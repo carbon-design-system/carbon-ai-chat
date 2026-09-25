@@ -9,6 +9,9 @@
 
 import React from 'react';
 import { cleanup, render, waitFor, act } from '@testing-library/react';
+// Production defers this module for SSR. Load it here so cold Jest transforms
+// finish before tests start timing mount readiness.
+import '../src/chat/ChatAppEntry';
 import { ChatContainer } from '../src/react/ChatContainer';
 import { PublicConfig } from '../src/types/config/PublicConfig';
 import { ChatContainerProps } from '../src/types/component/ChatContainer';
@@ -86,13 +89,13 @@ export async function addUserDefinedResponse(
 
 /**
  * The element that hosts the chat app. `ChatContainer` and
- * `ChatCustomElement` render `cds-aichat-react`, and the app lives in its
+ * `ChatCustomElement` render `cds-aichat-container`, and the app lives in its
  * shadow root.
  *
  * @param root - Where to search. Defaults to the whole document.
  */
 export function getChatHost(root: ParentNode = document): HTMLElement | null {
-  return root.querySelector<HTMLElement>('cds-aichat-react');
+  return root.querySelector<HTMLElement>('cds-aichat-container');
 }
 
 /**

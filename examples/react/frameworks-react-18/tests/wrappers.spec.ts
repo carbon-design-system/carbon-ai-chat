@@ -9,6 +9,97 @@ import { readFileSync } from 'fs';
 import { PageObjectId } from '@carbon/ai-chat/server';
 import { test, expect, type Page } from '@playwright/test';
 
+test('preserves host DOM props through updates and removal', async ({
+  page,
+}) => {
+  await page.goto('/?host-props');
+  const host = page.getByTestId('props-host');
+  const click = page.getByTestId('host-click');
+  await expect(page.getByTestId(PageObjectId.LAUNCHER)).toBeVisible({
+    timeout: 10000,
+  });
+  const originalHost = await host.elementHandle();
+  const attributeNames = [
+    'id',
+    'class',
+    'classname',
+    'title',
+    'hidden',
+    'draggable',
+    'spellcheck',
+    'contenteditable',
+    'tabindex',
+    'aria-label',
+    'aria-hidden',
+  ];
+  const attributes = () =>
+    host.evaluate(
+      (node, names) =>
+        Object.fromEntries(
+          names.map((name) => [name, node.getAttribute(name)])
+        ),
+      attributeNames
+    );
+  const initial = {
+    id: 'host-initial',
+    class: 'host-initial',
+    classname: null,
+    title: 'initial',
+    hidden: null,
+    draggable: 'true',
+    spellcheck: 'true',
+    contenteditable: 'false',
+    tabindex: '2',
+    'aria-label': 'initial',
+    'aria-hidden': 'false',
+  };
+  expect(await attributes()).toEqual(initial);
+  await expect(host).toHaveJSProperty('hidden', false);
+  await expect(host).toHaveCSS('color', 'rgb(1, 2, 3)');
+
+  // A host rerender reapplies native properties even when their props stay equal.
+  await host.evaluate((node) => {
+    (node as HTMLElement).hidden = true;
+  });
+  await host.dispatchEvent('click');
+  await expect(click).toHaveText('initial:cds-aichat-container');
+  await expect(host).toHaveJSProperty('hidden', false);
+
+  await page.getByRole('button', { name: 'Update host props' }).click();
+  expect(await attributes()).toEqual({
+    id: 'host-updated',
+    class: 'host-updated',
+    classname: null,
+    title: 'updated',
+    hidden: '',
+    draggable: 'false',
+    spellcheck: 'false',
+    contenteditable: 'true',
+    tabindex: '3',
+    'aria-label': 'updated',
+    'aria-hidden': 'true',
+  });
+  await expect(host).toHaveJSProperty('hidden', true);
+  await expect(host).toHaveCSS('display', 'none');
+  await expect(page.getByTestId(PageObjectId.LAUNCHER)).toBeHidden();
+  await expect(host).toHaveCSS('padding', '4px');
+  expect(await host.evaluate((node) => node.style.color)).toBe('');
+  await host.dispatchEvent('click');
+  await expect(click).toHaveText('updated:cds-aichat-container');
+
+  await page.getByRole('button', { name: 'Remove host props' }).click();
+  expect(await attributes()).toEqual(
+    Object.fromEntries(attributeNames.map((name) => [name, null]))
+  );
+  await expect(host).toHaveJSProperty('hidden', false);
+  await expect(host).toHaveJSProperty('contentEditable', 'inherit');
+  await expect(page.getByTestId(PageObjectId.LAUNCHER)).toBeVisible();
+  expect(await host.evaluate((node) => node.style.padding)).toBe('');
+  await host.dispatchEvent('click');
+  await expect(click).toHaveText('updated:cds-aichat-container');
+  expect(await originalHost.evaluate((node) => node.isConnected)).toBe(true);
+});
+
 /**
  * Both React components mount and exchange a message on React 18, with no
  * page errors. The version check guards the example's own install: a hoisted

@@ -124,9 +124,12 @@ class ConfirmModal extends Component<
             }
           }
 
-          // Fallback to DOM traversal if ref doesn't work
-          const aiChat = document.querySelector('cds-aichat-react');
-          const layer = aiChat?.shadowRoot?.querySelector('cds-layer');
+          // Fallback to DOM traversal if ref doesn't work. Search the shadow
+          // root this chat renders in, not the page.
+          const chatRoot =
+            this.props.serviceManager?.container?.getRootNode() as
+              ShadowRoot | Document | undefined;
+          const layer = chatRoot?.querySelector('cds-layer');
           const buttonNo = layer?.querySelector(
             '.cds-aichat--confirm-modal__no-button'
           );

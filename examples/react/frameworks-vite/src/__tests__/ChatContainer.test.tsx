@@ -109,7 +109,8 @@ describe('ChatContainer', () => {
       // markers to make sure the critical interactive pieces are present.
       const mainPanel = await waitFor(
         () =>
-          shadowRoot.querySelector(
+          deepQuerySelector(
+            shadowRoot,
             `[data-testid="${PageObjectId.MAIN_PANEL}"]`
           ),
         { timeout: WAIT_FOR_TIMEOUT }

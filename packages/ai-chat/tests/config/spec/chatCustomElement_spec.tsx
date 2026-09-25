@@ -16,7 +16,7 @@
  */
 
 import React from 'react';
-import { render, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, waitFor } from '@testing-library/react';
 
 import { ChatCustomElement } from '../../../src/react/ChatCustomElement';
 import { createBaseTestProps } from '../../test_helpers';
@@ -72,4 +72,72 @@ describe('ChatCustomElement prop forwarding', () => {
     expect(wrapper?.classList.contains('my-custom-chat')).toBe(true);
     expect(wrapper?.id).toBe('custom-chat-id');
   });
+
+  it('delivers DOM event props with the outer div as the current target', async () => {
+    let capturedInstance: any = null;
+    const onClick = jest.fn(
+      (event: React.MouseEvent<HTMLDivElement>) => event.currentTarget
+    );
+
+    render(
+      React.createElement(ChatCustomElement, {
+        ...createBaseTestProps(),
+        className: 'event-host',
+        onClick,
+        onBeforeRender: (instance: any) => {
+          capturedInstance = instance;
+        },
+      })
+    );
+    await waitFor(() => expect(capturedInstance).not.toBeNull(), {
+      timeout: 5000,
+    });
+
+    const host = document.querySelector<HTMLDivElement>('.event-host');
+    fireEvent.click(host.firstElementChild ?? host);
+
+    expect(onClick).toHaveBeenCalledTimes(1);
+    expect(onClick.mock.results[0].value).toBe(host);
+    expect(capturedInstance.serviceManager.customHostElement).toBe(host);
+  });
+
+  it.each([
+    ['omitted', undefined, true],
+    ['supplied', jest.fn(), false],
+  ])(
+    'hides the outer div by default only when onViewChange is %s',
+    async (_label, onViewChange, hidesByDefault) => {
+      let capturedInstance: any = null;
+
+      render(
+        React.createElement(ChatCustomElement, {
+          ...createBaseTestProps(),
+          className: 'view-host',
+          onViewChange,
+          onBeforeRender: (instance: any) => {
+            capturedInstance = instance;
+          },
+        })
+      );
+      await waitFor(() => expect(capturedInstance).not.toBeNull(), {
+        timeout: 5000,
+      });
+
+      const host = document.querySelector<HTMLDivElement>('.view-host');
+      await act(async () => {
+        await capturedInstance.changeView('mainWindow');
+      });
+      expect(host.classList.contains('cds-aichat--hidden')).toBe(false);
+
+      await act(async () => {
+        await capturedInstance.changeView('launcher');
+      });
+      expect(host.classList.contains('cds-aichat--hidden')).toBe(
+        hidesByDefault
+      );
+      if (onViewChange) {
+        expect(onViewChange).toHaveBeenCalled();
+      }
+    }
+  );
 });

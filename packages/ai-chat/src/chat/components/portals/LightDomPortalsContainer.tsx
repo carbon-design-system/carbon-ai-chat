@@ -30,8 +30,10 @@ interface LightDomPortalEntry {
 }
 
 interface LightDomPortalsContainerProps {
-  /** The chat wrapper element (`<cds-aichat-react>`) whose light DOM hosts portal targets. */
+  /** The page-level chat element whose light DOM hosts portal targets. */
   chatWrapper?: HTMLElement;
+  /** The shadow root holding the editor; defaults to `chatWrapper`'s own. */
+  observationRoot?: Node;
 }
 
 let lightDomSlotCounter = 0;
@@ -52,6 +54,7 @@ let lightDomSlotCounter = 0;
  */
 function LightDomPortalsContainer({
   chatWrapper,
+  observationRoot,
 }: LightDomPortalsContainerProps) {
   const [portals, setPortals] = useState<LightDomPortalEntry[]>([]);
   const portalsRef = useRef(portals);
@@ -127,7 +130,7 @@ function LightDomPortalsContainer({
       return undefined;
     }
 
-    const shadowRoot = chatWrapper.shadowRoot;
+    const shadowRoot = observationRoot ?? chatWrapper.shadowRoot;
     if (!shadowRoot) {
       return undefined;
     }
@@ -154,7 +157,7 @@ function LightDomPortalsContainer({
     observer.observe(shadowRoot, { childList: true, subtree: true });
     return () => observer.disconnect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [portals.length > 0, chatWrapper]);
+  }, [portals.length > 0, chatWrapper, observationRoot]);
 
   // On unmount, remove all light DOM elements
   useEffect(() => {

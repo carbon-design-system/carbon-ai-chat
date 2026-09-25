@@ -37,11 +37,16 @@ export async function waitForChatElement(
     () => {
       // the chat host is a custom element whose shadowRoot we don't know
       // by tag name, so we have to walk every descendant looking for the one
-      // whose shadow tree contains the CHAT_WIDGET marker.
+      // whose shadow tree contains the CHAT_WIDGET marker. The marker sits
+      // below more than one shadow boundary — the host renders an inner
+      // element that holds the app — so this walks nested roots too and
+      // returns the outermost host.
       for (const el of Array.from(container.querySelectorAll('*'))) {
         const shadowRoot = (el as HTMLElement).shadowRoot;
         if (
-          shadowRoot?.querySelector(
+          shadowRoot &&
+          deepQuerySelector(
+            shadowRoot,
             `[data-testid="${PageObjectId.CHAT_WIDGET}"]`
           )
         ) {

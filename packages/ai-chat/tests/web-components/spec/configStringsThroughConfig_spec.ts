@@ -13,7 +13,7 @@
  * To a consumer there is a single `strings` input. On the React surface it is a
  * top-level prop; on the web-component surface the flattened `strings` property
  * is folded into `config.strings` (`resolveFlattenedConfig`) and the element
- * passes only `.config` to `cds-aichat-internal` — never a separate `.strings`.
+ * passes only `.config` to the chat element — never a separate `.strings`.
  *
  * The booted chat must honor strings supplied through that channel: a host
  * customizing `strings` on `cds-aichat-container` must see the override in the

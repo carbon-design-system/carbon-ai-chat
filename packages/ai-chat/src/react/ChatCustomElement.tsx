@@ -17,7 +17,6 @@ import React, {
 
 import { ChatInstance } from '../types/instance/ChatInstance';
 import {
-  BusEventType,
   BusEventViewChange,
   BusEventViewPreChange,
 } from '../types/events/eventBusTypes';
@@ -184,41 +183,15 @@ function ChatCustomElement(
     setElementReady(true);
   }, []);
 
-  const onBeforeRenderOverride = useCallback(
-    async (instance: ChatInstance) => {
-      /**
-       * A default handler for the "view:change" event. This will be used to show or hide the Carbon AI Chat main window
-       * by adding/removing a CSS class that sets the element size to 0x0 when hidden.
-       */
-      function defaultViewChangeHandler(event: BusEventViewChange) {
-        const el = containerRef.current;
-        if (el) {
-          if (event.newViewState.mainWindow) {
-            // Show: remove the hidden class, let the provided className handle sizing
-            el.classList.remove('cds-aichat--hidden');
-          } else {
-            // Hide: add the hidden class to set size to 0x0
-            el.classList.add('cds-aichat--hidden');
-          }
-        }
-      }
-
-      if (onViewPreChange) {
-        instance.on({
-          type: BusEventType.VIEW_PRE_CHANGE,
-          handler: onViewPreChange,
-        });
-      }
-
-      instance.on({
-        type: BusEventType.VIEW_CHANGE,
-        handler: onViewChange || defaultViewChangeHandler,
-      });
-
-      return onBeforeRender?.(instance);
-    },
-    [onViewPreChange, onViewChange, onBeforeRender]
-  );
+  /**
+   * The default "view:change" handler. It shows or hides the chat by toggling a class that sizes the element to 0x0.
+   */
+  const defaultViewChangeHandler = useCallback((event: BusEventViewChange) => {
+    const el = containerRef.current;
+    if (el) {
+      el.classList.toggle('cds-aichat--hidden', !event.newViewState.mainWindow);
+    }
+  }, []);
 
   return (
     <div
@@ -231,8 +204,10 @@ function ChatCustomElement(
           // Flattened PublicConfig fields, split from the shared field table.
           {...(configProps as ChatContainerProps)}
           // ChatContainer-specific props (not part of PublicConfig).
-          onBeforeRender={onBeforeRenderOverride}
+          onBeforeRender={onBeforeRender}
           onAfterRender={onAfterRender}
+          onViewPreChange={onViewPreChange}
+          onViewChange={onViewChange || defaultViewChangeHandler}
           renderUserDefinedResponse={renderUserDefinedResponse}
           renderUserDefinedInputNode={renderUserDefinedInputNode}
           renderCustomMessageFooter={renderCustomMessageFooter}

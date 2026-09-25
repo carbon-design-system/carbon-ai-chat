@@ -28,8 +28,13 @@ export async function waitForChatElement(
     () => {
       for (const el of Array.from(container.querySelectorAll('*'))) {
         const shadowRoot = (el as HTMLElement).shadowRoot;
+        // The widget sits below more than one shadow boundary — the chat host
+        // renders an inner element that holds the app — so this walks every
+        // nested root and returns the outermost host.
         if (
-          shadowRoot?.querySelector(
+          shadowRoot &&
+          deepQuerySelector(
+            shadowRoot,
             `[data-testid="${PageObjectId.CHAT_WIDGET}"]`
           )
         ) {
@@ -54,11 +59,18 @@ export async function openChat(customElement: Element): Promise<ShadowRoot> {
   }
   const { launcher, alreadyOpen } = await waitFor(
     () => {
-      const button = shadowRoot.querySelector(
+      // Each of these sits below several shadow boundaries — the chat host's
+      // inner element, then the chat's own components — so the search walks
+      // nested roots rather than only this one.
+      const button = deepQuerySelector(
+        shadowRoot,
         `[data-testid="${PageObjectId.LAUNCHER}"]`
       ) as HTMLElement | null;
       const isMainPanelVisible = Boolean(
-        shadowRoot.querySelector(`[data-testid="${PageObjectId.MAIN_PANEL}"]`)
+        deepQuerySelector(
+          shadowRoot,
+          `[data-testid="${PageObjectId.MAIN_PANEL}"]`
+        )
       );
 
       if (button) {
@@ -84,7 +96,10 @@ export async function openChat(customElement: Element): Promise<ShadowRoot> {
   }
   await waitFor(
     () =>
-      shadowRoot.querySelector(`[data-testid="${PageObjectId.CHAT_WIDGET}"]`),
+      deepQuerySelector(
+        shadowRoot,
+        `[data-testid="${PageObjectId.CHAT_WIDGET}"]`
+      ),
     { timeout: WAIT_FOR_TIMEOUT }
   );
   return shadowRoot;

@@ -7,27 +7,13 @@
  *  @license
  */
 
-import isEqual from 'lodash-es/isEqual.js';
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-import { StoreProvider } from './providers/StoreProvider';
-import { WindowSizeProvider } from './providers/WindowSizeProvider';
-import { ServiceManagerProvider } from './providers/ServiceManagerProvider';
-import { IntlProvider } from './providers/IntlProvider';
-import { AriaAnnouncerProvider } from './providers/AriaAnnouncerProvider';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { AppProviders } from './AppProviders';
 import { ServiceManager } from './services/ServiceManager';
 import {
   attachUserDefinedResponseHandlers,
   attachCustomFooterHandler,
   attachCustomRequestFooterHandler,
-  initServiceManagerAndInstance,
-  mergePublicConfig,
-  performInitialViewChange,
 } from './utils/chatBoot';
 import { UserDefinedResponsePortalsContainer } from './components/portals/UserDefinedResponsePortalsContainer';
 import {
@@ -42,16 +28,6 @@ import { WriteableElementsPortalsContainer } from './components/portals/Writeabl
 import { LightDomPortalsContainer } from './components/portals/LightDomPortalsContainer';
 import { InputNodePortalsContainer } from './components/portals/InputNodePortalsContainer';
 
-import { useOnMount } from './hooks/useOnMount';
-import appActions from './store/actions';
-import { consoleError, consoleWarn } from './utils/miscUtils';
-import { isBrowser } from './utils/browserUtils';
-
-import { applyConfigChangesDynamically } from './utils/dynamicConfigUpdates';
-import { resolvePromptLineMode } from './components/input/promptLineMode';
-import { preloadBuildCarbonExtensions } from './components/input/buildExtensionsLoader';
-import { preloadPromptLineRich } from '@carbon/ai-chat-components/es/components/prompt-line/src/prompt-line-rich-loader.js';
-
 import {
   RenderUserDefinedState,
   RenderUserDefinedResponse,
@@ -61,43 +37,47 @@ import {
   RenderWriteableElementResponse,
 } from '../types/component/ChatContainer';
 import { ChatInstance } from '../types/instance/ChatInstance';
-import { PublicConfig } from '../types/config/PublicConfig';
 import { Dimension } from '../types/utilities/Dimension';
 import AppShell from './AppShell';
 
 /**
- * Props for the top-level Chat container. This component is responsible for
- * bootstrapping services and the chat instance, rendering the application shell,
- * and handling dynamic updates when the public config changes.
+ * What `cds-aichat-container` hands the renderer for one mount. The host's
+ * render props ride alongside; the React wrapper supplies its current ones on
+ * every render.
+ *
+ * @internal
  */
-interface AppProps {
-  /**
-   * The single effective config. Both surfaces reconstruct this from their
-   * flattened inputs through the shared `resolveFlattenedConfig`, folding every
-   * field — `strings`, `markdown`, `serviceDesk`, and `serviceDeskFactory`
-   * included — so the core has exactly one config channel and no side-channel
-   * props.
-   */
-  config: PublicConfig;
-  onBeforeRender?: (instance: ChatInstance) => Promise<void> | void;
-  onAfterRender?: (instance: ChatInstance) => Promise<void> | void;
+interface ChatAppEntryProps {
+  serviceManager: ServiceManager;
+  instance: ChatInstance;
+  windowSize: Dimension;
+  /** False until `onBeforeRender` settles. Nothing renders before then. */
+  renderReady: boolean;
+  /** True once the store holds the chat's initial view. */
+  initialViewReady: boolean;
+  /** Called once the slot trackers listen, before `onBeforeRender` runs. */
+  onListenersReady: () => void;
+  /** Called after the commit that renders the initial view. */
+  onInitialViewCommitted: () => void;
   renderUserDefinedResponse?: RenderUserDefinedResponse;
   renderUserDefinedInputNode?: RenderUserDefinedInputNode;
   renderCustomMessageFooter?: RenderCustomMessageFooter;
   renderCustomRequestFooter?: RenderCustomRequestFooter;
   renderWriteableElements?: RenderWriteableElementResponse;
-  container: HTMLElement;
-  element?: HTMLElement;
-  setParentInstance?: React.Dispatch<React.SetStateAction<ChatInstance>>;
+  /** The page-level element whose light DOM holds portal hosts for extension content. */
   chatWrapper?: HTMLElement;
+  /**
+   * The shadow root that holds the rendered app. Watched to prune editor
+   * portal hosts; it differs from `chatWrapper`'s own shadow root when the
+   * app renders inside a nested element.
+   */
+  observationRoot?: Node;
 }
 
 /**
- * Top-level Chat component that initializes the ServiceManager and ChatInstance,
- * then renders the app shell. Subsequent config changes are applied dynamically
- * without a hard reboot. If a change affects the human agent service while a
- * chat is active/connecting, the current human agent chat is ended quietly and
- * the service is recreated.
+ * Renders a chat whose services `cds-aichat-container` has already started. It
+ * collects extension slots from the instance, then renders the app shell once
+ * the host's `onBeforeRender` has settled.
  *
  * Re-render boundary (important): the store-driven heavy tree (`AppShell` and
  * everything it renders) must never receive raw host render-props. Hosts that
@@ -109,35 +89,22 @@ interface AppProps {
  * `renderWriteableElements` node map) flow only to their isolated, individually
  * memoized portal siblings of `AppShell` below — those re-render independently.
  */
-export function ChatAppEntry({
-  config,
-  onBeforeRender,
-  onAfterRender,
+function ChatAppEntry({
+  serviceManager,
+  instance,
+  windowSize,
+  renderReady,
+  initialViewReady,
+  onListenersReady,
+  onInitialViewCommitted,
   renderUserDefinedResponse,
   renderUserDefinedInputNode,
   renderCustomMessageFooter,
   renderCustomRequestFooter,
   renderWriteableElements,
-  container,
-  setParentInstance,
-  element,
   chatWrapper,
-}: AppProps) {
-  const [instance, setInstance] = useState<ChatInstance | null>(null);
-  const [serviceManager, setServiceManager] = useState<ServiceManager | null>(
-    null
-  );
-  const [beforeRenderComplete, setBeforeRenderComplete] =
-    useState<boolean>(false);
-  const [afterRenderCallback, setAfterRenderCallback] = useState<
-    (() => void) | null
-  >(null);
-
-  const setInstances = (i: ChatInstance) => {
-    setInstance(i);
-    setParentInstance?.(i);
-  };
-
+  observationRoot,
+}: ChatAppEntryProps) {
   const [userDefinedResponseEventsBySlot, setUserDefinedResponseEventsBySlot] =
     useState<Record<string, RenderUserDefinedState>>({});
 
@@ -148,254 +115,42 @@ export function ChatAppEntry({
   const [customRequestFooterSlotsByName, setCustomRequestFooterSlotsByName] =
     useState<Record<string, CustomRequestFooterSlotState>>({});
 
-  // The bootstrap below runs once, but this prop can arrive later — behind a
+  // The trackers subscribe once, but this prop can arrive later — behind a
   // feature flag, or with async config. The handler reads the ref on each
   // event so a late arrival still gets footers.
   const renderCustomRequestFooterRef = useRef(renderCustomRequestFooter);
   renderCustomRequestFooterRef.current = renderCustomRequestFooter;
 
-  const previousConfigRef = useRef<PublicConfig | null>(null);
+  const onListenersReadyRef = useRef(onListenersReady);
+  onListenersReadyRef.current = onListenersReady;
+  const onInitialViewCommittedRef = useRef(onInitialViewCommitted);
+  onInitialViewCommittedRef.current = onInitialViewCommitted;
 
-  // Tracks which props we've already warned about so a host that re-creates an
-  // object prop every render gets the diagnostic once, not on every commit.
-  const unstablePropsWarnedRef = useRef<Set<string>>(new Set());
-
-  /**
-   * Dev-only diagnostic: a heavy object prop changed identity but its content is
-   * unchanged, meaning the host is re-creating it every render and paying for
-   * avoidable reconciliation. Gated behind `config.debug` and emitted once per
-   * prop. See the prop-stability contract in `src/types/AGENTS.md`.
-   */
-  const warnUnstableProp = useCallback(
-    (name: string) => {
-      if (!serviceManager?.store.getState().config.public.debug) {
-        return;
-      }
-      if (unstablePropsWarnedRef.current.has(name)) {
-        return;
-      }
-      unstablePropsWarnedRef.current.add(name);
-      consoleWarn(
-        `The \`${name}\` prop changed identity without changing content. Memoize it ` +
-          `(e.g. useMemo / useCallback) so it does not trigger avoidable work on every render.`
-      );
-    },
-    [serviceManager]
-  );
-
-  /**
-   * On mount, fully initialize services and the chat instance, then render.
-   */
-  useOnMount(() => {
-    /**
-     * Performs the first-time bootstrap of services and the chat instance.
-     * Attaches user-defined response handlers, executes lifecycle callbacks,
-     * renders the instance, and triggers the initial view change.
-     */
-    const initializeChat = async () => {
-      try {
-        // `config` is already the single effective config — both surfaces folded
-        // every flattened field (strings, markdown, serviceDesk,
-        // serviceDeskFactory) into it via `resolveFlattenedConfig` before this
-        // point, so the merge with defaults is all that's left.
-        const publicConfig = mergePublicConfig(config);
-        // Seed the previous config immediately to avoid dynamic updates during boot.
-        previousConfigRef.current = publicConfig;
-
-        const { serviceManager, instance } =
-          await initServiceManagerAndInstance({
-            publicConfig,
-            container,
-            customHostElement: element,
-          });
-
-        // Set the host markdown config before first paint so the initial
-        // markdown render already has its custom renderers / plugins. `markdown`
-        // lives in its own `markdownConfig` slice (not read from the config
-        // tree), so lift it off `config` here. Read from the original `config`
-        // prop, not `publicConfig`, to keep the consumer's plugin/renderer
-        // references stable for the slice's `isEqual` guard.
-        if (config.markdown) {
-          serviceManager.store.dispatch(
-            appActions.setAppStateValue('markdownConfig', config.markdown)
-          );
-        }
-
-        attachUserDefinedResponseHandlers(
-          instance,
-          setUserDefinedResponseEventsBySlot
-        );
-
-        attachCustomFooterHandler(instance, setCustomFooterSlotsByName);
-
-        attachCustomRequestFooterHandler(
-          instance,
-          setCustomRequestFooterSlotsByName,
-          () => Boolean(renderCustomRequestFooterRef.current)
-        );
-
-        setInstances(instance);
-
-        if (onBeforeRender) {
-          await onBeforeRender(instance);
-        }
-
-        // Warm the Tiptap chunks before the first render commits so a chat
-        // configured for the rich editor mounts it directly (no textarea→editor
-        // flash) and the prompt-line is present before hydration completes and
-        // before `onAfterRender` resolves. Lite chats skip this and never
-        // download Tiptap.
-        if (resolvePromptLineMode(publicConfig.input) === 'rich') {
-          await Promise.all([
-            preloadPromptLineRich(),
-            preloadBuildCarbonExtensions(),
-          ]);
-        }
-
-        setServiceManager(serviceManager);
-        setBeforeRenderComplete(true);
-        await performInitialViewChange(serviceManager);
-        serviceManager.store.dispatch(
-          appActions.setInitialViewChangeComplete(true)
-        );
-
-        if (onAfterRender) {
-          setAfterRenderCallback(() => () => onAfterRender(instance));
-        }
-      } catch (error) {
-        console.error('Error initializing chat:', error);
-      }
-    };
-
-    initializeChat();
-  });
-
-  /**
-   * Reacts to config changes to dynamic configuration updates to an existing ServiceManager.
-   */
+  // Subscribes before the host's onBeforeRender runs, so content that callback
+  // emits is already collected when the shell first renders. The cleanups keep
+  // a StrictMode effect replay from subscribing twice.
   useEffect(() => {
-    if (!serviceManager || !instance || !config || !beforeRenderComplete) {
-      return;
-    }
+    const detachTrackers = [
+      attachUserDefinedResponseHandlers(
+        instance,
+        setUserDefinedResponseEventsBySlot
+      ),
+      attachCustomFooterHandler(instance, setCustomFooterSlotsByName),
+      attachCustomRequestFooterHandler(
+        instance,
+        setCustomRequestFooterSlotsByName,
+        () => Boolean(renderCustomRequestFooterRef.current)
+      ),
+    ];
+    onListenersReadyRef.current();
+    return () => detachTrackers.forEach((detach) => detach());
+  }, [instance]);
 
-    // `config` already carries every field (strings/markdown/serviceDesk/
-    // serviceDeskFactory folded in by both surfaces), so the merged config is
-    // the whole change-detection input — no side-channel props to reconcile.
-    const nextEffective = mergePublicConfig(config);
-
-    const previousEffective = previousConfigRef.current;
-    if (!previousEffective) {
-      // Skip the initial run so we don't dispatch during first render.
-      previousConfigRef.current = nextEffective;
-      return;
-    }
-
-    if (isEqual(previousEffective, nextEffective)) {
-      // The effect re-ran (a `config`/`strings`/`serviceDesk` prop changed
-      // identity) but nothing actually changed — surface the churn in debug mode.
-      warnUnstableProp('config');
-      return;
-    }
-
-    const currentServiceManager = serviceManager;
-
-    const handleDynamicUpdate = async () => {
-      try {
-        await applyConfigChangesDynamically(
-          previousEffective,
-          nextEffective,
-          currentServiceManager
-        );
-      } catch (error) {
-        consoleError('Failed to apply config changes dynamically:', error);
-      }
-    };
-    handleDynamicUpdate();
-    previousConfigRef.current = nextEffective;
-  }, [
-    config,
-    instance,
-    serviceManager,
-    beforeRenderComplete,
-    warnUnstableProp,
-  ]);
-
-  // Keep the markdownConfig slice in sync with `config.markdown`. The markdown
-  // config is stored in its own slice rather than read off the config tree, so
-  // it is lifted here. Guarded by isEqual so a host passing an inline object
-  // (new identity, same content) does not churn the slice and re-render every
-  // markdown message.
-  const markdown = config.markdown;
   useEffect(() => {
-    if (!serviceManager) {
-      return;
+    if (initialViewReady) {
+      onInitialViewCommittedRef.current();
     }
-    const current = serviceManager.store.getState().markdownConfig;
-    if (isEqual(current, markdown)) {
-      // A new `markdown` identity with unchanged content — diagnose the churn.
-      if (markdown !== undefined && markdown !== current) {
-        warnUnstableProp('markdown');
-      }
-      return;
-    }
-    serviceManager.store.dispatch(
-      appActions.setAppStateValue('markdownConfig', markdown)
-    );
-  }, [markdown, serviceManager, warnUnstableProp]);
-
-  /**
-   * Defers the `onAfterRender` callback until after the initial render commits
-   * and all prerequisites (instance, serviceManager, and before-render tasks)
-   * are complete. This avoids invoking `onAfterRender` mid-render and keeps the
-   * sequencing deterministic.
-   */
-  useEffect(() => {
-    if (
-      afterRenderCallback &&
-      serviceManager &&
-      instance &&
-      beforeRenderComplete
-    ) {
-      const timeoutId = setTimeout(() => {
-        afterRenderCallback();
-        setAfterRenderCallback(null);
-      }, 0);
-      return () => clearTimeout(timeoutId);
-    }
-    return undefined;
-  }, [afterRenderCallback, serviceManager, instance, beforeRenderComplete]);
-
-  const [windowSize, setWindowSize] = useState<Dimension>({
-    width: isBrowser() ? window.innerWidth : 0,
-    height: isBrowser() ? window.innerHeight : 0,
-  });
-
-  useOnMount(() => {
-    if (!isBrowser) {
-      return () => {};
-    }
-
-    const windowListener = () => {
-      setWindowSize({ width: window.innerWidth, height: window.innerHeight });
-    };
-    window.addEventListener('resize', windowListener);
-
-    const visibilityListener = () => {
-      serviceManager?.store.dispatch(
-        appActions.setIsBrowserPageVisible(
-          document.visibilityState === 'visible'
-        )
-      );
-    };
-
-    document.addEventListener('visibilitychange', visibilityListener);
-
-    return () => {
-      window.removeEventListener('resize', windowListener);
-      document.removeEventListener('visibilitychange', visibilityListener);
-      serviceManager?.themeWatcherService?.stopWatching();
-    };
-  });
+  }, [initialViewReady]);
 
   // Stable signal of which writeable-element slots have content. A host that
   // passes live state typically rebuilds the `renderWriteableElements` map every
@@ -418,72 +173,65 @@ export function ChatAppEntry({
     [renderWriteableElements]
   );
 
-  if (!(serviceManager && instance && beforeRenderComplete)) {
+  if (!renderReady) {
     return null;
   }
 
   return (
-    <StoreProvider store={serviceManager.store}>
-      <WindowSizeProvider windowSize={windowSize}>
-        <ServiceManagerProvider serviceManager={serviceManager}>
-          <IntlProvider intl={serviceManager.intl}>
-            <AriaAnnouncerProvider>
-              <AppShell
-                serviceManager={serviceManager}
-                hostElement={serviceManager.customHostElement}
-                writeableElementsPresentKeys={writeableElementsPresentKeys}
-              />
-              {renderUserDefinedResponse && (
-                <UserDefinedResponsePortalsContainer
-                  chatInstance={instance}
-                  renderUserDefinedResponse={renderUserDefinedResponse}
-                  userDefinedResponseEventsBySlot={
-                    userDefinedResponseEventsBySlot
-                  }
-                  chatWrapper={chatWrapper}
-                />
-              )}
+    <AppProviders serviceManager={serviceManager} windowSize={windowSize}>
+      <AppShell
+        serviceManager={serviceManager}
+        hostElement={serviceManager.customHostElement}
+        writeableElementsPresentKeys={writeableElementsPresentKeys}
+      />
+      {renderUserDefinedResponse && (
+        <UserDefinedResponsePortalsContainer
+          chatInstance={instance}
+          renderUserDefinedResponse={renderUserDefinedResponse}
+          userDefinedResponseEventsBySlot={userDefinedResponseEventsBySlot}
+          chatWrapper={chatWrapper}
+        />
+      )}
 
-              {renderCustomMessageFooter && (
-                <CustomFooterPortalsContainer
-                  chatInstance={instance}
-                  renderCustomMessageFooter={renderCustomMessageFooter}
-                  customFooterEventsBySlot={customFooterSlotsByName}
-                  chatWrapper={chatWrapper}
-                />
-              )}
+      {renderCustomMessageFooter && (
+        <CustomFooterPortalsContainer
+          chatInstance={instance}
+          renderCustomMessageFooter={renderCustomMessageFooter}
+          customFooterEventsBySlot={customFooterSlotsByName}
+          chatWrapper={chatWrapper}
+        />
+      )}
 
-              {renderCustomRequestFooter && (
-                <CustomRequestFooterPortalsContainer
-                  chatInstance={instance}
-                  renderCustomRequestFooter={renderCustomRequestFooter}
-                  customRequestFooterEventsBySlot={
-                    customRequestFooterSlotsByName
-                  }
-                  chatWrapper={chatWrapper}
-                />
-              )}
+      {renderCustomRequestFooter && (
+        <CustomRequestFooterPortalsContainer
+          chatInstance={instance}
+          renderCustomRequestFooter={renderCustomRequestFooter}
+          customRequestFooterEventsBySlot={customRequestFooterSlotsByName}
+          chatWrapper={chatWrapper}
+        />
+      )}
 
-              {renderWriteableElements && (
-                <WriteableElementsPortalsContainer
-                  chatInstance={instance}
-                  renderResponseMap={renderWriteableElements}
-                />
-              )}
+      {renderWriteableElements && (
+        <WriteableElementsPortalsContainer
+          chatInstance={instance}
+          renderResponseMap={renderWriteableElements}
+        />
+      )}
 
-              <LightDomPortalsContainer chatWrapper={chatWrapper} />
+      <LightDomPortalsContainer
+        chatWrapper={chatWrapper}
+        observationRoot={observationRoot}
+      />
 
-              {renderUserDefinedInputNode && (
-                <InputNodePortalsContainer
-                  chatInstance={instance}
-                  renderUserDefinedInputNode={renderUserDefinedInputNode}
-                  chatWrapper={chatWrapper}
-                />
-              )}
-            </AriaAnnouncerProvider>
-          </IntlProvider>
-        </ServiceManagerProvider>
-      </WindowSizeProvider>
-    </StoreProvider>
+      {renderUserDefinedInputNode && (
+        <InputNodePortalsContainer
+          chatInstance={instance}
+          renderUserDefinedInputNode={renderUserDefinedInputNode}
+          chatWrapper={chatWrapper}
+        />
+      )}
+    </AppProviders>
   );
 }
+
+export { ChatAppEntry, ChatAppEntryProps };

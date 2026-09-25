@@ -119,9 +119,8 @@ beforeAll(async () => {
   );
 
   let reactWrapper: HTMLElement | undefined;
-  // Wait for the listeners themselves, not for the element: they are attached
-  // by an effect keyed on the wrapper, which is set only after the shadow-ready
-  // handshake resolves. A probe offer is the only thing that proves they exist.
+  // Wait for the listeners themselves, not for the element: a probe offer is
+  // the only thing that proves they exist.
   await waitFor(
     () => {
       const found = getChatHost(reactMount);
@@ -492,11 +491,9 @@ describe('plugin-host protocol: nested topology', () => {
     await (customElement as unknown as { updateComplete: Promise<void> })
       .updateComplete;
 
-    // The inner container forwards but does not host; the outer element hosts.
+    // The inner container does not host; the outer element does, and its own
+    // forwarder carries the host inward from there.
     expect(inner.querySelector(`[slot="${slotName}"]:not(slot)`)).toBeNull();
-    expect(
-      (inner as unknown as { _pluginSlotNames: string[] })._pluginSlotNames
-    ).toContain(slotName);
     expect(
       customElement.querySelector(`[slot="${slotName}"]:not(slot)`)
     ).not.toBeNull();
@@ -521,9 +518,6 @@ describe('plugin-host protocol: nested topology', () => {
 
     expect(event.defaultPrevented).toBe(true);
     expect(inner.querySelector(`[slot="${slotName}"]:not(slot)`)).toBeNull();
-    expect(
-      (inner as unknown as { _pluginSlotNames: string[] })._pluginSlotNames
-    ).toContain(slotName);
     expect(customElement.querySelector(`[slot="${slotName}"]:not(slot)`)).toBe(
       live
     );
