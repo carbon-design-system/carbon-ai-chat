@@ -15,10 +15,21 @@
  * the only way to isolate the remaining fields.
  */
 
-import { renderHook } from '@testing-library/react';
+import React, {
+  Suspense,
+  startTransition,
+  useLayoutEffect,
+  useState,
+} from 'react';
+import { act, render, renderHook } from '@testing-library/react';
+import type { Extension } from '@tiptap/core';
+import { getBuildCarbonExtensionsIfLoaded } from '../../../src/chat/components/input/buildExtensionsLoader';
 
 import { useInputExtensions } from '../../../src/chat/hooks/useInputExtensions';
-import type { StartersConfig } from '../../../src/types/config/InputConfig';
+import type {
+  StartersConfig,
+  TriggerSuggestionConfig,
+} from '../../../src/types/config/InputConfig';
 
 /** Stable reference, exactly as a host holding a module constant supplies it. */
 const STARTER_ITEMS = [{ id: 's1', label: 'Summarize this' }];
@@ -86,4 +97,60 @@ describe('useInputExtensions starter memo dependencies', () => {
 
     expect(result.current.normalizedStarters.disableDirectSend).toBe(true);
   });
+});
+
+jest.mock('../../../src/chat/components/input/buildExtensionsLoader', () => ({
+  getBuildCarbonExtensionsIfLoaded: jest.fn(),
+  loadBuildCarbonExtensions: jest.fn(),
+}));
+
+it('preserves committed extension identity after a suspended transition is abandoned', async () => {
+  const builder = jest.fn().mockImplementation(() => [{} as Extension]);
+  jest.mocked(getBuildCarbonExtensionsIfLoaded).mockReturnValue(builder);
+  const initial: TriggerSuggestionConfig = { trigger: '@', items: [] };
+  const suspended: TriggerSuggestionConfig = { trigger: '#', items: [] };
+  const pending = new Promise<void>(() => {});
+  let changeMention: (mention: TriggerSuggestionConfig) => void;
+  let refresh: () => void;
+  let committed: Extension[];
+  let suspendedRenderCount = 0;
+
+  function Harness(): React.ReactElement | null {
+    const [mention, setMention] = useState(initial);
+    const [, setRevision] = useState(0);
+    changeMention = setMention;
+    refresh = () => setRevision((revision) => revision + 1);
+    const { extensions } = useInputExtensions({
+      mention,
+      command: undefined,
+      autocomplete: undefined,
+      starters: undefined,
+      hostExtensions: undefined,
+      enabled: true,
+    });
+    useLayoutEffect(() => {
+      committed = extensions;
+    });
+    if (mention === suspended) {
+      suspendedRenderCount += 1;
+      throw pending;
+    }
+    return null;
+  }
+
+  render(
+    <Suspense fallback={null}>
+      <Harness />
+    </Suspense>
+  );
+  const before = committed;
+  await act(async () => {
+    startTransition(() => changeMention(suspended));
+  });
+  expect(suspendedRenderCount).toBeGreaterThan(0);
+  act(() => {
+    changeMention(initial);
+    refresh();
+  });
+  expect(committed).toBe(before);
 });

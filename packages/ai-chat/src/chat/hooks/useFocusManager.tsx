@@ -9,9 +9,7 @@
 
 import { useCallback } from 'react';
 import CDSButton from '@carbon/web-components/es/components/button/button.js';
-import { IS_MOBILE } from '../utils/browserUtils';
-import { doFocusRef } from '../utils/domUtils';
-import { consoleError } from '../utils/miscUtils';
+import { requestFocus as requestFocusForTargets } from '../utils/focusManager';
 import type { InputFunctions } from '../components/input/Input';
 import type { HasRequestFocus } from '../../types/utilities/HasRequestFocus';
 
@@ -49,29 +47,20 @@ export function useFocusManager({
   inputRef,
 }: UseFocusManagerProps) {
   const requestFocus = useCallback(() => {
-    try {
-      if (shouldAutoFocus && !IS_MOBILE) {
-        // Priority order for focus
-        if (showDisclaimer) {
-          if (disclaimerRef.current) {
-            doFocusRef(disclaimerRef);
-          }
-        } else if (iFramePanelIsOpen) {
-          iframePanelRef.current?.requestFocus();
-        } else if (viewSourcePanelIsOpen) {
-          viewSourcePanelRef.current?.requestFocus();
-        } else if (customPanelIsOpen) {
-          customPanelRef.current?.requestFocus();
-        } else if (responsePanelIsOpen) {
-          responsePanelRef.current?.requestFocus();
-        } else if (inputRef.current) {
-          // Focus main input for both homescreen and messages view
-          inputRef.current.requestFocus();
-        }
-      }
-    } catch (error) {
-      consoleError('An error occurred in MainWindow.requestFocus', error);
-    }
+    requestFocusForTargets({
+      shouldAutoFocus,
+      showDisclaimer,
+      iFramePanelIsOpen,
+      viewSourcePanelIsOpen,
+      customPanelIsOpen,
+      responsePanelIsOpen,
+      disclaimer: disclaimerRef.current,
+      iframePanel: iframePanelRef.current,
+      viewSourcePanel: viewSourcePanelRef.current,
+      customPanel: customPanelRef.current,
+      responsePanel: responsePanelRef.current,
+      input: inputRef.current,
+    });
   }, [
     customPanelIsOpen,
     customPanelRef,

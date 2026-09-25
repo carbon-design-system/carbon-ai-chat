@@ -20,6 +20,7 @@ Load only what you need:
 
 - Working across the React/Lit boundary, shadow DOM, or slots → [architecture.md](references/architecture.md)
 - Adding, editing, or wiring a service → [services.md](references/services.md)
+- Changing hooks or view-owned logic in `utils/` or `services/` → [hooks/AGENTS.md](src/chat/hooks/AGENTS.md)
 - Writing or fixing a Jest test → [tests.md](references/tests.md)
 - Shipping any UI change (WCAG 2.1 AA checklist, live-region patterns, the announcer helpers, and when an announcement should be `assertive`) → [Root accessibility.md](../../references/accessibility.md)
 - Touching the store → [src/chat/store/AGENTS.md](src/chat/store/AGENTS.md)
@@ -32,7 +33,7 @@ Load only what you need:
 - [src/chat/](src/chat/) — the chat application. Do most feature work here.
   - `AppShell.tsx`, `ChatAppEntry.tsx`, `AppShellPanels.tsx`, `AppShellWriteableElements.tsx` — top-level composition.
   - `store/` — Redux-style store.
-  - `services/` — long-lived singletons wired in `ServiceManager.ts` and `loadServices.ts`. `ChatActionsImpl.ts` is the instance-facing API — public methods added here must also be reflected on `ChatInstance` in `instance/`.
+  - `services/` — chat-instance services wired through `ServiceManager.ts` and `loadServices.ts`, plus view-owned classes with explicit cleanup. `ChatActionsImpl.ts` is the instance-facing API — public methods added here must also be reflected on `ChatInstance` in `instance/`.
   - `instance/` — public `ChatInstance` object. Breaking changes here break every consumer; prefer additive API.
   - `events/` — typed pub/sub for the public event API. Event names and payloads are part of the public contract.
   - `schema/` — runtime message/config schema. Keep in sync with types in [src/types/](src/types/).
@@ -75,7 +76,7 @@ See [definition-of-done.md](../../references/definition-of-done.md) for the gate
 
 - **Public API changes**: anything exported from `aiChatEntry.tsx`, `serverEntry.ts`, or `types/` is semver-visible. Coordinate with a `feat`/`fix!`/`BREAKING CHANGE` footer. JSDoc/TypeDoc rules: [src/types/AGENTS.md](src/types/AGENTS.md).
 - **Store**: see [src/chat/store/AGENTS.md](src/chat/store/AGENTS.md). Reducers stay pure; side effects go through services or `store/actions.ts` / `store/subscriptions.ts`. `humanAgentReducers.ts` is a separate slice on purpose.
-- **Services**: see [services.md](references/services.md). Wire through `ServiceManager` and `loadServices`. Nothing disposes a service on unmount yet, so a subscription or timer you add outlives the mount until teardown lands (#1681).
+- **Services**: read [services.md](references/services.md) when choosing ownership or wiring.
 - **i18n**: no user-visible strings in code. Route through `languages/`.
 - **Tests**: see [tests.md](references/tests.md). Colocate helpers in `tests/test_helpers.ts`. Store tests exercise reducers directly; service tests use the mocks in `tests/services/`.
 - **SCSS / RTL / prefix discipline**: see [code-patterns.md](../../references/code-patterns.md). Prefix discipline is build-breaking — never hardcode `cds--`; use `#{$prefix}--` in SCSS and the prefix helpers in TS.

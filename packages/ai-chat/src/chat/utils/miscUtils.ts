@@ -11,7 +11,7 @@
  * Miscellaneous utilities that don't fit anywhere else.
  */
 
-import { ErrorInfo } from 'react';
+import type { ErrorInfo } from 'react';
 
 import { FileUpload } from '../../types/config/ServiceDeskConfig';
 import { FileStatusValue, WA_CONSOLE_PREFIX } from './constants';

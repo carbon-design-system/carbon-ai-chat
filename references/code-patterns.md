@@ -79,7 +79,7 @@ Never hardcode `cds--` in SCSS or TSX class strings — the `es-custom` build re
 - **The test**: if you can only exercise it by rendering something, it's in the wrong place. Logic in a plain module is testable by calling it.
 - **Framework-agnostic ≠ DOM-free.** Touching `document`, measuring an element, or reading a media query is fine in a plain module — see the existing `utils/` helpers. It's the framework coupling to avoid, not the browser.
 
-Where it goes in `@carbon/ai-chat`: pure helpers in `src/chat/utils/`, stateful or side-effecting collaborators as services (see [packages/ai-chat/AGENTS.md](../packages/ai-chat/AGENTS.md)), state transitions in store reducers. In `@carbon/ai-chat-components`, prefer a sibling module over a method on the Lit element.
+Where it goes in `@carbon/ai-chat`: plain functions and DOM setup helpers that return cleanup in `src/chat/utils/`, stateful classes as services (see [packages/ai-chat/AGENTS.md](../packages/ai-chat/AGENTS.md)), state transitions in store reducers. In `@carbon/ai-chat-components`, prefer a sibling module over a method on the Lit element.
 
 Beyond testability, this is directional: the React layer is meant to get thinner over time, and logic that never imported React moves for free.
 

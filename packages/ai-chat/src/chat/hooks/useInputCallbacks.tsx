@@ -7,24 +7,23 @@
  *  @license
  */
 
-import { useCallback, useMemo } from 'react';
-import actions from '../store/actions';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useSelector } from './useSelector';
 import {
-  selectIsInputToHumanAgent,
-  selectInputState,
   selectInputIsReadonly,
   selectInputIsDisabled,
 } from '../store/selectors';
 import { shallowEqual } from '../store/appStore';
-import { createMessageRequestForText } from '../utils/messageUtils';
-import { shouldSendSilently } from '../utils/fileAttachments';
 import {
-  BusEventType,
-  MessageSendSource,
-} from '../../types/events/eventBusTypes';
+  InputCallbacks,
+  requestInputFocus as focusInput,
+  shouldDisableInput as inputDisabled,
+  shouldDisableSend as sendDisabled,
+  selectInputUploads,
+  isUploadButtonDisabled,
+} from '../services/inputCallbacks';
+import type { MessageSendSource } from '../../types/events/eventBusTypes';
 import type { ServiceManager } from '../services/ServiceManager';
-import type { AppState } from '../../types/state/AppState';
 import type { SendOptions } from '../../types/instance/ChatInstance';
 import type { MessagesComponentClass } from '../components-legacy/MessagesComponent';
 import type { JSONContent } from '@tiptap/core';
@@ -67,134 +66,53 @@ export function useInputCallbacks({
   messagesRef,
   humanAgentFileUploadInProgress,
 }: UseInputCallbacksProps): UseInputCallbacksReturn {
-  const onSendInput = useCallback(
-    async (
-      text: string,
-      source: MessageSendSource,
-      options?: SendOptions,
-      displayContent?: JSONContent
-    ) => {
-      // Read fresh state at call time — avoids closing over a stale render snapshot
-      const currentState = serviceManager.store.getState();
-      const isInputToHumanAgent = selectIsInputToHumanAgent(currentState);
-      const { files, pendingStructuredData } = selectInputState(currentState);
-
-      if (isInputToHumanAgent) {
-        serviceManager.humanAgentService.sendMessageToAgent(
-          text,
-          files,
-          displayContent
-        );
-      } else {
-        const messageRequest = createMessageRequestForText(
-          text,
-          displayContent
-        );
-        serviceManager.actions.sendWithCatch(messageRequest, source, {
-          ...options,
-          // `pendingStructuredData` is what `doSend` is about to merge onto this
-          // message. An explicit silent:true/false from the caller is preserved.
-          silent:
-            options?.silent ?? shouldSendSilently(text, pendingStructuredData),
-        });
-      }
-
-      if (files.length) {
-        serviceManager.store.dispatch(
-          actions.clearInputFiles(isInputToHumanAgent)
-        );
-      }
-    },
-    [serviceManager]
+  const controller = useMemo(
+    () =>
+      new InputCallbacks(serviceManager, () =>
+        messagesRef.current?.doAutoScroll()
+      ),
+    [serviceManager, messagesRef]
   );
-
-  const onRestart = useCallback(async () => {
-    await serviceManager.actions.restartConversation();
-  }, [serviceManager]);
-
-  const onClose = useCallback(async () => {
-    await serviceManager.actions.changeView('launcher' as any, {
-      viewChangeReason: 'main_window_minimized' as any,
-      mainWindowCloseReason: 'default_minimize' as any,
-    });
-  }, [serviceManager]);
-
-  const onToggleHomeScreen = useCallback(() => {
-    const currentState = serviceManager.store.getState();
-    const willShowMessages =
-      currentState.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen;
-
-    serviceManager.store.dispatch(actions.toggleHomeScreen());
-
-    // Auto-scroll when returning to messages
-    if (willShowMessages) {
-      // Use setTimeout to ensure the toggle completes before scrolling
-      setTimeout(() => {
-        messagesRef.current?.doAutoScroll();
-      }, 0);
-    }
-  }, [serviceManager, messagesRef]);
-
-  const onAcceptDisclaimer = useCallback(() => {
-    serviceManager.store.dispatch(actions.acceptDisclaimer());
-    serviceManager.fire({
-      type: BusEventType.DISCLAIMER_ACCEPTED,
-    });
-  }, [serviceManager]);
-
-  const requestInputFocus = useCallback(() => {
-    try {
-      if (
-        agentDisplayState.isConnectingOrConnected &&
-        agentDisplayState.disableInput
-      ) {
-        if (messagesRef.current?.requestHumanAgentBannerFocus()) {
-          return;
-        }
-      }
-      // Input focus will be handled by parent component
-    } catch (error) {
-      console.error('An error occurred in requestInputFocus', error);
-    }
-  }, [agentDisplayState, messagesRef]);
-
-  // Effective values derived from config + runtime override (see selectors).
+  useEffect(() => controller.disconnect, [controller]);
+  const requestInputFocus = useCallback(
+    () =>
+      focusInput(agentDisplayState, () =>
+        messagesRef.current?.requestHumanAgentBannerFocus()
+      ),
+    [agentDisplayState, messagesRef]
+  );
   const isInputReadonly = useSelector(selectInputIsReadonly);
   const isInputDisabled = useSelector(selectInputIsDisabled);
-
-  const shouldDisableInput = useCallback(() => {
-    return isInputReadonly || isInputDisabled || agentDisplayState.disableInput;
-  }, [isInputReadonly, isInputDisabled, agentDisplayState.disableInput]);
-
-  const shouldDisableSend = useCallback(() => {
-    return shouldDisableInput() || !isHydrated;
-  }, [shouldDisableInput, isHydrated]);
-
-  // One subscription with shallowEqual: a keystroke (rawValue/displayValue
-  // update) does not change either field, so this skips re-rendering then.
-  const { files, allowMultipleFileUploads } = useSelector((state: AppState) => {
-    const slice = selectInputState(state);
-    return {
-      files: slice.files,
-      allowMultipleFileUploads: slice.allowMultipleFileUploads,
-    };
-  }, shallowEqual);
-
-  const showUploadButtonDisabled = useMemo(() => {
-    const numFiles = files?.length ?? 0;
-    const anyCurrentFiles = numFiles > 0 || humanAgentFileUploadInProgress;
-    return anyCurrentFiles && !allowMultipleFileUploads;
-  }, [files, allowMultipleFileUploads, humanAgentFileUploadInProgress]);
-
+  const shouldDisableInput = useCallback(
+    () =>
+      inputDisabled(
+        isInputReadonly,
+        isInputDisabled,
+        agentDisplayState.disableInput
+      ),
+    [isInputReadonly, isInputDisabled, agentDisplayState.disableInput]
+  );
+  const shouldDisableSend = useCallback(
+    () => sendDisabled(shouldDisableInput(), isHydrated),
+    [shouldDisableInput, isHydrated]
+  );
+  const { files, allowMultipleFileUploads } = useSelector(
+    selectInputUploads,
+    shallowEqual
+  );
   return {
-    onSendInput,
-    onRestart,
-    onClose,
-    onToggleHomeScreen,
-    onAcceptDisclaimer,
+    onSendInput: controller.onSendInput,
+    onRestart: controller.onRestart,
+    onClose: controller.onClose,
+    onToggleHomeScreen: controller.onToggleHomeScreen,
+    onAcceptDisclaimer: controller.onAcceptDisclaimer,
     requestInputFocus,
     shouldDisableInput,
     shouldDisableSend,
-    showUploadButtonDisabled,
+    showUploadButtonDisabled: isUploadButtonDisabled(
+      files?.length ?? 0,
+      humanAgentFileUploadInProgress,
+      allowMultipleFileUploads
+    ),
   };
 }

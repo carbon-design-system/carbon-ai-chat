@@ -43,6 +43,7 @@ import { LightDomPortalsContainer } from './components/portals/LightDomPortalsCo
 import { InputNodePortalsContainer } from './components/portals/InputNodePortalsContainer';
 
 import { useOnMount } from './hooks/useOnMount';
+import { getWindowSize, observeWindowSize } from './utils/windowSize';
 import appActions from './store/actions';
 import { consoleError, consoleWarn } from './utils/miscUtils';
 import { isBrowser } from './utils/browserUtils';
@@ -365,20 +366,16 @@ export function ChatAppEntry({
     return undefined;
   }, [afterRenderCallback, serviceManager, instance, beforeRenderComplete]);
 
-  const [windowSize, setWindowSize] = useState<Dimension>({
-    width: isBrowser() ? window.innerWidth : 0,
-    height: isBrowser() ? window.innerHeight : 0,
-  });
+  const [windowSize, setWindowSize] = useState<Dimension>(() =>
+    getWindowSize()
+  );
 
   useOnMount(() => {
-    if (!isBrowser) {
-      return () => {};
+    if (!isBrowser()) {
+      return undefined;
     }
 
-    const windowListener = () => {
-      setWindowSize({ width: window.innerWidth, height: window.innerHeight });
-    };
-    window.addEventListener('resize', windowListener);
+    const stopObservingWindowSize = observeWindowSize(setWindowSize);
 
     const visibilityListener = () => {
       serviceManager?.store.dispatch(
@@ -391,7 +388,7 @@ export function ChatAppEntry({
     document.addEventListener('visibilitychange', visibilityListener);
 
     return () => {
-      window.removeEventListener('resize', windowListener);
+      stopObservingWindowSize();
       document.removeEventListener('visibilitychange', visibilityListener);
       serviceManager?.themeWatcherService?.stopWatching();
     };

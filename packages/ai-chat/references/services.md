@@ -2,6 +2,8 @@
 
 Load this when adding, editing, or testing a service. Services are orchestration boundaries that coordinate the store, external APIs, and browser APIs.
 
+For view-owned classes, follow [the hook core contract](../src/chat/hooks/AGENTS.md). The initialization, manager lookup, and teardown rules below apply to chat-instance services.
+
 ## Initialization order
 
 Services bootstrap in [`createServiceManager()`](../src/chat/services/loadServices.ts#L36) in this order:
@@ -16,7 +18,7 @@ Services bootstrap in [`createServiceManager()`](../src/chat/services/loadServic
 
 ## Dependency pattern
 
-Services **do not hold direct references to each other**. They resolve collaborators on-demand through [`ServiceManager`](../src/chat/services/ServiceManager.ts#L38):
+Chat-instance services **do not hold direct references to each other**. They resolve collaborators on-demand through [`ServiceManager`](../src/chat/services/ServiceManager.ts#L38):
 
 ```typescript
 class MyService {
@@ -107,12 +109,12 @@ class MessageService {
 
 - Simple state transformation → reducer.
 - One-off API call → action creator.
-- Pure utility → `src/utils/`.
+- Pure utility or small setup/cleanup function → `src/chat/utils/`.
 
 ## Wiring & teardown
 
-- Register new services through [`ServiceManager`](../src/chat/services/ServiceManager.ts) and [`loadServices`](../src/chat/services/loadServices.ts).
-- **There is no teardown yet.** Unmount only unmounts the React root, so every store subscription, timer, and in-flight request a service owns outlives the mount. Keep the unsubscribe handle and the timer id you create, so the teardown that #1681 builds can dispose them. `destroySession()` resets session data; it is not a teardown.
+- Register new chat-instance services through [`ServiceManager`](../src/chat/services/ServiceManager.ts) and [`loadServices`](../src/chat/services/loadServices.ts).
+- **Full chat-instance teardown is still pending.** Do not rely on React unmount to release a manager-owned service's resources. Keep the unsubscribe handle and the timer id you create, so the teardown that #1681 builds can dispose them. `destroySession()` resets session data; it is not a teardown.
 - Public methods on `ChatActionsImpl` must be reflected on the `ChatInstance` type in [src/chat/instance/](../src/chat/instance).
 
 ## Testing services
