@@ -16,9 +16,13 @@
  */
 
 import React from 'react';
-import { render, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, waitFor } from '@testing-library/react';
 
 import { ChatCustomElement } from '../../../src/react/ChatCustomElement';
+import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
+import { BusEventViewPreChange } from '../../../src/types/events/eventBusTypes';
+import { ChatInstance } from '../../../src/types/instance/ChatInstance';
+import { ViewType } from '../../../src/types/instance/apiTypes';
 import { createBaseTestProps } from '../../test_helpers';
 import { AppState } from '../../../src/types/state/AppState';
 import { enLanguagePack } from '../../../src/types/config/LanguagePack';
@@ -71,5 +75,128 @@ describe('ChatCustomElement prop forwarding', () => {
     expect(wrapper?.tagName).toBe('DIV');
     expect(wrapper?.classList.contains('my-custom-chat')).toBe(true);
     expect(wrapper?.id).toBe('custom-chat-id');
+  });
+
+  it('delivers DOM event props with the outer div as the current target', async () => {
+    let capturedInstance: any = null;
+    const onClick = jest.fn(
+      (event: React.MouseEvent<HTMLDivElement>) => event.currentTarget
+    );
+
+    render(
+      React.createElement(ChatCustomElement, {
+        ...createBaseTestProps(),
+        className: 'event-host',
+        onClick,
+        onBeforeRender: (instance: any) => {
+          capturedInstance = instance;
+        },
+      })
+    );
+    await waitFor(() => expect(capturedInstance).not.toBeNull(), {
+      timeout: 5000,
+    });
+
+    const host = document.querySelector<HTMLDivElement>('.event-host');
+    fireEvent.click(host.firstElementChild ?? host);
+
+    expect(onClick).toHaveBeenCalledTimes(1);
+    expect(onClick.mock.results[0].value).toBe(host);
+    expect(capturedInstance.serviceManager.customHostElement).toBe(host);
+  });
+
+  it.each([
+    ['omitted', undefined, true],
+    ['supplied', jest.fn(), false],
+  ])(
+    'hides the outer div by default only when onViewChange is %s',
+    async (_label, onViewChange, hidesByDefault) => {
+      let capturedInstance: any = null;
+
+      render(
+        React.createElement(ChatCustomElement, {
+          ...createBaseTestProps(),
+          className: 'view-host',
+          onViewChange,
+          onBeforeRender: (instance: any) => {
+            capturedInstance = instance;
+          },
+        })
+      );
+      await waitFor(() => expect(capturedInstance).not.toBeNull(), {
+        timeout: 5000,
+      });
+
+      const host = document.querySelector<HTMLDivElement>('.view-host');
+      await act(async () => {
+        await capturedInstance.changeView('mainWindow');
+      });
+      expect(host.classList.contains('cds-aichat--hidden')).toBe(false);
+
+      await act(async () => {
+        await capturedInstance.changeView('launcher');
+      });
+      expect(host.classList.contains('cds-aichat--hidden')).toBe(
+        hidesByDefault
+      );
+      if (onViewChange) {
+        expect(onViewChange).toHaveBeenCalled();
+      }
+    }
+  );
+
+  it('waits for an async onViewPreChange before hiding the outer div', async () => {
+    let capturedInstance: ChatInstance | null = null;
+    const closing = resolvablePromise();
+    // Only the close under test waits; the chat's own startup view change
+    // must not.
+    let holdClose = false;
+    const onViewPreChange = jest.fn((event: BusEventViewPreChange) =>
+      holdClose && !event.newViewState.mainWindow ? closing : undefined
+    );
+    const onAfterRender = jest.fn();
+
+    render(
+      React.createElement(ChatCustomElement, {
+        ...createBaseTestProps(),
+        className: 'pre-change-host',
+        onViewPreChange,
+        onBeforeRender: (instance: ChatInstance) => {
+          capturedInstance = instance;
+        },
+        onAfterRender,
+      })
+    );
+    await waitFor(() => expect(onAfterRender).toHaveBeenCalled(), {
+      timeout: 5000,
+    });
+
+    const host = document.querySelector<HTMLDivElement>('.pre-change-host');
+    await act(async () => {
+      await capturedInstance.changeView(ViewType.MAIN_WINDOW);
+    });
+    expect(host.classList.contains('cds-aichat--hidden')).toBe(false);
+
+    holdClose = true;
+    let closed: Promise<void>;
+    act(() => {
+      closed = capturedInstance.changeView(ViewType.LAUNCHER);
+    });
+    await waitFor(() =>
+      expect(onViewPreChange).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          newViewState: expect.objectContaining({ mainWindow: false }),
+        }),
+        capturedInstance
+      )
+    );
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(host.classList.contains('cds-aichat--hidden')).toBe(false);
+
+    await act(async () => {
+      closing.doResolve();
+      await closed;
+    });
+    expect(host.classList.contains('cds-aichat--hidden')).toBe(true);
   });
 });
