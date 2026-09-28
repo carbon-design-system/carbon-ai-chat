@@ -381,6 +381,14 @@ class AutocompleteElement extends LitElement {
         break;
       }
 
+      case 'Tab':
+        event.preventDefault();
+        this._focusedIndex = this._navigateTo(this._focusedIndex, 1);
+        this._setUserHasNavigated(true);
+        this._scheduleMoveAnnouncement(this._focusedIndex, totalItems);
+        this._scrollActiveItemIntoView();
+        break;
+
       case 'Escape':
         event.preventDefault();
         this._dismiss();

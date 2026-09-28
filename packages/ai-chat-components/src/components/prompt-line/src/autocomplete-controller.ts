@@ -426,6 +426,7 @@ export class AutocompleteController {
     if (
       event.key !== 'ArrowUp' &&
       event.key !== 'ArrowDown' &&
+      event.key !== 'Tab' &&
       event.key !== 'Enter' &&
       event.key !== 'Escape'
     ) {
