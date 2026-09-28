@@ -51,7 +51,6 @@ const treeshake = true;
  */
 const dtsTsConfig = {
   compilerOptions: {
-    baseUrl: './',
     jsx: 'react-jsx', // Enables the new JSX runtime
     allowSyntheticDefaultImports: true, // Allows default imports for React
     esModuleInterop: true, // Ensures compatibility with ES modules

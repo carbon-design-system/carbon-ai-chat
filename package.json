@@ -94,7 +94,7 @@
     "stylelint": "^17.0.0",
     "stylelint-config-carbon": "^1.25.0",
     "text-readability": "^1.1.0",
-    "typescript": "5.9.3"
+    "typescript": "6.0.3"
   },
   "commitlint": {
     "extends": [

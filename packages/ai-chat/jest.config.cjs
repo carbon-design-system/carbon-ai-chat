@@ -27,7 +27,7 @@ module.exports = {
           module: 'esnext',
           target: 'es2022',
           lib: ['es2022', 'dom', 'dom.iterable'],
-          moduleResolution: 'node',
+          moduleResolution: 'bundler',
           jsx: 'react-jsx',
         },
       },

@@ -154,7 +154,7 @@
     "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-postcss-lit": "^2.1.0",
     "storybook": "^10.2.8",
-    "typescript": "^5.2.2",
+    "typescript": "^6.0.3",
     "vite": "^8.0.16",
     "web-dev-server-plugin-lit-css": "^4.0.0"
   }
