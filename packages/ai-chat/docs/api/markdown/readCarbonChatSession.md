@@ -1,8 +1,14 @@
+<!--
+  GENERATED FILE - do not edit. A release regenerates and commits it
+  (`npm run docs:api`, see release-base.yml); a branch never should.
+  Edit the JSDoc it is generated from instead.
+-->
+
 # readCarbonChatSession
 
 - Kind: Function
 - Category: Utilities
-- Reference: https://chat.carbondesignsystem.com/version/v1.21.0/docs/functions/Type_reference.readCarbonChatSession.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/functions/Type_reference.readCarbonChatSession.html
 
 Reads and validates the Carbon AI Chat session from sessionStorage.
 Returns null if no session exists, if the data is corrupt, or if the

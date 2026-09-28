@@ -1,8 +1,14 @@
+<!--
+  GENERATED FILE - do not edit. A release regenerates and commits it
+  (`npm run docs:api`, see release-base.yml); a branch never should.
+  Edit the JSDoc it is generated from instead.
+-->
+
 # BusEventHeaderMenuClick
 
 - Kind: Interface
 - Category: Events
-- Reference: https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.BusEventHeaderMenuClick.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.BusEventHeaderMenuClick.html
 
 This event is fired when a user clicks on navigation items in the chat header.
 This includes the homescreen button and overflow menu items.
@@ -21,7 +27,7 @@ interface BusEventHeaderMenuClick
 
 The type of navigation item that was clicked.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.BusEventHeaderMenuClick.html#clicktype)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.BusEventHeaderMenuClick.html#clicktype)
 
 ### menuItemIndex
 
@@ -30,7 +36,7 @@ The type of navigation item that was clicked.
 For overflow menu items, this is the index of the item clicked.
 For homescreen button, this will be undefined.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.BusEventHeaderMenuClick.html#menuitemindex)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.BusEventHeaderMenuClick.html#menuitemindex)
 
 ### menuItemText
 
@@ -39,7 +45,7 @@ For homescreen button, this will be undefined.
 For overflow menu items, this is the text label of the item clicked.
 For homescreen button, this will be the back button label.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.BusEventHeaderMenuClick.html#menuitemtext)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.BusEventHeaderMenuClick.html#menuitemtext)
 
 ### type
 
@@ -47,4 +53,4 @@ For homescreen button, this will be the back button label.
 
 The type of the event.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.BusEventHeaderMenuClick.html#type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.BusEventHeaderMenuClick.html#type)

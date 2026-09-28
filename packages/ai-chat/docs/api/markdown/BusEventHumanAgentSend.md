@@ -1,8 +1,14 @@
+<!--
+  GENERATED FILE - do not edit. A release regenerates and commits it
+  (`npm run docs:api`, see release-base.yml); a branch never should.
+  Edit the JSDoc it is generated from instead.
+-->
+
 # BusEventHumanAgentSend
 
 - Kind: Interface
 - Category: Service desk
-- Reference: https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.BusEventHumanAgentSend.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.BusEventHumanAgentSend.html
 
 ## Signature
 
@@ -16,13 +22,13 @@ interface BusEventHumanAgentSend
 
 `data: MessageRequest`
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.BusEventHumanAgentSend.html#data)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.BusEventHumanAgentSend.html#data)
 
 ### files
 
 `files: FileUpload[]`
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.BusEventHumanAgentSend.html#files)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.BusEventHumanAgentSend.html#files)
 
 ### type
 
@@ -30,4 +36,4 @@ interface BusEventHumanAgentSend
 
 The type of this event.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.BusEventHumanAgentSend.html#type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.BusEventHumanAgentSend.html#type)

@@ -1,8 +1,14 @@
+<!--
+  GENERATED FILE - do not edit. A release regenerates and commits it
+  (`npm run docs:api`, see release-base.yml); a branch never should.
+  Edit the JSDoc it is generated from instead.
+-->
+
 # FinalResponseChunk
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.FinalResponseChunk.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.FinalResponseChunk.html
 
 Finalizes the full response and ends streaming.
 
@@ -26,7 +32,7 @@ interface FinalResponseChunk
 The final message response. If this response contains items that were streamed,
 those items should include ItemStreamingMetadata.id to avoid remounts.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.FinalResponseChunk.html#final_response)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.FinalResponseChunk.html#final_response)
 
 ## Related
 

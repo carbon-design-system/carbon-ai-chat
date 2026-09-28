@@ -1,8 +1,14 @@
+<!--
+  GENERATED FILE - do not edit. A release regenerates and commits it
+  (`npm run docs:api`, see release-base.yml); a branch never should.
+  Edit the JSDoc it is generated from instead.
+-->
+
 # CancellationReason
 
 - Kind: Enum
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.21.0/docs/enums/Type_reference.CancellationReason.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.CancellationReason.html
 
 Reasons why a message request was cancelled via the abort signal.
 
@@ -20,7 +26,7 @@ enum CancellationReason
 
 User restarted or cleared the conversation.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/enums/Type_reference.CancellationReason.html#conversation_restarted)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.CancellationReason.html#conversation_restarted)
 
 ### STOP_STREAMING
 
@@ -28,7 +34,7 @@ User restarted or cleared the conversation.
 
 User clicked the "stop streaming" button during message streaming.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/enums/Type_reference.CancellationReason.html#stop_streaming)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.CancellationReason.html#stop_streaming)
 
 ### TIMEOUT
 
@@ -36,4 +42,4 @@ User clicked the "stop streaming" button during message streaming.
 
 Message request exceeded the configured timeout duration.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/enums/Type_reference.CancellationReason.html#timeout)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.CancellationReason.html#timeout)

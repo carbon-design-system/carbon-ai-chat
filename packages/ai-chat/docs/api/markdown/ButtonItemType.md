@@ -1,8 +1,14 @@
+<!--
+  GENERATED FILE - do not edit. A release regenerates and commits it
+  (`npm run docs:api`, see release-base.yml); a branch never should.
+  Edit the JSDoc it is generated from instead.
+-->
+
 # ButtonItemType
 
 - Kind: Enum
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.21.0/docs/enums/Type_reference.ButtonItemType.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.ButtonItemType.html
 
 ## Signature
 
@@ -18,7 +24,7 @@ enum ButtonItemType
 
 A button that throws an event for your UI to respond to.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/enums/Type_reference.ButtonItemType.html#custom_event)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.ButtonItemType.html#custom_event)
 
 ### POST_BACK
 
@@ -26,7 +32,7 @@ A button that throws an event for your UI to respond to.
 
 A button that sends its value back to the backend.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/enums/Type_reference.ButtonItemType.html#post_back)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.ButtonItemType.html#post_back)
 
 ### SHOW_PANEL
 
@@ -34,7 +40,7 @@ A button that sends its value back to the backend.
 
 A button that shows a panel.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/enums/Type_reference.ButtonItemType.html#show_panel)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.ButtonItemType.html#show_panel)
 
 ### URL
 
@@ -42,4 +48,4 @@ A button that shows a panel.
 
 A button that opens a URL.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/enums/Type_reference.ButtonItemType.html#url)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.ButtonItemType.html#url)

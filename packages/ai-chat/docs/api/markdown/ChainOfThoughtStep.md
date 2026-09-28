@@ -1,8 +1,14 @@
+<!--
+  GENERATED FILE - do not edit. A release regenerates and commits it
+  (`npm run docs:api`, see release-base.yml); a branch never should.
+  Edit the JSDoc it is generated from instead.
+-->
+
 # ChainOfThoughtStep
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.ChainOfThoughtStep.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.ChainOfThoughtStep.html
 
 A chain of thought step is meant to show tool calls and other steps made by your agent
 to reach its final answer.
@@ -23,7 +29,7 @@ An optional human readable description of what the tool does.
 
 Accepts markdown formatted text.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.ChainOfThoughtStep.html#description)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.ChainOfThoughtStep.html#description)
 
 ### request
 
@@ -31,7 +37,7 @@ Accepts markdown formatted text.
 
 Optional request metadata sent to a tool.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.ChainOfThoughtStep.html#request)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.ChainOfThoughtStep.html#request)
 
 ### response
 
@@ -39,7 +45,7 @@ Optional request metadata sent to a tool.
 
 Optional response from a tool.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.ChainOfThoughtStep.html#response)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.ChainOfThoughtStep.html#response)
 
 ### status
 
@@ -48,7 +54,7 @@ Optional response from a tool.
 Optionally, share the status of this step. An icon will appear in the view showing the status. If no status is
 shared, the UI will assume success.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.ChainOfThoughtStep.html#status)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.ChainOfThoughtStep.html#status)
 
 ### title
 
@@ -56,7 +62,7 @@ shared, the UI will assume success.
 
 The plain text name of the step.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.ChainOfThoughtStep.html#title)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.ChainOfThoughtStep.html#title)
 
 ### tool_name
 
@@ -64,4 +70,4 @@ The plain text name of the step.
 
 The plain text name of the tool called.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.ChainOfThoughtStep.html#tool_name)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.ChainOfThoughtStep.html#tool_name)

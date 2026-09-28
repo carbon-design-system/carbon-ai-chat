@@ -1,10 +1,16 @@
+<!--
+  GENERATED FILE - do not edit. A release regenerates and commits it
+  (`npm run docs:api`, see release-base.yml); a branch never should.
+  Edit the JSDoc it is generated from instead.
+-->
+
 # PersistableState
 
 **Experimental.**
 
 - Kind: TypeAlias
 - Category: Config
-- Reference: https://chat.carbondesignsystem.com/version/v1.21.0/docs/types/Type_reference.PersistableState.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/types/Type_reference.PersistableState.html
 
 The subset of session state that Carbon AI Chat can persist and restore, consumed by
 PersistedStateConfig. It is the full internal PersistedState minus the

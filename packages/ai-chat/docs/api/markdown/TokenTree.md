@@ -1,8 +1,14 @@
+<!--
+  GENERATED FILE - do not edit. A release regenerates and commits it
+  (`npm run docs:api`, see release-base.yml); a branch never should.
+  Edit the JSDoc it is generated from instead.
+-->
+
 # TokenTree
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.TokenTree.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.TokenTree.html
 
 Markdown-it parser node tree, surfaced on the `node` field of
 MarkdownRendererTableArgs and MarkdownRendererCodeBlockArgs,
@@ -25,7 +31,7 @@ interface TokenTree
 
 Child nodes for nested content
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.TokenTree.html#children)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.TokenTree.html#children)
 
 ### key
 
@@ -33,7 +39,7 @@ Child nodes for nested content
 
 Unique identifier for this node, used for efficient diffing
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.TokenTree.html#key)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.TokenTree.html#key)
 
 ### token
 
@@ -41,7 +47,7 @@ Unique identifier for this node, used for efficient diffing
 
 The original markdown-it token data
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.TokenTree.html#token)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.TokenTree.html#token)
 
 ## Related
 

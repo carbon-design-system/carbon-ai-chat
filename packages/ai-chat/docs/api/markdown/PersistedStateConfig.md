@@ -1,10 +1,16 @@
+<!--
+  GENERATED FILE - do not edit. A release regenerates and commits it
+  (`npm run docs:api`, see release-base.yml); a branch never should.
+  Edit the JSDoc it is generated from instead.
+-->
+
 # PersistedStateConfig
 
 **Experimental.**
 
 - Kind: Interface
 - Category: Config
-- Reference: https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.PersistedStateConfig.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.PersistedStateConfig.html
 
 Hands session-state persistence to the host page, set on PublicConfig.persistedState. By
 default Carbon AI Chat stores session state in the browser's `sessionStorage`; providing either
@@ -36,7 +42,7 @@ asynchronous load (for example from your own backend) before constructing the ch
 resolved value here. When omitted, the chat starts a fresh session but still reports changes to
 PersistedStateConfig.onStateChange.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.PersistedStateConfig.html#initialstate)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.PersistedStateConfig.html#initialstate)
 
 ### onStateChange
 
@@ -49,7 +55,7 @@ Called whenever the persistable session state changes, so the host can store it 
 argument is the complete PersistableState; persist it verbatim so it can later seed
 PersistedStateConfig.initialState.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.PersistedStateConfig.html#onstatechange)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.PersistedStateConfig.html#onstatechange)
 
 ## Related
 

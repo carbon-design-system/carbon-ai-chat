@@ -1,8 +1,14 @@
+<!--
+  GENERATED FILE - do not edit. A release regenerates and commits it
+  (`npm run docs:api`, see release-base.yml); a branch never should.
+  Edit the JSDoc it is generated from instead.
+-->
+
 # ResponseUserProfile
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.ResponseUserProfile.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.ResponseUserProfile.html
 
 Profile information about a specific agent that can be used to display information to the user. This may
 represent a human agent or a virtual assistant agent.
@@ -21,7 +27,7 @@ interface ResponseUserProfile
 
 A unique identifier for this agent.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.ResponseUserProfile.html#id)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.ResponseUserProfile.html#id)
 
 ### nickname
 
@@ -29,7 +35,7 @@ A unique identifier for this agent.
 
 The visible name for the response author. Can be the full name or just a first name for a human.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.ResponseUserProfile.html#nickname)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.ResponseUserProfile.html#nickname)
 
 ### profile_picture_url
 
@@ -37,7 +43,7 @@ The visible name for the response author. Can be the full name or just a first n
 
 A URL pointing to an avatar for the response author. This image should be a square.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.ResponseUserProfile.html#profile_picture_url)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.ResponseUserProfile.html#profile_picture_url)
 
 ### user_type
 
@@ -46,4 +52,4 @@ A URL pointing to an avatar for the response author. This image should be a squa
 The type of user. If its a "human" there is more protection against code injection attacks, where as assistant responses
 are trusted by default unless PublicConfig.shouldSanitizeHTML is set to true.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.ResponseUserProfile.html#user_type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.ResponseUserProfile.html#user_type)

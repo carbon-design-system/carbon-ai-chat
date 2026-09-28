@@ -1,8 +1,14 @@
+<!--
+  GENERATED FILE - do not edit. A release regenerates and commits it
+  (`npm run docs:api`, see release-base.yml); a branch never should.
+  Edit the JSDoc it is generated from instead.
+-->
+
 # OptionItemPreference
 
 - Kind: Enum
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.21.0/docs/enums/Type_reference.OptionItemPreference.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.OptionItemPreference.html
 
 The set of possible response preferences for an options response.
 
@@ -20,7 +26,7 @@ enum OptionItemPreference
 
 Indicates the options should be displayed as buttons.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/enums/Type_reference.OptionItemPreference.html#button)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.OptionItemPreference.html#button)
 
 ### DROPDOWN
 
@@ -28,4 +34,4 @@ Indicates the options should be displayed as buttons.
 
 Indicates the options should be displayed as a drop-down.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/enums/Type_reference.OptionItemPreference.html#dropdown)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.OptionItemPreference.html#dropdown)

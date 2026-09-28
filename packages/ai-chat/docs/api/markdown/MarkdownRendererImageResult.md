@@ -1,8 +1,14 @@
+<!--
+  GENERATED FILE - do not edit. A release regenerates and commits it
+  (`npm run docs:api`, see release-base.yml); a branch never should.
+  Edit the JSDoc it is generated from instead.
+-->
+
 # MarkdownRendererImageResult
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.MarkdownRendererImageResult.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.MarkdownRendererImageResult.html
 
 Attribute overrides returned by an image renderer callback (`src`, extra
 `attributes`). Return `null` to keep the defaults.
@@ -22,7 +28,7 @@ interface MarkdownRendererImageResult
 Extra attributes merged over the image's existing ones. Re-sanitized when
 the element has HTML sanitization enabled.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.MarkdownRendererImageResult.html#attributes)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.MarkdownRendererImageResult.html#attributes)
 
 ### src
 
@@ -30,4 +36,4 @@ the element has HTML sanitization enabled.
 
 Replacement `src`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.MarkdownRendererImageResult.html#src)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.MarkdownRendererImageResult.html#src)
