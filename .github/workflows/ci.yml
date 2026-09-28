@@ -180,9 +180,6 @@ jobs:
       - name: Build @carbon/ai-chat-components package
         if: github.event_name != 'merge_group'
         run: npm run build --workspace=@carbon/ai-chat-components
-      - name: Build storybook
-        if: github.event_name != 'merge_group'
-        run: npm run storybook:build --workspace=@carbon/ai-chat-components
       - id: chromatic
         name: Run Chromatic
         uses: chromaui/action@6b3c2820222d23bad770d57a4ad5e2d1c91f92e9 # v18.9.5
@@ -239,9 +236,6 @@ jobs:
       - name: Build @carbon/ai-chat-components package
         if: github.event_name != 'merge_group'
         run: npm run build --workspace=@carbon/ai-chat-components
-      - name: Build storybook
-        if: github.event_name != 'merge_group'
-        run: npm run storybook:build --workspace=@carbon/ai-chat-components
       - id: chromatic
         name: Run Chromatic
         uses: chromaui/action@6b3c2820222d23bad770d57a4ad5e2d1c91f92e9 # v18.9.5
