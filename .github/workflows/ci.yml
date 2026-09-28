@@ -195,6 +195,8 @@ jobs:
           zip: true # Runs Chromatic with the option to compress the build output
           autoAcceptChanges: 'main' # Option to accept all changes on main
           onlyChanged: true # 👈 Required option to enable TurboSnap
+          # 👇 Example apps aren't in the Storybook graph, so their manifests shouldn't disable TurboSnap
+          untraced: 'examples/**'
           # 👇 `main` push rebuilds the merge-queue SHA, so pass the queue check without snapshots
           skip: '**/gh-readonly-queue/**'
         env:
@@ -252,6 +254,8 @@ jobs:
           zip: true # Runs Chromatic with the option to compress the build output
           autoAcceptChanges: 'main' # Option to accept all changes on main
           onlyChanged: true # 👈 Required option to enable TurboSnap
+          # 👇 Example apps aren't in the Storybook graph, so their manifests shouldn't disable TurboSnap
+          untraced: 'examples/**'
           # 👇 `main` push rebuilds the merge-queue SHA, so pass the queue check without snapshots
           skip: '**/gh-readonly-queue/**'
         env:
