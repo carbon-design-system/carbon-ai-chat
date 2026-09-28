@@ -149,7 +149,8 @@ jobs:
         run: npm run verify:example-readmes
 
   chromatic-wc-storybook:
-    if: ${{ github.repository == 'carbon-design-system/carbon-ai-chat' && github.event.pull_request.draft == false }}
+    # 👇 A new release branch points at a commit main already built, so skip its first push
+    if: ${{ github.repository == 'carbon-design-system/carbon-ai-chat' && github.event.pull_request.draft == false && !github.event.created }}
     runs-on: ubuntu-latest
     outputs:
       buildUrl: ${{ steps.chromatic.outputs.buildUrl }}
@@ -205,7 +206,8 @@ jobs:
           CHROMATIC_SLUG: ${{ github.repository }}
 
   chromatic-react-wrapper-storybook:
-    if: ${{ github.repository == 'carbon-design-system/carbon-ai-chat' && github.event.pull_request.draft == false }}
+    # 👇 A new release branch points at a commit main already built, so skip its first push
+    if: ${{ github.repository == 'carbon-design-system/carbon-ai-chat' && github.event.pull_request.draft == false && !github.event.created }}
     runs-on: ubuntu-latest
     outputs:
       buildUrl: ${{ steps.chromatic.outputs.buildUrl }}
