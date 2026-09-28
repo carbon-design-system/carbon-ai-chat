@@ -175,11 +175,13 @@ jobs:
             */**/node_modules
           key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
       - name: Install dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
+        if: github.event_name != 'merge_group' && steps.cache.outputs.cache-hit != 'true'
         run: npm ci --prefer-offline
       - name: Build @carbon/ai-chat-components package
+        if: github.event_name != 'merge_group'
         run: npm run build --workspace=@carbon/ai-chat-components
       - name: Build storybook
+        if: github.event_name != 'merge_group'
         run: npm run storybook:build --workspace=@carbon/ai-chat-components
       - id: chromatic
         name: Run Chromatic
@@ -193,6 +195,8 @@ jobs:
           zip: true # Runs Chromatic with the option to compress the build output
           autoAcceptChanges: 'main' # Option to accept all changes on main
           onlyChanged: true # 👈 Required option to enable TurboSnap
+          # 👇 `main` push rebuilds the merge-queue SHA, so pass the queue check without snapshots
+          skip: '**/gh-readonly-queue/**'
         env:
           # 👇 Set to the PR branch if it's a PR; otherwise, falls back to the pushed branch name
           CHROMATIC_BRANCH: ${{ github.event.pull_request.head.ref || github.ref_name }}
@@ -228,11 +232,13 @@ jobs:
             */**/node_modules
           key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
       - name: Install dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
+        if: github.event_name != 'merge_group' && steps.cache.outputs.cache-hit != 'true'
         run: npm ci --prefer-offline
       - name: Build @carbon/ai-chat-components package
+        if: github.event_name != 'merge_group'
         run: npm run build --workspace=@carbon/ai-chat-components
       - name: Build storybook
+        if: github.event_name != 'merge_group'
         run: npm run storybook:build --workspace=@carbon/ai-chat-components
       - id: chromatic
         name: Run Chromatic
@@ -246,6 +252,8 @@ jobs:
           zip: true # Runs Chromatic with the option to compress the build output
           autoAcceptChanges: 'main' # Option to accept all changes on main
           onlyChanged: true # 👈 Required option to enable TurboSnap
+          # 👇 `main` push rebuilds the merge-queue SHA, so pass the queue check without snapshots
+          skip: '**/gh-readonly-queue/**'
         env:
           # 👇 Set to the PR branch if it's a PR; otherwise, falls back to the pushed branch name
           CHROMATIC_BRANCH: ${{ github.event.pull_request.head.ref || github.ref_name }}
