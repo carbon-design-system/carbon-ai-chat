@@ -238,6 +238,16 @@
     "eslint-config-carbon": {
       "@typescript-eslint/parser": "$@typescript-eslint/parser",
       "@typescript-eslint/eslint-plugin": "$@typescript-eslint/eslint-plugin"
+    },
+    "@mordech/vite-lit-loader": {
+      "vite": "^8.0.16"
+    },
+    "lerna": {
+      "js-yaml": "^4.3.2",
+      "pacote": "^21.5.1"
+    },
+    "nx": {
+      "smol-toml": "^1.9.0"
     }
   }
 }
