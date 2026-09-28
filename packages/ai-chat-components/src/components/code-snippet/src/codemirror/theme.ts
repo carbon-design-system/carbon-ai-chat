@@ -98,7 +98,6 @@ export function createCarbonTheme() {
 
     // Editor content
     '.cm-content': {
-      flexBasis: '0 !important',
       caretColor: 'var(--cds-text-primary, #161616)',
     },
 
@@ -159,13 +158,10 @@ export function createCarbonTheme() {
       backgroundColor: 'var(--cds-highlight, #d0e2ff)',
     },
 
-    '&.cm-focused .cm-selectionBackground': {
-      backgroundColor: 'var(--cds-highlight, #d0e2ff) !important',
-    },
-
-    '&.cm-focused .cm-selectionMatch': {
-      backgroundColor: 'var(--cds-highlight, #d0e2ff) !important',
-    },
+    '&.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground':
+      {
+        backgroundColor: 'var(--cds-highlight, #d0e2ff)',
+      },
 
     // Native selection fallback
     '.cm-content ::selection': {

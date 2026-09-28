@@ -21,6 +21,35 @@ import '../prompt-line-shell.js';
 import type PromptLineShellElement from '../prompt-line-shell.js';
 
 describe('<cds-aichat-prompt-line-shell>', () => {
+  it('keeps collapsed message actions below the input row under a page margin reset', async () => {
+    const container: HTMLElement = await fixture(html`
+      <div>
+        <style>
+          div {
+            margin: 0;
+          }
+        </style>
+        <cds-aichat-prompt-line-shell>
+          <div slot="message-actions"><button>Attach</button></div>
+          <div slot="editor">Message</div>
+        </cds-aichat-prompt-line-shell>
+      </div>
+    `);
+    const el = container.querySelector(
+      'cds-aichat-prompt-line-shell'
+    ) as PromptLineShellElement;
+    await el.updateComplete;
+
+    const row = el.shadowRoot!.querySelector(
+      '.cds-aichat--input-text-and-actions'
+    ) as HTMLElement;
+    const actions = el.querySelector('[slot="message-actions"]') as HTMLElement;
+
+    expect(
+      actions.getBoundingClientRect().top - row.getBoundingClientRect().top
+    ).to.be.closeTo(12, 0.5);
+  });
+
   it('renders the layout chrome with named slots', async () => {
     const el: PromptLineShellElement = await fixture(html`
       <cds-aichat-prompt-line-shell></cds-aichat-prompt-line-shell>
