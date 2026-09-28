@@ -102,15 +102,18 @@ export function requestInputFocus(
     isConnectingOrConnected: boolean;
     disableInput: boolean;
   },
-  focusHumanAgentBanner: () => void
+  focusHumanAgentBanner: () => boolean | void,
+  focusComposer: () => boolean
 ) {
   try {
     if (
       agentDisplayState.isConnectingOrConnected &&
-      agentDisplayState.disableInput
+      agentDisplayState.disableInput &&
+      focusHumanAgentBanner()
     ) {
-      focusHumanAgentBanner();
+      return;
     }
+    focusComposer();
   } catch (error) {
     console.error('An error occurred in requestInputFocus', error);
   }

@@ -65,6 +65,25 @@ export enum WriteableElementName {
   AFTER_INPUT_ELEMENT = 'afterInputElement',
 
   /**
+   * Replaces the built-in prompt line on the home screen and in the conversation
+   * while this slot has content. Removing the content restores the built-in draft.
+   * An empty framework wrapper, whitespace, and comments retain the built-in
+   * prompt line. Any host-supplied element counts as content.
+   *
+   * Only {@link InputConfig.isVisible} applies to this content. An override for the
+   * active input takes precedence. {@link ChatInstance.updateInputFieldVisibility}
+   * sets the assistant input's override.
+   * Other {@link InputConfig} fields and the nested prompt-line slots are ignored.
+   * The adjacent before-input and after-input slots keep their usual placement.
+   *
+   * Your application owns the draft, labels, keyboard handling, limits, errors,
+   * uploads, and send controls. Send through {@link ChatInstance.send};
+   * {@link ChatInstanceInput} editor methods reject or throw while content exists,
+   * even when hidden. The public input state still describes the built-in input.
+   */
+  CUSTOM_PROMPT_LINE = 'customPromptLine',
+
+  /**
    * A slot rendered in the input composer's actions row, after the action
    * buttons. Only present when the input uses the expanded layout
    * ({@link InputConfig.expanded}); in the default compact layout this slot is

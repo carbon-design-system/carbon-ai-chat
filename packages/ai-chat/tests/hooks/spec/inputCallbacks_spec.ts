@@ -9,6 +9,7 @@
 
 import {
   InputCallbacks,
+  requestInputFocus,
   isUploadButtonDisabled,
   shouldDisableInput,
   shouldDisableSend,
@@ -177,4 +178,33 @@ it('projects config references and derives input availability', () => {
   expect(shouldDisableSend(false, false)).toBe(true);
   expect(isUploadButtonDisabled(0, true, false)).toBe(true);
   expect(isUploadButtonDisabled(1, false, true)).toBe(false);
+});
+
+it('focuses the active composer unless the disabled agent banner takes focus', () => {
+  const focusBanner = jest.fn(() => true);
+  const focusComposer = jest.fn(() => true);
+  requestInputFocus(
+    { isConnectingOrConnected: false, disableInput: false },
+    focusBanner,
+    focusComposer
+  );
+  expect(focusBanner).not.toHaveBeenCalled();
+  expect(focusComposer).toHaveBeenCalledTimes(1);
+
+  focusComposer.mockClear();
+  requestInputFocus(
+    { isConnectingOrConnected: true, disableInput: true },
+    focusBanner,
+    focusComposer
+  );
+  expect(focusBanner).toHaveBeenCalledTimes(1);
+  expect(focusComposer).not.toHaveBeenCalled();
+
+  focusBanner.mockReturnValue(false);
+  requestInputFocus(
+    { isConnectingOrConnected: true, disableInput: true },
+    focusBanner,
+    focusComposer
+  );
+  expect(focusComposer).toHaveBeenCalledTimes(1);
 });

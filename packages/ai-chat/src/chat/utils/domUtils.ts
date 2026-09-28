@@ -197,8 +197,14 @@ function isTextAreaNode(node: Node): node is HTMLTextAreaElement {
  *
  * @param parentElement An element with potential focusable children.
  */
-function focusOnFirstFocusableElement(parentElement: HTMLElement) {
-  const focusableElements = tabbable(parentElement, { getShadowRoot: true });
+function focusOnFirstFocusableElement(
+  parentElement: HTMLElement,
+  includeContainer = false
+) {
+  const focusableElements = tabbable(parentElement, {
+    getShadowRoot: true,
+    includeContainer,
+  });
   if (focusableElements?.length) {
     doFocus(focusableElements[0]);
     return true;

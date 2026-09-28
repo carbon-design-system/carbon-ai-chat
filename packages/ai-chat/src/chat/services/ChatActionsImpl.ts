@@ -42,7 +42,12 @@ import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
 
 import { HistoryItem, HistoryNote } from '../../types/messaging/History';
 
+import { isPlainTextDoc } from '../utils/inputContent';
 import { asyncForEach } from '../utils/lang/arrayUtils';
+import {
+  hasCustomPromptLine,
+  requestComposerFocus,
+} from '../utils/customPromptLine';
 import { deepFreeze } from '../utils/lang/objectUtils';
 import { sleep } from '../utils/lang/promiseUtils';
 import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
@@ -131,45 +136,6 @@ import {
  * times the host calls it.
  */
 let hasWarnedAboutUpdateRawValueDeprecation = false;
-
-/**
- * Returns true if the given JSONContent doc only contains `paragraph`,
- * `text`, and `hardBreak` nodes, with no marks on any text node. Used to
- * gate the deprecated `updateRawValue` path post-segment-drop: legacy
- * docs that grew tokens / blocks throw; plain-text docs (including ones
- * with `\n` from Shift+Enter) pass through.
- */
-function isPlainTextDoc(json: JSONContent): boolean {
-  const allowed = new Set(['doc', 'paragraph', 'text', 'hardBreak']);
-  let ok = true;
-  const walk = (node: JSONContent | undefined): void => {
-    if (!ok || !node) {
-      return;
-    }
-    if (typeof node.type === 'string' && !allowed.has(node.type)) {
-      ok = false;
-      return;
-    }
-    if (
-      node.type === 'text' &&
-      Array.isArray(node.marks) &&
-      node.marks.length > 0
-    ) {
-      ok = false;
-      return;
-    }
-    if (Array.isArray(node.content)) {
-      for (const child of node.content) {
-        walk(child);
-        if (!ok) {
-          return;
-        }
-      }
-    }
-  };
-  walk(json);
-  return ok;
-}
 
 /**
  * This class is responsible for handling various "actions" that the system can perform including actions that can
@@ -503,7 +469,16 @@ class ChatActionsImpl {
     });
   }
 
+  private assertBuiltInInput() {
+    if (hasCustomPromptLine(this.serviceManager)) {
+      throw new Error(
+        'Input content is host-owned while CUSTOM_PROMPT_LINE has content.'
+      );
+    }
+  }
+
   updateRawInputValue(updater: (previous: string) => string) {
+    this.assertBuiltInInput();
     if (typeof updater !== 'function') {
       consoleError('Input updater must be a function');
       return;
@@ -610,6 +585,7 @@ class ChatActionsImpl {
   async updateInputContent(
     updater: (previous: JSONContent) => JSONContent
   ): Promise<void> {
+    this.assertBuiltInInput();
     if (typeof updater !== 'function') {
       consoleError('Input content updater must be a function');
       return;
@@ -676,6 +652,10 @@ class ChatActionsImpl {
       );
     }
     await ref.ensureEditor();
+    this.assertBuiltInInput();
+    if (this.serviceManager.getInputFunctionsRef() !== ref) {
+      throw new Error('Input is not currently rendered');
+    }
     ref.setContent(next);
   }
 
@@ -684,12 +664,19 @@ class ChatActionsImpl {
    * place), then resolves with the live `Editor`. Rejects when the input is not
    * currently rendered.
    */
-  ensureInputEditor(): Promise<Editor> {
+  async ensureInputEditor(): Promise<Editor> {
     const ref = this.serviceManager.getInputFunctionsRef();
-    if (!ref) {
-      return Promise.reject(new Error('Input is not currently rendered'));
+    if (!ref || hasCustomPromptLine(this.serviceManager)) {
+      throw new Error('Input is not currently rendered');
     }
-    return ref.ensureEditor();
+    const editor = await ref.ensureEditor();
+    if (
+      this.serviceManager.getInputFunctionsRef() !== ref ||
+      hasCustomPromptLine(this.serviceManager)
+    ) {
+      throw new Error('Input is not currently rendered');
+    }
+    return editor;
   }
 
   /**
@@ -702,6 +689,7 @@ class ChatActionsImpl {
       previous: StructuredData | undefined
     ) => StructuredData | undefined
   ) {
+    this.assertBuiltInInput();
     if (typeof updater !== 'function') {
       consoleError('Structured data updater must be a function');
       return;
@@ -864,6 +852,7 @@ class ChatActionsImpl {
     ignoreHydration = false
   ) {
     this.assertNoInFlightUpload();
+    const useBuiltInData = !hasCustomPromptLine(this.serviceManager);
 
     const messageRequest =
       typeof message === 'string'
@@ -876,12 +865,7 @@ class ChatActionsImpl {
       this.serviceManager.ariaAnnouncer(languagePack.input_sendingMessage);
     }
 
-    // If focus is not already on the input field, put focus on it before sending
-    // This ensures focus is set for all message sends, including API calls
-    // Only focus on the input field if it's available; don't move focus elsewhere
-    if (this.serviceManager.inputComponent) {
-      this.serviceManager.inputComponent.requestFocus();
-    }
+    requestComposerFocus(this.serviceManager);
 
     // Clear any currently active response while awaiting the next one (even before hydration).
     this.serviceManager.store.dispatch(actions.setActiveResponseId(null));
@@ -915,7 +899,7 @@ class ChatActionsImpl {
     // message would otherwise go out without that file's contributed data.
     this.assertNoInFlightUpload();
 
-    await this.doSend(messageRequest, source, options);
+    await this.doSend(messageRequest, source, options, useBuiltInData);
   }
 
   /**
@@ -931,27 +915,24 @@ class ChatActionsImpl {
   private async doSend(
     message: MessageRequest,
     source: MessageSendSource,
-    options: SendOptions = {}
+    options: SendOptions,
+    useBuiltInData: boolean
   ): Promise<void> {
     const { store } = this.serviceManager;
 
     addDefaultsToMessage(message);
 
-    const inputState = selectInputState(store.getState());
-
-    // Merge pending structured data from InputState into the message if the message doesn't already
-    // have structured_data set. This handles UI-originated sends (text input + Enter/Send button).
-    // Messages sent via instance.send() with explicit structured_data are never overwritten.
-    if (inputState.pendingStructuredData && !message.input.structured_data) {
-      message.input.structured_data = cloneDeep(
-        inputState.pendingStructuredData
+    if (useBuiltInData) {
+      const inputState = selectInputState(store.getState());
+      if (inputState.pendingStructuredData && !message.input.structured_data) {
+        message.input.structured_data = cloneDeep(
+          inputState.pendingStructuredData
+        );
+      }
+      store.dispatch(
+        actions.clearStructuredData(selectIsInputToHumanAgent(store.getState()))
       );
     }
-
-    // Clear the pending structured data now that it has been captured into the outgoing message.
-    store.dispatch(
-      actions.clearStructuredData(selectIsInputToHumanAgent(store.getState()))
-    );
 
     // Grab the original text before it can be modified by a pre:send handler.
     const originalUserText = message.history?.label || message.input.text;
