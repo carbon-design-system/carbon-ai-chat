@@ -57,7 +57,7 @@ Local shortcuts from this directory:
 
 ```bash
 npm start          # Vite dev server (default port 3001)
-npm run build      # production Vite build
+npm run build      # type-check, then production Vite build
 npm run preview    # serve the production build
 npm test           # playwright against `build` + `preview` (uses node-polyfill.js)
 ```
