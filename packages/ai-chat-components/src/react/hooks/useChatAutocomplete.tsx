@@ -226,6 +226,20 @@ export function useChatAutocomplete(
         navigatedListenerRef.current = { el, handler };
       } else {
         setIsListNavigated(false);
+        // Fire a synthetic clear event on the prompt-line's shell ancestor so
+        // the send-control's internal guard (`_autocompleteListNavigated`) also
+        // resets. This covers cases where the list is removed from the DOM
+        // without the autocomplete element dispatching its own clear event
+        // (e.g. the user deletes the trigger character).
+        const shell = promptLineRef.current?.closest(
+          'cds-aichat-prompt-line-shell'
+        );
+        shell?.dispatchEvent(
+          new CustomEvent<AutocompleteNavigatedEventDetail>(
+            'cds-aichat-autocomplete-navigated',
+            { detail: { navigated: false }, bubbles: false, composed: false }
+          )
+        );
       }
     },
     [maxHeight, promptLineRef]
