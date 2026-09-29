@@ -1,8 +1,14 @@
+<!--
+  GENERATED FILE - do not edit. A release regenerates and commits it
+  (`npm run docs:api`, see release-base.yml); a branch never should.
+  Edit the JSDoc it is generated from instead.
+-->
+
 # MessageHistoryFeedback
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.MessageHistoryFeedback.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.MessageHistoryFeedback.html
 
 ## Signature
 
@@ -18,7 +24,7 @@ interface MessageHistoryFeedback
 
 When submitting feedback details, this is the list of categories the user selected (if visible).
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.MessageHistoryFeedback.html#categories)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.MessageHistoryFeedback.html#categories)
 
 ### is_positive
 
@@ -26,7 +32,7 @@ When submitting feedback details, this is the list of categories the user select
 
 Indicates if positive feedback was provided.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.MessageHistoryFeedback.html#is_positive)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.MessageHistoryFeedback.html#is_positive)
 
 ### text
 
@@ -34,4 +40,4 @@ Indicates if positive feedback was provided.
 
 The feedback text provided by the user.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.MessageHistoryFeedback.html#text)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.MessageHistoryFeedback.html#text)

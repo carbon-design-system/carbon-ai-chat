@@ -1,8 +1,14 @@
+<!--
+  GENERATED FILE - do not edit. A release regenerates and commits it
+  (`npm run docs:api`, see release-base.yml); a branch never should.
+  Edit the JSDoc it is generated from instead.
+-->
+
 # MessageResponseOptions
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.MessageResponseOptions.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.MessageResponseOptions.html
 
 This interface contains options for a MessageResponse.
 
@@ -27,7 +33,7 @@ Chain of thought it meant more for technical "called X API and got Y result back
 Reasoning steps can include that kind of detail depending on your use case, but is meant more for user friendly
 content than debugging technical internal content.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.MessageResponseOptions.html#chain_of_thought)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.MessageResponseOptions.html#chain_of_thought)
 
 ### reasoning
 
@@ -42,7 +48,7 @@ Chain of thought it meant more for technical "called X API and got Y result back
 Reasoning steps can include that kind of detail depending on your use case, but is meant more for user friendly
 content than debugging technical internal content.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.MessageResponseOptions.html#reasoning)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.MessageResponseOptions.html#reasoning)
 
 ### response_user_profile
 
@@ -50,7 +56,7 @@ content than debugging technical internal content.
 
 This is the profile for the human or assistant who sent or triggered this message.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.MessageResponseOptions.html#response_user_profile)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.MessageResponseOptions.html#response_user_profile)
 
 ## Related
 

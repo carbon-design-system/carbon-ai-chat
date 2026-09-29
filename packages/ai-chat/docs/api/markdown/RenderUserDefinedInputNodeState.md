@@ -1,10 +1,16 @@
+<!--
+  GENERATED FILE - do not edit. A release regenerates and commits it
+  (`npm run docs:api`, see release-base.yml); a branch never should.
+  Edit the JSDoc it is generated from instead.
+-->
+
 # RenderUserDefinedInputNodeState
 
 **Experimental.**
 
 - Kind: Interface
 - Category: React
-- Reference: https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.RenderUserDefinedInputNodeState.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.RenderUserDefinedInputNodeState.html
 
 The state passed to a `renderUserDefinedInputNode` call. The chat surfaces
 one call per non-text TipTap node inside a sent user message's
@@ -27,7 +33,7 @@ interface RenderUserDefinedInputNodeState
 
 The full user message this node belongs to.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.RenderUserDefinedInputNodeState.html#message)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.RenderUserDefinedInputNodeState.html#message)
 
 ### node
 
@@ -37,4 +43,4 @@ The full user message this node belongs to.
 
 The TipTap JSONContent node being rendered (carries `type`, `attrs`, etc.).
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.RenderUserDefinedInputNodeState.html#node)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.RenderUserDefinedInputNodeState.html#node)

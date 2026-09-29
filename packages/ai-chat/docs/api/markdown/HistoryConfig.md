@@ -1,8 +1,14 @@
+<!--
+  GENERATED FILE - do not edit. A release regenerates and commits it
+  (`npm run docs:api`, see release-base.yml); a branch never should.
+  Edit the JSDoc it is generated from instead.
+-->
+
 # HistoryConfig
 
 - Kind: Interface
 - Category: Config
-- Reference: https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.HistoryConfig.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.HistoryConfig.html
 
 Configuration for the history panel of the chat.
 
@@ -20,7 +26,7 @@ interface HistoryConfig
 
 Indicates if the history panel should be shown.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.HistoryConfig.html#ison)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.HistoryConfig.html#ison)
 
 ### showMobileMenu
 
@@ -34,7 +40,7 @@ providing quick access to start a new chat or view chat history.
 
 When false, the mobile menu will be hidden even when in mobile mode.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.HistoryConfig.html#showmobilemenu)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.HistoryConfig.html#showmobilemenu)
 
 ### startClosed
 
@@ -51,4 +57,4 @@ When true:
 - User's open/closed state is preserved when resizing between modes
 - Enables external control via: instance.customPanels.getPanel(PanelType.HISTORY).open()/close()
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.HistoryConfig.html#startclosed)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.HistoryConfig.html#startclosed)

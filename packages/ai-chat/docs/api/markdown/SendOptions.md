@@ -1,8 +1,14 @@
+<!--
+  GENERATED FILE - do not edit. A release regenerates and commits it
+  (`npm run docs:api`, see release-base.yml); a branch never should.
+  Edit the JSDoc it is generated from instead.
+-->
+
 # SendOptions
 
 - Kind: Interface
 - Category: Instance
-- Reference: https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.SendOptions.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.SendOptions.html
 
 This interface represents the options for when a MessageRequest is sent to the server with the send method.
 
@@ -22,4 +28,4 @@ If you want to send a message to the API, but NOT have it show up in the UI, set
 and "send" events will still be fired but the message will not be added to the local message list displayed in
 the UI. Note that the response message will still be added.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.SendOptions.html#silent)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.SendOptions.html#silent)

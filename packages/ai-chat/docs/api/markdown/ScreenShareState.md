@@ -1,8 +1,14 @@
+<!--
+  GENERATED FILE - do not edit. A release regenerates and commits it
+  (`npm run docs:api`, see release-base.yml); a branch never should.
+  Edit the JSDoc it is generated from instead.
+-->
+
 # ScreenShareState
 
 - Kind: Enum
 - Category: Service desk
-- Reference: https://chat.carbondesignsystem.com/version/v1.21.0/docs/enums/Type_reference.ScreenShareState.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.ScreenShareState.html
 
 The possible state changes for a screen sharing request.
 
@@ -20,7 +26,7 @@ enum ScreenShareState
 
 Indicates the screen sharing was accepted by the user.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/enums/Type_reference.ScreenShareState.html#accepted)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.ScreenShareState.html#accepted)
 
 ### CANCELLED
 
@@ -28,7 +34,7 @@ Indicates the screen sharing was accepted by the user.
 
 Indicates the screen sharing request was cancelled.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/enums/Type_reference.ScreenShareState.html#cancelled)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.ScreenShareState.html#cancelled)
 
 ### DECLINED
 
@@ -36,7 +42,7 @@ Indicates the screen sharing request was cancelled.
 
 Indicates the screen sharing was declined by the user.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/enums/Type_reference.ScreenShareState.html#declined)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.ScreenShareState.html#declined)
 
 ### ENDED
 
@@ -44,4 +50,4 @@ Indicates the screen sharing was declined by the user.
 
 Indicates that screen sharing has ended.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/enums/Type_reference.ScreenShareState.html#ended)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.ScreenShareState.html#ended)

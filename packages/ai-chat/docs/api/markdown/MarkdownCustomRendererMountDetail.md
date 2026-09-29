@@ -1,8 +1,14 @@
+<!--
+  GENERATED FILE - do not edit. A release regenerates and commits it
+  (`npm run docs:api`, see release-base.yml); a branch never should.
+  Edit the JSDoc it is generated from instead.
+-->
+
 # MarkdownCustomRendererMountDetail
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.MarkdownCustomRendererMountDetail.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.MarkdownCustomRendererMountDetail.html
 
 Payload of the `cds-aichat-markdown-plugin-host-mount` event when the
 markdown element hands over a live `customRenderers` host.
@@ -29,7 +35,7 @@ The host to re-parent. The markdown element created it, replaces its
 children on every render, and removes it when the renderer stops matching
 — a claimant only moves it.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.MarkdownCustomRendererMountDetail.html#element)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.MarkdownCustomRendererMountDetail.html#element)
 
 ### isInline
 
@@ -40,7 +46,7 @@ the markdown element hosts every `customRenderers` result in a `<div>` it
 created, so a claimant has no host tag to choose. Declared on both members
 so a listener can read it before narrowing on `kind`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.MarkdownCustomRendererMountDetail.html#isinline)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.MarkdownCustomRendererMountDetail.html#isinline)
 
 ### kind
 
@@ -48,7 +54,7 @@ so a listener can read it before narrowing on `kind`.
 
 Marks the payload as a live element rather than an HTML string.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.MarkdownCustomRendererMountDetail.html#kind)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.MarkdownCustomRendererMountDetail.html#kind)
 
 ### slotName
 
@@ -60,7 +66,7 @@ opaque, like the plugin-fallback name. No `-update` event follows this
 one: the markdown element writes the consumer's node into `element`
 itself.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.MarkdownCustomRendererMountDetail.html#slotname)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.MarkdownCustomRendererMountDetail.html#slotname)
 
 ## Related
 

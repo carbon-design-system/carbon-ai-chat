@@ -1,8 +1,14 @@
+<!--
+  GENERATED FILE - do not edit. A release regenerates and commits it
+  (`npm run docs:api`, see release-base.yml); a branch never should.
+  Edit the JSDoc it is generated from instead.
+-->
+
 # MarkdownPluginFallbackMountDetail
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.MarkdownPluginFallbackMountDetail.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.MarkdownPluginFallbackMountDetail.html
 
 Payload of the `cds-aichat-markdown-plugin-host-mount` event when the
 markdown element hands over plugin output as an HTML string.
@@ -33,7 +39,7 @@ for it either — that one escapes HTML written in the markdown source and
 never filters what a plugin's renderer rule emits. Treat the string as
 exactly as trustworthy as the markdown-it plugins the page registered.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.MarkdownPluginFallbackMountDetail.html#html)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.MarkdownPluginFallbackMountDetail.html#html)
 
 ### isInline
 
@@ -44,7 +50,7 @@ Picks the host tag — `span` when true, so the output stays in paragraph
 flow, `div` when false — and gates the block spacing that matches the
 markdown element's own stack gap.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.MarkdownPluginFallbackMountDetail.html#isinline)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.MarkdownPluginFallbackMountDetail.html#isinline)
 
 ### kind
 
@@ -52,7 +58,7 @@ markdown element's own stack gap.
 
 Marks the payload as an HTML string rather than a live element.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.MarkdownPluginFallbackMountDetail.html#kind)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.MarkdownPluginFallbackMountDetail.html#kind)
 
 ### slotName
 
@@ -64,7 +70,7 @@ element on the page, and reused across renders while the token stays put,
 so a streaming message rewrites one host instead of growing a new one per
 chunk. Treat the value as opaque; its format is not part of the API.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.MarkdownPluginFallbackMountDetail.html#slotname)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.MarkdownPluginFallbackMountDetail.html#slotname)
 
 ## Related
 

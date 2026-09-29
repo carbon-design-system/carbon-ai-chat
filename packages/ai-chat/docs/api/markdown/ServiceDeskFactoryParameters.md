@@ -1,8 +1,14 @@
+<!--
+  GENERATED FILE - do not edit. A release regenerates and commits it
+  (`npm run docs:api`, see release-base.yml); a branch never should.
+  Edit the JSDoc it is generated from instead.
+-->
+
 # ServiceDeskFactoryParameters
 
 - Kind: Interface
 - Category: Service desk
-- Reference: https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.ServiceDeskFactoryParameters.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.ServiceDeskFactoryParameters.html
 
 The parameters that are passed to a service desk factory.
 
@@ -20,7 +26,7 @@ interface ServiceDeskFactoryParameters
 
 The callback used by the service desk to communicate with the widget.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.ServiceDeskFactoryParameters.html#callback)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.ServiceDeskFactoryParameters.html#callback)
 
 ### instance
 
@@ -28,7 +34,7 @@ The callback used by the service desk to communicate with the widget.
 
 The instance of Carbon AI Chat.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.ServiceDeskFactoryParameters.html#instance)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.ServiceDeskFactoryParameters.html#instance)
 
 ### persistedState
 
@@ -36,4 +42,4 @@ The instance of Carbon AI Chat.
 
 Any state that was stored for the service desk. This value may be undefined if no state has been stored.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.ServiceDeskFactoryParameters.html#persistedstate)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.ServiceDeskFactoryParameters.html#persistedstate)

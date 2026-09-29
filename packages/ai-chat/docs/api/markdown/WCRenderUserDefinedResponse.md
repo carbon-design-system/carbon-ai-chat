@@ -1,8 +1,14 @@
+<!--
+  GENERATED FILE - do not edit. A release regenerates and commits it
+  (`npm run docs:api`, see release-base.yml); a branch never should.
+  Edit the JSDoc it is generated from instead.
+-->
+
 # WCRenderUserDefinedResponse
 
 - Kind: TypeAlias
 - Category: Web component
-- Reference: https://chat.carbondesignsystem.com/version/v1.21.0/docs/types/Type_reference.WCRenderUserDefinedResponse.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/types/Type_reference.WCRenderUserDefinedResponse.html
 
 The type of the render function used to render user defined responses in web components.
 This function should return an HTMLElement to display for the given user defined state,

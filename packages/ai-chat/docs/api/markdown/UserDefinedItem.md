@@ -1,8 +1,14 @@
+<!--
+  GENERATED FILE - do not edit. A release regenerates and commits it
+  (`npm run docs:api`, see release-base.yml); a branch never should.
+  Edit the JSDoc it is generated from instead.
+-->
+
 # UserDefinedItem
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.UserDefinedItem.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.UserDefinedItem.html
 
 A user defined item returned in a message response from an assistant.
 
@@ -20,7 +26,7 @@ interface UserDefinedItem
 
 For messages that are sent between the user and a human agent, we assign an agent type to the message to distinguish what type it is.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.UserDefinedItem.html#agent_message_type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.UserDefinedItem.html#agent_message_type)
 
 ### full_width
 
@@ -28,7 +34,7 @@ For messages that are sent between the user and a human agent, we assign an agen
 
 If the user_defined response type should be rendered as full width and ignore margin on the "start".
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.UserDefinedItem.html#full_width)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.UserDefinedItem.html#full_width)
 
 ### message_item_options
 
@@ -36,7 +42,7 @@ If the user_defined response type should be rendered as full width and ignore ma
 
 Options that control additional features available for a message item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.UserDefinedItem.html#message_item_options)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.UserDefinedItem.html#message_item_options)
 
 ### response_type
 
@@ -44,7 +50,7 @@ Options that control additional features available for a message item.
 
 The response type of this message item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.UserDefinedItem.html#response_type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.UserDefinedItem.html#response_type)
 
 ### streaming_metadata
 
@@ -53,7 +59,7 @@ The response type of this message item.
 Metadata used to identify a generic item within the context of a stream in order to correlate any updates meant
 for a specific item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.UserDefinedItem.html#streaming_metadata)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.UserDefinedItem.html#streaming_metadata)
 
 ### user_defined
 
@@ -61,4 +67,4 @@ for a specific item.
 
 An optional buckets of additional user defined properties for this item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.UserDefinedItem.html#user_defined)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.UserDefinedItem.html#user_defined)

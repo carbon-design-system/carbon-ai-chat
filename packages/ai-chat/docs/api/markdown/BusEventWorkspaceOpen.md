@@ -1,8 +1,14 @@
+<!--
+  GENERATED FILE - do not edit. A release regenerates and commits it
+  (`npm run docs:api`, see release-base.yml); a branch never should.
+  Edit the JSDoc it is generated from instead.
+-->
+
 # BusEventWorkspaceOpen
 
 - Kind: Interface
 - Category: Events
-- Reference: https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.BusEventWorkspaceOpen.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.BusEventWorkspaceOpen.html
 
 ## Signature
 
@@ -16,7 +22,7 @@ interface BusEventWorkspaceOpen
 
 `data: { additionalData?: unknown; fullMessage: MessageResponse; message: GenericItem; workspaceId?: string }`
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.BusEventWorkspaceOpen.html#data)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.BusEventWorkspaceOpen.html#data)
 
 ### type
 
@@ -24,4 +30,4 @@ interface BusEventWorkspaceOpen
 
 The type of this event.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.BusEventWorkspaceOpen.html#type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.BusEventWorkspaceOpen.html#type)

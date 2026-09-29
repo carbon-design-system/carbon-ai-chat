@@ -1,8 +1,14 @@
+<!--
+  GENERATED FILE - do not edit. A release regenerates and commits it
+  (`npm run docs:api`, see release-base.yml); a branch never should.
+  Edit the JSDoc it is generated from instead.
+-->
+
 # MarkdownRendererChecklistItemArgs
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.MarkdownRendererChecklistItemArgs.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.MarkdownRendererChecklistItemArgs.html
 
 Render-time identity + state for a checklist item, passed to
 `checklist.getChecked`.
@@ -21,7 +27,7 @@ interface MarkdownRendererChecklistItemArgs
 
 The checkbox state parsed from the markdown (`[x]` / `[ ]`).
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.MarkdownRendererChecklistItemArgs.html#checked)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.MarkdownRendererChecklistItemArgs.html#checked)
 
 ### id
 
@@ -30,7 +36,7 @@ The checkbox state parsed from the markdown (`[x]` / `[ ]`).
 Stable identity for the item — the source line of its list item. Stable
 across re-renders while earlier lines don't shift.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.MarkdownRendererChecklistItemArgs.html#id)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.MarkdownRendererChecklistItemArgs.html#id)
 
 ### label
 
@@ -38,7 +44,7 @@ across re-renders while earlier lines don't shift.
 
 The item's text.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.MarkdownRendererChecklistItemArgs.html#label)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.MarkdownRendererChecklistItemArgs.html#label)
 
 ### token
 
@@ -46,4 +52,4 @@ The item's text.
 
 The markdown-it checkbox `Token`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.MarkdownRendererChecklistItemArgs.html#token)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.MarkdownRendererChecklistItemArgs.html#token)

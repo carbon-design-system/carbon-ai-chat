@@ -63,6 +63,16 @@ export default defineConfig({
     host: true,
     open: true,
   },
+  build: {
+    rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, 'index.html'),
+        // Loads the package entries in a chosen order for the host
+        // compatibility tests; not linked from the demo.
+        hostCompatibility: path.resolve(__dirname, 'host-compatibility.html'),
+      },
+    },
+  },
   // exclude these packages from pre-bundle
   optimizeDeps: {
     exclude: ['@carbon/ai-chat', '@carbon/ai-chat-components'],

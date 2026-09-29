@@ -1,8 +1,14 @@
+<!--
+  GENERATED FILE - do not edit. A release regenerates and commits it
+  (`npm run docs:api`, see release-base.yml); a branch never should.
+  Edit the JSDoc it is generated from instead.
+-->
+
 # WorkspaceCustomPanelConfigOptions
 
 - Kind: Interface
 - Category: Instance
-- Reference: https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.WorkspaceCustomPanelConfigOptions.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.WorkspaceCustomPanelConfigOptions.html
 
 Options supported by the workspace custom panel implementation.
 
@@ -20,7 +26,7 @@ interface WorkspaceCustomPanelConfigOptions
 
 Additional metadata associated with the workspace. This will be included in WORKSPACE_PRE_CLOSE and WORKSPACE_CLOSE events.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.WorkspaceCustomPanelConfigOptions.html#additionaldata)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.WorkspaceCustomPanelConfigOptions.html#additionaldata)
 
 ### preferredLocation
 
@@ -28,7 +34,7 @@ Additional metadata associated with the workspace. This will be included in WORK
 
 Where the chat will attempt to render the workspace in logical terms. For a ltr layout "start" will render on the left and "end" will render on the right. If there is not enough room to render the workspace, it will be rendered as a panel overlaying the content with a back button.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.WorkspaceCustomPanelConfigOptions.html#preferredlocation)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.WorkspaceCustomPanelConfigOptions.html#preferredlocation)
 
 ### title
 
@@ -36,7 +42,7 @@ Where the chat will attempt to render the workspace in logical terms. For a ltr 
 
 The title of the workspace. Used for accessibility announcements.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.WorkspaceCustomPanelConfigOptions.html#title)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.WorkspaceCustomPanelConfigOptions.html#title)
 
 ### workspaceId
 
@@ -44,4 +50,4 @@ The title of the workspace. Used for accessibility announcements.
 
 The ID of the workspace being opened. This will be included in WORKSPACE_PRE_CLOSE and WORKSPACE_CLOSE events.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.WorkspaceCustomPanelConfigOptions.html#workspaceid)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.WorkspaceCustomPanelConfigOptions.html#workspaceid)

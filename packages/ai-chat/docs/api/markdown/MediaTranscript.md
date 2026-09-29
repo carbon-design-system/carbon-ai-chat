@@ -1,8 +1,14 @@
+<!--
+  GENERATED FILE - do not edit. A release regenerates and commits it
+  (`npm run docs:api`, see release-base.yml); a branch never should.
+  Edit the JSDoc it is generated from instead.
+-->
+
 # MediaTranscript
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.MediaTranscript.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.MediaTranscript.html
 
 Represents a text transcript for audio content.
 Displayed as readable text below the audio player for accessibility.
@@ -21,7 +27,7 @@ interface MediaTranscript
 
 Optional label for the transcript (e.g., "English Transcript").
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.MediaTranscript.html#label)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.MediaTranscript.html#label)
 
 ### language
 
@@ -29,7 +35,7 @@ Optional label for the transcript (e.g., "English Transcript").
 
 Language of the transcript (e.g., "en", "es", "fr").
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.MediaTranscript.html#language)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.MediaTranscript.html#language)
 
 ### text
 
@@ -38,4 +44,4 @@ Language of the transcript (e.g., "en", "es", "fr").
 Full text transcript of the audio content.
 Supports markdown for formatting.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.21.0/docs/interfaces/Type_reference.MediaTranscript.html#text)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.MediaTranscript.html#text)
