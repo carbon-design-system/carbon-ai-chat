@@ -71,34 +71,37 @@ export function carbonAutocomplete(
             if (!text || text.length === 0) {
               return null;
             }
-            // Restrict the query to the trailing word (split on whitespace).
-            const trailing = /\S+$/.exec(text);
-            if (!trailing) {
-              return null;
-            }
-            const query = trailing[0];
             // Yield to co-installed mention/command extensions so they win
-            // when their trigger char is active.
-            for (const excluded of excludeTriggers) {
-              if (!query.startsWith(excluded.char)) {
-                continue;
-              }
-              if (excluded.position === 'anywhere') {
-                return null;
-              }
-              if (text === query) {
-                return null;
+            // when their trigger char is the active (trailing) word. We still
+            // extract the trailing non-whitespace word for this check only —
+            // the autocomplete query itself spans the full text so that spaces
+            // are allowed in suggestion items.
+            const trailing = /\S+$/.exec(text);
+            if (trailing) {
+              const trailingWord = trailing[0];
+              for (const excluded of excludeTriggers) {
+                if (!trailingWord.startsWith(excluded.char)) {
+                  continue;
+                }
+                if (excluded.position === 'anywhere') {
+                  return null;
+                }
+                // 'start' position: stand down only when the trigger char
+                // begins the whole input (no preceding text).
+                if (text === trailingWord) {
+                  return null;
+                }
               }
             }
-            const matchStart =
-              $position.start() + $position.parentOffset - query.length;
+            // Use the full paragraph text as the query so spaces are included.
+            const matchStart = $position.start();
             return {
               range: {
                 from: matchStart,
                 to: $position.start() + $position.parentOffset,
               },
-              query,
-              text: query,
+              query: text,
+              text,
             };
           },
           render: () => ({
