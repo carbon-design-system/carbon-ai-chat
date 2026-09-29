@@ -50,6 +50,7 @@ function versionsJsPlugin(): Plugin {
 }
 
 export default defineConfig({
+  base: './',
   plugins: [
     // transform demo's own React sources only
     react({ include: [/\/demo\/src\/.*\.[jt]sx?$/] }),
