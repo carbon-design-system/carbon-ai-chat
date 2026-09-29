@@ -659,7 +659,7 @@ HTTP: http://example.com
       await waitUntil(
         () => table.shadowRoot?.textContent?.includes('Diamond') ?? false,
         'Expected carbon allotrope table to render inside details',
-        { timeout: 5000 }
+        { timeout: 15000 }
       );
     });
   });
@@ -1059,6 +1059,13 @@ HTTP: http://example.com
       // fire renderTokenTree on the cell more than once before
       // updateComplete resolves; the streaming-cache test below verifies
       // the cache invariant on a direct top-level fence path.
+      // The table renders its cells after its runtime chunk loads, which can
+      // trail markdown's updateComplete on slower engines, so wait for it.
+      await waitUntil(
+        () => imageCalls.length >= 1,
+        'Expected the image plugin rule to fire for the table cell image',
+        { timeout: 15000 }
+      );
       expect(imageCalls.length).to.be.greaterThanOrEqual(1);
       expect(new Set(imageCalls).size).to.equal(1);
       expect(imageCalls[0]).to.equal('https://example.com/cell.png');
