@@ -195,7 +195,8 @@ type SlotKind =
   | 'message-footer'
   | 'request-footer'
   | 'writeable-element'
-  | 'input-node';
+  | 'input-node'
+  | 'inline-plugin';
 
 const ALL_KINDS: SlotKind[] = [
   'user-defined-response',
@@ -203,6 +204,7 @@ const ALL_KINDS: SlotKind[] = [
   'request-footer',
   'writeable-element',
   'input-node',
+  'inline-plugin',
 ];
 
 /**
@@ -215,7 +217,7 @@ const PAGE_CSS_ROWS: [string, SlotKind[]][] = [
   ['react-container', ALL_KINDS],
   ['react-custom', ALL_KINDS],
   ['wc-container', ALL_KINDS],
-  ['wc-custom', ['input-node']],
+  ['wc-custom', ['input-node', 'inline-plugin']],
 ];
 
 /** Makes the chat render the given slot kind. */
@@ -254,6 +256,31 @@ async function triggerSlot(page: Page, instanceKey: string, kind: SlotKind) {
                 {
                   type: 'paragraph',
                   content: [{ type: 'taskCard', attrs: { label: 'Ship it' } }],
+                },
+              ],
+            },
+          },
+        }),
+      instanceKey
+    );
+  } else if (kind === 'inline-plugin') {
+    // A chip makes the paragraph structured, so the plugin renders inline.
+    await page.evaluate(
+      (key) =>
+        window.hostCompatibility[key as 'reactInstance'].send({
+          id: 'inline',
+          input: {
+            message_type: 'text',
+            text: 'Ada `plugin`',
+            display_content: {
+              type: 'doc',
+              content: [
+                {
+                  type: 'paragraph',
+                  content: [
+                    { type: 'mention', attrs: { id: 'ada', label: 'Ada' } },
+                    { type: 'text', text: ' `plugin`' },
+                  ],
                 },
               ],
             },

@@ -19,7 +19,7 @@
  *   Structured: at least one node anywhere in the doc has a type outside
  *   `TEXTUAL_NODE_TYPES`. Top-level non-`paragraph` blocks go straight to
  *   `UnknownNodeSlot`. Paragraph nodes walk their inline children:
- *   text/hardBreak runs use `renderInlineMarkdown`; every other inline node
+ *   text/hardBreak runs use `InlineMarkdown`; every other inline node
  *   — including `mention` and `command` — goes to `UnknownNodeSlot`.
  *   `UnknownNodeSlot` emits a `<slot name={slotKey}>`; `InputNodePortalsContainer`
  *   walks the same `display_content`, derives the identical slot key, and
@@ -34,7 +34,7 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 
 import { MarkdownWithDefaults } from '../components/helpers/MarkdownWithDefaults/MarkdownWithDefaults';
-import { renderInlineMarkdown } from '../components/helpers/InlineMarkdown/InlineMarkdown';
+import { InlineMarkdown } from '../components/helpers/InlineMarkdown/InlineMarkdown';
 import { renderTokenChip } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
 import type { JSONContent } from '@tiptap/core';
 import type { MessageRequest } from '../../types/messaging/Messages';
@@ -90,7 +90,11 @@ export function MessageRichUserContent({
 
         if (onlyTextual) {
           const joined = joinTextualInline(inlineChildren);
-          return <p key={`${blockIndex}`}>{renderInlineMarkdown(joined)}</p>;
+          return (
+            <p key={`${blockIndex}`}>
+              <InlineMarkdown text={joined} />
+            </p>
+          );
         }
 
         return (
@@ -171,31 +175,15 @@ function renderParagraphInline(
     if (!textRun) {
       return;
     }
-    // The block-level markdown parser trims leading/trailing whitespace from
-    // each run it parses. When a chip splits a paragraph into separate runs,
-    // the space between the chip and the adjacent text gets eaten. Capture the
-    // boundary whitespace explicitly and emit it as plain text siblings so the
-    // rendered bubble matches what the user composed.
-    const leading = textRun.match(/^\s+/)?.[0] ?? '';
-    const afterLeading = textRun.slice(leading.length);
-    const trailing = afterLeading.match(/\s+$/)?.[0] ?? '';
-    const trimmed = afterLeading.slice(
-      0,
-      afterLeading.length - trailing.length
+    out.push(
+      <InlineMarkdown
+        key={key}
+        text={textRun}
+        preserveBoundaryWhitespace
+        trimStartBreaks={out.length === 0}
+        trimEndBreaks={key === `${messageId}::${blockIndex}.tail`}
+      />
     );
-    if (leading) {
-      out.push(...renderBoundaryWhitespace(leading, `${key}-ws-pre`));
-    }
-    if (trimmed) {
-      out.push(
-        <React.Fragment key={key}>
-          {renderInlineMarkdown(trimmed)}
-        </React.Fragment>
-      );
-    }
-    if (trailing) {
-      out.push(...renderBoundaryWhitespace(trailing, `${key}-ws-post`));
-    }
     textRun = '';
   };
 
@@ -218,62 +206,6 @@ function renderParagraphInline(
 
   flushTextRun(`${messageId}::${blockIndex}.tail`);
 
-  // The block parser drops a break at the very start or end of a paragraph, so
-  // the chip path drops it too. Without this a chip-bearing paragraph renders a
-  // blank first or last line that the same text without a chip does not. The
-  // scan steps over whitespace because `renderBoundaryWhitespace` emits the
-  // spaces around a break as their own sibling, so the break is not always the
-  // edge node; that whitespace goes with it, matching what the block parser
-  // trims. Whitespace with no break beside it is left alone — it is the chip
-  // spacing the boundary capture exists for.
-  const isBreak = (node: React.ReactNode) =>
-    React.isValidElement(node) && node.type === 'br';
-  const isBlankText = (node: React.ReactNode) =>
-    React.isValidElement(node) &&
-    node.type === React.Fragment &&
-    !String((node.props as { children?: unknown }).children ?? '').trim();
-
-  let start = 0;
-  for (let index = 0; index < out.length; index++) {
-    if (isBreak(out[index])) {
-      start = index + 1;
-    } else if (!isBlankText(out[index])) {
-      break;
-    }
-  }
-  let end = out.length;
-  for (let index = out.length - 1; index >= start; index--) {
-    if (isBreak(out[index])) {
-      end = index;
-    } else if (!isBlankText(out[index])) {
-      break;
-    }
-  }
-
-  return out.slice(start, end);
-}
-
-/**
- * A `hardBreak` contributes a `\n` to the run, so a break adjacent to a chip is
- * captured as boundary whitespace and never reaches the inline token walker
- * that turns breaks into `<br>`. Emit it here instead; the spaces around it
- * stay plain text so the boundary-whitespace behavior is unchanged.
- */
-function renderBoundaryWhitespace(
-  whitespace: string,
-  keyPrefix: string
-): React.ReactNode[] {
-  const out: React.ReactNode[] = [];
-  whitespace.split('\n').forEach((segment, index) => {
-    if (index > 0) {
-      out.push(<br key={`${keyPrefix}-br-${index}`} />);
-    }
-    if (segment) {
-      out.push(
-        <React.Fragment key={`${keyPrefix}-${index}`}>{segment}</React.Fragment>
-      );
-    }
-  });
   return out;
 }
 

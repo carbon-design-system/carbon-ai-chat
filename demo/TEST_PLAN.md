@@ -163,6 +163,44 @@ Run these in both modes:
 - [ ] Resize older content above the latest request. The latest request stays at the same viewport offset.
 - [ ] Stream text, reasoning steps, and code. Expand and collapse reasoning steps; the request stays pinned.
 
+#### Inline markdown in sent messages
+
+Open `/host-compatibility.html?surface=<surface>` for each of `react-container`, `react-custom`, `wc-container`, and `wc-custom`. Run this in the console, using `reactInstance` for the React surfaces and `wcInstance` for the web-component ones:
+
+```js
+window.hostCompatibility.wcInstance.send({
+  input: {
+    message_type: 'text',
+    text: 'Selection proof',
+    display_content: {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'text', text: 'Start **bold** ' },
+            { type: 'mention', attrs: { id: 'ada', label: 'Ada' } },
+            { type: 'text', text: ' `plugin` ' },
+            { type: 'taskCard', attrs: { label: 'Ship it' } },
+            { type: 'text', text: ' ' },
+            { type: 'fallbackCard', attrs: { label: 'Label' } },
+            { type: 'text', text: ' end.' },
+          ],
+        },
+      ],
+    },
+  },
+});
+```
+
+Repeat in Chrome, Firefox, and Safari. Paste into a plain-text editor.
+
+- [ ] The bubble shows **bold** text, the Ada chip, `plugin` and `input-node` in the page's `rgb(1, 2, 3)` color, and the `Label` fallback.
+- [ ] Drag from before `Start` to after `end.`, then copy and paste. The paste holds every word in order: `Start bold Ada plugin input-node Label end.`
+- [ ] Drag from the middle of `bold` to the middle of `plugin`. The paste holds only that part.
+- [ ] Double-click `plugin` and `input-node`. Each selects its word.
+- [ ] Select all inside the bubble, then copy and paste. The paste holds the full message.
+
 ### Track 3: Mobile & Non-Chrome Browser Support
 
 **Focus:** Smoke testing across browsers, emphasis on mobile.
