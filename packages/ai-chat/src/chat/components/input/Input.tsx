@@ -521,32 +521,33 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     onUserTyping?.(isTyping);
   };
 
-  const { onTriggerChange, autocompleteContent } = useChatAutocomplete({
-    mention: normalizedMention,
-    command: normalizedCommand,
-    autocomplete: normalizedAutocomplete,
-    starters: normalizedStarters,
-    promptLineRef,
-    isSendDisabled: isSendDisabledFromConfig,
-    attached: chatWidthBreakpoint !== ChatWidthBreakpoint.WIDE,
-    maxHeight: `${Math.floor(chatHeight * 0.4)}px`,
-    onStarterSelected: (text) => {
-      // Reflect the inserted text into local state so send-gating reads it,
-      // then run the same send path used elsewhere.
-      setRawInputValue(text);
-      rawInputValueRef.current = text;
-      sendCurrentValue();
-    },
-    onSendItem: (text) => {
-      setRawInputValue(text);
-      rawInputValueRef.current = text;
-      // The autocomplete item's text is both the sent value and the display
-      // value — discard any stale editor JSONContent so the bubble doesn't
-      // render the old typed text instead of the selected item.
-      displayContentRef.current = null;
-      sendCurrentValue();
-    },
-  });
+  const { onTriggerChange, autocompleteContent, isListNavigated } =
+    useChatAutocomplete({
+      mention: normalizedMention,
+      command: normalizedCommand,
+      autocomplete: normalizedAutocomplete,
+      starters: normalizedStarters,
+      promptLineRef,
+      isSendDisabled: isSendDisabledFromConfig,
+      attached: chatWidthBreakpoint !== ChatWidthBreakpoint.WIDE,
+      maxHeight: `${Math.floor(chatHeight * 0.4)}px`,
+      onStarterSelected: (text) => {
+        // Reflect the inserted text into local state so send-gating reads it,
+        // then run the same send path used elsewhere.
+        setRawInputValue(text);
+        rawInputValueRef.current = text;
+        sendCurrentValue();
+      },
+      onSendItem: (text) => {
+        setRawInputValue(text);
+        rawInputValueRef.current = text;
+        // The autocomplete item's text is both the sent value and the display
+        // value — discard any stale editor JSONContent so the bubble doesn't
+        // render the old typed text instead of the selected item.
+        displayContentRef.current = null;
+        sendCurrentValue();
+      },
+    });
 
   useInputImperativeHandle({
     ref,
@@ -783,7 +784,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
         slot="send-control"
         hasValidInput={hasValidInput}
         disabled={disableInput}
-        disableSend={effectiveDisableSend}
+        disableSend={effectiveDisableSend || isListNavigated}
         isStopStreamingButtonVisible={isStopStreamingButtonVisible}
         isStopStreamingButtonDisabled={isStopStreamingButtonDisabled}
         buttonLabel={languagePack.input_buttonLabel}
