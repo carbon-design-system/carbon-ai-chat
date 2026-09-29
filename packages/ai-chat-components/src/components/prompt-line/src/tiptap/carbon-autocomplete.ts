@@ -72,10 +72,7 @@ export function carbonAutocomplete(
               return null;
             }
             // Yield to co-installed mention/command extensions so they win
-            // when their trigger char is the active (trailing) word. We still
-            // extract the trailing non-whitespace word for this check only —
-            // the autocomplete query itself spans the full text so that spaces
-            // are allowed in suggestion items.
+            // when their trigger char is the active (trailing) word.
             const trailing = /\S+$/.exec(text);
             if (trailing) {
               const trailingWord = trailing[0];
@@ -86,8 +83,7 @@ export function carbonAutocomplete(
                 if (excluded.position === 'anywhere') {
                   return null;
                 }
-                // 'start' position: stand down only when the trigger char
-                // begins the whole input (no preceding text).
+                // text matches an excluded trigger
                 if (text === trailingWord) {
                   return null;
                 }
@@ -126,7 +122,7 @@ export function carbonAutocomplete(
             },
             onExit: (props) => {
               lastQuery = null;
-              dispatchTriggerChange(props.editor, null);
+              dispatchTriggerChange(props.editor, null, 'autocomplete');
             },
             onKeyDown: () => false,
           }),

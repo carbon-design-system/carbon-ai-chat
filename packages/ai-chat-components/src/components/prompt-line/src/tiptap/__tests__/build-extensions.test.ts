@@ -176,4 +176,32 @@ describe('buildCarbonExtensions — trigger coexistence', function () {
       'Expected mention trigger after space, got ' + last?.type
     );
   });
+
+  it('mention trigger is not overwritten by a stale autocomplete onExit', () => {
+    const extensions = buildCarbonExtensions({
+      mention: { trigger: '@', items: ITEMS },
+      autocomplete: { items: ITEMS },
+    });
+    const {
+      editor,
+      events,
+      cleanup: c,
+    } = makeEditor(extensions as unknown as Extension[]);
+    cleanup = c;
+
+    // First keystroke activates autocomplete.
+    editor.commands.insertContent('hello ');
+    const afterPlain = events[events.length - 1];
+    expect(afterPlain?.type).to.equal('autocomplete');
+
+    // Typing '@' in a single transaction: autocomplete onExit fires after
+    // mention onStart. The final event must be the mention, not null.
+    editor.commands.insertContent('@');
+    const afterMention = events[events.length - 1];
+    expect(afterMention?.type).to.equal(
+      'mention',
+      'Stale autocomplete onExit must not overwrite mention onStart, got ' +
+        afterMention?.type
+    );
+  });
 });
