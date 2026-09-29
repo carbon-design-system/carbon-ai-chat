@@ -207,23 +207,15 @@ const ALL_KINDS: SlotKind[] = [
 
 /**
  * The surfaces and slot kinds where page CSS reaches slotted content today.
- * `cds-aichat-container` keeps input nodes out of reach, and
- * `cds-aichat-custom-element` keeps every kind inside its own shadow root, so
- * those rows are not listed. The fixture still mounts `wc-custom`, so its rows
+ * `cds-aichat-custom-element` keeps the other kinds inside its own shadow
+ * root, so those rows are not listed. The fixture still mounts them, so they
  * can join once they pass.
  */
 const PAGE_CSS_ROWS: [string, SlotKind[]][] = [
   ['react-container', ALL_KINDS],
   ['react-custom', ALL_KINDS],
-  [
-    'wc-container',
-    [
-      'user-defined-response',
-      'message-footer',
-      'request-footer',
-      'writeable-element',
-    ],
-  ],
+  ['wc-container', ALL_KINDS],
+  ['wc-custom', ['input-node']],
 ];
 
 /** Makes the chat render the given slot kind. */

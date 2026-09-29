@@ -7,7 +7,7 @@
  *  @license
  */
 
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useLayoutEffect, useMemo } from 'react';
 
 import { useSelector } from '../../hooks/useSelector';
 import { SlotHostPortal } from './SlotHostPortal';
@@ -52,10 +52,13 @@ const entriesByMessage = new WeakMap<MessageRequest, SlotEntry[]>();
  * node API. For every non-built-in TipTap node inside a user message's
  * `display_content`, we:
  *
- *   1. Append a host element to the chat wrapper's light DOM (so consumer
- *      stylesheets reach the content). The tag is `<span>` for `mention` and
- *      `command` nodes so they render inline alongside surrounding text;
- *      `<div>` for all other custom nodes that may contain block-level content.
+ *   1. Create a host element and offer it through the markdown plugin-host
+ *      protocol, so the outermost chat element hosts it in page light DOM
+ *      (where consumer stylesheets reach the content) and forwards the slot
+ *      inward. Without a claimant the host stays on the chat wrapper. The tag
+ *      is `<span>` for `mention` and `command` nodes so they render inline
+ *      alongside surrounding text; `<div>` for all other custom nodes that may
+ *      contain block-level content.
  *   2. Mount the consumer's `renderUserDefinedInputNode` output in that host
  *      element through `SlotHostPortal`.
  *
@@ -78,78 +81,106 @@ function InputNodePortalsContainer({
     [allMessagesByID]
   );
 
-  // Map slotKey -> light-DOM host element. Hosts persist across renders so
-  // React doesn't re-mount the consumer's content when message order
-  // shifts.
-  const hostElementsRef = useRef<Map<string, HTMLElement>>(new Map());
-
-  // Reap hosts whose slot is no longer present in any message.
-  useEffect(() => {
-    const liveKeys = new Set(slotEntries.map((entry) => entry.slotKey));
-    for (const [key, host] of hostElementsRef.current.entries()) {
-      if (!liveKeys.has(key)) {
-        if (host.parentNode) {
-          host.parentNode.removeChild(host);
-        }
-        hostElementsRef.current.delete(key);
-      }
-    }
-  }, [slotEntries]);
-
-  // Clean up everything on unmount.
-  useEffect(() => {
-    const hosts = hostElementsRef.current;
-    return () => {
-      for (const host of hosts.values()) {
-        if (host.parentNode) {
-          host.parentNode.removeChild(host);
-        }
-      }
-      hosts.clear();
-    };
-  }, []);
-
   if (!chatWrapper) {
     return null;
   }
 
   return (
     <>
-      {slotEntries.map((entry) => {
-        const node = renderUserDefinedInputNode(entry.state, chatInstance);
-        if (node == null || typeof node === 'boolean' || node === '') {
-          // Drop any previously mounted host for this slot — the consumer
-          // dropped this node, so the slot falls back to its inline label.
-          const existing = hostElementsRef.current.get(entry.slotKey);
-          if (existing && existing.parentNode) {
-            existing.parentNode.removeChild(existing);
-            hostElementsRef.current.delete(entry.slotKey);
-          }
-          return null;
-        }
-
-        let host = hostElementsRef.current.get(entry.slotKey);
-        if (!host) {
-          // Use an inline element for token nodes so the custom chip sits in
-          // the text flow. Block custom nodes (e.g. tileChip) keep a <div>
-          // so their block-level content is valid HTML.
-          const isTokenNode =
-            entry.state.node.type === 'mention' ||
-            entry.state.node.type === 'command';
-          host = document.createElement(isTokenNode ? 'span' : 'div');
-          host.setAttribute('slot', entry.slotKey);
-          hostElementsRef.current.set(entry.slotKey, host);
-          chatWrapper.appendChild(host);
-        }
-
-        return (
-          <SlotHostPortal key={entry.slotKey} hostElement={host}>
-            {node}
-          </SlotHostPortal>
-        );
-      })}
+      {slotEntries.map((entry) => (
+        <InputNodePortal
+          key={entry.slotKey}
+          entry={entry}
+          chatWrapper={chatWrapper}
+          chatInstance={chatInstance}
+          renderUserDefinedInputNode={renderUserDefinedInputNode}
+        />
+      ))}
     </>
   );
+}
+
+function InputNodePortal({
+  entry: { slotKey, state },
+  chatWrapper,
+  chatInstance,
+  renderUserDefinedInputNode,
+}: Required<InputNodePortalsContainerProps> & { entry: SlotEntry }) {
+  // Use an inline element for token nodes so the custom chip sits in the text
+  // flow. Block custom nodes (e.g. tileChip) keep a <div> so their block-level
+  // content is valid HTML.
+  const isTokenNode =
+    state.node.type === 'mention' || state.node.type === 'command';
+  const host = useMemo(
+    () => document.createElement(isTokenNode ? 'span' : 'div'),
+    [isTokenNode]
+  );
+  // `state` is stable per slot until its message changes, so the renderer is
+  // not called again on every message-store update.
+  const content = useMemo(
+    () => renderUserDefinedInputNode(state, chatInstance),
+    [state, chatInstance, renderUserDefinedInputNode]
+  );
+  // A dropped node leaves no host, so the slot falls back to its inline label.
+  const hasContent = !(
+    content == null ||
+    typeof content === 'boolean' ||
+    content === ''
+  );
+
+  useLayoutEffect(() => {
+    if (!hasContent) {
+      return undefined;
+    }
+    host.setAttribute('slot', slotKey);
+    mountHost(chatWrapper, host, slotKey, isTokenNode);
+    return () => unmountHost(chatWrapper, host, slotKey);
+  }, [chatWrapper, host, slotKey, hasContent, isTokenNode]);
+
+  return hasContent ? (
+    <SlotHostPortal hostElement={host}>{content}</SlotHostPortal>
+  ) : null;
+}
+
+/**
+ * Offers a host through the markdown plugin-host protocol. When no ancestor
+ * claims it, the host stays on the chat wrapper.
+ */
+function mountHost(
+  chatWrapper: HTMLElement,
+  host: HTMLElement,
+  slotName: string,
+  isInline: boolean
+) {
+  const mount = new CustomEvent('cds-aichat-markdown-plugin-host-mount', {
+    bubbles: true,
+    composed: true,
+    cancelable: true,
+    detail: { kind: 'customRenderer', slotName, element: host, isInline },
+  });
+  chatWrapper.dispatchEvent(mount);
+  if (!mount.defaultPrevented) {
+    chatWrapper.appendChild(host);
+  }
+}
+
+/**
+ * Removes a host. A claimant may have moved it, so the event goes out from the
+ * wrapper to reach every forwarder.
+ */
+function unmountHost(
+  chatWrapper: HTMLElement,
+  host: HTMLElement,
+  slotName: string
+) {
+  chatWrapper.dispatchEvent(
+    new CustomEvent('cds-aichat-markdown-plugin-host-unmount', {
+      bubbles: true,
+      composed: true,
+      detail: { slotName },
+    })
+  );
+  host.remove();
 }
 
 function collectSlotEntries(
