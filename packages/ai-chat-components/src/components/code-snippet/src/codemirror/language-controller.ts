@@ -97,7 +97,7 @@ export class LanguageController {
 
     try {
       return await loadLanguageSupport(langDesc);
-    } catch (error) {
+    } catch (_error) {
       console.warn(`Failed to load language support for "${languageToUse}"`);
       return null;
     }

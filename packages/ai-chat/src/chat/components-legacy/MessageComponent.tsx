@@ -72,7 +72,9 @@ import {
 import { FileStatusValue } from '../utils/constants';
 import { doFocusRef } from '../utils/domUtils';
 import {
+  getRequestFooterSlotName,
   getSpeakerName,
+  hasRequestFooter,
   isConnectToHumanAgent,
   isFullWidthUserDefined,
   isOptionItem,
@@ -83,6 +85,7 @@ import {
   renderAsUserDefinedMessage,
 } from '../utils/messageUtils';
 import { getMessageFileAttachments } from '../utils/fileAttachments';
+import CustomRequestFooterSlot from '../components/responseTypes/custom/CustomRequestFooterSlot';
 import { MessageFileAttachments } from '../components/helpers/MessageFileAttachments/MessageFileAttachments';
 import { messageHasDisplayableContent } from '../utils/streamingUtils';
 import { createDidCatchErrorData } from '../utils/miscUtils';
@@ -1389,21 +1392,34 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
                   <VisuallyHidden>
                     {languagePack.messages_youSaid}
                   </VisuallyHidden>
-                  {hasBubbleContent && (
-                    <div className="cds-aichat--sent--bubble">
-                      <div ref={this.messageRef}>{messageComponent}</div>
-                    </div>
-                  )}
-                  {/* Attachments sit below the bubble rather than inside it, and take
-                      their width cap from this column, so the chips need no knowledge
-                      of the chat's breakpoints. */}
-                  {attachments.length > 0 && (
-                    <MessageFileAttachments
-                      attachments={attachments}
-                      label={languagePack.messages_attachmentsLabel}
-                      fallbackName={languagePack.messages_unnamedAttachment}
-                    />
-                  )}
+                  {/* The bubble, its attachments and its footer share a
+                      shrink-to-fit column so the footer can align to the
+                      bubble's leading edge. Without the group the footer is a
+                      full-width flex item and lands at the far edge of the
+                      message column instead. */}
+                  <div className="cds-aichat--sent--bubble-group">
+                    {hasBubbleContent && (
+                      <div className="cds-aichat--sent--bubble">
+                        <div ref={this.messageRef}>{messageComponent}</div>
+                      </div>
+                    )}
+                    {/* Attachments sit below the bubble rather than inside it. */}
+                    {attachments.length > 0 && (
+                      <MessageFileAttachments
+                        attachments={attachments}
+                        label={languagePack.messages_attachmentsLabel}
+                        fallbackName={languagePack.messages_unnamedAttachment}
+                      />
+                    )}
+                    {hasRequestFooter(
+                      localMessageItem,
+                      message as MessageRequest
+                    ) && (
+                      <CustomRequestFooterSlot
+                        slotName={getRequestFooterSlotName(localMessageItem)}
+                      />
+                    )}
+                  </div>
                 </div>
                 {messageState?.showBelowMessage && messageState?.element}
               </div>

@@ -127,7 +127,7 @@ async function doFakeTextStreaming(
       timeouts.push(timeoutId as unknown as number);
     });
 
-    // Wait for streaming to complete or be cancelled
+    // Wait for streaming to complete or be canceled
     const totalDelay = words.length * WORD_DELAY;
     const startTime = Date.now();
     while (!isCanceled && Date.now() - startTime < totalDelay) {

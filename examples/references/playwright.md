@@ -88,6 +88,8 @@ Four, deliberately. Do not add suites for these, and do not re-litigate them.
 
 `frameworks-vite` can use the shared Vite launcher even though its `start` script pins a port: the launcher reads its Vite config and serves it on a Node-assigned port for tests. Keep its existing vitest `test` script.
 
+`frameworks-react-17` and `frameworks-react-18` already have Playwright suites with fixed ports and `test` scripts. Root `npm test` still runs them. Do not copy their setup for new suites; migrate them to the shared launcher and `test:e2e` in #1424.
+
 `frameworks-next` is not a Vite app. Give it a separate web-server command when adding its suite in #1424; its `start` script runs the production server and needs a build first.
 
 ## Naming
@@ -106,6 +108,7 @@ npm run test:e2e
 - From the root, install dependencies once with `npm install` and build the shared packages with `npm run aiChat:build` before testing. Rebuild a changed package before testing its examples.
 - Install Chromium once per machine with `npx playwright install chromium`.
 - Playwright starts and stops each example's server. Root `test:e2e` runs up to four example suites at once, with one browser worker in each.
+- Root `test:e2e` currently picks up the two goldens. The existing React 17 and 18 suites run under `npm test` until they are migrated.
 - To compare local concurrency, run `E2E_CONCURRENCY=1 npm run test:e2e`, then repeat with `2` and `4`. Record elapsed time and peak memory before changing the default.
 
 The local baseline on 2026-09-29 ran the two golden suites after installation and the shared-package build. `/usr/bin/time -l` reported elapsed time and maximum RSS for one process, not aggregate memory across the process tree:

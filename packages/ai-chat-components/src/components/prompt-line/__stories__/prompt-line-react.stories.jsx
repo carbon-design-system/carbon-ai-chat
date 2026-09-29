@@ -31,6 +31,7 @@ import '@carbon/web-components/es/components/menu/index.js';
 import AddLarge16 from '@carbon/icons/es/add--large/16.js';
 import OverflowMenuVertical16 from '@carbon/icons/es/overflow-menu--vertical/16.js';
 import { createOverflowHandler } from '@carbon/utilities';
+import { carbonIconToReact } from '../../../globals/utils/iconTransform';
 
 import PromptLine from '../../../react/prompt-line';
 import PromptLineShell from '../../../react/prompt-line-shell';
@@ -51,6 +52,9 @@ import {
   dummyActions,
   filterItems,
 } from './story-data.js';
+
+const OverflowIcon = carbonIconToReact(OverflowMenuVertical16);
+const AddLargeIcon = carbonIconToReact(AddLarge16);
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -73,27 +77,6 @@ const Hint = ({ children }) => (
 );
 
 const InlineCode = ({ children }) => <code>{children}</code>;
-
-/**
- * Renders a CarbonIcon descriptor as a React <svg> element in a named slot.
- * Mirrors the carbonIconToReact() utility used in InputActionsInline.
- */
-const CarbonIconSlot = ({ icon, slot }) =>
-  React.createElement(
-    'svg',
-    {
-      slot,
-      ...icon.attrs,
-      width: icon.attrs.width || 16,
-      height: icon.attrs.height || 16,
-      fill: icon.attrs.fill || 'currentColor',
-      focusable: 'false',
-      style: { pointerEvents: 'none' },
-    },
-    icon.content.map((child, i) =>
-      React.createElement(child.elem, { key: i, ...(child.attrs || {}) })
-    )
-  );
 
 /**
  * Mirrors InputActionsInline from @carbon/ai-chat: renders each action as a
@@ -140,20 +123,23 @@ const InlineActions = ({ actions, disabled }) => {
         className="prompt-line-story-inline-actions"
         style={{ position: 'relative' }}
         data-measuring={measuring ? '' : undefined}>
-        {actions.map((a) => (
-          <cds-icon-button
-            key={a.text}
-            size="sm"
-            kind="ghost"
-            align="top-start"
-            enter-delay-ms="0"
-            leave-delay-ms="0"
-            disabled={disabled || a.disabled}
-            onClick={a.onClick}>
-            <CarbonIconSlot icon={a.icon} slot="icon" />
-            <span slot="tooltip-content">{a.text}</span>
-          </cds-icon-button>
-        ))}
+        {actions.map((a) => {
+          const Icon = carbonIconToReact(a.icon);
+          return (
+            <cds-icon-button
+              key={a.text}
+              size="sm"
+              kind="ghost"
+              align="top-start"
+              enter-delay-ms="0"
+              leave-delay-ms="0"
+              disabled={disabled || a.disabled}
+              onClick={a.onClick}>
+              <Icon slot="icon" />
+              <span slot="tooltip-content">{a.text}</span>
+            </cds-icon-button>
+          );
+        })}
 
         <div
           data-offset=""
@@ -167,7 +153,7 @@ const InlineActions = ({ actions, disabled }) => {
             leave-delay-ms="0"
             disabled={disabled || undefined}
             onClick={() => setMenuOpen((o) => !o)}>
-            <CarbonIconSlot icon={OverflowMenuVertical16} slot="icon" />
+            <OverflowIcon slot="icon" />
             <span slot="tooltip-content">More actions</span>
           </cds-icon-button>
 
@@ -239,6 +225,11 @@ export const Default = {
     errorDescription,
     errorCollapsible,
     errorFullscreen,
+    isStopStreamingButtonVisible,
+    disableSend,
+    isStopStreamingButtonDisabled,
+    buttonLabel,
+    stopResponseLabel,
   }) => {
     const [hasValidInput, setHasValidInput] = useState(false);
 
@@ -279,7 +270,13 @@ export const Default = {
             slot="send-control"
             disabled={disabled}
             hasValidInput={hasValidInput}
+            isStopStreamingButtonVisible={isStopStreamingButtonVisible}
+            disableSend={disableSend}
+            isStopStreamingButtonDisabled={isStopStreamingButtonDisabled}
+            buttonLabel={buttonLabel}
+            stopResponseLabel={stopResponseLabel}
             onSend={() => action('cds-aichat-input-send')()}
+            onStopStreaming={() => action('cds-aichat-input-stop-streaming')()}
           />
         </PromptLineShell>
       </Wrapper>
@@ -313,6 +310,11 @@ const CommandsAndMentionsStory = ({
   errorDescription,
   errorCollapsible,
   errorFullscreen,
+  isStopStreamingButtonVisible,
+  disableSend,
+  isStopStreamingButtonDisabled,
+  buttonLabel,
+  stopResponseLabel,
   attached,
 }) => {
   const [hasValidInput, setHasValidInput] = useState(false);
@@ -400,7 +402,13 @@ const CommandsAndMentionsStory = ({
             slot="send-control"
             disabled={disabled}
             hasValidInput={hasValidInput}
+            isStopStreamingButtonVisible={isStopStreamingButtonVisible}
+            disableSend={disableSend}
+            isStopStreamingButtonDisabled={isStopStreamingButtonDisabled}
+            buttonLabel={buttonLabel}
+            stopResponseLabel={stopResponseLabel}
             onSend={() => action('cds-aichat-input-send')()}
+            onStopStreaming={() => action('cds-aichat-input-stop-streaming')()}
           />
         </PromptLineShell>
       </div>
@@ -452,6 +460,11 @@ const ConversationStartersStory = ({
   errorDescription,
   errorCollapsible,
   errorFullscreen,
+  isStopStreamingButtonVisible,
+  disableSend,
+  isStopStreamingButtonDisabled,
+  buttonLabel,
+  stopResponseLabel,
   attached,
   disableDirectSend,
 }) => {
@@ -487,7 +500,7 @@ const ConversationStartersStory = ({
     action('cds-aichat-prompt-change')(e.detail);
   }, []);
 
-  const toggleIcon = startersEnabled ? ChatOff16 : Chat16;
+  const ToggleIcon = carbonIconToReact(startersEnabled ? ChatOff16 : Chat16);
   const toggleLabel = startersEnabled
     ? 'Hide conversation starters'
     : 'Show conversation starters';
@@ -528,7 +541,7 @@ const ConversationStartersStory = ({
             leave-delay-ms="0"
             disabled={disabled || hasValidInput || undefined}
             onClick={() => setStartersEnabled((prev) => !prev)}>
-            <CarbonIconSlot icon={toggleIcon} slot="icon" />
+            <ToggleIcon slot="icon" />
             <span slot="tooltip-content">{toggleLabel}</span>
           </cds-icon-button>
         </div>
@@ -536,7 +549,13 @@ const ConversationStartersStory = ({
           slot="send-control"
           disabled={disabled}
           hasValidInput={hasValidInput}
+          isStopStreamingButtonVisible={isStopStreamingButtonVisible}
+          disableSend={disableSend}
+          isStopStreamingButtonDisabled={isStopStreamingButtonDisabled}
+          buttonLabel={buttonLabel}
+          stopResponseLabel={stopResponseLabel}
           onSend={() => action('cds-aichat-input-send')()}
+          onStopStreaming={() => action('cds-aichat-input-stop-streaming')()}
         />
       </PromptLineShell>
     </WrapperBottom>
@@ -561,6 +580,11 @@ const FileUploadsStory = ({
   errorDescription,
   errorCollapsible,
   errorFullscreen,
+  isStopStreamingButtonVisible,
+  disableSend,
+  isStopStreamingButtonDisabled,
+  buttonLabel,
+  stopResponseLabel,
 }) => {
   const [uploads, setUploads] = useState([]);
   const [hasValidInput, setHasValidInput] = useState(false);
@@ -651,7 +675,7 @@ const FileUploadsStory = ({
             leave-delay-ms="0"
             disabled={disabled || undefined}
             onClick={onAttachClick}>
-            <CarbonIconSlot icon={AddLarge16} slot="icon" />
+            <AddLargeIcon slot="icon" />
             <span slot="tooltip-content">Attach file</span>
           </cds-icon-button>
         </div>
@@ -659,7 +683,13 @@ const FileUploadsStory = ({
           slot="send-control"
           disabled={disabled}
           hasValidInput={hasValidInputOrUploads}
+          isStopStreamingButtonVisible={isStopStreamingButtonVisible}
+          disableSend={disableSend}
+          isStopStreamingButtonDisabled={isStopStreamingButtonDisabled}
+          buttonLabel={buttonLabel}
+          stopResponseLabel={stopResponseLabel}
           onSend={() => action('cds-aichat-input-send')()}
+          onStopStreaming={() => action('cds-aichat-input-stop-streaming')()}
         />
       </PromptLineShell>
     </Wrapper>
@@ -688,6 +718,11 @@ const TypeaheadStory = ({
   errorDescription,
   errorCollapsible,
   errorFullscreen,
+  isStopStreamingButtonVisible,
+  disableSend,
+  isStopStreamingButtonDisabled,
+  buttonLabel,
+  stopResponseLabel,
   attached,
   disableDirectSend,
 }) => {
@@ -765,7 +800,13 @@ const TypeaheadStory = ({
           slot="send-control"
           disabled={disabled}
           hasValidInput={hasValidInput}
+          isStopStreamingButtonVisible={isStopStreamingButtonVisible}
+          disableSend={disableSend}
+          isStopStreamingButtonDisabled={isStopStreamingButtonDisabled}
+          buttonLabel={buttonLabel}
+          stopResponseLabel={stopResponseLabel}
           onSend={() => action('cds-aichat-input-send')()}
+          onStopStreaming={() => action('cds-aichat-input-stop-streaming')()}
         />
       </PromptLineShell>
     </WrapperBottom>
@@ -814,6 +855,16 @@ const PromptLineAPI = {
     autofocus: {
       control: 'boolean',
       description: 'Focus the surface on mount.',
+    },
+    extensions: {
+      control: false,
+      description:
+        'Array of Tiptap extensions built via `buildCarbonExtensions()`. Staged when provided — does not trigger the rich upgrade on its own; set `rich` or call `ensureEditor()` to activate. Extensions are compared by value; passing a stable reference (e.g. from `useMemo`) avoids unnecessary editor rebuilds.',
+    },
+    content: {
+      control: false,
+      description:
+        'Initial or controlled content. Accepts a plain string or a Tiptap `JSONContent` document. In textarea mode `JSONContent` is flattened to plain text.',
     },
   },
   args: {
@@ -903,11 +954,11 @@ const CDSAIChatInputSendControlAPI = {
       control: 'boolean',
       description: 'Disables only the send button (independent of `disabled`).',
     },
-    showStopStreaming: {
+    isStopStreamingButtonVisible: {
       control: 'boolean',
       description: 'Swaps the send button for the stop-streaming button.',
     },
-    disableStopStreaming: {
+    isStopStreamingButtonDisabled: {
       control: 'boolean',
       description: 'Disables the stop-streaming button.',
     },
@@ -924,8 +975,8 @@ const CDSAIChatInputSendControlAPI = {
     hasValidInput: false,
     disabled: false,
     disableSend: false,
-    showStopStreaming: false,
-    disableStopStreaming: false,
+    isStopStreamingButtonVisible: false,
+    isStopStreamingButtonDisabled: false,
     buttonLabel: 'Send',
     stopResponseLabel: 'Stop response',
   },

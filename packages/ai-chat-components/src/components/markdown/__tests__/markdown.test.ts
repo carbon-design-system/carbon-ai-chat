@@ -27,11 +27,11 @@ if (!registeredConstructor) {
   throw new Error('cds-aichat-markdown was not registered');
 }
 
-const MarkdownElementConstructor =
+const _MarkdownElementConstructor =
   (registeredConstructor as typeof CDSAIChatMarkdownElement) ??
   CDSAIChatMarkdownElement;
 
-type MarkdownElementInstance = InstanceType<typeof MarkdownElementConstructor>;
+type MarkdownElementInstance = InstanceType<typeof _MarkdownElementConstructor>;
 
 describe('cds-aichat-markdown smoke test', () => {
   it('renders markdown when markdown property is provided', async () => {
@@ -3275,7 +3275,7 @@ describe('renderTokenTree — softbreak with breaks: false', () => {
   // The component always uses breaks: true, but renderTokenTree is exported and
   // may be called directly by consumers. When a caller passes an md instance with
   // breaks: false, a softbreak token must render as a literal newline character,
-  // not a <br>, to match markdown-it's own behaviour for that setting.
+  // not a <br>, to match markdown-it's own behavior for that setting.
   it('emits a newline character (not <br>) for softbreak when breaks is false', async () => {
     const { renderTokenTree } = await import('../src/markdown-renderer.js');
     const MarkdownIt = (await import('markdown-it')).default;

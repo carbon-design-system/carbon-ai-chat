@@ -219,6 +219,7 @@ class PromptLineStartersStory extends LitElement {
   static properties = {
     _startersEnabled: { state: true },
     _inputHasText: { state: true },
+    _listNavigated: { state: true },
     placeholder: {},
     disabled: { type: Boolean },
     rounded: { type: Boolean },
@@ -227,6 +228,11 @@ class PromptLineStartersStory extends LitElement {
     errorDescription: {},
     errorCollapsible: { type: Boolean },
     errorFullscreen: { type: Boolean },
+    isStopStreamingButtonVisible: { type: Boolean },
+    disableSend: { type: Boolean },
+    isStopStreamingButtonDisabled: { type: Boolean },
+    buttonLabel: {},
+    stopResponseLabel: {},
     disableDirectSend: { type: Boolean },
     attached: { type: Boolean },
   };
@@ -235,6 +241,7 @@ class PromptLineStartersStory extends LitElement {
     super();
     this._startersEnabled = true;
     this._inputHasText = false;
+    this._listNavigated = false;
     this.placeholder = 'Ask a question…';
     this.disabled = false;
     this.rounded = false;
@@ -243,6 +250,11 @@ class PromptLineStartersStory extends LitElement {
     this.errorDescription = '';
     this.errorCollapsible = false;
     this.errorFullscreen = true;
+    this.isStopStreamingButtonVisible = false;
+    this.disableSend = false;
+    this.isStopStreamingButtonDisabled = false;
+    this.buttonLabel = 'Send';
+    this.stopResponseLabel = 'Stop response';
     this.disableDirectSend = false;
     this.attached = false;
   }
@@ -267,6 +279,10 @@ class PromptLineStartersStory extends LitElement {
 
   _onItemSend(e) {
     action('cds-aichat-autocomplete-send')(e.detail.text);
+  }
+
+  _onListNavigated(e) {
+    this._listNavigated = e.detail.navigated;
   }
 
   _renderCustomList({ items, onSelect, onDismiss, onSend }) {
@@ -332,7 +348,8 @@ class PromptLineStartersStory extends LitElement {
             slot="autocomplete-content"
             .starters=${startersConfig}
             @cds-aichat-autocomplete-item-selected=${(e) => this._onItemSelected(e)}
-            @cds-aichat-autocomplete-item-send=${(e) => this._onItemSend(e)}></cds-aichat-autocomplete-controller>
+            @cds-aichat-autocomplete-item-send=${(e) => this._onItemSend(e)}
+            @cds-aichat-autocomplete-navigated=${(e) => this._onListNavigated(e)}></cds-aichat-autocomplete-controller>
           <div slot="message-actions">
             <cds-icon-button
               size="sm"
@@ -352,8 +369,16 @@ class PromptLineStartersStory extends LitElement {
             slot="send-control"
             ?disabled=${this.disabled}
             .hasValidInput=${this._inputHasText}
-            @cds-aichat-input-send=${() =>
-              this._onSend()}></cds-aichat-input-send-control>
+            ?show-stop-streaming=${this.isStopStreamingButtonVisible}
+            ?disable-send=${this.disableSend || this._listNavigated}
+            ?disable-stop-streaming=${this.isStopStreamingButtonDisabled}
+            button-label=${this.buttonLabel}
+            stop-response-label=${this.stopResponseLabel}
+            @cds-aichat-input-send=${() => this._onSend()}
+            @cds-aichat-input-stop-streaming=${() =>
+              action(
+                'cds-aichat-input-stop-streaming'
+              )()}></cds-aichat-input-send-control>
         </cds-aichat-prompt-line-shell>
       </div>
     `;
@@ -379,6 +404,11 @@ class PromptLineFileUploadsStory extends LitElement {
     errorDescription: {},
     errorCollapsible: { type: Boolean },
     errorFullscreen: { type: Boolean },
+    isStopStreamingButtonVisible: { type: Boolean },
+    disableSend: { type: Boolean },
+    isStopStreamingButtonDisabled: { type: Boolean },
+    buttonLabel: {},
+    stopResponseLabel: {},
   };
 
   constructor() {
@@ -392,6 +422,11 @@ class PromptLineFileUploadsStory extends LitElement {
     this.errorDescription = '';
     this.errorCollapsible = false;
     this.errorFullscreen = true;
+    this.isStopStreamingButtonVisible = false;
+    this.disableSend = false;
+    this.isStopStreamingButtonDisabled = false;
+    this.buttonLabel = 'Send';
+    this.stopResponseLabel = 'Stop response';
     this._fileInputRef = createRef();
   }
 
@@ -497,9 +532,15 @@ class PromptLineFileUploadsStory extends LitElement {
           <cds-aichat-input-send-control
             slot="send-control"
             ?disabled=${this.disabled}
-            @cds-aichat-input-send=${() =>
+            ?show-stop-streaming=${this.isStopStreamingButtonVisible}
+            ?disable-send=${this.disableSend}
+            ?disable-stop-streaming=${this.isStopStreamingButtonDisabled}
+            button-label=${this.buttonLabel}
+            stop-response-label=${this.stopResponseLabel}
+            @cds-aichat-input-send=${() => action('cds-aichat-input-send')()}
+            @cds-aichat-input-stop-streaming=${() =>
               action(
-                'cds-aichat-input-send'
+                'cds-aichat-input-stop-streaming'
               )()}></cds-aichat-input-send-control>
         </cds-aichat-prompt-line-shell>
       </div>
@@ -520,6 +561,7 @@ if (!customElements.get('prompt-line-story-file-uploads')) {
 
 class PromptLineCommandsAndMentionsStory extends LitElement {
   static properties = {
+    _listNavigated: { state: true },
     placeholder: {},
     disabled: { type: Boolean },
     rounded: { type: Boolean },
@@ -528,11 +570,17 @@ class PromptLineCommandsAndMentionsStory extends LitElement {
     errorDescription: {},
     errorCollapsible: { type: Boolean },
     errorFullscreen: { type: Boolean },
+    isStopStreamingButtonVisible: { type: Boolean },
+    disableSend: { type: Boolean },
+    isStopStreamingButtonDisabled: { type: Boolean },
+    buttonLabel: {},
+    stopResponseLabel: {},
     attached: { type: Boolean },
   };
 
   constructor() {
     super();
+    this._listNavigated = false;
     this.placeholder = 'Type something...';
     this.disabled = false;
     this.rounded = true;
@@ -541,6 +589,11 @@ class PromptLineCommandsAndMentionsStory extends LitElement {
     this.errorDescription = '';
     this.errorCollapsible = false;
     this.errorFullscreen = true;
+    this.isStopStreamingButtonVisible = false;
+    this.disableSend = false;
+    this.isStopStreamingButtonDisabled = false;
+    this.buttonLabel = 'Send';
+    this.stopResponseLabel = 'Stop response';
     this.attached = false;
     this._sendControlRef = createRef();
     this._mentionConfig = {
@@ -608,6 +661,10 @@ class PromptLineCommandsAndMentionsStory extends LitElement {
     action('cds-aichat-prompt-change')(e.detail);
   }
 
+  _onListNavigated(e) {
+    this._listNavigated = e.detail.navigated;
+  }
+
   render() {
     return html`
       <style>
@@ -645,14 +702,22 @@ class PromptLineCommandsAndMentionsStory extends LitElement {
             <cds-aichat-autocomplete-controller
               slot="autocomplete-content"
               .mention=${this._mentionConfig}
-              .command=${this._commandConfig}></cds-aichat-autocomplete-controller>
+              .command=${this._commandConfig}
+              @cds-aichat-autocomplete-navigated=${(e) => this._onListNavigated(e)}></cds-aichat-autocomplete-controller>
             <prompt-line-story-inline-actions
               .actions=${dummyActions}
               ?disabled=${this.disabled}></prompt-line-story-inline-actions>
             <cds-aichat-input-send-control
               slot="send-control"
               ?disabled=${this.disabled}
+              ?show-stop-streaming=${this.isStopStreamingButtonVisible}
+              ?disable-send=${this.disableSend || this._listNavigated}
+              ?disable-stop-streaming=${this.isStopStreamingButtonDisabled}
+              button-label=${this.buttonLabel}
+              stop-response-label=${this.stopResponseLabel}
               @cds-aichat-input-send=${() => action('cds-aichat-input-send')()}
+              @cds-aichat-input-stop-streaming=${() =>
+                action('cds-aichat-input-stop-streaming')()}
               ${ref(this._sendControlRef)}></cds-aichat-input-send-control>
           </cds-aichat-prompt-line-shell>
         </div>
@@ -675,6 +740,7 @@ if (!customElements.get('prompt-line-story-commands-and-mentions')) {
 class PromptLineTypeaheadStory extends LitElement {
   static properties = {
     _inputText: { state: true },
+    _listNavigated: { state: true },
     placeholder: {},
     disabled: { type: Boolean },
     rounded: { type: Boolean },
@@ -683,6 +749,11 @@ class PromptLineTypeaheadStory extends LitElement {
     errorDescription: {},
     errorCollapsible: { type: Boolean },
     errorFullscreen: { type: Boolean },
+    isStopStreamingButtonVisible: { type: Boolean },
+    disableSend: { type: Boolean },
+    isStopStreamingButtonDisabled: { type: Boolean },
+    buttonLabel: {},
+    stopResponseLabel: {},
     disableDirectSend: { type: Boolean },
     attached: { type: Boolean },
   };
@@ -690,6 +761,7 @@ class PromptLineTypeaheadStory extends LitElement {
   constructor() {
     super();
     this._inputText = '';
+    this._listNavigated = false;
     this.placeholder = 'Type something...';
     this.disabled = false;
     this.rounded = true;
@@ -698,6 +770,11 @@ class PromptLineTypeaheadStory extends LitElement {
     this.errorDescription = '';
     this.errorCollapsible = false;
     this.errorFullscreen = true;
+    this.isStopStreamingButtonVisible = false;
+    this.disableSend = false;
+    this.isStopStreamingButtonDisabled = false;
+    this.buttonLabel = 'Send';
+    this.stopResponseLabel = 'Stop response';
     this.disableDirectSend = false;
     this.attached = false;
     this._autocompleteConfig = {
@@ -763,6 +840,10 @@ class PromptLineTypeaheadStory extends LitElement {
     action('cds-aichat-autocomplete-send')(e.detail.text);
   }
 
+  _onListNavigated(e) {
+    this._listNavigated = e.detail.navigated;
+  }
+
   render() {
     return html`
       <style>
@@ -797,14 +878,22 @@ class PromptLineTypeaheadStory extends LitElement {
             slot="autocomplete-content"
             .autocomplete=${this._autocompleteConfig}
             @cds-aichat-autocomplete-item-selected=${(e) => this._onItemSelected(e)}
-            @cds-aichat-autocomplete-item-send=${(e) => this._onItemSend(e)}></cds-aichat-autocomplete-controller>
+            @cds-aichat-autocomplete-item-send=${(e) => this._onItemSend(e)}
+            @cds-aichat-autocomplete-navigated=${(e) => this._onListNavigated(e)}></cds-aichat-autocomplete-controller>
           <prompt-line-story-inline-actions
             .actions=${dummyActions}
             ?disabled=${this.disabled}></prompt-line-story-inline-actions>
           <cds-aichat-input-send-control
             slot="send-control"
             ?disabled=${this.disabled}
+            ?show-stop-streaming=${this.isStopStreamingButtonVisible}
+            ?disable-send=${this.disableSend || this._listNavigated}
+            ?disable-stop-streaming=${this.isStopStreamingButtonDisabled}
+            button-label=${this.buttonLabel}
+            stop-response-label=${this.stopResponseLabel}
             @cds-aichat-input-send=${() => action('cds-aichat-input-send')()}
+            @cds-aichat-input-stop-streaming=${() =>
+              action('cds-aichat-input-stop-streaming')()}
             ${ref(this._sendControlRef)}></cds-aichat-input-send-control>
         </cds-aichat-prompt-line-shell>
       </div>
@@ -864,6 +953,33 @@ export default {
       control: 'boolean',
       description: 'Whether the error message uses the fullscreen layout.',
     },
+    isStopStreamingButtonVisible: {
+      control: 'boolean',
+      description:
+        'Swaps the send button for the stop-streaming button in the send control.',
+      table: { category: 'Send control' },
+    },
+    disableSend: {
+      control: 'boolean',
+      description:
+        'Disables only the send button (independent of the top-level `disabled` state).',
+      table: { category: 'Send control' },
+    },
+    isStopStreamingButtonDisabled: {
+      control: 'boolean',
+      description: 'Disables the stop-streaming button.',
+      table: { category: 'Send control' },
+    },
+    buttonLabel: {
+      control: 'text',
+      description: 'Tooltip label for the send button.',
+      table: { category: 'Send control' },
+    },
+    stopResponseLabel: {
+      control: 'text',
+      description: 'Tooltip label for the stop-streaming button.',
+      table: { category: 'Send control' },
+    },
     disableDirectSend: {
       control: 'boolean',
       description:
@@ -887,6 +1003,11 @@ export default {
     errorDescription: '',
     errorCollapsible: false,
     errorFullscreen: true,
+    isStopStreamingButtonVisible: false,
+    disableSend: false,
+    isStopStreamingButtonDisabled: false,
+    buttonLabel: 'Send',
+    stopResponseLabel: 'Stop response',
     disableDirectSend: false,
     attached: false,
   },
@@ -911,6 +1032,11 @@ export const Default = {
     errorDescription,
     errorCollapsible,
     errorFullscreen,
+    isStopStreamingButtonVisible,
+    disableSend,
+    isStopStreamingButtonDisabled,
+    buttonLabel,
+    stopResponseLabel,
   }) => {
     let sendControlEl = null;
 
@@ -960,7 +1086,14 @@ export const Default = {
           <cds-aichat-input-send-control
             slot="send-control"
             ?disabled=${disabled}
+            ?show-stop-streaming=${isStopStreamingButtonVisible}
+            ?disable-send=${disableSend}
+            ?disable-stop-streaming=${isStopStreamingButtonDisabled}
+            button-label=${buttonLabel}
+            stop-response-label=${stopResponseLabel}
             @cds-aichat-input-send=${() => action('cds-aichat-input-send')()}
+            @cds-aichat-input-stop-streaming=${() =>
+              action('cds-aichat-input-stop-streaming')()}
             ${ref((el) => {
               sendControlEl = el ?? null;
             })}></cds-aichat-input-send-control>
@@ -1001,6 +1134,11 @@ export const CommandsAndMentions = {
     errorDescription,
     errorCollapsible,
     errorFullscreen,
+    isStopStreamingButtonVisible,
+    disableSend,
+    isStopStreamingButtonDisabled,
+    buttonLabel,
+    stopResponseLabel,
     attached,
   }) => {
     const el = document.createElement(
@@ -1014,6 +1152,11 @@ export const CommandsAndMentions = {
     el.errorDescription = errorDescription;
     el.errorCollapsible = errorCollapsible;
     el.errorFullscreen = errorFullscreen;
+    el.isStopStreamingButtonVisible = isStopStreamingButtonVisible;
+    el.disableSend = disableSend;
+    el.isStopStreamingButtonDisabled = isStopStreamingButtonDisabled;
+    el.buttonLabel = buttonLabel;
+    el.stopResponseLabel = stopResponseLabel;
     el.attached = attached;
     return el;
   },
@@ -1034,6 +1177,11 @@ export const ConversationStarters = {
     errorDescription,
     errorCollapsible,
     errorFullscreen,
+    isStopStreamingButtonVisible,
+    disableSend,
+    isStopStreamingButtonDisabled,
+    buttonLabel,
+    stopResponseLabel,
     disableDirectSend,
     attached,
   }) => {
@@ -1046,6 +1194,11 @@ export const ConversationStarters = {
     el.errorDescription = errorDescription;
     el.errorCollapsible = errorCollapsible;
     el.errorFullscreen = errorFullscreen;
+    el.isStopStreamingButtonVisible = isStopStreamingButtonVisible;
+    el.disableSend = disableSend;
+    el.isStopStreamingButtonDisabled = isStopStreamingButtonDisabled;
+    el.buttonLabel = buttonLabel;
+    el.stopResponseLabel = stopResponseLabel;
     el.disableDirectSend = disableDirectSend;
     el.attached = attached;
     return el;
@@ -1071,6 +1224,11 @@ export const FileUploads = {
     errorDescription,
     errorCollapsible,
     errorFullscreen,
+    isStopStreamingButtonVisible,
+    disableSend,
+    isStopStreamingButtonDisabled,
+    buttonLabel,
+    stopResponseLabel,
   }) => {
     const el = document.createElement('prompt-line-story-file-uploads');
     el.placeholder = placeholder;
@@ -1081,6 +1239,11 @@ export const FileUploads = {
     el.errorDescription = errorDescription;
     el.errorCollapsible = errorCollapsible;
     el.errorFullscreen = errorFullscreen;
+    el.isStopStreamingButtonVisible = isStopStreamingButtonVisible;
+    el.disableSend = disableSend;
+    el.isStopStreamingButtonDisabled = isStopStreamingButtonDisabled;
+    el.buttonLabel = buttonLabel;
+    el.stopResponseLabel = stopResponseLabel;
     return el;
   },
 };
@@ -1099,6 +1262,11 @@ export const Typeahead = {
     errorDescription,
     errorCollapsible,
     errorFullscreen,
+    isStopStreamingButtonVisible,
+    disableSend,
+    isStopStreamingButtonDisabled,
+    buttonLabel,
+    stopResponseLabel,
     disableDirectSend,
     attached,
   }) => {
@@ -1111,6 +1279,11 @@ export const Typeahead = {
     el.errorDescription = errorDescription;
     el.errorCollapsible = errorCollapsible;
     el.errorFullscreen = errorFullscreen;
+    el.isStopStreamingButtonVisible = isStopStreamingButtonVisible;
+    el.disableSend = disableSend;
+    el.isStopStreamingButtonDisabled = isStopStreamingButtonDisabled;
+    el.buttonLabel = buttonLabel;
+    el.stopResponseLabel = stopResponseLabel;
     el.disableDirectSend = disableDirectSend;
     el.attached = attached;
     return el;

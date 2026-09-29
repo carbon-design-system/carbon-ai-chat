@@ -131,7 +131,6 @@ function Launcher(props: LauncherProps) {
     .join('. ');
 
   const launcherAvatar = launcherAvatarUrl ? (
-    // eslint-disable-next-line jsx-a11y/alt-text
     <img
       className="cds-aichat--launcher__avatar"
       src={launcherAvatarUrl}

@@ -122,7 +122,6 @@ export function renderTokenChip(args: RenderTokenChipArgs): HTMLElement {
   try {
     result = renderer(item);
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error(
       'Error in renderCustomToken, falling back to default chip:',
       error

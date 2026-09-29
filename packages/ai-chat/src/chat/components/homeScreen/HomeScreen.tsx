@@ -124,7 +124,6 @@ function HomeScreenComponent({
                   })}>
                   {starters.buttons.map((starter, index) => (
                     <div
-                      // eslint-disable-next-line react/no-array-index-key
                       key={index}
                       className="cds-aichat--home-screen__starter-wrapper">
                       <ChatButton

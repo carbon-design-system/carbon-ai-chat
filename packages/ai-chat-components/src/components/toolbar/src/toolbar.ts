@@ -51,6 +51,14 @@ export interface Action extends BaseOverflowMenuItem {
    * When overflow handling is enabled, setting fixed to true will force this action out of the overflow menu.
    */
   fixed?: boolean;
+
+  /**
+   * Renders this action as a two-state toggle and sets its current state.
+   * When `true` or `false`, the button exposes `aria-pressed` and a visible
+   * pressed treatment. Omit the field for a plain button with no toggle
+   * semantics — `undefined` is intentionally distinct from `false`.
+   */
+  isSelected?: boolean;
 }
 
 /**
@@ -120,6 +128,51 @@ class CDSAIChatToolbar extends LitElement {
     if (this.overflow) {
       this.setupResizeObserver();
     }
+  }
+
+  updated() {
+    // Carbon's delegatesFocus moves focus to the inner shadow <button>, so
+    // ARIA attributes on the host are invisible to assistive tech. Mirror
+    // them onto the inner button after each element's update cycle completes.
+    void this._patchShadowButtonAttrs('cds-icon-button[data-pressed]', {
+      'aria-pressed': 'data-pressed',
+    });
+    void this._patchShadowButtonAttrs(
+      'cds-overflow-menu-item[role="menuitemcheckbox"]',
+      { role: 'role', 'aria-checked': 'aria-checked' }
+    );
+  }
+
+  /**
+   * Copies attributes from each host element matching `selector` onto its
+   * inner shadow `<button>`, after the element's own update cycle completes.
+   *
+   * @param selector - CSS selector scoped to this shadow root.
+   * @param attrMap  - `{ targetAttr: sourceAttr }` pairs to copy.
+   * @internal
+   */
+  private async _patchShadowButtonAttrs(
+    selector: string,
+    attrMap: Record<string, string>
+  ): Promise<void> {
+    await Promise.all(
+      Array.from(
+        this.shadowRoot?.querySelectorAll<LitElement & HTMLElement>(selector) ??
+          []
+      ).map(async (el) => {
+        await el.updateComplete;
+        const btn = el.shadowRoot?.querySelector('button');
+        if (!btn) {
+          return;
+        }
+        for (const [target, source] of Object.entries(attrMap)) {
+          const value = el.getAttribute(source);
+          if (value !== null) {
+            btn.setAttribute(target, value);
+          }
+        }
+      })
+    );
   }
 
   private sortActions() {
@@ -257,20 +310,24 @@ class CDSAIChatToolbar extends LitElement {
    */
   private renderIconButton = (action: Action) => {
     const tooltipAlign = this.isRTL ? 'bottom-start' : 'bottom-end';
+    const { isSelected } = action;
 
     return html`
       <cds-icon-button
-        ?data-fixed=${action.fixed}
-        data-testid=${action.testId || nothing}
-        @click=${action.onClick}
-        href=${action.href || nothing}
-        target=${action.href ? action.target || '_self' : nothing}
-        size=${action.size || BUTTON_SIZE.MEDIUM}
         align=${tooltipAlign}
-        kind="ghost"
+        @click=${action.onClick}
+        ?data-fixed=${action.fixed}
+        data-pressed=${isSelected !== undefined ? String(isSelected) : nothing}
+        ?data-selected=${isSelected === true}
+        data-testid=${action.testId || nothing}
+        ?disabled=${action.disabled}
         enter-delay-ms="0"
+        href=${action.href || nothing}
+        ?isSelected=${isSelected === true}
+        kind="ghost"
         leave-delay-ms="0"
-        ?disabled=${action.disabled}>
+        size=${action.size || BUTTON_SIZE.MEDIUM}
+        target=${action.href ? action.target || '_self' : nothing}>
         ${iconLoader(action.icon, {
           slot: 'icon',
         })}
@@ -377,23 +434,36 @@ class CDSAIChatToolbar extends LitElement {
                         ${repeat(
                           hiddenActions,
                           (item) => item.text,
-                          (item) => html`
-                            <cds-overflow-menu-item
-                              @click=${item.onClick}
-                              href=${item.href || nothing}
-                              target=${
-                                item.href ? item.target || '_self' : nothing
-                              }
-                              ?disabled=${item.disabled}
-                              ?danger=${item.danger}
-                              danger-description=${
-                                item.dangerDescription || nothing
-                              }
-                              ?divider=${item.divider}
-                              data-testid=${item.testId || nothing}>
-                              ${item.text}
-                            </cds-overflow-menu-item>
-                          `
+                          (item) => {
+                            return html`
+                              <cds-overflow-menu-item
+                                @click=${item.onClick}
+                                href=${item.href || nothing}
+                                target=${
+                                  item.href ? item.target || '_self' : nothing
+                                }
+                                ?disabled=${item.disabled}
+                                ?danger=${item.danger}
+                                danger-description=${
+                                  item.dangerDescription || nothing
+                                }
+                                ?divider=${item.divider}
+                                ?data-selected=${item.isSelected === true}
+                                role=${
+                                  item.isSelected !== undefined
+                                    ? 'menuitemcheckbox'
+                                    : nothing
+                                }
+                                aria-checked=${
+                                  item.isSelected !== undefined
+                                    ? String(item.isSelected)
+                                    : nothing
+                                }
+                                data-testid=${item.testId || nothing}>
+                                ${item.text}
+                              </cds-overflow-menu-item>
+                            `;
+                          }
                         )}
                       </cds-overflow-menu-body>
                     </cds-overflow-menu>

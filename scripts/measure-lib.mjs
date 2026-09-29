@@ -263,20 +263,26 @@ function firstFatal(messages) {
 }
 
 export function makeLinter(rules) {
+  // Flat config, and deliberately not the repo's own: these rules are the
+  // measurement, so a config file on disk must not add to or silence them.
+  // `parser` is a resolved path, which flat config does not take — it wants
+  // the module.
   const eslint = new ESLint({
-    useEslintrc: false,
+    overrideConfigFile: true,
     allowInlineConfig: false,
-    plugins: { sonarjs },
-    baseConfig: {
-      plugins: ['sonarjs'],
-      parser,
-      parserOptions: {
-        ecmaVersion: 'latest',
-        sourceType: 'module',
-        ecmaFeatures: { jsx: true },
+    overrideConfig: [
+      {
+        files: ['**/*.{js,jsx,mjs,cjs,ts,tsx}'],
+        plugins: { sonarjs },
+        languageOptions: {
+          parser: requireFrom(parser),
+          ecmaVersion: 'latest',
+          sourceType: 'module',
+          parserOptions: { ecmaFeatures: { jsx: true } },
+        },
+        rules,
       },
-      rules,
-    },
+    ],
   });
   return async (content, filePath) => {
     const [result] = await eslint.lintText(content, { filePath });

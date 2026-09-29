@@ -30,6 +30,7 @@ Apply these mechanically — you don't have to be a wordsmith to follow them.
 - **Present tense.** "`addMessage` inserts a message," not "will insert." Avoid tense built on _have, has, had, been, should, would, will_.
 - **Second person.** Address the reader as "you." Never "we," "our," or "I" — the reader cares what _they_ can do.
 - **Sentence case.** Capitalize only the first word and proper nouns, in headings and body alike. Exceptions: product, service, and trademarked names.
+- **US English.** "color," not "colour." "behavior," not "behaviour." "canceled" and "labeled," not "cancelled" and "labelled" — US doubles a final `l` only when the stress lands on the last syllable, so "cancellation" and "compelling" keep both. This binds prose; an identifier, a dependency name, or a string literal keeps the spelling its source gave it.
 - **Short, everyday words.** "use," not "utilize." "to," not "in order to." Short words read faster.
 - **Contractions are fine.** "it's," "you'll," "don't" — they keep the tone human.
 - **No marketing language and no emoji.** Describe; don't sell.

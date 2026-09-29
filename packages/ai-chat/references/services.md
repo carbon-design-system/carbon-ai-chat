@@ -112,7 +112,7 @@ class MessageService {
 ## Wiring & teardown
 
 - Register new services through [`ServiceManager`](../src/chat/services/ServiceManager.ts) and [`loadServices`](../src/chat/services/loadServices.ts).
-- **Dispose** them in `ChatInstanceImpl.destroy()` and the matching `unloadServices()` teardown. Leaking a subscription across instance re-creation is a common regression — see [tests/services/](../tests/services) for disposal patterns.
+- **There is no teardown yet.** Unmount only unmounts the React root, so every store subscription, timer, and in-flight request a service owns outlives the mount. Keep the unsubscribe handle and the timer id you create, so the teardown that #1681 builds can dispose them. `destroySession()` resets session data; it is not a teardown.
 - Public methods on `ChatActionsImpl` must be reflected on the `ChatInstance` type in [src/chat/instance/](../src/chat/instance).
 
 ## Testing services

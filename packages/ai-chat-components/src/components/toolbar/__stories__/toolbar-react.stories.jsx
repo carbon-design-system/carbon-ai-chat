@@ -8,7 +8,7 @@
  */
 
 /* eslint-disable */
-import React from 'react';
+import React, { useState } from 'react';
 import Toolbar from '../../../react/toolbar';
 import {
   Button,
@@ -20,7 +20,15 @@ import {
   AILabel,
 } from '@carbon/react';
 import { actionLists } from './story-data-react';
-import { Home, ArrowLeft, OverflowMenuVertical } from '@carbon/icons-react';
+import {
+  Home,
+  ArrowLeft,
+  OverflowMenuVertical,
+  Star,
+  StarFilled,
+  Download,
+  Close,
+} from '@carbon/icons-react';
 import './story-styles.scss';
 import { Default as DefaultWC } from './toolbar.stories';
 
@@ -217,4 +225,43 @@ export const Default = {
       </Toolbar>
     );
   },
+};
+
+const ToggleDemo = () => {
+  const [isOn, setIsOn] = useState(false);
+
+  const actions = [
+    {
+      text: 'Favourite',
+      icon: isOn ? StarFilled : Star,
+      isSelected: isOn,
+      onClick: () => setIsOn((prev) => !prev),
+    },
+    {
+      text: 'Download',
+      icon: Download,
+      onClick: () => {},
+    },
+    {
+      text: 'Close',
+      fixed: true,
+      icon: Close,
+      onClick: () => {},
+    },
+  ];
+
+  return <Toolbar actions={actions} overflow />;
+};
+
+export const Toggle = {
+  name: 'Toggleable actions',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates the usage of the `isSelected` prop on a toolbar action. Click star action to see the action selected state.',
+      },
+    },
+  },
+  render: () => <ToggleDemo />,
 };

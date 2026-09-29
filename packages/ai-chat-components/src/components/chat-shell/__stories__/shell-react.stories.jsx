@@ -14,29 +14,6 @@ import ChatShell from '../../../react/chat-shell';
 import Toolbar from '../../../react/toolbar';
 import './story-styles.scss';
 
-// Core slot content for stories
-const CoreSlotContent = () => (
-  <>
-    <div slot="header">
-      <Toolbar>
-        <div slot="title">Header</div>
-      </Toolbar>
-    </div>
-    <div slot="history" className="history slot-sample">
-      History
-    </div>
-    <div slot="workspace" className="workspace slot-sample">
-      Workspace
-    </div>
-    <div slot="messages" className="messages slot-sample">
-      Messages
-    </div>
-    <div slot="input" className="input slot-sample">
-      Input
-    </div>
-  </>
-);
-
 export default {
   title: 'Preview/Chat shell',
   argTypes: {
@@ -98,57 +75,6 @@ export default {
   },
 };
 
-export const Default = {
-  args: {
-    aiEnabled: false,
-    showFrame: true,
-    cornerAll: 'round',
-    cornerStartStart: undefined,
-    cornerStartEnd: undefined,
-    cornerEndStart: undefined,
-    cornerEndEnd: undefined,
-    showHistory: false,
-    showWorkspace: false,
-    workspaceLocation: 'start',
-    historyLocation: 'start',
-    contentMaxWidth: true,
-  },
-  render: (args) => {
-    const {
-      aiEnabled,
-      showFrame,
-      cornerAll,
-      cornerStartStart,
-      cornerStartEnd,
-      cornerEndStart,
-      cornerEndEnd,
-      showHistory,
-      showWorkspace,
-      workspaceLocation,
-      historyLocation,
-      contentMaxWidth,
-    } = args;
-
-    return (
-      <ChatShell
-        aiEnabled={aiEnabled}
-        showFrame={showFrame}
-        cornerAll={cornerAll}
-        cornerStartStart={cornerStartStart}
-        cornerStartEnd={cornerStartEnd}
-        cornerEndStart={cornerEndStart}
-        cornerEndEnd={cornerEndEnd}
-        showHistory={showHistory}
-        showWorkspace={showWorkspace}
-        workspaceLocation={workspaceLocation}
-        historyLocation={historyLocation}
-        contentMaxWidth={contentMaxWidth}>
-        <CoreSlotContent />
-      </ChatShell>
-    );
-  },
-};
-
 // Slot configuration definitions
 const SLOT_CONFIGS = [
   { name: 'header', label: 'Header', hasCheckbox: true },
@@ -162,7 +88,7 @@ const SLOT_CONFIGS = [
   { name: 'workspace', label: 'Workspace', hasCheckbox: false },
 ];
 
-export const Slots = {
+export const Default = {
   args: {
     aiEnabled: false,
     showFrame: true,

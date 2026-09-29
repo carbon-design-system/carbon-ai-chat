@@ -374,7 +374,7 @@ describe('ChatInstance.messaging.clearConversation', () => {
 
       // Wait for send to complete/cancel
       await sendPromise.catch(() => {
-        /* Expected to be cancelled */
+        /* Expected to be canceled */
       });
 
       // Verify abort was triggered with correct reason

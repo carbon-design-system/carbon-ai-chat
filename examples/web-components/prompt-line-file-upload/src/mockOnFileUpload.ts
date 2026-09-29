@@ -62,7 +62,7 @@ async function mockOnFileUpload(
 ): Promise<StructuredData> {
   // The chat passes an `AbortSignal` so the user can cancel an in-flight
   // upload from the attachment chip; we wire `setTimeout`/`abort` together
-  // and reject with an `AbortError` so the chat marks the file as cancelled.
+  // and reject with an `AbortError` so the chat marks the file as canceled.
   await new Promise<void>((resolve, reject) => {
     const timer = setTimeout(resolve, 1000);
 

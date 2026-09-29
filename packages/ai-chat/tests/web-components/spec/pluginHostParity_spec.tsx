@@ -35,25 +35,11 @@ import { createRoot } from 'react-dom/client';
 import '../../../src/web-components/cds-aichat-container';
 import '../../../src/web-components/cds-aichat-custom-element';
 import { ChatContainer } from '../../../src/react/ChatContainer';
-import { createBaseConfig, createBaseTestProps } from '../../test_helpers';
-
-// `cds-aichat-custom-element` spreads `root.adoptedStyleSheets` in its
-// `createRenderRoot` to append its hide-sheet, and jsdom's ShadowRoot has no
-// such property, so connecting it throws before any listener is wired. Same
-// class of environment gap as the `CSSStyleSheet` stub in `tests/setup.ts`,
-// kept local because this is the first spec to connect that element.
-const adopted = new WeakMap<ShadowRoot, unknown[]>();
-if (!('adoptedStyleSheets' in ShadowRoot.prototype)) {
-  Object.defineProperty(ShadowRoot.prototype, 'adoptedStyleSheets', {
-    configurable: true,
-    get(this: ShadowRoot) {
-      return adopted.get(this) ?? [];
-    },
-    set(this: ShadowRoot, sheets: unknown[]) {
-      adopted.set(this, sheets);
-    },
-  });
-}
+import {
+  createBaseConfig,
+  createBaseTestProps,
+  getChatHost,
+} from '../../test_helpers';
 
 const MOUNT = 'cds-aichat-markdown-plugin-host-mount';
 const UPDATE = 'cds-aichat-markdown-plugin-host-update';
@@ -138,7 +124,7 @@ beforeAll(async () => {
   // handshake resolves. A probe offer is the only thing that proves they exist.
   await waitFor(
     () => {
-      const found = reactMount.querySelector<HTMLElement>('cds-aichat-react');
+      const found = getChatHost(reactMount);
       expect(found).not.toBeNull();
       const probe = mountEvent(fallbackDetail('boot-probe', '', false));
       found?.dispatchEvent(probe);
@@ -148,7 +134,7 @@ beforeAll(async () => {
     { timeout: 8000 }
   );
   if (!reactWrapper) {
-    throw new Error('ChatContainer never produced a cds-aichat-react wrapper');
+    throw new Error('ChatContainer never produced a chat host');
   }
   const wrapper = reactWrapper;
   wrapper.dispatchEvent(plainEvent(UNMOUNT, { slotName: 'boot-probe' }));

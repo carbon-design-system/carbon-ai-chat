@@ -65,7 +65,13 @@ import {
   selectLanguagePack,
 } from './store/selectors';
 import { shallowEqual } from './store/appStore';
-import { consoleError, createDidCatchErrorData } from './utils/miscUtils';
+import {
+  consoleError,
+  consoleWarn,
+  createDidCatchErrorData,
+  isEnableDebugLog,
+} from './utils/miscUtils';
+import { useWriteableElementPresence } from './hooks/useWriteableElementPresence';
 import {
   IS_PHONE,
   IS_PHONE_IN_PORTRAIT_MODE,
@@ -499,6 +505,11 @@ function AppShell({
     onPanelCloseEnd,
   } = usePanelCallbacks({ requestFocus });
 
+  const customHeaderPresent = useWriteableElementPresence(
+    WriteableElementName.CUSTOM_HEADER,
+    serviceManager.writeableElements
+  );
+
   // Header config override for mobile history
   const headerConfigOverride = useMemo(() => {
     const showMobileMenu = publicConfig.history?.showMobileMenu ?? true;
@@ -506,7 +517,8 @@ function AppShell({
     if (
       !publicConfig.history?.isOn ||
       !historyPanelState.isMobile ||
-      !showMobileMenu
+      !showMobileMenu ||
+      customHeaderPresent
     ) {
       return undefined;
     }
@@ -543,7 +555,30 @@ function AppShell({
     languagePack.history_view_chats,
     publicConfig.history?.isOn,
     publicConfig.history?.showMobileMenu,
+    customHeaderPresent,
   ]);
+
+  const customHeaderMobileWarningFired = useRef(false);
+
+  // True when the host is responsible for providing mobile history menu controls
+  // (open/close) because CUSTOM_HEADER suppresses the built-in menu.
+  const isHostControlledHistoryMenu =
+    customHeaderPresent &&
+    publicConfig.history?.isOn &&
+    historyPanelState.isMobile;
+
+  useEffect(() => {
+    if (
+      isHostControlledHistoryMenu &&
+      !customHeaderMobileWarningFired.current &&
+      isEnableDebugLog()
+    ) {
+      customHeaderMobileWarningFired.current = true;
+      consoleWarn(
+        'CUSTOM_HEADER is present while the history panel is in its mobile layout. The built-in mobile history menu no longer renders; supply your own controls. See docs/CustomHistory.md.'
+      );
+    }
+  }, [isHostControlledHistoryMenu]);
 
   // History mobile detection hook
   const updateHistoryMobileDetection = useHistoryMobileDetection({
@@ -674,15 +709,12 @@ function AppShell({
         const messagesContainer = containerRef.current?.querySelector(
           '.cds-aichat--messages'
         );
-        const inputContainer =
-          containerRef.current?.querySelector('.cds-aichat--input');
-
-        // Check if focus is in messages area but not in input
-        if (
+        if (inputRef.current?.hasFocus()) {
+          inputRef.current.requestFocus();
+        } else if (
           activeElement &&
           (messagesWrapper?.contains(activeElement) ||
-            messagesContainer?.contains(activeElement)) &&
-          !inputContainer?.contains(activeElement)
+            messagesContainer?.contains(activeElement))
         ) {
           event.preventDefault();
           inputRef.current?.requestFocus();
@@ -879,17 +911,18 @@ function AppShell({
                 catastrophicErrorPanelState={catastrophicErrorPanelState}
               />
 
-              {(header?.isOn || headerConfigOverride?.isOn) && (
-                <div slot="header">
-                  <Header
-                    onClose={onClose}
-                    onRestart={onRestart}
-                    onToggleHomeScreen={onToggleHomeScreen}
-                    isHomeScreenActive={showHomeScreen}
-                    headerConfigOverride={headerConfigOverride}
-                  />
-                </div>
-              )}
+              {!customHeaderPresent &&
+                (header?.isOn || headerConfigOverride?.isOn) && (
+                  <div slot="header">
+                    <Header
+                      onClose={onClose}
+                      onRestart={onRestart}
+                      onToggleHomeScreen={onToggleHomeScreen}
+                      isHomeScreenActive={showHomeScreen}
+                      headerConfigOverride={headerConfigOverride}
+                    />
+                  </div>
+                )}
 
               <AppShellWriteableElements
                 serviceManager={serviceManager}

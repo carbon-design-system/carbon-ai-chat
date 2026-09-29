@@ -7,8 +7,6 @@
  *  @license
  */
 
-/* eslint-disable prefer-destructuring */
-
 const VERSION = process.env.VERSION;
 
 export { VERSION };

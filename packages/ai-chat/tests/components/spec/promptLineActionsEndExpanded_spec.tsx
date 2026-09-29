@@ -19,6 +19,7 @@ import { deepQuerySelector } from '@carbon/ai-chat-components/es/globals/utils/d
 
 import {
   createBaseConfig,
+  getChatShadowRoot,
   renderChatAndGetInstance,
   setupAfterEach,
   setupBeforeEach,
@@ -27,10 +28,10 @@ import {
 const PROMPT_LINE_SHELL = 'cds-aichat-prompt-line-shell';
 const SLOT_SELECTOR = 'slot[name="promptLineActionsEnd"]';
 
-// The chat renders inside the `cds-aichat-react` shadow root, so DOM queries
-// must start there and pierce nested shadow roots.
+// The chat renders inside a shadow root, so DOM queries must start there and
+// pierce nested shadow roots.
 function chatRoot(): ShadowRoot | null {
-  return document.querySelector('cds-aichat-react')?.shadowRoot ?? null;
+  return getChatShadowRoot();
 }
 
 function find(selector: string): Element | null {

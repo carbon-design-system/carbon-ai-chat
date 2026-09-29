@@ -73,6 +73,22 @@ if (
     .mockReturnValue(null);
 }
 
+// `cds-aichat-custom-element` appends its hide-sheet to the shadow root's
+// `adoptedStyleSheets`, which jsdom's ShadowRoot does not implement, so
+// connecting that element would throw before anything renders.
+const adoptedSheets = new WeakMap<ShadowRoot, unknown[]>();
+if (!('adoptedStyleSheets' in ShadowRoot.prototype)) {
+  Object.defineProperty(ShadowRoot.prototype, 'adoptedStyleSheets', {
+    configurable: true,
+    get(this: ShadowRoot) {
+      return adoptedSheets.get(this) ?? [];
+    },
+    set(this: ShadowRoot, sheets: unknown[]) {
+      adoptedSheets.set(this, sheets);
+    },
+  });
+}
+
 // Mock ResizeObserver since it's not available in jsdom
 (global as any).ResizeObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),

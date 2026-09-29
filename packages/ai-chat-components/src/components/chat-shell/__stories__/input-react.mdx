@@ -1,0 +1,99 @@
+import { Canvas, Meta } from '@storybook/addon-docs/blocks';
+import * as InputReactStories from './input-react.stories';
+
+<Meta of={InputReactStories} />
+
+# Chat shell input
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/chat-shell) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Component API](#component-api)
+- [Feedback](#feedback)
+
+## Overview
+
+Use [Prompt line shell](?path=/docs/preview-prompt-line--overview) in the `slot="input"` of `ChatShell` to compose a full input area. The prompt line shell has two layouts: compact (single row) and expanded (with an actions row beneath it). It exposes named slots for `editor`, `message-actions`, `file-uploads`, `autocomplete-content`, `field-messaging`, and `send-control`.
+
+### Getting started
+
+Here's a quick example to get you started.
+
+```jsx
+import ChatShell from '@carbon/ai-chat-components/es/react/chat-shell.js';
+import PromptLine from '@carbon/ai-chat-components/es/react/prompt-line.js';
+import PromptLineShell from '@carbon/ai-chat-components/es/react/prompt-line-shell.js';
+import CDSAIChatInputSendControl from '@carbon/ai-chat-components/es/react/input-send-control.js';
+
+function ChatInput() {
+  const [hasValidInput, setHasValidInput] = React.useState(false);
+
+  return (
+    <ChatShell>
+      <div slot="header">Chat Header</div>
+      <div slot="messages">Messages</div>
+
+      <PromptLineShell slot="input">
+        <PromptLine
+          slot="editor"
+          placeholder="Ask a question"
+          onChange={(e) => setHasValidInput(e.detail.rawValue.length > 0)}
+        />
+        <CDSAIChatInputSendControl
+          slot="send-control"
+          hasValidInput={hasValidInput}
+          buttonLabel="Send"
+          onSend={() => console.log('send')}
+        />
+      </PromptLineShell>
+    </ChatShell>
+  );
+}
+```
+
+### Expanded layout with message actions
+
+```jsx
+function ChatInputExpanded() {
+  const [hasValidInput, setHasValidInput] = React.useState(false);
+
+  return (
+    <ChatShell>
+      <div slot="header">Chat Header</div>
+      <div slot="messages">Messages</div>
+
+      <PromptLineShell slot="input" expanded>
+        <PromptLine
+          slot="editor"
+          placeholder="Ask a question"
+          onChange={(e) => setHasValidInput(e.detail.rawValue.length > 0)}
+        />
+
+        <div slot="message-actions">
+          <cds-icon-button size="sm" kind="ghost">
+            <svg slot="icon" />
+            <span slot="tooltip-content">Summarize</span>
+          </cds-icon-button>
+        </div>
+
+        <CDSAIChatInputSendControl
+          slot="send-control"
+          hasValidInput={hasValidInput}
+          buttonLabel="Send"
+          onSend={() => console.log('send')}
+        />
+      </PromptLineShell>
+    </ChatShell>
+  );
+}
+```
+
+## Component API
+
+For the full component API including all props, slots, and events, see the [Prompt line](?path=/docs/preview-prompt-line--overview#component-api) overview.
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

@@ -511,7 +511,7 @@ describe('ChatInstance.messaging.addMessageChunk', () => {
           }
 
           if (isStreaming) {
-            // Send final response if not cancelled
+            // Send final response if not canceled
             await instance.messaging.addMessageChunk({
               final_response: {
                 id: responseId,
@@ -538,7 +538,7 @@ describe('ChatInstance.messaging.addMessageChunk', () => {
       // Wait for streaming to start
       await new Promise((resolve) => setTimeout(resolve, 100));
 
-      // Simulate stop button click by cancelling current message
+      // Simulate stop button click by canceling current message
       (
         instance as any
       ).serviceManager.messageService.cancelCurrentMessageRequest();
@@ -550,7 +550,7 @@ describe('ChatInstance.messaging.addMessageChunk', () => {
       expect(capturedAbortReason).toBe(CancellationReason.STOP_STREAMING);
     });
 
-    it('should handle stream_stopped flag in CompleteItemChunk when cancelled', async () => {
+    it('should handle stream_stopped flag in CompleteItemChunk when canceled', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);

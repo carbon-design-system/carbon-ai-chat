@@ -17,7 +17,7 @@ This is the type where [revision-pass.md](revision-pass.md) is softest, for that
 ## Before and after
 
 - Before: "This is the timeout value that will be used in order to determine how long we should wait before we cancel the request."
-- After: "Time to wait before cancelling the request, in milliseconds."
+- After: "Time to wait before canceling the request, in milliseconds."
 
 ## Gate
 

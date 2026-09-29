@@ -28,6 +28,7 @@
   "categoryOrder": [
     "React",
     "Web component",
+    "SDK",
     "Config",
     "Instance",
     "Events",

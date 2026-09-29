@@ -91,11 +91,25 @@ function deleteMentionAt(editor: Editor, pos: number) {
 }
 
 describe('tiptap/carbon-mention onRemove', function () {
+  let cleanup: (() => void) | undefined;
+  let initialBodyChildCount: number;
+
+  beforeEach(() => {
+    initialBodyChildCount = document.body.childElementCount;
+  });
+
+  afterEach(() => {
+    cleanup?.();
+    cleanup = undefined;
+    expect(document.body.childElementCount).to.equal(initialBodyChildCount);
+  });
+
   it('fires once with the reconstructed item when a mention is deleted', () => {
     const removed: SuggestionItem[] = [];
-    const { editor, cleanup } = makeEditor('mention', {
+    const { editor, cleanup: c } = makeEditor('mention', {
       onRemove: (item) => removed.push(item),
     });
+    cleanup = c;
 
     insertMention(editor, { id: 'u1', label: 'Alice', value: '@alice' });
     expect(removed).to.have.lengthOf(0);
@@ -106,14 +120,14 @@ describe('tiptap/carbon-mention onRemove', function () {
     expect(removed[0].id).to.equal('u1');
     expect(removed[0].label).to.equal('Alice');
     expect(removed[0].value).to.equal('@alice');
-    cleanup();
   });
 
   it('carries custom fields stashed in attrs.data back onto the item', () => {
     const removed: SuggestionItem[] = [];
-    const { editor, cleanup } = makeEditor('mention', {
+    const { editor, cleanup: c } = makeEditor('mention', {
       onRemove: (item) => removed.push(item),
     });
+    cleanup = c;
 
     insertMention(editor, {
       id: 'u1',
@@ -124,14 +138,14 @@ describe('tiptap/carbon-mention onRemove', function () {
 
     expect(removed).to.have.lengthOf(1);
     expect((removed[0] as Record<string, unknown>).team).to.equal('design');
-    cleanup();
   });
 
   it('fires once per removed instance for duplicate ids (multiset diff)', () => {
     const removed: SuggestionItem[] = [];
-    const { editor, cleanup } = makeEditor('mention', {
+    const { editor, cleanup: c } = makeEditor('mention', {
       onRemove: (item) => removed.push(item),
     });
+    cleanup = c;
 
     // Two chips with the SAME id, separated by a space.
     insertMention(editor, { id: 'u1', label: 'Alice' });
@@ -147,14 +161,14 @@ describe('tiptap/carbon-mention onRemove', function () {
     // Delete the survivor — one more.
     deleteMentionAt(editor, tokenPositions(editor, 'mention')[0]);
     expect(removed).to.have.lengthOf(2);
-    cleanup();
   });
 
   it('does NOT fire for host-origin (programmatic) removals', () => {
     const removed: SuggestionItem[] = [];
-    const { editor, cleanup } = makeEditor('mention', {
+    const { editor, cleanup: c } = makeEditor('mention', {
       onRemove: (item) => removed.push(item),
     });
+    cleanup = c;
 
     insertMention(editor, { id: 'u1', label: 'Alice' });
     const pos = tokenPositions(editor, 'mention')[0];
@@ -164,11 +178,11 @@ describe('tiptap/carbon-mention onRemove', function () {
     editor.view.dispatch(tr);
 
     expect(removed).to.have.lengthOf(0);
-    cleanup();
   });
 
   it('does not throw when no onRemove is configured', () => {
-    const { editor, cleanup } = makeEditor('mention');
+    const { editor, cleanup: c } = makeEditor('mention');
+    cleanup = c;
 
     insertMention(editor, { id: 'u1', label: 'Alice' });
     expect(() =>
@@ -176,11 +190,11 @@ describe('tiptap/carbon-mention onRemove', function () {
     ).to.not.throw();
 
     expect(tokenPositions(editor, 'mention')).to.have.lengthOf(0);
-    cleanup();
   });
 
   it('Backspace leaves the correct trigger char for carbonMention with custom trigger', () => {
-    const { editor, cleanup } = makeEditor('mention', {}, '*');
+    const { editor, cleanup: c } = makeEditor('mention', {}, '*');
+    cleanup = c;
 
     insertMention(editor, {
       id: 'u1',
@@ -197,13 +211,26 @@ describe('tiptap/carbon-mention onRemove', function () {
     // The chip should be gone and replaced with the trigger character.
     expect(tokenPositions(editor, 'mention')).to.have.lengthOf(0);
     expect(editor.state.doc.textContent).to.equal('*');
-    cleanup();
   });
 });
 
 describe('tiptap/carbon-command Backspace', function () {
+  let cleanup: (() => void) | undefined;
+  let initialBodyChildCount: number;
+
+  beforeEach(() => {
+    initialBodyChildCount = document.body.childElementCount;
+  });
+
+  afterEach(() => {
+    cleanup?.();
+    cleanup = undefined;
+    expect(document.body.childElementCount).to.equal(initialBodyChildCount);
+  });
+
   it('Backspace leaves "/" when using the default command trigger', () => {
-    const { editor, cleanup } = makeEditor('command', {}, '/');
+    const { editor, cleanup: c } = makeEditor('command', {}, '/');
+    cleanup = c;
 
     editor.commands.insertContent({
       type: 'command',
@@ -219,6 +246,89 @@ describe('tiptap/carbon-command Backspace', function () {
     // The chip should be gone and "/" left behind.
     expect(tokenPositions(editor, 'command')).to.have.lengthOf(0);
     expect(editor.state.doc.textContent).to.equal('/');
-    cleanup();
+  });
+
+  describe('the data attr contract', () => {
+    let innerCleanup: (() => void) | undefined;
+    let innerInitialBodyChildCount: number;
+
+    beforeEach(() => {
+      innerInitialBodyChildCount = document.body.childElementCount;
+    });
+
+    afterEach(() => {
+      innerCleanup?.();
+      innerCleanup = undefined;
+      expect(document.body.childElementCount).to.equal(
+        innerInitialBodyChildCount
+      );
+    });
+
+    it('keeps host custom fields out of HTML but inside the JSON', () => {
+      const { editor, cleanup: c } = makeEditor('mention');
+      innerCleanup = c;
+
+      editor.commands.insertContent({
+        type: 'mention',
+        attrs: {
+          id: 'u1',
+          label: 'Alice',
+          value: '@alice',
+          data: { team: 'design' },
+        },
+      });
+
+      // renderHTML returns nothing for `data`, so the object never reaches
+      // serialized markup — no "[object Object]", no host fields in a copy.
+      expect(editor.getHTML()).to.not.contain('object Object');
+      expect(editor.getHTML()).to.not.contain('design');
+
+      // The JSON round-trip is the path that has to keep them.
+      const [node] = (editor.getJSON().content?.[0].content ?? []).filter(
+        (child) => child.type === 'mention'
+      );
+      expect(node?.attrs?.data).to.deep.equal({ team: 'design' });
+    });
+
+    // An array is `typeof 'object'`, so it clears a bare object check and
+    // still spreads to index keys — it needs the same guard the string does.
+    [
+      { label: 'string', data: 'abc' },
+      { label: 'array', data: ['a', 'b'] },
+      { label: 'number', data: 42 },
+    ].forEach(({ label, data }) => {
+      it(`never spreads a ${label} data attr into the removed item`, () => {
+        const removed: SuggestionItem[] = [];
+        const { editor, cleanup: c } = makeEditor('mention', {
+          onRemove: (item) => removed.push(item),
+        });
+        innerCleanup = c;
+
+        // insertContent takes a raw node spec, so a host can put anything in
+        // attrs.data — this is the reachable route, not hand-authored HTML.
+        editor.commands.insertContent({
+          type: 'mention',
+          attrs: { id: 'u1', label: 'Alice', value: '@alice', data },
+        });
+
+        const positions = tokenPositions(editor, 'mention');
+        expect(positions).to.have.lengthOf(1);
+
+        editor
+          .chain()
+          .deleteRange({ from: positions[0], to: positions[0] + 1 })
+          .run();
+
+        expect(removed).to.have.lengthOf(1);
+        // Unguarded, 'abc' spreads to {0:'a',1:'b',2:'c'} and ['a','b'] to
+        // {0:'a',1:'b'}.
+        expect(removed[0]).to.not.have.property('0');
+        expect(removed[0]).to.deep.equal({
+          id: 'u1',
+          label: 'Alice',
+          value: '@alice',
+        });
+      });
+    });
   });
 });

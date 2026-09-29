@@ -48,7 +48,7 @@ Why it fails: no `@category` (lands in `*`), no member-level JSDoc, note-form ra
 
 ```ts
 /**
- * The time to wait for a response from the back-end before cancelling the
+ * The time to wait for a response from the back-end before canceling the
  * request, in milliseconds. Defaults to the value returned by
  * {@link DefaultMessagingTimeouts.response}.
  */

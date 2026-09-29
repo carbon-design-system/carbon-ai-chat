@@ -111,7 +111,7 @@ async function doFakeTextStreaming(
   // The signal fires on both the stop button and a restart/clear action, so a single handler covers both cases.
   const abortHandler = () => {
     isCanceled = true;
-    // Pending timers must be cleared so cancelled streams stop emitting chunks immediately.
+    // Pending timers must be cleared so canceled streams stop emitting chunks immediately.
     timeouts.forEach((timeoutId) => clearTimeout(timeoutId));
   };
   signal?.addEventListener('abort', abortHandler);
@@ -166,7 +166,7 @@ async function doFakeTextStreaming(
         final_response: finalResponse,
       } as StreamChunk);
     } else {
-      // The stream_stopped marker tells the chat the partial text shown so far is the final state for this cancelled response.
+      // The stream_stopped marker tells the chat the partial text shown so far is the final state for this canceled response.
       const completeItem = {
         response_type: MessageResponseTypes.TEXT,
         text: words.slice(0, Math.floor(words.length * 0.3)).join(' '),

@@ -9,9 +9,13 @@
 
 /**
  * React hook for the chat-input autocomplete overlay. Thin wrapper around
- * the framework-agnostic `AutocompleteController` co-located in
- * [../../components/prompt-line/src/autocomplete-controller.ts] (which also exports
- * the `<cds-aichat-autocomplete-controller>` element). The controller owns
+ * the framework-agnostic `AutocompleteController` in
+ * [../../components/prompt-line/src/autocomplete-controller.ts]. That module
+ * holds no Lit and registers no custom element, so reaching the controller
+ * costs this hook neither. It still loads `<cds-aichat-autocomplete>` — it
+ * renders that list itself — but never
+ * `<cds-aichat-autocomplete-controller>`, the other surface on the same
+ * class. The controller owns
  * trigger handling, async resolution, and selection routing; this hook
  * adapts those callbacks into React state and returns a JSX node to slot
  * into `<PromptLineShell>`.
@@ -28,6 +32,7 @@ import {
   itemsToGroups,
   type AutocompleteControllerState,
 } from '../../components/prompt-line/src/autocomplete-controller.js';
+import type { AutocompleteNavigatedEventDetail } from '../../components/prompt-line/autocomplete/src/autocomplete.js';
 import type {
   AutocompleteConfig,
   StartersConfig,
@@ -72,6 +77,11 @@ export interface UseChatAutocompleteResult {
    * `null` while no trigger is active.
    */
   autocompleteContent: ReactNode;
+  /**
+   * `true` while the user has navigated into the autocomplete list with arrow
+   * keys. Use to disable the prompt send button while a list item is active.
+   */
+  isListNavigated: boolean;
 }
 
 export function useChatAutocomplete(
@@ -95,6 +105,8 @@ export function useChatAutocomplete(
     trigger: null,
     items: [],
   });
+
+  const [isListNavigated, setIsListNavigated] = React.useState(false);
 
   // Keep the controller stable for the hook's lifetime — set in a layout
   // effect so it's wired before any event handler can fire.
@@ -176,8 +188,22 @@ export function useChatAutocomplete(
   // Register / unregister the rendered list element with the controller so
   // arrow / Enter / Escape on the editor DOM get forwarded to it.
   // Also set the max-height CSS variable if provided.
+  const navigatedListenerRef = React.useRef<{
+    el: HTMLElement;
+    handler: (e: Event) => void;
+  } | null>(null);
+
   const setListElement = React.useCallback(
     (el: HTMLElement | null) => {
+      // Remove the previous navigation listener before swapping elements.
+      if (navigatedListenerRef.current) {
+        navigatedListenerRef.current.el.removeEventListener(
+          'cds-aichat-autocomplete-navigated',
+          navigatedListenerRef.current.handler
+        );
+        navigatedListenerRef.current = null;
+      }
+
       controllerRef.current?.setListElement(el);
       // Pass the editor DOM as anchorElement so outside-click detection on the
       // autocomplete element doesn't dismiss the list when the user clicks the
@@ -188,6 +214,32 @@ export function useChatAutocomplete(
       }
       if (el && maxHeight) {
         el.style.setProperty('--cds-aichat-autocomplete-max-height', maxHeight);
+      }
+      if (el) {
+        const handler = (e: Event) => {
+          setIsListNavigated(
+            (e as CustomEvent<AutocompleteNavigatedEventDetail>).detail
+              .navigated
+          );
+        };
+        el.addEventListener('cds-aichat-autocomplete-navigated', handler);
+        navigatedListenerRef.current = { el, handler };
+      } else {
+        setIsListNavigated(false);
+        // Fire a synthetic clear event on the prompt-line's shell ancestor so
+        // the send-control's internal guard (`_autocompleteListNavigated`) also
+        // resets. This covers cases where the list is removed from the DOM
+        // without the autocomplete element dispatching its own clear event
+        // (e.g. the user deletes the trigger character).
+        const shell = promptLineRef.current?.closest(
+          'cds-aichat-prompt-line-shell'
+        );
+        shell?.dispatchEvent(
+          new CustomEvent<AutocompleteNavigatedEventDetail>(
+            'cds-aichat-autocomplete-navigated',
+            { detail: { navigated: false }, bubbles: false, composed: false }
+          )
+        );
       }
     },
     [maxHeight, promptLineRef]
@@ -264,7 +316,7 @@ export function useChatAutocomplete(
     handleContainerMousedown,
   ]);
 
-  return { onTriggerChange, autocompleteContent };
+  return { onTriggerChange, autocompleteContent, isListNavigated };
 }
 
 interface CustomElementHostProps {

@@ -74,9 +74,9 @@ function InputActionsMenu({
           open
           label={menuLabel}
           onCdsMenuClosed={() => setOpen(false)}>
-          {actions.map((opt) => (
+          {actions.map((opt, index) => (
             <MenuItem
-              key={opt.testId ?? opt.text}
+              key={opt.id ?? index}
               label={opt.text}
               disabled={opt.disabled}
               data-testid={opt.testId}

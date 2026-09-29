@@ -74,7 +74,6 @@ const DEFAULT_HEADER: HeaderConfig = {
   isOn: true,
   minimizeButtonIconType: MinimizeButtonIconType.MINIMIZE,
   showAiLabel: true,
-  hideDefaultAiLabelContent: false,
   hasContentMaxWidth: false,
 };
 

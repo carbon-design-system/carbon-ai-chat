@@ -234,6 +234,12 @@ export enum DemoPageObjectId {
 
 interface PrepareDemoPageOptions {
   setChatConfig?: boolean;
+
+  /**
+   * Demo settings to deep-link into, merged over the demo's defaults — `{ writeableElements: 'true' }` to show the
+   * slots, for instance.
+   */
+  settings?: Partial<Record<string, string>>;
 }
 
 /**
@@ -247,13 +253,20 @@ interface PrepareDemoPageOptions {
  */
 export const prepareDemoPage = async (
   page: Page,
-  { setChatConfig = false }: PrepareDemoPageOptions = {}
+  { setChatConfig = false, settings }: PrepareDemoPageOptions = {}
 ) => {
   await page.route(/.*ibm-common\.js$/, (route) => route.abort());
   await installTestCsp(page);
   await installCspGuard(page);
-  const targetPath = setChatConfig ? '/?config=setChatConfig' : '/';
-  await page.goto(targetPath);
+  const params = new URLSearchParams();
+  if (setChatConfig) {
+    params.set('config', 'setChatConfig');
+  }
+  if (settings) {
+    params.set('settings', JSON.stringify(settings));
+  }
+  const query = params.toString();
+  await page.goto(query ? `/?${query}` : '/');
 };
 
 /**

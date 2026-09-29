@@ -14,7 +14,7 @@ import {
 
 /**
  * Whether there is anything to send. A staged file is content on its own, so a
- * file with no caption is a valid message — the industry-standard behaviour, and
+ * file with no caption is a valid message — the industry-standard behavior, and
  * what the attach affordance implies.
  *
  * Deliberately keyed on staged uploads rather than on structured data at large: a

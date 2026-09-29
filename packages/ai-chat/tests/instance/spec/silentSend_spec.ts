@@ -8,7 +8,7 @@
  */
 
 /**
- * Tests for the silent-send behaviour.
+ * Tests for the silent-send behavior.
  *
  * A send with nothing to show is marked silent so it does not render as an empty
  * bubble. An attachment-only send is not such a case: a file with no caption has
@@ -26,6 +26,7 @@ import { waitFor } from '@testing-library/react';
 
 import {
   createBaseConfig,
+  getChatShadowRoot,
   renderChatAndGetInstanceWithStore,
   setupAfterEach,
   setupBeforeEach,
@@ -168,7 +169,7 @@ describe('silent send', () => {
 
     function sendButton(): HTMLButtonElement | null {
       return deepQuery(
-        document.querySelector('cds-aichat-react')?.shadowRoot ?? null,
+        getChatShadowRoot(),
         'button[aria-label="Send message"]'
       ) as HTMLButtonElement | null;
     }

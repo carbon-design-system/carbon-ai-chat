@@ -1,0 +1,85 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks';
+
+import { cdnJs, cdnCss } from '../../../globals/internal/storybook-cdn';
+import * as InputStories from './input.stories';
+
+<Meta of={InputStories} />
+
+# Chat shell input
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/chat-shell) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Component API](#component-api)
+- [JS (via import)](#js-via-import)
+- [JS (via CDN)](#js-via-cdn)
+- [Feedback](#feedback)
+
+## Overview
+
+Use [Prompt line shell](?path=/docs/preview-prompt-line--overview) in the `slot="input"` of `cds-aichat-shell` to compose a full input area. The prompt line shell has two layouts: compact (single row) and expanded (with an actions row beneath it). It exposes named slots for `editor`, `message-actions`, `file-uploads`, `autocomplete-content`, `field-messaging`, and `send-control`.
+
+### Getting started
+
+Here's a quick example to get you started.
+
+```html
+<cds-aichat-shell>
+  <div slot="header">Chat Header</div>
+  <div slot="messages">Messages</div>
+
+  <cds-aichat-prompt-line-shell slot="input">
+    <cds-aichat-prompt-line
+      slot="editor"
+      placeholder="Ask a question"></cds-aichat-prompt-line>
+    <cds-aichat-input-send-control slot="send-control" button-label="Send">
+    </cds-aichat-input-send-control>
+  </cds-aichat-prompt-line-shell>
+</cds-aichat-shell>
+```
+
+### Expanded layout with message actions
+
+```html
+<cds-aichat-shell>
+  <div slot="header">Chat Header</div>
+  <div slot="messages">Messages</div>
+
+  <cds-aichat-prompt-line-shell slot="input" expanded>
+    <cds-aichat-prompt-line
+      slot="editor"
+      placeholder="Ask a question"></cds-aichat-prompt-line>
+
+    <!-- slot="message-actions" content appears at the start of the actions row -->
+    <div slot="message-actions">
+      <cds-icon-button size="sm" kind="ghost">
+        <svg slot="icon"><!-- icon --></svg>
+        <span slot="tooltip-content">Summarize</span>
+      </cds-icon-button>
+    </div>
+
+    <cds-aichat-input-send-control slot="send-control" button-label="Send">
+    </cds-aichat-input-send-control>
+  </cds-aichat-prompt-line-shell>
+</cds-aichat-shell>
+```
+
+## Component API
+
+For the full component API including all props, slots, and events, see the [Prompt line](?path=/docs/preview-prompt-line--overview#component-api) overview.
+
+## JS (via import)
+
+```javascript
+import '@carbon/ai-chat-components/es/components/chat-shell/index.js';
+import '@carbon/ai-chat-components/es/components/prompt-line/index.js';
+```
+
+<Markdown>{`${cdnJs(['chat-shell', 'prompt-line'])}`}</Markdown>
+<Markdown>{`${cdnCss()}`}</Markdown>
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

@@ -192,7 +192,7 @@ check(program.args, options).then(
     process.exit(0);
   },
   (error) => {
-    console.error(error); // eslint-disable-line no-console
+    console.error(error);
     process.exit(1);
   }
 );

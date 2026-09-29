@@ -40,23 +40,6 @@
     'card-border-radius',
     component.$card-border-radius
   );
-  @include utilities.declaration('border-radius', component.$border-radius);
-  @include utilities.declaration(
-    'border-radius-start-start',
-    component.$border-radius-start-start
-  );
-  @include utilities.declaration(
-    'border-radius-start-end',
-    component.$border-radius-start-end
-  );
-  @include utilities.declaration(
-    'border-radius-end-start',
-    component.$border-radius-end-start
-  );
-  @include utilities.declaration(
-    'border-radius-end-end',
-    component.$border-radius-end-end
-  );
 }
 
 // ============================================================================

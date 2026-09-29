@@ -54,6 +54,8 @@ Pick by **the file you are editing**, never by the package's dependency list: `@
 
 The vendored `carbon-builder` skill instructs "Default to **React** unless the user specifies Web Components." That default is wrong for most of this repo, and the table above overrides it. Take its JSX verbatim only in the React rows; anywhere else treat a React snippet as a translation hint and rewrite it as Lit before saving. Pass `filters.component_type` on every Carbon MCP call, or results mix flavors and you adopt the wrong snippet.
 
+**Follow repository verification gates.** The skill's "no tests" and "stop after emitting the requested files" defaults do not apply here. Complete the applicable [definition-of-done.md](definition-of-done.md) gate, including tests, docs, and review required by the change. Keep these overrides here; do not edit the vendored skill.
+
 ## Naming & prefix discipline (build-breaking)
 
 Never hardcode `cds--` in SCSS or TSX class strings — the `es-custom` build re-prefixes (`cds--custom`) and a literal `cds--` slips through unchanged, breaking that bundle.

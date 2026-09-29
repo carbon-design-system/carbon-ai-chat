@@ -120,7 +120,7 @@ describe('ChatInstance.messaging.restartConversation', () => {
 
       // Wait for send to complete/cancel
       await sendPromise.catch(() => {
-        /* Expected to be cancelled */
+        /* Expected to be canceled */
       });
 
       // Verify abort was triggered with correct reason
@@ -241,7 +241,7 @@ describe('ChatInstance.messaging.restartConversation', () => {
       // Restart conversation while streaming is in progress
       await instance.messaging.restartConversation();
 
-      // Wait for first send to be cancelled
+      // Wait for first send to be canceled
       await send1.catch(() => {});
 
       // Send a new message after restart
@@ -316,7 +316,7 @@ describe('ChatInstance.messaging.restartConversation', () => {
       await instance.messaging.restartConversation();
       await instance.messaging.restartConversation();
 
-      // Wait for first message to be cancelled
+      // Wait for first message to be canceled
       await send1.catch(() => {});
 
       // Send final message

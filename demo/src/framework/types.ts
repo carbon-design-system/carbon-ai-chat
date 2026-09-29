@@ -11,7 +11,6 @@ interface Settings {
   framework: 'react' | 'web-component';
   layout: 'float' | 'sidebar' | 'fullscreen';
   writeableElements: 'true' | 'false';
-  hideDefaultAiLabelContent?: 'true' | 'false';
   /**
    * Renders markdown tables through `markdown.customRenderers.table` instead
    * of the built-in Carbon table. Exists for the Playwright case that proves a

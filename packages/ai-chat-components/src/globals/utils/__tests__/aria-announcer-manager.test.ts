@@ -9,7 +9,10 @@
 
 import { expect } from '@open-wc/testing';
 
-import { AriaAnnouncerManager } from '../aria-announcer-manager.js';
+import {
+  AriaAnnouncerManager,
+  mountAriaAnnouncer,
+} from '../aria-announcer-manager.js';
 
 const DEBOUNCE_MS = 250;
 const SLACK_MS = 50;
@@ -191,5 +194,130 @@ describe('AriaAnnouncerManager – politeness', function () {
 
     expect(polite[0].textContent).to.equal('p');
     expect(assertive[0].textContent).to.equal('a');
+  });
+});
+
+describe('mountAriaAnnouncer', function () {
+  let container: HTMLDivElement;
+
+  beforeEach(() => {
+    container = document.createElement('div');
+    document.body.appendChild(container);
+  });
+
+  afterEach(() => {
+    container.remove();
+  });
+
+  it('creates the requested number of polite regions', () => {
+    const handle = mountAriaAnnouncer(container, { politeCount: 3 });
+    const politeRegions = container.querySelectorAll('[aria-live="polite"]');
+    expect(politeRegions.length).to.equal(3);
+    handle.disconnect();
+  });
+
+  it('creates the requested number of assertive regions', () => {
+    const handle = mountAriaAnnouncer(container, {
+      politeCount: 1,
+      assertiveCount: 2,
+    });
+    const assertiveRegions = container.querySelectorAll(
+      '[aria-live="assertive"]'
+    );
+    expect(assertiveRegions.length).to.equal(2);
+    handle.disconnect();
+  });
+
+  it('defaults to 1 polite region and 0 assertive regions', () => {
+    const handle = mountAriaAnnouncer(container);
+    expect(container.querySelectorAll('[aria-live="polite"]').length).to.equal(
+      1
+    );
+    expect(
+      container.querySelectorAll('[aria-live="assertive"]').length
+    ).to.equal(0);
+    handle.disconnect();
+  });
+
+  it('routes a polite announce to the polite region', async () => {
+    const handle = mountAriaAnnouncer(container, { politeCount: 1 });
+    const politeRegion = container.querySelector(
+      '[aria-live="polite"]'
+    ) as HTMLDivElement;
+
+    handle.announce('status update');
+    await wait(WAIT_MS);
+
+    expect(politeRegion.textContent).to.equal('status update');
+    handle.disconnect();
+  });
+
+  it('routes an assertive announce to the assertive region', async () => {
+    const handle = mountAriaAnnouncer(container, {
+      politeCount: 1,
+      assertiveCount: 1,
+    });
+    const assertiveRegion = container.querySelector(
+      '[aria-live="assertive"]'
+    ) as HTMLDivElement;
+    const politeRegion = container.querySelector(
+      '[aria-live="polite"]'
+    ) as HTMLDivElement;
+
+    handle.announce('blocking error', 'assertive');
+    await wait(WAIT_MS);
+
+    expect(assertiveRegion.textContent).to.equal('blocking error');
+    expect(politeRegion.textContent).to.equal('');
+    handle.disconnect();
+  });
+
+  it('disconnect cancels pending timers and removes created regions', async () => {
+    const politeRegion = document.createElement('div');
+    container.appendChild(politeRegion);
+
+    const handle = mountAriaAnnouncer(container, {
+      politeCount: 2,
+      assertiveCount: 1,
+    });
+
+    // Capture a reference to one of the created regions before they are removed.
+    const createdRegion = container.querySelector(
+      '[aria-live]'
+    ) as HTMLDivElement;
+
+    handle.announce('dropped');
+    handle.disconnect();
+    await wait(WAIT_MS);
+
+    // All created live regions are removed from the container.
+    expect(container.querySelectorAll('[aria-live]').length).to.equal(0);
+    // The pending message was not written after disconnect.
+    expect(createdRegion.textContent).to.equal('');
+  });
+
+  it('sets aria-atomic on regions when ariaAtomic is true', () => {
+    const handle = mountAriaAnnouncer(container, {
+      politeCount: 1,
+      assertiveCount: 1,
+      ariaAtomic: true,
+    });
+    const regions = container.querySelectorAll('[aria-live]');
+    regions.forEach((region) => {
+      expect(region.getAttribute('aria-atomic')).to.equal('true');
+    });
+    handle.disconnect();
+  });
+
+  it('omits aria-atomic when ariaAtomic is false (default)', () => {
+    const handle = mountAriaAnnouncer(container, {
+      politeCount: 1,
+      assertiveCount: 1,
+    });
+    const regions = container.querySelectorAll('[aria-live]');
+    regions.forEach((region) => {
+      expect(region.hasAttribute('aria-atomic')).to.equal(false);
+    });
+    handle.disconnect();
   });
 });

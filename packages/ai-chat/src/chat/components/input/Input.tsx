@@ -292,6 +292,39 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     [intl]
   );
 
+  // Interpolated here rather than in the component so a translation can order
+  // the name however its language needs.
+  const getRemoveFileLabel = useMemo(
+    () =>
+      ({ name }: { name?: string }) =>
+        name
+          ? intl.formatMessage(
+              { id: 'fileSharing_removeButtonTitleWithName' },
+              { filename: name }
+            )
+          : languagePack.fileSharing_removeButtonTitle,
+    [intl, languagePack.fileSharing_removeButtonTitle]
+  );
+
+  // Mirrors the composition in `AppShell`'s `inputError`, so the announcement and
+  // the on-screen message cannot drift apart. The title is punctuated so a screen
+  // reader pauses before the reason instead of running the two together.
+  const getFileUploadFailureText = useMemo(
+    () =>
+      ({ messages }: { messages: string[] }) =>
+        [
+          `${languagePack.fileSharing_uploadErrorTitle}.`,
+          ...messages,
+          languagePack.fileSharing_uploadErrorRecovery,
+        ]
+          .filter(Boolean)
+          .join(' '),
+    [
+      languagePack.fileSharing_uploadErrorTitle,
+      languagePack.fileSharing_uploadErrorRecovery,
+    ]
+  );
+
   // Get chat width breakpoint and height to determine autocomplete settings
   const chatWidthBreakpoint = useSelector(
     (state: AppState) => state.chatWidthBreakpoint
@@ -488,32 +521,33 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     onUserTyping?.(isTyping);
   };
 
-  const { onTriggerChange, autocompleteContent } = useChatAutocomplete({
-    mention: normalizedMention,
-    command: normalizedCommand,
-    autocomplete: normalizedAutocomplete,
-    starters: normalizedStarters,
-    promptLineRef,
-    isSendDisabled: isSendDisabledFromConfig,
-    attached: chatWidthBreakpoint !== ChatWidthBreakpoint.WIDE,
-    maxHeight: `${Math.floor(chatHeight * 0.4)}px`,
-    onStarterSelected: (text) => {
-      // Reflect the inserted text into local state so send-gating reads it,
-      // then run the same send path used elsewhere.
-      setRawInputValue(text);
-      rawInputValueRef.current = text;
-      sendCurrentValue();
-    },
-    onSendItem: (text) => {
-      setRawInputValue(text);
-      rawInputValueRef.current = text;
-      // The autocomplete item's text is both the sent value and the display
-      // value — discard any stale editor JSONContent so the bubble doesn't
-      // render the old typed text instead of the selected item.
-      displayContentRef.current = null;
-      sendCurrentValue();
-    },
-  });
+  const { onTriggerChange, autocompleteContent, isListNavigated } =
+    useChatAutocomplete({
+      mention: normalizedMention,
+      command: normalizedCommand,
+      autocomplete: normalizedAutocomplete,
+      starters: normalizedStarters,
+      promptLineRef,
+      isSendDisabled: isSendDisabledFromConfig,
+      attached: chatWidthBreakpoint !== ChatWidthBreakpoint.WIDE,
+      maxHeight: `${Math.floor(chatHeight * 0.4)}px`,
+      onStarterSelected: (text) => {
+        // Reflect the inserted text into local state so send-gating reads it,
+        // then run the same send path used elsewhere.
+        setRawInputValue(text);
+        rawInputValueRef.current = text;
+        sendCurrentValue();
+      },
+      onSendItem: (text) => {
+        setRawInputValue(text);
+        rawInputValueRef.current = text;
+        // The autocomplete item's text is both the sent value and the display
+        // value — discard any stale editor JSONContent so the bubble doesn't
+        // render the old typed text instead of the selected item.
+        displayContentRef.current = null;
+        sendCurrentValue();
+      },
+    });
 
   useInputImperativeHandle({
     ref,
@@ -575,19 +609,34 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
       return null;
     }
 
+    const hasUploadError =
+      pendingUploads?.some((upload) => upload.isError) ?? false;
+
     const announcement = error.description
       ? `${error.title}. ${error.description}`
       : error.title;
 
+    const errorMessage = (
+      <ErrorMessage
+        fullscreen={chatWidthBreakpoint === ChatWidthBreakpoint.WIDE}
+        title={error.title}
+        description={error?.description}
+        collapsible={error?.collapsible}
+      />
+    );
+
     return (
       <div slot="field-messaging">
-        <AnnounceOnMount announceOnce={announcement}>
-          <ErrorMessage
-            fullscreen={chatWidthBreakpoint === ChatWidthBreakpoint.WIDE}
-            title={error.title}
-            description={error?.description}
-            collapsible={error?.collapsible}
-          />
+        {/*
+          <FileUploads> announces upload failures itself, so this wrapper goes
+          silent for them — otherwise its announcer call and its own live region
+          would each repeat the text. Kept mounted rather than swapped out: a
+          changed element type here remounts it, and a remount re-announces.
+        */}
+        <AnnounceOnMount
+          live={!hasUploadError}
+          announceOnce={hasUploadError ? undefined : announcement}>
+          {errorMessage}
         </AnnounceOnMount>
       </div>
     );
@@ -709,12 +758,13 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
           slot="file-uploads"
           uploads={pendingUploads || EMPTY_UPLOADS}
           removeFileLabel={languagePack.fileSharing_removeButtonTitle}
+          getRemoveFileLabel={getRemoveFileLabel}
           uploadingFileLabel={languagePack.fileSharing_statusUploading}
           getFilesAddedText={getFilesAddedText}
           getFilesUploadingText={getFilesUploadingText}
           fileRemovedLabel={languagePack.fileSharing_ariaAnnounceFileRemoved}
           uploadSuccessLabel={languagePack.fileSharing_ariaAnnounceSuccess}
-          uploadFailureLabel={languagePack.fileSharing_uploadFailed}
+          getFileUploadFailureText={getFileUploadFailureText}
           onFileRemove={handleRemoveFile}
         />
       )}
@@ -734,7 +784,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
         slot="send-control"
         hasValidInput={hasValidInput}
         disabled={disableInput}
-        disableSend={effectiveDisableSend}
+        disableSend={effectiveDisableSend || isListNavigated}
         isStopStreamingButtonVisible={isStopStreamingButtonVisible}
         isStopStreamingButtonDisabled={isStopStreamingButtonDisabled}
         buttonLabel={languagePack.input_buttonLabel}

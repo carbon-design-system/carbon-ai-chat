@@ -31,6 +31,11 @@
 
 const fs = require('fs');
 const path = require('path');
+const {
+  checkLocalLink,
+  extractLinks,
+  withoutFencedCode,
+} = require('./guidance-links-lib');
 
 const REPO_ROOT = path.join(__dirname, '..');
 const CANONICAL_DIR = '.bob/skills';
@@ -40,6 +45,15 @@ const MIRROR_DIRS = ['.claude/skills', '.agents/skills'];
 // shape-checked like any other, but its internal links belong to its upstream
 // author, so they are not ours to lint.
 const OWNED_SKILL_PREFIX = 'caic-';
+
+// The same per-file budget AGENTS.md files carry. A skill body loads on
+// invocation rather than into an always-on chain, so it is not competing for
+// context the way an ancestor AGENTS.md is — but a body that has to be read
+// end-to-end before the first step still spends every one of its bytes on every
+// invocation. Anything a given run may not need belongs in references/, behind
+// a "read when…" trigger. Vendored skills are exempt: ownedSkills already
+// filters them out, and their length is their upstream author's call.
+const MAX_FILE_BYTES = 12 * 1024;
 
 const fix = process.argv.includes('--fix');
 
@@ -160,6 +174,47 @@ function skillDirs() {
     .sort();
 }
 
+function formatBytes(bytes) {
+  return `${(bytes / 1024).toFixed(1)} KiB`;
+}
+
+// Budget the body and each of its supporting files separately. A skill that
+// moves half its body into one oversized reference has relocated the cost, not
+// removed it, so references/ is held to the same ceiling.
+function validateSkillBudget(name) {
+  const dir = path.join(REPO_ROOT, CANONICAL_DIR, name);
+  const targets = [`${CANONICAL_DIR}/${name}/SKILL.md`];
+  const refsDir = path.join(dir, 'references');
+  if (fs.existsSync(refsDir)) {
+    for (const entry of fs.readdirSync(refsDir).sort()) {
+      if (entry.endsWith('.md')) {
+        targets.push(`${CANONICAL_DIR}/${name}/references/${entry}`);
+      }
+    }
+  }
+
+  let checked = 0;
+  for (const file of targets) {
+    const fullPath = path.join(REPO_ROOT, file);
+    if (!fs.existsSync(fullPath)) {
+      continue;
+    }
+    checked += 1;
+    const bytes = fs.statSync(fullPath).size;
+    if (bytes > MAX_FILE_BYTES) {
+      error(
+        file,
+        `${formatBytes(bytes)} exceeds the ${formatBytes(
+          MAX_FILE_BYTES
+        )} per-file budget by ${formatBytes(
+          bytes - MAX_FILE_BYTES
+        )}. Move the rubrics, worked examples, and per-case rules a given run may not need into ${CANONICAL_DIR}/${name}/references/, and link them with a "read when…" trigger.`
+      );
+    }
+  }
+  return checked;
+}
+
 function validateSkillShape(name) {
   const file = `${CANONICAL_DIR}/${name}/SKILL.md`;
   const fullPath = path.join(REPO_ROOT, file);
@@ -225,73 +280,26 @@ function isPlaceholder(target) {
   );
 }
 
-// GitHub's heading-anchor rules: lowercase, drop punctuation other than hyphen
-// and underscore, then turn each remaining space into a hyphen. Spaces are not
-// e.g. "Naming & prefix discipline" anchors as "naming--prefix-discipline".
-function slugify(heading) {
-  return heading
-    .trim()
-    .toLowerCase()
-    .replace(/`/g, '')
-    .replace(/[^\w\s-]/g, '')
-    .replace(/\s/g, '-');
+function validateMarkdownLinks(file, content) {
+  for (const link of extractLinks(content)) {
+    const { problem } = checkLocalLink(REPO_ROOT, file, link.url);
+    if (problem) {
+      error(file, `Broken link: [${link.text}](${link.url}) -> ${problem}`);
+    }
+  }
 }
 
-function headingSlugs(filePath) {
-  const slugs = new Set();
-  let inFence = false;
-  for (const line of fs.readFileSync(filePath, 'utf-8').split('\n')) {
-    if (/^\s*```/.test(line)) {
-      inFence = !inFence;
-      continue;
-    }
-    if (inFence) {
-      continue;
-    }
-    const heading = line.match(/^#{1,6}\s+(.+?)\s*$/);
-    if (heading) {
-      slugs.add(slugify(heading[1]));
-    }
-  }
-  return slugs;
-}
-
-// `file` is only where the finding gets reported; `baseDir` is what the target
-// resolves against, which differs between markdown links (relative to their own
-// file) and backtick paths (written from the repo root).
-function checkTarget(file, baseDir, target, description) {
-  if (
-    /^(https?:)?\/\//.test(target) ||
-    target.startsWith('#') ||
-    target.startsWith('mailto:')
-  ) {
+// Backtick paths describe repo-root files; they are not Markdown destinations.
+function checkFileReference(file, target) {
+  if (isPlaceholder(target)) {
     return;
   }
-
-  const withoutAnchor = target.split('#')[0];
-  if (!withoutAnchor || isPlaceholder(withoutAnchor)) {
-    return;
-  }
-
-  const resolved = path.resolve(baseDir, withoutAnchor);
+  const resolved = path.resolve(REPO_ROOT, target);
   if (!fs.existsSync(resolved)) {
     error(
       file,
-      `${description} ${target} does not resolve relative to ${path.relative(REPO_ROOT, baseDir) || '.'}.`
+      `Outdated file reference \`${target}\` -> does not resolve relative to the repository root.`
     );
-    return;
-  }
-
-  // A link into a heading that later gets renamed still resolves as a file, so
-  // check the anchor too — otherwise cross-file section links rot in silence.
-  const anchor = target.split('#')[1];
-  if (anchor && resolved.endsWith('.md') && fs.statSync(resolved).isFile()) {
-    if (!headingSlugs(resolved).has(anchor)) {
-      error(
-        file,
-        `${description} ${target} resolves, but ${path.relative(REPO_ROOT, resolved)} has no heading anchored at #${anchor}.`
-      );
-    }
   }
 }
 
@@ -303,30 +311,15 @@ function validateSkillLinks(name) {
 
   for (const relative of markdown) {
     const file = `${CANONICAL_DIR}/${name}/${relative}`;
-    const content = fs.readFileSync(path.join(skillRoot, relative), 'utf-8');
-
-    const fileDir = path.dirname(path.join(skillRoot, relative));
-
-    const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
-    let match;
-    while ((match = linkRegex.exec(content)) !== null) {
-      checkTarget(
-        file,
-        fileDir,
-        match[2],
-        `Broken link: [${match[1]}](${match[2]}) ->`
-      );
-    }
+    const content = withoutFencedCode(
+      fs.readFileSync(path.join(skillRoot, relative), 'utf-8')
+    );
+    validateMarkdownLinks(file, content);
 
     const fileRefRegex =
       /`([a-zA-Z0-9_\-./]+\.(ts|tsx|js|jsx|cjs|mjs|md|json|yml|yaml|scss|css))`/g;
-    while ((match = fileRefRegex.exec(content)) !== null) {
-      checkTarget(
-        file,
-        REPO_ROOT,
-        match[1],
-        `Outdated file reference \`${match[1]}\` ->`
-      );
+    for (const match of content.matchAll(fileRefRegex)) {
+      checkFileReference(file, match[1]);
     }
   }
 }
@@ -344,16 +337,7 @@ function validateCollectionDocs() {
     }
     const file = `${CANONICAL_DIR}/${entry.name}`;
     const content = fs.readFileSync(path.join(root, entry.name), 'utf-8');
-    const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
-    let match;
-    while ((match = linkRegex.exec(content)) !== null) {
-      checkTarget(
-        file,
-        root,
-        match[2],
-        `Broken link: [${match[1]}](${match[2]}) ->`
-      );
-    }
+    validateMarkdownLinks(file, content);
   }
 }
 
@@ -415,10 +399,17 @@ const mirrorDrifted = errors > errorsBeforeMirror;
 for (const name of skills) {
   validateSkillShape(name);
 }
+let budgetedFiles = 0;
 for (const name of ownedSkills) {
   validateSkillLinks(name);
+  budgetedFiles += validateSkillBudget(name);
 }
 validateCollectionDocs();
+info(
+  `Checked ${budgetedFiles} owned skill files against the ${formatBytes(
+    MAX_FILE_BYTES
+  )} per-file budget.`
+);
 
 console.log('\n' + '='.repeat(60));
 console.log(`✅ Validation complete: ${errors} errors`);

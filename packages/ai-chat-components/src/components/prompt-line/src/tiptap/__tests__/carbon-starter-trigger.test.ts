@@ -13,7 +13,11 @@ import DocumentNode from '@tiptap/extension-document';
 import ParagraphNode from '@tiptap/extension-paragraph';
 import TextNode from '@tiptap/extension-text';
 
-import { carbonStarterTrigger } from '../carbon-starter-trigger.js';
+import {
+  carbonStarterTrigger,
+  readStarterStorage,
+  writeStarterStorage,
+} from '../carbon-starter-trigger.js';
 import type { TriggerChangeEventDetail } from '../types.js';
 
 const ITEMS = [
@@ -55,8 +59,22 @@ function flushMacrotask(): Promise<void> {
 }
 
 describe('tiptap/carbon-starter-trigger', function () {
+  let cleanup: (() => void) | undefined;
+  let initialBodyChildCount: number;
+
+  beforeEach(() => {
+    initialBodyChildCount = document.body.childElementCount;
+  });
+
+  afterEach(() => {
+    cleanup?.();
+    cleanup = undefined;
+    expect(document.body.childElementCount).to.equal(initialBodyChildCount);
+  });
+
   it('emits a starter trigger when the editor is focused and empty', () => {
-    const { editor, events, cleanup } = makeEditor();
+    const { editor, events, cleanup: c } = makeEditor();
+    cleanup = c;
 
     editor.view.dom.focus();
 
@@ -66,7 +84,6 @@ describe('tiptap/carbon-starter-trigger', function () {
       query: '',
       triggerOffset: 0,
     });
-    cleanup();
   });
 
   it('stays silent while the list is empty', () => {
@@ -74,16 +91,17 @@ describe('tiptap/carbon-starter-trigger', function () {
     // emptying `items` is a storage write rather than an editor recreate. The
     // emission stays gated on the list, or those hosts get a starter trigger
     // with nothing behind it.
-    const { editor, events, cleanup } = makeEditor([]);
+    const { editor, events, cleanup: c } = makeEditor([]);
+    cleanup = c;
 
     editor.view.dom.focus();
 
     expect(events).to.have.lengthOf(0);
-    cleanup();
   });
 
   it('emits null when the editor has content', () => {
-    const { editor, events, cleanup } = makeEditor();
+    const { editor, events, cleanup: c } = makeEditor();
+    cleanup = c;
 
     editor.view.dom.focus();
     editor.commands.insertContent('hello');
@@ -91,7 +109,6 @@ describe('tiptap/carbon-starter-trigger', function () {
 
     const last = events[events.length - 1];
     expect(last).to.equal(null);
-    cleanup();
   });
 
   it("does not dismiss on blur — blur dismissal is the controller's responsibility", async () => {
@@ -99,7 +116,8 @@ describe('tiptap/carbon-starter-trigger', function () {
     // blur/refocus cycle), so the trigger cannot use it reliably.
     // Genuine blur-to-dismiss is handled by
     // AutocompleteController._handleEditorFocusOut instead.
-    const { editor, events, cleanup } = makeEditor();
+    const { editor, events, cleanup: c } = makeEditor();
+    cleanup = c;
 
     editor.view.dom.focus();
     events.length = 0;
@@ -110,6 +128,17 @@ describe('tiptap/carbon-starter-trigger', function () {
     // No null should be emitted by the trigger itself on blur.
     const nullEvents = events.filter((e) => e === null);
     expect(nullEvents.length).to.equal(0);
-    cleanup();
+  });
+
+  it('keeps a storage write made before the editor finishes creating', async () => {
+    // Tiptap emits `create` a macrotask after construction. A host config
+    // update can land in that gap and must not be reset by it.
+    const { editor, cleanup: c } = makeEditor();
+    cleanup = c;
+
+    writeStarterStorage(editor, { isOn: false });
+    await flushMacrotask();
+
+    expect(readStarterStorage(editor)?.isOn).to.equal(false);
   });
 });

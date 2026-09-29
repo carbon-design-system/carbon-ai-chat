@@ -171,4 +171,31 @@ test.describe('user_defined responses - legacy event path (React)', () => {
       timeout: 30000,
     });
   });
+
+  test('removes React user_defined content when the conversation restarts', async ({
+    page,
+  }) => {
+    test.slow();
+
+    await page.goto('/?settings=%7B%22layout%22%3A%22float%22%7D');
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForFunction(() => Boolean(window.chatInstance), {
+      timeout: 10000,
+    });
+
+    await openChatViaLauncher(page);
+    await expect(page.getByTestId(PageObjectId.MAIN_PANEL)).toBeVisible();
+    await sendChatMessage(page, 'user_defined');
+    await expect(page.locator('.external').first()).toBeVisible({
+      timeout: 15000,
+    });
+
+    await page.evaluate(() =>
+      window.chatInstance?.messaging.restartConversation()
+    );
+
+    // The content lived in the page's light DOM, outside the transcript, so
+    // hiding the transcript would not remove it.
+    await expect(page.locator('.external')).toHaveCount(0, { timeout: 15000 });
+  });
 });

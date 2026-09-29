@@ -61,6 +61,11 @@ export interface UploadConfig {
    * {@link LanguagePack}, so don't repeat the recovery step in your own message.
    * Reword either one through {@link PublicConfig.strings}.
    *
+   * The same two keys and your message make up the screen-reader announcement,
+   * which is assertive because a failed upload blocks sending.
+   * `fileSharing_uploadFailed` does not reach this path — it belongs to the
+   * human-agent file transfer.
+   *
    * @param file - The `File` object selected by the user.
    * @param abortSignal - Fires if the user removes the pending upload before it
    *   completes, or if the chat is destroyed.

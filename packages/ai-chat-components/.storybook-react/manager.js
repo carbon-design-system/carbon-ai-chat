@@ -9,7 +9,10 @@
 
 import { addons } from 'storybook/manager-api';
 import storybookTheme from './theme';
+import { registerVersionSwitcher } from '../.storybook/version-switcher';
 
 addons.setConfig({
   theme: storybookTheme,
 });
+
+registerVersionSwitcher('react');

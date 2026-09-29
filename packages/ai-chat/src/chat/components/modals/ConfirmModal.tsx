@@ -9,12 +9,18 @@
 
 import Button, { BUTTON_KIND } from '../carbon/Button';
 import FocusTrap from 'focus-trap-react';
-import React, { Component, createRef, KeyboardEvent, RefObject } from 'react';
+import React, {
+  Component,
+  createRef,
+  KeyboardEvent,
+  RefObject,
+  useEffect,
+} from 'react';
 import type CarbonButtonElement from '@carbon/web-components/es/components/button/button.js';
 
 import { ModalPortal } from './ModalPortal';
 import { HasServiceManager } from '../../hocs/withServiceManager';
-import { AriaLiveMessage } from '../aria/AriaLiveMessage';
+import { useAriaAnnouncer } from '../../hooks/useAriaAnnouncer';
 
 /**
  * This component is a panel that is display in the messages list when the user clicks the "end chat" button that is
@@ -165,7 +171,7 @@ class ConfirmModal extends Component<
             aria-labelledby={`cds-aichat--confirm-modal__title${serviceManager.namespace.suffix}`}
             aria-describedby={`cds-aichat--confirm-modal__message${serviceManager.namespace.suffix}`}>
             <div className="cds-aichat--confirm-modal__container">
-              <AriaLiveMessage message={modalAnnounceMessage} />
+              <ModalAnnounce message={modalAnnounceMessage} />
               <div
                 className="cds-aichat--confirm-modal__title"
                 id={`cds-aichat--confirm-modal__title${serviceManager.namespace.suffix}`}>
@@ -208,6 +214,20 @@ class ConfirmModal extends Component<
       clearTimeout(this.focusTimer);
     }
   }
+}
+
+/**
+ * Thin functional helper that announces the modal's appearance to screen readers
+ * on mount and whenever the message changes.
+ */
+function ModalAnnounce({ message }: { message: string }): null {
+  const ariaAnnouncer = useAriaAnnouncer();
+  useEffect(() => {
+    if (ariaAnnouncer && message) {
+      ariaAnnouncer(message);
+    }
+  }, [ariaAnnouncer, message]);
+  return null;
 }
 
 export { ConfirmModal, ConfirmModalButtonProps };

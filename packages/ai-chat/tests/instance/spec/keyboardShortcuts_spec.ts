@@ -9,6 +9,7 @@
 
 import {
   createBaseConfig,
+  getChatShadowRoot,
   renderChatAndGetInstanceWithStore,
   setupAfterEach,
   setupBeforeEach,
@@ -77,7 +78,7 @@ async function bootChat(
     });
   }
 
-  const root = document.querySelector('cds-aichat-react').shadowRoot;
+  const root = getChatShadowRoot();
   const widget = root.querySelector<HTMLElement>('.cds-aichat--widget');
   const input = root.querySelector<HTMLElement>('[data-testid="input_field"]');
 

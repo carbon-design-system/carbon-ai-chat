@@ -14,17 +14,6 @@ import '../../toolbar/src/toolbar';
 import { html, nothing } from 'lit';
 import styles from './story-styles.scss?lit';
 
-// Core slots for Default, No Header, and Panels stories
-const coreSlotContent = html`
-  <cds-aichat-toolbar slot="header">
-    <div slot="title">Header</div>
-  </cds-aichat-toolbar>
-  <div slot="history" class="history slot-sample">History</div>
-  <div slot="workspace" class="workspace slot-sample">Workspace</div>
-  <div slot="messages" class="messages slot-sample">Messages</div>
-  <div slot="input" class="input slot-sample">Input</div>
-`;
-
 export default {
   title: 'Preview/Chat shell',
   args: {
@@ -91,43 +80,6 @@ export default {
   ],
 };
 
-export const Default = {
-  render: (args) => {
-    const {
-      aiEnabled,
-      showFrame,
-      cornerAll,
-      cornerStartStart,
-      cornerStartEnd,
-      cornerEndStart,
-      cornerEndEnd,
-      showHistory,
-      showWorkspace,
-      workspaceLocation,
-      historyLocation,
-      contentMaxWidth,
-    } = args;
-
-    return html`
-      <cds-aichat-shell
-        ?ai-enabled=${aiEnabled}
-        ?show-frame=${showFrame}
-        corner-all=${cornerAll}
-        corner-start-start=${cornerStartStart || nothing}
-        corner-start-end=${cornerStartEnd || nothing}
-        corner-end-start=${cornerEndStart || nothing}
-        corner-end-end=${cornerEndEnd || nothing}
-        ?show-history=${showHistory}
-        ?show-workspace=${showWorkspace}
-        ?content-max-width=${contentMaxWidth}
-        workspace-location=${workspaceLocation}
-        history-location=${historyLocation}>
-        ${coreSlotContent}
-      </cds-aichat-shell>
-    `;
-  },
-};
-
 // Slot configuration definitions
 const SLOT_CONFIGS = [
   { name: 'header', label: 'Header', hasCheckbox: true },
@@ -178,7 +130,7 @@ const createSlotElement = (slot, shouldRender) => {
   `;
 };
 
-export const Slots = {
+export const Default = {
   args: {
     messagesMaxWidth: '672px',
     messagesMinWidth: '320px',

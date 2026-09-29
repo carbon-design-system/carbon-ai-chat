@@ -14,7 +14,15 @@ import '@carbon/web-components/es/components/copy-button/copy-button.js';
 import '@carbon/web-components/es/components/overflow-menu/index.js';
 import '@carbon/web-components/es/components/content-switcher/index.js';
 
-import { Home16, ArrowLeft16, OverflowMenuVertical16 } from '@carbon/icons';
+import {
+  Home16,
+  ArrowLeft16,
+  OverflowMenuVertical16,
+  Star16,
+  StarFilled16,
+  Download16,
+  Close16,
+} from '@carbon/icons';
 
 import { html } from 'lit';
 import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
@@ -223,4 +231,51 @@ export const Default = {
       }
     </cds-aichat-toolbar>
   `,
+};
+
+export const Toggle = {
+  name: 'Toggleable actions',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates the usage of the `isSelected` prop on a toolbar action. Click star action to see the action selected state.',
+      },
+    },
+  },
+  render: () => {
+    let isOn = false;
+
+    const getActions = () => [
+      {
+        text: 'Favourite',
+        icon: isOn ? StarFilled16 : Star16,
+        size: 'md',
+        isSelected: isOn,
+        onClick: () => {
+          isOn = !isOn;
+          toolbar.actions = getActions();
+        },
+      },
+      {
+        text: 'Download',
+        icon: Download16,
+        size: 'md',
+        onClick: () => {},
+      },
+      {
+        text: 'Close',
+        fixed: true,
+        icon: Close16,
+        size: 'md',
+        onClick: () => {},
+      },
+    ];
+
+    const toolbar = document.createElement('cds-aichat-toolbar');
+    toolbar.setAttribute('overflow', '');
+    toolbar.actions = getActions();
+
+    return toolbar;
+  },
 };

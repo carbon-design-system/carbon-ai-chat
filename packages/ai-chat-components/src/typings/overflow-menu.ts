@@ -45,4 +45,9 @@ export interface BaseOverflowMenuItem extends Partial<
    * Optional data-testid string for e2e testing.
    */
   testId?: string;
+
+  /**
+   * Optional ID
+   */
+  id?: string;
 }

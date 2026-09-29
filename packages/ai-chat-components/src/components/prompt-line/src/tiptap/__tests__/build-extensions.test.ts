@@ -42,14 +42,30 @@ function makeEditor(extensions: Extension[]) {
 }
 
 describe('buildCarbonExtensions — trigger coexistence', function () {
+  let cleanup: (() => void) | undefined;
+  let initialBodyChildCount: number;
+
+  beforeEach(() => {
+    initialBodyChildCount = document.body.childElementCount;
+  });
+
+  afterEach(() => {
+    cleanup?.();
+    cleanup = undefined;
+    expect(document.body.childElementCount).to.equal(initialBodyChildCount);
+  });
+
   it('mention trigger fires as "mention" when autocomplete is also enabled', () => {
     const extensions = buildCarbonExtensions({
       mention: { trigger: '@', items: ITEMS },
       autocomplete: { items: ITEMS },
     });
-    const { editor, events, cleanup } = makeEditor(
-      extensions as unknown as Extension[]
-    );
+    const {
+      editor,
+      events,
+      cleanup: c,
+    } = makeEditor(extensions as unknown as Extension[]);
+    cleanup = c;
 
     // Typing plain text first — should produce an autocomplete trigger.
     editor.commands.insertContent('hello');
@@ -66,7 +82,6 @@ describe('buildCarbonExtensions — trigger coexistence', function () {
       'mention',
       'Expected mention trigger, got ' + last?.type
     );
-    cleanup();
   });
 
   it('command trigger fires as "command" when autocomplete is also enabled — but only at start of input', () => {
@@ -74,9 +89,12 @@ describe('buildCarbonExtensions — trigger coexistence', function () {
       command: { trigger: '/', triggerPosition: 'start', items: ITEMS },
       autocomplete: { items: ITEMS },
     });
-    const { editor, events, cleanup } = makeEditor(
-      extensions as unknown as Extension[]
-    );
+    const {
+      editor,
+      events,
+      cleanup: c,
+    } = makeEditor(extensions as unknown as Extension[]);
+    cleanup = c;
 
     // '/' at the very start of input must open the command picker.
     editor.commands.insertContent('/');
@@ -96,6 +114,5 @@ describe('buildCarbonExtensions — trigger coexistence', function () {
       'autocomplete',
       'Expected autocomplete mid-sentence, got ' + midSentence?.type
     );
-    cleanup();
   });
 });

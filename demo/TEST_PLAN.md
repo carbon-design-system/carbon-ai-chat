@@ -86,6 +86,19 @@ We should be looking for what here can can automate, and as we do, we can remove
 - [ ] **user_defined (stream)**
 - [ ] **video**
 
+#### Message footers
+
+Run each in both frameworks (React and web component).
+
+Both footers follow the **Slot visibility** dropdown, so set it to "Show slots" first.
+
+- [ ] **Both directions:** send any message; a green box naming `renderCustomRequestFooter` appears beneath your message, and one naming `renderCustomMessageFooter` appears beneath the reply.
+- [ ] **Streamed reply:** send "text (stream)"; the reply's green box appears once the stream finishes.
+- [ ] **Restored conversation:** open a conversation from the history panel; both your messages and the replies carry green boxes.
+- [ ] **Attachment-only message:** send a message with a file and no text; no footer appears beneath it.
+- [ ] **Slots hidden:** switch to "Hide slots" with footers on screen; every green box goes away. Your messages lose the extra height; replies that arrived with the slots shown keep a small gap until the page reloads, and replies sent afterward have none.
+- [ ] **Restart:** restart the conversation and confirm no footer content is left behind.
+
 #### Markdown custom renderers
 
 Set **Chat Configuration → Markdown → Table rendering** to `customRenderers.table` in the sidebar (or deep-link it: append `markdownCustomRenderers` to the `settings` query param), then send **table**.

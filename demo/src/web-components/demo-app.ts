@@ -11,15 +11,17 @@ import '@carbon/web-components/es/components/ai-skeleton/index.js';
 import '@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js';
 import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
 import './user-defined-response-example';
-import './custom-footer-example';
 import './writeable-element-example';
+import type WriteableElementExample from './writeable-element-example';
 import './workspace-writeable-element-example';
 import './history-writeable-element-example';
 import './explainability-popover-example';
 
 import {
   BusEvent,
+  BusEventHistoryBegin,
   BusEventMessageItemCustom,
+  BusEventPreReceive,
   BusEventType,
   BusEventViewChange,
   BusEventViewPreChange,
@@ -33,6 +35,8 @@ import {
   UserDefinedItem,
   ViewType,
   WCMarkdown,
+  RenderCustomRequestFooterState,
+  WriteableElementName,
 } from '@carbon/ai-chat';
 // Raw CSS text of the shipped sidebar layout. demo-app keeps its shadow DOM, so
 // the compiled stylesheet is imported as a string (Vite `?raw`) and adopted
@@ -42,6 +46,7 @@ import { css, html, LitElement, PropertyValues, unsafeCSS } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { DeepPartial } from '../types/DeepPartial';
 
+import { addCustomFooterSlots } from '../framework/custom-footer-slots';
 import { Settings } from '../framework/types';
 import { MockServiceDesk } from '../mockServiceDesk/mockServiceDesk';
 
@@ -54,14 +59,10 @@ async function sleep(milliseconds: number) {
 const serviceDeskFactory = (parameters: ServiceDeskFactoryParameters) =>
   Promise.resolve(new MockServiceDesk(parameters) as ServiceDesk);
 
-interface CustomFooterSlotsMap {
-  [key: string]: CustomFooterSlot;
-}
-
-interface CustomFooterSlot {
-  messageItem: GenericItem;
-  additionalData?: Record<string, unknown>;
-}
+/**
+ * Returning null drops the footer the chat created, so a user message with slots hidden costs no extra height.
+ */
+const hideCustomRequestFooter = (): HTMLElement | null => null;
 
 /**
  * `DemoApp` is a custom Lit element representing usage of AI chat with a web component.
@@ -143,7 +144,7 @@ export class DemoApp extends LitElement {
   accessor instance!: ChatInstance;
 
   @state()
-  accessor customFooterSlotsMap: CustomFooterSlotsMap = {};
+  accessor customFooterSlotNames: string[] = [];
 
   @state()
   accessor valueFromParent: string = Date.now().toString();
@@ -292,6 +293,25 @@ export class DemoApp extends LitElement {
     // Notify parent component that instance is ready
     this.onChatInstanceReady?.(instance);
 
+    // Populate the explainability popover slots imperatively so that
+    // useWriteableElementPresence can detect them via the host node's children.
+    const popoverContentNode =
+      instance.writeableElements[
+        WriteableElementName.EXPLAINABILITY_POPOVER_CONTENT
+      ];
+    if (popoverContentNode && !popoverContentNode.firstChild) {
+      const el = document.createElement('explainability-popover-content');
+      popoverContentNode.appendChild(el);
+    }
+    const popoverActionsNode =
+      instance.writeableElements[
+        WriteableElementName.EXPLAINABILITY_POPOVER_ACTIONS
+      ];
+    if (popoverActionsNode && !popoverActionsNode.firstChild) {
+      const el = document.createElement('explainability-popover-actions');
+      popoverActionsNode.appendChild(el);
+    }
+
     this.instance.on({
       type: BusEventType.MESSAGE_ITEM_CUSTOM,
       handler: this.customButtonHandler,
@@ -301,6 +321,26 @@ export class DemoApp extends LitElement {
     this.instance.on({
       type: BusEventType.CUSTOM_FOOTER_SLOT,
       handler: this.customFooterHandler,
+    });
+    // With the slots shown, replies get a footer slot before the chat reads them: live ones on pre:receive, restored
+    // ones on history:begin, which never passes through pre:receive.
+    this.instance.on({
+      type: BusEventType.PRE_RECEIVE,
+      handler: (event: BusEvent) => {
+        if (this.settings.writeableElements === 'true') {
+          addCustomFooterSlots((event as BusEventPreReceive).data);
+        }
+      },
+    });
+    this.instance.on({
+      type: BusEventType.HISTORY_BEGIN,
+      handler: (event: BusEvent) => {
+        if (this.settings.writeableElements === 'true') {
+          (event as BusEventHistoryBegin).messages.forEach(
+            addCustomFooterSlots
+          );
+        }
+      },
     });
 
     // Listen for workspace pre-open event to expand sidebar
@@ -392,36 +432,70 @@ export class DemoApp extends LitElement {
 
   /**
    * Each custom footer event is tied to a slot deeply rendered with-in AI chat that is generated at runtime.
-   * Here we make sure we store all these slots along with their relevant data in order to be able to dynamically
-   * render the content to be slotted when this.renderCustomFooterSlots() is called in the render function.
+   * Here we make sure we store all these slot names in order to be able to dynamically render the content to be
+   * slotted when this.renderCustomFooterSlots() is called in the render function.
    */
   customFooterHandler = (event: any) => {
-    const { data } = event;
+    const { slotName } = event.data;
 
-    this.customFooterSlotsMap[data.slotName] = {
-      messageItem: data.messageItem,
-      additionalData: data.additionalData,
-    };
-
-    this.requestUpdate();
+    if (!this.customFooterSlotNames.includes(slotName)) {
+      this.customFooterSlotNames = [...this.customFooterSlotNames, slotName];
+    }
   };
 
   /**
-   * This renders each of the slots that were generated by the AI chat.
+   * This renders each of the slots that were generated by the AI chat. Like the writeable elements, the footers
+   * fill with a green box and follow the demo's slot-visibility toggle.
    */
   renderCustomFooterSlots() {
-    const customFooterSlotsKeyArray = Object.keys(this.customFooterSlotsMap);
+    if (this.settings.writeableElements !== 'true') {
+      return null;
+    }
 
-    return customFooterSlotsKeyArray.map((slotName) => {
-      const { messageItem, additionalData } =
-        this.customFooterSlotsMap[slotName];
+    return this.customFooterSlotNames.map(
+      (slotName) =>
+        html`<div slot=${slotName}>
+          <writeable-element-example
+            location="renderCustomMessageFooter"
+            .valueFromParent=${this.valueFromParent}></writeable-element-example>
+        </div>`
+    );
+  }
 
-      return html`<div slot=${slotName}>
-        <custom-footer-example
-          .messageItem=${messageItem}
-          .additionalData=${additionalData}></custom-footer-example>
-      </div>`;
-    });
+  /**
+   * One footer element per slot, so the callback below hands back the same node each time.
+   */
+  private requestFooters = new Map<string, WriteableElementExample>();
+
+  /**
+   * Called on every render, once per user message that has a footer slot. The library tracks the slot and manages
+   * the element's lifecycle, so there is no event handler and no slot map on this side — the contrast with the
+   * incoming footer above is the point. Returning the same element leaves the DOM alone.
+   */
+  renderCustomRequestFooterCallback = (
+    state: RenderCustomRequestFooterState
+  ): HTMLElement | null => {
+    let footer = this.requestFooters.get(state.slotName);
+    if (!footer) {
+      footer = document.createElement(
+        'writeable-element-example'
+      ) as WriteableElementExample;
+      footer.location = 'renderCustomRequestFooter';
+      this.requestFooters.set(state.slotName, footer);
+    }
+    footer.valueFromParent = this.valueFromParent;
+    return footer;
+  };
+
+  /**
+   * Which renderer the chat gets, by the demo's slot-visibility toggle. The two are separate functions because the
+   * chat only re-runs the renderer when the property it was handed changes: one function reading the setting would
+   * leave the footers already on screen as they were until the next message.
+   */
+  private get requestFooterRenderer() {
+    return this.settings.writeableElements === 'true'
+      ? this.renderCustomRequestFooterCallback
+      : hideCustomRequestFooter;
   }
 
   /**
@@ -431,12 +505,7 @@ export class DemoApp extends LitElement {
    * Workspace panel element is now using the workspace-writeable-element-example component. and we render it with custom example for demo purpose. but remember its a custom slot.
    */
   renderWriteableElementSlots() {
-    const ALWAYS_RENDER_KEYS = [
-      'workspacePanelElement',
-      'historyPanelElement',
-      'explainabilityPopoverContent',
-      'explainabilityPopoverActions',
-    ];
+    const ALWAYS_RENDER_KEYS = ['workspacePanelElement', 'historyPanelElement'];
     const elements = this.instance?.writeableElements ?? {};
 
     const keys =
@@ -453,14 +522,6 @@ export class DemoApp extends LitElement {
 
     return finalKeys.map((key) => {
       switch (key) {
-        case 'explainabilityPopoverContent':
-          return html`<div slot=${key}>
-            <explainability-popover-content></explainability-popover-content>
-          </div>`;
-        case 'explainabilityPopoverActions':
-          return html`<div slot=${key}>
-            <explainability-popover-actions></explainability-popover-actions>
-          </div>`;
         case 'workspacePanelElement':
           return html`<div slot=${key}>
             <workspace-writeable-element-example
@@ -539,10 +600,7 @@ export class DemoApp extends LitElement {
               }
               .namespace=${this.config.namespace ?? undefined}
               .shouldSanitizeHTML=${this.config.shouldSanitizeHTML ?? undefined}
-              .header=${{
-                ...this.config.header,
-                hideDefaultAiLabelContent: true,
-              }}
+              .header=${this.config.header}
               .layout=${this.config.layout}
               .markdown=${this._markdownConfig}
               .messaging=${this.config.messaging}
@@ -557,6 +615,7 @@ export class DemoApp extends LitElement {
               .onBeforeRender=${this.onBeforeRender}
               .serviceDeskFactory=${serviceDeskFactory}
               .renderUserDefinedResponse=${this.renderUserDefinedCallback}
+              .renderCustomRequestFooter=${this.requestFooterRenderer}
               >${this.renderWriteableElementSlots()}${this.renderCustomFooterSlots()}</cds-aichat-container
             >`
           : html``
@@ -581,10 +640,7 @@ export class DemoApp extends LitElement {
               }
               .namespace=${this.config.namespace ?? undefined}
               .shouldSanitizeHTML=${this.config.shouldSanitizeHTML ?? undefined}
-              .header=${{
-                ...this.config.header,
-                hideDefaultAiLabelContent: true,
-              }}
+              .header=${this.config.header}
               .layout=${this.config.layout}
               .markdown=${this._markdownConfig}
               .messaging=${this.config.messaging}
@@ -601,6 +657,7 @@ export class DemoApp extends LitElement {
               .onViewChange=${this.onViewChange}
               .serviceDeskFactory=${serviceDeskFactory}
               .renderUserDefinedResponse=${this.renderUserDefinedCallback}
+              .renderCustomRequestFooter=${this.requestFooterRenderer}
               >${this.renderWriteableElementSlots()}${this.renderCustomFooterSlots()}</cds-aichat-custom-element
             >`
           : html``
@@ -624,10 +681,7 @@ export class DemoApp extends LitElement {
               }
               .namespace=${this.config.namespace ?? undefined}
               .shouldSanitizeHTML=${this.config.shouldSanitizeHTML ?? undefined}
-              .header=${{
-                ...this.config.header,
-                hideDefaultAiLabelContent: true,
-              }}
+              .header=${this.config.header}
               .layout=${this.config.layout}
               .markdown=${this._markdownConfig}
               .messaging=${this.config.messaging}
@@ -640,6 +694,7 @@ export class DemoApp extends LitElement {
               .onBeforeRender=${this.onBeforeRender}
               .serviceDeskFactory=${serviceDeskFactory}
               .renderUserDefinedResponse=${this.renderUserDefinedCallback}
+              .renderCustomRequestFooter=${this.requestFooterRenderer}
               .hideAvatar=${this.config.hideAvatar ?? undefined}
               >${this.renderWriteableElementSlots()}${this.renderCustomFooterSlots()}</cds-aichat-custom-element
             >`

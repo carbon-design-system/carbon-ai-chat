@@ -10,6 +10,8 @@
 import React, { ReactNode, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 
+import { useRemoveHostsOnUnmount } from '../../hooks/useRemoveHostsOnUnmount';
+
 import { ChatInstance } from '../../../types/instance/ChatInstance';
 import {
   RenderUserDefinedResponse,
@@ -59,6 +61,7 @@ function UserDefinedResponsePortalsContainer({
 }: UserDefinedResponsePortalsContainer) {
   // Use a ref to store slot elements so they persist across renders
   const slotElementsRef = useRef<Map<string, HTMLElement>>(new Map());
+  useRemoveHostsOnUnmount(slotElementsRef, chatWrapper);
 
   // In the case that a new history is passed in, we want to ensure
   // the previous user_defined response slots are removed

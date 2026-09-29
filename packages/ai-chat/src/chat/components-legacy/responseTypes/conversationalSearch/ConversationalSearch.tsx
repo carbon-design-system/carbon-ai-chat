@@ -99,7 +99,6 @@ function ConversationalSearch({
   function renderCitations() {
     const tiles = sortedCitations?.map((citation, index) => (
       <CitationCard
-        // eslint-disable-next-line react/no-array-index-key
         key={index}
         citation={citation}
         isSelected={index === selectedCitationIndex}

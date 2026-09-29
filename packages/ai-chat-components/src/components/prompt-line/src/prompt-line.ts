@@ -165,7 +165,7 @@ class PromptLineElement extends LitElement {
     super.connectedCallback();
     if (this._pendingTeardownTimer !== null) {
       // Reattached before the deferred teardown ran — a move, not an unmount.
-      // The controller and its editor host travelled with the element, so the
+      // The controller and its editor host traveled with the element, so the
       // Tiptap instance (and its undo history) survives untouched.
       //
       // Unlike `_teardownSurface`, this deliberately leaves `_isComposing` /

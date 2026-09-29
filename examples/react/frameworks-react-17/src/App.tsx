@@ -15,14 +15,18 @@
  * by this example is React 17 compatibility, not a chat feature.
  *
  * APIs exercised:
- *   - `ChatContainer` (the chat surface — kept minimal so the framework
+ *   - `ChatContainer` and `ChatCustomElement` (kept minimal so the framework
  *     glue is the focus)
  *   - `ReactDOM.render` from `react-dom`
  *
  * Start reading at: the `ReactDOM.render` call at the bottom of this file.
  */
 
-import { ChatContainer, PublicConfig } from '@carbon/ai-chat';
+import {
+  ChatContainer,
+  ChatCustomElement,
+  PublicConfig,
+} from '@carbon/ai-chat';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
@@ -36,7 +40,21 @@ const config: PublicConfig = {
   },
 };
 
+// `?wrapper=custom` swaps the floating widget for a chat in a sized element, so one page covers both React components on React 17.
+const showCustomElement =
+  new URLSearchParams(window.location.search).get('wrapper') === 'custom';
+
 function App() {
+  if (showCustomElement) {
+    return (
+      <ChatCustomElement
+        {...config}
+        className="chat-custom-element"
+        layout={{ showFrame: false }}
+        openChatByDefault
+      />
+    );
+  }
   return <ChatContainer {...config} />;
 }
 

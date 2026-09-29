@@ -43,6 +43,8 @@ demo/
 
 ## Definition of done
 
+For guidance-only edits, use the [guidance gate](../references/definition-of-done.md#minimum-gate-by-area-edited). For demo code changes:
+
 - `npm run build --workspace=@carbon/ai-chat-examples-demo`
 - `npm run test --workspace=@carbon/ai-chat-examples-demo`
 - If you added or changed a config toggle, update [TEST_PLAN.md](TEST_PLAN.md).
@@ -63,7 +65,9 @@ npm test           # playwright against `build` + `preview` (uses node-polyfill.
 Single Playwright test:
 
 ```bash
-npx playwright test tests/<file>.spec.ts
-npx playwright test -g "pattern"
-npx playwright test --ui
+npm test -- tests/<file>.spec.ts
+npm test -- -g "pattern"
+npm test -- --ui
 ```
+
+These commands preserve the script's `NODE_OPTIONS` preload. Playwright can start a production build and preview server; coordinate that build under the [root rule](../AGENTS.md#always-on-rules).

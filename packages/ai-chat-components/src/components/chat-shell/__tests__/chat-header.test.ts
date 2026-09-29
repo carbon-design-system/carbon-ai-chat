@@ -541,4 +541,45 @@ describe('cds-aichat-chat-header', function () {
       expect(truncatedText!.textContent).to.include('Updated Title');
     });
   });
+
+  // ========== CSS Custom Property Tests ==========
+  describe('CSS custom properties', () => {
+    it('should use --cds-aichat-border-radius as fallback for overflow menu corner when per-corner property is unset', async () => {
+      // Note: WTR does not load the shipped stylesheet, so the pre-fix regression
+      // (where :root defined --cds-aichat-border-radius-start-start: 0.5rem and
+      // blocked the fallback entirely) cannot be reproduced here. This test guards
+      // the SCSS fallback chain itself against future regressions.
+      const items = [
+        { text: 'Settings', onClick: () => {} },
+        { text: 'Help', onClick: () => {} },
+      ];
+
+      // Container sets only --cds-aichat-border-radius
+      const container = document.createElement('div');
+      container.style.setProperty('--cds-aichat-border-radius', '12px');
+
+      const el = await fixture<CdsAiChatHeader>(
+        html`<cds-aichat-chat-header
+          navigation-type="overflow"
+          .navigationOverflowItems=${items}></cds-aichat-chat-header>`,
+        { parentNode: container }
+      );
+      await el.updateComplete;
+
+      const overflowWrapper = el.shadowRoot!.querySelector(
+        '.cds-aichat-chat-header-overflow-wrapper'
+      );
+      expect(overflowWrapper, 'overflow wrapper should exist').to.exist;
+
+      const overflowMenu = overflowWrapper!.querySelector('cds-overflow-menu');
+      expect(overflowMenu, 'cds-overflow-menu should exist').to.exist;
+
+      // --cds-aichat-border-radius-start-start is absent from the cascade, so
+      // the fallback var(--cds-aichat-border-radius) = 12px applies:
+      // calc(12px - 1px) = 11px
+      expect(getComputedStyle(overflowMenu!).borderStartStartRadius).to.equal(
+        '11px'
+      );
+    });
+  });
 });

@@ -75,11 +75,10 @@ Add when: new user-facing features, cross-component workflows, config-dependent 
 From `packages/ai-chat/`:
 
 ```bash
-npm test                                                    # full suite with coverage
-npx jest path/to/file_spec.ts                               # single file
-npx jest -t "test name pattern"                             # by name
-npx jest --watch                                            # watch mode
-npm run test:coverage --workspace=@carbon/ai-chat           # coverage report
+npm test                                        # full suite with coverage
+npm test -- path/to/file_spec.ts                 # single file, with coverage
+npm test -- -t "test name pattern"               # by name
+npm test -- --watch                              # watch mode
 ```
 
 Test setup: `tests/setup.ts` installs DOM + testing-library setup; `tests/test_helpers.ts` has shared fixtures.

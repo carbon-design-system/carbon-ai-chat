@@ -9,6 +9,7 @@
 
 import {
   createBaseConfig,
+  getChatShadowRoot,
   renderChatAndGetInstanceWithStore,
   setupAfterEach,
   setupBeforeEach,
@@ -28,11 +29,11 @@ function makeFile(name = 'test.pdf'): File {
 }
 
 function queryFileUploaderItem(): Element | null {
-  const chatElement = document.querySelector('cds-aichat-react');
-  if (!chatElement?.shadowRoot) {
+  const root = getChatShadowRoot();
+  if (!root) {
     return null;
   }
-  return deepQuerySelector(chatElement.shadowRoot, 'cds-file-uploader-item');
+  return deepQuerySelector(root, 'cds-file-uploader-item');
 }
 
 /**

@@ -15,15 +15,12 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { StoreProvider } from './providers/StoreProvider';
-import { WindowSizeProvider } from './providers/WindowSizeProvider';
-import { ServiceManagerProvider } from './providers/ServiceManagerProvider';
-import { IntlProvider } from './providers/IntlProvider';
-import { AriaAnnouncerProvider } from './providers/AriaAnnouncerProvider';
+import { AppProviders } from './AppProviders';
 import { ServiceManager } from './services/ServiceManager';
 import {
   attachUserDefinedResponseHandlers,
   attachCustomFooterHandler,
+  attachCustomRequestFooterHandler,
   initServiceManagerAndInstance,
   mergePublicConfig,
   performInitialViewChange,
@@ -33,6 +30,10 @@ import {
   CustomFooterSlotState,
   CustomFooterPortalsContainer,
 } from './components/portals/CustomFooterPortalsContainer';
+import {
+  CustomRequestFooterSlotState,
+  CustomRequestFooterPortalsContainer,
+} from './components/portals/CustomRequestFooterPortalsContainer';
 import { WriteableElementsPortalsContainer } from './components/portals/WriteableElementsPortalsContainer';
 import { LightDomPortalsContainer } from './components/portals/LightDomPortalsContainer';
 import { InputNodePortalsContainer } from './components/portals/InputNodePortalsContainer';
@@ -52,6 +53,7 @@ import {
   RenderUserDefinedResponse,
   RenderUserDefinedInputNode,
   RenderCustomMessageFooter,
+  RenderCustomRequestFooter,
   RenderWriteableElementResponse,
 } from '../types/component/ChatContainer';
 import { ChatInstance } from '../types/instance/ChatInstance';
@@ -78,6 +80,7 @@ interface AppProps {
   renderUserDefinedResponse?: RenderUserDefinedResponse;
   renderUserDefinedInputNode?: RenderUserDefinedInputNode;
   renderCustomMessageFooter?: RenderCustomMessageFooter;
+  renderCustomRequestFooter?: RenderCustomRequestFooter;
   renderWriteableElements?: RenderWriteableElementResponse;
   container: HTMLElement;
   element?: HTMLElement;
@@ -109,6 +112,7 @@ export function ChatAppEntry({
   renderUserDefinedResponse,
   renderUserDefinedInputNode,
   renderCustomMessageFooter,
+  renderCustomRequestFooter,
   renderWriteableElements,
   container,
   setParentInstance,
@@ -136,6 +140,15 @@ export function ChatAppEntry({
   const [customFooterSlotsByName, setCustomFooterSlotsByName] = useState<
     Record<string, CustomFooterSlotState>
   >({});
+
+  const [customRequestFooterSlotsByName, setCustomRequestFooterSlotsByName] =
+    useState<Record<string, CustomRequestFooterSlotState>>({});
+
+  // The bootstrap below runs once, but this prop can arrive later — behind a
+  // feature flag, or with async config. The handler reads the ref on each
+  // event so a late arrival still gets footers.
+  const renderCustomRequestFooterRef = useRef(renderCustomRequestFooter);
+  renderCustomRequestFooterRef.current = renderCustomRequestFooter;
 
   const previousConfigRef = useRef<PublicConfig | null>(null);
 
@@ -210,6 +223,12 @@ export function ChatAppEntry({
         );
 
         attachCustomFooterHandler(instance, setCustomFooterSlotsByName);
+
+        attachCustomRequestFooterHandler(
+          instance,
+          setCustomRequestFooterSlotsByName,
+          () => Boolean(renderCustomRequestFooterRef.current)
+        );
 
         setInstances(instance);
 
@@ -400,56 +419,55 @@ export function ChatAppEntry({
   }
 
   return (
-    <StoreProvider store={serviceManager.store}>
-      <WindowSizeProvider windowSize={windowSize}>
-        <ServiceManagerProvider serviceManager={serviceManager}>
-          <IntlProvider intl={serviceManager.intl}>
-            <AriaAnnouncerProvider>
-              <AppShell
-                serviceManager={serviceManager}
-                hostElement={serviceManager.customHostElement}
-                writeableElementsPresentKeys={writeableElementsPresentKeys}
-              />
-              {renderUserDefinedResponse && (
-                <UserDefinedResponsePortalsContainer
-                  chatInstance={instance}
-                  renderUserDefinedResponse={renderUserDefinedResponse}
-                  userDefinedResponseEventsBySlot={
-                    userDefinedResponseEventsBySlot
-                  }
-                  chatWrapper={chatWrapper}
-                />
-              )}
+    <AppProviders serviceManager={serviceManager} windowSize={windowSize}>
+      <AppShell
+        serviceManager={serviceManager}
+        hostElement={serviceManager.customHostElement}
+        writeableElementsPresentKeys={writeableElementsPresentKeys}
+      />
+      {renderUserDefinedResponse && (
+        <UserDefinedResponsePortalsContainer
+          chatInstance={instance}
+          renderUserDefinedResponse={renderUserDefinedResponse}
+          userDefinedResponseEventsBySlot={userDefinedResponseEventsBySlot}
+          chatWrapper={chatWrapper}
+        />
+      )}
 
-              {renderCustomMessageFooter && (
-                <CustomFooterPortalsContainer
-                  chatInstance={instance}
-                  renderCustomMessageFooter={renderCustomMessageFooter}
-                  customFooterEventsBySlot={customFooterSlotsByName}
-                  chatWrapper={chatWrapper}
-                />
-              )}
+      {renderCustomMessageFooter && (
+        <CustomFooterPortalsContainer
+          chatInstance={instance}
+          renderCustomMessageFooter={renderCustomMessageFooter}
+          customFooterEventsBySlot={customFooterSlotsByName}
+          chatWrapper={chatWrapper}
+        />
+      )}
 
-              {renderWriteableElements && (
-                <WriteableElementsPortalsContainer
-                  chatInstance={instance}
-                  renderResponseMap={renderWriteableElements}
-                />
-              )}
+      {renderCustomRequestFooter && (
+        <CustomRequestFooterPortalsContainer
+          chatInstance={instance}
+          renderCustomRequestFooter={renderCustomRequestFooter}
+          customRequestFooterEventsBySlot={customRequestFooterSlotsByName}
+          chatWrapper={chatWrapper}
+        />
+      )}
 
-              <LightDomPortalsContainer chatWrapper={chatWrapper} />
+      {renderWriteableElements && (
+        <WriteableElementsPortalsContainer
+          chatInstance={instance}
+          renderResponseMap={renderWriteableElements}
+        />
+      )}
 
-              {renderUserDefinedInputNode && (
-                <InputNodePortalsContainer
-                  chatInstance={instance}
-                  renderUserDefinedInputNode={renderUserDefinedInputNode}
-                  chatWrapper={chatWrapper}
-                />
-              )}
-            </AriaAnnouncerProvider>
-          </IntlProvider>
-        </ServiceManagerProvider>
-      </WindowSizeProvider>
-    </StoreProvider>
+      <LightDomPortalsContainer chatWrapper={chatWrapper} />
+
+      {renderUserDefinedInputNode && (
+        <InputNodePortalsContainer
+          chatInstance={instance}
+          renderUserDefinedInputNode={renderUserDefinedInputNode}
+          chatWrapper={chatWrapper}
+        />
+      )}
+    </AppProviders>
   );
 }

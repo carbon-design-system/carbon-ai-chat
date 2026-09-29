@@ -14,12 +14,15 @@ Load this when you need to build, watch, lint, format, test, or run an example/S
 | Storybook (React wrappers) | `npm run aiChat:start:storybook:react` |
 | Build everything | `npm run build` |
 | Build only the ai-chat stack (components + ai-chat + demo) | `npm run aiChat:build` |
+| Build the ai-chat stack + generate TypeDoc | `npm run aiChat:build:docs` |
+| Build example applications | `npm run examples:build` |
 | Lint (eslint on `packages/`, `scripts/`, `tools/`) | `npm run lint` |
 | Stylelint | `npm run lint:styles` |
 | License header check | `npm run lint:license` |
 | Dead-code check (knip) | `npm run lint:dead` |
 | Prettier check / write | `npm run format` / `npm run format:write` |
-| All tests | `npm run test` |
+| All package tests | `npm run test` |
+| Guidance validator regression tests (no build) | `npm run test:guidance` |
 | Lint + format + license + test gate (no build) | `npm run ci-check` |
 | Clean everything | `npm run clean` |
 

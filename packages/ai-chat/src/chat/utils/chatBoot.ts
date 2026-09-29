@@ -51,12 +51,14 @@ import {
   BusEventType,
   BusEventUserDefinedResponse,
   BusEventCustomFooterSlot,
+  BusEventCustomRequestFooterSlot,
   MainWindowOpenReason,
   ViewChangeReason,
 } from '../../types/events/eventBusTypes';
 import { VIEW_STATE_ALL_CLOSED } from '../store/reducerUtils';
 import { PublicConfig } from '../../types/config/PublicConfig';
 import { ChatInstance } from '../../types/instance/ChatInstance';
+import { RenderCustomRequestFooterState } from '../../types/component/ChatContainer';
 import { loadLocale } from './languageUtils';
 
 /**
@@ -202,7 +204,8 @@ export async function performInitialViewChange(serviceManager: ServiceManager) {
  * Attaches event handlers to the `ChatInstance` that track user-defined
  * response items in React state so they can be rendered via portals.
  *
- * On restart events, the tracked state is cleared.
+ * On restart events, the tracked state is cleared. Returns a function that
+ * removes the handlers again, so a remount does not collect twice.
  */
 export function attachUserDefinedResponseHandlers(
   webChatInstance: ChatInstance,
@@ -261,25 +264,29 @@ export function attachUserDefinedResponseHandlers(
     setBySlot({});
   }
 
-  webChatInstance.on({
-    type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
-    handler: userDefinedChunkHandler,
-  });
-  webChatInstance.on({
-    type: BusEventType.USER_DEFINED_RESPONSE,
-    handler: userDefinedResponseHandler,
-  });
-  webChatInstance.on({
-    type: BusEventType.RESTART_CONVERSATION,
-    handler: restartHandler,
-  });
+  const handlers = [
+    {
+      type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
+      handler: userDefinedChunkHandler,
+    },
+    {
+      type: BusEventType.USER_DEFINED_RESPONSE,
+      handler: userDefinedResponseHandler,
+    },
+    { type: BusEventType.RESTART_CONVERSATION, handler: restartHandler },
+  ];
+  webChatInstance.on(handlers);
+  return () => {
+    webChatInstance.off(handlers);
+  };
 }
 
 /**
  * Attaches event handlers to the `ChatInstance` that track custom
  * message footers in React state so they can be rendered via portals.
  *
- * On restart events, the tracked state is cleared.
+ * On restart events, the tracked state is cleared. Returns a function that
+ * removes the handlers again.
  */
 export function attachCustomFooterHandler(
   webChatInstance: ChatInstance,
@@ -313,13 +320,65 @@ export function attachCustomFooterHandler(
     setBySlot({});
   }
 
-  webChatInstance.on({
-    type: BusEventType.CUSTOM_FOOTER_SLOT,
-    handler: customFooterSlotHandler,
-  });
+  const handlers = [
+    { type: BusEventType.CUSTOM_FOOTER_SLOT, handler: customFooterSlotHandler },
+    { type: BusEventType.RESTART_CONVERSATION, handler: restartHandler },
+  ];
+  webChatInstance.on(handlers);
+  return () => {
+    webChatInstance.off(handlers);
+  };
+}
 
-  webChatInstance.on({
-    type: BusEventType.RESTART_CONVERSATION,
-    handler: restartHandler,
-  });
+/**
+ * Registers a handler that accumulates the footer slots below user messages in React state so they can be
+ * rendered via portals.
+ *
+ * This event fires for every user message rather than only when a backend opts in, so `isEnabled` is asked on each
+ * one: a host that passes no render prop accumulates nothing and re-renders on nothing. Asking per event rather
+ * than gating the subscription is what lets a host supply the prop after the chat has booted.
+ *
+ * On restart events, the tracked state is cleared. Returns a function that
+ * removes the handlers again.
+ */
+export function attachCustomRequestFooterHandler(
+  webChatInstance: ChatInstance,
+  setBySlot: React.Dispatch<
+    React.SetStateAction<Record<string, RenderCustomRequestFooterState>>
+  >,
+  isEnabled: () => boolean
+) {
+  function customRequestFooterSlotHandler(
+    event: BusEventCustomRequestFooterSlot
+  ) {
+    if (!isEnabled()) {
+      return;
+    }
+
+    setBySlot((bySlot) => {
+      return {
+        ...bySlot,
+        [event.data.slotName]: {
+          slotName: event.data.slotName,
+          message: event.data.message,
+        },
+      };
+    });
+  }
+
+  function restartHandler() {
+    setBySlot({});
+  }
+
+  const handlers = [
+    {
+      type: BusEventType.CUSTOM_REQUEST_FOOTER_SLOT,
+      handler: customRequestFooterSlotHandler,
+    },
+    { type: BusEventType.RESTART_CONVERSATION, handler: restartHandler },
+  ];
+  webChatInstance.on(handlers);
+  return () => {
+    webChatInstance.off(handlers);
+  };
 }

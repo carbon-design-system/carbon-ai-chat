@@ -16,7 +16,7 @@ A keyboard-only Tiptap extension intercepts `ArrowUp` / `ArrowDown` in the chat 
 
 - Your users re-send variants of previous prompts and a shell-like `↑` / `↓` shortcut would save them time — power-user UX with no visible UI cost.
 - You need to write text into the editor from outside React (e.g. from a Tiptap extension callback) and `instance.input.updateContent` + `textToDoc` is the right tool for plain-text content.
-- You want to attach behaviour to the prompt-line keyboard without building a full custom node.
+- You want to attach behavior to the prompt-line keyboard without building a full custom node.
 
 ## APIs and props demonstrated
 

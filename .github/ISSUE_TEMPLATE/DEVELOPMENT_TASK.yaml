@@ -7,32 +7,41 @@ body:
     id: background
     attributes:
       label: Background
-      description: 'Why this work matters. Open with who is bitten and what goes wrong today. A reader without your context decides from that first sentence whether this issue concerns them, so keep file names, scripts, and type names for Goal. Then the links: the parent epic if this is a sub-issue, and the ADR if this implements a recorded decision. The ADR is where a reviewer checks the diff against what was agreed.'
+      description: 'Why this work matters. Open with who is bitten and what goes wrong today, in plain language, before any file, script, or type name. A reader without your context decides from that first sentence whether this issue concerns them. Then the links: the parent epic if this is a sub-issue, and the ADR if this implements a recorded decision.'
     validations:
       required: true
   - type: textarea
     id: goal
     attributes:
       label: Goal
-      description: "What this task delivers — the change that exists when it's done."
+      description: 'The outcome this task exists for, not the mechanism that delivers it. Leave the fix to whoever plans the work.'
     validations:
       required: true
   - type: textarea
-    id: acceptance-criteria
+    id: done-when
     attributes:
-      label: Acceptance criteria
-      description: 'The conditions that must hold before this can be closed, as a checkbox list. One observable outcome per box, each carrying its proof — a command that exits 0, a named spec, or demo steps with the expected result. The last box is the definition-of-done gate for every area this touches; see references/definition-of-done.md.'
+      label: Done when
+      description: 'The outcomes that must hold before this can close, as a checkbox list. One observable outcome per box: what a user, a host developer, the type surface, or the build sees. No spec paths, test names, or commands. The developer picks the proof when they plan the work.'
       value: |
         - [ ]
         - [ ]
     validations:
       required: true
   - type: textarea
-    id: public-api-contract
+    id: constraints
     attributes:
-      label: Public API / contract
-      description: "If this changes what a consumer can observe on the public surface — anything exported from packages/ai-chat/src/aiChatEntry.tsx or serverEntry.ts — define the contract here up front. A change with no signature change still qualifies: behavior is public too. Give the data types (interfaces / type aliases) and method signatures, then the behavior the shape can't carry — preconditions, the no-op case, failure, events, timing, repeat calls, defaults, the derivation rule for each value of any state a host can read, what a screen reader hears, and which side does the work."
-      render: typescript
+      label: Constraints
+      description: 'What is already settled and binds any fix: an accepted ADR, a compatibility promise, an accessibility requirement. Leave empty when nothing is. A preference belongs under Possible approaches.'
+  - type: textarea
+    id: possible-approaches
+    attributes:
+      label: Possible approaches
+      description: "Optional. Fixes you can see, each with its tradeoff. These are options for whoever plans the work, not a decision, so don't pick one."
+  - type: textarea
+    id: open-questions
+    attributes:
+      label: Open questions
+      description: "Optional. What you don't know and the developer has to find out."
   - type: textarea
     id: out-of-scope
     attributes:

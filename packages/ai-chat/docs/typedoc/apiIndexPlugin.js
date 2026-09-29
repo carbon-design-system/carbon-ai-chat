@@ -58,6 +58,19 @@ function baseUrlFor(version) {
   return `https://chat.carbondesignsystem.com/version/v${version}/docs/`;
 }
 
+/**
+ * Prepended to every generated page. These files are committed, carry no
+ * other mark of their origin, and sit beside hand-written docs — so without
+ * this a reader has no way to tell they are output.
+ */
+const MARKDOWN_BANNER = `<!--
+  GENERATED FILE - do not edit. A release regenerates and commits it
+  (\`npm run docs:api\`, see release-base.yml); a branch never should.
+  Edit the JSDoc it is generated from instead.
+-->
+
+`;
+
 export function load(app) {
   app.renderer.on(Renderer.EVENT_END, (event) => {
     // The committed index is regenerated only when cutting an RC or full
@@ -96,7 +109,7 @@ export function load(app) {
       serializeJsonIndex(records, meta)
     );
     for (const [relativePath, content] of Object.entries(markdown)) {
-      writeFileSync(join(OUT_DIR, relativePath), content);
+      writeFileSync(join(OUT_DIR, relativePath), MARKDOWN_BANNER + content);
     }
 
     app.logger.info(

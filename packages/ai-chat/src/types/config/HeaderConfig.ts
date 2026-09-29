@@ -17,6 +17,12 @@ import type { ToolbarAction as _ToolbarAction } from '@carbon/ai-chat-components
  * `danger` / `divider` flags. Set `fixed: true` to keep the action visible
  * rather than collapsing into the overflow menu when space is tight.
  *
+ * To render the action as a two-state toggle, set `isSelected`. When
+ * `isSelected` is `true` or `false`, the button renders with `aria-pressed`
+ * and a visible pressed treatment. Omitting `isSelected` entirely leaves the
+ * action as a plain button with no toggle semantics — `undefined` is
+ * intentionally distinct from `false`.
+ *
  * @category Config
  * @interface
  */
@@ -103,6 +109,9 @@ export interface HeaderConfig {
   /**
    * If the chat should supply its own header. Can be false if you have a fullscreen chat or one embedded into a page and
    * you want to only make use of the main application header. Defaults to true.
+   *
+   * Also applies when `WriteableElementName.CUSTOM_HEADER` is present — `isOn: false` hides the
+   * header area whether or not host content has replaced it.
    */
   isOn?: boolean;
 
@@ -153,6 +162,11 @@ export interface HeaderConfig {
    * When set to true, all the default ai label content including the deprecated
    * {@link WriteableElementName.AI_TOOLTIP_AFTER_DESCRIPTION_ELEMENT}
    * writeable element will be removed.
+   *
+   * @deprecated The default popover body content is now hidden automatically
+   * when {@link WriteableElementName.EXPLAINABILITY_POPOVER_CONTENT} contains
+   * meaningful content. Setting this property explicitly is no longer necessary
+   * and support for it will be removed in a future release.
    *
    * @default false
    */

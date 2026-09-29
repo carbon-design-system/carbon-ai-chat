@@ -1,6 +1,6 @@
 {
   "name": "@carbon/ai-chat",
-  "version": "1.20.0",
+  "version": "1.22.0-rc.0",
   "description": "Be sure to review the [chat documentation](https://chat.carbondesignsystem.com/tag/latest/docs/documents/Overview.html).",
   "author": "IBM Corp",
   "license": "Apache-2.0",
@@ -74,14 +74,14 @@
   ],
   "sideEffects": [
     "**/web-components/**/*.js",
-    "**/chat.index.js",
+    "**/chat.cds-aichat-container.js",
     "**/*.css"
   ],
   "devDependencies": {
     "@carbon/icons": "^11.53.0",
     "@carbon/styles": "^1.105.0",
     "@carbon/themes": "^11.58.0",
-    "@carbon/typedoc-theme": "^0.9.0",
+    "@carbon/typedoc-theme": "^0.11.0-rc.0",
     "@carbon/web-components": "^2.58.1",
     "@open-wc/testing": "4.0.0",
     "@rollup/plugin-babel": "^7.0.0",
@@ -117,7 +117,7 @@
     "rollup-plugin-dts": "^6.2.1",
     "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-visualizer": "^6.0.3",
-    "sass": "1.102.0",
+    "sass": "1.105.0",
     "serve": "^14.2.6",
     "terser": "^5.43.1",
     "ts-jest": "^29.1.5",
@@ -132,7 +132,7 @@
     "react-dom": ">=17.0.0 <20.0.0"
   },
   "dependencies": {
-    "@carbon/ai-chat-components": "^1.10.0",
+    "@carbon/ai-chat-components": "^1.12.0-rc.0",
     "@carbon/icons": "^11.53.0",
     "@carbon/utilities": "^0.24.0",
     "@floating-ui/dom": "^1.6.3",
@@ -152,7 +152,8 @@
     "use-sync-external-store": "^1.2.0"
   },
   "scripts": {
-    "build": "rollup -c ./tasks/rollup.aichat.js && typedoc",
+    "build": "rollup -c ./tasks/rollup.aichat.js",
+    "build:docs": "npm run build && npm run docs",
     "docs": "typedoc",
     "docs:api": "cross-env WRITE_API_INDEX=1 typedoc",
     "docs:api:check": "cross-env WRITE_API_INDEX=1 typedoc && git diff --exit-code -- docs/api",

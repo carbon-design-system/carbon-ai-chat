@@ -41,6 +41,30 @@ const response: MessageResponse = {
 };
 ```
 
+### Per-item options
+
+`message_options` above is message-level. Each item in `output.generic` can also carry its own {@link GenericItemMessageOptions | `message_item_options`}, which is what turns on the two features attached to a single item rather than the whole message:
+
+- `feedback` ({@link GenericItemMessageFeedbackOptions}) — show the thumbs up/down controls under this item. Set `is_on: true` and give it an `id` you can match the rating back to.
+- `custom_footer_slot` ({@link GenericItemCustomFooterSlotOptions}) — render your own content under this item. Set `is_on: true` and give each item a `slot_name` that is unique across the conversation; anything you put in `additional_data` is handed to your render function. See [Custom message footer](./CustomMessageFooter.md).
+
+```typescript
+const item: GenericItem = {
+  response_type: MessageResponseTypes.TEXT,
+  text: 'Here is what I found.',
+  message_item_options: {
+    feedback: { is_on: true, id: 'feedback-1' },
+    custom_footer_slot: {
+      is_on: true,
+      slot_name: `footer-${responseID}`,
+      additional_data: { allow_copy: true },
+    },
+  },
+};
+```
+
+Footers under a user's own message work the other way around: the chat creates the slot and your server sends nothing. See [Custom request footer](./CustomRequestFooter.md).
+
 ## Streaming
 
 The shapes above describe a complete message. To build a response piece by piece, wrap items in chunk envelopes and apply them one at a time. You can deliver a response two ways:
@@ -56,4 +80,5 @@ Both render the same {@link MessageResponse | response} shape shown above.
 - [Structured data](./StructuredData.md) — send typed fields and uploaded files on the request.
 - [Adding messages (legacy)](./AddMessageChunk.md) — deliver a response piece by piece.
 - [Adding messages (experimental)](./UpsertMessage.md) — accumulate state and apply each update with one call.
+- [Custom message footer](./CustomMessageFooter.md) — render your own content under an assistant item with `custom_footer_slot`.
 - [Conversation history](./CustomHistory.md) — persist and replay responses.

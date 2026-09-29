@@ -35,7 +35,6 @@ interface ModalPortalState {
   attachedToHost: Element;
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types
 class ModalPortal extends Component<ModalPortalProps, ModalPortalState> {
   // Specify the context type and redefine the context property so it's got the right type.
   static contextType = ModalPortalRootContext;

@@ -1,7 +1,7 @@
 {
   "name": "@carbon/ai-chat-examples-react-tests-jest-jsdom",
   "private": true,
-  "version": "1.20.0",
+  "version": "1.22.0-rc.0",
   "description": "Jest testing example for @carbon/ai-chat React components using jsdom.",
   "scripts": {
     "test": "jest",
@@ -10,16 +10,16 @@
   "author": "IBM Corp",
   "license": "Apache-2.0",
   "dependencies": {
-    "@carbon/ai-chat": "^1.20.0",
+    "@carbon/ai-chat": "^1.22.0-rc.0",
     "@carbon/web-components": "^2.58.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.26.0",
-    "@babel/preset-env": "^7.26.0",
-    "@babel/preset-react": "^7.25.9",
-    "@babel/preset-typescript": "^7.26.0",
+    "@babel/core": "^8.0.0",
+    "@babel/preset-env": "^8.0.0",
+    "@babel/preset-react": "^8.0.0",
+    "@babel/preset-typescript": "^8.0.0",
     "@testing-library/jest-dom": "^6.8.0",
     "@testing-library/react": "^16.0.0",
     "@types/jest": "^29.0.0",

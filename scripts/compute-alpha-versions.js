@@ -123,7 +123,7 @@ function publishedVersions(name) {
     });
     const parsed = JSON.parse(output);
     return Array.isArray(parsed) ? parsed : [parsed];
-  } catch (error) {
+  } catch (_error) {
     // Package or its versions are not on the registry yet: start fresh.
     return [];
   }

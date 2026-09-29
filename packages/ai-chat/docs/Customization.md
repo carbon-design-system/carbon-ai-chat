@@ -11,6 +11,7 @@ children:
   - ./CustomPanels.md
   - ./Responses.md
   - ./CustomMessageFooter.md
+  - ./CustomRequestFooter.md
 ---
 
 ## Overview
@@ -35,6 +36,7 @@ Pick the area you want to customize:
 - [Custom panels](./CustomPanels.md) — open an overlay panel with your own content.
 - [Customizing responses](./Responses.md) — style rich text responses and render your own {@link MessageResponseTypes.USER_DEFINED | user-defined} content.
 - [Custom message footer](./CustomMessageFooter.md) — render your own content beneath an assistant message.
+- [Custom request footer](./CustomRequestFooter.md) — render your own content beneath a user message.
 
 ## Config reference
 

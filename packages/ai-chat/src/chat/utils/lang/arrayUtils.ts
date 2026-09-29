@@ -34,7 +34,7 @@ async function asyncForEach<T>(
 ) {
   for (let index = 0; index < array.length; index++) {
     const value = array[index];
-    // eslint-disable-next-line no-await-in-loop
+
     await callbackFunction(value, index, array);
   }
 }

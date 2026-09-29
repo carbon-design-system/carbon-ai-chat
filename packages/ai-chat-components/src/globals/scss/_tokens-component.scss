@@ -16,12 +16,11 @@
 // These tokens can be customized by developers to adjust component appearance
 
 // Border radius tokens
-$border-radius: 0 !default;
+$border-radius: layout.$spacing-03 !default;
 $card-border-radius: layout.$spacing-03 !default;
 
 // Rounded modifier radius tokens
 // These are used by the data-rounded modifier system to apply contextual rounding
-$border-radius: layout.$spacing-03 !default;
 $border-radius-start-start: layout.$spacing-03 !default;
 $border-radius-start-end: layout.$spacing-03 !default;
 $border-radius-end-start: layout.$spacing-03 !default;

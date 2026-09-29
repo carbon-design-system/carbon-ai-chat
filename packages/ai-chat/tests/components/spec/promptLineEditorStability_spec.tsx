@@ -71,20 +71,40 @@ async function renderChat(
   config: PublicConfig
 ): Promise<{ chat: ChatInstance; rerender: (config: PublicConfig) => void }> {
   let captured: ChatInstance | null = null;
+  let rendered = false;
   const onBeforeRender = jest.fn((next: ChatInstance) => {
     captured = next;
   });
+  // The editor exists only once the chat has rendered, which is after the
+  // instance is handed over.
+  const onAfterRender = jest.fn(() => {
+    rendered = true;
+  });
 
   const result = render(
-    <ChatContainer {...config} onBeforeRender={onBeforeRender} />
+    <ChatContainer
+      {...config}
+      onBeforeRender={onBeforeRender}
+      onAfterRender={onAfterRender}
+    />
   );
-  await waitFor(() => expect(captured).not.toBeNull(), { timeout: 5000 });
+  await waitFor(
+    () => {
+      expect(captured).not.toBeNull();
+      expect(rendered).toBe(true);
+    },
+    { timeout: 5000 }
+  );
 
   return {
     chat: captured as unknown as ChatInstance,
     rerender: (next: PublicConfig) =>
       result.rerender(
-        <ChatContainer {...next} onBeforeRender={onBeforeRender} />
+        <ChatContainer
+          {...next}
+          onBeforeRender={onBeforeRender}
+          onAfterRender={onAfterRender}
+        />
       ),
   };
 }

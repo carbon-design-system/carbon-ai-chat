@@ -32,18 +32,17 @@ interface CatastrophicErrorPanelProps {
   hideRetryButton?: boolean;
 }
 
-const CatastrophicErrorPanel: React.FC<CatastrophicErrorPanelProps> = ({
+const CatastrophicErrorPanel = ({
   title,
   bodyText,
   onRestart,
   hideRetryButton,
-}) => {
+}: CatastrophicErrorPanelProps) => {
   const intl = useIntl();
   const { isDarkTheme } = useCarbonTheme();
   const languagePack = useSelector(
     (state: AppState) => ({
       errors_somethingWrong: state.languagePack.errors_somethingWrong,
-      buttons_restart: state.languagePack.buttons_restart,
       buttons_retry: state.languagePack.buttons_retry,
     }),
     shallowEqual
@@ -88,7 +87,6 @@ const CatastrophicErrorPanel: React.FC<CatastrophicErrorPanelProps> = ({
             className="cds-aichat--catastrophic-error__restart-button"
             kind={CHAT_BUTTON_KIND.TERTIARY}
             size={CHAT_BUTTON_SIZE.SMALL}
-            aria-label={languagePack.buttons_restart}
             onClick={onRestart}>
             <Restart slot="icon" />
             {languagePack.buttons_retry}

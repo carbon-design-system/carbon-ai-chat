@@ -27,7 +27,7 @@ export interface UnknownAction {
   /** Type string identifying the action. */
   type: string;
   /** Additional action properties. */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   [extraProperty: string]: unknown;
 }
 

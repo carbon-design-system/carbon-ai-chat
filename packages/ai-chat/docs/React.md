@@ -253,6 +253,21 @@ Insert a `custom_footer_slot` in assistant messages to render your own content b
 
 Like `renderUserDefinedResponse`, it runs on every render, so keep per-render work out of it. For the full footer component and the mock backend that attaches the slot, see the [custom message footer example](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react/messages-custom-footer).
 
+## Custom request footer
+
+Render your own content beneath a **user** message — a copy button, an edit action, a resend link. See [Custom request footer](./CustomRequestFooter.md) for the concept. Pass a {@link ChatContainerProps.renderCustomRequestFooter | renderCustomRequestFooter} render prop that returns the footer component:
+
+```tsx
+<ChatContainer
+  renderCustomRequestFooter={(slotName, message, instance) => (
+    <CopyRequestExample message={message} />
+  )}
+  messaging={messaging}
+/>
+```
+
+Your backend sends nothing extra for this. Passing the render prop is the whole opt-in, so a host using only `renderCustomMessageFooter` gets no footers on user messages. Like the other render props it runs on every render, so keep per-render work out of it. For the full component, see the [custom request footer example](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react/messages-custom-request-footer).
+
 ## Related
 
 - [UI customization](./Customization.md) — theme the chat, control its layout, and inject your own content into slots, panels, responses, and footers.

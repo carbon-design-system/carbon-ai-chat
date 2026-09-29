@@ -191,26 +191,40 @@ CSS custom properties control the visual appearance of components. They're defin
 
 ### Rounding System
 
-**Individual corner control (RTL-safe):**
-
 | Property | Default | Description |
 | --- | --- | --- |
-| `--cds-aichat-border-radius-start-start` | `0.5rem` | Top-left (LTR) / Top-right (RTL) |
-| `--cds-aichat-border-radius-start-end` | `0.5rem` | Top-right (LTR) / Top-left (RTL) |
-| `--cds-aichat-border-radius-end-start` | `0.5rem` | Bottom-left (LTR) / Bottom-right (RTL) |
-| `--cds-aichat-border-radius-end-end` | `0.5rem` | Bottom-right (LTR) / Bottom-left (RTL) |
+| `--cds-aichat-border-radius` | `0.5rem` | Base radius applied to all corners uniformly |
+| `--cds-aichat-border-radius-start-start` | _(falls back to base)_ | Top-left (LTR) / Top-right (RTL) |
+| `--cds-aichat-border-radius-start-end` | _(falls back to base)_ | Top-right (LTR) / Top-left (RTL) |
+| `--cds-aichat-border-radius-end-start` | _(falls back to base)_ | Bottom-left (LTR) / Bottom-right (RTL) |
+| `--cds-aichat-border-radius-end-end` | _(falls back to base)_ | Bottom-right (LTR) / Bottom-left (RTL) |
 
 ### Using the Properties in Your CSS
 
-Reference these custom properties in your own components to align with the system:
+Reference these custom properties in your own components using the two-tier fallback pattern:
 
 ```css
 .my-custom-element {
-  /* Control individual corners (RTL-safe logical properties): */
-  border-start-start-radius: var(--cds-aichat-border-radius-start-start, 0);
-  border-start-end-radius: var(--cds-aichat-border-radius-start-end, 0);
-  border-end-start-radius: var(--cds-aichat-border-radius-end-start, 0);
-  border-end-end-radius: var(--cds-aichat-border-radius-end-end, 0);
+  /* Round all corners uniformly using the base property: */
+  border-radius: var(--cds-aichat-border-radius);
+
+  /* Or control individual corners with fallback to base (RTL-safe logical properties): */
+  border-start-start-radius: var(
+    --cds-aichat-border-radius-start-start,
+    var(--cds-aichat-border-radius)
+  );
+  border-start-end-radius: var(
+    --cds-aichat-border-radius-start-end,
+    var(--cds-aichat-border-radius)
+  );
+  border-end-start-radius: var(
+    --cds-aichat-border-radius-end-start,
+    var(--cds-aichat-border-radius)
+  );
+  border-end-end-radius: var(
+    --cds-aichat-border-radius-end-end,
+    var(--cds-aichat-border-radius)
+  );
 }
 ```
 

@@ -10,6 +10,7 @@
 import {
   applySafariScrollAnchoringRestore,
   computeGrowOnlySpacerHeight,
+  didClearAllMessages,
   getAnchoringRestoreTarget,
   getMessageArrayChangeFlags,
   getStreamingTransition,
@@ -99,6 +100,7 @@ function createPortableMessage(
   overrides: Partial<PortableMessage> & { id: string }
 ): PortableMessage {
   return {
+    messageId: overrides.id,
     element: null,
     isPinnable: false,
     isStreaming: false,
@@ -510,6 +512,59 @@ describe('getMessageArrayChangeFlags', () => {
         newItems,
       })
     ).toEqual({ countChanged: true, itemsChanged: true });
+  });
+});
+
+describe('didClearAllMessages', () => {
+  it('returns false when there were no previous messages', () => {
+    expect(
+      didClearAllMessages({
+        oldItems: [],
+        newItems: [createPortableMessage({ id: 'welcome' })],
+      })
+    ).toBe(false);
+  });
+
+  it('returns true when the list is emptied', () => {
+    expect(
+      didClearAllMessages({
+        oldItems: [createPortableMessage({ id: '1' })],
+        newItems: [],
+      })
+    ).toBe(true);
+  });
+
+  it('returns true when every previous message is replaced', () => {
+    expect(
+      didClearAllMessages({
+        oldItems: [
+          createPortableMessage({ id: '1' }),
+          createPortableMessage({ id: '2' }),
+        ],
+        newItems: [createPortableMessage({ id: 'welcome' })],
+      })
+    ).toBe(true);
+  });
+
+  it('returns false when a message keeps its id but its rows are rebuilt', () => {
+    expect(
+      didClearAllMessages({
+        oldItems: [createPortableMessage({ id: 'row-a', messageId: 'msg-1' })],
+        newItems: [createPortableMessage({ id: 'row-b', messageId: 'msg-1' })],
+      })
+    ).toBe(false);
+  });
+
+  it('returns false when any previous message survives', () => {
+    expect(
+      didClearAllMessages({
+        oldItems: [
+          createPortableMessage({ id: '1' }),
+          createPortableMessage({ id: '2' }),
+        ],
+        newItems: [createPortableMessage({ id: '1' })],
+      })
+    ).toBe(false);
   });
 });
 
@@ -1271,6 +1326,119 @@ describe('MessagesScrollController', () => {
     await flushFrames();
 
     expect(h.container.scrollTop).toBe(80); // preserved, not yanked to 140
+
+    controller.disconnect();
+  });
+
+  it('restart: replacing every message resets the pin, zeroes the spacer, and scrolls to the top', async () => {
+    const h = createHarness({
+      scrollTop: 0,
+      clientHeight: 500,
+      scrollHeight: 1000,
+      offsetHeight: 500,
+      rectTop: 0,
+    });
+
+    const pinnable = createRealPinnableMessage('req-1', 200, 80);
+    const placeholder = createPortableMessage({ id: 'ui-0' });
+
+    const controller = new MessagesScrollController(h.host);
+    h.setMessages([]);
+    controller.connect();
+
+    h.setMessages([placeholder, pinnable]);
+    controller.onHostUpdated(null);
+    await flushFrames();
+    expect(h.container.scrollTop).toBe(140); // pin
+
+    // Restart and the welcome message land before the next frame, so the host never
+    // commits an empty list.
+    h.setSpacerHeight.mockClear();
+    h.setMessages([createPortableMessage({ id: 'welcome' })]);
+    controller.onHostUpdated(null);
+    await flushFrames();
+
+    expect(h.container.scrollTop).toBe(0);
+    expect(h.setSpacerHeight).toHaveBeenLastCalledWith(0);
+
+    // The next request in the new conversation still pins.
+    h.setMessages([
+      createPortableMessage({ id: 'welcome' }),
+      createRealPinnableMessage('req-2', 200, 80),
+    ]);
+    controller.onHostUpdated(null);
+    await flushFrames();
+
+    expect(h.container.scrollTop).toBe(140);
+
+    controller.disconnect();
+  });
+
+  it('restart during a pending pin does not restore the old pin', async () => {
+    const h = createHarness({
+      scrollTop: 0,
+      clientHeight: 500,
+      scrollHeight: 1000,
+      offsetHeight: 500,
+      rectTop: 0,
+    });
+
+    // The pin waits on the nested markdown render; hold it open until after the restart.
+    const pinnable = createRealPinnableMessage('req-1', 200, 80);
+    let finishMarkdown: () => void = () => {};
+    const markdown = document.createElement('cds-aichat-markdown');
+    Object.defineProperty(markdown, 'updateComplete', {
+      value: new Promise<void>((resolve) => {
+        finishMarkdown = resolve;
+      }),
+    });
+    pinnable.element?.appendChild(markdown);
+
+    const controller = new MessagesScrollController(h.host);
+    h.setMessages([]);
+    controller.connect();
+
+    h.setMessages([createPortableMessage({ id: 'ui-0' }), pinnable]);
+    controller.onHostUpdated(null);
+    await flushFrames();
+
+    h.setMessages([createPortableMessage({ id: 'welcome' })]);
+    controller.onHostUpdated(null);
+    finishMarkdown();
+    await flushFrames();
+
+    expect(h.container.scrollTop).toBe(0);
+    expect(h.setSpacerHeight).toHaveBeenLastCalledWith(0);
+
+    controller.disconnect();
+  });
+
+  it('removing only the pinned message keeps the scroll position', async () => {
+    const h = createHarness({
+      scrollTop: 0,
+      clientHeight: 500,
+      scrollHeight: 1000,
+      offsetHeight: 500,
+      rectTop: 0,
+    });
+
+    const pinnable = createRealPinnableMessage('req-1', 200, 80);
+    const placeholder = createPortableMessage({ id: 'ui-0' });
+
+    const controller = new MessagesScrollController(h.host);
+    h.setMessages([]);
+    controller.connect();
+
+    h.setMessages([placeholder, pinnable]);
+    controller.onHostUpdated(null);
+    await flushFrames();
+    expect(h.container.scrollTop).toBe(140); // pin
+
+    h.setMessages([placeholder]);
+    controller.onHostUpdated(null);
+    await flushFrames();
+
+    expect(h.container.scrollTop).toBe(140);
 
     controller.disconnect();
   });

@@ -23,12 +23,12 @@ What the `diff` block's rows mean:
 
 | Row | Says |
 | --- | --- |
-| `<file>  N lines, K× the <dir>/*<ext> median (M, n=P)` | a new file beside its neighbours at `<base>`. With no same-extension sibling it falls back to the top-level area, saying `(fallback)`, then to `no precedent`. |
+| `<file>  N lines, K× the <dir>/*<ext> median (M, n=P)` | a new file beside its neighbors at `<base>`. With no same-extension sibling it falls back to the top-level area, saying `(fallback)`, then to `no precedent`. |
 | `added lines N, comments C (R%)` | the comment ratio of added lines, blanks included. Per-file density across `scripts/` and `tools/` sits at p50 19%. |
 | `banners N` | added lines matching `^\s*// ?-{5,}` — a divider comment, which this repo does not use. |
 | `task references N` | added comments matching `#\d{3,5}`, `PLAN`, or `RESEARCH` — a comment naming the task instead of the reason. |
 | `new dependencies …` | names added to `dependencies` or `devDependencies`. |
-| `<name>: 0 importers` or `1 importer, same directory` | an added export nothing else uses, or only its neighbour uses. Ten rows, then a count. |
+| `<name>: 0 importers` or `1 importer, same directory` | an added export nothing else uses, or only its neighbor uses. Ten rows, then a count. |
 | `TODO/FIXME`, `console.log`, `: any` | added under `packages/` and `demo/` only. |
 
 A new file's own length is read at `HEAD`; the median population comes from `<base>`, so a file the diff adds never counts itself. The median is the middle file, or the rounded mean of the two middle.
