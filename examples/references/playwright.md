@@ -9,7 +9,7 @@ Copy that example's [playwright.config.ts](../react/basic-custom-element-fullscr
 
 ```json
 "scripts": { "test:e2e": "playwright test" },
-"devDependencies": { "@playwright/test": "^1.63.0" }
+"devDependencies": { "@playwright/test": "^1.63.0", "vite": "^8.3.0" }
 ```
 
 **Name the script `test:e2e`, not `test`.** Three examples already use `test` for a different test runner: `frameworks-vite` runs vitest, and `tests-jest-happydom` and `tests-jest-jsdom` run jest. Calling yours `test` would replace theirs.
@@ -25,23 +25,16 @@ Copy [playwright.config.ts](../react/basic-custom-element-fullscreen/playwright.
 | `workers` | `1` — an example has one or two specs, so a pool buys nothing and multiplies against whatever concurrency runs the examples |
 | `retries` | `process.env.CI ? 1 : 0` |
 | `projects` | chromium only — webkit has shadow-DOM gaps, see [demo/playwright.config.ts](../../demo/playwright.config.ts) |
-| `webServer.command` | `PORT=<probed> npm run start` |
-| `reuseExistingServer` | `!process.env.CI` |
+| `webServer.command` | Start the shared Vite launcher in this example's directory. |
+| `webServer.wait` | Capture the URL after Vite binds. |
 
 ### Ports are allocated at run time. Never add a port table.
 
-Every example's dev server falls back to port 3000 when `PORT` is unset, so any two suites running at once collide. The config asks the OS for a free port instead:
+Every Vite example's dev server falls back to port 3000 when `PORT` is unset. The shared [launcher](../shared/playwright/start-vite.mjs) runs Vite as middleware and asks Node to bind port `0`, then reports the address of its open listener. Playwright captures that URL and the [shared fixture](../shared/playwright/helpers/index.ts) gives it to the browser. The operating system assigns the port while binding the listener, so there is no gap between finding and using a port.
 
-```ts
-const PORT = Number(process.env.CAIC_EXAMPLE_PORT) || (await probeFreePort());
-process.env.CAIC_EXAMPLE_PORT = String(PORT);
-```
+Keep Vite at version 8.3.0 or later, the version used by the shared launcher. Import `test` and `expect` from the shared fixture so `page.goto('/')` uses the captured URL. Call `openExample(page)` in `beforeEach`; it also asks the page to reduce motion. Use `waitForChatReady(page, PageObjectId.INPUT)` before chat assertions. The fixture checks console and page errors after each test.
 
-**Publish the port to the environment, as above.** Playwright evaluates the config once in the runner and again in every worker. Probe on each evaluation and each process gets a different port, the dev server binds one of them, and every test fails with `ERR_CONNECTION_REFUSED`.
-
-**Never hardcode a port in an example's [vite.config.ts](../react/basic-custom-element-fullscreen/vite.config.ts).** That overrides `PORT=`, and the example can no longer be run alongside the others.
-
-A checked-in port table is not an alternative. It grows with the catalog, every new-example PR edits it, and it conflicts on merge.
+Do not add a per-example port table or a probe that closes its listener before Vite starts.
 
 ## Selectors
 
@@ -93,9 +86,9 @@ Four, deliberately. Do not add suites for these, and do not re-litigate them.
 
 ## Examples that deviate
 
-`frameworks-vite` (`cross-env PORT=3016 vite`) and `frameworks-next` (`cross-env PORT=3018 next start`) pin their port inside the start script, which overrides the `PORT=` the webServer command supplies. `frameworks-next`'s `start` is the production server, so it needs a build first.
+`frameworks-vite` can use the shared Vite launcher even though its `start` script pins a port: the launcher reads its Vite config and serves it on a Node-assigned port for tests. Keep its existing vitest `test` script.
 
-For these two, skip the probe: set `webServer.command` to the example's own start script and `webServer.port` to the port that script pins.
+`frameworks-next` is not a Vite app. Give it a separate web-server command when adding its suite in #1424; its `start` script runs the production server and needs a build first.
 
 ## Naming
 
@@ -107,11 +100,23 @@ Open every spec with a purpose comment, per the inline-comments rule in [example
 
 ```bash
 npm run test:e2e --workspace=<example-workspace-name>
+npm run test:e2e
 ```
 
-- Playwright starts the dev server itself. Don't start one first.
-- Browsers install once per machine: `npx playwright install --with-deps`.
-- `reuseExistingServer` is inert here: the probe only ever returns a port nothing is listening on, so there is never a server to reuse. It stays in the config for the deviating examples below, which use a fixed port.
+- From the root, install dependencies once with `npm install` and build the shared packages with `npm run aiChat:build` before testing. Rebuild a changed package before testing its examples.
+- Install Chromium once per machine with `npx playwright install chromium`.
+- Playwright starts and stops each example's server. Root `test:e2e` runs up to four example suites at once, with one browser worker in each.
+- To compare local concurrency, run `E2E_CONCURRENCY=1 npm run test:e2e`, then repeat with `2` and `4`. Record elapsed time and peak memory before changing the default.
+
+The local baseline on 2026-09-29 ran the two golden suites after installation and the shared-package build. `/usr/bin/time -l` reported elapsed time and maximum RSS for one process, not aggregate memory across the process tree:
+
+| Concurrency | Elapsed | Time-reported maximum RSS |
+| --- | --- | --- |
+| 1 | 14.08s | 1.74 GB |
+| 2 | 7.75s | 1.71 GB |
+| 4 | 7.92s | 1.73 GB |
+
+Four is the initial ceiling for new suites; with only two suites, it offers no speedup over two. These figures exclude installation and build time, so they do not yet validate the 30-minute target for the eventual full suite.
 
 When and how the suite runs in CI at scale is not decided here. See [issue #2127](https://github.com/carbon-design-system/carbon-ai-chat/issues/2127).
 
@@ -120,7 +125,7 @@ When and how the suite runs in CI at scale is not decided here. See [issue #2127
 - [ ] `npm run test:e2e --workspace=<example>` passes on chromium.
 - [ ] `npm run build --workspace=<example>` exits 0.
 - [ ] The suite covers the example's one concern plus the baseline above.
-- [ ] No port is hardcoded anywhere in the example.
+- [ ] The Playwright config uses the shared launcher and fixture; it assigns no port.
 - [ ] Every spec opens with a purpose comment.
 
 ## React vs Web Components

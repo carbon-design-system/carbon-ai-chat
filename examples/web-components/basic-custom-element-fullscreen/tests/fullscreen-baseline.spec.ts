@@ -17,29 +17,23 @@
  */
 
 import { PageObjectId } from '@carbon/ai-chat/server';
-import { expect, test } from '@playwright/test';
-import { watchForConsoleErrors } from '../../../shared/playwright/helpers';
+import {
+  expect,
+  openExample,
+  test,
+  waitForChatReady,
+} from '../../../shared/playwright/helpers';
 
-test.describe('basic fullscreen', async () => {
-  let errors: string[] = [];
-
+test.describe('basic fullscreen', () => {
   test.beforeEach(async ({ page }) => {
-    errors = [];
-
-    await page.goto('/');
-
-    watchForConsoleErrors(page, errors);
-  });
-
-  test.afterEach(async () => {
-    await expect.poll(() => errors).toEqual([]);
+    await openExample(page);
   });
 
   test('mounts fullscreen and open, with no console errors', async ({
     page,
   }) => {
     // `openChatByDefault` means the conversation is up without a launcher click.
-    await expect(page.getByTestId(PageObjectId.INPUT)).toBeVisible();
+    await waitForChatReady(page, PageObjectId.INPUT);
 
     // `showFrame: false` leaves no 'show-frame' attribute on the shell host, so
     // the chat fills its container rather than sitting in a framed window.

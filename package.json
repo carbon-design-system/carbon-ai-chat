@@ -40,7 +40,7 @@
     "lint:styles": "stylelint '**/*.scss' --report-needless-disables --report-invalid-scope-disables",
     "telemetry:config": "lerna run telemetry:config",
     "test": "lerna run test --stream",
-    "test:e2e": "lerna run test:e2e --stream",
+    "test:e2e": "node scripts/run-example-e2e.mjs",
     "validate:adrs": "node tools/validate-adrs.js",
     "validate:agents": "node tools/validate-agents-docs.js",
     "validate:skills": "node tools/validate-skills.js",
@@ -88,7 +88,8 @@
     "stylelint": "^17.0.0",
     "stylelint-config-carbon": "^1.22.0",
     "text-readability": "^1.1.0",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vite": "^8.3.0"
   },
   "commitlint": {
     "extends": [
