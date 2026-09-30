@@ -970,7 +970,7 @@ Baseline Jest + `jest-environment-jsdom` setup that verifies `ChatContainer` mou
 
 Tests `ChatContainer` with Vitest and happy-dom, covering chat mounting, launcher clicks, shadow DOM queries, and slotted React content.
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-frameworks-vite`
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-tests-vitest-happydom`
 
 <details>
 <summary>APIs and props demonstrated</summary>
