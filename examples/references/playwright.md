@@ -43,6 +43,8 @@ In order — use the first that works:
 1. **`getByRole` / `getByLabel`**, where the element has a stable accessible name. This doubles as an accessibility check. The send button qualifies: `getByRole('button', { name: /send/i })`.
 2. **`PageObjectId`** test IDs from `@carbon/ai-chat/server`, where no dependable role or name exists — the contenteditable input, or anything dynamic or localized.
 
+Use Playwright locators for actions and checks. They wait for the target to be ready. If a role or text matches more than once, chain or filter the locator within a stable region.
+
 Never reach into the chat's own markup with a CSS or structural selector, and never assert on raw model output.
 
 The example's own elements are a different matter — select those however the example defines them. The host `<div>` an
@@ -65,10 +67,21 @@ To work out what that behavior is, read two things:
 
 Then stop. A second concern means a second example — see the single-purpose rule in [examples/AGENTS.md](../AGENTS.md#authoring-rules).
 
+## Accessibility
+
+- Use role and label locators where they work. They check that a control has a name, but cannot prove the full flow is accessible.
+- If the example adds an interactive flow, test its keyboard path and focus when UI opens or closes. Follow [the repo accessibility guide](../../references/accessibility.md) for WCAG 2.1 AA checks and screen-reader review.
+- For an axe scan, wait until the UI reaches the state you want to test. Use `@axe-core/playwright` to scan the page or `AxeBuilder.include()` to scan one region. Assert that `violations` is empty. Add the package when an example needs a scan; it is not in the shared fixture today.
+- To scan for WCAG 2.1 A and AA rules, use `withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])`. Avoid broad exclusions: they skip every rule for all child elements. Link each known issue and keep any temporary exclusion narrow.
+
+An axe scan catches some issues, but cannot prove WCAG conformance. Check keyboard use and screen-reader output by hand for new behavior.
+
 ## Determinism
 
 - Settle a stream before asserting on it. Assert the end of the reply, not a partial state mid-flight.
-- No real timestamps, no randomness, no live network.
+- Use Playwright's fresh page and context for each test. Put shared navigation in `beforeEach`. Do not rely on another test's messages, storage, cookies, or order.
+- Use retrying checks such as `await expect(locator).toBeVisible()` or `toHaveText()` for UI changes. Await actions and checks. Avoid fixed sleeps and one-time checks such as `expect(await locator.isVisible()).toBe(true)`.
+- No real timestamps or randomness. If an example needs an external response, register a `page.route()` with fixed data before navigation; never depend on a live third-party service.
 - Disable animation where it gates an assertion.
 
 An example is non-deterministic when its reply depends on a live service or on the clock. Skip it rather than working around it.
@@ -123,6 +136,10 @@ Four is the initial ceiling for new suites; with only two suites, it offers no s
 
 When and how the suite runs in CI at scale is not decided here. See [issue #2127](https://github.com/carbon-design-system/carbon-ai-chat/issues/2127).
 
+## Debugging
+
+Debug an example with `npm run test:e2e --workspace=<example> -- --debug` to inspect actions and locators. For an intermittent failure, rerun one test with `npm run test:e2e --workspace=<example> -- --grep '<test name>' --trace on`. Inspect the trace's actions, DOM snapshots, and requests. Keep full-run tracing off; when CI is added, capture traces on the first retry rather than every test.
+
 ## Definition of done
 
 - [ ] `npm run test:e2e --workspace=<example>` passes on chromium.
@@ -143,3 +160,5 @@ This guide stays one file: both flavors share the dev server, `@playwright/test`
 - [examples/AGENTS.md](../AGENTS.md) — read when adding or changing an example
 - [examples/react/AGENTS.md](../react/AGENTS.md) and [examples/web-components/AGENTS.md](../web-components/AGENTS.md) — flavor deltas
 - [demo/tests/README.md](../../demo/tests/README.md) — read for existing Playwright helper patterns
+- [Playwright best practices](https://playwright.dev/docs/best-practices) — read when choosing locators, assertions, isolation, or debugging steps
+- [Playwright accessibility testing](https://playwright.dev/docs/accessibility-testing) — read when adding an axe scan or checking its limits
