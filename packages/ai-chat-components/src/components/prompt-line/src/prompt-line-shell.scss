@@ -152,12 +152,10 @@
   align-items: center;
 }
 
-:host(:not([expanded])) ::slotted([slot='message-actions']) {
+:host(:not([expanded])) slot[name='message-actions'] {
+  display: flex;
   align-self: flex-start;
-  // !important required to override global CSS reset (common.scss) that sets
-  // margin: 0 on all divs including slotted elements
-  // stylelint-disable-next-line declaration-no-important
-  margin-block-start: layout.$spacing-04 !important;
+  margin-block-start: layout.$spacing-04;
 }
 
 // Lay the real action container's buttons out in a row with consistent

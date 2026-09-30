@@ -51,7 +51,6 @@ const treeshake = true;
  */
 const dtsTsConfig = {
   compilerOptions: {
-    baseUrl: './',
     jsx: 'react-jsx', // Enables the new JSX runtime
     allowSyntheticDefaultImports: true, // Allows default imports for React
     esModuleInterop: true, // Ensures compatibility with ES modules
@@ -276,7 +275,9 @@ async function postBuild() {
 
       // Find import/export lines and transform only the small, allowed parts in them.
       // Then replace those lines with placeholders so global replacements don't touch them.
-      const importExportRegex = /^[ \t]*(?:import|export)[^\r\n]*(?:\r?\n|$)/gm;
+      // The sourceMappingURL comment is masked too: files keep their `es` names, so
+      // `chat.cds-aichat-container.js` must still point at its own map.
+      const importExportRegex = /^[ \t]*(?:import|export|\/\/# sourceMappingURL=)[^\r\n]*(?:\r?\n|$)/gm;
       const placeholders = [];
 
       const masked = content.replace(importExportRegex, (match) => {
