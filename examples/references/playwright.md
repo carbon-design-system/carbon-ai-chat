@@ -12,7 +12,7 @@ Copy that example's [playwright.config.ts](../react/basic-custom-element-fullscr
 "devDependencies": { "@playwright/test": "^1.63.0", "vite": "^8.3.0" }
 ```
 
-**Name the script `test:e2e`, not `test`.** Three examples already use `test` for a different test runner: `frameworks-vite` runs vitest, and `tests-jest-happydom` and `tests-jest-jsdom` run jest. Calling yours `test` would replace theirs.
+**Name the script `test:e2e`, not `test`.** Three examples already use `test` for a different test runner: `tests-vitest-happydom` runs vitest, and `tests-jest-happydom` and `tests-jest-jsdom` run jest. Calling yours `test` would replace theirs.
 
 ## Config conventions
 
@@ -86,7 +86,7 @@ Four, deliberately. Do not add suites for these, and do not re-litigate them.
 
 ## Examples that deviate
 
-`frameworks-vite` can use the shared Vite launcher even though its `start` script pins a port: the launcher reads its Vite config and serves it on a Node-assigned port for tests. Keep its existing vitest `test` script.
+`tests-vitest-happydom` can use the shared Vite launcher even though its `start` script pins a port: the launcher reads its Vite config and serves it on a Node-assigned port for tests. Keep its existing vitest `test` script.
 
 `frameworks-react-17` and `frameworks-react-18` already have Playwright suites with fixed ports and `test` scripts. Root `npm test` still runs them. Do not copy their setup for new suites; migrate them to the shared launcher and `test:e2e` in #1424.
 

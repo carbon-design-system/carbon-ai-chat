@@ -68,6 +68,75 @@ const footerActions = [
 ];
 
 describe('aichat workspace shell', function () {
+  it('fits beside a flex sibling under a page sizing reset and contains overflow', async () => {
+    const container = await fixture<HTMLElement>(html`
+      <div style="display: flex; inline-size: 600px; block-size: 400px;">
+        <style>
+          cds-aichat-workspace-shell {
+            box-sizing: content-box;
+          }
+        </style>
+        <div style="flex: 0 0 200px;">Sidebar</div>
+        <cds-aichat-workspace-shell>
+          <div slot="body">${'Long content '.repeat(100)}</div>
+        </cds-aichat-workspace-shell>
+      </div>
+    `);
+    const el = container.querySelector(
+      'cds-aichat-workspace-shell'
+    ) as CDSAIChatWorkspaceShell;
+    await el.updateComplete;
+    const shell = el.shadowRoot!.querySelector(
+      '.cds-aichat-workspace-shell'
+    ) as HTMLElement;
+    const body = el.querySelector('[slot="body"]') as HTMLElement;
+    body.style.whiteSpace = 'nowrap';
+
+    expect(el.getBoundingClientRect().width).to.be.closeTo(400, 0.5);
+    expect(shell.getBoundingClientRect().width).to.be.closeTo(400, 0.5);
+    expect(shell.getBoundingClientRect().height).to.be.closeTo(400, 0.5);
+    expect(container.scrollWidth).to.equal(container.clientWidth);
+    expect(shell.scrollWidth).to.be.greaterThan(shell.clientWidth);
+    shell.scrollLeft = 20;
+    expect(shell.scrollLeft).to.equal(20);
+  });
+
+  it('fills the notification width without changing notifications outside the shell', async () => {
+    const container = await fixture<HTMLElement>(html`
+      <div style="inline-size: 600px; block-size: 400px;">
+        <style>
+          .page-notification {
+            box-sizing: border-box;
+            border: 1px solid;
+            max-inline-size: 18rem;
+            min-inline-size: 18rem;
+            padding: 16px;
+          }
+        </style>
+        <div class="page-notification" slot="notification">Outside</div>
+        <cds-aichat-workspace-shell>
+          <div class="page-notification" slot="notification">Inside</div>
+        </cds-aichat-workspace-shell>
+      </div>
+    `);
+    const el = container.querySelector(
+      'cds-aichat-workspace-shell'
+    ) as CDSAIChatWorkspaceShell;
+    await el.updateComplete;
+
+    const notification = el.querySelector(
+      '[slot="notification"]'
+    ) as HTMLElement;
+    const outside = container.querySelector(
+      '.page-notification'
+    ) as HTMLElement;
+    expect(notification.getBoundingClientRect().width).to.be.closeTo(598, 0.5);
+    expect(outside.getBoundingClientRect().width).to.be.closeTo(288, 0.5);
+
+    container.style.inlineSize = '240px';
+    expect(notification.getBoundingClientRect().width).to.be.closeTo(238, 0.5);
+  });
+
   it('should render cds-aichat-workspace-shell in DOM', async () => {
     const el = await fixture<CDSAIChatWorkspaceShell>(
       html`<cds-aichat-workspace-shell></cds-aichat-workspace-shell>`

@@ -119,6 +119,30 @@ Here's a minimal implementation.
 </script>
 ```
 
+#### Filtering across multiple words
+
+The `query` passed to your `items` function is the **full editor text up to the cursor**, including spaces. The overlay stays open as the user types and the query grows — there is no word boundary that resets or closes it.
+
+Filter against the full query string to match suggestions across words:
+
+```js
+autocomplete: {
+  items: (query) =>
+    ALL_ITEMS.filter((i) =>
+      i.label.toLowerCase().includes(query.toLowerCase())
+    ),
+},
+```
+
+Because `query` may contain leading or trailing spaces (for example, `"translate "` after the user pauses mid-phrase), trim before comparing if you want to treat `"translate"` and `"translate "` as the same filter:
+
+```js
+items: (query) => {
+  const q = query.trim().toLowerCase();
+  return q ? ALL_ITEMS.filter((i) => i.label.toLowerCase().includes(q)) : ALL_ITEMS;
+},
+```
+
 ### Using with file uploads
 
 ```html

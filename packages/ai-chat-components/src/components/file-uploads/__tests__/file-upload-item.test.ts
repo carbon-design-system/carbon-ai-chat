@@ -139,12 +139,15 @@ describe('file-upload-item', () => {
       // Without this the chip carries 36px of dead trailing space. Carbon exposes
       // no part= for it, so the rule is injected into its shadow root.
       const el = await mountReadOnly({ id: 'a', name: 'report.pdf' });
-      const injected = Array.from(
-        innerItem(el).shadowRoot?.querySelectorAll('style') ?? []
-      ).map((style) => style.textContent ?? '');
-      expect(
-        injected.some((text) => text.includes('.cds--file__state-container'))
-      ).to.be.true;
+      await settle(el);
+      const root = innerRoot(el);
+      const state = root.querySelector('.cds--file__state-container')!;
+      const filename = root.querySelector('.cds--file-filename')!;
+      expect(getComputedStyle(state).display).to.equal('none');
+      expect(state.getBoundingClientRect().width).to.equal(0);
+      expect(getComputedStyle(filename).marginInlineEnd).to.equal(
+        getComputedStyle(document.documentElement).fontSize
+      );
     });
 
     it('picks a file-type icon from the mime type alone', async () => {
@@ -171,6 +174,8 @@ describe('file-upload-item', () => {
       );
       expect(preview).to.exist;
       expect(preview!.getAttribute('src')).to.contain('data:image/gif');
+      const filename = innerRoot(el).querySelector('.cds--file-filename')!;
+      expect(getComputedStyle(filename).marginInlineStart).to.equal('2px');
     });
 
     it('falls back to an icon for a non-image url', async () => {

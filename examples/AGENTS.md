@@ -25,7 +25,7 @@ When `npm run aiChat:start` is running in another terminal, example Vite dev ser
 
 ## Smoke tests
 
-Playwright is the smoke-test mechanism for examples. New suites use `test:e2e`. `frameworks-vite` and both `tests-jest-*` examples use `test` for another runner. The existing `frameworks-react-17` and `frameworks-react-18` Playwright suites also use `test`. Keep them in the root `npm test` run until they move to the shared setup in #1424.
+Playwright is the smoke-test mechanism for examples. New suites use `test:e2e`. `tests-vitest-happydom` and both `tests-jest-*` examples use `test` for another runner. The existing `frameworks-react-17` and `frameworks-react-18` Playwright suites also use `test`. Keep them in the root `npm test` run until they move to the shared setup in #1424.
 
 Read [playwright.md](references/playwright.md) before adding or changing an example's tests. It carries the goldens to copy, how a port is allocated, the selector rules, and the four examples that are deliberately skipped.
 
@@ -40,7 +40,7 @@ A Playwright suite is **not** required here yet: most examples have none, so the
 
 ## Authoring rules
 
-**Single-purpose rule**: each example demonstrates exactly one concern. If a change would add a second concern, create a new example instead. Framework-variant examples (`frameworks-next`, `frameworks-vite`, `tests-jest-happydom`, `tests-jest-jsdom`, `frameworks-react-17`, `frameworks-react-18`) count the framework / test-runner integration as their "one thing" — keep their chat configuration as thin as possible.
+**Single-purpose rule**: each example demonstrates exactly one concern. If a change would add a second concern, create a new example instead. Framework-variant examples (`frameworks-next`, `tests-vitest-happydom`, `tests-jest-happydom`, `tests-jest-jsdom`, `frameworks-react-17`, `frameworks-react-18`) count the framework / test-runner integration as their "one thing" — keep their chat configuration as thin as possible.
 
 **Base-template rule**: non-float examples derive from the `basic-custom-element-fullscreen` baseline — `ChatCustomElement` (or `<cds-aichat-custom-element>`) + `layout.showFrame: false` + `openChatByDefault: true`. The float-pattern examples (`basic-float`, `custom-element-as-float`, `custom-element-as-float-lazy-load`, `history-float`, `watch-state`, `watch-state-redux`) are the documented exceptions — they demonstrate the launcher chat shape with host UI alongside it.
 

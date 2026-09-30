@@ -8,19 +8,11 @@
  */
 
 /**
- * Mock backend for the Vite + Vitest example.
+ * Mock backend for the Vitest and happy-dom example.
  *
- * Demonstrates: a synchronous `customSendMessage` that stands in for a real
- * service so the dev server (and Vitest suite) can exercise the chat surface
- * without network plumbing. The "one thing" demonstrated by this example is
- * the Vite + Vitest toolchain glue, so this handler is intentionally small.
- *
- * APIs exercised:
- *   - `ChatInstance.messaging.addMessage`
- *   - `MessageResponseTypes.TEXT`
- *
- * Start reading at: the empty-input branch in `customSendMessage` for the
- * welcome-message convention used by the chat runtime.
+ * Uses ChatInstance.messaging.addMessage and MessageResponseTypes.TEXT to
+ * show a welcome message and echo user input when you run the app.
+ * Start with the empty-input branch for the welcome-message path.
  */
 
 import {
@@ -30,7 +22,7 @@ import {
   MessageResponseTypes,
 } from '@carbon/ai-chat';
 
-const WELCOME_TEXT = `Welcome to the Vite + Vitest Carbon AI Chat example.
+const WELCOME_TEXT = `Welcome to the Vitest and happy-dom Carbon AI Chat example.
 
 Send any message to receive an echo response from the mock backend.`;
 
@@ -61,7 +53,7 @@ async function customSendMessage(
       generic: [
         {
           response_type: MessageResponseTypes.TEXT,
-          text: `Echo from the Vite mock backend: "${request.input.text}".`,
+          text: `Echo from the mock backend: "${request.input.text}".`,
         },
       ],
     },
