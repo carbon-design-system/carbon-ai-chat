@@ -8,7 +8,7 @@
 
 - Kind: TypeAlias
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/types/Type_reference.SystemMessageVariant.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/types/Type_reference.SystemMessageVariant.html
 
 Visual layout for a SystemMessageItem.
 

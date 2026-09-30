@@ -8,7 +8,7 @@
 
 - Kind: Function
 - Category: Utilities
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/functions/Type_reference.getRawText.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/functions/Type_reference.getRawText.html
 
 Project a Tiptap `JSONContent` doc to a plain-text string. Mirrors the
 `rawValue` projection: text nodes contribute their text, mention/command

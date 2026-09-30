@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Service desk
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.AgentAvailability.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.AgentAvailability.html
 
 Information about the current availability of an agent while a user is waiting to be connected. If these are not set
 the Carbon AI Chat will provide generic messaging letting the user know that a request for an agent has been sent.
@@ -30,7 +30,7 @@ interface AgentAvailability
 
 The estimated wait time for the user in minutes. E.g. "Current wait time is 2 minutes."
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.AgentAvailability.html#estimatedwaittime)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.AgentAvailability.html#estimatedwaittime)
 
 ### message
 
@@ -38,7 +38,7 @@ The estimated wait time for the user in minutes. E.g. "Current wait time is 2 mi
 
 A custom message to display to the user containing the updated status. This may contain markdown.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.AgentAvailability.html#message)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.AgentAvailability.html#message)
 
 ### positionInQueue
 
@@ -46,4 +46,4 @@ A custom message to display to the user containing the updated status. This may 
 
 The current position of the user in a queue. E.g. "You are number 2 in line."
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.AgentAvailability.html#positioninqueue)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.AgentAvailability.html#positioninqueue)

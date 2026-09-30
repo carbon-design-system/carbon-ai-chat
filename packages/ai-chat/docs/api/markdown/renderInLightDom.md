@@ -8,7 +8,7 @@
 
 - Kind: Function
 - Category: Utilities
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/functions/Type_reference.renderInLightDom.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/functions/Type_reference.renderInLightDom.html
 
 Bridge an element (or React node) built inside the shadow-DOM editor into
 the page's LIGHT DOM, where the host's stylesheet applies. Intended for

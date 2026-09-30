@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.PartialItemChunk.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.PartialItemChunk.html
 
 The interface for a chunk that represents a partial update (or first time chunk) to a message item.
 
@@ -27,7 +27,7 @@ interface PartialItemChunk
 The partial details of the item. The client will decide what rules to follow for merging this in with any
 existing data for the same item (which is identified using the ItemStreamingMetadata.id property).
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.PartialItemChunk.html#partial_item)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.PartialItemChunk.html#partial_item)
 
 ### partial_response
 
@@ -35,7 +35,7 @@ existing data for the same item (which is identified using the ItemStreamingMeta
 
 Change the agent display name and other items on the full response.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.PartialItemChunk.html#partial_response)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.PartialItemChunk.html#partial_response)
 
 ### streaming_metadata
 
@@ -43,4 +43,4 @@ Change the agent display name and other items on the full response.
 
 Additional metadata associated with the stream.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.PartialItemChunk.html#streaming_metadata)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.PartialItemChunk.html#streaming_metadata)

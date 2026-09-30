@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.MarkdownRendererCodeBlockData.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.MarkdownRendererCodeBlockData.html
 
 Parsed code-block payload extended by MarkdownRendererCodeBlockArgs —
 the argument shape the code-block renderer callback actually receives.
@@ -28,7 +28,7 @@ interface MarkdownRendererCodeBlockData
 
 The raw code text inside the fence. May be incomplete while streaming.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.MarkdownRendererCodeBlockData.html#code)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.MarkdownRendererCodeBlockData.html#code)
 
 ### isStreaming
 
@@ -37,7 +37,7 @@ The raw code text inside the fence. May be incomplete while streaming.
 True while the chat is still receiving chunks of the message this code
 block belongs to.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.MarkdownRendererCodeBlockData.html#isstreaming)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.MarkdownRendererCodeBlockData.html#isstreaming)
 
 ### language
 
@@ -45,7 +45,7 @@ block belongs to.
 
 Language identifier from the fence info string (empty when unset).
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.MarkdownRendererCodeBlockData.html#language)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.MarkdownRendererCodeBlockData.html#language)
 
 ## Related
 

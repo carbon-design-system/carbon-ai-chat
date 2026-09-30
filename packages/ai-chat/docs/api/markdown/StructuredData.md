@@ -10,7 +10,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.StructuredData.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.StructuredData.html
 
 Structured data that can be sent alongside or instead of plain text input.
 Carries an array of StructuredField entries plus `user_defined`, an
@@ -32,7 +32,7 @@ interface StructuredData
 
 The structured fields carried with the message.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.StructuredData.html#fields)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.StructuredData.html#fields)
 
 ### user_defined
 
@@ -42,7 +42,7 @@ The structured fields carried with the message.
 
 Escape hatch: arbitrary key-value data for user-defined implementations.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.StructuredData.html#user_defined)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.StructuredData.html#user_defined)
 
 ## Related
 
