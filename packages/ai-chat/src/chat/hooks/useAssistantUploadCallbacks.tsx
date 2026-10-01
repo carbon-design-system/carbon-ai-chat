@@ -19,14 +19,14 @@ interface UseAssistantUploadCallbacksReturn {
   /**
    * Called when the user selects one or more files via the attachment button in the
    * assistant (non-human-agent) context. Delegates each file to
-   * `ChatActionsImpl.handleFileSelectedForUpload` which orchestrates the full upload
+   * `ChatInstanceService.handleFileSelectedForUpload` which orchestrates the full upload
    * lifecycle (ADD_PENDING_UPLOAD → onFileUpload → UPDATE_PENDING_UPLOAD).
    */
   onAssistantFilesSelectedForUpload: (uploads: FileUpload[]) => void;
 
   /**
    * Called when the user removes a pending upload chip in the assistant context.
-   * Delegates to `ChatActionsImpl.removePendingUpload` which aborts any in-progress
+   * Delegates to `ChatInstanceService.removePendingUpload` which aborts any in-progress
    * upload and dispatches REMOVE_PENDING_UPLOAD.
    */
   onRemoveAssistantUpload: (uploadId: string) => void;

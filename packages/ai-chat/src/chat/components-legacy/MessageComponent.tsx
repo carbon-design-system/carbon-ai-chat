@@ -77,6 +77,7 @@ import {
   hasRequestFooter,
   isConnectToHumanAgent,
   isFullWidthUserDefined,
+  isItemStillStreaming,
   isOptionItem,
   isRequest,
   isResponse,
@@ -89,6 +90,7 @@ import CustomRequestFooterSlot from '../components/responseTypes/custom/CustomRe
 import { MessageFileAttachments } from '../components/helpers/MessageFileAttachments/MessageFileAttachments';
 import { messageHasDisplayableContent } from '../utils/streamingUtils';
 import { createDidCatchErrorData } from '../utils/miscUtils';
+import { OnErrorData } from '../../types/config/ErrorConfig';
 import { timestampToTimeString } from '../utils/timeUtils';
 import { type ScrollElementIntoViewFunction } from './MessagesComponent';
 import { MessageTypeComponent } from './MessageTypeComponent';
@@ -285,6 +287,19 @@ interface MessageState {
   didRenderErrorOccur: boolean;
 
   /**
+   * The version of the item that {@link didRenderErrorOccur} belongs to. A newer `item` gets one fresh attempt
+   * to render. The key is `item` rather than the local item because the chat's own bookkeeping writes (such as
+   * marking the item announced) copy the local item but keep `item`, and retrying on those would loop.
+   */
+  renderErrorItem?: GenericItem;
+
+  /**
+   * A render error caught while the item was still streaming. It is reported only if the item still fails once
+   * its stream completes.
+   */
+  unreportedRenderError?: OnErrorData;
+
+  /**
    * Indicates if the focus handle has focus. This will be used to display the focus indicator on the message.
    */
   focusHandleHasFocus: boolean;
@@ -386,10 +401,56 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       : null;
   }
 
+  /**
+   * Gives a newer version of the item one fresh attempt to render after a render error.
+   */
+  static getDerivedStateFromProps(
+    props: MessageProps,
+    state: MessageState
+  ): Partial<MessageState> | null {
+    const { item } = props.localMessageItem;
+    if (item === state.renderErrorItem) {
+      return null;
+    }
+    return {
+      renderErrorItem: item,
+      didRenderErrorOccur: false,
+      unreportedRenderError: undefined,
+    };
+  }
+
+  /**
+   * Whether this component has reported a render error to `onError`.
+   */
+  private didReportRenderError = false;
+
+  /**
+   * Reports a render error to `onError`.
+   */
+  private reportRenderError(errorData: OnErrorData) {
+    // An item with no streaming state came from addMessage or a final_response, which reported once per item before
+    // recovery existed, so a still-broken newer version of it is the same failure and doesn't report again. Upsert
+    // and chunk versions carry streaming state and report each failing version.
+    if (
+      this.didReportRenderError &&
+      !this.props.localMessageItem.ui_state.streamingState
+    ) {
+      return;
+    }
+    this.didReportRenderError = true;
+    this.props.serviceManager.actions.errorOccurred(errorData);
+  }
+
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    this.props.serviceManager.actions.errorOccurred(
-      createDidCatchErrorData('Message', error, errorInfo)
-    );
+    const errorData = createDidCatchErrorData('Message', error, errorInfo);
+    if (isItemStillStreaming(this.props.localMessageItem)) {
+      this.setState({
+        didRenderErrorOccur: true,
+        unreportedRenderError: errorData,
+      });
+      return;
+    }
+    this.reportRenderError(errorData);
     this.setState({ didRenderErrorOccur: true });
   }
 
@@ -407,8 +468,18 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
   }
 
   componentDidUpdate() {
+    const { unreportedRenderError } = this.state;
+    if (
+      unreportedRenderError &&
+      !isItemStillStreaming(this.props.localMessageItem)
+    ) {
+      this.reportRenderError(unreportedRenderError);
+      this.setState({ unreportedRenderError: undefined });
+    }
     const uiState = this.props.localMessageItem.ui_state;
-    if (uiState.needsAnnouncement) {
+    // A pass that rendered nothing (a failed retry) has nothing to announce, so keep the
+    // announcement for the pass that renders the error box.
+    if (uiState.needsAnnouncement && this.ref.current) {
       this.props.ariaAnnouncer(this.ref.current);
       this.props.serviceManager.store.dispatch(
         actions.setMessageWasAnnounced(uiState.id)
@@ -420,10 +491,21 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
   }
 
   /**
+   * Whether this item failed to draw, or the chat already knows it can't.
+   */
+  private isFailedItem() {
+    return (
+      this.state.didRenderErrorOccur ||
+      Boolean(this.props.localMessageItem.ui_state.cannotDraw)
+    );
+  }
+
+  /**
    * Indicates if we should render the failed message instead of the actual message.
    */
   private shouldRenderFailedMessage() {
-    if (this.state.didRenderErrorOccur) {
+    // An item the chat can't draw never reaches the renderers, which would throw on it.
+    if (this.isFailedItem()) {
       return true;
     }
 
@@ -483,6 +565,13 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
    * could be data that doesn't match what we were expecting.
    */
   private renderFailedRenderMessage() {
+    if (
+      this.isFailedItem() &&
+      isItemStillStreaming(this.props.localMessageItem)
+    ) {
+      // While the stream is open, hide the failed item and hold its error until the stream completes.
+      return null;
+    }
     const { messagesIndex } = this.props;
     return (
       <div

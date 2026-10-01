@@ -11,15 +11,16 @@ import {
   ChainOfThoughtStep,
   ChainOfThoughtStepStatus,
   ChatInstance,
+  CompleteItemChunk,
   CustomSendMessageOptions,
   GenericItemMessageFeedbackOptions,
   MessageResponse,
   MessageResponseTypes,
+  PartialItemChunk,
   ReasoningStep,
   ReasoningSteps,
   ReasoningStepOpenState,
   ResponseUserProfile,
-  StreamChunk,
   UserType,
 } from '@carbon/ai-chat';
 import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
@@ -33,6 +34,7 @@ import {
   WORD_DELAY,
 } from './constants';
 import { RESPONSE_MAP } from './responseMap';
+import { createResponseStream, sendResponse } from './sendResponse';
 
 async function sleep(milliseconds: number) {
   await new Promise((resolve) => {
@@ -269,6 +271,7 @@ async function doTextStreaming(
 ) {
   const signal = requestOptions?.signal;
   const responseID = uuid();
+  const stream = createResponseStream(instance, responseID);
   const words = text.split(' ');
   const totalWords = words.length;
 
@@ -331,7 +334,7 @@ async function doTextStreaming(
         typeof reasoningContent === 'string' ? '' : undefined;
 
       const emitReasoningChunk = (payload: ReasoningSteps) => {
-        const chunk: StreamChunk = {
+        const chunk: PartialItemChunk = {
           partial_item: {
             response_type: MessageResponseTypes.TEXT,
             text: '',
@@ -351,7 +354,7 @@ async function doTextStreaming(
           },
         };
 
-        instance.messaging.addMessageChunk(chunk);
+        stream.partial(chunk);
       };
 
       if (reasoningDisplaySteps?.length) {
@@ -445,11 +448,12 @@ async function doTextStreaming(
       lastWordIndex = index;
 
       await sleep(wordDelay);
-      // Each time you get a chunk back, you can call `addMessageChunk`.
-      const chunk: StreamChunk = {
+      // Each time you get a chunk back, pass it to the stream. With addMessageChunk the chat appends the chunks itself.
+      // With upsertMessage the helper in sendResponse.ts keeps the running text and sends the whole message each time.
+      const chunk: PartialItemChunk = {
         partial_item: {
           response_type: MessageResponseTypes.TEXT,
-          // The next chunk, the chat component will deal with appending these chunks.
+          // The next chunk. Only the new text goes here, in either mode.
           text: `${word} `,
           streaming_metadata: {
             // This is the id of the item inside the response. If you have multiple items in this message they will be
@@ -477,10 +481,10 @@ async function doTextStreaming(
           chainOfThoughtStreamingSteps[index];
       }
 
-      instance.messaging.addMessageChunk(chunk);
+      stream.partial(chunk);
     }
 
-    // When you are done streaming this item in the response, you should call the complete item.
+    // When you are done streaming this item in the response, you should send the complete item.
     // This requires ALL the concatenated final text. If you want to append text, run a post processing safety check, or anything
     // else that mutates the data, you can do so here.
     const completeItem = {
@@ -493,7 +497,7 @@ async function doTextStreaming(
       },
     };
 
-    const chunk: StreamChunk = {
+    const chunk: CompleteItemChunk = {
       complete_item: completeItem,
       streaming_metadata: {
         // This is the id of the entire message response.
@@ -514,7 +518,7 @@ async function doTextStreaming(
       chunk.partial_response.message_options.reasoning = reasoningFinalState;
     }
 
-    instance.messaging.addMessageChunk(chunk);
+    stream.complete(chunk);
 
     // When all and any chunks are complete, you send a final response.
     // You can rearrange or re-write everything here, but what you send here is what the chat will display when streaming
@@ -545,9 +549,7 @@ async function doTextStreaming(
       finalResponse.message_options.reasoning = reasoningFinalState;
     }
 
-    await instance.messaging.addMessageChunk({
-      final_response: finalResponse,
-    } as StreamChunk);
+    await stream.final(finalResponse);
   } finally {
     signal?.removeEventListener('abort', abortHandler);
   }
@@ -558,7 +560,8 @@ function doWelcomeText(instance: ChatInstance) {
     label: key,
     value: { input: { text: key } },
   }));
-  instance.messaging.addMessage({
+  return sendResponse(instance, {
+    id: uuid(),
     output: {
       generic: [
         {
@@ -588,7 +591,8 @@ function doText(
     text,
   };
 
-  const message: MessageResponse = {
+  const message: MessageResponse & { id: string } = {
+    id: uuid(),
     output: {
       generic: [genericItem],
     },
@@ -653,7 +657,7 @@ function doText(
     };
   }
 
-  instance.messaging.addMessage(message);
+  return sendResponse(instance, message);
 }
 
 function doTextWithHumanProfile(
@@ -661,7 +665,7 @@ function doTextWithHumanProfile(
   text: string = MARKDOWN,
   responseUserProfile: ResponseUserProfile = defaultHumanUserProfile
 ) {
-  doText(instance, text, responseUserProfile);
+  return doText(instance, text, responseUserProfile);
 }
 
 function doTextWithNonWatsonAssistantProfile(
@@ -669,7 +673,7 @@ function doTextWithNonWatsonAssistantProfile(
   text: string = MARKDOWN,
   responseUserProfile: ResponseUserProfile = defaultAlternativeAssistantProfile
 ) {
-  doText(instance, text, responseUserProfile);
+  return doText(instance, text, responseUserProfile);
 }
 
 function doTextWithWatsonAgentProfile(
@@ -677,7 +681,7 @@ function doTextWithWatsonAgentProfile(
   text: string = MARKDOWN,
   responseUserProfile: ResponseUserProfile = defaultWatsonAgentProfile
 ) {
-  doText(instance, text, responseUserProfile);
+  return doText(instance, text, responseUserProfile);
 }
 
 async function doTextStreamingWithNonWatsonAssistantProfile(
@@ -727,7 +731,7 @@ function doTextChainOfThought(
   userProfile?: ResponseUserProfile,
   chainOfThought: ChainOfThoughtStep[] = fullChainOfThought
 ) {
-  doText(instance, text, userProfile, chainOfThought);
+  return doText(instance, text, userProfile, chainOfThought);
 }
 
 async function doTextWithReasoningStepsStreaming(
@@ -768,15 +772,15 @@ async function doTextWithReasoningTraceStreaming(
   );
 }
 
-function doHTML(
+async function doHTML(
   instance: ChatInstance,
   text: string = HTML,
   userProfile?: ResponseUserProfile,
   chainOfThought?: ChainOfThoughtStep[]
 ) {
   // Make sure simple standalone html works as well.
-  doText(instance, '<b>Carbon is bold!</b>', userProfile);
-  doText(instance, text, userProfile, chainOfThought);
+  await doText(instance, '<b>Carbon is bold!</b>', userProfile);
+  await doText(instance, text, userProfile, chainOfThought);
 }
 
 async function doHTMLStreaming(
@@ -817,7 +821,7 @@ function doTextWithFeedback(instance: ChatInstance) {
     },
   };
 
-  doText(instance, feedbackText, undefined, undefined, feedback);
+  return doText(instance, feedbackText, undefined, undefined, feedback);
 }
 
 async function doTextWithFeedbackStreaming(
@@ -862,6 +866,7 @@ async function doTextStreamingEarlyResolve(
 ) {
   const signal = requestOptions?.signal;
   const responseID = uuid();
+  const stream = createResponseStream(instance, responseID);
   const fullText =
     "Testing showStopButtonImmediately edge case. Please ensure 'Show Stop Button Immediately' is enabled in the demo settings.\n\n" +
     'This test simulates a scenario where the customSendMessage promise resolves after the first chunk, but streaming continues.\n\n' +
@@ -894,7 +899,7 @@ async function doTextStreamingEarlyResolve(
       const chunkText = chunks[i];
       lastChunkIndex = i;
 
-      const chunk: StreamChunk = {
+      const chunk: PartialItemChunk = {
         partial_item: {
           response_type: MessageResponseTypes.TEXT,
           text: chunkText,
@@ -908,7 +913,7 @@ async function doTextStreamingEarlyResolve(
         },
       };
 
-      instance.messaging.addMessageChunk(chunk);
+      stream.partial(chunk);
       await sleep(1000);
 
       if (isCanceled) {
@@ -934,12 +939,12 @@ async function doTextStreamingEarlyResolve(
       },
     };
 
-    instance.messaging.addMessageChunk({
+    stream.complete({
       complete_item: completeItem,
       streaming_metadata: {
         response_id: responseID,
       },
-    } as StreamChunk);
+    });
 
     // Send final response
     const finalResponse: MessageResponse = {
@@ -949,9 +954,7 @@ async function doTextStreamingEarlyResolve(
       },
     };
 
-    await instance.messaging.addMessageChunk({
-      final_response: finalResponse,
-    } as StreamChunk);
+    await stream.final(finalResponse);
   } finally {
     signal?.removeEventListener('abort', abortHandler);
   }

@@ -12,9 +12,13 @@ import {
   UpsertMessageUpdater,
 } from '../../types/config/MessagingConfig';
 import {
+  GenericItem,
   Message,
   MessageRequest,
   MessageResponse,
+  MessageResponseTypes,
+  PauseItem,
+  TextItem,
 } from '../../types/messaging/Messages';
 import {
   BusEventPreReceive,
@@ -22,16 +26,71 @@ import {
   BusEventType,
 } from '../../types/events/eventBusTypes';
 import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
-import actions from '../store/actions';
-import { addDefaultsToMessage, isRequest } from '../utils/messageUtils';
+import { OnErrorType } from '../../types/config/ErrorConfig';
+import isEqual from 'lodash-es/isEqual.js';
+import actions, {
+  MessageWriteOptions,
+  ReceivedLocalItems,
+} from '../store/actions';
+import {
+  createLocalMessageItemsForNestedMessageItems,
+  outputItemToLocalItem,
+} from '../schema/outputItemToLocalItem';
+import {
+  addDefaultsToMessage,
+  isConnectToHumanAgent,
+  isHiddenOutputItem,
+  isPause,
+  isItemStillStreaming,
+  isRequest,
+  streamItemID,
+} from '../utils/messageUtils';
+import { deepFreeze } from '../utils/lang/objectUtils';
 import { consoleError } from '../utils/miscUtils';
+import {
+  hasDisplayableContentForItem,
+  shouldShowStopStreaming,
+} from '../utils/streamingUtils';
 import { ServiceManager } from './ServiceManager';
+
+/**
+ * Whether an upserted item counts as content for the stream-start announcement. A text
+ * item whose `text` isn't a string doesn't, and checking it would throw trimming it.
+ */
+function isAnnounceableContent(item: GenericItem): boolean {
+  if (
+    item.response_type === MessageResponseTypes.TEXT &&
+    typeof (item as TextItem).text !== 'string'
+  ) {
+    return false;
+  }
+  return hasDisplayableContentForItem(item, item.response_type);
+}
 
 const VALID_STATES = new Set<MessageState>([
   MessageState.STREAMING,
   MessageState.COMPLETE,
   MessageState.ERROR,
 ]);
+
+/**
+ * One item of an upserted message, paired with the local item the reducer shows for it.
+ */
+interface FanOutEntry {
+  index: number;
+  item: GenericItem;
+  isHidden: boolean;
+  /** Undefined for a hidden item, which has no local item of its own. */
+  shownLocalItem: LocalMessageItem | undefined;
+}
+
+/**
+ * What a fan-out compares against to skip items that did not change.
+ */
+interface SkipsUnchanged {
+  refsBefore: Map<string, LocalMessageItem>;
+  previousItems: GenericItem[];
+}
 
 const noop = () => {
   /* intentionally empty */
@@ -46,13 +105,45 @@ const noop = () => {
  * - Track the most recent {@link MessageState} for each message ID. `addMessage` and
  *   `addMessageChunk` call {@link markComplete} / {@link markStreaming} so that mixing
  *   those APIs with `upsertMessage` does not double-fire `pre:receive` / `receive`.
+ * - Track which message IDs are currently mid-stream, so the stop streaming button
+ *   survives one concurrent stream finishing while another is still running.
  */
 class MessageUpsertCoordinator {
   private readonly serviceManager: ServiceManager;
 
   private readonly chainByID = new Map<string, Promise<void>>();
 
+  /**
+   * Receive-dedup record, **not** a liveness record. `addMessage` and `addMessageChunk`
+   * write it too, it deliberately retains {@link MessageState.COMPLETE} for the life of
+   * the session, and nothing drains it when a stream is canceled. Use
+   * {@link streamingIDs} to ask whether a message is still streaming.
+   */
   private readonly stateByID = new Map<string, MessageState>();
+
+  /**
+   * IDs currently mid-stream via `upsertMessage`. Written only by {@link runOne}, which
+   * adds on {@link MessageState.STREAMING} and removes on {@link MessageState.COMPLETE} /
+   * {@link MessageState.ERROR}, so the two operations stay symmetric and the set cannot
+   * leak the way {@link stateByID} does.
+   */
+  private readonly streamingIDs = new Set<string>();
+
+  /**
+   * How many of each message's `pause` items have run, counted in `output.generic`
+   * order, so a later upsert of the same message never runs one again. `Infinity` when
+   * `addMessage` or history delivered the message, since they run its pauses themselves.
+   */
+  private readonly pausesRunByID = new Map<string, number>();
+
+  /**
+   * A token for each message id that the item loop of a message from `addMessage` or
+   * `final_response` checks before showing each item. Removing the message, or a restart,
+   * drops the token, which ends the loop. A later write for the id takes the same token,
+   * so its items and the earlier write's keep showing side by side, as `addMessage`'s
+   * always have.
+   */
+  private readonly revealByID = new Map<string, object>();
 
   constructor(serviceManager: ServiceManager) {
     this.serviceManager = serviceManager;
@@ -65,6 +156,17 @@ class MessageUpsertCoordinator {
   markComplete(messageID: string | undefined) {
     if (messageID) {
       this.stateByID.set(messageID, MessageState.COMPLETE);
+      // `addMessage` and history already ran, or are running, this message's pauses, so
+      // a later upsert of it must not run them again. Always overwrite, even when upsert
+      // has already advanced the cursor: a finite count would let a subsequent upsert
+      // replay pauses from the wrong index.
+      this.pausesRunByID.set(messageID, Infinity);
+      // If a streaming upsert was in progress for this id, `addMessage` delivering the
+      // same id closes the stream. Without this, the stop button would stay up with
+      // nothing left to take it down.
+      if (this.streamingIDs.delete(messageID)) {
+        this.serviceManager.messageService.hideStopStreamingButtonIfIdle();
+      }
     }
   }
 
@@ -87,33 +189,76 @@ class MessageUpsertCoordinator {
   }
 
   /**
-   * Drops both the in-flight promise chain and recorded state for a single message ID.
-   * Called from `removeMessages` and after `finalizeStreamingMessage` to keep the maps
-   * draining for idle IDs.
+   * Returns true when any message is currently mid-stream via `upsertMessage`.
+   */
+  hasStreamingMessages(): boolean {
+    return this.streamingIDs.size > 0;
+  }
+
+  /**
+   * Settles every message still registered as mid-stream and drops the registrations.
+   *
+   * A canceled `upsertMessage` stream has no terminal upsert to settle it — the host is
+   * told to stop and simply stops calling. Nothing else drains {@link streamingIDs}, so
+   * without this the stop streaming button stays visible and the items keep rendering
+   * mid-stream for the rest of the session.
+   *
+   * Deliberately settles *every* registered id rather than one. The ids are known — they
+   * are exactly {@link streamingIDs} — but nothing associates them with the request that
+   * was canceled, so there is no basis for picking a subset (see the `TODO(#1816)` on
+   * {@link MessageService#cancelCurrentMessageRequest}). Settling all of them is right for
+   * both callers, which already mean "stop everything". A host that ignores the abort and
+   * keeps streaming re-registers on its next `STREAMING` upsert.
+   */
+  endAllStreaming(): boolean {
+    const settledAny = this.streamingIDs.size > 0;
+    for (const messageID of this.streamingIDs) {
+      const refsBefore = this.snapshotLocalItemRefs(messageID);
+      this.serviceManager.store.dispatch(
+        actions.endMessageStreaming(messageID)
+      );
+      this.reportUndrawableItems(messageID, refsBefore, false);
+    }
+    this.streamingIDs.clear();
+    return settledAny;
+  }
+
+  /**
+   * Drops the in-flight promise chain, the recorded state, any streaming registration,
+   * the pause record, and any reveal under way for a single message ID. Called from
+   * `removeMessages`.
    */
   clear(messageID: string) {
     this.stateByID.delete(messageID);
     this.chainByID.delete(messageID);
+    this.streamingIDs.delete(messageID);
+    this.pausesRunByID.delete(messageID);
+    this.revealByID.delete(messageID);
   }
 
   /**
-   * Drops every entry from both maps. Called from `restartConversation` and from
-   * {@link ChatInstance.destroySession} so a reset chat does not carry stale state into a
-   * fresh session.
+   * Drops every entry from every collection. Called from `restartConversation` and
+   * from {@link ChatInstance.destroySession} so a reset chat does not carry stale state
+   * into a fresh session.
    */
   clearAll() {
     this.chainByID.clear();
     this.stateByID.clear();
+    this.streamingIDs.clear();
+    this.pausesRunByID.clear();
+    this.revealByID.clear();
   }
 
   /**
    * Entry point for `instance.messaging.upsertMessage`. See {@link UpsertMessageUpdater}
-   * for the updater contract.
+   * for the updater contract. The chat's own callers pass `options` to say which
+   * public method the write comes from; the public `upsertMessage` never does.
    */
   async upsert(
     messageID: string,
     nextState: MessageState,
-    updater: UpsertMessageUpdater
+    updater: UpsertMessageUpdater,
+    options: MessageWriteOptions = {}
   ): Promise<void> {
     if (typeof messageID !== 'string' || messageID.length === 0) {
       throw new TypeError(
@@ -131,16 +276,44 @@ class MessageUpsertCoordinator {
       throw new TypeError('upsertMessage: updater must be a function.');
     }
 
-    const prev = this.chainByID.get(messageID) ?? Promise.resolve();
-    // A predecessor failure for this id must not poison this caller's promise.
-    const next = prev
-      .catch(noop)
-      .then(() => this.runOne(messageID, nextState, updater));
-    this.chainByID.set(messageID, next);
+    // `addMessage` and `final_response` have never waited on an earlier write for their
+    // id, and no later write waits on them.
+    if (
+      options.origin === 'addMessage' ||
+      (options.origin === 'chunk' && nextState !== MessageState.STREAMING)
+    ) {
+      return this.runReceivedWrite(messageID, updater, options);
+    }
 
-    // Drain the chain entry once `next` settles. The trailing `.then(noop, noop)`
-    // detaches and absorbs the rejection so it isn't reported as unhandled — the
-    // original caller still sees the rejection via `return next` below.
+    // Chunk-STREAMING writes go through the per-id chain for serialization but bypass
+    // the full upsert lifecycle in runOne — they have their own events, announcements,
+    // and stop-button handling.
+    if (options.origin === 'chunk') {
+      return this.enqueue(messageID, () =>
+        this.runChunkWrite(messageID, updater, options)
+      );
+    }
+
+    return this.enqueue(messageID, () =>
+      this.runOne(messageID, nextState, updater, options)
+    );
+  }
+
+  /**
+   * Appends `worker` to the per-id promise chain for `messageID` and returns the
+   * resulting promise. A predecessor failure for this id does not poison the new entry.
+   * The chain entry is cleaned up once `worker` settles.
+   */
+  private enqueue(
+    messageID: string,
+    worker: () => Promise<void>
+  ): Promise<void> {
+    const prev = this.chainByID.get(messageID) ?? Promise.resolve();
+    const next = prev.catch(noop).then(worker);
+    this.chainByID.set(messageID, next);
+    // Detach a finalization handler that cleans up the chain entry. The trailing
+    // `.then(noop, noop)` absorbs the rejection so it isn't reported as unhandled —
+    // the original caller still sees the rejection via the returned `next`.
     next
       .finally(() => {
         if (this.chainByID.get(messageID) === next) {
@@ -148,41 +321,511 @@ class MessageUpsertCoordinator {
         }
       })
       .then(noop, noop);
-
     return next;
   }
 
   private async runOne(
     messageID: string,
     nextState: MessageState,
-    updater: UpsertMessageUpdater
+    updater: UpsertMessageUpdater,
+    options: MessageWriteOptions
   ): Promise<void> {
-    const result = await this.runUpdater(messageID, updater);
+    // A restart while the updater or `pre:receive` is pending must not write into the
+    // new conversation, the same check `addMessage` makes.
+    const { restartCount: initialRestartCount } = this.serviceManager;
+    const isStale = () =>
+      initialRestartCount !== this.serviceManager.restartCount;
 
-    const previousState = this.stateByID.get(messageID);
-    const willFireReceive =
-      nextState === MessageState.COMPLETE &&
-      previousState !== MessageState.COMPLETE;
+    // Fill in `history.timestamp`, `thread_id`, and `ui_state_internal` defaults the
+    // way `addMessage` does. Without these, message components render-crash because
+    // they read `message.history.timestamp` directly.
+    const result = addDefaultsToMessage(
+      await this.runUpdater(messageID, updater)
+    );
+    if (isStale()) {
+      return;
+    }
+
+    const { willFireReceive, settlesMessage } = transitionOf(
+      this.stateByID.get(messageID),
+      nextState
+    );
 
     if (willFireReceive) {
       await this.firePreReceive(messageID, result);
+      if (isStale()) {
+        return;
+      }
+    }
+
+    if (nextState === MessageState.COMPLETE && !options.isLatestWelcomeNode) {
+      // Picks the returning-user home screen, as `addMessage` does — but not
+      // for a welcome message, which should leave the home screen selector alone.
+      this.serviceManager.store.dispatch(
+        actions.updateHasSentNonWelcomeMessage(true)
+      );
     }
 
     const refsBefore = this.snapshotLocalItemRefs(messageID);
-    this.serviceManager.store.dispatch(actions.upsertMessage(result));
-    await this.fanOutChangedSlots(messageID, result, nextState, refsBefore);
+    const previousMessage = this.serviceManager.store.getState()
+      .allMessagesByID[messageID] as MessageResponse | undefined;
+    const holdFromIndex = this.findPauseToRun(messageID, result);
+    this.serviceManager.store.dispatch(
+      actions.upsertMessage(
+        result,
+        nextState === MessageState.STREAMING,
+        holdFromIndex,
+        options
+      )
+    );
+    this.reportUndrawableItems(messageID, refsBefore);
 
+    // Before the slot fan-out below: `serviceManager.fire` does not swallow listener
+    // exceptions, so a throwing user-defined-response handler would skip everything
+    // after `fanOutChangedSlots` — leaving the button up with nothing registered to
+    // take it down.
+    this.settleStreamingLiveness(messageID, nextState, result, holdFromIndex);
+
+    await this.fanOutChangedSlots(
+      messageID,
+      result,
+      nextState,
+      refsBefore,
+      previousMessage,
+      settlesMessage,
+      0,
+      holdFromIndex
+    );
+    if (isStale()) {
+      return;
+    }
+
+    // Record the committed transition before the pause reveal, so that a pause
+    // interrupted by a restart or removeMessages still leaves stateByID consistent
+    // with the store write that already happened. Without this, a subsequent write
+    // would compute willFireReceive against the stale pre-write state and re-fire
+    // pre:receive / receive.
     this.stateByID.set(messageID, nextState);
+
+    const revealed = await this.revealAfterPauses(
+      messageID,
+      result,
+      nextState,
+      holdFromIndex,
+      initialRestartCount
+    );
+    if (!revealed) {
+      return;
+    }
 
     if (willFireReceive) {
       await this.firePostReceiveAndFinalize(messageID, result);
     }
+
+    if (nextState === MessageState.COMPLETE) {
+      await this.handleNewConnectToAgentItems(
+        messageID,
+        result,
+        initialRestartCount
+      );
+    }
+  }
+
+  /**
+   * Stores a streaming write from `addMessageChunk`. Until `final_response` the chunk path
+   * keeps its own events, announcements, stop button, and send-queue hold, and records
+   * its own receive state, so none of the upsert lifecycle runs here. The message is
+   * stored as the updater returns it, without defaults, as the chunk path always has.
+   */
+  private async runChunkWrite(
+    messageID: string,
+    updater: UpsertMessageUpdater,
+    options: MessageWriteOptions
+  ): Promise<void> {
+    const { restartCount } = this.serviceManager;
+    const result = await this.runUpdater(messageID, updater);
+    if (restartCount === this.serviceManager.restartCount) {
+      this.serviceManager.store.dispatch(
+        actions.upsertMessage(result, true, undefined, options)
+      );
+    }
+  }
+
+  /**
+   * Stores a message from `addMessage`, or a chunk stream's `final_response`, the way
+   * `addMessage` always has. `receive()` has already fired `pre:receive` and checked for a
+   * restart.
+   *
+   * The message is stored first, with none of its items showing beyond the ones a stream
+   * already shows. `receive` fires next, without waiting for the items, which then show
+   * one at a time. A failure while storing the message is logged, and `receive` still
+   * fires. The write never joins the per-id chain, so it runs beside any other write for
+   * this id, and the write ends once `receive` has fired. A `receive` handler's error
+   * rejects the write.
+   */
+  private async runReceivedWrite(
+    messageID: string,
+    updater: UpsertMessageUpdater,
+    options: MessageWriteOptions
+  ): Promise<void> {
+    const initialRestartCount =
+      options.restartCount ?? this.serviceManager.restartCount;
+    const message = await updater(
+      this.serviceManager.store.getState().allMessagesByID[
+        messageID
+      ] as MessageResponse
+    );
+    if (initialRestartCount !== this.serviceManager.restartCount) {
+      return;
+    }
+
+    const reveal = this.revealByID.get(messageID) ?? {};
+    this.revealByID.set(messageID, reveal);
+    const isCurrent = () =>
+      this.revealByID.get(messageID) === reveal &&
+      initialRestartCount === this.serviceManager.restartCount;
+    this.storeReceivedMessage(
+      message,
+      options,
+      isCurrent,
+      initialRestartCount
+    ).catch((error) => {
+      consoleError('Error processing the message response', error);
+    });
+
+    if (!options.isLatestWelcomeNode) {
+      // Picks the returning-user home screen, as `runOne` does for native upserts, but
+      // only when the message actually stores — not for messages that become inline errors.
+      this.serviceManager.store.dispatch(
+        actions.updateHasSentNonWelcomeMessage(true)
+      );
+    }
+
+    // The stored message is the host's own object, so nobody may change it from here on.
+    deepFreeze(message);
+    await this.serviceManager.fire({
+      type: BusEventType.RECEIVE,
+      data: message,
+    });
+    this.markComplete(messageID);
+  }
+
+  /**
+   * Stores a message from `addMessage` or `final_response`, then shows its items. Only the
+   * part before the first item's wait runs before `receive` fires.
+   */
+  private async storeReceivedMessage(
+    message: MessageResponse,
+    options: MessageWriteOptions,
+    isCurrent: () => boolean,
+    initialRestartCount: number
+  ): Promise<void> {
+    const { store, messageService } = this.serviceManager;
+
+    // `addMessage` has always passed no request, which clears a host-set `request_id`.
+    message.request_id = options.requestMessage?.id;
+    addDefaultsToMessage(message);
+    const built = buildReceivedLocalItems(message, options.isLatestWelcomeNode);
+    const write = (received: ReceivedLocalItems) =>
+      store.dispatch(
+        actions.upsertMessage(message, false, undefined, {
+          origin: options.origin,
+          received,
+        })
+      );
+    write({ nestedLocalItems: [] });
+
+    // `showStopButtonImmediately` put the button up for the request; the response takes
+    // it down unless something is still streaming.
+    if (store.getState().config.public.messaging?.showStopButtonImmediately) {
+      messageService.hideStopStreamingButtonIfIdle();
+    }
+
+    await this.showReceivedItems(
+      message,
+      built,
+      write,
+      isCurrent,
+      initialRestartCount
+    );
+  }
+
+  /**
+   * Shows the items of a message from `addMessage` or `final_response` one at a time, in
+   * `output.generic` order. A pause waits, with the typing indicator up when it asks for
+   * one. A `connect_to_agent` item checks agent availability first, including a hidden
+   * one. Every other item fires its `userDefinedResponse` and footer events, then shows,
+   * unless it is hidden. Once `isCurrent` turns false, nothing more shows.
+   */
+  private async showReceivedItems(
+    message: MessageResponse,
+    {
+      localItems,
+      nestedLocalItems,
+      nestedLocalItemsByID,
+    }: BuiltReceivedLocalItems,
+    write: (received: ReceivedLocalItems) => void,
+    isCurrent: () => boolean,
+    initialRestartCount: number
+  ): Promise<void> {
+    const { store, actions: chatActions } = this.serviceManager;
+    const { config } = store.getState();
+    const generic = message.output.generic;
+    let addAfterID: string;
+
+    for (let index = 0; index < generic.length && isCurrent(); index++) {
+      const item = generic[index];
+      const localItem = localItems[index];
+      if (!item) {
+        continue;
+      }
+      if (isConnectToHumanAgent(item)) {
+        // Mark the item handled before the async availability check, so a later
+        // native upsertMessage COMPLETE write doesn't re-run the check for the
+        // same item (matching handleNewConnectToAgentItems:676-682).
+        store.dispatch(
+          actions.setMessageUIProperty(
+            localItem.ui_state.id,
+            'connectToAgentHandled',
+            true
+          )
+        );
+        await this.serviceManager.humanAgentService.handleConnectToHumanAgent(
+          localItem,
+          message,
+          config,
+          initialRestartCount
+        );
+      }
+      if (isPause(item)) {
+        await this.serviceManager.chunkProcessingService.waitForPause(
+          item as PauseItem,
+          initialRestartCount
+        );
+        continue;
+      }
+      await chatActions.handleUserDefinedResponseItems(
+        localItem,
+        message,
+        MessageState.COMPLETE,
+        nestedLocalItemsByID
+      );
+      await chatActions.handleCustomFooterSlot(localItem, message);
+      if (!isHiddenOutputItem(message, item) && isCurrent()) {
+        write({
+          localItem,
+          nestedLocalItems: nestedLocalItems[index],
+          addAfterID,
+        });
+        addAfterID = localItem.ui_state.id;
+      }
+    }
+  }
+
+  /**
+   * Returns the index in `output.generic` of the first `pause` item of the message that
+   * has not run yet, or `Infinity` when there is none. Items from there on are held back.
+   */
+  private findPauseToRun(messageID: string, result: MessageResponse): number {
+    const pausesRun = this.pausesRunByID.get(messageID) ?? 0;
+    let pausesSeen = 0;
+    for (const [index, item] of (result.output?.generic ?? []).entries()) {
+      if (item && isPause(item)) {
+        if (pausesSeen === pausesRun) {
+          return index;
+        }
+        pausesSeen++;
+      }
+    }
+    return Infinity;
+  }
+
+  /**
+   * Reveals the items held back behind `pause` items, the way `addMessage` does: waits
+   * out each pause, with the typing indicator up when it asks for one, then shows and
+   * fans out the items up to the next pause. Returns false when a restart or removal
+   * during a pause, or a restart during a fan-out, means the write should go no further.
+   */
+  private async revealAfterPauses(
+    messageID: string,
+    result: MessageResponse,
+    nextState: MessageState,
+    holdFromIndex: number,
+    initialRestartCount: number
+  ): Promise<boolean> {
+    const { store } = this.serviceManager;
+    const generic = result.output?.generic ?? [];
+    let pauseIndex = holdFromIndex;
+
+    while (pauseIndex < generic.length) {
+      await this.serviceManager.chunkProcessingService.waitForPause(
+        generic[pauseIndex] as PauseItem,
+        initialRestartCount
+      );
+      if (
+        initialRestartCount !== this.serviceManager.restartCount ||
+        !store.getState().allMessagesByID[messageID]
+      ) {
+        return false;
+      }
+      this.pausesRunByID.set(
+        messageID,
+        (this.pausesRunByID.get(messageID) ?? 0) + 1
+      );
+
+      // A stop pressed during the pause settled the stream, so the reveal must not put
+      // the items back mid-stream.
+      const isStreaming =
+        nextState === MessageState.STREAMING &&
+        this.streamingIDs.has(messageID);
+      const revealState =
+        nextState === MessageState.STREAMING && !isStreaming
+          ? MessageState.COMPLETE
+          : nextState;
+      const revealFromIndex = pauseIndex + 1;
+      pauseIndex = this.findPauseToRun(messageID, result);
+      const refsBefore = this.snapshotLocalItemRefs(messageID);
+      store.dispatch(actions.upsertMessage(result, isStreaming, pauseIndex));
+      this.reportUndrawableItems(messageID, refsBefore);
+      if (isStreaming) {
+        this.announceStreamStarts(result, pauseIndex);
+      }
+      await this.fanOutChangedSlots(
+        messageID,
+        result,
+        revealState,
+        refsBefore,
+        // firesEveryItem=true means previousMessage is unused; pass undefined
+        // so a future caller can't accidentally copy this self-reference and
+        // get silent event suppression.
+        undefined,
+        true,
+        revealFromIndex,
+        pauseIndex
+      );
+      if (initialRestartCount !== this.serviceManager.restartCount) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Runs the `connect_to_agent` handling `addMessage` gives, once per item: the first
+   * time the item shows in a {@link MessageState.COMPLETE} write. The item is marked
+   * before the availability check starts, so a later upsert never repeats it. The check
+   * is tied to `initialRestartCount`, the restart count when the write began, so a
+   * restart during the write drops its result.
+   */
+  private async handleNewConnectToAgentItems(
+    messageID: string,
+    result: MessageResponse,
+    initialRestartCount: number
+  ): Promise<void> {
+    const { store } = this.serviceManager;
+    const state = store.getState();
+    const newItems = state.assistantMessageState.localMessageIDs
+      .map((id) => state.allMessageItemsByID[id])
+      .filter(
+        (item) =>
+          item?.fullMessageID === messageID &&
+          isConnectToHumanAgent(item.item) &&
+          !item.ui_state.connectToAgentHandled
+      );
+
+    for (const item of newItems) {
+      if (initialRestartCount !== this.serviceManager.restartCount) {
+        return;
+      }
+      store.dispatch(
+        actions.setMessageUIProperty(
+          item.ui_state.id,
+          'connectToAgentHandled',
+          true
+        )
+      );
+      await this.serviceManager.humanAgentService.handleConnectToHumanAgent(
+        item,
+        result,
+        state.config,
+        initialRestartCount
+      );
+    }
+  }
+
+  /**
+   * Records whether `messageID` is still streaming, then brings the stop button and the
+   * stream-start announcements in line with that.
+   */
+  private settleStreamingLiveness(
+    messageID: string,
+    nextState: MessageState,
+    result: MessageResponse,
+    holdFromIndex: number
+  ) {
+    if (nextState === MessageState.STREAMING) {
+      this.streamingIDs.add(messageID);
+      this.syncStopStreamingButton(nextState, result, false);
+      this.announceStreamStarts(result, holdFromIndex);
+      return;
+    }
+    const wasStreaming = this.streamingIDs.delete(messageID);
+    this.syncStopStreamingButton(nextState, result, wasStreaming);
+  }
+
+  private syncStopStreamingButton(
+    nextState: MessageState,
+    result: MessageResponse,
+    wasStreaming: boolean
+  ) {
+    const { store } = this.serviceManager;
+
+    if (nextState === MessageState.STREAMING) {
+      const isCancellable = (result.output?.generic ?? []).some(
+        (item) => item?.streaming_metadata?.cancellable
+      );
+      const { isVisible } =
+        store.getState().assistantInputState.stopStreamingButtonState;
+      if (shouldShowStopStreaming({ cancellable: isCancellable }, isVisible)) {
+        store.dispatch(actions.setStopStreamingButtonVisible(true));
+      }
+      return;
+    }
+
+    // COMPLETE and ERROR are both terminal for this message — but the affordance only
+    // goes away once nothing else is streaming. `runOne` already dropped this message
+    // from `streamingIDs` above, so the check below reads "is anything *else* live".
+    // A message that never streamed leaves the button alone: it may be up for another
+    // request (`showStopButtonImmediately`), and upserts never touched it before.
+    if (wasStreaming) {
+      this.serviceManager.messageService.hideStopStreamingButtonIfIdle();
+    }
+  }
+
+  /**
+   * Announces reasoning start and streaming start for a streaming message, once each,
+   * the way `addMessageChunk` does. Only items that show count as content: not the ones
+   * the reducer hides, not a pause, and not the ones held back from `holdFromIndex` on.
+   */
+  private announceStreamStarts(result: MessageResponse, holdFromIndex: number) {
+    const { message_options: messageOptions } = result;
+    this.serviceManager.actions.announceStreamStarts(result.id, {
+      hasReasoning: Boolean(messageOptions?.reasoning),
+      hasDisplayableContent: (result.output?.generic ?? []).some(
+        (item, index) =>
+          item &&
+          index < holdFromIndex &&
+          !isPause(item) &&
+          !isHiddenOutputItem(result, item) &&
+          isAnnounceableContent(item)
+      ),
+      responseUserProfile: messageOptions?.response_user_profile,
+    });
   }
 
   /**
    * Phase 1: read the existing message (rejecting requests), invoke the updater, and
-   * normalize the returned response so the rest of the pipeline can rely on a
-   * well-formed {@link MessageResponse} carrying the right id and history defaults.
+   * check that the returned response carries the right id.
    */
   private async runUpdater(
     messageID: string,
@@ -219,11 +862,6 @@ class MessageUpsertCoordinator {
         `upsertMessage: updater returned message id "${result.id}" but call was for "${messageID}".`
       );
     }
-
-    // Fill in `history.timestamp`, `thread_id`, and `ui_state_internal` defaults the
-    // way `addMessage` does. Without these, message components render-crash because
-    // they read `message.history.timestamp` directly.
-    addDefaultsToMessage(result);
 
     return result;
   }
@@ -273,46 +911,157 @@ class MessageUpsertCoordinator {
   }
 
   /**
-   * Phase 4: for each top-level local item belonging to `messageID`, re-emit the
-   * `USER_DEFINED_RESPONSE` slot and custom-footer slot — but skip items whose
-   * `LocalMessageItem` reference is identical to the pre-dispatch snapshot, because
-   * that means the reducer kept them verbatim and downstream slot accumulators would
-   * churn for nothing.
+   * Reports each shown item of `messageID` that the chat can't draw and now shows an
+   * error for: one the last write or settle replaced, that is no longer streaming. A
+   * reused local item was reported when it was written, so each version reports once.
+   *
+   * Pass `false` for `reportErrors` when the settle is user-initiated (stop/cancel):
+   * a malformed in-flight item that was never completed is not actionable host data.
+   */
+  private reportUndrawableItems(
+    messageID: string,
+    refsBefore: Map<string, LocalMessageItem>,
+    reportErrors = true
+  ) {
+    const state = this.serviceManager.store.getState();
+    for (const localID of state.assistantMessageState.localMessageIDs) {
+      const localItem = state.allMessageItemsByID[localID];
+      const { cannotDraw } = localItem?.ui_state ?? {};
+      if (
+        localItem?.fullMessageID !== messageID ||
+        !cannotDraw ||
+        refsBefore.get(localID) === localItem ||
+        isItemStillStreaming(localItem)
+      ) {
+        continue;
+      }
+      if (!reportErrors) {
+        continue;
+      }
+      const responseType = localItem.item.response_type;
+      this.serviceManager.actions.errorOccurred({
+        errorType: OnErrorType.RENDER,
+        message: this.serviceManager.intl.formatMessage(
+          { id: 'errors_upsertItemCannotDraw' },
+          {
+            responseType,
+            messageID,
+            missing: cannotDraw.missing.join(', '),
+          }
+        ),
+        otherData: {
+          messageID,
+          responseType,
+          missing: cannotDraw.missing,
+          item: localItem.item,
+        },
+      });
+    }
+  }
+
+  /**
+   * Phase 4: for each item of the upserted message, re-emit the `USER_DEFINED_RESPONSE`
+   * slot and custom-footer slot. It walks `output.generic` rather than the rendered list
+   * so that items the reducer leaves out ({@link isHiddenOutputItem}) still fire, as they
+   * do for `addMessage`. A shown item is skipped when the reducer kept its
+   * `LocalMessageItem` reference, and a hidden one when it is deep-equal to the item at
+   * the same position before, so downstream slot accumulators don't churn for nothing.
+   *
+   * `firesEveryItem` turns the skip off. It is set on the write that settles the
+   * message, the one that fires `receive` or the first `ERROR`, so every item hears its
+   * final state, as `addMessage` gives every item its `COMPLETE` event. An item that
+   * shows would often fire anyway, since settling rebuilds a streamed item, but a hidden
+   * one has no streaming state to change.
+   *
+   * Only items from `fromIndex` up to `toIndex` in `output.generic` fire, so items held
+   * back behind a pause fire when they are revealed. A `pause` item never fires.
    */
   private async fanOutChangedSlots(
     messageID: string,
     result: MessageResponse,
     nextState: MessageState,
-    refsBefore: Map<string, LocalMessageItem>
+    refsBefore: Map<string, LocalMessageItem>,
+    previousMessage: MessageResponse | undefined,
+    firesEveryItem: boolean,
+    fromIndex: number,
+    toIndex: number
   ): Promise<void> {
-    const { actions: chatActions, store } = this.serviceManager;
-    const stateAfter = store.getState();
+    const { actions: chatActions } = this.serviceManager;
+    const skipsUnchanged: SkipsUnchanged | undefined = firesEveryItem
+      ? undefined
+      : { refsBefore, previousItems: previousMessage?.output?.generic ?? [] };
 
-    const topLevelLocalItemIDs =
-      stateAfter.assistantMessageState.localMessageIDs
-        .map((id) => stateAfter.allMessageItemsByID[id])
-        .filter((item) => item && item.fullMessageID === messageID)
-        .map((item) => item.ui_state.id);
-
-    for (const localID of topLevelLocalItemIDs) {
-      const localItem = stateAfter.allMessageItemsByID[localID];
-      if (!localItem) {
-        continue;
+    for (const entry of this.fanOutEntries(messageID, result, toIndex)) {
+      const localItem =
+        entry.index >= fromIndex
+          ? this.localItemToFanOut(messageID, result, entry, skipsUnchanged)
+          : undefined;
+      if (localItem) {
+        await chatActions.handleUserDefinedResponseItems(
+          localItem,
+          result,
+          nextState
+        );
+        await chatActions.handleCustomFooterSlot(localItem, result);
       }
-      const previousRef = refsBefore.get(localID);
-      if (previousRef !== undefined && previousRef === localItem) {
-        // Reducer reused this item verbatim — nothing changed for slots to react to.
-        continue;
-      }
-
-      await chatActions.handleUserDefinedResponseItems(
-        localItem,
-        result,
-        nextState
-      );
-
-      await chatActions.handleCustomFooterSlot(localItem, result);
     }
+  }
+
+  /**
+   * Pairs each item of the message before `toIndex`, pauses left out, with the local
+   * item the reducer shows for it. Shown items are matched by their position among the
+   * shown items, so a hidden item doesn't shift the ones after it.
+   */
+  private fanOutEntries(
+    messageID: string,
+    result: MessageResponse,
+    toIndex: number
+  ): FanOutEntry[] {
+    const state = this.serviceManager.store.getState();
+    const shownLocalItems = state.assistantMessageState.localMessageIDs
+      .map((id) => state.allMessageItemsByID[id])
+      .filter((localItem) => localItem?.fullMessageID === messageID);
+    let shownIndex = 0;
+
+    return (result.output?.generic ?? [])
+      .map((item, index) => ({ item, index }))
+      .filter(({ item, index }) => index < toIndex && item && !isPause(item))
+      .map(({ item, index }) => {
+        const isHidden = isHiddenOutputItem(result, item);
+        const shownLocalItem = isHidden
+          ? undefined
+          : shownLocalItems[shownIndex++];
+        return { index, item, isHidden, shownLocalItem };
+      });
+  }
+
+  /**
+   * Returns the local item to fire one item's events with, or undefined to skip it. With
+   * `skipsUnchanged` set, a shown item is skipped when the reducer kept its local item's
+   * reference, and a hidden one when it is deep-equal to the item at its position before.
+   */
+  private localItemToFanOut(
+    messageID: string,
+    result: MessageResponse,
+    { index, item, isHidden, shownLocalItem }: FanOutEntry,
+    skipsUnchanged: SkipsUnchanged | undefined
+  ): LocalMessageItem | undefined {
+    if (!isHidden) {
+      const isReused =
+        shownLocalItem &&
+        skipsUnchanged?.refsBefore.get(shownLocalItem.ui_state.id) ===
+          shownLocalItem;
+      return isReused ? undefined : shownLocalItem;
+    }
+    if (skipsUnchanged && isEqual(skipsUnchanged.previousItems[index], item)) {
+      return undefined;
+    }
+    const localItem = outputItemToLocalItem(item, result);
+    // A hidden item has no stored local item to lend it an id. A stable one keeps its
+    // user-defined slot the same from one write to the next.
+    localItem.ui_state.id =
+      streamItemID(messageID, item) ?? `${messageID}-hidden-${index}`;
+    return localItem;
   }
 
   /**
@@ -336,6 +1085,72 @@ class MessageUpsertCoordinator {
     }
     this.serviceManager.messageService.finalizeStreamingMessage(messageID);
   }
+}
+
+/** The local items built for a message from `addMessage` or `final_response`. */
+interface BuiltReceivedLocalItems {
+  /** The local item built for each index in `output.generic`. */
+  localItems: LocalMessageItem[];
+
+  /** The local items nested in each of those, by the same index. */
+  nestedLocalItems: LocalMessageItem[][];
+
+  /** All the nested local items, by id. */
+  nestedLocalItemsByID: Record<string, LocalMessageItem>;
+}
+
+/**
+ * Builds the local items for a message from `addMessage` or `final_response`, nested ones
+ * included, before any of them shows. An item takes its streaming id as its local id, so
+ * a streamed item keeps its identity, and a new uuid otherwise.
+ */
+function buildReceivedLocalItems(
+  message: MessageResponse,
+  isLatestWelcomeNode = false
+): BuiltReceivedLocalItems {
+  const built: BuiltReceivedLocalItems = {
+    localItems: [],
+    nestedLocalItems: [],
+    nestedLocalItemsByID: {},
+  };
+  message.output.generic.forEach((item, index) => {
+    if (!item) {
+      return;
+    }
+    const localItem = outputItemToLocalItem(item, message, isLatestWelcomeNode);
+    const nestedLocalItems: LocalMessageItem[] = [];
+    createLocalMessageItemsForNestedMessageItems(
+      localItem,
+      message,
+      false,
+      nestedLocalItems,
+      true
+    );
+    built.localItems[index] = localItem;
+    built.nestedLocalItems[index] = nestedLocalItems;
+    for (const nested of nestedLocalItems) {
+      built.nestedLocalItemsByID[nested.ui_state.id] = nested;
+    }
+  });
+  return built;
+}
+
+/**
+ * What moving from `previousState` to `nextState` means for a message: whether it fires
+ * `receive` (its first COMPLETE), and whether it settles every item's slots (that, or its
+ * first ERROR).
+ */
+function transitionOf(
+  previousState: MessageState | undefined,
+  nextState: MessageState
+) {
+  const willFireReceive =
+    nextState === MessageState.COMPLETE &&
+    previousState !== MessageState.COMPLETE;
+  const settlesMessage =
+    willFireReceive ||
+    (nextState === MessageState.ERROR && previousState !== MessageState.ERROR);
+  return { willFireReceive, settlesMessage };
 }
 
 export { MessageUpsertCoordinator };

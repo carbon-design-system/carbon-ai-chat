@@ -45,7 +45,7 @@ interface UseInputImperativeHandleArgs {
 /**
  * Builds the imperative `InputFunctions` object (focus / content / editor
  * access), publishes it on the forwarded `ref`, and registers it on the
- * service manager so `ChatActionsImpl` can drive the input. The object is
+ * service manager so `ChatInstanceService` can drive the input. The object is
  * memoized with empty deps because it only reaches the live surface through
  * stable refs/callbacks — re-creating it would needlessly re-fire the
  * imperative handle and the registration effect.

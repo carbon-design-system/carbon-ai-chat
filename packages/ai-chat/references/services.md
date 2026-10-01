@@ -113,7 +113,7 @@ class MessageService {
 
 - Register new services through [`ServiceManager`](../src/chat/services/ServiceManager.ts) and [`loadServices`](../src/chat/services/loadServices.ts).
 - **There is no teardown yet.** Unmount only unmounts the React root, so every store subscription, timer, and in-flight request a service owns outlives the mount. Keep the unsubscribe handle and the timer id you create, so the teardown that #1681 builds can dispose them. `destroySession()` resets session data; it is not a teardown.
-- Public methods on `ChatActionsImpl` must be reflected on the `ChatInstance` type in [src/chat/instance/](../src/chat/instance).
+- Public methods on `ChatInstanceService` must be reflected on the `ChatInstance` type in [`src/types/instance/ChatInstance.ts`](../src/types/instance/ChatInstance.ts). The instance object is constructed in [`src/chat/utils/chatBoot.ts`](../src/chat/utils/chatBoot.ts).
 
 ## Testing services
 

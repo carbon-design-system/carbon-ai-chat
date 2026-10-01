@@ -261,5 +261,6 @@
   "aria_disclaimerPanel": "Disclaimer panel",
   "aria_responsePanel": "Response panel",
   "aria_iframePanel": "Content panel",
-  "aria_viewSourcePanel": "View source panel"
+  "aria_viewSourcePanel": "View source panel",
+  "errors_upsertItemCannotDraw": "The chat showed an error in place of the \"{responseType}\" item in message \"{messageID}\", because these fields are missing or the wrong type: {missing}."
 }

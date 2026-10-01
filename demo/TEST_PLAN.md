@@ -54,6 +54,7 @@ We should be looking for what here can can automate, and as we do, we can remove
 - [ ] **audio**
 - [ ] **button**
 - [ ] **card**
+- [ ] **card (stream)**
 - [ ] **carousel**
 - [ ] **code**
 - [ ] **code (stream)**
@@ -106,6 +107,21 @@ Set **Chat Configuration → Markdown → Table rendering** to `customRenderers.
 - [ ] The table renders as the demo's own "Custom table: N columns, M rows" node instead of the Carbon table, in all four container shapes (react/web-component × float/fullscreen).
 - [ ] That node is a child of the outermost chat element, not of the markdown element inside the shadow root — check in devtools. The tree that element sits in differs by shape: the document for the React ones, `<demo-app>`'s shadow root for the web-component ones. Add a rule to that root and confirm it reaches the node.
 - [ ] Send **table (stream)** and confirm one node is reused as chunks arrive, rather than a new one per chunk.
+
+#### Send mode (`?useUpsertMessage`)
+
+The mock backend sends every response through `addMessage` / `addMessageChunk` by default. Add `?useUpsertMessage` to the URL on a pre-release build and it sends through `upsertMessage` instead. The helper that decides is `src/customSendMessage/sendResponse.ts`.
+
+- The flag works only on pre-release builds: localhost, 127.0.0.1, ::1, and paths under `/tag/next/` or `/tag/alpha/`. On `/tag/latest/` and `/version/…` the demo ignores it and stays on `addMessage` / `addMessageChunk`.
+- On those same builds, **Chat Configuration → Messaging** shows a "Use upsertMessage" checkbox. It sets or clears the flag and reloads the page. It doesn't appear on `latest` or `/version/…`.
+- Playwright runs the suite in three projects: `chromium` and `firefox` in the default `addMessageChunk` mode, and `chromium-add-message` with the flag (which adds `?useUpsertMessage`). `chromium-add-message` skips `react-host-compatibility.spec.ts`, which calls `addMessage` itself. `send-response.spec.ts` checks which API each mode calls, the environment gate, and `card (stream)`; its checkbox case runs in `chromium` only.
+
+Run these in both modes:
+
+- [ ] Streamed text, reasoning steps and trace, chain of thought, **table (stream)** (the custom renderer node is reused as chunks arrive), **user_defined (stream)**, **conversational search (stream)**, and **text (stream early resolve)** with "Show stop button immediately" on.
+- [ ] Stop a stream partway: the message settles and the stop button goes away.
+- [ ] **card (stream)** and **carousel (stream)**: these entries only appear in the response map when `?useUpsertMessage` is set. The card's body and footer appear before the stream ends; carousel cards arrive one at a time.
+- [ ] With VoiceOver, both modes announce the same things.
 
 ### Track 3: Mobile & Non-Chrome Browser Support
 

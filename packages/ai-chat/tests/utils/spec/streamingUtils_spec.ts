@@ -8,8 +8,9 @@
  */
 
 import {
+  applyChunk,
   chunkHasDisplayableContent,
-  mergePartialResponseOptions,
+  deriveStreamingItemText,
   messageHasDisplayableContent,
   resetStopStreamingButton,
   resolveChunkContext,
@@ -29,6 +30,55 @@ describe('streamingUtils', () => {
       }),
     };
   };
+
+  describe('deriveStreamingItemText', () => {
+    // The chunk flow accumulates text in `chunks` — the item's own text holds only the
+    // first chunk, so the join must win while chunks exist.
+    it('joins chunks for a chunk-delivered item mid-stream', () => {
+      expect(
+        deriveStreamingItemText('Hello ', {
+          isDone: false,
+          chunks: [{ text: 'Hello ' }, { text: 'world' }],
+        })
+      ).toBe('Hello world');
+    });
+
+    // The upsert flow streams whole-message snapshots: `chunks` is always empty and the
+    // item's text is complete on every update. Joining the empty array rendered
+    // upsert-streamed text as blank until COMPLETE — the regression this pins.
+    it('falls back to the item text for a snapshot-delivered item mid-stream', () => {
+      expect(
+        deriveStreamingItemText('Hello world so far', {
+          isDone: false,
+          chunks: [],
+        })
+      ).toBe('Hello world so far');
+    });
+
+    it('uses the item text once streaming is done', () => {
+      expect(
+        deriveStreamingItemText('The final text', {
+          isDone: true,
+          chunks: [{ text: 'stale ' }, { text: 'chunks' }],
+        })
+      ).toBe('The final text');
+    });
+
+    it('uses the item text when there is no streaming state', () => {
+      expect(deriveStreamingItemText('Plain text', undefined)).toBe(
+        'Plain text'
+      );
+    });
+
+    it('treats chunks with missing text as empty rather than "undefined"', () => {
+      expect(
+        deriveStreamingItemText('', {
+          isDone: false,
+          chunks: [{ text: 'a' }, {}, { text: 'b' }],
+        })
+      ).toBe('ab');
+    });
+  });
 
   describe('resolveChunkContext', () => {
     it('extracts metadata for partial chunks', () => {
@@ -109,72 +159,78 @@ describe('streamingUtils', () => {
         expect(store.dispatch).not.toHaveBeenCalled();
       });
 
-      describe('with streamingMessageID parameter', () => {
-        it('keeps button visible when streaming is active (edge case fix)', () => {
-          const store = createStore(true);
-
-          // Simulate: customSendMessage resolved but streaming still active
-          resetStopStreamingButton(store as any, 'active-stream-123');
-
-          // Button should STAY visible
-          expect(store.dispatch).not.toHaveBeenCalled();
-        });
-
-        it('hides button when no streaming active (streamingMessageID is null)', () => {
-          const store = createStore(true);
-
-          // Simulate: no active streaming
-          resetStopStreamingButton(store as any, null);
-
-          // Button should be hidden
-          expect(store.dispatch).toHaveBeenCalledTimes(2);
-        });
-
-        it('hides button when streamingMessageID is undefined', () => {
-          const store = createStore(true);
-
-          resetStopStreamingButton(store as any, undefined);
-
-          // Button should be hidden
-          expect(store.dispatch).toHaveBeenCalledTimes(2);
-        });
-
-        it('maintains backward compatibility (no parameter)', () => {
-          const store = createStore(true);
-
-          // Old behavior: always hide when called
-          resetStopStreamingButton(store as any);
-
-          expect(store.dispatch).toHaveBeenCalledTimes(2);
-        });
-
-        it('does nothing when button not visible, regardless of streamingMessageID', () => {
-          const store = createStore(false);
-
-          resetStopStreamingButton(store as any, 'active-stream');
-
-          expect(store.dispatch).not.toHaveBeenCalled();
-        });
-      });
+      // This helper hides unconditionally. Deciding *whether* to hide while other
+      // messages are still streaming belongs to MessageService — see its
+      // hideStopStreamingButtonIfIdle / hideStopStreamingButtonIfNoUpsertStreaming,
+      // covered in MessageService_spec and the upsertMessage instance specs.
     });
   });
 
-  describe('mergePartialResponseOptions', () => {
-    it('dispatches merge when message options exist', () => {
-      const store = createStore();
-      const chunk = {
-        partial_response: {
-          message_options: { foo: 'bar' },
-        },
-      } as any;
-      mergePartialResponseOptions(store as any, 'msg-1', chunk);
-      expect(store.dispatch).toHaveBeenCalledTimes(1);
+  describe('applyChunk', () => {
+    const chunkWithOptions = (messageOptions?: Record<string, unknown>) =>
+      ({
+        streaming_metadata: { response_id: 'msg-1' },
+        ...(messageOptions
+          ? { partial_response: { message_options: messageOptions } }
+          : {}),
+        partial_item: { response_type: 'text', text: 'Hi' },
+      }) as any;
+
+    it('starts a new stream from an empty placeholder', () => {
+      const message = applyChunk(undefined, chunkWithOptions(), 'msg-1');
+
+      expect(message).toEqual({
+        id: 'msg-1',
+        output: { generic: [] },
+        history: { timestamp: expect.any(Number) },
+      });
     });
 
-    it('skips dispatch when no options or message id', () => {
-      const store = createStore();
-      mergePartialResponseOptions(store as any, undefined, {} as any);
-      expect(store.dispatch).not.toHaveBeenCalled();
+    it('returns the stored message as is when the chunk has no message_options', () => {
+      const prev = {
+        id: 'msg-1',
+        output: { generic: [] },
+        history: { timestamp: 1 },
+      } as any;
+
+      expect(applyChunk(prev, chunkWithOptions(), 'msg-1')).toBe(prev);
+    });
+
+    it('deep-merges message_options into a copy, the way lodash merge does', () => {
+      const prev = Object.freeze({
+        id: 'msg-1',
+        output: Object.freeze({ generic: [] }),
+        history: Object.freeze({ timestamp: 1 }),
+        message_options: Object.freeze({
+          reasoning: Object.freeze({
+            content: 'Thinking',
+            steps: Object.freeze([
+              Object.freeze({ title: 'S1' }),
+              Object.freeze({ title: 'S2' }),
+            ]),
+          }),
+          response_user_profile: Object.freeze({ id: 'p', nickname: 'Pat' }),
+        }),
+      }) as any;
+
+      const message = applyChunk(
+        prev,
+        chunkWithOptions({
+          reasoning: { steps: [{ content: 'c1' }] },
+          response_user_profile: { nickname: undefined },
+        }),
+        'msg-1'
+      );
+
+      expect(message).not.toBe(prev);
+      expect(message.message_options).toEqual({
+        reasoning: {
+          content: 'Thinking',
+          steps: [{ title: 'S1', content: 'c1' }, { title: 'S2' }],
+        },
+        response_user_profile: { id: 'p', nickname: 'Pat' },
+      });
+      expect(prev.message_options.reasoning.steps[0]).toEqual({ title: 'S1' });
     });
   });
 

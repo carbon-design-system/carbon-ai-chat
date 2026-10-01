@@ -268,6 +268,15 @@ function isPause(message: GenericItem): message is PauseItem {
 }
 
 /**
+ * Whether the given item of a response is left out of the message list: every item of a
+ * `history.silent` response, and any item marked `user_defined.silent`. The response is
+ * still stored, and its items still fire their events.
+ */
+function isHiddenOutputItem(message: MessageResponse, item: GenericItem) {
+  return Boolean(message.history?.silent || item.user_defined?.silent);
+}
+
+/**
  * This is a type guard that determines if the given item is an {@link OptionItem} item.
  */
 function isOptionItem(item: GenericItem): item is OptionItem {
@@ -765,6 +774,16 @@ function getSpeakerName(
   return responseUserProfile.nickname;
 }
 
+/**
+ * Whether the item's stream is still open. An upsert `STREAMING` write and a chunk
+ * `partial_item` open it; a `COMPLETE` or `ERROR` upsert, a `complete_item`, and a
+ * stop (`END_MESSAGE_STREAMING`) close it. Items from `addMessage` or a
+ * `final_response` have no streaming state, so they never count as streaming.
+ */
+function isItemStillStreaming(localItem: LocalMessageItem): boolean {
+  return localItem.ui_state.streamingState?.isDone === false;
+}
+
 export {
   getOptionType,
   isResponse,
@@ -776,6 +795,7 @@ export {
   isTextItem,
   isTyping,
   isPause,
+  isHiddenOutputItem,
   isRequest,
   isEventRequest,
   isDateResponseType,
@@ -812,4 +832,5 @@ export {
   isStandaloneSystemMessage,
   getMessageIDForUserInput,
   getSpeakerName,
+  isItemStillStreaming,
 };

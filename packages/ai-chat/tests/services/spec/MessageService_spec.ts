@@ -74,11 +74,21 @@ const createServiceManagerStub = (
     fire: jest.fn().mockResolvedValue(undefined),
   };
 
+  // MessageService resolves this collaborator through ServiceManager to answer
+  // "is an upsertMessage stream still running".
+  const messageUpsertCoordinator = {
+    hasStreamingMessages: jest.fn().mockReturnValue(false),
+    // Cancellation settles every registered upsert stream, since none of them can be
+    // targeted by a chunk response id or a queued request id.
+    endAllStreaming: jest.fn(),
+  };
+
   const serviceManager = {
     store,
     actions,
     eventBus,
     instance: {},
+    messageUpsertCoordinator,
   } as unknown as ServiceManager;
 
   return serviceManager;
@@ -478,6 +488,122 @@ describe('MessageService', () => {
 
       // Verify the controller was aborted
       expect(controller.signal.aborted).toBe(true);
+    });
+  });
+
+  describe('isAnyMessageStreaming', () => {
+    const build = (stopStreamingButtonState?: {
+      isVisible: boolean;
+      isDisabled: boolean;
+    }) => {
+      const serviceManager = createServiceManagerStub(
+        jest.fn().mockResolvedValue(undefined),
+        stopStreamingButtonState
+      );
+      const messageService = new MessageService(serviceManager, {
+        messaging: { messageTimeoutSecs: 0 },
+      } as any);
+      return { serviceManager, messageService };
+    };
+
+    it('is false when nothing is streaming', () => {
+      const { messageService } = build();
+      expect(messageService.isAnyMessageStreaming()).toBe(false);
+    });
+
+    it('is true while a chunk stream is active', () => {
+      const { messageService } = build();
+      messageService.inboundStreaming.streamingMessageID = 'chunk-1';
+      expect(messageService.isAnyMessageStreaming()).toBe(true);
+    });
+
+    it('is true while an upsert stream is active', () => {
+      const { serviceManager, messageService } = build();
+      (
+        serviceManager.messageUpsertCoordinator
+          .hasStreamingMessages as jest.Mock
+      ).mockReturnValue(true);
+
+      // The chunk registry is null for a pure-upsert flow, which is exactly why the
+      // predicate cannot be built on inboundStreaming alone.
+      expect(messageService.inboundStreaming.streamingMessageID).toBeNull();
+      expect(messageService.isAnyMessageStreaming()).toBe(true);
+    });
+
+    it('hideStopStreamingButtonIfIdle leaves the button alone while anything streams', () => {
+      const { serviceManager, messageService } = build({
+        isVisible: true,
+        isDisabled: false,
+      });
+      (
+        serviceManager.messageUpsertCoordinator
+          .hasStreamingMessages as jest.Mock
+      ).mockReturnValue(true);
+
+      messageService.hideStopStreamingButtonIfIdle();
+
+      expect(serviceManager.store.dispatch).not.toHaveBeenCalled();
+    });
+
+    it('hideStopStreamingButtonIfIdle leaves the button alone while a chunk stream is active', () => {
+      // The call sites that use this variant used to pass inboundStreaming's id to
+      // resetStopStreamingButton, which kept the button up; that must still hold.
+      const { serviceManager, messageService } = build({
+        isVisible: true,
+        isDisabled: false,
+      });
+      messageService.inboundStreaming.streamingMessageID = 'chunk-1';
+
+      messageService.hideStopStreamingButtonIfIdle();
+
+      expect(serviceManager.store.dispatch).not.toHaveBeenCalled();
+    });
+
+    it('hideStopStreamingButtonIfIdle hides once nothing streams', () => {
+      const { serviceManager, messageService } = build({
+        isVisible: true,
+        isDisabled: false,
+      });
+
+      messageService.hideStopStreamingButtonIfIdle();
+
+      const types = (serviceManager.store.dispatch as jest.Mock).mock.calls.map(
+        (call) => call[0]?.type
+      );
+      expect(types).toContain('SET_STOP_STREAMING_BUTTON_VISIBLE');
+      expect(types).toContain('SET_STOP_STREAMING_BUTTON_DISABLED');
+    });
+
+    it('hideStopStreamingButtonIfNoUpsertStreaming ignores an active chunk stream', () => {
+      const { serviceManager, messageService } = build({
+        isVisible: true,
+        isDisabled: false,
+      });
+      messageService.inboundStreaming.streamingMessageID = 'chunk-1';
+
+      // The chunk flow has always hidden on its own complete_item, so this variant must
+      // not consult inboundStreaming — otherwise complete_item would stop hiding.
+      messageService.hideStopStreamingButtonIfNoUpsertStreaming();
+
+      const types = (serviceManager.store.dispatch as jest.Mock).mock.calls.map(
+        (call) => call[0]?.type
+      );
+      expect(types).toContain('SET_STOP_STREAMING_BUTTON_VISIBLE');
+    });
+
+    it('hideStopStreamingButtonIfNoUpsertStreaming respects an active upsert stream', () => {
+      const { serviceManager, messageService } = build({
+        isVisible: true,
+        isDisabled: false,
+      });
+      (
+        serviceManager.messageUpsertCoordinator
+          .hasStreamingMessages as jest.Mock
+      ).mockReturnValue(true);
+
+      messageService.hideStopStreamingButtonIfNoUpsertStreaming();
+
+      expect(serviceManager.store.dispatch).not.toHaveBeenCalled();
     });
   });
 });

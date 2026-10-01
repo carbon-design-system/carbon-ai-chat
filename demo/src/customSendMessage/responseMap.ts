@@ -12,6 +12,8 @@ import { ChatInstance, CustomSendMessageOptions } from '@carbon/ai-chat';
 import { doAudioSoundCloud, doAudioMp3 } from './doAudio';
 import { doButton } from './doButton';
 import { doCard } from './doCard';
+import { doCardStreaming } from './doCardStreaming';
+import { doCarouselStreaming } from './doCarouselStreaming';
 import { doPreviewCard } from './doPreviewCard';
 import { doCarousel } from './doCarousel';
 import { doCode, doCodeStreaming } from './doCode';
@@ -49,6 +51,7 @@ import {
 import { doUserDefined, doUserDefinedStreaming } from './doUserDefined';
 import { doSystemMessage } from './doSystemMessage';
 import { doVideoYouTube, doVideoVimeo, doVideoKaltura } from './doVideo';
+import { usesUpsertMessage } from './sendResponse';
 
 const sortResponseMap = <T extends Record<string, unknown>>(map: T): T =>
   Object.fromEntries(
@@ -57,13 +60,13 @@ const sortResponseMap = <T extends Record<string, unknown>>(map: T): T =>
     )
   ) as T;
 
-const RESPONSE_MAP: Record<
-  string,
-  (
-    instance: ChatInstance,
-    requestOptions?: CustomSendMessageOptions
-  ) => Promise<void> | void
-> = sortResponseMap({
+type ResponseHandler = (
+  instance: ChatInstance,
+  requestOptions?: CustomSendMessageOptions
+) => Promise<void> | void;
+
+// Available in both send modes.
+const BASE_RESPONSE_MAP: Record<string, ResponseHandler> = sortResponseMap({
   'audio - soundcloud': (instance) => doAudioSoundCloud(instance),
   'audio - mp3': (instance) => doAudioMp3(instance),
   button: (instance) => doButton(instance),
@@ -251,5 +254,19 @@ const RESPONSE_MAP: Record<
   'video - vimeo': (instance) => doVideoVimeo(instance),
   'video - kaltura': (instance) => doVideoKaltura(instance),
 });
+
+// Only meaningful when upsertMessage is active: these entries demonstrate
+// mid-stream rendering that addMessageChunk holds until final_response.
+const UPSERT_ONLY_RESPONSE_MAP: Record<string, ResponseHandler> =
+  sortResponseMap({
+    'card (stream)': (instance, requestOptions) =>
+      doCardStreaming(instance, requestOptions),
+    'carousel (stream)': (instance, requestOptions) =>
+      doCarouselStreaming(instance, requestOptions),
+  });
+
+const RESPONSE_MAP: Record<string, ResponseHandler> = usesUpsertMessage()
+  ? { ...BASE_RESPONSE_MAP, ...UPSERT_ONLY_RESPONSE_MAP }
+  : BASE_RESPONSE_MAP;
 
 export { RESPONSE_MAP };

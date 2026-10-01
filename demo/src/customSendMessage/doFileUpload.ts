@@ -17,6 +17,8 @@ import {
 } from '@carbon/ai-chat';
 import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
+import { sendResponse } from './sendResponse';
+
 const MOCK_UPLOAD_DELAY_MS = 2500;
 
 /**
@@ -96,10 +98,10 @@ function formatBytes(bytes: number): string {
  * renders a chip per uploaded file in the user's own message bubble; this echo
  * exists to show the fields arriving server-side.
  */
-function doFileUploadResponse(
+async function doFileUploadResponse(
   request: MessageRequest,
   instance: ChatInstance
-): void {
+): Promise<void> {
   const fields = request.input.structured_data?.fields ?? [];
   const fileFields = fields.filter((f) => f.type === 'file');
 
@@ -149,7 +151,8 @@ function doFileUploadResponse(
     lines.push('');
   }
 
-  instance.messaging.addMessage({
+  await sendResponse(instance, {
+    id: uuid(),
     output: {
       generic: [
         {

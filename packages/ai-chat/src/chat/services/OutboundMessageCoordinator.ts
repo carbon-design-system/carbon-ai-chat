@@ -30,7 +30,6 @@ import cloneDeep from 'lodash-es/cloneDeep.js';
 import { consoleError, debugLog } from '../utils/miscUtils';
 import { BusEventSend, BusEventType } from '../../types/events/eventBusTypes';
 import { ChatInstance } from '../../types/instance/ChatInstance';
-import { resetStopStreamingButton } from '../utils/streamingUtils';
 import { addDefaultsToMessage } from '../utils/messageUtils';
 
 type CustomSendMessageFn = (
@@ -57,7 +56,8 @@ class OutboundMessageCoordinator {
       current: PendingMessageRequest,
       received?: MessageResponse
     ) => Promise<void>,
-    private getMessagingConfig: () => PublicConfigMessaging
+    private getMessagingConfig: () => PublicConfigMessaging,
+    private hideStopStreamingButtonIfNoUpsertStreaming: () => void
   ) {}
 
   /**
@@ -103,8 +103,28 @@ class OutboundMessageCoordinator {
       otherData: resultText,
     });
 
-    // Hide stop streaming button if visible
-    resetStopStreamingButton(this.serviceManager.store);
+    // A `customSendMessage` that throws mid-stream never sends a closing chunk, so settle
+    // the items it had streamed — only if that stream belongs to this request, since a
+    // host can still be streaming a response to an earlier one. The chunk registry
+    // itself is left as it always was.
+    const { inboundStreaming } = this.serviceManager.messageService;
+    const { streamingMessageID } = inboundStreaming;
+    const streamingMeta =
+      streamingMessageID &&
+      inboundStreaming.getStreamingMeta(streamingMessageID);
+    if (
+      streamingMeta &&
+      streamingMeta.requestId === pendingRequest.message.id
+    ) {
+      this.serviceManager.store.dispatch(
+        actions.endMessageStreaming(streamingMessageID)
+      );
+    }
+
+    // Hide stop streaming button if visible. This hid unconditionally before
+    // `upsertMessage` existed, so it still ignores chunk streams; only a running upsert
+    // stream keeps the button up.
+    this.hideStopStreamingButtonIfNoUpsertStreaming();
 
     this.rejectFinalErrorOnMessage(pendingRequest, resultText);
   }
@@ -196,8 +216,10 @@ class OutboundMessageCoordinator {
       this.messageLoadingManager.end();
     }
 
-    // Hide stop streaming button if visible
-    resetStopStreamingButton(this.serviceManager.store);
+    // Hide stop streaming button if visible. This hid unconditionally before
+    // `upsertMessage` existed, so it still ignores chunk streams; only a running upsert
+    // stream keeps the button up.
+    this.hideStopStreamingButtonIfNoUpsertStreaming();
 
     sendMessagePromise.doResolve();
     pendingRequest.isProcessed = true;

@@ -13,7 +13,7 @@ import { UNORDERED_LIST } from './constants';
 import { doText } from './doText';
 
 function doList(instance: ChatInstance) {
-  doText(instance, UNORDERED_LIST);
+  return doText(instance, UNORDERED_LIST);
 }
 
 export { doList };

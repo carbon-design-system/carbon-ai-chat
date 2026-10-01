@@ -41,6 +41,31 @@ The second argument is a {@link MessageState | MessageState}. It sets the lifecy
 
 The state is required on every call. The chat does not keep state across calls. It applies your state to every item in the returned message. `STREAMING` and `COMPLETE` are not locked-terminal states. The chat treats "complete" as "complete as of now." So you can call `upsertMessage(id, MessageState.STREAMING, ...)` on an already-complete message to start re-streaming it. One example is a regenerate-with-streaming flow.
 
+## When a streamed item draws
+
+While a message streams, you can send items that aren't finished yet. The chat draws each item once it has the fields its type needs. Most types draw from their first snapshot. A few need lists in place first:
+
+- An `option` item needs an `options` list. In a dropdown, each option also needs a `value.input`.
+- A `carousel` item needs an `items` list, even an empty one.
+- A `grid` item needs a `rows` list. Each row needs a `cells` list, and each cell needs an `items` list. A column `width` must be a string.
+- A card's `body` and `footer`, a button panel's `body` and `footer`, and a search answer's `citations` must be lists when you send them.
+- A `null` entry in any list stops the item from drawing. This includes the lists nested inside cards, carousels, and grids.
+
+While the stream is open, an item that can't draw keeps its last drawn version. If it never drew, it stays hidden. For example, a grid whose newest cell has no `items` yet keeps showing the grid as it was before that cell. An `option` item with no `options` yet shows nothing. No error shows while the message streams.
+
+The stream ends when you call `upsertMessage` with `COMPLETE` or `ERROR`, or when the user stops it. At that point, an item that still can't draw shows an error in its place. The rest of the message draws as usual. If the user stops the stream, an item that drew before keeps its last drawn version instead.
+
+When the error shows, the chat reports the item once to your {@link PublicConfig.onError | onError} handler. Repeating the same `COMPLETE` or `ERROR` call doesn't report it again. The `errorType` is {@link OnErrorType.RENDER | RENDER}, and `otherData` holds four fields:
+
+- `messageID` — the message the item belongs to.
+- `responseType` — the item's type, such as `grid`.
+- `missing` — the path of each field to fix, such as `rows[0].cells[2].items`.
+- `item` — the item as you sent it.
+
+`upsertMessage` doesn't reject because of an item like this. To clear the error, send a version of the item that can draw.
+
+{@link ChatInstanceMessaging.addMessageChunk | addMessageChunk} works differently. It holds most types until the final response. See [What draws while streaming](./AddMessageChunk.md#what-draws-while-streaming).
+
 ## Per-messageID serialization
 
 Calls to the same `messageID` are serialized. Each call waits for the previous call to that ID before it runs. Calls to different `messageID`s run on their own, in parallel. So several messages can stream or update at once. Each message still stays internally consistent.

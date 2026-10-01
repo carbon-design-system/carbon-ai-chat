@@ -7,11 +7,15 @@
  *  @license
  */
 
+import merge from 'lodash-es/merge.js';
+
 import actions from '../store/actions';
 import {
   CompleteItemChunk,
+  ConversationalSearchItem,
   FinalResponseChunk,
   GenericItem,
+  MessageResponse,
   MessageResponseTypes,
   PartialItemChunk,
   PartialOrCompleteItemChunk,
@@ -20,7 +24,10 @@ import {
   UserDefinedItem,
 } from '../../types/messaging/Messages';
 import { DeepPartial } from '../../types/utilities/DeepPartial';
-import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
+import {
+  LocalMessageItem,
+  LocalMessageItemStreamingState,
+} from '../../types/messaging/LocalMessageItem';
 import {
   isStreamCompleteItem,
   isStreamFinalResponse,
@@ -160,48 +167,76 @@ function shouldShowStopStreaming(
 /**
  * Hides and re-enables the stop streaming button if currently visible.
  *
+ * This hides unconditionally. Deciding *whether* to hide belongs to `MessageService` —
+ * see its `hideStopStreamingButtonIfIdle` / `hideStopStreamingButtonIfNoUpsertStreaming`,
+ * which own that policy so concurrent streams cannot hide each other's button.
+ *
  * @param store - The store instance
- * @param streamingMessageID - Optional ID of currently streaming message. If provided and not null,
- *                             the button will remain visible (used with showStopButtonImmediately
- *                             to keep button visible during active streaming).
  */
-function resetStopStreamingButton(
-  store: StoreLike,
-  streamingMessageID?: string | null
-) {
+function resetStopStreamingButton(store: StoreLike) {
   const stopStreamingState =
     store.getState().assistantInputState.stopStreamingButtonState;
   if (stopStreamingState.isVisible) {
-    // If there's an active streaming message, keep the button visible
-    if (streamingMessageID) {
-      return;
-    }
     store.dispatch(actions.setStopStreamingButtonDisabled(false));
     store.dispatch(actions.setStopStreamingButtonVisible(false));
   }
 }
 
 /**
- * Merge message options only, ignoring unexpected partial_response fields.
+ * The text a streaming-aware renderer should display for a text-bearing item.
+ *
+ * The two delivery flows store mid-stream text differently. The chunk flow streams
+ * deltas: the accumulated text lives in `streamingState.chunks` (the item's own `text`
+ * holds only the first chunk). The upsert flow streams snapshots: the item's `text` is
+ * complete on every update and `chunks` stays empty. Joining chunks unconditionally
+ * rendered upsert-streamed text as blank until COMPLETE, so the chunks win only when
+ * there are any.
  */
-function mergePartialResponseOptions(
-  store: StoreLike,
-  messageID: string | undefined,
-  chunk: PartialOrCompleteItemChunk
-) {
-  if (chunk.partial_response?.message_options && messageID) {
-    store.dispatch(
-      actions.streamingMergeMessageOptions(
-        messageID,
-        chunk.partial_response.message_options
-      )
-    );
+function deriveStreamingItemText(
+  text: string,
+  streamingState:
+    | LocalMessageItemStreamingState<TextItem | ConversationalSearchItem>
+    | undefined
+): string {
+  if (
+    streamingState &&
+    !streamingState.isDone &&
+    streamingState.chunks.length
+  ) {
+    return streamingState.chunks.map((chunk) => chunk.text ?? '').join('');
   }
+  return text;
 }
 
 /**
- * Internal helper function to check if an item has displayable content.
- * This is the core logic shared by both chunk and message content detection.
+ * Returns the message `addMessageChunk` stores for a `partial_item` or `complete_item`
+ * chunk. Item content never reaches it before `final_response`: a new stream starts from
+ * an empty placeholder, and a chunk only deep-merges its `message_options` in, ignoring
+ * any other `partial_response` field. With nothing to merge, `prev` comes back as is.
+ *
+ * @param prev The message stored under `messageID`, if any.
+ * @param chunk The chunk being applied.
+ * @param messageID The resolved message ID, which the chunk itself may not carry.
+ */
+function applyChunk(
+  prev: MessageResponse | undefined,
+  chunk: PartialOrCompleteItemChunk,
+  messageID: string
+): MessageResponse {
+  const message: MessageResponse = prev ?? {
+    id: messageID,
+    output: { generic: [] },
+    history: { timestamp: Date.now() },
+  };
+  const messageOptions = chunk.partial_response?.message_options;
+  return messageOptions
+    ? merge({}, message, { message_options: messageOptions })
+    : message;
+}
+
+/**
+ * Checks if an item has displayable content.
+ * This is the core logic shared by chunk, message, and upserted item content detection.
  *
  * @param item - The item to check (can be partial)
  * @param responseType - The response type of the item
@@ -286,9 +321,11 @@ function messageHasDisplayableContent(
 }
 
 export {
+  applyChunk,
   chunkHasDisplayableContent,
+  hasDisplayableContentForItem,
+  deriveStreamingItemText,
   FinalResponseChunk,
-  mergePartialResponseOptions,
   messageHasDisplayableContent,
   resetStopStreamingButton,
   resolveChunkContext,

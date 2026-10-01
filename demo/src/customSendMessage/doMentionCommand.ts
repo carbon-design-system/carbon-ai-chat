@@ -13,7 +13,10 @@ import {
   MessageResponseTypes,
   SuggestionItem,
 } from '@carbon/ai-chat';
+import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
+
 import { RESPONSE_MAP } from './responseMap';
+import { sendResponse } from './sendResponse';
 
 /**
  * Mock `InputConfig.mention` / `InputConfig.command` fixtures and callbacks
@@ -124,10 +127,10 @@ function commandOnRemove(item: SuggestionItem): void {
  * structured-data fields. Echoes what was attached as a text message before
  * the standard response for the utterance is shown.
  */
-function doMentionCommandResponse(
+async function doMentionCommandResponse(
   request: MessageRequest,
   instance: ChatInstance
-): void {
+): Promise<void> {
   const fields = request.input.structured_data?.fields ?? [];
   const mentions = fields.filter((f) => f.type === 'mention');
   const commands = fields.filter((f) => f.type === 'command');
@@ -148,7 +151,8 @@ function doMentionCommandResponse(
     parts.push(`**Commands:** ${cmds}`);
   }
 
-  instance.messaging.addMessage({
+  await sendResponse(instance, {
+    id: uuid(),
     output: {
       generic: [
         {

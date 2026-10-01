@@ -7,12 +7,10 @@
  *  @license
  */
 
-import isEqual from 'lodash-es/isEqual.js';
 import merge from 'lodash-es/merge.js';
 import { DeepPartial } from '../../types/utilities/DeepPartial';
 import { isBrowser } from '../utils/browserUtils';
 
-import { outputItemToLocalItem } from '../schema/outputItemToLocalItem';
 import {
   AnnounceMessage,
   AppState,
@@ -36,7 +34,7 @@ import {
   LocalMessageUIState,
 } from '../../types/messaging/LocalMessageItem';
 import { FileStatusValue } from '../utils/constants';
-import { isRequest, isResponse, streamItemID } from '../utils/messageUtils';
+import { isRequest, isResponse } from '../utils/messageUtils';
 import {
   ACCEPTED_DISCLAIMER,
   ADD_INPUT_FILE,
@@ -44,7 +42,6 @@ import {
   ADD_IS_LOADING_COUNTER,
   ADD_LOCAL_MESSAGE_ITEM,
   ADD_MESSAGE,
-  ADD_NESTED_MESSAGES,
   ANNOUNCE_MESSAGE,
   CHANGE_STATE,
   CLEAR_INPUT_FILES,
@@ -78,6 +75,7 @@ import {
   SET_MESSAGE_RESPONSE_HISTORY_PROPERTY,
   SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY,
   SET_MESSAGE_UI_PROPERTY,
+  SET_MESSAGE_WAS_ANNOUNCED,
   SET_RESPONSE_PANEL_CONTENT,
   SET_RESPONSE_PANEL_IS_OPEN,
   SET_STOP_STREAMING_BUTTON_DISABLED,
@@ -87,9 +85,6 @@ import {
   SET_VIEW_CHANGING,
   SET_VIEW_STATE,
   SET_ACTIVE_RESPONSE_ID,
-  STREAMING_ADD_CHUNK,
-  STREAMING_MERGE_MESSAGE_OPTIONS,
-  STREAMING_START,
   TOGGLE_HOME_SCREEN,
   UPDATE_CATASTROPHIC_ERROR_PANEL,
   UPDATE_HAS_SENT_NON_WELCOME_MESSAGE,
@@ -98,6 +93,7 @@ import {
   UPDATE_STRUCTURED_DATA,
   UPDATE_MESSAGE,
   UPSERT_MESSAGE,
+  END_MESSAGE_STREAMING,
   UPDATE_PERSISTED_STATE,
   UPDATE_THEME_STATE,
   RESET_IS_HYDRATING_COUNTER,
@@ -106,31 +102,34 @@ import {
   UPDATE_PENDING_UPLOAD,
   REMOVE_PENDING_UPLOAD,
 } from './actions';
+import type { MessageWriteOptions, ReceivedLocalItems } from './actions';
 import { humanAgentReducers } from './humanAgentReducers';
 import {
   applyAssistantMessageState,
+  applyChunkWrite,
   applyFullMessage,
   applyLocalMessageUIState,
   computeLocalIDInsertionPoint,
   rebuildLocalItemsForUpsert,
+  keepStreamedItemsOnly,
   DEFAULT_CITATION_PANEL_STATE,
   DEFAULT_CUSTOM_PANEL_STATE,
   DEFAULT_WORKSPACE_PANEL_STATE,
   DEFAULT_IFRAME_PANEL_STATE,
   handleViewStateChange,
   setHomeScreenOpenState,
+  keepPriorUIStateInternal,
+  keepMessageRefIfUnchanged,
 } from './reducerUtils';
 import {
   HumanAgentMessageType,
   ConversationalSearchItemCitation,
-  GenericItem,
   IFrameItem,
   Message,
   MessageRequest,
   MessageResponse,
   SearchResult,
   MessageUIStateInternal,
-  MessageResponseOptions,
   MessageResponseHistory,
   MessageRequestHistory,
 } from '../../types/messaging/Messages';
@@ -204,6 +203,159 @@ const EXCLUDE_HUMAN_AGENT_UNREAD = new Set([
   HumanAgentMessageType.CHAT_WAS_ENDED,
   HumanAgentMessageType.RELOAD_WARNING,
 ]);
+
+/**
+ * Returns `localMessageIDs` with `id` in it: in its own place when it is already there,
+ * else at the end, or after `addAfterID` when that is there.
+ */
+function withLocalMessageID(
+  localMessageIDs: string[],
+  id: string,
+  addAfterID: string
+): string[] {
+  const currentIndex = localMessageIDs.indexOf(id);
+  const newLocalMessageIDs = [...localMessageIDs];
+
+  let insertAtIndex = currentIndex;
+
+  if (currentIndex !== -1) {
+    // Remove the ID from the array. We may insert it back at this index.
+    newLocalMessageIDs.splice(currentIndex, 1);
+  } else {
+    // By default, insert the new ID at the end.
+    insertAtIndex = newLocalMessageIDs.length;
+  }
+
+  // If an "addAfterID" was provided, use that to determine where to put this new ID.
+  const afterIDIndex = addAfterID ? newLocalMessageIDs.indexOf(addAfterID) : -1;
+  if (afterIDIndex !== -1) {
+    insertAtIndex = afterIDIndex + 1;
+  }
+
+  // Insert the ID.
+  newLocalMessageIDs.splice(insertAtIndex, 0, id);
+  return newLocalMessageIDs;
+}
+
+/**
+ * Applies what showing a new local item does beyond listing it: the home screen closes,
+ * and a human agent's message counts as unread while the chat is out of sight.
+ *
+ * @param state The state before the item was shown, which says whether the chat was in
+ * sight.
+ * @param newState The state with the item shown.
+ * @param messageItem The local item shown.
+ * @param message The message the item belongs to.
+ */
+function applyLocalItemShown(
+  state: AppState,
+  newState: AppState,
+  messageItem: LocalMessageItem,
+  message: Message
+): AppState {
+  if (newState.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen) {
+    // When a message has been sent, we don't want the home screen open anymore.
+    newState = setHomeScreenOpenState(newState, false);
+  }
+
+  const isAssistantMessage = !messageItem.item.agent_message_type;
+  const isMainWindowOpen = state.persistedToBrowserStorage.viewState.mainWindow;
+  if (
+    !isAssistantMessage &&
+    (!isMainWindowOpen || !state.isBrowserPageVisible)
+  ) {
+    // This message is with an agent, and it occurred while the main window was closed or the page is not
+    // visible, so it may need to be counted as an unread message.
+    const fromHumanAgent = !isRequest(message);
+    if (
+      fromHumanAgent &&
+      !EXCLUDE_HUMAN_AGENT_UNREAD.has(messageItem.item.agent_message_type)
+    ) {
+      // If this message came from an agent, then add one to the unread count, but not if it's one of the excluded
+      // types.
+      newState = {
+        ...newState,
+        humanAgentState: {
+          ...newState.humanAgentState,
+          numUnreadMessages: newState.humanAgentState.numUnreadMessages + 1,
+        },
+      };
+    }
+  }
+  return newState;
+}
+
+/**
+ * Shows a local item, placed by {@link withLocalMessageID}, and replaces any local item
+ * with its id. Nothing shows for a `history.silent` message.
+ */
+function applyLocalMessageItem(
+  state: AppState,
+  {
+    messageItem,
+    message,
+    addMessage,
+    addAfterID,
+  }: {
+    messageItem: LocalMessageItem;
+    message: Message;
+    addMessage: boolean;
+    addAfterID: string;
+  }
+): AppState {
+  const withMessage = addMessage ? applyFullMessage(state, message) : state;
+
+  // If we receive back a silent message, we don't want to add to the store.
+  if (message.history.silent) {
+    return withMessage;
+  }
+
+  const { id } = messageItem.ui_state;
+  const newState: AppState = {
+    ...withMessage,
+    allMessageItemsByID: {
+      ...withMessage.allMessageItemsByID,
+      [id]: messageItem,
+    },
+    assistantMessageState: {
+      ...withMessage.assistantMessageState,
+      localMessageIDs: withLocalMessageID(
+        withMessage.assistantMessageState.localMessageIDs,
+        id,
+        addAfterID
+      ),
+    },
+  };
+  return applyLocalItemShown(state, newState, messageItem, message);
+}
+
+/**
+ * Applies a write from `addMessage` or `final_response` the way `ADD_MESSAGE` and
+ * `ADD_LOCAL_MESSAGE_ITEM` did. The first write stores the message, makes it the active
+ * response, and keeps only the streamed items the message still has. Each later write
+ * shows one item, with the items nested in it, and changes nothing else about the message.
+ */
+function applyReceivedWrite(
+  state: AppState,
+  message: MessageResponse,
+  { localItem, nestedLocalItems, addAfterID }: ReceivedLocalItems
+): AppState {
+  if (!localItem) {
+    return applyAssistantMessageState(
+      applyFullMessage(keepStreamedItemsOnly(state, message), message),
+      { activeResponseId: message.id }
+    );
+  }
+
+  const allMessageItemsByID = { ...state.allMessageItemsByID };
+  nestedLocalItems.forEach((nested) => {
+    allMessageItemsByID[nested.ui_state.id] = nested;
+  });
+  return applyLocalMessageItem(
+    { ...state, allMessageItemsByID },
+    { messageItem: localItem, message, addMessage: false, addAfterID }
+  );
+}
 
 const reducers: { [key: string]: ReducerType } = {
   [CHANGE_STATE]: (
@@ -320,96 +472,7 @@ const reducers: { [key: string]: ReducerType } = {
       addMessage: boolean;
       addAfterID: string;
     }
-  ): AppState => {
-    const { messageItem, message, addMessage, addAfterID } = action;
-    const { id } = messageItem.ui_state;
-
-    // If we receive back a silent message, we don't want to add to the store.
-    const isSilent = message.history.silent;
-    let newState: AppState = state;
-
-    if (addMessage) {
-      newState = applyFullMessage(newState, message);
-    }
-
-    const currentIndex =
-      newState.assistantMessageState.localMessageIDs.findIndex(
-        (existingID) => existingID === id
-      );
-    const newLocalMessageIDs = [
-      ...newState.assistantMessageState.localMessageIDs,
-    ];
-
-    let insertAtIndex = currentIndex;
-
-    if (currentIndex !== -1) {
-      // Remove the ID from the array. We may insert it back at this index.
-      newLocalMessageIDs.splice(currentIndex, 1);
-    } else {
-      // By default, insert the new ID at the end.
-      insertAtIndex = newLocalMessageIDs.length;
-    }
-
-    // If an "addAfterID" was provided, use that to determine where to put this new ID.
-    if (addAfterID) {
-      const afterIDIndex = newLocalMessageIDs.findIndex(
-        (existingID) => existingID === addAfterID
-      );
-      if (afterIDIndex !== -1) {
-        insertAtIndex = afterIDIndex + 1;
-      }
-    }
-
-    // Insert the ID.
-    newLocalMessageIDs.splice(insertAtIndex, 0, id);
-
-    if (!isSilent) {
-      newState = {
-        ...newState,
-        allMessageItemsByID: {
-          ...newState.allMessageItemsByID,
-          [id]: messageItem,
-        },
-        assistantMessageState: {
-          ...newState.assistantMessageState,
-          localMessageIDs: newLocalMessageIDs,
-        },
-      };
-
-      if (newState.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen) {
-        // When a message has been sent, we don't want the home screen open anymore.
-        newState = setHomeScreenOpenState(newState, false);
-      }
-
-      const isAssistantMessage = !messageItem.item.agent_message_type;
-      const isMainWindowOpen =
-        state.persistedToBrowserStorage.viewState.mainWindow;
-      if (
-        !isAssistantMessage &&
-        (!isMainWindowOpen || !state.isBrowserPageVisible)
-      ) {
-        // This message is with an agent, and it occurred while the main window was closed or the page is not
-        // visible, so it may need to be counted as an unread message.
-        const fromHumanAgent = !isRequest(message);
-        if (
-          fromHumanAgent &&
-          !EXCLUDE_HUMAN_AGENT_UNREAD.has(messageItem.item.agent_message_type)
-        ) {
-          // If this message came from an agent, then add one to the unread count, but not if it's one of the excluded
-          // types.
-          newState = {
-            ...newState,
-            humanAgentState: {
-              ...newState.humanAgentState,
-              numUnreadMessages: newState.humanAgentState.numUnreadMessages + 1,
-            },
-          };
-        }
-      }
-    }
-
-    return newState;
-  },
+  ): AppState => applyLocalMessageItem(state, action),
 
   [REMOVE_MESSAGES]: (
     state: AppState,
@@ -489,22 +552,44 @@ const reducers: { [key: string]: ReducerType } = {
 
   [UPSERT_MESSAGE]: (
     state: AppState,
-    action: { message: Message }
+    action: {
+      message: Message;
+      isStreaming?: boolean;
+      holdFromIndex?: number;
+      options?: MessageWriteOptions;
+    }
   ): AppState => {
-    const { message } = action;
+    const { message, isStreaming = false, holdFromIndex, options } = action;
     const messageID = message.id;
 
     if (!isResponse(message)) {
       return state;
     }
 
-    const messageResponse = message;
+    // Until `final_response`, a chunk stream keeps the rules it has always had.
+    if (options?.origin === 'chunk' && isStreaming) {
+      return applyChunkWrite(state, message, options.chunk);
+    }
+
+    // A message from `addMessage` or `final_response` keeps the rules it has always had.
+    if (options?.received) {
+      return applyReceivedWrite(state, message, options.received);
+    }
+
+    const messageResponse = keepPriorUIStateInternal(
+      message,
+      state.allMessagesByID[messageID]
+    );
 
     const { newLocalItemsByID, newLocalIDsForMessage } =
-      rebuildLocalItemsForUpsert(state, messageResponse);
+      rebuildLocalItemsForUpsert(
+        state,
+        messageResponse,
+        isStreaming,
+        true,
+        holdFromIndex
+      );
 
-    // Splice the new ordered IDs back into localMessageIDs at the same position the
-    // existing block occupied. Brand-new messages append.
     const { otherLocalIDs, insertPoint } = computeLocalIDInsertionPoint(
       state.assistantMessageState.localMessageIDs,
       state.allMessageItemsByID,
@@ -516,25 +601,20 @@ const reducers: { [key: string]: ReducerType } = {
       ...otherLocalIDs.slice(insertPoint),
     ];
 
-    // Preserve the `allMessagesByID[messageID]` reference when nothing actually
-    // changed — React selectors that subscribe to the whole `Message` compare by
-    // `===` and would otherwise re-render on every upsert.
     const prevMessage = state.allMessagesByID[messageID];
-    const everyLocalItemReused = newLocalIDsForMessage.every((localID) => {
-      const prev = state.allMessageItemsByID[localID];
-      return prev !== undefined && newLocalItemsByID[localID] === prev;
-    });
-    let nextMessageRef: Message = messageResponse;
-    if (prevMessage && everyLocalItemReused && isEqual(prevMessage, message)) {
-      nextMessageRef = prevMessage;
-    }
+    const nextMessageRef = keepMessageRefIfUnchanged(
+      state,
+      messageResponse,
+      newLocalIDsForMessage,
+      newLocalItemsByID
+    );
 
     let nextMessageIDs = state.assistantMessageState.messageIDs;
     if (!prevMessage) {
       nextMessageIDs = [...nextMessageIDs, messageID];
     }
 
-    return {
+    const newState: AppState = {
       ...state,
       allMessagesByID: {
         ...state.allMessagesByID,
@@ -548,96 +628,70 @@ const reducers: { [key: string]: ReducerType } = {
         activeResponseId: messageID,
       },
     };
+
+    if (
+      newLocalIDsForMessage.length &&
+      newState.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen
+    ) {
+      return setHomeScreenOpenState(newState, false);
+    }
+    return newState;
   },
 
-  [ADD_MESSAGE]: (state: AppState, action: { message: Message }): AppState => {
-    const { message } = action;
-    const messageID = message.id;
+  [END_MESSAGE_STREAMING]: (
+    state: AppState,
+    action: { messageID: string }
+  ): AppState => {
+    const { messageID } = action;
 
-    let newState = state;
+    let changed = false;
+    const newLocalItems: Record<string, LocalMessageItem> = {
+      ...state.allMessageItemsByID,
+    };
 
-    if (isResponse(message)) {
-      // For message responses, we need to re-order any items that may already be present in the store if they had
-      // been added during a previous stream. We're going to use the following algorithm.
-      //
-      // 1. Locate the first item already in the list. This will be the insertion point for the re-ordered items.
-      // 2. Remove all existing items from the list.
-      // 3. Insert the new items back into the list at the insertion point but only items that were previously in
-      //    the list.
-      //
-      // Example: if we've got response 1 with items 1.1 and 1.2, response 2 with items 2.1, 2.2, 2.3, and response 3
-      // with 3.1. We start with.
-      //
-      //  [1.1, 1.2, 2.1, 2.2, 2.3, 3.1]
-      //
-      // Now, we "re-add" message 2 expect that we 2.1 and 2.2 are reversed in order and 2.3 and 2.4 is going to be
-      // added ([2.2, 2.1, 2.4]).
-      //
-      // 1. The first item is "2.1" at index 2.
-      // 2. Remove all items for response 2 giving us [1.1, 1.2, 3.1]
-      // 3. Insert 2.1 and 2.2 (those were the only items we already had) back in the list at index 2 in the new order.
-      //    item 2.4 will be inserted later as an individual item.
-      //
-      // Result: [1.1, 1.2, 2.2, 2.1, 3.1]
-
-      // Get the ordered list of the new items. Only items with a stream ID can be re-ordered at this point.
-      const itemIDsInNewMessage: string[] = [];
-      message.output.generic.forEach((item) => {
-        const id = streamItemID(messageID, item);
-        if (id) {
-          itemIDsInNewMessage.push(id);
-        }
-      });
-
-      const newAllMessageItemsByID = { ...state.allMessageItemsByID };
-      const existingItemIDs: string[] = [];
-      let firstFoundIndex: number;
-
-      // Remove all the existing items for this message. Also keep track of where the first one was found.
-      const newLocalMessageIDs =
-        state.assistantMessageState.localMessageIDs.filter((itemID, index) => {
-          const item = state.allMessageItemsByID[itemID];
-          const isItemInMessage = item.fullMessageID === messageID;
-
-          if (isItemInMessage) {
-            if (firstFoundIndex === undefined) {
-              firstFoundIndex = index;
-            }
-            if (!itemIDsInNewMessage.includes(itemID)) {
-              // If this item is not in the new message, then remove the whole item object.
-              delete newAllMessageItemsByID[itemID];
-            } else {
-              // Otherwise, this item will may get re-inserted back into the list (if it still exists).
-              existingItemIDs.push(itemID);
-            }
-          }
-
-          // Keep the item if it's not in the new message.
-          return !isItemInMessage;
-        });
-
-      // Now insert the message items back into the list at the right spot, but only the items we already had.
-      if (existingItemIDs.length) {
-        const itemIDsToInsert = itemIDsInNewMessage.filter((itemID) =>
-          existingItemIDs.includes(itemID)
-        );
-        if (itemIDsToInsert.length) {
-          newLocalMessageIDs.splice(firstFoundIndex, 0, ...itemIDsToInsert);
-        }
+    for (const localID of Object.keys(newLocalItems)) {
+      const localItem = newLocalItems[localID];
+      if (localItem?.fullMessageID !== messageID) {
+        continue;
       }
-
-      newState = {
-        ...newState,
-        allMessageItemsByID: newAllMessageItemsByID,
-        assistantMessageState: {
-          ...newState.assistantMessageState,
-          localMessageIDs: newLocalMessageIDs,
+      const { streamingState } = localItem.ui_state;
+      if (streamingState?.isDone !== false) {
+        // Already settled — leave the reference alone so subscribers don't re-render.
+        continue;
+      }
+      // A chunk-delivered item holds only its first delta in `item`; the rest is in
+      // `chunks`, which renderers stop reading once `isDone` flips. Fold the accumulated
+      // text into the item so a stream cut off before its closing chunk keeps the text
+      // it had already shown.
+      const textChunks = (streamingState?.chunks ?? []) as { text?: string }[];
+      const accumulatedText = textChunks.some(
+        (chunk) => typeof chunk.text === 'string'
+      )
+        ? textChunks.map((chunk) => chunk.text ?? '').join('')
+        : undefined;
+      newLocalItems[localID] = {
+        ...localItem,
+        item:
+          accumulatedText === undefined
+            ? localItem.item
+            : { ...localItem.item, text: accumulatedText },
+        ui_state: {
+          ...localItem.ui_state,
+          streamingState: { ...streamingState, chunks: [], isDone: true },
         },
       };
+      changed = true;
     }
 
-    return applyFullMessage(newState, message);
+    if (!changed) {
+      return state;
+    }
+
+    return { ...state, allMessageItemsByID: newLocalItems };
   },
+
+  [ADD_MESSAGE]: (state: AppState, action: { message: Message }): AppState =>
+    applyFullMessage(state, action.message),
 
   [MESSAGE_SET_OPTION_SELECTED]: (
     state: AppState,
@@ -813,6 +867,26 @@ const reducers: { [key: string]: ReducerType } = {
       action.localMessageID,
       action.propertyName,
       action.propertyValue
+    );
+  },
+
+  [SET_MESSAGE_WAS_ANNOUNCED]: (
+    state: AppState,
+    action: { localMessageID: string }
+  ): AppState => {
+    // `wasAnnounced` outlives the clear, so an upsert that rebuilds the item knows not
+    // to announce it again.
+    const { localMessageID } = action;
+    return applyLocalMessageUIState(
+      applyLocalMessageUIState(
+        state,
+        localMessageID,
+        'needsAnnouncement',
+        false
+      ),
+      localMessageID,
+      'wasAnnounced',
+      true
     );
   },
 
@@ -1390,22 +1464,6 @@ const reducers: { [key: string]: ReducerType } = {
     );
   },
 
-  [ADD_NESTED_MESSAGES]: (
-    state: AppState,
-    { localMessageItems }: { localMessageItems: LocalMessageItem[] }
-  ) => {
-    const allMessageItemsByID = { ...state.allMessageItemsByID };
-
-    localMessageItems.forEach((localMessageItem) => {
-      allMessageItemsByID[localMessageItem.ui_state.id] = localMessageItem;
-    });
-
-    return {
-      ...state,
-      allMessageItemsByID,
-    };
-  },
-
   [SET_RESPONSE_PANEL_IS_OPEN]: (
     state: AppState,
     { isOpen }: { isOpen: boolean }
@@ -1432,144 +1490,6 @@ const reducers: { [key: string]: ReducerType } = {
         ...state.responsePanelState,
         localMessageItem,
         isMessageForInput,
-      },
-    };
-  },
-
-  [STREAMING_START]: (
-    state: AppState,
-    { messageID }: { messageID: string }
-  ) => {
-    // Add an empty placeholder where we will start adding the streaming chunks as they come in.
-    const streamIntoResponse: MessageResponse = {
-      id: messageID,
-      output: {
-        generic: [],
-      },
-      history: {
-        timestamp: Date.now(),
-      },
-    };
-
-    return applyFullMessage(state, streamIntoResponse);
-  },
-
-  [STREAMING_MERGE_MESSAGE_OPTIONS]: (
-    state: AppState,
-    {
-      messageID,
-      message_options,
-    }: {
-      messageID: string;
-      message_options: DeepPartial<MessageResponseOptions>;
-    }
-  ) => {
-    const existingMessage = state.allMessagesByID[messageID];
-    const newMessage = merge({}, existingMessage, { message_options });
-
-    if (existingMessage) {
-      return {
-        ...state,
-        allMessagesByID: {
-          ...state.allMessagesByID,
-          [messageID]: newMessage,
-        },
-      };
-    }
-
-    return state;
-  },
-
-  [STREAMING_ADD_CHUNK]: (
-    state: AppState,
-    {
-      chunkItem,
-      fullMessageID,
-      isCompleteItem,
-    }: {
-      fullMessageID: string;
-      chunkItem: DeepPartial<GenericItem>;
-      isCompleteItem: boolean;
-    }
-  ) => {
-    const message = state.allMessagesByID[fullMessageID] as MessageResponse;
-
-    // This might be undefined if we haven't seen this item before.
-    const localItemID = streamItemID(fullMessageID, chunkItem);
-    const existingLocalMessageItem = state.allMessageItemsByID[localItemID];
-    let { localMessageIDs } = state.assistantMessageState;
-    let newItem: LocalMessageItem;
-    if (!existingLocalMessageItem) {
-      // This is a new item we haven't seen before. We will need the response type to know what to with this item which
-      // should always be available in the first chunk. We will then need to add this item to the store so it'll appear.
-      newItem = outputItemToLocalItem(
-        chunkItem as GenericItem,
-        message as MessageResponse,
-        false
-      );
-      newItem.ui_state.needsAnnouncement = false;
-      newItem.ui_state.isIntermediateStreaming = true;
-      if (isCompleteItem) {
-        newItem.ui_state.streamingState = { chunks: [], isDone: true };
-      } else {
-        newItem.ui_state.streamingState = {
-          chunks: [chunkItem],
-          isDone: false,
-        };
-      }
-      localMessageIDs = [...localMessageIDs, localItemID];
-      if (!newItem.item.response_type) {
-        throw new Error(
-          `New chunk item does not have a response_type: ${JSON.stringify(
-            chunkItem
-          )}`
-        );
-      }
-    } else if (isCompleteItem) {
-      // This is a complete item. Update the existing item instead of creating a new one
-      // to preserve object identity and prevent component re-mounting.
-      const updatedItem = {
-        ...existingLocalMessageItem.item,
-        ...chunkItem,
-      } as GenericItem;
-
-      newItem = {
-        ...existingLocalMessageItem,
-        item: updatedItem,
-        ui_state: {
-          ...existingLocalMessageItem.ui_state,
-          // Mark streaming as complete and clear intermediate state
-          isIntermediateStreaming: false,
-          streamingState: { chunks: [], isDone: true },
-        },
-      };
-    } else {
-      // This is a new chunk on an existing item. We need to merge it with the existing item and add the new chunk.
-      const existingChunks =
-        existingLocalMessageItem?.ui_state.streamingState?.chunks || [];
-      const newChunks = [...existingChunks, chunkItem];
-
-      newItem = {
-        ...existingLocalMessageItem,
-        ui_state: {
-          ...existingLocalMessageItem?.ui_state,
-          streamingState: {
-            ...existingLocalMessageItem?.ui_state.streamingState,
-            chunks: newChunks,
-          },
-        },
-      };
-    }
-
-    return {
-      ...state,
-      allMessageItemsByID: {
-        ...state.allMessageItemsByID,
-        [localItemID]: newItem,
-      },
-      assistantMessageState: {
-        ...state.assistantMessageState,
-        localMessageIDs,
       },
     };
   },

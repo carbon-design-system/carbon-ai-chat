@@ -20,6 +20,9 @@ interface StubState {
   allMessagesByID: Record<string, unknown>;
   allMessageItemsByID: Record<string, unknown>;
   assistantMessageState: { localMessageIDs: string[] };
+  assistantInputState: {
+    stopStreamingButtonState: { isVisible: boolean; isDisabled: boolean };
+  };
 }
 
 function makeStubManager(initialMessages: Record<string, unknown> = {}) {
@@ -27,6 +30,11 @@ function makeStubManager(initialMessages: Record<string, unknown> = {}) {
     allMessagesByID: { ...initialMessages },
     allMessageItemsByID: {},
     assistantMessageState: { localMessageIDs: [] },
+    // The coordinator drives the stop streaming button from the upsert lifecycle,
+    // so it reads this slice on every call.
+    assistantInputState: {
+      stopStreamingButtonState: { isVisible: false, isDisabled: false },
+    },
   };
   const dispatch = jest.fn((action: { type: string; message?: any }) => {
     if (action.type === 'UPSERT_MESSAGE' && action.message?.id) {
@@ -43,8 +51,12 @@ function makeStubManager(initialMessages: Record<string, unknown> = {}) {
     handleCustomFooterSlot: jest.fn(
       async (..._args: any[]): Promise<void> => undefined
     ),
+    announceStreamStarts: jest.fn(),
   };
   const finalizeStreamingMessage = jest.fn();
+  // The coordinator asks MessageService to hide the stop streaming button on a terminal
+  // upsert; MessageService is the one that decides whether anything else is still live.
+  const hideStopStreamingButtonIfIdle = jest.fn();
 
   const manager = {
     store: {
@@ -53,7 +65,7 @@ function makeStubManager(initialMessages: Record<string, unknown> = {}) {
     },
     fire,
     actions: chatActions,
-    messageService: { finalizeStreamingMessage },
+    messageService: { finalizeStreamingMessage, hideStopStreamingButtonIfIdle },
   } as unknown as ServiceManager;
 
   return {
@@ -63,6 +75,7 @@ function makeStubManager(initialMessages: Record<string, unknown> = {}) {
     fire,
     chatActions,
     finalizeStreamingMessage,
+    hideStopStreamingButtonIfIdle,
   };
 }
 
@@ -340,6 +353,182 @@ describe('MessageUpsertCoordinator', () => {
       const types = fire.mock.calls.map((c) => c[0].type);
       expect(types).toContain(BusEventType.PRE_RECEIVE);
       expect(types).toContain(BusEventType.RECEIVE);
+    });
+
+    it('markStreaming does not register streaming liveness', async () => {
+      const { manager } = makeStubManager();
+      const coord = new MessageUpsertCoordinator(manager);
+
+      // markStreaming is the receive-dedup hook the chunk path calls before the
+      // generation check. Treating it as liveness would re-register stale ids after a
+      // restart and pin the stop button on forever.
+      coord.markStreaming('m1');
+
+      expect(coord.hasStreamingMessages()).toBe(false);
+    });
+  });
+
+  describe('streaming liveness', () => {
+    it('registers on STREAMING and drops on COMPLETE', async () => {
+      const { manager } = makeStubManager();
+      const coord = new MessageUpsertCoordinator(manager);
+
+      await coord.upsert('m1', MessageState.STREAMING, () =>
+        textResponse('m1', 'partial')
+      );
+      expect(coord.hasStreamingMessages()).toBe(true);
+
+      await coord.upsert('m1', MessageState.COMPLETE, () =>
+        textResponse('m1', 'done')
+      );
+      expect(coord.hasStreamingMessages()).toBe(false);
+    });
+
+    it('drops on ERROR', async () => {
+      const { manager } = makeStubManager();
+      const coord = new MessageUpsertCoordinator(manager);
+
+      await coord.upsert('m1', MessageState.STREAMING, () =>
+        textResponse('m1', 'partial')
+      );
+      await coord.upsert('m1', MessageState.ERROR, () =>
+        textResponse('m1', 'failed')
+      );
+
+      // ERROR never reaches firePostReceiveAndFinalize, so the drop has to happen in
+      // runOne rather than in the finalize phase.
+      expect(coord.hasStreamingMessages()).toBe(false);
+    });
+
+    it('tracks ids independently', async () => {
+      const { manager } = makeStubManager();
+      const coord = new MessageUpsertCoordinator(manager);
+
+      await coord.upsert('m1', MessageState.STREAMING, () =>
+        textResponse('m1', 'a')
+      );
+      await coord.upsert('m2', MessageState.STREAMING, () =>
+        textResponse('m2', 'b')
+      );
+
+      await coord.upsert('m1', MessageState.COMPLETE, () =>
+        textResponse('m1', 'a done')
+      );
+      expect(coord.hasStreamingMessages()).toBe(true);
+
+      await coord.upsert('m2', MessageState.COMPLETE, () =>
+        textResponse('m2', 'b done')
+      );
+      expect(coord.hasStreamingMessages()).toBe(false);
+    });
+
+    it('endAllStreaming settles every registered id and drains', async () => {
+      const { manager, dispatch } = makeStubManager();
+      const coord = new MessageUpsertCoordinator(manager);
+
+      await coord.upsert('m1', MessageState.STREAMING, () =>
+        textResponse('m1', 'a')
+      );
+      await coord.upsert('m2', MessageState.STREAMING, () =>
+        textResponse('m2', 'b')
+      );
+
+      dispatch.mockClear();
+      coord.endAllStreaming();
+
+      const ended = dispatch.mock.calls
+        .map((call) => call[0] as { type: string; messageID?: string })
+        .filter((action) => action?.type === 'END_MESSAGE_STREAMING')
+        .map((action) => action.messageID);
+      expect(ended.sort()).toEqual(['m1', 'm2']);
+      expect(coord.hasStreamingMessages()).toBe(false);
+    });
+
+    it('endAllStreaming is a no-op when nothing is registered', async () => {
+      const { manager, dispatch } = makeStubManager();
+      const coord = new MessageUpsertCoordinator(manager);
+
+      await coord.upsert('m1', MessageState.COMPLETE, () =>
+        textResponse('m1', 'done')
+      );
+
+      dispatch.mockClear();
+      coord.endAllStreaming();
+
+      expect(dispatch).not.toHaveBeenCalled();
+    });
+
+    it('drains on clear and clearAll', async () => {
+      const { manager } = makeStubManager();
+      const coord = new MessageUpsertCoordinator(manager);
+
+      await coord.upsert('m1', MessageState.STREAMING, () =>
+        textResponse('m1', 'a')
+      );
+      coord.clear('m1');
+      expect(coord.hasStreamingMessages()).toBe(false);
+
+      await coord.upsert('m2', MessageState.STREAMING, () =>
+        textResponse('m2', 'b')
+      );
+      coord.clearAll();
+      expect(coord.hasStreamingMessages()).toBe(false);
+    });
+
+    it('drops the registration and hides the button even when the slot fan-out throws', async () => {
+      const {
+        manager,
+        state,
+        dispatch,
+        chatActions,
+        hideStopStreamingButtonIfIdle,
+      } = makeStubManager();
+      const coord = new MessageUpsertCoordinator(manager);
+
+      await coord.upsert('m1', MessageState.STREAMING, () =>
+        textResponse('m1', 'partial')
+      );
+
+      // Make the fan-out loop actually run for m1. It skips items whose reference the
+      // reducer reused verbatim, so the dispatch has to hand back a fresh object the way
+      // the real reducer does for a changed item.
+      state.assistantMessageState.localMessageIDs = ['local1'];
+      dispatch.mockImplementation((action: { type: string; message?: any }) => {
+        if (action.type === 'UPSERT_MESSAGE' && action.message?.id) {
+          state.allMessagesByID[action.message.id] = action.message;
+          state.allMessageItemsByID = {
+            local1: { ui_state: { id: 'local1' }, fullMessageID: 'm1' },
+          };
+        }
+      });
+
+      // The event bus does not swallow listener exceptions, so everything after
+      // fanOutChangedSlots is skipped — the registration has to already be gone by then.
+      chatActions.handleUserDefinedResponseItems.mockRejectedValueOnce(
+        new Error('listener blew up')
+      );
+
+      await expect(
+        coord.upsert('m1', MessageState.COMPLETE, () =>
+          textResponse('m1', 'done')
+        )
+      ).rejects.toThrow('listener blew up');
+
+      expect(coord.hasStreamingMessages()).toBe(false);
+      expect(hideStopStreamingButtonIfIdle).toHaveBeenCalledTimes(1);
+    });
+
+    it('leaves the stop button alone for a COMPLETE upsert of a message that never streamed', async () => {
+      // The button may be up for another request (showStopButtonImmediately); an upsert
+      // that did not stream has nothing to take down.
+      const { manager, hideStopStreamingButtonIfIdle } = makeStubManager();
+      const coord = new MessageUpsertCoordinator(manager);
+
+      await coord.upsert('m1', MessageState.COMPLETE, () =>
+        textResponse('m1', 'one shot')
+      );
+
+      expect(hideStopStreamingButtonIfIdle).not.toHaveBeenCalled();
     });
   });
 });

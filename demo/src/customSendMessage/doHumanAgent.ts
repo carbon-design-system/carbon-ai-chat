@@ -8,9 +8,13 @@
  */
 
 import { ChatInstance, MessageResponseTypes } from '@carbon/ai-chat';
+import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
+
+import { sendResponse } from './sendResponse';
 
 function doHumanAgent(instance: ChatInstance) {
-  instance.messaging.addMessage({
+  return sendResponse(instance, {
+    id: uuid(),
     output: {
       generic: [
         {

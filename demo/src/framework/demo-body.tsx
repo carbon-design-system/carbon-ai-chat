@@ -8,9 +8,10 @@
  */
 
 import { PublicConfig, ChatInstance } from '@carbon/ai-chat';
-import { css, html, LitElement, PropertyValues } from 'lit';
+import { css, html, LitElement, nothing, PropertyValues } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 
+import { isPreReleaseDemo } from '../customSendMessage/sendResponse';
 import { Settings } from './types';
 import {
   getSettings,
@@ -32,6 +33,7 @@ import './demo-chat-history-switcher';
 import './demo-launcher-switcher';
 import './demo-input-config-switcher';
 import './demo-stop-button-immediate-switcher';
+import './demo-add-message-switcher';
 import './demo-chat-instance-switcher';
 import './demo-direction-switcher';
 import './demo-chat-version-switcher';
@@ -89,6 +91,7 @@ export class DemoBody extends LitElement {
     demo-writeable-elements-switcher,
     demo-markdown-custom-renderers-switcher,
     demo-direction-switcher,
+    demo-add-message-switcher,
     demo-chat-version-switcher {
       display: block;
       margin-block-start: 1rem;
@@ -714,6 +717,11 @@ export class DemoBody extends LitElement {
                       </div>
                       <demo-stop-button-immediate-switcher
                         .config=${this.config}></demo-stop-button-immediate-switcher>
+                      ${
+                        isPreReleaseDemo(window.location)
+                          ? html`<demo-add-message-switcher></demo-add-message-switcher>`
+                          : nothing
+                      }
                     </div>
                     <div
                       class="config-section"

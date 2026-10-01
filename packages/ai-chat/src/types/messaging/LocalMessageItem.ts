@@ -143,10 +143,39 @@ interface LocalMessageUIState<
   streamingState?: LocalMessageItemStreamingState<TGenericItemType>;
 
   /**
-   * Indicates if this item is part of an intermediate step during streaming. This will be true for items received
-   * as part of a "partial_item" or a "complete_item". This value will be removed when the "final_response" is received.
+   * Indicates if this item is part of an intermediate step of a chunk stream. It is set when the first chunk for
+   * the item arrives, whether that chunk is a "partial_item" or a "complete_item". It is cleared when a
+   * "complete_item" arrives for an item that already exists, except on a grid or a carousel, which keeps the flag it
+   * had, so a hidden one stays hidden until "final_response". It is gone once the "final_response" replaces the
+   * item. A stream that is canceled, or whose `customSendMessage` throws, before its closing chunk settles
+   * `streamingState` but leaves this flag as it was. Items delivered by `upsertMessage` never set it; they use
+   * `streamingState` alone.
    */
   isIntermediateStreaming?: boolean;
+
+  /**
+   * Set once a screen reader has announced this item, so a rebuilt copy is not announced again.
+   *
+   * @internal
+   */
+  wasAnnounced?: boolean;
+
+  /**
+   * Set on an item `upsertMessage` wrote that the chat can't draw, with the path of each field it's missing. While
+   * the item streams it stays hidden; once its stream completes it shows an error instead. An item with it has no
+   * nested local items.
+   *
+   * @internal
+   */
+  cannotDraw?: { missing: string[] };
+
+  /**
+   * Set once the chat has checked agent availability for this "connect_to_agent" item, so an upsert does not check
+   * again.
+   *
+   * @internal
+   */
+  connectToAgentHandled?: boolean;
 }
 
 /**

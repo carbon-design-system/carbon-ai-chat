@@ -16,7 +16,7 @@
  *    and delegates the actual send to `customSendMessage` via `OutboundMessageCoordinator`.
  * 3) OutboundCoordinator clones/updates the message in store, calls `customSendMessage` (sync or async), and on success
  *    calls back into `processSuccess`; on error/cancel it resolves/rejects and advances the queue.
- * 4) Incoming stream chunks are handled through `ChatActionsImpl`, which marks streaming and finalization via
+ * 4) Incoming stream chunks are handled through `ChatInstanceService`, which marks streaming and finalization via
  *    `InboundStreamingCoordinator`. InboundCoordinator tracks response_id/item_id pairs so cancellations and
  *    finalization can advance the queue even when response_id differs from the original request id.
  * 5) FinalResponseChunk or cancellation clears streaming tracking and moves to the next queued message.
@@ -224,7 +224,8 @@ class MessageService {
       () => this.moveToNextQueueItem(),
       (pendingRequest, received) =>
         this.processSuccess(pendingRequest, received),
-      () => this.serviceManager.store.getState().config.public.messaging || {}
+      () => this.serviceManager.store.getState().config.public.messaging || {},
+      () => this.hideStopStreamingButtonIfNoUpsertStreaming()
     );
     this.queue = {
       waiting: [],
@@ -306,12 +307,9 @@ class MessageService {
     // For streaming messages, don't clear the queue yet - wait for FinalResponseChunk to arrive
     // For non-streaming messages (addMessage), clear immediately
     if (!current.isStreaming) {
-      // Hide stop streaming button if it was shown for showStopButtonImmediately
-      // Pass streamingMessageID to keep button visible if there's an active stream
-      resetStopStreamingButton(
-        this.serviceManager.store,
-        this.inboundStreaming.streamingMessageID
-      );
+      // Hide stop streaming button if it was shown for showStopButtonImmediately, unless
+      // some other message is still streaming.
+      this.hideStopStreamingButtonIfIdle();
       this.moveToNextQueueItem();
     }
   }
@@ -649,6 +647,15 @@ class MessageService {
       );
       this.clearCurrentQueueItem();
     }
+
+    // Settle every upsert-driven stream. Mirror cancelCurrentMessageRequest's
+    // cleanup: if any upsert stream was running, the stop button must come down
+    // now that nothing in the send-queue remains either.
+    const settledUpsertStreams =
+      this.serviceManager.messageUpsertCoordinator.endAllStreaming();
+    if (settledUpsertStreams) {
+      this.hideStopStreamingButtonIfIdle();
+    }
   }
 
   /**
@@ -675,12 +682,77 @@ class MessageService {
   }
 
   /**
+   * Returns true when any message is still streaming, whichever API is driving it —
+   * `addMessageChunk` (tracked by {@link inboundStreaming}) or `upsertMessage` (tracked
+   * by the upsert coordinator). This is the single source of truth for "is the chat still
+   * producing output", so the stop streaming button does not vanish when one of several
+   * concurrent streams finishes.
+   */
+  public isAnyMessageStreaming(): boolean {
+    if (this.inboundStreaming.streamingMessageID) {
+      return true;
+    }
+    return this.serviceManager.messageUpsertCoordinator.hasStreamingMessages();
+  }
+
+  /**
+   * Hides the stop streaming button unless something is still streaming.
+   */
+  public hideStopStreamingButtonIfIdle() {
+    if (!this.isAnyMessageStreaming()) {
+      resetStopStreamingButton(this.serviceManager.store);
+    }
+  }
+
+  /**
+   * Hides the stop streaming button unless an `upsertMessage` stream is still running.
+   *
+   * The chunk flow has always hidden the button on its own `complete_item`, and that
+   * behavior is deliberately preserved — so these call sites must ignore
+   * {@link inboundStreaming} and ask only whether the *other* flow is live. Consulting the
+   * chunk state here would keep the button up past a `complete_item`, which is a different
+   * change than the one this method exists to make.
+   */
+  public hideStopStreamingButtonIfNoUpsertStreaming() {
+    if (!this.serviceManager.messageUpsertCoordinator.hasStreamingMessages()) {
+      resetStopStreamingButton(this.serviceManager.store);
+    }
+  }
+
+  /**
    * Cancels the current message request if one is in progress.
    * Also handles streaming messages that may have been cleared from the queue.
+   *
+   * Streaming *state* settles for both flows: the chunk stream through the branches
+   * below, and every `upsertMessage` stream through `endAllStreaming`.
+   *
+   * TODO(#1816): what still doesn't work is *targeted* cancellation of one upsert stream.
+   * Not for want of an id — the host passed one to `upsertMessage` and the coordinator
+   * tracks it. The problem is discovery: the two branches below look up a victim in
+   * `inboundStreaming.streamingMessageID`, which only the chunk pipeline populates, and
+   * in `queue.current.message.id`, which is the outbound *request* id rather than the
+   * response id the host chose. Nothing associates a canceled request with the upsert
+   * ids created under it, and `upsertMessage` can be called with no request in flight at
+   * all. So the abort fires for the queued request, and `endAllStreaming` settles every
+   * id the coordinator knows about rather than the one that was canceled. Building that
+   * association, via `instance.messaging.stop()`, is #1816's scope.
    */
   public async cancelCurrentMessageRequest(
     reason: string = CancellationReason.STOP_STREAMING
   ) {
+    // Settle upsert-driven streams up front — the chunk branch below returns early, and
+    // this has to run either way. Neither branch can reach them: an upsert stream is
+    // registered with the coordinator, not with `inboundStreaming` or the send queue,
+    // which is where those branches look. See the TODO above.
+    this.serviceManager.messageUpsertCoordinator.endAllStreaming();
+
+    // Always attempt to hide the button. A terminal upsert that races with this cancel
+    // may have already removed its id from streamingIDs synchronously before endAllStreaming
+    // ran — in that case settledUpsertStreams would be false but the button is still up.
+    // hideStopStreamingButtonIfIdle is a no-op when nothing is streaming, so calling it
+    // unconditionally is safe.
+    this.hideStopStreamingButtonIfIdle();
+
     // If there's a streaming message, cancel it even if not in queue
     if (this.inboundStreaming.streamingMessageID) {
       await this.cancelMessageRequestByID(
@@ -793,7 +865,9 @@ class MessageService {
         pendingRequest.isProcessed = true;
         // Hide and re-enable the stop streaming button now that cancellation has
         // completed; processSuccess/processError will short-circuit on isProcessed.
-        resetStopStreamingButton(this.serviceManager.store);
+        // This hid unconditionally before `upsertMessage` existed, so it still ignores
+        // other chunk streams; only a running upsert stream keeps the button up.
+        this.hideStopStreamingButtonIfNoUpsertStreaming();
         if (pendingRequest === this.queue.current) {
           this.moveToNextQueueItem();
         }
@@ -835,6 +909,16 @@ class MessageService {
       logError,
       reason
     );
+
+    // A canceled stream often ends without a `complete_item` or `final_response` — the
+    // host simply breaks out of its loop. Nothing else would settle the items' streaming
+    // flags, which left streaming-aware rendering (an in-progress markdown table, for
+    // one) engaged for the rest of the session.
+    if (streamingEntry) {
+      this.serviceManager.store.dispatch(
+        actions.endMessageStreaming(responseId)
+      );
+    }
 
     if (!pendingRequest && wasStreamingCurrent) {
       this.moveToNextQueueItem();

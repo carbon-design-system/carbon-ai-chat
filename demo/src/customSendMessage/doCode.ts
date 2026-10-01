@@ -12,12 +12,15 @@ import {
   CustomSendMessageOptions,
   MessageResponseTypes,
 } from '@carbon/ai-chat';
+import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
 import { CODE } from './constants';
 import { doTextStreaming } from './doText';
+import { sendResponse } from './sendResponse';
 
 function doCode(instance: ChatInstance) {
-  instance.messaging.addMessage({
+  return sendResponse(instance, {
+    id: uuid(),
     output: {
       generic: [
         {

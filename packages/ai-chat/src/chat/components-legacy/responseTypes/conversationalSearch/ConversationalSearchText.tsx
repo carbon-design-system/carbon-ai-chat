@@ -25,6 +25,7 @@ import { useServiceManager } from '../../../hooks/useServiceManager';
 import { shallowEqual } from '../../../store/appStore';
 import OperationalTag from '../../../components/carbon/OperationalTag';
 import { carbonIconToReact } from '../../../utils/carbonIcon';
+import { deriveStreamingItemText } from '../../../utils/streamingUtils';
 
 const ChevronDown = carbonIconToReact(ChevronDown16);
 const ChevronUp = carbonIconToReact(ChevronUp16);
@@ -80,12 +81,9 @@ function ConversationalSearchText(props: ConversationalSearchTextProps) {
   }`;
   const [html, setHtml] = useState('');
 
-  let text: string;
-  if (streamingState && !streamingState.isDone) {
-    text = streamingState.chunks.map((chunk) => chunk.text).join('');
-  } else {
-    text = searchItem.item.text;
-  }
+  // Chunk-delivered items accumulate their text in `streamingState.chunks`;
+  // upsert-delivered items carry the whole text on the item with empty chunks.
+  const text = deriveStreamingItemText(searchItem.item.text, streamingState);
 
   useEffect(() => {
     const processedText = insertHighlightMarkdown(text, highlightCitation);
