@@ -429,12 +429,17 @@ class CDSAIChatShell extends LitElement {
   }
 
   private getInputAndMessagesClasses(): string {
+    // When content-max-width is disabled there is no max-width constraint, so
+    // the container is always considered "at max width" — this prevents the
+    // corner-zeroing rules in _rounded-corners.scss from stripping border-radius
+    // off prompt-line-shell when the container happens to exceed 672 px.
+    const atMaxWidth = !this.contentMaxWidth || this.inputAndMessagesAtMaxWidth;
     return [
       'input-and-messages',
       this.hasInputBeforeContent ? 'has-input-before-content' : '',
       this.hasInputContent ? 'has-input-content' : '',
       this.hasInputAfterContent ? 'has-input-after-content' : '',
-      this.inputAndMessagesAtMaxWidth ? 'at-max-width' : '',
+      atMaxWidth ? 'at-max-width' : '',
     ]
       .filter(Boolean)
       .join(' ');
