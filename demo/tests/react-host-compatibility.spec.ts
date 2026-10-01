@@ -5,6 +5,7 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
+import { PageObjectId } from '@carbon/ai-chat/server';
 import { test, expect, type Page } from '@playwright/test';
 
 /**
@@ -16,7 +17,9 @@ import { test, expect, type Page } from '@playwright/test';
  * Whatever loads first, a React chat keeps rendering in the host's React tree:
  * host context reaches its custom content, that content keeps its state, and
  * page CSS reaches it. The React host adds no height to the page, and page CSS
- * reaches the content the host puts in each slot.
+ * reaches the content the host puts in each slot. Loading the web-component
+ * entry later wakes a plain `cds-aichat-container` that connected while no
+ * renderer existed.
  */
 
 interface ChatInstanceHandle {
@@ -72,6 +75,9 @@ function countRenderTargets(page: Page) {
 
 async function expectLiveReactChat(page: Page) {
   expect(await countRenderTargets(page)).toBe(1);
+  expect(
+    await page.evaluate(() => customElements.get('cds-aichat-react'))
+  ).toBeUndefined();
 
   const instanceBefore = await page.evaluateHandle(
     () => window.hostCompatibility.reactInstance
@@ -120,6 +126,28 @@ test('React chat renders in the host tree when the web-component entry loads fir
   expect(errors).toEqual([]);
 });
 
+test('a plain web component connected before its entry loads wakes when it does', async ({
+  page,
+}) => {
+  const errors = await openHarness(page, 'wait', [
+    'react-entry',
+    'plain',
+    'wc',
+  ]);
+
+  await page.waitForFunction(
+    () => Boolean(window.hostCompatibility.wcInstance),
+    {
+      timeout: 20000,
+    }
+  );
+  await expect(
+    page.locator('#plain-host').getByTestId(PageObjectId.INPUT)
+  ).toBeVisible({ timeout: 15000 });
+  expect(await countRenderTargets(page)).toBe(1);
+  expect(errors).toEqual([]);
+});
+
 /** Opens one chat surface and waits for its instance. */
 async function openSurface(page: Page, surface: string) {
   const errors: string[] = [];
@@ -135,6 +163,16 @@ async function openSurface(page: Page, surface: string) {
   );
   return { errors, instanceKey };
 }
+
+test('a custom element renders when its entry is the only one loaded', async ({
+  page,
+}) => {
+  const { errors } = await openSurface(page, 'wc-custom');
+  await expect(
+    page.locator('cds-aichat-custom-element').getByTestId(PageObjectId.INPUT)
+  ).toBeVisible({ timeout: 15000 });
+  expect(errors).toEqual([]);
+});
 
 test('a float React chat adds no height to a full-height page', async ({
   page,
@@ -157,7 +195,8 @@ type SlotKind =
   | 'message-footer'
   | 'request-footer'
   | 'writeable-element'
-  | 'input-node';
+  | 'input-node'
+  | 'inline-plugin';
 
 const ALL_KINDS: SlotKind[] = [
   'user-defined-response',
@@ -165,27 +204,20 @@ const ALL_KINDS: SlotKind[] = [
   'request-footer',
   'writeable-element',
   'input-node',
+  'inline-plugin',
 ];
 
 /**
  * The surfaces and slot kinds where page CSS reaches slotted content today.
- * `cds-aichat-container` keeps input nodes out of reach, and
- * `cds-aichat-custom-element` keeps every kind inside its own shadow root, so
- * those rows are not listed. The fixture still mounts `wc-custom`, so its rows
+ * `cds-aichat-custom-element` keeps the other kinds inside its own shadow
+ * root, so those rows are not listed. The fixture still mounts them, so they
  * can join once they pass.
  */
 const PAGE_CSS_ROWS: [string, SlotKind[]][] = [
   ['react-container', ALL_KINDS],
   ['react-custom', ALL_KINDS],
-  [
-    'wc-container',
-    [
-      'user-defined-response',
-      'message-footer',
-      'request-footer',
-      'writeable-element',
-    ],
-  ],
+  ['wc-container', ALL_KINDS],
+  ['wc-custom', ['input-node', 'inline-plugin']],
 ];
 
 /** Makes the chat render the given slot kind. */
@@ -224,6 +256,31 @@ async function triggerSlot(page: Page, instanceKey: string, kind: SlotKind) {
                 {
                   type: 'paragraph',
                   content: [{ type: 'taskCard', attrs: { label: 'Ship it' } }],
+                },
+              ],
+            },
+          },
+        }),
+      instanceKey
+    );
+  } else if (kind === 'inline-plugin') {
+    // A chip makes the paragraph structured, so the plugin renders inline.
+    await page.evaluate(
+      (key) =>
+        window.hostCompatibility[key as 'reactInstance'].send({
+          id: 'inline',
+          input: {
+            message_type: 'text',
+            text: 'Ada `plugin`',
+            display_content: {
+              type: 'doc',
+              content: [
+                {
+                  type: 'paragraph',
+                  content: [
+                    { type: 'mention', attrs: { id: 'ada', label: 'Ada' } },
+                    { type: 'text', text: ' `plugin`' },
+                  ],
                 },
               ],
             },

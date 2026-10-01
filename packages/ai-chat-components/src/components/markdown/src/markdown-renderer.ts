@@ -25,6 +25,7 @@
  */
 
 import DOMPurify from 'dompurify';
+import { InlineMarkdownError } from './utils/inline-validation.js';
 import { html, TemplateResult } from 'lit';
 import { repeat } from 'lit/directives/repeat.js';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
@@ -146,6 +147,19 @@ function renderChildTokenTrees(
     combineSplitHtmlBlocks(children)
   );
 
+  if (options.inline) {
+    return html`${normalizedChildren.map((child, index) =>
+      renderInlineChild(child, {
+        ...options,
+        context: {
+          ...childContext,
+          parentChildren: normalizedChildren,
+          currentIndex: index,
+        },
+      })
+    )}`;
+  }
+
   // Multiple or complex children: use repeat for stable keying
   return html`${repeat(
     normalizedChildren,
@@ -178,6 +192,65 @@ function renderChildTokenTrees(
       return result ?? html``;
     }
   )}`;
+}
+
+/**
+ * An inline child that a plugin owns renders through the plugin's rule alone.
+ * Rendering its subtree first would run host callbacks for output the plugin
+ * then discards.
+ */
+function renderInlineChild(
+  child: TokenTree,
+  options: RenderTokenTreeOptions
+): TemplateResult {
+  if (options.md && !isNativelyHandled(child.token)) {
+    return renderFallback(
+      child.token as Token,
+      child,
+      options.md,
+      options.sanitize,
+      options
+    );
+  }
+  return renderTokenTree(child, options);
+}
+
+function renderHTMLString(
+  content: string,
+  options: RenderTokenTreeOptions
+): TemplateResult {
+  return options.inline
+    ? options.inline.renderHTML(content)
+    : html`${unsafeHTML(content)}`;
+}
+
+/** The token's attributes as an object, sanitized and checked as requested. */
+function resolveAttrs(
+  token: TokenTree['token'],
+  options: RenderTokenTreeOptions
+): Record<string, string> {
+  const rawAttrs = Object.fromEntries(token.attrs || []);
+  const isCustomElement = !!token.tag && token.tag.includes('-');
+  const attrs =
+    options.sanitize && !isCustomElement ? sanitizeAttrs(rawAttrs) : rawAttrs;
+  validateInlineAttributes(attrs, options);
+  return attrs;
+}
+
+function validateInlineAttributes(
+  attrs: Record<string, string>,
+  options: RenderTokenTreeOptions
+) {
+  options.inline?.validateAttributes(attrs);
+}
+
+function rejectInlineBlock(tag: string, options: RenderTokenTreeOptions) {
+  if (options.inline) {
+    throw new InlineMarkdownError(
+      'non-inline-output',
+      `renderInlineMarkdown cannot render the native token tag "${tag}" inline.`
+    );
+  }
 }
 
 /**
@@ -259,7 +332,7 @@ export function renderTokenTree(
       content = sanitizeHtmlContent(content);
     }
 
-    return html`${unsafeHTML(content)}`;
+    return renderHTMLString(content, options);
   }
 
   // Handle split HTML blocks that wrap markdown siblings (e.g. <details>…</details>).
@@ -363,21 +436,7 @@ export function renderTokenTree(
   // Handle structural elements (paragraphs, headings, lists, etc.)
   const tag = token.tag;
 
-  // Convert markdown-it attributes (array of [key, value]) into an object.
-  const rawAttrs = (token.attrs || []).reduce(
-    (acc, [key, value]) => {
-      acc[key] = value;
-      return acc;
-    },
-    {} as Record<string, string>
-  );
-
-  // Apply attribute sanitization if requested
-  let attrs = rawAttrs;
-  const isCustomElement = !!token.tag && token.tag.includes('-');
-  if (sanitize && !isCustomElement) {
-    attrs = sanitizeAttrs(rawAttrs);
-  }
+  const attrs = resolveAttrs(token, options);
 
   // Set up context for child rendering
   let childContext = context;
@@ -636,6 +695,7 @@ function renderWithStaticTag(
         }
       }
 
+      validateInlineAttributes(linkAttrs, options);
       return html`<a ${spread(linkAttrs)} @click=${onClickHandler}
         >${content}</a
       >`;
@@ -665,6 +725,7 @@ function renderWithStaticTag(
             imgAttrs = sanitizeAttrs(imgAttrs);
           }
         }
+        validateInlineAttributes(imgAttrs, options);
         return html`<img ${spread(imgAttrs)} />`;
       }
       if (node && options.md && shouldDelegateToPluginRule(token, options.md)) {
@@ -711,6 +772,7 @@ function renderWithStaticTag(
           options
         );
       }
+      rejectInlineBlock(tag, options);
       return html`<div ${spread(attrs)}>${content}</div>`;
   }
 }

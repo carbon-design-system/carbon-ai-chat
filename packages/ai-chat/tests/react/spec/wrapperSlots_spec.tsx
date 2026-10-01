@@ -8,10 +8,11 @@
  */
 
 /**
- * React render props stay live after boot. Their hosts land in the chat host's
- * light DOM, where page CSS reaches them, and slots in its shadow root project
- * them. Removing a render prop removes its hosts, so a slot with nothing to
- * show has no host and its fallback content shows.
+ * React render props stay live through the shared container. Their hosts land
+ * in `cds-aichat-container`'s light DOM, where page CSS reaches them, and the
+ * app's own slots project them from the same shadow root. Removing a render
+ * prop removes its hosts, so a slot with nothing to show has no host and its
+ * fallback content shows.
  */
 
 import React, { StrictMode } from 'react';
@@ -38,7 +39,9 @@ import {
 const config = { ...createBaseConfig(), openChatByDefault: true };
 
 /**
- * The slot a host node is projected into, or null when nothing picked it up.
+ * The app slot a host node is projected into, or null when nothing picked it
+ * up. A host in the container's light DOM is assigned straight to the slot the
+ * app renders, with no forwarding in between.
  */
 function assignedSlotFor(slot: string) {
   return (hostFor(slot) as HTMLElement | null)?.assignedSlot ?? null;
@@ -97,7 +100,7 @@ function sendRequest(instance: ChatInstance, request: Partial<MessageRequest>) {
   );
 }
 
-describe('React render props after boot', () => {
+describe('React render props through the shared container', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 

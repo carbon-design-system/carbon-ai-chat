@@ -109,10 +109,14 @@ class MessageService {
 - One-off API call → action creator.
 - Pure utility → `src/utils/`.
 
+## Who starts services
+
+[`cds-aichat-container`](../src/web-components/cds-aichat-container/cds-aichat-container.ts) starts them, for every host. React starts nothing. The host calls [`initServiceManagerAndInstance`](../src/chat/utils/chatBoot.ts), runs the host's `onBeforeRender`, then lets the renderer show the app. **A Lit element reads the manager from the context in [service-manager-context.ts](../src/web-components/shared/service-manager-context.ts)**, never from a singleton. The value is `undefined` before startup and after detach.
+
 ## Wiring & teardown
 
 - Register new services through [`ServiceManager`](../src/chat/services/ServiceManager.ts) and [`loadServices`](../src/chat/services/loadServices.ts).
-- **There is no teardown yet.** Unmount only unmounts the React root, so every store subscription, timer, and in-flight request a service owns outlives the mount. Keep the unsubscribe handle and the timer id you create, so the teardown that #1681 builds can dispose them. `destroySession()` resets session data; it is not a teardown.
+- **There is no teardown yet.** Detaching a host retires its mount — the renderer unmounts, listeners and bus handlers go, pending callbacks are dropped — but every store subscription, timer, and in-flight request a service owns keeps running. Keep the unsubscribe handle and the timer id you create, so the teardown that #1681 builds can dispose them. `destroySession()` resets session data; it is not a teardown.
 - Public methods on `ChatActionsImpl` must be reflected on the `ChatInstance` type in [src/chat/instance/](../src/chat/instance).
 
 ## Testing services

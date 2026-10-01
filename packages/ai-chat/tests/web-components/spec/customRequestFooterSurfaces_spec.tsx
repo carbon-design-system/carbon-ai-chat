@@ -22,7 +22,7 @@
  * boot must still get footers.
  */
 
-import { waitFor } from '@testing-library/react';
+import { act, waitFor } from '@testing-library/react';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 
@@ -225,6 +225,13 @@ describe('custom request footer across host surfaces', () => {
       surface.host as unknown as Record<string, unknown>
     ).renderCustomRequestFooter = (state: RenderCustomRequestFooterState) =>
       footerElementFor(cache, state);
+    await surface.settle();
+    // The container hands the callback to React, which commits on its own
+    // schedule. The footer handler reads it from that commit, so let it land
+    // before the next send.
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
 
     await surface.instance.send('sent after');
     await surface.settle();

@@ -15,7 +15,12 @@ import { render } from '@testing-library/react';
 // REAL store via `useSelector` so this spec exercises the `markdownConfig` slice
 // that replaced the old MarkdownConfigContext.
 jest.mock('../../../src/chat/hooks/useIntl', () => ({
-  useIntl: () => ({ formatMessage: () => '' }),
+  useIntl: () => ({
+    formatMessage: ({ id }: { id: string }, values: unknown) => ({
+      id,
+      values,
+    }),
+  }),
 }));
 jest.mock('../../../src/chat/hooks/useShouldSanitizeHTML', () => ({
   useShouldSanitizeHTML: () => false,
@@ -102,5 +107,69 @@ describe('MarkdownWithDefaults', () => {
     rerender(tree(false));
     expect(capturedProps).toHaveLength(2);
     expect(capturedProps[1].streaming).toBe(false);
+  });
+  it('preserves per-call options, locale, translations, and format callbacks', () => {
+    const store = makeConfigStore({ locale: 'fr' });
+    render(
+      <StoreProvider store={store}>
+        <MarkdownWithDefaults
+          text="source"
+          removeHTML
+          overrideSanitize
+          streaming
+          highlight={false}
+        />
+      </StoreProvider>
+    );
+    const props = capturedProps[0];
+    expect(props).toMatchObject({
+      markdown: 'source',
+      sanitizeHTML: true,
+      removeHTML: true,
+      streaming: true,
+      codeSnippetHighlight: false,
+      tableLocale: 'fr',
+    });
+    const pack = store.getState().languagePack;
+    const translations = {
+      codeSnippetShowLessText: pack.codeSnippet_showLessText,
+      codeSnippetShowMoreText: pack.codeSnippet_showMoreText,
+      codeSnippetCopyButtonTooltipContent: pack.codeSnippet_tooltipContent,
+      codeSnippetAriaLabelReadOnly: pack.codeSnippet_ariaLabelReadOnly,
+      codeSnippetAriaLabelEditable: pack.codeSnippet_ariaLabelEditable,
+      tableFilterPlaceholderText: pack.table_filterPlaceholder,
+      tablePreviousPageText: pack.table_previousPage,
+      tableNextPageText: pack.table_nextPage,
+      tableItemsPerPageText: pack.table_itemsPerPage,
+      tableDownloadLabelText: pack.table_downloadButton,
+    };
+    expect(props).toMatchObject(translations);
+    expect(
+      (
+        props.codeSnippetGetLineCountText as (
+          args: Record<string, number>
+        ) => unknown
+      )({ count: 3 })
+    ).toEqual({ id: 'codeSnippet_lineCount', values: { count: 3 } });
+    expect(
+      (
+        props.tableGetPaginationSupplementalText as (
+          args: Record<string, number>
+        ) => unknown
+      )({ count: 4 })
+    ).toEqual({
+      id: 'table_paginationSupplementalText',
+      values: { pagesCount: 4 },
+    });
+    expect(
+      (
+        props.tableGetPaginationStatusText as (
+          args: Record<string, number>
+        ) => unknown
+      )({ start: 1, end: 2, count: 4 })
+    ).toEqual({
+      id: 'table_paginationStatus',
+      values: { start: 1, end: 2, count: 4 },
+    });
   });
 });
