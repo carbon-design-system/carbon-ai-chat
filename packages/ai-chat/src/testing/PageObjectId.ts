@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { PageObjectId as BasePageObjectId } from '@carbon/ai-chat-components/es/testing/PageObjectId';
+import { PageObjectId as BasePageObjectId } from '@carbon/ai-chat-components/es/testing/PageObjectId.js';
 
 /**
  * An enum of all of our data-testid we use. For some elements (like INPUT) they can appear in multiple "panels"

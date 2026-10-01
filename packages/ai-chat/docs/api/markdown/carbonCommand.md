@@ -10,7 +10,7 @@
 - Category: Utilities
  The prompt-line extension surface is still settling; these
 factory signatures can change in a minor release.
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/functions/Type_reference.carbonCommand.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/functions/Type_reference.carbonCommand.html
 
 Tiptap extension factory for `/`-style command triggers. Same shape as
 carbonMention; the two differ only in the default schema-node name

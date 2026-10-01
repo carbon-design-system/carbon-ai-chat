@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Events
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.BusEventCustomRequestFooterSlot.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.BusEventCustomRequestFooterSlot.html
 
 Used to populate the custom footer slot below a user message.
 
@@ -28,7 +28,7 @@ interface BusEventCustomRequestFooterSlot
 
 `data: { message: MessageRequest; slotName: string }`
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.BusEventCustomRequestFooterSlot.html#data)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.BusEventCustomRequestFooterSlot.html#data)
 
 ### type
 
@@ -36,4 +36,4 @@ interface BusEventCustomRequestFooterSlot
 
 The type of this event.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.BusEventCustomRequestFooterSlot.html#type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.BusEventCustomRequestFooterSlot.html#type)

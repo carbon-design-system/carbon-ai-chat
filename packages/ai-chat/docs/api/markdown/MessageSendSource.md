@@ -8,7 +8,7 @@
 
 - Kind: Enum
 - Category: Events
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.MessageSendSource.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.MessageSendSource.html
 
 The different sources that can cause a send event to occur.
 
@@ -26,7 +26,7 @@ enum MessageSendSource
 
 The user chose a value from the date picker.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.MessageSendSource.html#date_picker)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.MessageSendSource.html#date_picker)
 
 ### EVENT
 
@@ -34,7 +34,7 @@ The user chose a value from the date picker.
 
 This is used for message events.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.MessageSendSource.html#event)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.MessageSendSource.html#event)
 
 ### HISTORY_UPDATE
 
@@ -42,7 +42,7 @@ This is used for message events.
 
 The message was sent as an event history update.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.MessageSendSource.html#history_update)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.MessageSendSource.html#history_update)
 
 ### HOME_SCREEN_INPUT
 
@@ -50,7 +50,7 @@ The message was sent as an event history update.
 
 The user has entered a value from the input on the home screen.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.MessageSendSource.html#home_screen_input)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.MessageSendSource.html#home_screen_input)
 
 ### HOME_SCREEN_STARTER
 
@@ -58,7 +58,7 @@ The user has entered a value from the input on the home screen.
 
 The user clicked a starter from the home screen.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.MessageSendSource.html#home_screen_starter)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.MessageSendSource.html#home_screen_starter)
 
 ### INSTANCE_SEND
 
@@ -66,7 +66,7 @@ The user clicked a starter from the home screen.
 
 An external call to the public "instance.send" method was made.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.MessageSendSource.html#instance_send)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.MessageSendSource.html#instance_send)
 
 ### MESSAGE_INPUT
 
@@ -74,7 +74,7 @@ An external call to the public "instance.send" method was made.
 
 The user has entered a value from the main input on the message list.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.MessageSendSource.html#message_input)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.MessageSendSource.html#message_input)
 
 ### OPTION_BUTTON
 
@@ -82,7 +82,7 @@ The user has entered a value from the main input on the message list.
 
 The user clicked a button from an option response.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.MessageSendSource.html#option_button)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.MessageSendSource.html#option_button)
 
 ### OPTION_DROP_DOWN
 
@@ -90,7 +90,7 @@ The user clicked a button from an option response.
 
 The user selected a value from a dropdown for an option response.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.MessageSendSource.html#option_drop_down)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.MessageSendSource.html#option_drop_down)
 
 ### OTHER
 
@@ -98,7 +98,7 @@ The user selected a value from a dropdown for an option response.
 
 Some other source.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.MessageSendSource.html#other)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.MessageSendSource.html#other)
 
 ### POST_BACK_BUTTON
 
@@ -106,7 +106,7 @@ Some other source.
 
 The user clicked a post back button from a button response.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.MessageSendSource.html#post_back_button)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.MessageSendSource.html#post_back_button)
 
 ### WELCOME_REQUEST
 
@@ -114,4 +114,4 @@ The user clicked a post back button from a button response.
 
 A default request for the welcome message was made.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.MessageSendSource.html#welcome_request)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.MessageSendSource.html#welcome_request)

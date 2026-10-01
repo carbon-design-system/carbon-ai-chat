@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Events
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.BusEvent.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.BusEvent.html
 
 The discriminating union of all the possible bus event types.
 
@@ -26,4 +26,4 @@ interface BusEvent
 
 The type of this event.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.BusEvent.html#type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.BusEvent.html#type)

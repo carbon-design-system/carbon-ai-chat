@@ -26,7 +26,12 @@
  * - `./utils/plugin-fallback.ts` — reads `cachedHtml` and {@link getPluginOverriddenRules} to drive the delegated-render flow.
  */
 
-import MarkdownIt, { Token } from 'markdown-it';
+import MarkdownIt, {
+  Token,
+  type PluginSimple,
+  type PluginWithOptions,
+  type PluginWithParams,
+} from 'markdown-it';
 
 import { markdownItAttrs } from './plugins/markdown-it-attrs';
 import { markdownItHighlight } from './plugins/markdown-it-highlight';
@@ -89,9 +94,9 @@ export const PLUGIN_DELEGABLE_TOKEN_TYPES: ReadonlySet<string> = new Set([
  * `MarkdownIt.use(...)`.
  */
 export type MarkdownItPlugin =
-  | MarkdownIt.PluginSimple
-  | [MarkdownIt.PluginWithOptions<unknown>, unknown]
-  | [MarkdownIt.PluginWithParams, ...unknown[]];
+  | PluginSimple
+  | [PluginWithOptions<unknown>, unknown]
+  | [PluginWithParams, ...unknown[]];
 
 // Per-instance set of renderer-rule keys that user plugins overrode (or
 // added) relative to the snapshot taken after our built-in plugins ran.
@@ -151,7 +156,7 @@ function createMarkdownIt(
   for (const plugin of plugins ?? []) {
     if (Array.isArray(plugin)) {
       const [fn, ...args] = plugin;
-      (md as MarkdownIt).use(fn as MarkdownIt.PluginWithParams, ...args);
+      (md as MarkdownIt).use(fn as PluginWithParams, ...args);
     } else {
       md.use(plugin);
     }

@@ -63,7 +63,7 @@ npm test -- -t "pattern"
 ## Gotchas
 
 - **Custom store hooks**: `useSelector` comes from `src/chat/hooks/` — **not** `react-redux`. There is no `useDispatch`; dispatch through `serviceManager.store.dispatch` with an action creator from `store/actions.ts`.
-- **Relative-import extensions**: `moduleResolution` is classic `node`, so relative imports of TS source resolve **with or without** a trailing `.js`; extensionless is the convention across the tree, and rollup, `tsc --noEmit`, and Jest all accept either. Keep the extension only when the target is a real built `.js` in a dependency (e.g. `@carbon/ai-chat-components/es/react/card.js`) — those are actual files, not TS source.
+- **Import extensions**: `moduleResolution` is `bundler`, so relative imports of TS source resolve **with or without** a trailing `.js`; extensionless is the convention across the tree, and rollup, `tsc --noEmit`, and Jest all accept either. A deep import into a dependency is different: `bundler` enforces the package's `exports` map, so write the real built file, `.js` included (e.g. `@carbon/ai-chat-components/es/react/card.js`).
 - **Relaxed TS strictness**: `tsconfig` sets `strictNullChecks: false` and `strictFunctionTypes: false`. Don't assume null safety; check explicitly or add guards.
 - **React runs inside shadow DOM**: the `cds-aichat-*` custom elements mount React into a shadow root. User-defined responses and writeable elements use slotted content; follow existing patterns. Background in [architecture.md](references/architecture.md).
 

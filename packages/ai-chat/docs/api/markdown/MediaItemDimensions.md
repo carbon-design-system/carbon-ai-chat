@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.MediaItemDimensions.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.MediaItemDimensions.html
 
 Dimension information for displaying a media item.
 
@@ -28,4 +28,4 @@ This property's value is used to calculate a responsive height for Carbon AI Cha
 ratio is the same between different screen widths. This is set to a reasonable default depending on the response type
 and other details like what service you are pulling the content from (e.g. Youtube or SoundCloud).
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.MediaItemDimensions.html#base_height)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.MediaItemDimensions.html#base_height)

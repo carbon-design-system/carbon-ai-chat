@@ -8,7 +8,7 @@
 
 - Kind: Enum
 - Category: Instance
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.ViewType.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.ViewType.html
 
 The different views that can be shown by Carbon AI Chat.
 
@@ -26,7 +26,7 @@ enum ViewType
 
 The launcher view is used to open the main window.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.ViewType.html#launcher)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.ViewType.html#launcher)
 
 ### MAIN_WINDOW
 
@@ -35,4 +35,4 @@ The launcher view is used to open the main window.
 The main window view is used to ask WA questions and converse with an agent, as well as many other things. The
 string value is kept camel case to align with the viewState mainWindow property.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.ViewType.html#main_window)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.ViewType.html#main_window)

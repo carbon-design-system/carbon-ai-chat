@@ -9,7 +9,9 @@
     "sourceMap": true,
     "experimentalDecorators": true,
     "useDefineForClassFields": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
+    "skipLibCheck": true,
+    "types": ["vite/client"],
     "plugins": [
       {
         "name": "ts-lit-plugin"

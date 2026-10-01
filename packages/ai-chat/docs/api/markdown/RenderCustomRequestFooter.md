@@ -8,7 +8,7 @@
 
 - Kind: TypeAlias
 - Category: React
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/types/Type_reference.RenderCustomRequestFooter.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/types/Type_reference.RenderCustomRequestFooter.html
 
 The type of the render function that is used to render a custom footer below a user message. This function should
 return a component that renders the footer, or null to render nothing.

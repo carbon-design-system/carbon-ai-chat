@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.BaseMessageInput.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.BaseMessageInput.html
 
 ## Signature
 
@@ -24,4 +24,4 @@ interface BaseMessageInput
 
 The type of user input.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.BaseMessageInput.html#message_type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.BaseMessageInput.html#message_type)

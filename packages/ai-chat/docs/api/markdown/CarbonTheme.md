@@ -8,7 +8,7 @@
 
 - Kind: Enum
 - Category: Config
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.CarbonTheme.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.CarbonTheme.html
 
 A string identifying what Carbon Theme we should base UI variables off of.
 Defaults to "inherit". If you are not hosting the chat on a website that is Carbon styles, you will want to choose
@@ -29,7 +29,7 @@ enum CarbonTheme
 
 Injects Carbon Gray 10 theme tokens.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.CarbonTheme.html#g10)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.CarbonTheme.html#g10)
 
 ### G100
 
@@ -37,7 +37,7 @@ Injects Carbon Gray 10 theme tokens.
 
 Injects Carbon Gray 100 theme tokens.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.CarbonTheme.html#g100)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.CarbonTheme.html#g100)
 
 ### G90
 
@@ -45,7 +45,7 @@ Injects Carbon Gray 100 theme tokens.
 
 Injects Carbon Gray 90 theme tokens.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.CarbonTheme.html#g90)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.CarbonTheme.html#g90)
 
 ### WHITE
 
@@ -53,4 +53,4 @@ Injects Carbon Gray 90 theme tokens.
 
 Injects Carbon white theme tokens.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.CarbonTheme.html#white)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.CarbonTheme.html#white)

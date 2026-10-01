@@ -8,7 +8,7 @@
 
 - Kind: TypeAlias
 - Category: Web component
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/types/Type_reference.WCRenderCustomRequestFooter.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/types/Type_reference.WCRenderCustomRequestFooter.html
 
 The render function used to render a custom footer below a user message in web components. When provided, the
 library manages all event listening, slot tracking, and element lifecycle. The callback receives the accumulated

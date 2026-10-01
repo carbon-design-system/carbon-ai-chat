@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Instance
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.PublicCustomPanelsState.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.PublicCustomPanelsState.html
 
 Represents public state for each supported custom panel variant.
 
@@ -26,7 +26,7 @@ interface PublicCustomPanelsState
 
 State for the default overlay-style custom panel.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.PublicCustomPanelsState.html#default)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.PublicCustomPanelsState.html#default)
 
 ### history
 
@@ -34,7 +34,7 @@ State for the default overlay-style custom panel.
 
 State for the history panel.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.PublicCustomPanelsState.html#history)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.PublicCustomPanelsState.html#history)
 
 ### workspace
 
@@ -42,4 +42,4 @@ State for the history panel.
 
 State for the workspace custom panel.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.PublicCustomPanelsState.html#workspace)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.PublicCustomPanelsState.html#workspace)
