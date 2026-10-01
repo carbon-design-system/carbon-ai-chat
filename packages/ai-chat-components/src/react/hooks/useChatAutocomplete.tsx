@@ -255,7 +255,7 @@ export function useChatAutocomplete(
   );
 
   const autocompleteContent = React.useMemo<ReactNode>(() => {
-    if (!state.trigger || state.items.length === 0) {
+    if (!state.trigger) {
       return null;
     }
     const { items: flatItems, groups } = itemsToGroups(state.items);

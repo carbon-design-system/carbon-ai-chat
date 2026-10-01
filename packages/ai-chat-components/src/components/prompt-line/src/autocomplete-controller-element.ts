@@ -203,7 +203,7 @@ class AutocompleteControllerElement extends LitElement {
 
   override render() {
     const { trigger, items, renderCustomList, disableDirectSend } = this._state;
-    if (!trigger || items.length === 0) {
+    if (!trigger) {
       // List is gone — reset navigation state so the send button is unblocked.
       // This covers cases where the list is removed without an autocomplete
       // dismiss/select/send event (e.g. the user deletes the trigger character).
@@ -224,6 +224,21 @@ class AutocompleteControllerElement extends LitElement {
         );
       }
       return nothing;
+    }
+    if (items.length === 0 && this._listNavigated) {
+      this._listNavigated = false;
+      this.dispatchEvent(
+        new CustomEvent<AutocompleteNavigatedEventDetail>(
+          'cds-aichat-list-navigated',
+          { detail: { navigated: false }, bubbles: true, composed: true }
+        )
+      );
+      this.dispatchEvent(
+        new CustomEvent<AutocompleteNavigatedEventDetail>(
+          'cds-aichat-autocomplete-navigated',
+          { detail: { navigated: false }, bubbles: true, composed: true }
+        )
+      );
     }
     if (renderCustomList) {
       const result = renderCustomList({
