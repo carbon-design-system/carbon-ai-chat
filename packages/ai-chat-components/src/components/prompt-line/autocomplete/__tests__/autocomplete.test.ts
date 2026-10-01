@@ -1513,5 +1513,132 @@ describe('cds-aichat-autocomplete', () => {
 
       expect(announcedMessage).to.equal('Group item 1, Group 1, 3 of 4');
     });
+
+    it('filtering an open list to a different count announces the new count', async () => {
+      const initialItems: SuggestionItem[] = [
+        { id: '1', label: 'Item 1' },
+        { id: '2', label: 'Item 2' },
+        { id: '3', label: 'Item 3' },
+        { id: '4', label: 'Item 4' },
+        { id: '5', label: 'Item 5' },
+        { id: '6', label: 'Item 6' },
+      ];
+
+      const announcedCounts: number[] = [];
+      const trackingI18n = {
+        ...defaultAutocompleteI18n,
+        suggestionsAvailable: (count: number) => {
+          announcedCounts.push(count);
+          return defaultAutocompleteI18n.suggestionsAvailable(count);
+        },
+      };
+
+      const el = await defaultFixture({
+        items: initialItems,
+        i18n: trackingI18n,
+      });
+
+      // Initial mount fires the open announcement immediately
+      expect(announcedCounts).to.deep.equal([6]);
+
+      // Filter down to 1 item
+      el.items = [{ id: '1', label: 'Item 1' }];
+      await el.updateComplete;
+
+      // Filter count announcements are debounced by 250ms, plus AriaAnnouncerManager 250ms delay
+      await new Promise((resolve) => window.setTimeout(resolve, 550));
+
+      expect(announcedCounts).to.deep.equal([6, 1]);
+
+      // Verify the live region text ends with the phrase for 1 suggestion
+      const liveRegions = el.shadowRoot?.querySelectorAll<HTMLDivElement>(
+        '.cds-aichat-autocomplete__live-region'
+      );
+      const textContents = Array.from(liveRegions ?? []).map(
+        (r) => r.textContent
+      );
+      const hasFinalAnnouncement = textContents.some((t) =>
+        t?.includes('1 suggestion. Use up and down arrows')
+      );
+      expect(hasFinalAnnouncement).to.be.true;
+    });
+
+    it('rapid typing does not queue one announcement per keystroke', async () => {
+      const announcedCounts: number[] = [];
+      const trackingI18n = {
+        ...defaultAutocompleteI18n,
+        suggestionsAvailable: (count: number) => {
+          announcedCounts.push(count);
+          return defaultAutocompleteI18n.suggestionsAvailable(count);
+        },
+      };
+
+      const el = await defaultFixture({
+        items: [
+          { id: '1', label: 'Item 1' },
+          { id: '2', label: 'Item 2' },
+          { id: '3', label: 'Item 3' },
+          { id: '4', label: 'Item 4' },
+        ],
+        i18n: trackingI18n,
+      });
+
+      expect(announcedCounts).to.deep.equal([4]);
+
+      // Simulate rapid keystrokes within debounce window (< 250ms)
+      el.items = [
+        { id: '1', label: 'Item 1' },
+        { id: '2', label: 'Item 2' },
+        { id: '3', label: 'Item 3' },
+      ];
+      await el.updateComplete;
+
+      await new Promise((resolve) => window.setTimeout(resolve, 50));
+
+      el.items = [
+        { id: '1', label: 'Item 1' },
+        { id: '2', label: 'Item 2' },
+      ];
+      await el.updateComplete;
+
+      await new Promise((resolve) => window.setTimeout(resolve, 50));
+
+      el.items = [{ id: '1', label: 'Item 1' }];
+      await el.updateComplete;
+
+      // Wait for debounce timer to fire
+      await new Promise((resolve) => window.setTimeout(resolve, 300));
+
+      // Only the initial count (4) and the final count (1) should have been announced
+      expect(announcedCounts).to.deep.equal([4, 1]);
+    });
+
+    it('re-announcing does not move focus or change aria-activedescendant', async () => {
+      const initialItems: SuggestionItem[] = [
+        { id: 'item-1', label: 'Apple' },
+        { id: 'item-2', label: 'Apricot' },
+        { id: 'item-3', label: 'Banana' },
+      ];
+
+      const el = await defaultFixture({
+        items: initialItems,
+      });
+
+      const listbox = el.shadowRoot?.querySelector('ul[role="listbox"]');
+      expect(listbox?.getAttribute('aria-activedescendant')).to.be.null;
+
+      // Filter list
+      el.items = [
+        { id: 'item-1', label: 'Apple' },
+        { id: 'item-2', label: 'Apricot' },
+      ];
+      await el.updateComplete;
+
+      // Wait for debounce timer
+      await new Promise((resolve) => window.setTimeout(resolve, 300));
+
+      expect(listbox?.getAttribute('aria-activedescendant')).to.be.null;
+      expect(el.hasNavigated()).to.be.false;
+    });
   });
 });
