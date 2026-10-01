@@ -7,33 +7,42 @@
  *  @license
  */
 
-/**
- * This is the exposed web component for a basic floating chat.
- */
-
-import './cds-aichat-internal';
-
-import { html } from 'lit';
+import { ContextProvider } from '@lit/context';
+import { css, nothing, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 
 import { carbonElement } from '@carbon/ai-chat-components/es/globals/decorators/index.js';
 import { createMarkdownPluginHostController } from '@carbon/ai-chat-components/es/components/markdown/src/utils/plugin-host-container.js';
+import { preloadPromptLineRich } from '@carbon/ai-chat-components/es/components/prompt-line/src/prompt-line-rich-loader.js';
 import { PublicConfig } from '../../types/config/PublicConfig';
 import { FlattenedConfigElement } from '../shared/FlattenedConfigElement';
-import { ChatInstance } from '../../types/instance/ChatInstance';
 import {
-  BusEventChunkUserDefinedResponse,
-  BusEventCustomFooterSlot,
-  BusEventCustomRequestFooterSlot,
+  getDefaultRenderer,
+  whenDefaultRenderer,
+} from '../shared/react-renderer';
+import type { ChatRenderer, ChatRenderMount } from '../shared/react-renderer';
+import { serviceManagerContext } from '../shared/service-manager-context';
+import { ChatInstance } from '../../types/instance/ChatInstance';
+import type { TypeAndHandler } from '../../types/instance/EventHandlers';
+import { Dimension } from '../../types/utilities/Dimension';
+import type { ServiceManager } from '../../chat/services/ServiceManager';
+import appActions from '../../chat/store/actions';
+import type { AppliedConfig } from '../../chat/utils/appConfigUpdates';
+import type { ChatAppEntryProps } from '../../chat/ChatAppEntry';
+import { resolvablePromise } from '../../chat/utils/resolvablePromise';
+import type { ResolvablePromise } from '../../chat/utils/resolvablePromise';
+import { resolvePromptLineMode } from '../../chat/components/input/promptLineMode';
+import { preloadBuildCarbonExtensions } from '../../chat/components/input/buildExtensionsLoader';
+import {
   BusEventType,
-  BusEventUserDefinedResponse,
   BusEventViewChange,
   BusEventViewPreChange,
 } from '../../types/events/eventBusTypes';
 import type {
-  RenderCustomMessageFooterState,
-  RenderCustomRequestFooterState,
-  RenderUserDefinedState,
+  RenderCustomMessageFooter,
+  RenderCustomRequestFooter,
+  RenderUserDefinedInputNodeState,
+  RenderUserDefinedResponse,
   WCMarkdown,
   WCRenderCustomMessageFooter,
   WCRenderCustomRequestFooter,
@@ -41,22 +50,80 @@ import type {
   WCRenderUserDefinedInputNode,
   RenderUserDefinedInputNode,
 } from '../../types/component/ChatContainer';
-import { adaptWCRenderUserDefinedInputNode } from './adapt-wc-input-node-renderer';
+import React, { ComponentType, ReactNode, useEffect, useRef } from 'react';
+
+// Derived rather than written out: the es-custom build rewrites lowercase
+// `cds-aichat` text in its output, so an uppercase literal would never match
+// there.
+const OUTER_CHAT_TAG_NAME = 'cds-aichat-custom-element'.toUpperCase();
+
+/** Everything one mount holds, from startup until it detaches. */
+interface MountState {
+  mount?: ChatRenderMount;
+  App?: ComponentType<ChatAppEntryProps>;
+  serviceManager?: ServiceManager;
+  instance?: ChatInstance;
+  bootConfig?: PublicConfig;
+  appliedConfig?: AppliedConfig;
+  applyConfig?: (config: PublicConfig) => void;
+  renderReady: boolean;
+  initialViewReady: boolean;
+  listenersReady: ResolvablePromise;
+  initialViewCommitted: ResolvablePromise;
+  afterRenderTimer?: ReturnType<typeof setTimeout>;
+  removeWindowListeners?: () => void;
+}
+
+function currentWindowSize(): Dimension {
+  return { width: window.innerWidth, height: window.innerHeight };
+}
 
 /**
- * The cds-aichat-container managing creating slotted elements for user_defined responses, custom message footers, and writable elements.
- * It then passes that slotted content into cds-aichat-internal. That component will boot up the full chat application
- * and pass the slotted elements into their slots.
+ * The chat element. It starts the chat's services, runs the host's lifecycle
+ * callbacks, and renders the app into its own shadow root through a renderer.
+ *
+ * Content the host slots in — user_defined responses, custom footers,
+ * writeable elements, markdown plugin output — stays in this element's light
+ * DOM, where page CSS reaches it, and the app's own `<slot>` elements pick it
+ * up from the same shadow root.
  */
 @carbonElement('cds-aichat-container')
 class ChatContainer extends FlattenedConfigElement {
+  // No box of its own by default: a float chat positions itself and must add
+  // nothing to the page's layout. With a custom host element it fills that
+  // host instead.
+  static styles = css`
+    :host {
+      box-sizing: border-box;
+      z-index: var(--cds-aichat-z-index, auto);
+    }
+
+    :host([custom-host]) {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    :host([hidden]) {
+      display: none;
+    }
+  `;
   /**
    * The element to render to instead of the default float element.
    *
    * @internal
    */
-  @property({ type: HTMLElement })
+  @property({ attribute: false })
   element?: HTMLElement;
+
+  /**
+   * Renders the app inside this element. The React wrappers supply one; plain
+   * web-component hosts use the default the public entry installs.
+   *
+   * @internal
+   */
+  @property({ attribute: false })
+  renderer?: ChatRenderer;
 
   /**
    * This function is called before the render function of Carbon AI Chat is called. This function can return a Promise
@@ -150,290 +217,13 @@ class ChatContainer extends FlattenedConfigElement {
   renderUserDefinedInputNode?: WCRenderUserDefinedInputNode;
 
   /**
-   * The existing array of slot names for all user_defined components.
-   */
-  @state()
-  _userDefinedSlotNames: string[] = [];
-
-  /**
-   * The existing array of slot names for all custom footers.
-   */
-  @state()
-  _customFooterSlotNames: string[] = [];
-
-  /**
-   * The existing array of slot names for all writeable elements.
-   */
-  @state()
-  _writeableElementSlots: string[] = [];
-
-  /**
-   * Active slot names for markdown-plugin output hosted at this element.
-   * Populated when this element takes over from the markdown element by
-   * accepting the host-mount event; drained when the matching unmount
-   * event fires.
-   */
-  @state()
-  _pluginSlotNames: string[] = [];
-
-  /**
    * The chat instance.
    */
   @state()
   _instance: ChatInstance;
 
-  /**
-   * Accumulated state per slot for user_defined responses when renderUserDefinedResponse is provided.
-   */
-  @state()
-  _userDefinedStateBySlot: Record<string, RenderUserDefinedState> = {};
-
-  /**
-   * Accumulated state per slot for custom message footers when renderCustomMessageFooter is provided.
-   */
-  @state()
-  _customFooterStateBySlot: Record<string, RenderCustomMessageFooterState> = {};
-
-  /**
-   * Accumulated state per slot for the footers below user messages when renderCustomRequestFooter is provided.
-   * Unlike the incoming twin there is no second array of slot names: nothing tracks a name without state, so the
-   * keys of this record are the slot names.
-   */
-  @state()
-  _customRequestFooterStateBySlot: Record<
-    string,
-    RenderCustomRequestFooterState
-  > = {};
-
-  /**
-   * Tracks the wrapper elements created by the callback rendering path.
-   */
-  private _callbackElements = new Map<string, HTMLElement>();
-
-  /**
-   * Tracks the wrapper elements created by the custom-footer callback rendering path.
-   */
-  private _callbackFooterElements = new Map<string, HTMLElement>();
-
-  /**
-   * Tracks the wrapper elements created by the request-footer callback rendering path.
-   */
-  private _callbackRequestFooterElements = new Map<string, HTMLElement>();
-
-  /**
-   * Cached adapter so each container update doesn't churn a new React
-   * function down into ChatAppEntry. Keyed on the WC function identity.
-   */
-  private _inputNodeRendererCache:
-    | { wc: WCRenderUserDefinedInputNode; react: RenderUserDefinedInputNode }
-    | undefined;
-
-  private _inputNodeReactRendererFor(
-    wc: WCRenderUserDefinedInputNode
-  ): RenderUserDefinedInputNode {
-    if (this._inputNodeRendererCache?.wc === wc) {
-      return this._inputNodeRendererCache.react;
-    }
-    const react = adaptWCRenderUserDefinedInputNode(wc);
-    this._inputNodeRendererCache = { wc, react };
-    return react;
-  }
-
-  /**
-   * Adds the slot attribute to the element for the user_defined response type and then injects it into the component by
-   * updating this._userDefinedSlotNames;
-   */
-  userDefinedHandler = (
-    event: BusEventUserDefinedResponse | BusEventChunkUserDefinedResponse
-  ) => {
-    // This element already has `slot` as an attribute.
-    const { slot } = event.data;
-    if (!this._userDefinedSlotNames.includes(slot)) {
-      this._userDefinedSlotNames = [...this._userDefinedSlotNames, slot];
-    }
-  };
-
-  /**
-   * Adds the slot attribute to the element for the custom_footer_slot type and then injects it into the component by
-   * updating this._customFooterSlotNames;
-   */
-  customFooterHandler = (event: BusEventCustomFooterSlot) => {
-    // This element already has `slotName` as an attribute.
-    const { slotName } = event.data;
-    if (!this._customFooterSlotNames.includes(slotName)) {
-      this._customFooterSlotNames = [...this._customFooterSlotNames, slotName];
-    }
-  };
-
-  /**
-   * Enhanced handler for CUSTOM_FOOTER_SLOT when the renderCustomMessageFooter callback is provided.
-   * Tracks both slot names and the full per-slot state used by the callback rendering path.
-   */
-  private enhancedCustomFooterHandler = (event: BusEventCustomFooterSlot) => {
-    const { slotName, message, messageItem, additionalData } = event.data;
-    if (!this._customFooterSlotNames.includes(slotName)) {
-      this._customFooterSlotNames = [...this._customFooterSlotNames, slotName];
-    }
-    this._customFooterStateBySlot = {
-      ...this._customFooterStateBySlot,
-      [slotName]: {
-        slotName,
-        message,
-        messageItem,
-        additionalData: additionalData as Record<string, unknown> | undefined,
-      },
-    };
-  };
-
-  /**
-   * Handler for CUSTOM_REQUEST_FOOTER_SLOT. Unlike the incoming footer there is no legacy passthrough path, so this
-   * always tracks full per-slot state.
-   *
-   * The event fires for every user message rather than only when a backend opts in, so the callback is checked on
-   * each one: without it nothing accumulates. Checking here rather than gating the subscription is what lets a host
-   * set the callback after the chat has booted.
-   */
-  private customRequestFooterHandler = (
-    event: BusEventCustomRequestFooterSlot
-  ) => {
-    if (!this.renderCustomRequestFooter) {
-      return;
-    }
-
-    const { slotName, message } = event.data;
-    this._customRequestFooterStateBySlot = {
-      ...this._customRequestFooterStateBySlot,
-      [slotName]: { slotName, message },
-    };
-  };
-
-  /**
-   * Enhanced handler for USER_DEFINED_RESPONSE when renderUserDefinedResponse callback is provided.
-   * Tracks both slot names and full message state per slot.
-   */
-  private enhancedUserDefinedHandler = (event: BusEventUserDefinedResponse) => {
-    const { slot } = event.data;
-    if (!this._userDefinedSlotNames.includes(slot)) {
-      this._userDefinedSlotNames = [...this._userDefinedSlotNames, slot];
-    }
-    this._userDefinedStateBySlot = {
-      ...this._userDefinedStateBySlot,
-      [slot]: {
-        fullMessage: event.data.fullMessage,
-        messageItem: event.data.message,
-        state: event.data.state,
-      },
-    };
-  };
-
-  /**
-   * Enhanced handler for CHUNK_USER_DEFINED_RESPONSE when renderUserDefinedResponse callback is provided.
-   * Handles both complete_item and partial_item chunks, accumulating state per slot.
-   */
-  private enhancedUserDefinedChunkHandler = (
-    event: BusEventChunkUserDefinedResponse
-  ) => {
-    const { slot, chunk } = event.data;
-    if (!this._userDefinedSlotNames.includes(slot)) {
-      this._userDefinedSlotNames = [...this._userDefinedSlotNames, slot];
-    }
-
-    if ('complete_item' in chunk) {
-      this._userDefinedStateBySlot = {
-        ...this._userDefinedStateBySlot,
-        [slot]: { messageItem: chunk.complete_item },
-      };
-    } else if ('partial_item' in chunk) {
-      const existing = this._userDefinedStateBySlot[slot];
-      this._userDefinedStateBySlot = {
-        ...this._userDefinedStateBySlot,
-        [slot]: {
-          ...existing,
-          partialItems: [...(existing?.partialItems ?? []), chunk.partial_item],
-        },
-      };
-    }
-  };
-
-  /**
-   * Handles RESTART_CONVERSATION when the renderUserDefinedResponse and/or renderCustomMessageFooter
-   * callback is provided. Clears all accumulated state and removes callback-rendered elements from the DOM.
-   *
-   * The custom-footer cleanup is guarded by renderCustomMessageFooter so the legacy footer passthrough
-   * path (which the host clears itself) is left untouched.
-   */
-  private restartHandler = () => {
-    this._userDefinedStateBySlot = {};
-    this._userDefinedSlotNames = [];
-    for (const el of this._callbackElements.values()) {
-      el.remove();
-    }
-    this._callbackElements.clear();
-
-    if (this.renderCustomMessageFooter) {
-      this._customFooterStateBySlot = {};
-      this._customFooterSlotNames = [];
-      for (const el of this._callbackFooterElements.values()) {
-        el.remove();
-      }
-      this._callbackFooterElements.clear();
-    }
-
-    this._customRequestFooterStateBySlot = {};
-    for (const el of this._callbackRequestFooterElements.values()) {
-      el.remove();
-    }
-    this._callbackRequestFooterElements.clear();
-  };
-
-  /**
-   * Synchronizes callback-rendered wrapper elements in the light DOM against the accumulated per-slot state.
-   *
-   * Each slot owns one wrapper div. A slot whose callback returns nothing loses its wrapper, and so does a slot
-   * that has left the state. Returning the same element as last time leaves the node alone: replaceChildren would
-   * detach and re-attach it, which restarts media and fires disconnectedCallback on a custom element.
-   */
-  private syncCallbackRenderedWrappers<TState>(
-    stateBySlot: Record<string, TState>,
-    wrappersBySlot: Map<string, HTMLElement>,
-    render: (state: TState) => HTMLElement | null
-  ) {
-    for (const [slotName, slotState] of Object.entries(stateBySlot)) {
-      const newContent = render(slotState) ?? null;
-
-      if (!newContent) {
-        const existing = wrappersBySlot.get(slotName);
-        if (existing) {
-          existing.remove();
-          wrappersBySlot.delete(slotName);
-        }
-        continue;
-      }
-
-      let wrapper = wrappersBySlot.get(slotName);
-      if (!wrapper) {
-        wrapper = document.createElement('div');
-        wrapper.setAttribute('slot', slotName);
-        wrappersBySlot.set(slotName, wrapper);
-        this.appendChild(wrapper);
-      }
-
-      if (
-        wrapper.firstChild !== newContent ||
-        wrapper.childNodes.length !== 1
-      ) {
-        wrapper.replaceChildren(newContent);
-      }
-    }
-
-    // Clean up wrappers for slots that no longer exist in state
-    for (const [slotName, el] of wrappersBySlot.entries()) {
-      if (!(slotName in stateBySlot)) {
-        el.remove();
-        wrappersBySlot.delete(slotName);
-      }
-    }
-  }
+  /** Handlers this element added to the current mount's instance. */
+  private _mountHandlers: TypeAndHandler[] = [];
 
   /**
    * True when an outer chat element (cds-aichat-custom-element) further up
@@ -450,10 +240,7 @@ class ChatContainer extends FlattenedConfigElement {
     }
     for (let i = myIndex + 1; i < path.length; i++) {
       const node = path[i] as Element;
-      if (
-        node?.tagName === 'CDS-AICHAT-CUSTOM-ELEMENT' ||
-        node?.tagName === 'CDS-AICHAT-REACT'
-      ) {
+      if (node?.tagName === OUTER_CHAT_TAG_NAME) {
         return true;
       }
     }
@@ -468,99 +255,115 @@ class ChatContainer extends FlattenedConfigElement {
    * cannot.
    */
   private pluginHostController = createMarkdownPluginHostController(this, {
-    onSlotNamesChange: (slotNames) => {
-      this._pluginSlotNames = slotNames;
-    },
     shouldDefer: (event) => this.hasOuterChatHandler(event),
   });
 
   connectedCallback() {
     super.connectedCallback();
     this.pluginHostController.connect();
+    if (this.hasUpdated) {
+      this.requestUpdate();
+    }
+  }
+
+  willUpdate(changed: PropertyValues<this>) {
+    if (changed.has('element')) {
+      this.toggleAttribute('custom-host', Boolean(this.element));
+    }
+  }
+
+  updated() {
+    const state = this.current;
+    if (!state) {
+      this.startMount();
+      return;
+    }
+    // `resolvedConfig` is cached against the fields it was built from, so a
+    // new identity is a real config change rather than render churn.
+    if (
+      state.renderReady &&
+      this.resolvedConfig !== state.appliedConfig.source
+    ) {
+      state.applyConfig(this.resolvedConfig);
+    }
+    this.renderApp();
   }
 
   disconnectedCallback() {
     this.pluginHostController.disconnect();
+    // A move is a detach and reattach in one task, as when React reorders
+    // keyed siblings. Keep the running chat through it; release only when the
+    // element is still detached once the task's microtasks run.
+    queueMicrotask(() => {
+      if (!this.isConnected) {
+        this.releaseMount();
+      }
+    });
     super.disconnectedCallback();
   }
 
-  onBeforeRenderOverride = async (instance: ChatInstance) => {
+  /**
+   * Retires the current mount: no more rendering or callbacks from it, and
+   * nothing it collected survives. This is not service teardown — its
+   * services keep running, and work the host's callbacks started is not
+   * canceled. Exhaustive disposal is #1681.
+   */
+  private releaseMount() {
+    const state = this.current;
+    if (state) {
+      this.current = undefined;
+      clearTimeout(state.afterRenderTimer);
+      state.removeWindowListeners?.();
+      // Settle the private waits so a boot paused on one resumes, finds it is
+      // retired, and stops.
+      state.listenersReady.doResolve();
+      state.initialViewCommitted.doResolve();
+      this.servicesProvider.setValue(undefined);
+      state.mount?.unmount();
+    }
+
+    this._instance?.off(this._mountHandlers);
+    this._mountHandlers = [];
+
+    Object.values(this._instance?.writeableElements ?? {}).forEach(
+      (element) => {
+        if (element?.parentNode === this) {
+          element.remove();
+        }
+      }
+    );
+
+    this._instance = undefined;
+  }
+
+  /** Records a subscription so {@link releaseMount} can remove it. */
+  private subscribe(handler: TypeAndHandler) {
+    this._mountHandlers.push(handler);
+    this._instance.on(handler);
+  }
+
+  /** Subscribes this element to the mount's instance, then calls the host. */
+  private async runBeforeRender(instance: ChatInstance) {
     this._instance = instance;
 
     // Opt-in view-change observation hooks. The float container manages its own
     // visibility, so there is no default handler — a prop is only subscribed
     // when the consumer provides it.
     if (this.onViewPreChange) {
-      this._instance.on({
+      this.subscribe({
         type: BusEventType.VIEW_PRE_CHANGE,
         handler: this.onViewPreChange,
       });
     }
     if (this.onViewChange) {
-      this._instance.on({
+      this.subscribe({
         type: BusEventType.VIEW_CHANGE,
         handler: this.onViewChange,
       });
     }
 
-    if (this.renderUserDefinedResponse) {
-      // Enhanced path: library manages full state for callback rendering
-      this._instance.on({
-        type: BusEventType.USER_DEFINED_RESPONSE,
-        handler: this.enhancedUserDefinedHandler,
-      });
-      this._instance.on({
-        type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
-        handler: this.enhancedUserDefinedChunkHandler,
-      });
-    } else {
-      // Legacy path: container only tracks slot names
-      this._instance.on({
-        type: BusEventType.USER_DEFINED_RESPONSE,
-        handler: this.userDefinedHandler,
-      });
-      this._instance.on({
-        type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
-        handler: this.userDefinedHandler,
-      });
-    }
-
-    // Enhanced path manages full per-slot state for callback rendering; the
-    // legacy path only tracks slot names for manual slotting.
-    this._instance.on({
-      type: BusEventType.CUSTOM_FOOTER_SLOT,
-      handler: this.renderCustomMessageFooter
-        ? this.enhancedCustomFooterHandler
-        : this.customFooterHandler,
-    });
-
-    this._instance.on({
-      type: BusEventType.CUSTOM_REQUEST_FOOTER_SLOT,
-      handler: this.customRequestFooterHandler,
-    });
-
-    // A single RESTART_CONVERSATION subscription clears whichever callback
-    // paths are active. Registered once so the handler does not fire twice
-    // when both callbacks are provided, and unconditionally so a callback set
-    // after boot still gets its wrappers cleared.
-    this._instance.on({
-      type: BusEventType.RESTART_CONVERSATION,
-      handler: this.restartHandler,
-    });
-
-    this.addWriteableElementSlots();
     this.attachWriteableElements();
     await this.onBeforeRender?.(instance);
-  };
-
-  addWriteableElementSlots() {
-    const writeableElementSlots: string[] = [];
-    Object.keys(this._instance.writeableElements).forEach(
-      (writeableElementKey) => {
-        writeableElementSlots.push(writeableElementKey);
-      }
-    );
-    this._writeableElementSlots = writeableElementSlots;
   }
 
   private attachWriteableElements() {
@@ -573,7 +376,8 @@ class ChatContainer extends FlattenedConfigElement {
     // markers a parent template may have stamped into this element's light
     // DOM. Lit only manages nodes between its start/end markers; a node
     // prepended before the start marker is outside that range and survives
-    // parent re-renders unchanged.
+    // parent re-renders unchanged. One call keeps them in their map order.
+    const unattached: HTMLElement[] = [];
     Object.entries(writeableElements).forEach(([slot, element]) => {
       if (!element) {
         return;
@@ -582,79 +386,351 @@ class ChatContainer extends FlattenedConfigElement {
       element.setAttribute('slot', slot);
 
       if (!element.isConnected) {
-        this.prepend(element);
+        unattached.push(element);
       }
+    });
+    this.prepend(...unattached);
+  }
+
+  /**
+   * The app renders its own slots into this shadow root, so this element
+   * renders no template of its own.
+   */
+  render() {
+    return nothing;
+  }
+
+  // -------------------------------------------------------------------------
+  // Startup
+  // -------------------------------------------------------------------------
+
+  private renderTarget?: HTMLDivElement;
+
+  private current?: MountState;
+
+  private windowSize: Dimension = { width: 0, height: 0 };
+
+  private servicesProvider = new ContextProvider(this, {
+    context: serviceManagerContext,
+  });
+
+  private startMount() {
+    if (!this.isConnected) {
+      return;
+    }
+    const renderer = this.renderer ?? getDefaultRenderer();
+    if (!renderer) {
+      this.waitForDefaultRenderer();
+      return;
+    }
+    const state: MountState = {
+      renderReady: false,
+      initialViewReady: false,
+      listenersReady: resolvablePromise(),
+      initialViewCommitted: resolvablePromise(),
+    };
+    // Recorded before mounting: a renderer can detach this element while it
+    // mounts, and that mount still has to be released.
+    this.current = state;
+    this.windowSize = currentWindowSize();
+    state.mount = renderer.mount(this.ensureRenderTarget());
+    if (this.current !== state) {
+      state.mount.unmount();
+      return;
+    }
+    this.boot(state);
+  }
+
+  /**
+   * Starts services, runs the host's callbacks, and opens the render gate.
+   * Each await can outlive the mount, so each is followed by a check that
+   * this mount is still the current one.
+   */
+  private async boot(state: MountState) {
+    const isCurrent = () => this.current === state;
+    try {
+      // Service and UI imports reach Carbon UI modules, which need browser
+      // globals. Keep registration server-safe and load them only for a live
+      // mount, so a failed load lands in the catch below for every host.
+      const [
+        {
+          initServiceManagerAndInstance,
+          mergePublicConfig,
+          performInitialViewChange,
+        },
+        { applyConfigUpdate, createAppliedConfig },
+        { ChatAppEntry },
+      ] = await Promise.all([
+        import('../../chat/utils/chatBoot'),
+        import('../../chat/utils/appConfigUpdates'),
+        import('../../chat/ChatAppEntry'),
+      ]);
+      if (!isCurrent()) {
+        return;
+      }
+      const config = this.resolvedConfig;
+      const publicConfig = mergePublicConfig(config);
+      const { serviceManager, instance } = await initServiceManagerAndInstance({
+        publicConfig,
+        container: this.renderTarget,
+        customHostElement: this.element,
+      });
+      if (!isCurrent()) {
+        return;
+      }
+
+      // Read markdown off the original config, not the merged one, to keep the
+      // host's plugin and renderer references for the slice's isEqual guard.
+      if (config.markdown) {
+        serviceManager.store.dispatch(
+          appActions.setAppStateValue('markdownConfig', config.markdown)
+        );
+      }
+      state.App = ChatAppEntry;
+      state.serviceManager = serviceManager;
+      state.instance = instance;
+      state.bootConfig = config;
+      state.appliedConfig = createAppliedConfig(publicConfig, config);
+      state.applyConfig = (nextConfig) =>
+        applyConfigUpdate(state.appliedConfig, nextConfig, serviceManager);
+      state.removeWindowListeners = this.listenToWindow(serviceManager);
+      this.servicesProvider.setValue(serviceManager);
+
+      this.renderApp();
+      await state.listenersReady;
+      if (!isCurrent()) {
+        return;
+      }
+
+      await this.runBeforeRender(instance);
+      if (!isCurrent()) {
+        return;
+      }
+
+      // Before-render can change the input config. All rich modes share these
+      // chunks; config changes during the wait are applied before rendering.
+      if (resolvePromptLineMode(this.resolvedConfig.input) === 'rich') {
+        await Promise.all([
+          preloadPromptLineRich(),
+          preloadBuildCarbonExtensions(),
+        ]);
+        if (!isCurrent()) {
+          return;
+        }
+      }
+
+      state.renderReady = true;
+      if (this.resolvedConfig !== state.bootConfig) {
+        state.applyConfig(this.resolvedConfig);
+      }
+      this.renderApp();
+
+      await performInitialViewChange(serviceManager);
+      if (!isCurrent()) {
+        return;
+      }
+      serviceManager.store.dispatch(
+        appActions.setInitialViewChangeComplete(true)
+      );
+      state.initialViewReady = true;
+      this.renderApp();
+
+      await state.initialViewCommitted;
+      const { onAfterRender } = this;
+      if (!isCurrent() || !onAfterRender) {
+        return;
+      }
+      state.afterRenderTimer = setTimeout(() => onAfterRender(instance), 0);
+    } catch (error) {
+      console.error('Error initializing chat:', error);
+    }
+  }
+
+  private renderApp() {
+    const state = this.current;
+    if (!state?.serviceManager || !state.App) {
+      return;
+    }
+
+    state.mount?.render(state.App, {
+      serviceManager: state.serviceManager,
+      instance: state.instance,
+      windowSize: this.windowSize,
+      renderReady: state.renderReady,
+      initialViewReady: state.initialViewReady,
+      onListenersReady: () => state.listenersReady.doResolve(),
+      onInitialViewCommitted: () => state.initialViewCommitted.doResolve(),
+      renderUserDefinedResponse: toReactUserDefinedResponse(
+        this.renderUserDefinedResponse
+      ),
+      renderCustomMessageFooter: toReactCustomMessageFooter(
+        this.renderCustomMessageFooter
+      ),
+      renderCustomRequestFooter: toReactCustomRequestFooter(
+        this.renderCustomRequestFooter
+      ),
+      renderUserDefinedInputNode: toReactUserDefinedInputNode(
+        this.renderUserDefinedInputNode
+      ),
+      chatWrapper: this,
     });
   }
 
   /**
-   * Renders the template while passing in class functionality
+   * Feeds window size to the app and page visibility to the store, and stops
+   * the theme watcher's polling when the mount goes. The watcher is the one
+   * service the retired React effect named; broader disposal is #1681.
    */
-  render() {
-    if (this.renderUserDefinedResponse) {
-      this.syncCallbackRenderedWrappers(
-        this._userDefinedStateBySlot,
-        this._callbackElements,
-        (state) =>
-          this.renderUserDefinedResponse?.(state, this._instance) ?? null
+  private listenToWindow(serviceManager: ServiceManager) {
+    const onResize = () => {
+      this.windowSize = currentWindowSize();
+      this.renderApp();
+    };
+    const onVisibilityChange = () => {
+      serviceManager.store.dispatch(
+        appActions.setIsBrowserPageVisible(
+          document.visibilityState === 'visible'
+        )
       );
-    }
-    if (this.renderCustomMessageFooter) {
-      this.syncCallbackRenderedWrappers(
-        this._customFooterStateBySlot,
-        this._callbackFooterElements,
-        (state) =>
-          this.renderCustomMessageFooter?.(state, this._instance) ?? null
-      );
-    }
-    if (this.renderCustomRequestFooter) {
-      this.syncCallbackRenderedWrappers(
-        this._customRequestFooterStateBySlot,
-        this._callbackRequestFooterElements,
-        (state) =>
-          this.renderCustomRequestFooter?.(state, this._instance) ?? null
-      );
-    }
+    };
+    // Held here: the release runs a microtask after disconnect, and a closing
+    // page (or test environment) may have dropped its globals by then.
+    const view = window;
+    const doc = document;
+    view.addEventListener('resize', onResize);
+    doc.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      view.removeEventListener('resize', onResize);
+      doc.removeEventListener('visibilitychange', onVisibilityChange);
+      serviceManager.themeWatcherService?.stopWatching();
+    };
+  }
 
-    // Convert the WC-style renderer (returns HTMLElement) into the React-
-    // style renderer (returns ReactNode) the React infrastructure expects.
-    // Memoization is by reference: as long as the consumer hands us the
-    // same function we hand the same adapter down to the React tree, so
-    // ChatAppEntry doesn't re-render on every container update.
-    const inputNodeReactRenderer = this.renderUserDefinedInputNode
-      ? this._inputNodeReactRendererFor(this.renderUserDefinedInputNode)
-      : undefined;
+  /**
+   * A host can connect after the React entry loaded but before the
+   * web-component entry installs its renderer. Wake it once that happens;
+   * `startMount` ignores the wake if the element has left the page.
+   */
+  private waitForDefaultRenderer() {
+    whenDefaultRenderer().then(() => this.requestUpdate());
+  }
 
-    return html`<cds-aichat-internal
-      .config=${this.resolvedConfig}
-      .onAfterRender=${this.onAfterRender}
-      .onBeforeRender=${this.onBeforeRenderOverride}
-      .element=${this.element}
-      .renderUserDefinedInputNode=${inputNodeReactRenderer}>
-      ${this._writeableElementSlots.map(
-        (slot) => html`<slot name=${slot} slot=${slot}></slot>`
-      )}
-      ${this._userDefinedSlotNames.map(
-        (slot) => html`<slot name=${slot} slot=${slot}></slot>`
-      )}
-      ${
-        this.renderCustomMessageFooter
-          ? this._customFooterSlotNames.map(
-              (slot) => html`<slot name=${slot} slot=${slot}></slot>`
-            )
-          : this._customFooterSlotNames.map(
-              (slot) => html`<div slot=${slot}><slot name=${slot}></slot></div>`
-            )
-      }
-      ${Object.keys(this._customRequestFooterStateBySlot).map(
-        (slot) => html`<slot name=${slot} slot=${slot}></slot>`
-      )}
-      ${this._pluginSlotNames.map(
-        (slot) => html`<slot name=${slot} slot=${slot}></slot>`
-      )}
-    </cds-aichat-internal>`;
+  private ensureRenderTarget(): HTMLDivElement {
+    if (!this.renderTarget) {
+      this.renderTarget = document.createElement('div');
+      this.renderTarget.classList.add('cds-aichat--react-app');
+      // Appended after Lit's markers, and this element renders no template,
+      // so a re-render never reaches it.
+      this.shadowRoot.appendChild(this.renderTarget);
+    }
+    return this.renderTarget;
   }
 }
+
+/**
+ * Mounts the element a WC-style `renderUserDefinedInputNode` returns. React
+ * owns the slot wrapper; the consumer owns the element inside it.
+ */
+function WCInputNodeMount({
+  state,
+  instance,
+  wcRenderer,
+}: {
+  state: RenderUserDefinedInputNodeState;
+  instance: ChatInstance;
+  wcRenderer: WCRenderUserDefinedInputNode;
+}) {
+  const hostRef = useRef<HTMLSpanElement | null>(null);
+  const lastElRef = useRef<HTMLElement | null>(null);
+
+  // Depend on the individual `state` fields, not the wrapper object:
+  // `InputNodePortalsContainer` allocates a fresh `{ node, message }` on every
+  // render, but `node` / `message` themselves are stable (derived from the
+  // memoized `slotEntries`). Keying the effect on the wrapper would tear down
+  // and rebuild the consumer's element on every unrelated chat re-render.
+  const { node, message } = state;
+
+  useEffect(() => {
+    const host = hostRef.current;
+    if (!host) {
+      return undefined;
+    }
+
+    const el = wcRenderer({ node, message }, instance);
+    if (lastElRef.current && lastElRef.current.parentNode === host) {
+      host.removeChild(lastElRef.current);
+    }
+    lastElRef.current = el ?? null;
+
+    if (el) {
+      host.appendChild(el);
+    }
+
+    return () => {
+      if (lastElRef.current && lastElRef.current.parentNode === host) {
+        host.removeChild(lastElRef.current);
+        lastElRef.current = null;
+      }
+    };
+  }, [node, message, instance, wcRenderer]);
+
+  // No JSX here: this module is a Lit element, compiled as plain TypeScript.
+  return React.createElement('span', { ref: hostRef });
+}
+
+/**
+ * Makes one React render prop per web-component callback. The same callback
+ * always gets the same adapter, so an unchanged callback does not re-render
+ * the app's portals.
+ */
+function cachedAdapter<TCallback extends object, TRenderProp>(
+  adapt: (callback: TCallback) => TRenderProp
+) {
+  const adapters = new WeakMap<TCallback, TRenderProp>();
+  return (callback: TCallback | undefined) => {
+    if (!callback) {
+      return undefined;
+    }
+    let adapter = adapters.get(callback);
+    if (!adapter) {
+      adapter = adapt(callback);
+      adapters.set(callback, adapter);
+    }
+    return adapter;
+  };
+}
+
+// The slot callbacks return a DOM element, which the app's slot portals place
+// in the slot host directly; see `SlotHostPortal`.
+const asSlotContent = (element: HTMLElement | null) =>
+  element as unknown as ReactNode;
+
+const toReactUserDefinedResponse = cachedAdapter(
+  (render: WCRenderUserDefinedResponse): RenderUserDefinedResponse =>
+    (state, instance) =>
+      asSlotContent(render(state, instance))
+);
+
+const toReactCustomMessageFooter = cachedAdapter(
+  (render: WCRenderCustomMessageFooter): RenderCustomMessageFooter =>
+    (slotName, message, messageItem, instance, additionalData) =>
+      asSlotContent(
+        render({ slotName, message, messageItem, additionalData }, instance)
+      )
+);
+
+const toReactCustomRequestFooter = cachedAdapter(
+  (render: WCRenderCustomRequestFooter): RenderCustomRequestFooter =>
+    (slotName, message, instance) =>
+      asSlotContent(render({ slotName, message }, instance))
+);
+
+const toReactUserDefinedInputNode = cachedAdapter(
+  (wcRenderer: WCRenderUserDefinedInputNode): RenderUserDefinedInputNode =>
+    // eslint-disable-next-line react/display-name -- this is a render callback, not a component
+    (state, instance) =>
+      React.createElement(WCInputNodeMount, { state, instance, wcRenderer })
+);
 
 declare global {
   interface HTMLElementTagNameMap {

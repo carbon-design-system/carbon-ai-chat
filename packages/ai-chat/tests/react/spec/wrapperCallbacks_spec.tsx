@@ -8,14 +8,17 @@
  */
 
 /**
- * The before/after render contract. `onBeforeRender` may return a promise, and
- * the host holds the shell and `onAfterRender` until it settles. A throw or
- * rejection leaves the shell gated for the rest of that mount. `onAfterRender`
- * fires once, after the first usable render, and never waits for history.
- * Nothing the host does inside `onAfterRender` can take the shell down.
+ * The before/after render contract, driven through one React wrapper and one
+ * web component. The gate itself lives in `cds-aichat-container`, which every
+ * surface mounts through; `ChatCustomElement` and `cds-aichat-custom-element`
+ * only pass these callbacks down, which `wrapperMountParity_spec` and
+ * `chatCustomElement_spec` already cover.
  *
- * `surfaces` lists the hosts that hold the shell for `onBeforeRender` today.
- * The React wrappers don't await it yet, so they aren't in the list.
+ * `onBeforeRender` may return a promise, and every host holds the shell and
+ * `onAfterRender` until it settles. A throw or rejection leaves the shell gated
+ * for the rest of that mount. `onAfterRender` fires once, after the first
+ * usable render, and never waits for history. Nothing the host does inside
+ * `onAfterRender` can take the shell down.
  *
  * Each case locates the chat by walking shadow roots for the render target
  * rather than naming a host tag, so the host topology can change without
@@ -74,6 +77,17 @@ function mountElement(tag: string, options: MountOptions) {
 }
 
 const surfaces: Surface[] = [
+  {
+    name: 'React ChatContainer',
+    mount: ({ config, ...callbacks }) => {
+      const view = render(<ChatContainer {...config} {...callbacks} />);
+      return async () => {
+        view.rerender(
+          <ChatContainer {...config} {...callbacks} data-probe="updated" />
+        );
+      };
+    },
+  },
   {
     name: 'cds-aichat-container',
     mount: (options) => mountElement('cds-aichat-container', options),

@@ -12,8 +12,9 @@ import { MutableRefObject, useEffect } from 'react';
 /**
  * Detaches a portal container's light-DOM host elements when it unmounts. The
  * hosts live outside React's tree, so without this a removed render prop would
- * leave its hosts slotted into the chat, and adding it back would duplicate
- * them.
+ * leave its hosts slotted into the chat, adding it back would duplicate them,
+ * and a remounted chat would find the previous mount's content still slotted
+ * into the same outer element.
  *
  * Hosts are created during render, so the map is kept and reattached on mount:
  * StrictMode replays effects without rendering again.

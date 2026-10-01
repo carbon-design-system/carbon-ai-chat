@@ -13,6 +13,7 @@
 // from pruning the side-effect-only import.
 export { default as __cds_aichat_container_register } from '../cds-aichat-container';
 import '../cds-aichat-container';
+import { installReactDomRenderer } from '../shared/react-dom-renderer';
 
 import { html } from 'lit';
 import { property, state } from 'lit/decorators.js';
@@ -22,6 +23,7 @@ import { createMarkdownPluginHostController } from '@carbon/ai-chat-components/e
 import { PublicConfig } from '../../types/config/PublicConfig';
 import { FlattenedConfigElement } from '../shared/FlattenedConfigElement';
 import { ChatInstance } from '../../types/instance/ChatInstance';
+import type { TypeAndHandler } from '../../types/instance/EventHandlers';
 import {
   BusEventChunkUserDefinedResponse,
   BusEventCustomFooterSlot,
@@ -38,6 +40,8 @@ import type {
   WCRenderUserDefinedInputNode,
 } from '../../types/component/ChatContainer';
 
+installReactDomRenderer();
+
 /**
  * cds-aichat-custom-element will is a pass through to cds-aichat-container. It takes any user_defined and writeable element
  * slotted content and forwards it to cds-aichat-container. It also will setup the custom element with a default viewChange
@@ -51,12 +55,13 @@ class ChatCustomElement extends FlattenedConfigElement {
   /**
    * Shared stylesheet for hiding styles.
    */
-  private static hideSheet = new CSSStyleSheet();
+  private static hideSheet =
+    typeof CSSStyleSheet === 'undefined' ? undefined : new CSSStyleSheet();
   static {
-    // Hide styles that override any external sizing. `replaceSync` is absent
-    // in non-browser environments (e.g. the jsdom-based test environment), so
-    // skip styling there rather than throwing at module-evaluation time.
-    ChatCustomElement.hideSheet.replaceSync?.(`
+    // Hide styles that override any external sizing. `CSSStyleSheet` is absent
+    // on a server and `replaceSync` in jsdom, so skip styling there rather than
+    // throwing at module-evaluation time.
+    ChatCustomElement.hideSheet?.replaceSync?.(`
       :host {
         display: block;
       }
@@ -81,10 +86,12 @@ class ChatCustomElement extends FlattenedConfigElement {
     const root = super.createRenderRoot() as ShadowRoot;
 
     // now TS knows root.adoptedStyleSheets exists
-    root.adoptedStyleSheets = [
-      ...root.adoptedStyleSheets,
-      ChatCustomElement.hideSheet,
-    ];
+    if (ChatCustomElement.hideSheet) {
+      root.adoptedStyleSheets = [
+        ...root.adoptedStyleSheets,
+        ChatCustomElement.hideSheet,
+      ];
+    }
     return root;
   }
 
@@ -205,6 +212,9 @@ class ChatCustomElement extends FlattenedConfigElement {
   @state()
   private _instance!: ChatInstance;
 
+  /** Handlers this element added to the current mount's instance. */
+  private _mountHandlers: TypeAndHandler[] = [];
+
   private defaultViewChangeHandler = (event: BusEventViewChange) => {
     if (event.newViewState.mainWindow) {
       this.classList.remove('cds-aichat--hidden');
@@ -249,18 +259,51 @@ class ChatCustomElement extends FlattenedConfigElement {
 
   disconnectedCallback() {
     this.pluginHostController.disconnect();
+    // Matches the inner container: a move keeps the running chat.
+    queueMicrotask(() => {
+      if (!this.isConnected) {
+        this.releaseMount();
+      }
+    });
     super.disconnectedCallback();
   }
 
+  /**
+   * Clears what this element holds for the current mount: its instance
+   * subscriptions and the slot names collected from them. Services keep
+   * running.
+   */
+  private releaseMount() {
+    this._instance?.off(this._mountHandlers);
+    this._mountHandlers = [];
+    this._userDefinedSlotNames = [];
+    this._writeableElementSlots = [];
+    this._customFooterSlotNames = [];
+    this._instance = undefined;
+  }
+
+  /** Records a subscription so {@link releaseMount} can remove it. */
+  private subscribe(handler: TypeAndHandler) {
+    this._mountHandlers.push(handler);
+    this._instance.on(handler);
+  }
+
+  /**
+   * Called by the inner element once per mount, which drops calls from a
+   * retired mount. A new mount replaces whatever the previous one left here.
+   */
   private onBeforeRenderOverride = async (instance: ChatInstance) => {
+    if (this._instance) {
+      this.releaseMount();
+    }
     this._instance = instance;
     if (this.onViewPreChange) {
-      this._instance.on({
+      this.subscribe({
         type: BusEventType.VIEW_PRE_CHANGE,
         handler: this.onViewPreChange,
       });
     }
-    this._instance.on({
+    this.subscribe({
       type: BusEventType.VIEW_CHANGE,
       handler: this.onViewChange || this.defaultViewChangeHandler,
     });
@@ -268,11 +311,11 @@ class ChatCustomElement extends FlattenedConfigElement {
     if (!this.renderUserDefinedResponse) {
       // Legacy path: custom-element tracks slot names for manual slotting.
       // When renderUserDefinedResponse is set, the inner cds-aichat-container handles everything.
-      this._instance.on({
+      this.subscribe({
         type: BusEventType.USER_DEFINED_RESPONSE,
         handler: this.userDefinedHandler,
       });
-      this._instance.on({
+      this.subscribe({
         type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
         handler: this.userDefinedHandler,
       });
@@ -281,7 +324,7 @@ class ChatCustomElement extends FlattenedConfigElement {
     if (!this.renderCustomMessageFooter) {
       // Legacy path: custom-element tracks slot names for manual slotting.
       // When renderCustomMessageFooter is set, the inner cds-aichat-container handles everything.
-      this._instance.on({
+      this.subscribe({
         type: BusEventType.CUSTOM_FOOTER_SLOT,
         handler: this.customFooterHandler,
       });

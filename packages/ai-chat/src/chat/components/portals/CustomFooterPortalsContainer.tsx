@@ -7,10 +7,10 @@
  *  @license
  */
 
-import React, { ReactNode, useRef, useEffect } from 'react';
-import ReactDOM from 'react-dom';
+import React, { useRef, useEffect } from 'react';
 
 import { useRemoveHostsOnUnmount } from '../../hooks/useRemoveHostsOnUnmount';
+import { SlotHostPortal } from './SlotHostPortal';
 
 import { ChatInstance } from '../../../types/instance/ChatInstance';
 import {
@@ -116,7 +116,7 @@ function CustomFooterPortalsContainer({
         const { message, messageItem, additionalData } = slotState;
 
         return (
-          <CustomFooterComponentPortal key={slotName} hostElement={hostElement}>
+          <SlotHostPortal key={slotName} hostElement={hostElement}>
             {renderCustomMessageFooter(
               slotName,
               message,
@@ -124,26 +124,10 @@ function CustomFooterPortalsContainer({
               chatInstance,
               additionalData
             )}
-          </CustomFooterComponentPortal>
+          </SlotHostPortal>
         );
       })
     : null;
-}
-
-/**
- * This is the component that will attach a React portal to the given host element. The host element is the element
- * provided by Carbon AI Chat where your custom message footer will be displayed in the DOM. This portal will attach any React
- * children passed to it under this component so you can render the response using your own React application. Those
- * children will be rendered under the given element where it lives in the DOM.
- */
-function CustomFooterComponentPortal({
-  hostElement,
-  children,
-}: {
-  hostElement: HTMLElement;
-  children: ReactNode;
-}) {
-  return ReactDOM.createPortal(children, hostElement);
 }
 
 const CustomFooterPortalsContainerExport = React.memo(

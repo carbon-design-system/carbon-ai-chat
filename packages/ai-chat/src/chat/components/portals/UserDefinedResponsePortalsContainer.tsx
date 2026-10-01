@@ -7,10 +7,10 @@
  *  @license
  */
 
-import React, { ReactNode, useRef, useEffect } from 'react';
-import ReactDOM from 'react-dom';
+import React, { useRef, useEffect } from 'react';
 
 import { useRemoveHostsOnUnmount } from '../../hooks/useRemoveHostsOnUnmount';
+import { SlotHostPortal } from './SlotHostPortal';
 
 import { ChatInstance } from '../../../types/instance/ChatInstance';
 import {
@@ -108,31 +108,13 @@ function UserDefinedResponsePortalsContainer({
           const hostElement = getOrCreateSlotElement(slot);
 
           return (
-            <UserDefinedResponseComponentPortal
-              key={slot}
-              hostElement={hostElement}>
+            <SlotHostPortal key={slot} hostElement={hostElement}>
               {renderUserDefinedResponse(slotState, chatInstance)}
-            </UserDefinedResponseComponentPortal>
+            </SlotHostPortal>
           );
         }
       )
     : null;
-}
-
-/**
- * This is the component that will attach a React portal to the given host element. The host element is the element
- * provided by Carbon AI Chat where your user defined response will be displayed in the DOM. This portal will attach any React
- * children passed to it under this component so you can render the response using your own React application. Those
- * children will be rendered under the given element where it lives in the DOM.
- */
-function UserDefinedResponseComponentPortal({
-  hostElement,
-  children,
-}: {
-  hostElement: HTMLElement;
-  children: ReactNode;
-}) {
-  return ReactDOM.createPortal(children, hostElement);
 }
 
 const UserDefinedResponsePortalsContainerExport = React.memo(

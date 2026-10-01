@@ -226,6 +226,11 @@ describe('custom request footer across host surfaces', () => {
     ).renderCustomRequestFooter = (state: RenderCustomRequestFooterState) =>
       footerElementFor(cache, state);
 
+    // The chat reads the callback from its last render, so let the property
+    // reach the container and React commit it before the next message.
+    await surface.settle();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
     await surface.instance.send('sent after');
     await surface.settle();
 
