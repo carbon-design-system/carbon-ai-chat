@@ -16,6 +16,48 @@ import isEqual from 'lodash-es/isEqual.js';
 import { setVarsForSelector } from '@carbon/ai-chat-components/es/components/shared/dynamic-css-var-sheet.js';
 
 import { createServiceManager } from '../services/loadServices';
+import actions from '../store/actions';
+import { selectInputIsReadonly } from '../store/selectors';
+
+import { ServiceManager } from '../services/ServiceManager';
+import { createAppConfig } from '../store/doCreateStore';
+import { setIntl } from './intlUtils';
+import { consoleDebug, consoleError, consoleWarn, debugLog } from './miscUtils';
+import createHumanAgentService from '../services/haa/HumanAgentServiceImpl';
+
+import {
+  BusEventChunkUserDefinedResponse,
+  BusEventType,
+  BusEventUserDefinedResponse,
+  BusEventCustomFooterSlot,
+  BusEventCustomRequestFooterSlot,
+  MainWindowOpenReason,
+  MessageSendSource,
+  ViewChangeReason,
+} from '../../types/events/eventBusTypes';
+import { VIEW_STATE_ALL_CLOSED } from '../store/reducerUtils';
+import { PublicConfig } from '../../types/config/PublicConfig';
+import {
+  ChatInstance,
+  IncreaseOrDecrease,
+  SendOptions,
+} from '../../types/instance/ChatInstance';
+import { TypeAndHandler } from '../../types/instance/EventHandlers';
+import { AddMessageOptions } from '../../types/config/MessagingConfig';
+import { RenderCustomRequestFooterState } from '../../types/component/ChatContainer';
+import { loadLocale } from './languageUtils';
+import { HistoryItem } from '../../types/messaging/History';
+import {
+  MessageRequest,
+  MessageResponse,
+  StreamChunk,
+} from '../../types/messaging/Messages';
+import {
+  CatastrophicErrorPanelState,
+  ViewState,
+  ViewType,
+} from '../../types/state/AppState';
+import { AutoScrollOptions } from '../../types/utilities/HasDoAutoScroll';
 
 let bootContainerRulesInstalled = false;
 
@@ -39,27 +81,6 @@ function ensureBootContainerStyleRules(): void {
   });
   bootContainerRulesInstalled = true;
 }
-import { ServiceManager } from '../services/ServiceManager';
-import { createChatInstance } from '../instance/ChatInstanceImpl';
-import { createAppConfig } from '../store/doCreateStore';
-import { setIntl } from './intlUtils';
-import { consoleError } from './miscUtils';
-import createHumanAgentService from '../services/haa/HumanAgentServiceImpl';
-
-import {
-  BusEventChunkUserDefinedResponse,
-  BusEventType,
-  BusEventUserDefinedResponse,
-  BusEventCustomFooterSlot,
-  BusEventCustomRequestFooterSlot,
-  MainWindowOpenReason,
-  ViewChangeReason,
-} from '../../types/events/eventBusTypes';
-import { VIEW_STATE_ALL_CLOSED } from '../store/reducerUtils';
-import { PublicConfig } from '../../types/config/PublicConfig';
-import { ChatInstance } from '../../types/instance/ChatInstance';
-import { RenderCustomRequestFooterState } from '../../types/component/ChatContainer';
-import { loadLocale } from './languageUtils';
 
 /**
  * Default values applied to the provided `PublicConfig` before boot. This keeps
@@ -153,7 +174,321 @@ export async function initServiceManagerAndInstance(options: {
   }
 
   // Create the chat instance
-  const instance = createChatInstance({ serviceManager });
+  const instance: ChatInstance = {
+    on: (handlers: TypeAndHandler | TypeAndHandler[]) => {
+      serviceManager.eventBus.on(handlers);
+      return instance;
+    },
+
+    off: (handlers: TypeAndHandler | TypeAndHandler[]) => {
+      serviceManager.eventBus.off(handlers);
+      return instance;
+    },
+
+    once: (handlers: TypeAndHandler | TypeAndHandler[]) => {
+      serviceManager.eventBus.once(handlers);
+      return instance;
+    },
+
+    send: async (message: MessageRequest | string, options?: SendOptions) => {
+      debugLog('Called instance.send', message, options);
+      if (selectInputIsReadonly(serviceManager.store.getState())) {
+        throw new Error('You are unable to send messages in read only mode.');
+      }
+      return serviceManager.actions.send(
+        message,
+        MessageSendSource.INSTANCE_SEND,
+        options
+      );
+    },
+
+    doAutoScroll: (options: AutoScrollOptions = {}) => {
+      debugLog('Called instance.doAutoScroll', options);
+      serviceManager.mainWindow?.doAutoScroll?.(options);
+    },
+
+    updateInputFieldVisibility: (isVisible: boolean) => {
+      consoleWarn(
+        'instance.updateInputFieldVisibility is deprecated. Use The input.isVisible property to configure this behavior.'
+      );
+      serviceManager.store.dispatch(
+        actions.updateInputState({ fieldVisible: isVisible }, false)
+      );
+    },
+
+    updateInputIsDisabled: (isDisabled: boolean) => {
+      consoleWarn(
+        'instance.updateInputIsDisabled is deprecated. Use the input.isDisabled property to configure this behavior.'
+      );
+      serviceManager.store.dispatch(
+        actions.updateInputState({ isReadonly: isDisabled }, false)
+      );
+    },
+
+    updateAssistantUnreadIndicatorVisibility: (isVisible: boolean) => {
+      consoleWarn(
+        'instance.updateAssistantUnreadIndicatorVisibility is deprecated. Use launcher.showUnreadIndicator to configure this behavior.'
+      );
+      debugLog(
+        'Called instance.updateAssistantUnreadIndicatorVisibility',
+        isVisible
+      );
+      serviceManager.store.dispatch(
+        actions.setLauncherProperty('showUnreadIndicator', isVisible)
+      );
+    },
+
+    changeView: async (
+      newView: ViewType | Partial<ViewState>
+    ): Promise<void> => {
+      debugLog('Called instance.changeView', newView);
+
+      let issueWithNewView = false;
+
+      const viewTypeValues = Object.values<string>(ViewType);
+      if (typeof newView === 'string') {
+        if (!viewTypeValues.includes(newView)) {
+          consoleError(
+            `You tried to change the view but the view you specified is not a valid view name. Please use` +
+              ` the valid view names; ${viewTypeValues.join(', ')}.`
+          );
+          issueWithNewView = true;
+        }
+      } else if (typeof newView === 'object') {
+        Object.keys(newView).forEach((key) => {
+          if (!viewTypeValues.includes(key)) {
+            consoleError(
+              `You tried to change the state of multiple views by providing an object, however you included the key` +
+                ` "${key}" within the object which is not a valid view name. Please use the valid view names; ` +
+                `${viewTypeValues.join(', ')}.`
+            );
+            issueWithNewView = true;
+          }
+        });
+      } else {
+        consoleError(
+          'You tried to change the view but the view you provided was not a string or an object. You can either change' +
+            ' to one of the supported views by providing a string, ex. "launcher" or "mainWindow". Or you can' +
+            ' change the state of multiple views by providing an object, ex. { "launcher": true, "mainWindow": false,' +
+            ' }. Please use one of these supported options.'
+        );
+        issueWithNewView = true;
+      }
+
+      if (!issueWithNewView) {
+        await serviceManager.actions.changeView(newView, {
+          viewChangeReason: ViewChangeReason.CALLED_CHANGE_VIEW,
+        });
+      }
+    },
+
+    input: {
+      updateRawValue: (updater: (previous: string) => string) => {
+        debugLog('Called instance.input.updateRawValue');
+        serviceManager.actions.updateRawInputValue(updater);
+      },
+
+      updateStructuredData: (updater) => {
+        debugLog('Called instance.input.updateStructuredData');
+        serviceManager.actions.updateStructuredData(updater);
+      },
+
+      updateContent: (updater) => {
+        debugLog('Called instance.input.updateContent');
+        return serviceManager.actions.updateInputContent(updater);
+      },
+
+      getEditor: () => {
+        debugLog('Called instance.input.getEditor()');
+        return serviceManager.actions.ensureInputEditor();
+      },
+    },
+
+    getState: () => serviceManager.actions.getPublicChatState(),
+
+    writeableElements: serviceManager.writeableElements,
+
+    scrollToMessage: (messageID: string, animate?: boolean) => {
+      debugLog('Called instance.scrollToMessage', messageID, animate);
+      serviceManager.mainWindow?.doScrollToMessage(messageID, animate);
+    },
+
+    updateCatastrophicErrorPanel: (
+      panelState: Partial<CatastrophicErrorPanelState>
+    ) => {
+      debugLog('Called instance.updateCatastrophicPanel');
+
+      if (
+        panelState.isOpen &&
+        serviceManager.store.getState().catastrophicErrorType !== true
+      ) {
+        serviceManager.store.dispatch({
+          type: 'SET_APP_STATE_VALUE',
+          key: 'catastrophicErrorType',
+          value: true,
+        });
+      }
+
+      serviceManager.store.dispatch(
+        actions.updateCatastrophicErrorPanel(panelState)
+      );
+    },
+
+    customPanels: serviceManager.customPanelManager,
+
+    restartConversation: async () => {
+      debugLog('Called instance.restartConversation');
+      consoleWarn(
+        'instance.restartConversation is deprecated. Use instance.messaging.restartConversation instead.'
+      );
+      return instance.messaging.restartConversation();
+    },
+
+    updateIsMessageLoadingCounter(
+      direction: IncreaseOrDecrease,
+      message?: string
+    ): void {
+      debugLog('Called instance.updateIsMessageLoadingCounter', direction);
+      const { store } = serviceManager;
+
+      if (direction === 'reset') {
+        store.dispatch(actions.resetIsLoadingCounter());
+      } else if (direction === 'increase') {
+        store.dispatch(actions.addIsLoadingCounter(1, message));
+      } else if (direction === 'decrease') {
+        if (
+          store.getState().assistantMessageState.isMessageLoadingCounter <= 0
+        ) {
+          return;
+        }
+        store.dispatch(actions.addIsLoadingCounter(-1, message));
+      } else if (!direction && message) {
+        store.dispatch(actions.addIsLoadingCounter(0, message));
+      } else if (direction) {
+        consoleError(
+          `[updateIsMessageLoadingCounter] Invalid direction: ${direction}. Valid values are undefined (with loading message), "reset", "increase" and "decrease".`
+        );
+      }
+    },
+
+    updateIsChatLoadingCounter(direction: string): void {
+      debugLog('Called instance.updateIsChatLoadingCounter', direction);
+      const { store } = serviceManager;
+
+      if (direction === 'reset') {
+        store.dispatch(actions.resetIsHydratingCounter());
+      } else if (direction === 'increase') {
+        store.dispatch(actions.addIsHydratingCounter(1));
+      } else if (direction === 'decrease') {
+        if (store.getState().assistantMessageState.isHydratingCounter <= 0) {
+          return;
+        }
+        store.dispatch(actions.addIsHydratingCounter(-1));
+      } else {
+        consoleError(
+          `[updateIsChatLoadingCounter] Invalid direction: ${direction}. Valid values are "reset", "increase" and "decrease".`
+        );
+      }
+    },
+
+    messaging: {
+      addMessage: (
+        message: MessageResponse,
+        options: AddMessageOptions = {}
+      ) => {
+        debugLog('Called instance.messaging.addMessage', message, options);
+        serviceManager.messageService.messageLoadingManager.end();
+        return serviceManager.actions.receive(
+          message,
+          options?.isLatestWelcomeNode ?? false,
+          null
+        );
+      },
+
+      addMessageChunk: async (
+        chunk: StreamChunk,
+        options: AddMessageOptions = {}
+      ) => {
+        debugLog('Called instance.messaging.addMessageChunk', chunk, options);
+        serviceManager.messageService.messageLoadingManager.end();
+        try {
+          await serviceManager.actions.receiveChunk(chunk, null, options);
+        } catch (error) {
+          consoleError('Error in addMessageChunk', error);
+          throw error;
+        }
+      },
+
+      upsertMessage: async (messageID, state, updater) => {
+        debugLog('Called instance.messaging.upsertMessage', messageID, state);
+        serviceManager.messageService.messageLoadingManager.end();
+        return serviceManager.messageUpsertCoordinator.upsert(
+          messageID,
+          state,
+          updater
+        );
+      },
+
+      removeMessages: async (messageIDs: string[]) => {
+        debugLog('Called instance.messaging.removeMessages', messageIDs);
+        return serviceManager.actions.removeMessages(messageIDs);
+      },
+
+      clearConversation: () => {
+        debugLog('Called instance.messaging.clearConversation');
+        return serviceManager.actions.restartConversation({
+          skipHydration: true,
+          endHumanAgentConversation: false,
+          fireEvents: false,
+        });
+      },
+
+      insertHistory: (messages: HistoryItem[]) => {
+        debugLog('Called instance.messaging.insertHistory', messages);
+        return serviceManager.actions.insertHistory(messages);
+      },
+
+      restartConversation: async () => {
+        debugLog('Called instance.messaging.restartConversation');
+        return serviceManager.actions.restartConversation();
+      },
+    },
+
+    requestFocus: () => {
+      debugLog('Called instance.requestFocus');
+      serviceManager.appWindow?.requestFocus();
+    },
+
+    serviceDesk: {
+      endConversation: () => {
+        debugLog('Called instance.serviceDesk.endConversation');
+        return serviceManager.actions.agentEndConversation(false);
+      },
+
+      updateIsSuspended: async (isSuspended: boolean) => {
+        debugLog('Called instance.serviceDesk.updateIsSuspended', isSuspended);
+        return serviceManager.actions.agentUpdateIsSuspended(isSuspended);
+      },
+    },
+
+    destroySession: async (keepOpenState: boolean) => {
+      debugLog('Called instance.destroySession', keepOpenState);
+      return serviceManager.actions.destroySession(keepOpenState);
+    },
+  };
+
+  // Add serviceManager for testing if the flag is enabled (exclude instance to avoid circular reference)
+  if (
+    serviceManager.store.getState().config.public.exposeServiceManagerForTesting
+  ) {
+    const { instance: _, ...serviceManagerForTesting } = serviceManager;
+    instance.serviceManager = serviceManagerForTesting as ServiceManager;
+  }
+
+  if (serviceManager.store.getState().config.public.debug) {
+    consoleDebug('[chatBoot] Created chat instance', instance);
+  }
+
   serviceManager.instance = instance;
 
   return { serviceManager, instance };
@@ -198,7 +533,6 @@ export async function performInitialViewChange(serviceManager: ServiceManager) {
  * view-change decision making. Avoids pulling in a deep-equality dependency for
  * this narrow use.
  */
-// Note: use lodash `isEqual` for stable, predictable equality checks
 
 /**
  * Attaches event handlers to the `ChatInstance` that track user-defined
