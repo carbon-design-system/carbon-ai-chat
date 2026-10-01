@@ -8,6 +8,7 @@
  */
 
 import { useCallback, useMemo } from 'react';
+import { requestComposerFocus } from '../utils/customPromptLine';
 import actions from '../store/actions';
 import { useSelector } from './useSelector';
 import {
@@ -152,11 +153,11 @@ export function useInputCallbacks({
           return;
         }
       }
-      // Input focus will be handled by parent component
+      requestComposerFocus(serviceManager);
     } catch (error) {
       console.error('An error occurred in requestInputFocus', error);
     }
-  }, [agentDisplayState, messagesRef]);
+  }, [agentDisplayState, messagesRef, serviceManager]);
 
   // Effective values derived from config + runtime override (see selectors).
   const isInputReadonly = useSelector(selectInputIsReadonly);

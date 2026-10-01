@@ -7,65 +7,44 @@
  *  @license
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useLayoutEffect } from 'react';
 import {
   WriteableElementName,
   WriteableElements,
 } from '../../types/instance/WriteableElements';
+import { hasMeaningfulContent } from '../utils/writeableElementPresence';
 
-/**
- * Returns `true` when the writeable-element host node for `name` contains
- * meaningful host content, `false` otherwise. "Meaningful content" mirrors
- * `SlotObserver.hasSlotContent`: an empty wrapper div, a whitespace-only text node,
- * and comments all read as no content. Reacts to content arriving or leaving
- * post-boot via a `MutationObserver`.
- */
 export function useWriteableElementPresence(
   name: WriteableElementName,
-  writeableElements: Partial<WriteableElements>
+  writeableElements: Partial<WriteableElements>,
+  initialPresence = false
 ): boolean {
   const node = writeableElements[name];
-
   const [present, setPresent] = useState(
-    () => node !== undefined && hasMeaningfulContent(node)
+    () => initialPresence || hasMeaningfulContent(node)
   );
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    setPresent(hasMeaningfulContent(node));
     if (!node) {
       return undefined;
     }
-
-    // Re-check synchronously in case content arrived between the lazy-init and mount.
-    setPresent(hasMeaningfulContent(node));
-
-    const observer = new MutationObserver(() => {
-      setPresent(hasMeaningfulContent(node));
+    const update = () => setPresent(hasMeaningfulContent(node));
+    const observer = new MutationObserver(update);
+    const target = node.parentElement ?? node;
+    observer.observe(target, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+      attributes: true,
+      attributeFilter: ['slot'],
     });
-
-    observer.observe(node, { childList: true, subtree: true });
-
+    target.addEventListener('slotchange', update);
     return () => {
       observer.disconnect();
+      target.removeEventListener('slotchange', update);
     };
   }, [node]);
 
   return present;
-}
-
-/**
- * Returns true when `node` contains at least one non-comment,
- * non-whitespace-only child — matching the rules in
- * `SlotObserver.hasSlotContent`.
- */
-function hasMeaningfulContent(node: HTMLElement): boolean {
-  return Array.from(node.childNodes).some((child) => {
-    if (child.nodeType === Node.COMMENT_NODE) {
-      return false;
-    }
-    if (child.nodeType === Node.TEXT_NODE) {
-      return Boolean(child.textContent?.trim());
-    }
-    // Any element node counts as content.
-    return child.nodeType === Node.ELEMENT_NODE;
-  });
 }

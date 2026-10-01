@@ -14,6 +14,8 @@ import {
   setupAfterEach,
   setupBeforeEach,
 } from '../../test_helpers';
+import { WriteableElementName } from '../../../src/types/instance/WriteableElements';
+import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
 import actions from '../../../src/chat/store/actions';
 import {
   PendingUploadStatus,
@@ -142,5 +144,54 @@ describe('upload api - block sends while file is uploading', () => {
 
     await expect(instance.send('hi')).resolves.toBeUndefined();
     expect(mockCustomSendMessage).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('custom prompt line with existing uploads', () => {
+  beforeEach(setupBeforeEach);
+  afterEach(setupAfterEach);
+
+  it('blocks while uploading and preserves the completed attachment on custom send', async () => {
+    const { instance, store } =
+      await renderChatAndGetInstanceWithStore(createBaseConfig());
+    const parked = { user_defined: { attachment: 'parked-file' } };
+    instance.input.updateStructuredData(() => parked);
+    store.dispatch(actions.addPendingUpload(makePendingUpload(), false));
+    instance.writeableElements[WriteableElementName.CUSTOM_PROMPT_LINE].append(
+      document.createElement('input')
+    );
+    await expect(instance.send('custom')).rejects.toThrow(/upload/i);
+    expect(mockCustomSendMessage).not.toHaveBeenCalled();
+    store.dispatch(
+      actions.updatePendingUpload(
+        'upload-1',
+        { status: PendingUploadStatus.COMPLETE },
+        false
+      )
+    );
+    await instance.send('custom');
+    expect(
+      mockCustomSendMessage.mock.calls[0][0].input.structured_data
+    ).toBeUndefined();
+    expect(store.getState().assistantInputState.pendingStructuredData).toEqual(
+      parked
+    );
+    expect(store.getState().assistantInputState.pendingUploads).toHaveLength(1);
+  });
+
+  it('rechecks uploads started while a custom send awaits hydration', async () => {
+    const { instance, store, serviceManager } =
+      await renderChatAndGetInstanceWithStore(createBaseConfig());
+    instance.writeableElements[WriteableElementName.CUSTOM_PROMPT_LINE].append(
+      document.createElement('input')
+    );
+    const hydration = resolvablePromise();
+    Object.assign(serviceManager.actions, { hydrationPromise: hydration });
+    const sent = instance.send('custom');
+    const rejected = expect(sent).rejects.toThrow(/upload/i);
+    store.dispatch(actions.addPendingUpload(makePendingUpload(), false));
+    hydration.doResolve();
+    await rejected;
+    expect(mockCustomSendMessage).not.toHaveBeenCalled();
   });
 });
