@@ -7,8 +7,15 @@
  *  @license
  */
 
-import { ChatActionsImpl } from '../../../src/chat/services/ChatActionsImpl';
+import { ChatInstanceService } from '../../../src/chat/services/ChatInstanceService';
 import { EventBus } from '../../../src/chat/events/EventBus';
+import { HydrationService } from '../../../src/chat/services/HydrationService';
+import { InputActionsService } from '../../../src/chat/services/InputActionsService';
+import { PublicStateService } from '../../../src/chat/services/PublicStateService';
+import { ReceiveService } from '../../../src/chat/services/ReceiveService';
+import { SendService } from '../../../src/chat/services/SendService';
+import { SlotEventService } from '../../../src/chat/services/SlotEventService';
+import { ViewService } from '../../../src/chat/services/ViewService';
 import { ServiceManager } from '../../../src/chat/services/ServiceManager';
 import {
   BusEvent,
@@ -30,7 +37,7 @@ const createRequest = (text: string): MessageRequest => ({
 });
 
 /**
- * The narrowest store `ChatActionsImpl.send` reads through on the outbound path: the input slice it merges pending
+ * The narrowest store `ChatInstanceService.send` reads through on the outbound path: the input slice it merges pending
  * structured data from, the human-agent slices the input selectors route on, and the two panels a send closes.
  */
 const createServiceManagerStub = () => {
@@ -70,7 +77,23 @@ const createServiceManagerStub = () => {
     fire: jest.fn(async (event: BusEvent) => {
       firedEvents.push(event);
     }),
+    getInputFunctionsRef: (): null => null,
   } as unknown as ServiceManager;
+  (serviceManager as any).inputActionsService = new InputActionsService(
+    serviceManager
+  );
+  (serviceManager as any).slotEventService = new SlotEventService(
+    serviceManager
+  );
+  (serviceManager as any).hydrationService = new HydrationService(
+    serviceManager
+  );
+  (serviceManager as any).publicStateService = new PublicStateService(
+    serviceManager
+  );
+  (serviceManager as any).receiveService = new ReceiveService(serviceManager);
+  (serviceManager as any).sendService = new SendService(serviceManager);
+  (serviceManager as any).viewService = new ViewService(serviceManager);
 
   return { serviceManager, firedEvents };
 };
@@ -84,8 +107,9 @@ const footerEventsIn = (events: BusEvent[]) =>
  * `doSend` starts the footer fire without awaiting it, so the send resolves first. Await the chain's tail to reach
  * the point where every fire started so far has settled.
  */
-const flushFooterFires = (chatActions: ChatActionsImpl) =>
-  (chatActions as any).requestFooterFireChain as Promise<unknown>;
+const flushFooterFires = (chatActions: ChatInstanceService) =>
+  (chatActions as any).serviceManager.slotEventService
+    .requestFooterFireChain as Promise<unknown>;
 
 /**
  * A stub whose `fire` routes through a real EventBus, which refuses to start an event whose type is already running.
@@ -102,7 +126,7 @@ const createServiceManagerStubWithRealBus = () => {
 describe('custom request footer slot', () => {
   it('fires once per sent message with the request as payload', async () => {
     const { serviceManager, firedEvents } = createServiceManagerStub();
-    const chatActions = new ChatActionsImpl(serviceManager);
+    const chatActions = new ChatInstanceService(serviceManager);
     const message = createRequest('what is the weather?');
 
     await chatActions.send(message, MessageSendSource.MESSAGE_INPUT, {}, true);
@@ -125,7 +149,7 @@ describe('custom request footer slot', () => {
   it('sends the message even when a handler rejects', async () => {
     const errorSpy = jest.spyOn(console, 'error').mockImplementation();
     const { serviceManager, eventBus } = createServiceManagerStubWithRealBus();
-    const chatActions = new ChatActionsImpl(serviceManager);
+    const chatActions = new ChatInstanceService(serviceManager);
     const seen: string[] = [];
     let failNext = true;
 
@@ -164,7 +188,7 @@ describe('custom request footer slot', () => {
 
   it('does not wait for a handler that never settles', async () => {
     const { serviceManager, eventBus } = createServiceManagerStubWithRealBus();
-    const chatActions = new ChatActionsImpl(serviceManager);
+    const chatActions = new ChatInstanceService(serviceManager);
 
     eventBus.on({
       type: BusEventType.CUSTOM_REQUEST_FOOTER_SLOT,
@@ -190,7 +214,7 @@ describe('custom request footer slot', () => {
 
   it('hands the host a frozen message', async () => {
     const { serviceManager, firedEvents } = createServiceManagerStub();
-    const chatActions = new ChatActionsImpl(serviceManager);
+    const chatActions = new ChatInstanceService(serviceManager);
 
     await chatActions.send(
       createRequest('hello'),
@@ -208,7 +232,7 @@ describe('custom request footer slot', () => {
 
   it('gives each message its own slot name', async () => {
     const { serviceManager, firedEvents } = createServiceManagerStub();
-    const chatActions = new ChatActionsImpl(serviceManager);
+    const chatActions = new ChatInstanceService(serviceManager);
 
     await chatActions.send(
       createRequest('first'),
@@ -231,7 +255,7 @@ describe('custom request footer slot', () => {
 
   it('survives sends that overlap', async () => {
     const { serviceManager, eventBus } = createServiceManagerStubWithRealBus();
-    const chatActions = new ChatActionsImpl(serviceManager);
+    const chatActions = new ChatInstanceService(serviceManager);
     const seen: string[] = [];
 
     eventBus.on({
@@ -270,7 +294,7 @@ describe('custom request footer slot', () => {
 
   it('fires nothing for a silent message', async () => {
     const { serviceManager, firedEvents } = createServiceManagerStub();
-    const chatActions = new ChatActionsImpl(serviceManager);
+    const chatActions = new ChatInstanceService(serviceManager);
 
     await chatActions.send(
       createRequest('hello'),
@@ -286,7 +310,7 @@ describe('custom request footer slot', () => {
 
   it('fires nothing for a message typed to a human agent', async () => {
     const { serviceManager, firedEvents } = createServiceManagerStub();
-    const chatActions = new ChatActionsImpl(serviceManager);
+    const chatActions = new ChatInstanceService(serviceManager);
     const message = createRequest('hello');
     message.input.agent_message_type = HumanAgentMessageType.FROM_USER;
 
@@ -299,7 +323,7 @@ describe('custom request footer slot', () => {
 
   it('fires nothing for a message with no bubble content', async () => {
     const { serviceManager, firedEvents } = createServiceManagerStub();
-    const chatActions = new ChatActionsImpl(serviceManager);
+    const chatActions = new ChatInstanceService(serviceManager);
 
     await chatActions.send(
       createRequest(''),
@@ -369,7 +393,7 @@ describe('footer replay from history', () => {
 
   it('fires for restored user messages', async () => {
     const { serviceManager, firedEvents } = createServiceManagerStub();
-    const chatActions = new ChatActionsImpl(serviceManager);
+    const chatActions = new ChatInstanceService(serviceManager);
 
     await chatActions.replayFooterSlots(
       historyFrom([restoredRequest('m1', 'restored text')]) as never
@@ -383,7 +407,7 @@ describe('footer replay from history', () => {
 
   it('fires for restored assistant messages', async () => {
     const { serviceManager, firedEvents } = createServiceManagerStub();
-    const chatActions = new ChatActionsImpl(serviceManager);
+    const chatActions = new ChatInstanceService(serviceManager);
 
     await chatActions.replayFooterSlots(
       historyFrom([restoredResponse('m1', 'backend-slot', true)]) as never
@@ -398,7 +422,7 @@ describe('footer replay from history', () => {
 
   it('replays both directions in one pass', async () => {
     const { serviceManager, firedEvents } = createServiceManagerStub();
-    const chatActions = new ChatActionsImpl(serviceManager);
+    const chatActions = new ChatInstanceService(serviceManager);
 
     await chatActions.replayFooterSlots(
       historyFrom([
@@ -417,7 +441,7 @@ describe('footer replay from history', () => {
 
   it('honors the documented is_on default', async () => {
     const { serviceManager, firedEvents } = createServiceManagerStub();
-    const chatActions = new ChatActionsImpl(serviceManager);
+    const chatActions = new ChatInstanceService(serviceManager);
 
     // `is_on` is documented as defaulting to true, so an unset one still gets a
     // footer. This used to require an explicit true and left the slot empty.
@@ -434,7 +458,7 @@ describe('footer replay from history', () => {
 
   it('skips the nested items of a restored grid', async () => {
     const { serviceManager, firedEvents } = createServiceManagerStub();
-    const chatActions = new ChatActionsImpl(serviceManager);
+    const chatActions = new ChatInstanceService(serviceManager);
 
     // A nested item renders no footer, so firing for one would name a slot that never reaches the DOM.
     const nestedItem = restoredResponse('m1', 'nested-slot', true);
@@ -456,7 +480,7 @@ describe('footer replay from history', () => {
 
   it('skips an assistant footer switched off', async () => {
     const { serviceManager, firedEvents } = createServiceManagerStub();
-    const chatActions = new ChatActionsImpl(serviceManager);
+    const chatActions = new ChatInstanceService(serviceManager);
 
     await chatActions.replayFooterSlots(
       historyFrom([restoredResponse('m1', 'backend-slot', false)]) as never
@@ -471,7 +495,7 @@ describe('footer replay from history', () => {
 
   it('fires nothing for a restored human-agent message', async () => {
     const { serviceManager, firedEvents } = createServiceManagerStub();
-    const chatActions = new ChatActionsImpl(serviceManager);
+    const chatActions = new ChatInstanceService(serviceManager);
     const entry = restoredRequest('m1', 'to the agent');
     (entry.localMessage.item as any).agent_message_type =
       HumanAgentMessageType.FROM_USER;

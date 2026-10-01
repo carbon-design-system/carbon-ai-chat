@@ -7,7 +7,16 @@
  *  @license
  */
 
-import { ChatActionsImpl } from './ChatActionsImpl';
+import { ChatInstanceService } from './ChatInstanceService';
+import { ChunkProcessingService } from './ChunkProcessingService';
+import { HydrationService } from './HydrationService';
+import { InputActionsService } from './InputActionsService';
+import { PublicStateService } from './PublicStateService';
+import { ReceiveService } from './ReceiveService';
+import { SlotEventService } from './SlotEventService';
+import { SendService } from './SendService';
+import { StreamAnnouncerService } from './StreamAnnouncerService';
+import { ViewService } from './ViewService';
 import { EventBus } from '../events/EventBus';
 import { HistoryService } from './HistoryService';
 import { createCustomPanelManager } from './CustomPanelManager';
@@ -45,7 +54,20 @@ function createServiceManager(appConfig: AppConfig) {
   serviceManager.userSessionStorageService = new UserSessionStorageService(
     serviceManager
   );
-  serviceManager.actions = new ChatActionsImpl(serviceManager);
+  serviceManager.actions = new ChatInstanceService(serviceManager);
+  serviceManager.inputActionsService = new InputActionsService(serviceManager);
+  serviceManager.streamAnnouncerService = new StreamAnnouncerService(
+    serviceManager
+  );
+  serviceManager.chunkProcessingService = new ChunkProcessingService(
+    serviceManager
+  );
+  serviceManager.slotEventService = new SlotEventService(serviceManager);
+  serviceManager.hydrationService = new HydrationService(serviceManager);
+  serviceManager.publicStateService = new PublicStateService(serviceManager);
+  serviceManager.receiveService = new ReceiveService(serviceManager);
+  serviceManager.sendService = new SendService(serviceManager);
+  serviceManager.viewService = new ViewService(serviceManager);
   serviceManager.eventBus = new EventBus();
   serviceManager.store = doCreateStore(publicConfig, serviceManager);
   serviceManager.historyService = new HistoryService(serviceManager);
