@@ -32,7 +32,7 @@ export class Demo extends LitElement {
   static styles = [
     css`
       .chat-custom-element {
-        block-size: calc(100vh - 2rem);
+        block-size: calc(100vh - 1rem);
         inline-size: 100%;
       }
     `,

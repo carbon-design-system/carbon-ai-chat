@@ -27,6 +27,7 @@ import type {
   InputChangeEventDetail,
   PromptLineElement,
 } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
+import '@carbon/styles/css/styles.css';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { customSendMessage } from './customSendMessage';
