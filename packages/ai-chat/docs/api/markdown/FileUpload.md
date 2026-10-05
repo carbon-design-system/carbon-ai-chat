@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Service desk
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.FileUpload.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.FileUpload.html
 
 Represents a file the user has selected for upload, including its current
 FileStatusValue and any error metadata.
@@ -27,7 +27,7 @@ interface FileUpload
 
 If the file failed to upload, this is an optional error message to display.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.FileUpload.html#errormessage)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.FileUpload.html#errormessage)
 
 ### file
 
@@ -35,7 +35,7 @@ If the file failed to upload, this is an optional error message to display.
 
 The file to upload.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.FileUpload.html#file)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.FileUpload.html#file)
 
 ### id
 
@@ -43,7 +43,7 @@ The file to upload.
 
 A unique ID for the file.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.FileUpload.html#id)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.FileUpload.html#id)
 
 ### isError
 
@@ -51,7 +51,7 @@ A unique ID for the file.
 
 Indicates if the file contains an error or failed to upload.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.FileUpload.html#iserror)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.FileUpload.html#iserror)
 
 ### status
 
@@ -59,7 +59,7 @@ Indicates if the file contains an error or failed to upload.
 
 The current upload status.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.FileUpload.html#status)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.FileUpload.html#status)
 
 ## Related
 

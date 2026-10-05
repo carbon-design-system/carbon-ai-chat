@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.WithWidthOptions.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.WithWidthOptions.html
 
 ## Signature
 
@@ -25,4 +25,4 @@ interface WithWidthOptions
 Sets an optional max width of the component. Options are small, medium and large.
 By default, the component will be 100% width of the container.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.WithWidthOptions.html#max_width)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.WithWidthOptions.html#max_width)

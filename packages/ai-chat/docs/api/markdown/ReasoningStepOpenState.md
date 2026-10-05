@@ -8,7 +8,7 @@
 
 - Kind: Enum
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.ReasoningStepOpenState.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.ReasoningStepOpenState.html
 
 If the reasoning step is open, closed, or is controlled by Carbon AI Chat.
 
@@ -26,16 +26,16 @@ enum ReasoningStepOpenState
 
 `CLOSE = "close"`
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.ReasoningStepOpenState.html#close)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.ReasoningStepOpenState.html#close)
 
 ### DEFAULT
 
 `DEFAULT = "default"`
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.ReasoningStepOpenState.html#default)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.ReasoningStepOpenState.html#default)
 
 ### OPEN
 
 `OPEN = "open"`
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.ReasoningStepOpenState.html#open)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.ReasoningStepOpenState.html#open)

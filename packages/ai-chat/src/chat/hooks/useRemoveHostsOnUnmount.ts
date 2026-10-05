@@ -8,6 +8,7 @@
  */
 
 import { MutableRefObject, useEffect } from 'react';
+import { attachHosts, detachHosts } from '../utils/removeHostsOnUnmount';
 
 /**
  * Detaches a portal container's light-DOM host elements when it unmounts. The
@@ -24,12 +25,8 @@ function useRemoveHostsOnUnmount(
 ) {
   useEffect(() => {
     const hosts = hostsRef.current;
-    hosts.forEach((host) => {
-      if (!host.isConnected) {
-        chatWrapper?.appendChild(host);
-      }
-    });
-    return () => hosts.forEach((host) => host.remove());
+    attachHosts(hosts, chatWrapper);
+    return () => detachHosts(hosts);
   }, [hostsRef, chatWrapper]);
 }
 

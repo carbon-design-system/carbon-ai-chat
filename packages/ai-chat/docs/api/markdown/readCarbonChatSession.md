@@ -8,7 +8,7 @@
 
 - Kind: Function
 - Category: Utilities
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/functions/Type_reference.readCarbonChatSession.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/functions/Type_reference.readCarbonChatSession.html
 
 Reads and validates the Carbon AI Chat session from sessionStorage.
 Returns null if no session exists, if the data is corrupt, or if the

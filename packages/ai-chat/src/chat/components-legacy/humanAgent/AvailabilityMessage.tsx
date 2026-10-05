@@ -57,13 +57,15 @@ function AvailabilityMessage({
 
   const message = messages[availabilityKey as string];
   const formatter = new IntlMessageFormat(message, locale);
+  // IntlMessageFormat returns an array when there are rich text elements, so
+  // each element needs a key.
+  let partKey = 0;
   const formattedParts = formatter.format({
     ...availabilityValues,
-    b: (chunks: any) => <b>{chunks}</b>,
-    br: () => <br />,
+    b: (chunks: any) => <b key={partKey++}>{chunks}</b>,
+    br: () => <br key={partKey++} />,
   });
 
-  // IntlMessageFormat returns an array when there are rich text elements
   return <span>{formattedParts}</span>;
 }
 

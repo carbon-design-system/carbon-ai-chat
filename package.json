@@ -42,6 +42,7 @@
     "lint:styles": "stylelint '**/*.scss' --report-needless-disables --report-invalid-scope-disables",
     "telemetry:config": "lerna run telemetry:config",
     "test": "lerna run test --stream && npm run test:versions",
+    "test:e2e": "node scripts/run-example-e2e.mjs",
     "test:guidance": "node --test tools/validate-guidance.test.js",
     "test:versions": "node --test scripts/update-versions-file.test.cjs",
     "validate:adrs": "node tools/validate-adrs.js",
@@ -94,7 +95,8 @@
     "stylelint": "^17.0.0",
     "stylelint-config-carbon": "^1.25.0",
     "text-readability": "^1.1.0",
-    "typescript": "6.0.3"
+    "typescript": "6.0.3",
+    "vite": "^8.3.0"
   },
   "commitlint": {
     "extends": [
@@ -224,7 +226,7 @@
   },
   "overrides": {
     "tar": "^7.5.16",
-    "shell-quote": "^1.10.0",
+    "shell-quote": "^1.11.0",
     "postcss": "^8.5.23",
     "axios": "^1.18.1",
     "proxy-addr": "^2.0.8",

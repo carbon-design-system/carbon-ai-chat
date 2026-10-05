@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.WithBodyAndFooter.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.WithBodyAndFooter.html
 
 ## Signature
 
@@ -24,7 +24,7 @@ interface WithBodyAndFooter
 
 A list of message items to render in a Carbon AI Chat panel.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.WithBodyAndFooter.html#body)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.WithBodyAndFooter.html#body)
 
 ### footer
 
@@ -32,4 +32,4 @@ A list of message items to render in a Carbon AI Chat panel.
 
 A list of button items that are rendered under the panel body.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/interfaces/Type_reference.WithBodyAndFooter.html#footer)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.WithBodyAndFooter.html#footer)

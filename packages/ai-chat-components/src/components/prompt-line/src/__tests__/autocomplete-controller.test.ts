@@ -502,7 +502,7 @@ describe('AutocompleteController', () => {
       return received;
     }
 
-    it('forwards ArrowDown/ArrowUp/Enter/Escape on the editor to the list', async () => {
+    it('forwards ArrowDown/ArrowUp/Enter/Escape/Home/End on the editor to the list', async () => {
       const { editorDom, promptLine } = makeEditorStubWithDom();
       const listEl = document.createElement('div');
       const received = captureSyntheticKeys(listEl);
@@ -520,7 +520,14 @@ describe('AutocompleteController', () => {
       });
       await flush();
 
-      for (const key of ['ArrowDown', 'ArrowUp', 'Enter', 'Escape']) {
+      for (const key of [
+        'ArrowDown',
+        'ArrowUp',
+        'Enter',
+        'Escape',
+        'Home',
+        'End',
+      ]) {
         editorDom.dispatchEvent(
           new KeyboardEvent('keydown', {
             key,
@@ -534,6 +541,8 @@ describe('AutocompleteController', () => {
         'ArrowUp',
         'Enter',
         'Escape',
+        'Home',
+        'End',
       ]);
     });
 

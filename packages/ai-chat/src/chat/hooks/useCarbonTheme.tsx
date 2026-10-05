@@ -8,24 +8,8 @@
  */
 
 import { useSelector } from './useSelector';
-import { AppState } from '../../types/state/AppState';
-import { CarbonTheme } from '../../types/config/CarbonTheme';
+import { getCarbonTheme, selectCarbonTheme } from '../utils/carbonTheme';
 
-/**
- * Custom hook to get the current Carbon theme and determine if it's a dark theme.
- *
- * @returns An object containing:
- *   - carbonTheme: The current Carbon theme (G10, G90, G100, or White)
- *   - isDarkTheme: Boolean indicating if the current theme is dark (G90 or G100)
- */
 export function useCarbonTheme() {
-  const carbonTheme = useSelector(
-    (state: AppState) =>
-      state.config.derived.themeWithDefaults.derivedCarbonTheme
-  );
-
-  const isDarkTheme =
-    carbonTheme === CarbonTheme.G90 || carbonTheme === CarbonTheme.G100;
-
-  return { carbonTheme, isDarkTheme };
+  return getCarbonTheme(useSelector(selectCarbonTheme));
 }

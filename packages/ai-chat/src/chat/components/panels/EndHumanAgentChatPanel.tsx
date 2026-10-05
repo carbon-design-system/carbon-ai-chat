@@ -10,29 +10,19 @@
 import React from 'react';
 import { useSelector } from '../../hooks/useSelector';
 
-import { useServiceManager } from '../../hooks/useServiceManager';
 import { AppState } from '../../../types/state/AppState';
 import { shallowEqual } from '../../store/appStore';
-import { ConfirmModal, ConfirmModalButtonProps } from './ConfirmModal';
+import { ConfirmPanel, ConfirmPanelButtonProps } from './ConfirmPanel';
 
-interface EndHumanAgentChatModalProps extends ConfirmModalButtonProps {
-  /**
-   * The title for the modal.
-   */
+export interface EndHumanAgentChatPanelProps extends ConfirmPanelButtonProps {
+  open: boolean;
   title?: string;
 
-  /**
-   * The message to display in the confirmation modal to explain to the user the purpose of this confirmation.
-   */
   message?: string;
 }
 
-/**
- * Displays a modal asking if the user wants to end a chat with an agent. This also covers the case where the user
- * cancels a request for an agent before an agent has joined.
- */
-function EndHumanAgentChatModal(props: EndHumanAgentChatModalProps) {
-  const { onConfirm, onCancel, title, message } = props;
+function EndHumanAgentChatPanel(props: EndHumanAgentChatPanelProps) {
+  const { onConfirm, onCancel, title, message, open } = props;
   const languagePack = useSelector(
     (state: AppState) => ({
       agent_endChat: state.languagePack.agent_endChat,
@@ -50,7 +40,6 @@ function EndHumanAgentChatModal(props: EndHumanAgentChatModalProps) {
     }),
     shallowEqual
   );
-  const serviceManager = useServiceManager();
   const { isConnected, isSuspended } = useSelector(
     (state: AppState) => ({
       isConnected: state.persistedToBrowserStorage.humanAgentState.isConnected,
@@ -81,17 +70,18 @@ function EndHumanAgentChatModal(props: EndHumanAgentChatModalProps) {
   }
 
   return (
-    <ConfirmModal
+    <ConfirmPanel
+      open={open}
+      priority={70}
       title={useTitle}
       message={useMessage}
       onConfirm={onConfirm}
       onCancel={onCancel}
       cancelButtonLabel={cancelButtonLabel}
       confirmButtonLabel={confirmButtonLabel}
-      modalAnnounceMessage={useMessage}
-      serviceManager={serviceManager}
+      announceMessage={useMessage}
     />
   );
 }
 
-export { EndHumanAgentChatModal };
+export { EndHumanAgentChatPanel };

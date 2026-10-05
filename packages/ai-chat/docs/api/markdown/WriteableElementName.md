@@ -8,7 +8,7 @@
 
 - Kind: Enum
 - Category: Instance
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.WriteableElementName.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.WriteableElementName.html
 
 ## Signature
 
@@ -24,7 +24,7 @@ enum WriteableElementName
 
 An element that appears after the input field.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.WriteableElementName.html#after_input_element)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.WriteableElementName.html#after_input_element)
 
 ### AI_TOOLTIP_AFTER_DESCRIPTION_ELEMENT
 
@@ -36,7 +36,7 @@ and WriteableElementName.EXPLAINABILITY_POPOVER_ACTIONS for full control over AI
 An element that appears in the AI theme only and is shown beneath the title and description in the AI tooltip
 content.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.WriteableElementName.html#ai_tooltip_after_description_element)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.WriteableElementName.html#ai_tooltip_after_description_element)
 
 ### BEFORE_INPUT_ELEMENT
 
@@ -44,7 +44,7 @@ content.
 
 An element that appears after the messages area and before the input area.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.WriteableElementName.html#before_input_element)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.WriteableElementName.html#before_input_element)
 
 ### CUSTOM_HEADER
 
@@ -63,7 +63,7 @@ WriteableElementName.HEADER_BOTTOM_ELEMENT and
 WriteableElementName.HOME_SCREEN_HEADER_BOTTOM_ELEMENT are
 unaffected — they sit below the header, not inside it.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.WriteableElementName.html#custom_header)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.WriteableElementName.html#custom_header)
 
 ### CUSTOM_PANEL_ELEMENT
 
@@ -71,7 +71,7 @@ unaffected — they sit below the header, not inside it.
 
 An element to be housed in the custom panel.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.WriteableElementName.html#custom_panel_element)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.WriteableElementName.html#custom_panel_element)
 
 ### EXPLAINABILITY_POPOVER_ACTIONS
 
@@ -79,7 +79,7 @@ An element to be housed in the custom panel.
 
 An element that appears in the header's AI label popover actions footer area.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.WriteableElementName.html#explainability_popover_actions)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.WriteableElementName.html#explainability_popover_actions)
 
 ### EXPLAINABILITY_POPOVER_CONTENT
 
@@ -88,7 +88,7 @@ An element that appears in the header's AI label popover actions footer area.
 An element that appears in the header's AI label popover body. When this slot contains meaningful
 content, the default popover body is hidden automatically.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.WriteableElementName.html#explainability_popover_content)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.WriteableElementName.html#explainability_popover_content)
 
 ### FOOTER_ELEMENT
 
@@ -96,7 +96,7 @@ content, the default popover body is hidden automatically.
 
 An element that appears in the footer area.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.WriteableElementName.html#footer_element)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.WriteableElementName.html#footer_element)
 
 ### HEADER_BOTTOM_ELEMENT
 
@@ -104,7 +104,7 @@ An element that appears in the footer area.
 
 An element that appears in the header on a new line. Only visible while talking to the assistant.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.WriteableElementName.html#header_bottom_element)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.WriteableElementName.html#header_bottom_element)
 
 ### HEADER_FIXED_ACTIONS_ELEMENT
 
@@ -112,7 +112,7 @@ An element that appears in the header on a new line. Only visible while talking 
 
 An element that appears in the header's fixed-actions slot (before close/minimize buttons).
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.WriteableElementName.html#header_fixed_actions_element)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.WriteableElementName.html#header_fixed_actions_element)
 
 ### HISTORY_PANEL_ELEMENT
 
@@ -120,7 +120,7 @@ An element that appears in the header's fixed-actions slot (before close/minimiz
 
 An element to be housed in the history panel.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.WriteableElementName.html#history_panel_element)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.WriteableElementName.html#history_panel_element)
 
 ### HOME_SCREEN_AFTER_STARTERS_ELEMENT
 
@@ -128,7 +128,7 @@ An element to be housed in the history panel.
 
 An element that appears on the home screen after the conversation starters.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.WriteableElementName.html#home_screen_after_starters_element)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.WriteableElementName.html#home_screen_after_starters_element)
 
 ### HOME_SCREEN_BEFORE_INPUT_ELEMENT
 
@@ -136,7 +136,7 @@ An element that appears on the home screen after the conversation starters.
 
 An element that appears above the input field on the home screen.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.WriteableElementName.html#home_screen_before_input_element)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.WriteableElementName.html#home_screen_before_input_element)
 
 ### HOME_SCREEN_HEADER_BOTTOM_ELEMENT
 
@@ -144,7 +144,7 @@ An element that appears above the input field on the home screen.
 
 An element that appears on the home screen above the welcome message and conversation starters.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.WriteableElementName.html#home_screen_header_bottom_element)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.WriteableElementName.html#home_screen_header_bottom_element)
 
 ### PROMPT_LINE_ACTIONS_END
 
@@ -155,7 +155,7 @@ buttons. Only present when the input uses the expanded layout
 (InputConfig.expanded); in the default compact layout this slot is
 not rendered, so content assigned to it is not shown.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.WriteableElementName.html#prompt_line_actions_end)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.WriteableElementName.html#prompt_line_actions_end)
 
 ### PROMPT_LINE_SEND_BUTTON_START
 
@@ -164,7 +164,7 @@ not rendered, so content assigned to it is not shown.
 A slot rendered inside the input composer, after the prompt line and directly before
 the send button.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.WriteableElementName.html#prompt_line_send_button_start)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.WriteableElementName.html#prompt_line_send_button_start)
 
 ### WELCOME_NODE_BEFORE_ELEMENT
 
@@ -172,7 +172,7 @@ the send button.
 
 An element that appears in the main message body directly above the welcome node.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.WriteableElementName.html#welcome_node_before_element)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.WriteableElementName.html#welcome_node_before_element)
 
 ### WORKSPACE_PANEL_ELEMENT
 
@@ -180,4 +180,4 @@ An element that appears in the main message body directly above the welcome node
 
 An element to be housed in the workspace panel.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.0/docs/enums/Type_reference.WriteableElementName.html#workspace_panel_element)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.WriteableElementName.html#workspace_panel_element)
