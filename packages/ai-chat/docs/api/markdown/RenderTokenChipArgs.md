@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Utilities
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.RenderTokenChipArgs.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.RenderTokenChipArgs.html
 
 Args for renderTokenChip. Carries the chip's stored attributes, the
 trigger config whose `renderCustomToken` should draw it, and where the chip
@@ -28,7 +28,7 @@ interface RenderTokenChipArgs
 
 Node attrs in mention shape.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.RenderTokenChipArgs.html#attrs)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.RenderTokenChipArgs.html#attrs)
 
 ### config
 
@@ -37,7 +37,7 @@ Node attrs in mention shape.
 Subset of the trigger-suggestion config relevant to chip rendering. Only
 `renderCustomToken` is read; other config fields are ignored.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.RenderTokenChipArgs.html#config)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.RenderTokenChipArgs.html#config)
 
 ### context
 
@@ -48,7 +48,7 @@ the prompt-line editor; `"historical"` is a token inside an already-sent
 message in the transcript. Drives the default chip's color/highlight —
 see `ensureTokenStyleRules`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.RenderTokenChipArgs.html#context)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.RenderTokenChipArgs.html#context)
 
 ### dispatchTarget
 
@@ -62,7 +62,7 @@ container element itself with `bubbles: true, composed: true` — callers
 that mount the chip lazily must ensure it lives under a listener subtree
 before connection.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.RenderTokenChipArgs.html#dispatchtarget)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.RenderTokenChipArgs.html#dispatchtarget)
 
 ### type
 
@@ -70,7 +70,7 @@ before connection.
 
 Token type — usually `"mention"` or `"command"`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.RenderTokenChipArgs.html#type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.RenderTokenChipArgs.html#type)
 
 ## Related
 

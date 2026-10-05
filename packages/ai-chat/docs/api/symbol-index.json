@@ -1,6 +1,6 @@
 {
-  "version": "v1.22.0-rc.1",
-  "baseUrl": "https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/",
+  "version": "v1.22.0",
+  "baseUrl": "https://chat.carbondesignsystem.com/version/v1.22.0/docs/",
   "generator": "@carbon/ai-chat typedoc apiIndexPlugin",
   "symbols": {
     "AdditionalDataToAgent": {

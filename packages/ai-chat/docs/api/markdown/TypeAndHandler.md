@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Instance
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.TypeAndHandler.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.TypeAndHandler.html
 
 The type of the object that is passed to the event bus functions (e.g. "on") when registering a handler.
 
@@ -26,7 +26,7 @@ interface TypeAndHandler
 
 The handler for events of this type.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.TypeAndHandler.html#handler)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.TypeAndHandler.html#handler)
 
 ### type
 
@@ -34,4 +34,4 @@ The handler for events of this type.
 
 The type of event this handler is for.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.TypeAndHandler.html#type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.TypeAndHandler.html#type)

@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Events
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.BusEventWorkspaceClose.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.BusEventWorkspaceClose.html
 
 ## Signature
 
@@ -22,7 +22,7 @@ interface BusEventWorkspaceClose
 
 `data: { additionalData?: unknown; fullMessage: MessageResponse; message: GenericItem; workspaceId?: string }`
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.BusEventWorkspaceClose.html#data)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.BusEventWorkspaceClose.html#data)
 
 ### type
 
@@ -30,4 +30,4 @@ interface BusEventWorkspaceClose
 
 The type of this event.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.BusEventWorkspaceClose.html#type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.BusEventWorkspaceClose.html#type)

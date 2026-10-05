@@ -10,7 +10,7 @@
 - Category: Utilities
  The prompt-line extension surface is still settling; these
 factory signatures can change in a minor release.
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/functions/Type_reference.carbonStarterTrigger.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0/docs/functions/Type_reference.carbonStarterTrigger.html
 
 Tiptap extension factory for starter prompts shown while the editor is
 empty + focused + editable. Selection inserts the item's `value` (or
