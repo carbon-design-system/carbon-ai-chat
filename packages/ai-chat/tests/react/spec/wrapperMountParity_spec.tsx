@@ -116,7 +116,7 @@ describe('how each host mounts the chat', () => {
       expect(createRoot.mock.calls.length).toBe(before + 1);
     });
 
-    it('gives a plain web component one root, reused across updates and unmounted on removal', async () => {
+    it('gives a plain web component one root, reused across updates and unmounted after removal', async () => {
       const before = createRoot.mock.calls.length;
       const { element, instances, onAfterRender } = createElementChat(
         'cds-aichat-container'
@@ -140,6 +140,9 @@ describe('how each host mounts the chat', () => {
 
       const root = createRoot.mock.results[before].value;
       element.remove();
+      // Unmount is deferred by a macrotask so a DOM move can cancel it.
+      // Wait for the timer to fire before asserting.
+      await settle();
       expect(root.unmount).toHaveBeenCalledTimes(1);
     });
   });

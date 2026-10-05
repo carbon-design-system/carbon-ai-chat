@@ -129,8 +129,10 @@ export interface ChatInstanceInput {
    *
    * Rejects with `"Input is not currently rendered"` when there is no input
    * surface to upgrade (for example the input is hidden via
-   * {@link InputConfig.isVisible} or the chat is closed). Concurrent calls
-   * share a single upgrade and resolve with the same instance.
+   * {@link InputConfig.isVisible} or the chat is closed), and also when the
+   * surface is in its deferred-teardown window — that is, the chat container
+   * has been removed from the DOM but the teardown macrotask has not yet run.
+   * Concurrent calls share a single upgrade and resolve with the same instance.
    *
    * Sole escape hatch from the curated public surface. Use the resolved editor
    * for direct Tiptap operations the facade doesn't cover:

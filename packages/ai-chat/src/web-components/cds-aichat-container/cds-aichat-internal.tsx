@@ -113,6 +113,31 @@ class ChatContainerInternal extends LitElement {
    */
   reactContainer?: HTMLDivElement;
 
+  /**
+   * Pending deferred unmount timer. Set in `disconnectedCallback` and
+   * cancelled in `connectedCallback` if the element is reattached before
+   * the timer fires (i.e. a DOM move, not a real unmount).
+   * @internal
+   */
+  private _pendingUnmountTimer: ReturnType<typeof setTimeout> | null = null;
+
+  override connectedCallback(): void {
+    super.connectedCallback();
+    if (this._pendingUnmountTimer !== null) {
+      // Reattached before the deferred unmount ran — this is a DOM move, not
+      // a real removal. Cancel the unmount so the React root and its state
+      // survive intact.
+      clearTimeout(this._pendingUnmountTimer);
+      this._pendingUnmountTimer = null;
+      return;
+    }
+    // Reconnected after a real unmount (root was cleared). Re-render if we
+    // already have a config (firstUpdated won't fire again).
+    if (this.hasUpdated && this.config && !this.root) {
+      this.renderReactApp();
+    }
+  }
+
   async renderReactApp() {
     const container = this.ensureReactRoot();
 
@@ -146,7 +171,19 @@ class ChatContainerInternal extends LitElement {
   }
 
   disconnectedCallback(): void {
-    this.root?.unmount();
+    if (this._pendingUnmountTimer !== null) {
+      return;
+    }
+    // Defer the unmount by a macrotask. A reparent — remove then re-append in
+    // the same or adjacent task — will call `connectedCallback` and cancel
+    // this before it fires, leaving the React root and its conversation intact.
+    this._pendingUnmountTimer = setTimeout(() => {
+      this._pendingUnmountTimer = null;
+      this.root?.unmount();
+      // Clear the root reference so `connectedCallback` can create a fresh one
+      // if the element is ever reattached after a real unmount.
+      this.root = null;
+    }, 0);
     super.disconnectedCallback();
   }
 }

@@ -303,6 +303,14 @@ class CDSAIChatShell extends LitElement {
   private suppressWorkspacePanelCloseAnimation = false;
 
   /**
+   * @internal
+   * Pending deferred teardown timer. Set in `disconnectedCallback` and
+   * cancelled in `connectedCallback` if the element is reattached before the
+   * timer fires (i.e. a DOM move, not a real unmount).
+   */
+  private _pendingTeardownTimer: ReturnType<typeof setTimeout> | null = null;
+
+  /**
    * Handles panel open events and announces to screen readers
    * @internal
    */
@@ -629,8 +637,37 @@ class CDSAIChatShell extends LitElement {
     `;
   }
 
+  override connectedCallback(): void {
+    super.connectedCallback();
+    if (this._pendingTeardownTimer !== null) {
+      // Reattached before the deferred teardown ran — a move, not an unmount.
+      // All managers and observers traveled with the element; cancel the timer
+      // and leave everything in place.
+      clearTimeout(this._pendingTeardownTimer);
+      this._pendingTeardownTimer = null;
+      // Re-adopt the shared dynamic stylesheet on the (potentially new) root.
+      adoptOnRoot(this.renderRoot as ShadowRoot);
+      return;
+    }
+    // Reconnected after a real teardown. `firstUpdated` is one-shot, so
+    // re-establish managers if the element has already rendered before.
+    if (this.hasUpdated) {
+      this._setupManagers();
+    }
+  }
+
   protected firstUpdated(changedProperties: PropertyValues) {
     super.firstUpdated(changedProperties);
+    this._setupManagers();
+  }
+
+  /**
+   * Creates and connects all managers and observers. Called from
+   * `firstUpdated` on the initial render and from `connectedCallback` when
+   * the element is reattached after a real teardown.
+   * @internal
+   */
+  private _setupManagers(): void {
     const widgetRoot = this.renderRoot.querySelector<HTMLElement>('.shell');
     if (!widgetRoot) {
       return;
@@ -663,8 +700,14 @@ class CDSAIChatShell extends LitElement {
       cornerEndEnd: this.cornerEndEnd,
     });
 
-    // Initialize initialization manager FIRST (before observers that use it)
+    // Initialize initialization manager FIRST (before observers that use it).
+    // On a reconnect after real teardown, skip the initializing state —
+    // the shell was already laid out.
     this.initializationManager = new InitializationManager();
+    const wasAlreadyInitialized = this.hasUpdated && !this._isInitializing;
+    if (wasAlreadyInitialized) {
+      this._isInitializing = false;
+    }
     this.initializationManager.onComplete(() => {
       this._isInitializing = false;
       this.requestUpdate();
@@ -853,6 +896,28 @@ class CDSAIChatShell extends LitElement {
   }
 
   disconnectedCallback() {
+    if (this._pendingTeardownTimer !== null) {
+      // Already waiting — do nothing; the earlier timer covers this removal.
+      super.disconnectedCallback();
+      return;
+    }
+    // Defer teardown by a macrotask. A reparent — remove and re-append in the
+    // same or adjacent task — will trigger `connectedCallback`, cancel this
+    // timer, and keep every manager running without interruption.
+    this._pendingTeardownTimer = setTimeout(() => {
+      this._pendingTeardownTimer = null;
+      this._teardownManagers();
+    }, 0);
+
+    super.disconnectedCallback();
+  }
+
+  /**
+   * Disconnects and destroys all managers and observers. Called from the
+   * deferred teardown started in `disconnectedCallback`.
+   * @internal
+   */
+  private _teardownManagers(): void {
     this.panelManager?.disconnect();
     this.workspaceManager?.disconnect();
     this.slotObserver?.disconnect();
@@ -865,8 +930,6 @@ class CDSAIChatShell extends LitElement {
     // Clean up event listeners
     this.removeEventListener('openend', this.handlePanelOpen);
     this.removeEventListener('closeend', this.handlePanelClose);
-
-    super.disconnectedCallback();
   }
 
   private syncWorkspacePanelState(): void {

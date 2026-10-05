@@ -198,7 +198,7 @@ class PromptLineElement extends LitElement {
     ) {
       this._richLatched = true;
       if (this._mode === 'textarea') {
-        void this._upgradeToRich();
+        void this._requestRichUpgrade();
       }
     }
     if (
@@ -275,6 +275,13 @@ class PromptLineElement extends LitElement {
 
   /** Mount the editing surface. Runs on first render and on a late reconnect. */
   private _initializeSurface(): void {
+    // Guard against Lit running the pending first update on an element that was
+    // appended and removed in a single task before the update flushed. Without
+    // this check the editor mounts on a detached host with no disconnectedCallback
+    // left to clean it up, because the callback already ran before the update.
+    if (!this.isConnected) {
+      return;
+    }
     const host = this._mountEditorHost();
     this._lastExtensionsRef = this.extensions;
     this._seededContent = this.content;
@@ -293,7 +300,7 @@ class PromptLineElement extends LitElement {
       this._controller = new TextareaController();
       this._controller.mount(host, this._makeInit());
       if (this._richLatched) {
-        void this._upgradeToRich();
+        void this._requestRichUpgrade();
       }
     }
 
@@ -345,8 +352,13 @@ class PromptLineElement extends LitElement {
         this._rejectRichReady = reject;
       });
     }
-    void this._upgradeToRich();
-    return this._richReady;
+    // Capture the promise before starting the upgrade: _requestRichUpgrade may
+    // run synchronously (warm runtime path) and call _failRichReady, which
+    // nulls this._richReady. Returning the captured reference keeps the
+    // rejection visible to the caller.
+    const promise = this._richReady;
+    void this._requestRichUpgrade();
+    return promise;
   }
 
   /**
@@ -448,7 +460,7 @@ class PromptLineElement extends LitElement {
     this._controller?.setComposing(false);
     if (this._pendingUpgrade) {
       this._pendingUpgrade = false;
-      void this._upgradeToRich();
+      void this._requestRichUpgrade();
     }
   };
 
@@ -497,16 +509,28 @@ class PromptLineElement extends LitElement {
     this._richReady = null;
   }
 
-  /** Lazily load Tiptap and swap the textarea for the rich editor in place. */
-  private async _upgradeToRich(): Promise<void> {
+  /**
+   * Request a textarea→rich upgrade. The upgrade may be declined or deferred:
+   * returns without upgrading when already rich, when a concurrent upgrade is
+   * in flight, when a teardown is pending (element scheduled for removal), when
+   * a composition is in flight, or when the runtime is unavailable (SSR).
+   */
+  private async _requestRichUpgrade(): Promise<void> {
     if (this._mode === 'rich' || this._upgrading) {
       return;
     }
     this._upgrading = true;
     try {
       const module = getRichRuntimeIfLoaded() ?? (await loadRichRuntime());
-      // Bail if disconnected or runtime unavailable (SSR). The `_upgrading`
-      // latch already prevents a concurrent upgrade.
+      // After the async import, re-check all bail conditions — any of them can
+      // have changed while the runtime was loading:
+      // - `_pendingTeardownTimer`: element disconnected during the import; the
+      //   teardown is scheduled but hasn't run yet, so _editorHost and
+      //   _controller are still set. Mounting here would build an editor that
+      //   is destroyed a macrotask later, and resolve any pending ensureEditor()
+      //   with a dead editor. Reject instead.
+      // - `_editorHost` / `_controller` null: real teardown already ran.
+      // - `module` null: SSR or runtime load failed.
       if (!module || !this._editorHost || !this._controller) {
         this._failRichReady(
           new Error(
@@ -515,6 +539,12 @@ class PromptLineElement extends LitElement {
               : 'Input editor runtime is unavailable'
           )
         );
+        return;
+      }
+      if (this._pendingTeardownTimer !== null) {
+        // Teardown is deferred but imminent. Reject so callers get a clear
+        // error rather than a live editor that disappears one task later.
+        this._failRichReady(new Error('Input is not currently rendered'));
         return;
       }
       if (this._isComposing) {

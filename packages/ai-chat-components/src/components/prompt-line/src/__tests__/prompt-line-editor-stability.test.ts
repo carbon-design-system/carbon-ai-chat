@@ -513,6 +513,41 @@ describe('<cds-aichat-prompt-line> editor stability', function () {
     expect(editor).to.equal(el.getEditor());
   });
 
+  it('rejects ensureEditor() called while in the deferred-teardown window', async () => {
+    // After disconnect, _pendingTeardownTimer is set but the surface is still
+    // alive (_editorHost / _controller not yet null). ensureEditor() must
+    // reject with the documented error rather than resolving a pending call
+    // from inside _requestRichUpgrade via _swapToRich, and must not mount a
+    // new editor on the detached host.
+    const el = await fixture<PromptLineElement>(html`
+      <cds-aichat-prompt-line aria-label="test prompt"></cds-aichat-prompt-line>
+    `);
+    await el.updateComplete;
+
+    // Disconnect — starts the deferred-teardown timer.
+    el.parentElement?.removeChild(el);
+
+    // ensureEditor() is called while in the window: the timer is pending but
+    // the surface fields are still set.
+    const pending = el.ensureEditor();
+
+    // The deferred teardown fires, clearing the controller.
+    await flushTeardown();
+
+    // The promise must have rejected, not resolved.
+    let caught: Error | null = null;
+    try {
+      await pending;
+    } catch (err) {
+      caught = err as Error;
+    }
+
+    expect(caught).to.not.be.null;
+    expect(caught!.message).to.equal('Input is not currently rendered');
+    // The teardown cleared the controller; no editor should be mounted.
+    expect(el.getEditor()).to.equal(null);
+  });
+
   it('destroys the editor when the element is really unmounted', async () => {
     const el = await makeRichPromptLine();
     const editor = el.getEditor()!;
@@ -522,6 +557,42 @@ describe('<cds-aichat-prompt-line> editor stability', function () {
 
     expect(el.getEditor()).to.equal(null);
     expect(editor.isDestroyed).to.equal(true);
+  });
+
+  it('leaves no editor mounted on a detached node when append and remove happen in one task', async () => {
+    // Lit schedules its first update as a microtask. If the element is appended
+    // and removed synchronously before that microtask runs, `firstUpdated`
+    // fires after `disconnectedCallback` while the element is no longer
+    // connected. Without the `isConnected` guard in `_initializeSurface`, an
+    // editor mounts on the detached host with nothing left to tear it down.
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+
+    const el = document.createElement(
+      'cds-aichat-prompt-line'
+    ) as PromptLineElement;
+    el.setAttribute('rich', '');
+    el.setAttribute('aria-label', 'test prompt');
+
+    // Append then immediately remove — all in the same synchronous block so
+    // Lit's microtask-scheduled first update has not yet run.
+    container.appendChild(el);
+    container.removeChild(el);
+
+    // Allow the first update (and the deferred teardown timer) to run.
+    await flushTeardown();
+
+    // No controller should have been created on the detached host.
+    expect(el.getEditor()).to.equal(null);
+
+    // The element should be fully functional if reattached afterward.
+    document.body.appendChild(el);
+    await waitForRich(el);
+    expect(el.getEditor()).to.not.equal(null);
+
+    document.body.removeChild(el);
+    await flushTeardown();
+    document.body.removeChild(container);
   });
 
   it('does not re-apply the content seed after a reattach', async () => {

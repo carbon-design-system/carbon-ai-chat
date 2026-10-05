@@ -832,6 +832,115 @@ describe('cds-aichat-shell', function () {
     });
   });
 
+  // ========== DOM Move / Reconnect Tests ==========
+  describe('DOM move survival', () => {
+    it('keeps managers running when moved to a new parent without a real unmount', async () => {
+      const el = await fixture<CDSAIChatShell>(
+        html`<cds-aichat-shell>
+          <div slot="header">Header</div>
+        </cds-aichat-shell>`
+      );
+      await el.updateComplete;
+
+      const container1 = el.parentElement!;
+      const container2 = document.createElement('div');
+      document.body.appendChild(container2);
+
+      // Move: remove then immediately re-append in the same task.
+      container1.removeChild(el);
+      container2.appendChild(el);
+
+      // Allow the deferred teardown timer (macrotask) to resolve — the
+      // connectedCallback should have cancelled it before it fired.
+      await new Promise<void>((resolve) => setTimeout(resolve, 10));
+      await el.updateComplete;
+
+      // Shell should still be functional: shadow root and slot content intact.
+      const shell = el.shadowRoot!.querySelector('.shell');
+      expect(shell).to.exist;
+
+      const headerSlot = el.shadowRoot!.querySelector(
+        'slot[name="header"]'
+      ) as HTMLSlotElement;
+      expect(headerSlot).to.exist;
+      expect(headerSlot.assignedElements({ flatten: true }).length).to.equal(1);
+
+      // Clean up
+      document.body.removeChild(container2);
+    });
+
+    it('re-establishes managers after a real removal and later re-attach', async () => {
+      const el = await fixture<CDSAIChatShell>(
+        html`<cds-aichat-shell>
+          <div slot="header">Header</div>
+        </cds-aichat-shell>`
+      );
+      await el.updateComplete;
+
+      const container = el.parentElement!;
+
+      // Real removal — wait long enough for the deferred teardown to fire.
+      container.removeChild(el);
+      await new Promise<void>((resolve) => setTimeout(resolve, 10));
+
+      // Re-attach after teardown has completed.
+      const container2 = document.createElement('div');
+      document.body.appendChild(container2);
+      container2.appendChild(el);
+
+      // Allow Lit's update cycle to run.
+      await el.updateComplete;
+
+      // Shell should have recovered its shadow DOM structure.
+      const shell = el.shadowRoot!.querySelector('.shell');
+      expect(shell).to.exist;
+
+      // Slot is still accessible.
+      const headerSlot = el.shadowRoot!.querySelector(
+        'slot[name="header"]'
+      ) as HTMLSlotElement;
+      expect(headerSlot).to.exist;
+
+      // Clean up
+      document.body.removeChild(container2);
+    });
+
+    it('preserves slot content across a same-task DOM move', async () => {
+      const el = await fixture<CDSAIChatShell>(
+        html`<cds-aichat-shell>
+          <div slot="messages">Messages</div>
+          <div slot="input">Input area</div>
+        </cds-aichat-shell>`
+      );
+      await el.updateComplete;
+
+      const parent1 = el.parentElement!;
+      const parent2 = document.createElement('div');
+      document.body.appendChild(parent2);
+
+      // Same-task move
+      parent1.removeChild(el);
+      parent2.appendChild(el);
+
+      await new Promise<void>((resolve) => setTimeout(resolve, 10));
+      await el.updateComplete;
+
+      const messagesSlot = el.shadowRoot!.querySelector(
+        'slot[name="messages"]'
+      ) as HTMLSlotElement;
+      expect(messagesSlot.assignedElements({ flatten: true }).length).to.equal(
+        1
+      );
+
+      const inputSlot = el.shadowRoot!.querySelector(
+        'slot[name="input"]'
+      ) as HTMLSlotElement;
+      expect(inputSlot.assignedElements({ flatten: true }).length).to.equal(1);
+
+      document.body.removeChild(parent2);
+    });
+  });
+
   // ========== Snapshot Tests ==========
   describe('Snapshots', () => {
     it('should match snapshot with default configuration', async () => {
