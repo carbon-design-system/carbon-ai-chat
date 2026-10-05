@@ -14,6 +14,8 @@ import {
   setupAfterEach,
   setupBeforeEach,
 } from '../../test_helpers';
+import { WriteableElementName } from '../../../src/types/instance/WriteableElements';
+import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
 import type { StructuredData } from '../../../src/types/messaging/Messages';
 
@@ -346,4 +348,63 @@ describe('structured_data merge on send', () => {
     const sentMessage = sendHandler.mock.calls[0][0].data;
     expect(sentMessage.input.structured_data).toEqual(structuredData);
   });
+});
+
+describe('custom prompt line send data', () => {
+  beforeEach(setupBeforeEach);
+  afterEach(setupAfterEach);
+
+  it('sends only supplied data and keeps the built-in data parked', async () => {
+    const { instance, store } =
+      await renderChatAndGetInstanceWithStore(createBaseConfig());
+    const parked = { user_defined: { parked: true } };
+    instance.input.updateStructuredData(() => parked);
+    instance.writeableElements[WriteableElementName.CUSTOM_PROMPT_LINE].append(
+      document.createElement('input')
+    );
+    const send = instance.send;
+    await send('custom text');
+    expect(
+      mockCustomSendMessage.mock.calls[0][0].input.structured_data
+    ).toBeUndefined();
+    const explicit = { user_defined: { custom: true } };
+    await send({ input: { text: 'with data', structured_data: explicit } });
+    expect(
+      mockCustomSendMessage.mock.calls[1][0].input.structured_data
+    ).toEqual(explicit);
+    expect(store.getState().assistantInputState.pendingStructuredData).toEqual(
+      parked
+    );
+  });
+
+  it.each([true, false])(
+    'keeps send ownership captured before hydration (custom at entry: %s)',
+    async (customAtEntry) => {
+      const { instance, store, serviceManager } =
+        await renderChatAndGetInstanceWithStore(createBaseConfig());
+      const parked = { user_defined: { parked: true } };
+      instance.input.updateStructuredData(() => parked);
+      const wrapper =
+        instance.writeableElements[WriteableElementName.CUSTOM_PROMPT_LINE];
+      if (customAtEntry) {
+        wrapper.append(document.createElement('input'));
+      }
+      const hydration = resolvablePromise();
+      Object.assign(serviceManager.actions, { hydrationPromise: hydration });
+      const sent = instance.send('during hydration');
+      if (customAtEntry) {
+        wrapper.replaceChildren();
+      } else {
+        wrapper.append(document.createElement('input'));
+      }
+      hydration.doResolve();
+      await sent;
+      expect(
+        mockCustomSendMessage.mock.calls[0][0].input.structured_data
+      ).toEqual(customAtEntry ? undefined : parked);
+      expect(
+        store.getState().assistantInputState.pendingStructuredData
+      ).toEqual(customAtEntry ? parked : undefined);
+    }
+  );
 });

@@ -7,6 +7,8 @@
  *  @license
  */
 
+import { hasCustomPromptLine } from './utils/customPromptLine';
+import { WriteableElementName } from '../types/instance/WriteableElements';
 import isEqual from 'lodash-es/isEqual.js';
 import React, {
   useCallback,
@@ -242,7 +244,12 @@ export function ChatAppEntry({
         // flash) and the prompt-line is present before hydration completes and
         // before `onAfterRender` resolves. Lite chats skip this and never
         // download Tiptap.
-        if (resolvePromptLineMode(publicConfig.input) === 'rich') {
+        if (
+          resolvePromptLineMode(publicConfig.input) === 'rich' &&
+          !hasCustomPromptLine(serviceManager) &&
+          renderWriteableElements?.[WriteableElementName.CUSTOM_PROMPT_LINE] ==
+            null
+        ) {
           await Promise.all([
             preloadPromptLineRich(),
             preloadBuildCarbonExtensions(),

@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useLayoutEffect } from 'react';
 import {
   WriteableElementName,
   WriteableElements,
@@ -19,10 +19,16 @@ import {
 
 export function useWriteableElementPresence(
   name: WriteableElementName,
-  writeableElements: Partial<WriteableElements>
+  writeableElements: Partial<WriteableElements>,
+  initialPresence = false
 ): boolean {
   const node = writeableElements[name];
-  const [present, setPresent] = useState(() => hasMeaningfulContent(node));
-  useEffect(() => observeWriteableElementPresence(node, setPresent), [node]);
+  const [present, setPresent] = useState(
+    () => initialPresence || hasMeaningfulContent(node)
+  );
+  useLayoutEffect(
+    () => observeWriteableElementPresence(node, setPresent),
+    [node]
+  );
   return present;
 }

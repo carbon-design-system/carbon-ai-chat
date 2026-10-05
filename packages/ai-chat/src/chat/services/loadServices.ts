@@ -130,6 +130,7 @@ function createServiceManager(appConfig: AppConfig) {
       [WriteableElementName.HISTORY_PANEL_ELEMENT]:
         document.createElement('div'),
       [WriteableElementName.CUSTOM_HEADER]: document.createElement('div'),
+      [WriteableElementName.CUSTOM_PROMPT_LINE]: document.createElement('div'),
     };
   }
 

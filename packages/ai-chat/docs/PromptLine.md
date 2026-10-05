@@ -19,6 +19,41 @@ const config: PublicConfig = {
 
 > **Note**: Only a few parts are stable. These are visibility, the disabled states, and the character limit. The rest of the prompt line is experimental and may change. Experimental members carry a badge in the API reference.
 
+## Replace the prompt line
+
+Use {@link WriteableElementName.CUSTOM_PROMPT_LINE} when your application needs to own the whole composer. Supply it through React's `renderWriteableElements` or put content in `slot="customPromptLine"` on the web component. You can also append to the node in {@link ChatInstance.writeableElements}. Content enables the replacement; no config flag or `onBeforeRender` callback is needed. You can add or remove content after startup.
+
+See [Slots](./WriteableElements.md#custom-prompt-line-custom_prompt_line) for visibility and nearby slots. Complete examples: [React](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react/custom-prompt-line) and [web components](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/web-components/custom-prompt-line).
+
+### Send from your composer
+
+Send through {@link ChatInstance.send | send} with your text and any `input.structured_data`. Keep your own draft. While custom content exists, sends do not consume the built-in draft, pending structured data, or completed attachments. Removing your content restores those values. Selection and undo history are not retained.
+
+Your application owns the input label, keyboard behavior, limits and their announcements, errors, busy state, and send button. The chat still announces incoming messages. Use a labeled, focusable control so chat focus actions can reach your composer. If it has no focusable control, those actions leave focus where it is.
+
+Watch {@link BusEventType.STATE_CHANGE} and read {@link ChatInstance.getState} for loading and hydration counters, human-agent state, and `input.hasInFlightUploads`. Combine those fields with your own busy state to gate sending. Public state does not expose every built-in read-only, disabled, or stop-streaming state. Your controls must enforce your application's rules; they cannot mirror all built-in lockouts through public state alone.
+
+The public send method targets assistant messaging. The examples send text to an assistant and do not supply service-desk routing or a stop-streaming control.
+
+### Own the upload flow
+
+If you add uploads, your application handles file selection, validation, progress, cancel and remove actions, errors, and upload state. Send the resulting file data with your message. You can reuse your backend upload handler, but there is no bridge to the built-in upload queue.
+
+Your uploads do not affect `input.hasInFlightUploads`. That flag tracks widget uploads, including transfers that began before a swap. Those transfers still block sends until they finish. Completed built-in attachments remain with the saved built-in draft.
+
+### Built-in input methods
+
+While custom content exists, even when hidden, the input API cannot edit your composer:
+
+| Method                                        | Result                |
+| --------------------------------------------- | --------------------- |
+| {@link ChatInstanceInput.getEditor            | getEditor}            | Rejects with `Input is not currently rendered`; does not load Tiptap.            |
+| {@link ChatInstanceInput.updateContent        | updateContent}        | Rejects with `Input content is host-owned while CUSTOM_PROMPT_LINE has content.` |
+| {@link ChatInstanceInput.updateRawValue       | updateRawValue}       | Throws the same host-owned-content error.                                        |
+| {@link ChatInstanceInput.updateStructuredData | updateStructuredData} | Throws the same host-owned-content error.                                        |
+
+Failed writes do not call your updater or queue a value. Without custom content, the existing input API rules apply. `getState().input` describes the built-in input, not your text, focus, attachments, or errors.
+
 ## Visibility, disabled states, and errors
 
 Hide the input with {@link InputConfig.isVisible | isVisible}. Make it read-only with {@link InputConfig.isDisabled | isDisabled}. That is the narrow form of {@link PublicConfig.isReadonly | isReadonly}, which freezes the whole chat. {@link InputConfig.isSendDisabled | isSendDisabled} gates only the send button and the Enter key. The editor stays editable. A {@link ChatInstance.send | send} call from your code is never gated. To show a message in the prompt line, set {@link InputConfig.error | error}. It takes a title, an optional description, and an optional collapsible flag.
