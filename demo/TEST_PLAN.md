@@ -157,6 +157,12 @@ Run these in both modes:
 - [ ] Stop a stream partway: the message settles and the stop button goes away.
 - [ ] With VoiceOver, both modes announce the same things.
 
+#### Auto-scroll after content resizes
+
+- [ ] After **user_defined (stream)** completes, grow and shrink its custom content. The request stays pinned; scrolling away stops re-pinning.
+- [ ] Resize older content above the latest request. The latest request stays at the same viewport offset.
+- [ ] Stream text, reasoning steps, and code. Expand and collapse reasoning steps; the request stays pinned.
+
 ### Track 3: Mobile & Non-Chrome Browser Support
 
 **Focus:** Smoke testing across browsers, emphasis on mobile.
