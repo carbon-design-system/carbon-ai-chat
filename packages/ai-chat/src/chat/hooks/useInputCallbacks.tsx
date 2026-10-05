@@ -8,6 +8,7 @@
  */
 
 import { useCallback, useEffect, useMemo } from 'react';
+import { requestComposerFocus } from '../utils/customPromptLine';
 import { useSelector } from './useSelector';
 import {
   selectInputIsReadonly,
@@ -76,10 +77,12 @@ export function useInputCallbacks({
   useEffect(() => controller.disconnect, [controller]);
   const requestInputFocus = useCallback(
     () =>
-      focusInput(agentDisplayState, () =>
-        messagesRef.current?.requestHumanAgentBannerFocus()
+      focusInput(
+        agentDisplayState,
+        () => messagesRef.current?.requestHumanAgentBannerFocus(),
+        () => requestComposerFocus(serviceManager)
       ),
-    [agentDisplayState, messagesRef]
+    [agentDisplayState, messagesRef, serviceManager]
   );
   const isInputReadonly = useSelector(selectInputIsReadonly);
   const isInputDisabled = useSelector(selectInputIsDisabled);

@@ -11,7 +11,10 @@ import { StructuredData } from '../messaging/Messages';
 import type { Editor, JSONContent } from '@tiptap/core';
 
 /**
- * Methods for controlling the input field.
+ * Methods for controlling the built-in input field.
+ * While {@link WriteableElementName.CUSTOM_PROMPT_LINE} has content, including
+ * hidden content, these methods cannot edit the host-owned composer.
+ * The public input state remains a snapshot of the built-in draft.
  *
  * @category Instance
  */
@@ -30,8 +33,15 @@ export interface ChatInstanceInput {
    *
    * Throws if the editor doc contains any node type other than
    * `paragraph`, `text`, or `hardBreak`, or if any text node carries
-   * marks. Empty paragraphs pass through; `hardBreak` renders as `\n` in
+   * marks. Also throws `"Input content is host-owned while CUSTOM_PROMPT_LINE has content."`
+   * before calling the updater while the custom prompt line has content.
+   * Empty paragraphs pass through; `hardBreak` renders as `\n` in
    * the rawValue projection. Emits one deprecation warning per session.
+   *
+   * @example Replace a plain-text draft
+   * ```ts
+   * instance.input.updateRawValue(() => "Summarize this report");
+   * ```
    */
   updateRawValue: (updater: (previous: string) => string) => void;
 
@@ -51,6 +61,10 @@ export interface ChatInstanceInput {
    * While the input is hidden or not yet mounted, a plain-text result is staged
    * as the pending value and seeds the field when it renders; a result with
    * non-text content throws, because there is no surface to upgrade.
+   *
+   * While {@link WriteableElementName.CUSTOM_PROMPT_LINE} has content, rejects with
+   * `"Input content is host-owned while CUSTOM_PROMPT_LINE has content."` without
+   * calling the updater or staging a value.
    *
    * @example Replace the input with a paragraph containing a mention
    * ```ts
@@ -84,6 +98,11 @@ export interface ChatInstanceInput {
    *
    * This is the primary mechanism for pushing structured inputs (form fields, file references, etc.)
    * into the active input so they are included when the user hits Send.
+   *
+   * While {@link WriteableElementName.CUSTOM_PROMPT_LINE} has content, throws
+   * `"Input content is host-owned while CUSTOM_PROMPT_LINE has content."` without
+   * calling the updater. Include structured data in the custom message instead.
+   * Custom sends leave the built-in pending data intact for later use.
    *
    * @example Add a field to the pending structured data
    * ```ts
@@ -129,7 +148,9 @@ export interface ChatInstanceInput {
    *
    * Rejects with `"Input is not currently rendered"` when there is no input
    * surface to upgrade (for example the input is hidden via
-   * {@link InputConfig.isVisible} or the chat is closed). Concurrent calls
+   * {@link InputConfig.isVisible}, the chat is closed, or
+   * {@link WriteableElementName.CUSTOM_PROMPT_LINE} has content). A custom prompt
+   * line does not load Tiptap, even when hidden. Concurrent calls
    * share a single upgrade and resolve with the same instance.
    *
    * Sole escape hatch from the curated public surface. Use the resolved editor

@@ -7,16 +7,35 @@
  *  @license
  */
 
-export function hasMeaningfulContent(node: HTMLElement | undefined): boolean {
-  return Boolean(
-    node &&
-    Array.from(node.childNodes).some((child) => {
-      if (child.nodeType === Node.TEXT_NODE) {
-        return Boolean(child.textContent?.trim());
+/** Includes direct web-component slots as well as content in the stable host. */
+export function getWriteableElementContent(
+  node: HTMLElement | undefined
+): Node[] {
+  if (!node) {
+    return [];
+  }
+  const content: Node[] = Array.from(node.childNodes);
+  if (node.slot && node.parentElement) {
+    for (const sibling of Array.from(node.parentElement.children)) {
+      if (sibling !== node && sibling.getAttribute('slot') === node.slot) {
+        content.push(
+          ...(sibling instanceof HTMLSlotElement
+            ? sibling.assignedNodes({ flatten: true })
+            : [sibling])
+        );
       }
-      return child.nodeType === Node.ELEMENT_NODE;
-    })
-  );
+    }
+  }
+  return content;
+}
+
+export function hasMeaningfulContent(node: HTMLElement | undefined): boolean {
+  return getWriteableElementContent(node).some((child) => {
+    if (child.nodeType === Node.TEXT_NODE) {
+      return Boolean(child.textContent?.trim());
+    }
+    return child.nodeType === Node.ELEMENT_NODE;
+  });
 }
 
 export function observeWriteableElementPresence(
@@ -28,18 +47,24 @@ export function observeWriteableElementPresence(
     return () => {};
   }
   let connected = true;
-  const observer = new MutationObserver(() => {
+  const update = () => {
     if (connected) {
       onChange(hasMeaningfulContent(node));
     }
-  });
-  observer.observe(node, {
+  };
+  const observer = new MutationObserver(update);
+  const target = node.parentElement ?? node;
+  observer.observe(target, {
     childList: true,
     subtree: true,
     characterData: true,
+    attributes: true,
+    attributeFilter: ['slot'],
   });
+  target.addEventListener('slotchange', update);
   return () => {
     connected = false;
     observer.disconnect();
+    target.removeEventListener('slotchange', update);
   };
 }

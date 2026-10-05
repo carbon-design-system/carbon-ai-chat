@@ -10,7 +10,6 @@
 import { useCallback } from 'react';
 import CDSButton from '@carbon/web-components/es/components/button/button.js';
 import { requestFocus as requestFocusForTargets } from '../utils/focusManager';
-import type { InputFunctions } from '../components/input/Input';
 import type { HasRequestFocus } from '../../types/utilities/HasRequestFocus';
 
 interface UseFocusManagerProps {
@@ -25,7 +24,7 @@ interface UseFocusManagerProps {
   viewSourcePanelRef: React.RefObject<HasRequestFocus | null>;
   customPanelRef: React.RefObject<HasRequestFocus | null>;
   responsePanelRef: React.RefObject<HasRequestFocus | null>;
-  inputRef: React.RefObject<InputFunctions | null>;
+  inputRef: React.RefObject<HasRequestFocus | null>;
 }
 
 /**
