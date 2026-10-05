@@ -1,0 +1,1 @@
+var e={focusable:`false`,preserveAspectRatio:`xMidYMid meet`};function t({width:t,height:n,viewBox:r=`0 0 ${t} ${n}`,...i}={}){let{tabindex:a,...o}=i,s={...e,...o,width:t,height:n,viewBox:r};return s[`aria-label`]||s[`aria-labelledby`]?(s.role=`img`,a!=null&&(s.focusable=`true`,s.tabindex=a)):s[`aria-hidden`]=!0,s}export{t};
