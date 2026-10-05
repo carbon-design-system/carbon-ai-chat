@@ -57,8 +57,8 @@ We should be looking for what here can can automate, and as we do, we can remove
 - [ ] **carousel**
 - [ ] **code**
 - [ ] **code (stream)**
-- Automated: **conversational search** and **conversational search (stream)** — `tests/conversational-search.spec.ts` covers Sources keyboard toggling, cards, carousel highlights, and reduced-motion animation in Chromium and Firefox.
-- [ ] **Conversational search accessibility:** verify Sources with VoiceOver and NVDA; inspect narrow/wide and RTL layouts.
+- [ ] **conversational search**
+- [ ] **conversational search (stream)**
 - [ ] **date**
 - [ ] **grid**
 - [ ] **human agent**
