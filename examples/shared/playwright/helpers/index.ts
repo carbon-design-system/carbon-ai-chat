@@ -9,14 +9,14 @@
 import { expect, test as base, type Page } from '@playwright/test';
 
 export const test = base.extend({
-  baseURL: async (_fixtures, use) => {
+  baseURL: async (_fixtures, playWrightUse) => {
     const url = process.env.CAIC_E2E_URL;
     if (!url) {
       throw new Error('The example server did not report its URL.');
     }
-    await use(url);
+    await playWrightUse(url);
   },
-  page: async ({ page }, use) => {
+  page: async ({ page }, playWrightUse) => {
     const errors: string[] = [];
     page.on('console', (message) => {
       // Vite may reload a cold page after its dependency optimizer changes.
@@ -28,7 +28,7 @@ export const test = base.extend({
       }
     });
     page.on('pageerror', (error) => errors.push(String(error)));
-    await use(page);
+    await playWrightUse(page);
     expect(errors).toEqual([]);
   },
 });
