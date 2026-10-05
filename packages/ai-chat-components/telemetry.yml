@@ -50,6 +50,7 @@ collect:
         - size
         - slot
         - source
+        - streaming
         - test-id
         - title
         - type
@@ -129,6 +130,14 @@ collect:
         - oncontent-change
         - show-less-text
         - show-more-text
+        # cds-aichat-conversational-search-text
+        - citations-label
+        - citations-open
+        - oncds-aichat-citations-scroll
+        - oncds-aichat-citations-toggle
+        - show-citations-toggle
+        - toggle-id
+        - toggle-label
         # cds-aichat-error-message
         - description
         - fullscreen
@@ -162,6 +171,7 @@ collect:
         # cds-aichat-file-upload-item
         - fallback-label
         - read-only
+        - remove-file-named-label
         # cds-aichat-file-uploads
         - file-removed-label
         - upload-failure-label
@@ -239,7 +249,6 @@ collect:
         - oncds-aichat-markdown-plugin-host-update
         - remove-html
         - sanitize-html
-        - streaming
         - table-download-label-text
         - table-filter-placeholder-text
         - table-items-per-page-text

@@ -12,3 +12,5 @@
 @use 'media/imports' as responseType-media;
 @use 'message/imports' as responseType-message;
 @use 'options/imports' as responseType-options;
+
+@use 'conversationalSearch/imports' as responseType-conversationalSearch;

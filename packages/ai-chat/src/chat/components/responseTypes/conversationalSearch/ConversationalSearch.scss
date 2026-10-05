@@ -10,13 +10,6 @@
 @use '@carbon/styles/scss/theme';
 @use '@carbon/styles/scss/type';
 
-@media screen and (prefers-reduced-motion: reduce) {
-  .cds-aichat--conversational-search-citations {
-    animation: none;
-    padding-block-start: 16px;
-  }
-}
-
 @keyframes cds-aichat-fade-in {
   0% {
     opacity: 0;
@@ -54,4 +47,28 @@
   .cds-aichat--carousel-container--one-slide,
 .cds-aichat--narrow-width .cds-aichat--conversational-search-disclaimer {
   margin-inline: 16px;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--conversational-search-citations {
+    animation: none;
+    padding-block-start: 16px;
+  }
+}
+
+.cds-aichat--conversational-search__skeleton {
+  display: block;
+  inline-size: 100%;
+  margin-block-start: layout.$spacing-04;
+  max-inline-size: 400px;
+}
+
+.cds-aichat--narrow-width .cds-aichat--conversational-search__answer {
+  margin-inline-start: layout.$spacing-05;
+}
+
+.cds-aichat--narrow-width
+  .cds-aichat--received--conversational-search
+  .cds-aichat--received--feedback {
+  margin-inline-start: layout.$spacing-05;
 }

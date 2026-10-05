@@ -36,7 +36,7 @@ import { ButtonItemComponent } from '../components/responseTypes/button/ButtonIt
 import { CardItemComponent } from '../components/responseTypes/card/CardItemComponent';
 import { PreviewCardComponent } from './responseTypes/previewCard/PreviewCardComponent';
 import { CarouselItemComponent } from '../components/responseTypes/card/CarouselItemComponent';
-import { ConversationalSearch } from './responseTypes/conversationalSearch/ConversationalSearch';
+import { ConversationalSearch } from '../components/responseTypes/conversationalSearch/ConversationalSearch';
 import UserDefinedResponse from '../components/responseTypes/userDefined/UserDefinedResponse';
 import CustomFooterSlot from './responseTypes/custom/CustomFooterSlot';
 import { DatePickerComponent } from '../components/responseTypes/datePicker/DatePickerComponent';

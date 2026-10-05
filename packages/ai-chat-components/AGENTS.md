@@ -42,6 +42,7 @@ npm test                        # both test suites (see testing.md)
 
 - **`custom-elements.json` is generated, never committed** — it's gitignored and rebuilt by `npm run custom-elements` (and every `npm run build`). Regenerate it for Storybook `<ArgTypes>`, then inspect only the changed component's entries. Update its React wrapper by hand; the command does not generate wrappers.
 - **Carbon flavor**: Lit elements use `@carbon/web-components`. `@carbon/react` is a devDependency for the `-react.stories.jsx` / `-react.mdx` files **only** — never import it into `src/`. See [code-patterns.md](../../references/code-patterns.md#carbon-flavor-by-area), which also overrides the `carbon-builder` skill's React default.
+- **Slot Markdown in presentation elements**: keep parsing, sanitization, streaming updates, and citation selection in the host. Accept rich content through a slot; do not add a Markdown string property to the presentation element.
 - **ESM `.js` extensions** apply here: relative imports use `.js` even for `.ts` source.
 - The two test runners and the ESM-dep `transformIgnorePatterns` rule live in [testing.md](references/testing.md).
 

@@ -1,0 +1,58 @@
+import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
+import * as Stories from './conversational-search-text.stories';
+
+<Meta of={Stories} />
+
+# Answer text
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/conversational-search-text) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+## Overview
+
+Use `cds-aichat-conversational-search-text` to display a conversational search answer with a citations toggle. Supply your answer content in the default slot.
+
+<Canvas of={Stories.Default} />
+
+## Examples
+
+### Open citations
+
+Your host handles the toggle event, reads `event.detail.open`, and supplies the new `citationsOpen` value. The element keeps its supplied state until your host updates it. Your host also renders the citation list and handles the scroll request.
+
+<Canvas of={Stories.Open} />
+
+### Without a toggle
+
+Hide the toggle when the answer has no citations.
+
+<Canvas of={Stories.WithoutToggle} />
+
+### Highlighted answer
+
+Supply Markdown with `==highlight==` spans to mark text tied to a selected citation. Your host owns the selection and updates the slotted Markdown.
+
+<Canvas of={Stories.Highlighted} />
+
+### Streaming answer
+
+Update the slotted Markdown as chunks arrive. Set `streaming` on both the answer element and the Markdown element; the answer does not change its slot content. Your host owns any error shown after an incomplete stream.
+
+<Canvas of={Stories.Streaming} />
+
+## Component API
+
+Supply translated visible and accessible labels through `citationsLabel` and `toggleLabel`. Both events bubble and cross shadow roots. Opening requests a toggle first, then a scroll; closing requests only a toggle.
+
+### `cds-aichat-conversational-search-text`
+
+<ArgTypes of="cds-aichat-conversational-search-text" />
+
+## JS (via import)
+
+```javascript
+import '@carbon/ai-chat-components/es/components/conversational-search-text/index.js';
+```
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

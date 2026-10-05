@@ -1,0 +1,53 @@
+/**
+ * @license
+ *
+ * Copyright IBM Corp. 2026
+ *
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+@use '../../../globals/scss/vars' as *;
+@use '@carbon/layout';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/components/tag/tokens' as tag;
+@use '@carbon/styles/scss/utilities/component-tokens';
+
+:host {
+  display: block;
+}
+
+.#{$prefix}-conversational-search-text__toggle-container {
+  padding-block-start: layout.$spacing-04;
+}
+
+.#{$prefix}-conversational-search-text__toggle {
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: layout.$spacing-05;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+
+  &:focus-visible {
+    outline: 2px solid theme.$focus;
+    outline-offset: 2px;
+  }
+
+  &:hover {
+    --#{$cds-prefix}-tag-background-gray: #{component-tokens.get-var(
+        tag.$tag-hover-gray,
+        'tag-hover-gray'
+      )};
+  }
+}
+
+#{$cds-prefix}-tag {
+  border: 1px solid
+    component-tokens.get-var(tag.$tag-border-gray, 'tag-border-gray');
+  margin: 0;
+  pointer-events: none;
+}
