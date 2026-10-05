@@ -18,7 +18,7 @@
     "packages/*"
   ],
   "engines": {
-    "node": ">=24.0.0",
+    "node": ">=24.11.0",
     "npm": ">=10.0.0"
   },
   "scripts": {
@@ -42,6 +42,7 @@
     "lint:styles": "stylelint '**/*.scss' --report-needless-disables --report-invalid-scope-disables",
     "telemetry:config": "lerna run telemetry:config",
     "test": "lerna run test --stream && npm run test:versions",
+    "test:e2e": "node scripts/run-example-e2e.mjs",
     "test:guidance": "node --test tools/validate-guidance.test.js",
     "test:versions": "node --test scripts/update-versions-file.test.cjs",
     "validate:adrs": "node tools/validate-adrs.js",
@@ -60,20 +61,20 @@
   },
   "devDependencies": {
     "@babel/core": "^8.0.0",
-    "@babel/plugin-transform-private-methods": "^8.0.0",
-    "@babel/plugin-transform-runtime": "^8.0.0",
     "@babel/preset-env": "^8.0.0",
     "@babel/preset-react": "^8.0.0",
     "@babel/preset-typescript": "^8.0.0",
-    "@typescript-eslint/eslint-plugin": "^8.0.0",
-    "@typescript-eslint/parser": "^8.0.0",
     "@commitlint/cli": "^21.0.0",
     "@commitlint/config-conventional": "^21.0.0",
+    "@eslint/eslintrc": "^3.3.1",
+    "@eslint/js": "^9.39.5",
     "@storybook/addons": "^7.6.17",
     "@types/prop-types": "^15.7.15",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.1",
-    "babel-preset-carbon": "^0.9.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "babel-jest": "^30.5.2",
     "chromatic": "^17.0.0",
     "commander": "^15.0.0",
     "concurrently": "^10.0.0",
@@ -86,15 +87,16 @@
     "globby": "^16.0.0",
     "husky": "^9.1.7",
     "knip": "^6.34.0",
-    "lerna": "^9.0.0",
+    "lerna": "^10.0.1",
     "lint-staged": "^17.0.0",
     "patch-package": "^8.0.1",
     "prettier": "^3.0.0",
     "prettier-config-carbon": "^0.12.0",
     "stylelint": "^17.0.0",
-    "stylelint-config-carbon": "^1.22.0",
+    "stylelint-config-carbon": "^1.25.0",
     "text-readability": "^1.1.0",
-    "typescript": "5.9.3"
+    "typescript": "6.0.3",
+    "vite": "^8.3.0"
   },
   "commitlint": {
     "extends": [
@@ -213,7 +215,10 @@
           "message": "Remove tool-generated watermark comments ('Made with Bob')",
           "severity": "error"
         }
-      ]
+      ],
+      "color-function-alias-notation": null,
+      "declaration-property-value-keyword-no-deprecated": null,
+      "property-no-deprecated": null
     }
   },
   "dependencies": {
@@ -221,9 +226,30 @@
   },
   "overrides": {
     "tar": "^7.5.16",
-    "shell-quote": "^1.10.0",
+    "shell-quote": "^1.11.0",
     "postcss": "^8.5.23",
     "axios": "^1.18.1",
-    "proxy-addr": "^2.0.8"
+    "proxy-addr": "^2.0.8",
+    "stylelint-config-carbon": {
+      "stylelint-config-standard": "^40.0.0",
+      "stylelint-config-standard-scss": "^17.0.0"
+    },
+    "stylelint-config-idiomatic-order": {
+      "stylelint-order": "^8.0.1"
+    },
+    "eslint-config-carbon": {
+      "@typescript-eslint/parser": "$@typescript-eslint/parser",
+      "@typescript-eslint/eslint-plugin": "$@typescript-eslint/eslint-plugin"
+    },
+    "@mordech/vite-lit-loader": {
+      "vite": "^8.0.16"
+    },
+    "lerna": {
+      "js-yaml": "^4.3.2",
+      "pacote": "^21.5.1"
+    },
+    "nx": {
+      "smol-toml": "^1.9.0"
+    }
   }
 }

@@ -61,12 +61,6 @@ class ChatCustomElement extends FlattenedConfigElement {
         display: block;
       }
       :host(.cds-aichat--hidden) {
-        width: 0 !important;
-        height: 0 !important;
-        min-width: 0 !important;
-        min-height: 0 !important;
-        max-width: 0 !important;
-        max-height: 0 !important;
         inline-size: 0 !important;
         block-size: 0 !important;
         min-inline-size: 0 !important;

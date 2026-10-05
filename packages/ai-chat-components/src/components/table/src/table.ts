@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { type CDSTableRow } from '@carbon/web-components';
+import type CDSTableRow from '@carbon/web-components/es/components/data-table/table-row.js';
 import { TemplateResult, LitElement, PropertyValues, html } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { carbonElement } from '../../../globals/decorators';

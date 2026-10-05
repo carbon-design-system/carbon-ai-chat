@@ -502,7 +502,7 @@ describe('AutocompleteController', () => {
       return received;
     }
 
-    it('forwards ArrowDown/ArrowUp/Enter/Escape on the editor to the list', async () => {
+    it('forwards ArrowDown/ArrowUp/Enter/Escape/Home/End on the editor to the list', async () => {
       const { editorDom, promptLine } = makeEditorStubWithDom();
       const listEl = document.createElement('div');
       const received = captureSyntheticKeys(listEl);
@@ -520,7 +520,14 @@ describe('AutocompleteController', () => {
       });
       await flush();
 
-      for (const key of ['ArrowDown', 'ArrowUp', 'Enter', 'Escape']) {
+      for (const key of [
+        'ArrowDown',
+        'ArrowUp',
+        'Enter',
+        'Escape',
+        'Home',
+        'End',
+      ]) {
         editorDom.dispatchEvent(
           new KeyboardEvent('keydown', {
             key,
@@ -534,6 +541,8 @@ describe('AutocompleteController', () => {
         'ArrowUp',
         'Enter',
         'Escape',
+        'Home',
+        'End',
       ]);
     });
 
@@ -563,7 +572,7 @@ describe('AutocompleteController', () => {
       expect(event.defaultPrevented).to.equal(true);
     });
 
-    it('does not forward non-navigation keys', async () => {
+    it('does not forward non-navigation keys (e.g. "a")', async () => {
       const { editorDom, promptLine } = makeEditorStubWithDom();
       const listEl = document.createElement('div');
       const received = captureSyntheticKeys(listEl);
@@ -584,10 +593,76 @@ describe('AutocompleteController', () => {
       editorDom.dispatchEvent(
         new KeyboardEvent('keydown', { key: 'a', bubbles: true })
       );
-      editorDom.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'Tab', bubbles: true })
-      );
       expect(received).to.deep.equal([]);
+    });
+
+    it('forwards Tab key to the list element when a trigger is active', async () => {
+      const { editorDom, promptLine } = makeEditorStubWithDom();
+      const listEl = document.createElement('div');
+      const received = captureSyntheticKeys(listEl);
+
+      const controller = new AutocompleteController({
+        mention: { trigger: '@', items: USERS },
+        onChange: () => {},
+      });
+      controller.setPromptLine(promptLine);
+      controller.setListElement(listEl);
+      controller.handleTriggerChange({
+        type: 'mention',
+        query: '',
+        triggerOffset: 0,
+      });
+      await flush();
+
+      editorDom.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Tab',
+          bubbles: true,
+          cancelable: true,
+        })
+      );
+      expect(received).to.deep.equal(['Tab']);
+    });
+
+    it('does not intercept Enter and calls dismiss() when list hasNavigated() returns false', async () => {
+      const { editorDom, promptLine } = makeEditorStubWithDom();
+
+      // A mock list element that reports hasNavigated() = false
+      const listEl = document.createElement('div');
+      (listEl as any).hasNavigated = () => false;
+
+      let dismissCalled = false;
+      const controller = new AutocompleteController({
+        mention: { trigger: '@', items: USERS },
+        onChange: () => {},
+      });
+      // Patch dismiss to track calls without replacing internal state logic
+      const originalDismiss = controller.dismiss.bind(controller);
+      (controller as any).dismiss = () => {
+        dismissCalled = true;
+        originalDismiss();
+      };
+
+      controller.setPromptLine(promptLine);
+      controller.setListElement(listEl);
+      controller.handleTriggerChange({
+        type: 'mention',
+        query: '',
+        triggerOffset: 0,
+      });
+      await flush();
+
+      const event = new KeyboardEvent('keydown', {
+        key: 'Enter',
+        bubbles: true,
+        cancelable: true,
+      });
+      editorDom.dispatchEvent(event);
+
+      // The controller must NOT preventDefault — it lets carbonChatEnter fire.
+      expect(event.defaultPrevented).to.equal(false);
+      // dismiss() must have been called to close the dropdown.
+      expect(dismissCalled).to.equal(true);
     });
 
     it('does not forward keys when no trigger is active', async () => {
@@ -633,6 +708,39 @@ describe('AutocompleteController', () => {
       // event should pass through (no preventDefault).
       editorDom.dispatchEvent(event);
       expect(event.defaultPrevented).to.equal(false);
+    });
+
+    it('forwards Enter and calls preventDefault when list hasNavigated() returns true', async () => {
+      const { editorDom, promptLine } = makeEditorStubWithDom();
+
+      const listEl = document.createElement('div');
+      (listEl as any).hasNavigated = () => true;
+      const received = captureSyntheticKeys(listEl);
+
+      const controller = new AutocompleteController({
+        mention: { trigger: '@', items: USERS },
+        onChange: () => {},
+      });
+      controller.setPromptLine(promptLine);
+      controller.setListElement(listEl);
+      controller.handleTriggerChange({
+        type: 'mention',
+        query: '',
+        triggerOffset: 0,
+      });
+      await flush();
+
+      const event = new KeyboardEvent('keydown', {
+        key: 'Enter',
+        bubbles: true,
+        cancelable: true,
+      });
+      editorDom.dispatchEvent(event);
+
+      // Event was forwarded to the list so it can handle the selection.
+      expect(received).to.deep.equal(['Enter']);
+      // The original editor event must be cancelled so ProseMirror doesn't also act on it.
+      expect(event.defaultPrevented).to.equal(true);
     });
 
     it('detaches the editor listener on dismiss', async () => {

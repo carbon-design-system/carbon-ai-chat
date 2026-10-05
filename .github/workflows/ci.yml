@@ -149,7 +149,8 @@ jobs:
         run: npm run verify:example-readmes
 
   chromatic-wc-storybook:
-    if: ${{ github.repository == 'carbon-design-system/carbon-ai-chat' && github.event.pull_request.draft == false }}
+    # 👇 A new release branch points at a commit main already built, so skip its first push
+    if: ${{ github.repository == 'carbon-design-system/carbon-ai-chat' && github.event.pull_request.draft == false && !github.event.created }}
     runs-on: ubuntu-latest
     outputs:
       buildUrl: ${{ steps.chromatic.outputs.buildUrl }}
@@ -175,15 +176,14 @@ jobs:
             */**/node_modules
           key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
       - name: Install dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
+        if: github.event_name != 'merge_group' && steps.cache.outputs.cache-hit != 'true'
         run: npm ci --prefer-offline
       - name: Build @carbon/ai-chat-components package
+        if: github.event_name != 'merge_group'
         run: npm run build --workspace=@carbon/ai-chat-components
-      - name: Build storybook
-        run: npm run storybook:build --workspace=@carbon/ai-chat-components
       - id: chromatic
         name: Run Chromatic
-        uses: chromaui/action@bb3b582719a93c1828c5e520e62992b2937d7889 # v18.9.4
+        uses: chromaui/action@a18e9f57b71eb05f941848c0b927aab2ee644e3e # v18.10.2
         with:
           # 👇 Token is intentionally plaintext
           # https://www.chromatic.com/docs/github-actions/#run-chromatic-on-external-forks-of-open-source-projects
@@ -193,6 +193,10 @@ jobs:
           zip: true # Runs Chromatic with the option to compress the build output
           autoAcceptChanges: 'main' # Option to accept all changes on main
           onlyChanged: true # 👈 Required option to enable TurboSnap
+          # 👇 Example apps aren't in the Storybook graph, so their manifests shouldn't disable TurboSnap
+          untraced: 'examples/**'
+          # 👇 `main` push rebuilds the merge-queue SHA, so pass the queue check without snapshots
+          skip: '**/gh-readonly-queue/**'
         env:
           # 👇 Set to the PR branch if it's a PR; otherwise, falls back to the pushed branch name
           CHROMATIC_BRANCH: ${{ github.event.pull_request.head.ref || github.ref_name }}
@@ -202,7 +206,8 @@ jobs:
           CHROMATIC_SLUG: ${{ github.repository }}
 
   chromatic-react-wrapper-storybook:
-    if: ${{ github.repository == 'carbon-design-system/carbon-ai-chat' && github.event.pull_request.draft == false }}
+    # 👇 A new release branch points at a commit main already built, so skip its first push
+    if: ${{ github.repository == 'carbon-design-system/carbon-ai-chat' && github.event.pull_request.draft == false && !github.event.created }}
     runs-on: ubuntu-latest
     outputs:
       buildUrl: ${{ steps.chromatic.outputs.buildUrl }}
@@ -228,15 +233,14 @@ jobs:
             */**/node_modules
           key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
       - name: Install dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
+        if: github.event_name != 'merge_group' && steps.cache.outputs.cache-hit != 'true'
         run: npm ci --prefer-offline
       - name: Build @carbon/ai-chat-components package
+        if: github.event_name != 'merge_group'
         run: npm run build --workspace=@carbon/ai-chat-components
-      - name: Build storybook
-        run: npm run storybook:build --workspace=@carbon/ai-chat-components
       - id: chromatic
         name: Run Chromatic
-        uses: chromaui/action@bb3b582719a93c1828c5e520e62992b2937d7889 # v18.9.4
+        uses: chromaui/action@a18e9f57b71eb05f941848c0b927aab2ee644e3e # v18.10.2
         with:
           # 👇 Token is intentionally plaintext
           # https://www.chromatic.com/docs/github-actions/#run-chromatic-on-external-forks-of-open-source-projects
@@ -246,6 +250,10 @@ jobs:
           zip: true # Runs Chromatic with the option to compress the build output
           autoAcceptChanges: 'main' # Option to accept all changes on main
           onlyChanged: true # 👈 Required option to enable TurboSnap
+          # 👇 Example apps aren't in the Storybook graph, so their manifests shouldn't disable TurboSnap
+          untraced: 'examples/**'
+          # 👇 `main` push rebuilds the merge-queue SHA, so pass the queue check without snapshots
+          skip: '**/gh-readonly-queue/**'
         env:
           # 👇 Set to the PR branch if it's a PR; otherwise, falls back to the pushed branch name
           CHROMATIC_BRANCH: ${{ github.event.pull_request.head.ref || github.ref_name }}

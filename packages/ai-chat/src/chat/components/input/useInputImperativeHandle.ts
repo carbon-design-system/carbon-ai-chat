@@ -106,7 +106,9 @@ function useInputImperativeHandle({
   useEffect(() => {
     serviceManager.setInputFunctionsRef(inputFunctions);
     return () => {
-      serviceManager.setInputFunctionsRef(null);
+      if (serviceManager.getInputFunctionsRef?.() === inputFunctions) {
+        serviceManager.setInputFunctionsRef(null);
+      }
     };
   }, [serviceManager, inputFunctions]);
 }

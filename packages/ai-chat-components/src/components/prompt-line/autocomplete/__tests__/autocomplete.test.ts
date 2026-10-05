@@ -136,16 +136,33 @@ describe('cds-aichat-autocomplete', () => {
       });
     });
 
-    it('adds active class and updates aria-activedescendant when item is focused', async () => {
+    it('adds active class and updates aria-activedescendant when item is navigated to', async () => {
       const el = await defaultFixture();
 
-      // First item is auto-focused on render
+      // Before any navigation: no --active class, no aria-activedescendant.
+      // The list opens without auto-selecting so Enter falls through to send
+      // the typed text (ARIA APG combobox pattern).
       const firstOption = el.shadowRoot?.querySelector('li[role="option"]');
       expect(
         firstOption?.classList.contains('cds-aichat-autocomplete-item--active')
-      ).to.be.true;
+      ).to.be.false;
 
       const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
+      expect(listbox?.getAttribute('aria-activedescendant') ?? '').to.equal('');
+
+      // Navigate down with ArrowDown — first item is now active.
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowDown',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      expect(
+        firstOption?.classList.contains('cds-aichat-autocomplete-item--active')
+      ).to.be.true;
       expect(listbox?.getAttribute('aria-activedescendant')).to.equal(
         '1--option'
       );
@@ -235,7 +252,16 @@ describe('cds-aichat-autocomplete', () => {
           .groups="${mockGroups}"></cds-aichat-autocomplete>
       `);
 
-      // First group item should be auto-focused on render
+      // Navigate to the first group item with ArrowDown.
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowDown',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
       const groupOptions = el.shadowRoot?.querySelectorAll(
         'ul[role="group"] li[role="option"]'
       );
@@ -288,23 +314,18 @@ describe('cds-aichat-autocomplete', () => {
     it('should navigate across flat and grouped items with arrow keys', async () => {
       const el = await defaultFixture({ groups: mockGroups });
 
-      // First item is already focused, navigate down 2 more times to reach first group item
-      el.dispatchEvent(
-        new KeyboardEvent('keydown', {
-          key: 'ArrowDown',
-          bubbles: true,
-          composed: true,
-        })
-      );
-      await el.updateComplete;
-      el.dispatchEvent(
-        new KeyboardEvent('keydown', {
-          key: 'ArrowDown',
-          bubbles: true,
-          composed: true,
-        })
-      );
-      await el.updateComplete;
+      // Starting at -1 (no selection). Navigate down 3 times to reach the
+      // first group item (flat items at 0,1; group items at 2,3).
+      for (let i = 0; i < 3; i++) {
+        el.dispatchEvent(
+          new KeyboardEvent('keydown', {
+            key: 'ArrowDown',
+            bubbles: true,
+            composed: true,
+          })
+        );
+        await el.updateComplete;
+      }
 
       const allOptions = el.shadowRoot?.querySelectorAll('li[role="option"]');
       const activeOption = Array.from(allOptions || []).find((li) =>
@@ -497,9 +518,10 @@ describe('cds-aichat-autocomplete', () => {
       );
       await el.updateComplete;
 
+      // Starting from no selection (-1), ArrowDown lands on the first item (index 0).
       const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
       expect(listbox?.getAttribute('aria-activedescendant')).to.equal(
-        '2--option'
+        '1--option'
       );
     });
 
@@ -507,14 +529,14 @@ describe('cds-aichat-autocomplete', () => {
       const el = await defaultFixture();
 
       const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
-      // First item is auto-focused on render
+      // Before navigation no item is marked active
       expect(
         (options?.[0] as HTMLElement)?.classList.contains(
           'cds-aichat-autocomplete-item--active'
         )
-      ).to.be.true;
+      ).to.be.false;
 
-      // Move down to second item
+      // First ArrowDown from unselected state lands on the first item.
       el.dispatchEvent(
         new KeyboardEvent('keydown', {
           key: 'ArrowDown',
@@ -526,7 +548,7 @@ describe('cds-aichat-autocomplete', () => {
 
       const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
       expect(listbox?.getAttribute('aria-activedescendant')).to.equal(
-        '2--option'
+        '1--option'
       );
     });
 
@@ -607,7 +629,7 @@ describe('cds-aichat-autocomplete', () => {
       );
     });
 
-    it('should send item with Enter key', async () => {
+    it('should send item with Enter key after explicit navigation', async () => {
       const el = await defaultFixture();
 
       let eventDetail: any = null;
@@ -615,7 +637,17 @@ describe('cds-aichat-autocomplete', () => {
         eventDetail = (e as CustomEvent).detail;
       });
 
-      // First item is already focused, pressing Enter sends it
+      // Navigate to the first item explicitly with ArrowDown so Enter confirms it.
+      // Starting from -1, one ArrowDown lands on index 0 (mockItems[0]).
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowDown',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
       el.dispatchEvent(
         new KeyboardEvent('keydown', {
           key: 'Enter',
@@ -628,13 +660,259 @@ describe('cds-aichat-autocomplete', () => {
       expect(eventDetail).to.exist;
       expect(eventDetail.text).to.equal(mockItems[0].label);
     });
+
+    it('Enter without prior navigation does not dispatch send or select events', async () => {
+      const el = await defaultFixture();
+
+      let sendFired = false;
+      let selectFired = false;
+      el.addEventListener('cds-aichat-autocomplete-send', () => {
+        sendFired = true;
+      });
+      el.addEventListener('cds-aichat-autocomplete-select', () => {
+        selectFired = true;
+      });
+
+      // Press Enter immediately without any ArrowDown/ArrowUp — _userHasNavigated is false
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Enter',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      expect(sendFired).to.be.false;
+      expect(selectFired).to.be.false;
+    });
+
+    it('Enter after ArrowDown dispatches send event for the navigated item', async () => {
+      const el = await defaultFixture();
+
+      let sentText: string | null = null;
+      el.addEventListener('cds-aichat-autocomplete-send', (e: Event) => {
+        sentText = (e as CustomEvent<{ text: string }>).detail.text;
+      });
+
+      // Starting at -1, one ArrowDown lands on index 0 (mockItems[0]).
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowDown',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Enter',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      // ArrowDown from -1 lands on index 0 (mockItems[0])
+      expect(sentText).to.equal(mockItems[0].label);
+    });
+
+    it('Tab key moves focus to the next item and sets hasNavigated to true', async () => {
+      const el = await defaultFixture();
+
+      let sentText: string | null = null;
+      el.addEventListener('cds-aichat-autocomplete-send', (e: Event) => {
+        sentText = (e as CustomEvent<{ text: string }>).detail.text;
+      });
+
+      // Tab behaves like ArrowDown: moves to next item and marks navigation.
+      // Starting at -1, one Tab lands on index 0 (mockItems[0]).
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Tab',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      // After Tab, hasNavigated() should be true
+      expect(el.hasNavigated()).to.be.true;
+
+      // Active option should have moved to the first item (index 0)
+      const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
+      expect(listbox?.getAttribute('aria-activedescendant')).to.equal(
+        '1--option'
+      );
+
+      // Enter should now confirm the navigated item
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Enter',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      expect(sentText).to.equal(mockItems[0].label);
+    });
+
+    it('hasNavigated() resets to false when items are replaced', async () => {
+      const el = await defaultFixture();
+
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowDown',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+      expect(el.hasNavigated()).to.be.true;
+
+      // Replacing items triggers updated() which calls _setUserHasNavigated(false)
+      el.items = [{ id: 'new-1', label: 'New item' }];
+      await el.updateComplete;
+
+      expect(el.hasNavigated()).to.be.false;
+    });
+
+    it('hasNavigated() resets to false after Escape dismisses the list', async () => {
+      const el = await defaultFixture();
+
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowDown',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+      expect(el.hasNavigated()).to.be.true;
+
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Escape',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      expect(el.hasNavigated()).to.be.false;
+    });
+
+    it('ArrowUp sets hasNavigated to true', async () => {
+      const el = await defaultFixture();
+
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowUp',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      expect(el.hasNavigated()).to.be.true;
+    });
+
+    it('fires cds-aichat-autocomplete-navigated with navigated:true on first arrow key', async () => {
+      const el = await defaultFixture();
+
+      const events: boolean[] = [];
+      el.addEventListener('cds-aichat-autocomplete-navigated', (e: Event) => {
+        events.push(
+          (e as CustomEvent<{ navigated: boolean }>).detail.navigated
+        );
+      });
+
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowDown',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      expect(events).to.deep.equal([true]);
+    });
+
+    it('fires cds-aichat-autocomplete-navigated with navigated:false when items reset navigation', async () => {
+      const el = await defaultFixture();
+
+      const events: boolean[] = [];
+      el.addEventListener('cds-aichat-autocomplete-navigated', (e: Event) => {
+        events.push(
+          (e as CustomEvent<{ navigated: boolean }>).detail.navigated
+        );
+      });
+
+      // Navigate (fires true), then replace items (fires false)
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowDown',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      el.items = [{ id: 'new-1', label: 'New item' }];
+      await el.updateComplete;
+
+      expect(events).to.deep.equal([true, false]);
+    });
+
+    it('does not fire cds-aichat-autocomplete-navigated when value does not change', async () => {
+      const el = await defaultFixture();
+
+      let count = 0;
+      el.addEventListener('cds-aichat-autocomplete-navigated', () => {
+        count++;
+      });
+
+      // First ArrowDown: false → true, fires once.
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowDown',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+      expect(count).to.equal(1);
+
+      // Second ArrowDown: true → true, guard suppresses the event.
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowDown',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+      expect(count).to.equal(1);
+    });
   });
 
   describe('hover navigation', () => {
     it('mouseenter on a non-active row makes it the active option', async () => {
       const el = await defaultFixture();
 
-      // First item is auto-focused on render
+      // Navigate to the first item so _userHasNavigated is true
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowDown',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
       const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
       expect(
         (options?.[0] as HTMLElement)?.classList.contains(
@@ -660,7 +938,18 @@ describe('cds-aichat-autocomplete', () => {
       const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
       const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
 
-      // First item is the initial active option
+      // Before navigation, no item is active
+      expect(listbox?.getAttribute('aria-activedescendant') ?? '').to.equal('');
+
+      // Navigate to the first item so _userHasNavigated is true
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowDown',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
       expect(listbox?.getAttribute('aria-activedescendant')).to.equal(
         '1--option'
       );
@@ -691,13 +980,24 @@ describe('cds-aichat-autocomplete', () => {
 
       const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
 
-      // Hover the second item while the first is active
-      (options?.[1] as HTMLElement)?.dispatchEvent(
+      // Navigate with ArrowDown first so _userHasNavigated becomes true,
+      // then hover the first item to change the active row.
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowDown',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      // Hover the first item while the second is keyboard-active.
+      (options?.[0] as HTMLElement)?.dispatchEvent(
         new MouseEvent('mouseenter', { bubbles: true })
       );
       await el.updateComplete;
 
-      // Enter should pick the hovered (now active) second item
+      // Enter should pick the hovered (now active) first item.
       el.dispatchEvent(
         new KeyboardEvent('keydown', {
           key: 'Enter',
@@ -707,7 +1007,7 @@ describe('cds-aichat-autocomplete', () => {
       );
       await el.updateComplete;
 
-      expect(sentText).to.equal(mockItems[1].label);
+      expect(sentText).to.equal(mockItems[0].label);
     });
 
     it('mouseenter on a disabled item does not move the active option', async () => {
@@ -718,6 +1018,16 @@ describe('cds-aichat-autocomplete', () => {
       };
       const enabledItem = { id: 'enabled-1', label: 'Enabled' };
       const el = await defaultFixture({ items: [enabledItem, disabledItem] });
+
+      // Navigate to the enabled item first so _userHasNavigated is true
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowDown',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
 
       const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
 
@@ -736,11 +1046,23 @@ describe('cds-aichat-autocomplete', () => {
   });
 
   describe('aria', () => {
-    it('should have aria-activedescendant pointing to focused item', async () => {
+    it('should have aria-activedescendant pointing to focused item after navigation', async () => {
       const el = await defaultFixture();
 
-      // First item is auto-focused
+      // No item is active before navigation
       const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
+      expect(listbox?.getAttribute('aria-activedescendant') ?? '').to.equal('');
+
+      // Navigate to the first item
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowDown',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
       const activeId = listbox?.getAttribute('aria-activedescendant');
       expect(activeId).to.equal('1--option');
     });
@@ -748,23 +1070,18 @@ describe('cds-aichat-autocomplete', () => {
     it('should have aria-activedescendant for grouped items', async () => {
       const el = await defaultFixture({ groups: mockGroups });
 
-      // First item is auto-focused (index 0), navigate down 2 times to reach group item at index 2
-      el.dispatchEvent(
-        new KeyboardEvent('keydown', {
-          key: 'ArrowDown',
-          bubbles: true,
-          composed: true,
-        })
-      );
-      await el.updateComplete;
-      el.dispatchEvent(
-        new KeyboardEvent('keydown', {
-          key: 'ArrowDown',
-          bubbles: true,
-          composed: true,
-        })
-      );
-      await el.updateComplete;
+      // Starting at -1, navigate down 3 times to reach the first group item
+      // (flat: 0, 1; group: 2, 3)
+      for (let i = 0; i < 3; i++) {
+        el.dispatchEvent(
+          new KeyboardEvent('keydown', {
+            key: 'ArrowDown',
+            bubbles: true,
+            composed: true,
+          })
+        );
+        await el.updateComplete;
+      }
 
       const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
       const activeId = listbox?.getAttribute('aria-activedescendant');
@@ -936,6 +1253,8 @@ describe('cds-aichat-autocomplete', () => {
 
     it('ArrowDown skips a disabled item and lands on the next enabled item', async () => {
       // Layout: enabled(0) → disabled(1) → enabled(2)
+      // Starting at -1. First ArrowDown → 0 (enabled). Second ArrowDown skips
+      // 1 (disabled) and lands on 2 (enabled-2).
       const threeItems: SuggestionItem[] = [
         enabledItem,
         disabledItem,
@@ -943,8 +1262,15 @@ describe('cds-aichat-autocomplete', () => {
       ];
       const el = await defaultFixture({ items: threeItems });
 
-      // Focus starts at index 0 (first enabled). One ArrowDown should skip
-      // the disabled item at index 1 and land on index 2.
+      // Two ArrowDowns: -1→0, 0→2 (skip disabled at 1).
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowDown',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
       el.dispatchEvent(
         new KeyboardEvent('keydown', {
           key: 'ArrowDown',
@@ -962,9 +1288,19 @@ describe('cds-aichat-autocomplete', () => {
     });
 
     it('ArrowDown stays put when no enabled item exists beyond current', async () => {
-      // Layout: enabled(0) → disabled(1). From 0, ArrowDown should not move.
+      // Layout: enabled(0) → disabled(1).
+      // Starting at -1. First ArrowDown → 0. Second ArrowDown: from 0, next=1
+      // (disabled), no further enabled → stays at 0.
       const el = await defaultFixture({ items: [enabledItem, disabledItem] });
 
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowDown',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
       el.dispatchEvent(
         new KeyboardEvent('keydown', {
           key: 'ArrowDown',
@@ -981,16 +1317,130 @@ describe('cds-aichat-autocomplete', () => {
       );
     });
 
-    it('initial focus skips a leading disabled item', async () => {
-      // Render with disabled first — _focusedIndex should initialise to the
-      // first enabled item, not index 0.
+    it('initial focus is not set until navigation (no auto-select on open)', async () => {
+      // The list opens with _focusedIndex = -1, so no aria-activedescendant
+      // or --active class is set until the user navigates explicitly.
       const el = await defaultFixture({ items: [disabledItem, enabledItem] });
 
       const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
-      // Initial focus should be on the first enabled item (index 1, id 'enabled-1')
+      // No item is pre-focused on open — ARIA APG combobox pattern
+      expect(listbox?.getAttribute('aria-activedescendant') ?? '').to.equal('');
+
+      // ArrowDown from -1 → first enabled item (skipping disabled at 0 → lands on 1)
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowDown',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
       expect(listbox?.getAttribute('aria-activedescendant')).to.equal(
         'enabled-1--option'
       );
+    });
+
+    it('Home skips leading disabled items and lands on the first enabled item', async () => {
+      // Layout: disabled(0) → disabled(1) → enabled(2)
+      const items: SuggestionItem[] = [
+        { id: 'dis-a', label: 'Disabled A', disabled: true },
+        { id: 'dis-b', label: 'Disabled B', disabled: true },
+        { id: 'ena-c', label: 'Enabled C' },
+      ];
+      const el = await defaultFixture({ items });
+
+      // Navigate to the last item first so Home has somewhere to jump from.
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'End',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Home',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
+      // Should have skipped indices 0 and 1 (disabled) and landed on index 2.
+      expect(listbox?.getAttribute('aria-activedescendant')).to.equal(
+        'ena-c--option'
+      );
+    });
+
+    it('End skips trailing disabled items and lands on the last enabled item', async () => {
+      // Layout: enabled(0) → disabled(1) → disabled(2)
+      const items: SuggestionItem[] = [
+        { id: 'ena-a', label: 'Enabled A' },
+        { id: 'dis-b', label: 'Disabled B', disabled: true },
+        { id: 'dis-c', label: 'Disabled C', disabled: true },
+      ];
+      const el = await defaultFixture({ items });
+
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'End',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
+      // Should have skipped indices 2 and 1 (disabled) and landed on index 0.
+      expect(listbox?.getAttribute('aria-activedescendant')).to.equal(
+        'ena-a--option'
+      );
+    });
+
+    it('Home stays put when all items are disabled', async () => {
+      const items: SuggestionItem[] = [
+        { id: 'dis-a', label: 'Disabled A', disabled: true },
+        { id: 'dis-b', label: 'Disabled B', disabled: true },
+      ];
+      const el = await defaultFixture({ items });
+
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Home',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
+      // _focusedIndex stays at -1, so no aria-activedescendant is set.
+      expect(listbox?.getAttribute('aria-activedescendant') ?? '').to.equal('');
+    });
+
+    it('End stays put when all items are disabled', async () => {
+      const items: SuggestionItem[] = [
+        { id: 'dis-a', label: 'Disabled A', disabled: true },
+        { id: 'dis-b', label: 'Disabled B', disabled: true },
+      ];
+      const el = await defaultFixture({ items });
+
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'End',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
+      // _focusedIndex stays at -1, so no aria-activedescendant is set.
+      expect(listbox?.getAttribute('aria-activedescendant') ?? '').to.equal('');
     });
 
     it('all-disabled list fires suggestionsAvailable with the correct count', async () => {
@@ -1047,21 +1497,18 @@ describe('cds-aichat-autocomplete', () => {
         i18n: trackingI18n,
       });
 
-      el.dispatchEvent(
-        new KeyboardEvent('keydown', {
-          key: 'ArrowDown',
-          bubbles: true,
-          composed: true,
-        })
-      );
-      await el.updateComplete;
-      el.dispatchEvent(
-        new KeyboardEvent('keydown', {
-          key: 'ArrowDown',
-          bubbles: true,
-          composed: true,
-        })
-      );
+      // Starting at -1, navigate down 3 times to reach the first group item
+      // (flat items at 0,1; group items at 2,3).
+      for (let i = 0; i < 3; i++) {
+        el.dispatchEvent(
+          new KeyboardEvent('keydown', {
+            key: 'ArrowDown',
+            bubbles: true,
+            composed: true,
+          })
+        );
+        await el.updateComplete;
+      }
       await new Promise((resolve) => window.setTimeout(resolve, 75));
 
       expect(announcedMessage).to.equal('Group item 1, Group 1, 3 of 4');

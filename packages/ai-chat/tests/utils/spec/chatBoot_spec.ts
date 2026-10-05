@@ -17,11 +17,9 @@ import {
 } from '../../../src/chat/utils/chatBoot';
 
 import { createBaseTestProps } from '../../test_helpers';
+import { EventBus } from '../../../src/chat/events/EventBus';
 import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
-import {
-  BusEventType,
-  BusEvent,
-} from '../../../src/types/events/eventBusTypes';
+import { BusEventType } from '../../../src/types/events/eventBusTypes';
 
 describe('chatBoot utils', () => {
   beforeEach(() => {
@@ -187,88 +185,87 @@ describe('chatBoot utils', () => {
 
   describe('attachUserDefinedResponseHandlers', () => {
     it('updates state on user-defined response and chunk events', () => {
-      const handlers: Record<
-        string | number,
-        (event: BusEvent & { data?: any }) => void
-      > = {};
-      const fakeInstance: any = {
-        on: ({ type, handler }: any) => {
-          handlers[type] = handler;
-        },
-      };
+      const eventBus = new EventBus();
+      const instance = eventBus as unknown as ChatInstance;
 
       let bySlot: any = {};
       const setBySlot = (updater: any) => {
         bySlot = typeof updater === 'function' ? updater(bySlot) : updater;
       };
 
-      attachUserDefinedResponseHandlers(
-        fakeInstance as unknown as ChatInstance,
-        setBySlot as any
-      );
+      attachUserDefinedResponseHandlers(instance, setBySlot as any);
 
       // Simulate full user-defined response
-      handlers[BusEventType.USER_DEFINED_RESPONSE]({
-        type: BusEventType.USER_DEFINED_RESPONSE,
-        data: { slot: 's1', fullMessage: { id: 'm1' }, message: { id: 'i1' } },
-      });
+      eventBus.fireSync(
+        {
+          type: BusEventType.USER_DEFINED_RESPONSE,
+          data: {
+            slot: 's1',
+            fullMessage: { id: 'm1' },
+            message: { id: 'i1' },
+          },
+        },
+        instance
+      );
 
       expect(bySlot.s1.fullMessage).toEqual({ id: 'm1' });
       expect(bySlot.s1.messageItem).toEqual({ id: 'i1' });
 
       // Simulate partial chunk
-      handlers[BusEventType.CHUNK_USER_DEFINED_RESPONSE]({
-        type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
-        data: { slot: 's1', chunk: { partial_item: { t: 'p1' } } },
-      });
+      eventBus.fireSync(
+        {
+          type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
+          data: { slot: 's1', chunk: { partial_item: { t: 'p1' } } },
+        },
+        instance
+      );
       expect(bySlot.s1.partialItems).toEqual([{ t: 'p1' }]);
 
       // Simulate completion chunk
-      handlers[BusEventType.CHUNK_USER_DEFINED_RESPONSE]({
-        type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
-        data: { slot: 's1', chunk: { complete_item: { id: 'i2' } } },
-      });
+      eventBus.fireSync(
+        {
+          type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
+          data: { slot: 's1', chunk: { complete_item: { id: 'i2' } } },
+        },
+        instance
+      );
       expect(bySlot.s1.messageItem).toEqual({ id: 'i2' });
 
       // Simulate restart: state should reset
-      handlers[BusEventType.RESTART_CONVERSATION]({
-        type: BusEventType.RESTART_CONVERSATION,
-      });
+      eventBus.fireSync(
+        {
+          type: BusEventType.RESTART_CONVERSATION,
+        },
+        instance
+      );
       expect(bySlot).toEqual({});
     });
   });
   describe('attachCustomFooterHandler', () => {
     it('updates state on custom footer slot events', () => {
-      const handlers: Record<
-        string | number,
-        (event: BusEvent & { data?: any }) => void
-      > = {};
-      const fakeInstance: any = {
-        on: ({ type, handler }: any) => {
-          handlers[type] = handler;
-        },
-      };
+      const eventBus = new EventBus();
+      const instance = eventBus as unknown as ChatInstance;
 
       let bySlot: any = {};
       const setBySlot = (updater: any) => {
         bySlot = typeof updater === 'function' ? updater(bySlot) : updater;
       };
 
-      attachCustomFooterHandler(
-        fakeInstance as unknown as ChatInstance,
-        setBySlot as any
-      );
+      attachCustomFooterHandler(instance, setBySlot as any);
 
       // Simulate custom footer slot event
-      handlers[BusEventType.CUSTOM_FOOTER_SLOT]({
-        type: BusEventType.CUSTOM_FOOTER_SLOT,
-        data: {
-          slotName: 'footer1',
-          message: { id: 'msg1' },
-          messageItem: { id: 'item1', text: 'Hello' },
-          additionalData: { customKey: 'customValue', count: 42 },
+      eventBus.fireSync(
+        {
+          type: BusEventType.CUSTOM_FOOTER_SLOT,
+          data: {
+            slotName: 'footer1',
+            message: { id: 'msg1' },
+            messageItem: { id: 'item1', text: 'Hello' },
+            additionalData: { customKey: 'customValue', count: 42 },
+          },
         },
-      });
+        instance
+      );
 
       expect(bySlot.footer1.slotName).toBe('footer1');
       expect(bySlot.footer1.message).toEqual({ id: 'msg1' });
@@ -284,49 +281,47 @@ describe('chatBoot utils', () => {
       expect(Object.keys(bySlot)).toEqual(['footer1']);
 
       // Simulate restart: state should reset
-      handlers[BusEventType.RESTART_CONVERSATION]({
-        type: BusEventType.RESTART_CONVERSATION,
-      });
+      eventBus.fireSync(
+        {
+          type: BusEventType.RESTART_CONVERSATION,
+        },
+        instance
+      );
       expect(bySlot).toEqual({});
     });
   });
   describe('attachCustomRequestFooterHandler', () => {
     it('accumulates one entry per slot and clears them on restart', () => {
-      const handlers: Record<
-        string,
-        (event: BusEvent & { data?: any }) => void
-      > = {};
-      const fakeInstance: any = {
-        on: ({ type, handler }: any) => {
-          handlers[type] = handler;
-        },
-      };
+      const eventBus = new EventBus();
+      const instance = eventBus as unknown as ChatInstance;
 
       let bySlot: any = {};
       const setBySlot = (updater: any) => {
         bySlot = typeof updater === 'function' ? updater(bySlot) : updater;
       };
 
-      attachCustomRequestFooterHandler(
-        fakeInstance as unknown as ChatInstance,
-        setBySlot as any,
-        () => true
-      );
+      attachCustomRequestFooterHandler(instance, setBySlot as any, () => true);
 
-      handlers[BusEventType.CUSTOM_REQUEST_FOOTER_SLOT]({
-        type: BusEventType.CUSTOM_REQUEST_FOOTER_SLOT,
-        data: {
-          slotName: 'request-footer-1',
-          message: { id: 'm1', input: { text: 'first' } },
+      eventBus.fireSync(
+        {
+          type: BusEventType.CUSTOM_REQUEST_FOOTER_SLOT,
+          data: {
+            slotName: 'request-footer-1',
+            message: { id: 'm1', input: { text: 'first' } },
+          },
         },
-      });
-      handlers[BusEventType.CUSTOM_REQUEST_FOOTER_SLOT]({
-        type: BusEventType.CUSTOM_REQUEST_FOOTER_SLOT,
-        data: {
-          slotName: 'request-footer-2',
-          message: { id: 'm2', input: { text: 'second' } },
+        instance
+      );
+      eventBus.fireSync(
+        {
+          type: BusEventType.CUSTOM_REQUEST_FOOTER_SLOT,
+          data: {
+            slotName: 'request-footer-2',
+            message: { id: 'm2', input: { text: 'second' } },
+          },
         },
-      });
+        instance
+      );
 
       expect(Object.keys(bySlot)).toEqual([
         'request-footer-1',
@@ -335,22 +330,18 @@ describe('chatBoot utils', () => {
       expect(bySlot['request-footer-1'].message.input.text).toBe('first');
       expect(bySlot['request-footer-2'].message.input.text).toBe('second');
 
-      handlers[BusEventType.RESTART_CONVERSATION]({
-        type: BusEventType.RESTART_CONVERSATION,
-      });
+      eventBus.fireSync(
+        {
+          type: BusEventType.RESTART_CONVERSATION,
+        },
+        instance
+      );
       expect(bySlot).toEqual({});
     });
 
     it('accumulates nothing until the host has a render callback', () => {
-      const handlers: Record<
-        string,
-        (event: BusEvent & { data?: any }) => void
-      > = {};
-      const fakeInstance: any = {
-        on: ({ type, handler }: any) => {
-          handlers[type] = handler;
-        },
-      };
+      const eventBus = new EventBus();
+      const instance = eventBus as unknown as ChatInstance;
 
       let bySlot: any = {};
       const setBySlot = (updater: any) => {
@@ -361,33 +352,119 @@ describe('chatBoot utils', () => {
       // so it can arrive after the chat has booted.
       const host: { renderCustomRequestFooter?: () => null } = {};
 
-      attachCustomRequestFooterHandler(
-        fakeInstance as unknown as ChatInstance,
-        setBySlot as any,
-        () => Boolean(host.renderCustomRequestFooter)
+      attachCustomRequestFooterHandler(instance, setBySlot as any, () =>
+        Boolean(host.renderCustomRequestFooter)
       );
 
-      handlers[BusEventType.CUSTOM_REQUEST_FOOTER_SLOT]({
-        type: BusEventType.CUSTOM_REQUEST_FOOTER_SLOT,
-        data: {
-          slotName: 'request-footer-1',
-          message: { id: 'm1', input: { text: 'before' } },
+      eventBus.fireSync(
+        {
+          type: BusEventType.CUSTOM_REQUEST_FOOTER_SLOT,
+          data: {
+            slotName: 'request-footer-1',
+            message: { id: 'm1', input: { text: 'before' } },
+          },
         },
-      });
+        instance
+      );
 
       expect(bySlot).toEqual({});
 
       host.renderCustomRequestFooter = () => null;
 
-      handlers[BusEventType.CUSTOM_REQUEST_FOOTER_SLOT]({
-        type: BusEventType.CUSTOM_REQUEST_FOOTER_SLOT,
-        data: {
-          slotName: 'request-footer-2',
-          message: { id: 'm2', input: { text: 'after' } },
+      eventBus.fireSync(
+        {
+          type: BusEventType.CUSTOM_REQUEST_FOOTER_SLOT,
+          data: {
+            slotName: 'request-footer-2',
+            message: { id: 'm2', input: { text: 'after' } },
+          },
         },
-      });
+        instance
+      );
 
       expect(Object.keys(bySlot)).toEqual(['request-footer-2']);
+    });
+  });
+
+  describe.each([
+    {
+      name: 'attachUserDefinedResponseHandlers',
+      attach: attachUserDefinedResponseHandlers,
+      events: [
+        {
+          type: BusEventType.USER_DEFINED_RESPONSE,
+          data: {
+            slot: 's1',
+            fullMessage: { id: 'm1' },
+            message: { id: 'i1' },
+          },
+        },
+        {
+          type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
+          data: { slot: 's1', chunk: { partial_item: { text: 'partial' } } },
+        },
+        {
+          type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
+          data: { slot: 's1', chunk: { complete_item: { id: 'i1' } } },
+        },
+      ],
+    },
+    {
+      name: 'attachCustomFooterHandler',
+      attach: attachCustomFooterHandler,
+      events: [
+        {
+          type: BusEventType.CUSTOM_FOOTER_SLOT,
+          data: {
+            slotName: 'footer1',
+            message: { id: 'm1' },
+            messageItem: { id: 'i1' },
+          },
+        },
+      ],
+    },
+    {
+      name: 'attachCustomRequestFooterHandler',
+      attach: attachCustomRequestFooterHandler,
+      events: [
+        {
+          type: BusEventType.CUSTOM_REQUEST_FOOTER_SLOT,
+          data: { slotName: 'request-footer-1', message: { id: 'm1' } },
+        },
+      ],
+    },
+  ])('$name cleanup', ({ attach, events }) => {
+    it('stops state updates and preserves other subscribers to the same events', () => {
+      const eventBus = new EventBus();
+      const instance = eventBus as unknown as ChatInstance;
+      const setBySlot = jest.fn();
+      const restartEvent = { type: BusEventType.RESTART_CONVERSATION };
+      const unrelatedListener = jest.fn();
+      const eventTypes = new Set([
+        ...events.map(({ type }) => type),
+        restartEvent.type,
+      ]);
+      eventBus.on(
+        Array.from(eventTypes, (type) => ({ type, handler: unrelatedListener }))
+      );
+      const cleanup = attach(instance, setBySlot, () => true);
+
+      for (const event of [...events, restartEvent]) {
+        setBySlot.mockClear();
+        eventBus.fireSync(event, instance);
+        expect(setBySlot).toHaveBeenCalledTimes(1);
+      }
+
+      cleanup();
+      setBySlot.mockClear();
+      unrelatedListener.mockClear();
+
+      for (const event of [...events, restartEvent]) {
+        eventBus.fireSync(event, instance);
+        expect(setBySlot).not.toHaveBeenCalled();
+        expect(unrelatedListener).toHaveBeenLastCalledWith(event, instance);
+      }
+      expect(unrelatedListener).toHaveBeenCalledTimes(events.length + 1);
     });
   });
 });

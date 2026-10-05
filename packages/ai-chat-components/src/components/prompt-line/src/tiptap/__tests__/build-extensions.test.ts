@@ -115,4 +115,93 @@ describe('buildCarbonExtensions — trigger coexistence', function () {
       'Expected autocomplete mid-sentence, got ' + midSentence?.type
     );
   });
+
+  it('autocomplete query includes spaces — overlay stays open after typing a space', () => {
+    const extensions = buildCarbonExtensions({
+      autocomplete: { items: ITEMS },
+    });
+    const {
+      editor,
+      events,
+      cleanup: c,
+    } = makeEditor(extensions as unknown as Extension[]);
+    cleanup = c;
+
+    editor.commands.insertContent('hello ');
+    const afterSpace = events[events.length - 1];
+    // The overlay must remain open (type === 'autocomplete') with the full
+    // text including the space as the query.
+    expect(afterSpace?.type).to.equal(
+      'autocomplete',
+      'Expected autocomplete to stay open after space, got ' + afterSpace?.type
+    );
+    expect(afterSpace?.query).to.equal('hello ');
+  });
+
+  it('autocomplete query spans multiple words', () => {
+    const extensions = buildCarbonExtensions({
+      autocomplete: { items: ITEMS },
+    });
+    const {
+      editor,
+      events,
+      cleanup: c,
+    } = makeEditor(extensions as unknown as Extension[]);
+    cleanup = c;
+
+    editor.commands.insertContent('hello world');
+    const last = events[events.length - 1];
+    expect(last?.type).to.equal('autocomplete');
+    expect(last?.query).to.equal('hello world');
+  });
+
+  it('autocomplete yields to mention trigger even after a preceding word and space', () => {
+    const extensions = buildCarbonExtensions({
+      mention: { trigger: '@', items: ITEMS },
+      autocomplete: { items: ITEMS },
+    });
+    const {
+      editor,
+      events,
+      cleanup: c,
+    } = makeEditor(extensions as unknown as Extension[]);
+    cleanup = c;
+
+    // Typing a mention trigger after a word + space must still open the
+    // mention picker, not autocomplete.
+    editor.commands.insertContent('hello @');
+    const last = events[events.length - 1];
+    expect(last?.type).to.equal(
+      'mention',
+      'Expected mention trigger after space, got ' + last?.type
+    );
+  });
+
+  it('mention trigger is not overwritten by a stale autocomplete onExit', () => {
+    const extensions = buildCarbonExtensions({
+      mention: { trigger: '@', items: ITEMS },
+      autocomplete: { items: ITEMS },
+    });
+    const {
+      editor,
+      events,
+      cleanup: c,
+    } = makeEditor(extensions as unknown as Extension[]);
+    cleanup = c;
+
+    // First keystroke activates autocomplete.
+    editor.commands.insertContent('hello ');
+    const afterPlain = events[events.length - 1];
+    expect(afterPlain?.type).to.equal('autocomplete');
+
+    // Typing '@' in a single transaction: autocomplete onExit fires after
+    // mention onStart. The final event must be the mention, not null.
+    editor.commands.insertContent('@');
+    const afterMention = events[events.length - 1];
+    expect(afterMention?.type).to.equal(
+      'mention',
+      'Stale autocomplete onExit must not overwrite mention onStart, got ' +
+        afterMention?.type
+    );
+  });
 });

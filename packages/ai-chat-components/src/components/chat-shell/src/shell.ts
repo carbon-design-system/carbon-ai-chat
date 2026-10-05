@@ -32,6 +32,9 @@ import {
 const INSTANCE_ATTR = 'data-cds-aichat-shell-id';
 let shellInstanceCounter = 0;
 
+/**
+ * @fires cds-aichat-shell-panel-focus-fallback - A closed panel's trigger cannot receive focus and no panel remains active. Focus an appropriate fallback.
+ */
 @carbonElement(`${prefix}-shell`)
 class CDSAIChatShell extends LitElement {
   static styles = [commonStyles, styles];
@@ -426,12 +429,17 @@ class CDSAIChatShell extends LitElement {
   }
 
   private getInputAndMessagesClasses(): string {
+    // When content-max-width is disabled there is no max-width constraint, so
+    // the container is always considered "at max width" — this prevents the
+    // corner-zeroing rules in _rounded-corners.scss from stripping border-radius
+    // off prompt-line-shell when the container happens to exceed 672 px.
+    const atMaxWidth = !this.contentMaxWidth || this.inputAndMessagesAtMaxWidth;
     return [
       'input-and-messages',
       this.hasInputBeforeContent ? 'has-input-before-content' : '',
       this.hasInputContent ? 'has-input-content' : '',
       this.hasInputAfterContent ? 'has-input-after-content' : '',
-      this.inputAndMessagesAtMaxWidth ? 'at-max-width' : '',
+      atMaxWidth ? 'at-max-width' : '',
     ]
       .filter(Boolean)
       .join(' ');
