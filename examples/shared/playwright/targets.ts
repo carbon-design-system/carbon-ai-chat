@@ -30,6 +30,18 @@ export const targets = {
     example: 'react/watch-state',
     spec: 'watch-state.spec.ts',
   },
+  'web-components-fullscreen': {
+    example: 'web-components/basic-custom-element-fullscreen',
+    spec: 'fullscreen.spec.ts',
+  },
+  'web-components-mentions-and-commands': {
+    example: 'web-components/prompt-line-mentions-and-commands',
+    spec: 'mentions-and-commands.spec.ts',
+  },
+  'web-components-watch-state': {
+    example: 'web-components/watch-state',
+    spec: 'watch-state.spec.ts',
+  },
 } as const satisfies Record<string, Target>;
 
 export type TargetId = keyof typeof targets;

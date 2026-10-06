@@ -8,8 +8,8 @@
 /**
  * Tests: Carbon AI Chat — Mentions and commands, detailed behavior.
  *
- * Runs against the React example. React mounts through the shared web
- * component, so the shared chat behavior is tested once through React.
+ * Runs against both the React and Web Components examples. Each project
+ * checks the same behavior through its own host application.
  *
  * Exercises the mention and command pickers from trigger through filtering,
  * selection, and send. Atomic deletion proves picks are chips and keeps their

@@ -1,6 +1,6 @@
 # playwright.md — Playwright tests for examples
 
-Run the golden Playwright flows only against the React examples. Every spec lives in one place: [shared/playwright/](../shared/playwright/). No example holds a Playwright config, spec, or `test:e2e` script of its own, so no suite can run twice. Examples do not import or depend on each other.
+Run the golden Playwright flows against both React and Web Components examples. Keep one definition of each flow in [shared/playwright/](../shared/playwright/). Each flavor has its own project and example server. Examples hold no local Playwright setup and do not depend on each other.
 
 ```text
 shared/playwright/
@@ -8,7 +8,7 @@ shared/playwright/
   targets.ts             the table of examples under test
   start-vite.mjs         builds an example and serves it on an OS-assigned port
   helpers/index.ts       fixtures: target, baseURL, console-error check
-  tests/                 detailed behavior, run against React
+  tests/                 shared specs, run against both flavors
 ```
 
 ## Which specs run against which example
@@ -17,25 +17,32 @@ shared/playwright/
 
 | Project | Example | Spec |
 | --- | --- | --- |
-| `react-fullscreen` | `react/basic-custom-element-fullscreen` | `tests/fullscreen.spec.ts` |
-| `react-mentions-and-commands` | `react/prompt-line-mentions-and-commands` | `tests/mentions-and-commands.spec.ts` |
-| `react-watch-state` | `react/watch-state` | `tests/watch-state.spec.ts` |
+| `react-fullscreen` | `react/basic-custom-element-fullscreen` | [Fullscreen](../shared/playwright/tests/fullscreen.spec.ts) |
+| `react-mentions-and-commands` | `react/prompt-line-mentions-and-commands` | [Mentions and commands](../shared/playwright/tests/mentions-and-commands.spec.ts) |
+| `react-watch-state` | `react/watch-state` | [Watch state](../shared/playwright/tests/watch-state.spec.ts) |
+| `web-components-fullscreen` | `web-components/basic-custom-element-fullscreen` | [Fullscreen](../shared/playwright/tests/fullscreen.spec.ts) |
+| `web-components-mentions-and-commands` | `web-components/prompt-line-mentions-and-commands` | [Mentions and commands](../shared/playwright/tests/mentions-and-commands.spec.ts) |
+| `web-components-watch-state` | `web-components/watch-state` | [Watch state](../shared/playwright/tests/watch-state.spec.ts) |
 
-### Run shared behavior once
+### Share definitions across hosts
 
-Run the detailed flows through the React wrappers in `tests/`. These exercise the
-shared chat implementation. The golden suite does not launch the standalone Web
-Components examples or check their separate host wiring.
+Both flavors run the same specs in `tests/`. The suite has three specs and six
+projects: 14 cases per flavor, for 28 Chromium cases. Each execution opens only
+its own example.
 
-This coverage choice relies on React mounting through the shared web component.
-Verify that mounting path before treating a React result as proof of shared
-behavior. Use unit or integration tests for framework-specific wiring. This
-suite does not establish coverage of every example's callbacks or subscriptions.
+React mounts through the shared chat element, but each example has separate
+host code. Running both checks that code through the same visible contract.
+A passing shared spec does not prove exact payload or layout parity. The
+mentions spec checks labels in fixed summaries, not every field ID or value.
+
+If a framework needs a distinct browser check, add a separate spec in this
+folder and map it to that framework's target. Keep common flow assertions in
+the shared spec. Unit tests for local host logic may live in the example.
 
 ### Add a target
 
-1. Add an entry to `targets` in [targets.ts](../shared/playwright/targets.ts): the React example's directory under `examples/`, and a spec path relative to `tests/`.
-2. Write that spec. Import `test`, `expect`, and `openExample` from the shared helpers; never put a URL in a spec.
+1. Add an entry to `targets` in [targets.ts](../shared/playwright/targets.ts): the example's directory under `examples/`, and a spec path relative to `tests/`.
+2. Reuse an existing spec when the visible contract matches. Otherwise, write a new spec. Import `test`, `expect`, and `openExample` from the shared helpers; never put a URL in a spec.
 3. Check discovery with `npm run test:e2e:goldens -- --list`. The config derives the project, the server, and the URL variable from the entry.
 
 An example needs a `build` script, a `vite.config.ts`, and an HTML entry. It needs no Playwright config, dependency, or script.
@@ -78,9 +85,7 @@ Use roles, labels, or maintained test IDs for chat markup. Avoid CSS and structu
 
 Do not assert on live model output. A fixed mock summary is a valid proof of sent data. Scope it to the response so input text or welcome copy cannot satisfy the assertion.
 
-The example's own elements are a different matter — select those however the example defines them. The host `<div>` an
-example hands to `ChatCustomElement` carries no role and no test id, so the class the example sets on it is the right
-handle, and the only way to assert how the chat sizes that host.
+The example's own elements are a different matter — select those however the example defines them. The fullscreen examples give their host a `.chat-custom-element` class. Use that class to check host sizing in either flavor.
 
 Shadow DOM does not decide this: Playwright locators pierce open shadow roots either way. The real web-component caveat is that ARIA IDREFs (`aria-labelledby`, `for`) do not cross a shadow-root boundary, which makes accessible names unreliable there — that is what `PageObjectId` is for.
 
@@ -168,13 +173,14 @@ Open every spec with a purpose comment, per the inline-comments rule in [example
 ```bash
 npm run test:e2e:goldens
 npm run test:e2e:goldens -- --project react-watch-state
+npm run test:e2e:goldens -- --project web-components-watch-state
 npm run test:e2e
 ```
 
 - From the root, install dependencies once with `npm install` and build the shared packages with `npm run aiChat:build` before testing. Rebuild a changed package before testing its examples.
-- Check test discovery with `npm run test:e2e:goldens -- --list` before opening a browser. This catches config and fixture errors; it does not run the tests. Each case appears once.
+- Check test discovery with `npm run test:e2e:goldens -- --list` before opening a browser. This catches config and fixture errors; it does not run the tests. Each shared case appears once per flavor, under its own project.
 - Install Chromium once per machine with `npx playwright install chromium`.
-- Playwright builds and serves all three React examples on every run, even when `--project` selects one. Select projects with the usual Playwright arguments.
+- Playwright builds and serves all six target examples on every run, even when `--project` selects one. Select projects with the usual Playwright arguments.
 - Root `test:e2e` runs the central suite once, then any `test:e2e` script a workspace still defines. The React 17 and 18 suites run under `npm test` until they are migrated.
 
 When and how the suite runs in CI at scale is not decided here. See [issue #2127](https://github.com/carbon-design-system/carbon-ai-chat/issues/2127).
@@ -187,7 +193,7 @@ Failures, screenshots, and videos land in `shared/playwright/test-results/`, whi
 
 ## Definition of done
 
-- [ ] `npm run test:e2e:goldens -- --list` shows each case once, under the right project.
+- [ ] `npm run test:e2e:goldens -- --list` shows 28 cases across six projects, with each case once per flavor.
 - [ ] `npm run test:e2e:goldens` passes on chromium.
 - [ ] `npm run build --workspace=<example>` exits 0.
 - [ ] The suite covers the example's one concern plus the baseline above.
@@ -196,9 +202,9 @@ Failures, screenshots, and videos land in `shared/playwright/test-results/`, whi
 
 ## React vs Web Components
 
-Run each golden flow once through React, including the render-prop bridge and
-shared chat behavior. Keep all specs in `tests/`; do not add a duplicate project
-for the matching Web Components example.
+Use the same spec for both flavors when they expose the same visible contract.
+Keep all browser specs in `tests/` and all target URLs in the shared fixture.
+Use separate specs for host behavior that applies to only one flavor.
 
 ## Related guidance
 

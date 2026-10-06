@@ -8,7 +8,8 @@
 /**
  * Tests: Carbon AI Chat — Watch state, detailed behavior.
  *
- * Runs against the React example to test the visible host state updates.
+ * Runs against both the React and Web Components examples to test each
+ * host's visible state updates.
  *
  * Opens the floating chat and checks the host's state mirror through homescreen,
  * conversation, and return-home transitions. Checks the initial visible mirror
