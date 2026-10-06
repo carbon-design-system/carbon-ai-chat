@@ -5,6 +5,8 @@ description: Draft a PR description from the selected changes, or submit it when
 
 Workflow for drafting a pull-request description. Do **not** trigger on a plain commit/push request.
 
+**Before drafting any copy**, read [caic-copy-writer](../caic-copy-writer/SKILL.md) and apply its shared skim-reading rule and workflow. This includes local drafts and final artifacts. Reuse it if already loaded.
+
 ## Output
 
 A `.github/pr-drafts/<scope-slug>.md` file, populated from [.github/PULL_REQUEST_TEMPLATE.md](../../../.github/PULL_REQUEST_TEMPLATE.md). Use the branch name or a short range label for the slug. Update the draft for this task; preserve unrelated drafts. The directory is git-ignored.
