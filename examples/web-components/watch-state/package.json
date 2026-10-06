@@ -6,7 +6,8 @@
   "description": "An example showing how to watch ChatInstance state changes as a web component.",
   "scripts": {
     "start": "vite",
-    "build": "vite build"
+    "build": "vite build",
+    "test:e2e": "playwright test"
   },
   "author": "IBM Corp",
   "license": "Apache-2.0",
@@ -18,8 +19,9 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "ts-lit-plugin": "^2.0.2",
     "typescript": "^6.0.3",
-    "vite": "^8.0.16"
+    "vite": "^8.3.0"
   }
 }
