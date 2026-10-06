@@ -1341,6 +1341,108 @@ describe('cds-aichat-autocomplete', () => {
       );
     });
 
+    it('Home skips leading disabled items and lands on the first enabled item', async () => {
+      // Layout: disabled(0) → disabled(1) → enabled(2)
+      const items: SuggestionItem[] = [
+        { id: 'dis-a', label: 'Disabled A', disabled: true },
+        { id: 'dis-b', label: 'Disabled B', disabled: true },
+        { id: 'ena-c', label: 'Enabled C' },
+      ];
+      const el = await defaultFixture({ items });
+
+      // Navigate to the last item first so Home has somewhere to jump from.
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'End',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Home',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
+      // Should have skipped indices 0 and 1 (disabled) and landed on index 2.
+      expect(listbox?.getAttribute('aria-activedescendant')).to.equal(
+        'ena-c--option'
+      );
+    });
+
+    it('End skips trailing disabled items and lands on the last enabled item', async () => {
+      // Layout: enabled(0) → disabled(1) → disabled(2)
+      const items: SuggestionItem[] = [
+        { id: 'ena-a', label: 'Enabled A' },
+        { id: 'dis-b', label: 'Disabled B', disabled: true },
+        { id: 'dis-c', label: 'Disabled C', disabled: true },
+      ];
+      const el = await defaultFixture({ items });
+
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'End',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
+      // Should have skipped indices 2 and 1 (disabled) and landed on index 0.
+      expect(listbox?.getAttribute('aria-activedescendant')).to.equal(
+        'ena-a--option'
+      );
+    });
+
+    it('Home stays put when all items are disabled', async () => {
+      const items: SuggestionItem[] = [
+        { id: 'dis-a', label: 'Disabled A', disabled: true },
+        { id: 'dis-b', label: 'Disabled B', disabled: true },
+      ];
+      const el = await defaultFixture({ items });
+
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Home',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
+      // _focusedIndex stays at -1, so no aria-activedescendant is set.
+      expect(listbox?.getAttribute('aria-activedescendant') ?? '').to.equal('');
+    });
+
+    it('End stays put when all items are disabled', async () => {
+      const items: SuggestionItem[] = [
+        { id: 'dis-a', label: 'Disabled A', disabled: true },
+        { id: 'dis-b', label: 'Disabled B', disabled: true },
+      ];
+      const el = await defaultFixture({ items });
+
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'End',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
+      // _focusedIndex stays at -1, so no aria-activedescendant is set.
+      expect(listbox?.getAttribute('aria-activedescendant') ?? '').to.equal('');
+    });
+
     it('all-disabled list fires suggestionsAvailable with the correct count', async () => {
       const allDisabledItems: SuggestionItem[] = [
         { id: 'd1', label: 'Disabled A', disabled: true },

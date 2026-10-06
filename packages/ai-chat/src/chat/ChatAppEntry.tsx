@@ -7,6 +7,8 @@
  *  @license
  */
 
+import { hasCustomPromptLine } from './utils/customPromptLine';
+import { WriteableElementName } from '../types/instance/WriteableElements';
 import isEqual from 'lodash-es/isEqual.js';
 import React, {
   useCallback,
@@ -15,11 +17,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { StoreProvider } from './providers/StoreProvider';
-import { WindowSizeProvider } from './providers/WindowSizeProvider';
-import { ServiceManagerProvider } from './providers/ServiceManagerProvider';
-import { IntlProvider } from './providers/IntlProvider';
-import { AriaAnnouncerProvider } from './providers/AriaAnnouncerProvider';
+import { AppProviders } from './AppProviders';
 import { ServiceManager } from './services/ServiceManager';
 import {
   attachUserDefinedResponseHandlers,
@@ -43,6 +41,7 @@ import { LightDomPortalsContainer } from './components/portals/LightDomPortalsCo
 import { InputNodePortalsContainer } from './components/portals/InputNodePortalsContainer';
 
 import { useOnMount } from './hooks/useOnMount';
+import { getWindowSize, observeWindowSize } from './utils/windowSize';
 import appActions from './store/actions';
 import { consoleError, consoleWarn } from './utils/miscUtils';
 import { isBrowser } from './utils/browserUtils';
@@ -245,7 +244,12 @@ export function ChatAppEntry({
         // flash) and the prompt-line is present before hydration completes and
         // before `onAfterRender` resolves. Lite chats skip this and never
         // download Tiptap.
-        if (resolvePromptLineMode(publicConfig.input) === 'rich') {
+        if (
+          resolvePromptLineMode(publicConfig.input) === 'rich' &&
+          !hasCustomPromptLine(serviceManager) &&
+          renderWriteableElements?.[WriteableElementName.CUSTOM_PROMPT_LINE] ==
+            null
+        ) {
           await Promise.all([
             preloadPromptLineRich(),
             preloadBuildCarbonExtensions(),
@@ -365,20 +369,16 @@ export function ChatAppEntry({
     return undefined;
   }, [afterRenderCallback, serviceManager, instance, beforeRenderComplete]);
 
-  const [windowSize, setWindowSize] = useState<Dimension>({
-    width: isBrowser() ? window.innerWidth : 0,
-    height: isBrowser() ? window.innerHeight : 0,
-  });
+  const [windowSize, setWindowSize] = useState<Dimension>(() =>
+    getWindowSize()
+  );
 
   useOnMount(() => {
-    if (!isBrowser) {
-      return () => {};
+    if (!isBrowser()) {
+      return undefined;
     }
 
-    const windowListener = () => {
-      setWindowSize({ width: window.innerWidth, height: window.innerHeight });
-    };
-    window.addEventListener('resize', windowListener);
+    const stopObservingWindowSize = observeWindowSize(setWindowSize);
 
     const visibilityListener = () => {
       serviceManager?.store.dispatch(
@@ -391,7 +391,7 @@ export function ChatAppEntry({
     document.addEventListener('visibilitychange', visibilityListener);
 
     return () => {
-      window.removeEventListener('resize', windowListener);
+      stopObservingWindowSize();
       document.removeEventListener('visibilitychange', visibilityListener);
       serviceManager?.themeWatcherService?.stopWatching();
     };
@@ -423,67 +423,55 @@ export function ChatAppEntry({
   }
 
   return (
-    <StoreProvider store={serviceManager.store}>
-      <WindowSizeProvider windowSize={windowSize}>
-        <ServiceManagerProvider serviceManager={serviceManager}>
-          <IntlProvider intl={serviceManager.intl}>
-            <AriaAnnouncerProvider>
-              <AppShell
-                serviceManager={serviceManager}
-                hostElement={serviceManager.customHostElement}
-                writeableElementsPresentKeys={writeableElementsPresentKeys}
-              />
-              {renderUserDefinedResponse && (
-                <UserDefinedResponsePortalsContainer
-                  chatInstance={instance}
-                  renderUserDefinedResponse={renderUserDefinedResponse}
-                  userDefinedResponseEventsBySlot={
-                    userDefinedResponseEventsBySlot
-                  }
-                  chatWrapper={chatWrapper}
-                />
-              )}
+    <AppProviders serviceManager={serviceManager} windowSize={windowSize}>
+      <AppShell
+        serviceManager={serviceManager}
+        hostElement={serviceManager.customHostElement}
+        writeableElementsPresentKeys={writeableElementsPresentKeys}
+      />
+      {renderUserDefinedResponse && (
+        <UserDefinedResponsePortalsContainer
+          chatInstance={instance}
+          renderUserDefinedResponse={renderUserDefinedResponse}
+          userDefinedResponseEventsBySlot={userDefinedResponseEventsBySlot}
+          chatWrapper={chatWrapper}
+        />
+      )}
 
-              {renderCustomMessageFooter && (
-                <CustomFooterPortalsContainer
-                  chatInstance={instance}
-                  renderCustomMessageFooter={renderCustomMessageFooter}
-                  customFooterEventsBySlot={customFooterSlotsByName}
-                  chatWrapper={chatWrapper}
-                />
-              )}
+      {renderCustomMessageFooter && (
+        <CustomFooterPortalsContainer
+          chatInstance={instance}
+          renderCustomMessageFooter={renderCustomMessageFooter}
+          customFooterEventsBySlot={customFooterSlotsByName}
+          chatWrapper={chatWrapper}
+        />
+      )}
 
-              {renderCustomRequestFooter && (
-                <CustomRequestFooterPortalsContainer
-                  chatInstance={instance}
-                  renderCustomRequestFooter={renderCustomRequestFooter}
-                  customRequestFooterEventsBySlot={
-                    customRequestFooterSlotsByName
-                  }
-                  chatWrapper={chatWrapper}
-                />
-              )}
+      {renderCustomRequestFooter && (
+        <CustomRequestFooterPortalsContainer
+          chatInstance={instance}
+          renderCustomRequestFooter={renderCustomRequestFooter}
+          customRequestFooterEventsBySlot={customRequestFooterSlotsByName}
+          chatWrapper={chatWrapper}
+        />
+      )}
 
-              {renderWriteableElements && (
-                <WriteableElementsPortalsContainer
-                  chatInstance={instance}
-                  renderResponseMap={renderWriteableElements}
-                />
-              )}
+      {renderWriteableElements && (
+        <WriteableElementsPortalsContainer
+          chatInstance={instance}
+          renderResponseMap={renderWriteableElements}
+        />
+      )}
 
-              <LightDomPortalsContainer chatWrapper={chatWrapper} />
+      <LightDomPortalsContainer chatWrapper={chatWrapper} />
 
-              {renderUserDefinedInputNode && (
-                <InputNodePortalsContainer
-                  chatInstance={instance}
-                  renderUserDefinedInputNode={renderUserDefinedInputNode}
-                  chatWrapper={chatWrapper}
-                />
-              )}
-            </AriaAnnouncerProvider>
-          </IntlProvider>
-        </ServiceManagerProvider>
-      </WindowSizeProvider>
-    </StoreProvider>
+      {renderUserDefinedInputNode && (
+        <InputNodePortalsContainer
+          chatInstance={instance}
+          renderUserDefinedInputNode={renderUserDefinedInputNode}
+          chatWrapper={chatWrapper}
+        />
+      )}
+    </AppProviders>
   );
 }

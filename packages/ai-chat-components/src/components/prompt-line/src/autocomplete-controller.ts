@@ -423,24 +423,32 @@ export class AutocompleteController {
   }
 
   private _handleEditorKeyDown = (event: KeyboardEvent): void => {
-    if (
-      event.key !== 'ArrowUp' &&
-      event.key !== 'ArrowDown' &&
-      event.key !== 'Tab' &&
-      event.key !== 'Enter' &&
-      event.key !== 'Escape'
-    ) {
+    const { key } = event;
+    const whitelist = [
+      'ArrowUp',
+      'ArrowDown',
+      'Tab',
+      'Enter',
+      'Escape',
+      'Home',
+      'End',
+    ];
+
+    if (!whitelist.includes(key)) {
       return;
     }
+
     const listEl = this._listElement;
+
     if (!listEl || !this._trigger) {
       return;
     }
 
-    if (event.key === 'Enter') {
+    if (key === 'Enter') {
       const navigated = isNavigableListElement(listEl)
         ? listEl.hasNavigated()
         : true;
+
       if (!navigated) {
         this.dismiss();
         return; // let carbonChatEnter send the typed text
@@ -454,7 +462,7 @@ export class AutocompleteController {
     event.stopPropagation();
     listEl.dispatchEvent(
       new KeyboardEvent('keydown', {
-        key: event.key,
+        key,
         bubbles: true,
         cancelable: true,
       })

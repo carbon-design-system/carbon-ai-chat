@@ -14,14 +14,21 @@
 @use '@carbon/styles/scss/utilities/convert' as *;
 @use '@carbon/styles/scss/breakpoint' as *;
 
-/* Workspace shell styles */
 :host(#{$prefix}-workspace-shell) {
   @include type.type-style('body-01');
 
+  display: block;
+  block-size: 100%;
+  color: theme.$text-secondary;
+  inline-size: 100%;
+  min-block-size: 0;
+  min-inline-size: 0;
+}
+
+.#{$prefix}-workspace-shell {
   display: flex;
   overflow: auto;
-  /* stylelint-disable-next-line declaration-no-important */
-  box-sizing: border-box !important;
+  box-sizing: border-box;
   flex-direction: column;
   border: solid rem(1px) theme.$chat-bubble-border;
   border-radius: rem(8px);
@@ -30,49 +37,28 @@
   box-shadow:
     -10px 0 100px -24px theme.$ai-popover-shadow-outer-01,
     0 10px 40px -24px theme.$ai-popover-shadow-outer-02;
-  color: theme.$text-secondary;
   inline-size: 100%;
-
-  // Prevent toolbar from shrinking - it should maintain its natural height
-  slot[name='toolbar'] {
-    flex-shrink: 0;
-    min-inline-size: 0;
-  }
-
-  // Prevent notification from shrinking - it should maintain its natural height
-  slot[name='notification'] {
-    flex-shrink: 0;
-  }
-
-  // Prevent header from shrinking - it should maintain its natural height
-  slot[name='header'] {
-    flex-shrink: 0;
-  }
-
-  // Make body slot grow to fill available space and become scrollable when content is large
-  slot[name='body'] {
-    flex: 1 1 auto;
-    min-block-size: 0;
-  }
-
-  // Prevent footer from shrinking - it should maintain its natural height
-  slot[name='footer'] {
-    flex-shrink: 0;
-  }
 }
 
-// Carbon's global `.cds--inline-notification` sets a responsive max-inline-size
-// ladder (18/38/46/52rem). In the React build that class lands on a light-DOM
-// element, and document-tree declarations beat `::slotted()` no matter how
-// specific it is — for normal declarations the outer tree always wins, so
-// `!important` is the only way to override it from inside this shadow root.
-// The web components build encapsulates the class in the notification's own
-// shadow root, where the global rule can't reach it, so this is a no-op there.
+slot[name='toolbar'] {
+  flex-shrink: 0;
+  min-inline-size: 0;
+}
+
+slot[name='notification'],
+slot[name='header'],
+slot[name='footer'] {
+  flex-shrink: 0;
+}
+
+slot[name='body'] {
+  flex: 1 1 auto;
+  min-block-size: 0;
+}
+
 ::slotted([slot='notification']) {
   box-sizing: border-box;
   margin-block-end: 0;
-  /* stylelint-disable-next-line declaration-no-important */
-  max-inline-size: 100% !important;
 }
 
 // Typography inherits through the toolbar's shadow boundary onto its title;

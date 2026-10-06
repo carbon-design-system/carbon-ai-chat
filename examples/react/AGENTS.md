@@ -15,6 +15,8 @@ Workspace naming: `@carbon/ai-chat-examples-react-<slug>`.
 
 Reference setups: [`./tests-jest-jsdom/`](./tests-jest-jsdom/) and [`./tests-jest-happydom/`](./tests-jest-happydom/) — `jest.config.js`, `babel.config.js`, plus a spec under `src/`. **Default to jsdom**; use happy-dom only when the example's APIs need it (layout measurement, certain form behaviors).
 
+For Vitest with happy-dom, use [`./tests-vitest-happydom/`](./tests-vitest-happydom/) — `vite.config.ts`, `src/vitest.setup.ts`, and `src/__tests__/`.
+
 A sufficient spec mounts root, asserts no error, and exercises the main claimed API (e.g. one message via `customSendMessage`).
 
 ## APIs-and-props table headers

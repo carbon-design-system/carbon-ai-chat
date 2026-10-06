@@ -9,7 +9,7 @@
 
 import { useRef } from 'react';
 
-let nextNumber = 1;
+import { nextCounter } from '../utils/counter';
 
 /**
  * A hook that returns a counter that increases by one for each component it is used in.
@@ -17,7 +17,7 @@ let nextNumber = 1;
 function useCounter() {
   const counterRef = useRef<number>(undefined);
   if (counterRef.current === undefined) {
-    counterRef.current = nextNumber++;
+    counterRef.current = nextCounter();
   }
 
   return counterRef.current;

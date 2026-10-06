@@ -8,24 +8,10 @@
  */
 
 import React from 'react';
-
-import { AnnounceMessage } from '../../types/state/AppState';
-
-/**
- * This file contains the instance of the {@link AriaAnnouncerContext} which is used to provide access to the
- * {@link AriaAnnouncerProvider}.
- */
-
-/**
- * This is the function that will be used to trigger an announcement of a given value.
- *
- * @see AriaAnnouncerProvider
- */
-type AriaAnnouncerFunctionType = (
-  value: Node | AnnounceMessage | string
-) => void;
+import type { AriaAnnouncerFunctionType } from '../services/ariaAnnouncer';
 
 const AriaAnnouncerContext =
   React.createContext<AriaAnnouncerFunctionType>(null);
 
-export { AriaAnnouncerContext, AriaAnnouncerFunctionType };
+export { AriaAnnouncerContext };
+export type { AriaAnnouncerFunctionType };

@@ -6,7 +6,7 @@
   "description": "A demo and testing framework using @carbon/ai-chat as a React component.",
   "scripts": {
     "start": "vite",
-    "build": "vite build",
+    "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "NODE_OPTIONS='--import ./tests/node-polyfill.js' playwright test --workers=2"
   },
@@ -29,7 +29,7 @@
     "@vitejs/plugin-react": "^6.0.0",
     "accessibility-checker": "^4.0.18",
     "ts-lit-plugin": "^2.0.2",
-    "typescript": "^5.6.3",
+    "typescript": "^6.0.3",
     "vite": "^8.0.16"
   }
 }

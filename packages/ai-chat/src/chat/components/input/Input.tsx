@@ -161,6 +161,8 @@ interface InputProps {
    */
   trackInputState?: boolean;
 
+  restoreDraft?: boolean;
+
   /**
    * Whether the input container should have rounded corners (at wider breakpoints).
    */
@@ -258,6 +260,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     isStopStreamingButtonDisabled,
     maxInputChars = 10000,
     trackInputState = false,
+    restoreDraft = false,
     rounded,
     error,
   } = props;
@@ -394,6 +397,9 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     onSendInput,
     hasErrorProp,
     pendingUploads,
+    restoreDraft,
+    isInputVisible,
+    latchRich,
   });
 
   /**
