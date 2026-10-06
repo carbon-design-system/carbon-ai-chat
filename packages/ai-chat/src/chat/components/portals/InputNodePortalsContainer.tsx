@@ -30,15 +30,12 @@ interface InputNodePortalsContainerProps {
  * The set of TipTap node types that the rich user message bubble walker
  * (`MessageRichUserContent`) renders natively. Anything else is treated as
  * a custom node and routed through `renderUserDefinedInputNode`.
+ *
+ * `mention` and `command` are intentionally absent: they now flow through the
+ * same slot path as custom nodes so hosts can supply custom chip content via
+ * `renderUserDefinedInputNode`. The slot fallback renders the default chip.
  */
-const BUILT_IN_NODE_TYPES = new Set([
-  'doc',
-  'paragraph',
-  'text',
-  'hardBreak',
-  'mention',
-  'command',
-]);
+const BUILT_IN_NODE_TYPES = new Set(['doc', 'paragraph', 'text', 'hardBreak']);
 
 interface SlotEntry {
   slotKey: string;
@@ -52,13 +49,15 @@ interface SlotEntry {
  * node API. For every non-built-in TipTap node inside a user message's
  * `display_content`, we:
  *
- *   1. Append a `<div slot=cds-aichat-input-node-X>` to the chat wrapper's
- *      light DOM (so consumer stylesheets reach the content).
+ *   1. Append a host element to the chat wrapper's light DOM (so consumer
+ *      stylesheets reach the content). The tag is `<span>` for `mention` and
+ *      `command` nodes so they render inline alongside surrounding text;
+ *      `<div>` for all other custom nodes that may contain block-level content.
  *   2. `ReactDOM.createPortal` the consumer's `renderUserDefinedInputNode`
- *      output into that div.
+ *      output into that host element.
  *
  * `MessageRichUserContent` emits a matching `<slot name=...>` in the message
- * bubble that projects the slotted div back into the visual position. When the
+ * bubble that projects the slotted host back into the visual position. When the
  * consumer returns `null`, no slotted content is added and the slot's fallback
  * children (the node's label / value) show through.
  */
@@ -131,7 +130,12 @@ function InputNodePortalsContainer({
 
         let host = hostElementsRef.current.get(entry.slotKey);
         if (!host) {
-          host = document.createElement('div');
+          // Use an inline element for token nodes so the custom chip sits in
+          // the text flow. Block custom nodes (e.g. tileChip) keep a <div>
+          // so their block-level content is valid HTML.
+          const isTokenNode =
+            entry.node.type === 'mention' || entry.node.type === 'command';
+          host = document.createElement(isTokenNode ? 'span' : 'div');
           host.setAttribute('slot', entry.slotKey);
           hostElementsRef.current.set(entry.slotKey, host);
           chatWrapper.appendChild(host);

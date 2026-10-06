@@ -18,12 +18,13 @@
  *
  *   Structured: at least one paragraph contains a mention, command, or
  *   unknown custom node. Walk paragraph-by-paragraph and use
- *   `renderInlineMarkdown` for runs of plain text. Chip nodes mount the
- *   shared `renderTokenChip` element via a ref. Unknown node types emit a
- *   `<slot name={slotKey}>`; `InputNodePortalsContainer` walks the same
- *   `display_content`, derives the identical slot key, and projects the
- *   consumer's `renderUserDefinedInputNode` output into it. The slot-key
- *   scheme is shared via `collectInputNodeSlots` and pinned by
+ *   `renderInlineMarkdown` for runs of plain text. All non-text inline nodes
+ *   — including `mention` and `command` — emit a `<slot name={slotKey}>`;
+ *   `InputNodePortalsContainer` walks the same `display_content`, derives the
+ *   identical slot key, and projects the consumer's `renderUserDefinedInputNode`
+ *   output into it. When no renderer is registered, the slot's fallback content
+ *   (the default `renderTokenChip` chip) shows through. The slot-key scheme is
+ *   shared via `collectInputNodeSlots` and pinned by
  *   `messageRichUserContentSlots_spec`.
  */
 
@@ -209,11 +210,6 @@ function renderParagraphInline(
 
     flushTextRun(`${baseKey}-text-pre`);
 
-    if (node.type === 'mention' || node.type === 'command') {
-      out.push(<TokenChipMount key={baseKey} node={node} type={node.type} />);
-      return;
-    }
-
     out.push(<UnknownNodeSlot key={baseKey} node={node} slotKey={baseKey} />);
   });
 
@@ -278,49 +274,6 @@ function renderBoundaryWhitespace(
   return out;
 }
 
-interface TokenChipMountProps {
-  node: JSONContent;
-  type: 'mention' | 'command';
-}
-
-function TokenChipMount({ node, type }: TokenChipMountProps) {
-  const hostRef = useRef<HTMLSpanElement | null>(null);
-
-  // The chip element is rebuilt only when its visible attrs change.
-  //
-  // We deliberately do NOT forward `renderCustomToken` into the bubble: the
-  // editor pipes custom chip content through a portal listener on the chat
-  // wrapper (`LightDomPortalsContainer`), which assumes the dispatched event
-  // originates from inside the shadow DOM and bridges into light DOM. The
-  // bubble chip already lives in light DOM, so reusing that handshake would
-  // produce broken slot wiring. Consumers who need custom rendering inside
-  // a sent-bubble chip register a `renderUserDefinedInputNode` instead.
-  const chip = useMemo(
-    () =>
-      renderTokenChip({
-        attrs: (node.attrs ?? {}) as Record<string, string>,
-        type,
-        context: 'historical',
-      }),
-    [node.attrs, type]
-  );
-
-  useEffect(() => {
-    const host = hostRef.current;
-    if (!host) {
-      return undefined;
-    }
-    host.appendChild(chip);
-    return () => {
-      if (chip.parentNode === host) {
-        host.removeChild(chip);
-      }
-    };
-  }, [chip]);
-
-  return <span ref={hostRef} />;
-}
-
 interface UnknownNodeSlotProps {
   node: JSONContent;
   slotKey: string;
@@ -330,16 +283,52 @@ function UnknownNodeSlot({ node, slotKey }: UnknownNodeSlotProps) {
   // Rendered as a real `<slot>` element so the `InputNodePortalsContainer`
   // can project consumer content from chatWrapper's light DOM into this
   // position. When no consumer renderer is registered (or it returned
-  // null), the slot's fallback children — the node's label or value — show
-  // through.
-  const fallback = (node.attrs?.label ?? node.attrs?.value ?? '') as string;
+  // null), the slot's fallback children show through.
+  //
+  // For `mention` and `command` nodes, the fallback mounts the same default
+  // chip that used to be rendered by `TokenChipMount`, preserving the visual
+  // for hosts that do not supply a `renderUserDefinedInputNode`. For all other
+  // custom nodes, the fallback is the node's `label` or `value` as plain text.
+  const hostRef = useRef<HTMLSpanElement | null>(null);
+  const isTokenNode = node.type === 'mention' || node.type === 'command';
+
+  // Chip element is rebuilt only when its visible attrs change.
+  const chip = useMemo(
+    () =>
+      isTokenNode
+        ? renderTokenChip({
+            attrs: (node.attrs ?? {}) as Record<string, string>,
+            type: node.type as 'mention' | 'command',
+            context: 'historical',
+          })
+        : null,
+    [isTokenNode, node.attrs, node.type]
+  );
+
+  useEffect(() => {
+    if (!chip || !hostRef.current) {
+      return undefined;
+    }
+    const host = hostRef.current;
+    host.appendChild(chip);
+    return () => {
+      if (chip.parentNode === host) {
+        host.removeChild(chip);
+      }
+    };
+  }, [chip]);
+
   const dataProps = {
     [INPUT_NODE_SLOT_ATTR]: slotKey,
     [INPUT_NODE_TYPE_ATTR]: node.type ?? '',
   };
   return (
     <slot name={slotKey} {...dataProps}>
-      {fallback}
+      {isTokenNode ? (
+        <span ref={hostRef} />
+      ) : (
+        ((node.attrs?.label ?? node.attrs?.value ?? '') as string)
+      )}
     </slot>
   );
 }
