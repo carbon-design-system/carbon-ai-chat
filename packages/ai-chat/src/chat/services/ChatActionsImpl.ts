@@ -18,7 +18,10 @@ import {
   outputItemToLocalItem,
 } from '../schema/outputItemToLocalItem';
 import { HumanAgentsOnlineStatus } from './haa/HumanAgentService';
-import { ServiceManager } from './ServiceManager';
+import {
+  ServiceManager,
+  type UserDefinedElementRegistryItem,
+} from './ServiceManager';
 import actions from '../store/actions';
 import { agentUpdateIsSuspended } from '../store/humanAgentActions';
 import {
@@ -1610,7 +1613,9 @@ class ChatActionsImpl {
   /**
    * Creates the HTML element for a user defined response and adds it to the registry (if it does not already exist).
    */
-  getOrCreateUserDefinedElement(messageItemID: string) {
+  getOrCreateUserDefinedElement(
+    messageItemID: string
+  ): UserDefinedElementRegistryItem {
     let userDefinedItem =
       this.serviceManager.userDefinedElementRegistry.get(messageItemID);
     if (!userDefinedItem) {

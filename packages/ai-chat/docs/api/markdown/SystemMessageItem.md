@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.SystemMessageItem.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.SystemMessageItem.html
 
 A system message item that can be returned in a message response. System messages are used for
 status updates, progress indicators, or informational notices.
@@ -30,7 +30,7 @@ interface SystemMessageItem
 
 For messages that are sent between the user and a human agent, we assign an agent type to the message to distinguish what type it is.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.SystemMessageItem.html#agent_message_type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.SystemMessageItem.html#agent_message_type)
 
 ### message_item_options
 
@@ -38,7 +38,7 @@ For messages that are sent between the user and a human agent, we assign an agen
 
 Options that control additional features available for a message item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.SystemMessageItem.html#message_item_options)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.SystemMessageItem.html#message_item_options)
 
 ### response_type
 
@@ -46,7 +46,7 @@ Options that control additional features available for a message item.
 
 The response type is always "system" for system messages.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.SystemMessageItem.html#response_type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.SystemMessageItem.html#response_type)
 
 ### streaming_metadata
 
@@ -55,7 +55,7 @@ The response type is always "system" for system messages.
 Metadata used to identify a generic item within the context of a stream in order to correlate any updates meant
 for a specific item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.SystemMessageItem.html#streaming_metadata)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.SystemMessageItem.html#streaming_metadata)
 
 ### title
 
@@ -63,7 +63,7 @@ for a specific item.
 
 The title text to display in the system message.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.SystemMessageItem.html#title)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.SystemMessageItem.html#title)
 
 ### user_defined
 
@@ -71,7 +71,7 @@ The title text to display in the system message.
 
 An optional buckets of additional user defined properties for this item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.SystemMessageItem.html#user_defined)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.SystemMessageItem.html#user_defined)
 
 ### variant
 
@@ -82,4 +82,4 @@ How the system line is presented when the message renders as a **standalone** sy
 agent with a rule above and helper text. When system items render **inline** inside a
 bubble, `variant` is ignored and the default inline style is used.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.SystemMessageItem.html#variant)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.SystemMessageItem.html#variant)

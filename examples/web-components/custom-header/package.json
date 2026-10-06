@@ -1,6 +1,6 @@
 {
   "name": "@carbon/ai-chat-examples-web-components-custom-header",
-  "version": "1.22.0-rc.1",
+  "version": "1.22.0",
   "private": true,
   "type": "module",
   "description": "Demonstrates replacing the built-in chat header with a custom DOM element via WriteableElementName.CUSTOM_HEADER.",
@@ -12,7 +12,7 @@
   "license": "Apache-2.0",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "dependencies": {
-    "@carbon/ai-chat": "^1.22.0-rc.1",
+    "@carbon/ai-chat": "^1.22.0",
     "@carbon/react": "^1.97.0",
     "@carbon/styles": "^1.97.0",
     "@carbon/web-components": "^2.58.1",

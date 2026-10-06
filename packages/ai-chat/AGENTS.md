@@ -7,7 +7,7 @@ Guidance for authoring inside [packages/ai-chat/](.). Read this before editing a
 The primary Carbon AI Chat app. Ships as:
 
 - A React component tree rooted at [src/aiChatEntry.tsx](src/aiChatEntry.tsx).
-- Lit web-component wrappers (`cds-aichat-container`, `cds-aichat-custom-element`) under [src/web-components/](src/web-components) that mount the same React tree via `@lit/react`.
+- Lit web-component wrappers (`cds-aichat-container`, `cds-aichat-custom-element`) under [src/web-components/](src/web-components) that own startup and mount the React tree for every host. React components render through `cds-aichat-container`.
 - A server entry ([src/serverEntry.ts](src/serverEntry.ts)) exposing SSR-safe types/utilities only.
 
 All entries compile via [tasks/rollup.aichat.js](tasks/rollup.aichat.js) to `dist/es/` (`cds--` prefix) and `dist/es-custom/` (`cds--custom` prefix, avoiding `@carbon/angular-components` collisions). TypeDoc emits to `dist/docs/`.

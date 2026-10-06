@@ -1,7 +1,7 @@
 {
   "name": "@carbon/ai-chat-examples-react-tests-vitest-happydom",
   "private": true,
-  "version": "1.22.0-rc.1",
+  "version": "1.22.0",
   "type": "module",
   "description": "Vitest and happy-dom tests for @carbon/ai-chat React components.",
   "scripts": {
@@ -15,7 +15,7 @@
   "author": "IBM Corp",
   "license": "Apache-2.0",
   "dependencies": {
-    "@carbon/ai-chat": "^1.22.0-rc.1",
+    "@carbon/ai-chat": "^1.22.0",
     "@carbon/web-components": "^2.58.1",
     "lit": "^3.1.0",
     "react": "^19.0.0",

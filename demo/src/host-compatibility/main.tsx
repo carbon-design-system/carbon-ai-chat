@@ -15,6 +15,8 @@
  *
  * - `react,wc`: React chat, then the web-component entry.
  * - `wc,react`: the web-component entry, then the React chat.
+ * - `wait`: the React entry, then a plain `cds-aichat-container`, then the
+ *   web-component entry, which must wake that element.
  *
  * `?surface=` mounts one chat with page-styled content in every slot kind:
  *
@@ -179,6 +181,22 @@ async function loadWebComponents() {
   harness.loaded.push('wc');
 }
 
+function connectPlainElement() {
+  const element = document.createElement(
+    'cds-aichat-container'
+  ) as HTMLElement & {
+    config: PublicConfig;
+    onBeforeRender: (instance: ChatInstance) => void;
+  };
+  element.id = 'plain-host';
+  element.config = config;
+  element.onBeforeRender = (instance) => {
+    harness.wcInstance = instance;
+  };
+  document.getElementById('root')?.appendChild(element);
+  harness.loaded.push('plain');
+}
+
 /** Mounts a web-component chat with page-styled content in every slot kind. */
 async function mountWebComponent(surface: string) {
   let tagName = 'cds-aichat-container';
@@ -220,7 +238,17 @@ async function run() {
     await mountReact(surface);
     return;
   }
-  for (const step of (params.get('order') ?? 'react,wc').split(',')) {
+  const order = params.get('order') ?? 'react,wc';
+  if (order === 'wait') {
+    await import('@carbon/ai-chat');
+    harness.loaded.push('react-entry');
+    connectPlainElement();
+    // Let the element connect and settle before its renderer exists.
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    await loadWebComponents();
+    return;
+  }
+  for (const step of order.split(',')) {
     await (step === 'wc' ? loadWebComponents() : mountReact());
   }
 }

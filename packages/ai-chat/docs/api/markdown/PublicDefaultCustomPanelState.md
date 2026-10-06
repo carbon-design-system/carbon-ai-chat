@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Instance
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.PublicDefaultCustomPanelState.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.PublicDefaultCustomPanelState.html
 
 Represents public state for default custom panel.
 
@@ -26,4 +26,4 @@ interface PublicDefaultCustomPanelState
 
 Indicates if the default custom panel overlay is currently open.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.PublicDefaultCustomPanelState.html#isopen)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.PublicDefaultCustomPanelState.html#isopen)

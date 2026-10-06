@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`ChatContainer should open chat when launcher is clicked 1`] = `
-<cds-aichat-react>
+<cds-aichat-container>
   <div
     slot="aiTooltipAfterDescriptionElement"
   />
@@ -59,11 +59,11 @@ exports[`ChatContainer should open chat when launcher is clicked 1`] = `
   <div
     slot="customPromptLine"
   />
-</cds-aichat-react>
+</cds-aichat-container>
 `;
 
 exports[`ChatContainer should render PageObjectId elements in shadow DOM 1`] = `
-<cds-aichat-react>
+<cds-aichat-container>
   <div
     slot="aiTooltipAfterDescriptionElement"
   />
@@ -121,11 +121,11 @@ exports[`ChatContainer should render PageObjectId elements in shadow DOM 1`] = `
   <div
     slot="customPromptLine"
   />
-</cds-aichat-react>
+</cds-aichat-container>
 `;
 
 exports[`ChatContainer should render slotted content 1`] = `
-<cds-aichat-react>
+<cds-aichat-container>
   <div
     slot="aiTooltipAfterDescriptionElement"
   />
@@ -189,5 +189,5 @@ exports[`ChatContainer should render slotted content 1`] = `
   <div
     slot="customPromptLine"
   />
-</cds-aichat-react>
+</cds-aichat-container>
 `;

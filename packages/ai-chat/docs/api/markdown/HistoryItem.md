@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.HistoryItem.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.HistoryItem.html
 
 A single interaction in the Session History.
 
@@ -26,7 +26,7 @@ interface HistoryItem
 
 The message represented by this history item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.HistoryItem.html#message)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.HistoryItem.html#message)
 
 ### time
 
@@ -34,4 +34,4 @@ The message represented by this history item.
 
 Time this message occurred. ISO Format (e.g. 2020-03-15T08:59:56.952Z).
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.HistoryItem.html#time)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.HistoryItem.html#time)
