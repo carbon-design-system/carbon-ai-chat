@@ -10,7 +10,7 @@
 - Category: Utilities
  The prompt-line extension surface is still settling; these
 factory signatures can change in a minor release.
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/functions/Type_reference.carbonAutocomplete.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0/docs/functions/Type_reference.carbonAutocomplete.html
 
 Tiptap extension factory for live autocomplete. Wraps `@tiptap/suggestion`
 directly (no Mention node), and activates whenever the input has any

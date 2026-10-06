@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Web component
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.RenderCustomRequestFooterState.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.RenderCustomRequestFooterState.html
 
 The accumulated state for one custom footer slot below a user message, passed to the web component
 WCRenderCustomRequestFooter callback.
@@ -29,7 +29,7 @@ The message as the user submitted it, which is what the bubble on screen shows. 
 BusEventType.PRE_SEND handler runs later and may rewrite the text the assistant receives, so this can
 differ from what was sent.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.RenderCustomRequestFooterState.html#message)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.RenderCustomRequestFooterState.html#message)
 
 ### slotName
 
@@ -39,7 +39,7 @@ The unique identifier for this footer slot. Treat it as opaque: it is a key for 
 reference you can parse. It is also regenerated when the chat restores a message from history, so don't key
 durable state off it.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.RenderCustomRequestFooterState.html#slotname)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.RenderCustomRequestFooterState.html#slotname)
 
 ## Related
 

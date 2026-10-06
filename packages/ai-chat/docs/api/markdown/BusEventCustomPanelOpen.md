@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Events
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.BusEventCustomPanelOpen.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.BusEventCustomPanelOpen.html
 
 ## Signature
 
@@ -24,4 +24,4 @@ interface BusEventCustomPanelOpen
 
 The type of this event.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.BusEventCustomPanelOpen.html#type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.BusEventCustomPanelOpen.html#type)

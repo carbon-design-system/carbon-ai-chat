@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.MarkdownRendererTableArgs.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.MarkdownRendererTableArgs.html
 
 Argument passed to the markdown table renderer callbacks on
 CustomMarkdownRenderers.table and
@@ -32,7 +32,7 @@ interface MarkdownRendererTableArgs
 
 Cells extracted from the table's `<thead>`, in column order.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.MarkdownRendererTableArgs.html#headers)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.MarkdownRendererTableArgs.html#headers)
 
 ### isLoading
 
@@ -42,7 +42,7 @@ True when the table should render its skeleton/loading state instead of
 cell data — set by the component while a streaming table sits at the tail
 of the message and the next chunk may still add rows.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.MarkdownRendererTableArgs.html#isloading)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.MarkdownRendererTableArgs.html#isloading)
 
 ### isStreaming
 
@@ -51,7 +51,7 @@ of the message and the next chunk may still add rows.
 True while the chat is still receiving chunks of the message this table
 belongs to.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.MarkdownRendererTableArgs.html#isstreaming)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.MarkdownRendererTableArgs.html#isstreaming)
 
 ### rows
 
@@ -59,7 +59,7 @@ belongs to.
 
 Body rows, each an array of cells in column order.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.MarkdownRendererTableArgs.html#rows)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.MarkdownRendererTableArgs.html#rows)
 
 ### slotName
 
@@ -71,7 +71,7 @@ streaming chunks — while the underlying source line stays put, which makes
 it a safe React key. Treat the value as opaque; its format is not part of
 the API.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.MarkdownRendererTableArgs.html#slotname)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.MarkdownRendererTableArgs.html#slotname)
 
 ### token
 
@@ -80,7 +80,7 @@ the API.
 The markdown-it `Token` (a `table_open`) for the matched element — see
 the `markdown-it` `Token` documentation for the field shape.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.MarkdownRendererTableArgs.html#token)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.MarkdownRendererTableArgs.html#token)
 
 ## Related
 
