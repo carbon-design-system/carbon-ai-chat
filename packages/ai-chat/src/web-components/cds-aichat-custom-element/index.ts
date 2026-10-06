@@ -263,10 +263,10 @@ class ChatCustomElement extends FlattenedConfigElement {
   }
 
   disconnectedCallback() {
-    this.pluginHostController.disconnect();
     // Matches the inner container: a move keeps the running chat.
     queueMicrotask(() => {
       if (!this.isConnected) {
+        this.pluginHostController.disconnect();
         this.releaseMount();
       }
     });
