@@ -52,7 +52,7 @@ describe('ChatContainer', () => {
     // only the custom-element host is reachable from the light DOM in
     // jsdom; querying inside its shadow root would silently return null.
     const customElement = await waitFor(() =>
-      container.querySelector('cds-aichat-react')
+      container.querySelector('cds-aichat-container')
     );
     expect(customElement).toBeInTheDocument();
   }, 60000);
@@ -112,8 +112,8 @@ describe('ChatContainer', () => {
     // snapshotting only after the host element has appeared keeps the
     // serialized output stable - otherwise the first run captures a pre-mount
     // tree and later runs diff against the post-mount tree.
-    await waitFor(() => container.querySelector('cds-aichat-react')).then(() =>
-      expect(container.firstChild).toMatchSnapshot()
+    await waitFor(() => container.querySelector('cds-aichat-container')).then(
+      () => expect(container.firstChild).toMatchSnapshot()
     );
   }, 60000);
 });

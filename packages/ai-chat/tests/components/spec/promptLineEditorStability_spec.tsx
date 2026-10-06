@@ -18,6 +18,7 @@
 import React from 'react';
 import { render, waitFor } from '@testing-library/react';
 import type { Editor } from '@tiptap/core';
+import '@tiptap/extensions';
 
 import { ChatContainer } from '../../../src/react/ChatContainer';
 import {

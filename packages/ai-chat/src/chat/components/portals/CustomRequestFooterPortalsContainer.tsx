@@ -7,10 +7,10 @@
  *  @license
  */
 
-import React, { ReactNode, useRef, useEffect } from 'react';
-import ReactDOM from 'react-dom';
+import React, { useRef, useEffect } from 'react';
 
 import { useRemoveHostsOnUnmount } from '../../hooks/useRemoveHostsOnUnmount';
+import { SlotHostPortal } from './SlotHostPortal';
 
 import { ChatInstance } from '../../../types/instance/ChatInstance';
 import {
@@ -138,31 +138,15 @@ function CustomRequestFooterPortalsContainer({
           }
 
           return (
-            <CustomRequestFooterComponentPortal
+            <SlotHostPortal
               key={slotName}
               hostElement={getOrCreateSlotElement(slotName)}>
               {content}
-            </CustomRequestFooterComponentPortal>
+            </SlotHostPortal>
           );
         }
       )
     : null;
-}
-
-/**
- * This is the component that will attach a React portal to the given host element. The host element is the element
- * provided by Carbon AI Chat where your footer will be displayed in the DOM. This portal will attach any React
- * children passed to it under this component so you can render the footer using your own React application. Those
- * children will be rendered under the given element where it lives in the DOM.
- */
-function CustomRequestFooterComponentPortal({
-  hostElement,
-  children,
-}: {
-  hostElement: HTMLElement;
-  children: ReactNode;
-}) {
-  return ReactDOM.createPortal(children, hostElement);
 }
 
 const CustomRequestFooterPortalsContainerExport = React.memo(

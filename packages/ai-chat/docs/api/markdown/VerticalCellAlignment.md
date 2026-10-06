@@ -8,7 +8,7 @@
 
 - Kind: TypeAlias
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/types/Type_reference.VerticalCellAlignment.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0/docs/types/Type_reference.VerticalCellAlignment.html
 
 Vertical alignment values for items in a grid response.
 
