@@ -6,8 +6,7 @@
   "description": "An example demonstrating @mentions and /commands with structured data in @carbon/ai-chat.",
   "scripts": {
     "start": "vite",
-    "build": "vite build",
-    "test:e2e": "playwright test"
+    "build": "vite build"
   },
   "author": "IBM Corp",
   "license": "Apache-2.0",
@@ -20,7 +19,6 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@playwright/test": "^1.63.0",
     "@vitejs/plugin-react": "^6.0.0",
     "typescript": "^6.0.3",
     "vite": "^8.3.0"

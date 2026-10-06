@@ -8,11 +8,15 @@
 /** Browser fixtures and setup helpers shared by Vite example suites. */
 import { expect, test as base, type Page } from '@playwright/test';
 
-export const test = base.extend({
-  baseURL: async (_fixtures, playWrightUse) => {
-    const url = process.env.CAIC_E2E_URL;
+import { urlVariable, type TargetId } from '../targets';
+
+export const test = base.extend<{ target: TargetId }>({
+  // Set per project in `playwright.config.ts`; never meant to be read unset.
+  target: [undefined as unknown as TargetId, { option: true }],
+  baseURL: async ({ target }, playWrightUse) => {
+    const url = process.env[urlVariable(target)];
     if (!url) {
-      throw new Error('The example server did not report its URL.');
+      throw new Error(`The ${target} example server did not report its URL.`);
     }
     await playWrightUse(url);
   },

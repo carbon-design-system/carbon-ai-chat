@@ -25,14 +25,14 @@ When `npm run aiChat:start` is running in another terminal, example Vite dev ser
 
 ## Smoke tests
 
-Playwright is the smoke-test mechanism for examples. New suites use `test:e2e`. `tests-vitest-happydom` and both `tests-jest-*` examples use `test` for another runner. The existing `frameworks-react-17` and `frameworks-react-18` Playwright suites also use `test`. Keep them in the root `npm test` run until they move to the shared setup in #1424.
+Playwright is the smoke-test mechanism for examples. The golden examples are covered by one central suite in [shared/playwright/](shared/playwright/): run it with `npm run test:e2e:goldens`. An example holds no Playwright config, dependency, or script of its own. `tests-vitest-happydom` and both `tests-jest-*` examples use `test` for another runner. The existing `frameworks-react-17` and `frameworks-react-18` Playwright suites also use `test`. Keep them in the root `npm test` run until they move to the shared setup in #1424.
 
-Read [playwright.md](references/playwright.md) before adding or changing an example's tests. It carries the goldens to copy, how a port is allocated, the selector rules, and the four examples that are deliberately skipped.
+Read [playwright.md](references/playwright.md) before adding or changing an example's tests. It carries where specs live, how to add a target, how a port is allocated, the selector rules, and the four examples that are deliberately skipped.
 
 ## Definition of done
 
 - `npm run build --workspace=<example>` exits 0.
-- `npm run test:e2e --workspace=<example>` passes, if the example has a `test:e2e` script.
+- `npm run test:e2e:goldens -- --project <target>` passes, if the example is a target in [targets.ts](shared/playwright/targets.ts).
 - `npm run test --workspace=<example>` passes, if the example has a `test` script.
 - README follows the [Indexer Contract](references/indexer-contract.md).
 
