@@ -26,7 +26,7 @@ import {
 const customSlot = WriteableElementName.CUSTOM_PROMPT_LINE;
 const query = (selector: string) => deepQuerySelector(document, selector);
 const outlet = (name: WriteableElementName) => {
-  const root = query('cds-aichat-react, cds-aichat-internal')?.shadowRoot;
+  const root = query('cds-aichat-container')?.shadowRoot;
   return root ? deepQuerySelector(root, `slot[name="${name}"]`) : null;
 };
 const prompt = () => query('cds-aichat-prompt-line');

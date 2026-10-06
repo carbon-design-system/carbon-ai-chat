@@ -31,5 +31,8 @@ export default defineConfig({
       },
     },
     testTimeout: 15000,
+    // `loadAllLazyDeps` in the setup `beforeAll` transforms the whole chat app
+    // on first import, which can outlast the 10s default on a busy CI runner.
+    hookTimeout: 30000,
   },
 });

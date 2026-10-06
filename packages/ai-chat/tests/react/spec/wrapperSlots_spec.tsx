@@ -8,17 +8,20 @@
  */
 
 /**
- * React render props stay live after boot. Their hosts land in the chat host's
- * light DOM, where page CSS reaches them, and slots in its shadow root project
- * them. Removing a render prop removes its hosts, so a slot with nothing to
- * show has no host and its fallback content shows.
+ * React render props stay live through the shared container. Their hosts land
+ * in `cds-aichat-container`'s light DOM, where page CSS reaches them, and the
+ * app's own slots project them from the same shadow root. Removing a render
+ * prop removes its hosts, so a slot with nothing to show has no host and its
+ * fallback content shows.
  */
 
 import React, { StrictMode } from 'react';
 import { act, render, waitFor } from '@testing-library/react';
 import { deepQuerySelector } from '@carbon/ai-chat-components/es/globals/utils/dom-utils.js';
 
+import '../../../src/web-components/cds-aichat-container';
 import { ChatContainer } from '../../../src/react/ChatContainer';
+import type CdsAiChatContainerElement from '../../../src/web-components/cds-aichat-container/cds-aichat-container';
 import { ChatContainerProps } from '../../../src/types/component/ChatContainer';
 import { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import {
@@ -37,8 +40,33 @@ import {
 
 const config = { ...createBaseConfig(), openChatByDefault: true };
 
+class TestErrorBoundary extends React.Component<
+  { children: React.ReactNode; onError: (error: Error) => void },
+  { failed: boolean }
+> {
+  state = { failed: false };
+
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+
+  componentDidCatch(error: Error) {
+    this.props.onError(error);
+  }
+
+  render() {
+    return this.state.failed ? (
+      <span data-probe="host-error-boundary" />
+    ) : (
+      this.props.children
+    );
+  }
+}
+
 /**
- * The slot a host node is projected into, or null when nothing picked it up.
+ * The app slot a host node is projected into, or null when nothing picked it
+ * up. A host in the container's light DOM is assigned straight to the slot the
+ * app renders, with no forwarding in between.
  */
 function assignedSlotFor(slot: string) {
   return (hostFor(slot) as HTMLElement | null)?.assignedSlot ?? null;
@@ -88,6 +116,48 @@ async function boot(props: Partial<ChatContainerProps> = {}, strict = false) {
   };
 }
 
+/** Drains the microtask queue and a short timer, enough for Lit updates. */
+async function settle() {
+  await new Promise((resolve) => setTimeout(resolve, 50));
+}
+
+/**
+ * Boots a plain cds-aichat-container and returns its instance plus a
+ * property-setter update function, mirroring `boot()` above.
+ */
+async function bootWC(props: Partial<Record<string, unknown>> = {}): Promise<{
+  element: CdsAiChatContainerElement;
+  instance: ChatInstance;
+  update: (next: Record<string, unknown>) => Promise<void>;
+}> {
+  const element = document.createElement(
+    'cds-aichat-container'
+  ) as CdsAiChatContainerElement;
+  let instance: ChatInstance | null = null;
+  Object.assign(element, {
+    config,
+    ...props,
+    onBeforeRender: (chat: ChatInstance) => {
+      instance = chat;
+    },
+  });
+  document.body.appendChild(element);
+  await waitFor(() => expect(instance).not.toBeNull(), { timeout: 5000 });
+  await waitFor(() =>
+    expect(
+      element.shadowRoot?.querySelector('.cds-aichat--react-app')
+    ).not.toBeNull()
+  );
+  return {
+    element,
+    instance: instance as ChatInstance,
+    update: async (next: Record<string, unknown>) => {
+      Object.assign(element, next);
+      await element.updateComplete;
+    },
+  };
+}
+
 function sendRequest(instance: ChatInstance, request: Partial<MessageRequest>) {
   return act(() =>
     instance.send({
@@ -97,7 +167,7 @@ function sendRequest(instance: ChatInstance, request: Partial<MessageRequest>) {
   );
 }
 
-describe('React render props after boot', () => {
+describe('React render props through the shared container', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
@@ -142,6 +212,10 @@ describe('React render props after boot', () => {
     await waitFor(() =>
       expect(document.querySelector('[data-probe="b"]')).not.toBeNull()
     );
+    expect(hostFor(slot)).toBe(firstHost);
+
+    update({ renderUserDefinedResponse: () => null });
+    await waitFor(() => expect(firstHost).toBeEmptyDOMElement());
     expect(hostFor(slot)).toBe(firstHost);
 
     update({});
@@ -222,6 +296,71 @@ describe('React render props after boot', () => {
         )
       ).toEqual(['after', 'reenabled'])
     );
+  });
+
+  it('adds and removes user-defined content via cds-aichat-container callback', async () => {
+    const { instance, update } = await bootWC();
+
+    await addUserDefinedResponse(instance, 'wc-udr', { label: 'hello' });
+    await settle();
+
+    expect(document.querySelectorAll('[slot^="wc-udr"]')).toHaveLength(0);
+
+    const cache = new Map<string, HTMLElement>();
+    await update({
+      renderUserDefinedResponse: (state: {
+        messageItem?: { user_defined?: { label?: string } };
+      }) => {
+        const el =
+          cache.get(String(state.messageItem?.user_defined?.label)) ??
+          document.createElement('p');
+        el.setAttribute('data-probe', 'wc-udr');
+        el.textContent = state.messageItem?.user_defined?.label ?? '';
+        cache.set(el.textContent, el);
+        return el;
+      },
+    });
+    await waitFor(() =>
+      expect(document.querySelector('[data-probe="wc-udr"]')).not.toBeNull()
+    );
+
+    // Identity is stable across an unrelated update.
+    const before = document.querySelector('[data-probe="wc-udr"]');
+    await update({ assistantName: 'Updated' });
+    await settle();
+    expect(document.querySelector('[data-probe="wc-udr"]')).toBe(before);
+
+    // Removing the callback removes the host.
+    await update({ renderUserDefinedResponse: undefined });
+    await settle();
+    expect(document.querySelector('[data-probe="wc-udr"]')).toBeNull();
+  });
+
+  it('removes the slot host when a cds-aichat-container callback returns null', async () => {
+    const { element, instance, update } = await bootWC({
+      renderUserDefinedResponse: () => {
+        const content = document.createElement('span');
+        content.dataset.probe = 'wc-null';
+        return content;
+      },
+    });
+    await addUserDefinedResponse(instance, 'wc-null', {});
+    const content = await waitFor(() => {
+      const match = element.querySelector<HTMLElement>(
+        '[data-probe="wc-null"]'
+      );
+      expect(match).not.toBeNull();
+      return match as HTMLElement;
+    });
+    const host = content.parentElement;
+    const slotName = host?.getAttribute('slot');
+    expect(slotName).toMatch(/^slot-user-defined-/);
+
+    await update({
+      renderUserDefinedResponse: (): HTMLElement | null => null,
+    });
+    await waitFor(() => expect(host?.isConnected).toBe(false));
+    expect(element.querySelector(`[slot="${slotName}"]`)).toBeNull();
   });
 
   it('adds, replaces, and removes a message footer renderer after boot', async () => {
@@ -329,6 +468,41 @@ describe('React render props after boot', () => {
     expect(bubbleSlot().textContent).toBe('Ship it');
   });
 
+  it('renders input nodes through a cds-aichat-container callback', async () => {
+    const { instance, update } = await bootWC();
+    await update({
+      renderUserDefinedInputNode: () => {
+        const element = document.createElement('b');
+        element.dataset.probe = 'wc-input-node';
+        element.textContent = 'custom';
+        return element;
+      },
+    });
+
+    await sendRequest(instance, {
+      id: 'wc-rich',
+      input: {
+        message_type: MessageInputType.TEXT,
+        text: 'Ship it',
+        display_content: {
+          type: 'doc',
+          content: [
+            {
+              type: 'paragraph',
+              content: [{ type: 'taskCard', attrs: { label: 'Ship it' } }],
+            },
+          ],
+        },
+      },
+    });
+
+    await waitFor(() =>
+      expect(
+        document.querySelector('[data-probe="wc-input-node"]')?.textContent
+      ).toBe('custom')
+    );
+  });
+
   it('updates writeable keys without replacing nodes or clearing imperative content', async () => {
     const { instance, update } = await boot();
     const nodes = Object.entries(instance.writeableElements);
@@ -415,5 +589,77 @@ describe('React render props after boot', () => {
       expect(assignedSlotFor('afterInputElement')).not.toBeNull();
     });
     expectNodesUnchanged();
+  });
+  describe('throwing slot callbacks', () => {
+    it('logs a web-component callback error and keeps the chat mounted', async () => {
+      const consoleError = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+      const boom = new Error('renderer boom');
+      const { element, instance, update } = await bootWC({
+        renderUserDefinedResponse: () => {
+          const content = document.createElement('span');
+          content.dataset.probe = 'wc-throw';
+          return content;
+        },
+      });
+
+      await addUserDefinedResponse(instance, 'throw-udr', {});
+      const content = await waitFor(() => {
+        const match = element.querySelector<HTMLElement>(
+          '[data-probe="wc-throw"]'
+        );
+        expect(match).not.toBeNull();
+        return match as HTMLElement;
+      });
+      const host = content.parentElement;
+
+      await update({
+        renderUserDefinedResponse: () => {
+          throw boom;
+        },
+      });
+      await waitFor(() =>
+        expect(consoleError).toHaveBeenCalledWith(
+          expect.stringContaining('Error in renderUserDefinedResponse:'),
+          boom
+        )
+      );
+      await waitFor(() => expect(host?.isConnected).toBe(false));
+      expect(
+        element.shadowRoot?.querySelector('[data-testid="input_field"]')
+      ).not.toBeNull();
+      consoleError.mockRestore();
+    });
+
+    it('lets a React render-prop error reach the host error boundary', async () => {
+      const consoleError = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+      const boom = new Error('react renderer boom');
+      const onError = jest.fn();
+      let instance: ChatInstance | null = null;
+      render(
+        <TestErrorBoundary onError={onError}>
+          <ChatContainer
+            {...config}
+            onBeforeRender={(chat) => {
+              instance = chat;
+            }}
+            renderUserDefinedResponse={() => {
+              throw boom;
+            }}
+          />
+        </TestErrorBoundary>
+      );
+      await waitFor(() => expect(instance).not.toBeNull(), { timeout: 5000 });
+
+      await addUserDefinedResponse(instance as ChatInstance, 'throw-react', {});
+      await waitFor(() => expect(onError).toHaveBeenCalledWith(boom));
+      expect(
+        document.querySelector('[data-probe="host-error-boundary"]')
+      ).not.toBeNull();
+      consoleError.mockRestore();
+    });
   });
 });
