@@ -138,7 +138,7 @@ describe('rich user message slot-key contract', () => {
     expect(renderedSlotKeys(content)).toEqual(walkedSlotKeys(content));
   });
 
-  it('agrees on a mention node that now produces a slot', () => {
+  it('agrees on a paragraph containing only a mention', () => {
     const content: JSONContent = {
       type: 'doc',
       content: [

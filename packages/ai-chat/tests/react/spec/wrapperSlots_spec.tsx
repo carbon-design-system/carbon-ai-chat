@@ -329,6 +329,61 @@ describe('React render props after boot', () => {
     expect(bubbleSlot().textContent).toBe('Ship it');
   });
 
+  it('projects custom renderUserDefinedInputNode content for mention and command nodes in the sent message bubble', async () => {
+    const { instance, update } = await boot();
+    await sendRequest(instance, {
+      id: 'token-rich',
+      input: {
+        message_type: MessageInputType.TEXT,
+        text: '@Alice /deploy',
+        display_content: {
+          type: 'doc',
+          content: [
+            {
+              type: 'paragraph',
+              content: [
+                { type: 'mention', attrs: { id: 'u1', label: 'Alice' } },
+                { type: 'text', text: ' ' },
+                { type: 'command', attrs: { id: 'c1', label: 'deploy' } },
+              ],
+            },
+          ],
+        },
+      },
+    });
+
+    const mentionSlot = 'token-rich::0.0';
+    const commandSlot = 'token-rich::0.2';
+    const bubbleSlot = (name: string) =>
+      deepQuerySelector(
+        getChatShadowRoot(),
+        `slot[name="${name}"]`
+      ) as HTMLSlotElement;
+
+    await waitFor(() => expect(bubbleSlot(mentionSlot)).not.toBeNull());
+    await waitFor(() => expect(bubbleSlot(commandSlot)).not.toBeNull());
+
+    expect(bubbleSlot(mentionSlot).assignedNodes()).toHaveLength(0);
+    expect(bubbleSlot(commandSlot).assignedNodes()).toHaveLength(0);
+
+    update({
+      renderUserDefinedInputNode: ({ node }) =>
+        node.type === 'mention' ? (
+          <b data-probe="mention-chip">@{String(node.attrs?.label ?? '')}</b>
+        ) : null,
+    });
+
+    await waitFor(() => expect(assignedSlotFor(mentionSlot)).not.toBeNull());
+    expect(
+      bubbleSlot(mentionSlot)
+        .assignedNodes({ flatten: true })
+        .map((n) => n.textContent)
+    ).toEqual(['@Alice']);
+
+    await waitFor(() => expect(hostFor(commandSlot)).toBeNull());
+    expect(bubbleSlot(commandSlot).assignedNodes()).toHaveLength(0);
+  });
+
   it('updates writeable keys without replacing nodes or clearing imperative content', async () => {
     const { instance, update } = await boot();
     const nodes = Object.entries(instance.writeableElements);

@@ -16,15 +16,18 @@
  *   cross-paragraph markdown (fenced code blocks, lists, tables) keeps
  *   working — visually identical to the legacy plain-text bubble.
  *
- *   Structured: at least one paragraph contains a mention, command, or
- *   unknown custom node. Walk paragraph-by-paragraph and use
- *   `renderInlineMarkdown` for runs of plain text. All non-text inline nodes
- *   — including `mention` and `command` — emit a `<slot name={slotKey}>`;
- *   `InputNodePortalsContainer` walks the same `display_content`, derives the
- *   identical slot key, and projects the consumer's `renderUserDefinedInputNode`
- *   output into it. When no renderer is registered, the slot's fallback content
- *   (the default `renderTokenChip` chip) shows through. The slot-key scheme is
- *   shared via `collectInputNodeSlots` and pinned by
+ *   Structured: at least one node anywhere in the doc has a type outside
+ *   `TEXTUAL_NODE_TYPES`. Top-level non-`paragraph` blocks go straight to
+ *   `UnknownNodeSlot`. Paragraph nodes walk their inline children:
+ *   text/hardBreak runs use `renderInlineMarkdown`; every other inline node
+ *   — including `mention` and `command` — goes to `UnknownNodeSlot`.
+ *   `UnknownNodeSlot` emits a `<slot name={slotKey}>`; `InputNodePortalsContainer`
+ *   walks the same `display_content`, derives the identical slot key, and
+ *   projects the consumer's `renderUserDefinedInputNode` output into it.
+ *   When the renderer returns `null` (or none is registered), the slot's
+ *   fallback shows through: the default `renderTokenChip` chip for `mention`
+ *   and `command`, or the node's `label`/`value` text for other custom nodes.
+ *   The slot-key scheme is shared via `collectInputNodeSlots` and pinned by
  *   `messageRichUserContentSlots_spec`.
  */
 
@@ -282,13 +285,12 @@ interface UnknownNodeSlotProps {
 function UnknownNodeSlot({ node, slotKey }: UnknownNodeSlotProps) {
   // Rendered as a real `<slot>` element so the `InputNodePortalsContainer`
   // can project consumer content from chatWrapper's light DOM into this
-  // position. When no consumer renderer is registered (or it returned
-  // null), the slot's fallback children show through.
+  // position. When the renderer returns `null` or none is registered, the
+  // slot's fallback children show through.
   //
-  // For `mention` and `command` nodes, the fallback mounts the same default
-  // chip that used to be rendered by `TokenChipMount`, preserving the visual
-  // for hosts that do not supply a `renderUserDefinedInputNode`. For all other
-  // custom nodes, the fallback is the node's `label` or `value` as plain text.
+  // For `mention` and `command` nodes the fallback is the default
+  // `renderTokenChip` chip. For all other custom nodes it is the node's
+  // `label` or `value` as plain text.
   const hostRef = useRef<HTMLSpanElement | null>(null);
   const isTokenNode = node.type === 'mention' || node.type === 'command';
 
@@ -318,17 +320,14 @@ function UnknownNodeSlot({ node, slotKey }: UnknownNodeSlotProps) {
     };
   }, [chip]);
 
+  const fallback = (node.attrs?.label ?? node.attrs?.value ?? '') as string;
   const dataProps = {
     [INPUT_NODE_SLOT_ATTR]: slotKey,
     [INPUT_NODE_TYPE_ATTR]: node.type ?? '',
   };
   return (
     <slot name={slotKey} {...dataProps}>
-      {isTokenNode ? (
-        <span ref={hostRef} />
-      ) : (
-        ((node.attrs?.label ?? node.attrs?.value ?? '') as string)
-      )}
+      {isTokenNode ? <span ref={hostRef} /> : fallback}
     </slot>
   );
 }
