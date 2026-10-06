@@ -260,6 +260,12 @@ export function useChatAutocomplete(
     }
     const { items: flatItems, groups } = itemsToGroups(state.items);
     if (state.renderCustomList) {
+      // When items are empty the built-in Autocomplete component stays
+      // mounted to announce the zero-results state. Consumer-supplied
+      // renderers are not rendered when empty (pre-PR behaviour unchanged).
+      if (state.items.length === 0) {
+        return null;
+      }
       const result = state.renderCustomList({
         items: state.items,
         query: state.trigger.query,

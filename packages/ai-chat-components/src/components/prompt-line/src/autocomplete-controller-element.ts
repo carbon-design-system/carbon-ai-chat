@@ -241,6 +241,13 @@ class AutocompleteControllerElement extends LitElement {
       );
     }
     if (renderCustomList) {
+      // When items are empty the built-in autocomplete element is kept mounted
+      // so it can announce the zero-results state. Consumer-supplied renderers
+      // are not mounted in that case: they own their own empty-state handling
+      // and were not rendered before this PR.
+      if (items.length === 0) {
+        return nothing;
+      }
       const result = renderCustomList({
         items,
         query: trigger.query,
