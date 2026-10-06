@@ -44,13 +44,13 @@ const TOPOLOGIES = [
     framework: 'react',
     layout: 'float',
     surface: 'React ChatContainer',
-    chatElement: 'cds-aichat-react',
+    chatElement: 'cds-aichat-container',
   },
   {
     framework: 'react',
     layout: 'fullscreen',
     surface: 'React ChatCustomElement',
-    chatElement: 'cds-aichat-react',
+    chatElement: 'cds-aichat-container',
   },
   {
     framework: 'web-component',

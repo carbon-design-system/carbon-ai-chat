@@ -200,4 +200,4 @@ class ServiceManager {
   }
 }
 
-export { ServiceManager };
+export { ServiceManager, UserDefinedElementRegistryItem };

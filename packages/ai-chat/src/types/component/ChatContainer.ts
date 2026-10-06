@@ -646,10 +646,17 @@ interface ChatContainerProps extends Omit<PublicConfig, 'markdown'> {
   markdown?: ChatContainerPropsMarkdown;
 
   /**
-   * This function is called before the render function of Carbon AI Chat is called. This function can return a Promise
-   * which will cause Carbon AI Chat to wait for it before rendering.
+   * Called once per mount, after the {@link ChatInstance} is ready and before the chat renders.
    *
-   * Use it to capture the {@link ChatInstance} so you can call instance methods later.
+   * Use it to capture the instance so you can call instance methods later. Events the chat fires while this runs
+   * still reach your render props.
+   *
+   * If it returns a promise, the chat waits for that promise before it renders. If it throws or rejects, the chat
+   * logs the error, stays unrendered, and skips {@link ChatContainerProps.onAfterRender | onAfterRender}. Changing
+   * props does not retry it; mount the chat again to retry.
+   *
+   * Don't return a promise that waits for `onAfterRender`. That callback runs only after this promise settles, so
+   * the chat would never render.
    *
    * @example
    * ```tsx
@@ -667,11 +674,11 @@ interface ChatContainerProps extends Omit<PublicConfig, 'markdown'> {
   onBeforeRender?: (instance: ChatInstance) => Promise<void> | void;
 
   /**
-   * This function is called after the render function of Carbon AI Chat is called. This function can return a Promise
-   * which will cause Carbon AI Chat to wait for it before rendering.
+   * Called once per mount, after the chat first renders and applies its initial view.
    *
-   * Like {@link ChatContainerProps.onBeforeRender}, it receives the {@link ChatInstance}; use it when you need the
-   * instance only after the first render has completed.
+   * Like {@link ChatContainerProps.onBeforeRender}, it receives the {@link ChatInstance}. Use it when you need the
+   * instance only after the first render. It does not wait for history to load, and the chat does not wait for a
+   * promise it returns.
    */
   onAfterRender?: (instance: ChatInstance) => Promise<void> | void;
 

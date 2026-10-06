@@ -7,10 +7,10 @@
  *  @license
  */
 
-import React, { ReactNode, useRef, useEffect } from 'react';
-import ReactDOM from 'react-dom';
+import React, { useRef, useEffect } from 'react';
 
 import { useRemoveHostsOnUnmount } from '../../hooks/useRemoveHostsOnUnmount';
+import { SlotHostPortal } from './SlotHostPortal';
 
 import { ChatInstance } from '../../../types/instance/ChatInstance';
 import {
@@ -29,6 +29,9 @@ interface UserDefinedResponsePortalsContainer {
    * response.
    */
   renderUserDefinedResponse?: RenderUserDefinedResponse;
+
+  /** Removes the slot host when a web-component callback returns no content. */
+  removeEmptyHost?: boolean;
 
   /**
    * The list of events gathered by slot name that were fired that contain all the responses to render.
@@ -56,6 +59,7 @@ interface UserDefinedResponsePortalsContainer {
 function UserDefinedResponsePortalsContainer({
   chatInstance,
   renderUserDefinedResponse,
+  removeEmptyHost,
   userDefinedResponseEventsBySlot,
   chatWrapper,
 }: UserDefinedResponsePortalsContainer) {
@@ -100,39 +104,35 @@ function UserDefinedResponsePortalsContainer({
     return hostElement;
   };
 
+  const removeSlotElement = (slot: string) => {
+    const hostElement = slotElementsRef.current.get(slot);
+    if (hostElement) {
+      hostElement.remove();
+      slotElementsRef.current.delete(slot);
+    }
+  };
+
   // All we need to do to enable the React portals is to render each portal somewhere in your application (it
   // doesn't really matter where).
   return renderUserDefinedResponse
     ? Object.entries(userDefinedResponseEventsBySlot).map(
         ([slot, slotState]) => {
-          const hostElement = getOrCreateSlotElement(slot);
+          const content = renderUserDefinedResponse(slotState, chatInstance);
+          if (removeEmptyHost && !content) {
+            removeSlotElement(slot);
+            return null;
+          }
 
           return (
-            <UserDefinedResponseComponentPortal
+            <SlotHostPortal
               key={slot}
-              hostElement={hostElement}>
-              {renderUserDefinedResponse(slotState, chatInstance)}
-            </UserDefinedResponseComponentPortal>
+              hostElement={getOrCreateSlotElement(slot)}>
+              {content}
+            </SlotHostPortal>
           );
         }
       )
     : null;
-}
-
-/**
- * This is the component that will attach a React portal to the given host element. The host element is the element
- * provided by Carbon AI Chat where your user defined response will be displayed in the DOM. This portal will attach any React
- * children passed to it under this component so you can render the response using your own React application. Those
- * children will be rendered under the given element where it lives in the DOM.
- */
-function UserDefinedResponseComponentPortal({
-  hostElement,
-  children,
-}: {
-  hostElement: HTMLElement;
-  children: ReactNode;
-}) {
-  return ReactDOM.createPortal(children, hostElement);
 }
 
 const UserDefinedResponsePortalsContainerExport = React.memo(
