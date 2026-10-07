@@ -25,8 +25,6 @@ import {
 } from '@carbon/ai-chat-components/es/components/conversational-search/src/citation-utils.js';
 import { ScrollElementIntoViewFunction } from '../../../components-legacy/MessagesComponent';
 import { useSelector } from '../../../hooks/useSelector';
-import { useCounter } from '../../../hooks/useCounter';
-import { useServiceManager } from '../../../hooks/useServiceManager';
 import { shallowEqual } from '../../../store/appStore';
 import { AppState } from '../../../../types/state/AppState';
 import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
@@ -58,8 +56,6 @@ function ConversationalSearch({
   const citationsContainerRef = useRef<HTMLDivElement>(null);
   const scrollTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const citationsOpenRef = useRef(false);
-  const serviceManager = useServiceManager();
-  const toggleId = `cds-aichat--conversational-search-text-${useCounter()}${serviceManager.namespace.suffix}`;
   const languagePack = useSelector(
     (state: AppState) => ({
       conversationalSearch_citationsLabel:
@@ -119,7 +115,9 @@ function ConversationalSearch({
 
   function onToggleCitations(event: CustomEvent<{ open: boolean }>) {
     setCitationsOpen(event.detail.open);
-    if (!event.detail.open) {
+    if (event.detail.open) {
+      scrollCitations();
+    } else {
       cancelScroll();
     }
   }
@@ -132,13 +130,9 @@ function ConversationalSearch({
         showCitationsToggle={Boolean(sortedCitations?.length)}
         citationsLabel={languagePack.conversationalSearch_citationsLabel}
         toggleLabel={languagePack.conversationalSearch_toggleCitations}
-        toggleId={toggleId}
-        streaming={streaming}
-        onCitationsToggle={onToggleCitations}
-        onCitationsScroll={scrollCitations}>
+        onCitationsToggle={onToggleCitations}>
         <MarkdownWithDefaults
           text={highlightedText}
-          overrideSanitize={false}
           streaming={streaming}
           highlight
         />

@@ -25,8 +25,6 @@ const ConversationalSearchText = withWebComponentBridge(
         ConversationalSearchTextElement.eventCitationsToggle as EventName<
           CustomEvent<CitationToggleEventDetail>
         >,
-      onCitationsScroll:
-        ConversationalSearchTextElement.eventCitationsScroll as EventName<CustomEvent>,
     },
   })
 );

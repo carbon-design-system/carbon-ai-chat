@@ -20,10 +20,7 @@ const renderAnswer = (args, onToggle) => html`
       .showCitationsToggle=${args.showCitationsToggle}
       .citationsLabel=${args.citationsLabel}
       .toggleLabel=${args.toggleLabel}
-      .toggleId=${args.toggleId}
-      .streaming=${args.streaming}
-      @cds-aichat-citations-toggle=${onToggle}
-      @cds-aichat-citations-scroll=${() => action('citations-scroll')()}>
+      @cds-aichat-citations-toggle=${onToggle}>
       <cds-aichat-markdown
         .markdown=${args.markdown}
         .streaming=${args.streaming}></cds-aichat-markdown>
@@ -113,7 +110,6 @@ export const Default = {
     showCitationsToggle: true,
     citationsLabel: 'Citations',
     toggleLabel: 'Toggle citations',
-    toggleId: '',
     streaming: false,
     markdown:
       'Carbon provides reusable components and accessibility guidance for your application.',
@@ -130,13 +126,9 @@ export const Default = {
     },
     citationsLabel: { control: 'text', description: 'Visible toggle text.' },
     toggleLabel: { control: 'text', description: 'Accessible toggle name.' },
-    toggleId: {
-      control: 'text',
-      description: 'Optional ID on the toggle button.',
-    },
     streaming: {
       control: 'boolean',
-      description: 'Mark the answer and its slotted Markdown as streaming.',
+      description: 'Mark the slotted Markdown as streaming.',
     },
     markdown: {
       control: 'text',
@@ -149,11 +141,6 @@ export const Default = {
     '@cds-aichat-citations-toggle': {
       action: 'citations-toggle',
       description: 'Requests a new open state in event.detail.open.',
-      table: { category: 'events' },
-    },
-    '@cds-aichat-citations-scroll': {
-      action: 'citations-scroll',
-      description: 'Requests host scrolling when citations open.',
       table: { category: 'events' },
     },
   },

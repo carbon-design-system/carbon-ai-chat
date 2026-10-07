@@ -17,7 +17,7 @@ Use `cds-aichat-conversational-search-text` to display a conversational search a
 
 ### Open citations
 
-Your host handles the toggle event, reads `event.detail.open`, and supplies the new `citationsOpen` value. The element keeps its supplied state until your host updates it. Your host also renders the citation list and handles the scroll request.
+Your host handles the toggle event, reads `event.detail.open`, and supplies the new `citationsOpen` value. The element keeps its supplied state until your host updates it. Your host also renders the citation list and scrolls it into view when it opens.
 
 <Canvas of={Stories.Open} />
 
@@ -35,13 +35,13 @@ Supply Markdown with `==highlight==` spans to mark text tied to a selected citat
 
 ### Streaming answer
 
-Update the slotted Markdown as chunks arrive. Set `streaming` on both the answer element and the Markdown element; the answer does not change its slot content. Your host owns any error shown after an incomplete stream.
+Update the slotted Markdown as chunks arrive. Set `streaming` on the Markdown element; the answer element does not change its slot content. Your host owns any error shown after an incomplete stream.
 
 <Canvas of={Stories.Streaming} />
 
 ## Component API
 
-Supply translated visible and accessible labels through `citationsLabel` and `toggleLabel`. Both events bubble and cross shadow roots. Opening requests a toggle first, then a scroll; closing requests only a toggle.
+Supply translated visible and accessible labels through `citationsLabel` and `toggleLabel`. The toggle event bubbles and crosses shadow roots. Read `event.detail.open` to handle opening and closing.
 
 ### `cds-aichat-conversational-search-text`
 

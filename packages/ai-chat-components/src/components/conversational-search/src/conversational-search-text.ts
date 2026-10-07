@@ -9,7 +9,6 @@
 
 import { LitElement, html, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
 import { ChevronDown16, ChevronUp16 } from '@carbon/icons';
 import '@carbon/web-components/es/components/tag/tag.js';
 import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
@@ -32,7 +31,6 @@ export interface CitationToggleEventDetail {
  * @element cds-aichat-conversational-search-text
  * @slot - The answer content, such as Markdown.
  * @fires {CustomEvent<CitationToggleEventDetail>} cds-aichat-citations-toggle - Requests a citation state change.
- * @fires {CustomEvent} cds-aichat-citations-scroll - Requests scrolling after an opening toggle request.
  */
 @carbonElement(blockClass)
 class ConversationalSearchText extends LitElement {
@@ -48,17 +46,9 @@ class ConversationalSearchText extends LitElement {
   @property({ attribute: 'citations-label' })
   citationsLabel = 'Citations';
 
-  /** Streaming metadata. The host must also update its slotted answer content. */
-  @property({ type: Boolean })
-  streaming = false;
-
   /** Accessible name of the citation toggle. */
   @property({ attribute: 'toggle-label' })
   toggleLabel = 'Toggle citations';
-
-  /** Optional ID for the internal toggle button. Use a value unique on the page. */
-  @property({ attribute: 'toggle-id' })
-  toggleId = '';
 
   private _handleToggle() {
     const open = !this.citationsOpen;
@@ -72,14 +62,6 @@ class ConversationalSearchText extends LitElement {
         }
       )
     );
-    if (open) {
-      this.dispatchEvent(
-        new CustomEvent(ConversationalSearchText.eventCitationsScroll, {
-          bubbles: true,
-          composed: true,
-        })
-      );
-    }
   }
 
   render() {
@@ -92,7 +74,6 @@ class ConversationalSearchText extends LitElement {
                 <button
                   type="button"
                   class="${blockClass}__toggle"
-                  id=${ifDefined(this.toggleId || undefined)}
                   aria-label=${this.toggleLabel}
                   aria-expanded=${String(this.citationsOpen)}
                   @click=${this._handleToggle}>
@@ -114,10 +95,6 @@ class ConversationalSearchText extends LitElement {
 
   static get eventCitationsToggle() {
     return `${prefix}-citations-toggle`;
-  }
-
-  static get eventCitationsScroll() {
-    return `${prefix}-citations-scroll`;
   }
 
   static styles = styles;

@@ -23,10 +23,7 @@ function Answer({ args, onToggle }) {
         showCitationsToggle={args.showCitationsToggle}
         citationsLabel={args.citationsLabel}
         toggleLabel={args.toggleLabel}
-        toggleId={args.toggleId}
-        streaming={args.streaming}
-        onCitationsToggle={onToggle}
-        onCitationsScroll={() => action('citations-scroll')()}>
+        onCitationsToggle={onToggle}>
         <Markdown markdown={args.markdown} streaming={args.streaming} />
       </ConversationalSearchText>
       {args.citationsOpen && args.showCitationsToggle && (
@@ -73,11 +70,8 @@ function StreamingAnswer({ args }) {
   );
 }
 
-const {
-  '@cds-aichat-citations-toggle': toggleEvent,
-  '@cds-aichat-citations-scroll': scrollEvent,
-  ...argTypes
-} = DefaultWC.argTypes;
+const { '@cds-aichat-citations-toggle': toggleEvent, ...argTypes } =
+  DefaultWC.argTypes;
 
 function answerSource(_source, { args }) {
   return `import { useState } from 'react';
@@ -93,10 +87,10 @@ function AnswerExample({ onCitationsScroll }) {
         showCitationsToggle={${JSON.stringify(args.showCitationsToggle)}}
         citationsLabel={${JSON.stringify(args.citationsLabel)}}
         toggleLabel={${JSON.stringify(args.toggleLabel)}}
-        toggleId={${JSON.stringify(args.toggleId)}}
-        streaming={${JSON.stringify(args.streaming)}}
-        onCitationsToggle={(event) => setCitationsOpen(event.detail.open)}
-        onCitationsScroll={onCitationsScroll}>
+        onCitationsToggle={(event) => {
+          setCitationsOpen(event.detail.open);
+          if (event.detail.open) onCitationsScroll();
+        }}>
         <Markdown
           markdown={${JSON.stringify(args.markdown)}}
           streaming={${JSON.stringify(args.streaming)}}
@@ -123,7 +117,6 @@ export const Default = {
   argTypes: {
     ...argTypes,
     onCitationsToggle: { ...toggleEvent, control: 'none' },
-    onCitationsScroll: { ...scrollEvent, control: 'none' },
   },
   render: (args) => {
     const [, updateArgs] = useArgs();
