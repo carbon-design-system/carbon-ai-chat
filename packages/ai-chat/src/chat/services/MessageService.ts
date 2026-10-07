@@ -16,7 +16,7 @@
  *    and delegates the actual send to `customSendMessage` via `OutboundMessageCoordinator`.
  * 3) OutboundCoordinator clones/updates the message in store, calls `customSendMessage` (sync or async), and on success
  *    calls back into `processSuccess`; on error/cancel it resolves/rejects and advances the queue.
- * 4) Incoming stream chunks are handled through `ChatActionsImpl`, which marks streaming and finalization via
+ * 4) Incoming stream chunks are handled through `ChunkProcessingService`, which marks streaming and finalization via
  *    `InboundStreamingCoordinator`. InboundCoordinator tracks response_id/item_id pairs so cancellations and
  *    finalization can advance the queue even when response_id differs from the original request id.
  * 5) FinalResponseChunk or cancellation clears streaming tracking and moves to the next queued message.

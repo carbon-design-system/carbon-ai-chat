@@ -390,7 +390,9 @@ describe('custom prompt line send data', () => {
         wrapper.append(document.createElement('input'));
       }
       const hydration = resolvablePromise();
-      Object.assign(serviceManager.actions, { hydrationPromise: hydration });
+      Object.assign(serviceManager.hydrationService, {
+        hydrationPromise: hydration,
+      });
       const sent = instance.send('during hydration');
       if (customAtEntry) {
         wrapper.replaceChildren();

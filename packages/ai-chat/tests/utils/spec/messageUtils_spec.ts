@@ -481,7 +481,7 @@ describe('System message utilities', () => {
 
     it('is false for a message typed to a human agent', () => {
       // The gate MessageComponent reads. A human-agent send never reaches
-      // ChatActionsImpl.send — HumanAgentServiceImpl builds its own local item
+      // SendService.send — HumanAgentServiceImpl builds its own local item
       // — so this is the only place the exclusion holds.
       const agentLocalItem = {
         ...textLocalItem,
