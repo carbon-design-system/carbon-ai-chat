@@ -226,6 +226,9 @@
     "@carbon/ai-chat": "^0.0.0"
   },
   "overrides": {
+    "@vscode/markdown-it-katex": {
+      "katex": "0.18.2"
+    },
     "tar": "^7.5.16",
     "shell-quote": "^1.11.0",
     "postcss": "^8.5.23",
