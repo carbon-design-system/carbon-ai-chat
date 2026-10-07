@@ -6,7 +6,10 @@
  */
 
 /**
- * Tests: Carbon AI Chat — Custom element (Fullscreen), React.
+ * Tests: Carbon AI Chat — Custom element (Fullscreen), detailed behavior.
+ *
+ * Runs against both the React and Web Components examples. Each project
+ * checks the same behavior through its own host application.
  *
  * Covers this example's one concern — a fullscreen surface open from first
  * paint — plus the baseline every example carries: it mounts with no console
@@ -17,12 +20,7 @@
  */
 
 import { PageObjectId } from '@carbon/ai-chat/server';
-import {
-  expect,
-  openExample,
-  test,
-  waitForChatReady,
-} from '../../../shared/playwright/helpers';
+import { expect, openExample, test, waitForChatReady } from '../helpers';
 
 test.describe('basic fullscreen', () => {
   test.beforeEach(async ({ page }) => {
@@ -67,8 +65,8 @@ test.describe('basic fullscreen', () => {
   }) => {
     await expect(page.getByTestId(PageObjectId.CHAT_WIDGET)).toBeVisible();
 
-    // The example's own host element, sized by the className it passes to
-    // ChatCustomElement. Not a chat internal.
+    // The example's own host element, sized by its chat-custom-element class.
+    // Both flavors use this class; it is not a chat internal.
     const host = page.locator('.chat-custom-element');
     expect((await host.boundingBox())?.width).toBeGreaterThan(0);
 
