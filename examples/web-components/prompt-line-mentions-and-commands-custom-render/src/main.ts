@@ -49,11 +49,8 @@ import { customSendMessage } from './customSendMessage';
 import { mentionItems, commandItems } from './suggestions';
 
 /**
- * The shared chip element used in both the composer and the sent bubble.
- * Accepts `label` (the chip text) and `tooltipLabel` separately because the
- * two call sites have different information: `renderCustomToken` has the full
- * SuggestionItem so it can use `description`; `renderUserDefinedInputNode`
- * only has node attrs where `description` has been stripped at insert time.
+ * The chip both surfaces render. A chip stores the picked item's `id` and
+ * `label` but not its `description`, so the description is looked up here.
  *
  * `autoalign` switches the popover to `position: fixed` via floating-ui so
  * the popover escapes the editor's `overflow: auto` clip. With
@@ -69,13 +66,15 @@ import { mentionItems, commandItems } from './suggestions';
  * (sub-issue of #731). When that's resolved this example should render
  * above the chip without any change to the code below.
  */
-function createMentionToken(label: string, tooltipLabel: string): HTMLElement {
+function createMentionToken(id: string, label: string): HTMLElement {
+  const description = mentionItems.find((item) => item.id === id)?.description;
+
   const tooltip = document.createElement('cds-tooltip');
   tooltip.setAttribute('align', 'top');
   tooltip.setAttribute('autoalign', '');
 
   const content = document.createElement('cds-tooltip-content');
-  content.textContent = tooltipLabel;
+  content.textContent = description ?? label;
   tooltip.appendChild(content);
 
   const tag = document.createElement('cds-tag');
@@ -90,8 +89,6 @@ function createMentionToken(label: string, tooltipLabel: string): HTMLElement {
 /**
  * Renders a custom mention chip inside sent message bubbles.
  * `renderCustomToken` is composer-only; this is the bubble counterpart.
- * Only `label` is available from node attrs — `description` is stripped at
- * insert time — so both arguments to `createMentionToken` are `label`.
  * Returns null for command nodes and everything else — the slot fallback
  * shows the default chip.
  */
@@ -99,8 +96,9 @@ const renderUserDefinedInputNode: WCRenderUserDefinedInputNode = ({
   node,
 }: RenderUserDefinedInputNodeState): HTMLElement | null => {
   if (node.type === 'mention') {
+    const id = (node.attrs?.id ?? '') as string;
     const label = (node.attrs?.label ?? '') as string;
-    return createMentionToken(label, label);
+    return createMentionToken(id, label);
   }
   return null;
 };
@@ -180,13 +178,10 @@ export class Demo extends LitElement {
               return { ...prev, fields };
             });
           },
-          // Replaces the default chip with a definition tooltip in the composer.
-          // The full SuggestionItem is available here, so `description` is used
-          // as the tooltip label when present. `renderCustomToken` is
-          // composer-only; `renderUserDefinedInputNode` (bound below) handles
-          // the same chip in sent message bubbles.
+          // `renderCustomToken` is composer-only; `renderUserDefinedInputNode`
+          // (bound below) handles the same chip in sent message bubbles.
           renderCustomToken: (item: SuggestionItem) =>
-            createMentionToken(item.label, item.description ?? item.label),
+            createMentionToken(item.id, item.label),
         },
         command: {
           trigger: '/',

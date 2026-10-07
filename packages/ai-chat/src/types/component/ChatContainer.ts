@@ -260,10 +260,11 @@ interface RenderUserDefinedInputNodeState {
 }
 
 /**
- * React-side renderer for custom TipTap node types in user message bubbles.
- * Returned content mounts into LIGHT DOM so consumer stylesheets apply. The
- * library manages the slot lifecycle — register a renderer that returns the
- * React node for nodes you care about and `null` for everything else.
+ * React-side renderer for `mention` chips, `command` chips, and custom TipTap
+ * nodes in user message bubbles. Returned content mounts into LIGHT DOM so
+ * consumer stylesheets apply. The library manages the slot lifecycle —
+ * register a renderer that returns the React node for nodes you care about
+ * and `null` for everything else.
  *
  * @category React
  * @experimental
@@ -274,10 +275,10 @@ type RenderUserDefinedInputNode = (
 ) => ReactNode;
 
 /**
- * Web-component renderer for custom TipTap node types in user message
- * bubbles. Mirrors {@link RenderUserDefinedInputNode} but returns an
- * `HTMLElement` (or `null`). The library moves / removes the element as
- * messages mount and unmount.
+ * Web-component renderer for `mention` chips, `command` chips, and custom
+ * TipTap nodes in user message bubbles. Mirrors
+ * {@link RenderUserDefinedInputNode} but returns an `HTMLElement` (or `null`).
+ * The library moves / removes the element as messages mount and unmount.
  *
  * @category Web component
  * @experimental
@@ -721,10 +722,11 @@ interface ChatContainerProps extends Omit<PublicConfig, 'markdown'> {
   renderUserDefinedResponse?: RenderUserDefinedResponse;
 
   /**
-   * Renderer for custom TipTap node types inside sent user message bubbles
-   * (rich user message content). Invoked once per non-built-in node in a
-   * user message's `display_content`; returned React content mounts into
-   * light DOM. Return `null` for nodes you don't recognize.
+   * Renderer for nodes inside sent user message bubbles (rich user message
+   * content). Invoked once per `mention` chip, `command` chip, and custom
+   * TipTap node in a user message's `display_content`; returned React content
+   * mounts into light DOM. Return `null` for a node you don't render: a chip
+   * keeps its default look, and a custom node shows its `label` or `value`.
    *
    * @experimental
    */

@@ -46,11 +46,13 @@ import { customSendMessage } from './customSendMessage';
 import { mentionItems, commandItems } from './suggestions';
 
 /**
- * The shared chip visual used in both the composer and the sent bubble.
+ * The chip both surfaces render. A chip stores the picked item's `id` and
+ * `label` but not its `description`, so the description is looked up here.
  */
-function mentionChip(label: string, tooltipLabel: string): React.ReactNode {
+function mentionChip(id: string, label: string): React.ReactNode {
+  const description = mentionItems.find((item) => item.id === id)?.description;
   return (
-    <Tooltip label={tooltipLabel} align="top" autoAlign>
+    <Tooltip label={description ?? label} align="top" autoAlign>
       <Tag size="sm" type="purple">
         @{label}
       </Tag>
@@ -135,7 +137,7 @@ function App() {
           // wrapped in a Tooltip — this is the entire point of the
           // example.
           renderCustomToken: (item: SuggestionItem) =>
-            mentionChip(item.label, item.description ?? item.label),
+            mentionChip(item.id, item.label),
         },
         command: {
           trigger: '/',
@@ -194,8 +196,9 @@ function App() {
       _instance: ChatInstance
     ): React.ReactNode => {
       if (node.type === 'mention') {
+        const id = (node.attrs?.id ?? '') as string;
         const label = (node.attrs?.label ?? '') as string;
-        return mentionChip(label, label);
+        return mentionChip(id, label);
       }
       // Return null for command and everything else — slot fallback shows
       // the default chip.

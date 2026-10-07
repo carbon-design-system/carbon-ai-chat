@@ -116,7 +116,7 @@ describe('rich user message slot-key contract', () => {
     expect(renderedSlotKeys(content)).toEqual(walkedSlotKeys(content));
   });
 
-  it('agrees on mention and command nodes alongside custom inline nodes', () => {
+  it('agrees on a command node alongside a custom inline node', () => {
     const content: JSONContent = {
       type: 'doc',
       content: [

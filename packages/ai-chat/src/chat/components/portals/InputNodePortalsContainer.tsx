@@ -8,9 +8,9 @@
  */
 
 import React, { useEffect, useMemo, useRef } from 'react';
-import ReactDOM from 'react-dom';
 
 import { useSelector } from '../../hooks/useSelector';
+import { SlotHostPortal } from './SlotHostPortal';
 import type { AppState } from '../../../types/state/AppState';
 import type { ChatInstance } from '../../../types/instance/ChatInstance';
 import type {
@@ -27,13 +27,10 @@ interface InputNodePortalsContainerProps {
 }
 
 /**
- * The set of TipTap node types that the rich user message bubble walker
- * (`MessageRichUserContent`) renders natively. Anything else is treated as
- * a custom node and routed through `renderUserDefinedInputNode`.
- *
- * `mention` and `command` are intentionally absent: they now flow through the
- * same slot path as custom nodes so hosts can supply custom chip content via
- * `renderUserDefinedInputNode`. The slot fallback renders the default chip.
+ * The TipTap node types that the rich user message bubble walker
+ * (`MessageRichUserContent`) renders as text. Every other node — `mention`,
+ * `command`, and custom nodes — gets a slot and is routed through
+ * `renderUserDefinedInputNode`.
  */
 const BUILT_IN_NODE_TYPES = new Set(['doc', 'paragraph', 'text', 'hardBreak']);
 
@@ -53,8 +50,8 @@ interface SlotEntry {
  *      stylesheets reach the content). The tag is `<span>` for `mention` and
  *      `command` nodes so they render inline alongside surrounding text;
  *      `<div>` for all other custom nodes that may contain block-level content.
- *   2. `ReactDOM.createPortal` the consumer's `renderUserDefinedInputNode`
- *      output into that host element.
+ *   2. Mount the consumer's `renderUserDefinedInputNode` output in that host
+ *      element through `SlotHostPortal`.
  *
  * `MessageRichUserContent` emits a matching `<slot name=...>` in the message
  * bubble that projects the slotted host back into the visual position. When the
@@ -117,7 +114,7 @@ function InputNodePortalsContainer({
           { node: entry.node, message: entry.message },
           chatInstance
         );
-        if (node == null) {
+        if (node == null || typeof node === 'boolean' || node === '') {
           // Drop any previously mounted host for this slot — the consumer
           // dropped this node, so the slot falls back to its inline label.
           const existing = hostElementsRef.current.get(entry.slotKey);
@@ -142,23 +139,13 @@ function InputNodePortalsContainer({
         }
 
         return (
-          <InputNodePortal key={entry.slotKey} host={host}>
+          <SlotHostPortal key={entry.slotKey} hostElement={host}>
             {node}
-          </InputNodePortal>
+          </SlotHostPortal>
         );
       })}
     </>
   );
-}
-
-function InputNodePortal({
-  host,
-  children,
-}: {
-  host: HTMLElement;
-  children: React.ReactNode;
-}) {
-  return ReactDOM.createPortal(children, host);
 }
 
 function collectSlotEntries(

@@ -468,7 +468,7 @@ describe('React render props through the shared container', () => {
     expect(bubbleSlot().textContent).toBe('Ship it');
   });
 
-  it('projects custom renderUserDefinedInputNode content for mention and command nodes in the sent message bubble', async () => {
+  it('projects custom renderUserDefinedInputNode content for a mention and keeps the default command chip', async () => {
     const { instance, update } = await boot();
     await sendRequest(instance, {
       id: 'token-rich',
@@ -504,6 +504,12 @@ describe('React render props through the shared container', () => {
 
     expect(bubbleSlot(mentionSlot).assignedNodes()).toHaveLength(0);
     expect(bubbleSlot(commandSlot).assignedNodes()).toHaveLength(0);
+    const defaultChip = (name: string, type: string) =>
+      bubbleSlot(name).querySelector(`[data-token-type="${type}"]`);
+    await waitFor(() =>
+      expect(defaultChip(mentionSlot, 'mention')?.textContent).toBe('Alice')
+    );
+    expect(defaultChip(commandSlot, 'command')?.textContent).toBe('deploy');
 
     update({
       renderUserDefinedInputNode: ({ node }) =>
@@ -513,6 +519,7 @@ describe('React render props through the shared container', () => {
     });
 
     await waitFor(() => expect(assignedSlotFor(mentionSlot)).not.toBeNull());
+    expect(hostFor(mentionSlot)?.tagName).toBe('SPAN');
     expect(
       bubbleSlot(mentionSlot)
         .assignedNodes({ flatten: true })
@@ -521,6 +528,93 @@ describe('React render props through the shared container', () => {
 
     await waitFor(() => expect(hostFor(commandSlot)).toBeNull());
     expect(bubbleSlot(commandSlot).assignedNodes()).toHaveLength(0);
+  });
+
+  it('keeps the default chip when renderUserDefinedInputNode returns false for a mention', async () => {
+    const { instance, update } = await boot();
+    await sendRequest(instance, {
+      id: 'token-false',
+      input: {
+        message_type: MessageInputType.TEXT,
+        text: '@Alice',
+        display_content: {
+          type: 'doc',
+          content: [
+            {
+              type: 'paragraph',
+              content: [
+                { type: 'mention', attrs: { id: 'u1', label: 'Alice' } },
+              ],
+            },
+          ],
+        },
+      },
+    });
+
+    const mentionSlot = 'token-false::0.0';
+    const bubbleSlot = (name: string) =>
+      deepQuerySelector(
+        getChatShadowRoot(),
+        `slot[name="${name}"]`
+      ) as HTMLSlotElement;
+
+    update({
+      renderUserDefinedInputNode: () => false as unknown as React.ReactNode,
+    });
+
+    await waitFor(() => expect(bubbleSlot(mentionSlot)).not.toBeNull());
+    expect(hostFor(mentionSlot)).toBeNull();
+    await waitFor(() =>
+      expect(
+        bubbleSlot(mentionSlot).querySelector('[data-token-type="mention"]')
+          ?.textContent
+      ).toBe('Alice')
+    );
+  });
+
+  it('caches the WC renderUserDefinedInputNode result per node so store updates do not rebuild the host element', async () => {
+    let callCount = 0;
+    const renderUserDefinedInputNode = () => {
+      callCount++;
+      const el = document.createElement('b');
+      el.dataset.probe = 'cached-wc-chip';
+      return el;
+    };
+    const { element, instance, update } = await bootWC({
+      renderUserDefinedInputNode,
+    });
+
+    await sendRequest(instance, {
+      id: 'wc-cache',
+      input: {
+        message_type: MessageInputType.TEXT,
+        text: '@Alice',
+        display_content: {
+          type: 'doc',
+          content: [
+            {
+              type: 'paragraph',
+              content: [
+                { type: 'mention', attrs: { id: 'u1', label: 'Alice' } },
+              ],
+            },
+          ],
+        },
+      },
+    });
+
+    const mentionSlot = 'wc-cache::0.0';
+    await waitFor(() =>
+      expect(
+        element.querySelector(
+          `[slot="${mentionSlot}"] [data-probe="cached-wc-chip"]`
+        )
+      ).not.toBeNull()
+    );
+    const firstCallCount = callCount;
+
+    await update({});
+    expect(callCount).toBe(firstCallCount);
   });
 
   it('renders input nodes through a cds-aichat-container callback', async () => {
