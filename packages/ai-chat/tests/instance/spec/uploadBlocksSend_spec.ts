@@ -186,7 +186,9 @@ describe('custom prompt line with existing uploads', () => {
       document.createElement('input')
     );
     const hydration = resolvablePromise();
-    Object.assign(serviceManager.actions, { hydrationPromise: hydration });
+    Object.assign(serviceManager.hydrationService, {
+      hydrationPromise: hydration,
+    });
     const sent = instance.send('custom');
     const rejected = expect(sent).rejects.toThrow(/upload/i);
     store.dispatch(actions.addPendingUpload(makePendingUpload(), false));

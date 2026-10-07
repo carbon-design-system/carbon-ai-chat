@@ -58,8 +58,7 @@ import type { BuildCarbonExtensionsConfig as _BuildCarbonExtensionsConfig } from
  *
  * @function
  * @category Utilities
- * @experimental The prompt-line extension surface is still settling; these
- * factory signatures can change in a minor release.
+ * @experimental
  */
 export const carbonMention = _carbonMention;
 
@@ -71,8 +70,7 @@ export const carbonMention = _carbonMention;
  *
  * @function
  * @category Utilities
- * @experimental The prompt-line extension surface is still settling; these
- * factory signatures can change in a minor release.
+ * @experimental
  */
 export const carbonCommand = _carbonCommand;
 
@@ -88,8 +86,7 @@ export const carbonCommand = _carbonCommand;
  *
  * @function
  * @category Utilities
- * @experimental The prompt-line extension surface is still settling; these
- * factory signatures can change in a minor release.
+ * @experimental
  */
 export const carbonAutocomplete = _carbonAutocomplete;
 
@@ -100,8 +97,7 @@ export const carbonAutocomplete = _carbonAutocomplete;
  * {@link buildCarbonExtensions} assembles this list for you.
  *
  * @category Utilities
- * @experimental The prompt-line extension surface is still settling; these
- * factory signatures can change in a minor release.
+ * @experimental
  * @interface
  */
 export type ExcludedTrigger = _ExcludedTrigger;
@@ -115,8 +111,7 @@ export type ExcludedTrigger = _ExcludedTrigger;
  *
  * @function
  * @category Utilities
- * @experimental The prompt-line extension surface is still settling; these
- * factory signatures can change in a minor release.
+ * @experimental
  */
 export const carbonStarterTrigger = _carbonStarterTrigger;
 
@@ -128,8 +123,7 @@ export const carbonStarterTrigger = _carbonStarterTrigger;
  *
  * @function
  * @category Utilities
- * @experimental The prompt-line extension surface is still settling; these
- * factory signatures can change in a minor release.
+ * @experimental
  */
 export const buildCarbonExtensions = _buildCarbonExtensions;
 

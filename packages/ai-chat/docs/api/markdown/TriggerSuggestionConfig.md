@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Config
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.TriggerSuggestionConfig.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.TriggerSuggestionConfig.html
 
 Trigger-character-driven suggestion config consumed by
 InputConfig.mention and InputConfig.command. Adds the
@@ -36,7 +36,7 @@ Static item list, or an async function called with the current query
 string. Resolved by the autocomplete controller once per query change —
 the Tiptap extensions never call it.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.TriggerSuggestionConfig.html#items)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.TriggerSuggestionConfig.html#items)
 
 ### minQueryLength
 
@@ -45,7 +45,7 @@ the Tiptap extensions never call it.
 Minimum query length before `items()` is called. Defaults to 0. Applied
 by the autocomplete controller, which owns resolution for every trigger.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.TriggerSuggestionConfig.html#minquerylength)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.TriggerSuggestionConfig.html#minquerylength)
 
 ### onRemove
 
@@ -65,7 +65,7 @@ not retained on the node and are absent. Programmatic removals (via
 `getEditor()`/`updateContent`) are host-origin and do NOT fire `onRemove`,
 symmetric with `onSelect` not firing on programmatic inserts.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.TriggerSuggestionConfig.html#onremove)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.TriggerSuggestionConfig.html#onremove)
 
 ### onSelect
 
@@ -74,7 +74,7 @@ symmetric with `onSelect` not firing on programmatic inserts.
 Called after the user selects an item and the controller has finished
 inserting it.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.TriggerSuggestionConfig.html#onselect)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.TriggerSuggestionConfig.html#onselect)
 
 ### renderCustomList
 
@@ -82,7 +82,7 @@ inserting it.
 
 Replace the built-in suggestion list UI.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.TriggerSuggestionConfig.html#rendercustomlist)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.TriggerSuggestionConfig.html#rendercustomlist)
 
 ### renderCustomToken
 
@@ -90,7 +90,7 @@ Replace the built-in suggestion list UI.
 
 Replace the visual element rendered inside the token chip.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.TriggerSuggestionConfig.html#rendercustomtoken)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.TriggerSuggestionConfig.html#rendercustomtoken)
 
 ### showTriggerInChip
 
@@ -101,7 +101,7 @@ applied to every item from this config unless the item sets its own
 SuggestionItem.showTriggerInChip. Defaults to `true` for
 `carbonCommand` and `false` for `carbonMention` when omitted.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.TriggerSuggestionConfig.html#showtriggerinchip)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.TriggerSuggestionConfig.html#showtriggerinchip)
 
 ### trigger
 
@@ -109,7 +109,7 @@ SuggestionItem.showTriggerInChip. Defaults to `true` for
 
 Character that activates the suggestion (e.g. "@", "/").
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.TriggerSuggestionConfig.html#trigger)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.TriggerSuggestionConfig.html#trigger)
 
 ### triggerPosition
 
@@ -118,7 +118,7 @@ Character that activates the suggestion (e.g. "@", "/").
 Whether the trigger must appear at the start of the input/line, or
  anywhere. Defaults to "anywhere".
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.TriggerSuggestionConfig.html#triggerposition)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.TriggerSuggestionConfig.html#triggerposition)
 
 ## Related
 

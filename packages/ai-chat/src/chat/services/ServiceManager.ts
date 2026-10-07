@@ -25,7 +25,16 @@ import { ChatInstance } from '../../types/instance/ChatInstance';
 import { WriteableElements } from '../../types/instance/WriteableElements';
 import { BusEvent } from '../../types/events/eventBusTypes';
 import { MainWindowFunctions } from '../AppShell';
-import { ChatActionsImpl } from './ChatActionsImpl';
+import { ChatInstanceService } from './ChatInstanceService';
+import { ChunkProcessingService } from './ChunkProcessingService';
+import { HydrationService } from './HydrationService';
+import { InputActionsService } from './InputActionsService';
+import { PublicStateService } from './PublicStateService';
+import { ReceiveService } from './ReceiveService';
+import { SlotEventService } from './SlotEventService';
+import { SendService } from './SendService';
+import { StreamAnnouncerService } from './StreamAnnouncerService';
+import { ViewService } from './ViewService';
 import { HasRequestFocus } from '../../types/utilities/HasRequestFocus';
 import type { InputFunctions } from '../components/input/Input';
 
@@ -63,7 +72,52 @@ class ServiceManager {
   /**
    * The class used by the client to execute various chat actions.
    */
-  actions: ChatActionsImpl;
+  actions: ChatInstanceService;
+
+  /**
+   * Service handling input field mutations and file uploads.
+   */
+  inputActionsService: InputActionsService;
+
+  /**
+   * Service that tracks and fires stream-start announcements for screen readers.
+   */
+  streamAnnouncerService: StreamAnnouncerService;
+
+  /**
+   * Service that owns the chunk queue and processes incoming streaming chunks.
+   */
+  chunkProcessingService: ChunkProcessingService;
+
+  /**
+   * Service that wires user-defined response elements and fires footer-slot events.
+   */
+  slotEventService: SlotEventService;
+
+  /**
+   * Service that manages chat hydration, session restart, and session destruction.
+   */
+  hydrationService: HydrationService;
+
+  /**
+   * Service that projects store state into the public ChatState snapshot.
+   */
+  publicStateService: PublicStateService;
+
+  /**
+   * Service that owns the inbound receive path.
+   */
+  receiveService: ReceiveService;
+
+  /**
+   * Service that owns the outbound send path.
+   */
+  sendService: SendService;
+
+  /**
+   * Service that manages view transitions and fires view-change events.
+   */
+  viewService: ViewService;
 
   /**
    * The optional custom element for rendering provided in the publicConfig.
@@ -185,7 +239,7 @@ class ServiceManager {
   /**
    * Live ref to the React `Input` component's imperative handle. Set by
    * `Input.tsx` on mount and cleared on unmount. Used by content-write
-   * actions on `ChatActionsImpl` that must reach the underlying
+   * actions on `ChatInstanceService` that must reach the underlying
    * ProseMirror view synchronously (the legacy Redux-driven path cannot
    * dispatch PM transactions).
    */
