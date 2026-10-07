@@ -80,7 +80,7 @@ export interface PromptLineController {
   getEditor(): Editor | null;
 
   /** Accepts `keyboardFocus`, which when true specifies that a focus ring should be visible around the prompt line text area */
-  focus(keyboardFocus: boolean): void;
+  focus(keyboardFocus: boolean, synchronous?: boolean): void;
 
   blur(): void;
   hasFocus(): boolean;

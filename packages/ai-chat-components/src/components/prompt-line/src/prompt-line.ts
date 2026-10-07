@@ -133,6 +133,7 @@ class PromptLineElement extends LitElement {
   private _seedPending = false;
   /** Pending deferred teardown, cancelled if the element is reattached. */
   private _pendingTeardownTimer: ReturnType<typeof setTimeout> | null = null;
+  private _focusedWithKeyboard: boolean | null = null;
   /** Sticky latch — once rich is wanted it never reverts. */
   private _richLatched = false;
   private _upgrading = false;
@@ -178,6 +179,18 @@ class PromptLineElement extends LitElement {
       const root = this._editorHost?.getRootNode();
       if (root instanceof ShadowRoot || root instanceof Document) {
         adoptOnRoot(root);
+      }
+      const activeElement = this.ownerDocument.activeElement;
+      if (
+        this._focusedWithKeyboard !== null &&
+        (!activeElement || activeElement === this.ownerDocument.body)
+      ) {
+        this._controller?.focus(this._focusedWithKeyboard, true);
+      } else {
+        this._focusedWithKeyboard = null;
+      }
+      if (this._richLatched && this._mode === 'textarea') {
+        void this._requestRichUpgrade();
       }
       return;
     }
@@ -256,6 +269,7 @@ class PromptLineElement extends LitElement {
 
   /** Destroy the editing surface. Deferred from `disconnectedCallback`. */
   private _teardownSurface(): void {
+    this._focusedWithKeyboard = null;
     this._failRichReady(new Error('Input is not currently rendered'));
     this._controller?.destroy();
     this._controller = null;
@@ -335,6 +349,9 @@ class PromptLineElement extends LitElement {
    * upgrade.
    */
   ensureEditor(): Promise<Editor> {
+    if (!this.isConnected || this._pendingTeardownTimer !== null) {
+      return Promise.reject(new Error('Input is not currently rendered'));
+    }
     if (this._mode === 'rich') {
       const editor = this._controller?.getEditor();
       if (editor) {
@@ -375,6 +392,7 @@ class PromptLineElement extends LitElement {
   }
 
   override blur(): void {
+    this._focusedWithKeyboard = null;
     this._controller?.blur();
   }
 
@@ -442,6 +460,18 @@ class PromptLineElement extends LitElement {
     // field out from under the user.
     host.addEventListener('compositionstart', this._onCompositionStart);
     host.addEventListener('compositionend', this._onCompositionEnd);
+    host.addEventListener('cds-aichat-prompt-focus', (event) => {
+      this._focusedWithKeyboard = (event as CustomEvent).detail.keyboard;
+    });
+    host.addEventListener('cds-aichat-prompt-blur', () => {
+      // Chromium blurs a removed ancestor's descendants before disconnecting
+      // them. Wait until the DOM move finishes before treating this as a blur.
+      queueMicrotask(() => {
+        if (this.isConnected && !this._controller?.hasFocus()) {
+          this._focusedWithKeyboard = null;
+        }
+      });
+    });
 
     const root = host.getRootNode();
     if (root instanceof ShadowRoot || root instanceof Document) {
@@ -590,7 +620,7 @@ class PromptLineElement extends LitElement {
       to: textOffsetToDocPos(value, selection.to),
     });
     if (hadFocus) {
-      rich.focus(hadKeyboardFocus);
+      rich.focus(hadKeyboardFocus, true);
     }
     this._settleRichReady();
   }

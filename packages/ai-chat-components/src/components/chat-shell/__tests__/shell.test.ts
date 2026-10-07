@@ -834,7 +834,7 @@ describe('cds-aichat-shell', function () {
 
   // ========== DOM Move / Reconnect Tests ==========
   describe('DOM move survival', () => {
-    it('keeps managers running when moved to a new parent without a real unmount', async () => {
+    it('keeps observing slot changes after a same-task move', async () => {
       const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell>
           <div slot="header">Header</div>
@@ -844,7 +844,7 @@ describe('cds-aichat-shell', function () {
 
       const container1 = el.parentElement!;
       const container2 = document.createElement('div');
-      document.body.appendChild(container2);
+      container1.appendChild(container2);
 
       // Move: remove then immediately re-append in the same task.
       container1.removeChild(el);
@@ -855,21 +855,22 @@ describe('cds-aichat-shell', function () {
       await new Promise<void>((resolve) => setTimeout(resolve, 10));
       await el.updateComplete;
 
-      // Shell should still be functional: shadow root and slot content intact.
       const shell = el.shadowRoot!.querySelector('.shell');
-      expect(shell).to.exist;
+      expect(shell!.classList.contains('has-header-content')).to.be.true;
 
-      const headerSlot = el.shadowRoot!.querySelector(
-        'slot[name="header"]'
-      ) as HTMLSlotElement;
-      expect(headerSlot).to.exist;
-      expect(headerSlot.assignedElements({ flatten: true }).length).to.equal(1);
+      const header = el.querySelector('[slot="header"]')!;
+      header.remove();
+      await nextFrame();
+      await el.updateComplete;
+      expect(shell!.classList.contains('has-header-content')).to.be.false;
 
-      // Clean up
-      document.body.removeChild(container2);
+      el.appendChild(header);
+      await nextFrame();
+      await el.updateComplete;
+      expect(shell!.classList.contains('has-header-content')).to.be.true;
     });
 
-    it('re-establishes managers after a real removal and later re-attach', async () => {
+    it('resumes observing slot changes after teardown and reconnect', async () => {
       const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell>
           <div slot="header">Header</div>
@@ -885,24 +886,62 @@ describe('cds-aichat-shell', function () {
 
       // Re-attach after teardown has completed.
       const container2 = document.createElement('div');
-      document.body.appendChild(container2);
+      container.appendChild(container2);
       container2.appendChild(el);
 
       // Allow Lit's update cycle to run.
       await el.updateComplete;
 
-      // Shell should have recovered its shadow DOM structure.
       const shell = el.shadowRoot!.querySelector('.shell');
-      expect(shell).to.exist;
+      expect(shell!.classList.contains('has-header-content')).to.be.true;
 
-      // Slot is still accessible.
-      const headerSlot = el.shadowRoot!.querySelector(
-        'slot[name="header"]'
-      ) as HTMLSlotElement;
-      expect(headerSlot).to.exist;
+      const header = el.querySelector('[slot="header"]')!;
+      header.remove();
+      await nextFrame();
+      await el.updateComplete;
+      expect(shell!.classList.contains('has-header-content')).to.be.false;
 
-      // Clean up
-      document.body.removeChild(container2);
+      el.appendChild(header);
+      await nextFrame();
+      await el.updateComplete;
+      expect(shell!.classList.contains('has-header-content')).to.be.true;
+    });
+
+    it('resumes an interrupted workspace panel opening after teardown and reconnect', async () => {
+      const workspaceMinWidth = window.innerWidth + 200 - 320;
+      const el = await fixture<CDSAIChatShell>(
+        html`<cds-aichat-shell
+          show-workspace
+          style="
+            width: 600px;
+            display: block;
+            --cds-aichat-workspace-min-width: ${workspaceMinWidth}px;
+            --cds-aichat-messages-min-width: 320px;
+            --cds-aichat-history-width: 0px;
+          ">
+          <div slot="workspace">Workspace Content</div>
+        </cds-aichat-shell>`
+      );
+      await el.updateComplete;
+
+      const panel = el.shadowRoot!.querySelector<HTMLElement>(
+        'cds-aichat-panel[data-internal-panel]'
+      )!;
+      expect(panel).to.exist;
+      expect(panel.hasAttribute('open')).to.be.false;
+
+      const container = el.parentElement!;
+      el.remove();
+      await new Promise<void>((resolve) => setTimeout(resolve, 10));
+      await nextFrame(2);
+      expect(panel.hasAttribute('open')).to.be.false;
+
+      container.appendChild(el);
+      await nextFrame(2);
+      await el.updateComplete;
+
+      expect(panel.hasAttribute('open')).to.be.true;
+      expect(el.hasAttribute('workspace-in-panel')).to.be.true;
     });
 
     it('preserves slot content across a same-task DOM move', async () => {

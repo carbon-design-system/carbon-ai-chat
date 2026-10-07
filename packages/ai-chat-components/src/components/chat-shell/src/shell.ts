@@ -658,6 +658,12 @@ class CDSAIChatShell extends LitElement {
     // re-establish managers if the element has already rendered before.
     if (this.hasUpdated) {
       this._setupManagers();
+      if (
+        this.workspaceManager?.shouldRenderPanel() &&
+        !this.workspacePanelOpen
+      ) {
+        this.scheduleWorkspacePanelOpen();
+      }
     }
   }
 
