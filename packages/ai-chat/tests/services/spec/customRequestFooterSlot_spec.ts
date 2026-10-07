@@ -104,16 +104,17 @@ const footerEventsIn = (events: BusEvent[]) =>
   ) as BusEventCustomRequestFooterSlot[];
 
 /**
- * `doSend` starts the footer fire without awaiting it, so the send resolves first. Await the chain's tail to reach
- * the point where every fire started so far has settled.
+ * `doSend` starts the footer fire without awaiting it, so the send resolves first. A macrotask boundary lets every
+ * fire queued so far run, since the footer handlers here only ever await microtasks.
  */
-const flushFooterFires = (chatActions: ChatInstanceService) =>
-  (chatActions as any).serviceManager.slotEventService
-    .requestFooterFireChain as Promise<unknown>;
+const flushFooterFires = () =>
+  new Promise<void>((resolve) => {
+    setTimeout(resolve, 0);
+  });
 
 /**
- * A stub whose `fire` routes through a real EventBus, which refuses to start an event whose type is already running.
- * The jest.fn stub above cannot see that rule, so the concurrency case needs the real thing.
+ * A stub whose `fire` routes through a real EventBus, which runs overlapping fires of one type in order. The jest.fn
+ * stub above cannot see that rule, so the concurrency case needs the real thing.
  */
 const createServiceManagerStubWithRealBus = () => {
   const { serviceManager } = createServiceManagerStub();
@@ -130,7 +131,7 @@ describe('custom request footer slot', () => {
     const message = createRequest('what is the weather?');
 
     await chatActions.send(message, MessageSendSource.MESSAGE_INPUT, {}, true);
-    await flushFooterFires(chatActions);
+    await flushFooterFires();
 
     const footerEvents = footerEventsIn(firedEvents);
     expect(footerEvents).toHaveLength(1);
@@ -173,14 +174,14 @@ describe('custom request footer slot', () => {
 
     expect(serviceManager.messageService.send).toHaveBeenCalledTimes(1);
 
-    // And the next send still fires: the chain recovers from a rejected tail.
+    // And the next send still fires: the bus recovers from a rejected fire.
     await chatActions.send(
       createRequest('again'),
       MessageSendSource.MESSAGE_INPUT,
       {},
       true
     );
-    await flushFooterFires(chatActions);
+    await flushFooterFires();
 
     expect(seen).toEqual(['again']);
     errorSpy.mockRestore();
@@ -223,7 +224,7 @@ describe('custom request footer slot', () => {
       true
     );
 
-    await flushFooterFires(chatActions);
+    await flushFooterFires();
 
     expect(Object.isFrozen(footerEventsIn(firedEvents)[0].data.message)).toBe(
       true
@@ -247,7 +248,7 @@ describe('custom request footer slot', () => {
       true
     );
 
-    await flushFooterFires(chatActions);
+    await flushFooterFires();
 
     const [first, second] = footerEventsIn(firedEvents);
     expect(first.data.slotName).not.toBe(second.data.slotName);
@@ -287,7 +288,7 @@ describe('custom request footer slot', () => {
       ),
     ]);
 
-    await flushFooterFires(chatActions);
+    await flushFooterFires();
 
     expect(seen).toEqual(['first', 'second', 'third']);
   });
@@ -303,7 +304,7 @@ describe('custom request footer slot', () => {
       true
     );
 
-    await flushFooterFires(chatActions);
+    await flushFooterFires();
 
     expect(footerEventsIn(firedEvents)).toHaveLength(0);
   });
@@ -316,7 +317,7 @@ describe('custom request footer slot', () => {
 
     await chatActions.send(message, MessageSendSource.MESSAGE_INPUT, {}, true);
 
-    await flushFooterFires(chatActions);
+    await flushFooterFires();
 
     expect(footerEventsIn(firedEvents)).toHaveLength(0);
   });
@@ -332,7 +333,7 @@ describe('custom request footer slot', () => {
       true
     );
 
-    await flushFooterFires(chatActions);
+    await flushFooterFires();
 
     expect(footerEventsIn(firedEvents)).toHaveLength(0);
   });

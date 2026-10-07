@@ -43,19 +43,6 @@ import type {
 class SlotEventService {
   private serviceManager: ServiceManager;
 
-  /**
-   * Serializes the outbound footer events. `EventBus.fire` refuses to start an event whose type is already running,
-   * and this one fires on every send, so a host that sends several messages without awaiting each one would
-   * otherwise make the second send throw.
-   */
-  requestFooterFireChain: Promise<unknown> = Promise.resolve();
-
-  /**
-   * The same serialization for the assistant-side footer. A history replay fires one per restored message, and two
-   * overlapping `insertHistory` calls would otherwise collide on the event bus and drop the rest.
-   */
-  footerFireChain: Promise<unknown> = Promise.resolve();
-
   constructor(serviceManager: ServiceManager) {
     this.serviceManager = serviceManager;
   }
@@ -225,10 +212,7 @@ class SlotEventService {
         },
       };
 
-      const fire = () => this.serviceManager.fire(customFooterSlotEvent);
-      this.footerFireChain = this.footerFireChain.then(fire, fire);
-
-      await this.footerFireChain;
+      await this.serviceManager.fire(customFooterSlotEvent);
     }
   }
 
@@ -256,10 +240,7 @@ class SlotEventService {
       },
     };
 
-    const fire = () => this.serviceManager.fire(customRequestFooterSlotEvent);
-    this.requestFooterFireChain = this.requestFooterFireChain.then(fire, fire);
-
-    await this.requestFooterFireChain;
+    await this.serviceManager.fire(customRequestFooterSlotEvent);
   }
 
   /**
