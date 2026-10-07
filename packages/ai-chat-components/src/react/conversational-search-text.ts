@@ -11,7 +11,7 @@ import { createComponent, type EventName } from '@lit/react';
 import React from 'react';
 import ConversationalSearchTextElement, {
   type CitationToggleEventDetail,
-} from '../components/conversational-search-text/src/conversational-search-text.js';
+} from '../components/conversational-search/src/conversational-search-text.js';
 import prefix from '../globals/settings.js';
 import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 

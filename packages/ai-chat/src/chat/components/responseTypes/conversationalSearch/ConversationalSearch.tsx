@@ -22,7 +22,7 @@ import ConversationalSearchText from '@carbon/ai-chat-components/es/react/conver
 import {
   insertHighlightMarkdown,
   sortCitations,
-} from '@carbon/ai-chat-components/es/components/conversational-search-text/src/citation-utils.js';
+} from '@carbon/ai-chat-components/es/components/conversational-search/src/citation-utils.js';
 import { ScrollElementIntoViewFunction } from '../../../components-legacy/MessagesComponent';
 import { useSelector } from '../../../hooks/useSelector';
 import { useCounter } from '../../../hooks/useCounter';

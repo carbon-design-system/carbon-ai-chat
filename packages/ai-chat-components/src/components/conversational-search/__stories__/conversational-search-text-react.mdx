@@ -1,15 +1,15 @@
 import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
-import * as Stories from './conversational-search-text.stories';
+import * as Stories from './conversational-search-text-react.stories';
 
 <Meta of={Stories} />
 
 # Answer text
 
-[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/conversational-search-text) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/conversational-search) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
 
 ## Overview
 
-Use `cds-aichat-conversational-search-text` to display a conversational search answer with a citations toggle. Supply your answer content in the default slot.
+Use `ConversationalSearchText` to display a conversational search answer with a citations toggle. Supply your answer content in the default slot.
 
 <Canvas of={Stories.Default} />
 
@@ -43,14 +43,14 @@ Update the slotted Markdown as chunks arrive. Set `streaming` on both the answer
 
 Supply translated visible and accessible labels through `citationsLabel` and `toggleLabel`. Both events bubble and cross shadow roots. Opening requests a toggle first, then a scroll; closing requests only a toggle.
 
-### `cds-aichat-conversational-search-text`
+### `ConversationalSearchText`
 
-<ArgTypes of="cds-aichat-conversational-search-text" />
+<ArgTypes of={Stories.Default} />
 
-## JS (via import)
+## JSX (via import)
 
-```javascript
-import '@carbon/ai-chat-components/es/components/conversational-search-text/index.js';
+```jsx
+import ConversationalSearchText from '@carbon/ai-chat-components/es/react/conversational-search-text.js';
 ```
 
 ## Feedback
