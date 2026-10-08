@@ -334,6 +334,39 @@ describe('cds-aichat-autocomplete', () => {
 
       expect(activeOption?.textContent).to.include('Group item 1');
     });
+
+    it('aria-activedescendant and --active class agree on every navigation step across a mixed flat+group list', async () => {
+      const el = await defaultFixture({ groups: mockGroups });
+      const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
+
+      const keys = [
+        'ArrowDown',
+        'ArrowDown',
+        'ArrowDown',
+        'ArrowDown',
+        'ArrowUp',
+        'Home',
+        'End',
+      ];
+      for (const key of keys) {
+        el.dispatchEvent(
+          new KeyboardEvent('keydown', { key, bubbles: true, composed: true })
+        );
+        await el.updateComplete;
+
+        const activeDescendant = listbox?.getAttribute('aria-activedescendant');
+        const activeClass = `${prefix}-autocomplete-item--active`;
+        const activeOptions = Array.from(
+          el.shadowRoot?.querySelectorAll(`li[role="option"].${activeClass}`) ??
+            []
+        );
+
+        // Exactly one item carries the active class.
+        expect(activeOptions.length).to.equal(1);
+        // Its id matches what aria-activedescendant points to.
+        expect(activeOptions[0].getAttribute('id')).to.equal(activeDescendant);
+      }
+    });
   });
 
   describe('header', () => {
@@ -1284,6 +1317,40 @@ describe('cds-aichat-autocomplete', () => {
       // Should have landed on index 2 (id 'enabled-2')
       expect(listbox?.getAttribute('aria-activedescendant')).to.equal(
         'enabled-2--option'
+      );
+    });
+
+    it('ArrowUp skips a disabled item and lands on the previous enabled item', async () => {
+      const threeItems: SuggestionItem[] = [
+        enabledItem,
+        disabledItem,
+        { id: 'enabled-2', label: 'Enabled Option 2' },
+      ];
+      const el = await defaultFixture({ items: threeItems });
+
+      // End lands on index 2 directly.
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'End',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      // ArrowUp from 2: must skip disabled at 1 and land on 0.
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowUp',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
+      expect(listbox?.getAttribute('aria-activedescendant')).to.equal(
+        'enabled-1--option'
       );
     });
 
