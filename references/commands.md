@@ -27,7 +27,7 @@ Load this when you need to build, watch, lint, format, test, or run an example/S
 | Example app tests only (CI's `examples` suite) | `npm run test:examples` |
 | Guidance validator regression tests (no build) | `npm run test:guidance` |
 | Lint + format + license + test gate (no build) | `npm run ci-check` |
-| Remove every `node_modules`, plus `es/`, `es-custom/`, `dist/`, and `storybook-static/` in the components package | `npm run clean` |
+| Remove every `node_modules`, `packages/ai-chat/dist`, and `es/`, `es-custom/`, `dist/`, and `storybook-static/` in the components package | `npm run clean` |
 
 **Always run the npm script, never the underlying binary.** `npx prettier`, a bare `eslint`, or `stylelint` invoked by hand drops the project configuration and ignore rules in `.prettierignore` and will reformat generated output — which is never editable, see [Root AGENTS.md](../AGENTS.md). The scripts are also the only thing CI and husky run, so a hand-rolled invocation can disagree with the gate that actually blocks the merge.
 
@@ -104,7 +104,7 @@ npm run clean && npm install && npm run aiChat:build
 
 Then rerun the same failing command. A pass means stale state: report it as that, not as a fix. A repeat failure makes stale state unlikely. Look at the source change, then at the base branch.
 
-`npm run clean` leaves `packages/ai-chat/dist` in place. No script removes it. Each build overwrites the current files there and leaves files from older builds beside them, so a file's presence in that directory is not evidence. When you cannot disturb the current worktree, a fresh worktree with the same changes, installed and built, answers the same question.
+`npm run clean` also removes `packages/ai-chat/dist`. An ordinary `@carbon/ai-chat` build does not: it overwrites the current files there and leaves files from older builds beside them, so a file's presence in that directory is not evidence. When you cannot disturb the current worktree, a fresh worktree with the same changes, installed and built, answers the same question.
 
 ### Report the build with the test
 
