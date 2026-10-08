@@ -26,7 +26,11 @@ import {
 } from '../../../src/chat/components-legacy/MessageRichUserContent';
 import { collectInputNodeSlots } from '../../../src/chat/components/portals/InputNodePortalsContainer';
 import { StoreProvider } from '../../../src/chat/providers/StoreProvider';
-import { createAppStore } from '../../../src/chat/store/appStore';
+import { makeConfigStore } from '../../test_helpers';
+
+jest.mock('../../../src/chat/hooks/useIntl', () => ({
+  useIntl: () => ({ formatMessage: () => '' }),
+}));
 import type { MessageRequest } from '../../../src/types/messaging/Messages';
 
 const MESSAGE_ID = 'msg-1';
@@ -41,7 +45,7 @@ function messageWith(content: JSONContent): MessageRequest {
 // Minimal store — the pure-text branch renders `<MarkdownWithDefaults>`, which
 // reads `state.config.public.shouldSanitizeHTML` via a selector.
 function makeStore() {
-  return createAppStore((state) => state, { config: { public: {} } } as never);
+  return makeConfigStore({});
 }
 
 /** Slot keys as `MessageRichUserContent` actually renders them, in DOM order. */

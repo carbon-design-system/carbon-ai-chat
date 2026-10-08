@@ -1,0 +1,130 @@
+/*
+ *  Copyright IBM Corp. 2025, 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/type';
+@use '@carbon/layout';
+@use '@carbon/styles/scss/utilities/focus-outline' as *;
+@use '@carbon/styles/scss/motion';
+@use './vars' as *;
+
+@mixin markdown-inline-emphasis($scope) {
+  #{$scope} mark {
+    border-radius: layout.$spacing-02;
+    background-color: theme.$highlight;
+    color: theme.$text-primary;
+  }
+
+  #{$scope} b,
+  #{$scope} strong {
+    font-weight: bold;
+  }
+
+  #{$scope} i,
+  #{$scope} em {
+    font-style: italic;
+  }
+}
+
+@mixin markdown-inline-links($scope) {
+  #{$scope} a {
+    color: theme.$link-primary;
+    outline: none;
+    text-decoration: none;
+
+    @media (prefers-reduced-motion: no-preference) {
+      transition: color motion.$duration-fast-01 motion(standard, productive);
+    }
+
+    &:hover {
+      color: theme.$link-primary-hover;
+      text-decoration: underline;
+    }
+
+    &:focus {
+      @include focus-outline;
+
+      outline-color: theme.$focus;
+      text-decoration: underline;
+    }
+
+    &:visited {
+      color: theme.$link-primary;
+    }
+
+    &:active {
+      @include focus-outline;
+
+      color: theme.$link-primary;
+      outline-color: theme.$focus;
+      text-decoration: underline;
+    }
+
+    &:visited:hover {
+      color: theme.$link-primary-hover;
+    }
+
+    &:active:visited,
+    &:active:visited:hover {
+      @include focus-outline;
+
+      color: theme.$link-primary;
+      outline-color: theme.$focus;
+      text-decoration: underline;
+    }
+  }
+}
+
+@mixin markdown-inline-images($scope) {
+  #{$scope} img {
+    /* Make sure images in markdown do not overflow. */
+    max-inline-size: 100%;
+  }
+}
+
+// Inline markdown styles under `$scope`, the selector for the rendered span.
+@mixin markdown-inline($scope: '.#{$prefix}-inline-markdown') {
+  #{$scope} {
+    @include type.type-style('body-01');
+  }
+
+  #{$scope}
+    :where(
+      a,
+      abbr,
+      b,
+      code,
+      del,
+      em,
+      i,
+      img,
+      ins,
+      kbd,
+      mark,
+      q,
+      s,
+      samp,
+      small,
+      span,
+      strong,
+      sub,
+      sup,
+      u,
+      var
+    ) {
+    padding: 0;
+    border: 0;
+    margin: 0;
+    font: inherit;
+    font-size: 1em;
+    vertical-align: baseline;
+  }
+
+  @include markdown-inline-emphasis($scope);
+  @include markdown-inline-links($scope);
+  @include markdown-inline-images($scope);
+}

@@ -42,7 +42,6 @@ import {
 import type {
   RenderCustomMessageFooter,
   RenderCustomRequestFooter,
-  RenderUserDefinedInputNodeState,
   RenderUserDefinedResponse,
   WCMarkdown,
   WCRenderCustomMessageFooter,
@@ -51,7 +50,12 @@ import type {
   WCRenderUserDefinedInputNode,
   RenderUserDefinedInputNode,
 } from '../../types/component/ChatContainer';
-import React, { ComponentType, ReactNode, useEffect, useRef } from 'react';
+import React, {
+  ComponentType,
+  ReactNode,
+  useLayoutEffect,
+  useRef,
+} from 'react';
 
 // Derived rather than written out: the es-custom build rewrites lowercase
 // `cds-aichat` text in its output, so an uppercase literal would never match
@@ -321,12 +325,12 @@ class ChatContainer extends FlattenedConfigElement {
   }
 
   disconnectedCallback() {
-    this.pluginHostController.disconnect();
     // A move is a detach and reattach in one task, as when React reorders
     // keyed siblings. Keep the running chat through it; release only when the
     // element is still detached once the task's microtasks run.
     queueMicrotask(() => {
       if (!this.isConnected) {
+        this.pluginHostController.disconnect();
         this.releaseMount();
       }
     });
@@ -669,51 +673,21 @@ class ChatContainer extends FlattenedConfigElement {
 }
 
 /**
- * Mounts the element a WC-style `renderUserDefinedInputNode` returns. React
+ * Mounts the element a WC-style `renderUserDefinedInputNode` returned. React
  * owns the slot wrapper; the consumer owns the element inside it.
  */
-function WCInputNodeMount({
-  state,
-  instance,
-  wcRenderer,
-}: {
-  state: RenderUserDefinedInputNodeState;
-  instance: ChatInstance;
-  wcRenderer: WCRenderUserDefinedInputNode;
-}) {
+function WCInputNodeMount({ element }: { element: HTMLElement }) {
   const hostRef = useRef<HTMLSpanElement | null>(null);
-  const lastElRef = useRef<HTMLElement | null>(null);
 
-  // Depend on the individual `state` fields, not the wrapper object:
-  // `InputNodePortalsContainer` allocates a fresh `{ node, message }` on every
-  // render, but `node` / `message` themselves are stable (derived from the
-  // memoized `slotEntries`). Keying the effect on the wrapper would tear down
-  // and rebuild the consumer's element on every unrelated chat re-render.
-  const { node, message } = state;
-
-  useEffect(() => {
+  useLayoutEffect(() => {
     const host = hostRef.current;
-    if (!host) {
-      return undefined;
-    }
-
-    const el = wcRenderer({ node, message }, instance);
-    if (lastElRef.current && lastElRef.current.parentNode === host) {
-      host.removeChild(lastElRef.current);
-    }
-    lastElRef.current = el ?? null;
-
-    if (el) {
-      host.appendChild(el);
-    }
-
+    host.appendChild(element);
     return () => {
-      if (lastElRef.current && lastElRef.current.parentNode === host) {
-        host.removeChild(lastElRef.current);
-        lastElRef.current = null;
+      if (element.parentNode === host) {
+        host.removeChild(element);
       }
     };
-  }, [node, message, instance, wcRenderer]);
+  }, [element]);
 
   // No JSX here: this module is a Lit element, compiled as plain TypeScript.
   return React.createElement('span', { ref: hostRef });
@@ -784,9 +758,15 @@ const toReactCustomRequestFooter = cachedAdapter(
 
 const toReactUserDefinedInputNode = cachedAdapter(
   (wcRenderer: WCRenderUserDefinedInputNode): RenderUserDefinedInputNode =>
+    // Called here rather than in the mount, so a null result leaves no host
+    // assigned to the bubble's slot and its fallback label shows.
     // eslint-disable-next-line react/display-name -- this is a render callback, not a component
-    (state, instance) =>
-      React.createElement(WCInputNodeMount, { state, instance, wcRenderer })
+    (state, instance) => {
+      const element = wcRenderer(state, instance);
+      return element
+        ? React.createElement(WCInputNodeMount, { element })
+        : null;
+    }
 );
 
 declare global {

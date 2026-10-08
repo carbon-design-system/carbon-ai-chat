@@ -1,0 +1,14 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use '@carbon/ai-chat-components/scss/markdown-inline';
+
+@include markdown-inline.markdown-inline;
+
+.cds-aichat--inline-markdown-fallback {
+  white-space: pre-wrap;
+}

@@ -7,7 +7,7 @@
  *  @license
  */
 
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useLayoutEffect, useMemo } from 'react';
 import ReactDOM from 'react-dom';
 
 import { useSelector } from '../../hooks/useSelector';
@@ -48,19 +48,14 @@ interface SlotEntry {
 }
 
 /**
- * Mirrors `UserDefinedResponsePortalsContainer` for the new bubble custom
- * node API. For every non-built-in TipTap node inside a user message's
- * `display_content`, we:
+ * Portals `renderUserDefinedInputNode` output for every custom node in a
+ * user message's `display_content`. `MessageRichUserContent` emits a matching
+ * `<slot name={slotKey}>` whose fallback is the node's label, which shows when
+ * the renderer returns `null`.
  *
- *   1. Append a `<div slot=cds-aichat-input-node-X>` to the chat wrapper's
- *      light DOM (so consumer stylesheets reach the content).
- *   2. `ReactDOM.createPortal` the consumer's `renderUserDefinedInputNode`
- *      output into that div.
- *
- * `MessageRichUserContent` emits a matching `<slot name=...>` in the message
- * bubble that projects the slotted div back into the visual position. When the
- * consumer returns `null`, no slotted content is added and the slot's fallback
- * children (the node's label / value) show through.
+ * Each host is offered through the markdown plugin-host protocol, so the
+ * outermost chat element hosts it in page light DOM and forwards the slot
+ * inward. Without a claimant the host stays on the chat wrapper.
  */
 function InputNodePortalsContainer({
   chatInstance,
@@ -70,42 +65,10 @@ function InputNodePortalsContainer({
   const allMessagesByID = useSelector(
     (state: AppState) => state.allMessagesByID
   );
-
   const slotEntries = useMemo(
     () => collectSlotEntries(allMessagesByID),
     [allMessagesByID]
   );
-
-  // Map slotKey -> light-DOM host element. Hosts persist across renders so
-  // React doesn't re-mount the consumer's content when message order
-  // shifts.
-  const hostElementsRef = useRef<Map<string, HTMLElement>>(new Map());
-
-  // Reap hosts whose slot is no longer present in any message.
-  useEffect(() => {
-    const liveKeys = new Set(slotEntries.map((entry) => entry.slotKey));
-    for (const [key, host] of hostElementsRef.current.entries()) {
-      if (!liveKeys.has(key)) {
-        if (host.parentNode) {
-          host.parentNode.removeChild(host);
-        }
-        hostElementsRef.current.delete(key);
-      }
-    }
-  }, [slotEntries]);
-
-  // Clean up everything on unmount.
-  useEffect(() => {
-    const hosts = hostElementsRef.current;
-    return () => {
-      for (const host of hosts.values()) {
-        if (host.parentNode) {
-          host.parentNode.removeChild(host);
-        }
-      }
-      hosts.clear();
-    };
-  }, []);
 
   if (!chatWrapper) {
     return null;
@@ -113,48 +76,66 @@ function InputNodePortalsContainer({
 
   return (
     <>
-      {slotEntries.map((entry) => {
-        const node = renderUserDefinedInputNode(
-          { node: entry.node, message: entry.message },
-          chatInstance
-        );
-        if (node == null) {
-          // Drop any previously mounted host for this slot — the consumer
-          // dropped this node, so the slot falls back to its inline label.
-          const existing = hostElementsRef.current.get(entry.slotKey);
-          if (existing && existing.parentNode) {
-            existing.parentNode.removeChild(existing);
-            hostElementsRef.current.delete(entry.slotKey);
-          }
-          return null;
-        }
-
-        let host = hostElementsRef.current.get(entry.slotKey);
-        if (!host) {
-          host = document.createElement('div');
-          host.setAttribute('slot', entry.slotKey);
-          hostElementsRef.current.set(entry.slotKey, host);
-          chatWrapper.appendChild(host);
-        }
-
-        return (
-          <InputNodePortal key={entry.slotKey} host={host}>
-            {node}
-          </InputNodePortal>
-        );
-      })}
+      {slotEntries.map((entry) => (
+        <InputNodePortal
+          key={entry.slotKey}
+          entry={entry}
+          chatWrapper={chatWrapper}
+          chatInstance={chatInstance}
+          renderUserDefinedInputNode={renderUserDefinedInputNode}
+        />
+      ))}
     </>
   );
 }
 
 function InputNodePortal({
-  host,
-  children,
-}: {
-  host: HTMLElement;
-  children: React.ReactNode;
-}) {
-  return ReactDOM.createPortal(children, host);
+  entry: { node, message, slotKey },
+  chatWrapper,
+  chatInstance,
+  renderUserDefinedInputNode,
+}: InputNodePortalsContainerProps & { entry: SlotEntry }) {
+  const host = useMemo(() => document.createElement('div'), []);
+  const content = useMemo(
+    () => renderUserDefinedInputNode({ node, message }, chatInstance),
+    [node, message, chatInstance, renderUserDefinedInputNode]
+  );
+  const hasContent = content != null;
+
+  useLayoutEffect(() => {
+    if (!hasContent) {
+      return undefined;
+    }
+    host.setAttribute('slot', slotKey);
+    const mount = new CustomEvent('cds-aichat-markdown-plugin-host-mount', {
+      bubbles: true,
+      composed: true,
+      cancelable: true,
+      detail: {
+        kind: 'customRenderer',
+        slotName: slotKey,
+        element: host,
+        isInline: false,
+      },
+    });
+    chatWrapper.dispatchEvent(mount);
+    if (!mount.defaultPrevented) {
+      chatWrapper.appendChild(host);
+    }
+    return () => {
+      // The host has moved; dispatch from the wrapper to reach every forwarder.
+      chatWrapper.dispatchEvent(
+        new CustomEvent('cds-aichat-markdown-plugin-host-unmount', {
+          bubbles: true,
+          composed: true,
+          detail: { slotName: slotKey },
+        })
+      );
+      host.remove();
+    };
+  }, [chatWrapper, host, slotKey, hasContent]);
+
+  return hasContent ? ReactDOM.createPortal(content, host) : null;
 }
 
 function collectSlotEntries(

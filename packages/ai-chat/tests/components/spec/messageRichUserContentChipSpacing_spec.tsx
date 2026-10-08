@@ -28,7 +28,11 @@ import type { JSONContent } from '@tiptap/core';
 
 import { MessageRichUserContent } from '../../../src/chat/components-legacy/MessageRichUserContent';
 import { StoreProvider } from '../../../src/chat/providers/StoreProvider';
-import { createAppStore } from '../../../src/chat/store/appStore';
+import { makeConfigStore } from '../../test_helpers';
+
+jest.mock('../../../src/chat/hooks/useIntl', () => ({
+  useIntl: () => ({ formatMessage: () => '' }),
+}));
 import type { MessageRequest } from '../../../src/types/messaging/Messages';
 
 // `renderTokenChip` mounts a Lit web-component into a <span> via a useEffect.
@@ -58,7 +62,7 @@ jest.mock(
 );
 
 function makeStore() {
-  return createAppStore((state) => state, { config: { public: {} } } as never);
+  return makeConfigStore({});
 }
 
 function messageWith(content: JSONContent): MessageRequest {
