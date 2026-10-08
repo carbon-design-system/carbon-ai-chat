@@ -151,7 +151,7 @@ export interface BaseSuggestionConfig {
  */
 export interface TriggerSuggestionConfig extends Omit<
   BaseSuggestionConfig,
-  'disableDirectSend'
+  'disableDirectSend' | 'onSelect'
 > {
   /** Character that activates the suggestion (e.g. "@", "/"). */
   trigger: string;
@@ -164,19 +164,36 @@ export interface TriggerSuggestionConfig extends Omit<
   renderCustomToken?: (item: SuggestionItem) => HTMLElement | ReactNode;
 
   /**
-   * Called when a previously-inserted token for this trigger is removed from
-   * the input by a user edit (backspace, delete, cut, select-all, undo, ...).
-   * The mirror of {@link BaseSuggestionConfig}'s `onSelect`: fires once per
-   * removed node instance, so deleting one of two identical chips fires
-   * exactly once. Use it to keep host-owned structured data in sync with the
-   * editor.
+   * Called whenever a token chip for this trigger **enters** the editor via
+   * any user edit: selecting from the autocomplete, undo restoring a deleted chip,
+   * or redo. Fires once per added node instance (duplicate chips with
+   * the same id are tracked individually).
    *
    * The item is reconstructed from the node's stored attributes (`id`,
    * `label`, `value`, plus any custom fields preserved in `data`);
-   * presentation-only fields (`icon`, `avatar`, `description`, `disabled`) are
-   * not retained on the node and are absent. Programmatic removals (via
-   * `getEditor()`/`updateContent`) are host-origin and do NOT fire `onRemove`,
-   * symmetric with `onSelect` not firing on programmatic inserts.
+   * presentation-only fields (`avatar`, `description`, `disabled`,
+   * `showTriggerInChip`) are not retained on the node and are absent.
+   * Programmatic inserts (via `getEditor()`/`updateContent`) are host-origin
+   * and do NOT fire `onSelect`, symmetric with `onRemove`.
+   *
+   * Use the symmetric {@link TriggerSuggestionConfig.onRemove} to keep
+   * host-owned structured data in sync in both directions.
+   */
+  onSelect?: (item: SuggestionItem) => void;
+
+  /**
+   * Called when a token chip for this trigger **leaves** the editor via any
+   * user edit: backspace, delete, cut, select-all+type, undo of an insert, ....
+   * Fires once per removed node instance, so deleting one of two identical
+   * chips fires exactly once. Use it to keep host-owned structured data in sync
+   * with the editor.
+   *
+   * The item is reconstructed from the node's stored attributes (`id`,
+   * `label`, `value`, plus any custom fields preserved in `data`);
+   * presentation-only fields (`avatar`, `description`, `disabled`,
+   * `showTriggerInChip`) are not retained on the node and are absent.
+   * Programmatic removals (via `getEditor()`/`updateContent`) are host-origin
+   * and do NOT fire `onRemove`, symmetric with `onSelect`.
    */
   onRemove?: (item: SuggestionItem) => void;
 

@@ -25,7 +25,7 @@ import {
   type AutocompleteControllerState,
 } from '../autocomplete-controller.js';
 import { carbonAutocomplete } from '../tiptap/carbon-autocomplete.js';
-import { carbonMention } from '../tiptap/carbon-mention.js';
+import { carbonCommand, carbonMention } from '../tiptap/carbon-mention.js';
 import { carbonStarterTrigger } from '../tiptap/carbon-starter-trigger.js';
 import {
   dispatchTriggerChange,
@@ -1223,52 +1223,92 @@ describe('AutocompleteController', () => {
   });
 
   describe('onSelect fires for every trigger type', () => {
-    it('fires the mention config onSelect with the selected item', async () => {
-      const { promptLine } = makeEditorStub();
+    it('fires the mention config onSelect with the selected item (via lifecycle plugin)', async () => {
+      const mount = document.createElement('div');
+      document.body.appendChild(mount);
       let selected: SuggestionItem | null = null;
-      const controller = new AutocompleteController({
-        mention: {
-          trigger: '@',
-          items: USERS,
-          onSelect: (item) => {
-            selected = item;
-          },
-        },
-        onChange: () => {},
+      const editor = new Editor({
+        element: mount,
+        extensions: [
+          DocumentNode,
+          ParagraphNode,
+          TextNode,
+          carbonMention({
+            trigger: '@',
+            items: USERS,
+            onSelect: (item) => {
+              selected = item;
+            },
+          }),
+        ],
+        content: '',
       });
-      controller.setPromptLine(promptLine);
-      controller.handleTriggerChange({
-        type: 'mention',
-        query: '',
-        triggerOffset: 0,
-      });
-      await flush();
-      controller.select(USERS[0]);
-      expect(selected).to.equal(USERS[0]);
+      try {
+        const promptLine = { getEditor: () => editor };
+        const controller = new AutocompleteController({
+          mention: { trigger: '@', items: USERS },
+          onChange: () => {},
+        });
+        controller.setPromptLine(promptLine as any);
+        controller.handleTriggerChange({
+          type: 'mention',
+          query: '',
+          triggerOffset: 1,
+        });
+        await flush();
+        controller.select(USERS[0]);
+        expect(selected).to.deep.include({
+          id: USERS[0].id,
+          label: USERS[0].label,
+        });
+      } finally {
+        editor.destroy();
+        mount.remove();
+      }
     });
 
-    it('fires the command config onSelect with the selected item', async () => {
-      const { promptLine } = makeEditorStub();
+    it('fires the command config onSelect with the selected item (via lifecycle plugin)', async () => {
+      const mount = document.createElement('div');
+      document.body.appendChild(mount);
       let selected: SuggestionItem | null = null;
-      const controller = new AutocompleteController({
-        command: {
-          trigger: '/',
-          items: COMMANDS,
-          onSelect: (item) => {
-            selected = item;
-          },
-        },
-        onChange: () => {},
+      const editor = new Editor({
+        element: mount,
+        extensions: [
+          DocumentNode,
+          ParagraphNode,
+          TextNode,
+          carbonCommand({
+            trigger: '/',
+            items: COMMANDS,
+            onSelect: (item) => {
+              selected = item;
+            },
+          }),
+        ],
+        content: '',
       });
-      controller.setPromptLine(promptLine);
-      controller.handleTriggerChange({
-        type: 'command',
-        query: '',
-        triggerOffset: 0,
-      });
-      await flush();
-      controller.select(COMMANDS[0]);
-      expect(selected).to.equal(COMMANDS[0]);
+      try {
+        const promptLine = { getEditor: () => editor };
+        const controller = new AutocompleteController({
+          command: { trigger: '/', items: COMMANDS },
+          onChange: () => {},
+        });
+        controller.setPromptLine(promptLine as any);
+        controller.handleTriggerChange({
+          type: 'command',
+          query: '',
+          triggerOffset: 1,
+        });
+        await flush();
+        controller.select(COMMANDS[0]);
+        expect(selected).to.deep.include({
+          id: COMMANDS[0].id,
+          label: COMMANDS[0].label,
+        });
+      } finally {
+        editor.destroy();
+        mount.remove();
+      }
     });
 
     it('fires the autocomplete config onSelect and inserts plain text', async () => {
