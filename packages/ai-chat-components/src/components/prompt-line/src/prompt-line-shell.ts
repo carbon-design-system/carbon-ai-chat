@@ -32,6 +32,48 @@ import styles from './prompt-line-shell.scss?lit';
  *   autocomplete row (e.g. char-count exceeded message).
  * - `send-control` — send / stop-streaming button.
  *
+ * ## Styling
+ *
+ * ### CSS part
+ *
+ * The input container is exposed as a CSS part so external stylesheets can
+ * style the resting frame independently of the outer shell:
+ *
+ * ```css
+ * cds-aichat-prompt-line-shell::part(prompt-container) {
+ *   border: 1px solid var(--cds-border-subtle-01);
+ * }
+ * ```
+ *
+ * When embedded inside `cds-aichat-custom-element`, the part is forwarded
+ * through the shadow hierarchy and reachable from the outermost host:
+ *
+ * ```css
+ * cds-aichat-custom-element::part(prompt-container) {
+ *   border: 1px solid var(--cds-border-subtle-01);
+ * }
+ * ```
+ *
+ * ### CSS custom property
+ *
+ * `--cds-aichat-prompt-border` sets the `border` shorthand on the input
+ * container. It inherits through shadow boundaries, so any ancestor of the
+ * chat host can set it:
+ *
+ * ```css
+ * cds-aichat-custom-element {
+ *   --cds-aichat-prompt-border: 1px solid var(--cds-border-subtle-01);
+ * }
+ * ```
+ *
+ * Or via `layout.customProperties`:
+ *
+ * ```ts
+ * layout: { customProperties: { "prompt-border": "1px solid var(--cds-border-subtle-01)" } }
+ * ```
+ *
+ * The focus outline and error outline are not affected by either hook.
+ *
  * @element cds-aichat-prompt-line-shell
  */
 @carbonElement(`${prefix}-prompt-line-shell`)
@@ -149,7 +191,7 @@ class PromptLineShellElement extends LitElement {
 
     return html`
       <div class="${prefix}--prompt-line-shell">
-        <div class=${classMap(containerClasses)}>
+        <div class=${classMap(containerClasses)} part="prompt-container">
           <div class=${classMap(uploadsRowClasses)}>
             <slot
               name="file-uploads"

@@ -254,4 +254,45 @@ describe('<cds-aichat-prompt-line-shell>', () => {
     expect(el.querySelector('#my-send')).to.not.equal(null);
     expect(el.querySelector('#my-msg')).to.not.equal(null);
   });
+
+  it('exposes a `prompt-container` CSS part on the input container', async () => {
+    const el: PromptLineShellElement = await fixture(html`
+      <cds-aichat-prompt-line-shell></cds-aichat-prompt-line-shell>
+    `);
+    await el.updateComplete;
+
+    const container = el.shadowRoot?.querySelector(
+      '[part~="prompt-container"]'
+    ) as HTMLElement | null;
+    expect(container).to.not.equal(null);
+    expect(
+      container!.classList.contains('cds-aichat--input-container')
+    ).to.equal(true);
+  });
+
+  it('applies --cds-aichat-prompt-border to the input container', async () => {
+    const el: PromptLineShellElement = await fixture(html`
+      <div>
+        <style>
+          cds-aichat-prompt-line-shell {
+            --cds-aichat-prompt-border: 2px solid rgb(255, 0, 0);
+          }
+        </style>
+        <cds-aichat-prompt-line-shell></cds-aichat-prompt-line-shell>
+      </div>
+    `).then(
+      (wrapper) =>
+        wrapper.querySelector(
+          'cds-aichat-prompt-line-shell'
+        ) as PromptLineShellElement
+    );
+    await el.updateComplete;
+
+    const container = el.shadowRoot?.querySelector(
+      '.cds-aichat--input-container'
+    ) as HTMLElement;
+    const borderStyle = getComputedStyle(container).border;
+    // The exact computed value varies by browser but must contain "2px" and "red"
+    expect(borderStyle).to.include('2px');
+  });
 });
