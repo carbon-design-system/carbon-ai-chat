@@ -1471,6 +1471,101 @@ describe('cds-aichat-autocomplete', () => {
     });
   });
 
+  describe('_buildFlatList (flat index mapping)', () => {
+    it('returns an empty array when there are no items or groups', () => {
+      const el = document.createElement(
+        `${prefix}-autocomplete`
+      ) as AutocompleteElement;
+      el.items = [];
+      el.groups = [];
+      el.i18n = defaultAutocompleteI18n;
+      const list = (el as any)._buildFlatList() as Array<{
+        item: SuggestionItem;
+        groupTitle: string | undefined;
+      }>;
+      expect(list).to.deep.equal([]);
+    });
+
+    it('places ungrouped items before grouped items and assigns correct group titles', () => {
+      const flatA: SuggestionItem = { id: 'flat-a', label: 'Flat A' };
+      const flatB: SuggestionItem = { id: 'flat-b', label: 'Flat B' };
+      const grpItem1: SuggestionItem = { id: 'g1-1', label: 'Group 1 item 1' };
+      const grpItem2: SuggestionItem = { id: 'g1-2', label: 'Group 1 item 2' };
+      const grpItem3: SuggestionItem = { id: 'g2-1', label: 'Group 2 item 1' };
+      const groups: SuggestionItemGroup[] = [
+        { id: 'grp-1', title: 'Group 1', items: [grpItem1, grpItem2] },
+        { id: 'grp-2', title: 'Group 2', items: [grpItem3] },
+      ];
+
+      const el = document.createElement(
+        `${prefix}-autocomplete`
+      ) as AutocompleteElement;
+      el.items = [flatA, flatB];
+      el.groups = groups;
+      el.i18n = defaultAutocompleteI18n;
+
+      const list = (el as any)._buildFlatList() as Array<{
+        item: SuggestionItem;
+        groupTitle: string | undefined;
+      }>;
+
+      expect(list.length).to.equal(5);
+      expect(list[0]).to.deep.equal({
+        item: flatA,
+        groupTitle: defaultAutocompleteI18n.nonGroupedItemsLabel,
+      });
+      expect(list[1]).to.deep.equal({
+        item: flatB,
+        groupTitle: defaultAutocompleteI18n.nonGroupedItemsLabel,
+      });
+      expect(list[2]).to.deep.equal({ item: grpItem1, groupTitle: 'Group 1' });
+      expect(list[3]).to.deep.equal({ item: grpItem2, groupTitle: 'Group 1' });
+      expect(list[4]).to.deep.equal({ item: grpItem3, groupTitle: 'Group 2' });
+    });
+
+    it('assigns undefined groupTitle to ungrouped items when there are no groups', () => {
+      const itemA: SuggestionItem = { id: 'a', label: 'A' };
+      const itemB: SuggestionItem = { id: 'b', label: 'B' };
+
+      const el = document.createElement(
+        `${prefix}-autocomplete`
+      ) as AutocompleteElement;
+      el.items = [itemA, itemB];
+      el.groups = [];
+      el.i18n = defaultAutocompleteI18n;
+
+      const list = (el as any)._buildFlatList() as Array<{
+        item: SuggestionItem;
+        groupTitle: string | undefined;
+      }>;
+
+      expect(list.length).to.equal(2);
+      expect(list[0].groupTitle).to.be.undefined;
+      expect(list[1].groupTitle).to.be.undefined;
+    });
+
+    it('produces only group items when items is empty', () => {
+      const g1: SuggestionItem = { id: 'g1', label: 'G1' };
+      const g2: SuggestionItem = { id: 'g2', label: 'G2' };
+
+      const el = document.createElement(
+        `${prefix}-autocomplete`
+      ) as AutocompleteElement;
+      el.items = [];
+      el.groups = [{ id: 'grp', title: 'Only Group', items: [g1, g2] }];
+      el.i18n = defaultAutocompleteI18n;
+
+      const list = (el as any)._buildFlatList() as Array<{
+        item: SuggestionItem;
+        groupTitle: string | undefined;
+      }>;
+
+      expect(list.length).to.equal(2);
+      expect(list[0]).to.deep.equal({ item: g1, groupTitle: 'Only Group' });
+      expect(list[1]).to.deep.equal({ item: g2, groupTitle: 'Only Group' });
+    });
+  });
+
   describe('screen reader announcements', () => {
     it('includes the group title in arrow-key navigation announcements for grouped items', async () => {
       let announcedMessage: string | null = null;
