@@ -349,8 +349,9 @@ describe('<cds-aichat-prompt-line> (rich upgrade)', function () {
     expect(editor.getText()).to.equal('draft to clear');
   });
 
-  it('resetHistory() fires no events, value sync, typing indicator, or mention onRemove', async () => {
+  it('resetHistory() fires no events, value sync, typing indicator, or mention onRemove/onSelect', async () => {
     const removed: SuggestionItem[] = [];
+    const inserted: SuggestionItem[] = [];
     const changeEvents: Event[] = [];
     const typingEvents: Event[] = [];
     const el = await makePromptLine();
@@ -359,6 +360,7 @@ describe('<cds-aichat-prompt-line> (rich upgrade)', function () {
         trigger: '@',
         items: [{ id: 'u1', label: 'Alice' }],
         onRemove: (item) => removed.push(item),
+        onSelect: (item) => inserted.push(item),
       }),
     ];
     el.rich = true;
@@ -379,6 +381,8 @@ describe('<cds-aichat-prompt-line> (rich upgrade)', function () {
 
     changeEvents.length = 0;
     typingEvents.length = 0;
+    removed.length = 0;
+    inserted.length = 0;
 
     el.resetHistory();
     await Promise.resolve();
@@ -386,6 +390,7 @@ describe('<cds-aichat-prompt-line> (rich upgrade)', function () {
     expect(changeEvents).to.have.lengthOf(0);
     expect(typingEvents).to.have.lengthOf(0);
     expect(removed).to.have.lengthOf(0);
+    expect(inserted).to.have.lengthOf(0);
   });
 
   it('preserves keyboard-focus state across the upgrade', async () => {
