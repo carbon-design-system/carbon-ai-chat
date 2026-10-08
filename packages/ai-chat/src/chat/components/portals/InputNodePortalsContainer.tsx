@@ -17,7 +17,10 @@ import type {
   Message,
   MessageRequest,
 } from '../../../types/messaging/Messages';
-import type { RenderUserDefinedInputNode } from '../../../types/component/ChatContainer';
+import type {
+  RenderUserDefinedInputNode,
+  RenderUserDefinedInputNodeState,
+} from '../../../types/component/ChatContainer';
 import type { JSONContent } from '@tiptap/core';
 
 interface InputNodePortalsContainerProps {
@@ -36,10 +39,13 @@ const BUILT_IN_NODE_TYPES = new Set(['doc', 'paragraph', 'text', 'hardBreak']);
 
 interface SlotEntry {
   slotKey: string;
-  messageId: string;
-  node: JSONContent;
-  message: MessageRequest;
+  state: RenderUserDefinedInputNodeState;
 }
+
+// One message's entries, kept while the store holds that message object. A
+// renderer gets the same `state` object for a slot on every render, which is
+// what the web-component adapter keys its per-slot cache on.
+const entriesByMessage = new WeakMap<MessageRequest, SlotEntry[]>();
 
 /**
  * Mirrors `UserDefinedResponsePortalsContainer` for the new bubble custom
@@ -110,10 +116,7 @@ function InputNodePortalsContainer({
   return (
     <>
       {slotEntries.map((entry) => {
-        const node = renderUserDefinedInputNode(
-          { node: entry.node, message: entry.message },
-          chatInstance
-        );
+        const node = renderUserDefinedInputNode(entry.state, chatInstance);
         if (node == null || typeof node === 'boolean' || node === '') {
           // Drop any previously mounted host for this slot — the consumer
           // dropped this node, so the slot falls back to its inline label.
@@ -131,7 +134,8 @@ function InputNodePortalsContainer({
           // the text flow. Block custom nodes (e.g. tileChip) keep a <div>
           // so their block-level content is valid HTML.
           const isTokenNode =
-            entry.node.type === 'mention' || entry.node.type === 'command';
+            entry.state.node.type === 'mention' ||
+            entry.state.node.type === 'command';
           host = document.createElement(isTokenNode ? 'span' : 'div');
           host.setAttribute('slot', entry.slotKey);
           hostElementsRef.current.set(entry.slotKey, host);
@@ -160,16 +164,15 @@ function collectSlotEntries(
     if (!messageId) {
       continue;
     }
-    const displayContent = (message as MessageRequest).input.display_content;
-    if (!displayContent) {
-      continue;
+    let messageEntries = entriesByMessage.get(message);
+    if (!messageEntries) {
+      messageEntries = collectInputNodeSlots(
+        message.input.display_content,
+        messageId
+      ).map(({ slotKey, node }) => ({ slotKey, state: { node, message } }));
+      entriesByMessage.set(message, messageEntries);
     }
-    walkForSlots({
-      content: displayContent,
-      messageId,
-      message: message as MessageRequest,
-      out: entries,
-    });
+    entries.push(...messageEntries);
   }
   return entries;
 }
@@ -178,13 +181,6 @@ function isRequestWithDisplayContent(
   message: Message
 ): message is MessageRequest {
   return Boolean((message as MessageRequest)?.input?.display_content);
-}
-
-interface WalkArgs {
-  content: JSONContent;
-  messageId: string;
-  message: MessageRequest;
-  out: SlotEntry[];
 }
 
 /** A non-built-in node found in a `display_content` doc, with its slot key. */
@@ -235,20 +231,6 @@ export function collectInputNodeSlots(
   }
 
   return out;
-}
-
-function walkForSlots(args: WalkArgs): void {
-  for (const { slotKey, node } of collectInputNodeSlots(
-    args.content,
-    args.messageId
-  )) {
-    args.out.push({
-      slotKey,
-      messageId: args.messageId,
-      node,
-      message: args.message,
-    });
-  }
 }
 
 const InputNodePortalsContainerExport = React.memo(InputNodePortalsContainer);

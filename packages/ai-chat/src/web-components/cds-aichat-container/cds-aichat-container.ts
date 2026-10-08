@@ -736,24 +736,19 @@ const toReactUserDefinedInputNode = cachedAdapter(
   (render: WCRenderUserDefinedInputNode): RenderUserDefinedInputNode => {
     // The input-node portals re-render on every message-store change, so a
     // call per render would rebuild the host's element on each streamed chunk.
-    // Each node keeps its first result until its message changes.
-    const rendered = new WeakMap<
-      RenderUserDefinedInputNodeState['node'],
-      {
-        message: RenderUserDefinedInputNodeState['message'];
-        content: ReactNode;
-      }
-    >();
+    // `InputNodePortalsContainer` passes one `state` object per slot until
+    // its message changes, so each slot keeps its first result until then.
+    const rendered = new WeakMap<RenderUserDefinedInputNodeState, ReactNode>();
     return (state, instance) => {
-      const cached = rendered.get(state.node);
-      if (cached?.message === state.message) {
-        return cached.content;
+      if (!rendered.has(state)) {
+        rendered.set(
+          state,
+          renderWCSlotContent('renderUserDefinedInputNode', () =>
+            render(state, instance)
+          )
+        );
       }
-      const content = renderWCSlotContent('renderUserDefinedInputNode', () =>
-        render(state, instance)
-      );
-      rendered.set(state.node, { message: state.message, content });
-      return content;
+      return rendered.get(state);
     };
   }
 );

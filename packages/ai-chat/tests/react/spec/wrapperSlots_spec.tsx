@@ -447,6 +447,7 @@ describe('React render props through the shared container', () => {
     ).toEqual(['custom']);
 
     const host = hostFor(slotName);
+    expect(host.tagName).toBe('DIV');
     update({ renderUserDefinedInputNode: () => <b>Updated custom</b> });
     await waitFor(() => expect(host.textContent).toBe('Updated custom'));
     expect(hostFor(slotName)).toBe(host);
@@ -572,23 +573,22 @@ describe('React render props through the shared container', () => {
     );
   });
 
-  it('caches the WC renderUserDefinedInputNode result per node so store updates do not rebuild the host element', async () => {
-    let callCount = 0;
-    const renderUserDefinedInputNode = () => {
-      callCount++;
-      const el = document.createElement('b');
-      el.dataset.probe = 'cached-wc-chip';
-      return el;
-    };
-    const { element, instance, update } = await bootWC({
-      renderUserDefinedInputNode,
-    });
-
+  it('keeps the default chip when a cds-aichat-container callback returns null', async () => {
+    const renderUserDefinedInputNode: CdsAiChatContainerElement['renderUserDefinedInputNode'] =
+      ({ node }) => {
+        if (node.type !== 'mention') {
+          return null;
+        }
+        const chip = document.createElement('b');
+        chip.textContent = `@${node.attrs?.label}`;
+        return chip;
+      };
+    const { element, instance } = await bootWC({ renderUserDefinedInputNode });
     await sendRequest(instance, {
-      id: 'wc-cache',
+      id: 'wc-token',
       input: {
         message_type: MessageInputType.TEXT,
-        text: '@Alice',
+        text: '@Alice /deploy',
         display_content: {
           type: 'doc',
           content: [
@@ -596,6 +596,8 @@ describe('React render props through the shared container', () => {
               type: 'paragraph',
               content: [
                 { type: 'mention', attrs: { id: 'u1', label: 'Alice' } },
+                { type: 'text', text: ' ' },
+                { type: 'command', attrs: { id: 'c1', label: 'deploy' } },
               ],
             },
           ],
@@ -603,18 +605,88 @@ describe('React render props through the shared container', () => {
       },
     });
 
-    const mentionSlot = 'wc-cache::0.0';
+    const hostIn = (slot: string) =>
+      element.querySelector(`:scope > [slot="${slot}"]`);
+    await waitFor(() =>
+      expect(hostIn('wc-token::0.0')?.textContent).toBe('@Alice')
+    );
+    expect(hostIn('wc-token::0.2')).toBeNull();
+    const commandSlot = element.shadowRoot?.querySelector(
+      'slot[name="wc-token::0.2"]'
+    ) as HTMLSlotElement;
+    expect(commandSlot.assignedNodes()).toHaveLength(0);
+    expect(
+      commandSlot.querySelector('[data-token-type="command"]')?.textContent
+    ).toBe('deploy');
+  });
+
+  it('keeps a cds-aichat-container callback element across later messages', async () => {
+    const renderUserDefinedInputNode = jest.fn(() =>
+      document.createElement('b')
+    );
+    const { element, instance } = await bootWC({ renderUserDefinedInputNode });
+    await sendRequest(instance, {
+      id: 'wc-kept',
+      input: {
+        message_type: MessageInputType.TEXT,
+        text: 'Ship it',
+        display_content: {
+          type: 'doc',
+          content: [
+            {
+              type: 'paragraph',
+              content: [{ type: 'taskCard', attrs: { label: 'Ship it' } }],
+            },
+          ],
+        },
+      },
+    });
+
+    const mounted = () =>
+      element.querySelector(':scope > [slot="wc-kept::0.0"] > b');
+    await waitFor(() => expect(mounted()).not.toBeNull());
+    const first = mounted();
+    const calls = renderUserDefinedInputNode.mock.calls.length;
+
+    await addUserDefinedResponse(instance, 'wc-later');
+    expect(mounted()).toBe(first);
+    expect(renderUserDefinedInputNode).toHaveBeenCalledTimes(calls);
+  });
+
+  it('renders a chip in each slot when one node object appears twice', async () => {
+    const renderUserDefinedInputNode = () => {
+      const chip = document.createElement('b');
+      chip.textContent = 'chip';
+      return chip;
+    };
+    const { element, instance } = await bootWC({ renderUserDefinedInputNode });
+    const alice = { type: 'mention', attrs: { id: 'u1', label: 'Alice' } };
+    await sendRequest(instance, {
+      id: 'wc-alias',
+      input: {
+        message_type: MessageInputType.TEXT,
+        text: '@Alice and @Alice',
+        display_content: {
+          type: 'doc',
+          content: [
+            {
+              type: 'paragraph',
+              content: [alice, { type: 'text', text: ' and ' }, alice],
+            },
+          ],
+        },
+      },
+    });
+
+    const hostIn = (slot: string) =>
+      element.querySelector(`:scope > [slot="${slot}"]`);
     await waitFor(() =>
       expect(
-        element.querySelector(
-          `[slot="${mentionSlot}"] [data-probe="cached-wc-chip"]`
+        ['wc-alias::0.0', 'wc-alias::0.2'].map(
+          (slot) => hostIn(slot)?.textContent
         )
-      ).not.toBeNull()
+      ).toEqual(['chip', 'chip'])
     );
-    const firstCallCount = callCount;
-
-    await update({});
-    expect(callCount).toBe(firstCallCount);
   });
 
   it('renders input nodes through a cds-aichat-container callback', async () => {
