@@ -336,19 +336,28 @@ describe('cds-aichat-autocomplete', () => {
     });
 
     it('aria-activedescendant and --active class agree on every navigation step across a mixed flat+group list', async () => {
-      const el = await defaultFixture({ groups: mockGroups });
+      // Flat: '1'(0), 'flat-disabled'(1, disabled). Group 1: '3'(2), '4'(3).
+      // The disabled item sits on the flat/group boundary.
+      const el = await defaultFixture({
+        items: [
+          mockItems[0],
+          { id: 'flat-disabled', label: 'Flat disabled', disabled: true },
+        ],
+        groups: mockGroups,
+      });
       const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
 
-      const keys = [
-        'ArrowDown',
-        'ArrowDown',
-        'ArrowDown',
-        'ArrowDown',
-        'ArrowUp',
-        'Home',
-        'End',
+      const steps: Array<[string, string]> = [
+        ['ArrowUp', '4--option'], // -1 wraps to the last item
+        ['Home', '1--option'],
+        ['ArrowDown', '3--option'], // skips the disabled boundary item
+        ['ArrowDown', '4--option'],
+        ['ArrowDown', '4--option'], // stays put at the end
+        ['ArrowUp', '3--option'],
+        ['ArrowUp', '1--option'], // skips the disabled boundary item
+        ['End', '4--option'],
       ];
-      for (const key of keys) {
+      for (const [key, expectedId] of steps) {
         el.dispatchEvent(
           new KeyboardEvent('keydown', { key, bubbles: true, composed: true })
         );
@@ -365,6 +374,7 @@ describe('cds-aichat-autocomplete', () => {
         expect(activeOptions.length).to.equal(1);
         // Its id matches what aria-activedescendant points to.
         expect(activeOptions[0].getAttribute('id')).to.equal(activeDescendant);
+        expect(activeDescendant).to.equal(expectedId);
       }
     });
   });
@@ -1489,6 +1499,34 @@ describe('cds-aichat-autocomplete', () => {
       expect(listbox?.getAttribute('aria-activedescendant') ?? '').to.equal('');
     });
 
+    it('arrow keys and Tab leave nothing active when all items are disabled', async () => {
+      const el = await defaultFixture({
+        items: [{ id: 'dis-a', label: 'Disabled A', disabled: true }],
+        groups: [
+          {
+            id: 'grp',
+            title: 'Group',
+            items: [{ id: 'dis-b', label: 'Disabled B', disabled: true }],
+          },
+        ],
+      });
+      const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
+
+      for (const key of ['ArrowDown', 'ArrowUp', 'Tab']) {
+        el.dispatchEvent(
+          new KeyboardEvent('keydown', { key, bubbles: true, composed: true })
+        );
+        await el.updateComplete;
+
+        expect(listbox?.getAttribute('aria-activedescendant') ?? '').to.equal(
+          ''
+        );
+        expect(
+          el.shadowRoot?.querySelector(`.${prefix}-autocomplete-item--active`)
+        ).to.be.null;
+      }
+    });
+
     it('End stays put when all items are disabled', async () => {
       const items: SuggestionItem[] = [
         { id: 'dis-a', label: 'Disabled A', disabled: true },
@@ -1539,18 +1577,29 @@ describe('cds-aichat-autocomplete', () => {
   });
 
   describe('_buildFlatList (flat index mapping)', () => {
-    it('returns an empty array when there are no items or groups', () => {
+    type FlatEntry = {
+      item: SuggestionItem;
+      index: number;
+      groupIndex: number | undefined;
+      groupTitle: string | undefined;
+    };
+
+    // Builds the mapping on an element that is never rendered.
+    function buildFlatList(
+      items: SuggestionItem[],
+      groups: SuggestionItemGroup[]
+    ): FlatEntry[] {
       const el = document.createElement(
         `${prefix}-autocomplete`
       ) as AutocompleteElement;
-      el.items = [];
-      el.groups = [];
+      el.items = items;
+      el.groups = groups;
       el.i18n = defaultAutocompleteI18n;
-      const list = (el as any)._buildFlatList() as Array<{
-        item: SuggestionItem;
-        groupTitle: string | undefined;
-      }>;
-      expect(list).to.deep.equal([]);
+      return (el as any)._buildFlatList();
+    }
+
+    it('returns an empty array when there are no items or groups', () => {
+      expect(buildFlatList([], [])).to.deep.equal([]);
     });
 
     it('places ungrouped items before grouped items and assigns correct group titles', () => {
@@ -1564,47 +1613,33 @@ describe('cds-aichat-autocomplete', () => {
         { id: 'grp-2', title: 'Group 2', items: [grpItem3] },
       ];
 
-      const el = document.createElement(
-        `${prefix}-autocomplete`
-      ) as AutocompleteElement;
-      el.items = [flatA, flatB];
-      el.groups = groups;
-      el.i18n = defaultAutocompleteI18n;
+      const list = buildFlatList([flatA, flatB], groups);
+      const ungroupedTitle = defaultAutocompleteI18n.nonGroupedItemsLabel;
 
-      const list = (el as any)._buildFlatList() as Array<{
-        item: SuggestionItem;
-        groupTitle: string | undefined;
-      }>;
-
-      expect(list.length).to.equal(5);
-      expect(list[0]).to.deep.equal({
-        item: flatA,
-        groupTitle: defaultAutocompleteI18n.nonGroupedItemsLabel,
-      });
-      expect(list[1]).to.deep.equal({
-        item: flatB,
-        groupTitle: defaultAutocompleteI18n.nonGroupedItemsLabel,
-      });
-      expect(list[2]).to.deep.equal({ item: grpItem1, groupTitle: 'Group 1' });
-      expect(list[3]).to.deep.equal({ item: grpItem2, groupTitle: 'Group 1' });
-      expect(list[4]).to.deep.equal({ item: grpItem3, groupTitle: 'Group 2' });
+      expect(list).to.deep.equal([
+        {
+          item: flatA,
+          index: 0,
+          groupIndex: undefined,
+          groupTitle: ungroupedTitle,
+        },
+        {
+          item: flatB,
+          index: 1,
+          groupIndex: undefined,
+          groupTitle: ungroupedTitle,
+        },
+        { item: grpItem1, index: 2, groupIndex: 0, groupTitle: 'Group 1' },
+        { item: grpItem2, index: 3, groupIndex: 0, groupTitle: 'Group 1' },
+        { item: grpItem3, index: 4, groupIndex: 1, groupTitle: 'Group 2' },
+      ]);
     });
 
     it('assigns undefined groupTitle to ungrouped items when there are no groups', () => {
       const itemA: SuggestionItem = { id: 'a', label: 'A' };
       const itemB: SuggestionItem = { id: 'b', label: 'B' };
 
-      const el = document.createElement(
-        `${prefix}-autocomplete`
-      ) as AutocompleteElement;
-      el.items = [itemA, itemB];
-      el.groups = [];
-      el.i18n = defaultAutocompleteI18n;
-
-      const list = (el as any)._buildFlatList() as Array<{
-        item: SuggestionItem;
-        groupTitle: string | undefined;
-      }>;
+      const list = buildFlatList([itemA, itemB], []);
 
       expect(list.length).to.equal(2);
       expect(list[0].groupTitle).to.be.undefined;
@@ -1615,21 +1650,27 @@ describe('cds-aichat-autocomplete', () => {
       const g1: SuggestionItem = { id: 'g1', label: 'G1' };
       const g2: SuggestionItem = { id: 'g2', label: 'G2' };
 
-      const el = document.createElement(
-        `${prefix}-autocomplete`
-      ) as AutocompleteElement;
-      el.items = [];
-      el.groups = [{ id: 'grp', title: 'Only Group', items: [g1, g2] }];
-      el.i18n = defaultAutocompleteI18n;
+      const list = buildFlatList(
+        [],
+        [{ id: 'grp', title: 'Only Group', items: [g1, g2] }]
+      );
 
-      const list = (el as any)._buildFlatList() as Array<{
-        item: SuggestionItem;
-        groupTitle: string | undefined;
-      }>;
+      expect(list).to.deep.equal([
+        { item: g1, index: 0, groupIndex: 0, groupTitle: 'Only Group' },
+        { item: g2, index: 1, groupIndex: 0, groupTitle: 'Only Group' },
+      ]);
+    });
 
-      expect(list.length).to.equal(2);
-      expect(list[0]).to.deep.equal({ item: g1, groupTitle: 'Only Group' });
-      expect(list[1]).to.deep.equal({ item: g2, groupTitle: 'Only Group' });
+    it('keeps disabled items at their index', () => {
+      const enabled: SuggestionItem = { id: 'e', label: 'E' };
+      const disabled: SuggestionItem = { id: 'd', label: 'D', disabled: true };
+
+      const list = buildFlatList([disabled, enabled], []);
+
+      expect(list.map((entry) => [entry.item.id, entry.index])).to.deep.equal([
+        ['d', 0],
+        ['e', 1],
+      ]);
     });
   });
 
