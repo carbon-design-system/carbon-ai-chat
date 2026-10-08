@@ -513,6 +513,13 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
         type: BusEventType.STOP_STREAMING,
       });
       await serviceManager.messageService.cancelCurrentMessageRequest();
+      // When only the host config shows the button, no stream end will
+      // re-enable it, so re-enable it here. The host hides it through config.
+      if (
+        !store.getState().assistantInputState.stopStreamingButtonState.isVisible
+      ) {
+        store.dispatch(actions.setStopStreamingButtonDisabled(false));
+      }
     } catch (error) {
       consoleError('Error stopping stream:', error);
       store.dispatch(actions.setStopStreamingButtonDisabled(false));

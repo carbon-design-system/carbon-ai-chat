@@ -146,6 +146,41 @@ function selectInputFieldVisible(state: AppState): boolean {
   return configured != null ? configured : true;
 }
 
+/**
+ * Effective visibility of the stop-streaming button. The chat shows it for a
+ * cancellable stream or a pending send; for the assistant input,
+ * `PublicConfig.input.isStopStreamingButtonVisible` also shows it. The two
+ * combine with OR, so the chat hiding its own button at the end of a stream
+ * never hides a button the host asked for. The human-agent input has no config
+ * baseline.
+ */
+function selectStopStreamingButtonVisible(state: AppState): boolean {
+  const { isVisible } = selectInputState(state).stopStreamingButtonState;
+  if (selectIsInputToHumanAgent(state)) {
+    return isVisible;
+  }
+  return (
+    isVisible ||
+    Boolean(state.config.public.input?.isStopStreamingButtonVisible)
+  );
+}
+
+/**
+ * Effective disabled state of the stop-streaming button. The chat disables it
+ * while a click is pending; for the assistant input,
+ * `PublicConfig.input.isStopStreamingButtonDisabled` also disables it.
+ */
+function selectStopStreamingButtonDisabled(state: AppState): boolean {
+  const { isDisabled } = selectInputState(state).stopStreamingButtonState;
+  if (selectIsInputToHumanAgent(state)) {
+    return isDisabled;
+  }
+  return (
+    isDisabled ||
+    Boolean(state.config.public.input?.isStopStreamingButtonDisabled)
+  );
+}
+
 type InputUploadAndStreamingFields = Pick<
   InputState,
   | 'allowFileUploads'
@@ -204,6 +239,8 @@ export {
   selectInputIsReadonly,
   selectInputIsDisabled,
   selectInputFieldVisible,
+  selectStopStreamingButtonVisible,
+  selectStopStreamingButtonDisabled,
   selectInputUploadAndStreamingFields,
   selectLanguagePack,
   selectHasInFlightUpload,

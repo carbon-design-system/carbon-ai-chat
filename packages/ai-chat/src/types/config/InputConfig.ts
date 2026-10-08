@@ -137,6 +137,33 @@ export interface InputConfig {
   isSendDisabled?: boolean;
 
   /**
+   * If true, the assistant input shows the stop streaming button, even when no
+   * request is pending and nothing is streaming. Use it for work that outlives
+   * `customSendMessage`, such as a backend agent run that is still going after
+   * a page reload. Defaults to false.
+   *
+   * The button also shows when the chat shows it on its own, for
+   * {@link PublicConfigMessaging.showStopButtonImmediately} or a cancellable
+   * stream. When that request or stream ends, the button stays while this
+   * flag is true. Restarting or clearing the conversation does not change it;
+   * set it back to false when your work ends.
+   *
+   * A click fires {@link BusEventType.STOP_STREAMING} and cancels any pending
+   * request, as it does for a stream. The button is disabled until your
+   * handlers return. Listen for that event to stop your work.
+   *
+   * Has no effect while the chat is connected to a human agent.
+   */
+  isStopStreamingButtonVisible?: boolean;
+
+  /**
+   * If true, the stop streaming button renders disabled whenever it shows. Use
+   * it to keep the button disabled while your work is stopping. Defaults to
+   * false. Has no effect while the chat is connected to a human agent.
+   */
+  isStopStreamingButtonDisabled?: boolean;
+
+  /**
    * `@`-style mention trigger config. The chat layer wires this into a
    * `carbonMention` Tiptap extension; the editor inserts a `mention` node on
    * selection and surfaces token chip rendering via the light-DOM portal
