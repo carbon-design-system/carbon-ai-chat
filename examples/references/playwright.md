@@ -177,7 +177,7 @@ npm run test:e2e:goldens -- --project web-components-watch-state
 npm run test:e2e
 ```
 
-- From the root, install dependencies once with `npm install` and build the shared packages with `npm run aiChat:build` before testing. Rebuild a changed package before testing its examples.
+- Before testing, run the root [build preflight](../../references/commands.md#build-preflight). These suites read the built chat packages and build only the examples.
 - Check test discovery with `npm run test:e2e:goldens -- --list` before opening a browser. This catches config and fixture errors; it does not run the tests. Each shared case appears once per flavor, under its own project.
 - Install Chromium once per machine with `npx playwright install chromium`.
 - Playwright builds and serves all six target examples on every run, even when `--project` selects one. Select projects with the usual Playwright arguments.
