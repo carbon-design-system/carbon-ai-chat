@@ -145,6 +145,8 @@ jobs:
         run: npm run validate:skills
       - name: Test guidance validators
         run: npm run test:guidance
+      - name: Test example E2E scaffolding
+        run: npm run test:example-e2e-scaffold
       - name: Verify example READMEs
         run: npm run verify:example-readmes
 

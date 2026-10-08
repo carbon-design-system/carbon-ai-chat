@@ -1,22 +1,44 @@
 # playwright.md — Playwright tests for examples
 
-Every servable example gets a Playwright suite. Copy a golden example, then change the spec.
+Use the scaffold command to set up a Vite example, then write its behavior assertions.
 
-- React — [react/basic-custom-element-fullscreen/](../react/basic-custom-element-fullscreen/)
-- Web Components — [web-components/basic-custom-element-fullscreen/](../web-components/basic-custom-element-fullscreen/)
-
-Copy that example's [playwright.config.ts](../react/basic-custom-element-fullscreen/playwright.config.ts), its `tests/` folder, and its `.gitignore`, then add to its `package.json`:
-
-```json
-"scripts": { "test:e2e": "playwright test" },
-"devDependencies": { "@playwright/test": "^1.63.0", "vite": "^8.3.0" }
+```bash
+npm run scaffold:example-e2e -- \
+  --example react/prompt-line-typeahead \
+  --concern prompt-line-typeahead \
+  --startup input \
+  --purpose "Checks typeahead selection and dismissal." \
+  --dry-run
 ```
 
-**Name the script `test:e2e`, not `test`.** Three examples already use `test` for a different test runner: `tests-vitest-happydom` runs vitest, and `tests-jest-happydom` and `tests-jest-jsdom` run jest. Calling yours `test` would replace theirs.
+Review the preview, then remove `--dry-run` to write the files. Repeat `--example` to scaffold another host.
+
+| Input | What the agent chooses |
+| --- | --- |
+| `--example` | An existing `react/<slug>` or `web-components/<slug>` Vite example. |
+| `--concern` | A kebab-case name for the behavior spec. |
+| `--startup` | `input`, `launcher`, or `homescreen`, based on the example's initial UI. |
+| `--purpose` | The behavior the test will prove, read from the example's README. |
+
+The command creates a [Playwright config](../react/basic-custom-element-fullscreen/playwright.config.ts) and `tests/<concern>.spec.ts` inside each example.
+It adds `test:e2e`, the Playwright dependency, and ignore entries for test output.
+It reads the config and dependency version from the [React fullscreen golden](../react/basic-custom-element-fullscreen/).
+Existing configs, dependency versions, and other scripts stay intact. A custom `test:e2e` script needs manual setup.
+Authored specs are never overwritten; choose another concern name to add a spec.
+Repeating an unchanged scaffold command writes nothing.
+
+The generated spec checks the chosen startup surface and includes a skipped `test.fixme` placeholder.
+Replace that placeholder with a normal `test` and meaningful behavior assertions. A passing mount check does not complete coverage.
+The shared fixture checks console and page errors after each executed test.
+
+After generation, run `npm install` to update the lockfile. The command does not install, build, or start servers.
+Use the [root build rules](../../AGENTS.md#always-on-rules) before running the generated suite.
+
+**Keep the script named `test:e2e`.** Some examples use `test` for Jest, Vitest, or an older Playwright setup.
 
 ## Config conventions
 
-Copy [playwright.config.ts](../react/basic-custom-element-fullscreen/playwright.config.ts) as-is. What it sets, and why:
+The generated config uses the existing [base config](../shared/playwright/baseConfig.mts):
 
 | Setting | Value |
 | --- | --- |
@@ -32,7 +54,7 @@ Copy [playwright.config.ts](../react/basic-custom-element-fullscreen/playwright.
 
 Every Vite example's dev server falls back to port 3000 when `PORT` is unset. The shared [launcher](../shared/playwright/start-vite.mjs) runs Vite as middleware and asks Node to bind port `0`, then reports the address of its open listener. Playwright captures that URL and the [shared fixture](../shared/playwright/helpers/index.ts) gives it to the browser. The operating system assigns the port while binding the listener, so there is no gap between finding and using a port.
 
-Keep Vite at version 8.3.0 or later, the version used by the shared launcher. Import `test` and `expect` from the shared fixture so `page.goto('/')` uses the captured URL. Call `openExample(page)` in `beforeEach`; it also asks the page to reduce motion. Use `waitForChatReady(page, PageObjectId.INPUT)` before chat assertions. The fixture checks console and page errors after each test.
+Keep the example's existing Vite dependency; the scaffold does not upgrade it. Import `test` and `expect` from the shared fixture so `page.goto('/')` uses the captured URL. Call `openExample(page)` in `beforeEach`; it also asks the page to reduce motion. Wait for the surface you need before chat assertions. Use `waitForChatReady(page, PageObjectId.INPUT)` after opening a launcher. The fixture checks console and page errors after each test.
 
 Do not add a per-example port table or a probe that closes its listener before Vite starts.
 
@@ -81,14 +103,14 @@ An axe scan catches some issues, but cannot prove WCAG conformance. Check keyboa
 - Settle a stream before asserting on it. Assert the end of the reply, not a partial state mid-flight.
 - Use Playwright's fresh page and context for each test. Put shared navigation in `beforeEach`. Do not rely on another test's messages, storage, cookies, or order.
 - Use retrying checks such as `await expect(locator).toBeVisible()` or `toHaveText()` for UI changes. Await actions and checks. Avoid fixed sleeps and one-time checks such as `expect(await locator.isVisible()).toBe(true)`.
-- No real timestamps or randomness. If an example needs an external response, register a `page.route()` with fixed data before navigation; never depend on a live third-party service.
+- Avoid assertions on clock values or random IDs. If a deterministic example needs a mocked response, register `page.route()` before navigation.
 - Disable animation where it gates an assertion.
 
-An example is non-deterministic when its reply depends on a live service or on the clock. Skip it rather than working around it.
+Keep live-service examples in the skipped list. For other examples, assert stable behavior instead of incidental timestamps or IDs.
 
 ## Skipped examples
 
-Four, deliberately. Do not add suites for these, and do not re-litigate them.
+Keep these deliberate exceptions:
 
 | Example | Why |
 | --- | --- |
@@ -114,6 +136,7 @@ Open every spec with a purpose comment, per the inline-comments rule in [example
 ## Running
 
 ```bash
+npm run test:e2e --workspace=<example-workspace-name> -- --list
 npm run test:e2e --workspace=<example-workspace-name>
 npm run test:e2e
 ```
@@ -121,18 +144,8 @@ npm run test:e2e
 - From the root, install dependencies once with `npm install` and build the shared packages with `npm run aiChat:build` before testing. Rebuild a changed package before testing its examples.
 - Install Chromium once per machine with `npx playwright install chromium`.
 - Playwright starts and stops each example's server. Root `test:e2e` runs up to four example suites at once, with one browser worker in each.
-- Root `test:e2e` currently picks up the two goldens. The existing React 17 and 18 suites run under `npm test` until they are migrated.
+- Root `test:e2e` picks up workspace `test:e2e` scripts, including newly scaffolded examples. The existing React 17 and 18 suites run under `npm test` until they are migrated.
 - To compare local concurrency, run `E2E_CONCURRENCY=1 npm run test:e2e`, then repeat with `2` and `4`. Record elapsed time and peak memory before changing the default.
-
-The local baseline on 2026-09-29 ran the two golden suites after installation and the shared-package build. `/usr/bin/time -l` reported elapsed time and maximum RSS for one process, not aggregate memory across the process tree:
-
-| Concurrency | Elapsed | Time-reported maximum RSS |
-| --- | --- | --- |
-| 1 | 14.08s | 1.74 GB |
-| 2 | 7.75s | 1.71 GB |
-| 4 | 7.92s | 1.73 GB |
-
-Four is the initial ceiling for new suites; with only two suites, it offers no speedup over two. These figures exclude installation and build time, so they do not yet validate the 30-minute target for the eventual full suite.
 
 When and how the suite runs in CI at scale is not decided here. See [issue #2127](https://github.com/carbon-design-system/carbon-ai-chat/issues/2127).
 
@@ -144,7 +157,7 @@ Debug an example with `npm run test:e2e --workspace=<example> -- --debug` to ins
 
 - [ ] `npm run test:e2e --workspace=<example>` passes on chromium.
 - [ ] `npm run build --workspace=<example>` exits 0.
-- [ ] The suite covers the example's one concern plus the baseline above.
+- [ ] The suite covers the example's one concern plus the baseline above; no scaffold `test.fixme` placeholder remains.
 - [ ] The Playwright config uses the shared launcher and fixture; it assigns no port.
 - [ ] Every spec opens with a purpose comment.
 
