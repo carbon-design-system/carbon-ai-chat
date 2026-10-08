@@ -1257,9 +1257,10 @@ describe('AutocompleteController', () => {
         });
         await flush();
         controller.select(USERS[0]);
-        expect(selected).to.deep.include({
+        expect(selected).to.deep.equal({
           id: USERS[0].id,
           label: USERS[0].label,
+          value: USERS[0].value,
         });
       } finally {
         editor.destroy();
@@ -1301,9 +1302,10 @@ describe('AutocompleteController', () => {
         });
         await flush();
         controller.select(COMMANDS[0]);
-        expect(selected).to.deep.include({
+        expect(selected).to.deep.equal({
           id: COMMANDS[0].id,
           label: COMMANDS[0].label,
+          value: COMMANDS[0].label,
         });
       } finally {
         editor.destroy();

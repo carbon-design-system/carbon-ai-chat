@@ -382,10 +382,12 @@ describe('tiptap/carbon-command Backspace', function () {
       editor.commands.undo();
 
       expect(inserted).to.have.lengthOf(2);
-      expect(inserted[1].id).to.equal('u1');
-      expect(inserted[1].label).to.equal('Alice');
-      expect(inserted[1].value).to.equal('@alice');
-      expect((inserted[1] as Record<string, unknown>).role).to.equal('admin');
+      expect(inserted[1]).to.deep.equal({
+        id: 'u1',
+        label: 'Alice',
+        value: '@alice',
+        role: 'admin',
+      });
     });
 
     it('does not fire for host-origin insertions', () => {
