@@ -6,7 +6,7 @@
  */
 
 import { PageObjectId, ViewType } from '@carbon/ai-chat/server';
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 import {
   setupAccessibilityChecker,
   checkAccessibility,

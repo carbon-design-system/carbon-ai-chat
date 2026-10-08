@@ -7,6 +7,7 @@
  *  @license
  */
 
+import { resetStopStreamingButton } from '../../../src/chat/utils/streamingUtils';
 import MessageService, {
   PendingMessageRequest,
 } from '../../../src/chat/services/MessageService';
@@ -79,6 +80,14 @@ const createServiceManagerStub = (
     actions,
     eventBus,
     instance: {},
+    messageUpsertCoordinator: {
+      hasStreamingMessages: jest.fn(() => false),
+      endAllStreaming: jest.fn(),
+    },
+    messageService: {
+      resetStopStreamingButtonWithoutUpserts: () =>
+        resetStopStreamingButton(store),
+    },
   } as unknown as ServiceManager;
 
   return serviceManager;

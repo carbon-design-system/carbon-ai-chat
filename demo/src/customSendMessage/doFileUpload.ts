@@ -17,6 +17,8 @@ import {
 } from '@carbon/ai-chat';
 import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
+import { sendResponse } from './sendResponse';
+
 const MOCK_UPLOAD_DELAY_MS = 2500;
 
 /**
@@ -149,7 +151,8 @@ async function doFileUploadResponse(
     lines.push('');
   }
 
-  await instance.messaging.addMessage({
+  await sendResponse(instance, {
+    id: uuid(),
     output: {
       generic: [
         {

@@ -214,8 +214,8 @@ const actions = {
    * existing `LocalMessageItem` references for items deep-equal to their predecessor so
    * components that subscribe to unchanged siblings do not re-render.
    */
-  upsertMessage(message: Message) {
-    return { type: UPSERT_MESSAGE, message };
+  upsertMessage(message: Message, isStreaming = false) {
+    return { type: UPSERT_MESSAGE, message, isStreaming };
   },
 
   messageSetOptionSelected(messageID: string, sentMessage: MessageRequest) {

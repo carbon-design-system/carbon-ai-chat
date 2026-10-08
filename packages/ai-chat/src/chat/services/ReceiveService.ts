@@ -25,7 +25,7 @@ import {
   isResponse,
 } from '../utils/messageUtils';
 import { consoleError } from '../utils/miscUtils';
-import { resetStopStreamingButton } from '../utils/streamingUtils';
+import { OnErrorType } from '../../types/config/ErrorConfig';
 import {
   BusEventPreReceive,
   BusEventType,
@@ -43,6 +43,8 @@ import type { ServiceManager } from './ServiceManager';
 
 class ReceiveService {
   private serviceManager: ServiceManager;
+
+  private processedAgentItems = new Set<string>();
 
   constructor(serviceManager: ServiceManager) {
     this.serviceManager = serviceManager;
@@ -147,11 +149,11 @@ class ReceiveService {
     store.dispatch(actions.setActiveResponseId(fullMessage.id));
     store.dispatch(actions.addMessage(fullMessage));
 
-    if (config.public.messaging?.showStopButtonImmediately) {
-      resetStopStreamingButton(
-        store,
-        this.serviceManager.messageService.inboundStreaming.streamingMessageID
-      );
+    if (
+      config.public.messaging?.showStopButtonImmediately &&
+      !this.serviceManager.messageService.inboundStreaming.streamingMessageID
+    ) {
+      this.serviceManager.messageService.resetStopStreamingButtonWithoutUpserts();
     }
 
     let previousItemID: string = null;
@@ -183,12 +185,7 @@ class ReceiveService {
       store.dispatch(actions.addNestedMessages(nestedLocalMessageItems));
 
       if (isConnectToHumanAgent(messageItem) && isResponse(fullMessage)) {
-        await this.serviceManager.humanAgentService?.handleConnectToHumanAgent(
-          localMessageItem,
-          fullMessage,
-          config,
-          initialRestartCount
-        );
+        await this.handleConnectToHumanAgent(localMessageItem, fullMessage);
       }
 
       if (isPause(messageItem)) {
@@ -223,6 +220,48 @@ class ReceiveService {
         previousItemID = localMessageItem.ui_state.id;
       }
     }
+  }
+
+  async handleConnectToHumanAgent(
+    localMessageItem: LocalMessageItem,
+    fullMessage: MessageResponse
+  ) {
+    if (
+      !isConnectToHumanAgent(localMessageItem.item) ||
+      this.processedAgentItems.has(localMessageItem.ui_state.id)
+    ) {
+      return;
+    }
+    this.processedAgentItems.add(localMessageItem.ui_state.id);
+
+    const { store, humanAgentService, restartCount } = this.serviceManager;
+    const { config } = store.getState();
+    if (humanAgentService) {
+      await humanAgentService.handleConnectToHumanAgent(
+        localMessageItem,
+        fullMessage,
+        config,
+        restartCount
+      );
+      return;
+    }
+
+    this.serviceManager.actions.errorOccurred({
+      errorType: OnErrorType.INTEGRATION_ERROR,
+      message:
+        'Web chat received a "connect_to_agent" message but there is no service desk configured. Check your chat configuration.',
+    });
+    store.dispatch(
+      actions.setMessageUIStateInternalProperty(
+        localMessageItem.fullMessageID,
+        'agent_no_service_desk',
+        true
+      )
+    );
+  }
+
+  clearProcessedAgentItems() {
+    this.processedAgentItems.clear();
   }
 
   /**

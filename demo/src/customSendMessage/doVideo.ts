@@ -8,41 +8,13 @@
  */
 
 import { ChatInstance, MessageResponseTypes } from '@carbon/ai-chat';
+import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
-function doVideo(instance: ChatInstance) {
-  instance.messaging.addMessage({
-    output: {
-      generic: [
-        {
-          response_type: MessageResponseTypes.TEXT,
-          text: 'You can display video from your own video files, or you can embed content from YouTube, Vimeo or Kaltura.',
-        },
-        {
-          source: 'https://vimeo.com/362850275',
-          response_type: MessageResponseTypes.VIDEO,
-          alt_text: 'Video from Vimeo',
-        },
-        {
-          source: 'https://www.youtube.com/watch?v=QuW4_bRHbUk',
-          response_type: MessageResponseTypes.VIDEO,
-          alt_text: 'Video from YouTube',
-        },
-        {
-          source:
-            'https://cdnapisec.kaltura.com/p/1773841/sp/177384100/embedIframeJs/uiconf_id/27941801/partner_id/1773841?iframeembed=true&entry_id=1_onstzigu',
-          response_type: MessageResponseTypes.VIDEO,
-          alt_text: 'Video from Kaltura',
-          title: 'Generative Models Explained',
-          description:
-            '(This video will fail to load as its scoped to ibm.com only)',
-        },
-      ],
-    },
-  });
-}
+import { sendResponse } from './sendResponse';
 
 function doVideoYouTube(instance: ChatInstance) {
-  instance.messaging.addMessage({
+  return sendResponse(instance, {
+    id: uuid(),
     output: {
       generic: [
         {
@@ -60,7 +32,8 @@ function doVideoYouTube(instance: ChatInstance) {
 }
 
 function doVideoVimeo(instance: ChatInstance) {
-  instance.messaging.addMessage({
+  return sendResponse(instance, {
+    id: uuid(),
     output: {
       generic: [
         {
@@ -78,7 +51,8 @@ function doVideoVimeo(instance: ChatInstance) {
 }
 
 function doVideoKaltura(instance: ChatInstance) {
-  instance.messaging.addMessage({
+  return sendResponse(instance, {
+    id: uuid(),
     output: {
       generic: [
         {
@@ -99,4 +73,4 @@ function doVideoKaltura(instance: ChatInstance) {
   });
 }
 
-export { doVideo, doVideoYouTube, doVideoVimeo, doVideoKaltura };
+export { doVideoYouTube, doVideoVimeo, doVideoKaltura };

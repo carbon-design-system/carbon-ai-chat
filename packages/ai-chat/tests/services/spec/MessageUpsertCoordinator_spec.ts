@@ -53,7 +53,15 @@ function makeStubManager(initialMessages: Record<string, unknown> = {}) {
     },
     fire,
     actions: chatActions,
-    messageService: { finalizeStreamingMessage },
+    chunkProcessingService: { handleUpsertStreaming: jest.fn() },
+    receiveService: {
+      handleConnectToHumanAgent: jest.fn().mockResolvedValue(undefined),
+    },
+    messageService: {
+      finalizeStreamingMessage,
+      getCurrentMessageController: jest.fn(),
+      resetStopStreamingButtonIfIdle: jest.fn(),
+    },
   } as unknown as ServiceManager;
 
   return {
@@ -289,6 +297,42 @@ describe('MessageUpsertCoordinator', () => {
         coord.upsert('m1', MessageState.COMPLETE, () => textResponse('m1', ''))
       ).resolves.toBeUndefined();
     });
+  });
+
+  it('discards an awaiting updater and its queued successor after reset', async () => {
+    const { manager, dispatch, fire } = makeStubManager();
+    const coord = new MessageUpsertCoordinator(manager);
+    let resolve: (message: MessageResponse) => void;
+    const waiting = new Promise<MessageResponse>((done) => {
+      resolve = done;
+    });
+    const first = coord.upsert('old', MessageState.COMPLETE, () => waiting);
+    const successor = jest.fn(() => textResponse('old', 'queued'));
+    const second = coord.upsert('old', MessageState.COMPLETE, successor);
+    await Promise.resolve();
+    await Promise.resolve();
+    coord.clearAll();
+    resolve(textResponse('old', 'stale'));
+    await Promise.all([first, second]);
+    expect(dispatch).not.toHaveBeenCalled();
+    expect(fire).not.toHaveBeenCalled();
+    expect(successor).not.toHaveBeenCalled();
+    expect(coord.hasStreamingMessages()).toBe(false);
+  });
+
+  it('ends snapshot liveness on error without receive events', async () => {
+    const { manager, fire, dispatch } = makeStubManager();
+    const coord = new MessageUpsertCoordinator(manager);
+    await coord.upsert('m1', MessageState.STREAMING, () =>
+      textResponse('m1', 'partial')
+    );
+    expect(coord.hasStreamingMessages()).toBe(true);
+    await coord.upsert('m1', MessageState.ERROR, (previous) => previous);
+    expect(coord.hasStreamingMessages()).toBe(false);
+    expect(fire).not.toHaveBeenCalled();
+    expect(dispatch).toHaveBeenLastCalledWith(
+      expect.objectContaining({ isStreaming: false })
+    );
   });
 
   describe('clearAll', () => {

@@ -47,7 +47,7 @@ async function customSendMessage(
       const handler = RESPONSE_MAP[request.input.text];
       await handler(instance, requestOptions);
     } else {
-      doWelcomeText(instance);
+      await doWelcomeText(instance);
     }
   }
 }

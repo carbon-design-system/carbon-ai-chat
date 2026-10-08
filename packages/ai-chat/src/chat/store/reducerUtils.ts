@@ -57,6 +57,7 @@ import {
   GenericItem,
   Message,
   MessageResponse,
+  MessageResponseTypes,
 } from '../../types/messaging/Messages';
 import ObjectMap from '../../types/utilities/ObjectMap';
 import {
@@ -452,6 +453,23 @@ function collectNestedLocalIDs(
   );
 }
 
+function supportsSnapshotStreaming(item: GenericItem) {
+  return (
+    item.response_type === MessageResponseTypes.TEXT ||
+    item.response_type === MessageResponseTypes.CONVERSATIONAL_SEARCH ||
+    item.response_type === MessageResponseTypes.USER_DEFINED
+  );
+}
+
+function matchesStreamingState(item: LocalMessageItem, isStreaming: boolean) {
+  return (
+    Boolean(item?.ui_state.isIntermediateStreaming) === isStreaming &&
+    (isStreaming
+      ? item?.ui_state.streamingState?.isDone === false
+      : item?.ui_state.streamingState?.isDone !== false)
+  );
+}
+
 /**
  * Rebuilds the {@link LocalMessageItem} entries for a single upserted message while
  * preserving:
@@ -470,7 +488,8 @@ function collectNestedLocalIDs(
  */
 function rebuildLocalItemsForUpsert(
   state: AppState,
-  message: MessageResponse
+  message: MessageResponse,
+  isStreaming = false
 ): {
   newLocalItemsByID: ObjectMap<LocalMessageItem>;
   newLocalIDsForMessage: string[];
@@ -525,7 +544,13 @@ function rebuildLocalItemsForUpsert(
     let localID: string;
     let localItem: LocalMessageItem;
 
-    if (matchedPrev && isEqual(matchedPrev.item, item)) {
+    const itemIsStreaming = isStreaming && supportsSnapshotStreaming(item);
+    const lifecycleMatches = matchesStreamingState(
+      matchedPrev,
+      itemIsStreaming
+    );
+
+    if (matchedPrev && lifecycleMatches && isEqual(matchedPrev.item, item)) {
       // Reference-stable path: deep-equal to the prior item, keep the exact object so
       // selectors comparing by `===` see no change.
       //
@@ -542,6 +567,14 @@ function rebuildLocalItemsForUpsert(
       localItem = outputItemToLocalItem(item, message, false);
       localItem.ui_state.id = localID;
       localItem.fullMessageID = messageID;
+      if (itemIsStreaming || matchedPrev?.ui_state.streamingState) {
+        localItem.ui_state.isIntermediateStreaming = itemIsStreaming;
+        localItem.ui_state.streamingState = {
+          chunks: itemIsStreaming ? [item] : [],
+          isDone: !itemIsStreaming,
+        };
+        localItem.ui_state.needsAnnouncement = !itemIsStreaming;
+      }
 
       if (isResponseWithNestedItems(localItem.item)) {
         const nestedLocalItems: LocalMessageItem[] = [];

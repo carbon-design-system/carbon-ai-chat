@@ -14,7 +14,6 @@ import {
   chunkHasDisplayableContent,
   FinalResponseChunk,
   mergePartialResponseOptions,
-  resetStopStreamingButton,
   resolveChunkContext,
   shouldShowStopStreaming,
 } from '../utils/streamingUtils';
@@ -34,6 +33,7 @@ import {
   GenericItem,
   ItemStreamingMetadata,
   MessageResponse,
+  MessageResponseTypes,
   PartialItemChunk,
   PartialOrCompleteItemChunk,
   PauseItem,
@@ -128,19 +128,7 @@ class ChunkProcessingService {
         extractedMessageID || undefined
       );
 
-      if (extractedMessageID) {
-        this.serviceManager.streamAnnouncerService.announceStreamStarts(
-          extractedMessageID,
-          {
-            hasReasoning: Boolean(
-              chunk.partial_response?.message_options?.reasoning
-            ),
-            hasDisplayableContent: chunkHasDisplayableContent(chunk),
-            responseUserProfile:
-              chunk.partial_response?.message_options?.response_user_profile,
-          }
-        );
-      }
+      this.announceStreamingChunk(extractedMessageID, chunk);
     }
 
     const chunkPromise = resolvablePromise();
@@ -149,6 +137,44 @@ class ChunkProcessingService {
       this.processChunkQueue();
     }
     return chunkPromise;
+  }
+
+  private announceStreamingChunk(messageID: string, chunk: PartialItemChunk) {
+    if (messageID) {
+      this.serviceManager.streamAnnouncerService.announceStreamStarts(
+        messageID,
+        {
+          hasReasoning: Boolean(
+            chunk.partial_response?.message_options?.reasoning
+          ),
+          hasDisplayableContent: chunkHasDisplayableContent(chunk),
+          responseUserProfile:
+            chunk.partial_response?.message_options?.response_user_profile,
+        }
+      );
+    }
+  }
+
+  handleUpsertStreaming(message: MessageResponse) {
+    for (const item of message.output?.generic ?? []) {
+      const chunk: PartialItemChunk = {
+        partial_item: item,
+        partial_response: message,
+      };
+      this.announceStreamingChunk(message.id, chunk);
+      this.maybeShowStopStreaming(
+        chunk,
+        true,
+        this.serviceManager.store.getState().assistantInputState
+          .stopStreamingButtonState
+      );
+    }
+    if (!message.output?.generic?.length) {
+      this.announceStreamingChunk(message.id, {
+        partial_response: message,
+        partial_item: { response_type: MessageResponseTypes.TEXT, text: '' },
+      });
+    }
   }
 
   async processChunkQueue() {
@@ -170,7 +196,7 @@ class ChunkProcessingService {
           (isCompleteItem || isFinalResponse) &&
           stopStreamingState.isVisible
         ) {
-          resetStopStreamingButton(this.serviceManager.store);
+          this.serviceManager.messageService.resetStopStreamingButtonWithoutUpserts();
         }
       };
 
@@ -422,7 +448,7 @@ class ChunkProcessingService {
     chunk: StreamChunk
   ) {
     if (isCompleteItem || isStreamFinalResponse(chunk)) {
-      resetStopStreamingButton(this.serviceManager.store);
+      this.serviceManager.messageService.resetStopStreamingButtonWithoutUpserts();
     }
   }
 
