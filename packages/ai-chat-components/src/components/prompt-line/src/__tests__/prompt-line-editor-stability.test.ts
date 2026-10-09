@@ -591,4 +591,30 @@ describe('<cds-aichat-prompt-line> editor stability', function () {
     await el.updateComplete;
     expect(el.getEditor()!.getText()).to.equal('a');
   });
+
+  it('resets undo and redo history after resetHistory() while preserving editor instance and focus', async () => {
+    const el = await makeRichPromptLine();
+    el.focus();
+    await nextFrame();
+    expect(el.hasFocus()).to.equal(true);
+
+    const editor = el.getEditor()!;
+    type(el, 'hello world');
+    expect(editor.getText()).to.equal('hello world');
+
+    el.clearContent();
+    expect(editor.getText()).to.equal('');
+
+    el.resetHistory();
+
+    // Editor instance and focus survive
+    expect(el.getEditor()).to.equal(editor);
+    expect(el.hasFocus()).to.equal(true);
+
+    // Undo and redo do nothing and never restore the cleared/sent text
+    expect(el.undo()).to.equal(false);
+    expect(editor.getText()).to.equal('');
+    expect(el.redo()).to.equal(false);
+    expect(editor.getText()).to.equal('');
+  });
 });

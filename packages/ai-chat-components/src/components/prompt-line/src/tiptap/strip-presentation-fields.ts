@@ -11,9 +11,9 @@
  * Drops the fields a chip renders from its own attrs: `id`, `label`, `value`,
  * and the presentation-only `avatar`, `description`, `disabled`, and
  * `showTriggerInChip`. Grouping metadata (`groupId`, `groupTitle`) survives,
- * matching what `TriggerSuggestionConfig.onRemove` documents as retained.
- * Used by AutocompleteController at insert time to fill the token node's
- * `data` attr, so `onRemove` can hand those fields back.
+ * matching what `TriggerSuggestionConfig.onSelect`/`onRemove` document as
+ * retained. Used by AutocompleteController at insert time to fill the token
+ * node's `data` attr, so `onSelect`/`onRemove` can hand those fields back.
  */
 
 import type { SuggestionItem } from './types.js';

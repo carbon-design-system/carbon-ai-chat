@@ -32,6 +32,7 @@ import ParagraphNode from '@tiptap/extension-paragraph';
 import Placeholder from '@tiptap/extension-placeholder';
 import TextNode from '@tiptap/extension-text';
 import { UndoRedo } from '@tiptap/extensions';
+import { closeHistory, history } from '@tiptap/pm/history';
 
 import { IS_PHONE } from '../../../globals/utils/browser-utils.js';
 import { MouseFocusController } from './prompt-line-mouse-focus.js';
@@ -173,10 +174,14 @@ class RichController
     // firing `onRemove`. Otherwise a send would strip the just-captured
     // mention/command fields from the host's structured_data sidecar before
     // `doSend` merges them. Mirrors `_dispatchSetContent`.
+    //
+    // closeHistory() breaks the grouping window so the clear lands in its own
+    // undo step, keeping any prior user edits individually reachable.
     editor
       .chain()
       .command(({ tr }) => {
         setHostOriginMeta(tr);
+        closeHistory(tr);
         return true;
       })
       .clearContent(true)
@@ -288,6 +293,15 @@ class RichController
 
   redo(): boolean {
     return Boolean(this._editor?.commands.redo());
+  }
+
+  resetHistory(): void {
+    const editor = this._editor;
+    if (!editor || editor.isDestroyed) {
+      return;
+    }
+    editor.unregisterPlugin('history');
+    editor.registerPlugin(history({ ...HISTORY_DEFAULTS }));
   }
 
   // -------------------------------------------------------------------------

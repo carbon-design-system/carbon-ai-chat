@@ -402,6 +402,14 @@ class PromptLineElement extends LitElement {
     return this._controller?.redo() ?? false;
   }
 
+  /**
+   * Drops the editor's undo and redo history, keeping the live editor,
+   * its focus, and its plugin state. No-op in plain textarea mode.
+   */
+  resetHistory(): void {
+    this._controller?.resetHistory();
+  }
+
   // ---------------------------------------------------------------------------
   // Internals
   // ---------------------------------------------------------------------------

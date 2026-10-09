@@ -48,6 +48,7 @@ type MockPromptLineProps = {
 let capturedOnChange: MockPromptLineProps['onChange'] | undefined;
 let capturedOnSendIntent: MockPromptLineProps['onSendIntent'] | undefined;
 const clearContentSpy = jest.fn();
+const resetHistorySpy = jest.fn();
 
 jest.mock('@carbon/ai-chat-components/es/react/prompt-line-shell.js', () => ({
   __esModule: true,
@@ -64,7 +65,10 @@ jest.mock('@carbon/ai-chat-components/es/react/prompt-line.js', () => {
       // Capture the callbacks on every render so we always have the latest.
       capturedOnChange = props.onChange;
       capturedOnSendIntent = props.onSendIntent;
-      React.useImperativeHandle(ref, () => ({ clearContent: clearContentSpy }));
+      React.useImperativeHandle(ref, () => ({
+        clearContent: clearContentSpy,
+        resetHistory: resetHistorySpy,
+      }));
       return React.createElement('div', null);
     }
   );
@@ -136,6 +140,7 @@ describe('sendCurrentValue trims leading/trailing whitespace', () => {
   beforeEach(() => {
     setupBeforeEach();
     clearContentSpy.mockClear();
+    resetHistorySpy.mockClear();
     capturedOnChange = undefined;
     capturedOnSendIntent = undefined;
   });
@@ -162,6 +167,9 @@ describe('sendCurrentValue trims leading/trailing whitespace', () => {
 
     expect(onSendInput).toHaveBeenCalledTimes(1);
     expect(onSendInput).toHaveBeenCalledWith('padded message', undefined);
+    // clearContent() + resetHistory() are both called by sendCurrentValue() on send.
+    expect(clearContentSpy).toHaveBeenCalledTimes(1);
+    expect(resetHistorySpy).toHaveBeenCalledTimes(1);
   });
 
   it('strips a trailing newline left by Shift+Enter', async () => {
