@@ -29,6 +29,17 @@ const itemClass = `${blockClass}-item`;
 const groupClass = `${itemClass}-group`;
 
 /**
+ * One option in render order. `index` is its flat keyboard index;
+ * `groupIndex` is its position in `groups`, or `undefined` when ungrouped.
+ */
+export interface FlatEntry {
+  item: SuggestionItem;
+  index: number;
+  groupIndex: number | undefined;
+  groupTitle: string | undefined;
+}
+
+/**
  * Configuration for the autocomplete header
  */
 export interface HeaderConfig {
@@ -221,6 +232,9 @@ class AutocompleteElement extends LitElement {
    */
   private _moveAnnouncePending: number | null = null;
 
+  /** Cached flat item list, rebuilt in willUpdate when items/groups/i18n change. */
+  private _flatList: FlatEntry[] = [];
+
   /** Whether the open announcement has already fired for this show. */
   private _openAnnounced = false;
 
@@ -257,6 +271,17 @@ class AutocompleteElement extends LitElement {
     this._listboxEl?.addEventListener('mousedown', this._handleMousedown);
   }
 
+  willUpdate(changedProperties: Map<string, any>) {
+    super.willUpdate(changedProperties);
+    if (
+      changedProperties.has('items') ||
+      changedProperties.has('groups') ||
+      changedProperties.has('i18n')
+    ) {
+      this._flatList = this._buildFlatList();
+    }
+  }
+
   updated(changedProperties: Map<string, any>) {
     super.updated(changedProperties);
 
@@ -264,8 +289,14 @@ class AutocompleteElement extends LitElement {
       changedProperties.has('items') || changedProperties.has('groups');
 
     if (itemsChanged) {
-      const totalItems = this._getTotalItemCount();
+      if (this._moveAnnouncePending !== null) {
+        clearTimeout(this._moveAnnouncePending);
+        this._moveAnnouncePending = null;
+      }
+      const totalItems = this._flatList.length;
       if (totalItems === 0) {
+        this._focusedIndex = -1;
+        this._setUserHasNavigated(false);
         this._announcer.announce(this.i18n.noSuggestions);
         this._openAnnounced = false;
         return;
@@ -280,49 +311,50 @@ class AutocompleteElement extends LitElement {
   }
 
   /**
-   * Get the total count of all items (flat items + items in groups)
+   * Build a flat list of all items in render order: ungrouped items first,
+   * then each group's items in group order. Called from willUpdate whenever
+   * items, groups, or i18n change; callers read `this._flatList` directly.
    */
-  private _getTotalItemCount(): number {
-    const flatCount = this.items.length;
-    const groupedCount = this.groups.reduce(
-      (sum, group) => sum + group.items.length,
-      0
-    );
-    return flatCount + groupedCount;
-  }
-
-  /**
-   * Get the item at a specific index (accounting for both flat items and groups)
-   */
-  private _getItemAtIndex(index: number): SuggestionItem | null {
-    if (index < this.items.length) {
-      return this.items[index];
+  private _buildFlatList(): FlatEntry[] {
+    const result: FlatEntry[] = [];
+    const hasGroups = this.groups.length > 0;
+    for (const item of this.items) {
+      result.push({
+        item,
+        index: result.length,
+        groupIndex: undefined,
+        groupTitle: hasGroups ? this.i18n.nonGroupedItemsLabel : undefined,
+      });
     }
-
-    let currentIndex = this.items.length;
-    for (const group of this.groups) {
-      if (index < currentIndex + group.items.length) {
-        return group.items[index - currentIndex];
+    this.groups.forEach((group, groupIndex) => {
+      for (const item of group.items) {
+        result.push({
+          item,
+          index: result.length,
+          groupIndex,
+          groupTitle: group.title,
+        });
       }
-      currentIndex += group.items.length;
-    }
-
-    return null;
+    });
+    return result;
   }
 
   /**
    * Move focus to the next enabled item in the given direction (+1 / -1),
    * skipping over any disabled items. Mirrors the Carbon Dropdown `_navigate`
-   * pattern. Returns the resolved index, or the current index if no enabled
-   * item exists in that direction.
+   * pattern. Returns the resolved index, or `from` if no enabled item exists
+   * in that direction.
    */
-  private _navigateTo(from: number, direction: 1 | -1): number {
-    const totalItems = this._getTotalItemCount();
+  private _navigateTo(
+    list: FlatEntry[],
+    from: number,
+    direction: 1 | -1
+  ): number {
     // When no item is selected yet (-1), ArrowUp wraps to the last item.
-    const start = from === -1 && direction === -1 ? totalItems : from;
+    const start = from === -1 && direction === -1 ? list.length : from;
     let next = start + direction;
-    while (next >= 0 && next < totalItems) {
-      if (!this._getItemAtIndex(next)?.disabled) {
+    while (next >= 0 && next < list.length) {
+      if (!list[next].item.disabled) {
         return next;
       }
       next += direction;
@@ -332,7 +364,8 @@ class AutocompleteElement extends LitElement {
   }
 
   private _handleKeydown = (event: KeyboardEvent) => {
-    const totalItems = this._getTotalItemCount();
+    const list = this._flatList;
+    const totalItems = list.length;
     if (totalItems === 0) {
       return;
     }
@@ -340,42 +373,34 @@ class AutocompleteElement extends LitElement {
     switch (event.key) {
       case 'ArrowDown':
         event.preventDefault();
-        this._focusedIndex = this._navigateTo(this._focusedIndex, 1);
-        this._setUserHasNavigated(true);
+        this._focusedIndex = this._navigateTo(list, this._focusedIndex, 1);
+        this._setUserHasNavigated(this._focusedIndex !== -1);
         this._scheduleMoveAnnouncement(this._focusedIndex, totalItems);
         this._scrollActiveItemIntoView();
         break;
 
       case 'ArrowUp':
         event.preventDefault();
-        this._focusedIndex = this._navigateTo(this._focusedIndex, -1);
-        this._setUserHasNavigated(true);
+        this._focusedIndex = this._navigateTo(list, this._focusedIndex, -1);
+        this._setUserHasNavigated(this._focusedIndex !== -1);
         this._scheduleMoveAnnouncement(this._focusedIndex, totalItems);
         this._scrollActiveItemIntoView();
         break;
 
-      case 'Home': {
-        event.preventDefault();
-        // Find first enabled item from the top.
-        let first = 0;
-        while (first < totalItems && this._getItemAtIndex(first)?.disabled) {
-          first++;
-        }
-        this._focusedIndex = first < totalItems ? first : this._focusedIndex;
-        this._setUserHasNavigated(true);
-        this._scheduleMoveAnnouncement(this._focusedIndex, totalItems);
-        this._scrollActiveItemIntoView();
-        break;
-      }
+      case 'Home':
       case 'End': {
         event.preventDefault();
-        // Find last enabled item from the bottom.
-        let last = totalItems - 1;
-        while (last >= 0 && this._getItemAtIndex(last)?.disabled) {
-          last--;
+        // Scanning from -1 lands on the first enabled item going down and
+        // wraps to the last enabled item going up. Stay put if none exists.
+        const target = this._navigateTo(
+          list,
+          -1,
+          event.key === 'Home' ? 1 : -1
+        );
+        if (target !== -1) {
+          this._focusedIndex = target;
         }
-        this._focusedIndex = last >= 0 ? last : this._focusedIndex;
-        this._setUserHasNavigated(true);
+        this._setUserHasNavigated(this._focusedIndex !== -1);
         this._scheduleMoveAnnouncement(this._focusedIndex, totalItems);
         this._scrollActiveItemIntoView();
         break;
@@ -383,8 +408,8 @@ class AutocompleteElement extends LitElement {
 
       case 'Tab':
         event.preventDefault();
-        this._focusedIndex = this._navigateTo(this._focusedIndex, 1);
-        this._setUserHasNavigated(true);
+        this._focusedIndex = this._navigateTo(list, this._focusedIndex, 1);
+        this._setUserHasNavigated(this._focusedIndex !== -1);
         this._scheduleMoveAnnouncement(this._focusedIndex, totalItems);
         this._scrollActiveItemIntoView();
         break;
@@ -414,27 +439,23 @@ class AutocompleteElement extends LitElement {
     }
     this._moveAnnouncePending = window.setTimeout(() => {
       this._moveAnnouncePending = null;
-      const item = this._getItemAtIndex(index);
-      if (!item) {
+      const entry = this._flatList[index];
+      if (!entry) {
         return;
       }
       const position = `${index + 1} of ${total}`;
       this._announcer.announce(
         this.i18n.itemNavigation(
-          item.label,
-          item.description,
-          this._getGroupTitleAtIndex(index),
+          entry.item.label,
+          entry.item.description,
+          entry.groupTitle,
           position
         )
       );
     }, 50);
   }
 
-  private _handleSend(index: number) {
-    const item = this._getItemAtIndex(index);
-    if (!item) {
-      return;
-    }
+  private _handleSend(index: number, item: SuggestionItem) {
     this._focusedIndex = index;
     this._announcer.announce(this.i18n.itemSent(item.label));
     this.dispatchEvent(
@@ -458,7 +479,7 @@ class AutocompleteElement extends LitElement {
   };
 
   private _handleItemMouseEnter(index: number): void {
-    if (this._getItemAtIndex(index)?.disabled) {
+    if (this._flatList[index]?.item.disabled) {
       return;
     }
     this._focusedIndex = index;
@@ -522,13 +543,13 @@ class AutocompleteElement extends LitElement {
   }
 
   private _handleItemClick(index: number) {
-    const item = this._getItemAtIndex(index);
+    const item = this._flatList[index]?.item;
     if (!item || item.disabled) {
       return;
     }
 
     if (!this.disableDirectSend) {
-      this._handleSend(index);
+      this._handleSend(index, item);
       return;
     }
     this._focusedIndex = index;
@@ -539,27 +560,8 @@ class AutocompleteElement extends LitElement {
     if (!this._userHasNavigated) {
       return undefined;
     }
-    const item = this._getItemAtIndex(this._focusedIndex);
-    return item ? `${item.id}--option` : undefined;
-  }
-
-  private _getGroupTitleAtIndex(index: number): string | undefined {
-    if (index < this.items.length) {
-      return this.groups.length > 0
-        ? this.i18n.nonGroupedItemsLabel
-        : undefined;
-    }
-
-    let currentIndex = this.items.length;
-    for (const group of this.groups) {
-      const groupEndIndex = currentIndex + group.items.length;
-      if (index < groupEndIndex) {
-        return group.title;
-      }
-      currentIndex = groupEndIndex;
-    }
-
-    return undefined;
+    const entry = this._flatList[this._focusedIndex];
+    return entry ? `${entry.item.id}--option` : undefined;
   }
 
   private _getLabelParts(item: SuggestionItem): {
@@ -675,7 +677,7 @@ class AutocompleteElement extends LitElement {
   }
 
   render() {
-    const totalItems = this._getTotalItemCount();
+    const flatList = this._flatList;
 
     // Always render the live regions so the last announcement is not lost
     // when the list empties (e.g. "No suggestions." or "Suggestions closed.").
@@ -690,12 +692,15 @@ class AutocompleteElement extends LitElement {
         aria-atomic="false"></div>
     `;
 
-    if (totalItems === 0) {
+    if (flatList.length === 0) {
       return liveRegions;
     }
 
-    let currentIndex = 0;
     const hasGroups = this.groups.length > 0;
+    const activeOptionId = this._getActiveOptionId();
+    const ungrouped = flatList.filter(
+      (entry) => entry.groupIndex === undefined
+    );
 
     return html`
       ${liveRegions}
@@ -715,26 +720,25 @@ class AutocompleteElement extends LitElement {
           hasGroups
             ? html`
                 <div
-                  aria-activedescendant="${this._getActiveOptionId()}"
+                  aria-activedescendant="${activeOptionId}"
                   aria-label="${this.i18n.listboxLabel}"
                   class="${blockClass}__items"
                   id="${blockClass}-listbox"
                   role="listbox">
                   <!-- Flat items wrapped in their own implicit group -->
                   ${
-                    this.items.length > 0
+                    ungrouped.length > 0
                       ? html`
                           <ul
                             role="group"
                             aria-label="${this.i18n.nonGroupedItemsLabel}"
                             class="${groupClass}__items">
-                            ${this.items.map((item, index) => {
-                              const itemIndex = currentIndex++;
-                              return this._renderItem(item, itemIndex, {
+                            ${ungrouped.map(({ item, index }) =>
+                              this._renderItem(item, index, {
                                 firstItem:
                                   !this.headerConfig?.showHeader && index === 0,
-                              });
-                            })}
+                              })
+                            )}
                           </ul>
                         `
                       : ''
@@ -742,8 +746,9 @@ class AutocompleteElement extends LitElement {
 
                   <!-- Grouped items -->
                   ${this.groups.map((group, groupIndex) => {
-                    const groupStartIndex = currentIndex;
-                    currentIndex += group.items.length;
+                    const entries = flatList.filter(
+                      (entry) => entry.groupIndex === groupIndex
+                    );
                     const isLastGroup = groupIndex === this.groups.length - 1;
                     return html`
                       <ul
@@ -756,11 +761,10 @@ class AutocompleteElement extends LitElement {
                           class="${groupClass}__title">
                           ${group.title}
                         </li>
-                        ${group.items.map((item, itemIndex) =>
-                          this._renderItem(item, groupStartIndex + itemIndex, {
+                        ${entries.map(({ item, index }, position) =>
+                          this._renderItem(item, index, {
                             lastItem:
-                              isLastGroup &&
-                              itemIndex === group.items.length - 1,
+                              isLastGroup && position === entries.length - 1,
                           })
                         )}
                       </ul>
@@ -771,18 +775,17 @@ class AutocompleteElement extends LitElement {
             : html`
                 <!-- Flat items only -->
                 <ul
-                  aria-activedescendant="${this._getActiveOptionId()}"
+                  aria-activedescendant="${activeOptionId}"
                   aria-label="${this.i18n.listboxLabel}"
                   class="${blockClass}__items"
                   id="${blockClass}-listbox"
                   role="listbox">
-                  ${this.items.map((item, index) => {
-                    const itemIndex = currentIndex++;
-                    return this._renderItem(item, itemIndex, {
+                  ${flatList.map(({ item, index }) =>
+                    this._renderItem(item, index, {
                       firstItem: !this.headerConfig?.showHeader && index === 0,
-                      lastItem: index === this.items.length - 1,
-                    });
-                  })}
+                      lastItem: index === flatList.length - 1,
+                    })
+                  )}
                 </ul>
               `
         }
