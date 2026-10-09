@@ -60,5 +60,5 @@ npm test                        # both test suites (see testing.md)
 
 For guidance-only edits, use the [guidance gate](../../references/definition-of-done.md#minimum-gate-by-area-edited). For component changes:
 
-- `npm run test --workspace=@carbon/ai-chat-components` (runs both suites) + `npm run build --workspace=@carbon/ai-chat-components`.
+- `npm run build --workspace=@carbon/ai-chat-components`, then `npm run test --workspace=@carbon/ai-chat-components` (runs both suites). Build first; read [testing.md](references/testing.md#gotchas) when a WTR test fails against correct source.
 - If you changed JSDoc, props, slots, events, or CSS parts: rerun `npm run custom-elements` and inspect that component's manifest entries. Never hand-edit the manifest. Restart Storybook to verify the component docs, and update the matching wrapper in `src/react/` for new prop types.

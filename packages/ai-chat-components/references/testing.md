@@ -41,6 +41,7 @@ npm run test:react -- src/react/__tests__/<file>.test.ts
 | `Unexpected token 'export'` in a React (Jest) test | A new ESM-only dep isn't transpiled  | Add its package name to `transformIgnorePatterns` in the Jest config. The list already covers lit, `@carbon` packages, lodash-es, `@floating-ui`, uuid, `@formatjs`, `@codemirror`, etc. |
 | Import not found at build/test time                | Missing `.js` extension              | Relative imports use explicit `.js` even for `.ts` source (`import { foo } from "./bar.js"`).                                                                                            |
 | Wrong runner picked up a file                      | Lit vs React test in the wrong suite | Lit → WTR (`.test.ts` under `__tests__/`); React wrappers → Jest (under `src/react/__tests__/`).                                                                                         |
+| A WTR test fails against code that is correct in `src/` | The test imports `@carbon/ai-chat-components/es/…`, the built output, and `es/` is stale | Rebuild before testing — see the [build preflight](../../../references/commands.md#build-preflight).                                                                                     |
 
 ## Related guidance
 

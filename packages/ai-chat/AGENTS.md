@@ -54,6 +54,7 @@ From this package directory:
 npm run build      # rollup only
 npm run build:docs # rollup + typedoc
 npm run docs       # typedoc only — the fast docs loop, no rollup needed
+npm run clean      # remove dist/ — a build overwrites it but never empties it
 npm start          # rollup --watch + typedoc --watch + local doc server on :5001
 npm test           # jest with coverage
 npm test -- path/to/file_spec.ts

@@ -6,7 +6,8 @@ It is a **router**: find your package and your task below, then read the linked 
 
 A few things hold everywhere, regardless of what you touch:
 
-- **Set up before running package code**: `npm install && npm run aiChat:build`. Workspace deps resolve through built artifacts (`dist/es/`, `es/`), not TS sources. Rebuild a changed package before checking its consumers. Guidance-only edits do not need a package build.
+- **Set up before running package code**: `npm install && npm run aiChat:build`. Workspace deps resolve through built artifacts (`dist/es/`, `es/`), not TS sources. Guidance-only edits do not need a package build.
+- **Establish build freshness before a test that reads built output.** Existing output and a build that exited 0 earlier are not proof. With no evidence, freshness is unknown → [build preflight](references/commands.md#build-preflight).
 - **Ask before starting any build/watch yourself.** Most developers keep `npm run aiChat:start` running; a parallel `npm run build` races the watcher.
 - **Work from source; never hand-edit generated output**: `dist/`, `es/`, `es-custom/`, `storybook-static/`, `storybook-react-static/`, `node_modules/`, `packages/ai-chat-components/custom-elements.json`, and `telemetry.yml`. Skip these in routine discovery. Regenerate via the documented commands. For required verification, inspect only changed components' freshly regenerated manifest entries or changed symbols' locally rendered TypeDoc pages. The tracked `packages/ai-chat/docs/api/markdown/` and `packages/ai-chat/docs/api/symbol-index.json` remain release-owned: do not inspect or rewrite them for branch work. Fix their source JSDoc; local `docs:api:check` drift is expected, not a CI failure. Their sibling `README.md` and the React wrappers in `packages/ai-chat-components/src/react/` are hand-authored → [packages/ai-chat-components/AGENTS.md](packages/ai-chat-components/AGENTS.md).
 - **Lint, format, and test through the npm scripts**, never the underlying binary — `npx prettier`, bare `eslint`, and `stylelint` drop the ignore globs the scripts carry and reformat generated output → [commands.md](references/commands.md).
@@ -40,6 +41,7 @@ Read that package's `AGENTS.md` before your first edit. Each one routes onward t
 | Understanding why a public-API decision went the way it did | [docs/adr/README.md](docs/adr/README.md) |
 | Commits, branches, PR titles, license headers | [conventions.md](references/conventions.md) |
 | Building, testing, linting, using prettier, or running a single example/test | [commands.md](references/commands.md) |
+| Running a test that reads built output, or diagnosing a failure that may be stale build state | [commands.md](references/commands.md#build-preflight) |
 | Adding a root-level Node script (`scripts/` vs `tools/`) | [commands.md](references/commands.md#scripts-vs-tools) |
 | Knowing which gate to run before shipping, and how to report that you ran it | [definition-of-done.md](references/definition-of-done.md) |
 | Measuring a diff before review (complexity, coupling, smells, size vs precedent) | [measuring.md](references/measuring.md) |
