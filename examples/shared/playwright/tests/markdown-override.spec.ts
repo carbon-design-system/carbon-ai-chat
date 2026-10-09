@@ -5,7 +5,17 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-/** Tests markdown-override: mounts the chat and exercises the host's demonstrated behavior. */
+/**
+ * Tests: Carbon AI Chat — Markdown overrides.
+ *
+ * Runs against both the React and Web Components examples.
+ *
+ * The example sets `markdown.customRenderers` for code blocks, tables, links,
+ * images, and checklists. The tests check output only an override produces: a
+ * Carbon table without the default download toolbar, a snippet without a
+ * detected-language label, rewritten link attributes, and a checklist that
+ * toggles by keyboard. A fixme records checklist state leaking across replies.
+ */
 
 import { PageObjectId } from '@carbon/ai-chat/server';
 import { expect, openExample, test, waitForChatReady } from '../helpers';
@@ -32,10 +42,21 @@ test('mounts with a usable prompt', async ({ page }) => {
 test('keeps custom tables, transformed links, and actionable checkboxes', async ({
   page,
 }) => {
+  const panel = page.getByTestId(PageObjectId.MAIN_PANEL);
+  const download = page.getByRole('button', {
+    name: 'Download table data',
+    exact: true,
+  });
   await expect(page.getByRole('table')).toHaveCount(2);
   await expect(
     page.getByRole('cell', { name: 'Scheduler', exact: true })
   ).toBeVisible();
+  // The default cds-aichat-table adds a download toolbar; the Carbon table
+  // the override renders has none.
+  await expect(download).toHaveCount(0);
+  // The default snippet labels this fence "Python — 3 lines"; the override
+  // turns detection off, leaving only the line count.
+  await expect(panel.getByText('3 lines', { exact: true })).toHaveCount(2);
   const link = page.getByRole('link', {
     name: 'Carbon Design System',
     exact: true,
@@ -56,6 +77,8 @@ test('keeps custom tables, transformed links, and actionable checkboxes', async 
   await page.getByTestId(PageObjectId.INPUT).fill('another markdown request');
   await page.getByRole('button', { name: /send/i }).click();
   await expect(page.getByRole('table')).toHaveCount(4);
+  await expect(download).toHaveCount(0);
+  await expect(panel.getByText('3 lines', { exact: true })).toHaveCount(4);
 });
 
 // Observed: toggling "Review the design" in the welcome also checks it in every

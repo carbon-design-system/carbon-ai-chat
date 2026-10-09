@@ -5,7 +5,17 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-/** Tests upsert message user defined mounting and its host-visible behavior. */
+/**
+ * Tests: Carbon AI Chat — Progressive user_defined updates through upsertMessage.
+ *
+ * Runs against both the React and Web Components examples.
+ *
+ * Each run updates one host-rendered steps card in place through
+ * `upsertMessage`, and a toast's "View message" action calls `scrollToMessage`
+ * when a run finishes. The test runs two cards at once and checks each updates
+ * in place and that the toast scrolls to the finished card. A fixme records
+ * that the welcome button cannot start a second run as its copy says.
+ */
 
 import { PageObjectId } from '@carbon/ai-chat/server';
 import { expect, openExample, test, waitForChatReady } from '../helpers';

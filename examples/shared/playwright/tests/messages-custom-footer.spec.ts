@@ -5,7 +5,15 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-/** Tests messages-custom-footer: mounts the chat and exercises the host's demonstrated behavior. */
+/**
+ * Tests: Carbon AI Chat — Custom message footer.
+ *
+ * Runs against both the React and Web Components examples.
+ *
+ * The host renders a copy button into each reply's custom footer slot. The test
+ * sends a request, then uses the reply's own copy button by keyboard and checks
+ * the clipboard holds that reply's text.
+ */
 
 import { PageObjectId } from '@carbon/ai-chat/server';
 import { expect, openExample, test, waitForChatReady } from '../helpers';

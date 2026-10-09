@@ -5,7 +5,15 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-/** Tests reasoning with streaming generic items mounting and its host-visible behavior. */
+/**
+ * Tests: Carbon AI Chat — Reasoning with streaming generic items.
+ *
+ * Runs against both the React and Web Components examples.
+ *
+ * Each streamed reasoning step carries a `user_defined` item that the host
+ * renders as a summary card. The test opens every completed step and checks
+ * each keeps exactly one host-rendered summary.
+ */
 
 import { PageObjectId } from '@carbon/ai-chat/server';
 import { expect, openExample, test, waitForChatReady } from '../helpers';

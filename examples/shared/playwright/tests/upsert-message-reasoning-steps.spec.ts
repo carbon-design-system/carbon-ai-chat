@@ -5,7 +5,16 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-/** Tests upsert message reasoning steps mounting and its host-visible behavior. */
+/**
+ * Tests: Carbon AI Chat — Reasoning steps through upsertMessage.
+ *
+ * Runs against both the React and Web Components examples.
+ *
+ * The same two reasoning formats as the streaming example, discrete steps or
+ * one `reasoning.content` trace, delivered as whole-message snapshots through
+ * `upsertMessage`. For each, the tests wait for the run to finish and check the
+ * reasoning panel still holds the completed trace.
+ */
 
 import { PageObjectId } from '@carbon/ai-chat/server';
 import { expect, openExample, test, waitForChatReady } from '../helpers';

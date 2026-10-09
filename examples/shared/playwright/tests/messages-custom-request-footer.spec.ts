@@ -5,7 +5,16 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-/** Tests messages-custom-request-footer: mounts the chat and exercises the host's demonstrated behavior. */
+/**
+ * Tests: Carbon AI Chat — Custom request footer.
+ *
+ * Runs against both the React and Web Components examples.
+ *
+ * The host renders a copy button beneath each user message through the request
+ * footer callback; assistant replies get no footer. The test copies a sent
+ * message by keyboard, checks the clipboard, then checks the reply adds no
+ * second copy button.
+ */
 
 import { PageObjectId } from '@carbon/ai-chat/server';
 import { expect, openExample, test, waitForChatReady } from '../helpers';
@@ -36,6 +45,15 @@ test('copies the request through its custom footer', async ({
   await expect
     .poll(() => page.evaluate(() => navigator.clipboard.readText()))
     .toBe('request alpha');
+  // Wait for the reply before ruling out a footer on it.
+  await expect(
+    page
+      .getByTestId(PageObjectId.MAIN_PANEL)
+      .getByText(
+        'Thanks. Your message above has a copy button under it; this reply does not.',
+        { exact: true }
+      )
+  ).toBeVisible();
   await expect(
     page.getByRole('button', { name: 'Copy your message', exact: true })
   ).toHaveCount(1);

@@ -5,7 +5,15 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-/** Tests upsert message reasoning with streaming generic items mounting and its host-visible behavior. */
+/**
+ * Tests: Carbon AI Chat — Reasoning with generic items through upsertMessage.
+ *
+ * Runs against both the React and Web Components examples.
+ *
+ * Each reasoning step carries a host-rendered `user_defined` summary card, and
+ * every `upsertMessage` snapshot replaces the whole message. The test opens each
+ * completed step and checks it keeps exactly one card with that step's text.
+ */
 
 import { PageObjectId } from '@carbon/ai-chat/server';
 import { expect, openExample, test, waitForChatReady } from '../helpers';

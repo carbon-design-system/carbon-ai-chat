@@ -5,7 +5,15 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-/** Tests chain-of-thought: mounts the chat and exercises the host's demonstrated behavior. */
+/**
+ * Tests: Carbon AI Chat — Chain of thought.
+ *
+ * Runs against both the React and Web Components examples.
+ *
+ * The example ships a finished `chain_of_thought` array on the final response,
+ * so the chat shows a tool-trace drawer under the reply. The tests open that
+ * drawer by keyboard and check that every step is listed with its status.
+ */
 
 import { PageObjectId } from '@carbon/ai-chat/server';
 import { expect, openExample, test, waitForChatReady } from '../helpers';

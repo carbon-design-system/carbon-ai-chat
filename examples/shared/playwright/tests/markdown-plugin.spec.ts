@@ -5,7 +5,16 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-/** Tests markdown-plugin: mounts the chat and exercises the host's demonstrated behavior. */
+/**
+ * Tests: Carbon AI Chat — Markdown plugin.
+ *
+ * Runs against both the React and Web Components examples.
+ *
+ * The example adds a KaTeX markdown-it plugin through
+ * `markdown.markdownItPlugins`, and the page's own stylesheet styles its
+ * output. The tests check that inline and block math render in the KaTeX font,
+ * in the welcome and in a later reply. The CDN stylesheet is served locally.
+ */
 
 import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';

@@ -5,7 +5,16 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-/** Tests user defined responses mounting and its host-visible behavior. */
+/**
+ * Tests: Carbon AI Chat — User-defined responses.
+ *
+ * Runs against both the React and Web Components examples.
+ *
+ * The host renders `user_defined` items through `renderUserDefinedResponse` and
+ * tracks `activeResponseId` from `STATE_CHANGE`, so each card says whether it
+ * is the latest message. The test sends two requests and checks both cards stay
+ * and only the newer one reports itself as latest.
+ */
 
 import { PageObjectId } from '@carbon/ai-chat/server';
 import { expect, openExample, test, waitForChatReady } from '../helpers';

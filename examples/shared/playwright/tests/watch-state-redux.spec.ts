@@ -5,7 +5,16 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-/** Tests watch state redux mounting and its host-visible behavior. */
+/**
+ * Tests: Carbon AI Chat — Watch state with Redux.
+ *
+ * Runs against the React example only.
+ *
+ * The host bridges `BusEventType.STATE_CHANGE` into a Redux store, and a status
+ * panel outside the chat reads the homescreen flag through a selector. The test
+ * moves between the homescreen and the conversation twice and checks the
+ * panel follows each transition.
+ */
 
 import { PageObjectId } from '@carbon/ai-chat/server';
 import { expect, openExample, test, waitForChatReady } from '../helpers';
@@ -21,7 +30,9 @@ test('mounts with a usable chat surface', async ({ page }) => {
 
 test('mirrors homescreen transitions in both directions', async ({ page }) => {
   const home = page.getByTestId(PageObjectId.HOME_SCREEN_PANEL);
-  const hostStatus = page.getByText('Homescreen', { exact: true });
+  // The status line is host DOM, so the example's own wrapper scopes it.
+  const host = page.locator('.watch-state-host');
+  const hostStatus = host.getByText('Homescreen', { exact: true });
   await expect(hostStatus).toBeVisible();
   for (let turn = 0; turn < 2; turn += 1) {
     await home
@@ -29,7 +40,7 @@ test('mirrors homescreen transitions in both directions', async ({ page }) => {
       .focus();
     await page.keyboard.press('Enter');
     await waitForChatReady(page, PageObjectId.INPUT);
-    await expect(page.getByText('Chat View', { exact: true })).toBeVisible();
+    await expect(host.getByText('Chat View', { exact: true })).toBeVisible();
     await expect(hostStatus).toBeHidden();
     await page
       .getByRole('button', { name: 'Return to the home screen' })

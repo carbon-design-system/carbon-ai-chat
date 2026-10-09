@@ -5,7 +5,16 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-/** Tests reasoning steps mounting and its host-visible behavior. */
+/**
+ * Tests: Carbon AI Chat — Reasoning steps.
+ *
+ * Runs against both the React and Web Components examples.
+ *
+ * A dropdown on the welcome message picks one of two streamed reasoning
+ * formats: discrete `ReasoningStep` items or one long-form `reasoning.content`
+ * trace. For each, the tests wait for the run to finish, open the reasoning
+ * panel, and check the completed trace is still there.
+ */
 
 import { PageObjectId } from '@carbon/ai-chat/server';
 import { expect, openExample, test, waitForChatReady } from '../helpers';

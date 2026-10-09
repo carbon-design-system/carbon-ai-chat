@@ -5,7 +5,16 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-/** Tests reasoning steps controlled mounting and its host-visible behavior. */
+/**
+ * Tests: Carbon AI Chat — Controlled reasoning steps.
+ *
+ * Runs against both the React and Web Components examples.
+ *
+ * The host drives the loading label with `updateIsMessageLoadingCounter` and
+ * holds `reasoning.open_state` at `CLOSE`, though each step inside is `OPEN`.
+ * The test checks the panel stays collapsed while loading and after the run,
+ * then opens it by keyboard and finds the steps already expanded.
+ */
 
 import { PageObjectId } from '@carbon/ai-chat/server';
 import { expect, openExample, test, waitForChatReady } from '../helpers';

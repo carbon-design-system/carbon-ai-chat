@@ -5,7 +5,16 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-/** Tests upsert message reasoning steps controlled mounting and its host-visible behavior. */
+/**
+ * Tests: Carbon AI Chat — Controlled reasoning steps through upsertMessage.
+ *
+ * Runs against both the React and Web Components examples.
+ *
+ * The controlled reasoning flow, delivered through `upsertMessage` snapshots:
+ * the host drives the loading label and holds the panel at `CLOSE`. The test
+ * checks the label tracks the run and then clears, and that the panel opens by
+ * keyboard with each step already expanded.
+ */
 
 import { PageObjectId } from '@carbon/ai-chat/server';
 import { expect, openExample, test, waitForChatReady } from '../helpers';
