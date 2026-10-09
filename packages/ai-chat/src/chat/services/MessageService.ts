@@ -101,6 +101,8 @@ interface SendMessageRequest {
 // In order to be able to resolve the correct message in the queue, we pass along the promise we will return with the
 // message and call resolve/reject on "resolvablePromise".
 export interface PendingMessageRequest extends SendMessageRequest {
+  restartGeneration: number;
+
   /**
    * The ID of the {@link LocalMessageItem} created from the current request.
    */
@@ -203,10 +205,30 @@ class MessageService {
    */
   private messageAbortControllers = new Map<string, AbortController>();
 
+  // A first reply can arrive after cancellation, so retain IDs for the instance's lifetime.
+  private requestGenerations = new Map<string, number>();
+
   /**
    * The instance of the messageLoadingManager to manage timeouts and showing of loading states.
    */
   public messageLoadingManager: MessageLoadingManager;
+
+  public registerRequestGeneration(
+    requestID: string,
+    restartGeneration: number
+  ) {
+    this.requestGenerations.set(requestID, restartGeneration);
+  }
+
+  public isRequestFromPreviousConversation(
+    requestID: string | undefined
+  ): boolean {
+    const restartGeneration = this.requestGenerations.get(requestID);
+    return (
+      restartGeneration !== undefined &&
+      restartGeneration !== this.serviceManager.restartCount
+    );
+  }
 
   constructor(serviceManager: ServiceManager, publicConfig: PublicConfig) {
     this.serviceManager = serviceManager;
@@ -224,7 +246,9 @@ class MessageService {
       () => this.moveToNextQueueItem(),
       (pendingRequest, received) =>
         this.processSuccess(pendingRequest, received),
-      () => this.serviceManager.store.getState().config.public.messaging || {}
+      () => this.serviceManager.store.getState().config.public.messaging || {},
+      (requestID, restartGeneration) =>
+        this.registerRequestGeneration(requestID, restartGeneration)
     );
     this.queue = {
       waiting: [],
@@ -467,6 +491,7 @@ class MessageService {
     this.messageAbortControllers.set(message.id, controller);
 
     const newPendingMessage: PendingMessageRequest = {
+      restartGeneration: this.serviceManager.restartCount,
       localMessageID,
       message,
       sendMessagePromise,
@@ -634,6 +659,9 @@ class MessageService {
   public async cancelAllMessageRequests(
     reason: string = CancellationReason.CONVERSATION_RESTARTED
   ) {
+    // Abort listeners can remove controllers from tracking before cancellation finishes.
+    const messageAbortControllers = Array.from(this.messageAbortControllers);
+
     while (this.queue.waiting.length) {
       await this.cancelMessageRequestByID(
         this.queue.waiting[0].message.id,
@@ -648,6 +676,11 @@ class MessageService {
         reason
       );
       this.clearCurrentQueueItem();
+    }
+
+    for (const [messageID, controller] of messageAbortControllers) {
+      controller.abort(reason);
+      this.inboundStreaming.clearStreamingResponse(messageID);
     }
   }
 

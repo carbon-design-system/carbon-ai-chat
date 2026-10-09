@@ -354,7 +354,11 @@ interface MessageResponse<TGenericType = GenericItem[]> {
   id?: string;
 
   /**
-   * The id of the request that this is the response of.
+   * The ID of the request this response answers. Use the {@link MessageRequest.id} passed to
+   * {@link PublicConfigMessaging.customSendMessage}. If that request belongs to a conversation
+   * restarted or cleared on this instance, the chat ignores the response. Omitted or unknown IDs
+   * keep the existing behavior and do not provide this protection. Request IDs must be unique
+   * across conversations on the instance. Include this ID on every response update.
    */
   request_id?: string;
 
@@ -1927,6 +1931,14 @@ interface Chunk {
      * in the final chunk of the stream.
      */
     response_id: string;
+    /**
+     * The ID of the request this chunk answers. Use the {@link MessageRequest.id} passed to
+     * {@link PublicConfigMessaging.customSendMessage}. If that request belongs to a conversation
+     * restarted or cleared on this instance, the chat ignores the chunk. Omitted or unknown IDs
+     * keep the existing behavior and do not provide this protection. Include this ID on every
+     * partial and complete item chunk, then set {@link MessageResponse.request_id} on the final response.
+     */
+    request_id?: string;
   };
 }
 

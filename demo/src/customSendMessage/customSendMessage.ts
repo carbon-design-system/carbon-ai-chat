@@ -45,9 +45,9 @@ async function customSendMessage(
 
     if (request.input.text && request.input.text in RESPONSE_MAP) {
       const handler = RESPONSE_MAP[request.input.text];
-      await handler(instance, requestOptions);
+      await handler(instance, requestOptions, request.id);
     } else {
-      doWelcomeText(instance);
+      doWelcomeText(instance, request.id);
     }
   }
 }

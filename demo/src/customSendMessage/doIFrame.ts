@@ -9,13 +9,15 @@
 
 import {
   ChatInstance,
+  MessageRequest,
   IFrameItem,
   MessageResponseTypes,
   TextItem,
 } from '@carbon/ai-chat';
 
-function doIFrame(instance: ChatInstance) {
+function doIFrame(instance: ChatInstance, requestID?: MessageRequest['id']) {
   instance.messaging.addMessage({
+    request_id: requestID,
     output: {
       generic: [
         {

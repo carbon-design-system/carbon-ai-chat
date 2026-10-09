@@ -43,7 +43,9 @@ function createHarness(config: PublicConfig = {}) {
     humanAgentService: { handleConnectToHumanAgent },
     streamAnnouncerService: { clearAll: jest.fn() },
     messageService: {
+      isRequestFromPreviousConversation: jest.fn().mockReturnValue(false),
       inboundStreaming: { streamingMessageID: null },
+      messageLoadingManager: { end: jest.fn() },
       finalizeStreamingMessage: jest.fn(),
       cancelAllMessageRequests: jest.fn().mockResolvedValue(undefined),
     },
@@ -256,6 +258,23 @@ describe('ReceiveService', () => {
 
     expect(store.getState().allMessagesByID).toEqual({});
     expect(eventTypes()).toEqual([BusEventType.PRE_RECEIVE]);
+  });
+
+  it('does not call the old footer when restart happens while a slot is pending', async () => {
+    const { service, manager, slotEventService, localItems } = createHarness();
+    const pendingSlot = resolvablePromise();
+    slotEventService.handleUserDefinedResponseItems.mockReturnValueOnce(
+      pendingSlot
+    );
+    await service.receive(response());
+    await manager.hydrationService.restartConversation({
+      skipHydration: true,
+      fireEvents: false,
+    });
+    pendingSlot.doResolve();
+    await jest.advanceTimersByTimeAsync(0);
+    expect(slotEventService.handleCustomFooterSlot).not.toHaveBeenCalled();
+    expect(localItems()).toEqual([]);
   });
 
   it.each([

@@ -7,18 +7,25 @@
  *  @license
  */
 
+import { waitFor } from '@testing-library/react';
+
 import {
   createBaseConfig,
   renderChatAndGetInstance,
+  renderChatAndGetInstanceWithStore,
   setupBeforeEach,
   setupAfterEach,
 } from '../../../test_helpers';
-import { MessageRequest } from '../../../../src/types/messaging/Messages';
+import {
+  MessageRequest,
+  MessageResponseTypes,
+} from '../../../../src/types/messaging/Messages';
 import {
   CancellationReason,
   CustomSendMessageOptions,
 } from '../../../../src/types/config/MessagingConfig';
 import { ChatInstance } from '../../../../src/types/instance/ChatInstance';
+import { resolvablePromise } from '../../../../src/chat/utils/resolvablePromise';
 
 describe('ChatInstance.messaging.restartConversation', () => {
   beforeEach(setupBeforeEach);
@@ -202,6 +209,181 @@ describe('ChatInstance.messaging.restartConversation', () => {
   });
 
   describe('Chunk queue filtering during restart', () => {
+    afterEach(() => jest.restoreAllMocks());
+
+    it('sends the next queued message when a stale chunk arrives before the current final response', async () => {
+      const config = createBaseConfig();
+      const sentMessages: string[] = [];
+      config.messaging = {
+        skipWelcome: true,
+        customSendMessage: async (request, _options, instance) => {
+          const text = request.input.text;
+          sentMessages.push(text);
+          if (text === 'third') {
+            return;
+          }
+          await instance.messaging.addMessageChunk({
+            streaming_metadata: { response_id: `${text}-response` },
+            partial_item: {
+              streaming_metadata: { id: `${text}-item` },
+              response_type: MessageResponseTypes.TEXT,
+              text,
+            },
+          });
+        },
+      };
+      const instance = await renderChatAndGetInstance(config);
+
+      await instance.send('first');
+      await instance.messaging.restartConversation();
+      await instance.send('second');
+      const thirdSend = instance.send('third');
+
+      await instance.messaging.addMessageChunk({
+        streaming_metadata: { response_id: 'first-response' },
+        partial_item: {
+          streaming_metadata: { id: 'first-item' },
+          response_type: MessageResponseTypes.TEXT,
+          text: 'late chunk',
+        },
+      });
+      await instance.messaging.addMessageChunk({
+        final_response: {
+          id: 'second-response',
+          output: {
+            generic: [
+              {
+                streaming_metadata: { id: 'second-item' },
+                response_type: MessageResponseTypes.TEXT,
+                text: 'second response complete',
+              },
+            ],
+          },
+        },
+      });
+
+      await waitFor(() =>
+        expect(sentMessages).toEqual(['first', 'second', 'third'])
+      );
+      await thirdSend;
+    });
+
+    it.each(['partial', 'complete', 'final'] as const)(
+      'leaves the new stream untouched when an old %s chunk arrives',
+      async (kind) => {
+        const config = createBaseConfig();
+        config.messaging = { skipWelcome: true, customSendMessage: () => {} };
+        const { instance, store, serviceManager } =
+          await renderChatAndGetInstanceWithStore(config);
+        const item = {
+          streaming_metadata: { id: 'old-item', cancellable: true },
+          response_type: MessageResponseTypes.TEXT,
+          text: 'old response',
+        };
+        const staleChunks = {
+          partial: {
+            streaming_metadata: { response_id: 'old-response' },
+            partial_item: item,
+          },
+          complete: {
+            streaming_metadata: { response_id: 'old-response' },
+            complete_item: item,
+          },
+          final: {
+            final_response: {
+              id: 'old-response',
+              output: { generic: [item] },
+            },
+          },
+        };
+        await instance.messaging.addMessageChunk(staleChunks.partial);
+        await instance.messaging.restartConversation();
+        await instance.messaging.addMessageChunk({
+          streaming_metadata: { response_id: 'new-response' },
+          partial_item: {
+            streaming_metadata: { id: 'new-item', cancellable: true },
+            response_type: MessageResponseTypes.TEXT,
+            text: 'new response',
+          },
+        });
+        const state = store.getState();
+        expect(
+          state.assistantInputState.stopStreamingButtonState.isVisible
+        ).toBe(true);
+        const endLoading = jest.spyOn(
+          serviceManager.messageService.messageLoadingManager,
+          'end'
+        );
+        const announce = jest.spyOn(
+          serviceManager.streamAnnouncerService,
+          'announceStreamStarts'
+        );
+
+        await instance.messaging.addMessageChunk(staleChunks[kind]);
+
+        expect(store.getState()).toBe(state);
+        expect(
+          serviceManager.messageService.inboundStreaming.streamingMessageID
+        ).toBe('new-response');
+        expect(endLoading).not.toHaveBeenCalled();
+        expect(announce).not.toHaveBeenCalled();
+      }
+    );
+
+    it.each(['partial', 'final without an ID'])(
+      'drops a %s chunk that was waiting in the chunk queue when restart happened',
+      async (kind) => {
+        const config = createBaseConfig();
+        config.messaging = { skipWelcome: true, customSendMessage: () => {} };
+        const { instance, store, serviceManager } =
+          await renderChatAndGetInstanceWithStore(config);
+        const releaseSlot = resolvablePromise();
+        jest
+          .spyOn(
+            serviceManager.slotEventService,
+            'handleUserDefinedResponseItemsChunk'
+          )
+          .mockReturnValueOnce(releaseSlot);
+        const first = instance.messaging.addMessageChunk({
+          streaming_metadata: { response_id: 'blocking-response' },
+          partial_item: {
+            streaming_metadata: { id: 'blocking-item' },
+            response_type: MessageResponseTypes.TEXT,
+            text: 'blocking response',
+          },
+        });
+        const queued = instance.messaging.addMessageChunk(
+          kind === 'partial'
+            ? {
+                streaming_metadata: { response_id: 'queued-response' },
+                partial_item: {
+                  streaming_metadata: { id: 'queued-item' },
+                  response_type: MessageResponseTypes.TEXT,
+                  text: 'queued response',
+                },
+              }
+            : {
+                final_response: {
+                  output: {
+                    generic: [
+                      {
+                        response_type: MessageResponseTypes.TEXT,
+                        text: 'queued response',
+                      },
+                    ],
+                  },
+                },
+              }
+        );
+
+        await instance.messaging.restartConversation();
+        releaseSlot.doResolve();
+        await Promise.all([first, queued]);
+
+        expect(Object.keys(store.getState().allMessagesByID)).toEqual([]);
+      }
+    );
+
     it('should handle restart during message processing gracefully', async () => {
       const config = createBaseConfig();
       const processedMessages: string[] = [];
@@ -324,6 +506,56 @@ describe('ChatInstance.messaging.restartConversation', () => {
 
       // Should handle all restarts gracefully - at least final message should process
       expect(messagesProcessed).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  describe('Loading indicator', () => {
+    it('is off after a reply when the request before the restart got none', async () => {
+      const config = createBaseConfig();
+      config.messaging = {
+        skipWelcome: true,
+        messageLoadingIndicatorTimeoutSecs: 0.05,
+        customSendMessage: async (
+          request: MessageRequest,
+          _options: CustomSendMessageOptions,
+          instance: ChatInstance
+        ) => {
+          if (request.input.text !== 'answered') {
+            return;
+          }
+          await instance.messaging.addMessage({
+            output: {
+              generic: [
+                { response_type: MessageResponseTypes.TEXT, text: 'reply' },
+              ],
+            },
+          });
+        },
+      };
+      const instance = await renderChatAndGetInstance(config);
+
+      await instance.send('unanswered');
+      await instance.messaging.restartConversation();
+      await instance.send('answered');
+      await new Promise((resolve) => setTimeout(resolve, 150));
+
+      expect(instance.getState().isMessageLoadingCounter).toBe(0);
+    });
+
+    it('stays off after a restart when the request before it got none', async () => {
+      const config = createBaseConfig();
+      config.messaging = {
+        skipWelcome: true,
+        messageLoadingIndicatorTimeoutSecs: 0.05,
+        customSendMessage: async () => {},
+      };
+      const instance = await renderChatAndGetInstance(config);
+
+      await instance.send('unanswered');
+      await instance.messaging.restartConversation();
+      await new Promise((resolve) => setTimeout(resolve, 150));
+
+      expect(instance.getState().isMessageLoadingCounter).toBe(0);
     });
   });
 });

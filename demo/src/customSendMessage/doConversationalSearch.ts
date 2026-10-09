@@ -9,6 +9,7 @@
 
 import {
   ChatInstance,
+  MessageRequest,
   CustomSendMessageOptions,
   ConversationalSearchItem,
   MessageResponseTypes,
@@ -63,7 +64,10 @@ Isotopes of carbon include carbon-12, carbon-13, and carbon-14. Carbon-14 is rad
   ],
 };
 
-function doConversationalSearch(instance: ChatInstance) {
+function doConversationalSearch(
+  instance: ChatInstance,
+  requestID?: MessageRequest['id']
+) {
   const response: ConversationalSearchItem = {
     response_type: MessageResponseTypes.CONVERSATIONAL_SEARCH,
     text: TEXT,
@@ -71,6 +75,7 @@ function doConversationalSearch(instance: ChatInstance) {
   };
 
   instance.messaging.addMessage({
+    request_id: requestID,
     output: {
       generic: [response],
     },
@@ -80,7 +85,8 @@ function doConversationalSearch(instance: ChatInstance) {
 async function doConversationalSearchStreaming(
   instance: ChatInstance,
   text: string = TEXT,
-  requestOptions?: CustomSendMessageOptions
+  requestOptions?: CustomSendMessageOptions,
+  requestID?: MessageRequest['id']
 ) {
   const signal = requestOptions?.signal;
   const responseID = uuid();
@@ -117,6 +123,7 @@ async function doConversationalSearchStreaming(
         streaming_metadata: {
           // This is the id of the entire message response.
           response_id: responseID,
+          request_id: requestID,
         },
       });
     }
@@ -144,6 +151,7 @@ async function doConversationalSearchStreaming(
         streaming_metadata: {
           // This is the id of the entire message response.
           response_id: responseID,
+          request_id: requestID,
         },
       } as StreamChunk);
     }
@@ -152,6 +160,7 @@ async function doConversationalSearchStreaming(
     // You can rearrange or re-write everything here, but what you send here is what the chat will display when streaming
     // has been completed.
     const finalResponse = {
+      request_id: requestID,
       id: responseID,
       output: {
         generic: [completeItem],

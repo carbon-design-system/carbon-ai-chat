@@ -9,18 +9,20 @@
 
 import {
   ChatInstance,
+  MessageRequest,
   MessageResponseTypes,
   OptionItemPreference,
 } from '@carbon/ai-chat';
 
 import { RESPONSE_MAP } from './responseMap';
 
-function doOption(instance: ChatInstance) {
+function doOption(instance: ChatInstance, requestID?: MessageRequest['id']) {
   const options = Object.keys(RESPONSE_MAP).map((key) => ({
     label: key,
     value: { input: { text: key } },
   }));
   instance.messaging.addMessage({
+    request_id: requestID,
     output: {
       generic: [
         {

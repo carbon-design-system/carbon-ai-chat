@@ -131,11 +131,12 @@ class MessageUpsertCoordinator {
       throw new TypeError('upsertMessage: updater must be a function.');
     }
 
+    const { restartCount } = this.serviceManager;
     const prev = this.chainByID.get(messageID) ?? Promise.resolve();
     // A predecessor failure for this id must not poison this caller's promise.
     const next = prev
       .catch(noop)
-      .then(() => this.runOne(messageID, nextState, updater));
+      .then(() => this.runOne(messageID, nextState, updater, restartCount));
     this.chainByID.set(messageID, next);
 
     // Drain the chain entry once `next` settles. The trailing `.then(noop, noop)`
@@ -155,9 +156,17 @@ class MessageUpsertCoordinator {
   private async runOne(
     messageID: string,
     nextState: MessageState,
-    updater: UpsertMessageUpdater
+    updater: UpsertMessageUpdater,
+    restartCount: number
   ): Promise<void> {
+    if (this.isStale(restartCount)) {
+      return;
+    }
     const result = await this.runUpdater(messageID, updater);
+    if (this.isStale(restartCount, result.request_id)) {
+      return;
+    }
+    this.serviceManager.messageService.messageLoadingManager.end();
 
     const previousState = this.stateByID.get(messageID);
     const willFireReceive =
@@ -167,16 +176,37 @@ class MessageUpsertCoordinator {
     if (willFireReceive) {
       await this.firePreReceive(messageID, result);
     }
+    if (this.isStale(restartCount, result.request_id)) {
+      return;
+    }
 
     const refsBefore = this.snapshotLocalItemRefs(messageID);
     this.serviceManager.store.dispatch(actions.upsertMessage(result));
-    await this.fanOutChangedSlots(messageID, result, nextState, refsBefore);
+    await this.fanOutChangedSlots(
+      messageID,
+      result,
+      nextState,
+      refsBefore,
+      restartCount
+    );
+    if (this.isStale(restartCount, result.request_id)) {
+      return;
+    }
 
     this.stateByID.set(messageID, nextState);
 
     if (willFireReceive) {
-      await this.firePostReceiveAndFinalize(messageID, result);
+      await this.firePostReceiveAndFinalize(messageID, result, restartCount);
     }
+  }
+
+  private isStale(restartCount: number, requestID?: string): boolean {
+    return (
+      restartCount !== this.serviceManager.restartCount ||
+      this.serviceManager.messageService.isRequestFromPreviousConversation(
+        requestID
+      )
+    );
   }
 
   /**
@@ -283,7 +313,8 @@ class MessageUpsertCoordinator {
     messageID: string,
     result: MessageResponse,
     nextState: MessageState,
-    refsBefore: Map<string, LocalMessageItem>
+    refsBefore: Map<string, LocalMessageItem>,
+    restartCount: number
   ): Promise<void> {
     const { actions: chatActions, store } = this.serviceManager;
     const stateAfter = store.getState();
@@ -295,6 +326,9 @@ class MessageUpsertCoordinator {
         .map((item) => item.ui_state.id);
 
     for (const localID of topLevelLocalItemIDs) {
+      if (this.isStale(restartCount, result.request_id)) {
+        return;
+      }
       const localItem = stateAfter.allMessageItemsByID[localID];
       if (!localItem) {
         continue;
@@ -311,6 +345,10 @@ class MessageUpsertCoordinator {
         nextState
       );
 
+      if (this.isStale(restartCount, result.request_id)) {
+        return;
+      }
+
       await chatActions.handleCustomFooterSlot(localItem, result);
     }
   }
@@ -323,7 +361,8 @@ class MessageUpsertCoordinator {
    */
   private async firePostReceiveAndFinalize(
     messageID: string,
-    result: MessageResponse
+    result: MessageResponse,
+    restartCount: number
   ): Promise<void> {
     const receiveEvent: BusEventReceive = {
       type: BusEventType.RECEIVE,
@@ -334,7 +373,9 @@ class MessageUpsertCoordinator {
     } catch (error) {
       consoleError('upsertMessage: receive handler threw, continuing.', error);
     }
-    this.serviceManager.messageService.finalizeStreamingMessage(messageID);
+    if (!this.isStale(restartCount, result.request_id)) {
+      this.serviceManager.messageService.finalizeStreamingMessage(messageID);
+    }
   }
 }
 

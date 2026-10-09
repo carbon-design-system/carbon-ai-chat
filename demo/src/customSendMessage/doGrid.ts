@@ -9,12 +9,14 @@
 
 import {
   ChatInstance,
+  MessageRequest,
   MessageResponseTypes,
   WidthOptions,
 } from '@carbon/ai-chat';
 
-function doGrid(instance: ChatInstance) {
+function doGrid(instance: ChatInstance, requestID?: MessageRequest['id']) {
   instance.messaging.addMessage({
+    request_id: requestID,
     output: {
       generic: [
         {

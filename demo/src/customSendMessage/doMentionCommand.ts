@@ -149,6 +149,7 @@ async function doMentionCommandResponse(
   }
 
   await instance.messaging.addMessage({
+    request_id: request.id,
     output: {
       generic: [
         {

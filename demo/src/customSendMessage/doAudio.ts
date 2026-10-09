@@ -7,10 +7,15 @@
  *  @license
  */
 
-import { ChatInstance, MessageResponseTypes } from '@carbon/ai-chat';
+import {
+  ChatInstance,
+  MessageRequest,
+  MessageResponseTypes,
+} from '@carbon/ai-chat';
 
-function doAudio(instance: ChatInstance) {
+function doAudio(instance: ChatInstance, requestID?: MessageRequest['id']) {
   instance.messaging.addMessage({
+    request_id: requestID,
     output: {
       generic: [
         {
@@ -44,8 +49,12 @@ function doAudio(instance: ChatInstance) {
   });
 }
 
-function doAudioSoundCloud(instance: ChatInstance) {
+function doAudioSoundCloud(
+  instance: ChatInstance,
+  requestID?: MessageRequest['id']
+) {
   instance.messaging.addMessage({
+    request_id: requestID,
     output: {
       generic: [
         {
@@ -64,8 +73,9 @@ function doAudioSoundCloud(instance: ChatInstance) {
   });
 }
 
-function doAudioMp3(instance: ChatInstance) {
+function doAudioMp3(instance: ChatInstance, requestID?: MessageRequest['id']) {
   instance.messaging.addMessage({
+    request_id: requestID,
     output: {
       generic: [
         {

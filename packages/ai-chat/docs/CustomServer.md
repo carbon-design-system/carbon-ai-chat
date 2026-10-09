@@ -54,6 +54,43 @@ When you have a response, or part of one, push it to the screen through {@link C
 
 For the data shape in either flow, see [Message format](./MessageFormat.md).
 
+## Ignore replies from before a restart
+
+Set {@link MessageResponse.request_id | request_id} to the outgoing request's {@link MessageRequest.id | id} on every reply or update. Use the request passed to {@link PublicConfigMessaging.customSendMessage | customSendMessage}. The chat then drops replies to requests from before a restart or clear, even if their first response arrives late. You can keep using the same saved chat instance.
+
+```typescript
+import type { MessageResponse, PublicConfig } from '@carbon/ai-chat';
+
+export const config: PublicConfig = {
+  messaging: {
+    customSendMessage: async (request, options, instance) => {
+      const result = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(request),
+        signal: options.signal,
+      });
+      if (!result.ok) {
+        throw new Error(`Chat request failed: ${result.status}`);
+      }
+      const response: MessageResponse = await result.json();
+      await instance.messaging.addMessage({
+        ...response,
+        request_id: request.id, // Drops this reply if its conversation ended.
+      });
+    },
+  },
+};
+```
+
+For streaming, include the request ID on **every delivery**, starting with the first chunk:
+
+- Partial and complete item chunks: set `streaming_metadata.request_id` beside `response_id`.
+- Final response chunks: set `final_response.request_id`.
+- Upserts: set `request_id` on each message the updater returns.
+
+Omitted or unknown request IDs keep the prior behavior; they do not provide this protection. A welcome or background message with no request can still omit the field. Use the chat's generated request ID, and never reuse it across conversations. The chat remembers these IDs for the life of the instance; this tracking does not persist when you create a new instance.
+
 ## Cancelling request (stop streaming)
 
 While content streams, users can stop the stream in two ways:
@@ -121,7 +158,7 @@ async function customSendMessage(
       console.log('Request timed out');
     }
 
-    // Stop your streaming loop and prepare to send the final response
+    // Stop your stream. Only finalize it if the conversation still exists.
   };
   requestOptions.signal?.addEventListener('abort', abortHandler);
 
@@ -138,7 +175,9 @@ async function customSendMessage(
 
 ### 3. Deliver the final state
 
-When you detect cancellation, exit your streaming loop and move the message out of the streaming state. How you deliver that final state depends on your flow.
+When the user clicks "stop streaming," exit your loop and deliver the final state to clear the streaming UI. Use the patterns below inside your send callback, where `request` is the outgoing request.
+
+After a restart or clear, stop the loop and skip the final state. The conversation has already ended. If you still deliver it with the old request ID, the chat ignores it. Without that ID, your code must prevent late delivery after restart.
 
 #### With addMessageChunk
 
@@ -157,13 +196,15 @@ await instance.messaging.addMessageChunk({
   },
   streaming_metadata: {
     response_id: responseID,
+    request_id: request.id,
   },
 });
 
-// Always send the final response to clean up streaming UI state.
+// Finalize after the stop button; skip this after restart or clear.
 await instance.messaging.addMessageChunk({
   final_response: {
     id: responseID,
+    request_id: request.id,
     output: {
       generic: [
         {
@@ -186,6 +227,7 @@ await instance.messaging.upsertMessage(
   MessageState.COMPLETE,
   (prev) => ({
     ...prev!,
+    request_id: request.id,
     output: {
       generic:
         prev?.output.generic?.map((item) => ({
@@ -204,9 +246,9 @@ await instance.messaging.upsertMessage(
 
 - The "stop streaming" button appears when a streaming item has `cancellable: true`.
 - Clicking the button fires the abort signal (with reason {@link CancellationReason.STOP_STREAMING}), but it does not stop your streaming on its own.
-- You must listen for the abort signal, stop your streaming logic, and deliver the final state.
+- Listen for the abort signal and stop your streaming logic. After the stop button, deliver the final state. After restart or clear, skip it.
 - The abort signal also fires on conversation restarts and clears ({@link CancellationReason.CONVERSATION_RESTARTED}) and on timeouts ({@link CancellationReason.TIMEOUT}).
-- With {@link ChatInstanceMessaging.addMessageChunk | addMessageChunk}, the button stays visible but disabled until a {@link FinalResponseChunk | final response chunk} arrives. With {@link ChatInstanceMessaging.upsertMessage | upsertMessage}, it hides when the message reaches {@link MessageState.COMPLETE | complete} (or {@link MessageState.ERROR | error}). Always deliver the final state, even when cancelled, to clean up UI state.
+- With {@link ChatInstanceMessaging.addMessageChunk | addMessageChunk}, the button stays visible but disabled until a {@link FinalResponseChunk | final response chunk} arrives. With {@link ChatInstanceMessaging.upsertMessage | upsertMessage}, it hides when the message reaches {@link MessageState.COMPLETE | complete} (or {@link MessageState.ERROR | error}).
 - If a {@link CancellationReason.TIMEOUT | timeout} cancels the message, the UI marks it as errored.
 
 ## Welcome messages

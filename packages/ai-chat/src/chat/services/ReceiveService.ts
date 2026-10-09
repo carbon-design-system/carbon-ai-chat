@@ -68,6 +68,14 @@ class ReceiveService {
     _origin: 'addMessage' | 'chunk' = 'addMessage'
   ) {
     const { restartCount: initialRestartCount } = this.serviceManager;
+    const { messageService } = this.serviceManager;
+    if (
+      messageService.isRequestFromPreviousConversation(
+        message.request_id ?? requestMessage?.id
+      )
+    ) {
+      return;
+    }
 
     // Received messages should be given an id if they don't have one.
     if (!message.id) {
@@ -81,7 +89,10 @@ class ReceiveService {
     // Fire the pre:receive event. User code is allowed to modify the message at this point.
     await this.serviceManager.fire(preReceiveEvent);
 
-    if (initialRestartCount !== this.serviceManager.restartCount) {
+    if (
+      initialRestartCount !== this.serviceManager.restartCount ||
+      messageService.isRequestFromPreviousConversation(message.request_id)
+    ) {
       // If a restart occurred during the await above, we need to exit.
       return;
     }
@@ -128,7 +139,9 @@ class ReceiveService {
 
     // Record COMPLETE so a later `upsertMessage(id, MessageState.COMPLETE, ...)` for
     // the same id suppresses a second `pre:receive` / `receive`.
-    this.serviceManager.messageUpsertCoordinator.markComplete(message.id);
+    if (initialRestartCount === this.serviceManager.restartCount) {
+      this.serviceManager.messageUpsertCoordinator.markComplete(message.id);
+    }
   }
 
   private async processMessageResponse(
@@ -141,7 +154,7 @@ class ReceiveService {
     const initialRestartCount = this.serviceManager.restartCount;
 
     const output = fullMessage.output.generic;
-    fullMessage.request_id = requestMessage?.id;
+    fullMessage.request_id ??= requestMessage?.id;
     addDefaultsToMessage(fullMessage);
 
     store.dispatch(actions.setActiveResponseId(fullMessage.id));
@@ -189,6 +202,9 @@ class ReceiveService {
           config,
           initialRestartCount
         );
+        if (initialRestartCount !== this.serviceManager.restartCount) {
+          return;
+        }
       }
 
       if (isPause(messageItem)) {
@@ -204,6 +220,9 @@ class ReceiveService {
         fullMessage,
         MessageState.COMPLETE
       );
+      if (initialRestartCount !== this.serviceManager.restartCount) {
+        return;
+      }
       await this.serviceManager.slotEventService.handleCustomFooterSlot(
         localMessageItem,
         fullMessage

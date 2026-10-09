@@ -7,7 +7,11 @@
  *  @license
  */
 
-import { ChatInstance, CustomSendMessageOptions } from '@carbon/ai-chat';
+import {
+  ChatInstance,
+  CustomSendMessageOptions,
+  MessageRequest,
+} from '@carbon/ai-chat';
 
 import { doAudioSoundCloud, doAudioMp3 } from './doAudio';
 import { doButton } from './doButton';
@@ -61,45 +65,84 @@ const RESPONSE_MAP: Record<
   string,
   (
     instance: ChatInstance,
-    requestOptions?: CustomSendMessageOptions
+    requestOptions?: CustomSendMessageOptions,
+    requestID?: MessageRequest['id']
   ) => Promise<void> | void
 > = sortResponseMap({
-  'audio - soundcloud': (instance) => doAudioSoundCloud(instance),
-  'audio - mp3': (instance) => doAudioMp3(instance),
-  button: (instance) => doButton(instance),
-  card: (instance) => doCard(instance),
-  'workspace preview card (open start)': (instance) =>
-    doPreviewCard(instance, 'start'),
-  'workspace preview card (open end)': (instance) =>
-    doPreviewCard(instance, 'end'),
-  carousel: (instance) => doCarousel(instance),
-  code: (instance) => doCode(instance),
-  'code (stream)': (instance, requestOptions) =>
-    doCodeStreaming(instance, requestOptions),
-  'conversational search': (instance) => doConversationalSearch(instance),
-  'conversational search (stream)': (instance, requestOptions) =>
-    doConversationalSearchStreaming(instance, undefined, requestOptions),
-  date: (instance) => doDate(instance),
-  grid: (instance) => doGrid(instance),
-  'human agent': (instance) => doHumanAgent(instance),
-  iframe: (instance) => doIFrame(instance),
-  'inline error': (instance) => doError(instance),
-  image: (instance) => doImage(instance),
-  'unordered list': (instance) => doList(instance),
-  'option list': (instance) => doOption(instance),
-  'ordered list': (instance) => doOrderedList(instance),
-  'system message (inline)': (instance) => doSystemMessage(instance, true),
-  'system message (stand alone, default variant)': (instance) =>
-    doSystemMessage(instance, false, 'default'),
-  'system message (stand alone, date variant)': (instance) =>
-    doSystemMessage(instance, false, 'date'),
-  'system message (stand alone, agent variant)': (instance) =>
-    doSystemMessage(instance, false, 'agent'),
-  table: (instance) => doTable(instance),
-  'table (stream)': (instance, requestOptions) =>
-    doTableStreaming(instance, requestOptions),
-  text: (instance) => doText(instance),
-  'text (stream)': (instance, requestOptions) =>
+  'audio - soundcloud': (instance, _requestOptions, requestID) =>
+    doAudioSoundCloud(instance, requestID),
+  'audio - mp3': (instance, _requestOptions, requestID) =>
+    doAudioMp3(instance, requestID),
+  button: (instance, _requestOptions, requestID) =>
+    doButton(instance, requestID),
+  card: (instance, _requestOptions, requestID) => doCard(instance, requestID),
+  'workspace preview card (open start)': (
+    instance,
+    _requestOptions,
+    requestID
+  ) => doPreviewCard(instance, 'start', requestID),
+  'workspace preview card (open end)': (instance, _requestOptions, requestID) =>
+    doPreviewCard(instance, 'end', requestID),
+  carousel: (instance, _requestOptions, requestID) =>
+    doCarousel(instance, requestID),
+  code: (instance, _requestOptions, requestID) => doCode(instance, requestID),
+  'code (stream)': (instance, requestOptions, requestID) =>
+    doCodeStreaming(instance, requestOptions, requestID),
+  'conversational search': (instance, _requestOptions, requestID) =>
+    doConversationalSearch(instance, requestID),
+  'conversational search (stream)': (instance, requestOptions, requestID) =>
+    doConversationalSearchStreaming(
+      instance,
+      undefined,
+      requestOptions,
+      requestID
+    ),
+  date: (instance, _requestOptions, requestID) => doDate(instance, requestID),
+  grid: (instance, _requestOptions, requestID) => doGrid(instance, requestID),
+  'human agent': (instance, _requestOptions, requestID) =>
+    doHumanAgent(instance, requestID),
+  iframe: (instance, _requestOptions, requestID) =>
+    doIFrame(instance, requestID),
+  'inline error': (instance, _requestOptions, requestID) =>
+    doError(instance, requestID),
+  image: (instance, _requestOptions, requestID) => doImage(instance, requestID),
+  'unordered list': (instance, _requestOptions, requestID) =>
+    doList(instance, requestID),
+  'option list': (instance, _requestOptions, requestID) =>
+    doOption(instance, requestID),
+  'ordered list': (instance, _requestOptions, requestID) =>
+    doOrderedList(instance, requestID),
+  'system message (inline)': (instance, _requestOptions, requestID) =>
+    doSystemMessage(instance, true, undefined, requestID),
+  'system message (stand alone, default variant)': (
+    instance,
+    _requestOptions,
+    requestID
+  ) => doSystemMessage(instance, false, 'default', requestID),
+  'system message (stand alone, date variant)': (
+    instance,
+    _requestOptions,
+    requestID
+  ) => doSystemMessage(instance, false, 'date', requestID),
+  'system message (stand alone, agent variant)': (
+    instance,
+    _requestOptions,
+    requestID
+  ) => doSystemMessage(instance, false, 'agent', requestID),
+  table: (instance, _requestOptions, requestID) => doTable(instance, requestID),
+  'table (stream)': (instance, requestOptions, requestID) =>
+    doTableStreaming(instance, requestOptions, requestID),
+  text: (instance, _requestOptions, requestID) =>
+    doText(
+      instance,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      requestID
+    ),
+  'text (stream)': (instance, requestOptions, requestID) =>
     doTextStreaming(
       instance,
       undefined,
@@ -109,41 +152,59 @@ const RESPONSE_MAP: Record<
       undefined,
       undefined,
       undefined,
-      requestOptions
+      requestOptions,
+      requestID
     ),
-  'text (stream early resolve)': (instance, requestOptions) =>
-    doTextStreamingEarlyResolve(instance, requestOptions),
-  'text with feedback': (instance) => doTextWithFeedback(instance),
-  'text with feedback (stream)': (instance, requestOptions) =>
-    doTextWithFeedbackStreaming(instance, requestOptions),
-  'text from watsonx agent': (instance) =>
-    doTextWithWatsonAgentProfile(instance),
-  'text from third party human': (instance) => doTextWithHumanProfile(instance),
-  'text from third party bot': (instance) =>
-    doTextWithNonWatsonAssistantProfile(instance),
-  'text (stream) from third party bot': (instance, requestOptions) =>
+  'text (stream early resolve)': (instance, requestOptions, requestID) =>
+    doTextStreamingEarlyResolve(instance, requestOptions, requestID),
+  'text with feedback': (instance, _requestOptions, requestID) =>
+    doTextWithFeedback(instance, requestID),
+  'text with feedback (stream)': (instance, requestOptions, requestID) =>
+    doTextWithFeedbackStreaming(instance, requestOptions, requestID),
+  'text from watsonx agent': (instance, _requestOptions, requestID) =>
+    doTextWithWatsonAgentProfile(instance, undefined, undefined, requestID),
+  'text from third party human': (instance, _requestOptions, requestID) =>
+    doTextWithHumanProfile(instance, undefined, undefined, requestID),
+  'text from third party bot': (instance, _requestOptions, requestID) =>
+    doTextWithNonWatsonAssistantProfile(
+      instance,
+      undefined,
+      undefined,
+      requestID
+    ),
+  'text (stream) from third party bot': (instance, requestOptions, requestID) =>
     doTextStreamingWithNonWatsonAssistantProfile(
       instance,
       undefined,
       undefined,
       undefined,
-      requestOptions
+      requestOptions,
+      requestID
     ),
-  'text with chain of thought': (instance) => doTextChainOfThought(instance),
-  'text (stream) with chain of thought': (instance, requestOptions) =>
+  'text with chain of thought': (instance, _requestOptions, requestID) =>
+    doTextChainOfThought(instance, undefined, undefined, undefined, requestID),
+  'text (stream) with chain of thought': (
+    instance,
+    requestOptions,
+    requestID
+  ) =>
     doTextChainOfThoughtStreaming(
       instance,
       undefined,
       undefined,
       undefined,
       undefined,
-      requestOptions
+      requestOptions,
+      requestID
     ),
-  'text (stream) with reasoning steps': (instance, requestOptions) =>
-    doTextWithReasoningStepsStreaming(instance, requestOptions),
-  'text (stream) with single reasoning trace': (instance, requestOptions) =>
-    doTextWithReasoningTraceStreaming(instance, requestOptions),
-  'text (delayed response)': async (instance, requestOptions) => {
+  'text (stream) with reasoning steps': (instance, requestOptions, requestID) =>
+    doTextWithReasoningStepsStreaming(instance, requestOptions, requestID),
+  'text (stream) with single reasoning trace': (
+    instance,
+    requestOptions,
+    requestID
+  ) => doTextWithReasoningTraceStreaming(instance, requestOptions, requestID),
+  'text (delayed response)': async (instance, requestOptions, requestID) => {
     const signal = requestOptions?.signal;
 
     // Check if already aborted
@@ -163,7 +224,15 @@ const RESPONSE_MAP: Record<
           return;
         }
         instance.updateIsMessageLoadingCounter('decrease');
-        doText(instance);
+        doText(
+          instance,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          requestID
+        );
         resolve();
       }, 3000);
 
@@ -176,7 +245,11 @@ const RESPONSE_MAP: Record<
       signal?.addEventListener('abort', abortHandler, { once: true });
     });
   },
-  'text (delayed streaming response)': async (instance, requestOptions) => {
+  'text (delayed streaming response)': async (
+    instance,
+    requestOptions,
+    requestID
+  ) => {
     const signal = requestOptions?.signal;
 
     // Check if already aborted
@@ -206,7 +279,8 @@ const RESPONSE_MAP: Record<
             undefined,
             undefined,
             undefined,
-            requestOptions
+            requestOptions,
+            requestID
           );
           resolve();
         } catch (error) {
@@ -223,18 +297,19 @@ const RESPONSE_MAP: Record<
       signal?.addEventListener('abort', abortHandler, { once: true });
     });
   },
-  'text (consecutive responses)': (instance) => {
+  'text (consecutive responses)': (instance, _requestOptions, requestID) => {
     instance.updateIsMessageLoadingCounter('increase', 'Thinking...');
     setTimeout(() => {
       instance.updateIsMessageLoadingCounter('decrease');
-      doTextWithFeedback(instance);
+      doTextWithFeedback(instance, requestID);
       setTimeout(() => {
-        doTextWithFeedback(instance);
+        doTextWithFeedback(instance, requestID);
       }, 1000);
     }, 3000);
   },
-  html: (instance) => doHTML(instance),
-  'html (stream)': (instance, requestOptions) =>
+  html: (instance, _requestOptions, requestID) =>
+    doHTML(instance, undefined, undefined, undefined, requestID),
+  'html (stream)': (instance, requestOptions, requestID) =>
     doHTMLStreaming(
       instance,
       undefined,
@@ -242,14 +317,19 @@ const RESPONSE_MAP: Record<
       undefined,
       undefined,
       undefined,
-      requestOptions
+      requestOptions,
+      requestID
     ),
-  user_defined: (instance) => doUserDefined(instance),
-  'user_defined (stream)': (instance, requestOptions) =>
-    doUserDefinedStreaming(instance, requestOptions),
-  'video - youtube': (instance) => doVideoYouTube(instance),
-  'video - vimeo': (instance) => doVideoVimeo(instance),
-  'video - kaltura': (instance) => doVideoKaltura(instance),
+  user_defined: (instance, _requestOptions, requestID) =>
+    doUserDefined(instance, requestID),
+  'user_defined (stream)': (instance, requestOptions, requestID) =>
+    doUserDefinedStreaming(instance, requestOptions, requestID),
+  'video - youtube': (instance, _requestOptions, requestID) =>
+    doVideoYouTube(instance, requestID),
+  'video - vimeo': (instance, _requestOptions, requestID) =>
+    doVideoVimeo(instance, requestID),
+  'video - kaltura': (instance, _requestOptions, requestID) =>
+    doVideoKaltura(instance, requestID),
 });
 
 export { RESPONSE_MAP };

@@ -146,8 +146,7 @@ class InboundStreamingCoordinator {
   public validateChunkGeneration(
     messageID: string | undefined,
     messageGenerations: Map<string, number>,
-    currentGeneration: number,
-    hideStopStreaming: () => void
+    currentGeneration: number
   ): boolean {
     if (!messageID) {
       return true;
@@ -158,7 +157,6 @@ class InboundStreamingCoordinator {
       messageGeneration !== undefined &&
       messageGeneration !== currentGeneration
     ) {
-      hideStopStreaming();
       return false;
     }
 

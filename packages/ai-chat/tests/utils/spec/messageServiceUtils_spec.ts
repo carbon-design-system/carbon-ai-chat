@@ -43,4 +43,32 @@ describe('MessageLoadingManager', () => {
     jest.advanceTimersByTime(250);
     expect(onTimeout).toHaveBeenCalledTimes(1);
   });
+
+  it('ends the previous run when a new one starts', () => {
+    const manager = new MessageLoadingManager();
+    const onExceededFirst = jest.fn();
+    const onEndFirst = jest.fn();
+    const onTimeoutFirst = jest.fn();
+    const onExceededSecond = jest.fn();
+
+    manager.start(onExceededFirst, onEndFirst, onTimeoutFirst, 100, 200);
+    manager.start(onExceededSecond, jest.fn(), jest.fn(), 100, 0);
+    jest.advanceTimersByTime(250);
+
+    expect(onEndFirst).toHaveBeenCalledWith(false);
+    expect(onExceededFirst).not.toHaveBeenCalled();
+    expect(onTimeoutFirst).not.toHaveBeenCalled();
+    expect(onExceededSecond).toHaveBeenCalledTimes(1);
+  });
+
+  it('reports that the previous run exceeded silent loading when a new one starts', () => {
+    const manager = new MessageLoadingManager();
+    const onEndFirst = jest.fn();
+
+    manager.start(jest.fn(), onEndFirst, jest.fn(), 100, 0);
+    jest.advanceTimersByTime(150);
+    manager.start(jest.fn(), jest.fn(), jest.fn(), 100, 0);
+
+    expect(onEndFirst).toHaveBeenCalledWith(true);
+  });
 });

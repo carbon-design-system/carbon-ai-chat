@@ -272,6 +272,9 @@ class HydrationService {
 
       serviceManager.restartCount++;
 
+      // A request that got no reply has already left the queue, so the cancel below never ends its timers.
+      serviceManager.messageService.messageLoadingManager.end();
+
       if (
         state.config.public.messaging.messageLoadingIndicatorTimeoutSecs !== 0
       ) {
