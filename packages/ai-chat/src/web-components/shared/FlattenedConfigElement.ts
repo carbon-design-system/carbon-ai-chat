@@ -65,6 +65,39 @@ interface FlattenedConfigElement extends Partial<PublicConfig> {}
 /**
  * Base class contributing all flattened `PublicConfig` reactive properties.
  * Not registered as a custom element — only the concrete subclasses are.
+ *
+ * The `@attr` tags below exist solely so that web-component-analyzer can
+ * discover the HTML attributes derived from {@link FLATTENED_PUBLIC_CONFIG_FIELDS}.
+ * Lit registers them at runtime via `static properties = buildFlattenedProperties()`,
+ * which WCA cannot statically analyze. Keep this list in sync with that table
+ * (property-only fields with `attribute: false` are intentionally omitted).
+ *
+ * @attr ai-disabled
+ * @attr ai-enabled
+ * @attr assistant-name
+ * @attr debug
+ * @attr disclaimer
+ * @attr disable-custom-element-mobile-enhancements
+ * @attr expose-service-manager-for-testing
+ * @attr header
+ * @attr hide-avatar
+ * @attr history
+ * @attr homescreen
+ * @attr inject-carbon-theme
+ * @attr input
+ * @attr is-readonly
+ * @attr keyboardshortcuts
+ * @attr launcher
+ * @attr layout
+ * @attr locale
+ * @attr messaging
+ * @attr namespace
+ * @attr open-chat-by-default
+ * @attr persist-feedback
+ * @attr service-desk
+ * @attr should-sanitize-html
+ * @attr should-take-focus-if-opens-automatically
+ * @attr strings
  */
 abstract class FlattenedConfigElement extends LitElement {
   static properties: PropertyDeclarations = buildFlattenedProperties();

@@ -82,7 +82,7 @@
     "@codemirror/lint": "^6.9.2",
     "@codemirror/state": "^6.5.2",
     "@codemirror/view": "^6.38.5",
-    "@ibm/telemetry-js": "^1.10.2",
+    "@ibm/telemetry-js": "^1.12.0",
     "@lezer/highlight": "^1.1.6",
     "@lit/react": "^1.0.8",
     "@tiptap/core": "^3.22.5",
