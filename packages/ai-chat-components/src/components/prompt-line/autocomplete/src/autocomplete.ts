@@ -232,6 +232,9 @@ class AutocompleteElement extends LitElement {
    */
   private _moveAnnouncePending: number | null = null;
 
+  /** Cached flat item list, rebuilt at the start of every render cycle. */
+  private _flatList: FlatEntry[] = [];
+
   /** Whether the open announcement has already fired for this show. */
   private _openAnnounced = false;
 
@@ -275,8 +278,7 @@ class AutocompleteElement extends LitElement {
       changedProperties.has('items') || changedProperties.has('groups');
 
     if (itemsChanged) {
-      const flatList = this._buildFlatList();
-      const totalItems = flatList.length;
+      const totalItems = this._flatList.length;
       if (totalItems === 0) {
         this._announcer.announce(this.i18n.noSuggestions);
         this._openAnnounced = false;
@@ -293,9 +295,8 @@ class AutocompleteElement extends LitElement {
 
   /**
    * Build a flat list of all items in render order: ungrouped items first,
-   * then each group's items in group order. Single source of truth for the
-   * index ↔ item mapping used by `updated()`, `render()`, `_handleKeydown()`,
-   * `_handleItemMouseEnter()`, and `_handleItemClick()`.
+   * then each group's items in group order. Stored in `_flatList` at the start
+   * of every render cycle; callers read `this._flatList` directly.
    */
   private _buildFlatList(): FlatEntry[] {
     const result: FlatEntry[] = [];
@@ -346,7 +347,7 @@ class AutocompleteElement extends LitElement {
   }
 
   private _handleKeydown = (event: KeyboardEvent) => {
-    const list = this._buildFlatList();
+    const list = this._flatList;
     const totalItems = list.length;
     if (totalItems === 0) {
       return;
@@ -357,7 +358,7 @@ class AutocompleteElement extends LitElement {
         event.preventDefault();
         this._focusedIndex = this._navigateTo(list, this._focusedIndex, 1);
         this._setUserHasNavigated(true);
-        this._scheduleMoveAnnouncement(this._focusedIndex, totalItems);
+        this._scheduleMoveAnnouncement(this._focusedIndex, totalItems, list);
         this._scrollActiveItemIntoView();
         break;
 
@@ -365,7 +366,7 @@ class AutocompleteElement extends LitElement {
         event.preventDefault();
         this._focusedIndex = this._navigateTo(list, this._focusedIndex, -1);
         this._setUserHasNavigated(true);
-        this._scheduleMoveAnnouncement(this._focusedIndex, totalItems);
+        this._scheduleMoveAnnouncement(this._focusedIndex, totalItems, list);
         this._scrollActiveItemIntoView();
         break;
 
@@ -383,7 +384,7 @@ class AutocompleteElement extends LitElement {
           this._focusedIndex = target;
         }
         this._setUserHasNavigated(true);
-        this._scheduleMoveAnnouncement(this._focusedIndex, totalItems);
+        this._scheduleMoveAnnouncement(this._focusedIndex, totalItems, list);
         this._scrollActiveItemIntoView();
         break;
       }
@@ -392,7 +393,7 @@ class AutocompleteElement extends LitElement {
         event.preventDefault();
         this._focusedIndex = this._navigateTo(list, this._focusedIndex, 1);
         this._setUserHasNavigated(true);
-        this._scheduleMoveAnnouncement(this._focusedIndex, totalItems);
+        this._scheduleMoveAnnouncement(this._focusedIndex, totalItems, list);
         this._scrollActiveItemIntoView();
         break;
 
@@ -415,13 +416,17 @@ class AutocompleteElement extends LitElement {
    * Schedule a move announcement, replacing any pending one so rapid arrow
    * holds only speak the final position.
    */
-  private _scheduleMoveAnnouncement(index: number, total: number): void {
+  private _scheduleMoveAnnouncement(
+    index: number,
+    total: number,
+    list: FlatEntry[]
+  ): void {
     if (this._moveAnnouncePending !== null) {
       clearTimeout(this._moveAnnouncePending);
     }
     this._moveAnnouncePending = window.setTimeout(() => {
       this._moveAnnouncePending = null;
-      const entry = this._buildFlatList()[index];
+      const entry = list[index];
       if (!entry) {
         return;
       }
@@ -461,7 +466,7 @@ class AutocompleteElement extends LitElement {
   };
 
   private _handleItemMouseEnter(index: number): void {
-    if (this._buildFlatList()[index]?.item.disabled) {
+    if (this._flatList[index]?.item.disabled) {
       return;
     }
     this._focusedIndex = index;
@@ -525,7 +530,7 @@ class AutocompleteElement extends LitElement {
   }
 
   private _handleItemClick(index: number) {
-    const item = this._buildFlatList()[index]?.item;
+    const item = this._flatList[index]?.item;
     if (!item || item.disabled) {
       return;
     }
@@ -659,7 +664,8 @@ class AutocompleteElement extends LitElement {
   }
 
   render() {
-    const flatList = this._buildFlatList();
+    this._flatList = this._buildFlatList();
+    const flatList = this._flatList;
 
     // Always render the live regions so the last announcement is not lost
     // when the list empties (e.g. "No suggestions." or "Suggestions closed.").

@@ -1510,7 +1510,7 @@ describe('cds-aichat-autocomplete', () => {
       });
       const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
 
-      for (const key of ['ArrowDown', 'ArrowUp', 'Tab']) {
+      for (const key of ['ArrowDown', 'ArrowUp', 'Tab', 'Home', 'End']) {
         el.dispatchEvent(
           new KeyboardEvent('keydown', { key, bubbles: true, composed: true })
         );
