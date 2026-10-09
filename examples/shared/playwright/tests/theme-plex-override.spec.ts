@@ -5,7 +5,17 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-/** Tests theme plex override mounting and its host-visible behavior. */
+/**
+ * Tests: Carbon AI Chat — Theme Plex override, detailed behavior.
+ *
+ * Runs against both the React and Web Components examples. Each project
+ * checks the same behavior through its own host application.
+ *
+ * Covers this example's one concern — swapping the chat's IBM Plex font for a
+ * bundled replacement through the `@carbon/styles` font configuration — plus
+ * the baseline: it mounts with no console errors. The font test checks the
+ * replacement face loads and the prompt's computed font family uses it.
+ */
 
 import { PageObjectId } from '@carbon/ai-chat/server';
 import { expect, openExample, test, waitForChatReady } from '../helpers';
