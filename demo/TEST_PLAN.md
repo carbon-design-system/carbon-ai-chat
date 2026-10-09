@@ -119,6 +119,12 @@ Set **Chat Configuration → Markdown → Table rendering** to `customRenderers.
 - [ ] That node is a child of the outermost chat element, not of the markdown element inside the shadow root — check in devtools. The tree that element sits in differs by shape: the document for the React ones, `<demo-app>`'s shadow root for the web-component ones. Add a rule to that root and confirm it reaches the node.
 - [ ] Send **table (stream)** and confirm one node is reused as chunks arrive, rather than a new one per chunk.
 
+#### Auto-scroll after content resizes
+
+- [ ] After **user_defined (stream)** completes, grow and shrink its custom content. The request stays pinned; scrolling away stops re-pinning.
+- [ ] Resize older content above the latest request. The latest request stays at the same viewport offset.
+- [ ] Stream text, reasoning steps, and code. Expand and collapse reasoning steps; the request stays pinned.
+
 ### Track 3: Mobile & Non-Chrome Browser Support
 
 **Focus:** Smoke testing across browsers, emphasis on mobile.

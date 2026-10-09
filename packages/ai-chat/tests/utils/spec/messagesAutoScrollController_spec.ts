@@ -9,7 +9,6 @@
 
 import {
   applySafariScrollAnchoringRestore,
-  computeGrowOnlySpacerHeight,
   didClearAllMessages,
   getAnchoringRestoreTarget,
   getMessageArrayChangeFlags,
@@ -848,78 +847,6 @@ describe('applySafariScrollAnchoringRestore', () => {
   });
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// computeGrowOnlySpacerHeight (the key grow-only invariant, extracted in Part A)
-// ─────────────────────────────────────────────────────────────────────────────
-
-describe('computeGrowOnlySpacerHeight', () => {
-  it('(a) growth case: content taller than pin+viewport → returns currentSpacerHeight unchanged (never shrinks)', () => {
-    // contentWithoutSpacer = scrollHeight - currentSpacerHeight = 2000 - 100 = 1900
-    // minSpacerForPin = max(0, pinnedScrollTop(300) + clientHeight(500) - 1900) = max(0, -1100) = 0
-    // result = max(currentSpacerHeight(100), 0) = 100 → unchanged
-    expect(
-      computeGrowOnlySpacerHeight({
-        scrollHeight: 2000,
-        clientHeight: 500,
-        currentSpacerHeight: 100,
-        pinnedScrollTop: 300,
-      })
-    ).toBe(100);
-  });
-
-  it('(b) grow case: content shorter than pin+viewport → returns exactly pinnedScrollTop + clientHeight - contentWithoutSpacer', () => {
-    // contentWithoutSpacer = scrollHeight - currentSpacerHeight = 700 - 100 = 600
-    // minSpacerForPin = max(0, pinnedScrollTop(300) + clientHeight(500) - 600) = max(0, 200) = 200
-    // result = max(currentSpacerHeight(100), 200) = 200
-    const contentWithoutSpacer = 700 - 100;
-    const expected = 300 + 500 - contentWithoutSpacer; // 200
-    expect(
-      computeGrowOnlySpacerHeight({
-        scrollHeight: 700,
-        clientHeight: 500,
-        currentSpacerHeight: 100,
-        pinnedScrollTop: 300,
-      })
-    ).toBe(expected);
-  });
-
-  it('(c) invariant: never returns less than currentSpacerHeight', () => {
-    // A case where the pin-based minimum is well below the current spacer.
-    // contentWithoutSpacer = 5000 - 400 = 4600; minSpacerForPin = max(0, 100 + 500 - 4600) = 0.
-    // result must still be >= currentSpacerHeight (400).
-    const result = computeGrowOnlySpacerHeight({
-      scrollHeight: 5000,
-      clientHeight: 500,
-      currentSpacerHeight: 400,
-      pinnedScrollTop: 100,
-    });
-    expect(result).toBe(400);
-    expect(result).toBeGreaterThanOrEqual(400);
-  });
-
-  it('clamps the pin-based minimum at 0 (never negative)', () => {
-    const result = computeGrowOnlySpacerHeight({
-      scrollHeight: 10000,
-      clientHeight: 500,
-      currentSpacerHeight: 0,
-      pinnedScrollTop: 0,
-    });
-    expect(result).toBe(0);
-  });
-});
-
-// ─────────────────────────────────────────────────────────────────────────────
-// MessagesScrollController (class-level, driven by a mock ScrollHost)
-//
-// jsdom notes:
-//  - tests/setup.ts mocks ResizeObserver as a no-op (callbacks NEVER fire), so we
-//    do NOT attempt to trigger the real message ResizeObserver here. The grow-only
-//    spacer MATH is covered by the computeGrowOnlySpacerHeight tests above; the
-//    live browser is what actually exercises the ResizeObserver → grow-only path.
-//  - We use a real detached HTMLElement as the scroll container so real
-//    addEventListener / dispatchEvent work for the settle-reconcile test.
-// ─────────────────────────────────────────────────────────────────────────────
-
 /**
  * Builds a fake scroll container backed by a real detached <div> so that
  * addEventListener/removeEventListener and dispatchEvent behave for real, while
@@ -989,6 +916,7 @@ function createHarness(geom?: Parameters<typeof createFakeContainer>[0]) {
     getScrollContainer: () => container,
     getSpacer: () => spacer,
     setSpacerHeight,
+    setScrollHeightFloor: jest.fn(),
     getMessages: () => messages,
     onScrollGeometryChanged: jest.fn(),
   };
@@ -1067,6 +995,7 @@ describe('MessagesScrollController', () => {
       getScrollContainer: () => null,
       getSpacer: () => null,
       setSpacerHeight: jest.fn(),
+      setScrollHeightFloor: jest.fn(),
       getMessages: () => [],
       onScrollGeometryChanged: jest.fn(),
     };
@@ -1142,190 +1071,6 @@ describe('MessagesScrollController', () => {
     // deficit = ceil((floor(200-60)=140 + clientHeight 500) - spacerOffset(400)) = 240
     expect(h.setSpacerHeight).toHaveBeenCalledWith(240);
     expect(h.container.scrollTop).toBe(140);
-
-    controller.disconnect();
-  });
-
-  it('settle reconcile: a bubbled reasoning-animation-end event triggers a spacer reconcile on the next frame', async () => {
-    const h = createHarness({
-      scrollTop: 0,
-      clientHeight: 500,
-      scrollHeight: 1000,
-      offsetHeight: 500,
-      rectTop: 0,
-    });
-
-    const pinnable = createRealPinnableMessage('req-1', 200, 80);
-    const placeholder = createPortableMessage({ id: 'ui-0' });
-
-    const controller = new MessagesScrollController(h.host);
-    h.setMessages([]);
-    controller.connect();
-
-    // Pin first so there is a pinnedMessageId / pinnedElement for the reconcile to act on.
-    h.setMessages([placeholder, pinnable]);
-    controller.onHostUpdated(null);
-    await flushFrames();
-
-    expect(h.setSpacerHeight).toHaveBeenCalled();
-    h.setSpacerHeight.mockClear();
-
-    // Dispatch the composed settle event from within the subtree; it bubbles to the container.
-    h.container.dispatchEvent(
-      new CustomEvent('reasoning-animation-end', { bubbles: true })
-    );
-
-    // handleContentLayoutSettled schedules the reconcile on the next frame.
-    await flushFrames();
-
-    // reconcileSpacerAfterLayoutSettled ran and wrote the spacer again.
-    expect(h.setSpacerHeight).toHaveBeenCalled();
-
-    controller.disconnect();
-  });
-
-  it('settle reconcile: does NOT re-pin (yank down) after the user manually scrolled up', async () => {
-    const h = createHarness({
-      scrollTop: 0,
-      clientHeight: 500,
-      scrollHeight: 1000,
-      offsetHeight: 500,
-      rectTop: 0,
-    });
-
-    const pinnable = createRealPinnableMessage('req-1', 200, 80);
-    const placeholder = createPortableMessage({ id: 'ui-0' });
-
-    const controller = new MessagesScrollController(h.host);
-    h.setMessages([]);
-    controller.connect();
-
-    // Pin first: the container scrolls to the pin (140) — see the pin-flow test above.
-    h.setMessages([placeholder, pinnable]);
-    controller.onHostUpdated(null);
-    await flushFrames();
-    expect(h.container.scrollTop).toBe(140);
-
-    // The user manually scrolls UP, above the pin.
-    h.container.scrollTop = 0;
-
-    // A new reasoning step settles and bubbles its composed event to the container.
-    h.container.dispatchEvent(
-      new CustomEvent('reasoning-animation-end', { bubbles: true })
-    );
-    await flushFrames();
-
-    // The reconcile must preserve the user's position, not yank them back to the pin.
-    // (maxScrollTop = 1000 - 500 = 500, so scrollTop 0 is a genuine scroll-up, not a
-    // browser cap.)
-    expect(h.container.scrollTop).toBe(0);
-
-    controller.disconnect();
-  });
-
-  it('collapse announcement: restores the pin synchronously when the shrink capped scrollTop', async () => {
-    // Geometry chosen so that after the collapse the content can no longer reach the pin:
-    // scrollHeight 600 with clientHeight 500 caps scrollTop at 100, below the 140 pin.
-    const h = createHarness({
-      scrollTop: 0,
-      clientHeight: 500,
-      scrollHeight: 1000,
-      offsetHeight: 500,
-      rectTop: 0,
-    });
-
-    const pinnable = createRealPinnableMessage('req-1', 200, 80);
-    const controller = new MessagesScrollController(h.host);
-    h.setMessages([]);
-    controller.connect();
-    h.setMessages([createPortableMessage({ id: 'ui-0' }), pinnable]);
-    controller.onHostUpdated(null);
-    await flushFrames();
-    expect(h.container.scrollTop).toBe(140); // pinned
-    h.setSpacerHeight.mockClear();
-
-    // Simulate the browser capping scrollTop against the collapsed content.
-    h.container.scrollTop = 100;
-
-    h.container.dispatchEvent(
-      new CustomEvent('reasoning-animation-start', {
-        bubbles: true,
-        detail: { open: false },
-      })
-    );
-
-    // Handled synchronously — the pin is restored in the same task, before any paint.
-    expect(h.container.scrollTop).toBe(140);
-
-    controller.disconnect();
-  });
-
-  it('collapse announcement: leaves the user alone when they have deliberately scrolled away', async () => {
-    const h = createHarness({
-      scrollTop: 0,
-      clientHeight: 500,
-      scrollHeight: 1000,
-      offsetHeight: 500,
-      rectTop: 0,
-    });
-
-    const pinnable = createRealPinnableMessage('req-1', 200, 80);
-    const controller = new MessagesScrollController(h.host);
-    h.setMessages([]);
-    controller.connect();
-    h.setMessages([createPortableMessage({ id: 'ui-0' }), pinnable]);
-    controller.onHostUpdated(null);
-    await flushFrames();
-
-    // User scrolls up and the scroll listener latches the scroll-away.
-    h.container.scrollTop = 0;
-    h.container.dispatchEvent(new Event('scroll'));
-
-    h.container.dispatchEvent(
-      new CustomEvent('reasoning-animation-start', {
-        bubbles: true,
-        detail: { open: false },
-      })
-    );
-
-    expect(h.container.scrollTop).toBe(0); // not yanked back to the pin
-
-    controller.disconnect();
-  });
-
-  it('settle reconcile: a scroll-away latched by the scroll listener suppresses a re-pin resolveStreamEndAction would otherwise make', async () => {
-    const h = createHarness({
-      scrollTop: 0,
-      clientHeight: 500,
-      scrollHeight: 1000,
-      offsetHeight: 500,
-      rectTop: 0,
-    });
-
-    const pinnable = createRealPinnableMessage('req-1', 200, 80);
-    const placeholder = createPortableMessage({ id: 'ui-0' });
-
-    const controller = new MessagesScrollController(h.host);
-    h.setMessages([]);
-    controller.connect();
-
-    h.setMessages([placeholder, pinnable]);
-    controller.onHostUpdated(null);
-    await flushFrames();
-    expect(h.container.scrollTop).toBe(140); // pin
-
-    // Scroll to 80: within resolveStreamEndAction's 60px re-pin band (|80-140|=60 → re_pin),
-    // but > 50px above the pin with room below (maxScrollTop 500) → a deliberate scroll-away.
-    h.container.scrollTop = 80;
-    h.container.dispatchEvent(new Event('scroll'));
-
-    // A reasoning step settles — without the latched flag this would re-pin to 140.
-    h.container.dispatchEvent(
-      new CustomEvent('reasoning-animation-end', { bubbles: true })
-    );
-    await flushFrames();
-
-    expect(h.container.scrollTop).toBe(80); // preserved, not yanked to 140
 
     controller.disconnect();
   });
@@ -1441,5 +1186,278 @@ describe('MessagesScrollController', () => {
     expect(h.container.scrollTop).toBe(140);
 
     controller.disconnect();
+  });
+});
+
+describe('message resize observation', () => {
+  let observers: Array<{
+    callback: ResizeObserverCallback;
+    observe: jest.Mock;
+    unobserve: jest.Mock;
+    disconnect: jest.Mock;
+  }>;
+
+  beforeEach(() => {
+    observers = [];
+    jest.spyOn(global, 'ResizeObserver').mockImplementation((callback) => {
+      const observer = {
+        callback,
+        observe: jest.fn(),
+        unobserve: jest.fn(),
+        disconnect: jest.fn(),
+      };
+      observers.push(observer);
+      return observer;
+    });
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  async function createResizeHarness(streaming = false) {
+    const harness = createHarness();
+    let contentHeight = 1000;
+    let requestTop = 360;
+    let spacerHeight = 0;
+    let scrollHeightFloor = 0;
+    let scrollTop = 0;
+    (harness.host.setScrollHeightFloor as jest.Mock).mockImplementation(
+      (height) => {
+        scrollHeightFloor = height;
+      }
+    );
+    Object.defineProperties(harness.container, {
+      scrollHeight: {
+        get: () =>
+          Math.max(500, scrollHeightFloor, contentHeight + spacerHeight),
+      },
+      scrollTop: {
+        get: () => {
+          scrollTop = Math.min(scrollTop, harness.container.scrollHeight - 500);
+          return scrollTop;
+        },
+        set: (value: number) => {
+          scrollTop = Math.max(
+            0,
+            Math.min(value, harness.container.scrollHeight - 500)
+          );
+        },
+      },
+    });
+    harness.spacer.getBoundingClientRect = () =>
+      ({ top: contentHeight - harness.container.scrollTop }) as DOMRect;
+    harness.setSpacerHeight.mockImplementation((height) => {
+      spacerHeight = height;
+    });
+    const request = createRealPinnableMessage('request', 360, 40);
+    request.element.getBoundingClientRect = () =>
+      ({
+        top: requestTop - harness.container.scrollTop,
+        height: 40,
+      }) as DOMRect;
+    const response = createPortableMessage({
+      id: 'response',
+      element: document.createElement('div'),
+      isResponse: true,
+      isStreaming: streaming,
+    });
+    const messages = [
+      createPortableMessage({
+        id: 'welcome',
+        element: document.createElement('div'),
+      }),
+      request,
+      response,
+    ];
+    harness.setMessages(messages);
+    const controller = new MessagesScrollController(harness.host);
+    controller.connect();
+    controller.doAutoScrollInternal();
+    await flushFrames();
+    expect(harness.container.scrollTop).toBe(300);
+    const deliver = (height: number, target = response.element) => {
+      const observer = observers[1];
+      observer.callback(
+        [
+          { target, borderBoxSize: [{ blockSize: height }] },
+        ] as unknown as ResizeObserverEntry[],
+        observer
+      );
+    };
+    return {
+      ...harness,
+      controller,
+      messages,
+      response,
+      request,
+      deliver,
+      resizeEarlierContent: (delta: number) => {
+        contentHeight += delta;
+        requestTop += delta;
+      },
+      resizeContent: (height: number) => {
+        contentHeight = height;
+      },
+      getSpacerHeight: () => spacerHeight,
+    };
+  }
+
+  it('preserves a deep shrink and reconciles its first resize delivery', async () => {
+    const h = await createResizeHarness();
+    h.resizeContent(420);
+    expect(h.container.scrollTop).toBe(300);
+    h.deliver(20);
+    expect(h.container.scrollTop).toBe(300);
+    expect(h.getSpacerHeight()).toBe(380);
+    h.controller.disconnect();
+  });
+
+  it('prevents clamping when content shrinks and regrows before a resize delivery', async () => {
+    const h = await createResizeHarness();
+    h.deliver(600);
+    h.resizeContent(420);
+    expect(h.container.scrollTop).toBe(300);
+    h.resizeContent(1000);
+    h.container.dispatchEvent(new Event('scroll'));
+    h.deliver(600);
+    expect(h.container.scrollTop).toBe(300);
+    expect(h.getSpacerHeight()).toBe(0);
+    h.controller.disconnect();
+    expect(h.host.setScrollHeightFloor).toHaveBeenLastCalledWith(0);
+  });
+
+  it('refreshes the floor on container resize and releases it on conversation clear', async () => {
+    const h = await createResizeHarness();
+    Object.defineProperty(h.container, 'clientHeight', { get: () => 600 });
+    h.controller.onContainerResize();
+    expect(h.host.setScrollHeightFloor).toHaveBeenLastCalledWith(900);
+    await flushFrames();
+    h.setMessages([]);
+    h.controller.onHostUpdated(300);
+    expect(h.host.setScrollHeightFloor).toHaveBeenLastCalledWith(0);
+    h.controller.disconnect();
+  });
+
+  it('reconciles growth and small shrinks after streaming has completed', async () => {
+    const h = await createResizeHarness();
+    h.resizeContent(420);
+    h.deliver(20);
+    h.resizeContent(419);
+    h.deliver(19);
+    expect(h.container.scrollTop).toBe(300);
+    expect(h.getSpacerHeight()).toBe(381);
+    h.resizeContent(900);
+    h.deliver(500);
+    expect(h.getSpacerHeight()).toBe(0);
+    expect(h.container.scrollTop).toBe(300);
+    expect(h.onScrollGeometryChanged).toHaveBeenCalled();
+    h.controller.disconnect();
+  });
+
+  it.each([false, true])(
+    'preserves the request offset when earlier content resizes (streaming: %s)',
+    async (streaming) => {
+      const h = await createResizeHarness(streaming);
+      const earlier = h.messages[0].element;
+      h.resizeContent(420);
+      h.deliver(20);
+      for (const delta of [250, -180]) {
+        h.resizeEarlierContent(delta);
+        h.container.dispatchEvent(new Event('scroll'));
+        h.deliver(360 + delta, earlier);
+        expect(h.request.element.getBoundingClientRect().top).toBe(60);
+        expect(h.getSpacerHeight()).toBe(380);
+      }
+      h.controller.disconnect();
+    }
+  );
+
+  it('keeps following when native anchoring moves the scroll position with an earlier row', async () => {
+    const h = await createResizeHarness();
+    const earlier = h.messages[0].element;
+    h.deliver(360, earlier);
+    h.resizeEarlierContent(-200);
+    h.container.scrollTop = 100;
+    h.container.dispatchEvent(new Event('scroll'));
+    h.deliver(160, earlier);
+    expect(h.host.setScrollHeightFloor).toHaveBeenLastCalledWith(600);
+    expect(h.request.element.getBoundingClientRect().top).toBe(60);
+    h.resizeEarlierContent(250);
+    h.deliver(410, earlier);
+    expect(h.container.scrollTop).toBe(350);
+    expect(h.request.element.getBoundingClientRect().top).toBe(60);
+    h.controller.disconnect();
+  });
+
+  it('leaves the user away from the pin when an earlier row resizes', async () => {
+    const h = await createResizeHarness();
+    h.container.scrollTop = 100;
+    h.container.dispatchEvent(new Event('scroll'));
+    h.resizeEarlierContent(250);
+    h.deliver(610, h.messages[0].element);
+    expect(h.container.scrollTop).toBe(100);
+    expect(h.host.setScrollHeightFloor).toHaveBeenLastCalledWith(0);
+    h.controller.disconnect();
+  });
+
+  it('keeps the spacer grow-only during streaming', async () => {
+    const h = await createResizeHarness(true);
+    h.resizeContent(420);
+    h.deliver(20);
+    h.resizeContent(900);
+    h.deliver(500);
+    expect(h.getSpacerHeight()).toBe(380);
+    expect(h.container.scrollTop).toBe(300);
+    h.controller.disconnect();
+  });
+
+  it.each([100, 240])(
+    'does not restore the pin after the user scrolls to %ipx and content shrinks',
+    async (scrollTop) => {
+      const h = await createResizeHarness();
+      h.deliver(600);
+      h.container.scrollTop = scrollTop;
+      h.container.dispatchEvent(new Event('scroll'));
+      expect(h.host.setScrollHeightFloor).toHaveBeenLastCalledWith(0);
+      h.resizeContent(420);
+      h.deliver(20);
+      expect(h.container.scrollTop).toBe(0);
+      expect(h.getSpacerHeight()).toBe(80);
+      h.controller.disconnect();
+    }
+  );
+
+  it('preserves a scroll-away position before its scroll event arrives', async () => {
+    const h = await createResizeHarness();
+    h.deliver(600);
+    h.container.scrollTop = 100;
+    h.resizeContent(900);
+    h.deliver(500);
+    expect(h.container.scrollTop).toBe(100);
+    h.controller.disconnect();
+  });
+
+  it('reconciles replacement rows on first delivery and stops observing removed rows', async () => {
+    const h = await createResizeHarness();
+    h.deliver(600);
+    const replacement = document.createElement('div');
+    h.setMessages([
+      ...h.messages.slice(0, -1),
+      { ...h.response, element: replacement },
+    ]);
+    h.controller.onHostUpdated(300);
+    expect(observers[1].unobserve).toHaveBeenCalledWith(h.response.element);
+    expect(observers[1].observe).toHaveBeenCalledWith(replacement, {
+      box: 'border-box',
+    });
+    h.resizeContent(420);
+    h.deliver(20, replacement);
+    expect(h.container.scrollTop).toBe(300);
+    expect(h.getSpacerHeight()).toBe(380);
+    h.controller.disconnect();
+    h.setSpacerHeight.mockClear();
+    h.deliver(50, replacement);
+    expect(h.setSpacerHeight).not.toHaveBeenCalled();
   });
 });
