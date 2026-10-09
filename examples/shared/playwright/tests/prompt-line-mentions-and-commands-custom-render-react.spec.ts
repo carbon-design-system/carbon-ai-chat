@@ -39,7 +39,7 @@ test('a custom mention and a default command reach the mock summary', async ({
   await expect(input).toBeEmpty();
 });
 
-// renderCustomToken receives the item without `description` (the prompt line strips it), so the tooltip shows "Jane Smith", not "Design Lead".
+// Since #2480 the custom chip exposes no focusable "Jane Smith" button, so Tab cannot reach its tooltip. renderCustomToken also receives the item without `description` (the prompt line strips it), so the tooltip would show "Jane Smith", not "Design Lead".
 test.fixme('the custom mention tooltip shows the description by keyboard', async ({
   page,
 }) => {
