@@ -8,6 +8,7 @@
 /** Browser fixtures and setup helpers shared by Vite example suites. */
 import { expect, test as base, type Page } from '@playwright/test';
 
+import { coverageRoot, startCoverage, stopCoverage } from '../coverage';
 import { urlVariable, type TargetId } from '../targets';
 
 export const test = base.extend<{ target: TargetId }>({
@@ -20,7 +21,7 @@ export const test = base.extend<{ target: TargetId }>({
     }
     await playWrightUse(url);
   },
-  page: async ({ page }, playWrightUse) => {
+  page: async ({ page, target }, playWrightUse) => {
     const errors: string[] = [];
     page.on('console', (message) => {
       // Vite may reload a cold page after its dependency optimizer changes.
@@ -32,7 +33,11 @@ export const test = base.extend<{ target: TargetId }>({
       }
     });
     page.on('pageerror', (error) => errors.push(String(error)));
+    if (coverageRoot) {
+      await startCoverage(page);
+    }
     await playWrightUse(page);
+    await stopCoverage(page, target);
     expect(errors).toEqual([]);
   },
 });
