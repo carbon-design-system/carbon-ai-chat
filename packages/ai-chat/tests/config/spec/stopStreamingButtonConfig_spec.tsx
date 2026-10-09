@@ -25,6 +25,7 @@ import { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
 import { AppState } from '../../../src/types/state/AppState';
+import { MessageResponseTypes } from '../../../src/types/messaging/Messages';
 import { selectStopStreamingButtonVisible } from '../../../src/chat/store/selectors';
 import {
   createAppConfig,
@@ -395,6 +396,62 @@ describe('stop streaming button from input config', () => {
     });
 
     expect(selectStopStreamingButtonVisible(store.getState())).toBe(false);
+  });
+
+  it('keeps a host-shown button visible after a cancellable chunk stream ends', async () => {
+    const { instance, store } = await renderChat(
+      props(
+        { showStopStreamingButton: true },
+        { customSendMessage: mockCustomSendMessage, skipWelcome: true }
+      )
+    );
+    const responseId = 'host-flag-stream';
+    const itemId = 'item-1';
+
+    await act(async () => {
+      await instance.messaging.addMessageChunk({
+        streaming_metadata: { response_id: responseId },
+        partial_item: {
+          streaming_metadata: { id: itemId, cancellable: true },
+          response_type: MessageResponseTypes.TEXT,
+          text: 'Working',
+        },
+      });
+    });
+
+    expect(
+      store.getState().assistantInputState.stopStreamingButtonState.isVisible
+    ).toBe(true);
+    await waitFor(() =>
+      expect(getSendControl()?.isStopStreamingButtonVisible).toBe(true)
+    );
+
+    await act(async () => {
+      await instance.messaging.addMessageChunk({
+        final_response: {
+          id: responseId,
+          output: {
+            generic: [
+              {
+                streaming_metadata: { id: itemId },
+                response_type: MessageResponseTypes.TEXT,
+                text: 'Working done',
+              },
+            ],
+          },
+        },
+      });
+    });
+
+    // The chat hid the button it showed for the stream...
+    expect(
+      store.getState().assistantInputState.stopStreamingButtonState.isVisible
+    ).toBe(false);
+    // ...but the host flag still shows it.
+    expect(selectStopStreamingButtonVisible(store.getState())).toBe(true);
+    await waitFor(() =>
+      expect(getSendControl()?.isStopStreamingButtonVisible).toBe(true)
+    );
   });
 
   it('keeps a host-shown button visible after a restart', async () => {
