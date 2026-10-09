@@ -172,22 +172,22 @@ Open every spec with a purpose comment, per the inline-comments rule in [example
 
 ```bash
 npm run test:e2e:goldens
-npm run test:e2e:goldens -- --project react-watch-state
-npm run test:e2e:goldens -- --project web-components-watch-state
+CAIC_E2E_TARGETS=react-watch-state npm run test:e2e:goldens
+CAIC_E2E_TARGETS=react-watch-state,web-components-watch-state npm run test:e2e:goldens
 npm run test:e2e
 ```
 
 - From the root, install dependencies once with `npm install` and build the shared packages with `npm run aiChat:build` before testing. Rebuild a changed package before testing its examples.
 - Check test discovery with `npm run test:e2e:goldens -- --list` before opening a browser. This catches config and fixture errors; it does not run the tests. Each shared case appears once per flavor, under its own project.
 - Install Chromium once per machine with `npx playwright install chromium`.
-- Playwright builds and serves all six target examples on every run, even when `--project` selects one. Select projects with the usual Playwright arguments.
+- Playwright starts every configured server, whatever `--project` selects. To run only some targets, list their names in `CAIC_E2E_TARGETS`, comma-separated; the config then builds, serves, and runs only those. An unknown name fails the run. Without it, every target runs.
 - Root `test:e2e` runs the central suite once, then any `test:e2e` script a workspace still defines. The React 17 and 18 suites run under `npm test` until they are migrated.
 
 When and how the suite runs in CI at scale is not decided here. See [issue #2127](https://github.com/carbon-design-system/carbon-ai-chat/issues/2127).
 
 ## Debugging
 
-Debug one project with `npm run test:e2e:goldens -- --project <name> --debug` to inspect actions and locators. For an intermittent failure, rerun one test with `npm run test:e2e:goldens -- --project <name> --grep '<test name>' --trace on`. Inspect the trace's actions, DOM snapshots, and requests. Keep full-run tracing off; when CI is added, capture traces on the first retry rather than every test.
+Debug one target with `CAIC_E2E_TARGETS=<name> npm run test:e2e:goldens -- --debug` to inspect actions and locators. For an intermittent failure, rerun one test with `CAIC_E2E_TARGETS=<name> npm run test:e2e:goldens -- --grep '<test name>' --trace on`. Inspect the trace's actions, DOM snapshots, and requests. Keep full-run tracing off; when CI is added, capture traces on the first retry rather than every test.
 
 Failures, screenshots, and videos land in `shared/playwright/test-results/`, which is git-ignored.
 
