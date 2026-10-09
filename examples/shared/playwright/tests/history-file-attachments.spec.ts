@@ -5,7 +5,16 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-/** Tests history-file-attachments: mounts the chat and exercises the host's demonstrated behavior. */
+/**
+ * Tests: Carbon AI Chat — History file attachments, restored without links.
+ *
+ * Runs against both the React and Web Components examples. Each host's
+ * `customLoadHistory` restores a request whose `structured_data` holds a
+ * `file` field, and the chat renders it as a chip in the user's bubble.
+ *
+ * Checks that the chat mounts, and that the restored attachment chip shows
+ * its file name without a download link.
+ */
 
 import { PageObjectId } from '@carbon/ai-chat/server';
 import { expect, openExample, test, waitForChatReady } from '../helpers';
