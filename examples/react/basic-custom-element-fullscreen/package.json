@@ -1,7 +1,7 @@
 {
   "name": "@carbon/ai-chat-examples-react-basic-custom-element-fullscreen",
   "private": true,
-  "version": "1.21.0",
+  "version": "1.22.0",
   "type": "module",
   "description": "Fullscreen ChatCustomElement React example — the canonical baseline for non-float examples.",
   "scripts": {
@@ -12,7 +12,7 @@
   "license": "Apache-2.0",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "dependencies": {
-    "@carbon/ai-chat": "^1.21.0",
+    "@carbon/ai-chat": "^1.22.0",
     "@carbon/react": "^1.97.0",
     "@carbon/web-components": "^2.58.1",
     "lit": "^3.1.0",
@@ -20,9 +20,10 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@types/node": "^22.20.2",
     "@vitejs/plugin-react": "^6.0.0",
     "ts-lit-plugin": "^2.0.2",
-    "typescript": "^5.6.3",
-    "vite": "^8.0.16"
+    "typescript": "^6.0.3",
+    "vite": "^8.3.0"
   }
 }

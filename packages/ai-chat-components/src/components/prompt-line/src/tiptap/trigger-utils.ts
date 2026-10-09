@@ -13,13 +13,12 @@
  * bridge extension (per PLAN.md decision 4) — each factory calls this helper
  * from its own `onStart`/`onUpdate`/`onExit` callbacks.
  *
- * **Concurrent transitions:** if two factories transition in the same
- * transaction (rare — would require a host-driven setContent that crosses
- * two trigger contexts), each emits independently and listeners observe a
- * sequence of detail values. Consumers tracking "current trigger" stay
- * correct because the final `onStart`/`onUpdate` wins; `onExit` listeners
- * receive a `null` between the two activations only if the previous trigger's
- * range was actually exited.
+ * **Concurrent transitions:** when two factories transition in the same
+ * synchronous turn (e.g. autocomplete exits while mention starts), plugin
+ * view updates run in extension-registration order. The later `onExit`
+ * (dispatching `null`) must not overwrite the earlier `onStart` from a
+ * different plugin. Pass `exitingType` when calling with `null` so the helper
+ * can detect and suppress that stale exit.
  */
 
 import type { Editor } from '@tiptap/core';
@@ -35,12 +34,29 @@ const lastDetailByEditor = new WeakMap<
  * Dispatch `cds-aichat-trigger-change` on the editor's DOM if the detail has
  * changed since the last call for the same editor. No-op transitions are
  * coalesced.
+ *
+ * When `detail` is `null` (an `onExit` call), pass `exitingType` so the
+ * helper can suppress the exit if another plugin already claimed the trigger
+ * in the same synchronous turn — preventing a late `onExit` from overwriting
+ * an earlier `onStart` from a different extension.
  */
 export function dispatchTriggerChange(
   editor: Editor,
-  detail: TriggerChangeEventDetail | null
+  detail: TriggerChangeEventDetail | null,
+  exitingType?: string
 ): void {
   const previous = lastDetailByEditor.get(editor) ?? null;
+  // Suppress a null dispatch when a different plugin already activated in this
+  // turn — its onStart updated lastDetail to a non-null value with a different
+  // type, so this onExit is stale.
+  const isStaleExit =
+    detail === null &&
+    exitingType !== undefined &&
+    previous !== null &&
+    previous.type !== exitingType;
+  if (isStaleExit) {
+    return;
+  }
   if (areDetailsEqual(previous, detail)) {
     return;
   }

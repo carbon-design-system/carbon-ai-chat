@@ -34,11 +34,46 @@ jobs:
         run: npm ci --prefer-offline
       - name: Run build
         run: npm run aiChat:build
+      # 👇 Test jobs reuse this output instead of rebuilding
+      - name: Upload build output
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: build-output
+          path: |
+            packages/ai-chat-components/es
+            packages/ai-chat-components/es-custom
+            packages/ai-chat-components/dist
+            packages/ai-chat-components/scss
+            packages/ai-chat-components/custom-elements.json
+            packages/ai-chat/dist
+          if-no-files-found: error
+          retention-days: 1
       - name: Validate TypeDoc links
         run: npm run docs --workspace=@carbon/ai-chat
 
-  test:
+  # 👇 Each suite gets its own runner so they don't compete for CPU
+  test-suite:
+    name: test (${{ matrix.suite }})
+    needs: build
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - suite: ai-chat 1/2
+            run: npm run test --workspace=@carbon/ai-chat -- --shard=1/2
+          - suite: ai-chat 2/2
+            run: npm run test --workspace=@carbon/ai-chat -- --shard=2/2
+          - suite: components
+            browsers: chromium firefox webkit
+            run: npm run test --workspace=@carbon/ai-chat-components
+          - suite: demo
+            browsers: chromium firefox
+            run: npm run test --workspace=@carbon/ai-chat-examples-demo
+          # 👇 Every other package with a test script
+          - suite: examples
+            browsers: chromium
+            run: npm run test:examples && npm run test:versions
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Use Node.js version from .nvmrc
@@ -57,12 +92,26 @@ jobs:
       - name: Install dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: npm ci --prefer-offline
-      - name: Install Playwright dependencies
-        run: npx playwright install --with-deps
-      - name: Build ai-chat
-        run: npm run aiChat:build
+      - name: Install Playwright browsers
+        if: matrix.browsers
+        run: npx playwright install --with-deps ${{ matrix.browsers }}
+      - name: Download build output
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: build-output
+          path: packages
       - name: Run test
-        run: npm run test
+        run: ${{ matrix.run }}
+
+  # 👇 Branch protection requires a check named `test`; this reports the matrix as one
+  test:
+    if: always()
+    needs: test-suite
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every test suite to pass
+        if: needs.test-suite.result != 'success'
+        run: exit 1
 
   format:
     runs-on: ubuntu-latest
@@ -143,11 +192,14 @@ jobs:
         run: npm run validate:agents
       - name: Validate agent skills
         run: npm run validate:skills
+      - name: Test guidance validators
+        run: npm run test:guidance
       - name: Verify example READMEs
         run: npm run verify:example-readmes
 
   chromatic-wc-storybook:
-    if: ${{ github.repository == 'carbon-design-system/carbon-ai-chat' && github.event.pull_request.draft == false }}
+    # 👇 A new release branch points at a commit main already built, so skip its first push
+    if: ${{ github.repository == 'carbon-design-system/carbon-ai-chat' && github.event.pull_request.draft == false && !github.event.created }}
     runs-on: ubuntu-latest
     outputs:
       buildUrl: ${{ steps.chromatic.outputs.buildUrl }}
@@ -173,15 +225,14 @@ jobs:
             */**/node_modules
           key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
       - name: Install dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
+        if: github.event_name != 'merge_group' && steps.cache.outputs.cache-hit != 'true'
         run: npm ci --prefer-offline
       - name: Build @carbon/ai-chat-components package
+        if: github.event_name != 'merge_group'
         run: npm run build --workspace=@carbon/ai-chat-components
-      - name: Build storybook
-        run: npm run storybook:build --workspace=@carbon/ai-chat-components
       - id: chromatic
         name: Run Chromatic
-        uses: chromaui/action@bb3b582719a93c1828c5e520e62992b2937d7889 # v18.9.4
+        uses: chromaui/action@38afd264ef2241136f12d039093c2724748bec08 # v18.11.0
         with:
           # 👇 Token is intentionally plaintext
           # https://www.chromatic.com/docs/github-actions/#run-chromatic-on-external-forks-of-open-source-projects
@@ -191,6 +242,10 @@ jobs:
           zip: true # Runs Chromatic with the option to compress the build output
           autoAcceptChanges: 'main' # Option to accept all changes on main
           onlyChanged: true # 👈 Required option to enable TurboSnap
+          # 👇 Example apps aren't in the Storybook graph, so their manifests shouldn't disable TurboSnap
+          untraced: 'examples/**'
+          # 👇 `main` push rebuilds the merge-queue SHA, so pass the queue check without snapshots
+          skip: '**/gh-readonly-queue/**'
         env:
           # 👇 Set to the PR branch if it's a PR; otherwise, falls back to the pushed branch name
           CHROMATIC_BRANCH: ${{ github.event.pull_request.head.ref || github.ref_name }}
@@ -200,7 +255,8 @@ jobs:
           CHROMATIC_SLUG: ${{ github.repository }}
 
   chromatic-react-wrapper-storybook:
-    if: ${{ github.repository == 'carbon-design-system/carbon-ai-chat' && github.event.pull_request.draft == false }}
+    # 👇 A new release branch points at a commit main already built, so skip its first push
+    if: ${{ github.repository == 'carbon-design-system/carbon-ai-chat' && github.event.pull_request.draft == false && !github.event.created }}
     runs-on: ubuntu-latest
     outputs:
       buildUrl: ${{ steps.chromatic.outputs.buildUrl }}
@@ -226,15 +282,14 @@ jobs:
             */**/node_modules
           key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
       - name: Install dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
+        if: github.event_name != 'merge_group' && steps.cache.outputs.cache-hit != 'true'
         run: npm ci --prefer-offline
       - name: Build @carbon/ai-chat-components package
+        if: github.event_name != 'merge_group'
         run: npm run build --workspace=@carbon/ai-chat-components
-      - name: Build storybook
-        run: npm run storybook:build --workspace=@carbon/ai-chat-components
       - id: chromatic
         name: Run Chromatic
-        uses: chromaui/action@bb3b582719a93c1828c5e520e62992b2937d7889 # v18.9.4
+        uses: chromaui/action@38afd264ef2241136f12d039093c2724748bec08 # v18.11.0
         with:
           # 👇 Token is intentionally plaintext
           # https://www.chromatic.com/docs/github-actions/#run-chromatic-on-external-forks-of-open-source-projects
@@ -244,6 +299,10 @@ jobs:
           zip: true # Runs Chromatic with the option to compress the build output
           autoAcceptChanges: 'main' # Option to accept all changes on main
           onlyChanged: true # 👈 Required option to enable TurboSnap
+          # 👇 Example apps aren't in the Storybook graph, so their manifests shouldn't disable TurboSnap
+          untraced: 'examples/**'
+          # 👇 `main` push rebuilds the merge-queue SHA, so pass the queue check without snapshots
+          skip: '**/gh-readonly-queue/**'
         env:
           # 👇 Set to the PR branch if it's a PR; otherwise, falls back to the pushed branch name
           CHROMATIC_BRANCH: ${{ github.event.pull_request.head.ref || github.ref_name }}

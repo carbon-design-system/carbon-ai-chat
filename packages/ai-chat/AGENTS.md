@@ -7,7 +7,7 @@ Guidance for authoring inside [packages/ai-chat/](.). Read this before editing a
 The primary Carbon AI Chat app. Ships as:
 
 - A React component tree rooted at [src/aiChatEntry.tsx](src/aiChatEntry.tsx).
-- Lit web-component wrappers (`cds-aichat-container`, `cds-aichat-custom-element`) under [src/web-components/](src/web-components) that mount the same React tree via `@lit/react`.
+- Lit web-component wrappers (`cds-aichat-container`, `cds-aichat-custom-element`) under [src/web-components/](src/web-components) that own startup and mount the React tree for every host. React components render through `cds-aichat-container`.
 - A server entry ([src/serverEntry.ts](src/serverEntry.ts)) exposing SSR-safe types/utilities only.
 
 All entries compile via [tasks/rollup.aichat.js](tasks/rollup.aichat.js) to `dist/es/` (`cds--` prefix) and `dist/es-custom/` (`cds--custom` prefix, avoiding `@carbon/angular-components` collisions). TypeDoc emits to `dist/docs/`.
@@ -20,6 +20,7 @@ Load only what you need:
 
 - Working across the React/Lit boundary, shadow DOM, or slots → [architecture.md](references/architecture.md)
 - Adding, editing, or wiring a service → [services.md](references/services.md)
+- Changing hooks or view-owned logic in `utils/` or `services/` → [hooks/AGENTS.md](src/chat/hooks/AGENTS.md)
 - Writing or fixing a Jest test → [tests.md](references/tests.md)
 - Shipping any UI change (WCAG 2.1 AA checklist, live-region patterns, the announcer helpers, and when an announcement should be `assertive`) → [Root accessibility.md](../../references/accessibility.md)
 - Touching the store → [src/chat/store/AGENTS.md](src/chat/store/AGENTS.md)
@@ -32,8 +33,7 @@ Load only what you need:
 - [src/chat/](src/chat/) — the chat application. Do most feature work here.
   - `AppShell.tsx`, `ChatAppEntry.tsx`, `AppShellPanels.tsx`, `AppShellWriteableElements.tsx` — top-level composition.
   - `store/` — Redux-style store.
-  - `services/` — long-lived singletons wired in `ServiceManager.ts` and `loadServices.ts`. `ChatActionsImpl.ts` is the instance-facing API — public methods added here must also be reflected on `ChatInstance` in `instance/`.
-  - `instance/` — public `ChatInstance` object. Breaking changes here break every consumer; prefer additive API.
+  - `services/` — chat-instance services wired through `ServiceManager.ts` and `loadServices.ts`, plus view-owned classes with explicit cleanup. `ChatInstanceService.ts` is the instance-facing API — public methods added here must also be reflected on `ChatInstance` in [`src/types/instance/ChatInstance.ts`](src/types/instance/ChatInstance.ts).
   - `events/` — typed pub/sub for the public event API. Event names and payloads are part of the public contract.
   - `schema/` — runtime message/config schema. Keep in sync with types in [src/types/](src/types/).
   - `hocs/`, `hooks/`, `contexts/`, `providers/` — React glue.
@@ -56,14 +56,14 @@ npm run build:docs # rollup + typedoc
 npm run docs       # typedoc only — the fast docs loop, no rollup needed
 npm start          # rollup --watch + typedoc --watch + local doc server on :5001
 npm test           # jest with coverage
-npx jest path/to/file_spec.ts
-npx jest -t "pattern"
+npm test -- path/to/file_spec.ts
+npm test -- -t "pattern"
 ```
 
 ## Gotchas
 
 - **Custom store hooks**: `useSelector` comes from `src/chat/hooks/` — **not** `react-redux`. There is no `useDispatch`; dispatch through `serviceManager.store.dispatch` with an action creator from `store/actions.ts`.
-- **Relative-import extensions**: `moduleResolution` is classic `node`, so relative imports of TS source resolve **with or without** a trailing `.js`; extensionless is the convention across the tree, and rollup, `tsc --noEmit`, and Jest all accept either. Keep the extension only when the target is a real built `.js` in a dependency (e.g. `@carbon/ai-chat-components/es/react/card.js`) — those are actual files, not TS source.
+- **Import extensions**: `moduleResolution` is `bundler`, so relative imports of TS source resolve **with or without** a trailing `.js`; extensionless is the convention across the tree, and rollup, `tsc --noEmit`, and Jest all accept either. A deep import into a dependency is different: `bundler` enforces the package's `exports` map, so write the real built file, `.js` included (e.g. `@carbon/ai-chat-components/es/react/card.js`).
 - **Relaxed TS strictness**: `tsconfig` sets `strictNullChecks: false` and `strictFunctionTypes: false`. Don't assume null safety; check explicitly or add guards.
 - **React runs inside shadow DOM**: the `cds-aichat-*` custom elements mount React into a shadow root. User-defined responses and writeable elements use slotted content; follow existing patterns. Background in [architecture.md](references/architecture.md).
 
@@ -75,7 +75,7 @@ See [definition-of-done.md](../../references/definition-of-done.md) for the gate
 
 - **Public API changes**: anything exported from `aiChatEntry.tsx`, `serverEntry.ts`, or `types/` is semver-visible. Coordinate with a `feat`/`fix!`/`BREAKING CHANGE` footer. JSDoc/TypeDoc rules: [src/types/AGENTS.md](src/types/AGENTS.md).
 - **Store**: see [src/chat/store/AGENTS.md](src/chat/store/AGENTS.md). Reducers stay pure; side effects go through services or `store/actions.ts` / `store/subscriptions.ts`. `humanAgentReducers.ts` is a separate slice on purpose.
-- **Services**: see [services.md](references/services.md). Wire through `ServiceManager` and `loadServices`. Nothing disposes a service on unmount yet, so a subscription or timer you add outlives the mount until teardown lands (#1681).
+- **Services**: read [services.md](references/services.md) when choosing ownership or wiring.
 - **i18n**: no user-visible strings in code. Route through `languages/`.
 - **Tests**: see [tests.md](references/tests.md). Colocate helpers in `tests/test_helpers.ts`. Store tests exercise reducers directly; service tests use the mocks in `tests/services/`.
 - **SCSS / RTL / prefix discipline**: see [code-patterns.md](../../references/code-patterns.md). Prefix discipline is build-breaking — never hardcode `cds--`; use `#{$prefix}--` in SCSS and the prefix helpers in TS.

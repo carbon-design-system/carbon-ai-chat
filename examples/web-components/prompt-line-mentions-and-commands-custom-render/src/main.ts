@@ -13,19 +13,22 @@
  * Demonstrates: the same mention/command suggestion configuration as
  * `prompt-line-mentions-and-commands`, plus a `renderCustomToken` for mentions
  * that swaps the default chip for a `<cds-tag>` wrapped in a `<cds-tooltip>`
- * so hovering a mention reveals the picked user's description. Commands
- * keep the default chip.
+ * in the composer, and a matching `renderUserDefinedInputNode` that renders
+ * the same chip inside the sent message bubble. Commands keep the default chip
+ * in both surfaces.
  *
  * APIs exercised:
  *   - `<cds-aichat-custom-element>`
  *   - `PublicConfig.layout.showFrame`
  *   - `PublicConfig.openChatByDefault`
  *   - `PublicConfig.input.mention` + `PublicConfig.input.command`
- *   - `mention.renderCustomToken` for chip rendering
+ *   - `mention.renderCustomToken` for chip rendering in the composer
+ *   - `renderUserDefinedInputNode` for chip rendering in sent bubbles
  *   - `mention.onSelect` / `mention.onRemove` keep the structured-data sidecar
  *     in sync as chips are added and deleted
  *
- * Start reading at: the `renderCustomToken` callback below.
+ * Start reading at: the `renderCustomToken` callback and
+ * `renderUserDefinedInputNode` below.
  */
 
 import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
@@ -35,7 +38,9 @@ import '@carbon/web-components/es/components/tag/tag.js';
 import {
   type ChatInstance,
   type PublicConfig,
+  type RenderUserDefinedInputNodeState,
   type SuggestionItem,
+  type WCRenderUserDefinedInputNode,
 } from '@carbon/ai-chat';
 import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
@@ -44,8 +49,8 @@ import { customSendMessage } from './customSendMessage';
 import { mentionItems, commandItems } from './suggestions';
 
 /**
- * Creates a custom mention token element: a Carbon Tag wrapped in a Tooltip
- * so the picked user's description appears on hover.
+ * The chip both surfaces render. A chip stores the picked item's `id` and
+ * `label` but not its `description`, so the description is looked up here.
  *
  * `autoalign` switches the popover to `position: fixed` via floating-ui so
  * the popover escapes the editor's `overflow: auto` clip. With
@@ -61,23 +66,42 @@ import { mentionItems, commandItems } from './suggestions';
  * (sub-issue of #731). When that's resolved this example should render
  * above the chip without any change to the code below.
  */
-function createMentionToken(item: SuggestionItem): HTMLElement {
+function createMentionToken(id: string, label: string): HTMLElement {
+  const description = mentionItems.find((item) => item.id === id)?.description;
+
   const tooltip = document.createElement('cds-tooltip');
   tooltip.setAttribute('align', 'top');
   tooltip.setAttribute('autoalign', '');
 
   const content = document.createElement('cds-tooltip-content');
-  content.textContent = item.description ?? item.label;
+  content.textContent = description ?? label;
   tooltip.appendChild(content);
 
   const tag = document.createElement('cds-tag');
   tag.setAttribute('size', 'sm');
   tag.setAttribute('type', 'purple');
-  tag.textContent = `@${item.label}`;
+  tag.textContent = `@${label}`;
   tooltip.appendChild(tag);
 
   return tooltip;
 }
+
+/**
+ * Renders a custom mention chip inside sent message bubbles.
+ * `renderCustomToken` is composer-only; this is the bubble counterpart.
+ * Returns null for command nodes and everything else — the slot fallback
+ * shows the default chip.
+ */
+const renderUserDefinedInputNode: WCRenderUserDefinedInputNode = ({
+  node,
+}: RenderUserDefinedInputNodeState): HTMLElement | null => {
+  if (node.type === 'mention') {
+    const id = (node.attrs?.id ?? '') as string;
+    const label = (node.attrs?.label ?? '') as string;
+    return createMentionToken(id, label);
+  }
+  return null;
+};
 
 @customElement('my-app')
 export class Demo extends LitElement {
@@ -154,8 +178,10 @@ export class Demo extends LitElement {
               return { ...prev, fields };
             });
           },
-          // Replaces the default chip with a definition tooltip so hovering a mention reveals the user's role.
-          renderCustomToken: (item: SuggestionItem) => createMentionToken(item),
+          // `renderCustomToken` is composer-only; `renderUserDefinedInputNode`
+          // (bound below) handles the same chip in sent message bubbles.
+          renderCustomToken: (item: SuggestionItem) =>
+            createMentionToken(item.id, item.label),
         },
         command: {
           trigger: '/',
@@ -211,7 +237,8 @@ export class Demo extends LitElement {
         .messaging=${cfg.messaging}
         .input=${cfg.input}
         .layout=${cfg.layout}
-        .openChatByDefault=${cfg.openChatByDefault}></cds-aichat-custom-element>
+        .openChatByDefault=${cfg.openChatByDefault}
+        .renderUserDefinedInputNode=${renderUserDefinedInputNode}></cds-aichat-custom-element>
     `;
   }
 }

@@ -1,13 +1,26 @@
 ---
 name: caic-copy-writer
-description: Write the copy this repo ships, routed by which kind it is — public JSDoc, internal comments, docs-site pages, Storybook MDX, package and example READMEs, end-user UI strings, agent guidance, commit bodies, PR descriptions, issue bodies, ADR prose, the errors thrown at a host developer, and the comments left on a code review — each with its own audience, rules file, and gate, plus the draft-measure-revise loop every one of them ends with. Use when the user asks to "write the README for X", "document this type", "word this error message", or "tighten this doc". Load it unprompted too, before writing copy that rides along with another task — JSDoc on a new public type, a comment above non-obvious code, a new string in en.json, the text of a thrown error, the body of a commit, PR, issue, or ADR, or a review finding on a pull request or in a self-review — since those carry different rules and none of them arrives worded as a copy request.
+description: Write or revise this repo's documentation, comments, UI copy, and development artifacts using the rules for their audience. Use for explicit writing requests and for copy added during implementation or review; load only the applicable copy type.
 ---
 
-This skill owns how the words go, for every surface this repo writes. Find your type in the table, open its rules file, then write.
+This skill owns how the words go, for every surface this repo writes. Before drafting or revising any copy, including local drafts and final artifacts, apply [Write for readers who skip to code](#write-for-readers-who-skip-to-code). Then open the rules for your copy type.
 
 **Each type has its own audience, rules, and gate**, and types 1 and 2 carry opposite instructions — so one set of rules applied to all fourteen is wrong in both directions at once. Routing first is the whole point of this skill.
 
 Voice is the part that does not vary: read [tone.md](../../../references/tone.md) once for the mandate, the constant voice, and the quick rules.
+
+## Write for readers who skip to code
+
+Developers often scan headings, tables, and code before choosing which prose to read. That path must convey the point and its main limit. Apply this to all copy; adapt it to the format and audience. A short comment or UI string needs clear wording, not added headings, code, or tables. Keep headings required by a template; make their opening line state the point.
+
+- **Give each example a distinct job.** Show the action and its result. Use before/after when it clarifies the change; cut examples that repeat a lesson.
+- **Keep copied blocks honest.** Label proposed APIs, relevant versions, and placeholders inside the block. Put crucial defaults, failures, and compatibility limits beside the lines they qualify. Distinguish consumer code from library code.
+- **Keep needed context adjacent.** Place related markup and CSS, or a call and its result, together. Omit setup only when it does not change the meaning, and name omitted inputs.
+- **Make headings state the point.** Use a compact table for choices, scope, or version rules when it saves prose.
+- **Let prose explain why.** Do not narrate code line by line. Keep crucial constraints visible on the skim path.
+- **Shorten without weakening the contract.** Preserve scope, defaults, failures, compatibility, and accepted costs. A low reading grade alone does not prove the copy is clear.
+
+Before handing back copy, skim only its headings, tables, and code, or the visible text when those forms do not fit. Check each example copied on its own. Fix a misleading block or its nearby label rather than adding a distant caveat.
 
 ## Which kind of copy?
 
@@ -38,17 +51,17 @@ Each rules file names its **structural owner** — the document that decides whi
 | 11 | [caic-adr](../caic-adr/SKILL.md) | [adr-prose.md](references/adr-prose.md) |
 | 14 | [caic-review](../caic-review/SKILL.md) | [review-comments.md](references/review-comments.md) |
 
-Plan files have no row. They are git-ignored working drafts, so [caic-plan](../caic-plan/SKILL.md) keeps them whole, and only [revision-pass.md](references/revision-pass.md) reaches them.
+Plan files have no row. [caic-plan](../caic-plan/SKILL.md) owns their structure. Apply the shared skim-reading rule above and [revision-pass.md](references/revision-pass.md) to plans and other local working drafts too.
 
 ## The loop
 
 Rules on their own produce a draft nobody measured. Run all five steps.
 
-1. **Route.** Find your row above, open its rules file, and read the structural owner it names. Read [tone.md](../../../references/tone.md) for voice.
+1. **Route before drafting.** Apply the shared skim-reading rule above, then open the rules file for the copy you are changing. Read its structural owner when creating a new artifact or changing its structure. Reuse guidance already in context. Related links are navigation, not a requirement to load every file.
 2. **Draft.** The fewest words that carry the idea.
 3. **Measure, where a number exists.** Run `npm run reading-level -- <file>`. [tone.md](../../../references/tone.md) owns the ceiling and what a score means. Over it, shorten sentences and swap long words for short ones. Never buy the grade by cutting a qualifier that carries the contract.
 4. **Revise.** [revision-pass.md](references/revision-pass.md), every time, including when step 3 came back green.
-5. **Gate.** The command in your row, plus whatever [definition-of-done.md](../../../references/definition-of-done.md) lists for the area you touched.
+5. **Gate.** Use your row and [definition-of-done.md](../../../references/definition-of-done.md) to select checks for what changed. A prose-only internal comment needs a clarity review; it does not require a package build. Preserve any required check for executable behavior or rendered documentation.
 
 **Types 3, 5, 7, 9, 10, 11, and 13 are where the number is trustworthy** — they are plain markdown. The scorer reads any file you hand it but strips only markdown, so a type-4 MDX file scores its JSX as prose and comes back inflated. Types 1, 2, 6, 8, 12, and 14 are TypeScript, JSON, or not a file at all, so step 3 does not apply and step 4 does the whole job by hand.
 

@@ -44,6 +44,7 @@ import {
   createMessageRequestForFileUpload,
   createMessageRequestForText,
   createMessageResponseForText,
+  hasServiceDesk,
 } from '../../utils/messageUtils';
 import { assertType, consoleError, debugLog } from '../../utils/miscUtils';
 import {
@@ -72,6 +73,8 @@ import {
   MessageResponse,
   TextItem,
 } from '../../../types/messaging/Messages';
+import { AppConfig } from '../../../types/state/AppConfig';
+import { OnErrorType } from '../../../types/config/ErrorConfig';
 import {
   AdditionalDataToAgent,
   AgentAvailability,
@@ -428,7 +431,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
     const wasSuspended = this.isSuspended();
 
     this.cancelHumanAgentJoinedTimer();
-    this.closeScreenShareRequestModal(ScreenShareState.CANCELLED);
+    this.closeScreenShareRequestPanel(ScreenShareState.CANCELLED);
 
     try {
       await resolveOrTimeout(
@@ -690,6 +693,99 @@ class HumanAgentServiceImpl implements HumanAgentService {
   }
 
   /**
+   * Handles a "connect_to_agent" item: checks whether any human agents are online, with
+   * the loading indicator up while it waits, records the result on the message, and
+   * starts the chat right away when the configuration skips the connect card. With no
+   * service desk configured, it reports an integration error and records that instead.
+   *
+   * @param localMessageItem The local item for the "connect_to_agent" item.
+   * @param fullMessage The message the item belongs to.
+   * @param config The configuration to act on.
+   * @param initialRestartCount The restart count when the message arrived. The result is
+   * dropped when the conversation restarted while the check was pending.
+   */
+  async handleConnectToHumanAgent(
+    localMessageItem: LocalMessageItem,
+    fullMessage: MessageResponse,
+    config: AppConfig,
+    initialRestartCount: number
+  ) {
+    const { store } = this.serviceManager;
+
+    // For the "connect_to_agent" response, we need to determine the agents' availability before we can
+    // continue to process the message items. Let's increment the typing counter while we're waiting for a
+    // result from areAnyAgentsOnline.
+    store.dispatch(actions.addIsLoadingCounter(1));
+
+    // Create a partial message to record the current state of agent availability and any service desk errors.
+    const partialMessage: DeepPartial<MessageResponse> = {
+      history: {},
+      ui_state_internal: {},
+    };
+
+    // Determine if the CTA card should display a service desk error.
+    if (!hasServiceDesk(config)) {
+      // Report this error.
+      const message =
+        'Web chat received a "connect_to_agent" message but there is no service desk configured. Check your chat configuration.';
+      this.serviceManager.actions.errorOccurred({
+        errorType: OnErrorType.INTEGRATION_ERROR,
+        message,
+      });
+
+      // Make sure this state is reflected in history.
+      store.dispatch(
+        actions.setMessageUIStateInternalProperty(
+          localMessageItem.fullMessageID,
+          'agent_no_service_desk',
+          true
+        )
+      );
+      partialMessage.ui_state_internal.agent_no_service_desk = true;
+    }
+
+    const agentAvailability =
+      await this.checkAreAnyHumanAgentsOnline(fullMessage);
+
+    // If a restart occurred while waiting for the agents online check, then skip the processing below.
+    if (initialRestartCount === this.serviceManager.restartCount) {
+      // Update the value in the redux store.
+      store.dispatch(
+        actions.setMessageUIStateInternalProperty(
+          localMessageItem.fullMessageID,
+          'agent_availability',
+          agentAvailability
+        )
+      );
+
+      partialMessage.ui_state_internal = partialMessage.ui_state_internal || {};
+
+      // Send event to back-end to save the current agent availability state so session history can use it on reload.
+      partialMessage.ui_state_internal.agent_availability = agentAvailability;
+
+      let shouldAutoRequestHumanAgent = false;
+
+      // If configured, then auto-connect right now.
+      if (config.public.serviceDesk?.skipConnectHumanAgentCard) {
+        shouldAutoRequestHumanAgent = true;
+      }
+
+      // Decrement the typing counter to get rid of the pause.
+      store.dispatch(actions.addIsLoadingCounter(-1));
+
+      if (
+        shouldAutoRequestHumanAgent &&
+        agentAvailability === HumanAgentsOnlineStatus.ONLINE
+      ) {
+        this.serviceManager.humanAgentService.startChat(
+          localMessageItem,
+          fullMessage
+        );
+      }
+    }
+  }
+
+  /**
    * Tells the service desk if a user has started or stopped typing.
    *
    * @param isTyping If true, indicates that the user is typing. False indicates the user has stopped typing.
@@ -764,8 +860,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
       return;
     }
 
-    // Close the modal.
-    this.closeScreenShareRequestModal(state);
+    this.closeScreenShareRequestPanel(state);
 
     let agentMessageType: HumanAgentMessageType;
     switch (state) {
@@ -861,10 +956,9 @@ class HumanAgentServiceImpl implements HumanAgentService {
   }
 
   /**
-   * Closes the screen share request modal and completes the promise waiting on it.
+   * Closes the screen share request panel and completes the promise waiting on it.
    */
-  closeScreenShareRequestModal(state: ScreenShareState) {
-    // Close the modal if it was open.
+  closeScreenShareRequestPanel(state: ScreenShareState) {
     this.serviceManager.store.dispatch(setShowScreenShareRequest(false));
 
     // If someone is waiting on the Promise, then resolve it.
@@ -1342,7 +1436,7 @@ class ServiceDeskCallbackImpl<
   }
 
   /**
-   * Requests that the user share their screen with the agent. This will present a modal dialog to the user who must
+   * Requests that the user share their screen with the agent. This opens a panel where the user must
    * respond before continuing the conversation. This method returns a Promise that resolves when the user has
    * responded to the request or the request times out.
    *
@@ -1374,7 +1468,7 @@ class ServiceDeskCallbackImpl<
     const wasScreenSharing =
       this.serviceManager.store.getState().humanAgentState.isScreenSharing;
     const requestPending = this.service.screenShareRequestPromise;
-    this.service.closeScreenShareRequestModal(ScreenShareState.CANCELLED);
+    this.service.closeScreenShareRequestPanel(ScreenShareState.CANCELLED);
     if (wasScreenSharing) {
       this.serviceManager.store.dispatch(setIsScreenSharing(false));
       await this.service.addHumanAgentLocalMessage(SHARING_ENDED);

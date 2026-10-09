@@ -19,7 +19,7 @@ import {
   HistoryPanelItems,
   HistorySearchItem,
   HistoryDeletePanel,
-} from '@carbon/ai-chat-components/es/react/history';
+} from '@carbon/ai-chat-components/es/react/history/index.js';
 import {
   historyItemActions,
   pinnedHistoryItemActions,
@@ -29,7 +29,7 @@ import {
   resultItemSection,
 } from '../fixtures/history/chatHistoryData';
 import { customLoadHistory } from '../fixtures/history/customLoadHistory';
-import { focusElementAfterRepaint } from '@carbon/ai-chat-components/es/globals/utils/focus-utils';
+import { focusElementAfterRepaint } from '@carbon/ai-chat-components/es/globals/utils/focus-utils.js';
 
 import { PinFilled, Search, Time } from '@carbon/icons-react';
 import React, { useState, useCallback, useRef } from 'react';

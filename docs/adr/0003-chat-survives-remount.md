@@ -1,5 +1,5 @@
 ---
-status: proposed
+status: accepted
 date: 2026-09-15
 feedback-by: 2026-09-24
 discussion:
@@ -214,4 +214,4 @@ None.
 
 ## Decision
 
-Not decided. Feedback by 2026-09-24 in the RFC discussion linked above.
+Accepted. A chat survives remount as proposed. In 1.x, `lifecycle.reuseInstance` opts in. In 2.0 reuse is the default, and `lifecycle.onUnmount: 'destroy'` is how a host gets a fresh chat instead. The grace window defaults to 3 seconds. Two live claims on the same namespace are an error. The headless SDK in ADR-0002 uses the same lifetime model.

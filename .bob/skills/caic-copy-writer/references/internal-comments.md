@@ -1,8 +1,8 @@
 # internal-comments.md — comments in the source (type 2)
 
-Load this before adding or editing a comment anywhere under `packages/*/src/**` that is not the public types tree, in either package. **[public-jsdoc.md](public-jsdoc.md) is the opposite instruction in the same source tree** — check which side of the types directory you are on before writing a word.
+Load this for internal source comments. Public API JSDoc uses [public-jsdoc.md](public-jsdoc.md) instead; open that route only when the comment is part of the public contract.
 
-Structural owner: [code-patterns.md](../../../../references/code-patterns.md#comments), which sets the repo default at *no comments* — the code states what it does.
+Structural owner: the [comments rule](../../../../references/code-patterns.md#comments). Read that section when adding a new kind of comment; reuse it if already loaded.
 
 - **A comment earns its place by carrying a non-obvious _why_**: a hidden constraint, a subtle invariant, a bug workaround.
 - **Note form is correct here.** Fragments, no ceremony. Type 1's complete-sentence bar does not reach this tree.

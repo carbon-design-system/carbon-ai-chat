@@ -1,31 +1,42 @@
-# Updates the versions array within the `versions.js` file with latest stable version
 name: Update versions.js file
 
-# Gets triggered every time a full/stable release tag has been published from the
-# `create-release-tag-and-pr` workflow or can also be triggered manually
 on:
   workflow_dispatch:
     inputs:
-      tag:
-        # Recently published stable version
-        # This is used to create branch to push the changes to
+      sha:
         required: true
-        description: 'release tag (ie. v1.1.0)'
+        description: 'SHA of the checkout used to build both Storybooks'
         type: string
-        default: 'v1.1.0'
+      chat_version:
+        required: true
+        description: 'Stable @carbon/ai-chat package version, without v'
+        type: string
+      components_version:
+        required: true
+        description: 'Stable @carbon/ai-chat-components package version, without v'
+        type: string
   repository_dispatch:
     types: [update-versions-file]
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: update-versions-file
+  queue: max
+  cancel-in-progress: false
 
 jobs:
   update-versions-file:
+    if: github.event_name == 'workflow_dispatch' || github.event.client_payload.sha
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    permissions:
+      contents: read
     env:
-      GH_TOKEN: ${{ secrets.PAT }}
+      BUILD_SHA: ${{ github.event.client_payload.sha || github.event.inputs.sha }}
+      CHAT_VERSION: ${{ github.event.client_payload.chat_version || github.event.inputs.chat_version }}
+      COMPONENTS_VERSION: ${{ github.event.client_payload.components_version || github.event.inputs.components_version }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.COMMON_COS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.COMMON_COS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: ${{ secrets.COMMON_COS_REGION }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -33,59 +44,81 @@ jobs:
           ref: ${{ github.event.client_payload.branch || github.ref_name }}
           token: ${{ secrets.PAT }}
 
-      - run: |
-          git config --global user.email ${{ secrets.CARBON_BOT_EMAIL }}
-          git config --global user.name ${{ secrets.CARBON_BOT_NAME }}
+      - name: Checkout current catalog updater
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: catalog-tools
+          persist-credentials: false
 
-      - name: Read version from package.json and update versions.js
+      - name: Sync target branch
+        env:
+          TARGET_BRANCH: ${{ github.event.client_payload.branch || github.ref_name }}
+          BOT_EMAIL: ${{ secrets.CARBON_BOT_EMAIL }}
+          BOT_NAME: ${{ secrets.CARBON_BOT_NAME }}
         run: |
-          node - <<'EOF'
-          const fs = require('fs');
-          const pkg = require('./packages/ai-chat/package.json');
-          const version = pkg.version;
+          git config user.email "$BOT_EMAIL"
+          git config user.name "$BOT_NAME"
+          git pull --ff-only origin "$TARGET_BRANCH"
 
-          const file = 'versions.js';
-          let content = fs.readFileSync(file, 'utf8');
+      - name: Use Node.js version from .nvmrc
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: 'catalog-tools/.nvmrc'
 
-          const regex = /export const AI_CHAT_VERSIONS\s*=\s*(\[[\s\S]*?\]);/;
-          const match = content.match(regex);
-          if (!match) {
-            console.error("Could not find AI_CHAT_VERSIONS array in versions.js");
-            process.exit(1);
-          }
+      - name: Read published catalog directly from COS
+        env:
+          COS_BUCKET: ${{ secrets.COMMON_COS_BUCKET }}
+          COS_ENDPOINT: ${{ secrets.COMMON_COS_ENDPOINT }}
+        run: |
+          aws --endpoint-url "https://$COS_ENDPOINT" s3 cp "s3://$COS_BUCKET/versions.js" published-versions.js
 
-          let arr = eval(match[1]); // parse the JS array
-          const versionWithPrefix = "v" + version;
-          if (!arr.includes(versionWithPrefix)) {
-            arr.unshift(versionWithPrefix);
-          }
-
-          // Match the repo's prettier style: single quotes, trailing comma
-          const formattedArray = `[\n${arr.map((v) => `  '${v}',`).join('\n')}\n]`;
-
-          const newContent = content.replace(
-            regex,
-            `export const AI_CHAT_VERSIONS = ${formattedArray};`
-          );
-
-          fs.writeFileSync(file, newContent);
-          console.log("Updated versions.js with", versionWithPrefix);
+      - name: Verify deployed Storybook destinations
+        id: verify-pages
+        env:
+          COS_BUCKET: ${{ secrets.COMMON_COS_BUCKET }}
+          COS_ENDPOINT: ${{ secrets.COMMON_COS_ENDPOINT }}
+        run: |
+          for flavor in storybook storybook/react; do
+            aws --endpoint-url "https://$COS_ENDPOINT" s3api head-object \
+              --bucket "$COS_BUCKET" \
+              --key "components/$flavor/version/v${COMPONENTS_VERSION}/index.html" > /dev/null
+          done
+          node --input-type=module - <<'EOF' > seed-versions.txt
+          import { AI_CHAT_COMPONENTS_VERSIONS } from './catalog-tools/versions.js';
+          console.log(AI_CHAT_COMPONENTS_VERSIONS.join('\n'));
           EOF
+          while IFS= read -r version; do
+            for flavor in storybook storybook/react; do
+              aws --endpoint-url "https://$COS_ENDPOINT" s3api head-object \
+                --bucket "$COS_BUCKET" \
+                --key "components/$flavor/version/$version/index.html" > /dev/null
+            done
+          done < seed-versions.txt
+          echo 'seed_verified=true' >> "$GITHUB_OUTPUT"
 
-      - name: Commit updated versions.js file
+      - name: Merge published history with built versions
+        env:
+          SEED_VERIFIED: ${{ steps.verify-pages.outputs.seed_verified }}
+        run: node catalog-tools/scripts/update-versions-file.cjs
+
+      - name: Commit updated catalog
+        env:
+          TARGET_BRANCH: ${{ github.event.client_payload.branch || github.ref_name }}
         run: |
-          git pull
-          git add versions.js
-          git commit -m "chore: update versions.js file"
-          git push origin ${{ github.event.client_payload.branch || github.ref_name }}
+          if git diff --quiet -- versions.js; then
+            echo 'Catalog is unchanged.'
+          else
+            git add versions.js
+            git commit -m 'chore: update versions.js file'
+            git push origin "HEAD:$TARGET_BRANCH"
+          fi
 
-      - name: Put versions.js file in temp directory
-        run: mkdir temp && cp versions.js temp/
+      - name: Prepare catalog upload
+        run: mkdir catalog-upload && cp versions.js catalog-upload/
 
-      # Upload versions.js file to COS
-      # ie. chat.carbondesignsystem.com/versions.js
-      - name: Upload versions.js file to COS
-        uses: jakejarvis/s3-sync-action@master
+      - name: Upload versions.js to COS
+        uses: jakejarvis/s3-sync-action@7ed8b112447abb09f1da74f3466e4194fc7a6311 # master
         with:
           args: --acl public-read --follow-symlinks
         env:
@@ -94,4 +127,4 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.COMMON_COS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
           AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
-          SOURCE_DIR: 'temp'
+          SOURCE_DIR: 'catalog-upload'

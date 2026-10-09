@@ -15,14 +15,18 @@
  * by this example is React 17 compatibility, not a chat feature.
  *
  * APIs exercised:
- *   - `ChatContainer` (the chat surface — kept minimal so the framework
+ *   - `ChatContainer` and `ChatCustomElement` (kept minimal so the framework
  *     glue is the focus)
  *   - `ReactDOM.render` from `react-dom`
  *
  * Start reading at: the `ReactDOM.render` call at the bottom of this file.
  */
 
-import { ChatContainer, PublicConfig } from '@carbon/ai-chat';
+import {
+  ChatContainer,
+  ChatCustomElement,
+  PublicConfig,
+} from '@carbon/ai-chat';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
@@ -36,7 +40,72 @@ const config: PublicConfig = {
   },
 };
 
+// `?wrapper=custom` swaps the floating widget for a chat in a sized element, so one page covers both React components on React 17.
+const showCustomElement =
+  new URLSearchParams(window.location.search).get('wrapper') === 'custom';
+
+/** The query-only fixture checks DOM props against this example's React version. */
+function HostPropsProbe() {
+  const [phase, setPhase] = React.useState('initial');
+  const [lastClick, setLastClick] = React.useState('none');
+  const [callbacks, setCallbacks] = React.useState<string[]>([]);
+  const updated = phase === 'updated';
+  const hostProps: React.HTMLAttributes<HTMLElement> =
+    phase === 'omitted'
+      ? {}
+      : {
+          id: `host-${phase}`,
+          className: `host-${phase}`,
+          title: phase,
+          hidden: updated,
+          draggable: !updated,
+          spellCheck: !updated,
+          contentEditable: updated,
+          tabIndex: updated ? 3 : 2,
+          'aria-label': phase,
+          'aria-hidden': updated,
+          style: updated ? { padding: '4px' } : { color: 'rgb(1, 2, 3)' },
+          onClick: (event) =>
+            setLastClick(`${phase}:${event.currentTarget.localName}`),
+        };
+
+  return (
+    <>
+      <button type="button" onClick={() => setPhase('updated')}>
+        Update host props
+      </button>
+      <button type="button" onClick={() => setPhase('omitted')}>
+        Remove host props
+      </button>
+      <output data-testid="host-click">{lastClick}</output>
+      <output data-testid="host-callbacks">
+        {callbacks.join(',') || 'none'}
+      </output>
+      <ChatContainer
+        {...config}
+        {...hostProps}
+        data-testid="props-host"
+        onBeforeRender={() => setCallbacks((calls) => [...calls, 'before'])}
+        onAfterRender={() => setCallbacks((calls) => [...calls, 'after'])}
+      />
+    </>
+  );
+}
+
 function App() {
+  if (new URLSearchParams(window.location.search).has('host-props')) {
+    return <HostPropsProbe />;
+  }
+  if (showCustomElement) {
+    return (
+      <ChatCustomElement
+        {...config}
+        className="chat-custom-element"
+        layout={{ showFrame: false }}
+        openChatByDefault
+      />
+    );
+  }
   return <ChatContainer {...config} />;
 }
 

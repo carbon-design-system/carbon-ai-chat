@@ -13,7 +13,11 @@ import DocumentNode from '@tiptap/extension-document';
 import ParagraphNode from '@tiptap/extension-paragraph';
 import TextNode from '@tiptap/extension-text';
 
-import { carbonStarterTrigger } from '../carbon-starter-trigger.js';
+import {
+  carbonStarterTrigger,
+  readStarterStorage,
+  writeStarterStorage,
+} from '../carbon-starter-trigger.js';
 import type { TriggerChangeEventDetail } from '../types.js';
 
 const ITEMS = [
@@ -124,5 +128,17 @@ describe('tiptap/carbon-starter-trigger', function () {
     // No null should be emitted by the trigger itself on blur.
     const nullEvents = events.filter((e) => e === null);
     expect(nullEvents.length).to.equal(0);
+  });
+
+  it('keeps a storage write made before the editor finishes creating', async () => {
+    // Tiptap emits `create` a macrotask after construction. A host config
+    // update can land in that gap and must not be reset by it.
+    const { editor, cleanup: c } = makeEditor();
+    cleanup = c;
+
+    writeStarterStorage(editor, { isOn: false });
+    await flushMacrotask();
+
+    expect(readStarterStorage(editor)?.isOn).to.equal(false);
   });
 });

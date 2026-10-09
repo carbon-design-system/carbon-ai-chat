@@ -54,6 +54,8 @@ Pick by **the file you are editing**, never by the package's dependency list: `@
 
 The vendored `carbon-builder` skill instructs "Default to **React** unless the user specifies Web Components." That default is wrong for most of this repo, and the table above overrides it. Take its JSX verbatim only in the React rows; anywhere else treat a React snippet as a translation hint and rewrite it as Lit before saving. Pass `filters.component_type` on every Carbon MCP call, or results mix flavors and you adopt the wrong snippet.
 
+**Follow repository verification gates.** The skill's "no tests" and "stop after emitting the requested files" defaults do not apply here. Complete the applicable [definition-of-done.md](definition-of-done.md) gate, including tests, docs, and review required by the change. Keep these overrides here; do not edit the vendored skill.
+
 ## Naming & prefix discipline (build-breaking)
 
 Never hardcode `cds--` in SCSS or TSX class strings — the `es-custom` build re-prefixes (`cds--custom`) and a literal `cds--` slips through unchanged, breaking that bundle.
@@ -77,7 +79,7 @@ Never hardcode `cds--` in SCSS or TSX class strings — the `es-custom` build re
 - **The test**: if you can only exercise it by rendering something, it's in the wrong place. Logic in a plain module is testable by calling it.
 - **Framework-agnostic ≠ DOM-free.** Touching `document`, measuring an element, or reading a media query is fine in a plain module — see the existing `utils/` helpers. It's the framework coupling to avoid, not the browser.
 
-Where it goes in `@carbon/ai-chat`: pure helpers in `src/chat/utils/`, stateful or side-effecting collaborators as services (see [packages/ai-chat/AGENTS.md](../packages/ai-chat/AGENTS.md)), state transitions in store reducers. In `@carbon/ai-chat-components`, prefer a sibling module over a method on the Lit element.
+Where it goes in `@carbon/ai-chat`: plain functions and DOM setup helpers that return cleanup in `src/chat/utils/`, stateful classes as services (see [packages/ai-chat/AGENTS.md](../packages/ai-chat/AGENTS.md)), state transitions in store reducers. In `@carbon/ai-chat-components`, prefer a sibling module over a method on the Lit element.
 
 Beyond testability, this is directional: the React layer is meant to get thinner over time, and logic that never imported React moves for free.
 

@@ -328,9 +328,9 @@ export {
   LauncherConfig,
 } from './types/config/LauncherConfig';
 
-export { CdsAiChatContainerAttributes } from './web-components/cds-aichat-container/index';
+export { CdsAiChatContainerAttributes } from './web-components/cds-aichat-container/cds-aichat-container';
 
-export { CdsAiChatCustomElementAttributes } from './web-components/cds-aichat-custom-element/index';
+export type { CdsAiChatCustomElementAttributes } from './web-components/cds-aichat-custom-element/types';
 
 export {
   ChatContainerPropsMarkdown,

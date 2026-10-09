@@ -18,7 +18,7 @@ import comments from 'postcss-discard-comments';
 import { dts } from 'rollup-plugin-dts';
 import postcss from 'rollup-plugin-postcss';
 import { visualizer } from 'rollup-plugin-visualizer';
-import { parseJsonConfigFileContent, sys } from 'typescript';
+import TypeScript, { parseJsonConfigFileContent, sys } from 'typescript';
 import { fileURLToPath } from 'url';
 import fs from 'fs-extra';
 import { globby } from 'globby';
@@ -46,12 +46,52 @@ const external = [
 
 const treeshake = true;
 
+// TypeScript can schedule one final watch update after a watch program closes,
+// which recreates file watchers and prevents one-shot Rollup builds from exiting.
+// Track the host timers so closing the program also cancels those pending updates.
+const typescriptWithSafeWatchClose = {
+  ...TypeScript,
+  createWatchProgram(host) {
+    const timers = new Set();
+    const { setTimeout: schedule, clearTimeout: cancel } = host;
+
+    if (schedule && cancel) {
+      host.setTimeout = (callback, milliseconds, ...args) => {
+        const timer = schedule(
+          () => {
+            timers.delete(timer);
+            callback(...args);
+          },
+          milliseconds,
+          ...args,
+        );
+        timers.add(timer);
+        return timer;
+      };
+      host.clearTimeout = (timer) => {
+        timers.delete(timer);
+        cancel(timer);
+      };
+    }
+
+    const program = TypeScript.createWatchProgram(host);
+    const { close } = program;
+    program.close = () => {
+      close.call(program);
+      if (cancel) {
+        timers.forEach((timer) => cancel(timer));
+      }
+      timers.clear();
+    };
+    return program;
+  },
+};
+
 /**
  * Simplified tsconfig for dts plugin.
  */
 const dtsTsConfig = {
   compilerOptions: {
-    baseUrl: './',
     jsx: 'react-jsx', // Enables the new JSX runtime
     allowSyntheticDefaultImports: true, // Allows default imports for React
     esModuleInterop: true, // Ensures compatibility with ES modules
@@ -175,6 +215,7 @@ async function runRollup() {
           'process.env.NODE_ENV': JSON.stringify('production'),
         }),
         typescript({
+          typescript: typescriptWithSafeWatchClose,
           tsconfig: path.join(paths.root, '/tsconfig.json'),
           allowSyntheticDefaultImports: true,
           compilerOptions: {
@@ -276,7 +317,9 @@ async function postBuild() {
 
       // Find import/export lines and transform only the small, allowed parts in them.
       // Then replace those lines with placeholders so global replacements don't touch them.
-      const importExportRegex = /^[ \t]*(?:import|export)[^\r\n]*(?:\r?\n|$)/gm;
+      // The sourceMappingURL comment is masked too: files keep their `es` names, so
+      // `chat.cds-aichat-container.js` must still point at its own map.
+      const importExportRegex = /^[ \t]*(?:import|export|\/\/# sourceMappingURL=)[^\r\n]*(?:\r?\n|$)/gm;
       const placeholders = [];
 
       const masked = content.replace(importExportRegex, (match) => {

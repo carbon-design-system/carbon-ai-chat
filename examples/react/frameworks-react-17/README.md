@@ -1,10 +1,11 @@
 # Frameworks / React 17
 
-Runs `ChatContainer` on React 17 using the legacy `ReactDOM.render` root, proving the library still works on the pre-concurrent API.
+Runs `ChatContainer` and `ChatCustomElement` on React 17 using the legacy `ReactDOM.render` root, proving the library still works on the pre-concurrent API.
 
 ## What this example shows
 
 - Mounting with `ReactDOM.render` (not `createRoot`).
+- Both React components: the floating `ChatContainer` at `/`, and `ChatCustomElement` in a sized element at `/?wrapper=custom`.
 - A minimal mock `customSendMessage` that echoes user input.
 
 ## When to use this pattern
@@ -16,7 +17,8 @@ Runs `ChatContainer` on React 17 using the legacy `ReactDOM.render` root, provin
 
 | Symbol | Package / kind | Role in this example |
 | --- | --- | --- |
-| `ChatContainer` | `@carbon/ai-chat` component | Mounts the chat UI. |
+| `ChatContainer` | `@carbon/ai-chat` component | Mounts the floating chat UI. |
+| `ChatCustomElement` | `@carbon/ai-chat` component | Mounts the chat in a sized element. |
 | `PublicConfig` | `@carbon/ai-chat` type | Config shape. |
 | `customSendMessage` | `messaging` prop | Minimal echo mock backend. |
 | `ReactDOM.render` | `react-dom` | Legacy React 17 mount. |

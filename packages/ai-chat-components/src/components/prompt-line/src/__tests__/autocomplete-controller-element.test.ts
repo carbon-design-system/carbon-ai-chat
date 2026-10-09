@@ -119,4 +119,144 @@ describe('<cds-aichat-autocomplete-controller>', () => {
       expect(event.detail.text).to.equal(text);
     });
   });
+
+  describe('cds-aichat-list-navigated + listNavigated', () => {
+    it('fires cds-aichat-list-navigated with navigated:true when cds-aichat-autocomplete-navigated bubbles in', async () => {
+      const el = await mountWithStarters();
+
+      fireTriggerChange(el, { type: 'starter', query: '', triggerOffset: 0 });
+      await flush();
+      await el.updateComplete;
+
+      const autocomplete = el.querySelector('cds-aichat-autocomplete');
+      expect(autocomplete).to.exist;
+
+      setTimeout(() =>
+        autocomplete!.dispatchEvent(
+          new CustomEvent('cds-aichat-autocomplete-navigated', {
+            detail: { navigated: true },
+            bubbles: true,
+            composed: true,
+          })
+        )
+      );
+
+      const event = (await oneEvent(
+        el,
+        'cds-aichat-list-navigated'
+      )) as CustomEvent<{ navigated: boolean }>;
+
+      expect(event.bubbles).to.equal(true);
+      expect(event.composed).to.equal(true);
+      expect(event.detail.navigated).to.equal(true);
+    });
+
+    it('exposes listNavigated getter reflecting the current navigation state', async () => {
+      const el = await mountWithStarters();
+
+      fireTriggerChange(el, { type: 'starter', query: '', triggerOffset: 0 });
+      await flush();
+      await el.updateComplete;
+
+      const autocomplete = el.querySelector('cds-aichat-autocomplete');
+      expect(autocomplete).to.exist;
+      expect(el.listNavigated).to.equal(false);
+
+      // Navigate into the list.
+      autocomplete!.dispatchEvent(
+        new CustomEvent('cds-aichat-autocomplete-navigated', {
+          detail: { navigated: true },
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+      expect(el.listNavigated).to.equal(true);
+
+      // Navigation clears.
+      autocomplete!.dispatchEvent(
+        new CustomEvent('cds-aichat-autocomplete-navigated', {
+          detail: { navigated: false },
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+      expect(el.listNavigated).to.equal(false);
+    });
+
+    it('fires cds-aichat-list-navigated with navigated:false when navigation clears', async () => {
+      const el = await mountWithStarters();
+
+      fireTriggerChange(el, { type: 'starter', query: '', triggerOffset: 0 });
+      await flush();
+      await el.updateComplete;
+
+      const autocomplete = el.querySelector('cds-aichat-autocomplete');
+
+      // First set navigated to true so we have state to clear.
+      autocomplete!.dispatchEvent(
+        new CustomEvent('cds-aichat-autocomplete-navigated', {
+          detail: { navigated: true },
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      // Now clear it and await the event.
+      setTimeout(() =>
+        autocomplete!.dispatchEvent(
+          new CustomEvent('cds-aichat-autocomplete-navigated', {
+            detail: { navigated: false },
+            bubbles: true,
+            composed: true,
+          })
+        )
+      );
+
+      const event = (await oneEvent(
+        el,
+        'cds-aichat-list-navigated'
+      )) as CustomEvent<{ navigated: boolean }>;
+
+      expect(event.detail.navigated).to.equal(false);
+    });
+
+    it('does not fire cds-aichat-list-navigated when the value does not change', async () => {
+      const el = await mountWithStarters();
+
+      fireTriggerChange(el, { type: 'starter', query: '', triggerOffset: 0 });
+      await flush();
+      await el.updateComplete;
+
+      const autocomplete = el.querySelector('cds-aichat-autocomplete');
+
+      // First navigate to set state to true.
+      autocomplete!.dispatchEvent(
+        new CustomEvent('cds-aichat-autocomplete-navigated', {
+          detail: { navigated: true },
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      let extraFired = false;
+      el.addEventListener('cds-aichat-list-navigated', () => {
+        extraFired = true;
+      });
+
+      // Dispatch the same value again — should be a no-op.
+      autocomplete!.dispatchEvent(
+        new CustomEvent('cds-aichat-autocomplete-navigated', {
+          detail: { navigated: true },
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+      expect(extraFired).to.equal(false);
+    });
+  });
 });

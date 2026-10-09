@@ -248,6 +248,38 @@ Replaces the built-in chat header with a custom React element using `WriteableEl
 
 </details>
 
+### [Custom prompt line](./custom-prompt-line/README.md)
+
+Replace the built-in prompt line with input components from `@carbon/ai-chat-components` and send text through the public API.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-custom-prompt-line`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `ChatCustomElement` | Chat host | Mounts the full-screen chat. |
+| `WriteableElementName.CUSTOM_PROMPT_LINE` | Slot | Replaces the built-in composer while it has content. |
+| `PromptLineShell` / `PromptLine` / `InputSendControl` | `@carbon/ai-chat-components` components | Render the editor and send control. |
+| `renderWriteableElements` | Host API | Supplies the custom composer. |
+| `onBeforeRender` | Callback | Gets the instance before the first paint. |
+| `instance.send` | Instance method | Sends the host draft. |
+| `instance.messaging.addMessage` | Instance method | Adds the mock reply. |
+| `instance.getState` | Instance method | Reads public loading and upload state. |
+| `instance.on` / `instance.off` | Instance methods | Manage the state subscription. |
+| `BusEventType.STATE_CHANGE` | Event | Updates send availability. |
+| `messaging.customSendMessage` | Config | Runs the local mock transport. |
+| `layout.showFrame` / `openChatByDefault` | Config | Opens the chat without its floating frame. |
+
+The input components handle text editing and keyboard behavior. The host owns labels, send handling, errors, limits, busy state, and uploads. This text-only example does not add uploads. Host uploads do not use the built-in queue or its public in-flight flag.
+
+Public state does not expose all built-in lockouts or a stop-streaming control. This example blocks sends during a human-agent session; it does not add service-desk routing. Send `fail` to try an error, then edit your draft and retry.
+
+Content enables the custom prompt line. You can add it after startup; `onBeforeRender` only controls timing. Removing it restores the built-in draft. The host owns whether to retain its own draft after removal.
+
+</details>
+
 ### [Feedback](./feedback/README.md)
 
 React example that subscribes to `BusEventType.FEEDBACK` and forwards `FeedbackInteractionType.SUBMITTED` events to the host page.
@@ -290,7 +322,7 @@ Embeds `ChatContainer` inside a Next.js 16 App Router page, loading the chat as 
 
 ### [Frameworks / React 17](./frameworks-react-17/README.md)
 
-Runs `ChatContainer` on React 17 using the legacy `ReactDOM.render` root, proving the library still works on the pre-concurrent API.
+Runs `ChatContainer` and `ChatCustomElement` on React 17 using the legacy `ReactDOM.render` root, proving the library still works on the pre-concurrent API.
 
 **Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-17`
 
@@ -299,27 +331,30 @@ Runs `ChatContainer` on React 17 using the legacy `ReactDOM.render` root, provin
 
 | Symbol | Package / kind | Role in this example |
 | --- | --- | --- |
-| `ChatContainer` | `@carbon/ai-chat` component | Mounts the chat UI. |
+| `ChatContainer` | `@carbon/ai-chat` component | Mounts the floating chat UI. |
+| `ChatCustomElement` | `@carbon/ai-chat` component | Mounts the chat in a sized element. |
 | `PublicConfig` | `@carbon/ai-chat` type | Config shape. |
 | `customSendMessage` | `messaging` prop | Minimal echo mock backend. |
 | `ReactDOM.render` | `react-dom` | Legacy React 17 mount. |
 
 </details>
 
-### [Frameworks / Vite](./frameworks-vite/README.md)
+### [Frameworks / React 18](./frameworks-react-18/README.md)
 
-Vite-powered React example that mounts `ChatContainer` with a minimal mock backend and adds a Vitest + happy-dom test suite.
+Runs `ChatContainer` and `ChatCustomElement` on React 18, mounted from the app's own `createRoot`.
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-frameworks-vite`
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-18`
 
 <details>
 <summary>APIs and props demonstrated</summary>
 
 | Symbol | Package / kind | Role in this example |
 | --- | --- | --- |
-| `ChatContainer` | `@carbon/ai-chat` component | Mounts the chat UI. |
+| `ChatContainer` | `@carbon/ai-chat` component | Mounts the floating chat UI. |
+| `ChatCustomElement` | `@carbon/ai-chat` component | Mounts the chat in a sized element. |
 | `PublicConfig` | `@carbon/ai-chat` type | Config shape. |
 | `customSendMessage` | `messaging` prop | Minimal echo mock backend. |
+| `createRoot` | `react-dom/client` | React 18 mount. |
 
 </details>
 
@@ -772,7 +807,7 @@ A keyboard-only Tiptap extension intercepts `ArrowUp` / `ArrowDown` in the chat 
 
 ### [Prompt line / Mentions & commands (custom render)](./prompt-line-mentions-and-commands-custom-render/README.md)
 
-The Mentions & Commands example with a `renderCustomToken` supplied for mentions: each picked user appears in the input as a Carbon `Tag` wrapped in a `Tooltip` showing the user's description on hover. Commands keep the default chip rendering.
+The Mentions & Commands example with a `renderCustomToken` supplied for mentions: each picked user appears in the input and in the sent message bubble as a Carbon `Tag` wrapped in a `Tooltip` showing the user's description on hover. Commands keep the default chip rendering.
 
 **Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-prompt-line-mentions-and-commands-custom-render`
 
@@ -788,6 +823,8 @@ The Mentions & Commands example with a `renderCustomToken` supplied for mentions
 | `input.mention` | config prop | Registers the `@`-mention trigger config on the input. |
 | `input.command` | config prop | Registers the `/`-command trigger config on the input. |
 | `mention.renderCustomToken` | config prop | Returns a React node rendered in place of the default mention chip. |
+| `renderUserDefinedInputNode` | component prop | Renders the custom mention chip inside the sent user message bubble. |
+| `RenderUserDefinedInputNodeState` | `@carbon/ai-chat` type | Types the `{ node }` argument of the `renderUserDefinedInputNode` callback. |
 | `mention.trigger` / `command.trigger` | config prop | Character (`@` or `/`) that opens the suggestion list. |
 | `command.triggerPosition` | config prop | `"start"` constrains commands to the beginning of the line. |
 | `mention.items` / `command.items` | config prop | Async filter (or static list) narrowing items as the user types. |
@@ -960,6 +997,33 @@ Baseline Jest + `jest-environment-jsdom` setup that verifies `ChatContainer` mou
 | `@testing-library/react` | test util | `render`, `act`, `waitFor`. |
 | `@testing-library/jest-dom` | test util | DOM matchers. |
 | `jest-environment-jsdom` | jest env | Default Jest DOM environment (no shadow-DOM support). |
+
+</details>
+
+### [Tests / Vitest (happy-dom)](./tests-vitest-happydom/README.md)
+
+Tests `ChatContainer` with Vitest and happy-dom, covering chat mounting, launcher clicks, shadow DOM queries, and slotted React content.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-tests-vitest-happydom`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `ChatContainer` | `@carbon/ai-chat` component | Mounts the chat under test. |
+| `PublicConfig` | `@carbon/ai-chat` type | Types the app's chat config. |
+| `messaging.customSendMessage` | Config prop | Supplies mock responses without a backend. |
+| `ChatInstance.messaging.addMessage` | Instance method | Adds text responses to the chat. |
+| `MessageResponseTypes.TEXT` | Response type | Marks a mock response as text. |
+| `renderWriteableElements.headerBottomElement` | Component prop | Inserts React content into the header slot. |
+| `data-testid` | Component prop | Gives the mounted chat a test selector. |
+| `PageObjectId` | `@carbon/ai-chat` enum | Identifies the launcher, main panel, input, and send button. |
+| `deepQuerySelector` | `@carbon/ai-chat-components` utility | Finds controls across nested shadow roots. |
+| `loadAllLazyDeps` | `@carbon/ai-chat/server` utility | Loads deferred modules before tests run. |
+| `render`, `act`, `waitFor`, `cleanup` | `@testing-library/react` utilities | Mount components, wait for updates, and clean up each test. |
+| `vi.mock`, `expect.addSnapshotSerializer` | Vitest utilities | Stub browser dependencies and normalize snapshots. |
+| `happy-dom` | Test environment | Provides DOM APIs for the Vitest suite. |
 
 </details>
 

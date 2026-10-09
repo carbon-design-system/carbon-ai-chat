@@ -60,7 +60,7 @@ Write the block to the shared criteria in [code-examples.md](../../references/co
 
 ## Definition of done
 
-When you change anything under [.](.) (or a type in `@carbon/ai-chat-components` that crosses into this package's public surface):
+For guidance-only edits, use the [guidance gate](../../../../references/definition-of-done.md#minimum-gate-by-area-edited). When you change a public type or its JSDoc here (including types surfaced from `@carbon/ai-chat-components`):
 
 1. `npm run build --workspace=@carbon/ai-chat` — rollup only. Use `npm run build:docs --workspace=@carbon/ai-chat` to also generate TypeDoc; the build fails on `validation.invalidLink` errors.
 2. If you added a new public export, confirm it appears in both [../aiChatEntry.tsx](../aiChatEntry.tsx) and [../serverEntry.ts](../serverEntry.ts).

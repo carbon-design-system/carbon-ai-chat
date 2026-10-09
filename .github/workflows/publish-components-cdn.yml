@@ -15,6 +15,9 @@ on:
   repository_dispatch:
     types: [publish-cdn-artifacts]
 
+permissions:
+  contents: write
+
 jobs:
   publish-cdn:
     runs-on: ubuntu-latest
@@ -22,7 +25,28 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: '0'
-          ref: ${{ github.event.client_payload.branch }}
+          ref: ${{ github.event.client_payload.branch || github.ref_name }}
+      - name: Capture published versions and checkout
+        id: release-versions
+        env:
+          RELEASE_TAG: ${{ github.event.client_payload.tag || github.event.inputs.tag }}
+        run: |
+          node - <<'EOF' >> "$GITHUB_OUTPUT"
+          const chat = require('./packages/ai-chat/package.json').version;
+          const components = require('./packages/ai-chat-components/package.json').version;
+          if (!/^\d+\.\d+\.\d+(?:-rc\.\d+)?$/.test(chat)) {
+            throw new Error('Unexpected chat package version');
+          }
+          if (process.env.RELEASE_TAG !== `v${chat}`) {
+            throw new Error('Release tag does not match the checked-out chat version');
+          }
+          if (!/^\d+\.\d+\.\d+(?:-rc\.\d+)?$/.test(components)) {
+            throw new Error('Unexpected components package version');
+          }
+          console.log(`chat=${chat}`);
+          console.log(`components=${components}`);
+          EOF
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - name: Use Node.js version from .nvmrc
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
@@ -40,12 +64,6 @@ jobs:
       - name: Check release type
         if: contains(github.event.client_payload.tag, '-rc.') || contains(github.event.inputs.tag, '-rc.')
         run: echo "PRE_RELEASE=true" >> $GITHUB_ENV
-      - name: Get version of web components from package.json
-        id: package-version
-        uses: martinbeentjes/npm-get-version-action@3cf273023a0dda27efcd3164bdfb51908dd46a5b # v1.3.1
-        with:
-          path: packages/ai-chat-components
-
       # If tag is a release candidate, upload the CDN artifacts to the `next` tag folder
       # ie. chat.carbondesignsystem.com/components/tag/next/breadcrumb.min.js
       - name: Upload components to COS under the `next` folder
@@ -155,7 +173,7 @@ jobs:
           AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
           AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
           SOURCE_DIR: 'packages/ai-chat-components/dist'
-          DEST_DIR: 'components/version/v${{steps.package-version.outputs.current-version}}'
+          DEST_DIR: 'components/version/v${{ steps.release-versions.outputs.components }}'
 
       # Upload the ai-chat-components Storybook to versioned folder
       # ie. chat.carbondesignsystem.com/components/storybook/version/v1.x.0/index.html
@@ -170,7 +188,7 @@ jobs:
           AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
           AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
           SOURCE_DIR: 'packages/ai-chat-components/storybook-static'
-          DEST_DIR: 'components/storybook/version/v${{steps.package-version.outputs.current-version}}'
+          DEST_DIR: 'components/storybook/version/v${{ steps.release-versions.outputs.components }}'
 
       # Upload the ai-chat-components React Storybook to versioned folder
       # ie. chat.carbondesignsystem.com/components/storybook/react/version/v1.x.0/index.html
@@ -185,4 +203,11 @@ jobs:
           AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
           AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
           SOURCE_DIR: 'packages/ai-chat-components/storybook-react-static'
-          DEST_DIR: 'components/storybook/react/version/v${{steps.package-version.outputs.current-version}}'
+          DEST_DIR: 'components/storybook/react/version/v${{ steps.release-versions.outputs.components }}'
+
+      - name: Update stable version catalog after both Storybooks publish
+        if: ${{ !env.PRE_RELEASE }}
+        uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4
+        with:
+          event-type: update-versions-file
+          client-payload: '{"branch":"${{ github.event.client_payload.branch || github.ref_name }}","sha":"${{ steps.release-versions.outputs.sha }}","chat_version":"${{ steps.release-versions.outputs.chat }}","components_version":"${{ steps.release-versions.outputs.components }}"}'

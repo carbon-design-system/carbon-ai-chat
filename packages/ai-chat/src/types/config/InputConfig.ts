@@ -99,6 +99,8 @@ export type CustomListProps = _CustomListProps;
 
 /**
  * Configuration for the input field in the main chat and homescreen.
+ * Only {@link InputConfig.isVisible} applies while
+ * {@link WriteableElementName.CUSTOM_PROMPT_LINE} has content.
  *
  * @category Config
  */
@@ -110,7 +112,10 @@ export interface InputConfig {
 
   /**
    * Controls whether the main input surface is visible when the chat loads.
-   * Defaults to true.
+   * Defaults to true. Also controls a custom prompt line in assistant and human-agent
+   * views. An override stored for the active input takes precedence. The deprecated
+   * {@link ChatInstance.updateInputFieldVisibility} method overrides the assistant input.
+   * Hiding the custom prompt line preserves its content.
    */
   isVisible?: boolean;
 

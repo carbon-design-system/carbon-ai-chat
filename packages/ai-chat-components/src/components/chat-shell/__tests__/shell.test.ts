@@ -832,6 +832,92 @@ describe('cds-aichat-shell', function () {
     });
   });
 
+  // ========== content-max-width / at-max-width Tests ==========
+  describe('content-max-width and at-max-width class', () => {
+    it('should apply at-max-width when content-max-width is not set, regardless of container width', async () => {
+      // Container is wider than the 672px messages-max-width threshold, but
+      // content-max-width is absent, so at-max-width must still be present.
+      const el = await fixture<CDSAIChatShell>(
+        html`<cds-aichat-shell
+          style="width: 673px; display: block;"></cds-aichat-shell>`
+      );
+      await el.updateComplete;
+      await nextFrame(2);
+
+      const inputAndMessages = el.shadowRoot!.querySelector(
+        '.input-and-messages'
+      );
+      expect(inputAndMessages!.classList.contains('at-max-width')).to.be.true;
+    });
+
+    it('should apply at-max-width when content-max-width is not set and container is narrower than 672px', async () => {
+      const el = await fixture<CDSAIChatShell>(
+        html`<cds-aichat-shell
+          style="width: 400px; display: block;"></cds-aichat-shell>`
+      );
+      await el.updateComplete;
+      await nextFrame(2);
+
+      const inputAndMessages = el.shadowRoot!.querySelector(
+        '.input-and-messages'
+      );
+      expect(inputAndMessages!.classList.contains('at-max-width')).to.be.true;
+    });
+
+    it('should apply at-max-width when content-max-width is set and container fits within 672px', async () => {
+      const el = await fixture<CDSAIChatShell>(
+        html`<cds-aichat-shell
+          content-max-width
+          style="width: 400px; display: block;"></cds-aichat-shell>`
+      );
+      await el.updateComplete;
+      await nextFrame(2);
+
+      const inputAndMessages = el.shadowRoot!.querySelector(
+        '.input-and-messages'
+      );
+      expect(inputAndMessages!.classList.contains('at-max-width')).to.be.true;
+    });
+
+    it('should NOT apply at-max-width when content-max-width is set and container exceeds 672px', async () => {
+      const el = await fixture<CDSAIChatShell>(
+        html`<cds-aichat-shell
+          content-max-width
+          style="width: 673px; display: block;"></cds-aichat-shell>`
+      );
+      await el.updateComplete;
+      await nextFrame(2);
+
+      const inputAndMessages = el.shadowRoot!.querySelector(
+        '.input-and-messages'
+      );
+      expect(inputAndMessages!.classList.contains('at-max-width')).to.be.false;
+    });
+
+    it('should restore at-max-width when content-max-width attribute is removed', async () => {
+      const el = await fixture<CDSAIChatShell>(
+        html`<cds-aichat-shell
+          content-max-width
+          style="width: 673px; display: block;"></cds-aichat-shell>`
+      );
+      await el.updateComplete;
+      await nextFrame(2);
+
+      // Confirm it starts without at-max-width
+      let inputAndMessages = el.shadowRoot!.querySelector(
+        '.input-and-messages'
+      );
+      expect(inputAndMessages!.classList.contains('at-max-width')).to.be.false;
+
+      // Remove content-max-width — at-max-width must now be applied unconditionally
+      el.contentMaxWidth = false;
+      await el.updateComplete;
+
+      inputAndMessages = el.shadowRoot!.querySelector('.input-and-messages');
+      expect(inputAndMessages!.classList.contains('at-max-width')).to.be.true;
+    });
+  });
+
   // ========== Snapshot Tests ==========
   describe('Snapshots', () => {
     it('should match snapshot with default configuration', async () => {
