@@ -34,6 +34,11 @@ interface ClickableImageProps {
   disabled?: boolean;
 
   /**
+   * Whether this button is the selected choice.
+   */
+  selected?: boolean;
+
+  /**
    * The callback function to fire when the component is clicked.
    */
   onClick?: () => void;
@@ -101,6 +106,7 @@ function Image(props: ImageProps) {
     buttonAltText,
     isLink,
     disabled,
+    selected,
     onClick,
     target,
     rel = 'noopener noreferrer',
@@ -187,7 +193,10 @@ function Image(props: ImageProps) {
   if (onClick) {
     return (
       <button
-        className="cds-aichat--clickable-image"
+        aria-pressed={selected}
+        className={cx('cds-aichat--clickable-image', {
+          'cds-aichat--button-item--selected': selected,
+        })}
         type="button"
         onClick={onClick}
         disabled={disabled}>

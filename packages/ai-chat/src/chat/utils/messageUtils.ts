@@ -46,6 +46,7 @@ import {
   OptionItemPreference,
   PartialItemChunk,
   PauseItem,
+  SelectionDisplay,
   SingleOption,
   StreamChunk,
   SystemMessageItem,
@@ -61,6 +62,68 @@ const THREAD_ID_MAIN = 'main';
  * custom node the bubble renders on its own. See {@link isRenderableDisplayNode}.
  */
 const DISPLAY_CONTENT_STRUCTURAL_NODES = new Set(['doc', 'paragraph', 'text']);
+
+type SelectableChoice = SingleOption | ButtonItem;
+
+interface ChoiceText {
+  controlText?: string;
+  transcriptText?: string;
+  outboundText?: string;
+}
+
+function resolveChoiceText(choice: SelectableChoice): ChoiceText {
+  const label = choice.label;
+  const inputText = choice.value?.input?.text;
+
+  return {
+    controlText: label || inputText,
+    transcriptText:
+      choice.selection_display === SelectionDisplay.INPUT_TEXT
+        ? inputText || label
+        : label || inputText,
+    outboundText: inputText || label,
+  };
+}
+
+function findSelectedChoiceIndex(
+  choices: SelectableChoice[],
+  request?: MessageRequest
+): number {
+  if (!request) {
+    return -1;
+  }
+
+  const historyLabel = request.history?.label;
+  const requestText = request.input?.text;
+  const validChoices = choices.map(resolveChoiceText);
+
+  if (historyLabel && requestText) {
+    const bothIndex = validChoices.findIndex(
+      ({ transcriptText, outboundText }) =>
+        transcriptText === historyLabel && outboundText === requestText
+    );
+    if (bothIndex !== -1) {
+      return bothIndex;
+    }
+  }
+
+  if (historyLabel) {
+    const labelIndex = validChoices.findIndex(
+      ({ transcriptText }) => transcriptText === historyLabel
+    );
+    if (labelIndex !== -1) {
+      return labelIndex;
+    }
+  }
+
+  if (requestText) {
+    return validChoices.findIndex(
+      ({ outboundText }) => outboundText === requestText
+    );
+  }
+
+  return -1;
+}
 
 /**
  * This function determines if the given message is an output message (i.e. a message output from the assistant) and
@@ -289,17 +352,25 @@ function createMessageRequestForChoice(
   choice: SingleOption,
   relatedResponseID?: string
 ): MessageRequest {
-  // The "value" of the choice contains the data that is to be sent to the server when this choice is selected.
-  // We'll clone it and add in the history value which stores the user-visible label in the history store.
+  const { transcriptText, outboundText } = resolveChoiceText(choice);
+  const input = cloneDeep(choice.value.input);
+  if (!input.text) {
+    input.text = outboundText;
+  }
+
   const messageRequest: MessageRequest = {
     id: uuid(),
     thread_id: THREAD_ID_MAIN,
-    ...cloneDeep(choice.value),
+    input,
   };
   messageRequest.history = {
-    label: choice.label,
+    is_choice_request: true,
+    label: transcriptText,
     related_message_id: relatedResponseID,
   };
+  if (choice.silent) {
+    messageRequest.history.silent = true;
+  }
 
   return messageRequest;
 }
@@ -316,10 +387,10 @@ function createMessageRequestForButtonItemOption(
   buttonItem: ButtonItem,
   relatedResponseID: string
 ) {
-  // The "value" of the choice contains the data that is to be sent to the server when this choice is selected.
+  const { transcriptText, outboundText } = resolveChoiceText(buttonItem);
   const input: MessageInput = cloneDeep(buttonItem.value?.input) ?? {};
   if (!input.text) {
-    input.text = buttonItem.label;
+    input.text = outboundText;
   }
 
   const messageRequest: MessageRequest = {
@@ -328,10 +399,11 @@ function createMessageRequestForButtonItemOption(
     input,
   };
 
-  messageRequest.history = { related_message_id: relatedResponseID };
-  if (buttonItem.label) {
-    messageRequest.history.label = buttonItem.label;
-  }
+  messageRequest.history = {
+    is_choice_request: true,
+    label: transcriptText,
+    related_message_id: relatedResponseID,
+  };
   if (buttonItem.silent) {
     messageRequest.history.silent = true;
   }
@@ -767,6 +839,8 @@ function getSpeakerName(
 
 export {
   getOptionType,
+  resolveChoiceText,
+  findSelectedChoiceIndex,
   isResponse,
   isCardResponseType,
   getRequestBubbleText,

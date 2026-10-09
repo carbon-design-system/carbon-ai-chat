@@ -15,7 +15,12 @@ import {
   setupAfterEach,
 } from '../../../test_helpers';
 import { BusEventType } from '../../../../src/types/events/eventBusTypes';
-import { MessageResponseTypes } from '../../../../src/types/messaging/Messages';
+import {
+  ButtonItemType,
+  MessageResponseTypes,
+  OptionItemPreference,
+  SelectionDisplay,
+} from '../../../../src/types/messaging/Messages';
 import { HistoryItem } from '../../../../src/types/messaging/History';
 
 describe('ChatInstance.messaging.insertHistory', () => {
@@ -513,6 +518,139 @@ describe('ChatInstance.messaging.insertHistory', () => {
       // Each insertion should fire both events
       expect(historyBeginHandler).toHaveBeenCalledTimes(2);
       expect(historyEndHandler).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('choice selection restoration', () => {
+    it.each([true, undefined])(
+      'restores the matching option group with is_choice_request=%s',
+      async (is_choice_request) => {
+        const { instance, store } =
+          await renderChatAndGetInstanceWithStore(createBaseConfig());
+        const historyItems: HistoryItem[] = [
+          {
+            message: {
+              id: 'choice-response',
+              output: {
+                generic: [
+                  {
+                    response_type: MessageResponseTypes.OPTION,
+                    preference: OptionItemPreference.BUTTON,
+                    options: [
+                      { label: '', value: { input: { text: '' } } },
+                      {
+                        label: 'Same label',
+                        value: { input: { text: 'first' } },
+                      },
+                    ],
+                  },
+                  {
+                    response_type: MessageResponseTypes.OPTION,
+                    preference: OptionItemPreference.DROPDOWN,
+                    options: [
+                      {
+                        label: 'Different control text',
+                        selection_display: SelectionDisplay.INPUT_TEXT,
+                        value: { input: { text: 'second' } },
+                      },
+                    ],
+                  },
+                ],
+              },
+            },
+            time: '2024-01-01T00:00:00.000Z',
+          },
+          {
+            message: {
+              id: 'choice-request',
+              input: { text: 'second' },
+              history: {
+                label: 'second',
+                related_message_id: 'choice-response',
+                is_choice_request,
+                silent: true,
+              },
+            },
+            time: '2024-01-01T00:00:01.000Z',
+          },
+        ];
+
+        await instance.messaging.insertHistory(
+          JSON.parse(JSON.stringify(historyItems))
+        );
+
+        const groups = Object.values(
+          store.getState().allMessageItemsByID
+        ).filter(
+          (item) =>
+            item.fullMessageID === 'choice-response' &&
+            item.item.response_type === MessageResponseTypes.OPTION
+        );
+        expect(groups).toHaveLength(2);
+        expect(groups[0].ui_state.optionSelected).toBeUndefined();
+        expect(groups[1].ui_state.optionSelected?.id).toBe('choice-request');
+        expect(
+          groups[1].ui_state.optionSelected?.history.is_choice_request
+        ).toBe(is_choice_request);
+        expect(
+          Object.values(store.getState().allMessageItemsByID).filter(
+            (item) => item.ui_state.optionSelected
+          )
+        ).toHaveLength(1);
+      }
+    );
+
+    it('restores a legacy unmarked post-back from top-level, body, and footer choices', async () => {
+      const { instance, store } =
+        await renderChatAndGetInstanceWithStore(createBaseConfig());
+      const postBack = (label: string, text: string) => ({
+        response_type: MessageResponseTypes.BUTTON,
+        button_type: ButtonItemType.POST_BACK,
+        label,
+        value: { input: { text } },
+      });
+      const historyItems: HistoryItem[] = [
+        {
+          message: {
+            id: 'button-response',
+            output: {
+              generic: [
+                postBack('Top level', 'top'),
+                {
+                  response_type: MessageResponseTypes.BUTTON,
+                  button_type: ButtonItemType.SHOW_PANEL,
+                  label: 'Open panel',
+                  panel: {
+                    body: [postBack('Body choice', 'body')],
+                    footer: [postBack('Footer choice', 'footer')],
+                  },
+                },
+              ],
+            },
+          },
+          time: '2024-01-01T00:00:00.000Z',
+        },
+        {
+          message: {
+            id: 'button-request',
+            input: { text: 'rewritten by pre-send' },
+            history: {
+              label: 'Footer choice',
+              related_message_id: 'button-response',
+            },
+          },
+          time: '2024-01-01T00:00:01.000Z',
+        },
+      ];
+
+      await instance.messaging.insertHistory(historyItems);
+
+      const selected = Object.values(
+        store.getState().allMessageItemsByID
+      ).filter((item) => item.ui_state.optionSelected);
+      expect(selected).toHaveLength(1);
+      expect((selected[0].item as any).label).toBe('Footer choice');
+      expect(selected[0].ui_state.optionSelected?.id).toBe('button-request');
     });
   });
 });

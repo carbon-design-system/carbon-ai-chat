@@ -18,6 +18,7 @@ import {
   createMessageResponseForItem,
   createMessageResponseForText,
   getOptionType,
+  findSelectedChoiceIndex,
   hasRequestBubbleContent,
   hasRequestFooter,
   hasServiceDesk,
@@ -43,6 +44,7 @@ import {
   isSystemMessageItem,
   isTextItem,
   renderAsUserDefinedMessage,
+  resolveChoiceText,
   streamItemID,
 } from '../../../src/chat/utils/messageUtils';
 import {
@@ -50,6 +52,7 @@ import {
   HumanAgentMessageType,
   MessageInputType,
   MessageResponseTypes,
+  SelectionDisplay,
 } from '../../../src/types/messaging/Messages';
 import { FileStatusValue } from '../../../src/chat/utils/constants';
 
@@ -115,7 +118,7 @@ describe('messageUtils', () => {
       'resp-3'
     );
     expect(buttonReq.input.text).toBe('card');
-    expect(buttonReq.history).not.toHaveProperty('label');
+    expect(buttonReq.history.label).toBe('card');
   });
 
   it('creates a button item request with no value input text', () => {
@@ -170,6 +173,159 @@ describe('messageUtils', () => {
     expect(buttonReq.input.text).toBe('card');
     expect(buttonReq.history.label).toBe('Return a card');
     expect(buttonReq.history.silent).toBe(true);
+  });
+
+  it.each([
+    {
+      name: 'default label mode',
+      item: { label: 'Label', value: { input: { text: 'input' } } },
+      control: 'Label',
+      transcript: 'Label',
+      outbound: 'input',
+    },
+    {
+      name: 'explicit label mode',
+      item: {
+        label: 'Label',
+        value: { input: { text: 'input' } },
+        selection_display: SelectionDisplay.LABEL,
+      },
+      control: 'Label',
+      transcript: 'Label',
+      outbound: 'input',
+    },
+    {
+      name: 'input-text mode',
+      item: {
+        label: 'Label',
+        value: { input: { text: 'input' } },
+        selection_display: SelectionDisplay.INPUT_TEXT,
+      },
+      control: 'Label',
+      transcript: 'input',
+      outbound: 'input',
+    },
+    {
+      name: 'label fallback',
+      item: {
+        label: '',
+        value: { input: { text: 'input' } },
+        selection_display: SelectionDisplay.LABEL,
+      },
+      control: 'input',
+      transcript: 'input',
+      outbound: 'input',
+    },
+    {
+      name: 'input fallback',
+      item: {
+        label: 'Label',
+        value: { input: { text: '' } },
+        selection_display: SelectionDisplay.INPUT_TEXT,
+      },
+      control: 'Label',
+      transcript: 'Label',
+      outbound: 'Label',
+    },
+    {
+      name: 'whitespace remains usable',
+      item: { label: ' ', value: { input: { text: 'input' } } },
+      control: ' ',
+      transcript: ' ',
+      outbound: 'input',
+    },
+  ])('resolves $name', ({ item, control, transcript, outbound }) => {
+    expect(resolveChoiceText(item as any)).toEqual({
+      controlText: control,
+      transcriptText: transcript,
+      outboundText: outbound,
+    });
+  });
+
+  it.each([
+    ['option', createMessageRequestForChoice],
+    ['post-back', createMessageRequestForButtonItemOption],
+  ])(
+    'preserves complete %s input and stores only resolved history',
+    (_, create) => {
+      const item = {
+        label: 'Visible label',
+        selection_display: SelectionDisplay.INPUT_TEXT,
+        silent: true,
+        value: {
+          input: {
+            text: 'sent text',
+            structured_data: { fields: [{ id: 'field', value: 1 }] },
+            display_content: { type: 'doc', content: [] },
+          },
+        },
+      } as any;
+
+      const request = create(item, 'response-id');
+      expect(request.input).toEqual(item.value.input);
+      expect(request.input).not.toBe(item.value.input);
+      expect(request.history).toEqual({
+        label: 'sent text',
+        related_message_id: 'response-id',
+        is_choice_request: true,
+        silent: true,
+      });
+      expect(request.history).not.toHaveProperty('selection_display');
+    }
+  );
+
+  it.each([
+    ['option', createMessageRequestForChoice],
+    ['post-back', createMessageRequestForButtonItemOption],
+  ])('fills only missing %s input text from the label', (_, create) => {
+    const request = create(
+      {
+        label: 'Fallback label',
+        value: {
+          input: {
+            structured_data: { fields: [] },
+            display_content: { type: 'doc' },
+          },
+        },
+      } as any,
+      'response-id'
+    );
+    expect(request.input).toEqual({
+      text: 'Fallback label',
+      structured_data: { fields: [] },
+      display_content: { type: 'doc' },
+    });
+  });
+
+  it('matches one choice in the required fallback order', () => {
+    const choices = [
+      { label: 'Same', value: { input: { text: 'first' } } },
+      {
+        label: 'Same',
+        value: { input: { text: 'second' } },
+        selection_display: SelectionDisplay.INPUT_TEXT,
+      },
+      { label: 'Legacy', value: { input: { text: 'second' } } },
+    ] as any;
+
+    expect(
+      findSelectedChoiceIndex(choices, {
+        input: { text: 'second' },
+        history: { label: 'second' },
+      } as any)
+    ).toBe(1);
+    expect(
+      findSelectedChoiceIndex(choices, {
+        input: { text: 'rewritten' },
+        history: { label: 'Same' },
+      } as any)
+    ).toBe(0);
+    expect(
+      findSelectedChoiceIndex(choices, {
+        input: { text: 'second' },
+        history: {},
+      } as any)
+    ).toBe(1);
   });
 
   it('creates message requests for text/file', () => {

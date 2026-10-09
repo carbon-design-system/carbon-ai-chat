@@ -29,6 +29,8 @@ import { deepFreeze } from '../utils/lang/objectUtils';
 import {
   addDefaultsToMessage,
   isDateResponseType,
+  findSelectedChoiceIndex,
+  isButtonResponseType,
   isEventRequest,
   isOptionItem,
   isPause,
@@ -36,6 +38,7 @@ import {
   isResponse,
   isResponseWithNestedItems,
   THREAD_ID_MAIN,
+  resolveChoiceText,
 } from '../utils/messageUtils';
 import inputItemToLocalItemSchema from './inputItemToLocalItem';
 import {
@@ -43,10 +46,13 @@ import {
   outputItemToLocalItem,
 } from './outputItemToLocalItem';
 import {
+  ButtonItem,
+  ButtonItemType,
   GenericItem,
   Message,
   MessageResponse,
   PanelItem,
+  SingleOption,
 } from '../../types/messaging/Messages';
 import {
   BusEventHistoryBegin,
@@ -490,27 +496,72 @@ function markIsLatestWelcomeNode(loadingState: LoadingState) {
  */
 function markSelectedOptions({
   allMessages,
+  allLocalMessagesByID,
   relatedMessageByID,
   localMessagesByOriginalMessageID,
 }: LoadingState) {
   allMessages.forEach((message) => {
     if (isResponse(message)) {
-      localMessagesByOriginalMessageID[message.id].forEach((localMessage) => {
-        if (isOptionItem(localMessage.item)) {
-          // This is an option response. Let's see if another message said it's related to this
-          // message in which case, that other message should tell us which option the user chose.
-          const relatedRequest = relatedMessageByID[message.id];
-          if (isRequest(relatedRequest)) {
-            localMessage.ui_state.optionSelected = relatedRequest;
-          }
-        } else if (isDateResponseType(localMessage as LocalMessageItem)) {
-          const relatedRequest = relatedMessageByID[message.id];
+      const relatedRequest = relatedMessageByID[message.id];
+      const rootItems = localMessagesByOriginalMessageID[message.id];
+
+      rootItems.forEach((localMessage) => {
+        if (isDateResponseType(localMessage as LocalMessageItem)) {
           if (isRequest(relatedRequest)) {
             localMessage.ui_state.originalUserText =
               relatedRequest.history.label;
           }
         }
       });
+
+      if (!isRequest(relatedRequest)) {
+        return;
+      }
+
+      const candidates: {
+        choice: SingleOption | ButtonItem;
+        localMessage: LocalMessageItem;
+      }[] = [];
+
+      const visit = (localMessage: LocalMessageItem) => {
+        if (isOptionItem(localMessage.item)) {
+          localMessage.item.options.forEach((choice) => {
+            if (resolveChoiceText(choice).controlText) {
+              candidates.push({ choice, localMessage });
+            }
+          });
+        } else if (
+          isButtonResponseType(localMessage.item) &&
+          localMessage.item.button_type === ButtonItemType.POST_BACK &&
+          resolveChoiceText(localMessage.item).controlText
+        ) {
+          candidates.push({ choice: localMessage.item, localMessage });
+        }
+
+        const { ui_state } = localMessage;
+        const nestedIDs = [
+          ...(ui_state.itemsLocalMessageItemIDs || []),
+          ...(ui_state.gridLocalMessageItemIDs?.flat(2) || []),
+          ...(ui_state.bodyLocalMessageItemIDs || []),
+          ...(ui_state.footerLocalMessageItemIDs || []),
+        ];
+        nestedIDs.forEach((id) => {
+          const nestedItem = allLocalMessagesByID[id];
+          if (nestedItem) {
+            visit(nestedItem);
+          }
+        });
+      };
+
+      rootItems.forEach(visit);
+      const selectedIndex = findSelectedChoiceIndex(
+        candidates.map(({ choice }) => choice),
+        relatedRequest
+      );
+      if (selectedIndex !== -1) {
+        candidates[selectedIndex].localMessage.ui_state.optionSelected =
+          relatedRequest;
+      }
     }
   });
 }

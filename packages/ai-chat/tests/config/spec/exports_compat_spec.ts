@@ -31,6 +31,8 @@
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import ts from 'typescript';
+import { SelectionDisplay as ClientSelectionDisplay } from '../../../src/aiChatEntry';
+import { SelectionDisplay as ServerSelectionDisplay } from '../../../src/serverEntry';
 
 // Utility types for compile-time assertions
 type Equals<A, B> =
@@ -192,6 +194,12 @@ function staleEntries(
 describe('API compatibility (server vs client)', () => {
   it('compiles with matching export surface', () => {
     expect(true).toBe(true);
+  });
+
+  it('exports the selection display values from both entry points', () => {
+    const expected = { LABEL: 'label', INPUT_TEXT: 'input_text' };
+    expect(ClientSelectionDisplay).toEqual(expected);
+    expect(ServerSelectionDisplay).toEqual(expected);
   });
 });
 

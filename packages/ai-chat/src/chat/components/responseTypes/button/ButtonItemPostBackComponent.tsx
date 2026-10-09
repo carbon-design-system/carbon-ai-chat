@@ -16,8 +16,10 @@ import { useServiceManager } from '../../../hooks/useServiceManager';
 import { selectInputIsReadonly } from '../../../store/selectors';
 import { HasRequestFocus } from '../../../../types/utilities/HasRequestFocus';
 import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
-import { WA_CONSOLE_PREFIX } from '../../../utils/constants';
-import { createMessageRequestForButtonItemOption } from '../../../utils/messageUtils';
+import {
+  createMessageRequestForButtonItemOption,
+  resolveChoiceText,
+} from '../../../utils/messageUtils';
 import { consoleError } from '../../../utils/miscUtils';
 import actions from '../../../store/actions';
 import { MessageSendSource } from '../../../../types/events/eventBusTypes';
@@ -46,36 +48,28 @@ function ButtonItemPostBackComponent({
   const Send = carbonIconToReact(Send16);
   const messageItem = localMessageItem.item;
   const { ui_state, fullMessageID } = localMessageItem;
-  const { image_url, alt_text, label, kind, size, is } = messageItem;
+  const { image_url, alt_text, kind, size, is } = messageItem;
   const isInputReadonly = useSelector(selectInputIsReadonly);
-  const isDisabled =
-    !isMessageForInput || Boolean(ui_state.optionSelected) || isInputReadonly;
+  const { controlText } = resolveChoiceText(messageItem);
+  const isSelected = Boolean(ui_state.optionSelected);
+  const isDisabled = !isMessageForInput || isSelected || isInputReadonly;
 
   const onClickHandler = useCallback(() => {
-    const isInputAvailable = Boolean(messageItem.value?.input?.text || label);
+    const messageRequest = createMessageRequestForButtonItemOption(
+      messageItem,
+      fullMessageID
+    );
 
-    if (isInputAvailable) {
-      const messageRequest = createMessageRequestForButtonItemOption(
-        messageItem,
-        fullMessageID
-      );
-
-      requestFocus();
-      serviceManager.store.dispatch(
-        actions.messageSetOptionSelected(ui_state.id, messageRequest)
-      );
-      serviceManager.actions.sendWithCatch(
-        messageRequest,
-        MessageSendSource.POST_BACK_BUTTON
-      );
-    } else {
-      consoleError(
-        `${WA_CONSOLE_PREFIX} post_back button with label "${messageItem.label}" has no input message to send.`
-      );
-    }
+    requestFocus();
+    serviceManager.store.dispatch(
+      actions.messageSetOptionSelected(ui_state.id, messageRequest)
+    );
+    serviceManager.actions.sendWithCatch(
+      messageRequest,
+      MessageSendSource.POST_BACK_BUTTON
+    );
   }, [
     messageItem,
-    label,
     fullMessageID,
     requestFocus,
     serviceManager.store,
@@ -83,17 +77,25 @@ function ButtonItemPostBackComponent({
     ui_state.id,
   ]);
 
+  if (!controlText) {
+    consoleError(
+      'A post-back button has no label or input text, so the chat did not render it.'
+    );
+    return null;
+  }
+
   return (
     <BaseButtonItemComponent
       imageURL={image_url}
       altText={alt_text}
-      label={label}
+      label={controlText}
       kind={kind}
       size={size}
       is={is}
       onClick={onClickHandler}
       renderIcon={(image_url && Send) || undefined}
       disabled={isDisabled}
+      selected={isSelected}
     />
   );
 }
