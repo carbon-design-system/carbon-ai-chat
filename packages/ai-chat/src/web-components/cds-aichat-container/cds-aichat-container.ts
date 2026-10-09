@@ -51,7 +51,7 @@ import type {
   WCRenderUserDefinedInputNode,
   RenderUserDefinedInputNode,
 } from '../../types/component/ChatContainer';
-import React, { ComponentType, ReactNode, useEffect, useRef } from 'react';
+import type { ComponentType, ReactNode } from 'react';
 
 // Derived rather than written out: the es-custom build rewrites lowercase
 // `cds-aichat` text in its output, so an uppercase literal would never match
@@ -237,10 +237,11 @@ class ChatContainer extends FlattenedConfigElement {
   // interface narrows its type.
 
   /**
-   * Renderer for custom TipTap node types inside sent user message bubbles
-   * (rich user message content). Called with `{ node, message }` plus the
-   * chat instance and should return an `HTMLElement` (or `null`). The
-   * library mounts the element inside the bubble via a slot.
+   * Renderer for `mention` chips, `command` chips, and custom TipTap nodes
+   * inside sent user message bubbles (rich user message content). Called with
+   * `{ node, message }` plus the chat instance and should return an
+   * `HTMLElement` (or `null`). The library mounts the element inside the
+   * bubble via a slot.
    *
    * @experimental
    */
@@ -669,57 +670,6 @@ class ChatContainer extends FlattenedConfigElement {
 }
 
 /**
- * Mounts the element a WC-style `renderUserDefinedInputNode` returns. React
- * owns the slot wrapper; the consumer owns the element inside it.
- */
-function WCInputNodeMount({
-  state,
-  instance,
-  wcRenderer,
-}: {
-  state: RenderUserDefinedInputNodeState;
-  instance: ChatInstance;
-  wcRenderer: WCRenderUserDefinedInputNode;
-}) {
-  const hostRef = useRef<HTMLSpanElement | null>(null);
-  const lastElRef = useRef<HTMLElement | null>(null);
-
-  // Depend on the individual `state` fields, not the wrapper object:
-  // `InputNodePortalsContainer` allocates a fresh `{ node, message }` on every
-  // render, but `node` / `message` themselves are stable (derived from the
-  // memoized `slotEntries`). Keying the effect on the wrapper would tear down
-  // and rebuild the consumer's element on every unrelated chat re-render.
-  const { node, message } = state;
-
-  useEffect(() => {
-    const host = hostRef.current;
-    if (!host) {
-      return undefined;
-    }
-
-    const el = wcRenderer({ node, message }, instance);
-    if (lastElRef.current && lastElRef.current.parentNode === host) {
-      host.removeChild(lastElRef.current);
-    }
-    lastElRef.current = el ?? null;
-
-    if (el) {
-      host.appendChild(el);
-    }
-
-    return () => {
-      if (lastElRef.current && lastElRef.current.parentNode === host) {
-        host.removeChild(lastElRef.current);
-        lastElRef.current = null;
-      }
-    };
-  }, [node, message, instance, wcRenderer]);
-
-  // No JSX here: this module is a Lit element, compiled as plain TypeScript.
-  return React.createElement('span', { ref: hostRef });
-}
-
-/**
  * Makes one React render prop per web-component callback. The same callback
  * always gets the same adapter, so an unchanged callback does not re-render
  * the app's portals.
@@ -783,10 +733,24 @@ const toReactCustomRequestFooter = cachedAdapter(
 );
 
 const toReactUserDefinedInputNode = cachedAdapter(
-  (wcRenderer: WCRenderUserDefinedInputNode): RenderUserDefinedInputNode =>
-    // eslint-disable-next-line react/display-name -- this is a render callback, not a component
-    (state, instance) =>
-      React.createElement(WCInputNodeMount, { state, instance, wcRenderer })
+  (render: WCRenderUserDefinedInputNode): RenderUserDefinedInputNode => {
+    // The input-node portals re-render on every message-store change, so a
+    // call per render would rebuild the host's element on each streamed chunk.
+    // `InputNodePortalsContainer` passes one `state` object per slot until
+    // its message changes, so each slot keeps its first result until then.
+    const rendered = new WeakMap<RenderUserDefinedInputNodeState, ReactNode>();
+    return (state, instance) => {
+      if (!rendered.has(state)) {
+        rendered.set(
+          state,
+          renderWCSlotContent('renderUserDefinedInputNode', () =>
+            render(state, instance)
+          )
+        );
+      }
+      return rendered.get(state);
+    };
+  }
 );
 
 declare global {
@@ -862,8 +826,8 @@ interface CdsAiChatContainerAttributes extends Omit<PublicConfig, 'markdown'> {
   renderCustomRequestFooter?: WCRenderCustomRequestFooter;
 
   /**
-   * Renderer for custom TipTap node types inside sent user message bubbles
-   * (rich user message content).
+   * Renderer for `mention` chips, `command` chips, and custom TipTap nodes
+   * inside sent user message bubbles (rich user message content).
    *
    * @experimental
    */

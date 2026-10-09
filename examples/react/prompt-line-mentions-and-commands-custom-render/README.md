@@ -1,10 +1,11 @@
 # Prompt line / Mentions & commands (custom render)
 
-The Mentions & Commands example with a `renderCustomToken` supplied for mentions: each picked user appears in the input as a Carbon `Tag` wrapped in a `Tooltip` showing the user's description on hover. Commands keep the default chip rendering.
+The Mentions & Commands example with a `renderCustomToken` supplied for mentions: each picked user appears in the input and in the sent message bubble as a Carbon `Tag` wrapped in a `Tooltip` showing the user's description on hover. Commands keep the default chip rendering.
 
 ## What this example shows
 
 - Replacing the default mention chip with a custom inline element via `mention.renderCustomToken`, returning a `Tooltip`-wrapped Carbon `Tag`.
+- Rendering the same chip in the sent message bubble via `renderUserDefinedInputNode`, which the chat calls for each `mention` and `command` node. Returning `null` for commands keeps their default chip.
 - Mixing custom and default token rendering across the two slots — only `input.mention` sets `renderCustomToken`, so commands fall back to the built-in chip.
 - Using Carbon React's `Tooltip` with `autoAlign` so the popover escapes the editor's scroll-overflow clipping by positioning relative to the viewport.
 - Persisting selections via `instance.input.updateStructuredData` (same flow as the non-custom example) so the custom rendering does not change the structured-data wire format, with a symmetric `onRemove` that drops a chip's field when it is deleted before sending.
@@ -26,6 +27,8 @@ The Mentions & Commands example with a `renderCustomToken` supplied for mentions
 | `input.mention` | config prop | Registers the `@`-mention trigger config on the input. |
 | `input.command` | config prop | Registers the `/`-command trigger config on the input. |
 | `mention.renderCustomToken` | config prop | Returns a React node rendered in place of the default mention chip. |
+| `renderUserDefinedInputNode` | component prop | Renders the custom mention chip inside the sent user message bubble. |
+| `RenderUserDefinedInputNodeState` | `@carbon/ai-chat` type | Types the `{ node }` argument of the `renderUserDefinedInputNode` callback. |
 | `mention.trigger` / `command.trigger` | config prop | Character (`@` or `/`) that opens the suggestion list. |
 | `command.triggerPosition` | config prop | `"start"` constrains commands to the beginning of the line. |
 | `mention.items` / `command.items` | config prop | Async filter (or static list) narrowing items as the user types. |
