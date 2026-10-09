@@ -8,14 +8,13 @@
  */
 
 /**
- * Behavior of `input.isStopStreamingButtonVisible` and
- * `input.isStopStreamingButtonDisabled`, which let the host show the stop
- * streaming button for work that outlives a request:
- *  - the config flags combine with the chat's own button state by OR,
+ * Behavior of `input.showStopStreamingButton`, which lets the host show the
+ * stop streaming button for work that outlives a request:
+ *  - the config flag combines with the chat's own button state by OR,
  *  - the chat hiding its own button never hides a host-shown one,
  *  - a click fires STOP_STREAMING and re-enables a host-shown button after,
  *  - restarting the conversation leaves the host flag in place,
- *  - the human-agent input ignores the flags.
+ *  - the human-agent input ignores the flag.
  */
 
 import React from 'react';
@@ -26,10 +25,7 @@ import { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
 import { AppState } from '../../../src/types/state/AppState';
-import {
-  selectStopStreamingButtonDisabled,
-  selectStopStreamingButtonVisible,
-} from '../../../src/chat/store/selectors';
+import { selectStopStreamingButtonVisible } from '../../../src/chat/store/selectors';
 import {
   createAppConfig,
   createInitialState,
@@ -45,11 +41,7 @@ function stateFor(config: PublicConfig): AppState {
   return createInitialState(createAppConfig(config));
 }
 
-function withButtonState(
-  state: AppState,
-  isVisible: boolean,
-  isDisabled = false
-): AppState {
+function withButtonState(state: AppState, isVisible: boolean): AppState {
   return {
     ...state,
     assistantInputState: {
@@ -57,7 +49,6 @@ function withButtonState(
       stopStreamingButtonState: {
         ...state.assistantInputState.stopStreamingButtonState,
         isVisible,
-        isDisabled,
       },
     },
   };
@@ -77,14 +68,13 @@ function connectedToHumanAgent(state: AppState): AppState {
 }
 
 describe('stop streaming button selectors', () => {
-  it('hides and enables the button with no config and no stream', () => {
+  it('hides the button with no config and no stream', () => {
     const state = stateFor({});
     expect(selectStopStreamingButtonVisible(state)).toBe(false);
-    expect(selectStopStreamingButtonDisabled(state)).toBe(false);
   });
 
   it('shows the button when the host config asks for it', () => {
-    const state = stateFor({ input: { isStopStreamingButtonVisible: true } });
+    const state = stateFor({ input: { showStopStreamingButton: true } });
     expect(selectStopStreamingButtonVisible(state)).toBe(true);
   });
 
@@ -93,30 +83,19 @@ describe('stop streaming button selectors', () => {
     expect(selectStopStreamingButtonVisible(state)).toBe(true);
   });
 
-  it('disables the button when either the chat or the host config does', () => {
-    expect(
-      selectStopStreamingButtonDisabled(
-        stateFor({ input: { isStopStreamingButtonDisabled: true } })
-      )
-    ).toBe(true);
-    expect(
-      selectStopStreamingButtonDisabled(
-        withButtonState(stateFor({}), true, true)
-      )
-    ).toBe(true);
+  it('keeps a chat-shown button visible when the host config is false', () => {
+    const state = withButtonState(
+      stateFor({ input: { showStopStreamingButton: false } }),
+      true
+    );
+    expect(selectStopStreamingButtonVisible(state)).toBe(true);
   });
 
   it('ignores the host config while connected to a human agent', () => {
     const state = connectedToHumanAgent(
-      stateFor({
-        input: {
-          isStopStreamingButtonVisible: true,
-          isStopStreamingButtonDisabled: true,
-        },
-      })
+      stateFor({ input: { showStopStreamingButton: true } })
     );
     expect(selectStopStreamingButtonVisible(state)).toBe(false);
-    expect(selectStopStreamingButtonDisabled(state)).toBe(false);
   });
 });
 
@@ -183,7 +162,7 @@ describe('stop streaming button from input config', () => {
 
   it('shows and hides the button as the host toggles the flag', async () => {
     const { store, rerender } = await renderChat(
-      props({ isStopStreamingButtonVisible: true })
+      props({ showStopStreamingButton: true })
     );
 
     expect(selectStopStreamingButtonVisible(store.getState())).toBe(true);
@@ -191,7 +170,7 @@ describe('stop streaming button from input config', () => {
       expect(getSendControl()?.isStopStreamingButtonVisible).toBe(true)
     );
 
-    rerender(props({ isStopStreamingButtonVisible: false }));
+    rerender(props({ showStopStreamingButton: false }));
 
     await waitFor(() =>
       expect(selectStopStreamingButtonVisible(store.getState())).toBe(false)
@@ -201,32 +180,7 @@ describe('stop streaming button from input config', () => {
     );
   });
 
-  it('renders the button disabled when the host sets isStopStreamingButtonDisabled', async () => {
-    await renderChat(
-      props({
-        isStopStreamingButtonVisible: true,
-        isStopStreamingButtonDisabled: true,
-      })
-    );
-
-    await waitFor(() =>
-      expect(getSendControl()?.isStopStreamingButtonDisabled).toBe(true)
-    );
-  });
-
-  it('fires STOP_STREAMING on click and re-enables the button after the handlers return', async () => {
-    const { instance, store } = await renderChat(
-      props({ isStopStreamingButtonVisible: true })
-    );
-
-    let disabledDuringHandler: boolean | undefined;
-    const handler = jest.fn(() => {
-      disabledDuringHandler = selectStopStreamingButtonDisabled(
-        store.getState()
-      );
-    });
-    instance.on({ type: BusEventType.STOP_STREAMING, handler });
-
+  async function clickStop() {
     await waitFor(() => expect(getSendControl()).toBeTruthy());
     await act(async () => {
       getSendControl().dispatchEvent(
@@ -236,13 +190,135 @@ describe('stop streaming button from input config', () => {
         })
       );
     });
+  }
+
+  function addPendingStopHandler(instance: ChatInstance) {
+    let release: () => void;
+    const handler = jest.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          release = resolve;
+        })
+    );
+    instance.on({ type: BusEventType.STOP_STREAMING, handler });
+    return { handler, release: () => release() };
+  }
+
+  it('fires STOP_STREAMING on click and keeps the button disabled until the handlers return', async () => {
+    const { instance, store } = await renderChat(
+      props({ showStopStreamingButton: true })
+    );
+    const { handler, release } = addPendingStopHandler(instance);
+
+    await clickStop();
 
     await waitFor(() => expect(handler).toHaveBeenCalledTimes(1));
-    expect(disabledDuringHandler).toBe(true);
     await waitFor(() =>
-      expect(selectStopStreamingButtonDisabled(store.getState())).toBe(false)
+      expect(getSendControl().isStopStreamingButtonDisabled).toBe(true)
+    );
+
+    await act(async () => {
+      release();
+    });
+
+    await waitFor(() =>
+      expect(getSendControl().isStopStreamingButtonDisabled).toBe(false)
     );
     expect(selectStopStreamingButtonVisible(store.getState())).toBe(true);
+  });
+
+  it('leaves a pending request alone when only the host shows the button', async () => {
+    let resolveSend: () => void;
+    let signal: AbortSignal;
+    const customSendMessage = jest.fn(
+      (_request: unknown, options: { signal: AbortSignal }) => {
+        signal = options.signal;
+        return new Promise<void>((resolve) => {
+          resolveSend = resolve;
+        });
+      }
+    );
+    const { instance, store } = await renderChat(
+      props(
+        { showStopStreamingButton: true },
+        { customSendMessage, skipWelcome: true }
+      )
+    );
+    const { handler, release } = addPendingStopHandler(instance);
+
+    let sendPromise: Promise<void>;
+    await act(async () => {
+      sendPromise = instance.send('Hello');
+    });
+    await waitFor(() => expect(customSendMessage).toHaveBeenCalled());
+    expect(
+      store.getState().assistantInputState.stopStreamingButtonState.isVisible
+    ).toBe(false);
+
+    await clickStop();
+    await waitFor(() => expect(handler).toHaveBeenCalledTimes(1));
+    await act(async () => {
+      release();
+    });
+    await waitFor(() =>
+      expect(getSendControl().isStopStreamingButtonDisabled).toBe(false)
+    );
+
+    expect(signal.aborted).toBe(false);
+
+    await act(async () => {
+      resolveSend();
+      await sendPromise;
+    });
+  });
+
+  it('keeps the button disabled until the handlers return when the chat request ends first', async () => {
+    let resolveSend: () => void;
+    const customSendMessage = jest.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveSend = resolve;
+        })
+    );
+    const { instance, store } = await renderChat(
+      props(
+        { showStopStreamingButton: true },
+        {
+          customSendMessage,
+          showStopButtonImmediately: true,
+          skipWelcome: true,
+        }
+      )
+    );
+    const { handler, release } = addPendingStopHandler(instance);
+
+    let sendPromise: Promise<void>;
+    await act(async () => {
+      sendPromise = instance.send('Hello');
+    });
+    await waitFor(() => expect(customSendMessage).toHaveBeenCalled());
+
+    await clickStop();
+    await waitFor(() => expect(handler).toHaveBeenCalledTimes(1));
+
+    await act(async () => {
+      resolveSend();
+      await sendPromise;
+    });
+
+    expect(
+      store.getState().assistantInputState.stopStreamingButtonState.isVisible
+    ).toBe(false);
+    expect(getSendControl().isStopStreamingButtonDisabled).toBe(true);
+
+    await act(async () => {
+      release();
+    });
+
+    await waitFor(() =>
+      expect(getSendControl().isStopStreamingButtonDisabled).toBe(false)
+    );
+    expect(getSendControl().isStopStreamingButtonVisible).toBe(true);
   });
 
   it('keeps a host-shown button visible after a pending send ends', async () => {
@@ -255,7 +331,7 @@ describe('stop streaming button from input config', () => {
     );
     const { instance, store } = await renderChat(
       props(
-        { isStopStreamingButtonVisible: true },
+        { showStopStreamingButton: true },
         {
           customSendMessage,
           showStopButtonImmediately: true,
@@ -323,7 +399,7 @@ describe('stop streaming button from input config', () => {
 
   it('keeps a host-shown button visible after a restart', async () => {
     const { instance, store } = await renderChat(
-      props({ isStopStreamingButtonVisible: true })
+      props({ showStopStreamingButton: true })
     );
 
     await act(async () => {

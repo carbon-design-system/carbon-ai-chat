@@ -211,12 +211,20 @@ await instance.messaging.upsertMessage(
 
 ### Show the button for work outside a request
 
-Some work outlives `customSendMessage`, such as a backend agent run that keeps going after the call resolves, or one that is still running when the page reloads. To show the button for that work, set {@link InputConfig.isStopStreamingButtonVisible | input.isStopStreamingButtonVisible}. A click fires {@link BusEventType.STOP_STREAMING}; stop your work there and set the flag back to `false`.
+Some work outlives `customSendMessage`, such as a backend agent run that keeps going after the call resolves, or one that is still running when the page reloads. To show the button for that work, set {@link InputConfig.showStopStreamingButton | input.showStopStreamingButton}. A click fires {@link BusEventType.STOP_STREAMING}; stop your work there and set the flag back to `false`.
 
 ```tsx
+import { BusEventType, ChatContainer } from '@carbon/ai-chat';
+import { useMemo } from 'react';
+
+const input = useMemo(
+  () => ({ showStopStreamingButton: isAgentRunning }),
+  [isAgentRunning]
+);
+
 <ChatContainer
   messaging={{ customSendMessage }}
-  input={{ isStopStreamingButtonVisible: isAgentRunning }}
+  input={input}
   onBeforeRender={(instance) => {
     instance.on({
       type: BusEventType.STOP_STREAMING,
@@ -226,11 +234,11 @@ Some work outlives `customSendMessage`, such as a backend agent run that keeps g
       },
     });
   }}
-/>
+/>;
 ```
 
 - The flag adds to the chat's own logic. When a request or stream ends, the chat hides only the button it showed, so the button stays while the flag is `true`.
-- The button is disabled until your handlers return. To keep it disabled longer, set {@link InputConfig.isStopStreamingButtonDisabled | input.isStopStreamingButtonDisabled}.
+- The button is disabled until your handlers return, so await your stop call in the handler.
 - Restarting or clearing the conversation does not change the flag.
 - The flag has no effect while the chat is connected to a human agent.
 

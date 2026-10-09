@@ -68,7 +68,6 @@ import {
   selectInputFieldVisible,
   selectInputUploadAndStreamingFields,
   selectLanguagePack,
-  selectStopStreamingButtonDisabled,
   selectStopStreamingButtonVisible,
 } from './store/selectors';
 import { shallowEqual } from './store/appStore';
@@ -351,9 +350,6 @@ function AppShell({
   const isInputFieldVisible = useSelector(selectInputFieldVisible);
   const isStopStreamingButtonVisible = useSelector(
     selectStopStreamingButtonVisible
-  );
-  const isStopStreamingButtonDisabled = useSelector(
-    selectStopStreamingButtonDisabled
   );
   const agentDisplayState = useSelector(
     selectHumanAgentDisplayState,
@@ -1074,7 +1070,7 @@ function AppShell({
                     }
                     isStopStreamingButtonVisible={isStopStreamingButtonVisible}
                     isStopStreamingButtonDisabled={
-                      isStopStreamingButtonDisabled
+                      inputFields.stopStreamingButtonState.isDisabled
                     }
                     maxInputChars={publicConfig.input?.maxInputCharacters}
                     trackInputState
