@@ -58,6 +58,30 @@ export const targets = {
     example: 'react/basic-custom-element-fullscreen',
     spec: 'fullscreen.spec.ts',
   },
+  'react-history-file-attachments': {
+    example: 'react/history-file-attachments',
+    spec: 'history-file-attachments.spec.ts',
+  },
+  'react-history-float': {
+    example: 'react/history-float',
+    spec: 'history-float.spec.ts',
+  },
+  'react-history-fullscreen': {
+    example: 'react/history-fullscreen',
+    spec: 'history-fullscreen.spec.ts',
+  },
+  'react-history-host-driven': {
+    example: 'react/history-host-driven',
+    spec: 'history-host-driven.spec.ts',
+  },
+  'react-history-user-defined-responses': {
+    example: 'react/history-user-defined-responses',
+    spec: 'history-user-defined-responses.spec.ts',
+  },
+  'react-human-agent': {
+    example: 'react/human-agent',
+    spec: 'human-agent.spec.ts',
+  },
   'react-markdown-override': {
     example: 'react/markdown-override',
     spec: 'markdown-override.spec.ts',
@@ -158,6 +182,18 @@ export const targets = {
     example: 'react/watch-state-redux',
     spec: 'watch-state-redux.spec.ts',
   },
+  'react-workspace': {
+    example: 'react/workspace',
+    spec: 'workspace.spec.ts',
+  },
+  'react-workspace-sidebar': {
+    example: 'react/workspace-sidebar',
+    spec: 'workspace-sidebar.spec.ts',
+  },
+  'react-workspace-table-markdown-override': {
+    example: 'react/workspace-table-markdown-override',
+    spec: 'workspace-table-markdown-override.spec.ts',
+  },
   'web-components-basic-custom-element-sidebar': {
     example: 'web-components/basic-custom-element-sidebar',
     spec: 'basic-custom-element-sidebar.spec.ts',
@@ -197,6 +233,30 @@ export const targets = {
   'web-components-fullscreen': {
     example: 'web-components/basic-custom-element-fullscreen',
     spec: 'fullscreen.spec.ts',
+  },
+  'web-components-history-file-attachments': {
+    example: 'web-components/history-file-attachments',
+    spec: 'history-file-attachments.spec.ts',
+  },
+  'web-components-history-float': {
+    example: 'web-components/history-float',
+    spec: 'history-float.spec.ts',
+  },
+  'web-components-history-fullscreen': {
+    example: 'web-components/history-fullscreen',
+    spec: 'history-fullscreen.spec.ts',
+  },
+  'web-components-history-host-driven': {
+    example: 'web-components/history-host-driven',
+    spec: 'history-host-driven.spec.ts',
+  },
+  'web-components-history-user-defined-responses': {
+    example: 'web-components/history-user-defined-responses',
+    spec: 'history-user-defined-responses.spec.ts',
+  },
+  'web-components-human-agent': {
+    example: 'web-components/human-agent',
+    spec: 'human-agent.spec.ts',
   },
   'web-components-markdown-override': {
     example: 'web-components/markdown-override',
@@ -290,6 +350,18 @@ export const targets = {
   'web-components-watch-state': {
     example: 'web-components/watch-state',
     spec: 'watch-state.spec.ts',
+  },
+  'web-components-workspace': {
+    example: 'web-components/workspace',
+    spec: 'workspace.spec.ts',
+  },
+  'web-components-workspace-sidebar': {
+    example: 'web-components/workspace-sidebar',
+    spec: 'workspace-sidebar.spec.ts',
+  },
+  'web-components-workspace-table-markdown-override': {
+    example: 'web-components/workspace-table-markdown-override',
+    spec: 'workspace-table-markdown-override.spec.ts',
   },
 } as const satisfies Record<string, Target>;
 
