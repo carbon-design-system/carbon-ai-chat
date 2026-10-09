@@ -5,6 +5,8 @@ description: Draft or file a GitHub issue with a problem, outcomes, and settled 
 
 How to write a good issue in this repo and how to wire a sub-issue to its parent.
 
+**Before drafting any copy**, read [caic-copy-writer](../caic-copy-writer/SKILL.md) and apply its shared skim-reading rule and workflow. This includes local drafts and final artifacts. Reuse it if already loaded.
+
 If the work is an umbrella that splits into multiple children, author it as an epic instead — see [epic-authoring.md](references/epic-authoring.md). An epic is shaped with [caic-plan](../caic-plan/SKILL.md) first, and its children are filed here.
 
 ## What an issue is

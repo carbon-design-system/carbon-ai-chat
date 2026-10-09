@@ -5,6 +5,8 @@ description: Draft, revise, or review an implementation plan, including plans ag
 
 Produce the requested plan or review. Keep planning local unless the user authorizes publication. Planning alone does not authorize implementation.
 
+**Before drafting any copy**, read [caic-copy-writer](../caic-copy-writer/SKILL.md) and apply its shared skim-reading rule and workflow. This includes local drafts and final artifacts. Reuse it if already loaded.
+
 ## Pick the artifact first
 
 - **Draft or revise a plan:** follow the workflow below.

@@ -9,15 +9,17 @@ Load this before writing the body of a numbered ADR under `docs/adr/`. Structura
 - **Claim before scaffolding.** Summary and Proposal carry the ask. Together they stay larger than Motivation and the optional sections behind Proposal.
 - **Show code before prose in Proposal, and in Consumer impact when a record has one.** A sample of what a host writes carries a surface faster than a paragraph about it. Words carry only what the code can't show.
 - **Make Reference precise enough to review a diff against.** State defaults, failure paths, and timing as facts. A hedge here reads as two allowed behaviors.
-- **Write Reference blocks as commented types**, per [caic-adr](../../caic-adr/SKILL.md). The wording rule that follows from it: `reading-level` can't see inside a fence, so hold that JSDoc to the same plainness by reading it yourself.
+- **Use the contract's native form in Reference**, per [caic-adr](../../caic-adr/SKILL.md): commented types for APIs, CSS and markup for styling, tables for policy. Read code comments for plainness; `reading-level` cannot score them.
 - **Describe costs as what a host experiences.** "Your build fails with a missing-module error," not "the peer dependency is no longer auto-installed." Evidence from the source goes in the PR description, never as file:line citations in the ADR.
 - **Gloss an internal name on first use**, and in the clause that links another ADR, epic, or issue, say what it decided. Years later, half of those links are closed.
 - **Address the reader as "you."** Per [tone.md](../../../../references/tone.md), write "this proposal", not "we propose".
 
+Apply [the shared skim-reading rule](../SKILL.md#write-for-readers-who-skip-to-code) before drafting. Keep the decision and its limits in the main text; put supporting research in an appendix per [caic-adr](../../caic-adr/SKILL.md#write-reference-in-the-contracts-native-form).
+
 ## Gate
 
 1. **`npm run reading-level -- docs/adr/<file>.md` at grade 10 or below.**
-2. **Read the Summary alone, for order.** The score is blind to a buried proposal.
+2. **Read the Summary alone, then skim headings, tables, and code.** Both paths must give a truthful picture. The score is blind to buried constraints and repeated examples.
 3. **Review against [adr-review.md](../../caic-adr/references/adr-review.md).**
 
 ## Related guidance

@@ -6,8 +6,7 @@
   "description": "Fullscreen ChatCustomElement React example — the canonical baseline for non-float examples.",
   "scripts": {
     "start": "vite",
-    "build": "vite build",
-    "test:e2e": "playwright test"
+    "build": "vite build"
   },
   "author": "IBM Corp",
   "license": "Apache-2.0",
@@ -21,7 +20,6 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@playwright/test": "^1.63.0",
     "@types/node": "^22.20.2",
     "@vitejs/plugin-react": "^6.0.0",
     "ts-lit-plugin": "^2.0.2",
