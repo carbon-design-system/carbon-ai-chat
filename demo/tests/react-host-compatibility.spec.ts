@@ -360,3 +360,32 @@ test('layout.customProperties prompt-border styles the prompt container with the
     .toEqual({ width: '2px', color: 'rgb(0, 0, 255)' });
   expect(errors).toEqual([]);
 });
+
+test('page CSS styles the prompt container when the rich editor is mounted', async ({
+  page,
+}) => {
+  const input = encodeURIComponent(
+    JSON.stringify({
+      mention: { trigger: '@', items: [{ id: 'ada', label: 'Ada' }] },
+    })
+  );
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto(`/host-compatibility.html?surface=wc-custom&input=${input}`);
+  await expect(page.locator('cds-aichat-prompt-line[rich]')).toHaveCount(1, {
+    timeout: 20000,
+  });
+  await expect(page.locator('.ProseMirror').first()).toBeVisible({
+    timeout: 20000,
+  });
+  expect((await readPromptBorder(page)).width).toBe('0px');
+
+  await page.addStyleTag({
+    content: PROMPT_PART_RULE('cds-aichat-custom-element'),
+  });
+
+  await expect
+    .poll(() => readPromptBorder(page))
+    .toEqual({ width: '3px', color: 'rgb(255, 0, 0)' });
+  expect(errors).toEqual([]);
+});

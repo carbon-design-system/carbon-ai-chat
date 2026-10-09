@@ -25,7 +25,7 @@
  * - `wc-container`: a `cds-aichat-container` element.
  * - `wc-custom`: a `cds-aichat-custom-element`, sized 400×600.
  *
- * `?layout=` takes a JSON `layout` config that replaces the default, for
+ * `?layout=` and `?input=` take a JSON `layout` or `input` config, for
  * surfaces that need one.
  */
 
@@ -58,11 +58,14 @@ window.hostCompatibility = harness;
 
 const time = new Date().toISOString();
 
-const layoutParam = new URLSearchParams(window.location.search).get('layout');
+const searchParams = new URLSearchParams(window.location.search);
+const layoutParam = searchParams.get('layout');
+const inputParam = searchParams.get('input');
 
 const config: PublicConfig = {
   openChatByDefault: true,
   ...(layoutParam ? { layout: JSON.parse(layoutParam) } : {}),
+  ...(inputParam ? { input: JSON.parse(inputParam) } : {}),
   messaging: {
     customSendMessage: () => undefined,
     // A welcome exchange in history shows the welcome writeable element.

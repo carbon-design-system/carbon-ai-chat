@@ -295,4 +295,60 @@ describe('<cds-aichat-prompt-line-shell>', () => {
     expect(style.borderTopWidth).to.equal('2px');
     expect(style.borderTopColor).to.equal('rgb(255, 0, 0)');
   });
+
+  it('leaves the error outline in place when a prompt border is set', async () => {
+    const wrapper: HTMLElement = await fixture(html`
+      <div>
+        <style>
+          cds-aichat-prompt-line-shell {
+            --cds-aichat-prompt-border: 2px solid rgb(255, 0, 0);
+          }
+        </style>
+        <cds-aichat-prompt-line-shell has-error></cds-aichat-prompt-line-shell>
+      </div>
+    `);
+    const el = wrapper.querySelector(
+      'cds-aichat-prompt-line-shell'
+    ) as PromptLineShellElement;
+    await el.updateComplete;
+
+    const style = getComputedStyle(
+      el.shadowRoot!.querySelector('.cds-aichat--input-container')!
+    );
+    expect(style.borderTopWidth).to.equal('2px');
+    expect(style.outlineStyle).to.equal('solid');
+    expect(style.outlineWidth).to.equal('1px');
+    expect(style.outlineColor).to.not.equal('rgba(0, 0, 0, 0)');
+  });
+
+  it('leaves the focus outline in place when a prompt border is set', async () => {
+    const wrapper: HTMLElement = await fixture(html`
+      <div>
+        <style>
+          cds-aichat-prompt-line-shell {
+            --cds-aichat-prompt-border: 2px solid rgb(255, 0, 0);
+          }
+        </style>
+        <cds-aichat-prompt-line-shell>
+          <input slot="editor" id="editor" />
+        </cds-aichat-prompt-line-shell>
+      </div>
+    `);
+    const el = wrapper.querySelector(
+      'cds-aichat-prompt-line-shell'
+    ) as PromptLineShellElement;
+    await el.updateComplete;
+    const container = el.shadowRoot!.querySelector(
+      '.cds-aichat--input-container'
+    ) as HTMLElement;
+    expect(getComputedStyle(container).outlineColor).to.equal(
+      'rgba(0, 0, 0, 0)'
+    );
+
+    (wrapper.querySelector('#editor') as HTMLInputElement).focus();
+
+    const style = getComputedStyle(container);
+    expect(style.borderTopWidth).to.equal('2px');
+    expect(style.outlineColor).to.not.equal('rgba(0, 0, 0, 0)');
+  });
 });
