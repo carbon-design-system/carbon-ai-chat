@@ -17,17 +17,34 @@ shared/playwright/
 
 | Project | Example | Spec |
 | --- | --- | --- |
+| `react-basic-custom-element-sidebar` | `react/basic-custom-element-sidebar` | [Basic custom element sidebar](../shared/playwright/tests/basic-custom-element-sidebar.spec.ts) |
+| `react-basic-custom-element-sidebar-narrow` | `react/basic-custom-element-sidebar-narrow` | [Basic custom element sidebar narrow](../shared/playwright/tests/basic-custom-element-sidebar-narrow.spec.ts) |
+| `react-basic-float` | `react/basic-float` | [Basic float](../shared/playwright/tests/basic-float.spec.ts) |
+| `react-custom-element-as-float` | `react/custom-element-as-float` | [Custom element as float](../shared/playwright/tests/custom-element-as-float.spec.ts) |
+| `react-custom-element-as-float-lazy-load` | `react/custom-element-as-float-lazy-load` | [Custom element as float lazy load](../shared/playwright/tests/custom-element-as-float-lazy-load.spec.ts) |
+| `react-custom-element-lazy-load` | `react/custom-element-lazy-load` | [Custom element lazy load](../shared/playwright/tests/custom-element-lazy-load.spec.ts) |
+| `react-custom-header` | `react/custom-header` | [Custom header](../shared/playwright/tests/custom-header.spec.ts) |
 | `react-fullscreen` | `react/basic-custom-element-fullscreen` | [Fullscreen](../shared/playwright/tests/fullscreen.spec.ts) |
 | `react-mentions-and-commands` | `react/prompt-line-mentions-and-commands` | [Mentions and commands](../shared/playwright/tests/mentions-and-commands.spec.ts) |
+| `react-tests-vitest-happydom` | `react/tests-vitest-happydom` | [Tests vitest happydom](../shared/playwright/tests/tests-vitest-happydom.spec.ts) |
+| `react-theme-plex-override` | `react/theme-plex-override` | [Theme plex override](../shared/playwright/tests/theme-plex-override.spec.ts) |
 | `react-watch-state` | `react/watch-state` | [Watch state](../shared/playwright/tests/watch-state.spec.ts) |
+| `web-components-basic-custom-element-sidebar` | `web-components/basic-custom-element-sidebar` | [Basic custom element sidebar](../shared/playwright/tests/basic-custom-element-sidebar.spec.ts) |
+| `web-components-basic-custom-element-sidebar-narrow` | `web-components/basic-custom-element-sidebar-narrow` | [Basic custom element sidebar narrow](../shared/playwright/tests/basic-custom-element-sidebar-narrow.spec.ts) |
+| `web-components-basic-float` | `web-components/basic-float` | [Basic float](../shared/playwright/tests/basic-float.spec.ts) |
+| `web-components-custom-element-as-float` | `web-components/custom-element-as-float` | [Custom element as float](../shared/playwright/tests/custom-element-as-float.spec.ts) |
+| `web-components-custom-element-as-float-lazy-load` | `web-components/custom-element-as-float-lazy-load` | [Custom element as float lazy load](../shared/playwright/tests/custom-element-as-float-lazy-load.spec.ts) |
+| `web-components-custom-element-lazy-load` | `web-components/custom-element-lazy-load` | [Custom element lazy load](../shared/playwright/tests/custom-element-lazy-load.spec.ts) |
+| `web-components-custom-header` | `web-components/custom-header` | [Custom header](../shared/playwright/tests/custom-header.spec.ts) |
 | `web-components-fullscreen` | `web-components/basic-custom-element-fullscreen` | [Fullscreen](../shared/playwright/tests/fullscreen.spec.ts) |
 | `web-components-mentions-and-commands` | `web-components/prompt-line-mentions-and-commands` | [Mentions and commands](../shared/playwright/tests/mentions-and-commands.spec.ts) |
+| `web-components-theme-plex-override` | `web-components/theme-plex-override` | [Theme plex override](../shared/playwright/tests/theme-plex-override.spec.ts) |
 | `web-components-watch-state` | `web-components/watch-state` | [Watch state](../shared/playwright/tests/watch-state.spec.ts) |
 
 ### Share definitions across hosts
 
-Both flavors run the same specs in `tests/`. The suite has three specs and six
-projects: 14 cases per flavor, for 28 Chromium cases. Each execution opens only
+Both flavors run the same specs in `tests/`, one project per target. A spec
+that only one flavor has, such as `tests-vitest-happydom`, maps to one target. Each execution opens only
 its own example.
 
 React mounts through the shared chat element, but each example has separate
@@ -193,7 +210,7 @@ Failures, screenshots, and videos land in `shared/playwright/test-results/`, whi
 
 ## Definition of done
 
-- [ ] `npm run test:e2e:goldens -- --list` shows 28 cases across six projects, with each case once per flavor.
+- [ ] `npm run test:e2e:goldens -- --list` shows each new case once per target, and the target table above lists the new targets.
 - [ ] `npm run test:e2e:goldens` passes on chromium.
 - [ ] `npm run build --workspace=<example>` exits 0.
 - [ ] The suite covers the example's one concern plus the baseline above.
