@@ -7,14 +7,17 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import type { SuggestionItem } from './types.js';
+
 /**
  * Shared resolver for BaseSuggestionConfig items: applies minQueryLength
  * gating, delegates to the async function or filters the static array.
  * Used by AutocompleteController — the canonical resolution path.
+ *
+ * When `items` is a static array, the default filter matches any item whose
+ * label contains the query (case-insensitive). Pass `items` as a function to
+ * use a different matching strategy.
  */
-
-import type { SuggestionItem } from './types.js';
-
 export async function resolveConfigItems(
   config: {
     items:

@@ -849,53 +849,57 @@ class PromptLineTypeaheadStory extends LitElement {
       <style>
         ${styles}
       </style>
-      <div
-        class="prompt-line-story-wrapper prompt-line-story-wrapper--autocomplete">
-        <cds-aichat-prompt-line-shell
-          ?rounded=${this.rounded}
-          ?disabled=${this.disabled}
-          ?has-error=${this.hasError}
-          expanded>
-          ${
-            this.hasError && this.errorTitle
-              ? html`<cds-aichat-error-message
-                  slot="field-messaging"
-                  title=${this.errorTitle}
-                  description=${this.errorDescription}
-                  ?collapsible=${this.errorCollapsible}
-                  ?fullscreen=${this.errorFullscreen}></cds-aichat-error-message>`
-              : null
-          }
-          <cds-aichat-prompt-line
-            slot="editor"
-            placeholder=${this.placeholder}
+      <div class="prompt-line-story-wrapper">
+        <p class="prompt-line-story-hint">
+          Start typing <code>When...</code> to see typeahead suggestions.
+        </p>
+        <div class="prompt-line-story-wrapper--autocomplete">
+          <cds-aichat-prompt-line-shell
+            ?rounded=${this.rounded}
             ?disabled=${this.disabled}
-            rich
-            .extensions=${this._extensions}
-            @cds-aichat-prompt-change=${(e) =>
-              this._onPromptChange(e)}></cds-aichat-prompt-line>
-          <cds-aichat-autocomplete-controller
-            slot="autocomplete-content"
-            .autocomplete=${this._autocompleteConfig}
-            @cds-aichat-autocomplete-item-selected=${(e) => this._onItemSelected(e)}
-            @cds-aichat-autocomplete-item-send=${(e) => this._onItemSend(e)}
-            @cds-aichat-autocomplete-navigated=${(e) => this._onListNavigated(e)}></cds-aichat-autocomplete-controller>
-          <prompt-line-story-inline-actions
-            .actions=${dummyActions}
-            ?disabled=${this.disabled}></prompt-line-story-inline-actions>
-          <cds-aichat-input-send-control
-            slot="send-control"
-            ?disabled=${this.disabled}
-            ?show-stop-streaming=${this.isStopStreamingButtonVisible}
-            ?disable-send=${this.disableSend || this._listNavigated}
-            ?disable-stop-streaming=${this.isStopStreamingButtonDisabled}
-            button-label=${this.buttonLabel}
-            stop-response-label=${this.stopResponseLabel}
-            @cds-aichat-input-send=${() => action('cds-aichat-input-send')()}
-            @cds-aichat-input-stop-streaming=${() =>
-              action('cds-aichat-input-stop-streaming')()}
-            ${ref(this._sendControlRef)}></cds-aichat-input-send-control>
-        </cds-aichat-prompt-line-shell>
+            ?has-error=${this.hasError}
+            expanded>
+            ${
+              this.hasError && this.errorTitle
+                ? html`<cds-aichat-error-message
+                    slot="field-messaging"
+                    title=${this.errorTitle}
+                    description=${this.errorDescription}
+                    ?collapsible=${this.errorCollapsible}
+                    ?fullscreen=${this.errorFullscreen}></cds-aichat-error-message>`
+                : null
+            }
+            <cds-aichat-prompt-line
+              slot="editor"
+              placeholder=${this.placeholder}
+              ?disabled=${this.disabled}
+              rich
+              .extensions=${this._extensions}
+              @cds-aichat-prompt-change=${(e) =>
+                this._onPromptChange(e)}></cds-aichat-prompt-line>
+            <cds-aichat-autocomplete-controller
+              slot="autocomplete-content"
+              .autocomplete=${this._autocompleteConfig}
+              @cds-aichat-autocomplete-item-selected=${(e) => this._onItemSelected(e)}
+              @cds-aichat-autocomplete-item-send=${(e) => this._onItemSend(e)}
+              @cds-aichat-autocomplete-navigated=${(e) => this._onListNavigated(e)}></cds-aichat-autocomplete-controller>
+            <prompt-line-story-inline-actions
+              .actions=${dummyActions}
+              ?disabled=${this.disabled}></prompt-line-story-inline-actions>
+            <cds-aichat-input-send-control
+              slot="send-control"
+              ?disabled=${this.disabled}
+              ?show-stop-streaming=${this.isStopStreamingButtonVisible}
+              ?disable-send=${this.disableSend || this._listNavigated}
+              ?disable-stop-streaming=${this.isStopStreamingButtonDisabled}
+              button-label=${this.buttonLabel}
+              stop-response-label=${this.stopResponseLabel}
+              @cds-aichat-input-send=${() => action('cds-aichat-input-send')()}
+              @cds-aichat-input-stop-streaming=${() =>
+                action('cds-aichat-input-stop-streaming')()}
+              ${ref(this._sendControlRef)}></cds-aichat-input-send-control>
+          </cds-aichat-prompt-line-shell>
+        </div>
       </div>
     `;
   }

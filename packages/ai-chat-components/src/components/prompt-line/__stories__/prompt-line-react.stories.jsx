@@ -64,14 +64,6 @@ const Wrapper = ({ children }) => (
   <div className="prompt-line-story-wrapper">{children}</div>
 );
 
-// Gives the prompt line breathing room above it for the autocomplete overlay.
-// Mirrors .prompt-line-story-wrapper--autocomplete in story-styles.scss.
-const WrapperBottom = ({ children }) => (
-  <div className="prompt-line-story-wrapper prompt-line-story-wrapper--autocomplete">
-    {children}
-  </div>
-);
-
 const Hint = ({ children }) => (
   <p className="prompt-line-story-hint">{children}</p>
 );
@@ -370,7 +362,7 @@ const CommandsAndMentionsStory = ({
         Type <InlineCode>@</InlineCode> anywhere to mention a team member. Type{' '}
         <InlineCode>/</InlineCode> at the start of the line to run a command.
       </Hint>
-      <div style={{ marginBlockStart: '320px' }}>
+      <div className="prompt-line-story-wrapper--autocomplete">
         <PromptLineShell
           ref={shellRef}
           rounded={rounded}
@@ -506,59 +498,61 @@ const ConversationStartersStory = ({
     : 'Show conversation starters';
 
   return (
-    <WrapperBottom>
-      <PromptLineShell
-        rounded={rounded}
-        disabled={disabled}
-        hasError={hasError}
-        expanded>
-        {hasError && errorTitle && (
-          <CDSAIChatErrorMessage
-            slot="field-messaging"
-            title={errorTitle}
-            description={errorDescription}
-            collapsible={errorCollapsible}
-            fullscreen={errorFullscreen}
+    <Wrapper>
+      <div className="prompt-line-story-wrapper--autocomplete">
+        <PromptLineShell
+          rounded={rounded}
+          disabled={disabled}
+          hasError={hasError}
+          expanded>
+          {hasError && errorTitle && (
+            <CDSAIChatErrorMessage
+              slot="field-messaging"
+              title={errorTitle}
+              description={errorDescription}
+              collapsible={errorCollapsible}
+              fullscreen={errorFullscreen}
+            />
+          )}
+          <PromptLine
+            ref={promptLineRef}
+            slot="editor"
+            placeholder={placeholder}
+            disabled={disabled}
+            rich
+            extensions={extensions}
+            onChange={onChange}
+            onTriggerChange={onTriggerChange}
           />
-        )}
-        <PromptLine
-          ref={promptLineRef}
-          slot="editor"
-          placeholder={placeholder}
-          disabled={disabled}
-          rich
-          extensions={extensions}
-          onChange={onChange}
-          onTriggerChange={onTriggerChange}
-        />
-        {autocompleteContent}
-        <div slot="message-actions">
-          <cds-icon-button
-            size="sm"
-            kind="ghost"
-            align="top-start"
-            enter-delay-ms="0"
-            leave-delay-ms="0"
-            disabled={disabled || hasValidInput || undefined}
-            onClick={() => setStartersEnabled((prev) => !prev)}>
-            <ToggleIcon slot="icon" />
-            <span slot="tooltip-content">{toggleLabel}</span>
-          </cds-icon-button>
-        </div>
-        <CDSAIChatInputSendControl
-          slot="send-control"
-          disabled={disabled}
-          hasValidInput={hasValidInput}
-          isStopStreamingButtonVisible={isStopStreamingButtonVisible}
-          disableSend={disableSend}
-          isStopStreamingButtonDisabled={isStopStreamingButtonDisabled}
-          buttonLabel={buttonLabel}
-          stopResponseLabel={stopResponseLabel}
-          onSend={() => action('cds-aichat-input-send')()}
-          onStopStreaming={() => action('cds-aichat-input-stop-streaming')()}
-        />
-      </PromptLineShell>
-    </WrapperBottom>
+          {autocompleteContent}
+          <div slot="message-actions">
+            <cds-icon-button
+              size="sm"
+              kind="ghost"
+              align="top-start"
+              enter-delay-ms="0"
+              leave-delay-ms="0"
+              disabled={disabled || hasValidInput || undefined}
+              onClick={() => setStartersEnabled((prev) => !prev)}>
+              <ToggleIcon slot="icon" />
+              <span slot="tooltip-content">{toggleLabel}</span>
+            </cds-icon-button>
+          </div>
+          <CDSAIChatInputSendControl
+            slot="send-control"
+            disabled={disabled}
+            hasValidInput={hasValidInput}
+            isStopStreamingButtonVisible={isStopStreamingButtonVisible}
+            disableSend={disableSend}
+            isStopStreamingButtonDisabled={isStopStreamingButtonDisabled}
+            buttonLabel={buttonLabel}
+            stopResponseLabel={stopResponseLabel}
+            onSend={() => action('cds-aichat-input-send')()}
+            onStopStreaming={() => action('cds-aichat-input-stop-streaming')()}
+          />
+        </PromptLineShell>
+      </div>
+    </Wrapper>
   );
 };
 
@@ -768,48 +762,54 @@ const TypeaheadStory = ({
   }, [inputText, disableDirectSend, autocompleteContent]);
 
   return (
-    <WrapperBottom>
-      <PromptLineShell
-        ref={shellRef}
-        rounded={rounded}
-        disabled={disabled}
-        hasError={hasError}
-        expanded>
-        {hasError && errorTitle && (
-          <CDSAIChatErrorMessage
-            slot="field-messaging"
-            title={errorTitle}
-            description={errorDescription}
-            collapsible={errorCollapsible}
-            fullscreen={errorFullscreen}
+    <Wrapper>
+      <Hint>
+        Start typing <InlineCode>When...</InlineCode> to see typeahead
+        suggestions.
+      </Hint>
+      <div className="prompt-line-story-wrapper--autocomplete">
+        <PromptLineShell
+          ref={shellRef}
+          rounded={rounded}
+          disabled={disabled}
+          hasError={hasError}
+          expanded>
+          {hasError && errorTitle && (
+            <CDSAIChatErrorMessage
+              slot="field-messaging"
+              title={errorTitle}
+              description={errorDescription}
+              collapsible={errorCollapsible}
+              fullscreen={errorFullscreen}
+            />
+          )}
+          <PromptLine
+            ref={promptLineRef}
+            slot="editor"
+            placeholder={placeholder}
+            disabled={disabled}
+            rich
+            extensions={extensions}
+            onChange={onChange}
+            onTriggerChange={onTriggerChange}
           />
-        )}
-        <PromptLine
-          ref={promptLineRef}
-          slot="editor"
-          placeholder={placeholder}
-          disabled={disabled}
-          rich
-          extensions={extensions}
-          onChange={onChange}
-          onTriggerChange={onTriggerChange}
-        />
-        {autocompleteContent}
-        <InlineActions actions={dummyActions} disabled={disabled} />
-        <CDSAIChatInputSendControl
-          slot="send-control"
-          disabled={disabled}
-          hasValidInput={hasValidInput}
-          isStopStreamingButtonVisible={isStopStreamingButtonVisible}
-          disableSend={disableSend}
-          isStopStreamingButtonDisabled={isStopStreamingButtonDisabled}
-          buttonLabel={buttonLabel}
-          stopResponseLabel={stopResponseLabel}
-          onSend={() => action('cds-aichat-input-send')()}
-          onStopStreaming={() => action('cds-aichat-input-stop-streaming')()}
-        />
-      </PromptLineShell>
-    </WrapperBottom>
+          {autocompleteContent}
+          <InlineActions actions={dummyActions} disabled={disabled} />
+          <CDSAIChatInputSendControl
+            slot="send-control"
+            disabled={disabled}
+            hasValidInput={hasValidInput}
+            isStopStreamingButtonVisible={isStopStreamingButtonVisible}
+            disableSend={disableSend}
+            isStopStreamingButtonDisabled={isStopStreamingButtonDisabled}
+            buttonLabel={buttonLabel}
+            stopResponseLabel={stopResponseLabel}
+            onSend={() => action('cds-aichat-input-send')()}
+            onStopStreaming={() => action('cds-aichat-input-stop-streaming')()}
+          />
+        </PromptLineShell>
+      </div>
+    </Wrapper>
   );
 };
 
@@ -875,20 +875,18 @@ const PromptLineAPI = {
     autofocus: false,
   },
   render: ({ placeholder, disabled, rich, ariaLabel, autofocus }) => (
-    <Wrapper>
-      <PromptLineShell>
-        <PromptLine
-          slot="editor"
-          placeholder={placeholder}
-          disabled={disabled}
-          rich={rich}
-          ariaLabel={ariaLabel}
-          autofocus={autofocus}
-          onChange={(e) => action('cds-aichat-prompt-change')(e.detail)}
-        />
-        <CDSAIChatInputSendControl slot="send-control" />
-      </PromptLineShell>
-    </Wrapper>
+    <PromptLineShell>
+      <PromptLine
+        slot="editor"
+        placeholder={placeholder}
+        disabled={disabled}
+        rich={rich}
+        ariaLabel={ariaLabel}
+        autofocus={autofocus}
+        onChange={(e) => action('cds-aichat-prompt-change')(e.detail)}
+      />
+      <CDSAIChatInputSendControl slot="send-control" />
+    </PromptLineShell>
   ),
 };
 
@@ -923,16 +921,14 @@ const PromptLineShellAPI = {
     disabled: false,
   },
   render: ({ rounded, expanded, hasError, disabled }) => (
-    <Wrapper>
-      <PromptLineShell
-        rounded={rounded}
-        expanded={expanded}
-        hasError={hasError}
-        disabled={disabled}>
-        <PromptLine slot="editor" placeholder="Ask a question..." />
-        <CDSAIChatInputSendControl slot="send-control" />
-      </PromptLineShell>
-    </Wrapper>
+    <PromptLineShell
+      rounded={rounded}
+      expanded={expanded}
+      hasError={hasError}
+      disabled={disabled}>
+      <PromptLine slot="editor" placeholder="Ask a question..." />
+      <CDSAIChatInputSendControl slot="send-control" />
+    </PromptLineShell>
   ),
 };
 
@@ -981,17 +977,15 @@ const CDSAIChatInputSendControlAPI = {
     stopResponseLabel: 'Stop response',
   },
   render: (args) => (
-    <Wrapper>
-      <PromptLineShell>
-        <PromptLine slot="editor" placeholder="Ask a question..." />
-        <CDSAIChatInputSendControl
-          slot="send-control"
-          {...args}
-          onSend={() => action('cds-aichat-input-send')()}
-          onStopStreaming={() => action('cds-aichat-input-stop-streaming')()}
-        />
-      </PromptLineShell>
-    </Wrapper>
+    <PromptLineShell>
+      <PromptLine slot="editor" placeholder="Ask a question..." />
+      <CDSAIChatInputSendControl
+        slot="send-control"
+        {...args}
+        onSend={() => action('cds-aichat-input-send')()}
+        onStopStreaming={() => action('cds-aichat-input-stop-streaming')()}
+      />
+    </PromptLineShell>
   ),
 };
 
@@ -1023,22 +1017,20 @@ const CDSAIChatAutocompleteAPI = {
     disableDirectSend: false,
   },
   render: ({ inputText, attached, disableDirectSend }) => (
-    <WrapperBottom>
-      <PromptLineShell rounded>
-        <CDSAIChatAutocomplete
-          slot="autocomplete-content"
-          items={typeaheadItems.slice(0, 5)}
-          inputText={inputText}
-          attached={attached}
-          disableDirectSend={disableDirectSend}
-          onSend={(e) => action('cds-aichat-autocomplete-send')(e.detail)}
-          onSelect={(e) => action('cds-aichat-autocomplete-select')(e.detail)}
-          onDismiss={() => action('cds-aichat-autocomplete-dismiss')()}
-        />
-        <PromptLine slot="editor" placeholder="Ask a question..." />
-        <CDSAIChatInputSendControl slot="send-control" />
-      </PromptLineShell>
-    </WrapperBottom>
+    <PromptLineShell rounded>
+      <CDSAIChatAutocomplete
+        slot="autocomplete-content"
+        items={typeaheadItems.slice(0, 5)}
+        inputText={inputText}
+        attached={attached}
+        disableDirectSend={disableDirectSend}
+        onSend={(e) => action('cds-aichat-autocomplete-send')(e.detail)}
+        onSelect={(e) => action('cds-aichat-autocomplete-select')(e.detail)}
+        onDismiss={() => action('cds-aichat-autocomplete-dismiss')()}
+      />
+      <PromptLine slot="editor" placeholder="Ask a question..." />
+      <CDSAIChatInputSendControl slot="send-control" />
+    </PromptLineShell>
   ),
 };
 
@@ -1089,23 +1081,19 @@ const CDSAIChatFileUploadsAPI = {
       },
     ]);
     return (
-      <Wrapper>
-        <PromptLineShell rounded expanded>
-          <CDSAIChatFileUploads
-            slot="file-uploads"
-            uploads={uploads}
-            {...args}
-            onFileRemove={(e) => {
-              action('cds-aichat-file-remove')(e.detail);
-              setUploads((prev) =>
-                prev.filter((u) => u.id !== e.detail.fileId)
-              );
-            }}
-          />
-          <PromptLine slot="editor" placeholder="Ask a question..." />
-          <CDSAIChatInputSendControl slot="send-control" />
-        </PromptLineShell>
-      </Wrapper>
+      <PromptLineShell rounded expanded>
+        <CDSAIChatFileUploads
+          slot="file-uploads"
+          uploads={uploads}
+          {...args}
+          onFileRemove={(e) => {
+            action('cds-aichat-file-remove')(e.detail);
+            setUploads((prev) => prev.filter((u) => u.id !== e.detail.fileId));
+          }}
+        />
+        <PromptLine slot="editor" placeholder="Ask a question..." />
+        <CDSAIChatInputSendControl slot="send-control" />
+      </PromptLineShell>
     );
   },
 };
@@ -1141,13 +1129,11 @@ const CDSAIChatErrorMessageAPI = {
     fullscreen: false,
   },
   render: (args) => (
-    <Wrapper>
-      <PromptLineShell rounded hasError>
-        <CDSAIChatErrorMessage slot="field-messaging" {...args} />
-        <PromptLine slot="editor" placeholder="Ask a question..." />
-        <CDSAIChatInputSendControl slot="send-control" />
-      </PromptLineShell>
-    </Wrapper>
+    <PromptLineShell rounded hasError>
+      <CDSAIChatErrorMessage slot="field-messaging" {...args} />
+      <PromptLine slot="editor" placeholder="Ask a question..." />
+      <CDSAIChatInputSendControl slot="send-control" />
+    </PromptLineShell>
   ),
 };
 
