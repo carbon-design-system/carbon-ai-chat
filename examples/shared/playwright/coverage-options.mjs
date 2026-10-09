@@ -18,16 +18,16 @@ export const COVERAGE_HOST = 'http://localhost';
 export const MIN_LINES = 80;
 
 /**
- * Examples whose concern depends on random content, dates, or random timing.
- * Their suites prove only a clean mount, so they are reported, not gated.
+ * Examples whose concern cannot be checked deterministically, so their suites
+ * prove a mount and any behavior that stays fixed. They are reported, not
+ * gated. An entry is a slug for both flavors or `<flavor>/<slug>` for one.
  */
 export const DEFERRED_EXAMPLES = [
-  'history-float',
-  'history-fullscreen',
+  // Random message counts and texts.
   'history-host-driven',
-  'human-agent',
-  'workspace',
-  'workspace-sidebar',
+  // The history list renders a viewport height down, so no pinned item can be
+  // picked; its concern test is a fixme.
+  'web-components/history-fullscreen',
 ];
 
 /**

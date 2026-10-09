@@ -113,21 +113,34 @@ test.describe('basic fullscreen', () => {
       exact: true,
     });
     await stop.click();
-    await expect(stop).toBeDisabled();
 
-    // Settle a second reply. By then an unstopped stream would have run on.
-    // The `text` reply contains the closing code line once; the stopped
-    // stream must add no second copy.
-    await page.getByTestId(PageObjectId.INPUT).fill('text');
-    await page.getByRole('button', { name: /send/i }).click();
+    // The back end answers the abort with a `stream_stopped` final item once
+    // its full stream time has passed, so wait as long as an unstopped
+    // stream would take; by then the stopped reply must lack its last line.
     await expect(
-      panel.getByText('Lorem ipsum odor amet, consectetuer adipiscing elit.', {
-        exact: false,
-      })
-    ).toHaveCount(2);
+      panel.getByText('Response stopped', { exact: true })
+    ).toBeVisible({ timeout: 45 * 1000 });
     await expect(
       panel.getByText('print(generate_lorem_ipsum(2))', { exact: false })
-    ).toHaveCount(1);
+    ).toHaveCount(0);
+  });
+
+  // After Stop, the mock back end stays in `sleep(words.length * WORD_DELAY)`
+  // (about 17 seconds) before it ends the turn, so the next message cannot be
+  // sent until then.
+  test.fixme('accepts a new message right after a stop', async ({ page }) => {
+    await send(page, 'stream text');
+    const panel = page.getByTestId(PageObjectId.MAIN_PANEL);
+    await expect(
+      panel.getByText('Lorem ipsum odor amet', { exact: false })
+    ).toBeVisible();
+    await page
+      .getByRole('button', { name: 'Stop response', exact: true })
+      .click();
+    await page.getByTestId(PageObjectId.INPUT).fill('text');
+    await expect(page.getByRole('button', { name: /send/i })).toBeEnabled({
+      timeout: 2000,
+    });
   });
 
   test('answers an unknown request with the list of demo replies', async ({

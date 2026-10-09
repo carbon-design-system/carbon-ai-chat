@@ -32,5 +32,10 @@ for (const result of [suite, report]) {
   if (result.error) {
     throw result.error;
   }
+  // A killed run has no status; re-raise its signal so partial coverage
+  // never reads as a pass.
+  if (result.signal) {
+    process.kill(process.pid, result.signal);
+  }
 }
 process.exitCode = suite.status || report.status || 0;
