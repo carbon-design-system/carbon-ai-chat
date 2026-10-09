@@ -1574,7 +1574,7 @@ describe('cds-aichat-autocomplete', () => {
     });
   });
 
-  describe('_buildFlatList (flat index mapping)', () => {
+  describe('flat index mapping', () => {
     type FlatEntry = {
       item: SuggestionItem;
       index: number;

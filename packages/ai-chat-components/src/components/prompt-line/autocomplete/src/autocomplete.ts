@@ -275,7 +275,8 @@ class AutocompleteElement extends LitElement {
       changedProperties.has('items') || changedProperties.has('groups');
 
     if (itemsChanged) {
-      const totalItems = this._buildFlatList().length;
+      const flatList = this._buildFlatList();
+      const totalItems = flatList.length;
       if (totalItems === 0) {
         this._announcer.announce(this.i18n.noSuggestions);
         this._openAnnounced = false;
@@ -291,10 +292,10 @@ class AutocompleteElement extends LitElement {
   }
 
   /**
-   * Build a flat list of all items in render order: ungrouped
-   * items first, then each group's items in group order. This is the single
-   * source of truth for index ↔ item mapping; `render()` and the keyboard
-   * handlers both read it.
+   * Build a flat list of all items in render order: ungrouped items first,
+   * then each group's items in group order. Single source of truth for the
+   * index ↔ item mapping used by `updated()`, `render()`, `_handleKeydown()`,
+   * `_handleItemMouseEnter()`, and `_handleItemClick()`.
    */
   private _buildFlatList(): FlatEntry[] {
     const result: FlatEntry[] = [];
@@ -318,10 +319,6 @@ class AutocompleteElement extends LitElement {
       }
     });
     return result;
-  }
-
-  private _getItemAtIndex(index: number): SuggestionItem | null {
-    return this._buildFlatList()[index]?.item ?? null;
   }
 
   /**
@@ -440,11 +437,7 @@ class AutocompleteElement extends LitElement {
     }, 50);
   }
 
-  private _handleSend(index: number) {
-    const item = this._getItemAtIndex(index);
-    if (!item) {
-      return;
-    }
+  private _handleSend(index: number, item: SuggestionItem) {
     this._focusedIndex = index;
     this._announcer.announce(this.i18n.itemSent(item.label));
     this.dispatchEvent(
@@ -468,7 +461,7 @@ class AutocompleteElement extends LitElement {
   };
 
   private _handleItemMouseEnter(index: number): void {
-    if (this._getItemAtIndex(index)?.disabled) {
+    if (this._buildFlatList()[index]?.item.disabled) {
       return;
     }
     this._focusedIndex = index;
@@ -532,13 +525,13 @@ class AutocompleteElement extends LitElement {
   }
 
   private _handleItemClick(index: number) {
-    const item = this._getItemAtIndex(index);
+    const item = this._buildFlatList()[index]?.item;
     if (!item || item.disabled) {
       return;
     }
 
     if (!this.disableDirectSend) {
-      this._handleSend(index);
+      this._handleSend(index, item);
       return;
     }
     this._focusedIndex = index;
