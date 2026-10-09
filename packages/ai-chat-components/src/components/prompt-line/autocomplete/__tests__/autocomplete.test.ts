@@ -336,8 +336,6 @@ describe('cds-aichat-autocomplete', () => {
     });
 
     it('aria-activedescendant and --active class agree on every navigation step across a mixed flat+group list', async () => {
-      // Flat: '1'(0), 'flat-disabled'(1, disabled). Group 1: '3'(2), '4'(3).
-      // The disabled item sits on the flat/group boundary.
       const el = await defaultFixture({
         items: [
           mockItems[0],
