@@ -5,7 +5,18 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-/** Tests the prompt-line code snippet behavior with local fixtures. */
+/**
+ * Tests: Carbon AI Chat — Prompt line code snippet.
+ *
+ * Runs against both the React and Web Components examples. Each host adds a
+ * block-level Tiptap node through `input.tiptap.extensions`: typing three
+ * backticks swaps the paragraph for an editable code snippet, and
+ * `renderUserDefinedInputNode` draws a read-only copy in the sent message.
+ *
+ * Checks that backticks open a focused code editor, that Escape returns the
+ * caret to a new prompt paragraph, and that the sent message carries the code
+ * as a snippet and the mock recognizes the fenced block.
+ */
 
 import { PageObjectId } from '@carbon/ai-chat/server';
 import { expect, openExample, test, waitForChatReady } from '../helpers';

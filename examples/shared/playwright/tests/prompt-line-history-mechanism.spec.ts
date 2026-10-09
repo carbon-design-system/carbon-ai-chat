@@ -5,7 +5,18 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-/** Tests the prompt-line history mechanism behavior with local fixtures. */
+/**
+ * Tests: Carbon AI Chat — Prompt line history mechanism.
+ *
+ * Runs against both the React and Web Components examples. Each host adds a
+ * keyboard-only Tiptap extension: ArrowUp at the start of a one-block draft
+ * recalls earlier sends, and ArrowDown at the end walks back to the saved
+ * draft, through `instance.input.updateContent`.
+ *
+ * Checks that ArrowUp without history keeps the draft, that recall stops at
+ * the oldest entry and restores the draft past the newest, and that arrows in
+ * a multiline draft move the caret instead of recalling history.
+ */
 
 import { PageObjectId } from '@carbon/ai-chat/server';
 import { expect, openExample, test, waitForChatReady } from '../helpers';
@@ -16,16 +27,18 @@ test.beforeEach(async ({ page }) => {
   await waitForChatReady(page, PageObjectId.INPUT);
 });
 
-// macOS Chromium has no Home/End caret moves, so use the editor's Ctrl-A and
-// Ctrl-E line bindings there.
+// Move the caret to the start or end of the whole draft, not the visual
+// line. Elsewhere Ctrl+Home and Ctrl+End do that. macOS Chromium has no such
+// keys in a contenteditable, so use the editor's Ctrl-A and Ctrl-E bindings:
+// they move to the paragraph's edges, and a Shift+Enter draft is one paragraph.
 const isMac = process.platform === 'darwin';
 
 async function caretToStart(input: Locator) {
-  await input.press(isMac ? 'Control+a' : 'Home');
+  await input.press(isMac ? 'Control+a' : 'Control+Home');
 }
 
 async function caretToEnd(input: Locator) {
-  await input.press(isMac ? 'Control+e' : 'End');
+  await input.press(isMac ? 'Control+e' : 'Control+End');
 }
 
 async function sendText(page: Page, input: Locator, text: string) {

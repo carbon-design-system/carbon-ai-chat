@@ -5,7 +5,18 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-/** Tests the prompt-line typeahead custom behavior with local fixtures. */
+/**
+ * Tests: Carbon AI Chat — Prompt line custom typeahead list, React host.
+ *
+ * The React host replaces the built-in dropdown through
+ * `autocomplete.renderCustomList`. Its list drives Arrow, Enter, and Escape
+ * from a document keydown listener and resets the highlight on new items.
+ * Picking a suggestion fills the editor; the user still sends it.
+ *
+ * Checks keyboard selection before an explicit send, that navigation clamps
+ * at both ends, that a new query restarts at the top, and that Escape closes
+ * the list while keeping the draft and focus.
+ */
 
 import { PageObjectId } from '@carbon/ai-chat/server';
 import { expect, openExample, test, waitForChatReady } from '../helpers';
@@ -71,6 +82,8 @@ test('navigation clamps, queries reset, and Escape preserves editing', async ({
   await expect(page.getByRole('listbox')).toHaveCount(0);
   await expect(input).toBeFocused();
   await expect(input).toHaveText('grid');
+  await input.fill('carbon');
+  await expect(page.getByRole('listbox')).toBeVisible();
   await input.fill('zzzz-no-match');
   await expect(page.getByRole('listbox')).toHaveCount(0);
   await input.fill('grid');

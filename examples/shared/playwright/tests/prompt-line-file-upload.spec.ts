@@ -5,7 +5,18 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-/** Tests the prompt-line file upload behavior with local fixtures. */
+/**
+ * Tests: Carbon AI Chat — Prompt line file upload.
+ *
+ * Runs against both the React and Web Components examples. Each host turns on
+ * `upload.isOn` with a mock `onFileUpload` that resolves after a delay, or
+ * throws for a file named `fail.txt`. The mock reply lists the file metadata
+ * the send carried.
+ *
+ * Checks that an uploaded file sends its name, type, and size and shows in
+ * the sent message, and that a rejected upload blocks send until it is
+ * removed, keeping the typed draft.
+ */
 
 import { PageObjectId } from '@carbon/ai-chat/server';
 import { expect, openExample, test, waitForChatReady } from '../helpers';
@@ -94,15 +105,26 @@ test('rejected upload blocks send and removal restores retained text', async ({
 });
 
 // fixme: no cancel control exists while an upload is pending. The chip shows
-// only an uploading spinner; "Remove report.txt" appears after the upload completes.
+// only an unnamed spinner; "Remove report.txt" appears after the upload completes.
 test.fixme('canceling a pending upload contributes nothing', async ({
   page,
 }) => {
+  // Reload under a paused fake clock so the mock's one-second upload stays
+  // pending.
+  await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
+  await openExample(page);
+  await waitForChatReady(page, PageObjectId.INPUT);
+  await page.clock.pauseAt(new Date('2026-01-01T01:00:00Z'));
   await attach(page, 'report.txt');
-  await page.getByRole('button', { name: 'Remove report.txt' }).click();
-  await expect(
-    page.getByRole('group', { name: 'report.txt', exact: true })
-  ).toHaveCount(0);
+  const chip = page.getByRole('group', { name: 'report.txt', exact: true });
+  // The spinner is the chip's only image while the upload is pending.
+  await expect(chip.getByRole('img')).toBeVisible();
+  const remove = page.getByRole('button', { name: 'Remove report.txt' });
+  await expect(remove).toBeVisible();
+  await expect(chip.getByRole('img')).toBeVisible();
+  await remove.click();
+  await expect(chip).toHaveCount(0);
+  await page.clock.resume();
   const input = page.getByTestId(PageObjectId.INPUT);
   await input.fill('review report');
   await page.getByRole('button', { name: /send/i }).click();

@@ -5,7 +5,18 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-/** Tests the prompt-line custom render behavior with local fixtures. */
+/**
+ * Tests: Carbon AI Chat — Prompt line custom render.
+ *
+ * Runs against both the React and Web Components examples. Each host page has
+ * tiles outside the chat; a tile click calls `instance.input.updateContent`
+ * and `updateStructuredData` so a host-rendered tile node replaces the input,
+ * and `renderUserDefinedInputNode` draws it in the sent message.
+ *
+ * Checks that a second tile replaces the first, that the sent message shows
+ * the tile and the mock reports its id, that a plain follow-up carries no tile,
+ * and that a focused tile inserts its node with Enter.
+ */
 
 import { PageObjectId } from '@carbon/ai-chat/server';
 import { expect, openExample, test, waitForChatReady } from '../helpers';
@@ -58,6 +69,38 @@ test('the second tile replaces the first in the prompt and sent message', async 
   await expect(
     page
       .getByText('No tile was attached to this message.', { exact: true })
+      .filter({ visible: true })
+  ).toBeVisible();
+  await expect(chatTiles).toHaveCount(1);
+});
+
+test('a focused tile inserts its chip with Enter', async ({ page, target }) => {
+  // fixme: the Web Components tile (`cds-clickable-tile` without `href`) takes
+  // focus as role=button, but Enter and Space do not fire its click handler.
+  test.fixme(
+    target.startsWith('web-components'),
+    'Enter on a focused tile inserts nothing in the Web Components host'
+  );
+  // The React tile is a focusable link with no role or name, so select it
+  // by the host's own class.
+  const tile = page
+    .locator('.tile-grid .tile-chip')
+    .filter({ hasText: 'Draft a reply' });
+  await tile.press('Enter');
+  const chatTiles = page
+    .locator('.sidebar .tile-chip')
+    .filter({ visible: true });
+  await expect(chatTiles).toHaveCount(1);
+  await expect(chatTiles).toContainText('Draft a reply');
+  const send = page.getByRole('button', { name: /send/i });
+  await send.focus();
+  await expect(send).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(
+    page
+      .getByText('You submitted the Draft a reply tile (id: draft-reply).', {
+        exact: true,
+      })
       .filter({ visible: true })
   ).toBeVisible();
   await expect(chatTiles).toHaveCount(1);

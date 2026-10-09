@@ -46,6 +46,10 @@ export const targets = {
     example: 'react/custom-header',
     spec: 'custom-header.spec.ts',
   },
+  'react-custom-prompt-line': {
+    example: 'react/custom-prompt-line',
+    spec: 'custom-prompt-line.spec.ts',
+  },
   'react-fullscreen': {
     example: 'react/basic-custom-element-fullscreen',
     spec: 'fullscreen.spec.ts',
@@ -76,7 +80,7 @@ export const targets = {
   },
   'react-prompt-line-mentions-and-commands-custom-render': {
     example: 'react/prompt-line-mentions-and-commands-custom-render',
-    spec: 'prompt-line-mentions-and-commands-custom-render-react.spec.ts',
+    spec: 'prompt-line-mentions-and-commands-custom-render.spec.ts',
   },
   'react-prompt-line-typeahead': {
     example: 'react/prompt-line-typeahead',
@@ -126,6 +130,10 @@ export const targets = {
     example: 'web-components/custom-header',
     spec: 'custom-header.spec.ts',
   },
+  'web-components-custom-prompt-line': {
+    example: 'web-components/custom-prompt-line',
+    spec: 'custom-prompt-line.spec.ts',
+  },
   'web-components-fullscreen': {
     example: 'web-components/basic-custom-element-fullscreen',
     spec: 'fullscreen.spec.ts',
@@ -156,7 +164,7 @@ export const targets = {
   },
   'web-components-prompt-line-mentions-and-commands-custom-render': {
     example: 'web-components/prompt-line-mentions-and-commands-custom-render',
-    spec: 'prompt-line-mentions-and-commands-custom-render-web-components.spec.ts',
+    spec: 'prompt-line-mentions-and-commands-custom-render.spec.ts',
   },
   'web-components-prompt-line-typeahead': {
     example: 'web-components/prompt-line-typeahead',

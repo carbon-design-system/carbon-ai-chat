@@ -5,7 +5,17 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-/** Tests the prompt-line typeahead custom behavior with local fixtures. */
+/**
+ * Tests: Carbon AI Chat — Prompt line custom typeahead list, Web Components host.
+ *
+ * The Web Components host replaces the built-in dropdown through
+ * `autocomplete.renderCustomList` with its own list element. Picking a
+ * suggestion fills the editor; the user still sends it.
+ *
+ * Checks pointer selection before an explicit send, that a new query restarts
+ * the highlight, and that a query with no match hides the list. The keyboard
+ * cases are fixme: the list never receives the editor's arrow and Enter keys.
+ */
 
 import { PageObjectId } from '@carbon/ai-chat/server';
 import { expect, openExample, test, waitForChatReady } from '../helpers';
