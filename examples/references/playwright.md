@@ -98,6 +98,7 @@ shared/playwright/
 | `web-components-theme-plex-override` | `web-components/theme-plex-override` | [Theme plex override](../shared/playwright/tests/theme-plex-override.spec.ts) |
 | `web-components-upsert-message-reasoning-steps` | `web-components/upsert-message-reasoning-steps` | [Upsert message reasoning steps](../shared/playwright/tests/upsert-message-reasoning-steps.spec.ts) |
 | `web-components-upsert-message-reasoning-steps-controlled` | `web-components/upsert-message-reasoning-steps-controlled` | [Upsert message reasoning steps controlled](../shared/playwright/tests/upsert-message-reasoning-steps-controlled.spec.ts) |
+| `web-components-upsert-message-reasoning-with-streaming-generic-items` | `web-components/upsert-message-reasoning-with-streaming-generic-items` | [Upsert message reasoning with streaming generic items](../shared/playwright/tests/upsert-message-reasoning-with-streaming-generic-items.spec.ts) |
 | `web-components-upsert-message-user-defined` | `web-components/upsert-message-user-defined` | [Upsert message user defined](../shared/playwright/tests/upsert-message-user-defined.spec.ts) |
 | `web-components-user-defined-responses` | `web-components/user-defined-responses` | [User defined responses](../shared/playwright/tests/user-defined-responses.spec.ts) |
 | `web-components-watch-state` | `web-components/watch-state` | [Watch state](../shared/playwright/tests/watch-state.spec.ts) |
