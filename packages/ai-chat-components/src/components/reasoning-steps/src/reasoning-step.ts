@@ -12,7 +12,7 @@ import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { property, state } from 'lit/decorators.js';
 import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
-import ChevronRight16 from '@carbon/icons/es/chevron--right/16.js';
+import ChevronDown16 from '@carbon/icons/es/chevron--down/16.js';
 import commonStyles from '../../../globals/scss/common.scss?lit';
 import styles from './reasoning-step.scss?lit';
 import prefix from '../../../globals/settings.js';
@@ -207,7 +207,7 @@ class CDSAIChatReasoningStep extends LitElement {
         @click=${this.handleButtonClick}
         @keydown=${this.handleButtonKeydown}>
         <span class="${baseClass}__icon" part="expando-icon" aria-hidden="true">
-          ${iconLoader(ChevronRight16)}
+          ${iconLoader(ChevronDown16)}
         </span>
         <div class="${baseClass}__title" part="title">
           <slot name="title">${this.title}</slot>
