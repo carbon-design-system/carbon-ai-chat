@@ -30,7 +30,7 @@ interface LightDomPortalEntry {
 }
 
 interface LightDomPortalsContainerProps {
-  /** The chat wrapper element (`<cds-aichat-react>`) whose light DOM hosts portal targets. */
+  /** The page-level chat element whose light DOM hosts portal targets. */
   chatWrapper?: HTMLElement;
 }
 

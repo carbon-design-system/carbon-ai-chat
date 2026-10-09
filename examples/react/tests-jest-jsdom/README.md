@@ -5,7 +5,7 @@ Baseline Jest + `jest-environment-jsdom` setup that verifies `ChatContainer` mou
 ## What this example shows
 
 - Running `@carbon/ai-chat` React components under Jest with the default jsdom environment.
-- Asserting the `cds-aichat-react` custom element mounts via `container.querySelector`.
+- Asserting the `cds-aichat-container` custom element mounts via `container.querySelector`.
 - Rendering `ChatContainer` with an inline `customSendMessage` stub.
 - Using `renderWriteableElements.headerBottomElement` with a `data-testid` to confirm React-rendered slot content.
 

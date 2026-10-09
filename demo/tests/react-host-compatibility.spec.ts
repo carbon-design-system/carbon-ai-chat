@@ -5,6 +5,7 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
+import { PageObjectId } from '@carbon/ai-chat/server';
 import { test, expect, type Page } from '@playwright/test';
 
 /**
@@ -16,7 +17,9 @@ import { test, expect, type Page } from '@playwright/test';
  * Whatever loads first, a React chat keeps rendering in the host's React tree:
  * host context reaches its custom content, that content keeps its state, and
  * page CSS reaches it. The React host adds no height to the page, and page CSS
- * reaches the content the host puts in each slot.
+ * reaches the content the host puts in each slot. Loading the web-component
+ * entry later wakes a plain `cds-aichat-container` that connected while no
+ * renderer existed.
  */
 
 interface ChatInstanceHandle {
@@ -72,6 +75,9 @@ function countRenderTargets(page: Page) {
 
 async function expectLiveReactChat(page: Page) {
   expect(await countRenderTargets(page)).toBe(1);
+  expect(
+    await page.evaluate(() => customElements.get('cds-aichat-react'))
+  ).toBeUndefined();
 
   const instanceBefore = await page.evaluateHandle(
     () => window.hostCompatibility.reactInstance
@@ -120,6 +126,28 @@ test('React chat renders in the host tree when the web-component entry loads fir
   expect(errors).toEqual([]);
 });
 
+test('a plain web component connected before its entry loads wakes when it does', async ({
+  page,
+}) => {
+  const errors = await openHarness(page, 'wait', [
+    'react-entry',
+    'plain',
+    'wc',
+  ]);
+
+  await page.waitForFunction(
+    () => Boolean(window.hostCompatibility.wcInstance),
+    {
+      timeout: 20000,
+    }
+  );
+  await expect(
+    page.locator('#plain-host').getByTestId(PageObjectId.INPUT)
+  ).toBeVisible({ timeout: 15000 });
+  expect(await countRenderTargets(page)).toBe(1);
+  expect(errors).toEqual([]);
+});
+
 /** Opens one chat surface and waits for its instance. */
 async function openSurface(page: Page, surface: string) {
   const errors: string[] = [];
@@ -135,6 +163,16 @@ async function openSurface(page: Page, surface: string) {
   );
   return { errors, instanceKey };
 }
+
+test('a custom element renders when its entry is the only one loaded', async ({
+  page,
+}) => {
+  const { errors } = await openSurface(page, 'wc-custom');
+  await expect(
+    page.locator('cds-aichat-custom-element').getByTestId(PageObjectId.INPUT)
+  ).toBeVisible({ timeout: 15000 });
+  expect(errors).toEqual([]);
+});
 
 test('a float React chat adds no height to a full-height page', async ({
   page,

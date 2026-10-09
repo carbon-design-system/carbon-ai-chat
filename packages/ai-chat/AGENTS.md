@@ -7,7 +7,7 @@ Guidance for authoring inside [packages/ai-chat/](.). Read this before editing a
 The primary Carbon AI Chat app. Ships as:
 
 - A React component tree rooted at [src/aiChatEntry.tsx](src/aiChatEntry.tsx).
-- Lit web-component wrappers (`cds-aichat-container`, `cds-aichat-custom-element`) under [src/web-components/](src/web-components) that mount the same React tree via `@lit/react`.
+- Lit web-component wrappers (`cds-aichat-container`, `cds-aichat-custom-element`) under [src/web-components/](src/web-components) that own startup and mount the React tree for every host. React components render through `cds-aichat-container`.
 - A server entry ([src/serverEntry.ts](src/serverEntry.ts)) exposing SSR-safe types/utilities only.
 
 All entries compile via [tasks/rollup.aichat.js](tasks/rollup.aichat.js) to `dist/es/` (`cds--` prefix) and `dist/es-custom/` (`cds--custom` prefix, avoiding `@carbon/angular-components` collisions). TypeDoc emits to `dist/docs/`.
@@ -33,8 +33,7 @@ Load only what you need:
 - [src/chat/](src/chat/) — the chat application. Do most feature work here.
   - `AppShell.tsx`, `ChatAppEntry.tsx`, `AppShellPanels.tsx`, `AppShellWriteableElements.tsx` — top-level composition.
   - `store/` — Redux-style store.
-  - `services/` — chat-instance services wired through `ServiceManager.ts` and `loadServices.ts`, plus view-owned classes with explicit cleanup. `ChatActionsImpl.ts` is the instance-facing API — public methods added here must also be reflected on `ChatInstance` in `instance/`.
-  - `instance/` — public `ChatInstance` object. Breaking changes here break every consumer; prefer additive API.
+  - `services/` — chat-instance services wired through `ServiceManager.ts` and `loadServices.ts`, plus view-owned classes with explicit cleanup. `ChatInstanceService.ts` is the instance-facing API — public methods added here must also be reflected on `ChatInstance` in [`src/types/instance/ChatInstance.ts`](src/types/instance/ChatInstance.ts).
   - `events/` — typed pub/sub for the public event API. Event names and payloads are part of the public contract.
   - `schema/` — runtime message/config schema. Keep in sync with types in [src/types/](src/types/).
   - `hocs/`, `hooks/`, `contexts/`, `providers/` — React glue.

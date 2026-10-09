@@ -14,6 +14,13 @@
  * bundle, and the synchronous `getRichRuntimeIfLoaded()` lets the shell mount
  * the rich editor on first paint (no textarea→editor flash) once the chunk has
  * been warmed via {@link preloadPromptLineRich}.
+ *
+ * **Preservation rule:** the eager barrel (`tiptap/index.ts`) must never
+ * statically import from `@tiptap/*`. Any such import would appear as a
+ * side-effect import in the published entry and pull Tiptap into every
+ * consumer's bundle, including lite-mode hosts that never load the rich
+ * runtime. All `@tiptap/*` imports belong in this lazy chunk
+ * (`prompt-line-rich-runtime.ts`) or modules it imports.
  */
 
 type RichRuntimeModule = typeof import('./prompt-line-rich-runtime.js');

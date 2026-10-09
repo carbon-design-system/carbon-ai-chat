@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.MessageOutput.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.MessageOutput.html
 
 The output context for a message response from an assistant.
 
@@ -26,4 +26,4 @@ interface MessageOutput
 
 Responses intended to be processed by a generic channel. This will be an array of message response items.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.MessageOutput.html#generic)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.MessageOutput.html#generic)
