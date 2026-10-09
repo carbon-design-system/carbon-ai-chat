@@ -5,7 +5,18 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-/** Tests workspace table markdown override mounting and its host-visible behavior. */
+/**
+ * Tests: Carbon AI Chat — Workspace table markdown override.
+ *
+ * Runs against both the React and Web Components examples. Each host replaces
+ * the markdown table renderer with a card whose "Open in workspace" action
+ * shows the same data, unpaginated, in the workspace panel, and resets that
+ * state on `WORKSPACE_CLOSE`.
+ *
+ * Checks that the chat mounts, then opens the table in the workspace by
+ * keyboard, checks all 25 rows, closes it, and reopens it without
+ * duplicating rows.
+ */
 
 import { PageObjectId } from '@carbon/ai-chat/server';
 import { expect, openExample, test, waitForChatReady } from '../helpers';
