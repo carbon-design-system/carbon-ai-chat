@@ -53,6 +53,8 @@ import type { CustomPanelState } from './panels/CustomPanelState';
 import type { WorkspacePanelState } from './panels/WorkspacePanelState';
 import type { HistoryPanelState } from './panels/HistoryPanelState';
 import type { MessagePanelState } from './panels/MessagePanelState';
+import type { OnErrorData } from '../config/ErrorConfig';
+import type { ConversationStatus } from '../instance/PublicChatState';
 
 // ─── AppStatePanels ──────────────────────────────────────────────────────────
 
@@ -176,6 +178,12 @@ interface AppStateView {
  * The lifecycle and session sub-group of AppState.
  */
 interface AppStateLifecycle {
+  /** Current conversation operation phase. */
+  conversationStatus: ConversationStatus;
+
+  /** Current terminal conversation error. */
+  conversationError: Readonly<OnErrorData> | null;
+
   /**
    * Whether we have hydrated Carbon AI Chat. This means we have loaded session history if it exists as well as the
    * welcome node (if appropriate).

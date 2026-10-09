@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.22.0",
   "type": "module",
-  "description": "An example showing how to bridge ChatInstance state into a Redux Toolkit store via the STATE_CHANGE bus event.",
+  "description": "An example showing how to select ChatInstance state into a Redux Toolkit store.",
   "scripts": {
     "start": "vite",
     "build": "vite build"
@@ -22,6 +22,6 @@
   "devDependencies": {
     "@vitejs/plugin-react": "^6.0.0",
     "typescript": "^6.0.3",
-    "vite": "^8.0.16"
+    "vite": "^8.3.0"
   }
 }

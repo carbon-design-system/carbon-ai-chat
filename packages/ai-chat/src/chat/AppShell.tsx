@@ -47,7 +47,7 @@ import { AppShellPanels } from './AppShellPanels';
 import { HasServiceManager } from './hocs/withServiceManager';
 import { useMobileViewportLayout } from './hooks/useMobileViewportLayout';
 import { useOnMount } from './hooks/useOnMount';
-import { useSelector } from './hooks/useSelector';
+import { useSelector, useStateAccessSelector } from './hooks/useSelector';
 import { useWindowOpenState } from './hooks/useWindowOpenState';
 import { useFocusManager } from './hooks/useFocusManager';
 import { useStyleInjection } from './hooks/useStyleInjection';
@@ -101,6 +101,7 @@ import {
   ChatWidthBreakpoint,
   PendingUpload,
 } from '../types/state/AppState';
+import type { PublicChatState } from '../types/instance/PublicChatState';
 import {
   AutoScrollOptions,
   HasDoAutoScroll,
@@ -147,6 +148,8 @@ const selectPersistedToBrowserStorage = (state: AppState) =>
 const selectIsHydrated = (state: AppState) => state.isHydrated;
 const selectAssistantMessageState = (state: AppState) =>
   state.assistantMessageState;
+const selectIsHydratingCounter = (state: PublicChatState) =>
+  state.isHydratingCounter;
 const selectHumanAgentStateSlice = (state: AppState) => state.humanAgentState;
 const selectWorkspacePanelState = (state: AppState) =>
   state.workspacePanelState;
@@ -224,6 +227,10 @@ function AppShell({
   );
   const isHydrated = useSelector(selectIsHydrated);
   const assistantMessageState = useSelector(selectAssistantMessageState);
+  const isHydratingCounter = useStateAccessSelector(
+    serviceManager.instance.state,
+    selectIsHydratingCounter
+  );
   const humanAgentState = useSelector(selectHumanAgentStateSlice);
   const workspacePanelState = useSelector(selectWorkspacePanelState);
   const historyPanelState = useSelector(selectHistoryPanelState);
@@ -361,7 +368,7 @@ function AppShell({
   } = useDerivedState({
     publicConfig,
     persistedToBrowserStorage,
-    isHydratingCounter: assistantMessageState.isHydratingCounter,
+    isHydratingCounter,
     catastrophicErrorType,
     viewStateMainWindow: viewState.mainWindow,
   });

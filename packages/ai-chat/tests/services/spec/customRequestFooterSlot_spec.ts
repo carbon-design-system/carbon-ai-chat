@@ -70,6 +70,7 @@ const createServiceManagerStub = () => {
     store: {
       dispatch: jest.fn(),
       getState: () => state,
+      subscribe: jest.fn(() => jest.fn()),
     },
     messageService: {
       send: jest.fn().mockResolvedValue(undefined),
@@ -135,7 +136,8 @@ describe('custom request footer slot', () => {
 
     const footerEvents = footerEventsIn(firedEvents);
     expect(footerEvents).toHaveLength(1);
-    expect(footerEvents[0].data.message).toBe(message);
+    expect(footerEvents[0].data.message).not.toBe(message);
+    expect(message.id).toBeUndefined();
     expect(footerEvents[0].data.message.input.text).toBe(
       'what is the weather?'
     );
@@ -419,6 +421,31 @@ describe('footer replay from history', () => {
     );
     expect(incoming).toHaveLength(1);
     expect((incoming[0] as any).data.slotName).toBe('backend-slot');
+  });
+
+  it('owns and freezes restored assistant footer event data', async () => {
+    const { serviceManager, firedEvents } = createServiceManagerStub();
+    const chatActions = new ChatInstanceService(serviceManager);
+    const entry = restoredResponse('m1', 'backend-slot', true);
+    const additionalData = { nested: { value: 'original' } };
+    (
+      entry.localMessage.item.message_item_options.custom_footer_slot as any
+    ).additional_data = additionalData;
+
+    await chatActions.replayFooterSlots(historyFrom([entry]) as never);
+
+    const footerEvent = firedEvents.find(
+      (event) => event.type === BusEventType.CUSTOM_FOOTER_SLOT
+    ) as any;
+    expect(footerEvent.data.message).not.toBe(entry.message);
+    expect(footerEvent.data.messageItem).not.toBe(entry.localMessage.item);
+    expect(footerEvent.data.additionalData).not.toBe(additionalData);
+    expect(Object.isFrozen(footerEvent.data)).toBe(true);
+    expect(Object.isFrozen(footerEvent.data.additionalData.nested)).toBe(true);
+    expect(() => {
+      footerEvent.data.additionalData.nested.value = 'mutated';
+    }).toThrow();
+    expect(additionalData.nested.value).toBe('original');
   });
 
   it('replays both directions in one pass', async () => {

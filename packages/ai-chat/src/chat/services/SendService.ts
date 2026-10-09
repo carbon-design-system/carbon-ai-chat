@@ -61,7 +61,7 @@ class SendService {
     const messageRequest =
       typeof message === 'string'
         ? createMessageRequestForText(message)
-        : message;
+        : cloneDeep(message);
 
     // Announce that the message is being sent for screen reader users
     if (this.serviceManager.ariaAnnouncer) {

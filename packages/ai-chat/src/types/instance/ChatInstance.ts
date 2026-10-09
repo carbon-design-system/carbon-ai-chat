@@ -27,6 +27,65 @@ import type { WriteableElements } from './WriteableElements';
  */
 export interface ChatInstance extends EventHandlers, ChatActions {
   /**
+   * Reads and observes immutable public state snapshots for this chat instance.
+   */
+  readonly state: {
+    /**
+     * Returns the current snapshot. The same object is returned until public state changes.
+     *
+     * @example Read the current messages
+     * ```ts
+     * const messages = instance.state.get().messages;
+     * console.log(messages); // => the current public message list
+     * ```
+     */
+    get(): PublicChatState;
+
+    /**
+     * Calls a listener after public state changes. The returned function stops this subscription.
+     *
+     * @example Subscribe to state changes
+     * ```ts
+     * const unsubscribe = instance.state.subscribe(() => {
+     *   console.log(instance.state.get().status);
+     * });
+     *
+     * unsubscribe();
+     * ```
+     */
+    subscribe(listener: () => void): () => void;
+
+    /**
+     * Calls a listener when the selected value changes. The comparison uses `Object.is` by default.
+     *
+     * @typeParam Selected The selected value.
+     * @param selector Selects a value from the current public state.
+     * @param listener Receives each changed selected value.
+     * @param options Options for comparing selected values.
+     * @param options.isEqual Returns `true` when two selected values are equal.
+     * @returns A function that stops this selection.
+     *
+     * @example Observe the conversation status
+     * ```ts
+     * const unsubscribe = instance.state.select(
+     *   (state) => state.status,
+     *   (status) => console.log(status),
+     * );
+     *
+     * unsubscribe();
+     * ```
+     */
+    select<Selected>(
+      selector: (state: PublicChatState) => Selected,
+      listener: (value: Selected) => void,
+      options?: {
+        /** Returns `true` when two selected values are equal. */
+        isEqual?: (left: Selected, right: Selected) => boolean;
+      }
+    ): () => void;
+  };
+
+  /**
    * Returns state information of the Carbon AI Chat that could be useful.
    *
    * @example Read the current state snapshot
@@ -34,6 +93,8 @@ export interface ChatInstance extends EventHandlers, ChatActions {
    * const state = instance.getState();
    * console.log(state); // => the current PublicChatState
    * ```
+   *
+   * @deprecated Use {@link ChatInstance.state} — removed in 2.0.0.
    */
   getState: () => PublicChatState;
 

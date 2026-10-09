@@ -142,6 +142,31 @@ describe('MessageUpsertCoordinator', () => {
         coord.upsert('m1', MessageState.COMPLETE, () => textResponse('m1', ''))
       ).rejects.toThrow(/non-assistant/i);
     });
+
+    it('isolates both the previous message and the updater result', async () => {
+      const original = textResponse('m1', 'before');
+      const { manager, state } = makeStubManager({ m1: original });
+      const coord = new MessageUpsertCoordinator(manager);
+      let returned: MessageResponse;
+
+      await coord.upsert('m1', MessageState.STREAMING, (previous) => {
+        (previous.output.generic[0] as any).text = 'changed by updater';
+        returned = previous;
+        return previous;
+      });
+
+      expect((original.output.generic[0] as any).text).toBe('before');
+      expect(
+        ((state.allMessagesByID.m1 as MessageResponse).output.generic[0] as any)
+          .text
+      ).toBe('changed by updater');
+
+      (returned.output.generic[0] as any).text = 'changed after return';
+      expect(
+        ((state.allMessagesByID.m1 as MessageResponse).output.generic[0] as any)
+          .text
+      ).toBe('changed by updater');
+    });
   });
 
   describe('pre:receive / receive firing predicate', () => {
@@ -312,6 +337,58 @@ describe('MessageUpsertCoordinator', () => {
       const types = fire.mock.calls.map((c) => c[0].type);
       expect(types).toContain(BusEventType.PRE_RECEIVE);
       expect(types).toContain(BusEventType.RECEIVE);
+    });
+
+    it('cancels an updater that settles after the generation is cleared', async () => {
+      const { manager, dispatch, fire } = makeStubManager();
+      const coord = new MessageUpsertCoordinator(manager);
+      let release: (message: MessageResponse) => void;
+      const result = new Promise<MessageResponse>((resolve) => {
+        release = resolve;
+      });
+
+      const pending = coord.upsert(
+        'stale',
+        MessageState.COMPLETE,
+        () => result
+      );
+      await Promise.resolve();
+      coord.clearAll();
+      release(textResponse('stale', 'late'));
+
+      await expect(pending).resolves.toBeUndefined();
+      expect(dispatch).not.toHaveBeenCalled();
+      expect(fire).not.toHaveBeenCalled();
+      expect(coord.getState('stale')).toBeUndefined();
+    });
+  });
+
+  describe('event ownership', () => {
+    it('commits pre:receive mutations without retaining event payload aliases', async () => {
+      const { manager, state, fire } = makeStubManager();
+      let preReceivePayload: MessageResponse;
+      let receivePayload: MessageResponse;
+      fire.mockImplementation(async (event) => {
+        if (event.type === BusEventType.PRE_RECEIVE) {
+          preReceivePayload = event.data;
+          (event.data.output.generic[0] as any).text = 'from pre:receive';
+        } else if (event.type === BusEventType.RECEIVE) {
+          receivePayload = event.data;
+        }
+      });
+      const coord = new MessageUpsertCoordinator(manager);
+
+      await coord.upsert('m1', MessageState.COMPLETE, () =>
+        textResponse('m1', 'original')
+      );
+
+      const stored = state.allMessagesByID.m1 as MessageResponse;
+      expect((stored.output.generic[0] as any).text).toBe('from pre:receive');
+      expect(receivePayload).not.toBe(stored);
+      expect(Object.isFrozen(receivePayload)).toBe(true);
+
+      (preReceivePayload.output.generic[0] as any).text = 'retained mutation';
+      expect((stored.output.generic[0] as any).text).toBe('from pre:receive');
     });
   });
 

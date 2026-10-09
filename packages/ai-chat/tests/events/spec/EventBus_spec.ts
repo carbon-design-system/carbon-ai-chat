@@ -275,3 +275,56 @@ describe('EventBus.fire', () => {
     expect(seen).toEqual(['first', 'second']);
   });
 });
+
+describe('EventBus', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('reports exact and wildcard listeners', () => {
+    const eventBus = new EventBus();
+    const exactHandler = jest.fn();
+    const wildcardHandler = jest.fn();
+
+    expect(eventBus.hasListeners(BusEventType.STATE_CHANGE)).toBe(false);
+
+    eventBus.on({ type: BusEventType.STATE_CHANGE, handler: exactHandler });
+    expect(eventBus.hasListeners(BusEventType.STATE_CHANGE)).toBe(true);
+
+    eventBus.off({ type: BusEventType.STATE_CHANGE, handler: exactHandler });
+    eventBus.on({
+      type: '*' as BusEventType,
+      handler: wildcardHandler,
+    });
+    expect(eventBus.hasListeners(BusEventType.STATE_CHANGE)).toBe(true);
+
+    eventBus.off({ type: '*' as BusEventType, handler: wildcardHandler });
+    expect(eventBus.hasListeners(BusEventType.STATE_CHANGE)).toBe(false);
+  });
+
+  it('continues firing synchronous handlers after one throws', () => {
+    const eventBus = new EventBus();
+    const error = new Error('listener failed');
+    const laterHandler = jest.fn();
+    const consoleError = jest.spyOn(console, 'error').mockImplementation();
+
+    eventBus.on([
+      {
+        type: BusEventType.STATE_CHANGE,
+        handler: () => {
+          throw error;
+        },
+      },
+      { type: BusEventType.STATE_CHANGE, handler: laterHandler },
+    ]);
+
+    expect(() =>
+      eventBus.fireSync({ type: BusEventType.STATE_CHANGE }, instance)
+    ).not.toThrow();
+    expect(laterHandler).toHaveBeenCalledTimes(1);
+    expect(consoleError).toHaveBeenCalledWith(
+      '[Chat] An event handler for state:change threw, so the chat ignored the error and continued.',
+      error
+    );
+  });
+});

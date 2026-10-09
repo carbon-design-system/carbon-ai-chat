@@ -19,16 +19,21 @@ shared/playwright/
 | --- | --- | --- |
 | `react-fullscreen` | `react/basic-custom-element-fullscreen` | [Fullscreen](../shared/playwright/tests/fullscreen.spec.ts) |
 | `react-mentions-and-commands` | `react/prompt-line-mentions-and-commands` | [Mentions and commands](../shared/playwright/tests/mentions-and-commands.spec.ts) |
+| `react-watch-messages` | `react/watch-messages` | [Watch messages](../shared/playwright/tests/watch-messages.spec.ts) |
+| `react-watch-messages-redux` | `react/watch-messages-redux` | [Watch messages](../shared/playwright/tests/watch-messages.spec.ts) |
 | `react-watch-state` | `react/watch-state` | [Watch state](../shared/playwright/tests/watch-state.spec.ts) |
+| `react-watch-state-redux` | `react/watch-state-redux` | [Watch state](../shared/playwright/tests/watch-state.spec.ts) |
 | `web-components-fullscreen` | `web-components/basic-custom-element-fullscreen` | [Fullscreen](../shared/playwright/tests/fullscreen.spec.ts) |
 | `web-components-mentions-and-commands` | `web-components/prompt-line-mentions-and-commands` | [Mentions and commands](../shared/playwright/tests/mentions-and-commands.spec.ts) |
 | `web-components-watch-state` | `web-components/watch-state` | [Watch state](../shared/playwright/tests/watch-state.spec.ts) |
 
 ### Share definitions across hosts
 
-Both flavors run the same specs in `tests/`. The suite has three specs and six
-projects: 14 cases per flavor, for 28 Chromium cases. Each execution opens only
-its own example.
+Both flavors run the same specs in `tests/` where an example exists in both.
+The suite has four specs and nine projects: 19 React cases and 14 Web
+Components cases, for 33 Chromium cases. Each execution opens only its own
+example. The watch-messages spec and the Redux targets run against React alone;
+those examples have no Web Components counterpart.
 
 React mounts through the shared chat element, but each example has separate
 host code. Running both checks that code through the same visible contract.
@@ -130,7 +135,7 @@ Prefer the host DOM when it displays the state under test. If a host already exp
 
 - Use role and label locators where they work. They check that a control has a name, but cannot prove the full flow is accessible.
 - If the example adds an interactive flow, test its keyboard path and focus when UI opens or closes. Follow [the repo accessibility guide](../../references/accessibility.md) for WCAG 2.1 AA checks and screen-reader review.
-- For an axe scan, wait until the UI reaches the state you want to test. Use `@axe-core/playwright` to scan the page or `AxeBuilder.include()` to scan one region. Assert that `violations` is empty. Add the package when an example needs a scan; it is not in the shared fixture today.
+- For an axe scan, wait until the UI reaches the state you want to test. Use `@axe-core/playwright` to scan the page or `AxeBuilder.include()` to scan one region. Assert that `violations` is empty. The package is a root dev dependency, imported by the spec that scans; it is not in the shared fixture today. Read [watch messages](../shared/playwright/tests/watch-messages.spec.ts) for a region scan.
 - To scan for WCAG 2.1 A and AA rules, use `withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])`. Avoid broad exclusions: they skip every rule for all child elements. Link each known issue and keep any temporary exclusion narrow.
 
 An axe scan catches some issues, but cannot prove WCAG conformance. Check keyboard use and screen-reader output by hand for new behavior.
@@ -180,7 +185,7 @@ npm run test:e2e
 - From the root, install dependencies once with `npm install` and build the shared packages with `npm run aiChat:build` before testing. Rebuild a changed package before testing its examples.
 - Check test discovery with `npm run test:e2e:goldens -- --list` before opening a browser. This catches config and fixture errors; it does not run the tests. Each shared case appears once per flavor, under its own project.
 - Install Chromium once per machine with `npx playwright install chromium`.
-- Playwright builds and serves all six target examples on every run, even when `--project` selects one. Select projects with the usual Playwright arguments.
+- Playwright builds and serves all nine target examples on every run, even when `--project` selects one. Select projects with the usual Playwright arguments.
 - Root `test:e2e` runs the central suite once, then any `test:e2e` script a workspace still defines. The React 17 and 18 suites run under `npm test` until they are migrated.
 
 When and how the suite runs in CI at scale is not decided here. See [issue #2127](https://github.com/carbon-design-system/carbon-ai-chat/issues/2127).
@@ -193,7 +198,7 @@ Failures, screenshots, and videos land in `shared/playwright/test-results/`, whi
 
 ## Definition of done
 
-- [ ] `npm run test:e2e:goldens -- --list` shows 28 cases across six projects, with each case once per flavor.
+- [ ] `npm run test:e2e:goldens -- --list` shows 33 cases across nine projects, with each case once per target.
 - [ ] `npm run test:e2e:goldens` passes on chromium.
 - [ ] `npm run build --workspace=<example>` exits 0.
 - [ ] The suite covers the example's one concern plus the baseline above.

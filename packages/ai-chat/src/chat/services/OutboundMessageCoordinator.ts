@@ -32,6 +32,7 @@ import { BusEventSend, BusEventType } from '../../types/events/eventBusTypes';
 import { ChatInstance } from '../../types/instance/ChatInstance';
 import { resetStopStreamingButton } from '../utils/streamingUtils';
 import { addDefaultsToMessage } from '../utils/messageUtils';
+import { isChunkProcessingError } from './ChunkProcessingService';
 
 type CustomSendMessageFn = (
   message: MessageRequest<any>,
@@ -57,7 +58,10 @@ class OutboundMessageCoordinator {
       current: PendingMessageRequest,
       received?: MessageResponse
     ) => Promise<void>,
-    private getMessagingConfig: () => PublicConfigMessaging
+    private getMessagingConfig: () => PublicConfigMessaging,
+    private finishStreamingResponse: (
+      pendingRequest: PendingMessageRequest
+    ) => void
   ) {}
 
   /**
@@ -79,7 +83,8 @@ class OutboundMessageCoordinator {
    */
   async processError(
     pendingRequest: PendingMessageRequest,
-    resultText: string
+    resultText: string,
+    reportConversationError = true
   ) {
     const { timeFirstRequest, timeLastRequest, isProcessed, requestOptions } =
       pendingRequest;
@@ -97,11 +102,23 @@ class OutboundMessageCoordinator {
       this.addErrorMessage();
     }
 
-    this.serviceManager.actions.errorOccurred({
+    const conversationError = {
       errorType: OnErrorType.MESSAGE_COMMUNICATION,
       message: 'An error occurred sending a message',
+      messageID: pendingRequest.message.id,
       otherData: resultText,
-    });
+    };
+    if (reportConversationError) {
+      if (this.serviceManager.actions.conversationErrorOccurred) {
+        this.serviceManager.actions.conversationErrorOccurred(
+          conversationError,
+          pendingRequest.generation
+        );
+      } else {
+        const { messageID: _messageID, ...legacyError } = conversationError;
+        this.serviceManager.actions.errorOccurred(legacyError);
+      }
+    }
 
     // Hide stop streaming button if visible
     resetStopStreamingButton(this.serviceManager.store);
@@ -134,8 +151,13 @@ class OutboundMessageCoordinator {
     }
 
     // Reject the promise that lets the original caller who sent the message know that the message failed to be sent.
+    this.finishStreamingResponse(pendingRequest);
     sendMessagePromise.doReject(new Error(resultText));
     pendingRequest.isProcessed = true;
+    this.serviceManager.conversationLifecycleService?.requestFinished(
+      pendingRequest.message.id,
+      pendingRequest.generation
+    );
 
     if (pendingRequest === this.getCurrent()) {
       // Move on to next item in queue.
@@ -201,6 +223,10 @@ class OutboundMessageCoordinator {
 
     sendMessagePromise.doResolve();
     pendingRequest.isProcessed = true;
+    this.serviceManager.conversationLifecycleService?.requestFinished(
+      pendingRequest.message.id,
+      pendingRequest.generation
+    );
 
     if (pendingRequest === this.getCurrent()) {
       this.moveToNextQueueItem();
@@ -267,9 +293,13 @@ class OutboundMessageCoordinator {
       consoleError('An error occurred while sending a message', error);
       const resultText =
         (error &&
-          (typeof error === 'string' ? error : JSON.stringify(error))) ||
+          (typeof error === 'string'
+            ? error
+            : error instanceof Error
+              ? error.message
+              : JSON.stringify(error))) ||
         'There was an unidentified error.';
-      this.processError(current, resultText);
+      this.processError(current, resultText, !isChunkProcessingError(error));
     } finally {
       // Loading manager is ended via processSuccess/reject handlers.
     }

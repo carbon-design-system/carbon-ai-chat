@@ -93,6 +93,22 @@ describe('ChatInstance.messaging.upsertMessage', () => {
         'v2'
       );
     });
+
+    it('does not freeze or retain an addMessage caller payload', async () => {
+      const config = createBaseConfig();
+      const { instance, store } =
+        await renderChatAndGetInstanceWithStore(config);
+      const message = textResponse('owned-response', 'before');
+
+      await instance.messaging.addMessage(message);
+
+      expect(Object.isFrozen(message)).toBe(false);
+      (message.output.generic[0] as any).text = 'after';
+      expect(
+        (store.getState().allMessagesByID['owned-response'] as MessageResponse)
+          .output.generic[0]
+      ).toMatchObject({ text: 'before' });
+    });
   });
 
   describe('pre:receive / receive firing predicate', () => {

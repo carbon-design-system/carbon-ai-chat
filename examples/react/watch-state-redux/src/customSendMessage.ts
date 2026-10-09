@@ -11,10 +11,8 @@
  * Mock `customSendMessage` for the Watch state (Redux Toolkit) example.
  *
  * Demonstrates: a minimal `messaging.customSendMessage` whose only job is to
- * trigger `homeScreenState.isHomeScreenOpen` transitions (sending a message
- * leaves the homescreen, returning home re-opens it). Each transition emits a
- * `BusEventType.STATE_CHANGE` event that the Redux bridge mirrors into the
- * store, so the host UI flips between "Homescreen" and "Chat View".
+ * trigger `homeScreenState.isHomeScreenOpen` transitions. The state selector
+ * mirrors each relevant change into Redux.
  *
  * APIs exercised:
  *   - `MessageRequest`, `CustomSendMessageOptions`, `ChatInstance`
@@ -58,14 +56,13 @@ async function customSendMessage(
     return;
   }
 
-  // Stand-in reply for any user turn so the host can observe the homescreen
-  // -> chat-view STATE_CHANGE transition flowing into Redux.
+  // A reply lets the host observe the selected chat-view transition.
   instance.messaging.addMessage({
     output: {
       generic: [
         {
           response_type: MessageResponseTypes.TEXT,
-          text: 'That is super great!',
+          text: 'That is super great.',
         },
       ],
     },

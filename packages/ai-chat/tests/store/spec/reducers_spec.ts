@@ -59,6 +59,8 @@ function createInitialAppState(): AppState {
     suspendScrollDetection: false,
     showNonHeaderBackgroundCover: false,
     isRestarting: false,
+    conversationStatus: 'ready',
+    conversationError: null,
     isBrowserPageVisible: true,
     chatWidthBreakpoint: null,
     chatWidth: null,
@@ -346,9 +348,7 @@ describe('Store Reducers', () => {
     it('preserves every non-config slice reference when only config changes', () => {
       const before = store.getState() as AppState;
 
-      // A config-only dispatch must take the shallow-copy path so unrelated
-      // slices keep their references (the old unconditional deep merge cloned the
-      // whole tree and churned every slice, forcing avoidable re-renders).
+      // A config-only dispatch must keep unrelated slice references stable.
       store.dispatch(
         actions.changeState({
           config: {
@@ -387,11 +387,61 @@ describe('Store Reducers', () => {
       );
 
       const after = store.getState() as AppState;
-      // The targeted slice is updated (positive case, so the config-only
-      // shallow-copy branch is not the only path that runs) and the deep merge
-      // applies the change correctly.
+      // The targeted slice is updated while unrelated slices stay stable.
       expect(after.assistantInputState).not.toBe(before.assistantInputState);
       expect(after.assistantInputState.isReadonly).toBe(true);
+      expect(after.assistantInputState.stopStreamingButtonState).toBe(
+        before.assistantInputState.stopStreamingButtonState
+      );
+      expect(after.allMessagesByID).toBe(before.allMessagesByID);
+    });
+
+    it('preserves nested branches outside a non-config deep patch', () => {
+      const before = store.getState() as AppState;
+
+      store.dispatch(
+        actions.changeState({
+          assistantInputState: {
+            stopStreamingButtonState: { isDisabled: true },
+          },
+        })
+      );
+
+      const after = store.getState() as AppState;
+      expect(after.assistantInputState).not.toBe(before.assistantInputState);
+      expect(after.assistantInputState.stopStreamingButtonState).not.toBe(
+        before.assistantInputState.stopStreamingButtonState
+      );
+      expect(after.assistantInputState.stopStreamingButtonState).toEqual({
+        ...before.assistantInputState.stopStreamingButtonState,
+        isDisabled: true,
+      });
+      expect(after.assistantInputState.content).toBe(
+        before.assistantInputState.content
+      );
+      expect(after.assistantInputState.files).toBe(
+        before.assistantInputState.files
+      );
+    });
+
+    it('returns the current state for empty and equivalent patches', () => {
+      const before = store.getState() as AppState;
+
+      store.dispatch(actions.changeState({}));
+      expect(store.getState()).toBe(before);
+
+      store.dispatch(
+        actions.changeState({
+          assistantInputState: {
+            isReadonly: before.assistantInputState.isReadonly,
+            stopStreamingButtonState: {
+              isDisabled:
+                before.assistantInputState.stopStreamingButtonState.isDisabled,
+            },
+          },
+        })
+      );
+      expect(store.getState()).toBe(before);
     });
   });
 
@@ -520,6 +570,21 @@ describe('Store Reducers', () => {
             userId: 'user-789',
             context: 'test',
           });
+        });
+
+        it('should own additional data passed by the caller', () => {
+          const additionalData = { nested: { value: 'original' } };
+
+          store.dispatch(actions.setWorkspacePanelData({ additionalData }));
+          additionalData.nested.value = 'mutated';
+
+          const state = store.getState() as AppState;
+          expect(state.workspacePanelState.additionalData).toEqual({
+            nested: { value: 'original' },
+          });
+          expect(state.workspacePanelState.additionalData).not.toBe(
+            additionalData
+          );
         });
 
         it('should handle partial workspace data updates', () => {

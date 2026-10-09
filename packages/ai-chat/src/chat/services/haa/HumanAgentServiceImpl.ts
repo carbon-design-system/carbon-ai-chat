@@ -543,10 +543,32 @@ class HumanAgentServiceImpl implements HumanAgentService {
 
     await addMessages(pairs, !this.isSuspended(), serviceManager);
 
+    const generation =
+      serviceManager.conversationLifecycleService?.currentGeneration ?? 0;
+    serviceManager.conversationLifecycleService?.requestStarted(
+      originalMessage.id,
+      generation
+    );
+
     // Start some timeouts to display a warning or error if the service desk doesn't indicate if the message was
     // sent successfully (or it failed).
     let messageSucceeded = false;
     let messageFailed = false;
+    const reportFailure = (error: unknown) => {
+      if (messageSucceeded || messageFailed) {
+        return;
+      }
+      messageFailed = true;
+      serviceManager.actions.conversationErrorOccurred?.(
+        {
+          errorType: OnErrorType.MESSAGE_COMMUNICATION,
+          message: 'An error occurred sending a message',
+          messageID: originalMessage.id,
+          otherData: error,
+        },
+        generation
+      );
+    };
     setTimeout(() => {
       if (!messageSucceeded && !messageFailed) {
         this.setMessageErrorState(
@@ -561,6 +583,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
           textMessage.fullMessageID,
           MessageErrorState.FAILED
         );
+        reportFailure('Request timeout');
       }
     }, SEND_TIMEOUT_ERROR_MS);
 
@@ -576,6 +599,10 @@ class HumanAgentServiceImpl implements HumanAgentService {
         additionalData
       );
       messageSucceeded = true;
+      serviceManager.conversationLifecycleService?.requestFinished(
+        originalMessage.id,
+        generation
+      );
       this.setMessageErrorState(
         textMessage.fullMessageID,
         MessageErrorState.NONE
@@ -587,7 +614,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
         files: uploads,
       });
     } catch (error) {
-      messageFailed = true;
+      reportFailure(error);
       consoleError(
         '[sendMessageToAgent] An error with the service desk occurred.',
         error
@@ -1132,7 +1159,7 @@ class ServiceDeskCallbackImpl<
     const messageResponse =
       typeof message === 'string'
         ? createMessageResponseForText(message)
-        : message;
+        : cloneDeep(message);
     addDefaultsToMessage(messageResponse);
     if (messageResponse.output?.generic?.length) {
       messageResponse.output.generic.forEach((messageItem) => {
@@ -1172,22 +1199,27 @@ class ServiceDeskCallbackImpl<
       responseUserProfile,
     });
 
-    messageResponse.message_options = messageResponse.message_options || {};
+    const committedMessage = cloneDeep(messageResponse);
 
-    messageResponse.message_options.response_user_profile = responseUserProfile;
+    committedMessage.message_options = committedMessage.message_options || {};
 
-    const localMessages = messageResponse.output.generic.map((item: any) => {
-      return outputItemToLocalItem(item, messageResponse);
+    committedMessage.message_options.response_user_profile =
+      responseUserProfile;
+
+    const localMessages = committedMessage.output.generic.map((item: any) => {
+      return outputItemToLocalItem(item, committedMessage);
     });
     await addMessages(
-      [toPair(localMessages, messageResponse)],
+      [toPair(localMessages, committedMessage)],
       !this.service.isSuspended(),
       this.serviceManager
     );
 
+    const receiveEventMessage = cloneDeep(committedMessage);
+    deepFreeze(receiveEventMessage);
     await serviceManager.fire({
       type: BusEventType.HUMAN_AGENT_RECEIVE,
-      data: messageResponse,
+      data: receiveEventMessage,
       responseUserProfile,
     });
   }

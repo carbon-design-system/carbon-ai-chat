@@ -8,6 +8,7 @@
  */
 
 import isEqual from 'lodash-es/isEqual.js';
+import isPlainObject from 'lodash-es/isPlainObject.js';
 import merge from 'lodash-es/merge.js';
 import { DeepPartial } from '../../types/utilities/DeepPartial';
 import { isBrowser } from '../utils/browserUtils';
@@ -105,6 +106,7 @@ import {
   ADD_PENDING_UPLOAD,
   UPDATE_PENDING_UPLOAD,
   REMOVE_PENDING_UPLOAD,
+  SET_CONVERSATION_LIFECYCLE,
 } from './actions';
 import { humanAgentReducers } from './humanAgentReducers';
 import {
@@ -205,6 +207,56 @@ const EXCLUDE_HUMAN_AGENT_UNREAD = new Set([
   HumanAgentMessageType.RELOAD_WARNING,
 ]);
 
+function mergeStatePatch(currentValue: unknown, patchValue: unknown): unknown {
+  if (patchValue === undefined || Object.is(currentValue, patchValue)) {
+    return currentValue;
+  }
+
+  if (Array.isArray(patchValue)) {
+    const currentArray = Array.isArray(currentValue) ? currentValue : [];
+    let nextArray = currentArray;
+
+    Object.keys(patchValue).forEach((key) => {
+      const index = Number(key);
+      const currentItem = currentArray[index];
+      const nextItem = mergeStatePatch(currentItem, patchValue[index]);
+      if (!Object.is(currentItem, nextItem)) {
+        if (nextArray === currentArray) {
+          nextArray = currentArray.slice();
+        }
+        nextArray[index] = nextItem;
+      }
+    });
+
+    return nextArray;
+  }
+
+  if (isPlainObject(patchValue)) {
+    const currentObject = isPlainObject(currentValue)
+      ? (currentValue as Record<string, unknown>)
+      : {};
+    let nextObject = currentObject;
+
+    Object.keys(patchValue).forEach((key) => {
+      const currentItem = currentObject[key];
+      const nextItem = mergeStatePatch(
+        currentItem,
+        (patchValue as Record<string, unknown>)[key]
+      );
+      if (!Object.is(currentItem, nextItem)) {
+        if (nextObject === currentObject) {
+          nextObject = { ...currentObject };
+        }
+        nextObject[key] = nextItem;
+      }
+    });
+
+    return nextObject;
+  }
+
+  return patchValue;
+}
+
 const reducers: { [key: string]: ReducerType } = {
   [CHANGE_STATE]: (
     state: AppState,
@@ -220,15 +272,7 @@ const reducers: { [key: string]: ReducerType } = {
     }
 
     const { config, ...rest } = partialState;
-    // `merge({}, state, rest)` deep-clones the whole tree, which hands every
-    // slice a fresh reference. When the caller only updates `config` (e.g.
-    // applyConfigChangesDynamically dispatches `{ config }` on any config
-    // change), that would churn unrelated slices like `assistantInputState`
-    // and force avoidable re-renders. Only pay for the deep clone/merge when
-    // there are non-config slices to merge; otherwise shallow-copy so unchanged
-    // slices keep their references.
-    const nextState =
-      Object.keys(rest).length > 0 ? merge({}, state, rest) : { ...state };
+    let nextState = mergeStatePatch(state, rest) as AppState;
 
     // Handle config separately because callers sometimes pass a completely rebuilt AppConfig (for example after
     // recomputing derived fields based on a new PublicConfig). A blind deep merge would blend the new tree with the
@@ -237,11 +281,25 @@ const reducers: { [key: string]: ReducerType } = {
     // `config: { derived: { header: ... } }`) to merge as before.
     if (config !== undefined) {
       if (config && Object.prototype.hasOwnProperty.call(config, 'public')) {
-        nextState.config = config as AppState['config'];
+        if (!isEqual(state.config, config)) {
+          nextState = {
+            ...nextState,
+            config: config as AppState['config'],
+          };
+        }
       } else if (config) {
-        nextState.config = merge({}, nextState.config, config);
-      } else {
-        nextState.config = config as AppState['config'];
+        const nextConfig = mergeStatePatch(nextState.config, config);
+        if (nextConfig !== nextState.config) {
+          nextState = {
+            ...nextState,
+            config: nextConfig as AppState['config'],
+          };
+        }
+      } else if (config !== nextState.config) {
+        nextState = {
+          ...nextState,
+          config: config as AppState['config'],
+        };
       }
     }
 
@@ -289,6 +347,18 @@ const reducers: { [key: string]: ReducerType } = {
     }
     return newState;
   },
+
+  [SET_CONVERSATION_LIFECYCLE]: (
+    state: AppState,
+    action: {
+      status: AppState['conversationStatus'];
+      error: AppState['conversationError'];
+    }
+  ): AppState => ({
+    ...state,
+    conversationStatus: action.status,
+    conversationError: action.error,
+  }),
 
   [HYDRATE_MESSAGE_HISTORY]: (
     state: AppState,

@@ -101,6 +101,8 @@ interface SendMessageRequest {
 // In order to be able to resolve the correct message in the queue, we pass along the promise we will return with the
 // message and call resolve/reject on "resolvablePromise".
 export interface PendingMessageRequest extends SendMessageRequest {
+  /** Conversation generation in which this request was accepted. */
+  generation?: number;
   /**
    * The ID of the {@link LocalMessageItem} created from the current request.
    */
@@ -224,7 +226,8 @@ class MessageService {
       () => this.moveToNextQueueItem(),
       (pendingRequest, received) =>
         this.processSuccess(pendingRequest, received),
-      () => this.serviceManager.store.getState().config.public.messaging || {}
+      () => this.serviceManager.store.getState().config.public.messaging || {},
+      (pendingRequest) => this.finishFailedStreamingResponse(pendingRequest)
     );
     this.queue = {
       waiting: [],
@@ -314,6 +317,10 @@ class MessageService {
       );
       this.moveToNextQueueItem();
     }
+    this.serviceManager.conversationLifecycleService?.requestFinished(
+      current.message.id,
+      current.generation
+    );
   }
 
   /**
@@ -346,6 +353,10 @@ class MessageService {
     this.clearCurrentQueueItem();
     this.queue.current = this.queue.waiting.shift();
     const { current } = this.queue;
+    this.serviceManager.conversationLifecycleService?.requestStarted(
+      current.message.id,
+      current.generation
+    );
     const { message } = current;
     current.timeFirstRequest = Date.now();
 
@@ -467,6 +478,9 @@ class MessageService {
     this.messageAbortControllers.set(message.id, controller);
 
     const newPendingMessage: PendingMessageRequest = {
+      generation:
+        this.serviceManager.conversationLifecycleService?.currentGeneration ??
+        0,
       localMessageID,
       message,
       sendMessagePromise,
@@ -672,6 +686,49 @@ class MessageService {
    */
   public finalizeStreamingMessage(messageID: string) {
     this.inboundStreaming.finalizeStreamingMessage(messageID);
+    this.serviceManager.conversationLifecycleService?.responseFinished(
+      messageID
+    );
+  }
+
+  /** Ends response streaming without treating the associated transport as complete. */
+  public markStreamingResponseError(messageID: string) {
+    const responseID = this.inboundStreaming.resolveResponseId(messageID);
+    const streamingMeta = this.inboundStreaming.getStreamingMeta(responseID);
+    const current = this.queue.current;
+    const isCurrentResponse = Boolean(
+      current &&
+      (current.message.id === responseID ||
+        current.message.id === streamingMeta?.requestId ||
+        (current.isStreaming &&
+          this.inboundStreaming.streamingMessageID === responseID))
+    );
+    this.inboundStreaming.clearStreamingResponse(responseID);
+    this.serviceManager.conversationLifecycleService?.responseFinished(
+      responseID,
+      isCurrentResponse ? current.generation : undefined
+    );
+    if (isCurrentResponse) {
+      current.isStreaming = false;
+      if (current.isProcessed) {
+        this.moveToNextQueueItem();
+      }
+    }
+    resetStopStreamingButton(this.serviceManager.store);
+  }
+
+  private finishFailedStreamingResponse(pendingRequest: PendingMessageRequest) {
+    if (!pendingRequest.isStreaming) {
+      return;
+    }
+    const responseID =
+      this.inboundStreaming.streamingMessageID || pendingRequest.message.id;
+    this.inboundStreaming.clearStreamingResponse(responseID);
+    pendingRequest.isStreaming = false;
+    this.serviceManager.conversationLifecycleService?.responseFinished(
+      responseID,
+      pendingRequest.generation
+    );
   }
 
   /**
@@ -773,17 +830,27 @@ class MessageService {
     // Only process the pending request if it exists (it may have already been cleared from queue)
     if (pendingRequest) {
       if (reason === CancellationReason.TIMEOUT) {
+        if (logError) {
+          const conversationError = {
+            errorType: OnErrorType.MESSAGE_COMMUNICATION,
+            message: reason,
+            messageID: pendingRequest.message.id,
+            otherData: await safeFetchTextWithTimeout(lastResponse),
+          };
+          if (this.serviceManager.actions.conversationErrorOccurred) {
+            this.serviceManager.actions.conversationErrorOccurred(
+              conversationError,
+              pendingRequest.generation
+            );
+          } else {
+            const { messageID: _messageID, ...legacyError } = conversationError;
+            this.serviceManager.actions.errorOccurred(legacyError);
+          }
+        }
         this.outboundCoordinator.rejectFinalErrorOnMessage(
           pendingRequest,
           reason
         );
-        if (logError) {
-          this.serviceManager.actions.errorOccurred({
-            errorType: OnErrorType.MESSAGE_COMMUNICATION,
-            message: reason,
-            otherData: await safeFetchTextWithTimeout(lastResponse),
-          });
-        }
       } else if (pendingRequest.isStreaming) {
         // If we're canceling during streaming, SystemMessage (responseStopped) will handle
         // displaying the "Response stopped" message via the stream_stopped metadata flag.
@@ -791,6 +858,14 @@ class MessageService {
         // Mark as processed and advance the queue
         pendingRequest.sendMessagePromise.doResolve();
         pendingRequest.isProcessed = true;
+        this.serviceManager.conversationLifecycleService?.requestFinished(
+          pendingRequest.message.id,
+          pendingRequest.generation
+        );
+        this.serviceManager.conversationLifecycleService?.responseFinished(
+          responseId,
+          pendingRequest.generation
+        );
         // Hide and re-enable the stop streaming button now that cancellation has
         // completed; processSuccess/processError will short-circuit on isProcessed.
         resetStopStreamingButton(this.serviceManager.store);

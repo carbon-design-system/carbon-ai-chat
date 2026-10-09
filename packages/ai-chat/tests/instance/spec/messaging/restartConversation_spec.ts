@@ -10,6 +10,7 @@
 import {
   createBaseConfig,
   renderChatAndGetInstance,
+  renderChatAndGetInstanceWithStore,
   setupBeforeEach,
   setupAfterEach,
 } from '../../../test_helpers';
@@ -17,8 +18,11 @@ import { MessageRequest } from '../../../../src/types/messaging/Messages';
 import {
   CancellationReason,
   CustomSendMessageOptions,
+  MessageState,
 } from '../../../../src/types/config/MessagingConfig';
 import { ChatInstance } from '../../../../src/types/instance/ChatInstance';
+import { BusEventType } from '../../../../src/types/events/eventBusTypes';
+import { resolvablePromise } from '../../../../src/chat/utils/resolvablePromise';
 
 describe('ChatInstance.messaging.restartConversation', () => {
   beforeEach(setupBeforeEach);
@@ -37,6 +41,7 @@ describe('ChatInstance.messaging.restartConversation', () => {
 
     const result = instance.messaging.restartConversation();
     expect(result).toBeInstanceOf(Promise);
+    await result;
   });
 
   it('should resolve successfully', async () => {
@@ -61,6 +66,55 @@ describe('ChatInstance.messaging.restartConversation', () => {
     // Should maintain basic state structure
     expect(restartedState).toBeDefined();
     expect(typeof restartedState).toBe('object');
+  });
+
+  it('invalidates an awaited upsert before the pre-restart event settles', async () => {
+    const { instance, store } =
+      await renderChatAndGetInstanceWithStore(createBaseConfig());
+    const updaterStarted = resolvablePromise<void>();
+    const releaseUpdater = resolvablePromise<void>();
+    const releasePreRestart = resolvablePromise<void>();
+    instance.on({
+      type: BusEventType.PRE_RESTART_CONVERSATION,
+      handler: () => releasePreRestart,
+    });
+
+    const upsert = instance.messaging.upsertMessage(
+      'old-response',
+      MessageState.STREAMING,
+      async () => {
+        updaterStarted.doResolve();
+        await releaseUpdater;
+        return {
+          id: 'old-response',
+          output: { generic: [] },
+        };
+      }
+    );
+    await updaterStarted;
+
+    const restart = instance.messaging.restartConversation();
+    releaseUpdater.doResolve();
+    await upsert;
+
+    expect(store.getState().allMessagesByID['old-response']).toBeUndefined();
+
+    releasePreRestart.doResolve();
+    await restart;
+  });
+
+  it('settles ready when a closed chat restarts without starting hydration', async () => {
+    const { instance, store } =
+      await renderChatAndGetInstanceWithStore(createBaseConfig());
+
+    expect(
+      store.getState().persistedToBrowserStorage.viewState.mainWindow
+    ).toBe(false);
+
+    await instance.messaging.restartConversation();
+
+    expect(instance.state.get().status).toBe('ready');
+    expect(instance.state.get().error).toBeNull();
   });
 
   describe('Deprecated instance.restartConversation', () => {

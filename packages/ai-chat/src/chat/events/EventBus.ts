@@ -34,6 +34,7 @@ import {
 } from '../../types/instance/EventHandlers';
 
 const HANDLER_NOT_FUNCTION = 'The event handler is not a function.';
+const WILDCARD_EVENT_TYPE = '*';
 
 /**
  * How long a fire may wait behind an earlier fire of the same type before the bus gives up on it. A handler that
@@ -205,10 +206,26 @@ class EventBus {
     if (handlersForType && handlersForType.length) {
       // Copy the array in case it's modified by an event handler.
       const handlersCopy = handlersForType.slice();
-      handlersCopy.forEach((handler) => handler(busEvent, instance));
+      handlersCopy.forEach((handler) => {
+        try {
+          handler(busEvent, instance);
+        } catch (error) {
+          consoleError(
+            `An event handler for ${type} threw, so the chat ignored the error and continued.`,
+            error
+          );
+        }
+      });
     }
 
     logEvent('After fire', busEvent);
+  }
+
+  hasListeners(type: BusEventType) {
+    return Boolean(
+      this.handlersByType.get(type)?.length ||
+      this.handlersByType.get(WILDCARD_EVENT_TYPE)?.length
+    );
   }
 
   /**

@@ -15,6 +15,7 @@ import {
   LoadedHistory,
   notesToLoadedHistory,
 } from '../schema/historyToMessages';
+import cloneDeep from 'lodash-es/cloneDeep.js';
 import { HistoryItem, HistoryNote } from '../../types/messaging/History';
 
 import { consoleError } from '../utils/miscUtils';
@@ -58,13 +59,17 @@ class HistoryService {
       if (resultData) {
         // If there is result data then grab the notes array, transform it into a LoadedHistory, and return it.
         const historyNotes = resultData?.notes;
-        return notesToLoadedHistory(historyNotes, this.serviceManager);
+        return notesToLoadedHistory(
+          cloneDeep(historyNotes),
+          this.serviceManager
+        );
       }
     } catch (error) {
       consoleError(
         'An error occurred while attempting to load the conversation history',
         error
       );
+      throw error;
     }
 
     return null;

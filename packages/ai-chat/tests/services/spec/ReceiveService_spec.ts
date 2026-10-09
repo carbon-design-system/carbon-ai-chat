@@ -9,6 +9,7 @@
 
 import { makeConfigStore } from '../../test_helpers';
 import { ChunkProcessingService } from '../../../src/chat/services/ChunkProcessingService';
+import { ConversationLifecycleService } from '../../../src/chat/services/ConversationLifecycleService';
 import { HydrationService } from '../../../src/chat/services/HydrationService';
 import { MessageUpsertCoordinator } from '../../../src/chat/services/MessageUpsertCoordinator';
 import { ReceiveService } from '../../../src/chat/services/ReceiveService';
@@ -17,6 +18,7 @@ import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
 import {
   BusEvent,
+  BusEventReceive,
   BusEventType,
 } from '../../../src/types/events/eventBusTypes';
 import {
@@ -49,6 +51,9 @@ function createHarness(config: PublicConfig = {}) {
     },
   } as unknown as ServiceManager;
   manager.chunkProcessingService = new ChunkProcessingService(manager);
+  manager.conversationLifecycleService = new ConversationLifecycleService(
+    manager
+  );
   manager.hydrationService = new HydrationService(manager);
   manager.messageUpsertCoordinator = new MessageUpsertCoordinator(manager);
   const service = new ReceiveService(manager);
@@ -144,7 +149,7 @@ describe('ReceiveService', () => {
     }
   );
 
-  it('records the corresponding request before freezing and firing receive', async () => {
+  it('records the corresponding request on owned store and event values', async () => {
     const { service, store, fire } = createHarness();
     const message = response();
     const request: MessageRequest = {
@@ -153,18 +158,26 @@ describe('ReceiveService', () => {
     };
     fire.mockImplementation(async (event): Promise<void> => {
       if (event.type === BusEventType.RECEIVE) {
-        expect(store.getState().allMessagesByID[message.id]).toBe(message);
-        expect(message.request_id).toBe(request.id);
-        expect(Object.isFrozen(message)).toBe(true);
+        const receiveEvent = event as BusEventReceive;
+        const storedMessage = store.getState().allMessagesByID[
+          message.id
+        ] as MessageResponse;
+
+        expect(storedMessage).not.toBe(message);
+        expect(storedMessage).toEqual(receiveEvent.data);
+        expect(storedMessage.request_id).toBe(request.id);
+        expect(receiveEvent.data).not.toBe(storedMessage);
+        expect(Object.isFrozen(receiveEvent.data)).toBe(true);
       }
     });
 
     await service.receive(message, false, request);
 
-    expect(fire).toHaveBeenLastCalledWith({
-      type: BusEventType.RECEIVE,
-      data: message,
-    });
+    expect(message.request_id).toBeUndefined();
+    expect(Object.isFrozen(message)).toBe(false);
+    expect(fire).toHaveBeenLastCalledWith(
+      expect.objectContaining({ type: BusEventType.RECEIVE })
+    );
   });
 
   it('fires user-defined events without adding silent items to the conversation', async () => {
@@ -203,12 +216,18 @@ describe('ReceiveService', () => {
     expect(handleConnectToHumanAgent).toHaveBeenCalledWith(
       expect.objectContaining({
         fullMessageID: message.id,
-        item: message.output.generic[0],
+        item: expect.objectContaining({
+          response_type: MessageResponseTypes.CONNECT_TO_HUMAN_AGENT,
+        }),
       }),
-      message,
+      expect.objectContaining({
+        id: message.id,
+        output: { generic: message.output.generic },
+      }),
       store.getState().config,
       0
     );
+    expect(handleConnectToHumanAgent.mock.calls[0][1]).not.toBe(message);
     expect(localItems()).toEqual([]);
     expect(eventTypes()).toContain(BusEventType.RECEIVE);
 

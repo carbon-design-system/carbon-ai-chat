@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2026
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,116 +7,171 @@
  *  @license
  */
 
-import cloneDeep from 'lodash-es/cloneDeep.js';
-
-import { selectHasInFlightUpload, selectInputState } from '../store/selectors';
-import { deepFreeze } from '../utils/lang/objectUtils';
+import { BusEventType } from '../../types/events/eventBusTypes';
 import { PublicChatState } from '../../types/instance/PublicChatState';
-import type { JSONContent } from '@tiptap/core';
+import { AppState } from '../../types/state/AppState';
+import {
+  PublicStateProjectionObserver,
+  PublicStateSnapshotCache,
+} from '../utils/publicState';
+import { consoleError } from '../utils/miscUtils';
 import type { ServiceManager } from './ServiceManager';
 
-class PublicStateService {
-  private serviceManager: ServiceManager;
+type PublicStateListener = () => void;
 
-  private cachedInputContentSource: JSONContent | undefined = undefined;
-  private cachedInputContentClone: JSONContent | undefined = undefined;
-
-  constructor(serviceManager: ServiceManager) {
-    this.serviceManager = serviceManager;
-  }
-
-  getPublicChatState(): PublicChatState {
-    const state = this.serviceManager.store.getState();
-    const { persistedToBrowserStorage, assistantMessageState } = state;
-
-    const persistedSnapshot = deepFreeze(cloneDeep(persistedToBrowserStorage));
-
-    const { humanAgentState, ...rest } = persistedSnapshot;
-
-    const humanAgent = deepFreeze({
-      ...humanAgentState,
-      isConnecting: state.humanAgentState.isConnecting,
-    });
-
-    const inputState = selectInputState(state);
-    // `content` is mirrored into Redux on every input-change event as
-    // Tiptap-native JSONContent so it reads quickly without traversing
-    // the live editor. Cache the cloned-and-frozen result keyed on the
-    // Redux reference so unrelated dispatches don't pay the deep-clone cost.
-    let inputContent: JSONContent;
-    if (inputState.content) {
-      if (
-        this.cachedInputContentSource === inputState.content &&
-        this.cachedInputContentClone
-      ) {
-        inputContent = this.cachedInputContentClone;
-      } else {
-        inputContent = deepFreeze(cloneDeep(inputState.content));
-        this.cachedInputContentSource = inputState.content;
-        this.cachedInputContentClone = inputContent;
-      }
-    } else {
-      inputContent = {
-        type: 'doc',
-        content: [{ type: 'paragraph' }],
-      } as JSONContent;
-    }
-    const input = deepFreeze({
-      rawValue: inputState.rawValue ?? '',
-      content: inputContent,
-      focused: Boolean(inputState.focused),
-      structuredData: inputState.pendingStructuredData
-        ? cloneDeep(inputState.pendingStructuredData)
-        : undefined,
-      hasInFlightUploads: selectHasInFlightUpload(state),
-    });
-
-    const customPanels = deepFreeze({
-      default: {
-        isOpen: Boolean(state.customPanelState.isOpen),
-      },
-      workspace: {
-        isOpen: Boolean(state.workspacePanelState.isOpen),
-        options: {
-          preferredLocation:
-            state.workspacePanelState.options.preferredLocation,
-        },
-        workspaceID: state.workspacePanelState.workspaceID,
-        additionalData: state.workspacePanelState.additionalData,
-      },
-      history: {
-        isOpen: Boolean(state.historyPanelState.isOpen),
-        isMobile: Boolean(state.historyPanelState.isMobile),
-      },
-    });
-
-    const workspace = deepFreeze({
-      isOpen: Boolean(state.workspacePanelState.isOpen),
-      options: {
-        preferredLocation: state.workspacePanelState.options.preferredLocation,
-      },
-      workspaceID: state.workspacePanelState.workspaceID,
-      additionalData: state.workspacePanelState.additionalData,
-    });
-
-    const history = deepFreeze({
-      isOpen: Boolean(state.historyPanelState.isOpen),
-      isMobile: Boolean(state.historyPanelState.isMobile),
-    });
-
-    return deepFreeze({
-      ...rest,
-      humanAgent,
-      isMessageLoadingCounter: assistantMessageState.isMessageLoadingCounter,
-      isMessageLoadingText: assistantMessageState.isMessageLoadingText,
-      isHydratingCounter: assistantMessageState.isHydratingCounter,
-      activeResponseId: assistantMessageState.activeResponseId ?? null,
-      input,
-      customPanels,
-      workspace,
-      history,
-    });
-  }
+interface PublicStateListenerRegistration {
+  active: boolean;
+  listener: PublicStateListener;
 }
 
-export { PublicStateService };
+export class PublicStateService {
+  private cache: PublicStateSnapshotCache;
+  private currentSnapshot: PublicChatState;
+  private currentSnapshotState: AppState;
+  private publishedState: AppState;
+  private listeners = new Set<PublicStateListenerRegistration>();
+  private queuedStates: AppState[] = [];
+  private isPublishing = false;
+  private unsubscribeStore: () => void;
+
+  constructor(
+    private serviceManager: ServiceManager,
+    observer?: PublicStateProjectionObserver
+  ) {
+    this.cache = new PublicStateSnapshotCache(observer);
+    this.publishedState = serviceManager.store.getState();
+    this.unsubscribeStore = serviceManager.store.subscribe(
+      this.handleStoreChange
+    );
+  }
+
+  get = (): PublicChatState => {
+    if (this.isPublishing && this.currentSnapshot) {
+      return this.currentSnapshot;
+    }
+
+    const state = this.serviceManager.store.getState();
+    if (
+      !this.currentSnapshot ||
+      !this.cache.haveSamePublicSources(this.currentSnapshotState, state)
+    ) {
+      this.currentSnapshot = this.cache.createSnapshot(state);
+    }
+    this.currentSnapshotState = state;
+    return this.currentSnapshot;
+  };
+
+  getPublicChatState = this.get;
+
+  subscribe = (listener: PublicStateListener): (() => void) => {
+    const registration = { active: true, listener };
+    this.listeners.add(registration);
+    return () => {
+      if (registration.active) {
+        registration.active = false;
+        this.listeners.delete(registration);
+      }
+    };
+  };
+
+  select = <Selected>(
+    selector: (state: PublicChatState) => Selected,
+    listener: (value: Selected) => void,
+    options?: { isEqual?: (left: Selected, right: Selected) => boolean }
+  ): (() => void) => {
+    let selected = selector(this.get());
+    const isEqual = options?.isEqual ?? Object.is;
+
+    return this.subscribe(() => {
+      try {
+        const nextSelected = selector(this.get());
+        if (!isEqual(selected, nextSelected)) {
+          selected = nextSelected;
+          listener(nextSelected);
+        }
+      } catch (error) {
+        consoleError(
+          'A state selector or comparison function threw, so the chat skipped this update and continued.',
+          error
+        );
+      }
+    });
+  };
+
+  destroy(): void {
+    this.unsubscribeStore?.();
+    this.listeners.clear();
+    this.queuedStates = [];
+  }
+
+  private handleStoreChange = (): void => {
+    this.queuedStates.push(this.serviceManager.store.getState());
+    if (this.isPublishing) {
+      return;
+    }
+
+    this.isPublishing = true;
+    try {
+      while (this.queuedStates.length) {
+        this.publish(this.queuedStates.shift());
+      }
+    } finally {
+      this.isPublishing = false;
+    }
+  };
+
+  private publish(nextState: AppState): void {
+    const previousState = this.publishedState;
+    this.publishedState = nextState;
+
+    const eventBus = this.serviceManager.eventBus;
+    const hasLegacyListeners = eventBus.hasListeners(BusEventType.STATE_CHANGE);
+    if (!this.listeners.size && !hasLegacyListeners) {
+      return;
+    }
+    if (this.cache.haveSamePublicSources(previousState, nextState)) {
+      return;
+    }
+
+    const previousSnapshot = this.snapshotFor(previousState);
+    const nextSnapshot = this.snapshotFor(nextState);
+    const listenerRegistrations = [...this.listeners];
+    this.currentSnapshot = nextSnapshot;
+    this.currentSnapshotState = nextState;
+
+    if (hasLegacyListeners) {
+      eventBus.fireSync(
+        {
+          type: BusEventType.STATE_CHANGE,
+          previousState: previousSnapshot,
+          newState: nextSnapshot,
+        },
+        this.serviceManager.instance
+      );
+    }
+
+    listenerRegistrations.forEach((registration) => {
+      if (!registration.active) {
+        return;
+      }
+      try {
+        registration.listener();
+      } catch (error) {
+        consoleError(
+          'A state subscriber threw, so the chat ignored the error and continued.',
+          error
+        );
+      }
+    });
+  }
+
+  private snapshotFor(state: AppState): PublicChatState {
+    if (
+      this.currentSnapshot &&
+      this.cache.haveSamePublicSources(this.currentSnapshotState, state)
+    ) {
+      return this.currentSnapshot;
+    }
+    return this.cache.createSnapshot(state);
+  }
+}

@@ -229,6 +229,8 @@ export enum BusEventType {
   /**
    * This event is fired whenever the public state returned by ChatInstance.getState() changes.
    * This includes changes to viewState, showUnreadIndicator, and other persisted state.
+   *
+   * @deprecated Use {@link ChatInstance.state} to subscribe to state — removed in 2.0.0.
    */
   STATE_CHANGE = 'state:change',
 
@@ -1056,6 +1058,7 @@ export interface BusEventFeedback extends BusEvent {
  * This includes changes to viewState, showUnreadIndicator, and other persisted state.
  *
  * @category Events
+ * @deprecated Use {@link ChatInstance.state} to subscribe to state — removed in 2.0.0.
  */
 export interface BusEventStateChange extends BusEvent {
   /**

@@ -25,6 +25,7 @@ import {
 } from '../../types/events/eventBusTypes';
 import { SendOptions } from '../../types/instance/ChatInstance';
 import { MessageRequest } from '../../types/messaging/Messages';
+import { OnErrorType } from '../../types/config/ErrorConfig';
 import type { ServiceManager } from './ServiceManager';
 
 /**
@@ -97,10 +98,40 @@ class HydrationService {
     try {
       if (!this.hydrationPromise) {
         this.hydrating = true;
+        const generation =
+          this.serviceManager.conversationLifecycleService.hydrationStarted();
+        this.serviceManager.store.dispatch(actions.addIsHydratingCounter(1));
         this.hydrationPromise = this.doHydrateChat(
           alternateWelcomeRequest,
-          alternateOptions
-        );
+          alternateOptions,
+          generation
+        )
+          .catch((error) => {
+            this.serviceManager.actions.conversationErrorOccurred(
+              {
+                errorType: OnErrorType.HYDRATION,
+                message: 'An error occurred hydrating the conversation',
+                otherData: error,
+              },
+              generation
+            );
+          })
+          .finally(() => {
+            if (
+              this.serviceManager.conversationLifecycleService.isCurrent(
+                generation
+              )
+            ) {
+              this.serviceManager.store.dispatch(actions.chatWasHydrated());
+              this.alreadyHydrated = true;
+            }
+            this.serviceManager.store.dispatch(
+              actions.addIsHydratingCounter(-1)
+            );
+            this.serviceManager.conversationLifecycleService.hydrationFinished(
+              generation
+            );
+          });
         fireReady = true;
       }
 
@@ -126,7 +157,9 @@ class HydrationService {
    */
   private async doHydrateChat(
     alternateWelcomeRequest?: MessageRequest,
-    alternateOptions?: SendOptions
+    alternateOptions?: SendOptions,
+    generation = this.serviceManager.conversationLifecycleService
+      .currentGeneration
   ) {
     debugLog(
       'Hydrating Carbon AI Chat',
@@ -134,84 +167,19 @@ class HydrationService {
       alternateOptions
     );
 
-    // Load the history and main config but only if it's the first time we are hydrating.
-    let history: LoadedHistory;
     const { serviceManager } = this;
-    serviceManager.store.dispatch(actions.addIsHydratingCounter(1));
-    if (!this.alreadyHydrated) {
-      history = await this.serviceManager.historyService.loadHistory();
-
-      if (
-        serviceManager.humanAgentService &&
-        !serviceManager.humanAgentService.hasInitialized
-      ) {
-        // Once we've got the main config which contains the details for connecting to a service desk, we can
-        // initialize the human agent service.
-        debugLog('Initializing the human agent service');
-        await serviceManager.humanAgentService.initialize();
-      } else {
-        debugLog('No service desk integrations present');
-      }
+    const history = await this.loadInitialHistory(generation);
+    if (!serviceManager.conversationLifecycleService.isCurrent(generation)) {
+      return;
     }
 
     const { config } = serviceManager.store.getState();
 
     if (!history) {
-      if (!alternateWelcomeRequest) {
-        const state = serviceManager.store.getState();
-        if (state.config.public.homescreen?.isOn) {
-          // If no history was loaded, there are no messages already sent, and there is a home screen,
-          // then we need to show the home screen.
-          serviceManager.store.dispatch(actions.setHomeScreenIsOpen(true));
-        } else if (
-          !config.public.messaging?.skipWelcome &&
-          !this.shouldSkipWelcomeForAgentSession(state)
-        ) {
-          // If no history was loaded, there are no messages already sent, there is no home screen, and the user is not
-          // currently or previously in an agent session, then we need to fetch the welcome node.
-          await serviceManager.actions.send(
-            createWelcomeRequest(),
-            MessageSendSource.WELCOME_REQUEST,
-            {},
-            true
-          );
-        }
-      }
+      await this.applyEmptyHistory(alternateWelcomeRequest);
     } else {
-      // Need to populate the history in redux (specifically botMessageState) before creating elements for custom
-      // responses. createElementsForUserDefinedResponse() fires a userDefinedResponse event.
-      serviceManager.store.dispatch(
-        actions.hydrateMessageHistory(history.messageHistory)
-      );
-      const { messageIDs } = history.messageHistory.assistantMessageState;
-      // The active response is simply the last message response in order (requests are ignored).
-      const lastId =
-        messageIDs.length > 0 ? messageIDs[messageIDs.length - 1] : null;
-      const lastMessage = lastId
-        ? history.messageHistory.allMessagesByID[lastId]
-        : null;
-      const activeResponseId =
-        lastMessage && isResponse(lastMessage) ? lastMessage.id : null;
-      serviceManager.store.dispatch(
-        actions.setActiveResponseId(activeResponseId)
-      );
-      await serviceManager.actions.createElementsForUserDefinedResponses(
-        history.messageHistory
-      );
-      await serviceManager.actions.replayFooterSlots(history.messageHistory);
-
-      // If the latest message is a panel response type, we should open it.
-      if (history.latestPanelLocalMessageItem) {
-        serviceManager.actions.openResponsePanel(
-          history.latestPanelLocalMessageItem,
-          true
-        );
-      }
+      await this.applyLoadedHistory(history);
     }
-
-    // After both history and welcome are loaded indicate we've got everything.
-    serviceManager.store.dispatch(actions.chatWasHydrated());
-    serviceManager.store.dispatch(actions.addIsHydratingCounter(-1));
 
     // Note, we're not waiting for the human agent service to handle the hydration. It may start an asynchronous
     // process to reconnect the user to an agent but that is considered separate from the main hydration.
@@ -220,8 +188,94 @@ class HydrationService {
       allowReconnect,
       Boolean(history)
     );
+  }
 
-    this.alreadyHydrated = true;
+  private async loadInitialHistory(generation: number): Promise<LoadedHistory> {
+    if (this.alreadyHydrated) {
+      return null;
+    }
+
+    const { serviceManager } = this;
+    const history = await serviceManager.historyService.loadHistory();
+    if (!serviceManager.conversationLifecycleService.isCurrent(generation)) {
+      return history;
+    }
+
+    const humanAgentService = serviceManager.humanAgentService;
+    if (!humanAgentService || humanAgentService.hasInitialized) {
+      debugLog('No service desk integrations present');
+      return history;
+    }
+
+    debugLog('Initializing the human agent service');
+    await humanAgentService.initialize();
+    return history;
+  }
+
+  private async applyEmptyHistory(
+    alternateWelcomeRequest?: MessageRequest
+  ): Promise<void> {
+    if (alternateWelcomeRequest) {
+      return;
+    }
+
+    const { serviceManager } = this;
+    const state = serviceManager.store.getState();
+    if (state.config.public.homescreen?.isOn) {
+      serviceManager.store.dispatch(actions.setHomeScreenIsOpen(true));
+      return;
+    }
+    if (
+      state.config.public.messaging?.skipWelcome ||
+      this.shouldSkipWelcomeForAgentSession(state)
+    ) {
+      return;
+    }
+
+    const welcomeRequest = createWelcomeRequest();
+    try {
+      await serviceManager.actions.send(
+        welcomeRequest,
+        MessageSendSource.WELCOME_REQUEST,
+        {},
+        true
+      );
+    } catch (error) {
+      if (
+        serviceManager.store.getState().conversationError?.messageID !==
+        welcomeRequest.id
+      ) {
+        throw error;
+      }
+    }
+  }
+
+  private async applyLoadedHistory(history: LoadedHistory): Promise<void> {
+    const { serviceManager } = this;
+    serviceManager.store.dispatch(
+      actions.hydrateMessageHistory(history.messageHistory)
+    );
+    const { messageIDs } = history.messageHistory.assistantMessageState;
+    const lastId = messageIDs[messageIDs.length - 1];
+    const lastMessage = lastId
+      ? history.messageHistory.allMessagesByID[lastId]
+      : null;
+    serviceManager.store.dispatch(
+      actions.setActiveResponseId(
+        lastMessage && isResponse(lastMessage) ? lastMessage.id : null
+      )
+    );
+    await serviceManager.actions.createElementsForUserDefinedResponses(
+      history.messageHistory
+    );
+    await serviceManager.actions.replayFooterSlots(history.messageHistory);
+
+    if (history.latestPanelLocalMessageItem) {
+      serviceManager.actions.openResponsePanel(
+        history.latestPanelLocalMessageItem,
+        true
+      );
+    }
   }
 
   /**
@@ -246,6 +300,9 @@ class HydrationService {
       return;
     }
 
+    this.restarting = true;
+    this.serviceManager.messageUpsertCoordinator.clearAll();
+
     try {
       const { serviceManager } = this;
       const { store } = serviceManager;
@@ -257,7 +314,8 @@ class HydrationService {
         });
       }
 
-      this.restarting = true;
+      const restartGeneration =
+        serviceManager.conversationLifecycleService.restart(skipHydration);
 
       // Increment the restart generation to filter out any chunks from the previous conversation
       this.serviceManager.chunkProcessingService.bumpRestartGeneration();
@@ -300,10 +358,6 @@ class HydrationService {
       // it visible for.
       resetStopStreamingButton(store);
 
-      // Drop any in-flight upsertMessage chains and recorded state so upserts queued
-      // before the restart do not resolve against the new session.
-      this.serviceManager.messageUpsertCoordinator.clearAll();
-
       store.dispatch(actions.restartConversation());
       if (!skipHydration) {
         // Clear this promise in case the restart event below triggers another hydration.
@@ -318,14 +372,21 @@ class HydrationService {
         await this.hydrationPromise;
       }
 
+      let didHydrate = false;
       if (!skipHydration && !serviceManager.store.getState().isHydrated) {
         // Trigger re-hydration.
         this.hydrationPromise = null;
         if (store.getState().persistedToBrowserStorage.viewState.mainWindow) {
+          didHydrate = true;
           await serviceManager.actions.hydrateChat();
         }
       } else {
         store.dispatch(actions.chatWasHydrated());
+      }
+      if (!didHydrate) {
+        serviceManager.conversationLifecycleService.hydrationFinished(
+          restartGeneration
+        );
       }
     } finally {
       this.restarting = false;

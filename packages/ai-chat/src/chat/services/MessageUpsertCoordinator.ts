@@ -11,6 +11,7 @@ import {
   MessageState,
   UpsertMessageUpdater,
 } from '../../types/config/MessagingConfig';
+import cloneDeep from 'lodash-es/cloneDeep.js';
 import {
   Message,
   MessageRequest,
@@ -24,6 +25,7 @@ import {
 import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
 import actions from '../store/actions';
 import { addDefaultsToMessage, isRequest } from '../utils/messageUtils';
+import { deepFreeze } from '../utils/lang/objectUtils';
 import { consoleError } from '../utils/miscUtils';
 import { ServiceManager } from './ServiceManager';
 
@@ -53,6 +55,8 @@ class MessageUpsertCoordinator {
   private readonly chainByID = new Map<string, Promise<void>>();
 
   private readonly stateByID = new Map<string, MessageState>();
+
+  private generation = 0;
 
   constructor(serviceManager: ServiceManager) {
     this.serviceManager = serviceManager;
@@ -102,6 +106,7 @@ class MessageUpsertCoordinator {
    * fresh session.
    */
   clearAll() {
+    this.generation++;
     this.chainByID.clear();
     this.stateByID.clear();
   }
@@ -131,11 +136,12 @@ class MessageUpsertCoordinator {
       throw new TypeError('upsertMessage: updater must be a function.');
     }
 
+    const generation = this.generation;
     const prev = this.chainByID.get(messageID) ?? Promise.resolve();
     // A predecessor failure for this id must not poison this caller's promise.
     const next = prev
       .catch(noop)
-      .then(() => this.runOne(messageID, nextState, updater));
+      .then(() => this.runOne(messageID, nextState, updater, generation));
     this.chainByID.set(messageID, next);
 
     // Drain the chain entry once `next` settles. The trailing `.then(noop, noop)`
@@ -155,9 +161,16 @@ class MessageUpsertCoordinator {
   private async runOne(
     messageID: string,
     nextState: MessageState,
-    updater: UpsertMessageUpdater
+    updater: UpsertMessageUpdater,
+    generation: number
   ): Promise<void> {
+    if (generation !== this.generation) {
+      return;
+    }
     const result = await this.runUpdater(messageID, updater);
+    if (generation !== this.generation) {
+      return;
+    }
 
     const previousState = this.stateByID.get(messageID);
     const willFireReceive =
@@ -166,16 +179,47 @@ class MessageUpsertCoordinator {
 
     if (willFireReceive) {
       await this.firePreReceive(messageID, result);
+      if (generation !== this.generation) {
+        return;
+      }
     }
 
+    const committedResult = cloneDeep(result);
     const refsBefore = this.snapshotLocalItemRefs(messageID);
-    this.serviceManager.store.dispatch(actions.upsertMessage(result));
-    await this.fanOutChangedSlots(messageID, result, nextState, refsBefore);
+    this.serviceManager.store.dispatch(actions.upsertMessage(committedResult));
+    if (nextState === MessageState.STREAMING) {
+      this.serviceManager.conversationLifecycleService?.responseStreaming(
+        messageID
+      );
+    } else if (nextState === MessageState.ERROR) {
+      if (this.serviceManager.messageService.markStreamingResponseError) {
+        this.serviceManager.messageService.markStreamingResponseError(
+          messageID
+        );
+      } else {
+        this.serviceManager.conversationLifecycleService?.responseFinished(
+          messageID
+        );
+      }
+    }
+    await this.fanOutChangedSlots(
+      messageID,
+      cloneDeep(committedResult),
+      nextState,
+      refsBefore
+    );
+    if (generation !== this.generation) {
+      return;
+    }
 
     this.stateByID.set(messageID, nextState);
 
     if (willFireReceive) {
-      await this.firePostReceiveAndFinalize(messageID, result);
+      await this.firePostReceiveAndFinalize(
+        messageID,
+        committedResult,
+        generation
+      );
     }
   }
 
@@ -198,19 +242,23 @@ class MessageUpsertCoordinator {
       );
     }
 
-    const previousMessage = existing as MessageResponse | undefined;
-    const result = await updater(previousMessage);
+    const previousMessage = existing
+      ? cloneDeep(existing as MessageResponse)
+      : undefined;
+    const updaterResult = await updater(previousMessage);
 
-    if (result === null || result === undefined) {
+    if (updaterResult === null || updaterResult === undefined) {
       throw new TypeError(
         'upsertMessage: updater must return a MessageResponse, received null/undefined.'
       );
     }
-    if (typeof result !== 'object') {
+    if (typeof updaterResult !== 'object') {
       throw new TypeError(
         'upsertMessage: updater must return a MessageResponse object.'
       );
     }
+
+    const result = cloneDeep(updaterResult);
 
     if (result.id === undefined || result.id === null) {
       result.id = messageID;
@@ -323,18 +371,23 @@ class MessageUpsertCoordinator {
    */
   private async firePostReceiveAndFinalize(
     messageID: string,
-    result: MessageResponse
+    result: MessageResponse,
+    generation: number
   ): Promise<void> {
+    const eventMessage = cloneDeep(result);
+    deepFreeze(eventMessage);
     const receiveEvent: BusEventReceive = {
       type: BusEventType.RECEIVE,
-      data: result,
+      data: eventMessage,
     };
     try {
       await this.serviceManager.fire(receiveEvent);
     } catch (error) {
       consoleError('upsertMessage: receive handler threw, continuing.', error);
     }
-    this.serviceManager.messageService.finalizeStreamingMessage(messageID);
+    if (generation === this.generation) {
+      this.serviceManager.messageService.finalizeStreamingMessage(messageID);
+    }
   }
 }
 

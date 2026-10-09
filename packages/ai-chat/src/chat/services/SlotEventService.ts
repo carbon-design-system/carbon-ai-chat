@@ -35,10 +35,16 @@ import {
 import { AppStateMessages } from '../../types/state/AppState';
 import { MessageState } from '../../types/config/MessagingConfig';
 import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
+import cloneDeep from 'lodash-es/cloneDeep.js';
+import { deepFreeze } from '../utils/lang/objectUtils';
 import type {
   ServiceManager,
   UserDefinedElementRegistryItem,
 } from './ServiceManager';
+
+function ownEventData<Data>(data: Data): Data {
+  return deepFreeze(cloneDeep(data));
+}
 
 class SlotEventService {
   private serviceManager: ServiceManager;
@@ -95,12 +101,12 @@ class SlotEventService {
 
       const userDefinedResponseEvent: BusEventUserDefinedResponse = {
         type: BusEventType.USER_DEFINED_RESPONSE,
-        data: {
+        data: ownEventData({
           message: localMessage.item,
           fullMessage: originalMessage,
           slot: slotName,
           state: messageState,
-        },
+        }),
       };
 
       await this.serviceManager.fire(userDefinedResponseEvent);
@@ -179,11 +185,11 @@ class SlotEventService {
 
       const userDefinedResponseEvent: BusEventChunkUserDefinedResponse = {
         type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
-        data: {
+        data: ownEventData({
           messageItem,
           chunk,
           slot: slotName,
-        },
+        }),
       };
 
       await this.serviceManager.fire(userDefinedResponseEvent);
@@ -204,12 +210,12 @@ class SlotEventService {
     if (footerOptions && footerOptions.is_on !== false) {
       const customFooterSlotEvent: BusEventCustomFooterSlot = {
         type: BusEventType.CUSTOM_FOOTER_SLOT,
-        data: {
+        data: ownEventData({
           slotName: footerOptions.slot_name,
           messageItem: localMessage.item,
           message: originalMessage,
           additionalData: footerOptions.additional_data,
-        },
+        }),
       };
 
       await this.serviceManager.fire(customFooterSlotEvent);
@@ -234,10 +240,10 @@ class SlotEventService {
 
     const customRequestFooterSlotEvent: BusEventCustomRequestFooterSlot = {
       type: BusEventType.CUSTOM_REQUEST_FOOTER_SLOT,
-      data: {
+      data: ownEventData({
         slotName: getRequestFooterSlotName(localMessage),
         message: originalMessage,
-      },
+      }),
     };
 
     await this.serviceManager.fire(customRequestFooterSlotEvent);

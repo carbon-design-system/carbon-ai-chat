@@ -174,7 +174,13 @@ export async function initServiceManagerAndInstance(options: {
   }
 
   // Create the chat instance
+  const state = {
+    get: serviceManager.publicStateService.get,
+    subscribe: serviceManager.publicStateService.subscribe,
+    select: serviceManager.publicStateService.select,
+  };
   const instance: ChatInstance = {
+    state,
     on: (handlers: TypeAndHandler | TypeAndHandler[]) => {
       serviceManager.eventBus.on(handlers);
       return instance;
@@ -304,7 +310,7 @@ export async function initServiceManagerAndInstance(options: {
       },
     },
 
-    getState: () => serviceManager.actions.getPublicChatState(),
+    getState: state.get,
 
     writeableElements: serviceManager.writeableElements,
 

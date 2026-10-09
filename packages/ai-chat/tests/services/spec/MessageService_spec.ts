@@ -32,6 +32,22 @@ const createMessage = (id: string): MessageRequest<any> => ({
   },
 });
 
+const createDeferred = () => {
+  let resolve: () => void;
+  let reject: (error: Error) => void;
+  const promise = new Promise<void>((promiseResolve, promiseReject) => {
+    resolve = promiseResolve;
+    reject = promiseReject;
+  });
+  return { promise, resolve: resolve!, reject: reject! };
+};
+
+const flushMessageQueue = async () => {
+  await Promise.resolve();
+  await Promise.resolve();
+  await Promise.resolve();
+};
+
 const createServiceManagerStub = (
   customSendMessage = jest.fn(),
   stopStreamingButtonState = { isVisible: false, isDisabled: false }
@@ -326,6 +342,235 @@ describe('MessageService', () => {
       null
     );
     expect((messageService as any).queue.current).toBeNull();
+  });
+
+  describe('streaming terminal cleanup', () => {
+    it('advances after an ERROR upsert when the transport later succeeds', async () => {
+      const first = createDeferred();
+      const customSendMessage = jest.fn((message: MessageRequest<any>) =>
+        message.id === 'm-first' ? first.promise : Promise.resolve()
+      );
+      const serviceManager = createServiceManagerStub(customSendMessage);
+      const messageService = new MessageService(serviceManager, {
+        messaging: {
+          customSendMessage,
+          messageTimeoutSecs: 0,
+          messageLoadingIndicatorTimeoutSecs: 0,
+        },
+      } as any);
+
+      const firstSend = messageService.send(
+        createMessage('m-first'),
+        MessageSendSource.MESSAGE_INPUT,
+        'local-first'
+      );
+      await flushMessageQueue();
+      messageService.markCurrentMessageAsStreaming('response-first');
+      const secondSend = messageService.send(
+        createMessage('m-second'),
+        MessageSendSource.MESSAGE_INPUT,
+        'local-second'
+      );
+
+      messageService.markStreamingResponseError('response-first');
+      expect((messageService as any).queue.current.message.id).toBe('m-first');
+
+      first.resolve();
+      await firstSend;
+      await secondSend;
+
+      expect(customSendMessage).toHaveBeenCalledTimes(2);
+      expect((messageService as any).queue.current).toBeNull();
+    });
+
+    it('advances immediately when an ERROR upsert follows transport settlement', async () => {
+      const customSendMessage = jest.fn();
+      const serviceManager = createServiceManagerStub(customSendMessage);
+      const messageService = new MessageService(serviceManager, {
+        messaging: {
+          customSendMessage,
+          messageTimeoutSecs: 0,
+          messageLoadingIndicatorTimeoutSecs: 0,
+        },
+      } as any);
+      customSendMessage.mockImplementation((message: MessageRequest<any>) => {
+        if (message.id === 'm-first') {
+          messageService.markCurrentMessageAsStreaming('response-first');
+        }
+        return Promise.resolve();
+      });
+
+      await messageService.send(
+        createMessage('m-first'),
+        MessageSendSource.MESSAGE_INPUT,
+        'local-first'
+      );
+      const secondSend = messageService.send(
+        createMessage('m-second'),
+        MessageSendSource.MESSAGE_INPUT,
+        'local-second'
+      );
+      expect(customSendMessage).toHaveBeenCalledTimes(1);
+
+      messageService.markStreamingResponseError('response-first');
+      await secondSend;
+
+      expect(customSendMessage).toHaveBeenCalledTimes(2);
+      expect((messageService as any).queue.current).toBeNull();
+    });
+
+    it('advances after an ERROR upsert when the transport later fails', async () => {
+      const first = createDeferred();
+      const customSendMessage = jest.fn((message: MessageRequest<any>) =>
+        message.id === 'm-first' ? first.promise : Promise.resolve()
+      );
+      const serviceManager = createServiceManagerStub(customSendMessage);
+      const messageService = new MessageService(serviceManager, {
+        messaging: {
+          customSendMessage,
+          messageTimeoutSecs: 0,
+          messageLoadingIndicatorTimeoutSecs: 0,
+        },
+      } as any);
+
+      const firstSend = messageService.send(
+        createMessage('m-first'),
+        MessageSendSource.MESSAGE_INPUT,
+        'local-first'
+      );
+      const rejectedFirstSend = expect(firstSend).rejects.toThrow('failed');
+      await flushMessageQueue();
+      messageService.markCurrentMessageAsStreaming('response-first');
+      const secondSend = messageService.send(
+        createMessage('m-second'),
+        MessageSendSource.MESSAGE_INPUT,
+        'local-second'
+      );
+
+      messageService.markStreamingResponseError('response-first');
+      first.reject(new Error('failed'));
+      await rejectedFirstSend;
+      await secondSend;
+
+      expect(customSendMessage).toHaveBeenCalledTimes(2);
+      expect((messageService as any).queue.current).toBeNull();
+    });
+
+    it('clears partial-stream routing before advancing after a send failure', async () => {
+      const first = createDeferred();
+      const customSendMessage = jest.fn((message: MessageRequest<any>) =>
+        message.id === 'm-first' ? first.promise : Promise.resolve()
+      );
+      const serviceManager = createServiceManagerStub(customSendMessage);
+      const lifecycle = {
+        currentGeneration: 0,
+        requestStarted: jest.fn(),
+        requestFinished: jest.fn(),
+        responseFinished: jest.fn(),
+      };
+      serviceManager.conversationLifecycleService = lifecycle as any;
+      const messageService = new MessageService(serviceManager, {
+        messaging: {
+          customSendMessage,
+          messageTimeoutSecs: 0,
+          messageLoadingIndicatorTimeoutSecs: 0,
+        },
+      } as any);
+
+      const firstSend = messageService.send(
+        createMessage('m-first'),
+        MessageSendSource.MESSAGE_INPUT,
+        'local-first'
+      );
+      const rejectedFirstSend = expect(firstSend).rejects.toThrow('failed');
+      await flushMessageQueue();
+      messageService.markCurrentMessageAsStreaming('response-first');
+      const secondSend = messageService.send(
+        createMessage('m-second'),
+        MessageSendSource.MESSAGE_INPUT,
+        'local-second'
+      );
+
+      first.reject(new Error('failed'));
+      await rejectedFirstSend;
+      await secondSend;
+
+      expect(messageService.inboundStreaming.streamingMessageID).toBeNull();
+      expect(lifecycle.responseFinished).toHaveBeenCalledWith(
+        'response-first',
+        0
+      );
+      const nextRequestCall = lifecycle.requestStarted.mock.calls.findIndex(
+        ([messageID]) => messageID === 'm-second'
+      );
+      expect(nextRequestCall).toBe(1);
+      expect(
+        lifecycle.responseFinished.mock.invocationCallOrder[0]
+      ).toBeLessThan(lifecycle.requestStarted.mock.invocationCallOrder[1]);
+    });
+
+    it('clears partial-stream routing before advancing after a timeout', async () => {
+      let timeout: () => void;
+      const customSendMessage = jest.fn((message: MessageRequest<any>) =>
+        message.id === 'm-first'
+          ? new Promise<void>(() => undefined)
+          : Promise.resolve()
+      );
+      const serviceManager = createServiceManagerStub(customSendMessage);
+      const lifecycle = {
+        currentGeneration: 0,
+        requestStarted: jest.fn(),
+        requestFinished: jest.fn(),
+        responseFinished: jest.fn(),
+      };
+      serviceManager.conversationLifecycleService = lifecycle as any;
+      const messageService = new MessageService(serviceManager, {
+        messaging: {
+          customSendMessage,
+          messageTimeoutSecs: 1,
+          messageLoadingIndicatorTimeoutSecs: 0,
+        },
+      } as any);
+      const startSpy = jest
+        .spyOn(messageService.messageLoadingManager, 'start')
+        .mockImplementation((_, __, onTimeout) => {
+          timeout = onTimeout;
+        });
+
+      try {
+        const firstSend = messageService.send(
+          createMessage('m-first'),
+          MessageSendSource.MESSAGE_INPUT,
+          'local-first'
+        );
+        const rejectedFirstSend = expect(firstSend).rejects.toThrow(
+          CancellationReason.TIMEOUT
+        );
+        await flushMessageQueue();
+        messageService.markCurrentMessageAsStreaming('response-first');
+        const secondSend = messageService.send(
+          createMessage('m-second'),
+          MessageSendSource.MESSAGE_INPUT,
+          'local-second'
+        );
+
+        timeout!();
+        await rejectedFirstSend;
+        await secondSend;
+
+        expect(messageService.inboundStreaming.streamingMessageID).toBeNull();
+        expect(lifecycle.responseFinished).toHaveBeenCalledWith(
+          'response-first',
+          0
+        );
+        expect(lifecycle.requestStarted.mock.calls[1][0]).toBe('m-second');
+        expect(
+          lifecycle.responseFinished.mock.invocationCallOrder[0]
+        ).toBeLessThan(lifecycle.requestStarted.mock.invocationCallOrder[1]);
+      } finally {
+        startSpy.mockRestore();
+      }
+    });
   });
 
   describe('Message cancellation with system messages', () => {

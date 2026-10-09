@@ -27,6 +27,7 @@ import {
   SystemMessageItem,
 } from '../../../types/messaging/Messages';
 import { LanguagePack } from '../../../types/config/LanguagePack';
+import cloneDeep from 'lodash-es/cloneDeep.js';
 
 /**
  * A simple pairing of local messages to the original messages that they belong to.
@@ -58,8 +59,8 @@ async function createHumanAgentLocalMessage(
     serviceManager.intl
   );
 
-  const result = createHumanAgentLocalMessageForType(agentMessageType);
-  const { originalMessage, localMessage } = result;
+  const { originalMessage, localMessage } =
+    createHumanAgentLocalMessageForType(agentMessageType);
 
   // Set the text/title based on item type
   if (localMessage.item.response_type === MessageResponseTypes.SYSTEM) {
@@ -79,15 +80,24 @@ async function createHumanAgentLocalMessage(
       data: originalMessage,
     });
   }
-  deepFreeze(originalMessage);
+  const committedMessage = cloneDeep(originalMessage);
+  const committedLocalMessage = outputItemToLocalItem(
+    committedMessage.output.generic[0],
+    committedMessage
+  );
+  const eventMessage = cloneDeep(committedMessage);
+  deepFreeze(eventMessage);
   if (fireEvents) {
     await serviceManager.fire({
       type: BusEventType.HUMAN_AGENT_RECEIVE,
-      data: originalMessage,
+      data: eventMessage,
     });
   }
 
-  return result;
+  return {
+    originalMessage: committedMessage,
+    localMessage: committedLocalMessage,
+  };
 }
 
 /**
@@ -198,19 +208,28 @@ async function addMessages(
     await asyncForEach(
       messagePairs,
       async ({ localMessages, originalMessage }) => {
-        await asyncForEach(localMessages, async (localMessage, index) => {
-          await serviceManager.actions.handleUserDefinedResponseItems(
-            localMessage,
-            originalMessage
-          );
-          serviceManager.store.dispatch(
-            actions.addLocalMessageItem(
+        const committedPair = cloneDeep({ localMessages, originalMessage });
+        await asyncForEach(
+          committedPair.localMessages,
+          async (localMessage, index) => {
+            const eventValues = cloneDeep({
               localMessage,
-              originalMessage,
-              index === 0
-            )
-          );
-        });
+              originalMessage: committedPair.originalMessage,
+            });
+            deepFreeze(eventValues);
+            await serviceManager.actions.handleUserDefinedResponseItems(
+              eventValues.localMessage,
+              eventValues.originalMessage
+            );
+            serviceManager.store.dispatch(
+              actions.addLocalMessageItem(
+                localMessage,
+                committedPair.originalMessage,
+                index === 0
+              )
+            );
+          }
+        );
       }
     );
   }

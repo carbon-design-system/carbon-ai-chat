@@ -8,6 +8,7 @@
  */
 
 import merge from 'lodash-es/merge.js';
+import cloneDeep from 'lodash-es/cloneDeep.js';
 
 import actions from '../store/actions';
 import { AppStateMessages } from '../../types/state/AppState';
@@ -68,15 +69,16 @@ class ReceiveService {
     _origin: 'addMessage' | 'chunk' = 'addMessage'
   ) {
     const { restartCount: initialRestartCount } = this.serviceManager;
+    const receivedMessage = cloneDeep(message);
 
     // Received messages should be given an id if they don't have one.
-    if (!message.id) {
-      message.id = uuid();
+    if (!receivedMessage.id) {
+      receivedMessage.id = uuid();
     }
 
     const preReceiveEvent: BusEventPreReceive = {
       type: BusEventType.PRE_RECEIVE,
-      data: message,
+      data: receivedMessage,
     };
     // Fire the pre:receive event. User code is allowed to modify the message at this point.
     await this.serviceManager.fire(preReceiveEvent);
@@ -99,36 +101,39 @@ class ReceiveService {
 
     const { languagePack } = this.serviceManager.store.getState();
 
-    if (isResponse(message as any)) {
+    let receiveEventMessage = receivedMessage;
+    if (isResponse(receivedMessage as any)) {
       // Pauses and host slot handlers must not delay the receive event.
+      const committedMessage = cloneDeep(receivedMessage);
       this.processMessageResponse(
-        message,
+        committedMessage,
         isLatestWelcomeNode,
         requestMessage
       ).catch((error) => {
         consoleError('Error processing the message response', error);
       });
+      receiveEventMessage = cloneDeep(committedMessage);
     } else {
       const inlineError: MessageResponse = createMessageResponseForText(
         languagePack.errors_singleMessage,
-        message?.thread_id,
+        receivedMessage?.thread_id,
         MessageResponseTypes.INLINE_ERROR
       );
       this.receive(inlineError, false);
     }
 
-    // Now freeze the message so nobody can mess with it since that object came from outside.
-    deepFreeze(message);
+    deepFreeze(receiveEventMessage);
 
-    // Don't fire with the cloned message since we don't want to let anyone mess with it.
     await this.serviceManager.fire({
       type: BusEventType.RECEIVE,
-      data: message,
+      data: receiveEventMessage,
     });
 
     // Record COMPLETE so a later `upsertMessage(id, MessageState.COMPLETE, ...)` for
     // the same id suppresses a second `pre:receive` / `receive`.
-    this.serviceManager.messageUpsertCoordinator.markComplete(message.id);
+    this.serviceManager.messageUpsertCoordinator.markComplete(
+      receivedMessage.id
+    );
   }
 
   private async processMessageResponse(

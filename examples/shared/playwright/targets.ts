@@ -26,8 +26,20 @@ export const targets = {
     example: 'react/prompt-line-mentions-and-commands',
     spec: 'mentions-and-commands.spec.ts',
   },
+  'react-watch-messages': {
+    example: 'react/watch-messages',
+    spec: 'watch-messages.spec.ts',
+  },
+  'react-watch-messages-redux': {
+    example: 'react/watch-messages-redux',
+    spec: 'watch-messages.spec.ts',
+  },
   'react-watch-state': {
     example: 'react/watch-state',
+    spec: 'watch-state.spec.ts',
+  },
+  'react-watch-state-redux': {
+    example: 'react/watch-state-redux',
     spec: 'watch-state.spec.ts',
   },
   'web-components-fullscreen': {
