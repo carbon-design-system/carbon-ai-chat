@@ -26,6 +26,14 @@ shared/playwright/
 | `react-custom-header` | `react/custom-header` | [Custom header](../shared/playwright/tests/custom-header.spec.ts) |
 | `react-fullscreen` | `react/basic-custom-element-fullscreen` | [Fullscreen](../shared/playwright/tests/fullscreen.spec.ts) |
 | `react-mentions-and-commands` | `react/prompt-line-mentions-and-commands` | [Mentions and commands](../shared/playwright/tests/mentions-and-commands.spec.ts) |
+| `react-prompt-line-code-snippet` | `react/prompt-line-code-snippet` | [Prompt line code snippet](../shared/playwright/tests/prompt-line-code-snippet.spec.ts) |
+| `react-prompt-line-conversation-starters` | `react/prompt-line-conversation-starters` | [Prompt line conversation starters](../shared/playwright/tests/prompt-line-conversation-starters.spec.ts) |
+| `react-prompt-line-custom-render` | `react/prompt-line-custom-render` | [Prompt line custom render](../shared/playwright/tests/prompt-line-custom-render.spec.ts) |
+| `react-prompt-line-file-upload` | `react/prompt-line-file-upload` | [Prompt line file upload](../shared/playwright/tests/prompt-line-file-upload.spec.ts) |
+| `react-prompt-line-history-mechanism` | `react/prompt-line-history-mechanism` | [Prompt line history mechanism](../shared/playwright/tests/prompt-line-history-mechanism.spec.ts) |
+| `react-prompt-line-mentions-and-commands-custom-render` | `react/prompt-line-mentions-and-commands-custom-render` | [Prompt line mentions and commands custom render react](../shared/playwright/tests/prompt-line-mentions-and-commands-custom-render-react.spec.ts) |
+| `react-prompt-line-typeahead` | `react/prompt-line-typeahead` | [Prompt line typeahead](../shared/playwright/tests/prompt-line-typeahead.spec.ts) |
+| `react-prompt-line-typeahead-custom` | `react/prompt-line-typeahead-custom` | [Prompt line typeahead custom react](../shared/playwright/tests/prompt-line-typeahead-custom-react.spec.ts) |
 | `react-tests-vitest-happydom` | `react/tests-vitest-happydom` | [Tests vitest happydom](../shared/playwright/tests/tests-vitest-happydom.spec.ts) |
 | `react-theme-plex-override` | `react/theme-plex-override` | [Theme plex override](../shared/playwright/tests/theme-plex-override.spec.ts) |
 | `react-watch-state` | `react/watch-state` | [Watch state](../shared/playwright/tests/watch-state.spec.ts) |
@@ -38,6 +46,14 @@ shared/playwright/
 | `web-components-custom-header` | `web-components/custom-header` | [Custom header](../shared/playwright/tests/custom-header.spec.ts) |
 | `web-components-fullscreen` | `web-components/basic-custom-element-fullscreen` | [Fullscreen](../shared/playwright/tests/fullscreen.spec.ts) |
 | `web-components-mentions-and-commands` | `web-components/prompt-line-mentions-and-commands` | [Mentions and commands](../shared/playwright/tests/mentions-and-commands.spec.ts) |
+| `web-components-prompt-line-code-snippet` | `web-components/prompt-line-code-snippet` | [Prompt line code snippet](../shared/playwright/tests/prompt-line-code-snippet.spec.ts) |
+| `web-components-prompt-line-conversation-starters` | `web-components/prompt-line-conversation-starters` | [Prompt line conversation starters](../shared/playwright/tests/prompt-line-conversation-starters.spec.ts) |
+| `web-components-prompt-line-custom-render` | `web-components/prompt-line-custom-render` | [Prompt line custom render](../shared/playwright/tests/prompt-line-custom-render.spec.ts) |
+| `web-components-prompt-line-file-upload` | `web-components/prompt-line-file-upload` | [Prompt line file upload](../shared/playwright/tests/prompt-line-file-upload.spec.ts) |
+| `web-components-prompt-line-history-mechanism` | `web-components/prompt-line-history-mechanism` | [Prompt line history mechanism](../shared/playwright/tests/prompt-line-history-mechanism.spec.ts) |
+| `web-components-prompt-line-mentions-and-commands-custom-render` | `web-components/prompt-line-mentions-and-commands-custom-render` | [Prompt line mentions and commands custom render web components](../shared/playwright/tests/prompt-line-mentions-and-commands-custom-render-web-components.spec.ts) |
+| `web-components-prompt-line-typeahead` | `web-components/prompt-line-typeahead` | [Prompt line typeahead](../shared/playwright/tests/prompt-line-typeahead.spec.ts) |
+| `web-components-prompt-line-typeahead-custom` | `web-components/prompt-line-typeahead-custom` | [Prompt line typeahead custom web components](../shared/playwright/tests/prompt-line-typeahead-custom-web-components.spec.ts) |
 | `web-components-theme-plex-override` | `web-components/theme-plex-override` | [Theme plex override](../shared/playwright/tests/theme-plex-override.spec.ts) |
 | `web-components-watch-state` | `web-components/watch-state` | [Watch state](../shared/playwright/tests/watch-state.spec.ts) |
 

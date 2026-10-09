@@ -54,6 +54,38 @@ export const targets = {
     example: 'react/prompt-line-mentions-and-commands',
     spec: 'mentions-and-commands.spec.ts',
   },
+  'react-prompt-line-code-snippet': {
+    example: 'react/prompt-line-code-snippet',
+    spec: 'prompt-line-code-snippet.spec.ts',
+  },
+  'react-prompt-line-conversation-starters': {
+    example: 'react/prompt-line-conversation-starters',
+    spec: 'prompt-line-conversation-starters.spec.ts',
+  },
+  'react-prompt-line-custom-render': {
+    example: 'react/prompt-line-custom-render',
+    spec: 'prompt-line-custom-render.spec.ts',
+  },
+  'react-prompt-line-file-upload': {
+    example: 'react/prompt-line-file-upload',
+    spec: 'prompt-line-file-upload.spec.ts',
+  },
+  'react-prompt-line-history-mechanism': {
+    example: 'react/prompt-line-history-mechanism',
+    spec: 'prompt-line-history-mechanism.spec.ts',
+  },
+  'react-prompt-line-mentions-and-commands-custom-render': {
+    example: 'react/prompt-line-mentions-and-commands-custom-render',
+    spec: 'prompt-line-mentions-and-commands-custom-render-react.spec.ts',
+  },
+  'react-prompt-line-typeahead': {
+    example: 'react/prompt-line-typeahead',
+    spec: 'prompt-line-typeahead.spec.ts',
+  },
+  'react-prompt-line-typeahead-custom': {
+    example: 'react/prompt-line-typeahead-custom',
+    spec: 'prompt-line-typeahead-custom-react.spec.ts',
+  },
   'react-tests-vitest-happydom': {
     example: 'react/tests-vitest-happydom',
     spec: 'tests-vitest-happydom.spec.ts',
@@ -101,6 +133,38 @@ export const targets = {
   'web-components-mentions-and-commands': {
     example: 'web-components/prompt-line-mentions-and-commands',
     spec: 'mentions-and-commands.spec.ts',
+  },
+  'web-components-prompt-line-code-snippet': {
+    example: 'web-components/prompt-line-code-snippet',
+    spec: 'prompt-line-code-snippet.spec.ts',
+  },
+  'web-components-prompt-line-conversation-starters': {
+    example: 'web-components/prompt-line-conversation-starters',
+    spec: 'prompt-line-conversation-starters.spec.ts',
+  },
+  'web-components-prompt-line-custom-render': {
+    example: 'web-components/prompt-line-custom-render',
+    spec: 'prompt-line-custom-render.spec.ts',
+  },
+  'web-components-prompt-line-file-upload': {
+    example: 'web-components/prompt-line-file-upload',
+    spec: 'prompt-line-file-upload.spec.ts',
+  },
+  'web-components-prompt-line-history-mechanism': {
+    example: 'web-components/prompt-line-history-mechanism',
+    spec: 'prompt-line-history-mechanism.spec.ts',
+  },
+  'web-components-prompt-line-mentions-and-commands-custom-render': {
+    example: 'web-components/prompt-line-mentions-and-commands-custom-render',
+    spec: 'prompt-line-mentions-and-commands-custom-render-web-components.spec.ts',
+  },
+  'web-components-prompt-line-typeahead': {
+    example: 'web-components/prompt-line-typeahead',
+    spec: 'prompt-line-typeahead.spec.ts',
+  },
+  'web-components-prompt-line-typeahead-custom': {
+    example: 'web-components/prompt-line-typeahead-custom',
+    spec: 'prompt-line-typeahead-custom-web-components.spec.ts',
   },
   'web-components-theme-plex-override': {
     example: 'web-components/theme-plex-override',
