@@ -42,7 +42,10 @@ test('starters send directly and their toggle follows empty input', async ({
   await input.fill('draft text');
   const hide = page.getByRole('button', { name: 'Hide conversation starters' });
   await expect(hide).toBeDisabled();
-  await input.fill('');
+  // Clear with keystrokes: a programmatic fill can skip the editor's update.
+  await input.press('ControlOrMeta+a');
+  await input.press('Backspace');
+  await expect(input).toBeEmpty();
   await expect(hide).toBeEnabled();
   await input.click();
   await expect(page.getByRole('listbox')).toBeVisible();
