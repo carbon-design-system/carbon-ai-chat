@@ -368,6 +368,8 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
   // Track if we've announced the keyboard shortcut to avoid repeating it
   const [hasAnnouncedShortcut, setHasAnnouncedShortcut] = useState(false);
 
+  const [isStopPending, setIsStopPending] = useState(false);
+
   const promptLineRef = useRef<PromptLineElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -507,15 +509,26 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
    * Handle stop streaming button click.
    */
   const handleStopStreaming = async () => {
-    store.dispatch(actions.setStopStreamingButtonDisabled(true));
+    // Read before any await. A request that starts while the host's handlers
+    // run is not what the user clicked on, so this click must not cancel it.
+    const chatShowsButton =
+      store.getState().assistantInputState.stopStreamingButtonState.isVisible;
+    setIsStopPending(true);
+    if (chatShowsButton) {
+      store.dispatch(actions.setStopStreamingButtonDisabled(true));
+    }
     try {
       await serviceManager.fire({
         type: BusEventType.STOP_STREAMING,
       });
-      await serviceManager.messageService.cancelCurrentMessageRequest();
+      if (chatShowsButton) {
+        await serviceManager.messageService.cancelCurrentMessageRequest();
+      }
     } catch (error) {
       consoleError('Error stopping stream:', error);
       store.dispatch(actions.setStopStreamingButtonDisabled(false));
+    } finally {
+      setIsStopPending(false);
     }
   };
 
@@ -792,7 +805,9 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
         disabled={disableInput}
         disableSend={effectiveDisableSend || isListNavigated}
         isStopStreamingButtonVisible={isStopStreamingButtonVisible}
-        isStopStreamingButtonDisabled={isStopStreamingButtonDisabled}
+        isStopStreamingButtonDisabled={
+          isStopStreamingButtonDisabled || isStopPending
+        }
         buttonLabel={languagePack.input_buttonLabel}
         stopResponseLabel={languagePack.input_stopResponse}
         testId={PageObjectId.INPUT_SEND}
