@@ -32,7 +32,7 @@ const groupClass = `${itemClass}-group`;
  * One option in render order. `index` is its flat keyboard index;
  * `groupIndex` is its position in `groups`, or `undefined` when ungrouped.
  */
-interface FlatEntry {
+export interface FlatEntry {
   item: SuggestionItem;
   index: number;
   groupIndex: number | undefined;
@@ -232,7 +232,7 @@ class AutocompleteElement extends LitElement {
    */
   private _moveAnnouncePending: number | null = null;
 
-  /** Cached flat item list, rebuilt at the start of every render cycle. */
+  /** Cached flat item list, rebuilt in willUpdate when items/groups/i18n change. */
   private _flatList: FlatEntry[] = [];
 
   /** Whether the open announcement has already fired for this show. */
@@ -271,6 +271,17 @@ class AutocompleteElement extends LitElement {
     this._listboxEl?.addEventListener('mousedown', this._handleMousedown);
   }
 
+  willUpdate(changedProperties: Map<string, any>) {
+    super.willUpdate(changedProperties);
+    if (
+      changedProperties.has('items') ||
+      changedProperties.has('groups') ||
+      changedProperties.has('i18n')
+    ) {
+      this._flatList = this._buildFlatList();
+    }
+  }
+
   updated(changedProperties: Map<string, any>) {
     super.updated(changedProperties);
 
@@ -278,8 +289,14 @@ class AutocompleteElement extends LitElement {
       changedProperties.has('items') || changedProperties.has('groups');
 
     if (itemsChanged) {
+      if (this._moveAnnouncePending !== null) {
+        clearTimeout(this._moveAnnouncePending);
+        this._moveAnnouncePending = null;
+      }
       const totalItems = this._flatList.length;
       if (totalItems === 0) {
+        this._focusedIndex = -1;
+        this._setUserHasNavigated(false);
         this._announcer.announce(this.i18n.noSuggestions);
         this._openAnnounced = false;
         return;
@@ -295,8 +312,8 @@ class AutocompleteElement extends LitElement {
 
   /**
    * Build a flat list of all items in render order: ungrouped items first,
-   * then each group's items in group order. Stored in `_flatList` at the start
-   * of every render cycle; callers read `this._flatList` directly.
+   * then each group's items in group order. Called from willUpdate whenever
+   * items, groups, or i18n change; callers read `this._flatList` directly.
    */
   private _buildFlatList(): FlatEntry[] {
     const result: FlatEntry[] = [];
@@ -357,16 +374,16 @@ class AutocompleteElement extends LitElement {
       case 'ArrowDown':
         event.preventDefault();
         this._focusedIndex = this._navigateTo(list, this._focusedIndex, 1);
-        this._setUserHasNavigated(true);
-        this._scheduleMoveAnnouncement(this._focusedIndex, totalItems, list);
+        this._setUserHasNavigated(this._focusedIndex !== -1);
+        this._scheduleMoveAnnouncement(this._focusedIndex, totalItems);
         this._scrollActiveItemIntoView();
         break;
 
       case 'ArrowUp':
         event.preventDefault();
         this._focusedIndex = this._navigateTo(list, this._focusedIndex, -1);
-        this._setUserHasNavigated(true);
-        this._scheduleMoveAnnouncement(this._focusedIndex, totalItems, list);
+        this._setUserHasNavigated(this._focusedIndex !== -1);
+        this._scheduleMoveAnnouncement(this._focusedIndex, totalItems);
         this._scrollActiveItemIntoView();
         break;
 
@@ -383,8 +400,8 @@ class AutocompleteElement extends LitElement {
         if (target !== -1) {
           this._focusedIndex = target;
         }
-        this._setUserHasNavigated(true);
-        this._scheduleMoveAnnouncement(this._focusedIndex, totalItems, list);
+        this._setUserHasNavigated(this._focusedIndex !== -1);
+        this._scheduleMoveAnnouncement(this._focusedIndex, totalItems);
         this._scrollActiveItemIntoView();
         break;
       }
@@ -392,8 +409,8 @@ class AutocompleteElement extends LitElement {
       case 'Tab':
         event.preventDefault();
         this._focusedIndex = this._navigateTo(list, this._focusedIndex, 1);
-        this._setUserHasNavigated(true);
-        this._scheduleMoveAnnouncement(this._focusedIndex, totalItems, list);
+        this._setUserHasNavigated(this._focusedIndex !== -1);
+        this._scheduleMoveAnnouncement(this._focusedIndex, totalItems);
         this._scrollActiveItemIntoView();
         break;
 
@@ -416,17 +433,13 @@ class AutocompleteElement extends LitElement {
    * Schedule a move announcement, replacing any pending one so rapid arrow
    * holds only speak the final position.
    */
-  private _scheduleMoveAnnouncement(
-    index: number,
-    total: number,
-    list: FlatEntry[]
-  ): void {
+  private _scheduleMoveAnnouncement(index: number, total: number): void {
     if (this._moveAnnouncePending !== null) {
       clearTimeout(this._moveAnnouncePending);
     }
     this._moveAnnouncePending = window.setTimeout(() => {
       this._moveAnnouncePending = null;
-      const entry = list[index];
+      const entry = this._flatList[index];
       if (!entry) {
         return;
       }
@@ -543,11 +556,11 @@ class AutocompleteElement extends LitElement {
     this._selectItem(item);
   }
 
-  private _getActiveOptionId(list: FlatEntry[]): string | undefined {
+  private _getActiveOptionId(): string | undefined {
     if (!this._userHasNavigated) {
       return undefined;
     }
-    const entry = list[this._focusedIndex];
+    const entry = this._flatList[this._focusedIndex];
     return entry ? `${entry.item.id}--option` : undefined;
   }
 
@@ -664,7 +677,6 @@ class AutocompleteElement extends LitElement {
   }
 
   render() {
-    this._flatList = this._buildFlatList();
     const flatList = this._flatList;
 
     // Always render the live regions so the last announcement is not lost
@@ -685,7 +697,7 @@ class AutocompleteElement extends LitElement {
     }
 
     const hasGroups = this.groups.length > 0;
-    const activeOptionId = this._getActiveOptionId(flatList);
+    const activeOptionId = this._getActiveOptionId();
     const ungrouped = flatList.filter(
       (entry) => entry.groupIndex === undefined
     );

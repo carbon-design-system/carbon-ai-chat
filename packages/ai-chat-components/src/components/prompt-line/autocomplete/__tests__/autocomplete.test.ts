@@ -14,6 +14,7 @@ import type AutocompleteElement from '../src/autocomplete.js';
 import type {
   SuggestionItem,
   SuggestionItemGroup,
+  FlatEntry,
 } from '../src/autocomplete.js';
 import { defaultAutocompleteI18n } from '../src/autocomplete.js';
 import prefix from '../../../../globals/settings.js';
@@ -1515,6 +1516,8 @@ describe('cds-aichat-autocomplete', () => {
           new KeyboardEvent('keydown', { key, bubbles: true, composed: true })
         );
         await el.updateComplete;
+        // Wait for the 50ms announcement timer so any guard regression surfaces.
+        await new Promise((resolve) => window.setTimeout(resolve, 75));
 
         expect(listbox?.getAttribute('aria-activedescendant') ?? '').to.equal(
           ''
@@ -1522,6 +1525,7 @@ describe('cds-aichat-autocomplete', () => {
         expect(
           el.shadowRoot?.querySelector(`.${prefix}-autocomplete-item--active`)
         ).to.be.null;
+        expect(el.hasNavigated()).to.be.false;
       }
     });
 
@@ -1575,13 +1579,6 @@ describe('cds-aichat-autocomplete', () => {
   });
 
   describe('flat index mapping', () => {
-    type FlatEntry = {
-      item: SuggestionItem;
-      index: number;
-      groupIndex: number | undefined;
-      groupTitle: string | undefined;
-    };
-
     // Builds the mapping on an element that is never rendered.
     function buildFlatList(
       items: SuggestionItem[],
