@@ -291,3 +291,72 @@ for (const [surface, kinds] of PAGE_CSS_ROWS) {
     });
   }
 }
+
+const PROMPT_PART_RULE = (tag: string) =>
+  `${tag}::part(prompt-container) { border: 3px solid rgb(255, 0, 0); }`;
+
+/** Reads the painted border of the prompt line's input container. */
+function readPromptBorder(page: Page) {
+  return page
+    .locator('[part~="prompt-container"]')
+    .first()
+    .evaluate((node) => {
+      const style = getComputedStyle(node);
+      return { width: style.borderTopWidth, color: style.borderTopColor };
+    });
+}
+
+// The `prompt-container` part crosses two shadow boundaries on its way to the
+// page: the prompt-line shell's exportparts into the chat's render root, and
+// the custom element's exportparts out of its own shadow root. The React
+// `ChatCustomElement` is a plain div around a `cds-aichat-container`, so the
+// container is the host the page styles there.
+const PROMPT_PART_ROWS: [string, string][] = [
+  ['wc-container', 'cds-aichat-container'],
+  ['wc-custom', 'cds-aichat-custom-element'],
+  ['react-container', 'cds-aichat-container'],
+  ['react-custom', 'cds-aichat-container'],
+];
+
+for (const [surface, tag] of PROMPT_PART_ROWS) {
+  test(`page CSS styles the prompt container through ::part on ${surface}`, async ({
+    page,
+  }) => {
+    const { errors } = await openSurface(page, surface);
+    await expect(page.getByTestId(PageObjectId.INPUT)).toBeVisible({
+      timeout: 15000,
+    });
+    expect((await readPromptBorder(page)).width).toBe('0px');
+
+    await page.addStyleTag({ content: PROMPT_PART_RULE(tag) });
+
+    await expect
+      .poll(() => readPromptBorder(page))
+      .toEqual({ width: '3px', color: 'rgb(255, 0, 0)' });
+    expect(errors).toEqual([]);
+  });
+}
+
+test('layout.customProperties prompt-border styles the prompt container with the frame off', async ({
+  page,
+}) => {
+  const layout = encodeURIComponent(
+    JSON.stringify({
+      showFrame: false,
+      customProperties: { 'prompt-border': '2px solid rgb(0, 0, 255)' },
+    })
+  );
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto(
+    `/host-compatibility.html?surface=wc-custom&layout=${layout}`
+  );
+  await expect(page.getByTestId(PageObjectId.INPUT)).toBeVisible({
+    timeout: 20000,
+  });
+
+  await expect
+    .poll(() => readPromptBorder(page))
+    .toEqual({ width: '2px', color: 'rgb(0, 0, 255)' });
+  expect(errors).toEqual([]);
+});

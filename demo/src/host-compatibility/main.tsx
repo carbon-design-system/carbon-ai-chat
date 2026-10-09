@@ -24,6 +24,9 @@
  * - `react-custom`: a React `ChatCustomElement`, sized 400×600.
  * - `wc-container`: a `cds-aichat-container` element.
  * - `wc-custom`: a `cds-aichat-custom-element`, sized 400×600.
+ *
+ * `?layout=` takes a JSON `layout` config that replaces the default, for
+ * surfaces that need one.
  */
 
 import type { ChatInstance, HistoryItem, PublicConfig } from '@carbon/ai-chat';
@@ -55,8 +58,11 @@ window.hostCompatibility = harness;
 
 const time = new Date().toISOString();
 
+const layoutParam = new URLSearchParams(window.location.search).get('layout');
+
 const config: PublicConfig = {
   openChatByDefault: true,
+  ...(layoutParam ? { layout: JSON.parse(layoutParam) } : {}),
   messaging: {
     customSendMessage: () => undefined,
     // A welcome exchange in history shows the welcome writeable element.

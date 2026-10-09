@@ -291,8 +291,8 @@ describe('<cds-aichat-prompt-line-shell>', () => {
     const container = el.shadowRoot?.querySelector(
       '.cds-aichat--input-container'
     ) as HTMLElement;
-    const borderStyle = getComputedStyle(container).border;
-    // The exact computed value varies by browser but must contain "2px" and "red"
-    expect(borderStyle).to.include('2px');
+    const style = getComputedStyle(container);
+    expect(style.borderTopWidth).to.equal('2px');
+    expect(style.borderTopColor).to.equal('rgb(255, 0, 0)');
   });
 });
