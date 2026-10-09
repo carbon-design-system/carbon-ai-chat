@@ -126,6 +126,27 @@ the shared spec. Unit tests for local host logic may live in the example.
 
 An example needs a `build` script, a `vite.config.ts`, and an HTML entry. It needs no Playwright config, dependency, or script.
 
+### Generate a spec with Playwright agents
+
+Playwright's test agents can plan, write, and repair a spec. Install them once per checkout, then start a new agent session so they load:
+
+```bash
+npx playwright init-agents --loop=claude
+```
+
+1. **Plan with `playwright_test_planner`.** Give it the example directory, its `README.md`, and this guide. It explores the running example and writes a test plan: a mount scenario and the example's one concern, each with its start state, steps, and expected result. Check the plan against [What to test](#what-to-test) and [Determinism](#determinism) before generating.
+2. **Generate with `playwright_test_generator`.** It runs each planned scenario in a browser and writes the spec from the locators it confirmed. Point it at an existing spec in `tests/` so the output imports from `../helpers` rather than `@playwright/test`, then add the target as above.
+3. **Repair with `playwright_test_healer`.** When a test fails, the healer replays it, reads the failure snapshot, and fixes the locator or wait. It must not weaken an assertion to pass. When the example itself misbehaves, mark that test `test.fixme` with one line that records what happens, and file the bug.
+
+Agent output follows the same rules as a hand-written spec. Before committing:
+
+- Follow [Selectors](#selectors): no `.first()`, `.last()`, or `.nth()` to hide an ambiguous match, and no chat-internal CSS classes.
+- The chat's live-region announcer repeats reply text. Scope reply assertions under `page.getByTestId(PageObjectId.MAIN_PANEL)`, or match a leaf with `{ exact: true }`. Host-rendered content is slotted, not inside `MAIN_PANEL`; select it by the example's own class.
+- No `waitForTimeout`, fixed sleeps, dates, or random values.
+- Take fixture text from each flavor's own `src/`; React and Web Components mocks can differ. Read a per-flavor value from the `target` fixture rather than forking the spec.
+- Delete the agents' `seed.spec.ts` and any scratch specs.
+- Check the [coverage gate](#coverage-gate).
+
 ## Config conventions
 
 Edit [playwright.config.ts](../shared/playwright/playwright.config.ts) for every target at once. What it sets, and why:
@@ -264,6 +285,28 @@ npm run test:e2e
 
 When and how the suite runs in CI at scale is not decided here. See [issue #2127](https://github.com/carbon-design-system/carbon-ai-chat/issues/2127).
 
+## Coverage
+
+`npm run test:e2e:coverage` runs the suite with Chromium's V8 coverage on, then reports it with [monocart-coverage-reports](https://github.com/cenfun/monocart-coverage-reports). It honors `CAIC_E2E_TARGETS`, so one example can be measured alone:
+
+```bash
+CAIC_E2E_TARGETS=react-feedback,web-components-feedback npm run test:e2e:coverage
+```
+
+- It measures each example's own `src/`. The launcher builds with sourcemaps while coverage is on, and the fixture maps the bundle back to the example's sources; the chat packages and third-party code are left out.
+- `coverage/examples-e2e/index.html` lists every measured example, with a link to its own report. `lcov.info` beside it merges them all.
+- Sources the suite never loads count as zero.
+- A covered line is one a test ran, whether or not an assertion checked its result.
+
+### Coverage gate
+
+A new or changed spec must run at least **80% of its example's gated `src/` lines**. The command exits non-zero when a measured example falls below. [coverage-options.mjs](../shared/playwright/coverage-options.mjs) holds two lists:
+
+- `OFF_CONCERN_BACKENDS` — examples whose `customSendMessage.ts` copies the baseline mock back end without being part of their concern. That back end is proven once, in `basic-custom-element-fullscreen`, so the copies are left out of the gate. A back end the concern runs through stays in.
+- `DEFERRED_EXAMPLES` — examples whose concern depends on random content, dates, or timing, so their suites prove only a mount. They are reported, not gated.
+
+Add to either list only with the reason in the PR description. Do not add assertions outside the example's concern to raise the number; open the example's report and cover the branches its concern takes.
+
 ## Debugging
 
 Debug one target with `CAIC_E2E_TARGETS=<name> npm run test:e2e:goldens -- --debug` to inspect actions and locators. For an intermittent failure, rerun one test with `CAIC_E2E_TARGETS=<name> npm run test:e2e:goldens -- --grep '<test name>' --trace on`. Inspect the trace's actions, DOM snapshots, and requests. Keep full-run tracing off; when CI is added, capture traces on the first retry rather than every test.
@@ -277,6 +320,7 @@ Failures, screenshots, and videos land in `shared/playwright/test-results/`, whi
 - [ ] `npm run build --workspace=<example>` exits 0.
 - [ ] The suite covers the example's one concern plus the baseline above.
 - [ ] The example has no Playwright config, dependency, or script, and its target assigns no port.
+- [ ] `CAIC_E2E_TARGETS=<targets> npm run test:e2e:coverage` passes the [coverage gate](#coverage-gate).
 - [ ] Every spec opens with a purpose comment.
 
 ## React vs Web Components

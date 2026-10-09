@@ -8,6 +8,7 @@
 /** Tests theme plex override mounting and its host-visible behavior. */
 
 import { PageObjectId } from '@carbon/ai-chat/server';
+import type { Locator } from '@playwright/test';
 import { expect, openExample, test, waitForChatReady } from '../helpers';
 
 test.beforeEach(async ({ page }) => {
@@ -33,4 +34,46 @@ test('loads the bundled replacement font for chat input', async ({ page }) => {
       })
     )
     .toBe(true);
+});
+
+// Resolves once the element's computed family is the replacement font.
+function usesReplacementFont(locator: Locator) {
+  return expect
+    .poll(() =>
+      locator.evaluate((element) =>
+        getComputedStyle(element).fontFamily.includes('Permanent Marker')
+      )
+    )
+    .toBe(true);
+}
+
+test('renders reply text and code in the replacement font', async ({
+  page,
+}) => {
+  await page.getByTestId(PageObjectId.INPUT).fill('text');
+  await page.getByRole('button', { name: /send/i }).click();
+  const panel = page.getByTestId(PageObjectId.MAIN_PANEL);
+  // Body text uses the `sans` family; the inline code span uses `mono`.
+  await usesReplacementFont(
+    panel.getByText('Lorem ipsum odor amet, consectetuer adipiscing elit.', {
+      exact: false,
+    })
+  );
+  await usesReplacementFont(
+    panel.getByText('Inline Code Venenatis', { exact: true })
+  );
+});
+
+test('renders the custom response in the replacement font', async ({
+  page,
+}) => {
+  await page.getByTestId(PageObjectId.INPUT).fill('user_defined');
+  await page.getByRole('button', { name: /send/i }).click();
+  // The custom response is host-rendered and slotted, so select it by the
+  // example's own class; the announcer's off-screen copy is excluded.
+  const card = page.locator('.external').filter({ visible: true });
+  await expect(card).toContainText(
+    'This is text from the server placed into a user_defined response.'
+  );
+  await usesReplacementFont(card);
 });
