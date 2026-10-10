@@ -392,8 +392,11 @@ export class AutocompleteController {
       this._detachEditorKeyHandler();
       return;
     }
+    // Do not bind key forwarding when items are empty: there is nothing to
+    // navigate, and keeping the handler bound would trap Tab, Home, End,
+    // arrows, and Escape while the list is mounted but shows no matches.
     const editorDom =
-      this._trigger && this._listElement
+      this._trigger && this._listElement && this._items.length > 0
         ? ((this._promptLine?.getEditor()?.view.dom as HTMLElement) ?? null)
         : null;
     if (editorDom === this._editorDomBound) {
@@ -564,6 +567,11 @@ export class AutocompleteController {
   }
 
   private _emit(): void {
+    // Re-evaluate key-forwarding on every items change: the empty-items guard
+    // in _refreshEditorKeyHandler must detach the handler when items go to
+    // zero (the list element stays mounted for the announcement, so
+    // setListElement won't re-trigger the refresh).
+    this._refreshEditorKeyHandler();
     this._onChange({
       trigger: this._trigger,
       items: this._items,

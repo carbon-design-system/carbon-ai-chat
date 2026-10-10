@@ -203,7 +203,7 @@ class AutocompleteControllerElement extends LitElement {
 
   override render() {
     const { trigger, items, renderCustomList, disableDirectSend } = this._state;
-    if (!trigger || items.length === 0) {
+    if (!trigger) {
       // List is gone — reset navigation state so the send button is unblocked.
       // This covers cases where the list is removed without an autocomplete
       // dismiss/select/send event (e.g. the user deletes the trigger character).
@@ -225,7 +225,29 @@ class AutocompleteControllerElement extends LitElement {
       }
       return nothing;
     }
+    if (items.length === 0 && this._listNavigated) {
+      this._listNavigated = false;
+      this.dispatchEvent(
+        new CustomEvent<AutocompleteNavigatedEventDetail>(
+          'cds-aichat-list-navigated',
+          { detail: { navigated: false }, bubbles: true, composed: true }
+        )
+      );
+      this.dispatchEvent(
+        new CustomEvent<AutocompleteNavigatedEventDetail>(
+          'cds-aichat-autocomplete-navigated',
+          { detail: { navigated: false }, bubbles: true, composed: true }
+        )
+      );
+    }
     if (renderCustomList) {
+      // When items are empty the built-in autocomplete element is kept mounted
+      // so it can announce the zero-results state. Consumer-supplied renderers
+      // are not mounted in that case: they own their own empty-state handling
+      // and were not rendered before this PR.
+      if (items.length === 0) {
+        return nothing;
+      }
       const result = renderCustomList({
         items,
         query: trigger.query,
