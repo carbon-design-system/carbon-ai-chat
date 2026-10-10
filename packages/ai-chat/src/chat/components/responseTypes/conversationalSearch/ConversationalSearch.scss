@@ -1,0 +1,49 @@
+/* 
+ *  Copyright IBM Corp. 2025, 2026
+ *  
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use '@carbon/layout';
+@use '@carbon/styles/scss/motion';
+
+@keyframes cds-aichat-fade-in {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+.cds-aichat--conversational-search-citations {
+  animation: motion.$duration-slow-01 motion.motion(entrance, expressive)
+    cds-aichat-fade-in both;
+  max-inline-size: 400px;
+  padding-block-start: 16px;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--conversational-search-citations {
+    animation: none;
+  }
+}
+
+.cds-aichat--conversational-search__skeleton {
+  display: block;
+  inline-size: 100%;
+  margin-block-start: layout.$spacing-04;
+  max-inline-size: 400px;
+}
+
+.cds-aichat--narrow-width .cds-aichat--conversational-search__answer {
+  margin-inline-start: layout.$spacing-05;
+}
+
+.cds-aichat--narrow-width
+  .cds-aichat--received--conversational-search
+  .cds-aichat--received--feedback {
+  margin-inline-start: layout.$spacing-05;
+}
