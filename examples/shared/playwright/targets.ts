@@ -30,6 +30,10 @@ export const targets = {
     example: 'react/basic-float',
     spec: 'basic-float.spec.ts',
   },
+  'react-chain-of-thought': {
+    example: 'react/chain-of-thought',
+    spec: 'chain-of-thought.spec.ts',
+  },
   'react-custom-element-as-float': {
     example: 'react/custom-element-as-float',
     spec: 'custom-element-as-float.spec.ts',
@@ -46,13 +50,33 @@ export const targets = {
     example: 'react/custom-header',
     spec: 'custom-header.spec.ts',
   },
+  'react-feedback': {
+    example: 'react/feedback',
+    spec: 'feedback.spec.ts',
+  },
   'react-fullscreen': {
     example: 'react/basic-custom-element-fullscreen',
     spec: 'fullscreen.spec.ts',
   },
+  'react-markdown-override': {
+    example: 'react/markdown-override',
+    spec: 'markdown-override.spec.ts',
+  },
+  'react-markdown-plugin': {
+    example: 'react/markdown-plugin',
+    spec: 'markdown-plugin.spec.ts',
+  },
   'react-mentions-and-commands': {
     example: 'react/prompt-line-mentions-and-commands',
     spec: 'mentions-and-commands.spec.ts',
+  },
+  'react-messages-custom-footer': {
+    example: 'react/messages-custom-footer',
+    spec: 'messages-custom-footer.spec.ts',
+  },
+  'react-messages-custom-request-footer': {
+    example: 'react/messages-custom-request-footer',
+    spec: 'messages-custom-request-footer.spec.ts',
   },
   'react-prompt-line-code-snippet': {
     example: 'react/prompt-line-code-snippet',
@@ -86,6 +110,18 @@ export const targets = {
     example: 'react/prompt-line-typeahead-custom',
     spec: 'prompt-line-typeahead-custom-react.spec.ts',
   },
+  'react-reasoning-steps': {
+    example: 'react/reasoning-steps',
+    spec: 'reasoning-steps.spec.ts',
+  },
+  'react-reasoning-steps-controlled': {
+    example: 'react/reasoning-steps-controlled',
+    spec: 'reasoning-steps-controlled.spec.ts',
+  },
+  'react-reasoning-with-streaming-generic-items': {
+    example: 'react/reasoning-with-streaming-generic-items',
+    spec: 'reasoning-with-streaming-generic-items.spec.ts',
+  },
   'react-tests-vitest-happydom': {
     example: 'react/tests-vitest-happydom',
     spec: 'tests-vitest-happydom.spec.ts',
@@ -94,9 +130,33 @@ export const targets = {
     example: 'react/theme-plex-override',
     spec: 'theme-plex-override.spec.ts',
   },
+  'react-upsert-message-reasoning-steps': {
+    example: 'react/upsert-message-reasoning-steps',
+    spec: 'upsert-message-reasoning-steps.spec.ts',
+  },
+  'react-upsert-message-reasoning-steps-controlled': {
+    example: 'react/upsert-message-reasoning-steps-controlled',
+    spec: 'upsert-message-reasoning-steps-controlled.spec.ts',
+  },
+  'react-upsert-message-reasoning-with-streaming-generic-items': {
+    example: 'react/upsert-message-reasoning-with-streaming-generic-items',
+    spec: 'upsert-message-reasoning-with-streaming-generic-items.spec.ts',
+  },
+  'react-upsert-message-user-defined': {
+    example: 'react/upsert-message-user-defined',
+    spec: 'upsert-message-user-defined.spec.ts',
+  },
+  'react-user-defined-responses': {
+    example: 'react/user-defined-responses',
+    spec: 'user-defined-responses.spec.ts',
+  },
   'react-watch-state': {
     example: 'react/watch-state',
     spec: 'watch-state.spec.ts',
+  },
+  'react-watch-state-redux': {
+    example: 'react/watch-state-redux',
+    spec: 'watch-state-redux.spec.ts',
   },
   'web-components-basic-custom-element-sidebar': {
     example: 'web-components/basic-custom-element-sidebar',
@@ -109,6 +169,10 @@ export const targets = {
   'web-components-basic-float': {
     example: 'web-components/basic-float',
     spec: 'basic-float.spec.ts',
+  },
+  'web-components-chain-of-thought': {
+    example: 'web-components/chain-of-thought',
+    spec: 'chain-of-thought.spec.ts',
   },
   'web-components-custom-element-as-float': {
     example: 'web-components/custom-element-as-float',
@@ -126,13 +190,33 @@ export const targets = {
     example: 'web-components/custom-header',
     spec: 'custom-header.spec.ts',
   },
+  'web-components-feedback': {
+    example: 'web-components/feedback',
+    spec: 'feedback.spec.ts',
+  },
   'web-components-fullscreen': {
     example: 'web-components/basic-custom-element-fullscreen',
     spec: 'fullscreen.spec.ts',
   },
+  'web-components-markdown-override': {
+    example: 'web-components/markdown-override',
+    spec: 'markdown-override.spec.ts',
+  },
+  'web-components-markdown-plugin': {
+    example: 'web-components/markdown-plugin',
+    spec: 'markdown-plugin.spec.ts',
+  },
   'web-components-mentions-and-commands': {
     example: 'web-components/prompt-line-mentions-and-commands',
     spec: 'mentions-and-commands.spec.ts',
+  },
+  'web-components-messages-custom-footer': {
+    example: 'web-components/messages-custom-footer',
+    spec: 'messages-custom-footer.spec.ts',
+  },
+  'web-components-messages-custom-request-footer': {
+    example: 'web-components/messages-custom-request-footer',
+    spec: 'messages-custom-request-footer.spec.ts',
   },
   'web-components-prompt-line-code-snippet': {
     example: 'web-components/prompt-line-code-snippet',
@@ -166,9 +250,42 @@ export const targets = {
     example: 'web-components/prompt-line-typeahead-custom',
     spec: 'prompt-line-typeahead-custom-web-components.spec.ts',
   },
+  'web-components-reasoning-steps': {
+    example: 'web-components/reasoning-steps',
+    spec: 'reasoning-steps.spec.ts',
+  },
+  'web-components-reasoning-steps-controlled': {
+    example: 'web-components/reasoning-steps-controlled',
+    spec: 'reasoning-steps-controlled.spec.ts',
+  },
+  'web-components-reasoning-with-streaming-generic-items': {
+    example: 'web-components/reasoning-with-streaming-generic-items',
+    spec: 'reasoning-with-streaming-generic-items.spec.ts',
+  },
   'web-components-theme-plex-override': {
     example: 'web-components/theme-plex-override',
     spec: 'theme-plex-override.spec.ts',
+  },
+  'web-components-upsert-message-reasoning-steps': {
+    example: 'web-components/upsert-message-reasoning-steps',
+    spec: 'upsert-message-reasoning-steps.spec.ts',
+  },
+  'web-components-upsert-message-reasoning-steps-controlled': {
+    example: 'web-components/upsert-message-reasoning-steps-controlled',
+    spec: 'upsert-message-reasoning-steps-controlled.spec.ts',
+  },
+  'web-components-upsert-message-reasoning-with-streaming-generic-items': {
+    example:
+      'web-components/upsert-message-reasoning-with-streaming-generic-items',
+    spec: 'upsert-message-reasoning-with-streaming-generic-items.spec.ts',
+  },
+  'web-components-upsert-message-user-defined': {
+    example: 'web-components/upsert-message-user-defined',
+    spec: 'upsert-message-user-defined.spec.ts',
+  },
+  'web-components-user-defined-responses': {
+    example: 'web-components/user-defined-responses',
+    spec: 'user-defined-responses.spec.ts',
   },
   'web-components-watch-state': {
     example: 'web-components/watch-state',
