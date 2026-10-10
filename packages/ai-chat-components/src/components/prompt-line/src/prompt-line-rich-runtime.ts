@@ -187,9 +187,14 @@ class RichController
     return this._editor;
   }
 
-  focus(keyboardFocus: boolean): void {
+  focus(keyboardFocus: boolean, synchronous = false): void {
     this._setNextFocusOrigin(keyboardFocus);
-    this._editor?.commands.focus();
+    if (synchronous) {
+      // Reparent restoration must not queue focus that could steal it later.
+      this._editor?.view.focus();
+    } else {
+      this._editor?.commands.focus();
+    }
   }
 
   blur(): void {
