@@ -17,7 +17,19 @@ import { defineConfig, devices } from '@playwright/test';
 import { targets, urlVariable, type TargetId } from './targets';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const ids = Object.keys(targets) as TargetId[];
+const allIds = Object.keys(targets) as TargetId[];
+
+// `CAIC_E2E_TARGETS` (comma-separated target names) limits a run to those
+// targets. Playwright starts every `webServer` entry whatever `--project`
+// selects, so filtering here is what keeps one target from building them all.
+const selected = process.env.CAIC_E2E_TARGETS?.split(',')
+  .map((id) => id.trim())
+  .filter(Boolean);
+const unknown = selected?.filter((id) => !(id in targets)) ?? [];
+if (unknown.length) {
+  throw new Error(`Unknown CAIC_E2E_TARGETS: ${unknown.join(', ')}.`);
+}
+const ids = selected?.length ? (selected as TargetId[]) : allIds;
 
 export default defineConfig<{ target: TargetId }>({
   testDir: './tests',
