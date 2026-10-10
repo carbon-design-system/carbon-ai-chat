@@ -30,7 +30,12 @@ if (!urlVariable) {
 const vitePath = createRequire(`${process.cwd()}/`).resolve('vite');
 const { build, resolveConfig } = await import(pathToFileURL(vitePath).href);
 
-await build({ root: process.cwd(), logLevel: 'warn' });
+// Coverage maps the built bundle back to the example's sources.
+await build({
+  root: process.cwd(),
+  logLevel: 'warn',
+  ...(process.env.CAIC_E2E_COVERAGE && { build: { sourcemap: true } }),
+});
 const { build: buildConfig, root } = await resolveConfig({}, 'build');
 const outDir = path.resolve(root, buildConfig.outDir);
 

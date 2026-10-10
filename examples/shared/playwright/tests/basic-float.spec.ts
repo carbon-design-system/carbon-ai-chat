@@ -48,3 +48,24 @@ test('settles one streamed mock reply and clears the prompt', async ({
   await expect(page.getByRole('button', { name: /stop/i })).toHaveCount(0);
   await expect(input).toHaveText('');
 });
+
+test('stops a streamed reply and marks it stopped', async ({ page }) => {
+  await page.getByTestId(PageObjectId.INPUT).fill('stream request');
+  await page.getByRole('button', { name: /send/i }).click();
+  const panel = page.getByTestId(PageObjectId.MAIN_PANEL);
+  await expect(
+    panel.getByText('Lorem ipsum odor amet', { exact: false })
+  ).toBeVisible();
+  await page
+    .getByRole('button', { name: 'Stop response', exact: true })
+    .click();
+  // The back end answers the abort with a `stream_stopped` final item.
+  await expect(
+    panel.getByText('Response stopped', { exact: true })
+  ).toBeVisible();
+  await expect(
+    panel.getByText('Vel congue semper, rhoncus tempus nisl nam.', {
+      exact: false,
+    })
+  ).toHaveCount(0);
+});
