@@ -27,6 +27,12 @@ shared/playwright/
 | `react-custom-header` | `react/custom-header` | [Custom header](../shared/playwright/tests/custom-header.spec.ts) |
 | `react-feedback` | `react/feedback` | [Feedback](../shared/playwright/tests/feedback.spec.ts) |
 | `react-fullscreen` | `react/basic-custom-element-fullscreen` | [Fullscreen](../shared/playwright/tests/fullscreen.spec.ts) |
+| `react-history-file-attachments` | `react/history-file-attachments` | [History file attachments](../shared/playwright/tests/history-file-attachments.spec.ts) |
+| `react-history-float` | `react/history-float` | [History float](../shared/playwright/tests/history-float.spec.ts) |
+| `react-history-fullscreen` | `react/history-fullscreen` | [History fullscreen](../shared/playwright/tests/history-fullscreen.spec.ts) |
+| `react-history-host-driven` | `react/history-host-driven` | [History host driven](../shared/playwright/tests/history-host-driven.spec.ts) |
+| `react-history-user-defined-responses` | `react/history-user-defined-responses` | [History user defined responses](../shared/playwright/tests/history-user-defined-responses.spec.ts) |
+| `react-human-agent` | `react/human-agent` | [Human agent](../shared/playwright/tests/human-agent.spec.ts) |
 | `react-markdown-override` | `react/markdown-override` | [Markdown override](../shared/playwright/tests/markdown-override.spec.ts) |
 | `react-markdown-plugin` | `react/markdown-plugin` | [Markdown plugin](../shared/playwright/tests/markdown-plugin.spec.ts) |
 | `react-mentions-and-commands` | `react/prompt-line-mentions-and-commands` | [Mentions and commands](../shared/playwright/tests/mentions-and-commands.spec.ts) |
@@ -52,6 +58,9 @@ shared/playwright/
 | `react-user-defined-responses` | `react/user-defined-responses` | [User defined responses](../shared/playwright/tests/user-defined-responses.spec.ts) |
 | `react-watch-state` | `react/watch-state` | [Watch state](../shared/playwright/tests/watch-state.spec.ts) |
 | `react-watch-state-redux` | `react/watch-state-redux` | [Watch state redux](../shared/playwright/tests/watch-state-redux.spec.ts) |
+| `react-workspace` | `react/workspace` | [Workspace](../shared/playwright/tests/workspace.spec.ts) |
+| `react-workspace-sidebar` | `react/workspace-sidebar` | [Workspace sidebar](../shared/playwright/tests/workspace-sidebar.spec.ts) |
+| `react-workspace-table-markdown-override` | `react/workspace-table-markdown-override` | [Workspace table markdown override](../shared/playwright/tests/workspace-table-markdown-override.spec.ts) |
 | `web-components-basic-custom-element-sidebar` | `web-components/basic-custom-element-sidebar` | [Basic custom element sidebar](../shared/playwright/tests/basic-custom-element-sidebar.spec.ts) |
 | `web-components-basic-custom-element-sidebar-narrow` | `web-components/basic-custom-element-sidebar-narrow` | [Basic custom element sidebar narrow](../shared/playwright/tests/basic-custom-element-sidebar-narrow.spec.ts) |
 | `web-components-basic-float` | `web-components/basic-float` | [Basic float](../shared/playwright/tests/basic-float.spec.ts) |
@@ -62,6 +71,12 @@ shared/playwright/
 | `web-components-custom-header` | `web-components/custom-header` | [Custom header](../shared/playwright/tests/custom-header.spec.ts) |
 | `web-components-feedback` | `web-components/feedback` | [Feedback](../shared/playwright/tests/feedback.spec.ts) |
 | `web-components-fullscreen` | `web-components/basic-custom-element-fullscreen` | [Fullscreen](../shared/playwright/tests/fullscreen.spec.ts) |
+| `web-components-history-file-attachments` | `web-components/history-file-attachments` | [History file attachments](../shared/playwright/tests/history-file-attachments.spec.ts) |
+| `web-components-history-float` | `web-components/history-float` | [History float](../shared/playwright/tests/history-float.spec.ts) |
+| `web-components-history-fullscreen` | `web-components/history-fullscreen` | [History fullscreen](../shared/playwright/tests/history-fullscreen.spec.ts) |
+| `web-components-history-host-driven` | `web-components/history-host-driven` | [History host driven](../shared/playwright/tests/history-host-driven.spec.ts) |
+| `web-components-history-user-defined-responses` | `web-components/history-user-defined-responses` | [History user defined responses](../shared/playwright/tests/history-user-defined-responses.spec.ts) |
+| `web-components-human-agent` | `web-components/human-agent` | [Human agent](../shared/playwright/tests/human-agent.spec.ts) |
 | `web-components-markdown-override` | `web-components/markdown-override` | [Markdown override](../shared/playwright/tests/markdown-override.spec.ts) |
 | `web-components-markdown-plugin` | `web-components/markdown-plugin` | [Markdown plugin](../shared/playwright/tests/markdown-plugin.spec.ts) |
 | `web-components-mentions-and-commands` | `web-components/prompt-line-mentions-and-commands` | [Mentions and commands](../shared/playwright/tests/mentions-and-commands.spec.ts) |
@@ -81,10 +96,12 @@ shared/playwright/
 | `web-components-theme-plex-override` | `web-components/theme-plex-override` | [Theme plex override](../shared/playwright/tests/theme-plex-override.spec.ts) |
 | `web-components-upsert-message-reasoning-steps` | `web-components/upsert-message-reasoning-steps` | [Upsert message reasoning steps](../shared/playwright/tests/upsert-message-reasoning-steps.spec.ts) |
 | `web-components-upsert-message-reasoning-steps-controlled` | `web-components/upsert-message-reasoning-steps-controlled` | [Upsert message reasoning steps controlled](../shared/playwright/tests/upsert-message-reasoning-steps-controlled.spec.ts) |
-| `web-components-upsert-message-reasoning-with-streaming-generic-items` | `web-components/upsert-message-reasoning-with-streaming-generic-items` | [Upsert message reasoning with streaming generic items](../shared/playwright/tests/upsert-message-reasoning-with-streaming-generic-items.spec.ts) |
 | `web-components-upsert-message-user-defined` | `web-components/upsert-message-user-defined` | [Upsert message user defined](../shared/playwright/tests/upsert-message-user-defined.spec.ts) |
 | `web-components-user-defined-responses` | `web-components/user-defined-responses` | [User defined responses](../shared/playwright/tests/user-defined-responses.spec.ts) |
 | `web-components-watch-state` | `web-components/watch-state` | [Watch state](../shared/playwright/tests/watch-state.spec.ts) |
+| `web-components-workspace` | `web-components/workspace` | [Workspace](../shared/playwright/tests/workspace.spec.ts) |
+| `web-components-workspace-sidebar` | `web-components/workspace-sidebar` | [Workspace sidebar](../shared/playwright/tests/workspace-sidebar.spec.ts) |
+| `web-components-workspace-table-markdown-override` | `web-components/workspace-table-markdown-override` | [Workspace table markdown override](../shared/playwright/tests/workspace-table-markdown-override.spec.ts) |
 
 ### Share definitions across hosts
 
