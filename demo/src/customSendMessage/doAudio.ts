@@ -8,44 +8,13 @@
  */
 
 import { ChatInstance, MessageResponseTypes } from '@carbon/ai-chat';
+import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
-function doAudio(instance: ChatInstance) {
-  instance.messaging.addMessage({
-    output: {
-      generic: [
-        {
-          response_type: MessageResponseTypes.TEXT,
-          text: 'You can display audio for your own .mp3 files, or you can embed content from [SoundCloud](https://soundcloud.com/). For raw audio files, you can also provide a text transcript for accessibility.',
-        },
-        {
-          response_type: MessageResponseTypes.AUDIO,
-          title: 'An audio clip from SoundCloud',
-          description: 'This description and the title above are optional.',
-          source: 'https://soundcloud.com/kelab-gklm/baby-shark-do-do-do',
-          alt_text: 'Baby Shark audio clip from SoundCloud',
-        },
-        {
-          response_type: MessageResponseTypes.AUDIO,
-          title: 'Your own mp3 file with transcript',
-          description: 'This example includes a transcript for accessibility.',
-          source:
-            'https://web-chat.assistant.test.watson.cloud.ibm.com/assets/Teapot_Hasselhoff.mp3',
-          alt_text: 'Audio recording about teapot and David Hasselhoff',
-          file_accessibility: {
-            transcript: {
-              text: 'My text input is, you know, I am a teapot and then my image input is a picture of David Hasselhoff.',
-              language: 'en',
-              label: 'English Transcript',
-            },
-          },
-        },
-      ],
-    },
-  });
-}
+import { sendResponse } from './sendResponse';
 
 function doAudioSoundCloud(instance: ChatInstance) {
-  instance.messaging.addMessage({
+  return sendResponse(instance, {
+    id: uuid(),
     output: {
       generic: [
         {
@@ -65,7 +34,8 @@ function doAudioSoundCloud(instance: ChatInstance) {
 }
 
 function doAudioMp3(instance: ChatInstance) {
-  instance.messaging.addMessage({
+  return sendResponse(instance, {
+    id: uuid(),
     output: {
       generic: [
         {
@@ -92,4 +62,4 @@ function doAudioMp3(instance: ChatInstance) {
   });
 }
 
-export { doAudio, doAudioSoundCloud, doAudioMp3 };
+export { doAudioSoundCloud, doAudioMp3 };

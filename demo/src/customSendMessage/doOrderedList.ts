@@ -13,7 +13,7 @@ import { ORDERED_LIST } from './constants';
 import { doText } from './doText';
 
 function doOrderedList(instance: ChatInstance) {
-  doText(instance, ORDERED_LIST);
+  return doText(instance, ORDERED_LIST);
 }
 
 export { doOrderedList };

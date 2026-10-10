@@ -11,12 +11,10 @@ import isEqual from 'lodash-es/isEqual.js';
 
 import actions from '../store/actions';
 import {
+  applyChunk,
   chunkHasDisplayableContent,
   FinalResponseChunk,
-  mergePartialResponseOptions,
-  resetStopStreamingButton,
   resolveChunkContext,
-  shouldShowStopStreaming,
 } from '../utils/streamingUtils';
 import { consoleError, consoleWarn } from '../utils/miscUtils';
 import {
@@ -29,7 +27,10 @@ import {
   isTyping,
 } from '../utils/messageUtils';
 import { sleep } from '../utils/lang/promiseUtils';
-import { AddMessageOptions } from '../../types/config/MessagingConfig';
+import {
+  AddMessageOptions,
+  MessageState,
+} from '../../types/config/MessagingConfig';
 import {
   GenericItem,
   ItemStreamingMetadata,
@@ -170,7 +171,7 @@ class ChunkProcessingService {
           (isCompleteItem || isFinalResponse) &&
           stopStreamingState.isVisible
         ) {
-          resetStopStreamingButton(this.serviceManager.store);
+          this.serviceManager.messageService.hideStopStreamingButtonIfNoUpsertStreaming();
         }
       };
 
@@ -179,7 +180,16 @@ class ChunkProcessingService {
         return;
       }
 
-      this.maybeShowStopStreaming(chunk, isPartialItem, stopStreamingState);
+      if (isPartialItem) {
+        this.serviceManager.messageService.updateStreamingCancellation(
+          messageID ??
+            this.serviceManager.messageService.inboundStreaming
+              .streamingMessageID ??
+            '',
+          (chunk as PartialItemChunk).partial_item?.streaming_metadata
+            ?.cancellable
+        );
+      }
 
       if (messageID) {
         store.dispatch(actions.setActiveResponseId(messageID));
@@ -196,7 +206,7 @@ class ChunkProcessingService {
         await this.handleFinalResponseChunk(chunk, messageID, options);
       }
 
-      this.resetStopStreamingIfNeeded(isCompleteItem, chunk);
+      this.resetStopStreamingIfNeeded(isCompleteItem, chunk, messageID);
 
       this.advanceChunkQueue(chunkPromise);
     } catch (error) {
@@ -226,49 +236,34 @@ class ChunkProcessingService {
     return false;
   }
 
-  private maybeShowStopStreaming(
-    chunk: StreamChunk,
-    isPartialItem: boolean,
-    stopStreamingState: { isVisible: boolean }
-  ) {
-    const shouldShow = isPartialItem
-      ? shouldShowStopStreaming(
-          (chunk as PartialItemChunk).partial_item?.streaming_metadata,
-          stopStreamingState.isVisible
-        )
-      : false;
-
-    if (shouldShow) {
-      this.serviceManager.store.dispatch(
-        actions.setStopStreamingButtonVisible(true)
-      );
-    }
-  }
-
   private async handleStreamingChunk(
     chunk: PartialOrCompleteItemChunk,
     messageID: string | undefined,
     item: DeepPartial<GenericItem> | undefined,
     isCompleteItem: boolean
   ) {
-    const { store } = this.serviceManager;
-    if (messageID && !store.getState().allMessagesByID[messageID]) {
-      store.dispatch(actions.streamingStart(messageID));
-    }
-
     if (isCompleteItem) {
       this.warnIfMissingCompleteItemStreamingId(messageID, item);
     }
 
-    if (messageID && item) {
-      store.dispatch(
-        actions.streamingAddChunk(messageID, item, isCompleteItem)
-      );
+    if (!messageID) {
+      return;
     }
 
-    mergePartialResponseOptions(store, messageID, chunk);
+    const initialRestartCount = this.serviceManager.restartCount;
+    const initialGeneration = this.restartGeneration;
+    await this.serviceManager.messageUpsertCoordinator.upsert(
+      messageID,
+      MessageState.STREAMING,
+      (prev) => applyChunk(prev, chunk, messageID),
+      { origin: 'chunk', chunk: { item, isComplete: isCompleteItem } }
+    );
 
-    if (messageID && item) {
+    if (
+      item &&
+      initialRestartCount === this.serviceManager.restartCount &&
+      initialGeneration === this.restartGeneration
+    ) {
       await this.serviceManager.slotEventService.handleUserDefinedResponseItemsChunk(
         messageID,
         chunk,
@@ -419,10 +414,17 @@ class ChunkProcessingService {
 
   private resetStopStreamingIfNeeded(
     isCompleteItem: boolean,
-    chunk: StreamChunk
+    chunk: StreamChunk,
+    messageID?: string
   ) {
     if (isCompleteItem || isStreamFinalResponse(chunk)) {
-      resetStopStreamingButton(this.serviceManager.store);
+      this.serviceManager.messageService.clearStreamingCancellation(
+        messageID ??
+          this.serviceManager.messageService.inboundStreaming
+            .streamingMessageID ??
+          ''
+      );
+      this.serviceManager.messageService.hideStopStreamingButtonIfNoUpsertStreaming();
     }
   }
 

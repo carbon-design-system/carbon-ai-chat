@@ -20,7 +20,11 @@ export enum OnErrorType {
   MESSAGE_COMMUNICATION = 'MESSAGE_COMMUNICATION',
 
   /**
-   * This indicates an error in one of the components that occurs as part of rendering the UI.
+   * This indicates an error in one of the components that occurs as part of rendering the UI. It also reports an
+   * item from {@link ChatInstanceMessaging.upsertMessage} that is missing fields the chat needs to draw it after a
+   * {@link MessageState.COMPLETE} or {@link MessageState.ERROR} write. User cancellation does not report unfinished items.
+   * For that report, `otherData` holds `messageID`, `responseType`, `missing` (the path of
+   * each field to fix, such as `rows[0].cells`), and `item` (the item as sent).
    */
   RENDER = 'RENDER',
 
@@ -54,7 +58,9 @@ export interface OnErrorData {
   message: string;
 
   /**
-   * An extra blob of data associated with the error. This may be a stack trace for thrown errors.
+   * An extra blob of data associated with the error. This may be a stack trace for thrown errors. For a
+   * {@link OnErrorType.RENDER} report about an upserted item the chat can't draw, it names the item and the fields
+   * it's missing.
    */
   otherData?: unknown;
 

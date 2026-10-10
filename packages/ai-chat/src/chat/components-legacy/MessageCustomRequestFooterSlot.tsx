@@ -14,14 +14,16 @@
 
 import React from 'react';
 
-interface CustomRequestFooterSlotProps {
+interface MessageCustomRequestFooterSlotProps {
   /**
    * The name of the slot to render.
    */
   slotName: string;
 }
 
-function CustomRequestFooterSlot(props: CustomRequestFooterSlotProps) {
+function MessageCustomRequestFooterSlot(
+  props: MessageCustomRequestFooterSlotProps
+) {
   const { slotName } = props;
 
   return (
@@ -31,4 +33,4 @@ function CustomRequestFooterSlot(props: CustomRequestFooterSlotProps) {
   );
 }
 
-export default React.memo(CustomRequestFooterSlot);
+export default React.memo(MessageCustomRequestFooterSlot);

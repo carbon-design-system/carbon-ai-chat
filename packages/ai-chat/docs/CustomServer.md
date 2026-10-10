@@ -65,7 +65,7 @@ Both actions cancel the request. Cancellation works the same across flows: the s
 
 ### 1. Mark your stream as cancellable
 
-Set `cancellable: true` in the {@link ItemStreamingMetadata | streaming metadata} of the items you stream. The "stop streaming" button appears whenever a streaming item has `cancellable: true`.
+Set `cancellable: true` in the {@link ItemStreamingMetadata | streaming metadata} of the items you stream to show the "stop streaming" button.
 
 With {@link ChatInstanceMessaging.addMessageChunk | addMessageChunk}, set it on the partial item chunk as a {@link StreamChunk | stream chunk}:
 
@@ -86,6 +86,69 @@ const chunk: StreamChunk = {
 ```
 
 With {@link ChatInstanceMessaging.upsertMessage | upsertMessage}, set it on the item in the message your updater returns while the message is in the {@link MessageState.STREAMING | streaming} state.
+
+#### Disable stop during one step
+
+Send `cancellable: false` before a step that must finish, such as saving a batch of records. The button stays visible but disabled. Send `true` after that step to enable it again. This also works when {@link PublicConfigMessaging.showStopButtonImmediately | showStopButtonImmediately} showed the button before the first update. If the button is hidden, `false` leaves it hidden.
+
+- With upserts, any explicit `false` in the snapshot wins over `true` on another item.
+- With chunks, the latest explicit value on a partial item applies to that response.
+- If an update omits the flag, that response's setting stays as it was in either flow.
+- If several responses stream at once, any response marked `false` keeps the shared button disabled until it permits stop or ends.
+- Once the user clicks stop, a later `true` cannot enable the button again while that stop is pending.
+
+For a response already streaming through upserts, wrap the step like this. Pass the request's abort signal and keep each item's streaming ID.
+
+```typescript
+import { ChatInstance, MessageState } from '@carbon/ai-chat';
+
+async function protectStep(
+  instance: ChatInstance,
+  responseID: string,
+  signal: AbortSignal,
+  saveRecords: () => Promise<void>
+) {
+  const setCancellable = (cancellable: boolean) =>
+    instance.messaging.upsertMessage(
+      responseID,
+      MessageState.STREAMING,
+      (previous) => {
+        if (!previous?.output.generic?.length) {
+          throw new Error('Start the response before protecting a step.');
+        }
+        return {
+          ...previous,
+          output: {
+            ...previous.output,
+            generic: previous.output.generic.map((item) => {
+              const metadata = item.streaming_metadata;
+              if (!metadata?.id) {
+                throw new Error('Give each streamed item an ID first.');
+              }
+              return {
+                ...item,
+                streaming_metadata: { ...metadata, cancellable },
+              };
+            }),
+          },
+        };
+      }
+    );
+
+  signal.throwIfAborted();
+  await setCancellable(false);
+  try {
+    signal.throwIfAborted();
+    await saveRecords();
+  } finally {
+    if (!signal.aborted) {
+      await setCancellable(true);
+    }
+  }
+}
+```
+
+For chunks, send a partial item with `cancellable: false`, then send one with `true` after the step. Keep the same item ID. Finalize the response as shown in step 3, including when the step fails. Disabling stop does not prevent a timeout or conversation restart.
 
 ### 2. Listen for cancellation
 
@@ -202,7 +265,7 @@ await instance.messaging.upsertMessage(
 
 ### Important notes
 
-- The "stop streaming" button appears when a streaming item has `cancellable: true`.
+- The "stop streaming" button appears with `cancellable: true`. An explicit `false` disables it; see the rules above for mixed items.
 - Clicking the button fires the abort signal (with reason {@link CancellationReason.STOP_STREAMING}), but it does not stop your streaming on its own.
 - You must listen for the abort signal, stop your streaming logic, and deliver the final state.
 - The abort signal also fires on conversation restarts and clears ({@link CancellationReason.CONVERSATION_RESTARTED}) and on timeouts ({@link CancellationReason.TIMEOUT}).

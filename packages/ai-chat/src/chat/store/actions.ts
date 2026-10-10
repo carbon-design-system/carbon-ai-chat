@@ -8,6 +8,7 @@
  */
 
 import { DeepPartial } from '../../types/utilities/DeepPartial';
+import type { MessageWriteOptions } from './messageWriteTypes';
 
 import {
   AnnounceMessage,
@@ -33,13 +34,11 @@ import {
 } from '../../types/messaging/LocalMessageItem';
 import {
   ConversationalSearchItemCitation,
-  GenericItem,
   IFrameItem,
   Message,
   MessageRequest,
   MessageRequestHistory,
   MessageResponseHistory,
-  MessageResponseOptions,
   MessageUIStateInternal,
   SearchResult,
 } from '../../types/messaging/Messages';
@@ -60,6 +59,7 @@ const SET_VIEW_CHANGING = 'SET_VIEW_CHANGING';
 const SET_INITIAL_VIEW_CHANGE_COMPLETE = 'SET_INITIAL_VIEW_CHANGE_COMPLETE';
 const MESSAGE_SET_OPTION_SELECTED = 'MESSAGE_SET_OPTION_SELECTED';
 const SET_MESSAGE_UI_PROPERTY = 'SET_MESSAGE_UI_PROPERTY';
+const SET_MESSAGE_WAS_ANNOUNCED = 'SET_MESSAGE_WAS_ANNOUNCED';
 const SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY =
   'SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY';
 const SET_MESSAGE_RESPONSE_HISTORY_PROPERTY =
@@ -78,6 +78,7 @@ const UPDATE_PERSISTED_STATE = 'UPDATE_PERSISTED_STATE';
 const SET_HOME_SCREEN_IS_OPEN = 'SET_HOME_SCREEN_IS_OPEN';
 const UPDATE_MESSAGE = 'UPDATE_MESSAGE';
 const UPSERT_MESSAGE = 'UPSERT_MESSAGE';
+const END_MESSAGE_STREAMING = 'END_MESSAGE_STREAMING';
 const SET_LAUNCHER_MINIMIZED = 'SET_LAUNCHER_MINIMIZED';
 const CLOSE_IFRAME_PANEL = 'CLOSE_IFRAME_PANEL';
 const OPEN_IFRAME_CONTENT = 'OPEN_IFRAME_CONTENT';
@@ -98,14 +99,12 @@ const CLEAR_INPUT_FILES = 'CLEAR_INPUT_FILES';
 const REMOVE_INPUT_FILE = 'REMOVE_INPUT_FILE';
 const REMOVE_LOCAL_MESSAGE_ITEM = 'REMOVE_LOCAL_MESSAGE_ITEM';
 const FILE_UPLOAD_INPUT_ERROR = 'FILE_UPLOAD_INPUT_ERROR';
-const ADD_NESTED_MESSAGES = 'ADD_NESTED_MESSAGES';
 const SET_RESPONSE_PANEL_IS_OPEN = 'SET_RESPONSE_PANEL_IS_OPEN';
 const SET_RESPONSE_PANEL_CONTENT = 'SET_PANEL_RESPONSE_CONTENT';
-const STREAMING_ADD_CHUNK = 'STREAMING_ADD_CHUNK';
-const STREAMING_START = 'STREAMING_START';
-const STREAMING_MERGE_MESSAGE_OPTIONS = 'STREAMING_MERGE_MESSAGE_OPTIONS';
 const SET_STOP_STREAMING_BUTTON_VISIBLE = 'SET_STOP_STREAMING_BUTTON_VISIBLE';
 const SET_STOP_STREAMING_BUTTON_DISABLED = 'SET_STOP_STREAMING_BUTTON_DISABLED';
+const SET_STOP_STREAMING_BUTTON_METADATA_DISABLED =
+  'SET_STOP_STREAMING_BUTTON_METADATA_DISABLED';
 const SET_STREAM_ID = 'SET_STREAM_ID';
 const UPDATE_THEME_STATE = 'UPDATE_THEME_STATE';
 const SET_IS_RESTARTING = 'SET_IS_RESTARTING';
@@ -193,8 +192,7 @@ const actions = {
   },
 
   /**
-   * Adds the given message to the message list. This may also re-order any existing message items that are already
-   * visible due to being received from previous streaming chunks.
+   * Adds the given message to the message list.
    */
   addMessage(message: Message) {
     return { type: ADD_MESSAGE, message };
@@ -214,8 +212,33 @@ const actions = {
    * existing `LocalMessageItem` references for items deep-equal to their predecessor so
    * components that subscribe to unchanged siblings do not re-render.
    */
-  upsertMessage(message: Message) {
-    return { type: UPSERT_MESSAGE, message };
+  upsertMessage(
+    message: Message,
+    isStreaming = false,
+    holdFromIndex?: number,
+    options?: MessageWriteOptions
+  ) {
+    return {
+      type: UPSERT_MESSAGE,
+      message,
+      isStreaming,
+      holdFromIndex,
+      options,
+    };
+  },
+
+  /**
+   * Marks every local item belonging to `messageID` as no longer streaming.
+   *
+   * Streaming UI (the markdown element's in-progress table treatment, for one) keys off
+   * `ui_state.streamingState.isDone`. Reaching that state used to depend on the host
+   * sending a `complete_item` or `final_response` chunk, so a stream that ended any other
+   * way — the user pressing stop, `customSendMessage` throwing, a timeout — left items
+   * stuck mid-stream forever. Dispatch this wherever a stream terminates so the end state
+   * does not depend on host cooperation.
+   */
+  endMessageStreaming(messageID: string) {
+    return { type: END_MESSAGE_STREAMING, messageID };
   },
 
   messageSetOptionSelected(messageID: string, sentMessage: MessageRequest) {
@@ -402,7 +425,7 @@ const actions = {
    * Marks the given message to indicate that it has been announced and doesn't need to be announced again.
    */
   setMessageWasAnnounced(messageID: string) {
-    return actions.setMessageUIProperty(messageID, 'needsAnnouncement', false);
+    return { type: SET_MESSAGE_WAS_ANNOUNCED, localMessageID: messageID };
   },
 
   /**
@@ -574,10 +597,6 @@ const actions = {
     return { type: CLEAR_INPUT_FILES, isInputToHumanAgent };
   },
 
-  addNestedMessages(localMessageItems: LocalMessageItem[]) {
-    return { type: ADD_NESTED_MESSAGES, localMessageItems };
-  },
-
   setResponsePanelIsOpen(isOpen: boolean) {
     return { type: SET_RESPONSE_PANEL_IS_OPEN, isOpen };
   },
@@ -593,49 +612,19 @@ const actions = {
     };
   },
 
-  /**
-   * Adds a message to the store to begin the streaming process.
-   */
-  streamingStart(messageID: string) {
-    return { type: STREAMING_START, messageID };
-  },
-
-  /**
-   * Merges the given message history object into an existing message object.
-   */
-  streamingMergeMessageOptions(
-    messageID: string,
-    message_options: DeepPartial<MessageResponseOptions>
-  ) {
-    return {
-      type: STREAMING_MERGE_MESSAGE_OPTIONS,
-      messageID,
-      message_options,
-    };
-  },
-
-  /**
-   * Adds a new chunk of a streaming response to an existing message.
-   */
-  streamingAddChunk(
-    fullMessageID: string,
-    chunkItem: DeepPartial<GenericItem>,
-    isCompleteItem: boolean
-  ) {
-    return {
-      type: STREAMING_ADD_CHUNK,
-      fullMessageID,
-      chunkItem,
-      isCompleteItem,
-    };
-  },
-
   setStopStreamingButtonVisible(isVisible: boolean) {
     return { type: SET_STOP_STREAMING_BUTTON_VISIBLE, isVisible };
   },
 
   setStopStreamingButtonDisabled(isDisabled: boolean) {
     return { type: SET_STOP_STREAMING_BUTTON_DISABLED, isDisabled };
+  },
+
+  setStopStreamingButtonMetadataDisabled(isMetadataDisabled: boolean) {
+    return {
+      type: SET_STOP_STREAMING_BUTTON_METADATA_DISABLED,
+      isMetadataDisabled,
+    };
   },
 
   setStreamID(currentStreamID: string) {
@@ -725,6 +714,7 @@ export {
   SET_INITIAL_VIEW_CHANGE_COMPLETE,
   MESSAGE_SET_OPTION_SELECTED,
   SET_MESSAGE_UI_PROPERTY,
+  SET_MESSAGE_WAS_ANNOUNCED,
   ANNOUNCE_MESSAGE,
   RESTART_CONVERSATION,
   ACCEPTED_DISCLAIMER,
@@ -736,6 +726,7 @@ export {
   SET_MESSAGE_RESPONSE_HISTORY_PROPERTY,
   UPDATE_MESSAGE,
   UPSERT_MESSAGE,
+  END_MESSAGE_STREAMING,
   SET_LAUNCHER_PROPERTY,
   SET_LAUNCHER_MINIMIZED,
   CLOSE_IFRAME_PANEL,
@@ -756,17 +747,14 @@ export {
   REMOVE_INPUT_FILE,
   FILE_UPLOAD_INPUT_ERROR,
   CLEAR_INPUT_FILES,
-  ADD_NESTED_MESSAGES,
   SET_RESPONSE_PANEL_IS_OPEN,
   SET_RESPONSE_PANEL_CONTENT,
-  STREAMING_ADD_CHUNK,
-  STREAMING_START,
-  STREAMING_MERGE_MESSAGE_OPTIONS,
   REMOVE_LOCAL_MESSAGE_ITEM,
   REMOVE_MESSAGES,
   MERGE_HISTORY,
   SET_STOP_STREAMING_BUTTON_VISIBLE,
   SET_STOP_STREAMING_BUTTON_DISABLED,
+  SET_STOP_STREAMING_BUTTON_METADATA_DISABLED,
   SET_STREAM_ID,
   UPDATE_THEME_STATE,
   SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY,

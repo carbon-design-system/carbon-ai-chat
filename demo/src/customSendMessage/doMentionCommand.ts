@@ -13,7 +13,10 @@ import {
   MessageResponseTypes,
   SuggestionItem,
 } from '@carbon/ai-chat';
+import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
+
 import { RESPONSE_MAP } from './responseMap';
+import { sendResponse } from './sendResponse';
 
 /**
  * Mock `InputConfig.mention` / `InputConfig.command` fixtures and callbacks
@@ -148,7 +151,8 @@ async function doMentionCommandResponse(
     parts.push(`**Commands:** ${cmds}`);
   }
 
-  await instance.messaging.addMessage({
+  await sendResponse(instance, {
+    id: uuid(),
     output: {
       generic: [
         {

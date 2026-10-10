@@ -1068,7 +1068,8 @@ function AppShell({
                       inputFields.stopStreamingButtonState.isVisible
                     }
                     isStopStreamingButtonDisabled={
-                      inputFields.stopStreamingButtonState.isDisabled
+                      inputFields.stopStreamingButtonState.isDisabled ||
+                      inputFields.stopStreamingButtonState.isMetadataDisabled
                     }
                     maxInputChars={publicConfig.input?.maxInputCharacters}
                     trackInputState

@@ -15,6 +15,7 @@ import { AppState } from '../../../../types/state/AppState';
 import { LocalMessageItemStreamingState } from '../../../../types/messaging/LocalMessageItem';
 import { InlineError } from '../../responseTypes/error/InlineError';
 import { MarkdownWithDefaults } from '../MarkdownWithDefaults/MarkdownWithDefaults';
+import { deriveStreamingItemText } from '../../../utils/streamingUtils';
 import { TextItem } from '../../../../types/messaging/Messages';
 
 interface MarkdownWithErrorHandlingProps {
@@ -54,13 +55,9 @@ function MarkdownWithErrorHandling(props: MarkdownWithErrorHandlingProps) {
     shallowEqual
   );
 
-  let textToUse;
-  if (streamingState && !streamingState.isDone) {
-    // If we're streaming, then concatenate all the chunks together.
-    textToUse = streamingState.chunks.map((chunk) => chunk.text).join('');
-  } else {
-    textToUse = text;
-  }
+  // Chunk-delivered items accumulate their text in `streamingState.chunks`;
+  // upsert-delivered items carry the whole text on the item with empty chunks.
+  const textToUse = deriveStreamingItemText(text, streamingState);
 
   return (
     <>

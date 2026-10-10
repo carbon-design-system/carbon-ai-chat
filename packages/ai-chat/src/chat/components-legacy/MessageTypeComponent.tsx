@@ -38,7 +38,7 @@ import { PreviewCardComponent } from './responseTypes/previewCard/PreviewCardCom
 import { CarouselItemComponent } from '../components/responseTypes/card/CarouselItemComponent';
 import { ConversationalSearch } from './responseTypes/conversationalSearch/ConversationalSearch';
 import UserDefinedResponse from '../components/responseTypes/userDefined/UserDefinedResponse';
-import CustomFooterSlot from './responseTypes/custom/CustomFooterSlot';
+import MessageCustomFooterSlot from './MessageCustomFooterSlot';
 import { DatePickerComponent } from '../components/responseTypes/datePicker/DatePickerComponent';
 import { InlineError } from '../components/responseTypes/error/InlineError';
 import { GridItemComponent } from './responseTypes/grid/GridItemComponent';
@@ -613,6 +613,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     return (
       <div className="carousel-container">
         <Carousel
+          key={JSON.stringify(message.ui_state.itemsLocalMessageItemIDs)}
           nextBtnText={languagePack.carousel_nextNavButton}
           previousBtnText={languagePack.carousel_prevNavButton}>
           <div className="carousel-container-inner">
@@ -993,7 +994,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
       return false;
     }
 
-    return <CustomFooterSlot footerOptions={footerOptions} />;
+    return <MessageCustomFooterSlot footerOptions={footerOptions} />;
   }
 
   /**

@@ -40,11 +40,18 @@ function createHarness(config: PublicConfig = {}) {
     restartCount: 0,
     slotEventService,
     actions: slotEventService,
-    humanAgentService: { handleConnectToHumanAgent },
+    humanAgentService: {
+      handleConnectToHumanAgent,
+      clearProcessedAgentItems: jest.fn(),
+    },
     streamAnnouncerService: { clearAll: jest.fn() },
     messageService: {
       inboundStreaming: { streamingMessageID: null },
       finalizeStreamingMessage: jest.fn(),
+      clearStreamingCancellation: jest.fn(),
+      clearAllStreamingCancellation: jest.fn(),
+      hideStopStreamingButtonIfIdle: jest.fn(),
+      hideStopStreamingButtonIfNoUpsertStreaming: jest.fn(),
       cancelAllMessageRequests: jest.fn().mockResolvedValue(undefined),
     },
   } as unknown as ServiceManager;

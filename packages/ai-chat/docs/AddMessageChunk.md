@@ -47,6 +47,22 @@ const chunk: StreamChunk = {
 await instance.messaging.addMessageChunk(chunk);
 ```
 
+## What draws while streaming
+
+Only some response types draw before the final response chunk arrives. These types draw as soon as their first chunk arrives:
+
+- `text`
+- `user_defined`
+- `image`, `video`, and `audio`
+- `option`
+- `iframe`
+- `inline_error`
+- `conversational_search`
+
+The chat holds every other type, such as `card`, `button`, `grid`, and `carousel`. It draws one when the final response chunk arrives. If the item began with a partial item chunk, it draws sooner, when the item's complete item chunk arrives. A `grid` or `carousel` always waits for the final response chunk. Nothing fails, and you don't need to change your chunks.
+
+If a type must draw as it arrives, use {@link ChatInstanceMessaging.upsertMessage | upsertMessage} instead. It draws every response type on each update. See [Adding messages (experimental)](./UpsertMessage.md).
+
 ## Complete item chunks
 
 A complete item chunk ({@link CompleteItemChunk | CompleteItemChunk}) finalizes one item before the whole message is done. Use one when you:

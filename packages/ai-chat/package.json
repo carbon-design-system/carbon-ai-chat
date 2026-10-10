@@ -74,7 +74,7 @@
   ],
   "sideEffects": [
     "**/web-components/**/*.js",
-    "**/chat.cds-aichat-container.js",
+    "**/chat.*.js",
     "**/*.css"
   ],
   "devDependencies": {

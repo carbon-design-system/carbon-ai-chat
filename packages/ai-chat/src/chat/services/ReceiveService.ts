@@ -10,22 +10,14 @@
 import merge from 'lodash-es/merge.js';
 
 import actions from '../store/actions';
+import type { MessageWriteOptions } from '../store/messageWriteTypes';
 import { AppStateMessages } from '../../types/state/AppState';
-import {
-  createLocalMessageItemsForNestedMessageItems,
-  outputItemToLocalItem,
-} from '../schema/outputItemToLocalItem';
 import { deepFreeze } from '../utils/lang/objectUtils';
 import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 import {
-  addDefaultsToMessage,
   createMessageResponseForText,
-  isConnectToHumanAgent,
-  isPause,
   isResponse,
 } from '../utils/messageUtils';
-import { consoleError } from '../utils/miscUtils';
-import { resetStopStreamingButton } from '../utils/streamingUtils';
 import {
   BusEventPreReceive,
   BusEventType,
@@ -34,9 +26,7 @@ import {
   MessageRequest,
   MessageResponse,
   MessageResponseTypes,
-  PauseItem,
 } from '../../types/messaging/Messages';
-import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
 import { MessageState } from '../../types/config/MessagingConfig';
 import { HistoryItem, HistoryNote } from '../../types/messaging/History';
 import type { ServiceManager } from './ServiceManager';
@@ -58,14 +48,14 @@ class ReceiveService {
    * @param isLatestWelcomeNode Indicates if this message is a new welcome message that has just been shown to the user
    * and isn't a historical welcome message.
    * @param requestMessage The optional {@link MessageRequest} that this response is a response to.
-   * @param _origin The public method the message comes from: `addMessage`, or `addMessageChunk` for the
+   * @param origin The public method the message comes from: `addMessage`, or `addMessageChunk` for the
    * `final_response` that completes a stream.
    */
   async receive(
     message: MessageResponse,
     isLatestWelcomeNode = false,
     requestMessage?: MessageRequest,
-    _origin: 'addMessage' | 'chunk' = 'addMessage'
+    origin: 'addMessage' | 'chunk' = 'addMessage'
   ) {
     const { restartCount: initialRestartCount } = this.serviceManager;
 
@@ -86,36 +76,23 @@ class ReceiveService {
       return;
     }
 
-    if (!isLatestWelcomeNode) {
-      this.serviceManager.store.dispatch(
-        actions.updateHasSentNonWelcomeMessage(true)
-      );
-    }
-
-    if (initialRestartCount !== this.serviceManager.restartCount) {
-      // If a restart occurred during the await above, we need to exit.
+    if (isResponse(message as any)) {
+      await this.writeReceivedMessage(message, {
+        origin,
+        isLatestWelcomeNode,
+        requestMessage,
+        restartCount: initialRestartCount,
+      });
       return;
     }
 
     const { languagePack } = this.serviceManager.store.getState();
-
-    if (isResponse(message as any)) {
-      // Pauses and host slot handlers must not delay the receive event.
-      this.processMessageResponse(
-        message,
-        isLatestWelcomeNode,
-        requestMessage
-      ).catch((error) => {
-        consoleError('Error processing the message response', error);
-      });
-    } else {
-      const inlineError: MessageResponse = createMessageResponseForText(
-        languagePack.errors_singleMessage,
-        message?.thread_id,
-        MessageResponseTypes.INLINE_ERROR
-      );
-      this.receive(inlineError, false);
-    }
+    const inlineError: MessageResponse = createMessageResponseForText(
+      languagePack.errors_singleMessage,
+      message?.thread_id,
+      MessageResponseTypes.INLINE_ERROR
+    );
+    this.receive(inlineError, false);
 
     // Now freeze the message so nobody can mess with it since that object came from outside.
     deepFreeze(message);
@@ -131,98 +108,21 @@ class ReceiveService {
     this.serviceManager.messageUpsertCoordinator.markComplete(message.id);
   }
 
-  private async processMessageResponse(
-    fullMessage: MessageResponse,
-    isLatestWelcomeNode: boolean,
-    requestMessage?: MessageRequest
-  ) {
-    const { store } = this.serviceManager;
-    const { config } = store.getState();
-    const initialRestartCount = this.serviceManager.restartCount;
-
-    const output = fullMessage.output.generic;
-    fullMessage.request_id = requestMessage?.id;
-    addDefaultsToMessage(fullMessage);
-
-    store.dispatch(actions.setActiveResponseId(fullMessage.id));
-    store.dispatch(actions.addMessage(fullMessage));
-
-    if (config.public.messaging?.showStopButtonImmediately) {
-      resetStopStreamingButton(
-        store,
-        this.serviceManager.messageService.inboundStreaming.streamingMessageID
-      );
-    }
-
-    let previousItemID: string = null;
-
-    for (
-      let index = 0;
-      index < output.length &&
-      initialRestartCount === this.serviceManager.restartCount;
-      index++
-    ) {
-      const messageItem = output[index];
-      if (!messageItem) {
-        continue;
-      }
-
-      const localMessageItem = outputItemToLocalItem(
-        messageItem,
-        fullMessage,
-        isLatestWelcomeNode
-      );
-      const nestedLocalMessageItems: LocalMessageItem[] = [];
-      createLocalMessageItemsForNestedMessageItems(
-        localMessageItem,
-        fullMessage,
-        false,
-        nestedLocalMessageItems,
-        true
-      );
-      store.dispatch(actions.addNestedMessages(nestedLocalMessageItems));
-
-      if (isConnectToHumanAgent(messageItem) && isResponse(fullMessage)) {
-        await this.serviceManager.humanAgentService?.handleConnectToHumanAgent(
-          localMessageItem,
-          fullMessage,
-          config,
-          initialRestartCount
-        );
-      }
-
-      if (isPause(messageItem)) {
-        await this.serviceManager.chunkProcessingService.waitForPause(
-          messageItem as PauseItem,
-          initialRestartCount
-        );
-        continue;
-      }
-
-      await this.serviceManager.slotEventService.handleUserDefinedResponseItems(
-        localMessageItem,
-        fullMessage,
-        MessageState.COMPLETE
-      );
-      await this.serviceManager.slotEventService.handleCustomFooterSlot(
-        localMessageItem,
-        fullMessage
-      );
-      if (
-        !localMessageItem.item.user_defined?.silent &&
-        initialRestartCount === this.serviceManager.restartCount
-      ) {
-        store.dispatch(
-          actions.addLocalMessageItem(
-            localMessageItem,
-            fullMessage,
-            false,
-            previousItemID
-          )
-        );
-        previousItemID = localMessageItem.ui_state.id;
-      }
-    }
+  /**
+   * Writes a received message through the upsert coordinator as one COMPLETE upsert. It
+   * resolves once `receive` has fired, and rejects when a `receive` handler throws. The
+   * message's items keep showing after that, while the next write for its id runs.
+   */
+  private writeReceivedMessage(
+    message: MessageResponse,
+    options: MessageWriteOptions
+  ): Promise<void> {
+    return this.serviceManager.messageUpsertCoordinator.upsert(
+      message.id,
+      MessageState.COMPLETE,
+      () => message,
+      options
+    );
   }
 
   /**

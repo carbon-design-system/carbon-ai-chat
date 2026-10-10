@@ -119,6 +119,42 @@ Set **Chat Configuration → Markdown → Table rendering** to `customRenderers.
 - [ ] That node is a child of the outermost chat element, not of the markdown element inside the shadow root — check in devtools. The tree that element sits in differs by shape: the document for the React ones, `<demo-app>`'s shadow root for the web-component ones. Add a rule to that root and confirm it reaches the node.
 - [ ] Send **table (stream)** and confirm one node is reused as chunks arrive, rather than a new one per chunk.
 
+#### Send mode (`?useUpsertMessage`)
+
+The mock backend uses `addMessage` / `addMessageChunk` by default. Add `?useUpsertMessage` on a pre-release build to use `upsertMessage`. The mode helper is `src/customSendMessage/sendResponse.ts`.
+
+The flag works on localhost, 127.0.0.1, ::1, and paths under `/tag/next/` or `/tag/alpha/`. These builds show **Chat Configuration → Messaging → Use upsertMessage**. The checkbox sets or clears the flag and reloads the page. Published `/tag/latest/` and `/version/…` pages ignore the flag and hide the checkbox.
+
+Playwright uses three projects:
+
+- `chromium` and `firefox` cover the default mode.
+- `chromium-upsert-message` adds the flag. It skips `react-host-compatibility.spec.ts`, which calls `addMessage` directly.
+
+Set `PORT` when another demo is running, for example `PORT=3101 npm test` from `demo/`.
+
+`send-response.spec.ts` checks API calls and the environment gate. Its checkbox case runs in `chromium` and checks that URL settings and the hash survive both toggles.
+
+Run these in both modes:
+
+- [ ] Stream text, reasoning steps and trace, and chain of thought.
+- [ ] Send **table (stream)** and confirm the custom renderer node is reused as chunks arrive.
+- [ ] Send **user_defined (stream)** and **conversational search (stream)**.
+- [ ] Send **text (stream early resolve)** with "Show stop button immediately" on.
+- [ ] Stop a stream partway: the message settles and the stop button goes away.
+- [ ] Run `stop-streaming-cancellable.spec.ts` in both send modes. When `cancellable` changes from `true` to `false`, Stop stays visible but disabled. An omitted value leaves it disabled; `true` enables it again. Disabled Stop ignores clicks, Enter, and Space. A completed stream hides it.
+- [ ] **card (stream)** and **carousel (stream)**: these entries only appear when `?useUpsertMessage` is set, alphabetically beside their non-streaming versions. The card's body and footer appear before the stream ends; carousel cards arrive one at a time.
+- [ ] After **carousel (stream)** ends, Next reaches all three cards and the count advances from "1 / 3" to "3 / 3".
+- [ ] The request stays pinned through carousel initialization and stream completion, including with conversation history. Check each frame for jumps.
+- [ ] Both side borders stay visible on every carousel card.
+- [ ] As each carousel card arrives, the first card stays visible and the new card does not flash below it before joining the carousel.
+- [ ] With VoiceOver, both modes announce the same things.
+
+#### Auto-scroll after content resizes
+
+- [ ] After **user_defined (stream)** completes, grow and shrink its custom content. The request stays pinned; scrolling away stops re-pinning.
+- [ ] Resize older content above the latest request. The latest request stays at the same viewport offset.
+- [ ] Stream text, reasoning steps, and code. Expand and collapse reasoning steps; the request stays pinned.
+
 ### Track 3: Mobile & Non-Chrome Browser Support
 
 **Focus:** Smoke testing across browsers, emphasis on mobile.

@@ -81,12 +81,33 @@ function createInitialAppState(): AppState {
 }
 
 describe('Store Reducers', () => {
-  let store: ReturnType<typeof createAppStore>;
+  let store: ReturnType<typeof createAppStore<AppState>>;
   let initialState: AppState;
 
   beforeEach(() => {
     initialState = createInitialAppState();
     store = createAppStore(rootReducer, initialState);
+  });
+
+  it('keeps metadata disablement separate from a pending stop click', () => {
+    store.dispatch(actions.setStopStreamingButtonVisible(true));
+    store.dispatch(actions.setStopStreamingButtonDisabled(true));
+    store.dispatch(actions.setStopStreamingButtonMetadataDisabled(true));
+    expect(
+      store.getState().assistantInputState.stopStreamingButtonState
+    ).toMatchObject({
+      isVisible: true,
+      isDisabled: true,
+      isMetadataDisabled: true,
+    });
+    store.dispatch(actions.setStopStreamingButtonMetadataDisabled(false));
+    expect(
+      store.getState().assistantInputState.stopStreamingButtonState
+    ).toMatchObject({
+      isVisible: true,
+      isDisabled: true,
+      isMetadataDisabled: false,
+    });
   });
 
   describe('CHANGE_STATE action', () => {

@@ -651,8 +651,17 @@ export interface ItemStreamingMetadata {
   id: string;
 
   /**
-   * When included on a partial_item, indicates if the stream can be cancelled.
-   * If so, a "stop streaming" button will display in the UI.
+   * Controls the stop streaming button during a streamed response. `true` shows and
+   * enables it. `false` disables an already visible button without hiding it, including
+   * a button shown by {@link PublicConfigMessaging.showStopButtonImmediately}.
+   * A later `true` enables it again unless the user has already clicked stop.
+   *
+   * For {@link ChatInstanceMessaging.upsertMessage}, any explicit `false` in the
+   * snapshot takes precedence over `true`. For {@link ChatInstanceMessaging.addMessageChunk},
+   * the latest explicit value on a partial item applies. Omitting the flag leaves the
+   * response's setting unchanged in either flow. If several responses stream at once,
+   * any response marked `false` keeps the shared button disabled until it permits
+   * cancellation or ends. Ending the last stream clears the button state.
    */
   cancellable?: boolean;
 

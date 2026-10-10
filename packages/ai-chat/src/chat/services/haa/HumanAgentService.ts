@@ -115,6 +115,8 @@ interface HumanAgentService {
     connectMessage: MessageResponse
   ): Promise<HumanAgentsOnlineStatus>;
 
+  clearProcessedAgentItems(): void;
+
   /**
    * Handles a "connect_to_agent" item: checks whether any human agents are online, with
    * the loading indicator up while it waits, records the result on the message, and

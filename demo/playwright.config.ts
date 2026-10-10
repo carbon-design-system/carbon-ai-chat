@@ -8,11 +8,13 @@
 import { defineConfig, devices } from '@playwright/test';
 import { fileURLToPath } from 'url';
 import { dirname, resolve } from 'path';
+import type { DemoModeOptions } from './tests/fixtures';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+const port = Number(process.env.PORT) || 3001;
 
-export default defineConfig({
+export default defineConfig<DemoModeOptions>({
   testDir: './tests',
   // Set timeout for each test (including beforeEach/afterEach hooks)
   timeout: 60 * 1000, // 60 seconds per test
@@ -25,15 +27,14 @@ export default defineConfig({
   // Serve production build. Vite's `@vite/client` injects inline <style>
   // to trip CSP tests (`style-src 'self'`)
   webServer: {
-    command:
-      'npm run build && npm run preview -- --host 127.0.0.1 --port 3001 --strictPort',
-    port: 3001,
+    command: `npm run build && npm run preview -- --host 127.0.0.1 --port ${port} --strictPort`,
+    port,
     timeout: 120 * 1000, // wait up to 2m for the server
     reuseExistingServer: !process.env.CI,
   },
   globalSetup: resolve(__dirname, './tests/setup.ts'),
   use: {
-    baseURL: 'http://localhost:3001',
+    baseURL: `http://localhost:${port}`,
     headless: true,
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
@@ -41,6 +42,15 @@ export default defineConfig({
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
     { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+    // Reruns the suite with `?useUpsertMessage`, so the demo sends through
+    // upsertMessage instead of addMessage / addMessageChunk. The host
+    // compatibility spec calls addMessage itself on its own page, so a second
+    // run would prove nothing.
+    {
+      name: 'chromium-upsert-message',
+      use: { ...devices['Desktop Chrome'], useUpsertMessage: true },
+      testIgnore: /react-host-compatibility\.spec\.ts$/,
+    },
     // Disabling webkit for now. See https://github.com/microsoft/playwright/issues/33547 and https://webscraping.ai/faq/playwright/what-are-the-ways-to-handle-shadow-dom-elements-using-playwright
     // Just need to implement that.
     // { name: 'webkit',   use: { ...devices['Desktop Safari'] } },

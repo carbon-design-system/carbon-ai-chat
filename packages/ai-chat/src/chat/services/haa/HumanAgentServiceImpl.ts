@@ -45,6 +45,7 @@ import {
   createMessageRequestForText,
   createMessageResponseForText,
   hasServiceDesk,
+  isConnectToHumanAgent,
 } from '../../utils/messageUtils';
 import { assertType, consoleError, debugLog } from '../../utils/miscUtils';
 import {
@@ -143,6 +144,8 @@ class HumanAgentServiceImpl implements HumanAgentService {
    * The service manager to use to access services.
    */
   private serviceManager: ServiceManager;
+
+  private processedAgentItems = new Set<string>();
 
   /**
    * The instance of the service desk wrapper used to communicate with the actual service desk.
@@ -692,6 +695,10 @@ class HumanAgentServiceImpl implements HumanAgentService {
     return resultValue;
   }
 
+  clearProcessedAgentItems() {
+    this.processedAgentItems.clear();
+  }
+
   /**
    * Handles a "connect_to_agent" item: checks whether any human agents are online, with
    * the loading indicator up while it waits, records the result on the message, and
@@ -710,18 +717,19 @@ class HumanAgentServiceImpl implements HumanAgentService {
     config: AppConfig,
     initialRestartCount: number
   ) {
+    if (
+      !isConnectToHumanAgent(localMessageItem.item) ||
+      this.processedAgentItems.has(localMessageItem.ui_state.id)
+    ) {
+      return;
+    }
+    this.processedAgentItems.add(localMessageItem.ui_state.id);
     const { store } = this.serviceManager;
 
     // For the "connect_to_agent" response, we need to determine the agents' availability before we can
     // continue to process the message items. Let's increment the typing counter while we're waiting for a
     // result from areAnyAgentsOnline.
     store.dispatch(actions.addIsLoadingCounter(1));
-
-    // Create a partial message to record the current state of agent availability and any service desk errors.
-    const partialMessage: DeepPartial<MessageResponse> = {
-      history: {},
-      ui_state_internal: {},
-    };
 
     // Determine if the CTA card should display a service desk error.
     if (!hasServiceDesk(config)) {
@@ -741,7 +749,6 @@ class HumanAgentServiceImpl implements HumanAgentService {
           true
         )
       );
-      partialMessage.ui_state_internal.agent_no_service_desk = true;
     }
 
     const agentAvailability =
@@ -757,11 +764,6 @@ class HumanAgentServiceImpl implements HumanAgentService {
           agentAvailability
         )
       );
-
-      partialMessage.ui_state_internal = partialMessage.ui_state_internal || {};
-
-      // Send event to back-end to save the current agent availability state so session history can use it on reload.
-      partialMessage.ui_state_internal.agent_availability = agentAvailability;
 
       let shouldAutoRequestHumanAgent = false;
 
