@@ -279,4 +279,27 @@ export enum LayoutCustomProperties {
    * Unread indicator text color.
    */
   unread_indicator_color_text = 'unread-indicator-color-text',
+
+  /**
+   * Shared token.
+   *
+   * Border shorthand for the compact prompt-line input container (resting state).
+   * Use this to add a visible resting boundary to the composer without affecting
+   * the outer shell frame or Carbon's shared border tokens.
+   *
+   * Accepts any CSS `border` shorthand value, e.g. `"1px solid #8d8d8d"`.
+   *
+   * The focus outline and error outline are unaffected by this property.
+   *
+   * Example — apply via `layout.customProperties`:
+   * ```ts
+   * { "prompt-border": "1px solid var(--cds-border-subtle-01)" }
+   * ```
+   *
+   * Or directly via CSS on any ancestor of the chat host:
+   * ```css
+   * cds-aichat-custom-element { --cds-aichat-prompt-border: 1px solid var(--cds-border-subtle-01); }
+   * ```
+   */
+  prompt_border = 'prompt-border',
 }
