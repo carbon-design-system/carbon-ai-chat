@@ -7,13 +7,24 @@
  *  @license
  */
 
-import { ChatInstance } from '@carbon/ai-chat';
+import { ChatInstance, MessageRequest } from '@carbon/ai-chat';
 
 import { ORDERED_LIST } from './constants';
 import { doText } from './doText';
 
-function doOrderedList(instance: ChatInstance) {
-  doText(instance, ORDERED_LIST);
+function doOrderedList(
+  instance: ChatInstance,
+  requestID?: MessageRequest['id']
+) {
+  doText(
+    instance,
+    ORDERED_LIST,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    requestID
+  );
 }
 
 export { doOrderedList };

@@ -427,4 +427,34 @@ describe('ChatInstance.messaging.addMessage', () => {
       expect(eventOrder).toEqual(['pre:receive', 'receive']);
     });
   });
+
+  describe('Loading indicator', () => {
+    it('shows for an unanswered request and is off after the next reply', async () => {
+      const config = createBaseConfig();
+      config.messaging = {
+        messageLoadingIndicatorTimeoutSecs: 0.05,
+        customSendMessage: async (request, _options, instance) => {
+          if (request.input.text !== 'answered') {
+            return;
+          }
+          await instance.messaging.addMessage({
+            output: {
+              generic: [
+                { response_type: MessageResponseTypes.TEXT, text: 'reply' },
+              ],
+            },
+          });
+        },
+      };
+      const instance = await renderChatAndGetInstance(config);
+
+      await instance.send('unanswered');
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      expect(instance.getState().isMessageLoadingCounter).toBe(1);
+
+      await instance.send('answered');
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      expect(instance.getState().isMessageLoadingCounter).toBe(0);
+    });
+  });
 });

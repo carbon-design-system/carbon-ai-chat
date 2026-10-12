@@ -10,6 +10,7 @@
 import {
   ButtonItemType,
   ChatInstance,
+  MessageRequest,
   MessageResponseTypes,
   SelectionDisplay,
 } from '@carbon/ai-chat';
@@ -18,8 +19,9 @@ import {
   CHAT_BUTTON_SIZE,
 } from '@carbon/ai-chat-components/es/react/chat-button.js';
 
-function doButton(instance: ChatInstance) {
+function doButton(instance: ChatInstance, requestID?: MessageRequest['id']) {
   instance.messaging.addMessage({
+    request_id: requestID,
     output: {
       generic: [
         {

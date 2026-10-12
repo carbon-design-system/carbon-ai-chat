@@ -98,6 +98,20 @@ Run the option-list and button fixtures in both frameworks (React and web compon
 - [ ] **Send failure:** Force the host send handler to reject. Visible and silent choices remain selected and disabled; the selection is not rolled back.
 - [ ] **Screen reader:** Confirm the accessible control name stays label-first and the post-back pressed state changes from false to true. Confirm the selected outline remains visible in high-contrast mode.
 
+#### Replies after restart
+
+Compare the [upstream main demo](https://carbon-design-system.github.io/carbon-ai-chat/demo/) with the local demo at `http://localhost:3001/`.
+
+1. Dismiss the cookie banner and open the chat if needed.
+2. Expand **Chat instance methods** in the sidebar. Find **Restart conversation** before sending.
+3. Send `text (consecutive responses)` and click **Restart conversation** within three seconds.
+4. Wait five seconds. On upstream main, two old replies starting “We'd love to hear your thoughts on Carbon!” appear. On this branch, neither appears.
+5. Send `table (stream)`. Wait for the table to finish, then send `text`. Both replies should complete normally.
+6. Reload and send `text (consecutive responses)` without restarting. Both replies should appear after about four seconds.
+7. Send `text (stream)` and press **Stop response** while it streams. The partial reply should remain and the stop button should disappear.
+
+The demo echoes the original `request.id` in every reply, including each stream chunk. The delayed command keeps its timers after restart so this check exercises late delivery.
+
 #### Message footers
 
 Run each in both frameworks (React and web component).
