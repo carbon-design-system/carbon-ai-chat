@@ -77,6 +77,7 @@ test('queries reset the selection and an empty result hides the list', async ({
 });
 
 // The prompt line re-dispatches ArrowUp/ArrowDown/Enter as non-composed keydown on the list inside the chat's shadow root, so the list's document listener never sees them: aria-selected stays on the first option and Enter does nothing.
+// Tracked in #2524.
 test.fixme('keyboard selection fills the editor before explicit send', async ({
   page,
 }) => {
@@ -106,6 +107,7 @@ test.fixme('keyboard selection fills the editor before explicit send', async ({
 });
 
 // Same root cause: arrow keys never reach the list, and Escape leaves the listbox open.
+// Tracked in #2524.
 test.fixme('keyboard navigation clamps and Escape preserves editing', async ({
   page,
 }) => {

@@ -106,6 +106,7 @@ test('rejected upload blocks send and removal restores retained text', async ({
 
 // fixme: no cancel control exists while an upload is pending. The chip shows
 // only an unnamed spinner; "Remove report.txt" appears after the upload completes.
+// Tracked in #2522.
 test.fixme('canceling a pending upload contributes nothing', async ({
   page,
 }) => {

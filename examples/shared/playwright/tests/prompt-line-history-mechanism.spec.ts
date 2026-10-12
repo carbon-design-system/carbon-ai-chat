@@ -108,6 +108,7 @@ test('multiline arrows edit the draft instead of recalling history', async ({
 
 // fixme: Shift+Enter inserts a line break inside one paragraph, so the
 // multi-block guard never applies; ArrowUp at the draft's start recalls "first entry".
+// Tracked in #2520.
 test.fixme('ArrowUp at the start of a multiline draft keeps the draft', async ({
   page,
 }) => {

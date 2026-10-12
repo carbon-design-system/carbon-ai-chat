@@ -77,6 +77,7 @@ test('the second tile replaces the first in the prompt and sent message', async 
 test('a focused tile inserts its chip with Enter', async ({ page, target }) => {
   // fixme: the Web Components tile (`cds-clickable-tile` without `href`) takes
   // focus as role=button, but Enter and Space do not fire its click handler.
+  // Tracked in #2526.
   test.fixme(
     target.startsWith('web-components'),
     'Enter on a focused tile inserts nothing in the Web Components host'

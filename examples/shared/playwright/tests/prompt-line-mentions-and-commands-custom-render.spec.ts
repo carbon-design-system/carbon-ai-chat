@@ -95,6 +95,7 @@ test('a custom mention and a default command reach the mock summary', async ({
 
 // The custom chip is not keyboard focusable: Tab from the editor skips it and
 // lands on a toolbar button, so its "Design Lead" tooltip shows only on hover.
+// Tracked in #2518.
 test.fixme('the custom mention tooltip opens by keyboard', async ({ page }) => {
   const input = page.getByTestId(PageObjectId.INPUT);
   await input.pressSequentially('@Jane');
