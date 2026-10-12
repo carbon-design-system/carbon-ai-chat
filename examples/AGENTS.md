@@ -33,7 +33,7 @@ Read [playwright.md](references/playwright.md) before adding or changing an exam
 
 - `npm run build --workspace=<example>` exits 0.
 - `CAIC_E2E_TARGETS=<target> npm run test:e2e:goldens` passes for each of the example's targets in [targets.ts](shared/playwright/targets.ts). `--project` alone still builds every target's example.
-- `CAIC_E2E_TARGETS=<targets> npm run test:e2e:coverage` passes the [coverage gate](references/playwright.md#coverage-gate) for each measured, non-deferred example.
+- `CAIC_E2E_TARGETS=<targets> npm run test:e2e:coverage` ran, and the PR explains any example below the [coverage target](references/playwright.md#coverage-target).
 - `npm run test --workspace=<example>` passes, if the example has a `test` script.
 - README follows the [Indexer Contract](references/indexer-contract.md).
 

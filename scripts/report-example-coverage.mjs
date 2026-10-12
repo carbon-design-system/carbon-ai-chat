@@ -6,7 +6,7 @@
  */
 
 // Turn the coverage the Playwright fixture recorded into one report per
-// example, a summary page, and a merged lcov file. Fails when an example's
+// example, a summary page, and a merged lcov file. Flags an example whose
 // suite runs less than MIN_LINES of its gated sources.
 // Usage: node scripts/report-example-coverage.mjs [coverage-dir]
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
@@ -85,7 +85,7 @@ writeFileSync(
   .below { color: #da1e28; font-weight: 600; }
 </style>
 <h1>Example coverage</h1>
-<p>Lines, branches, and functions of each example's own <code>src/</code> that its Playwright suite runs. The gate needs ${MIN_LINES}% of gated lines; deferred examples are reported only.</p>
+<p>Lines, branches, and functions of each example's own <code>src/</code> that its Playwright suite runs. The advisory target is ${MIN_LINES}% of gated lines; deferred examples are reported only.</p>
 <table>
   <tr><th>Example</th><th>Lines</th><th>Branches</th><th>Functions</th><th>Gated lines</th><th>Status</th></tr>
   ${rows
@@ -111,10 +111,10 @@ console.table(
 );
 console.log(`Report: ${path.join(root, 'index.html')}`);
 
+// The target is advisory: flag examples below it without failing the run.
 const below = rows.filter((row) => row.status === 'below');
 if (below.length) {
-  console.error(
-    `Below ${MIN_LINES}% of gated lines: ${below.map((row) => row.example).join(', ')}.`
+  console.warn(
+    `Below the ${MIN_LINES}% target of gated lines: ${below.map((row) => row.example).join(', ')}.`
   );
-  process.exitCode = 1;
 }

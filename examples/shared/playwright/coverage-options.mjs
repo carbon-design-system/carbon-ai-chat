@@ -14,13 +14,13 @@
 /** Host the fixture gives built scripts, so each example keeps its own paths. */
 export const COVERAGE_HOST = 'http://localhost';
 
-/** Minimum share of an example's `src/` lines its suite must run. */
+/** Share of an example's `src/` lines its suite should run; advisory. */
 export const MIN_LINES = 80;
 
 /**
  * Examples whose concern cannot be checked deterministically, so their suites
  * prove a mount and any behavior that stays fixed. They are reported, not
- * gated. An entry is a slug for both flavors or `<flavor>/<slug>` for one.
+ * flagged. An entry is a slug for both flavors or `<flavor>/<slug>` for one.
  */
 export const DEFERRED_EXAMPLES = [
   // Random message counts and texts.
@@ -33,7 +33,7 @@ export const DEFERRED_EXAMPLES = [
 /**
  * Examples whose `src/customSendMessage.ts` copies the baseline mock back end
  * without being part of their concern. That back end is proven once, in
- * `basic-custom-element-fullscreen`, so these copies are left out of the gate.
+ * `basic-custom-element-fullscreen`, so these copies are left out of the target.
  */
 export const OFF_CONCERN_BACKENDS = [
   'basic-custom-element-sidebar',

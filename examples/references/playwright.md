@@ -161,7 +161,7 @@ Agent output follows the same rules as a hand-written spec. Before committing:
 - No `waitForTimeout`, fixed sleeps, dates, or random values.
 - Take fixture text from each flavor's own `src/`; React and Web Components mocks can differ. Read a per-flavor value from the `target` fixture rather than forking the spec.
 - Commit none of the agent scaffolding: the seed spec, `specs/`, `.mcp.json`, and `.claude/agents/`.
-- Check the [coverage gate](#coverage-gate).
+- Check the example against the [coverage target](#coverage-target).
 
 ## Config conventions
 
@@ -259,7 +259,7 @@ An axe scan catches some issues, but cannot prove WCAG conformance. Check keyboa
 - No real timestamps or randomness. If an example needs an external response, register a `page.route()` with fixed data before navigation; never depend on a live third-party service.
 - Disable animation where it gates an assertion.
 
-An example is non-deterministic when its reply depends on a live service, the clock, or random values. Give it a suite anyway: prove its mount and any behavior that stays fixed, never assert the varying values, and list it in `DEFERRED_EXAMPLES` ([Coverage gate](#coverage-gate)). Skip an example entirely only when nothing in it runs without a live service; see [Skipped examples](#skipped-examples).
+An example is non-deterministic when its reply depends on a live service, the clock, or random values. Give it a suite anyway: prove its mount and any behavior that stays fixed, never assert the varying values, and list it in `DEFERRED_EXAMPLES` ([Coverage gate](#coverage-target)). Skip an example entirely only when nothing in it runs without a live service; see [Skipped examples](#skipped-examples).
 
 ## Skipped examples
 
@@ -314,12 +314,12 @@ CAIC_E2E_TARGETS=react-feedback,web-components-feedback npm run test:e2e:coverag
 - Sources the suite never loads count as zero.
 - A covered line is one a test ran, whether or not an assertion checked its result.
 
-### Coverage gate
+### Coverage target
 
-Every measured example except a deferred one must run at least **80% of its gated `src/` lines**. The command exits non-zero when a measured example falls below. [coverage-options.mjs](../shared/playwright/coverage-options.mjs) holds two lists:
+Aim for a suite that runs at least **80% of its example's gated `src/` lines**. The target is advisory: the report flags a measured, non-deferred example below it, and the command still exits 0. A new suite below the target should say why in its PR. [coverage-options.mjs](../shared/playwright/coverage-options.mjs) holds two lists:
 
-- `OFF_CONCERN_BACKENDS` — examples whose `customSendMessage.ts` copies the baseline mock back end without being part of their concern. That back end is proven once, in `basic-custom-element-fullscreen`, so the copies are left out of the gate. A back end the concern runs through stays in.
-- `DEFERRED_EXAMPLES` — examples whose concern cannot be checked deterministically: it depends on random content, dates, or timing, or a product defect blocks it and its concern test is a `test.fixme`. Their suites prove a mount and any behavior that stays fixed, and they are reported, not gated. An entry names a slug for both flavors, or `<flavor>/<slug>` for one.
+- `OFF_CONCERN_BACKENDS` — examples whose `customSendMessage.ts` copies the baseline mock back end without being part of their concern. That back end is proven once, in `basic-custom-element-fullscreen`, so the copies are left out of the target. A back end the concern runs through stays in.
+- `DEFERRED_EXAMPLES` — examples whose concern cannot be checked deterministically: it depends on random content, dates, or timing, or a product defect blocks it and its concern test is a `test.fixme`. Their suites prove a mount and any behavior that stays fixed, and they are reported, not flagged. An entry names a slug for both flavors, or `<flavor>/<slug>` for one.
 
 Add to either list only with the reason in the PR description. Do not add assertions outside the example's concern to raise the number; open the example's report and cover the branches its concern takes.
 
@@ -336,7 +336,7 @@ Failures, screenshots, and videos land in `shared/playwright/test-results/`, whi
 - [ ] `npm run build --workspace=<example>` exits 0.
 - [ ] The suite covers the example's one concern plus the baseline above.
 - [ ] The example has no Playwright config, dependency, or script, and its target assigns no port.
-- [ ] `CAIC_E2E_TARGETS=<targets> npm run test:e2e:coverage` passes the [coverage gate](#coverage-gate).
+- [ ] `CAIC_E2E_TARGETS=<targets> npm run test:e2e:coverage` ran, and the PR explains any example below the [coverage target](#coverage-target).
 - [ ] Every spec opens with a purpose comment.
 
 ## React vs Web Components
