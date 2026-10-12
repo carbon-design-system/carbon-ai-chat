@@ -14,6 +14,7 @@ import { carbonElement } from '../../../globals/decorators/carbon-element.js';
 import prefix from '../../../globals/settings.js';
 
 import '../autocomplete/src/autocomplete.js';
+import type { AutocompleteNavigatedEventDetail } from '../autocomplete/src/autocomplete.js';
 import {
   AutocompleteController,
   itemsToGroups,
@@ -46,6 +47,10 @@ import type {
  *   after a suggestion item is selected. Fired in addition to type-specific callbacks.
  * @fires cds-aichat-autocomplete-item-send — `{ text: string }` when the
  *   per-item send button is clicked inside the suggestion list.
+ * @fires cds-aichat-list-navigated — `{ navigated: boolean }` when the user
+ *   starts or stops navigating the suggestion list with arrow keys. WC
+ *   consumers should use this to disable their send control while `navigated`
+ *   is `true` (the `listNavigated` getter reflects the same state).
  */
 @carbonElement(`${prefix}-autocomplete-controller`)
 class AutocompleteControllerElement extends LitElement {
@@ -72,6 +77,22 @@ class AutocompleteControllerElement extends LitElement {
   @state()
   private _state: AutocompleteControllerState = { trigger: null, items: [] };
 
+  /**
+   * Tracks whether the user is actively navigating inside the autocomplete
+   * list. When `true`, the send button should be disabled so that Enter
+   * confirms the highlighted item rather than submitting the prompt.
+   */
+  @state()
+  private _listNavigated = false;
+
+  /**
+   * Returns `true` while the user is navigating inside the autocomplete list.
+   * Consumers can use this to disable their send control.
+   */
+  get listNavigated(): boolean {
+    return this._listNavigated;
+  }
+
   private _controller: AutocompleteController | null = null;
   /**
    * Ancestor we subscribed `cds-aichat-trigger-change` on. Scoping the
@@ -90,6 +111,10 @@ class AutocompleteControllerElement extends LitElement {
   override connectedCallback(): void {
     super.connectedCallback();
     this.addEventListener('mousedown', this._handleMousedown);
+    this.addEventListener(
+      'cds-aichat-autocomplete-navigated',
+      this._handleAutocompleteNavigated as EventListener
+    );
     this._controller = new AutocompleteController({
       mention: this.mention,
       command: this.command,
@@ -122,6 +147,10 @@ class AutocompleteControllerElement extends LitElement {
 
   override disconnectedCallback(): void {
     this.removeEventListener('mousedown', this._handleMousedown);
+    this.removeEventListener(
+      'cds-aichat-autocomplete-navigated',
+      this._handleAutocompleteNavigated as EventListener
+    );
     this._eventSource?.removeEventListener(
       'cds-aichat-trigger-change',
       this._handleTriggerChange as EventListener
@@ -175,6 +204,25 @@ class AutocompleteControllerElement extends LitElement {
   override render() {
     const { trigger, items, renderCustomList, disableDirectSend } = this._state;
     if (!trigger || items.length === 0) {
+      // List is gone — reset navigation state so the send button is unblocked.
+      // This covers cases where the list is removed without an autocomplete
+      // dismiss/select/send event (e.g. the user deletes the trigger character).
+      if (this._listNavigated) {
+        this._listNavigated = false;
+        this.dispatchEvent(
+          new CustomEvent<AutocompleteNavigatedEventDetail>(
+            'cds-aichat-list-navigated',
+            { detail: { navigated: false }, bubbles: true, composed: true }
+          )
+        );
+        // Also fire the lower-level event so send-control's shell listener fires.
+        this.dispatchEvent(
+          new CustomEvent<AutocompleteNavigatedEventDetail>(
+            'cds-aichat-autocomplete-navigated',
+            { detail: { navigated: false }, bubbles: true, composed: true }
+          )
+        );
+      }
       return nothing;
     }
     if (renderCustomList) {
@@ -243,6 +291,24 @@ class AutocompleteControllerElement extends LitElement {
   private _handleMousedown = (event: MouseEvent): void => {
     // Prevent the autocomplete list from stealing focus from the editor.
     event.preventDefault();
+  };
+
+  private _handleAutocompleteNavigated = (event: Event): void => {
+    const { navigated } = (
+      event as CustomEvent<AutocompleteNavigatedEventDetail>
+    ).detail;
+    if (this._listNavigated === navigated) {
+      return;
+    }
+    this._listNavigated = navigated;
+    // Re-fire a composed event so parent elements (e.g. a WC integration shell)
+    // can disable their send control while the user navigates the list.
+    this.dispatchEvent(
+      new CustomEvent<AutocompleteNavigatedEventDetail>(
+        'cds-aichat-list-navigated',
+        { detail: { navigated }, bubbles: true, composed: true }
+      )
+    );
   };
 
   private _handleTriggerChange = (event: Event): void => {

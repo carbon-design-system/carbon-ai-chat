@@ -8,7 +8,7 @@
  */
 
 import { css, html, LitElement, unsafeCSS } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
 import { carbonElement } from '../../../globals/decorators/carbon-element.js';
@@ -77,11 +77,74 @@ class InputSendControlElement extends LitElement {
   @property({ type: String, attribute: 'test-id' })
   testId?: string;
 
-  private _handleSendClick = () => {
-    if (this.disabled || this.disableSend || !this.hasValidInput) {
+  @state()
+  private _autocompleteListNavigated = false;
+
+  // Latches navigated state at gesture start; focusout can clear the live flag
+  // before click fires, so this preserves the blocked state through click.
+  private _navigatedAtPointerdown = false;
+
+  // Autocomplete is a sibling; listen on the shared shell ancestor.
+  private _autocompleteEventSource: EventTarget | null = null;
+
+  override connectedCallback(): void {
+    super.connectedCallback();
+    this._autocompleteEventSource =
+      this.closest(`${prefix}-prompt-line-shell`) ?? this.parentElement;
+    this._autocompleteEventSource?.addEventListener(
+      'cds-aichat-autocomplete-navigated',
+      this._handleAutocompleteNavigated as EventListener
+    );
+    // Capture phase: fires before focus-activation and before pointer-events:none
+    // on the disabled button suppresses the event.
+    document.addEventListener('pointerdown', this._handleDocumentPointerdown, {
+      capture: true,
+    });
+  }
+
+  override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this._autocompleteEventSource?.removeEventListener(
+      'cds-aichat-autocomplete-navigated',
+      this._handleAutocompleteNavigated as EventListener
+    );
+    this._autocompleteEventSource = null;
+    document.removeEventListener(
+      'pointerdown',
+      this._handleDocumentPointerdown,
+      { capture: true }
+    );
+  }
+
+  private _handleAutocompleteNavigated = (event: Event): void => {
+    this._autocompleteListNavigated = (
+      event as CustomEvent<{ navigated: boolean }>
+    ).detail.navigated;
+  };
+
+  private _handleDocumentPointerdown = (event: PointerEvent): void => {
+    if (!event.composedPath().includes(this)) {
       return;
     }
+    const navigated = this._autocompleteListNavigated;
+    // Sync on every gesture so a cancelled gesture doesn't leave a stale latch.
+    this._navigatedAtPointerdown = navigated;
+    if (navigated) {
+      // Suppress focus-activation so the editor stays focused and the live flag
+      // remains true through the subsequent click.
+      event.preventDefault();
+    }
+  };
 
+  private _handleSendClick = (event: MouseEvent) => {
+    // detail === 0 for keyboard/assistive clicks — don't block those.
+    const blocked =
+      (event.detail > 0 && this._navigatedAtPointerdown) ||
+      this._autocompleteListNavigated;
+    this._navigatedAtPointerdown = false;
+    if (this.disabled || this.disableSend || blocked || !this.hasValidInput) {
+      return;
+    }
     this.dispatchEvent(
       new CustomEvent('cds-aichat-input-send', {
         bubbles: true,
@@ -100,12 +163,14 @@ class InputSendControlElement extends LitElement {
   };
 
   render() {
-    // Check if RTL direction is set
     const isRTL =
       document.dir === 'rtl' || document.documentElement.dir === 'rtl';
 
     const showDisabledSend =
-      !this.hasValidInput || this.disabled || this.disableSend;
+      !this.hasValidInput ||
+      this.disabled ||
+      this.disableSend ||
+      this._autocompleteListNavigated;
 
     if (this.isStopStreamingButtonVisible) {
       return html`

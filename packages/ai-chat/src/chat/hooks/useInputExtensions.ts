@@ -19,9 +19,9 @@ import type {
   StartersConfig,
 } from '../../types/config/InputConfig';
 import {
-  getBuildCarbonExtensionsIfLoaded,
-  loadBuildCarbonExtensions,
-} from '../components/input/buildExtensionsLoader';
+  InputExtensions,
+  buildInputExtensions,
+} from '../services/inputExtensions';
 
 interface UseInputExtensionsArgs {
   mention: TriggerSuggestionConfig | undefined;
@@ -39,10 +39,6 @@ interface UseInputExtensionsArgs {
    */
   enabled: boolean;
 }
-
-// Stable empty reference so a disabled/not-yet-loaded build doesn't hand the
-// prompt-line a fresh array each render (which would recreate the editor).
-const EMPTY_EXTENSIONS: Extension[] = [];
 
 /**
  * Normalizes the suggestion/starter configs (converts React icon components
@@ -83,59 +79,34 @@ function useInputExtensions({
     ]
   );
 
-  // Re-render once the builder chunk resolves (cold rich path); the synchronous
-  // cache lets the warm path (boot-preloaded) build on first render.
+  const controller = useMemo(() => new InputExtensions(), []);
   const [, setLoadTick] = useState(0);
   useEffect(() => {
-    if (enabled && !getBuildCarbonExtensionsIfLoaded()) {
-      let active = true;
-      void loadBuildCarbonExtensions().then(() => {
-        if (active) {
-          setLoadTick((tick) => tick + 1);
-        }
-      });
-      return () => {
-        active = false;
-      };
-    }
-    return undefined;
-  }, [enabled]);
-
-  const buildCarbonExtensions = enabled
-    ? getBuildCarbonExtensionsIfLoaded()
-    : null;
-
-  const extensions = useMemo<Extension[]>(() => {
-    // The curated carbon bundle (mention / command / autocomplete / starters)
-    // pulls Tiptap, so it is only built when `enabled`. Host extensions need no
-    // chunk, so they are always staged onto the prompt-line — even in textarea
-    // mode — so a later on-demand upgrade mounts with them already installed.
-    const carbon = buildCarbonExtensions
-      ? buildCarbonExtensions({
+    controller.connect(enabled, () => setLoadTick((tick) => tick + 1));
+    return controller.disconnect;
+  }, [controller, enabled]);
+  const builder = controller.getBuilder(enabled);
+  const extensions = useMemo(
+    () =>
+      buildInputExtensions(
+        {
           mention: normalizedMention,
           command: normalizedCommand,
           autocomplete: normalizedAutocomplete,
           starters: normalizedStarters,
-        })
-      : [];
-    const host = hostExtensions ?? [];
-    if (carbon.length === 0) {
-      // No carbon bundle: return a stable reference (the host array, or the
-      // shared empty) so a `buildCarbonExtensions` load that yields nothing —
-      // e.g. an extensions-only chat, whose curated bundle is empty — does not
-      // churn the prompt-line's `extensions` prop and needlessly recreate the
-      // live editor (which would drop its content).
-      return host.length === 0 ? EMPTY_EXTENSIONS : host;
-    }
-    return [...carbon, ...host];
-  }, [
-    buildCarbonExtensions,
-    normalizedMention,
-    normalizedCommand,
-    normalizedAutocomplete,
-    normalizedStarters,
-    hostExtensions,
-  ]);
+        },
+        hostExtensions,
+        builder
+      ),
+    [
+      builder,
+      normalizedMention,
+      normalizedCommand,
+      normalizedAutocomplete,
+      normalizedStarters,
+      hostExtensions,
+    ]
+  );
 
   return {
     normalizedMention,

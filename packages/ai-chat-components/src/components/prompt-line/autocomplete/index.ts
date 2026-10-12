@@ -16,6 +16,7 @@ export type {
   AutocompleteI18n,
   AutocompleteSelectEventDetail,
   AutocompleteSendEventDetail,
+  AutocompleteNavigatedEventDetail,
   SuggestionItem,
   SuggestionItemGroup,
 } from './src/autocomplete.js';

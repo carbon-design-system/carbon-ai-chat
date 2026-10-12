@@ -116,7 +116,14 @@ const fullChainOfThought: ChainOfThoughtStep[] = [
   },
 ];
 
-const defaultReasoningSteps: ReasoningStep[] = [
+// The demo streams reasoning word by word, so it only uses plain-text content.
+type TextReasoningStep = ReasoningStep & { content?: string };
+type TextReasoningSteps = Omit<ReasoningSteps, 'steps' | 'content'> & {
+  steps?: TextReasoningStep[];
+  content?: string;
+};
+
+const defaultReasoningSteps: TextReasoningStep[] = [
   {
     title: 'Interpret the request',
     content:
@@ -256,7 +263,7 @@ async function doTextStreaming(
   wordDelay = WORD_DELAY,
   userProfile?: ResponseUserProfile,
   chainOfThought?: ChainOfThoughtStep[],
-  reasoning?: ReasoningSteps,
+  reasoning?: TextReasoningSteps,
   feedback?: GenericItemMessageFeedbackOptions,
   requestOptions?: CustomSendMessageOptions
 ) {

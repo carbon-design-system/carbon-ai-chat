@@ -19,6 +19,7 @@ import {
   Message,
   MessageResponse,
 } from '../../../types/messaging/Messages';
+import { AppConfig } from '../../../types/state/AppConfig';
 import { JSONContent } from '@tiptap/core';
 
 /**
@@ -113,6 +114,25 @@ interface HumanAgentService {
   checkAreAnyHumanAgentsOnline(
     connectMessage: MessageResponse
   ): Promise<HumanAgentsOnlineStatus>;
+
+  /**
+   * Handles a "connect_to_agent" item: checks whether any human agents are online, with
+   * the loading indicator up while it waits, records the result on the message, and
+   * starts the chat right away when the configuration skips the connect card. With no
+   * service desk configured, it reports an integration error and records that instead.
+   *
+   * @param localMessageItem The local item for the "connect_to_agent" item.
+   * @param fullMessage The message the item belongs to.
+   * @param config The configuration to act on.
+   * @param initialRestartCount The restart count when the message arrived. The result is
+   * dropped when the conversation restarted while the check was pending.
+   */
+  handleConnectToHumanAgent(
+    localMessageItem: LocalMessageItem,
+    fullMessage: MessageResponse,
+    config: AppConfig,
+    initialRestartCount: number
+  ): Promise<void>;
 
   /**
    * Indicates that the user has selected some files to be uploaded but that the user has not yet chosen to send

@@ -7,6 +7,8 @@
  *  @license
  */
 
+import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
+import { WriteableElementName } from '../../../src/types/instance/WriteableElements';
 import { waitFor } from '@testing-library/react';
 import { deepQuerySelector } from '@carbon/ai-chat-components/es/globals/utils/dom-utils.js';
 import type { PromptLineElement } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
@@ -251,4 +253,89 @@ describe('ChatInstance.input.updateRawValue (deprecation policy)', () => {
     instance.input.updateRawValue(() => 'hello');
     expect(store.getState().assistantInputState.rawValue).toBe('hello');
   });
+});
+
+describe('custom prompt line input ownership', () => {
+  beforeEach(setupBeforeEach);
+  afterEach(setupAfterEach);
+
+  it.each([true, false])(
+    'rejects all editor writes without calling their updaters (visible: %s)',
+    async (isVisible) => {
+      const config = createBaseConfig();
+      config.input = { ...config.input, isVisible };
+      const { instance, store } =
+        await renderChatAndGetInstanceWithStore(config);
+      await instance.input.updateContent(() => docFromText('parked'));
+      instance.input.updateStructuredData(() => ({
+        user_defined: { parked: true },
+      }));
+      const previous = store.getState().assistantInputState;
+      const updater = jest.fn();
+      instance.writeableElements[
+        WriteableElementName.CUSTOM_PROMPT_LINE
+      ].append(document.createElement('input'));
+
+      expect(() => instance.input.updateRawValue(updater)).toThrow(
+        'host-owned'
+      );
+      expect(() => instance.input.updateStructuredData(updater)).toThrow(
+        'host-owned'
+      );
+      await expect(instance.input.updateContent(updater)).rejects.toThrow(
+        'host-owned'
+      );
+      await expect(instance.input.getEditor()).rejects.toThrow(
+        'Input is not currently rendered'
+      );
+      expect(updater).not.toHaveBeenCalled();
+      expect(store.getState().assistantInputState).toEqual(previous);
+    }
+  );
+
+  it.each([
+    ['content', 'custom'],
+    ['editor', 'custom'],
+    ['content', 'unmount'],
+    ['editor', 'unmount'],
+  ])(
+    'rejects an interrupted %s upgrade after %s replaces the editor',
+    async (method, interruption) => {
+      const { instance, serviceManager } =
+        await renderChatAndGetInstanceWithStore(createBaseConfig());
+      const manager = (
+        serviceManager.actions as unknown as { serviceManager: ServiceManager }
+      ).serviceManager;
+      const ref = manager.getInputFunctionsRef();
+      let finish: (
+        editor: Awaited<ReturnType<typeof ref.ensureEditor>>
+      ) => void;
+      const pending = new Promise<Awaited<ReturnType<typeof ref.ensureEditor>>>(
+        (resolve) => {
+          finish = resolve;
+        }
+      );
+      jest.spyOn(ref, 'ensureEditor').mockReturnValue(pending);
+      const setContent = jest.spyOn(ref, 'setContent');
+      const result =
+        method === 'content'
+          ? instance.input.updateContent(markedDoc)
+          : instance.input.getEditor();
+      const rejected = expect(result).rejects.toThrow(
+        method === 'content' && interruption === 'custom'
+          ? 'host-owned'
+          : 'Input is not currently rendered'
+      );
+      if (interruption === 'custom') {
+        instance.writeableElements[
+          WriteableElementName.CUSTOM_PROMPT_LINE
+        ].append(document.createElement('input'));
+      } else {
+        jest.spyOn(manager, 'getInputFunctionsRef').mockReturnValue(null);
+      }
+      finish(null);
+      await rejected;
+      expect(setContent).not.toHaveBeenCalled();
+    }
+  );
 });

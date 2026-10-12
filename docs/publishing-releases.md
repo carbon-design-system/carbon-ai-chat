@@ -17,6 +17,7 @@
 - [Troubleshooting](#troubleshooting)
   - [Force publish](#force-publish)
   - [Tag already exists](#tag-already-exists)
+  - [Branch moved during the release](#branch-moved-during-the-release)
 
 ## Overview
 
@@ -262,6 +263,10 @@ If you run into an error saying a tag already exists, that usually means the a p
 Delete the git tags by going to the [tags page on GitHub](https://github.com/carbon-design-system/carbon-ai-chat/tags) and select the `Delete tag` option in next to all the appropriate tags. Then re-run the workflow.
 
 ![Screenshot of tag page on GitHub](https://github.com/user-attachments/assets/c1c58e29-711a-4f14-81cf-9bb752be2b18)
+
+### Branch moved during the release
+
+If the publish step fails with `EBEHIND`, someone pushed to the release branch while the workflow was running. Lerna stops before it publishes anything, so npm and git stay in step. Re-run the workflow; it checks out the new tip.
 
 ### Checks are stuck on pending
 

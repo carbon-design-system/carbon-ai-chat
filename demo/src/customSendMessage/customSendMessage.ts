@@ -30,7 +30,7 @@ async function customSendMessage(
       (f) => f.type === 'file'
     );
     if (fileFields && fileFields.length > 0) {
-      doFileUploadResponse(request, instance);
+      await doFileUploadResponse(request, instance);
     }
 
     // If the message contains @mention or /command fields, echo them back
@@ -40,7 +40,7 @@ async function customSendMessage(
         (f) => f.type === 'mention' || f.type === 'command'
       );
     if (mentionOrCommandFields && mentionOrCommandFields.length > 0) {
-      doMentionCommandResponse(request, instance);
+      await doMentionCommandResponse(request, instance);
     }
 
     if (request.input.text && request.input.text in RESPONSE_MAP) {

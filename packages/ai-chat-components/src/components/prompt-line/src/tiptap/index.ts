@@ -69,7 +69,5 @@ export { TypingIndicator } from './typing-indicator.js';
 export type { TypingIndicatorStorage } from './typing-indicator.js';
 export { PlainTextPaste } from './plain-text-paste.js';
 export { Keymap } from './keymap.js';
-export { default as Placeholder } from '@tiptap/extension-placeholder';
-export { UndoRedo } from '@tiptap/extensions';
 export { HISTORY_DEFAULTS } from '../prompt-line-constants.js';
 export type { StarterTriggerStorage } from './carbon-starter-trigger.js';

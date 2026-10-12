@@ -219,6 +219,7 @@ class PromptLineStartersStory extends LitElement {
   static properties = {
     _startersEnabled: { state: true },
     _inputHasText: { state: true },
+    _listNavigated: { state: true },
     placeholder: {},
     disabled: { type: Boolean },
     rounded: { type: Boolean },
@@ -240,6 +241,7 @@ class PromptLineStartersStory extends LitElement {
     super();
     this._startersEnabled = true;
     this._inputHasText = false;
+    this._listNavigated = false;
     this.placeholder = 'Ask a question…';
     this.disabled = false;
     this.rounded = false;
@@ -277,6 +279,10 @@ class PromptLineStartersStory extends LitElement {
 
   _onItemSend(e) {
     action('cds-aichat-autocomplete-send')(e.detail.text);
+  }
+
+  _onListNavigated(e) {
+    this._listNavigated = e.detail.navigated;
   }
 
   _renderCustomList({ items, onSelect, onDismiss, onSend }) {
@@ -342,7 +348,8 @@ class PromptLineStartersStory extends LitElement {
             slot="autocomplete-content"
             .starters=${startersConfig}
             @cds-aichat-autocomplete-item-selected=${(e) => this._onItemSelected(e)}
-            @cds-aichat-autocomplete-item-send=${(e) => this._onItemSend(e)}></cds-aichat-autocomplete-controller>
+            @cds-aichat-autocomplete-item-send=${(e) => this._onItemSend(e)}
+            @cds-aichat-autocomplete-navigated=${(e) => this._onListNavigated(e)}></cds-aichat-autocomplete-controller>
           <div slot="message-actions">
             <cds-icon-button
               size="sm"
@@ -363,7 +370,7 @@ class PromptLineStartersStory extends LitElement {
             ?disabled=${this.disabled}
             .hasValidInput=${this._inputHasText}
             ?show-stop-streaming=${this.isStopStreamingButtonVisible}
-            ?disable-send=${this.disableSend}
+            ?disable-send=${this.disableSend || this._listNavigated}
             ?disable-stop-streaming=${this.isStopStreamingButtonDisabled}
             button-label=${this.buttonLabel}
             stop-response-label=${this.stopResponseLabel}
@@ -554,6 +561,7 @@ if (!customElements.get('prompt-line-story-file-uploads')) {
 
 class PromptLineCommandsAndMentionsStory extends LitElement {
   static properties = {
+    _listNavigated: { state: true },
     placeholder: {},
     disabled: { type: Boolean },
     rounded: { type: Boolean },
@@ -572,6 +580,7 @@ class PromptLineCommandsAndMentionsStory extends LitElement {
 
   constructor() {
     super();
+    this._listNavigated = false;
     this.placeholder = 'Type something...';
     this.disabled = false;
     this.rounded = true;
@@ -652,6 +661,10 @@ class PromptLineCommandsAndMentionsStory extends LitElement {
     action('cds-aichat-prompt-change')(e.detail);
   }
 
+  _onListNavigated(e) {
+    this._listNavigated = e.detail.navigated;
+  }
+
   render() {
     return html`
       <style>
@@ -689,7 +702,8 @@ class PromptLineCommandsAndMentionsStory extends LitElement {
             <cds-aichat-autocomplete-controller
               slot="autocomplete-content"
               .mention=${this._mentionConfig}
-              .command=${this._commandConfig}></cds-aichat-autocomplete-controller>
+              .command=${this._commandConfig}
+              @cds-aichat-autocomplete-navigated=${(e) => this._onListNavigated(e)}></cds-aichat-autocomplete-controller>
             <prompt-line-story-inline-actions
               .actions=${dummyActions}
               ?disabled=${this.disabled}></prompt-line-story-inline-actions>
@@ -697,7 +711,7 @@ class PromptLineCommandsAndMentionsStory extends LitElement {
               slot="send-control"
               ?disabled=${this.disabled}
               ?show-stop-streaming=${this.isStopStreamingButtonVisible}
-              ?disable-send=${this.disableSend}
+              ?disable-send=${this.disableSend || this._listNavigated}
               ?disable-stop-streaming=${this.isStopStreamingButtonDisabled}
               button-label=${this.buttonLabel}
               stop-response-label=${this.stopResponseLabel}
@@ -726,6 +740,7 @@ if (!customElements.get('prompt-line-story-commands-and-mentions')) {
 class PromptLineTypeaheadStory extends LitElement {
   static properties = {
     _inputText: { state: true },
+    _listNavigated: { state: true },
     placeholder: {},
     disabled: { type: Boolean },
     rounded: { type: Boolean },
@@ -746,6 +761,7 @@ class PromptLineTypeaheadStory extends LitElement {
   constructor() {
     super();
     this._inputText = '';
+    this._listNavigated = false;
     this.placeholder = 'Type something...';
     this.disabled = false;
     this.rounded = true;
@@ -824,6 +840,10 @@ class PromptLineTypeaheadStory extends LitElement {
     action('cds-aichat-autocomplete-send')(e.detail.text);
   }
 
+  _onListNavigated(e) {
+    this._listNavigated = e.detail.navigated;
+  }
+
   render() {
     return html`
       <style>
@@ -858,7 +878,8 @@ class PromptLineTypeaheadStory extends LitElement {
             slot="autocomplete-content"
             .autocomplete=${this._autocompleteConfig}
             @cds-aichat-autocomplete-item-selected=${(e) => this._onItemSelected(e)}
-            @cds-aichat-autocomplete-item-send=${(e) => this._onItemSend(e)}></cds-aichat-autocomplete-controller>
+            @cds-aichat-autocomplete-item-send=${(e) => this._onItemSend(e)}
+            @cds-aichat-autocomplete-navigated=${(e) => this._onListNavigated(e)}></cds-aichat-autocomplete-controller>
           <prompt-line-story-inline-actions
             .actions=${dummyActions}
             ?disabled=${this.disabled}></prompt-line-story-inline-actions>
@@ -866,7 +887,7 @@ class PromptLineTypeaheadStory extends LitElement {
             slot="send-control"
             ?disabled=${this.disabled}
             ?show-stop-streaming=${this.isStopStreamingButtonVisible}
-            ?disable-send=${this.disableSend}
+            ?disable-send=${this.disableSend || this._listNavigated}
             ?disable-stop-streaming=${this.isStopStreamingButtonDisabled}
             button-label=${this.buttonLabel}
             stop-response-label=${this.stopResponseLabel}

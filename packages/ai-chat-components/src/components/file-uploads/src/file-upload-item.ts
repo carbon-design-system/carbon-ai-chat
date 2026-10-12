@@ -338,15 +338,15 @@ class FileUploadItemElement extends LitElement {
     const rules: string[] = [];
     if (this._hasMediaPreview()) {
       rules.push(
-        '.cds--file-filename { margin-inline-start: 2px !important; }'
+        ':host(cds-file-uploader-item) p.cds--file-filename { margin-inline-start: 2px; }'
       );
     }
     if (this.readOnly) {
-      rules.push('.cds--file__state-container { display: none !important; }');
+      rules.push(':host .cds--file__state-container { display: none; }');
       // Carbon hangs the chip's trailing padding off the status container, so
       // hiding it leaves the name flush to the edge against a 1rem leading margin.
       // Restate it on the name to even the two sides up.
-      rules.push('.cds--file-filename { margin-inline-end: 1rem !important; }');
+      rules.push('.cds--file-filename { margin-inline-end: 1rem; }');
     }
 
     const nextText = rules.join('\n');

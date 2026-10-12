@@ -12,7 +12,6 @@
  *   - AriaAnnouncerProvider drives mountAriaAnnouncer with the correct options
  *     and forwards announcements through the context function.
  *   - ProcessingWithText calls the announcer when visible with a typing message.
- *   - ModalAnnounce (the ConfirmModal helper) calls the announcer on mount.
  */
 
 import React, { useContext } from 'react';

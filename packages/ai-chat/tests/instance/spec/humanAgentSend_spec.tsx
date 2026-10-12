@@ -132,7 +132,7 @@ async function setupHumanAgentChat() {
     await renderChatAndGetInstanceWithStore(config);
 
   // `instance.serviceManager` is a rest-spread copy built for tests
-  // (ChatInstanceImpl drops the circular `instance` ref), so it is a plain
+  // (`chatBoot.ts` drops the circular `instance` ref), so it is a plain
   // object: the prototype — and with it `fire` — does not survive. Put `fire`
   // back, wired to the real event bus, or the pre:send dispatch throws.
   (serviceManager as any).instance = instance;

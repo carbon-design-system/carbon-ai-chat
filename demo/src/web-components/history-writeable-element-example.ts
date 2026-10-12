@@ -10,7 +10,7 @@ import '@carbon/ai-chat-components/es/components/chat-history/index.js';
 import '@carbon/web-components/es/components/icon-button/index.js';
 
 import { ChatInstance, PanelType } from '@carbon/ai-chat';
-import { focusElementAfterRepaint } from '@carbon/ai-chat-components/es/globals/utils/focus-utils';
+import { focusElementAfterRepaint } from '@carbon/ai-chat-components/es/globals/utils/focus-utils.js';
 import { css, html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';

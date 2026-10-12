@@ -1,6 +1,6 @@
 # revision-pass.md — the revision pass and word economy (every type)
 
-Load this at step 4 of the loop, on every draft — including one whose reading-level score came back green. It is the only part of [caic-copy-writer](../SKILL.md) that binds all fourteen copy types, plus the git-ignored working docs that have no row of their own: plan files and session notes.
+Load this at step 4 of the loop, on every draft — including one whose reading-level score came back green. Apply it alongside [the shared skim-reading rule](../SKILL.md#write-for-readers-who-skip-to-code) to all copy, including git-ignored working docs such as plan files and session notes.
 
 Seven rules, all checkable by reading. The first six tighten sentences; the seventh orders the document.
 

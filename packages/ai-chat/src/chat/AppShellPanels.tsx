@@ -8,6 +8,9 @@
  */
 
 import React from 'react';
+import { EndHumanAgentChatPanel } from './components/panels/EndHumanAgentChatPanel';
+import { RequestScreenSharePanel } from './components/panels/RequestScreenSharePanel';
+import type { HumanAgentConfirmation } from './contexts/HumanAgentConfirmationContext';
 import type CDSButton from '@carbon/web-components/es/components/button/button.js';
 import cx from 'classnames';
 import ChatPanel from '@carbon/ai-chat-components/es/react/panel.js';
@@ -40,11 +43,16 @@ import WriteableElement from './components/helpers/WriteableElement/WriteableEle
 import { PageObjectId } from '../testing/PageObjectId';
 
 interface AppShellPanelsProps extends HasServiceManager {
+  endChatConfirmation: HumanAgentConfirmation | null;
+  showEndChatConfirmation: boolean;
+  confirmHumanAgentEndChat: () => void;
+  hideConfirmEndChat: () => void;
+  showScreenShareRequest: boolean;
   isHydratingComplete: boolean;
   shouldShowHydrationPanel: boolean;
   onPanelOpenStart: (isPanel: boolean) => void;
-  onPanelOpenEnd: () => void;
-  onPanelCloseStart: () => void;
+  onPanelOpenEnd: (event: CustomEvent) => void;
+  onPanelCloseStart: (event: CustomEvent) => void;
   onPanelCloseEnd: (isPanel: boolean) => void;
   onClose: () => void;
   onRestart: () => void;
@@ -86,6 +94,11 @@ function isCustomPanelConfigOptions(
  */
 export const AppShellPanels = React.memo(function AppShellPanels({
   serviceManager,
+  endChatConfirmation,
+  showEndChatConfirmation,
+  confirmHumanAgentEndChat,
+  hideConfirmEndChat,
+  showScreenShareRequest,
   isHydratingComplete,
   shouldShowHydrationPanel,
   onPanelOpenStart,
@@ -181,6 +194,14 @@ export const AppShellPanels = React.memo(function AppShellPanels({
 
   return (
     <div slot="panels">
+      <EndHumanAgentChatPanel
+        open={showEndChatConfirmation || Boolean(endChatConfirmation)}
+        onConfirm={endChatConfirmation?.onConfirm ?? confirmHumanAgentEndChat}
+        onCancel={endChatConfirmation?.onCancel ?? hideConfirmEndChat}
+        title={endChatConfirmation?.title}
+        message={endChatConfirmation?.message}
+      />
+      <RequestScreenSharePanel open={showScreenShareRequest} />
       <ChatPanel
         panelAriaLabel={languagePack.aria_catastrophicErrorPanel}
         open={Boolean(catastrophicErrorPanelState?.isOpen)}
@@ -275,19 +296,19 @@ export const AppShellPanels = React.memo(function AppShellPanels({
           );
           onPanelOpenStart(true);
         }}
-        onOpenEnd={() => {
+        onOpenEnd={(event: CustomEvent) => {
           serviceManager.eventBus.fire(
             { type: BusEventType.CUSTOM_PANEL_OPEN },
             serviceManager.instance
           );
-          onPanelOpenEnd();
+          onPanelOpenEnd(event);
         }}
-        onCloseStart={() => {
+        onCloseStart={(event: CustomEvent) => {
           serviceManager.eventBus.fire(
             { type: BusEventType.CUSTOM_PANEL_PRE_CLOSE },
             serviceManager.instance
           );
-          onPanelCloseStart();
+          onPanelCloseStart(event);
         }}
         onCloseEnd={() => {
           serviceManager.eventBus.fire(

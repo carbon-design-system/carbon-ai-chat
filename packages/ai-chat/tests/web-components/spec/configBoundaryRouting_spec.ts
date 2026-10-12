@@ -9,7 +9,7 @@
 
 /**
  * Cross-surface re-render guard: a prop update driven through the public
- * web-component boundary (`cds-aichat-container` -> `cds-aichat-internal` ->
+ * web-component boundary (`cds-aichat-container` ->
  * `root.render` -> `ChatAppEntry`) must reach the store as a single, reconciled
  * change. Reference reconciliation is what lets the narrowed selectors that drive
  * `AppShell` and the message list skip re-rendering on an unrelated update — so

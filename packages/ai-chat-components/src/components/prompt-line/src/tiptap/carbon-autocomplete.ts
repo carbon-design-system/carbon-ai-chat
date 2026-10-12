@@ -71,34 +71,33 @@ export function carbonAutocomplete(
             if (!text || text.length === 0) {
               return null;
             }
-            // Restrict the query to the trailing word (split on whitespace).
-            const trailing = /\S+$/.exec(text);
-            if (!trailing) {
-              return null;
-            }
-            const query = trailing[0];
             // Yield to co-installed mention/command extensions so they win
-            // when their trigger char is active.
-            for (const excluded of excludeTriggers) {
-              if (!query.startsWith(excluded.char)) {
-                continue;
-              }
-              if (excluded.position === 'anywhere') {
-                return null;
-              }
-              if (text === query) {
-                return null;
+            // when their trigger char is the active (trailing) word.
+            const trailing = /\S+$/.exec(text);
+            if (trailing) {
+              const trailingWord = trailing[0];
+              for (const excluded of excludeTriggers) {
+                if (!trailingWord.startsWith(excluded.char)) {
+                  continue;
+                }
+                if (excluded.position === 'anywhere') {
+                  return null;
+                }
+                // text matches an excluded trigger
+                if (text === trailingWord) {
+                  return null;
+                }
               }
             }
-            const matchStart =
-              $position.start() + $position.parentOffset - query.length;
+            // Use the full paragraph text as the query so spaces are included.
+            const matchStart = $position.start();
             return {
               range: {
                 from: matchStart,
                 to: $position.start() + $position.parentOffset,
               },
-              query,
-              text: query,
+              query: text,
+              text,
             };
           },
           render: () => ({
@@ -123,7 +122,7 @@ export function carbonAutocomplete(
             },
             onExit: (props) => {
               lastQuery = null;
-              dispatchTriggerChange(props.editor, null);
+              dispatchTriggerChange(props.editor, null, 'autocomplete');
             },
             onKeyDown: () => false,
           }),

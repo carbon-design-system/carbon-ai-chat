@@ -64,7 +64,7 @@ async function customSendMessage(
       generic: [
         {
           response_type: MessageResponseTypes.TEXT,
-          text: 'That is super great!',
+          text: 'That is super great.',
         },
       ],
     },

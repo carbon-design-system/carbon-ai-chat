@@ -7,6 +7,11 @@
  *  @license
  */
 
+const { createRequire } = require('node:module');
+
+// Tests use the root Babel 8 tools while Rollup still requires Babel 7.
+const requireFromRoot = createRequire(`${__dirname}/../../package.json`);
+
 module.exports = {
   preset: 'ts-jest/presets/default-esm',
   testEnvironment: 'jsdom',
@@ -22,25 +27,25 @@ module.exports = {
           module: 'esnext',
           target: 'es2022',
           lib: ['es2022', 'dom', 'dom.iterable'],
-          moduleResolution: 'node',
+          moduleResolution: 'bundler',
           jsx: 'react-jsx',
         },
       },
     ],
     '^.+\\.(js|jsx|mjs)$': [
-      'babel-jest',
+      requireFromRoot.resolve('babel-jest'),
       {
         babelrc: false,
         configFile: false,
         presets: [
           [
-            '@babel/preset-env',
+            requireFromRoot.resolve('@babel/preset-env'),
             {
               targets: { node: 'current' },
               modules: 'commonjs',
             },
           ],
-          '@babel/preset-react',
+          requireFromRoot.resolve('@babel/preset-react'),
         ],
       },
     ],
@@ -51,7 +56,7 @@ module.exports = {
     '\\.(css|less|scss|sass)$': '<rootDir>/tests/transforms/cssTransform.cjs',
   },
   transformIgnorePatterns: [
-    '/node_modules/(?!(?:@lit|lit|lit-html|lit-element|@carbon|lodash-es|@floating-ui|uuid|csv-stringify|compute-scroll-into-view|@ibm|classnames|tabbable|dayjs|dompurify|focus-trap-react|intl-messageformat|markdown-it|@formatjs|@codemirror|@lezer|crelt|style-mod|w3c-keyname|flatpickr)/).*\\.js$',
+    '/node_modules/(?!(?:@lit|lit|lit-html|lit-element|@carbon|lodash-es|@floating-ui|uuid|csv-stringify|compute-scroll-into-view|@ibm|classnames|tabbable|dayjs|dompurify|intl-messageformat|markdown-it|@formatjs|@codemirror|@lezer|crelt|style-mod|w3c-keyname|flatpickr)/).*\\.js$',
   ],
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
   collectCoverageFrom: [

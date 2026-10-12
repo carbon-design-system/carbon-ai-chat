@@ -36,7 +36,7 @@ import React, { FunctionComponent } from 'react';
 import {
   CarbonIcon,
   CarbonIconDescriptor,
-} from '@carbon/web-components/es/globals/internal/icon-loader-utils';
+} from '@carbon/web-components/es/globals/internal/icon-loader-utils.js';
 
 type CarbonIconProps = React.SVGProps<SVGSVGElement> & {
   slot?: string;

@@ -14,6 +14,10 @@ import prefix from '../../../globals/settings.js';
 import commonStyles from '../../../globals/scss/common.scss?lit';
 import styles from './workspace-shell.scss?lit';
 import { HeaderCollapsibleManager } from './header-collapsible-manager.js';
+import {
+  adoptOnRoot,
+  setVarsForSelector,
+} from '../../shared/dynamic-css-var-sheet.js';
 
 /**
  * Workspace Shell.
@@ -46,6 +50,13 @@ class CDSAIChatWorkspaceShell extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
+    // Carbon sets both minimum and maximum widths in the containing tree,
+    // where normal slotted rules cannot override them.
+    adoptOnRoot(this.getRootNode() as Document | ShadowRoot);
+    setVarsForSelector(`${prefix}-workspace-shell > [slot="notification"]`, {
+      'min-inline-size': '0',
+      'max-inline-size': '100%',
+    });
     this.setupHeaderCollapsibleManager();
   }
 
@@ -121,11 +132,13 @@ class CDSAIChatWorkspaceShell extends LitElement {
 
   render() {
     return html`
-      <slot name="toolbar"></slot>
-      <slot name="notification"></slot>
-      <slot name="header"></slot>
-      <slot name="body"></slot>
-      <slot name="footer"></slot>
+      <div class="${prefix}-workspace-shell">
+        <slot name="toolbar"></slot>
+        <slot name="notification"></slot>
+        <slot name="header"></slot>
+        <slot name="body"></slot>
+        <slot name="footer"></slot>
+      </div>
     `;
   }
 }

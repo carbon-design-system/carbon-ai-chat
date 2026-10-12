@@ -143,7 +143,7 @@ function buildTriggerExtension(
           },
           onExit: (props) => {
             lastQuery = null;
-            dispatchTriggerChange(props.editor, null);
+            dispatchTriggerChange(props.editor, null, name);
           },
           onKeyDown: () => false,
         };

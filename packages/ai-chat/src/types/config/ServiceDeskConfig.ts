@@ -236,7 +236,7 @@ export interface ServiceDeskCallback<TPersistedStateType = unknown> {
   ): Promise<void>;
 
   /**
-   * Requests that the user share their screen with the agent. This will present a modal dialog to the user who must
+   * Requests that the user share their screen with the agent. This opens a panel where the user must
    * respond before continuing the conversation. This method returns a Promise that resolves when the user has
    * responded to the request or the request times out.
    *

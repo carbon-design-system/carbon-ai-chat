@@ -293,6 +293,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       const streamingState = item.ui_state.streamingState;
       return {
         id: item.ui_state.id,
+        messageId: item.fullMessageID,
         element: this.messageRefs.get(item.ui_state.id)?.ref?.current ?? null,
         isPinnable: fullMessage
           ? shouldScrollToMessage(fullMessage, allMessagesByID)

@@ -11,6 +11,7 @@ import {
   ButtonItemType,
   ChatInstance,
   MessageResponseTypes,
+  SelectionDisplay,
 } from '@carbon/ai-chat';
 import {
   CHAT_BUTTON_KIND,
@@ -52,6 +53,39 @@ function doButton(instance: ChatInstance) {
         {
           response_type: MessageResponseTypes.BUTTON,
           size: CHAT_BUTTON_SIZE.SMALL,
+          kind: CHAT_BUTTON_KIND.SECONDARY,
+          label: 'Show the sent text',
+          button_type: ButtonItemType.POST_BACK,
+          selection_display: SelectionDisplay.INPUT_TEXT,
+          value: { input: { text: 'text' } },
+        },
+        {
+          response_type: MessageResponseTypes.BUTTON,
+          size: CHAT_BUTTON_SIZE.SMALL,
+          kind: CHAT_BUTTON_KIND.TERTIARY,
+          label: 'Send silently',
+          button_type: ButtonItemType.POST_BACK,
+          silent: true,
+          value: { input: { text: 'card' } },
+        },
+        {
+          response_type: MessageResponseTypes.BUTTON,
+          size: CHAT_BUTTON_SIZE.SMALL,
+          kind: CHAT_BUTTON_KIND.TERTIARY,
+          button_type: ButtonItemType.POST_BACK,
+          value: { input: { text: 'image' } },
+        },
+        {
+          response_type: MessageResponseTypes.BUTTON,
+          size: CHAT_BUTTON_SIZE.SMALL,
+          kind: CHAT_BUTTON_KIND.TERTIARY,
+          label: 'Missing input text',
+          button_type: ButtonItemType.POST_BACK,
+          value: { input: {} },
+        },
+        {
+          response_type: MessageResponseTypes.BUTTON,
+          size: CHAT_BUTTON_SIZE.SMALL,
           kind: CHAT_BUTTON_KIND.TERTIARY,
           button_type: ButtonItemType.SHOW_PANEL,
           label: 'Open a panel',
@@ -65,6 +99,12 @@ function doButton(instance: ChatInstance) {
               },
             ],
             footer: [
+              {
+                response_type: MessageResponseTypes.BUTTON,
+                button_type: ButtonItemType.POST_BACK,
+                label: 'Select footer action',
+                value: { input: { text: 'text' } },
+              },
               {
                 response_type: MessageResponseTypes.BUTTON,
                 button_type: ButtonItemType.URL,

@@ -21,6 +21,35 @@ import '../prompt-line-shell.js';
 import type PromptLineShellElement from '../prompt-line-shell.js';
 
 describe('<cds-aichat-prompt-line-shell>', () => {
+  it('keeps collapsed message actions below the input row under a page margin reset', async () => {
+    const container: HTMLElement = await fixture(html`
+      <div>
+        <style>
+          div {
+            margin: 0;
+          }
+        </style>
+        <cds-aichat-prompt-line-shell>
+          <div slot="message-actions"><button>Attach</button></div>
+          <div slot="editor">Message</div>
+        </cds-aichat-prompt-line-shell>
+      </div>
+    `);
+    const el = container.querySelector(
+      'cds-aichat-prompt-line-shell'
+    ) as PromptLineShellElement;
+    await el.updateComplete;
+
+    const row = el.shadowRoot!.querySelector(
+      '.cds-aichat--input-text-and-actions'
+    ) as HTMLElement;
+    const actions = el.querySelector('[slot="message-actions"]') as HTMLElement;
+
+    expect(
+      actions.getBoundingClientRect().top - row.getBoundingClientRect().top
+    ).to.be.closeTo(12, 0.5);
+  });
+
   it('renders the layout chrome with named slots', async () => {
     const el: PromptLineShellElement = await fixture(html`
       <cds-aichat-prompt-line-shell></cds-aichat-prompt-line-shell>
@@ -224,5 +253,102 @@ describe('<cds-aichat-prompt-line-shell>', () => {
     expect(el.querySelector('#my-editor')).to.not.equal(null);
     expect(el.querySelector('#my-send')).to.not.equal(null);
     expect(el.querySelector('#my-msg')).to.not.equal(null);
+  });
+
+  it('exposes a `prompt-container` CSS part on the input container', async () => {
+    const el: PromptLineShellElement = await fixture(html`
+      <cds-aichat-prompt-line-shell></cds-aichat-prompt-line-shell>
+    `);
+    await el.updateComplete;
+
+    const container = el.shadowRoot?.querySelector(
+      '[part~="prompt-container"]'
+    ) as HTMLElement | null;
+    expect(container).to.not.equal(null);
+    expect(
+      container!.classList.contains('cds-aichat--input-container')
+    ).to.equal(true);
+  });
+
+  it('applies --cds-aichat-prompt-border to the input container', async () => {
+    const el: PromptLineShellElement = await fixture(html`
+      <div>
+        <style>
+          cds-aichat-prompt-line-shell {
+            --cds-aichat-prompt-border: 2px solid rgb(255, 0, 0);
+          }
+        </style>
+        <cds-aichat-prompt-line-shell></cds-aichat-prompt-line-shell>
+      </div>
+    `).then(
+      (wrapper) =>
+        wrapper.querySelector(
+          'cds-aichat-prompt-line-shell'
+        ) as PromptLineShellElement
+    );
+    await el.updateComplete;
+
+    const container = el.shadowRoot?.querySelector(
+      '.cds-aichat--input-container'
+    ) as HTMLElement;
+    const style = getComputedStyle(container);
+    expect(style.borderTopWidth).to.equal('2px');
+    expect(style.borderTopColor).to.equal('rgb(255, 0, 0)');
+  });
+
+  it('leaves the error outline in place when a prompt border is set', async () => {
+    const wrapper: HTMLElement = await fixture(html`
+      <div>
+        <style>
+          cds-aichat-prompt-line-shell {
+            --cds-aichat-prompt-border: 2px solid rgb(255, 0, 0);
+          }
+        </style>
+        <cds-aichat-prompt-line-shell has-error></cds-aichat-prompt-line-shell>
+      </div>
+    `);
+    const el = wrapper.querySelector(
+      'cds-aichat-prompt-line-shell'
+    ) as PromptLineShellElement;
+    await el.updateComplete;
+
+    const style = getComputedStyle(
+      el.shadowRoot!.querySelector('.cds-aichat--input-container')!
+    );
+    expect(style.borderTopWidth).to.equal('2px');
+    expect(style.outlineStyle).to.equal('solid');
+    expect(style.outlineWidth).to.equal('1px');
+    expect(style.outlineColor).to.not.equal('rgba(0, 0, 0, 0)');
+  });
+
+  it('leaves the focus outline in place when a prompt border is set', async () => {
+    const wrapper: HTMLElement = await fixture(html`
+      <div>
+        <style>
+          cds-aichat-prompt-line-shell {
+            --cds-aichat-prompt-border: 2px solid rgb(255, 0, 0);
+          }
+        </style>
+        <cds-aichat-prompt-line-shell>
+          <input slot="editor" id="editor" />
+        </cds-aichat-prompt-line-shell>
+      </div>
+    `);
+    const el = wrapper.querySelector(
+      'cds-aichat-prompt-line-shell'
+    ) as PromptLineShellElement;
+    await el.updateComplete;
+    const container = el.shadowRoot!.querySelector(
+      '.cds-aichat--input-container'
+    ) as HTMLElement;
+    expect(getComputedStyle(container).outlineColor).to.equal(
+      'rgba(0, 0, 0, 0)'
+    );
+
+    (wrapper.querySelector('#editor') as HTMLInputElement).focus();
+
+    const style = getComputedStyle(container);
+    expect(style.borderTopWidth).to.equal('2px');
+    expect(style.outlineColor).to.not.equal('rgba(0, 0, 0, 0)');
   });
 });

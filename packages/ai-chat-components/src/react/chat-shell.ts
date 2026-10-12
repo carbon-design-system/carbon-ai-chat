@@ -17,6 +17,9 @@ const CDSAIChatShell = withWebComponentBridge(
     tagName: 'cds-aichat-shell',
     elementClass: CDSChatShellElement,
     react: React,
+    events: {
+      onPanelFocusFallback: 'cds-aichat-shell-panel-focus-fallback',
+    },
   })
 );
 
