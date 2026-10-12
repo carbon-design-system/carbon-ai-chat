@@ -42,6 +42,7 @@ test('replaces the conversation with a pinned one from the history panel', async
   target,
 }) => {
   // Observed: the Web Components host lays its history list out one viewport height down, so the panel column looks empty and its items are off screen.
+  // Tracked in #2525.
   test.fixme(
     target.startsWith('web-components-'),
     'The history list renders below the viewport.'
