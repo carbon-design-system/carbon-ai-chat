@@ -32,6 +32,7 @@ test('mounts with a usable chat surface', async ({ page }) => {
 // The welcome copy says to click `Start steps demo` again while a run is in
 // progress, but the chat disables it once the run's card becomes the latest
 // message, so the button cannot start a second run.
+// Tracked in #2523.
 test.fixme('starts a second run from the same welcome button', async ({
   page,
 }) => {

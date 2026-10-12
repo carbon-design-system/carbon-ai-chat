@@ -83,6 +83,7 @@ test('keeps custom tables, transformed links, and actionable checkboxes', async 
 
 // Observed: toggling "Review the design" in the welcome also checks it in every
 // later reply, because checklist ids are source lines shared across messages.
+// Tracked in #2517.
 test.fixme('keeps checklist state per message across a new reply', async ({
   page,
 }) => {
