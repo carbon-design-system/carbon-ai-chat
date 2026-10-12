@@ -45,6 +45,7 @@ test('closes and reopens from the launcher by keyboard', async ({ page }) => {
 
 // Observed: focus falls to <body> on close, although the built-in launcher
 // is meant to take it back (`LauncherContainer` requests focus).
+// Tracked in #2519.
 test.fixme('returns focus to the launcher when the chat closes', async ({
   page,
 }) => {

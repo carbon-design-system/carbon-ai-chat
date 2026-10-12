@@ -60,6 +60,7 @@ test('toggles the sidebar by keyboard and restores the prompt', async ({
 
 // Observed: the host disables the focused toggle while `changeView` resolves,
 // and focus falls to <body>, so a second Enter does nothing.
+// Tracked in #2519.
 test.fixme('keeps focus on the toggle after closing the sidebar', async ({
   page,
 }) => {

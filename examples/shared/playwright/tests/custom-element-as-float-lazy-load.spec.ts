@@ -57,6 +57,7 @@ test('closes and reopens from the launcher by keyboard without the shell', async
 
 // Observed: the host's standalone launcher does not take focus back on
 // close; focus falls to <body>.
+// Tracked in #2519.
 test.fixme('returns focus to the launcher when the chat closes', async ({
   page,
 }) => {
