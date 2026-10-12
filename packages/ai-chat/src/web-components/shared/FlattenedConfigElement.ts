@@ -98,6 +98,7 @@ interface FlattenedConfigElement extends Partial<PublicConfig> {}
  * @attr should-sanitize-html
  * @attr should-take-focus-if-opens-automatically
  * @attr strings
+ * @attr assistantavatarurl
  */
 abstract class FlattenedConfigElement extends LitElement {
   static properties: PropertyDeclarations = buildFlattenedProperties();
