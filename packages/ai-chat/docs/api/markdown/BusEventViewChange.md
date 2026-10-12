@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Events
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.BusEventViewChange.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.BusEventViewChange.html
 
 Fires after the view state has been updated in the store. This event is awaited, making it ideal for async operations that should happen after the view change.
 
@@ -38,7 +38,7 @@ This is used by the event handler to indicate that the view change should be can
 not be changed. Since the view has already changed when this event is fired, this property will cause the view to
 change back. Note that the view change events are *not* fired when the view changes back.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.BusEventViewChange.html#cancelviewchange)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.BusEventViewChange.html#cancelviewchange)
 
 ### newViewState
 
@@ -46,7 +46,7 @@ change back. Note that the view change events are *not* fired when the view chan
 
 The new view state that Carbon AI Chat has switched to. This new state can be changed by the event handler.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.BusEventViewChange.html#newviewstate)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.BusEventViewChange.html#newviewstate)
 
 ### oldViewState
 
@@ -54,7 +54,7 @@ The new view state that Carbon AI Chat has switched to. This new state can be ch
 
 The previous view state from before the view:pre:change event.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.BusEventViewChange.html#oldviewstate)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.BusEventViewChange.html#oldviewstate)
 
 ### reason
 
@@ -62,7 +62,7 @@ The previous view state from before the view:pre:change event.
 
 The reason the view is changing.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.BusEventViewChange.html#reason)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.BusEventViewChange.html#reason)
 
 ### type
 
@@ -70,4 +70,4 @@ The reason the view is changing.
 
 The type of this event.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.BusEventViewChange.html#type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.BusEventViewChange.html#type)

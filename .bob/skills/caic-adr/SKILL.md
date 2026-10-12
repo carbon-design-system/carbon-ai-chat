@@ -37,36 +37,26 @@ If the user asks why an existing decision was made, read its record and explain 
 3. **Write the words with [caic-copy-writer](../caic-copy-writer/SKILL.md)'s loop, type 11** — route, draft, measure, revise, gate. The rules are [adr-prose.md](../caic-copy-writer/references/adr-prose.md).
 4. **Keep the five required `##` sections, in template order.** Consumer impact, Drawbacks, and Alternatives are optional: add one when it carries an argument a reader needs, and delete the heading rather than writing "None." under it. `npm run validate:adrs` fails an unknown section, a missing required one, or the wrong order. Use `###` inside a section.
 
+**Outline the examples before expanding the prose.** Pick the host action, changed behavior, and consequential limit a skimming reader must understand. Give each example or decision table one of those jobs. Apply the [skim-reading rules](../caic-copy-writer/SKILL.md#write-for-readers-who-skip-to-code), then fill only the gaps the examples leave.
+
 What each section has to settle:
 
 | Section | Settles | The test |
 | --- | --- | --- |
 | Summary | Problem, proposal, 2–3 feedback questions | A stranger reading only this can say what's proposed and whether it concerns them |
 | Motivation | Who hits the problem, and why now | Every cost is concrete and stated in consumer terms |
-| Proposal | What a host writes, then `### Reference` with exact types and behavior, explained in JSDoc on the types | Precise enough to review a diff against, and each block readable on its own |
+| Proposal | What a host writes, then `### Reference` with the exact contract in its native form | Precise enough to review a diff against, and each block readable on its own |
 | Consumer impact _(optional)_ | Before and after code for every host that changes | Silent breaks (UI goes quiet, wrong data) come first. A deprecation isn't impact: the record that retires the thing owns that |
 | Drawbacks _(optional)_ | Costs the proposal accepts, that nothing else in the record already names | Each is a cost of this decision, not a restatement of Consumer impact or packaging |
 | Alternatives _(optional)_ | Only ones someone proposed or a reader would raise | Each names the specific cost that lost it |
 | Open questions | What stays undecided or deferred | Each is a real question, not a to-do |
 | Decision | "Not decided. Feedback by DATE in the RFC discussion linked above." | Filled in only when a maintainer decides |
 
-## Write Reference sections as commented types
+## Write Reference in the contract's native form
 
-**Put the explanation in JSDoc on the type it describes.** A reader can then lift the block into an editor and still have everything. The alternative — a comment or two in the code, then bullets underneath repeating the rest — makes a reader hold two halves at once, and the halves drift as the proposal changes.
-
-```ts
-// Don't: half in the code, half underneath.
-interface ChatStore<T> {
-  get: () => T; // current value
-  subscribe: (listener: (value: T) => void) => () => void;
-}
-```
-
-- **`subscribe` fires only on change**, never on subscribe.
-- **`get()` returns the same reference** until the next change.
+Use commented types for a TypeScript API, CSS and markup for styling, and decision tables for policy. Do not invent a type just to fill Reference. For types, put behavior in JSDoc so the block stands alone:
 
 ```ts
-// Do: the block explains itself.
 /**
  * One value a host can read and watch. `get` and `subscribe` are bound functions, so
  * they can be passed as bare references.
@@ -85,6 +75,8 @@ interface ChatStore<T> {
 - **Comment what the type can't say**: defaults, what a call rejects on, timing, repeat calls, what clears a value, and which release removes it.
 - **Keep prose after a block for what isn't a type**: packaging, timing, a table of who owns what, a verification note such as a `tsc --strict` check.
 - **`reading-level` strips fenced code**, so the gate cannot see a word of your JSDoc. Read it yourself, and hold it to the same plainness as the prose around it.
+
+Keep the decision and its limits in the main text. Put a long inventory or supporting research in an appendix when readers need it. A publishable ADR must not depend on git-ignored notes; use `###` or a collapsed appendix within the allowed section structure.
 
 ## Set `feedback-by`
 

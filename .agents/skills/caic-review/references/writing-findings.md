@@ -4,7 +4,7 @@ Load this before you write the first finding of a review, and again whenever you
 
 ## Cite the defect, and ship a fix with it
 
-Cite a range when the defect spans lines, and show the fix as a snippet when words alone won't carry it. On a PR, a fix that replaces a line range ships as a `suggestion` block the author accepts in one click — [reviewing-a-pr.md](reviewing-a-pr.md). Never post the objection without the fix. When you genuinely can't name one, name the gap instead — "this drops the second update; whether that's a bug depends on whether the queue is ordered, and I didn't trace it." An objection with a stated gap is workable. An invented fix the author implements is not.
+Cite a range when the defect spans lines. Before drafting PR findings, read [reviewing-a-pr.md](reviewing-a-pr.md#ship-fixes-the-author-can-apply) for required suggestions and complete patches. Prose explains the defect; it does not replace an available suggestion. For local findings, show a snippet when words alone will not carry the fix. Never post the objection without the fix. When you genuinely can't name one, name the gap instead — "this drops the second update; whether that's a bug depends on whether the queue is ordered, and I didn't trace it." An objection with a stated gap is workable. An invented fix the author implements is not.
 
 The consequence names the input or path that reaches the defect — "on every close", "when the list is empty" — not the category. A defect you can't trigger is a guess: drop it, or say what you didn't check.
 
@@ -30,7 +30,7 @@ The other two severities, written the same way — orientation dropped here to s
 - **Important** — `packages/ai-chat/src/chat/store/fooReducer.ts:88` — the reducer rebuilds every item, so one changed message re-renders the whole list. Copy the array and replace the one index.
 - **Nit** — `packages/ai-chat/src/types/config/FooConfig.ts:12` — the JSDoc says "the timeout" with no unit, so a caller guesses seconds. Say "in milliseconds."
 
-Cap the diagnosis at three sentences plus a snippet; the orientation line is not one of the three. A concern that outgrows that — a design direction, a pattern repeated across the diff — is not a line comment: give it one line in the summary and move on.
+Cap the diagnosis at three sentences; the orientation line and fix block are separate. Put a design question or a pattern spanning the diff in the summary. For a settled fix that exceeds inline suggestions, include the complete patch required by [reviewing-a-pr.md](reviewing-a-pr.md#when-suggestions-cannot-carry-the-whole-fix).
 
 ## What isn't a finding
 

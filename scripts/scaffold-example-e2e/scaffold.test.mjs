@@ -44,23 +44,12 @@ function fixture(context) {
   context.after(() => rmSync(root, { recursive: true, force: true }));
   write(
     root,
-    'examples/react/basic-custom-element-fullscreen/package.json',
+    'package.json',
     JSON.stringify({
       devDependencies: { '@playwright/test': playwrightVersion },
     })
   );
-  write(
-    root,
-    'examples/react/basic-custom-element-fullscreen/playwright.config.ts',
-    readFileSync(
-      join(
-        repository,
-        'examples/react/basic-custom-element-fullscreen/playwright.config.ts'
-      ),
-      'utf8'
-    )
-  );
-  for (const file of ['baseConfig.mts', 'helpers/index.ts', 'start-vite.mjs']) {
+  for (const file of ['targets.ts', 'helpers/index.ts', 'start-vite.mjs']) {
     write(
       root,
       `examples/shared/playwright/${file}`,
@@ -86,6 +75,29 @@ function fixture(context) {
     write(root, `examples/${example}/vite.config.ts`, 'export default {};\n');
   }
   return root;
+}
+
+function installPlaywright(root) {
+  mkdirSync(join(root, 'node_modules/@playwright'), { recursive: true });
+  symlinkSync(
+    join(repository, 'node_modules/@playwright/test'),
+    join(root, 'node_modules/@playwright/test')
+  );
+  mkdirSync(join(root, 'node_modules/.bin'), { recursive: true });
+  symlinkSync(
+    join(repository, 'node_modules/@playwright/test/cli.js'),
+    join(root, 'node_modules/.bin/playwright')
+  );
+  write(
+    root,
+    'node_modules/@carbon/ai-chat/package.json',
+    JSON.stringify({ type: 'module', exports: { './server': './server.mjs' } })
+  );
+  write(
+    root,
+    'node_modules/@carbon/ai-chat/server.mjs',
+    'export const PageObjectId = { INPUT: "input", LAUNCHER: "launcher", HOME_SCREEN_PANEL: "homescreen" };\n'
+  );
 }
 
 function snapshot(root, directory = '') {
@@ -160,37 +172,10 @@ test('creates local suites and adds only the required manifest entries', async (
   assert.deepEqual(snapshot(root, 'examples/shared'), beforeShared);
 });
 
-test('Playwright discovers generated tests through local npm scripts with a stub helper', async (context) => {
+test('Playwright discovers generated tests through local npm scripts with shared helpers', async (context) => {
   const root = fixture(context);
   await scaffoldExampleE2e(createOptions, { root });
-  write(
-    root,
-    'examples/shared/playwright/helpers/index.ts',
-    `export { test, expect } from '@playwright/test';
-export async function openExample(page) { await page.goto('/'); }
-export async function waitForChatReady() {}
-`
-  );
-  mkdirSync(join(root, 'node_modules/@playwright'), { recursive: true });
-  symlinkSync(
-    join(repository, 'node_modules/@playwright/test'),
-    join(root, 'node_modules/@playwright/test')
-  );
-  mkdirSync(join(root, 'node_modules/.bin'), { recursive: true });
-  symlinkSync(
-    join(repository, 'node_modules/@playwright/test/cli.js'),
-    join(root, 'node_modules/.bin/playwright')
-  );
-  write(
-    root,
-    'node_modules/@carbon/ai-chat/package.json',
-    JSON.stringify({ type: 'module', exports: { './server': './server.mjs' } })
-  );
-  write(
-    root,
-    'node_modules/@carbon/ai-chat/server.mjs',
-    'export const PageObjectId = { INPUT: "input", LAUNCHER: "launcher", HOME_SCREEN_PANEL: "homescreen" };\n'
-  );
+  installPlaywright(root);
   for (const example of examples) {
     const result = spawnSync(
       process.platform === 'win32' ? 'npm.cmd' : 'npm',
@@ -203,6 +188,51 @@ export async function waitForChatReady() {}
     );
     assert.equal(result.status, 0, result.stderr || result.stdout);
     assert.match(result.stdout, /Total: 2 tests in 1 file/);
+  }
+});
+
+test('generated configs connect shared fixtures to their captured server URL', async (context) => {
+  const root = fixture(context);
+  await scaffoldExampleE2e(createOptions, { root });
+  installPlaywright(root);
+  write(
+    root,
+    'examples/shared/playwright/start-vite.mjs',
+    `import { createServer } from 'node:http';
+import { writeFileSync } from 'node:fs';
+const server = createServer((_request, response) => response.end('ready'));
+server.listen(0, '127.0.0.1', () => {
+  const url = 'http://127.0.0.1:' + server.address().port;
+  writeFileSync('server-url.txt', url);
+  console.log(process.argv[2] + '=' + url);
+});
+process.on('SIGTERM', () => server.close(() => process.exit(0)));
+`
+  );
+  for (const example of examples) {
+    write(
+      root,
+      `examples/${example}/tests/new-concern.spec.ts`,
+      `import { readFileSync } from 'node:fs';
+import { expect, test } from '../../../shared/playwright/helpers';
+
+test('uses the captured server URL', async ({ baseURL }) => {
+  expect(baseURL).toBe(readFileSync('server-url.txt', 'utf8'));
+});
+`
+    );
+    const result = spawnSync(
+      process.platform === 'win32' ? 'npm.cmd' : 'npm',
+      ['run', 'test:e2e'],
+      {
+        cwd: join(root, 'examples', example),
+        encoding: 'utf8',
+        shell: process.platform === 'win32',
+        timeout: 20 * 1000,
+      }
+    );
+    assert.equal(result.status, 0, result.stderr || result.stdout);
+    assert.match(result.stdout, /1 passed/);
   }
 });
 

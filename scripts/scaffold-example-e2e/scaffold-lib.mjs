@@ -17,7 +17,6 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const repoRoot = fileURLToPath(new URL('../../', import.meta.url));
-const goldenPath = 'examples/react/basic-custom-element-fullscreen';
 const startupIds = {
   input: 'INPUT',
   launcher: 'LAUNCHER',
@@ -116,6 +115,43 @@ function planNewFile(root, relativePath, content, changes, preserve = false) {
     );
   }
   changes.push({ path: relativePath, content, create: true });
+}
+
+function renderConfig(example) {
+  const target = example.replace('/', '-');
+  const variable = `CAIC_E2E_URL_${target.toUpperCase().replaceAll('-', '_')}`;
+  return `/*
+ *  Copyright IBM Corp. ${new Date().getFullYear()}
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+import { defineConfig, devices } from '@playwright/test';
+
+export default defineConfig<{ target: string }>({
+  testDir: './tests',
+  timeout: 60 * 1000,
+  workers: 1,
+  retries: process.env.CI ? 1 : 0,
+  webServer: {
+    command: 'node ../../shared/playwright/start-vite.mjs ${variable}',
+    wait: {
+      stdout: /${variable}=(?<${variable}>http:\\/\\/127\\.0\\.0\\.1:\\d+)/,
+    },
+    stdout: 'pipe',
+    timeout: 3 * 60 * 1000,
+    gracefulShutdown: { signal: 'SIGTERM', timeout: 1000 },
+  },
+  use: {
+    target: '${target}',
+    headless: true,
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
+  },
+  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+});
+`;
 }
 
 function renderSpec({ concern, startup, purpose }) {
@@ -235,15 +271,12 @@ function writeChanges(root, changes) {
 export async function scaffoldExampleE2e(options, { root = repoRoot } = {}) {
   validateOptions(options);
   const resolvedRoot = realpathSync(root);
-  const golden = JSON.parse(
-    readText(resolvedRoot, `${goldenPath}/package.json`)
-  );
-  const version = golden.devDependencies?.['@playwright/test'];
+  const manifest = JSON.parse(readText(resolvedRoot, 'package.json'));
+  const version = manifest.devDependencies?.['@playwright/test'];
   if (typeof version !== 'string' || !version.trim()) {
-    throw new Error('The fullscreen golden must declare @playwright/test.');
+    throw new Error('The root package must declare @playwright/test.');
   }
-  const config = readText(resolvedRoot, `${goldenPath}/playwright.config.ts`);
-  readText(resolvedRoot, 'examples/shared/playwright/baseConfig.mts');
+  readText(resolvedRoot, 'examples/shared/playwright/targets.ts');
   readText(resolvedRoot, 'examples/shared/playwright/helpers/index.ts');
   readText(resolvedRoot, 'examples/shared/playwright/start-vite.mjs');
   const changes = [];
@@ -253,7 +286,7 @@ export async function scaffoldExampleE2e(options, { root = repoRoot } = {}) {
     planNewFile(
       resolvedRoot,
       `${directory}/playwright.config.ts`,
-      config,
+      renderConfig(example),
       changes,
       true
     );

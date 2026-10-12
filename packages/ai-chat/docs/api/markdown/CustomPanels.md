@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Instance
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.CustomPanels.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.CustomPanels.html
 
 This manager handles fetching an instance for manipulating the custom panel.
 
@@ -26,4 +26,4 @@ interface CustomPanels
 
 Gets a custom panel instance.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.CustomPanels.html#getpanel)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.CustomPanels.html#getpanel)

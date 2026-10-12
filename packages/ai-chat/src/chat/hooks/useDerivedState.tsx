@@ -9,70 +9,36 @@
 
 import { useMemo } from 'react';
 import { isBrowser } from '../utils/browserUtils';
-import type { PublicConfig } from '../../types/config/PublicConfig';
-import type { PersistedState } from '../../types/state/AppState';
+import {
+  getDerivedState,
+  type DerivedStateOptions,
+} from '../utils/derivedState';
 
-interface UseDerivedStateProps {
-  publicConfig: PublicConfig;
-  persistedToBrowserStorage: PersistedState;
-  isHydratingCounter: number;
-  catastrophicErrorType: string | null | boolean;
-  viewStateMainWindow: boolean;
-}
-
-interface DerivedState {
-  hostname: string;
-  showDisclaimer: boolean;
-  showHomeScreen: boolean;
-  useHomeScreenVersion: boolean;
-  shouldShowHydrationPanel: boolean;
-  isHydratingComplete: boolean;
-}
-
-/**
- * Custom hook to compute derived state values with memoization
- */
 export function useDerivedState({
   publicConfig,
   persistedToBrowserStorage,
   isHydratingCounter,
   catastrophicErrorType,
   viewStateMainWindow,
-}: UseDerivedStateProps): DerivedState {
-  return useMemo(() => {
-    const hostname = isBrowser() ? window.location.hostname : 'localhost';
-    const showDisclaimer =
-      publicConfig.disclaimer?.isOn &&
-      !persistedToBrowserStorage.disclaimersAccepted[hostname];
-    const showHomeScreen =
-      publicConfig.homescreen?.isOn &&
-      persistedToBrowserStorage.homeScreenState.isHomeScreenOpen &&
-      !showDisclaimer;
-    const useHomeScreenVersion =
-      Boolean(publicConfig.homescreen?.isOn) &&
-      !persistedToBrowserStorage.hasSentNonWelcomeMessage;
-    const shouldShowHydrationPanel =
-      Boolean(isHydratingCounter) &&
-      !catastrophicErrorType &&
-      viewStateMainWindow;
-    const isHydratingComplete = isHydratingCounter === 0;
-
-    return {
-      hostname,
-      showDisclaimer,
-      showHomeScreen,
-      useHomeScreenVersion,
-      shouldShowHydrationPanel,
-      isHydratingComplete,
-    };
-  }, [
-    publicConfig.disclaimer?.isOn,
-    publicConfig.homescreen?.isOn,
-    persistedToBrowserStorage.disclaimersAccepted,
-    persistedToBrowserStorage.homeScreenState.isHomeScreenOpen,
-    persistedToBrowserStorage.hasSentNonWelcomeMessage,
-    isHydratingCounter,
-    catastrophicErrorType,
-    viewStateMainWindow,
-  ]);
+}: DerivedStateOptions) {
+  return useMemo(
+    () =>
+      getDerivedState(
+        {
+          publicConfig,
+          persistedToBrowserStorage,
+          isHydratingCounter,
+          catastrophicErrorType,
+          viewStateMainWindow,
+        },
+        isBrowser() ? window.location.hostname : 'localhost'
+      ),
+    [
+      publicConfig,
+      persistedToBrowserStorage,
+      isHydratingCounter,
+      catastrophicErrorType,
+      viewStateMainWindow,
+    ]
+  );
 }

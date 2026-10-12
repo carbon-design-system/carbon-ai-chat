@@ -1,19 +1,18 @@
 {
   "name": "@carbon/ai-chat-examples-web-components-basic-custom-element-fullscreen",
-  "version": "1.22.0-rc.1",
+  "version": "1.22.0",
   "private": true,
   "type": "module",
   "description": "Fullscreen cds-aichat-custom-element Lit example — the canonical baseline for non-float examples.",
   "scripts": {
     "start": "vite",
-    "build": "vite build",
-    "test:e2e": "playwright test"
+    "build": "vite build"
   },
   "author": "IBM Corp",
   "license": "Apache-2.0",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "dependencies": {
-    "@carbon/ai-chat": "^1.22.0-rc.1",
+    "@carbon/ai-chat": "^1.22.0",
     "@carbon/react": "^1.97.0",
     "@carbon/web-components": "^2.58.1",
     "lit": "^3.1.0",
@@ -21,7 +20,6 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@playwright/test": "^1.63.0",
     "@types/node": "^22.20.2",
     "ts-lit-plugin": "^2.0.2",
     "typescript": "^6.0.3",

@@ -277,6 +277,7 @@ export {
   MessageResponseTypes,
   OptionItem,
   OptionItemPreference,
+  SelectionDisplay,
   PartialItemChunk,
   PartialItemChunkWithId,
   PauseItem,
@@ -330,7 +331,7 @@ export {
 
 export { CdsAiChatContainerAttributes } from './web-components/cds-aichat-container/cds-aichat-container';
 
-export { CdsAiChatCustomElementAttributes } from './web-components/cds-aichat-custom-element/index';
+export type { CdsAiChatCustomElementAttributes } from './web-components/cds-aichat-custom-element/types';
 
 export {
   ChatContainerPropsMarkdown,

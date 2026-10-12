@@ -19,9 +19,15 @@ import {
 import type { ServiceManager } from '../../services/ServiceManager';
 import type { FileUpload } from '../../../types/config/ServiceDeskConfig';
 import { hasInFlightUpload, hasSendableInput } from '../../utils/sendableInput';
+import { restoreInputDraft } from '../../utils/restoreInputDraft';
+import { consoleError } from '../../utils/miscUtils';
+import { useSelector } from '../../hooks/useSelector';
 
 interface UseInputValueSyncArgs {
   serviceManager: ServiceManager;
+  restoreDraft: boolean;
+  isInputVisible: boolean;
+  latchRich: () => void;
 
   /**
    * Ref to the live prompt-line element the Redux value is mirrored into.
@@ -82,8 +88,70 @@ function useInputValueSync({
   onSendInput,
   hasErrorProp,
   pendingUploads,
+  restoreDraft,
+  isInputVisible,
+  latchRich,
 }: UseInputValueSyncArgs) {
   const store = serviceManager.store;
+  const isInputToHumanAgent = useSelector(selectIsInputToHumanAgent);
+  const restoredSurface = useRef<{
+    promptLine: PromptLineElement;
+    isInputToHumanAgent: boolean;
+  } | null>(null);
+
+  useEffect(() => {
+    const promptLine = promptLineRef.current;
+    if (
+      !trackInputState ||
+      !restoreDraft ||
+      !isInputVisible ||
+      !promptLine ||
+      (restoredSurface.current?.promptLine === promptLine &&
+        restoredSurface.current.isInputToHumanAgent === isInputToHumanAgent)
+    ) {
+      return undefined;
+    }
+    let canceled = false;
+    void restoreInputDraft(
+      serviceManager,
+      promptLine,
+      isInputToHumanAgent,
+      () => !canceled && promptLineRef.current === promptLine,
+      latchRich
+    )
+      .then((restored) => {
+        if (restored) {
+          restoredSurface.current = { promptLine, isInputToHumanAgent };
+        }
+      })
+      .catch((error) => {
+        if (!canceled) {
+          consoleError('Unable to restore the built-in input draft.', error);
+        }
+      });
+    return () => {
+      canceled = true;
+    };
+  }, [
+    serviceManager,
+    promptLineRef,
+    trackInputState,
+    restoreDraft,
+    isInputVisible,
+    isInputToHumanAgent,
+    latchRich,
+  ]);
+
+  useEffect(() => {
+    if (!trackInputState) {
+      return undefined;
+    }
+    return () => {
+      store.dispatch(
+        actions.updateInputState({ focused: false }, isInputToHumanAgent)
+      );
+    };
+  }, [store, trackInputState, isInputToHumanAgent]);
 
   // Get tracked input state from Redux if enabled
   const trackedInputState = trackInputState
@@ -97,6 +165,7 @@ function useInputValueSync({
 
   const rawInputValueRef = useRef(rawInputValue);
   rawInputValueRef.current = rawInputValue;
+  const mirroredInputSlice = useRef(isInputToHumanAgent);
 
   // Snapshot of the editor's last-known JSONContent. The send path forwards this verbatim so the
   // user message bubble can render structurally (mention chips, custom nodes).
@@ -109,11 +178,21 @@ function useInputValueSync({
     }
 
     const unsubscribe = store.subscribe(() => {
-      const nextInputState = selectInputState(store.getState());
+      const state = store.getState();
+      const nextInputSlice = selectIsInputToHumanAgent(state);
+      const sliceChanged = mirroredInputSlice.current !== nextInputSlice;
+      mirroredInputSlice.current = nextInputSlice;
+      const nextInputState = selectInputState(state);
       const nextRawValue = nextInputState.rawValue ?? '';
 
       if (nextRawValue !== rawInputValueRef.current) {
+        rawInputValueRef.current = nextRawValue;
         setRawInputValue(nextRawValue);
+        // The restore effect applies the new slice's full document after readiness.
+        // Mirroring only its text here would erase rich nodes before that restore.
+        if (restoreDraft && sliceChanged) {
+          return;
+        }
         // Push the Redux-driven value into the surface to keep them aligned.
         // `getValue()` works in both textarea and rich modes (no getEditor()
         // branch), so the sync runs regardless of which surface is mounted.
@@ -125,10 +204,9 @@ function useInputValueSync({
     });
 
     return unsubscribe;
-    // `promptLineRef` is a ref (stable identity); the subscription only needs to
-    // be torn down and rebuilt when the store or tracking flag changes.
+    // `promptLineRef` has stable identity and does not need a subscription dependency.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [store, trackInputState]);
+  }, [store, trackInputState, restoreDraft]);
 
   const overMaxLength = rawInputValue.length > maxInputChars;
 
@@ -155,6 +233,7 @@ function useInputValueSync({
     const { rawValue, content } = event.detail;
 
     setRawInputValue(rawValue);
+    rawInputValueRef.current = rawValue;
     displayContentRef.current = content ?? null;
 
     if (trackInputState) {

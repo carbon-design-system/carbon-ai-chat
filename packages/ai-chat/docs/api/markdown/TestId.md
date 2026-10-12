@@ -10,7 +10,7 @@
 
 - Kind: TypeAlias
 - Category: Testing
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/types/Type_reference.TestId.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0/docs/types/Type_reference.TestId.html
 
 Ids used for data-testid.
 

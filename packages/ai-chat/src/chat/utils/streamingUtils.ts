@@ -293,5 +293,6 @@ export {
   resetStopStreamingButton,
   resolveChunkContext,
   shouldShowStopStreaming,
+  StreamingResponseMeta,
   StreamingTracker,
 };

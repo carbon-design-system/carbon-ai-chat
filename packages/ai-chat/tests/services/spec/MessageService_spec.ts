@@ -111,6 +111,45 @@ describe('MessageService', () => {
     expect((messageService as any).queue.current).toBeNull();
   });
 
+  it("keeps an external stream's stop button visible when another request completes", async () => {
+    const customSendMessage = jest.fn().mockResolvedValue(undefined);
+    const serviceManager = createServiceManagerStub(customSendMessage, {
+      isVisible: true,
+      isDisabled: false,
+    });
+    const messageService = new MessageService(serviceManager, {
+      messaging: {
+        customSendMessage,
+        messageTimeoutSecs: 0,
+        messageLoadingIndicatorTimeoutSecs: 0,
+      },
+    } as any);
+
+    messageService.markCurrentMessageAsStreaming(
+      'external-response',
+      'external-item'
+    );
+
+    await messageService.send(
+      createMessage('separate-request'),
+      MessageSendSource.MESSAGE_INPUT,
+      'local-separate',
+      { silent: false }
+    );
+
+    expect(customSendMessage).toHaveBeenCalledTimes(1);
+    expect((messageService as any).queue.current).toBeNull();
+    expect(messageService.inboundStreaming.streamingMessageID).toBe(
+      'external-response'
+    );
+    expect(serviceManager.store.dispatch).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'SET_STOP_STREAMING_BUTTON_VISIBLE',
+        isVisible: false,
+      })
+    );
+  });
+
   it('cancels a streaming message by response id and advances the queue', async () => {
     const serviceManager = createServiceManagerStub(jest.fn());
     const messageService = new MessageService(serviceManager, {

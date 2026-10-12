@@ -14,7 +14,9 @@ export default defineConfig({
   timeout: 60 * 1000,
   retries: process.env.CI ? 1 : 0,
   webServer: {
-    command: `PORT=${PORT} npm run start`,
+    // A production build: the dev server's first-load dependency scan can
+    // reload the page mid-test.
+    command: `npm run build && npm run preview -- --port ${PORT} --strictPort`,
     port: PORT,
     timeout: 120 * 1000,
     reuseExistingServer: !process.env.CI,

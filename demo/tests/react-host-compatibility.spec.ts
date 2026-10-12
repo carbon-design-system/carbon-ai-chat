@@ -5,6 +5,7 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
+import { PageObjectId } from '@carbon/ai-chat/server';
 import { test, expect, type Page } from '@playwright/test';
 
 /**
@@ -16,7 +17,9 @@ import { test, expect, type Page } from '@playwright/test';
  * Whatever loads first, a React chat keeps rendering in the host's React tree:
  * host context reaches its custom content, that content keeps its state, and
  * page CSS reaches it. The React host adds no height to the page, and page CSS
- * reaches the content the host puts in each slot.
+ * reaches the content the host puts in each slot. Loading the web-component
+ * entry later wakes a plain `cds-aichat-container` that connected while no
+ * renderer existed.
  */
 
 interface ChatInstanceHandle {
@@ -72,6 +75,9 @@ function countRenderTargets(page: Page) {
 
 async function expectLiveReactChat(page: Page) {
   expect(await countRenderTargets(page)).toBe(1);
+  expect(
+    await page.evaluate(() => customElements.get('cds-aichat-react'))
+  ).toBeUndefined();
 
   const instanceBefore = await page.evaluateHandle(
     () => window.hostCompatibility.reactInstance
@@ -120,6 +126,28 @@ test('React chat renders in the host tree when the web-component entry loads fir
   expect(errors).toEqual([]);
 });
 
+test('a plain web component connected before its entry loads wakes when it does', async ({
+  page,
+}) => {
+  const errors = await openHarness(page, 'wait', [
+    'react-entry',
+    'plain',
+    'wc',
+  ]);
+
+  await page.waitForFunction(
+    () => Boolean(window.hostCompatibility.wcInstance),
+    {
+      timeout: 20000,
+    }
+  );
+  await expect(
+    page.locator('#plain-host').getByTestId(PageObjectId.INPUT)
+  ).toBeVisible({ timeout: 15000 });
+  expect(await countRenderTargets(page)).toBe(1);
+  expect(errors).toEqual([]);
+});
+
 /** Opens one chat surface and waits for its instance. */
 async function openSurface(page: Page, surface: string) {
   const errors: string[] = [];
@@ -135,6 +163,16 @@ async function openSurface(page: Page, surface: string) {
   );
   return { errors, instanceKey };
 }
+
+test('a custom element renders when its entry is the only one loaded', async ({
+  page,
+}) => {
+  const { errors } = await openSurface(page, 'wc-custom');
+  await expect(
+    page.locator('cds-aichat-custom-element').getByTestId(PageObjectId.INPUT)
+  ).toBeVisible({ timeout: 15000 });
+  expect(errors).toEqual([]);
+});
 
 test('a float React chat adds no height to a full-height page', async ({
   page,
@@ -253,3 +291,101 @@ for (const [surface, kinds] of PAGE_CSS_ROWS) {
     });
   }
 }
+
+const PROMPT_PART_RULE = (tag: string) =>
+  `${tag}::part(prompt-container) { border: 3px solid rgb(255, 0, 0); }`;
+
+/** Reads the painted border of the prompt line's input container. */
+function readPromptBorder(page: Page) {
+  return page
+    .locator('[part~="prompt-container"]')
+    .first()
+    .evaluate((node) => {
+      const style = getComputedStyle(node);
+      return { width: style.borderTopWidth, color: style.borderTopColor };
+    });
+}
+
+// The `prompt-container` part crosses two shadow boundaries on its way to the
+// page: the prompt-line shell's exportparts into the chat's render root, and
+// the custom element's exportparts out of its own shadow root. The React
+// `ChatCustomElement` is a plain div around a `cds-aichat-container`, so the
+// container is the host the page styles there.
+const PROMPT_PART_ROWS: [string, string][] = [
+  ['wc-container', 'cds-aichat-container'],
+  ['wc-custom', 'cds-aichat-custom-element'],
+  ['react-container', 'cds-aichat-container'],
+  ['react-custom', 'cds-aichat-container'],
+];
+
+for (const [surface, tag] of PROMPT_PART_ROWS) {
+  test(`page CSS styles the prompt container through ::part on ${surface}`, async ({
+    page,
+  }) => {
+    const { errors } = await openSurface(page, surface);
+    await expect(page.getByTestId(PageObjectId.INPUT)).toBeVisible({
+      timeout: 15000,
+    });
+    expect((await readPromptBorder(page)).width).toBe('0px');
+
+    await page.addStyleTag({ content: PROMPT_PART_RULE(tag) });
+
+    await expect
+      .poll(() => readPromptBorder(page))
+      .toEqual({ width: '3px', color: 'rgb(255, 0, 0)' });
+    expect(errors).toEqual([]);
+  });
+}
+
+test('layout.customProperties prompt-border styles the prompt container with the frame off', async ({
+  page,
+}) => {
+  const layout = encodeURIComponent(
+    JSON.stringify({
+      showFrame: false,
+      customProperties: { 'prompt-border': '2px solid rgb(0, 0, 255)' },
+    })
+  );
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto(
+    `/host-compatibility.html?surface=wc-custom&layout=${layout}`
+  );
+  await expect(page.getByTestId(PageObjectId.INPUT)).toBeVisible({
+    timeout: 20000,
+  });
+
+  await expect
+    .poll(() => readPromptBorder(page))
+    .toEqual({ width: '2px', color: 'rgb(0, 0, 255)' });
+  expect(errors).toEqual([]);
+});
+
+test('page CSS styles the prompt container when the rich editor is mounted', async ({
+  page,
+}) => {
+  const input = encodeURIComponent(
+    JSON.stringify({
+      mention: { trigger: '@', items: [{ id: 'ada', label: 'Ada' }] },
+    })
+  );
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto(`/host-compatibility.html?surface=wc-custom&input=${input}`);
+  await expect(page.locator('cds-aichat-prompt-line[rich]')).toHaveCount(1, {
+    timeout: 20000,
+  });
+  await expect(page.locator('.ProseMirror').first()).toBeVisible({
+    timeout: 20000,
+  });
+  expect((await readPromptBorder(page)).width).toBe('0px');
+
+  await page.addStyleTag({
+    content: PROMPT_PART_RULE('cds-aichat-custom-element'),
+  });
+
+  await expect
+    .poll(() => readPromptBorder(page))
+    .toEqual({ width: '3px', color: 'rgb(255, 0, 0)' });
+  expect(errors).toEqual([]);
+});

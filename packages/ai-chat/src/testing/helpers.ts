@@ -23,15 +23,24 @@ async function preloadDayjsLocales() {
 }
 
 /**
- * Eagerly loads every lazily imported dependency across both
- * `@carbon/ai-chat-components` and `@carbon/ai-chat` so tests can preload
- * everything they need (Jest, Vitest, server rendering, etc.). Only available
- * from `@carbon/ai-chat/server`.
+ * Preloads optional components and locales before rendering in tests.
+ * When a DOM is present, also loads the chat UI and startup modules.
+ * Only available from `@carbon/ai-chat/server`.
  *
  * @category Testing
  */
 async function loadAllLazyDeps(): Promise<void> {
-  await Promise.all([loadComponentLazyDeps(), preloadDayjsLocales()]);
+  const dependencies: Promise<unknown>[] = [
+    loadComponentLazyDeps(),
+    preloadDayjsLocales(),
+  ];
+  if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+    dependencies.push(
+      import('../chat/ChatAppEntry'),
+      import('../chat/utils/appConfigUpdates')
+    );
+  }
+  await Promise.all(dependencies);
 }
 
 export { loadAllLazyDeps };

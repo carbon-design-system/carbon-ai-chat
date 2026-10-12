@@ -161,6 +161,8 @@ interface InputProps {
    */
   trackInputState?: boolean;
 
+  restoreDraft?: boolean;
+
   /**
    * Whether the input container should have rounded corners (at wider breakpoints).
    */
@@ -258,6 +260,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     isStopStreamingButtonDisabled,
     maxInputChars = 10000,
     trackInputState = false,
+    restoreDraft = false,
     rounded,
     error,
   } = props;
@@ -394,6 +397,9 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     onSendInput,
     hasErrorProp,
     pendingUploads,
+    restoreDraft,
+    isInputVisible,
+    latchRich,
   });
 
   /**
@@ -659,7 +665,8 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
       rounded={rounded}
       expanded={expanded}
       hasError={hasError}
-      disabled={disableInput}>
+      disabled={disableInput}
+      exportparts="prompt-container">
       <PromptLine
         slot="editor"
         ref={promptLineRef}

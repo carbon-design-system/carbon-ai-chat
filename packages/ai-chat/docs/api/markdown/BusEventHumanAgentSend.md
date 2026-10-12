@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Service desk
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.BusEventHumanAgentSend.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.BusEventHumanAgentSend.html
 
 ## Signature
 
@@ -22,13 +22,13 @@ interface BusEventHumanAgentSend
 
 `data: MessageRequest`
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.BusEventHumanAgentSend.html#data)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.BusEventHumanAgentSend.html#data)
 
 ### files
 
 `files: FileUpload[]`
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.BusEventHumanAgentSend.html#files)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.BusEventHumanAgentSend.html#files)
 
 ### type
 
@@ -36,4 +36,4 @@ interface BusEventHumanAgentSend
 
 The type of this event.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.BusEventHumanAgentSend.html#type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.BusEventHumanAgentSend.html#type)

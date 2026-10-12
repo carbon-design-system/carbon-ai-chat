@@ -10,7 +10,7 @@
 - Category: Utilities
  The prompt-line extension surface is still settling; these
 factory signatures can change in a minor release.
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/functions/Type_reference.buildCarbonExtensions.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0/docs/functions/Type_reference.buildCarbonExtensions.html
 
 Translate the Carbon-curated configs surfaced on InputConfig into
 a Tiptap `Extension` list. Filters out empty configs so the returned list

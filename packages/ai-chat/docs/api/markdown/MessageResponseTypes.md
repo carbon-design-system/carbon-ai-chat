@@ -8,7 +8,7 @@
 
 - Kind: Enum
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.MessageResponseTypes.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0/docs/enums/Type_reference.MessageResponseTypes.html
 
 The set of possible message types in a response.
 
@@ -26,7 +26,7 @@ enum MessageResponseTypes
 
 Displays an audio clip to the user using an audio player.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.MessageResponseTypes.html#audio)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/enums/Type_reference.MessageResponseTypes.html#audio)
 
 ### BUTTON
 
@@ -34,7 +34,7 @@ Displays an audio clip to the user using an audio player.
 
 Displays a button that can either send a message back to the backend, open a url, or throw a client side event.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.MessageResponseTypes.html#button)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/enums/Type_reference.MessageResponseTypes.html#button)
 
 ### CARD
 
@@ -42,7 +42,7 @@ Displays a button that can either send a message back to the backend, open a url
 
 Displays a card that can contain other response types.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.MessageResponseTypes.html#card)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/enums/Type_reference.MessageResponseTypes.html#card)
 
 ### CAROUSEL
 
@@ -50,7 +50,7 @@ Displays a card that can contain other response types.
 
 Displays a carousel of cards that can contain other response types.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.MessageResponseTypes.html#carousel)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/enums/Type_reference.MessageResponseTypes.html#carousel)
 
 ### CONNECT_TO_HUMAN_AGENT
 
@@ -58,7 +58,7 @@ Displays a carousel of cards that can contain other response types.
 
 Indicates that the conversation should be escalated to a human agent and offers that opportunity to the user.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.MessageResponseTypes.html#connect_to_human_agent)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/enums/Type_reference.MessageResponseTypes.html#connect_to_human_agent)
 
 ### CONVERSATIONAL_SEARCH
 
@@ -66,7 +66,7 @@ Indicates that the conversation should be escalated to a human agent and offers 
 
 Ability to show citations on your RAG result.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.MessageResponseTypes.html#conversational_search)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/enums/Type_reference.MessageResponseTypes.html#conversational_search)
 
 ### DATE
 
@@ -74,7 +74,7 @@ Ability to show citations on your RAG result.
 
 Asks the user to provide a date. This may result in a date picker being presented to the user.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.MessageResponseTypes.html#date)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/enums/Type_reference.MessageResponseTypes.html#date)
 
 ### GRID
 
@@ -82,7 +82,7 @@ Asks the user to provide a date. This may result in a date picker being presente
 
 Ability to layout response types inside a grid.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.MessageResponseTypes.html#grid)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/enums/Type_reference.MessageResponseTypes.html#grid)
 
 ### IFRAME
 
@@ -90,7 +90,7 @@ Ability to layout response types inside a grid.
 
 Displays the contents of an iframe to the user.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.MessageResponseTypes.html#iframe)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/enums/Type_reference.MessageResponseTypes.html#iframe)
 
 ### IMAGE
 
@@ -98,7 +98,7 @@ Displays the contents of an iframe to the user.
 
 Displays an image to the user.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.MessageResponseTypes.html#image)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/enums/Type_reference.MessageResponseTypes.html#image)
 
 ### INLINE_ERROR
 
@@ -106,7 +106,7 @@ Displays an image to the user.
 
 Displays a general error message to the user and include developer info to be logged and to debug.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.MessageResponseTypes.html#inline_error)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/enums/Type_reference.MessageResponseTypes.html#inline_error)
 
 ### OPTION
 
@@ -115,7 +115,7 @@ Displays a general error message to the user and include developer info to be lo
 A response that requests the user choose an option from a list. The list of options may be presented as a list
 of buttons or it may be from a drop-down.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.MessageResponseTypes.html#option)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/enums/Type_reference.MessageResponseTypes.html#option)
 
 ### PAUSE
 
@@ -124,7 +124,7 @@ of buttons or it may be from a drop-down.
 Indicates that the chat should display a pause at this point in the conversation before displaying additional
 items.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.MessageResponseTypes.html#pause)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/enums/Type_reference.MessageResponseTypes.html#pause)
 
 ### PREVIEW_CARD
 
@@ -132,7 +132,7 @@ items.
 
 Displays a preview card that can take the user flow to a workspace view.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.MessageResponseTypes.html#preview_card)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/enums/Type_reference.MessageResponseTypes.html#preview_card)
 
 ### SYSTEM
 
@@ -169,7 +169,7 @@ If mixed with other response types, system messages render inline within the mes
 }
 ```
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.MessageResponseTypes.html#system)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/enums/Type_reference.MessageResponseTypes.html#system)
 
 ### TEXT
 
@@ -177,7 +177,7 @@ If mixed with other response types, system messages render inline within the mes
 
 Represents a basic text response. The given text may contain rich content such as markdown.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.MessageResponseTypes.html#text)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/enums/Type_reference.MessageResponseTypes.html#text)
 
 ### USER_DEFINED
 
@@ -185,7 +185,7 @@ Represents a basic text response. The given text may contain rich content such a
 
 A user defined response will be displayed according to custom logic in the client.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.MessageResponseTypes.html#user_defined)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/enums/Type_reference.MessageResponseTypes.html#user_defined)
 
 ### VIDEO
 
@@ -193,4 +193,4 @@ A user defined response will be displayed according to custom logic in the clien
 
 Displays a video to the user using a video player.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/enums/Type_reference.MessageResponseTypes.html#video)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/enums/Type_reference.MessageResponseTypes.html#video)

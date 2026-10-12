@@ -124,10 +124,10 @@ function commandOnRemove(item: SuggestionItem): void {
  * structured-data fields. Echoes what was attached as a text message before
  * the standard response for the utterance is shown.
  */
-function doMentionCommandResponse(
+async function doMentionCommandResponse(
   request: MessageRequest,
   instance: ChatInstance
-): void {
+): Promise<void> {
   const fields = request.input.structured_data?.fields ?? [];
   const mentions = fields.filter((f) => f.type === 'mention');
   const commands = fields.filter((f) => f.type === 'command');
@@ -148,7 +148,7 @@ function doMentionCommandResponse(
     parts.push(`**Commands:** ${cmds}`);
   }
 
-  instance.messaging.addMessage({
+  await instance.messaging.addMessage({
     output: {
       generic: [
         {

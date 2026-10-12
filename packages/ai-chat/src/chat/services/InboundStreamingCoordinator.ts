@@ -7,7 +7,10 @@
  *  @license
  */
 
-import { StreamingTracker } from '../utils/streamingUtils';
+import {
+  StreamingTracker,
+  type StreamingResponseMeta,
+} from '../utils/streamingUtils';
 import { MessageRequest } from '../../types/messaging/Messages';
 
 type StreamingCurrent =
@@ -46,7 +49,7 @@ class InboundStreamingCoordinator {
   /**
    * Returns metadata for a streaming response.
    */
-  getStreamingMeta(responseId: string) {
+  getStreamingMeta(responseId: string): StreamingResponseMeta | undefined {
     return this.streamingTracker.getMeta(responseId);
   }
 
@@ -123,7 +126,9 @@ class InboundStreamingCoordinator {
   /**
    * Clear tracking (without queue movement) and return metadata for the response.
    */
-  clearStreamingResponse(responseId: string) {
+  clearStreamingResponse(
+    responseId: string
+  ): StreamingResponseMeta | undefined {
     const cleared = this.streamingTracker.clear(responseId);
     this.messageAbortControllers.delete(responseId);
     if (cleared?.requestId && cleared.requestId !== responseId) {

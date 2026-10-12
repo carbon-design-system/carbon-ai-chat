@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.PauseItem.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.PauseItem.html
 
 A pause item returned in a message response from an assistant. This indicates that the client should pause before
 displaying additional response items.
@@ -27,7 +27,7 @@ interface PauseItem
 
 For messages that are sent between the user and a human agent, we assign an agent type to the message to distinguish what type it is.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.PauseItem.html#agent_message_type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.PauseItem.html#agent_message_type)
 
 ### message_item_options
 
@@ -35,7 +35,7 @@ For messages that are sent between the user and a human agent, we assign an agen
 
 Options that control additional features available for a message item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.PauseItem.html#message_item_options)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.PauseItem.html#message_item_options)
 
 ### response_type
 
@@ -43,7 +43,7 @@ Options that control additional features available for a message item.
 
 The response type of this message item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.PauseItem.html#response_type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.PauseItem.html#response_type)
 
 ### streaming_metadata
 
@@ -52,7 +52,7 @@ The response type of this message item.
 Metadata used to identify a generic item within the context of a stream in order to correlate any updates meant
 for a specific item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.PauseItem.html#streaming_metadata)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.PauseItem.html#streaming_metadata)
 
 ### time
 
@@ -60,7 +60,7 @@ for a specific item.
 
 How long to pause, in milliseconds.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.PauseItem.html#time)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.PauseItem.html#time)
 
 ### typing
 
@@ -68,7 +68,7 @@ How long to pause, in milliseconds.
 
 Whether to display an "is typing" indicator during the pause.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.PauseItem.html#typing)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.PauseItem.html#typing)
 
 ### user_defined
 
@@ -76,4 +76,4 @@ Whether to display an "is typing" indicator during the pause.
 
 An optional buckets of additional user defined properties for this item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.PauseItem.html#user_defined)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.PauseItem.html#user_defined)

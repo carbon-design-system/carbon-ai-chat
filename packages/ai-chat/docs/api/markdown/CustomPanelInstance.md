@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Instance
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.CustomPanelInstance.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.CustomPanelInstance.html
 
 The custom panel instance for controlling and manipulating a custom panel in Carbon AI Chat.
 
@@ -26,7 +26,7 @@ interface CustomPanelInstance
 
 Closes the custom panel.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.CustomPanelInstance.html#close)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.CustomPanelInstance.html#close)
 
 ### hostElement
 
@@ -34,7 +34,7 @@ Closes the custom panel.
 
 The custom panel hostElement.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.CustomPanelInstance.html#hostelement)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.CustomPanelInstance.html#hostelement)
 
 ### open
 
@@ -42,4 +42,4 @@ The custom panel hostElement.
 
 Opens the custom panel.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.CustomPanelInstance.html#open)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.CustomPanelInstance.html#open)

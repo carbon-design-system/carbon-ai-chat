@@ -18,11 +18,13 @@ An untagged symbol falls into the `*` catchall. That bucket is not a valid desti
 
 ## `@experimental`
 
-Public API that may still change. Pair it with a short note on _why_ it is unstable, so a consumer can judge the risk. It renders as a visible badge on the docs site, and works on a property, an enum member, or a whole type.
+Public API that may still change. It renders as a visible badge on the docs site, and works on a property, an enum member, or a whole type. Add a note only when it tells a consumer something the badge does not, such as which part may change. A note that says the API is still settling restates the tag; leave the tag bare.
+
+**When you do write a note, put the tag and note above every tag that takes text** — `@category`, `@param`, `@returns`, `@example`. TypeDoc reads `@experimental` as a flag with no text of its own, so the note joins whatever precedes it. Placed first, it becomes the last paragraph of the summary. Placed after `@category Utilities`, it becomes part of the category name, and the symbol moves to a sidebar section titled with the note.
 
 ## `@internal`
 
-Symbols the build pipeline forces into the public types for mechanical reasons, but that consumers must never rely on — for example the plumbing adjacent to [../../chat/services/ChatActionsImpl.ts](../../chat/services/ChatActionsImpl.ts) reached through `ChatInstance.serviceManager`. TypeDoc strips `@internal` from its output, so the rule is simple: if a reader should never see it, tag it.
+Symbols the build pipeline forces into the public types for mechanical reasons, but that consumers must never rely on — for example the plumbing adjacent to [../../chat/services/ChatInstanceService.ts](../../chat/services/ChatInstanceService.ts) reached through `ChatInstance.serviceManager`. TypeDoc strips `@internal` from its output, so the rule is simple: if a reader should never see it, tag it.
 
 ## `@deprecated`
 

@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Config
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.BaseSuggestionConfig.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.BaseSuggestionConfig.html
 
 Fields shared by every Carbon suggestion config (mention, command,
 autocomplete). Provides the item source, debounce, minimum query length,
@@ -33,7 +33,7 @@ and inserts the item into the editor rather than sending immediately.
 Defaults to `false`. This property is omitted in TriggerSuggestionConfig
 since mentions and commands should always insert into the editor.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.BaseSuggestionConfig.html#disabledirectsend)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.BaseSuggestionConfig.html#disabledirectsend)
 
 ### items
 
@@ -43,7 +43,7 @@ Static item list, or an async function called with the current query
 string. Resolved by the autocomplete controller once per query change —
 the Tiptap extensions never call it.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.BaseSuggestionConfig.html#items)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.BaseSuggestionConfig.html#items)
 
 ### minQueryLength
 
@@ -52,7 +52,7 @@ the Tiptap extensions never call it.
 Minimum query length before `items()` is called. Defaults to 0. Applied
 by the autocomplete controller, which owns resolution for every trigger.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.BaseSuggestionConfig.html#minquerylength)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.BaseSuggestionConfig.html#minquerylength)
 
 ### onSelect
 
@@ -61,7 +61,7 @@ by the autocomplete controller, which owns resolution for every trigger.
 Called after the user selects an item and the controller has finished
 inserting it.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.BaseSuggestionConfig.html#onselect)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.BaseSuggestionConfig.html#onselect)
 
 ### renderCustomList
 
@@ -69,4 +69,4 @@ inserting it.
 
 Replace the built-in suggestion list UI.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.BaseSuggestionConfig.html#rendercustomlist)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.BaseSuggestionConfig.html#rendercustomlist)

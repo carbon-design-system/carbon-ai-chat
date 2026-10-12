@@ -20,6 +20,10 @@ import { useIntl } from './hooks/useIntl';
 import { useHistoryMobileDetection } from './hooks/useHistoryMobileDetection';
 import { useAriaAnnouncer } from './hooks/useAriaAnnouncer';
 import { matchesShortcut } from './utils/keyboardUtils';
+import {
+  composerHasFocus,
+  requestComposerFocus,
+} from './utils/customPromptLine';
 import { getDeepActiveElement } from './utils/domUtils';
 
 import AppShellErrorBoundary from './AppShellErrorBoundary';
@@ -274,6 +278,52 @@ function AppShell({
   const responsePanelRef = useRef<HasRequestFocus | null>(null);
   const messagesRef = useRef<MessagesComponentClass | null>(null);
   const inputRef = useRef<InputFunctions | null>(null);
+  const customPromptLinePresent = useWriteableElementPresence(
+    WriteableElementName.CUSTOM_PROMPT_LINE,
+    serviceManager.writeableElements,
+    writeableElementsPresentKeys
+      ?.split(' ')
+      .includes(WriteableElementName.CUSTOM_PROMPT_LINE)
+  );
+  const restoreDraft = useRef(false);
+  if (customPromptLinePresent) {
+    restoreDraft.current = true;
+  }
+  const setInputRef = useCallback(
+    (input: InputFunctions | null) => {
+      if (input || serviceManager.inputComponent === inputRef.current) {
+        serviceManager.inputComponent = input;
+      }
+      inputRef.current = input;
+    },
+    [serviceManager]
+  );
+  const composerRef = useMemo(
+    () => ({
+      current: {
+        requestFocus: () => requestComposerFocus(serviceManager),
+        hasFocus: () => composerHasFocus(serviceManager),
+      },
+    }),
+    [serviceManager]
+  );
+  const hadComposerFocus = useRef(false);
+  useEffect(() => {
+    const trackFocus = () => {
+      hadComposerFocus.current = composerHasFocus(serviceManager);
+    };
+    document.addEventListener('focusin', trackFocus, true);
+    return () => document.removeEventListener('focusin', trackFocus, true);
+  }, [serviceManager]);
+  useEffect(() => {
+    if (!hadComposerFocus.current) {
+      return undefined;
+    }
+    const frame = requestAnimationFrame(() =>
+      requestComposerFocus(serviceManager)
+    );
+    return () => cancelAnimationFrame(frame);
+  }, [customPromptLinePresent, serviceManager]);
 
   useMobileViewportLayout({
     enabled: useMobileEnhancements,
@@ -348,7 +398,7 @@ function AppShell({
     viewSourcePanelRef,
     customPanelRef,
     responsePanelRef,
-    inputRef,
+    inputRef: composerRef,
   });
 
   // Update the ref with the actual requestFocus function
@@ -507,7 +557,10 @@ function AppShell({
 
   const customHeaderPresent = useWriteableElementPresence(
     WriteableElementName.CUSTOM_HEADER,
-    serviceManager.writeableElements
+    serviceManager.writeableElements,
+    writeableElementsPresentKeys
+      ?.split(' ')
+      .includes(WriteableElementName.CUSTOM_HEADER)
   );
 
   // Header config override for mobile history
@@ -650,24 +703,16 @@ function AppShell({
     messagesRef.current?.doScrollToMessage(messageID, animate);
   }, []);
 
-  // Handle keyboard shortcut for toggling focus between message list and input
   const handleFocusToggle = useCallback(() => {
-    try {
-      // Use the Input component's hasFocus() method to check focus state
-      // This encapsulates the internal focus detection logic
-      const inputHasFocus = inputRef.current?.hasFocus() ?? false;
-
-      if (inputHasFocus) {
-        // Move focus to first item of last message
-        messagesRef.current?.requestFocusOnFirstItemOfLastMessage();
-      } else {
-        // Use requestFocus() for consistency with focus management pattern
-        inputRef.current?.requestFocus();
+    if (composerRef.current.hasFocus()) {
+      if (!messagesRef.current) {
+        return false;
       }
-    } catch (error) {
-      consoleError('An error occurred in handleFocusToggle', error);
+      messagesRef.current.requestFocusOnFirstItemOfLastMessage();
+      return true;
     }
-  }, []);
+    return composerRef.current.requestFocus();
+  }, [composerRef]);
 
   // Stable wrapper so <Input> receives a referentially stable onSendInput prop.
   // When the home screen is active the single unconditional <Input> acts as the
@@ -693,10 +738,10 @@ function AppShell({
         messageFocusToggleShortcut.isOn &&
         matchesShortcut(event, messageFocusToggleShortcut)
       ) {
-        // Always handle the shortcut, even if it originates from the input field
-        event.preventDefault();
-        event.stopPropagation();
-        handleFocusToggle();
+        if (handleFocusToggle()) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
       } else if (event.key === 'Escape') {
         // If focus is in the messages area, return to input field
         // Use getDeepActiveElement to traverse all shadow DOM levels
@@ -709,15 +754,16 @@ function AppShell({
         const messagesContainer = containerRef.current?.querySelector(
           '.cds-aichat--messages'
         );
-        if (inputRef.current?.hasFocus()) {
-          inputRef.current.requestFocus();
+        if (composerRef.current.hasFocus()) {
+          composerRef.current.requestFocus();
         } else if (
           activeElement &&
           (messagesWrapper?.contains(activeElement) ||
             messagesContainer?.contains(activeElement))
         ) {
-          event.preventDefault();
-          inputRef.current?.requestFocus();
+          if (composerRef.current.requestFocus()) {
+            event.preventDefault();
+          }
         }
       }
     };
@@ -734,6 +780,7 @@ function AppShell({
     return undefined;
   }, [
     messageFocusToggleShortcut,
+    composerRef,
     handleFocusToggle,
     viewState.mainWindow,
     containerRef,
@@ -754,12 +801,6 @@ function AppShell({
     serviceManager.mainWindow = mainWindowFunctions;
   }, [mainWindowFunctions, serviceManager]);
 
-  // Set the input component reference in the service manager
-  useEffect(() => {
-    if (inputRef.current) {
-      serviceManager.inputComponent = inputRef.current;
-    }
-  }, [inputRef, serviceManager]);
   // Set scrollbar width CSS variable. Written via the shared dynamic
   // stylesheet so a strict CSP can drop style-src-attr 'unsafe-inline'.
   useEffect(() => {
@@ -966,78 +1007,81 @@ function AppShell({
                 )}
               </div>
 
-              <div slot="input">
-                <Input
-                  ref={inputRef}
-                  disableInput={shouldDisableInput()}
-                  disableSend={shouldDisableSend()}
-                  isInputVisible={isInputFieldVisible}
-                  onSendInput={onSendInputFromInput}
-                  onUserTyping={onUserTyping}
-                  showUploadButton={
-                    inputFields.allowFileUploads || isAssistantUploadEnabled
-                  }
-                  disableUploadButton={
-                    inputFields.allowFileUploads
-                      ? humanAgentUploadButtonDisabled
-                      : assistantUploadButtonDisabled
-                  }
-                  allowedFileUploadTypes={
-                    inputFields.allowFileUploads
-                      ? inputFields.allowedFileUploadTypes
-                      : uploadConfig?.accept
-                  }
-                  allowMultipleFileUploads={
-                    inputFields.allowFileUploads
-                      ? inputFields.allowMultipleFileUploads
-                      : uploadConfig?.maxFiles === undefined ||
-                        uploadConfig.maxFiles > 1
-                  }
-                  maxFileSizeBytes={
-                    inputFields.allowFileUploads
-                      ? inputFields.maxFileSizeBytes
-                      : uploadConfig?.maxFileSizeBytes
-                  }
-                  maxFiles={
-                    inputFields.allowFileUploads
-                      ? inputFields.maxFiles
-                      : uploadConfig?.maxFiles
-                  }
-                  pendingUploads={
-                    inputFields.allowFileUploads
-                      ? inputFields.files
-                      : assistantPendingUploadsForDisplay
-                  }
-                  onFilesSelectedForUpload={
-                    inputFields.allowFileUploads
-                      ? onFilesSelectedForUpload
-                      : onAssistantFilesSelectedForUpload
-                  }
-                  onRemoveFile={
-                    isAssistantUploadEnabled && !inputFields.allowFileUploads
-                      ? onRemoveAssistantUpload
-                      : undefined
-                  }
-                  placeholder={
-                    languagePack[agentDisplayState.inputPlaceholderKey]
-                  }
-                  isStopStreamingButtonVisible={
-                    inputFields.stopStreamingButtonState.isVisible
-                  }
-                  isStopStreamingButtonDisabled={
-                    inputFields.stopStreamingButtonState.isDisabled
-                  }
-                  maxInputChars={publicConfig.input?.maxInputCharacters}
-                  trackInputState
-                  rounded={
-                    chatWidthBreakpoint === ChatWidthBreakpoint.WIDE &&
-                    layout.hasContentMaxWidth &&
-                    (!IS_PHONE_IN_PORTRAIT_MODE ||
-                      !!publicConfig.disableCustomElementMobileEnhancements)
-                  }
-                  error={inputError}
-                />
-              </div>
+              {!customPromptLinePresent && (
+                <div slot="input">
+                  <Input
+                    ref={setInputRef}
+                    restoreDraft={restoreDraft.current}
+                    disableInput={shouldDisableInput()}
+                    disableSend={shouldDisableSend()}
+                    isInputVisible={isInputFieldVisible}
+                    onSendInput={onSendInputFromInput}
+                    onUserTyping={onUserTyping}
+                    showUploadButton={
+                      inputFields.allowFileUploads || isAssistantUploadEnabled
+                    }
+                    disableUploadButton={
+                      inputFields.allowFileUploads
+                        ? humanAgentUploadButtonDisabled
+                        : assistantUploadButtonDisabled
+                    }
+                    allowedFileUploadTypes={
+                      inputFields.allowFileUploads
+                        ? inputFields.allowedFileUploadTypes
+                        : uploadConfig?.accept
+                    }
+                    allowMultipleFileUploads={
+                      inputFields.allowFileUploads
+                        ? inputFields.allowMultipleFileUploads
+                        : uploadConfig?.maxFiles === undefined ||
+                          uploadConfig.maxFiles > 1
+                    }
+                    maxFileSizeBytes={
+                      inputFields.allowFileUploads
+                        ? inputFields.maxFileSizeBytes
+                        : uploadConfig?.maxFileSizeBytes
+                    }
+                    maxFiles={
+                      inputFields.allowFileUploads
+                        ? inputFields.maxFiles
+                        : uploadConfig?.maxFiles
+                    }
+                    pendingUploads={
+                      inputFields.allowFileUploads
+                        ? inputFields.files
+                        : assistantPendingUploadsForDisplay
+                    }
+                    onFilesSelectedForUpload={
+                      inputFields.allowFileUploads
+                        ? onFilesSelectedForUpload
+                        : onAssistantFilesSelectedForUpload
+                    }
+                    onRemoveFile={
+                      isAssistantUploadEnabled && !inputFields.allowFileUploads
+                        ? onRemoveAssistantUpload
+                        : undefined
+                    }
+                    placeholder={
+                      languagePack[agentDisplayState.inputPlaceholderKey]
+                    }
+                    isStopStreamingButtonVisible={
+                      inputFields.stopStreamingButtonState.isVisible
+                    }
+                    isStopStreamingButtonDisabled={
+                      inputFields.stopStreamingButtonState.isDisabled
+                    }
+                    maxInputChars={publicConfig.input?.maxInputCharacters}
+                    trackInputState
+                    rounded={
+                      chatWidthBreakpoint === ChatWidthBreakpoint.WIDE &&
+                      layout.hasContentMaxWidth &&
+                      (!IS_PHONE_IN_PORTRAIT_MODE ||
+                        !!publicConfig.disableCustomElementMobileEnhancements)
+                    }
+                    error={inputError}
+                  />
+                </div>
+              )}
 
               <div
                 slot="workspace"

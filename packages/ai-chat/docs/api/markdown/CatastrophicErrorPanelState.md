@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Instance
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.CatastrophicErrorPanelState.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.CatastrophicErrorPanelState.html
 
 The state information for a catastrophic error panel.
 
@@ -26,7 +26,7 @@ interface CatastrophicErrorPanelState
 
 The error body text to be displayed in the `CatastrophicErrorPanel`. Will render markdown if provided.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.CatastrophicErrorPanelState.html#bodytext)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.CatastrophicErrorPanelState.html#bodytext)
 
 ### hideRetryButton
 
@@ -36,7 +36,7 @@ When true, the panel renders without the built-in retry button. The consumer is 
 for closing the panel by calling `instance.updateCatastrophicErrorPanel({ isOpen: false })` once
 their own recovery flow completes.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.CatastrophicErrorPanelState.html#hideretrybutton)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.CatastrophicErrorPanelState.html#hideretrybutton)
 
 ### isOpen
 
@@ -44,7 +44,7 @@ their own recovery flow completes.
 
 Whether the catastrophic error panel is currently open.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.CatastrophicErrorPanelState.html#isopen)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.CatastrophicErrorPanelState.html#isopen)
 
 ### title
 
@@ -52,4 +52,4 @@ Whether the catastrophic error panel is currently open.
 
 The error title to be displayed in the `CatastrophicErrorPanel`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/interfaces/Type_reference.CatastrophicErrorPanelState.html#title)
+[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.CatastrophicErrorPanelState.html#title)

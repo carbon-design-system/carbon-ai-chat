@@ -44,7 +44,48 @@ const config: PublicConfig = {
 const showCustomElement =
   new URLSearchParams(window.location.search).get('wrapper') === 'custom';
 
+/** The query-only fixture checks DOM props against this example's React version. */
+function HostPropsProbe() {
+  const [phase, setPhase] = React.useState('initial');
+  const [lastClick, setLastClick] = React.useState('none');
+  const updated = phase === 'updated';
+  const hostProps: React.HTMLAttributes<HTMLElement> =
+    phase === 'omitted'
+      ? {}
+      : {
+          id: `host-${phase}`,
+          className: `host-${phase}`,
+          title: phase,
+          hidden: updated,
+          draggable: !updated,
+          spellCheck: !updated,
+          contentEditable: updated,
+          tabIndex: updated ? 3 : 2,
+          'aria-label': phase,
+          'aria-hidden': updated,
+          style: updated ? { padding: '4px' } : { color: 'rgb(1, 2, 3)' },
+          onClick: (event) =>
+            setLastClick(`${phase}:${event.currentTarget.localName}`),
+        };
+
+  return (
+    <>
+      <button type="button" onClick={() => setPhase('updated')}>
+        Update host props
+      </button>
+      <button type="button" onClick={() => setPhase('omitted')}>
+        Remove host props
+      </button>
+      <output data-testid="host-click">{lastClick}</output>
+      <ChatContainer {...config} {...hostProps} data-testid="props-host" />
+    </>
+  );
+}
+
 function App() {
+  if (new URLSearchParams(window.location.search).has('host-props')) {
+    return <HostPropsProbe />;
+  }
   if (showCustomElement) {
     return (
       <ChatCustomElement

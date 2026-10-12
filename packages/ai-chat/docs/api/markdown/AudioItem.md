@@ -8,7 +8,7 @@
 
 - Kind: TypeAlias
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/types/Type_reference.AudioItem.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0/docs/types/Type_reference.AudioItem.html
 
 The audio response type definition for future reuse. This is currently the same as MediaItem.
 

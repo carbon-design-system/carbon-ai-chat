@@ -8,7 +8,7 @@
 
 - Kind: TypeAlias
 - Category: Testing
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0-rc.1/docs/types/Type_reference.loadAllLazyDeps.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.22.0/docs/types/Type_reference.loadAllLazyDeps.html
 
 Eagerly loads every lazily imported dependency across both
 `@carbon/ai-chat-components` and `@carbon/ai-chat` so tests can preload
