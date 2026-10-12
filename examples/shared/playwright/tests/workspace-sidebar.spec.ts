@@ -86,6 +86,7 @@ test('expands the sidebar while a workspace is open', async ({ page }) => {
 });
 
 // Observed: the host sets `disabled` on the focused toggle during the view change, so focus drops to <body>.
+// Tracked in #2519.
 test.fixme('keeps focus on the toggle after closing the sidebar', async ({
   page,
 }) => {
