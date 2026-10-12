@@ -128,6 +128,7 @@ test.describe('basic fullscreen', () => {
   // After Stop, the mock back end stays in `sleep(words.length * WORD_DELAY)`
   // (about 17 seconds) before it ends the turn, so the next message cannot be
   // sent until then.
+  // Tracked in #2521.
   test.fixme('accepts a new message right after a stop', async ({ page }) => {
     await send(page, 'stream text');
     const panel = page.getByTestId(PageObjectId.MAIN_PANEL);
