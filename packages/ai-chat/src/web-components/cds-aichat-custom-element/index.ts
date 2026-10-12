@@ -357,7 +357,8 @@ class ChatCustomElement extends FlattenedConfigElement {
         .renderUserDefinedResponse=${this.renderUserDefinedResponse}
         .renderCustomMessageFooter=${this.renderCustomMessageFooter}
         .renderCustomRequestFooter=${this.renderCustomRequestFooter}
-        .renderUserDefinedInputNode=${this.renderUserDefinedInputNode}>
+        .renderUserDefinedInputNode=${this.renderUserDefinedInputNode}
+        exportparts="prompt-container">
         ${this._writeableElementSlots.map(
           (slot) => html`<slot name=${slot} slot=${slot}></slot>`
         )}
