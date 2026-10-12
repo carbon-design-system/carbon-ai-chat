@@ -12,8 +12,9 @@ import ChatButton, {
   CHAT_BUTTON_SIZE,
 } from '@carbon/ai-chat-components/es/react/chat-button.js';
 import cx from 'classnames';
-import React from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { useSelector } from '../../../hooks/useSelector';
+import { consoleError } from '../../../utils/miscUtils';
 
 import { AppState } from '../../../../types/state/AppState';
 import { HasClassName } from '../../../../types/utilities/HasClassName';
@@ -69,6 +70,11 @@ interface BaseButtonComponentProps extends HasClassName {
   disabled?: boolean;
 
   /**
+   * Whether this post-back button is the selected choice.
+   */
+  selected?: boolean;
+
+  /**
    * The svg icon to render in the button.
    */
   renderIcon?: any;
@@ -90,17 +96,55 @@ function BaseButtonItemComponent({
   url,
   target = '_blank',
   disabled,
+  selected,
   is,
   renderIcon,
   imageURL,
   altText,
   onClick,
 }: BaseButtonComponentProps) {
+  const buttonRef = useRef<HTMLElement & { updateComplete?: Promise<unknown> }>(
+    null
+  );
   const errors_imageSource = useSelector(
     (state: AppState) => state.languagePack.errors_imageSource
   );
   const text = label || url;
   const linkTarget = url ? target : undefined;
+  const setButtonRef = useCallback((element: HTMLElement | null) => {
+    buttonRef.current = element as HTMLElement & {
+      updateComplete?: Promise<unknown>;
+    };
+  }, []);
+
+  useEffect(() => {
+    const host = buttonRef.current;
+    if (!host) {
+      return;
+    }
+
+    const updateAriaPressed = async () => {
+      if (selected === undefined) {
+        host.removeAttribute('aria-pressed');
+      } else {
+        host.setAttribute('aria-pressed', String(selected));
+      }
+      await host.updateComplete;
+      const innerButton = host.shadowRoot?.querySelector('button');
+      if (selected === undefined) {
+        innerButton?.removeAttribute('aria-pressed');
+      } else {
+        innerButton?.setAttribute('aria-pressed', String(selected));
+      }
+    };
+
+    updateAriaPressed().catch((error) => {
+      consoleError(
+        'The post-back button could not update its pressed state.',
+        error
+      );
+    });
+  }, [selected]);
 
   if (imageURL) {
     return (
@@ -114,6 +158,7 @@ function BaseButtonItemComponent({
         renderIcon={renderIcon}
         onClick={onClick}
         disabled={disabled}
+        selected={selected}
         isLink={Boolean(url)}
       />
     );
@@ -123,7 +168,10 @@ function BaseButtonItemComponent({
   const isStandard = is === 'standard-button';
 
   const commonBtnProps = {
-    className: cx('cds-aichat--button-item', className),
+    'aria-pressed': selected,
+    className: cx('cds-aichat--button-item', className, {
+      'cds-aichat--button-item--selected': selected,
+    }),
     disabled,
     href: url,
     kind: isStandard
@@ -133,6 +181,7 @@ function BaseButtonItemComponent({
     rel: url ? 'noopener noreferrer' : undefined,
     size: isStandard ? (size as BUTTON_SIZE) : (size as CHAT_BUTTON_SIZE),
     target: linkTarget,
+    ref: setButtonRef,
   };
 
   const body = (

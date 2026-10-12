@@ -86,6 +86,18 @@ We should be looking for what here can can automate, and as we do, we can remove
 - [ ] **user_defined (stream)**
 - [ ] **video**
 
+#### Choice selection display and state
+
+Run the option-list and button fixtures in both frameworks (React and web component).
+
+- [ ] **Option buttons:** Select the default, input-text, missing-label, and missing-input choices. The control remains label-first, while the transcript uses the configured display text and fallback. A silent choice shows no user bubble but still becomes selected and disabled.
+- [ ] **Dropdown:** Repeat the option checks with the dropdown fixture. Choices with duplicate outbound text remain independently selectable, and exactly one choice is restored after reload.
+- [ ] **Post-back buttons:** Check top-level, body, and footer post-backs, including the standard footer button. Before selection, the focusable button exposes `aria-pressed="false"`; afterward it exposes `aria-pressed="true"`, is disabled, and has the non-color outline. A generally disabled but unselected button remains `aria-pressed="false"` without the selected outline.
+- [ ] **Keyboard and focus:** Reach every choice with Tab, activate buttons with Enter and Space, and operate the dropdown with arrow keys and Enter. After activation, focus returns to the message input.
+- [ ] **Reload:** Reload or restore history after choosing each fixture. The same option or post-back is selected using the stored transcript label, including nested body/footer buttons, with no more than one selected control.
+- [ ] **Send failure:** Force the host send handler to reject. Visible and silent choices remain selected and disabled; the selection is not rolled back.
+- [ ] **Screen reader:** Confirm the accessible control name stays label-first and the post-back pressed state changes from false to true. Confirm the selected outline remains visible in high-contrast mode.
+
 #### Message footers
 
 Run each in both frameworks (React and web component).
