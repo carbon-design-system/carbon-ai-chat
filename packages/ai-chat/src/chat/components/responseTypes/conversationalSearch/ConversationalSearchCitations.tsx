@@ -45,25 +45,23 @@ export default function ConversationalSearchCitations({
   useEffect(() => onReady(), [onReady]);
 
   return (
-    <div className="cds-aichat--conversational-search-citations">
-      <Carousel
-        nextBtnText={languagePack.carousel_nextNavButton}
-        previousBtnText={languagePack.carousel_prevNavButton}
-        onChange={(event: CustomEvent<{ currentIndex: number }>) =>
-          onChange(event.detail.currentIndex)
-        }>
-        <div>
-          {citations?.map((citation, index) => (
-            <CitationCard
-              key={index}
-              citation={citation}
-              isSelected={index === selectedCitationIndex}
-              onSelectCitation={() => onSelectCitation(index)}
-              relatedSearchResult={searchResults?.[citation.search_result_idx]}
-            />
-          ))}
-        </div>
-      </Carousel>
-    </div>
+    <Carousel
+      nextBtnText={languagePack.carousel_nextNavButton}
+      previousBtnText={languagePack.carousel_prevNavButton}
+      onChange={(event: CustomEvent<{ currentIndex: number }>) =>
+        onChange(event.detail.currentIndex)
+      }>
+      <div>
+        {citations?.map((citation, index) => (
+          <CitationCard
+            key={index}
+            citation={citation}
+            isSelected={index === selectedCitationIndex}
+            onSelectCitation={() => onSelectCitation(index)}
+            relatedSearchResult={searchResults?.[citation.search_result_idx]}
+          />
+        ))}
+      </div>
+    </Carousel>
   );
 }

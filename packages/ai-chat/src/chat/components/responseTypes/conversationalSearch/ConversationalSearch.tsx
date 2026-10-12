@@ -18,7 +18,7 @@ import React, {
 } from 'react';
 import { createComponent } from '@lit/react';
 import SkeletonPlaceholderElement from '@carbon/web-components/es/components/skeleton-placeholder/skeleton-placeholder.js';
-import ConversationalSearchText from '@carbon/ai-chat-components/es/react/conversational-search-text.js';
+import ConversationalSearchShell from '@carbon/ai-chat-components/es/react/conversational-search-shell.js';
 import {
   insertHighlightMarkdown,
   sortCitations,
@@ -89,11 +89,11 @@ function ConversationalSearch({
 
   const scrollCitations = useCallback(() => {
     cancelScroll();
-    // Leave room for the toggle above and any suggestions below the cards.
+    // Include the shell's 16px gap, the toggle above, and suggestions below.
     scrollTimerRef.current = setTimeout(() => {
       const target = citationsContainerRef.current;
       if (citationsOpenRef.current && target) {
-        scrollElementIntoView(target, 32, 64);
+        scrollElementIntoView(target, 48, 64);
       }
       scrollTimerRef.current = undefined;
     }, 50);
@@ -123,26 +123,26 @@ function ConversationalSearch({
   }
 
   return (
-    <div className="cds-aichat--conversational-search">
-      <ConversationalSearchText
-        className="cds-aichat--conversational-search__answer"
-        citationsOpen={citationsOpen}
-        showCitationsToggle={Boolean(sortedCitations?.length)}
-        citationsLabel={languagePack.conversationalSearch_citationsLabel}
-        toggleLabel={languagePack.conversationalSearch_toggleCitations}
-        onCitationsToggle={onToggleCitations}>
-        <MarkdownWithDefaults
-          text={highlightedText}
-          streaming={streaming}
-          highlight
-        />
-      </ConversationalSearchText>
+    <ConversationalSearchShell
+      className="cds-aichat--conversational-search"
+      citationsOpen={citationsOpen}
+      showCitationsToggle={Boolean(sortedCitations?.length)}
+      citationsLabel={languagePack.conversationalSearch_citationsLabel}
+      toggleLabel={languagePack.conversationalSearch_toggleCitations}
+      onCitationsToggle={onToggleCitations}>
+      <MarkdownWithDefaults
+        text={highlightedText}
+        streaming={streaming}
+        highlight
+      />
       {isStreamingError && (
-        <InlineError
-          text={languagePack.conversationalSearch_streamingIncomplete}
-        />
+        <div slot="answer-error">
+          <InlineError
+            text={languagePack.conversationalSearch_streamingIncomplete}
+          />
+        </div>
       )}
-      <div ref={citationsContainerRef}>
+      <div slot="citations" ref={citationsContainerRef}>
         {citationsOpen && (
           <CitationsErrorBoundary>
             <Suspense
@@ -161,7 +161,7 @@ function ConversationalSearch({
           </CitationsErrorBoundary>
         )}
       </div>
-    </div>
+    </ConversationalSearchShell>
   );
 }
 

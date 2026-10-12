@@ -12,8 +12,8 @@
 
 import React, { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import ConversationalSearchText from '@carbon/ai-chat-components/es/react/conversational-search-text.js';
-import ConversationalSearchTextElement from '@carbon/ai-chat-components/es/components/conversational-search/src/conversational-search-text.js';
+import ConversationalSearchShell from '@carbon/ai-chat-components/es/react/conversational-search-shell.js';
+import ConversationalSearchShellElement from '@carbon/ai-chat-components/es/components/conversational-search/src/conversational-search-shell.js';
 
 let container: HTMLDivElement;
 let root: Root;
@@ -30,12 +30,12 @@ afterEach(async () => {
   container.remove();
 });
 
-test('forwards the controlled props, slot, and the toggle callback', async () => {
+test('forwards the controlled props, slots, and the toggle callback', async () => {
   const onCitationsToggle = jest.fn();
   const render = (citationsOpen: boolean) =>
     root.render(
       React.createElement(
-        ConversationalSearchText,
+        ConversationalSearchShell,
         {
           citationsOpen,
           showCitationsToggle: true,
@@ -43,26 +43,45 @@ test('forwards the controlled props, slot, and the toggle callback', async () =>
           toggleLabel: 'Toggle sources',
           onCitationsToggle,
         },
-        React.createElement('p', null, 'Answer')
+        React.createElement('p', null, 'Answer'),
+        React.createElement('p', { slot: 'citations' }, 'Source content'),
+        React.createElement('p', { slot: 'answer-error' }, 'Answer incomplete')
       )
     );
   await act(async () => render(false));
   const element = container.querySelector(
-    'cds-aichat-conversational-search-text'
-  ) as ConversationalSearchTextElement;
+    'cds-aichat-conversational-search-shell'
+  ) as ConversationalSearchShellElement;
   await element.updateComplete;
   expect(element.citationsOpen).toBe(false);
   expect(element.showCitationsToggle).toBe(true);
   expect(element.citationsLabel).toBe('Sources');
   expect(element.toggleLabel).toBe('Toggle sources');
   expect(element.querySelector('p')?.textContent).toBe('Answer');
+  expect(
+    element
+      .shadowRoot!.querySelector<HTMLSlotElement>('slot[name="citations"]')!
+      .assignedElements()[0].textContent
+  ).toBe('Source content');
+  expect(
+    element
+      .shadowRoot!.querySelector<HTMLSlotElement>('slot[name="answer-error"]')!
+      .assignedElements()[0].textContent
+  ).toBe('Answer incomplete');
+  const citationsRegion = element.shadowRoot!.querySelector(
+    'slot[name="citations"]'
+  )!.parentElement!;
+  expect(citationsRegion.hidden).toBe(true);
   element.shadowRoot!.querySelector('button')!.click();
   expect(onCitationsToggle).toHaveBeenCalledTimes(1);
   expect(onCitationsToggle.mock.calls[0][0].detail).toEqual({ open: true });
   expect(element.citationsOpen).toBe(false);
+  expect(citationsRegion.hidden).toBe(true);
   await act(async () => render(true));
   await element.updateComplete;
+  expect(citationsRegion.hidden).toBe(false);
   element.shadowRoot!.querySelector('button')!.click();
   expect(onCitationsToggle).toHaveBeenCalledTimes(2);
   expect(onCitationsToggle.mock.calls[1][0].detail).toEqual({ open: false });
+  expect(citationsRegion.hidden).toBe(false);
 });

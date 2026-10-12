@@ -9,32 +9,94 @@
 
 import { expect, fixture, html } from '@open-wc/testing';
 import { sendKeys } from '@web/test-runner-commands';
-import ConversationalSearchText from '@carbon/ai-chat-components/es/components/conversational-search/src/conversational-search-text.js';
+import ConversationalSearchShell from '@carbon/ai-chat-components/es/components/conversational-search/src/conversational-search-shell.js';
 import '@carbon/ai-chat-components/es/components/markdown/index.js';
 import Markdown from '@carbon/ai-chat-components/es/components/markdown/src/markdown.js';
 import { insertHighlightMarkdown } from '../src/citation-utils.js';
 
 async function answer() {
-  return fixture<ConversationalSearchText>(html`
-    <cds-aichat-conversational-search-text show-citations-toggle>
+  return fixture<ConversationalSearchShell>(html`
+    <cds-aichat-conversational-search-shell show-citations-toggle>
       <p>Answer content</p>
-    </cds-aichat-conversational-search-text>
+      <p slot="citations">Source content</p>
+    </cds-aichat-conversational-search-shell>
   `);
 }
 
-describe('conversational search answer', () => {
+describe('conversational search shell', () => {
   it('renders a default slot and keeps the toggle hidden by default', async () => {
-    const element = await fixture<ConversationalSearchText>(html`
-      <cds-aichat-conversational-search-text
-        ><p>Answer</p></cds-aichat-conversational-search-text
+    const element = await fixture<ConversationalSearchShell>(html`
+      <cds-aichat-conversational-search-shell
+        ><p>Answer</p></cds-aichat-conversational-search-shell
       >
     `);
-    expect(element).to.be.instanceOf(ConversationalSearchText);
+    expect(element).to.be.instanceOf(ConversationalSearchShell);
     expect(
       element.shadowRoot?.querySelector('slot')?.assignedElements()[0]
         .textContent
     ).to.equal('Answer');
     expect(element.shadowRoot?.querySelector('button')).to.equal(null);
+  });
+
+  it('assigns mounted citations to a region hidden by default', async () => {
+    const element = await answer();
+    const slot = element.shadowRoot!.querySelector<HTMLSlotElement>(
+      'slot[name="citations"]'
+    )!;
+    expect(slot.assignedElements()).to.deep.equal([
+      element.querySelector('[slot="citations"]'),
+    ]);
+    expect(slot.parentElement!.hidden).to.equal(true);
+    expect(getComputedStyle(slot.parentElement!).display).to.equal('none');
+    expect(element.querySelector('[slot="citations"]')!.textContent).to.equal(
+      'Source content'
+    );
+  });
+
+  it('shows citations independently of whether the toggle is shown', async () => {
+    const element = await answer();
+    element.showCitationsToggle = false;
+    element.citationsOpen = true;
+    await element.updateComplete;
+    const region = element.shadowRoot!.querySelector(
+      'slot[name="citations"]'
+    )!.parentElement!;
+    expect(element.shadowRoot!.querySelector('button')).to.equal(null);
+    expect(region.hidden).to.equal(false);
+    expect(getComputedStyle(region).display).not.to.equal('none');
+    element.citationsOpen = false;
+    await element.updateComplete;
+    expect(region.hidden).to.equal(true);
+    expect(getComputedStyle(region).display).to.equal('none');
+  });
+
+  it('keeps an answer error between the toggle and the closed citations region', async () => {
+    const element = await fixture<ConversationalSearchShell>(html`
+      <cds-aichat-conversational-search-shell show-citations-toggle>
+        <p>Partial answer</p>
+        <p slot="answer-error">Answer incomplete</p>
+        <p slot="citations">Source content</p>
+      </cds-aichat-conversational-search-shell>
+    `);
+    const errorSlot = element.shadowRoot!.querySelector<HTMLSlotElement>(
+      'slot[name="answer-error"]'
+    )!;
+    const citationsSlot = element.shadowRoot!.querySelector(
+      'slot[name="citations"]'
+    )!;
+    const button = element.shadowRoot!.querySelector('button')!;
+    expect(errorSlot.assignedElements()[0].textContent).to.equal(
+      'Answer incomplete'
+    );
+    expect(errorSlot.closest('[hidden]')).to.equal(null);
+    expect(
+      button.compareDocumentPosition(errorSlot) &
+        Node.DOCUMENT_POSITION_FOLLOWING
+    ).not.to.equal(0);
+    expect(
+      errorSlot.compareDocumentPosition(citationsSlot) &
+        Node.DOCUMENT_POSITION_FOLLOWING
+    ).not.to.equal(0);
   });
 
   it('leaves highlighted Markdown rendering to the slotted element', async () => {
@@ -47,12 +109,12 @@ describe('conversational search answer', () => {
         ],
       }
     );
-    const element = await fixture<ConversationalSearchText>(html`
-      <cds-aichat-conversational-search-text>
+    const element = await fixture<ConversationalSearchShell>(html`
+      <cds-aichat-conversational-search-shell>
         <cds-aichat-markdown
           .markdown=${text}
           .sanitizeHTML=${true}></cds-aichat-markdown>
-      </cds-aichat-conversational-search-text>
+      </cds-aichat-conversational-search-shell>
     `);
     const markdown = element.querySelector('cds-aichat-markdown') as Markdown;
     await markdown.updateComplete;
@@ -78,6 +140,11 @@ describe('conversational search answer', () => {
       'Afficher les citations'
     );
     expect(button.getAttribute('aria-expanded')).to.equal('true');
+    expect(
+      element.shadowRoot!.getElementById(button.getAttribute('aria-controls')!)
+    ).to.equal(
+      element.shadowRoot!.querySelector('slot[name="citations"]')!.parentElement
+    );
     expect(button.textContent).to.include('Sources');
     const tag = button.querySelector('cds-tag')!;
     expect(tag.hasAttribute('tabindex')).to.equal(false);
@@ -114,7 +181,7 @@ describe('conversational search answer', () => {
       const events: CustomEvent[] = [];
       const listener = (event: Event) => events.push(event as CustomEvent);
       document.addEventListener(
-        ConversationalSearchText.eventCitationsToggle,
+        ConversationalSearchShell.eventCitationsToggle,
         listener
       );
       try {
@@ -126,7 +193,7 @@ describe('conversational search answer', () => {
           await sendKeys({ press: activation });
         }
         expect(events.map((event) => event.type)).to.deep.equal([
-          ConversationalSearchText.eventCitationsToggle,
+          ConversationalSearchShell.eventCitationsToggle,
         ]);
         expect(events[0].detail).to.deep.equal({ open: true });
         for (const event of events) {
@@ -136,17 +203,23 @@ describe('conversational search answer', () => {
         }
         expect(element.citationsOpen).to.equal(false);
         expect(button.getAttribute('aria-expanded')).to.equal('false');
+        const region = element.shadowRoot!.querySelector(
+          'slot[name="citations"]'
+        )!.parentElement!;
+        expect(region.hidden).to.equal(true);
         expect(element.shadowRoot!.activeElement).to.equal(button);
         events.length = 0;
         element.citationsOpen = true;
         await element.updateComplete;
         expect(events).to.have.length(0);
+        expect(region.hidden).to.equal(false);
         button.click();
         expect(events).to.have.length(1);
         expect(events[0].detail).to.deep.equal({ open: false });
+        expect(region.hidden).to.equal(false);
       } finally {
         document.removeEventListener(
-          ConversationalSearchText.eventCitationsToggle,
+          ConversationalSearchShell.eventCitationsToggle,
           listener
         );
       }

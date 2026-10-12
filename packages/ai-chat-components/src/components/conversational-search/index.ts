@@ -7,4 +7,4 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import './src/conversational-search-text.js';
+import './src/conversational-search-shell.js';

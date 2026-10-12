@@ -11,24 +11,22 @@
 import React, { useEffect, useState } from 'react';
 import { useArgs } from 'storybook/preview-api';
 import { action } from 'storybook/actions';
-import ConversationalSearchText from '../../../react/conversational-search-text';
+import ConversationalSearchShell from '../../../react/conversational-search-shell';
 import Markdown from '../../../react/markdown';
-import { Default as DefaultWC } from './conversational-search-text.stories';
+import { Default as DefaultWC } from './conversational-search-shell.stories';
 
 function Answer({ args, onToggle }) {
   return (
     <div style={{ maxInlineSize: '40rem' }}>
-      <ConversationalSearchText
+      <ConversationalSearchShell
         citationsOpen={args.citationsOpen}
         showCitationsToggle={args.showCitationsToggle}
         citationsLabel={args.citationsLabel}
         toggleLabel={args.toggleLabel}
         onCitationsToggle={onToggle}>
         <Markdown markdown={args.markdown} streaming={args.streaming} />
-      </ConversationalSearchText>
-      {args.citationsOpen && args.showCitationsToggle && (
-        <p>{args.citationText}</p>
-      )}
+        <div slot="citations">{args.citationText}</div>
+      </ConversationalSearchShell>
     </div>
   );
 }
@@ -75,38 +73,33 @@ const { '@cds-aichat-citations-toggle': toggleEvent, ...argTypes } =
 
 function answerSource(_source, { args }) {
   return `import { useState } from 'react';
-import ConversationalSearchText from '@carbon/ai-chat-components/es/react/conversational-search-text.js';
+import ConversationalSearchShell from '@carbon/ai-chat-components/es/react/conversational-search-shell.js';
 import Markdown from '@carbon/ai-chat-components/es/react/markdown.js';
 
-function AnswerExample({ onCitationsScroll }) {
+function AnswerExample() {
   const [citationsOpen, setCitationsOpen] = useState(${JSON.stringify(args.citationsOpen)});
   return (
-    <>
-      <ConversationalSearchText
-        citationsOpen={citationsOpen}
-        showCitationsToggle={${JSON.stringify(args.showCitationsToggle)}}
-        citationsLabel={${JSON.stringify(args.citationsLabel)}}
-        toggleLabel={${JSON.stringify(args.toggleLabel)}}
-        onCitationsToggle={(event) => {
-          setCitationsOpen(event.detail.open);
-          if (event.detail.open) onCitationsScroll();
-        }}>
-        <Markdown
-          markdown={${JSON.stringify(args.markdown)}}
-          streaming={${JSON.stringify(args.streaming)}}
-        />
-      </ConversationalSearchText>
-      {citationsOpen && ${JSON.stringify(args.showCitationsToggle)} && (
-        <p>{${JSON.stringify(args.citationText)}}</p>
-      )}
-    </>
+    <ConversationalSearchShell
+      citationsOpen={citationsOpen}
+      showCitationsToggle={${JSON.stringify(args.showCitationsToggle)}}
+      citationsLabel={${JSON.stringify(args.citationsLabel)}}
+      toggleLabel={${JSON.stringify(args.toggleLabel)}}
+      onCitationsToggle={(event) => {
+        setCitationsOpen(event.detail.open);
+      }}>
+      <Markdown
+        markdown={${JSON.stringify(args.markdown)}}
+        streaming={${JSON.stringify(args.streaming)}}
+      />
+      <div slot="citations">{${JSON.stringify(args.citationText)}}</div>
+    </ConversationalSearchShell>
   );
 }`;
 }
 
 export default {
-  title: 'Preview/Conversational search/Answer text',
-  component: ConversationalSearchText,
+  title: 'Preview/Conversational search/Shell',
+  component: ConversationalSearchShell,
   parameters: {
     docs: { source: { type: 'dynamic', transform: answerSource } },
   },

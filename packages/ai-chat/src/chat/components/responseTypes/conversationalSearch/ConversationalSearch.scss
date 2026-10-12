@@ -6,39 +6,13 @@
  */
 
 @use '@carbon/layout';
-@use '@carbon/styles/scss/motion';
-
-@keyframes cds-aichat-fade-in {
-  0% {
-    opacity: 0;
-  }
-
-  100% {
-    opacity: 1;
-  }
-}
-
-.cds-aichat--conversational-search-citations {
-  animation: motion.$duration-slow-01 motion.motion(entrance, expressive)
-    cds-aichat-fade-in both;
-  max-inline-size: 400px;
-  padding-block-start: 16px;
-}
-
-@media screen and (prefers-reduced-motion: reduce) {
-  .cds-aichat--conversational-search-citations {
-    animation: none;
-  }
-}
 
 .cds-aichat--conversational-search__skeleton {
   display: block;
   inline-size: 100%;
-  margin-block-start: layout.$spacing-04;
-  max-inline-size: 400px;
 }
 
-.cds-aichat--narrow-width .cds-aichat--conversational-search__answer {
+.cds-aichat--narrow-width .cds-aichat--conversational-search::part(answer) {
   margin-inline-start: layout.$spacing-05;
 }
 

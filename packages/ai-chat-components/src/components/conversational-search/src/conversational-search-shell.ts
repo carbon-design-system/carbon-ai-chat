@@ -7,6 +7,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+/* eslint jsdoc/check-tag-names: ["error", { "definedTags": ["element", "slot", "csspart"] }] */
+
 import { LitElement, html, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ChevronDown16, ChevronUp16 } from '@carbon/icons';
@@ -14,9 +16,9 @@ import '@carbon/web-components/es/components/tag/tag.js';
 import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
 import { carbonElement } from '../../../globals/decorators/index.js';
 import prefix from '../../../globals/settings.js';
-import styles from './conversational-search-text.scss?lit';
+import styles from './conversational-search-shell.scss?lit';
 
-const blockClass = `${prefix}-conversational-search-text`;
+const blockClass = `${prefix}-conversational-search-shell`;
 
 /** The citation state requested by a toggle activation. */
 export interface CitationToggleEventDetail {
@@ -25,15 +27,18 @@ export interface CitationToggleEventDetail {
 }
 
 /**
- * Displays a slotted answer and requests changes to a host-controlled citation list.
+ * Lays out a slotted answer, a Sources toggle, and host-supplied citations.
  *
  * @experimental
- * @element cds-aichat-conversational-search-text
+ * @element cds-aichat-conversational-search-shell
  * @slot - The answer content, such as Markdown.
+ * @slot answer-error - An optional answer error, after the toggle.
+ * @slot citations - Citation content, including loading or error states.
+ * @csspart answer - The answer and toggle container.
  * @fires {CustomEvent<CitationToggleEventDetail>} cds-aichat-citations-toggle - Requests a citation state change.
  */
 @carbonElement(blockClass)
-class ConversationalSearchText extends LitElement {
+class ConversationalSearchShell extends LitElement {
   /** The host-controlled open state of the citation list. */
   @property({ type: Boolean, attribute: 'citations-open' })
   citationsOpen = false;
@@ -54,7 +59,7 @@ class ConversationalSearchText extends LitElement {
     const open = !this.citationsOpen;
     this.dispatchEvent(
       new CustomEvent<CitationToggleEventDetail>(
-        ConversationalSearchText.eventCitationsToggle,
+        ConversationalSearchShell.eventCitationsToggle,
         {
           detail: { open },
           bubbles: true,
@@ -66,30 +71,40 @@ class ConversationalSearchText extends LitElement {
 
   render() {
     return html`
-      <slot></slot>
-      ${
-        this.showCitationsToggle
-          ? html`
-              <div class="${blockClass}__toggle-container">
-                <button
-                  type="button"
-                  class="${blockClass}__toggle"
-                  aria-label=${this.toggleLabel}
-                  aria-expanded=${String(this.citationsOpen)}
-                  @click=${this._handleToggle}>
-                  <cds-tag size="md" type="gray" .filter=${false}>
-                    <span slot="icon" aria-hidden="true">
-                      ${iconLoader(
-                        this.citationsOpen ? ChevronUp16 : ChevronDown16
-                      )}
-                    </span>
-                    ${this.citationsLabel}
-                  </cds-tag>
-                </button>
-              </div>
-            `
-          : nothing
-      }
+      <div part="answer">
+        <slot></slot>
+        ${
+          this.showCitationsToggle
+            ? html`
+                <div class="${blockClass}__toggle-container">
+                  <button
+                    type="button"
+                    class="${blockClass}__toggle"
+                    aria-label=${this.toggleLabel}
+                    aria-expanded=${String(this.citationsOpen)}
+                    aria-controls="citations"
+                    @click=${this._handleToggle}>
+                    <cds-tag size="md" type="gray" .filter=${false}>
+                      <span slot="icon" aria-hidden="true">
+                        ${iconLoader(
+                          this.citationsOpen ? ChevronUp16 : ChevronDown16
+                        )}
+                      </span>
+                      ${this.citationsLabel}
+                    </cds-tag>
+                  </button>
+                </div>
+              `
+            : nothing
+        }
+      </div>
+      <slot name="answer-error"></slot>
+      <div
+        id="citations"
+        class="${blockClass}__citations"
+        ?hidden=${!this.citationsOpen}>
+        <slot name="citations"></slot>
+      </div>
     `;
   }
 
@@ -100,4 +115,4 @@ class ConversationalSearchText extends LitElement {
   static styles = styles;
 }
 
-export default ConversationalSearchText;
+export default ConversationalSearchShell;

@@ -10,6 +10,7 @@
 @use '../../../globals/scss/vars' as *;
 @use '@carbon/layout';
 @use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/motion';
 @use '@carbon/styles/scss/components/tag/tokens' as tag;
 @use '@carbon/styles/scss/utilities/component-tokens';
 
@@ -17,11 +18,11 @@
   display: block;
 }
 
-.#{$prefix}-conversational-search-text__toggle-container {
+.#{$prefix}-conversational-search-shell__toggle-container {
   padding-block-start: layout.$spacing-04;
 }
 
-.#{$prefix}-conversational-search-text__toggle {
+.#{$prefix}-conversational-search-shell__toggle {
   display: inline-flex;
   align-items: center;
   padding: 0;
@@ -50,4 +51,27 @@
     component-tokens.get-var(tag.$tag-border-gray, 'tag-border-gray');
   margin: 0;
   pointer-events: none;
+}
+
+@keyframes #{$prefix}-conversational-search-citations-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.#{$prefix}-conversational-search-shell__citations {
+  animation: motion.$duration-slow-01 motion.motion(entrance, expressive)
+    #{$prefix}-conversational-search-citations-fade-in both;
+  max-inline-size: 400px;
+  padding-block-start: layout.$spacing-05;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .#{$prefix}-conversational-search-shell__citations {
+    animation: none;
+  }
 }

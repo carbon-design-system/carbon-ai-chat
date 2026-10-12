@@ -9,25 +9,25 @@
 
 import { createComponent, type EventName } from '@lit/react';
 import React from 'react';
-import ConversationalSearchTextElement, {
+import ConversationalSearchShellElement, {
   type CitationToggleEventDetail,
-} from '../components/conversational-search/src/conversational-search-text.js';
+} from '../components/conversational-search/src/conversational-search-shell.js';
 import prefix from '../globals/settings.js';
 import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
-const ConversationalSearchText = withWebComponentBridge(
+const ConversationalSearchShell = withWebComponentBridge(
   createComponent({
-    tagName: `${prefix}-conversational-search-text`,
-    elementClass: ConversationalSearchTextElement,
+    tagName: `${prefix}-conversational-search-shell`,
+    elementClass: ConversationalSearchShellElement,
     react: React,
     events: {
       onCitationsToggle:
-        ConversationalSearchTextElement.eventCitationsToggle as EventName<
+        ConversationalSearchShellElement.eventCitationsToggle as EventName<
           CustomEvent<CitationToggleEventDetail>
         >,
     },
   })
 );
 
-export { ConversationalSearchText };
-export default ConversationalSearchText;
+export { ConversationalSearchShell };
+export default ConversationalSearchShell;

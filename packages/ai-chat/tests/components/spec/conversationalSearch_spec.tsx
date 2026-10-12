@@ -149,7 +149,7 @@ function renderAnswer(item = makeItem(), isStreamingError = false) {
     />
   );
   const answer = view.container.querySelector(
-    'cds-aichat-conversational-search-text'
+    'cds-aichat-conversational-search-shell'
   ) as HTMLElement & { updateComplete: Promise<boolean> };
   return { ...view, scroll, answer };
 }
@@ -218,15 +218,41 @@ it('renders active chunks until the final answer replaces them', () => {
   );
 });
 
-it('retains the partial answer beside the translated incomplete-stream error', () => {
+it('retains the partial answer beside the translated incomplete-stream error', async () => {
   const item = makeItem();
   item.ui_state.streamingState = {
     isDone: false,
     chunks: [{ text: 'Partial answer' }],
   };
-  renderAnswer(item, true);
+  const { answer } = renderAnswer(item, true);
+  await answer.updateComplete;
   expect(screen.getByText('Partial answer')).toBeInTheDocument();
   expect(screen.getByText('Incomplete translated')).toBeInTheDocument();
+  const errorSlot = answer.shadowRoot.querySelector<HTMLSlotElement>(
+    'slot[name="answer-error"]'
+  );
+  expect(errorSlot.assignedElements()[0]).toContainElement(
+    screen.getByText('Incomplete translated')
+  );
+  expect(errorSlot.closest('[hidden]')).toBeNull();
+});
+
+it('mounts the lazy citation content in the shell citations slot', async () => {
+  const { answer } = renderAnswer();
+  await answer.updateComplete;
+  const citationsSlot = answer.shadowRoot.querySelector<HTMLSlotElement>(
+    'slot[name="citations"]'
+  );
+  expect(citationsSlot.parentElement.hidden).toBe(true);
+  expect(screen.queryByTestId('citations')).not.toBeInTheDocument();
+  await toggle(answer);
+  expect(citationsSlot.parentElement.hidden).toBe(false);
+  expect(citationsSlot.assignedElements()[0]).toContainElement(
+    screen.getByTestId('citations')
+  );
+  await toggle(answer);
+  expect(citationsSlot.parentElement.hidden).toBe(true);
+  expect(screen.queryByTestId('citations')).not.toBeInTheDocument();
 });
 
 it('updates highlights from selection and carousel navigation through the real answer wrapper', async () => {
@@ -314,14 +340,14 @@ it('replaces a rejected citations import with the translated content error while
   expect(screen.getByText('Alpha Beta')).toBeInTheDocument();
 });
 
-it('scrolls opening and selection after 50 ms with the existing padding', async () => {
+it('scrolls opening and selection after 50 ms with room for the shell gap and toggle', async () => {
   const { answer, scroll } = renderAnswer();
   await toggle(answer);
   act(() => jest.advanceTimersByTime(49));
   expect(scroll).not.toHaveBeenCalled();
   act(() => jest.advanceTimersByTime(1));
   expect(scroll).toHaveBeenCalledTimes(1);
-  expect(scroll).toHaveBeenCalledWith(expect.any(HTMLElement), 32, 64);
+  expect(scroll).toHaveBeenCalledWith(expect.any(HTMLElement), 48, 64);
   expect(scroll.mock.calls[0][0]).toContainElement(
     screen.getByTestId('citations')
   );
@@ -330,7 +356,7 @@ it('scrolls opening and selection after 50 ms with the existing padding', async 
   act(() => jest.advanceTimersByTime(49));
   expect(scroll).not.toHaveBeenCalled();
   act(() => jest.advanceTimersByTime(1));
-  expect(scroll).toHaveBeenCalledWith(expect.any(HTMLElement), 32, 64);
+  expect(scroll).toHaveBeenCalledWith(expect.any(HTMLElement), 48, 64);
 });
 
 it('scrolls the mounted cards again after a late lazy import', async () => {

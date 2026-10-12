@@ -7,15 +7,15 @@
  *  @license
  */
 
-import '../src/conversational-search-text';
+import '../src/conversational-search-shell';
 import '../../markdown/src/markdown';
-import { html, LitElement, nothing } from 'lit';
+import { html, LitElement } from 'lit';
 import { useArgs } from 'storybook/preview-api';
 import { action } from 'storybook/actions';
 
 const renderAnswer = (args, onToggle) => html`
   <div style="max-inline-size: 40rem">
-    <cds-aichat-conversational-search-text
+    <cds-aichat-conversational-search-shell
       .citationsOpen=${args.citationsOpen}
       .showCitationsToggle=${args.showCitationsToggle}
       .citationsLabel=${args.citationsLabel}
@@ -24,12 +24,8 @@ const renderAnswer = (args, onToggle) => html`
       <cds-aichat-markdown
         .markdown=${args.markdown}
         .streaming=${args.streaming}></cds-aichat-markdown>
-    </cds-aichat-conversational-search-text>
-    ${
-      args.citationsOpen && args.showCitationsToggle
-        ? html`<p>${args.citationText}</p>`
-        : nothing
-    }
+      <div slot="citations">${args.citationText}</div>
+    </cds-aichat-conversational-search-shell>
   </div>
 `;
 
@@ -100,8 +96,8 @@ if (!customElements.get('story-conversational-search-stream')) {
 }
 
 export default {
-  title: 'Preview/Conversational search/Answer text',
-  component: 'cds-aichat-conversational-search-text',
+  title: 'Preview/Conversational search/Shell',
+  component: 'cds-aichat-conversational-search-shell',
 };
 
 export const Default = {
@@ -118,7 +114,7 @@ export const Default = {
   argTypes: {
     citationsOpen: {
       control: 'boolean',
-      description: 'Host-controlled open state.',
+      description: 'Host-controlled visibility of the citations region.',
     },
     showCitationsToggle: {
       control: 'boolean',
@@ -136,7 +132,7 @@ export const Default = {
     },
     citationText: {
       control: 'text',
-      description: 'Example source text rendered by the host.',
+      description: 'Source text supplied in the citations slot.',
     },
     '@cds-aichat-citations-toggle': {
       action: 'citations-toggle',

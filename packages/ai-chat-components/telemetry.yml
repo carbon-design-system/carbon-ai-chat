@@ -51,7 +51,6 @@ collect:
         - size
         - slot
         - source
-        - streaming
         - test-id
         - title
         - type
@@ -132,13 +131,11 @@ collect:
         - oncontent-change
         - show-less-text
         - show-more-text
-        # cds-aichat-conversational-search-text
+        # cds-aichat-conversational-search-shell
         - citations-label
         - citations-open
-        - oncds-aichat-citations-scroll
         - oncds-aichat-citations-toggle
         - show-citations-toggle
-        - toggle-id
         - toggle-label
         # cds-aichat-error-message
         - description
@@ -251,6 +248,7 @@ collect:
         - oncds-aichat-markdown-plugin-host-update
         - remove-html
         - sanitize-html
+        - streaming
         - table-download-label-text
         - table-filter-placeholder-text
         - table-items-per-page-text
@@ -321,10 +319,6 @@ collect:
         # General - type
         - expand
         - tooltip
-        # cds-aichat-chain-of-thought-step - status
-        - failure
-        - processing
-        - success
         # cds-aichat-chat-header - navigation-type
         - back
         - none
