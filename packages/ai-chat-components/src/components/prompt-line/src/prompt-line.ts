@@ -404,7 +404,9 @@ class PromptLineElement extends LitElement {
 
   /**
    * Drops the editor's undo and redo history, keeping the live editor,
-   * its focus, and its plugin state. No-op in plain textarea mode.
+   * its focus, and its plugin state. Emits Tiptap's `transaction` event but
+   * no `update`, value-change, typing, or token events. No-op in plain
+   * textarea mode.
    */
   resetHistory(): void {
     this._controller?.resetHistory();

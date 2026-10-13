@@ -32,7 +32,7 @@ import ParagraphNode from '@tiptap/extension-paragraph';
 import Placeholder from '@tiptap/extension-placeholder';
 import TextNode from '@tiptap/extension-text';
 import { UndoRedo } from '@tiptap/extensions';
-import { closeHistory, history } from '@tiptap/pm/history';
+import { closeHistory } from '@tiptap/pm/history';
 
 import { IS_PHONE } from '../../../globals/utils/browser-utils.js';
 import { MouseFocusController } from './prompt-line-mouse-focus.js';
@@ -300,8 +300,20 @@ class RichController
     if (!editor || editor.isDestroyed) {
       return;
     }
-    editor.unregisterPlugin('history');
-    editor.registerPlugin(history({ ...HISTORY_DEFAULTS }));
+
+    const plugin = editor.state.plugins.find((p) =>
+      (p as unknown as { key: string }).key.startsWith('history$')
+    );
+    const historyState = plugin?.spec.state?.init(
+      plugin.spec.config,
+      editor.state
+    );
+    if (!plugin || !historyState) {
+      return;
+    }
+    editor.view.dispatch(
+      setHostOriginMeta(editor.state.tr.setMeta(plugin, { historyState }))
+    );
   }
 
   // -------------------------------------------------------------------------

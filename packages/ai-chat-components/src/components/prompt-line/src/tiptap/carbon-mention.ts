@@ -36,6 +36,7 @@ import type { Editor, Range } from '@tiptap/core';
 import Mention from '@tiptap/extension-mention';
 import type { Node as PMNode } from '@tiptap/pm/model';
 import { Plugin, PluginKey } from '@tiptap/pm/state';
+import isEqual from 'lodash-es/isEqual.js';
 
 import { isHostOrigin } from './origin-meta.js';
 import { CarbonTokenNodeView } from './token-node-view.js';
@@ -239,16 +240,7 @@ function diffRemovedTokens(
   after: PMNode,
   name: string
 ): SuggestionItem[] {
-  const beforeById = collectTokenAttrsById(before, name);
-  const afterById = collectTokenAttrsById(after, name);
-  const removed: SuggestionItem[] = [];
-  for (const [id, beforeAttrs] of beforeById) {
-    const afterCount = afterById.get(id)?.length ?? 0;
-    for (let i = afterCount; i < beforeAttrs.length; i += 1) {
-      removed.push(attrsToItem(beforeAttrs[i]));
-    }
-  }
-  return removed;
+  return diffAddedTokens(after, before, name);
 }
 
 /**
@@ -264,9 +256,16 @@ function diffAddedTokens(
   const afterById = collectTokenAttrsById(after, name);
   const added: SuggestionItem[] = [];
   for (const [id, afterAttrs] of afterById) {
-    const beforeCount = beforeById.get(id)?.length ?? 0;
-    for (let i = beforeCount; i < afterAttrs.length; i += 1) {
-      added.push(attrsToItem(afterAttrs[i]));
+    const unmatchedBefore = [...(beforeById.get(id) ?? [])];
+    for (const attrs of afterAttrs) {
+      const match = unmatchedBefore.findIndex((beforeAttrs) =>
+        isEqual(beforeAttrs, attrs)
+      );
+      if (match === -1) {
+        added.push(attrsToItem(attrs));
+      } else {
+        unmatchedBefore.splice(match, 1);
+      }
     }
   }
   return added;

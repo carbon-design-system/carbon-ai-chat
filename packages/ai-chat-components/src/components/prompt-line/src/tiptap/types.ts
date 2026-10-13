@@ -173,8 +173,8 @@ export interface TriggerSuggestionConfig extends Omit<
    * `label`, `value`, plus any custom fields preserved in `data`);
    * presentation-only fields (`avatar`, `description`, `disabled`,
    * `showTriggerInChip`) are not retained on the node and are absent.
-   * Programmatic inserts (via `getEditor()`/`updateContent`) are host-origin
-   * and do NOT fire `onSelect`, symmetric with `onRemove`.
+   * `updateContent` tags host-origin transactions and suppresses `onSelect`.
+   * Raw `getEditor()` commands require explicit `setHostOriginMeta` tagging.
    *
    * Use the symmetric {@link TriggerSuggestionConfig.onRemove} to keep
    * host-owned structured data in sync in both directions.
@@ -192,8 +192,8 @@ export interface TriggerSuggestionConfig extends Omit<
    * `label`, `value`, plus any custom fields preserved in `data`);
    * presentation-only fields (`avatar`, `description`, `disabled`,
    * `showTriggerInChip`) are not retained on the node and are absent.
-   * Programmatic removals (via `getEditor()`/`updateContent`) are host-origin
-   * and do NOT fire `onRemove`, symmetric with `onSelect`.
+   * `updateContent` tags host-origin transactions and suppresses `onRemove`.
+   * Raw `getEditor()` commands require explicit `setHostOriginMeta` tagging.
    */
   onRemove?: (item: SuggestionItem) => void;
 

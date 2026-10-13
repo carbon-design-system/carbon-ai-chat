@@ -335,6 +335,54 @@ describe('tiptap/carbon-command Backspace', function () {
   });
 
   describe('onSelect (lifecycle)', () => {
+    for (const { name, range, replacesExisting } of [
+      { name: 'prepended duplicate', range: 1, replacesExisting: false },
+      {
+        name: 'same-id replacement',
+        range: { from: 1, to: 2 },
+        replacesExisting: true,
+      },
+    ]) {
+      it(`fires with the new stored data for a ${name}`, () => {
+        const events: { type: string; item: SuggestionItem }[] = [];
+        const { editor, cleanup: c } = makeEditor('mention', {
+          onSelect: (item) => events.push({ type: 'select', item }),
+          onRemove: (item) => events.push({ type: 'remove', item }),
+        });
+        cleanup = c;
+
+        insertMention(editor, {
+          id: 'u1',
+          label: 'Alice',
+          value: '@alice',
+          data: { version: 1 },
+        });
+        events.length = 0;
+
+        editor.commands.insertContentAt(range, {
+          type: 'mention',
+          attrs: {
+            id: 'u1',
+            label: 'Alice',
+            value: '@alice',
+            data: { version: 2 },
+          },
+        });
+
+        const selected = {
+          type: 'select',
+          item: { id: 'u1', label: 'Alice', value: '@alice', version: 2 },
+        };
+        const removed = {
+          type: 'remove',
+          item: { id: 'u1', label: 'Alice', value: '@alice', version: 1 },
+        };
+        expect(events).to.deep.equal(
+          replacesExisting ? [removed, selected] : [selected]
+        );
+      });
+    }
+
     it('fires with the reconstructed item when a deleted mention is restored via undo', () => {
       const removed: SuggestionItem[] = [];
       const inserted: SuggestionItem[] = [];
