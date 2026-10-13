@@ -1669,6 +1669,43 @@ describe('cds-aichat-autocomplete', () => {
     });
   });
 
+  describe('in-place mutation', () => {
+    it('drops a removed item from the DOM and from keyboard navigation after splice + requestUpdate()', async () => {
+      const items: SuggestionItem[] = [
+        { id: 'a', label: 'A' },
+        { id: 'b', label: 'B' },
+        { id: 'c', label: 'C' },
+      ];
+      const el = await defaultFixture({ items });
+
+      items.splice(0, 1);
+      el.requestUpdate();
+      await el.updateComplete;
+
+      const options = Array.from(
+        el.shadowRoot?.querySelectorAll('li[role="option"]') ?? []
+      );
+      expect(options.map((option) => option.id)).to.deep.equal([
+        'b--option',
+        'c--option',
+      ]);
+
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Home',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
+      expect(listbox?.getAttribute('aria-activedescendant')).to.equal(
+        'b--option'
+      );
+    });
+  });
+
   describe('screen reader announcements', () => {
     it('includes the group title in arrow-key navigation announcements for grouped items', async () => {
       let announcedMessage: string | null = null;

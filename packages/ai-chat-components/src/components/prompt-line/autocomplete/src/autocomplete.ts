@@ -232,7 +232,7 @@ class AutocompleteElement extends LitElement {
    */
   private _moveAnnouncePending: number | null = null;
 
-  /** Cached flat item list, rebuilt in willUpdate when items/groups/i18n change. */
+  /** Cached flat item list, rebuilt on every update via willUpdate. */
   private _flatList: FlatEntry[] = [];
 
   /** Whether the open announcement has already fired for this show. */
@@ -273,13 +273,7 @@ class AutocompleteElement extends LitElement {
 
   willUpdate(changedProperties: Map<string, any>) {
     super.willUpdate(changedProperties);
-    if (
-      changedProperties.has('items') ||
-      changedProperties.has('groups') ||
-      changedProperties.has('i18n')
-    ) {
-      this._flatList = this._buildFlatList();
-    }
+    this._flatList = this._buildFlatList();
   }
 
   updated(changedProperties: Map<string, any>) {
@@ -312,8 +306,8 @@ class AutocompleteElement extends LitElement {
 
   /**
    * Build a flat list of all items in render order: ungrouped items first,
-   * then each group's items in group order. Called from willUpdate whenever
-   * items, groups, or i18n change; callers read `this._flatList` directly.
+   * then each group's items in group order. Called unconditionally from
+   * willUpdate so in-place mutations followed by requestUpdate() are reflected.
    */
   private _buildFlatList(): FlatEntry[] {
     const result: FlatEntry[] = [];
