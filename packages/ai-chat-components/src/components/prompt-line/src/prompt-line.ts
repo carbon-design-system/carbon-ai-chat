@@ -180,6 +180,7 @@ class PromptLineElement extends LitElement {
       if (root instanceof ShadowRoot || root instanceof Document) {
         adoptOnRoot(root);
       }
+      this._controller?.getEditor()?.view.updateRoot();
       const activeElement = this.ownerDocument.activeElement;
       if (
         this._focusedWithKeyboard !== null &&
