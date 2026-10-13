@@ -70,9 +70,6 @@ const searchParams = new URLSearchParams(window.location.search);
 const layoutParam = searchParams.get('layout');
 const inputParam = searchParams.get('input');
 
-/** A custom input node type the surfaces render as its fallback label. */
-const FALLBACK_NODE = 'fallbackCard';
-
 const inlinePlugin: MarkdownItPlugin = (md) => {
   md.renderer.rules.code_inline = (tokens, index) =>
     `<span class="page-styled" data-kind="inline-plugin">${md.utils.escapeHtml(tokens[index].content)}</span>`;
@@ -165,7 +162,7 @@ async function mountReact(surface?: string) {
         renderCustomMessageFooter: () => pageStyled('message-footer'),
         renderCustomRequestFooter: () => pageStyled('request-footer'),
         renderUserDefinedInputNode: ({ node }: { node: { type?: string } }) =>
-          node.type === FALLBACK_NODE ? null : pageStyled('input-node'),
+          node.type === 'taskCard' ? pageStyled('input-node') : null,
         renderWriteableElements: {
           welcomeNodeBeforeElement: pageStyled('writeable-element'),
         },
@@ -247,7 +244,7 @@ async function mountWebComponent(surface: string) {
     node,
   }: {
     node: { type?: string };
-  }) => (node.type === FALLBACK_NODE ? null : pageStyledElement('input-node'));
+  }) => (node.type === 'taskCard' ? pageStyledElement('input-node') : null);
   element.onBeforeRender = (instance: ChatInstance) => {
     harness.wcInstance = instance;
     instance.writeableElements.welcomeNodeBeforeElement?.appendChild(
