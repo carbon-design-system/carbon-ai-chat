@@ -7,10 +7,18 @@
  *  @license
  */
 
-import { ChatInstance, MessageResponseTypes } from '@carbon/ai-chat';
+import {
+  ChatInstance,
+  MessageRequest,
+  MessageResponseTypes,
+} from '@carbon/ai-chat';
 
-function doHumanAgent(instance: ChatInstance) {
+function doHumanAgent(
+  instance: ChatInstance,
+  requestID?: MessageRequest['id']
+) {
   instance.messaging.addMessage({
+    request_id: requestID,
     output: {
       generic: [
         {

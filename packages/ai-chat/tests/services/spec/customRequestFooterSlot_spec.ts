@@ -73,6 +73,8 @@ const createServiceManagerStub = () => {
     },
     messageService: {
       send: jest.fn().mockResolvedValue(undefined),
+      isRequestFromPreviousConversation: jest.fn().mockReturnValue(false),
+      messageLoadingManager: { end: jest.fn() },
     },
     fire: jest.fn(async (event: BusEvent) => {
       firedEvents.push(event);

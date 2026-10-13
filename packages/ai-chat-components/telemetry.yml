@@ -131,6 +131,12 @@ collect:
         - oncontent-change
         - show-less-text
         - show-more-text
+        # cds-aichat-conversational-search-shell
+        - citations-label
+        - citations-open
+        - oncds-aichat-citations-toggle
+        - show-citations-toggle
+        - toggle-label
         # cds-aichat-error-message
         - description
         - fullscreen
@@ -313,10 +319,6 @@ collect:
         # General - type
         - expand
         - tooltip
-        # cds-aichat-chain-of-thought-step - status
-        - failure
-        - processing
-        - success
         # cds-aichat-chat-header - navigation-type
         - back
         - none

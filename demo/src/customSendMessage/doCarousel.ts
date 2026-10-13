@@ -9,13 +9,15 @@
 
 import {
   ChatInstance,
+  MessageRequest,
   GenericItem,
   MessageResponseTypes,
   TextItem,
 } from '@carbon/ai-chat';
 
-function doCarousel(instance: ChatInstance) {
+function doCarousel(instance: ChatInstance, requestID?: MessageRequest['id']) {
   instance.messaging.addMessage({
+    request_id: requestID,
     output: {
       generic: [
         {

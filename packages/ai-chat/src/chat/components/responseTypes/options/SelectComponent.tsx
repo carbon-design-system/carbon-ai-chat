@@ -9,7 +9,7 @@
 
 import { Dropdown, DropdownItem } from '../../../components/carbon/Dropdown';
 import cx from 'classnames';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { HasServiceManager } from '../../../hocs/withServiceManager';
 import { useCounter } from '../../../hooks/useCounter';
@@ -18,25 +18,36 @@ import { shallowEqual } from '../../../store/appStore';
 import { AppState } from '../../../../types/state/AppState';
 import { doScrollElementIntoView } from '../../../utils/domUtils';
 import {
-  MessageInput,
+  MessageRequest,
   SingleOption,
 } from '../../../../types/messaging/Messages';
 import { DROPDOWN_SIZE } from '@carbon/web-components/es/components/dropdown/defs.js';
 import { TextBlock } from '../../../components/helpers/TextBlock/TextBlock';
+import {
+  findSelectedChoiceIndex,
+  resolveChoiceText,
+} from '../../../utils/messageUtils';
 
 interface OnChangeData<ItemType> {
   selectedItem: ItemType | null;
 }
 
 type SelectionEvent = CustomEvent<{
-  item: { textContent: string; value: string };
+  item: {
+    getAttribute?: (name: string) => string | null;
+    textContent: string;
+    value: string;
+  };
 }>;
+
+type CarbonDropdown = HTMLElement & { value: string };
+type CarbonDropdownItem = HTMLElement & { selected: boolean; value: string };
 
 interface SelectProps extends HasServiceManager {
   title: string;
   description: string;
   options: SingleOption[];
-  value: { input: MessageInput };
+  value?: MessageRequest;
   onChange: (data: OnChangeData<SingleOption>) => void;
 
   /**
@@ -57,6 +68,7 @@ function SelectComponent(props: SelectProps) {
     title,
     description,
     options,
+    value,
     onChange,
     disableUserInputs,
     serviceManager,
@@ -106,18 +118,54 @@ function SelectComponent(props: SelectProps) {
   };
 
   const handleSelected = (e: SelectionEvent) => {
-    const label = e.detail.item.textContent;
-    const text = e.detail.item.value;
+    const selectedIndex = Number(
+      e.detail.item.getAttribute?.('data-option-index') ??
+        e.detail.item.getAttribute?.('value') ??
+        e.detail.item.value
+    );
 
-    // Store the selection but don't send immediately
-    // Wait for the dropdown to close (handleToggle will send it)
-    // Reset the sent flag when a new selection is made
-    hasSentRef.current = false;
-    pendingSelectionRef.current = {
-      label,
-      value: { input: { text } },
-    };
+    if (
+      Number.isInteger(selectedIndex) &&
+      selectedIndex >= 0 &&
+      selectedIndex < options.length
+    ) {
+      // Keep the original option until the dropdown closes so all input fields and choice settings survive.
+      hasSentRef.current = false;
+      pendingSelectionRef.current = options[selectedIndex];
+    }
   };
+
+  const selectedIndex = findSelectedChoiceIndex(options, value);
+  const selectedValue =
+    selectedIndex === -1 ? undefined : String(selectedIndex);
+
+  useEffect(() => {
+    const dropdown = rootRef.current?.querySelector(
+      'cds-dropdown'
+    ) as CarbonDropdown | null;
+    if (!dropdown) {
+      return undefined;
+    }
+
+    const applySelection = () => {
+      dropdown
+        .querySelectorAll<CarbonDropdownItem>('cds-dropdown-item')
+        .forEach((item, index) => {
+          const itemValue = String(index);
+          item.value = itemValue;
+          item.setAttribute('value', itemValue);
+          item.selected = index === selectedIndex;
+        });
+      const dropdownValue = selectedValue ?? '';
+      dropdown.value = dropdownValue;
+      dropdown.setAttribute('value', dropdownValue);
+    };
+
+    applySelection();
+    const animationFrame = requestAnimationFrame(applySelection);
+
+    return () => cancelAnimationFrame(animationFrame);
+  }, [options, selectedIndex, selectedValue]);
 
   return (
     <div ref={rootRef}>
@@ -144,11 +192,9 @@ function SelectComponent(props: SelectProps) {
           disabled={disableUserInputs}
           onToggled={handleToggle}
           onSelected={handleSelected}>
-          {options.map((option) => (
-            <DropdownItem
-              value={option.value.input.text}
-              key={option.value.input.text}>
-              {option.label}
+          {options.map((option, index) => (
+            <DropdownItem key={index} data-option-index={index}>
+              {resolveChoiceText(option).controlText}
             </DropdownItem>
           ))}
         </Dropdown>

@@ -197,5 +197,5 @@ export const filterItems = (items, query) => {
     return items;
   }
   const lower = query.toLowerCase();
-  return items.filter((item) => item.label.toLowerCase().includes(lower));
+  return items.filter((item) => item.label.toLowerCase().startsWith(lower));
 };
