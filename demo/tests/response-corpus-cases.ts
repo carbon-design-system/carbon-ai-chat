@@ -90,10 +90,14 @@ export const RESPONSE_EXPECTATIONS: Record<string, CorpusExpectation> = {
     selectors: [['.cds-aichat--media-player__root', 1]],
   },
   button: {
-    items: 5,
+    items: 9,
     text: [
       'Fire a client side event',
       'Send a message to your server',
+      'Show the sent text',
+      'Send silently',
+      'image',
+      'Missing input text',
       'Open a panel',
       'Add a button that is a link',
     ],
@@ -162,10 +166,15 @@ export const RESPONSE_EXPECTATIONS: Record<string, CorpusExpectation> = {
     ],
   },
   'option list': {
-    items: 2,
+    items: 3,
     text: [
       'Select a response to view it in action (dropdown).',
       'Select a response to view it in action (button).',
+      'Verify choice transcript display and silent selection.',
+      'Default label mode',
+      'Input-text mode',
+      'Silent option',
+      'Missing input text',
     ],
   },
   'ordered list': {
