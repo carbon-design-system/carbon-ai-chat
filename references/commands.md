@@ -75,7 +75,7 @@ A build can meet all three and still be stale: they do not cover leftover `node_
 | --- | --- |
 | Checkout, pull, merge, rebase, cherry-pick, or a new worktree | `npm install && npm run aiChat:build`. These can change source, dependencies, and build configuration at once. Use a narrower row only after you check what changed. |
 | `package.json` or `package-lock.json` | `npm install`, then rebuild |
-| Source edit in a package | `npm run build --workspace=<package>` before a run that reads its output (table above) |
+| Source edit in a package | Rebuild that package and consumers that compile its changed output. For shared components SCSS, build components first, then `@carbon/ai-chat`. |
 | Build configuration (`tasks/`, `tsconfig*.json`, `.babelrc`, Rollup or Vite config) | Rebuild the package. Ask for a restart of any watcher started before the change. |
 
 ### With a watcher running
@@ -102,7 +102,7 @@ Use this when a failure looks like the environment and not the change. Signs: th
 npm run clean && npm install && npm run aiChat:build
 ```
 
-Then rerun the same failing command. A pass means stale state: report it as that, not as a fix. A repeat failure makes stale state unlikely. Look at the source change, then at the base branch.
+Then rerun the same failing command. A pass is consistent with stale state, but does not rule out a flake. Report the result and the evidence for its cause. If it fails again, inspect the source change, then the base branch.
 
 `npm run clean` also removes `packages/ai-chat/dist`. An ordinary `@carbon/ai-chat` build does not: it overwrites the current files there and leaves files from older builds beside them, so a file's presence in that directory is not evidence. When you cannot disturb the current worktree, a fresh worktree with the same changes, installed and built, answers the same question.
 
