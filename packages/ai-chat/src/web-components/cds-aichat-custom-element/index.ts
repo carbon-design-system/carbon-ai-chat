@@ -186,8 +186,8 @@ class ChatCustomElement extends FlattenedConfigElement {
   renderCustomRequestFooter?: WCRenderCustomRequestFooter;
 
   /**
-   * Renderer for custom TipTap node types inside sent user message bubbles
-   * (rich user message content). Forwarded to the inner cds-aichat-container.
+   * Renderer for `mention` chips, `command` chips, and custom TipTap nodes
+   * inside sent user message bubbles (rich user message content). Forwarded to the inner cds-aichat-container.
    *
    * @experimental
    */
@@ -357,7 +357,8 @@ class ChatCustomElement extends FlattenedConfigElement {
         .renderUserDefinedResponse=${this.renderUserDefinedResponse}
         .renderCustomMessageFooter=${this.renderCustomMessageFooter}
         .renderCustomRequestFooter=${this.renderCustomRequestFooter}
-        .renderUserDefinedInputNode=${this.renderUserDefinedInputNode}>
+        .renderUserDefinedInputNode=${this.renderUserDefinedInputNode}
+        exportparts="prompt-container">
         ${this._writeableElementSlots.map(
           (slot) => html`<slot name=${slot} slot=${slot}></slot>`
         )}

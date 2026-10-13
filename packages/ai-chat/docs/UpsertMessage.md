@@ -23,13 +23,19 @@ You return a {@link MessageResponse | MessageResponse} shape. [Message format](.
 
 See {@link ChatInstanceMessaging.upsertMessage | upsertMessage} for the full signature. See {@link UpsertMessageUpdater | the updater type} for its shape.
 
-The updater gets the {@link MessageResponse | MessageResponse} now stored under `messageID`. It gets `undefined` when no message with that ID exists yet. It returns the message that replaces the stored one. The updater can be synchronous or return a Promise. {@link ChatInstanceMessaging.upsertMessage | upsertMessage} also returns a Promise. That Promise waits until the updater resolves **and** the chat applies the new state.
+The updater gets the {@link MessageResponse | MessageResponse} now stored under `messageID`. It gets `undefined` when no message with that ID exists yet. It returns the message that replaces the stored one. The updater can be synchronous or return a Promise. {@link ChatInstanceMessaging.upsertMessage | upsertMessage} returns a Promise that resolves without a value after the chat applies or discards the result. If the updater fails, that Promise rejects.
 
 ID rules:
 
 - If the returned message has no `id`, the chat assigns `messageID`.
 - A returned message whose `id` differs from `messageID` throws a `TypeError`.
 - Returning `null` or `undefined` throws a `TypeError`. So does returning a non-assistant message — a request or a human-agent message.
+
+## Link each update to its request
+
+Set {@link MessageResponse.request_id | request_id} on every message your updater returns. Use the outgoing {@link MessageRequest.id | request ID} passed to {@link PublicConfigMessaging.customSendMessage | customSendMessage}. The chat drops the result if that request belongs to a conversation that was restarted or cleared. Omitted or unknown IDs keep the prior behavior and do not provide this protection. See [Ignore replies from before a restart](./CustomServer.md#ignore-replies-from-before-a-restart) for the ID rules.
+
+The updater may run before the chat can check the returned request ID. It may also finish after a restart; the chat drops that result. Keep side effects such as network calls under your own cancellation control. An upsert ends the loading indicator after the updater returns a result the chat can accept. If the updater fails in the same conversation, it still ends loading and rejects. Timers and conversation resets can also end loading while an updater is pending.
 
 ## The state argument
 
@@ -89,7 +95,7 @@ function renderUserDefinedResponse(state: RenderUserDefinedState) {
 
 ## Code patterns
 
-**Streaming a single message (SSE-style).** One call per delta. The first call creates the message. Later calls update it. {@link BusEventType.RECEIVE | RECEIVE} fires once, on the final transition to `COMPLETE`. Each call returns a {@link MessageResponse | MessageResponse}.
+**Streaming a single message (SSE-style).** One call per delta. The first call creates the message. Later calls update it. {@link BusEventType.RECEIVE | RECEIVE} fires once, on the final transition to `COMPLETE`. Here, `request` is the request passed to your send callback.
 
 ```typescript
 const messageID = 'msg-1';
@@ -100,6 +106,7 @@ for (const piece of await streamFromBackend()) {
     MessageState.STREAMING,
     (prev) => ({
       id: messageID,
+      request_id: request.id,
       output: {
         generic: [
           {
@@ -118,7 +125,10 @@ for (const piece of await streamFromBackend()) {
 await instance.messaging.upsertMessage(
   messageID,
   MessageState.COMPLETE,
-  (prev) => prev ?? { id: messageID, output: { generic: [] } }
+  (prev) => ({
+    ...(prev ?? { id: messageID, output: { generic: [] } }),
+    request_id: request.id,
+  })
 );
 ```
 
@@ -138,7 +148,7 @@ await instance.messaging.upsertMessage(
 );
 ```
 
-**Optimistic update.** Show a placeholder right away. Then replace it once the backend returns.
+**Optimistic update.** Show a placeholder right away. Then replace it once the backend returns. Here, `request` is the request passed to your send callback.
 
 ```typescript
 await instance.messaging.upsertMessage(
@@ -146,6 +156,7 @@ await instance.messaging.upsertMessage(
   MessageState.STREAMING,
   () => ({
     id: messageID,
+    request_id: request.id,
     output: {
       generic: [
         { response_type: MessageResponseTypes.TEXT, text: 'Working on it...' },
@@ -161,6 +172,7 @@ await instance.messaging.upsertMessage(
   MessageState.COMPLETE,
   () => ({
     id: messageID,
+    request_id: request.id,
     output: { generic: [result] },
   })
 );
@@ -168,7 +180,7 @@ await instance.messaging.upsertMessage(
 
 ## Cancellation
 
-Cancellation works the same way for every delivery method. When the abort signal fires, stop your stream. Then call `upsertMessage` with `MessageState.COMPLETE`. This moves the message out of streaming and hides the "stop streaming" button. See [Cancelling request (stop streaming)](./CustomServer.md#cancelling-request-stop-streaming) for the full pattern and an `upsertMessage` finalization example.
+When the abort signal fires, stop your stream. If the user clicked "stop streaming," call `upsertMessage` with `MessageState.COMPLETE` to clear the streaming UI. After restart or clear, skip this final update. The chat ignores it if it carries the old request ID. Without that ID, your code must prevent late delivery. See [Cancelling request (stop streaming)](./CustomServer.md#cancelling-request-stop-streaming) for the full pattern.
 
 ## Related
 

@@ -10,13 +10,15 @@
 import {
   ButtonItemType,
   ChatInstance,
+  MessageRequest,
   MessageResponseTypes,
   WidthOptions,
 } from '@carbon/ai-chat';
 import { BUTTON_KIND } from '@carbon/web-components/es/components/button/defs.js';
 
-function doCard(instance: ChatInstance) {
+function doCard(instance: ChatInstance, requestID?: MessageRequest['id']) {
   instance.messaging.addMessage({
+    request_id: requestID,
     output: {
       generic: [
         {

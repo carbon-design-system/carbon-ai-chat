@@ -103,8 +103,8 @@ interface CdsAiChatCustomElementAttributes extends Omit<
   renderCustomRequestFooter?: WCRenderCustomRequestFooter;
 
   /**
-   * Renderer for custom TipTap node types inside sent user message bubbles
-   * (rich user message content). Forwarded to the inner cds-aichat-container.
+   * Renderer for `mention` chips, `command` chips, and custom TipTap nodes
+   * inside sent user message bubbles (rich user message content). Forwarded to the inner cds-aichat-container.
    *
    * @experimental
    */

@@ -705,7 +705,7 @@ A keyboard-only Tiptap extension intercepts `ArrowUp` / `ArrowDown` in the chat 
 
 ### [Prompt line / Mentions & commands (custom render)](./prompt-line-mentions-and-commands-custom-render/README.md)
 
-The Mentions & Commands example with a `renderCustomToken` supplied for mentions: each picked user appears in the input as a `<cds-tag>` wrapped in a `<cds-tooltip>` showing the user's description on hover. Commands keep the default chip rendering.
+The Mentions & Commands example with a `renderCustomToken` supplied for mentions: each picked user appears in the input and in the sent message bubble as a `<cds-tag>` wrapped in a `<cds-tooltip>` showing the user's description on hover. Commands keep the default chip rendering.
 
 **Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-prompt-line-mentions-and-commands-custom-render`
 
@@ -723,6 +723,8 @@ The Mentions & Commands example with a `renderCustomToken` supplied for mentions
 | `.input` (`input.mention`) | property | Registers the `@`-mention trigger config on the input. |
 | `.input` (`input.command`) | property | Registers the `/`-command trigger config on the input. |
 | `mention.renderCustomToken` | property | Returns an `HTMLElement` rendered in place of the default mention chip. |
+| `.renderUserDefinedInputNode` | property | Renders the custom mention chip inside the sent user message bubble. |
+| `WCRenderUserDefinedInputNode` | type | Types the `renderUserDefinedInputNode` callback. |
 | `mention.trigger` / `command.trigger` | property | Character (`@` or `/`) that opens the suggestion list. |
 | `command.triggerPosition` | property | `"start"` constrains commands to the beginning of the line. |
 | `mention.items` / `command.items` | property | Async filter (or static list) narrowing items as the user types. |

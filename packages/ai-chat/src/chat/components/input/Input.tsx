@@ -678,7 +678,8 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
       rounded={rounded}
       expanded={expanded}
       hasError={hasError}
-      disabled={disableInput}>
+      disabled={disableInput}
+      exportparts="prompt-container">
       <PromptLine
         slot="editor"
         ref={promptLineRef}

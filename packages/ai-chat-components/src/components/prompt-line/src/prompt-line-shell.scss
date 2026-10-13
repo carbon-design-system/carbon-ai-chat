@@ -44,6 +44,7 @@
   box-sizing: border-box;
   flex-wrap: wrap;
   align-items: center;
+  border: var(--cds-aichat-prompt-border, none);
   background-color: theme.$chat-prompt-background;
   border-end-end-radius: var(--cds-aichat-border-radius-end-end, 0);
   border-end-start-radius: var(--cds-aichat-border-radius-end-start, 0);
