@@ -8,9 +8,12 @@
 
 - Kind: Interface
 - Category: Instance
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.ChatInstanceInput.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.23.0-rc.0/docs/interfaces/Type_reference.ChatInstanceInput.html
 
-Methods for controlling the input field.
+Methods for controlling the built-in input field.
+While WriteableElementName.CUSTOM_PROMPT_LINE has content, including
+hidden content, these methods cannot edit the host-owned composer.
+The public input state remains a snapshot of the built-in draft.
 
 ## Signature
 
@@ -38,7 +41,11 @@ rich editor loads it stays loaded.
 
 Rejects with `"Input is not currently rendered"` when there is no input
 surface to upgrade (for example the input is hidden via
-InputConfig.isVisible or the chat is closed). Concurrent calls
+InputConfig.isVisible and also when the
+surface is in its deferred-teardown window — that is, the chat container
+has been removed from the DOM but the teardown macrotask has not yet run or
+WriteableElementName.CUSTOM_PROMPT_LINE has content). A custom prompt
+line does not load Tiptap, even when hidden. Concurrent calls
 share a single upgrade and resolve with the same instance.
 
 Sole escape hatch from the curated public surface. Use the resolved editor
@@ -56,6 +63,10 @@ for direct Tiptap operations the facade doesn't cover:
   `getState().input.content` but live, not the immutable store copy)
 - `editor.extensionStorage` for per-extension state
 - `editor.on(...)` for low-level event subscriptions
+
+Rejects while no input is rendered. The chat hands you the
+ChatInstance before it renders, so this is not available from
+`onBeforeRender`, and a host that hides the input has none to resolve.
 
 ## Examples
 
@@ -90,7 +101,7 @@ editor.commands.focus();
    every render reads as a real change and replaces the editor mid-edit,
    losing its undo history.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.ChatInstanceInput.html#geteditor)
+[Reference](https://chat.carbondesignsystem.com/version/v1.23.0-rc.0/docs/interfaces/Type_reference.ChatInstanceInput.html#geteditor)
 
 ### updateContent
 
@@ -114,6 +125,10 @@ While the input is hidden or not yet mounted, a plain-text result is staged
 as the pending value and seeds the field when it renders; a result with
 non-text content throws, because there is no surface to upgrade.
 
+While WriteableElementName.CUSTOM_PROMPT_LINE has content, rejects with
+`"Input content is host-owned while CUSTOM_PROMPT_LINE has content."` without
+calling the updater or staging a value.
+
 ## Examples
 
 ```ts
@@ -133,7 +148,7 @@ For cursor-position insertion, use the {@link ChatInstanceInput.getEditor}
 escape hatch:
 `(await instance.input.getEditor()).commands.insertContent(...)`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.ChatInstanceInput.html#updatecontent)
+[Reference](https://chat.carbondesignsystem.com/version/v1.23.0-rc.0/docs/interfaces/Type_reference.ChatInstanceInput.html#updatecontent)
 
 ### updateRawValue
 
@@ -152,10 +167,18 @@ instance.input.updateContent((prev) =>
 
 Throws if the editor doc contains any node type other than
 `paragraph`, `text`, or `hardBreak`, or if any text node carries
-marks. Empty paragraphs pass through; `hardBreak` renders as `\n` in
+marks. Also throws `"Input content is host-owned while CUSTOM_PROMPT_LINE has content."`
+before calling the updater while the custom prompt line has content.
+Empty paragraphs pass through; `hardBreak` renders as `\n` in
 the rawValue projection. Emits one deprecation warning per session.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.ChatInstanceInput.html#updaterawvalue)
+## Examples
+
+```ts
+instance.input.updateRawValue(() => "Summarize this report");
+```
+
+[Reference](https://chat.carbondesignsystem.com/version/v1.23.0-rc.0/docs/interfaces/Type_reference.ChatInstanceInput.html#updaterawvalue)
 
 ### updateStructuredData
 
@@ -170,6 +193,11 @@ Return `undefined` to clear the pending structured data.
 
 This is the primary mechanism for pushing structured inputs (form fields, file references, etc.)
 into the active input so they are included when the user hits Send.
+
+While WriteableElementName.CUSTOM_PROMPT_LINE has content, throws
+`"Input content is host-owned while CUSTOM_PROMPT_LINE has content."` without
+calling the updater. Include structured data in the custom message instead.
+Custom sends leave the built-in pending data intact for later use.
 
 ## Examples
 
@@ -193,4 +221,8 @@ instance.input.updateStructuredData(() => ({
 instance.input.updateStructuredData(() => undefined);
 ```
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.ChatInstanceInput.html#updatestructureddata)
+[Reference](https://chat.carbondesignsystem.com/version/v1.23.0-rc.0/docs/interfaces/Type_reference.ChatInstanceInput.html#updatestructureddata)
+
+## Related
+
+- [WriteableElementName.CUSTOM_PROMPT_LINE](./WriteableElementName.md)
