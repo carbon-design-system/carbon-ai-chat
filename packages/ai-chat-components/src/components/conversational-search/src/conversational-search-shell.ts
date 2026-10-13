@@ -22,12 +22,12 @@ const blockClass = `${prefix}-conversational-search-shell`;
 
 /** The citation state requested by a toggle activation. */
 export interface CitationToggleEventDetail {
-  /** Whether the host should open its citation list. */
+  /** Whether the host should show the citations region. */
   open: boolean;
 }
 
 /**
- * Lays out a slotted answer, a Sources toggle, and host-supplied citations.
+ * Lays out a slotted answer, a citations toggle, and host-supplied citations.
  *
  * @experimental
  * @element cds-aichat-conversational-search-shell
@@ -39,7 +39,7 @@ export interface CitationToggleEventDetail {
  */
 @carbonElement(blockClass)
 class ConversationalSearchShell extends LitElement {
-  /** The host-controlled open state of the citation list. */
+  /** Host-controlled visibility of the citations region. */
   @property({ type: Boolean, attribute: 'citations-open' })
   citationsOpen = false;
 
