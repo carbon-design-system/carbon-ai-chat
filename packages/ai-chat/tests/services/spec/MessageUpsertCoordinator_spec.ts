@@ -53,7 +53,11 @@ function makeStubManager(initialMessages: Record<string, unknown> = {}) {
     },
     fire,
     actions: chatActions,
-    messageService: { finalizeStreamingMessage },
+    messageService: {
+      finalizeStreamingMessage,
+      isRequestFromPreviousConversation: jest.fn().mockReturnValue(false),
+      messageLoadingManager: { end: jest.fn() },
+    },
   } as unknown as ServiceManager;
 
   return {

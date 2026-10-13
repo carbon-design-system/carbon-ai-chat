@@ -12,8 +12,7 @@ import { setVarsForSelector } from '@carbon/ai-chat-components/es/components/sha
 let hostFillRuleInstalled = false;
 
 /**
- * Install the "fill the host element" rule on the shared dynamic stylesheet
- * so a strict CSP can drop style-src-attr 'unsafe-inline'.
+ * Install the "fill the host element" rule on the shared dynamic stylesheet.
  */
 function ensureHostFillRule(): void {
   if (hostFillRuleInstalled) {
@@ -48,7 +47,7 @@ export function injectStyles({
   }
 
   // Set container dimensions for custom host elements via class + shared
-  // dynamic stylesheet so a strict CSP can drop style-src-attr 'unsafe-inline'.
+  // dynamic stylesheet.
   if (hostElement) {
     ensureHostFillRule();
     container.classList.add('cds-aichat--container-host-fill');

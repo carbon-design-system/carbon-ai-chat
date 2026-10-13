@@ -32,7 +32,7 @@ Read [playwright.md](references/playwright.md) before adding or changing an exam
 ## Definition of done
 
 - `npm run build --workspace=<example>` exits 0.
-- `npm run test:e2e:goldens -- --project <target>` passes, if the example is a target in [targets.ts](shared/playwright/targets.ts).
+- `CAIC_E2E_TARGETS=<target> npm run test:e2e:goldens` passes for each of the example's targets in [targets.ts](shared/playwright/targets.ts). `--project` alone still builds every target's example.
 - `npm run test --workspace=<example>` passes, if the example has a `test` script.
 - README follows the [Indexer Contract](references/indexer-contract.md).
 

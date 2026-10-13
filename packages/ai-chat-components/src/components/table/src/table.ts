@@ -590,9 +590,8 @@ class CDSAIChatTable extends LitElement {
     // template). Using Carbon's example of hiding the rows with styling works so I'm extending that concept here even
     // though, ideally, render controls the view and reacts to the state that would be determined here.
 
-    // Hide all the rows to start. Using a data attribute (not inline style)
-    // so a strict CSP can drop style-src-attr 'unsafe-inline'; the matching
-    // rule lives in table.scss.
+    // Hide all the rows to start. Using a data attribute; the matching rule
+    // lives in table.scss.
     rows.forEach((row) => row.toggleAttribute('data-hidden', true));
 
     // Now filter the rows down to what is visible according to the filter.
@@ -638,10 +637,9 @@ class CDSAIChatTable extends LitElement {
         csvContent
       )}`;
 
-      // Create and trigger download using anchor element. The native `hidden`
-      // attribute is used (not an inline style) so a strict CSP can drop
-      // style-src-attr 'unsafe-inline'; the link is removed synchronously
-      // after click() so no flash is observed.
+      // Create and trigger download using anchor element. The link is
+      // `hidden` and removed synchronously after click() so no flash is
+      // observed.
       const link = document.createElement('a');
       link.setAttribute('href', dataUrl);
       link.setAttribute('download', 'table-data.csv');

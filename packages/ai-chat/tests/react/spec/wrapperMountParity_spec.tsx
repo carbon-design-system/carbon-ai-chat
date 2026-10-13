@@ -239,7 +239,7 @@ describe('how each host mounts the chat', () => {
       expect(createRoot.mock.calls.length).toBe(before + 1);
     });
 
-    it('gives a plain web component one root, reused across updates and unmounted on removal', async () => {
+    it('gives a plain web component one root, reused across updates and unmounted after removal', async () => {
       const before = createRoot.mock.calls.length;
       const { element, instances, onAfterRender } = createElementChat(
         'cds-aichat-container'
