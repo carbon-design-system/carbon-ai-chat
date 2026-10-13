@@ -9,6 +9,7 @@
 
 import {
   ChatInstance,
+  MessageRequest,
   MessageResponseTypes,
   SystemMessageVariant,
 } from '@carbon/ai-chat';
@@ -17,10 +18,12 @@ import { MARKDOWN } from './constants';
 function doSystemMessage(
   instance: ChatInstance,
   inline?: boolean,
-  variant?: SystemMessageVariant
+  variant?: SystemMessageVariant,
+  requestID?: MessageRequest['id']
 ) {
   if (inline) {
     instance.messaging.addMessage({
+      request_id: requestID,
       output: {
         generic: [
           {
@@ -37,6 +40,7 @@ function doSystemMessage(
   }
   if (variant === 'agent') {
     instance.messaging.addMessage({
+      request_id: requestID,
       output: {
         generic: [
           {
@@ -48,6 +52,7 @@ function doSystemMessage(
       },
     });
     instance.messaging.addMessage({
+      request_id: requestID,
       output: {
         generic: [
           {
@@ -60,6 +65,7 @@ function doSystemMessage(
   }
   if (variant === 'date') {
     instance.messaging.addMessage({
+      request_id: requestID,
       output: {
         generic: [
           {
@@ -71,6 +77,7 @@ function doSystemMessage(
       },
     });
     instance.messaging.addMessage({
+      request_id: requestID,
       output: {
         generic: [
           {
@@ -82,6 +89,7 @@ function doSystemMessage(
     });
   } else {
     instance.messaging.addMessage({
+      request_id: requestID,
       output: {
         generic: [
           {
@@ -94,6 +102,7 @@ function doSystemMessage(
     });
 
     instance.messaging.addMessage({
+      request_id: requestID,
       output: {
         generic: [
           {

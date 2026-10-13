@@ -13,6 +13,7 @@ import {
   ChatInstance,
   CustomSendMessageOptions,
   GenericItemMessageFeedbackOptions,
+  MessageRequest,
   MessageResponse,
   MessageResponseTypes,
   ReasoningStep,
@@ -265,7 +266,8 @@ async function doTextStreaming(
   chainOfThought?: ChainOfThoughtStep[],
   reasoning?: TextReasoningSteps,
   feedback?: GenericItemMessageFeedbackOptions,
-  requestOptions?: CustomSendMessageOptions
+  requestOptions?: CustomSendMessageOptions,
+  requestID?: MessageRequest['id']
 ) {
   const signal = requestOptions?.signal;
   const responseID = uuid();
@@ -342,6 +344,7 @@ async function doTextStreaming(
           },
           streaming_metadata: {
             response_id: responseID,
+            request_id: requestID,
           },
           partial_response: {
             message_options: {
@@ -462,6 +465,7 @@ async function doTextStreaming(
         streaming_metadata: {
           // This is the id of the entire message response.
           response_id: responseID,
+          request_id: requestID,
         },
       };
 
@@ -498,6 +502,7 @@ async function doTextStreaming(
       streaming_metadata: {
         // This is the id of the entire message response.
         response_id: responseID,
+        request_id: requestID,
       },
     };
 
@@ -521,6 +526,7 @@ async function doTextStreaming(
     // has been completed.
     const finalResponse: MessageResponse = {
       id: responseID,
+      request_id: requestID,
       output: {
         generic: feedback
           ? [
@@ -553,12 +559,16 @@ async function doTextStreaming(
   }
 }
 
-function doWelcomeText(instance: ChatInstance) {
+function doWelcomeText(
+  instance: ChatInstance,
+  requestID?: MessageRequest['id']
+) {
   const options = Object.keys(RESPONSE_MAP).map((key) => ({
     label: key,
     value: { input: { text: key } },
   }));
   instance.messaging.addMessage({
+    request_id: requestID,
     output: {
       generic: [
         {
@@ -581,7 +591,8 @@ function doText(
   userProfile?: ResponseUserProfile,
   chainOfThought?: ChainOfThoughtStep[],
   feedback?: GenericItemMessageFeedbackOptions,
-  reasoning?: ReasoningSteps
+  reasoning?: ReasoningSteps,
+  requestID?: MessageRequest['id']
 ) {
   const genericItem = {
     response_type: MessageResponseTypes.TEXT,
@@ -589,6 +600,7 @@ function doText(
   };
 
   const message: MessageResponse = {
+    request_id: requestID,
     output: {
       generic: [genericItem],
     },
@@ -659,25 +671,52 @@ function doText(
 function doTextWithHumanProfile(
   instance: ChatInstance,
   text: string = MARKDOWN,
-  responseUserProfile: ResponseUserProfile = defaultHumanUserProfile
+  responseUserProfile: ResponseUserProfile = defaultHumanUserProfile,
+  requestID?: MessageRequest['id']
 ) {
-  doText(instance, text, responseUserProfile);
+  doText(
+    instance,
+    text,
+    responseUserProfile,
+    undefined,
+    undefined,
+    undefined,
+    requestID
+  );
 }
 
 function doTextWithNonWatsonAssistantProfile(
   instance: ChatInstance,
   text: string = MARKDOWN,
-  responseUserProfile: ResponseUserProfile = defaultAlternativeAssistantProfile
+  responseUserProfile: ResponseUserProfile = defaultAlternativeAssistantProfile,
+  requestID?: MessageRequest['id']
 ) {
-  doText(instance, text, responseUserProfile);
+  doText(
+    instance,
+    text,
+    responseUserProfile,
+    undefined,
+    undefined,
+    undefined,
+    requestID
+  );
 }
 
 function doTextWithWatsonAgentProfile(
   instance: ChatInstance,
   text: string = MARKDOWN,
-  responseUserProfile: ResponseUserProfile = defaultWatsonAgentProfile
+  responseUserProfile: ResponseUserProfile = defaultWatsonAgentProfile,
+  requestID?: MessageRequest['id']
 ) {
-  doText(instance, text, responseUserProfile);
+  doText(
+    instance,
+    text,
+    responseUserProfile,
+    undefined,
+    undefined,
+    undefined,
+    requestID
+  );
 }
 
 async function doTextStreamingWithNonWatsonAssistantProfile(
@@ -685,7 +724,8 @@ async function doTextStreamingWithNonWatsonAssistantProfile(
   text: string = MARKDOWN,
   cancellable = true,
   userProfile: ResponseUserProfile = defaultAlternativeAssistantProfile,
-  requestOptions?: CustomSendMessageOptions
+  requestOptions?: CustomSendMessageOptions,
+  requestID?: MessageRequest['id']
 ) {
   return doTextStreaming(
     instance,
@@ -696,7 +736,8 @@ async function doTextStreamingWithNonWatsonAssistantProfile(
     undefined,
     undefined,
     undefined,
-    requestOptions
+    requestOptions,
+    requestID
   );
 }
 
@@ -706,7 +747,8 @@ async function doTextChainOfThoughtStreaming(
   cancellable = true,
   userProfile?: ResponseUserProfile,
   chainOfThought: ChainOfThoughtStep[] = fullChainOfThought,
-  requestOptions?: CustomSendMessageOptions
+  requestOptions?: CustomSendMessageOptions,
+  requestID?: MessageRequest['id']
 ) {
   doTextStreaming(
     instance,
@@ -717,7 +759,8 @@ async function doTextChainOfThoughtStreaming(
     chainOfThought,
     undefined,
     undefined,
-    requestOptions
+    requestOptions,
+    requestID
   );
 }
 
@@ -725,14 +768,24 @@ function doTextChainOfThought(
   instance: ChatInstance,
   text: string = CHAIN_OF_THOUGHT_TEXT,
   userProfile?: ResponseUserProfile,
-  chainOfThought: ChainOfThoughtStep[] = fullChainOfThought
+  chainOfThought: ChainOfThoughtStep[] = fullChainOfThought,
+  requestID?: MessageRequest['id']
 ) {
-  doText(instance, text, userProfile, chainOfThought);
+  doText(
+    instance,
+    text,
+    userProfile,
+    chainOfThought,
+    undefined,
+    undefined,
+    requestID
+  );
 }
 
 async function doTextWithReasoningStepsStreaming(
   instance: ChatInstance,
-  requestOptions?: CustomSendMessageOptions
+  requestOptions?: CustomSendMessageOptions,
+  requestID?: MessageRequest['id']
 ) {
   await doTextStreaming(
     instance,
@@ -745,13 +798,15 @@ async function doTextWithReasoningStepsStreaming(
       steps: defaultReasoningSteps,
     },
     undefined,
-    requestOptions
+    requestOptions,
+    requestID
   );
 }
 
 async function doTextWithReasoningTraceStreaming(
   instance: ChatInstance,
-  requestOptions?: CustomSendMessageOptions
+  requestOptions?: CustomSendMessageOptions,
+  requestID?: MessageRequest['id']
 ) {
   await doTextStreaming(
     instance,
@@ -764,7 +819,8 @@ async function doTextWithReasoningTraceStreaming(
       content: defaultReasoningTraceContent,
     },
     undefined,
-    requestOptions
+    requestOptions,
+    requestID
   );
 }
 
@@ -772,11 +828,28 @@ function doHTML(
   instance: ChatInstance,
   text: string = HTML,
   userProfile?: ResponseUserProfile,
-  chainOfThought?: ChainOfThoughtStep[]
+  chainOfThought?: ChainOfThoughtStep[],
+  requestID?: MessageRequest['id']
 ) {
   // Make sure simple standalone html works as well.
-  doText(instance, '<b>Carbon is bold!</b>', userProfile);
-  doText(instance, text, userProfile, chainOfThought);
+  doText(
+    instance,
+    '<b>Carbon is bold!</b>',
+    userProfile,
+    undefined,
+    undefined,
+    undefined,
+    requestID
+  );
+  doText(
+    instance,
+    text,
+    userProfile,
+    chainOfThought,
+    undefined,
+    undefined,
+    requestID
+  );
 }
 
 async function doHTMLStreaming(
@@ -786,7 +859,8 @@ async function doHTMLStreaming(
   wordDelay = WORD_DELAY,
   userProfile?: ResponseUserProfile,
   chainOfThought?: ChainOfThoughtStep[],
-  requestOptions?: CustomSendMessageOptions
+  requestOptions?: CustomSendMessageOptions,
+  requestID?: MessageRequest['id']
 ) {
   await doTextStreaming(
     instance,
@@ -797,11 +871,15 @@ async function doHTMLStreaming(
     chainOfThought,
     undefined,
     undefined,
-    requestOptions
+    requestOptions,
+    requestID
   );
 }
 
-function doTextWithFeedback(instance: ChatInstance) {
+function doTextWithFeedback(
+  instance: ChatInstance,
+  requestID?: MessageRequest['id']
+) {
   const feedbackText =
     "We'd love to hear your thoughts on Carbon! This versatile element forms the backbone of all organic chemistry and is essential for life as we know it. How do you feel about this fundamental building block of matter? Please use the feedback buttons below to share your opinion.";
 
@@ -817,12 +895,21 @@ function doTextWithFeedback(instance: ChatInstance) {
     },
   };
 
-  doText(instance, feedbackText, undefined, undefined, feedback);
+  doText(
+    instance,
+    feedbackText,
+    undefined,
+    undefined,
+    feedback,
+    undefined,
+    requestID
+  );
 }
 
 async function doTextWithFeedbackStreaming(
   instance: ChatInstance,
-  requestOptions?: CustomSendMessageOptions
+  requestOptions?: CustomSendMessageOptions,
+  requestID?: MessageRequest['id']
 ) {
   const feedbackText =
     "We'd love to hear your thoughts on Carbon! This versatile element forms the backbone of all organic chemistry and is essential for life as we know it. How do you feel about this fundamental building block of matter? Please use the feedback buttons below to share your opinion.";
@@ -848,7 +935,8 @@ async function doTextWithFeedbackStreaming(
     undefined,
     undefined,
     feedback,
-    requestOptions
+    requestOptions,
+    requestID
   );
 }
 
@@ -858,7 +946,8 @@ async function doTextWithFeedbackStreaming(
  */
 async function doTextStreamingEarlyResolve(
   instance: ChatInstance,
-  requestOptions?: CustomSendMessageOptions
+  requestOptions?: CustomSendMessageOptions,
+  requestID?: MessageRequest['id']
 ) {
   const signal = requestOptions?.signal;
   const responseID = uuid();
@@ -905,6 +994,7 @@ async function doTextStreamingEarlyResolve(
         },
         streaming_metadata: {
           response_id: responseID,
+          request_id: requestID,
         },
       };
 
@@ -938,12 +1028,14 @@ async function doTextStreamingEarlyResolve(
       complete_item: completeItem,
       streaming_metadata: {
         response_id: responseID,
+        request_id: requestID,
       },
     } as StreamChunk);
 
     // Send final response
     const finalResponse: MessageResponse = {
       id: responseID,
+      request_id: requestID,
       output: {
         generic: [completeItem],
       },

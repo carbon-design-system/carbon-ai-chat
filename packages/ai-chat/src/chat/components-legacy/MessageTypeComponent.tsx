@@ -245,6 +245,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     // the assistant.
     const userText = getRequestBubbleText(localMessageItem, originalMessage);
     const displayContent = originalMessage.input.display_content;
+    const isChoiceRequest = originalMessage.history?.is_choice_request === true;
     const isFile =
       originalMessage.input.message_type ===
       (InternalMessageRequestType.FILE as unknown as MessageInputType);
@@ -261,7 +262,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
             next/previous heading hotkeys in JAWS to enable a screen reader user an easier ability to navigate
             messages. */}
         <div role="heading" aria-level={2}>
-          {displayContent && !isFile ? (
+          {displayContent && !isFile && !isChoiceRequest ? (
             <MessageRichUserContent
               content={displayContent}
               message={originalMessage}

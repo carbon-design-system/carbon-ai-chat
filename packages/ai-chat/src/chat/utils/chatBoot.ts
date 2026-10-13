@@ -397,6 +397,13 @@ export async function initServiceManagerAndInstance(options: {
         options: AddMessageOptions = {}
       ) => {
         debugLog('Called instance.messaging.addMessage', message, options);
+        if (
+          serviceManager.messageService.isRequestFromPreviousConversation(
+            message.request_id
+          )
+        ) {
+          return Promise.resolve();
+        }
         serviceManager.messageService.messageLoadingManager.end();
         return serviceManager.actions.receive(
           message,
@@ -410,7 +417,6 @@ export async function initServiceManagerAndInstance(options: {
         options: AddMessageOptions = {}
       ) => {
         debugLog('Called instance.messaging.addMessageChunk', chunk, options);
-        serviceManager.messageService.messageLoadingManager.end();
         try {
           await serviceManager.actions.receiveChunk(chunk, null, options);
         } catch (error) {
@@ -421,12 +427,19 @@ export async function initServiceManagerAndInstance(options: {
 
       upsertMessage: async (messageID, state, updater) => {
         debugLog('Called instance.messaging.upsertMessage', messageID, state);
-        serviceManager.messageService.messageLoadingManager.end();
-        return serviceManager.messageUpsertCoordinator.upsert(
-          messageID,
-          state,
-          updater
-        );
+        const { restartCount } = serviceManager;
+        try {
+          await serviceManager.messageUpsertCoordinator.upsert(
+            messageID,
+            state,
+            updater
+          );
+        } catch (error) {
+          if (restartCount === serviceManager.restartCount) {
+            serviceManager.messageService.messageLoadingManager.end();
+          }
+          throw error;
+        }
       },
 
       removeMessages: async (messageIDs: string[]) => {

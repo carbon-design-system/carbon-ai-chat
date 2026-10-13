@@ -137,6 +137,7 @@ const config = [
         'error',
         {
           definedTags: [
+            'attr',
             'category',
             'element',
             'experimental',

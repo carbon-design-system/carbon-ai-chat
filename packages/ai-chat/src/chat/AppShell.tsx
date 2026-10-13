@@ -68,6 +68,7 @@ import {
   selectInputFieldVisible,
   selectInputUploadAndStreamingFields,
   selectLanguagePack,
+  selectStopStreamingButtonVisible,
 } from './store/selectors';
 import { shallowEqual } from './store/appStore';
 import {
@@ -347,6 +348,9 @@ function AppShell({
   // Effective input flags derived from config + runtime override.
   const isInputReadonly = useSelector(selectInputIsReadonly);
   const isInputFieldVisible = useSelector(selectInputFieldVisible);
+  const isStopStreamingButtonVisible = useSelector(
+    selectStopStreamingButtonVisible
+  );
   const agentDisplayState = useSelector(
     selectHumanAgentDisplayState,
     shallowEqual
@@ -1064,9 +1068,7 @@ function AppShell({
                     placeholder={
                       languagePack[agentDisplayState.inputPlaceholderKey]
                     }
-                    isStopStreamingButtonVisible={
-                      inputFields.stopStreamingButtonState.isVisible
-                    }
+                    isStopStreamingButtonVisible={isStopStreamingButtonVisible}
                     isStopStreamingButtonDisabled={
                       inputFields.stopStreamingButtonState.isDisabled
                     }
