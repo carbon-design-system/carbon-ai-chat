@@ -12,7 +12,8 @@
  * Page CSS reach for each kind is covered in `react-host-compatibility.spec.ts`;
  * this spec drives a native drag across all of them on every surface.
  *
- * Copy/paste is not automated here. The manual pass lives in TEST_PLAN.md.
+ * Native keyboard copy/paste checks the browser clipboard, independently of
+ * the composed-selection helper. Safari still has a manual pass in TEST_PLAN.md.
  */
 
 import { test, expect, type Page } from '@playwright/test';
@@ -25,8 +26,6 @@ const SURFACES = [
   'wc-container',
   'wc-custom',
 ] as const;
-
-const CUSTOM_SLOT = 'selection::0.3';
 
 const PARAGRAPH = [
   { type: 'text', text: 'Start **bold** ' },
@@ -42,15 +41,15 @@ test.beforeEach(async ({ page }) => {
   await page.route(/.*ibm-common\.js$/, (route) => route.abort());
 });
 
-async function sendStructuredMessage(page: Page, surface: string) {
+async function sendStructuredMessage(
+  page: Page,
+  surface: string,
+  content = PARAGRAPH,
+  pluginText: string | string[] = 'plugin'
+) {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto(`/host-compatibility.html?surface=${surface}`);
-  // The custom-node host is a block by default. Page CSS reaches it, so the
-  // page keeps the paragraph on one line.
-  await page.addStyleTag({
-    content: `div[slot="${CUSTOM_SLOT}"] { display: inline; }`,
-  });
   const key = surface.startsWith('react') ? 'reactInstance' : 'wcInstance';
   await page.waitForFunction(
     (instanceKey) => Boolean(window.hostCompatibility?.[instanceKey]),
@@ -70,19 +69,20 @@ async function sendStructuredMessage(page: Page, surface: string) {
           },
         },
       } as never),
-    { instanceKey: key, content: PARAGRAPH }
+    { instanceKey: key, content }
   );
   const paragraph = page
-    .locator('.cds-aichat--sent--bubble p')
+    .locator('span[slot="selection::paragraph.0"]')
     .filter({ hasText: 'Start' })
     .last();
   await expect(paragraph).toBeVisible({ timeout: 15000 });
   await expect(
     page.locator('.page-styled[data-kind="inline-plugin"]')
-  ).toHaveText('plugin');
+  ).toHaveText(pluginText);
   await expect(page.locator('.page-styled[data-kind="input-node"]')).toHaveText(
     'input-node'
   );
+  await primeClipboard(page);
   return { paragraph, errors };
 }
 
@@ -98,7 +98,10 @@ async function readSelection(paragraph: ReturnType<Page['locator']>) {
     let text = '';
     const visit = (node: Node) => {
       const start = text.length;
-      if (node instanceof HTMLStyleElement) {
+      if (
+        node instanceof HTMLStyleElement ||
+        (node instanceof HTMLElement && node.hidden)
+      ) {
         positions.set(node, { start, end: start });
         return;
       }
@@ -158,6 +161,23 @@ async function paragraphEdges(paragraph: ReturnType<Page['locator']>) {
   return paragraph.evaluate((root) => {
     const texts: Text[] = [];
     const collect = (node: Node) => {
+      if (
+        node instanceof HTMLStyleElement ||
+        (node instanceof HTMLElement && node.hidden)
+      ) {
+        return;
+      }
+      if (node instanceof HTMLSlotElement) {
+        const assigned = node.assignedNodes({ flatten: true });
+        (assigned.length ? assigned : Array.from(node.childNodes)).forEach(
+          collect
+        );
+        return;
+      }
+      if (node instanceof Element && node.shadowRoot) {
+        collect(node.shadowRoot);
+        return;
+      }
       if (node.nodeType === Node.TEXT_NODE && (node as Text).data.trim()) {
         texts.push(node as Text);
       }
@@ -175,16 +195,46 @@ async function paragraphEdges(paragraph: ReturnType<Page['locator']>) {
     const start = rect(first, first.data.indexOf('S'));
     const end = rect(last, last.data.length - 1);
     return {
-      // A quarter glyph in from each edge still resolves the caret before
-      // the first character and after the last, without overshooting.
+      // WebKit resolves a point within the final period before the glyph.
+      // End just beyond it to include the punctuation in the native drag.
       start: [start.left + start.width / 4, start.top + start.height / 2],
-      end: [end.right - end.width / 4, end.top + end.height / 2],
+      end: [end.right + 1, end.top + end.height / 2],
     };
   });
 }
 
+async function primeClipboard(page: Page) {
+  const clipboardPage = await page.context().newPage();
+  try {
+    await clipboardPage.setContent('<textarea>Clipboard sentinel</textarea>');
+    await clipboardPage.getByRole('textbox').focus();
+    await clipboardPage.keyboard.press('ControlOrMeta+a');
+    await clipboardPage.keyboard.press('ControlOrMeta+c');
+  } finally {
+    await clipboardPage.close();
+  }
+}
+
+async function pasteSelection(page: Page) {
+  await page.keyboard.press('ControlOrMeta+c');
+  // Paste in a separate document so its input selection cannot affect the
+  // next word selection in the message's shadow root.
+  const targetPage = await page.context().newPage();
+  try {
+    await targetPage.setContent(
+      '<textarea aria-label="Native paste target"></textarea>'
+    );
+    const target = targetPage.getByRole('textbox');
+    await target.focus();
+    await targetPage.keyboard.press('ControlOrMeta+v');
+    return await target.inputValue();
+  } finally {
+    await targetPage.close();
+  }
+}
+
 for (const surface of SURFACES) {
-  test(`dragging across a structured paragraph selects all of it on ${surface}`, async ({
+  test(`dragging across a structured paragraph copies all of it on ${surface}`, async ({
     page,
   }) => {
     const { paragraph, errors } = await sendStructuredMessage(page, surface);
@@ -194,12 +244,17 @@ for (const surface of SURFACES) {
       page.locator('.page-styled[data-kind="request-footer"]')
     ).toBeVisible();
     let edges = await paragraphEdges(paragraph);
-    for (let settled = false; !settled;) {
-      await page.waitForTimeout(300);
-      const next = await paragraphEdges(paragraph);
-      settled = JSON.stringify(next) === JSON.stringify(edges);
-      edges = next;
-    }
+    await expect
+      .poll(
+        async () => {
+          const next = await paragraphEdges(paragraph);
+          const settled = JSON.stringify(next) === JSON.stringify(edges);
+          edges = next;
+          return settled;
+        },
+        { intervals: [300] }
+      )
+      .toBe(true);
     const { start, end } = edges;
 
     await page.mouse.move(start[0], start[1]);
@@ -210,6 +265,200 @@ for (const surface of SURFACES) {
     const { text, selected } = await readSelection(paragraph);
     expect(text).toMatch(/^Start bold .*Ada.* plugin input-node Label end\.$/);
     expect(selected).toBe(text);
+    expect(await pasteSelection(page)).toBe(
+      'Start bold Ada plugin input-node Label end.'
+    );
+    expect(errors).toEqual([]);
+  });
+}
+
+for (const surface of SURFACES) {
+  test(`structured fallback preserves blank lines on ${surface}`, async ({
+    page,
+  }) => {
+    const source = 'Start first\n\nsecond ';
+    const { paragraph, errors } = await sendStructuredMessage(page, surface, [
+      { type: 'text', text: source },
+      ...PARAGRAPH.slice(1),
+    ]);
+    const fallback = paragraph.locator('.cds-aichat--inline-markdown-fallback');
+    await expect(fallback).toBeVisible();
+    await expect(fallback).toHaveJSProperty('textContent', source);
+    await expect(fallback).toHaveCSS('white-space', 'pre-wrap');
+    const lineGap = await fallback.evaluate((element) => {
+      const text = [...element.childNodes].find(
+        (node) => node.nodeType === Node.TEXT_NODE
+      ) as Text;
+      const range = document.createRange();
+      range.setStart(text, 0);
+      range.setEnd(text, 1);
+      const firstLine = range.getBoundingClientRect().top;
+      const secondStart = text.data.indexOf('second');
+      range.setStart(text, secondStart);
+      range.setEnd(text, secondStart + 1);
+      return (
+        (range.getBoundingClientRect().top - firstLine) /
+        parseFloat(getComputedStyle(element).lineHeight)
+      );
+    });
+    expect(lineGap).toBeCloseTo(2, 1);
+    expect(errors).toEqual([]);
+  });
+}
+
+for (const surface of SURFACES) {
+  test(`double-click copies words across inline boundaries on ${surface}`, async ({
+    page,
+  }) => {
+    const { paragraph, errors } = await sendStructuredMessage(page, surface, [
+      ...PARAGRAPH,
+      { type: 'text', text: ' cross**bound**ary' },
+    ]);
+    await expect(
+      page.locator('.page-styled[data-kind="request-footer"]')
+    ).toBeVisible();
+    for (const [word, expected] of [
+      [paragraph.locator('strong').last(), 'crossboundary'],
+      [page.locator('.page-styled[data-kind="inline-plugin"]'), 'plugin'],
+    ] as const) {
+      await word.dblclick();
+      expect(await pasteSelection(page)).toBe(expected);
+    }
+    const node = page.locator('.page-styled[data-kind="input-node"]');
+    await node.dblclick({ position: { x: 5, y: 5 } });
+    expect(await pasteSelection(page)).toMatch(/^(input|input-node)$/);
+    expect(errors).toEqual([]);
+  });
+}
+
+for (const surface of SURFACES) {
+  for (const [source, expected, pluginText = 'plugin'] of [
+    [' `plugin words` ', 'plugin', 'plugin words'],
+    [' pre`plugin`post ', 'prepluginpost'],
+    [' pre`plugin` ', 'preplugin'],
+    [' `plugin`post ', 'pluginpost'],
+    [' `plugin`**post** ', 'pluginpost'],
+    [
+      ' pre`plugin`**mid**`plugin`post ',
+      'prepluginmidpluginpost',
+      ['plugin', 'plugin'],
+    ],
+  ] as const) {
+    test(`double-click copies ${source} as ${expected} on ${surface}`, async ({
+      page,
+    }) => {
+      const content = PARAGRAPH.map((node, index) =>
+        index === 2 ? { type: 'text', text: source } : node
+      );
+      const { errors } = await sendStructuredMessage(
+        page,
+        surface,
+        content,
+        pluginText
+      );
+      await expect(
+        page.locator('.page-styled[data-kind="request-footer"]')
+      ).toBeVisible();
+      const plugin = page
+        .locator('.page-styled[data-kind="inline-plugin"]')
+        .first();
+      await plugin.dblclick({ position: { x: 5, y: 5 } });
+      expect(await pasteSelection(page)).toBe(expected);
+      expect(errors).toEqual([]);
+    });
+  }
+}
+
+for (const surface of SURFACES) {
+  test(`double-click joins custom-node text with surrounding text on ${surface}`, async ({
+    page,
+  }) => {
+    await sendStructuredMessage(page, surface, [
+      { type: 'text', text: 'Start pre' },
+      { type: 'taskCard', attrs: { label: 'Ship it' } },
+      { type: 'text', text: 'post `plugin` end.' },
+    ]);
+    const node = page.locator('.page-styled[data-kind="input-node"]');
+    await node.dblclick({ position: { x: 5, y: 5 } });
+    // Engines differ on hyphen segmentation; both native words include the prefix.
+    expect(await pasteSelection(page)).toMatch(/^preinput(?:-nodepost)?$/);
+  });
+}
+
+for (const surface of SURFACES) {
+  test(`core markdown copies full paragraphs and words across plugins on ${surface}`, async ({
+    page,
+  }) => {
+    const errors: string[] = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    await page.goto(`/host-compatibility.html?surface=${surface}`);
+    const key = surface.startsWith('react') ? 'reactInstance' : 'wcInstance';
+    await page.waitForFunction(
+      (instanceKey) => Boolean(window.hostCompatibility?.[instanceKey]),
+      key
+    );
+    await page.evaluate(
+      (instanceKey) =>
+        window.hostCompatibility[
+          instanceKey as 'reactInstance'
+        ].messaging.addMessage({
+          id: 'core-selection',
+          output: {
+            generic: [
+              {
+                response_type: 'text',
+                text: 'Start core **bold** `plugin`**post** and pre`again`**mid**`last`end.',
+              },
+            ],
+          },
+        }),
+      key
+    );
+    const paragraph = page
+      .locator('cds-aichat-markdown p')
+      .filter({ hasText: 'Start core' })
+      .last();
+    await expect(paragraph).toBeVisible();
+    const plugins = page.locator('.page-styled[data-kind="inline-plugin"]');
+    await expect(plugins).toHaveText(['plugin', 'again', 'last']);
+    await primeClipboard(page);
+    let edges = await paragraphEdges(paragraph);
+    await expect
+      .poll(
+        async () => {
+          const next = await paragraphEdges(paragraph);
+          const settled = JSON.stringify(next) === JSON.stringify(edges);
+          edges = next;
+          return settled;
+        },
+        { intervals: [300] }
+      )
+      .toBe(true);
+    await page.mouse.move(edges.start[0], edges.start[1]);
+    await page.mouse.down();
+    await page.mouse.move(edges.end[0], edges.end[1], { steps: 20 });
+    await page.mouse.up();
+    expect(await pasteSelection(page)).toBe(
+      'Start core bold pluginpost and preagainmidlastend.'
+    );
+    // Dragging within the existing selection can start a native text drag.
+    await page.evaluate(() => document.getSelection()?.removeAllRanges());
+    const start = await plugins.first().boundingBox();
+    const end = await plugins.last().boundingBox();
+    await page.mouse.move(start.x + 1, start.y + start.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(end.x + end.width + 1, end.y + end.height / 2, {
+      steps: 20,
+    });
+    await page.mouse.up();
+    expect(await pasteSelection(page)).toBe('pluginpost and preagainmidlast');
+    for (const [index, expected] of [
+      [0, 'pluginpost'],
+      [1, 'preagainmidlastend'],
+    ] as const) {
+      await plugins.nth(index).dblclick({ position: { x: 5, y: 5 } });
+      expect(await pasteSelection(page)).toBe(expected);
+    }
     expect(errors).toEqual([]);
   });
 }

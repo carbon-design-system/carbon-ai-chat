@@ -188,8 +188,11 @@ describe('InlineMarkdown bridge', () => {
     expect(pluginOutput).toHaveBeenCalledTimes(1);
     expect(container.querySelector('slot')).not.toBeNull();
     expect(mounts).toHaveLength(1);
-    expect(mounts[0].detail.html).toContain('data-plugin="yes"');
-    expect(mounts[0].detail.html).not.toContain('onclick');
+    expect(mounts[0].detail.element.innerHTML).toContain('data-plugin="yes"');
+    expect(mounts[0].detail.element.innerHTML).not.toContain('onclick');
+    expect(
+      mounts[0].detail.element.querySelector('a').getAttribute('rel')
+    ).toBe('noopener noreferrer');
     expect(container.querySelector('a').getAttribute('href')).toBe('#host');
     expect(container.querySelector('img').getAttribute('alt')).toBe(
       'host image'
@@ -218,23 +221,51 @@ describe('InlineMarkdown bridge', () => {
         markdownItPlugins: [plugin],
       })
     );
-    const { container } = render(
+    const host = document.createElement('div');
+    const root = host.attachShadow({ mode: 'open' });
+    const container = document.createElement('div');
+    root.appendChild(container);
+    document.body.appendChild(host);
+    const { unmount } = render(
       <StoreProvider store={store}>
         <MessageRichUserContent
           content={content}
           message={{ id: 'mixed', input: { text: '' } } as MessageRequest}
         />
-      </StoreProvider>
+      </StoreProvider>,
+      { container }
     );
+    try {
+      await act(async () => {});
+      expect(container.querySelectorAll('p')).toHaveLength(2);
+      expect(
+        container.querySelectorAll(
+          'p slot[name^="cds-aichat-inline-markdown-plugin"]'
+        )
+      ).toHaveLength(1);
+      expect(
+        container.querySelectorAll('p slot[data-aichat-input-paragraph-slot]')
+      ).toHaveLength(1);
+      expect(host.querySelector('[data-plugin="yes"]')?.textContent).toBe(
+        'plugin'
+      );
+      expect(mounts).toHaveLength(2);
+      expect(pluginOutput).toHaveBeenCalledTimes(2);
+    } finally {
+      unmount();
+      host.remove();
+    }
+  });
+
+  it('preserves consumer rel attributes on projected links', async () => {
+    setup('`source` [link](#target)', {
+      markdownItPlugins: [plugin],
+      customRenderers: { link: () => ({ rel: 'author' }) },
+    });
     await act(async () => {});
-    expect(container.querySelectorAll('p')).toHaveLength(2);
     expect(
-      container.querySelectorAll(
-        'p slot[name^="cds-aichat-inline-markdown-plugin"]'
-      )
-    ).toHaveLength(2);
-    expect(mounts).toHaveLength(2);
-    expect(pluginOutput).toHaveBeenCalledTimes(2);
+      mounts[0].detail.element.querySelector('a').getAttribute('rel')
+    ).toBe('author');
   });
 
   it('replaces host callbacks after config changes', () => {
@@ -271,7 +302,7 @@ describe('InlineMarkdown bridge', () => {
       expect(container.textContent).toBe(source);
       expect(
         container.querySelector('.cds-aichat--inline-markdown-fallback')
-      ).not.toBeNull();
+      ).toHaveStyle({ whiteSpace: 'pre-wrap' });
       expect(container.querySelector('img')).toBeNull();
       expect(diagnostic).toHaveBeenCalledTimes(1);
       expect(diagnostic.mock.calls[0][0]).toContain('block-content');
@@ -280,6 +311,9 @@ describe('InlineMarkdown bridge', () => {
       expect(diagnostic).toHaveBeenCalledTimes(1);
       update('**restored**');
       expect(container.querySelector('strong').textContent).toBe('restored');
+      expect(container.firstElementChild).not.toHaveStyle({
+        whiteSpace: 'pre-wrap',
+      });
       expect(
         container.querySelector('.cds-aichat--inline-markdown-fallback')
       ).toBeNull();

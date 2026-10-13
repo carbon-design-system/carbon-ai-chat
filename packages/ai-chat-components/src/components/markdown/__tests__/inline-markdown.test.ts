@@ -154,7 +154,12 @@ describe('renderInlineMarkdown', () => {
         markdownItPlugins: [plugin(output)],
       });
       const host = block.querySelector('[slot]')!;
-      expect(inline.firstElementChild!.innerHTML).to.contain(host.innerHTML);
+      const expected = host.querySelector(
+        '.cds-aichat-markdown-inline-plugin'
+      )!.firstElementChild!;
+      expect(inline.firstElementChild!.firstElementChild!.outerHTML).to.equal(
+        expected.outerHTML
+      );
     });
   }
 
@@ -457,9 +462,8 @@ describe('renderInlineMarkdown', () => {
     expect(mounts.length).to.equal(2);
     for (const detail of mounts) {
       expect(detail).to.include({
-        kind: 'pluginFallback',
+        kind: 'customRenderer',
         isInline: true,
-        html: '<span>rendered</span>',
       });
     }
     part.setConnected(false);
@@ -467,6 +471,7 @@ describe('renderInlineMarkdown', () => {
     part.setConnected(true);
     expect(mounts.length).to.equal(4);
     render(nothing, target);
+    await Promise.resolve();
     expect(unmounts.length).to.equal(4);
     rejects('`invalid`', 'non-inline-output', {
       ...options,

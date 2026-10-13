@@ -11,6 +11,8 @@ import React, { useLayoutEffect, useMemo } from 'react';
 
 import { useSelector } from '../../hooks/useSelector';
 import { SlotHostPortal } from './SlotHostPortal';
+import prefix from '@carbon/ai-chat-components/es/globals/settings.js';
+import { mountHost, mountInlineHost, unmountHost } from './inputNodeHosts';
 import type { AppState } from '../../../types/state/AppState';
 import type { ChatInstance } from '../../../types/instance/ChatInstance';
 import type {
@@ -40,6 +42,7 @@ const BUILT_IN_NODE_TYPES = new Set(['doc', 'paragraph', 'text', 'hardBreak']);
 interface SlotEntry {
   slotKey: string;
   state: RenderUserDefinedInputNodeState;
+  isInline: boolean;
 }
 
 // One message's entries, kept while the store holds that message object. A
@@ -47,26 +50,6 @@ interface SlotEntry {
 // what the web-component adapter keys its per-slot cache on.
 const entriesByMessage = new WeakMap<MessageRequest, SlotEntry[]>();
 
-/**
- * Mirrors `UserDefinedResponsePortalsContainer` for the new bubble custom
- * node API. For every non-built-in TipTap node inside a user message's
- * `display_content`, we:
- *
- *   1. Create a host element and offer it through the markdown plugin-host
- *      protocol, so the outermost chat element hosts it in page light DOM
- *      (where consumer stylesheets reach the content) and forwards the slot
- *      inward. Without a claimant the host stays on the chat wrapper. The tag
- *      is `<span>` for `mention` and `command` nodes so they render inline
- *      alongside surrounding text; `<div>` for all other custom nodes that may
- *      contain block-level content.
- *   2. Mount the consumer's `renderUserDefinedInputNode` output in that host
- *      element through `SlotHostPortal`.
- *
- * `MessageRichUserContent` emits a matching `<slot name=...>` in the message
- * bubble that projects the slotted host back into the visual position. When the
- * consumer returns `null`, no slotted content is added and the slot's fallback
- * children (the node's label / value) show through.
- */
 function InputNodePortalsContainer({
   chatInstance,
   renderUserDefinedInputNode,
@@ -101,19 +84,18 @@ function InputNodePortalsContainer({
 }
 
 function InputNodePortal({
-  entry: { slotKey, state },
+  entry: { slotKey, state, isInline },
   chatWrapper,
   chatInstance,
   renderUserDefinedInputNode,
 }: Required<InputNodePortalsContainerProps> & { entry: SlotEntry }) {
-  // Use an inline element for token nodes so the custom chip sits in the text
-  // flow. Block custom nodes (e.g. tileChip) keep a <div> so their block-level
-  // content is valid HTML.
+  // Native clipboard serializers preserve paragraph flow for span hosts.
+  // A div host can insert a newline even when page CSS makes it inline.
   const isTokenNode =
     state.node.type === 'mention' || state.node.type === 'command';
   const host = useMemo(
-    () => document.createElement(isTokenNode ? 'span' : 'div'),
-    [isTokenNode]
+    () => document.createElement(isInline || isTokenNode ? 'span' : 'div'),
+    [isInline, isTokenNode]
   );
   // `state` is stable per slot until its message changes, so the renderer is
   // not called again on every message-store update.
@@ -132,55 +114,20 @@ function InputNodePortal({
     if (!hasContent) {
       return undefined;
     }
+    if (isInline) {
+      host.className = `${prefix}-markdown-inline-plugin`;
+      return mountInlineHost(chatWrapper, slotKey, host);
+    }
     host.setAttribute('slot', slotKey);
-    mountHost(chatWrapper, host, slotKey, isTokenNode);
-    return () => unmountHost(chatWrapper, host, slotKey);
-  }, [chatWrapper, host, slotKey, hasContent, isTokenNode]);
+    mountHost(chatWrapper, host, slotKey, isInline || isTokenNode);
+    return () => {
+      unmountHost(chatWrapper, host, slotKey);
+    };
+  }, [chatWrapper, host, slotKey, hasContent, isInline, isTokenNode]);
 
   return hasContent ? (
     <SlotHostPortal hostElement={host}>{content}</SlotHostPortal>
   ) : null;
-}
-
-/**
- * Offers a host through the markdown plugin-host protocol. When no ancestor
- * claims it, the host stays on the chat wrapper.
- */
-function mountHost(
-  chatWrapper: HTMLElement,
-  host: HTMLElement,
-  slotName: string,
-  isInline: boolean
-) {
-  const mount = new CustomEvent('cds-aichat-markdown-plugin-host-mount', {
-    bubbles: true,
-    composed: true,
-    cancelable: true,
-    detail: { kind: 'customRenderer', slotName, element: host, isInline },
-  });
-  chatWrapper.dispatchEvent(mount);
-  if (!mount.defaultPrevented) {
-    chatWrapper.appendChild(host);
-  }
-}
-
-/**
- * Removes a host. A claimant may have moved it, so the event goes out from the
- * wrapper to reach every forwarder.
- */
-function unmountHost(
-  chatWrapper: HTMLElement,
-  host: HTMLElement,
-  slotName: string
-) {
-  chatWrapper.dispatchEvent(
-    new CustomEvent('cds-aichat-markdown-plugin-host-unmount', {
-      bubbles: true,
-      composed: true,
-      detail: { slotName },
-    })
-  );
-  host.remove();
 }
 
 function collectSlotEntries(
@@ -200,7 +147,11 @@ function collectSlotEntries(
       messageEntries = collectInputNodeSlots(
         message.input.display_content,
         messageId
-      ).map(({ slotKey, node }) => ({ slotKey, state: { node, message } }));
+      ).map(({ slotKey, node, isInline }) => ({
+        slotKey,
+        state: { node, message },
+        isInline,
+      }));
       entriesByMessage.set(message, messageEntries);
     }
     entries.push(...messageEntries);
@@ -218,26 +169,20 @@ function isRequestWithDisplayContent(
 export interface InputNodeSlot {
   slotKey: string;
   node: JSONContent;
+  isInline: boolean;
 }
 
-/**
- * Collect the slot key for every non-built-in TipTap node in a
- * `display_content` doc, in document order. The slot key
- * (`${messageId}::${path}`, where `path` is the dot-joined child-index trail)
- * MUST match the `<slot name>` that `MessageRichUserContent` emits at the same
- * structural position — that is the contract that lets the portal host project
- * back into the bubble. Exported so the slot-key contract test can pin it
- * against `MessageRichUserContent`'s rendering walk.
- */
+// The message walker uses these same keys for inline targets and block slots.
 export function collectInputNodeSlots(
   content: JSONContent,
   messageId: string
 ): InputNodeSlot[] {
   const out: InputNodeSlot[] = [];
-  const stack: Array<{ node: JSONContent; path: string }> = [];
+  const stack: Array<{ node: JSONContent; path: string; isInline: boolean }> =
+    [];
   const top = content.content ?? [];
   for (let i = top.length - 1; i >= 0; i--) {
-    stack.push({ node: top[i], path: `${i}` });
+    stack.push({ node: top[i], path: `${i}`, isInline: false });
   }
 
   while (stack.length) {
@@ -245,18 +190,22 @@ export function collectInputNodeSlots(
     if (!frame) {
       break;
     }
-    const { node, path } = frame;
+    const { node, path, isInline } = frame;
     const type = node.type ?? '';
 
     if (!BUILT_IN_NODE_TYPES.has(type)) {
-      out.push({ slotKey: `${messageId}::${path}`, node });
+      out.push({ slotKey: `${messageId}::${path}`, node, isInline });
       // Don't descend further — the consumer owns the rendering.
       continue;
     }
 
     if (node.content && node.content.length) {
       for (let i = node.content.length - 1; i >= 0; i--) {
-        stack.push({ node: node.content[i], path: `${path}.${i}` });
+        stack.push({
+          node: node.content[i],
+          path: `${path}.${i}`,
+          isInline: type === 'paragraph',
+        });
       }
     }
   }

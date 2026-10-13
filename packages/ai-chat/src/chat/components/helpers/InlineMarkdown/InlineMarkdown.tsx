@@ -13,9 +13,11 @@ import {
   InlineMarkdownError,
   renderInlineMarkdown,
   type InlineMarkdownOptions,
+  type MarkdownPluginHostMountDetail,
 } from '@carbon/ai-chat-components/es/components/markdown/index.js';
 import { markdownToTokenTree } from '@carbon/ai-chat-components/es/components/markdown/src/markdown-token-tree.js';
 import { validateInlineTree } from '@carbon/ai-chat-components/es/components/markdown/src/utils/inline-validation.js';
+import { renderInlineMarkdownInRun } from '@carbon/ai-chat-components/es/components/markdown/src/inline-markdown.js';
 
 import { useMarkdownSettings } from '../MarkdownWithDefaults/useMarkdownSettings';
 import { consoleError } from '../../../utils/miscUtils';
@@ -25,6 +27,8 @@ const FALLBACK_CLASS = 'cds-aichat--inline-markdown-fallback';
 interface InlineMarkdownProps {
   /** One run of sent message text. */
   text: string;
+  /** False when the surrounding paragraph already lives in page DOM. */
+  projectPluginOutput?: boolean;
   /** Keep edge whitespace, rendering edge newlines as breaks. */
   preserveBoundaryWhitespace?: boolean;
   /** Drop a leading edge break, which sits at the start of its paragraph. */
@@ -40,6 +44,7 @@ interface InlineMarkdownProps {
  */
 function InlineMarkdown({
   text,
+  projectPluginOutput = true,
   preserveBoundaryWhitespace = false,
   trimStartBreaks = false,
   trimEndBreaks = false,
@@ -54,28 +59,36 @@ function InlineMarkdown({
       customRenderers,
       sanitizeHTML: true,
       removeHTML: true,
-      projectPluginOutput: true,
+      projectPluginOutput,
     }),
-    [markdownItPlugins, customRenderers]
+    [markdownItPlugins, customRenderers, projectPluginOutput]
   );
 
   useLayoutEffect(() => {
     const host = hostRef.current;
+    const onMount = (event: Event) => {
+      const detail = (event as CustomEvent<MarkdownPluginHostMountDetail>)
+        .detail;
+      if (detail?.kind === 'customRenderer') {
+        addDefaultLinkRel(detail.element);
+      }
+    };
+    host.addEventListener('cds-aichat-markdown-plugin-host-mount', onMount);
     let part: RootPart;
     try {
       const template = preserveBoundaryWhitespace
         ? renderWithBoundaries(text, options, trimStartBreaks, trimEndBreaks)
-        : renderInlineMarkdown(text, options);
+        : renderInlineText(text, options);
       host.classList.remove(FALLBACK_CLASS);
+      host.style.whiteSpace = '';
       part = render(template, host);
       reported.current = null;
       // Sent links have always carried this rel. Adding it through a link
       // callback would make sanitization drop the renderer's target default.
-      host.querySelectorAll('a:not([rel])').forEach((link) => {
-        link.setAttribute('rel', 'noopener noreferrer');
-      });
+      addDefaultLinkRel(host);
     } catch (error) {
       host.classList.add(FALLBACK_CLASS);
+      host.style.whiteSpace = 'pre-wrap';
       part = render(text, host);
       const last = reported.current;
       if (last?.text !== text || last?.options !== options) {
@@ -87,6 +100,10 @@ function InlineMarkdown({
     }
     part.setConnected(true);
     return () => {
+      host.removeEventListener(
+        'cds-aichat-markdown-plugin-host-mount',
+        onMount
+      );
       part.setConnected(false);
       render(nothing, host);
     };
@@ -99,6 +116,12 @@ function InlineMarkdown({
   ]);
 
   return <span ref={hostRef} />;
+}
+
+function addDefaultLinkRel(host: HTMLElement) {
+  host.querySelectorAll('a:not([rel])').forEach((link) => {
+    link.setAttribute('rel', 'noopener noreferrer');
+  });
 }
 
 /**
@@ -132,7 +155,13 @@ function renderWithBoundaries(
     trailing = '';
     leading = trimmed ? leading : '';
   }
-  return html`${boundaryWhitespace(leading)}${trimmed ? renderInlineMarkdown(trimmed, options) : nothing}${boundaryWhitespace(trailing)}`;
+  return html`${boundaryWhitespace(leading)}${trimmed ? renderInlineText(trimmed, options) : nothing}${boundaryWhitespace(trailing)}`;
+}
+
+function renderInlineText(text: string, options: InlineMarkdownOptions) {
+  return options.projectPluginOutput
+    ? renderInlineMarkdown(text, options)
+    : renderInlineMarkdownInRun(text, options);
 }
 
 /** An error's code or type, which never carries message content. */

@@ -12,26 +12,26 @@
 @use '@carbon/styles/scss/motion';
 @use './vars' as *;
 
-@mixin markdown-inline-emphasis($scope) {
-  #{$scope} mark {
+@mixin markdown-inline-emphasis($scope, $exclude: '') {
+  #{$scope} mark#{$exclude} {
     border-radius: layout.$spacing-02;
     background-color: theme.$highlight;
     color: theme.$text-primary;
   }
 
-  #{$scope} b,
-  #{$scope} strong {
+  #{$scope} b#{$exclude},
+  #{$scope} strong#{$exclude} {
     font-weight: bold;
   }
 
-  #{$scope} i,
-  #{$scope} em {
+  #{$scope} i#{$exclude},
+  #{$scope} em#{$exclude} {
     font-style: italic;
   }
 }
 
-@mixin markdown-inline-links($scope) {
-  #{$scope} a {
+@mixin markdown-inline-links($scope, $exclude: '') {
+  #{$scope} a#{$exclude} {
     color: theme.$link-primary;
     outline: none;
     text-decoration: none;
@@ -79,17 +79,25 @@
   }
 }
 
-@mixin markdown-inline-images($scope) {
-  #{$scope} img {
+@mixin markdown-inline-images($scope, $exclude: '') {
+  #{$scope} img#{$exclude} {
     /* Make sure images in markdown do not overflow. */
     max-inline-size: 100%;
   }
 }
 
 // Inline markdown styles under `$scope`, the selector for the rendered span.
-@mixin markdown-inline($scope: '.#{$prefix}-inline-markdown') {
+@mixin markdown-inline(
+  $scope: '.#{$prefix}-inline-markdown',
+  $exclude: '',
+  $typography: true
+) {
   #{$scope} {
-    @include type.type-style('body-01');
+    @if $typography {
+      @include type.type-style('body-01');
+    } @else {
+      font: inherit;
+    }
   }
 
   #{$scope}
@@ -115,7 +123,7 @@
       sup,
       u,
       var
-    ) {
+    )#{$exclude} {
     padding: 0;
     border: 0;
     margin: 0;
@@ -124,7 +132,7 @@
     vertical-align: baseline;
   }
 
-  @include markdown-inline-emphasis($scope);
-  @include markdown-inline-links($scope);
-  @include markdown-inline-images($scope);
+  @include markdown-inline-emphasis($scope, $exclude);
+  @include markdown-inline-links($scope, $exclude);
+  @include markdown-inline-images($scope, $exclude);
 }

@@ -36,7 +36,7 @@ function render(ui: React.ReactElement) {
 }
 
 const instance = {} as ChatInstance;
-const slotName = 'message::0.0';
+const slotName = 'message::0';
 
 function message(): MessageRequest {
   return {
@@ -45,12 +45,7 @@ function message(): MessageRequest {
       text: 'custom',
       display_content: {
         type: 'doc',
-        content: [
-          {
-            type: 'paragraph',
-            content: [{ type: 'custom', attrs: { label: 'fallback' } }],
-          },
-        ],
+        content: [{ type: 'custom', attrs: { label: 'fallback' } }],
       },
     },
   } as MessageRequest;
@@ -64,7 +59,7 @@ beforeEach(() => {
 });
 
 test.each([0, 1, 2])(
-  'projects the host through %i shadow boundaries and clears every forwarder',
+  'projects a block host through %i shadow boundaries and clears every forwarder',
   (depth) => {
     const outer = document.createElement('div');
     document.body.appendChild(outer);
@@ -172,7 +167,8 @@ describe.each(['cds-aichat-container', 'cds-aichat-custom-element'])(
       await waitFor(() => expect(callback).toHaveBeenCalled());
       expect(element.querySelector(`[slot="${slotName}"]`)).toBeNull();
       expect(bubbleSlot().assignedNodes()).toHaveLength(0);
-      expect(bubbleSlot().textContent).toBe('fallback');
+      expect(bubbleSlot().nextElementSibling.textContent).toBe('fallback');
+      expect(bubbleSlot().nextElementSibling).not.toHaveAttribute('hidden');
     }, 20000);
 
     it('hosts the returned element in page light DOM and projects it into the bubble', async () => {

@@ -8,7 +8,3 @@
 @use '@carbon/ai-chat-components/scss/markdown-inline';
 
 @include markdown-inline.markdown-inline;
-
-.cds-aichat--inline-markdown-fallback {
-  white-space: pre-wrap;
-}

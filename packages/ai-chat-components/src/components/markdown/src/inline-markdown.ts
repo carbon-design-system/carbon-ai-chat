@@ -22,7 +22,10 @@ import {
   validateInlineHTML,
   validateInlineTree,
 } from './utils/inline-validation.js';
-import { inlinePluginSlot } from './utils/inline-plugin-slot.js';
+import {
+  projectInlineRun,
+  projectedInlinePlugin,
+} from './utils/inline-run-projection.js';
 
 export { InlineMarkdownError } from './utils/inline-validation.js';
 /**
@@ -66,6 +69,26 @@ export function renderInlineMarkdown(
   source: string,
   options: InlineMarkdownOptions = {}
 ): TemplateResult {
+  return renderInlineSource(source, options, false);
+}
+
+// Chat already projects the paragraph, so keep plugin markup in that live tree.
+export function renderInlineMarkdownInRun(
+  source: string,
+  options: InlineMarkdownOptions
+): TemplateResult {
+  return renderInlineSource(
+    source,
+    { ...options, projectPluginOutput: false },
+    true
+  );
+}
+
+function renderInlineSource(
+  source: string,
+  options: InlineMarkdownOptions,
+  markPluginOutput: boolean
+): TemplateResult {
   const { tree, md } = markdownToTokenTree(source, undefined, {
     removeHtml: options.removeHTML ?? false,
     markdownItPlugins: options.markdownItPlugins,
@@ -79,7 +102,7 @@ export function renderInlineMarkdown(
       : html``;
   }
   const namespace = nextMarkdownInstanceId();
-  let slotIndex = 0;
+  let hasPlugin = false;
   const content = renderTokenTree(
     { ...paragraph, token: { ...paragraph.token, tag: '', type: 'inline' } },
     {
@@ -91,27 +114,28 @@ export function renderInlineMarkdown(
         renderHTML: (markup, token) => {
           validateInlineHTML(markup);
           if (!options.projectPluginOutput || !token) {
+            if (markPluginOutput && token) {
+              return html`<span class=${`${prefix}-markdown-inline-plugin`}
+                >${unsafeHTML(markup)}</span
+              >`;
+            }
             return html`${unsafeHTML(markup)}`;
           }
-          const slotName = `${prefix}-inline-markdown-plugin-${namespace}-${slotIndex++}`;
+          hasPlugin = true;
           const fallback = token.content || markup.replace(/<[^>]*>/g, '');
-          return html`<slot
-            name=${slotName}
-            ${inlinePluginSlot({
-              kind: 'pluginFallback',
-              slotName,
-              html: markup,
-              isInline: true,
-            })}
-            >${fallback}</slot
-          >`;
+          return html`${projectedInlinePlugin(markup, fallback)}`;
         },
       },
     }
   );
   const leading = edgeSource.match(/^[\t ]*/)?.[0] ?? '';
   const trailing = edgeSource.match(/[\t ]*$/)?.[0] ?? '';
-  return html`<span class=${`${prefix}-inline-markdown`}
-    >${leading}${content}${trailing}</span
-  >`;
+  const prepared = html`${leading}${content}${trailing}`;
+  const output = hasPlugin
+    ? projectInlineRun(prepared, {
+        slotName: `${prefix}-inline-markdown-plugin-${namespace}`,
+        resetInlineStyles: true,
+      })
+    : prepared;
+  return html`<span class=${`${prefix}-inline-markdown`}>${output}</span>`;
 }
