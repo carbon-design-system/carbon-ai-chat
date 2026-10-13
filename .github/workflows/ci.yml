@@ -68,7 +68,7 @@ jobs:
             browsers: chromium firefox webkit
             run: npm run test --workspace=@carbon/ai-chat-components
           - suite: demo
-            browsers: chromium firefox
+            browsers: chromium firefox webkit
             run: npm run test --workspace=@carbon/ai-chat-examples-demo
           # 👇 Every other package with a test script
           - suite: examples
