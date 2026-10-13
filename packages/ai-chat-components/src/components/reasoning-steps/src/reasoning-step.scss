@@ -75,7 +75,7 @@
 }
 
 :host([open]) .#{$prefix}--reasoning-step__icon {
-  transform: rotate(90deg);
+  transform: rotate(180deg);
 }
 
 .#{$prefix}--reasoning-step__title {

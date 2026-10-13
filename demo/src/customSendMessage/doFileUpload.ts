@@ -153,6 +153,7 @@ async function doFileUploadResponse(
 
   await sendResponse(instance, {
     id: uuid(),
+    request_id: request.id,
     output: {
       generic: [
         {

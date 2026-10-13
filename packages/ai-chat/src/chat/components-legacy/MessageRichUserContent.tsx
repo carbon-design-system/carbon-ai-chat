@@ -16,14 +16,18 @@
  *   cross-paragraph markdown (fenced code blocks, lists, tables) keeps
  *   working — visually identical to the legacy plain-text bubble.
  *
- *   Structured: at least one paragraph contains a mention, command, or
- *   unknown custom node. Walk paragraph-by-paragraph and use
- *   `renderInlineMarkdown` for runs of plain text. Chip nodes mount the
- *   shared `renderTokenChip` element via a ref. Unknown node types emit a
- *   `<slot name={slotKey}>`; `InputNodePortalsContainer` walks the same
- *   `display_content`, derives the identical slot key, and projects the
- *   consumer's `renderUserDefinedInputNode` output into it. The slot-key
- *   scheme is shared via `collectInputNodeSlots` and pinned by
+ *   Structured: at least one node anywhere in the doc has a type outside
+ *   `TEXTUAL_NODE_TYPES`. Top-level non-`paragraph` blocks go straight to
+ *   `UnknownNodeSlot`. Paragraph nodes walk their inline children:
+ *   text/hardBreak runs use `renderInlineMarkdown`; every other inline node
+ *   — including `mention` and `command` — goes to `UnknownNodeSlot`.
+ *   `UnknownNodeSlot` emits a `<slot name={slotKey}>`; `InputNodePortalsContainer`
+ *   walks the same `display_content`, derives the identical slot key, and
+ *   projects the consumer's `renderUserDefinedInputNode` output into it.
+ *   When the renderer returns `null` (or none is registered), the slot's
+ *   fallback shows through: the default `renderTokenChip` chip for `mention`
+ *   and `command`, or the node's `label`/`value` text for other custom nodes.
+ *   The slot-key scheme is shared via `collectInputNodeSlots` and pinned by
  *   `messageRichUserContentSlots_spec`.
  */
 
@@ -209,11 +213,6 @@ function renderParagraphInline(
 
     flushTextRun(`${baseKey}-text-pre`);
 
-    if (node.type === 'mention' || node.type === 'command') {
-      out.push(<TokenChipMount key={baseKey} node={node} type={node.type} />);
-      return;
-    }
-
     out.push(<UnknownNodeSlot key={baseKey} node={node} slotKey={baseKey} />);
   });
 
@@ -278,49 +277,6 @@ function renderBoundaryWhitespace(
   return out;
 }
 
-interface TokenChipMountProps {
-  node: JSONContent;
-  type: 'mention' | 'command';
-}
-
-function TokenChipMount({ node, type }: TokenChipMountProps) {
-  const hostRef = useRef<HTMLSpanElement | null>(null);
-
-  // The chip element is rebuilt only when its visible attrs change.
-  //
-  // We deliberately do NOT forward `renderCustomToken` into the bubble: the
-  // editor pipes custom chip content through a portal listener on the chat
-  // wrapper (`LightDomPortalsContainer`), which assumes the dispatched event
-  // originates from inside the shadow DOM and bridges into light DOM. The
-  // bubble chip already lives in light DOM, so reusing that handshake would
-  // produce broken slot wiring. Consumers who need custom rendering inside
-  // a sent-bubble chip register a `renderUserDefinedInputNode` instead.
-  const chip = useMemo(
-    () =>
-      renderTokenChip({
-        attrs: (node.attrs ?? {}) as Record<string, string>,
-        type,
-        context: 'historical',
-      }),
-    [node.attrs, type]
-  );
-
-  useEffect(() => {
-    const host = hostRef.current;
-    if (!host) {
-      return undefined;
-    }
-    host.appendChild(chip);
-    return () => {
-      if (chip.parentNode === host) {
-        host.removeChild(chip);
-      }
-    };
-  }, [chip]);
-
-  return <span ref={hostRef} />;
-}
-
 interface UnknownNodeSlotProps {
   node: JSONContent;
   slotKey: string;
@@ -329,9 +285,41 @@ interface UnknownNodeSlotProps {
 function UnknownNodeSlot({ node, slotKey }: UnknownNodeSlotProps) {
   // Rendered as a real `<slot>` element so the `InputNodePortalsContainer`
   // can project consumer content from chatWrapper's light DOM into this
-  // position. When no consumer renderer is registered (or it returned
-  // null), the slot's fallback children — the node's label or value — show
-  // through.
+  // position. When the renderer returns `null` or none is registered, the
+  // slot's fallback children show through.
+  //
+  // For `mention` and `command` nodes the fallback is the default
+  // `renderTokenChip` chip. For all other custom nodes it is the node's
+  // `label` or `value` as plain text.
+  const hostRef = useRef<HTMLSpanElement | null>(null);
+  const isTokenNode = node.type === 'mention' || node.type === 'command';
+
+  // Chip element is rebuilt only when its visible attrs change.
+  const chip = useMemo(
+    () =>
+      isTokenNode
+        ? renderTokenChip({
+            attrs: (node.attrs ?? {}) as Record<string, string>,
+            type: node.type as 'mention' | 'command',
+            context: 'historical',
+          })
+        : null,
+    [isTokenNode, node.attrs, node.type]
+  );
+
+  useEffect(() => {
+    if (!chip || !hostRef.current) {
+      return undefined;
+    }
+    const host = hostRef.current;
+    host.appendChild(chip);
+    return () => {
+      if (chip.parentNode === host) {
+        host.removeChild(chip);
+      }
+    };
+  }, [chip]);
+
   const fallback = (node.attrs?.label ?? node.attrs?.value ?? '') as string;
   const dataProps = {
     [INPUT_NODE_SLOT_ATTR]: slotKey,
@@ -339,7 +327,7 @@ function UnknownNodeSlot({ node, slotKey }: UnknownNodeSlotProps) {
   };
   return (
     <slot name={slotKey} {...dataProps}>
-      {fallback}
+      {isTokenNode ? <span ref={hostRef} /> : fallback}
     </slot>
   );
 }

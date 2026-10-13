@@ -80,8 +80,11 @@ describe('rich user message slot-key contract', () => {
         },
       ],
     };
-    // The mention is built-in (no slot); only the custom inline node gets one.
-    expect(walkedSlotKeys(content)).toEqual([`${MESSAGE_ID}::0.3`]);
+    // mention (0.1) and taskCard (0.3) both produce slots; text nodes do not.
+    expect(walkedSlotKeys(content)).toEqual([
+      `${MESSAGE_ID}::0.1`,
+      `${MESSAGE_ID}::0.3`,
+    ]);
     expect(renderedSlotKeys(content)).toEqual(walkedSlotKeys(content));
   });
 
@@ -113,7 +116,7 @@ describe('rich user message slot-key contract', () => {
     expect(renderedSlotKeys(content)).toEqual(walkedSlotKeys(content));
   });
 
-  it('agrees that command nodes and pure-text docs produce no slots', () => {
+  it('agrees on a command node alongside a custom inline node', () => {
     const content: JSONContent = {
       type: 'doc',
       content: [
@@ -127,9 +130,32 @@ describe('rich user message slot-key contract', () => {
         },
       ],
     };
-    expect(walkedSlotKeys(content)).toEqual([`${MESSAGE_ID}::0.2`]);
+    // command (0.1) and widget (0.2) both get slots; text nodes do not.
+    expect(walkedSlotKeys(content)).toEqual([
+      `${MESSAGE_ID}::0.1`,
+      `${MESSAGE_ID}::0.2`,
+    ]);
     expect(renderedSlotKeys(content)).toEqual(walkedSlotKeys(content));
+  });
 
+  it('agrees on a paragraph containing only a mention', () => {
+    const content: JSONContent = {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'text', text: 'Hi ' },
+            { type: 'mention', attrs: { id: 'u1', label: 'Alice' } },
+          ],
+        },
+      ],
+    };
+    expect(walkedSlotKeys(content)).toEqual([`${MESSAGE_ID}::0.1`]);
+    expect(renderedSlotKeys(content)).toEqual(walkedSlotKeys(content));
+  });
+
+  it('agrees that pure-text docs produce no slots', () => {
     // A doc with no custom nodes goes down the plain-markdown path. The walker
     // emits nothing; the bubble emits a `<MarkdownWithDefaults>` with no
     // `<slot>`, so there is nothing to project and nothing to keep in sync.

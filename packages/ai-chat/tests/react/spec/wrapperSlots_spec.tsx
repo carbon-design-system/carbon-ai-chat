@@ -447,6 +447,7 @@ describe('React render props through the shared container', () => {
     ).toEqual(['custom']);
 
     const host = hostFor(slotName);
+    expect(host.tagName).toBe('DIV');
     update({ renderUserDefinedInputNode: () => <b>Updated custom</b> });
     await waitFor(() => expect(host.textContent).toBe('Updated custom'));
     expect(hostFor(slotName)).toBe(host);
@@ -466,6 +467,226 @@ describe('React render props through the shared container', () => {
     await waitFor(() => expect(hostFor(slotName)).toBeNull());
     expect(bubbleSlot().assignedNodes()).toHaveLength(0);
     expect(bubbleSlot().textContent).toBe('Ship it');
+  });
+
+  it('projects custom renderUserDefinedInputNode content for a mention and keeps the default command chip', async () => {
+    const { instance, update } = await boot();
+    await sendRequest(instance, {
+      id: 'token-rich',
+      input: {
+        message_type: MessageInputType.TEXT,
+        text: '@Alice /deploy',
+        display_content: {
+          type: 'doc',
+          content: [
+            {
+              type: 'paragraph',
+              content: [
+                { type: 'mention', attrs: { id: 'u1', label: 'Alice' } },
+                { type: 'text', text: ' ' },
+                { type: 'command', attrs: { id: 'c1', label: 'deploy' } },
+              ],
+            },
+          ],
+        },
+      },
+    });
+
+    const mentionSlot = 'token-rich::0.0';
+    const commandSlot = 'token-rich::0.2';
+    const bubbleSlot = (name: string) =>
+      deepQuerySelector(
+        getChatShadowRoot(),
+        `slot[name="${name}"]`
+      ) as HTMLSlotElement;
+
+    await waitFor(() => expect(bubbleSlot(mentionSlot)).not.toBeNull());
+    await waitFor(() => expect(bubbleSlot(commandSlot)).not.toBeNull());
+
+    expect(bubbleSlot(mentionSlot).assignedNodes()).toHaveLength(0);
+    expect(bubbleSlot(commandSlot).assignedNodes()).toHaveLength(0);
+    const defaultChip = (name: string, type: string) =>
+      bubbleSlot(name).querySelector(`[data-token-type="${type}"]`);
+    await waitFor(() =>
+      expect(defaultChip(mentionSlot, 'mention')?.textContent).toBe('Alice')
+    );
+    expect(defaultChip(commandSlot, 'command')?.textContent).toBe('deploy');
+
+    update({
+      renderUserDefinedInputNode: ({ node }) =>
+        node.type === 'mention' ? (
+          <b data-probe="mention-chip">@{String(node.attrs?.label ?? '')}</b>
+        ) : null,
+    });
+
+    await waitFor(() => expect(assignedSlotFor(mentionSlot)).not.toBeNull());
+    expect(hostFor(mentionSlot)?.tagName).toBe('SPAN');
+    expect(
+      bubbleSlot(mentionSlot)
+        .assignedNodes({ flatten: true })
+        .map((n) => n.textContent)
+    ).toEqual(['@Alice']);
+
+    await waitFor(() => expect(hostFor(commandSlot)).toBeNull());
+    expect(bubbleSlot(commandSlot).assignedNodes()).toHaveLength(0);
+  });
+
+  it('keeps the default chip when renderUserDefinedInputNode returns false for a mention', async () => {
+    const { instance, update } = await boot();
+    await sendRequest(instance, {
+      id: 'token-false',
+      input: {
+        message_type: MessageInputType.TEXT,
+        text: '@Alice',
+        display_content: {
+          type: 'doc',
+          content: [
+            {
+              type: 'paragraph',
+              content: [
+                { type: 'mention', attrs: { id: 'u1', label: 'Alice' } },
+              ],
+            },
+          ],
+        },
+      },
+    });
+
+    const mentionSlot = 'token-false::0.0';
+    const bubbleSlot = (name: string) =>
+      deepQuerySelector(
+        getChatShadowRoot(),
+        `slot[name="${name}"]`
+      ) as HTMLSlotElement;
+
+    update({
+      renderUserDefinedInputNode: () => false as unknown as React.ReactNode,
+    });
+
+    await waitFor(() => expect(bubbleSlot(mentionSlot)).not.toBeNull());
+    expect(hostFor(mentionSlot)).toBeNull();
+    await waitFor(() =>
+      expect(
+        bubbleSlot(mentionSlot).querySelector('[data-token-type="mention"]')
+          ?.textContent
+      ).toBe('Alice')
+    );
+  });
+
+  it('keeps the default chip when a cds-aichat-container callback returns null', async () => {
+    const renderUserDefinedInputNode: CdsAiChatContainerElement['renderUserDefinedInputNode'] =
+      ({ node }) => {
+        if (node.type !== 'mention') {
+          return null;
+        }
+        const chip = document.createElement('b');
+        chip.textContent = `@${node.attrs?.label}`;
+        return chip;
+      };
+    const { element, instance } = await bootWC({ renderUserDefinedInputNode });
+    await sendRequest(instance, {
+      id: 'wc-token',
+      input: {
+        message_type: MessageInputType.TEXT,
+        text: '@Alice /deploy',
+        display_content: {
+          type: 'doc',
+          content: [
+            {
+              type: 'paragraph',
+              content: [
+                { type: 'mention', attrs: { id: 'u1', label: 'Alice' } },
+                { type: 'text', text: ' ' },
+                { type: 'command', attrs: { id: 'c1', label: 'deploy' } },
+              ],
+            },
+          ],
+        },
+      },
+    });
+
+    const hostIn = (slot: string) =>
+      element.querySelector(`:scope > [slot="${slot}"]`);
+    await waitFor(() =>
+      expect(hostIn('wc-token::0.0')?.textContent).toBe('@Alice')
+    );
+    expect(hostIn('wc-token::0.2')).toBeNull();
+    const commandSlot = element.shadowRoot?.querySelector(
+      'slot[name="wc-token::0.2"]'
+    ) as HTMLSlotElement;
+    expect(commandSlot.assignedNodes()).toHaveLength(0);
+    expect(
+      commandSlot.querySelector('[data-token-type="command"]')?.textContent
+    ).toBe('deploy');
+  });
+
+  it('keeps a cds-aichat-container callback element across later messages', async () => {
+    const renderUserDefinedInputNode = jest.fn(() =>
+      document.createElement('b')
+    );
+    const { element, instance } = await bootWC({ renderUserDefinedInputNode });
+    await sendRequest(instance, {
+      id: 'wc-kept',
+      input: {
+        message_type: MessageInputType.TEXT,
+        text: 'Ship it',
+        display_content: {
+          type: 'doc',
+          content: [
+            {
+              type: 'paragraph',
+              content: [{ type: 'taskCard', attrs: { label: 'Ship it' } }],
+            },
+          ],
+        },
+      },
+    });
+
+    const mounted = () =>
+      element.querySelector(':scope > [slot="wc-kept::0.0"] > b');
+    await waitFor(() => expect(mounted()).not.toBeNull());
+    const first = mounted();
+    const calls = renderUserDefinedInputNode.mock.calls.length;
+
+    await addUserDefinedResponse(instance, 'wc-later');
+    expect(mounted()).toBe(first);
+    expect(renderUserDefinedInputNode).toHaveBeenCalledTimes(calls);
+  });
+
+  it('renders a chip in each slot when one node object appears twice', async () => {
+    const renderUserDefinedInputNode = () => {
+      const chip = document.createElement('b');
+      chip.textContent = 'chip';
+      return chip;
+    };
+    const { element, instance } = await bootWC({ renderUserDefinedInputNode });
+    const alice = { type: 'mention', attrs: { id: 'u1', label: 'Alice' } };
+    await sendRequest(instance, {
+      id: 'wc-alias',
+      input: {
+        message_type: MessageInputType.TEXT,
+        text: '@Alice and @Alice',
+        display_content: {
+          type: 'doc',
+          content: [
+            {
+              type: 'paragraph',
+              content: [alice, { type: 'text', text: ' and ' }, alice],
+            },
+          ],
+        },
+      },
+    });
+
+    const hostIn = (slot: string) =>
+      element.querySelector(`:scope > [slot="${slot}"]`);
+    await waitFor(() =>
+      expect(
+        ['wc-alias::0.0', 'wc-alias::0.2'].map(
+          (slot) => hostIn(slot)?.textContent
+        )
+      ).toEqual(['chip', 'chip'])
+    );
   });
 
   it('renders input nodes through a cds-aichat-container callback', async () => {

@@ -7,14 +7,19 @@
  *  @license
  */
 
-import { ChatInstance, MessageResponseTypes } from '@carbon/ai-chat';
+import {
+  ChatInstance,
+  MessageRequest,
+  MessageResponseTypes,
+} from '@carbon/ai-chat';
 import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
 import { sendResponse } from './sendResponse';
 
-function doError(instance: ChatInstance) {
+function doError(instance: ChatInstance, requestID?: MessageRequest['id']) {
   return sendResponse(instance, {
     id: uuid(),
+    request_id: requestID,
     output: {
       generic: [
         {

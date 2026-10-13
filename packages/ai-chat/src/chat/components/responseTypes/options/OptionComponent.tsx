@@ -17,7 +17,9 @@ import { HasServiceManager } from '../../../hocs/withServiceManager';
 import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
 import {
   createMessageRequestForChoice,
+  findSelectedChoiceIndex,
   getOptionType,
+  resolveChoiceText,
 } from '../../../utils/messageUtils';
 import SelectComponent from './SelectComponent';
 import {
@@ -27,6 +29,7 @@ import {
 } from '../../../../types/messaging/Messages';
 import { MessageSendSource } from '../../../../types/events/eventBusTypes';
 import { TextBlock } from '../../../components/helpers/TextBlock/TextBlock';
+import { consoleError } from '../../../utils/miscUtils';
 
 interface OnChangeData<ItemType> {
   selectedItem: ItemType | null;
@@ -103,7 +106,9 @@ class OptionComponent extends Component<OptionProps> {
    * It also sets the responseType to 'dropdown'.
    */
   onSelectChange = (data: OnChangeData<SingleOption>) => {
-    this.onOptionSelected(data.selectedItem, 'dropdown');
+    if (data.selectedItem) {
+      this.onOptionSelected(data.selectedItem, 'dropdown');
+    }
   };
 
   render() {
@@ -111,34 +116,50 @@ class OptionComponent extends Component<OptionProps> {
       this.props;
     const { options, title, description, preference } = localMessage.item;
     const { optionSelected } = localMessage.ui_state;
-    const type = getOptionType(preference, options.length);
+    const validOptions = options.filter((option) => {
+      if (resolveChoiceText(option).controlText) {
+        return true;
+      }
+      consoleError(
+        'An option has no label or input text, so the chat did not render it.'
+      );
+      return false;
+    });
+    const type = getOptionType(preference, validOptions.length);
+    const selectedIndex = findSelectedChoiceIndex(validOptions, optionSelected);
+
+    const textBlock = (
+      <TextBlock
+        title={title}
+        description={description}
+        removeHTML={removeHTML}
+        renderMode="markdown"
+      />
+    );
+
+    if (!validOptions.length) {
+      return textBlock;
+    }
 
     return type === 'button' ? (
       <>
-        <TextBlock
-          title={title}
-          description={description}
-          removeHTML={removeHTML}
-          renderMode="markdown"
-        />
+        {textBlock}
         <div className="cds-aichat--button-holder">
           <ul>
-            {options.map((item) => {
-              const isSelected = optionSelected
-                ? item.value.input.text === optionSelected.input.text
-                : false;
+            {validOptions.map((item, index) => {
+              const { controlText } = resolveChoiceText(item);
               return (
-                <li key={item.label}>
+                <li key={index}>
                   <ChatButton
                     kind={CHAT_BUTTON_KIND.TERTIARY}
                     is-quick-action
                     size={CHAT_BUTTON_SIZE.SMALL}
                     disabled={disableUserInputs}
-                    isselected={isSelected}
+                    isselected={index === selectedIndex}
                     onClick={(event: MouseEvent) => {
                       this.onButtonClick(event, item);
                     }}>
-                    {item.label}
+                    {controlText}
                   </ChatButton>
                 </li>
               );
@@ -151,7 +172,7 @@ class OptionComponent extends Component<OptionProps> {
         serviceManager={serviceManager}
         title={title}
         description={description}
-        options={options}
+        options={validOptions}
         disableUserInputs={disableUserInputs}
         onChange={this.onSelectChange}
         value={optionSelected}

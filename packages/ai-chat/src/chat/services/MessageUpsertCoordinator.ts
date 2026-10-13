@@ -178,11 +178,14 @@ class MessageUpsertCoordinator {
     }
 
     const generation = this.generation;
+    const { restartCount } = this.serviceManager;
     const prev = this.chainByID.get(messageID) ?? Promise.resolve();
     // A predecessor failure for this id must not poison this caller's promise.
     const next = prev
       .catch(noop)
-      .then(() => this.runOne(messageID, nextState, updater, generation));
+      .then(() =>
+        this.runOne(messageID, nextState, updater, generation, restartCount)
+      );
     this.chainByID.set(messageID, next);
 
     // Drain the chain entry once `next` settles. The trailing `.then(noop, noop)`
@@ -203,15 +206,18 @@ class MessageUpsertCoordinator {
     messageID: string,
     nextState: MessageState,
     updater: UpsertMessageUpdater,
-    generation: number
+    generation: number,
+    restartCount: number
   ): Promise<void> {
-    if (generation !== this.generation) {
+    if (this.isStale(generation, restartCount)) {
       return;
     }
     const result = await this.runUpdater(messageID, updater);
-    if (generation !== this.generation) {
+    if (this.isStale(generation, restartCount, result.request_id)) {
       return;
     }
+
+    this.serviceManager.messageService.messageLoadingManager.end();
 
     const previousState = this.stateByID.get(messageID);
     const willFireReceive =
@@ -221,8 +227,7 @@ class MessageUpsertCoordinator {
     if (willFireReceive) {
       await this.firePreReceive(messageID, result);
     }
-
-    if (generation !== this.generation) {
+    if (this.isStale(generation, restartCount, result.request_id)) {
       return;
     }
     if (nextState === MessageState.COMPLETE) {
@@ -256,22 +261,45 @@ class MessageUpsertCoordinator {
         result,
         nextState,
         refsBefore,
-        generation
+        generation,
+        restartCount
       );
-      if (generation !== this.generation) {
+      if (this.isStale(generation, restartCount, result.request_id)) {
         return;
       }
       this.stateByID.set(messageID, nextState);
       if (willFireReceive) {
-        await this.firePostReceiveAndFinalize(messageID, result, generation);
+        await this.firePostReceiveAndFinalize(
+          messageID,
+          result,
+          generation,
+          restartCount
+        );
       } else if (!isStreaming) {
         this.serviceManager.messageService.finalizeStreamingMessage(messageID);
       }
     } finally {
-      if (generation === this.generation && !isStreaming) {
+      if (
+        !this.isStale(generation, restartCount, result.request_id) &&
+        !isStreaming
+      ) {
         this.serviceManager.messageService.resetStopStreamingButtonIfIdle();
       }
     }
+  }
+
+  private isStale(
+    generation: number,
+    restartCount: number,
+    requestID?: string
+  ): boolean {
+    return (
+      generation !== this.generation ||
+      restartCount !== this.serviceManager.restartCount ||
+      this.serviceManager.messageService.isRequestFromPreviousConversation(
+        requestID
+      )
+    );
   }
 
   /**
@@ -388,7 +416,8 @@ class MessageUpsertCoordinator {
     result: MessageResponse,
     nextState: MessageState,
     refsBefore: Map<string, LocalMessageItem>,
-    generation: number
+    generation: number,
+    restartCount: number
   ): Promise<void> {
     const { actions: chatActions, store } = this.serviceManager;
     const stateAfter = store.getState();
@@ -400,7 +429,7 @@ class MessageUpsertCoordinator {
         .map((item) => item.ui_state.id);
 
     for (const localID of topLevelLocalItemIDs) {
-      if (generation !== this.generation) {
+      if (this.isStale(generation, restartCount, result.request_id)) {
         return;
       }
       const localItem = stateAfter.allMessageItemsByID[localID];
@@ -412,7 +441,7 @@ class MessageUpsertCoordinator {
           localItem,
           result
         );
-        if (generation !== this.generation) {
+        if (this.isStale(generation, restartCount, result.request_id)) {
           return;
         }
       }
@@ -428,7 +457,7 @@ class MessageUpsertCoordinator {
         nextState
       );
 
-      if (generation !== this.generation) {
+      if (this.isStale(generation, restartCount, result.request_id)) {
         return;
       }
       await chatActions.handleCustomFooterSlot(localItem, result);
@@ -444,7 +473,8 @@ class MessageUpsertCoordinator {
   private async firePostReceiveAndFinalize(
     messageID: string,
     result: MessageResponse,
-    generation: number
+    generation: number,
+    restartCount: number
   ): Promise<void> {
     const receiveEvent: BusEventReceive = {
       type: BusEventType.RECEIVE,
@@ -455,7 +485,7 @@ class MessageUpsertCoordinator {
     } catch (error) {
       consoleError('upsertMessage: receive handler threw, continuing.', error);
     }
-    if (generation === this.generation) {
+    if (!this.isStale(generation, restartCount, result.request_id)) {
       this.serviceManager.messageService.finalizeStreamingMessage(messageID);
     }
   }

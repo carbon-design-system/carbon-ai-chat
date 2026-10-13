@@ -9,21 +9,24 @@
 
 import {
   ChatInstance,
+  MessageRequest,
   MessageResponseTypes,
   OptionItemPreference,
+  SelectionDisplay,
 } from '@carbon/ai-chat';
 import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
 import { RESPONSE_MAP } from './responseMap';
 import { sendResponse } from './sendResponse';
 
-function doOption(instance: ChatInstance) {
+function doOption(instance: ChatInstance, requestID?: MessageRequest['id']) {
   const options = Object.keys(RESPONSE_MAP).map((key) => ({
     label: key,
     value: { input: { text: key } },
   }));
   return sendResponse(instance, {
     id: uuid(),
+    request_id: requestID,
     output: {
       generic: [
         {
@@ -38,6 +41,38 @@ function doOption(instance: ChatInstance) {
             'If under 5 items, default is buttons. If over, moves to dropdown.',
           options,
           preference: OptionItemPreference.BUTTON,
+        },
+        {
+          response_type: MessageResponseTypes.OPTION,
+          title: 'Verify choice transcript display and silent selection.',
+          description:
+            'The control text stays label-first while each option controls the generated user message.',
+          preference: OptionItemPreference.BUTTON,
+          options: [
+            {
+              label: 'Default label mode',
+              value: { input: { text: 'text' } },
+            },
+            {
+              label: 'Input-text mode',
+              value: { input: { text: 'button' } },
+              selection_display: SelectionDisplay.INPUT_TEXT,
+            },
+            {
+              label: 'Silent option',
+              value: { input: { text: 'card' } },
+              silent: true,
+            },
+            {
+              label: '',
+              value: { input: { text: 'image' } },
+            },
+            {
+              label: 'Missing input text',
+              value: { input: {} },
+              selection_display: SelectionDisplay.INPUT_TEXT,
+            },
+          ],
         },
       ],
     },

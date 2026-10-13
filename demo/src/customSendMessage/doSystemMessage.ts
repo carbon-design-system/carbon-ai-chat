@@ -9,6 +9,7 @@
 
 import {
   ChatInstance,
+  MessageRequest,
   MessageResponseTypes,
   SystemMessageVariant,
 } from '@carbon/ai-chat';
@@ -20,11 +21,13 @@ import { sendResponse } from './sendResponse';
 async function doSystemMessage(
   instance: ChatInstance,
   inline?: boolean,
-  variant?: SystemMessageVariant
+  variant?: SystemMessageVariant,
+  requestID?: MessageRequest['id']
 ) {
   if (inline) {
     await sendResponse(instance, {
       id: uuid(),
+      request_id: requestID,
       output: {
         generic: [
           {
@@ -42,6 +45,7 @@ async function doSystemMessage(
   if (variant === 'agent') {
     await sendResponse(instance, {
       id: uuid(),
+      request_id: requestID,
       output: {
         generic: [
           {
@@ -54,6 +58,7 @@ async function doSystemMessage(
     });
     await sendResponse(instance, {
       id: uuid(),
+      request_id: requestID,
       output: {
         generic: [
           {
@@ -67,6 +72,7 @@ async function doSystemMessage(
   if (variant === 'date') {
     await sendResponse(instance, {
       id: uuid(),
+      request_id: requestID,
       output: {
         generic: [
           {
@@ -79,6 +85,7 @@ async function doSystemMessage(
     });
     await sendResponse(instance, {
       id: uuid(),
+      request_id: requestID,
       output: {
         generic: [
           {
@@ -91,6 +98,7 @@ async function doSystemMessage(
   } else {
     await sendResponse(instance, {
       id: uuid(),
+      request_id: requestID,
       output: {
         generic: [
           {
@@ -104,6 +112,7 @@ async function doSystemMessage(
 
     await sendResponse(instance, {
       id: uuid(),
+      request_id: requestID,
       output: {
         generic: [
           {

@@ -160,10 +160,12 @@ function createUpsertStream(
 
   const upsertStreaming = (
     generic: GenericItem[],
-    options: DeepPartial<MessageResponseOptions> | undefined
+    options: DeepPartial<MessageResponseOptions> | undefined,
+    requestID: MessageResponse['request_id']
   ) => {
     const next: IdentifiedResponse = {
       ...snapshot,
+      request_id: requestID ?? snapshot.request_id,
       output: { ...snapshot.output, generic },
     };
     if (options) {
@@ -188,7 +190,8 @@ function createUpsertStream(
           chunk.partial_item,
           (previous) => appendPartial(previous, chunk.partial_item)
         ),
-        chunk.partial_response?.message_options
+        chunk.partial_response?.message_options,
+        chunk.streaming_metadata?.request_id
       ),
     complete: (chunk) =>
       upsertStreaming(
@@ -200,7 +203,8 @@ function createUpsertStream(
             ...chunk.complete_item,
           })
         ),
-        chunk.partial_response?.message_options
+        chunk.partial_response?.message_options,
+        chunk.streaming_metadata?.request_id
       ),
     final: (finalResponse) =>
       instance.messaging.upsertMessage(

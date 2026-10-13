@@ -7,14 +7,22 @@
  *  @license
  */
 
-import { ChatInstance, MessageResponseTypes } from '@carbon/ai-chat';
+import {
+  ChatInstance,
+  MessageRequest,
+  MessageResponseTypes,
+} from '@carbon/ai-chat';
 import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
 import { sendResponse } from './sendResponse';
 
-function doVideoYouTube(instance: ChatInstance) {
+function doVideoYouTube(
+  instance: ChatInstance,
+  requestID?: MessageRequest['id']
+) {
   return sendResponse(instance, {
     id: uuid(),
+    request_id: requestID,
     output: {
       generic: [
         {
@@ -31,9 +39,13 @@ function doVideoYouTube(instance: ChatInstance) {
   });
 }
 
-function doVideoVimeo(instance: ChatInstance) {
+function doVideoVimeo(
+  instance: ChatInstance,
+  requestID?: MessageRequest['id']
+) {
   return sendResponse(instance, {
     id: uuid(),
+    request_id: requestID,
     output: {
       generic: [
         {
@@ -50,9 +62,13 @@ function doVideoVimeo(instance: ChatInstance) {
   });
 }
 
-function doVideoKaltura(instance: ChatInstance) {
+function doVideoKaltura(
+  instance: ChatInstance,
+  requestID?: MessageRequest['id']
+) {
   return sendResponse(instance, {
     id: uuid(),
+    request_id: requestID,
     output: {
       generic: [
         {

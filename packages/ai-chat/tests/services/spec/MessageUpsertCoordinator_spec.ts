@@ -47,6 +47,7 @@ function makeStubManager(initialMessages: Record<string, unknown> = {}) {
   const finalizeStreamingMessage = jest.fn();
 
   const manager = {
+    restartCount: 0,
     store: {
       getState: () => state,
       dispatch,
@@ -61,6 +62,8 @@ function makeStubManager(initialMessages: Record<string, unknown> = {}) {
       finalizeStreamingMessage,
       getCurrentMessageController: jest.fn(),
       resetStopStreamingButtonIfIdle: jest.fn(),
+      isRequestFromPreviousConversation: jest.fn().mockReturnValue(false),
+      messageLoadingManager: { end: jest.fn() },
     },
   } as unknown as ServiceManager;
 
@@ -319,6 +322,48 @@ describe('MessageUpsertCoordinator', () => {
     expect(successor).not.toHaveBeenCalled();
     expect(coord.hasStreamingMessages()).toBe(false);
   });
+
+  it.each(['clearAll', 'restart', 'request'] as const)(
+    'drops completion when %s invalidates an awaited agent response',
+    async (boundary) => {
+      const { manager, state, fire, finalizeStreamingMessage } =
+        makeStubManager();
+      const coord = new MessageUpsertCoordinator(manager);
+      state.allMessageItemsByID.item1 = {
+        fullMessageID: 'm1',
+        ui_state: { id: 'item1' },
+        item: { response_type: MessageResponseTypes.CONNECT_TO_HUMAN_AGENT },
+      };
+      state.assistantMessageState.localMessageIDs = ['item1'];
+      jest
+        .mocked(manager.receiveService.handleConnectToHumanAgent)
+        .mockImplementation(async () => {
+          if (boundary === 'clearAll') {
+            coord.clearAll();
+          } else if (boundary === 'restart') {
+            manager.restartCount++;
+          } else {
+            jest
+              .mocked(manager.messageService.isRequestFromPreviousConversation)
+              .mockReturnValue(true);
+          }
+        });
+
+      await coord.upsert('m1', MessageState.COMPLETE, () => ({
+        ...textResponse('m1', 'response'),
+        request_id: 'request1',
+      }));
+
+      expect(fire.mock.calls.map(([event]) => event.type)).toEqual([
+        BusEventType.PRE_RECEIVE,
+      ]);
+      expect(coord.getState('m1')).toBeUndefined();
+      expect(finalizeStreamingMessage).not.toHaveBeenCalled();
+      expect(
+        manager.messageService.resetStopStreamingButtonIfIdle
+      ).not.toHaveBeenCalled();
+    }
+  );
 
   it('ends snapshot liveness on error without receive events', async () => {
     const { manager, fire, dispatch } = makeStubManager();

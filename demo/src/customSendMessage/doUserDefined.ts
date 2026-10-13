@@ -9,6 +9,7 @@
 
 import {
   ChatInstance,
+  MessageRequest,
   CustomSendMessageOptions,
   MessageResponse,
   MessageResponseTypes,
@@ -26,9 +27,13 @@ async function sleep(milliseconds: number) {
 
 const FAKE_DATA = `Some text that came from the server inside the user_defined object. Bacon ipsum dolor amet salami capicola chislic, meatball tail beef ham hock brisket cow ground round chuck. Turkey pork loin pastrami, ribeye jerky meatball drumstick kielbasa corned beef shankle picanha. Spare ribs leberkas hamburger strip steak beef ribs sirloin brisket capicola, sausage meatball drumstick ham swine alcatra. Pastrami filet mignon salami, flank short loin t-bone tenderloin ribeye brisket.`;
 
-function doUserDefined(instance: ChatInstance) {
+function doUserDefined(
+  instance: ChatInstance,
+  requestID?: MessageRequest['id']
+) {
   return sendResponse(instance, {
     id: uuid(),
+    request_id: requestID,
     output: {
       generic: [
         {
@@ -53,7 +58,8 @@ function doUserDefined(instance: ChatInstance) {
 
 async function doUserDefinedStreaming(
   instance: ChatInstance,
-  requestOptions?: CustomSendMessageOptions
+  requestOptions?: CustomSendMessageOptions,
+  requestID?: MessageRequest['id']
 ) {
   const signal = requestOptions?.signal;
   const WORD_DELAY = 50;
@@ -94,6 +100,7 @@ async function doUserDefinedStreaming(
         streaming_metadata: {
           // This is the id of the entire message response.
           response_id: responseID,
+          request_id: requestID,
         },
       });
     }
@@ -120,6 +127,7 @@ async function doUserDefinedStreaming(
         streaming_metadata: {
           // This is the id of the entire message response.
           response_id: responseID,
+          request_id: requestID,
         },
       });
     }
@@ -128,6 +136,7 @@ async function doUserDefinedStreaming(
     // You can rearrange or re-write everything here, but what you send here is what the chat will display when streaming
     // has been completed.
     const finalResponse: MessageResponse = {
+      request_id: requestID,
       id: responseID,
       output: {
         generic: [completeItem],

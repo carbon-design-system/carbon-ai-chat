@@ -153,6 +153,7 @@ async function doMentionCommandResponse(
 
   await sendResponse(instance, {
     id: uuid(),
+    request_id: request.id,
     output: {
       generic: [
         {
@@ -169,7 +170,7 @@ const _responseMapKeys = Object.keys(RESPONSE_MAP);
 function autocompleteItems(query: string): SuggestionItem[] {
   const q = query.toLowerCase();
   return _responseMapKeys
-    .filter((key) => key.toLowerCase().includes(q))
+    .filter((key) => key.toLowerCase().startsWith(q))
     .map((key) => ({ id: key, label: key, value: key }));
 }
 

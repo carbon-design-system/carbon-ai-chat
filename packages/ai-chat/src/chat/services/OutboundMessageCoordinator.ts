@@ -56,7 +56,11 @@ class OutboundMessageCoordinator {
       current: PendingMessageRequest,
       received?: MessageResponse
     ) => Promise<void>,
-    private getMessagingConfig: () => PublicConfigMessaging
+    private getMessagingConfig: () => PublicConfigMessaging,
+    private registerRequestGeneration: (
+      requestID: string,
+      restartGeneration: number
+    ) => void
   ) {}
 
   /**
@@ -250,6 +254,7 @@ class OutboundMessageCoordinator {
         }
       }
 
+      this.registerRequestGeneration(message.id, current.restartGeneration);
       await Promise.resolve(
         customSendMessage(
           message,

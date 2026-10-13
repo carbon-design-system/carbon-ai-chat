@@ -10,7 +10,7 @@ import { dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 
 import { BusEventType } from '@carbon/ai-chat/server';
-import type { BusEventReceive } from '@carbon/ai-chat';
+import type { BusEventReceive, BusEventSend } from '@carbon/ai-chat';
 import type { Page } from '@playwright/test';
 
 import { test, expect } from './fixtures';
@@ -148,19 +148,43 @@ test.describe('every demo response draws', () => {
 
       const expected = RESPONSE_EXPECTATIONS[key];
       const completedResponses: string[] = [];
-      await page.exposeFunction('recordCorpusResponse', (id: string) => {
-        completedResponses.push(id);
+      const responseRequestIDs: string[] = [];
+      const requestIDs: string[] = [];
+      await page.exposeFunction(
+        'recordCorpusResponse',
+        (id: string, requestID: string) => {
+          completedResponses.push(id);
+          responseRequestIDs.push(requestID);
+        }
+      );
+      await page.exposeFunction('recordCorpusRequest', (id: string) => {
+        requestIDs.push(id);
       });
-      await page.evaluate((receiveEventType) => {
-        const corpusWindow = window as typeof window & {
-          recordCorpusResponse: (id: string) => Promise<void>;
-        };
-        window.chatInstance!.on({
-          type: receiveEventType,
-          handler: (event: BusEventReceive) =>
-            corpusWindow.recordCorpusResponse(event.data.id),
-        });
-      }, BusEventType.RECEIVE);
+      await page.evaluate(
+        (eventTypes) => {
+          const corpusWindow = window as typeof window & {
+            recordCorpusResponse: (
+              id: string,
+              requestID: string
+            ) => Promise<void>;
+            recordCorpusRequest: (id: string) => Promise<void>;
+          };
+          window.chatInstance!.on({
+            type: eventTypes.SEND,
+            handler: (event: BusEventSend) =>
+              corpusWindow.recordCorpusRequest(event.data.id),
+          });
+          window.chatInstance!.on({
+            type: eventTypes.RECEIVE,
+            handler: (event: BusEventReceive) =>
+              corpusWindow.recordCorpusResponse(
+                event.data.id,
+                event.data.request_id
+              ),
+          });
+        },
+        { SEND: BusEventType.SEND, RECEIVE: BusEventType.RECEIVE }
+      );
 
       await page.evaluate((message) => window.chatInstance!.send(message), key);
       await expect
@@ -170,6 +194,11 @@ test.describe('every demo response draws', () => {
         })
         .toBe(expected.responses ?? 1);
       expect(new Set(completedResponses).size).toBe(expected.responses ?? 1);
+      expect(requestIDs).toHaveLength(1);
+      expect(requestIDs[0]).toBeTruthy();
+      expect(responseRequestIDs).toEqual(
+        Array(expected.responses ?? 1).fill(requestIDs[0])
+      );
 
       const responses = page.locator(
         '.cds-aichat--message--response, .cds-aichat--system-message-standalone'
