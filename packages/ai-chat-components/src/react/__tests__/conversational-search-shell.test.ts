@@ -83,5 +83,7 @@ test('forwards the controlled props, slots, and the toggle callback', async () =
   element.shadowRoot!.querySelector('button')!.click();
   expect(onCitationsToggle).toHaveBeenCalledTimes(2);
   expect(onCitationsToggle.mock.calls[1][0].detail).toEqual({ open: false });
+  expect(element.citationsOpen).toBe(true);
+  await element.updateComplete;
   expect(citationsRegion.hidden).toBe(false);
 });

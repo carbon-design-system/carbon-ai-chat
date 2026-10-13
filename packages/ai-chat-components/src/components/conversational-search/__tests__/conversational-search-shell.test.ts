@@ -89,6 +89,12 @@ describe('conversational search shell', () => {
       'Answer incomplete'
     );
     expect(errorSlot.closest('[hidden]')).to.equal(null);
+    const part = element.shadowRoot!.querySelector('[part="answer"]')!;
+    const answerSlot = element.shadowRoot!.querySelector('slot:not([name])');
+    expect(part.contains(answerSlot)).to.equal(true);
+    expect(part.contains(button)).to.equal(true);
+    expect(part.contains(errorSlot)).to.equal(false);
+    expect(part.contains(citationsSlot)).to.equal(false);
     expect(
       button.compareDocumentPosition(errorSlot) &
         Node.DOCUMENT_POSITION_FOLLOWING
@@ -216,6 +222,8 @@ describe('conversational search shell', () => {
         button.click();
         expect(events).to.have.length(1);
         expect(events[0].detail).to.deep.equal({ open: false });
+        expect(element.citationsOpen).to.equal(true);
+        await element.updateComplete;
         expect(region.hidden).to.equal(false);
       } finally {
         document.removeEventListener(
