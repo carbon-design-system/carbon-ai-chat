@@ -12,10 +12,9 @@ import { Editor } from '@tiptap/core';
 import DocumentNode from '@tiptap/extension-document';
 import ParagraphNode from '@tiptap/extension-paragraph';
 import TextNode from '@tiptap/extension-text';
-import { Fragment, Slice } from '@tiptap/pm/model';
 
 import { getRawText } from '../json-utils.js';
-import { linesToNodes, PlainTextPaste } from '../plain-text-paste.js';
+import { PlainTextPaste } from '../plain-text-paste.js';
 
 function makeEditor(initialContent = '') {
   const mount = document.createElement('div');
@@ -34,13 +33,13 @@ function makeEditor(initialContent = '') {
   };
 }
 
-function applyPaste(editor: Editor, text: string): void {
-  const { state } = editor.view;
-  const lines = text.replace(/\r\n?/g, '\n').split('\n');
-  const nodes = linesToNodes(state.schema, lines);
-  const { from, to } = state.selection;
-  const slice = new Slice(Fragment.from(nodes), 1, 1);
-  editor.view.dispatch(state.tr.replace(from, to, slice));
+function dispatchPaste(editor: Editor, text: string): void {
+  const event = {
+    clipboardData: { getData: () => text },
+  } as unknown as ClipboardEvent;
+  editor.view.someProp('handlePaste', (fn) =>
+    fn(editor.view, event, null as never)
+  );
 }
 
 describe('tiptap/plain-text-paste', function () {
@@ -61,7 +60,7 @@ describe('tiptap/plain-text-paste', function () {
     const { editor, cleanup: c } = makeEditor();
     cleanup = c;
 
-    applyPaste(editor, 'hello');
+    dispatchPaste(editor, 'hello');
 
     expect(getRawText(editor.getJSON())).to.equal('hello');
   });
@@ -72,7 +71,7 @@ describe('tiptap/plain-text-paste', function () {
 
     // Place cursor at the start of "world" and paste "hello " — should prepend.
     editor.commands.setTextSelection(1);
-    applyPaste(editor, 'hello ');
+    dispatchPaste(editor, 'hello ');
 
     expect(getRawText(editor.getJSON())).to.equal('hello world');
   });

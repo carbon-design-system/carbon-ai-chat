@@ -19,7 +19,7 @@ import { Fragment, Slice } from '@tiptap/pm/model';
 import type { Schema } from '@tiptap/pm/model';
 import { Plugin } from '@tiptap/pm/state';
 
-export function linesToNodes(schema: Schema, lines: string[]) {
+function linesToNodes(schema: Schema, lines: string[]) {
   return lines.map((line) => {
     if (line.length === 0) {
       return schema.nodes.paragraph.create();
