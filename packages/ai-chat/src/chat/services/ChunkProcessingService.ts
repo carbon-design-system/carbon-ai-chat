@@ -15,7 +15,6 @@ import {
   chunkHasDisplayableContent,
   FinalResponseChunk,
   resolveChunkContext,
-  shouldShowStopStreaming,
 } from '../utils/streamingUtils';
 import { consoleError, consoleWarn } from '../utils/miscUtils';
 import {
@@ -234,16 +233,16 @@ class ChunkProcessingService {
         );
       }
 
-      if (
-        isPartialItem &&
-        shouldShowStopStreaming(
-          (chunk as PartialItemChunk).partial_item?.streaming_metadata,
-          store.getState().assistantInputState.stopStreamingButtonState
-            .isVisible
-        )
-      ) {
+      if (isPartialItem) {
         runCoreOperation(() =>
-          store.dispatch(actions.setStopStreamingButtonVisible(true))
+          this.serviceManager.messageService.updateStreamingCancellation(
+            messageID ??
+              this.serviceManager.messageService.inboundStreaming
+                .streamingMessageID ??
+              '',
+            (chunk as PartialItemChunk).partial_item?.streaming_metadata
+              ?.cancellable
+          )
         );
       }
 
@@ -288,7 +287,7 @@ class ChunkProcessingService {
 
       if (restartGeneration === this.restartGeneration) {
         runCoreOperation(() =>
-          this.resetStopStreamingIfNeeded(isCompleteItem, chunk)
+          this.resetStopStreamingIfNeeded(isCompleteItem, chunk, messageID)
         );
       }
 
@@ -509,9 +508,16 @@ class ChunkProcessingService {
 
   private resetStopStreamingIfNeeded(
     isCompleteItem: boolean,
-    chunk: StreamChunk
+    chunk: StreamChunk,
+    messageID?: string
   ) {
     if (isCompleteItem || isStreamFinalResponse(chunk)) {
+      this.serviceManager.messageService.clearStreamingCancellation(
+        messageID ??
+          this.serviceManager.messageService.inboundStreaming
+            .streamingMessageID ??
+          ''
+      );
       this.serviceManager.messageService.hideStopStreamingButtonIfNoUpsertStreaming();
     }
   }
