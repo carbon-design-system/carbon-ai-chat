@@ -263,6 +263,7 @@ class HydrationService {
       this.serviceManager.chunkProcessingService.bumpRestartGeneration();
 
       this.serviceManager.streamAnnouncerService.clearAll();
+      this.serviceManager.receiveService.clearProcessedAgentItems();
 
       // Mark all existing messages as belonging to the OLD generation by keeping them in the map
       // (don't clear - this way we can detect stale chunks from old messages)
@@ -271,6 +272,7 @@ class HydrationService {
       store.dispatch(actions.setIsRestarting(true));
 
       serviceManager.restartCount++;
+      serviceManager.messageUpsertCoordinator.clearAll();
 
       // A request that got no reply has already left the queue, so the cancel below never ends its timers.
       serviceManager.messageService.messageLoadingManager.end();
@@ -302,10 +304,6 @@ class HydrationService {
       // on purpose — everything was just canceled, so there is no other stream to keep
       // it visible for.
       resetStopStreamingButton(store);
-
-      // Drop any in-flight upsertMessage chains and recorded state so upserts queued
-      // before the restart do not resolve against the new session.
-      this.serviceManager.messageUpsertCoordinator.clearAll();
 
       store.dispatch(actions.restartConversation());
       if (!skipHydration) {

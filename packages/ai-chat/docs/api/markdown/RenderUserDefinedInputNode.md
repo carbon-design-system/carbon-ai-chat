@@ -10,12 +10,13 @@
 
 - Kind: TypeAlias
 - Category: React
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0/docs/types/Type_reference.RenderUserDefinedInputNode.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.23.0-rc.0/docs/types/Type_reference.RenderUserDefinedInputNode.html
 
-React-side renderer for custom TipTap node types in user message bubbles.
-Returned content mounts into LIGHT DOM so consumer stylesheets apply. The
-library manages the slot lifecycle — register a renderer that returns the
-React node for nodes you care about and `null` for everything else.
+React-side renderer for `mention` chips, `command` chips, and custom TipTap
+nodes in user message bubbles. Returned content mounts into LIGHT DOM so
+consumer stylesheets apply. The library manages the slot lifecycle —
+register a renderer that returns the React node for nodes you care about
+and `null` for everything else.
 
 ## Signature
 

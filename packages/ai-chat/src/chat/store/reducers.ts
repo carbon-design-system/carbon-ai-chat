@@ -489,9 +489,9 @@ const reducers: { [key: string]: ReducerType } = {
 
   [UPSERT_MESSAGE]: (
     state: AppState,
-    action: { message: Message }
+    action: { message: Message; isStreaming?: boolean }
   ): AppState => {
-    const { message } = action;
+    const { message, isStreaming = false } = action;
     const messageID = message.id;
 
     if (!isResponse(message)) {
@@ -501,7 +501,7 @@ const reducers: { [key: string]: ReducerType } = {
     const messageResponse = message;
 
     const { newLocalItemsByID, newLocalIDsForMessage } =
-      rebuildLocalItemsForUpsert(state, messageResponse);
+      rebuildLocalItemsForUpsert(state, messageResponse, isStreaming);
 
     // Splice the new ordered IDs back into localMessageIDs at the same position the
     // existing block occupied. Brand-new messages append.
