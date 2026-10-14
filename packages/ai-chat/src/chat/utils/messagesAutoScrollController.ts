@@ -988,6 +988,8 @@ export class MessagesScrollController {
     this.pinnedScrollTop = 0;
     this.userScrolledAwayFromPin = false;
     this.domSpacerHeight = 0;
+    this.previousMessages = [];
+    this.doAutoScrollThrottled.cancel();
     this.host.setScrollHeightFloor(0);
     if (this.host.getSpacer()) {
       this.host.setSpacerHeight(0);
