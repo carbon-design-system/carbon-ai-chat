@@ -175,14 +175,13 @@ class SendService {
       );
     }
 
-    // Now freeze the message so nobody can mess with it since that object came from outside. We'll then create a
-    // clone of this message so that it may be modifiable by a pre:send listener when the message is ready to be
-    // sent (which may happen later if other messages are in the queue). We'll have to replace our store object once
-    // that happens.
+    // Preserve the caller's existing freeze after assigning defaults and adding the message.
+    // MessageService receives a writable copy for pre:send handlers when this request leaves the queue;
+    // their accepted edits replace the stored request.
     deepFreeze(message);
 
-    // Fired after the dispatch above so the slot element exists by the time a host reacts, and after the freeze so
-    // the host gets a read-only object rather than a live store reference.
+    // Fire after dispatch so the slot exists when a host reacts. The event wrapper remains writable,
+    // while its message is the original, now-frozen caller object.
     //
     // Deliberately not awaited: the send does not depend on the footer's content, and awaiting would let a host
     // handler that throws, never settles, or sends a message of its own take the send down with it.

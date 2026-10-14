@@ -26,6 +26,7 @@
  */
 
 import React from 'react';
+import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import {
   createBaseConfig,
@@ -126,8 +127,8 @@ function makeStubServiceDesk(): {
  * it never consults `selectIsInputToHumanAgent`. The connected dispatch is here
  * for `useInputCallbacks`, which routes on that selector.
  */
-async function setupHumanAgentChat() {
-  const config = createBaseConfig();
+async function setupHumanAgentChat(onError = jest.fn()) {
+  const config = { ...createBaseConfig(), onError };
   const { instance, store, serviceManager } =
     await renderChatAndGetInstanceWithStore(config);
 
@@ -507,5 +508,70 @@ describe('human-agent send path — display_content and structured_data', () => 
         MENTION_DOC
       );
     });
+  });
+  it.each([false, true])(
+    'clears only its own timeout after late agent success (newer failure: %s)',
+    async (newerFailure) => {
+      const onError = jest.fn();
+      const { instance, serviceManager, impl, sendMessageToAgent } =
+        await setupHumanAgentChat(onError);
+      const timer = jest.spyOn(globalThis, 'setTimeout');
+      const pending = resolvablePromise();
+      const started = resolvablePromise();
+      sendMessageToAgent.mockImplementation(() => {
+        started.doResolve();
+        return pending;
+      });
+      const sending = impl.sendMessageToAgent('late', [], undefined);
+      await started;
+      expect(instance.state.get().status).toBe('submitted');
+      await act(async () => {
+        const timeout = timer.mock.calls.find(([, delay]) => delay === 20000);
+        expect(timeout).toBeDefined();
+        (timeout[0] as () => void)();
+      });
+      expect(instance.state.get().status).toBe('error');
+      if (newerFailure) {
+        act(() =>
+          serviceManager.conversationLifecycleService.fail({
+            message: 'newer',
+            messageID: 'different',
+          } as any)
+        );
+      }
+      pending.doResolve();
+      await sending;
+      timer.mockRestore();
+      expect(instance.state.get().status).toBe(
+        newerFailure ? 'error' : 'ready'
+      );
+      expect(onError).not.toHaveBeenCalled();
+    }
+  );
+
+  it('reports agent rejection without adding a global error callback', async () => {
+    const onError = jest.fn();
+    const { instance, impl, sendMessageToAgent } =
+      await setupHumanAgentChat(onError);
+    sendMessageToAgent.mockRejectedValue(new Error('agent failure'));
+    jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    await impl.sendMessageToAgent('fails', [], undefined);
+    expect(instance.state.get().status).toBe('error');
+    expect(onError).not.toHaveBeenCalled();
+  });
+  it('reports submitted then ready for a successful agent send without a global callback', async () => {
+    const onError = jest.fn();
+    const { instance, impl, sendMessageToAgent } =
+      await setupHumanAgentChat(onError);
+    const statuses: string[] = [];
+    const unsubscribe = instance.state.select(
+      (state) => state.status,
+      (status) => statuses.push(status)
+    );
+    await impl.sendMessageToAgent('succeeds', [], undefined);
+    unsubscribe();
+    expect(sendMessageToAgent).toHaveBeenCalledTimes(1);
+    expect(statuses).toEqual(['submitted', 'ready']);
+    expect(onError).not.toHaveBeenCalled();
   });
 });

@@ -7,6 +7,7 @@
  *  @license
  */
 
+import { captureMessageEvent } from '../../utils/messageEventOwnership';
 import { BusEventType } from '../../../types/events/eventBusTypes';
 import { outputItemToLocalItem } from '../../schema/outputItemToLocalItem';
 import actions from '../../store/actions';
@@ -27,6 +28,7 @@ import {
   SystemMessageItem,
 } from '../../../types/messaging/Messages';
 import { LanguagePack } from '../../../types/config/LanguagePack';
+import cloneDeep from 'lodash-es/cloneDeep.js';
 
 /**
  * A simple pairing of local messages to the original messages that they belong to.
@@ -58,8 +60,8 @@ async function createHumanAgentLocalMessage(
     serviceManager.intl
   );
 
-  const result = createHumanAgentLocalMessageForType(agentMessageType);
-  const { originalMessage, localMessage } = result;
+  const { originalMessage, localMessage } =
+    createHumanAgentLocalMessageForType(agentMessageType);
 
   // Set the text/title based on item type
   if (localMessage.item.response_type === MessageResponseTypes.SYSTEM) {
@@ -87,7 +89,7 @@ async function createHumanAgentLocalMessage(
     });
   }
 
-  return result;
+  return { originalMessage, localMessage };
 }
 
 /**
@@ -199,14 +201,41 @@ async function addMessages(
       messagePairs,
       async ({ localMessages, originalMessage }) => {
         await asyncForEach(localMessages, async (localMessage, index) => {
-          await serviceManager.actions.handleUserDefinedResponseItems(
-            localMessage,
-            originalMessage
-          );
+          const state = serviceManager.store.getState();
+          const priorItems = localMessages.slice(0, index);
+          const priorMessage =
+            index > 0 ? state.allMessagesByID[originalMessage.id] : undefined;
+          const event =
+            priorMessage &&
+            captureMessageEvent(
+              serviceManager,
+              priorMessage,
+              Object.fromEntries(
+                priorItems.map((item) => [
+                  item.ui_state.id,
+                  state.allMessageItemsByID[item.ui_state.id],
+                ])
+              ),
+              {
+                message: originalMessage,
+                localItems: Object.fromEntries(
+                  priorItems.map((item) => [item.ui_state.id, item])
+                ),
+              }
+            );
+          try {
+            await serviceManager.actions.handleUserDefinedResponseItems(
+              localMessage,
+              originalMessage
+            );
+          } finally {
+            event?.commit();
+          }
+          const owned = cloneDeep({ localMessage, originalMessage });
           serviceManager.store.dispatch(
             actions.addLocalMessageItem(
-              localMessage,
-              originalMessage,
+              owned.localMessage,
+              owned.originalMessage,
               index === 0
             )
           );

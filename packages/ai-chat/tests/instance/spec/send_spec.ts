@@ -20,6 +20,40 @@ describe('ChatInstance.send', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
+  it.each([
+    ['Error', new Error('transport failed'), '{}'],
+    ['string', 'transport failed', 'transport failed'],
+    ['object', { reason: 'transport failed' }, '{"reason":"transport failed"}'],
+  ])(
+    'preserves legacy error text for a thrown %s',
+    async (_kind, thrown, expected) => {
+      const onError = jest.fn();
+      const instance = await renderChatAndGetInstance({
+        ...createBaseConfig(),
+        onError,
+        messaging: {
+          skipWelcome: true,
+          customSendMessage: async () => {
+            throw thrown;
+          },
+        },
+      });
+      jest.spyOn(console, 'error').mockImplementation(() => undefined);
+
+      await expect(instance.send('Hello')).rejects.toHaveProperty(
+        'message',
+        expected
+      );
+      expect(onError).toHaveBeenCalledTimes(1);
+      expect(onError).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: 'An error occurred sending a message',
+          otherData: expected,
+        })
+      );
+    }
+  );
+
   it('should have send method available', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);

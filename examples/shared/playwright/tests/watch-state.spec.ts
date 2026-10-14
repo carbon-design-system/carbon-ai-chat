@@ -8,12 +8,13 @@
 /**
  * Tests: Carbon AI Chat — Watch state, detailed behavior.
  *
- * Runs against both the React and Web Components examples to test each
- * host's visible state updates.
+ * Runs against the React, React with Redux, and Web Components examples to
+ * test each host's visible state updates.
  *
  * Opens the floating chat and checks the host's state mirror through homescreen,
  * conversation, and return-home transitions. Checks the initial visible mirror
- * and updates from the STATE_CHANGE subscription. Start with the launcher below.
+ * and updates from the host's subscription: `instance.state.select()` in the
+ * React hosts, STATE_CHANGE in Web Components. Start with the launcher below.
  */
 
 import { PageObjectId } from '@carbon/ai-chat/server';
@@ -29,8 +30,9 @@ test('mirrors chat view state changes to the host UI', async ({ page }) => {
   await expect(homescreen).toBeHidden();
   await expect(page.getByTestId(PageObjectId.INPUT)).toBeHidden();
 
-  // The host mirror reads `Homescreen` only until startup reports the state,
-  // then `Chat View` until the chat opens. Assert after opening, when it settles.
+  // The host mirror reads `Chat View` until the chat opens; the Web Components
+  // host first reads `Homescreen` until startup reports the state. Assert after
+  // opening, when every host has settled.
   await launcher.click();
   await expect(homescreen).toBeVisible();
   await expect(host.getByText('Homescreen', { exact: true })).toBeVisible();

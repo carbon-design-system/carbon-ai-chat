@@ -31,6 +31,7 @@ import { ConversationLifecycleService } from './ConversationLifecycleService';
 import { HydrationService } from './HydrationService';
 import { InputActionsService } from './InputActionsService';
 import { PublicStateService } from './PublicStateService';
+import { ConversationLifecycleService } from './ConversationLifecycleService';
 import { ReceiveService } from './ReceiveService';
 import { SlotEventService } from './SlotEventService';
 import { SendService } from './SendService';
@@ -106,6 +107,9 @@ class ServiceManager {
    * Service that projects store state into the public ChatState snapshot.
    */
   publicStateService: PublicStateService;
+
+  /** Coordinates transient loading, send, stream, and error state. */
+  conversationLifecycleService: ConversationLifecycleService;
 
   /**
    * Service that owns the inbound receive path.
