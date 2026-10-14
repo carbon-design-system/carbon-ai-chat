@@ -7,6 +7,7 @@
  *  @license
  */
 
+import { streamingText } from '../../../utils/streamingText';
 import React, {
   lazy,
   Suspense,
@@ -74,9 +75,7 @@ function ConversationalSearch({
   );
   const streamingState = localMessageItem.ui_state.streamingState;
   const streaming = Boolean(streamingState && !streamingState.isDone);
-  const text = streaming
-    ? streamingState.chunks.map((chunk) => chunk.text).join('')
-    : messageItem.text;
+  const text = streamingText(messageItem.text, streamingState);
   const highlightedText = insertHighlightMarkdown(
     text,
     citationsOpen ? sortedCitations?.[selectedCitationIndex] : null

@@ -12,6 +12,7 @@ import {
   MessageState,
   UpsertMessageUpdater,
 } from '../../types/config/MessagingConfig';
+import cloneDeep from 'lodash-es/cloneDeep.js';
 import {
   Message,
   MessageRequest,
@@ -26,6 +27,10 @@ import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
 import actions from '../store/actions';
 import { addDefaultsToMessage, isRequest } from '../utils/messageUtils';
 import { consoleError } from '../utils/miscUtils';
+import {
+  captureMessageEvent,
+  eventLocalItems,
+} from '../utils/messageEventOwnership';
 import { ServiceManager } from './ServiceManager';
 
 const VALID_STATES = new Set<MessageState>([
@@ -48,6 +53,12 @@ const noop = () => {
  *   `addMessageChunk` call {@link markComplete} / {@link markStreaming} so that mixing
  *   those APIs with `upsertMessage` does not double-fire `pre:receive` / `receive`.
  */
+/** Snapshot of the coordinator's and chat's reset counters when an upsert was accepted. */
+interface UpsertStamp {
+  generation: number;
+  restartCount: number;
+}
+
 class MessageUpsertCoordinator {
   private readonly serviceManager: ServiceManager;
 
@@ -74,6 +85,9 @@ class MessageUpsertCoordinator {
       this.stateByID.set(messageID, MessageState.COMPLETE);
       this.streamingControllers.delete(messageID);
       if (this.streamingIDs.delete(messageID)) {
+        this.serviceManager.conversationLifecycleService.responseFinished(
+          messageID
+        );
         this.serviceManager.messageService.resetStopStreamingButtonIfIdle();
       }
     }
@@ -108,8 +122,15 @@ class MessageUpsertCoordinator {
     this.stateByID.delete(messageID);
     this.chainByID.delete(messageID);
     if (wasStreaming) {
+      this.serviceManager.conversationLifecycleService.responseFinished(
+        messageID
+      );
       this.serviceManager.messageService.resetStopStreamingButtonIfIdle();
     }
+  }
+
+  invalidatePendingUpserts() {
+    this.generation++;
   }
 
   /**
@@ -144,6 +165,9 @@ class MessageUpsertCoordinator {
         );
       }
       this.stateByID.set(messageID, MessageState.ERROR);
+      this.serviceManager.conversationLifecycleService.responseStopped(
+        messageID
+      );
     }
     this.streamingIDs.clear();
     this.streamingControllers.clear();
@@ -177,15 +201,13 @@ class MessageUpsertCoordinator {
       throw new TypeError('upsertMessage: updater must be a function.');
     }
 
-    const generation = this.generation;
-    const { restartCount } = this.serviceManager;
+    const stamp = this.takeStamp();
+    const requestID = this.serviceManager.messageService.currentRequestID;
     const prev = this.chainByID.get(messageID) ?? Promise.resolve();
     // A predecessor failure for this id must not poison this caller's promise.
     const next = prev
       .catch(noop)
-      .then(() =>
-        this.runOne(messageID, nextState, updater, generation, restartCount)
-      );
+      .then(() => this.runOne(messageID, nextState, updater, stamp, requestID));
     this.chainByID.set(messageID, next);
 
     // Drain the chain entry once `next` settles. The trailing `.then(noop, noop)`
@@ -206,17 +228,16 @@ class MessageUpsertCoordinator {
     messageID: string,
     nextState: MessageState,
     updater: UpsertMessageUpdater,
-    generation: number,
-    restartCount: number
+    stamp: UpsertStamp,
+    requestID?: string
   ): Promise<void> {
-    if (this.isStale(generation, restartCount)) {
+    if (this.isStale(stamp)) {
       return;
     }
     const result = await this.runUpdater(messageID, updater);
-    if (this.isStale(generation, restartCount, result.request_id)) {
+    if (this.isStale(stamp, result.request_id)) {
       return;
     }
-
     this.serviceManager.messageService.messageLoadingManager.end();
 
     const previousState = this.stateByID.get(messageID);
@@ -227,19 +248,27 @@ class MessageUpsertCoordinator {
     if (willFireReceive) {
       await this.firePreReceive(messageID, result);
     }
-    if (this.isStale(generation, restartCount, result.request_id)) {
+    if (this.isStale(stamp, result.request_id)) {
       return;
     }
+
     if (nextState === MessageState.COMPLETE) {
       this.serviceManager.store.dispatch(
         actions.updateHasSentNonWelcomeMessage(true)
       );
     }
+    if (this.isStale(stamp, result.request_id)) {
+      return;
+    }
+    const committedResult = cloneDeep(result);
     const refsBefore = this.snapshotLocalItemRefs(messageID);
     const isStreaming = nextState === MessageState.STREAMING;
     this.serviceManager.store.dispatch(
-      actions.upsertMessage(result, isStreaming)
+      actions.upsertMessage(committedResult, isStreaming)
     );
+    if (this.isStale(stamp, result.request_id)) {
+      return;
+    }
     if (isStreaming) {
       this.stateByID.set(messageID, nextState);
       if (!this.streamingIDs.has(messageID)) {
@@ -255,47 +284,86 @@ class MessageUpsertCoordinator {
       this.streamingIDs.delete(messageID);
       this.streamingControllers.delete(messageID);
     }
+    if (this.isStale(stamp, result.request_id)) {
+      return;
+    }
+    if (nextState === MessageState.STREAMING) {
+      this.serviceManager.conversationLifecycleService.responseStreaming(
+        messageID,
+        undefined,
+        result.request_id ?? requestID
+      );
+    } else if (nextState === MessageState.COMPLETE) {
+      this.serviceManager.conversationLifecycleService.responseReceived(
+        messageID,
+        undefined,
+        result.request_id ?? requestID
+      );
+    } else if (nextState === MessageState.ERROR) {
+      this.serviceManager.conversationLifecycleService.responseFinished(
+        messageID
+      );
+    }
+    if (this.isStale(stamp, result.request_id)) {
+      return;
+    }
+    const stateAfter = this.serviceManager.store.getState();
+    const localItems = Object.fromEntries(
+      Object.entries(stateAfter.allMessageItemsByID).filter(
+        ([, item]) => item.fullMessageID === messageID
+      )
+    );
+    const eventValues = captureMessageEvent(
+      this.serviceManager,
+      committedResult,
+      localItems,
+      {
+        message: result,
+        localItems: eventLocalItems(committedResult, result, localItems),
+      }
+    );
+    const commit = () => {
+      if (!this.isStale(stamp, result.request_id)) {
+        eventValues.commit();
+      }
+    };
     try {
       await this.fanOutChangedSlots(
         messageID,
         result,
         nextState,
         refsBefore,
-        generation,
-        restartCount
+        stamp,
+        eventValues.localItems
       );
-      if (this.isStale(generation, restartCount, result.request_id)) {
+      if (this.isStale(stamp, result.request_id)) {
         return;
       }
       this.stateByID.set(messageID, nextState);
       if (willFireReceive) {
-        await this.firePostReceiveAndFinalize(
-          messageID,
-          result,
-          generation,
-          restartCount
-        );
+        await this.firePostReceiveAndFinalize(messageID, result, stamp, commit);
       } else if (!isStreaming) {
         this.serviceManager.messageService.finalizeStreamingMessage(messageID);
       }
     } finally {
-      if (
-        !this.isStale(generation, restartCount, result.request_id) &&
-        !isStreaming
-      ) {
+      commit();
+      if (!this.isStale(stamp, result.request_id) && !isStreaming) {
         this.serviceManager.messageService.resetStopStreamingButtonIfIdle();
       }
     }
   }
 
-  private isStale(
-    generation: number,
-    restartCount: number,
-    requestID?: string
-  ): boolean {
+  private takeStamp(): UpsertStamp {
+    return {
+      generation: this.generation,
+      restartCount: this.serviceManager.restartCount,
+    };
+  }
+
+  private isStale(stamp: UpsertStamp, requestID?: string): boolean {
     return (
-      generation !== this.generation ||
-      restartCount !== this.serviceManager.restartCount ||
+      stamp.generation !== this.generation ||
+      stamp.restartCount !== this.serviceManager.restartCount ||
       this.serviceManager.messageService.isRequestFromPreviousConversation(
         requestID
       )
@@ -321,27 +389,31 @@ class MessageUpsertCoordinator {
       );
     }
 
-    const previousMessage = existing as MessageResponse | undefined;
-    let result = await updater(previousMessage);
+    const previousMessage = existing
+      ? cloneDeep(existing as MessageResponse)
+      : undefined;
+    const updaterResult = await updater(previousMessage);
 
-    if (result === null || result === undefined) {
+    if (updaterResult === null || updaterResult === undefined) {
       throw new TypeError(
         'upsertMessage: updater must return a MessageResponse, received null/undefined.'
       );
     }
-    if (typeof result !== 'object') {
+    if (typeof updaterResult !== 'object') {
       throw new TypeError(
         'upsertMessage: updater must return a MessageResponse object.'
       );
     }
 
-    result = {
-      ...result,
-      history: { ...result.history },
-      ui_state_internal: {
-        ...previousMessage?.ui_state_internal,
-        ...result.ui_state_internal,
-      },
+    const result = Object.isFrozen(updaterResult)
+      ? cloneDeep(updaterResult)
+      : updaterResult;
+    if (Object.isFrozen(result.history)) {
+      result.history = { ...result.history };
+    }
+    result.ui_state_internal = {
+      ...previousMessage?.ui_state_internal,
+      ...result.ui_state_internal,
     };
 
     if (result.id === undefined || result.id === null) {
@@ -416,8 +488,8 @@ class MessageUpsertCoordinator {
     result: MessageResponse,
     nextState: MessageState,
     refsBefore: Map<string, LocalMessageItem>,
-    generation: number,
-    restartCount: number
+    stamp: UpsertStamp,
+    eventItems: Record<string, LocalMessageItem>
   ): Promise<void> {
     const { actions: chatActions, store } = this.serviceManager;
     const stateAfter = store.getState();
@@ -429,7 +501,7 @@ class MessageUpsertCoordinator {
         .map((item) => item.ui_state.id);
 
     for (const localID of topLevelLocalItemIDs) {
-      if (this.isStale(generation, restartCount, result.request_id)) {
+      if (this.isStale(stamp, result.request_id)) {
         return;
       }
       const localItem = stateAfter.allMessageItemsByID[localID];
@@ -438,10 +510,10 @@ class MessageUpsertCoordinator {
       }
       if (nextState === MessageState.COMPLETE) {
         await this.serviceManager.receiveService.handleConnectToHumanAgent(
-          localItem,
+          eventItems[localID],
           result
         );
-        if (this.isStale(generation, restartCount, result.request_id)) {
+        if (this.isStale(stamp, result.request_id)) {
           return;
         }
       }
@@ -452,15 +524,17 @@ class MessageUpsertCoordinator {
       }
 
       await chatActions.handleUserDefinedResponseItems(
-        localItem,
+        eventItems[localID],
         result,
-        nextState
+        nextState,
+        eventItems
       );
 
-      if (this.isStale(generation, restartCount, result.request_id)) {
+      if (this.isStale(stamp, result.request_id)) {
         return;
       }
-      await chatActions.handleCustomFooterSlot(localItem, result);
+
+      await chatActions.handleCustomFooterSlot(eventItems[localID], result);
     }
   }
 
@@ -473,8 +547,8 @@ class MessageUpsertCoordinator {
   private async firePostReceiveAndFinalize(
     messageID: string,
     result: MessageResponse,
-    generation: number,
-    restartCount: number
+    stamp: UpsertStamp,
+    commit: () => void
   ): Promise<void> {
     const receiveEvent: BusEventReceive = {
       type: BusEventType.RECEIVE,
@@ -485,7 +559,8 @@ class MessageUpsertCoordinator {
     } catch (error) {
       consoleError('upsertMessage: receive handler threw, continuing.', error);
     }
-    if (!this.isStale(generation, restartCount, result.request_id)) {
+    if (!this.isStale(stamp, result.request_id)) {
+      commit();
       this.serviceManager.messageService.finalizeStreamingMessage(messageID);
     }
   }

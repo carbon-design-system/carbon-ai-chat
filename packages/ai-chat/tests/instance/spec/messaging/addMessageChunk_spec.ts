@@ -26,8 +26,14 @@ import {
 import {
   CancellationReason,
   CustomSendMessageOptions,
+  MessageState,
 } from '../../../../src/types/config/MessagingConfig';
 import { ChatInstance } from '../../../../src/types/instance/ChatInstance';
+import {
+  BusEventChunkUserDefinedResponse,
+  BusEventType,
+} from '../../../../src/types/events/eventBusTypes';
+import { resolvablePromise } from '../../../../src/chat/utils/resolvablePromise';
 
 describe('ChatInstance.messaging.addMessageChunk', () => {
   beforeEach(setupBeforeEach);
@@ -60,6 +66,167 @@ describe('ChatInstance.messaging.addMessageChunk', () => {
     await expect(
       instance.messaging.addMessageChunk(chunk)
     ).resolves.not.toThrow();
+  });
+
+  it('releases public stream status when a standalone chunk handler rejects', async () => {
+    const handlerError = new Error('host chunk handler failed');
+    const onError = jest.fn();
+    const { instance } = await renderChatAndGetInstanceWithStore({
+      ...createBaseConfig(),
+      onError,
+    });
+    jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    instance.on({
+      type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
+      handler: async () => {
+        throw handlerError;
+      },
+    });
+
+    await expect(
+      instance.messaging.addMessageChunk({
+        streaming_metadata: { response_id: 'callback-response' },
+        partial_item: {
+          streaming_metadata: { id: 'callback-item' },
+          response_type: MessageResponseTypes.USER_DEFINED,
+          user_defined: { value: 'test' },
+        },
+      })
+    ).rejects.toBe(handlerError);
+
+    expect(onError).not.toHaveBeenCalled();
+    expect(instance.state.get().status).toBe('ready');
+    expect(instance.state.get()).not.toHaveProperty('error');
+  });
+
+  it('preserves a reused response after a pre-restart final chunk handler rejects', async () => {
+    const handlerStarted = resolvablePromise<void>();
+    const releaseHandler = resolvablePromise<void>();
+    const onError = jest.fn();
+    const { instance, store } = await renderChatAndGetInstanceWithStore({
+      ...createBaseConfig(),
+      onError,
+      messaging: { skipWelcome: true, customSendMessage: () => {} },
+    });
+    jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    instance.on({
+      type: BusEventType.PRE_RECEIVE,
+      handler: jest.fn().mockImplementationOnce(() => {
+        handlerStarted.doResolve();
+        return releaseHandler;
+      }),
+    });
+
+    const oldChunk = instance.messaging.addMessageChunk({
+      final_response: {
+        id: 'reused-response',
+        output: { generic: [] },
+      },
+    });
+    const oldChunkFailure =
+      expect(oldChunk).rejects.toThrow('old handler failed');
+    await handlerStarted;
+    await instance.messaging.restartConversation();
+
+    const newResponse: MessageResponse = {
+      id: 'reused-response',
+      output: {
+        generic: [
+          { response_type: MessageResponseTypes.TEXT, text: 'New response' },
+        ],
+      },
+    };
+    await instance.messaging.upsertMessage(
+      newResponse.id,
+      MessageState.STREAMING,
+      () => newResponse
+    );
+    expect(instance.state.get().status).toBe('streaming');
+
+    const queuedChunk = instance.messaging.addMessageChunk({
+      final_response: {
+        id: 'queued-response',
+        output: { generic: [] },
+      },
+    });
+    releaseHandler.doReject(new Error('old handler failed'));
+    await oldChunkFailure;
+    await queuedChunk;
+
+    expect(instance.state.get().status).toBe('streaming');
+    expect(instance.state.get()).not.toHaveProperty('error');
+    expect(onError).not.toHaveBeenCalled();
+    expect(store.getState().allMessagesByID[newResponse.id]).toMatchObject(
+      newResponse
+    );
+    expect(store.getState().allMessagesByID['queued-response']).toBeDefined();
+
+    await instance.messaging.upsertMessage(
+      newResponse.id,
+      MessageState.COMPLETE,
+      () => newResponse
+    );
+    expect(instance.state.get().status).toBe('ready');
+  });
+
+  it('should own chunk data passed by the caller', async () => {
+    const config = createBaseConfig();
+    const { instance, store } = await renderChatAndGetInstanceWithStore(config);
+    const partialItem = {
+      streaming_metadata: { id: 'owned-item' },
+      response_type: MessageResponseTypes.TEXT,
+      text: 'original',
+    } satisfies Partial<TextItem>;
+    const chunk: PartialItemChunk = {
+      streaming_metadata: { response_id: 'owned-response' },
+      partial_item: partialItem,
+    };
+
+    await instance.messaging.addMessageChunk(chunk);
+    partialItem.text = 'mutated';
+
+    const stored =
+      store.getState().allMessageItemsByID['owned-response-owned-item'];
+    expect(stored.ui_state.streamingState.chunks[0]).toMatchObject({
+      text: 'original',
+    });
+  });
+
+  it('preserves writable chunk event data separately from the store', async () => {
+    const { instance, store } =
+      await renderChatAndGetInstanceWithStore(createBaseConfig());
+    let receivedEvent: BusEventChunkUserDefinedResponse;
+    instance.on({
+      type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
+      handler: async (event) => {
+        receivedEvent = event as BusEventChunkUserDefinedResponse;
+      },
+    });
+
+    await instance.messaging.addMessageChunk({
+      streaming_metadata: { response_id: 'owned-event-response' },
+      partial_item: {
+        streaming_metadata: { id: 'owned-event-item' },
+        response_type: MessageResponseTypes.USER_DEFINED,
+        user_defined: { value: 'original' },
+      },
+    });
+
+    const stored =
+      store.getState().allMessageItemsByID[
+        'owned-event-response-owned-event-item'
+      ];
+    expect(receivedEvent.data.messageItem).not.toBe(stored.item);
+    expect(receivedEvent.data.chunk).not.toBe(
+      stored.ui_state.streamingState.chunks[0]
+    );
+    expect(Object.isFrozen(receivedEvent.data)).toBe(false);
+    expect(Object.isFrozen(receivedEvent.data.messageItem)).toBe(false);
+    expect(() => {
+      (receivedEvent.data.messageItem.user_defined as { value: string }).value =
+        'mutated';
+    }).not.toThrow();
+    expect(stored.item.user_defined).toEqual({ value: 'original' });
   });
 
   it('should return a Promise', async () => {
@@ -138,7 +305,7 @@ describe('ChatInstance.messaging.addMessageChunk', () => {
     expect(messageItem.ui_state.streamingState.isDone).toBe(false);
 
     const concatenatedText = messageItem.ui_state.streamingState.chunks
-      .map((chunk: any) => chunk.text)
+      .map((chunk) => ('text' in chunk ? chunk.text : ''))
       .join('');
 
     expect(concatenatedText).toBe('Hello world from Jest!');
@@ -192,7 +359,7 @@ describe('ChatInstance.messaging.addMessageChunk', () => {
     expect(messageItem.ui_state.streamingState.isDone).toBe(false);
 
     const partialText = messageItem.ui_state.streamingState.chunks
-      .map((chunk: any) => chunk.text)
+      .map((chunk) => ('text' in chunk ? chunk.text : ''))
       .join('');
     expect(partialText).toBe('Streaming text response!');
 

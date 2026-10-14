@@ -21,6 +21,7 @@ import {
   MessageSendSource,
 } from '../../../src/types/events/eventBusTypes';
 import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
+import { ConversationLifecycleService } from '../../../src/chat/services/ConversationLifecycleService';
 import { OnErrorType } from '../../../src/types/config/ErrorConfig';
 import { CancellationReason } from '../../../src/types/config/MessagingConfig';
 
@@ -94,6 +95,8 @@ const createServiceManagerStub = (
     },
   } as unknown as ServiceManager;
 
+  serviceManager.conversationLifecycleService =
+    new ConversationLifecycleService(serviceManager);
   return serviceManager;
 };
 

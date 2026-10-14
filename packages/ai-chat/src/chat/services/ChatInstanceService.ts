@@ -317,6 +317,17 @@ class ChatInstanceService {
     );
   }
 
+  conversationErrorOccurred(error: OnErrorData, generation?: number) {
+    const failure = this.serviceManager.conversationLifecycleService.fail(
+      {},
+      generation
+    );
+    if (failure) {
+      this.errorOccurred(error);
+    }
+    return failure;
+  }
+
   /** @see HydrationService.restartConversation */
   async restartConversation(options: RestartConversationOptions = {}) {
     return this.serviceManager.hydrationService.restartConversation(options);

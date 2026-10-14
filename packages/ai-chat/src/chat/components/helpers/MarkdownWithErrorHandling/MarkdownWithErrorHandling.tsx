@@ -8,6 +8,7 @@
  */
 
 import React from 'react';
+import { streamingText } from '../../../utils/streamingText';
 
 import { useSelector } from '../../../hooks/useSelector';
 import { shallowEqual } from '../../../store/appStore';
@@ -54,13 +55,7 @@ function MarkdownWithErrorHandling(props: MarkdownWithErrorHandlingProps) {
     shallowEqual
   );
 
-  let textToUse;
-  if (streamingState && !streamingState.isDone) {
-    // If we're streaming, then concatenate all the chunks together.
-    textToUse = streamingState.chunks.map((chunk) => chunk.text).join('');
-  } else {
-    textToUse = text;
-  }
+  const textToUse = streamingText(text, streamingState);
 
   return (
     <>

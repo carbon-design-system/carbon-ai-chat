@@ -7,6 +7,9 @@
  *  @license
  */
 
+import { act } from '@testing-library/react';
+import { resolvablePromise } from '../../../../src/chat/utils/resolvablePromise';
+
 import {
   createBaseConfig,
   renderChatAndGetInstance,
@@ -55,6 +58,55 @@ function userDefinedResponse(
 describe('ChatInstance.messaging.upsertMessage', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
+
+  it('keeps a pending send streaming past 150 seconds after an awaited upsert', async () => {
+    const streamingReady = resolvablePromise<void>();
+    const finishResponse = resolvablePromise<void>();
+    const onError = jest.fn();
+    const sendSettled = jest.fn();
+    const { instance } = await renderChatAndGetInstanceWithStore({
+      ...createBaseConfig(),
+      onError,
+      messaging: {
+        skipWelcome: true,
+        messageTimeoutSecs: 150,
+        customSendMessage: async (_request, _options, instance) => {
+          await instance.messaging.upsertMessage(
+            'timeout-response',
+            MessageState.STREAMING,
+            () => textResponse('timeout-response', 'Waiting')
+          );
+          streamingReady.doResolve();
+          await finishResponse;
+        },
+      },
+    });
+    jest.useFakeTimers();
+    let sent: Promise<void>;
+
+    try {
+      await act(async () => {
+        sent = instance.send('Start streaming').then(sendSettled, sendSettled);
+        await streamingReady;
+      });
+      expect(instance.state.get().status).toBe('streaming');
+
+      await act(async () => {
+        await jest.advanceTimersByTimeAsync(150001);
+      });
+
+      expect(sendSettled).not.toHaveBeenCalled();
+      expect(onError).not.toHaveBeenCalled();
+      expect(instance.state.get()).not.toHaveProperty('error');
+      expect(instance.state.get().status).toBe('streaming');
+    } finally {
+      await act(async () => {
+        finishResponse.doResolve();
+        await sent;
+      });
+      jest.useRealTimers();
+    }
+  });
 
   it('should expose upsertMessage as a function on instance.messaging', async () => {
     const config = createBaseConfig();
@@ -564,6 +616,27 @@ describe('ChatInstance.messaging.upsertMessage', () => {
       expect((state.allMessagesByID['u2'] as any).output.generic[0].text).toBe(
         'v2'
       );
+    });
+
+    it('preserves the addMessage caller freeze and owns the stored payload', async () => {
+      const config = createBaseConfig();
+      const { instance, store } =
+        await renderChatAndGetInstanceWithStore(config);
+      const message = textResponse('owned-response', 'before');
+
+      await instance.messaging.addMessage(message);
+
+      expect(Object.isFrozen(message)).toBe(true);
+      expect(() => {
+        (message.output.generic[0] as any).text = 'after';
+      }).toThrow();
+      expect(store.getState().allMessagesByID['owned-response']).not.toBe(
+        message
+      );
+      expect(
+        (store.getState().allMessagesByID['owned-response'] as MessageResponse)
+          .output.generic[0]
+      ).toMatchObject({ text: 'before' });
     });
   });
 

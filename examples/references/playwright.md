@@ -20,15 +20,17 @@ shared/playwright/
 | `react-fullscreen` | `react/basic-custom-element-fullscreen` | [Fullscreen](../shared/playwright/tests/fullscreen.spec.ts) |
 | `react-mentions-and-commands` | `react/prompt-line-mentions-and-commands` | [Mentions and commands](../shared/playwright/tests/mentions-and-commands.spec.ts) |
 | `react-watch-state` | `react/watch-state` | [Watch state](../shared/playwright/tests/watch-state.spec.ts) |
+| `react-watch-state-redux` | `react/watch-state-redux` | [Watch state](../shared/playwright/tests/watch-state.spec.ts) |
 | `web-components-fullscreen` | `web-components/basic-custom-element-fullscreen` | [Fullscreen](../shared/playwright/tests/fullscreen.spec.ts) |
 | `web-components-mentions-and-commands` | `web-components/prompt-line-mentions-and-commands` | [Mentions and commands](../shared/playwright/tests/mentions-and-commands.spec.ts) |
 | `web-components-watch-state` | `web-components/watch-state` | [Watch state](../shared/playwright/tests/watch-state.spec.ts) |
 
 ### Share definitions across hosts
 
-Both flavors run the same specs in `tests/`. The suite has three specs and six
-projects: 14 cases per flavor, for 28 Chromium cases. Each execution opens only
-its own example.
+Both flavors run the same specs in `tests/` where an example exists in both.
+The suite has three specs and seven projects: 15 React cases and 14 Web
+Components cases, for 29 Chromium cases. Each execution opens only its own
+example. The Redux target runs against React alone.
 
 React mounts through the shared chat element, but each example has separate
 host code. Running both checks that code through the same visible contract.
@@ -237,7 +239,7 @@ Failures, screenshots, and videos land in `shared/playwright/test-results/`, whi
 
 ## Definition of done
 
-- [ ] `npm run test:e2e:goldens -- --list` shows 28 cases across six projects, with each case once per flavor.
+- [ ] `npm run test:e2e:goldens -- --list` shows 29 cases across seven projects, with each case once per target.
 - [ ] `npm run test:e2e:goldens` passes on chromium.
 - [ ] `npm run build --workspace=<example>` exits 0.
 - [ ] The suite covers the example's one concern plus the baseline above; no scaffold `test.fixme` placeholder remains.

@@ -35,6 +35,7 @@ import {
 import { AppStateMessages } from '../../types/state/AppState';
 import { MessageState } from '../../types/config/MessagingConfig';
 import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
+import { captureMessageEvent } from '../utils/messageEventOwnership';
 import type {
   ServiceManager,
   UserDefinedElementRegistryItem,
@@ -85,6 +86,40 @@ class SlotEventService {
       LocalMessageItem
     > = this.serviceManager.store.getState().allMessageItemsByID
   ) {
+    if (
+      !renderAsUserDefinedMessage(localMessage.item) &&
+      !isResponseWithNestedItems(localMessage.item)
+    ) {
+      return;
+    }
+    const state = this.serviceManager.store.getState();
+    if (
+      !Object.isFrozen(originalMessage) &&
+      (state.allMessagesByID[originalMessage.id] === originalMessage ||
+        state.allMessageItemsByID[localMessage.ui_state.id] === localMessage)
+    ) {
+      const localItems = Object.fromEntries(
+        Object.entries(localItemsByID).filter(
+          ([, item]) => item.fullMessageID === originalMessage.id
+        )
+      );
+      const eventValues = captureMessageEvent(
+        this.serviceManager,
+        originalMessage,
+        localItems
+      );
+      try {
+        await this.handleUserDefinedResponseItems(
+          eventValues.localItems[localMessage.ui_state.id] ?? localMessage,
+          eventValues.message,
+          messageState,
+          eventValues.localItems
+        );
+      } finally {
+        eventValues.commit();
+      }
+      return;
+    }
     if (renderAsUserDefinedMessage(localMessage.item)) {
       let slotName: string;
       if (!localMessage.item.user_defined?.silent) {
@@ -200,8 +235,33 @@ class SlotEventService {
   ) {
     const footerOptions =
       localMessage.item.message_item_options?.custom_footer_slot;
-
-    if (footerOptions && footerOptions.is_on !== false) {
+    if (!footerOptions || footerOptions.is_on === false) {
+      return;
+    }
+    const state = this.serviceManager.store.getState();
+    if (
+      !Object.isFrozen(originalMessage) &&
+      (state.allMessagesByID[originalMessage.id] === originalMessage ||
+        state.allMessageItemsByID[localMessage.ui_state.id] === localMessage)
+    ) {
+      const eventValues = captureMessageEvent(
+        this.serviceManager,
+        originalMessage,
+        {
+          [localMessage.ui_state.id]: localMessage,
+        }
+      );
+      try {
+        await this.handleCustomFooterSlot(
+          eventValues.localItems[localMessage.ui_state.id],
+          eventValues.message as MessageResponse
+        );
+      } finally {
+        eventValues.commit();
+      }
+      return;
+    }
+    {
       const customFooterSlotEvent: BusEventCustomFooterSlot = {
         type: BusEventType.CUSTOM_FOOTER_SLOT,
         data: {
