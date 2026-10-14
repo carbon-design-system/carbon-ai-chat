@@ -19,6 +19,8 @@ shared/playwright/
 | --- | --- | --- |
 | `react-fullscreen` | `react/basic-custom-element-fullscreen` | [Fullscreen](../shared/playwright/tests/fullscreen.spec.ts) |
 | `react-mentions-and-commands` | `react/prompt-line-mentions-and-commands` | [Mentions and commands](../shared/playwright/tests/mentions-and-commands.spec.ts) |
+| `react-watch-messages` | `react/watch-messages` | [Watch messages](../shared/playwright/tests/watch-messages.spec.ts) |
+| `react-watch-messages-redux` | `react/watch-messages-redux` | [Watch messages](../shared/playwright/tests/watch-messages.spec.ts) |
 | `react-watch-state` | `react/watch-state` | [Watch state](../shared/playwright/tests/watch-state.spec.ts) |
 | `react-watch-state-redux` | `react/watch-state-redux` | [Watch state](../shared/playwright/tests/watch-state.spec.ts) |
 | `web-components-fullscreen` | `web-components/basic-custom-element-fullscreen` | [Fullscreen](../shared/playwright/tests/fullscreen.spec.ts) |
@@ -28,9 +30,10 @@ shared/playwright/
 ### Share definitions across hosts
 
 Both flavors run the same specs in `tests/` where an example exists in both.
-The suite has three specs and seven projects: 15 React cases and 14 Web
-Components cases, for 29 Chromium cases. Each execution opens only its own
-example. The Redux target runs against React alone.
+The suite has four specs and nine projects: 23 React cases and 14 Web
+Components cases, for 37 Chromium cases. Each execution opens only its own
+example. The watch-messages spec and the Redux targets run against React alone;
+those examples have no Web Components counterpart.
 
 React mounts through the shared chat element, but each example has separate
 host code. Running both checks that code through the same visible contract.
@@ -176,7 +179,7 @@ Prefer the host DOM when it displays the state under test. If a host already exp
 
 - Use role and label locators where they work. They check that a control has a name, but cannot prove the full flow is accessible.
 - If the example adds an interactive flow, test its keyboard path and focus when UI opens or closes. Follow [the repo accessibility guide](../../references/accessibility.md) for WCAG 2.1 AA checks and screen-reader review.
-- For an axe scan, wait until the UI reaches the state you want to test. Use `@axe-core/playwright` to scan the page or `AxeBuilder.include()` to scan one region. Assert that `violations` is empty. Add the package when an example needs a scan; it is not in the shared fixture today.
+- For an axe scan, wait until the UI reaches the state you want to test. Use `@axe-core/playwright` to scan the page or `AxeBuilder.include()` to scan one region. Assert that `violations` is empty. The package is a root dev dependency, imported by the spec that scans; it is not in the shared fixture today. Read [watch messages](../shared/playwright/tests/watch-messages.spec.ts) for a region scan.
 - To scan for WCAG 2.1 A and AA rules, use `withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])`. Avoid broad exclusions: they skip every rule for all child elements. Link each known issue and keep any temporary exclusion narrow.
 
 An axe scan catches some issues, but cannot prove WCAG conformance. Check keyboard use and screen-reader output by hand for new behavior.
@@ -239,7 +242,7 @@ Failures, screenshots, and videos land in `shared/playwright/test-results/`, whi
 
 ## Definition of done
 
-- [ ] `npm run test:e2e:goldens -- --list` shows 29 cases across seven projects, with each case once per target.
+- [ ] `npm run test:e2e:goldens -- --list` shows 37 cases across nine projects, with each case once per target.
 - [ ] `npm run test:e2e:goldens` passes on chromium.
 - [ ] `npm run build --workspace=<example>` exits 0.
 - [ ] The suite covers the example's one concern plus the baseline above; no scaffold `test.fixme` placeholder remains.
