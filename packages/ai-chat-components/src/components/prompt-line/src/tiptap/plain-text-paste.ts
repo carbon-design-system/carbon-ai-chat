@@ -15,10 +15,11 @@
  */
 
 import { Extension } from '@tiptap/core';
+import { Fragment, Slice } from '@tiptap/pm/model';
 import type { Schema } from '@tiptap/pm/model';
 import { Plugin } from '@tiptap/pm/state';
 
-function linesToNodes(schema: Schema, lines: string[]) {
+export function linesToNodes(schema: Schema, lines: string[]) {
   return lines.map((line) => {
     if (line.length === 0) {
       return schema.nodes.paragraph.create();
@@ -36,12 +37,16 @@ function createPastePlugin(): Plugin {
           return false;
         }
 
-        const { schema } = view.state;
+        const { schema, selection } = view.state;
         const lines = text.replace(/\r\n?/g, '\n').split('\n');
         const nodes = linesToNodes(schema, lines);
 
-        const { from, to } = view.state.selection;
-        const tr = view.state.tr.replaceWith(from, to, nodes);
+        // openStart=1/openEnd=1 marks the boundary paragraphs as open so
+        // ProseMirror merges them into the surrounding content rather than
+        // inserting closed blocks that would split the enclosing paragraph.
+        const { from, to } = selection;
+        const slice = new Slice(Fragment.from(nodes), 1, 1);
+        const tr = view.state.tr.replace(from, to, slice);
         view.dispatch(tr.scrollIntoView());
         return true;
       },
@@ -70,7 +75,8 @@ function createPastePlugin(): Plugin {
           return true;
         }
 
-        const tr = view.state.tr.replaceWith(pos.pos, pos.pos, nodes);
+        const slice = new Slice(Fragment.from(nodes), 1, 1);
+        const tr = view.state.tr.replace(pos.pos, pos.pos, slice);
         view.dispatch(tr.scrollIntoView());
         event.preventDefault();
         return true;
