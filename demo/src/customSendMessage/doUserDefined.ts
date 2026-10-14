@@ -11,10 +11,13 @@ import {
   ChatInstance,
   MessageRequest,
   CustomSendMessageOptions,
+  MessageResponse,
   MessageResponseTypes,
-  StreamChunk,
+  UserDefinedItem,
 } from '@carbon/ai-chat';
 import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
+
+import { createResponseStream, sendResponse } from './sendResponse';
 
 async function sleep(milliseconds: number) {
   await new Promise((resolve) => {
@@ -28,7 +31,8 @@ function doUserDefined(
   instance: ChatInstance,
   requestID?: MessageRequest['id']
 ) {
-  instance.messaging.addMessage({
+  return sendResponse(instance, {
+    id: uuid(),
     request_id: requestID,
     output: {
       generic: [
@@ -60,6 +64,7 @@ async function doUserDefinedStreaming(
   const signal = requestOptions?.signal;
   const WORD_DELAY = 50;
   const responseID = uuid();
+  const stream = createResponseStream(instance, responseID);
   const words = FAKE_DATA.split(' ');
   let isCanceled = false;
 
@@ -74,11 +79,12 @@ async function doUserDefinedStreaming(
       const word = words[index];
 
       await sleep(WORD_DELAY);
-      // Each time you get a chunk back, you can call `addMessageChunk`.
-      instance.messaging.addMessageChunk({
+      // Each time you get a chunk back, pass it to the stream. With addMessageChunk the chat appends the chunks itself.
+      // With upsertMessage the helper in sendResponse.ts keeps the running text and sends the whole message each time.
+      stream.partial({
         partial_item: {
           response_type: MessageResponseTypes.USER_DEFINED,
-          // The next chunk, the chat component will deal with appending these chunks.
+          // The next chunk. Only the new text goes here, in either mode.
           user_defined: {
             user_defined_type: 'green',
             text: `${word},`,
@@ -99,11 +105,11 @@ async function doUserDefinedStreaming(
       });
     }
 
-    // When you are done streaming this item in the response, you should call the complete item.
+    // When you are done streaming this item in the response, you should send the complete item.
     // This requires ALL the concatenated final text. If you want to append text, run a post processing safety check, or anything
     // else that mutates the data, you can do so here.
-    const completeItem = {
-      response_type: 'user_defined',
+    const completeItem: UserDefinedItem = {
+      response_type: MessageResponseTypes.USER_DEFINED,
       user_defined: {
         user_defined_type: isCanceled ? '' : 'green',
         text: FAKE_DATA,
@@ -116,20 +122,20 @@ async function doUserDefinedStreaming(
     };
 
     if (!isCanceled) {
-      instance.messaging.addMessageChunk({
+      stream.complete({
         complete_item: completeItem,
         streaming_metadata: {
           // This is the id of the entire message response.
           response_id: responseID,
           request_id: requestID,
         },
-      } as StreamChunk);
+      });
     }
 
     // When all and any chunks are complete, you send a final response.
     // You can rearrange or re-write everything here, but what you send here is what the chat will display when streaming
     // has been completed.
-    const finalResponse = {
+    const finalResponse: MessageResponse = {
       request_id: requestID,
       id: responseID,
       output: {
@@ -137,9 +143,7 @@ async function doUserDefinedStreaming(
       },
     };
 
-    await instance.messaging.addMessageChunk({
-      final_response: finalResponse,
-    } as StreamChunk);
+    await stream.final(finalResponse);
   } finally {
     signal?.removeEventListener('abort', abortHandler);
   }

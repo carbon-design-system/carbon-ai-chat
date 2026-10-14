@@ -41,7 +41,7 @@
     "lint:license:staged": "tools/check-license.js -w",
     "lint:styles": "stylelint '**/*.scss' --report-needless-disables --report-invalid-scope-disables",
     "telemetry:config": "lerna run telemetry:config",
-    "test": "lerna run test --stream --no-bail && npm run test:versions",
+    "test": "lerna run test --stream --no-bail && npm run test:versions && npm run test:example-e2e-scaffold",
     "test:e2e": "node scripts/run-example-e2e.mjs",
     "test:e2e:goldens": "playwright test --config examples/shared/playwright/playwright.config.ts",
     "test:examples": "lerna run test --stream --no-bail --ignore @carbon/ai-chat --ignore @carbon/ai-chat-components --ignore @carbon/ai-chat-examples-demo",
@@ -59,7 +59,9 @@
     "coupling": "node scripts/coupling.mjs",
     "smells": "node scripts/smells.mjs",
     "measure": "node scripts/measure.mjs",
-    "postinstall": "patch-package && husky"
+    "postinstall": "patch-package && husky",
+    "scaffold:example-e2e": "node scripts/scaffold-example-e2e/cli.mjs",
+    "test:example-e2e-scaffold": "node --test scripts/scaffold-example-e2e/scaffold.test.mjs"
   },
   "devDependencies": {
     "@babel/core": "^8.0.0",
