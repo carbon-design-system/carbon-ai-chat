@@ -114,6 +114,13 @@ export interface PromptLineController {
 
   undo(): boolean;
   redo(): boolean;
+  /**
+   * Drops the editor's undo and redo history, keeping the live editor,
+   * its focus, and its plugin state. Emits Tiptap's `transaction` event but
+   * no `update`, value-change, typing, or token events. No-op in plain
+   * textarea mode.
+   */
+  resetHistory(): void;
 
   /** Whether the most recent focus event was driven by keyboard (not pointer/touch-driven). */
   getKeyboardFocus(): boolean;

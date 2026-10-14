@@ -1,6 +1,6 @@
 # playwright.md — Playwright tests for examples
 
-Run the golden Playwright flows against both React and Web Components examples. Keep one definition of each flow in [shared/playwright/](../shared/playwright/). Each flavor has its own project and example server. Examples hold no local Playwright setup and do not depend on each other.
+Run the golden Playwright flows against both React and Web Components examples. Keep one definition of each flow in [shared/playwright/](../shared/playwright/). Each flavor has its own project and example server. Golden examples use the central setup. Other Vite examples can use the local scaffold below.
 
 ```text
 shared/playwright/
@@ -162,6 +162,50 @@ Agent output follows the same rules as a hand-written spec. Before committing:
 - Take fixture text from each flavor's own `src/`; React and Web Components mocks can differ. Read a per-flavor value from the `target` fixture rather than forking the spec.
 - Commit none of the agent scaffolding: the seed spec, `specs/`, `.mcp.json`, and `.claude/agents/`.
 - Check the example against the [coverage target](#coverage-target).
+
+## Scaffold a local Vite suite
+
+Use the scaffold command for an example outside the golden suite, then write its behavior assertions.
+
+```bash
+npm run scaffold:example-e2e -- \
+  --example react/prompt-line-typeahead \
+  --concern prompt-line-typeahead \
+  --startup input \
+  --purpose "Checks typeahead selection and dismissal." \
+  --dry-run
+```
+
+Review the preview, then remove `--dry-run` to write the files. Repeat `--example` to scaffold another host.
+
+| Input | What the agent chooses |
+| --- | --- |
+| `--example` | An existing `react/<slug>` or `web-components/<slug>` Vite example. |
+| `--concern` | A kebab-case name for the behavior spec. |
+| `--startup` | `input`, `launcher`, or `homescreen`, based on the example's initial UI. |
+| `--purpose` | The behavior the test will prove, read from the example's README. |
+
+The command creates a local Playwright config and `tests/<concern>.spec.ts` inside each example.
+It adds `test:e2e`, the Playwright dependency, and ignore entries for test output.
+The dependency version comes from the root `package.json`.
+The config uses the shared launcher and fixture with a URL variable for that example.
+Existing configs, dependency versions, and other scripts stay intact. A custom `test:e2e` script needs manual setup.
+Authored specs are never overwritten; choose another concern name to add a spec.
+Repeating an unchanged scaffold command writes nothing.
+
+The generated spec checks the chosen startup surface and includes a skipped `test.fixme` placeholder.
+Replace that placeholder with a normal `test` and meaningful behavior assertions. A passing mount check does not complete coverage.
+
+After generation, run `npm install` to update the lockfile. The command does not install, build, or start servers.
+Use the [root build rules](../../AGENTS.md#always-on-rules) before running the generated suite.
+
+```bash
+npm run test:e2e --workspace=<example-workspace-name> -- --list
+npm run test:e2e --workspace=<example-workspace-name>
+```
+
+Keep the script named `test:e2e`. Some examples use `test` for Jest, Vitest, or an older Playwright setup.
+Local suites keep their output in the example's ignored `test-results/` and `playwright-report/` folders.
 
 ## Config conventions
 
@@ -334,15 +378,15 @@ Failures, screenshots, and videos land in `shared/playwright/test-results/`, whi
 - [ ] `npm run test:e2e:goldens -- --list` shows each new case once per target, and the target table above lists the new targets.
 - [ ] `npm run test:e2e:goldens` passes on chromium.
 - [ ] `npm run build --workspace=<example>` exits 0.
-- [ ] The suite covers the example's one concern plus the baseline above.
-- [ ] The example has no Playwright config, dependency, or script, and its target assigns no port.
+- [ ] The suite covers the example's one concern plus the baseline above; no scaffold `test.fixme` placeholder remains.
+- [ ] Golden examples use the central config; local suites use the shared launcher and fixture. Neither assigns a port.
 - [ ] `CAIC_E2E_TARGETS=<targets> npm run test:e2e:coverage` ran, and the PR explains any example below the [coverage target](#coverage-target).
 - [ ] Every spec opens with a purpose comment.
 
 ## React vs Web Components
 
 Use the same spec for both flavors when they expose the same visible contract.
-Keep all browser specs in `tests/` and all target URLs in the shared fixture.
+Keep golden specs in `shared/playwright/tests/` and local specs in the example's `tests/`. Resolve URLs through the shared fixture.
 Use separate specs for host behavior that applies to only one flavor.
 
 ## Related guidance

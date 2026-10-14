@@ -15,15 +15,21 @@
 
 import { expect, fixture, html, nextFrame, oneEvent } from '@open-wc/testing';
 import { Extension } from '@tiptap/core';
+import { Plugin } from '@tiptap/pm/state';
 
 import '../prompt-line.js';
+import { TYPING_TIMEOUT_MS } from '../prompt-line-constants.js';
 import type PromptLineElement from '../prompt-line.js';
 import { buildCarbonExtensions } from '../tiptap/build-extensions.js';
+import { carbonMention } from '../tiptap/carbon-mention.js';
 import {
   readStarterStorage,
   type StarterTriggerStorage,
 } from '../tiptap/carbon-starter-trigger.js';
-import type { SuggestionItem } from '../tiptap/types.js';
+import type {
+  SuggestionItem,
+  TriggerChangeEventDetail,
+} from '../tiptap/types.js';
 import { waitForRich } from './wait-for-rich.js';
 
 const PEOPLE: SuggestionItem[] = [{ id: 'u1', label: 'Alice' }];
@@ -833,5 +839,140 @@ describe('<cds-aichat-prompt-line> editor stability', function () {
     el.content = 'a';
     await el.updateComplete;
     expect(el.getEditor()!.getText()).to.equal('a');
+  });
+
+  it('resets undo and redo history after resetHistory() while preserving editor instance and focus', async () => {
+    const el = await makeRichPromptLine();
+    el.focus();
+    await nextFrame();
+    expect(el.hasFocus()).to.equal(true);
+
+    const editor = el.getEditor()!;
+    type(el, 'hello world');
+    expect(editor.getText()).to.equal('hello world');
+
+    el.clearContent();
+    expect(editor.getText()).to.equal('');
+
+    el.resetHistory();
+
+    // Editor instance and focus survive
+    expect(el.getEditor()).to.equal(editor);
+    expect(el.hasFocus()).to.equal(true);
+
+    // Undo and redo do nothing and never restore the cleared/sent text
+    expect(el.undo()).to.equal(false);
+    expect(editor.getText()).to.equal('');
+    expect(el.redo()).to.equal(false);
+    expect(editor.getText()).to.equal('');
+  });
+
+  it('clears a populated redo stack on resetHistory()', async () => {
+    const el = await makeRichPromptLine();
+    const editor = el.getEditor()!;
+    type(el, 'hello');
+    expect(el.undo()).to.equal(true);
+    expect(editor.getText()).to.equal('');
+
+    el.resetHistory();
+
+    expect(el.redo()).to.equal(false);
+    expect(editor.getText()).to.equal('');
+  });
+
+  it('keeps every other plugin view alive across resetHistory()', async () => {
+    let builds = 0;
+    let destroys = 0;
+    const Probe = Extension.create({
+      name: 'resetHistoryProbe',
+      addProseMirrorPlugins() {
+        return [
+          new Plugin({
+            view: () => {
+              builds += 1;
+              return {
+                destroy: () => {
+                  destroys += 1;
+                },
+              };
+            },
+          }),
+        ];
+      },
+    });
+    const el = await makeRichPromptLine([Probe]);
+    type(el, 'hello');
+    el.clearContent();
+    builds = 0;
+    destroys = 0;
+
+    el.resetHistory();
+
+    expect(builds).to.equal(0);
+    expect(destroys).to.equal(0);
+  });
+
+  it('keeps an open mention query open across resetHistory()', async () => {
+    const el = await makeRichPromptLine([
+      carbonMention({ trigger: '@', items: PEOPLE }),
+    ]);
+    const editor = el.getEditor()!;
+    const details: (TriggerChangeEventDetail | null)[] = [];
+    el.addEventListener('cds-aichat-trigger-change', (event) => {
+      details.push((event as CustomEvent).detail);
+    });
+    editor.commands.insertContent('@al');
+    await nextFrame();
+    expect(details.at(-1)?.type).to.equal('mention');
+    details.length = 0;
+
+    el.resetHistory();
+    await nextFrame();
+
+    expect(details).to.deep.equal([]);
+    expect(editor.getText()).to.equal('@al');
+  });
+
+  it('still ends the typing indicator after a send within the typing window', async () => {
+    const el = await makeRichPromptLine();
+    const typing: boolean[] = [];
+    el.addEventListener('cds-aichat-prompt-typing', (event) => {
+      typing.push((event as CustomEvent).detail.isTyping);
+    });
+
+    // Intercept only the typing timer so the test need not wait it out.
+    const realSetTimeout = window.setTimeout;
+    const realClearTimeout = window.clearTimeout;
+    const pending = new Map<number, () => void>();
+    let nextId = -1;
+    window.setTimeout = ((fn: () => void, delay?: number, ...rest: []) => {
+      if (delay !== TYPING_TIMEOUT_MS) {
+        return realSetTimeout(fn, delay, ...rest);
+      }
+      nextId -= 1;
+      pending.set(nextId, fn);
+      return nextId;
+    }) as typeof window.setTimeout;
+    window.clearTimeout = ((id?: number) => {
+      if (id !== undefined && pending.has(id)) {
+        pending.delete(id);
+        return;
+      }
+      realClearTimeout(id);
+    }) as typeof window.clearTimeout;
+
+    try {
+      type(el, 'hello');
+      el.clearContent();
+      el.resetHistory();
+      for (const fn of pending.values()) {
+        fn();
+      }
+    } finally {
+      window.setTimeout = realSetTimeout;
+      window.clearTimeout = realClearTimeout;
+    }
+
+    expect(typing).to.deep.equal([true, false]);
   });
 });

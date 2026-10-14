@@ -10,12 +10,12 @@
 
 - Kind: TypeAlias
 - Category: Web component
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0/docs/types/Type_reference.WCRenderUserDefinedInputNode.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.23.0-rc.0/docs/types/Type_reference.WCRenderUserDefinedInputNode.html
 
-Web-component renderer for custom TipTap node types in user message
-bubbles. Mirrors RenderUserDefinedInputNode but returns an
-`HTMLElement` (or `null`). The library moves / removes the element as
-messages mount and unmount.
+Web-component renderer for `mention` chips, `command` chips, and custom
+TipTap nodes in user message bubbles. Mirrors
+RenderUserDefinedInputNode but returns an `HTMLElement` (or `null`).
+The library moves / removes the element as messages mount and unmount.
 
 ## Signature
 

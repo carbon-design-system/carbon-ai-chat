@@ -9,18 +9,21 @@
 import { expect, test as base, type Page } from '@playwright/test';
 
 import { coverageRoot, startCoverage, stopCoverage } from '../coverage';
-import { urlVariable, type TargetId } from '../targets';
+import { urlVariable } from '../targets';
 
-export const test = base.extend<{ target: TargetId }>({
-  // Set per project in `playwright.config.ts`; never meant to be read unset.
-  target: [undefined as unknown as TargetId, { option: true }],
-  baseURL: async ({ target }, playWrightUse) => {
-    const url = process.env[urlVariable(target)];
-    if (!url) {
-      throw new Error(`The ${target} example server did not report its URL.`);
-    }
-    await playWrightUse(url);
-  },
+export const test = base.extend<{ target: string }>({
+  // Set by each suite or project config; never meant to be read unset.
+  target: [undefined as unknown as string, { option: true }],
+  baseURL: [
+    async ({ target }, playWrightUse) => {
+      const url = process.env[urlVariable(target)];
+      if (!url) {
+        throw new Error(`The ${target} example server did not report its URL.`);
+      }
+      await playWrightUse(url);
+    },
+    { option: true },
+  ],
   page: async ({ page, target }, playWrightUse) => {
     const errors: string[] = [];
     page.on('console', (message) => {

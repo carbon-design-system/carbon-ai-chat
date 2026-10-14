@@ -36,11 +36,11 @@ export async function startCoverage(page: Page) {
   await page.coverage.startJSCoverage({ resetOnNavigation: false });
 }
 
-export async function stopCoverage(page: Page, target: TargetId) {
+export async function stopCoverage(page: Page, target: string) {
   if (!coverageRoot) {
     return;
   }
-  const { example } = targets[target];
+  const { example } = targets[target as TargetId];
   const entries = (await page.coverage.stopJSCoverage()).flatMap((entry) => {
     const { pathname } = new URL(entry.url);
     // The launcher serves the example's build output, built with sourcemaps

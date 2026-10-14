@@ -35,7 +35,7 @@ import { HasRequestFocus } from '../../types/utilities/HasRequestFocus';
 import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
 import { IS_MOBILE } from '../utils/browserUtils';
 import { WriteableElementName } from '../utils/constants';
-import { applyDynamicStyles } from '../utils/cspStyleUtils';
+import { applyDynamicStyles, clearDynamicStyles } from '../utils/cspStyleUtils';
 import { formatShortcutForDisplay } from '../utils/keyboardUtils';
 import { arrayLastValue } from '../utils/lang/arrayUtils';
 import {
@@ -275,6 +275,19 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         const spacerElem = this.bottomSpacerRef.current;
         if (spacerElem) {
           applySpacerDeficit(spacerElem, px);
+        }
+      },
+      setScrollHeightFloor: (px: number) => {
+        const messagesElement = this.bottomSpacerRef.current?.parentElement;
+        if (!messagesElement) {
+          return;
+        }
+        if (px === 0) {
+          clearDynamicStyles(messagesElement, 'scroll-height-floor');
+        } else {
+          applyDynamicStyles(messagesElement, 'scroll-height-floor', {
+            'min-block-size': `${px}px`,
+          });
         }
       },
       getMessages: () => this.getPortableMessages(),
