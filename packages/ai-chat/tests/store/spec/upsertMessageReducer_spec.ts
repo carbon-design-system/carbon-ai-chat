@@ -310,3 +310,67 @@ describe('[UPSERT_MESSAGE] reducer', () => {
     expect(after.allMessagesByID['m3']).toBe(m3MessageRefBefore);
   });
 });
+
+describe('upsert streaming snapshots', () => {
+  it.each([
+    { response_type: MessageResponseTypes.TEXT, text: 'snapshot' },
+    {
+      response_type: MessageResponseTypes.CONVERSATIONAL_SEARCH,
+      text: 'snapshot',
+    },
+    {
+      response_type: MessageResponseTypes.USER_DEFINED,
+      user_defined: { value: 'snapshot' },
+    },
+  ])(
+    'settles unchanged $response_type snapshots and preserves stable siblings',
+    (item) => {
+      const message = {
+        id: 'stream',
+        output: {
+          generic: [
+            item,
+            { response_type: MessageResponseTypes.IMAGE, source: 'image.png' },
+          ],
+        },
+      } as MessageResponse;
+      const initial = rootReducer(
+        createInitialAppState(),
+        actions.upsertMessage(message, true)
+      );
+      const [id, siblingID] = initial.assistantMessageState.localMessageIDs;
+      expect(initial.allMessageItemsByID[id].ui_state).toMatchObject({
+        isIntermediateStreaming: true,
+        needsAnnouncement: false,
+        streamingState: { chunks: [item], isDone: false },
+      });
+      const repeated = rootReducer(
+        initial,
+        actions.upsertMessage(message, true)
+      );
+      expect(repeated.allMessageItemsByID[id]).toBe(
+        initial.allMessageItemsByID[id]
+      );
+      const settled = rootReducer(
+        repeated,
+        actions.upsertMessage(message, false)
+      );
+      expect(settled.allMessageItemsByID[id].ui_state).toMatchObject({
+        id,
+        isIntermediateStreaming: false,
+        needsAnnouncement: true,
+        streamingState: { chunks: [], isDone: true },
+      });
+      expect(settled.allMessageItemsByID[siblingID]).toBe(
+        initial.allMessageItemsByID[siblingID]
+      );
+      expect(
+        initial.allMessageItemsByID[id].ui_state.streamingState.isDone
+      ).toBe(false);
+      const final = rootReducer(settled, actions.upsertMessage(message));
+      expect(final.allMessageItemsByID[id]).toBe(
+        settled.allMessageItemsByID[id]
+      );
+    }
+  );
+});

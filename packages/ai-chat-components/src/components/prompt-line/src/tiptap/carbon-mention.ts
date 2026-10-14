@@ -16,8 +16,8 @@
  *   Mention's default `id` + `label`.
  * - direct `cds-aichat-trigger-change` dispatch from the suggestion-render
  *   lifecycle via the shared `dispatchTriggerChange` helper.
- * - an `onRemove` callback fired when a user edit deletes a token node, the
- *   mirror of the suggestion `onSelect` (see the removal ProseMirror plugin).
+ * - `onSelect` / `onRemove` callbacks fired when a token node enters or leaves
+ *   the doc via any user edit (autocomplete selection, undo, redo, delete).
  *
  * They share an internal builder. The two exports differ only in their
  * default schema-node name (`"mention"` vs `"command"`), the dispatched
@@ -36,6 +36,7 @@ import type { Editor, Range } from '@tiptap/core';
 import Mention from '@tiptap/extension-mention';
 import type { Node as PMNode } from '@tiptap/pm/model';
 import { Plugin, PluginKey } from '@tiptap/pm/state';
+import isEqual from 'lodash-es/isEqual.js';
 
 import { isHostOrigin } from './origin-meta.js';
 import { CarbonTokenNodeView } from './token-node-view.js';
@@ -82,22 +83,22 @@ function buildTriggerExtension(
     addProseMirrorPlugins() {
       const parentPlugins = this.parent?.() ?? [];
       const onRemove = config.onRemove;
-      if (!onRemove) {
+      const onInsert = config.onSelect;
+      if (!onRemove && !onInsert) {
         return parentPlugins;
       }
 
-      // Fire `onRemove` once per token node of this type that leaves the doc
-      // via a USER edit. `appendTransaction` records whether the batch was
-      // host-origin — `some`, where typing-indicator uses `every` — and the
-      // view's `update` runs the diff (after state is applied, so host
-      // callbacks never re-enter `dispatch`). Host-origin batches — the
-      // framework's post-send clear and any `getEditor()`/`updateContent`
-      // mutation — are skipped, symmetric with `onSelect` firing only on user
-      // popup selection.
+      // Fire `onRemove` / `onSelect` once per token node of this type that
+      // leaves or enters the doc via a USER edit (e.g. deletion, undo, redo).
+      // `appendTransaction` records whether the batch was host-origin — `some`,
+      // where typing-indicator uses `every` — and the view's `update` runs the diff
+      // (after state is applied, so host callbacks never re-enter `dispatch`).
+      // Host-origin batches — the framework's post-send clear and any
+      // `getEditor()`/`updateContent` mutation — are skipped.
       let lastBatchIsHost = false;
 
-      const removalPlugin = new Plugin({
-        key: new PluginKey(`${name}_removal`),
+      const lifecyclePlugin = new Plugin({
+        key: new PluginKey(`${name}_lifecycle`),
         appendTransaction(transactions) {
           lastBatchIsHost = transactions.some((tr) => isHostOrigin(tr));
           return null;
@@ -107,19 +108,31 @@ function buildTriggerExtension(
             if (view.state.doc === prevState.doc || lastBatchIsHost) {
               return;
             }
-            const removed = diffRemovedTokens(
-              prevState.doc,
-              view.state.doc,
-              name
-            );
-            for (const item of removed) {
-              onRemove(item);
+            if (onRemove) {
+              const removed = diffRemovedTokens(
+                prevState.doc,
+                view.state.doc,
+                name
+              );
+              for (const item of removed) {
+                onRemove(item);
+              }
+            }
+            if (onInsert) {
+              const added = diffAddedTokens(
+                prevState.doc,
+                view.state.doc,
+                name
+              );
+              for (const item of added) {
+                onInsert(item);
+              }
             }
           },
         }),
       });
 
-      return [...parentPlugins, removalPlugin];
+      return [...parentPlugins, lifecyclePlugin];
     },
   }).configure({
     HTMLAttributes: { 'data-token-type': name },
@@ -227,16 +240,35 @@ function diffRemovedTokens(
   after: PMNode,
   name: string
 ): SuggestionItem[] {
+  return diffAddedTokens(after, before, name);
+}
+
+/**
+ * Diff token nodes named `name` between `before` and `after`, returning the
+ * reconstructed items for each added token node instance.
+ */
+function diffAddedTokens(
+  before: PMNode,
+  after: PMNode,
+  name: string
+): SuggestionItem[] {
   const beforeById = collectTokenAttrsById(before, name);
   const afterById = collectTokenAttrsById(after, name);
-  const removed: SuggestionItem[] = [];
-  for (const [id, beforeAttrs] of beforeById) {
-    const afterCount = afterById.get(id)?.length ?? 0;
-    for (let i = afterCount; i < beforeAttrs.length; i += 1) {
-      removed.push(attrsToItem(beforeAttrs[i]));
+  const added: SuggestionItem[] = [];
+  for (const [id, afterAttrs] of afterById) {
+    const unmatchedBefore = [...(beforeById.get(id) ?? [])];
+    for (const attrs of afterAttrs) {
+      const match = unmatchedBefore.findIndex((beforeAttrs) =>
+        isEqual(beforeAttrs, attrs)
+      );
+      if (match === -1) {
+        added.push(attrsToItem(attrs));
+      } else {
+        unmatchedBefore.splice(match, 1);
+      }
     }
   }
-  return removed;
+  return added;
 }
 
 /**
