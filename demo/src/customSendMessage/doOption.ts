@@ -14,15 +14,18 @@ import {
   OptionItemPreference,
   SelectionDisplay,
 } from '@carbon/ai-chat';
+import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
 import { RESPONSE_MAP } from './responseMap';
+import { sendResponse } from './sendResponse';
 
 function doOption(instance: ChatInstance, requestID?: MessageRequest['id']) {
   const options = Object.keys(RESPONSE_MAP).map((key) => ({
     label: key,
     value: { input: { text: key } },
   }));
-  instance.messaging.addMessage({
+  return sendResponse(instance, {
+    id: uuid(),
     request_id: requestID,
     output: {
       generic: [

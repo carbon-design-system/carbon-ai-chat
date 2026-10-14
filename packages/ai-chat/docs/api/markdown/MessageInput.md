@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.MessageInput.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.23.0-rc.0/docs/interfaces/Type_reference.MessageInput.html
 
 The default interface for message input that is sent to an assistant in a message request. This represents basic text
 input.
@@ -27,7 +27,7 @@ interface MessageInput
 
 For messages that are sent between the user and a human agent, we assign an agent type to the message to distinguish what type it is.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.MessageInput.html#agent_message_type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.23.0-rc.0/docs/interfaces/Type_reference.MessageInput.html#agent_message_type)
 
 ### display_content
 
@@ -40,11 +40,14 @@ the user message bubble renders structurally; mention / command / custom
 nodes render via their respective renderers. Absent on plain-text /
 legacy messages — the bubble falls back to `text`.
 
+Requests marked with MessageRequestHistory.is_choice_request show their choice text instead.
+The rich content remains in the request payload.
+
 Snapshot semantics: this reflects what the user typed at send time. If a
 `pre:send` handler rewrites `input.text`, `display_content` does NOT
 auto-update.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.MessageInput.html#display_content)
+[Reference](https://chat.carbondesignsystem.com/version/v1.23.0-rc.0/docs/interfaces/Type_reference.MessageInput.html#display_content)
 
 ### message_type
 
@@ -52,7 +55,7 @@ auto-update.
 
 The type of user input.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.MessageInput.html#message_type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.23.0-rc.0/docs/interfaces/Type_reference.MessageInput.html#message_type)
 
 ### structured_data
 
@@ -64,7 +67,7 @@ Structured data that can be sent alongside or instead of plain text input.
 Carries an array of structured fields and an escape hatch for arbitrary
 user-defined data.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.MessageInput.html#structured_data)
+[Reference](https://chat.carbondesignsystem.com/version/v1.23.0-rc.0/docs/interfaces/Type_reference.MessageInput.html#structured_data)
 
 ### text
 
@@ -72,4 +75,4 @@ user-defined data.
 
 The text of the user input to send to the back-end.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.MessageInput.html#text)
+[Reference](https://chat.carbondesignsystem.com/version/v1.23.0-rc.0/docs/interfaces/Type_reference.MessageInput.html#text)

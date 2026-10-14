@@ -84,7 +84,7 @@ class CDSAIChatReasoningStep extends LitElement {
       this.updatePanelInertState();
     }
 
-    // Announce when a real open/close toggle has settled so the scroll manager can
+    // Announce when a real open/close toggle has settled so host listeners can
     // recalculate geometry. Skip the initial render (no previous value).
     if (
       changedProperties.has('open') &&
@@ -231,9 +231,9 @@ class CDSAIChatReasoningStep extends LitElement {
 
   /**
    * The panel animates `grid-template-rows` when the step expands/collapses. We wait for
-   * any in-flight transition on the panel to finish, then emit a composed event so
-   * consumers (e.g. the message list's scroll manager) can recalculate scroll geometry
-   * against the settled layout.
+   * any in-flight transition on the panel to finish, then emit a composed event so host
+   * listeners can recalculate layout against the settled geometry. The event is public; the
+   * message list's scroll controller no longer listens to it.
    *
    * Using the Web Animations API (`getAnimations`) handles both cases with one path: when a
    * transition runs we resolve on its `finished` promise, and when nothing animates (reduced

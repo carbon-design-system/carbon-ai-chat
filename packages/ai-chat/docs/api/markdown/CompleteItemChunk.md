@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.CompleteItemChunk.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.23.0-rc.0/docs/interfaces/Type_reference.CompleteItemChunk.html
 
 Completes a single streamed item before the full response is ready.
 
@@ -34,7 +34,7 @@ interface CompleteItemChunk
 A complete message item. If this item was streamed via partial chunks,
 you should include ItemStreamingMetadata.id so the UI can preserve identity.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.CompleteItemChunk.html#complete_item)
+[Reference](https://chat.carbondesignsystem.com/version/v1.23.0-rc.0/docs/interfaces/Type_reference.CompleteItemChunk.html#complete_item)
 
 ### partial_response
 
@@ -42,15 +42,15 @@ you should include ItemStreamingMetadata.id so the UI can preserve identity.
 
 Change the agent display name and other items on the full response.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.CompleteItemChunk.html#partial_response)
+[Reference](https://chat.carbondesignsystem.com/version/v1.23.0-rc.0/docs/interfaces/Type_reference.CompleteItemChunk.html#partial_response)
 
 ### streaming_metadata
 
-`streaming_metadata?: { response_id: string }`
+`streaming_metadata?: { request_id?: string; response_id: string }`
 
 Additional metadata associated with the stream.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.22.0/docs/interfaces/Type_reference.CompleteItemChunk.html#streaming_metadata)
+[Reference](https://chat.carbondesignsystem.com/version/v1.23.0-rc.0/docs/interfaces/Type_reference.CompleteItemChunk.html#streaming_metadata)
 
 ## Related
 
