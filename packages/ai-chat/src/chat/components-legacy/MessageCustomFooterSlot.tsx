@@ -15,16 +15,16 @@
 
 import React from 'react';
 
-import { GenericItemCustomFooterSlotOptions } from '../../../../types/messaging/Messages';
+import { GenericItemCustomFooterSlotOptions } from '../../types/messaging/Messages';
 
-interface CustomFooterSlotProps {
+interface MessageCustomFooterSlotProps {
   /**
    * The custom footer slot config options
    */
   footerOptions: GenericItemCustomFooterSlotOptions;
 }
 
-function CustomFooterSlot(props: CustomFooterSlotProps) {
+function MessageCustomFooterSlot(props: MessageCustomFooterSlotProps) {
   const { footerOptions } = props;
 
   // Don't render if is_on is false
@@ -39,4 +39,4 @@ function CustomFooterSlot(props: CustomFooterSlotProps) {
   );
 }
 
-export default React.memo(CustomFooterSlot);
+export default React.memo(MessageCustomFooterSlot);

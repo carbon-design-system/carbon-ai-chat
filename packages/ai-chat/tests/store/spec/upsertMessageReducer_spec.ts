@@ -29,6 +29,7 @@ import {
   VIEW_STATE_ALL_CLOSED,
 } from '../../../src/chat/store/reducerUtils';
 import {
+  ButtonItemType,
   CardItem,
   MessageResponse,
   MessageResponseTypes,
@@ -288,6 +289,146 @@ describe('[UPSERT_MESSAGE] reducer', () => {
     );
   });
 
+  describe('nested items of a changed container', () => {
+    const text = (value: string) => ({
+      response_type: MessageResponseTypes.TEXT,
+      text: value,
+    });
+    const button = (label: string) => ({
+      response_type: MessageResponseTypes.BUTTON,
+      button_type: ButtonItemType.POST_BACK,
+      label,
+      value: { input: { text: label } },
+    });
+    const upsertOne = (item: Record<string, unknown>) => {
+      store.dispatch(
+        actions.upsertMessage({
+          id: 'h12',
+          output: { generic: [item as any] },
+        })
+      );
+      return localItemsForMessage(store.getState() as AppState, 'h12')[0];
+    };
+    const nestedOf = (ids: string[]) =>
+      ids.map((id) => (store.getState() as AppState).allMessageItemsByID[id]);
+
+    it('keeps each nested item’s id by its place, and an unchanged one’s reference', () => {
+      const card = (bodyText: string) => ({
+        response_type: MessageResponseTypes.CARD,
+        body: [text('Title'), text(bodyText)],
+        footer: [button('Go')],
+      });
+      const before = upsertOne(card('Draft'));
+      const bodyBefore = nestedOf(before.ui_state.bodyLocalMessageItemIDs);
+      const footerBefore = nestedOf(before.ui_state.footerLocalMessageItemIDs);
+
+      const after = upsertOne(card('Final'));
+      const bodyAfter = nestedOf(after.ui_state.bodyLocalMessageItemIDs);
+
+      expect(after).not.toBe(before);
+      expect(after.ui_state.bodyLocalMessageItemIDs).toEqual(
+        before.ui_state.bodyLocalMessageItemIDs
+      );
+      expect(bodyAfter[0]).toBe(bodyBefore[0]);
+      expect(bodyAfter[1]).not.toBe(bodyBefore[1]);
+      expect((bodyAfter[1].item as any).text).toBe('Final');
+      expect(nestedOf(after.ui_state.footerLocalMessageItemIDs)[0]).toBe(
+        footerBefore[0]
+      );
+    });
+
+    it.each([
+      [
+        'grid cell',
+        (cellText: string) => ({
+          response_type: MessageResponseTypes.GRID,
+          rows: [{ cells: [{ items: [text('Fixed'), text(cellText)] }] }],
+        }),
+        (item: any) => item.ui_state.gridLocalMessageItemIDs[0][0],
+      ],
+      [
+        'button panel',
+        (bodyText: string) => ({
+          response_type: MessageResponseTypes.BUTTON,
+          button_type: ButtonItemType.SHOW_PANEL,
+          label: 'Open',
+          panel: { body: [text('Fixed'), text(bodyText)] },
+        }),
+        (item: any) => item.ui_state.bodyLocalMessageItemIDs,
+      ],
+    ])(
+      'keeps the ids of the items in a %s',
+      (_slot, container, idsOf: (item: any) => string[]) => {
+        const idsBefore = idsOf(upsertOne(container('Draft')));
+        const [fixedBefore] = nestedOf(idsBefore);
+
+        const idsAfter = idsOf(upsertOne(container('Final')));
+
+        expect(idsAfter).toEqual(idsBefore);
+        expect(nestedOf(idsAfter)[0]).toBe(fixedBefore);
+        expect((nestedOf(idsAfter)[1].item as any).text).toBe('Final');
+      }
+    );
+
+    it('keeps descendant identities when streamed carousel cards change and reorder', () => {
+      const card = (id: string, value: string) => ({
+        response_type: MessageResponseTypes.CARD,
+        streaming_metadata: { id },
+        body: [
+          {
+            response_type: MessageResponseTypes.USER_DEFINED,
+            user_defined: { value },
+          },
+        ],
+      });
+      const carousel = (items: unknown[]) => ({
+        response_type: MessageResponseTypes.CAROUSEL,
+        items,
+      });
+      const before = upsertOne(
+        carousel([card('a', 'Draft'), card('b', 'Fixed')])
+      );
+      const [cardA, cardB] = nestedOf(before.ui_state.itemsLocalMessageItemIDs);
+      const [childA] = nestedOf(cardA.ui_state.bodyLocalMessageItemIDs);
+      const [childB] = nestedOf(cardB.ui_state.bodyLocalMessageItemIDs);
+
+      const after = upsertOne(
+        carousel([card('b', 'Fixed'), card('a', 'Final')])
+      );
+      const [nextB, nextA] = nestedOf(after.ui_state.itemsLocalMessageItemIDs);
+      const [nextChildA] = nestedOf(nextA.ui_state.bodyLocalMessageItemIDs);
+      const [nextChildB] = nestedOf(nextB.ui_state.bodyLocalMessageItemIDs);
+
+      expect(nextA.ui_state.id).toBe(cardA.ui_state.id);
+      expect(nextB.ui_state.id).toBe(cardB.ui_state.id);
+      expect(nextChildA.ui_state.id).toBe(childA.ui_state.id);
+      expect(nextChildA.item.user_defined).toEqual({ value: 'Final' });
+      expect(nextChildB).toBe(childB);
+      expect(cardA.ui_state.bodyLocalMessageItemIDs).toEqual([
+        childA.ui_state.id,
+      ]);
+      expect(childA.item.user_defined).toEqual({ value: 'Draft' });
+    });
+
+    it('prunes the nested items a container no longer has', () => {
+      const card = (texts: string[]) => ({
+        response_type: MessageResponseTypes.CARD,
+        body: texts.map(text),
+      });
+      const before = upsertOne(card(['One', 'Two']));
+      const [, droppedID] = before.ui_state.bodyLocalMessageItemIDs;
+
+      const after = upsertOne(card(['One, edited']));
+
+      expect(after.ui_state.bodyLocalMessageItemIDs).toEqual([
+        before.ui_state.bodyLocalMessageItemIDs[0],
+      ]);
+      expect(
+        (store.getState() as AppState).allMessageItemsByID[droppedID]
+      ).toBeUndefined();
+    });
+  });
+
   it('activates the upserted message as the active response', () => {
     store.dispatch(actions.upsertMessage(makeTextResponse('m1', ['one'])));
     store.dispatch(actions.upsertMessage(makeTextResponse('m2', ['two'])));
@@ -376,6 +517,88 @@ describe('[UPSERT_MESSAGE] reducer', () => {
       const [local] = localItemsForMessage(store.getState() as AppState, 's3');
       expect(local.ui_state.streamingState?.isDone).toBe(true);
     });
+
+    it('applies the flags to nested items too', () => {
+      const card: MessageResponse = {
+        id: 's4',
+        output: {
+          generic: [
+            {
+              response_type: MessageResponseTypes.CARD,
+              body: [
+                { response_type: MessageResponseTypes.TEXT, text: 'in a card' },
+              ],
+            } as CardItem,
+          ],
+        },
+      };
+
+      store.dispatch(actions.upsertMessage(card, true));
+
+      const state = store.getState() as AppState;
+      const nested = Object.values(state.allMessageItemsByID).filter(
+        (item) => item.fullMessageID === 's4'
+      );
+      expect(nested.length).toBeGreaterThan(1);
+      for (const item of nested) {
+        expect(item.ui_state.streamingState?.isDone).toBe(false);
+      }
+    });
+
+    it.each([
+      [
+        'carousel',
+        {
+          response_type: MessageResponseTypes.CAROUSEL,
+          items: [
+            {
+              response_type: MessageResponseTypes.CARD,
+              body: [
+                { response_type: MessageResponseTypes.TEXT, text: 'slide' },
+              ],
+            },
+          ],
+        },
+      ],
+      [
+        'grid',
+        {
+          response_type: MessageResponseTypes.GRID,
+          columns: [{ width: '1' }],
+          rows: [
+            {
+              cells: [
+                {
+                  items: [
+                    { response_type: MessageResponseTypes.TEXT, text: 'cell' },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    ])(
+      'applies the streaming state to items nested in a %s, both ways',
+      (_name, container) => {
+        const message = (): MessageResponse => ({
+          id: 'nest',
+          output: { generic: [container as any] },
+        });
+        const nestedDone = () =>
+          Object.values((store.getState() as AppState).allMessageItemsByID)
+            .filter((item) => item.fullMessageID === 'nest')
+            .map((item) => item.ui_state.streamingState?.isDone);
+
+        store.dispatch(actions.upsertMessage(message(), true));
+        const streaming = nestedDone();
+        expect(streaming.length).toBeGreaterThan(1);
+        expect(streaming.every((isDone) => isDone === false)).toBe(true);
+
+        store.dispatch(actions.upsertMessage(message(), false));
+        expect(nestedDone().every((isDone) => isDone === true)).toBe(true);
+      }
+    );
 
     it('keeps a settled sibling by reference while another item streams', () => {
       store.dispatch(
@@ -479,6 +702,33 @@ describe('[UPSERT_MESSAGE] reducer', () => {
       expect((local.item as any).text).toBe('Hello, world');
       // Settling never reveals a type the chunk flow hides mid-stream.
       expect(local.ui_state.isIntermediateStreaming).toBe(true);
+    });
+
+    it('settles nested items of an upserted container', () => {
+      const card: MessageResponse = {
+        id: 'e5',
+        output: {
+          generic: [
+            {
+              response_type: MessageResponseTypes.CARD,
+              body: [
+                { response_type: MessageResponseTypes.TEXT, text: 'in a card' },
+              ],
+            } as CardItem,
+          ],
+        },
+      };
+      store.dispatch(actions.upsertMessage(card, true));
+
+      store.dispatch(actions.endMessageStreaming('e5'));
+
+      const items = Object.values(
+        (store.getState() as AppState).allMessageItemsByID
+      ).filter((item) => item.fullMessageID === 'e5');
+      expect(items.length).toBeGreaterThan(1);
+      for (const item of items) {
+        expect(item.ui_state.streamingState?.isDone).toBe(true);
+      }
     });
 
     it('leaves other messages alone', () => {
@@ -1061,9 +1311,9 @@ describe('[UPSERT_MESSAGE] reducer', () => {
         [MessageResponseTypes.DATE]: [true, true, false, false],
         [MessageResponseTypes.INLINE_ERROR]: [false, false, false, false],
         [MessageResponseTypes.CARD]: [true, true, false, false],
-        [MessageResponseTypes.CAROUSEL]: [true, true, false, false],
+        [MessageResponseTypes.CAROUSEL]: [true, true, true, true],
         [MessageResponseTypes.BUTTON]: [true, true, false, false],
-        [MessageResponseTypes.GRID]: [true, true, false, false],
+        [MessageResponseTypes.GRID]: [true, true, true, true],
         [MessageResponseTypes.CONVERSATIONAL_SEARCH]: [
           false,
           false,
@@ -1103,6 +1353,254 @@ describe('[UPSERT_MESSAGE] reducer', () => {
         expect(actual).toEqual(hidden);
       });
     });
+
+    it('keeps a grid that upsertMessage drew shown when a chunk completes it', () => {
+      const grid = {
+        response_type: MessageResponseTypes.GRID,
+        streaming_metadata: { id: 'g' },
+        columns: [{ width: '1' }],
+        rows: [
+          {
+            cells: [
+              {
+                items: [
+                  { response_type: MessageResponseTypes.TEXT, text: 'cell' },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+      store.dispatch(
+        actions.upsertMessage(
+          { id: 'u-grid', output: { generic: [grid as any] } },
+          false
+        )
+      );
+      const before = state().allMessageItemsByID['u-grid-g'];
+      expect(before.ui_state.gridLocalMessageItemIDs).toHaveLength(1);
+
+      writeChunk(
+        state().allMessagesByID['u-grid'] as MessageResponse,
+        grid,
+        true
+      );
+
+      const after = state().allMessageItemsByID['u-grid-g'];
+      expect(after.ui_state.isIntermediateStreaming).toBeFalsy();
+      expect(after.ui_state.gridLocalMessageItemIDs).toBe(
+        before.ui_state.gridLocalMessageItemIDs
+      );
+    });
+
+    describe.each([
+      [
+        'grid',
+        {
+          response_type: MessageResponseTypes.GRID,
+          columns: [{ width: '1' }],
+          rows: [
+            {
+              cells: [
+                {
+                  items: [
+                    { response_type: MessageResponseTypes.TEXT, text: 'cell' },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      [
+        'carousel',
+        {
+          response_type: MessageResponseTypes.CAROUSEL,
+          items: [
+            {
+              response_type: MessageResponseTypes.CARD,
+              body: [
+                { response_type: MessageResponseTypes.TEXT, text: 'slide' },
+              ],
+            },
+          ],
+        },
+      ],
+    ])('a streamed %s', (name, container) => {
+      const streamed = { ...container, streaming_metadata: { id: 'x' } };
+      const first = {
+        response_type: container.response_type,
+        streaming_metadata: { id: 'x' },
+      };
+
+      it(`keeps a ${name} held when its complete_item lands`, () => {
+        const message = placeholder(`held-${name}`);
+        writeChunk(message, first);
+
+        writeChunk(message, streamed, true);
+
+        const local = state().allMessageItemsByID[`held-${name}-x`];
+        expect(local.ui_state.isIntermediateStreaming).toBe(true);
+        expect(local.ui_state.streamingState).toEqual({
+          chunks: [],
+          isDone: true,
+        });
+        expect(local.item).toEqual(streamed);
+      });
+
+      it(`keeps a ${name} whose first chunk is complete_item held through a second complete_item`, () => {
+        const message = placeholder(`held-twice-${name}`);
+        writeChunk(message, streamed, true);
+
+        writeChunk(message, streamed, true);
+
+        expect(
+          state().allMessageItemsByID[`held-twice-${name}-x`].ui_state
+            .isIntermediateStreaming
+        ).toBe(true);
+      });
+    });
+  });
+});
+
+describe('[UPSERT_MESSAGE] an item the chat cannot draw', () => {
+  let store: ReturnType<typeof createAppStore>;
+
+  beforeEach(() => {
+    store = createAppStore(rootReducer, createInitialAppState());
+  });
+
+  const text = (value: string) => ({
+    response_type: MessageResponseTypes.TEXT,
+    text: value,
+  });
+  const grid = (cells: unknown[]) => ({
+    response_type: MessageResponseTypes.GRID,
+    rows: [{ cells }],
+  });
+  const write = (generic: unknown[], isStreaming: boolean) =>
+    store.dispatch(
+      actions.upsertMessage(
+        { id: 'd1', output: { generic } } as MessageResponse,
+        isStreaming
+      )
+    );
+  const shown = () => localItemsForMessage(store.getState() as AppState, 'd1');
+
+  it('marks the item with what it is missing, and builds nothing nested in it', () => {
+    write(
+      [
+        {
+          response_type: MessageResponseTypes.CARD,
+          body: [null, text('Body')],
+        },
+      ],
+      true
+    );
+
+    const [card] = shown();
+    expect(card.ui_state.cannotDraw).toEqual({ missing: ['body[0]'] });
+    expect(card.ui_state.bodyLocalMessageItemIDs).toBeUndefined();
+    expect(
+      Object.keys((store.getState() as AppState).allMessageItemsByID)
+    ).toEqual([card.ui_state.id]);
+  });
+
+  it('leaves an item that can draw unmarked', () => {
+    write([grid([{ items: [text('A')] }])], true);
+
+    expect(shown()[0].ui_state.cannotDraw).toBeUndefined();
+  });
+
+  it.each([false, true])(
+    'rechecks an unchanged system item when its message is repaired (streaming: %s)',
+    (isStreaming) => {
+      const system = {
+        response_type: MessageResponseTypes.SYSTEM,
+        title: 'Joined',
+      };
+      write([null, system], isStreaming);
+      const [failed] = shown();
+      expect(failed.ui_state.cannotDraw).toEqual({
+        missing: ['output.generic[0]'],
+      });
+
+      write([system], isStreaming);
+      const [repaired] = shown();
+      expect(repaired.ui_state.id).toBe(failed.ui_state.id);
+      expect(repaired.ui_state.cannotDraw).toBeUndefined();
+      expect(repaired.item).toBe(system);
+
+      write([system], isStreaming);
+      expect(shown()[0]).toBe(repaired);
+    }
+  );
+
+  it('rechecks an unchanged settled system item when a preceding item becomes null', () => {
+    const system = {
+      response_type: MessageResponseTypes.SYSTEM,
+      title: 'Joined',
+    };
+    write([system], false);
+    const [drawn] = shown();
+
+    write([null, system], false);
+
+    expect(shown()[0].ui_state.id).toBe(drawn.ui_state.id);
+    expect(shown()[0].ui_state.cannotDraw).toEqual({
+      missing: ['output.generic[0]'],
+    });
+    expect(drawn.ui_state.cannotDraw).toBeUndefined();
+  });
+
+  it('keeps the last drawn version while the stream is open, until a new one can draw', () => {
+    write([grid([{ items: [text('A')] }])], true);
+    const [drawn] = shown();
+    const [[[cellItemID]]] = drawn.ui_state.gridLocalMessageItemIDs;
+
+    write([grid([{ items: [text('A')] }, {}])], true);
+    expect(shown()[0]).toBe(drawn);
+    expect(
+      (store.getState() as AppState).allMessageItemsByID[cellItemID]
+    ).toBeDefined();
+
+    write([grid([{ items: [text('A')] }, { items: [text('B')] }])], true);
+    expect(shown()[0]).not.toBe(drawn);
+    expect(shown()[0].ui_state.cannotDraw).toBeUndefined();
+    expect(shown()[0].ui_state.gridLocalMessageItemIDs[0]).toHaveLength(2);
+  });
+
+  it('hides an item that never drew, in its place in the message', () => {
+    write(
+      [{ response_type: MessageResponseTypes.CAROUSEL }, text('After')],
+      true
+    );
+
+    const [carousel, after] = shown();
+    expect(carousel.ui_state.cannotDraw).toEqual({ missing: ['items'] });
+    expect((after.item as any).text).toBe('After');
+  });
+
+  it('does not keep a version of another type', () => {
+    write([{ response_type: MessageResponseTypes.CARD, body: [] }], true);
+
+    write([{ response_type: MessageResponseTypes.GRID }], true);
+
+    const [item] = shown();
+    expect(item.item.response_type).toBe(MessageResponseTypes.GRID);
+    expect(item.ui_state.cannotDraw).toEqual({ missing: ['rows'] });
+  });
+
+  it('does not keep the last drawn version once the stream completes', () => {
+    write([grid([{ items: [text('A')] }])], true);
+    const [drawn] = shown();
+
+    write([grid([{ items: [text('A')] }, {}])], false);
+
+    expect(shown()[0]).not.toBe(drawn);
+    expect(shown()[0].ui_state.cannotDraw).toEqual({
+      missing: ['rows[0].cells[1].items'],
+    });
   });
 });
 
@@ -1140,7 +1638,7 @@ describe('upsert streaming snapshots', () => {
       });
       expect(
         initial.allMessageItemsByID[id].ui_state.isIntermediateStreaming
-      ).toBe(true);
+      ).toBeUndefined();
       expect(initial.allMessageItemsByID[id].item).toBe(item);
       const repeated = rootReducer(
         initial,
@@ -1163,13 +1661,13 @@ describe('upsert streaming snapshots', () => {
       });
       expect(
         settled.allMessageItemsByID[id].ui_state.isIntermediateStreaming
+      ).toBeUndefined();
+      expect(
+        settled.allMessageItemsByID[siblingID].ui_state.streamingState.isDone
+      ).toBe(true);
+      expect(
+        initial.allMessageItemsByID[siblingID].ui_state.streamingState.isDone
       ).toBe(false);
-      expect(
-        settled.allMessageItemsByID[siblingID].ui_state.streamingState
-      ).toBeUndefined();
-      expect(
-        initial.allMessageItemsByID[siblingID].ui_state.streamingState
-      ).toBeUndefined();
       expect(
         initial.allMessageItemsByID[id].ui_state.streamingState.isDone
       ).toBe(false);

@@ -2058,6 +2058,286 @@ describe('ChatInstance.messaging.addMessageChunk', () => {
       await waitFor(() => expect(cardInDOM()).toBeTruthy());
     });
 
+    describe('a grid or carousel streamed partial then complete', () => {
+      const gridWith = (cellItem: Record<string, unknown>) => ({
+        response_type: MessageResponseTypes.GRID,
+        columns: [{ width: '1' }],
+        rows: [{ cells: [{ items: [cellItem] }] }],
+      });
+
+      it('fires no chunk event for a user_defined item in a cell, and one userDefinedResponse at final_response', async () => {
+        const { instance } =
+          await renderChatAndGetInstanceWithStore(createBaseConfig());
+        const responseId = 'grid-user-defined';
+        const grid = gridWith({
+          response_type: MessageResponseTypes.USER_DEFINED,
+          user_defined: { kind: 'in-a-cell' },
+        });
+        const userDefinedResponse = jest.fn();
+        const chunkUserDefinedResponse = jest.fn();
+        instance.on([
+          {
+            type: BusEventType.USER_DEFINED_RESPONSE,
+            handler: userDefinedResponse,
+          },
+          {
+            type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
+            handler: chunkUserDefinedResponse,
+          },
+        ]);
+
+        await instance.messaging.addMessageChunk(
+          partial(responseId, 'g', {
+            response_type: MessageResponseTypes.GRID,
+          })
+        );
+        await instance.messaging.addMessageChunk(
+          complete(responseId, 'g', grid)
+        );
+        expect(userDefinedResponse).not.toHaveBeenCalled();
+
+        await instance.messaging.addMessageChunk(
+          final(responseId, [{ streaming_metadata: { id: 'g' }, ...grid }])
+        );
+
+        expect(chunkUserDefinedResponse).not.toHaveBeenCalled();
+        expect(userDefinedResponse).toHaveBeenCalledTimes(1);
+        expect(
+          userDefinedResponse.mock.calls[0][0].data.message.user_defined
+        ).toEqual({ kind: 'in-a-cell' });
+      });
+
+      // Message text renders inside cds-aichat-markdown's own shadow root, which a plain
+      // textContent on the chat's shadow root doesn't reach.
+      const deepText = (root: ParentNode | null): string => {
+        let text = '';
+        root?.childNodes.forEach((node) => {
+          if (node.nodeType === Node.TEXT_NODE) {
+            text += node.textContent ?? '';
+          } else if (node instanceof Element) {
+            text += deepText(node.shadowRoot) + deepText(node);
+          }
+        });
+        return text;
+      };
+      const errorBox = () =>
+        getChatShadowRoot()?.querySelector(
+          '.cds-aichat--message--inline-error'
+        );
+      const renderErrors = (onError: jest.Mock) =>
+        onError.mock.calls.filter(
+          ([error]) => error.errorType === OnErrorType.RENDER
+        );
+      const shownConfig = (onError: jest.Mock) => ({
+        ...createBaseConfig(),
+        openChatByDefault: true,
+        messaging: { ...createBaseConfig().messaging, skipWelcome: true },
+        onError,
+      });
+      const cardWith = (text: string) => ({
+        response_type: MessageResponseTypes.CARD,
+        body: [{ response_type: MessageResponseTypes.TEXT, text }],
+      });
+      const containers = [
+        {
+          name: 'grid',
+          selector: '.cds-aichat--grid',
+          build: (suffix: string) =>
+            gridWith({
+              response_type: MessageResponseTypes.TEXT,
+              text: `Grid cell${suffix}`,
+            }),
+          texts: (suffix: string) => [`Grid cell${suffix}`],
+        },
+        {
+          name: 'carousel',
+          selector: '.carousel-container',
+          build: (suffix: string) => ({
+            response_type: MessageResponseTypes.CAROUSEL,
+            items: [
+              cardWith(`Card one${suffix}`),
+              cardWith(`Card two${suffix}`),
+            ],
+          }),
+          texts: (suffix: string) => [`Card one${suffix}`, `Card two${suffix}`],
+        },
+      ];
+
+      it.each(containers)(
+        'holds a $name streamed as partial then complete until final_response',
+        async ({ name, selector, build, texts }) => {
+          const onError = jest.fn();
+          const { instance, store } = await renderChatAndGetInstanceWithStore(
+            shownConfig(onError) as any
+          );
+          const responseId = `held-${name}`;
+          const localID = `${responseId}-c`;
+          const inDOM = () => getChatShadowRoot()?.querySelector(selector);
+
+          await instance.messaging.addMessageChunk(
+            partial(responseId, 'c', { response_type: build('').response_type })
+          );
+          await instance.messaging.addMessageChunk(
+            complete(responseId, 'c', build(''))
+          );
+          // Give React a chance to render anything it was going to.
+          await new Promise((resolve) => setTimeout(resolve, 50));
+
+          expect(inDOM()).toBeFalsy();
+          expect(errorBox()).toBeFalsy();
+          expect(renderErrors(onError)).toEqual([]);
+          expect(
+            store.getState().assistantMessageState.localMessageIDs
+          ).toContain(localID);
+
+          await instance.messaging.addMessageChunk(
+            final(responseId, [
+              { streaming_metadata: { id: 'c' }, ...build(' final') },
+            ])
+          );
+
+          await waitFor(() => {
+            const shown = deepText(getChatShadowRoot());
+            texts(' final').forEach((text) => expect(shown).toContain(text));
+          });
+          expect(inDOM()).toBeTruthy();
+          expect(errorBox()).toBeFalsy();
+          expect(renderErrors(onError)).toEqual([]);
+          const { allMessageItemsByID, assistantMessageState } =
+            store.getState();
+          expect(
+            assistantMessageState.localMessageIDs.filter(
+              (id) => allMessageItemsByID[id]?.fullMessageID === responseId
+            )
+          ).toEqual([localID]);
+          expect(
+            allMessageItemsByID[localID].ui_state.isIntermediateStreaming
+          ).toBeFalsy();
+        }
+      );
+
+      it('keeps a grid streamed as partial then complete hidden when the stream is stopped', async () => {
+        const onError = jest.fn();
+        const responseId = 'held-grid-stopped';
+        let stopped = false;
+        const config = {
+          ...shownConfig(onError),
+          messaging: {
+            ...shownConfig(onError).messaging,
+            customSendMessage: async (
+              _request: MessageRequest,
+              options: CustomSendMessageOptions,
+              chatInstance: ChatInstance
+            ) => {
+              options.signal?.addEventListener('abort', () => {
+                stopped = true;
+              });
+              await chatInstance.messaging.addMessageChunk(
+                partial(responseId, 'g', {
+                  response_type: MessageResponseTypes.GRID,
+                })
+              );
+              await chatInstance.messaging.addMessageChunk(
+                complete(
+                  responseId,
+                  'g',
+                  gridWith({
+                    response_type: MessageResponseTypes.TEXT,
+                    text: 'Grid cell',
+                  })
+                )
+              );
+              while (!stopped) {
+                await new Promise((resolve) => setTimeout(resolve, 10));
+              }
+            },
+          },
+        };
+        const { instance, store } = await renderChatAndGetInstanceWithStore(
+          config as any
+        );
+
+        const localItem = () =>
+          store.getState().allMessageItemsByID[`${responseId}-g`];
+        const sendPromise = instance.send('go');
+        // Stop only once the complete_item has landed.
+        await waitFor(() =>
+          expect((localItem()?.item as any)?.rows).toBeDefined()
+        );
+        await (
+          instance as any
+        ).serviceManager.messageService.cancelCurrentMessageRequest();
+        await sendPromise.catch(() => {});
+        await new Promise((resolve) => setTimeout(resolve, 50));
+
+        expect(localItem().ui_state.streamingState.isDone).toBe(true);
+        expect(localItem().ui_state.isIntermediateStreaming).toBe(true);
+        expect(
+          getChatShadowRoot()?.querySelector('.cds-aichat--grid')
+        ).toBeFalsy();
+        expect(errorBox()).toBeFalsy();
+        expect(renderErrors(onError)).toEqual([]);
+      });
+
+      it.each([
+        ['partial then complete', true],
+        ['complete only', false],
+      ])(
+        'treats a grid with no rows streamed as %s the same way',
+        async (_sequence, sendsPartial) => {
+          const onError = jest.fn();
+          const { instance, store } = await renderChatAndGetInstanceWithStore(
+            shownConfig(onError) as any
+          );
+          const responseId = `rowless-grid-${sendsPartial}`;
+          const rowless = {
+            response_type: MessageResponseTypes.GRID,
+            columns: [{ width: '1' }],
+          };
+          const consoleError = jest.spyOn(console, 'error');
+
+          if (sendsPartial) {
+            await instance.messaging.addMessageChunk(
+              partial(responseId, 'g', {
+                response_type: MessageResponseTypes.GRID,
+              })
+            );
+          }
+          // Rejecting here would fail the case.
+          await instance.messaging.addMessageChunk(
+            complete(responseId, 'g', rowless)
+          );
+          await new Promise((resolve) => setTimeout(resolve, 50));
+
+          expect(errorBox()).toBeFalsy();
+          expect(
+            store.getState().allMessageItemsByID[`${responseId}-g`].ui_state
+              .isIntermediateStreaming
+          ).toBe(true);
+
+          await instance.messaging.addMessageChunk(
+            final(responseId, [{ streaming_metadata: { id: 'g' }, ...rowless }])
+          );
+          await waitFor(() =>
+            expect(
+              consoleError.mock.calls.some(
+                ([message]) =>
+                  typeof message === 'string' &&
+                  message.endsWith('Error processing the message response')
+              )
+            ).toBe(true)
+          );
+          await new Promise((resolve) => setTimeout(resolve, 50));
+
+          expect(
+            getChatShadowRoot()?.querySelector('.cds-aichat--grid')
+          ).toBeFalsy();
+          expect(errorBox()).toBeFalsy();
+          expect(renderErrors(onError)).toEqual([]);
+        }
+      );
+    });
+
     it('clears isIntermediateStreaming when complete_item lands on an item a partial_item created', async () => {
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(createBaseConfig());
@@ -2664,21 +2944,10 @@ describe('malformed items through addMessageChunk', () => {
   afterEach(setupAfterEach);
 
   /**
-   * Completed grid and carousel chunks render before their nested local items exist.
-   * Most failures stay in the item; a carousel without an items list fails in its wrapper.
+   * Items a renderer throws on. Label-only options render successfully; other malformed
+   * items fail while `final_response` is stored, leaving the streamed item as it was.
    */
-  const CATASTROPHIC = new Set(['carousel, no items', 'carousel, null items']);
   const SHOWS_ERROR = new Set([
-    'carousel, null entry',
-    'carousel, card with a null body entry',
-    'carousel, card with a footer not a list',
-    'grid, no rows',
-    'grid, null row',
-    'grid, row with no cells',
-    'grid, null cell',
-    'grid, cell with no items',
-    'grid, null cell item',
-    'grid, cell item that cannot draw',
     'grid, column width not a string',
     'option, no options',
     'option, null entry',
@@ -2713,13 +2982,11 @@ describe('malformed items through addMessageChunk', () => {
       expect(outcome).toEqual({
         rejects: false,
         shownItems: 1,
-        reports: CATASTROPHIC.has(fixture.name)
-          ? ['RENDER: AppShell.componentDidCatch']
-          : SHOWS_ERROR.has(fixture.name)
-            ? ['RENDER: Message.componentDidCatch']
-            : [],
+        reports: SHOWS_ERROR.has(fixture.name)
+          ? ['RENDER: Message.componentDidCatch']
+          : [],
         failedItems: SHOWS_ERROR.has(fixture.name) ? 1 : 0,
-        catastrophic: CATASTROPHIC.has(fixture.name),
+        catastrophic: false,
       });
     }
   );
