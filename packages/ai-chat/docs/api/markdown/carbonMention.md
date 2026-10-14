@@ -8,9 +8,7 @@
 
 - Kind: Function
 - Category: Utilities
- The prompt-line extension surface is still settling; these
-factory signatures can change in a minor release.
-- Reference: https://chat.carbondesignsystem.com/version/v1.22.0/docs/functions/Type_reference.carbonMention.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.23.0-rc.0/docs/functions/Type_reference.carbonMention.html
 
 Tiptap extension factory for `@`-style mention triggers. Wraps
 `@tiptap/extension-mention` with Carbon-specific chip rendering, extended

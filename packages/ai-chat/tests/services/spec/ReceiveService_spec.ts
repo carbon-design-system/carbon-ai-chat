@@ -47,6 +47,7 @@ function createHarness(config: PublicConfig = {}) {
       inboundStreaming: { streamingMessageID: null },
       messageLoadingManager: { end: jest.fn() },
       finalizeStreamingMessage: jest.fn(),
+      resetStopStreamingButtonWithoutUpserts: jest.fn(),
       cancelAllMessageRequests: jest.fn().mockResolvedValue(undefined),
     },
   } as unknown as ServiceManager;
@@ -54,6 +55,7 @@ function createHarness(config: PublicConfig = {}) {
   manager.hydrationService = new HydrationService(manager);
   manager.messageUpsertCoordinator = new MessageUpsertCoordinator(manager);
   const service = new ReceiveService(manager);
+  manager.receiveService = service;
 
   const localItems = () => {
     const state = store.getState();

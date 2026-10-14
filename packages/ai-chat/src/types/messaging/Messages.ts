@@ -159,7 +159,6 @@ interface EventInputData<TNameType extends string = string> {
  * autocompleting; describe every other backend widget type however your
  * backend already names it.
  *
- * @experimental
  * @category Messaging
  */
 type StructuredFieldType =
@@ -176,7 +175,6 @@ type StructuredFieldType =
  * The widget passes this through to customSendMessage unchanged; actual upload
  * handling is the responsibility of the customSendMessage implementation.
  *
- * @experimental
  * @category Messaging
  */
 interface InlineFile {
@@ -200,7 +198,6 @@ interface InlineFile {
  * Represents an external file reference — a file already uploaded elsewhere.
  * Use this when files are uploaded separately and you just need to reference them.
  *
- * @experimental
  * @category Messaging
  */
 interface ExternalFileReference {
@@ -239,7 +236,6 @@ interface ExternalFileReference {
  * Represents a file value in a structured field. Can be either an inline File
  * object or a reference to an already-uploaded file.
  *
- * @experimental
  * @category Messaging
  */
 type FileFieldValue = InlineFile | ExternalFileReference;
@@ -247,7 +243,6 @@ type FileFieldValue = InlineFile | ExternalFileReference;
 /**
  * A single field within a {@link StructuredData} payload.
  *
- * @experimental
  * @category Messaging
  */
 interface StructuredField {
@@ -284,7 +279,6 @@ interface StructuredField {
  * Carries an array of {@link StructuredField} entries plus `user_defined`, an
  * escape hatch for arbitrary host-defined data.
  *
- * @experimental
  * @category Messaging
  */
 interface StructuredData {
@@ -321,8 +315,6 @@ interface MessageInput extends BaseMessageInput {
    * Structured data that can be sent alongside or instead of plain text input.
    * Carries an array of structured fields and an escape hatch for arbitrary
    * user-defined data.
-   *
-   * @experimental
    */
   structured_data?: StructuredData;
 

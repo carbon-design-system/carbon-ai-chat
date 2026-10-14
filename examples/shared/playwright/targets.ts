@@ -47,6 +47,6 @@ export const targets = {
 export type TargetId = keyof typeof targets;
 
 /** Name of the variable that carries a target server's captured URL. */
-export function urlVariable(id: TargetId) {
+export function urlVariable(id: string) {
   return `CAIC_E2E_URL_${id.toUpperCase().replaceAll('-', '_')}`;
 }

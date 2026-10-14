@@ -105,6 +105,7 @@ jest.mock('@carbon/ai-chat-components/es/react/prompt-line.js', () => {
           currentValue.current = '';
           setValue('');
         },
+        resetHistory: () => {},
       }),
       []
     );

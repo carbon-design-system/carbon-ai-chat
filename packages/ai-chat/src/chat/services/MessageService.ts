@@ -332,10 +332,7 @@ class MessageService {
     if (!current.isStreaming) {
       // Hide stop streaming button if it was shown for showStopButtonImmediately
       // Pass streamingMessageID to keep button visible if there's an active stream
-      resetStopStreamingButton(
-        this.serviceManager.store,
-        this.inboundStreaming.streamingMessageID
-      );
+      this.resetStopStreamingButtonIfIdle();
       this.moveToNextQueueItem();
     }
   }
@@ -662,6 +659,8 @@ class MessageService {
     // Abort listeners can remove controllers from tracking before cancellation finishes.
     const messageAbortControllers = Array.from(this.messageAbortControllers);
 
+    this.serviceManager.messageUpsertCoordinator.endAllStreaming(reason);
+    this.resetStopStreamingButtonIfIdle();
     while (this.queue.waiting.length) {
       await this.cancelMessageRequestByID(
         this.queue.waiting[0].message.id,
@@ -707,6 +706,25 @@ class MessageService {
     this.inboundStreaming.finalizeStreamingMessage(messageID);
   }
 
+  getCurrentMessageController() {
+    return this.queue.current?.sendMessageController;
+  }
+
+  resetStopStreamingButtonIfIdle() {
+    if (
+      !this.inboundStreaming.streamingMessageID &&
+      (!this.queue.current || this.queue.current.isProcessed)
+    ) {
+      this.resetStopStreamingButtonWithoutUpserts();
+    }
+  }
+
+  resetStopStreamingButtonWithoutUpserts() {
+    if (!this.serviceManager.messageUpsertCoordinator.hasStreamingMessages()) {
+      resetStopStreamingButton(this.serviceManager.store);
+    }
+  }
+
   /**
    * Cancels the current message request if one is in progress.
    * Also handles streaming messages that may have been cleared from the queue.
@@ -714,6 +732,8 @@ class MessageService {
   public async cancelCurrentMessageRequest(
     reason: string = CancellationReason.STOP_STREAMING
   ) {
+    this.serviceManager.messageUpsertCoordinator.endAllStreaming(reason);
+    this.resetStopStreamingButtonIfIdle();
     // If there's a streaming message, cancel it even if not in queue
     if (this.inboundStreaming.streamingMessageID) {
       await this.cancelMessageRequestByID(
@@ -826,7 +846,7 @@ class MessageService {
         pendingRequest.isProcessed = true;
         // Hide and re-enable the stop streaming button now that cancellation has
         // completed; processSuccess/processError will short-circuit on isProcessed.
-        resetStopStreamingButton(this.serviceManager.store);
+        this.resetStopStreamingButtonWithoutUpserts();
         if (pendingRequest === this.queue.current) {
           this.moveToNextQueueItem();
         }

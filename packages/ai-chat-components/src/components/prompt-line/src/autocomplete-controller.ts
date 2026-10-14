@@ -345,7 +345,6 @@ export class AutocompleteController {
           { type: 'text', text: ' ' },
         ])
         .run();
-      config?.onSelect?.(item);
     } else if (trigger.type === 'autocomplete') {
       const text = item.value ?? item.label;
       const range = {
