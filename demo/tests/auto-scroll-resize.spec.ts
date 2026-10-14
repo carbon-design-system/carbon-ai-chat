@@ -34,15 +34,17 @@ const readGeometry = (page: Page) =>
     };
   });
 
-const resizeCustomContent = (page: Page, height: number, transient = false) =>
+const resizeCustomContent = async (
+  page: Page,
+  height: number,
+  transient = false
+) =>
   page
     .locator('.external')
     .last()
     .evaluate(
-      (element, { nextHeight, transient }) =>
+      (element, { nextHeight, transient, list }) =>
         new Promise<ScrollFrame[]>((resolve) => {
-          const host = document.querySelector('cds-aichat-container')!;
-          const list = host.shadowRoot!.querySelector('.cds-aichat--messages')!;
           const scroller = list.parentElement!;
           const requests = list.querySelectorAll(
             '.cds-aichat--message--request'
@@ -77,7 +79,11 @@ const resizeCustomContent = (page: Page, height: number, transient = false) =>
             requestAnimationFrame(sample);
           });
         }),
-      { nextHeight: height, transient }
+      {
+        nextHeight: height,
+        transient,
+        list: (await page.locator('.cds-aichat--messages').elementHandle())!,
+      }
     );
 
 test.afterEach(async ({ page }) => destroyChatSession(page));
