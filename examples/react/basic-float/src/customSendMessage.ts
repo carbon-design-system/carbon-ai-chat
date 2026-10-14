@@ -11,7 +11,8 @@
  * Mock backend for the float example.
  *
  * Demonstrates: how to wire a `customSendMessage` handler that streams a
- * fake assistant reply chunk-by-chunk and honors cancellation.
+ * fake assistant reply chunk-by-chunk and honors cancellation. Each delivery
+ * includes the request ID so late replies are ignored after restart or clear.
  *
  * APIs exercised:
  *   - `ChatInstance.messaging.addMessage`
@@ -51,6 +52,7 @@ const WORD_DELAY = 40;
 // Replace with a real production implementation.
 async function doFakeTextStreaming(
   instance: ChatInstance,
+  requestID: MessageRequest['id'],
   signal?: AbortSignal
 ) {
   const responseID = uuid();
@@ -59,8 +61,8 @@ async function doFakeTextStreaming(
   let lastStreamedIndex = -1;
   const timeouts: number[] = [];
 
-  // The abort signal fires when the user clicks "stop"; cancel pending word
-  // chunks so we can emit a final stream_stopped item instead of more text.
+  // Abort cancels pending words. After "stop," the final item clears streaming;
+  // after restart or clear, its old request ID makes the chat ignore it.
   const abortHandler = () => {
     isCanceled = true;
     timeouts.forEach((timeoutId) => clearTimeout(timeoutId));
@@ -83,6 +85,7 @@ async function doFakeTextStreaming(
             },
             streaming_metadata: {
               response_id: responseID,
+              request_id: requestID,
             },
           } as PartialItemChunkWithId);
         }
@@ -110,11 +113,13 @@ async function doFakeTextStreaming(
         complete_item: completeItem,
         streaming_metadata: {
           response_id: responseID,
+          request_id: requestID,
         },
       } as StreamChunk);
 
       const finalResponse = {
         id: responseID,
+        request_id: requestID,
         output: {
           generic: [completeItem],
         },
@@ -140,11 +145,13 @@ async function doFakeTextStreaming(
         complete_item: completeItem,
         streaming_metadata: {
           response_id: responseID,
+          request_id: requestID,
         },
       } as StreamChunk);
 
       const finalResponse = {
         id: responseID,
+        request_id: requestID,
         output: {
           generic: [completeItem],
         },
@@ -169,6 +176,7 @@ async function customSendMessage(
   // respond with a non-streamed welcome message instead of running the stream.
   if (request.input.text === '') {
     instance.messaging.addMessage({
+      request_id: request.id,
       output: {
         generic: [
           {
@@ -181,7 +189,7 @@ async function customSendMessage(
     return;
   }
 
-  doFakeTextStreaming(instance, requestOptions.signal);
+  doFakeTextStreaming(instance, request.id, requestOptions.signal);
 }
 
 export { customSendMessage };

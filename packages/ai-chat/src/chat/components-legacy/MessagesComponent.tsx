@@ -70,7 +70,7 @@ const SCROLL_NOTIFICATION_THROTTLE_MS = 200;
 
 /**
  * Write `min-block-size` for the bottom spacer via the shared dynamic
- * stylesheet so a strict CSP can drop style-src-attr 'unsafe-inline'.
+ * stylesheet.
  */
 function applySpacerDeficit(spacerElem: HTMLElement, deficit: number): void {
   applyDynamicStyles(spacerElem, 'spacer', {

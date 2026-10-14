@@ -80,7 +80,7 @@ export interface PromptLineController {
   getEditor(): Editor | null;
 
   /** Accepts `keyboardFocus`, which when true specifies that a focus ring should be visible around the prompt line text area */
-  focus(keyboardFocus: boolean): void;
+  focus(keyboardFocus: boolean, synchronous?: boolean): void;
 
   blur(): void;
   hasFocus(): boolean;
@@ -114,6 +114,13 @@ export interface PromptLineController {
 
   undo(): boolean;
   redo(): boolean;
+  /**
+   * Drops the editor's undo and redo history, keeping the live editor,
+   * its focus, and its plugin state. Emits Tiptap's `transaction` event but
+   * no `update`, value-change, typing, or token events. No-op in plain
+   * textarea mode.
+   */
+  resetHistory(): void;
 
   /** Whether the most recent focus event was driven by keyboard (not pointer/touch-driven). */
   getKeyboardFocus(): boolean;

@@ -194,7 +194,6 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
     const spaceBelow = containerRect.bottom - menuRect.bottom;
     const spaceAbove = menuRect.top - containerRect.top;
 
-    // Class-based flip so a strict CSP can drop style-src-attr 'unsafe-inline'.
     const flipUp = spaceBelow < actualMenuHeight && spaceAbove > spaceBelow;
     overflowMenuBody.classList.toggle(
       this._overflowMenuBodyFlippedClass,

@@ -15,15 +15,21 @@
 
 import { expect, fixture, html, nextFrame, oneEvent } from '@open-wc/testing';
 import { Extension } from '@tiptap/core';
+import { Plugin } from '@tiptap/pm/state';
 
 import '../prompt-line.js';
+import { TYPING_TIMEOUT_MS } from '../prompt-line-constants.js';
 import type PromptLineElement from '../prompt-line.js';
 import { buildCarbonExtensions } from '../tiptap/build-extensions.js';
+import { carbonMention } from '../tiptap/carbon-mention.js';
 import {
   readStarterStorage,
   type StarterTriggerStorage,
 } from '../tiptap/carbon-starter-trigger.js';
-import type { SuggestionItem } from '../tiptap/types.js';
+import type {
+  SuggestionItem,
+  TriggerChangeEventDetail,
+} from '../tiptap/types.js';
 import { waitForRich } from './wait-for-rich.js';
 
 const PEOPLE: SuggestionItem[] = [{ id: 'u1', label: 'Alice' }];
@@ -460,6 +466,171 @@ describe('<cds-aichat-prompt-line> editor stability', function () {
     expect(editor).to.equal(el.getEditor());
   });
 
+  for (const rich of [false, true]) {
+    for (const keyboard of [false, true]) {
+      it(`restores ${keyboard ? 'keyboard' : 'pointer'} focus after moving a ${rich ? 'rich' : 'textarea'} prompt between shadow roots`, async () => {
+        const el = await fixture<PromptLineElement>(html`
+          <cds-aichat-prompt-line ?rich=${rich}></cds-aichat-prompt-line>
+        `);
+        if (rich) {
+          await waitForRich(el);
+        }
+        const origin = await fixture<HTMLDivElement>(html`<div></div>`);
+        const innerHost = document.createElement('div');
+        origin.attachShadow({ mode: 'open' }).appendChild(innerHost);
+        innerHost.attachShadow({ mode: 'open' }).appendChild(el);
+        const surface = rich
+          ? el.getEditor()!.view.dom
+          : el.querySelector('textarea')!;
+        const focusOrigins: boolean[] = [];
+        el.addEventListener('cds-aichat-prompt-focus', (event) => {
+          focusOrigins.push((event as CustomEvent).detail.keyboard);
+        });
+        if (!keyboard) {
+          surface.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+        }
+        surface.focus();
+        expect(focusOrigins).to.deep.equal([keyboard]);
+
+        const destination = await fixture<HTMLDivElement>(html`<div></div>`);
+        const root = destination.attachShadow({ mode: 'open' });
+        root.appendChild(el);
+        await nextFrame();
+
+        expect(root.activeElement === surface).to.equal(true);
+        expect(el.hasFocus()).to.equal(true);
+        expect(focusOrigins).to.deep.equal([keyboard, keyboard]);
+
+        const parent = destination.parentElement!;
+        destination.remove();
+        parent.appendChild(destination);
+        await nextFrame();
+
+        expect(root.activeElement === surface).to.equal(true);
+        expect(el.hasFocus()).to.equal(true);
+        expect(focusOrigins).to.deep.equal([keyboard, keyboard, keyboard]);
+      });
+    }
+
+    it(`does not restore a ${rich ? 'rich' : 'textarea'} prompt after a connected blur`, async () => {
+      const el = await fixture<PromptLineElement>(html`
+        <cds-aichat-prompt-line ?rich=${rich}></cds-aichat-prompt-line>
+      `);
+      if (rich) {
+        await waitForRich(el);
+      }
+      const surface = rich
+        ? el.getEditor()!.view.dom
+        : el.querySelector('textarea')!;
+      const parent = el.parentElement!;
+
+      surface.focus();
+      surface.blur();
+      await Promise.resolve();
+      el.remove();
+      parent.appendChild(el);
+      await nextFrame();
+      expect(el.hasFocus()).to.equal(false);
+
+      surface.focus();
+      el.blur();
+      el.remove();
+      parent.appendChild(el);
+      await nextFrame();
+      expect(document.activeElement === surface).to.equal(false);
+    });
+
+    it(`does not steal focus chosen before or after reconnecting a ${rich ? 'rich' : 'textarea'} prompt`, async () => {
+      const el = await fixture<PromptLineElement>(html`
+        <cds-aichat-prompt-line ?rich=${rich}></cds-aichat-prompt-line>
+      `);
+      if (rich) {
+        await waitForRich(el);
+      }
+      const surface = rich
+        ? el.getEditor()!.view.dom
+        : el.querySelector('textarea')!;
+      const parent = el.parentElement!;
+      const otherHost = await fixture<HTMLDivElement>(html`<div></div>`);
+      const otherRoot = otherHost.attachShadow({ mode: 'open' });
+      const button = document.createElement('button');
+      button.textContent = 'Other control';
+      otherRoot.appendChild(button);
+
+      surface.focus();
+      el.remove();
+      button.focus();
+      parent.appendChild(el);
+      await nextFrame();
+      expect(otherRoot.activeElement).to.equal(button);
+
+      surface.focus();
+      el.remove();
+      parent.appendChild(el);
+      button.focus();
+      await nextFrame();
+      expect(otherRoot.activeElement).to.equal(button);
+    });
+
+    it(`does not restore focus after a ${rich ? 'rich' : 'textarea'} prompt is really unmounted`, async () => {
+      const el = await fixture<PromptLineElement>(html`
+        <cds-aichat-prompt-line ?rich=${rich}></cds-aichat-prompt-line>
+      `);
+      if (rich) {
+        await waitForRich(el);
+      }
+      const surface = rich
+        ? el.getEditor()!.view.dom
+        : el.querySelector('textarea')!;
+      const parent = el.parentElement!;
+      surface.focus();
+      el.remove();
+      await flushTeardown();
+      parent.appendChild(el);
+      await nextFrame();
+
+      expect(el.hasFocus()).to.equal(false);
+    });
+  }
+
+  it('retries a rich upgrade declined while the prompt was detached', async () => {
+    await makeRichPromptLine();
+    const el = await fixture<PromptLineElement>(html`
+      <cds-aichat-prompt-line></cds-aichat-prompt-line>
+    `);
+    const parent = el.parentElement!;
+    el.remove();
+    el.rich = true;
+    await el.updateComplete;
+    expect(el.getEditor()).to.equal(null);
+
+    parent.appendChild(el);
+    await waitForRich(el);
+    expect(el.getEditor()).to.not.equal(null);
+  });
+
+  it('does not steal focus after reconnect retries a rich upgrade', async () => {
+    await makeRichPromptLine();
+    const el = await fixture<PromptLineElement>(html`
+      <cds-aichat-prompt-line></cds-aichat-prompt-line>
+    `);
+    const parent = el.parentElement!;
+    const button = document.createElement('button');
+    button.textContent = 'Other control';
+    parent.appendChild(button);
+
+    el.querySelector('textarea')!.focus();
+    el.remove();
+    el.rich = true;
+    await el.updateComplete;
+    parent.appendChild(el);
+    button.focus();
+    await nextFrame();
+
+    expect(el.getEditor() !== null).to.equal(true);
+    expect(document.activeElement === button).to.equal(true);
+  });
+
   it('recovers a working surface when reattached after teardown', async () => {
     // `firstUpdated` never runs twice, so without an explicit re-init the
     // element used to come back with no controller and ignore every prop.
@@ -513,6 +684,48 @@ describe('<cds-aichat-prompt-line> editor stability', function () {
     expect(editor).to.equal(el.getEditor());
   });
 
+  it('rejects ensureEditor() called while in the deferred-teardown window', async () => {
+    // After disconnect, _pendingTeardownTimer is set but the surface is still
+    // alive (_editorHost / _controller not yet null). ensureEditor() must
+    // reject with the documented error rather than resolving a pending call
+    // from inside _requestRichUpgrade via _swapToRich, and must not mount a
+    // new editor on the detached host.
+    const el = await fixture<PromptLineElement>(html`
+      <cds-aichat-prompt-line aria-label="test prompt"></cds-aichat-prompt-line>
+    `);
+    await el.updateComplete;
+
+    // Disconnect — starts the deferred-teardown timer.
+    el.parentElement?.removeChild(el);
+
+    // ensureEditor() is called while in the window: the timer is pending but
+    // the surface fields are still set.
+    const pending = el.ensureEditor().catch((error: Error) => error);
+
+    // The deferred teardown fires, clearing the controller.
+    await flushTeardown();
+
+    // The promise must have rejected, not resolved.
+    const caught = await pending;
+    expect(caught instanceof Error).to.equal(true);
+    expect((caught as Error).message).to.equal(
+      'Input is not currently rendered'
+    );
+    // The teardown cleared the controller; no editor should be mounted.
+    expect(el.getEditor()).to.equal(null);
+  });
+
+  it('rejects ensureEditor() during pending teardown when already rich', async () => {
+    const el = await makeRichPromptLine();
+    el.remove();
+    const caught = await el.ensureEditor().catch((error: Error) => error);
+    expect(caught instanceof Error).to.equal(true);
+    expect((caught as Error).message).to.equal(
+      'Input is not currently rendered'
+    );
+    await flushTeardown();
+  });
+
   it('destroys the editor when the element is really unmounted', async () => {
     const el = await makeRichPromptLine();
     const editor = el.getEditor()!;
@@ -522,6 +735,42 @@ describe('<cds-aichat-prompt-line> editor stability', function () {
 
     expect(el.getEditor()).to.equal(null);
     expect(editor.isDestroyed).to.equal(true);
+  });
+
+  it('leaves no editor mounted on a detached node when append and remove happen in one task', async () => {
+    // Lit schedules its first update as a microtask. If the element is appended
+    // and removed synchronously before that microtask runs, `firstUpdated`
+    // fires after `disconnectedCallback` while the element is no longer
+    // connected. Without the `isConnected` guard in `_initializeSurface`, an
+    // editor mounts on the detached host with nothing left to tear it down.
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+
+    const el = document.createElement(
+      'cds-aichat-prompt-line'
+    ) as PromptLineElement;
+    el.setAttribute('rich', '');
+    el.setAttribute('aria-label', 'test prompt');
+
+    // Append then immediately remove — all in the same synchronous block so
+    // Lit's microtask-scheduled first update has not yet run.
+    container.appendChild(el);
+    container.removeChild(el);
+
+    // Allow the first update (and the deferred teardown timer) to run.
+    await flushTeardown();
+
+    // No controller should have been created on the detached host.
+    expect(el.getEditor()).to.equal(null);
+
+    // The element should be fully functional if reattached afterward.
+    document.body.appendChild(el);
+    await waitForRich(el);
+    expect(el.getEditor()).to.not.equal(null);
+
+    document.body.removeChild(el);
+    await flushTeardown();
+    document.body.removeChild(container);
   });
 
   it('does not re-apply the content seed after a reattach', async () => {
@@ -590,5 +839,140 @@ describe('<cds-aichat-prompt-line> editor stability', function () {
     el.content = 'a';
     await el.updateComplete;
     expect(el.getEditor()!.getText()).to.equal('a');
+  });
+
+  it('resets undo and redo history after resetHistory() while preserving editor instance and focus', async () => {
+    const el = await makeRichPromptLine();
+    el.focus();
+    await nextFrame();
+    expect(el.hasFocus()).to.equal(true);
+
+    const editor = el.getEditor()!;
+    type(el, 'hello world');
+    expect(editor.getText()).to.equal('hello world');
+
+    el.clearContent();
+    expect(editor.getText()).to.equal('');
+
+    el.resetHistory();
+
+    // Editor instance and focus survive
+    expect(el.getEditor()).to.equal(editor);
+    expect(el.hasFocus()).to.equal(true);
+
+    // Undo and redo do nothing and never restore the cleared/sent text
+    expect(el.undo()).to.equal(false);
+    expect(editor.getText()).to.equal('');
+    expect(el.redo()).to.equal(false);
+    expect(editor.getText()).to.equal('');
+  });
+
+  it('clears a populated redo stack on resetHistory()', async () => {
+    const el = await makeRichPromptLine();
+    const editor = el.getEditor()!;
+    type(el, 'hello');
+    expect(el.undo()).to.equal(true);
+    expect(editor.getText()).to.equal('');
+
+    el.resetHistory();
+
+    expect(el.redo()).to.equal(false);
+    expect(editor.getText()).to.equal('');
+  });
+
+  it('keeps every other plugin view alive across resetHistory()', async () => {
+    let builds = 0;
+    let destroys = 0;
+    const Probe = Extension.create({
+      name: 'resetHistoryProbe',
+      addProseMirrorPlugins() {
+        return [
+          new Plugin({
+            view: () => {
+              builds += 1;
+              return {
+                destroy: () => {
+                  destroys += 1;
+                },
+              };
+            },
+          }),
+        ];
+      },
+    });
+    const el = await makeRichPromptLine([Probe]);
+    type(el, 'hello');
+    el.clearContent();
+    builds = 0;
+    destroys = 0;
+
+    el.resetHistory();
+
+    expect(builds).to.equal(0);
+    expect(destroys).to.equal(0);
+  });
+
+  it('keeps an open mention query open across resetHistory()', async () => {
+    const el = await makeRichPromptLine([
+      carbonMention({ trigger: '@', items: PEOPLE }),
+    ]);
+    const editor = el.getEditor()!;
+    const details: (TriggerChangeEventDetail | null)[] = [];
+    el.addEventListener('cds-aichat-trigger-change', (event) => {
+      details.push((event as CustomEvent).detail);
+    });
+    editor.commands.insertContent('@al');
+    await nextFrame();
+    expect(details.at(-1)?.type).to.equal('mention');
+    details.length = 0;
+
+    el.resetHistory();
+    await nextFrame();
+
+    expect(details).to.deep.equal([]);
+    expect(editor.getText()).to.equal('@al');
+  });
+
+  it('still ends the typing indicator after a send within the typing window', async () => {
+    const el = await makeRichPromptLine();
+    const typing: boolean[] = [];
+    el.addEventListener('cds-aichat-prompt-typing', (event) => {
+      typing.push((event as CustomEvent).detail.isTyping);
+    });
+
+    // Intercept only the typing timer so the test need not wait it out.
+    const realSetTimeout = window.setTimeout;
+    const realClearTimeout = window.clearTimeout;
+    const pending = new Map<number, () => void>();
+    let nextId = -1;
+    window.setTimeout = ((fn: () => void, delay?: number, ...rest: []) => {
+      if (delay !== TYPING_TIMEOUT_MS) {
+        return realSetTimeout(fn, delay, ...rest);
+      }
+      nextId -= 1;
+      pending.set(nextId, fn);
+      return nextId;
+    }) as typeof window.setTimeout;
+    window.clearTimeout = ((id?: number) => {
+      if (id !== undefined && pending.has(id)) {
+        pending.delete(id);
+        return;
+      }
+      realClearTimeout(id);
+    }) as typeof window.clearTimeout;
+
+    try {
+      type(el, 'hello');
+      el.clearContent();
+      el.resetHistory();
+      for (const fn of pending.values()) {
+        fn();
+      }
+    } finally {
+      window.setTimeout = realSetTimeout;
+      window.clearTimeout = realClearTimeout;
+    }
+
+    expect(typing).to.deep.equal([true, false]);
   });
 });

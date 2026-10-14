@@ -11,11 +11,11 @@
  * CSP-compliant dynamic styling helpers.
  *
  * Writes runtime-dynamic CSS declarations for individual DOM elements via the
- * shared dynamic stylesheet (a Constructable CSSStyleSheet) so a strict CSP
- * can drop `style-src-attr 'unsafe-inline'`. Both `el.style.foo = ...` and
- * `el.style.setProperty(...)` mutate an element's `style` attribute and are
- * blocked by `style-src-attr`; mutations to a CSSStyleSheet that the document
- * already trusts are governed by `style-src` and pass without `'unsafe-inline'`.
+ * shared dynamic stylesheet (a Constructable CSSStyleSheet). A strict CSP
+ * (no `style-src-attr 'unsafe-inline'`) allows this, and also allows
+ * `el.style.foo = ...` and `el.style.setProperty(...)`; it blocks a `style`
+ * attribute set in markup or through `setAttribute`. See the note in
+ * `dynamic-css-var-sheet`.
  *
  * Each call site picks a `prefix` (e.g. `"avatar"`, `"grid-cell"`) which
  * scopes the per-instance attribute it tags elements with

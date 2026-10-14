@@ -10,13 +10,14 @@
 /**
  * Writes runtime-dynamic CSS custom properties via a single Constructable
  * Stylesheet. Lets us update CSS variable values from JS without touching any
- * element's inline `style` attribute, which a strict CSP (no
- * `style-src-attr 'unsafe-inline'`) would block.
+ * element's inline `style` attribute.
  *
- * Why a stylesheet, not `el.style.setProperty`: setProperty mutates the
- * element's `style` attribute and is governed by `style-src-attr`. Mutations
- * to a CSSStyleSheet that the document already trusts are governed by
- * `style-src` and pass without `'unsafe-inline'`.
+ * A strict CSP (no `style-src-attr 'unsafe-inline'`) blocks a `style`
+ * attribute set in markup or through `setAttribute`. It does not block
+ * properties set through an element's `style` object, such as
+ * `el.style.setProperty()`, so CSP alone does not require this sheet. Rule
+ * changes on the sheet pass a strict policy too.
+ * https://developer.mozilla.org/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/style-src
  *
  * The shared sheet must be adopted on every root (document or shadow root)
  * where its selectors need to apply. Callers in shadow DOM should call

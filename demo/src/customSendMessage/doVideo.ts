@@ -7,10 +7,15 @@
  *  @license
  */
 
-import { ChatInstance, MessageResponseTypes } from '@carbon/ai-chat';
+import {
+  ChatInstance,
+  MessageRequest,
+  MessageResponseTypes,
+} from '@carbon/ai-chat';
 
-function doVideo(instance: ChatInstance) {
+function doVideo(instance: ChatInstance, requestID?: MessageRequest['id']) {
   instance.messaging.addMessage({
+    request_id: requestID,
     output: {
       generic: [
         {
@@ -41,8 +46,12 @@ function doVideo(instance: ChatInstance) {
   });
 }
 
-function doVideoYouTube(instance: ChatInstance) {
+function doVideoYouTube(
+  instance: ChatInstance,
+  requestID?: MessageRequest['id']
+) {
   instance.messaging.addMessage({
+    request_id: requestID,
     output: {
       generic: [
         {
@@ -59,8 +68,12 @@ function doVideoYouTube(instance: ChatInstance) {
   });
 }
 
-function doVideoVimeo(instance: ChatInstance) {
+function doVideoVimeo(
+  instance: ChatInstance,
+  requestID?: MessageRequest['id']
+) {
   instance.messaging.addMessage({
+    request_id: requestID,
     output: {
       generic: [
         {
@@ -77,8 +90,12 @@ function doVideoVimeo(instance: ChatInstance) {
   });
 }
 
-function doVideoKaltura(instance: ChatInstance) {
+function doVideoKaltura(
+  instance: ChatInstance,
+  requestID?: MessageRequest['id']
+) {
   instance.messaging.addMessage({
+    request_id: requestID,
     output: {
       generic: [
         {

@@ -79,8 +79,7 @@ cds-table::part(inner-container) {
 }
 
 // Pagination uses data-hidden to hide rows that fall outside the current
-// page; class-based instead of inline style so a strict CSP can drop
-// style-src-attr 'unsafe-inline'.
+// page.
 cds-table-row[data-hidden] {
   display: none;
 }

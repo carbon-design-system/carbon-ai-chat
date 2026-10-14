@@ -425,8 +425,7 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
         await navigator.clipboard.writeText(textToCopy);
       } else {
         // Fallback for HTTP or older browsers. The off-screen positioning is
-        // applied via a class + dynamic stylesheet rule so a strict CSP can
-        // drop style-src-attr 'unsafe-inline'.
+        // applied via a class + dynamic stylesheet rule.
         ensureClipboardHelperRule();
         const textArea = document.createElement('textarea');
         textArea.value = textToCopy;
@@ -755,7 +754,7 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
   /**
    * Calculates the CSS custom properties for the snippet container based on expanded state and min/max row constraints.
    * Returned by reference for `_applyContainerStyles`, which writes them via the shared dynamic stylesheet
-   * (see `dynamic-css-var-sheet`) so a strict CSP can drop `style-src-attr 'unsafe-inline'`.
+   * (see `dynamic-css-var-sheet`).
    */
   private _getContainerStyles(expandedCode: boolean): ContainerStyleProperties {
     return buildContainerStyles({
@@ -770,9 +769,8 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
 
   /**
    * Applies CSS custom properties to the snippet container element via the
-   * shared dynamic stylesheet so a strict CSP can drop
-   * style-src-attr 'unsafe-inline'. The container is tagged with a
-   * per-instance data attribute so each snippet's rule is independent.
+   * shared dynamic stylesheet. The container is tagged with a per-instance
+   * data attribute so each snippet's rule is independent.
    */
   private _applyContainerStyles() {
     const container = this.snippetContainer.value;
