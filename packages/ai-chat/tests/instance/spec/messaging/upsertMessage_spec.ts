@@ -1338,6 +1338,97 @@ describe('ChatInstance.messaging.upsertMessage', () => {
     const isVisible = (store: { getState: () => any }) =>
       store.getState().assistantInputState.stopStreamingButtonState.isVisible;
 
+    it.each([MessageState.COMPLETE, MessageState.ERROR])(
+      'updates cancellation metadata and clears disablement on %s',
+      async (terminalState) => {
+        const { instance, store } =
+          await renderChatAndGetInstanceWithStore(createBaseConfig());
+        const write = (
+          cancellable?: boolean,
+          state = MessageState.STREAMING
+        ) => {
+          const response = cancellableResponse('cancellation-flags', 'Partial');
+          response.output.generic[0].streaming_metadata.cancellable =
+            cancellable;
+          return instance.messaging.upsertMessage(
+            response.id,
+            state,
+            () => response
+          );
+        };
+        const buttonState = () =>
+          store.getState().assistantInputState.stopStreamingButtonState;
+
+        await write(false);
+        expect(buttonState()).toMatchObject({
+          isVisible: false,
+          isMetadataDisabled: false,
+        });
+        await write(true);
+        expect(buttonState()).toMatchObject({
+          isVisible: true,
+          isMetadataDisabled: false,
+        });
+        await write(false);
+        expect(buttonState()).toMatchObject({
+          isVisible: true,
+          isMetadataDisabled: true,
+        });
+        await write();
+        expect(buttonState().isMetadataDisabled).toBe(true);
+        await write(true);
+        expect(buttonState().isMetadataDisabled).toBe(false);
+        await write(false);
+        await write(false, terminalState);
+        expect(buttonState()).toMatchObject({
+          isVisible: false,
+          isDisabled: false,
+          isMetadataDisabled: false,
+        });
+        await write(true);
+        expect(buttonState()).toMatchObject({
+          isVisible: true,
+          isMetadataDisabled: false,
+        });
+      }
+    );
+
+    it('lets an explicit false win over true in a mixed snapshot', async () => {
+      const { instance, store } =
+        await renderChatAndGetInstanceWithStore(createBaseConfig());
+      await instance.messaging.upsertMessage(
+        'mixed-flags',
+        MessageState.STREAMING,
+        () => cancellableResponse('mixed-flags', 'Partial')
+      );
+      const mixed = cancellableResponse('mixed-flags', 'Partial');
+      mixed.output.generic.push({
+        response_type: MessageResponseTypes.TEXT,
+        text: 'Cannot interrupt',
+        streaming_metadata: { id: '2', cancellable: false },
+      });
+      await instance.messaging.upsertMessage(
+        mixed.id,
+        MessageState.STREAMING,
+        () => mixed
+      );
+      expect(
+        store.getState().assistantInputState.stopStreamingButtonState
+      ).toMatchObject({
+        isVisible: true,
+        isMetadataDisabled: true,
+      });
+      await instance.messaging.upsertMessage(
+        mixed.id,
+        MessageState.STREAMING,
+        () => cancellableResponse(mixed.id, 'Can interrupt')
+      );
+      expect(
+        store.getState().assistantInputState.stopStreamingButtonState
+          .isMetadataDisabled
+      ).toBe(false);
+    });
+
     it('shows the button on a cancellable streaming upsert', async () => {
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(createBaseConfig());
@@ -1405,6 +1496,127 @@ describe('ChatInstance.messaging.upsertMessage', () => {
     });
 
     describe('with more than one message streaming', () => {
+      it('keeps a hidden response protected when another request shows stop immediately', async () => {
+        let finishSend: () => void;
+        const pendingSend = new Promise<void>((resolve) => {
+          finishSend = resolve;
+        });
+        const config = createBaseConfig();
+        config.messaging = {
+          showStopButtonImmediately: true,
+          customSendMessage: () => pendingSend,
+        };
+        const { instance, store } =
+          await renderChatAndGetInstanceWithStore(config);
+        const blocked = cancellableResponse(
+          'hidden-blocked',
+          'Cannot interrupt'
+        );
+        blocked.output.generic[0].streaming_metadata.cancellable = false;
+        await instance.messaging.upsertMessage(
+          blocked.id,
+          MessageState.STREAMING,
+          () => blocked
+        );
+        expect(isVisible(store)).toBe(false);
+        const send = instance.send('Another request');
+        try {
+          await waitFor(() => expect(isVisible(store)).toBe(true));
+          expect(
+            store.getState().assistantInputState.stopStreamingButtonState
+              .isMetadataDisabled
+          ).toBe(true);
+        } finally {
+          finishSend();
+          await send;
+        }
+      });
+
+      it.each(['complete', 'error', 'remove', 'addMessage'])(
+        'keeps another response protected until its %s',
+        async (finish) => {
+          const { instance, store } =
+            await renderChatAndGetInstanceWithStore(createBaseConfig());
+          const response = (id: string, cancellable?: boolean) => {
+            const message = cancellableResponse(id, 'Partial');
+            message.output.generic[0].streaming_metadata.cancellable =
+              cancellable;
+            return message;
+          };
+          await instance.messaging.upsertMessage(
+            'blocked',
+            MessageState.STREAMING,
+            () => response('blocked', false)
+          );
+          await instance.messaging.upsertMessage(
+            'available',
+            MessageState.STREAMING,
+            () => response('available', true)
+          );
+          const button = () =>
+            store.getState().assistantInputState.stopStreamingButtonState;
+          expect(button()).toMatchObject({
+            isVisible: true,
+            isMetadataDisabled: true,
+          });
+          await instance.messaging.upsertMessage(
+            'available',
+            MessageState.STREAMING,
+            () => response('available', true)
+          );
+          await instance.messaging.upsertMessage(
+            'blocked',
+            MessageState.STREAMING,
+            () => response('blocked')
+          );
+          expect(button().isMetadataDisabled).toBe(true);
+
+          if (finish === 'remove') {
+            await instance.messaging.removeMessages(['blocked']);
+          } else if (finish === 'addMessage') {
+            await instance.messaging.addMessage(response('blocked', false));
+          } else {
+            await instance.messaging.upsertMessage(
+              'blocked',
+              finish === 'error' ? MessageState.ERROR : MessageState.COMPLETE,
+              () => response('blocked', false)
+            );
+          }
+          expect(button()).toMatchObject({
+            isVisible: true,
+            isMetadataDisabled: false,
+          });
+        }
+      );
+
+      it('requires every non-cancellable response to release its own restriction', async () => {
+        const { instance, store } =
+          await renderChatAndGetInstanceWithStore(createBaseConfig());
+        const write = (id: string, cancellable: boolean) => {
+          const response = cancellableResponse(id, 'Partial');
+          response.output.generic[0].streaming_metadata.cancellable =
+            cancellable;
+          return instance.messaging.upsertMessage(
+            id,
+            MessageState.STREAMING,
+            () => response
+          );
+        };
+        await write('available', true);
+        await write('blocked-a', false);
+        await write('blocked-b', false);
+        await write('blocked-a', true);
+        expect(
+          store.getState().assistantInputState.stopStreamingButtonState
+            .isMetadataDisabled
+        ).toBe(true);
+        await write('blocked-b', true);
+        expect(
+          store.getState().assistantInputState.stopStreamingButtonState
+            .isMetadataDisabled
+        ).toBe(false);
+      });
+
       it('keeps the button visible when one of two streams completes', async () => {
         const { instance, store } =
           await renderChatAndGetInstanceWithStore(createBaseConfig());

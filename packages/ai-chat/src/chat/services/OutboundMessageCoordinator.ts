@@ -307,6 +307,9 @@ class OutboundMessageCoordinator {
         if (!stopStreamingState.isVisible) {
           store.dispatch(actions.setStopStreamingButtonVisible(true));
         }
+        this.serviceManager.messageService.updateStreamingCancellation(
+          message.id
+        );
       }
 
       this.registerRequestGeneration(message.id, current.restartGeneration);
