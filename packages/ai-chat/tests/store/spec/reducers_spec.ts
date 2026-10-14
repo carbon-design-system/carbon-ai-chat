@@ -81,7 +81,7 @@ function createInitialAppState(): AppState {
 }
 
 describe('Store Reducers', () => {
-  let store: ReturnType<typeof createAppStore>;
+  let store: ReturnType<typeof createAppStore<AppState>>;
   let initialState: AppState;
 
   beforeEach(() => {

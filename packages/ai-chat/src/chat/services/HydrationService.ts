@@ -258,6 +258,7 @@ class HydrationService {
       }
 
       this.restarting = true;
+      serviceManager.conversationLifecycleService.restart();
 
       // Increment the restart generation to filter out any chunks from the previous conversation
       this.serviceManager.chunkProcessingService.bumpRestartGeneration();
