@@ -11,9 +11,9 @@ import isEqual from 'lodash-es/isEqual.js';
 
 import actions from '../store/actions';
 import {
+  applyChunk,
   chunkHasDisplayableContent,
   FinalResponseChunk,
-  mergePartialResponseOptions,
   resolveChunkContext,
   shouldShowStopStreaming,
 } from '../utils/streamingUtils';
@@ -28,19 +28,37 @@ import {
   isTyping,
 } from '../utils/messageUtils';
 import { sleep } from '../utils/lang/promiseUtils';
-import { AddMessageOptions } from '../../types/config/MessagingConfig';
+import {
+  AddMessageOptions,
+  MessageState,
+} from '../../types/config/MessagingConfig';
 import {
   GenericItem,
   ItemStreamingMetadata,
   MessageResponse,
-  MessageResponseTypes,
   PartialItemChunk,
   PartialOrCompleteItemChunk,
   PauseItem,
   StreamChunk,
 } from '../../types/messaging/Messages';
 import { DeepPartial } from '../../types/utilities/DeepPartial';
+import { OnErrorType } from '../../types/config/ErrorConfig';
 import type { ServiceManager } from './ServiceManager';
+
+class ChunkProcessingError extends Error {
+  constructor(readonly cause: unknown) {
+    super(
+      cause instanceof Error
+        ? cause.message
+        : 'The chat could not process the message chunk.'
+    );
+    this.name = 'ChunkProcessingError';
+  }
+}
+
+function isChunkProcessingError(error: unknown) {
+  return error instanceof ChunkProcessingError;
+}
 
 class ChunkProcessingService {
   private serviceManager: ServiceManager;
@@ -51,6 +69,7 @@ class ChunkProcessingService {
   private chunkQueue: {
     chunk: StreamChunk;
     messageID?: string;
+    requestID?: string;
     options: AddMessageOptions;
     chunkPromise: ResolvablePromise<void>;
     restartGeneration: number;
@@ -145,13 +164,31 @@ class ChunkProcessingService {
         extractedMessageID || undefined
       );
 
-      this.announceStreamingChunk(extractedMessageID, chunk);
+      if (extractedMessageID) {
+        this.serviceManager.streamAnnouncerService.announceStreamStarts(
+          extractedMessageID,
+          {
+            hasReasoning: Boolean(
+              chunk.partial_response?.message_options?.reasoning
+            ),
+            hasDisplayableContent: chunkHasDisplayableContent(chunk),
+            responseUserProfile:
+              chunk.partial_response?.message_options?.response_user_profile,
+          }
+        );
+      }
     }
 
     const chunkPromise = resolvablePromise();
     this.chunkQueue.push({
       chunk,
       messageID,
+      requestID:
+        requestID ??
+        this.serviceManager.messageService.inboundStreaming.getStreamingMeta(
+          extractedMessageID
+        )?.requestId ??
+        this.serviceManager.messageService.currentRequestID,
       options,
       chunkPromise,
       restartGeneration,
@@ -162,84 +199,124 @@ class ChunkProcessingService {
     return chunkPromise;
   }
 
-  private announceStreamingChunk(messageID: string, chunk: PartialItemChunk) {
-    if (messageID) {
-      this.serviceManager.streamAnnouncerService.announceStreamStarts(
-        messageID,
-        {
-          hasReasoning: Boolean(
-            chunk.partial_response?.message_options?.reasoning
-          ),
-          hasDisplayableContent: chunkHasDisplayableContent(chunk),
-          responseUserProfile:
-            chunk.partial_response?.message_options?.response_user_profile,
-        }
-      );
-    }
-  }
-
-  handleUpsertStreaming(message: MessageResponse) {
-    for (const item of message.output?.generic ?? []) {
-      const chunk: PartialItemChunk = {
-        partial_item: item,
-        partial_response: message,
-      };
-      this.announceStreamingChunk(message.id, chunk);
-      this.maybeShowStopStreaming(
-        chunk,
-        true,
-        this.serviceManager.store.getState().assistantInputState
-          .stopStreamingButtonState
-      );
-    }
-    if (!message.output?.generic?.length) {
-      this.announceStreamingChunk(message.id, {
-        partial_response: message,
-        partial_item: { response_type: MessageResponseTypes.TEXT, text: '' },
-      });
-    }
-  }
-
   async processChunkQueue() {
-    const { chunk, options, chunkPromise, restartGeneration } =
+    const { chunk, options, chunkPromise, restartGeneration, requestID } =
       this.chunkQueue[0];
-    const { store } = this.serviceManager;
+    const { store, restartCount: initialRestartCount } = this.serviceManager;
+    let messageID: string | undefined;
+    let terminalConversationFailure = false;
+
+    const runCoreOperation = <T>(operation: () => T) => {
+      try {
+        return operation();
+      } catch (error) {
+        terminalConversationFailure = true;
+        throw error;
+      }
+    };
 
     try {
-      const { messageID, item, isCompleteItem, isPartialItem } =
-        resolveChunkContext(chunk, this.chunkQueue[0].messageID);
-      const stopStreamingState =
-        store.getState().assistantInputState.stopStreamingButtonState;
+      const context = resolveChunkContext(chunk, this.chunkQueue[0].messageID);
+      ({ messageID } = context);
+      const { item, isCompleteItem, isPartialItem } = context;
       if (restartGeneration !== this.restartGeneration) {
         this.advanceChunkQueue(chunkPromise);
         return;
       }
 
-      this.maybeShowStopStreaming(chunk, isPartialItem, stopStreamingState);
+      if (messageID && (isPartialItem || isCompleteItem)) {
+        runCoreOperation(() =>
+          this.serviceManager.conversationLifecycleService.responseStreaming(
+            messageID,
+            undefined,
+            requestID
+          )
+        );
+      }
+
+      if (
+        isPartialItem &&
+        shouldShowStopStreaming(
+          (chunk as PartialItemChunk).partial_item?.streaming_metadata,
+          store.getState().assistantInputState.stopStreamingButtonState
+            .isVisible
+        )
+      ) {
+        runCoreOperation(() =>
+          store.dispatch(actions.setStopStreamingButtonVisible(true))
+        );
+      }
 
       if (messageID) {
-        store.dispatch(actions.setActiveResponseId(messageID));
+        runCoreOperation(() =>
+          store.dispatch(actions.setActiveResponseId(messageID))
+        );
       }
 
       if (isCompleteItem || isPartialItem) {
-        await this.handleStreamingChunk(
-          chunk as PartialOrCompleteItemChunk,
-          messageID,
-          item,
-          isCompleteItem
-        );
+        try {
+          await this.commitStreamingChunk(
+            chunk as PartialOrCompleteItemChunk,
+            messageID,
+            item,
+            isCompleteItem
+          );
+        } catch (error) {
+          terminalConversationFailure = true;
+          throw error;
+        }
+        if (
+          restartGeneration === this.restartGeneration &&
+          initialRestartCount === this.serviceManager.restartCount
+        ) {
+          await this.notifyStreamingChunk(
+            chunk as PartialOrCompleteItemChunk,
+            messageID,
+            item
+          );
+        }
       } else if (isStreamFinalResponse(chunk)) {
         await this.handleFinalResponseChunk(chunk, messageID, options);
+        if (messageID && restartGeneration === this.restartGeneration) {
+          runCoreOperation(() =>
+            this.serviceManager.messageService.finalizeStreamingMessage(
+              messageID
+            )
+          );
+        }
       }
 
       if (restartGeneration === this.restartGeneration) {
-        this.resetStopStreamingIfNeeded(isCompleteItem, chunk);
+        runCoreOperation(() =>
+          this.resetStopStreamingIfNeeded(isCompleteItem, chunk)
+        );
       }
 
       this.advanceChunkQueue(chunkPromise);
     } catch (error) {
       consoleError('Error processing stream chunk', error);
-      this.advanceChunkQueue(chunkPromise, error);
+      if (restartGeneration !== this.restartGeneration) {
+        this.advanceChunkQueue(chunkPromise, new ChunkProcessingError(error));
+        return;
+      }
+      const responseID = messageID
+        ? this.serviceManager.messageService.inboundStreaming.resolveResponseId(
+            messageID
+          )
+        : undefined;
+      if (responseID) {
+        this.serviceManager.messageService.markStreamingResponseError(
+          responseID
+        );
+      }
+      if (terminalConversationFailure) {
+        this.serviceManager.actions.errorOccurred({
+          errorType: OnErrorType.MESSAGE_COMMUNICATION,
+          message: 'The chat could not process a streamed response.',
+          otherData: error,
+        });
+      }
+      this.advanceChunkQueue(chunkPromise, new ChunkProcessingError(error));
     }
   }
 
@@ -260,48 +337,31 @@ class ChunkProcessingService {
     return false;
   }
 
-  private maybeShowStopStreaming(
-    chunk: StreamChunk,
-    isPartialItem: boolean,
-    stopStreamingState: { isVisible: boolean }
-  ) {
-    const shouldShow = isPartialItem
-      ? shouldShowStopStreaming(
-          (chunk as PartialItemChunk).partial_item?.streaming_metadata,
-          stopStreamingState.isVisible
-        )
-      : false;
-
-    if (shouldShow) {
-      this.serviceManager.store.dispatch(
-        actions.setStopStreamingButtonVisible(true)
-      );
-    }
-  }
-
-  private async handleStreamingChunk(
+  private async commitStreamingChunk(
     chunk: PartialOrCompleteItemChunk,
     messageID: string | undefined,
     item: DeepPartial<GenericItem> | undefined,
     isCompleteItem: boolean
   ) {
-    const { store } = this.serviceManager;
-    if (messageID && !store.getState().allMessagesByID[messageID]) {
-      store.dispatch(actions.streamingStart(messageID));
-    }
-
     if (isCompleteItem) {
       this.warnIfMissingCompleteItemStreamingId(messageID, item);
     }
-
-    if (messageID && item) {
-      store.dispatch(
-        actions.streamingAddChunk(messageID, item, isCompleteItem)
-      );
+    if (!messageID) {
+      return;
     }
+    await this.serviceManager.messageUpsertCoordinator.upsert(
+      messageID,
+      MessageState.STREAMING,
+      (prev) => applyChunk(prev, chunk, messageID),
+      { origin: 'chunk', chunk: { item, isComplete: isCompleteItem } }
+    );
+  }
 
-    mergePartialResponseOptions(store, messageID, chunk);
-
+  private async notifyStreamingChunk(
+    chunk: PartialOrCompleteItemChunk,
+    messageID: string | undefined,
+    item: DeepPartial<GenericItem> | undefined
+  ) {
     if (messageID && item) {
       await this.serviceManager.slotEventService.handleUserDefinedResponseItemsChunk(
         messageID,
@@ -316,7 +376,6 @@ class ChunkProcessingService {
     messageID: string | undefined,
     options: AddMessageOptions
   ) {
-    const restartGeneration = this.restartGeneration;
     this.warnIfMissingFinalResponseStreamingIds(
       messageID,
       chunk.final_response
@@ -331,10 +390,6 @@ class ChunkProcessingService {
       null,
       'chunk'
     );
-
-    if (messageID && restartGeneration === this.restartGeneration) {
-      this.serviceManager.messageService.finalizeStreamingMessage(messageID);
-    }
   }
 
   private warnIfMissingCompleteItemStreamingId(
@@ -457,7 +512,7 @@ class ChunkProcessingService {
     chunk: StreamChunk
   ) {
     if (isCompleteItem || isStreamFinalResponse(chunk)) {
-      this.serviceManager.messageService.resetStopStreamingButtonWithoutUpserts();
+      this.serviceManager.messageService.hideStopStreamingButtonIfNoUpsertStreaming();
     }
   }
 
@@ -477,4 +532,4 @@ class ChunkProcessingService {
   }
 }
 
-export { ChunkProcessingService };
+export { ChunkProcessingService, isChunkProcessingError };

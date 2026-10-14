@@ -717,12 +717,6 @@ class HumanAgentServiceImpl implements HumanAgentService {
     // result from areAnyAgentsOnline.
     store.dispatch(actions.addIsLoadingCounter(1));
 
-    // Create a partial message to record the current state of agent availability and any service desk errors.
-    const partialMessage: DeepPartial<MessageResponse> = {
-      history: {},
-      ui_state_internal: {},
-    };
-
     // Determine if the CTA card should display a service desk error.
     if (!hasServiceDesk(config)) {
       // Report this error.
@@ -741,7 +735,6 @@ class HumanAgentServiceImpl implements HumanAgentService {
           true
         )
       );
-      partialMessage.ui_state_internal.agent_no_service_desk = true;
     }
 
     const agentAvailability =
@@ -757,11 +750,6 @@ class HumanAgentServiceImpl implements HumanAgentService {
           agentAvailability
         )
       );
-
-      partialMessage.ui_state_internal = partialMessage.ui_state_internal || {};
-
-      // Send event to back-end to save the current agent availability state so session history can use it on reload.
-      partialMessage.ui_state_internal.agent_availability = agentAvailability;
 
       let shouldAutoRequestHumanAgent = false;
 
