@@ -236,6 +236,48 @@ test('uses the captured server URL', async ({ baseURL }) => {
   }
 });
 
+test('shared fixtures honor a preserved config baseURL without a target', async (context) => {
+  const root = fixture(context);
+  const example = examples[0];
+  const config = `export default {
+  testDir: './tests',
+  use: { baseURL: 'http://localhost:3017' },
+};
+`;
+  write(root, `examples/${example}/playwright.config.ts`, config);
+  await scaffoldExampleE2e({ ...createOptions, example: [example] }, { root });
+  assert.equal(
+    readFileSync(
+      join(root, `examples/${example}/playwright.config.ts`),
+      'utf8'
+    ),
+    config
+  );
+  installPlaywright(root);
+  write(
+    root,
+    `examples/${example}/tests/new-concern.spec.ts`,
+    `import { expect, test } from '../../../shared/playwright/helpers';
+
+test('uses the authored baseURL', async ({ baseURL }) => {
+  expect(baseURL).toBe('http://localhost:3017');
+});
+`
+  );
+  const result = spawnSync(
+    process.platform === 'win32' ? 'npm.cmd' : 'npm',
+    ['run', 'test:e2e'],
+    {
+      cwd: join(root, 'examples', example),
+      encoding: 'utf8',
+      shell: process.platform === 'win32',
+      timeout: 20 * 1000,
+    }
+  );
+  assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`);
+  assert.match(result.stdout, /1 passed/);
+});
+
 test('dry runs preview every change without writing files', async (context) => {
   const root = fixture(context);
   const before = snapshot(root);
