@@ -13,7 +13,7 @@ This rubric governs every code review in this repo — both user-requested revie
 
 - **Local changes:** start with `git status --short --untracked-files=all`. Read `git diff --cached` and `git diff` separately, scoped to the requested paths. Inspect relevant untracked files that status lists, while respecting generated-output exclusions. `git diff HEAD` alone can hide a staged change canceled by an unstaged edit. Report which index and working-tree states you reviewed. An empty requested scope is a valid no-changes result; do not widen it silently.
 - **Committed branch:** use `git diff <base>...<head>` from the intended merge base, unless the user supplied a specific range. Keep unrelated local changes outside that scope.
-- **Pull request:** read [reviewing-a-pr.md](references/reviewing-a-pr.md) for the actual base, head revision, and any authorized posting.
+- **Pull request:** read [reviewing-a-pr.md](references/reviewing-a-pr.md) for the actual base, head revision, and any authorized posting, which also adds the `AIReviewed` label.
 
 **Return feedback for a review request. Publish on GitHub only when the user authorizes it.** A review request alone does not authorize edits to the user's checkout. Existing edit or publication authorization still applies. A self-review is part of the active implementation task: fix defects within that task's scope.
 

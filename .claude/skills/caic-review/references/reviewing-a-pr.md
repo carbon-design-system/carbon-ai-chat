@@ -73,6 +73,16 @@ gh api --method POST repos/<owner>/<repo>/pulls/<pr>/reviews --input .github/pr-
 - **Before submission, recheck the PR head.** If it moved, refresh the findings, anchors, patch, and affected checks against the new revision.
 - **If GitHub rejects a range**, keep the finding and complete fix in the summary `body` as a patch with the instructions above. Do not drop the edit or substitute prose. After an uncertain submission result, inspect existing reviews before retrying to avoid duplicate feedback.
 
+### Label the PR
+
+Once the review is submitted, add the `AIReviewed` label, the same one Carbon core uses. The label is how the team counts AI-reviewed PRs and traces later bugs back to them; without it, a review posted under a person's account looks hand-written. The authorization that covered the review covers the label.
+
+```bash
+gh pr edit <pr> --repo <owner>/<repo> --add-label AIReviewed
+```
+
+Add it on every posted review, including a re-review of a PR that already carries it; the command is a no-op then. If the command fails because the label doesn't exist in that repository, say so in your summary and don't create it — creating repository labels is a maintainer's call. A feedback-only review that stays in the conversation gets no label.
+
 ## Related guidance
 
 - [caic-review](../SKILL.md) — the rubric that produces the findings posted here
