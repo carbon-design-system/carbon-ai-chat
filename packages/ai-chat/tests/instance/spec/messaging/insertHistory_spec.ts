@@ -121,10 +121,10 @@ describe('ChatInstance.messaging.insertHistory', () => {
         expect(stored.history.user_profile?.id).toBe(
           senderID === viewerID ? undefined : senderID
         );
-        const senderName = { jane: 'Jane Doe', viewer: 'Viewer' }[senderID];
+        const actorName = { jane: 'Jane Doe', viewer: 'Viewer' }[senderID];
         await expectRequestSender(
           `Canonical ${senderID} request`,
-          senderID === viewerID ? 'You' : senderName
+          senderID === viewerID ? 'You' : actorName
         );
       }
       await act(async () => {

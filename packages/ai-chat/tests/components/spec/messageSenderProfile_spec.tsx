@@ -63,8 +63,8 @@ describe('request sender attribution', () => {
     const instance = await renderChatAndGetInstance({
       ...createBaseConfig(),
       strings: {
-        message_labelUser: 'Sender {senderName} at {timestamp}',
-        messages_userSaid: '{senderName} wrote',
+        message_labelUser: 'Sender {actorName} at {timestamp}',
+        messages_userSaid: '{actorName} wrote',
         message_labelYou: 'Viewer at {timestamp}',
         messages_youSaid: 'Viewer wrote',
       },
@@ -193,7 +193,7 @@ describe('request sender attribution', () => {
     const instance = await renderChatAndGetInstance({
       ...createBaseConfig(),
       assistantName: 'Test assistant',
-      strings: { message_labelAssistant: 'From {senderName} at {timestamp}' },
+      strings: { message_labelAssistant: 'From {actorName} at {timestamp}' },
     });
     await act(async () => {
       await instance.messaging.addMessage({

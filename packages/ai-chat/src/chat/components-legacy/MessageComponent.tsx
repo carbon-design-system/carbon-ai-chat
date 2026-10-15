@@ -525,7 +525,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     const timestamp = timestampToTimeString(message.history.timestamp);
 
     let label;
-    let senderName;
+    let actorName;
     let iconClassName = '';
     let reasoning;
 
@@ -562,9 +562,9 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
           />
         );
         iconClassName = 'cds-aichat--message__avatar--agent';
-        senderName = responseUserProfile?.nickname || '';
+        actorName = responseUserProfile?.nickname || '';
       } else {
-        senderName =
+        actorName =
           responseUserProfile?.nickname === 'watsonx' && assistantName
             ? assistantName
             : responseUserProfile?.nickname;
@@ -602,7 +602,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
             { id: 'message_labelAssistant' },
             {
               timestamp,
-              senderName,
+              actorName,
             }
           )}
         </span>
@@ -628,16 +628,16 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
         );
       }
     } else {
-      const senderName = getRequestSenderName(message);
+      const actorName = getRequestSenderName(message);
       const avatarUrl = message.history?.user_profile?.profile_picture_url;
-      if (senderName && avatarUrl) {
+      if (actorName && avatarUrl) {
         avatar = <ImageWithFallback url={avatarUrl} alt="" fallback={null} />;
       }
       label = (
         <span>
           {this.props.intl.formatMessage(
-            { id: senderName ? 'message_labelUser' : 'message_labelYou' },
-            { timestamp, senderName }
+            { id: actorName ? 'message_labelUser' : 'message_labelYou' },
+            { timestamp, actorName }
           )}
         </span>
       );
@@ -662,11 +662,11 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     message: Pick<MessageRequest, 'history'>,
     languagePack: Pick<LanguagePack, 'messages_youSaid'>
   ): string {
-    const senderName = getRequestSenderName(message);
-    return senderName
+    const actorName = getRequestSenderName(message);
+    return actorName
       ? this.props.intl.formatMessage(
           { id: 'messages_userSaid' },
-          { senderName }
+          { actorName }
         )
       : languagePack.messages_youSaid;
   }
