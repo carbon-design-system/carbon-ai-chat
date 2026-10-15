@@ -6,7 +6,8 @@
  */
 
 import { test, expect } from './fixtures';
-import { PageObjectId } from '@carbon/ai-chat/server';
+import { PageObjectId, PanelType } from '@carbon/ai-chat/server';
+import type { Locator, Page } from '@playwright/test';
 import {
   prepareDemoPage,
   destroyChatSession,
@@ -15,162 +16,191 @@ import {
   waitForChatReady,
   waitForSetChatConfigApplied,
 } from './utils';
-
-// Import types for window.setChatConfig without emitting runtime code
+import { focusedTag, inspectUpgrades } from './carbon-registration/inspect';
 import type {} from '../types/window';
 
-// Setup common to all tests
-test.beforeEach(async ({ page }) => {
-  // Load demo in setChatConfig mode and block analytics pop-ups
-  await prepareDemoPage(page, { setChatConfig: true });
-});
-
-// Clear session between all tests to ensure clean state, and assert that the
-// page rendered without tripping the test-time strict CSP. Run the CSP check
-// before destroyChatSession so the assertion fires against the test's own
-// interactions, not the cleanup tear-down.
 test.afterEach(async ({ page }) => {
   await expectNoCspViolations(page);
   await destroyChatSession(page);
 });
 
-/**
- * Helper function to find the currently focused overflow menu item by traversing shadow DOM.
- * Returns the text content of the focused item, or null if no item is focused.
- */
-async function getFocusedMenuItemText(page: any): Promise<string | null> {
-  return await page.evaluate(() => {
-    function findFocusedElement(root: Document | ShadowRoot): Element | null {
-      const activeElement = root.activeElement;
-
-      if (!activeElement) {
-        return null;
-      }
-
-      // Check if this is an overflow menu item
-      if (
-        activeElement.tagName.toLowerCase() === 'cds-overflow-menu-item' ||
-        activeElement.getAttribute('role') === 'menuitem'
-      ) {
-        return activeElement;
-      }
-
-      // Traverse into shadow DOM if it exists
-      if (activeElement.shadowRoot) {
-        return findFocusedElement(activeElement.shadowRoot);
-      }
-
-      return null;
-    }
-
-    const focusedItem = findFocusedElement(document);
-    return focusedItem ? focusedItem.textContent?.trim() || null : null;
-  });
-}
-
-/**
- * Helper function to open the overflow menu and wait for it to be visible.
- */
-async function openOverflowMenu(page: any) {
-  // Find and click the overflow menu button in the navigation slot
-  const overflowMenuButton = page.locator('cds-overflow-menu').first();
-  await overflowMenuButton.click();
-
-  // Wait for the first menu item to be visible
-  await page
-    .locator('cds-overflow-menu-item')
-    .first()
-    .waitFor({ state: 'visible' });
-}
-
-/**
- * Helper function to focus the first menu item in the overflow menu.
- */
-async function focusFirstMenuItem(page: any) {
-  // Focus the first menu item
-  const firstMenuItem = page.locator('cds-overflow-menu-item').first();
-  await firstMenuItem.focus();
-}
-
-test('arrow key navigation in overflow menu', async ({ page }) => {
-  // Configure chat with menu options enabled
-  await page.evaluate(async () => {
-    if (!window.setChatConfig) {
-      throw new Error('setChatConfig is not available');
-    }
-    await window.setChatConfig({
-      header: {
-        title: 'Test Chat',
-        menuOptions: [
-          {
-            text: 'Help',
-            handler: () => alert('Help clicked!'),
-          },
-          {
-            text: 'Documentation',
-            href: 'https://example.com',
-            target: '_blank',
-          },
-          {
-            text: 'Settings',
-            handler: () => alert('Settings clicked!'),
-          },
-        ],
-      },
-      launcher: { isOn: false },
-      openChatByDefault: true,
-    });
-  });
-
-  await waitForSetChatConfigApplied(page);
-
-  // Open the chat interface and wait for it to be ready
-  await openChatWindow(page);
-  await waitForChatReady(page, { panelTestId: PageObjectId.MAIN_PANEL });
-
-  // Open the overflow menu
-  await openOverflowMenu(page);
-
-  // Focus the first menu item
-  await focusFirstMenuItem(page);
-
-  // Verify first item is focused
-  let focusedText = await getFocusedMenuItemText(page);
-  expect(focusedText).toBe('Help');
-
-  // Press ArrowDown key
+async function exerciseMenu(page: Page, trigger: Locator) {
+  await expect(trigger).toBeVisible();
+  await trigger.click();
+  const menu = trigger.locator(':scope > cds-menu');
+  await expect(menu.getByRole('menu')).toBeVisible();
+  const items = menu.locator('cds-menu-item:not([disabled])');
+  const first = await items.first().getAttribute('label');
+  const last = await items.last().getAttribute('label');
+  await items.first().focus();
+  await expect.poll(() => focusedTag(page)).toBe(first);
+  await page.keyboard.press('ArrowUp');
+  await expect.poll(() => focusedTag(page)).toBe(last);
   await page.keyboard.press('ArrowDown');
-
-  // Wait for focus to update by checking that the second item is focused
-  await page.waitForFunction(
-    () => {
-      function findFocusedElement(root: Document | ShadowRoot): Element | null {
-        const activeElement = root.activeElement;
-        if (!activeElement) {
-          return null;
+  await expect.poll(() => focusedTag(page)).toBe(first);
+  await page.keyboard.press('ArrowDown');
+  await expect
+    .poll(() => focusedTag(page))
+    .toBe(await items.nth(1).getAttribute('label'));
+  await page.keyboard.press('Escape');
+  await expect(menu.getByRole('menu')).not.toBeVisible();
+  await expect
+    .poll(() =>
+      trigger.evaluate((element) => {
+        let active = document.activeElement;
+        while (active?.shadowRoot?.activeElement) {
+          active = active.shadowRoot.activeElement;
         }
+        return active === element || element.shadowRoot?.contains(active);
+      })
+    )
+    .toBe(true);
+}
 
+for (const framework of ['react', 'web-component'] as const) {
+  for (const appearance of [
+    { theme: 'white', direction: 'ltr' },
+    { theme: 'g100', direction: 'rtl' },
+  ] as const) {
+    test(`${framework} ${appearance.theme} ${appearance.direction}: header, history and forced toolbar overflow menus`, async ({
+      page,
+    }) => {
+      const menuWarnings: string[] = [];
+      page.on('console', (message) => {
         if (
-          activeElement.tagName.toLowerCase() === 'cds-overflow-menu-item' ||
-          activeElement.getAttribute('role') === 'menuitem'
+          /overflow.?menu|menu structure/i.test(message.text()) &&
+          message.type() === 'warning'
         ) {
-          return activeElement;
+          menuWarnings.push(message.text());
         }
+      });
+      await page.setViewportSize({ width: 1600, height: 900 });
+      await prepareDemoPage(page, {
+        setChatConfig: true,
+        settings: { framework },
+      });
+      await page.evaluate(async ({ theme, direction }) => {
+        const increment = () => {
+          const data = document.documentElement.dataset;
+          data.menuActions = String(Number(data.menuActions || 0) + 1);
+        };
+        document.documentElement.dir = direction;
+        await window.setChatConfig!({
+          header: {
+            title: 'Menu test',
+            menuOptions: [
+              { text: 'First', handler: increment },
+              { text: 'Middle', handler: increment },
+              { text: 'Last', handler: increment },
+            ],
+          },
+          homescreen: { isOn: false },
+          history: { isOn: true },
+          injectCarbonTheme: theme,
+          launcher: { isOn: false },
+          openChatByDefault: true,
+        });
+      }, appearance);
+      await waitForSetChatConfigApplied(page);
+      await openChatWindow(page);
+      await waitForChatReady(page, { panelTestId: PageObjectId.MAIN_PANEL });
 
-        if (activeElement.shadowRoot) {
-          return findFocusedElement(activeElement.shadowRoot);
-        }
-
-        return null;
+      const header = page.locator('cds-aichat-chat-header').first();
+      const navigation = header.locator('cds-overflow-menu').first();
+      await exerciseMenu(page, navigation);
+      for (const key of ['Enter', 'Space']) {
+        await navigation.click();
+        await expect(navigation.getByRole('menu')).toBeVisible();
+        await navigation.locator('cds-menu-item[label="First"]').focus();
+        await expect.poll(() => focusedTag(page)).toBe('First');
+        await page.keyboard.press(key);
+        await expect(navigation.getByRole('menu')).not.toBeVisible();
       }
+      await expect(page.locator('html')).toHaveAttribute(
+        'data-menu-actions',
+        '2'
+      );
 
-      const focusedItem = findFocusedElement(document);
-      return focusedItem?.textContent?.trim() === 'Documentation';
-    },
-    { timeout: 2000 }
-  );
+      await page.evaluate(async (panelType) => {
+        await window.chatInstance!.customPanels.getPanel(panelType).open();
+      }, PanelType.HISTORY);
+      const historyItem = page.locator('cds-aichat-history-panel-item').first();
+      await historyItem.hover();
+      const historyTrigger = historyItem.locator('cds-overflow-menu');
+      await exerciseMenu(page, historyTrigger);
+      await page.evaluate(() => {
+        document.addEventListener('history-item-menu-action', () => {
+          const data = document.documentElement.dataset;
+          data.historyActions = String(Number(data.historyActions || 0) + 1);
+        });
+      });
+      for (const key of ['Enter', 'Space']) {
+        await historyItem.hover();
+        await historyTrigger.click();
+        await expect(historyTrigger.getByRole('menu')).toBeVisible();
+        await historyTrigger.locator('cds-menu-item').first().focus();
+        await page.keyboard.press(key);
+      }
+      await expect(page.locator('html')).toHaveAttribute(
+        'data-history-actions',
+        '2'
+      );
 
-  // Verify second item is now focused
-  focusedText = await getFocusedMenuItemText(page);
-  expect(focusedText).toBe('Documentation');
-});
+      const toolbar = header.locator('cds-aichat-toolbar').first();
+      await toolbar.evaluate((element) => {
+        const instance = element as HTMLElement & {
+          actions: Record<string, unknown>[];
+          overflow: boolean;
+        };
+        const icon = instance.actions.find((action) => action.icon)?.icon;
+        if (!icon) {
+          throw new Error('Header toolbar has no action icon');
+        }
+        const onClick = () => {
+          const data = document.documentElement.dataset;
+          data.toolbarActions = String(Number(data.toolbarActions || 0) + 1);
+        };
+        instance.actions = [
+          { text: 'First', icon, onClick },
+          { text: 'Disabled', icon, disabled: true, onClick },
+          { text: 'Last', icon, danger: true, divider: true, onClick },
+        ];
+        instance.overflow = true;
+        instance.style.width = '64px';
+      });
+      const toolbarTrigger = toolbar.locator('cds-overflow-menu').last();
+      await exerciseMenu(page, toolbarTrigger);
+      await toolbarTrigger.click();
+      await toolbarTrigger.locator('cds-menu-item[label="First"]').focus();
+      await expect.poll(() => focusedTag(page)).toBe('First');
+      await expect(
+        toolbarTrigger.locator('cds-menu-item[kind="danger"]')
+      ).toHaveAttribute('label', 'Last');
+      await expect(
+        toolbarTrigger.locator('cds-menu-item-divider')
+      ).toBeVisible();
+      const disabled = toolbarTrigger.locator('cds-menu-item[disabled]');
+      await disabled.click({ force: true });
+      await expect(page.locator('html')).not.toHaveAttribute(
+        'data-toolbar-actions'
+      );
+      await expect(toolbarTrigger.getByRole('menu')).toBeVisible();
+      for (const key of ['Enter', 'Space']) {
+        await toolbarTrigger.locator('cds-menu-item[label="First"]').focus();
+        await expect.poll(() => focusedTag(page)).toBe('First');
+        await page.keyboard.press(key);
+        await expect(toolbarTrigger.getByRole('menu')).not.toBeVisible();
+        if (key === 'Enter') {
+          await toolbarTrigger.click();
+          await expect(toolbarTrigger.getByRole('menu')).toBeVisible();
+        }
+      }
+      await expect(page.locator('html')).toHaveAttribute(
+        'data-toolbar-actions',
+        '2'
+      );
+      expect((await inspectUpgrades(page)).failures).toEqual([]);
+      expect(menuWarnings).toEqual([]);
+    });
+  }
+}

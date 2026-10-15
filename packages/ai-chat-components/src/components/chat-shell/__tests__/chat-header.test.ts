@@ -7,7 +7,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { html, fixture, expect } from '@open-wc/testing';
+import { html, fixture, expect, waitUntil } from '@open-wc/testing';
+import { sendKeys, sendMouse, resetMouse } from '@web/test-runner-commands';
 import '@carbon/ai-chat-components/es/components/chat-shell/index.js';
 import CdsAiChatHeader from '@carbon/ai-chat-components/es/components/chat-shell/src/chat-header.js';
 
@@ -20,6 +21,14 @@ const Restart = { name: 'restart', size: 16 };
  * Documentation on writing tests, plugins, and commands
  * here: https://modern-web.dev/docs/test-runner/overview/
  */
+
+async function clickMenuItem(item: HTMLElement) {
+  const { x, y, width, height } = item.getBoundingClientRect();
+  await sendMouse({
+    type: 'click',
+    position: [Math.round(x + width / 2), Math.round(y + height / 2)],
+  });
+}
 
 describe('cds-aichat-chat-header', function () {
   // ========== Basic Rendering Tests ==========
@@ -276,6 +285,175 @@ describe('cds-aichat-chat-header', function () {
       expect(navSlot).to.exist;
       const overflowMenu = navSlot!.querySelector('cds-overflow-menu');
       expect(overflowMenu).to.exist;
+    });
+
+    it('composes the overflow menu the way the v12 structure expects', async () => {
+      const items = [
+        { text: 'Settings', onClick: () => {} },
+        { text: 'Delete', danger: true, divider: true, onClick: () => {} },
+      ];
+      const el = await fixture<CdsAiChatHeader>(html`
+        <cds-aichat-chat-header
+          navigation-type="overflow"
+          .navigationOverflowItems=${items}></cds-aichat-chat-header>
+      `);
+      const overflowMenu = el.shadowRoot!.querySelector(
+        'cds-overflow-menu'
+      ) as HTMLElement;
+
+      // In Carbon v12 the menu only opens off a direct `cds-menu` child.
+      // Anything else leaves it dead and only warns in development.
+      const menu = overflowMenu.querySelector(':scope > cds-menu');
+      expect(menu, 'cds-menu must be a direct child of cds-overflow-menu').to
+        .exist;
+      expect(overflowMenu.querySelector('cds-overflow-menu-body')).to.not.exist;
+
+      // `menu-alignment` is logical: Floating UI mirrors start/end against the
+      // computed direction, so this is a constant, not an isRTL ternary. The
+      // nav trigger sits at the inline-start end of the header.
+      expect(overflowMenu.getAttribute('menu-alignment')).to.equal(
+        'bottom-start'
+      );
+
+      const menuItems = Array.from(menu!.querySelectorAll('cds-menu-item'));
+      expect(menuItems.map((item) => item.getAttribute('label'))).to.deep.equal(
+        ['Settings', 'Delete']
+      );
+      expect(menuItems[1].getAttribute('kind')).to.equal('danger');
+      expect(menu!.querySelector('cds-menu-item-divider')).to.exist;
+    });
+
+    it('opens navigation, skips disabled items, wraps focus and activates with the keyboard', async () => {
+      const originalWarn = console.warn;
+      const menuWarnings: string[] = [];
+      console.warn = (...args: unknown[]) => {
+        const message = args.map(String).join(' ');
+        if (message.includes('expects a direct')) {
+          menuWarnings.push(message);
+        }
+        originalWarn.apply(console, args);
+      };
+      try {
+        let activations = 0;
+        const el = await fixture<CdsAiChatHeader>(html`
+          <cds-aichat-chat-header
+            navigation-type="overflow"
+            navigation-overflow-label="Navigation"
+            .navigationOverflowItems=${[
+              {
+                text: 'First',
+                onClick: () => {
+                  activations += 1;
+                },
+              },
+              {
+                text: 'Disabled',
+                disabled: true,
+                onClick: () => {
+                  activations += 1;
+                },
+              },
+              { text: 'Last', danger: true, divider: true },
+            ]}></cds-aichat-chat-header>
+        `);
+        const overflowMenu = el.shadowRoot!.querySelector(
+          'cds-overflow-menu'
+        ) as HTMLElement & {
+          updateComplete: Promise<boolean>;
+        };
+
+        const menu = overflowMenu.querySelector(
+          ':scope > cds-menu'
+        ) as HTMLElement & {
+          open: boolean;
+        };
+        expect(customElements.get('cds-menu')).to.exist;
+        expect(customElements.get('cds-menu-item')).to.exist;
+        await overflowMenu.updateComplete;
+        const trigger = overflowMenu.shadowRoot!.querySelector('button')!;
+        trigger.click();
+        await waitUntil(() => {
+          const surface =
+            menu.shadowRoot?.querySelector<HTMLElement>('[role="menu"]');
+          return (
+            !!surface &&
+            menu.open &&
+            getComputedStyle(surface).visibility === 'visible' &&
+            getComputedStyle(surface).display !== 'none' &&
+            surface.getBoundingClientRect().height > 0
+          );
+        });
+        const items = Array.from(
+          menu.querySelectorAll<HTMLElement>('cds-menu-item:not([disabled])')
+        );
+        expect(items.length).to.be.greaterThan(1);
+        await waitUntil(() => items[0].matches(':focus'));
+        await sendKeys({ press: 'ArrowUp' });
+        await waitUntil(() => items[items.length - 1].matches(':focus'));
+        await sendKeys({ press: 'ArrowDown' });
+        await waitUntil(() => items[0].matches(':focus'));
+        await sendKeys({ press: 'ArrowDown' });
+        await waitUntil(() => items[1].matches(':focus'));
+        await sendKeys({ press: 'Escape' });
+        await waitUntil(() => !menu.open && trigger.matches(':focus'));
+        for (const activation of ['Enter', 'Space']) {
+          trigger.click();
+          await waitUntil(() => menu.open && items[0].matches(':focus'));
+          await sendKeys({ press: activation });
+          await waitUntil(() => !menu.open && trigger.matches(':focus'));
+        }
+        expect(activations).to.equal(2);
+        trigger.click();
+        await waitUntil(() => menu.open && items[0].matches(':focus'));
+        const disabled = menu.querySelector<HTMLElement>(
+          'cds-menu-item[disabled]'
+        )!;
+        await clickMenuItem(disabled);
+        await overflowMenu.updateComplete;
+        expect(activations).to.equal(2);
+        expect(menu.open).to.be.true;
+        expect(overflowMenu.hasAttribute('open')).to.be.true;
+        await clickMenuItem(items[0]);
+        await waitUntil(() => !menu.open && trigger.matches(':focus'));
+        expect(activations).to.equal(3);
+        await resetMouse();
+        const icon = items[0].shadowRoot!.querySelector(
+          '.cds--menu-item__icon'
+        )!;
+        expect(getComputedStyle(icon).display).to.equal('none');
+        expect(
+          menuWarnings,
+          'Carbon must accept the menu composition'
+        ).to.deep.equal([]);
+      } finally {
+        console.warn = originalWarn;
+      }
+    });
+
+    it('keeps the same logical menu alignment in RTL', async () => {
+      // `menu-alignment` is a logical API -- Floating UI mirrors start/end
+      // against the computed direction. A hand-rolled isRTL ternary here would
+      // double-flip and throw the menu off the panel edge, which is exactly
+      // what this asserts cannot come back.
+      const previousDir = document.documentElement.dir;
+      document.documentElement.dir = 'rtl';
+      try {
+        const el = await fixture<CdsAiChatHeader>(html`
+          <cds-aichat-chat-header
+            navigation-type="overflow"
+            .navigationOverflowItems=${[{ text: 'Settings', onClick: () => {} }]}></cds-aichat-chat-header>
+        `);
+        await el.updateComplete;
+
+        const overflowMenu = el.shadowRoot!.querySelector(
+          'cds-overflow-menu'
+        ) as HTMLElement;
+        expect(overflowMenu.getAttribute('menu-alignment')).to.equal(
+          'bottom-start'
+        );
+      } finally {
+        document.documentElement.dir = previousDir;
+      }
     });
 
     it('should use custom navigation slot when provided', async () => {

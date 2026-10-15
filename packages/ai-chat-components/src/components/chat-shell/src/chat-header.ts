@@ -12,10 +12,17 @@ import { property, state } from 'lit/decorators.js';
 import { carbonElement } from '../../../globals/decorators/carbon-element.js';
 import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
 import '@carbon/web-components/es/components/button/index.js';
+import '@carbon/web-components/es/components/icon-button/index.js';
 import '@carbon/web-components/es/components/overflow-menu/index.js';
+import '@carbon/web-components/es/components/menu/index.js';
 import '../../toolbar/src/toolbar.js';
 import type { Action } from '../../toolbar/src/toolbar.js';
 import type { BaseOverflowMenuItem } from '../../../typings/overflow-menu.js';
+import {
+  activateOverflowMenuItem,
+  suppressMenuItemSpaceScroll,
+  stopMenuClickPropagation,
+} from '../../../globals/utils/menu-item-activation.js';
 import prefix from '../../../globals/settings.js';
 import { PageObjectId } from '../../../testing/PageObjectId.js';
 import { tryFocus } from '../../../globals/utils/focus-utils.js';
@@ -289,17 +296,20 @@ class CdsAiChatChatHeader extends LitElement {
   private renderOverflowMenuItems() {
     return this.navigationOverflowItems?.map(
       (item) => html`
-        <cds-overflow-menu-item
-          @click=${item.onClick}
-          href=${item.href || nothing}
-          target=${item.href ? item.target || '_self' : nothing}
-          ?disabled=${item.disabled}
-          ?danger=${item.danger}
+        ${
+          item.divider
+            ? html`<cds-menu-item-divider></cds-menu-item-divider>`
+            : nothing
+        }
+        <cds-menu-item
+          label=${item.text}
+          kind=${item.danger ? 'danger' : 'default'}
           danger-description=${item.dangerDescription || nothing}
-          ?divider=${item.divider}
-          data-testid=${item.testId || nothing}>
-          ${item.text}
-        </cds-overflow-menu-item>
+          ?disabled=${item.disabled}
+          data-testid=${item.testId || nothing}
+          @keydown=${suppressMenuItemSpaceScroll}
+          @click=${() => activateOverflowMenuItem(item)}>
+        </cds-menu-item>
       `
     );
   }
@@ -364,17 +374,14 @@ class CdsAiChatChatHeader extends LitElement {
    * @returns Template result for overflow menu
    */
   private renderOverflowNavigation() {
-    // For LTR: menu opens right
-    // For RTL: menu opens left
-    const menuAlignment = this.isRTL ? 'left' : 'right';
+    const triggerAlignment = this.isRTL ? 'left' : 'right';
 
     return html`
-      <div
-        slot="navigation"
-        data-floating-menu-container
-        class="${prefix}-chat-header-overflow-wrapper">
+      <div slot="navigation" class="${prefix}-chat-header-overflow-wrapper">
         <cds-overflow-menu
-          align=${menuAlignment}
+          autoalign
+          align=${triggerAlignment}
+          menu-alignment="bottom-start"
           tooltip-alignment=${CdsAiChatChatHeader.NAV_TOOLTIP_CONFIG.alignment}
           tooltip-position=${CdsAiChatChatHeader.NAV_TOOLTIP_CONFIG.position}
           enter-delay-ms=${CdsAiChatChatHeader.NAV_TOOLTIP_CONFIG.enterDelayMs}
@@ -389,9 +396,9 @@ class CdsAiChatChatHeader extends LitElement {
               : nothing
           }
           <span slot="tooltip-content">${this.navigationOverflowLabel}</span>
-          <cds-overflow-menu-body ?flipped=${this.isRTL}>
+          <cds-menu @click=${stopMenuClickPropagation}>
             ${this.renderOverflowMenuItems()}
-          </cds-overflow-menu-body>
+          </cds-menu>
         </cds-overflow-menu>
       </div>
     `;

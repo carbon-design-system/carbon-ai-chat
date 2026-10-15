@@ -7,20 +7,9 @@
  *  @license
  */
 import { html } from 'lit';
-import '@carbon/web-components/es/components/tag/tag.js';
-import '@carbon/web-components/es/components/data-table/table.js';
-import '@carbon/web-components/es/components/data-table/table-head.js';
-import '@carbon/web-components/es/components/data-table/table-header-row.js';
-import '@carbon/web-components/es/components/data-table/table-header-cell.js';
-import '@carbon/web-components/es/components/data-table/table-body.js';
-import '@carbon/web-components/es/components/data-table/table-row.js';
-import '@carbon/web-components/es/components/data-table/table-cell.js';
-import '@carbon/web-components/es/components/data-table/table-toolbar.js';
-import '@carbon/web-components/es/components/data-table/table-toolbar-content.js';
-import '@carbon/web-components/es/components/data-table/table-toolbar-search.js';
-import '@carbon/web-components/es/components/data-table/table-header-title.js';
-import '@carbon/web-components/es/components/data-table/table-header-description.js';
-import '@carbon/web-components/es/components/button/button.js';
+import '@carbon/web-components/es/components/tag/index.js';
+import '@carbon/web-components/es/components/data-table/index.js';
+import '@carbon/web-components/es/components/button/index.js';
 import '../../code-snippet/index.js';
 import { multilineCode } from './story-data.js';
 import {

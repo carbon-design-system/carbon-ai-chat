@@ -9,8 +9,8 @@
 
 import '../src/code-snippet';
 import '../../card/index.js';
-import '@carbon/web-components/es/components/ai-label/ai-label.js';
-import '@carbon/web-components/es/components/button/button.js';
+import '@carbon/web-components/es/components/ai-label/index.js';
+import '@carbon/web-components/es/components/button/index.js';
 import { html, LitElement } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import Download16 from '@carbon/icons/es/download/16.js';

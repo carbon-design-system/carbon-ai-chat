@@ -20,7 +20,7 @@
     "typedoc": "^0.28.0"
   },
   "dependencies": {
-    "@carbon/styles": "^1.103.0"
+    "@carbon/styles": "^2.0.0-alpha.3"
   },
   "repository": {
     "type": "git",
