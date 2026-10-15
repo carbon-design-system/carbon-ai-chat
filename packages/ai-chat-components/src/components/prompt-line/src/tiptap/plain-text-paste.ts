@@ -37,16 +37,15 @@ function createPastePlugin(): Plugin {
           return false;
         }
 
-        const { schema, selection } = view.state;
+        const { schema } = view.state;
         const lines = text.replace(/\r\n?/g, '\n').split('\n');
         const nodes = linesToNodes(schema, lines);
 
         // openStart=1/openEnd=1 marks the boundary paragraphs as open so
         // ProseMirror merges them into the surrounding content rather than
         // inserting closed blocks that would split the enclosing paragraph.
-        const { from, to } = selection;
         const slice = new Slice(Fragment.from(nodes), 1, 1);
-        const tr = view.state.tr.replace(from, to, slice);
+        const tr = view.state.tr.replaceSelection(slice);
         view.dispatch(tr.scrollIntoView());
         return true;
       },

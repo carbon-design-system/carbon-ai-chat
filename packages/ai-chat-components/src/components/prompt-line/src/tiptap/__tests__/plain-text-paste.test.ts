@@ -75,4 +75,38 @@ describe('tiptap/plain-text-paste', function () {
 
     expect(getRawText(editor.getJSON())).to.equal('hello world');
   });
+
+  it('splits multi-line text into paragraphs merged with the surrounding text', () => {
+    const { editor, cleanup: c } = makeEditor('world');
+    cleanup = c;
+
+    editor.commands.setTextSelection(3);
+    dispatchPaste(editor, 'a\nb');
+
+    expect(editor.getJSON().content?.length).to.equal(2);
+    expect(getRawText(editor.getJSON())).to.equal('woa\nbrld');
+  });
+
+  it('collapses the caret after text pasted over a selection', () => {
+    const { editor, cleanup: c } = makeEditor('world');
+    cleanup = c;
+
+    editor.commands.setTextSelection({ from: 2, to: 4 });
+    dispatchPaste(editor, 'XY');
+    editor.commands.insertContent('Z');
+
+    expect(getRawText(editor.getJSON())).to.equal('wXYZld');
+  });
+
+  it('keeps every pasted line when replacing a select-all', () => {
+    const { editor, cleanup: c } = makeEditor('<p>one</p><p>two</p>');
+    cleanup = c;
+
+    editor.commands.selectAll();
+    dispatchPaste(editor, '\n');
+    editor.commands.insertContent('Z');
+
+    expect(editor.getJSON().content?.length).to.equal(2);
+    expect(getRawText(editor.getJSON())).to.equal('\nZ');
+  });
 });
