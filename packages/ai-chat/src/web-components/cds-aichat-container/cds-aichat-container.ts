@@ -12,6 +12,7 @@ import { css, nothing, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 
 import { carbonElement } from '@carbon/ai-chat-components/es/globals/decorators/index.js';
+import prefix from '@carbon/ai-chat-components/es/globals/settings.js';
 import { createMarkdownPluginHostController } from '@carbon/ai-chat-components/es/components/markdown/src/utils/plugin-host-container.js';
 import { preloadPromptLineRich } from '@carbon/ai-chat-components/es/components/prompt-line/src/prompt-line-rich-loader.js';
 import { PublicConfig } from '../../types/config/PublicConfig';
@@ -104,6 +105,8 @@ export const bootModuleLoader = {
  */
 @carbonElement('cds-aichat-container')
 class ChatContainer extends FlattenedConfigElement {
+  static is = `${prefix}-container`;
+
   // No box of its own by default: a float chat positions itself and must add
   // nothing to the page's layout. With a custom host element it fills that
   // host instead.

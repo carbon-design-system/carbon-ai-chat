@@ -23,6 +23,7 @@ module.exports = {
   testRegex: '/__tests__/.*\\.test\\.(tsx?|jsx?)$',
   testPathIgnorePatterns: [
     '/node_modules/',
+    '/src/globals/__tests__/register\\.test\\.',
     '/src/globals/utils/__tests__/aria-announcer-manager\\.test\\.',
     '/src/globals/utils/__tests__/focus-utils\\.test\\.',
   ],
