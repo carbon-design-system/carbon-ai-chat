@@ -5,4 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-export { default } from '../../aichat-workspace-shell/aichat-workspace-shell-header.scss?lit';
+import type { CSSResult } from 'lit';
+import styles from '../../aichat-workspace-shell/aichat-workspace-shell-header.scss?lit';
+
+const legacyStyles: CSSResult = styles;
+export default legacyStyles;

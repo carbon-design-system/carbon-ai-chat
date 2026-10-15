@@ -35,6 +35,9 @@ import { assertPackedResolution } from './resolution.mjs';
 import { assertAggregateProof, prepareAggregateProof } from './aggregate.mjs';
 import { assertIsolationProofs, prepareIsolationProofs } from './isolation.mjs';
 import { assertParentBaseline } from './baseline.mjs';
+import { preparePrefixProofs } from './prefix.mjs';
+import { assertPrefixProofs } from './prefix-browser.mjs';
+import { assertSupplementalPrefixArtifacts } from './prefix-supplemental.mjs';
 
 const runFile = promisify(execFile);
 const fixtureDirectory = dirname(fileURLToPath(import.meta.url));
@@ -42,6 +45,7 @@ const repository = resolve(fixtureDirectory, '../..');
 const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 const consumer = await mkdtemp(join(tmpdir(), 'carbon-v12-consumer-'));
 console.log(`Packed consumer evidence: ${consumer}`);
+const prefixOnly = process.argv.includes('--prefix-only');
 
 async function runNpm(args, cwd = consumer) {
   const label = `${basename(cwd)}-${args.join(' ')}`.replaceAll(
@@ -186,18 +190,26 @@ await assertParentBaseline({
   baselinePath:
     baselineFlag === -1 ? undefined : process.argv[baselineFlag + 1],
 });
-await runNpm(['run', 'build']);
-await prepareRegistrationProofs({ consumer, runNpm });
-await prepareAggregateProof({
+let isolationCases;
+if (!prefixOnly) {
+  await runNpm(['run', 'build']);
+  await prepareRegistrationProofs({ consumer, runNpm });
+  await prepareAggregateProof({
+    consumer,
+    manifest: componentsMetadata.manifest,
+    runNpm,
+  });
+  isolationCases = await prepareIsolationProofs({
+    consumer,
+    manifest: componentsMetadata.manifest,
+    runNpm,
+  });
+}
+const prefixProof = await preparePrefixProofs({
   consumer,
-  manifest: componentsMetadata.manifest,
   runNpm,
-});
-
-const isolationCases = await prepareIsolationProofs({
-  consumer,
-  manifest: componentsMetadata.manifest,
-  runNpm,
+  viteVersion: resolvedVersion('vite'),
+  repository,
 });
 
 const dist = join(consumer, 'dist');
@@ -236,235 +248,246 @@ let browser;
 try {
   browser = await chromium.launch();
   const origin = `http://127.0.0.1:${server.address().port}`;
-  await assertRegistrationProofs({ consumer, browser, origin });
-  await assertAggregateProof({
-    consumer,
-    manifest: componentsMetadata.manifest,
-    browser,
-    origin,
-  });
-  await assertIsolationProofs({
-    consumer,
-    browser,
-    origin,
-    cases: isolationCases,
-  });
-  const hostCases = variants.flatMap((variant) =>
-    ['container', 'custom-element'].map((hostType) => ({
-      ...variant,
-      hostType,
-      label:
-        hostType === 'container'
-          ? variant.name
-          : `${variant.name}-custom-element`,
-    }))
-  );
-  const hostsByVariant = new Map(variants.map(({ name }) => [name, []]));
-  for (const { name, prefix, hostType, label } of hostCases) {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    page.setDefaultTimeout(30000);
-    const errors = [];
-    const messages = [];
-    const failedRequests = [];
-    page.on('pageerror', (error) => errors.push(String(error)));
-    page.on('console', (message) => {
-      messages.push({ type: message.type(), text: message.text() });
-      if (message.type() === 'error') {
-        errors.push(message.text());
-      }
+  if (!prefixOnly) {
+    await assertRegistrationProofs({ consumer, browser, origin });
+    await assertAggregateProof({
+      consumer,
+      manifest: componentsMetadata.manifest,
+      browser,
+      origin,
     });
-    page.on('requestfailed', (request) =>
-      failedRequests.push({ url: request.url(), failure: request.failure() })
+    await assertIsolationProofs({
+      consumer,
+      browser,
+      origin,
+      cases: isolationCases,
+    });
+    const hostCases = variants.flatMap((variant) =>
+      ['container', 'custom-element'].map((hostType) => ({
+        ...variant,
+        hostType,
+        label:
+          hostType === 'container'
+            ? variant.name
+            : `${variant.name}-custom-element`,
+      }))
     );
-    page.on('response', (response) => {
-      if (response.status() >= 400) {
-        errors.push(`${response.status()} ${response.url()}`);
-      }
-    });
-    try {
-      await page.goto(`${origin}/${name}.html?host=${hostType}`);
-      await page.waitForFunction(() => window.consumerState?.ready);
-      const hosts = await page.evaluate(() => window.consumerState.hosts);
-      assert.deepEqual(
-        hosts.map((host) => host.tag),
-        [`${prefix}-aichat-${hostType}`],
-        'Each fresh context must collect only its selected host metadata.'
+    const hostsByVariant = new Map(variants.map(({ name }) => [name, []]));
+    for (const { name, prefix, hostType, label } of hostCases) {
+      const context = await browser.newContext();
+      const page = await context.newPage();
+      page.setDefaultTimeout(30000);
+      const errors = [];
+      const messages = [];
+      const failedRequests = [];
+      page.on('pageerror', (error) => errors.push(String(error)));
+      page.on('console', (message) => {
+        messages.push({ type: message.type(), text: message.text() });
+        if (message.type() === 'error') {
+          errors.push(message.text());
+        }
+      });
+      page.on('requestfailed', (request) =>
+        failedRequests.push({ url: request.url(), failure: request.failure() })
       );
-      const canonicalHosts = hosts.map((host) => ({
-        ...host,
-        tag: host.tag.replace(`${prefix}-`, 'cds-'),
-      }));
-      hostsByVariant.get(name).push(...canonicalHosts);
+      page.on('response', (response) => {
+        if (response.status() >= 400) {
+          errors.push(`${response.status()} ${response.url()}`);
+        }
+      });
+      try {
+        await page.goto(`${origin}/${name}.html?host=${hostType}`);
+        await page.waitForFunction(() => window.consumerState?.ready);
+        const hosts = await page.evaluate(() => window.consumerState.hosts);
+        assert.deepEqual(
+          hosts.map((host) => host.tag),
+          [`${prefix}-aichat-${hostType}`],
+          'Each fresh context must collect only its selected host metadata.'
+        );
+        const canonicalHosts = hosts.map((host) => ({
+          ...host,
+          tag: host.tag.replace(`${prefix}-`, 'cds-'),
+        }));
+        hostsByVariant.get(name).push(...canonicalHosts);
+        await writeFile(
+          join(consumer, `${label}-manifest-parity.json`),
+          JSON.stringify(
+            { hosts, fields: [...publishedTypes.config.keys()] },
+            null,
+            2
+          )
+        );
+        await page
+          .locator('#consumer-toolbar')
+          .getByRole('button', { name: 'Run action', exact: true })
+          .click();
+        await page.waitForFunction(() => window.consumerState.actions === 1);
+        await page.getByTestId('input_field').click();
+        await page.keyboard.type(`packed ${label}`);
+        await page.getByTestId('input_send').click();
+        await page.waitForFunction(
+          (text) =>
+            window.consumerState.sent.some(
+              (message) => message.input?.text === text
+            ),
+          `packed ${label}`
+        );
+        await page.evaluate(() => window.consumerState.remountHost());
+        await page.waitForFunction(() => window.consumerState.ready);
+        await page.getByTestId('input_field').click();
+        await page.keyboard.type(`remounted ${label}`);
+        await page.getByTestId('input_send').click();
+        await page.waitForFunction(
+          (text) =>
+            window.consumerState.sent.some(
+              (message) => message.input?.text === text
+            ),
+          `remounted ${label}`
+        );
+        const tags = await page.evaluate(async () => {
+          const collect = (root) =>
+            Array.from(root.querySelectorAll('*')).flatMap((element) => [
+              element,
+              ...(element.shadowRoot ? collect(element.shadowRoot) : []),
+            ]);
+          for (let pass = 0; pass < 3; pass += 1) {
+            await Promise.all(
+              collect(document).map(async (element) => {
+                if (!element.updateComplete) {
+                  return;
+                }
+                let timer;
+                try {
+                  await Promise.race([
+                    element.updateComplete,
+                    new Promise((_, reject) => {
+                      timer = setTimeout(
+                        () =>
+                          reject(
+                            new Error(`Update timed out: ${element.localName}`)
+                          ),
+                        5000
+                      );
+                    }),
+                  ]);
+                } finally {
+                  clearTimeout(timer);
+                }
+              })
+            );
+          }
+          return collect(document)
+            .filter((element) => element.localName.startsWith('cds-'))
+            .map((element) => {
+              const constructor = customElements.get(element.localName);
+              return {
+                tag: element.localName,
+                defined: !!constructor,
+                upgraded: !!constructor && element instanceof constructor,
+                shadow: !!element.shadowRoot,
+              };
+            });
+        });
+        await writeFile(
+          join(consumer, `${label}-runtime.json`),
+          JSON.stringify({ tags, errors, messages, failedRequests }, null, 2)
+        );
+        assert.ok(
+          tags.some(
+            (tag) => tag.tag === `${prefix}-aichat-container` && tag.shadow
+          ),
+          'The packed chat host must render its shadow root.'
+        );
+        if (hostType === 'custom-element') {
+          assert.ok(
+            tags.some(
+              (tag) =>
+                tag.tag === `${prefix}-aichat-custom-element` && tag.shadow
+            ),
+            'The packed outer custom-element host must render its shadow root.'
+          );
+        }
+        assert.ok(
+          tags.some((tag) => tag.tag === `${prefix}-icon-button`),
+          'The toolbar must render a Carbon control.'
+        );
+        assert.deepEqual(
+          tags.filter((tag) => !tag.defined || !tag.upgraded),
+          [],
+          'Every rendered tag must upgrade.'
+        );
+        if (name === 'custom') {
+          assert.deepEqual(
+            tags.filter((tag) => !tag.tag.startsWith('cds-custom-')),
+            [],
+            'The custom consumer must use prefixed tags throughout.'
+          );
+        }
+        assert.deepEqual(
+          errors,
+          [],
+          'The packed consumer must have no browser errors.'
+        );
+        assert.deepEqual(
+          failedRequests,
+          [],
+          'The packed consumer must resolve every request.'
+        );
+        assert.deepEqual(
+          messages.filter((message) =>
+            message.text.includes('expects a direct')
+          ),
+          [],
+          'Deprecated menu composition must not render.'
+        );
+        await page.screenshot({
+          path: join(consumer, `${label}.png`),
+          fullPage: true,
+        });
+        console.log(
+          `${label}: packed chat send, Carbon action, and ${tags.length} upgraded tags passed.`
+        );
+      } catch (error) {
+        await writeFile(
+          join(consumer, `${label}-failure.json`),
+          JSON.stringify(
+            { error: String(error), errors, messages, failedRequests },
+            null,
+            2
+          )
+        );
+        await page
+          .screenshot({
+            path: join(consumer, `${label}-failure.png`),
+            fullPage: true,
+          })
+          .catch(() => {});
+        throw error;
+      } finally {
+        await context.close();
+      }
+    }
+    for (const { name } of variants) {
+      const hosts = hostsByVariant.get(name);
+      assertHostParity(chatMetadata.manifest, hosts, publishedTypes);
+      proveParityFailures(chatMetadata.manifest, hosts, publishedTypes);
       await writeFile(
-        join(consumer, `${label}-manifest-parity.json`),
+        join(consumer, `${name}-combined-manifest-parity.json`),
         JSON.stringify(
           { hosts, fields: [...publishedTypes.config.keys()] },
           null,
           2
         )
       );
-      await page
-        .locator('#consumer-toolbar')
-        .getByRole('button', { name: 'Run action', exact: true })
-        .click();
-      await page.waitForFunction(() => window.consumerState.actions === 1);
-      await page.getByTestId('input_field').click();
-      await page.keyboard.type(`packed ${label}`);
-      await page.getByTestId('input_send').click();
-      await page.waitForFunction(
-        (text) =>
-          window.consumerState.sent.some(
-            (message) => message.input?.text === text
-          ),
-        `packed ${label}`
-      );
-      await page.evaluate(() => window.consumerState.remountHost());
-      await page.waitForFunction(() => window.consumerState.ready);
-      await page.getByTestId('input_field').click();
-      await page.keyboard.type(`remounted ${label}`);
-      await page.getByTestId('input_send').click();
-      await page.waitForFunction(
-        (text) =>
-          window.consumerState.sent.some(
-            (message) => message.input?.text === text
-          ),
-        `remounted ${label}`
-      );
-      const tags = await page.evaluate(async () => {
-        const collect = (root) =>
-          Array.from(root.querySelectorAll('*')).flatMap((element) => [
-            element,
-            ...(element.shadowRoot ? collect(element.shadowRoot) : []),
-          ]);
-        for (let pass = 0; pass < 3; pass += 1) {
-          await Promise.all(
-            collect(document).map(async (element) => {
-              if (!element.updateComplete) {
-                return;
-              }
-              let timer;
-              try {
-                await Promise.race([
-                  element.updateComplete,
-                  new Promise((_, reject) => {
-                    timer = setTimeout(
-                      () =>
-                        reject(
-                          new Error(`Update timed out: ${element.localName}`)
-                        ),
-                      5000
-                    );
-                  }),
-                ]);
-              } finally {
-                clearTimeout(timer);
-              }
-            })
-          );
-        }
-        return collect(document)
-          .filter((element) => element.localName.startsWith('cds-'))
-          .map((element) => {
-            const constructor = customElements.get(element.localName);
-            return {
-              tag: element.localName,
-              defined: !!constructor,
-              upgraded: !!constructor && element instanceof constructor,
-              shadow: !!element.shadowRoot,
-            };
-          });
-      });
-      await writeFile(
-        join(consumer, `${label}-runtime.json`),
-        JSON.stringify({ tags, errors, messages, failedRequests }, null, 2)
-      );
-      assert.ok(
-        tags.some(
-          (tag) => tag.tag === `${prefix}-aichat-container` && tag.shadow
-        ),
-        'The packed chat host must render its shadow root.'
-      );
-      if (hostType === 'custom-element') {
-        assert.ok(
-          tags.some(
-            (tag) => tag.tag === `${prefix}-aichat-custom-element` && tag.shadow
-          ),
-          'The packed outer custom-element host must render its shadow root.'
-        );
-      }
-      assert.ok(
-        tags.some((tag) => tag.tag === `${prefix}-icon-button`),
-        'The toolbar must render a Carbon control.'
-      );
-      assert.deepEqual(
-        tags.filter((tag) => !tag.defined || !tag.upgraded),
-        [],
-        'Every rendered tag must upgrade.'
-      );
-      if (name === 'custom') {
-        assert.deepEqual(
-          tags.filter((tag) => !tag.tag.startsWith('cds-custom-')),
-          [],
-          'The custom consumer must use prefixed tags throughout.'
-        );
-      }
-      assert.deepEqual(
-        errors,
-        [],
-        'The packed consumer must have no browser errors.'
-      );
-      assert.deepEqual(
-        failedRequests,
-        [],
-        'The packed consumer must resolve every request.'
-      );
-      assert.deepEqual(
-        messages.filter((message) => message.text.includes('expects a direct')),
-        [],
-        'Deprecated menu composition must not render.'
-      );
-      await page.screenshot({
-        path: join(consumer, `${label}.png`),
-        fullPage: true,
-      });
-      console.log(
-        `${label}: packed chat send, Carbon action, and ${tags.length} upgraded tags passed.`
-      );
-    } catch (error) {
-      await writeFile(
-        join(consumer, `${label}-failure.json`),
-        JSON.stringify(
-          { error: String(error), errors, messages, failedRequests },
-          null,
-          2
-        )
-      );
-      await page
-        .screenshot({
-          path: join(consumer, `${label}-failure.png`),
-          fullPage: true,
-        })
-        .catch(() => {});
-      throw error;
-    } finally {
-      await context.close();
     }
   }
-  for (const { name } of variants) {
-    const hosts = hostsByVariant.get(name);
-    assertHostParity(chatMetadata.manifest, hosts, publishedTypes);
-    proveParityFailures(chatMetadata.manifest, hosts, publishedTypes);
-    await writeFile(
-      join(consumer, `${name}-combined-manifest-parity.json`),
-      JSON.stringify(
-        { hosts, fields: [...publishedTypes.config.keys()] },
-        null,
-        2
-      )
-    );
-  }
+  await assertPrefixProofs({ consumer, browser, origin, proof: prefixProof });
 } finally {
   await browser?.close();
   await new Promise((resolveClosed) => server.close(resolveClosed));
 }
+await assertSupplementalPrefixArtifacts({
+  proof: prefixProof,
+  runNpm,
+  consumer,
+});
