@@ -5,7 +5,7 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 import { PageObjectId } from '@carbon/ai-chat/server';
 import {
   prepareDemoPage,

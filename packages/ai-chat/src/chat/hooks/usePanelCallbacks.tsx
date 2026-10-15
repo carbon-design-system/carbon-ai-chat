@@ -7,47 +7,13 @@
  *  @license
  */
 
-import { useCallback } from 'react';
+import { useMemo } from 'react';
+import { createPanelCallbacks } from '../utils/panelCallbacks';
 
-interface UsePanelCallbacksProps {
-  requestFocus: () => void;
-}
-
-interface UsePanelCallbacksReturn {
-  onPanelOpenStart: () => void;
-  onPanelOpenEnd: (event: CustomEvent) => void;
-  onPanelCloseStart: (event: CustomEvent) => void;
-  onPanelCloseEnd: () => void;
-}
-
-/**
- * Custom hook to manage panel lifecycle callbacks
- */
 export function usePanelCallbacks({
   requestFocus,
-}: UsePanelCallbacksProps): UsePanelCallbacksReturn {
-  const onPanelOpenStart = useCallback(() => {
-    // Don't request focus here - panel content not yet rendered
-  }, []);
-
-  const onPanelOpenEnd = useCallback(
-    (event: CustomEvent) => {
-      if (event.detail?.isReactivation) {
-        return;
-      }
-      requestFocus();
-    },
-    [requestFocus]
-  );
-
-  const onPanelCloseStart = useCallback(() => {}, []);
-
-  const onPanelCloseEnd = useCallback(() => {}, []);
-
-  return {
-    onPanelOpenStart,
-    onPanelOpenEnd,
-    onPanelCloseStart,
-    onPanelCloseEnd,
-  };
+}: {
+  requestFocus: () => void;
+}) {
+  return useMemo(() => createPanelCallbacks(requestFocus), [requestFocus]);
 }

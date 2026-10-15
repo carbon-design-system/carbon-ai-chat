@@ -31,6 +31,7 @@ collect:
         - loading-label
         - loading-status-message
         - name
+        - oncds-aichat-autocomplete-navigated
         - oncds-aichat-file-remove
         - onhistory-item-selected
         - onhistory-panel-item-input-cancel
@@ -72,6 +73,7 @@ collect:
         - oncds-aichat-autocomplete-item-selected
         - oncds-aichat-autocomplete-item-send
         - oncds-aichat-custom-list-render
+        - oncds-aichat-list-navigated
         - oncds-aichat-starter-selected
         # cds-aichat-button
         - is-quick-action
@@ -129,6 +131,12 @@ collect:
         - oncontent-change
         - show-less-text
         - show-more-text
+        # cds-aichat-conversational-search-shell
+        - citations-label
+        - citations-open
+        - oncds-aichat-citations-toggle
+        - show-citations-toggle
+        - toggle-label
         # cds-aichat-error-message
         - description
         - fullscreen
@@ -162,6 +170,7 @@ collect:
         # cds-aichat-file-upload-item
         - fallback-label
         - read-only
+        - remove-file-named-label
         # cds-aichat-file-uploads
         - file-removed-label
         - upload-failure-label
@@ -310,10 +319,6 @@ collect:
         # General - type
         - expand
         - tooltip
-        # cds-aichat-chain-of-thought-step - status
-        - failure
-        - processing
-        - success
         # cds-aichat-chat-header - navigation-type
         - back
         - none

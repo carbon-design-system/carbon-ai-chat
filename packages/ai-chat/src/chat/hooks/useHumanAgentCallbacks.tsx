@@ -7,7 +7,9 @@
  *  @license
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo } from 'react';
+import { useSyncExternalStore } from 'use-sync-external-store/shim/index.js';
+import { HumanAgentCallbacks } from '../services/humanAgentCallbacks';
 import type { ServiceManager } from '../services/ServiceManager';
 import type { FileUpload } from '../../types/state/AppState';
 
@@ -36,56 +38,37 @@ export function useHumanAgentCallbacks({
   allowMultipleFileUploads,
   requestInputFocus,
 }: UseHumanAgentCallbacksProps): UseHumanAgentCallbacksReturn {
-  const [showEndChatConfirmation, setShowEndChatConfirmation] = useState(false);
-
-  const showConfirmEndChat = useCallback(() => {
-    setShowEndChatConfirmation(true);
-  }, []);
-
-  const hideConfirmEndChat = useCallback(() => {
-    setShowEndChatConfirmation(false);
-  }, []);
-
-  const confirmHumanAgentEndChat = useCallback(() => {
-    hideConfirmEndChat();
-    serviceManager.humanAgentService.endChat(true);
-  }, [hideConfirmEndChat, serviceManager]);
-
-  const onUserTyping = useCallback(
-    (isTyping: boolean) => {
-      if (
-        serviceManager.store.getState().persistedToBrowserStorage
-          .humanAgentState.isConnected
-      ) {
-        serviceManager.humanAgentService.userTyping(isTyping);
-      }
-    },
+  const controller = useMemo(
+    () => new HumanAgentCallbacks(serviceManager),
     [serviceManager]
   );
-
+  const showEndChatConfirmation = useSyncExternalStore(
+    controller.subscribe,
+    controller.getSnapshot,
+    controller.getSnapshot
+  );
   const onFilesSelectedForUpload = useCallback(
-    (uploads: FileUpload[]) => {
-      if (isConnectingOrConnected) {
-        serviceManager.humanAgentService.filesSelectedForUpload(uploads);
-        if (!allowMultipleFileUploads) {
-          requestInputFocus();
-        }
-      }
-    },
+    (uploads: FileUpload[]) =>
+      controller.onFilesSelectedForUpload(
+        uploads,
+        isConnectingOrConnected,
+        allowMultipleFileUploads,
+        requestInputFocus
+      ),
     [
+      controller,
       isConnectingOrConnected,
       allowMultipleFileUploads,
       requestInputFocus,
-      serviceManager,
     ]
   );
 
   return {
     showEndChatConfirmation,
-    showConfirmEndChat,
-    hideConfirmEndChat,
-    confirmHumanAgentEndChat,
-    onUserTyping,
+    showConfirmEndChat: controller.showConfirmEndChat,
+    hideConfirmEndChat: controller.hideConfirmEndChat,
+    confirmHumanAgentEndChat: controller.confirmHumanAgentEndChat,
+    onUserTyping: controller.onUserTyping,
     onFilesSelectedForUpload,
   };
 }

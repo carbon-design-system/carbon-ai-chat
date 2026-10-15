@@ -51,7 +51,7 @@ For guidance-only edits, use the [guidance gate](../references/definition-of-don
 
 ## Build, run, test
 
-See root [AGENTS.md](../AGENTS.md) for monorepo setup. The demo consumes the **built** artifacts of `@carbon/ai-chat` and `@carbon/ai-chat-components`, so the watcher (`npm run aiChat:start`) must be running in another terminal or Vite will resolve stale `dist/es/`. `vite.config.ts` lists those packages under `optimizeDeps.exclude` so a package rebuild reaches the browser without a manual optimizer purge.
+See root [AGENTS.md](../AGENTS.md) for monorepo setup. The demo consumes the **built** artifacts of `@carbon/ai-chat` and `@carbon/ai-chat-components`, so for the dev server (`npm start`) the watcher (`npm run aiChat:start`) must be running in another terminal or Vite will resolve stale `dist/es/`. `vite.config.ts` lists those packages under `optimizeDeps.exclude` so a package rebuild reaches the browser without a manual optimizer purge.
 
 Local shortcuts from this directory:
 
@@ -71,3 +71,5 @@ npm test -- --ui
 ```
 
 These commands preserve the script's `NODE_OPTIONS` preload. Playwright can start a production build and preview server; coordinate that build under the [root rule](../AGENTS.md#always-on-rules).
+
+That build covers the demo only. It bundles whatever `@carbon/ai-chat` and `@carbon/ai-chat-components` output is on disk, so run the [build preflight](../references/commands.md#build-preflight) first. When `CI` is unset, Playwright reuses any server already on port 3001 and skips its own build and preview. The suite expects the production preview. If a server answers on port 3001, such as the `aiChat:start` dev server, do not run the suite against it. Ask the user to stop that server, build the packages after asking, then run the suite.

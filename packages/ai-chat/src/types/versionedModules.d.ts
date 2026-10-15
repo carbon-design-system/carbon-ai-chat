@@ -15,3 +15,7 @@
 declare module 'use-sync-external-store/shim/with-selector.js' {
   export * from 'use-sync-external-store/shim/with-selector';
 }
+
+declare module 'use-sync-external-store/shim/index.js' {
+  export * from 'use-sync-external-store/shim';
+}

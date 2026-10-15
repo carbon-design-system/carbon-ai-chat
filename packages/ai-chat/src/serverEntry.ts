@@ -274,6 +274,7 @@ export {
   MessageResponseTypes,
   OptionItem,
   OptionItemPreference,
+  SelectionDisplay,
   PartialItemChunk,
   PartialItemChunkWithId,
   PauseItem,

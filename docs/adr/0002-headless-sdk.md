@@ -1,5 +1,5 @@
 ---
-status: proposed
+status: accepted
 date: 2026-09-15
 feedback-by: 2026-09-24
 discussion:
@@ -976,4 +976,4 @@ None.
 
 ## Decision
 
-Not decided. Feedback by 2026-09-24 in the RFC discussion linked above.
+Accepted. The headless `@carbon/ai-chat/sdk` entry point will be added as proposed. `instance.state` replaces `getState()` and the `STATE_CHANGE` event; both are deprecated in 1.x and removed in 2.0.0. The React `useChatSDK` hook ships alongside the framework-agnostic SDK. Existing entry points and callbacks are unaffected.

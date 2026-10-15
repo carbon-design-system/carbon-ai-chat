@@ -13,6 +13,8 @@ An ADR is a request for feedback. Its expensive failures are a proposal a reader
 - **If a Feedback wanted question can be answered "yes" without reading further,** it's too vague to draw a useful reply.
 - **Include your restatement in the write-up.** It goes in the PR description as evidence the Summary works on its own.
 
+**Next, check the [shared skim-reading rule](../../caic-copy-writer/SKILL.md#write-for-readers-who-skip-to-code).** Read only headings, tables, and code blocks. Record what a reader would do, which release or status it applies to, and the main limit. Compare that restatement with the full proposal and check each example copied on its own.
+
 ## Phase 2 — Sort the claims
 
 Put every assertion in one bucket. They get different treatment.
@@ -25,7 +27,8 @@ Put every assertion in one bucket. They get different treatment.
 
 - **Can someone review a diff against the Proposal?** If it can be satisfied two incompatible ways, it needs tightening.
 - **Does the Reference cover the behavior the types can't carry?** Look for defaults, failure paths, timing, and repeat calls.
-- **Is each Reference block explained on its own types?** Explanation split between code comments and bullets underneath makes a reader hold two halves at once. `reading-level` strips fenced code, so read the JSDoc for plainness yourself.
+- **Does each Reference block explain itself in the right form?** Types, CSS, markup, and policy tables need their own relevant context. `reading-level` strips fenced code, so read the comments yourself.
+- **Does every example teach a distinct part of the decision?** Cut repeated lessons and prose that narrates the code. Keep enough context to identify inputs, effects, and limits.
 - **Is the code real?** It should use types that exist or that the Proposal defines. Invented shapes in before/after code get copied.
 - **Is any break unannounced?** Ask directly whether a host finds out from its UI, or from wrong data, rather than from its build. If so, the record needs a Consumer impact section, whether or not it has one.
 - **Are the real costs said anywhere?** They can sit in Proposal or in Drawbacks. A record that names none is selling.
@@ -36,7 +39,7 @@ Put every assertion in one bucket. They get different treatment.
 ## Phase 4 — Check the shape
 
 - **No file:line citations or line-number evidence in the ADR.** Those go in the PR description.
-- **It reads alone.** A reader shouldn't have to open another ADR to understand this proposal.
+- **It reads alone.** A reader shouldn't have to open another ADR or git-ignored research notes to understand this proposal. An appendix may hold evidence, but not a decision-critical caveat.
 - **The Motivation opening and the Summary use no type names or paths before the problem is stated.**
 - **Run `npm run validate:adrs` and `npm run reading-level -- <file>`.** Report a grade above 10.
 
@@ -44,7 +47,7 @@ Put every assertion in one bucket. They get different treatment.
 
 Four sections, in this order:
 
-1. **Summary restatement**: your three-line restatement from Phase 1, and whether it matched the rest.
+1. **Summary and skim restatement**: your Phase 1 restatement, what headings/tables/code taught, and whether both matched the full text.
 2. **Proposal and impact**: ambiguities, missing silent breaks, invented code.
 3. **Evidence**: ✅ / ⚠️ / ❌ per claim, with file:line citations. Lead with ❌.
 4. **Open questions**: at most 5, each with concrete options.

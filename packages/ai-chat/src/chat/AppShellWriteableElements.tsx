@@ -13,6 +13,7 @@ import WriteableElement from './components/helpers/WriteableElement/WriteableEle
 import { WriteableElementName } from '../types/instance/WriteableElements';
 import { HasServiceManager } from './hocs/withServiceManager';
 import { useSelector } from './hooks/useSelector';
+import { selectCustomPromptLineVisible } from './utils/customPromptLine';
 import { AppState } from '../types/state/AppState';
 
 interface AppShellWriteableElementsProps extends HasServiceManager {
@@ -50,6 +51,12 @@ function resolveValue<T>(value: T | ((flag: boolean) => T), flag: boolean): T {
  * Configuration array for all writeable elements in the app shell.
  */
 const ELEMENT_CONFIGS: ElementConfig[] = [
+  {
+    wrapperSlot: 'input',
+    slotName: WriteableElementName.CUSTOM_PROMPT_LINE,
+    idSuffix: 'customPromptLineElement',
+    className: 'cds-aichat--custom-prompt-line-element',
+  },
   {
     wrapperSlot: 'header',
     slotName: WriteableElementName.CUSTOM_HEADER,
@@ -106,6 +113,7 @@ export const AppShellWriteableElements = React.memo(
     writeableElementsPresentKeys,
   }: AppShellWriteableElementsProps) {
     const suffix = serviceManager.namespace.suffix;
+    const inputIsVisible = useSelector(selectCustomPromptLineVisible);
     const hasContentMaxWidth = useSelector(
       (state: AppState) =>
         state.config.derived.header.hasContentMaxWidth ?? false
@@ -147,6 +155,9 @@ export const AppShellWriteableElements = React.memo(
             className,
           };
         }).filter((element) => {
+          if (element.slotName === WriteableElementName.CUSTOM_PROMPT_LINE) {
+            return inputIsVisible;
+          }
           // Hide CUSTOM_HEADER when the header area is turned off entirely,
           // matching the same gate that suppresses the default <Header>.
           if (
@@ -162,7 +173,14 @@ export const AppShellWriteableElements = React.memo(
           }
           return presentKeySet.has(element.slotName);
         }),
-      [showHomeScreen, suffix, presentKeySet, hasContentMaxWidth, headerIsOn]
+      [
+        showHomeScreen,
+        suffix,
+        presentKeySet,
+        hasContentMaxWidth,
+        headerIsOn,
+        inputIsVisible,
+      ]
     );
 
     return (

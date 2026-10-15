@@ -260,10 +260,11 @@ interface RenderUserDefinedInputNodeState {
 }
 
 /**
- * React-side renderer for custom TipTap node types in user message bubbles.
- * Returned content mounts into LIGHT DOM so consumer stylesheets apply. The
- * library manages the slot lifecycle — register a renderer that returns the
- * React node for nodes you care about and `null` for everything else.
+ * React-side renderer for `mention` chips, `command` chips, and custom TipTap
+ * nodes in user message bubbles. Returned content mounts into LIGHT DOM so
+ * consumer stylesheets apply. The library manages the slot lifecycle —
+ * register a renderer that returns the React node for nodes you care about
+ * and `null` for everything else.
  *
  * @category React
  * @experimental
@@ -274,10 +275,10 @@ type RenderUserDefinedInputNode = (
 ) => ReactNode;
 
 /**
- * Web-component renderer for custom TipTap node types in user message
- * bubbles. Mirrors {@link RenderUserDefinedInputNode} but returns an
- * `HTMLElement` (or `null`). The library moves / removes the element as
- * messages mount and unmount.
+ * Web-component renderer for `mention` chips, `command` chips, and custom
+ * TipTap nodes in user message bubbles. Mirrors
+ * {@link RenderUserDefinedInputNode} but returns an `HTMLElement` (or `null`).
+ * The library moves / removes the element as messages mount and unmount.
  *
  * @category Web component
  * @experimental
@@ -646,10 +647,17 @@ interface ChatContainerProps extends Omit<PublicConfig, 'markdown'> {
   markdown?: ChatContainerPropsMarkdown;
 
   /**
-   * This function is called before the render function of Carbon AI Chat is called. This function can return a Promise
-   * which will cause Carbon AI Chat to wait for it before rendering.
+   * Called once per mount, after the {@link ChatInstance} is ready and before the chat renders.
    *
-   * Use it to capture the {@link ChatInstance} so you can call instance methods later.
+   * Use it to capture the instance so you can call instance methods later. Events the chat fires while this runs
+   * still reach your render props.
+   *
+   * If it returns a promise, the chat waits for that promise before it renders. If it throws or rejects, the chat
+   * logs the error, stays unrendered, and skips {@link ChatContainerProps.onAfterRender | onAfterRender}. Changing
+   * props does not retry it; mount the chat again to retry.
+   *
+   * Don't return a promise that waits for `onAfterRender`. That callback runs only after this promise settles, so
+   * the chat would never render.
    *
    * @example
    * ```tsx
@@ -667,11 +675,11 @@ interface ChatContainerProps extends Omit<PublicConfig, 'markdown'> {
   onBeforeRender?: (instance: ChatInstance) => Promise<void> | void;
 
   /**
-   * This function is called after the render function of Carbon AI Chat is called. This function can return a Promise
-   * which will cause Carbon AI Chat to wait for it before rendering.
+   * Called once per mount, after the chat first renders and applies its initial view.
    *
-   * Like {@link ChatContainerProps.onBeforeRender}, it receives the {@link ChatInstance}; use it when you need the
-   * instance only after the first render has completed.
+   * Like {@link ChatContainerProps.onBeforeRender}, it receives the {@link ChatInstance}. Use it when you need the
+   * instance only after the first render. It does not wait for history to load, and the chat does not wait for a
+   * promise it returns.
    */
   onAfterRender?: (instance: ChatInstance) => Promise<void> | void;
 
@@ -714,10 +722,11 @@ interface ChatContainerProps extends Omit<PublicConfig, 'markdown'> {
   renderUserDefinedResponse?: RenderUserDefinedResponse;
 
   /**
-   * Renderer for custom TipTap node types inside sent user message bubbles
-   * (rich user message content). Invoked once per non-built-in node in a
-   * user message's `display_content`; returned React content mounts into
-   * light DOM. Return `null` for nodes you don't recognize.
+   * Renderer for nodes inside sent user message bubbles (rich user message
+   * content). Invoked once per `mention` chip, `command` chip, and custom
+   * TipTap node in a user message's `display_content`; returned React content
+   * mounts into light DOM. Return `null` for a node you don't render: a chip
+   * keeps its default look, and a custom node shows its `label` or `value`.
    *
    * @experimental
    */

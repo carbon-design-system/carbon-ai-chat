@@ -12,7 +12,7 @@ import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { property, state } from 'lit/decorators.js';
 import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
-import ChevronRight16 from '@carbon/icons/es/chevron--right/16.js';
+import ChevronDown16 from '@carbon/icons/es/chevron--down/16.js';
 import commonStyles from '../../../globals/scss/common.scss?lit';
 import styles from './reasoning-step.scss?lit';
 import prefix from '../../../globals/settings.js';
@@ -84,7 +84,7 @@ class CDSAIChatReasoningStep extends LitElement {
       this.updatePanelInertState();
     }
 
-    // Announce when a real open/close toggle has settled so the scroll manager can
+    // Announce when a real open/close toggle has settled so host listeners can
     // recalculate geometry. Skip the initial render (no previous value).
     if (
       changedProperties.has('open') &&
@@ -207,7 +207,7 @@ class CDSAIChatReasoningStep extends LitElement {
         @click=${this.handleButtonClick}
         @keydown=${this.handleButtonKeydown}>
         <span class="${baseClass}__icon" part="expando-icon" aria-hidden="true">
-          ${iconLoader(ChevronRight16)}
+          ${iconLoader(ChevronDown16)}
         </span>
         <div class="${baseClass}__title" part="title">
           <slot name="title">${this.title}</slot>
@@ -231,9 +231,9 @@ class CDSAIChatReasoningStep extends LitElement {
 
   /**
    * The panel animates `grid-template-rows` when the step expands/collapses. We wait for
-   * any in-flight transition on the panel to finish, then emit a composed event so
-   * consumers (e.g. the message list's scroll manager) can recalculate scroll geometry
-   * against the settled layout.
+   * any in-flight transition on the panel to finish, then emit a composed event so host
+   * listeners can recalculate layout against the settled geometry. The event is public; the
+   * message list's scroll controller no longer listens to it.
    *
    * Using the Web Animations API (`getAnimations`) handles both cases with one path: when a
    * transition runs we resolve on its `finished` promise, and when nothing animates (reduced

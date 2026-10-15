@@ -10,6 +10,12 @@
 @use '@carbon/styles/scss/utilities/convert' as *;
 @use '@carbon/styles/scss/components/button/tokens' as *;
 
+.cds-aichat--button-item--selected::part(button),
+.cds-aichat--clickable-image.cds-aichat--button-item--selected {
+  outline: rem(2px) solid currentColor;
+  outline-offset: rem(-2px);
+}
+
 // Mixin to apply proper radius
 @mixin footer-button-radius($radius) {
   // Non-column layout

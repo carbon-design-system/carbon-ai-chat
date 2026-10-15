@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "strict": true,
+    "esModuleInterop": true,
+    "declaration": false,
+    "sourceMap": true,
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
+    "moduleResolution": "bundler",
+    "plugins": [
+      {
+        "name": "ts-lit-plugin"
+      }
+    ],
+    "types": ["vite/client"]
+  },
+  "include": ["src/**/*"]
+}

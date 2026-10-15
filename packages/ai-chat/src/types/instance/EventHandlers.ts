@@ -76,6 +76,12 @@ export interface EventHandlers {
  * The type of handler for event bus events. This function may return a Promise in which case, the bus will await
  * the result and the loop will block until the Promise is resolved.
  *
+ * An event fired while another event of the same type is still running waits until every handler for the earlier
+ * one has settled, so events of one type reach your handlers in the order they were fired. A handler must therefore
+ * not wait on a chat call that fires its own event type again, such as awaiting
+ * {@link ChatInstanceMessaging.addMessage} inside a {@link BusEventType.RECEIVE} handler. After 10 seconds the chat
+ * rejects that inner call and skips its handlers.
+ *
  * @category Instance
  */
 export type EventBusHandler<T extends BusEvent = BusEvent> = (

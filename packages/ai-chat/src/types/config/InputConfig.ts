@@ -99,6 +99,8 @@ export type CustomListProps = _CustomListProps;
 
 /**
  * Configuration for the input field in the main chat and homescreen.
+ * Only {@link InputConfig.isVisible} applies while
+ * {@link WriteableElementName.CUSTOM_PROMPT_LINE} has content.
  *
  * @category Config
  */
@@ -110,7 +112,10 @@ export interface InputConfig {
 
   /**
    * Controls whether the main input surface is visible when the chat loads.
-   * Defaults to true.
+   * Defaults to true. Also controls a custom prompt line in assistant and human-agent
+   * views. An override stored for the active input takes precedence. The deprecated
+   * {@link ChatInstance.updateInputFieldVisibility} method overrides the assistant input.
+   * Hiding the custom prompt line preserves its content.
    */
   isVisible?: boolean;
 
@@ -130,6 +135,30 @@ export interface InputConfig {
    * @experimental
    */
   isSendDisabled?: boolean;
+
+  /**
+   * If true, the assistant input shows the stop streaming button, even when
+   * no request is pending and nothing is streaming. Use it to offer a stop
+   * control for work that is not a message request, such as a job your
+   * backend runs after a reply completes, or a run that is still going after
+   * a page reload. Defaults to false.
+   *
+   * This flag only adds a reason to show the button. The chat still shows it
+   * on its own for {@link PublicConfigMessaging.showStopButtonImmediately} or
+   * a cancellable stream, so `false` does not hide it. Restarting or clearing
+   * the conversation does not change the flag; set it back to false when your
+   * work ends.
+   *
+   * While the button shows, it takes the place of the send button; Enter
+   * still sends. A click fires {@link BusEventType.STOP_STREAMING}. Listen
+   * for that event to stop your work. The button is disabled until your
+   * handlers return, so await your stop call in the handler.
+   *
+   * Has no effect while the chat is connected to a human agent.
+   *
+   * @experimental
+   */
+  showStopStreamingButton?: boolean;
 
   /**
    * `@`-style mention trigger config. The chat layer wires this into a

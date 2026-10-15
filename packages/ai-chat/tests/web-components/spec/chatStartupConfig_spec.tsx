@@ -8,13 +8,11 @@
  */
 
 /**
- * Config changes reach a running chat without restarting it. A change made
+ * Config changes reach a running chat through `cds-aichat-container`, the same
+ * way from both host surfaces, without restarting it. A change made
  * while `onBeforeRender` is still pending waits for the gate and then applies
  * to the original instance. A change with no new content leaves the store
  * untouched, and no change drops the conversation.
- *
- * The gate case runs on `cds-aichat-container` only: React `ChatContainer`
- * doesn't await `onBeforeRender` yet.
  */
 
 import React from 'react';
@@ -99,7 +97,7 @@ const webComponentSurface: Surface = {
   },
 };
 
-describe.each([webComponentSurface])(
+describe.each([reactSurface, webComponentSurface])(
   'config updates through $name',
   (surface) => {
     beforeEach(setupBeforeEach);
@@ -136,6 +134,9 @@ describe.each([webComponentSurface])(
   }
 );
 
+// The remaining cases exercise one code path in `cds-aichat-container`; only
+// how config reaches the element differs between surfaces, which the case
+// above covers.
 describe('config updates after startup', () => {
   const surface = reactSurface;
 

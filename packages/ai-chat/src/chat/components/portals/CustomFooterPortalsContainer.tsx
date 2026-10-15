@@ -7,10 +7,10 @@
  *  @license
  */
 
-import React, { ReactNode, useRef, useEffect } from 'react';
-import ReactDOM from 'react-dom';
+import React, { useRef, useEffect } from 'react';
 
 import { useRemoveHostsOnUnmount } from '../../hooks/useRemoveHostsOnUnmount';
+import { SlotHostPortal } from './SlotHostPortal';
 
 import { ChatInstance } from '../../../types/instance/ChatInstance';
 import {
@@ -38,6 +38,9 @@ interface CustomFooterPortalsContainerProps {
    */
   renderCustomMessageFooter?: RenderCustomMessageFooter;
 
+  /** Removes the slot host when a web-component callback returns no content. */
+  removeEmptyHost?: boolean;
+
   /**
    * The list of events gathered by slot name that were fired that contain all the custom footers to render.
    */
@@ -64,6 +67,7 @@ interface CustomFooterPortalsContainerProps {
 function CustomFooterPortalsContainer({
   chatInstance,
   renderCustomMessageFooter,
+  removeEmptyHost,
   customFooterEventsBySlot,
   chatWrapper,
 }: CustomFooterPortalsContainerProps) {
@@ -108,42 +112,40 @@ function CustomFooterPortalsContainer({
     return hostElement;
   };
 
+  const removeSlotElement = (slot: string) => {
+    const hostElement = slotElementsRef.current.get(slot);
+    if (hostElement) {
+      hostElement.remove();
+      slotElementsRef.current.delete(slot);
+    }
+  };
+
   // All we need to do to enable the React portals is to render each portal somewhere in your application (it
   // doesn't really matter where).
   return renderCustomMessageFooter
     ? Object.entries(customFooterEventsBySlot).map(([slotName, slotState]) => {
-        const hostElement = getOrCreateSlotElement(slotName);
         const { message, messageItem, additionalData } = slotState;
+        const content = renderCustomMessageFooter(
+          slotName,
+          message,
+          messageItem,
+          chatInstance,
+          additionalData
+        );
+        if (removeEmptyHost && !content) {
+          removeSlotElement(slotName);
+          return null;
+        }
 
         return (
-          <CustomFooterComponentPortal key={slotName} hostElement={hostElement}>
-            {renderCustomMessageFooter(
-              slotName,
-              message,
-              messageItem,
-              chatInstance,
-              additionalData
-            )}
-          </CustomFooterComponentPortal>
+          <SlotHostPortal
+            key={slotName}
+            hostElement={getOrCreateSlotElement(slotName)}>
+            {content}
+          </SlotHostPortal>
         );
       })
     : null;
-}
-
-/**
- * This is the component that will attach a React portal to the given host element. The host element is the element
- * provided by Carbon AI Chat where your custom message footer will be displayed in the DOM. This portal will attach any React
- * children passed to it under this component so you can render the response using your own React application. Those
- * children will be rendered under the given element where it lives in the DOM.
- */
-function CustomFooterComponentPortal({
-  hostElement,
-  children,
-}: {
-  hostElement: HTMLElement;
-  children: ReactNode;
-}) {
-  return ReactDOM.createPortal(children, hostElement);
 }
 
 const CustomFooterPortalsContainerExport = React.memo(
