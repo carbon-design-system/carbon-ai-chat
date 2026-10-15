@@ -17,6 +17,10 @@ import type { ToolbarAction as _ToolbarAction } from '@carbon/ai-chat-components
  * `danger` / `divider` flags. Set `fixed: true` to keep the action visible
  * rather than collapsing into the overflow menu when space is tight.
  *
+ * In an overflow menu, `href` opens the URL on activation. Items announce
+ * as menu items and lack native link actions, including middle-click and
+ * copying the link address.
+ *
  * To render the action as a two-state toggle, set `isSelected`. When
  * `isSelected` is `true` or `false`, the button renders with `aria-pressed`
  * and a visible pressed treatment. Omitting `isSelected` entirely leaves the
@@ -47,7 +51,8 @@ export interface CustomMenuOption {
 
   /**
    * The URL to navigate to when the option is selected.
-   * Provide either this or `handler`, but not both.
+   * Provide either this or `handler`, but not both. Menu items lack the native
+   * link role, middle-click, and copy-link-address actions.
    */
   href?: string;
 

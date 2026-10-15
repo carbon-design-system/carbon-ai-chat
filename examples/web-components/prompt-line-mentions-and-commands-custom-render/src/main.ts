@@ -32,9 +32,8 @@
  */
 
 import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
-import '@carbon/web-components/es/components/tooltip/tooltip.js';
-import '@carbon/web-components/es/components/tooltip/tooltip-content.js';
-import '@carbon/web-components/es/components/tag/tag.js';
+import '@carbon/web-components/es/components/tooltip/index.js';
+import '@carbon/web-components/es/components/tag/index.js';
 import {
   type ChatInstance,
   type PublicConfig,

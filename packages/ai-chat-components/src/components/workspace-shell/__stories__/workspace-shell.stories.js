@@ -9,11 +9,11 @@
 
 import '../index';
 import '../../toolbar/index';
-import '@carbon/web-components/es/components/button/button.js';
-import '@carbon/web-components/es/components/tag/tag.js';
-import '@carbon/web-components/es/components/icon-button/icon-button.js';
-import '@carbon/web-components/es/components/ai-label/ai-label.js';
-import '@carbon/web-components/es/components/notification/inline-notification.js';
+import '@carbon/web-components/es/components/button/index.js';
+import '@carbon/web-components/es/components/tag/index.js';
+import '@carbon/web-components/es/components/icon-button/index.js';
+import '@carbon/web-components/es/components/ai-label/index.js';
+import '@carbon/web-components/es/components/notification/index.js';
 import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
 import { action } from 'storybook/actions';
 import { html } from 'lit';

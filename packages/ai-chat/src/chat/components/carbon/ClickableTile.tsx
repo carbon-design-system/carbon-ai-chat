@@ -9,8 +9,7 @@
 
 import { createComponent } from '@lit/react';
 import React from 'react';
-// Export the actual class for the component that will *directly* be wrapped with React.
-import CarbonClickableTileElement from '@carbon/web-components/es/components/tile/clickable-tile.js';
+import { CDSClickableTile as CarbonClickableTileElement } from '@carbon/web-components/es/components/tile/index.js';
 
 const ClickableTile = createComponent({
   tagName: 'cds-clickable-tile',
