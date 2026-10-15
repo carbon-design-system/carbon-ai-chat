@@ -19,6 +19,7 @@ import { html } from 'lit';
 import { property, state } from 'lit/decorators.js';
 
 import { carbonElement } from '@carbon/ai-chat-components/es/globals/decorators/index.js';
+import prefix from '@carbon/ai-chat-components/es/globals/settings.js';
 import { createMarkdownPluginHostController } from '@carbon/ai-chat-components/es/components/markdown/src/utils/plugin-host-container.js';
 import { FlattenedConfigElement } from '../shared/FlattenedConfigElement';
 import { ChatInstance } from '../../types/instance/ChatInstance';
@@ -50,6 +51,8 @@ installReactDomRenderer();
  */
 @carbonElement('cds-aichat-custom-element')
 class ChatCustomElement extends FlattenedConfigElement {
+  static is = `${prefix}-custom-element`;
+
   /**
    * Shared stylesheet for hiding styles.
    */
