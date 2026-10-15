@@ -15,7 +15,7 @@ import '../src/card-steps';
 import '../../toolbar/src/toolbar';
 import { Default as CardDefault, WithActions } from './card.stories';
 import { html } from 'lit';
-import '@carbon/web-components/es/components/ai-label/ai-label.js';
+import '@carbon/web-components/es/components/ai-label/index.js';
 import { ICON_INDICATOR_KIND } from '@carbon/web-components/es/components/icon-indicator/icon-indicator.js';
 import styles from './story-styles.scss?lit';
 import { action } from 'storybook/actions';

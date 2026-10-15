@@ -30,8 +30,7 @@
 import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
 import '@carbon/ai-chat-components/es/components/card/index.js';
 import '@carbon/ai-chat-components/es/components/toolbar/index.js';
-import '@carbon/web-components/es/components/notification/actionable-notification.js';
-import '@carbon/web-components/es/components/notification/actionable-notification-button.js';
+import '@carbon/web-components/es/components/notification/index.js';
 
 import {
   type ChatInstance,
