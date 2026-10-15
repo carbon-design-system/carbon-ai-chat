@@ -46,6 +46,7 @@ jobs:
             packages/ai-chat-components/scss
             packages/ai-chat-components/custom-elements.json
             packages/ai-chat/dist
+            packages/ai-chat/custom-elements.json
           if-no-files-found: error
           retention-days: 1
       - name: Validate TypeDoc links

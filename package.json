@@ -63,7 +63,8 @@
     "postinstall": "patch-package && husky",
     "scaffold:example-e2e": "node scripts/scaffold-example-e2e/cli.mjs",
     "test:example-e2e-scaffold": "node --test scripts/scaffold-example-e2e/scaffold.test.mjs",
-    "test:carbon-consumer": "node tools/carbon-v12-consumer/run.mjs"
+    "test:carbon-consumer": "npm run test:carbon-consumer:manifests && node tools/carbon-v12-consumer/run.mjs",
+    "test:carbon-consumer:manifests": "node --test tools/carbon-v12-consumer/manifests.test.mjs"
   },
   "devDependencies": {
     "@babel/core": "^8.0.0",
