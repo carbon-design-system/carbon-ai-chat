@@ -39,7 +39,7 @@ for (const entry of process.argv.slice(1)) {
     results[entry] = 'ok';
   } catch (error) {
     const frame = String(error?.stack ?? '').split('\\n')[1] ?? '';
-    results[entry] = { message: String(error?.message), frame };
+    results[entry] = { code: error?.code, message: String(error?.message), frame };
   }
 }
 console.log(JSON.stringify({ results }));
@@ -59,14 +59,26 @@ function importInNode(entries: string[]) {
 }
 
 describe('server-side imports of the built package', () => {
-  it.each([
-    '@carbon/ai-chat',
-    '@carbon/ai-chat/es-custom',
-    '@carbon/ai-chat/server',
-  ])(
+  it.each(['@carbon/ai-chat', '@carbon/ai-chat/es', '@carbon/ai-chat/server'])(
     'imports %s without browser globals',
     (entry) => {
       expect(importInNode([entry])).toEqual({ results: { [entry]: 'ok' } });
+    },
+    70000
+  );
+
+  it.each([
+    '@carbon/ai-chat/es-custom',
+    '@carbon/ai-chat/dist/es-custom/aiChatEntry.js',
+    '@carbon/ai-chat/dist/es-custom/web-components/cds-aichat-container/index.js',
+    '@carbon/ai-chat/dist/es-custom/web-components/cds-aichat-custom-element/index.js',
+    '@carbon/ai-chat-components/es-custom/components/aichat-card/index.js',
+  ])(
+    'rejects the removed fixed-prefix entry %s',
+    (entry) => {
+      expect(importInNode([entry])).toMatchObject({
+        results: { [entry]: { code: 'ERR_PACKAGE_PATH_NOT_EXPORTED' } },
+      });
     },
     70000
   );
