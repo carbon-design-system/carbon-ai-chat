@@ -25,6 +25,7 @@
  */
 
 import DOMPurify from 'dompurify';
+import { InlineMarkdownError } from './utils/inline-validation.js';
 import { html, TemplateResult } from 'lit';
 import { repeat } from 'lit/directives/repeat.js';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
@@ -37,6 +38,10 @@ import '../../table/index.js';
 import { defaultLineCountText } from '../../code-snippet/src/formatters.js';
 
 import { renderTable } from './utils/table-helpers.js';
+import {
+  projectedInlinePlugin,
+  projectInlineRun,
+} from './utils/inline-run-projection.js';
 import {
   combineConsecutiveHtmlInline,
   combineSplitHtmlBlocks,
@@ -146,6 +151,19 @@ function renderChildTokenTrees(
     combineSplitHtmlBlocks(children)
   );
 
+  if (options.inline) {
+    return html`${normalizedChildren.map((child, index) =>
+      renderInlineChild(child, {
+        ...options,
+        context: {
+          ...childContext,
+          parentChildren: normalizedChildren,
+          currentIndex: index,
+        },
+      })
+    )}`;
+  }
+
   // Multiple or complex children: use repeat for stable keying
   return html`${repeat(
     normalizedChildren,
@@ -181,6 +199,179 @@ function renderChildTokenTrees(
 }
 
 /**
+ * An inline child that a plugin owns renders through the plugin's rule alone.
+ * Rendering its subtree first would run host callbacks for output the plugin
+ * then discards.
+ */
+function renderInlineChild(
+  child: TokenTree,
+  options: RenderTokenTreeOptions
+): TemplateResult {
+  if (options.md && !isNativelyHandled(child.token)) {
+    return renderFallback(
+      child.token as Token,
+      child,
+      options.md,
+      options.sanitize,
+      options
+    );
+  }
+  return renderTokenTree(child, options);
+}
+
+function renderHTMLString(
+  content: string,
+  options: RenderTokenTreeOptions
+): TemplateResult {
+  return options.inline
+    ? options.inline.renderHTML(content)
+    : html`${unsafeHTML(content)}`;
+}
+
+function renderRawHTML(
+  node: TokenTree,
+  options: RenderTokenTreeOptions
+): TemplateResult {
+  const { token } = node;
+  const { sanitize } = options;
+  // Plugin-overridden html_block rules (rare but supported) — route through
+  // the plugin's renderer before our default unsafeHTML pass-through.
+  if (
+    token.type === 'html_block' &&
+    shouldDelegateToPluginRule(token, options.md) &&
+    options.md
+  ) {
+    return renderFallback(token as Token, node, options.md, sanitize, options);
+  }
+
+  let content = token.content || '';
+
+  // Apply HTML sanitization if requested
+  if (sanitize && content) {
+    content = sanitizeHtmlContent(content);
+  }
+
+  return renderHTMLString(content, options);
+}
+
+function containsInlinePlugin(
+  node: TokenTree,
+  options: RenderTokenTreeOptions
+): boolean {
+  if (!options.md || (node.token.block && node.token.type !== 'inline')) {
+    return false;
+  }
+  if (!isNativelyHandled(node.token)) {
+    return true;
+  }
+  if (
+    shouldDelegateToPluginRule(node.token, options.md) &&
+    !(node.token.tag === 'img' && options.customRenderers?.image)
+  ) {
+    return true;
+  }
+  return node.children.some((child) => containsInlinePlugin(child, options));
+}
+
+function canProjectInlineRun({ token, children }: TokenTree): boolean {
+  if (
+    (token.block && token.type !== 'inline') ||
+    token.tag?.includes('-') ||
+    ['input', 'button', 'select', 'textarea'].includes(token.tag ?? '') ||
+    ['html_inline', 'html_block', 'html_container'].includes(token.type ?? '')
+  ) {
+    return false;
+  }
+  return children.every(canProjectInlineRun);
+}
+
+function shouldProjectInlineRun(
+  node: TokenTree,
+  options: RenderTokenTreeOptions
+): boolean {
+  return (
+    node.token.type === 'inline' &&
+    !options.inline &&
+    canProjectInlineRun(node) &&
+    containsInlinePlugin(node, options)
+  );
+}
+
+function renderProjectedInlineRun(
+  node: TokenTree,
+  options: RenderTokenTreeOptions
+): TemplateResult {
+  const cached = options.preparedInlineRuns?.get(node);
+  if (cached) {
+    return cached;
+  }
+  let hasPlugin = false;
+  const content = renderChildTokenTrees(
+    node.children,
+    {
+      ...options,
+      inline: {
+        validateAttributes: () => {},
+        renderHTML: (markup, pluginToken) => {
+          if (!pluginToken) {
+            return html`${unsafeHTML(markup)}`;
+          }
+          hasPlugin = true;
+          return html`${projectedInlinePlugin(
+            markup,
+            pluginToken.content || markup.replace(/<[^>]*>/g, '')
+          )}`;
+        },
+      },
+    },
+    options.context
+  );
+  const index = options.pluginSlotCounter?.next(node) ?? 0;
+  const slotName = withInstanceNamespace(
+    `${MARKDOWN_SLOT_PREFIX}-pluginFallback-${index}`,
+    options
+  );
+  const result = hasPlugin
+    ? projectInlineRun(content, {
+        slotName,
+        fallbackHost: options.projectionHost,
+        resetInlineStyles: true,
+      })
+    : content;
+  options.preparedInlineRuns?.set(node, result);
+  return result;
+}
+
+/** The token's attributes as an object, sanitized and checked as requested. */
+function resolveAttrs(
+  token: TokenTree['token'],
+  options: RenderTokenTreeOptions
+): Record<string, string> {
+  const rawAttrs = Object.fromEntries(token.attrs || []);
+  const isCustomElement = !!token.tag && token.tag.includes('-');
+  const attrs =
+    options.sanitize && !isCustomElement ? sanitizeAttrs(rawAttrs) : rawAttrs;
+  validateInlineAttributes(attrs, options);
+  return attrs;
+}
+
+function validateInlineAttributes(
+  attrs: Record<string, string>,
+  options: RenderTokenTreeOptions
+) {
+  options.inline?.validateAttributes(attrs);
+}
+
+function rejectInlineBlock(tag: string, options: RenderTokenTreeOptions) {
+  if (options.inline) {
+    throw new InlineMarkdownError(
+      'non-inline-output',
+      `renderInlineMarkdown cannot render the native token tag "${tag}" inline.`
+    );
+  }
+}
+
+/**
  * Top-level entry: renders a markdown token tree to a Lit `TemplateResult`
  * and returns the batch of custom-renderer slot descriptors collected along
  * the way. Callers receive both pieces in one call so the batch can't be
@@ -205,6 +396,7 @@ export function renderMarkdownTree(
   const pluginSlotIndexes = new WeakMap<TokenTree, number>();
   const template = renderTokenTree(node, {
     ...options,
+    preparedInlineRuns: new WeakMap(),
     recordCustomRender: (descriptor) => batch.push(descriptor),
     pluginSlotCounter: {
       next: (forNode: TokenTree) => {
@@ -234,32 +426,14 @@ export function renderTokenTree(
   const { token, children } = node;
   const { context, sanitize } = options;
 
+  // Keep adjacent native text and plugin output in one DOM selection tree.
+  if (shouldProjectInlineRun(node, options)) {
+    return renderProjectedInlineRun(node, options);
+  }
+
   // Handle raw HTML blocks and inline HTML
   if (token.type === 'html_block' || token.type === 'html_inline') {
-    // Plugin-overridden html_block rules (rare but supported) — route through
-    // the plugin's renderer before our default unsafeHTML pass-through.
-    if (
-      token.type === 'html_block' &&
-      shouldDelegateToPluginRule(token, options.md) &&
-      options.md
-    ) {
-      return renderFallback(
-        token as Token,
-        node,
-        options.md,
-        sanitize,
-        options
-      );
-    }
-
-    let content = token.content || '';
-
-    // Apply HTML sanitization if requested
-    if (sanitize && content) {
-      content = sanitizeHtmlContent(content);
-    }
-
-    return html`${unsafeHTML(content)}`;
+    return renderRawHTML(node, options);
   }
 
   // Handle split HTML blocks that wrap markdown siblings (e.g. <details>…</details>).
@@ -363,21 +537,7 @@ export function renderTokenTree(
   // Handle structural elements (paragraphs, headings, lists, etc.)
   const tag = token.tag;
 
-  // Convert markdown-it attributes (array of [key, value]) into an object.
-  const rawAttrs = (token.attrs || []).reduce(
-    (acc, [key, value]) => {
-      acc[key] = value;
-      return acc;
-    },
-    {} as Record<string, string>
-  );
-
-  // Apply attribute sanitization if requested
-  let attrs = rawAttrs;
-  const isCustomElement = !!token.tag && token.tag.includes('-');
-  if (sanitize && !isCustomElement) {
-    attrs = sanitizeAttrs(rawAttrs);
-  }
+  const attrs = resolveAttrs(token, options);
 
   // Set up context for child rendering
   let childContext = context;
@@ -636,6 +796,7 @@ function renderWithStaticTag(
         }
       }
 
+      validateInlineAttributes(linkAttrs, options);
       return html`<a ${spread(linkAttrs)} @click=${onClickHandler}
         >${content}</a
       >`;
@@ -665,6 +826,7 @@ function renderWithStaticTag(
             imgAttrs = sanitizeAttrs(imgAttrs);
           }
         }
+        validateInlineAttributes(imgAttrs, options);
         return html`<img ${spread(imgAttrs)} />`;
       }
       if (node && options.md && shouldDelegateToPluginRule(token, options.md)) {
@@ -711,6 +873,7 @@ function renderWithStaticTag(
           options
         );
       }
+      rejectInlineBlock(tag, options);
       return html`<div ${spread(attrs)}>${content}</div>`;
   }
 }

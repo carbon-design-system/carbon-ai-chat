@@ -139,7 +139,7 @@ The mock backend uses `addMessage` / `addMessageChunk` by default. Add `?useUpse
 
 The flag works on localhost, 127.0.0.1, ::1, and paths under `/tag/next/` or `/tag/alpha/`. These builds show **Chat Configuration → Messaging → Use upsertMessage**. The checkbox sets or clears the flag and reloads the page. Published `/tag/latest/` and `/version/…` pages ignore the flag and hide the checkbox.
 
-Playwright uses three projects:
+Three Playwright projects cover send mode:
 
 - `chromium` and `firefox` cover the default mode.
 - `chromium-upsert-message` adds the flag. It skips `react-host-compatibility.spec.ts`, which calls `addMessage` directly.
@@ -162,6 +162,10 @@ Run these in both modes:
 - [ ] After **user_defined (stream)** completes, grow and shrink its custom content. The request stays pinned; scrolling away stops re-pinning.
 - [ ] Resize older content above the latest request. The latest request stays at the same viewport offset.
 - [ ] Stream text, reasoning steps, and code. Expand and collapse reasoning steps; the request stays pinned.
+
+#### Inline markdown regression coverage
+
+CI checks native copy/paste and word selection in core markdown and structured sent messages. The tests cover all four surfaces in Chromium, Firefox, and WebKit. Structured fallback text also keeps its blank lines.
 
 ### Track 3: Mobile & Non-Chrome Browser Support
 

@@ -81,7 +81,8 @@ export default {
   ],
   browsers: [
     playwrightLauncher({ product: 'chromium' }),
-    playwrightLauncher({ product: 'firefox' }),
+    // Concurrent Firefox pages can stall native selection gestures and overlap later tests.
+    playwrightLauncher({ product: 'firefox', concurrency: 1 }),
     playwrightLauncher({ product: 'webkit' }),
   ],
 };
