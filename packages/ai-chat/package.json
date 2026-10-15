@@ -105,7 +105,8 @@
     "dist/scss",
     "dist/css",
     "telemetry.yml",
-    "custom-elements.json"
+    "custom-elements.json",
+    "bin/**/*"
   ],
   "browserslist": [
     "> 0.5%",
@@ -222,5 +223,8 @@
   "bugs": {
     "url": "https://github.com/carbon-design-system/carbon-ai-chat/issues"
   },
-  "homepage": "https://github.com/carbon-design-system/carbon-ai-chat#readme"
+  "homepage": "https://github.com/carbon-design-system/carbon-ai-chat#readme",
+  "bin": {
+    "create-ai-chat-prefixed-build": "./bin/create-ai-chat-prefixed-build.js"
+  }
 }
