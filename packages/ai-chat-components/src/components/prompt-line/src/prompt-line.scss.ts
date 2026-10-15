@@ -5,4 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-export { default } from '../../aichat-prompt-line/aichat-prompt-line.scss?lit';
+import type { CSSResult } from 'lit';
+import styles from '../../aichat-prompt-line/aichat-prompt-line.scss?lit';
+
+const legacyStyles: CSSResult = styles;
+export default legacyStyles;
