@@ -1,13 +1,9 @@
 /*
- *  Copyright IBM Corp. 2025, 2026
+ * Copyright IBM Corp. 2026
  *
- *  This source code is licensed under the Apache-2.0 license found in the
- *  LICENSE file in the root directory of this source tree.
- *
- *  @license
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
  */
 
-import './src/code-snippet.js';
-export { default } from './src/code-snippet.js';
-export type { Action } from './src/code-snippet.js';
-export { CODE_SNIPPET_TYPE } from '@carbon/web-components/es/components/code-snippet/defs.js';
+export * from '../aichat-code-snippet/index.js';
+export { default } from '../aichat-code-snippet/index.js';

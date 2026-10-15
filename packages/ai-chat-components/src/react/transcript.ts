@@ -9,10 +9,10 @@
 
 import { createComponent } from '@lit/react';
 import React from 'react';
-import TranscriptElement from '../components/audio-player/src/transcript.js';
+import { Transcript as TranscriptElement } from '../components/aichat-audio-player/index.js';
 
 const Transcript = createComponent({
-  tagName: 'cds-aichat-transcript',
+  tagName: TranscriptElement.is,
   elementClass: TranscriptElement,
   react: React,
   events: {

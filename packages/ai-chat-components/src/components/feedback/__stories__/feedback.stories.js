@@ -7,7 +7,8 @@
  *  @license
  */
 
-import '../src/feedback';
+import '../../aichat-feedback/index.js';
+
 import { html } from 'lit';
 
 const negativeCategories = [

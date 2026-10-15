@@ -9,12 +9,12 @@
 
 import { createComponent } from '@lit/react';
 import React from 'react';
-import InputSendControlElement from '../components/prompt-line/src/send-control.js';
+import { InputSendControlElement } from '../components/aichat-prompt-line/index.js';
 import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
 const CDSAIChatInputSendControl = withWebComponentBridge(
   createComponent({
-    tagName: 'cds-aichat-input-send-control',
+    tagName: InputSendControlElement.is,
     elementClass: InputSendControlElement,
     react: React,
     events: {

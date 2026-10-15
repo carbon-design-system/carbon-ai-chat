@@ -10,9 +10,9 @@
 import { html, fixture, expect } from '@open-wc/testing';
 import '@carbon/ai-chat-components/es/components/carousel/index.js';
 import Carousel from '@carbon/ai-chat-components/es/components/carousel/src/carousel.js';
-import prefix from '../../../globals/settings';
+import { prefix } from '../../../globals/settings';
 
-const blockClass = `${prefix}-carousel`;
+const blockClass = `${prefix}-aichat-carousel`;
 
 /**
  * This repository uses the @web/test-runner library for testing

@@ -6,7 +6,7 @@ The public host interfaces can extend a config field's type. The plugin reads th
 
 `npm run build` bundles the package, then runs `npm run custom-elements`. Both commands generate `custom-elements.json`; never edit or commit it. `npm run test:manifest` runs the pure analyzer fixtures. The package test script runs them before Jest.
 
-The manifest projects both concrete hosts onto their published default entries. Inherited config metadata stays on each host. The abstract base has no public module or tag. Keep declaration and export references resolvable in packed packages.
+The manifest keeps each concrete host declaration on its pure class module. Its public registering index owns the custom-element definition and points back to that declaration. Inherited config metadata stays on each host. The plugin checks that the public barrel loads the actual registration; a type-only import does not count. The abstract base has no public module or tag. Keep all references resolvable in packed packages.
 
 The root `test:carbon-consumer` check compares the packed manifest with built runtime properties and attributes. It checks types against the packed public config and host interfaces. It also checks JSON discovery and published module references. Run it after a fresh build; see the [build preflight](../../../references/commands.md#build-preflight).
 

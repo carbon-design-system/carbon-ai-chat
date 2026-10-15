@@ -13,7 +13,7 @@ import {
   render as renderWithTestingLibrary,
   waitFor,
 } from '@testing-library/react';
-import { createMarkdownPluginHostController } from '@carbon/ai-chat-components/es/components/markdown/src/utils/plugin-host-container.js';
+import { createMarkdownPluginHostController } from '@carbon/ai-chat-components/es/components/aichat-markdown/utils/plugin-host-container.js';
 import { deepQuerySelector } from '@carbon/ai-chat-components/es/globals/utils/dom-utils.js';
 import '../../../src/web-components/cds-aichat-container';
 import '../../../src/web-components/cds-aichat-custom-element';

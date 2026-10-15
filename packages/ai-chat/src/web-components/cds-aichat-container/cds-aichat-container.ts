@@ -11,10 +11,9 @@ import { ContextProvider } from '@lit/context';
 import { css, nothing, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 
-import { carbonElement } from '@carbon/ai-chat-components/es/globals/decorators/index.js';
-import prefix from '@carbon/ai-chat-components/es/globals/settings.js';
-import { createMarkdownPluginHostController } from '@carbon/ai-chat-components/es/components/markdown/src/utils/plugin-host-container.js';
-import { preloadPromptLineRich } from '@carbon/ai-chat-components/es/components/prompt-line/src/prompt-line-rich-loader.js';
+import { prefix } from '@carbon/ai-chat-components/es/globals/settings.js';
+import { createMarkdownPluginHostController } from '@carbon/ai-chat-components/es/components/aichat-markdown/utils/plugin-host-container.js';
+import { preloadPromptLineRich } from '@carbon/ai-chat-components/es/components/aichat-prompt-line/prompt-line-rich-loader.js';
 import { PublicConfig } from '../../types/config/PublicConfig';
 import { FlattenedConfigElement } from '../shared/FlattenedConfigElement';
 import {
@@ -83,6 +82,8 @@ function currentWindowSize(): Dimension {
 /**
  * Loads the dynamic modules needed to boot a chat. The object seam lets tests
  * simulate a failed chunk load without changing the production imports.
+ *
+ * @internal
  */
 export const bootModuleLoader = {
   loadBootModules: () =>
@@ -103,9 +104,8 @@ export const bootModuleLoader = {
  * DOM, where page CSS reaches it, and the app's own `<slot>` elements pick it
  * up from the same shadow root.
  */
-@carbonElement('cds-aichat-container')
 class ChatContainer extends FlattenedConfigElement {
-  static is = `${prefix}-container`;
+  static is = `${prefix}-aichat-container`;
 
   // No box of its own by default: a float chat positions itself and must add
   // nothing to the page's layout. With a custom host element it fills that
@@ -838,4 +838,5 @@ interface CdsAiChatContainerAttributes extends Omit<PublicConfig, 'markdown'> {
 }
 
 export { CdsAiChatContainerAttributes };
+export { ChatContainer };
 export default ChatContainer;

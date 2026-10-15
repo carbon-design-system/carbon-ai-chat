@@ -7,10 +7,9 @@
  *  @license
  */
 
-import '../src/reasoning-steps-toggle';
-import '../src/reasoning-steps';
-import '../src/reasoning-step';
-import '../../markdown/src/markdown';
+import '../../aichat-markdown/index.js';
+import '../../aichat-reasoning-steps/index.js';
+
 import { LitElement, css, html, nothing } from 'lit';
 
 const defaultSteps = [

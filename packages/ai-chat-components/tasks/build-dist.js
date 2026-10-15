@@ -28,18 +28,30 @@ import litSCSS from '../tools/rollup-plugin-lit-scss.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-/**
- * Gets all of the folders and returns out
- *
- * @param {string} dir Directory to check
- * @returns {string[]} List of folders
- * @private
- */
-function _getFolders(dir) {
-  return fs
-    .readdirSync(dir)
-    .filter((file) => fs.statSync(path.join(dir, file)).isDirectory());
-}
+const componentEntries = {
+  'audio-player.min': 'src/components/aichat-audio-player/index.ts',
+  'card.min': 'src/components/aichat-card/index.ts',
+  'carousel.min': 'src/components/aichat-carousel/index.ts',
+  'chain-of-thought.min': 'src/components/aichat-chain-of-thought/index.ts',
+  'chat-button.min': 'src/components/aichat-button/index.ts',
+  'chat-history.min': 'src/components/aichat-history/index.ts',
+  'chat-shell.min': 'src/components/aichat-shell/index.ts',
+  'code-snippet.min': 'src/components/aichat-code-snippet/index.ts',
+  'conversational-search.min':
+    'src/components/aichat-conversational-search/index.ts',
+  'feedback.min': 'src/components/aichat-feedback/index.ts',
+  'file-uploads.min': 'src/components/aichat-file-uploads/index.ts',
+  'launcher.min': 'src/components/aichat-launcher/index.ts',
+  'markdown.min': 'src/components/aichat-markdown/index.ts',
+  'processing.min': 'src/components/aichat-processing/index.ts',
+  'prompt-line.min': 'src/components/aichat-prompt-line/index.ts',
+  'reasoning-steps.min': 'src/components/aichat-reasoning-steps/index.ts',
+  'table.min': 'src/components/aichat-table/index.ts',
+  'toolbar.min': 'src/components/aichat-toolbar/index.ts',
+  'truncated-text.min': 'src/components/aichat-truncated-text/index.ts',
+  'video-player.min': 'src/components/aichat-video-player/index.ts',
+  'workspace-shell.min': 'src/components/aichat-workspace-shell/index.ts',
+};
 
 /**
  * Builds all of the rollup bundles for all components
@@ -49,15 +61,7 @@ async function buildDist() {
     fs.mkdirSync('dist');
   }
 
-  const folders = _getFolders('src/components');
-
-  for (let i = folders.length - 1; i >= 0; i--) {
-    if (!fs.existsSync(`src/components/${folders[i]}/index.ts`)) {
-      folders.splice(i, 1);
-    }
-  }
-
-  return rollup(getRollupConfig({ folders }))
+  return rollup(getRollupConfig())
     .then((bundle) => {
       bundle.write({
         format: 'es',
@@ -71,30 +75,11 @@ async function buildDist() {
 }
 
 /**
- * Generates the multi-input for the rollup config
- *
- * @param {Array} folders Package names as inputs
- * @returns {{}} Object with inputs
- * @private
- */
-function _generateInputs(folders) {
-  const inputs = {};
-
-  folders.forEach((folder) => {
-    inputs[`${folder}.min`] = `src/components/${folder}/index.ts`;
-  });
-
-  return inputs;
-}
-
-/**
  * Sets the rollup configuration based on various settings
  *
- * @param {object} [options] The build options.
- * @param {Array} [options.folders] Package names as inputs
  * @returns {object} The Rollup config.
  */
-function getRollupConfig({ folders = [] } = {}) {
+function getRollupConfig() {
   const postCSSPlugins = [fixHostPseudo(), autoprefixer(), cssnano()];
 
   const licenseOptions = {
@@ -113,7 +98,7 @@ function getRollupConfig({ folders = [] } = {}) {
   };
 
   return {
-    input: _generateInputs(folders),
+    input: componentEntries,
     plugins: [
       alias({
         entries: [{ find: /^(.*)\.scss\?lit$/, replacement: '$1.scss' }],

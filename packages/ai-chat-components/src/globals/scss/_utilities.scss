@@ -16,14 +16,14 @@ $use-fallback-value: true !default;
 
 // Utility functions following Carbon's custom property patterns
 @function get-name($name) {
-  @return --#{$prefix}-#{$name};
+  @return --#{$prefix}-aichat-#{$name};
 }
 
 @function get-var($name, $fallback: false) {
   @if $fallback {
-    @return var(--#{$prefix}-#{$name}, #{$fallback});
+    @return var(--#{$prefix}-aichat-#{$name}, #{$fallback});
   }
-  @return var(--#{$prefix}-#{$name});
+  @return var(--#{$prefix}-aichat-#{$name});
 }
 
 @mixin declaration($name, $value) {

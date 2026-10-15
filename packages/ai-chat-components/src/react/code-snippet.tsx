@@ -12,13 +12,12 @@ import React from 'react';
 import { CarbonIcon } from '@carbon/web-components/es/globals/internal/icon-loader-utils.js';
 import { BUTTON_SIZE } from '@carbon/web-components/es/components/button/defs.js';
 
-// Export the actual class for the component that will *directly* be wrapped with React.
-import CDSAIChatCodeSnippet from '../components/code-snippet/src/code-snippet.js';
-import { withWebComponentBridge } from './utils/withWebComponentBridge';
+import { CDSAIChatCodeSnippet } from '../components/aichat-code-snippet/index.js';
+import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 import { transformReactIconToCarbonIcon } from '../globals/utils/iconTransform.js';
 
 // Re-export the Action interface from the web component
-export type { Action } from '../components/code-snippet/src/code-snippet.js';
+export type { Action } from '../components/aichat-code-snippet/aichat-code-snippet.js';
 
 /**
  * React-specific Action interface that accepts both CarbonIcon and React icon components.
@@ -35,7 +34,7 @@ export interface ReactAction {
 // Base code snippet component from @lit/react
 const BaseCodeSnippet = withWebComponentBridge(
   createComponent({
-    tagName: 'cds-aichat-code-snippet',
+    tagName: CDSAIChatCodeSnippet.is,
     elementClass: CDSAIChatCodeSnippet,
     react: React,
     events: {

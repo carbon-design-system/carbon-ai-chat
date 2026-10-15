@@ -40,7 +40,7 @@ import type { MessageRequest } from '../../../src/types/messaging/Messages';
 // We only care about the surrounding text content here, so a lightweight mock
 // that renders the chip's label is enough to verify spacing.
 jest.mock(
-  '@carbon/ai-chat-components/es/components/prompt-line/index.js',
+  '@carbon/ai-chat-components/es/components/aichat-prompt-line/index.js',
   () => ({
     renderTokenChip: ({ attrs }: { attrs: Record<string, string> }) => {
       const el = document.createElement('span');

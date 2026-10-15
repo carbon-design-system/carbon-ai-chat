@@ -35,15 +35,15 @@ import {
   textToDoc as _textToDoc,
   renderTokenChip as _renderTokenChip,
   renderInLightDom as _renderInLightDom,
-} from '@carbon/ai-chat-components/es/components/prompt-line/src/tiptap/index.js';
+} from '@carbon/ai-chat-components/es/components/aichat-prompt-line/tiptap/index.js';
 import type {
   RenderInLightDomArgs as _RenderInLightDomArgs,
   RenderInLightDomResult as _RenderInLightDomResult,
   RenderTokenChipArgs as _RenderTokenChipArgs,
   TokenChipAttrs as _TokenChipAttrs,
-} from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
-import type { ExcludedTrigger as _ExcludedTrigger } from '@carbon/ai-chat-components/es/components/prompt-line/src/tiptap/carbon-autocomplete.js';
-import type { BuildCarbonExtensionsConfig as _BuildCarbonExtensionsConfig } from '@carbon/ai-chat-components/es/components/prompt-line/src/tiptap/build-extensions.js';
+} from '@carbon/ai-chat-components/es/components/aichat-prompt-line/index.js';
+import type { ExcludedTrigger as _ExcludedTrigger } from '@carbon/ai-chat-components/es/components/aichat-prompt-line/tiptap/carbon-autocomplete.js';
+import type { BuildCarbonExtensionsConfig as _BuildCarbonExtensionsConfig } from '@carbon/ai-chat-components/es/components/aichat-prompt-line/tiptap/build-extensions.js';
 
 // ---------------------------------------------------------------------------
 // Carbon Tiptap extension factories.
