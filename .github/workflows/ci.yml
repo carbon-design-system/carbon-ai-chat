@@ -41,7 +41,6 @@ jobs:
           name: build-output
           path: |
             packages/ai-chat-components/es
-            packages/ai-chat-components/es-custom
             packages/ai-chat-components/dist
             packages/ai-chat-components/scss
             packages/ai-chat-components/custom-elements.json

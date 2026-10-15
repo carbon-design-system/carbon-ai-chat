@@ -8,6 +8,7 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import {
+  access,
   copyFile,
   mkdtemp,
   readFile,
@@ -102,6 +103,18 @@ for (const [name, directory] of [
   );
   const [packed] = JSON.parse(output);
   assert.equal(packed.name, name);
+  assert.deepEqual(
+    packed.files.filter(({ path }) => path.split('/').includes('es-custom')),
+    [],
+    `${name}: the tarball must not contain the removed fixed-prefix tree.`
+  );
+  const legacyOutput = join(
+    repository,
+    'packages',
+    directory,
+    name === '@carbon/ai-chat' ? 'dist/es-custom' : 'es-custom'
+  );
+  await assert.rejects(access(legacyOutput), { code: 'ENOENT' });
   dependencies[name] = `file:./${packed.filename}`;
 }
 
@@ -124,17 +137,30 @@ await writeFile(
 const html = await readFile(join(fixtureDirectory, 'fixture.html'), 'utf8');
 const source = await readFile(join(fixtureDirectory, 'fixture.js'), 'utf8');
 const variants = [
-  { name: 'normal', tree: 'es', prefix: 'cds' },
-  { name: 'custom', tree: 'es-custom', prefix: 'cds-custom' },
+  { name: 'normal', prefix: 'cds' },
+  { name: 'custom', prefix: 'cds-custom' },
 ];
-for (const { name, tree, prefix } of variants) {
+for (const { name, prefix } of variants) {
   await writeFile(
     join(consumer, `${name}.html`),
     html.replaceAll('VARIANT', name)
   );
   await writeFile(
     join(consumer, `${name}.js`),
-    source.replaceAll('TREE', tree).replaceAll('PREFIX', prefix)
+    source
+      .replaceAll(
+        '@carbon/ai-chat-components/TREE/',
+        name === 'custom'
+          ? './generated-custom/ai-chat-components/'
+          : '@carbon/ai-chat-components/es/'
+      )
+      .replaceAll(
+        '@carbon/ai-chat/dist/TREE/',
+        name === 'custom'
+          ? './generated-custom/ai-chat/'
+          : '@carbon/ai-chat/dist/es/'
+      )
+      .replaceAll('PREFIX', prefix)
   );
 }
 await copyFile(
@@ -143,6 +169,16 @@ await copyFile(
 );
 await runNpm(['install', '--ignore-scripts']);
 await runNpm(['ci', '--ignore-scripts']);
+await runNpm([
+  'exec',
+  '--offline',
+  '--',
+  'create-ai-chat-prefixed-build',
+  '--prefix',
+  'cds-custom',
+  '--out',
+  join(consumer, 'generated-custom'),
+]);
 const installed = await runNpm([
   'ls',
   '@carbon/ai-chat',
