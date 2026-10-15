@@ -7,12 +7,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import '../../aichat-card/index.js';
+import '../../aichat-toolbar/index.js';
+
 // https://storybook.js.org/docs/essentials/controls#conditional-controls
 
-import '../src/card';
-import '../src/card-footer';
-import '../src/card-steps';
-import '../../toolbar/src/toolbar';
 import { Default as CardDefault, WithActions } from './card.stories';
 import { html } from 'lit';
 import '@carbon/web-components/es/components/ai-label/index.js';

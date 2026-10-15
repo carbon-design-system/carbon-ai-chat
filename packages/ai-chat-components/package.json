@@ -4,6 +4,16 @@
   "version": "1.13.0-rc.0",
   "type": "module",
   "customElements": "./custom-elements.json",
+  "sideEffects": [
+    "./es/index.js",
+    "./es-custom/index.js",
+    "./src/index.ts",
+    "**/components/**/index.js",
+    "**/components/**/index.ts",
+    "**/*.scss.js",
+    "**/*.scss",
+    "**/*.css"
+  ],
   "license": "Apache-2.0",
   "repository": {
     "type": "git",

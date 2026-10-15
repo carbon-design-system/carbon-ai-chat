@@ -20,17 +20,16 @@ import React, {
 } from 'react';
 import { createPortal, flushSync } from 'react-dom';
 
-// Export the actual class for the component that will *directly* be wrapped with React.
-import CDSAIChatMarkdown from '../components/markdown/src/markdown.js';
+import { CDSAIChatMarkdown } from '../components/aichat-markdown/index.js';
 import type {
   MarkdownCustomRenderers,
   MarkdownRendererCodeBlockArgs,
   MarkdownRendererTableArgs,
-} from '../components/markdown/src/markdown-renderer-types.js';
-import { withWebComponentBridge } from './utils/withWebComponentBridge';
+} from '../components/aichat-markdown/markdown-renderer-types.js';
+import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
 const LitMarkdown = createComponent({
-  tagName: 'cds-aichat-markdown',
+  tagName: CDSAIChatMarkdown.is,
   elementClass: CDSAIChatMarkdown,
   react: React,
 });

@@ -33,9 +33,17 @@
       "types": "./dist/types/web-components/cds-aichat-container/index.d.ts",
       "import": "./dist/es/web-components/cds-aichat-container/index.js"
     },
+    "./es/web-components/cds-aichat-container/cds-aichat-container.js": {
+      "types": "./dist/types/web-components/cds-aichat-container/cds-aichat-container.d.ts",
+      "import": "./dist/es/web-components/cds-aichat-container/cds-aichat-container.js"
+    },
     "./es/web-components/cds-aichat-custom-element/index.js": {
       "types": "./dist/types/web-components/cds-aichat-custom-element/index.d.ts",
       "import": "./dist/es/web-components/cds-aichat-custom-element/index.js"
+    },
+    "./es/web-components/cds-aichat-custom-element/cds-aichat-custom-element.js": {
+      "types": "./dist/types/web-components/cds-aichat-custom-element/cds-aichat-custom-element.d.ts",
+      "import": "./dist/es/web-components/cds-aichat-custom-element/cds-aichat-custom-element.js"
     },
     "./es/*": "./dist/es/*",
     "./es-custom": {
@@ -50,9 +58,17 @@
       "types": "./dist/types/web-components/cds-aichat-container/index.d.ts",
       "import": "./dist/es/web-components/cds-aichat-container/index.js"
     },
+    "./dist/es/web-components/cds-aichat-container/cds-aichat-container.js": {
+      "types": "./dist/types/web-components/cds-aichat-container/cds-aichat-container.d.ts",
+      "import": "./dist/es/web-components/cds-aichat-container/cds-aichat-container.js"
+    },
     "./dist/es/web-components/cds-aichat-custom-element/index.js": {
       "types": "./dist/types/web-components/cds-aichat-custom-element/index.d.ts",
       "import": "./dist/es/web-components/cds-aichat-custom-element/index.js"
+    },
+    "./dist/es/web-components/cds-aichat-custom-element/cds-aichat-custom-element.js": {
+      "types": "./dist/types/web-components/cds-aichat-custom-element/cds-aichat-custom-element.d.ts",
+      "import": "./dist/es/web-components/cds-aichat-custom-element/cds-aichat-custom-element.js"
     },
     "./scss/*": "./dist/scss/*",
     "./css/*": "./dist/css/*",
@@ -100,9 +116,8 @@
     "not IE 11"
   ],
   "sideEffects": [
-    "**/web-components/**/*.js",
-    "**/chat.cds-aichat-container.js",
-    "**/chat.index.js",
+    "**/web-components/*/index.js",
+    "**/chat.register.js",
     "**/*.css"
   ],
   "devDependencies": {

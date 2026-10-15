@@ -7,10 +7,8 @@
  *  @license
  */
 
-import '../src/chain-of-thought-toggle';
-import '../src/chain-of-thought';
-import '../src/chain-of-thought-step';
-import '../src/tool-call-data';
+import '../../aichat-chain-of-thought/index.js';
+
 import '../../markdown';
 import { LitElement, css, html, nothing } from 'lit';
 

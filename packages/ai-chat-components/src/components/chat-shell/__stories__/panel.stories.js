@@ -7,9 +7,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import '../src/shell.js';
-import '../src/panel.js';
-import '../../card/src/card-footer.js';
+import '../../aichat-card/index.js';
+import '../../aichat-shell/index.js';
+
 import '@carbon/web-components/es/components/toggle/index.js';
 import { html, nothing } from 'lit';
 import styles from './story-styles.scss?lit';

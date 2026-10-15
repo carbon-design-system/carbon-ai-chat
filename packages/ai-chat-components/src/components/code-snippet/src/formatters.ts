@@ -1,13 +1,8 @@
 /*
- *  Copyright IBM Corp. 2025
+ * Copyright IBM Corp. 2026
  *
- *  This source code is licensed under the Apache-2.0 license found in the
- *  LICENSE file in the root directory of this source tree.
- *
- *  @license
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
  */
 
-export type LineCountFormatter = ({ count }: { count: number }) => string;
-
-export const defaultLineCountText: LineCountFormatter = ({ count }) =>
-  `${count} lines`;
+export * from '../../aichat-code-snippet/formatters.js';

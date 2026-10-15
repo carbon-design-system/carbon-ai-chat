@@ -7,9 +7,9 @@
  *  @license
  */
 
-import '../src/reasoning-step';
-import '../src/reasoning-steps';
-import '../../markdown/src/markdown';
+import '../../aichat-markdown/index.js';
+import '../../aichat-reasoning-steps/index.js';
+
 import { html } from 'lit';
 
 const defaultBody = html`<cds-aichat-markdown

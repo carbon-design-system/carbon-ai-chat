@@ -9,12 +9,12 @@
 
 import { createComponent } from '@lit/react';
 import React from 'react';
-import FileUploadItemElement from '../components/file-uploads/src/file-upload-item.js';
+import { FileUploadItemElement } from '../components/aichat-file-uploads/index.js';
 import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
 const CDSAIChatFileUploadItem = withWebComponentBridge(
   createComponent({
-    tagName: 'cds-aichat-file-upload-item',
+    tagName: FileUploadItemElement.is,
     elementClass: FileUploadItemElement,
     react: React,
     events: {

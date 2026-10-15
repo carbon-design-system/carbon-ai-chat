@@ -7,7 +7,7 @@
 
 import assert from 'node:assert/strict';
 import { readFile, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
 function componentClasses(manifest) {
   const components = manifest.modules.flatMap((module) =>
@@ -21,7 +21,7 @@ function componentClasses(manifest) {
       .map((declaration) => ({
         name: declaration.name,
         tag: declaration.tagName,
-        group: module.path.split('/src/')[0],
+        group: dirname(module.path),
       }))
   );
   assert.equal(

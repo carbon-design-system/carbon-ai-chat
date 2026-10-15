@@ -9,15 +9,13 @@
 
 import { createComponent, type EventName } from '@lit/react';
 import React from 'react';
-import ConversationalSearchShellElement, {
-  type CitationToggleEventDetail,
-} from '../components/conversational-search/src/conversational-search-shell.js';
-import prefix from '../globals/settings.js';
+import { ConversationalSearchShell as ConversationalSearchShellElement } from '../components/aichat-conversational-search/index.js';
+import { type CitationToggleEventDetail } from '../components/aichat-conversational-search/aichat-conversational-search-shell.js';
 import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
 const ConversationalSearchShell = withWebComponentBridge(
   createComponent({
-    tagName: `${prefix}-conversational-search-shell`,
+    tagName: ConversationalSearchShellElement.is,
     elementClass: ConversationalSearchShellElement,
     react: React,
     events: {

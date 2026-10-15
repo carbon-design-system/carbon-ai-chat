@@ -30,18 +30,14 @@ if (typeof document !== 'undefined') {
   }
 }
 
-/**
- * Filter out private members from the custom elements manifest
- * before passing it to Storybook
- */
-function filterPrivateMembers(manifest) {
+function filterPublicInstanceMembers(manifest) {
   const filtered = JSON.parse(JSON.stringify(manifest)); // Deep clone
 
   filtered.modules.forEach((module) => {
     (module.declarations || []).forEach((declaration) => {
       if (declaration.members) {
         declaration.members = declaration.members.filter(
-          (member) => member.privacy !== 'private'
+          (member) => member.privacy !== 'private' && !member.static
         );
       }
     });
@@ -50,7 +46,7 @@ function filterPrivateMembers(manifest) {
   return filtered;
 }
 
-const filteredManifest = filterPrivateMembers(customElements);
+const filteredManifest = filterPublicInstanceMembers(customElements);
 setCustomElementsManifest(filteredManifest);
 
 export const globalTypes = {
