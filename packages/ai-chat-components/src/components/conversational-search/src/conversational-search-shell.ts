@@ -12,7 +12,7 @@
 import { LitElement, html, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ChevronDown16, ChevronUp16 } from '@carbon/icons';
-import '@carbon/web-components/es/components/tag/tag.js';
+import '@carbon/web-components/es/components/tag/index.js';
 import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
 import { carbonElement } from '../../../globals/decorators/index.js';
 import prefix from '../../../globals/settings.js';

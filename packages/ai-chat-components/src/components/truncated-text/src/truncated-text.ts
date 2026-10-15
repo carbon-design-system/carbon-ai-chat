@@ -13,8 +13,6 @@ import { classMap } from 'lit/directives/class-map.js';
 import { carbonElement as customElement } from '@carbon/web-components/es/globals/decorators/carbon-element.js';
 import prefix from '../../../globals/settings';
 import '@carbon/web-components/es/components/tooltip/index.js';
-import '@carbon/web-components/es/components/button/button.js';
-import '@carbon/web-components/es/components/link/index.js';
 
 import styles from './truncated-text.scss?lit';
 import {

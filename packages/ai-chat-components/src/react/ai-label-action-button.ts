@@ -7,14 +7,14 @@
  *  @license
  */
 
-import '@carbon/web-components/es/components/ai-label/ai-label-action-button.js';
+import { CDSAILabelActionButton } from '@carbon/web-components/es/components/ai-label/index.js';
 
 import { createComponent } from '@lit/react';
 import React from 'react';
 
 const AILabelActionButton = createComponent({
   tagName: 'cds-ai-label-action-button',
-  elementClass: HTMLElement,
+  elementClass: CDSAILabelActionButton,
   react: React,
 });
 

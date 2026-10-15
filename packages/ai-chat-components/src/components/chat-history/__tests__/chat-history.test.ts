@@ -7,8 +7,17 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { html, fixture, expect } from '@open-wc/testing';
+import { html, fixture, expect, waitUntil } from '@open-wc/testing';
+import { sendKeys, sendMouse, resetMouse } from '@web/test-runner-commands';
 import '../index.js';
+
+async function clickMenuItem(item: HTMLElement) {
+  const { x, y, width, height } = item.getBoundingClientRect();
+  await sendMouse({
+    type: 'click',
+    position: [Math.round(x + width / 2), Math.round(y + height / 2)],
+  });
+}
 
 describe('history delete focus restore', () => {
   it('delete panel _getFocusDetailForDeletedItem picks next row and selected state', async () => {
@@ -98,22 +107,8 @@ describe('history delete focus restore', () => {
   });
 });
 
-describe('history panel item overflow menu positioning', () => {
-  it('flips the overflow menu body upward when there is not enough space below', async () => {
-    const createRect = (rect: Partial<DOMRect>): DOMRect =>
-      ({
-        x: 0,
-        y: 0,
-        width: 0,
-        height: 0,
-        top: 0,
-        right: 0,
-        bottom: 0,
-        left: 0,
-        toJSON: () => rect,
-        ...rect,
-      }) as DOMRect;
-
+describe('history panel item overflow menu', () => {
+  it('renders its actions through a cds-menu child, as the v12 overflow menu expects', async () => {
     const host = await fixture(html`
       <cds-aichat-history-content>
         <cds-aichat-history-panel-item
@@ -126,33 +121,130 @@ describe('history panel item overflow menu positioning', () => {
     ) as HTMLElement & {
       actions: unknown[];
       updateComplete: Promise<boolean>;
-      _adjustMenuPosition: () => void;
     };
-    item.actions = [{ text: 'Delete' }, { text: 'Rename' }];
+    item.actions = [{ text: 'Rename' }, { text: 'Delete', delete: true }];
     await item.updateComplete;
 
     const overflowMenu = item.shadowRoot?.querySelector(
       'cds-overflow-menu'
     ) as HTMLElement;
-    const overflowMenuBody = item.shadowRoot?.querySelector(
-      'cds-overflow-menu-body'
-    ) as HTMLElement;
-    const flippedClass = 'cds-aichat--history-overflow-menu-body--flipped';
+    expect(overflowMenu).to.exist;
 
-    host.getBoundingClientRect = () => createRect({ top: 0, bottom: 120 });
-    overflowMenu.getBoundingClientRect = () =>
-      createRect({ top: 80, bottom: 112 });
-    overflowMenuBody.getBoundingClientRect = () => createRect({ height: 80 });
+    // The v12 overflow menu drives a direct `cds-menu` child. Anything else
+    // leaves the menu unopenable and only warns in development.
+    const menu = overflowMenu.querySelector(':scope > cds-menu');
+    expect(menu, 'cds-menu must be a direct child of cds-overflow-menu').to
+      .exist;
+    expect(overflowMenu.querySelector('cds-overflow-menu-body')).to.not.exist;
 
-    item._adjustMenuPosition();
+    expect(overflowMenu.getAttribute('menu-alignment')).to.equal('bottom-end');
 
-    expect(overflowMenuBody.classList.contains(flippedClass)).to.be.true;
+    const items = Array.from(menu!.querySelectorAll('cds-menu-item'));
+    expect(items.map((el) => el.getAttribute('label'))).to.deep.equal([
+      'Rename',
+      'Delete',
+    ]);
+    expect(items[1].getAttribute('kind')).to.equal('danger');
+  });
 
-    host.getBoundingClientRect = () => createRect({ top: 0, bottom: 240 });
+  it('opens history actions, wraps focus and keeps activation separate from row selection', async () => {
+    const originalWarn = console.warn;
+    const menuWarnings: string[] = [];
+    console.warn = (...args: unknown[]) => {
+      const message = args.map(String).join(' ');
+      if (message.includes('expects a direct')) {
+        menuWarnings.push(message);
+      }
+      originalWarn.apply(console, args);
+    };
+    try {
+      let activations = 0;
+      let selections = 0;
+      const item = await fixture<
+        HTMLElement & {
+          actions: unknown[];
+          updateComplete: Promise<boolean>;
+        }
+      >(html`
+        <cds-aichat-history-panel-item
+          id="with-menu"
+          name="With menu"
+          show-actions></cds-aichat-history-panel-item>
+      `);
+      item.actions = [
+        { text: 'Rename' },
+        { text: 'Delete', delete: true, divider: true },
+      ];
+      item.addEventListener('history-item-menu-action', (event) => {
+        activations += 1;
+        expect((event as CustomEvent).detail.action).to.equal('Rename');
+      });
+      item.addEventListener('history-item-selected', () => {
+        selections += 1;
+      });
+      await item.updateComplete;
+      const overflowMenu = item.shadowRoot!.querySelector(
+        'cds-overflow-menu'
+      ) as HTMLElement & {
+        updateComplete: Promise<boolean>;
+      };
 
-    item._adjustMenuPosition();
+      const menu = overflowMenu.querySelector(
+        ':scope > cds-menu'
+      ) as HTMLElement & {
+        open: boolean;
+      };
+      expect(customElements.get('cds-menu')).to.exist;
+      expect(customElements.get('cds-menu-item')).to.exist;
+      await overflowMenu.updateComplete;
+      const trigger = overflowMenu.shadowRoot!.querySelector('button')!;
+      trigger.click();
+      await waitUntil(() => {
+        const surface =
+          menu.shadowRoot?.querySelector<HTMLElement>('[role="menu"]');
+        return (
+          !!surface &&
+          menu.open &&
+          getComputedStyle(surface).visibility === 'visible' &&
+          getComputedStyle(surface).display !== 'none' &&
+          surface.getBoundingClientRect().height > 0
+        );
+      });
+      const items = Array.from(
+        menu.querySelectorAll<HTMLElement>('cds-menu-item:not([disabled])')
+      );
+      expect(items.length).to.be.greaterThan(1);
+      await waitUntil(() => items[0].matches(':focus'));
+      await sendKeys({ press: 'ArrowUp' });
+      await waitUntil(() => items[items.length - 1].matches(':focus'));
+      await sendKeys({ press: 'ArrowDown' });
+      await waitUntil(() => items[0].matches(':focus'));
+      await sendKeys({ press: 'ArrowDown' });
+      await waitUntil(() => items[1].matches(':focus'));
+      await sendKeys({ press: 'Escape' });
+      await waitUntil(() => !menu.open && trigger.matches(':focus'));
+      for (const activation of ['Enter', 'Space']) {
+        trigger.click();
+        await waitUntil(() => menu.open && items[0].matches(':focus'));
+        await sendKeys({ press: activation });
+        await waitUntil(() => !menu.open && trigger.matches(':focus'));
+      }
+      expect(activations).to.equal(2);
+      trigger.click();
+      await waitUntil(() => menu.open && items[0].matches(':focus'));
+      await clickMenuItem(items[0]);
+      await waitUntil(() => !menu.open && trigger.matches(':focus'));
+      expect(activations).to.equal(3);
+      await resetMouse();
 
-    expect(overflowMenuBody.classList.contains(flippedClass)).to.be.false;
+      expect(selections).to.equal(0);
+      expect(
+        menuWarnings,
+        'Carbon must accept the menu composition'
+      ).to.deep.equal([]);
+    } finally {
+      console.warn = originalWarn;
+    }
   });
 });
 

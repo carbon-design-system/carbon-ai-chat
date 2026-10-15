@@ -9,7 +9,7 @@
 
 import { LitElement, html } from 'lit';
 import { property, state } from 'lit/decorators.js';
-import '@carbon/web-components/es/components/button/button.js';
+import '@carbon/web-components/es/components/button/index.js';
 import { CarbonIcon } from '@carbon/web-components/es/globals/internal/icon-loader-utils.js';
 import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
 import { BUTTON_KIND } from '@carbon/web-components/es/components/button/button.js';

@@ -11,7 +11,7 @@ import { LitElement, html } from 'lit';
 import prefix from '../../../globals/settings.js';
 import { property } from 'lit/decorators.js';
 import { carbonElement } from '../../../globals/decorators/carbon-element.js';
-import '@carbon/web-components/es/components/skeleton-text/skeleton-text.js';
+import '@carbon/web-components/es/components/skeleton-text/index.js';
 
 import styles from './chat-history.scss?lit';
 

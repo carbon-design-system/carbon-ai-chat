@@ -29,15 +29,7 @@ import type { ChatInstance } from '@carbon/ai-chat';
 import { PanelType } from '@carbon/ai-chat';
 import '@carbon/ai-chat-components/es/components/workspace-shell/index.js';
 import '@carbon/ai-chat-components/es/components/toolbar/index.js';
-import '@carbon/web-components/es/components/data-table/table.js';
-import '@carbon/web-components/es/components/data-table/table-head.js';
-import '@carbon/web-components/es/components/data-table/table-header-row.js';
-import '@carbon/web-components/es/components/data-table/table-header-cell.js';
-import '@carbon/web-components/es/components/data-table/table-body.js';
-import '@carbon/web-components/es/components/data-table/table-row.js';
-import '@carbon/web-components/es/components/data-table/table-cell.js';
-import '@carbon/web-components/es/components/data-table/table-header-title.js';
-import '@carbon/web-components/es/components/data-table/table-header-description.js';
+import '@carbon/web-components/es/components/data-table/index.js';
 import Close16 from '@carbon/icons/es/close/16.js';
 
 // Replace with a real production implementation; this hard-coded array stands in for a fetched orders dataset.

@@ -32,6 +32,19 @@ if (!global.CSSStyleSheet) {
   };
 }
 
+// jsdom exposes ElementInternals without the form methods Carbon calls on construction.
+if (typeof ElementInternals !== 'undefined') {
+  for (const method of ['setFormValue', 'setValidity'] as const) {
+    if (typeof ElementInternals.prototype[method] !== 'function') {
+      Object.defineProperty(ElementInternals.prototype, method, {
+        configurable: true,
+        writable: true,
+        value: jest.fn(),
+      });
+    }
+  }
+}
+
 // Mock window.matchMedia since it's not available in jsdom
 Object.defineProperty(window, 'matchMedia', {
   writable: true,

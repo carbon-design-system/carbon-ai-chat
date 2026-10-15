@@ -69,7 +69,7 @@ function ensureClipboardHelperRule(): void {
 
 import commonStyles from '../../../globals/scss/common.scss?lit';
 import styles from './code-snippet.scss?lit';
-import '@carbon/web-components/es/components/button/button.js';
+import '@carbon/web-components/es/components/button/index.js';
 
 /**
  * AI Chat code snippet orchestrator that keeps CodeMirror in sync with streamed slot content,

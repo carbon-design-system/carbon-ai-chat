@@ -7,7 +7,7 @@
  *  @license
  */
 
-import '@carbon/web-components/es/components/data-table/table-skeleton.js';
+import '@carbon/web-components/es/components/data-table/index.js';
 
 import { html } from 'lit';
 

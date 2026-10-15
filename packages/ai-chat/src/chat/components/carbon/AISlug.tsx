@@ -7,9 +7,7 @@
  *  @license
  */
 
-import '@carbon/web-components/es/components/ai-label/ai-label-action-button.js';
-
-import CDSAILabel from '@carbon/web-components/es/components/ai-label/ai-label.js';
+import { CDSAILabel } from '@carbon/web-components/es/components/ai-label/index.js';
 import { createComponent } from '@lit/react';
 import React from 'react';
 

@@ -29,8 +29,8 @@ import '@carbon/web-components/es/components/button/index.js';
 import { PanelType } from '@carbon/ai-chat';
 import '@carbon/ai-chat-components/es/components/workspace-shell/index.js';
 import '@carbon/ai-chat-components/es/components/toolbar/index.js';
-import '@carbon/web-components/es/components/tag/tag.js';
-import '@carbon/web-components/es/components/ai-label/ai-label.js';
+import '@carbon/web-components/es/components/tag/index.js';
+import '@carbon/web-components/es/components/ai-label/index.js';
 //icons
 import Close16 from '@carbon/icons/es/close/16.js';
 

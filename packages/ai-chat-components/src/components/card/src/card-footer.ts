@@ -12,8 +12,8 @@ import { property } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { repeat } from 'lit/directives/repeat.js';
-import '@carbon/web-components/es/components/button/button.js';
-import '@carbon/web-components/es/components/icon-button/icon-button.js';
+import '@carbon/web-components/es/components/button/index.js';
+import '@carbon/web-components/es/components/icon-button/index.js';
 import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
 import {
   BUTTON_KIND,
