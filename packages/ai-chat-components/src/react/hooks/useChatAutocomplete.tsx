@@ -10,7 +10,7 @@
 /**
  * React hook for the chat-input autocomplete overlay. Thin wrapper around
  * the framework-agnostic `AutocompleteController` in
- * [../../components/prompt-line/src/autocomplete-controller.ts]. That module
+ * [../../components/aichat-prompt-line/autocomplete-controller.ts]. That module
  * holds no Lit and registers no custom element, so reaching the controller
  * costs this hook neither. It still loads `<cds-aichat-autocomplete>` — it
  * renders that list itself — but never
@@ -26,20 +26,20 @@ import ReactDOM from 'react-dom';
 import type { JSX, ReactNode, RefObject } from 'react';
 
 import Autocomplete from '../autocomplete.js';
-import type PromptLineElement from '../../components/prompt-line/src/prompt-line.js';
+import type PromptLineElement from '../../components/aichat-prompt-line/aichat-prompt-line.js';
 import {
   AutocompleteController,
   itemsToGroups,
   type AutocompleteControllerState,
-} from '../../components/prompt-line/src/autocomplete-controller.js';
-import type { AutocompleteNavigatedEventDetail } from '../../components/prompt-line/autocomplete/src/autocomplete.js';
+} from '../../components/aichat-prompt-line/autocomplete-controller.js';
+import type { AutocompleteNavigatedEventDetail } from '../../components/aichat-autocomplete/aichat-autocomplete.js';
 import type {
   AutocompleteConfig,
   StartersConfig,
   SuggestionItem,
   TriggerChangeEventDetail,
   TriggerSuggestionConfig,
-} from '../../components/prompt-line/src/tiptap/types.js';
+} from '../../components/aichat-prompt-line/tiptap/types.js';
 
 export interface UseChatAutocompleteOptions {
   mention?: TriggerSuggestionConfig;

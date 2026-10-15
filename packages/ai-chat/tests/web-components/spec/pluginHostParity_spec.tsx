@@ -21,13 +21,13 @@
  * jsdom never upgrades `<cds-aichat-markdown>`, and the subject under test is
  * the listener, not the dispatcher. The details below are the ones
  * `reconcileCustomRendererHosts` actually dispatches — see
- * `packages/ai-chat-components/src/components/markdown/src/markdown.ts`.
+ * `packages/ai-chat-components/src/components/aichat-markdown/aichat-markdown.ts`.
  */
 
 import type {
   MarkdownPluginHostMountDetail,
   MarkdownPluginHostMountDetailInput,
-} from '@carbon/ai-chat-components/es/components/markdown/index.js';
+} from '@carbon/ai-chat-components/es/components/aichat-markdown/index.js';
 import { waitFor } from '@testing-library/react';
 import React from 'react';
 import { createRoot } from 'react-dom/client';

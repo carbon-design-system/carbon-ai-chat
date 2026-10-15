@@ -1,47 +1,8 @@
 /*
- *  Copyright IBM Corp. 2025, 2026
+ * Copyright IBM Corp. 2026
  *
- *  This source code is licensed under the Apache-2.0 license found in the
- *  LICENSE file in the root directory of this source tree.
- *
- *  @license
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
  */
 
-@use '@carbon/styles/scss/utilities/convert' as *;
-@use '@carbon/styles/scss/theme';
-@use '../../../globals/scss/vars' as *;
-@use '../../../globals/scss/modifiers' as *;
-@use '@carbon/styles/scss/breakpoint' as *;
-
-@include rounded-modifiers;
-@include stacked-modifiers;
-
-:host(#{$prefix}-workspace-shell-footer) {
-  display: grid;
-  align-items: stretch;
-  border-block-start: solid rem(1px) theme.$border-subtle-00;
-  container-type: inline-size;
-  margin-block-start: auto;
-}
-
-// Fixed layout when class is present
-:host(.#{$prefix}-workspace-shell-footer__three-buttons) {
-  grid-template-columns: 50% 25% 25%;
-}
-
-// Flexible layout when class is absent
-:host(:not(.#{$prefix}-workspace-shell-footer__three-buttons)) {
-  grid-template-columns: repeat(auto-fit, minmax(80px, auto));
-}
-
-/* Container Query — stacked layout for narrow widths */
-@container (max-width: 671px) {
-  :host(#{$prefix}-workspace-shell-footer) {
-    grid-auto-flow: row;
-    grid-template-columns: 1fr;
-  }
-
-  :host(.#{$prefix}-workspace-shell-footer__three-buttons) {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
+@forward '../../aichat-workspace-shell/aichat-workspace-shell-footer';

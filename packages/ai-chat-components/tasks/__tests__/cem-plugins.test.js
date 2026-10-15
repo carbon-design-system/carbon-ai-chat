@@ -6,11 +6,18 @@
  */
 
 import assert from 'node:assert/strict';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
 import { create, ts } from '@custom-elements-manifest/analyzer';
+import { litPlugin } from '@custom-elements-manifest/analyzer/src/features/framework-plugins/lit/lit.js';
 import { globby } from 'globby';
 import config from '../../custom-elements-manifest.config.js';
 import {
@@ -178,6 +185,99 @@ test('recognizes a pure static-is class and its registering barrel', () => {
   );
 });
 
+test('static-is getters resolve tags and registering barrels reference the pure class', () => {
+  const manifest = analyze(
+    {
+      'src/components/aichat-card/aichat-card.ts': `
+      import { prefix } from '../../globals/settings.js';
+      const component = 'aichat-card';
+      export default class Card extends HTMLElement {
+        static get is() { return \`\${prefix}-\${component}\`; }
+      }
+    `,
+      'src/components/aichat-card/index.ts': `
+      import CardElement from './aichat-card.js';
+      import { defineCustomElement as register } from '../../globals/register.js';
+      export { CardElement as Card };
+      register(CardElement);
+    `,
+    },
+    'fixture'
+  );
+  assert.equal(declaration(manifest, 'Card').tagName, 'fixture-aichat-card');
+  assert.equal(declaration(manifest, 'Card').customElement, true);
+  assert.equal(
+    declaration(manifest, 'Card').members.find((member) => member.name === 'is')
+      .static,
+    true
+  );
+  const owner = manifest.modules.find(
+    (module) => module.path === 'es/components/aichat-card/aichat-card.js'
+  );
+  assert.deepEqual(
+    (owner.exports ?? []).filter(
+      (entry) => entry.kind === 'custom-element-definition'
+    ),
+    []
+  );
+  const barrel = manifest.modules.find(
+    (module) => module.path === 'es/components/aichat-card/index.js'
+  );
+  assert.deepEqual(
+    barrel.exports.filter(
+      (entry) => entry.kind === 'custom-element-definition'
+    ),
+    [
+      {
+        kind: 'custom-element-definition',
+        name: 'fixture-aichat-card',
+        declaration: {
+          name: 'Card',
+          module: 'es/components/aichat-card/aichat-card.js',
+        },
+      },
+    ]
+  );
+  assert.deepEqual(
+    barrel.exports.find((entry) => entry.kind === 'js' && entry.name === 'Card')
+      .declaration,
+    { name: 'Card', module: 'es/components/aichat-card/aichat-card.js' }
+  );
+});
+
+for (const [name, getter, expected] of [
+  [
+    'multiple statements',
+    "static get is() { const tag = 'dynamic-element'; return tag; }",
+    /Unsupported static is declaration for Example/,
+  ],
+  [
+    'a conditional return',
+    "static get is() { if (ready) return 'first-element'; return 'second-element'; }",
+    /Unsupported static is declaration for Example/,
+  ],
+  [
+    'no return value',
+    'static get is() { return; }',
+    /Unsupported static is declaration for Example/,
+  ],
+  [
+    'a dynamic expression',
+    'static get is() { return getTagName(); }',
+    /Unsupported tag expression: getTagName\(\)/,
+  ],
+]) {
+  test(`rejects a static-is getter with ${name}`, () => {
+    assert.throws(
+      () =>
+        analyze({
+          'src/element.ts': `class Example extends HTMLElement { ${getter} }`,
+        }),
+      expected
+    );
+  });
+}
+
 test('keeping a decorator alongside static is does not duplicate a tag', () => {
   const manifest = analyze({
     'src/element.ts':
@@ -210,6 +310,46 @@ test('imported reexports point to their declarations through aliases and barrels
       ['loadViaBarrel', { name: 'loadDeps', module: 'es/loader.js' }],
     ]
   );
+});
+
+test('nested public reexports retain the declaration module origin and omit types', () => {
+  const manifest = analyze({
+    'src/components/aichat-prompt-line/tiptap/leaf.ts': `
+      export function load() {}
+      export interface Detail { ready: boolean; }
+      export enum Status { Ready = 'ready' }
+    `,
+    'src/components/aichat-prompt-line/tiptap/index.ts': `
+      export { load, Status, type Detail } from './leaf.js';
+    `,
+    'src/components/aichat-prompt-line/index.ts': `
+      export { load, Status, type Detail } from './tiptap/index.js';
+    `,
+    'src/consumer.ts': `
+      import { load as importedLoad, type Detail } from './components/aichat-prompt-line/index.js';
+      export { importedLoad as load, Detail };
+    `,
+  });
+  for (const filename of [
+    'components/aichat-prompt-line/tiptap/index',
+    'components/aichat-prompt-line/index',
+    'consumer',
+  ]) {
+    const module = manifest.modules.find(
+      (entry) => entry.path === `es/${filename}.js`
+    );
+    assert.equal(
+      module.exports.some((entry) => entry.name === 'Detail'),
+      false
+    );
+    assert.deepEqual(
+      module.exports.find((entry) => entry.name === 'load').declaration,
+      {
+        name: 'load',
+        module: 'es/components/aichat-prompt-line/tiptap/leaf.js',
+      }
+    );
+  }
 });
 
 test('imported external reexports retain the package and public subpath', () => {
@@ -365,16 +505,18 @@ test('rejects a decorator/static-is disagreement', () => {
   );
 });
 
-test('the analyzer includes public source while excluding fixture, story and declaration-only sources', async () => {
+test('the analyzer includes canonical public source while excluding compatibility and build-only sources', async () => {
   const directory = mkdtempSync(path.join(tmpdir(), 'cem-sources-'));
   try {
     for (const filename of [
-      'src/element.ts',
-      'src/__stories__/example.ts',
-      'src/__tests__/example.ts',
-      'src/globals.d.ts',
-      'src/example.test.ts',
-      'src/example.stories.ts',
+      'src/components/aichat-example/aichat-example.ts',
+      'src/components/example/src/legacy.ts',
+      'src/components/aichat-example/__stories__/example.ts',
+      'src/components/aichat-example/__tests__/example.ts',
+      'src/components/aichat-example/example.d.ts',
+      'src/components/aichat-example/aichat-example.scss.ts',
+      'src/components/aichat-example/example.test.ts',
+      'src/components/aichat-example/example.stories.ts',
       'src/globals/internal/storybook-cdn.ts',
     ]) {
       const file = path.join(directory, filename);
@@ -383,10 +525,73 @@ test('the analyzer includes public source while excluding fixture, story and dec
     }
     assert.deepEqual(
       await globby(config.globs, { cwd: directory, ignore: config.exclude }),
-      ['src/element.ts']
+      ['src/components/aichat-example/aichat-example.ts']
     );
     assert.equal(config.packagejson, false);
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
+});
+
+test('the production source graph has resolvable declarations and one definition per tag', async () => {
+  const files = await globby(config.globs, { ignore: config.exclude });
+  const manifest = create({
+    modules: files.map((filename) =>
+      ts.createSourceFile(
+        filename,
+        readFileSync(filename, 'utf8'),
+        ts.ScriptTarget.Latest,
+        true
+      )
+    ),
+    plugins: [...litPlugin(), ...config.plugins],
+  });
+  const defined = new Set(
+    manifest.modules.flatMap((module) => [
+      ...(module.declarations ?? []).map(
+        (entry) => `${module.path}#${entry.name}`
+      ),
+      ...(module.exports ?? []).map((entry) => `${module.path}#${entry.name}`),
+    ])
+  );
+  const referenceKeys = new Set([
+    'declaration',
+    'superclass',
+    'inheritedFrom',
+    'mixins',
+  ]);
+  function check(value, key, owner) {
+    if (!value || typeof value !== 'object') {
+      return;
+    }
+    if (referenceKeys.has(key) && value.name && !value.package) {
+      const reference = `${value.module ?? owner}#${value.name}`;
+      assert.ok(
+        defined.has(reference),
+        `Unresolved local declaration: ${reference}`
+      );
+    }
+    for (const [name, child] of Object.entries(value)) {
+      if (Array.isArray(child)) {
+        child.forEach((entry) => check(entry, name, owner));
+      } else {
+        check(child, name, owner);
+      }
+    }
+  }
+  for (const module of manifest.modules) {
+    check(module, undefined, module.path);
+  }
+  const tags = manifest.modules.flatMap((module) =>
+    (module.declarations ?? []).flatMap((entry) =>
+      entry.tagName ? [entry.tagName] : []
+    )
+  );
+  const definitions = manifest.modules.flatMap((module) =>
+    (module.exports ?? [])
+      .filter((entry) => entry.kind === 'custom-element-definition')
+      .map((entry) => entry.name)
+  );
+  assert.ok(tags.length > 0);
+  assert.deepEqual(definitions.sort(), [...new Set(tags)].sort());
 });

@@ -1,0 +1,77 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+import { LitElement, html } from 'lit';
+import { prefix } from '../../globals/settings.js';
+import { property } from 'lit/decorators.js';
+
+import styles from './chat-history.scss?lit';
+
+/**
+ * Chat History Content.
+ *
+ * @element cds-aichat-history-content
+ *
+ */
+class CDSAIChatHistoryContent extends LitElement {
+  static get is() {
+    return `${prefix}-aichat-history-content`;
+  }
+
+  /**
+   * Sets default slot value to content
+   */
+  @property({ type: String, reflect: true })
+  slot = 'content';
+
+  /**
+   * Label to display before the results count
+   */
+  @property({ type: String, attribute: 'results-label' })
+  resultsLabel = 'Results';
+
+  /**
+   * The results count to display
+   */
+  @property({ type: String, attribute: 'results-count' })
+  resultsCount?: string | number;
+
+  render() {
+    const shouldDisplay =
+      this.resultsCount !== undefined &&
+      this.resultsCount !== null &&
+      this.resultsCount !== '';
+
+    const displayText =
+      shouldDisplay && this.resultsLabel
+        ? `${this.resultsLabel}: ${this.resultsCount}`
+        : this.resultsCount;
+
+    return html`
+      <div
+        class="${prefix}-aichat--history-content__container"
+        aria-live="polite">
+        ${
+          shouldDisplay
+            ? html`<span
+                class="${prefix}-aichat--history-content__results-count">
+                ${displayText}
+              </span>`
+            : ''
+        }
+      </div>
+      <slot></slot>
+    `;
+  }
+
+  static styles = styles;
+}
+
+export { CDSAIChatHistoryContent };
+export default CDSAIChatHistoryContent;

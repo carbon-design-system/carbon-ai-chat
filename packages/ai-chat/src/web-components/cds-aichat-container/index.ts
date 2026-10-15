@@ -7,13 +7,9 @@
  *  @license
  */
 
-/**
- * This is the exposed web component for a basic floating chat.
- */
-
 import { installReactDomRenderer } from '../shared/react-dom-renderer';
 
 installReactDomRenderer();
 
-export { default } from './cds-aichat-container';
+export { default, ChatContainer } from './register';
 export type { CdsAiChatContainerAttributes } from './cds-aichat-container';

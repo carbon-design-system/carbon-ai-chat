@@ -70,7 +70,7 @@ jest.mock('@codemirror/view', () => {
  * (which depends on complex browser APIs that aren't available under happy-dom).
  */
 jest.mock(
-  '@carbon/ai-chat-components/es/components/code-snippet/src/codemirror/codemirror-loader.js',
+  '@carbon/ai-chat-components/es/components/aichat-code-snippet/codemirror/codemirror-loader.js',
   () => {
     const createRuntime = async () => {
       class MockCompartment {}

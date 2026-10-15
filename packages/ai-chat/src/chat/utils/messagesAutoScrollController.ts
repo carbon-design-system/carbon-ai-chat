@@ -8,7 +8,7 @@
  */
 
 import throttle from 'lodash-es/throttle.js';
-import prefix from '@carbon/ai-chat-components/es/globals/settings.js';
+import { prefix } from '@carbon/ai-chat-components/es/globals/settings.js';
 
 /**
  * Framework-agnostic scroll controller, connected to the view through {@link ScrollHost}.
@@ -1055,8 +1055,9 @@ export class MessagesScrollController {
       return;
     }
 
-    const markdownElement = targetElem.querySelector(`${prefix}-markdown`) as
-      (Element & { updateComplete?: Promise<unknown> }) | null;
+    const markdownElement = targetElem.querySelector(
+      `${prefix}-aichat-markdown`
+    ) as (Element & { updateComplete?: Promise<unknown> }) | null;
 
     if (!markdownElement) {
       return;

@@ -13,9 +13,7 @@
  * onAfterRender subscribes to public state; the host owns errors and uploads.
  */
 import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
-import '@carbon/ai-chat-components/es/components/prompt-line/src/prompt-line-shell.js';
-import '@carbon/ai-chat-components/es/components/prompt-line/src/prompt-line.js';
-import '@carbon/ai-chat-components/es/components/prompt-line/src/send-control.js';
+import '@carbon/ai-chat-components/es/components/aichat-prompt-line/index.js';
 import type {
   InputChangeEventDetail,
   PromptLineElement,

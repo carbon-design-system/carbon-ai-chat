@@ -14,9 +14,9 @@ import InputSendControl from '@carbon/ai-chat-components/es/react/input-send-con
 import FileUploads from '@carbon/ai-chat-components/es/react/file-uploads.js';
 import PromptLine from '@carbon/ai-chat-components/es/react/prompt-line.js';
 import ErrorMessage from '@carbon/ai-chat-components/es/react/error-message.js';
-import type { FileUpload } from '@carbon/ai-chat-components/es/components/prompt-line/src/types.js';
-import { FileStatusValue } from '@carbon/ai-chat-components/es/components/prompt-line/src/types.js';
-import type { PromptLineElement } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
+import type { FileUpload } from '@carbon/ai-chat-components/es/components/aichat-prompt-line/types.js';
+import { FileStatusValue } from '@carbon/ai-chat-components/es/components/aichat-prompt-line/types.js';
+import type { PromptLineElement } from '@carbon/ai-chat-components/es/components/aichat-prompt-line/index.js';
 import { useChatAutocomplete } from '@carbon/ai-chat-components/es/react/hooks/useChatAutocomplete.js';
 import type { Editor, JSONContent } from '@tiptap/core';
 import actions from '../../store/actions';

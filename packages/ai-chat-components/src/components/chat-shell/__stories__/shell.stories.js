@@ -7,10 +7,10 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import '../src/shell';
-import '../src/panel';
-import '../../card/src/card-footer';
-import '../../toolbar/src/toolbar';
+import '../../aichat-card/index.js';
+import '../../aichat-shell/index.js';
+import '../../aichat-toolbar/index.js';
+
 import { html, nothing } from 'lit';
 import styles from './story-styles.scss?lit';
 

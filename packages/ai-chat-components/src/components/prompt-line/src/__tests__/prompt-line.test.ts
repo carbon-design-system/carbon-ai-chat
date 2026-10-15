@@ -7,10 +7,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import '../../../aichat-prompt-line/index.js';
+
 import { expect, fixture, html, oneEvent } from '@open-wc/testing';
 import { Extension } from '@tiptap/core';
 
-import '../prompt-line.js';
 import { PROMPT_LINE_MAX_BLOCK_SIZE } from '../prompt-line-constants.js';
 import type PromptLineElement from '../prompt-line.js';
 import { carbonMention } from '../tiptap/carbon-mention.js';

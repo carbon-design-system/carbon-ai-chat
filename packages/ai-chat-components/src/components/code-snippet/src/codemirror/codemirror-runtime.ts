@@ -1,22 +1,8 @@
 /*
- *  Copyright IBM Corp. 2025, 2026
+ * Copyright IBM Corp. 2026
  *
- *  This source code is licensed under the Apache-2.0 license found in the
- *  LICENSE file in the root directory of this source tree.
- *
- *  @license
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
  */
 
-export { LanguageController } from './language-controller.js';
-export type { LanguageStateUpdate } from './language-controller.js';
-export { createContentSync } from './content-sync.js';
-export type { ContentSyncHandle } from './content-sync.js';
-export {
-  createEditorView,
-  applyLanguageSupport,
-  updateReadOnlyConfiguration,
-  updateContentAttributes,
-} from './editor-manager.js';
-export { createDiffDecorator } from './diff-decorator.js';
-export { EditorView } from '@codemirror/view';
-export { Compartment } from '@codemirror/state';
+export * from '../../../aichat-code-snippet/codemirror/codemirror-runtime.js';

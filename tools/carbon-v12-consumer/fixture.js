@@ -52,22 +52,32 @@ async function mount() {
   document.body.append(toolbar);
   await toolbar.updateComplete;
 
-  const chat = document.createElement(tag);
-  if (customElement) {
-    chat.style.inlineSize = '600px';
-    chat.style.blockSize = '600px';
+  function createChat() {
+    const chat = document.createElement(tag);
+    if (customElement) {
+      chat.style.inlineSize = '600px';
+      chat.style.blockSize = '600px';
+    }
+    chat.openChatByDefault = true;
+    chat.launcher = { isOn: false };
+    chat.messaging = {
+      customSendMessage(message) {
+        window.consumerState.sent.push(message);
+      },
+    };
+    chat.onAfterRender = () => {
+      window.consumerState.ready = true;
+    };
+    return chat;
   }
-  chat.openChatByDefault = true;
-  chat.launcher = { isOn: false };
-  chat.messaging = {
-    customSendMessage(message) {
-      window.consumerState.sent.push(message);
-    },
-  };
-  chat.onAfterRender = () => {
-    window.consumerState.ready = true;
-  };
+  let chat = createChat();
   document.body.append(chat);
+  window.consumerState.remountHost = () => {
+    chat.remove();
+    window.consumerState.ready = false;
+    chat = createChat();
+    document.body.append(chat);
+  };
 }
 
 void mount();

@@ -10,13 +10,13 @@
 import { createComponent } from '@lit/react';
 import React from 'react';
 
-import CDSAIChatReasoningStepsToggle from '../components/reasoning-steps/src/reasoning-steps-toggle.js';
-import { type ReasoningStepsToggleEventDetail } from '../components/reasoning-steps/src/reasoning-steps-toggle.js';
+import { CDSAIChatReasoningStepsToggle } from '../components/aichat-reasoning-steps/index.js';
+import { type ReasoningStepsToggleEventDetail } from '../components/aichat-reasoning-steps/aichat-reasoning-steps-toggle.js';
 import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
 const ReasoningStepsToggle = withWebComponentBridge(
   createComponent({
-    tagName: 'cds-aichat-reasoning-steps-toggle',
+    tagName: CDSAIChatReasoningStepsToggle.is,
     elementClass: CDSAIChatReasoningStepsToggle,
     react: React,
     events: {

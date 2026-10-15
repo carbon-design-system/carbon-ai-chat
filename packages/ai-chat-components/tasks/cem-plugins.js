@@ -334,9 +334,20 @@ export function carbonElementTagPlugin({ prefix }) {
           info.constants,
           prefix
         );
+      const getterReturn =
+        staticIs &&
+        ts.isGetAccessorDeclaration(staticIs) &&
+        staticIs.body?.statements.length === 1 &&
+        ts.isReturnStatement(staticIs.body.statements[0]) &&
+        staticIs.body.statements[0].expression;
+      const staticValue = staticIs?.initializer || getterReturn;
+      if (staticIs && !staticValue) {
+        throw new Error(
+          `Unsupported static is declaration for ${node.name.text}.`
+        );
+      }
       const staticTag =
-        staticIs?.initializer &&
-        stringValue(ts, staticIs.initializer, info.constants, prefix);
+        staticValue && stringValue(ts, staticValue, info.constants, prefix);
       if (decoratorTag && staticTag && decoratorTag !== staticTag) {
         throw new Error(`Conflicting tag names for ${node.name.text}.`);
       }
@@ -454,6 +465,18 @@ export function internalMembersPlugin() {
   };
 }
 
+function rewriteLocalModuleReferences(value, rewrite) {
+  if (!value || typeof value !== 'object') {
+    return;
+  }
+  if (typeof value.module === 'string' && !value.package) {
+    value.module = rewrite(value.module);
+  }
+  Object.values(value).forEach((child) =>
+    rewriteLocalModuleReferences(child, rewrite)
+  );
+}
+
 export function componentModulePathsPlugin() {
   const sources = new Map();
   const packageRoot = fileURLToPath(new URL('../', import.meta.url));
@@ -508,6 +531,13 @@ export function componentModulePathsPlugin() {
     },
     packageLinkPhase({ customElementsManifest }) {
       const modules = customElementsManifest.modules;
+      for (const module of modules) {
+        rewriteLocalModuleReferences(module, (target) =>
+          target.startsWith('.')
+            ? path.posix.join(path.posix.dirname(module.path), target)
+            : target
+        );
+      }
       const resolveDeclaration = (reference, owner, visited = new Set()) => {
         if (reference.package) {
           return reference;
@@ -527,6 +557,21 @@ export function componentModulePathsPlugin() {
         const key = `${module.path}#${reference.name}`;
         if (visited.has(key)) {
           throw new Error(`Circular manifest export: ${key}`);
+        }
+        const reexport = module.exports?.find(
+          (entry) => entry.kind === 'js' && entry.name === reference.name
+        )?.declaration;
+        if (
+          reexport &&
+          (reexport.package ||
+            reexport.name !== reference.name ||
+            moduleKey(reexport.module ?? module.path) !== moduleKey(target))
+        ) {
+          return resolveDeclaration(
+            reexport,
+            module,
+            new Set([...visited, key])
+          );
         }
         const imported = sources
           .get(moduleKey(module.path))
@@ -569,6 +614,13 @@ export function componentModulePathsPlugin() {
         );
       };
       for (const module of modules) {
+        for (const entry of module.exports ?? []) {
+          if (entry.kind === 'js') {
+            entry.declaration = resolveDeclaration(entry.declaration, module);
+          }
+        }
+      }
+      for (const module of modules) {
         const info = sources.get(moduleKey(module.path));
         module.exports = module.exports?.filter((entry) => {
           if (entry.kind === 'custom-element-definition') {
@@ -580,7 +632,6 @@ export function componentModulePathsPlugin() {
           if (info?.types.exported.has(entry.name)) {
             return false;
           }
-          entry.declaration = resolveDeclaration(entry.declaration, module);
           const reference = entry.declaration;
           if (reference.package) {
             return true;
@@ -595,19 +646,7 @@ export function componentModulePathsPlugin() {
       }
       for (const module of customElementsManifest.modules) {
         const source = module.path;
-        const rewrite = (value) => {
-          if (!value || typeof value !== 'object') {
-            return;
-          }
-          if (typeof value.module === 'string' && !value.package) {
-            const target = value.module.startsWith('.')
-              ? path.posix.join(path.posix.dirname(source), value.module)
-              : value.module;
-            value.module = publishedPath(target);
-          }
-          Object.values(value).forEach(rewrite);
-        };
-        rewrite(module);
+        rewriteLocalModuleReferences(module, publishedPath);
         module.path = publishedPath(source);
       }
     },

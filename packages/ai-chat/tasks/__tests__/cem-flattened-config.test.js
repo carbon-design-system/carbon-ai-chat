@@ -124,6 +124,86 @@ test('publishes both hosts with inherited fields and keeps their own callbacks',
   }
 });
 
+const splitHosts = hosts.map((host, index) => ({
+  ...host,
+  module: `dist/es/${host.name.toLowerCase()}/${host.name.toLowerCase()}.js`,
+  barrel: { source: `fixture/${host.name.toLowerCase()}-index.ts`, module: host.module },
+  ...(index === 0 ? { registrationSource: 'fixture/first-register.ts' } : {}),
+}));
+
+function splitSources() {
+  return {
+    ...Object.fromEntries(splitHosts.map((host) => [
+      host.source,
+      hostSource(host.name, `fixture-${host.name.toLowerCase()}`)
+        .replace(`class ${host.name} extends FlattenedConfigElement {`, `class ${host.name} extends FlattenedConfigElement { static is = 'fixture-${host.name.toLowerCase()}';`)
+        .replace(`customElements.define('fixture-${host.name.toLowerCase()}', ${host.name});`, '') + `\nexport { ${host.name} };`,
+    ])),
+    'fixture/first-register.ts': `
+      import { defineCustomElement } from './register';
+      import First from './first';
+      defineCustomElement(First);
+      export { First };
+      export default First;
+    `,
+    'fixture/first-index.ts': `export { default, First } from './first-register';`,
+    'fixture/second-index.ts': `
+      import { defineCustomElement } from './register';
+      import Second from './second';
+      defineCustomElement(Second);
+      export { Second };
+      export default Second;
+    `,
+  };
+}
+
+test('separates pure host declarations from registering public barrels', () => {
+  const result = manifest(splitSources(), [], splitHosts);
+  assert.equal(result.modules.length, 4);
+  for (const host of splitHosts) {
+    const pure = result.modules.find((module) => module.path === host.module);
+    const barrel = result.modules.find((module) => module.path === host.barrel.module);
+    assert.equal(pure.declarations.length, 1);
+    assert.equal(barrel.declarations.length, 0);
+    assert.ok(pure.exports.every((entry) => entry.kind === 'js'));
+    assert.deepEqual(pure.exports.map((entry) => entry.name), ['default', host.name]);
+    assert.deepEqual(barrel.exports.find((entry) => entry.kind === 'custom-element-definition'), {
+      kind: 'custom-element-definition',
+      name: `fixture-${host.name.toLowerCase()}`,
+      declaration: { name: host.name, module: host.module },
+    });
+    const members = new Map(pure.declarations[0].members.map((member) => [member.name, member]));
+    assert.equal(members.get('aiEnabled').type.text, 'boolean');
+    assert.equal(members.get('onError').attribute, undefined);
+    assert.equal(members.get('ownMember').attribute, 'own-member');
+  }
+  assert.equal(result.modules.flatMap((module) => module.exports).filter((entry) => entry.kind === 'custom-element-definition').length, 2);
+});
+
+test('rejects a tagged host when its actual registration is absent', () => {
+  const sources = splitSources();
+  sources['fixture/first-register.ts'] = sources['fixture/first-register.ts'].replace('defineCustomElement(First);', '');
+  assert.throws(() => manifest(sources, [], splitHosts), /missing registration for "First"/);
+});
+
+test('rejects a public barrel that does not load its private registration', () => {
+  const sources = splitSources();
+  sources['fixture/first-index.ts'] = `export { default, First } from './first';`;
+  assert.throws(() => manifest(sources, [], splitHosts), /does not load registration for "First"/);
+});
+
+test('rejects a public barrel that registers without exporting its host', () => {
+  const sources = splitSources();
+  sources['fixture/first-index.ts'] = `import './first-register';`;
+  assert.throws(() => manifest(sources, [], splitHosts), /does not export its host/);
+});
+
+test('type-only imports do not make a public barrel register its host', () => {
+  const sources = splitSources();
+  sources['fixture/first-index.ts'] = `import type FirstRegistration from './first-register'; export { default, First } from './first';`;
+  assert.throws(() => manifest(sources, [], splitHosts), /does not load registration for "First"/);
+});
+
 test('derives property types and the exact special and synthetic attributes', () => {
   for (const module of manifest().modules) {
     const declaration = module.declarations[0];

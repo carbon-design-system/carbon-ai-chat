@@ -67,7 +67,7 @@ vi.mock('@codemirror/view', async () => {
 });
 
 vi.mock(
-  '@carbon/ai-chat-components/es/components/code-snippet/src/codemirror/codemirror-loader.js',
+  '@carbon/ai-chat-components/es/components/aichat-code-snippet/codemirror/codemirror-loader.js',
   () => {
     // short-circuit the runtime loader so components never reach the real
     // editor stack — happy-dom cannot satisfy its browser-API dependencies and
