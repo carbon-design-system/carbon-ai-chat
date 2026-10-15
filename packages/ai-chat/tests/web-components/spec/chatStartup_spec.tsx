@@ -18,7 +18,7 @@ import React from 'react';
 import { render, waitFor } from '@testing-library/react';
 import { ContextConsumer } from '@lit/context';
 import { LitElement } from 'lit';
-import * as richRuntimeLoader from '@carbon/ai-chat-components/es/components/prompt-line/src/prompt-line-rich-loader.js';
+import * as richRuntimeLoader from '@carbon/ai-chat-components/es/components/aichat-prompt-line/prompt-line-rich-loader.js';
 import frLocaleData from 'dayjs/locale/fr.js';
 
 import '../../../src/web-components/cds-aichat-container';

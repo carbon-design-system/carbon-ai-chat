@@ -28,7 +28,7 @@ import Feedback, {
   type FeedbackInitialValues,
   type FeedbackSubmitDetails,
 } from '@carbon/ai-chat-components/es/react/feedback.js';
-import prefix from '@carbon/ai-chat-components/es/globals/settings.js';
+import { prefix } from '@carbon/ai-chat-components/es/globals/settings.js';
 import { SystemMessage } from '../components/responseTypes/message/SystemMessage';
 import { ConnectToHumanAgent } from './responseTypes/humanAgent/ConnectToHumanAgent';
 import { AudioComponent } from '../components/responseTypes/media/AudioComponent';
@@ -100,7 +100,7 @@ import {
 } from '../../types/messaging/Messages';
 import { MarkdownWithDefaults } from '../components/helpers/MarkdownWithDefaults/MarkdownWithDefaults';
 import { MessageRichUserContent } from './MessageRichUserContent';
-import type { CDSAIChatChainOfThought } from '@carbon/ai-chat-components/es/components/chain-of-thought/src/chain-of-thought.js';
+import type { CDSAIChatChainOfThought } from '@carbon/ai-chat-components/es/components/aichat-chain-of-thought/aichat-chain-of-thought.js';
 import Carousel from '@carbon/ai-chat-components/es/react/carousel.js';
 
 /**
@@ -919,7 +919,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 
       return (
         <Feedback
-          class={`${prefix}--feedback-details-${
+          class={`${prefix}-aichat--feedback-details-${
             isPositive ? 'positive' : 'negative'
           }`}
           id={`${feedbackPanelID}-feedback-${

@@ -7,11 +7,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import '../../../aichat-prompt-line/index.js';
+
 import { expect, fixture, html, oneEvent } from '@open-wc/testing';
 import { resetMouse, sendKeys, sendMouse } from '@web/test-runner-commands';
 
-import '../send-control.js';
-import '../prompt-line-shell.js';
 import type InputSendControlElement from '../send-control.js';
 
 function fireNavigated(target: EventTarget, navigated: boolean): void {

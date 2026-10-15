@@ -26,8 +26,8 @@ import type {
   MarkdownRendererTableArgs as _MarkdownRendererTableArgs,
   MarkdownRendererTableData as _MarkdownRendererTableData,
   TokenTree as _TokenTree,
-} from '@carbon/ai-chat-components/es/components/markdown/index.js';
-import type { TableCellData as _TableCellData } from '@carbon/ai-chat-components/es/components/markdown/src/utils/table-helpers.js';
+} from '@carbon/ai-chat-components/es/components/aichat-markdown/index.js';
+import type { TableCellData as _TableCellData } from '@carbon/ai-chat-components/es/components/aichat-markdown/utils/table-helpers.js';
 import { type ChatInstance } from '../instance/ChatInstance';
 import { WriteableElements } from '../instance/WriteableElements';
 import {

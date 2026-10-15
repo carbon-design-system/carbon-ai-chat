@@ -10,7 +10,7 @@
 import {
   getRawText,
   textToDoc,
-} from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
+} from '@carbon/ai-chat-components/es/components/aichat-prompt-line/index.js';
 import type { Editor, JSONContent } from '@tiptap/core';
 import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 

@@ -287,7 +287,22 @@ export function assertHostParity(manifest, runtime, publishedTypes) {
     2,
     'The chat manifest describes exactly two hosts.'
   );
-  assert.equal(manifest.modules.length, 2);
+  assert.equal(
+    manifest.modules.length,
+    4,
+    'Two pure host modules and two registering barrels.'
+  );
+  const definitions = manifest.modules.flatMap((module) =>
+    (module.exports ?? [])
+      .filter((entry) => entry.kind === 'custom-element-definition')
+      .map((entry) => ({ module, entry }))
+  );
+  assert.equal(
+    definitions.length,
+    2,
+    'Exactly one registering definition per host.'
+  );
+  assert.equal(new Set(definitions.map(({ entry }) => entry.name)).size, 2);
   assert.ok(!JSON.stringify(manifest).includes('FlattenedConfigElement'));
   for (const { module, declaration } of hosts) {
     const publicHost = publishedTypes.hosts.get(declaration.name);
@@ -361,15 +376,35 @@ export function assertHostParity(manifest, runtime, publishedTypes) {
         );
       }
     }
-    const definitions = module.exports.filter(
-      (entry) => entry.kind === 'custom-element-definition'
+    const definition = definitions.find(
+      ({ entry }) => entry.name === declaration.tagName
     );
-    assert.equal(definitions.length, 1);
-    assert.equal(definitions[0].name, declaration.tagName);
     assert.ok(
-      module.exports.some(
+      definition,
+      `Missing registering host definition: ${declaration.tagName}`
+    );
+    assert.equal(
+      definition.module.path,
+      module.path.replace(/\/[^/]+$/, '/index.js'),
+      'Registering host barrel must own the custom-element definition.'
+    );
+    assert.ok(
+      (module.exports ?? []).every((entry) => entry.kind === 'js'),
+      'Pure host modules export classes without custom-element definitions.'
+    );
+    assert.equal(definition.entry.declaration.module, module.path);
+    assert.equal(definition.entry.declaration.name, declaration.name);
+    assert.ok(
+      definition.module.exports.some(
         (entry) => entry.kind === 'js' && entry.name === 'default'
-      )
+      ),
+      'The registering host barrel retains its default export.'
+    );
+    assert.ok(
+      (module.exports ?? []).some(
+        (entry) => entry.kind === 'js' && entry.name === 'default'
+      ),
+      'The pure host class retains its default export.'
     );
   }
 }
@@ -386,6 +421,25 @@ export function proveParityFailures(manifest, runtime, publishedTypes) {
       pattern
     );
   };
+  const moved = structuredClone(manifest);
+  const barrel = moved.modules.find((module) =>
+    (module.exports ?? []).some(
+      (entry) => entry.kind === 'custom-element-definition'
+    )
+  );
+  const definitionIndex = barrel.exports.findIndex(
+    (entry) => entry.kind === 'custom-element-definition'
+  );
+  const [definition] = barrel.exports.splice(definitionIndex, 1);
+  const pure = moved.modules.find(
+    (module) => module.path === definition.declaration.module
+  );
+  pure.exports.push(definition);
+  assert.throws(
+    () => assertHostParity(moved, runtime, publishedTypes),
+    /Registering host barrel|Pure host modules/,
+    'Moving a registering definition into a pure class module must fail parity.'
+  );
   const first = publishedTypes.config.keys().next().value;
   mutate((host) => {
     host.members = host.members.filter((member) => member.name !== first);

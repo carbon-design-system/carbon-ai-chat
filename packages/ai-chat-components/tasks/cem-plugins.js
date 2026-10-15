@@ -550,9 +550,20 @@ export function carbonElementTagPlugin({ prefix }) {
           info.constants,
           prefix
         );
+      const getterReturn =
+        staticIs &&
+        ts.isGetAccessorDeclaration(staticIs) &&
+        staticIs.body?.statements.length === 1 &&
+        ts.isReturnStatement(staticIs.body.statements[0]) &&
+        staticIs.body.statements[0].expression;
+      const staticValue = staticIs?.initializer || getterReturn;
+      if (staticIs && !staticValue) {
+        throw new Error(
+          `Unsupported static is declaration for ${node.name.text}.`
+        );
+      }
       const staticTag =
-        staticIs?.initializer &&
-        stringValue(ts, staticIs.initializer, info.constants, prefix);
+        staticValue && stringValue(ts, staticValue, info.constants, prefix);
       if (decoratorTag && staticTag && decoratorTag !== staticTag) {
         throw new Error(`Conflicting tag names for ${node.name.text}.`);
       }

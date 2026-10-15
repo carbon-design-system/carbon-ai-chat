@@ -7,9 +7,8 @@
  *  @license
  */
 
-import '../src/chain-of-thought-step';
-import '../src/chain-of-thought';
-import '../src/tool-call-data';
+import '../../aichat-chain-of-thought/index.js';
+
 import '../../markdown';
 import { html } from 'lit';
 
