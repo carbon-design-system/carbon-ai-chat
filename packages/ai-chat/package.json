@@ -17,6 +17,27 @@
       "types": "./dist/types/aiChatEntry.d.ts",
       "import": "./dist/es/aiChatEntry.js"
     },
+    "./es": {
+      "types": "./dist/types/aiChatEntry.d.ts",
+      "import": "./dist/es/aiChatEntry.js"
+    },
+    "./es/aiChatEntry.js": {
+      "types": "./dist/types/aiChatEntry.d.ts",
+      "import": "./dist/es/aiChatEntry.js"
+    },
+    "./es/serverEntry.js": {
+      "types": "./dist/types/serverEntry.d.ts",
+      "import": "./dist/es/serverEntry.js"
+    },
+    "./es/web-components/cds-aichat-container/index.js": {
+      "types": "./dist/types/web-components/cds-aichat-container/index.d.ts",
+      "import": "./dist/es/web-components/cds-aichat-container/index.js"
+    },
+    "./es/web-components/cds-aichat-custom-element/index.js": {
+      "types": "./dist/types/web-components/cds-aichat-custom-element/index.d.ts",
+      "import": "./dist/es/web-components/cds-aichat-custom-element/index.js"
+    },
+    "./es/*": "./dist/es/*",
     "./es-custom": {
       "types": "./dist/types/aiChatEntry.d.ts",
       "import": "./dist/es-custom/aiChatEntry.js"
@@ -26,11 +47,11 @@
       "import": "./dist/es/serverEntry.js"
     },
     "./dist/es/web-components/cds-aichat-container/index.js": {
-      "types": "./dist/types/aiChatEntry.d.ts",
+      "types": "./dist/types/web-components/cds-aichat-container/index.d.ts",
       "import": "./dist/es/web-components/cds-aichat-container/index.js"
     },
     "./dist/es/web-components/cds-aichat-custom-element/index.js": {
-      "types": "./dist/types/aiChatEntry.d.ts",
+      "types": "./dist/types/web-components/cds-aichat-custom-element/index.d.ts",
       "import": "./dist/es/web-components/cds-aichat-custom-element/index.js"
     },
     "./scss/*": "./dist/scss/*",
@@ -51,10 +72,13 @@
         "dist/types/serverEntry.d.ts"
       ],
       "web-components/cds-aichat-container": [
-        "dist/types/aiChatEntry.d.ts"
+        "dist/types/web-components/cds-aichat-container/index.d.ts"
       ],
       "web-components/cds-aichat-custom-element": [
-        "dist/types/aiChatEntry.d.ts"
+        "dist/types/web-components/cds-aichat-custom-element/index.d.ts"
+      ],
+      "es/*": [
+        "dist/types/*"
       ]
     }
   },
@@ -78,6 +102,7 @@
   "sideEffects": [
     "**/web-components/**/*.js",
     "**/chat.cds-aichat-container.js",
+    "**/chat.index.js",
     "**/*.css"
   ],
   "devDependencies": {
