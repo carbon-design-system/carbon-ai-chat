@@ -58,7 +58,7 @@ The vendored `carbon-builder` skill instructs "Default to **React** unless the u
 
 ## Naming & prefix discipline (build-breaking)
 
-Never hardcode `cds--` in SCSS or TSX class strings — the `es-custom` build re-prefixes (`cds--custom`) and a literal `cds--` slips through unchanged, breaking that bundle.
+Use the shared prefix in SCSS and TSX class strings. The build-time prefix commands rewrite the compiled output across Carbon and both chat packages.
 
 - **SCSS**: use `#{$prefix}--` (resolves to `cds--`), never the literal.
 - **TS/TSX**: use the prefix helpers, never a literal class string.

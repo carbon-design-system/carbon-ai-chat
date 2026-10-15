@@ -32,7 +32,9 @@ Test both React and web-component hosts in light/dark themes and LTR/RTL.
 - [ ] Open the header AI label. Its tooltip and details remain visible and keyboard reachable.
 - [ ] Use VoiceOver and NVDA to check item names, disabled/danger states, menu opening, and focus return.
 - [ ] Run `npm test -- tests/carbon-registration.spec.ts` from `demo/` after a fresh package build. Each page imports one entry.
-- [ ] Check the normal and custom builds in packed consumers. Custom tags use `cds-custom-*`.
+- [ ] Check the normal entries and generated prefixed entries in packed consumers. Generated tags use `cds-custom-*`.
+
+The demo builds these test entries with the public prefix CLI before `npm run build` and `npm start`. If a package watcher rebuilds the components, run `npm run generate:carbon-registration` in `demo/` to refresh the prefixed test pages.
 
 Menu links use the activation helper. They lack native anchor behavior, such as modifier-click and an "open link" context menu. Track that limitation in [#2317](https://github.com/carbon-design-system/carbon-ai-chat/issues/2317).
 

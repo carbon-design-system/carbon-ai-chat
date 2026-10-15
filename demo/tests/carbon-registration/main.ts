@@ -13,7 +13,7 @@ import { elementEntries, wrapperEntries } from './entries';
 const root = document.getElementById('root')!;
 const params = new URLSearchParams(location.search);
 const entry = params.get('entry')!;
-const custom = entry.startsWith('es-custom/');
+const custom = entry.startsWith('generated/');
 const carbonPrefix = custom ? 'cds-custom' : 'cds';
 const chatPrefix = custom ? 'cds-custom-aichat' : 'cds-aichat';
 let actions = 0;
