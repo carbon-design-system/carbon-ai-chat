@@ -13,6 +13,7 @@ coverage
 .parcel-cache
 .next
 generated_docs
+demo/.generated/carbon-registration/
 
 # Dependencies
 node_modules

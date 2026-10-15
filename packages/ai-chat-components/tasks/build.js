@@ -72,6 +72,7 @@ if (watchMode) {
 }
 
 async function build() {
+  await fs.remove(path.resolve(__dirname, '../es-custom'));
   const esInputs = await globby([
     'src/**/*.ts',
     'src/**/*.tsx',
@@ -223,7 +224,6 @@ build().catch((error) => {
   process.exit(1);
 });
 
-// TODO: remove once @carbon/web-components supports scoped elements!
 async function postBuild() {
   // Copy SCSS token files to scss/ for consumption by other packages
   const scssSourceDir = path.resolve(__dirname, '../src/globals/scss');
@@ -238,36 +238,4 @@ async function postBuild() {
   });
 
   console.log('Copied SCSS token files to scss/');
-
-  const sourceDir = path.resolve(__dirname, '../es');
-
-  if (sourceDir) {
-    const targetDir = path.resolve(__dirname, '../es-custom');
-
-    // Copy `es` directory to `es-custom`
-    await fs.copy(sourceDir, targetDir);
-
-    // Find all files in the `es-custom` directory
-    const files = await globby([`${targetDir}/**/*`], { onlyFiles: true });
-
-    // Replace "cds" with "cds-custom" in all files
-    await Promise.all(
-      files.map(async (file) => {
-        const content = await fs.promises.readFile(file, 'utf8');
-        let updatedContent = content
-          // 1) Fix import paths
-          .replace(
-            /@carbon\/web-components\/es/g,
-            '@carbon/web-components/es-custom'
-          )
-          // 2) Replace cds-aichat → cds-custom-aichat (except CSS variables like --cds-aichat-*)
-          .replace(/(?<!-)\bcds-aichat\b/g, 'cds-custom-aichat')
-          // 3) Replace cds → cds-custom except:
-          //    - CSS variables like --cds-* (via negative lookbehind (?<!-))
-          //    - already transformed cds-custom/cds_custom (via negative lookahead (?!-custom|_custom))
-          .replace(/(?<!-)\bcds\b(?!-custom|_custom)/g, 'cds-custom');
-        await fs.promises.writeFile(file, updatedContent);
-      })
-    );
-  }
 }

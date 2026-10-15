@@ -5,7 +5,10 @@
   "type": "module",
   "description": "A demo and testing framework using @carbon/ai-chat as a React component.",
   "scripts": {
+    "generate:carbon-registration": "node tasks/generate-carbon-registration.mjs",
+    "prestart": "npm run generate:carbon-registration",
     "start": "vite",
+    "prebuild": "npm run generate:carbon-registration",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "NODE_OPTIONS='--import ./tests/node-polyfill.js' playwright test --workers=2"
