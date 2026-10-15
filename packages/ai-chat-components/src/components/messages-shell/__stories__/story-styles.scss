@@ -1,0 +1,59 @@
+/*
+ *  Copyright IBM Corp. 2025, 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+.messages-shell-story-container {
+  border: 1px solid #e0e0e0;
+  block-size: 400px;
+  inline-size: 100%;
+  max-inline-size: 600px;
+}
+
+.messages-shell-story-message {
+  padding: 1rem;
+  border-radius: 4px;
+  margin-block-end: 0.5rem;
+
+  &--user {
+    background: #e8daff;
+  }
+
+  &--assistant {
+    background: #f4f4f4;
+  }
+}
+
+.messages-shell-story-notification {
+  padding: 0.5rem 1rem;
+  background: #fff3cd;
+  font-size: 0.875rem;
+}
+
+.messages-shell-story-processing {
+  padding: 0.5rem 1rem;
+  color: #6f6f6f;
+  font-size: 0.875rem;
+}
+
+.messages-shell-story-scroll-down {
+  display: flex;
+  justify-content: center;
+  padding: 0.5rem;
+}
+
+.messages-shell-story-scroll-down-btn {
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+}
+
+.messages-shell-story-error {
+  padding: 0.5rem 1rem;
+  background: #fff1f1;
+  color: #da1e28;
+  font-size: 0.875rem;
+}

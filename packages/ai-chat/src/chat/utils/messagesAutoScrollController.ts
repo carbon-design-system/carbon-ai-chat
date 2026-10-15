@@ -814,6 +814,14 @@ export class MessagesScrollController {
    */
   private previousMessages: PortableMessage[] = [];
 
+  /**
+   * A counter that goes up by 1 each time a new scroll is scheduled.
+   * Each scroll captures the current number when it starts. If the number has
+   * changed by the time the scroll finishes its async work, a newer scroll has
+   * taken over and this one bails out without doing anything.
+   */
+  private scrollCounter = 0;
+
   constructor(host: ScrollHost) {
     this.host = host;
   }
@@ -1184,7 +1192,8 @@ export class MessagesScrollController {
 
   private async executeResolvedAutoScrollAction(
     options: ScrollOptions,
-    scrollElement: HTMLElement
+    scrollElement: HTMLElement,
+    counter: number
   ): Promise<void> {
     const messages = this.host.getMessages();
     const action = resolveAutoScrollAction({
@@ -1220,8 +1229,10 @@ export class MessagesScrollController {
         return;
       case 'pin_message':
         await this.waitForMessageComponentLayout(action.message);
-        // A clear during the wait removes the target; pinning it would restore a stale pin.
+        // Abort if a newer scroll request was scheduled while we were waiting, or if
+        // the target message was removed (e.g. conversation cleared mid-wait).
         if (
+          counter !== this.scrollCounter ||
           !scrollElement.isConnected ||
           !this.host
             .getMessages()
@@ -1394,6 +1405,9 @@ export class MessagesScrollController {
     options: ScrollOptions = {},
     includePublicSpacerReconciliation = false
   ): void => {
+    // Capture the counter before entering the async boundary so that any scroll
+    // still awaiting waitForMessageComponentLayout can detect it has been superseded.
+    const counter = ++this.scrollCounter;
     requestAnimationFrame(() => {
       void (async () => {
         // Execute after DOM/layout settles for the current frame so measurements
@@ -1403,7 +1417,11 @@ export class MessagesScrollController {
           return;
         }
 
-        await this.executeResolvedAutoScrollAction(options, scrollElement);
+        await this.executeResolvedAutoScrollAction(
+          options,
+          scrollElement,
+          counter
+        );
         if (includePublicSpacerReconciliation) {
           this.reconcileSpacerAfterPublicDoAutoScroll(scrollElement);
         }
