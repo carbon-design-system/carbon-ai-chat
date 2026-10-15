@@ -63,6 +63,8 @@ const aiEnabledConverter: ComplexAttributeConverter<boolean | undefined> = {
  *
  * `as const satisfies` keeps the `name` values as string literals (required by
  * the exhaustiveness guard below) while type-checking every entry.
+ * The manifest analyzer reads these literal entries alongside PublicConfig;
+ * computed or spread entries fail analysis.
  */
 export const FLATTENED_PUBLIC_CONFIG_FIELDS = [
   { name: 'onError', options: { attribute: false } },
