@@ -205,6 +205,13 @@
   min-block-size: 0;
 }
 
+:host([disabled]) {
+  ::slotted(textarea)::placeholder,
+  ::slotted([slot='editor'])::placeholder {
+    color: theme.$text-disabled;
+  }
+}
+
 // -----------------------------------------------------------
 // Autocomplete slot (light DOM, positioned above input)
 // -----------------------------------------------------------

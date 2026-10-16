@@ -110,7 +110,7 @@ function ensureTextareaStyleRules(): void {
     'max-block-size': PROMPT_LINE_MAX_BLOCK_SIZE,
   });
   setVarsForSelector(`.${TA_FIELD_CLASS}::placeholder`, {
-    color: 'var(--cds-text-secondary, #525252)',
+    color: 'var(--cds-text-placeholder, var(--cds-text-secondary, #525252))',
     opacity: '1',
   });
   setVarsForSelector(`.${TA_MIRROR_CLASS}`, {
