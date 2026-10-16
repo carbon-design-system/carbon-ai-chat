@@ -250,6 +250,11 @@ const CHAIN_OF_THOUGHT_TEXT_STREAM = `Carbon's versatile bonding properties have
 
 const WORD_DELAY = 40;
 
+// Delay between successive upsert-only streaming items (e.g. each card in a
+// carousel, or the hold before a card's final response). Long enough to make
+// the mid-stream render obviously visible.
+const UPSERT_ITEM_DELAY = 1500;
+
 export {
   CHAIN_OF_THOUGHT_TEXT_STREAM,
   CHAIN_OF_THOUGHT_TEXT,
@@ -263,4 +268,5 @@ export {
   BLOCKQUOTE,
   MARKDOWN,
   HTML,
+  UPSERT_ITEM_DELAY,
 };

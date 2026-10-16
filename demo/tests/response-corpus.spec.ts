@@ -9,7 +9,7 @@ import { readFileSync, mkdirSync, writeFileSync } from 'fs';
 import { dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 
-import { BusEventType } from '@carbon/ai-chat/server';
+import { BusEventType, PageObjectId } from '@carbon/ai-chat/server';
 import type { BusEventReceive, BusEventSend } from '@carbon/ai-chat';
 import type { Page } from '@playwright/test';
 
@@ -19,6 +19,7 @@ import {
   clearConversation,
   destroyChatSession,
   openChatWindow,
+  sendChatMessage,
   waitForChatReady,
 } from './utils';
 
@@ -118,6 +119,100 @@ test.describe('every demo response draws', () => {
     expect(keys.length).toBeGreaterThan(30);
     expect(Object.keys(RESPONSE_EXPECTATIONS).sort()).toEqual(
       keys.filter((key) => !ERRORS_ON_PURPOSE.has(key)).sort()
+    );
+  });
+
+  test('navigates to cards added while a carousel streams', async ({
+    page,
+    useUpsertMessage,
+  }) => {
+    test.skip(!useUpsertMessage, 'This response uses streaming upserts.');
+    await page.route(/.*ibm-common\.js$/, (route) => route.abort());
+    await page.goto('/?settings=%7B%22layout%22%3A%22float%22%7D');
+    await openChatWindow(page);
+
+    const pendingFrames = page.getByTestId(PageObjectId.MAIN_PANEL).evaluate(
+      (panel) =>
+        new Promise<
+          { cards: number; visible: number; firstVisible: boolean }[]
+        >((resolve) => {
+          const root = panel.getRootNode() as ShadowRoot;
+          const frames: {
+            cards: number;
+            visible: number;
+            firstVisible: boolean;
+          }[] = [];
+          const sample = () => {
+            for (const container of root.querySelectorAll(
+              '.carousel-container-inner:not(.carousel__view-stack)'
+            )) {
+              const cards = Array.from(container.children);
+              if (cards.length > 1) {
+                const visible = cards.map((card) => {
+                  const style = getComputedStyle(card);
+                  return (
+                    style.display !== 'none' &&
+                    style.visibility !== 'hidden' &&
+                    card.getBoundingClientRect().height > 0
+                  );
+                });
+                frames.push({
+                  cards: cards.length,
+                  visible: visible.filter(Boolean).length,
+                  firstVisible: visible[0],
+                });
+              }
+            }
+            if (root.querySelectorAll('.carousel__view').length === 3) {
+              resolve(frames);
+            } else {
+              requestAnimationFrame(sample);
+            }
+          };
+          requestAnimationFrame(sample);
+        })
+    );
+    const [frames] = await Promise.all([
+      pendingFrames,
+      sendChatMessage(page, 'carousel (stream)'),
+    ]);
+    expect(frames.map(({ cards }) => cards)).toEqual(
+      expect.arrayContaining([2, 3])
+    );
+    for (const frame of frames) {
+      expect(frame).toMatchObject({ visible: 1, firstVisible: true });
+    }
+
+    const carousel = page.locator('cds-aichat-carousel');
+    const indicator = carousel.locator('.cds-aichat-carousel__indicator');
+    const next = carousel.locator('.cds-aichat-carousel__next-btn');
+    const expectUnclippedCard = async () => {
+      await expect
+        .poll(() =>
+          carousel.locator('.carousel__view-active').evaluate((card) => {
+            const bounds = card.getBoundingClientRect();
+            const viewport = card.parentElement.getBoundingClientRect();
+            return (
+              bounds.left >= viewport.left - 0.1 &&
+              bounds.right <= viewport.right + 0.1
+            );
+          })
+        )
+        .toBe(true);
+    };
+    await expect(indicator).toHaveText('1 / 3');
+    await expectUnclippedCard();
+    await next.click();
+    await expect(indicator).toHaveText('2 / 3');
+    await expectUnclippedCard();
+    await expect(carousel.locator('.carousel__view-active')).toContainText(
+      'Green Leopard Jacket'
+    );
+    await next.click();
+    await expect(indicator).toHaveText('3 / 3');
+    await expectUnclippedCard();
+    await expect(carousel.locator('.carousel__view-active')).toContainText(
+      'Yellow Wool Hat'
     );
   });
 
