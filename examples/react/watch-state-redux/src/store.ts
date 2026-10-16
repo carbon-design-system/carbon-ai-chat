@@ -8,84 +8,59 @@
  */
 
 /**
- * Redux Toolkit store + slice for the Watch state (Redux Toolkit) example.
+ * Redux Toolkit store for the Watch / State (Redux Toolkit) example.
  *
- * Demonstrates: a one-way mirror of `PublicChatState` into Redux. The chat
- * remains the source of truth for its own state; this store just holds the
- * latest snapshot delivered by `BusEventType.STATE_CHANGE` so React
- * components can read it through `useSelector` without holding a reference
- * to the `ChatInstance`.
+ * Demonstrates: a one-way mirror of one selected public state field. The chat
+ * remains the source of truth; Redux holds only what the host panel uses.
  *
  * APIs exercised:
  *   - `configureStore`, `createSlice`, `PayloadAction` from `@reduxjs/toolkit`
- *   - `TypedUseSelectorHook`, `useDispatch`, `useSelector` from `react-redux`
- *   - `PublicChatState` from `@carbon/ai-chat`
+ *   - `TypedUseSelectorHook`, `useSelector` from `react-redux`
  *
- * Start reading at: `chatStateSlice` and `selectIsHomeScreenOpen`.
+ * Start reading at: `chatStateSlice`.
  */
 
-import type { PublicChatState } from '@carbon/ai-chat';
 import {
   configureStore,
   createSlice,
   type PayloadAction,
 } from '@reduxjs/toolkit';
-import {
-  type TypedUseSelectorHook,
-  useDispatch,
-  useSelector,
-} from 'react-redux';
+import { type TypedUseSelectorHook, useSelector } from 'react-redux';
 
 interface ChatStateSlice {
-  // Holds the most recent PublicChatState snapshot, or null before the bridge
-  // has run its initial seed in `onBeforeRender`.
-  snapshot: PublicChatState | null;
+  isHomeScreenOpen: boolean;
 }
 
-const initialState: ChatStateSlice = { snapshot: null };
+const initialState: ChatStateSlice = { isHomeScreenOpen: false };
 
 const chatStateSlice = createSlice({
   name: 'chatState',
   initialState,
   reducers: {
-    // STATE_CHANGE delivers full PublicChatState snapshots, not diffs, so the
-    // reducer replaces the snapshot wholesale; deep-merging would add
-    // complexity without correctness benefit. RTK + Immer handle the
-    // replacement efficiently.
-    chatStateSync(state, action: PayloadAction<PublicChatState>) {
-      state.snapshot = action.payload;
+    homescreenStateChanged(state, action: PayloadAction<boolean>) {
+      state.isHomeScreenOpen = action.payload;
     },
   },
 });
 
-const { chatStateSync } = chatStateSlice.actions;
+const { homescreenStateChanged } = chatStateSlice.actions;
 
 const store = configureStore({
   reducer: { chat: chatStateSlice.reducer },
 });
 
 type RootState = ReturnType<typeof store.getState>;
-type AppDispatch = typeof store.dispatch;
 
-// Pre-typed hooks per the RTK + react-redux TypeScript guide
-// (https://redux-toolkit.js.org/usage/usage-with-typescript). Components
-// import these instead of the raw hooks so RootState / AppDispatch flow
-// through automatically.
-const useAppDispatch = () => useDispatch<AppDispatch>();
+// Components use this typed hook instead of holding a chat instance.
 const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
 
-// Default to `true` when no snapshot has arrived yet so the host UI matches
-// the chat's actual initial state (homescreen open) instead of flickering
-// "Chat View" for one frame before the bridge seeds the store.
 const selectIsHomeScreenOpen = (state: RootState): boolean =>
-  state.chat.snapshot?.homeScreenState.isHomeScreenOpen ?? true;
+  state.chat.isHomeScreenOpen;
 
 export {
-  type AppDispatch,
   type RootState,
-  chatStateSync,
+  homescreenStateChanged,
   selectIsHomeScreenOpen,
   store,
-  useAppDispatch,
   useAppSelector,
 };

@@ -8,6 +8,8 @@
  */
 
 import merge from 'lodash-es/merge.js';
+import isEqual from 'lodash-es/isEqual.js';
+import cloneDeep from 'lodash-es/cloneDeep.js';
 
 import actions from '../store/actions';
 import { AppStateMessages } from '../../types/state/AppState';
@@ -79,21 +81,25 @@ class ReceiveService {
       return;
     }
 
+    const receivedMessage = message;
+
     // Received messages should be given an id if they don't have one.
-    if (!message.id) {
-      message.id = uuid();
+    if (!receivedMessage.id) {
+      receivedMessage.id = uuid();
     }
 
     const preReceiveEvent: BusEventPreReceive = {
       type: BusEventType.PRE_RECEIVE,
-      data: message,
+      data: receivedMessage,
     };
     // Fire the pre:receive event. User code is allowed to modify the message at this point.
     await this.serviceManager.fire(preReceiveEvent);
 
     if (
       initialRestartCount !== this.serviceManager.restartCount ||
-      messageService.isRequestFromPreviousConversation(message.request_id)
+      messageService.isRequestFromPreviousConversation(
+        receivedMessage.request_id
+      )
     ) {
       // If a restart occurred during the await above, we need to exit.
       return;
@@ -110,39 +116,57 @@ class ReceiveService {
       return;
     }
 
+    this.serviceManager.conversationLifecycleService.responseReceived(
+      receivedMessage.id,
+      undefined,
+      receivedMessage.request_id ?? requestMessage?.id
+    );
+    if (initialRestartCount !== this.serviceManager.restartCount) {
+      return;
+    }
     const { languagePack } = this.serviceManager.store.getState();
 
-    if (isResponse(message as any)) {
+    let receiveEventMessage = receivedMessage;
+    if (isResponse(receivedMessage as any)) {
       // Pauses and host slot handlers must not delay the receive event.
+      const committedMessage = receivedMessage;
       this.processMessageResponse(
-        message,
+        committedMessage,
         isLatestWelcomeNode,
         requestMessage
       ).catch((error) => {
         consoleError('Error processing the message response', error);
       });
+      receiveEventMessage = committedMessage;
     } else {
       const inlineError: MessageResponse = createMessageResponseForText(
         languagePack.errors_singleMessage,
-        message?.thread_id,
+        receivedMessage?.thread_id,
         MessageResponseTypes.INLINE_ERROR
       );
       this.receive(inlineError, false);
     }
 
-    // Now freeze the message so nobody can mess with it since that object came from outside.
-    deepFreeze(message);
+    deepFreeze(receiveEventMessage);
+    const storedMessage =
+      this.serviceManager.store.getState().allMessagesByID[
+        receiveEventMessage.id
+      ];
+    if (storedMessage) {
+      deepFreeze(storedMessage);
+    }
 
-    // Don't fire with the cloned message since we don't want to let anyone mess with it.
     await this.serviceManager.fire({
       type: BusEventType.RECEIVE,
-      data: message,
+      data: receiveEventMessage,
     });
 
     // Record COMPLETE so a later `upsertMessage(id, MessageState.COMPLETE, ...)` for
     // the same id suppresses a second `pre:receive` / `receive`.
     if (initialRestartCount === this.serviceManager.restartCount) {
-      this.serviceManager.messageUpsertCoordinator.markComplete(message.id);
+      this.serviceManager.messageUpsertCoordinator.markComplete(
+        receivedMessage.id
+      );
     }
   }
 
@@ -160,7 +184,7 @@ class ReceiveService {
     addDefaultsToMessage(fullMessage);
 
     store.dispatch(actions.setActiveResponseId(fullMessage.id));
-    store.dispatch(actions.addMessage(fullMessage));
+    store.dispatch(actions.addMessage(cloneDeep(fullMessage)));
 
     if (
       config.public.messaging?.showStopButtonImmediately &&
@@ -195,7 +219,9 @@ class ReceiveService {
         nestedLocalMessageItems,
         true
       );
-      store.dispatch(actions.addNestedMessages(nestedLocalMessageItems));
+      store.dispatch(
+        actions.addNestedMessages(cloneDeep(nestedLocalMessageItems))
+      );
 
       if (isConnectToHumanAgent(messageItem) && isResponse(fullMessage)) {
         await this.handleConnectToHumanAgent(localMessageItem, fullMessage);
@@ -215,7 +241,10 @@ class ReceiveService {
       await this.serviceManager.slotEventService.handleUserDefinedResponseItems(
         localMessageItem,
         fullMessage,
-        MessageState.COMPLETE
+        MessageState.COMPLETE,
+        Object.fromEntries(
+          nestedLocalMessageItems.map((item) => [item.ui_state.id, item])
+        )
       );
       if (initialRestartCount !== this.serviceManager.restartCount) {
         return;
@@ -228,10 +257,29 @@ class ReceiveService {
         !localMessageItem.item.user_defined?.silent &&
         initialRestartCount === this.serviceManager.restartCount
       ) {
+        if (
+          !isEqual(
+            store.getState().allMessagesByID[fullMessage.id],
+            fullMessage
+          )
+        ) {
+          const ownedMessage = cloneDeep(fullMessage);
+          if (Object.isFrozen(fullMessage)) {
+            deepFreeze(ownedMessage);
+          }
+          store.dispatch(actions.updateMessage(ownedMessage));
+        }
+        const owned = cloneDeep({ localMessageItem, fullMessage });
+        if (Object.isFrozen(fullMessage)) {
+          deepFreeze(owned.fullMessage);
+        }
+        if (Object.isFrozen(localMessageItem.item)) {
+          deepFreeze(owned.localMessageItem.item);
+        }
         store.dispatch(
           actions.addLocalMessageItem(
-            localMessageItem,
-            fullMessage,
+            owned.localMessageItem,
+            owned.fullMessage,
             false,
             previousItemID
           )

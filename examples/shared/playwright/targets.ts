@@ -30,6 +30,10 @@ export const targets = {
     example: 'react/watch-state',
     spec: 'watch-state.spec.ts',
   },
+  'react-watch-state-redux': {
+    example: 'react/watch-state-redux',
+    spec: 'watch-state.spec.ts',
+  },
   'web-components-fullscreen': {
     example: 'web-components/basic-custom-element-fullscreen',
     spec: 'fullscreen.spec.ts',

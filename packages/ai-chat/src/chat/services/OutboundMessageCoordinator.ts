@@ -100,6 +100,10 @@ class OutboundMessageCoordinator {
       this.addErrorMessage();
     }
 
+    this.serviceManager.conversationLifecycleService.fail(
+      { messageID: pendingRequest.message.id },
+      pendingRequest.generation
+    );
     this.serviceManager.actions.errorOccurred({
       errorType: OnErrorType.MESSAGE_COMMUNICATION,
       message: 'An error occurred sending a message',
@@ -137,8 +141,16 @@ class OutboundMessageCoordinator {
     }
 
     // Reject the promise that lets the original caller who sent the message know that the message failed to be sent.
+    this.serviceManager.conversationLifecycleService.requestStopped(
+      pendingRequest.message.id,
+      pendingRequest.generation
+    );
     sendMessagePromise.doReject(new Error(resultText));
     pendingRequest.isProcessed = true;
+    this.serviceManager.conversationLifecycleService.requestFinished(
+      pendingRequest.message.id,
+      pendingRequest.generation
+    );
 
     if (pendingRequest === this.getCurrent()) {
       // Move on to next item in queue.
@@ -204,6 +216,10 @@ class OutboundMessageCoordinator {
 
     sendMessagePromise.doResolve();
     pendingRequest.isProcessed = true;
+    this.serviceManager.conversationLifecycleService.requestFinished(
+      pendingRequest.message.id,
+      pendingRequest.generation
+    );
 
     if (pendingRequest === this.getCurrent()) {
       this.moveToNextQueueItem();
@@ -230,11 +246,12 @@ class OutboundMessageCoordinator {
       const message = cloneDeep(current.message);
       current.message = message;
       this.serviceManager.store.dispatch(actions.updateMessage(message));
+      const customSendMessageRequest = cloneDeep(message);
       // AbortController was already created when message was added to queue
       debugLog('Called customSendMessage', message);
       const busEventSend: BusEventSend = {
         type: BusEventType.SEND,
-        data: message,
+        data: customSendMessageRequest,
         source: current.source,
       };
       startLoading?.();
@@ -257,7 +274,7 @@ class OutboundMessageCoordinator {
       this.registerRequestGeneration(message.id, current.restartGeneration);
       await Promise.resolve(
         customSendMessage(
-          message,
+          customSendMessageRequest,
           {
             signal: current.sendMessageController.signal,
             silent: current.requestOptions.silent,

@@ -7,6 +7,7 @@
  *  @license
  */
 
+import { captureMessageEvent } from '../../utils/messageEventOwnership';
 import cloneDeep from 'lodash-es/cloneDeep.js';
 import merge from 'lodash-es/merge.js';
 import { DeepPartial } from '../../../types/utilities/DeepPartial';
@@ -543,10 +544,30 @@ class HumanAgentServiceImpl implements HumanAgentService {
 
     await addMessages(pairs, !this.isSuspended(), serviceManager);
 
+    const generation =
+      serviceManager.conversationLifecycleService.currentGeneration;
+    serviceManager.conversationLifecycleService.requestStarted(
+      originalMessage.id,
+      generation
+    );
+
     // Start some timeouts to display a warning or error if the service desk doesn't indicate if the message was
     // sent successfully (or it failed).
     let messageSucceeded = false;
     let messageFailed = false;
+    let failure: ReturnType<
+      typeof serviceManager.conversationLifecycleService.fail
+    >;
+    const reportFailure = () => {
+      if (messageSucceeded || messageFailed) {
+        return;
+      }
+      messageFailed = true;
+      failure = serviceManager.conversationLifecycleService.fail(
+        { messageID: originalMessage.id },
+        generation
+      );
+    };
     setTimeout(() => {
       if (!messageSucceeded && !messageFailed) {
         this.setMessageErrorState(
@@ -561,6 +582,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
           textMessage.fullMessageID,
           MessageErrorState.FAILED
         );
+        reportFailure();
       }
     }, SEND_TIMEOUT_ERROR_MS);
 
@@ -576,6 +598,11 @@ class HumanAgentServiceImpl implements HumanAgentService {
         additionalData
       );
       messageSucceeded = true;
+      serviceManager.conversationLifecycleService.clearFailure(failure);
+      serviceManager.conversationLifecycleService.requestFinished(
+        originalMessage.id,
+        generation
+      );
       this.setMessageErrorState(
         textMessage.fullMessageID,
         MessageErrorState.NONE
@@ -587,7 +614,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
         files: uploads,
       });
     } catch (error) {
-      messageFailed = true;
+      reportFailure();
       consoleError(
         '[sendMessageToAgent] An error with the service desk occurred.',
         error
@@ -1173,7 +1200,6 @@ class ServiceDeskCallbackImpl<
     });
 
     messageResponse.message_options = messageResponse.message_options || {};
-
     messageResponse.message_options.response_user_profile = responseUserProfile;
 
     const localMessages = messageResponse.output.generic.map((item: any) => {
@@ -1185,11 +1211,33 @@ class ServiceDeskCallbackImpl<
       this.serviceManager
     );
 
-    await serviceManager.fire({
-      type: BusEventType.HUMAN_AGENT_RECEIVE,
-      data: messageResponse,
-      responseUserProfile,
-    });
+    const stored = serviceManager.store.getState();
+    const storedMessage = stored.allMessagesByID[messageResponse.id];
+    const storedItems = Object.fromEntries(
+      localMessages
+        .map((item) => [
+          item.ui_state.id,
+          stored.allMessageItemsByID[item.ui_state.id],
+        ])
+        .filter(([, item]) => item)
+    );
+    const event =
+      storedMessage &&
+      captureMessageEvent(serviceManager, storedMessage, storedItems, {
+        message: messageResponse,
+        localItems: Object.fromEntries(
+          localMessages.map((item) => [item.ui_state.id, item])
+        ),
+      });
+    try {
+      await serviceManager.fire({
+        type: BusEventType.HUMAN_AGENT_RECEIVE,
+        data: messageResponse,
+        responseUserProfile,
+      });
+    } finally {
+      event?.commit();
+    }
   }
 
   /**

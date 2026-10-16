@@ -8,6 +8,9 @@
  */
 
 import isEqual from 'lodash-es/isEqual.js';
+import cloneDeep from 'lodash-es/cloneDeep.js';
+import cloneDeepWith from 'lodash-es/cloneDeepWith.js';
+import { eventValueMapper } from '../utils/messageEventOwnership';
 
 import actions from '../store/actions';
 import {
@@ -26,6 +29,8 @@ import {
   isStreamFinalResponse,
   isStreamPartialItem,
   isTyping,
+  renderAsUserDefinedMessage,
+  streamItemID,
 } from '../utils/messageUtils';
 import { sleep } from '../utils/lang/promiseUtils';
 import { AddMessageOptions } from '../../types/config/MessagingConfig';
@@ -51,6 +56,7 @@ class ChunkProcessingService {
   private chunkQueue: {
     chunk: StreamChunk;
     messageID?: string;
+    requestID?: string;
     options: AddMessageOptions;
     chunkPromise: ResolvablePromise<void>;
     restartGeneration: number;
@@ -152,6 +158,12 @@ class ChunkProcessingService {
     this.chunkQueue.push({
       chunk,
       messageID,
+      requestID:
+        requestID ??
+        this.serviceManager.messageService.inboundStreaming.getStreamingMeta(
+          extractedMessageID
+        )?.requestId ??
+        this.serviceManager.messageService.currentRequestID,
       options,
       chunkPromise,
       restartGeneration,
@@ -201,13 +213,15 @@ class ChunkProcessingService {
   }
 
   async processChunkQueue() {
-    const { chunk, options, chunkPromise, restartGeneration } =
+    const { chunk, options, chunkPromise, restartGeneration, requestID } =
       this.chunkQueue[0];
     const { store } = this.serviceManager;
+    let messageID: string | undefined;
 
     try {
-      const { messageID, item, isCompleteItem, isPartialItem } =
-        resolveChunkContext(chunk, this.chunkQueue[0].messageID);
+      const context = resolveChunkContext(chunk, this.chunkQueue[0].messageID);
+      ({ messageID } = context);
+      const { item, isCompleteItem, isPartialItem } = context;
       const stopStreamingState =
         store.getState().assistantInputState.stopStreamingButtonState;
       if (restartGeneration !== this.restartGeneration) {
@@ -215,6 +229,25 @@ class ChunkProcessingService {
         return;
       }
 
+      if (messageID && (isPartialItem || isCompleteItem)) {
+        this.serviceManager.conversationLifecycleService.responseStreaming(
+          messageID,
+          undefined,
+          requestID
+        );
+      }
+
+      if (messageID && isStreamFinalResponse(chunk)) {
+        this.serviceManager.conversationLifecycleService.responseReceived(
+          messageID,
+          undefined,
+          requestID
+        );
+      }
+      if (restartGeneration !== this.restartGeneration) {
+        this.advanceChunkQueue(chunkPromise);
+        return;
+      }
       this.maybeShowStopStreaming(chunk, isPartialItem, stopStreamingState);
 
       if (messageID) {
@@ -239,6 +272,11 @@ class ChunkProcessingService {
       this.advanceChunkQueue(chunkPromise);
     } catch (error) {
       consoleError('Error processing stream chunk', error);
+      if (messageID && restartGeneration === this.restartGeneration) {
+        this.serviceManager.conversationLifecycleService.responseFinished(
+          messageID
+        );
+      }
       this.advanceChunkQueue(chunkPromise, error);
     }
   }
@@ -285,7 +323,9 @@ class ChunkProcessingService {
     item: DeepPartial<GenericItem> | undefined,
     isCompleteItem: boolean
   ) {
-    const { store } = this.serviceManager;
+    const { store, restartCount } = this.serviceManager;
+    const generation = this.restartGeneration;
+    const ownedItem = cloneDeep(item);
     if (messageID && !store.getState().allMessagesByID[messageID]) {
       store.dispatch(actions.streamingStart(messageID));
     }
@@ -296,18 +336,42 @@ class ChunkProcessingService {
 
     if (messageID && item) {
       store.dispatch(
-        actions.streamingAddChunk(messageID, item, isCompleteItem)
+        actions.streamingAddChunk(messageID, ownedItem, isCompleteItem)
       );
     }
 
-    mergePartialResponseOptions(store, messageID, chunk);
+    mergePartialResponseOptions(store, messageID, {
+      ...chunk,
+      partial_response: cloneDeep(chunk.partial_response),
+    });
 
     if (messageID && item) {
-      await this.serviceManager.slotEventService.handleUserDefinedResponseItemsChunk(
-        messageID,
-        chunk,
-        item
-      );
+      const mapEventValues = renderAsUserDefinedMessage(item)
+        ? eventValueMapper(ownedItem, item)
+        : undefined;
+      try {
+        await this.serviceManager.slotEventService.handleUserDefinedResponseItemsChunk(
+          messageID,
+          chunk,
+          item
+        );
+      } finally {
+        if (
+          mapEventValues &&
+          !isEqual(ownedItem, item) &&
+          restartCount === this.serviceManager.restartCount &&
+          generation === this.restartGeneration
+        ) {
+          const id = streamItemID(messageID, ownedItem);
+          const current = store.getState().allMessageItemsByID[id];
+          if (current) {
+            const edited = cloneDeepWith(current, mapEventValues);
+            if (!isEqual(current, edited)) {
+              store.dispatch(actions.updateLocalMessageItem(cloneDeep(edited)));
+            }
+          }
+        }
+      }
     }
   }
 
