@@ -31,6 +31,7 @@ import { consoleError, debugLog } from '../utils/miscUtils';
 import { BusEventSend, BusEventType } from '../../types/events/eventBusTypes';
 import { ChatInstance } from '../../types/instance/ChatInstance';
 import { addDefaultsToMessage } from '../utils/messageUtils';
+import { isChunkProcessingError } from './ChunkProcessingService';
 
 type CustomSendMessageFn = (
   message: MessageRequest<any>,
@@ -57,10 +58,14 @@ class OutboundMessageCoordinator {
       received?: MessageResponse
     ) => Promise<void>,
     private getMessagingConfig: () => PublicConfigMessaging,
+    private finishStreamingResponse: (
+      pendingRequest: PendingMessageRequest
+    ) => void,
     private registerRequestGeneration: (
       requestID: string,
       restartGeneration: number
-    ) => void
+    ) => void,
+    private hideStopStreamingButtonIfNoUpsertStreaming: () => void
   ) {}
 
   /**
@@ -82,7 +87,8 @@ class OutboundMessageCoordinator {
    */
   async processError(
     pendingRequest: PendingMessageRequest,
-    resultText: string
+    resultText: string,
+    reportSendError = true
   ) {
     const { timeFirstRequest, timeLastRequest, isProcessed, requestOptions } =
       pendingRequest;
@@ -100,14 +106,40 @@ class OutboundMessageCoordinator {
       this.addErrorMessage();
     }
 
-    this.serviceManager.actions.errorOccurred({
-      errorType: OnErrorType.MESSAGE_COMMUNICATION,
-      message: 'An error occurred sending a message',
-      otherData: resultText,
-    });
+    if (reportSendError) {
+      this.serviceManager.actions.errorOccurred({
+        errorType: OnErrorType.MESSAGE_COMMUNICATION,
+        message: 'An error occurred sending a message',
+        otherData: resultText,
+      });
+    }
 
-    // Hide stop streaming button if visible
-    this.serviceManager.messageService.resetStopStreamingButtonWithoutUpserts();
+    // A `customSendMessage` that throws mid-stream never sends a closing chunk, so settle
+    // the items it had streamed — only if that stream belongs to this request, since a
+    // host can still be streaming a response to an earlier one.
+    const { inboundStreaming } = this.serviceManager.messageService;
+    const { streamingMessageID } = inboundStreaming;
+    const streamingMeta =
+      streamingMessageID &&
+      inboundStreaming.getStreamingMeta(streamingMessageID);
+    if (
+      streamingMeta &&
+      streamingMeta.requestId === pendingRequest.message.id
+    ) {
+      this.serviceManager.store.dispatch(
+        actions.endMessageStreaming(streamingMessageID)
+      );
+    }
+
+    this.serviceManager.messageUpsertCoordinator.endStreamingForRequest(
+      pendingRequest.message.id,
+      pendingRequest.generation
+    );
+
+    // Hide stop streaming button if visible. This hid unconditionally before
+    // `upsertMessage` existed, so it still ignores chunk streams; only a running upsert
+    // stream keeps the button up.
+    this.hideStopStreamingButtonIfNoUpsertStreaming();
 
     this.rejectFinalErrorOnMessage(pendingRequest, resultText);
   }
@@ -137,6 +169,7 @@ class OutboundMessageCoordinator {
     }
 
     // Reject the promise that lets the original caller who sent the message know that the message failed to be sent.
+    this.finishStreamingResponse(pendingRequest);
     sendMessagePromise.doReject(new Error(resultText));
     pendingRequest.isProcessed = true;
 
@@ -199,8 +232,10 @@ class OutboundMessageCoordinator {
       this.messageLoadingManager.end();
     }
 
-    // Hide stop streaming button if visible
-    this.serviceManager.messageService.resetStopStreamingButtonWithoutUpserts();
+    // Hide stop streaming button if visible. This hid unconditionally before
+    // `upsertMessage` existed, so it still ignores chunk streams; only a running upsert
+    // stream keeps the button up.
+    this.hideStopStreamingButtonIfNoUpsertStreaming();
 
     sendMessagePromise.doResolve();
     pendingRequest.isProcessed = true;
@@ -269,11 +304,13 @@ class OutboundMessageCoordinator {
       await this.processSuccess(current, null);
     } catch (error) {
       consoleError('An error occurred while sending a message', error);
-      const resultText =
-        (error &&
-          (typeof error === 'string' ? error : JSON.stringify(error))) ||
-        'There was an unidentified error.';
-      this.processError(current, resultText);
+      const processingError = isChunkProcessingError(error);
+      const resultText = processingError
+        ? error.message
+        : (error &&
+            (typeof error === 'string' ? error : JSON.stringify(error))) ||
+          'There was an unidentified error.';
+      this.processError(current, resultText, !processingError);
     } finally {
       // Loading manager is ended via processSuccess/reject handlers.
     }
