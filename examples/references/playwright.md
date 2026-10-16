@@ -108,9 +108,9 @@ shared/playwright/
 
 ### Share definitions across hosts
 
-Both flavors run the same specs in `tests/`, one project per target. A spec
-that only one flavor has, such as `tests-vitest-happydom`, maps to one target. Each execution opens only
-its own example.
+Both flavors run the same specs in `tests/`, one project per target. An example
+that exists in one flavor only, such as `tests-vitest-happydom`, has one target.
+Each execution opens only its own example.
 
 React mounts through the shared chat element, but each example has separate
 host code. Running both checks that code through the same visible contract.
@@ -128,6 +128,40 @@ the shared spec. Unit tests for local host logic may live in the example.
 3. Check discovery with `npm run test:e2e:goldens -- --list`. The config derives the project, the server, and the URL variable from the entry.
 
 An example needs a `build` script, a `vite.config.ts`, and an HTML entry. It needs no Playwright config, dependency, or script.
+
+### Generate a spec with Playwright agents
+
+Playwright's test agents can plan, write, and repair a spec. Install them once per checkout against the shared config and one target, then start a new agent session so they load:
+
+```bash
+npx playwright init-agents --loop=claude -c examples/shared/playwright/playwright.config.ts --project <target>
+```
+
+This writes the `playwright-test-planner`, `playwright-test-generator`, and `playwright-test-healer` agents under `.claude/agents/`, a `.mcp.json` for their test server, a seed spec, and a `specs/` folder for plans. Check that the `run-test-mcp-server` entry in `.mcp.json` passes `--config examples/shared/playwright/playwright.config.ts`; add it if not, or the agents run against a default config with no example server. Run the agents with `CAIC_E2E_TARGETS=<target>` set, so they build only that example.
+
+Replace the seed's body so it opens the example the way every spec does, then point the planner at it:
+
+```ts
+import { openExample, test } from '../helpers';
+
+test('seed', async ({ page }) => {
+  await openExample(page);
+});
+```
+
+1. **Plan with `playwright-test-planner`.** Give it the example directory, its `README.md`, and this guide. It explores the running example and writes a plan in `specs/`: a mount scenario and the example's one concern, each with its start state, steps, and expected result. Check the plan against [What to test](#what-to-test) and [Determinism](#determinism) before generating.
+2. **Generate with `playwright-test-generator`.** It runs each planned scenario in a browser and writes one test per file from the locators it confirmed. Merge those tests into the one concern spec, `tests/<concern>.spec.ts`, importing from `../helpers` rather than `@playwright/test`. Drop the generator's `// spec:` and `// seed:` header comments, then add the target as above.
+3. **Repair with `playwright-test-healer`.** When a test fails, the healer replays it, reads the failure snapshot, and fixes the locator or wait. It must not weaken an assertion to pass. When the example itself misbehaves, mark that test `test.fixme` with one line that records what happens, file the bug, and put the issue number in that line.
+
+Agent output follows the same rules as a hand-written spec. Before committing:
+
+- Follow [Selectors](#selectors): no `.first()`, `.last()`, or `.nth()` to hide an ambiguous match, and no chat-internal CSS classes.
+- The chat's live-region announcer repeats reply text. Scope reply assertions under `page.getByTestId(PageObjectId.MAIN_PANEL)`, or match a leaf with `{ exact: true }`. Host-rendered content is slotted, not inside `MAIN_PANEL`; select it by the example's own class.
+- A negative check must follow the state that would precede what it rules out. Await the reply, or open the list, before asserting something is absent.
+- No `waitForTimeout`, fixed sleeps, dates, or random values.
+- Take fixture text from each flavor's own `src/`; React and Web Components mocks can differ. Read a per-flavor value from the `target` fixture rather than forking the spec.
+- Commit none of the agent scaffolding: the seed spec, `specs/`, `.mcp.json`, and `.claude/agents/`.
+- Check the example against the [coverage target](#coverage-target).
 
 ## Scaffold a local Vite suite
 
@@ -181,7 +215,7 @@ Edit [playwright.config.ts](../shared/playwright/playwright.config.ts) for every
 | --- | --- |
 | `testDir` | `./tests` |
 | `timeout` | 60s per test |
-| `workers` | `1` — each project has one or two specs, so a pool buys nothing |
+| `workers` | `1`. A full run takes about 12 minutes; `--workers=4` finished in under 5 with the same peak memory. Settle the default with CI in [#2127](https://github.com/carbon-design-system/carbon-ai-chat/issues/2127). |
 | `retries` | `process.env.CI ? 1 : 0` |
 | `projects` | One per target, chromium only — webkit has shadow-DOM gaps, see [demo/playwright.config.ts](../../demo/playwright.config.ts) |
 | `webServer` | One per target, started with the example as its working directory |
@@ -269,7 +303,7 @@ An axe scan catches some issues, but cannot prove WCAG conformance. Check keyboa
 - No real timestamps or randomness. If an example needs an external response, register a `page.route()` with fixed data before navigation; never depend on a live third-party service.
 - Disable animation where it gates an assertion.
 
-An example is non-deterministic when its reply depends on a live service or on the clock. Skip it rather than working around it.
+An example is non-deterministic when its reply depends on a live service, the clock, or random values. Give it a suite anyway: prove its mount and any behavior that stays fixed, never assert the varying values, and list it in `DEFERRED_EXAMPLES` ([Coverage gate](#coverage-target)). Skip an example entirely only when nothing in it runs without a live service; see [Skipped examples](#skipped-examples).
 
 ## Skipped examples
 
@@ -290,7 +324,7 @@ Four, deliberately. Do not add suites for these, and do not re-litigate them.
 
 ## Naming
 
-`tests/<concern>.spec.ts`, kebab-case, named for the behavior under test — [fullscreen.spec.ts](../shared/playwright/tests/fullscreen.spec.ts). Never `example.spec.ts`.
+`tests/<concern>.spec.ts`, kebab-case, named for the behavior under test — [fullscreen.spec.ts](../shared/playwright/tests/fullscreen.spec.ts). Never `example.spec.ts`. A spec that only one flavor needs adds that flavor as a suffix, `<concern>-react.spec.ts` or `<concern>-web-components.spec.ts`, and its purpose comment says why the flavors differ.
 
 Open every spec with a purpose comment, per the inline-comments rule in [examples/AGENTS.md](../AGENTS.md#authoring-rules).
 
@@ -311,6 +345,28 @@ npm run test:e2e
 
 When and how the suite runs in CI at scale is not decided here. See [issue #2127](https://github.com/carbon-design-system/carbon-ai-chat/issues/2127).
 
+## Coverage
+
+`npm run test:e2e:coverage` runs the suite with Chromium's V8 coverage on, then reports it with [monocart-coverage-reports](https://github.com/cenfun/monocart-coverage-reports). It honors `CAIC_E2E_TARGETS`, so one example can be measured alone:
+
+```bash
+CAIC_E2E_TARGETS=react-feedback,web-components-feedback npm run test:e2e:coverage
+```
+
+- It measures each example's own `src/`. The launcher builds with sourcemaps while coverage is on, and the fixture maps the bundle back to the example's sources; the chat packages and third-party code are left out.
+- `coverage/examples-e2e/index.html` lists every measured example, with a link to its own report. `lcov.info` beside it merges them all.
+- Sources the suite never loads count as zero.
+- A covered line is one a test ran, whether or not an assertion checked its result.
+
+### Coverage target
+
+Aim for a suite that runs at least **80% of its example's gated `src/` lines**. The target is advisory: the report flags a measured, non-deferred example below it, and the command still exits 0. A new suite below the target should say why in its PR. [coverage-options.mjs](../shared/playwright/coverage-options.mjs) holds two lists:
+
+- `OFF_CONCERN_BACKENDS` — examples whose `customSendMessage.ts` copies the baseline mock back end without being part of their concern. That back end is proven once, in `basic-custom-element-fullscreen`, so the copies are left out of the target. A back end the concern runs through stays in.
+- `DEFERRED_EXAMPLES` — examples whose concern cannot be checked deterministically: it depends on random content, dates, or timing, or a product defect blocks it and its concern test is a `test.fixme`. Their suites prove a mount and any behavior that stays fixed, and they are reported, not flagged. An entry names a slug for both flavors, or `<flavor>/<slug>` for one.
+
+Add to either list only with the reason in the PR description. Do not add assertions outside the example's concern to raise the number; open the example's report and cover the branches its concern takes.
+
 ## Debugging
 
 Debug one target with `CAIC_E2E_TARGETS=<name> npm run test:e2e:goldens -- --debug` to inspect actions and locators. For an intermittent failure, rerun one test with `CAIC_E2E_TARGETS=<name> npm run test:e2e:goldens -- --grep '<test name>' --trace on`. Inspect the trace's actions, DOM snapshots, and requests. Keep full-run tracing off; when CI is added, capture traces on the first retry rather than every test.
@@ -324,6 +380,7 @@ Failures, screenshots, and videos land in `shared/playwright/test-results/`, whi
 - [ ] `npm run build --workspace=<example>` exits 0.
 - [ ] The suite covers the example's one concern plus the baseline above; no scaffold `test.fixme` placeholder remains.
 - [ ] Golden examples use the central config; local suites use the shared launcher and fixture. Neither assigns a port.
+- [ ] `CAIC_E2E_TARGETS=<targets> npm run test:e2e:coverage` ran, and the PR explains any example below the [coverage target](#coverage-target).
 - [ ] Every spec opens with a purpose comment.
 
 ## React vs Web Components
