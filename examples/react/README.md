@@ -1179,6 +1179,52 @@ React example that renders `user_defined` responses through the `renderUserDefin
 
 </details>
 
+### [Watch / Messages](./watch-messages/README.md)
+
+Shows how to select public messages and conversation status into React while a button starts a partial response and the host completes it.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-watch-messages`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol | Package / kind | Role in example |
+| --- | --- | --- |
+| `ChatContainer` | `@carbon/ai-chat` component | Mounts the chat UI as a float launcher. |
+| `instance.state.get()` | `ChatInstance` method | Seeds messages and status. |
+| `instance.state.select()` | `ChatInstance` method | Updates messages and status separately. |
+| `PublicChatState.messages` | `@carbon/ai-chat` state field | Supplies the public transcript. |
+| `PublicChatState.activeResponseId` | `@carbon/ai-chat` state field | Identifies the response for the host to complete. |
+| `PublicChatState.status` | `@carbon/ai-chat` state field | Supplies the current conversation phase. |
+| `instance.messaging.upsertMessage()` | `ChatInstance` method | Publishes partial and complete response snapshots. |
+| `MessageState` | `@carbon/ai-chat` enum | Marks the response as streaming or complete. |
+
+</details>
+
+### [Watch / Messages (Redux Toolkit)](./watch-messages-redux/README.md)
+
+Shows how to select public messages and conversation status into Redux Toolkit while a button starts a partial response and the host completes it.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-watch-messages-redux`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol | Package / kind | Role in example |
+| --- | --- | --- |
+| `ChatContainer` | `@carbon/ai-chat` component | Mounts the chat UI as a float launcher. |
+| `instance.state.get()` | `ChatInstance` method | Seeds messages and status. |
+| `instance.state.select()` | `ChatInstance` method | Dispatches messages and status separately. |
+| `PublicChatState.messages` | `@carbon/ai-chat` state field | Supplies the public transcript. |
+| `PublicChatState.activeResponseId` | `@carbon/ai-chat` state field | Identifies the response for the host to complete. |
+| `PublicChatState.status` | `@carbon/ai-chat` state field | Supplies the current conversation phase. |
+| `configureStore` | `@reduxjs/toolkit` function | Creates the narrow host store. |
+| `createSlice` | `@reduxjs/toolkit` function | Defines messages and status actions. |
+| `useSelector` (typed) | `react-redux` hook | Reads mirrored values in the host panel. |
+| `instance.messaging.upsertMessage()` | `ChatInstance` method | Publishes partial and complete response snapshots. |
+
+</details>
+
 ### [Watch / State](./watch-state/README.md)
 
 Shows how to read one public state field and keep a React component in sync with focused updates.
