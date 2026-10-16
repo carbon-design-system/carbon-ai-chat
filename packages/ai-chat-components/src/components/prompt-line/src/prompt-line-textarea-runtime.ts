@@ -165,7 +165,7 @@ export class TextareaController
     textarea.setAttribute('tabindex', '0');
     textarea.placeholder = init.placeholder;
     textarea.value = init.value;
-    textarea.readOnly = init.disabled;
+    textarea.disabled = init.disabled;
     if (init.ariaLabel) {
       textarea.setAttribute('aria-label', init.ariaLabel);
     }
@@ -308,9 +308,14 @@ export class TextareaController
   }
 
   setEditable(editable: boolean): void {
-    if (this._textarea) {
-      this._textarea.readOnly = !editable;
+    const ta = this._textarea;
+    if (!ta) {
+      return;
     }
+    if (!editable && this.hasFocus()) {
+      ta.blur();
+    }
+    ta.disabled = !editable;
   }
 
   setPlaceholder(placeholder: string): void {
