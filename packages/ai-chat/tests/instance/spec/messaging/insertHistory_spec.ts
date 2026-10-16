@@ -7,7 +7,10 @@
  *  @license
  */
 
+import { act, waitFor } from '@testing-library/react';
+
 import {
+  getChatShadowRoot,
   createBaseConfig,
   renderChatAndGetInstance,
   renderChatAndGetInstanceWithStore,
@@ -17,15 +20,130 @@ import {
 import { BusEventType } from '../../../../src/types/events/eventBusTypes';
 import {
   ButtonItemType,
+  MessageRequest,
   MessageResponseTypes,
   OptionItemPreference,
   SelectionDisplay,
 } from '../../../../src/types/messaging/Messages';
 import { HistoryItem } from '../../../../src/types/messaging/History';
 
+async function expectRequestSender(text: string, sender: string) {
+  await waitFor(() => {
+    const message = Array.from(
+      getChatShadowRoot().querySelectorAll('.cds-aichat--message--request')
+    ).find((element) =>
+      element
+        .querySelector('cds-aichat-markdown')
+        ?.shadowRoot?.textContent.includes(text)
+    );
+    expect(
+      message?.querySelector('.cds-aichat--message__label').textContent
+    ).toMatch(new RegExp(`^${sender} `));
+  });
+}
+
 describe('ChatInstance.messaging.insertHistory', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
+
+  it('preserves sender metadata through a stored history JSON round-trip', async () => {
+    const profile = {
+      id: 'jane',
+      nickname: 'Jane Doe',
+      profile_picture_url: 'https://example.com/jane.png',
+    };
+    const first = await renderChatAndGetInstanceWithStore(createBaseConfig());
+    await first.instance.messaging.insertHistory([
+      {
+        message: {
+          id: 'sender-round-trip',
+          input: { text: 'Original request' },
+          history: { user_profile: profile },
+        },
+        time: '2024-01-01T12:00:00.000Z',
+      },
+    ]);
+    const stored = first.store.getState().allMessagesByID[
+      'sender-round-trip'
+    ] as MessageRequest;
+    expect(stored.history.user_profile).toEqual(profile);
+    const replay: HistoryItem[] = JSON.parse(
+      JSON.stringify([{ message: stored, time: '2024-01-01T12:00:00.000Z' }])
+    );
+    setupAfterEach();
+    const second = await renderChatAndGetInstanceWithStore(createBaseConfig());
+    await act(async () => {
+      await second.instance.messaging.insertHistory(replay);
+    });
+    const replayed = second.store.getState().allMessagesByID[
+      'sender-round-trip'
+    ] as MessageRequest;
+    expect(replayed.history.user_profile).toEqual(profile);
+    await expectRequestSender('Original request', 'Jane Doe');
+  });
+
+  it('supports repeated viewer normalization without changing canonical host sender records', async () => {
+    const canonical: HistoryItem[] = ['jane', 'viewer'].map((id) => ({
+      message: {
+        id: `canonical-${id}`,
+        input: { text: `Canonical ${id} request` },
+        history: {
+          user_profile: { id, nickname: id === 'jane' ? 'Jane Doe' : 'Viewer' },
+        },
+      },
+      time: '2024-01-01T12:00:00.000Z',
+    }));
+    const original = JSON.parse(JSON.stringify(canonical));
+    for (const viewerID of ['viewer', 'jane']) {
+      setupAfterEach();
+      const presentation = canonical.map((item) => {
+        const message = item.message as MessageRequest;
+        return {
+          ...item,
+          message: {
+            ...message,
+            history: {
+              ...message.history,
+              user_profile:
+                message.history.user_profile.id === viewerID
+                  ? undefined
+                  : message.history.user_profile,
+            },
+          },
+        };
+      });
+      const { instance, store } =
+        await renderChatAndGetInstanceWithStore(createBaseConfig());
+      await act(async () => {
+        await instance.messaging.insertHistory(presentation);
+      });
+      for (const senderID of ['jane', 'viewer']) {
+        const stored = store.getState().allMessagesByID[
+          `canonical-${senderID}`
+        ] as MessageRequest;
+        expect(stored.history.user_profile?.id).toBe(
+          senderID === viewerID ? undefined : senderID
+        );
+        const actorName = { jane: 'Jane Doe', viewer: 'Viewer' }[senderID];
+        await expectRequestSender(
+          `Canonical ${senderID} request`,
+          senderID === viewerID ? 'You' : actorName
+        );
+      }
+      await act(async () => {
+        await instance.send({
+          id: `new-${viewerID}`,
+          input: { text: 'New viewer request' },
+        });
+      });
+      const fresh = store.getState().allMessagesByID[
+        `new-${viewerID}`
+      ] as MessageRequest;
+      expect(fresh.history?.user_profile).toBeUndefined();
+      await expectRequestSender('New viewer request', 'You');
+    }
+    expect(canonical).toEqual(original);
+  });
 
   it('should have insertHistory method available', async () => {
     const config = createBaseConfig();
