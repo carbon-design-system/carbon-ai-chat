@@ -1,0 +1,91 @@
+import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
+import * as Stories from './messages-shell-react.stories';
+
+<Meta of={Stories} />
+
+# Messages shell
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/messages-shell) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+## Overview
+
+Use `MessagesShell` to lay out a message list with your own rows, notices, and controls. This component is experimental, and its API may change without a deprecation window.
+
+<Canvas of={Stories.Default} />
+
+## Layout
+
+The shell places each slot in a fixed region:
+
+| Slot | Region |
+| --- | --- |
+| `notifications` | Above the scroller. It stays in place while rows scroll. |
+| default | Inside the scroller. Put message rows here. |
+| `processing` | Inside the scroller, after the rows. It keeps its height when content is hidden. |
+| `scroll-down` | Inside the scroller. It stays sticky near the bottom edge. |
+| `error` | Below the scroller. |
+
+The shell does not scroll for you. Your host moves the scroller and decides when to show the `scroll-down` control. Autoscroll and row navigation are not part of this component yet.
+
+## Customization
+
+The shell fills its parent, so give the parent a height. The handle width honors `--cds-aichat-messages-max-width`. Set it on the shell or an ancestor to change the column width.
+
+## Examples
+
+### Scroll handles
+
+Set `topHandleLabel` and `bottomHandleLabel` to add keyboard-focusable handles above and below the scroller. Focusing a handle shows a focus ring on the scroller. Press Escape to leave a handle. Supply translated strings for your locale. A handle is omitted when its label is empty.
+
+```jsx
+import MessagesShell from '@carbon/ai-chat-components/es/react/messages-shell.js';
+
+function Messages() {
+  return (
+    <MessagesShell
+      topHandleLabel="Start of messages"
+      bottomHandleLabel="End of messages">
+      <div>First message</div>
+    </MessagesShell>
+  );
+}
+```
+
+<Canvas of={Stories.NoContent} />
+
+### Read the scroll position
+
+`onMessagesShellScroll` receives `cds-aichat-messages-shell-scroll` on every scroll. Read `scrollTop`, `scrollHeight`, and `clientHeight` from `event.detail`. `isScrollable` is true when the content overflows. `isAtBottom` is true within 1px of the bottom.
+
+```jsx
+import MessagesShell from '@carbon/ai-chat-components/es/react/messages-shell.js';
+
+function Messages() {
+  const handleScroll = (event) => {
+    const { isScrollable, isAtBottom } = event.detail;
+    console.log(isScrollable, isAtBottom);
+  };
+
+  return (
+    <MessagesShell onMessagesShellScroll={handleScroll}>
+      <div>First message</div>
+    </MessagesShell>
+  );
+}
+```
+
+## Component API
+
+### `<MessagesShell>`
+
+<ArgTypes of={Stories.Default} />
+
+## JSX (via import)
+
+```jsx
+import MessagesShell from '@carbon/ai-chat-components/es/react/messages-shell.js';
+```
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.
