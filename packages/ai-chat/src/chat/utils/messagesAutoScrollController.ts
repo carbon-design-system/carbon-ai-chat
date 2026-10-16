@@ -856,6 +856,9 @@ export class MessagesScrollController {
 
   disconnect(): void {
     this.host.setScrollHeightFloor(0);
+    if (this.host.getSpacer()) {
+      this.host.setSpacerHeight(0);
+    }
     // Remove the listeners and observers set up in connect().
     if (this.scrollPanelObserver) {
       this.scrollPanelObserver.disconnect();

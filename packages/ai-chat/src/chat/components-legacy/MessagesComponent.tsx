@@ -70,21 +70,25 @@ const SCROLL_NOTIFICATION_THROTTLE_MS = 200;
 
 /**
  * Write `min-block-size` for the bottom spacer via the shared dynamic
- * stylesheet.
+ * stylesheet. Clears dynamic styles when deficit is 0.
  */
 function applySpacerDeficit(spacerElem: HTMLElement, deficit: number): void {
-  applyDynamicStyles(spacerElem, 'spacer', {
-    'min-block-size': `${deficit}px`,
-  });
+  if (deficit === 0) {
+    clearDynamicStyles(spacerElem, 'spacer');
+  } else {
+    applyDynamicStyles(spacerElem, 'spacer', {
+      'min-block-size': `${deficit}px`,
+    });
+  }
 }
 
 /**
  * Determines if a message qualifies as a scroll target (pin target).
  *
  * Rules:
- * - A MessageRequest always qualifies.
+ * - A MessageRequest always qualifies unless it is a welcome request.
  * - A MessageResponse qualifies only if its corresponding request had `history.silent = true`,
- *   meaning no visible user bubble was shown and the response is the right element to pin.
+ *   and was not a welcome request.
  */
 function shouldScrollToMessage(
   message: Message,
@@ -95,12 +99,20 @@ function shouldScrollToMessage(
       message?.request_id
     ] as MessageRequest;
 
+    if (messageRequest?.history?.is_welcome_request) {
+      return false;
+    }
+
     // If the request for this response was silent, scroll to the response instead of where
     // the silent user message would be.
     return Boolean(messageRequest?.history?.silent);
   }
 
-  return isRequest(message);
+  if (isRequest(message)) {
+    return !message.history?.is_welcome_request;
+  }
+
+  return false;
 }
 
 /**
@@ -301,16 +313,20 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    */
   private getPortableMessages(): PortableMessage[] {
     const { localMessageItems, allMessagesByID } = this.props;
+    let previousMessageID: string | null = null;
     return localMessageItems.map((item) => {
       const fullMessage = allMessagesByID[item.fullMessageID];
+      const isFirstItem = previousMessageID !== item.fullMessageID;
+      previousMessageID = item.fullMessageID;
       const streamingState = item.ui_state.streamingState;
       return {
         id: item.ui_state.id,
         messageId: item.fullMessageID,
         element: this.messageRefs.get(item.ui_state.id)?.ref?.current ?? null,
-        isPinnable: fullMessage
-          ? shouldScrollToMessage(fullMessage, allMessagesByID)
-          : false,
+        isPinnable:
+          isFirstItem && fullMessage
+            ? shouldScrollToMessage(fullMessage, allMessagesByID)
+            : false,
         isStreaming: Boolean(streamingState && !streamingState.isDone),
         isResponse: Boolean(fullMessage && isResponse(fullMessage)),
       };
