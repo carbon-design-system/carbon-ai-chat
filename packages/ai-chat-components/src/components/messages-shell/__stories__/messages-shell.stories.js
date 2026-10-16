@@ -12,7 +12,7 @@ import { html } from 'lit';
 import { map } from 'lit/directives/map.js';
 import { action } from 'storybook/actions';
 import styles from './story-styles.scss?lit';
-import { placeholderMessages, storyClass } from './story-data';
+import { handleLabelArgs, placeholderMessages, storyClass } from './story-data';
 
 export default {
   title: 'Preview/Messages shell',
@@ -29,7 +29,7 @@ export default {
     docs: {
       description: {
         component:
-          'Layout container for the chat message list. Provides named slots for notifications, rows, processing indicator, scroll-to-bottom control, and footer errors. **Experimental** — autoscroll and keyboard navigation are added in future issues.',
+          'Layout container for the chat message list. Provides named slots for notifications, rows, the processing indicator, the scroll-to-bottom control, and footer errors. **Experimental.**',
       },
     },
   },
@@ -37,22 +37,18 @@ export default {
     topHandleLabel: {
       control: 'text',
       description:
-        'Accessible label for the top scroll handle. Provide a translated string.',
+        'Label for the top scroll handle. Provide a translated string. Omit it to hide the handle.',
     },
     bottomHandleLabel: {
       control: 'text',
       description:
-        'Accessible label for the bottom scroll handle. Provide a translated string.',
+        'Label for the bottom scroll handle. Provide a translated string. Omit it to hide the handle.',
     },
   },
 };
 
 export const Default = {
-  args: {
-    topHandleLabel: 'Start of messages. Press Enter to move focus to messages.',
-    bottomHandleLabel:
-      'End of messages. Press Enter to move focus to last message.',
-  },
+  args: handleLabelArgs,
   render: (args) => html`
     <div class="${storyClass}-container">
       <cds-aichat-messages-shell
@@ -75,9 +71,7 @@ export const Default = {
           Processing slot (typing indicator goes here)
         </div>
         <div slot="scroll-down" class="${storyClass}-scroll-down">
-          <button type="button" class="${storyClass}-scroll-down-btn">
-            ↓ Scroll to bottom
-          </button>
+          <button type="button">↓ Scroll to bottom</button>
         </div>
         <div slot="error" class="${storyClass}-error">
           Error slot — e.g. send failure
@@ -88,10 +82,7 @@ export const Default = {
 };
 
 export const NoContent = {
-  args: {
-    topHandleLabel: 'Start of messages.',
-    bottomHandleLabel: 'End of messages.',
-  },
+  args: handleLabelArgs,
   render: (args) => html`
     <div class="${storyClass}-container">
       <cds-aichat-messages-shell

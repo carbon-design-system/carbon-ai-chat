@@ -8,7 +8,7 @@
  */
 
 import { LitElement, html, nothing } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, query } from 'lit/decorators.js';
 import { carbonElement } from '../../../globals/decorators/index.js';
 import prefix from '../../../globals/settings.js';
 import commonStyles from '../../../globals/scss/common.scss?lit';
@@ -18,29 +18,27 @@ const blockClass = `${prefix}-messages-shell`;
 const focusClass = `${blockClass}__scroller--handle-focused`;
 
 /**
- * A scroll event detail, emitted whenever the scroll container reports a
- * position change. Part of `cds-aichat-messages-shell`, which is experimental.
+ * Details sent with each scroll event from the message list.
  */
 export interface MessagesShellScrollDetail {
-  /** Current scrollTop of the scroll container, in pixels. */
+  /** How far the list is scrolled from the top, in pixels. */
   scrollTop: number;
-  /** Full scrollable height of the content, in pixels. */
+  /** The full height of the content, in pixels. */
   scrollHeight: number;
-  /** Visible height of the scroll container, in pixels. */
+  /** The visible height of the list, in pixels. */
   clientHeight: number;
-  /** Whether any content is currently scrollable (scrollHeight > clientHeight). */
+  /** Whether the content is taller than the visible area. */
   isScrollable: boolean;
-  /** Whether the scroller is at (or within 1px of) the bottom. */
+  /** Whether the list is scrolled to the bottom (within 1px). */
   isAtBottom: boolean;
 }
 
 /**
- * Message list shell — layout container for the chat message list.
+ * Layout container for the chat message list. It provides named slots for the
+ * rows and the controls around them, and reports scroll position. Autoscroll
+ * and row navigation are not part of this element yet.
  *
- * Provides the structural layout and named slots for the message list area.
- * Autoscroll and keyboard navigation are added in subsequent issues (#1841,
- * #1842). Ship and use this element for the layout contract only.
- *
+ * @experimental
  * @element cds-aichat-messages-shell
  *
  * @slot notifications - Sticky notices above the scroller (e.g. human-agent banners).
@@ -52,67 +50,38 @@ export interface MessagesShellScrollDetail {
  * @fires {CustomEvent<MessagesShellScrollDetail>} cds-aichat-messages-shell-scroll -
  *   Fired on every scroll event. Detail carries position and geometry readings.
  */
-@carbonElement(`${prefix}-messages-shell`)
+@carbonElement(blockClass)
 class CDSAIChatMessagesShell extends LitElement {
   static styles = [commonStyles, styles];
 
+  /** Name of the event fired when the list scrolls. */
+  static get eventScroll() {
+    return `${blockClass}-scroll`;
+  }
+
   /**
-   * Accessible label for the top scroll handle button.
-   * Provide a translated string for the host's locale.
+   * Visible and accessible label for the top scroll handle.
+   * Provide a translated string for the host's locale. The handle is omitted when empty.
    */
   @property({ attribute: 'top-handle-label' })
   topHandleLabel = '';
 
   /**
-   * Accessible label for the bottom scroll handle button.
-   * Provide a translated string for the host's locale.
+   * Visible and accessible label for the bottom scroll handle.
+   * Provide a translated string for the host's locale. The handle is omitted when empty.
    */
   @property({ attribute: 'bottom-handle-label' })
   bottomHandleLabel = '';
 
-  /** @internal */
-  private _scrollerEl: HTMLElement | null = null;
-
-  /** @internal */
-  private get _scroller(): HTMLElement | null {
-    if (!this._scrollerEl && this.shadowRoot) {
-      this._scrollerEl = this.shadowRoot.querySelector<HTMLElement>(
-        `.${blockClass}__scroller`
-      );
-    }
-    return this._scrollerEl;
-  }
-
-  disconnectedCallback(): void {
-    super.disconnectedCallback();
-    this._scrollerEl?.removeEventListener('scroll', this._handleScroll);
-    this._scrollerEl = null;
-  }
-
-  protected firstUpdated(): void {
-    // The scroller exists after first render. Store the reference and attach
-    // the listener; subsequent re-renders do not re-attach (firstUpdated runs once).
-    const scroller = this._scroller;
-    if (scroller) {
-      scroller.addEventListener('scroll', this._handleScroll, {
-        passive: true,
-      });
-    }
-  }
+  @query(`.${blockClass}__scroller`)
+  private _scroller!: HTMLElement;
 
   private _handleScroll = (): void => {
-    const scroller = this._scroller;
-    if (!scroller) {
-      return;
-    }
-
-    const { scrollTop, scrollHeight, clientHeight } = scroller;
-    const isScrollable = scrollHeight > clientHeight;
-    const isAtBottom = scrollHeight - scrollTop - clientHeight <= 1;
+    const { scrollTop, scrollHeight, clientHeight } = this._scroller;
 
     this.dispatchEvent(
       new CustomEvent<MessagesShellScrollDetail>(
-        'cds-aichat-messages-shell-scroll',
+        CDSAIChatMessagesShell.eventScroll,
         {
           bubbles: true,
           composed: true,
@@ -120,34 +89,34 @@ class CDSAIChatMessagesShell extends LitElement {
             scrollTop,
             scrollHeight,
             clientHeight,
-            isScrollable,
-            isAtBottom,
+            isScrollable: scrollHeight > clientHeight,
+            // Allow 1px of slack, because scroll positions can be fractional.
+            isAtBottom: scrollHeight - scrollTop - clientHeight <= 1,
           },
         }
       )
     );
   };
 
+  // The focus ring is switched on and off by editing the class directly,
+  // not through reactive state. A re-render while the handle has focus
+  // can make the browser drop that focus.
   private _onHandleFocus = (): void => {
-    this._scroller?.classList.add(focusClass);
+    this._scroller.classList.add(focusClass);
   };
 
   private _onHandleBlur = (): void => {
-    this._scroller?.classList.remove(focusClass);
+    this._scroller.classList.remove(focusClass);
   };
 
   private _onHandleKeyDown = (event: KeyboardEvent): void => {
     if (event.key === 'Escape') {
       event.preventDefault();
-      (event.target as HTMLElement).blur();
-    } else if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      (event.target as HTMLElement).click();
+      (event.currentTarget as HTMLElement).blur();
     }
   };
 
-  private _renderScrollHandle(atBottom = false) {
-    const label = atBottom ? this.bottomHandleLabel : this.topHandleLabel;
+  private _renderScrollHandle(label: string) {
     if (!label) {
       return nothing;
     }
@@ -167,16 +136,16 @@ class CDSAIChatMessagesShell extends LitElement {
   render() {
     return html`
       <slot name="notifications" class="${blockClass}__notifications"></slot>
-      ${this._renderScrollHandle(false)}
-      <div class="${blockClass}__scroller" part="scroller">
+      ${this._renderScrollHandle(this.topHandleLabel)}
+      <div class="${blockClass}__scroller" @scroll=${this._handleScroll}>
         <div class="${blockClass}__content">
           <slot></slot>
           <slot name="processing"></slot>
-          <div class="${blockClass}__spacer" part="spacer"></div>
+          <div class="${blockClass}__spacer"></div>
           <slot name="scroll-down"></slot>
         </div>
       </div>
-      ${this._renderScrollHandle(true)}
+      ${this._renderScrollHandle(this.bottomHandleLabel)}
       <slot name="error" class="${blockClass}__error"></slot>
     `;
   }

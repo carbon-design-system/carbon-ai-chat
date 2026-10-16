@@ -8,214 +8,234 @@
  */
 
 import { fixture, html, expect, oneEvent } from '@open-wc/testing';
+import prefix from '../../../globals/settings.js';
 import '../index.js';
+import type CDSAIChatMessagesShell from '../src/messages-shell.js';
 
-describe('cds-aichat-messages-shell', () => {
-  // --------------------------------------------------------------------------
-  // Rendering
-  // --------------------------------------------------------------------------
+const blockClass = `${prefix}-messages-shell`;
+const scrollerSelector = `.${blockClass}__scroller`;
+const handleSelector = `.${blockClass}__scroll-handle`;
+const scrollEvent = `${blockClass}-scroll`;
 
-  it('renders without error', async () => {
-    const el = await fixture(
-      html`<cds-aichat-messages-shell></cds-aichat-messages-shell>`
-    );
-    expect(el).to.exist;
-  });
+/** Renders an empty shell and returns its shadow root. */
+async function renderShell() {
+  const el = await fixture<CDSAIChatMessagesShell>(
+    html`<cds-aichat-messages-shell></cds-aichat-messages-shell>`
+  );
+  return el.shadowRoot!;
+}
 
-  it('renders all named slots in shadow DOM', async () => {
-    const el = await fixture(
-      html`<cds-aichat-messages-shell></cds-aichat-messages-shell>`
-    );
-    const root = el.shadowRoot!;
-    expect(root.querySelector('slot[name="notifications"]')).to.exist;
-    expect(root.querySelector('slot:not([name])')).to.exist;
-    expect(root.querySelector('slot[name="processing"]')).to.exist;
-    expect(root.querySelector('slot[name="scroll-down"]')).to.exist;
-    expect(root.querySelector('slot[name="error"]')).to.exist;
-  });
+/** Renders a shell with both handles and returns the shell. */
+function renderShellWithHandles() {
+  return fixture<CDSAIChatMessagesShell>(html`
+    <cds-aichat-messages-shell
+      top-handle-label="Top"
+      bottom-handle-label="Bottom">
+    </cds-aichat-messages-shell>
+  `);
+}
 
-  it('renders the spacer element inside the scroller', async () => {
-    const el = await fixture(
-      html`<cds-aichat-messages-shell></cds-aichat-messages-shell>`
-    );
-    const spacer = el.shadowRoot!.querySelector(
-      '.cds-aichat-messages-shell__spacer'
-    );
-    expect(spacer).to.exist;
-    const scroller = el.shadowRoot!.querySelector(
-      '.cds-aichat-messages-shell__scroller'
-    );
-    expect(scroller!.contains(spacer)).to.be.true;
-  });
-
-  // --------------------------------------------------------------------------
-  // Slot order — issue requirement: persistent notices above the scroller,
-  // footer errors below the scroller, rows/processing/spacer/scroll-down inside
-  // --------------------------------------------------------------------------
-
-  it('notifications slot is above the scroller', async () => {
-    const el = await fixture(
-      html`<cds-aichat-messages-shell></cds-aichat-messages-shell>`
-    );
-    const root = el.shadowRoot!;
-    const children = Array.from(root.children);
-    const notificationsIdx = children.findIndex(
-      (c) => c.tagName === 'SLOT' && c.getAttribute('name') === 'notifications'
-    );
-    const scrollerIdx = children.findIndex((c) =>
-      c.classList.contains('cds-aichat-messages-shell__scroller')
-    );
-    expect(notificationsIdx).to.be.lessThan(scrollerIdx);
-  });
-
-  it('error slot is below the scroller', async () => {
-    const el = await fixture(
-      html`<cds-aichat-messages-shell></cds-aichat-messages-shell>`
-    );
-    const root = el.shadowRoot!;
-    const children = Array.from(root.children);
-    const errorIdx = children.findIndex(
-      (c) => c.tagName === 'SLOT' && c.getAttribute('name') === 'error'
-    );
-    const scrollerIdx = children.findIndex((c) =>
-      c.classList.contains('cds-aichat-messages-shell__scroller')
-    );
-    expect(errorIdx).to.be.greaterThan(scrollerIdx);
-  });
-
-  it('default, processing, spacer, and scroll-down are inside the scroller', async () => {
-    const el = await fixture(
-      html`<cds-aichat-messages-shell></cds-aichat-messages-shell>`
-    );
-    const scroller = el.shadowRoot!.querySelector(
-      '.cds-aichat-messages-shell__scroller'
-    )!;
-    expect(scroller.querySelector('slot:not([name])')).to.exist;
-    expect(scroller.querySelector('slot[name="processing"]')).to.exist;
-    expect(scroller.querySelector('.cds-aichat-messages-shell__spacer')).to
-      .exist;
-    expect(scroller.querySelector('slot[name="scroll-down"]')).to.exist;
-  });
-
-  // --------------------------------------------------------------------------
-  // Scroll handles
-  // --------------------------------------------------------------------------
-
-  it('renders scroll handles when labels are provided', async () => {
-    const el = await fixture(html`
-      <cds-aichat-messages-shell
-        top-handle-label="Start of messages"
-        bottom-handle-label="End of messages">
+/**
+ * Renders a shell in a 200px-tall box so its content can overflow.
+ * Pass the row height to control whether the content scrolls.
+ */
+async function renderInBox(rowHeight: number, extraContent = html``) {
+  const box = await fixture<HTMLElement>(html`
+    <div style="block-size:200px;inline-size:200px">
+      <cds-aichat-messages-shell>
+        <div style="block-size:${rowHeight}px"></div>
+        ${extraContent}
       </cds-aichat-messages-shell>
-    `);
-    const handles = el.shadowRoot!.querySelectorAll(
-      '.cds-aichat-messages-shell__scroll-handle'
-    );
-    expect(handles.length).to.equal(2);
-    expect(handles[0].getAttribute('aria-label')).to.equal('Start of messages');
-    expect(handles[1].getAttribute('aria-label')).to.equal('End of messages');
-  });
+    </div>
+  `);
+  const shell = box.querySelector<CDSAIChatMessagesShell>(
+    'cds-aichat-messages-shell'
+  )!;
+  const scroller =
+    shell.shadowRoot!.querySelector<HTMLElement>(scrollerSelector)!;
+  return { shell, scroller };
+}
 
-  it('renders no scroll handles when labels are empty', async () => {
-    const el = await fixture(
-      html`<cds-aichat-messages-shell></cds-aichat-messages-shell>`
+/** Returns the position of each shadow-root child, to compare their order. */
+function indexOfChildren(root: ShadowRoot) {
+  const children = Array.from(root.children);
+  const slotIndex = (name: string) =>
+    children.findIndex(
+      (child) => child.tagName === 'SLOT' && child.getAttribute('name') === name
     );
-    const handles = el.shadowRoot!.querySelectorAll(
-      '.cds-aichat-messages-shell__scroll-handle'
-    );
-    expect(handles.length).to.equal(0);
-  });
+  return {
+    children,
+    notifications: slotIndex('notifications'),
+    error: slotIndex('error'),
+    scroller: children.findIndex((child) =>
+      child.classList.contains(`${blockClass}__scroller`)
+    ),
+  };
+}
 
-  it('top handle is before the scroller, bottom handle is after the scroller', async () => {
-    const el = await fixture(html`
-      <cds-aichat-messages-shell
-        top-handle-label="Top"
-        bottom-handle-label="Bottom">
-      </cds-aichat-messages-shell>
-    `);
-    const root = el.shadowRoot!;
-    const children = Array.from(root.children);
-    const handles = root.querySelectorAll(
-      '.cds-aichat-messages-shell__scroll-handle'
-    );
-    const scrollerIdx = children.findIndex((c) =>
-      c.classList.contains('cds-aichat-messages-shell__scroller')
-    );
-    const topIdx = children.indexOf(handles[0] as HTMLElement);
-    const bottomIdx = children.indexOf(handles[1] as HTMLElement);
-    expect(topIdx).to.be.lessThan(scrollerIdx);
-    expect(bottomIdx).to.be.greaterThan(scrollerIdx);
-  });
+describe(blockClass, () => {
+  describe('layout', () => {
+    it('renders all named slots in shadow DOM', async () => {
+      const root = await renderShell();
+      expect(root.querySelector('slot[name="notifications"]')).to.exist;
+      expect(root.querySelector('slot:not([name])')).to.exist;
+      expect(root.querySelector('slot[name="processing"]')).to.exist;
+      expect(root.querySelector('slot[name="scroll-down"]')).to.exist;
+      expect(root.querySelector('slot[name="error"]')).to.exist;
+    });
 
-  it('Escape on a scroll handle blurs it', async () => {
-    const el = await fixture(html`
-      <cds-aichat-messages-shell
-        top-handle-label="Top"
-        bottom-handle-label="Bottom">
-      </cds-aichat-messages-shell>
-    `);
-    const handle = el.shadowRoot!.querySelector<HTMLButtonElement>(
-      '.cds-aichat-messages-shell__scroll-handle'
-    )!;
-    handle.focus();
-    handle.dispatchEvent(
-      new KeyboardEvent('keydown', {
-        key: 'Escape',
-        bubbles: true,
-        cancelable: true,
-      })
-    );
-    expect(document.activeElement).to.not.equal(handle);
-  });
+    it('notifications slot is above the scroller', async () => {
+      const order = indexOfChildren(await renderShell());
+      expect(order.notifications).to.be.lessThan(order.scroller);
+    });
 
-  // --------------------------------------------------------------------------
-  // Scroll event
-  // --------------------------------------------------------------------------
+    it('error slot is below the scroller', async () => {
+      const order = indexOfChildren(await renderShell());
+      expect(order.error).to.be.greaterThan(order.scroller);
+    });
 
-  it('fires cds-aichat-messages-shell-scroll with correct detail shape', async () => {
-    const el = await fixture<HTMLElement>(html`
-      <div style="block-size:200px;inline-size:200px">
+    it('default, processing, spacer, and scroll-down are inside the scroller', async () => {
+      const root = await renderShell();
+      const scroller = root.querySelector(scrollerSelector)!;
+      expect(scroller.querySelector('slot:not([name])')).to.exist;
+      expect(scroller.querySelector('slot[name="processing"]')).to.exist;
+      expect(scroller.querySelector(`.${blockClass}__spacer`)).to.exist;
+      expect(scroller.querySelector('slot[name="scroll-down"]')).to.exist;
+    });
+
+    it('keeps the processing slot height when its content is hidden', async () => {
+      const el = await fixture(html`
         <cds-aichat-messages-shell>
-          <div style="block-size:600px"></div>
+          <div slot="processing" style="visibility:hidden">Typing</div>
         </cds-aichat-messages-shell>
-      </div>
-    `);
-    const shell = el.querySelector('cds-aichat-messages-shell')!;
-    const scroller = shell.shadowRoot!.querySelector<HTMLElement>(
-      '.cds-aichat-messages-shell__scroller'
-    )!;
+      `);
+      const slot = el.shadowRoot!.querySelector<HTMLElement>(
+        'slot[name="processing"]'
+      )!;
+      expect(slot.getBoundingClientRect().height).to.be.greaterThan(0);
+    });
 
-    const eventPromise = oneEvent(shell, 'cds-aichat-messages-shell-scroll');
-    scroller.dispatchEvent(new Event('scroll'));
-    const { detail } = await eventPromise;
+    it('keeps the scroll-down slot inside the scroller while it scrolls', async () => {
+      const { shell, scroller } = await renderInBox(
+        600,
+        html`<div slot="scroll-down" style="block-size:20px">Down</div>`
+      );
+      const control = shell.querySelector<HTMLElement>('[slot="scroll-down"]')!;
 
-    expect(detail).to.have.property('scrollTop');
-    expect(detail).to.have.property('scrollHeight');
-    expect(detail).to.have.property('clientHeight');
-    expect(detail).to.have.property('isScrollable');
-    expect(detail).to.have.property('isAtBottom');
+      // Scroll part of the way down. A sticky control stays in view, and a
+      // control that is not sticky would move 150px up and out of view.
+      scroller.scrollTop = 150;
+
+      const scrollerRect = scroller.getBoundingClientRect();
+      const controlRect = control.getBoundingClientRect();
+      expect(controlRect.bottom).to.be.at.most(scrollerRect.bottom);
+      expect(controlRect.top).to.be.at.least(scrollerRect.top);
+    });
   });
 
-  it('isAtBottom is true when scroller is at the bottom', async () => {
-    const el = await fixture<HTMLElement>(html`
-      <div style="block-size:200px;inline-size:200px">
-        <cds-aichat-messages-shell>
-          <div style="block-size:600px"></div>
-        </cds-aichat-messages-shell>
-      </div>
-    `);
-    const shell = el.querySelector('cds-aichat-messages-shell')!;
-    const scroller = shell.shadowRoot!.querySelector<HTMLElement>(
-      '.cds-aichat-messages-shell__scroller'
-    )!;
+  describe('scroll handles', () => {
+    it('renders handles with the supplied labels', async () => {
+      const el = await renderShellWithHandles();
+      const handles = el.shadowRoot!.querySelectorAll(handleSelector);
+      expect(handles.length).to.equal(2);
+      expect(handles[0].getAttribute('aria-label')).to.equal('Top');
+      expect(handles[1].getAttribute('aria-label')).to.equal('Bottom');
+    });
 
-    // Scroll to the bottom
-    scroller.scrollTop = scroller.scrollHeight - scroller.clientHeight;
+    it('renders no handles when labels are empty', async () => {
+      const root = await renderShell();
+      expect(root.querySelectorAll(handleSelector).length).to.equal(0);
+    });
 
-    const eventPromise = oneEvent(shell, 'cds-aichat-messages-shell-scroll');
-    scroller.dispatchEvent(new Event('scroll'));
-    const { detail } = await eventPromise;
+    it('puts the top handle before the scroller and the bottom handle after it', async () => {
+      const el = await renderShellWithHandles();
+      const { children, scroller } = indexOfChildren(el.shadowRoot!);
+      const [top, bottom] = el.shadowRoot!.querySelectorAll(handleSelector);
+      expect(children.indexOf(top)).to.be.lessThan(scroller);
+      expect(children.indexOf(bottom)).to.be.greaterThan(scroller);
+    });
 
-    expect(detail.isAtBottom).to.be.true;
+    it('puts the focus ring on the scroller while a handle has focus', async () => {
+      const el = await renderShellWithHandles();
+      const scroller = el.shadowRoot!.querySelector(scrollerSelector)!;
+      const handle =
+        el.shadowRoot!.querySelector<HTMLButtonElement>(handleSelector)!;
+      const ringClass = `${blockClass}__scroller--handle-focused`;
+
+      handle.focus();
+      expect(scroller.classList.contains(ringClass)).to.be.true;
+
+      handle.blur();
+      expect(scroller.classList.contains(ringClass)).to.be.false;
+    });
+
+    it('blurs a handle when Escape is pressed', async () => {
+      const el = await renderShellWithHandles();
+      const handle =
+        el.shadowRoot!.querySelector<HTMLButtonElement>(handleSelector)!;
+      handle.focus();
+      expect(el.shadowRoot!.activeElement).to.equal(handle);
+
+      handle.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Escape',
+          bubbles: true,
+          cancelable: true,
+        })
+      );
+      expect(el.shadowRoot!.activeElement).to.equal(null);
+    });
+  });
+
+  describe('scroll event', () => {
+    it('reports scroll position, geometry, and scrollability', async () => {
+      const { shell, scroller } = await renderInBox(600);
+
+      const eventPromise = oneEvent(shell, scrollEvent);
+      scroller.scrollTop = 50;
+      const { detail } = await eventPromise;
+
+      expect(detail.scrollTop).to.equal(50);
+      expect(detail.scrollHeight).to.equal(scroller.scrollHeight);
+      expect(detail.clientHeight).to.equal(scroller.clientHeight);
+      expect(detail.isScrollable).to.be.true;
+      expect(detail.isAtBottom).to.be.false;
+    });
+
+    it('reports isAtBottom when the scroller is at the bottom', async () => {
+      const { shell, scroller } = await renderInBox(600);
+
+      const eventPromise = oneEvent(shell, scrollEvent);
+      scroller.scrollTop = scroller.scrollHeight - scroller.clientHeight;
+      const { detail } = await eventPromise;
+
+      expect(detail.isScrollable).to.be.true;
+      expect(detail.isAtBottom).to.be.true;
+    });
+
+    it('reports isScrollable as false when the content fits', async () => {
+      const { shell, scroller } = await renderInBox(20);
+
+      // Nothing can scroll, so send the event by hand.
+      const eventPromise = oneEvent(shell, scrollEvent);
+      scroller.dispatchEvent(new Event('scroll'));
+      const { detail } = await eventPromise;
+
+      expect(detail.isScrollable).to.be.false;
+      expect(detail.isAtBottom).to.be.true;
+    });
+
+    it('keeps reporting scroll after the element is moved in the DOM', async () => {
+      const { shell, scroller } = await renderInBox(600);
+      const parent = shell.parentElement!;
+      parent.removeChild(shell);
+      parent.appendChild(shell);
+
+      const eventPromise = oneEvent(shell, scrollEvent);
+      scroller.scrollTop = 50;
+      const { detail } = await eventPromise;
+
+      expect(detail.scrollTop).to.equal(50);
+    });
   });
 });

@@ -255,6 +255,10 @@ collect:
         - table-locale
         - table-next-page-text
         - table-previous-page-text
+        # cds-aichat-messages-shell
+        - bottom-handle-label
+        - oncds-aichat-messages-shell-scroll
+        - top-handle-label
         # cds-aichat-processing
         - loop
         - quick-load

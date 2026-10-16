@@ -7,18 +7,23 @@
  *  @license
  */
 
-import { createComponent } from '@lit/react';
+import { createComponent, type EventName } from '@lit/react';
 import React from 'react';
-import CDSAIChatMessagesShell from '../components/messages-shell/src/messages-shell.js';
+import prefix from '../globals/settings.js';
+import CDSAIChatMessagesShell, {
+  type MessagesShellScrollDetail,
+} from '../components/messages-shell/src/messages-shell.js';
 import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
 const MessagesShell = withWebComponentBridge(
   createComponent({
-    tagName: 'cds-aichat-messages-shell',
+    tagName: `${prefix}-messages-shell`,
     elementClass: CDSAIChatMessagesShell,
     react: React,
     events: {
-      onScroll: 'cds-aichat-messages-shell-scroll',
+      onMessagesShellScroll: CDSAIChatMessagesShell.eventScroll as EventName<
+        CustomEvent<MessagesShellScrollDetail>
+      >,
     },
   })
 );

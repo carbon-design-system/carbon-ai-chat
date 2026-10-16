@@ -815,10 +815,9 @@ export class MessagesScrollController {
   private previousMessages: PortableMessage[] = [];
 
   /**
-   * A counter that goes up by 1 each time a new scroll is scheduled.
-   * Each scroll captures the current number when it starts. If the number has
-   * changed by the time the scroll finishes its async work, a newer scroll has
-   * taken over and this one bails out without doing anything.
+   * Numbers each scroll request so older ones can be told apart from the newest.
+   * A request saves the number it was given. If the counter has moved on by the time the
+   * request runs, a newer request (or `disconnect()`) replaced it, so it must do nothing.
    */
   private scrollCounter = 0;
 
@@ -836,7 +835,10 @@ export class MessagesScrollController {
     // Use requestAnimationFrame to avoid ResizeObserver loop errors
     this.scrollPanelObserver = new ResizeObserver(() => {
       requestAnimationFrame(() => {
-        this.onContainerResize();
+        // `disconnect()` clears the observer. If it is gone, skip this late resize.
+        if (this.scrollPanelObserver) {
+          this.onContainerResize();
+        }
       });
     });
     if (scrollContainer) {
@@ -863,6 +865,8 @@ export class MessagesScrollController {
   }
 
   disconnect(): void {
+    // Changing the counter makes every scroll request that is still waiting do nothing.
+    this.scrollCounter++;
     this.host.setScrollHeightFloor(0);
     if (this.host.getSpacer()) {
       this.host.setSpacerHeight(0);
@@ -879,6 +883,7 @@ export class MessagesScrollController {
     const scrollContainer = this.host.getScrollContainer();
     scrollContainer?.removeEventListener('scroll', this.handleUserScroll);
     this.doAutoScrollThrottled.cancel();
+    this.onContainerResize.cancel();
   }
 
   /**
@@ -1234,8 +1239,8 @@ export class MessagesScrollController {
         return;
       case 'pin_message':
         await this.waitForMessageComponentLayout(action.message);
-        // Abort if a newer scroll request was scheduled while we were waiting, or if
-        // the target message was removed (e.g. conversation cleared mid-wait).
+        // Stop if a newer request replaced this one while we waited, or if the target
+        // message was removed in the meantime (for example, the chat was cleared).
         if (
           counter !== this.scrollCounter ||
           !scrollElement.isConnected ||
@@ -1410,11 +1415,14 @@ export class MessagesScrollController {
     options: ScrollOptions = {},
     includePublicSpacerReconciliation = false
   ): void => {
-    // Capture the counter before entering the async boundary so that any scroll
-    // still awaiting waitForMessageComponentLayout can detect it has been superseded.
     const counter = ++this.scrollCounter;
     requestAnimationFrame(() => {
       void (async () => {
+        // Stop if a newer request (or disconnect) came in before this frame ran.
+        if (counter !== this.scrollCounter) {
+          return;
+        }
+
         // Execute after DOM/layout settles for the current frame so measurements
         // (scrollHeight, rects) match what the user can actually see.
         const scrollElement = this.host.getScrollContainer();
@@ -1427,7 +1435,10 @@ export class MessagesScrollController {
           scrollElement,
           counter
         );
-        if (includePublicSpacerReconciliation) {
+        if (
+          includePublicSpacerReconciliation &&
+          counter === this.scrollCounter
+        ) {
           this.reconcileSpacerAfterPublicDoAutoScroll(scrollElement);
         }
       })();

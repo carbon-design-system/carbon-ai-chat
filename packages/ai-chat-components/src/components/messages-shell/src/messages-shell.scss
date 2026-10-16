@@ -85,10 +85,6 @@ slot[name='notifications'] {
     outline: 2px solid theme.$focus;
     outline-offset: -2px;
   }
-
-  &:focus {
-    outline: none;
-  }
 }
 
 .#{$block-class}__content {
@@ -98,17 +94,7 @@ slot[name='notifications'] {
 
 slot[name='processing'] {
   display: block;
-  flex-shrink: 0;
   min-block-size: layout.$spacing-07;
-}
-
-::slotted([slot='processing']) {
-  display: block;
-  min-block-size: layout.$spacing-07;
-}
-
-.#{$block-class}__spacer {
-  flex-shrink: 0;
 }
 
 slot[name='scroll-down'] {

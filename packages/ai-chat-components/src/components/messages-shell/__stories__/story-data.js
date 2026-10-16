@@ -6,19 +6,19 @@
  *
  *  @license
  */
+
+// Base class for the story-only styles in story-styles.scss.
 export const storyClass = 'messages-shell-story';
 
-export const placeholderMessages = [
-  { type: 'user', text: 'User message 1' },
-  { type: 'assistant', text: 'Assistant response 2' },
-  { type: 'assistant', text: 'Assistant response 3' },
-  { type: 'user', text: 'User message 4' },
-  { type: 'assistant', text: 'Assistant response 5' },
-  { type: 'assistant', text: 'Assistant response 6' },
-  { type: 'user', text: 'User message 7' },
-  { type: 'assistant', text: 'Assistant response 8' },
-  { type: 'assistant', text: 'Assistant response 9' },
-  { type: 'user', text: 'User message 10' },
-  { type: 'assistant', text: 'Assistant response 11' },
-  { type: 'assistant', text: 'Assistant response 12' },
-];
+// Labels for the scroll handles, shared by every story.
+export const handleLabelArgs = {
+  topHandleLabel: 'Start of messages.',
+  bottomHandleLabel: 'End of messages.',
+};
+
+// Twelve rows, so the list is long enough to scroll. Every third row is from the user.
+export const placeholderMessages = Array.from({ length: 12 }, (_, index) => {
+  const type = index % 3 === 0 ? 'user' : 'assistant';
+  const label = type === 'user' ? 'User message' : 'Assistant response';
+  return { type, text: `${label} ${index + 1}` };
+});

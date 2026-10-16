@@ -12,50 +12,32 @@ import MessagesShell from '../../../react/messages-shell';
 import { action } from 'storybook/actions';
 import './story-styles.scss';
 import { placeholderMessages, storyClass } from './story-data';
+import messagesShellStories, {
+  Default as DefaultWC,
+  NoContent as NoContentWC,
+} from './messages-shell.stories';
 
 export default {
-  title: 'Preview/Messages shell',
+  title: messagesShellStories.title,
   component: MessagesShell,
-  parameters: {
-    docs: {
-      description: {
-        component:
-          'Layout container for the chat message list. Provides named slots for notifications, rows, processing indicator, scroll-to-bottom control, and footer errors. **Experimental** — autoscroll and keyboard navigation are added in future issues.',
-      },
-    },
-  },
-  argTypes: {
-    topHandleLabel: {
-      control: 'text',
-      description:
-        'Accessible label for the top scroll handle. Provide a translated string.',
-    },
-    bottomHandleLabel: {
-      control: 'text',
-      description:
-        'Accessible label for the bottom scroll handle. Provide a translated string.',
-    },
-  },
+  parameters: messagesShellStories.parameters,
+  argTypes: messagesShellStories.argTypes,
 };
 
 export const Default = {
-  args: {
-    topHandleLabel: 'Start of messages. Press Enter to move focus to messages.',
-    bottomHandleLabel:
-      'End of messages. Press Enter to move focus to last message.',
-  },
+  args: DefaultWC.args,
   render: ({ topHandleLabel, bottomHandleLabel }) => (
     <div className={`${storyClass}-container`}>
       <MessagesShell
         topHandleLabel={topHandleLabel}
         bottomHandleLabel={bottomHandleLabel}
-        onScroll={(e) => action('scroll')(e.detail)}>
+        onMessagesShellScroll={(e) => action('scroll')(e.detail)}>
         <div slot="notifications" className={`${storyClass}-notification`}>
           Notification slot — e.g. human-agent banner
         </div>
-        {placeholderMessages.map((msg, i) => (
+        {placeholderMessages.map((msg) => (
           <div
-            key={i}
+            key={msg.text}
             className={`${storyClass}-message ${storyClass}-message--${msg.type}`}>
             {msg.text}
           </div>
@@ -64,9 +46,7 @@ export const Default = {
           Processing slot (typing indicator goes here)
         </div>
         <div slot="scroll-down" className={`${storyClass}-scroll-down`}>
-          <button type="button" className={`${storyClass}-scroll-down-btn`}>
-            ↓ Scroll to bottom
-          </button>
+          <button type="button">↓ Scroll to bottom</button>
         </div>
         <div slot="error" className={`${storyClass}-error`}>
           Error slot — e.g. send failure
@@ -77,10 +57,7 @@ export const Default = {
 };
 
 export const NoContent = {
-  args: {
-    topHandleLabel: 'Start of messages.',
-    bottomHandleLabel: 'End of messages.',
-  },
+  args: NoContentWC.args,
   render: ({ topHandleLabel, bottomHandleLabel }) => (
     <div className={`${storyClass}-container`}>
       <MessagesShell
