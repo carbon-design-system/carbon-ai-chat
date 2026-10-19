@@ -87,11 +87,18 @@ function git(args) {
 // left side of the diff is that merge base and not `<base>` itself. Resolving
 // it once lets every diff and every `git show` below share one left side —
 // otherwise a base that moved ahead reads its own newer content as "before".
-function resolveBase(base) {
+function resolveBase(base, usage) {
   const result = spawnSync('git', ['merge-base', base, 'HEAD'], {
     encoding: 'utf8',
   });
-  return result.status === 0 ? result.stdout.trim() : base;
+  if (result.status !== 0) {
+    const detail = result.stderr.trim();
+    fail(
+      `cannot resolve the merge base of ${base} and HEAD${detail ? `\n${detail}` : ''}`,
+      usage
+    );
+  }
+  return result.stdout.trim();
 }
 
 // Against the merge base: the disk, the index, or HEAD.
@@ -352,7 +359,7 @@ export function parseCli({ ints, defaults = {}, usage }) {
     process.exit(2);
   }
   const source = parseSource(values.source, changed, usage);
-  const base = changed === null ? null : resolveBase(changed);
+  const base = changed === null ? null : resolveBase(changed, usage);
   return {
     files,
     changed,

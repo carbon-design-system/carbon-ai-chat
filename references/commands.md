@@ -24,6 +24,7 @@ Load this when you need to build, watch, lint, format, test, or run an example/S
 | All package tests | `npm run test` |
 | Example app tests only (CI's `examples` suite) | `npm run test:examples` |
 | Guidance validator regression tests (no build) | `npm run test:guidance` |
+| Measurement tool tests (no build) | `npm run test:measure` |
 | Lint + format + license + test gate (no build) | `npm run ci-check` |
 | Remove every `node_modules`, `packages/ai-chat/dist`, and `es/`, `es-custom/`, `dist/`, and `storybook-static/` in the components package | `npm run clean` |
 
