@@ -652,18 +652,14 @@ class CDSAIChatShell extends LitElement {
       this._pendingTeardownTimer = null;
       // Re-adopt the shared dynamic stylesheet on the (potentially new) root.
       adoptOnRoot(this.renderRoot as ShadowRoot);
-      return;
-    }
-    // Reconnected after a real teardown. `firstUpdated` is one-shot, so
-    // re-establish managers if the element has already rendered before.
-    if (this.hasUpdated) {
+    } else if (this.hasUpdated) {
       this._setupManagers();
-      if (
-        this.workspaceManager?.shouldRenderPanel() &&
-        !this.workspacePanelOpen
-      ) {
-        this.scheduleWorkspacePanelOpen();
-      }
+    }
+    if (
+      this.workspaceManager?.shouldRenderPanel() &&
+      !this.workspacePanelOpen
+    ) {
+      this.scheduleWorkspacePanelOpen();
     }
   }
 
@@ -1019,7 +1015,7 @@ class CDSAIChatShell extends LitElement {
       this.workspacePanelOpenRafId = window.requestAnimationFrame(() => {
         this.workspacePanelOpenRafId = null;
         this.workspacePanelOpenScheduled = false;
-        if (!this.workspaceManager?.shouldRenderPanel()) {
+        if (!this.isConnected || !this.workspaceManager?.shouldRenderPanel()) {
           return;
         }
         this.workspacePanelOpen = true;
