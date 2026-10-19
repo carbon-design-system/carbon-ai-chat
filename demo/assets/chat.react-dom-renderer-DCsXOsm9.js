@@ -1,0 +1,1 @@
+import{c as e,i as t,t as n}from"./client-BzRcmYfE.js";import{i as r}from"./chat.cds-aichat-container-R2Zz4Od9.js";var i=e(t(),1),a=n();function o(){r({mount(e){let t=(0,a.createRoot)(e);return{render(e,n){t.render(i.createElement(e,n))},unmount(){t.unmount()}}}})}export{o as t};
