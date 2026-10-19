@@ -17,17 +17,81 @@ shared/playwright/
 
 | Project | Example | Spec |
 | --- | --- | --- |
+| `react-basic-custom-element-sidebar` | `react/basic-custom-element-sidebar` | [Basic custom element sidebar](../shared/playwright/tests/basic-custom-element-sidebar.spec.ts) |
+| `react-basic-custom-element-sidebar-narrow` | `react/basic-custom-element-sidebar-narrow` | [Basic custom element sidebar narrow](../shared/playwright/tests/basic-custom-element-sidebar-narrow.spec.ts) |
+| `react-basic-float` | `react/basic-float` | [Basic float](../shared/playwright/tests/basic-float.spec.ts) |
+| `react-chain-of-thought` | `react/chain-of-thought` | [Chain of thought](../shared/playwright/tests/chain-of-thought.spec.ts) |
+| `react-custom-element-as-float` | `react/custom-element-as-float` | [Custom element as float](../shared/playwright/tests/custom-element-as-float.spec.ts) |
+| `react-custom-element-as-float-lazy-load` | `react/custom-element-as-float-lazy-load` | [Custom element as float lazy load](../shared/playwright/tests/custom-element-as-float-lazy-load.spec.ts) |
+| `react-custom-element-lazy-load` | `react/custom-element-lazy-load` | [Custom element lazy load](../shared/playwright/tests/custom-element-lazy-load.spec.ts) |
+| `react-custom-header` | `react/custom-header` | [Custom header](../shared/playwright/tests/custom-header.spec.ts) |
+| `react-custom-prompt-line` | `react/custom-prompt-line` | [Custom prompt line](../shared/playwright/tests/custom-prompt-line.spec.ts) |
+| `react-feedback` | `react/feedback` | [Feedback](../shared/playwright/tests/feedback.spec.ts) |
 | `react-fullscreen` | `react/basic-custom-element-fullscreen` | [Fullscreen](../shared/playwright/tests/fullscreen.spec.ts) |
+| `react-markdown-override` | `react/markdown-override` | [Markdown override](../shared/playwright/tests/markdown-override.spec.ts) |
+| `react-markdown-plugin` | `react/markdown-plugin` | [Markdown plugin](../shared/playwright/tests/markdown-plugin.spec.ts) |
 | `react-mentions-and-commands` | `react/prompt-line-mentions-and-commands` | [Mentions and commands](../shared/playwright/tests/mentions-and-commands.spec.ts) |
+| `react-messages-custom-footer` | `react/messages-custom-footer` | [Messages custom footer](../shared/playwright/tests/messages-custom-footer.spec.ts) |
+| `react-messages-custom-request-footer` | `react/messages-custom-request-footer` | [Messages custom request footer](../shared/playwright/tests/messages-custom-request-footer.spec.ts) |
+| `react-prompt-line-code-snippet` | `react/prompt-line-code-snippet` | [Prompt line code snippet](../shared/playwright/tests/prompt-line-code-snippet.spec.ts) |
+| `react-prompt-line-conversation-starters` | `react/prompt-line-conversation-starters` | [Prompt line conversation starters](../shared/playwright/tests/prompt-line-conversation-starters.spec.ts) |
+| `react-prompt-line-custom-render` | `react/prompt-line-custom-render` | [Prompt line custom render](../shared/playwright/tests/prompt-line-custom-render.spec.ts) |
+| `react-prompt-line-file-upload` | `react/prompt-line-file-upload` | [Prompt line file upload](../shared/playwright/tests/prompt-line-file-upload.spec.ts) |
+| `react-prompt-line-history-mechanism` | `react/prompt-line-history-mechanism` | [Prompt line history mechanism](../shared/playwright/tests/prompt-line-history-mechanism.spec.ts) |
+| `react-prompt-line-mentions-and-commands-custom-render` | `react/prompt-line-mentions-and-commands-custom-render` | [Prompt line mentions and commands custom render](../shared/playwright/tests/prompt-line-mentions-and-commands-custom-render.spec.ts) |
+| `react-prompt-line-typeahead` | `react/prompt-line-typeahead` | [Prompt line typeahead](../shared/playwright/tests/prompt-line-typeahead.spec.ts) |
+| `react-prompt-line-typeahead-custom` | `react/prompt-line-typeahead-custom` | [Prompt line typeahead custom react](../shared/playwright/tests/prompt-line-typeahead-custom-react.spec.ts) |
+| `react-reasoning-steps` | `react/reasoning-steps` | [Reasoning steps](../shared/playwright/tests/reasoning-steps.spec.ts) |
+| `react-reasoning-steps-controlled` | `react/reasoning-steps-controlled` | [Reasoning steps controlled](../shared/playwright/tests/reasoning-steps-controlled.spec.ts) |
+| `react-reasoning-with-streaming-generic-items` | `react/reasoning-with-streaming-generic-items` | [Reasoning with streaming generic items](../shared/playwright/tests/reasoning-with-streaming-generic-items.spec.ts) |
+| `react-tests-vitest-happydom` | `react/tests-vitest-happydom` | [Tests vitest happydom](../shared/playwright/tests/tests-vitest-happydom.spec.ts) |
+| `react-theme-plex-override` | `react/theme-plex-override` | [Theme plex override](../shared/playwright/tests/theme-plex-override.spec.ts) |
+| `react-upsert-message-reasoning-steps` | `react/upsert-message-reasoning-steps` | [Upsert message reasoning steps](../shared/playwright/tests/upsert-message-reasoning-steps.spec.ts) |
+| `react-upsert-message-reasoning-steps-controlled` | `react/upsert-message-reasoning-steps-controlled` | [Upsert message reasoning steps controlled](../shared/playwright/tests/upsert-message-reasoning-steps-controlled.spec.ts) |
+| `react-upsert-message-reasoning-with-streaming-generic-items` | `react/upsert-message-reasoning-with-streaming-generic-items` | [Upsert message reasoning with streaming generic items](../shared/playwright/tests/upsert-message-reasoning-with-streaming-generic-items.spec.ts) |
+| `react-upsert-message-user-defined` | `react/upsert-message-user-defined` | [Upsert message user defined](../shared/playwright/tests/upsert-message-user-defined.spec.ts) |
+| `react-user-defined-responses` | `react/user-defined-responses` | [User defined responses](../shared/playwright/tests/user-defined-responses.spec.ts) |
 | `react-watch-state` | `react/watch-state` | [Watch state](../shared/playwright/tests/watch-state.spec.ts) |
+| `react-watch-state-redux` | `react/watch-state-redux` | [Watch state redux](../shared/playwright/tests/watch-state-redux.spec.ts) |
+| `web-components-basic-custom-element-sidebar` | `web-components/basic-custom-element-sidebar` | [Basic custom element sidebar](../shared/playwright/tests/basic-custom-element-sidebar.spec.ts) |
+| `web-components-basic-custom-element-sidebar-narrow` | `web-components/basic-custom-element-sidebar-narrow` | [Basic custom element sidebar narrow](../shared/playwright/tests/basic-custom-element-sidebar-narrow.spec.ts) |
+| `web-components-basic-float` | `web-components/basic-float` | [Basic float](../shared/playwright/tests/basic-float.spec.ts) |
+| `web-components-chain-of-thought` | `web-components/chain-of-thought` | [Chain of thought](../shared/playwright/tests/chain-of-thought.spec.ts) |
+| `web-components-custom-element-as-float` | `web-components/custom-element-as-float` | [Custom element as float](../shared/playwright/tests/custom-element-as-float.spec.ts) |
+| `web-components-custom-element-as-float-lazy-load` | `web-components/custom-element-as-float-lazy-load` | [Custom element as float lazy load](../shared/playwright/tests/custom-element-as-float-lazy-load.spec.ts) |
+| `web-components-custom-element-lazy-load` | `web-components/custom-element-lazy-load` | [Custom element lazy load](../shared/playwright/tests/custom-element-lazy-load.spec.ts) |
+| `web-components-custom-header` | `web-components/custom-header` | [Custom header](../shared/playwright/tests/custom-header.spec.ts) |
+| `web-components-custom-prompt-line` | `web-components/custom-prompt-line` | [Custom prompt line](../shared/playwright/tests/custom-prompt-line.spec.ts) |
+| `web-components-feedback` | `web-components/feedback` | [Feedback](../shared/playwright/tests/feedback.spec.ts) |
 | `web-components-fullscreen` | `web-components/basic-custom-element-fullscreen` | [Fullscreen](../shared/playwright/tests/fullscreen.spec.ts) |
+| `web-components-markdown-override` | `web-components/markdown-override` | [Markdown override](../shared/playwright/tests/markdown-override.spec.ts) |
+| `web-components-markdown-plugin` | `web-components/markdown-plugin` | [Markdown plugin](../shared/playwright/tests/markdown-plugin.spec.ts) |
 | `web-components-mentions-and-commands` | `web-components/prompt-line-mentions-and-commands` | [Mentions and commands](../shared/playwright/tests/mentions-and-commands.spec.ts) |
+| `web-components-messages-custom-footer` | `web-components/messages-custom-footer` | [Messages custom footer](../shared/playwright/tests/messages-custom-footer.spec.ts) |
+| `web-components-messages-custom-request-footer` | `web-components/messages-custom-request-footer` | [Messages custom request footer](../shared/playwright/tests/messages-custom-request-footer.spec.ts) |
+| `web-components-prompt-line-code-snippet` | `web-components/prompt-line-code-snippet` | [Prompt line code snippet](../shared/playwright/tests/prompt-line-code-snippet.spec.ts) |
+| `web-components-prompt-line-conversation-starters` | `web-components/prompt-line-conversation-starters` | [Prompt line conversation starters](../shared/playwright/tests/prompt-line-conversation-starters.spec.ts) |
+| `web-components-prompt-line-custom-render` | `web-components/prompt-line-custom-render` | [Prompt line custom render](../shared/playwright/tests/prompt-line-custom-render.spec.ts) |
+| `web-components-prompt-line-file-upload` | `web-components/prompt-line-file-upload` | [Prompt line file upload](../shared/playwright/tests/prompt-line-file-upload.spec.ts) |
+| `web-components-prompt-line-history-mechanism` | `web-components/prompt-line-history-mechanism` | [Prompt line history mechanism](../shared/playwright/tests/prompt-line-history-mechanism.spec.ts) |
+| `web-components-prompt-line-mentions-and-commands-custom-render` | `web-components/prompt-line-mentions-and-commands-custom-render` | [Prompt line mentions and commands custom render](../shared/playwright/tests/prompt-line-mentions-and-commands-custom-render.spec.ts) |
+| `web-components-prompt-line-typeahead` | `web-components/prompt-line-typeahead` | [Prompt line typeahead](../shared/playwright/tests/prompt-line-typeahead.spec.ts) |
+| `web-components-prompt-line-typeahead-custom` | `web-components/prompt-line-typeahead-custom` | [Prompt line typeahead custom web components](../shared/playwright/tests/prompt-line-typeahead-custom-web-components.spec.ts) |
+| `web-components-reasoning-steps` | `web-components/reasoning-steps` | [Reasoning steps](../shared/playwright/tests/reasoning-steps.spec.ts) |
+| `web-components-reasoning-steps-controlled` | `web-components/reasoning-steps-controlled` | [Reasoning steps controlled](../shared/playwright/tests/reasoning-steps-controlled.spec.ts) |
+| `web-components-reasoning-with-streaming-generic-items` | `web-components/reasoning-with-streaming-generic-items` | [Reasoning with streaming generic items](../shared/playwright/tests/reasoning-with-streaming-generic-items.spec.ts) |
+| `web-components-theme-plex-override` | `web-components/theme-plex-override` | [Theme plex override](../shared/playwright/tests/theme-plex-override.spec.ts) |
+| `web-components-upsert-message-reasoning-steps` | `web-components/upsert-message-reasoning-steps` | [Upsert message reasoning steps](../shared/playwright/tests/upsert-message-reasoning-steps.spec.ts) |
+| `web-components-upsert-message-reasoning-steps-controlled` | `web-components/upsert-message-reasoning-steps-controlled` | [Upsert message reasoning steps controlled](../shared/playwright/tests/upsert-message-reasoning-steps-controlled.spec.ts) |
+| `web-components-upsert-message-reasoning-with-streaming-generic-items` | `web-components/upsert-message-reasoning-with-streaming-generic-items` | [Upsert message reasoning with streaming generic items](../shared/playwright/tests/upsert-message-reasoning-with-streaming-generic-items.spec.ts) |
+| `web-components-upsert-message-user-defined` | `web-components/upsert-message-user-defined` | [Upsert message user defined](../shared/playwright/tests/upsert-message-user-defined.spec.ts) |
+| `web-components-user-defined-responses` | `web-components/user-defined-responses` | [User defined responses](../shared/playwright/tests/user-defined-responses.spec.ts) |
 | `web-components-watch-state` | `web-components/watch-state` | [Watch state](../shared/playwright/tests/watch-state.spec.ts) |
 
 ### Share definitions across hosts
 
-Both flavors run the same specs in `tests/`. The suite has three specs and six
-projects: 14 cases per flavor, for 28 Chromium cases. Each execution opens only
+Both flavors run the same specs in `tests/`, one project per target. A spec
+that only one flavor has, such as `tests-vitest-happydom`, maps to one target. Each execution opens only
 its own example.
 
 React mounts through the shared chat element, but each example has separate
@@ -237,7 +301,7 @@ Failures, screenshots, and videos land in `shared/playwright/test-results/`, whi
 
 ## Definition of done
 
-- [ ] `npm run test:e2e:goldens -- --list` shows 28 cases across six projects, with each case once per flavor.
+- [ ] `npm run test:e2e:goldens -- --list` shows each new case once per target, and the target table above lists the new targets.
 - [ ] `npm run test:e2e:goldens` passes on chromium.
 - [ ] `npm run build --workspace=<example>` exits 0.
 - [ ] The suite covers the example's one concern plus the baseline above; no scaffold `test.fixme` placeholder remains.
