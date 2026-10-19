@@ -1,31 +1,44 @@
-/*
- *  Copyright IBM Corp. 2025, 2026
+/**
+ * @license
  *
- *  This source code is licensed under the Apache-2.0 license found in the
- *  LICENSE file in the root directory of this source tree.
+ * Copyright IBM Corp. 2025, 2026
  *
- *  @license
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
  */
 
+/* eslint-disable */
 import React from 'react';
 import MessagesShell from '../../../react/messages-shell';
 import { action } from 'storybook/actions';
 import './story-styles.scss';
 import { placeholderMessages, storyClass } from './story-data';
-import messagesShellStories, {
+import {
   Default as DefaultWC,
   NoContent as NoContentWC,
 } from './messages-shell.stories';
 
 export default {
-  title: messagesShellStories.title,
+  title: 'Preview/Messages shell',
   component: MessagesShell,
-  parameters: messagesShellStories.parameters,
-  argTypes: messagesShellStories.argTypes,
 };
 
 export const Default = {
-  args: DefaultWC.args,
+  argTypes: {
+    ...(() => {
+      const { '@cds-aichat-messages-shell-scroll': _, ...rest } =
+        DefaultWC.argTypes;
+      return rest;
+    })(),
+    onMessagesShellScroll: {
+      action: 'scroll',
+      control: 'none',
+      table: { category: 'events' },
+    },
+  },
+  args: {
+    ...DefaultWC.args,
+  },
   render: ({ topHandleLabel, bottomHandleLabel }) => (
     <div className={`${storyClass}-container`}>
       <MessagesShell
@@ -57,7 +70,12 @@ export const Default = {
 };
 
 export const NoContent = {
-  args: NoContentWC.args,
+  argTypes: {
+    ...Default.argTypes,
+  },
+  args: {
+    ...NoContentWC.args,
+  },
   render: ({ topHandleLabel, bottomHandleLabel }) => (
     <div className={`${storyClass}-container`}>
       <MessagesShell

@@ -1,10 +1,10 @@
-/*
- *  Copyright IBM Corp. 2025, 2026
+/**
+ * @license
  *
- *  This source code is licensed under the Apache-2.0 license found in the
- *  LICENSE file in the root directory of this source tree.
+ * Copyright IBM Corp. 2025, 2026
  *
- *  @license
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
  */
 
 import '../index';
@@ -25,14 +25,9 @@ export default {
       ${story()}
     `,
   ],
-  parameters: {
-    docs: {
-      description: {
-        component:
-          'Layout container for the chat message list. Provides named slots for notifications, rows, the processing indicator, the scroll-to-bottom control, and footer errors. **Experimental.**',
-      },
-    },
-  },
+};
+
+export const Default = {
   argTypes: {
     topHandleLabel: {
       control: 'text',
@@ -44,10 +39,12 @@ export default {
       description:
         'Label for the bottom scroll handle. Provide a translated string. Omit it to hide the handle.',
     },
+    '@cds-aichat-messages-shell-scroll': {
+      action: 'scroll',
+      control: 'none',
+      table: { category: 'events' },
+    },
   },
-};
-
-export const Default = {
   args: handleLabelArgs,
   render: (args) => html`
     <div class="${storyClass}-container">
@@ -82,7 +79,12 @@ export const Default = {
 };
 
 export const NoContent = {
-  args: handleLabelArgs,
+  argTypes: {
+    ...Default.argTypes,
+  },
+  args: {
+    ...Default.args,
+  },
   render: (args) => html`
     <div class="${storyClass}-container">
       <cds-aichat-messages-shell
