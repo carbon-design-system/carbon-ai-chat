@@ -25,11 +25,11 @@
       "import": "./dist/es/serverEntry.js"
     },
     "./dist/es/web-components/cds-aichat-container/index.js": {
-      "types": "./dist/types/aiChatEntry.d.ts",
+      "types": "./dist/types/web-components/cds-aichat-container/index.d.ts",
       "import": "./dist/es/web-components/cds-aichat-container/index.js"
     },
     "./dist/es/web-components/cds-aichat-custom-element/index.js": {
-      "types": "./dist/types/aiChatEntry.d.ts",
+      "types": "./dist/types/web-components/cds-aichat-custom-element/index.d.ts",
       "import": "./dist/es/web-components/cds-aichat-custom-element/index.js"
     },
     "./scss/*": "./dist/scss/*",
@@ -49,10 +49,10 @@
         "dist/types/serverEntry.d.ts"
       ],
       "web-components/cds-aichat-container": [
-        "dist/types/aiChatEntry.d.ts"
+        "dist/types/web-components/cds-aichat-container/index.d.ts"
       ],
       "web-components/cds-aichat-custom-element": [
-        "dist/types/aiChatEntry.d.ts"
+        "dist/types/web-components/cds-aichat-custom-element/index.d.ts"
       ]
     }
   },
