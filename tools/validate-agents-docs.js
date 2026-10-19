@@ -270,7 +270,9 @@ function checkGuidanceLink(file, url) {
   if (page.problem) {
     return page;
   }
-  const content = withoutFencedCode(fs.readFileSync(page.target, 'utf8'));
+  const content = withoutFencedCode(
+    fs.readFileSync(page.target, 'utf8').replace(/\{\/\*[\s\S]*?\*\/\}/g, ' ')
+  );
   if (
     !/<Meta\s+title=["']Introduction\/Styling & Modifiers["']\s*\/>/.test(
       content
@@ -281,12 +283,21 @@ function checkGuidanceLink(file, url) {
   return checkStorybookConfig(file, directory, page.target);
 }
 
+function withoutSourceComments(content) {
+  return content.replace(
+    /"(?:\\[\s\S]|[^"\\])*"|'(?:\\[\s\S]|[^'\\])*'|`(?:\\[\s\S]|[^`\\])*`|\/\*[\s\S]*?\*\/|\/\/[^\r\n]*/g,
+    function keepLiteral(token) {
+      return token.startsWith('/') ? ' ' : token;
+    }
+  );
+}
+
 function checkStorybookConfig(file, directory, target) {
   const config = checkLocalLink(REPO_ROOT, file, `../${directory}/main.js`);
   if (config.problem) {
     return config;
   }
-  const content = fs.readFileSync(config.target, 'utf8');
+  const content = withoutSourceComments(fs.readFileSync(config.target, 'utf8'));
   const stories = content.match(/\bstories\s*:\s*\[([^\]]*)\]/);
   if (
     !stories ||

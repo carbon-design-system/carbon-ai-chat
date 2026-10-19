@@ -358,6 +358,46 @@ for (const [flavor, directory] of [
     );
   });
 
+  for (const disabled of [
+    "// './welcome/styling-and-modifiers.mdx',\n",
+    "/* './welcome/styling-and-modifiers.mdx', */",
+  ]) {
+    test(`${flavor} template rejects registration disabled with ${disabled.slice(0, 2)}`, (context) => {
+      const root = storybookFixture(context);
+      write(
+        root,
+        config,
+        `export default { stories: [${disabled}], docs: { defaultName: 'Overview' } };\n`
+      );
+      run(
+        root,
+        'validate-agents-docs.js',
+        1,
+        /does not register the source page/
+      );
+    });
+  }
+
+  test(`${flavor} template rejects a Meta declaration inside an MDX comment`, (context) => {
+    const root = storybookFixture(context);
+    write(
+      root,
+      page,
+      'A developer\'s guide.\n{/*\n<Meta title="Introduction/Styling & Modifiers" />\n*/}\n'
+    );
+    run(root, 'validate-agents-docs.js', 1, /no matching Meta title/);
+  });
+
+  test(`${flavor} template preserves quoted URLs, globs, and escaped quotes`, (context) => {
+    const root = storybookFixture(context);
+    write(
+      root,
+      config,
+      "export default { url: 'https://example.com', label: 'it\\'s /* quoted */', glob: `../src/**/*.mdx`, stories: ['./welcome/styling-and-modifiers.mdx'], docs: { defaultName: 'Overview' } };\n"
+    );
+    run(root, 'validate-agents-docs.js', 0);
+  });
+
   test(`${flavor} template keeps ordinary link and unknown route checks`, (context) => {
     const root = storybookFixture(context);
     fs.appendFileSync(
