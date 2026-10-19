@@ -15,6 +15,15 @@ Before adding code, write the **least** the task needs. Trace the whole flow fir
 
 **When NOT to be lazy** — never trade these for fewer lines: input validation, error handling that prevents data loss, security, and accessibility (see [accessibility.md](accessibility.md)). Understand the whole flow before picking a rung.
 
+### Shaping the code you do write
+
+- **Single-purpose functions** over large multi-job ones.
+- **No hidden side effects** — a function's effects should be evident from its name and signature.
+- **Flat control flow** — early returns / guard clauses; avoid nesting beyond ~2–3 levels.
+- **Minimize state and mutation** — prefer pure functions and explicit inputs/outputs; avoid module-level or shared mutable state.
+- **No premature abstraction** — no indirection, generality, config, or flag params for a single caller.
+- **Avoid cleverness** — no dense one-liners or nested ternaries when a plain version reads clearer.
+
 ## Carbon flavor by area
 
 Rung 4 above says reach for Carbon; this says **which** Carbon. Both primary packages are Web Components only. React is legitimate in the demo, the React examples, and React-wrapper stories — "use Web Components" is not a repo-wide rule, it is a per-directory one.
