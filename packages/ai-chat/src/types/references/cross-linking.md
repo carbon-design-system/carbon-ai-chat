@@ -21,4 +21,3 @@ This is why third-party packages are never re-declared or re-exported to make th
 ## Related guidance
 
 - [src/types/AGENTS.md](../AGENTS.md) — the JSDoc bar these links sit inside
-- [cross-package-types.md](cross-package-types.md) — re-declaring `@carbon/ai-chat-components` types

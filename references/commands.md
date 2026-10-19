@@ -123,7 +123,4 @@ Name files in both plainly, with no underscore prefix. A shared module says so w
 
 ## Related guidance
 
-- [Root AGENTS.md](../AGENTS.md) — repo router
-- [definition-of-done.md](definition-of-done.md) — which gate to run before shipping
-- [demo/AGENTS.md](../demo/AGENTS.md) — read when running the demo's Playwright suite: its server and port
 - [conventions.md](conventions.md) — commits, branches, license headers, hooks

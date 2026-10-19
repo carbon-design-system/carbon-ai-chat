@@ -44,12 +44,3 @@ npm start --workspace=@carbon/ai-chat         # watch rollup/TypeDoc; preview on
 Docs emit to `packages/ai-chat/dist/docs/`; preview serves `dist/docs/carbon-tsdocs`.
 
 **Run the docs gate for published docs changes.** `npm run docs` from the package root rejects broken `{@link …}` references. Agent-guidance edits use the [guidance gate](../../../references/definition-of-done.md#minimum-gate-by-area-edited) instead.
-
-## Related guidance
-
-- [packages/ai-chat/AGENTS.md](../AGENTS.md) — package overview
-- [doc-style.md](references/doc-style.md) — markdown structure for net-new docs
-- [tone.md](../../../references/tone.md) — voice and quick rules
-- [docs-pages.md](../../../.bob/skills/caic-copy-writer/references/docs-pages.md) — the copy rules and gate for a docs page (type 3)
-- [../src/types/AGENTS.md](../src/types/AGENTS.md) — JSDoc standards for API docs
-- [../../typedoc-theme/AGENTS.md](../../typedoc-theme/AGENTS.md) — theme customization

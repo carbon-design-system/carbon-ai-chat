@@ -50,12 +50,3 @@ A Playwright suite is **not** required here yet: most examples have none, so the
 **Title naming**: follow the [Indexer Contract](references/indexer-contract.md#title-naming).
 
 **Inline comments rule**: comments are the product here, and how to word them is [example-copy.md](../.bob/skills/caic-copy-writer/references/example-copy.md) — type 5. Read it before writing one. The constraint driving those rules is local: the Carbon MCP indexer reads each example in isolation, so nothing in this directory may point at another one.
-
-## Related guidance
-
-- [Root AGENTS.md](../AGENTS.md) — monorepo conventions
-- [indexer-contract.md](references/indexer-contract.md) — README format for the docs-site indexer
-- [example-copy.md](../.bob/skills/caic-copy-writer/references/example-copy.md) — how to word a README and a comment here (type 5)
-- [tone.md](../references/tone.md) — voice and quick rules
-- [react/AGENTS.md](react/AGENTS.md) — React flavor deltas
-- [web-components/AGENTS.md](web-components/AGENTS.md) — Web Components flavor deltas

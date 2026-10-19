@@ -1,6 +1,6 @@
 # indexer-contract.md — examples README format
 
-Follow this format so the repo indexer can parse and display each example. `ci-check` validates it.
+Use this format for each README. The repo indexer reads it; `ci-check` checks it.
 
 ## Required sections (in order)
 
@@ -21,11 +21,11 @@ Follow this format so the repo indexer can parse and display each example. `ci-c
 3. Use exactly three table columns with the headers above.
 4. For a section that does not apply, use `N/A - <reason>` instead of leaving it empty.
 
-The indexer checks section presence, exact headers, table structure, and empty sections. A failed README does not appear on the docs site.
+The indexer checks all sections, headers, and table columns. It rejects empty sections. A failed README does not appear on the docs site.
 
 ## Title naming
 
-Match the `# H1` title to the slug family so related examples cluster in the aggregator.
+Match the `# H1` title to the slug family. This groups related examples in the list.
 
 | Slug | Title format | Example |
 | --- | --- | --- |

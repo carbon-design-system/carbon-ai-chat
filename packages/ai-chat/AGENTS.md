@@ -1,10 +1,10 @@
 # AGENTS.md — `@carbon/ai-chat`
 
-Guidance for authoring inside [packages/ai-chat/](.). Read this before editing anything here.
+Guidance for [packages/ai-chat/](.).
 
 ## What this package is
 
-The primary Carbon AI Chat app. Ships as:
+Carbon AI Chat ships as:
 
 - A React component tree rooted at [src/aiChatEntry.tsx](src/aiChatEntry.tsx).
 - Lit web-component wrappers (`cds-aichat-container`, `cds-aichat-custom-element`) under [src/web-components/](src/web-components) that own startup and mount the React tree for every host. React components render through `cds-aichat-container`.
@@ -69,9 +69,3 @@ See [definition-of-done.md](../../references/definition-of-done.md) for the gate
 
 - **Public API changes**: anything exported from `aiChatEntry.tsx`, `serverEntry.ts`, or `types/` is semver-visible. Coordinate with a `feat`/`fix!`/`BREAKING CHANGE` footer. JSDoc/TypeDoc rules: [src/types/AGENTS.md](src/types/AGENTS.md).
 - **i18n**: no user-visible strings in code. Route through `languages/`.
-
-## Related guidance
-
-- [Root AGENTS.md](../../AGENTS.md) — monorepo conventions
-- [../ai-chat-components/AGENTS.md](../ai-chat-components/AGENTS.md) — Lit component authoring
-- [definition-of-done.md](../../references/definition-of-done.md) — the gate before shipping

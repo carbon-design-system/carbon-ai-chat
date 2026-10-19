@@ -11,7 +11,10 @@ Load this when creating or editing AGENTS files, skills, or their references. In
 - **Cross-reference, don't restate**: when a rule is repo-wide (prefix discipline, license headers, the `aiChat:start` watcher, conventional commits), link to its canonical home — [code-patterns.md](code-patterns.md) or [conventions.md](conventions.md) — instead of inlining it.
 - **Every reference link carries a "read when…" trigger, and lives in the router that owns the file's scope.** Top-level `references/` are triggered from the root [AGENTS.md](../AGENTS.md) task router; a package's own `references/` (e.g. `architecture.md`, `services.md`, `tests.md`) are triggered from that package's `AGENTS.md`. Never dump a bare list of links — the reader can't tell when to open which.
 - **Trim human-onboarding prose**: drop "we chose this because…" framing unless the _why_ changes how an agent applies the rule.
-- **Each leaf file ends with a "Related guidance" section** so an agent landing cold can navigate to neighbors without re-reading the parent.
+- **Related guidance**: routers omit the footer. Leaf references list only links absent from the body. Skills keep their footers.
+- **Link to a list's owner**, rather than copying an enumeration or count. Keep numbers only when they calibrate judgment. Link to a file or heading, not a drifting `#L` anchor.
+- **Cite an issue only when it changes what the agent does.** Drop the citation when the issue closes.
+- **Committed guidance never links to plan drafts.** Drafts are git-ignored and get deleted.
 
 ## Task-workflow skills (`.bob/skills/`)
 
@@ -30,9 +33,3 @@ Rules for authoring them:
 - **Check both selection and behavior.** Test a request that should use the skill and a nearby request that should not. Static validators check structure, not whether the agent performs the right task.
 - **Keep the skill catalog out of root AGENTS.** Skill metadata supplies task discovery. The root router carries rules and package routes, not a second list of skills.
 - **End each skill body with `Task input from the user, if any: $ARGUMENTS`.** Some harnesses substitute invocation arguments. If the token remains literal, use the actual user request; do not treat it as missing task input.
-
-## Related guidance
-
-- [Root AGENTS.md](../AGENTS.md) — the router these rules produce
-- [tone.md](tone.md) — voice & quick rules for developer-facing copy
-- [.bob/skills/README.md](../.bob/skills/README.md) — the skill collection and its sync rules

@@ -46,8 +46,4 @@ Voice stays constant; tone shifts to fit the moment.
 
 ## Related guidance
 
-- [../packages/ai-chat/docs/references/doc-style.md](../packages/ai-chat/docs/references/doc-style.md) — markdown structure for the docs site.
-- [packages/ai-chat/src/types/AGENTS.md](../packages/ai-chat/src/types/AGENTS.md) — JSDoc mechanics for public types.
-- [caic-copy-writer](../.bob/skills/caic-copy-writer/SKILL.md) — which rules, audience, and gate apply to the kind of copy you're writing, from JSDoc to a commit body.
-- [revision-pass.md](../.bob/skills/caic-copy-writer/references/revision-pass.md) — the tightening pass and word economy under every one of them.
 - [AGENTS.md](../AGENTS.md) — repository-wide guidance.

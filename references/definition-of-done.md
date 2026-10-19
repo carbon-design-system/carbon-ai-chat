@@ -34,6 +34,5 @@ Before declaring a task done, self-review the diff against this repo's review ru
 ## Related guidance
 
 - [Root AGENTS.md](../AGENTS.md) — repo router
-- [commands.md](commands.md) — the commands referenced above, and the build preflight to run before a test
 - [code-patterns.md](code-patterns.md) — the code-authoring discipline a review checks against
 - [conventions.md](conventions.md) — commits, branches, license headers, hooks

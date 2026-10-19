@@ -40,9 +40,3 @@ Read before editing this custom Redux-style store. Package rules: [ai-chat/AGENT
 5. Add an action creator if dispatch is needed.
 6. Wire side effects in `subscriptions.ts`, outside the reducer.
 7. Test the reducer directly, without React, in [tests/store/spec/](../../../tests/store/spec/) (Jest, `*_spec.ts`).
-
-## Related Guidance
-
-- **Parent guidance**: [packages/ai-chat/AGENTS.md](../../../AGENTS.md)
-- **Type conventions**: [../../types/AGENTS.md](../../types/AGENTS.md) - For action/state type definitions
-- **Testing**: [tests.md](../../../references/tests.md#store--hook-example) - Store testing patterns

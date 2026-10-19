@@ -129,5 +129,3 @@ Normalising trims and collapses whitespace and drops blank lines, lone punctuati
 ## Related guidance
 
 - [Root AGENTS.md](../AGENTS.md) — repo overview and pointer index
-- [code-patterns.md](code-patterns.md) — the laziness ladder and the rules these numbers measure
-- [definition-of-done.md](definition-of-done.md) — when to run this before shipping

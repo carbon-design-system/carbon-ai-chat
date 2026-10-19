@@ -56,11 +56,3 @@ For guidance-only edits, use the [guidance gate](../../../../references/definiti
 3. For a changed cross-package re-declaration, run the [rendered-properties check](#scope).
 4. For a changed public instance method, check the [`@example` review gate](#example-on-public-methods).
 5. Apply the [public-API semver rules](../../AGENTS.md#authoring-rules).
-
-## Related Guidance
-
-- **Parent guidance**: [packages/ai-chat/AGENTS.md](../../AGENTS.md)
-- **Voice and tone**: [tone.md](../../../../references/tone.md) - Voice and word economy for all public copy
-- **Store patterns**: [../chat/store/AGENTS.md](../chat/store/AGENTS.md) - For action/state types
-- **Cross-package types**: [cross-package-types.md](references/cross-package-types.md) - Re-declaring `@carbon/ai-chat-components` types
-- **Documentation**: [../../docs/AGENTS.md](../../docs/AGENTS.md) - For public API docs

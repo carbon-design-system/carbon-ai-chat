@@ -140,9 +140,4 @@ Follow [component-authoring.md](component-authoring.md#manifest-and-react-wrappe
 ## Related guidance
 
 - [../AGENTS.md](../AGENTS.md) — package authoring rules (parent router)
-- [overview-lit.template.mdx](overview-lit.template.mdx) / [overview-react.template.mdx](overview-react.template.mdx) — copy-to-start Overview skeletons
-- [component-authoring.md](component-authoring.md) — directory shape, manifest, React-wrapper generation
-- [testing.md](testing.md) — WTR + Jest test setup
-- [../../../references/tone.md](../../../references/tone.md) — voice & quick rules for MDX copy
-- [storybook-mdx.md](../../../.bob/skills/caic-copy-writer/references/storybook-mdx.md) — what the Overview and controls owe a reader (type 4)
 - [../../../references/accessibility.md](../../../references/accessibility.md) — a11y-addon expectations

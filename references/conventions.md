@@ -40,5 +40,4 @@ Every source file needs the Apache-2.0 header. Enforced by `npm run lint:license
 ## Related guidance
 
 - [Root AGENTS.md](../AGENTS.md) — repo overview and pointer index
-- [code-patterns.md](code-patterns.md) — naming, SCSS, component placement, comments
 - [tone.md](tone.md) — voice & quick rules for developer-facing copy

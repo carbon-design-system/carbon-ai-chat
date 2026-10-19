@@ -84,8 +84,4 @@ Run `npm run measure -- --changed <base>` before reading a diff; interpret it wi
 ## Related guidance
 
 - [Root AGENTS.md](../AGENTS.md) — repo overview and pointer index
-- [conventions.md](conventions.md) — commits, branches, license headers, hooks
-- [accessibility.md](accessibility.md) — announcer utilities and live-region patterns
-- [internal-comments.md](../.bob/skills/caic-copy-writer/references/internal-comments.md) — how to word a comment that survives the no-comment default (type 2)
 - [error-strings.md](../.bob/skills/caic-copy-writer/references/error-strings.md) — how to word a thrown error or a console message (type 12)
-- [definition-of-done.md](definition-of-done.md) — the gate to run before shipping a change

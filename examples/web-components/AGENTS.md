@@ -14,7 +14,3 @@ Workspace naming: `@carbon/ai-chat-examples-web-components-<slug>`.
 ## APIs-and-props table headers
 
 `Symbol | Kind | Role in this example` — entries are custom-element tags, attributes, properties, events, and slots. Example row: `\`<cds-aichat-container>\` | custom element | Mounts the chat UI.`
-
-## Related Guidance
-
-- **Parent guidance**: [examples/AGENTS.md](../AGENTS.md) - Shared example rules

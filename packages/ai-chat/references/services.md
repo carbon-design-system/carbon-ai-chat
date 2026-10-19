@@ -52,5 +52,4 @@ Follow [tests.md](tests.md#service-example) when testing a service.
 ## Related guidance
 
 - [packages/ai-chat/AGENTS.md](../AGENTS.md) — package overview
-- [tests.md](tests.md) — testing strategy
 - [src/chat/store/AGENTS.md](../src/chat/store/AGENTS.md) — store rules

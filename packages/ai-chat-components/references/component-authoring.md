@@ -78,6 +78,4 @@ Storybook `<ArgTypes>` reads the manifest; restart Storybook after regenerating 
 ## Related guidance
 
 - [../AGENTS.md](../AGENTS.md) — package authoring rules (parent router)
-- [storybook.md](storybook.md) — stories & docs for each element
-- [testing.md](testing.md) — WTR (Lit) + Jest (React) test setup
 - [../../../references/accessibility.md](../../../references/accessibility.md) — WCAG 2.1 AA checklist for every element

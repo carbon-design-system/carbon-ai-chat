@@ -178,7 +178,6 @@ Failures, screenshots, and videos land in `shared/playwright/test-results/`, whi
 
 ## Related guidance
 
-- [examples/AGENTS.md](../AGENTS.md) — read when adding or changing an example
 - [examples/react/AGENTS.md](../react/AGENTS.md) and [examples/web-components/AGENTS.md](../web-components/AGENTS.md) — flavor deltas
 - [demo/tests/README.md](../../demo/tests/README.md) — read for existing Playwright helper patterns
 - [Playwright best practices](https://playwright.dev/docs/best-practices) — read when choosing locators, assertions, isolation, or debugging steps

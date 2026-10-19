@@ -80,4 +80,3 @@ Test setup: `tests/setup.ts` installs DOM + testing-library setup; `tests/test_h
 - [packages/ai-chat/AGENTS.md](../AGENTS.md) — package overview
 - [services.md](services.md) — service archetypes (test pattern background)
 - [src/chat/store/AGENTS.md](../src/chat/store/AGENTS.md) — store rules
-- [demo/AGENTS.md](../../../demo/AGENTS.md) — Playwright integration tests
