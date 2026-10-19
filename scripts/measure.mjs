@@ -15,6 +15,7 @@
  * function-level shape and nothing else. This adds what only the diff shows:
  * each new file's size beside its neighbors, what the added comments are made
  * of, and the tells that mean "read this line".
+ * The fifth block reports advisory PR size, exclusions, and affected areas.
  *
  * Usage:
  *   node scripts/measure.mjs --changed <base> [--source <s>] [--report <n>]
@@ -38,6 +39,7 @@ import {
   grepFiles,
   newCodeFiles,
   parseCli,
+  sizeReport,
 } from './measure-lib.mjs';
 
 const USAGE = [
@@ -251,6 +253,7 @@ function main() {
   }
   const worst = runTools(cli.base, cli);
   diffBlock(cli.base, cli.source);
+  console.log(`\n${sizeReport(cli.base, cli.source)}`);
   process.exit(worst);
 }
 

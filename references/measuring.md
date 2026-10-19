@@ -6,7 +6,7 @@ Run `npm run measure -- --changed <base>` before review and paste its rows per [
 
 ## Measuring a diff
 
-The wrapper prints four blocks: `== complexity`, `== coupling`, `== smells`, `== diff`.
+The wrapper prints five blocks: `== complexity`, `== coupling`, `== smells`, `== diff`, `== size`.
 
 See [measure.mjs](../scripts/measure.mjs)'s header for flags. The exit code is the highest of the three tools; bad usage exits 2 before any runs.
 
@@ -28,9 +28,35 @@ The `diff` rows:
 | `<name>: 0 importers` or `1 importer, same directory` | an added export nothing else uses, or only its neighbor uses. Ten rows, then a count. |
 | `TODO/FIXME`, `console.log`, `: any` | added under `packages/` and `demo/` only. |
 
-New-file length comes from `HEAD`; neighbors come from `<base>`, excluding the new file. The median is the middle length or rounded mean of the middle pair.
+New-file length comes from the selected source; neighbors come from `<base>`, excluding the new file. The median is the middle length or rounded mean of the middle pair.
 
 **Blind spots.** Importers use `git grep -lw`; common words over-count. Comment ratios measure lines, not value. A clean run proves shape, not correctness or the need for a change.
+
+## Measuring PR size
+
+The fifth block, `== size`, counts additions plus deletions. It reports the counted lines, additions, deletions, and file count. Size is advisory; it never changes the exit code. Keep size, file spread, affected areas, complexity, and coupling as separate signals.
+
+Rules apply in order; the first match wins. Unmatched hand-authored files count.
+
+| Category | Paths | In threshold |
+| --- | --- | --- |
+| lockfiles | `**/package-lock.json` | No |
+| generated | `.claude/skills/**`, `.agents/skills/**`, vendored `.bob/skills/carbon-builder/**`; release-owned `packages/ai-chat/docs/api/markdown/**` and `packages/ai-chat/docs/api/symbol-index.json`; `packages/*/telemetry.yml`; root `versions.js` | No |
+| snapshots | `**/__snapshots__/**`, `**/*.snap` | No |
+| fixtures | `**/fixtures/**`, `**/__fixtures__/**` | No |
+| test cases | Basenames matching `*_spec.*`, `*.test.*`, `*.spec.*` | No |
+| shared test infrastructure | `examples/shared/playwright/**`; outside `examples/`: `{jest,web-test-runner,playwright,vitest}.config.*`, `packages/ai-chat/tests/{setup.ts,test_helpers.ts}`, `packages/ai-chat-components/src/testing/**`, non-spec files in `**/__tests__/` or `demo/tests/` | Yes |
+| examples and demo | Remaining `examples/**`, `demo/**`, including example-local configs and helpers | No |
+| docs | `.md` and `.mdx` at any depth, plus root `docs/**` | No |
+| code | Everything else: production code, public types, styles, tooling, CI, manifests, and stories | Yes |
+
+Excluded categories still show their lines and files. The hand-authored `packages/ai-chat/docs/api/README.md` is docs; code in `packages/ai-chat/docs/typedoc/` counts. Areas use the first path segment, or two under `packages/`; root files use `(root)`.
+
+Git's `--numstat -z -M` handles deleted files, spaces in names, and renames. A rename within one category counts only edited lines; pure renames count zero and stay visible. A move across categories counts the old file as deleted and the new file as added, and lists both paths. Binary files count zero lines and are listed by category.
+
+In `worktree` mode, non-ignored untracked files count as additions and are marked untracked. The other four blocks do not include them. At submission, use `--source head` to measure committed work. Git may report a heavily edited move as a deletion plus an addition; rename detection uses its default similarity threshold.
+
+Run `git fetch upstream`, then `npm run measure -- --changed upstream/main`; local `main` can lag. For a stacked layer, pass `--changed <parent-branch>` so the report measures only that layer against its merge base.
 
 ## Which "after"
 
@@ -42,9 +68,9 @@ New-file length comes from `HEAD`; neighbors come from `<base>`, excluding the n
 | `index` | what is staged | what a commit would contain, or what a pre-commit hook would see |
 | `head` | the last commit | the committed branch, ignoring work in progress |
 
-`<base>` resolves to its merge base with `HEAD`, excluding newer commits on the base branch.
+`<base>` resolves to its merge base with `HEAD`, excluding newer commits on the base branch. If that fails, every script names the requested ref and exits 2.
 
-Only `worktree` sees an uncommitted rename or deletion. A file named by the diff but absent on disk prints `skipped <file>: not in the worktree`; this is not an error. `index` and `head` cost about the same as `worktree`.
+Only `worktree` sees an unstaged rename or deletion; `index` also sees staged changes. A file named by the diff but absent on disk prints `skipped <file>: not in the worktree`; this is not an error. `index` and `head` cost about the same as `worktree`.
 
 ## Measuring complexity
 
