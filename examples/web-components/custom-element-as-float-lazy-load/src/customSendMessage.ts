@@ -42,8 +42,7 @@ const WELCOME_TEXT = `Welcome to this example of a custom back-end. This back-en
 You can try the following responses:
 
 - stream text
-- text
-- user_defined`;
+- text`;
 
 const TEXT =
   `Lorem ipsum odor amet, consectetuer adipiscing elit. \`Inline Code Venenatis\` aliquet non platea elementum morbi porta accumsan. Tortor libero consectetur dapibus volutpat porta vestibulum.

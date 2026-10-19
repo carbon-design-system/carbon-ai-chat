@@ -18,7 +18,6 @@
  *   - `ChatInstance.messaging.addMessage`
  *   - `ChatInstance.messaging.addMessageChunk`
  *   - `MessageResponseTypes.TEXT`
- *   - `MessageResponseTypes.USER_DEFINED`
  *   - `StreamChunk` (`partial_item`, `complete_item`, `final_response`)
  *   - `CustomSendMessageOptions.signal`
  *
@@ -247,21 +246,6 @@ async function customSendMessage(
               {
                 response_type: MessageResponseTypes.TEXT,
                 text: TEXT,
-              },
-            ],
-          },
-        });
-        break;
-      case 'user_defined':
-        instance.messaging.addMessage({
-          output: {
-            generic: [
-              {
-                response_type: MessageResponseTypes.USER_DEFINED,
-                user_defined: {
-                  user_defined_type: 'my_unique_identifier',
-                  text: 'Some text from your back-end.',
-                },
               },
             ],
           },
