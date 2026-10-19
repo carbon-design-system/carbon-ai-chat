@@ -58,9 +58,13 @@ The build writes `custom-elements.json` from source. When the API changes, edit 
 
 `npm run build --workspace=@carbon/ai-chat-components` builds the package, then writes the CEM. The clean step removes stale JSON first. `npm run custom-elements --workspace=@carbon/ai-chat-components` writes only the CEM.
 
+The source build watcher does not rerun the CEM analyzer. After metadata edits, run `npm run custom-elements --workspace=@carbon/ai-chat-components`, then restart both Storybooks.
+
 The tool reads tags from decorators and props from Lit. It hides internal members, maps local paths to shipped files, and resolves imported exports. It drops types erased by the build and keeps runtime enums. For source globs and files to skip, check [the analyzer config](../custom-elements-manifest.config.js).
 
 The root `test:manifest-consumer` packs the built package. It checks that the discovery field and JSON export find the same file. It checks shipped local paths, exports, and type references. It imports each listed tagged class alone in a fresh browser context for both `es` and `es-custom`. It checks some toolbar and truncated-text props against the built classes.
+
+Root `npm test` and `npm run ci-check` run this packed check. The current GitHub split test matrix does not. Run `npm run test:manifest-consumer` from the root for manifest changes.
 
 The check does not cover all props, events, slots, or style hooks. Broader guards belong to [#2287](https://github.com/carbon-design-system/carbon-ai-chat/issues/2287). Checks of external type symbols and styles remain with [#2551](https://github.com/carbon-design-system/carbon-ai-chat/issues/2551).
 
