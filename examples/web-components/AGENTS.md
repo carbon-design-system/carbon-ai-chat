@@ -9,7 +9,7 @@ Deltas for web-component examples. See [../AGENTS.md](../AGENTS.md) for shared w
 
 Workspace naming: `@carbon/ai-chat-examples-web-components-<slug>`.
 
-**Carbon flavor**: `@carbon/web-components`. No JSX and no `@carbon/react` — if a Carbon snippet arrives as React (the `carbon-builder` skill defaults to it), rewrite it as a custom element before saving. See [code-patterns.md](../../references/code-patterns.md#carbon-flavor-by-area).
+**Carbon flavor**: `@carbon/web-components`; follow [code-patterns.md](../../references/code-patterns.md#carbon-flavor-by-area).
 
 ## APIs-and-props table headers
 

@@ -52,13 +52,12 @@ Rules for this pattern:
 
 ## Manifest and React wrappers
 
-React wrappers live under [../src/react/](../src/react/) — thin, hand-authored `createComponent` bindings kept in sync with `custom-elements.json`. After changing JSDoc, props, slots, events, or CSS parts:
+React wrappers live under [../src/react/](../src/react/) — thin, hand-authored `createComponent` bindings kept in sync with the generated, gitignored `custom-elements.json`; never hand-edit or commit the manifest. After changing JSDoc, props, slots, events, or CSS parts:
 
 - run `npm run custom-elements` — this regenerates only `custom-elements.json`; it does not touch `src/react/`;
-- inspect only the changed component's entries in the regenerated `custom-elements.json`, then update its `src/react/<name>.ts` wrapper for new prop types;
-- `custom-elements.json` is **generated, never committed** — it's gitignored and rebuilt on every `npm run build` (or `npm run custom-elements`), so don't hand-edit it or expect it in git. The `src/react/` wrappers are the opposite: checked in **and** hand-authored.
+- inspect only the changed component's entries in the regenerated `custom-elements.json`, then update its `src/react/<name>.ts` wrapper for new prop types.
 
-Storybook `<ArgTypes>` reads the manifest; React wrappers need matching hand edits. Regenerate telemetry too (`npm run telemetry:config`) after adding components; don't hand-edit `telemetry.yml`.
+Storybook `<ArgTypes>` reads the manifest; restart Storybook after regenerating it. Regenerate telemetry too (`npm run telemetry:config`) after adding components; don't hand-edit `telemetry.yml`.
 
 ## Naming
 
@@ -72,7 +71,7 @@ Storybook `<ArgTypes>` reads the manifest; React wrappers need matching hand edi
 ## Public API & deprecation
 
 - Anything exported from a component's `index.ts` is public. Props, slots, events, and CSS custom properties are the contract; mark internal helpers so the CEM analyzer doesn't publish them.
-- **Types are public docs**: every exported type ships through `@carbon/ai-chat`'s TypeDoc to the docs site, Elasticsearch index, and MCP server. Follow [../../ai-chat/src/types/AGENTS.md](../../ai-chat/src/types/AGENTS.md). Package rule: `@category` tags must use a value from `categoryOrder` in [../../ai-chat/typedoc.json](../../ai-chat/typedoc.json).
+- **Types are public docs**: follow [types/AGENTS.md](../../ai-chat/src/types/AGENTS.md) for their published surfaces and JSDoc rules; `@category` must match `categoryOrder` in [typedoc.json](../../ai-chat/typedoc.json).
 - **Deprecating or deleting**: mark `@deprecated` in JSDoc, ship a major version, then delete. Removing an exported element without a deprecation window breaks external consumers.
 - **React wrappers stay minimal** — no behavior beyond `createComponent`; behavior belongs in the Lit element.
 

@@ -58,12 +58,7 @@ This supports lazy initialization, handles circular dependencies, and makes test
 
 ## Testing services
 
-See [tests.md](tests.md) for the full pattern. Key points:
-
-- Stub `ServiceManager` with only required fields.
-- Instantiate the service directly (no DI container).
-- Assert on mock calls and internal state.
-- Reference: [`MessageService_spec.ts`](../tests/services/spec/MessageService_spec.ts)
+Follow [tests.md](tests.md#service-example) when testing a service.
 
 ## Related guidance
 

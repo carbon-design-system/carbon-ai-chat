@@ -11,19 +11,7 @@ Load only what you need:
 - Component file layout, the custom-elements manifest, React wrappers, naming, public API & deprecation → [component-authoring.md](references/component-authoring.md)
 - Authoring or editing a Storybook story or Overview MDX → [storybook.md](references/storybook.md)
 - Writing or running a test (WTR for Lit, Jest for React wrappers) → [testing.md](references/testing.md)
-- Shipping any UI change (WCAG 2.1 AA) → [root accessibility.md](../../references/accessibility.md), plus the package points below
-
-## Accessibility
-
-Every Lit element shipped here must hold WCAG 2.1 AA — see [root accessibility.md](../../references/accessibility.md) for the full checklist, politeness rules, and pitfalls (don't combine `role="status"` with `aria-live="polite"`; default `aria-atomic` off).
-
-Package-specific points:
-
-- **Shadow DOM hides implicit semantics** from some assistive tech. Declare `role` and labels on the host element explicitly rather than relying on the browser to infer from internals.
-- **Announcements** go through [`AriaAnnouncerManager`](src/globals/utils/aria-announcer-manager.ts) (also consumed by `@carbon/ai-chat`'s React announcer). Render visually-hidden regions in `render()`, call `connect(regions)` in `firstUpdated`, `announce(text)` to speak, and `disconnect()` in `disconnectedCallback`. Don't roll your own `aria-live` regions.
-- **Icon-only buttons need `aria-label`**; decorative slotted content needs `aria-hidden="true"`.
-
-When the component announces or has dynamic state changes, verify with NVDA + VoiceOver before marking done.
+- Shipping any UI change (WCAG 2.1 AA) → [root accessibility.md](../../references/accessibility.md)
 
 ## Build, test, Storybook
 
@@ -40,8 +28,8 @@ npm test                        # both test suites (see testing.md)
 
 ## Gotchas
 
-- **`custom-elements.json` is generated, never committed** — it's gitignored and rebuilt by `npm run custom-elements` (and every `npm run build`). Regenerate it for Storybook `<ArgTypes>`, then inspect only the changed component's entries. Update its React wrapper by hand; the command does not generate wrappers.
-- **Carbon flavor**: Lit elements use `@carbon/web-components`. `@carbon/react` is a devDependency for the `-react.stories.jsx` / `-react.mdx` files **only** — never import it into `src/`. See [code-patterns.md](../../references/code-patterns.md#carbon-flavor-by-area), which also overrides the `carbon-builder` skill's React default.
+- Follow [component-authoring.md](references/component-authoring.md#manifest-and-react-wrappers) when updating the manifest or React wrappers.
+- **Carbon flavor**: use the [area rules and skill override](../../references/code-patterns.md#carbon-flavor-by-area) for Lit elements and React stories.
 - **ESM `.js` extensions** apply here: relative imports use `.js` even for `.ts` source.
 - The two test runners and the ESM-dep `transformIgnorePatterns` rule live in [testing.md](references/testing.md).
 
@@ -61,4 +49,4 @@ npm test                        # both test suites (see testing.md)
 For guidance-only edits, use the [guidance gate](../../references/definition-of-done.md#minimum-gate-by-area-edited). For component changes:
 
 - `npm run build --workspace=@carbon/ai-chat-components`, then `npm run test --workspace=@carbon/ai-chat-components` (runs both suites). Build first; read [testing.md](references/testing.md#gotchas) when a WTR test fails against correct source.
-- If you changed JSDoc, props, slots, events, or CSS parts: rerun `npm run custom-elements` and inspect that component's manifest entries. Never hand-edit the manifest. Restart Storybook to verify the component docs, and update the matching wrapper in `src/react/` for new prop types.
+- For JSDoc, prop, slot, event, or CSS-part changes, follow the [manifest and wrapper workflow](references/component-authoring.md#manifest-and-react-wrappers).

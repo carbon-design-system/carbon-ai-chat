@@ -13,7 +13,7 @@ npm run start --workspace=@carbon/ai-chat-examples-react-basic-float
 PORT=3001 npm run start --workspace=@carbon/ai-chat-examples-react-basic-custom-element-fullscreen
 ```
 
-When `npm run aiChat:start` is running in another terminal, example Vite dev servers hot-reload on package rebuilds. This relies on each `vite.config.ts` listing `@carbon/ai-chat` and `@carbon/ai-chat-components` under `optimizeDeps.exclude` — without that, Vite pre-bundles the symlinked workspace packages and a rebuild will not reach the browser.
+Each Vite config excludes the chat packages from `optimizeDeps`, so package rebuilds reach the browser.
 
 ## Adding a new example
 
@@ -47,17 +47,7 @@ A Playwright suite is **not** required here yet: most examples have none, so the
 
 **README alignment rule**: an example's section in the aggregator README ([react/README.md](react/README.md) or [web-components/README.md](web-components/README.md)) must stay in sync with the example's own README — title, summary, start command, and APIs table. Run `npm run verify:example-readmes` (also in `ci-check`) to check; `npm run repair:example-readmes -- --from=examples` to regenerate the aggregator from the per-example READMEs.
 
-**Title-naming rule**: a README's `# H1` title mirrors the slug's prefix family so related examples cluster visually in the aggregator.
-
-| Slug pattern | Title format | Example |
-| --- | --- | --- |
-| Shares a prefix with 3+ siblings (`custom-element-*`, `history-*`, `prompt-line-*`, `frameworks-*`, `tests-*`) | `<Prefix> / <Variant>` (capitalize prefix; sentence-case variant) | `prompt-line-typeahead` → `Prompt line / Typeahead` |
-| Canonical baseline (`basic-*`) | `Basic / <Variant>` | `basic-float` → `Basic / Float` |
-| Pure variant of one base (e.g. `reasoning-steps-controlled` of `reasoning-steps`) | `<Base name> (<variant>)` | `workspace-sidebar` → `Workspace (sidebar)` |
-| Stands alone (no shared prefix family) | Flat sentence case | `feedback` → `Feedback` |
-| Sub-variant of a slash-family entry | Keep the slash, append the variant in parens (avoid stacking a second slash) | `prompt-line-typeahead-custom` → `Prompt line / Typeahead (custom list)` |
-
-Capitalize a slug-family prefix the first time you introduce a new family, even when the slug is a singleton today, if you anticipate siblings (e.g. `Integrations / watsonx.ai`).
+**Title naming**: follow the [Indexer Contract](references/indexer-contract.md#title-naming).
 
 **Inline comments rule**: comments are the product here, and how to word them is [example-copy.md](../.bob/skills/caic-copy-writer/references/example-copy.md) — type 5. Read it before writing one. The constraint driving those rules is local: the Carbon MCP indexer reads each example in isolation, so nothing in this directory may point at another one.
 

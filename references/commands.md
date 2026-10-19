@@ -2,8 +2,6 @@
 
 Load this when you need to build, watch, lint, format, test, or run an example/Storybook. Run from the repo root unless noted.
 
-> **Ask first** if the user has `npm run aiChat:start` running — don't kick off a parallel build/watch; it races the watcher.
->
 > **Before a test that reads built output**, run the [build preflight](#build-preflight).
 
 ## Common commands
@@ -122,14 +120,6 @@ For a run that reads built output, give each of these with the result:
 - **`scripts/`** — opt-in. A developer runs it on purpose. So does a release workflow. The measurement tools live here, and so do the release steps. One exception: `ci-check` and the pre-commit hook run [`scripts/verify-example-readmes.mjs`](../scripts/verify-example-readmes.mjs).
 
 Name files in both plainly, with no underscore prefix. A shared module says so with a `-lib` suffix ([`scripts/measure-lib.mjs`](../scripts/measure-lib.mjs)), not with a leading `_`.
-
-## Running a single example or test
-
-Each lives with the thing it tests — no recipes are restated here:
-
-- **One example** → [examples/AGENTS.md](../examples/AGENTS.md) ("Running an example").
-- **One `@carbon/ai-chat` test** (Jest) → [packages/ai-chat/references/tests.md](../packages/ai-chat/references/tests.md).
-- **One `@carbon/ai-chat-components` test** (two runners — `@web/test-runner` + Jest) → [packages/ai-chat-components/AGENTS.md](../packages/ai-chat-components/AGENTS.md).
 
 ## Related guidance
 

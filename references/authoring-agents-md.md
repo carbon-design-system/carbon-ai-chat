@@ -15,10 +15,7 @@ Load this when creating or editing AGENTS files, skills, or their references. In
 
 ## Task-workflow skills (`.bob/skills/`)
 
-Task procedures are **skills**, not `references/` docs. The dividing line is when the guidance applies:
-
-- **A convention applies to any edit in its scope** — prefix discipline, commit format, the WCAG gate. It has to be loadable at any moment, so it stays in `references/` and the root [AGENTS.md](../AGENTS.md) routes to it.
-- **A task procedure applies only while doing that task** — writing a plan, filing an issue, drafting a PR description, reviewing a diff. It becomes a skill, because a skill's `description` is always in context (so it can trigger itself) while its body loads only on invocation.
+For the skill/reference split and mirror mechanics, read [.bob/skills/README.md](../.bob/skills/README.md).
 
 Rules for authoring them:
 
@@ -33,7 +30,6 @@ Rules for authoring them:
 - **Check both selection and behavior.** Test a request that should use the skill and a nearby request that should not. Static validators check structure, not whether the agent performs the right task.
 - **Keep the skill catalog out of root AGENTS.** Skill metadata supplies task discovery. The root router carries rules and package routes, not a second list of skills.
 - **End each skill body with `Task input from the user, if any: $ARGUMENTS`.** Some harnesses substitute invocation arguments. If the token remains literal, use the actual user request; do not treat it as missing task input.
-- **`.bob/skills/` is canonical**; `.claude/skills/` (Claude Code, Copilot) and `.agents/skills/` (Codex, Copilot) are byte-identical generated mirrors, because each assistant reads only its own directory. Edit the canonical tree, then run `npm run sync:skills` — that regenerates both mirrors wholesale, so anything living only in a mirror is deleted. `npm run validate:skills` fails in CI on drift between the trees, a broken link or anchor, a name/directory mismatch, or an unquoted frontmatter value that YAML would truncate.
 
 ## Related guidance
 

@@ -1,6 +1,6 @@
 # code-examples.md — writing code examples
 
-What makes a good code example on the `@carbon/ai-chat` public surface. JSDoc `@example` blocks and docs-site snippets render to the TypeDoc site, an Elasticsearch index, and an MCP server — so a block is read two ways: by a human pasting it, and by a coding agent that retrieves it **with no surrounding code**. Write for both.
+Write public code examples for humans pasting them and agents retrieving them **with no surrounding code**. See [types/AGENTS.md](../src/types/AGENTS.md) for the surfaces that publish them.
 
 Applies to `@example` blocks in [src/types/](../src/types) (see [src/types/AGENTS.md](../src/types/AGENTS.md) for where `@example` is required) and to snippets in [docs/](../docs) (see [docs/AGENTS.md](../docs/AGENTS.md) for the test-it workflow).
 
