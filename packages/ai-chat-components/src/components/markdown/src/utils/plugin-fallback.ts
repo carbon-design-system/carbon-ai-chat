@@ -188,6 +188,31 @@ function sliceForFallback(token: Token, node: TokenTree): Token[] {
   return [token];
 }
 
+function renderPluginHTML(
+  token: Token,
+  node: TokenTree,
+  md: MarkdownIt,
+  sanitize: boolean
+): string {
+  let safe: string;
+  if (node?.cachedHtml && node.cachedHtml.md === md) {
+    safe = node.cachedHtml.html;
+  } else {
+    const slice = sliceForFallback(token, node);
+    const htmlStr = md.renderer.render(slice, md.options, {});
+    safe = sanitize ? sanitizeHtmlContent(htmlStr) : htmlStr;
+    if (
+      node &&
+      typeof token.type === 'string' &&
+      PLUGIN_DELEGABLE_TOKEN_TYPES.has(token.type)
+    ) {
+      node.cachedHtml = { md, html: safe };
+    }
+  }
+
+  return safe;
+}
+
 /**
  * Renders an unknown token via markdown-it's HTML renderer and emits a named
  * `<slot>` placeholder carrying the token's text as its fallback content. The
@@ -212,20 +237,9 @@ export function renderFallback(
   sanitize: boolean,
   options: RenderTokenTreeOptions
 ): TemplateResult {
-  let safe: string;
-  if (node?.cachedHtml && node.cachedHtml.md === md) {
-    safe = node.cachedHtml.html;
-  } else {
-    const slice = sliceForFallback(token, node);
-    const htmlStr = md.renderer.render(slice, md.options, {});
-    safe = sanitize ? sanitizeHtmlContent(htmlStr) : htmlStr;
-    if (
-      node &&
-      typeof token.type === 'string' &&
-      PLUGIN_DELEGABLE_TOKEN_TYPES.has(token.type)
-    ) {
-      node.cachedHtml = { md, html: safe };
-    }
+  const safe = renderPluginHTML(token, node, md, sanitize);
+  if (options.inline) {
+    return options.inline.renderHTML(safe, token);
   }
 
   const index = options.pluginSlotCounter?.next(node) ?? 0;

@@ -40,19 +40,46 @@ export default defineConfig<DemoModeOptions>({
     video: 'retain-on-failure',
   },
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+    {
+      name: 'chromium',
+      testIgnore: /inline-markdown-selection\.spec\.ts$/,
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'firefox',
+      testIgnore: /inline-markdown-selection\.spec\.ts$/,
+      use: { ...devices['Desktop Firefox'] },
+    },
     // Reruns the suite with `?useUpsertMessage`, so the demo sends through
     // upsertMessage instead of addMessage / addMessageChunk. The host
     // compatibility spec calls addMessage itself on its own page, so a second
-    // run would prove nothing.
+    // run would prove nothing. Selection checks are send-mode independent.
     {
       name: 'chromium-upsert-message',
       use: { ...devices['Desktop Chrome'], useUpsertMessage: true },
-      testIgnore: /react-host-compatibility\.spec\.ts$/,
+      testIgnore: [
+        /react-host-compatibility\.spec\.ts$/,
+        /inline-markdown-selection\.spec\.ts$/,
+      ],
     },
-    // Disabling webkit for now. See https://github.com/microsoft/playwright/issues/33547 and https://webscraping.ai/faq/playwright/what-are-the-ways-to-handle-shadow-dom-elements-using-playwright
-    // Just need to implement that.
-    // { name: 'webkit',   use: { ...devices['Desktop Safari'] } },
+    // Native clipboard checks share the system clipboard, so browser projects
+    // run in order even when the rest of the suite uses multiple workers.
+    {
+      name: 'chromium-selection',
+      testMatch: 'inline-markdown-selection.spec.ts',
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'firefox-selection',
+      testMatch: 'inline-markdown-selection.spec.ts',
+      dependencies: ['chromium-selection'],
+      use: { ...devices['Desktop Firefox'] },
+    },
+    {
+      name: 'webkit-selection',
+      testMatch: 'inline-markdown-selection.spec.ts',
+      dependencies: ['firefox-selection'],
+      use: { ...devices['Desktop Safari'] },
+    },
   ],
 });
