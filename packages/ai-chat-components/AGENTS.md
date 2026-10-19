@@ -2,7 +2,7 @@
 
 Guidance for authoring inside [packages/ai-chat-components/](.). Read this before adding or editing components.
 
-A library of Lit-based custom elements plus hand-authored React wrappers. Consumed as a workspace dep by `@carbon/ai-chat` and published to npm (versioned via Lerna alongside `@carbon/ai-chat`). See root [AGENTS.md](../../AGENTS.md) for build outputs, Storybook ports, and the `aiChat:start` watcher rule.
+A library of Lit-based custom elements plus hand-authored React wrappers. Consumed as a workspace dep by `@carbon/ai-chat` and published to npm (versioned via Lerna alongside `@carbon/ai-chat`). See root [AGENTS.md](../../AGENTS.md) for build outputs and the `aiChat:start` watcher rule.
 
 ## Topic-specific guidance
 

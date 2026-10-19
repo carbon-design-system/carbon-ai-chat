@@ -284,9 +284,9 @@ Four, deliberately. Do not add suites for these, and do not re-litigate them.
 
 ## Examples that deviate
 
-`frameworks-react-17` and `frameworks-react-18` keep their own Playwright suites, with fixed ports and `test` scripts. Root `npm test` still runs them. Do not copy their setup for new suites; migrate them into the shared suite in #1424.
+`frameworks-react-17` and `frameworks-react-18` keep their own Playwright suites, with fixed ports and `test` scripts. Root `npm test` still runs them. Do not copy their setup for new suites.
 
-`tests-vitest-happydom` keeps its vitest `test` script. `frameworks-next` is not a Vite app; add a separate server entry for it when its suite lands in #1424, since its `start` script runs the production server and needs a build first.
+`tests-vitest-happydom` keeps its vitest `test` script and also has the shared target `react-tests-vitest-happydom`. `frameworks-next` is not a Vite app; a suite for it needs a separate server entry, since its `start` script runs the production server and needs a build first.
 
 ## Naming
 

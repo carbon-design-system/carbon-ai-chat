@@ -20,7 +20,6 @@ New UI goes here, never in [`../components-legacy/`](../components-legacy/) (clo
 | `responseTypes/` | one subfolder per response type (`button/`, `media/`, `card/`, `message/`, `userDefined/`, `error/`, `options/`, `datePicker/`, …) | internal Lit helpers (#1863); some primitives publish (#1803) |
 | `helpers/` | internal render helpers, **one folder per helper**; may read the store | internal Lit helpers (#1863), never published |
 | `header/` `homeScreen/` `input/` `panels/` `modals/` | app chrome — one region each, mounted once by the shell | thin containers over shells + helpers |
-| `aria/` | live-region components | **transitional** — being removed by [#1933](https://github.com/carbon-design-system/carbon-ai-chat/issues/1933) |
 | `carbon/` | `@lit/react` wrappers of `@carbon/web-components` | **transitional** — shrinks to 0 as React is removed |
 | `portals/` | `ReactDOM` portal bridges (light-DOM / slots) | **transitional** — shrinks to 0 as React is removed |
 

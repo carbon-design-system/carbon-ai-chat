@@ -17,7 +17,7 @@ For markdown structure (page anatomy, cross-linking, code blocks, tables), see [
   - Prefer TypeDoc `{@link SymbolName}` for API references — survives renames and is validated by `validation.invalidLink`.
   - Use relative Markdown links (`./React.md`) between project documents.
   - Do not link into `src/` — source paths are internal and the site can't resolve them.
-- **API surface**: if a code example references a type/function, make sure it's actually exported from `aiChatEntry.tsx`. Match `categoryOrder` from [`typedoc.json`](../typedoc.json) (`React`, `Web component`, `Config`, `Instance`, `Events`, `Service desk`, `Messaging`, `Testing`) when grouping examples.
+- **API surface**: if a code example references a type/function, make sure it's actually exported from `aiChatEntry.tsx`. Match `categoryOrder` from [`typedoc.json`](../typedoc.json) when grouping examples.
 - **Code blocks**: tag the language (` ```tsx `, ` ```ts `, ` ```html `, ` ```bash `) so the Carbon theme syntax-highlights. Keep examples copy-pasteable.
 - **Migration docs are append-only** within a major. Don't rewrite history in `Migration-1.0.0.md`; add `Migration-<version>.md` for the next major and register it in `projectDocuments`.
 - **No emoji** and no marketing language.

@@ -81,12 +81,6 @@ See [definition-of-done.md](../../references/definition-of-done.md) for the gate
 - **Tests**: see [tests.md](references/tests.md). Colocate helpers in `tests/test_helpers.ts`. Store tests exercise reducers directly; service tests use the mocks in `tests/services/`.
 - **SCSS / RTL / prefix discipline**: see [code-patterns.md](../../references/code-patterns.md). Prefix discipline is build-breaking — never hardcode `cds--`; use `#{$prefix}--` in SCSS and the prefix helpers in TS.
 
-## Troubleshooting
-
-- **Build fails**: build `@carbon/ai-chat-components` first.
-- **TypeDoc errors**: verify every `@param` tag matches an actual parameter.
-- **React portal not rendering**: check the browser console for shadow DOM errors; verify `window.chatInstance` exists. Background in [architecture.md](references/architecture.md).
-
 ## Related guidance
 
 - [Root AGENTS.md](../../AGENTS.md) — monorepo conventions

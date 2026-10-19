@@ -8,26 +8,12 @@ Guidance for authoring inside [demo/](.). Read this before changing the demo.
 
 ## Layout
 
-```
-demo/
-  src/
-    main.ts                     # entry — reads query params, mounts Lit root
-    framework/                  # sidebar + config plumbing
-      demo-*-switcher.ts        # one file per toggle (theme, layout, history, ...)
-      config-manager.ts,
-      react-app-manager.ts,
-      set-chat-config-manager.ts
-    customSendMessage/          # mock backend — one do*.ts per response type
-    react/                      # React-based extension examples mounted by the demo
-    web-components/             # Lit-based extension examples mounted by the demo
-    mockServiceDesk/            # fake human-agent service desk
-    fixtures/                   # canned messages used by the mock backend
-    types/
-  tests/                        # Playwright specs + node polyfills
-  playwright.config.ts
-  vite.config.ts
-  TEST_PLAN.md                  # manual QA checklist
-```
+- `src/framework/` — config switchers and state plumbing.
+- `src/customSendMessage/` — mock backend responses.
+- `src/mockServiceDesk/` — fake human-agent service desk.
+- `src/fixtures/` — canned messages for the mock backend.
+- `src/host-compatibility/` — host compatibility harness.
+- `tests/` — Playwright specs and node polyfills.
 
 ## Authoring rules
 

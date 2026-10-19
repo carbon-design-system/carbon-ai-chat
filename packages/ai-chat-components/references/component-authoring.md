@@ -63,11 +63,11 @@ Storybook `<ArgTypes>` reads the manifest; React wrappers need matching hand edi
 ## Naming
 
 - **One element per file** under `src/`, re-exported from `index.ts`; sub-parts get their own file and `import` line.
-- **Tag naming**: Lit tags are `cds-aichat-<thing>` in the default build. Don't hand-write the tag string in multiple places — read it from the shared prefix constant so the `es-custom` rewrite applies. Prefix discipline is build-breaking; see [root AGENTS.md Conventions](../../../AGENTS.md#conventions).
+- **Tag naming**: Lit tags are `cds-aichat-<thing>` in the default build. Don't hand-write the tag string in multiple places — read it from the shared prefix constant so the `es-custom` rewrite applies. Prefix discipline is build-breaking; see [code-patterns.md](../../../references/code-patterns.md#naming--prefix-discipline-build-breaking).
 - **Attributes** are kebab-case (`has-footer`, not `hasFooter`); React wrappers expose the element's camelCase properties.
 - **Events** follow `cds-aichat-<thing>-<verb>` (e.g. `cds-aichat-card-expand`).
 - **Slots** use plain names; reserve `default` for primary content.
-- **Styles**: co-locate `.scss` next to the `.ts`; use Carbon tokens from `@carbon/styles` (no hardcoded colors/spacing/type). SCSS/RTL conventions live in [root AGENTS.md Conventions](../../../AGENTS.md#conventions).
+- **Styles**: co-locate `.scss` next to the `.ts`; use Carbon tokens from `@carbon/styles` (no hardcoded colors/spacing/type). SCSS/RTL conventions live in [code-patterns.md](../../../references/code-patterns.md#scss-authoring).
 
 ## Public API & deprecation
 

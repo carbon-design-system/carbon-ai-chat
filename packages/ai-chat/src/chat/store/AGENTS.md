@@ -13,7 +13,7 @@ Editing rules for the store. See parent [packages/ai-chat/AGENTS.md](../../../AG
 
 - Reducers are pure: `(state, action) => nextState`, no I/O, no `Date.now()` unless the value is passed in the action.
 - Read state through selectors (`selectors.ts`); dispatch through action creators (`actions.ts`).
-- Side effects live in services, or in thunk-style flows in `actions.ts` / `subscriptions.ts`.
+- Side effects live in services or store-subscription handlers in `subscriptions.ts`.
 
 ## Action Naming Conventions
 
@@ -60,29 +60,9 @@ Action payload fields use **descriptive camelCase names**:
 }
 ```
 
-### Thunk-Style Flows
-
-Complex flows that dispatch multiple actions live in `actions.ts` or `subscriptions.ts`, but are **plain functions**, not Redux thunk middleware:
-
-```typescript
-// In actions.ts
-export function sendMessageFlow(text: string) {
-  return (serviceManager: ServiceManager) => {
-    // Dispatch multiple actions
-    serviceManager.store.dispatch(actions.addMessage(text));
-    serviceManager.store.dispatch(actions.setInputState({ value: '' }));
-
-    // Trigger side effects
-    serviceManager.messageService.send(text);
-  };
-}
-```
-
-**Note**: The store itself does **not** support middleware or async thunk dispatch objects. These are imperative orchestration helpers, not thunks in the Redux sense.
-
 ### Examples from Codebase
 
-See [`actions.ts`](actions.ts:47) for:
+See [`actions.ts`](actions.ts) for:
 
 - Action type constants: `CHANGE_STATE`, `SET_VIEW_STATE`, `UPDATE_THEME_STATE`
 - Action creators: `changeState()`, `setViewState()`, `updateThemeState()`
@@ -158,7 +138,7 @@ const messages = useSelector(
 
 ### Examples from Tests
 
-See [`reactReduxShim_spec.tsx`](../../../tests/store/spec/reactReduxShim_spec.tsx:41) for:
+See [`reactReduxShim_spec.tsx`](../../../tests/store/spec/reactReduxShim_spec.tsx) for:
 
 - Primitive selection avoiding rerenders: line 90
 - Object selection with `shallowEqual`: line 128
@@ -169,7 +149,7 @@ See [`reactReduxShim_spec.tsx`](../../../tests/store/spec/reactReduxShim_spec.ts
 - `appStore.ts` — store construction + `dispatch` / `getState` / `subscribe`.
 - `reducers.ts` — main reducer tree.
 - `humanAgentReducers.ts` — separate slice for human-agent (service desk) state.
-- `actions.ts` — action creators, including thunk-style async flows that dispatch multiple actions.
+- `actions.ts` — synchronous action creators.
 - `selectors.ts` — plain functions that derive state. All component reads go through here.
 - `subscriptions.ts` — store-subscription side effects (replaces middleware).
 

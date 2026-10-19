@@ -45,7 +45,7 @@ The first line after `@example` is the title; the fenced code follows. One block
 
 **Good** (above): three titled blocks. Each renders as its own captioned example, is retrievable in isolation, and reads as one complete call.
 
-**Bad** (the same content, today's shape): one `@example` with all three cases stacked inside a single fence, divided by `// Add a field…` / `// Replace…` / `// Clear…` comments. The reader can't tell where one case ends, search returns the whole blob, and the title is empty.
+**Bad** (the same content as one block): one `@example` with all three cases stacked inside a single fence, divided by `// Add a field…` / `// Replace…` / `// Clear…` comments. The reader can't tell where one case ends, search returns the whole blob, and the title is empty.
 
 ## Sources
 

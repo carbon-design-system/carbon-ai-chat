@@ -6,19 +6,11 @@ For view-owned classes, follow [the hook core contract](../src/chat/hooks/AGENTS
 
 ## Initialization order
 
-Services bootstrap in [`createServiceManager()`](../src/chat/services/loadServices.ts#L36) in this order:
-
-1. Core primitives — `namespace`, `userSessionStorageService`
-2. Actions & event bus — action creators, event bus
-3. Store — Redux-like store with reducers
-4. Business services — `historyService`, `messageService` (depend on store)
-5. Store subscriptions — `copyToSessionStorage`, `fireStateChangeEvent`
-6. Browser services — `themeWatcherService` (depends on store + DOM)
-7. Post-init hooks — theme activation, i18n setup, debug logging
+See [`createServiceManager()`](../src/chat/services/loadServices.ts) for service initialization order.
 
 ## Dependency pattern
 
-Chat-instance services **do not hold direct references to each other**. They resolve collaborators on-demand through [`ServiceManager`](../src/chat/services/ServiceManager.ts#L38):
+Chat-instance services **do not hold direct references to each other**. They resolve collaborators on-demand through [`ServiceManager`](../src/chat/services/ServiceManager.ts):
 
 ```typescript
 class MyService {
@@ -35,66 +27,9 @@ This supports lazy initialization, handles circular dependencies, and makes test
 
 ## Archetypes
 
-### 1. Simple data adapter
-
-Reads config and state, transforms external data, dispatches actions, holds no internal state.
-
-Example: [`HistoryService`](../src/chat/services/HistoryService.ts#L23)
-
-```typescript
-class HistoryService {
-  constructor(private serviceManager: ServiceManager) {}
-
-  async loadHistory() {
-    const state = this.serviceManager.store.getState();
-    const customLoader = state.config.messaging?.customLoadHistory;
-    const data = await customLoader?.();
-    this.serviceManager.actions.loadHistory(transform(data));
-  }
-}
-```
-
-### 2. Lifecycle watcher
-
-Manages browser API subscriptions, maintains internal state (observers, intervals), exposes explicit start/stop, updates store on external changes.
-
-Example: [`ThemeWatcherService`](../src/chat/services/ThemeWatcherService.ts#L28)
-
-```typescript
-class ThemeWatcherService {
-  private observer: MutationObserver | null = null;
-
-  startWatching() {
-    this.observer = new MutationObserver(() => {
-      this.serviceManager.store.dispatch(UPDATE_THEME_STATE);
-    });
-  }
-
-  stopWatching() {
-    this.observer?.disconnect();
-  }
-}
-```
-
-### 3. Orchestration engine
-
-Coordinates multiple sub-systems, manages queues and async flows, composes other coordinators, handles complex error paths.
-
-Example: [`MessageService`](../src/chat/services/MessageService.ts#L155)
-
-```typescript
-class MessageService {
-  private queue: MessageQueue;
-  private inbound: InboundStreamingCoordinator;
-  private outbound: OutboundMessageCoordinator;
-
-  async sendMessage(text: string) {
-    this.queue.enqueue(text);
-    await this.outbound.send(text);
-    this.inbound.startListening();
-  }
-}
-```
+- **Simple data adapter:** [`HistoryService`](../src/chat/services/HistoryService.ts) loads and transforms history data.
+- **Lifecycle watcher:** [`ThemeWatcherService`](../src/chat/services/ThemeWatcherService.ts) watches browser theme changes and exposes start/stop methods.
+- **Orchestration engine:** [`MessageService`](../src/chat/services/MessageService.ts) manages the message queue and inbound/outbound coordinators.
 
 ## When to create a service
 
@@ -128,7 +63,7 @@ See [tests.md](tests.md) for the full pattern. Key points:
 - Stub `ServiceManager` with only required fields.
 - Instantiate the service directly (no DI container).
 - Assert on mock calls and internal state.
-- Reference: [`MessageService_spec.ts`](../tests/services/spec/MessageService_spec.ts#L87)
+- Reference: [`MessageService_spec.ts`](../tests/services/spec/MessageService_spec.ts)
 
 ## Related guidance
 

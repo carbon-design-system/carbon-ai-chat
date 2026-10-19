@@ -25,7 +25,7 @@ When `npm run aiChat:start` is running in another terminal, example Vite dev ser
 
 ## Smoke tests
 
-Playwright is the smoke-test mechanism for examples. The golden examples are covered by one central suite in [shared/playwright/](shared/playwright/): run it with `npm run test:e2e:goldens`. Golden examples use the central config, dependency, and script. Other Vite examples can use `scaffold:example-e2e` for a local suite. `tests-vitest-happydom` and both `tests-jest-*` examples use `test` for another runner. The existing `frameworks-react-17` and `frameworks-react-18` Playwright suites also use `test`. Keep them in the root `npm test` run until they move to the shared setup in #1424.
+Playwright is the smoke-test mechanism for examples. The golden examples are covered by one central suite in [shared/playwright/](shared/playwright/): run it with `npm run test:e2e:goldens`. Golden examples use the central config, dependency, and script. Other Vite examples can use `scaffold:example-e2e` for a local suite. `tests-vitest-happydom` and both `tests-jest-*` examples use `test` for another runner. The existing `frameworks-react-17` and `frameworks-react-18` Playwright suites also use `test`; they keep their own suites under root `npm test`.
 
 Read [playwright.md](references/playwright.md) before adding or changing an example's tests. It carries where specs live, how to add a target or scaffold a local suite, how a port is allocated, the selector rules, and the four examples that are deliberately skipped.
 
@@ -37,7 +37,7 @@ Read [playwright.md](references/playwright.md) before adding or changing an exam
 - `npm run test --workspace=<example>` passes, if the example has a `test` script.
 - README follows the [Indexer Contract](references/indexer-contract.md).
 
-A Playwright suite is **not** required here yet: most examples have none, so the requirement would fail repo-wide today. Hardening this list to require one, with the four skips carved out, is the closing step of [issue #1424](https://github.com/carbon-design-system/carbon-ai-chat/issues/1424).
+A Playwright suite is **not** required here yet: most examples have none, so the requirement would fail repo-wide today.
 
 ## Authoring rules
 
