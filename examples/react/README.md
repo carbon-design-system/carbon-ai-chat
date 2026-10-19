@@ -1041,8 +1041,7 @@ React integration of `@carbon/ai-chat` demonstrating how to replace Carbon's bui
 | `ChatContainer` | `@carbon/ai-chat` component | Mounts the chat UI. |
 | `PublicConfig` | `@carbon/ai-chat` type | Types the config object passed to `ChatContainer`. |
 | `ChatInstance` | `@carbon/ai-chat` type | Typed reference captured in `onBeforeRender`. |
-| `BusEventType` | `@carbon/ai-chat` enum | Subscribes to `STATE_CHANGE` and `FEEDBACK`. |
-| `FeedbackInteractionType` | `@carbon/ai-chat` enum | Detects `SUBMITTED` feedback interactions. |
+| `BusEventType` | `@carbon/ai-chat` enum | Subscribes to `STATE_CHANGE`. |
 | `messaging.customSendMessage` | config prop | Mock backend that echoes user input. |
 | `onBeforeRender` | component prop | Captures the `ChatInstance` and attaches event listeners. |
 | `renderUserDefinedResponse` | component prop | Renders custom response content for user-defined response types. |
