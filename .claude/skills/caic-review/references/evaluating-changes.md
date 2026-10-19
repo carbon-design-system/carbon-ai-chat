@@ -2,6 +2,8 @@
 
 Load this when a pass has its dimension and needs the checklist behind it. Take the section that matches what the diff touched — documentation and text, code, or the tests that prove it — and skip the rest.
 
+Check PR coherence against the [reviewability policy](../../../../references/pr-reviewability.md). When the policy calls for a split, or purposes mix, name concrete split points by file group or commit.
+
 ## If the diff contains documentation/text updates
 
 - Hold developer-facing copy to [tone.md](../../../../references/tone.md) for voice and quick rules, to [caic-copy-writer](../../caic-copy-writer/SKILL.md) for the rules of the copy type in the diff, and to [revision-pass.md](../../caic-copy-writer/references/revision-pass.md) for the tightening pass. The commit bodies and the PR description are copy too — types 8 and 9.
