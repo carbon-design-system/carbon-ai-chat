@@ -907,42 +907,78 @@ describe('cds-aichat-shell', function () {
       expect(shell!.classList.contains('has-header-content')).to.be.true;
     });
 
-    it('resumes an interrupted workspace panel opening after teardown and reconnect', async () => {
-      const workspaceMinWidth = window.innerWidth + 200 - 320;
-      const el = await fixture<CDSAIChatShell>(
-        html`<cds-aichat-shell
-          show-workspace
-          style="
-            width: 600px;
-            display: block;
-            --cds-aichat-workspace-min-width: ${workspaceMinWidth}px;
-            --cds-aichat-messages-min-width: 320px;
-            --cds-aichat-history-width: 0px;
-          ">
-          <div slot="workspace">Workspace Content</div>
-        </cds-aichat-shell>`
-      );
-      await el.updateComplete;
+    for (const teardown of [false, true]) {
+      it(`resumes an interrupted workspace panel opening after ${teardown ? 'teardown and reconnect' : 'a same-task move'}`, async () => {
+        const requestFrame = window.requestAnimationFrame;
+        const cancelFrame = window.cancelAnimationFrame;
+        const frames = new Map<number, FrameRequestCallback>();
+        let frameId = 0;
+        const flushFrame = () => {
+          const callbacks = Array.from(frames.values());
+          frames.clear();
+          callbacks.forEach((callback) => callback(performance.now()));
+        };
+        window.requestAnimationFrame = (callback) => {
+          frames.set(++frameId, callback);
+          return frameId;
+        };
+        window.cancelAnimationFrame = (id) => {
+          frames.delete(id);
+        };
 
-      const panel = el.shadowRoot!.querySelector<HTMLElement>(
-        'cds-aichat-panel[data-internal-panel]'
-      )!;
-      expect(panel).to.exist;
-      expect(panel.hasAttribute('open')).to.be.false;
+        try {
+          const workspaceMinWidth = window.innerWidth + 200 - 320;
+          const el = await fixture<CDSAIChatShell>(
+            html`<cds-aichat-shell
+              show-workspace
+              style="
+              width: 600px;
+              display: block;
+              --cds-aichat-workspace-min-width: ${workspaceMinWidth}px;
+              --cds-aichat-messages-min-width: 320px;
+              --cds-aichat-history-width: 0px;
+            ">
+              <div slot="workspace">Workspace Content</div>
+            </cds-aichat-shell>`
+          );
+          await el.updateComplete;
 
-      const container = el.parentElement!;
-      el.remove();
-      await new Promise<void>((resolve) => setTimeout(resolve, 10));
-      await nextFrame(2);
-      expect(panel.hasAttribute('open')).to.be.false;
+          const panel = el.shadowRoot!.querySelector<HTMLElement>(
+            'cds-aichat-panel[data-internal-panel]'
+          )!;
+          expect(panel).to.exist;
+          expect(panel.hasAttribute('open'), 'panel before removal').to.be
+            .false;
 
-      container.appendChild(el);
-      await nextFrame(2);
-      await el.updateComplete;
+          flushFrame();
+          const container = el.parentElement!;
+          el.remove();
+          flushFrame();
+          await el.updateComplete;
 
-      expect(panel.hasAttribute('open')).to.be.true;
-      expect(el.hasAttribute('workspace-in-panel')).to.be.true;
-    });
+          expect(panel.hasAttribute('open'), 'panel while detached').to.be
+            .false;
+          if (teardown) {
+            await new Promise<void>((resolve) => setTimeout(resolve, 10));
+            flushFrame();
+            flushFrame();
+            expect(panel.hasAttribute('open'), 'panel after teardown').to.be
+              .false;
+          }
+
+          container.appendChild(el);
+          flushFrame();
+          flushFrame();
+          await el.updateComplete;
+
+          expect(panel.hasAttribute('open')).to.be.true;
+          expect(el.hasAttribute('workspace-in-panel')).to.be.true;
+        } finally {
+          window.requestAnimationFrame = requestFrame;
+          window.cancelAnimationFrame = cancelFrame;
+        }
+      });
+    }
 
     it('preserves slot content across a same-task DOM move', async () => {
       const el = await fixture<CDSAIChatShell>(
