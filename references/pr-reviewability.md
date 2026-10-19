@@ -41,7 +41,7 @@ Independent changes use separate PRs. For dependent changes, prefer a native sta
 
 For a native stack targeting this repository, every branch must live in `carbon-design-system/carbon-ai-chat`. GitHub requires all branches in one repository; cross-fork stacks and GitHub Desktop are unsupported. Check upstream write access with `gh api repos/carbon-design-system/carbon-ai-chat --jq .permissions.push`.
 
-Branching locally from `upstream/main` does not choose where the branch is hosted. The push remote does: `git push upstream <branch>` selects the upstream repository. This is hosting guidance for the person managing the stack; the unresolved agent restriction below still applies.
+Branching locally from `upstream/main` does not choose where the branch is hosted. The push remote does: `git push upstream <branch>` selects the upstream repository. This is hosting guidance for the person managing the stack; the authorization requirements below still apply.
 
 Use the website or the `gh stack` extension, following GitHub's [stack management procedure](https://docs.github.com/en/pull-requests/how-tos/create-pull-requests/managing-stacked-pull-requests). Agents cannot run `gh stack modify`: it opens an interactive terminal UI.
 
@@ -55,11 +55,11 @@ Open the first PR, wait for it to merge, then prepare the next against the updat
 
 A manually chained upper PR targets the lower topic branch without joining a native stack. When that topic branch matches none of the [CI base filters](../.github/workflows/ci.yml), this workflow does not run. Use a native stack or sequential PRs; this policy does not change CI.
 
-### Unresolved stack conflicts
+### Get permission for stack pushes and rebases
 
-The [PR submission rule](../.bob/skills/caic-pr/references/submitting.md) says: "Do not force-push". A stack rebase conflicts with it: `gh stack push` uses `--force-with-lease`, and the website's Rebase stack action force-pushes each rebased branch.
+Before pushing or rebasing a stack, obtain explicit user permission for that stack and destination. Permission must cover any required force-pushes. Reuse permission already granted for those operations; do not ask again within that scope.
 
-Until this conflict is resolved, agents do not rebase or push a stack. The person managing the stack performs those actions, or asks a maintainer. This policy grants no new permission to force-push.
+`gh stack push` uses `--force-with-lease`, and the website's Rebase stack action force-pushes each rebased branch. The [PR submission rule](../.bob/skills/caic-pr/references/submitting.md) requires explicit permission for force-pushes. Without that permission, finish local preparation and provide the publishing or rebase handoff.
 
 GitHub's [stack reference](https://docs.github.com/en/pull-requests/reference/stacked-pull-requests) says server rebases produce signed commits; its management how-to says they do not. This repository checks a DCO sign-off, rather than commit signatures, so that disagreement appears unrelated to the check. It remains unresolved in the source docs.
 
