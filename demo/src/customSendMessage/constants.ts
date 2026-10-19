@@ -258,6 +258,7 @@ const isAutomated =
 const WORD_DELAY = isAutomated ? 5 : 40;
 
 export {
+  isAutomated,
   CHAIN_OF_THOUGHT_TEXT_STREAM,
   CHAIN_OF_THOUGHT_TEXT,
   WELCOME_TEXT,
