@@ -42,8 +42,9 @@ Read that package's `AGENTS.md` before your first edit. Each one routes onward t
 | Building, testing, linting, or using prettier | [commands.md](references/commands.md) |
 | Adding a root-level Node script (`scripts/` vs `tools/`) | [commands.md](references/commands.md#scripts-vs-tools) |
 | Choosing a gate before shipping, and reporting its result | [definition-of-done.md](references/definition-of-done.md) |
-| Measuring a diff before review (complexity, coupling, smells, size vs precedent) | [measuring.md](references/measuring.md) |
+| Measuring a diff before review (PR size, complexity, coupling, smells, size vs precedent) | [measuring.md](references/measuring.md) |
 | Writing copy of any kind — how the words sound | [tone.md](references/tone.md) |
+| Sizing a change or splitting it into PRs or a stack | [pr-reviewability.md](references/pr-reviewability.md) |
 | Editing an `AGENTS.md`, `references/`, or skill file | [authoring-agents-md.md](references/authoring-agents-md.md) |
 
 Working drafts are git-ignored and never committed: plans in `.github/plan-drafts/{name}/`, PR descriptions in `.github/pr-drafts/`, issue bodies in `.github/issue-drafts/`, ADR drafts in `.github/adr-drafts/`. An ADR draft is the one that graduates — it moves into [docs/adr/](docs/adr/README.md) and is committed.

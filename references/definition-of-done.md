@@ -21,7 +21,7 @@ Coordinate builds under the [watcher rule](commands.md#with-a-watcher-running).
 | SCSS only | `npm run lint:styles && npm run format` |
 | `scripts/` or `tools/` | `npm run measure -- --changed <base>`, plus the three tools on the files you changed — no new row at the default `--report` floor |
 
-Any code change also runs `npm run measure -- --changed <base>`, which reads your working tree — run it mid-change, not only after committing. Paste the rows that name your change into the PR's `Testing / Reviewing` section, not the whole block. A clean run proves shape, not correctness — see [measuring.md](measuring.md).
+Any code change also runs `npm run measure -- --changed <base>` on the working tree mid-change. At submission, run `npm run measure -- --changed <PR base> --source head`; use the parent branch for a stacked layer. Paste the rows that name your change and the `== size` block into `Testing / Reviewing`. When the [reviewability policy](pr-reviewability.md) calls for a split, explain why the change stays together. A clean run proves shape, not correctness — see [measuring.md](measuring.md).
 
 Always run `npm run lint` + `npm run lint:license` before opening a PR if you touched more than one file.
 

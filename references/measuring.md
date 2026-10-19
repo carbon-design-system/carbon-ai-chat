@@ -36,7 +36,7 @@ New-file length comes from the selected source; neighbors come from `<base>`, ex
 
 The fifth block, `== size`, counts additions plus deletions. It reports the counted lines, additions, deletions, and file count. Size is advisory; it never changes the exit code. Keep size, file spread, affected areas, complexity, and coupling as separate signals.
 
-Rules apply in order; the first match wins. Unmatched hand-authored files count.
+Use the [reviewability policy](pr-reviewability.md) for the size bands. Rules apply in order; the first match wins. Unmatched hand-authored files count.
 
 | Category | Paths | In threshold |
 | --- | --- | --- |
