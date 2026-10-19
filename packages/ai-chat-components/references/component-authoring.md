@@ -52,12 +52,32 @@ Rules for this pattern:
 
 ## Manifest and React wrappers
 
-React wrappers live under [../src/react/](../src/react/) — thin, hand-authored `createComponent` bindings kept in sync with the generated, gitignored `custom-elements.json`; never hand-edit or commit the manifest. After changing JSDoc, props, slots, events, or CSS parts:
+The build writes `custom-elements.json` from source. When the API changes, edit the source types, JSDoc, and hand-authored [React wrapper](../src/react/).
 
-- run `npm run custom-elements` — this regenerates only `custom-elements.json`; it does not touch `src/react/`;
-- inspect only the changed component's entries in the regenerated `custom-elements.json`, then update its `src/react/<name>.ts` wrapper for new prop types.
+### What the tools do
 
-Storybook `<ArgTypes>` reads the manifest; restart Storybook after regenerating it. Regenerate telemetry too (`npm run telemetry:config`) after adding components; don't hand-edit `telemetry.yml`.
+`npm run build --workspace=@carbon/ai-chat-components` builds the package, then writes the CEM. The clean step removes stale JSON first. `npm run custom-elements --workspace=@carbon/ai-chat-components` writes only the CEM.
+
+The tool reads tags from decorators and props from Lit. It hides internal members, maps local paths to shipped files, and resolves imported exports. It drops types erased by the build and keeps runtime enums. For source globs and files to skip, check [the analyzer config](../custom-elements-manifest.config.js).
+
+The root `test:manifest-consumer` packs the built package. It checks that the discovery field and JSON export find the same file. It checks shipped local paths, exports, and type references. It imports each listed tagged class alone in a fresh browser context for both `es` and `es-custom`. It checks some toolbar and truncated-text props against the built classes.
+
+The check does not cover all props, events, slots, or style hooks. Broader guards belong to [#2287](https://github.com/carbon-design-system/carbon-ai-chat/issues/2287). Checks of external type symbols and styles remain with [#2551](https://github.com/carbon-design-system/carbon-ai-chat/issues/2551).
+
+### What to do when the API changes
+
+1. Keep each new public element in the source globs, with a module the build ships. Use supported decorator syntax. If new syntax is unsupported, extend the parser and its pure tests before relying on the CEM entry.
+2. Check each `@property` option against the public contract. Use `attribute: false` for property-only values. Without an explicit attribute name, Lit lowercases the property name. Keep existing attribute names; choose explicit names for new kebab-case attributes. Mark private or internal members in source so they stay out of public tables.
+3. Update the source types and JSDoc for changed props, events, slots, and CSS parts. Update the matching wrapper in `src/react/` by hand; the CEM tool does not edit wrappers.
+4. Rebuild the CEM and inspect only the changed component's entries. Restart both Storybooks and inspect the changed `<ArgTypes>` rows. Use the [Storybook guide](storybook.md) for launch commands.
+5. Establish a fresh build with the [build preflight](../../../references/commands.md#build-preflight), then run these checks from the root:
+
+   ```bash
+   npm run test:manifest --workspace=@carbon/ai-chat-components
+   npm run test:manifest-consumer
+   ```
+
+The JSON is generated and ignored: never hand-edit or commit it. The wrappers are checked in and hand-authored. After adding components, regenerate telemetry with `npm run telemetry:config --workspace=@carbon/ai-chat-components`; do not hand-edit `telemetry.yml`.
 
 ## Naming
 
