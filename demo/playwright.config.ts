@@ -5,9 +5,12 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
+import { dirname, resolve } from 'node:path';
+import process from 'node:process';
+import { fileURLToPath } from 'node:url';
+
 import { defineConfig, devices } from '@playwright/test';
-import { fileURLToPath } from 'url';
-import { dirname, resolve } from 'path';
+
 import type { DemoModeOptions } from './tests/fixtures';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -18,6 +21,7 @@ export default defineConfig<DemoModeOptions>({
   testDir: './tests',
   // Set timeout for each test (including beforeEach/afterEach hooks)
   timeout: 60 * 1000, // 60 seconds per test
+  workers: process.env.CI ? 2 : undefined,
   // Most "flakes" we see in CI are timing-sensitive races under parallel CPU
   // contention (chromium + firefox sharing the dev server). One automatic
   // retry lets them self-heal while still surfacing genuine failures —
