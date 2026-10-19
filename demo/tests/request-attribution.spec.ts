@@ -105,7 +105,7 @@ test('restart discards both delayed responses and accepts a new request', async 
   await expect(page.locator('.cds-aichat--sent')).toHaveCount(0);
 
   // Wait past both mock timers so an absent reply proves that restart discarded it.
-  await page.waitForTimeout(5000);
+  await page.waitForTimeout(600);
   await expect(messagesWith(page, FEEDBACK_TEXT)).toHaveCount(0);
   expect(
     await page.evaluate(() => window.demoRequestAttribution.responses)

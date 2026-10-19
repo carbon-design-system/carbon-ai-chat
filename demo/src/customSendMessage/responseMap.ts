@@ -214,6 +214,14 @@ const RESPONSE_MAP: Record<
 
     instance.updateIsMessageLoadingCounter('increase', 'Thinking...');
 
+    const isAutomated =
+      typeof window !== 'undefined' &&
+      Boolean(
+        (typeof navigator !== 'undefined' && navigator.webdriver) ||
+        (window as unknown as { __playwright?: boolean }).__playwright
+      );
+    const delayMs = isAutomated ? 300 : 3000;
+
     // Return a Promise that resolves when the work is done or canceled
     return new Promise<void>((resolve, reject) => {
       const timeoutId = setTimeout(() => {
@@ -234,7 +242,7 @@ const RESPONSE_MAP: Record<
           requestID
         );
         resolve();
-      }, 3000);
+      }, delayMs);
 
       // Cancel timeout if signal is aborted
       const abortHandler = () => {
@@ -258,6 +266,14 @@ const RESPONSE_MAP: Record<
     }
 
     instance.updateIsMessageLoadingCounter('increase', 'Thinking...');
+
+    const isAutomated =
+      typeof window !== 'undefined' &&
+      Boolean(
+        (typeof navigator !== 'undefined' && navigator.webdriver) ||
+        (window as unknown as { __playwright?: boolean }).__playwright
+      );
+    const delayMs = isAutomated ? 300 : 3000;
 
     // Return a Promise that resolves when the work is done or canceled
     return new Promise<void>((resolve, reject) => {
@@ -286,7 +302,7 @@ const RESPONSE_MAP: Record<
         } catch (error) {
           reject(error);
         }
-      }, 3000);
+      }, delayMs);
 
       // Cancel timeout if signal is aborted
       const abortHandler = () => {
@@ -298,14 +314,23 @@ const RESPONSE_MAP: Record<
     });
   },
   'text (consecutive responses)': (instance, _requestOptions, requestID) => {
+    const isAutomated =
+      typeof window !== 'undefined' &&
+      Boolean(
+        (typeof navigator !== 'undefined' && navigator.webdriver) ||
+        (window as unknown as { __playwright?: boolean }).__playwright
+      );
+    const firstDelayMs = isAutomated ? 300 : 3000;
+    const secondDelayMs = isAutomated ? 100 : 1000;
+
     instance.updateIsMessageLoadingCounter('increase', 'Thinking...');
     setTimeout(() => {
       instance.updateIsMessageLoadingCounter('decrease');
       doTextWithFeedback(instance, requestID);
       setTimeout(() => {
         doTextWithFeedback(instance, requestID);
-      }, 1000);
-    }, 3000);
+      }, secondDelayMs);
+    }, firstDelayMs);
   },
   html: (instance, _requestOptions, requestID) =>
     doHTML(instance, undefined, undefined, undefined, requestID),

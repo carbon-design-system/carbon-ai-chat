@@ -16,6 +16,8 @@ import {
 } from '@carbon/ai-chat';
 import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
+import { WORD_DELAY } from './constants';
+
 async function sleep(milliseconds: number) {
   await new Promise((resolve) => {
     setTimeout(resolve, milliseconds);
@@ -58,7 +60,6 @@ async function doUserDefinedStreaming(
   requestID?: MessageRequest['id']
 ) {
   const signal = requestOptions?.signal;
-  const WORD_DELAY = 50;
   const responseID = uuid();
   const words = FAKE_DATA.split(' ');
   let isCanceled = false;
