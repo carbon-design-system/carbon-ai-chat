@@ -3,7 +3,13 @@ on:
   push:
     branches: [main, release/v*]
   pull_request:
-    branches: [main, release/v*]
+    branches:
+      - main
+      - release/v*
+      - docs/1x-wrapper-imports
+      - fix/1x-header-actions
+      - fix/1x-host-entry-types
+      - fix/1x-components-cem
   merge_group:
     types: [checks_requested]
 
