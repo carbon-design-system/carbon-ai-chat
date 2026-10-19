@@ -78,7 +78,7 @@ A build can meet all three and still be stale: they do not cover leftover `node_
 
 ### With a watcher running
 
-The ask-first rule at the top of this file applies here. If `npm run aiChat:start` is running, let it build the packages. A second build of the same packages races it on the same files.
+Follow the [root build/watch rule](../AGENTS.md#always-on-rules). If `npm run aiChat:start` is running, let it build the packages. A second build of the same packages races it on the same files.
 
 A watcher is evidence only for what it watches, and only once a rebuild succeeds:
 

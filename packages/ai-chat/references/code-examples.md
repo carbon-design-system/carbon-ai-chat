@@ -47,15 +47,6 @@ The first line after `@example` is the title; the fenced code follows. One block
 
 **Bad** (the same content as one block): one `@example` with all three cases stacked inside a single fence, divided by `// Add a field…` / `// Replace…` / `// Clear…` comments. The reader can't tell where one case ends, search returns the whole blob, and the title is empty.
 
-## Sources
-
-External best practice these principles draw on:
-
-- [Google — code samples](https://developers.google.com/style/code-samples)
-- [MDN — code example guidelines](https://developer.mozilla.org/en-US/docs/MDN/Writing_guidelines/Code_style_guide)
-- [TSDoc — `@example`](https://tsdoc.org/pages/tags/example/)
-- [Fern — how to write LLM-friendly documentation](https://buildwithfern.com/post/how-to-write-llm-friendly-documentation)
-
 ## Related guidance
 
 - [src/types/AGENTS.md](../src/types/AGENTS.md) — where `@example` is required, plus JSDoc rules (`@category`, `{@link}`, content bar)

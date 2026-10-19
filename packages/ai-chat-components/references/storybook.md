@@ -121,7 +121,7 @@ Variant stories compose, never copy: `args: { ...Default.args, … }`, `argTypes
 ## Titles, grouping, interaction tests
 
 - Two groups only: `Components/<Name>` (stable, published contract) and `Preview/<Name>` (experimental). Lit and React titles for the same component are **identical strings**. `storySort` order lives in `.storybook/preview.js` — new top-level entries may need adding there.
-- **Play functions**: this package uses none, and no interaction-test runner is installed — behavior is covered by `@web/test-runner` (Lit) and Jest (React); see [testing.md](testing.md). The empty **Interactions** panel is bundled into Storybook core and can't be cleanly hidden; leave it. Reach for a `play` function only if a future story needs interaction-driven state, and wire a runner if so.
+- **Play functions** have no runner here; use [WTR/Jest](testing.md) for behavior tests and leave the empty Interactions panel.
 
 ## API tables and the manifest
 

@@ -33,18 +33,7 @@ This supports lazy initialization, handles circular dependencies, and makes test
 
 ## When to create a service
 
-**Yes** when:
-
-- Logic coordinates multiple store slices.
-- You need to manage browser API lifecycle (timers, observers, listeners).
-- External API integration requires orchestration.
-- Logic is too complex for a single action creator.
-
-**No** when:
-
-- Simple state transformation → reducer.
-- One-off API call → action creator.
-- Pure utility or small setup/cleanup function → `src/chat/utils/`.
+Put state transformations in reducers and pure utilities or small setup/cleanup helpers in `src/chat/utils/`.
 
 ## Who starts services
 

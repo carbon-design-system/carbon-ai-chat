@@ -23,7 +23,7 @@ New UI goes here, never in [`../components-legacy/`](../components-legacy/) (clo
 | `carbon/` | `@lit/react` wrappers of `@carbon/web-components` | **transitional** — shrinks to 0 as React is removed |
 | `portals/` | `ReactDOM` portal bridges (light-DOM / slots) | **transitional** — shrinks to 0 as React is removed |
 
-Legacy renderers (image, iframe, grid, preview-card, conversational-search, connect-to-human-agent, citations) and the `MessageTypeComponent` dispatcher still live in `../components-legacy/`; they land in `responseTypes/` as #1802/#1803/#1863 migrate them.
+Remaining legacy renderers live in `../components-legacy/`.
 
 ## `helpers/` vs `chat/utils/`
 
@@ -33,8 +33,6 @@ One test: **does it return something that goes in the DOM?**
 - **No** (`.ts`, pure logic) → `chat/utils/` (the sibling `utils` one level up — note the plural; there is deliberately no `components/util`).
 
 A `helpers/` component is _internal_, so it may read the store — `MarkdownWithDefaults` pulls language-pack keys and the host markdown config. That coupling is what keeps it here rather than published (rule 1). What separates `helpers/` from a feature folder is shape, not store access: a helper is a fragment several callers render; `header/`, `input/`, `panels/`, `modals/`, and `homeScreen/` each own one region the shell mounts once.
-
-[#1863](https://github.com/carbon-design-system/carbon-ai-chat/issues/1863) does end with helpers attribute-driven and store-free, but that arrives **when each converts to Lit** — [#1850](https://github.com/carbon-design-system/carbon-ai-chat/issues/1850) lifts the markdown adapters' reads as part of its own scope. It isn't a bar for landing a React helper here today.
 
 ## Naming & nesting
 
