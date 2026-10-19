@@ -11,7 +11,7 @@ import { createRequire } from 'node:module';
 import { join, relative, resolve } from 'node:path';
 import ts from 'typescript';
 
-function localPath(root, path) {
+export function localPath(root, path) {
   const target = resolve(root, path);
   assert.ok(
     !relative(root, target).startsWith('..'),

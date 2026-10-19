@@ -14,12 +14,14 @@ import { build, preview } from 'vite';
 async function prepareHost(consumer, tree, host) {
   const name = `${tree}-${host}`;
   const prefix = tree === 'es' ? 'cds' : 'cds-custom';
+  const modulePath = `dist/${tree}/web-components/cds-aichat-${host}/index.js`;
   const script = `
-import Host from '@carbon/ai-chat/dist/${tree}/web-components/cds-aichat-${host}/index.js';
+import Host from '@carbon/ai-chat/${modulePath}';
 const tag = '${prefix}-aichat-${host}';
 if (customElements.get(tag) !== Host) throw new Error('The default host export must register its tag.');
 const attributes = Host.observedAttributes;
 window.hostRuntime = {
+  module: ${JSON.stringify(modulePath)},
   tag: 'cds-aichat-${host}', actualTag: tag, attributes,
   properties: [...Host.elementProperties].filter(([, options]) => !options.state)
     .map(([name, options]) => ({ name, attribute: options.attribute ?? true, type: options.type?.name })),
