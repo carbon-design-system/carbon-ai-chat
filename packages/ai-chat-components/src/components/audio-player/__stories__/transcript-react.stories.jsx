@@ -7,6 +7,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import { manifestEventArgTypes } from '../../../../.storybook-react/manifest-event-arg-types.js';
 import React from 'react';
 import { Transcript } from '../../../react/transcript';
 import { AudioPlayer } from '../../../react/audio-player';
@@ -168,4 +169,10 @@ export const WithEventHandling = {
       </>
     );
   },
+};
+
+export const TranscriptEvents = {
+  tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
+  argTypes: { ...manifestEventArgTypes(Transcript) },
 };

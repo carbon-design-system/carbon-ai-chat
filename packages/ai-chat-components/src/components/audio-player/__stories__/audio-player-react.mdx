@@ -42,29 +42,9 @@ function AudioExample() {
 
 ## Events
 
-The component supports the following event handlers:
+### `AudioPlayer`
 
-```jsx
-import AudioPlayer from '@carbon/ai-chat-components/es/react/audio-player.js';
-
-function AudioExample() {
-  const handleReady = (event) => {
-    console.log('Audio is ready to play');
-  };
-
-  const handleError = (event) => {
-    console.error('Audio error:', event.detail);
-  };
-
-  return (
-    <AudioPlayer
-      source="https://soundcloud.com/ibmthinkleaders/leveraging-ai-to-tackle-large-problems-being-an-optimistic-futurist-feat-kate-oneill"
-      onReady={handleReady}
-      onError={handleError}
-    />
-  );
-}
-```
+<ArgTypes of={AudioPlayerReactStories.AudioPlayerEvents} />
 
 ## Component API
 

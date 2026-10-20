@@ -8,6 +8,7 @@
  */
 
 /* eslint-disable */
+import { manifestEventArgTypes } from '../../../../.storybook-react/manifest-event-arg-types.js';
 import React from 'react';
 import ChainOfThoughtToggle from '../../../react/chain-of-thought-toggle';
 import ChainOfThought from '../../../react/chain-of-thought';
@@ -101,12 +102,8 @@ export default {
       description:
         'Chain-of-thought steps passed to the wrapper (used in the demo composition).',
     },
-    onToggle: {
-      action: 'onToggle',
-      table: { category: 'events' },
-      description:
-        'Emitted when the toggle is activated. Use it to sync controlled state.',
-    },
+
+    ...manifestEventArgTypes(ChainOfThoughtToggle),
   },
   args: {
     openLabelText: 'Hide chain of thought',
