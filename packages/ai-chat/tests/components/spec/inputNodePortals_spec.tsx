@@ -66,6 +66,28 @@ function message(): MessageRequest {
   } as MessageRequest;
 }
 
+/** The same node inside a paragraph, which the bubble renders inline. */
+function inlineMessage(): MessageRequest {
+  return {
+    id: 'message',
+    input: {
+      text: 'custom',
+      display_content: {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              { type: 'text', text: 'Hi ' },
+              { type: 'custom', attrs: { label: 'fallback' } },
+            ],
+          },
+        ],
+      },
+    },
+  } as MessageRequest;
+}
+
 beforeEach(() => {
   store = makeConfigStore({});
   store.dispatch(
@@ -145,11 +167,34 @@ test.each([0, 1, 2])(
   }
 );
 
+/**
+ * Whether `node` reaches the document through the flat tree: every light-DOM
+ * child of a shadow host on the way up has to be assigned to a slot.
+ */
+function isInFlatTree(node: Node) {
+  let current: Node | null = node;
+  while (current) {
+    const parent: Node | null = current.parentNode;
+    if (parent === document) {
+      return true;
+    }
+    if (parent instanceof Element && parent.shadowRoot) {
+      current = (current as Element).assignedSlot;
+    } else if (parent instanceof ShadowRoot) {
+      current = parent.host;
+    } else {
+      current = parent;
+    }
+  }
+  return false;
+}
+
 describe.each(['cds-aichat-container', 'cds-aichat-custom-element'])(
   '%s input nodes',
   (tagName) => {
     async function boot(
-      renderUserDefinedInputNode: WCRenderUserDefinedInputNode
+      renderUserDefinedInputNode: WCRenderUserDefinedInputNode,
+      sent: MessageRequest = message()
     ) {
       let chat!: ChatInstance;
       const element = document.createElement(tagName) as HTMLElement &
@@ -161,15 +206,17 @@ describe.each(['cds-aichat-container', 'cds-aichat-custom-element'])(
       element.renderUserDefinedInputNode = renderUserDefinedInputNode;
       document.body.appendChild(element);
       await waitFor(() => expect(chat).toBeDefined(), { timeout: 8000 });
-      await act(() => chat.send(message()));
+      await act(() => chat.send(sent));
       const bubbleSlot = () =>
         deepQuerySelector(
           element.shadowRoot,
           `slot[name="${slotName}"]`
         ) as HTMLSlotElement | null;
-      await waitFor(() => expect(bubbleSlot()).not.toBeNull(), {
-        timeout: 8000,
-      });
+      if (sent.input.display_content.content[0].type !== 'paragraph') {
+        await waitFor(() => expect(bubbleSlot()).not.toBeNull(), {
+          timeout: 8000,
+        });
+      }
       return { element, bubbleSlot, chat };
     }
 
@@ -202,6 +249,32 @@ describe.each(['cds-aichat-container', 'cds-aichat-custom-element'])(
       expect(host?.contains(chip)).toBe(true);
       expect(chip.getRootNode()).toBe(document);
     }, 20000);
+
+    it.each([
+      ['block', () => message()],
+      ['inline', () => inlineMessage()],
+    ])(
+      'slots a returned %s element into its bubble before it connects',
+      async (kind, sent) => {
+        const rendered: boolean[] = [];
+        const chip = document.createElement(`${tagName}-${kind}-probe-chip`);
+        customElements.define(
+          chip.localName,
+          class extends HTMLElement {
+            connectedCallback() {
+              rendered.push(isInFlatTree(this));
+            }
+          }
+        );
+        customElements.upgrade(chip);
+        await boot(() => chip, sent());
+        await waitFor(() => expect(rendered.length).toBeGreaterThan(0), {
+          timeout: 8000,
+        });
+        expect(rendered[0]).toBe(true);
+      },
+      20000
+    );
 
     it('keeps the returned element through unrelated message updates', async () => {
       const chip = document.createElement('span');

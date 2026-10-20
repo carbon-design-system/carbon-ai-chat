@@ -144,6 +144,9 @@ export interface MarkdownPluginHostControllerOptions {
    * outer one is hosting. The innermost hop — into the markdown element's own
    * shadow slot — is never one of these; the element mints that one, for
    * either kind, in the pass that read the claim.
+   *
+   * Runs before a new host is appended, so a forwarder added synchronously
+   * here slots the host before its content connects.
    */
   onSlotNamesChange?: (slotNames: string[]) => void;
 
