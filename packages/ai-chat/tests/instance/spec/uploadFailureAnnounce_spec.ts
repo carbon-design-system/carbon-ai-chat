@@ -141,6 +141,42 @@ describe('upload failure announcement', () => {
     });
   });
 
+  it('shows one error row per failed file, named and sorted alphabetically', async () => {
+    const onFileUpload = jest
+      .fn()
+      .mockRejectedValue(new Error('The file is larger than the 5 MB limit.'));
+
+    const { serviceManager } = await renderChatAndGetInstanceWithStore(
+      createUploadConfig(onFileUpload)
+    );
+
+    await serviceManager.actions.handleFileSelectedForUpload(
+      makeFile('zebra.pdf')
+    );
+    await serviceManager.actions.handleFileSelectedForUpload(
+      makeFile('Apple.pdf')
+    );
+
+    await waitFor(() => {
+      const messaging = deepQuerySelector(
+        chatShadowRoot(),
+        '[slot="field-messaging"]'
+      );
+      const rows = Array.from(
+        messaging?.querySelectorAll('cds-aichat-error-message') ?? []
+      ) as (Element & { title: string; description: string })[];
+
+      // Every failure is visible at once, not just the first.
+      expect(rows.map((row) => row.title)).toEqual([
+        'File upload error: Apple.pdf',
+        'File upload error: zebra.pdf',
+      ]);
+      expect(rows[0].description).toBe(
+        'The file is larger than the 5 MB limit. Remove the attachment and try again.'
+      );
+    });
+  });
+
   it('names each remove button after its own file', async () => {
     const onFileUpload = jest.fn().mockResolvedValue({});
 
