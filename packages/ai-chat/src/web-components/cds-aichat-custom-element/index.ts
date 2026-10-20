@@ -207,12 +207,11 @@ class ChatCustomElement extends FlattenedConfigElement {
   private _customFooterSlotNames: string[] = [];
 
   /**
-   * Active slot names for markdown-plugin output hosted at this element.
-   * Populated when this element accepts the host-mount event; drained when
-   * the matching unmount event fires.
+   * Active slot names for markdown-plugin output hosted at this element, and
+   * the `<slot>` that forwards each one into the inner container.
    */
-  @state()
-  private _pluginSlotNames: string[] = [];
+  private pluginSlotNames: string[] = [];
+  private pluginForwarders = new Map<string, HTMLSlotElement>();
 
   @state()
   private _instance!: ChatInstance;
@@ -253,13 +252,47 @@ class ChatCustomElement extends FlattenedConfigElement {
    */
   private pluginHostController = createMarkdownPluginHostController(this, {
     onSlotNamesChange: (slotNames) => {
-      this._pluginSlotNames = slotNames;
+      this.pluginSlotNames = slotNames;
+      this.syncPluginForwarders();
     },
   });
 
   connectedCallback() {
     super.connectedCallback();
     this.pluginHostController.connect();
+  }
+
+  firstUpdated() {
+    this.syncPluginForwarders();
+  }
+
+  /**
+   * Keeps one `<slot name=X slot=X>` per hosted plugin name inside the inner
+   * container. Code, not the template, owns these: a new host's content can
+   * mount in the task the host arrives, so its forwarder has to exist by then,
+   * and a render per name would cost the whole list each time.
+   */
+  private syncPluginForwarders() {
+    const inner = this.renderRoot?.querySelector('cds-aichat-container');
+    if (!inner) {
+      return;
+    }
+    const wanted = new Set(this.pluginSlotNames);
+    for (const [name, forwarder] of this.pluginForwarders) {
+      if (!wanted.has(name)) {
+        forwarder.remove();
+        this.pluginForwarders.delete(name);
+      }
+    }
+    for (const name of this.pluginSlotNames) {
+      if (!this.pluginForwarders.has(name)) {
+        const forwarder = document.createElement('slot');
+        forwarder.name = name;
+        forwarder.slot = name;
+        inner.appendChild(forwarder);
+        this.pluginForwarders.set(name, forwarder);
+      }
+    }
   }
 
   disconnectedCallback() {
@@ -377,9 +410,6 @@ class ChatCustomElement extends FlattenedConfigElement {
                   html`<div slot=${slot}><slot name=${slot}></slot></div>`
               )
         }
-        ${this._pluginSlotNames.map(
-          (slot) => html`<slot name=${slot} slot=${slot}></slot>`
-        )}
       </cds-aichat-container>
     `;
   }
