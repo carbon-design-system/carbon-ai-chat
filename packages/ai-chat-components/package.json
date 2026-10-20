@@ -31,7 +31,7 @@
   ],
   "scripts": {
     "build": "npm run clean && node tasks/build.js && node tasks/build-dist.js && npm run custom-elements",
-    "clean": "rimraf es es-custom dist storybook-static",
+    "clean": "rimraf es es-custom dist storybook-static custom-elements.json",
     "custom-elements": "cem analyze --config ./custom-elements-manifest.config.js",
     "postinstall": "ibmtelemetry --config=telemetry.yml",
     "start": "concurrently --names storybook,storybook-react,build --prefix-colors cyan,magenta,yellow --restart-tries Infinity --restart-after 2000 \"npm run storybook\" \"npm run storybook:react\" \"node tasks/build.js --watch\"",
@@ -40,10 +40,11 @@
     "storybook:react": "storybook dev -p 7007 -c .storybook-react",
     "storybook:react:build": "storybook build -c .storybook-react -o storybook-react-static",
     "telemetry:config": "npx -y @ibm/telemetry-js-config-generator generate --id 62aa153d-8a70-4d12-9e8d-069511e80e65 --endpoint https://www-api.ibm.com/ibm-telemetry/v1/metrics --files ./src/components --wc",
-    "test": "npm run test:web-components && npm run test:react",
+    "test": "npm run test:manifest && npm run test:web-components && npm run test:react",
     "test:react": "jest",
     "test:updateSnapshot": "web-test-runner \"src/components/**/*.test.ts\" --node-resolve --update-snapshots",
-    "test:web-components": "web-test-runner \"src/components/**/*.test.ts\" --node-resolve"
+    "test:web-components": "web-test-runner \"src/components/**/*.test.ts\" --node-resolve",
+    "test:manifest": "node --test tasks/__tests__/cem-plugins.test.js"
   },
   "peerDependencies": {
     "react": ">=17.0.0 <20.0.0"
@@ -157,5 +158,6 @@
     "typescript": "^6.0.3",
     "vite": "^8.0.16",
     "web-dev-server-plugin-lit-css": "^4.0.0"
-  }
+  },
+  "customElements": "./custom-elements.json"
 }
