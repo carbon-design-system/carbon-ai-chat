@@ -340,6 +340,15 @@ class FileUploadsElement extends LitElement {
                           name: upload.file?.name,
                         })}"
                         uploading-file-label="${this.uploadingFileLabel}"
+                        error-description="${
+                          upload.isError
+                            ? this.getFileUploadFailureText({
+                                messages: upload.errorMessage
+                                  ? [upload.errorMessage]
+                                  : [],
+                              })
+                            : ''
+                        }"
                         @cds-aichat-file-remove="${this._handleFileRemove}"></cds-aichat-file-upload-item>
                     `
                   )}

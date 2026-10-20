@@ -212,6 +212,26 @@ describe('file-uploads', () => {
     expect(announced).to.contain('Wrong type');
   });
 
+  it('passes the composed failure text to each failed chip', async () => {
+    const el = await mount();
+    el.getFileUploadFailureText = ({ messages }) =>
+      `failed: ${messages.join(' | ')}`;
+    await el.updateComplete;
+    await setUploads(el, [
+      makeUpload('a', FileStatusValue.EDIT, {
+        isError: true,
+        errorMessage: 'Too big',
+      }),
+      makeUpload('b', FileStatusValue.EDIT),
+    ]);
+
+    const items = el.renderRoot.querySelectorAll('cds-aichat-file-upload-item');
+    expect(items[0].getAttribute('error-description')).to.equal(
+      'failed: Too big'
+    );
+    expect(items[1].getAttribute('error-description')).to.equal('');
+  });
+
   it('announces once when two uploads fail in the same frame', async () => {
     const el = await mount();
     el.getFileUploadFailureText = ({ messages }) =>
