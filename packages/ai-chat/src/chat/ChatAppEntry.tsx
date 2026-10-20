@@ -10,6 +10,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AppProviders } from './AppProviders';
 import { ServiceManager } from './services/ServiceManager';
+import type { ChatViewState } from './services/chatViewState';
 import {
   attachUserDefinedResponseHandlers,
   attachCustomFooterHandler,
@@ -49,6 +50,7 @@ import AppShell from './AppShell';
  */
 interface ChatAppEntryProps {
   serviceManager: ServiceManager;
+  viewState: ChatViewState;
   instance: ChatInstance;
   windowSize: Dimension;
   /** False until `onBeforeRender` settles. Nothing renders before then. */
