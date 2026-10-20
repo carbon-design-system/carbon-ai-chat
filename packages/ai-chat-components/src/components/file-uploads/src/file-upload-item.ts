@@ -37,12 +37,6 @@ import type { FileAttachment } from './types.js';
 
 import styles from './file-upload-item.scss?lit';
 
-/**
- * Ids are scoped to their shadow root and each `cds-file-uploader-item` has its
- * own, so a constant collides with nothing.
- */
-const ERROR_MESSAGE_ID = 'cds-aichat-file-upload-item-error';
-
 interface SyncAttributeOptions {
   /** The element to set the attribute on. */
   element: Element;
@@ -122,6 +116,13 @@ class FileUploadItemElement extends LitElement {
   /** Label for the uploading status. */
   @property({ type: String, attribute: 'uploading-file-label' })
   uploadingFileLabel = 'Uploading';
+
+  /**
+   * Full failure text for a failed upload, announced after the file name when the
+   * chip takes focus. Falls back to the upload's own error message.
+   */
+  @property({ type: String, attribute: 'error-description' })
+  errorDescription?: string;
 
   /** Text shown when the file's name is not known. */
   @property({ type: String, attribute: 'fallback-label' })
@@ -250,6 +251,7 @@ class FileUploadItemElement extends LitElement {
     if (
       changedProperties.has('readOnly') ||
       changedProperties.has('upload') ||
+      changedProperties.has('errorDescription') ||
       !this._syncedErrorState
     ) {
       this._syncErrorState();
@@ -259,10 +261,9 @@ class FileUploadItemElement extends LitElement {
   private _syncedErrorState = false;
 
   /**
-   * Carbon leaves the failure message unreferenced and hides the invalid icon, so
-   * the remove button — the chip's only focusable node — states no reason. The
-   * message and the button are siblings in Carbon's shadow root, so the
-   * `aria-describedby` is wired there: an id reference cannot cross the boundary.
+   * Carbon hides the invalid icon and leaves its failure message unreferenced, so
+   * the chip states the failure itself, in its name, for a screen reader to read
+   * when the chip takes focus.
    */
   private async _syncErrorState(): Promise<void> {
     const { isError, message } = this._uploadError;
@@ -271,13 +272,26 @@ class FileUploadItemElement extends LitElement {
     // `aria-invalid` on a role-less host is dropped, so an input-area chip states
     // a role and names itself. A read-only chip is already a list item in the
     // message list.
-    const label = this.readOnly ? undefined : this._resolved?.name;
+    const name = this.readOnly ? undefined : this._resolved?.name;
+    // The failure text is folded into the name because an id reference from the
+    // host cannot reach into this shadow root, and a group's contents are not read
+    // when it takes focus. Focusing the chip then announces the whole failure.
+    const failure = this.errorDescription || message;
+    const hasFailureToAnnounce = Boolean(invalid && failure && name);
+    const label = hasFailureToAnnounce ? `${name}. ${failure}` : name;
     syncAttribute({
       element: this,
       attribute: 'role',
       value: this.readOnly ? undefined : 'group',
     });
     syncAttribute({ element: this, attribute: 'aria-label', value: label });
+    // Focusable so keyboard and screen reader users can land on the chip itself,
+    // and hear its state.
+    syncAttribute({
+      element: this,
+      attribute: 'tabindex',
+      value: this.readOnly ? undefined : '0',
+    });
     syncAttribute({
       element: this,
       attribute: 'aria-invalid',
@@ -291,8 +305,9 @@ class FileUploadItemElement extends LitElement {
       return;
     }
 
-    // A failure also flips `state`, and Carbon re-renders that subtree — replacing
-    // the button being described. Wait for the new one.
+    // Carbon draws the invalid icon in its own update, after ours; a failed upload
+    // usually also moves `state` from "uploading" to "edit", which swaps the whole
+    // status area. Wait for that render before looking for the icon.
     await inner.updateComplete;
 
     const innerRoot = inner.shadowRoot;
@@ -300,23 +315,6 @@ class FileUploadItemElement extends LitElement {
       return;
     }
     this._syncedErrorState = true;
-
-    // Carbon renders the requirement node even when it holds no message.
-    const describedBy = invalid && message ? ERROR_MESSAGE_ID : undefined;
-
-    const title = innerRoot.querySelector('.cds--form-requirement__title');
-    if (title) {
-      syncAttribute({ element: title, attribute: 'id', value: describedBy });
-    }
-
-    const removeButton = innerRoot.querySelector('button.cds--file-close');
-    if (removeButton) {
-      syncAttribute({
-        element: removeButton,
-        attribute: 'aria-describedby',
-        value: describedBy,
-      });
-    }
 
     // Carbon hardcodes its WarningFilled icon for the invalid state. Swap in
     // ErrorFilled; the marker keeps repeat syncs from replacing it again.

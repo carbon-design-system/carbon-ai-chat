@@ -177,6 +177,41 @@ describe('upload failure announcement', () => {
     });
   });
 
+  it('names a failed chip with its file, the localized title, the reason, and the recovery', async () => {
+    const onFileUpload = jest
+      .fn()
+      .mockRejectedValue(new Error('The file is larger than the 5 MB limit.'));
+
+    const { serviceManager } = await renderChatAndGetInstanceWithStore(
+      createUploadConfig(onFileUpload)
+    );
+
+    await serviceManager.actions.handleFileSelectedForUpload(makeFile());
+
+    await waitFor(() => {
+      const labels: string[] = [];
+      const walk = (root: ParentNode) => {
+        root
+          .querySelectorAll('cds-aichat-file-upload-item[aria-invalid="true"]')
+          .forEach((chip) => {
+            labels.push(chip.getAttribute('aria-label') ?? '');
+          });
+        root.querySelectorAll('*').forEach((element) => {
+          const nested = (element as HTMLElement).shadowRoot;
+          if (nested) {
+            walk(nested);
+          }
+        });
+      };
+      walk(chatShadowRoot());
+
+      // Focusing the chip reads its name, so the whole failure must be in it.
+      expect(labels).toEqual([
+        'test.pdf. File upload error. The file is larger than the 5 MB limit. Remove the attachment and try again.',
+      ]);
+    });
+  });
+
   it('names each remove button after its own file', async () => {
     const onFileUpload = jest.fn().mockResolvedValue({});
 

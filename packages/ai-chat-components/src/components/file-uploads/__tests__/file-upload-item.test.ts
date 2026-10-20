@@ -373,7 +373,7 @@ describe('file-upload-item', () => {
   });
 
   describe('error state', () => {
-    it('marks the host aria-invalid and describes the remove button with the reason', async () => {
+    it('marks the host aria-invalid', async () => {
       const el = await mount(
         makeUpload('a', FileStatusValue.EDIT, {
           isError: true,
@@ -386,17 +386,47 @@ describe('file-upload-item', () => {
       // dropped.
       expect(el.getAttribute('role')).to.equal('group');
       expect(el.getAttribute('aria-invalid')).to.equal('true');
+    });
 
-      const root = innerRoot(el);
-      const button = root.querySelector('button.cds--file-close')!;
-
-      // The description must resolve to the node holding the reason — an
-      // aria-describedby pointing at nothing is the bug this fixes.
-      const describedBy = button.getAttribute('aria-describedby');
-      expect(describedBy).to.be.a('string');
-      expect(root.getElementById(describedBy!)?.textContent).to.contain(
-        'File is too large.'
+    it('makes the chip focusable and names it with the file and its reason', async () => {
+      const el = await mount(
+        makeUpload('a', FileStatusValue.EDIT, {
+          isError: true,
+          errorMessage: 'File is too large.',
+        })
       );
+      await settle(el);
+
+      expect(el.getAttribute('tabindex')).to.equal('0');
+      expect(el.getAttribute('aria-label')).to.equal(
+        'a.txt. File is too large.'
+      );
+    });
+
+    it('prefers the supplied failure text over the raw reason in the name', async () => {
+      const el = await mount(
+        makeUpload('a', FileStatusValue.EDIT, {
+          isError: true,
+          errorMessage: 'File is too large.',
+        })
+      );
+      el.errorDescription = 'Upload failed. File is too large. Try again.';
+      await settle(el);
+
+      expect(el.getAttribute('aria-label')).to.equal(
+        'a.txt. Upload failed. File is too large. Try again.'
+      );
+    });
+
+    it('does not make a read-only chip focusable', async () => {
+      const el = await fixture<FileUploadItemElement>(
+        html`<cds-aichat-file-upload-item
+          read-only
+          .upload="${makeUpload('a', FileStatusValue.EDIT)}"></cds-aichat-file-upload-item>`
+      );
+      await settle(el);
+
+      expect(el.hasAttribute('tabindex')).to.be.false;
     });
 
     it('leaves a healthy chip with no error wiring', async () => {
@@ -404,23 +434,18 @@ describe('file-upload-item', () => {
       await settle(el);
 
       expect(el.hasAttribute('aria-invalid')).to.be.false;
-      const button = innerRoot(el).querySelector('button.cds--file-close')!;
-      expect(button.hasAttribute('aria-invalid')).to.be.false;
-      expect(button.hasAttribute('aria-describedby')).to.be.false;
     });
 
-    it('describes nothing when a failure carries no reason', async () => {
+    it('stays invalid with a plain name when a failure carries no reason', async () => {
       const el = await mount(
         makeUpload('a', FileStatusValue.EDIT, { isError: true })
       );
       await settle(el);
 
       // Still invalid — the state is real even when the host said nothing about
-      // why — but pointing at Carbon's empty requirement node would describe the
-      // button with silence.
+      // why — so the name stays the file's alone.
       expect(el.getAttribute('aria-invalid')).to.equal('true');
-      const button = innerRoot(el).querySelector('button.cds--file-close')!;
-      expect(button.hasAttribute('aria-describedby')).to.be.false;
+      expect(el.getAttribute('aria-label')).to.equal('a.txt');
     });
 
     it('clears the error wiring when the upload recovers', async () => {
@@ -437,8 +462,7 @@ describe('file-upload-item', () => {
       await settle(el);
 
       expect(el.hasAttribute('aria-invalid')).to.be.false;
-      const button = innerRoot(el).querySelector('button.cds--file-close')!;
-      expect(button.hasAttribute('aria-describedby')).to.be.false;
+      expect(el.getAttribute('aria-label')).to.equal('a.txt');
     });
 
     it('does not mark a read-only chip invalid', async () => {
