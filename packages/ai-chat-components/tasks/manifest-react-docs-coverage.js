@@ -106,6 +106,7 @@ export function visibleArgTypeRows({ filters, argTypes }) {
     ([name, row]) =>
       row &&
       !row.table?.disable &&
+      !row.if &&
       (!filters.include || matchesDocsFilter(filters.include, name)) &&
       !matchesDocsFilter(filters.exclude, name)
   );
