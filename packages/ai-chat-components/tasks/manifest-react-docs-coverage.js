@@ -44,16 +44,33 @@ function docsParameters(...values) {
   );
 }
 
+export function mergeDocsAnnotations(...layers) {
+  const merged = {};
+  for (const layer of layers) {
+    for (const [key, value] of Object.entries(layer ?? {})) {
+      const object = value && Object.getPrototypeOf(value) === Object.prototype;
+      const previous =
+        merged[key] && Object.getPrototypeOf(merged[key]) === Object.prototype;
+      merged[key] =
+        object && previous ? mergeDocsAnnotations(merged[key], value) : value;
+    }
+  }
+  return merged;
+}
+
 export function docsTableContext(model, values, table, preview = {}) {
   const meta = values.exported(table.source, 'default') ?? {};
   const stories = exportedStories(model, table.source, meta);
-  const name = table.story ?? stories[0]?.name;
-  if (!stories.some((story) => story.name === name)) {
+  const name = table.story === 'default' ? undefined : table.story;
+  if (
+    !stories.length ||
+    (name && !stories.some((story) => story.name === name))
+  ) {
     throw new Error(
       `${table.filename}:${table.line}: ArgTypes must reference an included story.`
     );
   }
-  const story = values.exported(table.source, name);
+  const story = name ? values.exported(table.source, name) : {};
   if (!story || story === values.unresolved) {
     throw new Error(
       `${table.filename}:${table.line}: Resolve the ArgTypes story metadata.`
@@ -76,7 +93,11 @@ export function docsTableContext(model, values, table, preview = {}) {
         .map((key) => [key, table[key]])
     ),
   };
-  const rows = { ...preview?.argTypes, ...meta.argTypes, ...story.argTypes };
+  const rows = mergeDocsAnnotations(
+    preview?.argTypes,
+    meta.argTypes,
+    story.argTypes
+  );
   return { meta, story, filters, argTypes: rows };
 }
 

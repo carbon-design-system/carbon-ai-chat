@@ -163,10 +163,16 @@ test('resolves actual MDX blocks, imported aliases and grouped metadata without 
     check('<Page of={Examples} />\n\n<Rows of={Examples.Default} />'),
     []
   );
-  assert.deepEqual(check('<Page of={Examples} />\n\n<Rows />'), []);
-  assert.deepEqual(check('<Rows of={Examples} />'), []);
+  const metaRows = story.replace(
+    "title: 'Button'",
+    "title: 'Button', argTypes: { ...callbackRows(Button) }"
+  );
+  assert.deepEqual(check('<Page of={Examples} />\n\n<Rows />', metaRows), []);
+  assert.deepEqual(check('<Rows of={Examples} />', metaRows), []);
+  assert.deepEqual(check('<Rows of={Examples.default} />', metaRows), []);
+  fails('<Rows of={Examples} />', /Show onChange/);
   const namespaced = `import * as Docs from '@storybook/addon-docs/blocks';\n\n<Docs.Meta of={Examples} />\n\n<Docs.ArgTypes />`;
-  assert.deepEqual(check(namespaced), []);
+  assert.deepEqual(check(namespaced, metaRows), []);
 });
 
 for (const [label, mdx] of [
@@ -243,7 +249,7 @@ for (const [label, mdx, text] of [
     fails(mdx, /Show onChange|Preserve generated/, text));
 }
 
-test('honors project filters, included stories, and the first included CSF story', () => {
+test('honors project filters and included stories without borrowing story rows for meta tables', () => {
   fails('<Rows of={Examples.Default} />', /Show onChange/, story, {
     preview: { parameters: { docs: { argTypes: { exclude: ['onChange'] } } } },
   });
@@ -263,16 +269,15 @@ test('honors project filters, included stories, and the first included CSF story
     'export const Empty = {};\nexport const Default'
   );
   fails('<Rows of={Examples} />', /Show onChange/, withFirst);
-  assert.deepEqual(
-    check(
-      '<Rows of={Examples} />',
-      withFirst.replace(
-        "title: 'Button'",
-        "title: 'Button', includeStories: ['Default']"
-      )
-    ),
-    []
+  fails(
+    '<Rows of={Examples} />',
+    /Show onChange/,
+    withFirst.replace(
+      "title: 'Button'",
+      "title: 'Button', includeStories: ['Default']"
+    )
   );
+  assert.deepEqual(check('<Rows of={Examples.Default} />', withFirst), []);
 });
 
 test('fails newly added wrappers instead of covering same-named peer callbacks', () => {
@@ -393,5 +398,15 @@ test('allows wrapper display names without treating them as documentation mutati
       }
     ),
     []
+  );
+});
+
+test('merges partial story row overrides with meta rows as Storybook does', () => {
+  const source = `${helper}\nimport Button from '../react/button.js';\nexport default { title: 'Button', argTypes: { ...callbackRows(Button) } };\nexport const Default = { argTypes: { onChange: { action: 'custom action', table: { disable: false } } } };`;
+  assert.deepEqual(check('<Rows of={Examples.Default} />', source), []);
+  fails(
+    '<Rows of={Examples.Default} />',
+    /Show onChange/,
+    source.replace('disable: false', 'disable: true')
   );
 });
