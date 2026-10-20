@@ -21,11 +21,12 @@ import {
   whenDefaultRenderer,
 } from '../shared/react-renderer';
 import type { ChatRenderer, ChatRenderMount } from '../shared/react-renderer';
-import { serviceManagerContext } from '../shared/service-manager-context';
+import { chatViewStateContext } from '../shared/chat-view-state-context';
 import { ChatInstance } from '../../types/instance/ChatInstance';
 import type { TypeAndHandler } from '../../types/instance/EventHandlers';
 import { Dimension } from '../../types/utilities/Dimension';
 import type { ServiceManager } from '../../chat/services/ServiceManager';
+import type { ChatViewState } from '../../chat/services/chatViewState';
 import appActions from '../../chat/store/actions';
 import type { AppliedConfig } from '../../chat/utils/appConfigUpdates';
 import type { ChatAppEntryProps } from '../../chat/ChatAppEntry';
@@ -34,6 +35,7 @@ import type { ResolvablePromise } from '../../chat/utils/resolvablePromise';
 import { resolvePromptLineMode } from '../../chat/components/input/promptLineMode';
 import { preloadBuildCarbonExtensions } from '../../chat/components/input/buildExtensionsLoader';
 import { consoleError } from '../../chat/utils/miscUtils';
+import { getWindowSize } from '../../chat/utils/windowSize';
 import {
   BusEventType,
   BusEventViewChange,
@@ -63,6 +65,7 @@ interface MountState {
   mount?: ChatRenderMount;
   App?: ComponentType<ChatAppEntryProps>;
   serviceManager?: ServiceManager;
+  viewState?: ChatViewState;
   instance?: ChatInstance;
   bootConfig?: PublicConfig;
   appliedConfig?: AppliedConfig;
@@ -90,6 +93,7 @@ export const bootModuleLoader = {
       import('../../chat/utils/appConfigUpdates'),
       import('../../chat/ChatAppEntry'),
       import('../../chat/utils/customPromptLine'),
+      import('../../chat/services/chatViewState'),
     ]),
 };
 
@@ -350,7 +354,8 @@ class ChatContainer extends FlattenedConfigElement {
       // retired, and stops.
       state.listenersReady.doResolve();
       state.initialViewCommitted.doResolve();
-      this.servicesProvider.setValue(undefined);
+      state.viewState?.disconnect();
+      this.viewStateProvider.setValue(undefined);
       state.mount?.unmount();
     }
 
@@ -442,8 +447,8 @@ class ChatContainer extends FlattenedConfigElement {
 
   private windowSize: Dimension = { width: 0, height: 0 };
 
-  private servicesProvider = new ContextProvider(this, {
-    context: serviceManagerContext,
+  private viewStateProvider = new ContextProvider(this, {
+    context: chatViewStateContext,
   });
 
   private startMount() {
@@ -493,6 +498,7 @@ class ChatContainer extends FlattenedConfigElement {
         { applyConfigUpdate, createAppliedConfig },
         { ChatAppEntry },
         { hasCustomPromptLine },
+        { ChatViewState },
       ] = await bootModuleLoader.loadBootModules();
       if (!isCurrent()) {
         return;
@@ -517,13 +523,15 @@ class ChatContainer extends FlattenedConfigElement {
       }
       state.App = ChatAppEntry;
       state.serviceManager = serviceManager;
+      state.viewState = new ChatViewState(serviceManager, getWindowSize());
+      state.viewState.connect();
       state.instance = instance;
       state.bootConfig = config;
       state.appliedConfig = createAppliedConfig(publicConfig, config);
       state.applyConfig = (nextConfig) =>
         applyConfigUpdate(state.appliedConfig, nextConfig, serviceManager);
-      state.removeWindowListeners = this.listenToWindow(serviceManager);
-      this.servicesProvider.setValue(serviceManager);
+      state.removeWindowListeners = this.listenToWindow(state.viewState);
+      this.viewStateProvider.setValue(state.viewState);
 
       this.renderApp();
       await state.listenersReady;
@@ -588,6 +596,7 @@ class ChatContainer extends FlattenedConfigElement {
 
     state.mount?.render(state.App, {
       serviceManager: state.serviceManager,
+      viewState: state.viewState,
       instance: state.instance,
       windowSize: this.windowSize,
       renderReady: state.renderReady,
@@ -623,8 +632,10 @@ class ChatContainer extends FlattenedConfigElement {
    * the theme watcher's polling when the mount goes. The watcher is the one
    * service the retired React effect named; broader disposal is #1681.
    */
-  private listenToWindow(serviceManager: ServiceManager) {
+  private listenToWindow(viewState: ChatViewState) {
+    const { serviceManager } = viewState;
     const onResize = () => {
+      viewState.setWindowSize(getWindowSize());
       this.windowSize = currentWindowSize();
       this.renderApp();
     };

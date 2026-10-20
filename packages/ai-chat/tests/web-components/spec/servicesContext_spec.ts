@@ -8,7 +8,7 @@
  */
 
 /**
- * `cds-aichat-container` provides its chat's service manager to Lit elements
+ * `cds-aichat-container` provides its chat's view state to Lit elements
  * rendered inside it, through Lit context rather than a React hook. Each chat
  * provides its own, and a chat that has released its mount provides none.
  */
@@ -18,7 +18,7 @@ import { LitElement } from 'lit';
 import { waitFor } from '@testing-library/react';
 
 import '../../../src/web-components/cds-aichat-container';
-import { serviceManagerContext } from '../../../src/web-components/shared/service-manager-context';
+import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
 import { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
 import {
@@ -29,7 +29,7 @@ import {
 
 class ServicesProbe extends LitElement {
   services = new ContextConsumer(this, {
-    context: serviceManagerContext,
+    context: chatViewStateContext,
     subscribe: true,
   });
 }
@@ -51,11 +51,11 @@ function mountChat() {
   return { host, probe, instances };
 }
 
-describe('service manager context', () => {
+describe('chat view state context', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  it('gives each chat its own manager and withdraws it once released', async () => {
+  it('gives each chat its own view state and withdraws it once released', async () => {
     const first = mountChat();
     const second = mountChat();
     await waitFor(
@@ -70,11 +70,11 @@ describe('service manager context', () => {
     // `instance.serviceManager` is a copy, and a manager is too large to print
     // if a comparison fails.
     expect(
-      first.probe.services.value.store ===
+      first.probe.services.value.serviceManager.store ===
         first.instances[0].serviceManager.store
     ).toBe(true);
     expect(
-      second.probe.services.value.store ===
+      second.probe.services.value.serviceManager.store ===
         second.instances[0].serviceManager.store
     ).toBe(true);
     expect(first.probe.services.value === second.probe.services.value).toBe(
@@ -88,7 +88,7 @@ describe('service manager context', () => {
     document.body.appendChild(first.host);
     expect(first.probe.services.value).toBeUndefined();
     expect(
-      second.probe.services.value.store ===
+      second.probe.services.value.serviceManager.store ===
         second.instances[0].serviceManager.store
     ).toBe(true);
   });

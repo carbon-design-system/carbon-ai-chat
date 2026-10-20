@@ -9,17 +9,17 @@
 
 import { createContext } from '@lit/context';
 
-import type { ServiceManager } from '../../chat/services/ServiceManager';
+import type { ChatViewState } from '../../chat/services/chatViewState';
 
 /**
- * The chat's {@link ServiceManager}, provided by `cds-aichat-container` to the
+ * The chat's {@link ChatViewState}, provided by `cds-aichat-container` to the
  * Lit elements rendered inside it. Private to this package: nothing exports
  * it. The value is `undefined` until services start and after the host
  * detaches. Services that need the rendered UI exist only once the shell
  * mounts.
  */
-const serviceManagerContext = createContext<ServiceManager | undefined>(
-  Symbol('cds-aichat-service-manager')
+const chatViewStateContext = createContext<ChatViewState | undefined>(
+  Symbol('cds-aichat-view-state')
 );
 
-export { serviceManagerContext };
+export { chatViewStateContext };
