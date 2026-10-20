@@ -456,5 +456,66 @@ describe('file-upload-item', () => {
       // button to describe.
       expect(el.hasAttribute('aria-invalid')).to.be.false;
     });
+
+    it('keeps the inline error text out of the chip layout', async () => {
+      const el = await mount(
+        makeUpload('a', FileStatusValue.EDIT, {
+          isError: true,
+          errorMessage: 'File is too large.',
+        })
+      );
+      await settle(el);
+
+      // Carbon un-hides .cds--form-requirement whenever invalid is true. The
+      // injected styles collapse its block space so the chip keeps a healthy
+      // chip's height; the parent surfaces the message as a separate row.
+      const requirement = innerRoot(el).querySelector(
+        '.cds--form-requirement'
+      )!;
+      expect(requirement).to.exist;
+      expect(getComputedStyle(requirement).display).to.equal('none');
+    });
+
+    it('renders the error-filled icon instead of the warning icon, once', async () => {
+      const el = await mount(
+        makeUpload('a', FileStatusValue.EDIT, {
+          isError: true,
+          errorMessage: 'File is too large.',
+        })
+      );
+      await settle(el);
+
+      const iconCount = () =>
+        innerRoot(el).querySelectorAll(
+          '.cds--file__state-container .cds--file-invalid'
+        ).length;
+      expect(iconCount()).to.equal(1);
+      const icon = innerRoot(el).querySelector('[data-error-icon]')!;
+      expect(icon).to.exist;
+      // ErrorFilled16 is a circle ("M8,1C4.1..."); Carbon's WarningFilled is a
+      // triangle.
+      expect(icon.querySelector('path')!.getAttribute('d')).to.match(
+        /^M8,1C4\.1/
+      );
+
+      // A repeat sync (here, a changed message) must not stack or re-swap it.
+      el.upload = makeUpload('a', FileStatusValue.EDIT, {
+        isError: true,
+        errorMessage: 'Still too large.',
+      });
+      await settle(el);
+      expect(iconCount()).to.equal(1);
+      expect(innerRoot(el).querySelector('[data-error-icon]')).to.equal(icon);
+    });
+
+    it('spaces the name from the status area by 16px', async () => {
+      const el = await mount(makeUpload('a', FileStatusValue.EDIT));
+      await settle(el);
+
+      const uploaderItem = el.renderRoot.querySelector(
+        'cds-file-uploader-item'
+      )!;
+      expect(getComputedStyle(uploaderItem).columnGap).to.equal('16px');
+    });
   });
 });

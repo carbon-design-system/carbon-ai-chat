@@ -12,14 +12,16 @@
 $block-class: #{$prefix}-file-upload-item;
 
 :host {
-  display: block;
+  display: inline-block;
   margin-inline-end: layout.$spacing-03;
 }
 
 cds-file-uploader-item {
   @include type.type-style('body-compact-01');
 
+  position: relative;
   border-radius: layout.$spacing-03;
+  inline-size: max-content;
 }
 
 .#{$block-class}__preview-wrapper {

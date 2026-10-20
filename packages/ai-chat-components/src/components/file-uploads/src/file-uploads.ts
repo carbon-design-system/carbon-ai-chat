@@ -58,6 +58,28 @@ class FileUploadsElement extends LitElement {
   @property({ type: Array, attribute: false })
   uploads: FileUpload[] = [];
 
+  /**
+   * Returns the sorted order of uploads for display. When errors are present,
+   * errored uploads appear first (alphabetical by name), followed by healthy
+   * uploads (alphabetical by name). When no errors are present, all uploads
+   * are sorted alphabetically by name.
+   */
+  private get _sortedUploads(): FileUpload[] {
+    const errored = this.uploads.filter((u) => u.isError);
+    const healthy = this.uploads.filter((u) => !u.isError);
+
+    const byName = (a: FileUpload, b: FileUpload) => {
+      const nameA = (a.file?.name ?? '').toLowerCase();
+      const nameB = (b.file?.name ?? '').toLowerCase();
+      return nameA < nameB ? -1 : nameA > nameB ? 1 : 0;
+    };
+
+    if (errored.length > 0) {
+      return [...errored.sort(byName), ...healthy.sort(byName)];
+    }
+    return [...this.uploads].sort(byName);
+  }
+
   /** Label for the remove file button, used when no file name is available. */
   @property({ type: String, attribute: 'remove-file-label' })
   removeFileLabel = 'Remove file';
@@ -292,6 +314,8 @@ class FileUploadsElement extends LitElement {
   }
 
   render() {
+    const sorted = this._sortedUploads;
+
     return html`
       <div class="${prefix}--file-uploads-live-region" aria-live="polite"></div>
       <div class="${prefix}--file-uploads-live-region" aria-live="polite"></div>
@@ -307,7 +331,7 @@ class FileUploadsElement extends LitElement {
               <div
                 class="${prefix}--file-uploads-gradient-wrapper${this._hasOverflow ? ` ${prefix}--file-uploads-gradient-wrapper--overflow` : ''}">
                 <div class="${prefix}--file-uploads-container">
-                  ${this.uploads.map(
+                  ${sorted.map(
                     (upload) => html`
                       <cds-aichat-file-upload-item
                         .upload="${upload}"

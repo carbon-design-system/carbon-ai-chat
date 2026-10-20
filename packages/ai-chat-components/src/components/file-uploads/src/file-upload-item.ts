@@ -24,8 +24,9 @@ import prefix from '../../../globals/settings.js';
 import '@carbon/web-components/es/components/file-uploader/index.js';
 
 import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
+import { carbonIconToSVG } from '@carbon/web-components/es/globals/internal/icon-loader-utils.js';
 import PlayFilledAlt16 from '@carbon/icons/es/play--filled--alt/16.js';
-
+import ErrorFilled16 from '@carbon/icons/es/error--filled/16.js';
 import { pickFileTypeIcon } from './file-type-icon.js';
 
 import type {
@@ -263,7 +264,7 @@ class FileUploadItemElement extends LitElement {
    * message and the button are siblings in Carbon's shadow root, so the
    * `aria-describedby` is wired there: an id reference cannot cross the boundary.
    */
-  private async _syncErrorState() {
+  private async _syncErrorState(): Promise<void> {
     const { isError, message } = this._uploadError;
     const invalid = !this.readOnly && isError;
 
@@ -316,16 +317,29 @@ class FileUploadItemElement extends LitElement {
         value: describedBy,
       });
     }
+
+    // Carbon hardcodes its WarningFilled icon for the invalid state. Swap in
+    // ErrorFilled; the marker keeps repeat syncs from replacing it again.
+    const warningIcon = innerRoot.querySelector(
+      '.cds--file__state-container .cds--file-invalid:not([data-error-icon])'
+    );
+    if (invalid && warningIcon) {
+      const template = document.createElement('template');
+      template.innerHTML = carbonIconToSVG(ErrorFilled16, {
+        class: 'cds--file-invalid',
+        'aria-hidden': 'true',
+        'data-error-icon': '',
+      });
+      warningIcon.replaceWith(template.content);
+    }
   }
 
   /**
-   * Carbon's `cds-file-uploader-item` needs two things patched from inside its own
-   * shadow root, because it exposes no `part=` for either.
+   * Overrides Carbon's `cds-file-uploader-item` styles from inside its shadow
+   * root, since it exposes no `part=` for the affected elements.
    *
-   * The filename margin is too wide when a media preview sits beside it. And the
-   * status container is rendered unconditionally at `min-inline-size: 1.5rem` plus
-   * `padding-inline-end: .75rem`, so in read-only mode — where there is no status
-   * to show — it would leave 36px of dead space on the chip's trailing edge.
+   * Carbon's adopted stylesheet wins over a `<style>` at equal specificity, so
+   * some selectors repeat the `size` attribute (always set) to out-rank it.
    */
   private _syncInjectedStyles() {
     const innerRoot = this.shadowRoot?.querySelector(
@@ -347,6 +361,30 @@ class FileUploadItemElement extends LitElement {
       // hiding it leaves the name flush to the edge against a 1rem leading margin.
       // Restate it on the name to even the two sides up.
       rules.push('.cds--file-filename { margin-inline-end: 1rem; }');
+    }
+    if (!this.readOnly) {
+      // Column gap between the name and the status area.
+      rules.push(
+        ':host(cds-file-uploader-item[size][size=md]) { gap: 0 var(--cds-spacing-04, 1rem); }'
+      );
+      // Column gap between the status area's children (error icon, remove button).
+      rules.push(
+        ':host([size]) .cds--file__state-container { gap: var(--cds-spacing-02, 0.25rem); }'
+      );
+    }
+    if (!this.readOnly && this._uploadError.isError) {
+      // Override core component's invalid-state styles: remove its padding and outline, hide
+      // inline error text, and redraw the outline so it paints above the content.
+      rules.push(':host([invalid][size]) { padding: 0; outline: none; }');
+      rules.push(
+        ':host([invalid][size]) .cds--form-requirement { display: none; }'
+      );
+      rules.push(
+        ':host([invalid][size])::after { content: ""; position: absolute; inset: 0; border-radius: 0.5rem; outline: 2px solid var(--cds-support-error, #da1e28); outline-offset: -2px; pointer-events: none; }'
+      );
+      rules.push(
+        '@media screen and (prefers-contrast) { :host([invalid][size])::after { outline-style: dotted; } }'
+      );
     }
 
     const nextText = rules.join('\n');
