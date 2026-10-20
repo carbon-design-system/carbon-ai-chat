@@ -10,7 +10,7 @@
 import React from 'react';
 import { EndHumanAgentChatPanel } from './components/panels/EndHumanAgentChatPanel';
 import { RequestScreenSharePanel } from './components/panels/RequestScreenSharePanel';
-import type { HumanAgentConfirmation } from './contexts/HumanAgentConfirmationContext';
+import type { HumanAgentConfirmation } from './services/chatViewState';
 import type CDSButton from '@carbon/web-components/es/components/button/button.js';
 import cx from 'classnames';
 import ChatPanel from '@carbon/ai-chat-components/es/react/panel.js';
