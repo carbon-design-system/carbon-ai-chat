@@ -15,9 +15,10 @@
  * fallback content shows.
  */
 
-import React, { StrictMode } from 'react';
-import { act, render, waitFor } from '@testing-library/react';
+import React, { StrictMode, useLayoutEffect, useRef, useState } from 'react';
+import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import { deepQuerySelector } from '@carbon/ai-chat-components/es/globals/utils/dom-utils.js';
+import { LIGHT_DOM_PORTAL_EVENT } from '@carbon/ai-chat-components/es/components/prompt-line/src/tiptap/render-in-light-dom.js';
 
 import '../../../src/web-components/cds-aichat-container';
 import { ChatContainer } from '../../../src/react/ChatContainer';
@@ -120,6 +121,7 @@ async function boot(props: Partial<ChatContainerProps> = {}, strict = false) {
   );
   return {
     instance,
+    unmount: () => view.unmount(),
     update: (next: Partial<ChatContainerProps>) =>
       view.rerender(
         <Wrapper>
@@ -175,6 +177,76 @@ async function bootWC(props: Partial<Record<string, unknown>> = {}): Promise<{
   };
 }
 
+/** A stateful child, so a remount shows as a reset count. */
+function Counter({ id }: { id: string }) {
+  const [count, setCount] = useState(0);
+  return (
+    <button
+      type="button"
+      data-probe={id}
+      onClick={() => setCount((value) => value + 1)}>
+      {count}
+    </button>
+  );
+}
+
+function probe(id: string) {
+  return document.querySelector<HTMLElement>(`[data-probe="${id}"]`);
+}
+
+function addFooterMessage(instance: ChatInstance, slotName: string) {
+  return act(() =>
+    instance.messaging.addMessage({
+      id: `with-${slotName}`,
+      output: {
+        generic: [
+          {
+            response_type: MessageResponseTypes.TEXT,
+            text: 'reply',
+            message_item_options: {
+              custom_footer_slot: { slot_name: slotName, is_on: true },
+            },
+          },
+        ],
+      },
+    } as never)
+  );
+}
+
+function sendTaskCard(instance: ChatInstance, id: string) {
+  return sendRequest(instance, {
+    id,
+    input: {
+      message_type: MessageInputType.TEXT,
+      text: 'Ship it',
+      display_content: {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [{ type: 'taskCard', attrs: { label: 'Ship it' } }],
+          },
+        ],
+      },
+    },
+  });
+}
+
+/**
+ * Places content in the page's light DOM the way the editor does for a token
+ * or node view: a container in the chat's shadow root asks for a host.
+ */
+function placeInLightDom(htmlElement: HTMLElement) {
+  const container = document.createElement('span');
+  getChatShadowRoot().appendChild(container);
+  getChatHost().dispatchEvent(
+    new CustomEvent(LIGHT_DOM_PORTAL_EVENT, {
+      detail: { container, hostTag: 'span', htmlElement },
+    })
+  );
+  return container;
+}
+
 function sendRequest(instance: ChatInstance, request: Partial<MessageRequest>) {
   return act(() =>
     instance.send({
@@ -182,10 +254,6 @@ function sendRequest(instance: ChatInstance, request: Partial<MessageRequest>) {
       ...request,
     } as MessageRequest)
   );
-}
-
-function probe(id: string) {
-  return document.querySelector<HTMLElement>(`[data-probe="${id}"]`);
 }
 
 describe('React render props through the shared container', () => {
@@ -222,6 +290,22 @@ describe('React render props through the shared container', () => {
         )
       ).toEqual(expect.arrayContaining(['first', 'partials:1']))
     );
+    const streamingHost = Array.from(
+      document.querySelectorAll('[data-probe="a"]')
+    ).find((node) => node.textContent === 'partials:1').parentElement;
+    await act(() =>
+      instance.messaging.addMessageChunk({
+        streaming_metadata: { response_id: 'udr-stream' },
+        complete_item: {
+          streaming_metadata: { id: 'item-1' },
+          response_type: MessageResponseTypes.USER_DEFINED,
+          user_defined: { label: 'complete' },
+        },
+      } as never)
+    );
+    await waitFor(() => expect(streamingHost.textContent).toBe('complete'));
+    expect(hostFor(streamingHost.getAttribute('slot'))).toBe(streamingHost);
+
     const firstHost = document.querySelector('[data-probe="a"]').parentElement;
     const slot = firstHost.getAttribute('slot');
     expect(firstHost.parentElement).toBe(getChatHost());
@@ -410,29 +494,36 @@ describe('React render props through the shared container', () => {
     });
     await waitFor(() => expect(host?.isConnected).toBe(false));
     expect(element.querySelector(`[slot="${slotName}"]`)).toBeNull();
+
+    // A later result reattaches the same host.
+    await update({ renderUserDefinedResponse: () => content });
+    await waitFor(() =>
+      expect(element.querySelector(`[slot="${slotName}"]`)).toBe(host)
+    );
+    expect(host.firstChild).toBe(content);
   });
 
   it('adds, replaces, and removes a message footer renderer after boot', async () => {
-    const { instance, update } = await boot();
-    await act(() =>
-      instance.messaging.addMessage({
-        id: 'with-footer',
-        output: {
-          generic: [
-            {
-              response_type: MessageResponseTypes.TEXT,
-              text: 'reply',
-              message_item_options: {
-                custom_footer_slot: { slot_name: 'footer-1', is_on: true },
-              },
-            },
-          ],
-        },
-      } as never)
-    );
+    const renderUserDefinedResponse = () => <p data-probe="kept-response" />;
+    const { instance, update } = await boot({ renderUserDefinedResponse });
+    await addUserDefinedResponse(instance, 'kept-response');
+    await addFooterMessage(instance, 'footer-1');
     expect(hostFor('footer-1')).toBeNull();
+    const responseHost = (
+      await waitFor(() => {
+        const node = probe('kept-response');
+        expect(node).not.toBeNull();
+        return node;
+      })
+    ).parentElement;
+    const callerNode = document.createElement('div');
+    callerNode.setAttribute('slot', 'caller-owned');
+    getChatHost().appendChild(callerNode);
+    const writeable = Object.values(instance.writeableElements)[0];
+    expect(writeable.parentNode).toBe(getChatHost());
 
     update({
+      renderUserDefinedResponse,
       renderCustomMessageFooter: (slotName) => (
         <span data-probe="message-footer">{slotName}</span>
       ),
@@ -447,6 +538,7 @@ describe('React render props through the shared container', () => {
     const host = hostFor('footer-1');
 
     update({
+      renderUserDefinedResponse,
       renderCustomMessageFooter: (slotName) => (
         <span data-probe="message-footer">Updated {slotName}</span>
       ),
@@ -454,8 +546,12 @@ describe('React render props through the shared container', () => {
     await waitFor(() => expect(host.textContent).toBe('Updated footer-1'));
     expect(hostFor('footer-1')).toBe(host);
 
-    update({});
+    // Removing the footer renderer releases only the footer hosts.
+    update({ renderUserDefinedResponse });
     await waitFor(() => expect(hostFor('footer-1')).toBeNull());
+    expect(responseHost.parentElement).toBe(getChatHost());
+    expect(callerNode.parentElement).toBe(getChatHost());
+    expect(writeable.parentNode).toBe(getChatHost());
   });
 
   it('restores the inline fallback when an input-node renderer returns null or is removed', async () => {
@@ -924,6 +1020,182 @@ describe('React render props through the shared container', () => {
         document.querySelector('[data-probe="host-error-boundary"]')
       ).not.toBeNull();
       consoleError.mockRestore();
+    });
+  });
+});
+
+describe('extension hosts outside React', () => {
+  beforeEach(setupBeforeEach);
+  afterEach(setupAfterEach);
+
+  it('leaves one connected host per live extension under StrictMode', async () => {
+    const renderers = {
+      renderUserDefinedResponse: () => <p data-probe="strict-response" />,
+      renderCustomMessageFooter: () => <p data-probe="strict-footer" />,
+      renderCustomRequestFooter: () => <p data-probe="strict-request" />,
+      renderUserDefinedInputNode: () => <b data-probe="strict-node" />,
+    };
+    const { instance } = await boot(renderers, true);
+    await addUserDefinedResponse(instance, 'strict-all');
+    await addFooterMessage(instance, 'strict-footer-slot');
+    await sendTaskCard(instance, 'strict-rich');
+    const editorNode = document.createElement('i');
+    act(() => {
+      placeInLightDom(editorNode);
+    });
+
+    const hostOf = async (id: string) =>
+      waitFor(() => {
+        const node = probe(id);
+        expect(node).not.toBeNull();
+        return node.parentElement;
+      });
+    const slotHosts = await Promise.all(
+      ['strict-response', 'strict-footer', 'strict-request'].map(hostOf)
+    );
+    slotHosts.forEach((host) => {
+      expect(host.parentElement).toBe(getChatHost());
+      expect(hostsFor(host.getAttribute('slot'))).toHaveLength(1);
+    });
+    const nodeHost = await hostOf('strict-node');
+    expect(nodeHost.isConnected).toBe(true);
+    expect(
+      document.querySelectorAll('[data-probe="strict-node"]')
+    ).toHaveLength(1);
+    const lightHost = editorNode.parentElement;
+    expect(lightHost.parentElement).toBe(getChatHost());
+    expect(hostsFor(lightHost.getAttribute('slot'))).toHaveLength(1);
+  });
+
+  it('renders React content from the editor into its page light-DOM host', async () => {
+    await boot();
+    const container = document.createElement('span');
+    getChatShadowRoot().appendChild(container);
+
+    act(() => {
+      getChatHost().dispatchEvent(
+        new CustomEvent(LIGHT_DOM_PORTAL_EVENT, {
+          detail: {
+            container,
+            hostTag: 'span',
+            reactNode: <b data-probe="light-react">chip</b>,
+          },
+        })
+      );
+    });
+
+    await waitFor(() => expect(probe('light-react')).not.toBeNull());
+    const host = probe('light-react').parentElement;
+    expect(host.parentElement).toBe(getChatHost());
+    expect(container.querySelector('slot').getAttribute('name')).toBe(
+      host.getAttribute('slot')
+    );
+
+    // The editor dropped the node: its host and React content go too.
+    act(() => container.remove());
+    await waitFor(() => expect(probe('light-react')).toBeNull());
+    expect(host.isConnected).toBe(false);
+  });
+
+  it('stops answering the editor once the chat unmounts', async () => {
+    const { unmount } = await boot();
+    const chat = getChatHost();
+    unmount();
+    await settle();
+
+    const container = document.createElement('span');
+    chat.shadowRoot.appendChild(container);
+    chat.dispatchEvent(
+      new CustomEvent(LIGHT_DOM_PORTAL_EVENT, {
+        detail: {
+          container,
+          hostTag: 'span',
+          htmlElement: document.createElement('b'),
+        },
+      })
+    );
+
+    expect(chat.querySelector('[slot^="cds-aichat-light-dom-"]')).toBeNull();
+  });
+
+  it('connects each host before its content runs layout effects', async () => {
+    const seen: Record<string, boolean> = {};
+    function Measured({ id }: { id: string }) {
+      const ref = useRef<HTMLSpanElement>(null);
+      useLayoutEffect(() => {
+        seen[id] = ref.current.isConnected;
+      }, [id]);
+      return <span ref={ref} />;
+    }
+    const { instance } = await boot({
+      renderUserDefinedResponse: () => <Measured id="response" />,
+      renderCustomMessageFooter: () => <Measured id="footer" />,
+      renderCustomRequestFooter: () => <Measured id="request" />,
+      renderUserDefinedInputNode: () => <Measured id="node" />,
+    });
+    await addUserDefinedResponse(instance, 'measured');
+    await addFooterMessage(instance, 'measured-footer');
+    // A block node: an inline node's target sits in a paragraph that the
+    // markdown element projects asynchronously, after this commit.
+    await sendRequest(instance, {
+      id: 'measured-block',
+      input: {
+        message_type: MessageInputType.TEXT,
+        text: 'Ship it',
+        display_content: {
+          type: 'doc',
+          content: [{ type: 'taskCard', attrs: { label: 'Ship it' } }],
+        },
+      },
+    });
+
+    await waitFor(() =>
+      expect(Object.keys(seen).sort()).toEqual([
+        'footer',
+        'node',
+        'request',
+        'response',
+      ])
+    );
+    expect(seen).toEqual({
+      response: true,
+      footer: true,
+      request: true,
+      node: true,
+    });
+  });
+
+  it('keeps hosts and React state across new render-prop identities and unrelated updates', async () => {
+    const renderers = () => ({
+      renderCustomMessageFooter: () => <Counter id="footer-count" />,
+      renderCustomRequestFooter: (_slot: string, message: MessageRequest) =>
+        message.id === 'counted' ? <Counter id="request-count" /> : null,
+      renderUserDefinedInputNode: () => <Counter id="node-count" />,
+    });
+    const { instance, update } = await boot(renderers());
+    await addFooterMessage(instance, 'counted-footer');
+    await sendTaskCard(instance, 'counted');
+
+    const ids = ['footer-count', 'request-count', 'node-count'];
+    await waitFor(() => ids.forEach((id) => expect(probe(id)).not.toBeNull()));
+    const buttons = ids.map(probe);
+    const hosts = buttons.map((button) => button.parentElement);
+    buttons.forEach((button) => fireEvent.click(button));
+    buttons.forEach((button) => expect(button.textContent).toBe('1'));
+
+    // New inline callbacks on every host render.
+    update(renderers());
+    await settle();
+    // An unrelated config change and an unrelated message.
+    update({ ...renderers(), assistantName: 'Unrelated' });
+    await sendRequest(instance, { id: 'unrelated' });
+    await settle();
+
+    ids.forEach((id, index) => {
+      expect(probe(id)).toBe(buttons[index]);
+      expect(buttons[index].textContent).toBe('1');
+      expect(buttons[index].parentElement).toBe(hosts[index]);
+      expect(hosts[index].isConnected).toBe(true);
     });
   });
 });
