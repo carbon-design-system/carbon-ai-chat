@@ -15,13 +15,39 @@ import { BusEventType } from '../../../src/types/events/eventBusTypes';
 function setup(isRequestFooterEnabled: () => boolean = () => true) {
   const eventBus = new EventBus();
   const instance = eventBus as unknown as ChatInstance;
-  const hosts = new ExtensionHosts(instance, isRequestFooterEnabled);
+  const chatWrapper = document.createElement('div');
+  document.body.append(chatWrapper);
+  const hosts = new ExtensionHosts(
+    instance,
+    chatWrapper,
+    isRequestFooterEnabled
+  );
   hosts.connect();
   const fire = (event: unknown) => eventBus.fireSync(event as never, instance);
-  return { eventBus, instance, hosts, fire };
+  return { eventBus, instance, chatWrapper, hosts, fire };
 }
 
-const restart = { type: BusEventType.RESTART_CONVERSATION };
+const restartEvent = { type: BusEventType.RESTART_CONVERSATION };
+
+function response(slot: string) {
+  return {
+    type: BusEventType.USER_DEFINED_RESPONSE,
+    data: { slot, fullMessage: { id: slot }, message: { id: slot } },
+  };
+}
+
+function footer(slotName: string) {
+  return {
+    type: BusEventType.CUSTOM_FOOTER_SLOT,
+    data: { slotName, message: {}, messageItem: {} },
+  };
+}
+
+afterEach(() => {
+  document.body.innerHTML = '';
+});
+
+const restart = restartEvent;
 
 describe('extension host records', () => {
   it('tracks user-defined responses and their chunks', () => {
@@ -227,5 +253,124 @@ describe.each([
       expect(unrelatedListener).toHaveBeenLastCalledWith(event, instance);
     }
     expect(unrelatedListener).toHaveBeenCalledTimes(events.length + 1);
+  });
+});
+
+describe('extension slot hosts', () => {
+  function attached(chatWrapper: HTMLElement) {
+    return Array.from(chatWrapper.children);
+  }
+
+  it('keeps one detached host per slot until it should attach', () => {
+    const { hosts, chatWrapper, fire } = setup();
+    fire(response('r1'));
+
+    const host = hosts.hostFor('userDefinedResponse', 'r1');
+    expect(hosts.hostFor('userDefinedResponse', 'r1')).toBe(host);
+    expect(host.getAttribute('slot')).toBe('r1');
+    expect(host.isConnected).toBe(false);
+
+    hosts.setHasContent('userDefinedResponse', 'r1', true);
+    expect(host.isConnected).toBe(false);
+
+    hosts.setRendererPresent('userDefinedResponse', true);
+    expect(attached(chatWrapper)).toEqual([host]);
+  });
+
+  it('detaches a host without content and reattaches the same element', () => {
+    const { hosts, chatWrapper, fire } = setup();
+    fire(response('r1'));
+    hosts.setRendererPresent('userDefinedResponse', true);
+    const host = hosts.hostFor('userDefinedResponse', 'r1');
+    hosts.setHasContent('userDefinedResponse', 'r1', true);
+
+    hosts.setHasContent('userDefinedResponse', 'r1', false);
+    expect(host.isConnected).toBe(false);
+    hosts.setHasContent('userDefinedResponse', 'r1', true);
+    expect(attached(chatWrapper)).toEqual([host]);
+  });
+
+  it('attaches hosts again after disconnect without duplicating them', () => {
+    const { hosts, chatWrapper, fire } = setup();
+    fire(response('r1'));
+    hosts.setRendererPresent('userDefinedResponse', true);
+    const host = hosts.hostFor('userDefinedResponse', 'r1');
+    hosts.setHasContent('userDefinedResponse', 'r1', true);
+
+    hosts.connect();
+    expect(attached(chatWrapper)).toEqual([host]);
+    hosts.disconnect();
+    hosts.disconnect();
+    expect(attached(chatWrapper)).toEqual([]);
+    hosts.connect();
+    expect(attached(chatWrapper)).toEqual([host]);
+  });
+
+  it('releases only the removed renderer kind and nodes it created', () => {
+    const { hosts, chatWrapper, fire } = setup();
+    const callerNode = document.createElement('p');
+    chatWrapper.append(callerNode);
+    fire(response('r1'));
+    fire(footer('f1'));
+    hosts.setRendererPresent('userDefinedResponse', true);
+    hosts.setRendererPresent('customFooter', true);
+    const responseHost = hosts.hostFor('userDefinedResponse', 'r1');
+    const footerHost = hosts.hostFor('customFooter', 'f1');
+    hosts.setHasContent('userDefinedResponse', 'r1', true);
+    hosts.setHasContent('customFooter', 'f1', true);
+
+    hosts.setRendererPresent('customFooter', false);
+
+    expect(attached(chatWrapper)).toEqual([callerNode, responseHost]);
+    expect(footerHost.isConnected).toBe(false);
+  });
+
+  it('releases every kind on restart and creates fresh hosts after it', () => {
+    const { hosts, chatWrapper, fire } = setup();
+    fire(response('r1'));
+    fire(footer('f1'));
+    hosts.setRendererPresent('userDefinedResponse', true);
+    hosts.setRendererPresent('customFooter', true);
+    const responseHost = hosts.hostFor('userDefinedResponse', 'r1');
+    hosts.setHasContent('userDefinedResponse', 'r1', true);
+    hosts.hostFor('customFooter', 'f1');
+    hosts.setHasContent('customFooter', 'f1', true);
+
+    fire(restartEvent);
+
+    expect(attached(chatWrapper)).toEqual([]);
+    fire(response('r1'));
+    expect(hosts.hostFor('userDefinedResponse', 'r1')).not.toBe(responseHost);
+  });
+
+  it('leaves a host that was moved out of the chat element', () => {
+    const { hosts, fire } = setup();
+    fire(response('r1'));
+    hosts.setRendererPresent('userDefinedResponse', true);
+    const host = hosts.hostFor('userDefinedResponse', 'r1');
+    hosts.setHasContent('userDefinedResponse', 'r1', true);
+    const elsewhere = document.createElement('section');
+    document.body.append(elsewhere);
+    elsewhere.append(host);
+
+    hosts.disconnect();
+
+    expect(host.parentNode).toBe(elsewhere);
+  });
+
+  it('collects request footers for a renderer reported after boot', () => {
+    const { hosts, fire } = setup(() => false);
+    const event = (slotName: string) => ({
+      type: BusEventType.CUSTOM_REQUEST_FOOTER_SLOT,
+      data: { slotName, message: { id: slotName } },
+    });
+
+    fire(event('before'));
+    hosts.setRendererPresent('customRequestFooter', true);
+    fire(event('after'));
+
+    expect(Object.keys(hosts.getSnapshot().customRequestFooter)).toEqual([
+      'after',
+    ]);
   });
 });

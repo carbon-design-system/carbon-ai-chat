@@ -184,6 +184,10 @@ function sendRequest(instance: ChatInstance, request: Partial<MessageRequest>) {
   );
 }
 
+function probe(id: string) {
+  return document.querySelector<HTMLElement>(`[data-probe="${id}"]`);
+}
+
 describe('React render props through the shared container', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
@@ -312,6 +316,34 @@ describe('React render props through the shared container', () => {
           (node) => node.textContent
         )
       ).toEqual(['after', 'reenabled'])
+    );
+  });
+
+  it('renders request footers for history inserted before the chat renders', async () => {
+    let instance: ChatInstance | null = null;
+    render(
+      <ChatContainer
+        {...config}
+        onBeforeRender={async (chat) => {
+          instance = chat;
+          await chat.messaging.insertHistory([
+            {
+              time: '2026-01-01T00:00:00.000Z',
+              message: {
+                id: 'restored',
+                input: { message_type: MessageInputType.TEXT, text: 'earlier' },
+              },
+            } as never,
+          ]);
+        }}
+        renderCustomRequestFooter={(_slotName, message) => (
+          <span data-probe="restored-footer">{message.id}</span>
+        )}
+      />
+    );
+    await waitFor(() => expect(instance).not.toBeNull(), { timeout: 5000 });
+    await waitFor(() =>
+      expect(probe('restored-footer')?.textContent).toBe('restored')
     );
   });
 
