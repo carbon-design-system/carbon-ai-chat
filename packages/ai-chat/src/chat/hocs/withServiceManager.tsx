@@ -11,9 +11,9 @@
  * This is a high order component that will inject a {@link ServiceManager} in to a component.
  */
 
-import React, { useContext } from 'react';
+import React from 'react';
 
-import { ServiceManagerContext } from '../contexts/ServiceManagerContext';
+import { useServiceManager } from '../hooks/useServiceManager';
 import { ServiceManager } from '../services/ServiceManager';
 
 /**
@@ -34,7 +34,7 @@ function withServiceManager<P extends HasServiceManager>(
 
   // 2. Tell forwardRef what ref type (here unknown) and what props (OuterProps) look like
   const Wrapped = React.forwardRef<unknown, OuterProps>((props, ref) => {
-    const serviceManager = useContext(ServiceManagerContext);
+    const serviceManager = useServiceManager();
     return (
       <Component
         {...(props as unknown as P)}

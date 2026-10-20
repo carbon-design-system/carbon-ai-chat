@@ -149,3 +149,4 @@ class ChatViewState {
 }
 
 export { ChatViewState };
+export type { ChatViewStateSnapshot };

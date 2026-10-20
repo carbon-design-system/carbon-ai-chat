@@ -27,8 +27,7 @@ import { render } from '@testing-library/react';
 import type { JSONContent } from '@tiptap/core';
 
 import { MessageRichUserContent } from '../../../src/chat/components-legacy/MessageRichUserContent';
-import { StoreProvider } from '../../../src/chat/providers/StoreProvider';
-import { makeConfigStore } from '../../test_helpers';
+import { makeConfigStore, TestChatContext } from '../../test_helpers';
 
 jest.mock('../../../src/chat/hooks/useIntl', () => ({
   useIntl: () => ({ formatMessage: () => '' }),
@@ -75,12 +74,12 @@ function messageWith(content: JSONContent): MessageRequest {
 /** Count <br> elements inside every <p> in the rendered bubble. */
 function brCount(content: JSONContent): number {
   const { container } = render(
-    <StoreProvider store={makeStore()}>
+    <TestChatContext store={makeStore()}>
       <MessageRichUserContent
         content={content}
         message={messageWith(content)}
       />
-    </StoreProvider>
+    </TestChatContext>
   );
   return Array.from(container.querySelectorAll('p')).reduce(
     (n, p) => n + p.querySelectorAll('br').length,
@@ -91,12 +90,12 @@ function brCount(content: JSONContent): number {
 /** Return the text content of every <p> in the rendered bubble, joined. */
 function renderedText(content: JSONContent): string {
   const { container } = render(
-    <StoreProvider store={makeStore()}>
+    <TestChatContext store={makeStore()}>
       <MessageRichUserContent
         content={content}
         message={messageWith(content)}
       />
-    </StoreProvider>
+    </TestChatContext>
   );
   return Array.from(container.querySelectorAll('p'))
     .map((p) => p.textContent ?? '')
@@ -187,12 +186,12 @@ describe('MessageRichUserContent chip spacing (issue #2155)', () => {
       ],
     };
     const { container } = render(
-      <StoreProvider store={makeStore()}>
+      <TestChatContext store={makeStore()}>
         <MessageRichUserContent
           content={content}
           message={messageWith(content)}
         />
-      </StoreProvider>
+      </TestChatContext>
     );
     const para = container.querySelector('p');
     expect(para?.textContent).toBe('Alice do this now');
@@ -216,12 +215,12 @@ describe('MessageRichUserContent chip spacing (issue #2155)', () => {
       ],
     };
     const { getByTestId } = render(
-      <StoreProvider store={makeStore()}>
+      <TestChatContext store={makeStore()}>
         <MessageRichUserContent
           content={content}
           message={messageWith(content)}
         />
-      </StoreProvider>
+      </TestChatContext>
     );
     // The stub renders the flattened text inside a data-testid="markdown" span.
     expect(getByTestId('markdown').textContent).toBe('just text no chips');
@@ -281,12 +280,12 @@ describe('MessageRichUserContent chip spacing (issue #2155)', () => {
       ],
     };
     const { getByTestId } = render(
-      <StoreProvider store={makeStore()}>
+      <TestChatContext store={makeStore()}>
         <MessageRichUserContent
           content={noChip}
           message={messageWith(noChip)}
         />
-      </StoreProvider>
+      </TestChatContext>
     );
     expect(getByTestId('markdown').textContent).toBe('line one\nline two');
   });
