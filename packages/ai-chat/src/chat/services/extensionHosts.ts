@@ -36,6 +36,17 @@ interface ExtensionHostsSnapshot {
 
 type SlotKind = keyof ExtensionHostsSnapshot;
 
+const SLOT_KINDS: SlotKind[] = [
+  'userDefinedResponse',
+  'customFooter',
+  'customRequestFooter',
+];
+
+interface SlotHost {
+  element: HTMLElement;
+  hasContent: boolean;
+}
+
 const EMPTY_SNAPSHOT: ExtensionHostsSnapshot = {
   userDefinedResponse: {},
   customFooter: {},
@@ -43,15 +54,28 @@ const EMPTY_SNAPSHOT: ExtensionHostsSnapshot = {
 };
 
 /**
- * Owns the render records for one chat's extension content: user-defined
- * responses, message footers, and request footers. Each kind's records stay
- * the same object until that kind changes, so a view that renders one kind
- * re-renders only for it.
+ * Owns one chat's extension content outside React: the render records for
+ * user-defined responses, message footers, and request footers, and the
+ * light-DOM host each record renders into. Each kind's records stay the same
+ * object until that kind changes, so a view that renders one kind re-renders
+ * only for it.
+ *
+ * A host's identity is separate from its attachment. `hostFor` creates one
+ * detached host per slot and keeps it, so a view can ask for it while it
+ * renders. The service attaches it to the chat element only while the chat is
+ * connected, its kind has a render callback, the view reported content, and
+ * the record still exists.
  */
 class ExtensionHosts {
   private snapshot = EMPTY_SNAPSHOT;
   private listeners = new Set<() => void>();
   private handlers: TypeAndHandler[] | null = null;
+  private renderers = new Set<SlotKind>();
+  private hosts: Record<SlotKind, Map<string, SlotHost>> = {
+    userDefinedResponse: new Map(),
+    customFooter: new Map(),
+    customRequestFooter: new Map(),
+  };
 
   /**
    * `isRequestFooterEnabled` is asked on each request-footer event, so a
@@ -60,6 +84,7 @@ class ExtensionHosts {
    */
   constructor(
     private readonly instance: ChatInstance,
+    private readonly chatWrapper: HTMLElement | undefined,
     private readonly isRequestFooterEnabled: () => boolean
   ) {}
 
@@ -72,7 +97,10 @@ class ExtensionHosts {
     };
   };
 
-  /** Starts collecting records from the instance's events. Repeat-safe. */
+  /**
+   * Starts collecting records and attaches every host that should be
+   * attached, as after a StrictMode effect replay. Repeat-safe.
+   */
   connect(): void {
     if (this.handlers) {
       return;
@@ -94,13 +122,49 @@ class ExtensionHosts {
       { type: BusEventType.RESTART_CONVERSATION, handler: this.onRestart },
     ];
     this.instance.on(this.handlers);
+    this.syncAll();
   }
 
-  /** Stops collecting. Records stay, so a later connect resumes. */
+  /**
+   * Stops collecting and detaches every host. Records and host identities
+   * stay, so a later connect restores them. Repeat-safe.
+   */
   disconnect(): void {
     if (this.handlers) {
       this.instance.off(this.handlers);
       this.handlers = null;
+    }
+    this.syncAll();
+  }
+
+  /** The slot's host element, created detached on first use. No DOM effect. */
+  hostFor(kind: SlotKind, slot: string): HTMLElement {
+    let host = this.hosts[kind].get(slot);
+    if (!host) {
+      const element = document.createElement('div');
+      element.setAttribute('slot', slot);
+      host = { element, hasContent: false };
+      this.hosts[kind].set(slot, host);
+    }
+    return host.element;
+  }
+
+  /** A view reports from a layout effect whether a kind has a callback. */
+  setRendererPresent(kind: SlotKind, present: boolean): void {
+    if (present) {
+      this.renderers.add(kind);
+    } else {
+      this.renderers.delete(kind);
+    }
+    this.hosts[kind].forEach((host, slot) => this.sync(kind, slot, host));
+  }
+
+  /** A view reports from a layout effect whether a slot rendered content. */
+  setHasContent(kind: SlotKind, slot: string, hasContent: boolean): void {
+    const host = this.hosts[kind].get(slot);
+    if (host) {
+      host.hasContent = hasContent;
+      this.sync(kind, slot, host);
     }
   }
 
@@ -138,7 +202,10 @@ class ExtensionHosts {
   };
 
   private onCustomRequestFooter = (event: BusEventCustomRequestFooterSlot) => {
-    if (!this.isRequestFooterEnabled()) {
+    if (
+      !this.renderers.has('customRequestFooter') &&
+      !this.isRequestFooterEnabled()
+    ) {
       return;
     }
     const { slotName, message } = event.data;
@@ -148,9 +215,48 @@ class ExtensionHosts {
   private onRestart = () => {
     if (this.snapshot !== EMPTY_SNAPSHOT) {
       this.snapshot = EMPTY_SNAPSHOT;
+      SLOT_KINDS.forEach((kind) => this.releaseExpired(kind));
       this.notify();
     }
   };
+
+  /** Releases the hosts of slots whose record left. */
+  private releaseExpired(kind: SlotKind): void {
+    this.hosts[kind].forEach((host, slot) => {
+      if (!(slot in this.snapshot[kind])) {
+        this.hosts[kind].delete(slot);
+        this.detach(host);
+      }
+    });
+  }
+
+  private syncAll(): void {
+    SLOT_KINDS.forEach((kind) =>
+      this.hosts[kind].forEach((host, slot) => this.sync(kind, slot, host))
+    );
+  }
+
+  private sync(kind: SlotKind, slot: string, host: SlotHost): void {
+    const shouldAttach =
+      this.handlers !== null &&
+      this.renderers.has(kind) &&
+      host.hasContent &&
+      slot in this.snapshot[kind];
+    if (shouldAttach && this.chatWrapper) {
+      if (host.element.parentNode !== this.chatWrapper) {
+        this.chatWrapper.appendChild(host.element);
+      }
+    } else {
+      this.detach(host);
+    }
+  }
+
+  // A host element someone moved out of the chat element stays where it is.
+  private detach(host: SlotHost): void {
+    if (this.chatWrapper && host.element.parentNode === this.chatWrapper) {
+      host.element.remove();
+    }
+  }
 
   private setRecord<K extends SlotKind>(
     kind: K,
@@ -170,3 +276,4 @@ class ExtensionHosts {
 }
 
 export { ExtensionHosts };
+export type { ExtensionHostsSnapshot, SlotKind };
