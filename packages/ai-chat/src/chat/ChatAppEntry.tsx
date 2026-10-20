@@ -8,30 +8,20 @@
  */
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useSyncExternalStore } from 'use-sync-external-store/shim/index.js';
 import { ChatContext } from './contexts/ChatContext';
 import { AriaAnnouncerRegion } from './components/aria/AriaAnnouncerRegion';
 import { ServiceManager } from './services/ServiceManager';
 import type { ChatViewState } from './services/chatViewState';
-import {
-  attachUserDefinedResponseHandlers,
-  attachCustomFooterHandler,
-  attachCustomRequestFooterHandler,
-} from './utils/chatBoot';
+import { ExtensionHosts } from './services/extensionHosts';
 import { UserDefinedResponsePortalsContainer } from './components/portals/UserDefinedResponsePortalsContainer';
-import {
-  CustomFooterSlotState,
-  CustomFooterPortalsContainer,
-} from './components/portals/CustomFooterPortalsContainer';
-import {
-  CustomRequestFooterSlotState,
-  CustomRequestFooterPortalsContainer,
-} from './components/portals/CustomRequestFooterPortalsContainer';
+import { CustomFooterPortalsContainer } from './components/portals/CustomFooterPortalsContainer';
+import { CustomRequestFooterPortalsContainer } from './components/portals/CustomRequestFooterPortalsContainer';
 import { WriteableElementsPortalsContainer } from './components/portals/WriteableElementsPortalsContainer';
 import { LightDomPortalsContainer } from './components/portals/LightDomPortalsContainer';
 import { InputNodePortalsContainer } from './components/portals/InputNodePortalsContainer';
 
 import {
-  RenderUserDefinedState,
   RenderUserDefinedResponse,
   RenderUserDefinedInputNode,
   RenderCustomMessageFooter,
@@ -113,50 +103,40 @@ function ChatAppEntry({
   renderWriteableElements,
   chatWrapper,
 }: ChatAppEntryProps) {
-  const [userDefinedResponseEventsBySlot, setUserDefinedResponseEventsBySlot] =
-    useState<Record<string, RenderUserDefinedState>>({});
-
-  const [customFooterSlotsByName, setCustomFooterSlotsByName] = useState<
-    Record<string, CustomFooterSlotState>
-  >({});
-
-  const [customRequestFooterSlotsByName, setCustomRequestFooterSlotsByName] =
-    useState<Record<string, CustomRequestFooterSlotState>>({});
-
-  // The trackers subscribe once, but this prop can arrive later — behind a
-  // feature flag, or with async config. The handler reads the ref on each
-  // event so a late arrival still gets footers.
+  // The prop can arrive after boot — behind a feature flag, or with async
+  // config — so the service asks on each event.
   const renderCustomRequestFooterRef = useRef(renderCustomRequestFooter);
   renderCustomRequestFooterRef.current = renderCustomRequestFooter;
   const isCustomRequestFooterEnabledRef = useRef(isCustomRequestFooterEnabled);
   isCustomRequestFooterEnabledRef.current = isCustomRequestFooterEnabled;
+
+  const [hosts] = useState(
+    () =>
+      new ExtensionHosts(
+        instance,
+        () =>
+          Boolean(renderCustomRequestFooterRef.current) ||
+          Boolean(isCustomRequestFooterEnabledRef.current?.())
+      )
+  );
+  const records = useSyncExternalStore(
+    hosts.subscribe,
+    hosts.getSnapshot,
+    hosts.getSnapshot
+  );
 
   const onListenersReadyRef = useRef(onListenersReady);
   onListenersReadyRef.current = onListenersReady;
   const onInitialViewCommittedRef = useRef(onInitialViewCommitted);
   onInitialViewCommittedRef.current = onInitialViewCommitted;
 
-  // Subscribes before the host's onBeforeRender runs, so content that callback
-  // emits is already collected when the shell first renders. The cleanups keep
-  // a StrictMode effect replay from subscribing twice.
+  // Connects before the host's onBeforeRender runs, so content that callback
+  // emits is already collected when the shell first renders.
   useEffect(() => {
-    const detachTrackers = [
-      attachUserDefinedResponseHandlers(
-        instance,
-        setUserDefinedResponseEventsBySlot
-      ),
-      attachCustomFooterHandler(instance, setCustomFooterSlotsByName),
-      attachCustomRequestFooterHandler(
-        instance,
-        setCustomRequestFooterSlotsByName,
-        () =>
-          Boolean(renderCustomRequestFooterRef.current) ||
-          Boolean(isCustomRequestFooterEnabledRef.current?.())
-      ),
-    ];
+    hosts.connect();
     onListenersReadyRef.current();
-    return () => detachTrackers.forEach((detach) => detach());
-  }, [instance]);
+    return () => hosts.disconnect();
+  }, [hosts]);
 
   useEffect(() => {
     if (initialViewReady) {
@@ -201,7 +181,7 @@ function ChatAppEntry({
           chatInstance={instance}
           renderUserDefinedResponse={renderUserDefinedResponse}
           removeEmptyHost={removeEmptyUserDefinedResponseHost}
-          userDefinedResponseEventsBySlot={userDefinedResponseEventsBySlot}
+          userDefinedResponseEventsBySlot={records.userDefinedResponse}
           chatWrapper={chatWrapper}
         />
       )}
@@ -211,7 +191,7 @@ function ChatAppEntry({
           chatInstance={instance}
           renderCustomMessageFooter={renderCustomMessageFooter}
           removeEmptyHost={removeEmptyCustomMessageFooterHost}
-          customFooterEventsBySlot={customFooterSlotsByName}
+          customFooterEventsBySlot={records.customFooter}
           chatWrapper={chatWrapper}
         />
       )}
@@ -220,7 +200,7 @@ function ChatAppEntry({
         <CustomRequestFooterPortalsContainer
           chatInstance={instance}
           renderCustomRequestFooter={renderCustomRequestFooter}
-          customRequestFooterEventsBySlot={customRequestFooterSlotsByName}
+          customRequestFooterEventsBySlot={records.customRequestFooter}
           chatWrapper={chatWrapper}
         />
       )}
