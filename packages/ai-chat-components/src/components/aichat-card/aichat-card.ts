@@ -17,6 +17,11 @@ import { prefix } from '../../globals/settings.js';
 /**
  * Component extending the @carbon/web-components' button
  * @element cds-aichat-card
+ * @slot header - Card header content.
+ * @slot media - Media shown before the body.
+ * @slot body - Main card content.
+ * @slot footer - Footer actions and supporting content.
+ * @slot decorator - Decorative content such as an AI label.
  */
 class Card extends CDSTile {
   static get is() {

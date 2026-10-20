@@ -13,6 +13,11 @@ import {
   returnedExpressions,
 } from './manifest-template-source.js';
 export { fireTags, readEvents } from './manifest-event-producers.js';
+export {
+  isLitSymbol,
+  returnedExpressions,
+  templateMarkup,
+} from './manifest-template-source.js';
 
 function inside(node, owner) {
   for (let current = node; current; current = current.parent) {

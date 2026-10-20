@@ -93,6 +93,8 @@ export type {
  * - the owning element's namespace, because slot hosts from every markdown
  *   element on the page are hoisted into one shared light-DOM container and
  *   projected back by name (see `./utils/slot-names.js`).
+ *
+ * @slotNameProtocol {MARKDOWN_SLOT_PREFIX}
  */
 function slotNameFor(
   kind: 'table' | 'codeBlock',
@@ -324,6 +326,7 @@ function renderProjectedInlineRun(
     options.context
   );
   const index = options.pluginSlotCounter?.next(node) ?? 0;
+  /** @slotNameProtocol {MARKDOWN_SLOT_PREFIX} */
   const slotName = withInstanceNamespace(
     `${MARKDOWN_SLOT_PREFIX}-pluginFallback-${index}`,
     options

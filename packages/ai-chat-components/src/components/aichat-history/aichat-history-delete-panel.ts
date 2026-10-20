@@ -22,15 +22,19 @@ import styles from './chat-history.scss?lit';
  *
  * @fires {CustomEvent<null>} history-delete-cancel - The deletion is canceled.
  * @fires {CustomEvent<HistoryDeleteConfirmEventDetail>} history-delete-confirm - The deletion is confirmed with the next focus target, when available.
+ * @slot title - Heading for the delete confirmation.
+ * @slot description - Explanation shown before the confirmation buttons.
  */
 class CDSAIChatHistoryDeletePanel extends LitElement {
   static get is() {
     return `${prefix}-aichat-history-delete-panel`;
   }
 
+  /** Label for the cancel button. */
   @property({ type: String, attribute: 'cancel-text', reflect: true })
   cancelText = 'Cancel';
 
+  /** Label for the delete button. */
   @property({ type: String, attribute: 'delete-text', reflect: true })
   deleteText = 'Delete';
 
@@ -41,7 +45,7 @@ class CDSAIChatHistoryDeletePanel extends LitElement {
   itemId = '';
 
   @query('cds-aichat-button[kind="danger"]')
-  _deleteButton;
+  private _deleteButton;
 
   /**
    * Finds the next chat item id after deleting `itemId`, and whether the removed chat item was * selected / active.
@@ -83,7 +87,7 @@ class CDSAIChatHistoryDeletePanel extends LitElement {
   /**
    * Handles cancel button click event
    */
-  _handleCancelClick = () => {
+  private _handleCancelClick = () => {
     this.dispatchEvent(
       new CustomEvent<null>('history-delete-cancel', {
         bubbles: true,
@@ -95,7 +99,7 @@ class CDSAIChatHistoryDeletePanel extends LitElement {
   /**
    * Handles delete button click event
    */
-  _handleDeleteClick = () => {
+  private _handleDeleteClick = () => {
     const focusDetail =
       this.itemId.length > 0
         ? this._getFocusDetailForDeletedItem(this.itemId)
