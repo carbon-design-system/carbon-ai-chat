@@ -24,7 +24,6 @@ import type { ChatRenderer, ChatRenderMount } from '../shared/react-renderer';
 import { chatViewStateContext } from '../shared/chat-view-state-context';
 import { ChatInstance } from '../../types/instance/ChatInstance';
 import type { TypeAndHandler } from '../../types/instance/EventHandlers';
-import { Dimension } from '../../types/utilities/Dimension';
 import type { ServiceManager } from '../../chat/services/ServiceManager';
 import type { ChatViewState } from '../../chat/services/chatViewState';
 import appActions from '../../chat/store/actions';
@@ -76,10 +75,6 @@ interface MountState {
   initialViewCommitted: ResolvablePromise;
   afterRenderTimer?: ReturnType<typeof setTimeout>;
   removeWindowListeners?: () => void;
-}
-
-function currentWindowSize(): Dimension {
-  return { width: window.innerWidth, height: window.innerHeight };
 }
 
 /**
@@ -446,8 +441,6 @@ class ChatContainer extends FlattenedConfigElement {
 
   private current?: MountState;
 
-  private windowSize: Dimension = { width: 0, height: 0 };
-
   private viewStateProvider = new ContextProvider(this, {
     context: chatViewStateContext,
   });
@@ -470,7 +463,6 @@ class ChatContainer extends FlattenedConfigElement {
     // Recorded before mounting: a renderer can detach this element while it
     // mounts, and that mount still has to be released.
     this.current = state;
-    this.windowSize = currentWindowSize();
     state.mount = renderer.mount(this.ensureRenderTarget());
     if (this.current !== state) {
       state.mount.unmount();
@@ -599,7 +591,6 @@ class ChatContainer extends FlattenedConfigElement {
       serviceManager: state.serviceManager,
       viewState: state.viewState,
       instance: state.instance,
-      windowSize: this.windowSize,
       renderReady: state.renderReady,
       initialViewReady: state.initialViewReady,
       onListenersReady: () => state.listenersReady.doResolve(),
@@ -629,7 +620,7 @@ class ChatContainer extends FlattenedConfigElement {
   }
 
   /**
-   * Feeds window size to the app and page visibility to the store, and stops
+   * Feeds window size to the view state and page visibility to the store, and stops
    * the theme watcher's polling when the mount goes. The watcher is the one
    * service the retired React effect named; broader disposal is #1681.
    */
@@ -637,8 +628,6 @@ class ChatContainer extends FlattenedConfigElement {
     const { serviceManager } = viewState;
     const onResize = () => {
       viewState.setWindowSize(getWindowSize());
-      this.windowSize = currentWindowSize();
-      this.renderApp();
     };
     const onVisibilityChange = () => {
       serviceManager.store.dispatch(

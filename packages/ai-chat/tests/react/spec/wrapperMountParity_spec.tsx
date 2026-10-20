@@ -332,6 +332,14 @@ describe('how each host mounts the chat', () => {
       expect(
         target.querySelectorAll('.cds-aichat--aria-announcer')
       ).toHaveLength(1);
+      // The effect replay must leave one connected set of live regions.
+      const announcer = '.cds-aichat--aria-announcer';
+      expect(
+        target.querySelectorAll(`${announcer} [aria-live="polite"]`)
+      ).toHaveLength(3);
+      expect(
+        target.querySelectorAll(`${announcer} [aria-live="assertive"]`)
+      ).toHaveLength(2);
     });
 
     it('keeps two chats independent', async () => {

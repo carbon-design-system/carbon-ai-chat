@@ -11,12 +11,15 @@ import React from 'react';
 import { render, waitFor, act, cleanup } from '@testing-library/react';
 import { ChatContainer } from '../../../src/react/ChatContainer';
 import { ChatContainerProps } from '../../../src/types/component/ChatContainer';
-import { createBaseTestProps, makeConfigStore } from '../../test_helpers';
+import {
+  createBaseTestProps,
+  makeConfigStore,
+  TestChatContext,
+} from '../../test_helpers';
 import { WriteableElementName } from '../../../src/types/instance/WriteableElements';
 import { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import { setEnableDebugLog } from '../../../src/chat/utils/miscUtils';
 import { AppShellWriteableElements } from '../../../src/chat/AppShellWriteableElements';
-import { StoreProvider } from '../../../src/chat/providers/StoreProvider';
 
 /**
  * Tests for the CUSTOM_HEADER writeable element.
@@ -253,12 +256,12 @@ describe('isOn: false hides the header slot', () => {
       headerIsOn === undefined ? {} : { header: { isOn: headerIsOn } };
     const store = makeConfigStore(config as any);
     return render(
-      <StoreProvider store={store}>
+      <TestChatContext store={store}>
         <AppShellWriteableElements
           serviceManager={stubServiceManager}
           showHomeScreen={false}
         />
-      </StoreProvider>
+      </TestChatContext>
     );
   }
 
