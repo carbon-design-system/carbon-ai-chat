@@ -39,6 +39,8 @@ export interface SearchAttributes {
  *
  * @element cds-aichat-history-toolbar
  *
+ * @fires {CustomEvent<null>} chat-history-new-chat-click - The new chat button is activated.
+ * @fires {CustomEvent<HistorySearchInputEventDetail>} cds-search-input - The Carbon search field value changes.
  */
 class CDSAIChatHistoryToolbar extends LitElement {
   static get is() {
@@ -117,7 +119,7 @@ class CDSAIChatHistoryToolbar extends LitElement {
    */
   _handleNewChatButtonClick = () => {
     this.dispatchEvent(
-      new CustomEvent('chat-history-new-chat-click', {
+      new CustomEvent<null>('chat-history-new-chat-click', {
         bubbles: true,
         composed: true,
       })
@@ -160,3 +162,9 @@ class CDSAIChatHistoryToolbar extends LitElement {
 
 export { CDSAIChatHistoryToolbar };
 export default CDSAIChatHistoryToolbar;
+
+/** Contains the Carbon search field value. */
+export interface HistorySearchInputEventDetail {
+  /** Current search field value. */
+  value: string;
+}

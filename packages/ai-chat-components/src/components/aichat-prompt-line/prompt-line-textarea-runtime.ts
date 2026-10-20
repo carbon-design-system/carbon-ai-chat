@@ -29,6 +29,7 @@
  * so this module carries no Tiptap runtime.
  */
 
+import type { PromptLineEventDetailMap } from './types.js';
 import type { Editor, Extension, JSONContent } from '@tiptap/core';
 
 import { IS_PHONE } from '../../globals/utils/browser-utils.js';
@@ -133,6 +134,7 @@ function ensureTextareaStyleRules(): void {
  * `PROMPT_LINE_MAX_BLOCK_SIZE` with the field scrolling past it — the same cap
  * the rich contenteditable applies (see ./tiptap/editor-styles.ts), so the
  * textarea→rich swap is imperceptible.
+ * @eventOwner {import('./aichat-prompt-line.js').default}
  */
 export class TextareaController
   extends MouseFocusController
@@ -455,9 +457,12 @@ export class TextareaController
     }
   }
 
-  private _dispatch(name: string, detail?: unknown): void {
+  private _dispatch<Name extends keyof PromptLineEventDetailMap>(
+    name: Name,
+    detail?: PromptLineEventDetailMap[Name]
+  ): void {
     this._textarea?.dispatchEvent(
-      new CustomEvent(name, {
+      new CustomEvent<PromptLineEventDetailMap[Name]>(name, {
         detail,
         bubbles: true,
         composed: true,

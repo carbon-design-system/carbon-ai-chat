@@ -44,7 +44,7 @@ interface UploadSnapshot {
  * spacing when empty.
  *
  * @element cds-aichat-file-uploads
- * @fires {CustomEvent<FileRemoveEventDetail>} cds-aichat-file-remove - Fired when a file is removed
+ * @fires {CustomEvent<FileRemoveEventDetail>} cds-aichat-file-remove - A descendant file item requests removal.
  */
 class FileUploadsElement extends LitElement {
   static get is() {

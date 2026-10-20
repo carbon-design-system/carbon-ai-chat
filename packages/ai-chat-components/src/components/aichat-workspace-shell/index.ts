@@ -25,3 +25,7 @@ defineCustomElement(CDSAIChatWorkspaceShellBody);
 defineCustomElement(CDSAIChatWorkspaceShellFooter);
 defineCustomElement(CDSAIChatWorkspaceShellHeader);
 defineCustomElement(CDSAIChatWorkspaceShell);
+
+export type { WorkspaceHeaderToggleEventDetail } from './aichat-workspace-shell-header.js';
+
+export type { Action } from './aichat-workspace-shell-footer.js';
