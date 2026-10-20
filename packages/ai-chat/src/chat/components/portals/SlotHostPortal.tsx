@@ -7,10 +7,14 @@
  *  @license
  */
 
-import { ReactNode, useLayoutEffect } from 'react';
+import React, { ReactNode, useLayoutEffect } from 'react';
 import ReactDOM from 'react-dom';
 
 import { isElement } from '../../utils/domUtils';
+import type {
+  ExtensionHosts,
+  SlotKind,
+} from '../../services/extensionHosts';
 
 /**
  * Renders one render-prop result into its slot host. React content goes
@@ -48,4 +52,76 @@ function SlotHostPortal({
     : ReactDOM.createPortal(children as ReactNode, hostElement);
 }
 
-export { SlotHostPortal };
+interface ExtensionSlotHostProps {
+  hosts: ExtensionHosts;
+  kind: SlotKind;
+  slot: string;
+  content: ReactNode;
+  /** False when an empty result should leave no host behind. */
+  keepEmptyHost: boolean;
+}
+
+/**
+ * Reports to the host service that a kind has a render callback while it is
+ * mounted. Render it before that kind's slots: layout effects run in tree
+ * order, so the hosts attach before their content's own layout effects.
+ */
+function RendererReport({
+  hosts,
+  kind,
+}: {
+  hosts: ExtensionHosts;
+  kind: SlotKind;
+}): null {
+  useLayoutEffect(() => {
+    hosts.setRendererPresent(kind, true);
+    return () => hosts.setRendererPresent(kind, false);
+  }, [hosts, kind]);
+  return null;
+}
+
+/**
+ * Reports that a slot rendered content while it is mounted. Render it before
+ * the content, for the same reason as {@link RendererReport}. A Suspense hide
+ * runs the cleanup, which detaches the host until the reveal.
+ */
+function ContentReport({
+  hosts,
+  kind,
+  slot,
+  host,
+}: {
+  hosts: ExtensionHosts;
+  kind: SlotKind;
+  slot: string;
+  /** Re-reports when the service replaces the slot's host. */
+  host: HTMLElement;
+}): null {
+  useLayoutEffect(() => {
+    hosts.setHasContent(kind, slot, true);
+    return () => hosts.setHasContent(kind, slot, false);
+  }, [hosts, kind, slot, host]);
+  return null;
+}
+
+/** Places one render-prop result in the slot's host, which the host service owns. */
+function ExtensionSlotHost({
+  hosts,
+  kind,
+  slot,
+  content,
+  keepEmptyHost,
+}: ExtensionSlotHostProps) {
+  const host = hosts.hostFor(kind, slot);
+  if (!keepEmptyHost && !content) {
+    return null;
+  }
+  return (
+    <>
+      <ContentReport hosts={hosts} kind={kind} slot={slot} host={host} />
+      <SlotHostPortal hostElement={host}>{content}</SlotHostPortal>
+    </>
+  );
+}
+
+export { SlotHostPortal, ExtensionSlotHost, RendererReport };
