@@ -36,7 +36,7 @@ Load only what you need:
   - `services/` — chat-instance services wired through `ServiceManager.ts` and `loadServices.ts`, plus view-owned classes with explicit cleanup. `ChatInstanceService.ts` is the instance-facing API — public methods added here must also be reflected on `ChatInstance` in [`src/types/instance/ChatInstance.ts`](src/types/instance/ChatInstance.ts).
   - `events/` — typed pub/sub for the public event API. Event names and payloads are part of the public contract.
   - `schema/` — runtime message/config schema. Keep in sync with types in [src/types/](src/types/).
-  - `hocs/`, `hooks/`, `contexts/`, `providers/` — React glue.
+  - `hocs/`, `hooks/`, `contexts/` — React glue. Per-chat state reaches React through the one `ChatContext`.
   - `languages/` — `intl-messageformat` string bundles, one locale file. [LanguagePack.ts](src/types/config/LanguagePack.ts) declares the public `LanguagePack` type over it, so adding a key widens public API and renaming one breaks it. Hosts translate through `PublicConfig.strings`; word new strings per [ui-strings.md](../../.bob/skills/caic-copy-writer/references/ui-strings.md).
   - `components/` vs `components-legacy/` — **always author new UI in `components/`**. `components-legacy/` is closed to new components; bug fixes and refactoring transitions out are welcome. Lift to `@carbon/ai-chat-components` when a component has no chat-specific state.
   - `ai-chat-components/` — React bindings (`@lit/react`) around the sibling package's Lit components.
