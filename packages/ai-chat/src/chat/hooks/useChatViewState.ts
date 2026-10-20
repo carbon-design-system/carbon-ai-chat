@@ -42,4 +42,4 @@ function useChatViewState<Selected>(
   );
 }
 
-export { useChatViewState };
+export { useChatViewState, useChatViewStateInstance };

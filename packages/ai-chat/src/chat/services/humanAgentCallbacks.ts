@@ -7,37 +7,23 @@
  *  @license
  */
 
+import type { ChatViewState } from './chatViewState';
 import type { ServiceManager } from './ServiceManager';
 import type { FileUpload } from '../../types/state/AppState';
 
 export class HumanAgentCallbacks {
-  private showEndChatConfirmation = false;
-  private listeners = new Set<() => void>();
+  private serviceManager: ServiceManager;
 
-  constructor(private serviceManager: ServiceManager) {}
-
-  subscribe = (listener: () => void) => {
-    this.listeners.add(listener);
-    return () => {
-      this.listeners.delete(listener);
-    };
-  };
-
-  getSnapshot = () => this.showEndChatConfirmation;
-
-  private setConfirmation(value: boolean) {
-    if (this.showEndChatConfirmation !== value) {
-      this.showEndChatConfirmation = value;
-      this.listeners.forEach((listener) => listener());
-    }
+  constructor(private viewState: ChatViewState) {
+    this.serviceManager = viewState.serviceManager;
   }
 
   showConfirmEndChat = () => {
-    this.setConfirmation(true);
+    this.viewState.showEndChatConfirmation();
   };
 
   hideConfirmEndChat = () => {
-    this.setConfirmation(false);
+    this.viewState.hideEndChatConfirmation();
   };
 
   confirmHumanAgentEndChat = () => {
