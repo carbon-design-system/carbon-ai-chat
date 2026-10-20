@@ -24,6 +24,7 @@ import {
   collectSlotEntries,
   type InputNodeSlotEntry,
 } from '../utils/inputNodeSlots';
+import { LightDomHosts, type LightDomEntry } from './lightDomHosts';
 import type { AppState } from '../../types/state/AppState';
 import type { ChatInstance } from '../../types/instance/ChatInstance';
 import type { TypeAndHandler } from '../../types/instance/EventHandlers';
@@ -45,9 +46,11 @@ interface ExtensionHostsSnapshot {
   >;
   /** Derived from the store's messages; stable while they are. */
   readonly inputNode: readonly InputNodeSlotEntry[];
+  /** Editor content placed in the page's light DOM. */
+  readonly lightDom: readonly LightDomEntry[];
 }
 
-type SlotKind = Exclude<keyof ExtensionHostsSnapshot, 'inputNode'>;
+type SlotKind = Exclude<keyof ExtensionHostsSnapshot, 'inputNode' | 'lightDom'>;
 type HostKind = SlotKind | 'inputNode';
 
 interface MessagesStore {
@@ -77,6 +80,7 @@ const EMPTY_SNAPSHOT: ExtensionHostsSnapshot = {
   customFooter: {},
   customRequestFooter: {},
   inputNode: [],
+  lightDom: [],
 };
 
 function isTokenNode(entry: InputNodeSlotEntry): boolean {
@@ -86,10 +90,11 @@ function isTokenNode(entry: InputNodeSlotEntry): boolean {
 
 /**
  * Owns one chat's extension content outside React: the render records for
- * user-defined responses, message footers, request footers, and sent input
- * nodes, and the light-DOM host each record renders into. Each kind's records stay the same
- * object until that kind changes, so a view that renders one kind re-renders
- * only for it.
+ * user-defined responses, message footers, request footers, sent input
+ * nodes, and editor light-DOM content, and the light-DOM host each record
+ * renders into. Editor light-DOM hosts live in `LightDomHosts`, which this
+ * service connects. Each kind's records stay the same object until that kind
+ * changes, so a view that renders one kind re-renders only for it.
  *
  * A host's identity is separate from its attachment. `hostFor` creates one
  * detached host per slot and keeps it, so a view can ask for it while it
@@ -111,6 +116,7 @@ class ExtensionHosts {
   private inputKeys = new Set<string>();
   private messages: AppState['allMessagesByID'] | undefined;
   private unsubscribeStore: (() => void) | null = null;
+  private readonly lightDom: LightDomHosts;
 
   /**
    * `isRequestFooterEnabled` is asked on each request-footer event, so a
@@ -122,7 +128,9 @@ class ExtensionHosts {
     private readonly chatWrapper: HTMLElement | undefined,
     private readonly store: MessagesStore,
     private readonly isRequestFooterEnabled: () => boolean
-  ) {}
+  ) {
+    this.lightDom = new LightDomHosts(chatWrapper, this.onLightDomChange);
+  }
 
   getSnapshot = (): ExtensionHostsSnapshot => this.snapshot;
 
@@ -160,6 +168,7 @@ class ExtensionHosts {
     this.instance.on(this.handlers);
     this.unsubscribeStore = this.store.subscribe(this.onMessagesChange);
     this.onMessagesChange();
+    this.lightDom.connect();
     this.syncAll();
   }
 
@@ -174,6 +183,7 @@ class ExtensionHosts {
     }
     this.unsubscribeStore?.();
     this.unsubscribeStore = null;
+    this.lightDom.disconnect();
     this.syncAll();
   }
 
@@ -293,6 +303,7 @@ class ExtensionHosts {
       this.snapshot = {
         ...EMPTY_SNAPSHOT,
         inputNode: this.snapshot.inputNode,
+        lightDom: this.snapshot.lightDom,
       };
       SLOT_KINDS.forEach((kind) => this.releaseExpired(kind));
       this.notify();
@@ -354,6 +365,11 @@ class ExtensionHosts {
     this.inputHosts.forEach((host, key) => this.syncInput(key, host));
   }
 
+  private onLightDomChange = () => {
+    this.snapshot = { ...this.snapshot, lightDom: this.lightDom.entries };
+    this.notify();
+  };
+
   private releaseInput(key: string, host: InputNodeHost): void {
     this.inputHosts.delete(key);
     host.release?.();
@@ -404,10 +420,14 @@ class ExtensionHosts {
     }
   }
 
-  // A host element someone moved out of the chat element stays where it is.
   private detach(host: SlotHost): void {
-    if (this.chatWrapper && host.element.parentNode === this.chatWrapper) {
-      host.element.remove();
+    this.detachElement(host.element);
+  }
+
+  // A host element someone moved out of the chat element stays where it is.
+  private detachElement(element: HTMLElement): void {
+    if (this.chatWrapper && element.parentNode === this.chatWrapper) {
+      element.remove();
     }
   }
 

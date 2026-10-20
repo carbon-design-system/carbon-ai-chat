@@ -11,6 +11,7 @@ import { EventBus } from '../../../src/chat/events/EventBus';
 import { ExtensionHosts } from '../../../src/chat/services/extensionHosts';
 import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
+import { LIGHT_DOM_PORTAL_EVENT } from '@carbon/ai-chat-components/es/components/prompt-line/src/tiptap/render-in-light-dom.js';
 
 const noMessages = {
   getState: () => ({ allMessagesByID: {} }),
@@ -379,4 +380,116 @@ describe('extension slot hosts', () => {
       'after',
     ]);
   });
+});
+
+describe('editor light-DOM hosts', () => {
+  function setupEditor() {
+    const result = setup();
+    const shadowRoot = result.chatWrapper.attachShadow({ mode: 'open' });
+    const editor = document.createElement('div');
+    shadowRoot.append(editor);
+    const place = (htmlElement?: HTMLElement) => {
+      const container = document.createElement('span');
+      editor.append(container);
+      result.chatWrapper.dispatchEvent(
+        new CustomEvent(LIGHT_DOM_PORTAL_EVENT, {
+          detail: { container, hostTag: 'span', htmlElement },
+        })
+      );
+      return container;
+    };
+    const lightHosts = () =>
+      Array.from(result.chatWrapper.children).filter((node) =>
+        node.getAttribute('slot')?.startsWith('cds-aichat-light-dom-')
+      );
+    return { ...result, editor, place, lightHosts };
+  }
+
+  it('keeps one host per node and removes it when the node leaves the editor', async () => {
+    const { hosts, place, lightHosts } = setupEditor();
+    const chip = document.createElement('b');
+
+    const container = place(chip);
+
+    expect(lightHosts()).toHaveLength(1);
+    expect(lightHosts()[0].firstChild).toBe(chip);
+    const slot = container.querySelector('slot');
+    expect(slot.getAttribute('name')).toBe(
+      lightHosts()[0].getAttribute('slot')
+    );
+    expect(hosts.getSnapshot().lightDom).toHaveLength(1);
+
+    container.remove();
+    await Promise.resolve();
+
+    expect(lightHosts()).toHaveLength(0);
+    expect(hosts.getSnapshot().lightDom).toHaveLength(0);
+  });
+
+  it('keeps editor entries through a restart', () => {
+    const { hosts, place, fire } = setupEditor();
+    place(document.createElement('b'));
+    fire(response('r1'));
+
+    fire(restartEvent);
+
+    expect(hosts.getSnapshot().lightDom).toHaveLength(1);
+  });
+
+  it('releases its listener, observer, and store subscription on disconnect', async () => {
+    const { hosts, place, lightHosts } = setupEditor();
+    const container = place(document.createElement('b'));
+    const observerDisconnect = jest.spyOn(
+      MutationObserver.prototype,
+      'disconnect'
+    );
+
+    hosts.disconnect();
+
+    expect(observerDisconnect).toHaveBeenCalled();
+    expect(lightHosts()).toHaveLength(0);
+    place(document.createElement('i'));
+    expect(lightHosts()).toHaveLength(0);
+    expect(hosts.getSnapshot().lightDom).toHaveLength(1);
+
+    // A node deleted while disconnected is pruned on reconnect.
+    container.remove();
+    hosts.connect();
+    expect(lightHosts()).toHaveLength(0);
+    expect(hosts.getSnapshot().lightDom).toHaveLength(0);
+    observerDisconnect.mockRestore();
+  });
+
+  it('restores the host of a live node on reconnect', () => {
+    const { hosts, place, lightHosts } = setupEditor();
+    place(document.createElement('b'));
+    const [host] = lightHosts();
+
+    hosts.disconnect();
+    hosts.connect();
+
+    expect(lightHosts()).toEqual([host]);
+  });
+});
+
+it('stops following the store after disconnect', () => {
+  const listeners = new Set<() => void>();
+  const store = {
+    getState: () => ({ allMessagesByID: {} }),
+    subscribe: (listener: () => void) => {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+  };
+  const hosts = new ExtensionHosts(
+    new EventBus() as unknown as ChatInstance,
+    document.createElement('div'),
+    store,
+    () => false
+  );
+
+  hosts.connect();
+  expect(listeners.size).toBe(1);
+  hosts.disconnect();
+  expect(listeners.size).toBe(0);
 });
