@@ -135,11 +135,6 @@ export const Default = {
       control: 'text',
       description: 'Source text supplied in the citations slot.',
     },
-    '@cds-aichat-citations-toggle': {
-      action: 'citations-toggle',
-      description: 'Requests a new open state in event.detail.open.',
-      table: { category: 'events' },
-    },
   },
   render: function Render(args) {
     const [, updateArgs] = useArgs();

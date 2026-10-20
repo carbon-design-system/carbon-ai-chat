@@ -1,7 +1,6 @@
 import { ArgTypes, Markdown, Meta, Canvas } from '@storybook/addon-docs/blocks';
 import { cdnJs, cdnCss } from '../../../globals/internal/storybook-cdn';
 import * as CardStories from './card.stories';
-import * as PreviewCardStories from './preview-card.stories';
 
 <Meta of={CardStories} />
 
@@ -320,7 +319,7 @@ type Action = {
 };
 ```
 
-<ArgTypes of={CardStories.CardFooter} />
+<ArgTypes of="cds-aichat-card-footer" />
 
 ## `cds-aichat-card-steps`
 
@@ -333,4 +332,4 @@ type Step = {
 };
 ```
 
-<ArgTypes of={PreviewCardStories.CardSteps} />
+<ArgTypes of="cds-aichat-card-steps" />
