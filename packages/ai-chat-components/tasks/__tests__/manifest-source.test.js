@@ -457,6 +457,146 @@ test('rejects reassigned contract variables instead of trusting the initializer'
   );
 });
 
+test('rejects contract values assigned through nested destructuring destinations', () => {
+  for (const assignment of [
+    '({ eventName } = incoming);',
+    '({ name: eventName } = incoming);',
+    '({ eventName = fallback } = incoming);',
+    '({ name: eventName = fallback } = incoming);',
+    '({ names: [, { name: eventName = fallback }] } = incoming);',
+    '[, eventName = fallback] = incoming;',
+    '[...eventName] = incoming;',
+    '({ ...eventName } = incoming);',
+  ]) {
+    const model = fixture({
+      'src/changed.ts': `
+        let eventName: unknown = 'event-known';
+        const fallback = 'event-fallback';
+        const incoming: any = {};
+        ${assignment}
+        const result = eventName;
+      `,
+    });
+
+    assert.throws(
+      () => model.values(variable(model, 'result').initializer),
+      /src\/changed\.ts:\d+:\d+: Assigned contract value cannot be resolved statically: eventName\./,
+      assignment
+    );
+  }
+});
+
+test('tracks destructured property destinations through aliases and bracket access', () => {
+  for (const destination of [
+    'options.eventName',
+    "options['eventName']",
+    'alias.eventName',
+    "alias['eventName']",
+  ]) {
+    const model = fixture({
+      'src/changed.ts': `
+        const options = { eventName: 'event-known', sibling: 'event-other' };
+        const alias = options;
+        ({ name: ${destination} = 'event-fallback' } = { name: 'event-next' });
+        const result = options.eventName;
+        const unchanged = options.sibling;
+      `,
+    });
+
+    assert.throws(
+      () => model.values(variable(model, 'result').initializer),
+      /Assigned contract value cannot be resolved statically: options\.eventName\./,
+      destination
+    );
+    assert.deepEqual(model.values(variable(model, 'unchanged').initializer), [
+      'event-other',
+    ]);
+  }
+});
+
+test('tracks array destructuring through an alias to an array item', () => {
+  const model = fixture({
+    'src/changed.ts': `
+      const options = [{ eventName: 'event-known', sibling: 'event-other' }];
+      const alias = options;
+      [alias[0].eventName] = ['event-next'];
+      const result = options[0].eventName;
+      const unchanged = options[0].sibling;
+    `,
+  });
+
+  assert.throws(
+    () => model.values(variable(model, 'result').initializer),
+    /Assigned contract value cannot be resolved statically: options\[0\]\.eventName\./
+  );
+  assert.deepEqual(model.values(variable(model, 'unchanged').initializer), [
+    'event-other',
+  ]);
+});
+
+test('tracks every possible computed property destination', () => {
+  for (const key of ["'eventName' | 'sibling'", 'string']) {
+    const model = fixture({
+      'src/changed.ts': `
+        const options = { eventName: 'event-known', sibling: 'event-other' };
+        declare const key: ${key};
+        ({ name: options[key] } = { name: 'event-next' });
+        const first = options.eventName;
+        const second = options.sibling;
+      `,
+    });
+
+    for (const name of ['first', 'second']) {
+      assert.throws(
+        () => model.values(variable(model, name).initializer),
+        /Assigned contract value cannot be resolved statically/,
+        `${key}: ${name}`
+      );
+    }
+  }
+});
+
+test('does not treat destructuring keys or default values as assignment destinations', () => {
+  const model = fixture({
+    'src/changed.ts': `
+      let eventName = 'event-known';
+      const key = 'name';
+      const fallback = 'event-fallback';
+      ({ [key]: eventName = fallback } = { name: 'event-next' });
+      const unchangedKey = key;
+      const unchangedFallback = fallback;
+    `,
+  });
+
+  assert.deepEqual(model.values(variable(model, 'unchangedKey').initializer), [
+    'name',
+  ]);
+  assert.deepEqual(
+    model.values(variable(model, 'unchangedFallback').initializer),
+    ['event-fallback']
+  );
+});
+
+test('rejects a dispatch name changed by destructuring inside an arrow handler', () => {
+  const model = fixture({
+    'src/element.ts': `
+      class Element {
+        emit = () => {
+          let eventName = 'event-known';
+          ({ eventName } = { eventName: 'event-next' });
+          this.dispatchEvent(new CustomEvent(eventName));
+        };
+      }
+    `,
+  });
+  const event = find(model, model.ts.isNewExpression);
+
+  assert.throws(
+    () => model.values(event.arguments[0]),
+    /src\/element\.ts:5:\d+: Assigned contract value cannot be resolved statically: eventName\./
+  );
+});
+
 test('rejects changed object properties without confusing unrelated symbols', () => {
   const model = fixture({
     'src/changed.ts': `
