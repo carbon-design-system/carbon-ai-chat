@@ -132,6 +132,7 @@ class CDSAIChatTable extends LitElement {
   @state()
   private _defaultPageSize = 5;
 
+  /** Rows per page used until the user changes pagination. */
   @property({ type: Number, attribute: 'default-page-size' })
   get defaultPageSize(): number {
     return this._defaultPageSize;

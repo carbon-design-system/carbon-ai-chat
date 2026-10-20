@@ -34,6 +34,7 @@ const generateId = (segment: string) =>
 /**
  * Chain of though step
  * @element cds-aichat-chain-of-thought-step
+ * @slot title - Overrides the step header title.
  * @fires {CustomEvent<ChainOfThoughtStepToggleEventDetail>} chain-of-thought-step-beingtoggled - Requests a step toggle. Call preventDefault() to veto the toggle.
  * @fires {CustomEvent<ChainOfThoughtStepToggleEventDetail>} chain-of-thought-step-toggled - A step toggle is accepted.
  */
@@ -44,24 +45,31 @@ class CDSAIChatChainOfThoughtStep extends LitElement {
 
   static styles = [commonStyles, styles];
 
+  /** Title shown in the step header. */
   @property({ type: String, attribute: 'title' })
   title = '';
 
+  /** Number used by the generated step label. */
   @property({ type: Number, attribute: 'step-number', reflect: true })
   stepNumber = 0;
 
+  /** Overrides the generated step label. */
   @property({ type: String, attribute: 'label-text' })
   labelText = '';
 
+  /** Completion status represented by the step icon. */
   @property({ type: String, attribute: 'status' })
   status: ChainOfThoughtStepStatus = ChainOfThoughtStepStatus.SUCCESS;
 
+  /** Whether the step body is expanded. */
   @property({ type: Boolean, reflect: true, attribute: 'open' })
   open = false;
 
+  /** Lets the parent control the open state instead of toggling it internally. */
   @property({ type: Boolean, reflect: true, attribute: 'controlled' })
   controlled = false;
 
+  /** Accessible label for the success icon. */
   @property({
     type: String,
     attribute: 'status-succeeded-label-text',
@@ -69,6 +77,7 @@ class CDSAIChatChainOfThoughtStep extends LitElement {
   })
   statusSucceededLabelText = 'Succeeded';
 
+  /** Accessible label for the failure icon. */
   @property({
     type: String,
     attribute: 'status-failed-label-text',
@@ -76,6 +85,7 @@ class CDSAIChatChainOfThoughtStep extends LitElement {
   })
   statusFailedLabelText = 'Failed';
 
+  /** Accessible label for the processing indicator. */
   @property({
     type: String,
     attribute: 'status-processing-label-text',

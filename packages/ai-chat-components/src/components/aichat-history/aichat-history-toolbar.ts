@@ -41,6 +41,8 @@ export interface SearchAttributes {
  *
  * @fires {CustomEvent<null>} chat-history-new-chat-click - The new chat button is activated.
  * @fires {CustomEvent<HistorySearchInputEventDetail>} cds-search-input - The Carbon search field value changes.
+ * @slot actions-start - Actions before the new chat button.
+ * @slot actions-end - Actions after the new chat button.
  */
 class CDSAIChatHistoryToolbar extends LitElement {
   static get is() {
@@ -66,6 +68,8 @@ class CDSAIChatHistoryToolbar extends LitElement {
   searchOff;
 
   /**
+   * Accessible label for the search clear button.
+   *
    * @deprecated Use `searchAttributes['close-button-label-text']` instead.
    * This property will be removed in a future major version.
    */
@@ -117,7 +121,7 @@ class CDSAIChatHistoryToolbar extends LitElement {
   /**
    * Handles new chat button click event
    */
-  _handleNewChatButtonClick = () => {
+  private _handleNewChatButtonClick = () => {
     this.dispatchEvent(
       new CustomEvent<null>('chat-history-new-chat-click', {
         bubbles: true,

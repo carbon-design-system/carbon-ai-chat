@@ -55,6 +55,7 @@ class CDSAIChatWorkspaceShellFooter extends LitElement {
   @property({ type: String, reflect: true })
   slot = 'footer';
 
+  /** Actions rendered in the workspace footer. */
   @property({ type: Array, reflect: false })
   actions: Action[] = [];
 
