@@ -8,7 +8,6 @@
  */
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useSyncExternalStore } from 'use-sync-external-store/shim/index.js';
 import { ChatContext } from './contexts/ChatContext';
 import { AriaAnnouncerRegion } from './components/aria/AriaAnnouncerRegion';
 import { ServiceManager } from './services/ServiceManager';
@@ -60,9 +59,9 @@ interface ChatAppEntryProps {
   removeEmptyCustomMessageFooterHost?: boolean;
   /**
    * Stable live check owned by the container: returns true when the host has
-   * set a `renderCustomRequestFooter` callback. ORed with the ref-based check
-   * so a web-component host whose property reaches the element before the
-   * React commit still gates the tracker correctly.
+   * set a `renderCustomRequestFooter` callback. ORed with the React prop, so a
+   * web-component property that reaches the element before the React commit
+   * still collects footers.
    */
   isCustomRequestFooterEnabled?: () => boolean;
   renderWriteableElements?: RenderWriteableElementResponse;
@@ -83,7 +82,7 @@ interface ChatAppEntryProps {
  * signals computed here (e.g. `writeableElementsPresentKeys`). The raw host
  * render-props (`renderUserDefinedResponse`, `renderCustomMessageFooter`, and the
  * `renderWriteableElements` node map) flow only to their isolated, individually
- * memoized portal siblings of `AppShell` below — those re-render independently.
+ * memoized portal siblings of `AppShell` — those re-render independently.
  */
 function ChatAppEntry({
   serviceManager,
@@ -103,26 +102,25 @@ function ChatAppEntry({
   renderWriteableElements,
   chatWrapper,
 }: ChatAppEntryProps) {
-  // The prop can arrive after boot — behind a feature flag, or with async
-  // config — so the service asks on each event.
+  // Request footers arrive before the render gate opens, as for history
+  // inserted in onBeforeRender, while the adapter cannot report yet. The
+  // service asks on each event, so a prop that arrives later still counts.
   const renderCustomRequestFooterRef = useRef(renderCustomRequestFooter);
   renderCustomRequestFooterRef.current = renderCustomRequestFooter;
   const isCustomRequestFooterEnabledRef = useRef(isCustomRequestFooterEnabled);
   isCustomRequestFooterEnabledRef.current = isCustomRequestFooterEnabled;
 
+  // One per mount: the React wrapper keys this entry by mount, so the chat
+  // wrapper never changes for it.
   const [hosts] = useState(
     () =>
       new ExtensionHosts(
         instance,
+        chatWrapper,
         () =>
           Boolean(renderCustomRequestFooterRef.current) ||
           Boolean(isCustomRequestFooterEnabledRef.current?.())
       )
-  );
-  const records = useSyncExternalStore(
-    hosts.subscribe,
-    hosts.getSnapshot,
-    hosts.getSnapshot
   );
 
   const onListenersReadyRef = useRef(onListenersReady);
@@ -171,18 +169,14 @@ function ChatAppEntry({
 
   return (
     <ChatContext.Provider value={viewState}>
-      <AppShell
-        serviceManager={serviceManager}
-        hostElement={serviceManager.customHostElement}
-        writeableElementsPresentKeys={writeableElementsPresentKeys}
-      />
+      {/* The extension adapters come first: their layout effects attach
+          the hosts before the shell's own layout effects measure. */}
       {renderUserDefinedResponse && (
         <UserDefinedResponsePortalsContainer
           chatInstance={instance}
           renderUserDefinedResponse={renderUserDefinedResponse}
           removeEmptyHost={removeEmptyUserDefinedResponseHost}
-          userDefinedResponseEventsBySlot={records.userDefinedResponse}
-          chatWrapper={chatWrapper}
+          hosts={hosts}
         />
       )}
 
@@ -191,8 +185,7 @@ function ChatAppEntry({
           chatInstance={instance}
           renderCustomMessageFooter={renderCustomMessageFooter}
           removeEmptyHost={removeEmptyCustomMessageFooterHost}
-          customFooterEventsBySlot={records.customFooter}
-          chatWrapper={chatWrapper}
+          hosts={hosts}
         />
       )}
 
@@ -200,8 +193,7 @@ function ChatAppEntry({
         <CustomRequestFooterPortalsContainer
           chatInstance={instance}
           renderCustomRequestFooter={renderCustomRequestFooter}
-          customRequestFooterEventsBySlot={records.customRequestFooter}
-          chatWrapper={chatWrapper}
+          hosts={hosts}
         />
       )}
 
@@ -214,6 +206,14 @@ function ChatAppEntry({
 
       <LightDomPortalsContainer chatWrapper={chatWrapper} />
 
+      <AppShell
+        serviceManager={serviceManager}
+        hostElement={serviceManager.customHostElement}
+        writeableElementsPresentKeys={writeableElementsPresentKeys}
+      />
+
+      {/* After the shell: inline input-node hosts mount into targets the
+          sent bubbles register. */}
       {renderUserDefinedInputNode && (
         <InputNodePortalsContainer
           chatInstance={instance}
