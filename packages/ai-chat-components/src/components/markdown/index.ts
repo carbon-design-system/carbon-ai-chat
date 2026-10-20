@@ -31,3 +31,10 @@ export type {
 } from './src/utils/plugin-host-container.js';
 export type { MarkdownItPlugin, TokenTree } from './src/markdown-token-tree.js';
 export { markdownToMarkdownItTokens } from './src/markdown-token-tree.js';
+
+export {
+  renderInlineMarkdown,
+  InlineMarkdownError,
+  inlineMarkdownStyles,
+} from './src/inline-markdown.js';
+export type { InlineMarkdownOptions } from './src/inline-markdown.js';

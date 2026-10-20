@@ -11,8 +11,8 @@
 // custom element module is imported by re-exporting its exports.
 // This prevents bundlers (and our own multi-entry Rollup build)
 // from pruning the side-effect-only import.
-export { default as __cds_aichat_container_register } from '../cds-aichat-container';
-import '../cds-aichat-container';
+export { default as __cds_aichat_container_register } from '../cds-aichat-container/cds-aichat-container';
+import '../cds-aichat-container/cds-aichat-container';
 import { installReactDomRenderer } from '../shared/react-dom-renderer';
 
 import { html } from 'lit';
@@ -263,10 +263,10 @@ class ChatCustomElement extends FlattenedConfigElement {
   }
 
   disconnectedCallback() {
-    this.pluginHostController.disconnect();
     // Matches the inner container: a move keeps the running chat.
     queueMicrotask(() => {
       if (!this.isConnected) {
+        this.pluginHostController.disconnect();
         this.releaseMount();
       }
     });

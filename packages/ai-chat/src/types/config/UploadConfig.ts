@@ -12,7 +12,6 @@ import { StructuredData } from '../messaging/Messages';
 /**
  * Configuration for file upload behavior in the chat input.
  *
- * @experimental
  * @category Config
  */
 export interface UploadConfig {
@@ -69,8 +68,6 @@ export interface UploadConfig {
    * @param file - The `File` object selected by the user.
    * @param abortSignal - Fires if the user removes the pending upload before it
    *   completes, or if the chat is destroyed.
-   *
-   * @experimental
    */
   onFileUpload?: (
     file: File,

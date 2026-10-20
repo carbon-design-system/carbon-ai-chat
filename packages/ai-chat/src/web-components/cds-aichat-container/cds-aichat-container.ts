@@ -322,12 +322,12 @@ class ChatContainer extends FlattenedConfigElement {
   }
 
   disconnectedCallback() {
-    this.pluginHostController.disconnect();
     // A move is a detach and reattach in one task, as when React reorders
     // keyed siblings. Keep the running chat through it; release only when the
     // element is still detached once the task's microtasks run.
     queueMicrotask(() => {
       if (!this.isConnected) {
+        this.pluginHostController.disconnect();
         this.releaseMount();
       }
     });

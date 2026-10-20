@@ -160,6 +160,7 @@
   "scripts": {
     "build": "rollup -c ./tasks/rollup.aichat.js",
     "build:docs": "npm run build && npm run docs",
+    "clean": "node -e \"fs.rmSync('dist', { recursive: true, force: true })\"",
     "docs": "typedoc",
     "docs:api": "cross-env WRITE_API_INDEX=1 typedoc",
     "docs:api:check": "cross-env WRITE_API_INDEX=1 typedoc && git diff --exit-code -- docs/api",

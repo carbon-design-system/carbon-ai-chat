@@ -8,6 +8,8 @@ Load this before writing findings. Choose the gates for this diff and check rule
 
 **Reuse checks for the same code and setup.** Record the command, revision or working-tree state, result, and limits. Rerun when edits, failures, or open risks make the old result stale. A review alone does not make it stale.
 
+**Establish build freshness before a test that reads built output.** Follow the [build preflight](../../../../references/commands.md#build-preflight). Without its evidence, report the result, pass or fail, as unverified. File a failure as a finding once it reproduces on a current build.
+
 **Coordinate builds and watchers before starting them.** Follow the root [AGENTS.md](../../../../AGENTS.md) and reuse the user's current answer. This includes tests that launch a build, such as the demo's Playwright server. Tests that do not build need no blanket approval. State which checks were blocked or not run.
 
 ## Flag the rules no gate catches

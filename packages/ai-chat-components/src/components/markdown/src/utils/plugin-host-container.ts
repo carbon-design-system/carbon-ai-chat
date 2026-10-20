@@ -57,8 +57,8 @@ export interface MarkdownPluginFallbackMountDetail {
 }
 
 /**
- * Mount detail for a `customRenderers` host. It carries a live element the
- * markdown element created, keeps writing to across renders, and removes.
+ * Mount detail for a live custom-renderer host or projected inline run. Its
+ * renderer creates the element, keeps writing to it across renders, and removes it.
  * Claiming it means re-parenting that element into your own light DOM,
  * synchronously, and nothing else: never rewrite its content, never style it,
  * never remove it. The markdown element renders the `<slot>` hop that projects
@@ -82,10 +82,9 @@ export interface MarkdownCustomRendererMountDetail {
    */
   element: HTMLElement;
   /**
-   * True when the claimed output is inline flow content. Always `false` here:
-   * the markdown element hosts every `customRenderers` result in a `<div>` it
-   * created, so a claimant has no host tag to choose. Declared on both members
-   * so a listener can read it before narrowing on `kind`.
+   * True for a projected inline run, false for a block custom-renderer host.
+   * The renderer supplies the host tag, so the claimant only moves it.
+   * Declared on both members so a listener can read it before narrowing on `kind`.
    */
   isInline: boolean;
 }
