@@ -205,7 +205,7 @@ function ChatAppEntry({
         />
       )}
 
-      <LightDomPortalsContainer chatWrapper={chatWrapper} />
+      <LightDomPortalsContainer hosts={hosts} />
 
       <AppShell
         serviceManager={serviceManager}
