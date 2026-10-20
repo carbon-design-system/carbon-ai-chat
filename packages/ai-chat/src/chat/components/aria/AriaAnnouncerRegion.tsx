@@ -15,8 +15,8 @@ interface AriaAnnouncerRegionProps {
 }
 
 /**
- * The chat's live regions. Render one per chat: a second copy would announce
- * everything twice.
+ * The chat's live regions. Render one per chat: the chat has one announcer, so
+ * a second region stays empty, and unmounting either one silences the chat.
  */
 function AriaAnnouncerRegion({ announcer }: AriaAnnouncerRegionProps) {
   const containerRef = useRef<HTMLDivElement>(null);
