@@ -77,7 +77,8 @@ function unwrap(ts, node) {
   while (
     ts.isParenthesizedExpression(node) ||
     ts.isAsExpression(node) ||
-    ts.isSatisfiesExpression(node)
+    ts.isSatisfiesExpression(node) ||
+    ts.isNonNullExpression(node)
   ) {
     node = node.expression;
   }
@@ -87,66 +88,333 @@ function unwrap(ts, node) {
 function metadataWrites(model) {
   const { ts } = model;
   const writes = new Map();
-  const visit = (node) => {
-    if (ts.isFunctionLike(node)) {
-      return;
+  const owners = metadataOwners(model);
+  const record = (target, node) => {
+    for (const symbol of owners(target)) {
+      writes.set(symbol, node);
     }
+  };
+  const visit = (node) => {
     if (
       ts.isBinaryExpression(node) &&
       node.operatorToken.kind >= ts.SyntaxKind.FirstAssignment &&
       node.operatorToken.kind <= ts.SyntaxKind.LastAssignment
     ) {
-      const target = metadataWriteTarget(ts, node.left);
-      const symbol = target && model.symbol(target);
-      if (symbol) {
-        writes.set(symbol, node);
+      const target = unwrap(ts, node.left);
+      if (ts.isIdentifier(target)) {
+        const symbol = model.symbol(target);
+        if (symbol) {
+          writes.set(symbol, node);
+        }
+      } else {
+        record(target, node);
+      }
+      if (mutableMetadata(model, node.right)) {
+        record(node.right, node);
+      }
+    }
+    if (ts.isDeleteExpression(node)) {
+      record(node.expression, node);
+    }
+    if (
+      (ts.isPrefixUnaryExpression(node) || ts.isPostfixUnaryExpression(node)) &&
+      [ts.SyntaxKind.PlusPlusToken, ts.SyntaxKind.MinusMinusToken].includes(
+        node.operator
+      )
+    ) {
+      record(node.operand, node);
+    }
+    if (ts.isCallExpression(node) && !readOnlyMetadataCall(model, node)) {
+      node.arguments
+        .filter((argument) => mutableMetadata(model, argument))
+        .forEach((argument) => record(argument, node));
+      if (
+        ts.isPropertyAccessExpression(node.expression) ||
+        ts.isElementAccessExpression(node.expression)
+      ) {
+        record(node.expression, node);
       }
     }
     ts.forEachChild(node, visit);
   };
   model.program
-    .getRootFileNames()
-    .forEach((file) => visit(model.program.getSourceFile(file)));
+    .getSourceFiles()
+    .filter(
+      (source) =>
+        source.fileName.startsWith(`${model.root}/`) &&
+        !source.isDeclarationFile
+    )
+    .forEach(visit);
   return writes;
 }
 
-function metadataWriteTarget(ts, input) {
-  let target = input;
-  const names = [];
-  while (
-    ts.isPropertyAccessExpression(target) ||
-    ts.isElementAccessExpression(target)
-  ) {
-    names.push(
-      ts.isPropertyAccessExpression(target)
-        ? target.name.text
-        : target.argumentExpression.getText().replace(/^['"]|['"]$/g, '')
-    );
-    target = target.expression;
+function storyAnnotations(model) {
+  const symbols = new Set();
+  for (const source of model.program.getSourceFiles()) {
+    if (!/\.stories\.[jt]sx?$/.test(source.fileName)) {
+      continue;
+    }
+    const module = model.checker.getSymbolAtLocation(source);
+    if (!module) {
+      continue;
+    }
+    for (const entry of model.checker.getExportsOfModule(module)) {
+      const symbol = exportedSymbol(model, source, entry.name);
+      symbols.add(symbol);
+      const declaration = symbol?.valueDeclaration;
+      if (declaration && model.ts.isExportAssignment(declaration)) {
+        symbols.add(model.symbol(declaration.expression));
+      }
+    }
   }
-  const relevant = [
-    'argTypes',
-    'parameters',
-    'includeStories',
-    'excludeStories',
-    'table',
-    'description',
-    'docs',
-    'disable',
-    'page',
-    'include',
-    'exclude',
-  ];
-  return !names.length ||
-    names.some((name) => relevant.includes(name) || /^on[A-Z]/.test(name))
-    ? target
-    : undefined;
+  return symbols;
+}
+
+function annotationAlias(model, node, annotations, seen = new Set()) {
+  if (!node) {
+    return false;
+  }
+  node = unwrap(model.ts, node);
+  if (!model.ts.isIdentifier(node)) {
+    return false;
+  }
+  const symbol = model.symbol(node);
+  if (!symbol || seen.has(symbol)) {
+    return false;
+  }
+  if (annotations.has(symbol)) {
+    return true;
+  }
+  const initializer = symbol.valueDeclaration?.initializer;
+  return (
+    !!initializer &&
+    annotationAlias(model, initializer, annotations, new Set([...seen, symbol]))
+  );
+}
+
+function bindingSource(ts, declaration) {
+  const names = [];
+  let owner = declaration;
+  while (owner && !ts.isVariableDeclaration(owner)) {
+    if (ts.isBindingElement(owner)) {
+      names.unshift((owner.propertyName ?? owner.name).text);
+    }
+    owner = owner.parent;
+  }
+  return { initializer: owner?.initializer, name: names[0] };
+}
+
+function returnedValues(model, node) {
+  if (!node.body) {
+    return [];
+  }
+  if (!model.ts.isBlock(node.body)) {
+    return [node.body];
+  }
+  const values = [];
+  model.visit(node.body, (child) => {
+    if (model.ts.isReturnStatement(child) && child.expression) {
+      values.push(child.expression);
+    }
+  });
+  return values;
+}
+
+function annotationRuntimeValues(model, input, name, seen = new Set()) {
+  if (!input) {
+    return [];
+  }
+  const { ts } = model;
+  const node = unwrap(ts, input);
+  if (ts.isIdentifier(node)) {
+    const symbol = model.symbol(node);
+    if (!symbol || seen.has(symbol)) {
+      return [];
+    }
+    const declaration = symbol.valueDeclaration;
+    const value =
+      declaration && ts.isExportAssignment(declaration)
+        ? declaration.expression
+        : declaration?.initializer;
+    return annotationRuntimeValues(
+      model,
+      value,
+      name,
+      new Set([...seen, symbol])
+    );
+  }
+  if (ts.isCallExpression(node)) {
+    return annotationRuntimeValues(model, inlineReturn(ts, node), name, seen);
+  }
+  if (!ts.isObjectLiteralExpression(node)) {
+    return [];
+  }
+  for (const property of [...node.properties].reverse()) {
+    if (property.name?.text === name) {
+      return [property.initializer ?? property.name];
+    }
+    if (ts.isSpreadAssignment(property)) {
+      const values = annotationRuntimeValues(
+        model,
+        property.expression,
+        name,
+        seen
+      );
+      if (values.length) {
+        return values;
+      }
+    }
+  }
+  return [];
+}
+
+function metadataOwners(model) {
+  const { ts } = model;
+  const annotations = storyAnnotations(model);
+
+  function memberOwners(node, seen) {
+    const name = ts.isPropertyAccessExpression(node)
+      ? node.name.text
+      : ts.isStringLiteralLike(node.argumentExpression)
+        ? node.argumentExpression.text
+        : undefined;
+    if (
+      ignoredProperties.has(name) &&
+      annotationAlias(model, node.expression, annotations)
+    ) {
+      return annotationRuntimeValues(model, node.expression, name).flatMap(
+        (value) => read(value, seen)
+      );
+    }
+    return read(node.expression, seen);
+  }
+
+  function referenceOwners(node, seen) {
+    const symbol = model.symbol(node);
+    if (!symbol || seen.has(symbol)) {
+      return [];
+    }
+    const declaration = symbol.valueDeclaration ?? symbol.declarations?.[0];
+    const binding =
+      declaration &&
+      ts.isBindingElement(declaration) &&
+      bindingSource(ts, declaration);
+    if (
+      binding &&
+      ignoredProperties.has(binding.name) &&
+      annotationAlias(model, binding.initializer, annotations)
+    ) {
+      return [
+        symbol,
+        ...annotationRuntimeValues(
+          model,
+          binding.initializer,
+          binding.name
+        ).flatMap((value) => read(value, seen)),
+      ];
+    }
+    const initializer = binding
+      ? binding.initializer
+      : declaration && ts.isFunctionLike(declaration)
+        ? declaration
+        : declaration?.initializer;
+    return [
+      symbol,
+      ...(mutableMetadata(model, node)
+        ? read(initializer, new Set([...seen, symbol]))
+        : []),
+    ];
+  }
+
+  function read(input, seen = new Set()) {
+    if (!input) {
+      return [];
+    }
+    const node = unwrap(ts, input);
+    if (ts.isIdentifier(node)) {
+      return referenceOwners(node, seen);
+    }
+    if (
+      ts.isPropertyAccessExpression(node) ||
+      ts.isElementAccessExpression(node)
+    ) {
+      return memberOwners(node, seen);
+    }
+    if (ts.isObjectLiteralExpression(node)) {
+      return node.properties.flatMap((property) =>
+        read(property.initializer ?? property.expression ?? property.name, seen)
+      );
+    }
+    if (ts.isArrayLiteralExpression(node)) {
+      return node.elements.flatMap((element) => read(element, seen));
+    }
+    if (ts.isSpreadElement(node)) {
+      return read(node.expression, seen);
+    }
+    if (ts.isConditionalExpression(node)) {
+      return [node.whenTrue, node.whenFalse].flatMap((branch) =>
+        read(branch, seen)
+      );
+    }
+    if (ts.isBinaryExpression(node)) {
+      return [node.left, node.right].flatMap((branch) => read(branch, seen));
+    }
+    if (ts.isFunctionLike(node)) {
+      return returnedValues(model, node).flatMap((value) => read(value, seen));
+    }
+    if (ts.isCallExpression(node) && !readOnlyMetadataCall(model, node)) {
+      return read(node.expression, seen);
+    }
+    return [];
+  }
+
+  return read;
+}
+
+function mutableMetadata(model, node) {
+  const { TypeFlags } = model.ts;
+  const primitive =
+    TypeFlags.StringLike |
+    TypeFlags.NumberLike |
+    TypeFlags.BooleanLike |
+    TypeFlags.BigIntLike |
+    TypeFlags.ESSymbolLike |
+    TypeFlags.Null |
+    TypeFlags.Undefined |
+    TypeFlags.Void |
+    TypeFlags.Never;
+  return !(model.checker.getTypeAtLocation(node).flags & primitive);
+}
+
+function readOnlyMetadataCall(model, node) {
+  if (importedHelper(model, node.expression)) {
+    return true;
+  }
+  const { ts } = model;
+  const callee = unwrap(ts, node.expression);
+  if (
+    !ts.isPropertyAccessExpression(callee) ||
+    callee.name.text !== 'keys' ||
+    callee.expression.getText() !== 'Object'
+  ) {
+    return false;
+  }
+  return model
+    .symbol(callee.expression)
+    ?.declarations?.some((declaration) =>
+      /[\\/]typescript[\\/]lib[\\/]lib\..*\.d\.ts$/.test(
+        declaration.getSourceFile().fileName
+      )
+    );
 }
 
 function assertConstant(model, writes, symbol) {
   const write = writes.get(symbol);
   if (write) {
-    model.fail(write, 'Define documentation metadata without later writes.');
+    model.fail(
+      write,
+      'Define documentation metadata without later writes or escaping calls.'
+    );
   }
 }
 
@@ -365,6 +633,9 @@ export function sourceValues(model, registry = []) {
     }
     const next = new Set([...seen, input]);
     const node = unwrap(ts, input);
+    if (wrappers.has(model.symbol(node))) {
+      return unresolved;
+    }
     const primitive = primitiveValue(ts, node);
     if (primitive !== unresolved) {
       return primitive;

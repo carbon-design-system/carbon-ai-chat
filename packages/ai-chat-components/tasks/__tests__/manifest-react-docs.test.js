@@ -6,6 +6,7 @@
  */
 
 import assert from 'node:assert/strict';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
 import { test } from 'node:test';
@@ -367,6 +368,177 @@ test('rejects later metadata writes rather than trusting an initializer', () => 
     '<Rows of={Examples.Default} />',
     /without later writes/,
     story + '\nDefault.argTypes.onChange = { table: { disable: true } };'
+  );
+});
+
+test('rejects mutation inside an imported helper outside program roots', async (context) => {
+  const directory = await mkdtemp(path.join(tmpdir(), 'manifest-docs-import-'));
+  context.after(() => rm(directory, { recursive: true, force: true }));
+  const storyFile = path.join(directory, 'src/stories/button.stories.jsx');
+  const helperFile = path.join(directory, 'src/stories/hide-rows.js');
+  const files = {
+    'src/react/button.ts': 'export const Button = {}; export default Button;',
+    '.storybook-react/manifest-event-arg-types.js':
+      'export const manifestEventArgTypes = () => { throw new Error("Do not execute browser imports"); };',
+    'src/stories/button.stories.jsx': `import { hide } from './hide-rows.js';\n${story}\nhide();`,
+    'src/stories/hide-rows.js': `
+      import { Default } from './button.stories.jsx';
+      export function hide() {
+        const rows = Default.argTypes;
+        rows.onChange.table = { disable: true };
+      }
+    `,
+  };
+  await Promise.all(
+    Object.entries(files).map(async ([file, text]) => {
+      const filename = path.join(directory, file);
+      await mkdir(path.dirname(filename), { recursive: true });
+      await writeFile(filename, text);
+    })
+  );
+  const model = readSource({ root: directory, additionalFiles: [storyFile] });
+  assert.ok(
+    model.program
+      .getSourceFiles()
+      .some((source) => source.fileName === helperFile)
+  );
+  assert.ok(!model.program.getRootFileNames().includes(helperFile));
+  const errors = validateReactDocs(model, registry, {
+    [path.join(directory, 'src/stories/button.mdx')]:
+      imports + '<Rows of={Examples.Default} />',
+  });
+  assert.match(
+    errors.join('\n'),
+    /hide-rows\.js:\d+:\d+: Define documentation metadata without later writes/
+  );
+});
+
+for (const mutation of [
+  'const rows = Default.argTypes; rows.onChange = { table: { disable: true } };',
+  'const alias = Default; const rows = alias.argTypes; rows.onChange.table.disable = true;',
+  'const { argTypes: rows } = Default; rows.onChange.table.disable = true;',
+  'const { argTypes: { onChange: row } } = Default; row.table.disable = true;',
+  'const table = Default.argTypes.onChange.table; table.disable = true;',
+  'const filters = Default.parameters.docs.argTypes.include; filters[0] = "other";',
+  'Object.assign(Default.argTypes.onChange, { table: { disable: true } });',
+  'Reflect.set(Default.argTypes.onChange, "table", { disable: true });',
+  'hideRows(Default.argTypes);',
+  'hideRows({ nested: Default.argTypes });',
+  'hideRows({ args: Default.argTypes });',
+  'const escaped = { args: Default.argTypes }; hideRows(escaped);',
+  'const escaped = { args: Default.argTypes }; escaped.args.onChange.table.disable = true;',
+  'let rows; rows = Default.argTypes; rows.onChange.table.disable = true;',
+  'hideRows(() => Default.argTypes);',
+  'function getRows() { return Default.argTypes; } hideRows(getRows);',
+  'function getRows() { return Default.argTypes; } const rows = getRows(); rows.onChange.table.disable = true;',
+  'const helpers = { getRows() { return Default.argTypes; } }; const rows = helpers.getRows(); rows.onChange.table.disable = true;',
+  'hideRows(ready && Default.argTypes);',
+  'function hideRows() { Default.argTypes.onChange.table.disable = true; } hideRows();',
+  'const rows = Default.argTypes; rows.hide();',
+  'const rows = Default.argTypes; delete rows.onChange;',
+  'Default.args = Default.argTypes; Default.args.onChange.table.disable = true;',
+  'export const Other = { args: Default.argTypes }; Other.args.onChange.table.disable = true;',
+  'export const Other = { args: Default.argTypes }; const { args: { onChange: row } } = Other; row.table.disable = true;',
+]) {
+  test(`rejects metadata mutation or escape: ${mutation}`, () => {
+    const source = mutation.includes('Default.parameters')
+      ? story.replace(
+          'argTypes: { ...callbackRows(Button) }',
+          'argTypes: { ...callbackRows(Button) }, parameters: { docs: { argTypes: { include: ["onChange"] } } }'
+        )
+      : story;
+    fails(
+      '<Rows of={Examples.Default} />',
+      /button\.stories\.jsx:\d+:\d+: Define documentation metadata without later writes/,
+      `${source}\n${mutation}`
+    );
+  });
+}
+
+test('keeps immutable aliases, spreads, keys and unrelated runtime mutations', () => {
+  const source = `${helper}\nimport Button from '../react/button.js';
+    const rows = callbackRows(Button);
+    const alias = rows;
+    const keys = Object.keys(alias);
+    const meta = { title: 'Button' };
+    export default meta;
+    export const Default = { argTypes: { ...alias }, args: { keys } };
+    const runtime = { count: 0 };
+    function update() { runtime.count++; Object.assign(runtime, { count: 2 }); }
+    let detached = Default.argTypes; detached = {};
+    inspect(meta.title);
+  `;
+  assert.deepEqual(check('<Rows of={Examples.Default} />', source), []);
+});
+
+test('does not trust a shadowed Object.keys as a read-only helper', () => {
+  fails(
+    '<Rows of={Examples.Default} />',
+    /without later writes/,
+    `${story}\nconst Object = { keys(value) { value.onChange.table.disable = true; } }; Object.keys(Default.argTypes);`
+  );
+});
+
+test('keeps runtime-only story fields outside documentation mutation checks', () => {
+  const source = `${story}
+    Default.args = { value: 'before' };
+    Default.args.value = 'after';
+    const args = Default.args; args.value = 'changed';
+    const { args: values } = Default; Object.assign(values, { value: 'again' });
+    Default.render = () => null; Default.render();
+    Default.play = () => {}; run(Default.play);
+  `;
+  assert.deepEqual(check('<Rows of={Examples.Default} />', source), []);
+});
+
+test('rejects an initializer shared by documentation and runtime args', () => {
+  const source = `${helper}\nimport Button from '../react/button.js';
+    const rows = callbackRows(Button);
+    export default { title: 'Button' };
+    export const Default = { argTypes: rows, args: rows };
+    Default.args.onChange.table.disable = true;
+  `;
+  fails('<Rows of={Examples.Default} />', /without later writes/, source);
+  const composed = source.replace(
+    'export const Default = { argTypes: rows, args: rows };',
+    'const shared = { args: rows }; export const Default = { ...shared, argTypes: rows };'
+  );
+  fails('<Rows of={Examples.Default} />', /without later writes/, composed);
+  assert.deepEqual(
+    check(
+      '<Rows of={Examples.Default} />',
+      composed
+        .replace(
+          '...shared, argTypes: rows',
+          '...shared, args: { value: "before" }, argTypes: rows'
+        )
+        .replace(
+          'Default.args.onChange.table.disable = true;',
+          'Default.args.value = "after";'
+        )
+    ),
+    []
+  );
+});
+
+test('does not count conditional callback rows but preserves value controls', () => {
+  fails(
+    '<Rows of={Examples.Default} />',
+    /Show onChange/,
+    story.replace(
+      '...callbackRows(Button)',
+      '...callbackRows(Button), onChange: { ...callbackRows(Button).onChange, if: { arg: "showEvents", truthy: true } }'
+    )
+  );
+  assert.deepEqual(
+    check(
+      '<Rows of={Examples.Default} />',
+      story.replace(
+        '...callbackRows(Button)',
+        '...callbackRows(Button), value: { if: { arg: "showValue", truthy: true }, control: "text" }'
+      )
+    ),
+    []
   );
 });
 
