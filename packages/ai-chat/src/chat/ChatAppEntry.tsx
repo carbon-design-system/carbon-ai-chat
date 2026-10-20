@@ -117,6 +117,7 @@ function ChatAppEntry({
       new ExtensionHosts(
         instance,
         chatWrapper,
+        serviceManager.store,
         () =>
           Boolean(renderCustomRequestFooterRef.current) ||
           Boolean(isCustomRequestFooterEnabledRef.current?.())
@@ -218,7 +219,7 @@ function ChatAppEntry({
         <InputNodePortalsContainer
           chatInstance={instance}
           renderUserDefinedInputNode={renderUserDefinedInputNode}
-          chatWrapper={chatWrapper}
+          hosts={hosts}
         />
       )}
 

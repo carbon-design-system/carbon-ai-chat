@@ -13,6 +13,7 @@ import ReactDOM from 'react-dom';
 import { isElement } from '../../utils/domUtils';
 import type {
   ExtensionHosts,
+  HostKind,
   SlotKind,
 } from '../../services/extensionHosts';
 
@@ -71,7 +72,7 @@ function RendererReport({
   kind,
 }: {
   hosts: ExtensionHosts;
-  kind: SlotKind;
+  kind: HostKind;
 }): null {
   useLayoutEffect(() => {
     hosts.setRendererPresent(kind, true);
@@ -92,7 +93,7 @@ function ContentReport({
   host,
 }: {
   hosts: ExtensionHosts;
-  kind: SlotKind;
+  kind: HostKind;
   slot: string;
   /** Re-reports when the service replaces the slot's host. */
   host: HTMLElement;
@@ -124,4 +125,4 @@ function ExtensionSlotHost({
   );
 }
 
-export { SlotHostPortal, ExtensionSlotHost, RendererReport };
+export { SlotHostPortal, ExtensionSlotHost, RendererReport, ContentReport };

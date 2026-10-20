@@ -14,6 +14,17 @@ import {
   type BusEventCustomRequestFooterSlot,
   type BusEventUserDefinedResponse,
 } from '../../types/events/eventBusTypes';
+import prefix from '@carbon/ai-chat-components/es/globals/settings.js';
+import {
+  mountHost,
+  mountInlineHost,
+  unmountHost,
+} from '../components/portals/inputNodeHosts';
+import {
+  collectSlotEntries,
+  type InputNodeSlotEntry,
+} from '../utils/inputNodeSlots';
+import type { AppState } from '../../types/state/AppState';
 import type { ChatInstance } from '../../types/instance/ChatInstance';
 import type { TypeAndHandler } from '../../types/instance/EventHandlers';
 import type {
@@ -32,9 +43,17 @@ interface ExtensionHostsSnapshot {
   readonly customRequestFooter: Readonly<
     Record<string, RenderCustomRequestFooterState>
   >;
+  /** Derived from the store's messages; stable while they are. */
+  readonly inputNode: readonly InputNodeSlotEntry[];
 }
 
-type SlotKind = keyof ExtensionHostsSnapshot;
+type SlotKind = Exclude<keyof ExtensionHostsSnapshot, 'inputNode'>;
+type HostKind = SlotKind | 'inputNode';
+
+interface MessagesStore {
+  getState(): Pick<AppState, 'allMessagesByID'>;
+  subscribe(listener: () => void): () => void;
+}
 
 const SLOT_KINDS: SlotKind[] = [
   'userDefinedResponse',
@@ -47,16 +66,28 @@ interface SlotHost {
   hasContent: boolean;
 }
 
+interface InputNodeHost extends SlotHost {
+  isInline: boolean;
+  isToken: boolean;
+  release: (() => void) | null;
+}
+
 const EMPTY_SNAPSHOT: ExtensionHostsSnapshot = {
   userDefinedResponse: {},
   customFooter: {},
   customRequestFooter: {},
+  inputNode: [],
 };
+
+function isTokenNode(entry: InputNodeSlotEntry): boolean {
+  const { type } = entry.state.node;
+  return type === 'mention' || type === 'command';
+}
 
 /**
  * Owns one chat's extension content outside React: the render records for
- * user-defined responses, message footers, and request footers, and the
- * light-DOM host each record renders into. Each kind's records stay the same
+ * user-defined responses, message footers, request footers, and sent input
+ * nodes, and the light-DOM host each record renders into. Each kind's records stay the same
  * object until that kind changes, so a view that renders one kind re-renders
  * only for it.
  *
@@ -70,12 +101,16 @@ class ExtensionHosts {
   private snapshot = EMPTY_SNAPSHOT;
   private listeners = new Set<() => void>();
   private handlers: TypeAndHandler[] | null = null;
-  private renderers = new Set<SlotKind>();
+  private renderers = new Set<HostKind>();
   private hosts: Record<SlotKind, Map<string, SlotHost>> = {
     userDefinedResponse: new Map(),
     customFooter: new Map(),
     customRequestFooter: new Map(),
   };
+  private inputHosts = new Map<string, InputNodeHost>();
+  private inputKeys = new Set<string>();
+  private messages: AppState['allMessagesByID'] | undefined;
+  private unsubscribeStore: (() => void) | null = null;
 
   /**
    * `isRequestFooterEnabled` is asked on each request-footer event, so a
@@ -85,6 +120,7 @@ class ExtensionHosts {
   constructor(
     private readonly instance: ChatInstance,
     private readonly chatWrapper: HTMLElement | undefined,
+    private readonly store: MessagesStore,
     private readonly isRequestFooterEnabled: () => boolean
   ) {}
 
@@ -122,6 +158,8 @@ class ExtensionHosts {
       { type: BusEventType.RESTART_CONVERSATION, handler: this.onRestart },
     ];
     this.instance.on(this.handlers);
+    this.unsubscribeStore = this.store.subscribe(this.onMessagesChange);
+    this.onMessagesChange();
     this.syncAll();
   }
 
@@ -134,6 +172,8 @@ class ExtensionHosts {
       this.instance.off(this.handlers);
       this.handlers = null;
     }
+    this.unsubscribeStore?.();
+    this.unsubscribeStore = null;
     this.syncAll();
   }
 
@@ -149,18 +189,52 @@ class ExtensionHosts {
     return host.element;
   }
 
+  /**
+   * The input node's host element, created detached on first use: a `span`
+   * for inline and token nodes, so clipboard text keeps paragraph flow, and a
+   * `div` otherwise. No DOM effect.
+   */
+  inputNodeHostFor(entry: InputNodeSlotEntry): HTMLElement {
+    let host = this.inputHosts.get(entry.slotKey);
+    if (!host) {
+      const isInline = entry.isInline;
+      const isToken = isTokenNode(entry);
+      host = {
+        element: document.createElement(isInline || isToken ? 'span' : 'div'),
+        hasContent: false,
+        isInline,
+        isToken,
+        release: null,
+      };
+      this.inputHosts.set(entry.slotKey, host);
+    }
+    return host.element;
+  }
+
   /** A view reports from a layout effect whether a kind has a callback. */
-  setRendererPresent(kind: SlotKind, present: boolean): void {
+  setRendererPresent(kind: HostKind, present: boolean): void {
     if (present) {
       this.renderers.add(kind);
     } else {
       this.renderers.delete(kind);
     }
-    this.hosts[kind].forEach((host, slot) => this.sync(kind, slot, host));
+    if (kind === 'inputNode') {
+      this.inputHosts.forEach((host, key) => this.syncInput(key, host));
+    } else {
+      this.hosts[kind].forEach((host, slot) => this.sync(kind, slot, host));
+    }
   }
 
   /** A view reports from a layout effect whether a slot rendered content. */
-  setHasContent(kind: SlotKind, slot: string, hasContent: boolean): void {
+  setHasContent(kind: HostKind, slot: string, hasContent: boolean): void {
+    if (kind === 'inputNode') {
+      const host = this.inputHosts.get(slot);
+      if (host) {
+        host.hasContent = hasContent;
+        this.syncInput(slot, host);
+      }
+      return;
+    }
     const host = this.hosts[kind].get(slot);
     if (host) {
       host.hasContent = hasContent;
@@ -213,11 +287,54 @@ class ExtensionHosts {
   };
 
   private onRestart = () => {
-    if (this.snapshot !== EMPTY_SNAPSHOT) {
-      this.snapshot = EMPTY_SNAPSHOT;
+    if (
+      SLOT_KINDS.some((kind) => this.snapshot[kind] !== EMPTY_SNAPSHOT[kind])
+    ) {
+      this.snapshot = {
+        ...EMPTY_SNAPSHOT,
+        inputNode: this.snapshot.inputNode,
+      };
       SLOT_KINDS.forEach((kind) => this.releaseExpired(kind));
       this.notify();
     }
+  };
+
+  /**
+   * Recomputes the input-node entries when the messages change. Entries are
+   * cached per message, so an unrelated update keeps the same array.
+   */
+  private onMessagesChange = () => {
+    const { allMessagesByID } = this.store.getState();
+    if (allMessagesByID === this.messages) {
+      return;
+    }
+    this.messages = allMessagesByID;
+    const entries = collectSlotEntries(allMessagesByID);
+    const previous = this.snapshot.inputNode;
+    if (
+      entries.length === previous.length &&
+      entries.every((entry, index) => entry === previous[index])
+    ) {
+      return;
+    }
+    this.snapshot = { ...this.snapshot, inputNode: entries };
+    this.inputKeys = new Set(entries.map((entry) => entry.slotKey));
+    entries.forEach((entry) => {
+      const host = this.inputHosts.get(entry.slotKey);
+      if (
+        host &&
+        (host.isInline !== entry.isInline ||
+          host.isToken !== isTokenNode(entry))
+      ) {
+        this.releaseInput(entry.slotKey, host);
+      }
+    });
+    this.inputHosts.forEach((host, key) => {
+      if (!this.inputKeys.has(key)) {
+        this.releaseInput(key, host);
+      }
+    });
+    this.notify();
   };
 
   /** Releases the hosts of slots whose record left. */
@@ -234,6 +351,42 @@ class ExtensionHosts {
     SLOT_KINDS.forEach((kind) =>
       this.hosts[kind].forEach((host, slot) => this.sync(kind, slot, host))
     );
+    this.inputHosts.forEach((host, key) => this.syncInput(key, host));
+  }
+
+  private releaseInput(key: string, host: InputNodeHost): void {
+    this.inputHosts.delete(key);
+    host.release?.();
+    host.release = null;
+  }
+
+  /**
+   * Input-node hosts attach through the markdown plugin-host protocol: an
+   * inline node joins its target in the bubble, and any other node gets a
+   * slot. A node without content gets no host, so its fallback label shows.
+   */
+  private syncInput(key: string, host: InputNodeHost): void {
+    const shouldAttach =
+      this.handlers !== null &&
+      this.renderers.has('inputNode') &&
+      host.hasContent &&
+      this.inputKeys.has(key) &&
+      Boolean(this.chatWrapper);
+    if (shouldAttach && !host.release) {
+      const { chatWrapper } = this;
+      const { element } = host;
+      if (host.isInline) {
+        element.className = `${prefix}-markdown-inline-plugin`;
+        host.release = mountInlineHost(chatWrapper, key, element);
+      } else {
+        element.setAttribute('slot', key);
+        mountHost(chatWrapper, element, key, host.isToken);
+        host.release = () => unmountHost(chatWrapper, element, key);
+      }
+    } else if (!shouldAttach && host.release) {
+      host.release();
+      host.release = null;
+    }
   }
 
   private sync(kind: SlotKind, slot: string, host: SlotHost): void {
@@ -276,4 +429,4 @@ class ExtensionHosts {
 }
 
 export { ExtensionHosts };
-export type { ExtensionHostsSnapshot, SlotKind };
+export type { ExtensionHostsSnapshot, HostKind, SlotKind };
