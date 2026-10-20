@@ -152,4 +152,3 @@ const CustomFooterPortalsContainerExport = React.memo(
   CustomFooterPortalsContainer
 );
 export { CustomFooterPortalsContainerExport as CustomFooterPortalsContainer };
-export type { CustomFooterSlotState };

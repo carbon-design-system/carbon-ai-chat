@@ -153,4 +153,3 @@ const CustomRequestFooterPortalsContainerExport = React.memo(
   CustomRequestFooterPortalsContainer
 );
 export { CustomRequestFooterPortalsContainerExport as CustomRequestFooterPortalsContainer };
-export type { CustomRequestFooterSlotState };
