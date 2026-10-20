@@ -48,12 +48,12 @@
     "custom-elements": "cem analyze --config ./custom-elements-manifest.config.js && npm run validate:manifest",
     "postinstall": "ibmtelemetry --config=telemetry.yml",
     "start": "concurrently --names storybook,storybook-react,build --prefix-colors cyan,magenta,yellow --restart-tries Infinity --restart-after 2000 \"npm run storybook\" \"npm run storybook:react\" \"node tasks/build.js --watch\"",
-    "storybook": "npm run custom-elements && storybook dev -p 6006",
-    "storybook:build": "npm run custom-elements && storybook build",
+    "storybook": "npm run validate:wc-docs && storybook dev -p 6006",
+    "storybook:build": "npm run validate:wc-docs && storybook build",
     "storybook:react": "npm run custom-elements && npm run generate:react-docs && storybook dev -p 7007 -c .storybook-react",
     "storybook:react:build": "npm run custom-elements && npm run generate:react-docs && storybook build -c .storybook-react -o storybook-react-static",
     "telemetry:config": "npx -y @ibm/telemetry-js-config-generator generate --id 62aa153d-8a70-4d12-9e8d-069511e80e65 --endpoint https://www-api.ibm.com/ibm-telemetry/v1/metrics --files ./src/components --wc",
-    "test": "npm run test:manifest && npm run test:web-components && npm run test:react && npm run test:react:interop && npm run test:react:types",
+    "test": "npm run test:manifest && npm run validate:wc-docs && npm run test:web-components && npm run test:react && npm run test:react:interop && npm run test:react:types",
     "test:react": "jest",
     "test:updateSnapshot": "web-test-runner \"src/{components,globals/__tests__}/**/*.test.ts\" --node-resolve --update-snapshots",
     "test:web-components": "web-test-runner \"src/{components,globals/__tests__}/**/*.test.ts\" --node-resolve",
@@ -63,7 +63,9 @@
     "test:react:interop": "jest --config jest.interop.config.cjs --runInBand",
     "test:react:types": "node ../../tools/carbon-v12-consumer/react-types.mjs",
     "generate:react-docs": "node tasks/manifest-react-docs.js",
-    "test:react-docs": "node --test tasks/__tests__/manifest-react-docs*.test.js"
+    "test:react-docs": "node --test tasks/__tests__/manifest-react-docs*.test.js",
+    "validate:wc-docs": "npm run custom-elements && node tasks/manifest-wc-docs.js",
+    "test:wc-docs": "node --test tasks/__tests__/manifest-wc-docs*.test.js"
   },
   "peerDependencies": {
     "react": ">=17.0.0 <20.0.0"

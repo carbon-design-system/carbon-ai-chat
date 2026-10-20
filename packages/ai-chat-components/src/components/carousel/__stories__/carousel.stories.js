@@ -36,6 +36,7 @@ const argTypes = {
 };
 
 export default {
+  component: 'cds-aichat-carousel',
   title: 'Components/Carousel',
   argTypes,
   decorators: [

@@ -211,204 +211,6 @@ items: (query) => {
 </script>
 ```
 
-## Events
-
-### `<cds-aichat-prompt-line>` Events
-
-<table style={{ width: '100%' }}>
-  <thead>
-    <tr>
-      <th>Event Name</th>
-      <th>Description</th>
-      <th>Event Detail Properties</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>
-        <code>cds-aichat-prompt-change</code>
-      </td>
-      <td>
-        Fired on every content change. Use <code>rawValue</code> to
-        enable/disable the send button and <code>content</code> to persist
-        structured input (e.g. with mention tokens).
-      </td>
-      <td>
-        • <code>rawValue</code> (string) — plain-text value
-        <br />• <code>content</code> (JSONContent) — Tiptap document (plain-text
-        doc in textarea mode)
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <code>cds-aichat-prompt-send-intent</code>
-      </td>
-      <td>
-        Fired when the user presses <kbd>Enter</kbd> (inline mode) or{' '}
-        <kbd>Mod+Enter</kbd> (expanded mode). Wire this to the same handler as
-        the send button's <code>cds-aichat-input-send</code>.
-      </td>
-      <td>None</td>
-    </tr>
-    <tr>
-      <td>
-        <code>cds-aichat-prompt-trigger-change</code>
-      </td>
-      <td>
-        Fired when the autocomplete trigger state changes (e.g. a <code>@</code>{' '}
-        or <code>/</code> is typed or dismissed). Pass this to{' '}
-        <code>cds-aichat-autocomplete-controller</code>.
-      </td>
-      <td>Trigger context object (internal to the autocomplete controller)</td>
-    </tr>
-    <tr>
-      <td>
-        <code>cds-aichat-prompt-typing</code>
-      </td>
-      <td>
-        Fired when the user starts typing and again after a 5-second idle
-        period. Useful for "user is typing…" indicators in collaborative or
-        agent-driven UIs.
-      </td>
-      <td>
-        • <code>isTyping</code> (boolean)
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <code>cds-aichat-prompt-focus</code>
-      </td>
-      <td>Fired when the editing surface gains focus.</td>
-      <td>
-        • <code>keyboard</code> (boolean) — <code>true</code> when focus arrived
-        via keyboard
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <code>cds-aichat-prompt-blur</code>
-      </td>
-      <td>Fired when the editing surface loses focus.</td>
-      <td>None</td>
-    </tr>
-    <tr>
-      <td>
-        <code>cds-aichat-prompt-keydown</code>
-      </td>
-      <td>Fired on every keydown inside the editing surface.</td>
-      <td>
-        • <code>originalEvent</code> (KeyboardEvent)
-      </td>
-    </tr>
-  </tbody>
-</table>
-
-### `<cds-aichat-input-send-control>` Events
-
-<table style={{ width: '100%' }}>
-  <thead>
-    <tr>
-      <th>Event Name</th>
-      <th>Description</th>
-      <th>Event Detail Properties</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>
-        <code>cds-aichat-input-send</code>
-      </td>
-      <td>
-        Fired when the send button is clicked. Only fires when{' '}
-        <code>has-valid-input</code> is set and the control is not disabled.
-      </td>
-      <td>None</td>
-    </tr>
-    <tr>
-      <td>
-        <code>cds-aichat-input-stop-streaming</code>
-      </td>
-      <td>
-        Fired when the stop-streaming button is clicked (visible when{' '}
-        <code>show-stop-streaming</code> is set).
-      </td>
-      <td>None</td>
-    </tr>
-  </tbody>
-</table>
-
-### `<cds-aichat-autocomplete>` Events
-
-<table style={{ width: '100%' }}>
-  <thead>
-    <tr>
-      <th>Event Name</th>
-      <th>Description</th>
-      <th>Event Detail Properties</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>
-        <code>cds-aichat-autocomplete-send</code>
-      </td>
-      <td>
-        Fired when an item is clicked or activated via keyboard and{' '}
-        <code>disable-direct-send</code> is <code>false</code> (default). The
-        item text is sent directly to chat.
-      </td>
-      <td>
-        • <code>text</code> (string)
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <code>cds-aichat-autocomplete-select</code>
-      </td>
-      <td>
-        Fired when an item is clicked or activated via keyboard and{' '}
-        <code>disable-direct-send</code> is <code>true</code>. Use this when the
-        item should be inserted into the editor rather than sent immediately.
-      </td>
-      <td>
-        • <code>item</code> (SuggestionItem)
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <code>cds-aichat-autocomplete-dismiss</code>
-      </td>
-      <td>
-        Fired when the autocomplete is dismissed (Escape or click outside).
-      </td>
-      <td>None</td>
-    </tr>
-  </tbody>
-</table>
-
-### `<cds-aichat-file-uploads>` Events
-
-<table style={{ width: '100%' }}>
-  <thead>
-    <tr>
-      <th>Event Name</th>
-      <th>Description</th>
-      <th>Event Detail Properties</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>
-        <code>cds-aichat-file-remove</code>
-      </td>
-      <td>Fired when the user clicks the remove button on a file chip.</td>
-      <td>
-        • <code>fileId</code> (string)
-      </td>
-    </tr>
-  </tbody>
-</table>
-
 ## Component API
 
 ### cds-aichat-prompt-line-shell
@@ -441,6 +243,14 @@ The following properties have no HTML attribute equivalent and must be set via J
 ### cds-aichat-file-uploads
 
 <ArgTypes of="cds-aichat-file-uploads" />
+
+### `cds-aichat-autocomplete-controller`
+
+<ArgTypes of="cds-aichat-autocomplete-controller" />
+
+### `cds-aichat-file-upload-item`
+
+<ArgTypes of="cds-aichat-file-upload-item" />
 
 ## JS (via import)
 
