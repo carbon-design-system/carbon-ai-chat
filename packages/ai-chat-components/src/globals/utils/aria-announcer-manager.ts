@@ -23,7 +23,7 @@ type AnnouncerPoliteness = 'polite' | 'assertive';
 export interface AriaAnnouncerOptions {
   /**
    * Number of polite `aria-live="polite"` regions to create and rotate through.
-   * Default `1`. The React `AriaAnnouncerProvider` passes `3` explicitly: in
+   * Default `1`. The chat's `AriaAnnouncer` passes `3` explicitly: in
    * earlier testing FF + JAWS occasionally re-read entire region contents on
    * append; a third region ensures there is always a fresh region for the next
    * announcement.
