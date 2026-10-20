@@ -16,6 +16,7 @@
  */
 
 import FileUploadItem from '../../../react/file-upload-item';
+import AutocompleteController from '../../../react/autocomplete-controller.js';
 import { manifestEventArgTypes } from '../../../../.storybook-react/manifest-event-arg-types.js';
 import React, {
   useState,
@@ -1215,4 +1216,10 @@ export const FileUploadItemEvents = {
   tags: ['!dev'],
   parameters: { chromatic: { disable: true } },
   argTypes: { ...manifestEventArgTypes(FileUploadItem) },
+};
+
+export const AutocompleteControllerEvents = {
+  tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
+  argTypes: { ...manifestEventArgTypes(AutocompleteController) },
 };
