@@ -76,6 +76,8 @@ import '@carbon/web-components/es/components/button/index.js';
  * @element cds-aichat-code-snippet
  * @slot fixed-actions - Actions that never overflow (passed to toolbar)
  * @slot decorator - Decorative elements like AI labels (passed to toolbar)
+ * @fires {CustomEvent<CodeSnippetChangeEventDetail>} content-change - The editor content changes.
+ * @fires {CustomEvent<null>} code-snippet-render-end - The rendered code and fonts have settled.
  */
 class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
   static get is() {
@@ -658,7 +660,7 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
           this._lineCount = lineCount;
 
           this.dispatchEvent(
-            new CustomEvent('content-change', {
+            new CustomEvent<CodeSnippetChangeEventDetail>('content-change', {
               detail: { content },
               bubbles: true,
               composed: true,
@@ -709,7 +711,7 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
    */
   private emitRenderSettled() {
     this.dispatchEvent(
-      new CustomEvent('code-snippet-render-end', {
+      new CustomEvent<null>('code-snippet-render-end', {
         bubbles: true,
         composed: true,
       })
@@ -1110,3 +1112,9 @@ declare global {
 export { CDSAIChatCodeSnippet };
 export default CDSAIChatCodeSnippet;
 export type { Action } from '../aichat-toolbar/aichat-toolbar.js';
+
+/** Contains the edited code. */
+export interface CodeSnippetChangeEventDetail {
+  /** Current editor content. */
+  content: string;
+}

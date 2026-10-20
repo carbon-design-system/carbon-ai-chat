@@ -13,3 +13,5 @@ import VideoPlayer from './aichat-video-player.js';
 export { default as VideoPlayer } from './aichat-video-player.js';
 
 defineCustomElement(VideoPlayer);
+
+export type { VideoPlayerErrorEventDetail } from './aichat-video-player.js';

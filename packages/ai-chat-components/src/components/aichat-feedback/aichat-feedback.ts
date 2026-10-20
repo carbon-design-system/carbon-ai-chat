@@ -26,6 +26,8 @@ import styles from './aichat-feedback.scss?lit';
 /**
  * The component for displaying a panel requesting feedback from a user.
  * @element cds-aichat-feedback
+ * @fires {CustomEvent<FeedbackSubmitDetails>} feedback-submit - The feedback form is submitted.
+ * @fires {CustomEvent<null>} feedback-close - The feedback form is canceled.
  */
 class CDSAIChatFeedback extends LitElement {
   static get is() {
@@ -215,7 +217,7 @@ class CDSAIChatFeedback extends LitElement {
    */
   _handleCancel() {
     this.dispatchEvent(
-      new CustomEvent('feedback-close', {
+      new CustomEvent<null>('feedback-close', {
         bubbles: true,
         composed: true,
       })

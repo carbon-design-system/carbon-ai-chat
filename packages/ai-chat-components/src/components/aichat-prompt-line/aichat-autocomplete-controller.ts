@@ -7,6 +7,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import type {
+  AutocompleteSelectEventDetail,
+  AutocompleteSendEventDetail,
+} from '../aichat-autocomplete/aichat-autocomplete.js';
+import type { SendEventDetail } from './types.js';
 import { html, LitElement, nothing } from 'lit';
 import { property, state } from 'lit/decorators.js';
 
@@ -39,16 +44,12 @@ import type {
  * prompt-line.
  *
  * @element cds-aichat-autocomplete-controller
- * @fires cds-aichat-starter-selected — `{ text: string }` after a starter is
- *   inserted into the editor; consumer triggers send.
- * @fires cds-aichat-autocomplete-item-selected — `{ item: SuggestionItem }`
- *   after a suggestion item is selected. Fired in addition to type-specific callbacks.
- * @fires cds-aichat-autocomplete-item-send — `{ text: string }` when the
- *   per-item send button is clicked inside the suggestion list.
- * @fires cds-aichat-list-navigated — `{ navigated: boolean }` when the user
- *   starts or stops navigating the suggestion list with arrow keys. WC
- *   consumers should use this to disable their send control while `navigated`
- *   is `true` (the `listNavigated` getter reflects the same state).
+ * @fires {CustomEvent<SendEventDetail>} cds-aichat-starter-selected - A starter is selected.
+ * @fires {CustomEvent<AutocompleteSelectEventDetail>} cds-aichat-autocomplete-item-selected - An autocomplete item is selected for insertion.
+ * @fires {CustomEvent<AutocompleteSendEventDetail>} cds-aichat-autocomplete-item-send - An autocomplete item is selected for direct send.
+ * @fires {CustomEvent<AutocompleteNavigatedEventDetail>} cds-aichat-list-navigated - Keyboard navigation enters or leaves the active list.
+ * @fires {CustomEvent<AutocompleteNavigatedEventDetail>} cds-aichat-autocomplete-navigated - The active autocomplete list enters or leaves keyboard navigation.
+ * @fires {CustomEvent<CustomListRenderEventDetail>} cds-aichat-custom-list-render - A custom list returns content for a host adapter to render.
  */
 class AutocompleteControllerElement extends LitElement {
   static get is() {
@@ -124,7 +125,7 @@ class AutocompleteControllerElement extends LitElement {
       isSendDisabled: this.isSendDisabled,
       onStarterSelected: (text) => {
         this.dispatchEvent(
-          new CustomEvent('cds-aichat-starter-selected', {
+          new CustomEvent<SendEventDetail>('cds-aichat-starter-selected', {
             detail: { text },
             bubbles: true,
             composed: true,
@@ -263,11 +264,14 @@ class AutocompleteControllerElement extends LitElement {
       // a React node). Surface it on a side-channel event so React adapters
       // can portal it into place themselves.
       this.dispatchEvent(
-        new CustomEvent('cds-aichat-custom-list-render', {
-          detail: { reactNode: result },
-          bubbles: true,
-          composed: true,
-        })
+        new CustomEvent<CustomListRenderEventDetail>(
+          'cds-aichat-custom-list-render',
+          {
+            detail: { reactNode: result },
+            bubbles: true,
+            composed: true,
+          }
+        )
       );
       return nothing;
     }
@@ -289,11 +293,14 @@ class AutocompleteControllerElement extends LitElement {
   private _selectItem(item: SuggestionItem): void {
     this._controller?.select(item);
     this.dispatchEvent(
-      new CustomEvent('cds-aichat-autocomplete-item-selected', {
-        detail: { item },
-        bubbles: true,
-        composed: true,
-      })
+      new CustomEvent<AutocompleteSelectEventDetail>(
+        'cds-aichat-autocomplete-item-selected',
+        {
+          detail: { item },
+          bubbles: true,
+          composed: true,
+        }
+      )
     );
   }
 
@@ -303,11 +310,14 @@ class AutocompleteControllerElement extends LitElement {
     }
     this._controller?.dismiss(true);
     this.dispatchEvent(
-      new CustomEvent('cds-aichat-autocomplete-item-send', {
-        detail: { text },
-        bubbles: true,
-        composed: true,
-      })
+      new CustomEvent<AutocompleteSendEventDetail>(
+        'cds-aichat-autocomplete-item-send',
+        {
+          detail: { text },
+          bubbles: true,
+          composed: true,
+        }
+      )
     );
   }
 
@@ -350,3 +360,9 @@ declare global {
 }
 
 export default AutocompleteControllerElement;
+
+/** Contains custom autocomplete list content. */
+export interface CustomListRenderEventDetail {
+  /** Content returned by the configured custom list renderer. */
+  reactNode: unknown;
+}

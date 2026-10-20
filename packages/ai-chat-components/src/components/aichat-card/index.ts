@@ -17,3 +17,5 @@ export { CardSteps, Card, CardFooter };
 defineCustomElement(CardSteps);
 defineCustomElement(Card);
 defineCustomElement(CardFooter);
+
+export type { Action } from './aichat-card-footer.js';

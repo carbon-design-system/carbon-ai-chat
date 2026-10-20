@@ -25,6 +25,8 @@ const stepSelector = `${prefix}-aichat-chain-of-thought-step`;
 /**
  * Chain of thought container component
  * @element cds-aichat-chain-of-thought
+ * @fires {CustomEvent<ChainOfThoughtToggleEventDetail>} chain-of-thought-toggled - The container requests its next open state.
+ * @fires {CustomEvent<ChainOfThoughtStepToggleEventDetail>} chain-of-thought-step-toggled - A descendant step toggle is accepted.
  */
 class CDSAIChatChainOfThought extends LitElement {
   static get is() {

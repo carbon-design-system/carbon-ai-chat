@@ -45,6 +45,9 @@ interface PanelState {
   index: number;
 }
 
+/**
+ * @eventOwner {import('./aichat-shell.js').default}
+ */
 export class PanelManager {
   private panelObservers = new Map<HTMLElement, MutationObserver>();
   private slotElements: HTMLElement[] = [];
@@ -249,7 +252,7 @@ export class PanelManager {
     }
     if (!this.activePanel) {
       this.shellRoot.dispatchEvent(
-        new CustomEvent(`${prefix}-aichat-shell-panel-focus-fallback`, {
+        new CustomEvent<null>(`${prefix}-aichat-shell-panel-focus-fallback`, {
           bubbles: true,
           composed: true,
         })

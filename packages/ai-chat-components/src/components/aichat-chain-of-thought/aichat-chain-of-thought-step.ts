@@ -7,6 +7,7 @@
  *  @license
  */
 
+import type { ChainOfThoughtStepToggleEventDetail } from './defs.js';
 import '@carbon/web-components/es/components/inline-loading/index.js';
 
 import { LitElement, html } from 'lit';
@@ -33,6 +34,8 @@ const generateId = (segment: string) =>
 /**
  * Chain of though step
  * @element cds-aichat-chain-of-thought-step
+ * @fires {CustomEvent<ChainOfThoughtStepToggleEventDetail>} chain-of-thought-step-beingtoggled - Requests a step toggle. Call preventDefault() to veto the toggle.
+ * @fires {CustomEvent<ChainOfThoughtStepToggleEventDetail>} chain-of-thought-step-toggled - A step toggle is accepted.
  */
 class CDSAIChatChainOfThoughtStep extends LitElement {
   static get is() {
@@ -225,7 +228,10 @@ class CDSAIChatChainOfThoughtStep extends LitElement {
     const detail = { open: nextState };
     const init = { bubbles: true, cancelable: true, composed: true, detail };
     const canToggle = this.dispatchEvent(
-      new CustomEvent(`chain-of-thought-step-beingtoggled`, init)
+      new CustomEvent<ChainOfThoughtStepToggleEventDetail>(
+        `chain-of-thought-step-beingtoggled`,
+        init
+      )
     );
 
     if (!canToggle) {
@@ -236,7 +242,12 @@ class CDSAIChatChainOfThoughtStep extends LitElement {
       this.open = nextState;
     }
 
-    this.dispatchEvent(new CustomEvent(`chain-of-thought-step-toggled`, init));
+    this.dispatchEvent(
+      new CustomEvent<ChainOfThoughtStepToggleEventDetail>(
+        `chain-of-thought-step-toggled`,
+        init
+      )
+    );
   }
 
   private handleButtonClick() {
