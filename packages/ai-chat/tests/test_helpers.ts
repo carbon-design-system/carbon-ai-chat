@@ -193,7 +193,10 @@ export interface TestChatContextOptions {
   store?: AppStore<any, any>;
   /** The formatter `useIntl` reads. Ignored when `serviceManager` has one. */
   intl?: IntlShape;
-  /** A stub service manager. It gains `store` and `intl` when it lacks them. */
+  /**
+   * A stub service manager. It gains `store` and `intl` when it lacks them,
+   * and must not already hold a different one.
+   */
   serviceManager?: object;
   /** Replaces the announcer's `announce`, which `useAriaAnnouncer` returns. */
   announce?: AriaAnnouncerFunctionType;
@@ -211,6 +214,14 @@ export function createTestViewState({
   announce,
 }: TestChatContextOptions = {}): ChatViewState {
   const manager = serviceManager as ServiceManager;
+  if (
+    (store && manager.store && manager.store !== store) ||
+    (intl && manager.intl && manager.intl !== intl)
+  ) {
+    throw new Error(
+      'The stub service manager already holds a different store or intl.'
+    );
+  }
   manager.store ??= store;
   manager.intl ??= intl;
   const viewState = new ChatViewState(manager, getWindowSize());
