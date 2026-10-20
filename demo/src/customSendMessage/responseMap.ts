@@ -13,7 +13,6 @@ import {
   MessageRequest,
 } from '@carbon/ai-chat';
 
-import { isAutomated } from './constants';
 import { doAudioSoundCloud, doAudioMp3 } from './doAudio';
 import { doButton } from './doButton';
 import { doCard } from './doCard';
@@ -53,10 +52,11 @@ import {
 } from './doText';
 import { doUserDefined, doUserDefinedStreaming } from './doUserDefined';
 import { doSystemMessage } from './doSystemMessage';
+import { timing } from './timing';
 import { doVideoYouTube, doVideoVimeo, doVideoKaltura } from './doVideo';
 
-const DELAYED_RESPONSE_MS = isAutomated ? 300 : 3000;
-const CONSECUTIVE_SECOND_DELAY_MS = isAutomated ? 100 : 1000;
+const DELAYED_RESPONSE_MS = timing.delayedResponseMs;
+const CONSECUTIVE_SECOND_DELAY_MS = timing.consecutiveSecondDelayMs;
 
 const sortResponseMap = <T extends Record<string, unknown>>(map: T): T =>
   Object.fromEntries(

@@ -7,6 +7,8 @@
  *  @license
  */
 
+import { timing } from './timing';
+
 const TABLE = `
 | Element      | Symbol | Atomic Number | Group | Period | Atomic Mass (u) | Electron Config | Bonding | Melting Point (°C) | Boiling Point (°C) |
 |--------------|--------|---------------|-------|--------|-----------------|-----------------|---------|--------------------|--------------------|
@@ -248,17 +250,9 @@ const CHAIN_OF_THOUGHT_TEXT = `Carbon's versatile bonding properties have been a
 
 const CHAIN_OF_THOUGHT_TEXT_STREAM = `Carbon's versatile bonding properties have been analyzed through multiple chemical databases to present this comprehensive overview. As this analysis streams in, various computational chemistry tools are querying molecular structures and periodic trends.`;
 
-const isAutomated =
-  typeof window !== 'undefined' &&
-  Boolean(
-    (typeof navigator !== 'undefined' && navigator.webdriver) ||
-    (window as unknown as { __playwright?: boolean }).__playwright
-  );
-
-const WORD_DELAY = isAutomated ? 5 : 40;
+const WORD_DELAY = timing.wordDelay;
 
 export {
-  isAutomated,
   CHAIN_OF_THOUGHT_TEXT_STREAM,
   CHAIN_OF_THOUGHT_TEXT,
   WELCOME_TEXT,
