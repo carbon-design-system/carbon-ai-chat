@@ -3,7 +3,14 @@ on:
   push:
     branches: [main, release/v*, feat/prompt-line]
   pull_request:
-    branches: [main, release/v*, feat/prompt-line]
+    branches:
+      - main
+      - release/v*
+      - feat/prompt-line
+      - docs/1x-wrapper-imports
+      - fix/1x-header-actions
+      - fix/1x-host-entry-types
+      - fix/1x-components-cem
   merge_group:
     types: [checks_requested]
 
