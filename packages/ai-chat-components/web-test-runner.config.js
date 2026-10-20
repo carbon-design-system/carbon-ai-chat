@@ -35,11 +35,9 @@ export default {
   // fail with "Browser tests did not finish within 120000ms". Raise the ceiling —
   // healthy files still finish in seconds.
   testsFinishTimeout: 300000,
-  // Default concurrency is ~cores/2 per browser (× 2 concurrent browsers), which
-  // floods the CPU with simultaneous lazy `import()`s and starves renders — the
-  // root cause of the timeout flakes. Cap it; tune 2–4 (lower for CI, higher
-  // locally) to trade wall-clock for stability.
-  concurrency: 3,
+  // Release checks share a runner; parallel page loads can starve Firefox.
+  concurrency: process.env.CI ? 1 : 3,
+  concurrentBrowsers: process.env.CI ? 1 : 2,
   // Cold Firefox/WebKit starts can exceed the 30s default under load.
   browserStartTimeout: 60000,
   // Mocha's default 2s per-test timeout is too tight for this suite on Chromium
