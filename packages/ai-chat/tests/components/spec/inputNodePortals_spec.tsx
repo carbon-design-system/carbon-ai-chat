@@ -18,6 +18,7 @@ import { deepQuerySelector } from '@carbon/ai-chat-components/es/globals/utils/d
 import '../../../src/web-components/cds-aichat-container';
 import '../../../src/web-components/cds-aichat-custom-element';
 import { InputNodePortalsContainer } from '../../../src/chat/components/portals/InputNodePortalsContainer';
+import { ExtensionHosts } from '../../../src/chat/services/extensionHosts';
 import type { WCRenderUserDefinedInputNode } from '../../../src/types/component/ChatContainer';
 import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import type { MessageRequest } from '../../../src/types/messaging/Messages';
@@ -38,8 +39,19 @@ function render(ui: React.ReactElement) {
   });
 }
 
-const instance = {} as ChatInstance;
+const instance = { on: jest.fn(), off: jest.fn() } as unknown as ChatInstance;
 const slotName = 'message::0';
+
+const connectedHosts: ExtensionHosts[] = [];
+afterEach(() => connectedHosts.splice(0).forEach((h) => h.disconnect()));
+
+/** A connected host service for one mount, as `ChatAppEntry` creates it. */
+function hostsFor(chatWrapper: HTMLElement) {
+  const hosts = new ExtensionHosts(instance, chatWrapper, store, () => false);
+  hosts.connect();
+  connectedHosts.push(hosts);
+  return hosts;
+}
 
 function message(): MessageRequest {
   return {
@@ -86,9 +98,10 @@ test.each([0, 1, 2])(
       }
     }
     const renderer = () => <span className="consumer-chip">custom</span>;
+    const hosts = hostsFor(wrapper);
     const view = render(
       <InputNodePortalsContainer
-        chatWrapper={wrapper}
+        hosts={hosts}
         chatInstance={instance}
         renderUserDefinedInputNode={renderer}
       />
@@ -102,7 +115,7 @@ test.each([0, 1, 2])(
     );
     view.rerender(
       <InputNodePortalsContainer
-        chatWrapper={wrapper}
+        hosts={hosts}
         chatInstance={instance}
         renderUserDefinedInputNode={() => null}
       />
@@ -113,7 +126,7 @@ test.each([0, 1, 2])(
     );
     view.rerender(
       <InputNodePortalsContainer
-        chatWrapper={wrapper}
+        hosts={hosts}
         chatInstance={instance}
         renderUserDefinedInputNode={renderer}
       />
@@ -206,26 +219,30 @@ describe.each(['cds-aichat-container', 'cds-aichat-custom-element'])(
   }
 );
 
-test('Strict Mode keeps one host, moves it with the wrapper, and removes deleted messages', () => {
+test('Strict Mode keeps one host, gives a new mount its own host, and removes deleted messages', () => {
   const wrapper = document.createElement('div');
   const replacement = document.createElement('div');
   const renderer = () => <span>custom</span>;
-  const tree = (chatWrapper: HTMLElement) => (
+  const tree = (hosts: ExtensionHosts) => (
     <React.StrictMode>
       <InputNodePortalsContainer
-        chatWrapper={chatWrapper}
+        hosts={hosts}
         chatInstance={instance}
         renderUserDefinedInputNode={renderer}
       />
     </React.StrictMode>
   );
-  const view = render(tree(wrapper));
+  const view = render(tree(hostsFor(wrapper)));
   expect(wrapper.children).toHaveLength(1);
-  view.rerender(tree(replacement));
-  expect(wrapper.children).toHaveLength(0);
-  expect(replacement.children).toHaveLength(1);
-  act(() => store.dispatch(actions.setAppStateValue('allMessagesByID', {})));
-  view.rerender(tree(replacement));
-  expect(replacement.children).toHaveLength(0);
+  const firstHost = wrapper.firstElementChild;
+  // A chat wrapper is fixed per mount; a new wrapper is a new mount.
   view.unmount();
+  connectedHosts.pop().disconnect();
+  expect(wrapper.children).toHaveLength(0);
+  const remount = render(tree(hostsFor(replacement)));
+  expect(replacement.children).toHaveLength(1);
+  expect(replacement.firstElementChild).not.toBe(firstHost);
+  act(() => store.dispatch(actions.setAppStateValue('allMessagesByID', {})));
+  expect(replacement.children).toHaveLength(0);
+  remount.unmount();
 });

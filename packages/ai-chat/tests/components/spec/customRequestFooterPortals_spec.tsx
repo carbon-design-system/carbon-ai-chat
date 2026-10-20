@@ -48,7 +48,12 @@ afterEach(() => connectedHosts.splice(0).forEach((h) => h.disconnect()));
 
 /** A connected host service that has recorded one footer per slot. */
 function hostsWith(chatWrapper: HTMLElement, ...slots: [string, string][]) {
-  const hosts = new ExtensionHosts(chatInstance, chatWrapper, () => true);
+  const hosts = new ExtensionHosts(
+    chatInstance,
+    chatWrapper,
+    { getState: () => ({ allMessagesByID: {} }), subscribe: () => () => {} },
+    () => true
+  );
   hosts.connect();
   connectedHosts.push(hosts);
   slots.forEach(([slotName, text]) =>
