@@ -8,7 +8,8 @@
  */
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { AppProviders } from './AppProviders';
+import { ChatContext } from './contexts/ChatContext';
+import { AriaAnnouncerRegion } from './components/aria/AriaAnnouncerRegion';
 import { ServiceManager } from './services/ServiceManager';
 import type { ChatViewState } from './services/chatViewState';
 import {
@@ -38,7 +39,6 @@ import {
   RenderWriteableElementResponse,
 } from '../types/component/ChatContainer';
 import { ChatInstance } from '../types/instance/ChatInstance';
-import { Dimension } from '../types/utilities/Dimension';
 import AppShell from './AppShell';
 
 /**
@@ -52,7 +52,6 @@ interface ChatAppEntryProps {
   serviceManager: ServiceManager;
   viewState: ChatViewState;
   instance: ChatInstance;
-  windowSize: Dimension;
   /** False until `onBeforeRender` settles. Nothing renders before then. */
   renderReady: boolean;
   /** True once the store holds the chat's initial view. */
@@ -98,8 +97,8 @@ interface ChatAppEntryProps {
  */
 function ChatAppEntry({
   serviceManager,
+  viewState,
   instance,
-  windowSize,
   renderReady,
   initialViewReady,
   onListenersReady,
@@ -191,7 +190,7 @@ function ChatAppEntry({
   }
 
   return (
-    <AppProviders serviceManager={serviceManager} windowSize={windowSize}>
+    <ChatContext.Provider value={viewState}>
       <AppShell
         serviceManager={serviceManager}
         hostElement={serviceManager.customHostElement}
@@ -242,7 +241,9 @@ function ChatAppEntry({
           chatWrapper={chatWrapper}
         />
       )}
-    </AppProviders>
+
+      <AriaAnnouncerRegion announcer={viewState.announcer} />
+    </ChatContext.Provider>
   );
 }
 

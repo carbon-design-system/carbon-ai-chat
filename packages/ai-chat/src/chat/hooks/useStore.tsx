@@ -10,7 +10,7 @@
 /**
  * useStore
  *
- * Returns the current store from {@link StoreContext}, typed to the caller's desired root state and action types.
+ * Returns the chat's store from {@link ChatContext}, typed to the caller's desired root state and action types.
  * Mirrors the ergonomics of `react-redux` without a dependency on that package.
  *
  * References (MIT licenses):
@@ -20,15 +20,15 @@
 
 import { useContext } from 'react';
 import type { AppStore, UnknownAction } from '../store/appStore';
-import { StoreContext } from '../contexts/StoreContext';
+import { ChatContext } from '../contexts/ChatContext';
 
 export function useStore<
   RootState,
   ActionType extends UnknownAction = UnknownAction,
 >(): AppStore<RootState, ActionType> {
-  const store = useContext(StoreContext);
+  const store = useContext(ChatContext)?.serviceManager.store;
   if (!store) {
-    throw new Error('StoreProvider is missing in the component tree.');
+    throw new Error('ChatContext is missing in the component tree.');
   }
   return store as unknown as AppStore<RootState, ActionType>;
 }
