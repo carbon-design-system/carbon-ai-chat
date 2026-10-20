@@ -12,6 +12,11 @@ import { ExtensionHosts } from '../../../src/chat/services/extensionHosts';
 import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
 
+const noMessages = {
+  getState: () => ({ allMessagesByID: {} }),
+  subscribe: () => () => {},
+};
+
 function setup(isRequestFooterEnabled: () => boolean = () => true) {
   const eventBus = new EventBus();
   const instance = eventBus as unknown as ChatInstance;
@@ -20,6 +25,7 @@ function setup(isRequestFooterEnabled: () => boolean = () => true) {
   const hosts = new ExtensionHosts(
     instance,
     chatWrapper,
+    noMessages,
     isRequestFooterEnabled
   );
   hosts.connect();
