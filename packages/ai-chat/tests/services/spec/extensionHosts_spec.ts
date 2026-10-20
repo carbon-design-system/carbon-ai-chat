@@ -11,6 +11,7 @@ import { EventBus } from '../../../src/chat/events/EventBus';
 import { ExtensionHosts } from '../../../src/chat/services/extensionHosts';
 import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
+import { registerInlineTarget } from '../../../src/chat/components/portals/inputNodeHosts';
 import { LIGHT_DOM_PORTAL_EVENT } from '@carbon/ai-chat-components/es/components/prompt-line/src/tiptap/render-in-light-dom.js';
 
 const noMessages = {
@@ -522,12 +523,9 @@ describe('input-node hosts', () => {
     };
     const eventBus = new EventBus();
     const instance = eventBus as unknown as ChatInstance;
-    const hosts = new ExtensionHosts(
-      instance,
-      document.createElement('div'),
-      store,
-      () => false
-    );
+    const chatWrapper = document.createElement('div');
+    document.body.append(chatWrapper);
+    const hosts = new ExtensionHosts(instance, chatWrapper, store, () => false);
     hosts.connect();
     const setMessages = (next: Record<string, unknown>) => {
       allMessagesByID = next;
@@ -535,8 +533,40 @@ describe('input-node hosts', () => {
     };
     const fire = (event: unknown) =>
       eventBus.fireSync(event as never, instance);
-    return { hosts, setMessages, fire };
+    return { hosts, chatWrapper, setMessages, fire };
   }
+
+  it('marks an inline host placed only once its target registers, and keeps it placed', () => {
+    const { hosts, chatWrapper } = setupMessages();
+    const onChange = jest.fn();
+    hosts.subscribe(onChange);
+    const [entry] = hosts.getSnapshot().inputNode;
+    expect(entry.isInline).toBe(true);
+    const host = hosts.inputNodeHostFor(entry);
+    hosts.setRendererPresent('inputNode', true);
+    hosts.setHasContent('inputNode', entry.slotKey, true);
+    expect(hosts.isInputNodePlaced(entry.slotKey)).toBe(false);
+
+    const target = document.createElement('span');
+    const fallback = document.createElement('span');
+    target.append(fallback);
+    chatWrapper.append(target);
+    const unregister = registerInlineTarget(
+      chatWrapper,
+      entry.slotKey,
+      target,
+      fallback
+    );
+
+    expect(host.parentElement).toBe(target);
+    expect(hosts.isInputNodePlaced(entry.slotKey)).toBe(true);
+    expect(onChange).toHaveBeenCalledTimes(1);
+
+    unregister();
+    registerInlineTarget(chatWrapper, entry.slotKey, target, fallback);
+    expect(hosts.isInputNodePlaced(entry.slotKey)).toBe(true);
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
 
   it('replaces a host whose node changes between token and other kinds', () => {
     const { hosts, setMessages } = setupMessages();
