@@ -5,8 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { templateMarkup } from './manifest-events.js';
-import { createTemplateReader, renderedMarkup } from './manifest-templates.js';
+import { renderedMarkup, templateMarkup } from './manifest-template-source.js';
+import { createTemplateReader } from './manifest-templates.js';
 import { createSlotProtocolReader } from './manifest-slot-protocols.js';
 
 function sourceOwner(model, node) {
