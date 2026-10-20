@@ -74,8 +74,13 @@ assert.equal(typeof HTMLElement, 'undefined');
 assert.equal(typeof customElements, 'undefined');
 const { defineCustomElement } = await import(${JSON.stringify(helperSpecifier)});
 assert.equal(typeof defineCustomElement, 'function');
-await writeFile('registration-node.json', JSON.stringify({ imported: true, document: typeof document, HTMLElement: typeof HTMLElement, customElements: typeof customElements }, null, 2));
-console.log('Packed helper imports in Node without DOM globals.');
+class Nameless {}
+class Named { static is = 'packed-node-registration'; }
+assert.equal(defineCustomElement(Nameless), Nameless);
+assert.equal(defineCustomElement(Named, { name: '' }), Named);
+assert.throws(() => defineCustomElement(Named), ReferenceError);
+await writeFile('registration-node.json', JSON.stringify({ imported: true, unnamedReturned: true, emptyNameReturned: true, document: typeof document, HTMLElement: typeof HTMLElement, customElements: typeof customElements }, null, 2));
+console.log('Packed helper imports and returns unnamed classes in Node without DOM globals.');
 `
   );
   await writeFile(

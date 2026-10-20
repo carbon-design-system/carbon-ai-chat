@@ -58,12 +58,12 @@ export const defineCustomElement = <
   clazz: T,
   options: DefineCustomElementOptions = {}
 ): T => {
-  const registry = options.registry ?? customElements;
   const name = options.name ?? clazz.is;
   if (!name) {
     return clazz;
   }
 
+  const registry = options.registry ?? customElements;
   const existing = registry.get(name);
   if (existing) {
     if (existing !== clazz && isDevelopment()) {
