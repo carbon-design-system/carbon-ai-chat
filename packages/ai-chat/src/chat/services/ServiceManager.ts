@@ -9,7 +9,7 @@
 
 import type { AppStore } from '../store/appStore';
 import { IntlShape } from '../utils/i18n';
-import { AriaAnnouncerFunctionType } from '../contexts/AriaAnnouncerContext';
+import type { AriaAnnouncerFunctionType } from './ariaAnnouncer';
 
 import { EventBus } from '../events/EventBus';
 import { AppState } from '../../types/state/AppState';

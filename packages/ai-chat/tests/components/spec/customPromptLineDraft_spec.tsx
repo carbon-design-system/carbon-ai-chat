@@ -10,10 +10,6 @@
 import React from 'react';
 import { act, render, waitFor } from '@testing-library/react';
 import type { JSONContent } from '@tiptap/core';
-import { StoreProvider } from '../../../src/chat/providers/StoreProvider';
-import { ServiceManagerContext } from '../../../src/chat/contexts/ServiceManagerContext';
-import { IntlProvider } from '../../../src/chat/providers/IntlProvider';
-import { AriaAnnouncerContext } from '../../../src/chat/contexts/AriaAnnouncerContext';
 import { createIntl } from '../../../src/chat/utils/i18n';
 import actions from '../../../src/chat/store/actions';
 import { selectInputState } from '../../../src/chat/store/selectors';
@@ -22,6 +18,7 @@ import {
   makeConfigStore,
   setupBeforeEach,
   setupAfterEach,
+  TestChatContext,
 } from '../../test_helpers';
 
 const testIntl = createIntl({ locale: 'en', messages: {} });
@@ -156,23 +153,22 @@ async function setup(
     getInputFunctionsRef: () => inputFunctions,
   } as any;
   const onSendInput = jest.fn();
+  const announce = jest.fn();
   const tree = (isInputVisible: boolean) => (
-    <StoreProvider store={store}>
-      <IntlProvider intl={testIntl}>
-        <AriaAnnouncerContext.Provider value={jest.fn()}>
-          <ServiceManagerContext.Provider value={serviceManager}>
-            <Input
-              disableInput={false}
-              disableSend={false}
-              isInputVisible={isInputVisible}
-              trackInputState
-              restoreDraft={restoreDraft}
-              onSendInput={onSendInput}
-            />
-          </ServiceManagerContext.Provider>
-        </AriaAnnouncerContext.Provider>
-      </IntlProvider>
-    </StoreProvider>
+    <TestChatContext
+      store={store}
+      intl={testIntl}
+      serviceManager={serviceManager}
+      announce={announce}>
+      <Input
+        disableInput={false}
+        disableSend={false}
+        isInputVisible={isInputVisible}
+        trackInputState
+        restoreDraft={restoreDraft}
+        onSendInput={onSendInput}
+      />
+    </TestChatContext>
   );
   const view = render(tree(visible));
   return {
