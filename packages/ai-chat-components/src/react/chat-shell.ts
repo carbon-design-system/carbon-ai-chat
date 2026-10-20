@@ -7,20 +7,19 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { createComponent } from '@lit/react';
+import { createComponent, type EventName } from '@lit/react';
 import React from 'react';
 import { CDSAIChatShell as CDSChatShellElement } from '../components/aichat-shell/index.js';
-import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
-const CDSAIChatShell = withWebComponentBridge(
-  createComponent({
-    tagName: CDSChatShellElement.is,
-    elementClass: CDSChatShellElement,
-    react: React,
-    events: {
-      onPanelFocusFallback: 'cds-aichat-shell-panel-focus-fallback',
-    },
-  })
-);
+const CDSAIChatShell = createComponent({
+  tagName: CDSChatShellElement.is,
+  elementClass: CDSChatShellElement,
+  react: React,
+  events: {
+    onPanelFocusFallback: 'cds-aichat-shell-panel-focus-fallback' as EventName<
+      CustomEvent<null>
+    >,
+  },
+});
 
 export default CDSAIChatShell;

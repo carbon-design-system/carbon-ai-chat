@@ -9,15 +9,12 @@
 
 import { createComponent } from '@lit/react';
 import React from 'react';
-import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 import { CDSAIChatButtonSkeleton } from '../components/aichat-button/index.js';
 
-const ChatButtonSkeleton = withWebComponentBridge(
-  createComponent({
-    tagName: CDSAIChatButtonSkeleton.is,
-    elementClass: CDSAIChatButtonSkeleton,
-    react: React,
-  })
-);
+const ChatButtonSkeleton = createComponent({
+  tagName: CDSAIChatButtonSkeleton.is,
+  elementClass: CDSAIChatButtonSkeleton,
+  react: React,
+});
 
 export default ChatButtonSkeleton;

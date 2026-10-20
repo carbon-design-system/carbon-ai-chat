@@ -11,14 +11,11 @@ import { createComponent } from '@lit/react';
 import React from 'react';
 
 import { CDSAIChatProcessing } from '../components/aichat-processing/index.js';
-import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
-const Processing = withWebComponentBridge(
-  createComponent({
-    tagName: CDSAIChatProcessing.is,
-    elementClass: CDSAIChatProcessing,
-    react: React,
-  })
-);
+const Processing = createComponent({
+  tagName: CDSAIChatProcessing.is,
+  elementClass: CDSAIChatProcessing,
+  react: React,
+});
 
 export default Processing;

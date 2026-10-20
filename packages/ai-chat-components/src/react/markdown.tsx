@@ -26,7 +26,6 @@ import type {
   MarkdownRendererCodeBlockArgs,
   MarkdownRendererTableArgs,
 } from '../components/aichat-markdown/markdown-renderer-types.js';
-import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
 const LitMarkdown = createComponent({
   tagName: CDSAIChatMarkdown.is,
@@ -57,12 +56,12 @@ const ForwardedBaseMarkdown = React.forwardRef<
 ForwardedBaseMarkdown.displayName = 'BaseMarkdown';
 
 /**
- * Thin `@lit/react` bridge around `<cds-aichat-markdown>`. Handles text vs.
- * element children and the web-component prop bridge, but performs no
+ * Thin `@lit/react` wrapper around `<cds-aichat-markdown>`. Handles text vs.
+ * element children, but performs no
  * React-specific `customRenderers` portaling — that is layered on by the
  * `Markdown` wrapper below.
  */
-const BaseMarkdown = withWebComponentBridge(ForwardedBaseMarkdown);
+const BaseMarkdown = ForwardedBaseMarkdown;
 
 /**
  * React-flavored variant of {@link MarkdownCustomRenderers}. The element
@@ -265,8 +264,8 @@ const Markdown = forwardRef<CDSAIChatMarkdown, MarkdownProps>(function Markdown(
     <>
       <BaseMarkdown
         {...rest}
-        ref={setMarkdownRef as React.Ref<HTMLElement>}
-        customRenderers={bridgedRenderers as never}
+        ref={setMarkdownRef}
+        customRenderers={bridgedRenderers}
       />
       {portalEntries.map((entry) => (
         <React.Fragment key={entry.slotName}>

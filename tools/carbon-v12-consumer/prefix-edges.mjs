@@ -17,6 +17,21 @@ import { createRequire, isBuiltin } from 'node:module';
 import { dirname, join, relative, resolve } from 'node:path';
 import ts from 'typescript';
 import { eventContractSource } from './event-contracts.mjs';
+import { reactContractSource } from './react-contracts.mjs';
+import { readSource } from '../../packages/ai-chat-components/tasks/manifest-source.js';
+import { readWrappers } from '../../packages/ai-chat-components/tasks/manifest-wrappers.js';
+
+let reactModel;
+
+function generatedReactContracts(root) {
+  reactModel ??= readSource();
+  return reactContractSource(
+    readWrappers(reactModel, { requireEventTypes: true }),
+    root,
+    reactModel,
+    { externalIcons: false }
+  );
+}
 
 const localPackages = [
   '@carbon/ai-chat',
@@ -406,6 +421,14 @@ export async function assertGeneratedEdges(options) {
 export async function assertGeneratedTypes({ receipt, consumer }) {
   const root = `./${relative(consumer, receipt.output).replaceAll('\\', '/')}`;
   const fixture = join(consumer, `prefix-${receipt.prefix}-types.ts`);
+  const reactFixture = join(
+    consumer,
+    `prefix-${receipt.prefix}-react-types.ts`
+  );
+  await writeFile(
+    reactFixture,
+    generatedReactContracts(`${root}/ai-chat-components`)
+  );
   await writeFile(
     fixture,
     `
@@ -430,7 +453,7 @@ export { host, constructor, card };
     ['node16', ts.ModuleKind.Node16, ts.ModuleResolutionKind.Node16],
     ['bundler', ts.ModuleKind.ESNext, ts.ModuleResolutionKind.Bundler],
   ]) {
-    const program = ts.createProgram([fixture], {
+    const program = ts.createProgram([fixture, reactFixture], {
       module,
       moduleResolution,
       target: ts.ScriptTarget.ES2022,

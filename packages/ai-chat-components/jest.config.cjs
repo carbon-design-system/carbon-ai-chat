@@ -10,6 +10,8 @@
 module.exports = {
   roots: ['<rootDir>/src/react', '<rootDir>/src/globals'],
   testEnvironment: '@happy-dom/jest-environment',
+  // Lit's Node entry omits browser property updates and event listeners.
+  testEnvironmentOptions: { customExportConditions: ['browser'] },
   transform: {
     '^.+\\.(ts|tsx)$': [
       'babel-jest',

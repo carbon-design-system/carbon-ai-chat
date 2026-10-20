@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { createComponent } from '@lit/react';
+import { createComponent, type EventName } from '@lit/react';
 import React from 'react';
 
 import {
@@ -15,35 +15,30 @@ import {
   CardFooter as CDSAIChatCardFooter,
   CardSteps as CDSAIChatCardSteps,
 } from '../components/aichat-card/index.js';
+import type { Action } from '../components/aichat-card/index.js';
 
-import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
+const Card = createComponent({
+  tagName: CDSAIChatCard.is,
+  elementClass: CDSAIChatCard,
+  react: React,
+});
 
-const Card = withWebComponentBridge(
-  createComponent({
-    tagName: CDSAIChatCard.is,
-    elementClass: CDSAIChatCard,
-    react: React,
-  })
-);
+const CardFooter = createComponent({
+  tagName: CDSAIChatCardFooter.is,
+  elementClass: CDSAIChatCardFooter,
+  react: React,
+  events: {
+    onFooterAction: 'cds-aichat-card-footer-action' as EventName<
+      CustomEvent<Action>
+    >,
+  },
+});
 
-const CardFooter = withWebComponentBridge(
-  createComponent({
-    tagName: CDSAIChatCardFooter.is,
-    elementClass: CDSAIChatCardFooter,
-    react: React,
-    events: {
-      onFooterAction: 'cds-aichat-card-footer-action',
-    },
-  })
-);
-
-const CardSteps = withWebComponentBridge(
-  createComponent({
-    tagName: CDSAIChatCardSteps.is,
-    elementClass: CDSAIChatCardSteps,
-    react: React,
-  })
-);
+const CardSteps = createComponent({
+  tagName: CDSAIChatCardSteps.is,
+  elementClass: CDSAIChatCardSteps,
+  react: React,
+});
 
 export { Card, CardFooter, CardSteps };
 export default Card;

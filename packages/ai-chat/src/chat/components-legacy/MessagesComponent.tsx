@@ -872,7 +872,6 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       Boolean(isMessageLoadingCounter) || isHumanAgentTyping;
     const typingIndicator = (
       <ProcessingWithText
-        carbonTheme={this.props.carbonTheme}
         index={localMessageItems.length}
         isTypingMessage={isTypingMessage}
         isVisible={isTypingVisible}

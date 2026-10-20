@@ -22,8 +22,8 @@ jest.mock('@carbon/ai-chat-components/es/react/chat-button.js', () => ({
   __esModule: true,
   CHAT_BUTTON_KIND: { TERTIARY: 'tertiary' },
   CHAT_BUTTON_SIZE: { SMALL: 'sm' },
-  default: ({ children, isselected, ...props }: any) => (
-    <button type="button" data-selected={String(isselected)} {...props}>
+  default: ({ children, isSelected, ...props }: any) => (
+    <button type="button" data-selected={String(isSelected)} {...props}>
       {children}
     </button>
   ),

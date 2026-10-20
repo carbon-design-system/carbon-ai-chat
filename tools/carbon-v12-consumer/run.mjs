@@ -39,6 +39,10 @@ import { assertParentBaseline } from './baseline.mjs';
 import { preparePrefixProofs } from './prefix.mjs';
 import { assertPrefixProofs } from './prefix-browser.mjs';
 import { assertSupplementalPrefixArtifacts } from './prefix-supplemental.mjs';
+import {
+  prepareReactInteropProof,
+  assertReactInteropProof,
+} from './react-interop.mjs';
 
 const runFile = promisify(execFile);
 const fixtureDirectory = dirname(fileURLToPath(import.meta.url));
@@ -228,6 +232,7 @@ await assertParentBaseline({
 });
 let isolationCases;
 if (!prefixOnly) {
+  await prepareReactInteropProof({ consumer });
   await runNpm(['run', 'build']);
   await prepareRegistrationProofs({ consumer, runNpm });
   await prepareAggregateProof({
@@ -285,6 +290,7 @@ try {
   browser = await chromium.launch();
   const origin = `http://127.0.0.1:${server.address().port}`;
   if (!prefixOnly) {
+    await assertReactInteropProof({ consumer, browser, origin });
     await assertRegistrationProofs({ consumer, browser, origin });
     await assertAggregateProof({
       consumer,

@@ -95,6 +95,8 @@ export interface MarkdownCustomRendererMountDetail {
  * Narrow on `kind`, never on which of `html` / `element` is present — the two
  * members deliberately declare only their own fields, so reading the wrong one
  * is a compile error rather than a silent `undefined`.
+ *
+ * @reactHostProtocol mount
  */
 export type MarkdownPluginHostMountDetail =
   MarkdownPluginFallbackMountDetail | MarkdownCustomRendererMountDetail;
@@ -318,7 +320,11 @@ export function createMarkdownPluginHostController(
   };
 }
 
-/** Updates an ancestor-owned plugin fallback host. */
+/**
+ * Updates an ancestor-owned plugin fallback host.
+ *
+ * @reactHostProtocol update
+ */
 export interface MarkdownPluginHostUpdateDetail {
   /** Slot that identifies the accepted host. */
   slotName: string;
@@ -326,7 +332,11 @@ export interface MarkdownPluginHostUpdateDetail {
   html: string;
 }
 
-/** Releases an ancestor-owned renderer host. */
+/**
+ * Releases an ancestor-owned renderer host.
+ *
+ * @reactHostProtocol unmount
+ */
 export interface MarkdownPluginHostUnmountDetail {
   /** Slot that identifies the host to release. */
   slotName: string;

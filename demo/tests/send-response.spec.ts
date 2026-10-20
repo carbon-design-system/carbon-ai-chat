@@ -153,17 +153,42 @@ test.describe('demo send mode toggle', () => {
     await page.goto(`/?settings=${encodeURIComponent(settings)}${hash}`);
 
     const toggle = page.getByRole('checkbox', { name: 'Use upsertMessage' });
-    await page.getByRole('button', { name: 'Chat Configuration' }).click();
+    const openConfiguration = async () => {
+      const section = page.locator(
+        'cds-accordion-item[title="Chat Configuration"]'
+      );
+      await expect(
+        page.getByRole('button', { name: 'Chat Configuration' })
+      ).toBeVisible();
+      // Keep the check and click together while saved accordion state restores.
+      await section.evaluate((item) => {
+        if (!item.hasAttribute('open')) {
+          item.shadowRoot!.querySelector('button')!.click();
+        }
+      });
+      await expect(toggle).toBeVisible();
+    };
+    await openConfiguration();
     await expect(toggle).not.toBeChecked();
 
-    await page.getByText('Use upsertMessage').click();
-    await page.waitForURL((url) => url.searchParams.has('useUpsertMessage'));
+    await Promise.all([
+      page.waitForURL((url) => url.searchParams.has('useUpsertMessage'), {
+        waitUntil: 'domcontentloaded',
+      }),
+      page.getByText('Use upsertMessage').click(),
+    ]);
+    await openConfiguration();
     await expect(toggle).toBeChecked();
     expect(new URL(page.url()).searchParams.get('settings')).toBe(settings);
     expect(new URL(page.url()).hash).toBe(hash);
 
-    await page.getByText('Use upsertMessage').click();
-    await page.waitForURL((url) => !url.searchParams.has('useUpsertMessage'));
+    await Promise.all([
+      page.waitForURL((url) => !url.searchParams.has('useUpsertMessage'), {
+        waitUntil: 'domcontentloaded',
+      }),
+      page.getByText('Use upsertMessage').click(),
+    ]);
+    await openConfiguration();
     await expect(toggle).not.toBeChecked();
     expect(new URL(page.url()).searchParams.get('settings')).toBe(settings);
     expect(new URL(page.url()).hash).toBe(hash);

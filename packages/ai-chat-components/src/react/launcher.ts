@@ -7,21 +7,18 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { createComponent } from '@lit/react';
+import { createComponent, type EventName } from '@lit/react';
 import React from 'react';
 
 import { CDSAIChatLauncher } from '../components/aichat-launcher/index.js';
-import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
-const Launcher = withWebComponentBridge(
-  createComponent({
-    tagName: CDSAIChatLauncher.is,
-    elementClass: CDSAIChatLauncher,
-    react: React,
-    events: {
-      onToggle: 'cds-aichat-launcher-toggle',
-    },
-  })
-);
+const Launcher = createComponent({
+  tagName: CDSAIChatLauncher.is,
+  elementClass: CDSAIChatLauncher,
+  react: React,
+  events: {
+    onToggle: 'cds-aichat-launcher-toggle' as EventName<CustomEvent<null>>,
+  },
+});
 
 export default Launcher;
