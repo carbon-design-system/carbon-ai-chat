@@ -462,6 +462,52 @@ test('accepts documented bubbling and composed events from a rendered local desc
   );
 });
 
+test('does not justify descendant events through inert markup or its interpolated templates', () => {
+  const withMarkup = (markup) =>
+    fixture(source, {
+      'src/components/aichat-parent/aichat-parent.ts': `
+        import { html, LitElement } from 'lit';
+        import type { ChangeDetail } from '../aichat-example/aichat-example.js';
+        /**
+         * @element fixture-aichat-parent
+         * @fires {CustomEvent<ChangeDetail>} example-change - Re-exposes its child value.
+         */
+        export default class Parent extends LitElement {
+          static get is() { return 'fixture-aichat-parent'; }
+          render = () => html\`${markup}\`;
+        }
+      `,
+    });
+  const child = '<fixture-aichat-example></fixture-aichat-example>';
+  for (const tag of ['template', 'textarea', 'script', 'style', 'title']) {
+    for (const content of [child, `\${html\`${child}\`}`]) {
+      rejects(
+        withMarkup(`<${tag}>${content}</${tag}>`),
+        /Unjustified.*fixture-aichat-parent.*example-change/
+      );
+    }
+  }
+  for (const markup of [
+    `<!-- ${child} -->`,
+    `<template><template>${child}</template></template>`,
+    `<template data-text="</template>">${child}</template>`,
+  ]) {
+    rejects(
+      withMarkup(markup),
+      /Unjustified.*fixture-aichat-parent.*example-change/
+    );
+  }
+  for (const markup of [
+    `\${html\`${child}\`}`,
+    `<template>${child}</template>${child}`,
+    `<template-preview>${child}</template-preview>`,
+    `<style-preview>${child}</style-preview>`,
+    `<title-bar>${child}</title-bar>`,
+  ]) {
+    assert.doesNotThrow(() => validate(withMarkup(markup)));
+  }
+});
+
 test('keeps same-name event payloads scoped to their own element and re-exposure graph', () => {
   const input = fixture(source, {
     'src/components/aichat-parent/aichat-parent.ts': `

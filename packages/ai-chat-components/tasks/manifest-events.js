@@ -7,6 +7,11 @@
 
 import { validateEventTypes } from './manifest-event-types.js';
 import { fireTags, readEvents } from './manifest-event-producers.js';
+import {
+  isLitSymbol,
+  renderedTemplateContent,
+  returnedExpressions,
+} from './manifest-template-source.js';
 export { fireTags, readEvents } from './manifest-event-producers.js';
 
 function inside(node, owner) {
@@ -16,92 +21,6 @@ function inside(node, owner) {
     }
   }
   return false;
-}
-
-function templateMarkup(model, template) {
-  const { ts } = model;
-  if (ts.isNoSubstitutionTemplateLiteral(template)) {
-    return {
-      markup: template.text,
-      expressions: [],
-      marker: '__caic_expression__',
-    };
-  }
-  const literals = [
-    template.head.text,
-    ...template.templateSpans.map((span) => span.literal.text),
-  ];
-  let marker = '__caic_expression__';
-  while (literals.some((literal) => literal.includes(marker))) {
-    marker += '_';
-  }
-  let markup = template.head.text;
-  const expressions = [];
-  for (const [index, span] of template.templateSpans.entries()) {
-    expressions.push(span.expression);
-    markup += `${marker}${index}${marker}${span.literal.text}`;
-  }
-  return { markup, expressions, marker };
-}
-
-function isLitSymbol(model, node, name, seen = new Set()) {
-  const symbol = model.symbol(node);
-  if (!symbol || seen.has(symbol)) {
-    return false;
-  }
-  seen.add(symbol);
-  return (symbol.declarations ?? []).some((declaration) => {
-    const filename = declaration.getSourceFile().fileName.replaceAll('\\', '/');
-    if (
-      symbol.name === name &&
-      /\/node_modules\/(?:lit|lit-html)\//.test(filename)
-    ) {
-      return true;
-    }
-    return Boolean(
-      declaration.initializer &&
-      isLitSymbol(model, declaration.initializer, name, seen)
-    );
-  });
-}
-
-function returnedExpressions(model, callable) {
-  const { ts } = model;
-  if (ts.isArrowFunction(callable) && !ts.isBlock(callable.body)) {
-    return [callable.body];
-  }
-  const expressions = [];
-  const collect = (node) => {
-    if (ts.isFunctionLike(node)) {
-      return;
-    }
-    if (ts.isReturnStatement(node) && node.expression) {
-      expressions.push(node.expression);
-    }
-    ts.forEachChild(node, collect);
-  };
-  if (callable.body) {
-    collect(callable.body);
-  }
-  return expressions;
-}
-
-function templateChildren(model, template, names) {
-  const { markup, expressions, marker } = templateMarkup(model, template);
-  const children = [];
-  const tokens = new RegExp(
-    String.raw`<!--[\s\S]*?-->|<(\/?)([a-z][a-z0-9-]*)(?:[^"'<>]|"[^"]*"|'[^']*')*>|${marker}(\d+)${marker}`,
-    'g'
-  );
-  for (const match of markup.matchAll(tokens)) {
-    if (match[2] && !match[1]) {
-      names.add(match[2]);
-    }
-    if (match[3] !== undefined) {
-      children.push(expressions[Number(match[3])]);
-    }
-  }
-  return children;
 }
 
 function childExpressions(model, node) {
@@ -178,9 +97,12 @@ function renderedChildren(model, element) {
 function renderedExpressions(model, node, names) {
   const { ts } = model;
   if (ts.isTaggedTemplateExpression(node)) {
-    return isLitSymbol(model, node.tag, 'html')
-      ? templateChildren(model, node.template, names)
-      : [];
+    if (!isLitSymbol(model, node.tag, 'html')) {
+      return [];
+    }
+    const content = renderedTemplateContent(model, node.template);
+    content.tags.forEach((name) => names.add(name));
+    return content.expressions;
   }
   if (ts.isCallExpression(node)) {
     return callReturns(model, node);
