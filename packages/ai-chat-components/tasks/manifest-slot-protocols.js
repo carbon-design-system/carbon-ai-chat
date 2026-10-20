@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { returnedExpressions } from './manifest-events.js';
+import { returnedExpressions } from './manifest-template-source.js';
 
 function declarationSymbol(model, declaration) {
   return model.symbol(declaration.name ?? declaration.parent?.name);

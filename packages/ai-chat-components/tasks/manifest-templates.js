@@ -7,9 +7,10 @@
 
 import {
   isLitSymbol,
+  renderedTemplateContent,
   returnedExpressions,
   templateMarkup,
-} from './manifest-events.js';
+} from './manifest-template-source.js';
 
 function assignedValues(model) {
   const assignments = new Map();
@@ -139,41 +140,6 @@ function callResults(model, call, assignments) {
     }
   }
   return [];
-}
-
-export function renderedMarkup(markup) {
-  const attributes = String.raw`(?:[^"'<>]|"[^"]*"|'[^']*')*`;
-  const raw = new RegExp(
-    String.raw`<!--[\s\S]*?(?:-->|$)|<(script|style|textarea|title|xmp|iframe|noembed|noframes|noscript)(?=[\s/>])${attributes}>[\s\S]*?(?:<\/\1\s*>|$)|<(plaintext)(?=[\s/>])${attributes}>[\s\S]*|<\/?[a-z][\w:-]*\b${attributes}>`,
-    'gi'
-  );
-  const visible = markup.replace(raw, (match, rawText, plainText) =>
-    rawText || plainText || match.startsWith('<!--') ? '' : match
-  );
-  const tags = new RegExp(String.raw`(<\/?[a-z][\w:-]*\b${attributes}>)`, 'gi');
-  let depth = 0;
-  return visible
-    .split(tags)
-    .map((part) => {
-      const inert = part.match(/^<(\/?)template(?=[\s/>])/i);
-      if (inert) {
-        depth = Math.max(0, depth + (inert[1] ? -1 : 1));
-        return '';
-      }
-      return depth ? '' : part;
-    })
-    .join('');
-}
-
-function templateChildren(model, template) {
-  const { markup, expressions, marker } = templateMarkup(model, template);
-  const tokens = new RegExp(
-    String.raw`<!--[\s\S]*?-->|<[^"'<>]*(?:"[^"]*"|'[^']*'|[^"'<>]*)*>|${marker}(\d+)${marker}`,
-    'g'
-  );
-  return [...renderedMarkup(markup).matchAll(tokens)]
-    .filter((match) => match[1] !== undefined)
-    .map((match) => expressions[Number(match[1])]);
 }
 
 function renderableChildren(model, node) {
@@ -327,7 +293,7 @@ function readRenderedTemplates(model, element, assignments) {
         return [];
       }
       templates.add(node);
-      return templateChildren(model, node.template);
+      return renderedTemplateContent(model, node.template).expressions;
     }
     if (ts.isCallExpression(node)) {
       return callResults(model, node, assignments);

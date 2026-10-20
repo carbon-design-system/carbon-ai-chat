@@ -112,6 +112,24 @@ test('compares consumer named slots to source and CEM in both directions while i
   }
 });
 
+test('checks named slots rendered by callable class fields', () => {
+  const text = source.replace(
+    'render() { return html`<slot name="header"></slot><slot></slot>`; }',
+    'render = () => html`<slot name="header"></slot><slot></slot>`;'
+  );
+  const input = fixture(text);
+  assert.deepEqual(
+    validate(input).map((slot) => slot.name),
+    ['header']
+  );
+  rejects(
+    fixture(text.replace('* @slot header - Header content.', '')),
+    /slot header needs one @slot declaration/
+  );
+  input.declaration.slots = [];
+  rejects(input, /slot header needs one manifest entry/);
+});
+
 test('rejects repeated source tags, repeated manifest entries and phantom CEM slots', () => {
   rejects(
     fixture(
