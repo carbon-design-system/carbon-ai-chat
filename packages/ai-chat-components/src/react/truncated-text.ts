@@ -11,15 +11,12 @@ import { createComponent } from '@lit/react';
 import React from 'react';
 
 import { CDSAIChatTruncatedText } from '../components/aichat-truncated-text/index.js';
-import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
-const TruncatedText = withWebComponentBridge(
-  createComponent({
-    tagName: CDSAIChatTruncatedText.is,
-    elementClass: CDSAIChatTruncatedText,
-    react: React,
-  })
-);
+const TruncatedText = createComponent({
+  tagName: CDSAIChatTruncatedText.is,
+  elementClass: CDSAIChatTruncatedText,
+  react: React,
+});
 
 export { TruncatedText };
 export default TruncatedText;

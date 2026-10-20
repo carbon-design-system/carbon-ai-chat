@@ -11,6 +11,10 @@ import React, { useCallback, useMemo } from 'react';
 import { Card, CardFooter } from '@carbon/ai-chat-components/es/react/card.js';
 import Maximize16 from '@carbon/icons/es/maximize/16.js';
 import View16 from '@carbon/icons/es/view/16.js';
+import {
+  BUTTON_KIND,
+  BUTTON_SIZE,
+} from '@carbon/web-components/es/components/button/defs.js';
 
 import { useServiceManager } from '../../../hooks/useServiceManager';
 import { PanelType } from '../../../../types/instance/apiTypes';
@@ -85,7 +89,7 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
       {
         icon: isViewing ? View16 : Maximize16,
         id: 'docs',
-        kind: 'ghost',
+        kind: BUTTON_KIND.GHOST,
         label: isViewing ? 'Viewing' : 'View details',
         payload: { test: 'value' },
         isViewing,
@@ -106,7 +110,7 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
       <CardFooter
         actions={footerActions}
         onFooterAction={handleClick}
-        size="md"
+        size={BUTTON_SIZE.MEDIUM}
       />
     </Card>
   );

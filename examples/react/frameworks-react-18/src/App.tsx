@@ -28,10 +28,12 @@ import {
   PublicConfig,
 } from '@carbon/ai-chat';
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import { createRoot, type Root } from 'react-dom/client';
+import { flushSync } from 'react-dom';
 
 import { customSendMessage } from './customSendMessage';
 import '@carbon/styles/css/styles.css';
+import { startReactInterop } from '../../../../tools/carbon-v12-consumer/react-interop-fixture.js';
 
 const config: PublicConfig = {
   // route outbound messages through a local mock so the example runs without a backend; the React 18 mount path is the focus, not the messaging surface.
@@ -99,4 +101,23 @@ function App() {
   return <ChatContainer {...config} />;
 }
 
-createRoot(document.querySelector('#root') as HTMLElement).render(<App />);
+const container = document.querySelector('#root') as HTMLElement;
+if (new URLSearchParams(window.location.search).has('interop')) {
+  let root: Root | undefined;
+  // Each fixture case unmounts its root to verify ref cleanup before the next case.
+  void startReactInterop({
+    container,
+    expectedMajor: 18,
+    render: (node: React.ReactNode) =>
+      flushSync(() => {
+        root ??= createRoot(container);
+        root.render(node);
+      }),
+    unmount: () => {
+      flushSync(() => root!.unmount());
+      root = undefined;
+    },
+  });
+} else {
+  createRoot(container).render(<App />);
+}

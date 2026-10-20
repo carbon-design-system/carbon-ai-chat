@@ -29,9 +29,11 @@ import {
 } from '@carbon/ai-chat';
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { flushSync } from 'react-dom';
 
 import { customSendMessage } from './customSendMessage';
 import '@carbon/styles/css/styles.css';
+import { startReactInterop } from '../../../../tools/carbon-v12-consumer/react-interop-fixture.js';
 
 const config: PublicConfig = {
   // route outbound messages through a local mock so the example runs without a backend; the React 17 mount path is the focus, not the messaging surface.
@@ -109,6 +111,21 @@ function App() {
   return <ChatContainer {...config} />;
 }
 
-// React 17 ships `ReactDOM.render` as the supported mount API; the lint rule flags it as deprecated against React 18+ types, but this example exists specifically to prove React 17 compatibility, so we suppress the rule here rather than migrate to `createRoot`.
-// eslint-disable-next-line react/no-deprecated -- this example intentionally demonstrates React 17's legacy render API
-ReactDOM.render(<App />, document.querySelector('#root'));
+const container = document.querySelector('#root') as HTMLElement;
+if (new URLSearchParams(window.location.search).has('interop')) {
+  // The fixture uses this app's legacy renderer so its component checks exercise React 17.
+  void startReactInterop({
+    container,
+    expectedMajor: 17,
+    render: (node: React.ReactNode) =>
+      flushSync(() => {
+        // eslint-disable-next-line react/no-deprecated -- React 17 compatibility requires the legacy renderer
+        ReactDOM.render(node, container);
+      }),
+    // eslint-disable-next-line react/no-deprecated -- React 17 compatibility requires legacy root cleanup
+    unmount: () => ReactDOM.unmountComponentAtNode(container),
+  });
+} else {
+  // eslint-disable-next-line react/no-deprecated -- React 17 compatibility requires the legacy renderer
+  ReactDOM.render(<App />, container);
+}

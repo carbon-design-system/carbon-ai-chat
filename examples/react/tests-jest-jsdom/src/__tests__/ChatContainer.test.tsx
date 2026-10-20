@@ -12,9 +12,8 @@
  *
  * Demonstrates: that the runner harness can mount the chat's web-component
  * wrapper, observe slotted light-DOM children, and produce a stable snapshot
- * of the host element. Because jsdom does NOT implement shadow DOM, these
- * specs verify only what is reachable from the light tree - mount success,
- * slotted React content, and the serialized host markup.
+ * of the host element. These smoke tests focus on mount success, supplied
+ * light-DOM content, and serialized host markup.
  *
  * APIs exercised: `ChatContainer`, `messaging.customSendMessage`,
  * `renderWriteableElements.headerBottomElement`, `@testing-library/react`
@@ -49,8 +48,7 @@ describe('ChatContainer', () => {
       )
     );
 
-    // only the custom-element host is reachable from the light DOM in
-    // jsdom; querying inside its shadow root would silently return null.
+    // Wait for the public host before checking its supplied light-DOM content.
     const customElement = await waitFor(() =>
       container.querySelector('cds-aichat-container')
     );
@@ -75,9 +73,7 @@ describe('ChatContainer', () => {
       )
     );
 
-    // slotted children live in light DOM regardless of where the
-    // component projects them, so they remain queryable under jsdom even
-    // when the slot's shadow-DOM destination is not observable.
+    // Supplied slot content remains in light DOM after projection.
     const slotWrapper = await waitFor(() =>
       container.querySelector('[slot="headerBottomElement"]')
     );

@@ -8,13 +8,12 @@
  */
 
 /**
- * Jest setup wired into `setupFilesAfterEach` for the jsdom test environment.
+ * Jest setup wired into `setupFilesAfterEnv` for the jsdom test environment.
  *
  * Demonstrates: registering `@testing-library/jest-dom` matchers, eagerly
  * resolving the chat's lazy chunks via `loadAllLazyDeps`, and stubbing
- * `ResizeObserver` so Carbon components can mount under jsdom. jsdom does NOT
- * implement shadow DOM, so the test surface here is intentionally limited to
- * the light-DOM custom-element host and slotted children.
+ * `ResizeObserver` so Carbon components can mount under jsdom. These smoke
+ * tests check the public host and supplied light-DOM content, not layout.
  *
  * APIs exercised: `loadAllLazyDeps` (`@carbon/ai-chat/server`), Jest globals
  * (`beforeAll`, `beforeEach`, `jest.fn`).

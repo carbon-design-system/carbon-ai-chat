@@ -6,9 +6,18 @@
  */
 
 import assert from 'node:assert/strict';
+import path from 'node:path';
 import { test } from 'node:test';
+import { create, ts } from '@custom-elements-manifest/analyzer';
+import { litPlugin } from '@custom-elements-manifest/analyzer/src/features/framework-plugins/lit/lit.js';
+import {
+  carbonElementTagPlugin,
+  componentModulePathsPlugin,
+} from '../cem-plugins.js';
 import { readSource } from '../manifest-source.js';
-import { readWrappers } from '../manifest-wrappers.js';
+import { readWrappers, validateWrapperEvents } from '../manifest-wrappers.js';
+import { validateEvents } from '../manifest-events.js';
+import { manifestEventsPlugin } from '../manifest-events-plugin.js';
 
 const element = `
   export default class Example extends HTMLElement {
@@ -434,5 +443,358 @@ test('resolves the production wrappers through their final exported adapters', (
         entry.exportName === 'CardFooter'
     ).element.tagName,
     'cds-aichat-card-footer'
+  );
+});
+
+const contractElement = `
+  export interface ChangeDetail { value: string; }
+  /**
+   * @element fixture-aichat-example
+   * @fires {CustomEvent<ChangeDetail>} example-change - Contains the updated value.
+   */
+  export default class Example extends HTMLElement {
+    static get is() { return 'fixture-aichat-example'; }
+    static get eventChange() { return 'example-change'; }
+    emit() { this.dispatchEvent(new CustomEvent<ChangeDetail>('example-change', {
+      detail: { value: 'first' }, bubbles: true, composed: true,
+    })); }
+  }
+`;
+
+function strictModel({
+  callback = "'example-change' as EventName<CustomEvent<ChangeDetail>>",
+  extra = {},
+  wrapper,
+  source = contractElement,
+} = {}) {
+  return model(
+    wrapper ??
+      `${imports}
+    import type { ChangeDetail } from '../components/aichat-example/index.js';
+    export default createComponent({
+      tagName: Example.is, elementClass: Example, react: React,
+      events: { onChange: ${callback} },
+    });
+  `,
+    {
+      'src/components/aichat-example/aichat-example.ts': source,
+      'src/components/aichat-example/index.ts': `
+      export { default as Example } from './aichat-example.js';
+      export type { ChangeDetail } from './aichat-example.js';
+    `,
+      ...extra,
+    }
+  );
+}
+
+function strictInput(model) {
+  const manifest = create({
+    modules: model.sources.map((entry) =>
+      ts.createSourceFile(
+        path.relative(model.root, entry.fileName),
+        entry.text,
+        ts.ScriptTarget.Latest,
+        true,
+        entry.fileName.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS
+      )
+    ),
+    plugins: [
+      ...litPlugin(),
+      carbonElementTagPlugin({ prefix: 'fixture' }),
+      componentModulePathsPlugin(),
+      manifestEventsPlugin({ model }),
+    ],
+  });
+  const wrappers = readWrappers(model);
+  const { pairs } = validateEvents(model, manifest);
+  return { model, wrappers, pairs };
+}
+
+function strictValidate(model) {
+  const input = strictInput(model);
+  validateWrapperEvents(input.model, input.wrappers, input.pairs);
+  return input;
+}
+
+test('validates exact CEM event types using aliased public family exports', () => {
+  assert.doesNotThrow(() =>
+    strictValidate(
+      strictModel({
+        wrapper: `${imports}
+      import type { ChangeDetail as Payload } from '../components/aichat-example/index.js';
+      export default React.memo(createComponent({
+        tagName: Example.is, elementClass: Example, react: React,
+        events: { onChange: Example.eventChange as EventName<CustomEvent<Payload>> },
+      }));
+    `,
+      })
+    )
+  );
+});
+
+test('rejects missing, widened, unresolved, inline and foreign event detail casts', () => {
+  for (const callback of [
+    "'example-change'",
+    "'example-change' as EventName<CustomEvent>",
+    "'example-change' as EventName<CustomEvent<any>>",
+    "'example-change' as EventName<CustomEvent<unknown>>",
+    "'example-change' as EventName<CustomEvent<never>>",
+    "'example-change' as EventName<CustomEvent<Missing>>",
+    "'example-change' as EventName<CustomEvent<{ value: string }>>",
+    "'example-change' as EventName<CustomEvent<ChangeDetail | null>>",
+    "'example-change' as EventName<KeyboardEvent>",
+  ]) {
+    assert.throws(
+      () => strictValidate(strictModel({ callback })),
+      /example\.tsx:\d+.*(?:EventName|public|DOM event)/
+    );
+  }
+  assert.throws(
+    () =>
+      strictValidate(
+        strictModel({
+          wrapper: `${imports}
+      import type { ForeignDetail } from './foreign.js';
+      export default createComponent({
+        tagName: Example.is, elementClass: Example, react: React,
+        events: { onChange: 'example-change' as EventName<CustomEvent<ForeignDetail>> },
+      });
+    `,
+          extra: {
+            'src/react/foreign.ts':
+              'export interface ForeignDetail { value: string; }',
+          },
+        })
+      ),
+    /EventName<CustomEvent<ChangeDetail>>/
+  );
+});
+
+test('requires details to remain exported by their owning canonical family', () => {
+  assert.throws(
+    () =>
+      strictValidate(
+        strictModel({
+          extra: {
+            'src/components/aichat-example/index.ts':
+              "export { default as Example } from './aichat-example.js';",
+          },
+        })
+      ),
+    /Export public event detail ChangeDetail.*owning canonical family/
+  );
+});
+
+test('rejects undocumented bindings and requires every public pair on a wrapped element', () => {
+  assert.throws(
+    () =>
+      strictValidate(
+        strictModel({
+          callback: "'undocumented' as EventName<CustomEvent<ChangeDetail>>",
+        })
+      ),
+    /Undocumented wrapper binding onChange.*undocumented/
+  );
+  assert.throws(
+    () =>
+      strictValidate(
+        strictModel({
+          wrapper: `${imports}
+      const Base = createComponent({ tagName: Example.is, elementClass: Example, react: React });
+      export default React.forwardRef((props, ref) => <Base {...props} ref={ref} />);
+    `,
+        })
+      ),
+    /Missing React callback.*fixture-aichat-example.*example-change/
+  );
+});
+
+test('requires an exported wrapper when a whole factory is removed or a public event owner is added', () => {
+  assert.throws(
+    () => strictValidate(strictModel({ wrapper: 'export {};' })),
+    /Missing exported React wrapper.*fixture-aichat-example.*example-change/
+  );
+  assert.throws(
+    () =>
+      strictValidate(
+        strictModel({
+          extra: {
+            'src/components/aichat-orphan/aichat-orphan.ts': contractElement
+              .replaceAll('Example', 'Orphan')
+              .replaceAll('fixture-aichat-example', 'fixture-aichat-orphan'),
+            'src/components/aichat-orphan/index.ts':
+              "export { default as Orphan, type ChangeDetail } from './aichat-orphan.js';",
+          },
+        })
+      ),
+    /Missing exported React wrapper.*fixture-aichat-orphan.*example-change/
+  );
+});
+
+test('keeps native keyboard and focus event types exact', () => {
+  for (const native of ['KeyboardEvent', 'FocusEvent']) {
+    const source = contractElement
+      .replace('CustomEvent<ChangeDetail>', native)
+      .replace(
+        "new CustomEvent<ChangeDetail>('example-change', {\n      detail: { value: 'first' }, bubbles: true, composed: true,",
+        `new ${native}('example-change', { bubbles: true, composed: true,`
+      );
+    assert.doesNotThrow(() =>
+      strictValidate(
+        strictModel({
+          source,
+          callback: `'example-change' as EventName<${native}>`,
+        })
+      )
+    );
+    assert.throws(
+      () =>
+        strictValidate(
+          strictModel({
+            source,
+            callback: "'example-change' as EventName<Event>",
+          })
+        ),
+      new RegExp(`EventName<${native}>`)
+    );
+  }
+});
+
+test('validates ancestor reexposure against the ancestor family public detail symbol', () => {
+  const source = contractElement
+    .replace(
+      'export interface ChangeDetail { value: string; }',
+      `
+    import { html } from 'lit';
+    import type { ChangeDetail } from '../aichat-child/index.js';
+  `
+    )
+    .replace(
+      / {4}emit\(\)[\s\S]*?\}\n {2}\}/,
+      '    render() { return html`<fixture-aichat-child></fixture-aichat-child>`; }\n  }'
+    );
+  const extra = {
+    'src/components/aichat-example/index.ts': `
+      export { default as Example } from './aichat-example.js';
+      export type { ChangeDetail } from '../aichat-child/index.js';
+    `,
+    'src/components/aichat-child/aichat-child.ts': contractElement
+      .replaceAll('Example', 'Child')
+      .replaceAll('fixture-aichat-example', 'fixture-aichat-child'),
+    'src/components/aichat-child/index.ts':
+      "export { default as Child, type ChangeDetail } from './aichat-child.js';",
+    'src/react/child.ts': `
+      import React from 'react';
+      import { createComponent, type EventName } from '@lit/react';
+      import { Child, type ChangeDetail } from '../components/aichat-child/index.js';
+      export default createComponent({
+        tagName: Child.is, elementClass: Child, react: React,
+        events: { onChange: Child.eventChange as EventName<CustomEvent<ChangeDetail>> },
+      });
+    `,
+  };
+  const input = strictValidate(strictModel({ source, extra }));
+  const pair = input.pairs.find(
+    (entry) => entry.element.className === 'Example'
+  );
+  assert.equal(pair.producers.length, 1);
+  assert.equal(pair.producers[0].element.className, 'Child');
+});
+
+function hostModel({ tags = {}, callback = '', extra = {} } = {}) {
+  const details = ['Mount', 'Update', 'Unmount'];
+  const types = details.map((name) => `MarkdownPluginHost${name}Detail`);
+  const roles = details.map((name) => name.toLowerCase());
+  return readSource({
+    prefix: 'fixture',
+    files: {
+      'src/components/aichat-markdown/utils/plugin-host-container.ts': types
+        .map(
+          (type, index) => `
+      /** @reactHostProtocol ${tags[roles[index]] ?? roles[index]} */
+      export interface ${type} { value: string; }
+    `
+        )
+        .join('\n'),
+      'src/components/aichat-markdown/index.ts': `
+      export { default as Markdown } from './aichat-markdown.js';
+      export type { ${types.join(', ')} } from './utils/plugin-host-container.js';
+    `,
+      'src/components/aichat-markdown/aichat-markdown.ts': `
+      import type { ${types.join(', ')} } from './utils/plugin-host-container.js';
+      /**
+       * @element fixture-aichat-markdown
+       ${types.map((type, index) => `* @fires {CustomEvent<${type}>} host-${roles[index]} - Offers a host protocol transition.`).join('\n')}
+       */
+      export default class Markdown extends HTMLElement {
+        static get is() { return 'fixture-aichat-markdown'; }
+        emit() { ${types.map((type, index) => `this.dispatchEvent(new CustomEvent<${type}>('host-${roles[index]}', { detail: { value: 'host' } }));`).join('\n')} }
+      }
+    `,
+      'src/react/markdown.ts': `
+      import React from 'react';
+      import { createComponent, type EventName } from '@lit/react';
+      import { Markdown, type MarkdownPluginHostMountDetail } from '../components/aichat-markdown/index.js';
+      export default createComponent({ tagName: Markdown.is, elementClass: Markdown, react: React, events: { ${callback} } });
+    `,
+      ...extra,
+    },
+  });
+}
+
+test('exempts only the three Markdown hosting event roles resolved through public symbols', () => {
+  assert.doesNotThrow(() => strictValidate(hostModel()));
+  assert.throws(
+    () =>
+      strictValidate(
+        hostModel({
+          callback:
+            "onMount: 'host-mount' as EventName<CustomEvent<MarkdownPluginHostMountDetail>>",
+        })
+      ),
+    /hosting protocol events are not React callback props/
+  );
+  for (const tags of [
+    { mount: 'other' },
+    { update: 'mount' },
+    { mount: '' },
+    { mount: 'mount\n * @reactHostProtocol mount' },
+  ]) {
+    assert.throws(
+      () => strictValidate(hostModel({ tags })),
+      /distinct Markdown hosting protocol role|all three Markdown/
+    );
+  }
+});
+
+test('rejects foreign protocol role annotations and does not exempt other element owners', () => {
+  assert.throws(
+    () =>
+      strictValidate(
+        hostModel({
+          extra: {
+            'src/react/foreign.ts':
+              '/** @reactHostProtocol mount */ export interface ForeignDetail { value: string; }',
+          },
+        })
+      ),
+    /distinct Markdown hosting protocol role/
+  );
+  const input = strictInput(hostModel());
+  const markdownPair = input.pairs.find((pair) => pair.name === 'host-mount');
+  const foreign = {
+    ...markdownPair.element,
+    node: input.wrappers[0].node,
+    tagName: 'fixture-aichat-foreign',
+  };
+  input.pairs.push({ ...markdownPair, element: foreign });
+  input.wrappers.push({
+    ...input.wrappers[0],
+    element: foreign,
+    node: input.wrappers[0].node.parent,
+  });
+  assert.throws(
+    () => validateWrapperEvents(input.model, input.wrappers, input.pairs),
+    /Missing React callback.*fixture-aichat-foreign.*host-mount/
   );
 });

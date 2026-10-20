@@ -14,7 +14,10 @@ import ChevronLeft16 from '@carbon/icons/es/chevron--left/16.js';
 import CloseLarge16 from '@carbon/icons/es/close--large/16.js';
 import Toolbar from '@carbon/ai-chat-components/es/react/toolbar.js';
 import IconButton from '../carbon/IconButton';
-import { BUTTON_KIND } from '@carbon/web-components/es/components/button/defs.js';
+import {
+  BUTTON_KIND,
+  BUTTON_SIZE,
+} from '@carbon/web-components/es/components/button/defs.js';
 import { MarkdownWithDefaults } from '../helpers/MarkdownWithDefaults/MarkdownWithDefaults';
 import { isDirectionRTL } from '../../utils/domUtils';
 import { carbonIconToReact } from '../../utils/carbonIcon';
@@ -72,7 +75,7 @@ function PanelHeader({
       {
         text: labelBackButton ?? '',
         icon: backButtonIcon,
-        size: 'md',
+        size: BUTTON_SIZE.MEDIUM,
         onClick: () => onClickBack?.(),
       },
     ];

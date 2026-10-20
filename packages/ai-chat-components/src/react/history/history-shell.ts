@@ -7,17 +7,20 @@
  *  @license
  */
 
-import { createComponent } from '@lit/react';
+import { createComponent, type EventName } from '@lit/react';
 import React from 'react';
 import { CDSAIChatHistoryShell } from '../../components/aichat-history/index.js';
-import { withWebComponentBridge } from '../utils/withWebComponentBridge.js';
+import type { HistoryItemSelectedEventDetail } from '../../components/aichat-history/index.js';
 
-const HistoryShell = withWebComponentBridge(
-  createComponent({
-    tagName: CDSAIChatHistoryShell.is,
-    elementClass: CDSAIChatHistoryShell,
-    react: React,
-  })
-);
+const HistoryShell = createComponent({
+  tagName: CDSAIChatHistoryShell.is,
+  elementClass: CDSAIChatHistoryShell,
+  react: React,
+  events: {
+    onSelected: 'history-item-selected' as EventName<
+      CustomEvent<HistoryItemSelectedEventDetail>
+    >,
+  },
+});
 
 export default HistoryShell;

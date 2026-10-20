@@ -143,6 +143,7 @@ const config = [
             'element',
             'eventOwner',
             'eventProtocol',
+            'reactHostProtocol',
             'experimental',
             'typeParam',
             'template',

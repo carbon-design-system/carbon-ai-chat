@@ -167,7 +167,6 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
   const backButtonLabel = languagePack.homeScreen_returnToHome;
   const closeButtonLabel = languagePack.launcher_isOpen;
   const overflowMenuTooltip = languagePack.header_overflowMenu_options;
-  const overflowMenuAriaLabel = languagePack.components_overflow_ariaLabel;
   const restartButtonLabel = languagePack.buttons_restart;
   const aiSlugLabel = languagePack.ai_slug_label;
   const aiSlugTitle = languagePack.ai_slug_title;
@@ -410,10 +409,8 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
         navigationBackOnClick={handleBackButtonClick}
         navigationOverflowItems={navigationOverflowItemsWithHandlers}
         navigationOverflowLabel={overflowMenuTooltip}
-        navigationOverflowAriaLabel={overflowMenuAriaLabel}
         navigationOverflowIcon={Menu16}
-        navigationOverflowOnClick={handleOverflowMenuClick}
-        navigationTooltipAlign="right">
+        navigationOverflowOnClick={handleOverflowMenuClick}>
         {/* Decorator slot - AI Label */}
         {showAiSlugContent && (
           <AISlug
