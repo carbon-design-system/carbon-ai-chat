@@ -436,7 +436,7 @@ describe('editor light-DOM hosts', () => {
     expect(hosts.getSnapshot().lightDom).toHaveLength(1);
   });
 
-  it('releases its listener, observer, and store subscription on disconnect', async () => {
+  it('releases its listener and observer on disconnect', async () => {
     const { hosts, place, lightHosts } = setupEditor();
     const container = place(document.createElement('b'));
     const observerDisconnect = jest.spyOn(
@@ -492,4 +492,129 @@ it('stops following the store after disconnect', () => {
   expect(listeners.size).toBe(1);
   hosts.disconnect();
   expect(listeners.size).toBe(0);
+});
+
+describe('input-node hosts', () => {
+  function messageWith(node: { type: string }) {
+    return {
+      id: 'm',
+      input: {
+        text: 'x',
+        display_content: {
+          type: 'doc',
+          content: [{ type: 'paragraph', content: [node] }],
+        },
+      },
+    };
+  }
+
+  function setupMessages() {
+    const listeners = new Set<() => void>();
+    let allMessagesByID: Record<string, unknown> = {
+      m: messageWith({ type: 'taskCard' }),
+    };
+    const store = {
+      getState: () => ({ allMessagesByID }) as never,
+      subscribe: (listener: () => void) => {
+        listeners.add(listener);
+        return () => listeners.delete(listener);
+      },
+    };
+    const eventBus = new EventBus();
+    const instance = eventBus as unknown as ChatInstance;
+    const hosts = new ExtensionHosts(
+      instance,
+      document.createElement('div'),
+      store,
+      () => false
+    );
+    hosts.connect();
+    const setMessages = (next: Record<string, unknown>) => {
+      allMessagesByID = next;
+      listeners.forEach((listener) => listener());
+    };
+    const fire = (event: unknown) =>
+      eventBus.fireSync(event as never, instance);
+    return { hosts, setMessages, fire };
+  }
+
+  it('replaces a host whose node changes between token and other kinds', () => {
+    const { hosts, setMessages } = setupMessages();
+    const [entry] = hosts.getSnapshot().inputNode;
+    const first = hosts.inputNodeHostFor(entry);
+    expect(hosts.inputNodeHostFor(entry)).toBe(first);
+
+    setMessages({ m: messageWith({ type: 'mention' }) });
+
+    const [next] = hosts.getSnapshot().inputNode;
+    expect(next.slotKey).toBe(entry.slotKey);
+    expect(hosts.inputNodeHostFor(next)).not.toBe(first);
+  });
+
+  function blockMessage(id: string) {
+    return {
+      id,
+      input: {
+        text: 'x',
+        display_content: { type: 'doc', content: [{ type: 'taskCard' }] },
+      },
+    };
+  }
+
+  /** Reports a renderer and content for each entry, as the adapter does. */
+  function attachAll(hosts: ExtensionHosts) {
+    hosts.setRendererPresent('inputNode', true);
+    return hosts.getSnapshot().inputNode.map((entry) => {
+      const host = hosts.inputNodeHostFor(entry);
+      hosts.setHasContent('inputNode', entry.slotKey, true);
+      return host;
+    });
+  }
+
+  it('keeps the other host attached when one of two messages leaves', () => {
+    const { hosts, setMessages } = setupMessages();
+    const kept = blockMessage('b');
+    setMessages({ a: blockMessage('a'), b: kept });
+    const [removedHost, keptHost] = attachAll(hosts);
+    const chatWrapper = keptHost.parentElement;
+    expect(chatWrapper).not.toBeNull();
+    expect(removedHost.parentElement).toBe(chatWrapper);
+
+    setMessages({ b: kept });
+
+    const [entry] = hosts.getSnapshot().inputNode;
+    expect(entry.slotKey).toBe('b::0');
+    expect(removedHost.parentElement).toBeNull();
+    expect(keptHost.parentElement).toBe(chatWrapper);
+    expect(hosts.inputNodeHostFor(entry)).toBe(keptHost);
+  });
+
+  it('detaches input-node hosts on disconnect and reattaches them on reconnect', () => {
+    const { hosts, setMessages } = setupMessages();
+    setMessages({ a: blockMessage('a') });
+    const [host] = attachAll(hosts);
+    const chatWrapper = host.parentElement;
+    expect(chatWrapper).not.toBeNull();
+
+    hosts.disconnect();
+    expect(host.parentElement).toBeNull();
+
+    hosts.connect();
+    expect(host.parentElement).toBe(chatWrapper);
+    expect(chatWrapper.children).toHaveLength(1);
+  });
+
+  it('keeps input-node hosts through a restart and releases them with their message', () => {
+    const { hosts, setMessages, fire } = setupMessages();
+    const [entry] = hosts.getSnapshot().inputNode;
+    const host = hosts.inputNodeHostFor(entry);
+
+    fire(restartEvent);
+    expect(hosts.getSnapshot().inputNode).toEqual([entry]);
+    expect(hosts.inputNodeHostFor(entry)).toBe(host);
+
+    setMessages({});
+    expect(hosts.getSnapshot().inputNode).toEqual([]);
+    expect(hosts.inputNodeHostFor(entry)).not.toBe(host);
+  });
 });
