@@ -189,9 +189,15 @@ function sameForAll<T>(value: (subject: Subject) => T): Record<string, T> {
 
 /** Slot names a surface forwards inward, or null where it forwards none. */
 function forwardedNames(subject: Subject): string[] | null {
-  return (
-    (subject.host as unknown as { _pluginSlotNames?: string[] })
-      ._pluginSlotNames ?? null
+  // Only the outer element forwards; it keeps a `<slot name=X slot=X>` per
+  // hosted name inside its inner container.
+  const inner = subject.host.shadowRoot?.querySelector('cds-aichat-container');
+  if (subject.name !== 'cds-aichat-custom-element' || !inner) {
+    return null;
+  }
+  return Array.from(
+    inner.querySelectorAll<HTMLSlotElement>(':scope > slot[slot]'),
+    (forwarder) => forwarder.name
   );
 }
 
@@ -475,6 +481,63 @@ describe('plugin-host protocol: forwarder slot names', () => {
 });
 
 describe('plugin-host protocol: nested topology', () => {
+  it.each([
+    [
+      'plugin-fallback',
+      (slotName: string) => fallbackDetail(slotName, '<i>x</i>', true),
+    ],
+    [
+      'custom-renderer',
+      (slotName: string) =>
+        rendererDetail(slotName, document.createElement('span')),
+    ],
+  ])(
+    'cds-aichat-custom-element slots a %s host into the inner container in the same task',
+    (label, detail) => {
+      const inner = customElement.shadowRoot?.querySelector<HTMLElement>(
+        'cds-aichat-container'
+      );
+      if (!inner) {
+        throw new Error(
+          'cds-aichat-custom-element rendered no inner container'
+        );
+      }
+
+      const slotName = `same-task-${label}`;
+      inner.dispatchEvent(mountEvent(detail(slotName)));
+
+      // No settle: content mounting in this task must already be slotted.
+      const host = customElement.querySelector<HTMLElement>(
+        `[slot="${slotName}"]:not(slot)`
+      );
+      expect(host?.assignedSlot?.parentElement).toBe(inner);
+    }
+  );
+
+  it('cds-aichat-custom-element keeps a host slotted when its name leaves and returns in one task', async () => {
+    const inner = customElement.shadowRoot?.querySelector<HTMLElement>(
+      'cds-aichat-container'
+    );
+    if (!inner) {
+      throw new Error('cds-aichat-custom-element rendered no inner container');
+    }
+
+    const slotName = 'same-task-return';
+    const live = document.createElement('span');
+    inner.dispatchEvent(mountEvent(rendererDetail(slotName, live)));
+    await (customElement as unknown as { updateComplete: Promise<void> })
+      .updateComplete;
+
+    inner.dispatchEvent(plainEvent(UNMOUNT, { slotName }));
+    inner.dispatchEvent(mountEvent(rendererDetail(slotName, live)));
+
+    expect(live.assignedSlot?.parentElement).toBe(inner);
+    await (customElement as unknown as { updateComplete: Promise<void> })
+      .updateComplete;
+    expect(live.assignedSlot?.parentElement).toBe(inner);
+    expect(inner.querySelectorAll(`slot[name="${slotName}"]`)).toHaveLength(1);
+  });
+
   it('cds-aichat-container declines when an outer chat element is present', async () => {
     const inner = customElement.shadowRoot?.querySelector<HTMLElement>(
       'cds-aichat-container'
