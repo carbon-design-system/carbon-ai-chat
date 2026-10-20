@@ -8,6 +8,7 @@
  */
 
 /* eslint-disable */
+import { manifestEventArgTypes } from '../../../../.storybook-react/manifest-event-arg-types.js';
 import React from 'react';
 
 import Feedback from '../../../react/feedback';
@@ -74,22 +75,14 @@ export default {
       control: 'boolean',
       description: 'Show the body text (defaults to false)',
     },
-    onSubmit: {
-      action: 'onSubmit',
-      table: { category: 'events' },
-      description:
-        'Fires when feedback is submitted. `event.detail` includes text and selectedCategories.',
-    },
-    onClose: {
-      action: 'onClose',
-      table: { category: 'events' },
-      description: 'Fires when the panel is closed without submitting.',
-    },
+
     maxLength: {
       control: 'number',
       description:
         'The maximum number of characters allowed in the feedback text area.',
     },
+
+    ...manifestEventArgTypes(Feedback),
   },
 };
 
@@ -240,4 +233,10 @@ export const ReadOnly = {
         selectedCategories: ['Inaccurate', 'Not relevant'],
       },
     }),
+};
+
+export const FeedbackEvents = {
+  tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
+  argTypes: { ...manifestEventArgTypes(Feedback) },
 };

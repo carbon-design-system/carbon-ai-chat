@@ -50,8 +50,8 @@
     "start": "concurrently --names storybook,storybook-react,build --prefix-colors cyan,magenta,yellow --restart-tries Infinity --restart-after 2000 \"npm run storybook\" \"npm run storybook:react\" \"node tasks/build.js --watch\"",
     "storybook": "npm run custom-elements && storybook dev -p 6006",
     "storybook:build": "npm run custom-elements && storybook build",
-    "storybook:react": "storybook dev -p 7007 -c .storybook-react",
-    "storybook:react:build": "storybook build -c .storybook-react -o storybook-react-static",
+    "storybook:react": "npm run custom-elements && npm run generate:react-docs && storybook dev -p 7007 -c .storybook-react",
+    "storybook:react:build": "npm run custom-elements && npm run generate:react-docs && storybook build -c .storybook-react -o storybook-react-static",
     "telemetry:config": "npx -y @ibm/telemetry-js-config-generator generate --id 62aa153d-8a70-4d12-9e8d-069511e80e65 --endpoint https://www-api.ibm.com/ibm-telemetry/v1/metrics --files ./src/components --wc",
     "test": "npm run test:manifest && npm run test:web-components && npm run test:react && npm run test:react:interop && npm run test:react:types",
     "test:react": "jest",
@@ -61,7 +61,9 @@
     "test:prefix-build": "node --test tasks/__tests__/prefix-build.test.js",
     "validate:manifest": "node tasks/validate-manifest.js",
     "test:react:interop": "jest --config jest.interop.config.cjs --runInBand",
-    "test:react:types": "node ../../tools/carbon-v12-consumer/react-types.mjs"
+    "test:react:types": "node ../../tools/carbon-v12-consumer/react-types.mjs",
+    "generate:react-docs": "node tasks/manifest-react-docs.js",
+    "test:react-docs": "node --test tasks/__tests__/manifest-react-docs*.test.js"
   },
   "peerDependencies": {
     "react": ">=17.0.0 <20.0.0"
@@ -132,6 +134,7 @@
     "@carbon/themes": "^12.0.0-alpha.3",
     "@custom-elements-manifest/analyzer": "^0.11.0",
     "@happy-dom/jest-environment": "^20.0.2",
+    "@mdx-js/mdx": "^3.1.1",
     "@mordech/vite-lit-loader": "^0.40.0",
     "@open-wc/testing": "4.0.0",
     "@rollup/plugin-alias": "^6.0.0",

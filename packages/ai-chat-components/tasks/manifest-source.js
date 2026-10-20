@@ -20,6 +20,7 @@ const compilerOptions = {
   skipLibCheck: true,
   allowSyntheticDefaultImports: true,
   noEmit: true,
+  allowJs: true,
 };
 const sourceIncludes = [
   'index.ts',
@@ -69,18 +70,23 @@ function createHost(virtual) {
   return host;
 }
 
-function createProgram(root, files) {
+function createProgram(root, files, additionalFiles) {
+  const extraFiles = Array.isArray(additionalFiles) ? {} : additionalFiles;
+  const supplied =
+    files || Object.keys(extraFiles).length
+      ? { ...extraFiles, ...files }
+      : undefined;
   const virtual =
-    files &&
+    supplied &&
     new Map(
-      Object.entries(files).map(([file, text]) => [
+      Object.entries(supplied).map(([file, text]) => [
         path.resolve(root, file),
         text,
       ])
     );
   const sourceRoot = path.join(root, 'src');
-  const names = virtual
-    ? [...virtual.keys()]
+  const names = files
+    ? Object.keys(files).map((file) => path.resolve(root, file))
     : [
         ...ts.sys.readDirectory(
           sourceRoot,
@@ -90,12 +96,20 @@ function createProgram(root, files) {
         ),
         ...ts.sys.readDirectory(path.join(sourceRoot, 'typings'), ['.d.ts']),
       ];
-  const program = ts.createProgram(names, compilerOptions, createHost(virtual));
+  const additional = (
+    Array.isArray(additionalFiles) ? additionalFiles : Object.keys(extraFiles)
+  ).map((file) => path.resolve(root, file));
+  const host = createHost(virtual);
+  const program = ts.createProgram(
+    [...new Set([...names, ...additional])],
+    compilerOptions,
+    host
+  );
   const sources = names
     .filter((file) => !file.endsWith('.d.ts'))
     .map((file) => program.getSourceFile(file))
     .filter(Boolean);
-  return { program, checker: program.getTypeChecker(), sources };
+  return { program, checker: program.getTypeChecker(), sources, host };
 }
 
 function sourceSymbol(checker, node) {
@@ -420,9 +434,18 @@ function readElements(model) {
   return elements;
 }
 
-export function readSource({ root = packageRoot, files, prefix } = {}) {
+export function readSource({
+  root = packageRoot,
+  files,
+  prefix,
+  additionalFiles = [],
+} = {}) {
   root = path.resolve(root);
-  const { program, checker, sources } = createProgram(root, files);
+  const { program, checker, sources, host } = createProgram(
+    root,
+    files,
+    additionalFiles
+  );
   const symbol = (node) => sourceSymbol(checker, node);
   const location = (node) => {
     const source = node.getSourceFile();
@@ -447,6 +470,15 @@ export function readSource({ root = packageRoot, files, prefix } = {}) {
     fail,
     visit,
     calls,
+    resolveModule: (specifier, containingFile) => {
+      const resolved = ts.resolveModuleName(
+        specifier,
+        containingFile,
+        program.getCompilerOptions(),
+        host
+      ).resolvedModule;
+      return resolved && program.getSourceFile(resolved.resolvedFileName);
+    },
   };
   return { ...model, elements: readElements(model) };
 }

@@ -8,6 +8,7 @@
  */
 
 /* eslint-disable */
+import { manifestEventArgTypes } from '../../../../.storybook-react/manifest-event-arg-types.js';
 import React, { useMemo, useState } from 'react';
 
 import ReasoningStepsToggle from '../../../react/reasoning-steps-toggle';
@@ -114,4 +115,10 @@ export default {
 
 export const Default = {
   render: (args) => <Demo args={args} />,
+};
+
+export const ReasoningStepsToggleEvents = {
+  tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
+  argTypes: { ...manifestEventArgTypes(ReasoningStepsToggle) },
 };

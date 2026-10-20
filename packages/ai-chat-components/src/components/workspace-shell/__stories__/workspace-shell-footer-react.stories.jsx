@@ -7,6 +7,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import { manifestEventArgTypes } from '../../../../.storybook-react/manifest-event-arg-types.js';
 import React from 'react';
 import WorkspaceShell, {
   WorkspaceShellBody,
@@ -37,11 +38,8 @@ export default {
       options: Object.keys(FooterActionList),
       description: 'Select a predefined set of actions',
     },
-    onFooterClicked: {
-      action: 'onFooterClicked',
-      table: { category: 'events' },
-      description: 'Event fired when a footer button is clicked',
-    },
+
+    ...manifestEventArgTypes(WorkspaceShellFooter),
   },
   decorators: [
     (Story) => (

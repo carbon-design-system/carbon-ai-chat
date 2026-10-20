@@ -8,6 +8,7 @@
  */
 
 /* eslint-disable */
+import { manifestEventArgTypes } from '../../../../.storybook-react/manifest-event-arg-types.js';
 import React, {
   useCallback,
   useEffect,
@@ -230,10 +231,8 @@ export default {
         'Array of actions that can overflow into a menu when space is limited.',
     },
     // Event handler
-    onChange: {
-      action: 'onChange',
-      table: { category: 'events' },
-    },
+
+    ...manifestEventArgTypes(CodeSnippet),
   },
   args: {
     onChange: undefined,
@@ -441,4 +440,10 @@ export const FullHeightMode = {
       </div>
     );
   },
+};
+
+export const CodeSnippetEvents = {
+  tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
+  argTypes: { ...manifestEventArgTypes(CodeSnippet) },
 };

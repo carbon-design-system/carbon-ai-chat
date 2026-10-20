@@ -8,6 +8,7 @@
  */
 
 /* eslint-disable */
+import { manifestEventArgTypes } from '../../../../.storybook-react/manifest-event-arg-types.js';
 import React from 'react';
 import ReasoningSteps from '../../../react/reasoning-steps';
 import ReasoningStep from '../../../react/reasoning-step';
@@ -45,18 +46,8 @@ export default {
       description:
         'When true, the host application must update the open state in response to toggle events.',
     },
-    onBeforeToggle: {
-      action: 'onBeforeToggle',
-      table: { category: 'events' },
-      description:
-        'Fires before a toggle; return false to prevent the open state from changing.',
-    },
-    onToggle: {
-      action: 'onToggle',
-      table: { category: 'events' },
-      description:
-        'Emitted after a toggle request. Useful for syncing controlled state.',
-    },
+
+    ...manifestEventArgTypes(ReasoningStep),
   },
   args: {
     title: 'Review retrieved context',
@@ -101,4 +92,10 @@ export const Static = {
       </ReasoningSteps>
     </div>
   ),
+};
+
+export const ReasoningStepEvents = {
+  tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
+  argTypes: { ...manifestEventArgTypes(ReasoningStep) },
 };
