@@ -21,6 +21,7 @@ Load only what you need:
 - Working across the React/Lit boundary, shadow DOM, or slots → [architecture.md](references/architecture.md)
 - Adding, editing, or wiring a service → [services.md](references/services.md)
 - Changing hooks or view-owned logic in `utils/` or `services/` → [hooks/AGENTS.md](src/chat/hooks/AGENTS.md)
+- Adding config fields or host properties/attributes, or editing CEM metadata → [manifests.md](references/manifests.md)
 - Writing or fixing a Jest test → [tests.md](references/tests.md)
 - Shipping any UI change (WCAG 2.1 AA checklist, live-region patterns, the announcer helpers, and when an announcement should be `assertive`) → [Root accessibility.md](../../references/accessibility.md)
 - Touching the store → [src/chat/store/AGENTS.md](src/chat/store/AGENTS.md)
@@ -51,10 +52,10 @@ Load only what you need:
 From this package directory:
 
 ```bash
-npm run build      # rollup only
-npm run build:docs # rollup + typedoc
+npm run build      # rollup + element manifest
+npm run build:docs # rollup + element manifest + typedoc
 npm run docs       # typedoc only — the fast docs loop, no rollup needed
-npm run clean      # remove dist/ — a build overwrites it but never empties it
+npm run clean      # remove dist/ and custom-elements.json
 npm start          # rollup --watch + typedoc --watch + local doc server on :5001
 npm test           # jest with coverage
 npm test -- path/to/file_spec.ts
