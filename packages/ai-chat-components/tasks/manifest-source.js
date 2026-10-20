@@ -150,13 +150,75 @@ function assignmentTarget(node) {
   return undefined;
 }
 
-function indexWrites(sources, symbol) {
+function assignmentDestinations(node) {
+  if (ts.isObjectLiteralExpression(node)) {
+    return node.properties.flatMap((property) => {
+      if (ts.isPropertyAssignment(property)) {
+        return assignmentDestinations(property.initializer);
+      }
+      if (ts.isShorthandPropertyAssignment(property)) {
+        return [property.name];
+      }
+      return ts.isSpreadAssignment(property)
+        ? assignmentDestinations(property.expression)
+        : [];
+    });
+  }
+  if (ts.isArrayLiteralExpression(node)) {
+    return node.elements.flatMap(assignmentDestinations);
+  }
+  if (
+    ts.isParenthesizedExpression(node) ||
+    ts.isAsExpression(node) ||
+    ts.isTypeAssertionExpression(node) ||
+    ts.isNonNullExpression(node) ||
+    ts.isSatisfiesExpression(node) ||
+    ts.isSpreadElement(node)
+  ) {
+    return assignmentDestinations(node.expression);
+  }
+  if (
+    ts.isBinaryExpression(node) &&
+    node.operatorToken.kind === ts.SyntaxKind.EqualsToken
+  ) {
+    return assignmentDestinations(node.left);
+  }
+  return [node];
+}
+
+function assignedSymbols(node, symbol, checker) {
+  if (!ts.isElementAccessExpression(node)) {
+    return [symbol(node)].filter(Boolean);
+  }
+  const target = checker.getTypeAtLocation(node.expression);
+  const key = checker.getTypeAtLocation(node.argumentExpression);
+  const keys = key.isUnion() ? key.types : [key];
+  const finite = keys.every(
+    (entry) => entry.isStringLiteral() || entry.isNumberLiteral()
+  );
+  if (!finite) {
+    return checker.getPropertiesOfType(target);
+  }
+  return keys
+    .map((entry) => checker.getPropertyOfType(target, String(entry.value)))
+    .filter(Boolean);
+}
+
+function indexWrites(sources, symbol, checker) {
   const writes = new Map();
   for (const source of sources) {
     visit(source, (node) => {
       const target = assignmentTarget(node);
       if (target) {
-        writes.set(symbol(target), node);
+        for (const destination of assignmentDestinations(target)) {
+          for (const assigned of assignedSymbols(
+            destination,
+            symbol,
+            checker
+          )) {
+            writes.set(assigned, node);
+          }
+        }
       }
     });
   }
@@ -371,7 +433,7 @@ export function readSource({ root = packageRoot, files, prefix } = {}) {
     throw new Error(`${location(node)}: ${message}`);
   };
   const calls = indexCalls(sources, symbol);
-  const writes = indexWrites(sources, symbol);
+  const writes = indexWrites(sources, symbol, checker);
   const values = createValueReader({ symbol, calls, writes, fail, prefix });
   const model = {
     ts,
