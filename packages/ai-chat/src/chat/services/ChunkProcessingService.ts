@@ -45,23 +45,24 @@ import { DeepPartial } from '../../types/utilities/DeepPartial';
 import { OnErrorType } from '../../types/config/ErrorConfig';
 import type { ServiceManager } from './ServiceManager';
 
-class ChunkProcessingError extends Error {
-  constructor(readonly cause: unknown) {
-    super(
-      cause instanceof Error
-        ? cause.message
-        : 'The chat could not process the message chunk.'
-    );
-    this.name = 'ChunkProcessingError';
-  }
-}
-
-function isChunkProcessingError(error: unknown) {
-  return error instanceof ChunkProcessingError;
-}
-
 class ChunkProcessingService {
   private serviceManager: ServiceManager;
+
+  // A sender can still await chunks after its response advances the send queue.
+  private pendingSendErrors = new Set<Set<unknown>>();
+
+  trackRequestErrors(signal: AbortSignal) {
+    const errors = new Set<unknown>();
+    const finish = () => {
+      this.pendingSendErrors.delete(errors);
+      signal.removeEventListener('abort', finish);
+    };
+    if (!signal.aborted) {
+      this.pendingSendErrors.add(errors);
+      signal.addEventListener('abort', finish, { once: true });
+    }
+    return { errors, finish };
+  }
 
   /**
    * Queue of received chunks.
@@ -294,9 +295,10 @@ class ChunkProcessingService {
 
       this.advanceChunkQueue(chunkPromise);
     } catch (error) {
+      this.pendingSendErrors.forEach((errors) => errors.add(error));
       consoleError('Error processing stream chunk', error);
       if (restartGeneration !== this.restartGeneration) {
-        this.advanceChunkQueue(chunkPromise, new ChunkProcessingError(error));
+        this.advanceChunkQueue(chunkPromise, { error });
         return;
       }
       const responseID = messageID
@@ -316,7 +318,7 @@ class ChunkProcessingService {
           otherData: error,
         });
       }
-      this.advanceChunkQueue(chunkPromise, new ChunkProcessingError(error));
+      this.advanceChunkQueue(chunkPromise, { error });
     }
   }
 
@@ -518,11 +520,11 @@ class ChunkProcessingService {
 
   private advanceChunkQueue(
     chunkPromise: ResolvablePromise<void>,
-    error?: unknown
+    failure?: { error: unknown }
   ) {
     this.chunkQueue.shift();
-    if (error) {
-      chunkPromise.doReject(error);
+    if (failure) {
+      chunkPromise.doReject(failure.error);
     } else {
       chunkPromise.doResolve();
     }
@@ -532,4 +534,4 @@ class ChunkProcessingService {
   }
 }
 
-export { ChunkProcessingService, isChunkProcessingError };
+export { ChunkProcessingService };

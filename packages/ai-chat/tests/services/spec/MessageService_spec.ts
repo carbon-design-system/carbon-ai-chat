@@ -10,6 +10,7 @@
 import MessageService, {
   PendingMessageRequest,
 } from '../../../src/chat/services/MessageService';
+import { ChunkProcessingService } from '../../../src/chat/services/ChunkProcessingService';
 import { ServiceManager } from '../../../src/chat/services/ServiceManager';
 import {
   MessageRequest,
@@ -114,6 +115,9 @@ const createServiceManagerStub = (
     },
   } as unknown as ServiceManager;
 
+  serviceManager.chunkProcessingService = new ChunkProcessingService(
+    serviceManager
+  );
   return serviceManager;
 };
 

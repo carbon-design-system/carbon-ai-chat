@@ -31,13 +31,24 @@ import { consoleError, debugLog } from '../utils/miscUtils';
 import { BusEventSend, BusEventType } from '../../types/events/eventBusTypes';
 import { ChatInstance } from '../../types/instance/ChatInstance';
 import { addDefaultsToMessage } from '../utils/messageUtils';
-import { isChunkProcessingError } from './ChunkProcessingService';
 
 type CustomSendMessageFn = (
   message: MessageRequest<any>,
   options: CustomSendMessageOptions,
   instance: ChatInstance
 ) => void | Promise<void>;
+
+function getSendErrorText(error: unknown, processingError: boolean): string {
+  if (processingError) {
+    return error instanceof Error
+      ? error.message
+      : 'The chat could not process the message chunk.';
+  }
+  return (
+    (error && (typeof error === 'string' ? error : JSON.stringify(error))) ||
+    'There was an unidentified error.'
+  );
+}
 
 /**
  * Handles outbound send lifecycle concerns: inline errors, error states, and queue advancement.
@@ -259,6 +270,11 @@ class OutboundMessageCoordinator {
       return;
     }
 
+    const { chunkProcessingService } = this.serviceManager;
+    const { errors: chunkErrors, finish } =
+      chunkProcessingService.trackRequestErrors(
+        current.sendMessageController.signal
+      );
     try {
       // We may update the timezone and locale on this message so we need to clone it and then update the store with
       // the new object.
@@ -304,15 +320,11 @@ class OutboundMessageCoordinator {
       await this.processSuccess(current, null);
     } catch (error) {
       consoleError('An error occurred while sending a message', error);
-      const processingError = isChunkProcessingError(error);
-      const resultText = processingError
-        ? error.message
-        : (error &&
-            (typeof error === 'string' ? error : JSON.stringify(error))) ||
-          'There was an unidentified error.';
+      const processingError = chunkErrors.has(error);
+      const resultText = getSendErrorText(error, processingError);
       this.processError(current, resultText, !processingError);
     } finally {
-      // Loading manager is ended via processSuccess/reject handlers.
+      finish();
     }
   }
 }
