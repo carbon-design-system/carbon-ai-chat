@@ -7,6 +7,8 @@
 
 import { test as base, expect } from '@playwright/test';
 
+import { FAST_TIMERS_FLAG } from '../src/customSendMessage/timing';
+
 const USE_UPSERT_MESSAGE_PARAM = 'useUpsertMessage';
 
 export interface DemoModeOptions {
@@ -54,6 +56,11 @@ export const test = base.extend<DemoModeOptions>({
   // Named `provide`, not Playwright's usual `use`, so the React hooks lint rule
   // doesn't read it as a hook call.
   page: async ({ page, useUpsertMessage }, provide) => {
+    // Opt the mock backend into short delays; the demo never infers this from
+    // `navigator.webdriver`.
+    await page.addInitScript((flag) => {
+      (window as unknown as Record<string, unknown>)[flag] = true;
+    }, FAST_TIMERS_FLAG);
     if (useUpsertMessage) {
       const goto = page.goto.bind(page);
       page.goto = (url, options) => goto(withUseUpsertMessage(url), options);

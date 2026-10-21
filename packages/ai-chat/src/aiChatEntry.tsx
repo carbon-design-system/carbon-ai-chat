@@ -236,6 +236,7 @@ export {
   MessageResponseHistory,
   MessageRequestHistory,
   ResponseUserProfile,
+  RequestUserProfile,
   AudioItem,
   BaseMessageInput,
   ButtonItem,

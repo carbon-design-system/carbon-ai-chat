@@ -137,7 +137,7 @@ Playwright's test agents can plan, write, and repair a spec. Install them once p
 npx playwright init-agents --loop=claude -c examples/shared/playwright/playwright.config.ts --project <target>
 ```
 
-This writes the `playwright-test-planner`, `playwright-test-generator`, and `playwright-test-healer` agents under `.claude/agents/`, a `.mcp.json` for their test server, a seed spec, and a `specs/` folder for plans. Check that the `run-test-mcp-server` entry in `.mcp.json` passes `--config examples/shared/playwright/playwright.config.ts`; add it if not, or the agents run against a default config with no example server. Run the agents with `CAIC_E2E_TARGETS=<target>` set, so they build only that example.
+This writes the `playwright-test-planner`, `playwright-test-generator`, and `playwright-test-healer` agents under `.claude/agents/`, a `.mcp.json` for their test server, a seed spec, and a `specs/` folder for plans. Add `--config examples/shared/playwright/playwright.config.ts` to the `run-test-mcp-server` args in `.mcp.json`; `init-agents` never writes it, and without it the agents run against a default config with no example server. Run the agents with `CAIC_E2E_TARGETS=<target>` set, so they build only that example.
 
 Replace the seed's body so it opens the example the way every spec does, then point the planner at it:
 
@@ -160,7 +160,6 @@ Agent output follows the same rules as a hand-written spec. Before committing:
 - A negative check must follow the state that would precede what it rules out. Await the reply, or open the list, before asserting something is absent.
 - No `waitForTimeout`, fixed sleeps, dates, or random values.
 - Take fixture text from each flavor's own `src/`; React and Web Components mocks can differ. Read a per-flavor value from the `target` fixture rather than forking the spec.
-- Commit none of the agent scaffolding: the seed spec, `specs/`, `.mcp.json`, and `.claude/agents/`.
 - Check the example against the [coverage target](#coverage-target).
 
 ## Scaffold a local Vite suite
@@ -337,7 +336,7 @@ CAIC_E2E_TARGETS=react-watch-state,web-components-watch-state npm run test:e2e:g
 npm run test:e2e
 ```
 
-- From the root, install dependencies once with `npm install` and build the shared packages with `npm run aiChat:build` before testing. Rebuild a changed package before testing its examples.
+- Before testing, run the root [build preflight](../../references/commands.md#build-preflight). These suites read the built chat packages and build only the examples.
 - Check test discovery with `npm run test:e2e:goldens -- --list` before opening a browser. This catches config and fixture errors; it does not run the tests. Each shared case appears once per flavor, under its own project.
 - Install Chromium once per machine with `npx playwright install chromium`.
 - Playwright starts every configured server, whatever `--project` selects. To run only some targets, list their names in `CAIC_E2E_TARGETS`, comma-separated; the config then builds, serves, and runs only those. An unknown name fails the run. Without it, every target runs.

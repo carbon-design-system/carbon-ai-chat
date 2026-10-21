@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.23.0-rc.0/docs/interfaces/Type_reference.ButtonItem.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.23.0/docs/interfaces/Type_reference.ButtonItem.html
 
 This message item represents a button that can perform various actions such as sending messages, opening URLs, or showing panels.
 
@@ -26,7 +26,7 @@ interface ButtonItem
 
 For messages that are sent between the user and a human agent, we assign an agent type to the message to distinguish what type it is.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.23.0-rc.0/docs/interfaces/Type_reference.ButtonItem.html#agent_message_type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.23.0/docs/interfaces/Type_reference.ButtonItem.html#agent_message_type)
 
 ### alt_text
 
@@ -35,7 +35,7 @@ For messages that are sent between the user and a human agent, we assign an agen
 The alt text for labeling the item. Screen readers will announce this text when the user's virtual cursor
 is focused on the item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.23.0-rc.0/docs/interfaces/Type_reference.ButtonItem.html#alt_text)
+[Reference](https://chat.carbondesignsystem.com/version/v1.23.0/docs/interfaces/Type_reference.ButtonItem.html#alt_text)
 
 ### button_type
 
@@ -43,7 +43,7 @@ is focused on the item.
 
 The type of button.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.23.0-rc.0/docs/interfaces/Type_reference.ButtonItem.html#button_type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.23.0/docs/interfaces/Type_reference.ButtonItem.html#button_type)
 
 ### custom_event_name
 
@@ -51,7 +51,7 @@ The type of button.
 
 A custom event that can be listened to by Carbon AI Chat when the button item is clicked.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.23.0-rc.0/docs/interfaces/Type_reference.ButtonItem.html#custom_event_name)
+[Reference](https://chat.carbondesignsystem.com/version/v1.23.0/docs/interfaces/Type_reference.ButtonItem.html#custom_event_name)
 
 ### image_url
 
@@ -59,7 +59,7 @@ A custom event that can be listened to by Carbon AI Chat when the button item is
 
 The URL pointing to an image.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.23.0-rc.0/docs/interfaces/Type_reference.ButtonItem.html#image_url)
+[Reference](https://chat.carbondesignsystem.com/version/v1.23.0/docs/interfaces/Type_reference.ButtonItem.html#image_url)
 
 ### kind
 
@@ -67,7 +67,7 @@ The URL pointing to an image.
 
 The style of button to display.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.23.0-rc.0/docs/interfaces/Type_reference.ButtonItem.html#kind)
+[Reference](https://chat.carbondesignsystem.com/version/v1.23.0/docs/interfaces/Type_reference.ButtonItem.html#kind)
 
 ### label
 
@@ -77,7 +77,7 @@ The text shown on the button. A `post_back` button also uses it for the user's m
 transcript, and sends `value.input.text` to the assistant. A `post_back` button with no
 `value.input.text` sends this text instead.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.23.0-rc.0/docs/interfaces/Type_reference.ButtonItem.html#label)
+[Reference](https://chat.carbondesignsystem.com/version/v1.23.0/docs/interfaces/Type_reference.ButtonItem.html#label)
 
 ### message_item_options
 
@@ -85,7 +85,7 @@ transcript, and sends `value.input.text` to the assistant. A `post_back` button 
 
 Options that control additional features available for a message item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.23.0-rc.0/docs/interfaces/Type_reference.ButtonItem.html#message_item_options)
+[Reference](https://chat.carbondesignsystem.com/version/v1.23.0/docs/interfaces/Type_reference.ButtonItem.html#message_item_options)
 
 ### panel
 
@@ -93,7 +93,7 @@ Options that control additional features available for a message item.
 
 The panel options to display in a panel when the "show_panel" button type is clicked.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.23.0-rc.0/docs/interfaces/Type_reference.ButtonItem.html#panel)
+[Reference](https://chat.carbondesignsystem.com/version/v1.23.0/docs/interfaces/Type_reference.ButtonItem.html#panel)
 
 ### response_type
 
@@ -101,7 +101,7 @@ The panel options to display in a panel when the "show_panel" button type is cli
 
 The response type of this message item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.23.0-rc.0/docs/interfaces/Type_reference.ButtonItem.html#response_type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.23.0/docs/interfaces/Type_reference.ButtonItem.html#response_type)
 
 ### selection_display
 
@@ -112,7 +112,7 @@ SelectionDisplay.LABEL. The preferred text falls back to the other available tex
 stored in MessageRequest.history and remains there when ButtonItem.silent hides the message. Other
 button types ignore this property.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.23.0-rc.0/docs/interfaces/Type_reference.ButtonItem.html#selection_display)
+[Reference](https://chat.carbondesignsystem.com/version/v1.23.0/docs/interfaces/Type_reference.ButtonItem.html#selection_display)
 
 ### silent
 
@@ -122,7 +122,7 @@ When true (post_back buttons only), the request generated by clicking this butto
 `customSendMessage` but not added to the visible chat transcript. Use this when the button's
 `value.input.text` is a machine-readable trigger string that you don't want the user to see.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.23.0-rc.0/docs/interfaces/Type_reference.ButtonItem.html#silent)
+[Reference](https://chat.carbondesignsystem.com/version/v1.23.0/docs/interfaces/Type_reference.ButtonItem.html#silent)
 
 ### size
 
@@ -130,7 +130,7 @@ When true (post_back buttons only), the request generated by clicking this butto
 
 The button size.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.23.0-rc.0/docs/interfaces/Type_reference.ButtonItem.html#size)
+[Reference](https://chat.carbondesignsystem.com/version/v1.23.0/docs/interfaces/Type_reference.ButtonItem.html#size)
 
 ### streaming_metadata
 
@@ -139,7 +139,7 @@ The button size.
 Metadata used to identify a generic item within the context of a stream in order to correlate any updates meant
 for a specific item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.23.0-rc.0/docs/interfaces/Type_reference.ButtonItem.html#streaming_metadata)
+[Reference](https://chat.carbondesignsystem.com/version/v1.23.0/docs/interfaces/Type_reference.ButtonItem.html#streaming_metadata)
 
 ### target
 
@@ -147,7 +147,7 @@ for a specific item.
 
 Where to open the link. The default value is _self.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.23.0-rc.0/docs/interfaces/Type_reference.ButtonItem.html#target)
+[Reference](https://chat.carbondesignsystem.com/version/v1.23.0/docs/interfaces/Type_reference.ButtonItem.html#target)
 
 ### url
 
@@ -155,7 +155,7 @@ Where to open the link. The default value is _self.
 
 The URL for the user to visit when the button is clicked.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.23.0-rc.0/docs/interfaces/Type_reference.ButtonItem.html#url)
+[Reference](https://chat.carbondesignsystem.com/version/v1.23.0/docs/interfaces/Type_reference.ButtonItem.html#url)
 
 ### user_defined
 
@@ -163,10 +163,10 @@ The URL for the user to visit when the button is clicked.
 
 An optional buckets of additional user defined properties for this item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.23.0-rc.0/docs/interfaces/Type_reference.ButtonItem.html#user_defined)
+[Reference](https://chat.carbondesignsystem.com/version/v1.23.0/docs/interfaces/Type_reference.ButtonItem.html#user_defined)
 
 ### value
 
 `value?: { input: MessageInput }`
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.23.0-rc.0/docs/interfaces/Type_reference.ButtonItem.html#value)
+[Reference](https://chat.carbondesignsystem.com/version/v1.23.0/docs/interfaces/Type_reference.ButtonItem.html#value)

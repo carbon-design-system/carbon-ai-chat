@@ -38,7 +38,7 @@ Read [playwright.md](references/playwright.md) before adding or changing an exam
 - `npm run test --workspace=<example>` passes, if the example has a `test` script.
 - README follows the [Indexer Contract](references/indexer-contract.md).
 
-Most examples now have shared Playwright targets. The four deliberate skips and framework examples tracked in [issue #1424](https://github.com/carbon-design-system/carbon-ai-chat/issues/1424) remain outside this suite.
+Every new example adds a shared Playwright suite: a spec in [tests/](shared/playwright/tests/) and its targets in [targets.ts](shared/playwright/targets.ts). The four deliberate skips and the framework examples tracked in [issue #1424](https://github.com/carbon-design-system/carbon-ai-chat/issues/1424) stay outside the suite.
 
 ## Authoring rules
 

@@ -27,9 +27,17 @@
  *
  * `?layout=` and `?input=` take a JSON `layout` or `input` config, for
  * surfaces that need one.
+ *
+ * Every surface renders inline code through a plugin as page-styled output,
+ * and leaves `fallbackCard` input nodes to their fallback label.
  */
 
-import type { ChatInstance, HistoryItem, PublicConfig } from '@carbon/ai-chat';
+import type {
+  ChatInstance,
+  HistoryItem,
+  MarkdownItPlugin,
+  PublicConfig,
+} from '@carbon/ai-chat';
 import React, {
   createContext,
   useContext,
@@ -62,10 +70,16 @@ const searchParams = new URLSearchParams(window.location.search);
 const layoutParam = searchParams.get('layout');
 const inputParam = searchParams.get('input');
 
+const inlinePlugin: MarkdownItPlugin = (md) => {
+  md.renderer.rules.code_inline = (tokens, index) =>
+    `<span class="page-styled" data-kind="inline-plugin">${md.utils.escapeHtml(tokens[index].content)}</span>`;
+};
+
 const config: PublicConfig = {
   openChatByDefault: true,
   ...(layoutParam ? { layout: JSON.parse(layoutParam) } : {}),
   ...(inputParam ? { input: JSON.parse(inputParam) } : {}),
+  markdown: { markdownItPlugins: [inlinePlugin] },
   messaging: {
     customSendMessage: () => undefined,
     // A welcome exchange in history shows the welcome writeable element.
@@ -147,7 +161,8 @@ async function mountReact(surface?: string) {
         renderUserDefinedResponse: () => pageStyled('user-defined-response'),
         renderCustomMessageFooter: () => pageStyled('message-footer'),
         renderCustomRequestFooter: () => pageStyled('request-footer'),
-        renderUserDefinedInputNode: () => pageStyled('input-node'),
+        renderUserDefinedInputNode: ({ node }: { node: { type?: string } }) =>
+          node.type === 'taskCard' ? pageStyled('input-node') : null,
         renderWriteableElements: {
           welcomeNodeBeforeElement: pageStyled('writeable-element'),
         },
@@ -225,7 +240,11 @@ async function mountWebComponent(surface: string) {
     pageStyledElement('user-defined-response');
   element.renderCustomMessageFooter = () => pageStyledElement('message-footer');
   element.renderCustomRequestFooter = () => pageStyledElement('request-footer');
-  element.renderUserDefinedInputNode = () => pageStyledElement('input-node');
+  element.renderUserDefinedInputNode = ({
+    node,
+  }: {
+    node: { type?: string };
+  }) => (node.type === 'taskCard' ? pageStyledElement('input-node') : null);
   element.onBeforeRender = (instance: ChatInstance) => {
     harness.wcInstance = instance;
     instance.writeableElements.welcomeNodeBeforeElement?.appendChild(

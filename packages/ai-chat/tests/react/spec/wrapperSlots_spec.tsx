@@ -80,6 +80,23 @@ function hostsFor(slot: string) {
   return getChatHost().querySelectorAll(`:scope > [slot="${slot}"]`);
 }
 
+function inputTarget(owner: HTMLElement, key: string) {
+  return owner.querySelector(
+    `[data-aichat-input-node-slot="${key}"]`
+  ) as HTMLElement;
+}
+
+function inputHost(owner: HTMLElement, key: string) {
+  const target = inputTarget(owner, key);
+  return target?.children.length > 1
+    ? (target.lastElementChild as HTMLElement)
+    : null;
+}
+
+function inputFallback(owner: HTMLElement, key: string) {
+  return inputTarget(owner, key)?.firstElementChild as HTMLElement;
+}
+
 /**
  * Boots a React chat and returns its instance plus a props updater. With
  * `strict`, the chat renders under `StrictMode`, which replays effects.
@@ -432,41 +449,46 @@ describe('React render props through the shared container', () => {
     const bubbleSlot = () =>
       deepQuerySelector(
         getChatShadowRoot(),
-        `slot[name="${slotName}"]`
+        `slot[name="rich::paragraph.0"]`
       ) as HTMLSlotElement;
     await waitFor(() => expect(bubbleSlot()).not.toBeNull());
-    expect(bubbleSlot().assignedNodes()).toHaveLength(0);
-    expect(bubbleSlot().textContent).toBe('Ship it');
+    expect(bubbleSlot().assignedNodes()).toHaveLength(1);
+    expect(inputFallback(getChatHost(), slotName).textContent).toBe('Ship it');
+    expect(inputFallback(getChatHost(), slotName).hidden).toBe(false);
 
     update({ renderUserDefinedInputNode: () => <b>custom</b> });
-    await waitFor(() => expect(assignedSlotFor(slotName)).not.toBeNull());
-    expect(
-      bubbleSlot()
-        .assignedNodes({ flatten: true })
-        .map((node) => node.textContent)
-    ).toEqual(['custom']);
+    await waitFor(() =>
+      expect(assignedSlotFor('rich::paragraph.0')).not.toBeNull()
+    );
+    expect(inputHost(getChatHost(), slotName).textContent).toBe('custom');
+    expect(inputHost(getChatHost(), slotName).getRootNode()).toBe(document);
+    expect(inputFallback(getChatHost(), slotName).hidden).toBe(true);
 
-    const host = hostFor(slotName);
-    expect(host.tagName).toBe('DIV');
+    const host = inputHost(getChatHost(), slotName);
+    expect(host.tagName).toBe('SPAN');
     update({ renderUserDefinedInputNode: () => <b>Updated custom</b> });
     await waitFor(() => expect(host.textContent).toBe('Updated custom'));
-    expect(hostFor(slotName)).toBe(host);
+    expect(inputHost(getChatHost(), slotName)).toBe(host);
 
     update({ renderUserDefinedInputNode: () => null });
-    await waitFor(() => expect(hostFor(slotName)).toBeNull());
-    expect(bubbleSlot().assignedNodes()).toHaveLength(0);
-    expect(bubbleSlot().textContent).toBe('Ship it');
+    await waitFor(() => expect(inputHost(getChatHost(), slotName)).toBeNull());
+    expect(bubbleSlot().assignedNodes()).toHaveLength(1);
+    expect(inputFallback(getChatHost(), slotName).textContent).toBe('Ship it');
+    expect(inputFallback(getChatHost(), slotName).hidden).toBe(false);
 
     update({ renderUserDefinedInputNode: () => <b>Restored custom</b> });
     await waitFor(() =>
-      expect(hostFor(slotName)?.textContent).toBe('Restored custom')
+      expect(inputHost(getChatHost(), slotName)?.textContent).toBe(
+        'Restored custom'
+      )
     );
-    expect(assignedSlotFor(slotName)).not.toBeNull();
+    expect(assignedSlotFor('rich::paragraph.0')).not.toBeNull();
 
     update({});
-    await waitFor(() => expect(hostFor(slotName)).toBeNull());
-    expect(bubbleSlot().assignedNodes()).toHaveLength(0);
-    expect(bubbleSlot().textContent).toBe('Ship it');
+    await waitFor(() => expect(inputHost(getChatHost(), slotName)).toBeNull());
+    expect(bubbleSlot().assignedNodes()).toHaveLength(1);
+    expect(inputFallback(getChatHost(), slotName).textContent).toBe('Ship it');
+    expect(inputFallback(getChatHost(), slotName).hidden).toBe(false);
   });
 
   it('projects custom renderUserDefinedInputNode content for a mention and keeps the default command chip', async () => {
@@ -494,19 +516,16 @@ describe('React render props through the shared container', () => {
 
     const mentionSlot = 'token-rich::0.0';
     const commandSlot = 'token-rich::0.2';
-    const bubbleSlot = (name: string) =>
-      deepQuerySelector(
-        getChatShadowRoot(),
-        `slot[name="${name}"]`
-      ) as HTMLSlotElement;
-
-    await waitFor(() => expect(bubbleSlot(mentionSlot)).not.toBeNull());
-    await waitFor(() => expect(bubbleSlot(commandSlot)).not.toBeNull());
-
-    expect(bubbleSlot(mentionSlot).assignedNodes()).toHaveLength(0);
-    expect(bubbleSlot(commandSlot).assignedNodes()).toHaveLength(0);
+    await waitFor(() =>
+      expect(inputTarget(getChatHost(), mentionSlot)).not.toBeNull()
+    );
+    await waitFor(() =>
+      expect(inputTarget(getChatHost(), commandSlot)).not.toBeNull()
+    );
     const defaultChip = (name: string, type: string) =>
-      bubbleSlot(name).querySelector(`[data-token-type="${type}"]`);
+      inputFallback(getChatHost(), name).querySelector(
+        `[data-token-type="${type}"]`
+      );
     await waitFor(() =>
       expect(defaultChip(mentionSlot, 'mention')?.textContent).toBe('Alice')
     );
@@ -519,16 +538,14 @@ describe('React render props through the shared container', () => {
         ) : null,
     });
 
-    await waitFor(() => expect(assignedSlotFor(mentionSlot)).not.toBeNull());
-    expect(hostFor(mentionSlot)?.tagName).toBe('SPAN');
-    expect(
-      bubbleSlot(mentionSlot)
-        .assignedNodes({ flatten: true })
-        .map((n) => n.textContent)
-    ).toEqual(['@Alice']);
-
-    await waitFor(() => expect(hostFor(commandSlot)).toBeNull());
-    expect(bubbleSlot(commandSlot).assignedNodes()).toHaveLength(0);
+    await waitFor(() =>
+      expect(inputHost(getChatHost(), mentionSlot)?.textContent).toBe('@Alice')
+    );
+    expect(inputHost(getChatHost(), mentionSlot)?.tagName).toBe('SPAN');
+    expect(inputHost(getChatHost(), mentionSlot)?.getRootNode()).toBe(document);
+    expect(inputFallback(getChatHost(), mentionSlot).hidden).toBe(true);
+    expect(inputHost(getChatHost(), commandSlot)).toBeNull();
+    expect(inputFallback(getChatHost(), commandSlot).hidden).toBe(false);
   });
 
   it('keeps the default chip when renderUserDefinedInputNode returns false for a mention', async () => {
@@ -553,22 +570,19 @@ describe('React render props through the shared container', () => {
     });
 
     const mentionSlot = 'token-false::0.0';
-    const bubbleSlot = (name: string) =>
-      deepQuerySelector(
-        getChatShadowRoot(),
-        `slot[name="${name}"]`
-      ) as HTMLSlotElement;
-
     update({
       renderUserDefinedInputNode: () => false as unknown as React.ReactNode,
     });
 
-    await waitFor(() => expect(bubbleSlot(mentionSlot)).not.toBeNull());
-    expect(hostFor(mentionSlot)).toBeNull();
+    await waitFor(() =>
+      expect(inputTarget(getChatHost(), mentionSlot)).not.toBeNull()
+    );
+    expect(inputHost(getChatHost(), mentionSlot)).toBeNull();
     await waitFor(() =>
       expect(
-        bubbleSlot(mentionSlot).querySelector('[data-token-type="mention"]')
-          ?.textContent
+        inputFallback(getChatHost(), mentionSlot).querySelector(
+          '[data-token-type="mention"]'
+        )?.textContent
       ).toBe('Alice')
     );
   });
@@ -605,18 +619,16 @@ describe('React render props through the shared container', () => {
       },
     });
 
-    const hostIn = (slot: string) =>
-      element.querySelector(`:scope > [slot="${slot}"]`);
     await waitFor(() =>
-      expect(hostIn('wc-token::0.0')?.textContent).toBe('@Alice')
+      expect(inputHost(element, 'wc-token::0.0')?.textContent).toBe('@Alice')
     );
-    expect(hostIn('wc-token::0.2')).toBeNull();
-    const commandSlot = element.shadowRoot?.querySelector(
-      'slot[name="wc-token::0.2"]'
-    ) as HTMLSlotElement;
-    expect(commandSlot.assignedNodes()).toHaveLength(0);
+    expect(inputHost(element, 'wc-token::0.0')?.getRootNode()).toBe(document);
+    expect(inputHost(element, 'wc-token::0.2')).toBeNull();
+    expect(inputFallback(element, 'wc-token::0.2').hidden).toBe(false);
     expect(
-      commandSlot.querySelector('[data-token-type="command"]')?.textContent
+      inputFallback(element, 'wc-token::0.2').querySelector(
+        '[data-token-type="command"]'
+      )?.textContent
     ).toBe('deploy');
   });
 
@@ -643,7 +655,7 @@ describe('React render props through the shared container', () => {
     });
 
     const mounted = () =>
-      element.querySelector(':scope > [slot="wc-kept::0.0"] > b');
+      inputHost(element, 'wc-kept::0.0')?.querySelector('b');
     await waitFor(() => expect(mounted()).not.toBeNull());
     const first = mounted();
     const calls = renderUserDefinedInputNode.mock.calls.length;
@@ -678,8 +690,7 @@ describe('React render props through the shared container', () => {
       },
     });
 
-    const hostIn = (slot: string) =>
-      element.querySelector(`:scope > [slot="${slot}"]`);
+    const hostIn = (slot: string) => inputHost(element, slot);
     await waitFor(() =>
       expect(
         ['wc-alias::0.0', 'wc-alias::0.2'].map(

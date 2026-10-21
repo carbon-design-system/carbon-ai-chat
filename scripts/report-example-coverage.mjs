@@ -31,7 +31,8 @@ if (!dirs.length) {
   throw new Error(`No recorded coverage in ${root}.`);
 }
 
-// An example with nothing measured fails rather than passing on zero lines.
+// An example with nothing measured reads 0%, below the target, rather than
+// passing on zero lines.
 const percent = (covered, total) =>
   total ? Math.round((1000 * covered) / total) / 10 : 0;
 
