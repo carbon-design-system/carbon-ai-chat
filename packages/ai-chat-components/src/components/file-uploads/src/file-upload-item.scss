@@ -31,9 +31,11 @@ cds-file-uploader-item {
   border-radius: 6px;
   background: none;
   block-size: 36px;
+  color: inherit;
   cursor: pointer;
   inline-size: 36px;
   margin-inline-end: layout.$spacing-05;
+  text-decoration: none;
   vertical-align: middle;
 }
 

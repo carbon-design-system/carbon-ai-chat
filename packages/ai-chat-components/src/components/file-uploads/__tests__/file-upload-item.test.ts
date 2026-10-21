@@ -178,6 +178,25 @@ describe('file-upload-item', () => {
       expect(getComputedStyle(filename).marginInlineStart).to.equal('2px');
     });
 
+    it('links a stated-url image preview to its url in a new tab', async () => {
+      const el = await mountReadOnly({
+        id: 'a',
+        name: 'photo.png',
+        mimeType: 'image/png',
+        url: 'https://example.com/photo.png',
+      });
+      const link = el.renderRoot.querySelector<HTMLAnchorElement>(
+        'a.cds-aichat-file-upload-item__preview-wrapper'
+      );
+      expect(link).to.exist;
+      expect(link!.getAttribute('href')).to.equal(
+        'https://example.com/photo.png'
+      );
+      expect(link!.getAttribute('target')).to.equal('_blank');
+      expect(link!.getAttribute('rel')).to.equal('noopener noreferrer');
+      expect(link!.getAttribute('aria-label')).to.equal('Open image');
+    });
+
     it('falls back to an icon for a non-image url', async () => {
       // Only images preview from a URL. Anything else keeps its file-type icon —
       // a chip on a sent message has no business fetching the file back.
@@ -231,6 +250,11 @@ describe('file-upload-item', () => {
       expect(
         el.renderRoot.querySelector('img.cds-aichat-file-upload-item__preview')
       ).to.exist;
+      expect(
+        el.renderRoot
+          .querySelector('a.cds-aichat-file-upload-item__preview-wrapper')!
+          .getAttribute('href')
+      ).to.match(/^blob:/);
     });
 
     it('renders a video preview using the objectURL', async () => {
@@ -249,6 +273,14 @@ describe('file-upload-item', () => {
 
       // The src must be an object URL (blob:), never a plain http/data path.
       expect(video!.getAttribute('src')).to.match(/^blob:/);
+
+      // Video stays a button that opens a player window. A navigated blob is
+      // downloaded when the browser can't render its type inline.
+      const button = el.renderRoot.querySelector<HTMLButtonElement>(
+        'button.cds-aichat-file-upload-item__preview-wrapper'
+      );
+      expect(button!.getAttribute('aria-label')).to.equal('Play video');
+      expect(el.renderRoot.querySelector('a')).to.not.exist;
     });
 
     it('never creates an object URL when there is no File', async () => {
