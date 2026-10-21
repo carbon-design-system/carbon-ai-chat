@@ -7,9 +7,10 @@
  *  @license
  */
 
-import { html, type TemplateResult } from 'lit';
+import { html, type CSSResult, type TemplateResult } from 'lit';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import prefix from '../../../globals/settings.js';
+import styles from './inline-markdown.scss?lit';
 import { renderTokenTree } from './markdown-renderer.js';
 import {
   markdownToTokenTree,
@@ -33,7 +34,7 @@ export { InlineMarkdownError } from './utils/inline-validation.js';
  * that renders the result.
  * @category Messaging
  */
-export { default as inlineMarkdownStyles } from './inline-markdown.scss?lit';
+export const inlineMarkdownStyles: CSSResult = styles;
 
 /**
  * Controls inline parsing, HTML filtering, and host transforms.
