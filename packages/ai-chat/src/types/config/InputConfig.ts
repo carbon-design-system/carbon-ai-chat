@@ -92,7 +92,6 @@ export type SuggestionItem = _SuggestionItem;
  * `onSend` / `onDismiss` callbacks.
  *
  * @category Config
- * @experimental
  * @interface
  */
 export type CustomListProps = _CustomListProps;
@@ -131,8 +130,6 @@ export interface InputConfig {
    * editable, only the send path is suppressed.
    *
    * Programmatic `instance.send(...)` is NOT gated by this flag.
-   *
-   * @experimental
    */
   isSendDisabled?: boolean;
 
@@ -155,8 +152,6 @@ export interface InputConfig {
    * handlers return, so await your stop call in the handler.
    *
    * Has no effect while the chat is connected to a human agent.
-   *
-   * @experimental
    */
   showStopStreamingButton?: boolean;
 
@@ -165,24 +160,18 @@ export interface InputConfig {
    * `carbonMention` Tiptap extension; the editor inserts a `mention` node on
    * selection and surfaces token chip rendering via the light-DOM portal
    * handshake.
-   *
-   * @experimental
    */
   mention?: TriggerSuggestionConfig;
 
   /**
    * `/`-style command trigger config. Same shape as {@link InputConfig.mention};
    * inserts a `command` node on selection.
-   *
-   * @experimental
    */
   command?: TriggerSuggestionConfig;
 
   /**
    * Live-typeahead autocomplete config. Selection inserts plain text; no
    * token chip is rendered.
-   *
-   * @experimental
    */
   autocomplete?: AutocompleteConfig;
 
@@ -190,8 +179,6 @@ export interface InputConfig {
    * Starter prompts shown while the editor is empty + focused + editable.
    * Selection inserts the item's `value` (or `label`) AND auto-sends in
    * the same turn (gated by {@link InputConfig.isSendDisabled}).
-   *
-   * @experimental
    */
   starters?: StartersConfig;
 
@@ -199,8 +186,6 @@ export interface InputConfig {
    * Tiptap-shaped configuration. The `tiptap` namespace signals "you're
    * stepping into Tiptap's API directly" — use {@link InputConfig.mention} /
    * `command` / `autocomplete` / `starters` for Carbon-curated chat features.
-   *
-   * @experimental
    */
   tiptap?: {
     /**
@@ -232,8 +217,6 @@ export interface InputConfig {
    * uploads are also enabled, an "Add files" action is automatically
    * prepended and the standalone upload button is not rendered. The button
    * size is controlled by the input, so a per-action `size` is ignored.
-   *
-   * @experimental
    */
   actions?: ToolbarAction[];
 
@@ -246,16 +229,12 @@ export interface InputConfig {
    * inside the Add ("+") popover, and the
    * {@link WriteableElementName.PROMPT_LINE_ACTIONS_END} slot becomes
    * available. Defaults to false.
-   *
-   * @experimental
    */
   expanded?: boolean;
 
   /**
    * Error configuration for displaying an error message in the input field.
    * When provided, an error message will be displayed in the prompt line.
-   *
-   * @experimental
    */
   error?: {
     /**

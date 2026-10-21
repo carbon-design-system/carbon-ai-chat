@@ -76,8 +76,7 @@ interface RenderUserDefinedState {
    * was invoked. Use this to drive in-widget streaming indicators or error treatments
    * without inspecting the message items directly.
    *
-   * @experimental Field is additive; its presence and semantics may evolve as the
-   * lifecycle model stabilizes.
+   * Field is additive; its presence and semantics may evolve as thelifecycle model stabilizes.
    */
   state?: MessageState;
 }
@@ -250,7 +249,6 @@ type WCRenderCustomRequestFooter = (
  * task card, file pill, or mention with rich rendering.
  *
  * @category React
- * @experimental
  */
 interface RenderUserDefinedInputNodeState {
   /** The TipTap JSONContent node being rendered (carries `type`, `attrs`, etc.). */
@@ -267,7 +265,6 @@ interface RenderUserDefinedInputNodeState {
  * and `null` for everything else.
  *
  * @category React
- * @experimental
  */
 type RenderUserDefinedInputNode = (
   state: RenderUserDefinedInputNodeState,
@@ -281,7 +278,6 @@ type RenderUserDefinedInputNode = (
  * The library moves / removes the element as messages mount and unmount.
  *
  * @category Web component
- * @experimental
  */
 type WCRenderUserDefinedInputNode = (
   state: RenderUserDefinedInputNodeState,
@@ -727,8 +723,6 @@ interface ChatContainerProps extends Omit<PublicConfig, 'markdown'> {
    * TipTap node in a user message's `display_content`; returned React content
    * mounts into light DOM. Return `null` for a node you don't render: a chip
    * keeps its default look, and a custom node shows its `label` or `value`.
-   *
-   * @experimental
    */
   renderUserDefinedInputNode?: RenderUserDefinedInputNode;
 
