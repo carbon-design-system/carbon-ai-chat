@@ -9,6 +9,8 @@ import { BusEventType, PageObjectId } from '@carbon/ai-chat/server';
 import type { BusEventPreReceive, BusEventSend } from '@carbon/ai-chat';
 import type { Page } from '@playwright/test';
 
+import { FAST_TIMING } from '../src/customSendMessage/timing';
+
 import { test, expect } from './fixtures';
 
 import {
@@ -107,7 +109,9 @@ test('restart discards both delayed responses and accepts a new request', async 
   await expect(page.locator('.cds-aichat--sent')).toHaveCount(0);
 
   // Wait past both mock timers so an absent reply proves that restart discarded it.
-  await page.waitForTimeout(5000);
+  await page.waitForTimeout(
+    FAST_TIMING.delayedResponseMs + FAST_TIMING.consecutiveSecondDelayMs + 300
+  );
   await expect(messagesWith(page, FEEDBACK_TEXT)).toHaveCount(0);
   expect(
     await page.evaluate(() => window.demoRequestAttribution.responses)

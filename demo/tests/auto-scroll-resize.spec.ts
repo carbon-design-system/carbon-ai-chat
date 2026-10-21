@@ -5,7 +5,9 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-import { test, expect, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
+
+import { test, expect } from './fixtures';
 import { destroyChatSession, openChatWindow, sendChatMessage } from './utils';
 import type {} from '../types/window';
 

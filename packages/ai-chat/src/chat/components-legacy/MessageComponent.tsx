@@ -73,6 +73,7 @@ import { FileStatusValue } from '../utils/constants';
 import { doFocusRef } from '../utils/domUtils';
 import {
   getRequestFooterSlotName,
+  getRequestSenderName,
   getSpeakerName,
   hasRequestFooter,
   isConnectToHumanAgent,
@@ -457,7 +458,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     // MessageResponse instead of once per LocalMessage but since we're moving focus between each LocalMessage, go
     // ahead and announce the "who" part for each one.
     const whoAnnouncement = isRequest(message)
-      ? languagePack.messages_youSaid
+      ? this.getRequestSaidMessage(message, languagePack)
       : intl.formatMessage(
           { id: 'messages_assistantSaid' },
           {
@@ -627,11 +628,16 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
         );
       }
     } else {
+      const actorName = getRequestSenderName(message);
+      const avatarUrl = message.history?.user_profile?.profile_picture_url;
+      if (actorName && avatarUrl) {
+        avatar = <ImageWithFallback url={avatarUrl} alt="" fallback={null} />;
+      }
       label = (
         <span>
           {this.props.intl.formatMessage(
-            { id: 'message_labelYou' },
-            { timestamp }
+            { id: actorName ? 'message_labelUser' : 'message_labelYou' },
+            { timestamp, actorName }
           )}
         </span>
       );
@@ -650,6 +656,19 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
         <div className="cds-aichat--message__reasoning">{reasoning}</div>
       </div>
     );
+  }
+
+  private getRequestSaidMessage(
+    message: Pick<MessageRequest, 'history'>,
+    languagePack: Pick<LanguagePack, 'messages_youSaid'>
+  ): string {
+    const actorName = getRequestSenderName(message);
+    return actorName
+      ? this.props.intl.formatMessage(
+          { id: 'messages_userSaid' },
+          { actorName }
+        )
+      : languagePack.messages_youSaid;
   }
 
   /**
@@ -1292,6 +1311,8 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
           agentMessageType && 'cds-aichat--message--agent-message',
           {
             'cds-aichat--message--with-avatar-line': showAvatarLine,
+            'cds-aichat--message--named-request':
+              isRequest(message) && Boolean(getRequestSenderName(message)),
             'cds-aichat--with-human-agent': this.isAgent,
             'cds-aichat--message--request': messageIsRequest,
             'cds-aichat--message--system-message': isSystemMessage,
@@ -1390,7 +1411,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
                 {!messageState?.showBelowMessage && messageState?.element}
                 <div className="cds-aichat--sent">
                   <VisuallyHidden>
-                    {languagePack.messages_youSaid}
+                    {this.getRequestSaidMessage(message, languagePack)}
                   </VisuallyHidden>
                   {/* The bubble, its attachments and its footer share a
                       shrink-to-fit column so the footer can align to the

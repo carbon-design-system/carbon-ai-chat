@@ -11,6 +11,10 @@ on:
       - fix/1x-header-actions
       - fix/1x-host-entry-types
       - fix/1x-components-cem
+      - feat/1x-host-cem
+      - fix/1x-option-selection
+      - fix/1x-inline-markdown-style-types
+      - docs/1x-contract-examples
   merge_group:
     types: [checks_requested]
 
@@ -81,7 +85,7 @@ jobs:
           # 👇 Every other package with a test script
           - suite: examples
             browsers: chromium
-            run: npm run test:examples && npm run test:versions
+            run: npm run test:examples && npm run test:versions && CAIC_E2E_TARGETS=react17-choice,react18-choice,react19-choice npm run test:e2e:goldens
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Use Node.js version from .nvmrc

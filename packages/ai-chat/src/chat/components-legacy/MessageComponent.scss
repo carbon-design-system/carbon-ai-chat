@@ -487,13 +487,23 @@ svg.cds-aichat--sent-file-icon {
   }
 }
 
+.cds-aichat--message--request
+  .cds-aichat--message__avatar
+  + .cds-aichat--message__label {
+  padding-block: layout.$spacing-03;
+}
+
+/* Group only unnamed requests; hiding a header at a named boundary can attribute
+   the next message to the wrong sender. */
+
 .cds-aichat--message--response:not(
     .cds-aichat--message--system-message
   ).cds-aichat--message--agent-message
   + .cds-aichat--message--response:not(
     .cds-aichat--message--system-message
   ).cds-aichat--message--agent-message,
-.cds-aichat--message--request + .cds-aichat--message--request {
+.cds-aichat--message--request:not(.cds-aichat--message--named-request)
+  + .cds-aichat--message--request:not(.cds-aichat--message--named-request) {
   padding-block-start: layout.$spacing-03;
 
   .cds-aichat--message__avatar-line {
