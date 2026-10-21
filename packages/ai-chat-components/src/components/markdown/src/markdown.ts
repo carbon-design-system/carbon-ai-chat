@@ -26,6 +26,7 @@ import {
 import type {
   MarkdownCustomRendererMountDetail,
   MarkdownPluginFallbackMountDetail,
+  MarkdownPluginHostMountDetail,
 } from './utils/plugin-host-container.js';
 import {
   renderMarkdownTree,
@@ -788,6 +789,35 @@ class CDSAIChatMarkdown extends LitElement {
   }
 
   /**
+   * Offers a host to a chat container and records the claim. The innermost
+   * hop back to the host is minted before the offer: the claimant fills the
+   * host while it handles the event, and content that connects then must
+   * already be slotted. An unclaimed offer removes the hop again. The mount
+   * event fires once per host and is never replayed, so minting here is what
+   * makes a claim without its forwarder unrepresentable.
+   * @internal
+   */
+  private offerHost(detail: MarkdownPluginHostMountDetail): boolean {
+    const { slotName } = detail;
+    const forwarder = document.createElement('slot');
+    forwarder.setAttribute('name', slotName);
+    forwarder.setAttribute('slot', slotName);
+    this.appendChild(forwarder);
+    const mountEvent = new CustomEvent(
+      'cds-aichat-markdown-plugin-host-mount',
+      { bubbles: true, composed: true, cancelable: true, detail }
+    );
+    this.dispatchEvent(mountEvent);
+    if (!mountEvent.defaultPrevented) {
+      forwarder.remove();
+      return false;
+    }
+    this.delegatedPluginSlots.add(slotName);
+    this.rendererForwarders.set(slotName, forwarder);
+    return true;
+  }
+
+  /**
    * Drops a claim: retires the forwarder minted for it, if any, then tells the
    * container to let go.
    *
@@ -796,22 +826,6 @@ class CDSAIChatMarkdown extends LitElement {
    * a removed host into a blank region instead of the default rendering.
    * @internal
    */
-  /**
-   * Records a claim and mints the innermost hop back to the host the listener
-   * just relocated. Called in the same pass that read the claim because the
-   * mount event fires once per host and is never replayed — minting here is
-   * what makes a claim without its forwarder unrepresentable.
-   * @internal
-   */
-  private adoptDelegatedSlot(slotName: string) {
-    this.delegatedPluginSlots.add(slotName);
-    const forwarder = document.createElement('slot');
-    forwarder.setAttribute('name', slotName);
-    forwarder.setAttribute('slot', slotName);
-    this.rendererForwarders.set(slotName, forwarder);
-    this.appendChild(forwarder);
-  }
-
   private retireDelegatedSlot(slotName: string) {
     this.rendererForwarders.get(slotName)?.remove();
     this.rendererForwarders.delete(slotName);
@@ -853,24 +867,12 @@ class CDSAIChatMarkdown extends LitElement {
           descriptor.slotName
         );
         if (!alreadyDelegated && !this.slotHosts.has(descriptor.slotName)) {
-          const mountEvent = new CustomEvent(
-            'cds-aichat-markdown-plugin-host-mount',
-            {
-              bubbles: true,
-              composed: true,
-              cancelable: true,
-              detail: {
-                kind: 'pluginFallback',
-                slotName: descriptor.slotName,
-                html: descriptor.html,
-                isInline: descriptor.isInline,
-              } satisfies MarkdownPluginFallbackMountDetail,
-            }
-          );
-          this.dispatchEvent(mountEvent);
-          if (mountEvent.defaultPrevented) {
-            this.adoptDelegatedSlot(descriptor.slotName);
-          }
+          this.offerHost({
+            kind: 'pluginFallback',
+            slotName: descriptor.slotName,
+            html: descriptor.html,
+            isInline: descriptor.isInline,
+          } satisfies MarkdownPluginFallbackMountDetail);
         } else if (alreadyDelegated) {
           // The chain owns this slot; push HTML updates through a second
           // event so streaming chunks reach the page-level host element.
@@ -955,24 +957,13 @@ class CDSAIChatMarkdown extends LitElement {
         // ownership of the host's content across renders, and mints the slot
         // hop back to it below. If no ancestor takes over (standalone usage,
         // e.g. storybook), host it locally.
-        const mountEvent = new CustomEvent(
-          'cds-aichat-markdown-plugin-host-mount',
-          {
-            bubbles: true,
-            composed: true,
-            cancelable: true,
-            detail: {
-              kind: 'customRenderer',
-              slotName: descriptor.slotName,
-              element: host,
-              isInline: false,
-            } satisfies MarkdownCustomRendererMountDetail,
-          }
-        );
-        this.dispatchEvent(mountEvent);
-        if (mountEvent.defaultPrevented) {
-          this.adoptDelegatedSlot(descriptor.slotName);
-        } else {
+        const claimed = this.offerHost({
+          kind: 'customRenderer',
+          slotName: descriptor.slotName,
+          element: host,
+          isInline: false,
+        } satisfies MarkdownCustomRendererMountDetail);
+        if (!claimed) {
           this.appendChild(host);
         }
       }
