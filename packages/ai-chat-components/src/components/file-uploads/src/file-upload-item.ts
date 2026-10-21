@@ -373,37 +373,6 @@ class FileUploadItemElement extends LitElement {
     }
   }
 
-  private _openMediaWindow(
-    src: string,
-    title: string,
-    kind: 'image' | 'video'
-  ) {
-    const newWindow = isBrowser()
-      ? window.open('', '_blank', 'width=800,height=600')
-      : null;
-
-    if (!newWindow) {
-      return;
-    }
-
-    const tag = kind === 'image' ? 'img' : 'video';
-    const style = newWindow.document.createElement('style');
-    style.textContent = `* { margin: 0; padding: 0; background: #000 } ${tag} { display: block; width: 100%; height: 100vh; object-fit: contain }`;
-    let media: HTMLImageElement | HTMLVideoElement;
-    if (kind === 'video') {
-      const video = newWindow.document.createElement('video');
-      video.controls = true;
-      video.autoplay = true;
-      media = video;
-    } else {
-      media = newWindow.document.createElement('img');
-    }
-    media.src = src;
-    newWindow.document.title = title;
-    newWindow.document.head.appendChild(style);
-    newWindow.document.body.appendChild(media);
-  }
-
   private _renderPreview() {
     const resolved = this._resolved;
     if (!resolved) {
@@ -421,14 +390,12 @@ class FileUploadItemElement extends LitElement {
         return nothing;
       }
 
-      const openImage = () =>
-        this._openMediaWindow(objectURL, name ?? '', 'image');
-
-      return html`<button
+      return html`<a
         class="${prefix}-file-upload-item__preview-wrapper"
-        type="button"
-        aria-label="Open image"
-        @click="${openImage}">
+        href="${objectURL}"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Open image">
         <img
           class="${prefix}-file-upload-item__preview"
           src="${objectURL}"
@@ -436,7 +403,7 @@ class FileUploadItemElement extends LitElement {
           height="36"
           alt=""
           aria-hidden="true" />
-      </button>`;
+      </a>`;
     }
 
     // Video preview
@@ -446,8 +413,26 @@ class FileUploadItemElement extends LitElement {
         return nothing;
       }
 
-      const openVideo = () =>
-        this._openMediaWindow(objectURL, name ?? '', 'video');
+      const openVideo = () => {
+        const newWindow = isBrowser()
+          ? window.open('', '_blank', 'width=800,height=600')
+          : null;
+
+        if (!newWindow) {
+          return;
+        }
+
+        const style = newWindow.document.createElement('style');
+        style.textContent =
+          '* { margin: 0; padding: 0; background: #000 } video { display: block; width: 100%; height: 100vh; object-fit: contain }';
+        const video = newWindow.document.createElement('video');
+        video.src = objectURL;
+        video.controls = true;
+        video.autoplay = true;
+        newWindow.document.title = name ?? '';
+        newWindow.document.head.appendChild(style);
+        newWindow.document.body.appendChild(video);
+      };
 
       return html`<button
         class="${prefix}-file-upload-item__preview-wrapper"
@@ -477,13 +462,12 @@ class FileUploadItemElement extends LitElement {
     // rather than in the page. No video equivalent: playback would stream the file
     // back, which a chip on a sent message has no business doing.
     if (this._canPreviewURL(url) && type.startsWith('image/')) {
-      const openImage = () => this._openMediaWindow(url, name ?? '', 'image');
-
-      return html`<button
+      return html`<a
         class="${prefix}-file-upload-item__preview-wrapper"
-        type="button"
-        aria-label="Open image"
-        @click="${openImage}">
+        href="${url}"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Open image">
         <img
           class="${prefix}-file-upload-item__preview"
           src="${url}"
@@ -494,7 +478,7 @@ class FileUploadItemElement extends LitElement {
           @error="${() => {
             this._failedPreviewURL = url;
           }}" />
-      </button>`;
+      </a>`;
     }
 
     // File type icon (for supported icons)
