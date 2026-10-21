@@ -45,6 +45,13 @@ We should be looking for what here can can automate, and as we do, we can remove
 - [ ] **State access:** `instance.getState()`
 - [ ] **Custom panels:** `instance.customPanels`
 
+#### Stream completion reading position
+
+- [ ] In chunk mode and `?useUpsertMessage`, stream a long text answer. Scroll down a little (about 30px), then farther (about 200px). At completion, the same text stays at the same viewport offset; the chat does not move to the bottom.
+- [ ] Repeat with `complete_item` before `final_response`, a final response with a second item, and delayed final rows. Check the frames around completion for a jump or surplus blank space. The scroll-down button reflects remaining text.
+- [ ] Scroll back up with the wheel or Page Up during completion. The newer position stays. Keep focus on the same history handle or input control and check keyboard scrolling.
+- [ ] Leave one stream untouched, stop another, then restart. Request pins and Stop behavior still work. Repeat in Safari and record the version.
+
 ### Track 2: Message Response Types
 
 **Focus:** Test all message types from demo dropdown.
