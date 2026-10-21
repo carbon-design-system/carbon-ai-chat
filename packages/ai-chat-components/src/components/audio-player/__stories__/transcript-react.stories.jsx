@@ -161,7 +161,8 @@ export const WithEventHandling = {
           text={text}
           label={label}
           language={language}
-          onCdsAichatTranscriptToggle={(e) => {
+          expanded={isExpanded}
+          onTranscriptToggle={(e) => {
             setIsExpanded(e.detail.expanded);
           }}
         />
