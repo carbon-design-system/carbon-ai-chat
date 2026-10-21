@@ -151,6 +151,14 @@ class InlineRunProjection extends AsyncDirective {
       element: this.host,
       isInline: true,
     };
+    // The hop back to the host goes in before the offer: the claimant moves
+    // the host while it handles the event, and content that connects then
+    // must already be slotted.
+    const { fallbackHost } = this.options;
+    const forwarder = this.slot.ownerDocument.createElement('slot');
+    forwarder.name = this.options.slotName;
+    forwarder.slot = this.options.slotName;
+    fallbackHost?.append(forwarder);
     const claimed = !this.slot.dispatchEvent(
       new CustomEvent(`${prefix}-markdown-plugin-host-mount`, {
         bubbles: true,
@@ -160,14 +168,12 @@ class InlineRunProjection extends AsyncDirective {
       })
     );
     this.mounted = true;
-    if (this.options.fallbackHost) {
+    if (fallbackHost) {
       if (claimed) {
-        this.forwarder = this.slot.ownerDocument.createElement('slot');
-        this.forwarder.name = this.options.slotName;
-        this.forwarder.slot = this.options.slotName;
-        this.options.fallbackHost.append(this.forwarder);
+        this.forwarder = forwarder;
       } else {
-        this.options.fallbackHost.append(this.host);
+        forwarder.remove();
+        fallbackHost.append(this.host);
       }
     }
     if (this.host.isConnected) {
