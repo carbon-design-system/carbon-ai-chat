@@ -17,6 +17,7 @@ import {
 } from '@carbon/ai-chat';
 import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
+import { WORD_DELAY } from './constants';
 import { createResponseStream, sendResponse } from './sendResponse';
 
 async function sleep(milliseconds: number) {
@@ -62,7 +63,6 @@ async function doUserDefinedStreaming(
   requestID?: MessageRequest['id']
 ) {
   const signal = requestOptions?.signal;
-  const WORD_DELAY = 50;
   const responseID = uuid();
   const stream = createResponseStream(instance, responseID);
   const words = FAKE_DATA.split(' ');

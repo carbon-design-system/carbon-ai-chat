@@ -5,6 +5,8 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
+import process from 'node:process';
+
 import { defineConfig, devices } from '@playwright/test';
 
 const PORT = 3019;

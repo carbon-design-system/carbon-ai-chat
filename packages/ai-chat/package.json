@@ -77,7 +77,7 @@
   ],
   "sideEffects": [
     "**/web-components/**/*.js",
-    "**/chat.cds-aichat-container.js",
+    "**/chat.*.js",
     "**/*.css"
   ],
   "devDependencies": {
@@ -171,7 +171,8 @@
     "postinstall": "ibmtelemetry --config=telemetry.yml",
     "start": "concurrently \"rollup -c ./tasks/rollup.aichat.js --watch\" \"typedoc --watch\" \"serve dist/docs/carbon-tsdocs -l 5001 --no-port-switching\" \"wait-on dist/docs/carbon-tsdocs/index.html && open http://localhost:5001\"",
     "telemetry:config": "npx -y @ibm/telemetry-js-config-generator update --id ef967584-5788-47d4-b9c2-a60da7ad901d --endpoint https://www-api.ibm.com/ibm-telemetry/v1/metrics --files ./src --wc",
-    "test": "npm run test:manifest && jest --coverage --coverageReporters=text --coverageReporters=text-summary",
+    "test": "npm run test:manifest && jest",
+    "test:coverage": "jest --coverage --coverageReporters=text --coverageReporters=text-summary",
     "test:manifest": "node --test tasks/__tests__/*.test.js",
     "custom-elements": "cem analyze --config ./custom-elements-manifest.config.js"
   },
