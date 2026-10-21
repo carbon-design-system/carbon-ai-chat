@@ -137,7 +137,9 @@ describe('ChatInstance.messaging.addMessageChunk', () => {
   });
 
   it('ends a failed stream and reports one terminal error for its request', async () => {
-    const processingFailure = new Error('stream reducer failed');
+    const processingFailure = Object.freeze(
+      new TypeError('stream reducer failed')
+    );
     const onError = jest.fn();
     const config = {
       ...createBaseConfig(),
@@ -148,14 +150,19 @@ describe('ChatInstance.messaging.addMessageChunk', () => {
           _options: CustomSendMessageOptions,
           instance: ChatInstance
         ) => {
-          await instance.messaging.addMessageChunk({
-            streaming_metadata: { response_id: 'failed-response' },
-            partial_item: {
-              streaming_metadata: { id: 'failed-item' },
-              response_type: MessageResponseTypes.TEXT,
-              text: 'partial',
-            },
-          });
+          await instance.messaging
+            .addMessageChunk({
+              streaming_metadata: { response_id: 'failed-response' },
+              partial_item: {
+                streaming_metadata: { id: 'failed-item' },
+                response_type: MessageResponseTypes.TEXT,
+                text: 'partial',
+              },
+            })
+            .catch((error) => {
+              expect(error).toBe(processingFailure);
+              throw error;
+            });
         },
       },
     };
@@ -195,7 +202,9 @@ describe('ChatInstance.messaging.addMessageChunk', () => {
   });
 
   it('reports a direct chunk write failure once and allows the next chunk to run', async () => {
-    const failure = new Error('direct stream reducer failed');
+    const failure = Object.freeze(
+      new TypeError('direct stream reducer failed')
+    );
     const onError = jest.fn();
     const { instance, store } = await renderChatAndGetInstanceWithStore({
       ...createBaseConfig(),
@@ -224,8 +233,8 @@ describe('ChatInstance.messaging.addMessageChunk', () => {
       },
     };
 
-    await expect(instance.messaging.addMessageChunk(chunk)).rejects.toThrow(
-      'direct stream reducer failed'
+    await expect(instance.messaging.addMessageChunk(chunk)).rejects.toBe(
+      failure
     );
     expect(onError).toHaveBeenCalledTimes(1);
     expect(onError).toHaveBeenCalledWith(
@@ -420,44 +429,163 @@ describe('ChatInstance.messaging.addMessageChunk', () => {
     }
   });
 
-  it('does not turn a chunk event handler failure into a conversation error', async () => {
-    const onError = jest.fn();
-    const { instance } = await renderChatAndGetInstanceWithStore({
-      ...createBaseConfig(),
-      onError,
-    });
-    jest.spyOn(console, 'error').mockImplementation(() => undefined);
-    instance.on({
-      type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
-      handler: async () => {
-        throw new Error('host chunk handler failed');
-      },
-    });
-
-    await expect(
-      instance.messaging.addMessageChunk({
-        streaming_metadata: { response_id: 'callback-response' },
-        partial_item: {
-          streaming_metadata: { id: 'callback-item' },
-          response_type: MessageResponseTypes.USER_DEFINED,
-          user_defined: { value: 'test' },
-        },
+  it.each([
+    Object.freeze(
+      Object.assign(new TypeError('host chunk handler failed'), {
+        code: 'HOST_FAILURE',
       })
-    ).rejects.toThrow('host chunk handler failed');
+    ),
+    'host failure',
+    undefined,
+    null,
+    false,
+    0,
+    '',
+  ])(
+    'preserves a chunk event handler rejection (%p) without a conversation error',
+    async (failure) => {
+      const onError = jest.fn();
+      const { instance } = await renderChatAndGetInstanceWithStore({
+        ...createBaseConfig(),
+        onError,
+      });
+      jest.spyOn(console, 'error').mockImplementation(() => undefined);
+      instance.on({
+        type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
+        handler: async () => {
+          throw failure;
+        },
+      });
 
-    expect(onError).not.toHaveBeenCalled();
-  });
+      await expect(
+        instance.messaging.addMessageChunk({
+          streaming_metadata: { response_id: 'callback-response' },
+          partial_item: {
+            streaming_metadata: { id: 'callback-item' },
+            response_type: MessageResponseTypes.USER_DEFINED,
+            user_defined: { value: 'test' },
+          },
+        })
+      ).rejects.toBe(failure);
 
-  it('does not report a communication error when a send awaits a rejected chunk slot', async () => {
+      expect(onError).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each([
+    new TypeError('host chunk handler failed'),
+    undefined,
+    null,
+    false,
+    0,
+    '',
+  ])(
+    'does not report a communication error when a send awaits a rejected chunk slot (%p)',
+    async (failure) => {
+      const onError = jest.fn();
+      const { instance } = await renderChatAndGetInstanceWithStore({
+        ...createBaseConfig(),
+        onError,
+        messaging: {
+          skipWelcome: true,
+          customSendMessage: async (_request, _options, chat) => {
+            await chat.messaging.addMessageChunk({
+              streaming_metadata: { response_id: 'callback-response' },
+              partial_item: {
+                streaming_metadata: { id: 'callback-item' },
+                response_type: MessageResponseTypes.USER_DEFINED,
+                user_defined: { value: 'test' },
+              },
+            });
+          },
+        },
+      });
+      jest.spyOn(console, 'error').mockImplementation(() => undefined);
+      instance.on({
+        type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
+        handler: async () => {
+          throw failure;
+        },
+      });
+
+      await expect(instance.send('start')).rejects.toThrow(
+        failure instanceof Error
+          ? failure.message
+          : 'The chat could not process the message chunk.'
+      );
+      expect(onError).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each([true, false])(
+    'keeps callback failures local after a final response advances the queue (request ID: %p)',
+    async (includeRequestID) => {
+      const failure = new TypeError('second response callback failed');
+      const onError = jest.fn();
+      const { instance } = await renderChatAndGetInstanceWithStore({
+        ...createBaseConfig(),
+        onError,
+        messaging: {
+          skipWelcome: true,
+          customSendMessage: async (request, _options, chat) => {
+            await chat.messaging.addMessageChunk({
+              streaming_metadata: { response_id: 'first-response' },
+              partial_item: {
+                streaming_metadata: { id: 'text' },
+                response_type: MessageResponseTypes.TEXT,
+                text: 'first',
+              },
+            });
+            await chat.messaging.addMessageChunk({
+              final_response: {
+                id: 'first-response',
+                output: { generic: [] },
+              },
+            });
+            await chat.messaging.addMessageChunk({
+              streaming_metadata: {
+                response_id: 'second-response',
+                request_id: includeRequestID ? request.id : undefined,
+              },
+              partial_item: {
+                streaming_metadata: { id: 'callback-item' },
+                response_type: MessageResponseTypes.USER_DEFINED,
+                user_defined: { value: 'test' },
+              },
+            });
+          },
+        },
+      });
+      jest.spyOn(console, 'error').mockImplementation(() => undefined);
+      instance.on({
+        type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
+        handler: async () => {
+          throw failure;
+        },
+      });
+
+      await expect(instance.send('start')).rejects.toThrow(failure.message);
+      expect(onError).not.toHaveBeenCalled();
+    }
+  );
+
+  it('reports a later send failure even when it reuses a chunk handler error', async () => {
+    const failure = Object.freeze(new TypeError('host chunk handler failed'));
     const onError = jest.fn();
     const { instance } = await renderChatAndGetInstanceWithStore({
       ...createBaseConfig(),
       onError,
       messaging: {
         skipWelcome: true,
-        customSendMessage: async (_request, _options, chat) => {
+        customSendMessage: async (request, _options, chat) => {
+          if (request.input.text === 'second') {
+            throw failure;
+          }
           await chat.messaging.addMessageChunk({
-            streaming_metadata: { response_id: 'callback-response' },
+            streaming_metadata: {
+              response_id: 'older-response',
+              request_id: 'older-request',
+            },
             partial_item: {
               streaming_metadata: { id: 'callback-item' },
               response_type: MessageResponseTypes.USER_DEFINED,
@@ -471,14 +599,18 @@ describe('ChatInstance.messaging.addMessageChunk', () => {
     instance.on({
       type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
       handler: async () => {
-        throw new Error('host chunk handler failed');
+        throw failure;
       },
     });
 
-    await expect(instance.send('start')).rejects.toThrow(
-      'host chunk handler failed'
-    );
+    await expect(instance.send('first')).rejects.toThrow(failure.message);
     expect(onError).not.toHaveBeenCalled();
+
+    await expect(instance.send('second')).rejects.toThrow();
+    expect(onError).toHaveBeenCalledTimes(1);
+    expect(onError).toHaveBeenCalledWith(
+      expect.objectContaining({ errorType: OnErrorType.MESSAGE_COMMUNICATION })
+    );
   });
 
   it('preserves a reused response after a pre-restart final chunk handler rejects', async () => {
