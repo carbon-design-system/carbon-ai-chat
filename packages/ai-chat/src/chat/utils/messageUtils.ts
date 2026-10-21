@@ -837,7 +837,18 @@ function getSpeakerName(
   return responseUserProfile.nickname;
 }
 
+function getRequestSenderName(
+  message: Pick<MessageRequest, 'history'>
+): string | undefined {
+  const nickname = message.history?.user_profile?.nickname;
+  if (typeof nickname !== 'string') {
+    return undefined;
+  }
+  return nickname.trim() || undefined;
+}
+
 export {
+  getRequestSenderName,
   getOptionType,
   resolveChoiceText,
   findSelectedChoiceIndex,

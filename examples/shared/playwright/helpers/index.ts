@@ -23,7 +23,7 @@ export const test = base.extend<{ target: string }>({
     },
     { option: true },
   ],
-  page: async ({ page }, playWrightUse) => {
+  page: async ({ page, target }, playWrightUse) => {
     const errors: string[] = [];
     page.on('console', (message) => {
       // Vite may reload a cold page after its dependency optimizer changes.
@@ -35,7 +35,12 @@ export const test = base.extend<{ target: string }>({
       }
     });
     page.on('pageerror', (error) => errors.push(String(error)));
+    const coverage = process.env.CAIC_E2E_COVERAGE
+      ? await import('../coverage')
+      : undefined;
+    await coverage?.startCoverage(page);
     await playWrightUse(page);
+    await coverage?.stopCoverage(page, target);
     expect(errors).toEqual([]);
   },
 });
