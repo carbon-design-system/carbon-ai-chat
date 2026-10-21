@@ -386,24 +386,22 @@ class FileUploadItemElement extends LitElement {
       return;
     }
 
-    if (kind === 'image') {
-      const html = `<!DOCTYPE html><html><head><title>${title}</title><style>* { margin: 0; padding: 0; background: #000 } img { display: block; width: 100%; height: 100vh; object-fit: contain }</style></head><body><img src="${src}"></body></html>`;
-      const htmlBlob = new Blob([html], { type: 'text/html' });
-      const htmlURL = URL.createObjectURL(htmlBlob);
-      newWindow.location.href = htmlURL;
-      return;
-    }
-
+    const tag = kind === 'image' ? 'img' : 'video';
     const style = newWindow.document.createElement('style');
-    style.textContent =
-      '* { margin: 0; padding: 0; background: #000 } video { display: block; width: 100%; height: 100vh; object-fit: contain }';
-    const video = newWindow.document.createElement('video');
-    video.src = src;
-    video.controls = true;
-    video.autoplay = true;
+    style.textContent = `* { margin: 0; padding: 0; background: #000 } ${tag} { display: block; width: 100%; height: 100vh; object-fit: contain }`;
+    let media: HTMLImageElement | HTMLVideoElement;
+    if (kind === 'video') {
+      const video = newWindow.document.createElement('video');
+      video.controls = true;
+      video.autoplay = true;
+      media = video;
+    } else {
+      media = newWindow.document.createElement('img');
+    }
+    media.src = src;
     newWindow.document.title = title;
     newWindow.document.head.appendChild(style);
-    newWindow.document.body.appendChild(video);
+    newWindow.document.body.appendChild(media);
   }
 
   private _renderPreview() {
