@@ -1561,6 +1561,29 @@ HTTP: http://example.com
       `<span class="cds-test-tag">tag</span>`;
   }
 
+  /** Renders a `::tag::` line as block plugin output. */
+  function blockTagPlugin(md: any) {
+    md.block.ruler.before(
+      'paragraph',
+      'cds_test_block_tag',
+      (state: any, startLine: number, _endLine: number, silent: boolean) => {
+        const start = state.bMarks[startLine] + state.tShift[startLine];
+        if (state.src.slice(start, state.eMarks[startLine]) !== '::tag::') {
+          return false;
+        }
+        if (!silent) {
+          const token = state.push('cds_test_block_tag', '', 0);
+          token.map = [startLine, startLine + 1];
+          token.block = true;
+        }
+        state.line = startLine + 1;
+        return true;
+      }
+    );
+    md.renderer.rules.cds_test_block_tag = () =>
+      `<div class="cds-test-block-tag">tag</div>`;
+  }
+
   describe('slot names across markdown elements', () => {
     const HARNESS_TAG = 'cds-test-markdown-relocation-host';
     const codeMarkdown = '```json\n{ "name": "Alice" }\n```';
@@ -1894,6 +1917,58 @@ HTTP: http://example.com
           });
         }
       }
+    });
+
+    // Booleans, not nodes: a failed assertion on a DOM node walks its whole
+    // graph to print it.
+    it("drops a removed element's plugin host and name on the next offer", async () => {
+      const { harness, levels, pluginHosts, addMarkdown } =
+        await createRelocationHarness(2);
+      const forwarded = (name: string) =>
+        Boolean(levels[1].querySelector(`:scope > slot[name="${name}"]`));
+      const plugins = [blockTagPlugin];
+      const first = await addMarkdown('::tag::', {
+        markdownItPlugins: plugins,
+      } as Partial<MarkdownElementInstance>);
+      const [firstName] = [...pluginHosts.keys()];
+      expect(firstName, 'the block output gets a host').to.be.a('string');
+      expect(forwarded(firstName)).to.equal(true);
+
+      // Its unmount fires from its own disconnect and never reaches us.
+      first.remove();
+      await addMarkdown('::tag::', {
+        markdownItPlugins: plugins,
+      } as Partial<MarkdownElementInstance>);
+
+      expect(pluginHosts.has(firstName)).to.equal(false);
+      expect(pluginHosts.size).to.equal(1);
+      expect(
+        Boolean(harness.querySelector(`:scope > [slot="${firstName}"]`))
+      ).to.equal(false);
+      expect(forwarded(firstName)).to.equal(false);
+    });
+
+    it("drops a removed element's inline-run name on the next offer", async () => {
+      const { levels, mounted, addMarkdown } = await createRelocationHarness(2);
+      const forwarded = () =>
+        Array.from(
+          levels[1].querySelectorAll<HTMLSlotElement>(':scope > slot[name]'),
+          (slot) => slot.name
+        );
+      const plugins = [tagPlugin];
+      const first = await addMarkdown('Hi :tag:', {
+        markdownItPlugins: plugins,
+      } as Partial<MarkdownElementInstance>);
+      const [{ slotName: firstName }] = mounted;
+      expect(forwarded()).to.include(firstName);
+
+      first.remove();
+      await addMarkdown('Bye :tag:', {
+        markdownItPlugins: plugins,
+      } as Partial<MarkdownElementInstance>);
+
+      expect(forwarded()).to.not.include(firstName);
+      expect(forwarded().length).to.equal(1);
     });
 
     it('namespaces plugin-fallback slot names per element', async () => {

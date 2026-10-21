@@ -207,6 +207,50 @@ export function createMarkdownPluginHostController(
   // consumer's node and `disconnect()` from destroying one.
   const hosts = new Map<string, HTMLElement>();
   let slotNames: string[] = [];
+  // The node each name's offer came from. A markdown element announces its
+  // unmounts from its own disconnect, once it is already detached, so those
+  // events never reach `target`. A name whose sender has left the page is
+  // dropped on the next offer instead. Held weakly, so a removed message is
+  // not kept alive until then.
+  const senders = new Map<string, WeakRef<Node>>();
+
+  /** Drops names whose sender left the page. Returns true if any went. */
+  const dropDetachedSenders = (): boolean => {
+    const detached = new Set<string>();
+    for (const [name, sender] of senders) {
+      if (!sender.deref()?.isConnected) {
+        detached.add(name);
+      }
+    }
+    for (const name of detached) {
+      senders.delete(name);
+      hosts.get(name)?.remove();
+      hosts.delete(name);
+    }
+    if (detached.size > 0) {
+      slotNames = slotNames.filter((name) => !detached.has(name));
+    }
+    return detached.size > 0;
+  };
+
+  /**
+   * Records an offer's name and sender, drops names whose sender left, and
+   * reports the list if it changed. Runs before the host is appended.
+   */
+  const trackOffer = (event: Event, slotName: string) => {
+    let changed = dropDetachedSenders();
+    const [sender] = event.composedPath();
+    if (sender instanceof Node) {
+      senders.set(slotName, new WeakRef(sender));
+    }
+    if (!slotNames.includes(slotName)) {
+      slotNames = [...slotNames, slotName];
+      changed = true;
+    }
+    if (changed) {
+      onSlotNamesChange?.(slotNames);
+    }
+  };
 
   // Built once, not per `connect()`: a Lit `connectedCallback` can fire again
   // without an intervening disconnect, and fresh closures would register a
@@ -222,10 +266,7 @@ export function createMarkdownPluginHostController(
 
     // Track before deferring: a container nested inside an outer chat element
     // hosts nothing but still has to forward the slot inward.
-    if (!slotNames.includes(detail.slotName)) {
-      slotNames = [...slotNames, detail.slotName];
-      onSlotNamesChange?.(slotNames);
-    }
+    trackOffer(event, detail.slotName);
     if (shouldDefer?.(event)) {
       return;
     }
@@ -285,6 +326,7 @@ export function createMarkdownPluginHostController(
     if (!detail?.slotName) {
       return;
     }
+    senders.delete(detail.slotName);
     if (slotNames.includes(detail.slotName)) {
       slotNames = slotNames.filter((name) => name !== detail.slotName);
       onSlotNamesChange?.(slotNames);
