@@ -375,7 +375,12 @@ class RichController
       // Resolved per decoration build rather than captured, so `setPlaceholder`
       // lands on the live editor. Tiptap snapshots an extension's options when
       // it builds plugins, so a value here could never be updated in place.
-      Placeholder.configure({ placeholder: () => this._placeholder }),
+      // `showOnlyWhenEditable: false` keeps the decoration visible when the
+      // editor is disabled so the placeholder matches the textarea runtime.
+      Placeholder.configure({
+        placeholder: () => this._placeholder,
+        showOnlyWhenEditable: false,
+      }),
       PlainTextPaste,
       Keymap,
       // Plain Enter sends (non-empty); empty Enter falls through to a newline.
