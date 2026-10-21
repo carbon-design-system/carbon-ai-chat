@@ -32,6 +32,7 @@ slot[name='notifications'] {
 .#{$block-class}__scroll-handle {
   position: absolute;
   overflow: hidden;
+  flex-shrink: 0;
   padding: 0;
   border: none;
   margin: 0;

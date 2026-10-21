@@ -883,7 +883,7 @@ export class MessagesScrollController {
     const scrollContainer = this.host.getScrollContainer();
     scrollContainer?.removeEventListener('scroll', this.handleUserScroll);
     this.doAutoScrollThrottled.cancel();
-    this.onContainerResize.cancel();
+    this.onContainerResizeThrottled.cancel();
   }
 
   /**
@@ -950,8 +950,15 @@ export class MessagesScrollController {
    * Runs internal auto-scroll to ensure proper scrolling behavior when the container resizes.
    * (Was the scroll work inside `MessagesComponent.onResize`.)
    */
-  onContainerResize = throttle(
-    () => {
+  onContainerResize = (): void => {
+    this.onContainerResizeThrottled(++this.scrollCounter);
+  };
+
+  private onContainerResizeThrottled = throttle(
+    (counter: number) => {
+      if (counter !== this.scrollCounter) {
+        return;
+      }
       // Resize can invalidate both "scroll down" visibility and pin geometry.
       this.updateScrollHeightFloor();
       this.host.onScrollGeometryChanged();
@@ -1300,7 +1307,7 @@ export class MessagesScrollController {
     if (hasNewResponse) {
       // Use the same throttled approach as streaming to recalculate after content settles.
       // This is more reliable than trying to time rAF perfectly.
-      this.doAutoScrollThrottled();
+      this.doAutoScrollThrottled(this.scrollCounter);
     }
   }
 
@@ -1479,7 +1486,11 @@ export class MessagesScrollController {
    * This is throttled to prevent excessive scrolling during rapid updates.
    */
   private doAutoScrollThrottled = throttle(
-    this.doAutoScrollInternal,
+    (counter: number) => {
+      if (counter === this.scrollCounter) {
+        this.doAutoScrollInternal();
+      }
+    },
     AUTO_SCROLL_THROTTLE_MS,
     { leading: true, trailing: true }
   );

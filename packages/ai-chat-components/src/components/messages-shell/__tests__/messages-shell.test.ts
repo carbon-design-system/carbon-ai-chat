@@ -8,6 +8,7 @@
  */
 
 import { fixture, html, expect, oneEvent } from '@open-wc/testing';
+import { sendKeys } from '@web/test-runner-commands';
 import prefix from '../../../globals/settings.js';
 import '../index.js';
 import type CDSAIChatMessagesShell from '../src/messages-shell.js';
@@ -168,6 +169,37 @@ describe(blockClass, () => {
       handle.blur();
       expect(scroller.classList.contains(ringClass)).to.be.false;
     });
+
+    for (const [index, position] of ['top', 'bottom'].entries()) {
+      it(`keeps the full ${position} handle label visible when focused`, async () => {
+        const label =
+          'Chat history begin. Select this button to focus the first message then use the arrow keys to move between messages. Press escape to exit the message list. Press the keyboard shortcut to toggle between the message list and the input field.';
+        const box = await fixture<HTMLElement>(html`
+          <div style="block-size:400px;inline-size:600px">
+            <cds-aichat-messages-shell
+              .topHandleLabel=${label}
+              .bottomHandleLabel=${label}>
+              <div slot="notifications" style="block-size:56px">Notice</div>
+              <div style="block-size:600px">Messages</div>
+              <div slot="error" style="block-size:56px">Error</div>
+            </cds-aichat-messages-shell>
+          </div>
+        `);
+        const shell = box.querySelector<CDSAIChatMessagesShell>(
+          'cds-aichat-messages-shell'
+        )!;
+        const handle =
+          shell.shadowRoot!.querySelectorAll<HTMLButtonElement>(handleSelector)[
+            index
+          ];
+
+        await sendKeys({ press: 'Tab' });
+        handle.focus();
+
+        expect(handle.matches(':focus-visible')).to.be.true;
+        expect(handle.clientHeight).to.be.at.least(handle.scrollHeight);
+      });
+    }
 
     it('blurs a handle when Escape is pressed', async () => {
       const el = await renderShellWithHandles();

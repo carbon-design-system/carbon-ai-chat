@@ -1351,6 +1351,101 @@ describe('MessagesScrollController', () => {
   });
 });
 
+describe('pending throttled scroll requests', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it.each([
+    ['doAutoScroll', 'message update'],
+    ['doAutoScrollInternal', 'message update'],
+    ['doAutoScroll', 'container resize'],
+    ['doAutoScrollInternal', 'container resize'],
+  ] as const)(
+    '%s supersedes a pending %s trailing callback',
+    async (entryPoint, source) => {
+      const { h, controller } = createConnectedController();
+      const messages = [
+        createPortableMessage({ id: 'ui-0' }),
+        createRealPinnableMessage('req-1', 200, 80),
+        createPortableMessage({ id: 'response-1', isResponse: true }),
+      ];
+      h.setMessages(messages);
+      controller.onHostUpdated(null);
+      if (source === 'message update') {
+        h.setMessages([
+          ...messages,
+          createPortableMessage({ id: 'response-2', isResponse: true }),
+        ]);
+        controller.onHostUpdated(null);
+      } else {
+        controller.onContainerResize();
+        controller.onContainerResize();
+      }
+
+      controller[entryPoint]({ scrollToBottom: 0 });
+      await jest.advanceTimersByTimeAsync(16);
+      expect(h.container.scrollTop).toBe(500);
+      expect(h.setSpacerHeight).not.toHaveBeenCalled();
+
+      await jest.advanceTimersByTimeAsync(250);
+      expect(h.container.scrollTop).toBe(500);
+      expect(h.setSpacerHeight).not.toHaveBeenCalled();
+      controller.disconnect();
+    }
+  );
+
+  it('keeps a newer resize on the original trailing deadline', async () => {
+    const { h, controller } = createConnectedController();
+    controller.onContainerResize();
+    await jest.advanceTimersByTimeAsync(50);
+    controller.onContainerResize();
+    await jest.advanceTimersByTimeAsync(30);
+    controller.doAutoScroll({ scrollToTop: 30 });
+    await jest.advanceTimersByTimeAsync(20);
+    expect(h.container.scrollTop).toBe(30);
+
+    controller.onContainerResize();
+    h.onScrollGeometryChanged.mockClear();
+    await jest.advanceTimersByTimeAsync(99);
+    expect(h.onScrollGeometryChanged).not.toHaveBeenCalled();
+    await jest.advanceTimersByTimeAsync(1);
+    expect(h.onScrollGeometryChanged).toHaveBeenCalledTimes(1);
+    await jest.advanceTimersByTimeAsync(16);
+    expect(h.container.scrollTop).toBe(0);
+    controller.disconnect();
+  });
+
+  it('keeps the latest message update on the original trailing deadline', async () => {
+    const { h, controller } = createConnectedController();
+    const messages = [
+      createPortableMessage({ id: 'ui-0' }),
+      createRealPinnableMessage('req-1', 200, 80),
+      createPortableMessage({ id: 'response-1', isResponse: true }),
+    ];
+    h.setMessages(messages);
+    controller.onHostUpdated(null);
+    await jest.advanceTimersByTimeAsync(50);
+    h.setMessages([
+      ...messages,
+      createPortableMessage({ id: 'response-2', isResponse: true }),
+    ]);
+    controller.onHostUpdated(null);
+    await jest.advanceTimersByTimeAsync(50);
+
+    h.setSpacerHeight.mockClear();
+    await jest.advanceTimersByTimeAsync(59);
+    expect(h.setSpacerHeight).not.toHaveBeenCalled();
+    await jest.advanceTimersByTimeAsync(1);
+    expect(h.setSpacerHeight).toHaveBeenCalledTimes(1);
+    controller.disconnect();
+  });
+});
+
 describe('message resize observation', () => {
   let observers: Array<{
     callback: ResizeObserverCallback;
