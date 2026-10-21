@@ -47,14 +47,21 @@ function makeStubManager(initialMessages: Record<string, unknown> = {}) {
   const finalizeStreamingMessage = jest.fn();
 
   const manager = {
+    restartCount: 0,
     store: {
       getState: () => state,
       dispatch,
     },
     fire,
     actions: chatActions,
+    chunkProcessingService: { handleUpsertStreaming: jest.fn() },
+    receiveService: {
+      handleConnectToHumanAgent: jest.fn().mockResolvedValue(undefined),
+    },
     messageService: {
       finalizeStreamingMessage,
+      getCurrentMessageController: jest.fn(),
+      resetStopStreamingButtonIfIdle: jest.fn(),
       isRequestFromPreviousConversation: jest.fn().mockReturnValue(false),
       messageLoadingManager: { end: jest.fn() },
     },
@@ -293,6 +300,84 @@ describe('MessageUpsertCoordinator', () => {
         coord.upsert('m1', MessageState.COMPLETE, () => textResponse('m1', ''))
       ).resolves.toBeUndefined();
     });
+  });
+
+  it('discards an awaiting updater and its queued successor after reset', async () => {
+    const { manager, dispatch, fire } = makeStubManager();
+    const coord = new MessageUpsertCoordinator(manager);
+    let resolve: (message: MessageResponse) => void;
+    const waiting = new Promise<MessageResponse>((done) => {
+      resolve = done;
+    });
+    const first = coord.upsert('old', MessageState.COMPLETE, () => waiting);
+    const successor = jest.fn(() => textResponse('old', 'queued'));
+    const second = coord.upsert('old', MessageState.COMPLETE, successor);
+    await Promise.resolve();
+    await Promise.resolve();
+    coord.clearAll();
+    resolve(textResponse('old', 'stale'));
+    await Promise.all([first, second]);
+    expect(dispatch).not.toHaveBeenCalled();
+    expect(fire).not.toHaveBeenCalled();
+    expect(successor).not.toHaveBeenCalled();
+    expect(coord.hasStreamingMessages()).toBe(false);
+  });
+
+  it.each(['clearAll', 'restart', 'request'] as const)(
+    'drops completion when %s invalidates an awaited agent response',
+    async (boundary) => {
+      const { manager, state, fire, finalizeStreamingMessage } =
+        makeStubManager();
+      const coord = new MessageUpsertCoordinator(manager);
+      state.allMessageItemsByID.item1 = {
+        fullMessageID: 'm1',
+        ui_state: { id: 'item1' },
+        item: { response_type: MessageResponseTypes.CONNECT_TO_HUMAN_AGENT },
+      };
+      state.assistantMessageState.localMessageIDs = ['item1'];
+      jest
+        .mocked(manager.receiveService.handleConnectToHumanAgent)
+        .mockImplementation(async () => {
+          if (boundary === 'clearAll') {
+            coord.clearAll();
+          } else if (boundary === 'restart') {
+            manager.restartCount++;
+          } else {
+            jest
+              .mocked(manager.messageService.isRequestFromPreviousConversation)
+              .mockReturnValue(true);
+          }
+        });
+
+      await coord.upsert('m1', MessageState.COMPLETE, () => ({
+        ...textResponse('m1', 'response'),
+        request_id: 'request1',
+      }));
+
+      expect(fire.mock.calls.map(([event]) => event.type)).toEqual([
+        BusEventType.PRE_RECEIVE,
+      ]);
+      expect(coord.getState('m1')).toBeUndefined();
+      expect(finalizeStreamingMessage).not.toHaveBeenCalled();
+      expect(
+        manager.messageService.resetStopStreamingButtonIfIdle
+      ).not.toHaveBeenCalled();
+    }
+  );
+
+  it('ends snapshot liveness on error without receive events', async () => {
+    const { manager, fire, dispatch } = makeStubManager();
+    const coord = new MessageUpsertCoordinator(manager);
+    await coord.upsert('m1', MessageState.STREAMING, () =>
+      textResponse('m1', 'partial')
+    );
+    expect(coord.hasStreamingMessages()).toBe(true);
+    await coord.upsert('m1', MessageState.ERROR, (previous) => previous);
+    expect(coord.hasStreamingMessages()).toBe(false);
+    expect(fire).not.toHaveBeenCalled();
+    expect(dispatch).toHaveBeenLastCalledWith(
+      expect.objectContaining({ isStreaming: false })
+    );
   });
 
   describe('clearAll', () => {
