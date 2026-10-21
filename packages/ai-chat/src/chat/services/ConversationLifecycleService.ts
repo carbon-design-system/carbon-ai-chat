@@ -8,8 +8,10 @@
  */
 
 class ConversationLifecycleService {
+  // Async work captures its generation so a restart can invalidate late callbacks.
   private generation = 0;
   private activeResponses = new Map<string, string | undefined>();
+  // Keep stopped IDs until restart so late chunks cannot revive a canceled request.
   private stoppedRequests = new Set<string>();
 
   get currentGeneration() {
@@ -27,14 +29,14 @@ class ConversationLifecycleService {
     return this.generation;
   }
 
-  requestStopped(messageID: string, generation = this.generation) {
+  requestStopped(requestID: string, generation = this.generation) {
     if (!this.isCurrent(generation)) {
       return [];
     }
     const responseIDs: string[] = [];
-    this.stoppedRequests.add(messageID);
-    for (const [responseID, requestID] of this.activeResponses) {
-      if (requestID === messageID) {
+    this.stoppedRequests.add(requestID);
+    for (const [responseID, owningRequestID] of this.activeResponses) {
+      if (owningRequestID === requestID) {
         responseIDs.push(responseID);
         this.activeResponses.delete(responseID);
       }
@@ -60,6 +62,7 @@ class ConversationLifecycleService {
       this.isCurrent(generation) &&
       !this.stoppedRequests.has(requestID)
     ) {
+      // The first write owns cancellation, even when later writes supply another request ID.
       if (!this.activeResponses.has(messageID)) {
         this.activeResponses.set(messageID, requestID);
       }
