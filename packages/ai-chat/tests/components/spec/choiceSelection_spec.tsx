@@ -22,8 +22,8 @@ jest.mock('@carbon/ai-chat-components/es/react/chat-button.js', () => ({
   __esModule: true,
   CHAT_BUTTON_KIND: { TERTIARY: 'tertiary' },
   CHAT_BUTTON_SIZE: { SMALL: 'sm' },
-  default: ({ children, isselected, ...props }: any) => (
-    <button type="button" data-selected={String(isselected)} {...props}>
+  default: ({ children, isSelected, ...props }: any) => (
+    <button type="button" data-selected={String(isSelected)} {...props}>
       {children}
     </button>
   ),
@@ -208,6 +208,25 @@ describe('choice selection controls', () => {
     expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
     expect(consoleSpy).toHaveBeenCalled();
     consoleSpy.mockRestore();
+  });
+
+  it('passes false before selection and after selection is cleared', () => {
+    const { localMessage, renderComponent, rerender } = renderOptions([
+      { label: 'Choice', value: { input: { text: 'choice' } } },
+    ]);
+    const choice = screen.getByRole('button', { name: 'Choice' });
+    expect(choice).toHaveAttribute('data-selected', 'false');
+
+    localMessage.ui_state.optionSelected = {
+      input: { text: 'choice' },
+      history: {},
+    };
+    rerender(renderComponent());
+    expect(choice).toHaveAttribute('data-selected', 'true');
+
+    delete localMessage.ui_state.optionSelected;
+    rerender(renderComponent());
+    expect(choice).toHaveAttribute('data-selected', 'false');
   });
 
   it('marks at most the first matching button selected', () => {

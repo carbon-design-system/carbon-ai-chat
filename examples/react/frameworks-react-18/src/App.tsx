@@ -29,6 +29,7 @@ import {
 } from '@carbon/ai-chat';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
+import ChoiceButtonProbe from '../../../shared/playwright/fixtures/ChoiceButtonProbe';
 
 import { customSendMessage } from './customSendMessage';
 import '@carbon/styles/css/styles.css';
@@ -83,6 +84,9 @@ function HostPropsProbe() {
 }
 
 function App() {
+  if (new URLSearchParams(window.location.search).has('choice-probe')) {
+    return <ChoiceButtonProbe />;
+  }
   if (new URLSearchParams(window.location.search).has('host-props')) {
     return <HostPropsProbe />;
   }
