@@ -417,7 +417,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     disableSend,
     isSendDisabledFromConfig,
     onSendInput,
-    hasErrorProp,
+    hasErrorProp: hasErrorProp || hasUploadErrors,
     pendingUploads,
     restoreDraft,
     isInputVisible,
