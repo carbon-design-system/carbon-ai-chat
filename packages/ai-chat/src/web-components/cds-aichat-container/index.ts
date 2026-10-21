@@ -8,9 +8,12 @@
  */
 
 /**
- * This is the exposed web component for a basic floating chat. Importing it
- * registers `cds-aichat-container`; the class lives in its own module.
+ * This is the exposed web component for a basic floating chat.
  */
+
+import { installReactDomRenderer } from '../shared/react-dom-renderer';
+
+installReactDomRenderer();
 
 export { default } from './cds-aichat-container';
 export type { CdsAiChatContainerAttributes } from './cds-aichat-container';

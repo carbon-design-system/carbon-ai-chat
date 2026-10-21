@@ -72,14 +72,22 @@ export default function LitSCSS({
         );
        ${contents}`;
 
-      const { css } = await renderSass({
+      const result = await renderSass({
         ...options,
         file: id,
         data: finalContent,
       });
 
+      // Register all @use'd / @import'd partials as watch dependencies so
+      // that edits to any of them trigger a rebuild.
+      for (const depFile of result.stats.includedFiles) {
+        this.addWatchFile(depFile);
+      }
+
       return {
-        code: transformToTemplate(await preprocessor(css.toString(), id)),
+        code: transformToTemplate(
+          await preprocessor(result.css.toString(), id)
+        ),
         map: {
           mappings: '',
         },

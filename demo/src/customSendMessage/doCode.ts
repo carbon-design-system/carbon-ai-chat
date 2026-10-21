@@ -9,15 +9,20 @@
 
 import {
   ChatInstance,
+  MessageRequest,
   CustomSendMessageOptions,
   MessageResponseTypes,
 } from '@carbon/ai-chat';
+import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
 import { CODE } from './constants';
 import { doTextStreaming } from './doText';
+import { sendResponse } from './sendResponse';
 
-function doCode(instance: ChatInstance) {
-  instance.messaging.addMessage({
+function doCode(instance: ChatInstance, requestID?: MessageRequest['id']) {
+  return sendResponse(instance, {
+    id: uuid(),
+    request_id: requestID,
     output: {
       generic: [
         {
@@ -31,7 +36,8 @@ function doCode(instance: ChatInstance) {
 
 function doCodeStreaming(
   instance: ChatInstance,
-  requestOptions?: CustomSendMessageOptions
+  requestOptions?: CustomSendMessageOptions,
+  requestID?: MessageRequest['id']
 ) {
   doTextStreaming(
     instance,
@@ -42,7 +48,8 @@ function doCodeStreaming(
     undefined,
     undefined,
     undefined,
-    requestOptions
+    requestOptions,
+    requestID
   );
 }
 

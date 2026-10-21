@@ -9,18 +9,25 @@
 
 import {
   ChatInstance,
+  MessageRequest,
   MessageResponseTypes,
   SystemMessageVariant,
 } from '@carbon/ai-chat';
-import { MARKDOWN } from './constants';
+import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
-function doSystemMessage(
+import { MARKDOWN } from './constants';
+import { sendResponse } from './sendResponse';
+
+async function doSystemMessage(
   instance: ChatInstance,
   inline?: boolean,
-  variant?: SystemMessageVariant
+  variant?: SystemMessageVariant,
+  requestID?: MessageRequest['id']
 ) {
   if (inline) {
-    instance.messaging.addMessage({
+    await sendResponse(instance, {
+      id: uuid(),
+      request_id: requestID,
       output: {
         generic: [
           {
@@ -36,7 +43,9 @@ function doSystemMessage(
     });
   }
   if (variant === 'agent') {
-    instance.messaging.addMessage({
+    await sendResponse(instance, {
+      id: uuid(),
+      request_id: requestID,
       output: {
         generic: [
           {
@@ -47,7 +56,9 @@ function doSystemMessage(
         ],
       },
     });
-    instance.messaging.addMessage({
+    await sendResponse(instance, {
+      id: uuid(),
+      request_id: requestID,
       output: {
         generic: [
           {
@@ -59,7 +70,9 @@ function doSystemMessage(
     });
   }
   if (variant === 'date') {
-    instance.messaging.addMessage({
+    await sendResponse(instance, {
+      id: uuid(),
+      request_id: requestID,
       output: {
         generic: [
           {
@@ -70,7 +83,9 @@ function doSystemMessage(
         ],
       },
     });
-    instance.messaging.addMessage({
+    await sendResponse(instance, {
+      id: uuid(),
+      request_id: requestID,
       output: {
         generic: [
           {
@@ -81,7 +96,9 @@ function doSystemMessage(
       },
     });
   } else {
-    instance.messaging.addMessage({
+    await sendResponse(instance, {
+      id: uuid(),
+      request_id: requestID,
       output: {
         generic: [
           {
@@ -93,7 +110,9 @@ function doSystemMessage(
       },
     });
 
-    instance.messaging.addMessage({
+    await sendResponse(instance, {
+      id: uuid(),
+      request_id: requestID,
       output: {
         generic: [
           {

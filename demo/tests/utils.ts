@@ -523,10 +523,10 @@ function processResults(results: any, label: string, scopeSelector?: string) {
   if (scopeSelector) {
     allViolations = allViolations.filter((v: any) => {
       const domPath = v.path?.dom || '';
-      // For chat widget scoping, check if the path goes through cds-aichat-react
-      // which is the chat widget's shadow DOM container
+      // For chat widget scoping, check if the path goes through
+      // cds-aichat-container, whose shadow root holds the chat app
       if (scopeSelector.includes('data-testid="chat_widget"')) {
-        return domPath.includes('cds-aichat-react');
+        return domPath.includes('cds-aichat-container');
       }
       // Fallback to checking if selector is in path or snippet
       return (

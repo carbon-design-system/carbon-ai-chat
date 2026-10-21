@@ -16,6 +16,12 @@ For a one-shot, non-streaming insert, use {@link ChatInstanceMessaging.addMessag
 
 [Message format](./MessageFormat.md) documents the item and response shapes used below.
 
+## Link every chunk to its request
+
+To drop replies from before a restart or clear, include the outgoing {@link MessageRequest.id | request ID} on every chunk. Set `streaming_metadata.request_id` on partial and complete item chunks. Set {@link MessageResponse.request_id | request_id} inside `final_response` on the final chunk. The response ID still identifies the reply; the request ID identifies the request it answers.
+
+Use the request passed to {@link PublicConfigMessaging.customSendMessage | customSendMessage}, shown as `request` below. Omitted or unknown request IDs do not provide this protection. See [Ignore replies from before a restart](./CustomServer.md#ignore-replies-from-before-a-restart) for a complete send callback and the ID rules.
+
 ## Partial item chunks
 
 Stream updates to single message items with a {@link PartialItemChunk | PartialItemChunk}. Each chunk carries a {@link DeepPartial} of a {@link GenericItem} in `partial_item`, a per-message `streaming_metadata.response_id`, and a `streaming_metadata` on the item whose `id` picks the item to update and whose optional `cancellable` flag shows the "stop streaming" button. See {@link PartialItemChunk} and {@link StreamChunk} for the full field reference.
@@ -36,6 +42,7 @@ const chunk: StreamChunk = {
   },
   streaming_metadata: {
     response_id: responseID, // Identifies the entire message
+    request_id: request.id, // Links every chunk to the outgoing request
   },
   partial_response: {
     message_options: {
@@ -71,6 +78,7 @@ const chunk: StreamChunk = {
   },
   streaming_metadata: {
     response_id: responseID,
+    request_id: request.id,
   },
   partial_response: {
     message_options: {
@@ -86,7 +94,7 @@ If you stream only one item, skip this step and go straight to the final respons
 
 ## Final response chunks
 
-The final response chunk ({@link FinalResponseChunk | FinalResponseChunk}) signals the end of all streaming and provides the authoritative final state. It carries the full {@link MessageResponse | MessageResponse} with all items. See {@link FinalResponseChunk} for the full field reference. When you send it:
+The final response chunk ({@link FinalResponseChunk | FinalResponseChunk}) signals the end of all streaming and provides the authoritative final state. It carries the full {@link MessageResponse | MessageResponse} with all items. See {@link FinalResponseChunk} for the full field reference. If the chat accepts it:
 
 - It clears streaming UI state, such as hiding the "stop streaming" buttons
 - Set its `id` to match the `response_id` from earlier chunks
@@ -98,6 +106,7 @@ Example:
 ```typescript
 const finalResponse: MessageResponse = {
   id: responseID,
+  request_id: request.id,
   output: {
     generic: [
       {

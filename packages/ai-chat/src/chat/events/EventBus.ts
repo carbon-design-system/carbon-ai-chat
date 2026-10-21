@@ -35,6 +35,22 @@ import {
 
 const HANDLER_NOT_FUNCTION = 'The event handler is not a function.';
 
+/**
+ * How long a fire may wait behind an earlier fire of the same type before the bus gives up on it. A handler that
+ * waits on a chat call firing its own type never lets the earlier fire finish, and this turns that deadlock back into
+ * a rejected call.
+ */
+const QUEUED_FIRE_TIMEOUT_MS = 10_000;
+
+const noop = () => {
+  /* intentionally empty */
+};
+
+interface QueuedFire {
+  /** Settles, never rejecting, once this fire is over. */
+  done: Promise<void>;
+}
+
 class EventBus {
   /**
    * This is a map of all the event handlers by type with the map key being the type of event (e.g. "send").
@@ -42,11 +58,12 @@ class EventBus {
   private handlersByType: Map<string, EventBusHandler[]> = new Map();
 
   /**
-   * This set is used to keep track of which events are currently running. This is to prevent the same event from
-   * running more than once at the same time. This check is only performed on asynchronous events and does not cover
-   * the "*" event.
+   * The latest fire of each event type that has not finished yet. A new fire of a type listed here waits for this one
+   * before its handlers start, so overlapping fires of one type run in call order. Fires of different types never
+   * wait on each other. A same-type fire made synchronously from inside a handler runs nested, before this entry is
+   * set, and a fire that timed out stops tracking the one it waited on.
    */
-  private eventsTypesRunning: Set<BusEventType> = new Set();
+  private queuedFireByType: Map<BusEventType, QueuedFire> = new Map();
 
   /**
    * This is the Promise used by the {@link waitForEmpty} function.
@@ -62,6 +79,10 @@ class EventBus {
    * Fires the given event and notifiers all listeners for this event type. All event listeners that listen for all
    * ("*") events will also be notified. Events will be fired in the order in which they were registered.
    *
+   * If an earlier fire of the same type is still running, this one waits for it to settle before its handlers
+   * start, so overlapping fires of one type run in the order they were called. A fire that waits longer than
+   * `QUEUED_FIRE_TIMEOUT_MS` rejects without running its handlers.
+   *
    * @param busEvent A single event.
    * @param instance The current instance of the Carbon AI Chat that is passed to the event handlers
    */
@@ -75,40 +96,32 @@ class EventBus {
       );
     }
 
-    function wrappedHandler(handler: EventBusHandler) {
-      const result = handler(busEvent, instance);
-      if (result && !(result instanceof Promise)) {
-        consoleWarn(
-          `An event handler for event ${type} returned a non-promise. This might be a mistake.`,
-          result
-        );
+    this.eventsRunningCount++;
+    const thisEntry: QueuedFire = { done: undefined };
+    const release = () => {
+      if (this.queuedFireByType.get(type) === thisEntry) {
+        this.queuedFireByType.delete(type);
       }
-      return result;
-    }
-
-    if (this.eventsTypesRunning.has(type)) {
-      throw new Error(
-        `An event of type ${type} is already running. Please make sure that you have resolved the Promises for any earlier events that were fired.`
-      );
-    }
-
+    };
     try {
-      this.eventsRunningCount++;
-
-      try {
-        this.eventsTypesRunning.add(type);
-
-        // Run all the handlers for the given type.
-        const handlersForType = this.handlersByType.get(type);
-        if (handlersForType && handlersForType.length) {
-          // Copy the array in case it's modified by an event handler.
-          const handlersCopy = handlersForType.slice();
-          await asyncForEach(handlersCopy, wrappedHandler);
+      const run = async () => {
+        try {
+          await this.runHandlers(busEvent, instance);
+        } finally {
+          release();
         }
-      } finally {
-        this.eventsTypesRunning.delete(type);
-      }
+      };
+      const previousEntry = this.queuedFireByType.get(type);
+      // With nothing of this type queued, run straight away so the handlers start synchronously as they always have.
+      const thisFire = previousEntry
+        ? this.runAfter(previousEntry.done, type, run)
+        : run();
+      thisEntry.done = thisFire.then(noop, noop);
+      this.queuedFireByType.set(type, thisEntry);
+
+      await thisFire;
     } finally {
+      release();
       this.eventsRunningCount--;
 
       if (this.waitForEmptyPromise && this.eventsRunningCount === 0) {
@@ -119,6 +132,59 @@ class EventBus {
     }
 
     logEvent('After fire', busEvent);
+  }
+
+  /**
+   * Runs the handlers once the previous fire of the same type settles, or rejects if that takes longer than
+   * `QUEUED_FIRE_TIMEOUT_MS`.
+   */
+  private async runAfter(
+    previousFire: Promise<void>,
+    type: BusEventType,
+    run: () => Promise<void>
+  ) {
+    let timer: ReturnType<typeof setTimeout>;
+    const timedOut = new Promise<never>((_resolve, reject) => {
+      timer = setTimeout(() => {
+        reject(
+          new Error(
+            `A ${type} event waited ${QUEUED_FIRE_TIMEOUT_MS / 1000} seconds for an earlier ${type} event that had not finished, so the chat skipped its handlers. Make sure every ${type} handler settles its Promise and does not wait on a chat call that fires ${type} again, such as addMessage from a receive handler.`
+          )
+        );
+      }, QUEUED_FIRE_TIMEOUT_MS);
+    });
+    try {
+      await Promise.race([previousFire, timedOut]);
+    } finally {
+      clearTimeout(timer);
+    }
+    await run();
+  }
+
+  /**
+   * Calls every handler registered for the event's type, one after another.
+   */
+  private async runHandlers<T extends BusEvent>(
+    busEvent: T,
+    instance: ChatInstance
+  ) {
+    const { type } = busEvent;
+    const handlersForType = this.handlersByType.get(type);
+    if (!handlersForType?.length) {
+      return;
+    }
+    // Copy the array in case it's modified by an event handler.
+    const handlersCopy = handlersForType.slice();
+    await asyncForEach(handlersCopy, (handler: EventBusHandler) => {
+      const result = handler(busEvent, instance);
+      if (result && !(result instanceof Promise)) {
+        consoleWarn(
+          `An event handler for event ${type} returned a non-promise. This might be a mistake.`,
+          result
+        );
+      }
+      return result;
+    });
   }
 
   /**

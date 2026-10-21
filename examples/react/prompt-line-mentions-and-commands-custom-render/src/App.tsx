@@ -13,24 +13,28 @@
  * Demonstrates: the same mention/command suggestion configuration as the
  * `prompt-line-mentions-and-commands` example, plus a `renderCustomToken` for
  * mentions that swaps the default chip for a Carbon `Tag` wrapped in a
- * `Tooltip`. Commands keep the default chip rendering.
+ * `Tooltip` in the composer, and a matching `renderUserDefinedInputNode` that
+ * renders the same chip inside the sent message bubble. Commands keep the
+ * default chip rendering in both surfaces.
  *
  * APIs exercised:
  *   - `ChatCustomElement`
  *   - `PublicConfig.layout.showFrame`
  *   - `PublicConfig.openChatByDefault`
  *   - `PublicConfig.input.mention` + `PublicConfig.input.command`
- *   - `mention.renderCustomToken` for chip rendering
+ *   - `mention.renderCustomToken` for chip rendering in the composer
+ *   - `renderUserDefinedInputNode` for chip rendering in sent bubbles
  *   - `mention.onSelect` / `mention.onRemove` keep the structured-data sidecar
  *     in sync as chips are added and deleted
  *
- * Start reading at: `App()` and the `renderCustomToken` callback.
+ * Start reading at: `mentionChip()`, then `App()`.
  */
 
 import {
   ChatCustomElement,
   ChatInstance,
   PublicConfig,
+  RenderUserDefinedInputNodeState,
   SuggestionItem,
 } from '@carbon/ai-chat';
 import '@carbon/styles/css/styles.css';
@@ -40,6 +44,21 @@ import { createRoot } from 'react-dom/client';
 
 import { customSendMessage } from './customSendMessage';
 import { mentionItems, commandItems } from './suggestions';
+
+/**
+ * The chip both surfaces render. A chip stores the picked item's `id` and
+ * `label` but not its `description`, so the description is looked up here.
+ */
+function mentionChip(id: string, label: string): React.ReactNode {
+  const description = mentionItems.find((item) => item.id === id)?.description;
+  return (
+    <Tooltip label={description ?? label} align="top" autoAlign>
+      <Tag size="sm" type="purple">
+        @{label}
+      </Tag>
+    </Tooltip>
+  );
+}
 
 function App() {
   const instanceRef = useRef<ChatInstance | null>(null);
@@ -116,19 +135,9 @@ function App() {
           },
           // replace the default mention chip with a Carbon Tag
           // wrapped in a Tooltip — this is the entire point of the
-          // example. autoAlign uses floating-ui with strategy:'fixed'
-          // so the tooltip escapes the editor's scroll/overflow
-          // clipping rather than being hidden behind it.
-          renderCustomToken: (item: SuggestionItem) => (
-            <Tooltip
-              label={item.description ?? item.label}
-              align="top"
-              autoAlign>
-              <Tag size="sm" type="purple">
-                @{item.label}
-              </Tag>
-            </Tooltip>
-          ),
+          // example.
+          renderCustomToken: (item: SuggestionItem) =>
+            mentionChip(item.id, item.label),
         },
         command: {
           trigger: '/',
@@ -179,11 +188,31 @@ function App() {
     []
   );
 
+  // Render the custom chip visual inside the sent message bubble.
+  // `renderCustomToken` is composer-only; this is the bubble counterpart.
+  const renderUserDefinedInputNode = useCallback(
+    (
+      { node }: RenderUserDefinedInputNodeState,
+      _instance: ChatInstance
+    ): React.ReactNode => {
+      if (node.type === 'mention') {
+        const id = (node.attrs?.id ?? '') as string;
+        const label = (node.attrs?.label ?? '') as string;
+        return mentionChip(id, label);
+      }
+      // Return null for command and everything else — slot fallback shows
+      // the default chip.
+      return null;
+    },
+    []
+  );
+
   return (
     <ChatCustomElement
       className="chat-custom-element"
       {...config}
       onBeforeRender={onBeforeRender}
+      renderUserDefinedInputNode={renderUserDefinedInputNode}
     />
   );
 }

@@ -832,6 +832,276 @@ describe('cds-aichat-shell', function () {
     });
   });
 
+  // ========== DOM Move / Reconnect Tests ==========
+  describe('DOM move survival', () => {
+    it('keeps observing slot changes after a same-task move', async () => {
+      const el = await fixture<CDSAIChatShell>(
+        html`<cds-aichat-shell>
+          <div slot="header">Header</div>
+        </cds-aichat-shell>`
+      );
+      await el.updateComplete;
+
+      const container1 = el.parentElement!;
+      const container2 = document.createElement('div');
+      container1.appendChild(container2);
+
+      // Move: remove then immediately re-append in the same task.
+      container1.removeChild(el);
+      container2.appendChild(el);
+
+      // Allow the deferred teardown timer (macrotask) to resolve — the
+      // connectedCallback should have cancelled it before it fired.
+      await new Promise<void>((resolve) => setTimeout(resolve, 10));
+      await el.updateComplete;
+
+      const shell = el.shadowRoot!.querySelector('.shell');
+      expect(shell!.classList.contains('has-header-content')).to.be.true;
+
+      const header = el.querySelector('[slot="header"]')!;
+      header.remove();
+      await nextFrame();
+      await el.updateComplete;
+      expect(shell!.classList.contains('has-header-content')).to.be.false;
+
+      el.appendChild(header);
+      await nextFrame();
+      await el.updateComplete;
+      expect(shell!.classList.contains('has-header-content')).to.be.true;
+    });
+
+    it('resumes observing slot changes after teardown and reconnect', async () => {
+      const el = await fixture<CDSAIChatShell>(
+        html`<cds-aichat-shell>
+          <div slot="header">Header</div>
+        </cds-aichat-shell>`
+      );
+      await el.updateComplete;
+
+      const container = el.parentElement!;
+
+      // Real removal — wait long enough for the deferred teardown to fire.
+      container.removeChild(el);
+      await new Promise<void>((resolve) => setTimeout(resolve, 10));
+
+      // Re-attach after teardown has completed.
+      const container2 = document.createElement('div');
+      container.appendChild(container2);
+      container2.appendChild(el);
+
+      // Allow Lit's update cycle to run.
+      await el.updateComplete;
+
+      const shell = el.shadowRoot!.querySelector('.shell');
+      expect(shell!.classList.contains('has-header-content')).to.be.true;
+
+      const header = el.querySelector('[slot="header"]')!;
+      header.remove();
+      await nextFrame();
+      await el.updateComplete;
+      expect(shell!.classList.contains('has-header-content')).to.be.false;
+
+      el.appendChild(header);
+      await nextFrame();
+      await el.updateComplete;
+      expect(shell!.classList.contains('has-header-content')).to.be.true;
+    });
+
+    for (const teardown of [false, true]) {
+      it(`resumes an interrupted workspace panel opening after ${teardown ? 'teardown and reconnect' : 'a same-task move'}`, async () => {
+        const requestFrame = window.requestAnimationFrame;
+        const cancelFrame = window.cancelAnimationFrame;
+        const frames = new Map<number, FrameRequestCallback>();
+        let frameId = 0;
+        const flushFrame = () => {
+          const callbacks = Array.from(frames.values());
+          frames.clear();
+          callbacks.forEach((callback) => callback(performance.now()));
+        };
+        window.requestAnimationFrame = (callback) => {
+          frames.set(++frameId, callback);
+          return frameId;
+        };
+        window.cancelAnimationFrame = (id) => {
+          frames.delete(id);
+        };
+
+        try {
+          const workspaceMinWidth = window.innerWidth + 200 - 320;
+          const el = await fixture<CDSAIChatShell>(
+            html`<cds-aichat-shell
+              show-workspace
+              style="
+              width: 600px;
+              display: block;
+              --cds-aichat-workspace-min-width: ${workspaceMinWidth}px;
+              --cds-aichat-messages-min-width: 320px;
+              --cds-aichat-history-width: 0px;
+            ">
+              <div slot="workspace">Workspace Content</div>
+            </cds-aichat-shell>`
+          );
+          await el.updateComplete;
+
+          const panel = el.shadowRoot!.querySelector<HTMLElement>(
+            'cds-aichat-panel[data-internal-panel]'
+          )!;
+          expect(panel).to.exist;
+          expect(panel.hasAttribute('open'), 'panel before removal').to.be
+            .false;
+
+          flushFrame();
+          const container = el.parentElement!;
+          el.remove();
+          flushFrame();
+          await el.updateComplete;
+
+          expect(panel.hasAttribute('open'), 'panel while detached').to.be
+            .false;
+          if (teardown) {
+            await new Promise<void>((resolve) => setTimeout(resolve, 10));
+            flushFrame();
+            flushFrame();
+            expect(panel.hasAttribute('open'), 'panel after teardown').to.be
+              .false;
+          }
+
+          container.appendChild(el);
+          flushFrame();
+          flushFrame();
+          await el.updateComplete;
+
+          expect(panel.hasAttribute('open')).to.be.true;
+          expect(el.hasAttribute('workspace-in-panel')).to.be.true;
+        } finally {
+          window.requestAnimationFrame = requestFrame;
+          window.cancelAnimationFrame = cancelFrame;
+        }
+      });
+    }
+
+    it('preserves slot content across a same-task DOM move', async () => {
+      const el = await fixture<CDSAIChatShell>(
+        html`<cds-aichat-shell>
+          <div slot="messages">Messages</div>
+          <div slot="input">Input area</div>
+        </cds-aichat-shell>`
+      );
+      await el.updateComplete;
+
+      const parent1 = el.parentElement!;
+      const parent2 = document.createElement('div');
+      document.body.appendChild(parent2);
+
+      // Same-task move
+      parent1.removeChild(el);
+      parent2.appendChild(el);
+
+      await new Promise<void>((resolve) => setTimeout(resolve, 10));
+      await el.updateComplete;
+
+      const messagesSlot = el.shadowRoot!.querySelector(
+        'slot[name="messages"]'
+      ) as HTMLSlotElement;
+      expect(messagesSlot.assignedElements({ flatten: true }).length).to.equal(
+        1
+      );
+
+      const inputSlot = el.shadowRoot!.querySelector(
+        'slot[name="input"]'
+      ) as HTMLSlotElement;
+      expect(inputSlot.assignedElements({ flatten: true }).length).to.equal(1);
+
+      document.body.removeChild(parent2);
+    });
+  });
+
+  // ========== content-max-width / at-max-width Tests ==========
+  describe('content-max-width and at-max-width class', () => {
+    it('should apply at-max-width when content-max-width is not set, regardless of container width', async () => {
+      // Container is wider than the 672px messages-max-width threshold, but
+      // content-max-width is absent, so at-max-width must still be present.
+      const el = await fixture<CDSAIChatShell>(
+        html`<cds-aichat-shell
+          style="width: 673px; display: block;"></cds-aichat-shell>`
+      );
+      await el.updateComplete;
+      await nextFrame(2);
+
+      const inputAndMessages = el.shadowRoot!.querySelector(
+        '.input-and-messages'
+      );
+      expect(inputAndMessages!.classList.contains('at-max-width')).to.be.true;
+    });
+
+    it('should apply at-max-width when content-max-width is not set and container is narrower than 672px', async () => {
+      const el = await fixture<CDSAIChatShell>(
+        html`<cds-aichat-shell
+          style="width: 400px; display: block;"></cds-aichat-shell>`
+      );
+      await el.updateComplete;
+      await nextFrame(2);
+
+      const inputAndMessages = el.shadowRoot!.querySelector(
+        '.input-and-messages'
+      );
+      expect(inputAndMessages!.classList.contains('at-max-width')).to.be.true;
+    });
+
+    it('should apply at-max-width when content-max-width is set and container fits within 672px', async () => {
+      const el = await fixture<CDSAIChatShell>(
+        html`<cds-aichat-shell
+          content-max-width
+          style="width: 400px; display: block;"></cds-aichat-shell>`
+      );
+      await el.updateComplete;
+      await nextFrame(2);
+
+      const inputAndMessages = el.shadowRoot!.querySelector(
+        '.input-and-messages'
+      );
+      expect(inputAndMessages!.classList.contains('at-max-width')).to.be.true;
+    });
+
+    it('should NOT apply at-max-width when content-max-width is set and container exceeds 672px', async () => {
+      const el = await fixture<CDSAIChatShell>(
+        html`<cds-aichat-shell
+          content-max-width
+          style="width: 673px; display: block;"></cds-aichat-shell>`
+      );
+      await el.updateComplete;
+      await nextFrame(2);
+
+      const inputAndMessages = el.shadowRoot!.querySelector(
+        '.input-and-messages'
+      );
+      expect(inputAndMessages!.classList.contains('at-max-width')).to.be.false;
+    });
+
+    it('should restore at-max-width when content-max-width attribute is removed', async () => {
+      const el = await fixture<CDSAIChatShell>(
+        html`<cds-aichat-shell
+          content-max-width
+          style="width: 673px; display: block;"></cds-aichat-shell>`
+      );
+      await el.updateComplete;
+      await nextFrame(2);
+
+      // Confirm it starts without at-max-width
+      let inputAndMessages = el.shadowRoot!.querySelector(
+        '.input-and-messages'
+      );
+      expect(inputAndMessages!.classList.contains('at-max-width')).to.be.false;
+
+      // Remove content-max-width — at-max-width must now be applied unconditionally
+      el.contentMaxWidth = false;
+      await el.updateComplete;
+
+      inputAndMessages = el.shadowRoot!.querySelector('.input-and-messages');
+      expect(inputAndMessages!.classList.contains('at-max-width')).to.be.true;
+    });
+  });
+
   // ========== Snapshot Tests ==========
   describe('Snapshots', () => {
     it('should match snapshot with default configuration', async () => {

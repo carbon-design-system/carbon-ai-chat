@@ -30,7 +30,6 @@ import cloneDeep from 'lodash-es/cloneDeep.js';
 import { consoleError, debugLog } from '../utils/miscUtils';
 import { BusEventSend, BusEventType } from '../../types/events/eventBusTypes';
 import { ChatInstance } from '../../types/instance/ChatInstance';
-import { resetStopStreamingButton } from '../utils/streamingUtils';
 import { addDefaultsToMessage } from '../utils/messageUtils';
 
 type CustomSendMessageFn = (
@@ -57,7 +56,11 @@ class OutboundMessageCoordinator {
       current: PendingMessageRequest,
       received?: MessageResponse
     ) => Promise<void>,
-    private getMessagingConfig: () => PublicConfigMessaging
+    private getMessagingConfig: () => PublicConfigMessaging,
+    private registerRequestGeneration: (
+      requestID: string,
+      restartGeneration: number
+    ) => void
   ) {}
 
   /**
@@ -104,7 +107,7 @@ class OutboundMessageCoordinator {
     });
 
     // Hide stop streaming button if visible
-    resetStopStreamingButton(this.serviceManager.store);
+    this.serviceManager.messageService.resetStopStreamingButtonWithoutUpserts();
 
     this.rejectFinalErrorOnMessage(pendingRequest, resultText);
   }
@@ -197,7 +200,7 @@ class OutboundMessageCoordinator {
     }
 
     // Hide stop streaming button if visible
-    resetStopStreamingButton(this.serviceManager.store);
+    this.serviceManager.messageService.resetStopStreamingButtonWithoutUpserts();
 
     sendMessagePromise.doResolve();
     pendingRequest.isProcessed = true;
@@ -251,6 +254,7 @@ class OutboundMessageCoordinator {
         }
       }
 
+      this.registerRequestGeneration(message.id, current.restartGeneration);
       await Promise.resolve(
         customSendMessage(
           message,

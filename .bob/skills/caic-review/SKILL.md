@@ -5,6 +5,8 @@ description: Review a local diff, branch, or pull request with severity-tagged f
 
 This rubric governs every code review in this repo — both user-requested reviews and the self-review an agent runs against its own diff before marking a task done (see [AGENTS.md](../../../AGENTS.md)).
 
+**Before drafting any copy**, read [caic-copy-writer](../caic-copy-writer/SKILL.md) and apply its shared skim-reading rule and workflow. This includes local drafts and final artifacts. Reuse it if already loaded.
+
 ## Scope the review first
 
 **Use the requested scope.** Honor supplied paths, ranges, and revisions. Infer them from the task when clear; ask only about gaps that change the review.

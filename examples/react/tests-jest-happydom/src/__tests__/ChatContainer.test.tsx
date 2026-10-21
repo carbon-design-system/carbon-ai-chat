@@ -25,7 +25,7 @@
  */
 
 import React from 'react';
-import { waitFor } from '@testing-library/react';
+import { act, waitFor } from '@testing-library/react';
 import {
   ChatContainer,
   PageObjectId,
@@ -286,16 +286,22 @@ describe('ChatContainer', () => {
         { timeout: WAIT_FOR_TIMEOUT }
       );
 
-      await chatInstance.send('Hello');
+      await act(async () => {
+        await chatInstance.send('Hello');
+      });
 
       // The rendered output is portaled into the light DOM of the host element,
       // not the shadow root — query from customElement, not shadowRoot.
-      const customResponse = await waitFor(
-        () => customElement.querySelector('[data-testid="custom-response"]'),
+      await waitFor(
+        () => {
+          const customResponse = customElement.querySelector(
+            '[data-testid="custom-response"]'
+          );
+          expect(customResponse).toBeTruthy();
+          expect(customResponse).toHaveTextContent('Custom response content');
+        },
         { timeout: WAIT_FOR_TIMEOUT }
       );
-      expect(customResponse).toBeTruthy();
-      expect(customResponse).toHaveTextContent('Custom response content');
     },
     TEST_TIMEOUT
   );

@@ -425,8 +425,7 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
         await navigator.clipboard.writeText(textToCopy);
       } else {
         // Fallback for HTTP or older browsers. The off-screen positioning is
-        // applied via a class + dynamic stylesheet rule so a strict CSP can
-        // drop style-src-attr 'unsafe-inline'.
+        // applied via a class + dynamic stylesheet rule.
         ensureClipboardHelperRule();
         const textArea = document.createElement('textarea');
         textArea.value = textToCopy;
@@ -683,7 +682,7 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
     this._lineCount = this.editorView.state.doc.lines;
 
     // Check height after editor renders, then announce that this snippet's async
-    // render has settled so a surrounding scroll manager can recalculate geometry.
+    // render has settled so host listeners can recalculate geometry.
     requestAnimationFrame(() => {
       this._checkShowMoreButton();
       this.emitRenderSettled();
@@ -703,8 +702,9 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
 
   /**
    * Announces that this snippet's async render (CodeMirror init and/or font load) has
-   * settled, so a host scroll manager can recalculate scroll geometry against the final
-   * height. Composed + bubbling so it crosses the shadow boundary up to the message list.
+   * settled, so host listeners can recalculate layout against the final height. The event is
+   * public; the message list's scroll controller no longer listens to it. Composed + bubbling
+   * so it crosses the shadow boundary.
    */
   private emitRenderSettled() {
     this.dispatchEvent(
@@ -755,7 +755,7 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
   /**
    * Calculates the CSS custom properties for the snippet container based on expanded state and min/max row constraints.
    * Returned by reference for `_applyContainerStyles`, which writes them via the shared dynamic stylesheet
-   * (see `dynamic-css-var-sheet`) so a strict CSP can drop `style-src-attr 'unsafe-inline'`.
+   * (see `dynamic-css-var-sheet`).
    */
   private _getContainerStyles(expandedCode: boolean): ContainerStyleProperties {
     return buildContainerStyles({
@@ -770,9 +770,8 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
 
   /**
    * Applies CSS custom properties to the snippet container element via the
-   * shared dynamic stylesheet so a strict CSP can drop
-   * style-src-attr 'unsafe-inline'. The container is tagged with a
-   * per-instance data attribute so each snippet's rule is independent.
+   * shared dynamic stylesheet. The container is tagged with a per-instance
+   * data attribute so each snippet's rule is independent.
    */
   private _applyContainerStyles() {
     const container = this.snippetContainer.value;

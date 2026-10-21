@@ -49,6 +49,9 @@ class MessageLoadingManager {
     msMaxSilentLoading: number,
     msMaxAttempt: number
   ) {
+    // A request that resolves without a reply never calls end(), so its timers are still running here.
+    this.end();
+
     this.hasExceededMaxSilentLoading = false;
     this.onEnd = onEnd;
 

@@ -13,7 +13,15 @@ if (!Number.isInteger(concurrency) || concurrency < 1) {
 }
 
 const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-const result = spawnSync(
+const shell = process.platform === 'win32';
+
+// The central golden suite runs once here. Lerna then runs any `test:e2e` script
+// a workspace defines; none do today.
+const goldens = spawnSync(npm, ['run', 'test:e2e:goldens'], {
+  stdio: 'inherit',
+  shell,
+});
+const workspaces = spawnSync(
   npm,
   [
     'exec',
@@ -25,13 +33,15 @@ const result = spawnSync(
     '--concurrency',
     String(concurrency),
   ],
-  { stdio: 'inherit', shell: process.platform === 'win32' }
+  { stdio: 'inherit', shell }
 );
 
-if (result.error) {
-  throw result.error;
+for (const result of [goldens, workspaces]) {
+  if (result.error) {
+    throw result.error;
+  }
+  if (result.signal) {
+    process.kill(process.pid, result.signal);
+  }
 }
-if (result.signal) {
-  process.kill(process.pid, result.signal);
-}
-process.exitCode = result.status ?? 1;
+process.exitCode = goldens.status || workspaces.status || 0;

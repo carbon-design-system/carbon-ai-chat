@@ -64,6 +64,9 @@ export class Demo extends LitElement {
       flex: 1 1 auto;
       min-height: 0;
     }
+    button {
+      font: inherit;
+    }
   `;
 
   @state()

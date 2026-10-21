@@ -10,13 +10,19 @@
 import {
   ButtonItemType,
   ChatInstance,
+  MessageRequest,
   MessageResponseTypes,
   WidthOptions,
 } from '@carbon/ai-chat';
+import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 import { BUTTON_KIND } from '@carbon/web-components/es/components/button/defs.js';
 
-function doCard(instance: ChatInstance) {
-  instance.messaging.addMessage({
+import { sendResponse } from './sendResponse';
+
+function doCard(instance: ChatInstance, requestID?: MessageRequest['id']) {
+  return sendResponse(instance, {
+    id: uuid(),
+    request_id: requestID,
     output: {
       generic: [
         {

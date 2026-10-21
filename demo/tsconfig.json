@@ -11,12 +11,17 @@
     "useDefineForClassFields": true,
     "moduleResolution": "bundler",
     "skipLibCheck": true,
-    "types": ["vite/client"],
+    "types": ["vite/client", "node"],
     "plugins": [
       {
         "name": "ts-lit-plugin"
       }
     ]
   },
-  "include": ["src/**/*", "types/**/*.d.ts"]
+  "include": [
+    "src/**/*",
+    "types/**/*.d.ts",
+    "playwright.config.ts",
+    "vite.config.ts"
+  ]
 }

@@ -28,6 +28,65 @@ describe('ChatInstance.messaging.addMessage', () => {
     expect(typeof instance.messaging.addMessage).toBe('function');
   });
 
+  it('hides the immediate stop button after addMessage while customSendMessage is still pending', async () => {
+    let allowResponse: () => void;
+    let reportStarted: () => void;
+    let reportResponse: () => void;
+    let finishSend: () => void;
+    const responseAllowed = new Promise<void>((resolve) => {
+      allowResponse = resolve;
+    });
+    const started = new Promise<void>((resolve) => {
+      reportStarted = resolve;
+    });
+    const responseAdded = new Promise<void>((resolve) => {
+      reportResponse = resolve;
+    });
+    const sendAllowedToFinish = new Promise<void>((resolve) => {
+      finishSend = resolve;
+    });
+    const config = createBaseConfig();
+    config.messaging = {
+      skipWelcome: true,
+      showStopButtonImmediately: true,
+      customSendMessage: async (_request, _options, chat) => {
+        reportStarted();
+        await responseAllowed;
+        await chat.messaging.addMessage({
+          id: 'ordinary-response',
+          output: {
+            generic: [
+              { response_type: MessageResponseTypes.TEXT, text: 'done' },
+            ],
+          },
+        });
+        reportResponse();
+        await sendAllowedToFinish;
+      },
+    };
+    const { instance, store } = await renderChatAndGetInstanceWithStore(config);
+    let settled = false;
+    const sending = instance.send('start').then(() => {
+      settled = true;
+    });
+    try {
+      await started;
+      expect(
+        store.getState().assistantInputState.stopStreamingButtonState.isVisible
+      ).toBe(true);
+      allowResponse();
+      await responseAdded;
+      expect(
+        store.getState().assistantInputState.stopStreamingButtonState.isVisible
+      ).toBe(false);
+      expect(settled).toBe(false);
+    } finally {
+      allowResponse();
+      finishSend();
+      await sending;
+    }
+  });
+
   it('should accept message response', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
@@ -425,6 +484,36 @@ describe('ChatInstance.messaging.addMessage', () => {
       await instance.messaging.addMessage(messageResponse);
 
       expect(eventOrder).toEqual(['pre:receive', 'receive']);
+    });
+  });
+
+  describe('Loading indicator', () => {
+    it('shows for an unanswered request and is off after the next reply', async () => {
+      const config = createBaseConfig();
+      config.messaging = {
+        messageLoadingIndicatorTimeoutSecs: 0.05,
+        customSendMessage: async (request, _options, instance) => {
+          if (request.input.text !== 'answered') {
+            return;
+          }
+          await instance.messaging.addMessage({
+            output: {
+              generic: [
+                { response_type: MessageResponseTypes.TEXT, text: 'reply' },
+              ],
+            },
+          });
+        },
+      };
+      const instance = await renderChatAndGetInstance(config);
+
+      await instance.send('unanswered');
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      expect(instance.getState().isMessageLoadingCounter).toBe(1);
+
+      await instance.send('answered');
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      expect(instance.getState().isMessageLoadingCounter).toBe(0);
     });
   });
 });

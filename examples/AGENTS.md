@@ -25,18 +25,20 @@ When `npm run aiChat:start` is running in another terminal, example Vite dev ser
 
 ## Smoke tests
 
-Playwright is the smoke-test mechanism for examples. New suites use `test:e2e`. `tests-vitest-happydom` and both `tests-jest-*` examples use `test` for another runner. The existing `frameworks-react-17` and `frameworks-react-18` Playwright suites also use `test`. Keep them in the root `npm test` run until they move to the shared setup in #1424.
+Playwright is the smoke-test mechanism for examples. The golden examples are covered by one central suite in [shared/playwright/](shared/playwright/): run it with `npm run test:e2e:goldens`. Golden examples use the central config, dependency, and script. Other Vite examples can use `scaffold:example-e2e` for a local suite. `tests-vitest-happydom` and both `tests-jest-*` examples use `test` for another runner. The existing `frameworks-react-17` and `frameworks-react-18` Playwright suites also use `test`. Keep them in the root `npm test` run until they move to the shared setup in #1424.
 
-Read [playwright.md](references/playwright.md) before adding or changing an example's tests. It carries the goldens to copy, how a port is allocated, the selector rules, and the four examples that are deliberately skipped.
+Read [playwright.md](references/playwright.md) before adding or changing an example's tests. It carries where specs live, how to add a target or scaffold a local suite, how a port is allocated, the selector rules, and the four examples that are deliberately skipped.
 
 ## Definition of done
 
 - `npm run build --workspace=<example>` exits 0.
-- `npm run test:e2e --workspace=<example>` passes, if the example has a `test:e2e` script.
+- `CAIC_E2E_TARGETS=<target> npm run test:e2e:goldens` passes for each of the example's targets in [targets.ts](shared/playwright/targets.ts). `--project` alone still builds every target's example.
+- `CAIC_E2E_TARGETS=<targets> npm run test:e2e:coverage` ran, and the PR explains any example below the [coverage target](references/playwright.md#coverage-target).
+- `npm run test:e2e --workspace=<example>` passes, if the example has a local `test:e2e` script.
 - `npm run test --workspace=<example>` passes, if the example has a `test` script.
 - README follows the [Indexer Contract](references/indexer-contract.md).
 
-A Playwright suite is **not** required here yet: most examples have none, so the requirement would fail repo-wide today. Hardening this list to require one, with the four skips carved out, is the closing step of [issue #1424](https://github.com/carbon-design-system/carbon-ai-chat/issues/1424).
+Every new example adds a shared Playwright suite: a spec in [tests/](shared/playwright/tests/) and its targets in [targets.ts](shared/playwright/targets.ts). The four deliberate skips and the framework examples tracked in [issue #1424](https://github.com/carbon-design-system/carbon-ai-chat/issues/1424) stay outside the suite.
 
 ## Authoring rules
 

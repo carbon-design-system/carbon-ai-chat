@@ -7,19 +7,53 @@ collect:
   wc:
     elements:
       allowedAttributeNames:
-        # General
-        - element
         # cds-aichat-container
+        - ai-disabled
+        - ai-enabled
+        - assistant-name
+        - assistantavatarurl
+        - debug
+        - disable-custom-element-mobile-enhancements
+        - disclaimer
+        - expose-service-manager-for-testing
+        - header
+        - hide-avatar
+        - history
+        - homescreen
+        - inject-carbon-theme
+        - input
+        - is-readonly
+        - keyboardshortcuts
+        - launcher
+        - layout
+        - locale
+        - messaging
+        - namespace
         - onViewChange
         - onViewPreChange
-        # cds-aichat-internal
-        - config
-        - onAfterRender
-        - onBeforeRender
+        - open-chat-by-default
+        - persist-feedback
+        - service-desk
+        - should-sanitize-html
+        - should-take-focus-if-opens-automatically
+        - strings
       allowedAttributeStringValues:
-        # General - boolean attributes
         - "true"
         - "false"
+      allowedAttributeObjectKeys:
+        # input (InputConfig keys)
+        - actions
+        - autocomplete
+        - command
+        - error
+        - expanded
+        - isSendDisabled
+        - isDisabled
+        - isVisible
+        - maxInputCharacters
+        - mention
+        - starters
+        - tiptap
   npm:
     dependencies: null
   js:

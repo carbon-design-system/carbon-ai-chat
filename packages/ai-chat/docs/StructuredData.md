@@ -11,8 +11,6 @@ Structured data is request-side only: it travels on {@link MessageInput.structur
 - **The host sets it** — push fields into the pending input with {@link ChatInstanceInput.updateStructuredData | updateStructuredData}.
 - **File uploads contribute it** — when {@link PublicConfig.upload | upload} is on, each file's {@link UploadConfig.onFileUpload | onFileUpload} handler returns a fragment that merges in.
 
-> This API is experimental. Its shape may still change.
-
 ## The shape
 
 A {@link StructuredData | structured data} payload has two parts. `fields` is an array of {@link StructuredField | field} entries, each with an `id`, a `value`, and an optional `label` and {@link StructuredFieldType | type}. `user_defined` is an escape hatch for any data that doesn't fit a field.

@@ -5,17 +5,23 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
+import { dirname, resolve } from 'node:path';
+import process from 'node:process';
+import { fileURLToPath } from 'node:url';
+
 import { defineConfig, devices } from '@playwright/test';
-import { fileURLToPath } from 'url';
-import { dirname, resolve } from 'path';
+
+import type { DemoModeOptions } from './tests/fixtures';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+const port = Number(process.env.PORT) || 3001;
 
-export default defineConfig({
+export default defineConfig<DemoModeOptions>({
   testDir: './tests',
   // Set timeout for each test (including beforeEach/afterEach hooks)
   timeout: 60 * 1000, // 60 seconds per test
+  workers: process.env.CI ? 2 : undefined,
   // Most "flakes" we see in CI are timing-sensitive races under parallel CPU
   // contention (chromium + firefox sharing the dev server). One automatic
   // retry lets them self-heal while still surfacing genuine failures —
@@ -25,24 +31,59 @@ export default defineConfig({
   // Serve production build. Vite's `@vite/client` injects inline <style>
   // to trip CSP tests (`style-src 'self'`)
   webServer: {
-    command:
-      'npm run build && npm run preview -- --host 127.0.0.1 --port 3001 --strictPort',
-    port: 3001,
+    command: `npm run build && npm run preview -- --host 127.0.0.1 --port ${port} --strictPort`,
+    port,
     timeout: 120 * 1000, // wait up to 2m for the server
     reuseExistingServer: !process.env.CI,
   },
   globalSetup: resolve(__dirname, './tests/setup.ts'),
   use: {
-    baseURL: 'http://localhost:3001',
+    baseURL: `http://localhost:${port}`,
     headless: true,
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
   },
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
-    // Disabling webkit for now. See https://github.com/microsoft/playwright/issues/33547 and https://webscraping.ai/faq/playwright/what-are-the-ways-to-handle-shadow-dom-elements-using-playwright
-    // Just need to implement that.
-    // { name: 'webkit',   use: { ...devices['Desktop Safari'] } },
+    {
+      name: 'chromium',
+      testIgnore: /inline-markdown-selection\.spec\.ts$/,
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'firefox',
+      testIgnore: /inline-markdown-selection\.spec\.ts$/,
+      use: { ...devices['Desktop Firefox'] },
+    },
+    // Reruns the suite with `?useUpsertMessage`, so the demo sends through
+    // upsertMessage instead of addMessage / addMessageChunk. The host
+    // compatibility spec calls addMessage itself on its own page, so a second
+    // run would prove nothing. Selection checks are send-mode independent.
+    {
+      name: 'chromium-upsert-message',
+      use: { ...devices['Desktop Chrome'], useUpsertMessage: true },
+      testIgnore: [
+        /react-host-compatibility\.spec\.ts$/,
+        /inline-markdown-selection\.spec\.ts$/,
+      ],
+    },
+    // Native clipboard checks share the system clipboard, so browser projects
+    // run in order even when the rest of the suite uses multiple workers.
+    {
+      name: 'chromium-selection',
+      testMatch: 'inline-markdown-selection.spec.ts',
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'firefox-selection',
+      testMatch: 'inline-markdown-selection.spec.ts',
+      dependencies: ['chromium-selection'],
+      use: { ...devices['Desktop Firefox'] },
+    },
+    {
+      name: 'webkit-selection',
+      testMatch: 'inline-markdown-selection.spec.ts',
+      dependencies: ['firefox-selection'],
+      use: { ...devices['Desktop Safari'] },
+    },
   ],
 });

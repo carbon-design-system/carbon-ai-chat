@@ -19,7 +19,7 @@ We should be looking for what here can can automate, and as we do, we can remove
 - Writeable elements, layout frame/content width settings
 - Input "Expanded layout" toggle: editor fills its own full-width row; message actions + send control drop to a second row (actions to the start, send to the end); with the "Additional actions menu" enabled the `input.actions` render inline as icon buttons instead of in the "+" popover, and collapse into a "more" (⋯) overflow menu when the row is too narrow to fit them all (narrow the window / use a small layout to verify; confirm the hidden actions are reachable and fire from the menu). Verify non-expanded is unchanged and that toggling live reflows correctly (incl. RTL).
 - Writeable element `promptLineActionsEnd`: its slotted content (the green swatch in the demo) appears only when the input "Expanded layout" toggle is on; it is absent in the default compact layout.
-- Input "@mentions" / "/commands" toggles: enable one (or both) and reload — confirm the toggle stays "Enable" (query-string round-trip re-injects the callbacks). With "@mentions" on, type `@` anywhere in the message and pick a suggestion — confirm a chip renders. With "/commands" on, type `/` at the start of a line and pick a suggestion — confirm a chip renders; typing `/` mid-message should NOT open the picker. Delete a chip before sending and confirm it doesn't show up in the echoed response. Send a message with a mention/command chip and confirm the mock backend echoes the mention/command names in a text message before the normal canned response for the typed text.
+- Input "@mentions" / "/commands" toggles: enable one (or both) and reload — confirm the toggle stays "Enable" (query-string round-trip re-injects the callbacks). With "@mentions" on, type `@` anywhere in the message and pick a suggestion — confirm a chip renders. With "/commands" on, type `/` at the start of a line and pick a suggestion — confirm a chip renders; typing `/` mid-message should NOT open the picker. Delete a chip before sending and confirm it doesn't show up in the echoed response. Send a message with a mention/command chip and confirm the mock backend echoes the mention/command names in a text message before the normal canned response for the typed text, and the browser console shows no errors.
 
 #### setChatConfig Testing (Use `window.setChatConfig()`)
 
@@ -86,6 +86,32 @@ We should be looking for what here can can automate, and as we do, we can remove
 - [ ] **user_defined (stream)**
 - [ ] **video**
 
+#### Choice selection display and state
+
+Run the option-list and button fixtures in both frameworks (React and web component).
+
+- [ ] **Option buttons:** Select the default, input-text, missing-label, and missing-input choices. The control remains label-first, while the transcript uses the configured display text and fallback. A silent choice shows no user bubble but still becomes selected and disabled.
+- [ ] **Dropdown:** Repeat the option checks with the dropdown fixture. Choices with duplicate outbound text remain independently selectable, and exactly one choice is restored after reload.
+- [ ] **Post-back buttons:** Check top-level, body, and footer post-backs, including the standard footer button. Before selection, the focusable button exposes `aria-pressed="false"`; afterward it exposes `aria-pressed="true"`, is disabled, and has the non-color outline. A generally disabled but unselected button remains `aria-pressed="false"` without the selected outline.
+- [ ] **Keyboard and focus:** Reach every choice with Tab, activate buttons with Enter and Space, and operate the dropdown with arrow keys and Enter. After activation, focus returns to the message input.
+- [ ] **Reload:** Reload or restore history after choosing each fixture. The same option or post-back is selected using the stored transcript label, including nested body/footer buttons, with no more than one selected control.
+- [ ] **Send failure:** Force the host send handler to reject. Visible and silent choices remain selected and disabled; the selection is not rolled back.
+- [ ] **Screen reader:** Confirm the accessible control name stays label-first and the post-back pressed state changes from false to true. Confirm the selected outline remains visible in high-contrast mode.
+
+#### Replies after restart
+
+Compare the [upstream main demo](https://carbon-design-system.github.io/carbon-ai-chat/demo/) with the local demo at `http://localhost:3001/`.
+
+1. Dismiss the cookie banner and open the chat if needed.
+2. Expand **Chat instance methods** in the sidebar. Find **Restart conversation** before sending.
+3. Send `text (consecutive responses)` and click **Restart conversation** within three seconds.
+4. Wait five seconds. On upstream main, two old replies starting “We'd love to hear your thoughts on Carbon!” appear. On this branch, neither appears.
+5. Send `table (stream)`. Wait for the table to finish, then send `text`. Both replies should complete normally.
+6. Reload and send `text (consecutive responses)` without restarting. Both replies should appear after about four seconds.
+7. Send `text (stream)` and press **Stop response** while it streams. The partial reply should remain and the stop button should disappear.
+
+The demo echoes the original `request.id` in every reply, including each stream chunk. The delayed command keeps its timers after restart so this check exercises late delivery.
+
 #### Message footers
 
 Run each in both frameworks (React and web component).
@@ -106,6 +132,40 @@ Set **Chat Configuration → Markdown → Table rendering** to `customRenderers.
 - [ ] The table renders as the demo's own "Custom table: N columns, M rows" node instead of the Carbon table, in all four container shapes (react/web-component × float/fullscreen).
 - [ ] That node is a child of the outermost chat element, not of the markdown element inside the shadow root — check in devtools. The tree that element sits in differs by shape: the document for the React ones, `<demo-app>`'s shadow root for the web-component ones. Add a rule to that root and confirm it reaches the node.
 - [ ] Send **table (stream)** and confirm one node is reused as chunks arrive, rather than a new one per chunk.
+
+#### Send mode (`?useUpsertMessage`)
+
+The mock backend uses `addMessage` / `addMessageChunk` by default. Add `?useUpsertMessage` on a pre-release build to use `upsertMessage`. The mode helper is `src/customSendMessage/sendResponse.ts`.
+
+The flag works on localhost, 127.0.0.1, ::1, and paths under `/tag/next/` or `/tag/alpha/`. These builds show **Chat Configuration → Messaging → Use upsertMessage**. The checkbox sets or clears the flag and reloads the page. Published `/tag/latest/` and `/version/…` pages ignore the flag and hide the checkbox.
+
+Three Playwright projects cover send mode:
+
+- `chromium` and `firefox` cover the default mode.
+- `chromium-upsert-message` adds the flag. It skips `react-host-compatibility.spec.ts`, which calls `addMessage` directly.
+
+Set `PORT` when another demo is running, for example `PORT=3101 npm test` from `demo/`.
+
+`send-response.spec.ts` checks API calls and the environment gate. Its checkbox case runs in `chromium` and checks that URL settings and the hash survive both toggles.
+
+Run these in both modes:
+
+- [ ] Stream text, reasoning steps and trace, and chain of thought.
+- [ ] Send **table (stream)** and confirm the custom renderer node is reused as chunks arrive.
+- [ ] Send **user_defined (stream)** and **conversational search (stream)**.
+- [ ] Send **text (stream early resolve)** with "Show stop button immediately" on.
+- [ ] Stop a stream partway: the message settles and the stop button goes away.
+- [ ] With VoiceOver, both modes announce the same things.
+
+#### Auto-scroll after content resizes
+
+- [ ] After **user_defined (stream)** completes, grow and shrink its custom content. The request stays pinned; scrolling away stops re-pinning.
+- [ ] Resize older content above the latest request. The latest request stays at the same viewport offset.
+- [ ] Stream text, reasoning steps, and code. Expand and collapse reasoning steps; the request stays pinned.
+
+#### Inline markdown regression coverage
+
+CI checks native copy/paste and word selection in core markdown and structured sent messages. The tests cover all four surfaces in Chromium, Firefox, and WebKit. Structured fallback text also keeps its blank lines.
 
 ### Track 3: Mobile & Non-Chrome Browser Support
 

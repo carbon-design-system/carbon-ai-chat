@@ -76,7 +76,8 @@ Generated from the records. Run `npm run sync:adrs` after you add one or change 
 | ADR | Title | Status |
 | --- | --- | --- |
 | [0001](0001-record-architecture-decisions.md) | Record architecture decisions | Accepted |
-| [0002](0002-headless-sdk.md) | Ship a headless SDK so you can compose your own chat | Proposed |
-| [0003](0003-chat-survives-remount.md) | A chat survives being unmounted and mounted again | Proposed |
+| [0002](0002-headless-sdk.md) | Ship a headless SDK so you can compose your own chat | Accepted |
+| [0003](0003-chat-survives-remount.md) | A chat survives being unmounted and mounted again | Accepted |
+| [0004](0004-component-styling-contract.md) | Make every v2 component styleable through public hooks | Proposed |
 
 <!-- adr-index:end -->

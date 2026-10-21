@@ -1,6 +1,6 @@
 {
   "name": "@carbon/ai-chat",
-  "version": "1.22.0-rc.1",
+  "version": "1.23.0",
   "description": "Be sure to review the [chat documentation](https://chat.carbondesignsystem.com/tag/latest/docs/documents/Overview.html).",
   "author": "IBM Corp",
   "license": "Apache-2.0",
@@ -74,7 +74,7 @@
   ],
   "sideEffects": [
     "**/web-components/**/*.js",
-    "**/chat.cds-aichat-container.js",
+    "**/chat.*.js",
     "**/*.css"
   ],
   "devDependencies": {
@@ -86,7 +86,7 @@
     "@carbon/icons": "^11.53.0",
     "@carbon/styles": "^1.105.0",
     "@carbon/themes": "^11.58.0",
-    "@carbon/typedoc-theme": "^0.11.0-rc.0",
+    "@carbon/typedoc-theme": "^0.12.0",
     "@carbon/web-components": "^2.58.1",
     "@open-wc/testing": "4.0.0",
     "@rollup/plugin-babel": "^7.1.0",
@@ -122,7 +122,7 @@
     "rollup-plugin-dts": "^6.2.1",
     "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-visualizer": "^6.0.3",
-    "sass": "1.105.0",
+    "sass": "1.105.1",
     "serve": "^14.2.6",
     "terser": "^5.43.1",
     "ts-jest": "^29.4.13",
@@ -138,11 +138,12 @@
   },
   "dependencies": {
     "@babel/runtime-corejs3": "^7.0.0",
-    "@carbon/ai-chat-components": "^1.12.0-rc.1",
+    "@carbon/ai-chat-components": "^1.13.0",
     "@carbon/icons": "^11.53.0",
     "@carbon/utilities": "^0.24.0",
     "@floating-ui/dom": "^1.6.3",
-    "@ibm/telemetry-js": "^1.10.2",
+    "@ibm/telemetry-js": "^1.12.0",
+    "@lit/context": "^1.1.6",
     "@lit/react": "^1.0.6",
     "@tiptap/core": "^3.22.5",
     "classnames": "^2.5.0",
@@ -159,13 +160,15 @@
   "scripts": {
     "build": "rollup -c ./tasks/rollup.aichat.js",
     "build:docs": "npm run build && npm run docs",
+    "clean": "node -e \"fs.rmSync('dist', { recursive: true, force: true })\"",
     "docs": "typedoc",
     "docs:api": "cross-env WRITE_API_INDEX=1 typedoc",
     "docs:api:check": "cross-env WRITE_API_INDEX=1 typedoc && git diff --exit-code -- docs/api",
     "postinstall": "ibmtelemetry --config=telemetry.yml",
     "start": "concurrently \"rollup -c ./tasks/rollup.aichat.js --watch\" \"typedoc --watch\" \"serve dist/docs/carbon-tsdocs -l 5001 --no-port-switching\" \"wait-on dist/docs/carbon-tsdocs/index.html && open http://localhost:5001\"",
-    "telemetry:config": "npx -y @ibm/telemetry-js-config-generator generate --id ef967584-5788-47d4-b9c2-a60da7ad901d --endpoint https://www-api.ibm.com/ibm-telemetry/v1/metrics --files ./src --wc",
-    "test": "jest --coverage --coverageReporters=text --coverageReporters=text-summary"
+    "telemetry:config": "npx -y @ibm/telemetry-js-config-generator update --id ef967584-5788-47d4-b9c2-a60da7ad901d --endpoint https://www-api.ibm.com/ibm-telemetry/v1/metrics --files ./src --wc",
+    "test": "jest",
+    "test:coverage": "jest --coverage --coverageReporters=text --coverageReporters=text-summary"
   },
   "repository": {
     "type": "git",

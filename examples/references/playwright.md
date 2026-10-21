@@ -1,40 +1,235 @@
 # playwright.md — Playwright tests for examples
 
-Every servable example gets a Playwright suite. Copy a golden example, then change the spec.
+Run the golden Playwright flows against both React and Web Components examples. Keep one definition of each flow in [shared/playwright/](../shared/playwright/). Each flavor has its own project and example server. Golden examples use the central setup. Other Vite examples can use the local scaffold below.
 
-- React — [react/basic-custom-element-fullscreen/](../react/basic-custom-element-fullscreen/)
-- Web Components — [web-components/basic-custom-element-fullscreen/](../web-components/basic-custom-element-fullscreen/)
-
-Copy that example's [playwright.config.ts](../react/basic-custom-element-fullscreen/playwright.config.ts), its `tests/` folder, and its `.gitignore`, then add to its `package.json`:
-
-```json
-"scripts": { "test:e2e": "playwright test" },
-"devDependencies": { "@playwright/test": "^1.63.0", "vite": "^8.3.0" }
+```text
+shared/playwright/
+  playwright.config.ts   one project per target, one server per target
+  targets.ts             the table of examples under test
+  start-vite.mjs         builds an example and serves it on an OS-assigned port
+  helpers/index.ts       fixtures: target, baseURL, console-error check
+  tests/                 shared specs, run against both flavors
 ```
 
-**Name the script `test:e2e`, not `test`.** Three examples already use `test` for a different test runner: `tests-vitest-happydom` runs vitest, and `tests-jest-happydom` and `tests-jest-jsdom` run jest. Calling yours `test` would replace theirs.
+## Which specs run against which example
+
+[targets.ts](../shared/playwright/targets.ts) maps a target name to an example directory and a spec. The name is also the Playwright project name, so a failure reads `[react-watch-state] › tests/watch-state.spec.ts:35:63`: the target, then the assertion.
+
+| Project | Example | Spec |
+| --- | --- | --- |
+| `react-basic-custom-element-sidebar` | `react/basic-custom-element-sidebar` | [Basic custom element sidebar](../shared/playwright/tests/basic-custom-element-sidebar.spec.ts) |
+| `react-basic-custom-element-sidebar-narrow` | `react/basic-custom-element-sidebar-narrow` | [Basic custom element sidebar narrow](../shared/playwright/tests/basic-custom-element-sidebar-narrow.spec.ts) |
+| `react-basic-float` | `react/basic-float` | [Basic float](../shared/playwright/tests/basic-float.spec.ts) |
+| `react-chain-of-thought` | `react/chain-of-thought` | [Chain of thought](../shared/playwright/tests/chain-of-thought.spec.ts) |
+| `react-custom-element-as-float` | `react/custom-element-as-float` | [Custom element as float](../shared/playwright/tests/custom-element-as-float.spec.ts) |
+| `react-custom-element-as-float-lazy-load` | `react/custom-element-as-float-lazy-load` | [Custom element as float lazy load](../shared/playwright/tests/custom-element-as-float-lazy-load.spec.ts) |
+| `react-custom-element-lazy-load` | `react/custom-element-lazy-load` | [Custom element lazy load](../shared/playwright/tests/custom-element-lazy-load.spec.ts) |
+| `react-custom-header` | `react/custom-header` | [Custom header](../shared/playwright/tests/custom-header.spec.ts) |
+| `react-custom-prompt-line` | `react/custom-prompt-line` | [Custom prompt line](../shared/playwright/tests/custom-prompt-line.spec.ts) |
+| `react-feedback` | `react/feedback` | [Feedback](../shared/playwright/tests/feedback.spec.ts) |
+| `react-fullscreen` | `react/basic-custom-element-fullscreen` | [Fullscreen](../shared/playwright/tests/fullscreen.spec.ts) |
+| `react-history-file-attachments` | `react/history-file-attachments` | [History file attachments](../shared/playwright/tests/history-file-attachments.spec.ts) |
+| `react-history-float` | `react/history-float` | [History float](../shared/playwright/tests/history-float.spec.ts) |
+| `react-history-fullscreen` | `react/history-fullscreen` | [History fullscreen](../shared/playwright/tests/history-fullscreen.spec.ts) |
+| `react-history-host-driven` | `react/history-host-driven` | [History host driven](../shared/playwright/tests/history-host-driven.spec.ts) |
+| `react-history-user-defined-responses` | `react/history-user-defined-responses` | [History user defined responses](../shared/playwright/tests/history-user-defined-responses.spec.ts) |
+| `react-human-agent` | `react/human-agent` | [Human agent](../shared/playwright/tests/human-agent.spec.ts) |
+| `react-markdown-override` | `react/markdown-override` | [Markdown override](../shared/playwright/tests/markdown-override.spec.ts) |
+| `react-markdown-plugin` | `react/markdown-plugin` | [Markdown plugin](../shared/playwright/tests/markdown-plugin.spec.ts) |
+| `react-mentions-and-commands` | `react/prompt-line-mentions-and-commands` | [Mentions and commands](../shared/playwright/tests/mentions-and-commands.spec.ts) |
+| `react-messages-custom-footer` | `react/messages-custom-footer` | [Messages custom footer](../shared/playwright/tests/messages-custom-footer.spec.ts) |
+| `react-messages-custom-request-footer` | `react/messages-custom-request-footer` | [Messages custom request footer](../shared/playwright/tests/messages-custom-request-footer.spec.ts) |
+| `react-prompt-line-code-snippet` | `react/prompt-line-code-snippet` | [Prompt line code snippet](../shared/playwright/tests/prompt-line-code-snippet.spec.ts) |
+| `react-prompt-line-conversation-starters` | `react/prompt-line-conversation-starters` | [Prompt line conversation starters](../shared/playwright/tests/prompt-line-conversation-starters.spec.ts) |
+| `react-prompt-line-custom-render` | `react/prompt-line-custom-render` | [Prompt line custom render](../shared/playwright/tests/prompt-line-custom-render.spec.ts) |
+| `react-prompt-line-file-upload` | `react/prompt-line-file-upload` | [Prompt line file upload](../shared/playwright/tests/prompt-line-file-upload.spec.ts) |
+| `react-prompt-line-history-mechanism` | `react/prompt-line-history-mechanism` | [Prompt line history mechanism](../shared/playwright/tests/prompt-line-history-mechanism.spec.ts) |
+| `react-prompt-line-mentions-and-commands-custom-render` | `react/prompt-line-mentions-and-commands-custom-render` | [Prompt line mentions and commands custom render](../shared/playwright/tests/prompt-line-mentions-and-commands-custom-render.spec.ts) |
+| `react-prompt-line-typeahead` | `react/prompt-line-typeahead` | [Prompt line typeahead](../shared/playwright/tests/prompt-line-typeahead.spec.ts) |
+| `react-prompt-line-typeahead-custom` | `react/prompt-line-typeahead-custom` | [Prompt line typeahead custom react](../shared/playwright/tests/prompt-line-typeahead-custom-react.spec.ts) |
+| `react-reasoning-steps` | `react/reasoning-steps` | [Reasoning steps](../shared/playwright/tests/reasoning-steps.spec.ts) |
+| `react-reasoning-steps-controlled` | `react/reasoning-steps-controlled` | [Reasoning steps controlled](../shared/playwright/tests/reasoning-steps-controlled.spec.ts) |
+| `react-reasoning-with-streaming-generic-items` | `react/reasoning-with-streaming-generic-items` | [Reasoning with streaming generic items](../shared/playwright/tests/reasoning-with-streaming-generic-items.spec.ts) |
+| `react-tests-vitest-happydom` | `react/tests-vitest-happydom` | [Tests vitest happydom](../shared/playwright/tests/tests-vitest-happydom.spec.ts) |
+| `react-theme-plex-override` | `react/theme-plex-override` | [Theme plex override](../shared/playwright/tests/theme-plex-override.spec.ts) |
+| `react-upsert-message-reasoning-steps` | `react/upsert-message-reasoning-steps` | [Upsert message reasoning steps](../shared/playwright/tests/upsert-message-reasoning-steps.spec.ts) |
+| `react-upsert-message-reasoning-steps-controlled` | `react/upsert-message-reasoning-steps-controlled` | [Upsert message reasoning steps controlled](../shared/playwright/tests/upsert-message-reasoning-steps-controlled.spec.ts) |
+| `react-upsert-message-reasoning-with-streaming-generic-items` | `react/upsert-message-reasoning-with-streaming-generic-items` | [Upsert message reasoning with streaming generic items](../shared/playwright/tests/upsert-message-reasoning-with-streaming-generic-items.spec.ts) |
+| `react-upsert-message-user-defined` | `react/upsert-message-user-defined` | [Upsert message user defined](../shared/playwright/tests/upsert-message-user-defined.spec.ts) |
+| `react-user-defined-responses` | `react/user-defined-responses` | [User defined responses](../shared/playwright/tests/user-defined-responses.spec.ts) |
+| `react-watch-state` | `react/watch-state` | [Watch state](../shared/playwright/tests/watch-state.spec.ts) |
+| `react-watch-state-redux` | `react/watch-state-redux` | [Watch state redux](../shared/playwright/tests/watch-state-redux.spec.ts) |
+| `react-workspace` | `react/workspace` | [Workspace](../shared/playwright/tests/workspace.spec.ts) |
+| `react-workspace-sidebar` | `react/workspace-sidebar` | [Workspace sidebar](../shared/playwright/tests/workspace-sidebar.spec.ts) |
+| `react-workspace-table-markdown-override` | `react/workspace-table-markdown-override` | [Workspace table markdown override](../shared/playwright/tests/workspace-table-markdown-override.spec.ts) |
+| `web-components-basic-custom-element-sidebar` | `web-components/basic-custom-element-sidebar` | [Basic custom element sidebar](../shared/playwright/tests/basic-custom-element-sidebar.spec.ts) |
+| `web-components-basic-custom-element-sidebar-narrow` | `web-components/basic-custom-element-sidebar-narrow` | [Basic custom element sidebar narrow](../shared/playwright/tests/basic-custom-element-sidebar-narrow.spec.ts) |
+| `web-components-basic-float` | `web-components/basic-float` | [Basic float](../shared/playwright/tests/basic-float.spec.ts) |
+| `web-components-chain-of-thought` | `web-components/chain-of-thought` | [Chain of thought](../shared/playwright/tests/chain-of-thought.spec.ts) |
+| `web-components-custom-element-as-float` | `web-components/custom-element-as-float` | [Custom element as float](../shared/playwright/tests/custom-element-as-float.spec.ts) |
+| `web-components-custom-element-as-float-lazy-load` | `web-components/custom-element-as-float-lazy-load` | [Custom element as float lazy load](../shared/playwright/tests/custom-element-as-float-lazy-load.spec.ts) |
+| `web-components-custom-element-lazy-load` | `web-components/custom-element-lazy-load` | [Custom element lazy load](../shared/playwright/tests/custom-element-lazy-load.spec.ts) |
+| `web-components-custom-header` | `web-components/custom-header` | [Custom header](../shared/playwright/tests/custom-header.spec.ts) |
+| `web-components-custom-prompt-line` | `web-components/custom-prompt-line` | [Custom prompt line](../shared/playwright/tests/custom-prompt-line.spec.ts) |
+| `web-components-feedback` | `web-components/feedback` | [Feedback](../shared/playwright/tests/feedback.spec.ts) |
+| `web-components-fullscreen` | `web-components/basic-custom-element-fullscreen` | [Fullscreen](../shared/playwright/tests/fullscreen.spec.ts) |
+| `web-components-history-file-attachments` | `web-components/history-file-attachments` | [History file attachments](../shared/playwright/tests/history-file-attachments.spec.ts) |
+| `web-components-history-float` | `web-components/history-float` | [History float](../shared/playwright/tests/history-float.spec.ts) |
+| `web-components-history-fullscreen` | `web-components/history-fullscreen` | [History fullscreen](../shared/playwright/tests/history-fullscreen.spec.ts) |
+| `web-components-history-host-driven` | `web-components/history-host-driven` | [History host driven](../shared/playwright/tests/history-host-driven.spec.ts) |
+| `web-components-history-user-defined-responses` | `web-components/history-user-defined-responses` | [History user defined responses](../shared/playwright/tests/history-user-defined-responses.spec.ts) |
+| `web-components-human-agent` | `web-components/human-agent` | [Human agent](../shared/playwright/tests/human-agent.spec.ts) |
+| `web-components-markdown-override` | `web-components/markdown-override` | [Markdown override](../shared/playwright/tests/markdown-override.spec.ts) |
+| `web-components-markdown-plugin` | `web-components/markdown-plugin` | [Markdown plugin](../shared/playwright/tests/markdown-plugin.spec.ts) |
+| `web-components-mentions-and-commands` | `web-components/prompt-line-mentions-and-commands` | [Mentions and commands](../shared/playwright/tests/mentions-and-commands.spec.ts) |
+| `web-components-messages-custom-footer` | `web-components/messages-custom-footer` | [Messages custom footer](../shared/playwright/tests/messages-custom-footer.spec.ts) |
+| `web-components-messages-custom-request-footer` | `web-components/messages-custom-request-footer` | [Messages custom request footer](../shared/playwright/tests/messages-custom-request-footer.spec.ts) |
+| `web-components-prompt-line-code-snippet` | `web-components/prompt-line-code-snippet` | [Prompt line code snippet](../shared/playwright/tests/prompt-line-code-snippet.spec.ts) |
+| `web-components-prompt-line-conversation-starters` | `web-components/prompt-line-conversation-starters` | [Prompt line conversation starters](../shared/playwright/tests/prompt-line-conversation-starters.spec.ts) |
+| `web-components-prompt-line-custom-render` | `web-components/prompt-line-custom-render` | [Prompt line custom render](../shared/playwright/tests/prompt-line-custom-render.spec.ts) |
+| `web-components-prompt-line-file-upload` | `web-components/prompt-line-file-upload` | [Prompt line file upload](../shared/playwright/tests/prompt-line-file-upload.spec.ts) |
+| `web-components-prompt-line-history-mechanism` | `web-components/prompt-line-history-mechanism` | [Prompt line history mechanism](../shared/playwright/tests/prompt-line-history-mechanism.spec.ts) |
+| `web-components-prompt-line-mentions-and-commands-custom-render` | `web-components/prompt-line-mentions-and-commands-custom-render` | [Prompt line mentions and commands custom render](../shared/playwright/tests/prompt-line-mentions-and-commands-custom-render.spec.ts) |
+| `web-components-prompt-line-typeahead` | `web-components/prompt-line-typeahead` | [Prompt line typeahead](../shared/playwright/tests/prompt-line-typeahead.spec.ts) |
+| `web-components-prompt-line-typeahead-custom` | `web-components/prompt-line-typeahead-custom` | [Prompt line typeahead custom web components](../shared/playwright/tests/prompt-line-typeahead-custom-web-components.spec.ts) |
+| `web-components-reasoning-steps` | `web-components/reasoning-steps` | [Reasoning steps](../shared/playwright/tests/reasoning-steps.spec.ts) |
+| `web-components-reasoning-steps-controlled` | `web-components/reasoning-steps-controlled` | [Reasoning steps controlled](../shared/playwright/tests/reasoning-steps-controlled.spec.ts) |
+| `web-components-reasoning-with-streaming-generic-items` | `web-components/reasoning-with-streaming-generic-items` | [Reasoning with streaming generic items](../shared/playwright/tests/reasoning-with-streaming-generic-items.spec.ts) |
+| `web-components-theme-plex-override` | `web-components/theme-plex-override` | [Theme plex override](../shared/playwright/tests/theme-plex-override.spec.ts) |
+| `web-components-upsert-message-reasoning-steps` | `web-components/upsert-message-reasoning-steps` | [Upsert message reasoning steps](../shared/playwright/tests/upsert-message-reasoning-steps.spec.ts) |
+| `web-components-upsert-message-reasoning-steps-controlled` | `web-components/upsert-message-reasoning-steps-controlled` | [Upsert message reasoning steps controlled](../shared/playwright/tests/upsert-message-reasoning-steps-controlled.spec.ts) |
+| `web-components-upsert-message-reasoning-with-streaming-generic-items` | `web-components/upsert-message-reasoning-with-streaming-generic-items` | [Upsert message reasoning with streaming generic items](../shared/playwright/tests/upsert-message-reasoning-with-streaming-generic-items.spec.ts) |
+| `web-components-upsert-message-user-defined` | `web-components/upsert-message-user-defined` | [Upsert message user defined](../shared/playwright/tests/upsert-message-user-defined.spec.ts) |
+| `web-components-user-defined-responses` | `web-components/user-defined-responses` | [User defined responses](../shared/playwright/tests/user-defined-responses.spec.ts) |
+| `web-components-watch-state` | `web-components/watch-state` | [Watch state](../shared/playwright/tests/watch-state.spec.ts) |
+| `web-components-workspace` | `web-components/workspace` | [Workspace](../shared/playwright/tests/workspace.spec.ts) |
+| `web-components-workspace-sidebar` | `web-components/workspace-sidebar` | [Workspace sidebar](../shared/playwright/tests/workspace-sidebar.spec.ts) |
+| `web-components-workspace-table-markdown-override` | `web-components/workspace-table-markdown-override` | [Workspace table markdown override](../shared/playwright/tests/workspace-table-markdown-override.spec.ts) |
+
+### Share definitions across hosts
+
+Both flavors run the same specs in `tests/`, one project per target. An example
+that exists in one flavor only, such as `tests-vitest-happydom`, has one target.
+Each execution opens only its own example.
+
+React mounts through the shared chat element, but each example has separate
+host code. Running both checks that code through the same visible contract.
+A passing shared spec does not prove exact payload or layout parity. The
+mentions spec checks labels in fixed summaries, not every field ID or value.
+
+If a framework needs a distinct browser check, add a separate spec in this
+folder and map it to that framework's target. Keep common flow assertions in
+the shared spec. Unit tests for local host logic may live in the example.
+
+### Add a target
+
+1. Add an entry to `targets` in [targets.ts](../shared/playwright/targets.ts): the example's directory under `examples/`, and a spec path relative to `tests/`.
+2. Reuse an existing spec when the visible contract matches. Otherwise, write a new spec. Import `test`, `expect`, and `openExample` from the shared helpers; never put a URL in a spec.
+3. Check discovery with `npm run test:e2e:goldens -- --list`. The config derives the project, the server, and the URL variable from the entry.
+
+An example needs a `build` script, a `vite.config.ts`, and an HTML entry. It needs no Playwright config, dependency, or script.
+
+### Generate a spec with Playwright agents
+
+Playwright's test agents can plan, write, and repair a spec. Install them once per checkout against the shared config and one target, then start a new agent session so they load:
+
+```bash
+npx playwright init-agents --loop=claude -c examples/shared/playwright/playwright.config.ts --project <target>
+```
+
+This writes the `playwright-test-planner`, `playwright-test-generator`, and `playwright-test-healer` agents under `.claude/agents/`, a `.mcp.json` for their test server, a seed spec, and a `specs/` folder for plans. Add `--config examples/shared/playwright/playwright.config.ts` to the `run-test-mcp-server` args in `.mcp.json`; `init-agents` never writes it, and without it the agents run against a default config with no example server. Run the agents with `CAIC_E2E_TARGETS=<target>` set, so they build only that example.
+
+Replace the seed's body so it opens the example the way every spec does, then point the planner at it:
+
+```ts
+import { openExample, test } from '../helpers';
+
+test('seed', async ({ page }) => {
+  await openExample(page);
+});
+```
+
+1. **Plan with `playwright-test-planner`.** Give it the example directory, its `README.md`, and this guide. It explores the running example and writes a plan in `specs/`: a mount scenario and the example's one concern, each with its start state, steps, and expected result. Check the plan against [What to test](#what-to-test) and [Determinism](#determinism) before generating.
+2. **Generate with `playwright-test-generator`.** It runs each planned scenario in a browser and writes one test per file from the locators it confirmed. Merge those tests into the one concern spec, `tests/<concern>.spec.ts`, importing from `../helpers` rather than `@playwright/test`. Drop the generator's `// spec:` and `// seed:` header comments, then add the target as above.
+3. **Repair with `playwright-test-healer`.** When a test fails, the healer replays it, reads the failure snapshot, and fixes the locator or wait. It must not weaken an assertion to pass. When the example itself misbehaves, mark that test `test.fixme` with one line that records what happens, file the bug, and put the issue number in that line.
+
+Agent output follows the same rules as a hand-written spec. Before committing:
+
+- Follow [Selectors](#selectors): no `.first()`, `.last()`, or `.nth()` to hide an ambiguous match, and no chat-internal CSS classes.
+- The chat's live-region announcer repeats reply text. Scope reply assertions under `page.getByTestId(PageObjectId.MAIN_PANEL)`, or match a leaf with `{ exact: true }`. Host-rendered content is slotted, not inside `MAIN_PANEL`; select it by the example's own class.
+- A negative check must follow the state that would precede what it rules out. Await the reply, or open the list, before asserting something is absent.
+- No `waitForTimeout`, fixed sleeps, dates, or random values.
+- Take fixture text from each flavor's own `src/`; React and Web Components mocks can differ. Read a per-flavor value from the `target` fixture rather than forking the spec.
+- Check the example against the [coverage target](#coverage-target).
+
+## Scaffold a local Vite suite
+
+Use the scaffold command for an example outside the golden suite, then write its behavior assertions.
+
+```bash
+npm run scaffold:example-e2e -- \
+  --example react/prompt-line-typeahead \
+  --concern prompt-line-typeahead \
+  --startup input \
+  --purpose "Checks typeahead selection and dismissal." \
+  --dry-run
+```
+
+Review the preview, then remove `--dry-run` to write the files. Repeat `--example` to scaffold another host.
+
+| Input | What the agent chooses |
+| --- | --- |
+| `--example` | An existing `react/<slug>` or `web-components/<slug>` Vite example. |
+| `--concern` | A kebab-case name for the behavior spec. |
+| `--startup` | `input`, `launcher`, or `homescreen`, based on the example's initial UI. |
+| `--purpose` | The behavior the test will prove, read from the example's README. |
+
+The command creates a local Playwright config and `tests/<concern>.spec.ts` inside each example.
+It adds `test:e2e`, the Playwright dependency, and ignore entries for test output.
+The dependency version comes from the root `package.json`.
+The config uses the shared launcher and fixture with a URL variable for that example.
+Existing configs, dependency versions, and other scripts stay intact. A custom `test:e2e` script needs manual setup.
+Authored specs are never overwritten; choose another concern name to add a spec.
+Repeating an unchanged scaffold command writes nothing.
+
+The generated spec checks the chosen startup surface and includes a skipped `test.fixme` placeholder.
+Replace that placeholder with a normal `test` and meaningful behavior assertions. A passing mount check does not complete coverage.
+
+After generation, run `npm install` to update the lockfile. The command does not install, build, or start servers.
+Use the [root build rules](../../AGENTS.md#always-on-rules) before running the generated suite.
+
+```bash
+npm run test:e2e --workspace=<example-workspace-name> -- --list
+npm run test:e2e --workspace=<example-workspace-name>
+```
+
+Keep the script named `test:e2e`. Some examples use `test` for Jest, Vitest, or an older Playwright setup.
+Local suites keep their output in the example's ignored `test-results/` and `playwright-report/` folders.
 
 ## Config conventions
 
-Copy [playwright.config.ts](../react/basic-custom-element-fullscreen/playwright.config.ts) as-is. What it sets, and why:
+Edit [playwright.config.ts](../shared/playwright/playwright.config.ts) for every target at once. What it sets, and why:
 
 | Setting | Value |
 | --- | --- |
 | `testDir` | `./tests` |
 | `timeout` | 60s per test |
-| `workers` | `1` — an example has one or two specs, so a pool buys nothing and multiplies against whatever concurrency runs the examples |
+| `workers` | `1`. A full run takes about 12 minutes; `--workers=4` finished in under 5 with the same peak memory. Settle the default with CI in [#2127](https://github.com/carbon-design-system/carbon-ai-chat/issues/2127). |
 | `retries` | `process.env.CI ? 1 : 0` |
-| `projects` | chromium only — webkit has shadow-DOM gaps, see [demo/playwright.config.ts](../../demo/playwright.config.ts) |
-| `webServer.command` | Start the shared Vite launcher in this example's directory. |
-| `webServer.wait` | Capture the URL after Vite binds. |
+| `projects` | One per target, chromium only — webkit has shadow-DOM gaps, see [demo/playwright.config.ts](../../demo/playwright.config.ts) |
+| `webServer` | One per target, started with the example as its working directory |
 
 ### Ports are allocated at run time. Never add a port table.
 
-Every Vite example's dev server falls back to port 3000 when `PORT` is unset. The shared [launcher](../shared/playwright/start-vite.mjs) runs Vite as middleware and asks Node to bind port `0`, then reports the address of its open listener. Playwright captures that URL and the [shared fixture](../shared/playwright/helpers/index.ts) gives it to the browser. The operating system assigns the port while binding the listener, so there is no gap between finding and using a port.
+The shared [launcher](../shared/playwright/start-vite.mjs) runs `vite build` in the example, serves the output, and asks Node to bind port `0`. It reports `CAIC_E2E_URL_<TARGET>=<url>` once the listener is open. Playwright captures each URL into its own variable, and the [shared fixture](../shared/playwright/helpers/index.ts) hands the right one to the browser through the project's `target`. The operating system assigns the port while binding, so there is no gap between finding and using a port.
 
-Keep Vite at version 8.3.0 or later, the version used by the shared launcher. Import `test` and `expect` from the shared fixture so `page.goto('/')` uses the captured URL. Call `openExample(page)` in `beforeEach`; it also asks the page to reduce motion. Use `waitForChatReady(page, PageObjectId.INPUT)` before chat assertions. The fixture checks console and page errors after each test.
+The suite serves a production build, not the dev server. On a cold cache, the dev server re-optimizes dependencies as the chat's lazy chunks load and reloads the page during the first test.
 
-Do not add a per-example port table or a probe that closes its listener before Vite starts.
+Import `test` and `expect` from the shared fixture so `page.goto('/')` uses the target's URL. Call `openExample(page)` first; it also asks the page to reduce motion. For an auto-open example, use `waitForChatReady(page, PageObjectId.INPUT)` before chat assertions. For a float example, await `PageObjectId.LAUNCHER`, click it, then await the displayed panel. The fixture checks console and page errors after each test.
+
+Fixtures take an object-destructured first argument, as in `async ({ target }, playWrightUse)`. Playwright rejects any other form. Name the second argument `playWrightUse`, not `use`, so the React hooks lint rule does not mistake it for a hook.
+
+Do not add a per-example port table or a probe that closes its listener before the server starts.
 
 ## Selectors
 
@@ -45,11 +240,11 @@ In order — use the first that works:
 
 Use Playwright locators for actions and checks. They wait for the target to be ready. If a role or text matches more than once, chain or filter the locator within a stable region.
 
-Never reach into the chat's own markup with a CSS or structural selector, and never assert on raw model output.
+Use roles, labels, or maintained test IDs for chat markup. Avoid CSS and structural selectors there.
 
-The example's own elements are a different matter — select those however the example defines them. The host `<div>` an
-example hands to `ChatCustomElement` carries no role and no test id, so the class the example sets on it is the right
-handle, and the only way to assert how the chat sizes that host.
+Do not assert on live model output. A fixed mock summary is a valid proof of sent data. Scope it to the response so input text or welcome copy cannot satisfy the assertion.
+
+The example's own elements are a different matter — select those however the example defines them. The fullscreen examples give their host a `.chat-custom-element` class. Use that class to check host sizing in either flavor.
 
 Shadow DOM does not decide this: Playwright locators pierce open shadow roots either way. The real web-component caveat is that ARIA IDREFs (`aria-labelledby`, `for`) do not cross a shadow-root boundary, which makes accessible names unreliable there — that is what `PageObjectId` is for.
 
@@ -66,6 +261,29 @@ To work out what that behavior is, read two things:
 - **The example's `README.md`.** Its "What this example shows" section lists the behavior in plain words, and its "APIs and props demonstrated" table names the API behind each one. Test the behavior, not the API.
 
 Then stop. A second concern means a second example — see the single-purpose rule in [examples/AGENTS.md](../AGENTS.md#authoring-rules).
+
+## Suggestions and chips
+
+Read [mentions and commands](../shared/playwright/tests/mentions-and-commands.spec.ts) when testing an editor popup.
+
+- Use the `PageObjectId.INPUT` locator for the contenteditable editor. Click it and use `pressSequentially()` to type the trigger, then the query. `fill()` replaces text in one update; it does not exercise the trigger and filter updates as separate steps.
+- Await the `listbox`, then type the query. Use retrying checks for the filtered `option` count and name. After selection, await the chosen label in the input and the list's dismissal.
+- Check keyboard selection with arrow keys and Enter. Open the list again, press Escape, and await dismissal and editor focus with `toBeFocused()`.
+- Prove a chip is atomic: remove its trailing space with Backspace, then press Backspace again. Assert the whole label disappears and the trigger returns. Clear the trigger and await list dismissal. Send ordinary text and check the mock reports no structured fields.
+- For slash commands, test `/` in an empty input and after a newline made with Shift+Enter. Test that a mid-line slash leaves the list closed. Await input text before the negative list check so an unready editor cannot pass it.
+- After sending, scope the mock's `Mentions:` or `Commands:` summary to the reply in `PageObjectId.MAIN_PANEL`. A label in the editor proves display, not sent structured data.
+
+Choose the states that prove the behavior: open, filtered, selected, dismissed, and sent. Use assertions for those states; screenshots of every intermediate state add no proof.
+
+## State reflected in the host
+
+Read [watch state](../shared/playwright/tests/watch-state.spec.ts) when testing a host subscription.
+
+Await the launcher before opening a float example. Open it, then await the homescreen panel and the host's `Homescreen` label. Do not assert the label before opening: the host reads `Chat View` until the chat opens and reports the homescreen. Click a conversation starter, then await the main panel and host `Chat View` label. Return home and await `Homescreen` again. Scope the label to the host's own `.watch-state-host` element in either flavor.
+
+This sequence changes the mirrored `homeScreenState.isHomeScreenOpen` field. Minimize and reopen alone cannot prove that mirror updates.
+
+Prefer the host DOM when it displays the state under test. If a host already exposes its chat instance, `page.evaluate()` can read `instance.getState()` there. Wrap that field read in `expect.poll` to await asynchronous changes. Read only the relevant field rather than comparing whole state snapshots. The demo's `window.chatInstance` is not a convention for examples; do not add a global just for a test.
 
 ## Accessibility
 
@@ -84,7 +302,7 @@ An axe scan catches some issues, but cannot prove WCAG conformance. Check keyboa
 - No real timestamps or randomness. If an example needs an external response, register a `page.route()` with fixed data before navigation; never depend on a live third-party service.
 - Disable animation where it gates an assertion.
 
-An example is non-deterministic when its reply depends on a live service or on the clock. Skip it rather than working around it.
+An example is non-deterministic when its reply depends on a live service, the clock, or random values. Give it a suite anyway: prove its mount and any behavior that stays fixed, never assert the varying values, and list it in `DEFERRED_EXAMPLES` ([Coverage gate](#coverage-target)). Skip an example entirely only when nothing in it runs without a live service; see [Skipped examples](#skipped-examples).
 
 ## Skipped examples
 
@@ -99,61 +317,76 @@ Four, deliberately. Do not add suites for these, and do not re-litigate them.
 
 ## Examples that deviate
 
-`tests-vitest-happydom` can use the shared Vite launcher even though its `start` script pins a port: the launcher reads its Vite config and serves it on a Node-assigned port for tests. Keep its existing vitest `test` script.
+`frameworks-react-17` and `frameworks-react-18` keep their own Playwright suites, with fixed ports and `test` scripts. Root `npm test` still runs them. Do not copy their setup for new suites; migrate them into the shared suite in #1424.
 
-`frameworks-react-17` and `frameworks-react-18` already have Playwright suites with fixed ports and `test` scripts. Root `npm test` still runs them. Do not copy their setup for new suites; migrate them to the shared launcher and `test:e2e` in #1424.
-
-`frameworks-next` is not a Vite app. Give it a separate web-server command when adding its suite in #1424; its `start` script runs the production server and needs a build first.
+`tests-vitest-happydom` keeps its vitest `test` script. `frameworks-next` is not a Vite app; add a separate server entry for it when its suite lands in #1424, since its `start` script runs the production server and needs a build first.
 
 ## Naming
 
-`tests/<concern>.spec.ts`, kebab-case, named for the behavior under test — [fullscreen-baseline.spec.ts](../react/basic-custom-element-fullscreen/tests/fullscreen-baseline.spec.ts), [send-clears-input.spec.ts](../react/frameworks-react-17/tests/send-clears-input.spec.ts). Never `example.spec.ts`.
+`tests/<concern>.spec.ts`, kebab-case, named for the behavior under test — [fullscreen.spec.ts](../shared/playwright/tests/fullscreen.spec.ts). Never `example.spec.ts`. A spec that only one flavor needs adds that flavor as a suffix, `<concern>-react.spec.ts` or `<concern>-web-components.spec.ts`, and its purpose comment says why the flavors differ.
 
 Open every spec with a purpose comment, per the inline-comments rule in [examples/AGENTS.md](../AGENTS.md#authoring-rules).
 
 ## Running
 
 ```bash
-npm run test:e2e --workspace=<example-workspace-name>
+npm run test:e2e:goldens
+CAIC_E2E_TARGETS=react-watch-state npm run test:e2e:goldens
+CAIC_E2E_TARGETS=react-watch-state,web-components-watch-state npm run test:e2e:goldens
 npm run test:e2e
 ```
 
-- From the root, install dependencies once with `npm install` and build the shared packages with `npm run aiChat:build` before testing. Rebuild a changed package before testing its examples.
+- Before testing, run the root [build preflight](../../references/commands.md#build-preflight). These suites read the built chat packages and build only the examples.
+- Check test discovery with `npm run test:e2e:goldens -- --list` before opening a browser. This catches config and fixture errors; it does not run the tests. Each shared case appears once per flavor, under its own project.
 - Install Chromium once per machine with `npx playwright install chromium`.
-- Playwright starts and stops each example's server. Root `test:e2e` runs up to four example suites at once, with one browser worker in each.
-- Root `test:e2e` currently picks up the two goldens. The existing React 17 and 18 suites run under `npm test` until they are migrated.
-- To compare local concurrency, run `E2E_CONCURRENCY=1 npm run test:e2e`, then repeat with `2` and `4`. Record elapsed time and peak memory before changing the default.
-
-The local baseline on 2026-09-29 ran the two golden suites after installation and the shared-package build. `/usr/bin/time -l` reported elapsed time and maximum RSS for one process, not aggregate memory across the process tree:
-
-| Concurrency | Elapsed | Time-reported maximum RSS |
-| --- | --- | --- |
-| 1 | 14.08s | 1.74 GB |
-| 2 | 7.75s | 1.71 GB |
-| 4 | 7.92s | 1.73 GB |
-
-Four is the initial ceiling for new suites; with only two suites, it offers no speedup over two. These figures exclude installation and build time, so they do not yet validate the 30-minute target for the eventual full suite.
+- Playwright starts every configured server, whatever `--project` selects. To run only some targets, list their names in `CAIC_E2E_TARGETS`, comma-separated; the config then builds, serves, and runs only those. An unknown name fails the run. Without it, every target runs.
+- Root `test:e2e` runs the central suite once, then any `test:e2e` script a workspace still defines. The React 17 and 18 suites run under `npm test` until they are migrated.
 
 When and how the suite runs in CI at scale is not decided here. See [issue #2127](https://github.com/carbon-design-system/carbon-ai-chat/issues/2127).
 
+## Coverage
+
+`npm run test:e2e:coverage` runs the suite with Chromium's V8 coverage on, then reports it with [monocart-coverage-reports](https://github.com/cenfun/monocart-coverage-reports). It honors `CAIC_E2E_TARGETS`, so one example can be measured alone:
+
+```bash
+CAIC_E2E_TARGETS=react-feedback,web-components-feedback npm run test:e2e:coverage
+```
+
+- It measures each example's own `src/`. The launcher builds with sourcemaps while coverage is on, and the fixture maps the bundle back to the example's sources; the chat packages and third-party code are left out.
+- `coverage/examples-e2e/index.html` lists every measured example, with a link to its own report. `lcov.info` beside it merges them all.
+- Sources the suite never loads count as zero.
+- A covered line is one a test ran, whether or not an assertion checked its result.
+
+### Coverage target
+
+Aim for a suite that runs at least **80% of its example's gated `src/` lines**. The target is advisory: the report flags a measured, non-deferred example below it, and the command still exits 0. A new suite below the target should say why in its PR. [coverage-options.mjs](../shared/playwright/coverage-options.mjs) holds two lists:
+
+- `OFF_CONCERN_BACKENDS` — examples whose `customSendMessage.ts` copies the baseline mock back end without being part of their concern. That back end is proven once, in `basic-custom-element-fullscreen`, so the copies are left out of the target. A back end the concern runs through stays in.
+- `DEFERRED_EXAMPLES` — examples whose concern cannot be checked deterministically: it depends on random content, dates, or timing, or a product defect blocks it and its concern test is a `test.fixme`. Their suites prove a mount and any behavior that stays fixed, and they are reported, not flagged. An entry names a slug for both flavors, or `<flavor>/<slug>` for one.
+
+Add to either list only with the reason in the PR description. Do not add assertions outside the example's concern to raise the number; open the example's report and cover the branches its concern takes.
+
 ## Debugging
 
-Debug an example with `npm run test:e2e --workspace=<example> -- --debug` to inspect actions and locators. For an intermittent failure, rerun one test with `npm run test:e2e --workspace=<example> -- --grep '<test name>' --trace on`. Inspect the trace's actions, DOM snapshots, and requests. Keep full-run tracing off; when CI is added, capture traces on the first retry rather than every test.
+Debug one target with `CAIC_E2E_TARGETS=<name> npm run test:e2e:goldens -- --debug` to inspect actions and locators. For an intermittent failure, rerun one test with `CAIC_E2E_TARGETS=<name> npm run test:e2e:goldens -- --grep '<test name>' --trace on`. Inspect the trace's actions, DOM snapshots, and requests. Keep full-run tracing off; when CI is added, capture traces on the first retry rather than every test.
+
+Failures, screenshots, and videos land in `shared/playwright/test-results/`, which is git-ignored.
 
 ## Definition of done
 
-- [ ] `npm run test:e2e --workspace=<example>` passes on chromium.
+- [ ] `npm run test:e2e:goldens -- --list` shows each new case once per target, and the target table above lists the new targets.
+- [ ] `npm run test:e2e:goldens` passes on chromium.
 - [ ] `npm run build --workspace=<example>` exits 0.
-- [ ] The suite covers the example's one concern plus the baseline above.
-- [ ] The Playwright config uses the shared launcher and fixture; it assigns no port.
+- [ ] The suite covers the example's one concern plus the baseline above; no scaffold `test.fixme` placeholder remains.
+- [ ] Golden examples use the central config; local suites use the shared launcher and fixture. Neither assigns a port.
+- [ ] `CAIC_E2E_TARGETS=<targets> npm run test:e2e:coverage` ran, and the PR explains any example below the [coverage target](#coverage-target).
 - [ ] Every spec opens with a purpose comment.
 
 ## React vs Web Components
 
-This guide stays one file: both flavors share the dev server, `@playwright/test`, and the same selectors, and a spec body ports between them unchanged. Only the mount differs.
-
-- Cover behavior that runs through the React render-prop bridge in the React flavor.
-- Cover shared chat behavior once. Default hide-on-close lives in the React golden, which is why no other `ChatCustomElement` example repeats it.
+Use the same spec for both flavors when they expose the same visible contract.
+Keep golden specs in `shared/playwright/tests/` and local specs in the example's `tests/`. Resolve URLs through the shared fixture.
+Use separate specs for host behavior that applies to only one flavor.
 
 ## Related guidance
 

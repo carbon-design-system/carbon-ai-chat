@@ -361,6 +361,10 @@ export class TextareaController
     return false;
   }
 
+  resetHistory(): void {
+    // Plain textarea uses the browser's native undo stack.
+  }
+
   // -------------------------------------------------------------------------
   // Internals
   // -------------------------------------------------------------------------
