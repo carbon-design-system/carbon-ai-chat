@@ -336,7 +336,10 @@ class ExtensionHosts {
       return;
     }
     this.messages = allMessagesByID;
-    const entries = collectSlotEntries(allMessagesByID);
+    const entries = collectSlotEntries(
+      allMessagesByID,
+      this.snapshot.inputNode
+    );
     const previous = this.snapshot.inputNode;
     if (
       entries.length === previous.length &&

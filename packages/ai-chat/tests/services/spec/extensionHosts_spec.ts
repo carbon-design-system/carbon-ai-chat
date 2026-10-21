@@ -12,6 +12,7 @@ import { ExtensionHosts } from '../../../src/chat/services/extensionHosts';
 import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
 import { registerInlineTarget } from '../../../src/chat/components/portals/inputNodeHosts';
+import { inputNodeIdentity } from '../../../src/chat/utils/inputNodeSlots';
 import { LIGHT_DOM_PORTAL_EVENT } from '@carbon/ai-chat-components/es/components/prompt-line/src/tiptap/render-in-light-dom.js';
 
 const noMessages = {
@@ -632,6 +633,49 @@ describe('input-node hosts', () => {
     hosts.connect();
     expect(host.parentElement).toBe(chatWrapper);
     expect(chatWrapper.children).toHaveLength(1);
+  });
+
+  it('keeps a slot identity across message updates until its node changes', () => {
+    const { hosts, setMessages } = setupMessages();
+    const sent = blockMessage('a');
+    setMessages({ a: sent });
+    const [first] = hosts.getSnapshot().inputNode;
+
+    // An equal copy, as a status update writes: a new message and node object.
+    setMessages({ a: JSON.parse(JSON.stringify(sent)) });
+    const [copied] = hosts.getSnapshot().inputNode;
+    expect(copied.state).not.toBe(first.state);
+    expect(copied.state.message).not.toBe(first.state.message);
+    expect(inputNodeIdentity(copied.state)).toBe(
+      inputNodeIdentity(first.state)
+    );
+
+    const edited = JSON.parse(JSON.stringify(sent));
+    edited.input.display_content.content[0].attrs = { label: 'edited' };
+    setMessages({ a: edited });
+    const [changed] = hosts.getSnapshot().inputNode;
+    expect(inputNodeIdentity(changed.state)).not.toBe(
+      inputNodeIdentity(first.state)
+    );
+  });
+
+  it('gives two slots that share one node object their own identity', () => {
+    const { hosts, setMessages } = setupMessages();
+    const node = { type: 'taskCard' };
+    setMessages({
+      a: {
+        id: 'a',
+        input: {
+          text: 'x',
+          display_content: { type: 'doc', content: [node, node] },
+        },
+      },
+    });
+    const [left, right] = hosts.getSnapshot().inputNode;
+    expect(left.state.node).toBe(right.state.node);
+    expect(inputNodeIdentity(left.state)).not.toBe(
+      inputNodeIdentity(right.state)
+    );
   });
 
   it('keeps input-node hosts through a restart and releases them with their message', () => {

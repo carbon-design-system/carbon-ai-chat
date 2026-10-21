@@ -276,6 +276,72 @@ describe.each(['cds-aichat-container', 'cds-aichat-custom-element'])(
       20000
     );
 
+    it.each([
+      ['block', () => message()],
+      ['inline', () => inlineMessage()],
+    ])(
+      'calls back once per %s node while its message updates',
+      async (_kind, sent) => {
+        const callback = jest.fn(() => document.createElement('span'));
+        const { chat } = await boot(callback, sent());
+        const connected = () =>
+          callback.mock.results
+            .map((result) => result.value as HTMLElement)
+            .filter((chip) => chip.isConnected);
+        await waitFor(() => expect(connected()).toHaveLength(1), {
+          timeout: 8000,
+        });
+        await act(() => new Promise((resolve) => setTimeout(resolve, 100)));
+        const [chip] = connected();
+
+        // A later update, such as a status change, replaces the message object
+        // with an equal copy whose node is a new object.
+        const { store } = chat.serviceManager;
+        const messages = store.getState().allMessagesByID;
+        act(() =>
+          store.dispatch(
+            actions.setAppStateValue('allMessagesByID', {
+              ...messages,
+              message: JSON.parse(JSON.stringify(messages.message)),
+            })
+          )
+        );
+        await act(async () => {});
+
+        expect(callback).toHaveBeenCalledTimes(1);
+        expect(chip.isConnected).toBe(true);
+      },
+      20000
+    );
+
+    it('calls back again when the node itself changes', async () => {
+      const callback = jest.fn(() => document.createElement('span'));
+      const { chat } = await boot(callback);
+      await waitFor(() => expect(callback).toHaveBeenCalled(), {
+        timeout: 8000,
+      });
+      await act(() => new Promise((resolve) => setTimeout(resolve, 100)));
+      const calls = callback.mock.calls.length;
+
+      const { store } = chat.serviceManager;
+      const messages = store.getState().allMessagesByID;
+      const edited = JSON.parse(JSON.stringify(messages.message));
+      edited.input.display_content.content[0].attrs = { label: 'edited' };
+      act(() =>
+        store.dispatch(
+          actions.setAppStateValue('allMessagesByID', {
+            ...messages,
+            message: edited,
+          })
+        )
+      );
+      await act(async () => {});
+
+      expect(callback).toHaveBeenCalledTimes(calls + 1);
+      const latest = callback.mock.results[calls].value as HTMLElement;
+      await waitFor(() => expect(latest.isConnected).toBe(true));
+    }, 20000);
+
     it('keeps the returned element through unrelated message updates', async () => {
       const chip = document.createElement('span');
       const callback = jest.fn(() => chip);
