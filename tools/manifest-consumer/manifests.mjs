@@ -10,6 +10,7 @@ import { access, readFile, realpath } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { join, relative, resolve } from 'node:path';
 import ts from 'typescript';
+import { globalSuperclassReferences } from '../../packages/ai-chat-components/tasks/cem-plugins.js';
 
 export function localPath(root, path) {
   const target = resolve(root, path);
@@ -18,6 +19,49 @@ export function localPath(root, path) {
     `Unpublished path: ${path}`
   );
   return target;
+}
+
+function bareSuperclass(reference) {
+  return Boolean(reference?.name) && !reference.module && !reference.package;
+}
+
+async function publishedGlobalSuperclasses(manifest, root) {
+  const globals = new Set();
+  for (const module of manifest.modules) {
+    if (
+      !(module.declarations ?? []).some((entry) =>
+        bareSuperclass(entry.superclass)
+      )
+    ) {
+      continue;
+    }
+    const filename = localPath(root, module.path);
+    const source = ts.createSourceFile(
+      filename,
+      await readFile(filename, 'utf8'),
+      ts.ScriptTarget.Latest,
+      true
+    );
+    for (const [name, base] of globalSuperclassReferences(ts, source)) {
+      if (
+        source.statements.some(
+          (statement) =>
+            ts.isClassDeclaration(statement) && statement.name?.text === name
+        )
+      ) {
+        globals.add(`${module.path}#${name}#${base}`);
+      }
+    }
+  }
+  return globals;
+}
+
+function globalSuperclass(reference, key, owner, globals) {
+  return (
+    key === 'superclass' &&
+    bareSuperclass(reference) &&
+    globals.has(`${owner}#${reference.name}`)
+  );
 }
 
 function checkExternalReference(value, declarationReference, require) {
@@ -40,9 +84,11 @@ function collectLocalReference(
   key,
   containingModule,
   declarationReference,
+  declarationName,
   state
 ) {
-  if (value.name === 'Error' && !value.module) {
+  const owner = `${containingModule}#${declarationName}`;
+  if (globalSuperclass(value, key, owner, state.globals)) {
     return;
   }
   if (!value.module && !declarationReference) {
@@ -57,11 +103,11 @@ function collectLocalReference(
     declarationReference &&
     !state.defined.has(`${targetModule}#${value.name}`)
   ) {
-    state.symbols.push({ ...value, module: targetModule });
+    state.symbols.push({ ...value, module: targetModule, owner });
   }
 }
 
-function visitReferences(value, key, containingModule, state) {
+function visitReferences(value, key, containingModule, declarationName, state) {
   if (!value || typeof value !== 'object') {
     return;
   }
@@ -76,21 +122,35 @@ function visitReferences(value, key, containingModule, state) {
       key,
       containingModule,
       declarationReference,
+      declarationName,
       state
     );
   }
   for (const [childKey, child] of Object.entries(value)) {
     if (Array.isArray(child)) {
       child.forEach((entry) =>
-        visitReferences(entry, childKey, containingModule, state)
+        visitReferences(
+          entry,
+          childKey,
+          containingModule,
+          childKey === 'declarations' ? entry.name : declarationName,
+          state
+        )
       );
     } else {
-      visitReferences(child, childKey, containingModule, state);
+      visitReferences(
+        child,
+        childKey,
+        containingModule,
+        declarationName,
+        state
+      );
     }
   }
 }
 
 export async function checkReferences(manifest, root, packageName) {
+  const globals = await publishedGlobalSuperclasses(manifest, root);
   const defined = new Set(
     manifest.modules.flatMap((module) => [
       ...(module.declarations ?? []).map(
@@ -105,13 +165,14 @@ export async function checkReferences(manifest, root, packageName) {
 
   const state = {
     packageName,
+    globals,
     defined,
     references,
     symbols,
     require: createRequire(join(root, 'package.json')),
   };
   manifest.modules.forEach((module) =>
-    visitReferences(module, undefined, module.path, state)
+    visitReferences(module, undefined, module.path, undefined, state)
   );
   for (const module of manifest.modules) {
     for (const entry of module.exports ?? []) {
@@ -172,7 +233,9 @@ async function checkPublishedSymbols(root, manifest, references, exports) {
     const names = checker.getExportsOfModule(symbol).map((entry) => entry.name);
     assert.ok(
       names.includes(reference.name),
-      `Unpublished symbol: ${reference.module}#${reference.name}`
+      `Unpublished symbol: ${reference.module}#${reference.name}${
+        reference.owner ? ` (from ${reference.owner})` : ''
+      }`
     );
   }
 }
