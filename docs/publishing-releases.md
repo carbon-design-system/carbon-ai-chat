@@ -83,7 +83,7 @@ The prerelease occurs on the first Monday of a sprint. During this stage, the re
   - [ ] Merge in the generated PR (the title of the PR should start with `chore(release):` followed by the version).
   - [ ] Check the generated [release](https://github.com/carbon-design-system/carbon-ai-chat/releases) to ensure the release notes are correct.
   - [ ] The create github tag and PR workflow should have dispatched:
-    - [ ] The [publish chat components cdn workflow ](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/publish-components-cdn.yml). Once this workflow has completed, check the staging environment on GitHub Pages and ensure the version in the storybook top left header has been updated.
+    - [ ] The [publish components cdn workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/publish-components-cdn.yml). Once this workflow has completed, check that the components Storybook for the staging tag and version has been published at https://chat.carbondesignsystem.com/components/storybook/tag/next/index.html.
     - [ ] The [publish chat cdn workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/publish-chat-cdn.yml). Once this workflow has completed, check that the docs and demo app sites for the staging tag and version has been published.
 - [ ] Post a message to the `#carbon-ai-chat` Slack channel to announce the new version of `@carbon/ai-chat`.
 
@@ -108,7 +108,6 @@ Once the first prerelease / release candidate has been published, it is availabl
     - If you encounter merge conflicts in this PR, resolve them by merging the main branch into the PR branch (typically named something like `chore/v1.2.0-release`), then push the updated branch to re-run the checks and complete the merge.
   - [ ] Check the generated [release](https://github.com/carbon-design-system/carbon-ai-chat/releases) to ensure the release notes are correct.
   - [ ] The create github tag and PR workflow should have dispatched:
-    - [ ] The deploy staging environment workflow (`deploy-staging-storybook`, listed on the [Actions tab](https://github.com/carbon-design-system/carbon-ai-chat/actions)). Once it has completed, check the staging environment on GitHub Pages and ensure the version in the storybook top left header has been updated.
     - [ ] The [publish chat cdn workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/publish-chat-cdn.yml) and the [publish components cdn workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/publish-components-cdn.yml). Once they have completed, check that the CDN for the staging tag and version has been published.
 - [ ] Post a message to the `#carbon-ai-chat` Slack channel to announce the new version of `@carbon/ai-chat`.
   - For **release candidates**, an example message:
@@ -148,7 +147,6 @@ A stable release occurs on the last Monday of the sprint and finishes later in t
   - [ ] Merge in the generated PR (the title of the PR should start with `chore(release):` followed by the version).
   - [ ] Check the generated [release](https://github.com/carbon-design-system/carbon-ai-chat/releases) to ensure the release notes are correct.
   - [ ] The create github tag and PR workflow should have dispatched:
-    - [ ] The deploy staging environment and deploy latest environment workflows (`deploy-staging-storybook` and `deploy-latest-storybook`, listed on the [Actions tab](https://github.com/carbon-design-system/carbon-ai-chat/actions)). Once both workflows have completed, check the staging and latest environments on GitHub Pages and ensure the version in the storybook top left header has been updated.
     - [ ] The [publish chat cdn workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/publish-chat-cdn.yml) and the [publish components cdn workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/publish-components-cdn.yml). Once they have completed, check that the CDN for the latest tag and version has been published.
   - [ ] Edit the generated release, and change the release from `pre-release` to `latest`. ![Screenshot of release label with latest option selected](https://github.com/user-attachments/assets/f3afc692-d691-4c04-b891-73d0406be7b0)
 
