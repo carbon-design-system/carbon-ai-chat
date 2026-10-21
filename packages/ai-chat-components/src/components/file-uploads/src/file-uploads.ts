@@ -68,11 +68,10 @@ class FileUploadsElement extends LitElement {
     const errored = this.uploads.filter((u) => u.isError);
     const healthy = this.uploads.filter((u) => !u.isError);
 
-    const byName = (a: FileUpload, b: FileUpload) => {
-      const nameA = (a.file?.name ?? '').toLowerCase();
-      const nameB = (b.file?.name ?? '').toLowerCase();
-      return nameA < nameB ? -1 : nameA > nameB ? 1 : 0;
-    };
+    const byName = (a: FileUpload, b: FileUpload) =>
+      (a.file?.name ?? '').localeCompare(b.file?.name ?? '', undefined, {
+        sensitivity: 'base',
+      });
 
     if (errored.length > 0) {
       return [...errored.sort(byName), ...healthy.sort(byName)];

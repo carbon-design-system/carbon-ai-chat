@@ -363,7 +363,7 @@ class FileUploadItemElement extends LitElement {
     if (!this.readOnly) {
       // Column gap between the name and the status area.
       rules.push(
-        ':host(cds-file-uploader-item[size][size=md]) { gap: 0 var(--cds-spacing-04, 1rem); }'
+        ':host(cds-file-uploader-item[size][size=md]) { gap: 0 var(--cds-spacing-05, 1rem); }'
       );
       // Column gap between the status area's children (error icon, remove button).
       rules.push(

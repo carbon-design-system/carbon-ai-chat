@@ -568,11 +568,9 @@ function AppShell({
       });
     }
 
-    entries.sort((a, b) => {
-      const nameA = a.filename.toLowerCase();
-      const nameB = b.filename.toLowerCase();
-      return nameA < nameB ? -1 : nameA > nameB ? 1 : 0;
-    });
+    entries.sort((a, b) =>
+      a.filename.localeCompare(b.filename, undefined, { sensitivity: 'base' })
+    );
 
     return entries.length > 0 ? entries : undefined;
   }, [
