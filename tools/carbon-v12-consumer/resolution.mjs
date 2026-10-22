@@ -141,17 +141,15 @@ async function assertPackageAliases(consumer) {
     false,
     'Components must not expose a bare package root.'
   );
-  for (const tree of ['es', 'es-custom']) {
-    for (const path of ['carbon-element.js', 'index.js']) {
-      assert.throws(
-        () =>
-          require.resolve(
-            `@carbon/ai-chat-components/${tree}/globals/decorators/${path}`
-          ),
-        { code: 'MODULE_NOT_FOUND' },
-        'The removed decorator entry must fail packed resolution.'
-      );
-    }
+  for (const path of ['carbon-element.js', 'index.js']) {
+    assert.throws(
+      () =>
+        require.resolve(
+          `@carbon/ai-chat-components/es/globals/decorators/${path}`
+        ),
+      { code: 'MODULE_NOT_FOUND' },
+      'The removed decorator entry must fail packed resolution.'
+    );
   }
   assert.throws(() => require.resolve('@carbon/ai-chat-components'), {
     code: 'ERR_PACKAGE_PATH_NOT_EXPORTED',
@@ -224,6 +222,65 @@ async function assertPackageAliases(consumer) {
         wildcardChunk: chunk,
         hostAliases: true,
       },
+      null,
+      2
+    )
+  );
+}
+
+async function assertLegacyPrefixRemoval(consumer) {
+  const require = createRequire(join(consumer, 'package.json'));
+  for (const name of ['@carbon/ai-chat', '@carbon/ai-chat-components']) {
+    const metadata = JSON.parse(
+      await readFile(
+        join(consumer, 'node_modules', name, 'package.json'),
+        'utf8'
+      )
+    );
+    for (const field of ['exports', 'files', 'typesVersions', 'sideEffects']) {
+      assert.doesNotMatch(
+        JSON.stringify(metadata[field] ?? {}),
+        /es-custom/,
+        `${name}: ${field} must not advertise the removed output.`
+      );
+    }
+  }
+  const specifiers = [
+    '@carbon/ai-chat/es-custom',
+    '@carbon/ai-chat/dist/es-custom/aiChatEntry.js',
+    '@carbon/ai-chat/dist/es-custom/web-components/cds-aichat-container/index.js',
+    '@carbon/ai-chat-components/es-custom',
+    '@carbon/ai-chat-components/es-custom/components/card/index.js',
+    '@carbon/ai-chat-components/es-custom/globals/decorators/carbon-element.js',
+    '@carbon/ai-chat-components/es-custom/globals/decorators/index.js',
+  ];
+  for (const specifier of specifiers) {
+    assert.throws(() => require.resolve(specifier), {
+      code: 'ERR_PACKAGE_PATH_NOT_EXPORTED',
+    });
+  }
+  const failures = JSON.parse(
+    execFileSync(
+      process.execPath,
+      [
+        '--input-type=module',
+        '--eval',
+        `process.stdout.write(JSON.stringify(${JSON.stringify(specifiers)}.map((specifier) => { try { return { specifier, resolved: import.meta.resolve(specifier) }; } catch (error) { return { specifier, code: error.code }; } })));`,
+      ],
+      { cwd: consumer, encoding: 'utf8' }
+    )
+  );
+  assert.deepEqual(
+    failures,
+    specifiers.map((specifier) => ({
+      specifier,
+      code: 'ERR_PACKAGE_PATH_NOT_EXPORTED',
+    }))
+  );
+  await writeFile(
+    join(consumer, 'removed-prefix-resolution.json'),
+    JSON.stringify(
+      { failures, metadata: 'No legacy exports or files.' },
       null,
       2
     )
@@ -358,6 +415,7 @@ async function compileConsumerScss(consumer) {
 }
 
 export async function assertPackedResolution({ consumer }) {
+  await assertLegacyPrefixRemoval(consumer);
   await assertPackageAliases(consumer);
   const classAliases = componentEntries
     .map(

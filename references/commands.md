@@ -27,7 +27,7 @@ Load this when you need to build, watch, lint, format, test, or run an example/S
 | Example app tests only (CI's `examples` suite) | `npm run test:examples` |
 | Guidance validator regression tests (no build) | `npm run test:guidance` |
 | Lint + format + license + test gate (no build) | `npm run ci-check` |
-| Remove every `node_modules`, `packages/ai-chat/dist`, and `es/`, `es-custom/`, `dist/`, and `storybook-static/` in the components package | `npm run clean` |
+| Remove every `node_modules`, `packages/ai-chat/dist`, and components output (`es/`, `dist/`, `storybook-static/`, plus stale `es-custom/`) | `npm run clean` |
 
 **Always run the npm script, never the underlying binary.** `npx prettier`, a bare `eslint`, or `stylelint` invoked by hand drops the project configuration and ignore rules in `.prettierignore` and will reformat generated output — which is never editable, see [Root AGENTS.md](../AGENTS.md). The scripts are also the only thing CI and husky run, so a hand-rolled invocation can disagree with the gate that actually blocks the merge.
 
