@@ -135,6 +135,47 @@ async function removeAndReadd(node: Node) {
   parent.insertBefore(node, next);
 }
 
+const inlinePluginConfig: PublicConfig = {
+  openChatByDefault: true,
+  markdown: {
+    markdownItPlugins: [
+      (md) => {
+        md.renderer.rules.code_inline = () =>
+          '<span data-inline-plugin>Projected plugin</span>';
+      },
+    ],
+  },
+};
+
+async function sendInlinePlugin(instance: ChatInstance, host: HTMLElement) {
+  await act(() =>
+    instance.send({
+      id: 'inline-plugin-move',
+      input: {
+        text: 'Ada `plugin`',
+        display_content: {
+          type: 'doc',
+          content: [
+            {
+              type: 'paragraph',
+              content: [
+                { type: 'mention', attrs: { id: 'ada', label: 'Ada' } },
+                { type: 'text', text: ' `plugin`' },
+              ],
+            },
+          ],
+        },
+      },
+    })
+  );
+  await waitFor(() =>
+    expect(host.querySelector('[data-inline-plugin]')?.textContent).toBe(
+      'Projected plugin'
+    )
+  );
+  return host.querySelector('[data-inline-plugin]');
+}
+
 describe('how each host mounts the chat', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
@@ -380,6 +421,7 @@ describe('how each host mounts the chat', () => {
         <ChatContainer
           key="chat"
           {...createBaseConfig()}
+          {...inlinePluginConfig}
           onBeforeRender={onBeforeRender}
           onAfterRender={onAfterRender}
         />
@@ -395,6 +437,10 @@ describe('how each host mounts the chat', () => {
       });
 
       const host = getChatHost();
+      const plugin = await sendInlinePlugin(
+        onBeforeRender.mock.calls[0][0],
+        host
+      );
       expect(host.previousSibling).toBeNull();
       const removed: Node[] = [];
       const observer = new MutationObserver((records) => {
@@ -415,17 +461,27 @@ describe('how each host mounts the chat', () => {
       expect(onBeforeRender).toHaveBeenCalledTimes(1);
       expect(onAfterRender).toHaveBeenCalledTimes(1);
       expect(renderTargetIn()?.childElementCount).toBeGreaterThan(0);
+      expect(host.querySelector('[data-inline-plugin]')).toBe(plugin);
+      expect(plugin.isConnected).toBe(true);
+
+      view.unmount();
+      await settle();
+      expect(host.querySelector('[data-inline-plugin]')).toBeNull();
     });
 
     it.each(['cds-aichat-container', 'cds-aichat-custom-element'])(
       'keeps one instance when a plain %s moves in one task',
       async (tag) => {
-        const { element, instances, onAfterRender } = createElementChat(tag);
+        const { element, instances, onAfterRender } = createElementChat(
+          tag,
+          inlinePluginConfig
+        );
         const sibling = document.createElement('p');
         document.body.append(element, sibling);
         await waitFor(() => expect(onAfterRender).toHaveBeenCalledTimes(1), {
           timeout: 5000,
         });
+        const plugin = await sendInlinePlugin(instances[0], element);
 
         sibling.after(element);
         await settle();
@@ -437,6 +493,12 @@ describe('how each host mounts the chat', () => {
             ? element
             : element.shadowRoot.querySelector('cds-aichat-container');
         expect(renderTargetOf(container)?.childElementCount).toBeGreaterThan(0);
+        expect(element.querySelector('[data-inline-plugin]')).toBe(plugin);
+        expect(plugin.isConnected).toBe(true);
+
+        element.remove();
+        await settle();
+        expect(element.querySelector('[data-inline-plugin]')).toBeNull();
       }
     );
   });

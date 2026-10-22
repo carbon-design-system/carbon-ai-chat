@@ -829,6 +829,9 @@ class MessageService {
       return;
     }
 
+    // Abort listeners may restart the chat, so read the generation first.
+    const generation =
+      this.serviceManager.conversationLifecycleService.currentGeneration;
     const sendMessageController =
       controller || pendingRequest?.sendMessageController;
 
@@ -837,6 +840,13 @@ class MessageService {
 
     // Clean up the controller from the map and streaming tracking
     this.inboundStreaming.clearStreamingResponse(responseId);
+    if (!pendingRequest) {
+      // The sender already settled, so only the response stream remains.
+      this.serviceManager.conversationLifecycleService.responseStopped(
+        responseId,
+        generation
+      );
+    }
 
     // Only process the pending request if it exists (it may have already been cleared from queue)
     if (pendingRequest) {

@@ -27,6 +27,7 @@
 
 import React from 'react';
 import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
+import { PublicStateSnapshotCache } from '../../../src/chat/utils/publicState';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import {
   createBaseConfig,
@@ -44,6 +45,7 @@ import {
 } from '../../../src/types/events/eventBusTypes';
 import actions from '../../../src/chat/store/actions';
 import type { StructuredData } from '../../../src/types/messaging/Messages';
+import { MessageErrorState } from '../../../src/types/messaging/LocalMessageItem';
 import type { ServiceDesk } from '../../../src/types/config/ServiceDeskConfig';
 import type { JSONContent } from '@tiptap/core';
 
@@ -509,6 +511,61 @@ describe('human-agent send path — display_content and structured_data', () => 
       );
     });
   });
+  it.each([false, true])(
+    'preserves outgoing callback edits and earlier snapshots (read early: %s)',
+    async (readEarly) => {
+      const { instance, store, impl, sendMessageToAgent } =
+        await setupHumanAgentChat();
+      const cache = new PublicStateSnapshotCache();
+      let captured: ReturnType<PublicStateSnapshotCache['createSnapshot']>;
+      let originalMessage: any;
+      instance.on({
+        type: BusEventType.HUMAN_AGENT_PRE_SEND,
+        handler: (event: any) => {
+          originalMessage = event.data;
+          event.data.input.structured_data = { value: 'before' };
+        },
+      });
+      sendMessageToAgent.mockImplementation(async (message) => {
+        expect(message).toBe(originalMessage);
+        captured = cache.createSnapshot(store.getState());
+        if (readEarly) {
+          expect(captured.messages[0]).toMatchObject({
+            input: { structured_data: { value: 'before' } },
+          });
+        }
+        message.input.structured_data.transport = 'accepted';
+      });
+      instance.on({
+        type: BusEventType.HUMAN_AGENT_SEND,
+        handler: (event: any) => {
+          expect(event.data).toBe(originalMessage);
+          expect(event.data.input.structured_data.transport).toBe('accepted');
+          event.data.input.structured_data.value = 'after';
+        },
+      });
+      await act(async () => impl.sendMessageToAgent('hello', [], undefined));
+      expect(captured.messages[0]).toMatchObject({
+        input: { structured_data: { value: 'before' } },
+      });
+      expect(
+        (captured.messages[0] as any).input.structured_data
+      ).not.toHaveProperty('transport');
+      expect(cache.createSnapshot(store.getState()).messages[0]).toMatchObject({
+        input: { structured_data: { value: 'after', transport: 'accepted' } },
+      });
+      expect(
+        store.getState().allMessagesByID[originalMessage.id].history.error_state
+      ).toBe(MessageErrorState.NONE);
+      originalMessage.input.structured_data.value = 'retained mutation';
+      expect(
+        store.getState().allMessagesByID[originalMessage.id]
+      ).toMatchObject({
+        input: { structured_data: { value: 'after', transport: 'accepted' } },
+      });
+    }
+  );
+
   it.each([false, true])(
     'clears only its own timeout after late agent success (newer failure: %s)',
     async (newerFailure) => {

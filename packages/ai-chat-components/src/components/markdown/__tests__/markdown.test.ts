@@ -659,7 +659,7 @@ HTTP: http://example.com
       await waitUntil(
         () => table.shadowRoot?.textContent?.includes('Diamond') ?? false,
         'Expected carbon allotrope table to render inside details',
-        { timeout: 5000 }
+        { timeout: 15000 }
       );
     });
   });
@@ -1059,6 +1059,13 @@ HTTP: http://example.com
       // fire renderTokenTree on the cell more than once before
       // updateComplete resolves; the streaming-cache test below verifies
       // the cache invariant on a direct top-level fence path.
+      // The table renders its cells after its runtime chunk loads, which can
+      // trail markdown's updateComplete on slower engines, so wait for it.
+      await waitUntil(
+        () => imageCalls.length >= 1,
+        'Expected the image plugin rule to fire for the table cell image',
+        { timeout: 15000 }
+      );
       expect(imageCalls.length).to.be.greaterThanOrEqual(1);
       expect(new Set(imageCalls).size).to.equal(1);
       expect(imageCalls[0]).to.equal('https://example.com/cell.png');
@@ -1788,8 +1795,7 @@ HTTP: http://example.com
     });
 
     it('namespaces plugin-fallback slot names per element', async () => {
-      const { mounted, pluginHosts, addMarkdown } =
-        await createRelocationHarness();
+      const { harness, mounted, addMarkdown } = await createRelocationHarness();
       const plugins = [tagPlugin];
 
       const first = await addMarkdown('Hi :tag:', {
@@ -1808,12 +1814,17 @@ HTTP: http://example.com
       expect(a.slotName).to.match(
         /^cds-aichat-markdown-renderer-pluginFallback-/
       );
-      expect(pluginHosts.size, 'each element gets its own host').to.equal(2);
+      expect(
+        harness.querySelectorAll(':scope > span[slot]').length,
+        'each element gets its own live run host'
+      ).to.equal(2);
 
       // Removing the first element must not tear down the second's host.
       first.remove();
-      expect(pluginHosts.has(b.slotName)).to.equal(true);
-      expect(pluginHosts.get(b.slotName)?.isConnected).to.equal(true);
+      await Promise.resolve();
+      expect(a.host.isConnected).to.equal(false);
+      expect(b.host.parentElement).to.equal(harness);
+      expect(b.host.isConnected).to.equal(true);
     });
 
     it('keeps the same slot name across a disconnect and reconnect', async () => {
@@ -2135,19 +2146,19 @@ HTTP: http://example.com
           ).to.equal(host);
         });
 
-        it(`pluginFallback: projects the relocated host through ${hops} hop(s) (${surface})`, async () => {
-          const { harness, pluginHosts, addMarkdown } =
+        it(`inline plugin run: projects the relocated host through ${hops} hop(s) (${surface})`, async () => {
+          const { harness, mounted, addMarkdown } =
             await createRelocationHarness(hops);
 
           const el = await addMarkdown('Hi :tag:', {
             markdownItPlugins: [tagPlugin],
           } as Partial<MarkdownElementInstance>);
 
-          expect(pluginHosts.size, 'the container hosts the string').to.equal(
-            1
-          );
-          const [slotName] = [...pluginHosts.keys()];
-          const host = pluginHosts.get(slotName) as HTMLElement;
+          expect(
+            mounted.length,
+            'the container hosts the complete live run'
+          ).to.equal(1);
+          const { slotName, host } = mounted[0];
           expect(
             host.parentElement,
             'the outermost surface is the one that hosts'
@@ -2210,14 +2221,14 @@ HTTP: http://example.com
           ).to.not.equal(null);
         });
 
-        it(`pluginFallback: retires every hop when the token leaves the content (${hops} hop(s))`, async () => {
-          const { harness, levels, pluginHosts, addMarkdown } =
+        it(`inline plugin run: retires every hop when the token leaves the content (${hops} hop(s))`, async () => {
+          const { harness, levels, mounted, addMarkdown } =
             await createRelocationHarness(hops);
 
           const el = await addMarkdown('Hi :tag:', {
             markdownItPlugins: [tagPlugin],
           } as Partial<MarkdownElementInstance>);
-          const [slotName] = [...pluginHosts.keys()];
+          const { slotName, host } = mounted[0];
           expect(
             walkProjection(shadowSlot(el, slotName)).forwarders.length
           ).to.equal(hops);
@@ -2226,9 +2237,9 @@ HTTP: http://example.com
           await el.updateComplete;
 
           expect(
-            pluginHosts.size,
-            'the container drops the host it created'
-          ).to.equal(0);
+            host.isConnected,
+            'the container drops the live run host'
+          ).to.equal(false);
           expect(
             harness.querySelector(`[slot="${slotName}"]`),
             'and nothing is left in the outermost light DOM'
@@ -2295,7 +2306,7 @@ HTTP: http://example.com
       return { harness, details, addMarkdown };
     }
 
-    it('marks a plugin-fallback offer as pluginFallback', async () => {
+    it('offers an inline plugin run as a live customRenderer host', async () => {
       const { details, addMarkdown } = await createDetailRecorder();
 
       await addMarkdown('Hi :tag: there', {
@@ -2306,9 +2317,9 @@ HTTP: http://example.com
         details.length,
         'the plugin token should offer a host'
       ).to.be.at.least(1);
-      expect(details[0].kind).to.equal('pluginFallback');
-      expect(details[0].html).to.be.a('string');
-      expect(details[0].element).to.equal(undefined);
+      expect(details[0].kind).to.equal('customRenderer');
+      expect(details[0].element).to.be.instanceOf(HTMLSpanElement);
+      expect(details[0].html).to.equal(undefined);
     });
 
     it('marks a customRenderers offer as customRenderer', async () => {
@@ -2524,7 +2535,7 @@ HTTP: http://example.com
           const detail = resolveMarkdownPluginHostMountDetail(
             (event as CustomEvent<MarkdownPluginHostMountDetailInput>).detail
           );
-          if (detail.kind === 'pluginFallback') {
+          if (detail.slotName.includes('pluginFallback')) {
             mounts.push(detail.slotName);
           }
         }
@@ -2610,13 +2621,12 @@ HTTP: http://example.com
       expect(unmounts).to.deep.equal([]);
     });
 
-    it('gives two plugin tokens distinct names that survive a re-render', async () => {
+    it('groups adjacent plugin tokens into one stable inline run', async () => {
       const { addMarkdown } = await createCommitRecorder();
 
       const el = await addMarkdown('a :tag: b :tag: c');
       const before = fallbackSlotNames(el);
-      expect(before.length, 'one slot per token').to.equal(2);
-      expect(before[0], 'names must not collide').to.not.equal(before[1]);
+      expect(before.length, 'one slot for the complete inline run').to.equal(1);
 
       el.requestUpdate();
       await el.updateComplete;

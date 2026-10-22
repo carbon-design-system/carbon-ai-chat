@@ -80,6 +80,8 @@
   "messages_streamingStart": "{sender} is responding...",
   "message_labelAssistant": "{actorName} {timestamp}",
   "message_labelYou": "You {timestamp}",
+  "message_labelUser": "{actorName} {timestamp}",
+  "messages_userSaid": "{actorName} said",
   "buttons_restart": "Restart conversation",
   "buttons_cancel": "Cancel",
   "buttons_retry": "Retry",
