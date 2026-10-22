@@ -71,6 +71,7 @@ import styles from './aichat-prompt-line.scss?lit';
  * @fires {CustomEvent<null>} cds-aichat-prompt-send-intent - The editor requests a send action.
  * @fires {CustomEvent<TriggerChangeEventDetail | null>} cds-aichat-trigger-change - The active suggestion trigger changes or ends.
  * @fires {CustomEvent<LightDomPortalEventDetail>} cds-aichat-light-dom-portal - Requests content projection into the page light DOM.
+ * @slot editor - Editor content.
  */
 class PromptLineElement extends LitElement {
   static get is() {

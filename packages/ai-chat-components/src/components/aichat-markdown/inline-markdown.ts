@@ -29,6 +29,8 @@ import {
 } from './utils/inline-run-projection.js';
 
 export { InlineMarkdownError } from './utils/inline-validation.js';
+
+const INLINE_MARKDOWN_SLOT_PREFIX = `${prefix}-aichat-inline-markdown-plugin`;
 /**
  * Styles for {@link renderInlineMarkdown} output. Install them in each root
  * that renders the result.
@@ -116,7 +118,8 @@ function renderInlineSource(
           validateInlineHTML(markup);
           if (!options.projectPluginOutput || !token) {
             if (markPluginOutput && token) {
-              return html`<span class=${`${prefix}-aichat-markdown-inline-plugin`}
+              return html`<span
+                class=${`${prefix}-aichat-markdown-inline-plugin`}
                 >${unsafeHTML(markup)}</span
               >`;
             }
@@ -132,11 +135,15 @@ function renderInlineSource(
   const leading = edgeSource.match(/^[\t ]*/)?.[0] ?? '';
   const trailing = edgeSource.match(/[\t ]*$/)?.[0] ?? '';
   const prepared = html`${leading}${content}${trailing}`;
+  /** @slotNameProtocol {INLINE_MARKDOWN_SLOT_PREFIX} */
+  const slotName = `${INLINE_MARKDOWN_SLOT_PREFIX}-${namespace}`;
   const output = hasPlugin
     ? projectInlineRun(prepared, {
-        slotName: `${prefix}-aichat-inline-markdown-plugin-${namespace}`,
+        slotName,
         resetInlineStyles: true,
       })
     : prepared;
-  return html`<span class=${`${prefix}-aichat-inline-markdown`}>${output}</span>`;
+  return html`<span class=${`${prefix}-aichat-inline-markdown`}
+    >${output}</span
+  >`;
 }

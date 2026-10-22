@@ -55,7 +55,7 @@ class CDSAIChatHistoryHeader extends LitElement {
   /**
    * Handles close button click event
    */
-  _handleCloseButtonClick = () => {
+  private _handleCloseButtonClick = () => {
     this.dispatchEvent(
       new CustomEvent<null>('history-header-close-click', {
         bubbles: true,

@@ -153,7 +153,7 @@ class CDSAIChatFeedback extends LitElement {
    * Indicates if the submit feedback button is disabled.
    */
   @state()
-  _isSubmitDisabled = false;
+  private _isSubmitDisabled = false;
 
   /**
    * Called when the properties of the component have changed.
