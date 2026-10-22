@@ -21,6 +21,12 @@ import { basename, dirname, extname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import { chromium } from '@playwright/test';
+import {
+  assertHostParity,
+  proveParityFailures,
+  readPackedManifest,
+  readPublishedHostTypes,
+} from './manifests.mjs';
 
 const runFile = promisify(execFile);
 const fixtureDirectory = dirname(fileURLToPath(import.meta.url));
@@ -135,6 +141,13 @@ const installed = await runNpm([
 ]);
 await writeFile(join(consumer, 'installed.json'), installed);
 
+await readPackedManifest(consumer, '@carbon/ai-chat-components');
+const chatMetadata = await readPackedManifest(consumer, '@carbon/ai-chat');
+const publishedTypes = await readPublishedHostTypes(
+  chatMetadata.root,
+  chatMetadata.packageJson
+);
+
 const utilityPaths = await Promise.all(
   [
     '@carbon/ai-chat',
@@ -215,6 +228,25 @@ try {
     try {
       await page.goto(`${origin}/${name}.html`);
       await page.waitForFunction(() => window.consumerState?.ready);
+      const hosts = await page.evaluate(() => window.consumerState.hosts);
+      const canonicalHosts = hosts.map((host) => ({
+        ...host,
+        tag: host.tag.replace(`${prefix}-`, 'cds-'),
+      }));
+      assertHostParity(chatMetadata.manifest, canonicalHosts, publishedTypes);
+      proveParityFailures(
+        chatMetadata.manifest,
+        canonicalHosts,
+        publishedTypes
+      );
+      await writeFile(
+        join(consumer, `${name}-manifest-parity.json`),
+        JSON.stringify(
+          { hosts, fields: [...publishedTypes.config.keys()] },
+          null,
+          2
+        )
+      );
       await page
         .locator('#consumer-toolbar')
         .getByRole('button', { name: 'Run action', exact: true })
