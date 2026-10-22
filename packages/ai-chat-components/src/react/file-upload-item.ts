@@ -7,20 +7,20 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { createComponent } from '@lit/react';
+import { createComponent, type EventName } from '@lit/react';
 import React from 'react';
 import { FileUploadItemElement } from '../components/aichat-file-uploads/index.js';
-import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
+import type { FileRemoveEventDetail } from '../components/aichat-file-uploads/index.js';
 
-const CDSAIChatFileUploadItem = withWebComponentBridge(
-  createComponent({
-    tagName: FileUploadItemElement.is,
-    elementClass: FileUploadItemElement,
-    react: React,
-    events: {
-      onFileRemove: 'cds-aichat-file-remove',
-    },
-  })
-);
+const CDSAIChatFileUploadItem = createComponent({
+  tagName: FileUploadItemElement.is,
+  elementClass: FileUploadItemElement,
+  react: React,
+  events: {
+    onFileRemove: 'cds-aichat-file-remove' as EventName<
+      CustomEvent<FileRemoveEventDetail>
+    >,
+  },
+});
 
 export default CDSAIChatFileUploadItem;

@@ -10,6 +10,8 @@
 module.exports = {
   roots: ['<rootDir>/src'],
   testEnvironment: 'jsdom',
+  // Keep DOM tests on Lit's browser entry; plain-Node SSR checks remain separate.
+  testEnvironmentOptions: { customExportConditions: ['browser'] },
   transform: {
     // Route TS/JS through babel-jest so CommonJS Jest can understand our ESM build.
     '^.+\\.(ts|tsx)$': ['babel-jest', { configFile: './babel.config.js' }],

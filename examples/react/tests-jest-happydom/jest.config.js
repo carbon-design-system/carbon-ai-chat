@@ -10,6 +10,8 @@
 module.exports = {
   roots: ['<rootDir>/src'],
   testEnvironment: '@happy-dom/jest-environment',
+  // DOM tests need Lit's browser effects for properties and custom-event listeners.
+  testEnvironmentOptions: { customExportConditions: ['browser'] },
   transform: {
     // Use the local babel config for TS/JS/JSX so the suite works even in CommonJS Jest.
     '^.+\\.(ts|tsx)$': ['babel-jest', { configFile: './babel.config.js' }],

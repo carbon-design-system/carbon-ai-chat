@@ -13,6 +13,7 @@ export default {
       input: {
         normal: resolve('normal.html'),
         custom: resolve('custom.html'),
+        interop: resolve('react-interop.html'),
       },
     },
   },

@@ -7,21 +7,21 @@
  *  @license
  */
 
-import { createComponent } from '@lit/react';
+import { createComponent, type EventName } from '@lit/react';
 import React from 'react';
 import { CDSAIChatHistoryDeletePanel } from '../../components/aichat-history/index.js';
-import { withWebComponentBridge } from '../utils/withWebComponentBridge.js';
+import type { HistoryDeleteConfirmEventDetail } from '../../components/aichat-history/index.js';
 
-const HistoryDeletePanel = withWebComponentBridge(
-  createComponent({
-    tagName: CDSAIChatHistoryDeletePanel.is,
-    elementClass: CDSAIChatHistoryDeletePanel,
-    react: React,
-    events: {
-      onCancel: 'history-delete-cancel',
-      onConfirm: 'history-delete-confirm',
-    },
-  })
-);
+const HistoryDeletePanel = createComponent({
+  tagName: CDSAIChatHistoryDeletePanel.is,
+  elementClass: CDSAIChatHistoryDeletePanel,
+  react: React,
+  events: {
+    onCancel: 'history-delete-cancel' as EventName<CustomEvent<null>>,
+    onConfirm: 'history-delete-confirm' as EventName<
+      CustomEvent<HistoryDeleteConfirmEventDetail>
+    >,
+  },
+});
 
 export default HistoryDeletePanel;

@@ -12,6 +12,8 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
+  // DOM tests need Lit's browser effects; plain-Node SSR probes use their own process.
+  resolve: { conditions: ['browser', 'development|production'] },
   server: {
     port: Number(process.env.PORT) || 3000,
     open: true,
@@ -27,7 +29,11 @@ export default defineConfig({
     include: ['src/__tests__/**/*.test.{ts,tsx}'],
     server: {
       deps: {
-        inline: ['@carbon/ai-chat-components', '@carbon/web-components'],
+        inline: [
+          '@carbon/ai-chat-components',
+          '@carbon/web-components',
+          '@lit/react',
+        ],
       },
     },
     testTimeout: 15000,

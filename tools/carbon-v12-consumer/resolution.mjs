@@ -61,7 +61,7 @@ transcript.text = 'Transcript';
 transcript.expanded = true;
 
 const transcriptProps: ComponentProps<typeof Transcript> = { text: 'Transcript', expanded: true };
-// @ts-expect-error Transcript publishes precise props independently of the loose bridge.
+// @ts-expect-error Transcript retains its Boolean property type.
 const invalidTranscriptProps: ComponentProps<typeof Transcript> = { expanded: 'yes' };
 const wrappers: ReactElement[] = [
   createElement(TranscriptDefault, transcriptProps),
@@ -76,7 +76,6 @@ const wrappers: ReactElement[] = [
   createElement(HistoryPanelItems), createElement(HistorySearchItem),
   createElement(HistoryPanelItemInput), createElement(HistoryDeletePanel),
 ];
-// Bridged wrappers publish loose props, while retaining a component export type.
 // @ts-expect-error A component export must not collapse to any.
 const invalidCard: typeof Card = 1;
 

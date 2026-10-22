@@ -283,12 +283,6 @@ export const AppShellPanels = React.memo(function AppShellPanels({
               ? 'slide-out-to-start'
               : 'slide-out-to-bottom'
         }
-        openFromSide={
-          'openFromSide' in customPanelState.options &&
-          customPanelState.options.openFromSide
-            ? true
-            : false
-        }
         onOpenStart={() => {
           serviceManager.eventBus.fire(
             { type: BusEventType.CUSTOM_PANEL_PRE_OPEN },

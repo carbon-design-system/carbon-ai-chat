@@ -21,6 +21,8 @@ import FocusMixin from '@carbon/web-components/es/globals/mixins/focus.js';
 import HostListener from '@carbon/web-components/es/globals/decorators/host-listener.js';
 import HostListenerMixin from '@carbon/web-components/es/globals/mixins/host-listener.js';
 import { CarbonIcon } from '@carbon/web-components/es/globals/internal/icon-loader-utils.js';
+import type { TemplateResult } from 'lit';
+import type { DirectiveResult } from 'lit/directive.js';
 import OverflowMenuVertical16 from '@carbon/icons/es/overflow-menu--vertical/16.js';
 import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
 import '@carbon/web-components/es/components/overflow-menu/index.js';
@@ -37,8 +39,8 @@ export interface Action {
   text: string;
   delete?: boolean;
   divider?: boolean;
-  icon: CarbonIcon;
-  onClick: () => void;
+  icon?: CarbonIcon | TemplateResult | DirectiveResult | null;
+  onClick?: () => void;
 }
 
 /**

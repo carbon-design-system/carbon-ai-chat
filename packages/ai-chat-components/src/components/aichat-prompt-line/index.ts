@@ -99,3 +99,8 @@ export type {
 } from './types.js';
 
 export type { CustomListRenderEventDetail } from './aichat-autocomplete-controller.js';
+export type {
+  AutocompleteSelectEventDetail,
+  AutocompleteSendEventDetail,
+  AutocompleteNavigatedEventDetail,
+} from '../aichat-autocomplete/index.js';

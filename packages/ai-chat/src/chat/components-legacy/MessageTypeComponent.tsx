@@ -76,6 +76,7 @@ import {
   CardItem,
   CarouselItem,
   ConnectToHumanAgentItem,
+  ChainOfThoughtStepStatus,
   ConversationalSearchItem,
   DateItem,
   GridItem,
@@ -733,7 +734,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
               <ChainOfThoughtStep
                 key={step.title || step.tool_name || index}
                 title={step.title || step.tool_name || ''}
-                status={step.status || 'success'}
+                status={step.status || ChainOfThoughtStepStatus.SUCCESS}
                 stepNumber={stepNumber}
                 labelText={labelText}
                 statusSucceededLabelText={

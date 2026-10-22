@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { createComponent } from '@lit/react';
+import { createComponent, type EventName } from '@lit/react';
 import React from 'react';
 
 import { CDSAIChatFeedback as CDSAIChatFeedbackElement } from '../components/aichat-feedback/index.js';
@@ -15,19 +15,18 @@ import {
   type FeedbackInitialValues,
   type FeedbackSubmitDetails,
 } from '../components/aichat-feedback/aichat-feedback.js';
-import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
-const Feedback = withWebComponentBridge(
-  createComponent({
-    tagName: CDSAIChatFeedbackElement.is,
-    elementClass: CDSAIChatFeedbackElement,
-    react: React,
-    events: {
-      onClose: 'feedback-close',
-      onSubmit: 'feedback-submit',
-    },
-  })
-);
+const Feedback = createComponent({
+  tagName: CDSAIChatFeedbackElement.is,
+  elementClass: CDSAIChatFeedbackElement,
+  react: React,
+  events: {
+    onClose: 'feedback-close' as EventName<CustomEvent<null>>,
+    onSubmit: 'feedback-submit' as EventName<
+      CustomEvent<FeedbackSubmitDetails>
+    >,
+  },
+});
 
 export type { FeedbackInitialValues, FeedbackSubmitDetails };
 export default Feedback;
