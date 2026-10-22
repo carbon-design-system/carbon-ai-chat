@@ -240,6 +240,15 @@
     "postcss": "^8.5.23",
     "axios": "^1.18.1",
     "proxy-addr": "^2.0.8",
+    "serve": {
+      "compression": "^1.8.2"
+    },
+    "get-uri": {
+      "basic-ftp": "^6.2.3"
+    },
+    "rollup-plugin-postcss": {
+      "cssnano": "^7.1.9"
+    },
     "stylelint-config-carbon": {
       "stylelint-config-standard": "^40.0.0",
       "stylelint-config-standard-scss": "^17.0.0"
@@ -259,7 +268,8 @@
       "pacote": "^21.5.1"
     },
     "nx": {
-      "smol-toml": "^1.9.0"
+      "smol-toml": "^1.9.0",
+      "undici": "^7.29.1"
     }
   }
 }
