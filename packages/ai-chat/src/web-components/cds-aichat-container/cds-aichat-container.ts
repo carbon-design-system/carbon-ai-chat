@@ -734,10 +734,10 @@ const toReactCustomRequestFooter = cachedAdapter(
 
 const toReactUserDefinedInputNode = cachedAdapter(
   (render: WCRenderUserDefinedInputNode): RenderUserDefinedInputNode => {
-    // The input-node portals re-render on every message-store change, so a
-    // call per render would rebuild the host's element on each streamed chunk.
-    // `InputNodePortalsContainer` passes one `state` object per slot until
-    // its message changes, so each slot keeps its first result until then.
+    // A call per render would rebuild the host's element whenever the portal
+    // re-renders. The host service hands each slot one `state` object until
+    // its message changes (`utils/inputNodeSlots.ts`), so each slot keeps its
+    // first result until then.
     const rendered = new WeakMap<RenderUserDefinedInputNodeState, ReactNode>();
     return (state, instance) => {
       if (!rendered.has(state)) {

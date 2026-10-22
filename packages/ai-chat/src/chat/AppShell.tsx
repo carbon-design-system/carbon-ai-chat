@@ -7,7 +7,13 @@
  *  @license
  */
 
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+} from 'react';
 import cx from 'classnames';
 import type CDSButton from '@carbon/web-components/es/components/button/button.js';
 import { useIntl } from './hooks/useIntl';
@@ -40,7 +46,6 @@ import { AppShellPanels } from './AppShellPanels';
 
 import { HasServiceManager } from './hocs/withServiceManager';
 import { useMobileViewportLayout } from './hooks/useMobileViewportLayout';
-import { useOnMount } from './hooks/useOnMount';
 import { useSelector } from './hooks/useSelector';
 import { useWindowOpenState } from './hooks/useWindowOpenState';
 import { useFocusManager } from './hooks/useFocusManager';
@@ -209,9 +214,14 @@ function AppShell({
   const intl = useIntl();
   const ariaAnnouncer = useAriaAnnouncer();
 
-  // Make ariaAnnouncer available to services
-  useEffect(() => {
+  // Extension consumers can call public APIs from their first passive effect.
+  useLayoutEffect(() => {
     serviceManager.ariaAnnouncer = ariaAnnouncer;
+    return () => {
+      if (serviceManager.ariaAnnouncer === ariaAnnouncer) {
+        serviceManager.ariaAnnouncer = undefined;
+      }
+    };
   }, [serviceManager, ariaAnnouncer]);
 
   const persistedToBrowserStorage = useSelector(
@@ -662,7 +672,7 @@ function AppShell({
     onResize: handleResize,
   });
 
-  useOnMount(() => {
+  useLayoutEffect(() => {
     function requestFocusWrapper() {
       try {
         const { persistedToBrowserStorage: persisted } =
@@ -675,8 +685,14 @@ function AppShell({
         consoleError('An error occurred in App.requestFocus', error);
       }
     }
-    serviceManager.appWindow = { requestFocus: requestFocusWrapper };
-  });
+    const appWindow = { requestFocus: requestFocusWrapper };
+    serviceManager.appWindow = appWindow;
+    return () => {
+      if (serviceManager.appWindow === appWindow) {
+        serviceManager.appWindow = undefined;
+      }
+    };
+  }, [serviceManager]);
 
   const handleBoundaryError = useCallback(
     (error: Error, errorInfo: React.ErrorInfo) => {
@@ -792,9 +808,17 @@ function AppShell({
     [doAutoScroll, doScrollToMessage, getMessagesScrollBottom, requestFocus]
   );
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     mainWindowRef.current = mainWindowFunctions;
     serviceManager.mainWindow = mainWindowFunctions;
+    return () => {
+      if (mainWindowRef.current === mainWindowFunctions) {
+        mainWindowRef.current = null;
+      }
+      if (serviceManager.mainWindow === mainWindowFunctions) {
+        serviceManager.mainWindow = undefined;
+      }
+    };
   }, [mainWindowFunctions, serviceManager]);
 
   // Set scrollbar width CSS variable. Written via the shared dynamic

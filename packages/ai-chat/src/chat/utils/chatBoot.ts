@@ -8,7 +8,6 @@
  */
 
 import dayjs from 'dayjs';
-import type React from 'react';
 import LocalizedFormat from 'dayjs/plugin/localizedFormat.js';
 import merge from 'lodash-es/merge.js';
 import isEqual from 'lodash-es/isEqual.js';
@@ -26,11 +25,6 @@ import { consoleDebug, consoleError, consoleWarn, debugLog } from './miscUtils';
 import createHumanAgentService from '../services/haa/HumanAgentServiceImpl';
 
 import {
-  BusEventChunkUserDefinedResponse,
-  BusEventType,
-  BusEventUserDefinedResponse,
-  BusEventCustomFooterSlot,
-  BusEventCustomRequestFooterSlot,
   MainWindowOpenReason,
   MessageSendSource,
   ViewChangeReason,
@@ -44,7 +38,6 @@ import {
 } from '../../types/instance/ChatInstance';
 import { TypeAndHandler } from '../../types/instance/EventHandlers';
 import { AddMessageOptions } from '../../types/config/MessagingConfig';
-import { RenderCustomRequestFooterState } from '../../types/component/ChatContainer';
 import { loadLocale } from './languageUtils';
 import { HistoryItem } from '../../types/messaging/History';
 import {
@@ -538,193 +531,4 @@ export async function performInitialViewChange(serviceManager: ServiceManager) {
       forceViewChange
     );
   }
-}
-
-/**
- * A minimal shallow-equivalence checker for plain objects used during initial
- * view-change decision making. Avoids pulling in a deep-equality dependency for
- * this narrow use.
- */
-
-/**
- * Attaches event handlers to the `ChatInstance` that track user-defined
- * response items in React state so they can be rendered via portals.
- *
- * On restart events, the tracked state is cleared. Returns a function that
- * removes the handlers again, so a remount does not collect twice.
- */
-export function attachUserDefinedResponseHandlers(
-  webChatInstance: ChatInstance,
-  setBySlot: React.Dispatch<
-    React.SetStateAction<{
-      [key: string]: {
-        fullMessage?: any;
-        messageItem?: any;
-        partialItems?: any[];
-        state?: any;
-      };
-    }>
-  >
-) {
-  function userDefinedResponseHandler(event: BusEventUserDefinedResponse) {
-    setBySlot((bySlot) => {
-      return {
-        ...bySlot,
-        [event.data.slot]: {
-          fullMessage: event.data.fullMessage,
-          messageItem: event.data.message,
-          state: event.data.state,
-        },
-      };
-    });
-  }
-
-  function userDefinedChunkHandler(event: BusEventChunkUserDefinedResponse) {
-    if ('complete_item' in event.data.chunk) {
-      const messageItem = event.data.chunk.complete_item;
-      setBySlot((bySlot) => {
-        return {
-          ...bySlot,
-          [event.data.slot]: {
-            messageItem,
-          },
-        };
-      });
-    } else if ('partial_item' in event.data.chunk) {
-      const itemChunk = event.data.chunk.partial_item;
-      setBySlot((bySlot) => {
-        return {
-          ...bySlot,
-          [event.data.slot]: {
-            partialItems: [
-              ...(bySlot[event.data.slot]?.partialItems || []),
-              itemChunk,
-            ],
-          },
-        };
-      });
-    }
-  }
-
-  function restartHandler() {
-    setBySlot({});
-  }
-
-  const handlers = [
-    {
-      type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
-      handler: userDefinedChunkHandler,
-    },
-    {
-      type: BusEventType.USER_DEFINED_RESPONSE,
-      handler: userDefinedResponseHandler,
-    },
-    { type: BusEventType.RESTART_CONVERSATION, handler: restartHandler },
-  ];
-  webChatInstance.on(handlers);
-  return () => {
-    webChatInstance.off(handlers);
-  };
-}
-
-/**
- * Attaches event handlers to the `ChatInstance` that track custom
- * message footers in React state so they can be rendered via portals.
- *
- * On restart events, the tracked state is cleared. Returns a function that
- * removes the handlers again.
- */
-export function attachCustomFooterHandler(
-  webChatInstance: ChatInstance,
-  setBySlot: React.Dispatch<
-    React.SetStateAction<{
-      [key: string]: {
-        slotName: string;
-        message: any;
-        messageItem: any;
-        additionalData?: Record<string, unknown>;
-      };
-    }>
-  >
-) {
-  function customFooterSlotHandler(event: BusEventCustomFooterSlot) {
-    setBySlot((bySlot) => {
-      return {
-        ...bySlot,
-        [event.data.slotName]: {
-          slotName: event.data.slotName,
-          message: event.data.message,
-          messageItem: event.data.messageItem,
-          additionalData: event.data.additionalData as
-            Record<string, unknown> | undefined,
-        },
-      };
-    });
-  }
-
-  function restartHandler() {
-    setBySlot({});
-  }
-
-  const handlers = [
-    { type: BusEventType.CUSTOM_FOOTER_SLOT, handler: customFooterSlotHandler },
-    { type: BusEventType.RESTART_CONVERSATION, handler: restartHandler },
-  ];
-  webChatInstance.on(handlers);
-  return () => {
-    webChatInstance.off(handlers);
-  };
-}
-
-/**
- * Registers a handler that accumulates the footer slots below user messages in React state so they can be
- * rendered via portals.
- *
- * This event fires for every user message rather than only when a backend opts in, so `isEnabled` is asked on each
- * one: a host that passes no render prop accumulates nothing and re-renders on nothing. Asking per event rather
- * than gating the subscription is what lets a host supply the prop after the chat has booted.
- *
- * On restart events, the tracked state is cleared. Returns a function that
- * removes the handlers again.
- */
-export function attachCustomRequestFooterHandler(
-  webChatInstance: ChatInstance,
-  setBySlot: React.Dispatch<
-    React.SetStateAction<Record<string, RenderCustomRequestFooterState>>
-  >,
-  isEnabled: () => boolean
-) {
-  function customRequestFooterSlotHandler(
-    event: BusEventCustomRequestFooterSlot
-  ) {
-    if (!isEnabled()) {
-      return;
-    }
-
-    setBySlot((bySlot) => {
-      return {
-        ...bySlot,
-        [event.data.slotName]: {
-          slotName: event.data.slotName,
-          message: event.data.message,
-        },
-      };
-    });
-  }
-
-  function restartHandler() {
-    setBySlot({});
-  }
-
-  const handlers = [
-    {
-      type: BusEventType.CUSTOM_REQUEST_FOOTER_SLOT,
-      handler: customRequestFooterSlotHandler,
-    },
-    { type: BusEventType.RESTART_CONVERSATION, handler: restartHandler },
-  ];
-  webChatInstance.on(handlers);
-  return () => {
-    webChatInstance.off(handlers);
-  };
 }

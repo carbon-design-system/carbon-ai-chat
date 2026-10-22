@@ -31,9 +31,11 @@ const coreFiles = [
   'src/chat/services/humanAgentCallbacks.ts',
   'src/chat/utils/mobileViewportLayout.ts',
   'src/chat/services/inputCallbacks.ts',
-  'src/chat/utils/removeHostsOnUnmount.ts',
   'src/chat/services/inputExtensions.ts',
   'src/chat/services/chatViewState.ts',
+  'src/chat/services/extensionHosts.ts',
+  'src/chat/services/lightDomHosts.ts',
+  'src/chat/utils/inputNodeSlots.ts',
 ];
 const componentsRoot = path.resolve(packageRoot, '../ai-chat-components/src');
 
