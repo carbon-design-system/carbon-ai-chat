@@ -43,7 +43,7 @@ After cloning your fork, set up the upstream remote:
 
 ```sh
 # Add the upstream remote to your repo
-git remote add upstream git@github.com:carbon-design-system/carbon.git
+git remote add upstream git@github.com:carbon-design-system/carbon-ai-chat.git
 
 # Verify the remote was added
 git remote -v

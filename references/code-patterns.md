@@ -13,12 +13,6 @@ Before adding code, write the **least** the task needs. Trace the whole flow fir
 5. **Can it be one line?** Write the one-liner.
 6. **Only then**, the minimum code that works.
 
-Heuristics:
-
-- **Root cause over symptoms** — a guard in the shared function is a smaller diff than a guard in every caller.
-- **Deletion beats addition** — removing code is the best fix when it works.
-- **Boring over clever** — clever is what someone decodes at 3am.
-
 **When NOT to be lazy** — never trade these for fewer lines: input validation, error handling that prevents data loss, security, and accessibility (see [accessibility.md](accessibility.md)). Understand the whole flow before picking a rung.
 
 ### Shaping the code you do write
@@ -92,19 +86,11 @@ Beyond testability, this is directional: the React layer is meant to get thinner
 
 Repo default is **no comments**. Keep only the non-obvious _why_ — a hidden constraint, a subtle invariant, or a bug workaround. Delete comments that restate the code or reference the current task/PR/issue. How to word one that survives: [internal-comments.md](../.bob/skills/caic-copy-writer/references/internal-comments.md) — type 2.
 
-## Accessibility code patterns
-
-The shared RTL / logical-property rule is canonicalized above. For everything else accessibility — the centralized announcer utilities, live-region politeness levels, ARIA pitfalls — see [accessibility.md](accessibility.md). Don't restate those patterns here.
-
 ## Measuring it
 
-How to put a number on "simpler" lives in [measuring.md](measuring.md). Run `npm run measure -- --changed <base>` before you read a diff. It scores each function, counts what each file imports, and checks seventeen code smells. It also sizes each new file against the files next to it. A score is not a finding. It picks what to read.
+Run `npm run measure -- --changed <base>` before reading a diff; interpret it with [measuring.md](measuring.md).
 
 ## Related guidance
 
 - [Root AGENTS.md](../AGENTS.md) — repo overview and pointer index
-- [conventions.md](conventions.md) — commits, branches, license headers, hooks
-- [accessibility.md](accessibility.md) — announcer utilities and live-region patterns
-- [internal-comments.md](../.bob/skills/caic-copy-writer/references/internal-comments.md) — how to word a comment that survives the no-comment default (type 2)
 - [error-strings.md](../.bob/skills/caic-copy-writer/references/error-strings.md) — how to word a thrown error or a console message (type 12)
-- [definition-of-done.md](definition-of-done.md) — the gate to run before shipping a change

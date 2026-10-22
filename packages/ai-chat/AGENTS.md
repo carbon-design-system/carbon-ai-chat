@@ -1,10 +1,10 @@
 # AGENTS.md — `@carbon/ai-chat`
 
-Guidance for authoring inside [packages/ai-chat/](.). Read this before editing anything here.
+Guidance for [packages/ai-chat/](.).
 
 ## What this package is
 
-The primary Carbon AI Chat app. Ships as:
+Carbon AI Chat ships as:
 
 - A React component tree rooted at [src/aiChatEntry.tsx](src/aiChatEntry.tsx).
 - Lit web-component wrappers (`cds-aichat-container`, `cds-aichat-custom-element`) under [src/web-components/](src/web-components) that own startup and mount the React tree for every host. React components render through `cds-aichat-container`.
@@ -12,7 +12,7 @@ The primary Carbon AI Chat app. Ships as:
 
 All entries compile via [tasks/rollup.aichat.js](tasks/rollup.aichat.js) to `dist/es/` (`cds--` prefix) and `dist/es-custom/` (`cds--custom` prefix, avoiding `@carbon/angular-components` collisions). TypeDoc emits to `dist/docs/`.
 
-**Carbon flavor**: `@carbon/web-components`, consumed through `@lit/react` wrappers — even though this package is a React tree. `@carbon/react` is not a dependency here; never import it. Full table → [code-patterns.md](../../references/code-patterns.md#carbon-flavor-by-area), which also overrides the `carbon-builder` skill's React default.
+**Carbon flavor**: use `@carbon/web-components` through `@lit/react`; see [code-patterns.md](../../references/code-patterns.md#carbon-flavor-by-area) for the area rules and skill override.
 
 ## Topic-specific guidance
 
@@ -31,20 +31,16 @@ Load only what you need:
 ## Where things live
 
 - [src/chat/](src/chat/) — the chat application. Do most feature work here.
-  - `AppShell.tsx`, `ChatAppEntry.tsx`, `AppShellPanels.tsx`, `AppShellWriteableElements.tsx` — top-level composition.
   - `store/` — Redux-style store.
   - `services/` — chat-instance services wired through `ServiceManager.ts` and `loadServices.ts`, plus view-owned classes with explicit cleanup. `ChatInstanceService.ts` is the instance-facing API — public methods added here must also be reflected on `ChatInstance` in [`src/types/instance/ChatInstance.ts`](src/types/instance/ChatInstance.ts).
   - `events/` — typed pub/sub for the public event API. Event names and payloads are part of the public contract.
   - `schema/` — runtime message/config schema. Keep in sync with types in [src/types/](src/types/).
-  - `hocs/`, `hooks/`, `contexts/`, `providers/` — React glue.
   - `languages/` — `intl-messageformat` string bundles, one locale file. [LanguagePack.ts](src/types/config/LanguagePack.ts) declares the public `LanguagePack` type over it, so adding a key widens public API and renaming one breaks it. Hosts translate through `PublicConfig.strings`; word new strings per [ui-strings.md](../../.bob/skills/caic-copy-writer/references/ui-strings.md).
-  - `components/` vs `components-legacy/` — **always author new UI in `components/`**. `components-legacy/` is closed to new components; bug fixes and refactoring transitions out are welcome. Lift to `@carbon/ai-chat-components` when a component has no chat-specific state.
+  - `components/` and `components-legacy/` — follow [component placement](../../references/code-patterns.md#component-placement) when adding or moving UI.
   - `ai-chat-components/` — React bindings (`@lit/react`) around the sibling package's Lit components.
 - [src/react/](src/react/) — public React wrapper components re-exported from the package root.
 - [src/web-components/](src/web-components/) — Lit hosts. Kept thin: bridge props/events/slots to the React core.
 - [src/types/](src/types/) — public type surface. Anything exported through `aiChatEntry.tsx` is public API; treat edits with semver discipline. TypeDoc output ships as the public docs site.
-- [tests/](tests/) — Jest specs in `spec/` folders under `tests/<area>/`. Setup in `setup.ts`; shared fixtures in `test_helpers.ts`.
-- [docs/](docs/) — consumer-facing docs published via TypeDoc.
 
 ## Build, test, lint
 
@@ -56,9 +52,6 @@ npm run build:docs # rollup + typedoc
 npm run docs       # typedoc only — the fast docs loop, no rollup needed
 npm run clean      # remove dist/ — a build overwrites it but never empties it
 npm start          # rollup --watch + typedoc --watch + local doc server on :5001
-npm test           # jest with coverage
-npm test -- path/to/file_spec.ts
-npm test -- -t "pattern"
 ```
 
 ## Gotchas
@@ -75,20 +68,4 @@ See [definition-of-done.md](../../references/definition-of-done.md) for the gate
 ## Authoring rules
 
 - **Public API changes**: anything exported from `aiChatEntry.tsx`, `serverEntry.ts`, or `types/` is semver-visible. Coordinate with a `feat`/`fix!`/`BREAKING CHANGE` footer. JSDoc/TypeDoc rules: [src/types/AGENTS.md](src/types/AGENTS.md).
-- **Store**: see [src/chat/store/AGENTS.md](src/chat/store/AGENTS.md). Reducers stay pure; side effects go through services or `store/actions.ts` / `store/subscriptions.ts`. `humanAgentReducers.ts` is a separate slice on purpose.
-- **Services**: read [services.md](references/services.md) when choosing ownership or wiring.
 - **i18n**: no user-visible strings in code. Route through `languages/`.
-- **Tests**: see [tests.md](references/tests.md). Colocate helpers in `tests/test_helpers.ts`. Store tests exercise reducers directly; service tests use the mocks in `tests/services/`.
-- **SCSS / RTL / prefix discipline**: see [code-patterns.md](../../references/code-patterns.md). Prefix discipline is build-breaking — never hardcode `cds--`; use `#{$prefix}--` in SCSS and the prefix helpers in TS.
-
-## Troubleshooting
-
-- **Build fails**: build `@carbon/ai-chat-components` first.
-- **TypeDoc errors**: verify every `@param` tag matches an actual parameter.
-- **React portal not rendering**: check the browser console for shadow DOM errors; verify `window.chatInstance` exists. Background in [architecture.md](references/architecture.md).
-
-## Related guidance
-
-- [Root AGENTS.md](../../AGENTS.md) — monorepo conventions
-- [../ai-chat-components/AGENTS.md](../ai-chat-components/AGENTS.md) — Lit component authoring
-- [definition-of-done.md](../../references/definition-of-done.md) — the gate before shipping

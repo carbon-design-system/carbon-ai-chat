@@ -1,25 +1,22 @@
 # measuring.md — putting a number on "simpler"
 
-Load this when a review or plan needs a measurement, not an adjective. The rules these numbers serve live in [code-patterns.md](code-patterns.md).
+Load when measuring a review or plan. The rules live in [code-patterns.md](code-patterns.md).
 
-One command runs everything: `npm run measure -- --changed <base>`; the three tools also run alone. **No CI job runs these** and no build fails on a number — a score is not a finding, it picks what to read. [definition-of-done.md](definition-of-done.md) still asks you to run it on a diff and paste the rows.
+Run `npm run measure -- --changed <base>` before review and paste its rows per [definition-of-done.md](definition-of-done.md). **No CI job runs these.** Scores pick what to read; they are not findings. Optional gate flags can raise the exit code.
 
 ## Measuring a diff
 
-It runs the three tools below over the diff, then adds the rows they cannot see. Four blocks, in order: `== complexity`, `== coupling`, `== smells`, `== diff`.
+The wrapper prints four blocks: `== complexity`, `== coupling`, `== smells`, `== diff`.
 
-How to run:
+See [measure.mjs](../scripts/measure.mjs)'s header for flags. The exit code is the highest of the three tools; bad usage exits 2 before any runs.
 
-- `--report <n>` goes to complexity and coupling; `--max <n>` to complexity and smells; `--max-fanout <n>` and `--max-fanin <n>` to coupling.
-- The exit code is the highest of the three, so a gate flag still gates.
-- `--report` reaches complexity and coupling only. It is a score floor there but a findings-count floor in smells, where any value above 1 hides whole files — so raising it to cut complexity noise would have silenced the smells block. Raise the smells floor by running `npm run smells` directly.
-- Bad usage, including an unknown flag, exits 2 before any tool runs.
-- **Areas**, used by every band below: the primary areas are `packages/ai-chat`, `packages/ai-chat-components`, `packages/typedoc-theme`, and `examples/**`. `demo/**` drops each band one notch. Every other path gets a score and no label.
-- `--changed <base>` scopes any of the three to the diff. Rows read before→after, or `new` when there is no counterpart at `<base>`, and severity attaches only to what is new or got worse.
-- `--source <worktree|index|head>` picks what "after" means. It only makes sense with `--changed`; file mode reads the files you name.
-- A diff with no code files prints each tool's `Nothing to report.` and `Diff: no new code files, no added lines`.
+`--report` is a score floor in complexity/coupling and a findings-count floor in smells. The wrapper passes it only to the first two to avoid hiding files in smells. Raise the smells floor with `npm run smells` directly.
 
-What the `diff` block's rows mean:
+**Areas:** the primary areas are `packages/ai-chat`, `packages/ai-chat-components`, `packages/typedoc-theme`, and `examples/**`. `demo/**` drops each band one notch. Other paths get a score and no label.
+
+`--changed <base>` scopes tools to the diff. Rows read before→after, or `new` without a counterpart; severity attaches only to new or worse scores. `--source` selects the after side below and requires `--changed`. File mode reads the named files. With no code files, tools print `Nothing to report.` and `Diff: no new code files, no added lines`.
+
+The `diff` rows:
 
 | Row | Says |
 | --- | --- |
@@ -31,13 +28,13 @@ What the `diff` block's rows mean:
 | `<name>: 0 importers` or `1 importer, same directory` | an added export nothing else uses, or only its neighbor uses. Ten rows, then a count. |
 | `TODO/FIXME`, `console.log`, `: any` | added under `packages/` and `demo/` only. |
 
-A new file's own length is read at `HEAD`; the median population comes from `<base>`, so a file the diff adds never counts itself. The median is the middle file, or the rounded mean of the two middle.
+New-file length comes from `HEAD`; neighbors come from `<base>`, excluding the new file. The median is the middle length or rounded mean of the middle pair.
 
-**Blind spots.** The importer count is `git grep -lw`, a word match, so a name that is also a common word over-counts. The comment ratio counts lines, not usefulness. And a clean run of all four blocks proves shape only — never that the code is correct, or that the change was worth making.
+**Blind spots.** Importers use `git grep -lw`; common words over-count. Comment ratios measure lines, not value. A clean run proves shape, not correctness or the need for a change.
 
 ## Which "after"
 
-`--source` answers "after what?", and the three answers agree the moment your change is committed — so a review never has to think about it and a mid-change run does.
+`--source` picks the after side. All three agree once the change is committed.
 
 | `--source` | Reads | Use it for |
 | --- | --- | --- |
@@ -45,76 +42,60 @@ A new file's own length is read at `HEAD`; the median population comes from `<ba
 | `index` | what is staged | what a commit would contain, or what a pre-commit hook would see |
 | `head` | the last commit | the committed branch, ignoring work in progress |
 
-`<base>` resolves to the merge base with `HEAD` before anything else runs, so a base branch that moved ahead does not read its own newer commits as your "before".
+`<base>` resolves to its merge base with `HEAD`, excluding newer commits on the base branch.
 
-Only `worktree` sees an uncommitted rename or deletion. Under it, a file the diff names but the disk does not have prints `skipped <file>: not in the worktree` — the ordinary mid-rename state, not an error. `index` and `head` are laid down in a temp directory first, because the coupling cruise and the duplication index both read the filesystem rather than git. That archive is why all three sources cost about the same; reading ~1,400 files one `git show` at a time instead took 25s longer.
+Only `worktree` sees an uncommitted rename or deletion. A file named by the diff but absent on disk prints `skipped <file>: not in the worktree`; this is not an error. `index` and `head` cost about the same as `worktree`.
 
 ## Measuring complexity
 
-Two metrics, two jobs. **Cyclomatic** counts branches (`if`, `||`, loops, `case`). **Cognitive** counts how hard the flow is to read. Nesting and chained conditions cost extra. A wide render function can score low on one and high on the other. Both matter.
+**Cyclomatic** counts branches (`if`, `||`, loops, `case`). **Cognitive** adds cost for nesting and chained conditions. A render function can be low on one and high on the other; read both.
 
-Current percentiles for this repo. The population is every function in `packages/*/src` and `demo/src`, tests and stories excluded (5,183 functions; 75 above cognitive 10, 33 above 15):
+Repo percentiles for functions in `packages/*/src` and `demo/src`, excluding tests/stories:
 
 | Metric | p50 | p90 | p95 | p99 | max |
 | --- | --- | --- | --- | --- | --- |
 | Cyclomatic | 1 | 4 | 7 | 13 | 76 |
 | Cognitive | 0 | 3 | 5 | 12 | 65 |
 
-To regenerate it, take percentiles over the cyc/cog columns of `npm run complexity -- --report 0` across that population.
+Regenerate from the cyc/cog columns of `npm run complexity -- --report 0` across that population.
 
-How to run:
-
-- `npm run complexity -- <file>` — score a file.
-- `npm run complexity -- --changed <base>` — score only the diff, as `cyc:54→55  cog:45→46`.
-- `--report <n>` — the print floor: functions at or above `n` on either metric appear (default 10).
-- `--max <n>` — exit 1 when a function's cognitive score exceeds `n`.
-- `--source <s>` — see [Which "after"](#which-after).
+See [complexity.mjs](../scripts/complexity.mjs)'s header for usage and flags.
 
 Severity bands, on the after score: in a primary area, above 15 is Important and above 25 a Blocker.
 
-**Render column.** Every row carries `(render N)`: how many cyclomatic branches sit inside JSX or a Lit `html`/`svg` template. `cond && <Panel />` adds a branch on both metrics but is not hard to read, so a high score that is mostly render is markup, not logic. Position decides and the name never does — `renderWithStaticTag` is the tree's cyclomatic maximum at 76 with `render 0`. Markup context crosses into a callback, but the count follows the nearest function, so a `.map` callback's branches are its own.
+**Render column.** `(render N)` counts cyclomatic branches inside JSX or Lit `html`/`svg` templates. `cond && <Panel />` raises both scores, but a score dominated by render comes from markup. Position decides: `renderWithStaticTag` has `render 0` despite its name. Markup context crosses callbacks; branches count toward the nearest function, including a `.map` callback.
 
-**Per-file footer.** After each file's rows: `<file>: N code lines, cognitive total N, deepest block N, widest params N, top-level N`. `--report` filters rows, never footers. Counts on the tree when these were adopted:
+**Per-file footer.** After each file's rows: `<file>: N code lines, cognitive total N, deepest block N, widest params N, top-level N`. `--report` filters rows, never footers.
 
-| Number | What it is | On this tree |
-| --- | --- | --- |
-| code lines | `max-lines`, blanks and comments skipped | 26 files over 500 |
-| cognitive total | every function in the file, summed | 5 files over 100 |
-| deepest block | `max-depth` | 19 blocks deeper than 4, in 5 files |
-| widest params | `max-params` | 9 functions over 5 |
-| top-level | statements that run on import | 10 or more in 1 of the 615 files above; in 3 of 16 under `scripts/` and `tools/` |
+| Number | What it is |
+| --- | --- |
+| code lines | `max-lines`, blanks and comments skipped |
+| cognitive total | every function in the file, summed |
+| deepest block | `max-depth` |
+| widest params | `max-params` |
+| top-level | statements that run on import |
 
-Top-level counts what runs when the module loads. A binding does not count when its initializer is a literal, template, array, object, arrow, function, class, identifier, member access, or a `require()` — the CommonJS spelling of an import. Nor do imports, function, class, and type declarations. A bare call, a loop, an `if`, and a `const x = f()` do. `export` is unwrapped first, so `export const x = f()` counts exactly as the unexported line would.
+Top-level counts calls, loops, conditionals, and call-initialized bindings on import. Imports and declarations do not count. Bindings are inert when their outer initializer is a literal, template, array, object, function, class, identifier, member access, or `require()`. `export` is unwrapped. This deliberately treats `const x = [f()]` as inert despite its nested call.
 
-The initializer is judged by its outermost node, so `const x = [f()]` reads as inert even though `f()` runs. That is the measure's one deliberate simplification: it asks what a statement *is*, not what it reaches.
-
-**Blind spot.** The render count comes from a second parse, joined to the score rows by position. When that parse fails the file prints `render 0` on every row and `top-level 0` — low, never wrong.
+**Blind spot.** A failed render parse prints `render 0` on every row and `top-level 0` — low, never wrong.
 
 ## Measuring coupling
 
-Two metrics, one score, both counting **runtime** imports. **Ca** (fan-in) counts how many repo modules import a file at runtime. **Ce** (fan-out) counts how many repo modules a file imports at runtime; npm packages are not counted. **Instability** = Ce / (Ca + Ce): 0 is a stable hub everything depends on, 1 is a leaf that depends on everything. Watch a hub — low instability, high fan-in — whose fan-out grows. Each new import drags every dependent along with it.
+**Ca** (fan-in) counts repo modules importing a file at runtime. **Ce** (fan-out) counts repo modules it imports; npm packages are excluded. **Instability** = Ce / (Ca + Ce): 0 is a hub, 1 a dependent leaf. Growing fan-out in a hub adds dependencies for all its callers, even when its functions stay simple.
 
-This is the dimension that function-level complexity cannot see. A file can have simple functions and still be a structural bottleneck.
+Each run cruises `packages/`, `demo/`, `examples/`, `scripts/`, and `tools/`, excluding tests, stories, and SCSS. Fan-in needs the whole graph.
 
-The population is `packages/`, `demo/`, `examples/`, `scripts/`, and `tools/`, with tests, stories, and SCSS excluded. Every run cruises the whole tree. Fan-in is a property of the graph, not of one file.
-
-How to run:
-
-- `npm run coupling -- <file>` — score a file.
-- `npm run coupling -- --changed <base>` — score only the diff, as `fanin:12→13  fanout:20→22`.
-- `--report <n>` — the print floor: files at or above `n` on either metric appear (default 15).
-- `--max-fanout <n>` / `--max-fanin <n>` — exit 1 when a file's Ce or Ca exceeds `n`.
-- `--source <s>` — see [Which "after"](#which-after).
+See [coupling.mjs](../scripts/coupling.mjs)'s header for usage and flags.
 
 Severity bands, on the after score: in a primary area, fan-out above 15 is Important and above 30 a Blocker; fan-in above 20 and above 40.
 
-**Entry points and barrels.** An entry point (`aiChatEntry.tsx`) imports everything, so its fan-out is high. A re-export `index.ts` is imported by many, so its fan-in is high. Both are structural. The script prints the note `(entry/barrel — structural, not judged)` in place of a label.
+**Entry points and barrels.** High fan-out in `aiChatEntry.tsx` and high fan-in in re-export `index.ts` files are structural. They print `(entry/barrel — structural, not judged)` instead of a label.
 
-**Type edges.** Each cell carries `(type N)`: the imports `tsc` erases, taken as the difference between a pre-compilation cruise and the runtime one. `import type { X }` and a plain import of a type both count, because what matters is what compiles away, not how it was written. The two numbers answer different questions: `packages/ai-chat/src/types/state/AppState.ts` reads `fanin:11 (type 61)`, so 61 files depend on its shape and 11 on its code — a hub for readers, not for the bundle. Bands and `--max-*` use the runtime numbers alone. 162 modules here have a type edge.
+**Type edges.** `(type N)` is the difference between pre-compilation and runtime cruises: imports `tsc` erases, whether spelled `import type` or plain imports. `fanin:11 (type 61)` means 11 modules depend on code and 61 on shape. Bands and `--max-*` use runtime numbers only.
 
-**Joined a cycle.** `--changed <base>` adds `joined a cycle with <file>` to a changed file that is in a runtime cycle at HEAD and was not at `<base>`. It is a delta, not a census: a file already in a cycle prints nothing, and a cycle closed by a type import prints nothing, because it does not exist at runtime. File mode prints none of this. The existing tail is 7 modules, all of `demo/src/customSendMessage`. Counting type edges too would make it 162, which is why the row is scoped to runtime.
+**Joined a cycle.** In diff mode, `joined a cycle with <file>` marks a changed file entering a runtime cycle. Existing cycles and cycles closed only by type imports print nothing. File mode has no cycle rows.
 
-**Blind spot.** A path outside the cruised roots is an error, not a clean score. The script prints `not in the cruised tree` and exits 1 rather than reporting nothing. Nothing here reports the tree's existing cycles; only a diff that adds one.
+**Blind spot.** Paths outside the cruised roots print `not in the cruised tree` and exit 1. Only newly joined cycles are reported.
 
 ## Measuring code smells
 
@@ -128,15 +109,9 @@ Severity bands, on the after score: in a primary area, fan-out above 15 is Impor
 | `no-duplicated-branches` | identical `if`/`else` branches |
 | `no-dead-store` | a local assigned and never read |
 
-How to run:
+See [smells.mjs](../scripts/smells.mjs)'s header for usage and flags.
 
-- `npm run smells -- <file>` — list every finding in a file.
-- `npm run smells -- --changed <base>` — scope to the diff.
-- `--report <n>` — print files with at least `n` findings (default 1).
-- `--max <n>` — exit 1 when a file has more than `n` findings.
-- `--source <s>` — see [Which "after"](#which-after).
-
-Rows carry no severity: a row is a place to read, not a finding. A finding is present or absent, not scored.
+Rows carry no severity; read them to decide whether a finding exists.
 
 **Duplication across files.** `--changed <base>` adds two rows the in-file rules cannot see:
 
@@ -145,14 +120,12 @@ Rows carry no severity: a row is a place to read, not a finding. A finding is pr
 | `duplicate-block  <file>:<line> ↔ <file>:<line> (N lines)` | an added run of ten or more normalised lines that already exists elsewhere |
 | `duplicate-function  <name> ↔ <file>:<line>` | an added function whose normalised body, five lines or more, exists elsewhere |
 
-Normalising trims and collapses whitespace and drops blank lines, lone punctuation, comments, imports, and a bare `return`. Windows are six lines and consecutive matches merge. The tree side skips entry files, `index.*` barrels, tests, and stories: two entry files share 136 re-export lines and mean nothing by it. A shared *name* is not a match — every script here has a `main`. On this tree, 46 blocks are duplicated across 102 files, 4.9% of all lines.
+Normalising trims and collapses whitespace and drops blank lines, lone punctuation, comments, imports, and a bare `return`. Windows are six lines and consecutive matches merge. The tree side skips entry files, `index.*` barrels, tests, and stories. A shared *name* is not a match — every script here has a `main`.
 
-**The redundancy bundle.** Twelve rules, each a one-line removal, with their counts at adoption: `no-nested-ternary` 26, `no-unneeded-ternary` 14, `no-param-reassign` 10, `prefer-immediate-return` 8, `no-useless-return` 6, `no-else-return` 5, `no-collapsible-if` 5, `no-small-switch` 4, `prefer-single-boolean-return` 2, `no-lonely-if` 1, `no-redundant-boolean` 1, `no-redundant-jump` 1.
+**The redundancy bundle.** The remaining rules flag one-line removals; see the rule names in [smells.mjs](../scripts/smells.mjs).
 
-**Blind spot.** Duplication is a `--changed` check only. File mode never runs it, and nothing reports the tree's existing 46 blocks. A copy matches by body rather than by name, so a renamed copy is found; a copied class method is not, because the function pass reads declarations only — the block check still catches one over ten lines.
+**Blind spot.** Duplication is a `--changed` check only. File mode never runs it, and nothing reports the tree's existing copies. A copy matches by body rather than by name, so a renamed copy is found; a copied class method is not, because the function pass reads declarations only — the block check still catches one over ten lines.
 
 ## Related guidance
 
 - [Root AGENTS.md](../AGENTS.md) — repo overview and pointer index
-- [code-patterns.md](code-patterns.md) — the laziness ladder and the rules these numbers measure
-- [definition-of-done.md](definition-of-done.md) — when to run this before shipping
