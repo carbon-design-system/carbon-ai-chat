@@ -187,7 +187,11 @@ class ConversationLifecycleService {
   }
 
   hasFailureForRequest(messageID: string) {
-    return this.failure?.messageID === messageID;
+    return Boolean(
+      this.failure &&
+      this.resolveRequestID(this.failure.messageID) ===
+        this.resolveRequestID(messageID)
+    );
   }
 
   clearFailure(failure: ReturnType<ConversationLifecycleService['fail']>) {
