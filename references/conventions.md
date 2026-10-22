@@ -25,7 +25,7 @@ A branch is read commit by commit before it is read as one diff. Stage it for th
 
 ## Branches & PR titles
 
-- **Branches**: kebab-case, descriptive.
+- **Branches**: use descriptive kebab-case names, such as `2457-user-message-sender-profiles`. Never include LLM or coding-agent names anywhere in a branch name, including prefixes such as `codex/`, `claude/`, or `copilot/`.
 - **PR title**: same Conventional Commit format as the eventual squash commit — the PR title _is_ the squash commit.
 
 ## License headers

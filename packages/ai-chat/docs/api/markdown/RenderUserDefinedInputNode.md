@@ -10,7 +10,7 @@
 
 - Kind: TypeAlias
 - Category: React
-- Reference: https://chat.carbondesignsystem.com/version/v1.23.0-rc.0/docs/types/Type_reference.RenderUserDefinedInputNode.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.23.0/docs/types/Type_reference.RenderUserDefinedInputNode.html
 
 React-side renderer for `mention` chips, `command` chips, and custom TipTap
 nodes in user message bubbles. Returned content mounts into LIGHT DOM so

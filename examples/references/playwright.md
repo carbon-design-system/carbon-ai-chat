@@ -29,45 +29,15 @@ Give host-specific behavior a separate spec mapped to that target; keep common f
 
 An example needs a `build` script, a `vite.config.ts`, and an HTML entry. It needs no Playwright config, dependency, or script.
 
+Writing the spec with Playwright's test agents? Read [playwright-agents.md](playwright-agents.md).
+
 ## Scaffold a local Vite suite
 
-Use the scaffold command for an example outside the golden suite, then write its behavior assertions.
-
-```bash
-npm run scaffold:example-e2e -- \
-  --example react/prompt-line-typeahead \
-  --concern prompt-line-typeahead \
-  --startup input \
-  --purpose "Checks typeahead selection and dismissal." \
-  --dry-run
-```
-
-Review the preview, then remove `--dry-run` to write the files. Repeat `--example` to scaffold another host.
-
-| Input | What the agent chooses |
-| --- | --- |
-| `--example` | An existing `react/<slug>` or `web-components/<slug>` Vite example. |
-| `--concern` | A kebab-case name for the behavior spec. |
-| `--startup` | `input`, `launcher`, or `homescreen`, based on the example's initial UI. |
-| `--purpose` | The behavior the test will prove, read from the example's README. |
-
-The command adds a local config, `tests/<concern>.spec.ts`, `test:e2e`, ignore entries, and a Playwright dependency matching root `package.json`. The config uses the shared launcher and fixture. Existing configs, versions, scripts, and authored specs stay intact; custom `test:e2e` scripts need manual setup. Choose a new concern to add a spec. Unchanged reruns write nothing.
-
-Replace the generated `test.fixme` with a normal `test` and behavior assertions; the mount check alone is not coverage.
-
-Run `npm install` afterward to update the lockfile. The scaffold does not install, build, or start servers. Follow the [root build rules](../../AGENTS.md#always-on-rules) before running it.
-
-```bash
-npm run test:e2e --workspace=<example-workspace-name> -- --list
-npm run test:e2e --workspace=<example-workspace-name>
-```
-
-Keep the script named `test:e2e`. Some examples use `test` for Jest, Vitest, or an older Playwright setup.
-Local suites keep their output in the example's ignored `test-results/` and `playwright-report/` folders.
+For an example outside the golden suite, read [playwright-local-suite.md](playwright-local-suite.md).
 
 ## Config conventions
 
-Edit [playwright.config.ts](../shared/playwright/playwright.config.ts) for every target at once. Chromium is the only browser because webkit has shadow-DOM gaps; see [demo/playwright.config.ts](../../demo/playwright.config.ts). `workers: 1` keeps a pool from adding overhead to projects with only one or two specs.
+Edit [playwright.config.ts](../shared/playwright/playwright.config.ts) for every target at once. It sets `testDir: ./tests`, a 60s per-test `timeout`, `retries: process.env.CI ? 1 : 0`, and one chromium project and one `webServer` per target, started with the example as its working directory. Chromium is the only browser because webkit has shadow-DOM gaps; see [demo/playwright.config.ts](../../demo/playwright.config.ts). `workers: 1` makes a full run take about 12 minutes; `--workers=4` finishes in under 5 with the same peak memory. Settle the default with CI in [#2127](https://github.com/carbon-design-system/carbon-ai-chat/issues/2127).
 
 ### Ports are allocated at run time. Never add a port table.
 
@@ -119,7 +89,13 @@ The shared fixture does not include axe. Add `@axe-core/playwright` when a spec 
 
 ## Determinism
 
-Settle a stream before asserting the final reply. For external responses, register a `page.route()` with fixed data before navigation. Skip examples whose behavior depends on a live service or the clock.
+- Settle a stream before asserting the end of the reply, not a partial state mid-flight.
+- Use a fresh page and context per test, with shared navigation in `beforeEach`. Never rely on another test's messages, storage, cookies, or order.
+- Use retrying checks such as `await expect(locator).toBeVisible()`, not fixed sleeps or one-time checks such as `expect(await locator.isVisible()).toBe(true)`.
+- No real timestamps or randomness. For external responses, register a `page.route()` with fixed data before navigation.
+- Disable animation where it gates an assertion.
+
+An example whose reply depends on a live service, the clock, or random values still gets a suite: prove its mount and any fixed behavior, never assert the varying values, and list it in `DEFERRED_EXAMPLES` ([Coverage target](playwright-coverage.md#coverage-target)). Skip an example entirely only when nothing in it runs without a live service; see [Skipped examples](#skipped-examples).
 
 ## Skipped examples
 
@@ -140,7 +116,7 @@ Four, deliberately. Do not add suites for these, and do not re-litigate them.
 
 ## Naming
 
-`tests/<concern>.spec.ts`, kebab-case, named for the behavior under test — [fullscreen.spec.ts](../shared/playwright/tests/fullscreen.spec.ts). Never `example.spec.ts`.
+`tests/<concern>.spec.ts`, kebab-case, named for the behavior under test — [fullscreen.spec.ts](../shared/playwright/tests/fullscreen.spec.ts). Never `example.spec.ts`. A spec that only one flavor needs adds that flavor as a suffix, `<concern>-react.spec.ts` or `<concern>-web-components.spec.ts`, and its purpose comment says why the flavors differ.
 
 Open every spec with a purpose comment, per the inline-comments rule in [examples/AGENTS.md](../AGENTS.md#authoring-rules).
 
@@ -169,11 +145,12 @@ Failures, screenshots, and videos land in `shared/playwright/test-results/`, whi
 
 ## Definition of done
 
-- [ ] `npm run test:e2e:goldens -- --list` shows each new case once per target, and `targets.ts` lists the new targets.
+- [ ] `npm run test:e2e:goldens -- --list` shows each new case once per target, and [targets.ts](../shared/playwright/targets.ts) lists the new targets.
 - [ ] `npm run test:e2e:goldens` passes on chromium.
 - [ ] `npm run build --workspace=<example>` exits 0.
 - [ ] The suite covers the example's one concern plus the baseline above; no scaffold `test.fixme` placeholder remains.
 - [ ] Golden examples use the central config; local suites use the shared launcher and fixture. Neither assigns a port.
+- [ ] `CAIC_E2E_TARGETS=<targets> npm run test:e2e:coverage` ran, and the PR explains any example below the [coverage target](playwright-coverage.md#coverage-target).
 - [ ] Every spec opens with a purpose comment.
 
 ## Related guidance
