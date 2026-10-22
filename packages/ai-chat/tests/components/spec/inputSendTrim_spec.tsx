@@ -23,15 +23,12 @@
 import React from 'react';
 import { render, act, waitFor } from '@testing-library/react';
 
-import { StoreProvider } from '../../../src/chat/providers/StoreProvider';
-import { ServiceManagerContext } from '../../../src/chat/contexts/ServiceManagerContext';
-import { IntlProvider } from '../../../src/chat/providers/IntlProvider';
-import { AriaAnnouncerContext } from '../../../src/chat/contexts/AriaAnnouncerContext';
 import { createIntl } from '../../../src/chat/utils/i18n';
 import {
   makeConfigStore,
   setupAfterEach,
   setupBeforeEach,
+  TestChatContext,
 } from '../../test_helpers';
 
 const testIntl = createIntl({ locale: 'en', messages: {} });
@@ -106,26 +103,14 @@ async function renderInput(onSendInput: jest.Mock) {
 
   render(
     React.createElement(
-      StoreProvider,
-      { store },
-      React.createElement(
-        IntlProvider,
-        { intl: testIntl },
-        React.createElement(
-          AriaAnnouncerContext.Provider,
-          { value: jest.fn() },
-          React.createElement(
-            ServiceManagerContext.Provider,
-            { value: serviceManager },
-            React.createElement(InputExport, {
-              disableInput: false,
-              isInputVisible: true,
-              disableSend: false,
-              onSendInput,
-            })
-          )
-        )
-      )
+      TestChatContext,
+      { store, intl: testIntl, serviceManager, announce: jest.fn() },
+      React.createElement(InputExport, {
+        disableInput: false,
+        isInputVisible: true,
+        disableSend: false,
+        onSendInput,
+      })
     )
   );
 

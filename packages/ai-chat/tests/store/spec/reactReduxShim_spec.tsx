@@ -9,7 +9,6 @@
 
 import React, { ReactElement } from 'react';
 import { render, screen, act } from '@testing-library/react';
-import { StoreProvider } from '../../../src/chat/providers/StoreProvider';
 import { useSelector } from '../../../src/chat/hooks/useSelector';
 
 import {
@@ -17,6 +16,7 @@ import {
   UnknownAction,
   shallowEqual,
 } from '../../../src/chat/store/appStore';
+import { TestChatContext } from '../../test_helpers';
 
 interface State {
   count: number;
@@ -51,9 +51,9 @@ describe('react-redux polyfill', () => {
     }
 
     render(
-      <StoreProvider store={store}>
+      <TestChatContext store={store}>
         <Counter />
-      </StoreProvider>
+      </TestChatContext>
     );
 
     expect(screen.getByTestId('count').textContent).toBe('0');
@@ -75,9 +75,9 @@ describe('react-redux polyfill', () => {
     }
 
     render(
-      <StoreProvider store={store}>
+      <TestChatContext store={store}>
         <View />
-      </StoreProvider>
+      </TestChatContext>
     );
 
     expect(screen.getByTestId('value').textContent).toBe('0');
@@ -102,9 +102,9 @@ describe('react-redux polyfill', () => {
     }
 
     render(
-      <StoreProvider store={store}>
+      <TestChatContext store={store}>
         <View />
-      </StoreProvider>
+      </TestChatContext>
     );
 
     expect(renders).toBe(1);
@@ -134,9 +134,9 @@ describe('react-redux polyfill', () => {
     }
 
     render(
-      <StoreProvider store={store}>
+      <TestChatContext store={store}>
         <View />
-      </StoreProvider>
+      </TestChatContext>
     );
 
     expect(renders).toBe(1);
@@ -170,9 +170,9 @@ describe('react-redux polyfill', () => {
     }
 
     render(
-      <StoreProvider store={store}>
+      <TestChatContext store={store}>
         <View />
-      </StoreProvider>
+      </TestChatContext>
     );
 
     expect(renders).toBe(1);
@@ -211,9 +211,9 @@ describe('react-redux polyfill', () => {
     }
 
     render(
-      <StoreProvider store={store}>
+      <TestChatContext store={store}>
         <View />
-      </StoreProvider>
+      </TestChatContext>
     );
 
     expect(renders).toBe(1);

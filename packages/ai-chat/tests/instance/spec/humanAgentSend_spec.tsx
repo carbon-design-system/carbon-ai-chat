@@ -33,10 +33,10 @@ import {
   renderChatAndGetInstanceWithStore,
   setupAfterEach,
   setupBeforeEach,
+  TestChatContext,
 } from '../../test_helpers';
 import createHumanAgentService from '../../../src/chat/services/haa/HumanAgentServiceImpl';
 import { useInputCallbacks } from '../../../src/chat/hooks/useInputCallbacks';
-import { StoreProvider } from '../../../src/chat/providers/StoreProvider';
 import {
   BusEventType,
   MessageSendSource,
@@ -474,7 +474,7 @@ describe('human-agent send path — display_content and structured_data', () => 
         await setupHumanAgentChat();
 
       const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <StoreProvider store={store}>{children}</StoreProvider>
+        <TestChatContext store={store}>{children}</TestChatContext>
       );
 
       const { result } = renderHook(

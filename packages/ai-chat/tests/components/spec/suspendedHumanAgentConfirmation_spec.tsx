@@ -10,8 +10,9 @@
 import React from 'react';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { RealConnectToHumanAgent } from '../../../src/chat/components-legacy/responseTypes/humanAgent/RealConnectToHumanAgent';
-import { HumanAgentConfirmationContext } from '../../../src/chat/contexts/HumanAgentConfirmationContext';
+import { ChatContext } from '../../../src/chat/contexts/ChatContext';
 import languagePack from '../../../src/chat/languages/en.json';
+import { createTestViewState } from '../../test_helpers';
 
 jest.mock('../../../src/chat/hooks/useSelector', () => ({
   useSelector: () => jest.requireActual('../../../src/chat/languages/en.json'),
@@ -42,7 +43,6 @@ jest.mock('../../../src/chat/components/carbon/Button', () => ({
 function renderSuspendedCard() {
   const startChat = jest.fn();
   const requestFocus = jest.fn();
-  const setConfirmation = jest.fn();
   const props = {
     localMessage: { item: {}, ui_state: { id: 'new-request' } },
     originalMessage: {},
@@ -53,21 +53,27 @@ function renderSuspendedCard() {
     agentDisplayState: {},
     requestFocus,
   } as unknown as React.ComponentProps<typeof RealConnectToHumanAgent>;
+  const viewState = createTestViewState({
+    serviceManager: props.serviceManager,
+  });
+  const currentConfirmation = () =>
+    viewState.getSnapshot().humanAgentConfirmation;
   const view = render(
-    <HumanAgentConfirmationContext.Provider value={setConfirmation}>
+    <ChatContext.Provider value={viewState}>
       <RealConnectToHumanAgent {...props} />
-    </HumanAgentConfirmationContext.Provider>
+    </ChatContext.Provider>
   );
   fireEvent.click(
     screen.getByRole('button', { name: languagePack.agent_startChat })
   );
-  const confirmation = setConfirmation.mock.calls[0][0];
+  const confirmation = currentConfirmation();
   return {
     ...view,
     props,
     startChat,
     requestFocus,
-    setConfirmation,
+    viewState,
+    currentConfirmation,
     confirmation,
   };
 }
@@ -77,8 +83,13 @@ describe('suspended human agent card confirmation', () => {
   afterEach(() => jest.useRealTimers());
 
   it('starts the new request only after confirmation and clears its context', () => {
-    const { props, startChat, requestFocus, setConfirmation, confirmation } =
-      renderSuspendedCard();
+    const {
+      props,
+      startChat,
+      requestFocus,
+      currentConfirmation,
+      confirmation,
+    } = renderSuspendedCard();
     expect(startChat).not.toHaveBeenCalled();
     expect(confirmation.title).toBe(
       languagePack.agent_confirmSuspendedEndChatTitle
@@ -93,24 +104,31 @@ describe('suspended human agent card confirmation', () => {
       props.localMessage,
       props.originalMessage
     );
-    const clearConfirmation =
-      setConfirmation.mock.calls[setConfirmation.mock.calls.length - 1][0];
-    expect(clearConfirmation(confirmation)).toBeNull();
+    expect(currentConfirmation()).toBeNull();
     act(() => jest.runOnlyPendingTimers());
     expect(requestFocus).toHaveBeenCalledTimes(1);
   });
 
-  it('clears its context on unmount without clearing a newer request', () => {
-    const { unmount, setConfirmation, confirmation, startChat } =
-      renderSuspendedCard();
+  it('clears its confirmation on unmount', () => {
+    const { unmount, currentConfirmation, startChat } = renderSuspendedCard();
 
     unmount();
 
-    const clearConfirmation =
-      setConfirmation.mock.calls[setConfirmation.mock.calls.length - 1][0];
+    expect(currentConfirmation()).toBeNull();
+    expect(startChat).not.toHaveBeenCalled();
+  });
+
+  it('leaves a newer confirmation open when it unmounts', () => {
+    const { unmount, viewState, currentConfirmation, confirmation, startChat } =
+      renderSuspendedCard();
     const newerConfirmation = { ...confirmation };
-    expect(clearConfirmation(confirmation)).toBeNull();
-    expect(clearConfirmation(newerConfirmation)).toBe(newerConfirmation);
+    act(() => {
+      viewState.openConfirmation(newerConfirmation);
+    });
+
+    unmount();
+
+    expect(currentConfirmation()).toBe(newerConfirmation);
     expect(startChat).not.toHaveBeenCalled();
   });
 });

@@ -113,7 +113,7 @@ class MessageService {
 
 ## Who starts services
 
-[`cds-aichat-container`](../src/web-components/cds-aichat-container/cds-aichat-container.ts) starts them, for every host. React starts nothing. The container calls [`initServiceManagerAndInstance`](../src/chat/utils/chatBoot.ts), runs the host application's `onBeforeRender`, then lets the renderer show the app. **A Lit element reads the manager from the context in [service-manager-context.ts](../src/web-components/shared/service-manager-context.ts)**, never from a singleton. The value is `undefined` before startup and after detach.
+[`cds-aichat-container`](../src/web-components/cds-aichat-container/cds-aichat-container.ts) starts them, for every host. React starts nothing. The container calls [`initServiceManagerAndInstance`](../src/chat/utils/chatBoot.ts), runs the host application's `onBeforeRender`, then lets the renderer show the app. **A Lit element reads the chat's view state, which holds the manager, from the context in [chat-view-state-context.ts](../src/web-components/shared/chat-view-state-context.ts)**, never from a singleton. The value is `undefined` before startup and after detach.
 
 ## Wiring & teardown
 

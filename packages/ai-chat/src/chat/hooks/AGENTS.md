@@ -1,6 +1,6 @@
 # AGENTS.md — chat hooks
 
-Pair each hook with a plain module: `useWindowOpenState` uses `../services/windowOpenState.ts`. Put functions and setup/cleanup helpers in `../utils/`, and stateful classes in `../services/`. A provider may wire the core, as with `useAriaAnnouncer`.
+Pair each hook with a plain module: `useWindowOpenState` uses `../services/windowOpenState.ts`. Put functions and setup/cleanup helpers in `../utils/`, and stateful classes in `../services/`. Per-chat state lives in [`../services/chatViewState.ts`](../services/chatViewState.ts); read it through `ChatContext` and `useChatViewState`, and add no new provider.
 
 - Keep React context, refs, effects, render subscriptions, and icon conversion in the adapter.
 - Pass values, DOM nodes, or narrow callbacks to the core. Its runtime dependencies must also be React-free.

@@ -11,12 +11,10 @@
  * This is a high order component that will inject a {@link AriaAnnouncerFunctionType} in to a component.
  */
 
-import React, { useContext } from 'react';
+import React from 'react';
 
-import {
-  AriaAnnouncerContext,
-  AriaAnnouncerFunctionType,
-} from '../contexts/AriaAnnouncerContext';
+import { useAriaAnnouncer } from '../hooks/useAriaAnnouncer';
+import type { AriaAnnouncerFunctionType } from '../services/ariaAnnouncer';
 
 /**
  * A simple interface that represents an injected announcer.
@@ -37,7 +35,7 @@ function withAriaAnnouncer<P extends HasAriaAnnouncer>(
   // Tell forwardRef: “I forward a ref of type unknown,
   // and I expect props = OuterProps”
   const Wrapped = React.forwardRef<unknown, OuterProps>((props, ref) => {
-    const ariaAnnouncer = useContext(AriaAnnouncerContext);
+    const ariaAnnouncer = useAriaAnnouncer();
     return (
       <Component
         {...(props as unknown as P)}

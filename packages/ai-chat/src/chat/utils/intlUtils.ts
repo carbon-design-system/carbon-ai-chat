@@ -14,6 +14,28 @@ import { loadLocale } from './languageUtils';
 import { LanguagePack } from '../../types/config/LanguagePack';
 import { ServiceManager } from '../services/ServiceManager';
 
+// Keyed by manager rather than stored on it, so tests can stub a manager.
+const intlListeners = new WeakMap<ServiceManager, Set<() => void>>();
+
+/**
+ * Calls `listener` after each new formatter for this service manager. A locale
+ * load finishes after its store update, so the store alone cannot signal it.
+ */
+function subscribeToIntl(
+  serviceManager: ServiceManager,
+  listener: () => void
+): () => void {
+  let listeners = intlListeners.get(serviceManager);
+  if (!listeners) {
+    listeners = new Set();
+    intlListeners.set(serviceManager, listeners);
+  }
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
 /**
  * A simple utility function to set the i18n formatter on the given service manager.
  * This replaces the previous react-intl based implementation.
@@ -24,6 +46,7 @@ function setIntl(
   messages: LanguagePack
 ) {
   serviceManager.intl = createIntl({ locale, messages });
+  intlListeners.get(serviceManager)?.forEach((listener) => listener());
 }
 
 /**
@@ -63,4 +86,4 @@ async function refreshLocalization(
   }
 }
 
-export { setIntl, refreshLocalization };
+export { setIntl, refreshLocalization, subscribeToIntl };

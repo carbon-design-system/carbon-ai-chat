@@ -7,13 +7,7 @@
  *  @license
  */
 
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import cx from 'classnames';
 import type CDSButton from '@carbon/web-components/es/components/button/button.js';
 import { useIntl } from './hooks/useIntl';
@@ -57,10 +51,8 @@ import { useAssistantUploadCallbacks } from './hooks/useAssistantUploadCallbacks
 import { usePanelCallbacks } from './hooks/usePanelCallbacks';
 import { useInputCallbacks } from './hooks/useInputCallbacks';
 import { useResizeObserver } from './hooks/useResizeObserver';
-import {
-  HumanAgentConfirmationContext,
-  HumanAgentConfirmation,
-} from './contexts/HumanAgentConfirmationContext';
+import { useChatViewState } from './hooks/useChatViewState';
+import type { ChatViewStateSnapshot } from './services/chatViewState';
 import actions from './store/actions';
 import {
   selectHumanAgentDisplayState,
@@ -166,6 +158,8 @@ const selectCustomPanelState = (state: AppState) => state.customPanelState;
 const selectResponsePanelState = (state: AppState) => state.responsePanelState;
 const selectChatWidthBreakpoint = (state: AppState) =>
   state.chatWidthBreakpoint;
+const selectHumanAgentConfirmation = (snapshot: ChatViewStateSnapshot) =>
+  snapshot.humanAgentConfirmation;
 
 interface AppShellProps extends HasServiceManager {
   hostElement?: Element;
@@ -268,8 +262,7 @@ function AppShell({
     IS_PHONE && !publicConfig.disableCustomElementMobileEnhancements;
   const dir = isBrowser() ? document.dir || 'auto' : 'auto';
   const mainWindowRef = useRef<MainWindowFunctions | null>(null);
-  const [humanAgentConfirmation, setHumanAgentConfirmation] =
-    useState<HumanAgentConfirmation | null>(null);
+  const humanAgentConfirmation = useChatViewState(selectHumanAgentConfirmation);
   const containerRef = useRef<HTMLDivElement>(null);
   const animationContainerRef = useRef<HTMLElement | null>(null);
   const disclaimerRef = useRef<CDSButton | null>(null);
@@ -469,7 +462,6 @@ function AppShell({
     onUserTyping,
     onFilesSelectedForUpload,
   } = useHumanAgentCallbacks({
-    serviceManager,
     isConnectingOrConnected: agentDisplayState.isConnectingOrConnected,
     allowMultipleFileUploads: inputFields.allowMultipleFileUploads,
     requestInputFocus,
@@ -848,263 +840,257 @@ function AppShell({
       role="region"
       aria-label={regionLabel}>
       <AppShellErrorBoundary onError={handleBoundaryError}>
-        <HumanAgentConfirmationContext.Provider
-          value={setHumanAgentConfirmation}>
-          <Layer
-            className={cx('cds-aichat--widget__layer', {
-              'cds-aichat--widget__layer--hidden': !open,
+        <Layer
+          className={cx('cds-aichat--widget__layer', {
+            'cds-aichat--widget__layer--hidden': !open,
+          })}
+          level={
+            theme.derivedCarbonTheme === CarbonTheme.G10 ||
+            theme.derivedCarbonTheme === CarbonTheme.G100
+              ? 1
+              : 0
+          }>
+          <ChatShell
+            onPanelFocusFallback={requestInputFocus}
+            data-testid={PageObjectId.CHAT_WIDGET}
+            className={cx('cds-aichat--widget', {
+              'cds-aichat-float--open': !useCustomHostElement && open,
+              'cds-aichat-float--opening':
+                !useCustomHostElement && !closing && open,
+              'cds-aichat-float--closing': !useCustomHostElement && closing,
+              'cds-aichat-float--close': !useCustomHostElement && !open,
+              'cds-aichat-float--mobile':
+                !useCustomHostElement &&
+                IS_PHONE &&
+                !publicConfig.disableCustomElementMobileEnhancements,
+              'cds-aichat--widget--max-width':
+                chatWidthBreakpoint === ChatWidthBreakpoint.WIDE &&
+                layout.hasContentMaxWidth,
+              [WIDTH_BREAKPOINT_NARROW]:
+                chatWidthBreakpoint === ChatWidthBreakpoint.NARROW,
+              [WIDTH_BREAKPOINT_STANDARD]:
+                chatWidthBreakpoint === ChatWidthBreakpoint.STANDARD,
+              [WIDTH_BREAKPOINT_WIDE]:
+                chatWidthBreakpoint === ChatWidthBreakpoint.WIDE,
             })}
-            level={
-              theme.derivedCarbonTheme === CarbonTheme.G10 ||
-              theme.derivedCarbonTheme === CarbonTheme.G100
-                ? 1
-                : 0
-            }>
-            <ChatShell
-              onPanelFocusFallback={requestInputFocus}
-              data-testid={PageObjectId.CHAT_WIDGET}
-              className={cx('cds-aichat--widget', {
-                'cds-aichat-float--open': !useCustomHostElement && open,
-                'cds-aichat-float--opening':
-                  !useCustomHostElement && !closing && open,
-                'cds-aichat-float--closing': !useCustomHostElement && closing,
-                'cds-aichat-float--close': !useCustomHostElement && !open,
-                'cds-aichat-float--mobile':
-                  !useCustomHostElement &&
-                  IS_PHONE &&
-                  !publicConfig.disableCustomElementMobileEnhancements,
-                'cds-aichat--widget--max-width':
-                  chatWidthBreakpoint === ChatWidthBreakpoint.WIDE &&
-                  layout.hasContentMaxWidth,
-                [WIDTH_BREAKPOINT_NARROW]:
-                  chatWidthBreakpoint === ChatWidthBreakpoint.NARROW,
-                [WIDTH_BREAKPOINT_STANDARD]:
-                  chatWidthBreakpoint === ChatWidthBreakpoint.STANDARD,
-                [WIDTH_BREAKPOINT_WIDE]:
-                  chatWidthBreakpoint === ChatWidthBreakpoint.WIDE,
-              })}
-              ref={(el: HTMLElement) => {
-                widgetContainerRef.current = el;
-                animationContainerRef.current = el;
-              }}
-              onScroll={(e: { currentTarget: { scrollTop: number } }) => {
-                if (e.currentTarget.scrollTop !== 0) {
-                  e.currentTarget.scrollTop = 0;
-                }
-              }}
-              aiEnabled={theme.aiEnabled}
-              showFrame={layout?.showFrame}
-              cornerAll={
-                theme.corners.startStart === theme.corners.startEnd &&
-                theme.corners.startStart === theme.corners.endStart &&
-                theme.corners.startStart === theme.corners.endEnd
-                  ? theme.corners.startStart
-                  : undefined
+            ref={(el: HTMLElement) => {
+              widgetContainerRef.current = el;
+              animationContainerRef.current = el;
+            }}
+            onScroll={(e: { currentTarget: { scrollTop: number } }) => {
+              if (e.currentTarget.scrollTop !== 0) {
+                e.currentTarget.scrollTop = 0;
               }
-              cornerStartStart={theme.corners.startStart}
-              cornerStartEnd={theme.corners.startEnd}
-              cornerEndStart={theme.corners.endStart}
-              cornerEndEnd={theme.corners.endEnd}
-              contentMaxWidth={layout.hasContentMaxWidth}
-              showWorkspace={workspacePanelState.isOpen}
-              workspaceLocation={workspacePanelState.options.preferredLocation}
-              showHistory={
-                (publicConfig.history?.isOn ?? false) &&
-                historyPanelState.isOpen
-              }
-              workspaceAriaLabel={languagePack.aria_workspaceRegion}
-              historyAriaLabel={languagePack.aria_historyRegion}
-              messagesAriaLabel={languagePack.aria_messagesRegion}
-              panelOpenedAnnouncement={languagePack.panel_opened}
-              panelClosedAnnouncement={languagePack.panel_closed}
-              workspaceOpenedAnnouncement={
-                workspacePanelState.options.title
-                  ? intl.formatMessage(
-                      { id: 'workspace_opened' },
-                      { title: workspacePanelState.options.title }
-                    )
-                  : languagePack.workspace_opened_no_title
-              }
-              workspaceClosedAnnouncement={languagePack.workspace_closed}
-              historyShownAnnouncement={languagePack.history_shown}
-              historyHiddenAnnouncement={languagePack.history_hidden}>
-              <AppShellPanels
-                endChatConfirmation={humanAgentConfirmation}
-                showEndChatConfirmation={showEndChatConfirmation}
-                confirmHumanAgentEndChat={confirmHumanAgentEndChat}
-                hideConfirmEndChat={hideConfirmEndChat}
-                showScreenShareRequest={humanAgentState.showScreenShareRequest}
-                serviceManager={serviceManager}
-                isHydratingComplete={isHydratingComplete}
-                shouldShowHydrationPanel={shouldShowHydrationPanel}
-                onPanelOpenStart={onPanelOpenStart}
-                onPanelOpenEnd={onPanelOpenEnd}
-                onPanelCloseStart={onPanelCloseStart}
-                onPanelCloseEnd={onPanelCloseEnd}
-                onClose={onClose}
-                onRestart={onRestart}
-                onToggleHomeScreen={onToggleHomeScreen}
-                isHomeScreenActive={showHomeScreen}
-                customPanelState={customPanelState}
-                customPanelRef={customPanelRef}
-                showDisclaimer={showDisclaimer}
-                disclaimerRef={disclaimerRef}
-                onAcceptDisclaimer={onAcceptDisclaimer}
-                responsePanelState={responsePanelState}
-                responsePanelRef={responsePanelRef}
-                requestFocus={requestFocus}
-                historyPanelState={historyPanelState}
-                iFramePanelState={iFramePanelState}
-                iframePanelRef={iframePanelRef}
-                viewSourcePanelState={viewSourcePanelState}
-                viewSourcePanelRef={viewSourcePanelRef}
-                allMessagesByID={allMessagesByID}
-                isInputReadonly={isInputReadonly}
-                catastrophicErrorPanelState={catastrophicErrorPanelState}
-              />
+            }}
+            aiEnabled={theme.aiEnabled}
+            showFrame={layout?.showFrame}
+            cornerAll={
+              theme.corners.startStart === theme.corners.startEnd &&
+              theme.corners.startStart === theme.corners.endStart &&
+              theme.corners.startStart === theme.corners.endEnd
+                ? theme.corners.startStart
+                : undefined
+            }
+            cornerStartStart={theme.corners.startStart}
+            cornerStartEnd={theme.corners.startEnd}
+            cornerEndStart={theme.corners.endStart}
+            cornerEndEnd={theme.corners.endEnd}
+            contentMaxWidth={layout.hasContentMaxWidth}
+            showWorkspace={workspacePanelState.isOpen}
+            workspaceLocation={workspacePanelState.options.preferredLocation}
+            showHistory={
+              (publicConfig.history?.isOn ?? false) && historyPanelState.isOpen
+            }
+            workspaceAriaLabel={languagePack.aria_workspaceRegion}
+            historyAriaLabel={languagePack.aria_historyRegion}
+            messagesAriaLabel={languagePack.aria_messagesRegion}
+            panelOpenedAnnouncement={languagePack.panel_opened}
+            panelClosedAnnouncement={languagePack.panel_closed}
+            workspaceOpenedAnnouncement={
+              workspacePanelState.options.title
+                ? intl.formatMessage(
+                    { id: 'workspace_opened' },
+                    { title: workspacePanelState.options.title }
+                  )
+                : languagePack.workspace_opened_no_title
+            }
+            workspaceClosedAnnouncement={languagePack.workspace_closed}
+            historyShownAnnouncement={languagePack.history_shown}
+            historyHiddenAnnouncement={languagePack.history_hidden}>
+            <AppShellPanels
+              endChatConfirmation={humanAgentConfirmation}
+              showEndChatConfirmation={showEndChatConfirmation}
+              confirmHumanAgentEndChat={confirmHumanAgentEndChat}
+              hideConfirmEndChat={hideConfirmEndChat}
+              showScreenShareRequest={humanAgentState.showScreenShareRequest}
+              serviceManager={serviceManager}
+              isHydratingComplete={isHydratingComplete}
+              shouldShowHydrationPanel={shouldShowHydrationPanel}
+              onPanelOpenStart={onPanelOpenStart}
+              onPanelOpenEnd={onPanelOpenEnd}
+              onPanelCloseStart={onPanelCloseStart}
+              onPanelCloseEnd={onPanelCloseEnd}
+              onClose={onClose}
+              onRestart={onRestart}
+              onToggleHomeScreen={onToggleHomeScreen}
+              isHomeScreenActive={showHomeScreen}
+              customPanelState={customPanelState}
+              customPanelRef={customPanelRef}
+              showDisclaimer={showDisclaimer}
+              disclaimerRef={disclaimerRef}
+              onAcceptDisclaimer={onAcceptDisclaimer}
+              responsePanelState={responsePanelState}
+              responsePanelRef={responsePanelRef}
+              requestFocus={requestFocus}
+              historyPanelState={historyPanelState}
+              iFramePanelState={iFramePanelState}
+              iframePanelRef={iframePanelRef}
+              viewSourcePanelState={viewSourcePanelState}
+              viewSourcePanelRef={viewSourcePanelRef}
+              allMessagesByID={allMessagesByID}
+              isInputReadonly={isInputReadonly}
+              catastrophicErrorPanelState={catastrophicErrorPanelState}
+            />
 
-              {!customHeaderPresent &&
-                (header?.isOn || headerConfigOverride?.isOn) && (
-                  <div slot="header">
-                    <Header
-                      onClose={onClose}
-                      onRestart={onRestart}
-                      onToggleHomeScreen={onToggleHomeScreen}
-                      isHomeScreenActive={showHomeScreen}
-                      headerConfigOverride={headerConfigOverride}
-                    />
-                  </div>
-                )}
-
-              <AppShellWriteableElements
-                serviceManager={serviceManager}
-                showHomeScreen={showHomeScreen}
-                writeableElementsPresentKeys={writeableElementsPresentKeys}
-              />
-
-              <div
-                slot="messages"
-                className="cds-aichat--widget--expand-to-fit"
-                data-testid={PageObjectId.MAIN_PANEL}>
-                {showHomeScreen ? (
-                  <HomeScreen
-                    isHydrated={true}
-                    onSendInput={onSendInput}
+            {!customHeaderPresent &&
+              (header?.isOn || headerConfigOverride?.isOn) && (
+                <div slot="header">
+                  <Header
+                    onClose={onClose}
+                    onRestart={onRestart}
                     onToggleHomeScreen={onToggleHomeScreen}
-                  />
-                ) : (
-                  <MessagesComponent
-                    ref={messagesRef}
-                    messageState={assistantMessageState}
-                    localMessageItems={messagesToArray(
-                      assistantMessageState.localMessageIDs,
-                      allMessageItemsByID
-                    )}
-                    requestInputFocus={requestInputFocus}
-                    assistantName={publicConfig.assistantName}
-                    assistantAvatarUrl={publicConfig.assistantAvatarUrl}
-                    intl={intl}
-                    onEndHumanAgentChat={showConfirmEndChat}
-                    locale={publicConfig.locale || 'en'}
-                    carbonTheme={theme.derivedCarbonTheme}
-                  />
-                )}
-              </div>
-
-              {!customPromptLinePresent && (
-                <div slot="input">
-                  <Input
-                    ref={setInputRef}
-                    restoreDraft={restoreDraft.current}
-                    disableInput={shouldDisableInput()}
-                    disableSend={shouldDisableSend()}
-                    isInputVisible={isInputFieldVisible}
-                    onSendInput={onSendInputFromInput}
-                    onUserTyping={onUserTyping}
-                    showUploadButton={
-                      inputFields.allowFileUploads || isAssistantUploadEnabled
-                    }
-                    disableUploadButton={
-                      inputFields.allowFileUploads
-                        ? humanAgentUploadButtonDisabled
-                        : assistantUploadButtonDisabled
-                    }
-                    allowedFileUploadTypes={
-                      inputFields.allowFileUploads
-                        ? inputFields.allowedFileUploadTypes
-                        : uploadConfig?.accept
-                    }
-                    allowMultipleFileUploads={
-                      inputFields.allowFileUploads
-                        ? inputFields.allowMultipleFileUploads
-                        : uploadConfig?.maxFiles === undefined ||
-                          uploadConfig.maxFiles > 1
-                    }
-                    maxFileSizeBytes={
-                      inputFields.allowFileUploads
-                        ? inputFields.maxFileSizeBytes
-                        : uploadConfig?.maxFileSizeBytes
-                    }
-                    maxFiles={
-                      inputFields.allowFileUploads
-                        ? inputFields.maxFiles
-                        : uploadConfig?.maxFiles
-                    }
-                    pendingUploads={
-                      inputFields.allowFileUploads
-                        ? inputFields.files
-                        : assistantPendingUploadsForDisplay
-                    }
-                    onFilesSelectedForUpload={
-                      inputFields.allowFileUploads
-                        ? onFilesSelectedForUpload
-                        : onAssistantFilesSelectedForUpload
-                    }
-                    onRemoveFile={
-                      isAssistantUploadEnabled && !inputFields.allowFileUploads
-                        ? onRemoveAssistantUpload
-                        : undefined
-                    }
-                    placeholder={
-                      languagePack[agentDisplayState.inputPlaceholderKey]
-                    }
-                    isStopStreamingButtonVisible={isStopStreamingButtonVisible}
-                    isStopStreamingButtonDisabled={
-                      inputFields.stopStreamingButtonState.isDisabled
-                    }
-                    maxInputChars={publicConfig.input?.maxInputCharacters}
-                    trackInputState
-                    rounded={
-                      chatWidthBreakpoint === ChatWidthBreakpoint.WIDE &&
-                      layout.hasContentMaxWidth &&
-                      (!IS_PHONE_IN_PORTRAIT_MODE ||
-                        !!publicConfig.disableCustomElementMobileEnhancements)
-                    }
-                    error={inputError}
+                    isHomeScreenActive={showHomeScreen}
+                    headerConfigOverride={headerConfigOverride}
                   />
                 </div>
               )}
 
-              <div
-                slot="workspace"
-                className="cds-aichat--widget--expand-to-fit">
-                <WriteableElement
-                  slotName={WriteableElementName.WORKSPACE_PANEL_ELEMENT}
-                  className="cds-aichat--workspace-writeable-element cds-aichat--widget--expand-to-fit"
-                  id={`workspacePanelElement${serviceManager.namespace.suffix}`}
-                />
-              </div>
+            <AppShellWriteableElements
+              serviceManager={serviceManager}
+              showHomeScreen={showHomeScreen}
+              writeableElementsPresentKeys={writeableElementsPresentKeys}
+            />
 
-              <div slot="history" className="cds-aichat--widget--expand-to-fit">
-                <WriteableElement
-                  slotName={WriteableElementName.HISTORY_PANEL_ELEMENT}
-                  className="cds-aichat--history-writeable-element cds-aichat--widget--expand-to-fit"
-                  id={`historyPanelElement${serviceManager.namespace.suffix}`}
+            <div
+              slot="messages"
+              className="cds-aichat--widget--expand-to-fit"
+              data-testid={PageObjectId.MAIN_PANEL}>
+              {showHomeScreen ? (
+                <HomeScreen
+                  isHydrated={true}
+                  onSendInput={onSendInput}
+                  onToggleHomeScreen={onToggleHomeScreen}
+                />
+              ) : (
+                <MessagesComponent
+                  ref={messagesRef}
+                  messageState={assistantMessageState}
+                  localMessageItems={messagesToArray(
+                    assistantMessageState.localMessageIDs,
+                    allMessageItemsByID
+                  )}
+                  requestInputFocus={requestInputFocus}
+                  assistantName={publicConfig.assistantName}
+                  assistantAvatarUrl={publicConfig.assistantAvatarUrl}
+                  intl={intl}
+                  onEndHumanAgentChat={showConfirmEndChat}
+                  locale={publicConfig.locale || 'en'}
+                  carbonTheme={theme.derivedCarbonTheme}
+                />
+              )}
+            </div>
+
+            {!customPromptLinePresent && (
+              <div slot="input">
+                <Input
+                  ref={setInputRef}
+                  restoreDraft={restoreDraft.current}
+                  disableInput={shouldDisableInput()}
+                  disableSend={shouldDisableSend()}
+                  isInputVisible={isInputFieldVisible}
+                  onSendInput={onSendInputFromInput}
+                  onUserTyping={onUserTyping}
+                  showUploadButton={
+                    inputFields.allowFileUploads || isAssistantUploadEnabled
+                  }
+                  disableUploadButton={
+                    inputFields.allowFileUploads
+                      ? humanAgentUploadButtonDisabled
+                      : assistantUploadButtonDisabled
+                  }
+                  allowedFileUploadTypes={
+                    inputFields.allowFileUploads
+                      ? inputFields.allowedFileUploadTypes
+                      : uploadConfig?.accept
+                  }
+                  allowMultipleFileUploads={
+                    inputFields.allowFileUploads
+                      ? inputFields.allowMultipleFileUploads
+                      : uploadConfig?.maxFiles === undefined ||
+                        uploadConfig.maxFiles > 1
+                  }
+                  maxFileSizeBytes={
+                    inputFields.allowFileUploads
+                      ? inputFields.maxFileSizeBytes
+                      : uploadConfig?.maxFileSizeBytes
+                  }
+                  maxFiles={
+                    inputFields.allowFileUploads
+                      ? inputFields.maxFiles
+                      : uploadConfig?.maxFiles
+                  }
+                  pendingUploads={
+                    inputFields.allowFileUploads
+                      ? inputFields.files
+                      : assistantPendingUploadsForDisplay
+                  }
+                  onFilesSelectedForUpload={
+                    inputFields.allowFileUploads
+                      ? onFilesSelectedForUpload
+                      : onAssistantFilesSelectedForUpload
+                  }
+                  onRemoveFile={
+                    isAssistantUploadEnabled && !inputFields.allowFileUploads
+                      ? onRemoveAssistantUpload
+                      : undefined
+                  }
+                  placeholder={
+                    languagePack[agentDisplayState.inputPlaceholderKey]
+                  }
+                  isStopStreamingButtonVisible={isStopStreamingButtonVisible}
+                  isStopStreamingButtonDisabled={
+                    inputFields.stopStreamingButtonState.isDisabled
+                  }
+                  maxInputChars={publicConfig.input?.maxInputCharacters}
+                  trackInputState
+                  rounded={
+                    chatWidthBreakpoint === ChatWidthBreakpoint.WIDE &&
+                    layout.hasContentMaxWidth &&
+                    (!IS_PHONE_IN_PORTRAIT_MODE ||
+                      !!publicConfig.disableCustomElementMobileEnhancements)
+                  }
+                  error={inputError}
                 />
               </div>
-            </ChatShell>
-          </Layer>
-        </HumanAgentConfirmationContext.Provider>
+            )}
+
+            <div slot="workspace" className="cds-aichat--widget--expand-to-fit">
+              <WriteableElement
+                slotName={WriteableElementName.WORKSPACE_PANEL_ELEMENT}
+                className="cds-aichat--workspace-writeable-element cds-aichat--widget--expand-to-fit"
+                id={`workspacePanelElement${serviceManager.namespace.suffix}`}
+              />
+            </div>
+
+            <div slot="history" className="cds-aichat--widget--expand-to-fit">
+              <WriteableElement
+                slotName={WriteableElementName.HISTORY_PANEL_ELEMENT}
+                className="cds-aichat--history-writeable-element cds-aichat--widget--expand-to-fit"
+                id={`historyPanelElement${serviceManager.namespace.suffix}`}
+              />
+            </div>
+          </ChatShell>
+        </Layer>
       </AppShellErrorBoundary>
       {showLauncher && <LauncherContainer />}
     </div>
