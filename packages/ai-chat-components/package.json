@@ -15,6 +15,10 @@
     "provenance": true
   },
   "exports": {
+    "./es": {
+      "types": "./es/index.d.ts",
+      "default": "./es/index.js"
+    },
     "./es/*": "./es/*",
     "./es-custom/*": "./es-custom/*",
     "./es/globals/*": "./es/globals/*",
@@ -43,8 +47,8 @@
     "telemetry:config": "npx -y @ibm/telemetry-js-config-generator generate --id 62aa153d-8a70-4d12-9e8d-069511e80e65 --endpoint https://www-api.ibm.com/ibm-telemetry/v1/metrics --files ./src/components --wc",
     "test": "npm run test:manifest && npm run test:web-components && npm run test:react",
     "test:react": "jest",
-    "test:updateSnapshot": "web-test-runner \"src/components/**/*.test.ts\" --node-resolve --update-snapshots",
-    "test:web-components": "web-test-runner \"src/components/**/*.test.ts\" --node-resolve",
+    "test:updateSnapshot": "web-test-runner \"src/{components,globals/__tests__}/**/*.test.ts\" --node-resolve --update-snapshots",
+    "test:web-components": "web-test-runner \"src/{components,globals/__tests__}/**/*.test.ts\" --node-resolve",
     "test:manifest": "node --test tasks/__tests__/*.test.js"
   },
   "peerDependencies": {
@@ -159,5 +163,8 @@
     "typescript": "^6.0.3",
     "vite": "^8.0.16",
     "web-dev-server-plugin-lit-css": "^4.0.0"
-  }
+  },
+  "main": "es/index.js",
+  "module": "es/index.js",
+  "types": "es/index.d.ts"
 }

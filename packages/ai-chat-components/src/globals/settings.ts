@@ -10,4 +10,5 @@
 // Set this to a suitable prefix for your project to use in TS files
 const prefix = 'cds-aichat';
 
+export { prefix };
 export default prefix;
