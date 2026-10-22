@@ -7,9 +7,10 @@
   "sideEffects": [
     "./es/index.js",
     "./src/index.ts",
-    "**/components/**/index.js",
-    "**/components/**/index.ts",
-    "**/*.scss.js",
+    "**/components/*/index.js",
+    "**/components/*/index.ts",
+    "**/components/prompt-line/autocomplete/index.js",
+    "**/components/prompt-line/autocomplete/index.ts",
     "**/*.scss",
     "**/*.css"
   ],
