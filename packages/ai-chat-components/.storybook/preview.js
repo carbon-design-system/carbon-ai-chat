@@ -16,6 +16,7 @@ import { breakpoints } from '@carbon/layout';
 import { setCustomElementsManifest } from '@storybook/web-components-vite';
 import customElements from '../custom-elements.json';
 import prettier from 'prettier/standalone';
+import { docsTheme } from './docs-theme.js';
 
 if (typeof document !== 'undefined') {
   const existing = document.head.querySelector(
@@ -131,6 +132,7 @@ export const parameters = {
     current: 'light',
   },
   docs: {
+    theme: docsTheme,
     codePanel: true,
     defaultName: 'Overview',
     source: {
