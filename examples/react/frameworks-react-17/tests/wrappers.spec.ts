@@ -17,7 +17,7 @@ test('waits for the app before callbacks and preserves live host DOM props', asy
     releaseEntry = resolve;
   });
   let entryRequested = false;
-  await page.route(/\/chat\.ChatAppEntry[^/]*\.js(?:\?.*)?$/, async (route) => {
+  await page.route(/\/ChatAppEntry[^/]*\.js(?:\?.*)?$/, async (route) => {
     entryRequested = true;
     await entryGate;
     await route.continue();
