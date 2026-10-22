@@ -10,15 +10,17 @@
 import { createComponent } from '@lit/react';
 import React from 'react';
 
-// Export the actual class for the component that will *directly* be wrapped with React.
-import CDSAIChatCard from '../components/card/src/card.js';
-import CDSAIChatCardFooter from '../components/card/src/card-footer.js';
-import CDSAIChatCardSteps from '../components/card/src/card-steps.js';
-import { withWebComponentBridge } from './utils/withWebComponentBridge';
+import {
+  Card as CDSAIChatCard,
+  CardFooter as CDSAIChatCardFooter,
+  CardSteps as CDSAIChatCardSteps,
+} from '../components/aichat-card/index.js';
+
+import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
 const Card = withWebComponentBridge(
   createComponent({
-    tagName: 'cds-aichat-card',
+    tagName: CDSAIChatCard.is,
     elementClass: CDSAIChatCard,
     react: React,
   })
@@ -26,7 +28,7 @@ const Card = withWebComponentBridge(
 
 const CardFooter = withWebComponentBridge(
   createComponent({
-    tagName: 'cds-aichat-card-footer',
+    tagName: CDSAIChatCardFooter.is,
     elementClass: CDSAIChatCardFooter,
     react: React,
     events: {
@@ -37,7 +39,7 @@ const CardFooter = withWebComponentBridge(
 
 const CardSteps = withWebComponentBridge(
   createComponent({
-    tagName: 'cds-aichat-card-steps',
+    tagName: CDSAIChatCardSteps.is,
     elementClass: CDSAIChatCardSteps,
     react: React,
   })

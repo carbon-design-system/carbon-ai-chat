@@ -154,9 +154,11 @@ async function runRollup() {
 
         // Web components - becomes es/web-components/cds-aichat-container/index.js
         'web-components/cds-aichat-container/index': path.join(paths.src, '/web-components/cds-aichat-container/index.ts'),
+        'web-components/cds-aichat-container/cds-aichat-container': path.join(paths.src, '/web-components/cds-aichat-container/cds-aichat-container.ts'),
 
         // Web components - becomes es/web-components/cds-aichat-custom-element/index.js
         'web-components/cds-aichat-custom-element/index': path.join(paths.src, '/web-components/cds-aichat-custom-element/index.ts'),
+        'web-components/cds-aichat-custom-element/cds-aichat-custom-element': path.join(paths.src, '/web-components/cds-aichat-custom-element/cds-aichat-custom-element.ts'),
       },
       output: {
         dir: path.join(paths.dist, '/es'),
@@ -249,7 +251,9 @@ async function runRollup() {
         aiChatEntry: path.join(paths.src, '/aiChatEntry.tsx'),
         serverEntry: path.join(paths.src, '/serverEntry.ts'),
         'web-components/cds-aichat-container/index': path.join(paths.src, '/web-components/cds-aichat-container/index.ts'),
+        'web-components/cds-aichat-container/cds-aichat-container': path.join(paths.src, '/web-components/cds-aichat-container/cds-aichat-container.ts'),
         'web-components/cds-aichat-custom-element/index': path.join(paths.src, '/web-components/cds-aichat-custom-element/index.ts'),
+        'web-components/cds-aichat-custom-element/cds-aichat-custom-element': path.join(paths.src, '/web-components/cds-aichat-custom-element/cds-aichat-custom-element.ts'),
       },
       output: {
         dir: path.join(paths.dist, '/types'),

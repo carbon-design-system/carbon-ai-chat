@@ -11,8 +11,8 @@ import { createComponent } from '@lit/react';
 import React, { ComponentType } from 'react';
 import { CarbonIcon } from '@carbon/web-components/es/globals/internal/icon-loader-utils.js';
 
-// Export the actual class for the component that will *directly* be wrapped with React.
-import CDSAIChatToolbar, { Action } from '../components/toolbar/src/toolbar.js';
+import { CDSAIChatToolbar } from '../components/aichat-toolbar/index.js';
+import type { Action } from '../components/aichat-toolbar/aichat-toolbar.js';
 import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 import { transformReactIconToCarbonIcon } from '../globals/utils/iconTransform.js';
 
@@ -34,7 +34,7 @@ export interface ToolbarAction extends Omit<Action, 'icon'> {
 // Base toolbar component from @lit/react
 const BaseToolbar = withWebComponentBridge(
   createComponent({
-    tagName: 'cds-aichat-toolbar',
+    tagName: CDSAIChatToolbar.is,
     elementClass: CDSAIChatToolbar,
     react: React,
   })

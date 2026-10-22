@@ -15,13 +15,22 @@ import {
 } from './tasks/cem-plugins.js';
 
 export default {
-  globs: ['src/**/*.ts'],
+  globs: [
+    'src/index.ts',
+    'src/components/aichat-*/**/*.ts',
+    'src/components/shared/**/*.ts',
+    'src/globals/**/*.ts',
+    'src/react/**/*.ts',
+    'src/testing/**/*.ts',
+    'src/typings/**/*.ts',
+  ],
   exclude: [
     '**/__stories__/**',
     '**/__tests__/**',
     '**/*.test.ts',
     '**/*.stories.ts',
     '**/*.d.ts',
+    '**/*.scss.ts',
     'src/globals/internal/storybook-cdn.ts',
   ],
   outdir: '.',

@@ -9,12 +9,12 @@
 
 import { createComponent } from '@lit/react';
 import React from 'react';
-import CDSAIChatHistoryPanelItem from '../../components/chat-history/src/history-panel-item.js';
+import { CDSAIChatHistoryPanelItem } from '../../components/aichat-history/index.js';
 import { withWebComponentBridge } from '../utils/withWebComponentBridge.js';
 
 const HistoryPanelItem = withWebComponentBridge(
   createComponent({
-    tagName: 'cds-aichat-history-panel-item',
+    tagName: CDSAIChatHistoryPanelItem.is,
     elementClass: CDSAIChatHistoryPanelItem,
     react: React,
     events: {

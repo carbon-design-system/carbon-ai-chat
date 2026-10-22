@@ -10,12 +10,12 @@
 import { createComponent } from '@lit/react';
 import React from 'react';
 
-import { CDSAIChatToolCallData } from '../components/chain-of-thought/src/tool-call-data.js';
+import { CDSAIChatToolCallData } from '../components/aichat-chain-of-thought/index.js';
 import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
 const ToolCallData = withWebComponentBridge(
   createComponent({
-    tagName: 'cds-aichat-tool-call-data',
+    tagName: CDSAIChatToolCallData.is,
     elementClass: CDSAIChatToolCallData,
     react: React,
   })

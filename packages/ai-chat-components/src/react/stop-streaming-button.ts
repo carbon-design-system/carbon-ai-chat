@@ -9,12 +9,12 @@
 
 import { createComponent } from '@lit/react';
 import React from 'react';
-import StopStreamingButton from '../components/prompt-line/src/stop-streaming-button.js';
+import { StopStreamingButton } from '../components/aichat-prompt-line/index.js';
 import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
 const CDSAIChatStopStreamingButton = withWebComponentBridge(
   createComponent({
-    tagName: 'cds-aichat-stop-streaming-button',
+    tagName: StopStreamingButton.is,
     elementClass: StopStreamingButton,
     react: React,
   })

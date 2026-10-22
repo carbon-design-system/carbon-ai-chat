@@ -88,7 +88,7 @@
 
 // Inline markdown styles under `$scope`, the selector for the rendered span.
 @mixin markdown-inline(
-  $scope: '.#{$prefix}-inline-markdown',
+  $scope: '.#{$prefix}-aichat-inline-markdown',
   $exclude: '',
   $typography: true
 ) {

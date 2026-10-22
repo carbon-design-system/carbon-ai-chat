@@ -13,10 +13,15 @@ import { join, relative } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import * as sass from 'sass';
 import ts from 'typescript';
+import { componentEntries } from './entry-paths.mjs';
 
 const consumerSource = `
 import { createElement, type ComponentProps, type ComponentType, type ReactElement } from 'react';
 import { Card as AggregateCard } from '@carbon/ai-chat-components/es';
+import CanonicalCard from '@carbon/ai-chat-components/es/components/aichat-card/aichat-card.js';
+import { Card as BarrelCard } from '@carbon/ai-chat-components/es/components/aichat-card/index.js';
+import PureContainerHost from '@carbon/ai-chat/es/web-components/cds-aichat-container/cds-aichat-container.js';
+import PureOuterHost from '@carbon/ai-chat/es/web-components/cds-aichat-custom-element/cds-aichat-custom-element.js';
 import CardElement from '@carbon/ai-chat-components/es/components/card/src/card.js';
 import '@carbon/ai-chat-components/es/components/card/index.js';
 import { AudioPlayer as AudioPlayerElement, Transcript as TranscriptElement } from '@carbon/ai-chat-components/es/components/audio-player/index.js';
@@ -26,7 +31,6 @@ import CardDefault, { Card, CardFooter, CardSteps } from '@carbon/ai-chat-compon
 import Autocomplete from '@carbon/ai-chat-components/es/react/autocomplete.js';
 import { HistoryShell, HistoryHeader, HistoryToolbar, HistoryContent, HistoryLoading, HistoryPanel, HistoryPanelMenu, HistoryPanelItem, HistoryPanelItems, HistorySearchItem, HistoryPanelItemInput, HistoryDeletePanel } from '@carbon/ai-chat-components/es/react/history/index.js';
 import prefix, { prefix as namedPrefix } from '@carbon/ai-chat-components/es/globals/settings.js';
-import { carbonElement } from '@carbon/ai-chat-components/es/globals/decorators/index.js';
 import { defineCustomElement, type DefineCustomElementOptions, type CarbonCustomElementConstructor } from '@carbon/ai-chat-components/es/globals/register.js';
 import type componentsManifest from '@carbon/ai-chat-components/custom-elements.json';
 import type chatManifest from '@carbon/ai-chat/custom-elements.json';
@@ -40,6 +44,10 @@ import CustomElementHost from '@carbon/ai-chat/es/web-components/cds-aichat-cust
 import OriginalContainerHost from '@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js';
 import OriginalCustomElementHost from '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
 
+const canonical: typeof CardElement = CanonicalCard;
+const barrel: typeof CardElement = BarrelCard;
+const pureContainer: typeof ContainerHost = PureContainerHost;
+const pureOuter: typeof CustomElementHost = PureOuterHost;
 const card = new CardElement();
 card.isFlush = true;
 // @ts-expect-error The packed class must retain its Boolean property type.
@@ -77,8 +85,7 @@ const options: DefineCustomElementOptions = { name: ConsumerElement.is, registry
 const registered: typeof ConsumerElement = defineCustomElement(ConsumerElement, options);
 // @ts-expect-error Helper options must retain their published string constraint.
 const invalidOptions: DefineCustomElementOptions = { name: 1 };
-const decorate = carbonElement('packed-resolution-decorator');
-const defaultPrefix: 'cds-aichat' = prefix;
+const defaultPrefix: 'cds' = prefix;
 const namedPrefixType: typeof prefix = namedPrefix;
 const defaultPrefixType: typeof namedPrefix = prefix;
 const componentSchema: typeof componentsManifest.schemaVersion = '1.0.0';
@@ -113,7 +120,7 @@ const aggregateAsReact: ComponentType<any> = AggregateCard;
 // @ts-expect-error Host instance properties retain their Boolean contract.
 outer.aiEnabled = 'yes';
 
-export { card, aggregateCard, audio, transcript, wrappers, constructor, registered, decorate, defaultPrefix, namedPrefixType, defaultPrefixType, componentSchema, chatSchema, rootApi, esApi, entryApi, serverApi, containerConstructor, outerConstructor, oldContainer, oldOuter, container, outer, containerTag, outerTag };
+export { canonical, barrel, pureContainer, pureOuter, card, aggregateCard, audio, transcript, wrappers, constructor, registered, defaultPrefix, namedPrefixType, defaultPrefixType, componentSchema, chatSchema, rootApi, esApi, entryApi, serverApi, containerConstructor, outerConstructor, oldContainer, oldOuter, container, outer, containerTag, outerTag };
 `;
 
 async function assertPackageAliases(consumer) {
@@ -134,6 +141,18 @@ async function assertPackageAliases(consumer) {
     false,
     'Components must not expose a bare package root.'
   );
+  for (const tree of ['es', 'es-custom']) {
+    for (const path of ['carbon-element.js', 'index.js']) {
+      assert.throws(
+        () =>
+          require.resolve(
+            `@carbon/ai-chat-components/${tree}/globals/decorators/${path}`
+          ),
+        { code: 'MODULE_NOT_FOUND' },
+        'The removed decorator entry must fail packed resolution.'
+      );
+    }
+  }
   assert.throws(() => require.resolve('@carbon/ai-chat-components'), {
     code: 'ERR_PACKAGE_PATH_NOT_EXPORTED',
   });
@@ -195,7 +214,7 @@ async function assertPackageAliases(consumer) {
     ).href
   );
   assert.equal(settings.default, settings.prefix);
-  assert.equal(settings.prefix, 'cds-aichat');
+  assert.equal(settings.prefix, 'cds');
   await writeFile(
     join(consumer, 'resolution-aliases.json'),
     JSON.stringify(
@@ -326,7 +345,7 @@ async function compileConsumerScss(consumer) {
     quietDeps: true,
     logger: { warn: (message) => warnings.push(message) },
   });
-  assert.match(result.css, /--consumer-prefix: cds-aichat/);
+  assert.match(result.css, /--consumer-prefix: cds;/);
   assert.match(result.css, /\.packed-resolution/);
   await writeFile(join(consumer, 'resolution.css'), result.css);
   await writeFile(
@@ -340,7 +359,39 @@ async function compileConsumerScss(consumer) {
 
 export async function assertPackedResolution({ consumer }) {
   await assertPackageAliases(consumer);
-  await writeFile(join(consumer, 'resolution.ts'), consumerSource);
+  const classAliases = componentEntries
+    .map(
+      (entry, index) => `
+import Canonical${index} from '@carbon/ai-chat-components/es/components/${entry.path}';
+import Legacy${index} from '@carbon/ai-chat-components/es/components/${entry.legacyPath}';
+const canonical${index}: typeof Legacy${index} = Canonical${index};
+const legacy${index}: typeof Canonical${index} = Legacy${index};
+const constructor${index}: CustomElementConstructor = Canonical${index};
+${
+  entry.tag === 'cds-aichat-button-skeleton'
+    ? `
+const canonicalSkeleton = new Canonical${index}();
+const legacySkeleton = new Legacy${index}();
+canonicalSkeleton.disabled = true;
+canonicalSkeleton.href = '/canonical-skeleton';
+legacySkeleton.disabled = false;
+legacySkeleton.href = '/legacy-skeleton';
+// @ts-expect-error The inherited Boolean property must remain precisely typed.
+canonicalSkeleton.disabled = 'yes';
+// @ts-expect-error The compatibility declaration retains the same Boolean type.
+legacySkeleton.disabled = 'yes';
+export { canonicalSkeleton, legacySkeleton };
+`
+    : ''
+}
+export { canonical${index}, legacy${index}, constructor${index} };
+`
+    )
+    .join('\n');
+  await writeFile(
+    join(consumer, 'resolution.ts'),
+    consumerSource + classAliases
+  );
   await compileConsumerTypes(
     consumer,
     'node16',

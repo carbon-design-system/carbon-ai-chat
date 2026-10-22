@@ -10,12 +10,12 @@
 import { createComponent } from '@lit/react';
 import React from 'react';
 
-import CDSAIChatReasoningSteps from '../components/reasoning-steps/src/reasoning-steps.js';
+import { CDSAIChatReasoningSteps } from '../components/aichat-reasoning-steps/index.js';
 import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
 const ReasoningSteps = withWebComponentBridge(
   createComponent({
-    tagName: 'cds-aichat-reasoning-steps',
+    tagName: CDSAIChatReasoningSteps.is,
     elementClass: CDSAIChatReasoningSteps,
     react: React,
   })

@@ -14,10 +14,10 @@ import {
   renderInlineMarkdown,
   type InlineMarkdownOptions,
   type MarkdownPluginHostMountDetail,
-} from '@carbon/ai-chat-components/es/components/markdown/index.js';
-import { markdownToTokenTree } from '@carbon/ai-chat-components/es/components/markdown/src/markdown-token-tree.js';
-import { validateInlineTree } from '@carbon/ai-chat-components/es/components/markdown/src/utils/inline-validation.js';
-import { renderInlineMarkdownInRun } from '@carbon/ai-chat-components/es/components/markdown/src/inline-markdown.js';
+} from '@carbon/ai-chat-components/es/components/aichat-markdown/index.js';
+import { markdownToTokenTree } from '@carbon/ai-chat-components/es/components/aichat-markdown/markdown-token-tree.js';
+import { validateInlineTree } from '@carbon/ai-chat-components/es/components/aichat-markdown/utils/inline-validation.js';
+import { renderInlineMarkdownInRun } from '@carbon/ai-chat-components/es/components/aichat-markdown/inline-markdown.js';
 
 import { useMarkdownSettings } from '../MarkdownWithDefaults/useMarkdownSettings';
 import { consoleError } from '../../../utils/miscUtils';
