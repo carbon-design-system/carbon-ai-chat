@@ -1948,6 +1948,69 @@ HTTP: http://example.com
       expect(forwarded(firstName)).to.equal(false);
     });
 
+    it('leaves a moved plugin host in its new parent when its sender retires', async () => {
+      const { levels, pluginHosts, addMarkdown } =
+        await createRelocationHarness(2);
+      const first = await addMarkdown('::tag::', {
+        markdownItPlugins: [blockTagPlugin],
+      } as Partial<MarkdownElementInstance>);
+      const [firstName, host] = [...pluginHosts.entries()][0];
+      const elsewhere = await fixture<HTMLElement>(html`<aside></aside>`);
+      elsewhere.appendChild(host);
+
+      first.remove();
+      await addMarkdown('::tag::', {
+        markdownItPlugins: [blockTagPlugin],
+      } as Partial<MarkdownElementInstance>);
+
+      expect(host.parentElement === elsewhere).to.equal(true);
+      expect(host.isConnected).to.equal(true);
+      expect(pluginHosts.has(firstName)).to.equal(false);
+      expect(
+        Boolean(levels[1].querySelector(`slot[name="${firstName}"]`))
+      ).to.equal(false);
+    });
+
+    it('keeps an inline run slotted across a same-task move and interleaved offer', async () => {
+      const { levels, mounted, pluginHosts, addMarkdown } =
+        await createRelocationHarness(2);
+      const first = await addMarkdown('Hi :tag:', {
+        markdownItPlugins: [tagPlugin],
+      } as Partial<MarkdownElementInstance>);
+      const [{ slotName: firstName, host }] = mounted;
+
+      first.remove();
+      levels[1].dispatchEvent(
+        new CustomEvent('cds-aichat-markdown-plugin-host-mount', {
+          bubbles: true,
+          composed: true,
+          cancelable: true,
+          detail: {
+            kind: 'pluginFallback',
+            slotName: 'interleaved-offer',
+            html: '<i>second</i>',
+            isInline: false,
+          },
+        })
+      );
+      expect(pluginHosts.has('interleaved-offer')).to.equal(true);
+      expect(
+        Boolean(levels[1].querySelector('slot[name="interleaved-offer"]'))
+      ).to.equal(true);
+      levels[1].shadowRoot?.appendChild(first);
+      await first.updateComplete;
+      await Promise.resolve();
+
+      expect(host.isConnected).to.equal(true);
+      expect(host.assignedSlot !== null).to.equal(true);
+      expect(
+        Boolean(levels[1].querySelector(`slot[name="${firstName}"]`))
+      ).to.equal(true);
+      expect(
+        mounted.filter(({ slotName }) => slotName === firstName).length
+      ).to.equal(1);
+    });
+
     it("drops a removed element's inline-run name on the next offer", async () => {
       const { levels, mounted, addMarkdown } = await createRelocationHarness(2);
       const forwarded = () =>
@@ -2633,6 +2696,51 @@ HTTP: http://example.com
         ['reconnect-fallback'],
         ['reconnect-fallback', 'reconnect-renderer'],
       ]);
+    });
+
+    for (const teardown of ['unmount', 'disconnect']) {
+      it(`leaves a moved fallback host in its new parent on ${teardown}`, async () => {
+        const { controller, mount, target } = await createReconnectTarget();
+        mount({
+          kind: 'pluginFallback',
+          slotName: 'moved-host',
+          html: '<i>x</i>',
+          isInline: false,
+        });
+        const host = controller.hosts.get('moved-host')!;
+        const elsewhere = await fixture<HTMLElement>(html`<aside></aside>`);
+        elsewhere.appendChild(host);
+
+        if (teardown === 'disconnect') {
+          controller.disconnect();
+        } else {
+          target.dispatchEvent(
+            new CustomEvent('cds-aichat-markdown-plugin-host-unmount', {
+              detail: { slotName: 'moved-host' },
+            })
+          );
+        }
+
+        expect(host.parentElement === elsewhere).to.equal(true);
+        expect(controller.hosts.has('moved-host')).to.equal(false);
+      });
+    }
+
+    it('cancels pending pruning when disconnected', async () => {
+      const { target, controller, announced, mount } =
+        await createReconnectTarget();
+      mount({
+        kind: 'pluginFallback',
+        slotName: 'pending-prune',
+        html: '<i>x</i>',
+        isInline: false,
+      });
+      target.remove();
+      controller.disconnect();
+      await Promise.resolve();
+
+      expect(announced).to.deep.equal([['pending-prune']]);
+      expect(controller.hosts.size).to.equal(0);
     });
 
     it('hosts one node per mount once it reconnects', async () => {
