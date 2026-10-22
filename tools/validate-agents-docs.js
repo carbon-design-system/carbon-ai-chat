@@ -15,8 +15,9 @@
  * - Inconsistent formatting
  * - Size budgets, per file and per chain (see MAX_FILE_BYTES below)
  *
- * Discovery starts at every AGENTS.md on disk and follows linked topic docs
- * under references/. Generated output, skill mirrors, and drafts are excluded.
+ * Discovery starts at every AGENTS.md and reference file on disk, then follows
+ * linked topic docs under references/. Generated output, skill mirrors, and
+ * drafts are excluded.
  */
 
 const fs = require('fs');
@@ -32,7 +33,7 @@ const ROOT_AGENTS_FILE = 'AGENTS.md';
 
 // Soft wrapping makes line counts misleading; bytes are a stable size proxy.
 // The chain budget catches ancestor costs that per-file limits miss. These
-// repo limits exclude personal instructions and references loaded on demand;
+// Chain limits exclude personal instructions and references loaded on demand;
 // they do not measure tokens or the active harness's total context allowance.
 const MAX_FILE_BYTES = 12 * 1024;
 const MAX_CHAIN_BYTES = 28 * 1024;
@@ -225,22 +226,97 @@ function shouldSkipDocReference(referencePath) {
   );
 }
 
+function isReferenceDoc(target) {
+  return (
+    path.basename(path.dirname(target)) === 'references' &&
+    /\.mdx?$/.test(target)
+  );
+}
+
 // A link target is an "agents doc" if it points at an AGENTS.md entry point, a
 // legacy AGENTS_* sibling, or a topic doc under a references/ folder.
 function isAgentsDocTarget(target) {
   const base = path.basename(target);
-  const parent = path.basename(path.dirname(target));
   return (
     base === 'AGENTS.md' ||
     (base.startsWith('AGENTS_') && base.endsWith('.md')) ||
-    (parent === 'references' && base.endsWith('.md'))
+    isReferenceDoc(target)
   );
+}
+
+function storybookDirectory(file, url) {
+  if (url !== '/docs/introduction-styling-modifiers--overview') {
+    return undefined;
+  }
+  const templates = {
+    'packages/ai-chat-components/references/overview-lit.template.mdx':
+      '.storybook',
+    'packages/ai-chat-components/references/overview-react.template.mdx':
+      '.storybook-react',
+  };
+  return templates[file];
+}
+
+function checkGuidanceLink(file, url) {
+  const directory = storybookDirectory(file, url);
+  if (!directory) {
+    return checkLocalLink(REPO_ROOT, file, url);
+  }
+  const page = checkLocalLink(
+    REPO_ROOT,
+    file,
+    `../${directory}/welcome/styling-and-modifiers.mdx`
+  );
+  if (page.problem) {
+    return page;
+  }
+  const content = withoutFencedCode(
+    fs.readFileSync(page.target, 'utf8').replace(/\{\/\*[\s\S]*?\*\/\}/g, ' ')
+  );
+  if (
+    !/<Meta\s+title=["']Introduction\/Styling & Modifiers["']\s*\/>/.test(
+      content
+    )
+  ) {
+    return { problem: 'Storybook source has no matching Meta title.' };
+  }
+  return checkStorybookConfig(file, directory, page.target);
+}
+
+function withoutSourceComments(content) {
+  return content.replace(
+    /"(?:\\[\s\S]|[^"\\])*"|'(?:\\[\s\S]|[^'\\])*'|`(?:\\[\s\S]|[^`\\])*`|\/\*[\s\S]*?\*\/|\/\/[^\r\n]*/g,
+    function keepLiteral(token) {
+      return token.startsWith('/') ? ' ' : token;
+    }
+  );
+}
+
+function checkStorybookConfig(file, directory, target) {
+  const config = checkLocalLink(REPO_ROOT, file, `../${directory}/main.js`);
+  if (config.problem) {
+    return config;
+  }
+  const content = withoutSourceComments(fs.readFileSync(config.target, 'utf8'));
+  const stories = content.match(/\bstories\s*:\s*\[([^\]]*)\]/);
+  if (
+    !stories ||
+    !/["']\.\/welcome\/styling-and-modifiers\.mdx["']/.test(stories[1])
+  ) {
+    return { problem: 'Storybook config does not register the source page.' };
+  }
+  if (!/\bdocs\s*:\s*\{\s*defaultName\s*:\s*["']Overview["']/.test(content)) {
+    return {
+      problem: 'Storybook config does not name the docs page Overview.',
+    };
+  }
+  return { target };
 }
 
 // Validate internal links
 function validateInternalLinks(file, content) {
   for (const link of extractLinks(content)) {
-    const { problem } = checkLocalLink(REPO_ROOT, file, link.url);
+    const { problem } = checkGuidanceLink(file, link.url);
     if (problem) {
       error(file, `Broken link: [${link.text}](${link.url}) -> ${problem}`);
     }
@@ -285,6 +361,9 @@ function validatePathNotation(file, content) {
   const links = extractLinks(content);
 
   for (const link of links) {
+    if (storybookDirectory(file, link.url)) {
+      continue;
+    }
     // Skip external links
     if (link.url.startsWith('http://') || link.url.startsWith('https://')) {
       continue;
@@ -342,7 +421,7 @@ function isExcluded(file) {
 }
 
 // Directory-based inventory matches how a harness assembles an AGENTS chain.
-function agentsFilesOnDisk() {
+function guidanceFilesOnDisk() {
   const found = [];
 
   const walk = (dir) => {
@@ -355,7 +434,10 @@ function agentsFilesOnDisk() {
         if (!isExcluded(relative)) {
           walk(relative);
         }
-      } else if (entry.isFile() && entry.name === 'AGENTS.md') {
+      } else if (
+        entry.isFile() &&
+        (entry.name === 'AGENTS.md' || isReferenceDoc(relative))
+      ) {
         found.push(relative);
       }
     }
@@ -367,9 +449,12 @@ function agentsFilesOnDisk() {
 
 // Two budgets: one file, and the chain a harness loads when work happens in
 // that file's directory (the root file plus every AGENTS.md on the path down).
-function validateBudgets(files) {
+function validateBudgets(files, references) {
   const sizes = new Map(
-    files.map((file) => [file, fs.statSync(path.join(REPO_ROOT, file)).size])
+    [...files, ...references].map((file) => [
+      file,
+      fs.statSync(path.join(REPO_ROOT, file)).size,
+    ])
   );
 
   for (const [file, size] of sizes) {
@@ -380,7 +465,7 @@ function validateBudgets(files) {
           MAX_FILE_BYTES
         )} per-file budget by ${formatBytes(
           size - MAX_FILE_BYTES
-        )}. Move topic detail into a references/ file and link to it with a "read when…" hint.`
+        )}. Split by topic or replace copied lists with links; see references/authoring-agents-md.md.`
       );
     }
   }
@@ -413,6 +498,9 @@ function validateBudgets(files) {
       MAX_FILE_BYTES
     )} file and ${formatBytes(MAX_CHAIN_BYTES)} chain budgets.`
   );
+  info(
+    `Checked ${references.length} reference files against the ${formatBytes(MAX_FILE_BYTES)} per-file budget.`
+  );
 }
 
 // Topic links add conditional guidance to the directory-based AGENTS inventory.
@@ -435,7 +523,7 @@ function discoverAgentsFiles(files) {
     discovered.add(file);
 
     for (const link of extractLinks(content)) {
-      const { target } = checkLocalLink(REPO_ROOT, file, link.url);
+      const { target } = checkGuidanceLink(file, link.url);
       if (!target) {
         continue;
       }
@@ -475,8 +563,12 @@ function validateFile(file) {
 // Run validation
 console.log('🔍 Validating AGENTS.md files...\n');
 
-const filesOnDisk = agentsFilesOnDisk();
-const agentsFiles = discoverAgentsFiles(filesOnDisk);
+const inventory = guidanceFilesOnDisk();
+const filesOnDisk = inventory.filter(
+  (file) => path.basename(file) === 'AGENTS.md'
+);
+const referencesOnDisk = inventory.filter(isReferenceDoc);
+const agentsFiles = discoverAgentsFiles(inventory);
 info(
   `Discovered ${agentsFiles.length} AGENTS documentation files from ${filesOnDisk.length} AGENTS.md entry points.`
 );
@@ -485,7 +577,7 @@ for (const file of agentsFiles) {
   validateFile(file);
 }
 
-validateBudgets(filesOnDisk);
+validateBudgets(filesOnDisk, referencesOnDisk);
 
 console.log('\n' + '='.repeat(60));
 console.log(`✅ Validation complete: ${errors} errors, ${warnings} warnings`);

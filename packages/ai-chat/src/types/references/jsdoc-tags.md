@@ -38,4 +38,3 @@ Symbols scheduled for removal. Always name the replacement and the target major,
 
 - [src/types/AGENTS.md](../AGENTS.md) — the JSDoc bar these tags sit inside
 - [cross-package-types.md](cross-package-types.md) — tagging a re-declared `@carbon/ai-chat-components` type
-- [jsdoc-examples.md](jsdoc-examples.md) — worked good/bad examples

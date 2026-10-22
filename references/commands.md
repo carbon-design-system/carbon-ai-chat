@@ -2,8 +2,6 @@
 
 Load this when you need to build, watch, lint, format, test, or run an example/Storybook. Run from the repo root unless noted.
 
-> **Ask first** if the user has `npm run aiChat:start` running — don't kick off a parallel build/watch; it races the watcher.
->
 > **Before a test that reads built output**, run the [build preflight](#build-preflight).
 
 ## Common commands
@@ -80,7 +78,7 @@ A build can meet all three and still be stale: they do not cover leftover `node_
 
 ### With a watcher running
 
-The ask-first rule at the top of this file applies here. If `npm run aiChat:start` is running, let it build the packages. A second build of the same packages races it on the same files.
+Follow the [root build/watch rule](../AGENTS.md#always-on-rules). If `npm run aiChat:start` is running, let it build the packages. A second build of the same packages races it on the same files.
 
 A watcher is evidence only for what it watches, and only once a rebuild succeeds:
 
@@ -123,17 +121,6 @@ For a run that reads built output, give each of these with the result:
 
 Name files in both plainly, with no underscore prefix. A shared module says so with a `-lib` suffix ([`scripts/measure-lib.mjs`](../scripts/measure-lib.mjs)), not with a leading `_`.
 
-## Running a single example or test
-
-Each lives with the thing it tests — no recipes are restated here:
-
-- **One example** → [examples/AGENTS.md](../examples/AGENTS.md) ("Running an example").
-- **One `@carbon/ai-chat` test** (Jest) → [packages/ai-chat/references/tests.md](../packages/ai-chat/references/tests.md).
-- **One `@carbon/ai-chat-components` test** (two runners — `@web/test-runner` + Jest) → [packages/ai-chat-components/AGENTS.md](../packages/ai-chat-components/AGENTS.md).
-
 ## Related guidance
 
-- [Root AGENTS.md](../AGENTS.md) — repo router
-- [definition-of-done.md](definition-of-done.md) — which gate to run before shipping
-- [demo/AGENTS.md](../demo/AGENTS.md) — read when running the demo's Playwright suite: its server and port
 - [conventions.md](conventions.md) — commits, branches, license headers, hooks

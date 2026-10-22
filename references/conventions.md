@@ -37,10 +37,7 @@ Every source file needs the Apache-2.0 header. Enforced by `npm run lint:license
 - `.husky/pre-commit` runs `lint-staged` only — prettier (+ eslint) on `*.{js,jsx,cjs,mjs,ts,tsx}`, prettier (+ stylelint) on `*.scss`, prettier on `*.md`.
 - `.husky/commit-msg` runs commitlint.
 
-Because pre-commit only touches staged files, and its license step fails on a missing header rather than adding one, run `npm run lint` + `npm run lint:license` before opening a PR if you touched more than one file.
-
 ## Related guidance
 
 - [Root AGENTS.md](../AGENTS.md) — repo overview and pointer index
-- [code-patterns.md](code-patterns.md) — naming, SCSS, component placement, comments
 - [tone.md](tone.md) — voice & quick rules for developer-facing copy

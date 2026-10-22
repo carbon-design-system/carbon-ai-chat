@@ -13,7 +13,7 @@ npm run start --workspace=@carbon/ai-chat-examples-react-basic-float
 PORT=3001 npm run start --workspace=@carbon/ai-chat-examples-react-basic-custom-element-fullscreen
 ```
 
-When `npm run aiChat:start` is running in another terminal, example Vite dev servers hot-reload on package rebuilds. This relies on each `vite.config.ts` listing `@carbon/ai-chat` and `@carbon/ai-chat-components` under `optimizeDeps.exclude` — without that, Vite pre-bundles the symlinked workspace packages and a rebuild will not reach the browser.
+Each Vite config excludes the chat packages from `optimizeDeps`, so package rebuilds reach the browser.
 
 ## Adding a new example
 
@@ -25,15 +25,15 @@ When `npm run aiChat:start` is running in another terminal, example Vite dev ser
 
 ## Smoke tests
 
-Playwright is the smoke-test mechanism for examples. The golden examples are covered by one central suite in [shared/playwright/](shared/playwright/): run it with `npm run test:e2e:goldens`. Golden examples use the central config, dependency, and script. Other Vite examples can use `scaffold:example-e2e` for a local suite. `tests-vitest-happydom` and both `tests-jest-*` examples use `test` for another runner. The existing `frameworks-react-17` and `frameworks-react-18` Playwright suites also use `test`. Keep them in the root `npm test` run until they move to the shared setup in #1424.
+Playwright is the smoke-test mechanism for examples. The golden examples are covered by one central suite in [shared/playwright/](shared/playwright/): run it with `npm run test:e2e:goldens`. Golden examples use the central config, dependency, and script. Other Vite examples can use `scaffold:example-e2e` for a local suite. `tests-vitest-happydom` and both `tests-jest-*` examples use `test` for another runner. The existing `frameworks-react-17` and `frameworks-react-18` Playwright suites also use `test`; they keep their own suites under root `npm test`.
 
-Read [playwright.md](references/playwright.md) before adding or changing an example's tests. It carries where specs live, how to add a target or scaffold a local suite, how a port is allocated, the selector rules, and the four examples that are deliberately skipped.
+Read [playwright.md](references/playwright.md) before adding or changing an example's tests. It carries where specs live, how to add a target or scaffold a local suite, how a port is allocated, the selector rules, and the four examples that are deliberately skipped. It routes to [playwright-agents.md](references/playwright-agents.md) when generating a spec with Playwright's agents, [playwright-local-suite.md](references/playwright-local-suite.md) when scaffolding a suite outside the golden set, and [playwright-coverage.md](references/playwright-coverage.md) when measuring a suite against the coverage target.
 
 ## Definition of done
 
 - `npm run build --workspace=<example>` exits 0.
 - `CAIC_E2E_TARGETS=<target> npm run test:e2e:goldens` passes for each of the example's targets in [targets.ts](shared/playwright/targets.ts). `--project` alone still builds every target's example.
-- `CAIC_E2E_TARGETS=<targets> npm run test:e2e:coverage` ran, and the PR explains any example below the [coverage target](references/playwright.md#coverage-target).
+- `CAIC_E2E_TARGETS=<targets> npm run test:e2e:coverage` ran, and the PR explains any example below the [coverage target](references/playwright-coverage.md#coverage-target).
 - `npm run test:e2e --workspace=<example>` passes, if the example has a local `test:e2e` script.
 - `npm run test --workspace=<example>` passes, if the example has a `test` script.
 - README follows the [Indexer Contract](references/indexer-contract.md).
@@ -48,25 +48,6 @@ Every new example adds a shared Playwright suite: a spec in [tests/](shared/play
 
 **README alignment rule**: an example's section in the aggregator README ([react/README.md](react/README.md) or [web-components/README.md](web-components/README.md)) must stay in sync with the example's own README — title, summary, start command, and APIs table. Run `npm run verify:example-readmes` (also in `ci-check`) to check; `npm run repair:example-readmes -- --from=examples` to regenerate the aggregator from the per-example READMEs.
 
-**Title-naming rule**: a README's `# H1` title mirrors the slug's prefix family so related examples cluster visually in the aggregator.
-
-| Slug pattern | Title format | Example |
-| --- | --- | --- |
-| Shares a prefix with 3+ siblings (`custom-element-*`, `history-*`, `prompt-line-*`, `frameworks-*`, `tests-*`) | `<Prefix> / <Variant>` (capitalize prefix; sentence-case variant) | `prompt-line-typeahead` → `Prompt line / Typeahead` |
-| Canonical baseline (`basic-*`) | `Basic / <Variant>` | `basic-float` → `Basic / Float` |
-| Pure variant of one base (e.g. `reasoning-steps-controlled` of `reasoning-steps`) | `<Base name> (<variant>)` | `workspace-sidebar` → `Workspace (sidebar)` |
-| Stands alone (no shared prefix family) | Flat sentence case | `feedback` → `Feedback` |
-| Sub-variant of a slash-family entry | Keep the slash, append the variant in parens (avoid stacking a second slash) | `prompt-line-typeahead-custom` → `Prompt line / Typeahead (custom list)` |
-
-Capitalize a slug-family prefix the first time you introduce a new family, even when the slug is a singleton today, if you anticipate siblings (e.g. `Integrations / watsonx.ai`).
+**Title naming**: follow the [Indexer Contract](references/indexer-contract.md#title-naming).
 
 **Inline comments rule**: comments are the product here, and how to word them is [example-copy.md](../.bob/skills/caic-copy-writer/references/example-copy.md) — type 5. Read it before writing one. The constraint driving those rules is local: the Carbon MCP indexer reads each example in isolation, so nothing in this directory may point at another one.
-
-## Related guidance
-
-- [Root AGENTS.md](../AGENTS.md) — monorepo conventions
-- [indexer-contract.md](references/indexer-contract.md) — README format for the docs-site indexer
-- [example-copy.md](../.bob/skills/caic-copy-writer/references/example-copy.md) — how to word a README and a comment here (type 5)
-- [tone.md](../references/tone.md) — voice and quick rules
-- [react/AGENTS.md](react/AGENTS.md) — React flavor deltas
-- [web-components/AGENTS.md](web-components/AGENTS.md) — Web Components flavor deltas
