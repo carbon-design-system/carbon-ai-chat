@@ -1561,6 +1561,29 @@ HTTP: http://example.com
       `<span class="cds-test-tag">tag</span>`;
   }
 
+  /** Renders a `::tag::` line as block plugin output. */
+  function blockTagPlugin(md: any) {
+    md.block.ruler.before(
+      'paragraph',
+      'cds_test_block_tag',
+      (state: any, startLine: number, _endLine: number, silent: boolean) => {
+        const start = state.bMarks[startLine] + state.tShift[startLine];
+        if (state.src.slice(start, state.eMarks[startLine]) !== '::tag::') {
+          return false;
+        }
+        if (!silent) {
+          const token = state.push('cds_test_block_tag', '', 0);
+          token.map = [startLine, startLine + 1];
+          token.block = true;
+        }
+        state.line = startLine + 1;
+        return true;
+      }
+    );
+    md.renderer.rules.cds_test_block_tag = () =>
+      `<div class="cds-test-block-tag">tag</div>`;
+  }
+
   describe('slot names across markdown elements', () => {
     const HARNESS_TAG = 'cds-test-markdown-relocation-host';
     const codeMarkdown = '```json\n{ "name": "Alice" }\n```';
@@ -1792,6 +1815,223 @@ HTTP: http://example.com
           host
         );
       }
+    });
+
+    describe('first connect of plugin output', () => {
+      const PROBE_TAG = 'cds-test-flat-tree-probe';
+      const connects: boolean[] = [];
+
+      /** Whether `node` reaches the document through the flat tree. */
+      function isInFlatTree(node: Node) {
+        let current: Node | null = node;
+        while (current) {
+          const parent: Node | null = current.parentNode;
+          if (parent === document) {
+            return true;
+          }
+          if (parent instanceof Element && parent.shadowRoot) {
+            current = (current as Element).assignedSlot;
+          } else if (parent instanceof ShadowRoot) {
+            current = parent.host;
+          } else {
+            current = parent;
+          }
+        }
+        return false;
+      }
+
+      if (!customElements.get(PROBE_TAG)) {
+        customElements.define(
+          PROBE_TAG,
+          class extends HTMLElement {
+            connectedCallback() {
+              connects.push(isInFlatTree(this));
+            }
+          }
+        );
+      }
+
+      /** Renders `:probe:` inline and a `::probe::` line as a probe element. */
+      function probePlugin(md: any) {
+        md.inline.ruler.before(
+          'text',
+          'cds_test_probe',
+          (state: any, silent: boolean) => {
+            if (!state.src.slice(state.pos).startsWith(':probe:')) {
+              return false;
+            }
+            if (!silent) {
+              state.push('cds_test_probe', '', 0);
+            }
+            state.pos += ':probe:'.length;
+            return true;
+          }
+        );
+        md.block.ruler.before(
+          'paragraph',
+          'cds_test_probe_block',
+          (
+            state: any,
+            startLine: number,
+            _endLine: number,
+            silent: boolean
+          ) => {
+            const start = state.bMarks[startLine] + state.tShift[startLine];
+            if (
+              state.src.slice(start, state.eMarks[startLine]) !== '::probe::'
+            ) {
+              return false;
+            }
+            if (!silent) {
+              const token = state.push('cds_test_probe_block', '', 0);
+              token.map = [startLine, startLine + 1];
+              token.block = true;
+            }
+            state.line = startLine + 1;
+            return true;
+          }
+        );
+        md.renderer.rules.cds_test_probe = () =>
+          `<${PROBE_TAG}></${PROBE_TAG}>`;
+        md.renderer.rules.cds_test_probe_block = () =>
+          `<${PROBE_TAG}></${PROBE_TAG}>`;
+      }
+
+      for (const hops of [1, 2, 3]) {
+        for (const [label, source] of [
+          ['inline', 'Hi :probe:'],
+          ['block', '::probe::'],
+        ]) {
+          it(`slots ${label} plugin output before it connects, ${hops} hop(s) out`, async () => {
+            connects.length = 0;
+            const { addMarkdown } = await createRelocationHarness(hops);
+            await addMarkdown(source, {
+              markdownItPlugins: [probePlugin],
+            } as Partial<MarkdownElementInstance>);
+
+            expect(connects.length, 'the probe should connect').to.be.above(0);
+            expect(
+              connects[0],
+              'its first connect should already be in the flat tree'
+            ).to.equal(true);
+          });
+        }
+      }
+    });
+
+    // Booleans, not nodes: a failed assertion on a DOM node walks its whole
+    // graph to print it.
+    it("drops a removed element's plugin host and name on the next offer", async () => {
+      const { harness, levels, pluginHosts, addMarkdown } =
+        await createRelocationHarness(2);
+      const forwarded = (name: string) =>
+        Boolean(levels[1].querySelector(`:scope > slot[name="${name}"]`));
+      const plugins = [blockTagPlugin];
+      const first = await addMarkdown('::tag::', {
+        markdownItPlugins: plugins,
+      } as Partial<MarkdownElementInstance>);
+      const [firstName] = [...pluginHosts.keys()];
+      expect(firstName, 'the block output gets a host').to.be.a('string');
+      expect(forwarded(firstName)).to.equal(true);
+
+      // Its unmount fires from its own disconnect and never reaches us.
+      first.remove();
+      await addMarkdown('::tag::', {
+        markdownItPlugins: plugins,
+      } as Partial<MarkdownElementInstance>);
+
+      expect(pluginHosts.has(firstName)).to.equal(false);
+      expect(pluginHosts.size).to.equal(1);
+      expect(
+        Boolean(harness.querySelector(`:scope > [slot="${firstName}"]`))
+      ).to.equal(false);
+      expect(forwarded(firstName)).to.equal(false);
+    });
+
+    it('leaves a moved plugin host in its new parent when its sender retires', async () => {
+      const { levels, pluginHosts, addMarkdown } =
+        await createRelocationHarness(2);
+      const first = await addMarkdown('::tag::', {
+        markdownItPlugins: [blockTagPlugin],
+      } as Partial<MarkdownElementInstance>);
+      const [firstName, host] = [...pluginHosts.entries()][0];
+      const elsewhere = await fixture<HTMLElement>(html`<aside></aside>`);
+      elsewhere.appendChild(host);
+
+      first.remove();
+      await addMarkdown('::tag::', {
+        markdownItPlugins: [blockTagPlugin],
+      } as Partial<MarkdownElementInstance>);
+
+      expect(host.parentElement === elsewhere).to.equal(true);
+      expect(host.isConnected).to.equal(true);
+      expect(pluginHosts.has(firstName)).to.equal(false);
+      expect(
+        Boolean(levels[1].querySelector(`slot[name="${firstName}"]`))
+      ).to.equal(false);
+    });
+
+    it('keeps an inline run slotted across a same-task move and interleaved offer', async () => {
+      const { levels, mounted, pluginHosts, addMarkdown } =
+        await createRelocationHarness(2);
+      const first = await addMarkdown('Hi :tag:', {
+        markdownItPlugins: [tagPlugin],
+      } as Partial<MarkdownElementInstance>);
+      const [{ slotName: firstName, host }] = mounted;
+
+      first.remove();
+      levels[1].dispatchEvent(
+        new CustomEvent('cds-aichat-markdown-plugin-host-mount', {
+          bubbles: true,
+          composed: true,
+          cancelable: true,
+          detail: {
+            kind: 'pluginFallback',
+            slotName: 'interleaved-offer',
+            html: '<i>second</i>',
+            isInline: false,
+          },
+        })
+      );
+      expect(pluginHosts.has('interleaved-offer')).to.equal(true);
+      expect(
+        Boolean(levels[1].querySelector('slot[name="interleaved-offer"]'))
+      ).to.equal(true);
+      levels[1].shadowRoot?.appendChild(first);
+      await first.updateComplete;
+      await Promise.resolve();
+
+      expect(host.isConnected).to.equal(true);
+      expect(host.assignedSlot !== null).to.equal(true);
+      expect(
+        Boolean(levels[1].querySelector(`slot[name="${firstName}"]`))
+      ).to.equal(true);
+      expect(
+        mounted.filter(({ slotName }) => slotName === firstName).length
+      ).to.equal(1);
+    });
+
+    it("drops a removed element's inline-run name on the next offer", async () => {
+      const { levels, mounted, addMarkdown } = await createRelocationHarness(2);
+      const forwarded = () =>
+        Array.from(
+          levels[1].querySelectorAll<HTMLSlotElement>(':scope > slot[name]'),
+          (slot) => slot.name
+        );
+      const plugins = [tagPlugin];
+      const first = await addMarkdown('Hi :tag:', {
+        markdownItPlugins: plugins,
+      } as Partial<MarkdownElementInstance>);
+      const [{ slotName: firstName }] = mounted;
+      expect(forwarded()).to.include(firstName);
+
+      first.remove();
+      await addMarkdown('Bye :tag:', {
+        markdownItPlugins: plugins,
+      } as Partial<MarkdownElementInstance>);
+
+      expect(forwarded()).to.not.include(firstName);
+      expect(forwarded().length).to.equal(1);
     });
 
     it('namespaces plugin-fallback slot names per element', async () => {
@@ -2456,6 +2696,51 @@ HTTP: http://example.com
         ['reconnect-fallback'],
         ['reconnect-fallback', 'reconnect-renderer'],
       ]);
+    });
+
+    for (const teardown of ['unmount', 'disconnect']) {
+      it(`leaves a moved fallback host in its new parent on ${teardown}`, async () => {
+        const { controller, mount, target } = await createReconnectTarget();
+        mount({
+          kind: 'pluginFallback',
+          slotName: 'moved-host',
+          html: '<i>x</i>',
+          isInline: false,
+        });
+        const host = controller.hosts.get('moved-host')!;
+        const elsewhere = await fixture<HTMLElement>(html`<aside></aside>`);
+        elsewhere.appendChild(host);
+
+        if (teardown === 'disconnect') {
+          controller.disconnect();
+        } else {
+          target.dispatchEvent(
+            new CustomEvent('cds-aichat-markdown-plugin-host-unmount', {
+              detail: { slotName: 'moved-host' },
+            })
+          );
+        }
+
+        expect(host.parentElement === elsewhere).to.equal(true);
+        expect(controller.hosts.has('moved-host')).to.equal(false);
+      });
+    }
+
+    it('cancels pending pruning when disconnected', async () => {
+      const { target, controller, announced, mount } =
+        await createReconnectTarget();
+      mount({
+        kind: 'pluginFallback',
+        slotName: 'pending-prune',
+        html: '<i>x</i>',
+        isInline: false,
+      });
+      target.remove();
+      controller.disconnect();
+      await Promise.resolve();
+
+      expect(announced).to.deep.equal([['pending-prune']]);
+      expect(controller.hosts.size).to.equal(0);
     });
 
     it('hosts one node per mount once it reconnects', async () => {
