@@ -517,6 +517,117 @@ describe('ChatInstance.messaging.addMessageChunk', () => {
     }
   );
 
+  it.each(['send', 'direct'])(
+    'settles partial items after a chunk slot rejects through %s',
+    async (mode) => {
+      const failure = new TypeError('host chunk handler failed');
+      const onError = jest.fn();
+      const writeChunks = async (chat: ChatInstance) => {
+        for (const text of ['Hello, ', 'world']) {
+          await chat.messaging.addMessageChunk({
+            streaming_metadata: { response_id: 'failed-response' },
+            partial_item: {
+              response_type: MessageResponseTypes.TEXT,
+              streaming_metadata: { id: 'text' },
+              text,
+            },
+          });
+        }
+        await chat.messaging.addMessageChunk({
+          streaming_metadata: { response_id: 'failed-response' },
+          partial_item: {
+            response_type: MessageResponseTypes.USER_DEFINED,
+            streaming_metadata: { id: 'custom' },
+            user_defined: { value: 'test' },
+          },
+        });
+      };
+      const { instance, store, serviceManager } =
+        await renderChatAndGetInstanceWithStore({
+          ...createBaseConfig(),
+          onError,
+          messaging: {
+            skipWelcome: true,
+            customSendMessage: (_request, _options, chat) => writeChunks(chat),
+          },
+        });
+      jest.spyOn(console, 'error').mockImplementation(() => undefined);
+
+      await instance.messaging.addMessageChunk({
+        streaming_metadata: { response_id: 'failed-response' },
+        complete_item: {
+          response_type: MessageResponseTypes.TEXT,
+          streaming_metadata: { id: 'completed' },
+          text: 'Already complete',
+        },
+      });
+      const completedItem =
+        store.getState().allMessageItemsByID['failed-response-completed'];
+      const otherResponse: MessageResponse = {
+        id: 'other-response',
+        output: {
+          generic: [
+            {
+              response_type: MessageResponseTypes.TEXT,
+              text: 'Still streaming',
+            },
+          ],
+        },
+      };
+      await instance.messaging.upsertMessage(
+        otherResponse.id,
+        MessageState.STREAMING,
+        () => otherResponse
+      );
+      const otherItem = Object.values(
+        store.getState().allMessageItemsByID
+      ).find((item) => item.fullMessageID === otherResponse.id);
+      instance.on({
+        type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
+        handler: async () => {
+          expect(
+            store.getState().allMessageItemsByID['failed-response-text']
+              .ui_state.streamingState.isDone
+          ).toBe(false);
+          throw failure;
+        },
+      });
+
+      const result =
+        mode === 'send' ? instance.send('start') : writeChunks(instance);
+      if (mode === 'send') {
+        await expect(result).rejects.toThrow(failure.message);
+      } else {
+        await expect(result).rejects.toBe(failure);
+      }
+
+      const items = store.getState().allMessageItemsByID;
+      expect(items['failed-response-text'].item).toMatchObject({
+        text: 'Hello, world',
+      });
+      for (const itemID of ['text', 'custom']) {
+        expect(
+          items[`failed-response-${itemID}`].ui_state.streamingState
+        ).toMatchObject({
+          isDone: true,
+          chunks: [],
+        });
+      }
+      expect(items['failed-response-completed']).toBe(completedItem);
+      expect(items[otherItem.ui_state.id]).toBe(otherItem);
+      expect(otherItem.ui_state.streamingState.isDone).toBe(false);
+      expect(
+        serviceManager.messageService.inboundStreaming.getStreamingMeta(
+          'failed-response'
+        )
+      ).toBeUndefined();
+      expect(
+        serviceManager.messageService.inboundStreaming.streamingMessageID
+      ).toBeNull();
+      expect(onError).not.toHaveBeenCalled();
+    }
+  );
+
   it.each([true, false])(
     'keeps callback failures local after a final response advances the queue (request ID: %p)',
     async (includeRequestID) => {
