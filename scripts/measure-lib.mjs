@@ -191,7 +191,7 @@ function untrackedRows(source) {
   }
   return git(['ls-files', '--others', '--exclude-standard', '-z'])
     .split('\0')
-    .filter(Boolean)
+    .filter((path) => path !== '' && !path.endsWith('/'))
     .map((path) => {
       const bytes = worktreeBytes(path);
       const binary = bytes.subarray(0, 8000).includes(0);
