@@ -7,7 +7,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { css, html, LitElement, unsafeCSS } from 'lit';
+import { css, html, LitElement, nothing, unsafeCSS } from 'lit';
 import { property, state } from 'lit/decorators.js';
 
 import { carbonElement } from '../../../../globals/decorators/carbon-element.js';
@@ -238,6 +238,15 @@ class AutocompleteElement extends LitElement {
   /** Whether the open announcement has already fired for this show. */
   private _openAnnounced = false;
 
+  /** Total item count from the last announcement, used to detect count changes. */
+  private _previousTotalItems = 0;
+
+  /**
+   * Pending timer for filtered count announcement. Keystroke updates are debounced
+   * so rapid typing does not interrupt typing echo with an announcement on every key.
+   */
+  private _filterAnnouncePending: number | null = null;
+
   connectedCallback() {
     super.connectedCallback();
     this.addEventListener('keydown', this._handleKeydown);
@@ -253,6 +262,10 @@ class AutocompleteElement extends LitElement {
     if (this._moveAnnouncePending !== null) {
       clearTimeout(this._moveAnnouncePending);
       this._moveAnnouncePending = null;
+    }
+    if (this._filterAnnouncePending !== null) {
+      clearTimeout(this._filterAnnouncePending);
+      this._filterAnnouncePending = null;
     }
   }
 
@@ -289,17 +302,32 @@ class AutocompleteElement extends LitElement {
       }
       const totalItems = this._flatList.length;
       if (totalItems === 0) {
+        if (this._filterAnnouncePending !== null) {
+          clearTimeout(this._filterAnnouncePending);
+          this._filterAnnouncePending = null;
+        }
         this._focusedIndex = -1;
         this._setUserHasNavigated(false);
         this._announcer.announce(this.i18n.noSuggestions);
         this._openAnnounced = false;
+        this._previousTotalItems = 0;
         return;
       }
       this._focusedIndex = -1;
       this._setUserHasNavigated(false);
       if (!this._openAnnounced) {
         this._openAnnounced = true;
+        this._previousTotalItems = totalItems;
         this._announcer.announce(this.i18n.suggestionsAvailable(totalItems));
+      } else if (totalItems !== this._previousTotalItems) {
+        this._previousTotalItems = totalItems;
+        if (this._filterAnnouncePending !== null) {
+          clearTimeout(this._filterAnnouncePending);
+        }
+        this._filterAnnouncePending = window.setTimeout(() => {
+          this._filterAnnouncePending = null;
+          this._announcer.announce(this.i18n.suggestionsAvailable(totalItems));
+        }, 250);
       }
     }
   }
@@ -525,7 +553,12 @@ class AutocompleteElement extends LitElement {
   }
 
   private _dismiss() {
+    if (this._filterAnnouncePending !== null) {
+      clearTimeout(this._filterAnnouncePending);
+      this._filterAnnouncePending = null;
+    }
     this._openAnnounced = false;
+    this._previousTotalItems = 0;
     this._setUserHasNavigated(false);
     this._announcer.announce(this.i18n.suggestionsClosed);
     this.dispatchEvent(
@@ -714,7 +747,7 @@ class AutocompleteElement extends LitElement {
           hasGroups
             ? html`
                 <div
-                  aria-activedescendant="${activeOptionId}"
+                  aria-activedescendant="${activeOptionId ?? nothing}"
                   aria-label="${this.i18n.listboxLabel}"
                   class="${blockClass}__items"
                   id="${blockClass}-listbox"
@@ -769,7 +802,7 @@ class AutocompleteElement extends LitElement {
             : html`
                 <!-- Flat items only -->
                 <ul
-                  aria-activedescendant="${activeOptionId}"
+                  aria-activedescendant="${activeOptionId ?? nothing}"
                   aria-label="${this.i18n.listboxLabel}"
                   class="${blockClass}__items"
                   id="${blockClass}-listbox"

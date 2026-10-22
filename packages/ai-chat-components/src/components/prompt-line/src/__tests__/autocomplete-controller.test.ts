@@ -767,6 +767,49 @@ describe('AutocompleteController', () => {
       );
       expect(received).to.deep.equal([]);
     });
+
+    it('does not intercept Tab or Escape when trigger is active but items resolved to zero', async () => {
+      const { editorDom, promptLine } = makeEditorStubWithDom();
+      const listEl = document.createElement('div');
+      const received = captureSyntheticKeys(listEl);
+      const editorEvents: string[] = [];
+      editorDom.addEventListener('keydown', (e) => {
+        // Capture events that were NOT stopped (i.e. not intercepted)
+        if (!e.cancelBubble) {
+          editorEvents.push((e as KeyboardEvent).key);
+        }
+      });
+
+      const controller = new AutocompleteController({
+        mention: { trigger: '@', items: () => [] },
+        onChange: () => {},
+      });
+      controller.setPromptLine(promptLine);
+      controller.setListElement(listEl);
+      controller.handleTriggerChange({
+        type: 'mention',
+        query: 'xyz',
+        triggerOffset: 0,
+      });
+      // Wait for the async resolve to settle (items = [])
+      await flush();
+
+      for (const key of ['Tab', 'Escape', 'ArrowDown', 'Home']) {
+        const event = new KeyboardEvent('keydown', {
+          key,
+          bubbles: true,
+          cancelable: true,
+        });
+        editorDom.dispatchEvent(event);
+        // The event must NOT have been prevented — key forwarding should be inactive
+        expect(event.defaultPrevented).to.equal(
+          false,
+          `${key} should not be intercepted when items is empty`
+        );
+      }
+      // Nothing was forwarded to the list element
+      expect(received).to.deep.equal([]);
+    });
   });
 
   it('destroy() stops further updates', async () => {
