@@ -9,6 +9,7 @@
 
 import { captureMessageEvent } from '../../utils/messageEventOwnership';
 import cloneDeep from 'lodash-es/cloneDeep.js';
+import isEqual from 'lodash-es/isEqual.js';
 import merge from 'lodash-es/merge.js';
 import { DeepPartial } from '../../../types/utilities/DeepPartial';
 
@@ -597,6 +598,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
         localMessageID,
         additionalData
       );
+      this.commitOutgoingEdits(originalMessage, textMessage);
       messageSucceeded = true;
       serviceManager.conversationLifecycleService.clearFailure(failure);
       serviceManager.conversationLifecycleService.requestFinished(
@@ -622,6 +624,44 @@ class HumanAgentServiceImpl implements HumanAgentService {
       this.setMessageErrorState(
         textMessage.fullMessageID,
         MessageErrorState.FAILED
+      );
+    } finally {
+      this.commitOutgoingEdits(originalMessage, textMessage);
+    }
+  }
+
+  /**
+   * Stores host edits made to an outgoing message after it was added. The service desk callback and
+   * HUMAN_AGENT_SEND handlers may write to the request, while the chat keeps owning its error state.
+   */
+  private commitOutgoingEdits(
+    originalMessage: Message,
+    textMessage: LocalMessageItem<TextItem>
+  ) {
+    const { store } = this.serviceManager;
+    const state = store.getState();
+    const storedMessage = state.allMessagesByID[originalMessage.id];
+    if (!storedMessage) {
+      return;
+    }
+    const errorState = storedMessage.history?.error_state;
+    const edited = {
+      ...originalMessage,
+      history: {
+        ...originalMessage.history,
+        ...(errorState === undefined ? {} : { error_state: errorState }),
+      },
+    };
+    if (!isEqual(storedMessage, edited)) {
+      store.dispatch(actions.updateMessage(cloneDeep(edited)));
+    }
+    const storedItem = state.allMessageItemsByID[textMessage.ui_state.id];
+    if (storedItem && !isEqual(storedItem.item, textMessage.item)) {
+      store.dispatch(
+        actions.updateLocalMessageItem({
+          ...storedItem,
+          item: cloneDeep(textMessage.item),
+        })
       );
     }
   }

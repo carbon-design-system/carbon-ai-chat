@@ -743,6 +743,41 @@ describe('conversation status', () => {
     }
   );
 
+  it('stops a chunk stream that starts after its sender settles', async () => {
+    let signal: AbortSignal;
+    const { instance, serviceManager } =
+      await renderChatAndGetInstanceWithStore({
+        ...createBaseConfig(),
+        messaging: {
+          skipWelcome: true,
+          customSendMessage: async (_request, options) => {
+            signal = options.signal;
+          },
+        },
+      });
+    await instance.send('question');
+    expect(instance.state.get().status).toBe('ready');
+
+    const update = (text: string) =>
+      instance.messaging.addMessageChunk({
+        streaming_metadata: { response_id: 'late-answer' },
+        partial_item: {
+          response_type: MessageResponseTypes.TEXT,
+          text,
+          streaming_metadata: { id: 'text', cancellable: true },
+        },
+      });
+    await update('before');
+    expect(instance.state.get().status).toBe('streaming');
+
+    await serviceManager.messageService.cancelCurrentMessageRequest();
+
+    expect(signal.aborted).toBe(true);
+    expect(instance.state.get().status).toBe('ready');
+    await update('after');
+    expect(instance.state.get().status).toBe('ready');
+  });
+
   it('preserves mutable legacy send-error data without exposing an error snapshot', async () => {
     const onError = jest.fn();
     const failure = new Error('failed');
