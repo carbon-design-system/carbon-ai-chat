@@ -968,6 +968,43 @@ async function flushFrames(count = 8): Promise<void> {
   }
 }
 
+/** A pin target whose nested markdown holds the pin open until `finish()` is called. */
+function createHeldPin(id: string) {
+  const pinnable = createRealPinnableMessage(id, 200, 80);
+  let finish: () => void = () => {};
+  const markdown = document.createElement('cds-aichat-markdown');
+  Object.defineProperty(markdown, 'updateComplete', {
+    value: new Promise<void>((resolve) => {
+      finish = resolve;
+    }),
+  });
+  pinnable.element?.appendChild(markdown);
+  return { pinnable, finish: () => finish() };
+}
+
+/**
+ * Creates a connected controller with an empty message list in a 500px-tall container.
+ * Call `addMessages` to hand it a new list the way the host would after an update.
+ */
+function createConnectedController() {
+  const h = createHarness({
+    scrollTop: 0,
+    clientHeight: 500,
+    scrollHeight: 1000,
+    offsetHeight: 500,
+    rectTop: 0,
+  });
+  const controller = new MessagesScrollController(h.host);
+  h.setMessages([]);
+  controller.connect();
+
+  const addMessages = (pinnable: PortableMessage) => {
+    h.setMessages([createPortableMessage({ id: 'ui-0' }), pinnable]);
+    controller.onHostUpdated(null);
+  };
+  return { h, controller, addMessages };
+}
+
 describe('MessagesScrollController', () => {
   it('isScrolledAwayFromBottom() reflects hasMessagesOutOfView using the tracked domSpacerHeight', () => {
     // domSpacerHeight starts at 0 (nothing pinned). With scrollHeight 2000,
@@ -1157,6 +1194,94 @@ describe('MessagesScrollController', () => {
 
     controller.disconnect();
   });
+  it('a later scroll-to-bottom request replaces an earlier pin that is waiting on layout', async () => {
+    const { h, controller, addMessages } = createConnectedController();
+    const { pinnable, finish } = createHeldPin('req-1');
+
+    addMessages(pinnable);
+    await flushFrames();
+
+    controller.doAutoScroll({ scrollToBottom: 0 });
+    await flushFrames();
+    finish();
+    await flushFrames();
+
+    expect(h.container.scrollTop).toBe(500);
+    expect(h.setSpacerHeight).not.toHaveBeenCalledWith(240);
+
+    controller.disconnect();
+  });
+
+  it('a request replaced before its frame makes no writes', async () => {
+    const h = createHarness({
+      scrollTop: 0,
+      clientHeight: 500,
+      scrollHeight: 1000,
+      offsetHeight: 500,
+    });
+    const writes: number[] = [];
+    Object.defineProperty(h.container, 'scrollTop', {
+      configurable: true,
+      get: () => writes[writes.length - 1] ?? 0,
+      set: (value: number) => {
+        writes.push(value);
+      },
+    });
+
+    const controller = new MessagesScrollController(h.host);
+    controller.connect();
+
+    controller.doAutoScroll({ scrollToTop: 30 });
+    controller.doAutoScroll({ scrollToTop: 10 });
+    await flushFrames();
+
+    expect(writes).toEqual([10]);
+
+    controller.disconnect();
+  });
+
+  it('a lone pin request still waits for layout, then pins', async () => {
+    const { h, controller, addMessages } = createConnectedController();
+    const { pinnable, finish } = createHeldPin('req-1');
+
+    addMessages(pinnable);
+    await flushFrames();
+    expect(h.container.scrollTop).toBe(0);
+
+    finish();
+    await flushFrames();
+    expect(h.container.scrollTop).toBe(140);
+
+    controller.disconnect();
+  });
+
+  it('disconnect drops a pin that is waiting on layout', async () => {
+    const { h, controller, addMessages } = createConnectedController();
+    const { pinnable, finish } = createHeldPin('req-1');
+
+    addMessages(pinnable);
+    await flushFrames();
+
+    controller.disconnect();
+    h.setSpacerHeight.mockClear();
+    finish();
+    await flushFrames();
+
+    expect(h.container.scrollTop).toBe(0);
+    expect(h.setSpacerHeight).not.toHaveBeenCalled();
+  });
+
+  it('disconnect drops a request that has not reached its frame', async () => {
+    const h = createHarness({ scrollTop: 0 });
+    const controller = new MessagesScrollController(h.host);
+    controller.connect();
+
+    controller.doAutoScroll({ scrollToTop: 30 });
+    controller.disconnect();
+    await flushFrames();
+
+    expect(h.container.scrollTop).toBe(0);
+  });
 
   it('removing only the pinned message keeps the scroll position', async () => {
     const h = createHarness({
@@ -1185,6 +1310,138 @@ describe('MessagesScrollController', () => {
 
     expect(h.container.scrollTop).toBe(140);
 
+    controller.disconnect();
+  });
+
+  it('a scroll-to-bottom request issued with a pin in the same frame wins without markdown', async () => {
+    const { h, controller, addMessages } = createConnectedController();
+
+    addMessages(createRealPinnableMessage('req-1', 200, 80));
+    controller.doAutoScroll({ scrollToBottom: 0 });
+    await flushFrames();
+
+    expect(h.container.scrollTop).toBe(500);
+    expect(h.setSpacerHeight).not.toHaveBeenCalledWith(240);
+
+    controller.disconnect();
+  });
+
+  it('ignores a container resize that arrives after disconnect', async () => {
+    // connect() creates the panel observer first, then the message observer.
+    let resizeCallback: ResizeObserverCallback | null = null;
+    jest.spyOn(global, 'ResizeObserver').mockImplementation((callback) => {
+      resizeCallback ??= callback;
+      return {
+        observe: jest.fn(),
+        unobserve: jest.fn(),
+        disconnect: jest.fn(),
+      };
+    });
+    const h = createHarness({ scrollTop: 0 });
+    const controller = new MessagesScrollController(h.host);
+    controller.connect();
+
+    resizeCallback!([], {} as ResizeObserver);
+    controller.disconnect();
+    h.onScrollGeometryChanged.mockClear();
+    await flushFrames();
+
+    expect(h.onScrollGeometryChanged).not.toHaveBeenCalled();
+    jest.restoreAllMocks();
+  });
+});
+
+describe('pending throttled scroll requests', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it.each([
+    ['doAutoScroll', 'message update'],
+    ['doAutoScrollInternal', 'message update'],
+    ['doAutoScroll', 'container resize'],
+    ['doAutoScrollInternal', 'container resize'],
+  ] as const)(
+    '%s supersedes a pending %s trailing callback',
+    async (entryPoint, source) => {
+      const { h, controller } = createConnectedController();
+      const messages = [
+        createPortableMessage({ id: 'ui-0' }),
+        createRealPinnableMessage('req-1', 200, 80),
+        createPortableMessage({ id: 'response-1', isResponse: true }),
+      ];
+      h.setMessages(messages);
+      controller.onHostUpdated(null);
+      if (source === 'message update') {
+        h.setMessages([
+          ...messages,
+          createPortableMessage({ id: 'response-2', isResponse: true }),
+        ]);
+        controller.onHostUpdated(null);
+      } else {
+        controller.onContainerResize();
+        controller.onContainerResize();
+      }
+
+      controller[entryPoint]({ scrollToBottom: 0 });
+      await jest.advanceTimersByTimeAsync(16);
+      expect(h.container.scrollTop).toBe(500);
+      expect(h.setSpacerHeight).not.toHaveBeenCalled();
+
+      await jest.advanceTimersByTimeAsync(250);
+      expect(h.container.scrollTop).toBe(500);
+      expect(h.setSpacerHeight).not.toHaveBeenCalled();
+      controller.disconnect();
+    }
+  );
+
+  it('keeps a newer resize on the original trailing deadline', async () => {
+    const { h, controller } = createConnectedController();
+    controller.onContainerResize();
+    await jest.advanceTimersByTimeAsync(50);
+    controller.onContainerResize();
+    await jest.advanceTimersByTimeAsync(30);
+    controller.doAutoScroll({ scrollToTop: 30 });
+    await jest.advanceTimersByTimeAsync(20);
+    expect(h.container.scrollTop).toBe(30);
+
+    controller.onContainerResize();
+    h.onScrollGeometryChanged.mockClear();
+    await jest.advanceTimersByTimeAsync(99);
+    expect(h.onScrollGeometryChanged).not.toHaveBeenCalled();
+    await jest.advanceTimersByTimeAsync(1);
+    expect(h.onScrollGeometryChanged).toHaveBeenCalledTimes(1);
+    await jest.advanceTimersByTimeAsync(16);
+    expect(h.container.scrollTop).toBe(0);
+    controller.disconnect();
+  });
+
+  it('keeps the latest message update on the original trailing deadline', async () => {
+    const { h, controller } = createConnectedController();
+    const messages = [
+      createPortableMessage({ id: 'ui-0' }),
+      createRealPinnableMessage('req-1', 200, 80),
+      createPortableMessage({ id: 'response-1', isResponse: true }),
+    ];
+    h.setMessages(messages);
+    controller.onHostUpdated(null);
+    await jest.advanceTimersByTimeAsync(50);
+    h.setMessages([
+      ...messages,
+      createPortableMessage({ id: 'response-2', isResponse: true }),
+    ]);
+    controller.onHostUpdated(null);
+    await jest.advanceTimersByTimeAsync(50);
+
+    h.setSpacerHeight.mockClear();
+    await jest.advanceTimersByTimeAsync(59);
+    expect(h.setSpacerHeight).not.toHaveBeenCalled();
+    await jest.advanceTimersByTimeAsync(1);
+    expect(h.setSpacerHeight).toHaveBeenCalledTimes(1);
     controller.disconnect();
   });
 });

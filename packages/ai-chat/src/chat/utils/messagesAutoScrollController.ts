@@ -814,6 +814,13 @@ export class MessagesScrollController {
    */
   private previousMessages: PortableMessage[] = [];
 
+  /**
+   * Numbers each scroll request so older ones can be told apart from the newest.
+   * A request saves the number it was given. If the counter has moved on by the time the
+   * request runs, a newer request (or `disconnect()`) replaced it, so it must do nothing.
+   */
+  private scrollCounter = 0;
+
   constructor(host: ScrollHost) {
     this.host = host;
   }
@@ -828,7 +835,10 @@ export class MessagesScrollController {
     // Use requestAnimationFrame to avoid ResizeObserver loop errors
     this.scrollPanelObserver = new ResizeObserver(() => {
       requestAnimationFrame(() => {
-        this.onContainerResize();
+        // `disconnect()` clears the observer. If it is gone, skip this late resize.
+        if (this.scrollPanelObserver) {
+          this.onContainerResize();
+        }
       });
     });
     if (scrollContainer) {
@@ -855,6 +865,8 @@ export class MessagesScrollController {
   }
 
   disconnect(): void {
+    // Changing the counter makes every scroll request that is still waiting do nothing.
+    this.scrollCounter++;
     this.host.setScrollHeightFloor(0);
     if (this.host.getSpacer()) {
       this.host.setSpacerHeight(0);
@@ -871,6 +883,7 @@ export class MessagesScrollController {
     const scrollContainer = this.host.getScrollContainer();
     scrollContainer?.removeEventListener('scroll', this.handleUserScroll);
     this.doAutoScrollThrottled.cancel();
+    this.onContainerResizeThrottled.cancel();
   }
 
   /**
@@ -937,8 +950,15 @@ export class MessagesScrollController {
    * Runs internal auto-scroll to ensure proper scrolling behavior when the container resizes.
    * (Was the scroll work inside `MessagesComponent.onResize`.)
    */
-  onContainerResize = throttle(
-    () => {
+  onContainerResize = (): void => {
+    this.onContainerResizeThrottled(++this.scrollCounter);
+  };
+
+  private onContainerResizeThrottled = throttle(
+    (counter: number) => {
+      if (counter !== this.scrollCounter) {
+        return;
+      }
       // Resize can invalidate both "scroll down" visibility and pin geometry.
       this.updateScrollHeightFloor();
       this.host.onScrollGeometryChanged();
@@ -1189,7 +1209,8 @@ export class MessagesScrollController {
 
   private async executeResolvedAutoScrollAction(
     options: ScrollOptions,
-    scrollElement: HTMLElement
+    scrollElement: HTMLElement,
+    counter: number
   ): Promise<void> {
     const messages = this.host.getMessages();
     const action = resolveAutoScrollAction({
@@ -1225,8 +1246,10 @@ export class MessagesScrollController {
         return;
       case 'pin_message':
         await this.waitForMessageComponentLayout(action.message);
-        // A clear during the wait removes the target; pinning it would restore a stale pin.
+        // Stop if a newer request replaced this one while we waited, or if the target
+        // message was removed in the meantime (for example, the chat was cleared).
         if (
+          counter !== this.scrollCounter ||
           !scrollElement.isConnected ||
           !this.host
             .getMessages()
@@ -1284,7 +1307,7 @@ export class MessagesScrollController {
     if (hasNewResponse) {
       // Use the same throttled approach as streaming to recalculate after content settles.
       // This is more reliable than trying to time rAF perfectly.
-      this.doAutoScrollThrottled();
+      this.doAutoScrollThrottled(this.scrollCounter);
     }
   }
 
@@ -1399,8 +1422,14 @@ export class MessagesScrollController {
     options: ScrollOptions = {},
     includePublicSpacerReconciliation = false
   ): void => {
+    const counter = ++this.scrollCounter;
     requestAnimationFrame(() => {
       void (async () => {
+        // Stop if a newer request (or disconnect) came in before this frame ran.
+        if (counter !== this.scrollCounter) {
+          return;
+        }
+
         // Execute after DOM/layout settles for the current frame so measurements
         // (scrollHeight, rects) match what the user can actually see.
         const scrollElement = this.host.getScrollContainer();
@@ -1408,8 +1437,15 @@ export class MessagesScrollController {
           return;
         }
 
-        await this.executeResolvedAutoScrollAction(options, scrollElement);
-        if (includePublicSpacerReconciliation) {
+        await this.executeResolvedAutoScrollAction(
+          options,
+          scrollElement,
+          counter
+        );
+        if (
+          includePublicSpacerReconciliation &&
+          counter === this.scrollCounter
+        ) {
           this.reconcileSpacerAfterPublicDoAutoScroll(scrollElement);
         }
       })();
@@ -1450,7 +1486,11 @@ export class MessagesScrollController {
    * This is throttled to prevent excessive scrolling during rapid updates.
    */
   private doAutoScrollThrottled = throttle(
-    this.doAutoScrollInternal,
+    (counter: number) => {
+      if (counter === this.scrollCounter) {
+        this.doAutoScrollInternal();
+      }
+    },
     AUTO_SCROLL_THROTTLE_MS,
     { leading: true, trailing: true }
   );
