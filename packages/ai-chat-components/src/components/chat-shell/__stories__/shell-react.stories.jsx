@@ -8,6 +8,7 @@
  */
 
 /* eslint-disable */
+import { manifestEventArgTypes } from '../../../../.storybook-react/manifest-event-arg-types.js';
 import React, { useState } from 'react';
 
 import ChatShell from '../../../react/chat-shell';
@@ -320,4 +321,10 @@ export const SidebarWorkspace = {
       </ChatShell>
     );
   },
+};
+
+export const ChatShellEvents = {
+  tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
+  argTypes: { ...manifestEventArgTypes(ChatShell) },
 };

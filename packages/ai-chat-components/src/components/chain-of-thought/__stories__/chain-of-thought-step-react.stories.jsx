@@ -8,6 +8,7 @@
  */
 
 /* eslint-disable */
+import { manifestEventArgTypes } from '../../../../.storybook-react/manifest-event-arg-types.js';
 import React from 'react';
 import ChainOfThought from '../../../react/chain-of-thought';
 import ChainOfThoughtStep from '../../../react/chain-of-thought-step';
@@ -69,18 +70,8 @@ export default {
       control: 'text',
       description: 'Assistive text when a step is processing.',
     },
-    onBeforeToggle: {
-      action: 'onBeforeToggle',
-      table: { category: 'events' },
-      description:
-        'Fires before a toggle; return false to prevent the open state from changing.',
-    },
-    onToggle: {
-      action: 'onToggle',
-      table: { category: 'events' },
-      description:
-        'Emitted after a toggle request. Useful for syncing controlled state.',
-    },
+
+    ...manifestEventArgTypes(ChainOfThoughtStep),
   },
   args: {
     title: 'Check recent incidents',

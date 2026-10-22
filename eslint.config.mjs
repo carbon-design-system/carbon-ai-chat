@@ -43,6 +43,7 @@ const config = [
       'packages/ai-chat/tasks/**',
       // generated output — must not be linted
       '**/custom-elements.json',
+      'packages/ai-chat-components/.storybook-react/manifest-wrapper-registry.generated.js',
     ],
   },
 

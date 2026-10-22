@@ -8,6 +8,7 @@
  */
 
 /* eslint-disable */
+import { manifestEventArgTypes } from '../../../../.storybook-react/manifest-event-arg-types.js';
 import React from 'react';
 import { Carousel } from '../../../react/carousel';
 import { Card } from '../../../react/card';
@@ -26,12 +27,8 @@ const argTypes = {
     control: 'text',
     description: 'Text for the previous button',
   },
-  onChange: {
-    action: 'cds-aichat-carousel-onchange',
-    table: {
-      disable: true,
-    },
-  },
+
+  ...manifestEventArgTypes(Carousel),
 };
 
 export default {
@@ -57,4 +54,10 @@ export const Default = {
     nextBtnText: 'Next',
     previousBtnText: 'Previous',
   },
+};
+
+export const CarouselEvents = {
+  tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
+  argTypes: { ...manifestEventArgTypes(Carousel) },
 };

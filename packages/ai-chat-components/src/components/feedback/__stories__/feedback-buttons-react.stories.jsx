@@ -8,6 +8,7 @@
  */
 
 /* eslint-disable */
+import { manifestEventArgTypes } from '../../../../.storybook-react/manifest-event-arg-types.js';
 import React from 'react';
 
 import Feedback from '../../../react/feedback';
@@ -324,4 +325,10 @@ export const WithDetailsPanel = {
       negativeLabel={args.negativeLabel}
     />
   ),
+};
+
+export const FeedbackButtonsEvents = {
+  tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
+  argTypes: { ...manifestEventArgTypes(FeedbackButtons) },
 };

@@ -8,6 +8,8 @@
  */
 
 /* eslint-disable */
+import { HistoryPanelItemInput } from '../../../react/history';
+import { manifestEventArgTypes } from '../../../../.storybook-react/manifest-event-arg-types.js';
 import React, { useState, useCallback, useRef } from 'react';
 import {
   HistoryShell,
@@ -616,4 +618,46 @@ export const DeleteFlow = {
       </HistoryShell>
     );
   },
+};
+
+export const HistoryHeaderEvents = {
+  tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
+  argTypes: { ...manifestEventArgTypes(HistoryHeader) },
+};
+
+export const HistoryToolbarEvents = {
+  tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
+  argTypes: { ...manifestEventArgTypes(HistoryToolbar) },
+};
+
+export const HistoryPanelItemEvents = {
+  tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
+  argTypes: { ...manifestEventArgTypes(HistoryPanelItem) },
+};
+
+export const HistorySearchItemEvents = {
+  tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
+  argTypes: { ...manifestEventArgTypes(HistorySearchItem) },
+};
+
+export const HistoryDeletePanelEvents = {
+  tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
+  argTypes: { ...manifestEventArgTypes(HistoryDeletePanel) },
+};
+
+export const HistoryPanelItemInputEvents = {
+  tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
+  argTypes: { ...manifestEventArgTypes(HistoryPanelItemInput) },
+};
+
+export const HistoryShellEvents = {
+  tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
+  argTypes: { ...manifestEventArgTypes(HistoryShell) },
 };

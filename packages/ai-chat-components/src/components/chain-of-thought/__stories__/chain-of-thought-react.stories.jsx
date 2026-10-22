@@ -8,6 +8,7 @@
  */
 
 /* eslint-disable */
+import { manifestEventArgTypes } from '../../../../.storybook-react/manifest-event-arg-types.js';
 import React from 'react';
 import ChainOfThought from '../../../react/chain-of-thought';
 import ChainOfThoughtStep from '../../../react/chain-of-thought-step';
@@ -296,4 +297,22 @@ export const WithComplexResponses = {
     closedLabelText: 'Show chain of thought',
   },
   render: (args) => renderChainOfThought(args, stepsWithComplexResponses),
+};
+
+export const ChainOfThoughtEvents = {
+  tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
+  argTypes: { ...manifestEventArgTypes(ChainOfThought) },
+};
+
+export const ChainOfThoughtStepEvents = {
+  tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
+  argTypes: { ...manifestEventArgTypes(ChainOfThoughtStep) },
+};
+
+export const ChainOfThoughtToggleEvents = {
+  tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
+  argTypes: { ...manifestEventArgTypes(ChainOfThoughtToggle) },
 };

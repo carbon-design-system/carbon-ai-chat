@@ -8,6 +8,7 @@
  */
 
 /* eslint-disable */
+import { manifestEventArgTypes } from '../../../../.storybook-react/manifest-event-arg-types.js';
 import React, { useEffect, useState } from 'react';
 import { useArgs } from 'storybook/preview-api';
 import { action } from 'storybook/actions';
@@ -109,7 +110,8 @@ export const Default = {
   args: { ...DefaultWC.args },
   argTypes: {
     ...argTypes,
-    onCitationsToggle: { ...toggleEvent, control: 'none' },
+
+    ...manifestEventArgTypes(ConversationalSearchShell),
   },
   render: (args) => {
     const [, updateArgs] = useArgs();
@@ -149,4 +151,10 @@ export const Streaming = {
   ...Default,
   args: { ...Default.args, streaming: true },
   render: (args) => <StreamingAnswer args={args} />,
+};
+
+export const ConversationalSearchShellEvents = {
+  tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
+  argTypes: { ...manifestEventArgTypes(ConversationalSearchShell) },
 };

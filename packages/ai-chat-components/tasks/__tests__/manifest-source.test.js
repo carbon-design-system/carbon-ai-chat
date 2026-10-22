@@ -11,6 +11,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
 import { readSource } from '../manifest-source.js';
+import { readWrappers } from '../manifest-wrappers.js';
 
 const root = path.join(tmpdir(), 'manifest-source-fixtures');
 
@@ -615,4 +616,104 @@ test('rejects changed object properties without confusing unrelated symbols', ()
   assert.deepEqual(model.values(variable(model, 'unchanged').initializer), [
     'other-event',
   ]);
+});
+
+test('resolves additional JavaScript docs inputs without expanding product inventory', () => {
+  const files = {
+    'src/components/aichat-example/example.ts': `export class Example { static get is() { return 'x-example'; } }`,
+    'src/stories/example.stories.jsx': `import { Example } from '../components/aichat-example/example.js'; export default { component: Example }; class StoryOnly { static is = 'x-story-only'; }`,
+    '.storybook-react/main.js': `export default { stories: ['../src/**/*.stories.jsx'] };`,
+  };
+  const model = fixture(
+    {
+      'src/components/aichat-example/example.ts':
+        files['src/components/aichat-example/example.ts'],
+    },
+    {
+      additionalFiles: Object.fromEntries(
+        Object.entries(files).filter(
+          ([file]) => file !== 'src/components/aichat-example/example.ts'
+        )
+      ),
+    }
+  );
+  assert.deepEqual(
+    model.sources.map((source) => path.relative(root, source.fileName)),
+    ['src/components/aichat-example/example.ts']
+  );
+  assert.deepEqual(
+    model.elements.map((element) => element.tagName),
+    ['x-example']
+  );
+  const source = model.program.getSourceFile(
+    path.join(root, 'src/stories/example.stories.jsx')
+  );
+  assert.ok(source);
+  const imported =
+    source.statements[0].importClause.namedBindings.elements[0].name;
+  assert.equal(model.symbol(imported).declarations[0].name.text, 'Example');
+  assert.equal(
+    model.resolveModule(
+      '../components/aichat-example/example.js',
+      source.fileName
+    ),
+    model.sources[0]
+  );
+  assert.equal(model.resolveModule('./missing.js', source.fileName), undefined);
+});
+
+test('additional inputs cannot remove overlapping canonical elements or wrappers', () => {
+  const files = {
+    'src/components/aichat-example/example.ts': `export class Example { static is = 'x-example'; }`,
+    'src/react/example.ts': `import { createComponent } from '@lit/react'; import { Example } from '../components/aichat-example/example.js'; export default createComponent({ tagName: Example.is, elementClass: Example, react: {} });`,
+  };
+  const baseline = fixture(files);
+  const overlapping = fixture(files, { additionalFiles: Object.keys(files) });
+  assert.deepEqual(
+    overlapping.sources.map((source) => source.fileName),
+    baseline.sources.map((source) => source.fileName)
+  );
+  assert.deepEqual(
+    overlapping.elements.map((element) => element.tagName),
+    ['x-example']
+  );
+  assert.deepEqual(
+    readWrappers(overlapping).map((wrapper) => [
+      wrapper.module,
+      wrapper.exportName,
+    ]),
+    readWrappers(baseline).map((wrapper) => [
+      wrapper.module,
+      wrapper.exportName,
+    ])
+  );
+});
+
+test('keeps disk-discovered product inventory when additional globs overlap it', () => {
+  const directory = mkdtempSync(path.join(tmpdir(), 'manifest-docs-overlap-'));
+  try {
+    const component = 'src/components/aichat-example/example.ts';
+    const wrapper = 'src/react/example.ts';
+    mkdirSync(path.join(directory, path.dirname(component)), {
+      recursive: true,
+    });
+    mkdirSync(path.join(directory, path.dirname(wrapper)), { recursive: true });
+    writeFileSync(
+      path.join(directory, component),
+      `export class Example { static is = 'x-example'; }`
+    );
+    writeFileSync(
+      path.join(directory, wrapper),
+      `import { createComponent } from '@lit/react'; import { Example } from '../components/aichat-example/example.js'; export default createComponent({ tagName: Example.is, elementClass: Example, react: {} });`
+    );
+    const model = readSource({
+      root: directory,
+      additionalFiles: [component, wrapper],
+    });
+    assert.equal(model.sources.length, 2);
+    assert.equal(model.elements.length, 1);
+    assert.equal(readWrappers(model).length, 1);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
 });
