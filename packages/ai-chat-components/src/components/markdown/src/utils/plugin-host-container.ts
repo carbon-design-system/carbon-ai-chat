@@ -213,6 +213,7 @@ export function createMarkdownPluginHostController(
   // dropped on the next offer instead. Held weakly, so a removed message is
   // not kept alive until then.
   const senders = new Map<string, WeakRef<Node>>();
+  let pendingPrune: object | undefined;
 
   /** Drops names whose sender left the page. Returns true if any went. */
   const dropDetachedSenders = (): boolean => {
@@ -224,7 +225,10 @@ export function createMarkdownPluginHostController(
     }
     for (const name of detached) {
       senders.delete(name);
-      hosts.get(name)?.remove();
+      const host = hosts.get(name);
+      if (host?.parentNode === target) {
+        host.remove();
+      }
       hosts.delete(name);
     }
     if (detached.size > 0) {
@@ -233,23 +237,34 @@ export function createMarkdownPluginHostController(
     return detached.size > 0;
   };
 
-  /**
-   * Records an offer's name and sender, drops names whose sender left, and
-   * reports the list if it changed. Runs before the host is appended.
-   */
+  const schedulePrune = () => {
+    if (pendingPrune) {
+      return;
+    }
+    const pending = {};
+    pendingPrune = pending;
+    // A same-task DOM move must settle before its slot is retired.
+    queueMicrotask(() => {
+      if (pendingPrune !== pending) {
+        return;
+      }
+      pendingPrune = undefined;
+      if (dropDetachedSenders()) {
+        onSlotNamesChange?.(slotNames);
+      }
+    });
+  };
+
   const trackOffer = (event: Event, slotName: string) => {
-    let changed = dropDetachedSenders();
     const [sender] = event.composedPath();
     if (sender instanceof Node) {
       senders.set(slotName, new WeakRef(sender));
     }
     if (!slotNames.includes(slotName)) {
       slotNames = [...slotNames, slotName];
-      changed = true;
-    }
-    if (changed) {
       onSlotNamesChange?.(slotNames);
     }
+    schedulePrune();
   };
 
   // Built once, not per `connect()`: a Lit `connectedCallback` can fire again
@@ -332,10 +347,10 @@ export function createMarkdownPluginHostController(
       onSlotNamesChange?.(slotNames);
     }
     const host = hosts.get(detail.slotName);
-    if (host) {
+    if (host?.parentNode === target) {
       host.remove();
-      hosts.delete(detail.slotName);
     }
+    hosts.delete(detail.slotName);
   };
 
   return {
@@ -346,11 +361,14 @@ export function createMarkdownPluginHostController(
       target.addEventListener(UNMOUNT, handleUnmount);
     },
     disconnect() {
+      pendingPrune = undefined;
       target.removeEventListener(MOUNT, handleMount);
       target.removeEventListener(UPDATE, handleUpdate);
       target.removeEventListener(UNMOUNT, handleUnmount);
       for (const host of hosts.values()) {
-        host.remove();
+        if (host.parentNode === target) {
+          host.remove();
+        }
       }
       hosts.clear();
       // Slot names deliberately survive. `handleUpdate` drops an update whose
