@@ -52,33 +52,30 @@ Rules for this pattern:
 
 ## Manifest and React wrappers
 
-React wrappers live under [../src/react/](../src/react/) — thin, hand-authored `createComponent` bindings kept in sync with `custom-elements.json`. After changing JSDoc, props, slots, events, or CSS parts:
+React wrappers live under [../src/react/](../src/react/) — thin, hand-authored `createComponent` bindings kept in sync with the generated, gitignored `custom-elements.json`; never hand-edit or commit the manifest. After changing JSDoc, props, slots, events, or CSS parts:
 
 - run `npm run custom-elements` — this regenerates only `custom-elements.json`; it does not touch `src/react/`;
-- inspect only the changed component's entries in the regenerated `custom-elements.json`, then update its `src/react/<name>.ts` wrapper for new prop types;
-- `custom-elements.json` is **generated, never committed** — it's gitignored and rebuilt on every `npm run build` (or `npm run custom-elements`), so don't hand-edit it or expect it in git. The `src/react/` wrappers are the opposite: checked in **and** hand-authored.
+- inspect only the changed component's entries in the regenerated `custom-elements.json`, then update its `src/react/<name>.ts` wrapper for new prop types.
 
-Storybook `<ArgTypes>` reads the manifest; React wrappers need matching hand edits. Regenerate telemetry too (`npm run telemetry:config`) after adding components; don't hand-edit `telemetry.yml`.
+Storybook `<ArgTypes>` reads the manifest; restart Storybook after regenerating it. Regenerate telemetry too (`npm run telemetry:config`) after adding components; don't hand-edit `telemetry.yml`.
 
 ## Naming
 
 - **One element per file** under `src/`, re-exported from `index.ts`; sub-parts get their own file and `import` line.
-- **Tag naming**: Lit tags are `cds-aichat-<thing>` in the default build. Don't hand-write the tag string in multiple places — read it from the shared prefix constant so the `es-custom` rewrite applies. Prefix discipline is build-breaking; see [root AGENTS.md Conventions](../../../AGENTS.md#conventions).
+- **Tag naming**: Lit tags are `cds-aichat-<thing>` in the default build. Don't hand-write the tag string in multiple places — read it from the shared prefix constant so the `es-custom` rewrite applies. Prefix discipline is build-breaking; see [code-patterns.md](../../../references/code-patterns.md#naming--prefix-discipline-build-breaking).
 - **Attributes** are kebab-case (`has-footer`, not `hasFooter`); React wrappers expose the element's camelCase properties.
 - **Events** follow `cds-aichat-<thing>-<verb>` (e.g. `cds-aichat-card-expand`).
 - **Slots** use plain names; reserve `default` for primary content.
-- **Styles**: co-locate `.scss` next to the `.ts`; use Carbon tokens from `@carbon/styles` (no hardcoded colors/spacing/type). SCSS/RTL conventions live in [root AGENTS.md Conventions](../../../AGENTS.md#conventions).
+- **Styles**: co-locate `.scss` next to the `.ts`; use Carbon tokens from `@carbon/styles` (no hardcoded colors/spacing/type). SCSS/RTL conventions live in [code-patterns.md](../../../references/code-patterns.md#scss-authoring).
 
 ## Public API & deprecation
 
 - Anything exported from a component's `index.ts` is public. Props, slots, events, and CSS custom properties are the contract; mark internal helpers so the CEM analyzer doesn't publish them.
-- **Types are public docs**: every exported type ships through `@carbon/ai-chat`'s TypeDoc to the docs site, Elasticsearch index, and MCP server. Follow [../../ai-chat/src/types/AGENTS.md](../../ai-chat/src/types/AGENTS.md). Package rule: `@category` tags must use a value from `categoryOrder` in [../../ai-chat/typedoc.json](../../ai-chat/typedoc.json).
+- **Types are public docs**: follow [types/AGENTS.md](../../ai-chat/src/types/AGENTS.md) for their published surfaces and JSDoc rules; `@category` must match `categoryOrder` in [typedoc.json](../../ai-chat/typedoc.json).
 - **Deprecating or deleting**: mark `@deprecated` in JSDoc, ship a major version, then delete. Removing an exported element without a deprecation window breaks external consumers.
 - **React wrappers stay minimal** — no behavior beyond `createComponent`; behavior belongs in the Lit element.
 
 ## Related guidance
 
 - [../AGENTS.md](../AGENTS.md) — package authoring rules (parent router)
-- [storybook.md](storybook.md) — stories & docs for each element
-- [testing.md](testing.md) — WTR (Lit) + Jest (React) test setup
 - [../../../references/accessibility.md](../../../references/accessibility.md) — WCAG 2.1 AA checklist for every element

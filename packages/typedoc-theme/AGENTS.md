@@ -23,7 +23,7 @@ The custom TypeDoc theme used by `@carbon/ai-chat`'s public docs site. Registere
 https://1.www.s81c.com/common/carbon/web-components/tag/latest/<component>.min.js
 ```
 
-Currently loaded: `ui-shell`, `breadcrumb`, `modal`, `dropdown`.
+See the script tags in [theme/layouts/default.js](theme/layouts/default.js) for the loaded components.
 
 To use a new Carbon component:
 
@@ -51,7 +51,3 @@ npm run build
 ```
 
 Reload the served site after each save; TypeDoc's watcher rebuilds on theme file changes.
-
-## Companion plugin
-
-[`packages/ai-chat/docs/typedoc/moduleNamePlugin.js`](../ai-chat/docs/typedoc/moduleNamePlugin.js) is a separate TypeDoc plugin registered alongside this theme in [`../ai-chat/typedoc.json`](../ai-chat/typedoc.json). It lives in the consuming package — leave it there.

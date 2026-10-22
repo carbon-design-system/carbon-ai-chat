@@ -2,17 +2,8 @@
 
 Load this when shipping any UI change in any package. All UI must meet WCAG 2.1 AA.
 
-## Keyboard navigation
-
-- All interactive elements reachable via Tab / Enter / Escape / arrow keys.
-- Focus order is logical and matches visual layout.
-- No keyboard traps — users can navigate away from any element.
-
 ## Screen readers — semantic HTML & ARIA
 
-- Use semantic HTML where possible (`<button>`, `<nav>`, `<main>`, etc.).
-- Add ARIA labels/roles only when semantic HTML is insufficient.
-- All images have appropriate alt text; form inputs have associated labels.
 - Lit elements with shadow DOM may hide implicit semantics from some assistive tech — declare `role` and labels on the host element explicitly.
 
 ## Screen readers — live regions & announcements
@@ -50,10 +41,6 @@ When a piece of UI changes state, decide who owns the announcement by which surf
 
 Only when the centralized announcer doesn't fit the use case (e.g. a dedicated status pane that must remain visible and updated, like `audio-player` / `video-player` status text). In that case, follow the politeness + atomicity rules above.
 
-## Visual & layout
-
-- Support RTL via CSS logical properties (`padding-inline-start`, `inset-inline-end`, etc.). See [code-patterns.md → SCSS authoring](code-patterns.md#scss-authoring).
-
 ## Verifying changes
 
 If your change adds or modifies announcements or dynamic state, exercise it with a screen reader before marking the task done:
@@ -62,11 +49,6 @@ If your change adds or modifies announcements or dynamic state, exercise it with
 - Windows: NVDA (free) — most representative for this codebase since the 250 ms workaround is NVDA-driven.
 
 Listen for: announcements firing on the expected events; no double-reads; focus moves don't drop announcements.
-
-## References
-
-- [WCAG 2.1 Quick Reference](https://www.w3.org/WAI/WCAG21/quickref/)
-- [Carbon Design System Accessibility](https://carbondesignsystem.com/guidelines/accessibility/overview)
 
 ## Related guidance
 

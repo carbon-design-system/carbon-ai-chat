@@ -11,7 +11,6 @@ import {
   BusEventType,
   ChatContainer,
   ChatInstance,
-  FeedbackInteractionType,
   PublicConfig,
 } from '@carbon/ai-chat';
 import React, { useMemo, useState } from 'react';
@@ -61,22 +60,6 @@ function App() {
         }
       },
     });
-
-    // Handle feedback event.
-    instance.on({ type: BusEventType.FEEDBACK, handler: feedbackHandler });
-  }
-
-  /**
-   * Handles when the user submits feedback.
-   */
-  function feedbackHandler(event: any) {
-    if (event.interactionType === FeedbackInteractionType.SUBMITTED) {
-      const { ...reportData } = event;
-      setTimeout(() => {
-        // eslint-disable-next-line no-alert
-        window.alert(JSON.stringify(reportData, null, 2));
-      });
-    }
   }
 
   const renderUserDefinedResponse = useMemo(

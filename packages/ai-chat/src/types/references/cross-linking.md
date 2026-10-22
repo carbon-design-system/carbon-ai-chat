@@ -10,11 +10,7 @@ Prefer a `{@link}` over a plain backtick reference when the target is itself pub
 
 When you declare a type that is only reachable through another public symbol — a leaf config consumed by a parent config, an enum surfaced on a single property, a callback signature attached to one event — open the JSDoc with a sentence that `{@link}`s the consumer entry point. A reader who lands on the leaf in TypeDoc or the MCP index can then jump straight to where it is actually used.
 
-The existing `AutocompleteConfig` is the template:
-
-```ts
-/** Live autocomplete config consumed by {@link InputConfig.autocomplete}. */
-```
+Use the [`AutocompleteConfig` re-declaration](cross-package-types.md#the-pattern) as the template.
 
 ## External (third-party) types
 
@@ -25,5 +21,3 @@ This is why third-party packages are never re-declared or re-exported to make th
 ## Related guidance
 
 - [src/types/AGENTS.md](../AGENTS.md) — the JSDoc bar these links sit inside
-- [cross-package-types.md](cross-package-types.md) — re-declaring `@carbon/ai-chat-components` types
-- [jsdoc-examples.md](jsdoc-examples.md) — worked good/bad examples

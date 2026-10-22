@@ -1,9 +1,9 @@
 name: ci-check
 on:
   push:
-    branches: [main, release/v*, feat/prompt-line]
+    branches: [main, release/v*]
   pull_request:
-    branches: [main, release/v*, feat/prompt-line]
+    branches: [main, release/v*]
   merge_group:
     types: [checks_requested]
 
