@@ -8,6 +8,7 @@
  */
 
 import type { JSONContent } from '@tiptap/core';
+import isEqual from 'lodash-es/isEqual.js';
 import type { Message, MessageRequest } from '../../types/messaging/Messages';
 import type { RenderUserDefinedInputNodeState } from '../../types/component/ChatContainer';
 
@@ -64,9 +65,7 @@ export function collectSlotEntries(
     const state = { node, message };
     identities.set(
       state,
-      before && JSON.stringify(before.node) === JSON.stringify(node)
-        ? inputNodeIdentity(before)
-        : {}
+      before && isEqual(before.node, node) ? inputNodeIdentity(before) : {}
     );
     return state;
   };
