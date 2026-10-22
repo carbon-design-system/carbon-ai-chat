@@ -194,11 +194,14 @@ async function assertPackageAliases(consumer) {
       hostUrls[hostSpecifiers.indexOf(`@carbon/ai-chat/${original.slice(2)}`)]
     );
   }
-  const chunk = (await readdir(join(chatRoot, 'dist/es'))).find(
-    (name) =>
-      name.endsWith('.js') &&
-      !['aiChatEntry.js', 'serverEntry.js'].includes(name)
-  );
+  const chunk = (await readdir(join(chatRoot, 'dist/es'), { recursive: true }))
+    .map((name) => name.replaceAll('\\', '/'))
+    .find(
+      (name) =>
+        name.endsWith('.js') &&
+        !Object.hasOwn(chat.exports, `./es/${name}`) &&
+        !Object.hasOwn(chat.exports, `./dist/es/${name}`)
+    );
   assert.ok(
     chunk,
     'The packed app must contain a runtime chunk for the wildcard alias proof.'
