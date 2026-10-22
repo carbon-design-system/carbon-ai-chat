@@ -21,6 +21,21 @@ We should be looking for what here can can automate, and as we do, we can remove
 - Writeable element `promptLineActionsEnd`: its slotted content (the green swatch in the demo) appears only when the input "Expanded layout" toggle is on; it is absent in the default compact layout.
 - Input "@mentions" / "/commands" toggles: enable one (or both) and reload — confirm the toggle stays "Enable" (query-string round-trip re-injects the callbacks). With "@mentions" on, type `@` anywhere in the message and pick a suggestion — confirm a chip renders. With "/commands" on, type `/` at the start of a line and pick a suggestion — confirm a chip renders; typing `/` mid-message should NOT open the picker. Delete a chip before sending and confirm it doesn't show up in the echoed response. Send a message with a mention/command chip and confirm the mock backend echoes the mention/command names in a text message before the normal canned response for the typed text, and the browser console shows no errors.
 
+#### Carbon v12 menus and registration
+
+Test both React and web-component hosts in light/dark themes and LTR/RTL.
+
+- [ ] Open the header menu, a history item menu, and a toolbar menu forced to overflow by a narrow width.
+- [ ] Use Up/Down to reach the first and last items. Escape closes each menu and returns focus to its trigger.
+- [ ] Activate items with Enter and Space. Disabled items do nothing; danger items and separate dividers remain visible.
+- [ ] Confirm iconless items have no icon gutter. Check menus near every viewport edge.
+- [ ] Open the header AI label. Its tooltip and details remain visible and keyboard reachable.
+- [ ] Use VoiceOver and NVDA to check item names, disabled/danger states, menu opening, and focus return.
+- [ ] Run `npm test -- tests/carbon-registration.spec.ts` from `demo/` after a fresh package build. Each page imports one entry.
+- [ ] Check the normal and custom builds in packed consumers. Custom tags use `cds-custom-*`.
+
+Menu links use the activation helper. They lack native anchor behavior, such as modifier-click and an "open link" context menu. Track that limitation in [#2317](https://github.com/carbon-design-system/carbon-ai-chat/issues/2317).
+
 #### setChatConfig Testing (Use `window.setChatConfig()`)
 
 - [ ] **Error handling:** `onError: (data) => console.log(data)`

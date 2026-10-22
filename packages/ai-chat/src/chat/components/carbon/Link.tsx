@@ -10,8 +10,7 @@
 import { createComponent } from '@lit/react';
 import React from 'react';
 
-// Export the actual class for the component that will *directly* be wrapped with React.
-import CarbonLinkElement from '@carbon/web-components/es/components/link/link.js';
+import { CDSLink as CarbonLinkElement } from '@carbon/web-components/es/components/link/index.js';
 
 const Link = createComponent({
   tagName: 'cds-link',

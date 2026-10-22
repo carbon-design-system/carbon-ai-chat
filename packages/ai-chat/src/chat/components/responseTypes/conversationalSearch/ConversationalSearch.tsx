@@ -17,7 +17,7 @@ import React, {
   useState,
 } from 'react';
 import { createComponent } from '@lit/react';
-import SkeletonPlaceholderElement from '@carbon/web-components/es/components/skeleton-placeholder/skeleton-placeholder.js';
+import { CDSSkeletonPlaceholder as SkeletonPlaceholderElement } from '@carbon/web-components/es/components/skeleton-placeholder/index.js';
 import ConversationalSearchShell from '@carbon/ai-chat-components/es/react/conversational-search-shell.js';
 import {
   insertHighlightMarkdown,

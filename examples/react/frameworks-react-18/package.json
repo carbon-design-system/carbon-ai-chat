@@ -15,7 +15,7 @@
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "dependencies": {
     "@carbon/ai-chat": "^1.23.0",
-    "@carbon/web-components": "^2.58.1",
+    "@carbon/web-components": "^3.0.0-alpha.3",
     "lit": "^3.1.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0"

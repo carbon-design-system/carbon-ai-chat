@@ -22,6 +22,8 @@
     "src/**/*",
     "types/**/*.d.ts",
     "playwright.config.ts",
-    "vite.config.ts"
+    "vite.config.ts",
+    "tests/carbon-menu-types.ts",
+    "tests/carbon-registration/**/*.ts"
   ]
 }

@@ -19,7 +19,7 @@ import {
 } from '@carbon/utilities';
 import { queryAssignedElements } from 'lit/decorators/query-assigned-elements.js';
 import { property, state } from 'lit/decorators.js';
-import '@carbon/web-components/es/components/icon-button/icon-button.js';
+import '@carbon/web-components/es/components/icon-button/index.js';
 import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
 import { ChevronLeft16, ChevronRight16 } from '@carbon/icons';
 
