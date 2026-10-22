@@ -45,7 +45,7 @@
   "scripts": {
     "build": "npm run clean && node tasks/build.js && node tasks/build-dist.js && npm run custom-elements",
     "clean": "rimraf es es-custom dist storybook-static custom-elements.json",
-    "custom-elements": "cem analyze --config ./custom-elements-manifest.config.js",
+    "custom-elements": "cem analyze --config ./custom-elements-manifest.config.js && npm run validate:manifest",
     "postinstall": "ibmtelemetry --config=telemetry.yml",
     "start": "concurrently --names storybook,storybook-react,build --prefix-colors cyan,magenta,yellow --restart-tries Infinity --restart-after 2000 \"npm run storybook\" \"npm run storybook:react\" \"node tasks/build.js --watch\"",
     "storybook": "npm run custom-elements && storybook dev -p 6006",
@@ -58,7 +58,8 @@
     "test:updateSnapshot": "web-test-runner \"src/{components,globals/__tests__}/**/*.test.ts\" --node-resolve --update-snapshots",
     "test:web-components": "web-test-runner \"src/{components,globals/__tests__}/**/*.test.ts\" --node-resolve",
     "test:manifest": "node --test tasks/__tests__/*.test.js",
-    "test:prefix-build": "node --test tasks/__tests__/prefix-build.test.js"
+    "test:prefix-build": "node --test tasks/__tests__/prefix-build.test.js",
+    "validate:manifest": "node tasks/validate-manifest.js"
   },
   "peerDependencies": {
     "react": ">=17.0.0 <20.0.0"

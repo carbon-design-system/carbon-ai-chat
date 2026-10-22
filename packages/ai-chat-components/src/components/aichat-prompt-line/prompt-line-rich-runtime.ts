@@ -25,6 +25,7 @@
  * handlers are mode-agnostic.
  */
 
+import type { PromptLineEventDetailMap } from './types.js';
 import { Editor, type Extension, type JSONContent } from '@tiptap/core';
 import DocumentNode from '@tiptap/extension-document';
 import HardBreakNode from '@tiptap/extension-hard-break';
@@ -60,6 +61,7 @@ import { setHostOriginMeta } from './tiptap/origin-meta.js';
 /**
  * Tiptap-backed prompt-line controller. Mirrors the editor lifecycle the
  * element owned before the textarea/rich split.
+ * @eventOwner {import('./aichat-prompt-line.js').default}
  */
 class RichController
   extends MouseFocusController
@@ -481,9 +483,16 @@ class RichController
     }
   }
 
-  private _dispatch(name: string, detail?: unknown): void {
+  private _dispatch<Name extends keyof PromptLineEventDetailMap>(
+    name: Name,
+    detail?: PromptLineEventDetailMap[Name]
+  ): void {
     this._host?.dispatchEvent(
-      new CustomEvent(name, { detail, bubbles: true, composed: true })
+      new CustomEvent<PromptLineEventDetailMap[Name]>(name, {
+        detail,
+        bubbles: true,
+        composed: true,
+      })
     );
   }
 }

@@ -120,6 +120,7 @@ const config = [
         // Prevent the jsdoc plugin from recommending replacement of @typeParam
         // with @template. @typeParam is the TypeDoc standard used throughout
         // the codebase; it is registered as a valid tag via definedTags below.
+        structuredTags: { eventOwner: { type: true } },
         tagNamePreference: {
           typeParam: 'typeParam',
         },
@@ -140,6 +141,8 @@ const config = [
             'attr',
             'category',
             'element',
+            'eventOwner',
+            'eventProtocol',
             'experimental',
             'typeParam',
             'template',

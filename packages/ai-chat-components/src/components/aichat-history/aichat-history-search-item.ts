@@ -7,6 +7,7 @@
  *  @license
  */
 
+import type { HistoryItemSelectedEventDetail } from './aichat-history-panel-item.js';
 import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
@@ -21,6 +22,7 @@ import styles from './chat-history.scss?lit';
  *
  * @element cds-aichat-history-search-item
  *
+ * @fires {CustomEvent<HistoryItemSelectedEventDetail>} history-search-item-selected - The search result is selected.
  */
 class CDSAIChatHistorySearchItem extends HostListenerMixin(
   FocusMixin(LitElement)
@@ -51,15 +53,18 @@ class CDSAIChatHistorySearchItem extends HostListenerMixin(
   // @ts-ignore: The decorator refers to this method but TS thinks this method is not referred to
   private _handleClick() {
     // Dispatch a custom event with item details
-    const itemActionEvent = new CustomEvent('history-search-item-selected', {
-      bubbles: true,
-      composed: true,
-      detail: {
-        itemId: this.id,
-        itemName: this.name,
-        element: this,
-      },
-    });
+    const itemActionEvent = new CustomEvent<HistoryItemSelectedEventDetail>(
+      'history-search-item-selected',
+      {
+        bubbles: true,
+        composed: true,
+        detail: {
+          itemId: this.id,
+          itemName: this.name,
+          element: this,
+        },
+      }
+    );
 
     this.dispatchEvent(itemActionEvent);
   }

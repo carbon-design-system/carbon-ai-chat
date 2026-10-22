@@ -14,6 +14,7 @@ import { pathToFileURL } from 'node:url';
 import * as sass from 'sass';
 import ts from 'typescript';
 import { componentEntries } from './entry-paths.mjs';
+import { eventContractSource } from './event-contracts.mjs';
 
 const consumerSource = `
 import { createElement, type ComponentProps, type ComponentType, type ReactElement } from 'react';
@@ -448,7 +449,9 @@ export { canonical${index}, legacy${index}, constructor${index} };
     .join('\n');
   await writeFile(
     join(consumer, 'resolution.ts'),
-    consumerSource + classAliases
+    consumerSource +
+      classAliases +
+      eventContractSource('@carbon/ai-chat-components/es')
   );
   await compileConsumerTypes(
     consumer,

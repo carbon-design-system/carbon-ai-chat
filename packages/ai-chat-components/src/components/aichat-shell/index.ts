@@ -20,3 +20,7 @@ export { CDSAIChatPanel, CDSAIChatShell };
 defineCustomElement(CDSAIChatPanel);
 defineCustomElement(CDSAIChatShell);
 defineCustomElement(CdsAiChatChatHeader);
+
+export type { PanelOpenEndEventDetail } from './aichat-panel.js';
+
+export type { PanelBodyScrollEventDetail } from './aichat-panel.js';

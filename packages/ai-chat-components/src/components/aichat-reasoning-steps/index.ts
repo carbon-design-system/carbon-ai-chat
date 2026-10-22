@@ -22,3 +22,5 @@ export { CDSAIChatReasoningSteps, CDSAIChatReasoningStep };
 defineCustomElement(CDSAIChatReasoningStepsToggle);
 defineCustomElement(CDSAIChatReasoningSteps);
 defineCustomElement(CDSAIChatReasoningStep);
+
+export type { ReasoningStepToggleEventDetail } from './aichat-reasoning-step.js';

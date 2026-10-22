@@ -18,8 +18,13 @@ import {
   projectInlineRun,
   projectedInlinePlugin,
   installInlineRunStyles,
+  dispatchInlineRunMount,
+  dispatchInlineRunUnmount,
 } from '../src/utils/inline-run-projection.js';
-import type { MarkdownCustomRendererMountDetail } from '../src/utils/plugin-host-container.js';
+import type {
+  MarkdownCustomRendererMountDetail,
+  MarkdownPluginHostUnmountDetail,
+} from '../src/utils/plugin-host-container.js';
 
 const parts = new Set<RootPart>();
 
@@ -59,6 +64,44 @@ async function projectedTarget() {
 }
 
 describe('whole inline run projection', () => {
+  it('dispatches typed hosting protocols on the caller slot with the original flags and cancellation result', () => {
+    const slot = document.createElement('slot');
+    const mount: MarkdownCustomRendererMountDetail = {
+      kind: 'customRenderer',
+      slotName: 'inline-test',
+      element: document.createElement('span'),
+      isInline: true,
+    };
+    const unmount: MarkdownPluginHostUnmountDetail = {
+      slotName: mount.slotName,
+    };
+    const observed: Event[] = [];
+    slot.addEventListener('cds-aichat-markdown-plugin-host-mount', (event) => {
+      observed.push(event);
+      event.preventDefault();
+      expect(event.target).to.equal(slot);
+      expect((event as CustomEvent).detail).to.equal(mount);
+      expect(event.bubbles).to.equal(true);
+      expect(event.composed).to.equal(true);
+      expect(event.cancelable).to.equal(true);
+    });
+    slot.addEventListener(
+      'cds-aichat-markdown-plugin-host-unmount',
+      (event) => {
+        observed.push(event);
+        event.preventDefault();
+        expect(event.target).to.equal(slot);
+        expect((event as CustomEvent).detail).to.equal(unmount);
+        expect(event.bubbles).to.equal(true);
+        expect(event.composed).to.equal(true);
+        expect(event.cancelable).to.equal(false);
+      }
+    );
+    expect(!dispatchInlineRunMount(slot, mount)).to.equal(true);
+    expect(dispatchInlineRunUnmount(slot, unmount)).to.equal(true);
+    expect(observed.length).to.equal(2);
+  });
+
   afterEach(async () => {
     for (const part of parts) {
       part.setConnected(false);

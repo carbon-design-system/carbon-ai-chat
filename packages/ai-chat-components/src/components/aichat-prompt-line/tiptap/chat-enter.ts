@@ -17,6 +17,9 @@
 
 import { Extension } from '@tiptap/core';
 
+/**
+ * @eventOwner {import('../aichat-prompt-line.js').default}
+ */
 export function carbonChatEnter(): Extension {
   return Extension.create({
     name: 'carbonChatEnter',
@@ -27,7 +30,7 @@ export function carbonChatEnter(): Extension {
             return false;
           }
           editor.view.dom.dispatchEvent(
-            new CustomEvent('cds-aichat-prompt-send-intent', {
+            new CustomEvent<null>('cds-aichat-prompt-send-intent', {
               bubbles: true,
               composed: true,
             })

@@ -24,10 +24,10 @@ const LOADING_TIMEOUT_MS = 10000; // 10 seconds
 /**
  * Audio player component that supports multiple audio sources
  * @element cds-aichat-audio-player
- * @fires cds-aichat-audio-player-play - Fired when audio starts playing
- * @fires cds-aichat-audio-player-pause - Fired when audio pauses
- * @fires cds-aichat-audio-player-ready - Fired when audio is ready to play
- * @fires cds-aichat-audio-player-error - Fired when an error occurs
+ * @fires {CustomEvent<null>} cds-aichat-audio-player-play - Audio playback starts.
+ * @fires {CustomEvent<null>} cds-aichat-audio-player-pause - Audio playback pauses.
+ * @fires {CustomEvent<null>} cds-aichat-audio-player-ready - The audio is ready to play.
+ * @fires {CustomEvent<AudioPlayerErrorEventDetail>} cds-aichat-audio-player-error - Audio playback fails.
  */
 class AudioPlayer extends LitElement {
   static get is() {
@@ -243,7 +243,7 @@ class AudioPlayer extends LitElement {
     }
 
     this.dispatchEvent(
-      new CustomEvent('cds-aichat-audio-player-ready', {
+      new CustomEvent<null>('cds-aichat-audio-player-ready', {
         bubbles: true,
         composed: true,
       })
@@ -255,7 +255,7 @@ class AudioPlayer extends LitElement {
    */
   private handlePlay(): void {
     this.dispatchEvent(
-      new CustomEvent('cds-aichat-audio-player-play', {
+      new CustomEvent<null>('cds-aichat-audio-player-play', {
         bubbles: true,
         composed: true,
       })
@@ -267,7 +267,7 @@ class AudioPlayer extends LitElement {
    */
   private handlePause(): void {
     this.dispatchEvent(
-      new CustomEvent('cds-aichat-audio-player-pause', {
+      new CustomEvent<null>('cds-aichat-audio-player-pause', {
         bubbles: true,
         composed: true,
       })
@@ -289,11 +289,14 @@ class AudioPlayer extends LitElement {
 
     // Always use the generic error message, regardless of the actual error
     this.dispatchEvent(
-      new CustomEvent('cds-aichat-audio-player-error', {
-        bubbles: true,
-        composed: true,
-        detail: { message: this.errorMessage },
-      })
+      new CustomEvent<AudioPlayerErrorEventDetail>(
+        'cds-aichat-audio-player-error',
+        {
+          bubbles: true,
+          composed: true,
+          detail: { message: this.errorMessage },
+        }
+      )
     );
   }
 
@@ -421,3 +424,9 @@ class AudioPlayer extends LitElement {
 }
 
 export default AudioPlayer;
+
+/** Describes an audio playback failure. */
+export interface AudioPlayerErrorEventDetail {
+  /** Localized error message shown by the player. */
+  message: string;
+}

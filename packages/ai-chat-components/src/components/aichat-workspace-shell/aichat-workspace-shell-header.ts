@@ -23,7 +23,7 @@ import ChevronDown16 from '@carbon/icons/es/chevron--down/16.js';
  * @slot header-description - Represents the description area in the Header.
  * @slot header-action - Represents the action area in the workspace.
  *
- * @fires workspace-header-toggle - Fired when the details element is toggled
+ * @fires {CustomEvent<WorkspaceHeaderToggleEventDetail>} workspace-header-toggle - The workspace details change their open state.
  */
 class CDSAIChatWorkspaceShellHeader extends LitElement {
   static get is() {
@@ -83,11 +83,14 @@ class CDSAIChatWorkspaceShellHeader extends LitElement {
   private _handleToggle = () => {
     const isOpen = this._detailsElement?.open || false;
     this.dispatchEvent(
-      new CustomEvent('workspace-header-toggle', {
-        detail: { open: isOpen },
-        bubbles: true,
-        composed: true,
-      })
+      new CustomEvent<WorkspaceHeaderToggleEventDetail>(
+        'workspace-header-toggle',
+        {
+          detail: { open: isOpen },
+          bubbles: true,
+          composed: true,
+        }
+      )
     );
   };
 
@@ -158,3 +161,9 @@ class CDSAIChatWorkspaceShellHeader extends LitElement {
 
 export { CDSAIChatWorkspaceShellHeader };
 export default CDSAIChatWorkspaceShellHeader;
+
+/** Describes workspace detail visibility. */
+export interface WorkspaceHeaderToggleEventDetail {
+  /** Whether the workspace details are open. */
+  open: boolean;
+}

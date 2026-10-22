@@ -116,3 +116,31 @@ export interface TypingEventDetail {
   /** Whether the user is currently typing. */
   isTyping: boolean;
 }
+
+/** Describes how focus entered the prompt editor. */
+export interface PromptFocusEventDetail {
+  /** Whether keyboard interaction caused focus. */
+  keyboard: boolean;
+}
+
+/** Exposes the editor keyboard event. */
+export interface PromptKeydownEventDetail {
+  /** Original keydown event received by the editor. */
+  originalEvent: KeyboardEvent;
+}
+
+/** Details emitted by the prompt editor runtimes. */
+export interface PromptLineEventDetailMap {
+  /** Current editor content. */
+  'cds-aichat-prompt-change': InputChangeEventDetail;
+  /** How focus entered the editor. */
+  'cds-aichat-prompt-focus': PromptFocusEventDetail;
+  /** The editor lost focus without a detail payload. */
+  'cds-aichat-prompt-blur': null;
+  /** Whether the user is typing. */
+  'cds-aichat-prompt-typing': TypingEventDetail;
+  /** Original keyboard event. */
+  'cds-aichat-prompt-keydown': PromptKeydownEventDetail;
+  /** A send request without a detail payload. */
+  'cds-aichat-prompt-send-intent': null;
+}

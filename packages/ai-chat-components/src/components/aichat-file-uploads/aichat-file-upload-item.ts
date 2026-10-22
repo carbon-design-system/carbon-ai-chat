@@ -83,7 +83,7 @@ interface ResolvedFile {
  * cannot be serialized.
  *
  * @element cds-aichat-file-upload-item
- * @fires {CustomEvent<FileRemoveEventDetail>} cds-aichat-file-remove - Fired when the remove button is clicked
+ * @fires {CustomEvent<FileRemoveEventDetail>} cds-aichat-file-remove - Requests removal of this file.
  */
 class FileUploadItemElement extends LitElement {
   static get is() {

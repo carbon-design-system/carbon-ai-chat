@@ -11,5 +11,6 @@ import { defineCustomElement } from '../../globals/register.js';
 import ConversationalSearchShell from './aichat-conversational-search-shell.js';
 
 export { ConversationalSearchShell };
+export type { CitationToggleEventDetail } from './aichat-conversational-search-shell.js';
 
 defineCustomElement(ConversationalSearchShell);

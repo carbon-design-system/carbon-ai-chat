@@ -31,6 +31,9 @@
 
 import { Extension } from '@tiptap/core';
 
+/**
+ * @eventOwner {import('../aichat-prompt-line.js').default}
+ */
 export const Keymap = Extension.create({
   name: 'carbonChatKeymap',
 
@@ -38,7 +41,7 @@ export const Keymap = Extension.create({
     return {
       'Mod-Enter': ({ editor }) => {
         editor.view.dom.dispatchEvent(
-          new CustomEvent('cds-aichat-prompt-send-intent', {
+          new CustomEvent<null>('cds-aichat-prompt-send-intent', {
             bubbles: true,
             composed: true,
           })

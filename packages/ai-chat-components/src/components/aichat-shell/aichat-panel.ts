@@ -20,7 +20,11 @@ const MESSAGES_MAX_WIDTH_FALLBACK = 672; // Fallback if CSS custom property is n
 type AnimationState = 'closed' | 'closing' | 'opening' | 'open';
 
 /**
- * @fires openend - Opening has finished. detail.isReactivation is true when an open panel becomes visible again after another panel covered it.
+ * @fires {CustomEvent<null>} openstart - The panel starts opening.
+ * @fires {CustomEvent<PanelOpenEndEventDetail>} openend - The panel finishes opening, including reactivation after another panel closes.
+ * @fires {CustomEvent<null>} closestart - The panel starts closing.
+ * @fires {CustomEvent<null>} closeend - The panel finishes closing.
+ * @fires {CustomEvent<PanelBodyScrollEventDetail>} body-scroll - The panel body scrolls.
  */
 class CDSAIChatPanel extends LitElement {
   static get is() {
@@ -276,7 +280,7 @@ class CDSAIChatPanel extends LitElement {
     this.isReactivation = this.hasOpened;
     this.hasOpened = true;
     this.dispatchEvent(
-      new CustomEvent('openstart', { bubbles: true, composed: true })
+      new CustomEvent<null>('openstart', { bubbles: true, composed: true })
     );
     this.clearAnimationFallback();
     this.pendingAnimation = 'opening';
@@ -294,7 +298,7 @@ class CDSAIChatPanel extends LitElement {
 
   private closePanel() {
     this.dispatchEvent(
-      new CustomEvent('closestart', { bubbles: true, composed: true })
+      new CustomEvent<null>('closestart', { bubbles: true, composed: true })
     );
     this.clearAnimationFallback();
     this.pendingAnimation = 'closing';
@@ -358,7 +362,7 @@ class CDSAIChatPanel extends LitElement {
     this.animationState = 'open';
     this.updateHostClasses();
     this.dispatchEvent(
-      new CustomEvent('openend', {
+      new CustomEvent<PanelOpenEndEventDetail>('openend', {
         bubbles: true,
         composed: true,
         detail: { isReactivation: this.isReactivation },
@@ -380,7 +384,7 @@ class CDSAIChatPanel extends LitElement {
     this.animationState = 'closed';
     this.updateHostClasses();
     this.dispatchEvent(
-      new CustomEvent('closeend', { bubbles: true, composed: true })
+      new CustomEvent<null>('closeend', { bubbles: true, composed: true })
     );
   }
 
@@ -592,7 +596,7 @@ class CDSAIChatPanel extends LitElement {
 
     // Dispatch a custom event with scroll information
     this.dispatchEvent(
-      new CustomEvent('body-scroll', {
+      new CustomEvent<PanelBodyScrollEventDetail>('body-scroll', {
         bubbles: true,
         composed: true,
         detail: {
@@ -649,3 +653,25 @@ class CDSAIChatPanel extends LitElement {
 }
 
 export default CDSAIChatPanel;
+
+/** Describes a completed panel opening. */
+export interface PanelOpenEndEventDetail {
+  /** Whether an already open panel became visible after another panel closed. */
+  isReactivation: boolean;
+}
+
+/** Describes the panel body scroll position. */
+export interface PanelBodyScrollEventDetail {
+  /** Distance from the top of the scroll area, in pixels. */
+  scrollTop: number;
+  /** Full height of the scroll area, in pixels. */
+  scrollHeight: number;
+  /** Visible height of the scroll area, in pixels. */
+  clientHeight: number;
+  /** Position of the visible bottom edge, in pixels. */
+  scrollBottom: number;
+  /** Whether the body is within one pixel of the bottom. */
+  isAtBottom: boolean;
+  /** Whether the content exceeds the visible height. */
+  isScrollable: boolean;
+}

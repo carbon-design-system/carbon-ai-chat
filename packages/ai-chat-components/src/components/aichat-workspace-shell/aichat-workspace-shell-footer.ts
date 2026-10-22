@@ -29,7 +29,7 @@ export type Action = {
 /**
  * Workspace Shell Footer.
  * @element cds-aichat-workspace-shell-footer
- * @fires cds-aichat-workspace-shell-footer-clicked - The custom event fired when footer buttons are clicked.
+ * @fires {CustomEvent<Action>} cds-aichat-workspace-shell-footer-clicked - A footer action is activated.
  */
 class CDSAIChatWorkspaceShellFooter extends LitElement {
   static get is() {
@@ -122,7 +122,7 @@ class CDSAIChatWorkspaceShellFooter extends LitElement {
       detail: action,
     };
     this.dispatchEvent(
-      new CustomEvent(
+      new CustomEvent<Action>(
         (this.constructor as typeof CDSAIChatWorkspaceShellFooter)
           .eventButtonClick,
         init
