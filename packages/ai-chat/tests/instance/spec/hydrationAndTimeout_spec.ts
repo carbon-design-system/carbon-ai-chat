@@ -13,6 +13,10 @@ import { HistoryItem } from '../../../src/types/messaging/History';
 import { CancellationReason } from '../../../src/types/config/MessagingConfig';
 import { OnErrorType } from '../../../src/types/config/ErrorConfig';
 import {
+  BusEventPreSend,
+  BusEventType,
+} from '../../../src/types/events/eventBusTypes';
+import {
   createBaseConfig,
   renderChatAndGetInstanceWithStore,
   setupBeforeEach,
@@ -95,6 +99,51 @@ describe('hydration and timeout isolation', () => {
         otherData: failure,
       })
     );
+    expect(instance.state.get().status).toBe('error');
+  });
+
+  it('reports one send error when a pre-send handler renames the welcome request', async () => {
+    const onError = jest.fn();
+    const customSendMessage = jest
+      .fn()
+      .mockRejectedValue(new Error('welcome send failed'));
+    // An earlier test persists an open main window, which would hydrate before PRE_SEND is registered.
+    sessionStorage.clear();
+    localStorage.clear();
+    const { instance, serviceManager } =
+      await renderChatAndGetInstanceWithStore({
+        ...createBaseConfig(),
+        onError,
+        messaging: {
+          customLoadHistory: jest.fn().mockResolvedValue([]),
+          customSendMessage,
+        },
+      });
+    let originalRequestID: string;
+    instance.on({
+      type: BusEventType.PRE_SEND,
+      handler: (event: BusEventPreSend) => {
+        originalRequestID = event.data.id;
+        event.data.id = 'renamed-welcome';
+      },
+    });
+    jest.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    await act(async () => serviceManager.actions.hydrateChat());
+
+    expect(customSendMessage).toHaveBeenCalledTimes(1);
+    expect(customSendMessage.mock.calls[0][0].id).toBe('renamed-welcome');
+    expect(onError).toHaveBeenCalledTimes(1);
+    expect(onError).toHaveBeenCalledWith(
+      expect.objectContaining({
+        errorType: OnErrorType.MESSAGE_COMMUNICATION,
+      })
+    );
+    expect(
+      serviceManager.conversationLifecycleService.hasFailureForRequest(
+        originalRequestID
+      )
+    ).toBe(true);
     expect(instance.state.get().status).toBe('error');
   });
 
