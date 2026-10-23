@@ -12,14 +12,30 @@
 $block-class: #{$prefix}-file-upload-item;
 
 :host {
-  display: block;
+  display: inline-block;
   margin-inline-end: layout.$spacing-03;
+}
+
+:host(:focus) {
+  outline: none;
 }
 
 cds-file-uploader-item {
   @include type.type-style('body-compact-01');
 
+  position: relative;
   border-radius: layout.$spacing-03;
+  inline-size: max-content;
+}
+
+:host(:focus-visible) cds-file-uploader-item::after {
+  position: absolute;
+  border-radius: layout.$spacing-03;
+  content: '';
+  inset: 0;
+  outline: 2px solid var(--cds-focus, #0f62fe);
+  outline-offset: -2px;
+  pointer-events: none;
 }
 
 .#{$block-class}__preview-wrapper {
@@ -37,6 +53,15 @@ cds-file-uploader-item {
   margin-inline-end: layout.$spacing-05;
   text-decoration: none;
   vertical-align: middle;
+
+  &:focus {
+    outline: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--cds-focus, #0f62fe);
+    outline-offset: -2px;
+  }
 }
 
 .#{$block-class}__play-badge {

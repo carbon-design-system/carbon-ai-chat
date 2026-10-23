@@ -58,6 +58,27 @@ class FileUploadsElement extends LitElement {
   @property({ type: Array, attribute: false })
   uploads: FileUpload[] = [];
 
+  /**
+   * Returns the sorted order of uploads for display. When errors are present,
+   * errored uploads appear first (alphabetical by name), followed by healthy
+   * uploads (alphabetical by name). When no errors are present, all uploads
+   * are sorted alphabetically by name.
+   */
+  private get _sortedUploads(): FileUpload[] {
+    const errored = this.uploads.filter((u) => u.isError);
+    const healthy = this.uploads.filter((u) => !u.isError);
+
+    const byName = (a: FileUpload, b: FileUpload) =>
+      (a.file?.name ?? '').localeCompare(b.file?.name ?? '', undefined, {
+        sensitivity: 'base',
+      });
+
+    if (errored.length > 0) {
+      return [...errored.sort(byName), ...healthy.sort(byName)];
+    }
+    return [...this.uploads].sort(byName);
+  }
+
   /** Label for the remove file button, used when no file name is available. */
   @property({ type: String, attribute: 'remove-file-label' })
   removeFileLabel = 'Remove file';
@@ -292,6 +313,8 @@ class FileUploadsElement extends LitElement {
   }
 
   render() {
+    const sorted = this._sortedUploads;
+
     return html`
       <div class="${prefix}--file-uploads-live-region" aria-live="polite"></div>
       <div class="${prefix}--file-uploads-live-region" aria-live="polite"></div>
@@ -307,7 +330,7 @@ class FileUploadsElement extends LitElement {
               <div
                 class="${prefix}--file-uploads-gradient-wrapper${this._hasOverflow ? ` ${prefix}--file-uploads-gradient-wrapper--overflow` : ''}">
                 <div class="${prefix}--file-uploads-container">
-                  ${this.uploads.map(
+                  ${sorted.map(
                     (upload) => html`
                       <cds-aichat-file-upload-item
                         .upload="${upload}"
@@ -316,6 +339,15 @@ class FileUploadsElement extends LitElement {
                           name: upload.file?.name,
                         })}"
                         uploading-file-label="${this.uploadingFileLabel}"
+                        error-description="${
+                          upload.isError
+                            ? this.getFileUploadFailureText({
+                                messages: upload.errorMessage
+                                  ? [upload.errorMessage]
+                                  : [],
+                              })
+                            : ''
+                        }"
                         @cds-aichat-file-remove="${this._handleFileRemove}"></cds-aichat-file-upload-item>
                     `
                   )}

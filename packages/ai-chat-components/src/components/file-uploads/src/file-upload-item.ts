@@ -24,8 +24,9 @@ import prefix from '../../../globals/settings.js';
 import '@carbon/web-components/es/components/file-uploader/index.js';
 
 import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
+import { carbonIconToSVG } from '@carbon/web-components/es/globals/internal/icon-loader-utils.js';
 import PlayFilledAlt16 from '@carbon/icons/es/play--filled--alt/16.js';
-
+import ErrorFilled16 from '@carbon/icons/es/error--filled/16.js';
 import { pickFileTypeIcon } from './file-type-icon.js';
 
 import type {
@@ -35,12 +36,6 @@ import type {
 import type { FileAttachment } from './types.js';
 
 import styles from './file-upload-item.scss?lit';
-
-/**
- * Ids are scoped to their shadow root and each `cds-file-uploader-item` has its
- * own, so a constant collides with nothing.
- */
-const ERROR_MESSAGE_ID = 'cds-aichat-file-upload-item-error';
 
 interface SyncAttributeOptions {
   /** The element to set the attribute on. */
@@ -121,6 +116,13 @@ class FileUploadItemElement extends LitElement {
   /** Label for the uploading status. */
   @property({ type: String, attribute: 'uploading-file-label' })
   uploadingFileLabel = 'Uploading';
+
+  /**
+   * Full failure text for a failed upload, announced after the file name when the
+   * chip takes focus. Falls back to the upload's own error message.
+   */
+  @property({ type: String, attribute: 'error-description' })
+  errorDescription?: string;
 
   /** Text shown when the file's name is not known. */
   @property({ type: String, attribute: 'fallback-label' })
@@ -249,6 +251,7 @@ class FileUploadItemElement extends LitElement {
     if (
       changedProperties.has('readOnly') ||
       changedProperties.has('upload') ||
+      changedProperties.has('errorDescription') ||
       !this._syncedErrorState
     ) {
       this._syncErrorState();
@@ -258,25 +261,37 @@ class FileUploadItemElement extends LitElement {
   private _syncedErrorState = false;
 
   /**
-   * Carbon leaves the failure message unreferenced and hides the invalid icon, so
-   * the remove button — the chip's only focusable node — states no reason. The
-   * message and the button are siblings in Carbon's shadow root, so the
-   * `aria-describedby` is wired there: an id reference cannot cross the boundary.
+   * Carbon hides the invalid icon and leaves its failure message unreferenced, so
+   * the chip states the failure itself, in its name, for a screen reader to read
+   * when the chip takes focus.
    */
-  private async _syncErrorState() {
+  private async _syncErrorState(): Promise<void> {
     const { isError, message } = this._uploadError;
     const invalid = !this.readOnly && isError;
 
     // `aria-invalid` on a role-less host is dropped, so an input-area chip states
     // a role and names itself. A read-only chip is already a list item in the
     // message list.
-    const label = this.readOnly ? undefined : this._resolved?.name;
+    const name = this.readOnly ? undefined : this._resolved?.name;
+    // The failure text is folded into the name because an id reference from the
+    // host cannot reach into this shadow root, and a group's contents are not read
+    // when it takes focus. Focusing the chip then announces the whole failure.
+    const failure = this.errorDescription || message;
+    const hasFailureToAnnounce = Boolean(invalid && failure && name);
+    const label = hasFailureToAnnounce ? `${name}. ${failure}` : name;
     syncAttribute({
       element: this,
       attribute: 'role',
       value: this.readOnly ? undefined : 'group',
     });
     syncAttribute({ element: this, attribute: 'aria-label', value: label });
+    // Focusable so keyboard and screen reader users can land on the chip itself,
+    // and hear its state.
+    syncAttribute({
+      element: this,
+      attribute: 'tabindex',
+      value: this.readOnly ? undefined : '0',
+    });
     syncAttribute({
       element: this,
       attribute: 'aria-invalid',
@@ -290,8 +305,9 @@ class FileUploadItemElement extends LitElement {
       return;
     }
 
-    // A failure also flips `state`, and Carbon re-renders that subtree — replacing
-    // the button being described. Wait for the new one.
+    // Carbon draws the invalid icon in its own update, after ours; a failed upload
+    // usually also moves `state` from "uploading" to "edit", which swaps the whole
+    // status area. Wait for that render before looking for the icon.
     await inner.updateComplete;
 
     const innerRoot = inner.shadowRoot;
@@ -300,32 +316,28 @@ class FileUploadItemElement extends LitElement {
     }
     this._syncedErrorState = true;
 
-    // Carbon renders the requirement node even when it holds no message.
-    const describedBy = invalid && message ? ERROR_MESSAGE_ID : undefined;
-
-    const title = innerRoot.querySelector('.cds--form-requirement__title');
-    if (title) {
-      syncAttribute({ element: title, attribute: 'id', value: describedBy });
-    }
-
-    const removeButton = innerRoot.querySelector('button.cds--file-close');
-    if (removeButton) {
-      syncAttribute({
-        element: removeButton,
-        attribute: 'aria-describedby',
-        value: describedBy,
+    // Carbon hardcodes its WarningFilled icon for the invalid state. Swap in
+    // ErrorFilled; the marker keeps repeat syncs from replacing it again.
+    const warningIcon = innerRoot.querySelector(
+      '.cds--file__state-container .cds--file-invalid:not([data-error-icon])'
+    );
+    if (invalid && warningIcon) {
+      const template = document.createElement('template');
+      template.innerHTML = carbonIconToSVG(ErrorFilled16, {
+        class: 'cds--file-invalid',
+        'aria-hidden': 'true',
+        'data-error-icon': '',
       });
+      warningIcon.replaceWith(template.content);
     }
   }
 
   /**
-   * Carbon's `cds-file-uploader-item` needs two things patched from inside its own
-   * shadow root, because it exposes no `part=` for either.
+   * Overrides Carbon's `cds-file-uploader-item` styles from inside its shadow
+   * root, since it exposes no `part=` for the affected elements.
    *
-   * The filename margin is too wide when a media preview sits beside it. And the
-   * status container is rendered unconditionally at `min-inline-size: 1.5rem` plus
-   * `padding-inline-end: .75rem`, so in read-only mode — where there is no status
-   * to show — it would leave 36px of dead space on the chip's trailing edge.
+   * Carbon's adopted stylesheet wins over a `<style>` at equal specificity, so
+   * some selectors repeat the `size` attribute (always set) to out-rank it.
    */
   private _syncInjectedStyles() {
     const innerRoot = this.shadowRoot?.querySelector(
@@ -347,6 +359,30 @@ class FileUploadItemElement extends LitElement {
       // hiding it leaves the name flush to the edge against a 1rem leading margin.
       // Restate it on the name to even the two sides up.
       rules.push('.cds--file-filename { margin-inline-end: 1rem; }');
+    }
+    if (!this.readOnly) {
+      // Column gap between the name and the status area.
+      rules.push(
+        ':host(cds-file-uploader-item[size][size=md]) { gap: 0 var(--cds-spacing-05, 1rem); }'
+      );
+      // Column gap between the status area's children (error icon, remove button).
+      rules.push(
+        ':host([size]) .cds--file__state-container { gap: var(--cds-spacing-02, 0.25rem); }'
+      );
+    }
+    if (!this.readOnly && this._uploadError.isError) {
+      // Override core component's invalid-state styles: remove its padding and outline, hide
+      // inline error text, and redraw the outline so it paints above the content.
+      rules.push(':host([invalid][size]) { padding: 0; outline: none; }');
+      rules.push(
+        ':host([invalid][size]) .cds--form-requirement { display: none; }'
+      );
+      rules.push(
+        ':host([invalid][size])::after { content: ""; position: absolute; inset: 0; border-radius: 0.5rem; outline: 2px solid var(--cds-support-error, #da1e28); outline-offset: -2px; pointer-events: none; }'
+      );
+      rules.push(
+        '@media screen and (prefers-contrast) { :host([invalid][size])::after { outline-style: dotted; } }'
+      );
     }
 
     const nextText = rules.join('\n');
