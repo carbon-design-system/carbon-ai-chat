@@ -325,7 +325,8 @@ class ChunkProcessingService {
           await this.notifyStreamingChunk(
             chunk as PartialOrCompleteItemChunk,
             messageID,
-            item
+            item,
+            isCurrent
           );
         }
       } else if (isStreamFinalResponse(chunk)) {
@@ -428,13 +429,15 @@ class ChunkProcessingService {
   private async notifyStreamingChunk(
     chunk: PartialOrCompleteItemChunk,
     messageID: string | undefined,
-    item: DeepPartial<GenericItem> | undefined
+    item: DeepPartial<GenericItem> | undefined,
+    isCurrent: () => boolean
   ) {
     if (messageID && item) {
       await this.serviceManager.slotEventService.handleUserDefinedResponseItemsChunk(
         messageID,
         chunk,
-        item
+        item,
+        isCurrent
       );
     }
   }
