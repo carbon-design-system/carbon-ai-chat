@@ -33,7 +33,7 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: npm ci --prefer-offline
       - name: Run build
-        run: npm run aiChat:build
+        run: npm run aiChat:build -- --ignore @carbon/ai-chat-examples-demo
       # 👇 Test jobs reuse this output instead of rebuilding
       - name: Upload build output
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -60,10 +60,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - suite: ai-chat 1/2
-            run: npm run test --workspace=@carbon/ai-chat -- --shard=1/2
-          - suite: ai-chat 2/2
-            run: npm run test --workspace=@carbon/ai-chat -- --shard=2/2
+          - suite: ai-chat 1/3
+            run: npm run test --workspace=@carbon/ai-chat -- --shard=1/3 && npm run test:versions
+          - suite: ai-chat 2/3
+            run: npm run test --workspace=@carbon/ai-chat -- --shard=2/3
+          - suite: ai-chat 3/3
+            run: npm run test --workspace=@carbon/ai-chat -- --shard=3/3
           # 👇 TEMPORARILY chromium-only in CI: the firefox/webkit apt dependencies (~185 packages)
           # stall the Playwright install. Restore `chromium firefox webkit` (and the matching
           # launchers in web-test-runner.config.js) when the CI strategy is reworked.
@@ -182,9 +184,6 @@ jobs:
         run: npm run lint:license
 
   validate-agents-files:
-    # 👇 TEMPORARILY DISABLED: repo-internal guidance and example tooling checks, not consumer-facing.
-    # A job skipped by `if` reports as passing for required status checks.
-    if: false
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

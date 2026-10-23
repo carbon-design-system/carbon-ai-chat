@@ -73,6 +73,7 @@ jobs:
           npm run lint:styles
           npm run validate:adrs
           npm run test --workspace=@carbon/ai-chat
+          npm run test:versions
           CI=true npm run test --workspace=@carbon/ai-chat-components
 
       - name: Update telemetry.yml
