@@ -1289,7 +1289,12 @@ class MessageUpsertCoordinator {
           result,
           localItems,
           this.fanOutEntries(messageID, result, Infinity)
-            .filter((entry) => entry.shownLocalItem)
+            // A retained drawing fallback belongs to an older payload, not this caller's item.
+            .filter(
+              (entry) =>
+                entry.shownLocalItem &&
+                isEqual(entry.shownLocalItem.item, entry.item)
+            )
             .map((entry) => [entry.shownLocalItem.item, entry.item])
         ),
       },
