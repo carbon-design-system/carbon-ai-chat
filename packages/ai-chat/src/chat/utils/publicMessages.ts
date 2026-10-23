@@ -9,6 +9,7 @@
 
 import cloneDeep from 'lodash-es/cloneDeep.js';
 import merge from 'lodash-es/merge.js';
+import isEqual from 'lodash-es/isEqual.js';
 
 import type {
   LocalMessageItem,
@@ -24,7 +25,12 @@ import {
 } from '../../types/messaging/Messages';
 import type ObjectMap from '../../types/utilities/ObjectMap';
 import { deepFreeze } from './lang/objectUtils';
-import { isResponse } from './messageUtils';
+import {
+  isHiddenOutputItem,
+  isPause,
+  isResponse,
+  streamItemID,
+} from './messageUtils';
 import { deriveStreamingItemText } from './streamingUtils';
 
 interface CachedMessage {
@@ -142,6 +148,67 @@ function assembleStreamingItem(localItem: LocalMessageItem): GenericItem {
   return merge({}, localItem.item, ...streamingState.chunks) as GenericItem;
 }
 
+function assembleResponseItems(
+  message: MessageResponse,
+  localItems: readonly LocalMessageItem[]
+): GenericItem[] {
+  const projected = localItems.map(assembleStreamingItem);
+  const generic = message.output?.generic ?? [];
+  const nonRendering = generic
+    .map((item, index) => ({ item, index }))
+    .filter(
+      ({ item }) => item && (isPause(item) || isHiddenOutputItem(message, item))
+    );
+  if (!nonRendering.length) {
+    return projected;
+  }
+
+  // Local items omit silent entries and can stop at a pause; snapshots retain the full payload.
+  const matched = new Map<number, number>();
+  const reserved = new Set<number>();
+  nonRendering.forEach(({ item, index: genericIndex }) => {
+    const id = streamItemID(message.id, item);
+    const index = localItems.findIndex(
+      (local, position) =>
+        !reserved.has(position) &&
+        (id
+          ? streamItemID(message.id, local.item) === id
+          : isEqual(local.item, item))
+    );
+    if (index !== -1) {
+      matched.set(genericIndex, index);
+      reserved.add(index);
+    }
+  });
+
+  const consumed = new Set<number>();
+  let nextLocal = 0;
+  const result = generic.flatMap((item, genericIndex) => {
+    if (!item) {
+      return [];
+    }
+    if (isPause(item) || isHiddenOutputItem(message, item)) {
+      const index = matched.get(genericIndex);
+      if (index !== undefined) {
+        consumed.add(index);
+        return [projected[index]];
+      }
+      return [item];
+    }
+    while (reserved.has(nextLocal)) {
+      nextLocal++;
+    }
+    if (nextLocal < projected.length) {
+      consumed.add(nextLocal);
+      return [projected[nextLocal++]];
+    }
+    return [item];
+  });
+  return result.concat(
+    projected.filter((_item, index) => !consumed.has(index))
+  );
+}
+
 function clonePublicMessage(
   message: Message,
   localItems: readonly LocalMessageItem[]
@@ -158,7 +225,7 @@ function clonePublicMessage(
       ...message,
       output: {
         ...message.output,
-        generic: localItems.map(assembleStreamingItem),
+        generic: assembleResponseItems(message as MessageResponse, localItems),
       },
     } as MessageResponse;
   }
