@@ -107,7 +107,7 @@ class SlotEventService {
         },
       };
 
-      await this.serviceManager.fire(userDefinedResponseEvent);
+      await this.serviceManager.fire(userDefinedResponseEvent, isCurrent);
     } else if (isResponseWithNestedItems(localMessage.item)) {
       const {
         itemsLocalMessageItemIDs,
@@ -172,8 +172,12 @@ class SlotEventService {
   async handleUserDefinedResponseItemsChunk(
     messageID: string,
     chunk: PartialOrCompleteItemChunk,
-    messageItem: DeepPartial<GenericItem>
+    messageItem: DeepPartial<GenericItem>,
+    isCurrent: () => boolean = () => true
   ) {
+    if (!isCurrent()) {
+      return;
+    }
     if (renderAsUserDefinedMessage(messageItem)) {
       const itemID = streamItemID(messageID, messageItem);
 
@@ -191,7 +195,7 @@ class SlotEventService {
         },
       };
 
-      await this.serviceManager.fire(userDefinedResponseEvent);
+      await this.serviceManager.fire(userDefinedResponseEvent, isCurrent);
     }
   }
 
@@ -221,7 +225,7 @@ class SlotEventService {
         },
       };
 
-      await this.serviceManager.fire(customFooterSlotEvent);
+      await this.serviceManager.fire(customFooterSlotEvent, isCurrent);
     }
   }
 

@@ -461,7 +461,7 @@ class MessageUpsertCoordinator {
     );
 
     if (willFireReceive) {
-      await this.firePreReceive(messageID, result);
+      await this.firePreReceive(messageID, result, stamp);
       if (isStale()) {
         return;
       }
@@ -662,10 +662,13 @@ class MessageUpsertCoordinator {
       return;
     }
     deepFreeze(message);
-    await this.serviceManager.fire({
-      type: BusEventType.RECEIVE,
-      data: message,
-    });
+    await this.serviceManager.fire(
+      {
+        type: BusEventType.RECEIVE,
+        data: message,
+      },
+      isCurrent
+    );
     if (isCurrent()) {
       this.markComplete(messageID);
     }
@@ -1090,13 +1093,17 @@ class MessageUpsertCoordinator {
    */
   private async firePreReceive(
     messageID: string,
-    result: MessageResponse
+    result: MessageResponse,
+    stamp: UpsertStamp
   ): Promise<void> {
     const preReceiveEvent: BusEventPreReceive = {
       type: BusEventType.PRE_RECEIVE,
       data: result,
     };
-    await this.serviceManager.fire(preReceiveEvent);
+    await this.serviceManager.fire(
+      preReceiveEvent,
+      () => !this.isStale(stamp, result.request_id)
+    );
     if (result.id !== messageID) {
       if (!result.id) {
         result.id = messageID;
@@ -1264,7 +1271,10 @@ class MessageUpsertCoordinator {
       data: result,
     };
     try {
-      await this.serviceManager.fire(receiveEvent);
+      await this.serviceManager.fire(
+        receiveEvent,
+        () => !this.isStale(stamp, result.request_id)
+      );
     } catch (error) {
       consoleError('upsertMessage: receive handler threw, continuing.', error);
     }
