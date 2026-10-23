@@ -7,6 +7,15 @@
  *  @license
  */
 
+import { act } from '@testing-library/react';
+import { MessageState } from '../../../src/types/config/MessagingConfig';
+import { BusEventType } from '../../../src/types/events/eventBusTypes';
+import {
+  createBaseConfig,
+  renderChatAndGetInstanceWithStore,
+  setupBeforeEach,
+  setupAfterEach,
+} from '../../test_helpers';
 import type { LocalMessageItem } from '../../../src/types/messaging/LocalMessageItem';
 import {
   Message,
@@ -16,6 +25,7 @@ import {
   TextItem,
 } from '../../../src/types/messaging/Messages';
 import { PublicMessagesProjection } from '../../../src/chat/utils/publicMessages';
+import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
 
 function localItem(
   fullMessageID: string,
@@ -164,6 +174,124 @@ describe('public message state', () => {
         ],
       },
     });
+  });
+
+  it('retains silent and pause payloads through streaming completion and delayed snapshot reads', () => {
+    const projection = new PublicMessagesProjection();
+    const hidden = {
+      response_type: MessageResponseTypes.USER_DEFINED,
+      user_defined: { silent: true, value: 'before' },
+    };
+    const pause = { response_type: MessageResponseTypes.PAUSE, time: 100 };
+    const message: MessageResponse = {
+      id: 'response',
+      output: {
+        generic: [
+          hidden,
+          { response_type: MessageResponseTypes.TEXT, text: 'Hello' },
+          pause,
+        ],
+      },
+    };
+    const streaming = localItem(
+      'response',
+      'text',
+      message.output.generic[1],
+      []
+    );
+    const first = projection.prepare(
+      ['response'],
+      { response: message },
+      { [streaming.ui_state.id]: streaming },
+      [streaming.ui_state.id]
+    );
+    const completeMessage: MessageResponse = {
+      ...message,
+      output: {
+        generic: [
+          {
+            ...hidden,
+            user_defined: { ...hidden.user_defined, value: 'after' },
+          },
+          { response_type: MessageResponseTypes.TEXT, text: 'Hello world' },
+          pause,
+        ],
+      },
+    };
+    const complete: LocalMessageItem = {
+      ...streaming,
+      item: completeMessage.output.generic[1],
+      ui_state: {
+        ...streaming.ui_state,
+        streamingState: { chunks: [], isDone: true },
+      },
+    };
+    const second = projection.project(
+      ['response'],
+      { response: completeMessage },
+      { [complete.ui_state.id]: complete },
+      [complete.ui_state.id]
+    );
+
+    expect((second[0] as MessageResponse).output.generic).toEqual(
+      completeMessage.output.generic
+    );
+    expect((first.get()[0] as MessageResponse).output.generic).toEqual(
+      message.output.generic
+    );
+    expect(
+      Object.isFrozen(
+        (first.get()[0] as MessageResponse).output.generic[0].user_defined
+      )
+    ).toBe(true);
+    expect(
+      projection.project(
+        ['response'],
+        { response: completeMessage },
+        {
+          [complete.ui_state.id]: {
+            ...complete,
+            ui_state: { ...complete.ui_state, needsAnnouncement: true },
+          },
+        },
+        [complete.ui_state.id]
+      )
+    ).toBe(second);
+  });
+
+  it('does not duplicate a streamed silent item or flatten nested payloads', () => {
+    const projection = new PublicMessagesProjection();
+    const hidden = {
+      response_type: MessageResponseTypes.USER_DEFINED,
+      user_defined: { silent: true, value: 'initial' },
+      streaming_metadata: { id: 'hidden' },
+    };
+    const card = {
+      response_type: MessageResponseTypes.CARD,
+      body: [{ response_type: MessageResponseTypes.TEXT, text: 'Nested' }],
+    };
+    const message: MessageResponse = {
+      id: 'response',
+      output: { generic: [hidden, card] },
+    };
+    const hiddenLocal = localItem('response', 'hidden', hidden, [
+      { user_defined: { value: 'streamed' } },
+    ]);
+    const cardLocal = localItem('response', 'card', card, []);
+    const [result] = projection.project(
+      ['response'],
+      { response: message },
+      {
+        [hiddenLocal.ui_state.id]: hiddenLocal,
+        [cardLocal.ui_state.id]: cardLocal,
+      },
+      [hiddenLocal.ui_state.id, cardLocal.ui_state.id]
+    );
+
+    expect((result as MessageResponse).output.generic).toEqual([
+      { ...hidden, user_defined: { silent: true, value: 'streamed' } },
+      card,
+    ]);
   });
 
   it('keeps stable references for unchanged content and fixed old snapshots', () => {
@@ -321,4 +449,135 @@ describe('public message state', () => {
     expect(newMessages[0]).not.toBe(oldMessages[0]);
     expect((newMessages[0] as Readonly<MessageRequest>).input.text).toBe('new');
   });
+});
+
+describe('silent response snapshots through public writes', () => {
+  beforeEach(setupBeforeEach);
+  afterEach(setupAfterEach);
+
+  it('retains the full COMPLETE payload while a pause delays visible items', async () => {
+    const { instance, store, serviceManager } =
+      await renderChatAndGetInstanceWithStore(createBaseConfig());
+    const entered = resolvablePromise<void>();
+    const release = resolvablePromise<void>();
+    const pause = jest
+      .spyOn(serviceManager.chunkProcessingService, 'waitForPause')
+      .mockImplementation(async () => {
+        entered.doResolve();
+        await release;
+      });
+    const response: MessageResponse = {
+      id: 'paused-complete',
+      output: {
+        generic: [
+          { response_type: MessageResponseTypes.TEXT, text: 'Before pause' },
+          { response_type: MessageResponseTypes.PAUSE, time: 100 },
+          { response_type: MessageResponseTypes.TEXT, text: 'After pause' },
+        ],
+      },
+    };
+    let pending: Promise<void>;
+    try {
+      await act(async () => {
+        pending = instance.messaging.upsertMessage(
+          response.id,
+          MessageState.COMPLETE,
+          () => response
+        );
+        await entered;
+      });
+      const during = instance.state.get();
+      const state = store.getState();
+      expect(
+        state.assistantMessageState.localMessageIDs
+          .map((id) => state.allMessageItemsByID[id])
+          .filter((item) => item.fullMessageID === response.id)
+          .map((item) => item.item)
+      ).toEqual([response.output.generic[0]]);
+      expect(
+        (
+          during.messages.find(
+            (message) => message.id === response.id
+          ) as MessageResponse
+        ).output.generic
+      ).toEqual(response.output.generic);
+      await act(async () => {
+        release.doResolve();
+        await pending;
+      });
+      expect(
+        (
+          instance.state
+            .get()
+            .messages.find(
+              (message) => message.id === response.id
+            ) as MessageResponse
+        ).output.generic
+      ).toEqual(response.output.generic);
+      expect(
+        (
+          during.messages.find(
+            (message) => message.id === response.id
+          ) as MessageResponse
+        ).output.generic
+      ).toEqual(response.output.generic);
+    } finally {
+      release.doResolve();
+      await pending;
+      pause.mockRestore();
+    }
+  });
+
+  it.each(['addMessage', 'upsertMessage'] as const)(
+    'retains silent generic content after COMPLETE through %s',
+    async (method) => {
+      const { instance, store } =
+        await renderChatAndGetInstanceWithStore(createBaseConfig());
+      const response: MessageResponse = {
+        id: 'silent-complete',
+        output: {
+          generic: [
+            {
+              response_type: MessageResponseTypes.USER_DEFINED,
+              user_defined: { silent: true, value: 'retained' },
+            },
+            {
+              response_type: MessageResponseTypes.TEXT,
+              text: 'Visible after silent',
+            },
+          ],
+        },
+      };
+      const slot = jest.fn();
+      instance.on({ type: BusEventType.USER_DEFINED_RESPONSE, handler: slot });
+      await act(async () => {
+        if (method === 'addMessage') {
+          await instance.messaging.addMessage(response);
+        } else {
+          await instance.messaging.upsertMessage(
+            response.id,
+            MessageState.COMPLETE,
+            () => response
+          );
+        }
+      });
+      const snapshot = instance.state
+        .get()
+        .messages.find(
+          (message) => message.id === response.id
+        ) as MessageResponse;
+      expect(snapshot.output.generic).toEqual(response.output.generic);
+      expect(Object.isFrozen(snapshot.output.generic[0].user_defined)).toBe(
+        true
+      );
+      expect(slot).toHaveBeenCalledTimes(1);
+      const state = store.getState();
+      expect(
+        state.assistantMessageState.localMessageIDs
+          .map((id) => state.allMessageItemsByID[id])
+          .filter((item) => item.fullMessageID === response.id)
+          .map((item) => item.item)
+      ).toEqual([response.output.generic[1]]);
+    }
+  );
 });
