@@ -26,18 +26,17 @@ cds-file-uploader-item {
   position: relative;
   display: inline-block;
   overflow: hidden;
-  border-radius: 6px;
-  block-size: 36px;
-  inline-size: 36px;
-  margin-inline-end: layout.$spacing-05;
-  vertical-align: middle;
-}
-
-.#{$block-class}__video-preview-wrapper {
   padding: 0;
   border: 0;
+  border-radius: 6px;
   background: none;
+  block-size: 36px;
+  color: inherit;
   cursor: pointer;
+  inline-size: 36px;
+  margin-inline-end: layout.$spacing-05;
+  text-decoration: none;
+  vertical-align: middle;
 }
 
 .#{$block-class}__play-badge {

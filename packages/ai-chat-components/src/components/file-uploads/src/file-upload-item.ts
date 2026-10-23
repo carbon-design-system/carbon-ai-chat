@@ -390,15 +390,20 @@ class FileUploadItemElement extends LitElement {
         return nothing;
       }
 
-      return html`<span class="${prefix}-file-upload-item__preview-wrapper"
-        ><img
+      return html`<a
+        class="${prefix}-file-upload-item__preview-wrapper"
+        href="${objectURL}"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Open image">
+        <img
           class="${prefix}-file-upload-item__preview"
           src="${objectURL}"
           width="36"
           height="36"
           alt=""
-          aria-hidden="true"
-      /></span>`;
+          aria-hidden="true" />
+      </a>`;
     }
 
     // Video preview
@@ -430,7 +435,7 @@ class FileUploadItemElement extends LitElement {
       };
 
       return html`<button
-        class="${prefix}-file-upload-item__preview-wrapper ${prefix}-file-upload-item__video-preview-wrapper"
+        class="${prefix}-file-upload-item__preview-wrapper"
         type="button"
         aria-label="Play video"
         @click="${openVideo}">
@@ -457,8 +462,13 @@ class FileUploadItemElement extends LitElement {
     // rather than in the page. No video equivalent: playback would stream the file
     // back, which a chip on a sent message has no business doing.
     if (this._canPreviewURL(url) && type.startsWith('image/')) {
-      return html`<span class="${prefix}-file-upload-item__preview-wrapper"
-        ><img
+      return html`<a
+        class="${prefix}-file-upload-item__preview-wrapper"
+        href="${url}"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Open image">
+        <img
           class="${prefix}-file-upload-item__preview"
           src="${url}"
           width="36"
@@ -467,8 +477,8 @@ class FileUploadItemElement extends LitElement {
           aria-hidden="true"
           @error="${() => {
             this._failedPreviewURL = url;
-          }}"
-      /></span>`;
+          }}" />
+      </a>`;
     }
 
     // File type icon (for supported icons)
