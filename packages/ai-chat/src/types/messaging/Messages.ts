@@ -330,8 +330,6 @@ interface MessageInput extends BaseMessageInput {
    * Snapshot semantics: this reflects what the user typed at send time. If a
    * `pre:send` handler rewrites `input.text`, `display_content` does NOT
    * auto-update.
-   *
-   * @experimental
    */
   display_content?: JSONContent;
 }
