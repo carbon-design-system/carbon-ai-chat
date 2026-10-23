@@ -708,41 +708,46 @@ class HumanAgentServiceImpl implements HumanAgentService {
     localMessageItem: LocalMessageItem,
     fullMessage: MessageResponse,
     config: AppConfig,
-    initialRestartCount: number
+    initialRestartCount: number,
+    isCurrent: () => boolean = () => true
   ) {
     const { store } = this.serviceManager;
-
-    // For the "connect_to_agent" response, we need to determine the agents' availability before we can
-    // continue to process the message items. Let's increment the typing counter while we're waiting for a
-    // result from areAnyAgentsOnline.
-    store.dispatch(actions.addIsLoadingCounter(1));
-
-    // Determine if the CTA card should display a service desk error.
-    if (!hasServiceDesk(config)) {
-      // Report this error.
-      const message =
-        'Web chat received a "connect_to_agent" message but there is no service desk configured. Check your chat configuration.';
-      this.serviceManager.actions.errorOccurred({
-        errorType: OnErrorType.INTEGRATION_ERROR,
-        message,
-      });
-
-      // Make sure this state is reflected in history.
-      store.dispatch(
-        actions.setMessageUIStateInternalProperty(
-          localMessageItem.fullMessageID,
-          'agent_no_service_desk',
-          true
-        )
-      );
+    const canApply = () =>
+      initialRestartCount === this.serviceManager.restartCount && isCurrent();
+    if (!canApply()) {
+      return;
     }
 
-    const agentAvailability =
-      await this.checkAreAnyHumanAgentsOnline(fullMessage);
-
-    // If a restart occurred while waiting for the agents online check, then skip the processing below.
-    if (initialRestartCount === this.serviceManager.restartCount) {
-      // Update the value in the redux store.
+    store.dispatch(actions.addIsLoadingCounter(1));
+    let agentAvailability: HumanAgentsOnlineStatus;
+    try {
+      if (!canApply()) {
+        return;
+      }
+      if (!hasServiceDesk(config)) {
+        this.serviceManager.actions.errorOccurred({
+          errorType: OnErrorType.INTEGRATION_ERROR,
+          message:
+            'Web chat received a "connect_to_agent" message but there is no service desk configured. Check your chat configuration.',
+        });
+        if (!canApply()) {
+          return;
+        }
+        store.dispatch(
+          actions.setMessageUIStateInternalProperty(
+            localMessageItem.fullMessageID,
+            'agent_no_service_desk',
+            true
+          )
+        );
+      }
+      if (!canApply()) {
+        return;
+      }
+      agentAvailability = await this.checkAreAnyHumanAgentsOnline(fullMessage);
+      if (!canApply()) {
+        return;
+      }
       store.dispatch(
         actions.setMessageUIStateInternalProperty(
           localMessageItem.fullMessageID,
@@ -750,26 +755,22 @@ class HumanAgentServiceImpl implements HumanAgentService {
           agentAvailability
         )
       );
-
-      let shouldAutoRequestHumanAgent = false;
-
-      // If configured, then auto-connect right now.
-      if (config.public.serviceDesk?.skipConnectHumanAgentCard) {
-        shouldAutoRequestHumanAgent = true;
+    } finally {
+      // Removal leaves this operation's loading counter active; restart resets it.
+      if (initialRestartCount === this.serviceManager.restartCount) {
+        store.dispatch(actions.addIsLoadingCounter(-1));
       }
+    }
 
-      // Decrement the typing counter to get rid of the pause.
-      store.dispatch(actions.addIsLoadingCounter(-1));
-
-      if (
-        shouldAutoRequestHumanAgent &&
-        agentAvailability === HumanAgentsOnlineStatus.ONLINE
-      ) {
-        this.serviceManager.humanAgentService.startChat(
-          localMessageItem,
-          fullMessage
-        );
-      }
+    if (
+      canApply() &&
+      config.public.serviceDesk?.skipConnectHumanAgentCard &&
+      agentAvailability === HumanAgentsOnlineStatus.ONLINE
+    ) {
+      this.serviceManager.humanAgentService.startChat(
+        localMessageItem,
+        fullMessage
+      );
     }
   }
 
