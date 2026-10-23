@@ -17,7 +17,10 @@ import {
 import { resolvablePromise } from '../../../../src/chat/utils/resolvablePromise';
 import actions from '../../../../src/chat/store/actions';
 import { MessageState } from '../../../../src/types/config/MessagingConfig';
-import { BusEventType } from '../../../../src/types/events/eventBusTypes';
+import {
+  BusEventType,
+  BusEventUserDefinedResponse,
+} from '../../../../src/types/events/eventBusTypes';
 import {
   MessageResponse,
   MessageResponseTypes,
@@ -45,6 +48,67 @@ function visibleTexts(state: AppState) {
 describe('message write lifetime', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
+
+  it.each(['addMessage', 'upsertMessage'] as const)(
+    'stops nested sibling events after removal during %s',
+    async (method) => {
+      const { instance, store, serviceManager } =
+        await renderChatAndGetInstanceWithStore(createBaseConfig());
+      const removed = resolvablePromise<void>();
+      let stateAfterRemoval: AppState;
+      let slotsAfterRemoval: number;
+      const createSlot = jest.spyOn(
+        serviceManager.slotEventService,
+        'getOrCreateUserDefinedElement'
+      );
+      const slot = jest.fn(async (event: BusEventUserDefinedResponse) => {
+        expect(event.data.message.user_defined.value).toBe('first');
+        await instance.messaging.removeMessages(['nested-response']);
+        stateAfterRemoval = store.getState();
+        slotsAfterRemoval = createSlot.mock.calls.length;
+        removed.doResolve();
+      });
+      instance.on({ type: BusEventType.USER_DEFINED_RESPONSE, handler: slot });
+      const message: MessageResponse = {
+        id: 'nested-response',
+        output: {
+          generic: [
+            {
+              response_type: MessageResponseTypes.CARD,
+              body: ['first', 'second'].map((value) => ({
+                response_type: MessageResponseTypes.USER_DEFINED,
+                user_defined: { value },
+              })),
+            },
+          ],
+        },
+      };
+
+      await act(async () => {
+        if (method === 'addMessage') {
+          await instance.messaging.addMessage(message);
+        } else {
+          await instance.messaging.upsertMessage(
+            message.id,
+            MessageState.COMPLETE,
+            () => message
+          );
+        }
+        await removed;
+        await jest.advanceTimersByTimeAsync(0);
+      });
+
+      expect(slot).toHaveBeenCalledTimes(1);
+      expect(createSlot).toHaveBeenCalledTimes(slotsAfterRemoval);
+      const state = store.getState();
+      expect(state.allMessagesByID[message.id]).toBeUndefined();
+      expect(state.assistantMessageState.messageIDs).not.toContain(message.id);
+      expect(state.allMessagesByID).toBe(stateAfterRemoval.allMessagesByID);
+      expect(state.allMessageItemsByID).toBe(
+        stateAfterRemoval.allMessageItemsByID
+      );
+    }
+  );
 
   it('isolates nested updater edits while pending and after rejection', async () => {
     const { instance, store } =

@@ -33,6 +33,54 @@ const deferred = () => {
 };
 
 describe('EventBus.fire', () => {
+  it('skips an invalidated queued fire and continues with the next fire', async () => {
+    const bus = new EventBus();
+    const gate = deferred();
+    const observed: string[] = [];
+    bus.on({
+      type: BusEventType.RECEIVE,
+      handler: async (busEvent: any) => {
+        observed.push(busEvent.data);
+        if (busEvent.data === 'held') {
+          await gate.promise;
+        }
+      },
+    });
+    let current = true;
+    const first = bus.fire(event(BusEventType.RECEIVE, 'held'), instance);
+    const stale = bus.fire(
+      event(BusEventType.RECEIVE, 'stale'),
+      instance,
+      () => current
+    );
+    const next = bus.fire(event(BusEventType.RECEIVE, 'next'), instance);
+    current = false;
+    gate.resolve();
+    await Promise.all([first, stale, next, bus.waitForEmpty()]);
+    expect(observed).toEqual(['held', 'next']);
+  });
+
+  it('finishes all listeners of a fire that already started before invalidation', async () => {
+    const bus = new EventBus();
+    let current = true;
+    const later = jest.fn();
+    bus.on([
+      {
+        type: BusEventType.RECEIVE,
+        handler: () => {
+          current = false;
+        },
+      },
+      { type: BusEventType.RECEIVE, handler: later },
+    ]);
+    await bus.fire(
+      event(BusEventType.RECEIVE, 'started'),
+      instance,
+      () => current
+    );
+    expect(later).toHaveBeenCalledTimes(1);
+  });
+
   it('runs overlapping fires of one type one at a time, in call order', async () => {
     const bus = new EventBus();
     const log: string[] = [];

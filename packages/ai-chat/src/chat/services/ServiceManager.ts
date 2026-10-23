@@ -235,8 +235,8 @@ class ServiceManager {
   /**
    * Convenience functions for firing events on the event bus.
    */
-  async fire<T extends BusEvent>(busEvent: T) {
-    return this.eventBus.fire(busEvent, this.instance);
+  async fire<T extends BusEvent>(busEvent: T, isCurrent?: () => boolean) {
+    return this.eventBus.fire(busEvent, this.instance, isCurrent);
   }
 
   /**
