@@ -363,6 +363,39 @@ describe('ReceiveService', () => {
     );
   });
 
+  it('checks agent availability again when a removed pending card is replaced', async () => {
+    const { service, handleConnectToHumanAgent, localItems } = createHarness();
+    const pendingAvailability = resolvablePromise<void>();
+    handleConnectToHumanAgent.mockReturnValueOnce(pendingAvailability);
+    const connectResponse = () =>
+      response([
+        {
+          response_type: MessageResponseTypes.CONNECT_TO_HUMAN_AGENT,
+          streaming_metadata: { id: 'connect' },
+        },
+      ]);
+
+    try {
+      await service.receive(connectResponse());
+      expect(handleConnectToHumanAgent).toHaveBeenCalledTimes(1);
+      expect(localItems()).toEqual([]);
+
+      await service.removeMessages(['response-1']);
+      await service.receive(connectResponse());
+      await jest.advanceTimersByTimeAsync(0);
+
+      expect(handleConnectToHumanAgent).toHaveBeenCalledTimes(2);
+      const replacement = localItems()[0];
+      expect(replacement.ui_state.id).toBe('response-1-connect');
+      pendingAvailability.doResolve();
+      await jest.advanceTimersByTimeAsync(0);
+      expect(localItems()).toEqual([replacement]);
+      expect(localItems()[0]).toBe(replacement);
+    } finally {
+      pendingAvailability.doResolve();
+    }
+  });
+
   it('does not add delayed items after the conversation restarts', async () => {
     const { service, manager, store, localItems } = createHarness();
     await service.receive(

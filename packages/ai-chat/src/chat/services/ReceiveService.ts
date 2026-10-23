@@ -37,7 +37,7 @@ import type { ServiceManager } from './ServiceManager';
 class ReceiveService {
   private serviceManager: ServiceManager;
 
-  private processedAgentItems = new Set<string>();
+  private processedAgentItems = new Map<string, Set<string>>();
 
   private pendingReceiveRemovals = new Set<Set<string>>();
 
@@ -171,11 +171,23 @@ class ReceiveService {
     if (
       !isCurrent() ||
       !isConnectToHumanAgent(localMessageItem.item) ||
-      this.processedAgentItems.has(localMessageItem.ui_state.id)
+      this.processedAgentItems
+        .get(localMessageItem.fullMessageID)
+        ?.has(localMessageItem.ui_state.id)
     ) {
       return;
     }
-    this.processedAgentItems.add(localMessageItem.ui_state.id);
+    let processedItems = this.processedAgentItems.get(
+      localMessageItem.fullMessageID
+    );
+    if (!processedItems) {
+      processedItems = new Set();
+      this.processedAgentItems.set(
+        localMessageItem.fullMessageID,
+        processedItems
+      );
+    }
+    processedItems.add(localMessageItem.ui_state.id);
 
     const { store, humanAgentService, restartCount } = this.serviceManager;
     const { config } = store.getState();
@@ -219,6 +231,7 @@ class ReceiveService {
       messageIDs.forEach((id) => removedIDs.add(id));
     });
     for (const id of messageIDs) {
+      this.processedAgentItems.delete(id);
       this.serviceManager.messageUpsertCoordinator.clear(id);
     }
     this.serviceManager.store.dispatch(actions.removeMessages(messageIDs));
