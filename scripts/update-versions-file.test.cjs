@@ -112,13 +112,38 @@ test('requires verified seed pages before adding the components list', (t) => {
     original
   );
   run('node', [updater], cwd, env);
-  assert.match(
-    fs.readFileSync(path.join(cwd, 'versions.js'), 'utf8'),
-    /AI_CHAT_COMPONENTS_VERSIONS = \[\n {2}'v1\.11\.0'/
-  );
   const versions = fs.readFileSync(path.join(cwd, 'versions.js'), 'utf8');
   for (let minor = 0; minor <= 11; minor += 1) {
     assert.ok(versions.includes(`'v1.${minor}.0'`));
+  }
+});
+
+test('reads a published catalog written with double quotes', (t) => {
+  const { cwd, env } = fixture(t);
+  fs.writeFileSync(
+    path.join(cwd, 'published-versions.js'),
+    'export const AI_CHAT_VERSIONS = [\n  "v1.20.0",\n  "v0.5.2",\n];\n'
+  );
+
+  run('node', [updater], cwd, env);
+  const versions = fs.readFileSync(path.join(cwd, 'versions.js'), 'utf8');
+  assert.match(versions, /AI_CHAT_VERSIONS = \[[\s\S]*'v1\.20\.0',/);
+  assert.doesNotMatch(versions, /"v|'v0\./);
+});
+
+test('backfills seed versions a failed run never published', (t) => {
+  const { cwd, env } = fixture(t);
+  fs.writeFileSync(
+    path.join(cwd, 'published-versions.js'),
+    "export const AI_CHAT_VERSIONS = ['v1.20.0'];\n" +
+      "export const AI_CHAT_COMPONENTS_VERSIONS = ['v1.11.0'];\n"
+  );
+
+  run('node', [updater], cwd, env);
+  const versions = fs.readFileSync(path.join(cwd, 'versions.js'), 'utf8');
+  const seed = fs.readFileSync(path.join(__dirname, '../versions.js'), 'utf8');
+  for (const version of seed.match(/v\d+\.\d+\.\d+/g)) {
+    assert.ok(versions.includes(`'${version}'`), version);
   }
 });
 
