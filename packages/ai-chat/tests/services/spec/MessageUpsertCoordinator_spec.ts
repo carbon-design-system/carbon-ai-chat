@@ -9,6 +9,7 @@
 
 import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
 import { MessageUpsertCoordinator } from '../../../src/chat/services/MessageUpsertCoordinator';
+import { ConversationLifecycleService } from '../../../src/chat/services/ConversationLifecycleService';
 import { ServiceManager } from '../../../src/chat/services/ServiceManager';
 import { MessageState } from '../../../src/types/config/MessagingConfig';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
@@ -61,6 +62,7 @@ function makeStubManager(initialMessages: Record<string, unknown> = {}) {
 
   const manager = {
     restartCount: 0,
+    conversationLifecycleService: new ConversationLifecycleService(),
     store: {
       getState: () => state,
       dispatch,

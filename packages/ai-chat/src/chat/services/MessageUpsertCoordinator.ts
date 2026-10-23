@@ -111,6 +111,7 @@ const noop = () => {
 interface UpsertStamp {
   generation: number;
   restartCount: number;
+  isCurrent: () => boolean;
 }
 
 class MessageUpsertCoordinator {
@@ -145,14 +146,38 @@ class MessageUpsertCoordinator {
    */
   private readonly pausesRunByID = new Map<string, number>();
 
-  /**
-   * A token for each message id that the item loop of a message from `addMessage` or
-   * `final_response` checks before showing each item. Removing the message, or a restart,
-   * drops the token, which ends the loop. A later write for the id takes the same token,
-   * so its items and the earlier write's keep showing side by side, as `addMessage`'s
-   * always have.
-   */
-  private readonly revealByID = new Map<string, object>();
+  private readonly pendingWrites = new Map<
+    string,
+    { valid: boolean; count: number }
+  >();
+
+  trackWrite(messageID: string) {
+    const entry = this.pendingWrites.get(messageID) ?? {
+      valid: true,
+      count: 0,
+    };
+    entry.count++;
+    this.pendingWrites.set(messageID, entry);
+    const generation = this.generation;
+    const restartCount = this.serviceManager.restartCount;
+    let released = false;
+    return {
+      isCurrent: () =>
+        entry.valid &&
+        generation === this.generation &&
+        restartCount === this.serviceManager.restartCount,
+      release: () => {
+        if (released) {
+          return;
+        }
+        released = true;
+        entry.count--;
+        if (!entry.count && this.pendingWrites.get(messageID) === entry) {
+          this.pendingWrites.delete(messageID);
+        }
+      },
+    };
+  }
 
   constructor(serviceManager: ServiceManager) {
     this.serviceManager = serviceManager;
@@ -176,7 +201,7 @@ class MessageUpsertCoordinator {
       // same id closes the stream. Without this, the stop button would stay up with
       // nothing left to take it down.
       if (this.streamingIDs.delete(messageID)) {
-        this.serviceManager.conversationLifecycleService?.responseFinished(
+        this.serviceManager.conversationLifecycleService.responseFinished(
           messageID
         );
         this.serviceManager.messageService.hideStopStreamingButtonIfIdle();
@@ -225,7 +250,7 @@ class MessageUpsertCoordinator {
     const settledAny = this.streamingIDs.size > 0;
     const lifecycle = this.serviceManager.conversationLifecycleService;
     for (const messageID of this.streamingIDs) {
-      const requestID = lifecycle?.responseRequestID(messageID);
+      const requestID = lifecycle.responseRequestID(messageID);
       if (requestID) {
         lifecycle.requestStopped(requestID);
       }
@@ -239,7 +264,7 @@ class MessageUpsertCoordinator {
 
   endStreamingForRequest(requestID: string, generation?: number) {
     const responseIDs =
-      this.serviceManager.conversationLifecycleService?.requestStopped(
+      this.serviceManager.conversationLifecycleService.requestStopped(
         requestID,
         generation
       ) ?? [];
@@ -258,7 +283,7 @@ class MessageUpsertCoordinator {
   private endStreamingMessage(messageID: string) {
     this.streamingIDs.delete(messageID);
     this.streamingControllers.delete(messageID);
-    this.serviceManager.conversationLifecycleService?.responseFinished(
+    this.serviceManager.conversationLifecycleService.responseFinished(
       messageID
     );
     this.serviceManager.messageService.clearStreamingCancellation(messageID);
@@ -273,17 +298,21 @@ class MessageUpsertCoordinator {
    * `removeMessages`.
    */
   clear(messageID: string) {
+    const pending = this.pendingWrites.get(messageID);
+    if (pending) {
+      pending.valid = false;
+      this.pendingWrites.delete(messageID);
+    }
     this.serviceManager.messageService.clearStreamingCancellation(messageID);
     const wasStreaming = this.streamingIDs.has(messageID);
     this.stateByID.delete(messageID);
     this.chainByID.delete(messageID);
     this.streamingIDs.delete(messageID);
     this.streamingControllers.delete(messageID);
-    this.serviceManager.conversationLifecycleService?.responseFinished(
+    this.serviceManager.conversationLifecycleService.responseFinished(
       messageID
     );
     this.pausesRunByID.delete(messageID);
-    this.revealByID.delete(messageID);
     if (wasStreaming) {
       this.serviceManager.messageService.hideStopStreamingButtonIfIdle();
     }
@@ -304,14 +333,14 @@ class MessageUpsertCoordinator {
     this.chainByID.clear();
     this.stateByID.clear();
     for (const messageID of this.streamingIDs) {
-      this.serviceManager.conversationLifecycleService?.responseFinished(
+      this.serviceManager.conversationLifecycleService.responseFinished(
         messageID
       );
     }
     this.streamingIDs.clear();
     this.streamingControllers.clear();
     this.pausesRunByID.clear();
-    this.revealByID.clear();
+    this.pendingWrites.clear();
   }
 
   /**
@@ -341,29 +370,33 @@ class MessageUpsertCoordinator {
       throw new TypeError('upsertMessage: updater must be a function.');
     }
 
-    // `addMessage` and `final_response` have never waited on an earlier write for their
-    // id, and no later write waits on them.
-    if (
-      options.origin === 'addMessage' ||
-      (options.origin === 'chunk' && nextState !== MessageState.STREAMING)
-    ) {
-      return this.runReceivedWrite(messageID, updater, options);
-    }
-
-    // Chunk-STREAMING writes go through the per-id chain for serialization but bypass
-    // the full upsert lifecycle in runOne — they have their own events, announcements,
-    // and stop-button handling.
-    if (options.origin === 'chunk') {
-      return this.enqueue(messageID, () =>
-        this.runChunkWrite(messageID, updater, options)
-      );
-    }
-
-    const stamp = this.takeStamp();
-    const requestID = this.serviceManager.messageService.currentRequestID;
-    return this.enqueue(messageID, () =>
-      this.runOne(messageID, nextState, updater, options, stamp, requestID)
+    const write = this.trackWrite(messageID);
+    const stamp = this.takeStamp(
+      () => write.isCurrent() && (options.isCurrent?.() ?? true)
     );
+    try {
+      if (this.isStale(stamp)) {
+        return;
+      }
+      // Received writes retain their independent reveal and event timing.
+      if (
+        options.origin === 'addMessage' ||
+        (options.origin === 'chunk' && nextState !== MessageState.STREAMING)
+      ) {
+        return await this.runReceivedWrite(messageID, updater, options, stamp);
+      }
+      if (options.origin === 'chunk') {
+        return await this.enqueue(messageID, () =>
+          this.runChunkWrite(messageID, updater, options, stamp)
+        );
+      }
+      const requestID = this.serviceManager.messageService.currentRequestID;
+      return await this.enqueue(messageID, () =>
+        this.runOne(messageID, nextState, updater, options, stamp, requestID)
+      );
+    } finally {
+      write.release();
+    }
   }
 
   /**
@@ -423,6 +456,9 @@ class MessageUpsertCoordinator {
       return;
     }
     this.serviceManager.messageService.messageLoadingManager.end();
+    if (isStale()) {
+      return;
+    }
 
     const { willFireReceive, settlesMessage } = transitionOf(
       this.stateByID.get(messageID),
@@ -430,7 +466,7 @@ class MessageUpsertCoordinator {
     );
 
     if (willFireReceive) {
-      await this.firePreReceive(messageID, result);
+      await this.firePreReceive(messageID, result, stamp);
       if (isStale()) {
         return;
       }
@@ -444,9 +480,12 @@ class MessageUpsertCoordinator {
       );
     }
 
+    if (isStale()) {
+      return;
+    }
     const ownerRequestID = result.request_id ?? requestID;
     const isStopped =
-      this.serviceManager.conversationLifecycleService?.isRequestStopped(
+      this.serviceManager.conversationLifecycleService.isRequestStopped(
         ownerRequestID
       );
     const refsBefore = this.snapshotLocalItemRefs(messageID);
@@ -461,6 +500,9 @@ class MessageUpsertCoordinator {
         options
       )
     );
+    if (isStale()) {
+      return;
+    }
     const committedResult = this.serviceManager.store.getState()
       .allMessagesByID[messageID] as MessageResponse;
     this.reportUndrawableItems(
@@ -491,7 +533,8 @@ class MessageUpsertCoordinator {
       previousMessage,
       settlesMessage,
       0,
-      holdFromIndex
+      holdFromIndex,
+      stamp
     );
     if (isStale()) {
       return;
@@ -508,7 +551,8 @@ class MessageUpsertCoordinator {
       committedResult,
       nextState,
       holdFromIndex,
-      initialRestartCount
+      initialRestartCount,
+      stamp
     );
     if (!revealed || isStale()) {
       return;
@@ -518,7 +562,7 @@ class MessageUpsertCoordinator {
       await this.handleNewConnectToAgentItems(
         messageID,
         committedResult,
-        initialRestartCount
+        stamp
       );
       if (isStale()) {
         return;
@@ -528,21 +572,23 @@ class MessageUpsertCoordinator {
     this.stateByID.set(messageID, nextState);
 
     if (willFireReceive) {
-      await this.firePostReceiveAndFinalize(messageID, committedResult);
+      await this.firePostReceiveAndFinalize(messageID, committedResult, stamp);
     } else if (nextState !== MessageState.STREAMING) {
       this.serviceManager.messageService.finalizeStreamingMessage(messageID);
     }
   }
 
-  private takeStamp(): UpsertStamp {
+  private takeStamp(isCurrent: () => boolean): UpsertStamp {
     return {
       generation: this.generation,
       restartCount: this.serviceManager.restartCount,
+      isCurrent,
     };
   }
 
   private isStale(stamp: UpsertStamp, requestID?: string): boolean {
     return (
+      !stamp.isCurrent() ||
       stamp.generation !== this.generation ||
       stamp.restartCount !== this.serviceManager.restartCount ||
       this.serviceManager.messageService.isRequestFromPreviousConversation(
@@ -560,15 +606,15 @@ class MessageUpsertCoordinator {
   private async runChunkWrite(
     messageID: string,
     updater: UpsertMessageUpdater,
-    options: MessageWriteOptions
+    options: MessageWriteOptions,
+    stamp: UpsertStamp
   ): Promise<void> {
-    const generation = this.generation;
-    const { restartCount } = this.serviceManager;
-    const result = await this.runUpdater(messageID, updater);
-    if (
-      generation === this.generation &&
-      restartCount === this.serviceManager.restartCount
-    ) {
+    if (this.isStale(stamp)) {
+      return;
+    }
+    // This updater is the chat's immutable chunk merge, not a host callback.
+    const result = await updater(this.getStoredResponse(messageID));
+    if (!this.isStale(stamp, result.request_id)) {
       this.serviceManager.store.dispatch(
         actions.upsertMessage(result, true, undefined, options)
       );
@@ -590,51 +636,49 @@ class MessageUpsertCoordinator {
   private async runReceivedWrite(
     messageID: string,
     updater: UpsertMessageUpdater,
-    options: MessageWriteOptions
+    options: MessageWriteOptions,
+    stamp: UpsertStamp
   ): Promise<void> {
-    const generation = this.generation;
-    const initialRestartCount =
-      options.restartCount ?? this.serviceManager.restartCount;
+    const initialRestartCount = options.restartCount ?? stamp.restartCount;
     const message = await updater(
       this.serviceManager.store.getState().allMessagesByID[
         messageID
       ] as MessageResponse
     );
-    if (
-      generation !== this.generation ||
-      initialRestartCount !== this.serviceManager.restartCount
-    ) {
+    const isCurrent = () =>
+      !this.isStale(stamp, message.request_id) &&
+      initialRestartCount === this.serviceManager.restartCount;
+    if (!isCurrent()) {
       return;
     }
 
-    const reveal = this.revealByID.get(messageID) ?? {};
-    this.revealByID.set(messageID, reveal);
-    const isCurrent = () =>
-      generation === this.generation &&
-      this.revealByID.get(messageID) === reveal &&
-      initialRestartCount === this.serviceManager.restartCount;
-    this.storeReceivedMessage(
-      message,
-      options,
-      isCurrent,
-      initialRestartCount
-    ).catch((error) => {
-      consoleError('Error processing the message response', error);
-    });
+    // Reveals outlive receive(), so they retain the same removal guard separately.
+    const reveal = this.trackWrite(messageID);
+    this.storeReceivedMessage(message, options, isCurrent, initialRestartCount)
+      .catch((error) => {
+        consoleError('Error processing the message response', error);
+      })
+      .finally(reveal.release);
 
+    if (!isCurrent()) {
+      return;
+    }
     if (!options.isLatestWelcomeNode) {
-      // Picks the returning-user home screen, as `runOne` does for native upserts, but
-      // only when the message actually stores — not for messages that become inline errors.
       this.serviceManager.store.dispatch(
         actions.updateHasSentNonWelcomeMessage(true)
       );
     }
-
+    if (!isCurrent()) {
+      return;
+    }
     deepFreeze(message);
-    await this.serviceManager.fire({
-      type: BusEventType.RECEIVE,
-      data: message,
-    });
+    await this.serviceManager.fire(
+      {
+        type: BusEventType.RECEIVE,
+        data: message,
+      },
+      isCurrent
+    );
     if (isCurrent()) {
       this.markComplete(messageID);
     }
@@ -732,7 +776,8 @@ class MessageUpsertCoordinator {
         );
         await this.serviceManager.receiveService.handleConnectToHumanAgent(
           localItem,
-          message
+          message,
+          isCurrent
         );
       }
       if (isPause(item)) {
@@ -749,12 +794,13 @@ class MessageUpsertCoordinator {
         localItem,
         message,
         MessageState.COMPLETE,
-        nestedLocalItemsByID
+        nestedLocalItemsByID,
+        isCurrent
       );
       if (!isCurrent()) {
         return;
       }
-      await chatActions.handleCustomFooterSlot(localItem, message);
+      await chatActions.handleCustomFooterSlot(localItem, message, isCurrent);
       if (!isHiddenOutputItem(message, item) && isCurrent()) {
         write({
           localItem,
@@ -795,9 +841,9 @@ class MessageUpsertCoordinator {
     result: MessageResponse,
     nextState: MessageState,
     holdFromIndex: number,
-    initialRestartCount: number
+    initialRestartCount: number,
+    stamp: UpsertStamp
   ): Promise<boolean> {
-    const generation = this.generation;
     const { store } = this.serviceManager;
     const generic = result.output?.generic ?? [];
     let pauseIndex = holdFromIndex;
@@ -808,11 +854,7 @@ class MessageUpsertCoordinator {
         initialRestartCount
       );
       if (
-        generation !== this.generation ||
-        initialRestartCount !== this.serviceManager.restartCount ||
-        this.serviceManager.messageService.isRequestFromPreviousConversation(
-          result.request_id
-        ) ||
+        this.isStale(stamp, result.request_id) ||
         !store.getState().allMessagesByID[messageID]
       ) {
         return false;
@@ -835,6 +877,9 @@ class MessageUpsertCoordinator {
       pauseIndex = this.findPauseToRun(messageID, result);
       const refsBefore = this.snapshotLocalItemRefs(messageID);
       store.dispatch(actions.upsertMessage(result, isStreaming, pauseIndex));
+      if (this.isStale(stamp, result.request_id)) {
+        return false;
+      }
       this.reportUndrawableItems(messageID, refsBefore);
       if (isStreaming) {
         this.announceStreamStarts(result, pauseIndex);
@@ -850,15 +895,10 @@ class MessageUpsertCoordinator {
         undefined,
         true,
         revealFromIndex,
-        pauseIndex
+        pauseIndex,
+        stamp
       );
-      if (
-        generation !== this.generation ||
-        initialRestartCount !== this.serviceManager.restartCount ||
-        this.serviceManager.messageService.isRequestFromPreviousConversation(
-          result.request_id
-        )
-      ) {
+      if (this.isStale(stamp, result.request_id)) {
         return false;
       }
     }
@@ -869,15 +909,13 @@ class MessageUpsertCoordinator {
    * Runs the `connect_to_agent` handling `addMessage` gives, once per item: the first
    * time the item shows in a {@link MessageState.COMPLETE} write. The item is marked
    * before the availability check starts, so a later upsert never repeats it. The check
-   * is tied to `initialRestartCount`, the restart count when the write began, so a
-   * restart during the write drops its result.
+   * uses the write's lifetime guard so removal or restart drops its result.
    */
   private async handleNewConnectToAgentItems(
     messageID: string,
     result: MessageResponse,
-    initialRestartCount: number
+    stamp: UpsertStamp
   ): Promise<void> {
-    const generation = this.generation;
     const { store } = this.serviceManager;
     const state = store.getState();
     const newItems = state.assistantMessageState.localMessageIDs
@@ -890,13 +928,7 @@ class MessageUpsertCoordinator {
       );
 
     for (const item of newItems) {
-      if (
-        generation !== this.generation ||
-        initialRestartCount !== this.serviceManager.restartCount ||
-        this.serviceManager.messageService.isRequestFromPreviousConversation(
-          result.request_id
-        )
-      ) {
+      if (this.isStale(stamp, result.request_id)) {
         return;
       }
       store.dispatch(
@@ -908,7 +940,8 @@ class MessageUpsertCoordinator {
       );
       await this.serviceManager.receiveService.handleConnectToHumanAgent(
         item,
-        result
+        result,
+        () => !this.isStale(stamp, result.request_id)
       );
     }
   }
@@ -927,7 +960,7 @@ class MessageUpsertCoordinator {
     const lifecycle = this.serviceManager.conversationLifecycleService;
     if (
       nextState === MessageState.STREAMING &&
-      lifecycle?.isRequestStopped(requestID)
+      lifecycle.isRequestStopped(requestID)
     ) {
       this.endStreamingMessage(messageID);
       this.serviceManager.messageService.hideStopStreamingButtonIfIdle();
@@ -943,14 +976,14 @@ class MessageUpsertCoordinator {
         }
       }
       this.streamingIDs.add(messageID);
-      lifecycle?.responseStreaming(messageID, undefined, requestID);
+      lifecycle.responseStreaming(messageID, undefined, requestID);
       this.syncStopStreamingButton(nextState, result, false);
       this.announceStreamStarts(result, holdFromIndex);
       return;
     }
     const wasStreaming = this.streamingIDs.delete(messageID);
     this.streamingControllers.delete(messageID);
-    lifecycle?.responseFinished(messageID);
+    lifecycle.responseFinished(messageID);
     this.syncStopStreamingButton(nextState, result, wasStreaming);
   }
 
@@ -1006,14 +1039,7 @@ class MessageUpsertCoordinator {
     });
   }
 
-  /**
-   * Phase 1: read the existing message (rejecting requests), invoke the updater, and
-   * check that the returned response carries the right id.
-   */
-  private async runUpdater(
-    messageID: string,
-    updater: UpsertMessageUpdater
-  ): Promise<MessageResponse> {
+  private getStoredResponse(messageID: string): MessageResponse | undefined {
     const existing = this.serviceManager.store.getState().allMessagesByID[
       messageID
     ] as Message | undefined;
@@ -1023,6 +1049,18 @@ class MessageUpsertCoordinator {
         `upsertMessage: messageID "${messageID}" refers to a non-assistant message and cannot be upserted.`
       );
     }
+
+    return existing as MessageResponse | undefined;
+  }
+
+  /**
+   * Gives the host a private copy and validates the returned response and ID.
+   */
+  private async runUpdater(
+    messageID: string,
+    updater: UpsertMessageUpdater
+  ): Promise<MessageResponse> {
+    const existing = this.getStoredResponse(messageID);
 
     const previousMessage = existing
       ? cloneDeep(existing as MessageResponse)
@@ -1065,13 +1103,17 @@ class MessageUpsertCoordinator {
    */
   private async firePreReceive(
     messageID: string,
-    result: MessageResponse
+    result: MessageResponse,
+    stamp: UpsertStamp
   ): Promise<void> {
     const preReceiveEvent: BusEventPreReceive = {
       type: BusEventType.PRE_RECEIVE,
       data: result,
     };
-    await this.serviceManager.fire(preReceiveEvent);
+    await this.serviceManager.fire(
+      preReceiveEvent,
+      () => !this.isStale(stamp, result.request_id)
+    );
     if (result.id !== messageID) {
       if (!result.id) {
         result.id = messageID;
@@ -1178,16 +1220,11 @@ class MessageUpsertCoordinator {
     previousMessage: MessageResponse | undefined,
     firesEveryItem: boolean,
     fromIndex: number,
-    toIndex: number
+    toIndex: number,
+    stamp: UpsertStamp
   ): Promise<void> {
-    const generation = this.generation;
-    const { actions: chatActions, restartCount } = this.serviceManager;
-    const isStale = () =>
-      generation !== this.generation ||
-      restartCount !== this.serviceManager.restartCount ||
-      this.serviceManager.messageService.isRequestFromPreviousConversation(
-        result.request_id
-      );
+    const { actions: chatActions } = this.serviceManager;
+    const isStale = () => this.isStale(stamp, result.request_id);
     const skipsUnchanged: SkipsUnchanged | undefined = firesEveryItem
       ? undefined
       : { refsBefore, previousItems: previousMessage?.output?.generic ?? [] };
@@ -1204,12 +1241,18 @@ class MessageUpsertCoordinator {
         await chatActions.handleUserDefinedResponseItems(
           localItem,
           result,
-          nextState
+          nextState,
+          undefined,
+          () => !isStale()
         );
         if (isStale()) {
           return;
         }
-        await chatActions.handleCustomFooterSlot(localItem, result);
+        await chatActions.handleCustomFooterSlot(
+          localItem,
+          result,
+          () => !isStale()
+        );
       }
     }
   }
@@ -1279,26 +1322,22 @@ class MessageUpsertCoordinator {
    */
   private async firePostReceiveAndFinalize(
     messageID: string,
-    result: MessageResponse
+    result: MessageResponse,
+    stamp: UpsertStamp
   ): Promise<void> {
-    const generation = this.generation;
-    const { restartCount } = this.serviceManager;
     const receiveEvent: BusEventReceive = {
       type: BusEventType.RECEIVE,
       data: result,
     };
     try {
-      await this.serviceManager.fire(receiveEvent);
+      await this.serviceManager.fire(
+        receiveEvent,
+        () => !this.isStale(stamp, result.request_id)
+      );
     } catch (error) {
       consoleError('upsertMessage: receive handler threw, continuing.', error);
     }
-    if (
-      generation === this.generation &&
-      restartCount === this.serviceManager.restartCount &&
-      !this.serviceManager.messageService.isRequestFromPreviousConversation(
-        result.request_id
-      )
-    ) {
+    if (!this.isStale(stamp, result.request_id)) {
       this.serviceManager.messageService.finalizeStreamingMessage(messageID);
     }
   }

@@ -11,6 +11,7 @@ import MessageService, {
   PendingMessageRequest,
 } from '../../../src/chat/services/MessageService';
 import { ChunkProcessingService } from '../../../src/chat/services/ChunkProcessingService';
+import { ConversationLifecycleService } from '../../../src/chat/services/ConversationLifecycleService';
 import { ServiceManager } from '../../../src/chat/services/ServiceManager';
 import {
   MessageRequest,
@@ -108,6 +109,7 @@ const createServiceManagerStub = (
     actions,
     eventBus,
     instance: {},
+    conversationLifecycleService: new ConversationLifecycleService(),
     messageUpsertCoordinator,
     messageService: {
       hideStopStreamingButtonIfNoUpsertStreaming: jest.fn(),
@@ -755,12 +757,8 @@ describe('MessageService', () => {
         message.id === 'm-first' ? first.promise : Promise.resolve()
       );
       const serviceManager = createServiceManagerStub(customSendMessage);
-      const lifecycle = {
-        currentGeneration: 0,
-        requestStopped: jest.fn((): string[] => []),
-        responseFinished: jest.fn(),
-      };
-      serviceManager.conversationLifecycleService = lifecycle as any;
+      const lifecycle = serviceManager.conversationLifecycleService;
+      const responseFinished = jest.spyOn(lifecycle, 'responseFinished');
       const messageService = new MessageService(serviceManager, {
         messaging: {
           customSendMessage,
@@ -798,9 +796,9 @@ describe('MessageService', () => {
       expect(
         customSendMessage.mock.calls.map(([message]) => message.id)
       ).toEqual(['m-first', 'm-second']);
-      expect(
-        lifecycle.responseFinished.mock.invocationCallOrder[0]
-      ).toBeLessThan(customSendMessage.mock.invocationCallOrder[1]);
+      expect(responseFinished.mock.invocationCallOrder[0]).toBeLessThan(
+        customSendMessage.mock.invocationCallOrder[1]
+      );
     });
 
     it('clears partial-stream routing before advancing after a timeout', async () => {
@@ -811,12 +809,8 @@ describe('MessageService', () => {
           : Promise.resolve()
       );
       const serviceManager = createServiceManagerStub(customSendMessage);
-      const lifecycle = {
-        currentGeneration: 0,
-        requestStopped: jest.fn((): string[] => []),
-        responseFinished: jest.fn(),
-      };
-      serviceManager.conversationLifecycleService = lifecycle as any;
+      const lifecycle = serviceManager.conversationLifecycleService;
+      const responseFinished = jest.spyOn(lifecycle, 'responseFinished');
       const messageService = new MessageService(serviceManager, {
         messaging: {
           customSendMessage,
@@ -859,9 +853,9 @@ describe('MessageService', () => {
         expect(
           customSendMessage.mock.calls.map(([message]) => message.id)
         ).toEqual(['m-first', 'm-second']);
-        expect(
-          lifecycle.responseFinished.mock.invocationCallOrder[0]
-        ).toBeLessThan(customSendMessage.mock.invocationCallOrder[1]);
+        expect(responseFinished.mock.invocationCallOrder[0]).toBeLessThan(
+          customSendMessage.mock.invocationCallOrder[1]
+        );
       } finally {
         startSpy.mockRestore();
       }

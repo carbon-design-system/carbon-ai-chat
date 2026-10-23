@@ -37,7 +37,9 @@ import type { ServiceManager } from './ServiceManager';
 class ReceiveService {
   private serviceManager: ServiceManager;
 
-  private processedAgentItems = new Set<string>();
+  private processedAgentItems = new Map<string, Set<string>>();
+
+  private pendingReceiveRemovals = new Set<Set<string>>();
 
   constructor(serviceManager: ServiceManager) {
     this.serviceManager = serviceManager;
@@ -60,11 +62,13 @@ class ReceiveService {
     message: MessageResponse,
     isLatestWelcomeNode = false,
     requestMessage?: MessageRequest,
-    origin: 'addMessage' | 'chunk' = 'addMessage'
+    origin: 'addMessage' | 'chunk' = 'addMessage',
+    isCallerCurrent: () => boolean = () => true
   ) {
     const { restartCount: initialRestartCount } = this.serviceManager;
     const { messageService } = this.serviceManager;
     if (
+      !isCallerCurrent() ||
       messageService.isRequestFromPreviousConversation(
         message.request_id ?? requestMessage?.id
       )
@@ -77,50 +81,71 @@ class ReceiveService {
       message.id = uuid();
     }
 
-    const preReceiveEvent: BusEventPreReceive = {
-      type: BusEventType.PRE_RECEIVE,
-      data: message,
-    };
-    // Fire the pre:receive event. User code is allowed to modify the message at this point.
-    await this.serviceManager.fire(preReceiveEvent);
-
-    if (
-      initialRestartCount !== this.serviceManager.restartCount ||
-      messageService.isRequestFromPreviousConversation(message.request_id)
-    ) {
-      // If a restart occurred during the await above, we need to exit.
-      return;
-    }
-
-    if (isResponse(message as any)) {
-      await this.writeReceivedMessage(message, {
-        origin,
-        isLatestWelcomeNode,
-        requestMessage,
-        restartCount: initialRestartCount,
-      });
-      return;
-    }
-
-    const { languagePack } = this.serviceManager.store.getState();
-    const inlineError: MessageResponse = createMessageResponseForText(
-      languagePack.errors_singleMessage,
-      message?.thread_id,
-      MessageResponseTypes.INLINE_ERROR
+    const write = this.serviceManager.messageUpsertCoordinator.trackWrite(
+      message.id
     );
-    this.receive(inlineError, false);
+    // A writable pre:receive handler can choose its final ID after a removal.
+    const removedIDs = new Set<string>();
+    this.pendingReceiveRemovals.add(removedIDs);
+    const isCurrent = () =>
+      write.isCurrent() && isCallerCurrent() && !removedIDs.has(message.id);
+    try {
+      const preReceiveEvent: BusEventPreReceive = {
+        type: BusEventType.PRE_RECEIVE,
+        data: message,
+      };
+      // Fire the pre:receive event. User code is allowed to modify the message at this point.
+      await this.serviceManager.fire(preReceiveEvent, isCurrent);
 
-    deepFreeze(message);
+      if (
+        !isCurrent() ||
+        initialRestartCount !== this.serviceManager.restartCount ||
+        messageService.isRequestFromPreviousConversation(message.request_id)
+      ) {
+        // If a restart occurred during the await above, we need to exit.
+        return;
+      }
 
-    await this.serviceManager.fire({
-      type: BusEventType.RECEIVE,
-      data: message,
-    });
+      if (isResponse(message as any)) {
+        await this.writeReceivedMessage(message, {
+          origin,
+          isLatestWelcomeNode,
+          requestMessage,
+          restartCount: initialRestartCount,
+          isCurrent,
+        });
+        return;
+      }
 
-    // Record COMPLETE so a later `upsertMessage(id, MessageState.COMPLETE, ...)` for
-    // the same id suppresses a second `pre:receive` / `receive`.
-    if (initialRestartCount === this.serviceManager.restartCount) {
-      this.serviceManager.messageUpsertCoordinator.markComplete(message.id);
+      const { languagePack } = this.serviceManager.store.getState();
+      const inlineError: MessageResponse = createMessageResponseForText(
+        languagePack.errors_singleMessage,
+        message?.thread_id,
+        MessageResponseTypes.INLINE_ERROR
+      );
+      this.receive(inlineError, false);
+
+      deepFreeze(message);
+
+      await this.serviceManager.fire(
+        {
+          type: BusEventType.RECEIVE,
+          data: message,
+        },
+        isCurrent
+      );
+
+      // Record COMPLETE so a later `upsertMessage(id, MessageState.COMPLETE, ...)` for
+      // the same id suppresses a second `pre:receive` / `receive`.
+      if (
+        isCurrent() &&
+        initialRestartCount === this.serviceManager.restartCount
+      ) {
+        this.serviceManager.messageUpsertCoordinator.markComplete(message.id);
+      }
+    } finally {
+      this.pendingReceiveRemovals.delete(removedIDs);
+      write.release();
     }
   }
 
@@ -143,15 +168,29 @@ class ReceiveService {
 
   async handleConnectToHumanAgent(
     localMessageItem: LocalMessageItem,
-    fullMessage: MessageResponse
+    fullMessage: MessageResponse,
+    isCurrent: () => boolean = () => true
   ) {
     if (
+      !isCurrent() ||
       !isConnectToHumanAgent(localMessageItem.item) ||
-      this.processedAgentItems.has(localMessageItem.ui_state.id)
+      this.processedAgentItems
+        .get(localMessageItem.fullMessageID)
+        ?.has(localMessageItem.ui_state.id)
     ) {
       return;
     }
-    this.processedAgentItems.add(localMessageItem.ui_state.id);
+    let processedItems = this.processedAgentItems.get(
+      localMessageItem.fullMessageID
+    );
+    if (!processedItems) {
+      processedItems = new Set();
+      this.processedAgentItems.set(
+        localMessageItem.fullMessageID,
+        processedItems
+      );
+    }
+    processedItems.add(localMessageItem.ui_state.id);
 
     const { store, humanAgentService, restartCount } = this.serviceManager;
     const { config } = store.getState();
@@ -160,7 +199,8 @@ class ReceiveService {
         localMessageItem,
         fullMessage,
         config,
-        restartCount
+        restartCount,
+        isCurrent
       );
       return;
     }
@@ -170,6 +210,9 @@ class ReceiveService {
       message:
         'Web chat received a "connect_to_agent" message but there is no service desk configured. Check your chat configuration.',
     });
+    if (!isCurrent()) {
+      return;
+    }
     store.dispatch(
       actions.setMessageUIStateInternalProperty(
         localMessageItem.fullMessageID,
@@ -187,10 +230,14 @@ class ReceiveService {
    * Removes the messages with the given IDs from the chat view.
    */
   async removeMessages(messageIDs: string[]) {
-    this.serviceManager.store.dispatch(actions.removeMessages(messageIDs));
+    this.pendingReceiveRemovals.forEach((removedIDs) => {
+      messageIDs.forEach((id) => removedIDs.add(id));
+    });
     for (const id of messageIDs) {
+      this.processedAgentItems.delete(id);
       this.serviceManager.messageUpsertCoordinator.clear(id);
     }
+    this.serviceManager.store.dispatch(actions.removeMessages(messageIDs));
   }
 
   /**

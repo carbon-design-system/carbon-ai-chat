@@ -16,6 +16,7 @@ import { ReceiveService } from '../../../src/chat/services/ReceiveService';
 import { ServiceManager } from '../../../src/chat/services/ServiceManager';
 import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
+import { MessageState } from '../../../src/types/config/MessagingConfig';
 import {
   BusEvent,
   BusEventPreReceive,
@@ -140,6 +141,121 @@ describe('ReceiveService', () => {
     );
   });
 
+  it('retains the write until a delayed receive callback finishes after its reveal', async () => {
+    const { service, manager, fire, localItems, eventTypes } = createHarness();
+    const callbackStarted = resolvablePromise<void>();
+    const finishCallback = resolvablePromise<void>();
+    const coordinator = manager.messageUpsertCoordinator;
+    const pendingWrites = (coordinator as any).pendingWrites as Map<
+      string,
+      unknown
+    >;
+    fire.mockImplementation(async (event) => {
+      if (event.type === BusEventType.RECEIVE) {
+        callbackStarted.doResolve();
+        await finishCallback;
+      }
+    });
+    const receiving = service.receive(
+      response([
+        { response_type: MessageResponseTypes.PAUSE, time: 100 },
+        textItem('Revealed'),
+      ])
+    );
+
+    try {
+      await callbackStarted;
+      await jest.advanceTimersByTimeAsync(100);
+      expect(localItems().map((local) => local.item)).toEqual([
+        textItem('Revealed'),
+      ]);
+      expect(pendingWrites.size).toBe(1);
+      expect(coordinator.getState('response-1')).toBeUndefined();
+      finishCallback.doResolve();
+      await receiving;
+      expect(pendingWrites.size).toBe(0);
+      expect(coordinator.getState('response-1')).toBe(MessageState.COMPLETE);
+
+      await coordinator.upsert('response-1', MessageState.COMPLETE, () =>
+        response([textItem('Updated')])
+      );
+      expect(
+        eventTypes().filter((type) => type === BusEventType.RECEIVE)
+      ).toHaveLength(1);
+      expect(localItems().map((local) => local.item)).toEqual([
+        textItem('Updated'),
+      ]);
+      expect(pendingWrites.size).toBe(0);
+    } finally {
+      finishCallback.doResolve();
+      await receiving;
+    }
+  });
+
+  it('keeps overlapping reveals alive until both writes finish', async () => {
+    const { service, manager, slotEventService, localItems } = createHarness();
+    const pendingWrites = (manager.messageUpsertCoordinator as any)
+      .pendingWrites as Map<string, unknown>;
+    await service.receive(
+      response([
+        { response_type: MessageResponseTypes.PAUSE, time: 100 },
+        textItem('First reveal'),
+      ])
+    );
+    await service.receive(
+      response([
+        { response_type: MessageResponseTypes.PAUSE, time: 200 },
+        textItem('Second reveal'),
+      ])
+    );
+    expect(pendingWrites.size).toBe(1);
+
+    await jest.advanceTimersByTimeAsync(100);
+    expect(
+      slotEventService.handleUserDefinedResponseItems
+    ).toHaveBeenCalledTimes(1);
+    expect(localItems().map((local) => local.item)).toContainEqual(
+      textItem('First reveal')
+    );
+    expect(pendingWrites.size).toBe(1);
+
+    await jest.advanceTimersByTimeAsync(100);
+    expect(
+      slotEventService.handleUserDefinedResponseItems
+    ).toHaveBeenCalledTimes(2);
+    expect(localItems().map((local) => local.item)).toContainEqual(
+      textItem('Second reveal')
+    );
+    expect(pendingWrites.size).toBe(0);
+  });
+
+  it('releases the write after a rejected receive callback and its remaining reveal settle', async () => {
+    const { service, manager, fire, localItems } = createHarness();
+    const pendingWrites = (manager.messageUpsertCoordinator as any)
+      .pendingWrites as Map<string, unknown>;
+    const failure = new Error('Receive failed');
+    fire.mockImplementation(async (event) => {
+      if (event.type === BusEventType.RECEIVE) {
+        throw failure;
+      }
+    });
+    await expect(
+      service.receive(
+        response([
+          { response_type: MessageResponseTypes.PAUSE, time: 100 },
+          textItem('Still revealed'),
+        ])
+      )
+    ).rejects.toBe(failure);
+    expect(pendingWrites.size).toBe(1);
+
+    await jest.advanceTimersByTimeAsync(100);
+    expect(localItems().map((local) => local.item)).toEqual([
+      textItem('Still revealed'),
+    ]);
+    expect(pendingWrites.size).toBe(0);
+  });
+
   it.each([false, true])(
     'preserves welcome metadata when isLatestWelcomeNode is %s',
     async (isWelcome) => {
@@ -184,7 +300,8 @@ describe('ReceiveService', () => {
     expect(message.request_id).toBe(request.id);
     expect(Object.isFrozen(message)).toBe(true);
     expect(fire).toHaveBeenLastCalledWith(
-      expect.objectContaining({ type: BusEventType.RECEIVE })
+      expect.objectContaining({ type: BusEventType.RECEIVE }),
+      expect.any(Function)
     );
   });
 
@@ -233,7 +350,8 @@ describe('ReceiveService', () => {
         output: { generic: message.output.generic },
       }),
       store.getState().config,
-      0
+      0,
+      expect.any(Function)
     );
     expect(handleConnectToHumanAgent.mock.calls[0][1]).toBe(message);
     expect(localItems()).toEqual([]);
@@ -244,6 +362,39 @@ describe('ReceiveService', () => {
     expect(localItems().map((local) => local.item)).toEqual(
       message.output.generic
     );
+  });
+
+  it('checks agent availability again when a removed pending card is replaced', async () => {
+    const { service, handleConnectToHumanAgent, localItems } = createHarness();
+    const pendingAvailability = resolvablePromise<void>();
+    handleConnectToHumanAgent.mockReturnValueOnce(pendingAvailability);
+    const connectResponse = () =>
+      response([
+        {
+          response_type: MessageResponseTypes.CONNECT_TO_HUMAN_AGENT,
+          streaming_metadata: { id: 'connect' },
+        },
+      ]);
+
+    try {
+      await service.receive(connectResponse());
+      expect(handleConnectToHumanAgent).toHaveBeenCalledTimes(1);
+      expect(localItems()).toEqual([]);
+
+      await service.removeMessages(['response-1']);
+      await service.receive(connectResponse());
+      await jest.advanceTimersByTimeAsync(0);
+
+      expect(handleConnectToHumanAgent).toHaveBeenCalledTimes(2);
+      const replacement = localItems()[0];
+      expect(replacement.ui_state.id).toBe('response-1-connect');
+      pendingAvailability.doResolve();
+      await jest.advanceTimersByTimeAsync(0);
+      expect(localItems()).toEqual([replacement]);
+      expect(localItems()[0]).toBe(replacement);
+    } finally {
+      pendingAvailability.doResolve();
+    }
   });
 
   it('does not add delayed items after the conversation restarts', async () => {
@@ -323,7 +474,7 @@ describe('ReceiveService', () => {
     'handleUserDefinedResponseItems',
     'handleCustomFooterSlot',
   ] as const)('does not wait for %s before firing receive', async (method) => {
-    const { service, slotEventService, eventTypes, localItems } =
+    const { service, manager, slotEventService, eventTypes, localItems } =
       createHarness();
     const pendingSlot = resolvablePromise();
     slotEventService[method].mockReturnValueOnce(pendingSlot);
@@ -338,6 +489,9 @@ describe('ReceiveService', () => {
       expect(received).toBe(true);
       expect(eventTypes()).toContain(BusEventType.RECEIVE);
       expect(localItems()).toEqual([]);
+      expect((manager.messageUpsertCoordinator as any).pendingWrites.size).toBe(
+        1
+      );
     } finally {
       pendingSlot.doResolve();
       await receiving;
@@ -345,13 +499,16 @@ describe('ReceiveService', () => {
     }
 
     expect(localItems()).toHaveLength(1);
+    expect((manager.messageUpsertCoordinator as any).pendingWrites.size).toBe(
+      0
+    );
   });
 
   it.each([
     'handleUserDefinedResponseItems',
     'handleCustomFooterSlot',
   ] as const)('fires receive when %s rejects', async (method) => {
-    const { service, slotEventService, eventTypes } = createHarness();
+    const { service, manager, slotEventService, eventTypes } = createHarness();
     jest.spyOn(console, 'error').mockImplementation(() => undefined);
     slotEventService[method].mockRejectedValueOnce(new Error('Host failed'));
 
@@ -359,5 +516,8 @@ describe('ReceiveService', () => {
     await jest.advanceTimersByTimeAsync(0);
 
     expect(eventTypes()).toContain(BusEventType.RECEIVE);
+    expect((manager.messageUpsertCoordinator as any).pendingWrites.size).toBe(
+      0
+    );
   });
 });

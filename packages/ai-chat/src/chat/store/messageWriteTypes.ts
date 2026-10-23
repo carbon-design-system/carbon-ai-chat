@@ -19,6 +19,9 @@ import type { DeepPartial } from '../../types/utilities/DeepPartial';
  * `upsertMessage` never passes it.
  */
 interface MessageWriteOptions {
+  /** Whether the caller's original message lifetime is still active. */
+  isCurrent?: () => boolean;
+
   /** The public method the write comes from. Unset means `upsertMessage`. */
   origin?: 'addMessage' | 'chunk';
 

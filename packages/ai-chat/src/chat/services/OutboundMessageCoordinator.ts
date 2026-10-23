@@ -271,10 +271,14 @@ class OutboundMessageCoordinator {
     }
 
     const { chunkProcessingService } = this.serviceManager;
-    const { errors: chunkErrors, finish } =
-      chunkProcessingService.trackRequestErrors(
-        current.sendMessageController.signal
-      );
+    const {
+      formattingErrors: chunkErrors,
+      reportedErrors,
+      finish,
+    } = chunkProcessingService.trackRequestErrors(
+      current.message.id,
+      current.sendMessageController.signal
+    );
     try {
       // We may update the timezone and locale on this message so we need to clone it and then update the store with
       // the new object.
@@ -326,7 +330,7 @@ class OutboundMessageCoordinator {
       consoleError('An error occurred while sending a message', error);
       const processingError = chunkErrors.has(error);
       const resultText = getSendErrorText(error, processingError);
-      this.processError(current, resultText, !processingError);
+      this.processError(current, resultText, !reportedErrors.has(error));
     } finally {
       finish();
     }
