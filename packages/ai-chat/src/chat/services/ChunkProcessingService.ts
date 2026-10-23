@@ -45,23 +45,35 @@ import { DeepPartial } from '../../types/utilities/DeepPartial';
 import { OnErrorType } from '../../types/config/ErrorConfig';
 import type { ServiceManager } from './ServiceManager';
 
+interface RequestChunkErrors {
+  restartGeneration: number;
+  formattingErrors: Set<unknown>;
+  reportedErrors: Set<unknown>;
+}
+
 class ChunkProcessingService {
   private serviceManager: ServiceManager;
 
   // A sender can still await chunks after its response advances the send queue.
-  private pendingSendErrors = new Set<Set<unknown>>();
+  private pendingSendErrors = new Map<string, RequestChunkErrors>();
 
-  trackRequestErrors(signal: AbortSignal) {
-    const errors = new Set<unknown>();
+  trackRequestErrors(requestID: string, signal: AbortSignal) {
+    const tracking: RequestChunkErrors = {
+      restartGeneration: this.restartGeneration,
+      formattingErrors: new Set(),
+      reportedErrors: new Set(),
+    };
     const finish = () => {
-      this.pendingSendErrors.delete(errors);
+      if (this.pendingSendErrors.get(requestID) === tracking) {
+        this.pendingSendErrors.delete(requestID);
+      }
       signal.removeEventListener('abort', finish);
     };
     if (!signal.aborted) {
-      this.pendingSendErrors.add(errors);
+      this.pendingSendErrors.set(requestID, tracking);
       signal.addEventListener('abort', finish, { once: true });
     }
-    return { errors, finish };
+    return { ...tracking, finish };
   }
 
   /**
@@ -71,6 +83,7 @@ class ChunkProcessingService {
     chunk: StreamChunk;
     messageID?: string;
     requestID?: string;
+    requestErrors?: RequestChunkErrors;
     options: AddMessageOptions;
     chunkPromise: ResolvablePromise<void>;
     restartGeneration: number;
@@ -180,16 +193,22 @@ class ChunkProcessingService {
       }
     }
 
+    const ownerRequestID =
+      requestID ??
+      this.serviceManager.messageService.inboundStreaming.getStreamingMeta(
+        extractedMessageID
+      )?.requestId ??
+      this.serviceManager.messageService.currentRequestID;
+    const tracking = this.pendingSendErrors.get(ownerRequestID);
     const chunkPromise = resolvablePromise();
     this.chunkQueue.push({
       chunk,
       messageID,
-      requestID:
-        requestID ??
-        this.serviceManager.messageService.inboundStreaming.getStreamingMeta(
-          extractedMessageID
-        )?.requestId ??
-        this.serviceManager.messageService.currentRequestID,
+      requestID: ownerRequestID,
+      requestErrors:
+        tracking?.restartGeneration === restartGeneration
+          ? tracking
+          : undefined,
       options,
       chunkPromise,
       restartGeneration,
@@ -201,8 +220,14 @@ class ChunkProcessingService {
   }
 
   async processChunkQueue() {
-    const { chunk, options, chunkPromise, restartGeneration, requestID } =
-      this.chunkQueue[0];
+    const {
+      chunk,
+      options,
+      chunkPromise,
+      restartGeneration,
+      requestID,
+      requestErrors,
+    } = this.chunkQueue[0];
     const { store, restartCount: initialRestartCount } = this.serviceManager;
     let messageID: string | undefined;
     let terminalConversationFailure = false;
@@ -295,7 +320,10 @@ class ChunkProcessingService {
 
       this.advanceChunkQueue(chunkPromise);
     } catch (error) {
-      this.pendingSendErrors.forEach((errors) => errors.add(error));
+      // Callback errors can outlive response routing; formatting does not suppress reports.
+      this.pendingSendErrors.forEach(({ formattingErrors }) => {
+        formattingErrors.add(error);
+      });
       consoleError('Error processing stream chunk', error);
       if (restartGeneration !== this.restartGeneration) {
         this.advanceChunkQueue(chunkPromise, { error });
@@ -312,6 +340,7 @@ class ChunkProcessingService {
         );
       }
       if (terminalConversationFailure) {
+        requestErrors?.reportedErrors.add(error);
         this.serviceManager.actions.errorOccurred({
           errorType: OnErrorType.MESSAGE_COMMUNICATION,
           message: 'The chat could not process a streamed response.',
