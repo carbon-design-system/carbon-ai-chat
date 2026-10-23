@@ -229,7 +229,10 @@ function applyChunk(
   };
   const messageOptions = chunk.partial_response?.message_options;
   return messageOptions
-    ? merge({}, message, { message_options: messageOptions })
+    ? {
+        ...message,
+        message_options: merge({}, message.message_options, messageOptions),
+      }
     : message;
 }
 

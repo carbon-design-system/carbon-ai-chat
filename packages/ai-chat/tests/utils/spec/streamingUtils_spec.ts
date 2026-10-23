@@ -223,6 +223,12 @@ describe('streamingUtils', () => {
       );
 
       expect(message).not.toBe(prev);
+      expect(message.output).toBe(prev.output);
+      expect(message.history).toBe(prev.history);
+      expect(message.message_options).not.toBe(prev.message_options);
+      expect(message.message_options.reasoning).not.toBe(
+        prev.message_options.reasoning
+      );
       expect(message.message_options).toEqual({
         reasoning: {
           content: 'Thinking',
@@ -231,6 +237,7 @@ describe('streamingUtils', () => {
         response_user_profile: { id: 'p', nickname: 'Pat' },
       });
       expect(prev.message_options.reasoning.steps[0]).toEqual({ title: 'S1' });
+      expect(prev.message_options.response_user_profile.nickname).toBe('Pat');
     });
   });
 
