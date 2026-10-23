@@ -18,6 +18,7 @@
   - [Force publish](#force-publish)
   - [Tag already exists](#tag-already-exists)
   - [Branch moved during the release](#branch-moved-during-the-release)
+  - [Publish failed after tags were pushed](#publish-failed-after-tags-were-pushed)
 
 ## Overview
 
@@ -265,6 +266,16 @@ Delete the git tags by going to the [tags page on GitHub](https://github.com/car
 ### Branch moved during the release
 
 If the publish step fails with `EBEHIND`, someone pushed to the release branch while the workflow was running. Lerna stops before it publishes anything, so npm and git stay in step. Re-run the workflow; it checks out the new tip.
+
+### Publish failed after tags were pushed
+
+If a publish error occurs after the git tags have already been pushed, it is now retried automatically.
+
+The retry step logs a `warning` annotation on the run, so the first failure is still visible even though the run can end green.
+
+If the retry fails with `Release commit never reached`, the release commit was never pushed to the branch. Nothing was released, so re-run the workflow, as in [Branch moved during the release](#branch-moved-during-the-release).
+
+If the retry fails for any other reason, the release commit and tags are on git but some versions are missing from npm. Run a **subsequent RC** with `force publish` checked, following the same dry run and then live run steps as in [Force publish](#force-publish).
 
 ### Checks are stuck on pending
 
