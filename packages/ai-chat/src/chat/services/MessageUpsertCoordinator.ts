@@ -554,7 +554,8 @@ class MessageUpsertCoordinator {
   ): Promise<void> {
     const generation = this.generation;
     const { restartCount } = this.serviceManager;
-    const result = await this.runUpdater(messageID, updater);
+    // This updater is the chat's immutable chunk merge, not a host callback.
+    const result = await updater(this.getStoredResponse(messageID));
     if (
       generation === this.generation &&
       restartCount === this.serviceManager.restartCount
@@ -996,14 +997,7 @@ class MessageUpsertCoordinator {
     });
   }
 
-  /**
-   * Phase 1: read the existing message (rejecting requests), invoke the updater, and
-   * check that the returned response carries the right id.
-   */
-  private async runUpdater(
-    messageID: string,
-    updater: UpsertMessageUpdater
-  ): Promise<MessageResponse> {
+  private getStoredResponse(messageID: string): MessageResponse | undefined {
     const existing = this.serviceManager.store.getState().allMessagesByID[
       messageID
     ] as Message | undefined;
@@ -1013,6 +1007,18 @@ class MessageUpsertCoordinator {
         `upsertMessage: messageID "${messageID}" refers to a non-assistant message and cannot be upserted.`
       );
     }
+
+    return existing as MessageResponse | undefined;
+  }
+
+  /**
+   * Gives the host a private copy and validates the returned response and ID.
+   */
+  private async runUpdater(
+    messageID: string,
+    updater: UpsertMessageUpdater
+  ): Promise<MessageResponse> {
+    const existing = this.getStoredResponse(messageID);
 
     const previousMessage = existing
       ? cloneDeep(existing as MessageResponse)
