@@ -259,6 +259,71 @@ describe('public message state', () => {
     ).toBe(second);
   });
 
+  it('retains new visible items before retained streamed items', () => {
+    const projection = new PublicMessagesProjection();
+    const retained = {
+      response_type: MessageResponseTypes.TEXT,
+      text: 'B',
+      streaming_metadata: { id: 'retained' },
+    };
+    const message: MessageResponse = {
+      id: 'response',
+      output: {
+        generic: [
+          { response_type: MessageResponseTypes.TEXT, text: 'A' },
+          retained,
+        ],
+      },
+    };
+    const streamed = localItem('response', 'retained', retained, []);
+    const [result] = projection.project(
+      ['response'],
+      { response: message },
+      { [streamed.ui_state.id]: streamed },
+      [streamed.ui_state.id]
+    );
+    expect((result as MessageResponse).output.generic).toEqual(
+      message.output.generic
+    );
+  });
+
+  it('keeps ID-less local items in order around reserved streamed items', () => {
+    const projection = new PublicMessagesProjection();
+    const hidden = {
+      response_type: MessageResponseTypes.USER_DEFINED,
+      user_defined: { silent: true },
+    };
+    const first = { response_type: MessageResponseTypes.TEXT, text: 'A' };
+    const retained = {
+      response_type: MessageResponseTypes.TEXT,
+      text: 'B',
+      streaming_metadata: { id: 'retained' },
+    };
+    const last = { response_type: MessageResponseTypes.TEXT, text: 'C' };
+    const message: MessageResponse = {
+      id: 'response',
+      output: { generic: [hidden, first, retained, last] },
+    };
+    const locals = [
+      localItem('response', 'hidden', hidden, []),
+      localItem('response', 'first', first, [{ text: 'A live' }]),
+      localItem('response', 'retained', retained, [{ text: 'B live' }]),
+      localItem('response', 'last', last, [{ text: 'C live' }]),
+    ];
+    const [result] = projection.project(
+      ['response'],
+      { response: message },
+      Object.fromEntries(locals.map((local) => [local.ui_state.id, local])),
+      locals.map((local) => local.ui_state.id)
+    );
+    expect((result as MessageResponse).output.generic).toEqual([
+      hidden,
+      { ...first, text: 'A live' },
+      { ...retained, text: 'B live' },
+      { ...last, text: 'C live' },
+    ]);
+  });
+
   it('does not duplicate a streamed silent item or flatten nested payloads', () => {
     const projection = new PublicMessagesProjection();
     const hidden = {
@@ -454,6 +519,127 @@ describe('public message state', () => {
 describe('silent response snapshots through public writes', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
+
+  it('publishes the full received payload before new visible items are revealed', async () => {
+    const { instance, store } =
+      await renderChatAndGetInstanceWithStore(createBaseConfig());
+    const retained = {
+      response_type: MessageResponseTypes.TEXT,
+      text: 'Streamed B',
+      streaming_metadata: { id: 'retained' },
+    };
+    const response: MessageResponse = {
+      id: 'retained-visible',
+      output: {
+        generic: [
+          { response_type: MessageResponseTypes.TEXT, text: 'New A' },
+          retained,
+        ],
+      },
+    };
+    await act(async () => {
+      await instance.messaging.addMessageChunk({
+        streaming_metadata: { response_id: response.id },
+        complete_item: retained,
+      });
+    });
+    const payloads: MessageResponse['output']['generic'][] = [];
+    const unsubscribe = instance.state.subscribe(() => {
+      const canonical = store.getState().allMessagesByID[
+        response.id
+      ] as MessageResponse;
+      if (canonical.output.generic.length === 2) {
+        payloads.push(
+          (
+            instance.state
+              .get()
+              .messages.find(
+                (message) => message.id === response.id
+              ) as MessageResponse
+          ).output.generic
+        );
+      }
+    });
+    try {
+      await act(async () => {
+        await instance.messaging.addMessage(response);
+      });
+      expect(payloads.length).toBeGreaterThan(0);
+      payloads.forEach((payload) =>
+        expect(payload).toEqual(response.output.generic)
+      );
+    } finally {
+      unsubscribe();
+    }
+  });
+
+  it.each(['addMessage', 'final_response'] as const)(
+    'matches retained streamed items by identity during a %s pause',
+    async (method) => {
+      const { instance, store, serviceManager } =
+        await renderChatAndGetInstanceWithStore(createBaseConfig());
+      const entered = resolvablePromise<void>();
+      const release = resolvablePromise<void>();
+      const pause = jest
+        .spyOn(serviceManager.chunkProcessingService, 'waitForPause')
+        .mockImplementation(async () => {
+          entered.doResolve();
+          await release;
+        });
+      const retained = {
+        response_type: MessageResponseTypes.TEXT,
+        text: 'Streamed B',
+        streaming_metadata: { id: 'retained' },
+      };
+      const response: MessageResponse = {
+        id: 'retained-after-pause',
+        output: {
+          generic: [
+            { response_type: MessageResponseTypes.PAUSE, time: 100 },
+            { response_type: MessageResponseTypes.TEXT, text: 'New A' },
+            retained,
+          ],
+        },
+      };
+      try {
+        await act(async () => {
+          await instance.messaging.addMessageChunk({
+            streaming_metadata: { response_id: response.id },
+            complete_item: retained,
+          });
+          if (method === 'addMessage') {
+            await instance.messaging.addMessage(response);
+          } else {
+            await instance.messaging.addMessageChunk({
+              final_response: response,
+            });
+          }
+          await entered;
+        });
+        const state = store.getState();
+        expect(
+          state.assistantMessageState.localMessageIDs
+            .map((id) => state.allMessageItemsByID[id])
+            .filter((item) => item.fullMessageID === response.id)
+            .map((item) => item.item)
+        ).toEqual([retained]);
+        const during = instance.state.get();
+        expect(
+          (
+            during.messages.find(
+              (message) => message.id === response.id
+            ) as MessageResponse
+          ).output.generic
+        ).toEqual(response.output.generic);
+      } finally {
+        await act(async () => {
+          release.doResolve();
+          await release;
+        });
+        pause.mockRestore();
+      }
+    }
+  );
 
   it('retains the full COMPLETE payload while a pause delays visible items', async () => {
     const { instance, store, serviceManager } =

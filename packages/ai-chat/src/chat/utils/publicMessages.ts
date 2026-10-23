@@ -159,21 +159,47 @@ function assembleResponseItems(
     .filter(
       ({ item }) => item && (isPause(item) || isHiddenOutputItem(message, item))
     );
-  if (!nonRendering.length) {
+  if (
+    !generic.length ||
+    (!nonRendering.length &&
+      generic.length === localItems.length &&
+      generic.every(
+        (item, index) =>
+          streamItemID(message.id, item) ===
+          streamItemID(message.id, localItems[index].item)
+      ))
+  ) {
     return projected;
   }
 
   // Local items omit silent entries and can stop at a pause; snapshots retain the full payload.
   const matched = new Map<number, number>();
   const reserved = new Set<number>();
-  nonRendering.forEach(({ item, index: genericIndex }) => {
+  // A received write can retain a streamed suffix before its new earlier items show.
+  const localByStreamID = new Map<string, number>();
+  localItems.forEach((local, index) => {
+    const id = streamItemID(message.id, local.item);
+    if (id) {
+      localByStreamID.set(id, index);
+    }
+  });
+  generic.forEach((item, genericIndex) => {
     const id = streamItemID(message.id, item);
+    const index = id ? localByStreamID.get(id) : undefined;
+    if (index !== undefined && !reserved.has(index)) {
+      matched.set(genericIndex, index);
+      reserved.add(index);
+    }
+  });
+  nonRendering.forEach(({ item, index: genericIndex }) => {
+    if (streamItemID(message.id, item)) {
+      return;
+    }
     const index = localItems.findIndex(
       (local, position) =>
         !reserved.has(position) &&
-        (id
-          ? streamItemID(message.id, local.item) === id
-          : isEqual(local.item, item))
+        !streamItemID(message.id, local.item) &&
+        isEqual(local.item, item)
     );
     if (index !== -1) {
       matched.set(genericIndex, index);
@@ -187,15 +213,23 @@ function assembleResponseItems(
     if (!item) {
       return [];
     }
-    if (isPause(item) || isHiddenOutputItem(message, item)) {
-      const index = matched.get(genericIndex);
-      if (index !== undefined) {
-        consumed.add(index);
-        return [projected[index]];
-      }
+    const index = matched.get(genericIndex);
+    if (index !== undefined) {
+      consumed.add(index);
+      return [projected[index]];
+    }
+    if (
+      isPause(item) ||
+      isHiddenOutputItem(message, item) ||
+      streamItemID(message.id, item)
+    ) {
       return [item];
     }
-    while (reserved.has(nextLocal)) {
+    while (
+      nextLocal < localItems.length &&
+      (reserved.has(nextLocal) ||
+        streamItemID(message.id, localItems[nextLocal].item))
+    ) {
       nextLocal++;
     }
     if (nextLocal < projected.length) {
