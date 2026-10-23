@@ -44,6 +44,31 @@ function localItem(
 }
 
 describe('public message state', () => {
+  it.each([
+    MessageResponseTypes.TEXT,
+    MessageResponseTypes.CONVERSATIONAL_SEARCH,
+  ])(
+    'keeps full snapshot text for unfinished %s items without chunks',
+    (response_type) => {
+      const projection = new PublicMessagesProjection();
+      const item = localItem(
+        'response',
+        'item',
+        { response_type, text: 'Live snapshot' },
+        []
+      );
+      const [result] = projection.project(
+        ['response'],
+        { response: { id: 'response', output: { generic: [] } } },
+        { [item.ui_state.id]: item },
+        [item.ui_state.id]
+      );
+      expect((result as MessageResponse).output.generic[0]).toMatchObject({
+        text: 'Live snapshot',
+      });
+    }
+  );
+
   it('joins conversational search chunks and keeps the fields rendered by the UI', () => {
     const projection = new PublicMessagesProjection();
     const item = localItem(

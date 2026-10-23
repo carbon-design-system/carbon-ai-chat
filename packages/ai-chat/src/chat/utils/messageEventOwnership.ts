@@ -20,15 +20,16 @@ export function captureMessageEvent(
   serviceManager: ServiceManager,
   message: Message,
   localItems: Record<string, LocalMessageItem>,
-  values?: { message: Message; localItems: Record<string, LocalMessageItem> }
+  values?: { message: Message; localItems: Record<string, LocalMessageItem> },
+  isCurrent: () => boolean = () => true
 ) {
   const { store, restartCount } = serviceManager;
   const before = store.getState();
   const working = values ?? cloneDeep({ message, localItems });
   return {
     ...working,
-    commit() {
-      if (restartCount !== serviceManager.restartCount) {
+    commit(onMessageCommit?: (message: Message) => void) {
+      if (!isCurrent() || restartCount !== serviceManager.restartCount) {
         return;
       }
       let owned: typeof working;
@@ -38,13 +39,15 @@ export function captureMessageEvent(
           store.getState().allMessagesByID[message.id] &&
         !isEqual(message, working.message)
       ) {
-        store.dispatch(actions.updateMessage(own().message));
+        const committedMessage = own().message;
+        onMessageCommit?.(committedMessage);
+        store.dispatch(actions.updateMessage(committedMessage));
       }
       for (const [id, item] of Object.entries(localItems)) {
         if (!item || !working.localItems[id]) {
           continue;
         }
-        if (restartCount !== serviceManager.restartCount) {
+        if (!isCurrent() || restartCount !== serviceManager.restartCount) {
           return;
         }
         const current = store.getState().allMessageItemsByID[id];
@@ -73,13 +76,21 @@ export function captureMessageEvent(
 export function eventLocalItems(
   storedMessage: object,
   message: object,
-  localItems: Record<string, LocalMessageItem>
+  localItems: Record<string, LocalMessageItem>,
+  itemPairs: [object, object][] = []
 ) {
-  return cloneDeepWith(localItems, eventValueMapper(storedMessage, message));
+  return cloneDeepWith(
+    localItems,
+    eventValueMapper(storedMessage, message, itemPairs)
+  );
 }
 
 /** Capture matching references before a handler can replace a caller field. */
-export function eventValueMapper(storedMessage: object, message: object) {
+export function eventValueMapper(
+  storedMessage: object,
+  message: object,
+  itemPairs: [object, object][] = []
+) {
   const counterparts = new WeakMap<object, object>();
   const pair = (stored: unknown, working: unknown) => {
     if (
@@ -100,6 +111,7 @@ export function eventValueMapper(storedMessage: object, message: object) {
     );
   };
   pair(storedMessage, message);
+  itemPairs.forEach(([stored, working]) => pair(stored, working));
   return (value: unknown) =>
     value && typeof value === 'object' ? counterparts.get(value) : undefined;
 }

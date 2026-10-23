@@ -9,7 +9,6 @@
 
 import { ChatInstanceService } from './ChatInstanceService';
 import { ChunkProcessingService } from './ChunkProcessingService';
-import { ConversationLifecycleService } from './ConversationLifecycleService';
 import { HydrationService } from './HydrationService';
 import { InputActionsService } from './InputActionsService';
 import { PublicStateService } from './PublicStateService';
@@ -63,8 +62,6 @@ function createServiceManager(appConfig: AppConfig) {
   serviceManager.chunkProcessingService = new ChunkProcessingService(
     serviceManager
   );
-  serviceManager.conversationLifecycleService =
-    new ConversationLifecycleService();
   serviceManager.slotEventService = new SlotEventService(serviceManager);
   serviceManager.hydrationService = new HydrationService(serviceManager);
   serviceManager.receiveService = new ReceiveService(serviceManager);

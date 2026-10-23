@@ -75,14 +75,21 @@ describe('PublicStateService', () => {
       'prepare'
     );
     store.dispatch(
-      actions.streamingAddChunk(
-        'response',
+      actions.upsertMessage(
+        store.getState().allMessagesByID.response,
+        true,
+        undefined,
         {
-          response_type: MessageResponseTypes.TEXT,
-          text: 'chunk',
-          streaming_metadata: { id: 'text' },
-        },
-        false
+          origin: 'chunk',
+          chunk: {
+            item: {
+              response_type: MessageResponseTypes.TEXT,
+              text: 'chunk',
+              streaming_metadata: { id: 'text' },
+            },
+            isComplete: false,
+          },
+        }
       )
     );
     expect(

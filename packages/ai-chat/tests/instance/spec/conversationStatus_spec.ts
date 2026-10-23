@@ -9,7 +9,11 @@
 
 import { ViewType } from '../../../src/types/instance/apiTypes';
 import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
-import type { MessageResponse } from '../../../src/types/messaging/Messages';
+import type {
+  MessageResponse,
+  TextItem,
+} from '../../../src/types/messaging/Messages';
+import { deriveStreamingItemText } from '../../../src/chat/utils/streamingUtils';
 import { act } from '@testing-library/react';
 import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
 import { MessageResponseTypes } from '../../../src/types/messaging/Messages';
@@ -527,9 +531,7 @@ describe('conversation status', () => {
       ).toBe(scope === 'targeted cancellation');
       expect(
         serviceManager.messageUpsertCoordinator.getState('response-a')
-      ).toBe(
-        scope === 'global Stop' ? MessageState.ERROR : MessageState.STREAMING
-      );
+      ).toBe(MessageState.STREAMING);
       await instance.messaging.upsertMessage(
         'response-a',
         MessageState.COMPLETE,
@@ -687,7 +689,7 @@ describe('conversation status', () => {
   });
 
   it.each(['chunk', 'upsert'])(
-    'keeps late ownerless %s content after Stop without reviving status',
+    'retains late ownerless %s writes after Stop using its settled display behavior',
     async (path) => {
       const started = resolvablePromise();
       const release = resolvablePromise();
@@ -723,7 +725,7 @@ describe('conversation status', () => {
           await release;
         },
       };
-      const { instance, serviceManager } =
+      const { instance, serviceManager, store } =
         await renderChatAndGetInstanceWithStore(config);
       const sending = instance.send('question');
       await started;
@@ -739,7 +741,27 @@ describe('conversation status', () => {
       unsubscribe();
       expect(statuses).toEqual(['ready']);
       expect(instance.state.get().status).toBe('ready');
-      expect(JSON.stringify(instance.state.get().messages)).toContain('after');
+      const answer = instance.state
+        .get()
+        .messages.find((message) => message.id === 'answer') as MessageResponse;
+      const visibleText = (answer.output.generic[0] as TextItem).text;
+      if (path === 'chunk') {
+        const item = store.getState().allMessageItemsByID['answer-text'];
+        expect(item.ui_state.streamingState).toMatchObject({
+          isDone: true,
+          chunks: [{ text: 'after' }],
+        });
+        expect((item.item as TextItem).text).toBe('before');
+        expect(visibleText).toBe(
+          deriveStreamingItemText(
+            (item.item as TextItem).text,
+            item.ui_state.streamingState
+          )
+        );
+        expect(visibleText).toBe('before');
+      } else {
+        expect(visibleText).toBe('after');
+      }
     }
   );
 
