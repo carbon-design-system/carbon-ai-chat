@@ -95,7 +95,7 @@ class ReceiveService {
         data: message,
       };
       // Fire the pre:receive event. User code is allowed to modify the message at this point.
-      await this.serviceManager.fire(preReceiveEvent);
+      await this.serviceManager.fire(preReceiveEvent, isCurrent);
 
       if (
         !isCurrent() ||
@@ -127,10 +127,13 @@ class ReceiveService {
 
       deepFreeze(message);
 
-      await this.serviceManager.fire({
-        type: BusEventType.RECEIVE,
-        data: message,
-      });
+      await this.serviceManager.fire(
+        {
+          type: BusEventType.RECEIVE,
+          data: message,
+        },
+        isCurrent
+      );
 
       // Record COMPLETE so a later `upsertMessage(id, MessageState.COMPLETE, ...)` for
       // the same id suppresses a second `pre:receive` / `receive`.

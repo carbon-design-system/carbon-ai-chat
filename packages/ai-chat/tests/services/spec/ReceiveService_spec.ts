@@ -300,7 +300,8 @@ describe('ReceiveService', () => {
     expect(message.request_id).toBe(request.id);
     expect(Object.isFrozen(message)).toBe(true);
     expect(fire).toHaveBeenLastCalledWith(
-      expect.objectContaining({ type: BusEventType.RECEIVE })
+      expect.objectContaining({ type: BusEventType.RECEIVE }),
+      expect.any(Function)
     );
   });
 
