@@ -781,12 +781,13 @@ class MessageUpsertCoordinator {
         localItem,
         message,
         MessageState.COMPLETE,
-        nestedLocalItemsByID
+        nestedLocalItemsByID,
+        isCurrent
       );
       if (!isCurrent()) {
         return;
       }
-      await chatActions.handleCustomFooterSlot(localItem, message);
+      await chatActions.handleCustomFooterSlot(localItem, message, isCurrent);
       if (!isHiddenOutputItem(message, item) && isCurrent()) {
         write({
           localItem,
@@ -1174,12 +1175,18 @@ class MessageUpsertCoordinator {
         await chatActions.handleUserDefinedResponseItems(
           localItem,
           result,
-          nextState
+          nextState,
+          undefined,
+          () => !isStale()
         );
         if (isStale()) {
           return;
         }
-        await chatActions.handleCustomFooterSlot(localItem, result);
+        await chatActions.handleCustomFooterSlot(
+          localItem,
+          result,
+          () => !isStale()
+        );
       }
     }
   }

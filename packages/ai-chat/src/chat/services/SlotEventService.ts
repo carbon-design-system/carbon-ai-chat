@@ -83,8 +83,12 @@ class SlotEventService {
     localItemsByID: Record<
       string,
       LocalMessageItem
-    > = this.serviceManager.store.getState().allMessageItemsByID
+    > = this.serviceManager.store.getState().allMessageItemsByID,
+    isCurrent: () => boolean = () => true
   ) {
+    if (!isCurrent()) {
+      return;
+    }
     if (renderAsUserDefinedMessage(localMessage.item)) {
       let slotName: string;
       if (!localMessage.item.user_defined?.silent) {
@@ -120,7 +124,8 @@ class SlotEventService {
           nestedLocalMessage,
           originalMessage,
           messageState,
-          localItemsByID
+          localItemsByID,
+          isCurrent
         );
       };
 
@@ -196,8 +201,12 @@ class SlotEventService {
    */
   async handleCustomFooterSlot(
     localMessage: LocalMessageItem,
-    originalMessage: MessageResponse
+    originalMessage: MessageResponse,
+    isCurrent: () => boolean = () => true
   ) {
+    if (!isCurrent()) {
+      return;
+    }
     const footerOptions =
       localMessage.item.message_item_options?.custom_footer_slot;
 
