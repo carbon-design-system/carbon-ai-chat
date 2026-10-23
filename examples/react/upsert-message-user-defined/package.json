@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.24.0-rc.0",
   "type": "module",
-  "description": "Demonstrates ChatInstance.messaging.upsertMessage by progressively updating a user_defined steps card after the message is already COMPLETE.",
+  "description": "Demonstrates ChatInstance.messaging.upsertMessage by progressively updating a cancellable user_defined steps card, then marking it COMPLETE.",
   "scripts": {
     "start": "vite",
     "build": "vite build"
