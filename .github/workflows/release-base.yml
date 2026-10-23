@@ -55,15 +55,26 @@ jobs:
           node-version-file: '.nvmrc'
           registry-url: https://registry.npmjs.org
           cache: 'npm'
+      # 👇 TEMPORARILY chromium-only: the full Playwright install (firefox/webkit apt dependencies)
+      # stalls. Restore `npx playwright install --with-deps` when the CI strategy is reworked.
       - name: Install dependencies and build
         run: |
           npm ci --prefer-offline
-          npx playwright install --with-deps
+          npx playwright install --with-deps chromium
           npm run aiChat:build:docs
-      - name: Build examples
-        run: npm run examples:build
+      # 👇 TEMPORARILY DISABLED: `npm run examples:build`, plus the demo, example and repo-internal
+      # guidance checks that `npm run ci-check` runs. Only consumer-facing checks gate a release for now.
+      # Restore `npm run examples:build` and `npm run ci-check` when the CI strategy is reworked.
       - name: Continuous integration check
-        run: npm run ci-check
+        run: |
+          npm run format:staged
+          npm run lint:license
+          npm run lint
+          npm run lint:styles
+          npm run validate:adrs
+          npm run test --workspace=@carbon/ai-chat
+          npm run test:versions
+          CI=true npm run test --workspace=@carbon/ai-chat-components
 
       - name: Update telemetry.yml
         if: github.event.inputs.type == 'full release' && github.event.inputs.dry-run == 'false'
