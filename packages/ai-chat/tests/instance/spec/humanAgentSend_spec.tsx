@@ -26,6 +26,8 @@
  */
 
 import React from 'react';
+import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
+import { PublicStateSnapshotCache } from '../../../src/chat/utils/publicState';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import {
   createBaseConfig,
@@ -43,6 +45,7 @@ import {
 } from '../../../src/types/events/eventBusTypes';
 import actions from '../../../src/chat/store/actions';
 import type { StructuredData } from '../../../src/types/messaging/Messages';
+import { MessageErrorState } from '../../../src/types/messaging/LocalMessageItem';
 import type { ServiceDesk } from '../../../src/types/config/ServiceDeskConfig';
 import type { JSONContent } from '@tiptap/core';
 
@@ -126,8 +129,8 @@ function makeStubServiceDesk(): {
  * it never consults `selectIsInputToHumanAgent`. The connected dispatch is here
  * for `useInputCallbacks`, which routes on that selector.
  */
-async function setupHumanAgentChat() {
-  const config = createBaseConfig();
+async function setupHumanAgentChat(onError = jest.fn()) {
+  const config = { ...createBaseConfig(), onError };
   const { instance, store, serviceManager } =
     await renderChatAndGetInstanceWithStore(config);
 
@@ -507,5 +510,125 @@ describe('human-agent send path — display_content and structured_data', () => 
         MENTION_DOC
       );
     });
+  });
+  it.each([false, true])(
+    'preserves outgoing callback edits and earlier snapshots (read early: %s)',
+    async (readEarly) => {
+      const { instance, store, impl, sendMessageToAgent } =
+        await setupHumanAgentChat();
+      const cache = new PublicStateSnapshotCache();
+      let captured: ReturnType<PublicStateSnapshotCache['createSnapshot']>;
+      let originalMessage: any;
+      instance.on({
+        type: BusEventType.HUMAN_AGENT_PRE_SEND,
+        handler: (event: any) => {
+          originalMessage = event.data;
+          event.data.input.structured_data = { value: 'before' };
+        },
+      });
+      sendMessageToAgent.mockImplementation(async (message) => {
+        expect(message).toBe(originalMessage);
+        captured = cache.createSnapshot(store.getState());
+        if (readEarly) {
+          expect(captured.messages[0]).toMatchObject({
+            input: { structured_data: { value: 'before' } },
+          });
+        }
+        message.input.structured_data.transport = 'accepted';
+      });
+      instance.on({
+        type: BusEventType.HUMAN_AGENT_SEND,
+        handler: (event: any) => {
+          expect(event.data).toBe(originalMessage);
+          expect(event.data.input.structured_data.transport).toBe('accepted');
+          event.data.input.structured_data.value = 'after';
+        },
+      });
+      await act(async () => impl.sendMessageToAgent('hello', [], undefined));
+      expect(captured.messages[0]).toMatchObject({
+        input: { structured_data: { value: 'before' } },
+      });
+      expect(
+        (captured.messages[0] as any).input.structured_data
+      ).not.toHaveProperty('transport');
+      expect(cache.createSnapshot(store.getState()).messages[0]).toMatchObject({
+        input: { structured_data: { value: 'after', transport: 'accepted' } },
+      });
+      expect(
+        store.getState().allMessagesByID[originalMessage.id].history.error_state
+      ).toBe(MessageErrorState.NONE);
+      originalMessage.input.structured_data.value = 'retained mutation';
+      expect(
+        store.getState().allMessagesByID[originalMessage.id]
+      ).toMatchObject({
+        input: { structured_data: { value: 'after', transport: 'accepted' } },
+      });
+    }
+  );
+
+  it.each([false, true])(
+    'clears only its own timeout after late agent success (newer failure: %s)',
+    async (newerFailure) => {
+      const onError = jest.fn();
+      const { instance, serviceManager, impl, sendMessageToAgent } =
+        await setupHumanAgentChat(onError);
+      const timer = jest.spyOn(globalThis, 'setTimeout');
+      const pending = resolvablePromise();
+      const started = resolvablePromise();
+      sendMessageToAgent.mockImplementation(() => {
+        started.doResolve();
+        return pending;
+      });
+      const sending = impl.sendMessageToAgent('late', [], undefined);
+      await started;
+      expect(instance.state.get().status).toBe('submitted');
+      await act(async () => {
+        const timeout = timer.mock.calls.find(([, delay]) => delay === 20000);
+        expect(timeout).toBeDefined();
+        (timeout[0] as () => void)();
+      });
+      expect(instance.state.get().status).toBe('error');
+      if (newerFailure) {
+        act(() =>
+          serviceManager.conversationLifecycleService.fail({
+            message: 'newer',
+            messageID: 'different',
+          } as any)
+        );
+      }
+      pending.doResolve();
+      await sending;
+      timer.mockRestore();
+      expect(instance.state.get().status).toBe(
+        newerFailure ? 'error' : 'ready'
+      );
+      expect(onError).not.toHaveBeenCalled();
+    }
+  );
+
+  it('reports agent rejection without adding a global error callback', async () => {
+    const onError = jest.fn();
+    const { instance, impl, sendMessageToAgent } =
+      await setupHumanAgentChat(onError);
+    sendMessageToAgent.mockRejectedValue(new Error('agent failure'));
+    jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    await impl.sendMessageToAgent('fails', [], undefined);
+    expect(instance.state.get().status).toBe('error');
+    expect(onError).not.toHaveBeenCalled();
+  });
+  it('reports submitted then ready for a successful agent send without a global callback', async () => {
+    const onError = jest.fn();
+    const { instance, impl, sendMessageToAgent } =
+      await setupHumanAgentChat(onError);
+    const statuses: string[] = [];
+    const unsubscribe = instance.state.select(
+      (state) => state.status,
+      (status) => statuses.push(status)
+    );
+    await impl.sendMessageToAgent('succeeds', [], undefined);
+    unsubscribe();
+    expect(sendMessageToAgent).toHaveBeenCalledTimes(1);
+    expect(statuses).toEqual(['submitted', 'ready']);
+    expect(onError).not.toHaveBeenCalled();
   });
 });

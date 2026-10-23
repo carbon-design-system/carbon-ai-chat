@@ -8,8 +8,8 @@
  */
 
 import { makeConfigStore } from '../../test_helpers';
-import { ConversationLifecycleService } from '../../../src/chat/services/ConversationLifecycleService';
 import { ChunkProcessingService } from '../../../src/chat/services/ChunkProcessingService';
+import { ConversationLifecycleService } from '../../../src/chat/services/ConversationLifecycleService';
 import { HydrationService } from '../../../src/chat/services/HydrationService';
 import { MessageUpsertCoordinator } from '../../../src/chat/services/MessageUpsertCoordinator';
 import { ReceiveService } from '../../../src/chat/services/ReceiveService';
@@ -60,8 +60,10 @@ function createHarness(config: PublicConfig = {}) {
       cancelAllMessageRequests: jest.fn().mockResolvedValue(undefined),
     },
   } as unknown as ServiceManager;
-  manager.conversationLifecycleService = new ConversationLifecycleService();
   manager.chunkProcessingService = new ChunkProcessingService(manager);
+  manager.conversationLifecycleService = new ConversationLifecycleService(
+    manager
+  );
   manager.hydrationService = new HydrationService(manager);
   manager.messageUpsertCoordinator = new MessageUpsertCoordinator(manager);
   const service = new ReceiveService(manager);
@@ -287,10 +289,11 @@ describe('ReceiveService', () => {
           message.id
         ] as MessageResponse;
 
-        expect(storedMessage).toBe(message);
+        expect(storedMessage).not.toBe(message);
         expect(storedMessage).toEqual(receiveEvent.data);
         expect(storedMessage.request_id).toBe(request.id);
-        expect(receiveEvent.data).toBe(storedMessage);
+        expect(receiveEvent.data).not.toBe(storedMessage);
+        expect(receiveEvent.data).toBe(message);
         expect(Object.isFrozen(receiveEvent.data)).toBe(true);
       }
     });
@@ -300,7 +303,8 @@ describe('ReceiveService', () => {
     expect(message.request_id).toBe(request.id);
     expect(Object.isFrozen(message)).toBe(true);
     expect(fire).toHaveBeenLastCalledWith(
-      expect.objectContaining({ type: BusEventType.RECEIVE })
+      expect.objectContaining({ type: BusEventType.RECEIVE }),
+      expect.any(Function)
     );
   });
 
@@ -361,6 +365,39 @@ describe('ReceiveService', () => {
     expect(localItems().map((local) => local.item)).toEqual(
       message.output.generic
     );
+  });
+
+  it('checks agent availability again when a removed pending card is replaced', async () => {
+    const { service, handleConnectToHumanAgent, localItems } = createHarness();
+    const pendingAvailability = resolvablePromise<void>();
+    handleConnectToHumanAgent.mockReturnValueOnce(pendingAvailability);
+    const connectResponse = () =>
+      response([
+        {
+          response_type: MessageResponseTypes.CONNECT_TO_HUMAN_AGENT,
+          streaming_metadata: { id: 'connect' },
+        },
+      ]);
+
+    try {
+      await service.receive(connectResponse());
+      expect(handleConnectToHumanAgent).toHaveBeenCalledTimes(1);
+      expect(localItems()).toEqual([]);
+
+      await service.removeMessages(['response-1']);
+      await service.receive(connectResponse());
+      await jest.advanceTimersByTimeAsync(0);
+
+      expect(handleConnectToHumanAgent).toHaveBeenCalledTimes(2);
+      const replacement = localItems()[0];
+      expect(replacement.ui_state.id).toBe('response-1-connect');
+      pendingAvailability.doResolve();
+      await jest.advanceTimersByTimeAsync(0);
+      expect(localItems()).toEqual([replacement]);
+      expect(localItems()[0]).toBe(replacement);
+    } finally {
+      pendingAvailability.doResolve();
+    }
   });
 
   it('does not add delayed items after the conversation restarts', async () => {

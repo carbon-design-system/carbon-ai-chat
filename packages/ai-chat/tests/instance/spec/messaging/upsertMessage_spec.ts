@@ -1003,14 +1003,16 @@ describe('ChatInstance.messaging.upsertMessage', () => {
       expect(childID()).not.toBe(idBefore);
     });
 
-    it('retains and freezes the original addMessage caller payload', async () => {
+    it('preserves the addMessage caller freeze and owns the stored payload', async () => {
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(createBaseConfig());
       const message = textResponse('owned-response', 'before');
 
       await instance.messaging.addMessage(message);
 
-      expect(store.getState().allMessagesByID['owned-response']).toBe(message);
+      expect(store.getState().allMessagesByID['owned-response']).not.toBe(
+        message
+      );
       expect(Object.isFrozen(message)).toBe(true);
       expect(() => {
         (message.output.generic[0] as any).text = 'after';
@@ -1020,6 +1022,49 @@ describe('ChatInstance.messaging.upsertMessage', () => {
   });
 
   describe('writable upsert events', () => {
+    it('keeps caller item identity when a terminal event reuses a stored local item', async () => {
+      const { instance, store } =
+        await renderChatAndGetInstanceWithStore(createBaseConfig());
+      const first = userDefinedResponse('reused-slot', { value: 'before' });
+      first.output.generic.push({
+        response_type: MessageResponseTypes.TEXT,
+        text: 'first',
+      });
+      await instance.messaging.upsertMessage(
+        first.id,
+        MessageState.COMPLETE,
+        () => first
+      );
+      const response = userDefinedResponse(first.id, { value: 'before' });
+      response.output.generic.push({
+        response_type: MessageResponseTypes.TEXT,
+        text: 'second',
+      });
+      const slot = jest.fn((event: BusEventUserDefinedResponse) => {
+        expect(event.data.message).toBe(response.output.generic[0]);
+        expect(event.data.fullMessage).toBe(response);
+        event.data.message.user_defined.value = 'edited';
+      });
+      instance.on({ type: BusEventType.USER_DEFINED_RESPONSE, handler: slot });
+
+      await instance.messaging.upsertMessage(
+        response.id,
+        MessageState.ERROR,
+        () => response
+      );
+
+      expect(slot).toHaveBeenCalledTimes(1);
+      expect(response.output.generic[0].user_defined.value).toBe('edited');
+      const state = store.getState();
+      const localItem = Object.values(state.allMessageItemsByID).find(
+        (item) =>
+          item.fullMessageID === response.id &&
+          item.item.response_type === MessageResponseTypes.USER_DEFINED
+      );
+      expect(localItem.item.user_defined.value).toBe('edited');
+      expect(localItem.item).not.toBe(response.output.generic[0]);
+    });
+
     it('applies receive edits to the shared caller payload and stored message', async () => {
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(createBaseConfig());
@@ -1083,7 +1128,8 @@ describe('ChatInstance.messaging.upsertMessage', () => {
       expect(stored.output.generic[1]).toMatchObject({
         text: 'full-message edit',
       });
-      expect(response.output).toBe(stored.output);
+      expect(response.output).not.toBe(stored.output);
+      expect(response.output).toEqual(stored.output);
     });
 
     it('applies custom-footer item and message edits to stored content', async () => {
@@ -1121,7 +1167,8 @@ describe('ChatInstance.messaging.upsertMessage', () => {
       expect(stored.output.generic[1]).toMatchObject({
         text: 'footer message edit',
       });
-      expect(response.output).toBe(stored.output);
+      expect(response.output).not.toBe(stored.output);
+      expect(response.output).toEqual(stored.output);
     });
   });
 

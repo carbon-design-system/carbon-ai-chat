@@ -109,7 +109,6 @@ const createServiceManagerStub = (
     actions,
     eventBus,
     instance: {},
-    conversationLifecycleService: new ConversationLifecycleService(),
     messageUpsertCoordinator,
     messageService: {
       hideStopStreamingButtonIfNoUpsertStreaming: jest.fn(),
@@ -117,6 +116,8 @@ const createServiceManagerStub = (
     },
   } as unknown as ServiceManager;
 
+  serviceManager.conversationLifecycleService =
+    new ConversationLifecycleService(serviceManager);
   serviceManager.chunkProcessingService = new ChunkProcessingService(
     serviceManager
   );

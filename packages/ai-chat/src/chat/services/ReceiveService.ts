@@ -37,7 +37,7 @@ import type { ServiceManager } from './ServiceManager';
 class ReceiveService {
   private serviceManager: ServiceManager;
 
-  private processedAgentItems = new Set<string>();
+  private processedAgentItems = new Map<string, Set<string>>();
 
   private pendingReceiveRemovals = new Set<Set<string>>();
 
@@ -95,7 +95,7 @@ class ReceiveService {
         data: message,
       };
       // Fire the pre:receive event. User code is allowed to modify the message at this point.
-      await this.serviceManager.fire(preReceiveEvent);
+      await this.serviceManager.fire(preReceiveEvent, isCurrent);
 
       if (
         !isCurrent() ||
@@ -103,6 +103,15 @@ class ReceiveService {
         messageService.isRequestFromPreviousConversation(message.request_id)
       ) {
         // If a restart occurred during the await above, we need to exit.
+        return;
+      }
+
+      this.serviceManager.conversationLifecycleService.responseReceived(
+        message.id,
+        undefined,
+        message.request_id ?? requestMessage?.id
+      );
+      if (!isCurrent()) {
         return;
       }
 
@@ -127,10 +136,13 @@ class ReceiveService {
 
       deepFreeze(message);
 
-      await this.serviceManager.fire({
-        type: BusEventType.RECEIVE,
-        data: message,
-      });
+      await this.serviceManager.fire(
+        {
+          type: BusEventType.RECEIVE,
+          data: message,
+        },
+        isCurrent
+      );
 
       // Record COMPLETE so a later `upsertMessage(id, MessageState.COMPLETE, ...)` for
       // the same id suppresses a second `pre:receive` / `receive`.
@@ -171,11 +183,23 @@ class ReceiveService {
     if (
       !isCurrent() ||
       !isConnectToHumanAgent(localMessageItem.item) ||
-      this.processedAgentItems.has(localMessageItem.ui_state.id)
+      this.processedAgentItems
+        .get(localMessageItem.fullMessageID)
+        ?.has(localMessageItem.ui_state.id)
     ) {
       return;
     }
-    this.processedAgentItems.add(localMessageItem.ui_state.id);
+    let processedItems = this.processedAgentItems.get(
+      localMessageItem.fullMessageID
+    );
+    if (!processedItems) {
+      processedItems = new Set();
+      this.processedAgentItems.set(
+        localMessageItem.fullMessageID,
+        processedItems
+      );
+    }
+    processedItems.add(localMessageItem.ui_state.id);
 
     const { store, humanAgentService, restartCount } = this.serviceManager;
     const { config } = store.getState();
@@ -219,6 +243,7 @@ class ReceiveService {
       messageIDs.forEach((id) => removedIDs.add(id));
     });
     for (const id of messageIDs) {
+      this.processedAgentItems.delete(id);
       this.serviceManager.messageUpsertCoordinator.clear(id);
     }
     this.serviceManager.store.dispatch(actions.removeMessages(messageIDs));
