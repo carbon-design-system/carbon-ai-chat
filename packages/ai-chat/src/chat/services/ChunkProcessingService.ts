@@ -84,6 +84,7 @@ class ChunkProcessingService {
     messageID?: string;
     requestID?: string;
     requestErrors?: RequestChunkErrors;
+    isCurrent: () => boolean;
     options: AddMessageOptions;
     chunkPromise: ResolvablePromise<void>;
     restartGeneration: number;
@@ -166,57 +167,69 @@ class ChunkProcessingService {
       return;
     }
 
-    this.serviceManager.messageService.messageLoadingManager.end();
-
-    if (isStreamPartialItem(chunk)) {
-      this.serviceManager.messageService.markCurrentMessageAsStreaming(
-        extractedMessageID,
-        chunk.partial_item?.streaming_metadata?.id
-      );
-
-      this.serviceManager.messageUpsertCoordinator.markStreaming(
-        extractedMessageID || undefined
-      );
-
-      if (extractedMessageID) {
-        this.serviceManager.streamAnnouncerService.announceStreamStarts(
-          extractedMessageID,
-          {
-            hasReasoning: Boolean(
-              chunk.partial_response?.message_options?.reasoning
-            ),
-            hasDisplayableContent: chunkHasDisplayableContent(chunk),
-            responseUserProfile:
-              chunk.partial_response?.message_options?.response_user_profile,
-          }
-        );
-      }
-    }
-
-    const ownerRequestID =
-      requestID ??
-      this.serviceManager.messageService.inboundStreaming.getStreamingMeta(
+    const write =
+      this.serviceManager.messageUpsertCoordinator.trackWrite(
         extractedMessageID
-      )?.requestId ??
-      this.serviceManager.messageService.currentRequestID;
-    const tracking = this.pendingSendErrors.get(ownerRequestID);
-    const chunkPromise = resolvablePromise();
-    this.chunkQueue.push({
-      chunk,
-      messageID,
-      requestID: ownerRequestID,
-      requestErrors:
-        tracking?.restartGeneration === restartGeneration
-          ? tracking
-          : undefined,
-      options,
-      chunkPromise,
-      restartGeneration,
-    });
-    if (this.chunkQueue.length === 1) {
-      this.processChunkQueue();
+      );
+    try {
+      this.serviceManager.messageService.messageLoadingManager.end();
+      if (!write.isCurrent()) {
+        return;
+      }
+
+      if (isStreamPartialItem(chunk)) {
+        this.serviceManager.messageService.markCurrentMessageAsStreaming(
+          extractedMessageID,
+          chunk.partial_item?.streaming_metadata?.id
+        );
+
+        this.serviceManager.messageUpsertCoordinator.markStreaming(
+          extractedMessageID || undefined
+        );
+
+        if (extractedMessageID) {
+          this.serviceManager.streamAnnouncerService.announceStreamStarts(
+            extractedMessageID,
+            {
+              hasReasoning: Boolean(
+                chunk.partial_response?.message_options?.reasoning
+              ),
+              hasDisplayableContent: chunkHasDisplayableContent(chunk),
+              responseUserProfile:
+                chunk.partial_response?.message_options?.response_user_profile,
+            }
+          );
+        }
+      }
+
+      const ownerRequestID =
+        requestID ??
+        this.serviceManager.messageService.inboundStreaming.getStreamingMeta(
+          extractedMessageID
+        )?.requestId ??
+        this.serviceManager.messageService.currentRequestID;
+      const tracking = this.pendingSendErrors.get(ownerRequestID);
+      const chunkPromise = resolvablePromise();
+      this.chunkQueue.push({
+        chunk,
+        messageID,
+        requestID: ownerRequestID,
+        requestErrors:
+          tracking?.restartGeneration === restartGeneration
+            ? tracking
+            : undefined,
+        options,
+        chunkPromise,
+        restartGeneration,
+        isCurrent: write.isCurrent,
+      });
+      if (this.chunkQueue.length === 1) {
+        this.processChunkQueue();
+      }
+      return await chunkPromise;
+    } finally {
+      write.release();
     }
-    return chunkPromise;
   }
 
   async processChunkQueue() {
@@ -227,8 +240,13 @@ class ChunkProcessingService {
       restartGeneration,
       requestID,
       requestErrors,
+      isCurrent: isWriteCurrent,
     } = this.chunkQueue[0];
     const { store, restartCount: initialRestartCount } = this.serviceManager;
+    const isCurrent = () =>
+      isWriteCurrent() &&
+      restartGeneration === this.restartGeneration &&
+      initialRestartCount === this.serviceManager.restartCount;
     let messageID: string | undefined;
     let terminalConversationFailure = false;
 
@@ -245,7 +263,7 @@ class ChunkProcessingService {
       const context = resolveChunkContext(chunk, this.chunkQueue[0].messageID);
       ({ messageID } = context);
       const { item, isCompleteItem, isPartialItem } = context;
-      if (restartGeneration !== this.restartGeneration) {
+      if (!isCurrent()) {
         this.advanceChunkQueue(chunkPromise);
         return;
       }
@@ -260,6 +278,10 @@ class ChunkProcessingService {
         );
       }
 
+      if (!isCurrent()) {
+        this.advanceChunkQueue(chunkPromise);
+        return;
+      }
       if (
         isPartialItem &&
         shouldShowStopStreaming(
@@ -273,28 +295,34 @@ class ChunkProcessingService {
         );
       }
 
+      if (!isCurrent()) {
+        this.advanceChunkQueue(chunkPromise);
+        return;
+      }
       if (messageID) {
         runCoreOperation(() =>
           store.dispatch(actions.setActiveResponseId(messageID))
         );
       }
 
+      if (!isCurrent()) {
+        this.advanceChunkQueue(chunkPromise);
+        return;
+      }
       if (isCompleteItem || isPartialItem) {
         try {
           await this.commitStreamingChunk(
             chunk as PartialOrCompleteItemChunk,
             messageID,
             item,
-            isCompleteItem
+            isCompleteItem,
+            isCurrent
           );
         } catch (error) {
           terminalConversationFailure = true;
           throw error;
         }
-        if (
-          restartGeneration === this.restartGeneration &&
-          initialRestartCount === this.serviceManager.restartCount
-        ) {
+        if (isCurrent()) {
           await this.notifyStreamingChunk(
             chunk as PartialOrCompleteItemChunk,
             messageID,
@@ -302,8 +330,13 @@ class ChunkProcessingService {
           );
         }
       } else if (isStreamFinalResponse(chunk)) {
-        await this.handleFinalResponseChunk(chunk, messageID, options);
-        if (messageID && restartGeneration === this.restartGeneration) {
+        await this.handleFinalResponseChunk(
+          chunk,
+          messageID,
+          options,
+          isCurrent
+        );
+        if (messageID && isCurrent()) {
           runCoreOperation(() =>
             this.serviceManager.messageService.finalizeStreamingMessage(
               messageID
@@ -312,7 +345,7 @@ class ChunkProcessingService {
         }
       }
 
-      if (restartGeneration === this.restartGeneration) {
+      if (isCurrent()) {
         runCoreOperation(() =>
           this.resetStopStreamingIfNeeded(isCompleteItem, chunk)
         );
@@ -325,7 +358,7 @@ class ChunkProcessingService {
         formattingErrors.add(error);
       });
       consoleError('Error processing stream chunk', error);
-      if (restartGeneration !== this.restartGeneration) {
+      if (!isCurrent()) {
         this.advanceChunkQueue(chunkPromise, { error });
         return;
       }
@@ -372,7 +405,8 @@ class ChunkProcessingService {
     chunk: PartialOrCompleteItemChunk,
     messageID: string | undefined,
     item: DeepPartial<GenericItem> | undefined,
-    isCompleteItem: boolean
+    isCompleteItem: boolean,
+    isCurrent: () => boolean
   ) {
     if (isCompleteItem) {
       this.warnIfMissingCompleteItemStreamingId(messageID, item);
@@ -384,7 +418,11 @@ class ChunkProcessingService {
       messageID,
       MessageState.STREAMING,
       (prev) => applyChunk(prev, chunk, messageID),
-      { origin: 'chunk', chunk: { item, isComplete: isCompleteItem } }
+      {
+        origin: 'chunk',
+        chunk: { item, isComplete: isCompleteItem },
+        isCurrent,
+      }
     );
   }
 
@@ -405,7 +443,8 @@ class ChunkProcessingService {
   private async handleFinalResponseChunk(
     chunk: FinalResponseChunk,
     messageID: string | undefined,
-    options: AddMessageOptions
+    options: AddMessageOptions,
+    isCurrent: () => boolean
   ) {
     this.warnIfMissingFinalResponseStreamingIds(
       messageID,
@@ -419,7 +458,8 @@ class ChunkProcessingService {
       finalResponse,
       options.isLatestWelcomeNode,
       null,
-      'chunk'
+      'chunk',
+      isCurrent
     );
   }
 

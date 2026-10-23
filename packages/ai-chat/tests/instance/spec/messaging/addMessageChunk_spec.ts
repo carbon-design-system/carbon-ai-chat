@@ -2514,6 +2514,7 @@ describe('ChatInstance.messaging.addMessageChunk', () => {
           expect.any(Function),
           {
             origin: 'chunk',
+            isCurrent: expect.any(Function),
             chunk: { item: partial.partial_item, isComplete: false },
           },
         ],
@@ -2523,6 +2524,7 @@ describe('ChatInstance.messaging.addMessageChunk', () => {
           expect.any(Function),
           {
             origin: 'chunk',
+            isCurrent: expect.any(Function),
             chunk: { item: complete.complete_item, isComplete: true },
           },
         ],

@@ -52,12 +52,13 @@ function createFixture(
   );
   store.dispatch(actions.addMessage(message));
 
-  const handleConnect = () =>
+  const handleConnect = (isCurrent?: () => boolean) =>
     service.handleConnectToHumanAgent(
       localMessage,
       message,
       store.getState().config,
-      manager.restartCount
+      manager.restartCount,
+      isCurrent
     );
 
   return {
@@ -176,6 +177,39 @@ describe('human agent handoff', () => {
     await handleConnect();
 
     expect(startChat).not.toHaveBeenCalled();
+  });
+
+  it('discards availability after message replacement and releases loading', async () => {
+    const { store, message, checkAvailability, startChat, handleConnect } =
+      createFixture();
+    const availability = resolvablePromise<HumanAgentsOnlineStatus>();
+    checkAvailability.mockReturnValueOnce(availability);
+    let current = true;
+    const pending = handleConnect(() => current);
+    expect(store.getState().assistantMessageState.isMessageLoadingCounter).toBe(
+      1
+    );
+
+    current = false;
+    store.dispatch(actions.removeMessages([message.id]));
+    const replacement: MessageResponse = {
+      ...message,
+      ui_state_internal: {
+        agent_availability: HumanAgentsOnlineStatus.OFFLINE,
+      },
+    };
+    store.dispatch(actions.addMessage(replacement));
+    availability.doResolve(HumanAgentsOnlineStatus.ONLINE);
+    await pending;
+
+    expect(store.getState().allMessagesByID[message.id]).toBe(replacement);
+    expect(replacement.ui_state_internal.agent_availability).toBe(
+      HumanAgentsOnlineStatus.OFFLINE
+    );
+    expect(startChat).not.toHaveBeenCalled();
+    expect(store.getState().assistantMessageState.isMessageLoadingCounter).toBe(
+      0
+    );
   });
 
   it('drops an availability result when the conversation restarts', async () => {
