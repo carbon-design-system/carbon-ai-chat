@@ -55,6 +55,7 @@ function createInitialAppState(): AppState {
     targetViewState: VIEW_STATE_ALL_CLOSED,
     viewChanging: false,
     assistantMessageState: DEFAULT_CHAT_MESSAGES_STATE,
+    conversationStatus: 'ready',
     isHydrated: false,
     suspendScrollDetection: false,
     showNonHeaderBackgroundCover: false,
