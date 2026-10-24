@@ -27,6 +27,7 @@ import {
   BusEventType,
 } from '../../types/events/eventBusTypes';
 import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
+import { OnErrorType } from '../../types/config/ErrorConfig';
 import isEqual from 'lodash-es/isEqual.js';
 import cloneDeep from 'lodash-es/cloneDeep.js';
 import actions from '../store/actions';
@@ -43,6 +44,7 @@ import {
   isConnectToHumanAgent,
   isHiddenOutputItem,
   isPause,
+  isItemStillStreaming,
   isRequest,
   streamItemID,
 } from '../utils/messageUtils';
@@ -286,7 +288,9 @@ class MessageUpsertCoordinator {
     this.serviceManager.conversationLifecycleService.responseFinished(
       messageID
     );
+    const refsBefore = this.snapshotLocalItemRefs(messageID);
     this.serviceManager.store.dispatch(actions.endMessageStreaming(messageID));
+    this.reportUndrawableItems(messageID, refsBefore, false);
   }
 
   /**
@@ -500,6 +504,11 @@ class MessageUpsertCoordinator {
     }
     const committedResult = this.serviceManager.store.getState()
       .allMessagesByID[messageID] as MessageResponse;
+    this.reportUndrawableItems(
+      messageID,
+      refsBefore,
+      !(isStopped && nextState === MessageState.STREAMING)
+    );
 
     // Before the slot fan-out below: `serviceManager.fire` does not swallow listener
     // exceptions, so a throwing user-defined-response handler would skip everything
@@ -870,6 +879,7 @@ class MessageUpsertCoordinator {
       if (this.isStale(stamp, result.request_id)) {
         return false;
       }
+      this.reportUndrawableItems(messageID, refsBefore);
       if (isStreaming) {
         this.announceStreamStarts(result, pauseIndex);
       }
@@ -1134,6 +1144,55 @@ class MessageUpsertCoordinator {
       }
     }
     return refs;
+  }
+
+  /**
+   * Reports each shown item of `messageID` that the chat can't draw and now shows an
+   * error for: one the last write or settle replaced, that is no longer streaming. A
+   * reused local item was reported when it was written, so each version reports once.
+   *
+   * Pass `false` for `reportErrors` when the settle is user-initiated (stop/cancel):
+   * a malformed in-flight item that was never completed is not actionable host data.
+   */
+  private reportUndrawableItems(
+    messageID: string,
+    refsBefore: Map<string, LocalMessageItem>,
+    reportErrors = true
+  ) {
+    const state = this.serviceManager.store.getState();
+    for (const localID of state.assistantMessageState.localMessageIDs) {
+      const localItem = state.allMessageItemsByID[localID];
+      const { cannotDraw } = localItem?.ui_state ?? {};
+      if (
+        localItem?.fullMessageID !== messageID ||
+        !cannotDraw ||
+        refsBefore.get(localID) === localItem ||
+        isItemStillStreaming(localItem)
+      ) {
+        continue;
+      }
+      if (!reportErrors) {
+        continue;
+      }
+      const responseType = localItem.item.response_type;
+      this.serviceManager.actions.errorOccurred({
+        errorType: OnErrorType.RENDER,
+        message: this.serviceManager.intl.formatMessage(
+          { id: 'errors_upsertItemCannotDraw' },
+          {
+            responseType,
+            messageID,
+            missing: cannotDraw.missing.join(', '),
+          }
+        ),
+        otherData: {
+          messageID,
+          responseType,
+          missing: cannotDraw.missing,
+          item: localItem.item,
+        },
+      });
+    }
   }
 
   /**

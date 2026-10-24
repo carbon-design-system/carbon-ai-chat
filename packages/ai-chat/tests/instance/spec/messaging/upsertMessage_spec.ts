@@ -247,7 +247,7 @@ describe('ChatInstance.messaging.upsertMessage', () => {
         expect(item).toBeUndefined();
       } else {
         expect(item.ui_state.streamingState.isDone).toBe(true);
-        expect(item.ui_state.isIntermediateStreaming).toBe(true);
+        expect(item.ui_state.isIntermediateStreaming).toBeUndefined();
       }
     });
 
@@ -772,7 +772,7 @@ describe('ChatInstance.messaging.upsertMessage', () => {
         (item) => item.fullMessageID === 'early'
       );
       expect(item.ui_state.streamingState.isDone).toBe(true);
-      expect(item.ui_state.isIntermediateStreaming).toBe(true);
+      expect(item.ui_state.isIntermediateStreaming).toBeUndefined();
     });
   });
 
@@ -811,6 +811,72 @@ describe('ChatInstance.messaging.upsertMessage', () => {
       expect((state.allMessagesByID['u2'] as any).output.generic[0].text).toBe(
         'v2'
       );
+    });
+
+    it('keeps the unchanged children of a changed card by reference, and every child’s id', async () => {
+      const { instance, store } =
+        await renderChatAndGetInstanceWithStore(createBaseConfig());
+      const card = (id: string, bodyText: string): MessageResponse => ({
+        id,
+        output: {
+          generic: [
+            {
+              response_type: MessageResponseTypes.CARD,
+              body: [
+                { response_type: MessageResponseTypes.TEXT, text: 'Title' },
+                { response_type: MessageResponseTypes.TEXT, text: bodyText },
+              ],
+            } as any,
+          ],
+        },
+      });
+      const children = () => {
+        const state = store.getState();
+        const [cardID] = state.assistantMessageState.localMessageIDs.filter(
+          (id) => state.allMessageItemsByID[id].fullMessageID === 'u-card'
+        );
+        return state.allMessageItemsByID[
+          cardID
+        ].ui_state.bodyLocalMessageItemIDs.map(
+          (id) => state.allMessageItemsByID[id]
+        );
+      };
+
+      await instance.messaging.upsertMessage(
+        'u-card',
+        MessageState.STREAMING,
+        () => card('u-card', 'Draft')
+      );
+      const before = children();
+      await instance.messaging.upsertMessage(
+        'u-card',
+        MessageState.STREAMING,
+        () => card('u-card', 'Draft, longer')
+      );
+      const edited = children();
+      await instance.messaging.upsertMessage(
+        'u-card',
+        MessageState.COMPLETE,
+        () => card('u-card', 'Final')
+      );
+      const completed = children();
+
+      expect(edited[0]).toBe(before[0]);
+      expect(edited[1]).not.toBe(before[1]);
+      expect(edited.map((child) => child.ui_state.id)).toEqual(
+        before.map((child) => child.ui_state.id)
+      );
+      expect(completed.map((child) => child.ui_state.id)).toEqual(
+        before.map((child) => child.ui_state.id)
+      );
+      expect((completed[1].item as any).text).toBe('Final');
+
+      // M6: nested items settle with isDone: true when the parent message reaches COMPLETE.
+      expect(
+        completed.every(
+          (child) => child.ui_state.streamingState?.isDone === true
+        )
+      ).toBe(true);
     });
 
     it('preserves the message reference across a no-change STREAMING upsert (A8)', async () => {
@@ -1568,7 +1634,7 @@ describe('ChatInstance.messaging.upsertMessage', () => {
 
         const [after] = itemsFor(store, 'cancel-1');
         expect(after.ui_state.streamingState?.isDone).toBe(true);
-        expect(after.ui_state.isIntermediateStreaming).toBe(true);
+        expect(after.ui_state.isIntermediateStreaming).toBeUndefined();
         expect(isVisible(store)).toBe(false);
       });
 
@@ -2739,10 +2805,9 @@ describe('ChatInstance.messaging.upsertMessage', () => {
 
         expect(visibleTexts(store, id)).toEqual(['First', 'Second']);
         expect(itemsFor()).toHaveLength(2);
-        const first = itemsFor().find((item) => item.item.text === 'First');
-        const second = itemsFor().find((item) => item.item.text === 'Second');
-        expect(first.ui_state.streamingState.isDone).toBe(true);
-        expect(second.ui_state.streamingState).toBeUndefined();
+        itemsFor().forEach((item) =>
+          expect(item.ui_state.streamingState?.isDone).toBe(true)
+        );
       });
 
       it('does not run the pauses of a message addMessage delivered again', async () => {
