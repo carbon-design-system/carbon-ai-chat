@@ -1709,6 +1709,173 @@ describe('ChatInstance.messaging.addMessageChunk', () => {
     const isVisible = (store: { getState: () => any }) =>
       store.getState().assistantInputState.stopStreamingButtonState.isVisible;
 
+    it.each(['chunk', 'upsert'])(
+      'keeps a non-cancellable %s response protected from the other API',
+      async (blockedAPI) => {
+        const { instance, store } =
+          await renderChatAndGetInstanceWithStore(createBaseConfig());
+        const write = (
+          api: string,
+          id: string,
+          cancellable?: boolean,
+          complete = false
+        ) => {
+          const item: TextItem = {
+            response_type: MessageResponseTypes.TEXT,
+            text: 'Partial',
+            streaming_metadata: { id: `${id}-item`, cancellable },
+          };
+          if (api === 'upsert') {
+            return instance.messaging.upsertMessage(
+              id,
+              complete ? MessageState.COMPLETE : MessageState.STREAMING,
+              () => ({ id, output: { generic: [item] } })
+            );
+          }
+          return instance.messaging.addMessageChunk(
+            complete
+              ? {
+                  streaming_metadata: { response_id: id },
+                  complete_item: item,
+                }
+              : {
+                  streaming_metadata: { response_id: id },
+                  partial_item: item,
+                }
+          );
+        };
+        const otherAPI = blockedAPI === 'chunk' ? 'upsert' : 'chunk';
+        await write(blockedAPI, 'blocked', false);
+        await write(otherAPI, 'available', true);
+        const button = () =>
+          store.getState().assistantInputState.stopStreamingButtonState;
+        expect(button()).toMatchObject({
+          isVisible: true,
+          isMetadataDisabled: true,
+        });
+        await write(otherAPI, 'available', true);
+        await write(blockedAPI, 'blocked');
+        expect(button().isMetadataDisabled).toBe(true);
+        await write(blockedAPI, 'blocked', false, true);
+        expect(button()).toMatchObject({
+          isVisible: true,
+          isMetadataDisabled: false,
+        });
+      }
+    );
+
+    it.each(['complete_item', 'final_response'])(
+      'updates cancellation metadata and resets it on %s',
+      async (terminalChunk) => {
+        const { instance, store } =
+          await renderChatAndGetInstanceWithStore(createBaseConfig());
+        const write = (cancellable?: boolean, itemId = 'flags-item') =>
+          instance.messaging.addMessageChunk({
+            streaming_metadata: { response_id: 'chunk-flags' },
+            partial_item: {
+              response_type: MessageResponseTypes.TEXT,
+              text: 'Partial ',
+              streaming_metadata: { id: itemId, cancellable },
+            },
+          });
+        const buttonState = () =>
+          store.getState().assistantInputState.stopStreamingButtonState;
+
+        await write(false);
+        expect(buttonState()).toMatchObject({
+          isVisible: false,
+          isMetadataDisabled: false,
+        });
+        await write(true);
+        await write(false);
+        expect(buttonState()).toMatchObject({
+          isVisible: true,
+          isMetadataDisabled: true,
+        });
+        await write();
+        expect(buttonState().isMetadataDisabled).toBe(true);
+        await write(true, 'another-item');
+        expect(buttonState().isMetadataDisabled).toBe(false);
+        await write(false);
+
+        const completedItem: TextItem = {
+          response_type: MessageResponseTypes.TEXT,
+          text: 'Complete',
+          streaming_metadata: { id: 'flags-item', cancellable: false },
+        };
+        if (terminalChunk === 'complete_item') {
+          await instance.messaging.addMessageChunk({
+            streaming_metadata: { response_id: 'chunk-flags' },
+            complete_item: completedItem,
+          });
+        } else {
+          await instance.messaging.addMessageChunk({
+            final_response: {
+              id: 'chunk-flags',
+              output: { generic: [completedItem] },
+            },
+          });
+        }
+        expect(buttonState()).toMatchObject({
+          isVisible: false,
+          isDisabled: false,
+          isMetadataDisabled: false,
+        });
+        await write(true);
+        expect(buttonState()).toMatchObject({
+          isVisible: true,
+          isMetadataDisabled: false,
+        });
+      }
+    );
+
+    it.each(['upsert', 'chunk'])(
+      'disables the immediate stop button through %s metadata',
+      async (api) => {
+        let finishSend: () => void;
+        const pendingSend = new Promise<void>((resolve) => {
+          finishSend = resolve;
+        });
+        const config = createBaseConfig();
+        config.messaging = {
+          showStopButtonImmediately: true,
+          customSendMessage: () => pendingSend,
+        };
+        const { instance, store } =
+          await renderChatAndGetInstanceWithStore(config);
+        const send = instance.send('Start');
+        await waitFor(() => expect(isVisible(store)).toBe(true));
+        try {
+          const item: TextItem = {
+            response_type: MessageResponseTypes.TEXT,
+            text: 'Cannot interrupt',
+            streaming_metadata: { id: 'immediate-item', cancellable: false },
+          };
+          if (api === 'upsert') {
+            await instance.messaging.upsertMessage(
+              'immediate',
+              MessageState.STREAMING,
+              () => ({ id: 'immediate', output: { generic: [item] } })
+            );
+          } else {
+            await instance.messaging.addMessageChunk({
+              streaming_metadata: { response_id: 'immediate' },
+              partial_item: item,
+            });
+          }
+          expect(
+            store.getState().assistantInputState.stopStreamingButtonState
+          ).toMatchObject({
+            isVisible: true,
+            isMetadataDisabled: true,
+          });
+        } finally {
+          finishSend();
+          await send;
+        }
+      }
+    );
+
     // The chunk flow has always hidden the button on its own complete_item. Making the
     // stop button concurrency-aware must not change that, so pin it here.
     it('hides the button on complete_item when nothing else is streaming', async () => {

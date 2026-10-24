@@ -70,6 +70,16 @@ export interface PublicConfigMessaging {
   /**
    * Controls when the stop streaming button becomes visible during message streaming.
    *
+   * This setting is independent of how you deliver the response — it is applied when
+   * `customSendMessage` is called, before either flow has started.
+   *
+   * Without it, the two flows reach the same result by their own route.
+   * {@link ChatInstanceMessaging.addMessageChunk} shows the button on the first partial
+   * chunk marked `cancellable`. {@link ChatInstanceMessaging.upsertMessage} shows it on
+   * the first upsert recorded as {@link MessageState.STREAMING} whose message carries
+   * `streaming_metadata.cancellable`, and hides it once that message reaches
+   * {@link MessageState.COMPLETE} or {@link MessageState.ERROR}.
+   *
    * You must have {@link PublicConfigMessaging.customSendMessage} return a promise for
    * this setting to work correctly.
    *
