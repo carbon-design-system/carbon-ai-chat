@@ -27,6 +27,7 @@ import { BusEvent } from '../../types/events/eventBusTypes';
 import { MainWindowFunctions } from '../AppShell';
 import { ChatInstanceService } from './ChatInstanceService';
 import { ChunkProcessingService } from './ChunkProcessingService';
+import { ConversationLifecycleService } from './ConversationLifecycleService';
 import { HydrationService } from './HydrationService';
 import { InputActionsService } from './InputActionsService';
 import { PublicStateService } from './PublicStateService';
@@ -88,6 +89,8 @@ class ServiceManager {
    * Service that owns the chunk queue and processes incoming streaming chunks.
    */
   chunkProcessingService: ChunkProcessingService;
+
+  conversationLifecycleService: ConversationLifecycleService;
 
   /**
    * Service that wires user-defined response elements and fires footer-slot events.
@@ -232,8 +235,8 @@ class ServiceManager {
   /**
    * Convenience functions for firing events on the event bus.
    */
-  async fire<T extends BusEvent>(busEvent: T) {
-    return this.eventBus.fire(busEvent, this.instance);
+  async fire<T extends BusEvent>(busEvent: T, isCurrent?: () => boolean) {
+    return this.eventBus.fire(busEvent, this.instance, isCurrent);
   }
 
   /**

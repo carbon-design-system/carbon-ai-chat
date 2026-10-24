@@ -131,7 +131,8 @@ interface HumanAgentService {
     localMessageItem: LocalMessageItem,
     fullMessage: MessageResponse,
     config: AppConfig,
-    initialRestartCount: number
+    initialRestartCount: number,
+    isCurrent?: () => boolean
   ): Promise<void>;
 
   /**

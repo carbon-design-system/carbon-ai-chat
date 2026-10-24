@@ -86,7 +86,11 @@ class EventBus {
    * @param busEvent A single event.
    * @param instance The current instance of the Carbon AI Chat that is passed to the event handlers
    */
-  async fire<T extends BusEvent>(busEvent: T, instance: ChatInstance) {
+  async fire<T extends BusEvent>(
+    busEvent: T,
+    instance: ChatInstance,
+    isCurrent?: () => boolean
+  ) {
     logEvent('Before fire', busEvent);
     const { type } = busEvent;
 
@@ -106,7 +110,9 @@ class EventBus {
     try {
       const run = async () => {
         try {
-          await this.runHandlers(busEvent, instance);
+          if (!isCurrent || isCurrent()) {
+            await this.runHandlers(busEvent, instance);
+          }
         } finally {
           release();
         }
