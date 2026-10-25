@@ -51,6 +51,12 @@ interface MessageWriteOptions {
 
   /** Set by the coordinator on a write from `addMessage` or `final_response`. */
   received?: ReceivedLocalItems;
+
+  /** Keeps positional item identities while one snapshot reveals across pauses. */
+  pauseReveal?: {
+    originalLocalIDs: string[];
+    previousHoldFromIndex: number;
+  };
 }
 
 /**

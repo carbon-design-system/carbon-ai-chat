@@ -487,6 +487,14 @@ class MessageUpsertCoordinator {
     const previousMessage = this.serviceManager.store.getState()
       .allMessagesByID[messageID] as MessageResponse | undefined;
     const holdFromIndex = this.findPauseToRun(messageID, result);
+    const previousState = this.serviceManager.store.getState();
+    const originalLocalIDs =
+      holdFromIndex === Infinity
+        ? []
+        : previousState.assistantMessageState.localMessageIDs.filter(
+            (id) =>
+              previousState.allMessageItemsByID[id]?.fullMessageID === messageID
+          );
     this.serviceManager.store.dispatch(
       actions.upsertMessage(
         result,
@@ -541,6 +549,7 @@ class MessageUpsertCoordinator {
       committedResult,
       nextState,
       holdFromIndex,
+      originalLocalIDs,
       initialRestartCount,
       stamp
     );
@@ -831,6 +840,7 @@ class MessageUpsertCoordinator {
     result: MessageResponse,
     nextState: MessageState,
     holdFromIndex: number,
+    originalLocalIDs: string[],
     initialRestartCount: number,
     stamp: UpsertStamp
   ): Promise<boolean> {
@@ -864,9 +874,14 @@ class MessageUpsertCoordinator {
           ? MessageState.COMPLETE
           : nextState;
       const revealFromIndex = pauseIndex + 1;
+      const previousHoldFromIndex = pauseIndex;
       pauseIndex = this.findPauseToRun(messageID, result);
       const refsBefore = this.snapshotLocalItemRefs(messageID);
-      store.dispatch(actions.upsertMessage(result, isStreaming, pauseIndex));
+      store.dispatch(
+        actions.upsertMessage(result, isStreaming, pauseIndex, {
+          pauseReveal: { originalLocalIDs, previousHoldFromIndex },
+        })
+      );
       if (this.isStale(stamp, result.request_id)) {
         return false;
       }

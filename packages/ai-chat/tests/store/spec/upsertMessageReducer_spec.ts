@@ -32,6 +32,7 @@ import {
   CardItem,
   MessageResponse,
   MessageResponseTypes,
+  PauseItem,
   TextItem,
 } from '../../../src/types/messaging/Messages';
 import { LocalMessageItem } from '../../../src/types/messaging/LocalMessageItem';
@@ -574,6 +575,143 @@ describe('[UPSERT_MESSAGE] reducer', () => {
         actions.upsertMessage(withPause('p2', ['a', 'b', 'c']), false, 1)
       );
       expect(texts('p2')).toEqual(['a', 'b']);
+    });
+
+    it('keeps the prior item visible when a new item precedes it after a pause', () => {
+      const initial = makeTextResponse('p3', ['A'], ['a']);
+      store.dispatch(actions.upsertMessage(initial, true));
+      const [prior] = localItemsForMessage(store.getState() as AppState, 'p3');
+      const next = makeTextResponse('p3', ['B', 'A'], ['b', 'a']);
+      next.output.generic.unshift({
+        response_type: MessageResponseTypes.PAUSE,
+        time: 500,
+      });
+
+      store.dispatch(actions.upsertMessage(next, true, 0));
+
+      expect(texts('p3')).toEqual(['A']);
+      expect(localItemsForMessage(store.getState() as AppState, 'p3')[0]).toBe(
+        prior
+      );
+
+      store.dispatch(actions.upsertMessage(next, true));
+
+      expect(texts('p3')).toEqual(['B', 'A']);
+    });
+
+    it('holds a replacement with a different streaming id until the pause ends', () => {
+      store.dispatch(
+        actions.upsertMessage(makeTextResponse('p4', ['A'], ['a']), true)
+      );
+      const next = makeTextResponse('p4', ['B'], ['b']);
+      next.output.generic.unshift({
+        response_type: MessageResponseTypes.PAUSE,
+        time: 500,
+      });
+
+      store.dispatch(actions.upsertMessage(next, true, 0));
+      expect(texts('p4')).toEqual([]);
+
+      store.dispatch(actions.upsertMessage(next, true));
+      expect(texts('p4')).toEqual(['B']);
+    });
+
+    it('retains positional matches when a new identified item is held back', () => {
+      store.dispatch(
+        actions.upsertMessage(
+          makeTextResponse('p5', ['A', 'Positional'], ['a']),
+          true
+        )
+      );
+      const [priorA, priorPositional] = localItemsForMessage(
+        store.getState() as AppState,
+        'p5'
+      );
+      const next = makeTextResponse(
+        'p5',
+        ['B', 'Positional', 'A'],
+        ['b', undefined, 'a']
+      );
+      next.output.generic.unshift({
+        response_type: MessageResponseTypes.PAUSE,
+        time: 500,
+      });
+
+      store.dispatch(actions.upsertMessage(next, true, 0));
+
+      const visible = localItemsForMessage(store.getState() as AppState, 'p5');
+      expect(texts('p5')).toEqual(['Positional', 'A']);
+      expect(visible[0]).toBe(priorPositional);
+      expect(visible[1]).toBe(priorA);
+
+      store.dispatch(
+        actions.upsertMessage(next, true, undefined, {
+          pauseReveal: {
+            originalLocalIDs: [priorA.ui_state.id, priorPositional.ui_state.id],
+            previousHoldFromIndex: 0,
+          },
+        })
+      );
+
+      const revealed = localItemsForMessage(store.getState() as AppState, 'p5');
+      expect(texts('p5')).toEqual(['B', 'Positional', 'A']);
+      expect(revealed[1]).toBe(priorPositional);
+      expect(revealed[2]).toBe(priorA);
+    });
+
+    it('keeps equal positional siblings distinct through two pause reveals', () => {
+      store.dispatch(
+        actions.upsertMessage(
+          makeTextResponse('p6', ['A', 'Same'], ['a']),
+          true
+        )
+      );
+      const [priorA, priorPositional] = localItemsForMessage(
+        store.getState() as AppState,
+        'p6'
+      );
+      const originalLocalIDs = [
+        priorA.ui_state.id,
+        priorPositional.ui_state.id,
+      ];
+      const next = makeTextResponse(
+        'p6',
+        ['Same', 'Same', 'New', 'A'],
+        [undefined, undefined, undefined, 'a']
+      );
+      const pause: PauseItem = {
+        response_type: MessageResponseTypes.PAUSE,
+        time: 500,
+      };
+      next.output.generic.unshift(pause);
+      next.output.generic.splice(3, 0, pause);
+
+      store.dispatch(actions.upsertMessage(next, true, 0));
+      expect(texts('p6')).toEqual(['Same', 'A']);
+      expect(localItemsForMessage(store.getState() as AppState, 'p6')[0]).toBe(
+        priorPositional
+      );
+
+      store.dispatch(
+        actions.upsertMessage(next, true, 3, {
+          pauseReveal: { originalLocalIDs, previousHoldFromIndex: 0 },
+        })
+      );
+      const between = localItemsForMessage(store.getState() as AppState, 'p6');
+      expect(texts('p6')).toEqual(['Same', 'Same', 'A']);
+      expect(between[0]).not.toBe(priorPositional);
+      expect(between[1]).toBe(priorPositional);
+
+      store.dispatch(
+        actions.upsertMessage(next, true, undefined, {
+          pauseReveal: { originalLocalIDs, previousHoldFromIndex: 3 },
+        })
+      );
+      const revealed = localItemsForMessage(store.getState() as AppState, 'p6');
+      expect(texts('p6')).toEqual(['Same', 'Same', 'New', 'A']);
+      expect(revealed[0]).toBe(between[0]);
+      expect(revealed[1]).toBe(priorPositional);
+      expect(revealed[3]).toBe(priorA);
     });
   });
 

@@ -600,14 +600,15 @@ function buildUpsertedLocalItem(
  *
  * A `pause` item is an instruction, not content, and never gets a local item. Items at
  * or after `holdFromIndex` in `output.generic` are held back while a pause before them
- * runs, except as many as the message already showed, so nothing visible disappears.
+ * runs, except items the message already showed, so nothing visible disappears.
  */
 function rebuildLocalItemsForUpsert(
   state: AppState,
   message: MessageResponse,
   isStreaming = false,
   hidesSilent = true,
-  holdFromIndex = Infinity
+  holdFromIndex = Infinity,
+  pauseReveal?: MessageWriteOptions['pauseReveal']
 ): {
   newLocalItemsByID: ObjectMap<LocalMessageItem>;
   newLocalIDsForMessage: string[];
@@ -629,7 +630,7 @@ function rebuildLocalItemsForUpsert(
     (id) => state.allMessageItemsByID[id]
   );
 
-  const shownItems: GenericItem[] = (message.output?.generic ?? [])
+  const shownItems = (message.output?.generic ?? [])
     .map((item, index) => ({ item, index }))
     .filter(
       ({ item }) =>
@@ -637,21 +638,26 @@ function rebuildLocalItemsForUpsert(
         !isPause(item) &&
         !(hidesSilent && isHiddenOutputItem(message, item))
     )
+    .map(({ item, index }, position) => ({
+      item,
+      index,
+      matchedPrev: resolvePreviousLocalItem(
+        state,
+        messageID,
+        streamItemID(messageID, item),
+        pauseReveal && index >= pauseReveal.previousHoldFromIndex
+          ? state.allMessageItemsByID[pauseReveal.originalLocalIDs[position]]
+          : prevTopLevelItems[position]
+      ),
+    }))
     .filter(
-      ({ index }, position) =>
-        index < holdFromIndex || position < prevTopLevelItems.length
-    )
-    .map(({ item }) => item);
+      ({ index, matchedPrev }) =>
+        index < holdFromIndex || prevTopLevelItems.includes(matchedPrev)
+    );
   const newLocalIDsForMessage: string[] = [];
 
-  shownItems.forEach((item, index) => {
+  shownItems.forEach(({ item, matchedPrev }) => {
     const streamId = streamItemID(messageID, item);
-    const matchedPrev = resolvePreviousLocalItem(
-      state,
-      messageID,
-      streamId,
-      prevTopLevelItems[index]
-    );
     const itemIsStreaming = isStreaming && supportsSnapshotStreaming(item);
     const localItem = canReuseLocalItem(matchedPrev, item, itemIsStreaming)
       ? matchedPrev

@@ -590,7 +590,8 @@ const reducers: { [key: string]: ReducerType } = {
         messageResponse,
         isStreaming,
         true,
-        holdFromIndex
+        holdFromIndex,
+        options?.pauseReveal
       );
 
     const { otherLocalIDs, insertPoint } = computeLocalIDInsertionPoint(
