@@ -902,16 +902,18 @@ function nextChunkLocalItem(
       },
     };
   }
+  const previousChunks = existing.ui_state.streamingState?.chunks ?? [];
+  const chunks =
+    previousChunks.length || existing.ui_state.streamingState?.isDone !== false
+      ? previousChunks
+      : [existing.item];
   return {
     ...existing,
     ui_state: {
       ...existing.ui_state,
       streamingState: {
         ...existing.ui_state.streamingState,
-        chunks: [
-          ...(existing.ui_state.streamingState?.chunks || []),
-          chunkItem,
-        ],
+        chunks: [...chunks, chunkItem],
       },
     },
   };

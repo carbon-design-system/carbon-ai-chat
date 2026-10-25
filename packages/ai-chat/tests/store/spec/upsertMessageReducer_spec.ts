@@ -32,8 +32,11 @@ import {
   CardItem,
   MessageResponse,
   MessageResponseTypes,
+  TextItem,
 } from '../../../src/types/messaging/Messages';
+import { LocalMessageItem } from '../../../src/types/messaging/LocalMessageItem';
 import { HumanAgentsOnlineStatus } from '../../../src/types/config/ServiceDeskConfig';
+import { deriveStreamingItemText } from '../../../src/chat/utils/streamingUtils';
 
 function rootReducer(
   state: AppState,
@@ -597,6 +600,42 @@ describe('[UPSERT_MESSAGE] reducer', () => {
         })
       );
     const state = () => store.getState() as AppState;
+
+    const renderedText = (id: string) => {
+      const local = localItemsForMessage(
+        state(),
+        id
+      )[0] as LocalMessageItem<TextItem>;
+      return deriveStreamingItemText(
+        local.item.text,
+        local.ui_state.streamingState
+      );
+    };
+
+    it('preserves snapshot text when chunks continue the same item and the stream stops', () => {
+      const message = makeTextResponse('mixed-text', ['Hel'], ['a']);
+      store.dispatch(actions.upsertMessage(message, true));
+
+      writeChunk(message, text('a', 'lo'));
+      expect(renderedText(message.id)).toBe('Hello');
+      writeChunk(message, text('a', ' there'));
+      expect(renderedText(message.id)).toBe('Hello there');
+
+      store.dispatch(actions.endMessageStreaming(message.id));
+      expect(renderedText(message.id)).toBe('Hello there');
+    });
+
+    it('continues the latest snapshot after switching from chunks and back', () => {
+      const message = makeTextResponse('mixed-snapshot', ['Old'], ['a']);
+      store.dispatch(actions.upsertMessage(message, true));
+      writeChunk(message, text('a', ' text'));
+      const updated = makeTextResponse(message.id, ['New'], ['a']);
+      store.dispatch(actions.upsertMessage(updated, true));
+
+      writeChunk(updated, text('a', ' text'));
+
+      expect(renderedText(message.id)).toBe('New text');
+    });
 
     it('builds a new partial item from the chunk itself, hidden and unannounced', () => {
       const message = placeholder('c1');
