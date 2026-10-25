@@ -1803,6 +1803,80 @@ describe('ChatInstance.messaging.upsertMessage', () => {
         expect(userDefined.mock.calls[0][0].data.slot).toBeUndefined();
       });
 
+      it.each(
+        [MessageResponseTypes.GRID, MessageResponseTypes.CAROUSEL].flatMap(
+          (responseType) =>
+            ['history', 'item'].map((hiddenBy) => ({ responseType, hiddenBy }))
+        )
+      )(
+        'recovers nested callbacks for an incomplete $responseType hidden by $hiddenBy',
+        async ({ responseType, hiddenBy }) => {
+          const { instance, store } =
+            await renderChatAndGetInstanceWithStore(createBaseConfig());
+          const userDefined = jest.fn();
+          instance.on({
+            type: BusEventType.USER_DEFINED_RESPONSE,
+            handler: userDefined,
+          });
+          const id = `hidden-incomplete-${responseType}-${hiddenBy}`;
+          const nested = {
+            response_type: MessageResponseTypes.USER_DEFINED,
+            user_defined: { value: 'Ready' },
+          };
+          const content =
+            responseType === MessageResponseTypes.GRID
+              ? {
+                  columns: [{ width: '1' }],
+                  rows: [{ cells: [{ items: [nested] }] }],
+                }
+              : {
+                  items: [
+                    {
+                      response_type: MessageResponseTypes.CARD,
+                      body: [nested],
+                    },
+                  ],
+                };
+          const message = (complete: boolean): MessageResponse => ({
+            id,
+            history: { silent: hiddenBy === 'history' },
+            output: {
+              generic: [
+                {
+                  response_type: responseType,
+                  user_defined: { silent: hiddenBy === 'item' },
+                  ...(complete ? content : {}),
+                },
+              ],
+            },
+          });
+
+          await expect(
+            instance.messaging.upsertMessage(id, MessageState.STREAMING, () =>
+              message(false)
+            )
+          ).resolves.toBeUndefined();
+          expect(userDefined).not.toHaveBeenCalled();
+
+          for (const state of [MessageState.STREAMING, MessageState.COMPLETE]) {
+            await instance.messaging.upsertMessage(id, state, () =>
+              message(true)
+            );
+          }
+
+          expect(userDefined).toHaveBeenCalledTimes(2);
+          const [streaming, complete] = userDefined.mock.calls.map(
+            ([event]) => event.data
+          );
+          expect(streaming.state).toBe(MessageState.STREAMING);
+          expect(complete.state).toBe(MessageState.COMPLETE);
+          expect(complete.message).toEqual(nested);
+          expect(streaming.slot).toEqual(expect.any(String));
+          expect(complete.slot).toBe(streaming.slot);
+          expect(shownItems(store, id)).toEqual([]);
+        }
+      );
+
       it.each(['history', 'item'])(
         'fires nested slots in a card hidden by %s across streaming and completion',
         async (hiddenBy) => {

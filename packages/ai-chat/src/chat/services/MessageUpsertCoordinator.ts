@@ -37,6 +37,7 @@ import type {
 } from '../store/messageWriteTypes';
 import {
   createLocalMessageItemsForNestedMessageItems,
+  findDrawIssues,
   outputItemToLocalItem,
 } from '../schema/outputItemToLocalItem';
 import {
@@ -1364,6 +1365,9 @@ class MessageUpsertCoordinator {
     localItem: LocalMessageItem,
     result: MessageResponse
   ): Record<string, LocalMessageItem> {
+    if (findDrawIssues(localItem.item, result).length) {
+      return {};
+    }
     const nestedItems: LocalMessageItem[] = [];
     createLocalMessageItemsForNestedMessageItems(
       localItem,
