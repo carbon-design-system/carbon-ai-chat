@@ -549,12 +549,6 @@ class MessageUpsertCoordinator {
       return;
     }
 
-    // A pause can end without finishing this write; retain its committed transition.
-    // Without a pause, await agent handling before recording completion.
-    if (holdFromIndex !== Infinity) {
-      this.stateByID.set(messageID, nextState);
-    }
-
     const revealed = await this.revealAfterPauses(
       messageID,
       committedResult,

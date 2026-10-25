@@ -431,38 +431,55 @@ describe('ChatInstance.messaging.upsertMessage', () => {
     });
   });
 
-  it('retries receive after a terminal user-defined slot handler rejects', async () => {
-    const { instance, store, serviceManager } =
-      await renderChatAndGetInstanceWithStore(createBaseConfig());
-    const receive = jest.fn();
-    instance.on({ type: BusEventType.RECEIVE, handler: receive });
-    await instance.messaging.upsertMessage(
-      'retry',
-      MessageState.STREAMING,
-      () => userDefinedResponse('retry', { text: 'partial' })
-    );
-    const handler = jest.spyOn(
-      serviceManager.actions,
-      'handleUserDefinedResponseItems'
-    );
-    handler.mockRejectedValueOnce(new Error('slot failed'));
-    await expect(
-      instance.messaging.upsertMessage('retry', MessageState.COMPLETE, () =>
-        userDefinedResponse('retry', { text: 'final' })
-      )
-    ).rejects.toThrow('slot failed');
-    expect(receive).not.toHaveBeenCalled();
-    expect(serviceManager.messageUpsertCoordinator.hasStreamingMessages()).toBe(
-      false
-    );
-    expect(
-      store.getState().assistantInputState.stopStreamingButtonState.isVisible
-    ).toBe(false);
-    await instance.messaging.upsertMessage('retry', MessageState.COMPLETE, () =>
-      userDefinedResponse('retry', { text: 'final' })
-    );
-    expect(receive).toHaveBeenCalledTimes(1);
-  });
+  it.each([false, true])(
+    'retries receive after a terminal slot handler rejects (pause=%s)',
+    async (withPause) => {
+      const { instance, store, serviceManager } =
+        await renderChatAndGetInstanceWithStore(createBaseConfig());
+      const receive = jest.fn();
+      instance.on({ type: BusEventType.RECEIVE, handler: receive });
+      await instance.messaging.upsertMessage(
+        'retry',
+        MessageState.STREAMING,
+        () => userDefinedResponse('retry', { text: 'partial' })
+      );
+      const handler = jest.spyOn(
+        serviceManager.actions,
+        'handleUserDefinedResponseItems'
+      );
+      handler.mockRejectedValueOnce(new Error('slot failed'));
+      const finalResponse = () => {
+        const message = userDefinedResponse('retry', { text: 'final' });
+        if (withPause) {
+          message.output.generic.unshift({
+            response_type: MessageResponseTypes.PAUSE,
+            time: 0,
+          });
+        }
+        return message;
+      };
+      await expect(
+        instance.messaging.upsertMessage(
+          'retry',
+          MessageState.COMPLETE,
+          finalResponse
+        )
+      ).rejects.toThrow('slot failed');
+      expect(receive).not.toHaveBeenCalled();
+      expect(
+        serviceManager.messageUpsertCoordinator.hasStreamingMessages()
+      ).toBe(false);
+      expect(
+        store.getState().assistantInputState.stopStreamingButtonState.isVisible
+      ).toBe(false);
+      await instance.messaging.upsertMessage(
+        'retry',
+        MessageState.COMPLETE,
+        finalResponse
+      );
+      expect(receive).toHaveBeenCalledTimes(1);
+    }
+  );
 
   describe('human-agent upserts', () => {
     function connectResponse(): MessageResponse {
