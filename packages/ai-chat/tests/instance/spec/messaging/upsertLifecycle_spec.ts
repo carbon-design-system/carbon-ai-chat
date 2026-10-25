@@ -243,20 +243,22 @@ describe('upsert and chunk request ownership', () => {
           if (request.input.text === 'next') {
             return;
           }
-          queuedChunks = [true, false].map((explicitOwner) =>
-            chat.messaging.addMessageChunk({
-              streaming_metadata: {
-                response_id: explicitOwner
-                  ? 'explicit-response'
-                  : 'implicit-response',
-                ...(explicitOwner ? { request_id: request.id } : {}),
-              },
-              partial_item: {
-                response_type: MessageResponseTypes.TEXT,
-                text: 'queued content',
-                streaming_metadata: { id: 'text' },
-              },
-            })
+          queuedChunks = [true, false].flatMap((explicitOwner) =>
+            ['queued ', 'content'].map((text) =>
+              chat.messaging.addMessageChunk({
+                streaming_metadata: {
+                  response_id: explicitOwner
+                    ? 'explicit-response'
+                    : 'implicit-response',
+                  ...(explicitOwner ? { request_id: request.id } : {}),
+                },
+                partial_item: {
+                  response_type: MessageResponseTypes.TEXT,
+                  text,
+                  streaming_metadata: { id: 'text', cancellable: true },
+                },
+              })
+            )
           );
           chunksQueued.doResolve();
           await releaseSend;
@@ -307,6 +309,15 @@ describe('upsert and chunk request ownership', () => {
       expect(Object.keys(store.getState().allMessagesByID)).toEqual(
         expect.arrayContaining(['explicit-response', 'implicit-response'])
       );
+      for (const responseID of ['explicit-response', 'implicit-response']) {
+        expect(
+          store.getState().allMessageItemsByID[`${responseID}-text`].item
+        ).toMatchObject({ text: 'queued content' });
+        expect(
+          store.getState().allMessageItemsByID[`${responseID}-text`].ui_state
+            .streamingState.isDone
+        ).toBe(true);
+      }
     }
   );
 

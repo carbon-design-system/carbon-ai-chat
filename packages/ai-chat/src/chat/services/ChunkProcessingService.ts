@@ -284,6 +284,9 @@ class ChunkProcessingService {
       }
       if (
         isPartialItem &&
+        !this.serviceManager.conversationLifecycleService.isRequestStopped(
+          requestID
+        ) &&
         shouldShowStopStreaming(
           (chunk as PartialItemChunk).partial_item?.streaming_metadata,
           store.getState().assistantInputState.stopStreamingButtonState
@@ -316,7 +319,8 @@ class ChunkProcessingService {
             messageID,
             item,
             isCompleteItem,
-            isCurrent
+            isCurrent,
+            requestID
           );
         } catch (error) {
           terminalConversationFailure = true;
@@ -407,7 +411,8 @@ class ChunkProcessingService {
     messageID: string | undefined,
     item: DeepPartial<GenericItem> | undefined,
     isCompleteItem: boolean,
-    isCurrent: () => boolean
+    isCurrent: () => boolean,
+    requestID?: string
   ) {
     if (isCompleteItem) {
       this.warnIfMissingCompleteItemStreamingId(messageID, item);
@@ -421,7 +426,7 @@ class ChunkProcessingService {
       (prev) => applyChunk(prev, chunk, messageID),
       {
         origin: 'chunk',
-        chunk: { item, isComplete: isCompleteItem },
+        chunk: { item, isComplete: isCompleteItem, requestID },
         isCurrent,
       }
     );

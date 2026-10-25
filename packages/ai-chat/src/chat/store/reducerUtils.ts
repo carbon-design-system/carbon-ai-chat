@@ -867,14 +867,16 @@ function applyFullMessage(state: AppState, message: Message): AppState {
 function newChunkLocalItem(
   chunkItem: DeepPartial<GenericItem>,
   message: MessageResponse,
-  isComplete: boolean
+  isComplete: boolean,
+  isStopped = false
 ): LocalMessageItem {
   const localItem = outputItemToLocalItem(chunkItem as GenericItem, message);
   localItem.ui_state.needsAnnouncement = false;
   localItem.ui_state.isIntermediateStreaming = true;
-  localItem.ui_state.streamingState = isComplete
-    ? { chunks: [], isDone: true }
-    : { chunks: [chunkItem], isDone: false };
+  localItem.ui_state.streamingState =
+    isComplete || isStopped
+      ? { chunks: [], isDone: true }
+      : { chunks: [chunkItem], isDone: false };
   if (!localItem.item.response_type) {
     throw new Error(
       `New chunk item does not have a response_type: ${JSON.stringify(
@@ -894,7 +896,8 @@ function newChunkLocalItem(
 function nextChunkLocalItem(
   existing: LocalMessageItem,
   chunkItem: DeepPartial<GenericItem>,
-  isComplete: boolean
+  isComplete: boolean,
+  isStopped = false
 ): LocalMessageItem {
   if (isComplete) {
     const item = { ...existing.item, ...chunkItem } as GenericItem;
@@ -909,6 +912,29 @@ function nextChunkLocalItem(
     };
   }
   const previousChunks = existing.ui_state.streamingState?.chunks ?? [];
+  if (isStopped) {
+    // Queued deltas can arrive after cancellation has folded earlier chunks into item.
+    const retainedChunks =
+      existing.ui_state.streamingState?.isDone === false &&
+      previousChunks.length
+        ? previousChunks
+        : [existing.item];
+    const textChunks = [...retainedChunks, chunkItem] as { text?: string }[];
+    const item = textChunks.some((chunk) => typeof chunk.text === 'string')
+      ? {
+          ...existing.item,
+          text: textChunks.map((chunk) => chunk.text ?? '').join(''),
+        }
+      : existing.item;
+    return {
+      ...existing,
+      item,
+      ui_state: {
+        ...existing.ui_state,
+        streamingState: { chunks: [], isDone: true },
+      },
+    };
+  }
   const chunks =
     previousChunks.length || existing.ui_state.streamingState?.isDone !== false
       ? previousChunks
@@ -934,7 +960,7 @@ function nextChunkLocalItem(
 function applyChunkWrite(
   state: AppState,
   message: MessageResponse,
-  { item: chunkItem, isComplete }: MessageWriteOptions['chunk']
+  { item: chunkItem, isComplete, isStopped }: MessageWriteOptions['chunk']
 ): AppState {
   const withMessage =
     state.allMessagesByID[message.id] === message
@@ -948,8 +974,8 @@ function applyChunkWrite(
   const localID = chunkItemLocalID(message.id, chunkItem);
   const existing = state.allMessageItemsByID[localID];
   const localItem = existing
-    ? nextChunkLocalItem(existing, chunkItem, isComplete)
-    : newChunkLocalItem(chunkItem, message, isComplete);
+    ? nextChunkLocalItem(existing, chunkItem, isComplete, isStopped)
+    : newChunkLocalItem(chunkItem, message, isComplete, isStopped);
 
   const { localMessageIDs } = state.assistantMessageState;
   return {

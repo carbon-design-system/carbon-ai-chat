@@ -621,8 +621,15 @@ class MessageUpsertCoordinator {
     // This updater is the chat's immutable chunk merge, not a host callback.
     const result = await updater(this.getStoredResponse(messageID));
     if (!this.isStale(stamp, result.request_id)) {
+      const isStopped =
+        this.serviceManager.conversationLifecycleService.isRequestStopped(
+          options.chunk?.requestID
+        );
       this.serviceManager.store.dispatch(
-        actions.upsertMessage(result, true, undefined, options)
+        actions.upsertMessage(result, true, undefined, {
+          ...options,
+          chunk: { ...options.chunk, isStopped },
+        })
       );
     }
   }

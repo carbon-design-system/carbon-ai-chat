@@ -29,7 +29,12 @@ interface MessageWriteOptions {
    * For a streaming write with `origin: 'chunk'`, the item the chunk carries: the host's
    * `partial_item` or `complete_item` itself.
    */
-  chunk?: { item: DeepPartial<GenericItem>; isComplete: boolean };
+  chunk?: {
+    item: DeepPartial<GenericItem>;
+    isComplete: boolean;
+    requestID?: string;
+    isStopped?: boolean;
+  };
 
   /**
    * For a write from `addMessage` or `final_response`: whether the message is a new

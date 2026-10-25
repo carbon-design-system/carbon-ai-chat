@@ -729,12 +729,13 @@ describe('[UPSERT_MESSAGE] reducer', () => {
     const writeChunk = (
       message: MessageResponse,
       item: Record<string, unknown>,
-      isComplete = false
+      isComplete = false,
+      isStopped = false
     ) =>
       store.dispatch(
         actions.upsertMessage(message, true, undefined, {
           origin: 'chunk',
-          chunk: { item, isComplete },
+          chunk: { item, isComplete, isStopped },
         })
       );
     const state = () => store.getState() as AppState;
@@ -761,6 +762,73 @@ describe('[UPSERT_MESSAGE] reducer', () => {
 
       store.dispatch(actions.endMessageStreaming(message.id));
       expect(renderedText(message.id)).toBe('Hello there');
+    });
+
+    describe.each([
+      MessageResponseTypes.TEXT,
+      MessageResponseTypes.CONVERSATIONAL_SEARCH,
+    ])('stopped %s chunks', (responseType) => {
+      it.each(['new', 'streaming', 'settled'] as const)(
+        'preserves repeated deltas for a %s item without changing siblings',
+        (initialState) => {
+          const message = placeholder('stopped');
+          const delta = (value: string) => ({
+            ...text('a', value),
+            response_type: responseType,
+          });
+          if (initialState !== 'new') {
+            writeChunk(message, delta('Earlier '));
+            writeChunk(message, delta('text. '));
+            if (initialState === 'settled') {
+              store.dispatch(actions.endMessageStreaming(message.id));
+            }
+          }
+          writeChunk(message, text('sibling', 'Unchanged'));
+          const sibling = state().allMessageItemsByID['stopped-sibling'];
+          const prefix = initialState === 'new' ? '' : 'Earlier text. ';
+
+          for (const [value, expected] of [
+            ['Hello ', `${prefix}Hello `],
+            ['world', `${prefix}Hello world`],
+          ]) {
+            const before = state().allMessageItemsByID['stopped-a'];
+            const previousText = (before?.item as TextItem)?.text;
+            writeChunk(message, delta(value), false, true);
+
+            const local = state().allMessageItemsByID[
+              'stopped-a'
+            ] as LocalMessageItem<TextItem>;
+            expect(local.item.text).toBe(expected);
+            expect(
+              deriveStreamingItemText(
+                local.item.text,
+                local.ui_state.streamingState
+              )
+            ).toBe(expected);
+            expect(local.ui_state.streamingState).toEqual({
+              chunks: [],
+              isDone: true,
+            });
+            expect(local.ui_state.isIntermediateStreaming).toBe(true);
+            expect(local.ui_state.needsAnnouncement).toBe(false);
+            expect(state().allMessageItemsByID['stopped-sibling']).toBe(
+              sibling
+            );
+            expect((before?.item as TextItem)?.text).toBe(previousText);
+          }
+
+          writeChunk(message, delta('Final replacement'), true, true);
+          const completed = state().allMessageItemsByID[
+            'stopped-a'
+          ] as LocalMessageItem<TextItem>;
+          expect(completed.item.text).toBe('Final replacement');
+          expect(completed.ui_state.isIntermediateStreaming).toBe(false);
+          expect(completed.ui_state.streamingState).toEqual({
+            chunks: [],
+            isDone: true,
+          });
+        }
+      );
     });
 
     it('continues the latest snapshot after switching from chunks and back', () => {
