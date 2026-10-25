@@ -71,6 +71,7 @@ function makeStubManager(initialMessages: Record<string, unknown> = {}) {
     actions: chatActions,
     chunkProcessingService: { handleUpsertStreaming: jest.fn() },
     receiveService: {
+      retainAgentItemPositions: jest.fn(),
       handleConnectToHumanAgent: jest.fn().mockResolvedValue(undefined),
     },
     messageService: {
@@ -443,10 +444,18 @@ describe('MessageUpsertCoordinator', () => {
         });
 
       await coord.upsert('m1', MessageState.COMPLETE, () => ({
-        ...textResponse('m1', 'response'),
+        id: 'm1',
+        output: {
+          generic: [
+            { response_type: MessageResponseTypes.CONNECT_TO_HUMAN_AGENT },
+          ],
+        },
         request_id: 'request1',
       }));
 
+      expect(
+        manager.receiveService.handleConnectToHumanAgent
+      ).toHaveBeenCalledTimes(1);
       expect(fire.mock.calls.map(([event]) => event.type)).toEqual([
         BusEventType.PRE_RECEIVE,
       ]);

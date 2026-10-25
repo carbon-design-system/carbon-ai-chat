@@ -169,14 +169,23 @@ class ReceiveService {
   async handleConnectToHumanAgent(
     localMessageItem: LocalMessageItem,
     fullMessage: MessageResponse,
-    isCurrent: () => boolean = () => true
+    isCurrent: () => boolean = () => true,
+    options: {
+      identity?: string;
+      deduplicateByLocalID?: boolean;
+    } = {}
   ) {
+    const localIdentity = `local:${localMessageItem.ui_state.id}`;
+    const itemIdentity = options.identity ?? localIdentity;
+    const deduplicationKey = options.deduplicateByLocalID
+      ? localIdentity
+      : itemIdentity;
     if (
       !isCurrent() ||
       !isConnectToHumanAgent(localMessageItem.item) ||
       this.processedAgentItems
         .get(localMessageItem.fullMessageID)
-        ?.has(localMessageItem.ui_state.id)
+        ?.has(deduplicationKey)
     ) {
       return;
     }
@@ -190,7 +199,8 @@ class ReceiveService {
         processedItems
       );
     }
-    processedItems.add(localMessageItem.ui_state.id);
+    processedItems.add(itemIdentity);
+    processedItems.add(localIdentity);
 
     const { store, humanAgentService, restartCount } = this.serviceManager;
     const { config } = store.getState();
@@ -220,6 +230,15 @@ class ReceiveService {
         true
       )
     );
+  }
+
+  retainAgentItemPositions(messageID: string, identities: Set<string>) {
+    const processed = this.processedAgentItems.get(messageID);
+    processed?.forEach((identity) => {
+      if (identity.startsWith('position:') && !identities.has(identity)) {
+        processed.delete(identity);
+      }
+    });
   }
 
   clearProcessedAgentItems() {

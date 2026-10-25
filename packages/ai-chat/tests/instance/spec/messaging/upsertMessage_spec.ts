@@ -2494,6 +2494,263 @@ describe('ChatInstance.messaging.upsertMessage', () => {
         return { ...rendered, areAnyAgentsOnline };
       };
 
+      it.each(['history', 'item'])(
+        'starts a hidden agent handoff once when hidden by %s',
+        async (hiddenBy) => {
+          const { instance, store, areAnyAgentsOnline } =
+            await renderWithOnlineDesk({
+              serviceDesk: { skipConnectHumanAgentCard: true },
+            });
+          const startChat = jest
+            .spyOn(
+              (instance as any).serviceManager.humanAgentService,
+              'startChat'
+            )
+            .mockResolvedValue(undefined);
+          const id = `hidden-agent-${hiddenBy}`;
+          const message = (): MessageResponse => ({
+            id,
+            history: { silent: hiddenBy === 'history' },
+            output: {
+              generic: [
+                {
+                  ...connectToAgent,
+                  user_defined: { silent: hiddenBy === 'item' },
+                },
+              ],
+            },
+          });
+
+          await instance.messaging.upsertMessage(
+            id,
+            MessageState.STREAMING,
+            message
+          );
+          expect(areAnyAgentsOnline).not.toHaveBeenCalled();
+          await instance.messaging.upsertMessage(
+            id,
+            MessageState.COMPLETE,
+            message
+          );
+          await instance.messaging.upsertMessage(
+            id,
+            MessageState.COMPLETE,
+            message
+          );
+
+          expect(areAnyAgentsOnline).toHaveBeenCalledTimes(1);
+          expect(startChat).toHaveBeenCalledTimes(1);
+          expect(
+            store.getState().allMessagesByID[id].ui_state_internal
+              .agent_availability
+          ).toBe(HumanAgentsOnlineStatus.ONLINE);
+          expect(
+            Object.values(store.getState().allMessageItemsByID).filter(
+              (item) => item.fullMessageID === id
+            )
+          ).toHaveLength(0);
+
+          await instance.messaging.removeMessages([id]);
+          await instance.messaging.upsertMessage(
+            id,
+            MessageState.COMPLETE,
+            message
+          );
+          expect(areAnyAgentsOnline).toHaveBeenCalledTimes(2);
+          expect(startChat).toHaveBeenCalledTimes(2);
+        }
+      );
+
+      it.each([
+        ['history', true],
+        ['history', false],
+        ['item', true],
+        ['item', false],
+      ])(
+        'keeps one handoff across %s visibility changes starting hidden=%s',
+        async (hiddenBy, initiallyHidden) => {
+          const { instance, areAnyAgentsOnline } = await renderWithOnlineDesk({
+            serviceDesk: { skipConnectHumanAgentCard: true },
+          });
+          const startChat = jest
+            .spyOn(
+              (instance as any).serviceManager.humanAgentService,
+              'startChat'
+            )
+            .mockResolvedValue(undefined);
+          const id = `agent-visibility-${hiddenBy}-${initiallyHidden}`;
+          const message = (
+            hidden: boolean,
+            withPause = false
+          ): MessageResponse => ({
+            id,
+            history: { silent: hiddenBy === 'history' && hidden },
+            output: {
+              generic: [
+                ...(withPause
+                  ? [{ response_type: MessageResponseTypes.PAUSE, time: 0 }]
+                  : []),
+                {
+                  ...connectToAgent,
+                  user_defined: { silent: hiddenBy === 'item' && hidden },
+                },
+              ],
+            },
+          });
+          const write = (hidden: boolean, withPause = false) =>
+            instance.messaging.upsertMessage(id, MessageState.COMPLETE, () =>
+              message(hidden, withPause)
+            );
+
+          await write(Boolean(initiallyHidden));
+          await write(Boolean(initiallyHidden), true);
+          expect(areAnyAgentsOnline).toHaveBeenCalledTimes(1);
+          await write(!initiallyHidden, true);
+          await write(Boolean(initiallyHidden), true);
+          expect(areAnyAgentsOnline).toHaveBeenCalledTimes(1);
+          expect(startChat).toHaveBeenCalledTimes(1);
+
+          await instance.messaging.removeMessages([id]);
+          await write(Boolean(initiallyHidden));
+          expect(areAnyAgentsOnline).toHaveBeenCalledTimes(2);
+          expect(startChat).toHaveBeenCalledTimes(2);
+
+          await instance.restartConversation();
+          await write(Boolean(initiallyHidden));
+          expect(areAnyAgentsOnline).toHaveBeenCalledTimes(3);
+          expect(startChat).toHaveBeenCalledTimes(3);
+        }
+      );
+
+      it.each([undefined, 'agent'])(
+        'preserves repeated addMessage handoffs with streaming id %s',
+        async (streamID) => {
+          const { instance, areAnyAgentsOnline } = await renderWithOnlineDesk();
+          const id = 'agent-repeated-receive';
+          const message = (): MessageResponse => ({
+            id,
+            output: {
+              generic: [
+                {
+                  ...connectToAgent,
+                  streaming_metadata: streamID ? { id: streamID } : undefined,
+                },
+              ],
+            },
+          });
+
+          await instance.messaging.addMessage(message());
+          await waitFor(() =>
+            expect(areAnyAgentsOnline).toHaveBeenCalledTimes(1)
+          );
+          await instance.messaging.addMessage(message());
+          const expectedCalls = streamID ? 1 : 2;
+          await waitFor(() =>
+            expect(areAnyAgentsOnline).toHaveBeenCalledTimes(expectedCalls)
+          );
+
+          await instance.messaging.upsertMessage(
+            id,
+            MessageState.COMPLETE,
+            message
+          );
+          expect(areAnyAgentsOnline).toHaveBeenCalledTimes(expectedCalls);
+        }
+      );
+
+      it.each(
+        [
+          MessageState.COMPLETE,
+          MessageState.STREAMING,
+          MessageState.ERROR,
+        ].flatMap((emptyState) =>
+          [false, true].flatMap((hidden) =>
+            [false, true].map((explicitID) => ({
+              emptyState,
+              hidden,
+              explicitID,
+            }))
+          )
+        )
+      )(
+        'handles reintroduced agents after $emptyState (hidden=$hidden, explicitID=$explicitID)',
+        async ({ emptyState, hidden, explicitID }) => {
+          const { instance, areAnyAgentsOnline } = await renderWithOnlineDesk();
+          const id = 'agent-reintroduced';
+          const message = (): MessageResponse => ({
+            id,
+            history: { silent: hidden },
+            output: {
+              generic: [
+                {
+                  ...connectToAgent,
+                  streaming_metadata: explicitID ? { id: 'agent' } : undefined,
+                },
+              ],
+            },
+          });
+
+          await instance.messaging.upsertMessage(
+            id,
+            MessageState.COMPLETE,
+            message
+          );
+          expect(areAnyAgentsOnline).toHaveBeenCalledTimes(1);
+          await instance.messaging.upsertMessage(id, emptyState, () => ({
+            id,
+            output: { generic: [] },
+          }));
+          await instance.messaging.upsertMessage(
+            id,
+            MessageState.COMPLETE,
+            message
+          );
+
+          expect(areAnyAgentsOnline).toHaveBeenCalledTimes(explicitID ? 1 : 2);
+        }
+      );
+
+      it('keeps explicit agent identities across visibility and position changes', async () => {
+        const { instance, areAnyAgentsOnline } = await renderWithOnlineDesk();
+        const id = 'agent-explicit-identity';
+        const message = (
+          streamID: string,
+          hidden: boolean,
+          precedingText = false
+        ): MessageResponse => ({
+          id,
+          history: { silent: hidden },
+          output: {
+            generic: [
+              ...(precedingText
+                ? [{ response_type: MessageResponseTypes.TEXT, text: 'Help' }]
+                : []),
+              {
+                ...connectToAgent,
+                streaming_metadata: { id: streamID },
+              },
+            ],
+          },
+        });
+
+        await instance.messaging.addMessage(message('first', true));
+        await waitFor(() =>
+          expect(areAnyAgentsOnline).toHaveBeenCalledTimes(1)
+        );
+        await instance.messaging.upsertMessage(id, MessageState.COMPLETE, () =>
+          message('first', false, true)
+        );
+        await instance.messaging.upsertMessage(id, MessageState.COMPLETE, () =>
+          message('first', true)
+        );
+        expect(areAnyAgentsOnline).toHaveBeenCalledTimes(1);
+
+        await instance.messaging.upsertMessage(id, MessageState.COMPLETE, () =>
+          message('second', true)
+        );
+        expect(areAnyAgentsOnline).toHaveBeenCalledTimes(2);
+      });
+
       it('keeps the item handled when an edit rebuilds it', async () => {
         const { instance, areAnyAgentsOnline } = await renderWithOnlineDesk();
         const id = 'upsert-connect-edited';

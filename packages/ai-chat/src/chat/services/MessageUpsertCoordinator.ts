@@ -509,6 +509,17 @@ class MessageUpsertCoordinator {
     const committedResult = this.serviceManager.store.getState()
       .allMessagesByID[messageID] as MessageResponse;
 
+    this.serviceManager.receiveService.retainAgentItemPositions(
+      messageID,
+      new Set(
+        (committedResult.output?.generic ?? []).flatMap((item, index) =>
+          isConnectToHumanAgent(item)
+            ? [this.agentItemIdentity(committedResult, index)]
+            : []
+        )
+      )
+    );
+
     // Before the slot fan-out below: `serviceManager.fire` does not swallow listener
     // exceptions, so a throwing user-defined-response handler would skip everything
     // after `fanOutChangedSlots` — leaving the button up with nothing registered to
@@ -776,7 +787,11 @@ class MessageUpsertCoordinator {
         await this.serviceManager.receiveService.handleConnectToHumanAgent(
           localItem,
           message,
-          isCurrent
+          isCurrent,
+          {
+            identity: this.agentItemIdentity(message, index),
+            deduplicateByLocalID: true,
+          }
         );
       }
       if (isPause(item)) {
@@ -911,7 +926,7 @@ class MessageUpsertCoordinator {
 
   /**
    * Runs the `connect_to_agent` handling `addMessage` gives, once per item: the first
-   * time the item shows in a {@link MessageState.COMPLETE} write. The item is marked
+   * time the item completes, including hidden items. The item is marked
    * before the availability check starts, so a later upsert never repeats it. The check
    * uses the write's lifetime guard so removal or restart drops its result.
    */
@@ -921,19 +936,19 @@ class MessageUpsertCoordinator {
     stamp: UpsertStamp
   ): Promise<void> {
     const { store } = this.serviceManager;
-    const state = store.getState();
-    const newItems = state.assistantMessageState.localMessageIDs
-      .map((id) => state.allMessageItemsByID[id])
-      .filter(
-        (item) =>
-          item?.fullMessageID === messageID &&
-          isConnectToHumanAgent(item.item) &&
-          !item.ui_state.connectToAgentHandled
-      );
-
-    for (const item of newItems) {
+    for (const entry of this.fanOutEntries(messageID, result, Infinity)) {
       if (this.isStale(stamp, result.request_id)) {
         return;
+      }
+      if (!isConnectToHumanAgent(entry.item)) {
+        continue;
+      }
+      if (entry.shownLocalItem?.ui_state.connectToAgentHandled) {
+        continue;
+      }
+      const item = this.localItemToFanOut(messageID, result, entry, undefined);
+      if (!item) {
+        continue;
       }
       store.dispatch(
         actions.setMessageUIProperty(
@@ -945,9 +960,19 @@ class MessageUpsertCoordinator {
       await this.serviceManager.receiveService.handleConnectToHumanAgent(
         item,
         result,
-        () => !this.isStale(stamp, result.request_id)
+        () => !this.isStale(stamp, result.request_id),
+        { identity: this.agentItemIdentity(result, entry.index) }
       );
     }
+  }
+
+  private agentItemIdentity(message: MessageResponse, index: number): string {
+    const item = message.output.generic[index];
+    const position = message.output.generic
+      .slice(0, index)
+      .filter((previous) => previous && !isPause(previous)).length;
+    const streamID = streamItemID(message.id, item);
+    return streamID ? `stream:${streamID}` : `position:${position}`;
   }
 
   /**
