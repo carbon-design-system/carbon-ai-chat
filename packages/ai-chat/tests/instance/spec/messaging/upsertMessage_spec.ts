@@ -1720,6 +1720,73 @@ describe('ChatInstance.messaging.upsertMessage', () => {
         expect(userDefined.mock.calls[0][0].data.slot).toBeUndefined();
       });
 
+      it.each(['history', 'item'])(
+        'fires nested slots in a card hidden by %s across streaming and completion',
+        async (hiddenBy) => {
+          const { instance, store } =
+            await renderChatAndGetInstanceWithStore(createBaseConfig());
+          const userDefined = jest.fn();
+          instance.on({
+            type: BusEventType.USER_DEFINED_RESPONSE,
+            handler: userDefined,
+          });
+          const id = `hidden-nested-${hiddenBy}`;
+          const message = (count: number): MessageResponse => ({
+            id,
+            history: { silent: hiddenBy === 'history' },
+            output: {
+              generic: [
+                {
+                  response_type: MessageResponseTypes.CARD,
+                  user_defined: { silent: hiddenBy === 'item' },
+                  body: [
+                    {
+                      response_type: MessageResponseTypes.USER_DEFINED,
+                      user_defined: { count },
+                    },
+                    {
+                      response_type: MessageResponseTypes.USER_DEFINED,
+                      user_defined: { count, silent: true },
+                    },
+                  ],
+                },
+              ],
+            },
+          });
+
+          await instance.messaging.upsertMessage(
+            id,
+            MessageState.STREAMING,
+            () => message(1)
+          );
+          await instance.messaging.upsertMessage(
+            id,
+            MessageState.COMPLETE,
+            () => message(2)
+          );
+
+          const events = userDefined.mock.calls.map(([event]) => event.data);
+          expect(events.map((event) => event.state)).toEqual([
+            MessageState.STREAMING,
+            MessageState.STREAMING,
+            MessageState.COMPLETE,
+            MessageState.COMPLETE,
+          ]);
+          expect(
+            events.map((event) => event.message.user_defined.count)
+          ).toEqual([1, 1, 2, 2]);
+          expect(events[0].slot).toEqual(expect.any(String));
+          expect(events[2].slot).toBe(events[0].slot);
+          expect(events[1].slot).toBeUndefined();
+          expect(events[3].slot).toBeUndefined();
+          expect(
+            Object.values(store.getState().allMessageItemsByID).filter(
+              (item) => item.fullMessageID === id
+            )
+          ).toHaveLength(0);
+        }
+      );
+
       it('keeps the local id of an item that follows a silent one across upserts', async () => {
         const { instance, store } =
           await renderChatAndGetInstanceWithStore(createBaseConfig());

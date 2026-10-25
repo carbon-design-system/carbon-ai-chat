@@ -1194,11 +1194,14 @@ class MessageUpsertCoordinator {
           ? this.localItemToFanOut(messageID, result, entry, skipsUnchanged)
           : undefined;
       if (localItem) {
+        const nestedItems = entry.isHidden
+          ? this.createHiddenNestedItems(localItem, result)
+          : undefined;
         await chatActions.handleUserDefinedResponseItems(
           localItem,
           result,
           nextState,
-          undefined,
+          nestedItems,
           () => !isStale()
         );
         if (isStale()) {
@@ -1268,6 +1271,49 @@ class MessageUpsertCoordinator {
     localItem.ui_state.id =
       streamItemID(messageID, item) ?? `${messageID}-hidden-${index}`;
     return localItem;
+  }
+
+  private createHiddenNestedItems(
+    localItem: LocalMessageItem,
+    result: MessageResponse
+  ): Record<string, LocalMessageItem> {
+    const nestedItems: LocalMessageItem[] = [];
+    createLocalMessageItemsForNestedMessageItems(
+      localItem,
+      result,
+      false,
+      nestedItems,
+      true
+    );
+    const stableIDs = new Map(
+      nestedItems.map((nested, index) => [
+        nested.ui_state.id,
+        streamItemID(result.id, nested.item) ??
+          `${localItem.ui_state.id}-nested-${index}`,
+      ])
+    );
+    const replaceIDs = (ids: string[]) => ids?.map((id) => stableIDs.get(id));
+    for (const item of [localItem, ...nestedItems]) {
+      const uiState = item.ui_state;
+      uiState.itemsLocalMessageItemIDs = replaceIDs(
+        uiState.itemsLocalMessageItemIDs
+      );
+      uiState.bodyLocalMessageItemIDs = replaceIDs(
+        uiState.bodyLocalMessageItemIDs
+      );
+      uiState.footerLocalMessageItemIDs = replaceIDs(
+        uiState.footerLocalMessageItemIDs
+      );
+      uiState.gridLocalMessageItemIDs = uiState.gridLocalMessageItemIDs?.map(
+        (row) => row.map(replaceIDs)
+      );
+    }
+    for (const nested of nestedItems) {
+      nested.ui_state.id = stableIDs.get(nested.ui_state.id);
+    }
+    return Object.fromEntries(
+      nestedItems.map((nested) => [nested.ui_state.id, nested])
+    );
   }
 
   /**
