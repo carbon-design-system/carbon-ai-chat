@@ -348,6 +348,51 @@ describe('upsert and chunk request ownership', () => {
     ).toBe(false);
   });
 
+  it('settles an upsert response when its chunk callback rejects through send', async () => {
+    const failure = new Error('chunk callback failed');
+    const config = createBaseConfig();
+    config.messaging = {
+      skipWelcome: true,
+      customSendMessage: async (request, _options, chat) => {
+        await chat.messaging.upsertMessage(
+          'mixed-response',
+          MessageState.STREAMING,
+          () => ({ ...snapshot('mixed-response'), request_id: request.id })
+        );
+        await chat.messaging.addMessageChunk({
+          streaming_metadata: { response_id: 'mixed-response' },
+          partial_item: {
+            response_type: MessageResponseTypes.USER_DEFINED,
+            user_defined: { value: 'test' },
+            streaming_metadata: { id: 'custom' },
+          },
+        });
+      },
+    };
+    const { instance, store, serviceManager } =
+      await renderChatAndGetInstanceWithStore(config);
+    jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    instance.on({
+      type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
+      handler: async () => {
+        throw failure;
+      },
+    });
+
+    await expect(instance.send('start')).rejects.toThrow(failure.message);
+
+    expect(serviceManager.messageService.isAnyMessageStreaming()).toBe(false);
+    expect(
+      store.getState().assistantInputState.stopStreamingButtonState.isVisible
+    ).toBe(false);
+    for (const itemID of ['text', 'custom']) {
+      expect(
+        store.getState().allMessageItemsByID[`mixed-response-${itemID}`]
+          .ui_state.streamingState.isDone
+      ).toBe(true);
+    }
+  });
+
   it('keeps a settled request stream alive when another send fails', async () => {
     const started = resolvablePromise();
     const release = resolvablePromise();

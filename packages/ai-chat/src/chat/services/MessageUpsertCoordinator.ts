@@ -280,11 +280,12 @@ class MessageUpsertCoordinator {
     }
   }
 
-  private endStreamingMessage(messageID: string) {
+  endStreamingMessage(messageID: string, generation?: number) {
     this.streamingIDs.delete(messageID);
     this.streamingControllers.delete(messageID);
     this.serviceManager.conversationLifecycleService.responseFinished(
-      messageID
+      messageID,
+      generation
     );
     this.serviceManager.store.dispatch(actions.endMessageStreaming(messageID));
   }

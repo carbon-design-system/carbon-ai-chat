@@ -13,6 +13,7 @@ import MessageService, {
 import { ChunkProcessingService } from '../../../src/chat/services/ChunkProcessingService';
 import { ConversationLifecycleService } from '../../../src/chat/services/ConversationLifecycleService';
 import { ServiceManager } from '../../../src/chat/services/ServiceManager';
+import storeActions from '../../../src/chat/store/actions';
 import {
   MessageRequest,
   MessageInputType,
@@ -101,6 +102,13 @@ const createServiceManagerStub = (
     hasStreamingMessages: jest.fn().mockReturnValue(false),
     endAllStreaming: jest.fn(),
     endStreamingForRequest: jest.fn(),
+    endStreamingMessage: jest.fn((messageID, generation) => {
+      serviceManager.conversationLifecycleService.responseFinished(
+        messageID,
+        generation
+      );
+      store.dispatch(storeActions.endMessageStreaming(messageID));
+    }),
   };
 
   const serviceManager = {

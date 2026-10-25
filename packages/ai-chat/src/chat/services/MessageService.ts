@@ -740,12 +740,11 @@ class MessageService {
         (current.isStreaming &&
           this.inboundStreaming.streamingMessageID === responseID))
     );
-    this.serviceManager.store.dispatch(actions.endMessageStreaming(responseID));
-    this.inboundStreaming.clearStreamingResponse(responseID);
-    this.serviceManager.conversationLifecycleService.responseFinished(
+    this.serviceManager.messageUpsertCoordinator.endStreamingMessage(
       responseID,
       isCurrentResponse ? current.generation : undefined
     );
+    this.inboundStreaming.clearStreamingResponse(responseID);
     if (isCurrentResponse) {
       current.isStreaming = false;
       if (current.isProcessed) {
