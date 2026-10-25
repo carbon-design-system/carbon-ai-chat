@@ -270,10 +270,11 @@ class MessageUpsertCoordinator {
       ) ?? [];
     let settledAny = false;
     for (const messageID of responseIDs) {
-      if (this.streamingIDs.has(messageID)) {
-        this.endStreamingMessage(messageID);
-        settledAny = true;
-      }
+      this.endStreamingMessage(messageID);
+      this.serviceManager.messageService.inboundStreaming.clearStreamingResponse(
+        messageID
+      );
+      settledAny = true;
     }
     if (settledAny) {
       this.serviceManager.messageService.hideStopStreamingButtonIfNoUpsertStreaming();

@@ -336,6 +336,17 @@ describe('upsert and chunk request ownership', () => {
     jest.spyOn(console, 'error').mockImplementation(() => undefined);
 
     await expect(instance.send('first')).rejects.toEqual(new Error('{}'));
+    for (const responseID of ['response-a', 'response-b']) {
+      expect(
+        store.getState().allMessageItemsByID[`${responseID}-text`].ui_state
+          .streamingState.isDone
+      ).toBe(true);
+      expect(
+        serviceManager.messageService.inboundStreaming.getStreamingMeta(
+          responseID
+        )
+      ).toBeUndefined();
+    }
     expect(serviceManager.messageService.isAnyMessageStreaming()).toBe(false);
     expect(
       store.getState().assistantInputState.stopStreamingButtonState.isVisible
