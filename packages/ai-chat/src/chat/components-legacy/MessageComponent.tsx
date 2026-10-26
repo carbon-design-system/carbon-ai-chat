@@ -351,8 +351,6 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     return this.props.localMessageItem;
   };
 
-  private isAgent: boolean;
-
   private firedReasoningUserDefinedIds = new Set<string>();
 
   /**
@@ -368,11 +366,9 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       // do not need this announcement.
       if (localMessageItem.item.response_type === MessageResponseTypes.TEXT) {
         messageId = 'messages_agentSaid';
-        this.isAgent = true;
       }
     } else {
       messageId = 'messages_assistantSaid';
-      this.isAgent = false;
     }
     return messageId
       ? intl.formatMessage(
@@ -539,7 +535,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
         user_type: UserType.WATSONX,
       };
 
-      if (isHumanAgentStatusMessage(agentMessageType)) {
+      if (isStatusMessage(agentMessageType)) {
         // These messages don't show an avatar line.
         return null;
       }
@@ -1261,10 +1257,8 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     const isCustomMessage = renderAsUserDefinedMessage(localMessageItem.item);
 
     const messageIsRequest = isRequest(message);
-    const isSystemMessage = isHumanAgentStatusMessage(
-      messageItem.agent_message_type
-    );
-    const isStatusNotice =
+    const isSystemMessage = isStatusMessage(messageItem.agent_message_type);
+    const isConnectionNotice =
       messageItem.agent_message_type === HumanAgentMessageType.RELOAD_WARNING ||
       messageItem.agent_message_type === HumanAgentMessageType.DISCONNECTED;
 
@@ -1305,7 +1299,6 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
             'cds-aichat--message--with-avatar-line': showAvatarLine,
             'cds-aichat--message--named-request':
               isRequest(message) && Boolean(getRequestSenderName(message)),
-            'cds-aichat--with-human-agent': this.isAgent,
             'cds-aichat--message--request': messageIsRequest,
             'cds-aichat--message--system-message': isSystemMessage,
             'cds-aichat--message--response': !messageIsRequest,
@@ -1365,7 +1358,8 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
                     'cds-aichat--received--full-width': isFullWidthUserDefined(
                       localMessageItem.item
                     ),
-                    'cds-aichat--received--chat-status-message': isStatusNotice,
+                    'cds-aichat--received--chat-status-message':
+                      isConnectionNotice,
                     'cds-aichat--message--historical': fromHistory,
                   }
                 )}
@@ -1443,7 +1437,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
 /**
  * Indicates if this message is a status message. These are messages that are centered in the view.
  */
-function isHumanAgentStatusMessage(agentMessageType: HumanAgentMessageType) {
+function isStatusMessage(agentMessageType: HumanAgentMessageType) {
   switch (agentMessageType) {
     case null:
     case undefined:
