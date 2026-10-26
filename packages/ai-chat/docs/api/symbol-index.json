@@ -1,6 +1,6 @@
 {
-  "version": "v1.23.0",
-  "baseUrl": "https://chat.carbondesignsystem.com/version/v1.23.0/docs/",
+  "version": "v1.24.0-rc.0",
+  "baseUrl": "https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/",
   "generator": "@carbon/ai-chat typedoc apiIndexPlugin",
   "symbols": {
     "AdditionalDataToAgent": {
@@ -9099,7 +9099,7 @@
       "kind": "Property",
       "parent": "ChatInstanceMessaging",
       "category": "Messaging",
-      "summary": "Adds a streaming message chunk to the chat widget.",
+      "summary": "Adds a streaming message chunk to the chat widget.\n\nA chunk stream whose `customSendMessage` throws, or that is canceled before a\n`final_response` chunk arrives, will have its `streamingState.isDone` settled to\n`true` on the items streamed so far. The host is responsible for calling\n`cancelCurrentMessageRequest` (or letting the chat cancel on restart) to settle\nthe stream; simply stopping calls to `addMessageChunk` without canceling leaves\n`streamingState.isDone` as `false` indefinitely.",
       "description": "",
       "signature": "addMessageChunk: (chunk: StreamChunk) => Promise<void>",
       "signatures": [],
@@ -9194,7 +9194,7 @@
       "parent": "ChatInstanceMessaging",
       "category": "Messaging",
       "summary": "Inserts or updates a single message identified by `messageID`. The `updater` receives\nthe MessageResponse currently stored under `messageID` (or `undefined` when no\nmessage with that ID exists) and returns the message that should replace it.\n\nCalls targeting the same `messageID` are serialized — each call awaits the previous\ncall for that ID before running. Calls targeting different `messageID`s run\nindependently.\n\nThe `state` argument describes the MessageState the chat records for this\nmessage after the upsert completes; it is applied uniformly to every item in the\nreturned message. Carbon AI Chat fires BusEventType.PRE_RECEIVE and\nBusEventType.RECEIVE exactly when this call transitions the message into\nMessageState.COMPLETE from any other state, including the case where the\nmessage did not previously exist. STREAMING-to-STREAMING and COMPLETE-to-COMPLETE\nupserts do not fire these events.\n\nIf the returned message has no `id`, Carbon AI Chat assigns `messageID`. The\ncancellation contract for outbound messages is unchanged — see\nCustomSendMessageOptions.",
-      "description": "",
+      "description": "A STREAMING sequence whose host simply stops calling `upsertMessage` without\n  sending a terminal COMPLETE or ERROR write will leave `streamingState.isDone` as\n  `false` indefinitely. The host is responsible for sending a terminal write, or for\n  calling `cancelCurrentMessageRequest` (or restarting the conversation) to settle it.\n Upsert semantics and the updater signature may evolve based on consumer feedback.",
       "signature": "upsertMessage: (messageID: string, state: MessageState, updater: UpsertMessageUpdater) => Promise<void>",
       "signatures": [],
       "members": [],
@@ -11739,7 +11739,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.ExternalFileReference.html",
       "anchor": null
     },
@@ -11757,7 +11757,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.ExternalFileReference.html#id",
       "anchor": "id"
     },
@@ -11775,7 +11775,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.ExternalFileReference.html#mime_type",
       "anchor": "mime_type"
     },
@@ -11793,7 +11793,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.ExternalFileReference.html#name",
       "anchor": "name"
     },
@@ -11811,7 +11811,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.ExternalFileReference.html#size",
       "anchor": "size"
     },
@@ -11829,7 +11829,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.ExternalFileReference.html#type",
       "anchor": "type"
     },
@@ -11847,7 +11847,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.ExternalFileReference.html#url",
       "anchor": "url"
     },
@@ -11941,7 +11941,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "types/Type_reference.FileFieldValue.html",
       "anchor": null
     },
@@ -14579,7 +14579,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.InlineFile.html",
       "anchor": null
     },
@@ -14597,7 +14597,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.InlineFile.html#file",
       "anchor": "file"
     },
@@ -14615,7 +14615,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.InlineFile.html#id",
       "anchor": "id"
     },
@@ -14633,7 +14633,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.InlineFile.html#type",
       "anchor": "type"
     },
@@ -16023,7 +16023,7 @@
       "kind": "Property",
       "parent": "MarkdownCustomRendererMountDetail",
       "category": "Messaging",
-      "summary": "True when the claimed output is inline flow content. Always `false` here:\nthe markdown element hosts every `customRenderers` result in a `<div>` it\ncreated, so a claimant has no host tag to choose. Declared on both members\nso a listener can read it before narrowing on `kind`.",
+      "summary": "True for a projected inline run, false for a block custom-renderer host.\nThe renderer supplies the host tag, so the claimant only moves it.\nDeclared on both members so a listener can read it before narrowing on `kind`.",
       "description": "",
       "signature": "isInline: boolean",
       "signatures": [],
@@ -18229,7 +18229,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MessageInput.html#structured_data",
       "anchor": "structured_data"
     },
@@ -18668,7 +18668,8 @@
         "MessageRequestHistory.label",
         "MessageRequestHistory.related_message_id",
         "MessageRequestHistory.silent",
-        "MessageRequestHistory.timestamp"
+        "MessageRequestHistory.timestamp",
+        "MessageRequestHistory.user_profile"
       ],
       "related": [
         "MessageRequest"
@@ -18811,6 +18812,26 @@
       "experimental": false,
       "url": "interfaces/Type_reference.MessageRequestHistory.html#timestamp",
       "anchor": "timestamp"
+    },
+    "MessageRequestHistory.user_profile": {
+      "name": "user_profile",
+      "kind": "Property",
+      "parent": "MessageRequestHistory",
+      "category": "Messaging",
+      "summary": "The sender to display for this request. Omit this profile to use the default “You” label.\nWhen you load a shared conversation, omit the viewer's profile from a presentation copy.\nKeep the original sender data in your application's history store.\nNames are trimmed before display. Missing or blank names use the default label.",
+      "description": "",
+      "signature": "user_profile?: RequestUserProfile",
+      "signatures": [],
+      "members": [],
+      "related": [],
+      "examples": [
+        "```ts\nimport type { MessageRequest } from '@carbon/ai-chat';\n\nconst canonicalRequests: MessageRequest[] = [\n  {\n    input: { text: 'Check this transaction.' },\n    history: {\n      timestamp: 1759571880000,\n      user_profile: { id: 'jane.doe', nickname: 'Jane Doe' },\n    },\n  },\n];\n\nconst viewerID = 'jane.doe';\nconst displayedRequests = canonicalRequests.map((request) => {\n  const history = { ...request.history };\n  if (history.user_profile?.id === viewerID) {\n    delete history.user_profile;\n  }\n  return { ...request, history };\n});\n\n// Insert displayedRequests as history; retain canonicalRequests in your store.\nconsole.log(displayedRequests[0]?.history?.user_profile); // undefined: displays \"You\"\nconsole.log(canonicalRequests[0]?.history?.user_profile?.nickname); // Jane Doe\n```"
+      ],
+      "deprecated": false,
+      "deprecatedMessage": "",
+      "experimental": false,
+      "url": "interfaces/Type_reference.MessageRequestHistory.html#user_profile",
+      "anchor": "user_profile"
     },
     "MessageResponse": {
       "name": "MessageResponse",
@@ -23989,6 +24010,82 @@
       "url": "types/Type_reference.RenderWriteableElementResponse.html",
       "anchor": null
     },
+    "RequestUserProfile": {
+      "name": "RequestUserProfile",
+      "kind": "Interface",
+      "parent": null,
+      "category": "Messaging",
+      "summary": "Identifies the sender displayed for a user request.",
+      "description": "",
+      "signature": "interface RequestUserProfile",
+      "signatures": [],
+      "members": [
+        "RequestUserProfile.id",
+        "RequestUserProfile.nickname",
+        "RequestUserProfile.profile_picture_url"
+      ],
+      "related": [],
+      "examples": [],
+      "deprecated": false,
+      "deprecatedMessage": "",
+      "experimental": false,
+      "url": "interfaces/Type_reference.RequestUserProfile.html",
+      "anchor": null
+    },
+    "RequestUserProfile.id": {
+      "name": "id",
+      "kind": "Property",
+      "parent": "RequestUserProfile",
+      "category": "Messaging",
+      "summary": "The sender's identifier in your application. The chat does not use it to identify the current viewer.",
+      "description": "",
+      "signature": "id: string",
+      "signatures": [],
+      "members": [],
+      "related": [],
+      "examples": [],
+      "deprecated": false,
+      "deprecatedMessage": "",
+      "experimental": false,
+      "url": "interfaces/Type_reference.RequestUserProfile.html#id",
+      "anchor": "id"
+    },
+    "RequestUserProfile.nickname": {
+      "name": "nickname",
+      "kind": "Property",
+      "parent": "RequestUserProfile",
+      "category": "Messaging",
+      "summary": "The sender's visible name, trimmed before display. Blank names use the default “You” label.",
+      "description": "",
+      "signature": "nickname: string",
+      "signatures": [],
+      "members": [],
+      "related": [],
+      "examples": [],
+      "deprecated": false,
+      "deprecatedMessage": "",
+      "experimental": false,
+      "url": "interfaces/Type_reference.RequestUserProfile.html#nickname",
+      "anchor": "nickname"
+    },
+    "RequestUserProfile.profile_picture_url": {
+      "name": "profile_picture_url",
+      "kind": "Property",
+      "parent": "RequestUserProfile",
+      "category": "Messaging",
+      "summary": "A URL for the sender's square avatar image. The image is hidden when the name is blank or avatars are disabled.\nIf the image fails to load, the sender's name remains visible.",
+      "description": "",
+      "signature": "profile_picture_url?: string",
+      "signatures": [],
+      "members": [],
+      "related": [],
+      "examples": [],
+      "deprecated": false,
+      "deprecatedMessage": "",
+      "experimental": false,
+      "url": "interfaces/Type_reference.RequestUserProfile.html#profile_picture_url",
+      "anchor": "profile_picture_url"
+    },
     "ResolvedCornerConfig": {
       "name": "ResolvedCornerConfig",
       "kind": "Interface",
@@ -25420,7 +25517,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.StructuredData.html",
       "anchor": null
     },
@@ -25438,7 +25535,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.StructuredData.html#fields",
       "anchor": "fields"
     },
@@ -25456,7 +25553,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.StructuredData.html#user_defined",
       "anchor": "user_defined"
     },
@@ -25481,7 +25578,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.StructuredField.html",
       "anchor": null
     },
@@ -25501,7 +25598,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.StructuredField.html#id",
       "anchor": "id"
     },
@@ -25519,7 +25616,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.StructuredField.html#label",
       "anchor": "label"
     },
@@ -25540,7 +25637,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.StructuredField.html#type",
       "anchor": "type"
     },
@@ -25561,7 +25658,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.StructuredField.html#value",
       "anchor": "value"
     },
@@ -25581,7 +25678,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "types/Type_reference.StructuredFieldType.html",
       "anchor": null
     },
@@ -26722,14 +26819,12 @@
       "kind": "Property",
       "parent": "TriggerSuggestionConfig",
       "category": "Config",
-      "summary": "Called when a previously-inserted token for this trigger is removed from\nthe input by a user edit (backspace, delete, cut, select-all, undo, ...).\nThe mirror of BaseSuggestionConfig's `onSelect`: fires once per\nremoved node instance, so deleting one of two identical chips fires\nexactly once. Use it to keep host-owned structured data in sync with the\neditor.\n\nThe item is reconstructed from the node's stored attributes (`id`,\n`label`, `value`, plus any custom fields preserved in `data`);\npresentation-only fields (`icon`, `avatar`, `description`, `disabled`) are\nnot retained on the node and are absent. Programmatic removals (via\n`getEditor()`/`updateContent`) are host-origin and do NOT fire `onRemove`,\nsymmetric with `onSelect` not firing on programmatic inserts.",
+      "summary": "Called when a token chip for this trigger **leaves** the editor via any\nuser edit: backspace, delete, cut, select-all+type, undo of an insert, ....\nFires once per removed node instance, so deleting one of two identical\nchips fires exactly once. Use it to keep host-owned structured data in sync\nwith the editor.\n\nThe item is reconstructed from the node's stored attributes (`id`,\n`label`, `value`, plus any custom fields preserved in `data`);\npresentation-only fields (`avatar`, `description`, `disabled`,\n`showTriggerInChip`) are not retained on the node and are absent.\n`updateContent` tags host-origin transactions and suppresses `onRemove`.\nRaw `getEditor()` commands require explicit `setHostOriginMeta` tagging.",
       "description": "",
       "signature": "onRemove?: (item: SuggestionItem) => void",
       "signatures": [],
       "members": [],
-      "related": [
-        "BaseSuggestionConfig"
-      ],
+      "related": [],
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
@@ -26742,12 +26837,14 @@
       "kind": "Property",
       "parent": "TriggerSuggestionConfig",
       "category": "Config",
-      "summary": "Called after the user selects an item and the controller has finished\ninserting it.",
+      "summary": "Called whenever a token chip for this trigger **enters** the editor via\nany user edit: selecting from the autocomplete, undo restoring a deleted chip,\nor redo. Fires once per added node instance (duplicate chips with\nthe same id are tracked individually).\n\nThe item is reconstructed from the node's stored attributes (`id`,\n`label`, `value`, plus any custom fields preserved in `data`);\npresentation-only fields (`avatar`, `description`, `disabled`,\n`showTriggerInChip`) are not retained on the node and are absent.\n`updateContent` tags host-origin transactions and suppresses `onSelect`.\nRaw `getEditor()` commands require explicit `setHostOriginMeta` tagging.\n\nUse the symmetric TriggerSuggestionConfig.onRemove to keep\nhost-owned structured data in sync in both directions.",
       "description": "",
       "signature": "onSelect?: (item: SuggestionItem) => void",
       "signatures": [],
       "members": [],
-      "related": [],
+      "related": [
+        "TriggerSuggestionConfig.onRemove"
+      ],
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
@@ -26924,7 +27021,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.UploadConfig.html",
       "anchor": null
     },
@@ -26942,7 +27039,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.UploadConfig.html#accept",
       "anchor": "accept"
     },
@@ -26960,7 +27057,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.UploadConfig.html#ison",
       "anchor": "ison"
     },
@@ -26978,7 +27075,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.UploadConfig.html#maxfilesizebytes",
       "anchor": "maxfilesizebytes"
     },
@@ -26996,7 +27093,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.UploadConfig.html#maxfiles",
       "anchor": "maxfiles"
     },
@@ -27018,7 +27115,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.UploadConfig.html#onfileupload",
       "anchor": "onfileupload"
     },
@@ -28616,7 +28713,7 @@
       "category": "Config",
       "summary": "The raw strings used for PublicConfig.strings. Presented in ICU format.",
       "description": "",
-      "signature": "enLanguagePack: { agent_agentEndedChat: string; agent_agentEndedChatNoName: string; agent_agentJoinedName: string; agent_agentJoinedNoName: string; agent_agentLeftChat: string; agent_agentLeftChatNoName: string; agent_agentNoNameTitle: string; agent_ariaGenericAssistantAvatar: string; agent_ariaGenericAvatar: string; agent_ariaHumanAgentAvatar: string; agent_assistantReturned: string; agent_cardButtonChatEnded: string; agent_cardButtonChatRequested: string; agent_cardButtonConnected: string; agent_cardMessageChatEnded: string; agent_cardMessageConnected: string; agent_chatTitle: string; agent_confirmCancelRequestMessage: string; agent_confirmCancelRequestNo: string; agent_confirmCancelRequestTitle: string; agent_confirmCancelRequestYes: string; agent_confirmEndChat: string; agent_confirmEndChatNo: string; agent_confirmEndChatYes: string; agent_confirmEndSuspendedYes: string; agent_confirmSuspendedEndChatMessage: string; agent_confirmSuspendedEndChatTitle: string; agent_connectButtonCancel: string; agent_connectedButtonEndChat: string; agent_connecting: string; agent_connectingMinutes: string; agent_connectingQueue: string; agent_connectWaiting: string; agent_conversationWasEnded: string; agent_defaultMessageToHumanAgent: string; agent_disconnected: string; agent_endChat: string; agent_inputPlaceholderConnecting: string; agent_inputPlaceholderReconnecting: string; agent_newMessage: string; agent_noName: string; agent_reason_error: string; agent_reconnected: string; agent_sdMissingWarning: string; agent_sharingAcceptButton: string; agent_sharingAccepted: string; agent_sharingCancelled: string; agent_sharingDeclineButton: string; agent_sharingDeclined: string; agent_sharingEnded: string; agent_sharingRequested: string; agent_sharingRequestMessage: string; agent_sharingRequestTitle: string; agent_sharingStopSharingButton: string; agent_startChat: string; agent_suspendedWarning: string; agent_transferring: string; agent_transferringNoName: string; agent_youConnectedWarning: string; agent_youEndedChat: string; ai_slug_description: string; ai_slug_label: string; ai_slug_title: string; aria_catastrophicErrorPanel: string; aria_customPanel: string; aria_disclaimerPanel: string; aria_historyRegion: string; aria_hydrationPanel: string; aria_iframePanel: string; aria_messagesRegion: string; aria_responsePanel: string; aria_viewSourcePanel: string; aria_workspaceRegion: string; buttons_cancel: string; buttons_restart: string; buttons_retry: string; carousel_nextNavButton: string; carousel_prevNavButton: string; chainOfThought_explainabilityLabel: string; chainOfThought_inputLabel: string; chainOfThought_outputLabel: string; chainOfThought_statusFailedLabel: string; chainOfThought_statusProcessingLabel: string; chainOfThought_statusSucceededLabel: string; chainOfThought_stepTitle: string; chainOfThought_toolLabel: string; codeSnippet_ariaLabelEditable: string; codeSnippet_ariaLabelEditableWithLanguage: string; codeSnippet_ariaLabelReadOnly: string; codeSnippet_ariaLabelReadOnlyWithLanguage: string; codeSnippet_feedback: string; codeSnippet_foldCollapse: string; codeSnippet_foldExpand: string; codeSnippet_lineCount: string; codeSnippet_showLessText: string; codeSnippet_showMoreText: string; codeSnippet_tooltipContent: string; components_overflow_ariaLabel: string; components_swiper_currentLabel: string; conversationalSearch_citationsLabel: string; conversationalSearch_responseStopped: string; conversationalSearch_streamingIncomplete: string; conversationalSearch_toggleCitations: string; conversationalSearch_viewSourceDocument: string; datePicker_chooseDate: string; datePicker_confirmDate: string; default_agent_availableMessage: string; default_agent_unavailableMessage: string; disclaimer_accept: string; disclaimer_acceptance_label: string; disclaimer_icon_label: string; disclaimer_title: string; errors_agentAppSessionExpired: string; errors_ariaMessageFailed: string; errors_ariaMessageRetrying: string; errors_audioSource: string; errors_busy: string; errors_communicating: string; errors_connectingToHumanAgent: string; errors_generalContent: string; errors_iframeSource: string; errors_imageSource: string; errors_noHumanAgentsAvailable: string; errors_noHumanAgentsJoined: string; errors_singleMessage: string; errors_somethingWrong: string; errors_videoSource: string; feedback_cancelLabel: string; feedback_categoriesLabel: string; feedback_defaultPlaceholder: string; feedback_defaultPrompt: string; feedback_defaultTitle: string; feedback_negativeLabel: string; feedback_positiveLabel: string; feedback_submitLabel: string; fileSharing_agentMessageText: string; fileSharing_ariaAnnounceFileRemoved: string; fileSharing_ariaAnnounceFilesAdded: string; fileSharing_ariaAnnounceFilesUploading: string; fileSharing_ariaAnnounceSuccess: string; fileSharing_fileIcon: string; fileSharing_fileTooLarge: string; fileSharing_removeButtonTitle: string; fileSharing_removeButtonTitleWithName: string; fileSharing_request: string; fileSharing_statusUploading: string; fileSharing_tooManyFiles: string; fileSharing_unsupportedType: string; fileSharing_uploadErrorRecovery: string; fileSharing_uploadErrorTitle: string; fileSharing_uploadFailed: string; general_ariaAnnounceClosedInformationOverlay: string; general_ariaAnnounceEscapeOverlay: string; general_ariaAnnounceOpenedInformationOverlay: string; general_ariaCloseInformationOverlay: string; general_returnToAssistant: string; header_ariaAssistantAvatar: string; header_overflowMenu_options: string; header_previewLinkTitle: string; history_hidden: string; history_new_chat: string; history_shown: string; history_view_chats: string; homeScreen_ariaHomeScreenContent: string; homeScreen_ariaQuickStartListButton: string; homeScreen_ariaQuickStartListClosed: string; homeScreen_ariaQuickStartListOpened: string; homeScreen_hidden: string; homeScreen_overflowMenuHomeScreen: string; homeScreen_returnToAssistant: string; homeScreen_returnToHome: string; homeScreen_shown: string; icon_ariaUnreadMessages: string; iframe_ariaClickPreviewCard: string; iframe_ariaClosedPanel: string; iframe_ariaClosePanel: string; iframe_ariaImageAltText: string; iframe_ariaOpenedPanel: string; iframe_ariaSourceLoaded: string; input_actionsMenuLabel: string; input_actionsOverflowLabel: string; input_ariaLabel: string; input_buttonLabel: string; input_completionsTagApp: string; input_completionsTagAssistant: string; input_keyboardShortcutAnnouncement: string; input_maxCharCountExceeded: string; input_maxCharCountExceededTitle: string; input_placeholder: string; input_sendingMessage: string; input_stopResponse: string; input_uploadButtonLabel: string; launcher_ariaIsExpanded: string; launcher_closeButton: string; launcher_desktopGreeting: string; launcher_isClosed: string; launcher_isOpen: string; launcher_mobileGreeting: string; media_audioPlayer_errorLabel: string; media_audioPlayer_loading: string; media_audioPlayer_loadingLabel: string; media_audioPlayer_ready: string; media_audioPlayer_readyLabel: string; media_transcript_hide: string; media_transcript_label: string; media_transcript_show: string; media_videoPlayer_errorLabel: string; media_videoPlayer_loading: string; media_videoPlayer_loadingLabel: string; media_videoPlayer_ready: string; media_videoPlayer_readyLabel: string; message_labelAssistant: string; message_labelYou: string; messages_agentIsTyping: string; messages_agentSaid: string; messages_assistantIsLoading: string; messages_assistantSaid: string; messages_attachmentsLabel: string; messages_focusHandle: string; messages_processingLabel: string; messages_reasoningStart: string; messages_requestCancelled: string; messages_responseStopped: string; messages_scrollHandle: string; messages_scrollHandleDetailed: string; messages_scrollHandleDetailedNoShortcut: string; messages_scrollHandleEnd: string; messages_scrollHandleEndDetailed: string; messages_scrollHandleEndDetailedNoShortcut: string; messages_scrollMoreButton: string; messages_searchResults: string; messages_searchResultsCollapse: string; messages_searchResultsExpand: string; messages_searchResultsLink: string; messages_searchResultsOpenDocument: string; messages_searchResultsOpenDocumentWithLabel: string; messages_streamingStart: string; messages_unnamedAttachment: string; messages_youSaid: string; options_ariaOptionsDisabled: string; options_select: string; panel_closed: string; panel_opened: string; reasoningSteps_mainLabelClosed: string; reasoningSteps_mainLabelOpen: string; showMore: string; showMoreResults: string; table_downloadButton: string; table_filterPlaceholder: string; table_itemsPerPage: string; table_nextPage: string; table_paginationStatus: string; table_paginationSupplementalText: string; table_previousPage: string; window_ariaChatRegion: string; window_ariaChatRegionNamespace: string; window_ariaWindowClosed: string; window_ariaWindowLoading: string; window_ariaWindowOpened: string; window_title: string; workspace_closed: string; workspace_opened: string; workspace_opened_no_title: string }",
+      "signature": "enLanguagePack: { agent_agentEndedChat: string; agent_agentEndedChatNoName: string; agent_agentJoinedName: string; agent_agentJoinedNoName: string; agent_agentLeftChat: string; agent_agentLeftChatNoName: string; agent_agentNoNameTitle: string; agent_ariaGenericAssistantAvatar: string; agent_ariaGenericAvatar: string; agent_ariaHumanAgentAvatar: string; agent_assistantReturned: string; agent_cardButtonChatEnded: string; agent_cardButtonChatRequested: string; agent_cardButtonConnected: string; agent_cardMessageChatEnded: string; agent_cardMessageConnected: string; agent_chatTitle: string; agent_confirmCancelRequestMessage: string; agent_confirmCancelRequestNo: string; agent_confirmCancelRequestTitle: string; agent_confirmCancelRequestYes: string; agent_confirmEndChat: string; agent_confirmEndChatNo: string; agent_confirmEndChatYes: string; agent_confirmEndSuspendedYes: string; agent_confirmSuspendedEndChatMessage: string; agent_confirmSuspendedEndChatTitle: string; agent_connectButtonCancel: string; agent_connectedButtonEndChat: string; agent_connecting: string; agent_connectingMinutes: string; agent_connectingQueue: string; agent_connectWaiting: string; agent_conversationWasEnded: string; agent_defaultMessageToHumanAgent: string; agent_disconnected: string; agent_endChat: string; agent_inputPlaceholderConnecting: string; agent_inputPlaceholderReconnecting: string; agent_newMessage: string; agent_noName: string; agent_reason_error: string; agent_reconnected: string; agent_sdMissingWarning: string; agent_sharingAcceptButton: string; agent_sharingAccepted: string; agent_sharingCancelled: string; agent_sharingDeclineButton: string; agent_sharingDeclined: string; agent_sharingEnded: string; agent_sharingRequested: string; agent_sharingRequestMessage: string; agent_sharingRequestTitle: string; agent_sharingStopSharingButton: string; agent_startChat: string; agent_suspendedWarning: string; agent_transferring: string; agent_transferringNoName: string; agent_youConnectedWarning: string; agent_youEndedChat: string; ai_slug_description: string; ai_slug_label: string; ai_slug_title: string; aria_catastrophicErrorPanel: string; aria_customPanel: string; aria_disclaimerPanel: string; aria_historyRegion: string; aria_hydrationPanel: string; aria_iframePanel: string; aria_messagesRegion: string; aria_responsePanel: string; aria_viewSourcePanel: string; aria_workspaceRegion: string; buttons_cancel: string; buttons_restart: string; buttons_retry: string; carousel_nextNavButton: string; carousel_prevNavButton: string; chainOfThought_explainabilityLabel: string; chainOfThought_inputLabel: string; chainOfThought_outputLabel: string; chainOfThought_statusFailedLabel: string; chainOfThought_statusProcessingLabel: string; chainOfThought_statusSucceededLabel: string; chainOfThought_stepTitle: string; chainOfThought_toolLabel: string; codeSnippet_ariaLabelEditable: string; codeSnippet_ariaLabelEditableWithLanguage: string; codeSnippet_ariaLabelReadOnly: string; codeSnippet_ariaLabelReadOnlyWithLanguage: string; codeSnippet_feedback: string; codeSnippet_foldCollapse: string; codeSnippet_foldExpand: string; codeSnippet_lineCount: string; codeSnippet_showLessText: string; codeSnippet_showMoreText: string; codeSnippet_tooltipContent: string; components_overflow_ariaLabel: string; components_swiper_currentLabel: string; conversationalSearch_citationsLabel: string; conversationalSearch_responseStopped: string; conversationalSearch_streamingIncomplete: string; conversationalSearch_toggleCitations: string; conversationalSearch_viewSourceDocument: string; datePicker_chooseDate: string; datePicker_confirmDate: string; default_agent_availableMessage: string; default_agent_unavailableMessage: string; disclaimer_accept: string; disclaimer_acceptance_label: string; disclaimer_icon_label: string; disclaimer_title: string; errors_agentAppSessionExpired: string; errors_ariaMessageFailed: string; errors_ariaMessageRetrying: string; errors_audioSource: string; errors_busy: string; errors_communicating: string; errors_connectingToHumanAgent: string; errors_generalContent: string; errors_iframeSource: string; errors_imageSource: string; errors_noHumanAgentsAvailable: string; errors_noHumanAgentsJoined: string; errors_singleMessage: string; errors_somethingWrong: string; errors_videoSource: string; feedback_cancelLabel: string; feedback_categoriesLabel: string; feedback_defaultPlaceholder: string; feedback_defaultPrompt: string; feedback_defaultTitle: string; feedback_negativeLabel: string; feedback_positiveLabel: string; feedback_submitLabel: string; fileSharing_agentMessageText: string; fileSharing_ariaAnnounceFileRemoved: string; fileSharing_ariaAnnounceFilesAdded: string; fileSharing_ariaAnnounceFilesUploading: string; fileSharing_ariaAnnounceSuccess: string; fileSharing_fileIcon: string; fileSharing_fileTooLarge: string; fileSharing_removeButtonTitle: string; fileSharing_removeButtonTitleWithName: string; fileSharing_request: string; fileSharing_statusUploading: string; fileSharing_tooManyFiles: string; fileSharing_unsupportedType: string; fileSharing_uploadErrorRecovery: string; fileSharing_uploadErrorTitle: string; fileSharing_uploadFailed: string; general_ariaAnnounceClosedInformationOverlay: string; general_ariaAnnounceEscapeOverlay: string; general_ariaAnnounceOpenedInformationOverlay: string; general_ariaCloseInformationOverlay: string; general_returnToAssistant: string; header_ariaAssistantAvatar: string; header_overflowMenu_options: string; header_previewLinkTitle: string; history_hidden: string; history_new_chat: string; history_shown: string; history_view_chats: string; homeScreen_ariaHomeScreenContent: string; homeScreen_ariaQuickStartListButton: string; homeScreen_ariaQuickStartListClosed: string; homeScreen_ariaQuickStartListOpened: string; homeScreen_hidden: string; homeScreen_overflowMenuHomeScreen: string; homeScreen_returnToAssistant: string; homeScreen_returnToHome: string; homeScreen_shown: string; icon_ariaUnreadMessages: string; iframe_ariaClickPreviewCard: string; iframe_ariaClosedPanel: string; iframe_ariaClosePanel: string; iframe_ariaImageAltText: string; iframe_ariaOpenedPanel: string; iframe_ariaSourceLoaded: string; input_actionsMenuLabel: string; input_actionsOverflowLabel: string; input_ariaLabel: string; input_buttonLabel: string; input_completionsTagApp: string; input_completionsTagAssistant: string; input_keyboardShortcutAnnouncement: string; input_maxCharCountExceeded: string; input_maxCharCountExceededTitle: string; input_placeholder: string; input_sendingMessage: string; input_stopResponse: string; input_uploadButtonLabel: string; launcher_ariaIsExpanded: string; launcher_closeButton: string; launcher_desktopGreeting: string; launcher_isClosed: string; launcher_isOpen: string; launcher_mobileGreeting: string; media_audioPlayer_errorLabel: string; media_audioPlayer_loading: string; media_audioPlayer_loadingLabel: string; media_audioPlayer_ready: string; media_audioPlayer_readyLabel: string; media_transcript_hide: string; media_transcript_label: string; media_transcript_show: string; media_videoPlayer_errorLabel: string; media_videoPlayer_loading: string; media_videoPlayer_loadingLabel: string; media_videoPlayer_ready: string; media_videoPlayer_readyLabel: string; message_labelAssistant: string; message_labelUser: string; message_labelYou: string; messages_agentIsTyping: string; messages_agentSaid: string; messages_assistantIsLoading: string; messages_assistantSaid: string; messages_attachmentsLabel: string; messages_focusHandle: string; messages_processingLabel: string; messages_reasoningStart: string; messages_requestCancelled: string; messages_responseStopped: string; messages_scrollHandle: string; messages_scrollHandleDetailed: string; messages_scrollHandleDetailedNoShortcut: string; messages_scrollHandleEnd: string; messages_scrollHandleEndDetailed: string; messages_scrollHandleEndDetailedNoShortcut: string; messages_scrollMoreButton: string; messages_searchResults: string; messages_searchResultsCollapse: string; messages_searchResultsExpand: string; messages_searchResultsLink: string; messages_searchResultsOpenDocument: string; messages_searchResultsOpenDocumentWithLabel: string; messages_streamingStart: string; messages_unnamedAttachment: string; messages_userSaid: string; messages_youSaid: string; options_ariaOptionsDisabled: string; options_select: string; panel_closed: string; panel_opened: string; reasoningSteps_mainLabelClosed: string; reasoningSteps_mainLabelOpen: string; showMore: string; showMoreResults: string; table_downloadButton: string; table_filterPlaceholder: string; table_itemsPerPage: string; table_nextPage: string; table_paginationStatus: string; table_paginationSupplementalText: string; table_previousPage: string; window_ariaChatRegion: string; window_ariaChatRegionNamespace: string; window_ariaWindowClosed: string; window_ariaWindowLoading: string; window_ariaWindowOpened: string; window_title: string; workspace_closed: string; workspace_opened: string; workspace_opened_no_title: string }",
       "signatures": [],
       "members": [],
       "related": [

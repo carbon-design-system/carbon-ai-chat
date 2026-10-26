@@ -8,7 +8,7 @@
 
 - Kind: Function
 - Category: React
-- Reference: https://chat.carbondesignsystem.com/version/v1.23.0/docs/functions/Type_reference.ChatCustomElement.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/functions/Type_reference.ChatCustomElement.html
 
 This is the React component for people injecting a Carbon AI Chat with a custom element.
 

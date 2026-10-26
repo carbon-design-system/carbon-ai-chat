@@ -8,7 +8,7 @@
 
 - Kind: Function
 - Category: Utilities
-- Reference: https://chat.carbondesignsystem.com/version/v1.23.0/docs/functions/Type_reference.carbonStarterTrigger.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/functions/Type_reference.carbonStarterTrigger.html
 
 Tiptap extension factory for starter prompts shown while the editor is
 empty + focused + editable. Selection inserts the item's `value` (or
