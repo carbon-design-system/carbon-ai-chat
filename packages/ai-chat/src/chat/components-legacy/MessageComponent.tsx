@@ -1264,6 +1264,9 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     const isSystemMessage = isHumanAgentStatusMessage(
       messageItem.agent_message_type
     );
+    const isStatusNotice =
+      messageItem.agent_message_type === HumanAgentMessageType.RELOAD_WARNING ||
+      messageItem.agent_message_type === HumanAgentMessageType.DISCONNECTED;
 
     let isOptionResponseWithoutTitleOrDescription = false;
     if (isOptionItem(localMessageItem.item)) {
@@ -1362,6 +1365,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
                     'cds-aichat--received--full-width': isFullWidthUserDefined(
                       localMessageItem.item
                     ),
+                    'cds-aichat--received--chat-status-message': isStatusNotice,
                     'cds-aichat--message--historical': fromHistory,
                   }
                 )}
