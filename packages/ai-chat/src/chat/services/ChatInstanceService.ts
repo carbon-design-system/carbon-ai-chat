@@ -216,13 +216,15 @@ class ChatInstanceService {
     localMessage: LocalMessageItem,
     originalMessage: Message,
     messageState?: MessageState,
-    localItemsByID?: Record<string, LocalMessageItem>
+    localItemsByID?: Record<string, LocalMessageItem>,
+    isCurrent?: () => boolean
   ) {
     return this.serviceManager.slotEventService.handleUserDefinedResponseItems(
       localMessage,
       originalMessage,
       messageState,
-      localItemsByID
+      localItemsByID,
+      isCurrent
     );
   }
 
@@ -242,11 +244,13 @@ class ChatInstanceService {
   /** @see SlotEventService.handleCustomFooterSlot */
   async handleCustomFooterSlot(
     localMessage: LocalMessageItem,
-    originalMessage: MessageResponse
+    originalMessage: MessageResponse,
+    isCurrent?: () => boolean
   ) {
     return this.serviceManager.slotEventService.handleCustomFooterSlot(
       localMessage,
-      originalMessage
+      originalMessage,
+      isCurrent
     );
   }
 

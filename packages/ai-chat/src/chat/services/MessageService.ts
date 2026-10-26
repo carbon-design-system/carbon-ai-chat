@@ -101,6 +101,9 @@ interface SendMessageRequest {
 // In order to be able to resolve the correct message in the queue, we pass along the promise we will return with the
 // message and call resolve/reject on "resolvablePromise".
 export interface PendingMessageRequest extends SendMessageRequest {
+  /** Conversation generation in which this request was accepted. */
+  generation?: number;
+
   restartGeneration: number;
 
   /**
@@ -213,6 +216,11 @@ class MessageService {
    */
   public messageLoadingManager: MessageLoadingManager;
 
+  get currentRequestID() {
+    const current = this.queue.current;
+    return current && !current.isProcessed ? current.message.id : undefined;
+  }
+
   public registerRequestGeneration(
     requestID: string,
     restartGeneration: number
@@ -247,8 +255,10 @@ class MessageService {
       (pendingRequest, received) =>
         this.processSuccess(pendingRequest, received),
       () => this.serviceManager.store.getState().config.public.messaging || {},
+      (pendingRequest) => this.finishFailedStreamingResponse(pendingRequest),
       (requestID, restartGeneration) =>
-        this.registerRequestGeneration(requestID, restartGeneration)
+        this.registerRequestGeneration(requestID, restartGeneration),
+      () => this.hideStopStreamingButtonIfNoUpsertStreaming()
     );
     this.queue = {
       waiting: [],
@@ -330,9 +340,9 @@ class MessageService {
     // For streaming messages, don't clear the queue yet - wait for FinalResponseChunk to arrive
     // For non-streaming messages (addMessage), clear immediately
     if (!current.isStreaming) {
-      // Hide stop streaming button if it was shown for showStopButtonImmediately
-      // Pass streamingMessageID to keep button visible if there's an active stream
-      this.resetStopStreamingButtonIfIdle();
+      // Hide stop streaming button if it was shown for showStopButtonImmediately, unless
+      // some other message is still streaming.
+      this.hideStopStreamingButtonIfIdle();
       this.moveToNextQueueItem();
     }
   }
@@ -488,6 +498,8 @@ class MessageService {
     this.messageAbortControllers.set(message.id, controller);
 
     const newPendingMessage: PendingMessageRequest = {
+      generation:
+        this.serviceManager.conversationLifecycleService.currentGeneration,
       restartGeneration: this.serviceManager.restartCount,
       localMessageID,
       message,
@@ -659,8 +671,6 @@ class MessageService {
     // Abort listeners can remove controllers from tracking before cancellation finishes.
     const messageAbortControllers = Array.from(this.messageAbortControllers);
 
-    this.serviceManager.messageUpsertCoordinator.endAllStreaming(reason);
-    this.resetStopStreamingButtonIfIdle();
     while (this.queue.waiting.length) {
       await this.cancelMessageRequestByID(
         this.queue.waiting[0].message.id,
@@ -675,6 +685,15 @@ class MessageService {
         reason
       );
       this.clearCurrentQueueItem();
+    }
+
+    // Settle every upsert-driven stream. Mirror cancelCurrentMessageRequest's
+    // cleanup: if any upsert stream was running, the stop button must come down
+    // now that nothing in the send-queue remains either.
+    const settledUpsertStreams =
+      this.serviceManager.messageUpsertCoordinator.endAllStreaming(reason);
+    if (settledUpsertStreams) {
+      this.hideStopStreamingButtonIfIdle();
     }
 
     for (const [messageID, controller] of messageAbortControllers) {
@@ -704,36 +723,118 @@ class MessageService {
    */
   public finalizeStreamingMessage(messageID: string) {
     this.inboundStreaming.finalizeStreamingMessage(messageID);
+    this.serviceManager.conversationLifecycleService.responseFinished(
+      messageID
+    );
+  }
+
+  /** Ends response streaming without treating the associated transport as complete. */
+  public markStreamingResponseError(messageID: string) {
+    const responseID = this.inboundStreaming.resolveResponseId(messageID);
+    const streamingMeta = this.inboundStreaming.getStreamingMeta(responseID);
+    const current = this.queue.current;
+    const isCurrentResponse = Boolean(
+      current &&
+      (current.message.id === responseID ||
+        current.message.id === streamingMeta?.requestId ||
+        (current.isStreaming &&
+          this.inboundStreaming.streamingMessageID === responseID))
+    );
+    this.serviceManager.messageUpsertCoordinator.endStreamingMessage(
+      responseID,
+      isCurrentResponse ? current.generation : undefined
+    );
+    this.inboundStreaming.clearStreamingResponse(responseID);
+    if (isCurrentResponse) {
+      current.isStreaming = false;
+      if (current.isProcessed) {
+        this.moveToNextQueueItem();
+      }
+    }
+    this.hideStopStreamingButtonIfIdle();
+  }
+
+  private finishFailedStreamingResponse(pendingRequest: PendingMessageRequest) {
+    this.serviceManager.messageUpsertCoordinator.endStreamingForRequest(
+      pendingRequest.message.id,
+      pendingRequest.generation
+    );
+    this.serviceManager.conversationLifecycleService.requestStopped(
+      pendingRequest.message.id,
+      pendingRequest.generation
+    );
+    if (!pendingRequest.isStreaming) {
+      return;
+    }
+    const responseID =
+      this.inboundStreaming.streamingMessageID || pendingRequest.message.id;
+    pendingRequest.isStreaming = false;
+    const streamingMeta = this.inboundStreaming.getStreamingMeta(responseID);
+    if (streamingMeta?.requestId !== pendingRequest.message.id) {
+      return;
+    }
+    this.inboundStreaming.clearStreamingResponse(responseID);
+    this.serviceManager.conversationLifecycleService.responseFinished(
+      responseID,
+      pendingRequest.generation
+    );
   }
 
   getCurrentMessageController() {
     return this.queue.current?.sendMessageController;
   }
 
-  resetStopStreamingButtonIfIdle() {
+  /**
+   * Returns true when any message is still streaming, whichever API is driving it —
+   * `addMessageChunk` (tracked by {@link inboundStreaming}) or `upsertMessage` (tracked
+   * by the upsert coordinator). This is the single source of truth for "is the chat still
+   * producing output", so the stop streaming button does not vanish when one of several
+   * concurrent streams finishes.
+   */
+  public isAnyMessageStreaming(): boolean {
+    if (this.inboundStreaming.streamingMessageID) {
+      return true;
+    }
+    return this.serviceManager.messageUpsertCoordinator.hasStreamingMessages();
+  }
+
+  /**
+   * Hides the stop streaming button unless something is still streaming.
+   */
+  public hideStopStreamingButtonIfIdle() {
     if (
-      !this.inboundStreaming.streamingMessageID &&
+      !this.isAnyMessageStreaming() &&
       (!this.queue.current || this.queue.current.isProcessed)
     ) {
-      this.resetStopStreamingButtonWithoutUpserts();
+      resetStopStreamingButton(this.serviceManager.store);
     }
   }
 
-  resetStopStreamingButtonWithoutUpserts() {
+  /**
+   * Hides the stop streaming button unless an `upsertMessage` stream is still running.
+   *
+   * The chunk flow has always hidden the button on its own `complete_item`, and that
+   * behavior is deliberately preserved — so these call sites must ignore
+   * {@link inboundStreaming} and ask only whether the *other* flow is live. Consulting the
+   * chunk state here would keep the button up past a `complete_item`, which is a different
+   * change than the one this method exists to make.
+   */
+  public hideStopStreamingButtonIfNoUpsertStreaming() {
     if (!this.serviceManager.messageUpsertCoordinator.hasStreamingMessages()) {
       resetStopStreamingButton(this.serviceManager.store);
     }
   }
 
   /**
-   * Cancels the current message request if one is in progress.
-   * Also handles streaming messages that may have been cleared from the queue.
+   * Cancels the current request and settles every registered chunk and upsert stream.
    */
   public async cancelCurrentMessageRequest(
     reason: string = CancellationReason.STOP_STREAMING
   ) {
+    // Settle before the chunk branch, which can return early.
     this.serviceManager.messageUpsertCoordinator.endAllStreaming(reason);
-    this.resetStopStreamingButtonIfIdle();
+    this.hideStopStreamingButtonIfIdle();
+
     // If there's a streaming message, cancel it even if not in queue
     if (this.inboundStreaming.streamingMessageID) {
       await this.cancelMessageRequestByID(
@@ -825,6 +926,12 @@ class MessageService {
 
     // Only process the pending request if it exists (it may have already been cleared from queue)
     if (pendingRequest) {
+      if (reason !== CancellationReason.TIMEOUT) {
+        this.serviceManager.conversationLifecycleService.requestStopped(
+          pendingRequest.message.id,
+          pendingRequest.generation
+        );
+      }
       if (reason === CancellationReason.TIMEOUT) {
         this.outboundCoordinator.rejectFinalErrorOnMessage(
           pendingRequest,
@@ -844,9 +951,15 @@ class MessageService {
         // Mark as processed and advance the queue
         pendingRequest.sendMessagePromise.doResolve();
         pendingRequest.isProcessed = true;
+        this.serviceManager.conversationLifecycleService.responseFinished(
+          responseId,
+          pendingRequest.generation
+        );
         // Hide and re-enable the stop streaming button now that cancellation has
         // completed; processSuccess/processError will short-circuit on isProcessed.
-        this.resetStopStreamingButtonWithoutUpserts();
+        // This hid unconditionally before `upsertMessage` existed, so it still ignores
+        // other chunk streams; only a running upsert stream keeps the button up.
+        this.hideStopStreamingButtonIfNoUpsertStreaming();
         if (pendingRequest === this.queue.current) {
           this.moveToNextQueueItem();
         }
@@ -888,6 +1001,16 @@ class MessageService {
       logError,
       reason
     );
+
+    // A canceled stream often ends without a `complete_item` or `final_response` — the
+    // host simply breaks out of its loop. Nothing else would settle the items' streaming
+    // flags, which left streaming-aware rendering (an in-progress markdown table, for
+    // one) engaged for the rest of the session.
+    if (streamingEntry) {
+      this.serviceManager.store.dispatch(
+        actions.endMessageStreaming(responseId)
+      );
+    }
 
     if (!pendingRequest && wasStreamingCurrent) {
       this.moveToNextQueueItem();

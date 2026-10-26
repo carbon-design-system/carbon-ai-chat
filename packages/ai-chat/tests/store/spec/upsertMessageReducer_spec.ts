@@ -32,7 +32,12 @@ import {
   CardItem,
   MessageResponse,
   MessageResponseTypes,
+  PauseItem,
+  TextItem,
 } from '../../../src/types/messaging/Messages';
+import { LocalMessageItem } from '../../../src/types/messaging/LocalMessageItem';
+import { HumanAgentsOnlineStatus } from '../../../src/types/config/ServiceDeskConfig';
+import { deriveStreamingItemText } from '../../../src/chat/utils/streamingUtils';
 
 function rootReducer(
   state: AppState,
@@ -204,6 +209,32 @@ describe('[UPSERT_MESSAGE] reducer', () => {
     expect(stateAfter.allMessagesByID['m1']).toBe(messageRefBefore);
   });
 
+  it("keeps the chat's own ui_state_internal when the upserted message leaves it out", () => {
+    store.dispatch(actions.upsertMessage(makeTextResponse('m1', ['alpha'])));
+    store.dispatch(
+      actions.setMessageUIStateInternalProperty(
+        'm1',
+        'agent_availability',
+        HumanAgentsOnlineStatus.ONLINE
+      )
+    );
+
+    // A host updater that ignores the previous message.
+    const next: MessageResponse = {
+      ...makeTextResponse('m1', ['beta']),
+      ui_state_internal: { from_history: false },
+    };
+    store.dispatch(actions.upsertMessage(next));
+
+    const stored = (store.getState() as AppState).allMessagesByID['m1'];
+    expect(stored.ui_state_internal).toEqual({
+      from_history: false,
+      agent_availability: HumanAgentsOnlineStatus.ONLINE,
+    });
+    // The host's own object is left alone.
+    expect(next.ui_state_internal).toEqual({ from_history: false });
+  });
+
   it('prunes dropped items from allMessageItemsByID', () => {
     store.dispatch(
       actions.upsertMessage(
@@ -309,6 +340,770 @@ describe('[UPSERT_MESSAGE] reducer', () => {
     expect(after.allMessagesByID['m1']).toBe(m1MessageRefBefore);
     expect(after.allMessagesByID['m3']).toBe(m3MessageRefBefore);
   });
+
+  describe('streaming flags', () => {
+    it('marks items as streaming while the message is streaming', () => {
+      store.dispatch(
+        actions.upsertMessage(makeTextResponse('s1', ['partial']), true)
+      );
+
+      const [local] = localItemsForMessage(store.getState() as AppState, 's1');
+      expect(local.ui_state.streamingState?.isDone).toBe(false);
+    });
+
+    it('settles the flags when the message stops streaming', () => {
+      store.dispatch(
+        actions.upsertMessage(makeTextResponse('s2', ['partial']), true)
+      );
+      store.dispatch(
+        actions.upsertMessage(makeTextResponse('s2', ['all of it']), false)
+      );
+
+      const [local] = localItemsForMessage(store.getState() as AppState, 's2');
+      expect(local.ui_state.streamingState?.isDone).toBe(true);
+    });
+
+    it('settles the flags even when the payload did not change', () => {
+      // The reference-stability path would otherwise reuse the streaming item
+      // verbatim and leave it rendering as mid-stream forever.
+      store.dispatch(
+        actions.upsertMessage(makeTextResponse('s3', ['same'], ['1']), true)
+      );
+      store.dispatch(
+        actions.upsertMessage(makeTextResponse('s3', ['same'], ['1']), false)
+      );
+
+      const [local] = localItemsForMessage(store.getState() as AppState, 's3');
+      expect(local.ui_state.streamingState?.isDone).toBe(true);
+    });
+
+    it('keeps a settled sibling by reference while another item streams', () => {
+      store.dispatch(
+        actions.upsertMessage(
+          makeTextResponse('sib', ['done', 'partial'], ['a', 'b']),
+          true
+        )
+      );
+      const [firstBefore] = localItemsForMessage(
+        store.getState() as AppState,
+        'sib'
+      );
+
+      // Only the second item changes, and the streaming state is unchanged.
+      store.dispatch(
+        actions.upsertMessage(
+          makeTextResponse('sib', ['done', 'partial, more'], ['a', 'b']),
+          true
+        )
+      );
+
+      const [firstAfter] = localItemsForMessage(
+        store.getState() as AppState,
+        'sib'
+      );
+      expect(firstAfter).toBe(firstBefore);
+    });
+
+    it('never sets isIntermediateStreaming, so cards and their contents render mid-stream', () => {
+      // isIntermediateStreaming hides every response type outside
+      // canRenderIntermediateStreaming. Upserted cards have always rendered while
+      // streaming; setting the flag here would hide them until COMPLETE.
+      const card: MessageResponse = {
+        id: 's5',
+        output: {
+          generic: [
+            {
+              response_type: MessageResponseTypes.CARD,
+              body: [
+                { response_type: MessageResponseTypes.TEXT, text: 'in a card' },
+              ],
+            } as CardItem,
+          ],
+        },
+      };
+
+      store.dispatch(actions.upsertMessage(card, true));
+
+      const state = store.getState() as AppState;
+      const items = Object.values(state.allMessageItemsByID).filter(
+        (item) => item.fullMessageID === 's5'
+      );
+      expect(items.length).toBeGreaterThan(1);
+      for (const item of items) {
+        expect(item.ui_state.isIntermediateStreaming).toBeUndefined();
+      }
+    });
+  });
+
+  describe('[END_MESSAGE_STREAMING] reducer', () => {
+    it('settles a streaming message left mid-stream', () => {
+      store.dispatch(
+        actions.upsertMessage(makeTextResponse('e1', ['partial']), true)
+      );
+
+      store.dispatch(actions.endMessageStreaming('e1'));
+
+      const [local] = localItemsForMessage(store.getState() as AppState, 'e1');
+      expect(local.ui_state.streamingState?.isDone).toBe(true);
+    });
+
+    it('keeps the text a chunk stream had shown when it is cut off', () => {
+      // Chunk-delivered items hold only their first delta in `item`; the rest sits in
+      // `streamingState.chunks`, which renderers stop reading once the item settles.
+      const streamInto: MessageResponse = {
+        id: 'c1',
+        output: { generic: [] },
+        history: { timestamp: 1 },
+      };
+      const addChunk = (text: string) =>
+        store.dispatch(
+          actions.upsertMessage(streamInto, true, undefined, {
+            origin: 'chunk',
+            chunk: {
+              item: {
+                response_type: MessageResponseTypes.TEXT,
+                text,
+                streaming_metadata: { id: '1' },
+              },
+              isComplete: false,
+            },
+          })
+        );
+      addChunk('Hello, ');
+      addChunk('world');
+
+      store.dispatch(actions.endMessageStreaming('c1'));
+
+      const [local] = localItemsForMessage(store.getState() as AppState, 'c1');
+      expect(local.ui_state.streamingState?.isDone).toBe(true);
+      expect((local.item as any).text).toBe('Hello, world');
+      // Settling never reveals a type the chunk flow hides mid-stream.
+      expect(local.ui_state.isIntermediateStreaming).toBe(true);
+    });
+
+    it('leaves other messages alone', () => {
+      store.dispatch(
+        actions.upsertMessage(makeTextResponse('e2', ['a']), true)
+      );
+      store.dispatch(
+        actions.upsertMessage(makeTextResponse('e3', ['b']), true)
+      );
+
+      store.dispatch(actions.endMessageStreaming('e2'));
+
+      const [other] = localItemsForMessage(store.getState() as AppState, 'e3');
+      expect(other.ui_state.streamingState?.isDone).toBe(false);
+    });
+
+    it('returns the same state object when nothing was streaming', () => {
+      store.dispatch(actions.upsertMessage(makeTextResponse('e4', ['done'])));
+      const before = store.getState();
+
+      store.dispatch(actions.endMessageStreaming('e4'));
+
+      expect(store.getState()).toBe(before);
+    });
+  });
+
+  describe('announcement', () => {
+    const flags = (id: string) => {
+      const [item] = localItemsForMessage(store.getState() as AppState, id);
+      return {
+        needsAnnouncement: item.ui_state.needsAnnouncement,
+        wasAnnounced: item.ui_state.wasAnnounced,
+        localID: item.ui_state.id,
+      };
+    };
+
+    it('holds the announcement while streaming and asks for it once the item settles', () => {
+      store.dispatch(
+        actions.upsertMessage(makeTextResponse('a1', ['He']), true)
+      );
+      expect(flags('a1').needsAnnouncement).toBe(false);
+
+      store.dispatch(actions.upsertMessage(makeTextResponse('a1', ['Hello'])));
+      expect(flags('a1').needsAnnouncement).toBe(true);
+    });
+
+    it('does not ask again for an item already announced, even when it changes', () => {
+      store.dispatch(actions.upsertMessage(makeTextResponse('a2', ['Hello'])));
+      store.dispatch(actions.setMessageWasAnnounced(flags('a2').localID));
+      expect(flags('a2')).toMatchObject({
+        needsAnnouncement: false,
+        wasAnnounced: true,
+      });
+
+      store.dispatch(
+        actions.upsertMessage(makeTextResponse('a2', ['Hello, edited']))
+      );
+      expect(flags('a2')).toMatchObject({
+        needsAnnouncement: false,
+        wasAnnounced: true,
+      });
+    });
+  });
+
+  describe('pause', () => {
+    const withPause = (id: string, texts: string[]): MessageResponse => {
+      const message = makeTextResponse(id, texts);
+      message.output.generic.splice(1, 0, {
+        response_type: MessageResponseTypes.PAUSE,
+        time: 500,
+      } as any);
+      return message;
+    };
+    const texts = (id: string) =>
+      localItemsForMessage(store.getState() as AppState, id).map(
+        (item) => (item.item as any).text
+      );
+
+    it('never gives a pause item a local item', () => {
+      store.dispatch(actions.upsertMessage(withPause('p1', ['a', 'b'])));
+      expect(texts('p1')).toEqual(['a', 'b']);
+    });
+
+    it('holds back new items from the given index but keeps the ones already shown', () => {
+      store.dispatch(
+        actions.upsertMessage(withPause('p2', ['a', 'b']), false, 1)
+      );
+      expect(texts('p2')).toEqual(['a']);
+
+      store.dispatch(actions.upsertMessage(withPause('p2', ['a', 'b'])));
+      expect(texts('p2')).toEqual(['a', 'b']);
+
+      store.dispatch(
+        actions.upsertMessage(withPause('p2', ['a', 'b', 'c']), false, 1)
+      );
+      expect(texts('p2')).toEqual(['a', 'b']);
+    });
+
+    it('keeps the prior item visible when a new item precedes it after a pause', () => {
+      const initial = makeTextResponse('p3', ['A'], ['a']);
+      store.dispatch(actions.upsertMessage(initial, true));
+      const [prior] = localItemsForMessage(store.getState() as AppState, 'p3');
+      const next = makeTextResponse('p3', ['B', 'A'], ['b', 'a']);
+      next.output.generic.unshift({
+        response_type: MessageResponseTypes.PAUSE,
+        time: 500,
+      });
+
+      store.dispatch(actions.upsertMessage(next, true, 0));
+
+      expect(texts('p3')).toEqual(['A']);
+      expect(localItemsForMessage(store.getState() as AppState, 'p3')[0]).toBe(
+        prior
+      );
+
+      store.dispatch(actions.upsertMessage(next, true));
+
+      expect(texts('p3')).toEqual(['B', 'A']);
+    });
+
+    it('holds a replacement with a different streaming id until the pause ends', () => {
+      store.dispatch(
+        actions.upsertMessage(makeTextResponse('p4', ['A'], ['a']), true)
+      );
+      const next = makeTextResponse('p4', ['B'], ['b']);
+      next.output.generic.unshift({
+        response_type: MessageResponseTypes.PAUSE,
+        time: 500,
+      });
+
+      store.dispatch(actions.upsertMessage(next, true, 0));
+      expect(texts('p4')).toEqual([]);
+
+      store.dispatch(actions.upsertMessage(next, true));
+      expect(texts('p4')).toEqual(['B']);
+    });
+
+    it('retains positional matches when a new identified item is held back', () => {
+      store.dispatch(
+        actions.upsertMessage(
+          makeTextResponse('p5', ['A', 'Positional'], ['a']),
+          true
+        )
+      );
+      const [priorA, priorPositional] = localItemsForMessage(
+        store.getState() as AppState,
+        'p5'
+      );
+      const next = makeTextResponse(
+        'p5',
+        ['B', 'Positional', 'A'],
+        ['b', undefined, 'a']
+      );
+      next.output.generic.unshift({
+        response_type: MessageResponseTypes.PAUSE,
+        time: 500,
+      });
+
+      store.dispatch(actions.upsertMessage(next, true, 0));
+
+      const visible = localItemsForMessage(store.getState() as AppState, 'p5');
+      expect(texts('p5')).toEqual(['Positional', 'A']);
+      expect(visible[0]).toBe(priorPositional);
+      expect(visible[1]).toBe(priorA);
+
+      store.dispatch(
+        actions.upsertMessage(next, true, undefined, {
+          pauseReveal: {
+            originalLocalIDs: [priorA.ui_state.id, priorPositional.ui_state.id],
+            previousHoldFromIndex: 0,
+          },
+        })
+      );
+
+      const revealed = localItemsForMessage(store.getState() as AppState, 'p5');
+      expect(texts('p5')).toEqual(['B', 'Positional', 'A']);
+      expect(revealed[1]).toBe(priorPositional);
+      expect(revealed[2]).toBe(priorA);
+    });
+
+    it('keeps equal positional siblings distinct through two pause reveals', () => {
+      store.dispatch(
+        actions.upsertMessage(
+          makeTextResponse('p6', ['A', 'Same'], ['a']),
+          true
+        )
+      );
+      const [priorA, priorPositional] = localItemsForMessage(
+        store.getState() as AppState,
+        'p6'
+      );
+      const originalLocalIDs = [
+        priorA.ui_state.id,
+        priorPositional.ui_state.id,
+      ];
+      const next = makeTextResponse(
+        'p6',
+        ['Same', 'Same', 'New', 'A'],
+        [undefined, undefined, undefined, 'a']
+      );
+      const pause: PauseItem = {
+        response_type: MessageResponseTypes.PAUSE,
+        time: 500,
+      };
+      next.output.generic.unshift(pause);
+      next.output.generic.splice(3, 0, pause);
+
+      store.dispatch(actions.upsertMessage(next, true, 0));
+      expect(texts('p6')).toEqual(['Same', 'A']);
+      expect(localItemsForMessage(store.getState() as AppState, 'p6')[0]).toBe(
+        priorPositional
+      );
+
+      store.dispatch(
+        actions.upsertMessage(next, true, 3, {
+          pauseReveal: { originalLocalIDs, previousHoldFromIndex: 0 },
+        })
+      );
+      const between = localItemsForMessage(store.getState() as AppState, 'p6');
+      expect(texts('p6')).toEqual(['Same', 'Same', 'A']);
+      expect(between[0]).not.toBe(priorPositional);
+      expect(between[1]).toBe(priorPositional);
+
+      store.dispatch(
+        actions.upsertMessage(next, true, undefined, {
+          pauseReveal: { originalLocalIDs, previousHoldFromIndex: 3 },
+        })
+      );
+      const revealed = localItemsForMessage(store.getState() as AppState, 'p6');
+      expect(texts('p6')).toEqual(['Same', 'Same', 'New', 'A']);
+      expect(revealed[0]).toBe(between[0]);
+      expect(revealed[1]).toBe(priorPositional);
+      expect(revealed[3]).toBe(priorA);
+    });
+  });
+
+  describe('chunk-origin streaming writes', () => {
+    const placeholder = (id: string): MessageResponse => ({
+      id,
+      output: { generic: [] },
+      history: { timestamp: 1 },
+    });
+    const text = (itemID: string | undefined, value: string) => ({
+      response_type: MessageResponseTypes.TEXT,
+      text: value,
+      ...(itemID ? { streaming_metadata: { id: itemID } } : {}),
+    });
+    const writeChunk = (
+      message: MessageResponse,
+      item: Record<string, unknown>,
+      isComplete = false,
+      isStopped = false
+    ) =>
+      store.dispatch(
+        actions.upsertMessage(message, true, undefined, {
+          origin: 'chunk',
+          chunk: { item, isComplete, isStopped },
+        })
+      );
+    const state = () => store.getState() as AppState;
+
+    const renderedText = (id: string) => {
+      const local = localItemsForMessage(
+        state(),
+        id
+      )[0] as LocalMessageItem<TextItem>;
+      return deriveStreamingItemText(
+        local.item.text,
+        local.ui_state.streamingState
+      );
+    };
+
+    it('preserves snapshot text when chunks continue the same item and the stream stops', () => {
+      const message = makeTextResponse('mixed-text', ['Hel'], ['a']);
+      store.dispatch(actions.upsertMessage(message, true));
+
+      writeChunk(message, text('a', 'lo'));
+      expect(renderedText(message.id)).toBe('Hello');
+      writeChunk(message, text('a', ' there'));
+      expect(renderedText(message.id)).toBe('Hello there');
+
+      store.dispatch(actions.endMessageStreaming(message.id));
+      expect(renderedText(message.id)).toBe('Hello there');
+    });
+
+    describe.each([
+      MessageResponseTypes.TEXT,
+      MessageResponseTypes.CONVERSATIONAL_SEARCH,
+    ])('stopped %s chunks', (responseType) => {
+      it.each(['new', 'streaming', 'settled'] as const)(
+        'preserves repeated deltas for a %s item without changing siblings',
+        (initialState) => {
+          const message = placeholder('stopped');
+          const delta = (value: string) => ({
+            ...text('a', value),
+            response_type: responseType,
+          });
+          if (initialState !== 'new') {
+            writeChunk(message, delta('Earlier '));
+            writeChunk(message, delta('text. '));
+            if (initialState === 'settled') {
+              store.dispatch(actions.endMessageStreaming(message.id));
+            }
+          }
+          writeChunk(message, text('sibling', 'Unchanged'));
+          const sibling = state().allMessageItemsByID['stopped-sibling'];
+          const prefix = initialState === 'new' ? '' : 'Earlier text. ';
+
+          for (const [value, expected] of [
+            ['Hello ', `${prefix}Hello `],
+            ['world', `${prefix}Hello world`],
+          ]) {
+            const before = state().allMessageItemsByID['stopped-a'];
+            const previousText = (before?.item as TextItem)?.text;
+            writeChunk(message, delta(value), false, true);
+
+            const local = state().allMessageItemsByID[
+              'stopped-a'
+            ] as LocalMessageItem<TextItem>;
+            expect(local.item.text).toBe(expected);
+            expect(
+              deriveStreamingItemText(
+                local.item.text,
+                local.ui_state.streamingState
+              )
+            ).toBe(expected);
+            expect(local.ui_state.streamingState).toEqual({
+              chunks: [],
+              isDone: true,
+            });
+            expect(local.ui_state.isIntermediateStreaming).toBe(true);
+            expect(local.ui_state.needsAnnouncement).toBe(false);
+            expect(state().allMessageItemsByID['stopped-sibling']).toBe(
+              sibling
+            );
+            expect((before?.item as TextItem)?.text).toBe(previousText);
+          }
+
+          writeChunk(message, delta('Final replacement'), true, true);
+          const completed = state().allMessageItemsByID[
+            'stopped-a'
+          ] as LocalMessageItem<TextItem>;
+          expect(completed.item.text).toBe('Final replacement');
+          expect(completed.ui_state.isIntermediateStreaming).toBe(false);
+          expect(completed.ui_state.streamingState).toEqual({
+            chunks: [],
+            isDone: true,
+          });
+        }
+      );
+    });
+
+    it('continues the latest snapshot after switching from chunks and back', () => {
+      const message = makeTextResponse('mixed-snapshot', ['Old'], ['a']);
+      store.dispatch(actions.upsertMessage(message, true));
+      writeChunk(message, text('a', ' text'));
+      const updated = makeTextResponse(message.id, ['New'], ['a']);
+      store.dispatch(actions.upsertMessage(updated, true));
+
+      writeChunk(updated, text('a', ' text'));
+
+      expect(renderedText(message.id)).toBe('New text');
+    });
+
+    it('builds a new partial item from the chunk itself, hidden and unannounced', () => {
+      const message = placeholder('c1');
+      const delta = text('a', 'Hel');
+
+      writeChunk(message, delta);
+
+      const local = state().allMessageItemsByID['c1-a'];
+      expect(local.item).toBe(delta);
+      expect(local.fullMessageID).toBe('c1');
+      expect(local.ui_state.needsAnnouncement).toBe(false);
+      expect(local.ui_state.isIntermediateStreaming).toBe(true);
+      expect(local.ui_state.streamingState).toEqual({
+        chunks: [delta],
+        isDone: false,
+      });
+      expect(local.ui_state.streamingState.chunks[0]).toBe(delta);
+      expect(state().allMessagesByID['c1']).toBe(message);
+      expect(state().assistantMessageState.messageIDs).toEqual(['c1']);
+    });
+
+    it('only stores the message for a chunk that carries no item', () => {
+      const message: MessageResponse = {
+        ...placeholder('c-options'),
+        message_options: { response_user_profile: { id: 'bot' } } as any,
+      };
+
+      store.dispatch(
+        actions.upsertMessage(message, true, undefined, {
+          origin: 'chunk',
+          chunk: { item: undefined, isComplete: false },
+        })
+      );
+
+      expect(state().allMessagesByID['c-options']).toBe(message);
+      expect(
+        Object.values(state().allMessageItemsByID).filter(
+          (item) => item.fullMessageID === 'c-options'
+        )
+      ).toHaveLength(0);
+    });
+
+    it('keeps a new complete_item hidden but settled', () => {
+      writeChunk(placeholder('c2'), text('a', 'Done'), true);
+
+      const local = state().allMessageItemsByID['c2-a'];
+      expect(local.ui_state.isIntermediateStreaming).toBe(true);
+      expect(local.ui_state.streamingState).toEqual({
+        chunks: [],
+        isDone: true,
+      });
+    });
+
+    it('adds later partials to chunks and leaves the item and the list alone', () => {
+      const message = placeholder('c3');
+      const first = text('a', 'Hello ');
+      writeChunk(message, first);
+      const idsBefore = state().assistantMessageState.localMessageIDs;
+
+      const second = text('a', 'world');
+      writeChunk(message, second);
+
+      const local = state().allMessageItemsByID['c3-a'];
+      expect(local.item).toBe(first);
+      expect(local.ui_state.streamingState).toEqual({
+        chunks: [first, second],
+        isDone: false,
+      });
+      expect(state().assistantMessageState.localMessageIDs).toBe(idsBefore);
+    });
+
+    it('merges a complete_item over the first chunk and shows the item', () => {
+      const message = placeholder('c4');
+      writeChunk(message, { ...text('a', 'Part'), first_only: 'kept' });
+      writeChunk(message, { ...text('a', 'ial'), second_only: 'lost' });
+
+      writeChunk(message, text('a', 'Complete'), true);
+
+      const local = state().allMessageItemsByID['c4-a'];
+      expect(local.item).toEqual({
+        ...text('a', 'Complete'),
+        first_only: 'kept',
+      });
+      expect(local.ui_state.isIntermediateStreaming).toBe(false);
+      expect(local.ui_state.streamingState).toEqual({
+        chunks: [],
+        isDone: true,
+      });
+    });
+
+    it('carries isDone over on a partial that follows a complete_item', () => {
+      const message = placeholder('c5');
+      writeChunk(message, text('a', 'Done'), true);
+      const late = text('a', ' late');
+
+      writeChunk(message, late);
+
+      expect(
+        state().allMessageItemsByID['c5-a'].ui_state.streamingState
+      ).toEqual({ chunks: [late], isDone: true });
+    });
+
+    it('appends new items at the end of the whole list, not with their message', () => {
+      writeChunk(placeholder('A'), text('a1', 'A1'));
+      writeChunk(placeholder('B'), text('b1', 'B1'));
+      writeChunk(placeholder('A'), text('a2', 'A2'));
+
+      expect(state().assistantMessageState.localMessageIDs).toEqual([
+        'A-a1',
+        'B-b1',
+        'A-a2',
+      ]);
+    });
+
+    it('keys an item without a streaming id once per message', () => {
+      writeChunk(placeholder('n1'), text(undefined, 'One'));
+      writeChunk(placeholder('n2'), text(undefined, 'Two'));
+
+      expect(state().assistantMessageState.localMessageIDs).toEqual([
+        'n1-__no_stream_id__',
+        'n2-__no_stream_id__',
+      ]);
+    });
+
+    it('builds no nested items for a container', () => {
+      const card = {
+        response_type: MessageResponseTypes.CARD,
+        streaming_metadata: { id: 'card' },
+        body: [{ response_type: MessageResponseTypes.TEXT, text: 'in a card' }],
+      };
+
+      writeChunk(placeholder('c6'), card, true);
+
+      const items = Object.values(state().allMessageItemsByID).filter(
+        (item) => item.fullMessageID === 'c6'
+      );
+      expect(items).toHaveLength(1);
+      expect(items[0].ui_state.bodyLocalMessageItemIDs).toBeUndefined();
+    });
+
+    it('leaves the message’s other items and the stored message as they were', () => {
+      const upserted = makeTextResponse('c7', ['From upsert'], ['a']);
+      store.dispatch(actions.upsertMessage(upserted, true));
+      const [upsertedLocal] = localItemsForMessage(state(), 'c7');
+      const messagesBefore = state().allMessagesByID;
+
+      writeChunk(upserted, text('b', 'From chunk'));
+
+      expect(localItemsForMessage(state(), 'c7')[0]).toBe(upsertedLocal);
+      expect(state().allMessagesByID).toBe(messagesBefore);
+      expect(state().assistantMessageState.localMessageIDs).toEqual([
+        'c7-a',
+        'c7-b',
+      ]);
+    });
+
+    it('keeps an open home screen open', () => {
+      store = createAppStore(rootReducer, {
+        ...createInitialAppState(),
+        persistedToBrowserStorage: {
+          ...DEFAULT_PERSISTED_TO_BROWSER,
+          homeScreenState: {
+            isHomeScreenOpen: true,
+            showBackToAssistant: false,
+          },
+        },
+      });
+
+      writeChunk(placeholder('c8'), text('a', 'Hi'));
+
+      expect(
+        state().persistedToBrowserStorage.homeScreenState.isHomeScreenOpen
+      ).toBe(true);
+    });
+
+    it('throws and writes nothing when a new item has no response_type', () => {
+      const before = state();
+
+      expect(() =>
+        writeChunk(placeholder('c9'), { streaming_metadata: { id: 'a' } })
+      ).toThrow('New chunk item does not have a response_type');
+      expect(state()).toBe(before);
+    });
+
+    describe('which types stay hidden mid-stream', () => {
+      // A copy of canRenderIntermediateStreaming in MessageComponent.tsx, which isn't
+      // exported: the types the chat draws while isIntermediateStreaming is set.
+      const drawnMidStream = new Set<string>([
+        MessageResponseTypes.IMAGE,
+        MessageResponseTypes.VIDEO,
+        MessageResponseTypes.AUDIO,
+        MessageResponseTypes.OPTION,
+        MessageResponseTypes.IFRAME,
+        MessageResponseTypes.INLINE_ERROR,
+        MessageResponseTypes.CONVERSATIONAL_SEARCH,
+        MessageResponseTypes.USER_DEFINED,
+        MessageResponseTypes.TEXT,
+      ]);
+      // Whether each chunk sequence leaves an item hidden, as
+      // [new partial, new complete, partial then complete, complete then complete].
+      const sequences = [[false], [true], [false, true], [true, true]];
+      const hidden: Record<string, boolean[]> = {
+        [MessageResponseTypes.TEXT]: [false, false, false, false],
+        [MessageResponseTypes.OPTION]: [false, false, false, false],
+        [MessageResponseTypes.CONNECT_TO_HUMAN_AGENT]: [
+          true,
+          true,
+          false,
+          false,
+        ],
+        [MessageResponseTypes.IMAGE]: [false, false, false, false],
+        [MessageResponseTypes.PAUSE]: [true, true, false, false],
+        [MessageResponseTypes.USER_DEFINED]: [false, false, false, false],
+        [MessageResponseTypes.IFRAME]: [false, false, false, false],
+        [MessageResponseTypes.VIDEO]: [false, false, false, false],
+        [MessageResponseTypes.AUDIO]: [false, false, false, false],
+        [MessageResponseTypes.DATE]: [true, true, false, false],
+        [MessageResponseTypes.INLINE_ERROR]: [false, false, false, false],
+        [MessageResponseTypes.CARD]: [true, true, false, false],
+        [MessageResponseTypes.CAROUSEL]: [true, true, false, false],
+        [MessageResponseTypes.BUTTON]: [true, true, false, false],
+        [MessageResponseTypes.GRID]: [true, true, false, false],
+        [MessageResponseTypes.CONVERSATIONAL_SEARCH]: [
+          false,
+          false,
+          false,
+          false,
+        ],
+        [MessageResponseTypes.PREVIEW_CARD]: [true, true, false, false],
+        [MessageResponseTypes.SYSTEM]: [true, true, false, false],
+      };
+
+      it('holds the same types mid-stream as before', () => {
+        expect(Object.keys(hidden).sort()).toEqual(
+          Object.values(MessageResponseTypes).sort()
+        );
+
+        const actual = Object.fromEntries(
+          Object.keys(hidden).map((type) => [
+            type,
+            sequences.map((sequence, index) => {
+              const message = placeholder(`held-${type}-${index}`);
+              sequence.forEach((isComplete) =>
+                writeChunk(
+                  message,
+                  { response_type: type, streaming_metadata: { id: 'x' } },
+                  isComplete
+                )
+              );
+              const { ui_state } =
+                state().allMessageItemsByID[`${message.id}-x`];
+              return (
+                ui_state.isIntermediateStreaming && !drawnMidStream.has(type)
+              );
+            }),
+          ])
+        );
+
+        expect(actual).toEqual(hidden);
+      });
+    });
+  });
 });
 
 describe('upsert streaming snapshots', () => {
@@ -340,10 +1135,13 @@ describe('upsert streaming snapshots', () => {
       );
       const [id, siblingID] = initial.assistantMessageState.localMessageIDs;
       expect(initial.allMessageItemsByID[id].ui_state).toMatchObject({
-        isIntermediateStreaming: true,
         needsAnnouncement: false,
-        streamingState: { chunks: [item], isDone: false },
+        streamingState: { chunks: [], isDone: false },
       });
+      expect(
+        initial.allMessageItemsByID[id].ui_state.isIntermediateStreaming
+      ).toBe(true);
+      expect(initial.allMessageItemsByID[id].item).toBe(item);
       const repeated = rootReducer(
         initial,
         actions.upsertMessage(message, true)
@@ -351,25 +1149,36 @@ describe('upsert streaming snapshots', () => {
       expect(repeated.allMessageItemsByID[id]).toBe(
         initial.allMessageItemsByID[id]
       );
+      expect(repeated.allMessageItemsByID[siblingID]).toBe(
+        initial.allMessageItemsByID[siblingID]
+      );
       const settled = rootReducer(
         repeated,
         actions.upsertMessage(message, false)
       );
       expect(settled.allMessageItemsByID[id].ui_state).toMatchObject({
         id,
-        isIntermediateStreaming: false,
         needsAnnouncement: true,
         streamingState: { chunks: [], isDone: true },
       });
-      expect(settled.allMessageItemsByID[siblingID]).toBe(
-        initial.allMessageItemsByID[siblingID]
-      );
+      expect(
+        settled.allMessageItemsByID[id].ui_state.isIntermediateStreaming
+      ).toBe(false);
+      expect(
+        settled.allMessageItemsByID[siblingID].ui_state.streamingState
+      ).toBeUndefined();
+      expect(
+        initial.allMessageItemsByID[siblingID].ui_state.streamingState
+      ).toBeUndefined();
       expect(
         initial.allMessageItemsByID[id].ui_state.streamingState.isDone
       ).toBe(false);
       const final = rootReducer(settled, actions.upsertMessage(message));
       expect(final.allMessageItemsByID[id]).toBe(
         settled.allMessageItemsByID[id]
+      );
+      expect(final.allMessageItemsByID[siblingID]).toBe(
+        settled.allMessageItemsByID[siblingID]
       );
     }
   );

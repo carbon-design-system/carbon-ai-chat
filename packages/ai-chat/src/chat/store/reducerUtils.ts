@@ -60,11 +60,18 @@ import {
   MessageResponseTypes,
 } from '../../types/messaging/Messages';
 import ObjectMap from '../../types/utilities/ObjectMap';
+import { DeepPartial } from '../../types/utilities/DeepPartial';
+import type { MessageWriteOptions } from './messageWriteTypes';
 import {
   createLocalMessageItemsForNestedMessageItems,
   outputItemToLocalItem,
 } from '../schema/outputItemToLocalItem';
-import { isResponseWithNestedItems, streamItemID } from '../utils/messageUtils';
+import {
+  isHiddenOutputItem,
+  isPause,
+  isResponseWithNestedItems,
+  streamItemID,
+} from '../utils/messageUtils';
 import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
 /**
@@ -453,6 +460,36 @@ function collectNestedLocalIDs(
   );
 }
 
+/**
+ * Returns the store key of a chunk-streamed item. An item without
+ * `streaming_metadata.id` gets one key per message, so id-less items of two responses
+ * never share one local item.
+ */
+function chunkItemLocalID(messageID: string, item: DeepPartial<GenericItem>) {
+  return streamItemID(messageID, item) ?? `${messageID}-__no_stream_id__`;
+}
+
+/**
+ * Resolves the previous local item an upserted item should be matched against: the item
+ * with the same streaming id, or else the item at the same position when neither of them
+ * has a streaming id.
+ */
+function resolvePreviousLocalItem(
+  state: AppState,
+  messageID: string,
+  streamId: string | undefined,
+  positional: LocalMessageItem | undefined
+): LocalMessageItem | undefined {
+  const byStreamId = streamId && state.allMessageItemsByID[streamId];
+  if (byStreamId && byStreamId.fullMessageID === messageID) {
+    return byStreamId;
+  }
+  if (positional && !streamItemID(messageID, positional.item) && !streamId) {
+    return positional;
+  }
+  return undefined;
+}
+
 function supportsSnapshotStreaming(item: GenericItem) {
   return (
     item.response_type === MessageResponseTypes.TEXT ||
@@ -461,13 +498,84 @@ function supportsSnapshotStreaming(item: GenericItem) {
   );
 }
 
-function matchesStreamingState(item: LocalMessageItem, isStreaming: boolean) {
-  return (
-    Boolean(item?.ui_state.isIntermediateStreaming) === isStreaming &&
+/**
+ * Whether an upserted item can keep its previous {@link LocalMessageItem} as is: it is
+ * deep-equal to the prior item and still streaming, or still settled, the same way.
+ * Streaming UI reads `ui_state.streamingState.isDone`, so comparing it alongside the item
+ * keeps a STREAMING → COMPLETE transition whose payload happened not to change from
+ * leaving the item rendering as mid-stream forever.
+ *
+ * Cross-file invariant: `MessageUpsertCoordinator.snapshotLocalItemRefs` and its fan-out
+ * rely on this `===`-preservation to dedupe `USER_DEFINED_RESPONSE` fan-out after
+ * dispatch. Don't rebuild a fresh `LocalMessageItem` when the item is unchanged.
+ */
+function canReuseLocalItem(
+  matchedPrev: LocalMessageItem | undefined,
+  item: GenericItem,
+  isStreaming: boolean
+): boolean {
+  return Boolean(
+    matchedPrev &&
+    Boolean(matchedPrev.ui_state.isIntermediateStreaming) === isStreaming &&
     (isStreaming
-      ? item?.ui_state.streamingState?.isDone === false
-      : item?.ui_state.streamingState?.isDone !== false)
+      ? matchedPrev.ui_state.streamingState?.isDone === false
+      : matchedPrev.ui_state.streamingState?.isDone !== false) &&
+    isEqual(matchedPrev.item, item)
   );
+}
+
+/**
+ * Sets the upsert-owned parts of a freshly built local item's UI state: its streaming
+ * state, the marks the chat recorded on the item it replaces, and whether to announce it.
+ */
+function applyUpsertUIState(
+  localItem: LocalMessageItem,
+  matchedPrev: LocalMessageItem | undefined,
+  isStreaming: boolean
+) {
+  const { ui_state: uiState } = localItem;
+  if (isStreaming || matchedPrev?.ui_state.streamingState) {
+    uiState.isIntermediateStreaming = isStreaming;
+    uiState.streamingState = { chunks: [], isDone: !isStreaming };
+  }
+  if (matchedPrev?.ui_state.wasAnnounced) {
+    uiState.wasAnnounced = true;
+  }
+  if (matchedPrev?.ui_state.connectToAgentHandled) {
+    uiState.connectToAgentHandled = true;
+  }
+  // Announce an item once, when it first shows settled. Announcing mid-stream would
+  // read partial content, and again on every later rebuild.
+  uiState.needsAnnouncement =
+    uiState.needsAnnouncement && !isStreaming && !uiState.wasAnnounced;
+}
+
+function buildUpsertedLocalItem(
+  item: GenericItem,
+  message: MessageResponse,
+  localID: string,
+  matchedPrev: LocalMessageItem | undefined,
+  isStreaming: boolean,
+  newLocalItemsByID: ObjectMap<LocalMessageItem>
+): LocalMessageItem {
+  const localItem = outputItemToLocalItem(item, message, false);
+  localItem.ui_state.id = localID;
+  localItem.fullMessageID = message.id;
+  applyUpsertUIState(localItem, matchedPrev, isStreaming);
+  if (isResponseWithNestedItems(localItem.item)) {
+    const nestedLocalItems: LocalMessageItem[] = [];
+    createLocalMessageItemsForNestedMessageItems(
+      localItem,
+      message,
+      false,
+      nestedLocalItems,
+      true
+    );
+    for (const nested of nestedLocalItems) {
+      newLocalItemsByID[nested.ui_state.id] = nested;
+    }
+  }
+  return localItem;
 }
 
 /**
@@ -480,16 +588,27 @@ function matchesStreamingState(item: LocalMessageItem, isStreaming: boolean) {
  * 2. **Reference stability** — if the new item is deep-equal to the previously stored
  *    `LocalMessageItem.item`, the existing `LocalMessageItem` reference is reused
  *    verbatim. Components subscribed to that item via `useSelector` see no diff and
- *    skip re-rendering. This matches the pattern in `[STREAMING_ADD_CHUNK]` and is
- *    critical when only one item in `output.generic[]` actually changes between calls.
+ *    skip re-rendering. This matches {@link applyChunkWrite} and is critical when only
+ *    one item in `output.generic[]` actually changes between calls.
  *
  * Nested CARD/CAROUSEL/GRID/BUTTON local items are rebuilt when their parent changes;
  * orphaned nested items are pruned.
+ *
+ * When `hidesSilent` is set, items {@link isHiddenOutputItem} picks out get no local
+ * item, the way `addMessage` stores them without showing them. Positional matching
+ * counts only the items that are shown, so hiding one doesn't shift the rest.
+ *
+ * A `pause` item is an instruction, not content, and never gets a local item. Items at
+ * or after `holdFromIndex` in `output.generic` are held back while a pause before them
+ * runs, except items the message already showed, so nothing visible disappears.
  */
 function rebuildLocalItemsForUpsert(
   state: AppState,
   message: MessageResponse,
-  isStreaming = false
+  isStreaming = false,
+  hidesSilent = true,
+  holdFromIndex = Infinity,
+  pauseReveal?: MessageWriteOptions['pauseReveal']
 ): {
   newLocalItemsByID: ObjectMap<LocalMessageItem>;
   newLocalIDsForMessage: string[];
@@ -511,88 +630,49 @@ function rebuildLocalItemsForUpsert(
     (id) => state.allMessageItemsByID[id]
   );
 
-  const generic: GenericItem[] = message.output?.generic ?? [];
+  const shownItems = (message.output?.generic ?? [])
+    .map((item, index) => ({ item, index }))
+    .filter(
+      ({ item }) =>
+        item &&
+        !isPause(item) &&
+        !(hidesSilent && isHiddenOutputItem(message, item))
+    )
+    .map(({ item, index }, position) => ({
+      item,
+      index,
+      matchedPrev: resolvePreviousLocalItem(
+        state,
+        messageID,
+        streamItemID(messageID, item),
+        pauseReveal && index >= pauseReveal.previousHoldFromIndex
+          ? state.allMessageItemsByID[pauseReveal.originalLocalIDs[position]]
+          : prevTopLevelItems[position]
+      ),
+    }))
+    .filter(
+      ({ index, matchedPrev }) =>
+        index < holdFromIndex || prevTopLevelItems.includes(matchedPrev)
+    );
   const newLocalIDsForMessage: string[] = [];
 
-  generic.forEach((item, index) => {
-    if (!item) {
-      return;
-    }
-
-    // Resolve the previous local item to match against:
-    // 1. Streaming-id match (preferred).
-    // 2. Positional fallback when the previous item at this index had no streaming id.
+  shownItems.forEach(({ item, matchedPrev }) => {
     const streamId = streamItemID(messageID, item);
-    let matchedPrev: LocalMessageItem | undefined;
-    if (streamId && state.allMessageItemsByID[streamId]) {
-      const candidate = state.allMessageItemsByID[streamId];
-      if (candidate.fullMessageID === messageID) {
-        matchedPrev = candidate;
-      }
-    }
-    if (!matchedPrev) {
-      const positional = prevTopLevelItems[index];
-      if (
-        positional &&
-        !streamItemID(messageID, positional.item) &&
-        !streamId
-      ) {
-        matchedPrev = positional;
-      }
-    }
-
-    let localID: string;
-    let localItem: LocalMessageItem;
-
     const itemIsStreaming = isStreaming && supportsSnapshotStreaming(item);
-    const lifecycleMatches = matchesStreamingState(
-      matchedPrev,
-      itemIsStreaming
-    );
-
-    if (matchedPrev && lifecycleMatches && isEqual(matchedPrev.item, item)) {
-      // Reference-stable path: deep-equal to the prior item, keep the exact object so
-      // selectors comparing by `===` see no change.
-      //
-      // Cross-file invariant: `MessageUpsertCoordinator.snapshotLocalItemRefs` /
-      // `fanOutChangedSlots` rely on this `===`-preservation to dedupe
-      // `USER_DEFINED_RESPONSE` fan-out after dispatch. Don't rebuild a fresh
-      // `LocalMessageItem` here when the item is unchanged.
-      localID = matchedPrev.ui_state.id;
-      localItem = matchedPrev;
-    } else {
-      // Build a fresh local item but preserve the resolved ID so React keys and slot
-      // names remain stable.
-      localID = matchedPrev?.ui_state.id ?? streamId ?? uuid();
-      localItem = outputItemToLocalItem(item, message, false);
-      localItem.ui_state.id = localID;
-      localItem.fullMessageID = messageID;
-      if (itemIsStreaming || matchedPrev?.ui_state.streamingState) {
-        localItem.ui_state.isIntermediateStreaming = itemIsStreaming;
-        localItem.ui_state.streamingState = {
-          chunks: itemIsStreaming ? [item] : [],
-          isDone: !itemIsStreaming,
-        };
-        localItem.ui_state.needsAnnouncement = !itemIsStreaming;
-      }
-
-      if (isResponseWithNestedItems(localItem.item)) {
-        const nestedLocalItems: LocalMessageItem[] = [];
-        createLocalMessageItemsForNestedMessageItems(
-          localItem,
+    const localItem = canReuseLocalItem(matchedPrev, item, itemIsStreaming)
+      ? matchedPrev
+      : buildUpsertedLocalItem(
+          item,
           message,
-          false,
-          nestedLocalItems,
-          true
+          // Keep the resolved ID so React keys and slot names stay stable.
+          matchedPrev?.ui_state.id ?? streamId ?? uuid(),
+          matchedPrev,
+          itemIsStreaming,
+          newLocalItemsByID
         );
-        for (const nested of nestedLocalItems) {
-          newLocalItemsByID[nested.ui_state.id] = nested;
-        }
-      }
-    }
 
-    newLocalIDsForMessage.push(localID);
-    newLocalItemsByID[localID] = localItem;
+    newLocalIDsForMessage.push(localItem.ui_state.id);
+    newLocalItemsByID[localItem.ui_state.id] = localItem;
   });
 
   // Compute the set of all local-item IDs still reachable from the rebuilt top-level
@@ -619,6 +699,110 @@ function rebuildLocalItemsForUpsert(
   }
 
   return { newLocalItemsByID, newLocalIDsForMessage };
+}
+
+/**
+ * Before a message from `addMessage` or `final_response` is stored, drops the items it
+ * showed that the new message has no streaming id for, and puts the rest in the new
+ * message's order, where the first of them was. The new message then shows each of its
+ * items the way `ADD_LOCAL_MESSAGE_ITEM` does, so an item without a streaming id comes back
+ * at the end of the list, or after the item before it.
+ *
+ * Example: response 1 shows [1.1, 1.2], response 2 shows [2.1, 2.2, 2.3], and response 3
+ * shows [3.1]. Response 2 comes again with [2.2, 2.1, 2.4]. This leaves
+ * [1.1, 1.2, 2.2, 2.1, 3.1], and 2.4 shows later, as its own item.
+ */
+function keepStreamedItemsOnly(
+  state: AppState,
+  message: MessageResponse
+): AppState {
+  const messageID = message.id;
+  const itemIDsInNewMessage = message.output.generic
+    .map((item) => streamItemID(messageID, item))
+    .filter(Boolean);
+
+  const newAllMessageItemsByID = { ...state.allMessageItemsByID };
+  const existingItemIDs: string[] = [];
+  let firstFoundIndex: number;
+
+  const newLocalMessageIDs = state.assistantMessageState.localMessageIDs.filter(
+    (itemID, index) => {
+      const isItemInMessage =
+        state.allMessageItemsByID[itemID].fullMessageID === messageID;
+      if (isItemInMessage) {
+        if (firstFoundIndex === undefined) {
+          firstFoundIndex = index;
+        }
+        if (itemIDsInNewMessage.includes(itemID)) {
+          existingItemIDs.push(itemID);
+        } else {
+          delete newAllMessageItemsByID[itemID];
+        }
+      }
+      return !isItemInMessage;
+    }
+  );
+
+  const itemIDsToInsert = itemIDsInNewMessage.filter((itemID) =>
+    existingItemIDs.includes(itemID)
+  );
+  newLocalMessageIDs.splice(firstFoundIndex ?? 0, 0, ...itemIDsToInsert);
+
+  return {
+    ...state,
+    allMessageItemsByID: newAllMessageItemsByID,
+    assistantMessageState: {
+      ...state.assistantMessageState,
+      localMessageIDs: newLocalMessageIDs,
+    },
+  };
+}
+
+/**
+ * Returns the upserted message with the stored message's `ui_state_internal` merged under
+ * its own. The chat writes that state itself (agent availability, for one), and a host
+ * updater that builds a fresh message would otherwise drop it. The host's object is
+ * returned as is when there is nothing to keep.
+ */
+function keepPriorUIStateInternal(
+  message: MessageResponse,
+  prevMessage: Message | undefined
+): MessageResponse {
+  const prior = prevMessage?.ui_state_internal;
+  const current = message.ui_state_internal ?? {};
+  const hasSomethingToKeep =
+    prior &&
+    Object.keys(prior).some(
+      (key) =>
+        prior[key as keyof typeof prior] !== undefined &&
+        current[key as keyof typeof current] === undefined
+    );
+  if (!hasSomethingToKeep) {
+    return message;
+  }
+  return { ...message, ui_state_internal: { ...prior, ...current } };
+}
+
+/**
+ * Returns the stored message in place of the upserted one when nothing changed: the two
+ * are deep-equal and every local item of the message kept its reference. React selectors
+ * that subscribe to the whole `Message` compare by `===` and would otherwise re-render on
+ * every upsert.
+ */
+function keepMessageRefIfUnchanged(
+  state: AppState,
+  message: MessageResponse,
+  newLocalIDsForMessage: string[],
+  newLocalItemsByID: ObjectMap<LocalMessageItem>
+): Message {
+  const prevMessage = state.allMessagesByID[message.id];
+  const everyLocalItemReused = newLocalIDsForMessage.every((localID) => {
+    const prev = state.allMessageItemsByID[localID];
+    return prev !== undefined && newLocalItemsByID[localID] === prev;
+  });
+  return prevMessage && everyLocalItemReused && isEqual(prevMessage, message)
+    ? prevMessage
+    : message;
 }
 
 /**
@@ -675,6 +859,137 @@ function applyFullMessage(state: AppState, message: Message): AppState {
   return newState;
 }
 
+/**
+ * Builds the local item for the first chunk of a streamed item. The item is the chunk
+ * itself, and it stays hidden (`isIntermediateStreaming`) until `final_response`, even
+ * when that first chunk is already a `complete_item`. A later `complete_item` shows it.
+ */
+function newChunkLocalItem(
+  chunkItem: DeepPartial<GenericItem>,
+  message: MessageResponse,
+  isComplete: boolean,
+  isStopped = false
+): LocalMessageItem {
+  const localItem = outputItemToLocalItem(chunkItem as GenericItem, message);
+  localItem.ui_state.needsAnnouncement = false;
+  localItem.ui_state.isIntermediateStreaming = true;
+  localItem.ui_state.streamingState =
+    isComplete || isStopped
+      ? { chunks: [], isDone: true }
+      : { chunks: [chunkItem], isDone: false };
+  if (!localItem.item.response_type) {
+    throw new Error(
+      `New chunk item does not have a response_type: ${JSON.stringify(
+        chunkItem
+      )}`
+    );
+  }
+  return localItem;
+}
+
+/**
+ * Applies a later chunk to an item already streaming. A `complete_item` merges over the
+ * local item, which is still the first chunk, and settles and shows it. A `partial_item`
+ * leaves the item alone and adds the delta to `streamingState.chunks`, which renderers
+ * read while the item streams.
+ */
+function nextChunkLocalItem(
+  existing: LocalMessageItem,
+  chunkItem: DeepPartial<GenericItem>,
+  isComplete: boolean,
+  isStopped = false
+): LocalMessageItem {
+  if (isComplete) {
+    const item = { ...existing.item, ...chunkItem } as GenericItem;
+    return {
+      ...existing,
+      item,
+      ui_state: {
+        ...existing.ui_state,
+        isIntermediateStreaming: false,
+        streamingState: { chunks: [], isDone: true },
+      },
+    };
+  }
+  const previousChunks = existing.ui_state.streamingState?.chunks ?? [];
+  if (isStopped) {
+    // Queued deltas can arrive after cancellation has folded earlier chunks into item.
+    const retainedChunks =
+      existing.ui_state.streamingState?.isDone === false &&
+      previousChunks.length
+        ? previousChunks
+        : [existing.item];
+    const textChunks = [...retainedChunks, chunkItem] as { text?: string }[];
+    const item = textChunks.some((chunk) => typeof chunk.text === 'string')
+      ? {
+          ...existing.item,
+          text: textChunks.map((chunk) => chunk.text ?? '').join(''),
+        }
+      : existing.item;
+    return {
+      ...existing,
+      item,
+      ui_state: {
+        ...existing.ui_state,
+        streamingState: { chunks: [], isDone: true },
+      },
+    };
+  }
+  const chunks =
+    previousChunks.length || existing.ui_state.streamingState?.isDone !== false
+      ? previousChunks
+      : [existing.item];
+  return {
+    ...existing,
+    ui_state: {
+      ...existing.ui_state,
+      streamingState: {
+        ...existing.ui_state.streamingState,
+        chunks: [...chunks, chunkItem],
+      },
+    },
+  };
+}
+
+/**
+ * Applies a streaming write that `addMessageChunk` makes. The message is stored as the
+ * chunk path built it, and only the one local item the chunk targets changes, so the
+ * message's other items keep their references. A new item goes at the end of the whole
+ * list rather than with its message, and no nested items are built for it.
+ */
+function applyChunkWrite(
+  state: AppState,
+  message: MessageResponse,
+  { item: chunkItem, isComplete, isStopped }: MessageWriteOptions['chunk']
+): AppState {
+  const withMessage =
+    state.allMessagesByID[message.id] === message
+      ? state
+      : applyFullMessage(state, message);
+  // A chunk with no item only ever merged its message_options.
+  if (!chunkItem) {
+    return withMessage;
+  }
+
+  const localID = chunkItemLocalID(message.id, chunkItem);
+  const existing = state.allMessageItemsByID[localID];
+  const localItem = existing
+    ? nextChunkLocalItem(existing, chunkItem, isComplete, isStopped)
+    : newChunkLocalItem(chunkItem, message, isComplete, isStopped);
+
+  const { localMessageIDs } = state.assistantMessageState;
+  return {
+    ...withMessage,
+    allMessageItemsByID: { ...state.allMessageItemsByID, [localID]: localItem },
+    assistantMessageState: {
+      ...withMessage.assistantMessageState,
+      localMessageIDs: existing
+        ? localMessageIDs
+        : [...localMessageIDs, localID],
+    },
+  };
+}
+
 export {
   DEFAULT_HEADER,
   DEFAULT_MESSAGE_STATE,
@@ -700,8 +1015,12 @@ export {
   setHomeScreenOpenState,
   applyAssistantMessageState,
   handleViewStateChange,
+  applyChunkWrite,
   applyFullMessage,
   applyLocalMessageUIState,
   computeLocalIDInsertionPoint,
   rebuildLocalItemsForUpsert,
+  keepStreamedItemsOnly,
+  keepPriorUIStateInternal,
+  keepMessageRefIfUnchanged,
 };
