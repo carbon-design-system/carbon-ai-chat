@@ -561,7 +561,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
             fallback={<IconHolder icon={<Headset />} />}
           />
         );
-        iconClassName = 'cds-aichat--message__avatar--agent';
+        iconClassName = 'cds-aichat--message__avatar--assistant';
         actorName = responseUserProfile?.nickname || '';
       } else {
         actorName =
@@ -1233,7 +1233,6 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     const { isIntermediateStreaming } = localMessageItem.ui_state;
     const messageItem = localMessageItem.item;
     const responseType = messageItem.response_type;
-    const agentMessageType = messageItem.agent_message_type;
     const fromHistory = message.ui_state_internal?.from_history;
     const readWidgetSaid = isFirstMessageItem;
 
@@ -1261,18 +1260,9 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
 
     const isCustomMessage = renderAsUserDefinedMessage(localMessageItem.item);
 
-    // If this is a user_defined response type with silent set, we don't want to render all the extra cruft around it.
-    const agentClassName = agentMessageType
-      ? getHumanAgentMessageClassName(
-          agentMessageType,
-          responseType,
-          isCustomMessage
-        )
-      : null;
-
     const messageIsRequest = isRequest(message);
     const isSystemMessage = isHumanAgentStatusMessage(
-      localMessageItem.item.agent_message_type
+      messageItem.agent_message_type
     );
 
     let isOptionResponseWithoutTitleOrDescription = false;
@@ -1308,7 +1298,6 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
         className={cx(
           `cds-aichat--message cds-aichat--message-${messagesIndex}`,
           className,
-          agentMessageType && 'cds-aichat--message--agent-message',
           {
             'cds-aichat--message--with-avatar-line': showAvatarLine,
             'cds-aichat--message--named-request':
@@ -1340,12 +1329,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
                 className={cx(
                   'cds-aichat--received',
                   'cds-aichat--message-vertical-padding',
-                  agentClassName,
                   {
-                    'cds-aichat--received--from-human':
-                      !agentMessageType &&
-                      message.message_options?.response_user_profile
-                        ?.user_type === UserType.HUMAN,
                     'cds-aichat--received--text':
                       responseType === MessageResponseTypes.TEXT,
                     'cds-aichat--received--image':
@@ -1449,39 +1433,6 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
         </div>
       </div>
     );
-  }
-}
-
-/**
- * Returns the class name to add to messages with the given agent message type.
- */
-function getHumanAgentMessageClassName(
-  agentMessageType: HumanAgentMessageType,
-  messageResponseType: MessageResponseTypes,
-  isUserDefinedResponse: boolean
-) {
-  if (agentMessageType && isUserDefinedResponse) {
-    return 'cds-aichat--received--agent-custom';
-  }
-  if (
-    !messageResponseType ||
-    (messageResponseType !== MessageResponseTypes.TEXT &&
-      messageResponseType !== MessageResponseTypes.BUTTON)
-  ) {
-    return '';
-  }
-  switch (agentMessageType) {
-    case null:
-    case undefined:
-    case HumanAgentMessageType.FROM_USER:
-      return null;
-    case HumanAgentMessageType.RELOAD_WARNING:
-    case HumanAgentMessageType.DISCONNECTED:
-      return 'cds-aichat--received--chat-status-message';
-    case HumanAgentMessageType.FROM_HUMAN_AGENT:
-      return 'cds-aichat--received--from-human';
-    default:
-      return 'cds-aichat--received--agent-status-message';
   }
 }
 
