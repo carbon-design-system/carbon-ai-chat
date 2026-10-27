@@ -79,6 +79,7 @@ import {
   SET_RESPONSE_PANEL_CONTENT,
   SET_RESPONSE_PANEL_IS_OPEN,
   SET_STOP_STREAMING_BUTTON_DISABLED,
+  SET_STOP_STREAMING_BUTTON_METADATA_DISABLED,
   SET_STOP_STREAMING_BUTTON_VISIBLE,
   SET_STREAM_ID,
   SET_IS_RESTARTING,
@@ -1529,6 +1530,20 @@ const reducers: { [key: string]: ReducerType } = {
       },
     };
   },
+
+  [SET_STOP_STREAMING_BUTTON_METADATA_DISABLED]: (
+    state: AppState,
+    { isMetadataDisabled }: { isMetadataDisabled: boolean }
+  ) => ({
+    ...state,
+    assistantInputState: {
+      ...state.assistantInputState,
+      stopStreamingButtonState: {
+        ...state.assistantInputState.stopStreamingButtonState,
+        isMetadataDisabled,
+      },
+    },
+  }),
 
   [SET_STREAM_ID]: (
     state: AppState,

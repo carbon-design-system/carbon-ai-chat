@@ -15,8 +15,10 @@ import {
   resetStopStreamingButton,
   resolveChunkContext,
   shouldShowStopStreaming,
+  syncStopStreamingButton,
   StreamingTracker,
 } from '../../../src/chat/utils/streamingUtils';
+import actions from '../../../src/chat/store/actions';
 
 describe('streamingUtils', () => {
   const createStore = (isVisible = true) => {
@@ -112,6 +114,47 @@ describe('streamingUtils', () => {
   });
 
   describe('stop streaming helpers', () => {
+    describe('syncStopStreamingButton', () => {
+      it('does nothing for omitted metadata', () => {
+        const store = createStore();
+        syncStopStreamingButton(store);
+        expect(store.dispatch).not.toHaveBeenCalled();
+      });
+
+      it('does not show or disable a hidden button for false', () => {
+        const store = createStore(false);
+        syncStopStreamingButton(store, false);
+        expect(store.dispatch).not.toHaveBeenCalled();
+      });
+
+      it('disables a visible button without changing the click latch', () => {
+        const store = createStore();
+        syncStopStreamingButton(store, false);
+        expect(store.dispatch.mock.calls).toEqual([
+          [actions.setStopStreamingButtonMetadataDisabled(true)],
+        ]);
+      });
+
+      it('releases metadata disablement without changing the click latch', () => {
+        const store = {
+          dispatch: jest.fn(),
+          getState: () => ({
+            assistantInputState: {
+              stopStreamingButtonState: {
+                isVisible: true,
+                isDisabled: true,
+                isMetadataDisabled: true,
+              },
+            },
+          }),
+        };
+        syncStopStreamingButton(store, true);
+        expect(store.dispatch.mock.calls).toEqual([
+          [actions.setStopStreamingButtonMetadataDisabled(false)],
+        ]);
+      });
+    });
+
     describe('shouldShowStopStreaming', () => {
       it('returns true when cancellable and button not visible', () => {
         expect(shouldShowStopStreaming({ cancellable: true }, false)).toBe(
@@ -147,6 +190,24 @@ describe('streamingUtils', () => {
     });
 
     describe('resetStopStreamingButton', () => {
+      it('clears metadata disablement even when already hidden', () => {
+        const store = {
+          dispatch: jest.fn(),
+          getState: () => ({
+            assistantInputState: {
+              stopStreamingButtonState: {
+                isVisible: false,
+                isMetadataDisabled: true,
+              },
+            },
+          }),
+        };
+        resetStopStreamingButton(store);
+        expect(store.dispatch.mock.calls).toEqual([
+          [actions.setStopStreamingButtonMetadataDisabled(false)],
+        ]);
+      });
+
       it('resets stop streaming button when visible', () => {
         const store = createStore(true);
         resetStopStreamingButton(store as any);

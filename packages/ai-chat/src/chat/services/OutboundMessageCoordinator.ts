@@ -307,6 +307,10 @@ class OutboundMessageCoordinator {
         if (!stopStreamingState.isVisible) {
           store.dispatch(actions.setStopStreamingButtonVisible(true));
         }
+        // Apply disablement from any other in-flight non-cancellable stream.
+        this.serviceManager.messageService.updateStreamingCancellation(
+          message.id
+        );
       }
 
       this.registerRequestGeneration(message.id, current.restartGeneration);

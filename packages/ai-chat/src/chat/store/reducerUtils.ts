@@ -224,6 +224,7 @@ const DEFAULT_INPUT_STATE: InputState = {
     currentStreamID: null,
     isVisible: false,
     isDisabled: false,
+    isMetadataDisabled: false,
   },
   pendingUploads: [],
 };
