@@ -275,9 +275,15 @@ If a publish error occurs after the git tags have already been pushed, it is now
 
 The retry step logs a `warning` annotation on the run, so the first failure is still visible even though the run can end green.
 
-If the retry fails with `Release commit never reached`, the release commit was never pushed to the branch. Nothing was released, so re-run the workflow, as in [Branch moved during the release](#branch-moved-during-the-release).
+If the retry fails with `Lerna did not push a release commit`, Lerna stopped before the release commit and tags reached the branch. Nothing was released, so re-run the workflow, as in [Branch moved during the release](#branch-moved-during-the-release).
 
-If the retry fails for any other reason, the release commit and tags are on git but some versions are missing from npm. Run a **subsequent RC** with `force publish` checked, following the same dry run and then live run steps as in [Force publish](#force-publish).
+If publishing still fails after all three retries, fix the reported error, then recover the missing versions:
+
+1. Open the **Release start** workflow and select the release branch. Check that its package versions still match the failed release.
+2. Set `type` to **retry publish** and `dry-run` to **false**. The `semver-type` and `force-publish` inputs do not affect recovery.
+3. Run the workflow. It skips versioning and publishes missing versions with `lerna publish from-package`. RCs use `next`; stable versions use `latest`.
+
+A dry run skips publishing and does not exercise recovery. Do not select **subsequent RC** to recover a full release: it creates a new prerelease and leaves the failed stable version unpublished.
 
 ### Checks are stuck on pending
 

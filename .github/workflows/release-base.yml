@@ -148,16 +148,24 @@ jobs:
         run: |
           npx lerna publish prerelease --conventional-prerelease --preid rc --pre-dist-tag next ${{ env.PUBLISH }} ${{ env.FORCE }}
 
+      - name: Explain recovery dry run
+        if: github.event.inputs.type == 'retry publish' && github.event.inputs.dry-run == 'true'
+        run: echo "Dry run skips versioning and publishing. Run retry publish with dry-run set to false to recover missing versions."
+
       # Lerna pushes the release commit and tags before it publishes, so a
       # publish failure (like a Sigstore TLOG 409) leaves versions git has and
       # npm does not. `from-package` publishes exactly those versions.
       - name: Retry publish of unpublished versions
-        if: github.event.inputs.dry-run == 'false' && contains(steps.*.outcome, 'failure')
+        if: |
+          github.event.inputs.dry-run == 'false' &&
+          (github.event.inputs.type == 'retry publish' || contains(steps.*.outcome, 'failure'))
+        env:
+          RELEASE_TYPE: ${{ inputs.type }}
         run: |
-          echo "::warning::A publish step failed. Retrying unpublished versions with lerna publish from-package."
+          echo "::warning::Retrying unpublished versions with lerna publish from-package."
           git fetch origin "$GITHUB_REF_NAME"
-          if ! git merge-base --is-ancestor HEAD FETCH_HEAD; then
-            echo "Release commit never reached $GITHUB_REF_NAME; not publishing versions git doesn't have."
+          if { [ "$RELEASE_TYPE" != "retry publish" ] && [ "$(git rev-parse HEAD)" = "$GITHUB_SHA" ]; } || ! git merge-base --is-ancestor HEAD FETCH_HEAD; then
+            echo "Lerna did not push a release commit to $GITHUB_REF_NAME; nothing to retry."
             exit 1
           fi
           for attempt in 1 2 3; do
