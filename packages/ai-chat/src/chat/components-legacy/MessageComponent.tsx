@@ -77,15 +77,14 @@ import {
   getSpeakerName,
   hasRequestFooter,
   isConnectToHumanAgent,
-  isFullWidthUserDefined,
   isItemStillStreaming,
   isOptionItem,
   isRequest,
   isResponse,
-  isSingleItemCarousel,
   hasRequestBubbleContent,
   renderAsUserDefinedMessage,
 } from '../utils/messageUtils';
+import { isFullWidthItem } from '../utils/messageBubbleLayout';
 import { getMessageFileAttachments } from '../utils/fileAttachments';
 import MessageCustomRequestFooterSlot from './MessageCustomRequestFooterSlot';
 import { MessageFileAttachments } from '../components/helpers/MessageFileAttachments/MessageFileAttachments';
@@ -1344,6 +1343,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     );
 
     const isCustomMessage = renderAsUserDefinedMessage(localMessageItem.item);
+    const isFullWidth = isFullWidthItem(localMessageItem.item);
 
     const messageIsRequest = isRequest(message);
     const isSystemMessage = isStatusMessage(messageItem.agent_message_type);
@@ -1433,20 +1433,14 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
                       responseType === MessageResponseTypes.DATE,
                     'cds-aichat--received--card':
                       responseType === MessageResponseTypes.CARD,
-                    'cds-aichat--received--carousel':
-                      responseType === MessageResponseTypes.CAROUSEL,
                     'cds-aichat--received--conversational-search':
                       responseType ===
                       MessageResponseTypes.CONVERSATIONAL_SEARCH,
-                    'cds-aichat--received--carousel-single':
-                      isSingleItemCarousel(localMessageItem.item),
                     'cds-aichat--received--button':
                       responseType === MessageResponseTypes.BUTTON,
                     'cds-aichat--received--grid':
                       responseType === MessageResponseTypes.GRID,
-                    'cds-aichat--received--full-width': isFullWidthUserDefined(
-                      localMessageItem.item
-                    ),
+                    'cds-aichat--received--full-width': isFullWidth,
                     'cds-aichat--received--chat-status-message':
                       isConnectionNotice,
                     'cds-aichat--message--historical': fromHistory,

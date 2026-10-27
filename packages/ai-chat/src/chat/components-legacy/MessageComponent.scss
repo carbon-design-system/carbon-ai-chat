@@ -102,12 +102,6 @@ $message-bar-width: 3px;
 .cds-aichat--message__avatar-line
   + .cds-aichat--message--padding
   .cds-aichat--assistant-message
-  > div.cds-aichat--received.cds-aichat--received--carousel:not(
-    .cds-aichat--received--carousel-single
-  ):first-child,
-.cds-aichat--message__avatar-line
-  + .cds-aichat--message--padding
-  .cds-aichat--assistant-message
   > div.cds-aichat--received.cds-aichat--received--full-width:first-child {
   margin-block-start: layout.$spacing-03;
 }
@@ -171,34 +165,10 @@ $message-bar-width: 3px;
 
 .cds-aichat--wide-width
   .cds-aichat--message
-  .cds-aichat--received.cds-aichat--received--conversational-search,
-.cds-aichat--wide-width
-  .cds-aichat--message
-  .cds-aichat--received.cds-aichat--received--search,
-.cds-aichat--wide-width
-  .cds-aichat--message
-  .cds-aichat--received--carousel:not(.cds-aichat--received--carousel-single),
-.cds-aichat--wide-width
-  .cds-aichat--message
   .cds-aichat--received.cds-aichat--received--full-width,
 .cds-aichat--narrow-width
   .cds-aichat--message
-  .cds-aichat--received.cds-aichat--received--conversational-search,
-.cds-aichat--narrow-width
-  .cds-aichat--message
-  .cds-aichat--received.cds-aichat--received--search,
-.cds-aichat--narrow-width
-  .cds-aichat--message
   .cds-aichat--received.cds-aichat--received--full-width,
-.cds-aichat--standard-width
-  .cds-aichat--message
-  .cds-aichat--received.cds-aichat--received--conversational-search,
-.cds-aichat--standard-width
-  .cds-aichat--message
-  .cds-aichat--received.cds-aichat--received--search,
-.cds-aichat--standard-width
-  .cds-aichat--message
-  .cds-aichat--received--carousel:not(.cds-aichat--received--carousel-single),
 .cds-aichat--standard-width
   .cds-aichat--message
   .cds-aichat--received.cds-aichat--received--full-width {
