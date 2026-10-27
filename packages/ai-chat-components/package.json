@@ -112,7 +112,7 @@
     "@carbon/react": "^1.97.0",
     "@carbon/themes": "^11.25.0",
     "@custom-elements-manifest/analyzer": "^0.11.0",
-    "@happy-dom/jest-environment": "^20.0.2",
+    "@happy-dom/jest-environment": "^21.0.4",
     "@mordech/vite-lit-loader": "^0.40.0",
     "@open-wc/testing": "4.0.0",
     "@rollup/plugin-alias": "^6.0.0",
