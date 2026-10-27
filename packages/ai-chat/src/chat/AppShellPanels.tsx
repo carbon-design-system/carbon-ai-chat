@@ -20,7 +20,10 @@ import DisclaimerPanel from './components/panels/DisclaimerPanel';
 import IFramePanel from './components/panels/IFramePanel';
 import ViewSourcePanel from './components/panels/ViewSourcePanel';
 import CatastrophicErrorPanel from './components/panels/CatastrophicErrorPanel';
-import { PanelWithFocus } from './components/panels/PanelWithFocus';
+import {
+  PanelContentErrorBoundary,
+  PanelWithFocus,
+} from './components/panels/PanelWithFocus';
 import { BodyMessageComponents } from './components/responseTypes/message/BodyMessageComponents';
 import { FooterButtonComponents } from './components/responseTypes/button/FooterButtonComponents';
 import { MessageTypeComponent } from './components-legacy/MessageTypeComponent';
@@ -34,6 +37,7 @@ import type {
 } from '../types/instance/apiTypes';
 import type { ButtonItem, MessageResponse } from '../types/messaging/Messages';
 import type { AppState } from '../types/state/AppState';
+import type { OnErrorData } from '../types/config/ErrorConfig';
 import type { HasRequestFocus } from '../types/utilities/HasRequestFocus';
 import type { MessageTypeComponentProps } from '../types/messaging/MessageTypeComponentProps';
 import { HasServiceManager } from './hocs/withServiceManager';
@@ -140,6 +144,7 @@ export const AppShellPanels = React.memo(function AppShellPanels({
       aria_responsePanel: state.languagePack.aria_responsePanel,
       aria_viewSourcePanel: state.languagePack.aria_viewSourcePanel,
       general_returnToAssistant: state.languagePack.general_returnToAssistant,
+      errors_singleMessage: state.languagePack.errors_singleMessage,
     }),
     shallowEqual
   );
@@ -149,6 +154,17 @@ export const AppShellPanels = React.memo(function AppShellPanels({
   // sub-object reference; the rest are primitives), so this memoized panel host
   // re-renders only when one of these specific values changes — not on every
   // config field change the way selecting whole `config`/`publicConfig` did.
+  // A failure in the response panel's body or footer stays in the panel, so it isn't catastrophic.
+  const onPanelContentError = React.useCallback(
+    (errorData: OnErrorData) => {
+      serviceManager.actions.errorOccurred(errorData);
+      serviceManager.store.dispatch(
+        actions.announceMessage({ messageID: 'errors_singleMessage' })
+      );
+    },
+    [serviceManager]
+  );
+
   const aiEnabled = useSelector(
     (state: AppState) => state.config.public.aiEnabled
   );
@@ -495,50 +511,61 @@ export const AppShellPanels = React.memo(function AppShellPanels({
                 ) : undefined
               }
               body={
-                <BodyMessageComponents
-                  message={responsePanelState.localMessageItem}
-                  originalMessage={
-                    allMessagesByID[
-                      responsePanelState.localMessageItem?.fullMessageID
-                    ] as MessageResponse
-                  }
-                  requestInputFocus={requestFocus}
-                  disableUserInputs={isInputReadonly}
-                  isMessageForInput={responsePanelState.isMessageForInput}
-                  scrollElementIntoView={() => {
-                    /* no-op; shell handles layout */
-                  }}
-                  serviceManager={serviceManager}
-                  hideFeedback
-                  showChainOfThought={false}
-                  allowNewFeedback={false}
-                  renderMessageComponent={(
-                    childProps: MessageTypeComponentProps
-                  ) => <MessageTypeComponent {...childProps} />}
-                />
+                <PanelContentErrorBoundary
+                  key={responsePanelState.localMessageItem.ui_state.id}
+                  errorText={languagePack.errors_singleMessage}
+                  onError={onPanelContentError}
+                  isBody>
+                  <BodyMessageComponents
+                    message={responsePanelState.localMessageItem}
+                    originalMessage={
+                      allMessagesByID[
+                        responsePanelState.localMessageItem?.fullMessageID
+                      ] as MessageResponse
+                    }
+                    requestInputFocus={requestFocus}
+                    disableUserInputs={isInputReadonly}
+                    isMessageForInput={responsePanelState.isMessageForInput}
+                    scrollElementIntoView={() => {
+                      /* no-op; shell handles layout */
+                    }}
+                    serviceManager={serviceManager}
+                    hideFeedback
+                    showChainOfThought={false}
+                    allowNewFeedback={false}
+                    renderMessageComponent={(
+                      childProps: MessageTypeComponentProps
+                    ) => <MessageTypeComponent {...childProps} />}
+                  />
+                </PanelContentErrorBoundary>
               }
               footer={
-                <FooterButtonComponents
-                  message={responsePanelState.localMessageItem}
-                  originalMessage={
-                    allMessagesByID[
-                      responsePanelState.localMessageItem?.fullMessageID
-                    ] as MessageResponse
-                  }
-                  requestInputFocus={requestFocus}
-                  disableUserInputs={isInputReadonly}
-                  isMessageForInput={responsePanelState.isMessageForInput}
-                  scrollElementIntoView={() => {
-                    /* no-op; shell handles layout */
-                  }}
-                  serviceManager={serviceManager}
-                  hideFeedback
-                  showChainOfThought={false}
-                  allowNewFeedback={false}
-                  renderMessageComponent={(
-                    childProps: MessageTypeComponentProps
-                  ) => <MessageTypeComponent {...childProps} />}
-                />
+                <PanelContentErrorBoundary
+                  key={responsePanelState.localMessageItem.ui_state.id}
+                  errorText={languagePack.errors_singleMessage}
+                  onError={onPanelContentError}>
+                  <FooterButtonComponents
+                    message={responsePanelState.localMessageItem}
+                    originalMessage={
+                      allMessagesByID[
+                        responsePanelState.localMessageItem?.fullMessageID
+                      ] as MessageResponse
+                    }
+                    requestInputFocus={requestFocus}
+                    disableUserInputs={isInputReadonly}
+                    isMessageForInput={responsePanelState.isMessageForInput}
+                    scrollElementIntoView={() => {
+                      /* no-op; shell handles layout */
+                    }}
+                    serviceManager={serviceManager}
+                    hideFeedback
+                    showChainOfThought={false}
+                    allowNewFeedback={false}
+                    renderMessageComponent={(
+                      childProps: MessageTypeComponentProps
+                    ) => <MessageTypeComponent {...childProps} />}
+                  />
+                </PanelContentErrorBoundary>
               }
             />
           )}

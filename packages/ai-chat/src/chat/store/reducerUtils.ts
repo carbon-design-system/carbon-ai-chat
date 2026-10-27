@@ -64,9 +64,13 @@ import { DeepPartial } from '../../types/utilities/DeepPartial';
 import type { MessageWriteOptions } from './messageWriteTypes';
 import {
   createLocalMessageItemsForNestedMessageItems,
+  findDrawIssues,
+  keepNestedLocalIDs,
   outputItemToLocalItem,
 } from '../schema/outputItemToLocalItem';
 import {
+  isCarouselResponseType,
+  isGridResponseType,
   isHiddenOutputItem,
   isPause,
   isResponseWithNestedItems,
@@ -490,14 +494,6 @@ function resolvePreviousLocalItem(
   return undefined;
 }
 
-function supportsSnapshotStreaming(item: GenericItem) {
-  return (
-    item.response_type === MessageResponseTypes.TEXT ||
-    item.response_type === MessageResponseTypes.CONVERSATIONAL_SEARCH ||
-    item.response_type === MessageResponseTypes.USER_DEFINED
-  );
-}
-
 /**
  * Whether an upserted item can keep its previous {@link LocalMessageItem} as is: it is
  * deep-equal to the prior item and still streaming, or still settled, the same way.
@@ -512,15 +508,23 @@ function supportsSnapshotStreaming(item: GenericItem) {
 function canReuseLocalItem(
   matchedPrev: LocalMessageItem | undefined,
   item: GenericItem,
-  isStreaming: boolean
+  isStreaming: boolean,
+  message: MessageResponse
 ): boolean {
-  return Boolean(
-    matchedPrev &&
-    Boolean(matchedPrev.ui_state.isIntermediateStreaming) === isStreaming &&
-    (isStreaming
-      ? matchedPrev.ui_state.streamingState?.isDone === false
-      : matchedPrev.ui_state.streamingState?.isDone !== false) &&
-    isEqual(matchedPrev.item, item)
+  if (!matchedPrev) {
+    return false;
+  }
+  const { streamingState } = matchedPrev.ui_state;
+  const prevIsStreaming = Boolean(streamingState && !streamingState.isDone);
+  if (prevIsStreaming !== isStreaming || !isEqual(matchedPrev.item, item)) {
+    return false;
+  }
+  return (
+    (item.response_type as string) !== MessageResponseTypes.SYSTEM ||
+    isEqual(
+      matchedPrev.ui_state.cannotDraw?.missing ?? [],
+      findDrawIssues(item, message)
+    )
   );
 }
 
@@ -534,10 +538,10 @@ function applyUpsertUIState(
   isStreaming: boolean
 ) {
   const { ui_state: uiState } = localItem;
-  if (isStreaming || matchedPrev?.ui_state.streamingState) {
-    uiState.isIntermediateStreaming = isStreaming;
-    uiState.streamingState = { chunks: [], isDone: !isStreaming };
-  }
+  // `isIntermediateStreaming` stays unset: it hides most response types while true,
+  // which is a chunk-flow rule, and upserted cards and tables have always rendered
+  // mid-stream (D2).
+  uiState.streamingState = { chunks: [], isDone: !isStreaming };
   if (matchedPrev?.ui_state.wasAnnounced) {
     uiState.wasAnnounced = true;
   }
@@ -550,6 +554,50 @@ function applyUpsertUIState(
     uiState.needsAnnouncement && !isStreaming && !uiState.wasAnnounced;
 }
 
+/**
+ * Builds the local items nested in `localItem`, with the given streaming state, and adds
+ * them to `localItemsByID`. They keep the ids of the items nested in `previous`, the local
+ * item `localItem` replaces, which `localItemsByID` still holds.
+ */
+function addNestedLocalItems(
+  localItem: LocalMessageItem,
+  message: MessageResponse,
+  previous: LocalMessageItem | undefined,
+  isDone: boolean,
+  localItemsByID: ObjectMap<LocalMessageItem>
+) {
+  if (!isResponseWithNestedItems(localItem.item)) {
+    return;
+  }
+  const nestedLocalItems: LocalMessageItem[] = [];
+  createLocalMessageItemsForNestedMessageItems(
+    localItem,
+    message,
+    false,
+    nestedLocalItems,
+    true
+  );
+  for (const nested of nestedLocalItems) {
+    // Nested items render markdown too, so a table inside a card or grid needs the
+    // same streaming state as a top-level one.
+    nested.ui_state.streamingState = { chunks: [], isDone };
+  }
+  keepNestedLocalIDs(
+    localItem,
+    nestedLocalItems,
+    previous,
+    localItemsByID
+  ).forEach((nested) => {
+    localItemsByID[nested.ui_state.id] = nested;
+  });
+}
+
+/**
+ * Builds a fresh {@link LocalMessageItem} for an upserted item under `localID`, and adds
+ * local items for anything nested in it to `newLocalItemsByID`. An item the chat can't
+ * draw is marked `cannotDraw` and gets no nested local items, since building them would
+ * throw.
+ */
 function buildUpsertedLocalItem(
   item: GenericItem,
   message: MessageResponse,
@@ -562,20 +610,37 @@ function buildUpsertedLocalItem(
   localItem.ui_state.id = localID;
   localItem.fullMessageID = message.id;
   applyUpsertUIState(localItem, matchedPrev, isStreaming);
-  if (isResponseWithNestedItems(localItem.item)) {
-    const nestedLocalItems: LocalMessageItem[] = [];
-    createLocalMessageItemsForNestedMessageItems(
-      localItem,
-      message,
-      false,
-      nestedLocalItems,
-      true
-    );
-    for (const nested of nestedLocalItems) {
-      newLocalItemsByID[nested.ui_state.id] = nested;
-    }
+  const missing = findDrawIssues(item, message);
+  if (missing.length) {
+    localItem.ui_state.cannotDraw = { missing };
+    return localItem;
   }
+  addNestedLocalItems(
+    localItem,
+    message,
+    matchedPrev,
+    !isStreaming,
+    newLocalItemsByID
+  );
   return localItem;
+}
+
+/**
+ * Whether a streamed snapshot the chat can't draw yet should keep showing the version
+ * of the same item before it. A host that streams partial JSON often sends a grid whose
+ * newest cell has no `items` yet; hiding the grid on each such snapshot would make it
+ * flicker. A previous version of another type isn't the same item, so it isn't kept.
+ */
+function keepsLastDrawn(
+  localItem: LocalMessageItem,
+  matchedPrev: LocalMessageItem | undefined
+): boolean {
+  return Boolean(
+    localItem.ui_state.cannotDraw &&
+    matchedPrev &&
+    !matchedPrev.ui_state.cannotDraw &&
+    matchedPrev.item.response_type === localItem.item.response_type
+  );
 }
 
 /**
@@ -591,8 +656,9 @@ function buildUpsertedLocalItem(
  *    skip re-rendering. This matches {@link applyChunkWrite} and is critical when only
  *    one item in `output.generic[]` actually changes between calls.
  *
- * Nested CARD/CAROUSEL/GRID/BUTTON local items are rebuilt when their parent changes;
- * orphaned nested items are pruned.
+ * Nested CARD/CAROUSEL/GRID/BUTTON local items are rebuilt when their parent changes,
+ * keeping the id of the nested item in the same place before, so they stay mounted.
+ * Orphaned nested items are pruned.
  *
  * When `hidesSilent` is set, items {@link isHiddenOutputItem} picks out get no local
  * item, the way `addMessage` stores them without showing them. Positional matching
@@ -658,8 +724,7 @@ function rebuildLocalItemsForUpsert(
 
   shownItems.forEach(({ item, matchedPrev }) => {
     const streamId = streamItemID(messageID, item);
-    const itemIsStreaming = isStreaming && supportsSnapshotStreaming(item);
-    const localItem = canReuseLocalItem(matchedPrev, item, itemIsStreaming)
+    let localItem = canReuseLocalItem(matchedPrev, item, isStreaming, message)
       ? matchedPrev
       : buildUpsertedLocalItem(
           item,
@@ -667,9 +732,12 @@ function rebuildLocalItemsForUpsert(
           // Keep the resolved ID so React keys and slot names stay stable.
           matchedPrev?.ui_state.id ?? streamId ?? uuid(),
           matchedPrev,
-          itemIsStreaming,
+          isStreaming,
           newLocalItemsByID
         );
+    if (isStreaming && keepsLastDrawn(localItem, matchedPrev)) {
+      localItem = matchedPrev;
+    }
 
     newLocalIDsForMessage.push(localItem.ui_state.id);
     newLocalItemsByID[localItem.ui_state.id] = localItem;
@@ -862,7 +930,8 @@ function applyFullMessage(state: AppState, message: Message): AppState {
 /**
  * Builds the local item for the first chunk of a streamed item. The item is the chunk
  * itself, and it stays hidden (`isIntermediateStreaming`) until `final_response`, even
- * when that first chunk is already a `complete_item`. A later `complete_item` shows it.
+ * when that first chunk is already a `complete_item`. A later `complete_item` shows it,
+ * unless it is a grid or a carousel (see {@link nextChunkLocalItem}).
  */
 function newChunkLocalItem(
   chunkItem: DeepPartial<GenericItem>,
@@ -889,7 +958,9 @@ function newChunkLocalItem(
 
 /**
  * Applies a later chunk to an item already streaming. A `complete_item` merges over the
- * local item, which is still the first chunk, and settles and shows it. A `partial_item`
+ * local item, which is still the first chunk, and settles it. It shows the item too,
+ * except a grid or a carousel: chunks never build the nested items those two draw, so
+ * one stays as hidden as it was until `final_response` builds it whole. A `partial_item`
  * leaves the item alone and adds the delta to `streamingState.chunks`, which renderers
  * read while the item streams.
  */
@@ -901,12 +972,16 @@ function nextChunkLocalItem(
 ): LocalMessageItem {
   if (isComplete) {
     const item = { ...existing.item, ...chunkItem } as GenericItem;
+    const keepsHidden =
+      isGridResponseType(item) || isCarouselResponseType(item);
     return {
       ...existing,
       item,
       ui_state: {
         ...existing.ui_state,
-        isIntermediateStreaming: false,
+        isIntermediateStreaming: keepsHidden
+          ? existing.ui_state.isIntermediateStreaming
+          : false,
         streamingState: { chunks: [], isDone: true },
       },
     };

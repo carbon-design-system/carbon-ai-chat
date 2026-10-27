@@ -27,6 +27,7 @@ import {
   BusEventType,
 } from '../../types/events/eventBusTypes';
 import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
+import { OnErrorType } from '../../types/config/ErrorConfig';
 import isEqual from 'lodash-es/isEqual.js';
 import cloneDeep from 'lodash-es/cloneDeep.js';
 import actions from '../store/actions';
@@ -36,6 +37,7 @@ import type {
 } from '../store/messageWriteTypes';
 import {
   createLocalMessageItemsForNestedMessageItems,
+  findDrawIssues,
   outputItemToLocalItem,
 } from '../schema/outputItemToLocalItem';
 import {
@@ -43,6 +45,7 @@ import {
   isConnectToHumanAgent,
   isHiddenOutputItem,
   isPause,
+  isItemStillStreaming,
   isRequest,
   streamItemID,
 } from '../utils/messageUtils';
@@ -288,7 +291,9 @@ class MessageUpsertCoordinator {
       messageID,
       generation
     );
+    const refsBefore = this.snapshotLocalItemRefs(messageID);
     this.serviceManager.store.dispatch(actions.endMessageStreaming(messageID));
+    this.reportUndrawableItems(messageID, refsBefore, false);
   }
 
   /**
@@ -510,6 +515,11 @@ class MessageUpsertCoordinator {
     }
     const committedResult = this.serviceManager.store.getState()
       .allMessagesByID[messageID] as MessageResponse;
+    this.reportUndrawableItems(
+      messageID,
+      refsBefore,
+      !(isStopped && nextState === MessageState.STREAMING)
+    );
 
     this.serviceManager.receiveService.retainAgentItemPositions(
       messageID,
@@ -903,6 +913,7 @@ class MessageUpsertCoordinator {
       if (this.isStale(stamp, result.request_id)) {
         return false;
       }
+      this.reportUndrawableItems(messageID, refsBefore);
       if (isStreaming) {
         this.announceStreamStarts(result, pauseIndex);
       }
@@ -1180,6 +1191,55 @@ class MessageUpsertCoordinator {
   }
 
   /**
+   * Reports each shown item of `messageID` that the chat can't draw and now shows an
+   * error for: one the last write or settle replaced, that is no longer streaming. A
+   * reused local item was reported when it was written, so each version reports once.
+   *
+   * Pass `false` for `reportErrors` when the settle is user-initiated (stop/cancel):
+   * a malformed in-flight item that was never completed is not actionable host data.
+   */
+  private reportUndrawableItems(
+    messageID: string,
+    refsBefore: Map<string, LocalMessageItem>,
+    reportErrors = true
+  ) {
+    const state = this.serviceManager.store.getState();
+    for (const localID of state.assistantMessageState.localMessageIDs) {
+      const localItem = state.allMessageItemsByID[localID];
+      const { cannotDraw } = localItem?.ui_state ?? {};
+      if (
+        localItem?.fullMessageID !== messageID ||
+        !cannotDraw ||
+        refsBefore.get(localID) === localItem ||
+        isItemStillStreaming(localItem)
+      ) {
+        continue;
+      }
+      if (!reportErrors) {
+        continue;
+      }
+      const responseType = localItem.item.response_type;
+      this.serviceManager.actions.errorOccurred({
+        errorType: OnErrorType.RENDER,
+        message: this.serviceManager.intl.formatMessage(
+          { id: 'errors_upsertItemCannotDraw' },
+          {
+            responseType,
+            messageID,
+            missing: cannotDraw.missing.join(', '),
+          }
+        ),
+        otherData: {
+          messageID,
+          responseType,
+          missing: cannotDraw.missing,
+          item: localItem.item,
+        },
+      });
+    }
+  }
+
+  /**
    * Phase 4: for each item of the upserted message, re-emit the `USER_DEFINED_RESPONSE`
    * slot and custom-footer slot. It walks `output.generic` rather than the rendered list
    * so that items the reducer leaves out ({@link isHiddenOutputItem}) still fire, as they
@@ -1305,6 +1365,9 @@ class MessageUpsertCoordinator {
     localItem: LocalMessageItem,
     result: MessageResponse
   ): Record<string, LocalMessageItem> {
+    if (findDrawIssues(localItem.item, result).length) {
+      return {};
+    }
     const nestedItems: LocalMessageItem[] = [];
     createLocalMessageItemsForNestedMessageItems(
       localItem,

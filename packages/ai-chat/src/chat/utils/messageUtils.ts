@@ -856,6 +856,16 @@ function getRequestSenderName(
   return nickname.trim() || undefined;
 }
 
+/**
+ * Whether the item's stream is still open. An upsert `STREAMING` write and a chunk
+ * `partial_item` open it; a `COMPLETE` or `ERROR` upsert, a `complete_item`, and a
+ * stop (`END_MESSAGE_STREAMING`) close it. Items from `addMessage` or a
+ * `final_response` have no streaming state, so they never count as streaming.
+ */
+function isItemStillStreaming(localItem: LocalMessageItem): boolean {
+  return localItem.ui_state.streamingState?.isDone === false;
+}
+
 export {
   getRequestSenderName,
   getOptionType,
@@ -907,4 +917,5 @@ export {
   isStandaloneSystemMessage,
   getMessageIDForUserInput,
   getSpeakerName,
+  isItemStillStreaming,
 };
