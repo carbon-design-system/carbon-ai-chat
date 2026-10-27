@@ -303,6 +303,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         }
       },
       getMessages: () => this.getPortableMessages(),
+      hasMessage: (id) => Boolean(this.props.allMessagesByID[id]),
       onScrollGeometryChanged: () => this.renderScrollDownNotification(),
     };
   }
