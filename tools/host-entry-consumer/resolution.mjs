@@ -22,7 +22,6 @@ import ContainerHost from '@carbon/ai-chat/dist/es/web-components/cds-aichat-con
 import CustomElementHost from '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
 import type { ChatInstance, PublicConfig } from '@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js';
 import type { ChatInstance as OuterInstance, PublicConfig as OuterConfig } from '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
-import { ChatContainer as HostTypeOnly } from '@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js';
 const containerConstructor: CustomElementConstructor = ContainerHost;
 const outerConstructor: CustomElementConstructor = CustomElementHost;
 const container = new ContainerHost();
@@ -50,8 +49,6 @@ outer.openChatByDefault = 'yes';
 const hostConfig: PublicConfig = { openChatByDefault: true };
 const outerConfig: OuterConfig = hostConfig;
 type HostInstances = [ChatInstance, OuterInstance];
-// @ts-expect-error Host paths re-export root types only; the host module has no React value.
-createElement(HostTypeOnly, {});
 export { containerConstructor, outerConstructor, container, outer, outerConfig };
 export type { HostInstances };
 `;
