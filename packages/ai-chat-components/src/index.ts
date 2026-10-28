@@ -18,7 +18,7 @@ import './components/aichat-feedback/index.js';
 import './components/aichat-file-uploads/index.js';
 import './components/aichat-launcher/index.js';
 import './components/aichat-markdown/index.js';
-import './components/messages-shell/index.js';
+import './components/aichat-messages-shell/index.js';
 import './components/aichat-processing/index.js';
 import './components/aichat-autocomplete/index.js';
 import './components/aichat-prompt-line/index.js';
@@ -64,7 +64,7 @@ export { default as FileUploadItemElement } from './components/aichat-file-uploa
 export { default as FileUploadsElement } from './components/aichat-file-uploads/aichat-file-uploads.js';
 export { default as CDSAIChatLauncher } from './components/aichat-launcher/aichat-launcher.js';
 export { default as CDSAIChatMarkdown } from './components/aichat-markdown/aichat-markdown.js';
-export { default as CDSAIChatMessagesShell } from './components/messages-shell/src/messages-shell.js';
+export { default as CDSAIChatMessagesShell } from './components/aichat-messages-shell/aichat-messages-shell.js';
 export { default as CDSAIChatProcessing } from './components/aichat-processing/aichat-processing.js';
 export { default as AutocompleteElement } from './components/aichat-autocomplete/aichat-autocomplete.js';
 export { default as AutocompleteControllerElement } from './components/aichat-prompt-line/aichat-autocomplete-controller.js';
