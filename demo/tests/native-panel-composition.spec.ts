@@ -10,6 +10,7 @@ import {
   ButtonItemType,
   MessageResponseTypes,
   MessageState,
+  PanelType,
 } from '@carbon/ai-chat/server';
 import type { ButtonItem, ChatInstance } from '@carbon/ai-chat';
 import type { Page } from '@playwright/test';
@@ -21,6 +22,7 @@ import {
   installTestCsp,
   openChatWindow,
   prepareDemoPage,
+  sendChatMessage,
 } from './utils';
 import type {} from '../types/window';
 
@@ -440,6 +442,211 @@ for (const framework of ['react', 'web-component']) {
       );
     });
   }
+}
+
+for (const framework of ['react', 'web-component']) {
+  test(`${framework} sidebar opens response, citation, and mobile history through public fixtures`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 600, height: 900 });
+    await prepareHost(page, framework, 'sidebar');
+    const region = page.locator('cds-aichat-native-panels');
+
+    await sendChatMessage(page, 'button');
+    await page
+      .getByRole('button', { name: 'Open a panel', exact: true })
+      .click();
+    const response = region.locator('[data-panel-name="response"]');
+    await expect(response).toBeVisible();
+    await expect(response.locator('[slot="title"]')).toHaveText('My panel');
+    await expect(response.locator(':scope > [slot="body"]')).toContainText(
+      'Carbon is great!'
+    );
+    await expect(
+      response
+        .locator(':scope > [slot="footer"]')
+        .getByRole('button', { name: 'Select footer action', exact: true })
+    ).toBeVisible();
+    // Footer URL items retain Carbon's standard-button role on their anchor.
+    const optionalButton = response
+      .locator(':scope > [slot="footer"]')
+      .getByRole('button', { name: /Optional Button/ });
+    await expect(optionalButton).toBeVisible();
+    await expect(optionalButton).toHaveAttribute('href', 'https://ibm.com');
+    expect(
+      await response.evaluate((frame) => {
+        const root = frame.getRootNode();
+        const title = frame.querySelector<HTMLElement>('[slot="title"]');
+        const body = frame.querySelector<HTMLElement>(':scope > [slot="body"]');
+        const footer = frame.querySelector<HTMLElement>(
+          ':scope > [slot="footer"]'
+        );
+        const region = frame.parentElement;
+        return {
+          nativeRegion: region.localName,
+          regionSlot: region.assignedSlot?.name,
+          titleParent: title.parentElement.localName,
+          titleSlot: title.assignedSlot?.name,
+          bodySlot: body.assignedSlot?.name,
+          footerSlot: footer.assignedSlot?.name,
+          sameRoot: [title, body, footer].every(
+            (target) => target.isConnected && target.getRootNode() === root
+          ),
+        };
+      })
+    ).toEqual({
+      nativeRegion: 'cds-aichat-native-panels',
+      regionSlot: 'panels',
+      titleParent: 'cds-aichat-toolbar',
+      titleSlot: 'title',
+      bodySlot: 'body',
+      footerSlot: 'footer',
+      sameRoot: true,
+    });
+    await response
+      .getByRole('button', { name: 'Return to conversation', exact: true })
+      .click();
+    await expect(response).toBeHidden();
+
+    await sendChatMessage(page, 'conversational search');
+    await page
+      .getByRole('button', {
+        name: 'Open or close the list of sources',
+        exact: true,
+      })
+      .click();
+    const citationTitle =
+      'Carbon Research Database - Internal Collection (IBM Quantum Network)';
+    const sources = page.locator(
+      '.cds-aichat--conversational-search [slot="citations"] cds-aichat-carousel'
+    );
+    const nextSource = sources.getByRole('button', {
+      name: 'Go to next slide.',
+      exact: true,
+    });
+    await nextSource.click();
+    await expect(sources.getByText('2 / 3', { exact: true })).toBeVisible();
+    await nextSource.click();
+    await expect(sources.getByText('3 / 3', { exact: true })).toBeVisible();
+    const sourceCard = sources.getByRole('button', {
+      name: citationTitle,
+      exact: true,
+    });
+    await sourceCard.focus();
+    await expect(sourceCard).toBeFocused();
+    await sourceCard.press('Enter');
+    const citation = region.locator('[data-panel-name="citation"]');
+    await expect(citation).toBeVisible();
+    await expect(citation.locator('[slot="title"]')).toHaveText(citationTitle);
+    const citationBody = citation.locator(':scope > [slot="body"]');
+    const sourceParagraph =
+      'Carbon exists in multiple allotropes including diamond, graphite, and fullerenes. Diamond was first synthesized artificially in 1955, while fullerenes were discovered in 1985, and graphene was first isolated in 2004 by Andre Geim and Konstantin Novoselov at the University of Manchester.';
+    await expect(citationBody).toContainText(sourceParagraph);
+    // The fixture's quote ends "1985." while its source continues "1985, and".
+    // The parent renders the complete source without a substring highlight.
+    await expect(
+      citationBody.locator('.cds-aichat--search-result-highlight')
+    ).toHaveCount(0);
+    await expect(citationBody).toContainText(
+      'Carbon nanotubes, another important allotrope'
+    );
+    const retainedCitationBody = await citationBody.elementHandle();
+    const citationContent = citationBody.locator(
+      '.cds-aichat--view-source-panel'
+    );
+    const retainedCitationContent = await citationContent.elementHandle();
+    await page.evaluate(() =>
+      window.setChatConfig({ header: { title: 'Updated panel host' } })
+    );
+    expect(
+      await citationBody.evaluate(
+        (node, original) => node === original,
+        retainedCitationBody
+      )
+    ).toBe(true);
+    expect(
+      await citationContent.evaluate(
+        (node, original) => node === original,
+        retainedCitationContent
+      )
+    ).toBe(true);
+    expect(await citationBody.evaluate((node) => node.assignedSlot?.name)).toBe(
+      'body'
+    );
+    await expect(citationBody).toContainText(sourceParagraph);
+    await expect(citationBody).toContainText(
+      'Carbon nanotubes, another important allotrope'
+    );
+    await expect(
+      citationBody.locator('.cds-aichat--search-result-highlight')
+    ).toHaveCount(0);
+    await citation
+      .getByRole('button', { name: 'Return to conversation', exact: true })
+      .click();
+    await expect(citation).toBeHidden();
+
+    await page.evaluate(() =>
+      window.setChatConfig({
+        history: { isOn: true, showMobileMenu: true, startClosed: true },
+      })
+    );
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () => window.chatInstance.getState().customPanels.history.isMobile
+        )
+      )
+      .toBe(true);
+    await page.evaluate(
+      (history) => window.chatInstance.customPanels.getPanel(history).open(),
+      PanelType.HISTORY
+    );
+    const history = region.locator('[data-panel-name="history"]');
+    await expect(history).toBeVisible();
+    const historyContent = page.locator('[slot="historyPanelElement"]');
+    await expect(
+      historyContent.getByText('Chats', { exact: true })
+    ).toBeVisible();
+    await expect(
+      historyContent.getByRole('button', {
+        name: 'Close chat history',
+        exact: true,
+      })
+    ).toBeVisible();
+    expect(
+      await history.evaluate((frame) => {
+        const host = window.chatInstance.writeableElements.historyPanelElement;
+        const body = frame.querySelector<HTMLElement>(':scope > [slot="body"]');
+        return {
+          mobile: window.chatInstance.getState().customPanels.history.isMobile,
+          open: window.chatInstance.getState().customPanels.history.isOpen,
+          bodySlot: body.assignedSlot?.name,
+          historySlot: host.assignedSlot?.name,
+          historySlotRoot:
+            host.assignedSlot?.getRootNode() === frame.getRootNode(),
+          hostConnected: host.isConnected,
+        };
+      })
+    ).toEqual({
+      mobile: true,
+      open: true,
+      bodySlot: 'body',
+      historySlot: 'historyPanelElement',
+      historySlotRoot: true,
+      hostConnected: true,
+    });
+    await historyContent
+      .getByRole('button', { name: 'Close chat history', exact: true })
+      .click();
+    await expect(history).toBeHidden();
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () => window.chatInstance.getState().customPanels.history.isOpen
+        )
+      )
+      .toBe(false);
+  });
 }
 
 test('native custom panel preserves ordinary animation events and keyboard close order', async ({
