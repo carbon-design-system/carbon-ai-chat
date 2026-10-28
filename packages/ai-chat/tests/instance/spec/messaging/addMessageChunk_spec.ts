@@ -2202,7 +2202,9 @@ describe('ChatInstance.messaging.addMessageChunk', () => {
         body: [{ response_type: MessageResponseTypes.TEXT, text: 'Card body' }],
       };
       const cardInDOM = () =>
-        getChatShadowRoot()?.querySelector('.cds-aichat--received--card');
+        getChatShadowRoot()?.querySelector(
+          '.cds-aichat--card-message-component'
+        );
 
       await instance.messaging.addMessageChunk(
         complete(responseId, 'card-1', card)
