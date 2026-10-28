@@ -9,7 +9,7 @@
  * Copied from Carbon v12.0.0-alpha.3, commit
  * 659c96584a68027d391458b4d9c3dac479e1e357:
  * https://github.com/carbon-design-system/carbon/blob/659c96584a68027d391458b4d9c3dac479e1e357/packages/web-components/bin/create-prefixed-build.js
- * The upstream script is unchanged through 3.0.0-alpha.5.
+ * The upstream script is unchanged through @carbon/web-components 3.0.0-alpha.5.
  *
  * Local adapters preserve module and map filenames, redirect installed child
  * package edges, and copy their declarations and advertised metadata.
