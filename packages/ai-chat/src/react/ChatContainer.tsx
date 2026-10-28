@@ -187,6 +187,7 @@ function ChatContainer(
     onAfterRender,
     onViewChange,
     onViewPreChange,
+    hostRendersCustomRequestFooter: Boolean(renderCustomRequestFooter),
     hostRendersCustomPromptLine:
       renderWriteableElements?.[WriteableElementName.CUSTOM_PROMPT_LINE] !=
       null,
