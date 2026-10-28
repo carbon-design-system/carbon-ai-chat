@@ -73,7 +73,7 @@ export function getBubbleLayout(item: GenericItem): BubbleLayout {
     fullWidth:
       isConversationalSearch ||
       isMultiItemCarousel ||
-      isFullWidthUserDefined(item),
+      isFullWidthUserDefined(item) === true,
     widthCap: WIDTH_CAPS[responseType] ?? 'none',
     insetFooter: isConversationalSearch,
   };

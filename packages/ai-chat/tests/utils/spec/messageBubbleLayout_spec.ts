@@ -78,6 +78,14 @@ describe('getBubbleLayout', () => {
     expect(layout).toEqual({ ...DEFAULT_LAYOUT, fullWidth: true });
   });
 
+  it('renders a user-defined item in the inset column when full_width is missing', () => {
+    const layout = getBubbleLayout(
+      item({ response_type: MessageResponseTypes.USER_DEFINED })
+    );
+
+    expect(layout).toEqual(DEFAULT_LAYOUT);
+  });
+
   it('renders a user-defined item in the inset column when full_width is false', () => {
     const layout = getBubbleLayout(
       item({
