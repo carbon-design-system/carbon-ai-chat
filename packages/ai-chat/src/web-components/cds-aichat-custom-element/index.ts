@@ -386,5 +386,7 @@ class ChatCustomElement extends FlattenedConfigElement {
 }
 
 export type { CdsAiChatCustomElementAttributes } from './types';
+// These paths published the root types before they had their own declarations.
+export type * from '../../aiChatEntry';
 
 export default ChatCustomElement;

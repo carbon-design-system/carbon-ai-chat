@@ -20,6 +20,9 @@ import { ChatContainer, ChatCustomElement } from '@carbon/ai-chat';
 import { ChatContainer as CustomChatContainer } from '@carbon/ai-chat/es-custom';
 import ContainerHost from '@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js';
 import CustomElementHost from '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
+import type { ChatInstance, PublicConfig } from '@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js';
+import type { ChatInstance as OuterInstance, PublicConfig as OuterConfig } from '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
+import { ChatContainer as HostTypeOnly } from '@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js';
 const containerConstructor: CustomElementConstructor = ContainerHost;
 const outerConstructor: CustomElementConstructor = CustomElementHost;
 const container = new ContainerHost();
@@ -43,7 +46,14 @@ const reactAsHost: typeof ContainerHost = ChatContainer;
 container.aiEnabled = 'yes';
 // @ts-expect-error Both hosts retain their config field types.
 outer.openChatByDefault = 'yes';
-export { containerConstructor, outerConstructor, container, outer };
+// Host paths still publish the root types they resolved to before.
+const hostConfig: PublicConfig = { openChatByDefault: true };
+const outerConfig: OuterConfig = hostConfig;
+type HostInstances = [ChatInstance, OuterInstance];
+// @ts-expect-error Host paths re-export root types only; the host module has no React value.
+createElement(HostTypeOnly, {});
+export { containerConstructor, outerConstructor, container, outer, outerConfig };
+export type { HostInstances };
 `;
 
 async function assertLocalDeclarations(consumer, name, program, options) {
