@@ -57,6 +57,14 @@ async function assertLocalDeclarations(consumer, name, program, options) {
   const chatRoot = await realpath(
     join(consumer, 'node_modules/@carbon/ai-chat')
   );
+  const chat = JSON.parse(
+    await readFile(join(chatRoot, 'package.json'), 'utf8')
+  );
+  const declared = new Set([
+    chat.name,
+    ...Object.keys(chat.dependencies ?? {}),
+    ...Object.keys(chat.peerDependencies ?? {}),
+  ]);
   for (const declaration of program.getSourceFiles()) {
     if (
       !declaration.isDeclarationFile ||
@@ -66,6 +74,15 @@ async function assertLocalDeclarations(consumer, name, program, options) {
     }
     for (const imported of ts.preProcessFile(declaration.text).importedFiles) {
       if (!imported.fileName.startsWith('.')) {
+        // Strict installs resolve only declared packages from these declarations.
+        const segments = imported.fileName.split('/');
+        const packageName = segments
+          .slice(0, imported.fileName.startsWith('@') ? 2 : 1)
+          .join('/');
+        assert.ok(
+          declared.has(packageName),
+          `${name}: ${declaration.fileName} imports undeclared ${packageName}.`
+        );
         continue;
       }
       const resolved = ts.resolveModuleName(
