@@ -1,6 +1,6 @@
 # Element manifests
 
-Edit the source table and public types when changing flattened host config. The CEM plugin reads those literal declarations and fails on unsupported expressions. Keep property-only fields free of attributes.
+Edit the source table and public types when changing flattened host config. The CEM plugin reads those literal declarations and fails on unsupported expressions. Keep property-only fields free of attributes. The `@attr` block on `FlattenedConfigElement` stays: `telemetry:config` reads it through web-component-analyzer, and `test:manifest` fails when it drifts from the table.
 
 The public host interfaces can extend a config field's type. The plugin reads those overrides from source too. The field table still controls its HTML attribute. Keep each host linked to its public interface in the analyzer config.
 

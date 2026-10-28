@@ -94,6 +94,13 @@ async function checkReferences(manifest, root, packageName) {
       `${containingModule}#${declarationName}`,
       globals
     );
+    if (value.package) {
+      assert.match(
+        value.package,
+        /^(@[^/]+\/)?[^/]+$/,
+        `Package references name a package, not a path: ${value.package}`
+      );
+    }
     if (
       value.package &&
       value.package !== packageName &&
