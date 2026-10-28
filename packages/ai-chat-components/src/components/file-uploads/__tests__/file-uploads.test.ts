@@ -555,6 +555,79 @@ describe('file-uploads', () => {
         'Remove gamma.txt',
       ]);
     });
+
+    function getChipByFileName(
+      el: FileUploadsElement,
+      fileName: string
+    ): HTMLElement {
+      return Array.from(
+        el.renderRoot.querySelectorAll<HTMLElement>(
+          'cds-aichat-file-upload-item'
+        )
+      ).find(
+        (chip) =>
+          chip.getAttribute('remove-file-named-label') === `Remove ${fileName}`
+      )!;
+    }
+
+    it('keeps each chip bound to its own upload when a failure reorders the list', async () => {
+      const el = await mount();
+      await setUploads(el, [
+        makeUpload('a', FileStatusValue.UPLOADING, { name: 'alpha.txt' }),
+        makeUpload('z', FileStatusValue.UPLOADING, { name: 'zebra.txt' }),
+      ]);
+      const alphaBefore = getChipByFileName(el, 'alpha.txt');
+
+      await setUploads(el, [
+        makeUpload('a', FileStatusValue.UPLOADING, { name: 'alpha.txt' }),
+        makeUpload('z', FileStatusValue.EDIT, {
+          isError: true,
+          name: 'zebra.txt',
+        }),
+      ]);
+
+      expect(chipOrder(el)).to.deep.equal([
+        'Remove zebra.txt',
+        'Remove alpha.txt',
+      ]);
+      // Same node, not a node reused by position, so Remove acts on Alpha.
+      expect(getChipByFileName(el, 'alpha.txt')).to.equal(alphaBefore);
+
+      const inner = alphaBefore.shadowRoot!.querySelector(
+        'cds-file-uploader-item'
+      )!;
+      setTimeout(() =>
+        inner.dispatchEvent(
+          new CustomEvent('cds-file-uploader-item-deleted', { bubbles: true })
+        )
+      );
+      const event = await oneEvent(el, 'cds-aichat-file-remove');
+      expect(event.detail.fileId).to.equal('a');
+    });
+
+    it('keeps focus on the focused chip when an asynchronous failure moves it', async () => {
+      const el = await mount();
+      await setUploads(el, [
+        makeUpload('a', FileStatusValue.UPLOADING, { name: 'alpha.txt' }),
+        makeUpload('z', FileStatusValue.UPLOADING, { name: 'zebra.txt' }),
+      ]);
+      const alpha = getChipByFileName(el, 'alpha.txt');
+      alpha.focus();
+      expect(el.shadowRoot!.activeElement).to.equal(alpha);
+
+      // Zebra fails and sorts ahead of Alpha, moving Alpha's node.
+      await setUploads(el, [
+        makeUpload('a', FileStatusValue.UPLOADING, { name: 'alpha.txt' }),
+        makeUpload('z', FileStatusValue.EDIT, {
+          isError: true,
+          name: 'zebra.txt',
+        }),
+      ]);
+
+      expect(el.shadowRoot!.activeElement).to.equal(
+        getChipByFileName(el, 'alpha.txt')
+      );
+    });
   });
 
   it('scrolls its chips inside the prompt line shell instead of overflowing it', async () => {

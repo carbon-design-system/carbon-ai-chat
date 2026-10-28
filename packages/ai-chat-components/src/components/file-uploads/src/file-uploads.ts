@@ -16,6 +16,7 @@ import {
   unsafeCSS,
 } from 'lit';
 import { property, state } from 'lit/decorators.js';
+import { repeat } from 'lit/directives/repeat.js';
 
 import { AriaAnnouncerManager } from '../../../globals/utils/aria-announcer-manager.js';
 import { carbonElement } from '../../../globals/decorators/carbon-element.js';
@@ -151,6 +152,13 @@ class FileUploadsElement extends LitElement {
   /** Previous-frame snapshot keyed by upload id, used to detect transitions. */
   private _snapshots = new Map<string, UploadSnapshot>();
 
+  /**
+   * The element holding focus before a re-render. Reordering chips moves their
+   * DOM nodes, and moving a focused node drops focus, so it is put back once
+   * the move is done.
+   */
+  private _focusedBeforeUpdate: HTMLElement | null = null;
+
   private _resizeObserver = new ResizeObserver(() => {
     this._checkOverflow();
   });
@@ -181,6 +189,25 @@ class FileUploadsElement extends LitElement {
     );
   }
 
+  /**
+   * Returns the element that holds focus inside this list. Focus can sit on a
+   * chip or on the Remove button nested in Carbon's shadow root, so the depth
+   * varies; walk down rather than assume it.
+   */
+  private _deepActiveElement(): HTMLElement | null {
+    let active = this.shadowRoot?.activeElement ?? null;
+    while (active?.shadowRoot?.activeElement) {
+      active = active.shadowRoot.activeElement;
+    }
+    return active as HTMLElement | null;
+  }
+
+  protected willUpdate(changedProperties: PropertyValues) {
+    this._focusedBeforeUpdate = changedProperties.has('uploads')
+      ? this._deepActiveElement()
+      : null;
+  }
+
   disconnectedCallback() {
     this._resizeObserver.disconnect();
     this._announcer.disconnect();
@@ -188,6 +215,12 @@ class FileUploadsElement extends LitElement {
   }
 
   protected updated(changedProperties: PropertyValues) {
+    const focused = this._focusedBeforeUpdate;
+    this._focusedBeforeUpdate = null;
+    if (focused?.isConnected && this._deepActiveElement() !== focused) {
+      focused.focus();
+    }
+
     if (changedProperties.has('uploads')) {
       this.toggleAttribute('has-uploads', this.uploads.length > 0);
       this._announceTransitions();
@@ -330,7 +363,9 @@ class FileUploadsElement extends LitElement {
               <div
                 class="${prefix}--file-uploads-gradient-wrapper${this._hasOverflow ? ` ${prefix}--file-uploads-gradient-wrapper--overflow` : ''}">
                 <div class="${prefix}--file-uploads-container">
-                  ${sorted.map(
+                  ${repeat(
+                    sorted,
+                    (upload) => upload.id,
                     (upload) => html`
                       <cds-aichat-file-upload-item
                         .upload="${upload}"
