@@ -1,7 +1,7 @@
 {
   "name": "@carbon/ai-chat-components",
   "description": "AI Chat Components",
-  "version": "1.13.0",
+  "version": "1.14.0-rc.0",
   "type": "module",
   "license": "Apache-2.0",
   "repository": {
@@ -112,7 +112,7 @@
     "@carbon/react": "^1.97.0",
     "@carbon/themes": "^11.25.0",
     "@custom-elements-manifest/analyzer": "^0.11.0",
-    "@happy-dom/jest-environment": "^20.0.2",
+    "@happy-dom/jest-environment": "^21.0.4",
     "@mordech/vite-lit-loader": "^0.40.0",
     "@open-wc/testing": "4.0.0",
     "@rollup/plugin-alias": "^6.0.0",
@@ -142,7 +142,7 @@
     "brace-expansion": "^5.0.8",
     "concurrently": "^10.0.0",
     "globby": "^16.0.0",
-    "happy-dom": "^20.8.9",
+    "happy-dom": "^21.0.0",
     "jest": "^30.0.0",
     "playwright": "^1.48.1",
     "react": "^19.0.0",

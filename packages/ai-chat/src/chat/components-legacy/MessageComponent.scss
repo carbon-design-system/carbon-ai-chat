@@ -166,12 +166,6 @@ $message-bar-width: 3px;
       transition: margin-block-start motion.$duration-fast-02
         motion.motion(standard, productive);
     }
-
-    .cds-aichat--message
-      .cds-aichat--received.cds-aichat--received--agent-status-message {
-      transition: margin-inline motion.$duration-fast-02
-        motion.motion(standard, productive);
-    }
   }
 }
 
@@ -395,14 +389,6 @@ svg.cds-aichat--sent-file-icon {
   inline-size: 100%;
 }
 
-.cds-aichat--assistant-message .cds-aichat--received--agent-status-message {
-  color: theme.$text-helper;
-  @include type.type-style('caption-01');
-
-  padding-inline: layout.$spacing-05;
-  text-align: center;
-}
-
 .cds-aichat--assistant-message .cds-aichat--received--chat-status-message {
   color: theme.$text-secondary;
   @include type.type-style('caption-01');
@@ -496,12 +482,6 @@ svg.cds-aichat--sent-file-icon {
 /* Group only unnamed requests; hiding a header at a named boundary can attribute
    the next message to the wrong sender. */
 
-.cds-aichat--message--response:not(
-    .cds-aichat--message--system-message
-  ).cds-aichat--message--agent-message
-  + .cds-aichat--message--response:not(
-    .cds-aichat--message--system-message
-  ).cds-aichat--message--agent-message,
 .cds-aichat--message--request:not(.cds-aichat--message--named-request)
   + .cds-aichat--message--request:not(.cds-aichat--message--named-request) {
   padding-block-start: layout.$spacing-03;
@@ -510,29 +490,15 @@ svg.cds-aichat--sent-file-icon {
     display: none;
   }
 
-  .cds-aichat--received--from-human,
   .cds-aichat--sent--bubble {
     border-radius: layout.$spacing-03;
   }
 }
 
-.cds-aichat--message--response:not(.cds-aichat--message--agent-message)
+.cds-aichat--message--response
   .cds-aichat--message__avatar-line
   + .cds-aichat--message--padding {
   padding-block-start: layout.$spacing-02;
-}
-
-.cds-aichat--message__avatar--agent
-  .cds-aichat--image-with-fallback
-  .cds-aichat--icon-holder {
-  background-color: theme.$chat-avatar-agent;
-}
-
-.cds-aichat--received--from-human.cds-aichat--received--text {
-  padding: layout.$spacing-03 layout.$spacing-04;
-  border: solid 1px theme.$chat-bubble-border;
-  border-radius: 0 layout.$spacing-03 layout.$spacing-03 layout.$spacing-03;
-  background-color: theme.$chat-bubble-agent;
 }
 
 .cds-aichat--received--chain-of-thought {
@@ -546,11 +512,6 @@ svg.cds-aichat--sent-file-icon {
 .cds-aichat--message__reasoning-steps--open {
   display: block;
   padding-block-end: layout.$spacing-04;
-}
-
-.cds-aichat--container--render[dir='rtl']
-  .cds-aichat--received--from-agent.cds-aichat--received--text {
-  border-radius: layout.$spacing-03 0 layout.$spacing-03 layout.$spacing-03;
 }
 
 .cds-aichat--message__avatar--assistant
@@ -570,11 +531,6 @@ svg.cds-aichat--sent-file-icon {
         .cds-aichat--assistant-message
         > div.cds-aichat--received {
         margin-block-start: 0;
-      }
-
-      .cds-aichat--message
-        .cds-aichat--received.cds-aichat--received--agent-status-message {
-        margin-inline: 0;
       }
     }
 
@@ -616,11 +572,6 @@ svg.cds-aichat--sent-file-icon {
         .cds-aichat--assistant-message
         > div.cds-aichat--received {
         margin-block-start: layout.$spacing-03;
-      }
-
-      .cds-aichat--message
-        .cds-aichat--received.cds-aichat--received--agent-status-message {
-        margin-inline: layout.$spacing-05;
       }
     }
 

@@ -78,6 +78,7 @@ import {
   hasRequestFooter,
   isConnectToHumanAgent,
   isFullWidthUserDefined,
+  isItemStillStreaming,
   isOptionItem,
   isRequest,
   isResponse,
@@ -86,10 +87,11 @@ import {
   renderAsUserDefinedMessage,
 } from '../utils/messageUtils';
 import { getMessageFileAttachments } from '../utils/fileAttachments';
-import CustomRequestFooterSlot from '../components/responseTypes/custom/CustomRequestFooterSlot';
+import MessageCustomRequestFooterSlot from './MessageCustomRequestFooterSlot';
 import { MessageFileAttachments } from '../components/helpers/MessageFileAttachments/MessageFileAttachments';
 import { messageHasDisplayableContent } from '../utils/streamingUtils';
 import { createDidCatchErrorData } from '../utils/miscUtils';
+import { OnErrorData } from '../../types/config/ErrorConfig';
 import { timestampToTimeString } from '../utils/timeUtils';
 import { type ScrollElementIntoViewFunction } from './MessagesComponent';
 import { MessageTypeComponent } from './MessageTypeComponent';
@@ -286,6 +288,19 @@ interface MessageState {
   didRenderErrorOccur: boolean;
 
   /**
+   * The version of the item that {@link didRenderErrorOccur} belongs to. A newer `item` gets one fresh attempt
+   * to render. The key is `item` rather than the local item because the chat's own bookkeeping writes (such as
+   * marking the item announced) copy the local item but keep `item`, and retrying on those would loop.
+   */
+  renderErrorItem?: GenericItem;
+
+  /**
+   * A render error caught while the item was still streaming. It is reported only if the item still fails once
+   * its stream completes.
+   */
+  unreportedRenderError?: OnErrorData;
+
+  /**
    * Indicates if the focus handle has focus. This will be used to display the focus indicator on the message.
    */
   focusHandleHasFocus: boolean;
@@ -351,8 +366,6 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     return this.props.localMessageItem;
   };
 
-  private isAgent: boolean;
-
   private firedReasoningUserDefinedIds = new Set<string>();
 
   /**
@@ -368,11 +381,9 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       // do not need this announcement.
       if (localMessageItem.item.response_type === MessageResponseTypes.TEXT) {
         messageId = 'messages_agentSaid';
-        this.isAgent = true;
       }
     } else {
       messageId = 'messages_assistantSaid';
-      this.isAgent = false;
     }
     return messageId
       ? intl.formatMessage(
@@ -387,10 +398,56 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       : null;
   }
 
+  /**
+   * Gives a newer version of the item one fresh attempt to render after a render error.
+   */
+  static getDerivedStateFromProps(
+    props: MessageProps,
+    state: MessageState
+  ): Partial<MessageState> | null {
+    const { item } = props.localMessageItem;
+    if (item === state.renderErrorItem) {
+      return null;
+    }
+    return {
+      renderErrorItem: item,
+      didRenderErrorOccur: false,
+      unreportedRenderError: undefined,
+    };
+  }
+
+  /**
+   * Whether this component has reported a render error to `onError`.
+   */
+  private didReportRenderError = false;
+
+  /**
+   * Reports a render error to `onError`.
+   */
+  private reportRenderError(errorData: OnErrorData) {
+    // An item with no streaming state came from addMessage or a final_response, which reported once per item before
+    // recovery existed, so a still-broken newer version of it is the same failure and doesn't report again. Upsert
+    // and chunk versions carry streaming state and report each failing version.
+    if (
+      this.didReportRenderError &&
+      !this.props.localMessageItem.ui_state.streamingState
+    ) {
+      return;
+    }
+    this.didReportRenderError = true;
+    this.props.serviceManager.actions.errorOccurred(errorData);
+  }
+
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    this.props.serviceManager.actions.errorOccurred(
-      createDidCatchErrorData('Message', error, errorInfo)
-    );
+    const errorData = createDidCatchErrorData('Message', error, errorInfo);
+    if (isItemStillStreaming(this.props.localMessageItem)) {
+      this.setState({
+        didRenderErrorOccur: true,
+        unreportedRenderError: errorData,
+      });
+      return;
+    }
+    this.reportRenderError(errorData);
     this.setState({ didRenderErrorOccur: true });
   }
 
@@ -408,8 +465,18 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
   }
 
   componentDidUpdate() {
+    const { unreportedRenderError } = this.state;
+    if (
+      unreportedRenderError &&
+      !isItemStillStreaming(this.props.localMessageItem)
+    ) {
+      this.reportRenderError(unreportedRenderError);
+      this.setState({ unreportedRenderError: undefined });
+    }
     const uiState = this.props.localMessageItem.ui_state;
-    if (uiState.needsAnnouncement) {
+    // A pass that rendered nothing (a failed retry) has nothing to announce, so keep the
+    // announcement for the pass that renders the error box.
+    if (uiState.needsAnnouncement && this.ref.current) {
       this.props.ariaAnnouncer(this.ref.current);
       this.props.serviceManager.store.dispatch(
         actions.setMessageWasAnnounced(uiState.id)
@@ -421,10 +488,21 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
   }
 
   /**
+   * Whether this item failed to draw, or the chat already knows it can't.
+   */
+  private isFailedItem() {
+    return (
+      this.state.didRenderErrorOccur ||
+      Boolean(this.props.localMessageItem.ui_state.cannotDraw)
+    );
+  }
+
+  /**
    * Indicates if we should render the failed message instead of the actual message.
    */
   private shouldRenderFailedMessage() {
-    if (this.state.didRenderErrorOccur) {
+    // An item the chat can't draw never reaches the renderers, which would throw on it.
+    if (this.isFailedItem()) {
       return true;
     }
 
@@ -484,6 +562,13 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
    * could be data that doesn't match what we were expecting.
    */
   private renderFailedRenderMessage() {
+    if (
+      this.isFailedItem() &&
+      isItemStillStreaming(this.props.localMessageItem)
+    ) {
+      // While the stream is open, hide the failed item and hold its error until the stream completes.
+      return null;
+    }
     const { messagesIndex } = this.props;
     return (
       <div
@@ -539,7 +624,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
         user_type: UserType.WATSONX,
       };
 
-      if (isHumanAgentStatusMessage(agentMessageType)) {
+      if (isStatusMessage(agentMessageType)) {
         // These messages don't show an avatar line.
         return null;
       }
@@ -561,7 +646,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
             fallback={<IconHolder icon={<Headset />} />}
           />
         );
-        iconClassName = 'cds-aichat--message__avatar--agent';
+        iconClassName = 'cds-aichat--message__avatar--assistant';
         actorName = responseUserProfile?.nickname || '';
       } else {
         actorName =
@@ -1233,7 +1318,6 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     const { isIntermediateStreaming } = localMessageItem.ui_state;
     const messageItem = localMessageItem.item;
     const responseType = messageItem.response_type;
-    const agentMessageType = messageItem.agent_message_type;
     const fromHistory = message.ui_state_internal?.from_history;
     const readWidgetSaid = isFirstMessageItem;
 
@@ -1261,19 +1345,11 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
 
     const isCustomMessage = renderAsUserDefinedMessage(localMessageItem.item);
 
-    // If this is a user_defined response type with silent set, we don't want to render all the extra cruft around it.
-    const agentClassName = agentMessageType
-      ? getHumanAgentMessageClassName(
-          agentMessageType,
-          responseType,
-          isCustomMessage
-        )
-      : null;
-
     const messageIsRequest = isRequest(message);
-    const isSystemMessage = isHumanAgentStatusMessage(
-      localMessageItem.item.agent_message_type
-    );
+    const isSystemMessage = isStatusMessage(messageItem.agent_message_type);
+    const isConnectionNotice =
+      messageItem.agent_message_type === HumanAgentMessageType.RELOAD_WARNING ||
+      messageItem.agent_message_type === HumanAgentMessageType.DISCONNECTED;
 
     let isOptionResponseWithoutTitleOrDescription = false;
     if (isOptionItem(localMessageItem.item)) {
@@ -1308,12 +1384,10 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
         className={cx(
           `cds-aichat--message cds-aichat--message-${messagesIndex}`,
           className,
-          agentMessageType && 'cds-aichat--message--agent-message',
           {
             'cds-aichat--message--with-avatar-line': showAvatarLine,
             'cds-aichat--message--named-request':
               isRequest(message) && Boolean(getRequestSenderName(message)),
-            'cds-aichat--with-human-agent': this.isAgent,
             'cds-aichat--message--request': messageIsRequest,
             'cds-aichat--message--system-message': isSystemMessage,
             'cds-aichat--message--response': !messageIsRequest,
@@ -1340,12 +1414,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
                 className={cx(
                   'cds-aichat--received',
                   'cds-aichat--message-vertical-padding',
-                  agentClassName,
                   {
-                    'cds-aichat--received--from-human':
-                      !agentMessageType &&
-                      message.message_options?.response_user_profile
-                        ?.user_type === UserType.HUMAN,
                     'cds-aichat--received--text':
                       responseType === MessageResponseTypes.TEXT,
                     'cds-aichat--received--image':
@@ -1378,6 +1447,8 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
                     'cds-aichat--received--full-width': isFullWidthUserDefined(
                       localMessageItem.item
                     ),
+                    'cds-aichat--received--chat-status-message':
+                      isConnectionNotice,
                     'cds-aichat--message--historical': fromHistory,
                   }
                 )}
@@ -1436,7 +1507,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
                       localMessageItem,
                       message as MessageRequest
                     ) && (
-                      <CustomRequestFooterSlot
+                      <MessageCustomRequestFooterSlot
                         slotName={getRequestFooterSlotName(localMessageItem)}
                       />
                     )}
@@ -1453,42 +1524,9 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
 }
 
 /**
- * Returns the class name to add to messages with the given agent message type.
- */
-function getHumanAgentMessageClassName(
-  agentMessageType: HumanAgentMessageType,
-  messageResponseType: MessageResponseTypes,
-  isUserDefinedResponse: boolean
-) {
-  if (agentMessageType && isUserDefinedResponse) {
-    return 'cds-aichat--received--agent-custom';
-  }
-  if (
-    !messageResponseType ||
-    (messageResponseType !== MessageResponseTypes.TEXT &&
-      messageResponseType !== MessageResponseTypes.BUTTON)
-  ) {
-    return '';
-  }
-  switch (agentMessageType) {
-    case null:
-    case undefined:
-    case HumanAgentMessageType.FROM_USER:
-      return null;
-    case HumanAgentMessageType.RELOAD_WARNING:
-    case HumanAgentMessageType.DISCONNECTED:
-      return 'cds-aichat--received--chat-status-message';
-    case HumanAgentMessageType.FROM_HUMAN_AGENT:
-      return 'cds-aichat--received--from-human';
-    default:
-      return 'cds-aichat--received--agent-status-message';
-  }
-}
-
-/**
  * Indicates if this message is a status message. These are messages that are centered in the view.
  */
-function isHumanAgentStatusMessage(agentMessageType: HumanAgentMessageType) {
+function isStatusMessage(agentMessageType: HumanAgentMessageType) {
   switch (agentMessageType) {
     case null:
     case undefined:

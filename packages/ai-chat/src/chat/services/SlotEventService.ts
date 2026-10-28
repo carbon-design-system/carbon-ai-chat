@@ -83,8 +83,12 @@ class SlotEventService {
     localItemsByID: Record<
       string,
       LocalMessageItem
-    > = this.serviceManager.store.getState().allMessageItemsByID
+    > = this.serviceManager.store.getState().allMessageItemsByID,
+    isCurrent: () => boolean = () => true
   ) {
+    if (!isCurrent()) {
+      return;
+    }
     if (renderAsUserDefinedMessage(localMessage.item)) {
       let slotName: string;
       if (!localMessage.item.user_defined?.silent) {
@@ -103,7 +107,7 @@ class SlotEventService {
         },
       };
 
-      await this.serviceManager.fire(userDefinedResponseEvent);
+      await this.serviceManager.fire(userDefinedResponseEvent, isCurrent);
     } else if (isResponseWithNestedItems(localMessage.item)) {
       const {
         itemsLocalMessageItemIDs,
@@ -120,7 +124,8 @@ class SlotEventService {
           nestedLocalMessage,
           originalMessage,
           messageState,
-          localItemsByID
+          localItemsByID,
+          isCurrent
         );
       };
 
@@ -167,8 +172,12 @@ class SlotEventService {
   async handleUserDefinedResponseItemsChunk(
     messageID: string,
     chunk: PartialOrCompleteItemChunk,
-    messageItem: DeepPartial<GenericItem>
+    messageItem: DeepPartial<GenericItem>,
+    isCurrent: () => boolean = () => true
   ) {
+    if (!isCurrent()) {
+      return;
+    }
     if (renderAsUserDefinedMessage(messageItem)) {
       const itemID = streamItemID(messageID, messageItem);
 
@@ -186,7 +195,7 @@ class SlotEventService {
         },
       };
 
-      await this.serviceManager.fire(userDefinedResponseEvent);
+      await this.serviceManager.fire(userDefinedResponseEvent, isCurrent);
     }
   }
 
@@ -196,8 +205,12 @@ class SlotEventService {
    */
   async handleCustomFooterSlot(
     localMessage: LocalMessageItem,
-    originalMessage: MessageResponse
+    originalMessage: MessageResponse,
+    isCurrent: () => boolean = () => true
   ) {
+    if (!isCurrent()) {
+      return;
+    }
     const footerOptions =
       localMessage.item.message_item_options?.custom_footer_slot;
 
@@ -212,7 +225,7 @@ class SlotEventService {
         },
       };
 
-      await this.serviceManager.fire(customFooterSlotEvent);
+      await this.serviceManager.fire(customFooterSlotEvent, isCurrent);
     }
   }
 

@@ -6,11 +6,9 @@
 
 # InlineFile
 
-**Experimental.**
-
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.23.0/docs/interfaces/Type_reference.InlineFile.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.InlineFile.html
 
 Represents an inline file — the actual File object to be uploaded.
 Use this when the file needs to be uploaded as part of the message send.
@@ -29,28 +27,22 @@ interface InlineFile
 
 `file: File`
 
-**Experimental.**
-
 The actual File object.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.23.0/docs/interfaces/Type_reference.InlineFile.html#file)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.InlineFile.html#file)
 
 ### id
 
 `id?: string`
 
-**Experimental.**
-
 Optional unique ID for tracking.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.23.0/docs/interfaces/Type_reference.InlineFile.html#id)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.InlineFile.html#id)
 
 ### type
 
 `type: "inline"`
 
-**Experimental.**
-
 Type discriminator.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.23.0/docs/interfaces/Type_reference.InlineFile.html#type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.InlineFile.html#type)
