@@ -116,7 +116,8 @@ function renderInlineSource(
           validateInlineHTML(markup);
           if (!options.projectPluginOutput || !token) {
             if (markPluginOutput && token) {
-              return html`<span class=${`${prefix}-aichat-markdown-inline-plugin`}
+              return html`<span
+                class=${`${prefix}-aichat-markdown-inline-plugin`}
                 >${unsafeHTML(markup)}</span
               >`;
             }
@@ -138,5 +139,7 @@ function renderInlineSource(
         resetInlineStyles: true,
       })
     : prepared;
-  return html`<span class=${`${prefix}-aichat-inline-markdown`}>${output}</span>`;
+  return html`<span class=${`${prefix}-aichat-inline-markdown`}
+    >${output}</span
+  >`;
 }
