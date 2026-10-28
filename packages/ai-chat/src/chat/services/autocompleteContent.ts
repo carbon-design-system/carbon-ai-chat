@@ -449,4 +449,5 @@ class AutocompleteContent {
   }
 }
 
+export type { AutocompleteContentRecord };
 export { AutocompleteContent };
