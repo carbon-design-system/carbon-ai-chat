@@ -6,7 +6,7 @@
  */
 
 /**
- * Proves the real ChatButton Boolean boundary on React 17, 18, and 19.
+ * Proves the real ChatButton Boolean boundary on React 17 and 18.
  * Both published trees retain click, keyboard, and cleared-selection behavior.
  */
 import { expect, openExample, test } from '../helpers';

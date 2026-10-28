@@ -26,7 +26,6 @@
 import { ChatCustomElement, PublicConfig } from '@carbon/ai-chat';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import ChoiceButtonProbe from '../../../shared/playwright/fixtures/ChoiceButtonProbe';
 
 import { customSendMessage } from './customSendMessage';
 import '@carbon/styles/css/styles.css';
@@ -48,9 +47,6 @@ const config: PublicConfig = {
 };
 
 function App() {
-  if (new URLSearchParams(window.location.search).has('choice-probe')) {
-    return <ChoiceButtonProbe />;
-  }
   return <ChatCustomElement className="chat-custom-element" {...config} />;
 }
 
