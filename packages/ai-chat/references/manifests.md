@@ -15,12 +15,12 @@ The root `test:manifest-consumer` check compares the packed manifest with built 
 ## What builds and checks do
 
 The build generates the host manifest from the literal config table, public types, and each linked host interface.
-It reads existing decorators for tag names and own reactive fields. You do not maintain a second list of config metadata.
+It reads existing decorators for tag names and own reactive fields. The one other list is the `@attr` block on `FlattenedConfigElement`: `telemetry:config` reads it through web-component-analyzer, and `test:manifest` fails when it drifts from the table.
 The analyzer rejects unsupported table syntax, duplicate fields, and table/type mismatches.
 
 The root `npm run test:manifest-consumer` checks packed discovery, shipped references, and host metadata against runtime attributes, runtime properties, and declarations.
 It runs from the root test gate. Run it after a fresh build; it does not build the packages itself.
-The split GitHub test jobs do not run this root script. Run it before opening a PR that changes manifest inputs.
+The GitHub components test job runs it too. Run it before opening a PR that changes manifest inputs.
 Its negative mutations catch missing or duplicate fields, lost host overrides, and optional callback type errors.
 
 ## Steps for a config or host change
