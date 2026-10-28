@@ -698,73 +698,88 @@ describe('ChatInstance.messaging.upsertMessage', () => {
       }
     });
 
-    it('keeps a late owned upsert settled after Stop while updating its content', async () => {
-      const streamingReady = resolvablePromise<void>();
-      const finishResponse = resolvablePromise<void>();
-      const { instance, store, serviceManager } =
-        await renderChatAndGetInstanceWithStore({
-          ...createBaseConfig(),
-          messaging: {
-            skipWelcome: true,
-            customSendMessage: async (request, _options, chat) => {
-              const response = cancellableResponse('stopped-upsert');
-              response.request_id = request.id;
-              await chat.messaging.upsertMessage(
-                response.id,
-                MessageState.STREAMING,
-                () => response
-              );
-              streamingReady.doResolve();
-              await finishResponse;
+    it.each([
+      { explicitOwner: true, senderSettled: false },
+      { explicitOwner: false, senderSettled: false },
+      { explicitOwner: true, senderSettled: true },
+      { explicitOwner: false, senderSettled: true },
+    ])(
+      'keeps a late owned upsert settled after Stop (%j)',
+      async ({ explicitOwner, senderSettled }) => {
+        const streamingReady = resolvablePromise<void>();
+        const finishResponse = resolvablePromise<void>();
+        const { instance, store, serviceManager } =
+          await renderChatAndGetInstanceWithStore({
+            ...createBaseConfig(),
+            messaging: {
+              skipWelcome: true,
+              customSendMessage: async (request, _options, chat) => {
+                const response = cancellableResponse('stopped-upsert');
+                if (explicitOwner) {
+                  response.request_id = request.id;
+                }
+                await chat.messaging.upsertMessage(
+                  response.id,
+                  MessageState.STREAMING,
+                  () => response
+                );
+                streamingReady.doResolve();
+                await finishResponse;
+              },
             },
-          },
-        });
-      const sent = instance.send('start');
+          });
+        const sent = instance.send('start');
 
-      try {
-        await streamingReady;
-        expect(
-          store.getState().assistantInputState.stopStreamingButtonState
-            .isVisible
-        ).toBe(true);
-        await serviceManager.messageService.cancelCurrentMessageRequest();
-        await sent;
-        await instance.messaging.upsertMessage(
-          'stopped-upsert',
-          MessageState.STREAMING,
-          (previous) => ({
-            ...previous,
-            output: {
-              ...previous.output,
-              generic: [
-                { ...previous.output.generic[0], text: 'Late content' },
-              ],
-            },
-          })
-        );
+        try {
+          await streamingReady;
+          if (senderSettled) {
+            finishResponse.doResolve();
+            await sent;
+          }
+          expect(
+            store.getState().assistantInputState.stopStreamingButtonState
+              .isVisible
+          ).toBe(true);
+          await serviceManager.messageService.cancelCurrentMessageRequest();
+          await sent;
+          await instance.messaging.upsertMessage(
+            'stopped-upsert',
+            MessageState.STREAMING,
+            (previous) => ({
+              ...previous,
+              output: {
+                ...previous.output,
+                generic: [
+                  { ...previous.output.generic[0], text: 'Late content' },
+                ],
+              },
+            })
+          );
 
-        expect(
-          serviceManager.messageUpsertCoordinator.hasStreamingMessages()
-        ).toBe(false);
-        expect(
-          store.getState().assistantInputState.stopStreamingButtonState
-            .isVisible
-        ).toBe(false);
-        const item = Object.values(store.getState().allMessageItemsByID).find(
-          (item) => item.fullMessageID === 'stopped-upsert'
-        );
-        expect(item.item).toMatchObject({ text: 'Late content' });
-        expect(item.ui_state.streamingState.isDone).toBe(true);
-        expect(
-          store.getState().allMessagesByID['stopped-upsert']
-        ).toMatchObject({
-          output: { generic: [{ text: 'Late content' }] },
-        });
-      } finally {
-        finishResponse.doResolve();
-        await sent;
+          expect(
+            serviceManager.messageUpsertCoordinator.hasStreamingMessages()
+          ).toBe(false);
+          expect(
+            store.getState().assistantInputState.stopStreamingButtonState
+              .isVisible
+          ).toBe(false);
+          const item = Object.values(store.getState().allMessageItemsByID).find(
+            (item) => item.fullMessageID === 'stopped-upsert'
+          );
+          expect(item.item).toMatchObject({ text: 'Late content' });
+          expect(item.ui_state.streamingState.isDone).toBe(true);
+          expect(instance.state.get().status).toBe('ready');
+          expect(
+            store.getState().allMessagesByID['stopped-upsert']
+          ).toMatchObject({
+            output: { generic: [{ text: 'Late content' }] },
+          });
+        } finally {
+          finishResponse.doResolve();
+          await sent;
+        }
       }
-    });
+    );
 
     it('settles all current snapshots when stopped after customSendMessage resolves', async () => {
       const config = createBaseConfig();
@@ -1938,6 +1953,33 @@ describe('ChatInstance.messaging.upsertMessage', () => {
           expect(item.ui_state.streamingState?.isDone).toBe(true);
         }
         expect(isVisible(store)).toBe(false);
+      });
+
+      it('allows an unsolicited stream to restart after Stop', async () => {
+        const { instance, store, serviceManager } =
+          await renderChatAndGetInstanceWithStore({
+            ...createBaseConfig(),
+            messaging: { skipWelcome: true },
+          });
+        const update = (text: string) =>
+          instance.messaging.upsertMessage(
+            'unsolicited',
+            MessageState.STREAMING,
+            () => cancellableResponse('unsolicited', text)
+          );
+
+        await update('before');
+        await serviceManager.messageService.cancelCurrentMessageRequest();
+        expect(instance.state.get().status).toBe('ready');
+        expect(isVisible(store)).toBe(false);
+
+        await update('after');
+
+        expect(instance.state.get().status).toBe('streaming');
+        expect(isVisible(store)).toBe(true);
+        expect(
+          itemsFor(store, 'unsolicited')[0].ui_state.streamingState.isDone
+        ).toBe(false);
       });
     });
   });

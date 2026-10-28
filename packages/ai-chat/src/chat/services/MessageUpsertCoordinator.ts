@@ -495,7 +495,12 @@ class MessageUpsertCoordinator {
     if (isStale()) {
       return;
     }
-    const ownerRequestID = result.request_id ?? requestID;
+    const ownerRequestID =
+      result.request_id ??
+      this.serviceManager.conversationLifecycleService.responseRequestID(
+        messageID
+      ) ??
+      requestID;
     const isStopped =
       this.serviceManager.conversationLifecycleService.isRequestStopped(
         ownerRequestID
