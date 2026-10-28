@@ -29,6 +29,15 @@ const FULL_WIDTH_TYPES = new Set<MessageResponseTypes>([
  * - Conversational-search responses
  * - Multi-item carousels (single-item carousels render at card width)
  * - User-defined responses whose `full_width` flag is `true`
+ *
+ * **Content width caps** are the caller's responsibility and are expressed
+ * entirely in CSS.  The default inset column applies `margin-inline:
+ * $spacing-05` on `.cds-aichat--received` in
+ * `components-legacy/MessageComponent.scss`.  Full-width items override that
+ * to `margin-inline: 0 $spacing-05` via the `cds-aichat--received--full-width`
+ * modifier on the same element.  No JS representation of width caps exists
+ * because the values are fixed tokens — add one here only if a consumer needs
+ * to read the cap programmatically.
  */
 export function isFullWidthItem(item: GenericItem): boolean {
   if (!item) {
