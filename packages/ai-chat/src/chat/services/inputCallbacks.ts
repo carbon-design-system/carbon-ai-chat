@@ -22,6 +22,7 @@ import type { ServiceManager } from './ServiceManager';
 import type { AppState } from '../../types/state/AppState';
 import type { SendOptions } from '../../types/instance/ChatInstance';
 import type { JSONContent } from '@tiptap/core';
+import { requestStopFromInput } from './assistantInputCommands';
 
 export class InputCallbacks {
   private scrollTimers = new Set<ReturnType<typeof setTimeout>>();
@@ -35,6 +36,9 @@ export class InputCallbacks {
     this.scrollTimers.forEach(clearTimeout);
     this.scrollTimers.clear();
   };
+
+  onStopStreaming = (markPending: () => void): Promise<void> =>
+    requestStopFromInput(this.serviceManager, markPending);
 
   onSendInput = async (
     text: string,
