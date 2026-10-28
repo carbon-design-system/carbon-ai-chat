@@ -110,6 +110,41 @@ jobs:
       - name: Run test
         run: ${{ matrix.run }}
 
+  # 👇 Packed consumer proof (~6 minutes). Its own job, outside the required
+  # `test` check, so it can be gated or scheduled separately.
+  carbon-consumer:
+    name: test:carbon-consumer
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Use Node.js version from .nvmrc
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        if: github.event_name != 'merge_group'
+        id: cache
+        with:
+          path: |
+            node_modules
+            */**/node_modules
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
+      - name: Install dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm ci --prefer-offline
+      - name: Install Playwright browsers
+        timeout-minutes: 10
+        run: npx playwright install --with-deps chromium
+      - name: Download build output
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: build-output
+          path: packages
+      - name: Run packed consumer check
+        run: npm run test:carbon-consumer
+
   # 👇 Branch protection requires a check named `test`; this reports the matrix as one
   test:
     if: always()
