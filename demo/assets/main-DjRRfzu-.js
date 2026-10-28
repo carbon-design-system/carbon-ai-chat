@@ -781,6 +781,7 @@ The button should only disappear after this final chunk arrives.`,t={response_ty
       ${t?j`<cds-icon-button
               class="${v}--history-header__close-button"
               kind="ghost"
+              size="md"
               align="right"
               @click=${r}>
               ${g(Oe,{slot:`icon`})}
@@ -793,7 +794,10 @@ The button should only disappear after this final chunk arrives.`,t={response_ty
               ${r?Fs(r):A}
               autofocus=${this.autofocus}></cds-search>`}
       <slot name="actions-end"></slot>
-      <cds-icon-button align="top-right" @click=${i}>
+      <cds-icon-button
+        align="top-right"
+        size="md"
+        @click=${i}>
         ${g(Is,{slot:`icon`})}
         <span slot="tooltip-content">${t}</span>
       </cds-icon-button>`}};Ls.styles=ks,N([P({type:String,reflect:!0})],Ls.prototype,`slot`,void 0),N([P({type:String,attribute:`new-chat-label`})],Ls.prototype,`newChatLabel`,void 0),N([P({type:Boolean,attribute:`search-off`,reflect:!0})],Ls.prototype,`searchOff`,void 0),N([P({type:String,attribute:`close-button-label-text`})],Ls.prototype,`closeButtonLabelText`,void 0),N([P({type:Boolean,reflect:!0})],Ls.prototype,`autofocus`,void 0),N([P({type:Object,attribute:!1})],Ls.prototype,`searchAttributes`,void 0),Ls=N([O(`${v}-history-toolbar`)],Ls);var Rs=Ie(V({tagName:`cds-aichat-history-toolbar`,elementClass:Ls,react:G.default,events:{onSearchInput:`cds-search-input`,onNewChatClick:`chat-history-new-chat-click`}})),zs=class extends F{constructor(){super(...arguments),this.slot=`content`,this.resultsLabel=`Results`}render(){let e=this.resultsCount!==void 0&&this.resultsCount!==null&&this.resultsCount!==``,t=e&&this.resultsLabel?`${this.resultsLabel}: ${this.resultsCount}`:this.resultsCount;return j`
