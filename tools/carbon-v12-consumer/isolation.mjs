@@ -239,7 +239,7 @@ export async function prepareIsolationProofs({ consumer, manifest, runNpm }) {
         path: module.path,
       }))
   );
-  assert.equal(actual.length, 54);
+  assert.equal(actual.length, 55);
   for (const expected of componentEntries) {
     const declaration = actual.find(({ tag }) => tag === expected.tag);
     assert.deepEqual(

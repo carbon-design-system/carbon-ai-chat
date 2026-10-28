@@ -287,6 +287,14 @@ export const componentEntries = [
     'markdown/index.js',
   ],
   [
+    'cds-aichat-messages-shell',
+    'CDSAIChatMessagesShell',
+    'aichat-messages-shell/aichat-messages-shell.js',
+    'messages-shell/src/messages-shell.js',
+    'aichat-messages-shell/index.js',
+    'messages-shell/index.js',
+  ],
+  [
     'cds-aichat-processing',
     'CDSAIChatProcessing',
     'aichat-processing/aichat-processing.js',
