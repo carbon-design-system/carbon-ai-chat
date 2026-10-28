@@ -8,6 +8,7 @@
  */
 
 import React from 'react';
+import { flushSync } from 'react-dom';
 import type CDSLoading from '@carbon/web-components/es/components/loading/loading.js';
 import { act, fireEvent, render } from '@testing-library/react';
 import { ContextProvider } from '@lit/context';
@@ -246,6 +247,27 @@ describe('native iframe panel body', () => {
     expect(view.querySelector('cds-loading')).toBeNull();
   });
 
+  it('keeps the loaded frame and notice when its host moves within one task', async () => {
+    const { view, host, store, announce } = await iframe();
+    const frame = view.querySelector('iframe');
+    frame.dispatchEvent(new Event('load'));
+    await flush(view);
+    const loadedNotice = store.getState().languagePack.iframe_ariaSourceLoaded;
+    expect(announce.mock.calls).toEqual([[loadedNotice]]);
+    const parent = host.parentNode;
+    flushSync(() => {
+      host.remove();
+      parent.appendChild(host);
+    });
+    await flush(view);
+    expect(view.querySelector('iframe')).toBe(frame);
+    jest.advanceTimersByTime(22000);
+    await flush(view);
+    expect(view.querySelector('iframe')).toBe(frame);
+    expect(view.querySelector('cds-loading')).toBeNull();
+    expect(announce.mock.calls).toEqual([[loadedNotice]]);
+  });
+
   it('publishes one connected error target at 20 s, keeps it for locale changes, and retries only on source reset', async () => {
     const { view, store, announce } = await iframe();
     const ready = jest.fn((event: PanelBodyContentReadyEvent) => {
@@ -313,6 +335,10 @@ describe('native iframe panel body', () => {
     expect(view.querySelector('iframe')).toBe(currentFrame);
     view.remove();
     expect(subscriptions.size).toBe(0);
+    jest.runAllTicks();
+    expect(jest.getTimerCount()).toBe(0);
+    currentFrame.dispatchEvent(new Event('load'));
+    expect(announce).not.toHaveBeenCalled();
     jest.advanceTimersByTime(20000);
     expect(announce).not.toHaveBeenCalled();
     host.shadowRoot.appendChild(view);
@@ -322,6 +348,36 @@ describe('native iframe panel body', () => {
     expect(subscriptions.size).toBe(activeSubscriptions);
     currentFrame.dispatchEvent(new Event('load'));
     expect(announce).not.toHaveBeenCalled();
+  });
+
+  it('replaces the iframe lifetime when a same-task move changes its chat owner', async () => {
+    const previous = await iframe();
+    const next = await createProvider();
+    const frame = previous.view.querySelector('iframe');
+    frame.dispatchEvent(new Event('load'));
+    await flush(previous.view);
+    expect(previous.announce).toHaveBeenCalledTimes(1);
+    previous.announce.mockClear();
+    flushSync(() => {
+      previous.view.remove();
+      next.host.shadowRoot.appendChild(previous.view);
+    });
+    await flush(previous.view);
+    jest.runAllTicks();
+    const replacement = previous.view.querySelector('iframe');
+    expect(replacement).not.toBe(frame);
+    expect(previous.subscriptions.size).toBe(0);
+    expect(next.subscriptions.size).toBeGreaterThan(0);
+    frame.dispatchEvent(new Event('load'));
+    expect(previous.announce).not.toHaveBeenCalled();
+    expect(next.announce).not.toHaveBeenCalled();
+    replacement.dispatchEvent(new Event('load'));
+    await flush(previous.view);
+    expect(previous.announce).not.toHaveBeenCalled();
+    expect(next.announce).toHaveBeenCalledWith(
+      next.store.getState().languagePack.iframe_ariaSourceLoaded
+    );
+    expect(next.announce).toHaveBeenCalledTimes(1);
   });
 
   it('releases a pending source after a render failure without recreating its timers', async () => {
@@ -451,6 +507,24 @@ describe('native iframe panel body', () => {
       );
       expect(
         content.closest('.cds-aichat--i-frame-component__status-container')
+      ).toBe(target);
+      expect(mounts).toHaveBeenCalledTimes(1);
+      const hostParent = host.parentNode;
+      await act(async () => {
+        flushSync(() => {
+          host.remove();
+          hostParent.appendChild(host);
+        });
+        await flush();
+      });
+      expect(host.shadowRoot.querySelector('[data-retained-error]')).toBe(
+        content
+      );
+      expect(content.textContent).toBe('host context:1');
+      expect(
+        host.shadowRoot.querySelector(
+          '.cds-aichat--i-frame-component__status-container'
+        )
       ).toBe(target);
       expect(mounts).toHaveBeenCalledTimes(1);
     } finally {

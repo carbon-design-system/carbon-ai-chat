@@ -14,6 +14,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import { flushSync } from 'react-dom';
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import { ChatContainer } from '../../../src/react/ChatContainer';
 import { ChatCustomElement } from '../../../src/react/ChatCustomElement';
@@ -213,6 +214,64 @@ describe('retained panel body content', () => {
       expect(markdownEffects).toHaveLength(1);
       expect(after).toHaveBeenCalledTimes(1);
       expect(snapshots).toEqual([{ markdown: true, passive: 1 }]);
+    }
+  );
+
+  it.each(wrappers)(
+    'preserves retained state when %s moves within one task under synchronous flushing',
+    async (_name, Wrapper) => {
+      const before = jest.fn((instance: ChatInstance) => {
+        instance.updateCatastrophicErrorPanel({
+          isOpen: false,
+          bodyText: 'Retained during move',
+        });
+      });
+      const after = jest.fn();
+      const mounted = render(
+        <HostContext.Provider value="host">
+          <Wrapper
+            {...createBaseConfig()}
+            className=""
+            markdown={markdownConfig}
+            onBeforeRender={before}
+            onAfterRender={after}
+          />
+        </HostContext.Provider>
+      );
+      await waitFor(() => expect(after).toHaveBeenCalledTimes(1));
+      const target = getChatShadowRoot().querySelector<HTMLElement>(
+        '.cds-aichat--catastrophic-error__error-body'
+      );
+      const counter = target.querySelector('[data-probe="panel-renderer"]');
+      fireEvent.click(counter);
+      expect(counter.textContent).toBe('host:1');
+      const publicHost = mounted.container.firstElementChild;
+      const parent = publicHost.parentNode;
+      await act(async () => {
+        flushSync(() => {
+          publicHost.remove();
+          parent.appendChild(publicHost);
+        });
+      });
+      await waitFor(() =>
+        expect(
+          getChatShadowRoot()?.querySelector('[data-probe="panel-renderer"]')
+        ).not.toBeNull()
+      );
+      expect(before).toHaveBeenCalledTimes(1);
+      expect(after).toHaveBeenCalledTimes(1);
+      expect(
+        getChatShadowRoot().querySelector(
+          '.cds-aichat--catastrophic-error__error-body'
+        )
+      ).toBe(target);
+      expect(
+        target.querySelector('[data-probe="panel-renderer"]')?.textContent
+      ).toBe('host:1');
+      expect(target.querySelector('[data-probe="panel-renderer"]')).toBe(
+        counter
+      );
+      expect(markdownEffects).toHaveLength(1);
     }
   );
 

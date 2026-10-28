@@ -62,6 +62,7 @@ class ErrorBody extends NativeChatView {
   );
   private reportedContent?: PanelBodyContentDetail;
   private hasReportedContent = false;
+  private releaseGeneration = 0;
 
   protected onViewConnected() {
     this.selectStore(
@@ -95,8 +96,13 @@ class ErrorBody extends NativeChatView {
   }
 
   disconnectedCallback() {
-    this.reportContent(undefined);
+    const generation = ++this.releaseGeneration;
     super.disconnectedCallback();
+    queueMicrotask(() => {
+      if (!this.isConnected && generation === this.releaseGeneration) {
+        this.reportContent(undefined);
+      }
+    });
   }
 
   protected updated() {

@@ -17,6 +17,7 @@ import { NativeChatView } from '../../shared/NativeChatView';
 import { IFrameBodyLifecycle } from '../../../utils/panelBodyLifecycle';
 import type { PanelBodyContentDetail } from './panelBodyContent';
 import { shallowEqual } from '../../../store/appStore';
+import type { ChatViewState } from '../../../services/chatViewState';
 
 interface IFramePanelMessage {
   source?: string;
@@ -38,12 +39,27 @@ class IFrameBody extends NativeChatView {
   private unsubscribe?: () => void;
   private errorTarget?: HTMLDivElement;
   private reportedContent?: PanelBodyContentDetail;
+  private releaseGeneration = 0;
+  private lifecycleOwner?: ChatViewState;
 
-  protected onViewConnected() {
+  protected onViewConnected(viewState: ChatViewState) {
+    this.releaseGeneration += 1;
+    if (this.lifecycleOwner && this.lifecycleOwner !== viewState) {
+      this.releaseFrame();
+    }
     this.connectedView = true;
     this.own(() => {
       this.connectedView = false;
-      this.releaseFrame();
+      const generation = ++this.releaseGeneration;
+      if (this.isConnected) {
+        this.releaseFrame();
+      } else {
+        queueMicrotask(() => {
+          if (!this.isConnected && generation === this.releaseGeneration) {
+            this.releaseFrame();
+          }
+        });
+      }
     });
     this.selectStore(
       (state) => ({
@@ -78,6 +94,7 @@ class IFrameBody extends NativeChatView {
         }
       );
       this.lifecycle = lifecycle;
+      this.lifecycleOwner = this.viewState;
       this.unsubscribe = lifecycle.subscribe(() => this.requestUpdate());
       this.errorTarget = document.createElement('div');
       this.errorTarget.className =
@@ -120,6 +137,7 @@ class IFrameBody extends NativeChatView {
     this.unsubscribe = undefined;
     this.lifecycle?.disconnect();
     this.lifecycle = undefined;
+    this.lifecycleOwner = undefined;
     this.source = undefined;
     this.errorTarget = undefined;
     this.reportContent(undefined);
@@ -151,8 +169,10 @@ class IFrameBody extends NativeChatView {
                                 tabindex="0"
                                 @load=${(event: Event) => {
                                   if (
+                                    this.connectedView &&
+                                    this.isConnected &&
                                     event.currentTarget ===
-                                    this.querySelector('iframe')
+                                      this.querySelector('iframe')
                                   ) {
                                     lifecycle.loaded();
                                   }
