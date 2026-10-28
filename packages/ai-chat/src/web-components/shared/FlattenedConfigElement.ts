@@ -67,8 +67,39 @@ interface FlattenedConfigElement extends Partial<PublicConfig> {}
  * Not registered as a custom element — only the concrete subclasses are.
  *
  * The CEM plugin reads the field table and public types to describe this
- * runtime-generated surface. Keep metadata in that source instead of a
- * separate attribute list.
+ * runtime-generated surface. The `@attr` tags below exist for
+ * web-component-analyzer, which `telemetry:config` runs and which cannot
+ * evaluate `buildFlattenedProperties()`. A manifest test fails when they drift
+ * from {@link FLATTENED_PUBLIC_CONFIG_FIELDS}; property-only fields with
+ * `attribute: false` are intentionally omitted.
+ *
+ * @attr ai-disabled
+ * @attr ai-enabled
+ * @attr assistant-name
+ * @attr debug
+ * @attr disclaimer
+ * @attr disable-custom-element-mobile-enhancements
+ * @attr expose-service-manager-for-testing
+ * @attr header
+ * @attr hide-avatar
+ * @attr history
+ * @attr homescreen
+ * @attr inject-carbon-theme
+ * @attr input
+ * @attr is-readonly
+ * @attr keyboardshortcuts
+ * @attr launcher
+ * @attr layout
+ * @attr locale
+ * @attr messaging
+ * @attr namespace
+ * @attr open-chat-by-default
+ * @attr persist-feedback
+ * @attr service-desk
+ * @attr should-sanitize-html
+ * @attr should-take-focus-if-opens-automatically
+ * @attr strings
+ * @attr assistantavatarurl
  */
 abstract class FlattenedConfigElement extends LitElement {
   static properties: PropertyDeclarations = buildFlattenedProperties();

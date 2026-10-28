@@ -323,10 +323,11 @@ test('fails when synthetic property declarations and options disagree', () => {
 
 test('reads all current source fields without loading a DOM-dependent host', () => {
   const publicConfigSource = readFileSync(new URL('../../src/types/config/PublicConfig.ts', import.meta.url), 'utf8');
+  const baseSource = readFileSync(new URL('../../src/web-components/shared/FlattenedConfigElement.ts', import.meta.url), 'utf8');
   const result = manifest({
     [tablePath]: readFileSync(new URL('../../src/web-components/shared/flattenedPublicConfig.ts', import.meta.url), 'utf8'),
     [publicConfigPath]: publicConfigSource,
-    [basePath]: readFileSync(new URL('../../src/web-components/shared/FlattenedConfigElement.ts', import.meta.url), 'utf8'),
+    [basePath]: baseSource,
   });
   const declaration = result.modules[0].declarations[0];
   const names = new Set(declaration.members.map((member) => member.name));
@@ -344,4 +345,15 @@ test('reads all current source fields without loading a DOM-dependent host', () 
   assert.equal(internal.privacy, 'private');
   assert.equal(internal.type.text, 'boolean');
   assert.ok(declaration.attributes.some((attribute) => attribute.fieldName === internal.name));
+  // web-component-analyzer, and so telemetry:config, reads only these JSDoc tags.
+  const baseClass = ts.createSourceFile(basePath, baseSource, ts.ScriptTarget.Latest, true)
+    .statements.find((node) => ts.isClassDeclaration(node) && node.name?.text === 'FlattenedConfigElement');
+  const attrTags = ts.getJSDocTags(baseClass)
+    .filter((tag) => tag.tagName.text === 'attr')
+    .map((tag) => ts.getTextOfJSDocComment(tag.comment).trim());
+  const hostOwnFields = new Set(['ownMember', 'onViewChange', 'onViewPreChange']);
+  const derived = declaration.attributes
+    .filter((attribute) => attribute.fieldName && !hostOwnFields.has(attribute.fieldName))
+    .map((attribute) => attribute.name);
+  assert.deepEqual([...attrTags].sort(), [...derived].sort());
 });
