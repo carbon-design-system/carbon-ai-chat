@@ -10,7 +10,7 @@ import { access, readFile, realpath } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { join, relative, resolve } from 'node:path';
 import ts from 'typescript';
-import { globalSuperclassReferences } from '../../packages/ai-chat-components/tasks/cem-plugins.js';
+import { globalSuperclassReferences } from './global-superclasses.mjs';
 
 export function localPath(root, path) {
   const target = resolve(root, path);

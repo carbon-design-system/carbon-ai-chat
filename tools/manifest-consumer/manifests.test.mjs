@@ -147,6 +147,19 @@ test('packed manifest rejects Error shadowed by module-scope hoisted and destruc
   }
 });
 
+test('packed manifest rejects a global base that differs from the source base', async () => {
+  await withManifest(
+    'export class Example extends Map {}',
+    { name: 'Error' },
+    async (read) => {
+      await assert.rejects(
+        read,
+        /Unpublished symbol: .*#Error \(from es\/example\.js#Example\)/
+      );
+    }
+  );
+});
+
 test('packed manifest accepts global Error beside a sibling block binding', async () => {
   await withManifest(
     '{ let Error = 1; } export class Example extends Error {}',
