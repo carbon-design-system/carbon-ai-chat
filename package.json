@@ -264,10 +264,6 @@
     "@mordech/vite-lit-loader": {
       "vite": "^8.0.16"
     },
-    "lerna": {
-      "js-yaml": "^4.3.2",
-      "pacote": "^21.5.1"
-    },
     "nx": {
       "smol-toml": "^1.9.0",
       "undici": "^7.29.1"
