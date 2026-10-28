@@ -33,7 +33,7 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: npm ci --prefer-offline
       - name: Run build
-        run: npm run aiChat:build -- --ignore @carbon/ai-chat-examples-demo
+        run: npm run aiChat:build -- --ignore @carbon/ai-chat-examples-demo --ignore '@carbon/ai-chat-examples-*'
       # 👇 Test jobs reuse this output instead of rebuilding
       - name: Upload build output
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -72,14 +72,7 @@ jobs:
           - suite: components
             browsers: chromium
             run: npm run test --workspace=@carbon/ai-chat-components
-          # 👇 TEMPORARILY DISABLED: demo and example app tests (Playwright install/runtime
-          # failures and 10+ minute runs). Re-enable once the CI strategy for them is reworked.
-          # - suite: demo
-          #   browsers: chromium firefox webkit
-          #   run: npm run test --workspace=@carbon/ai-chat-examples-demo
-          # - suite: examples
-          #   browsers: chromium
-          #   run: npm run test:examples && npm run test:versions
+          # 👇 Demo and example test suites run in the nightly workflow (nightly.yml), not here.
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Use Node.js version from .nvmrc
