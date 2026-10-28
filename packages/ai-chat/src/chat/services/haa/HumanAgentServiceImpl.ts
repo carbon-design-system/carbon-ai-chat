@@ -7,7 +7,9 @@
  *  @license
  */
 
+import { captureMessageEvent } from '../../utils/messageEventOwnership';
 import cloneDeep from 'lodash-es/cloneDeep.js';
+import isEqual from 'lodash-es/isEqual.js';
 import merge from 'lodash-es/merge.js';
 import { DeepPartial } from '../../../types/utilities/DeepPartial';
 
@@ -541,60 +543,132 @@ class HumanAgentServiceImpl implements HumanAgentService {
       updateFilesUploadInProgress(this.uploadingFiles.size > 0)
     );
 
-    await addMessages(pairs, !this.isSuspended(), serviceManager);
-
-    // Start some timeouts to display a warning or error if the service desk doesn't indicate if the message was
-    // sent successfully (or it failed).
-    let messageSucceeded = false;
-    let messageFailed = false;
-    setTimeout(() => {
-      if (!messageSucceeded && !messageFailed) {
-        this.setMessageErrorState(
-          textMessage.fullMessageID,
-          MessageErrorState.RETRYING
-        );
+    const write = serviceManager.messageUpsertCoordinator.trackWrite(
+      originalMessage.id
+    );
+    const setCurrentMessageErrorState = (errorState: MessageErrorState) => {
+      if (write.isCurrent()) {
+        this.setMessageErrorState(textMessage.fullMessageID, errorState);
       }
-    }, SEND_TIMEOUT_WARNING_MS);
-    setTimeout(() => {
-      if (!messageSucceeded) {
-        this.setMessageErrorState(
-          textMessage.fullMessageID,
-          MessageErrorState.FAILED
-        );
-      }
-    }, SEND_TIMEOUT_ERROR_MS);
-
-    const additionalData: AdditionalDataToAgent = {
-      filesToUpload: uploads,
     };
-
     try {
-      // Send the message to the service desk.
-      await this.serviceDesk.sendMessageToAgent(
-        originalMessage,
-        localMessageID,
-        additionalData
-      );
-      messageSucceeded = true;
-      this.setMessageErrorState(
-        textMessage.fullMessageID,
-        MessageErrorState.NONE
+      await addMessages(pairs, !this.isSuspended(), serviceManager);
+
+      const generation =
+        serviceManager.conversationLifecycleService.currentGeneration;
+      serviceManager.conversationLifecycleService.requestStarted(
+        originalMessage.id,
+        generation
       );
 
-      await serviceManager.fire({
-        type: BusEventType.HUMAN_AGENT_SEND,
-        data: originalMessage,
-        files: uploads,
-      });
-    } catch (error) {
-      messageFailed = true;
-      consoleError(
-        '[sendMessageToAgent] An error with the service desk occurred.',
-        error
-      );
-      this.setMessageErrorState(
-        textMessage.fullMessageID,
-        MessageErrorState.FAILED
+      // Start some timeouts to display a warning or error if the service desk doesn't indicate if the message was
+      // sent successfully (or it failed).
+      let messageSucceeded = false;
+      let messageFailed = false;
+      let failure: ReturnType<
+        typeof serviceManager.conversationLifecycleService.fail
+      >;
+      const reportFailure = () => {
+        if (messageSucceeded || messageFailed) {
+          return;
+        }
+        messageFailed = true;
+        failure = serviceManager.conversationLifecycleService.fail(
+          { messageID: originalMessage.id },
+          generation
+        );
+      };
+      setTimeout(() => {
+        if (!messageSucceeded && !messageFailed) {
+          setCurrentMessageErrorState(MessageErrorState.RETRYING);
+        }
+      }, SEND_TIMEOUT_WARNING_MS);
+      setTimeout(() => {
+        if (!messageSucceeded && !messageFailed) {
+          setCurrentMessageErrorState(MessageErrorState.FAILED);
+          reportFailure();
+        }
+      }, SEND_TIMEOUT_ERROR_MS);
+
+      const additionalData: AdditionalDataToAgent = {
+        filesToUpload: uploads,
+      };
+
+      try {
+        // Send the message to the service desk.
+        await this.serviceDesk.sendMessageToAgent(
+          originalMessage,
+          localMessageID,
+          additionalData
+        );
+        this.commitOutgoingEdits(originalMessage, textMessage, write.isCurrent);
+        messageSucceeded = true;
+        serviceManager.conversationLifecycleService.clearFailure(failure);
+        serviceManager.conversationLifecycleService.requestFinished(
+          originalMessage.id,
+          generation
+        );
+        setCurrentMessageErrorState(MessageErrorState.NONE);
+
+        await serviceManager.fire({
+          type: BusEventType.HUMAN_AGENT_SEND,
+          data: originalMessage,
+          files: uploads,
+        });
+      } catch (error) {
+        reportFailure();
+        consoleError(
+          '[sendMessageToAgent] An error with the service desk occurred.',
+          error
+        );
+        setCurrentMessageErrorState(MessageErrorState.FAILED);
+      } finally {
+        this.commitOutgoingEdits(originalMessage, textMessage, write.isCurrent);
+      }
+    } finally {
+      write.release();
+    }
+  }
+
+  /**
+   * Stores host edits made to an outgoing message after it was added. The service desk callback and
+   * HUMAN_AGENT_SEND handlers may write to the request, while the chat keeps owning its error state.
+   */
+  private commitOutgoingEdits(
+    originalMessage: Message,
+    textMessage: LocalMessageItem<TextItem>,
+    isCurrent: () => boolean
+  ) {
+    if (!isCurrent()) {
+      return;
+    }
+    const { store } = this.serviceManager;
+    const state = store.getState();
+    const storedMessage = state.allMessagesByID[originalMessage.id];
+    if (!storedMessage) {
+      return;
+    }
+    const errorState = storedMessage.history?.error_state;
+    const edited = {
+      ...originalMessage,
+      history: {
+        ...originalMessage.history,
+        ...(errorState === undefined ? {} : { error_state: errorState }),
+      },
+    };
+    if (!isEqual(storedMessage, edited)) {
+      store.dispatch(actions.updateMessage(cloneDeep(edited)));
+    }
+    if (!isCurrent()) {
+      return;
+    }
+    const storedItem = state.allMessageItemsByID[textMessage.ui_state.id];
+    if (storedItem && !isEqual(storedItem.item, textMessage.item)) {
+      store.dispatch(
+        actions.updateLocalMessageItem({
+          ...storedItem,
+          item: cloneDeep(textMessage.item),
+        })
       );
     }
   }
@@ -1062,7 +1136,7 @@ class ServiceDeskCallbackImpl<
     this.service.cancelHumanAgentJoinedTimer();
 
     // Update the store with the current agent's profile information.
-    this.serviceManager.store.dispatch(setHumanAgentJoined(profile));
+    this.serviceManager.store.dispatch(setHumanAgentJoined(cloneDeep(profile)));
 
     // Then generate a message we can display in the UI to indicate that the agent has joined.
     await this.service.addHumanAgentLocalMessage(HUMAN_AGENT_JOINED, profile);
@@ -1154,6 +1228,8 @@ class ServiceDeskCallbackImpl<
       }
     }
 
+    responseUserProfile = cloneDeep(responseUserProfile);
+
     // Fire the pre:receive event that will allow code to customize the message.
     await serviceManager.fire({
       type: BusEventType.HUMAN_AGENT_PRE_RECEIVE,
@@ -1162,7 +1238,6 @@ class ServiceDeskCallbackImpl<
     });
 
     messageResponse.message_options = messageResponse.message_options || {};
-
     messageResponse.message_options.response_user_profile = responseUserProfile;
 
     const localMessages = messageResponse.output.generic.map((item: any) => {
@@ -1174,11 +1249,33 @@ class ServiceDeskCallbackImpl<
       this.serviceManager
     );
 
-    await serviceManager.fire({
-      type: BusEventType.HUMAN_AGENT_RECEIVE,
-      data: messageResponse,
-      responseUserProfile,
-    });
+    const stored = serviceManager.store.getState();
+    const storedMessage = stored.allMessagesByID[messageResponse.id];
+    const storedItems = Object.fromEntries(
+      localMessages
+        .map((item) => [
+          item.ui_state.id,
+          stored.allMessageItemsByID[item.ui_state.id],
+        ])
+        .filter(([, item]) => item)
+    );
+    const event =
+      storedMessage &&
+      captureMessageEvent(serviceManager, storedMessage, storedItems, {
+        message: messageResponse,
+        localItems: Object.fromEntries(
+          localMessages.map((item) => [item.ui_state.id, item])
+        ),
+      });
+    try {
+      await serviceManager.fire({
+        type: BusEventType.HUMAN_AGENT_RECEIVE,
+        data: messageResponse,
+        responseUserProfile,
+      });
+    } finally {
+      event?.commit();
+    }
   }
 
   /**
@@ -1195,7 +1292,9 @@ class ServiceDeskCallbackImpl<
 
     if (profile) {
       // Update the store with the current agent's profile information.
-      this.serviceManager.store.dispatch(setHumanAgentJoined(profile));
+      this.serviceManager.store.dispatch(
+        setHumanAgentJoined(cloneDeep(profile))
+      );
     }
 
     await this.service.addHumanAgentLocalMessage(

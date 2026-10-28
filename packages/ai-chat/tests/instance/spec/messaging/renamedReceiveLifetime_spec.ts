@@ -59,7 +59,8 @@ describe('renamed receive lifetime', () => {
       await instance.messaging.addMessage(message);
     });
 
-    expect(store.getState().allMessagesByID.destination).toBe(message);
+    expect(store.getState().allMessagesByID.destination).not.toBe(message);
+    expect(store.getState().allMessagesByID.destination).toEqual(message);
     expect(store.getState().allMessagesByID.temporary).toBeUndefined();
     expect(receive).toHaveBeenCalledTimes(1);
     expect(receive.mock.calls[0][0].data).toBe(message);
