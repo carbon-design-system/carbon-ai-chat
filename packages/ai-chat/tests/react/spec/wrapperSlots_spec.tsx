@@ -23,6 +23,7 @@ import React, {
   useState,
 } from 'react';
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
+import type NativeChatHeader from '@carbon/ai-chat-components/es/components/chat-shell/src/chat-header.js';
 import { deepQuerySelector } from '@carbon/ai-chat-components/es/globals/utils/dom-utils.js';
 import { LIGHT_DOM_PORTAL_EVENT } from '@carbon/ai-chat-components/es/components/prompt-line/src/tiptap/render-in-light-dom.js';
 
@@ -975,6 +976,166 @@ describe('React render props through the shared container', () => {
       expect(after).toHaveBeenCalledTimes(1);
     }
   );
+
+  it.each([
+    ['ChatContainer', ChatContainer],
+    ['ChatCustomElement', ChatCustomElement],
+  ] as const)(
+    'keeps native header slots and consumer state through %s updates and custom-header replacement',
+    async (_name, Wrapper) => {
+      let instance: ChatInstance;
+      const after = jest.fn();
+      const host = (custom = false, title = 'Original header') => (
+        <Wrapper
+          {...config}
+          className=""
+          header={{ title }}
+          onBeforeRender={(chat) => {
+            instance = chat;
+          }}
+          onAfterRender={after}
+          renderWriteableElements={{
+            headerFixedActionsElement: <Counter id="native-header-counter" />,
+            ...(custom
+              ? {
+                  customHeader: (
+                    <p data-probe="replacement-header">Custom header</p>
+                  ),
+                }
+              : {}),
+          }}
+        />
+      );
+      const mounted = render(host());
+      await waitFor(() => expect(after).toHaveBeenCalledTimes(1));
+      const chat = getChatHost();
+      const native = chat.shadowRoot.querySelector('cds-aichat-header-view');
+      expect(native).not.toBeNull();
+      expect(native.shadowRoot).toBeNull();
+      const base = native.querySelector('cds-aichat-chat-header');
+      const label = native.querySelector('cds-ai-label');
+      expect(label.parentElement).toBe(base);
+      expect(label.slot).toBe('decorator');
+      const content = instance.writeableElements.explainabilityPopoverContent;
+      const fixed = instance.writeableElements.headerFixedActionsElement;
+      const slot = content.assignedSlot;
+      expect(slot.getRootNode()).toBe(chat.shadowRoot);
+      expect(slot.parentElement.slot).toBe('body-text');
+      expect(slot.parentElement.parentElement).toBe(label);
+      expect(fixed.assignedSlot.parentElement.slot).toBe('fixed-actions');
+      const counter = probe('native-header-counter');
+      fireEvent.click(counter);
+      expect(counter.textContent).toBe('1');
+      const customExplanation = document.createElement('button');
+      customExplanation.textContent = 'Host explanation';
+      content.appendChild(customExplanation);
+      await waitFor(() =>
+        expect(
+          native.querySelector('.cds-aichat--header__slug-label')
+        ).toBeNull()
+      );
+
+      mounted.rerender(host(false, 'Updated header'));
+      await waitFor(() =>
+        expect((base as any).headerTitle).toBe('Updated header')
+      );
+      expect(native.querySelector('cds-ai-label')).toBe(label);
+      expect(content.assignedSlot).toBe(slot);
+      expect(customExplanation.parentNode).toBe(content);
+      expect(probe('native-header-counter')).toBe(counter);
+      expect(counter.textContent).toBe('1');
+
+      mounted.rerender(host(true));
+      await waitFor(() => expect(probe('replacement-header')).not.toBeNull());
+      expect(content.parentNode).toBe(chat);
+      expect(fixed.parentNode).toBe(chat);
+      expect(customExplanation.parentNode).toBe(content);
+      expect(probe('native-header-counter')).toBe(counter);
+      expect(counter.textContent).toBe('1');
+      mounted.rerender(host(false));
+      await waitFor(() => expect(content.assignedSlot).not.toBeNull());
+      expect(instance.writeableElements.explainabilityPopoverContent).toBe(
+        content
+      );
+      expect(instance.writeableElements.headerFixedActionsElement).toBe(fixed);
+      expect(customExplanation.parentNode).toBe(content);
+      expect(probe('native-header-counter')).toBe(counter);
+      expect(counter.textContent).toBe('1');
+      expect(after).toHaveBeenCalledTimes(1);
+    }
+  );
+
+  it('normalizes configured React icons while retaining Carbon descriptors through the native header adapter', async () => {
+    const ReactIcon = React.forwardRef<SVGSVGElement>((_props, ref) => (
+      <svg ref={ref} viewBox="0 0 16 16">
+        <path d="M2 2h12v12H2z" />
+      </svg>
+    ));
+    ReactIcon.displayName = 'HeaderTestIcon';
+    const descriptor = {
+      elem: 'svg',
+      name: 'test-descriptor',
+      size: 16,
+      attrs: { viewBox: '0 0 16 16', width: 16, height: 16 },
+      content: [{ elem: 'path', attrs: { d: 'M1 1h14v14H1z' } }],
+    };
+    const after = jest.fn();
+    render(
+      <ChatContainer
+        {...config}
+        onAfterRender={after}
+        header={{
+          actions: [
+            {
+              text: 'React icon',
+              icon: ReactIcon,
+              onClick: jest.fn(),
+              fixed: true,
+            },
+            {
+              text: 'Carbon icon',
+              icon: descriptor,
+              onClick: jest.fn(),
+              fixed: true,
+            },
+          ],
+        }}
+      />
+    );
+    await waitFor(() => expect(after).toHaveBeenCalledTimes(1));
+    const native = getChatHost().shadowRoot.querySelector(
+      'cds-aichat-header-view'
+    );
+    const base = native.querySelector(
+      'cds-aichat-chat-header'
+    ) as NativeChatHeader;
+    const reactAction = base.actions.find(
+      (action) => action.text === 'React icon'
+    );
+    const carbonAction = base.actions.find(
+      (action) => action.text === 'Carbon icon'
+    );
+    expect(reactAction.icon).toEqual(
+      expect.objectContaining({
+        elem: 'svg',
+        content: expect.arrayContaining([
+          expect.objectContaining({
+            elem: 'path',
+            attrs: expect.objectContaining({ d: 'M2 2h12v12H2z' }),
+          }),
+        ]),
+      })
+    );
+    expect(carbonAction.icon).toEqual(descriptor);
+    await waitFor(() =>
+      expect(
+        deepQuerySelector(base.shadowRoot, 'path[d="M2 2h12v12H2z"]')
+      ).not.toBeNull()
+    );
+    expect(
+      deepQuerySelector(base.shadowRoot, 'path[d="M1 1h14v14H1z"]')
+    ).not.toBeNull();
+  });
 
   it('updates writeable keys without replacing nodes or clearing imperative content', async () => {
     const { instance, update } = await boot();
