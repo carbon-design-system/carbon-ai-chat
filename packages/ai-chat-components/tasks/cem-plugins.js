@@ -275,8 +275,10 @@ export function carbonElementTagPlugin({ prefix }) {
       const decorator = (ts.getDecorators(node) ?? []).find(
         (entry) =>
           ts.isCallExpression(entry.expression) &&
-          ts.isIdentifier(entry.expression.expression) &&
-          info.decorators.has(entry.expression.expression.text)
+          (ts.isIdentifier(entry.expression.expression)
+            ? info.decorators.has(entry.expression.expression.text)
+            : ts.isPropertyAccessExpression(entry.expression.expression) &&
+              entry.expression.expression.name.text === 'carbonElement')
       );
       if (!declaration || !decorator) {
         return;
@@ -511,6 +513,9 @@ export function componentModulePathsPlugin() {
               ? path.posix.join(path.posix.dirname(source), value.module)
               : value.module;
             value.module = publishedPath(target);
+          } else if (typeof value.package === 'string' && !value.module) {
+            // Superclass and mixin references keep the analyzer's full specifier.
+            Object.assign(value, packageReference(value.name, value.package));
           }
           Object.values(value).forEach(rewrite);
         };

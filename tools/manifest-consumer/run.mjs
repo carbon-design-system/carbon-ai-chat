@@ -111,7 +111,12 @@ const elements = manifest.modules.flatMap((module) =>
       };
     })
 );
-assert.ok(elements.length > 0);
+for (const tag of ['cds-aichat-toolbar', 'cds-aichat-truncated-text']) {
+  assert.ok(
+    elements.some((entry) => entry.tag === tag),
+    `The manifest must list ${tag} for its property checks.`
+  );
+}
 assert.equal(new Set(elements.map((entry) => entry.tag)).size, elements.length);
 await writeFile(
   join(consumer, 'index.html'),

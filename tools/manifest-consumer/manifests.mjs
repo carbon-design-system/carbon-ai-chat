@@ -21,6 +21,11 @@ function localPath(root, path) {
 }
 
 function checkExternalReference(value, declarationReference, require) {
+  assert.match(
+    value.package,
+    /^(@[^/]+\/)?[^/]+$/,
+    `Package references name a package, not a path: ${value.package}`
+  );
   if (!declarationReference) {
     return;
   }

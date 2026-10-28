@@ -82,6 +82,8 @@ test('resolves literal tags, local constants and imported decorator aliases', ()
     }
     @carbonElement('literal-element')
     class Literal extends HTMLElement {}
+    @decorators.carbonElement('namespaced-element')
+    class Namespaced extends HTMLElement {}
     export default Example;
   `,
   });
@@ -90,6 +92,10 @@ test('resolves literal tags, local constants and imported decorator aliases', ()
     'fixture-chat-element'
   );
   assert.equal(declaration(manifest, 'Literal').tagName, 'literal-element');
+  assert.equal(
+    declaration(manifest, 'Namespaced').tagName,
+    'namespaced-element'
+  );
   const fields = declaration(manifest, 'Example').members;
   assert.equal(
     fields.some(
@@ -107,6 +113,7 @@ test('resolves literal tags, local constants and imported decorator aliases', ()
   assert.deepEqual(definitions.map((entry) => entry.name).sort(), [
     'fixture-chat-element',
     'literal-element',
+    'namespaced-element',
   ]);
 });
 
@@ -203,6 +210,25 @@ test('imported base classes use package-relative published paths', () => {
     name: 'BaseProvider',
     module: 'es/providers/base.js',
   });
+});
+
+test('external base classes and mixins split the package from its subpath', () => {
+  const manifest = analyze({
+    'src/derived.ts': `
+      import { Base } from '@other/package/base.js';
+      import { Mixin } from '@other/package/mixins/mixin.js';
+      export class Derived extends Mixin(Base) {}
+    `,
+  });
+  const derived = declaration(manifest, 'Derived');
+  assert.deepEqual(derived.superclass, {
+    name: 'Base',
+    package: '@other/package',
+    module: 'base.js',
+  });
+  assert.deepEqual(derived.mixins, [
+    { name: 'Mixin', package: '@other/package', module: 'mixins/mixin.js' },
+  ]);
 });
 
 test('dynamic registration helpers do not invent element definitions', () => {
