@@ -144,6 +144,20 @@ test('imported external reexports retain the package and public subpath', () => 
   });
 });
 
+test('direct external reexports split the package from its subpath', () => {
+  const manifest = analyze({
+    'src/external.ts':
+      "export { Item } from '@other/package/items.js'; export { Root } from 'plain';",
+  });
+  assert.deepEqual(
+    manifest.modules[0].exports.map((entry) => entry.declaration),
+    [
+      { name: 'Item', package: '@other/package', module: 'items.js' },
+      { name: 'Root', package: 'plain' },
+    ]
+  );
+});
+
 test('type-only exports are omitted while runtime enums and values remain', () => {
   const manifest = analyze({
     'src/defs.ts': `

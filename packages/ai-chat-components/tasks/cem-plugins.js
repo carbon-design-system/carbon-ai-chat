@@ -343,6 +343,19 @@ export function internalMembersPlugin() {
   };
 }
 
+// Splits a bare specifier into the schema's package name and its subpath.
+const packageReference = (name, specifier) => {
+  const segments = specifier.split('/');
+  const packageName = segments
+    .splice(0, specifier.startsWith('@') ? 2 : 1)
+    .join('/');
+  return {
+    name,
+    package: packageName,
+    ...(segments.length ? { module: segments.join('/') } : {}),
+  };
+};
+
 export function componentModulePathsPlugin() {
   const sources = new Map();
   const packageRoot = fileURLToPath(new URL('../', import.meta.url));
@@ -400,7 +413,10 @@ export function componentModulePathsPlugin() {
       const modules = customElementsManifest.modules;
       const resolveDeclaration = (reference, owner, visited = new Set()) => {
         if (reference.package) {
-          return reference;
+          // A direct bare re-export arrives with its full specifier as the package.
+          return reference.module
+            ? reference
+            : packageReference(reference.name, reference.package);
         }
         const target = reference.module?.startsWith('.')
           ? path.posix.join(path.posix.dirname(owner.path), reference.module)
@@ -425,15 +441,7 @@ export function componentModulePathsPlugin() {
           return reference;
         }
         if (!imported.module.startsWith('.')) {
-          const segments = imported.module.split('/');
-          const packageName = segments
-            .splice(0, imported.module.startsWith('@') ? 2 : 1)
-            .join('/');
-          return {
-            name: imported.name,
-            package: packageName,
-            ...(segments.length ? { module: segments.join('/') } : {}),
-          };
+          return packageReference(imported.name, imported.module);
         }
         const importedPath = path.posix.join(
           path.posix.dirname(module.path),
