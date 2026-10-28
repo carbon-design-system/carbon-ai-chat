@@ -110,6 +110,7 @@ async function renderInput(onSendInput: jest.Mock) {
         isInputVisible: true,
         disableSend: false,
         onSendInput,
+        onStopStreaming: jest.fn(),
       })
     )
   );

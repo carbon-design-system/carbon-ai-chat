@@ -26,7 +26,6 @@ import {
 } from '../../store/selectors';
 import { ChatWidthBreakpoint, AppState } from '../../../types/state/AppState';
 import { useSelector } from '../../hooks/useSelector';
-import { BusEventType } from '../../../types/events/eventBusTypes';
 import { useServiceManager } from '../../hooks/useServiceManager';
 import { useIntl } from '../../hooks/useIntl';
 import { useAriaAnnouncer } from '../../hooks/useAriaAnnouncer';
@@ -37,7 +36,6 @@ import { useRichSurface } from './useRichSurface';
 import { useInputValueSync } from './useInputValueSync';
 import { useInputImperativeHandle } from './useInputImperativeHandle';
 import { PageObjectId } from '../../../testing/PageObjectId';
-import { consoleError } from '../../utils/miscUtils';
 import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
 // Upload button
@@ -83,6 +81,8 @@ interface InputProps {
    * absent for programmatic ones.
    */
   onSendInput: (text: string, displayContent?: JSONContent) => void;
+
+  onStopStreaming: (markPending: () => void) => Promise<void>;
 
   /**
    * An optional placeholder to display in the field.
@@ -263,6 +263,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     isInputVisible,
     disableSend,
     onSendInput,
+    onStopStreaming,
     placeholder,
     onUserTyping,
     showUploadButton,
@@ -529,24 +530,8 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
    * Handle stop streaming button click.
    */
   const handleStopStreaming = async () => {
-    // Read before any await. A request that starts while the host's handlers
-    // run is not what the user clicked on, so this click must not cancel it.
-    const chatShowsButton =
-      store.getState().assistantInputState.stopStreamingButtonState.isVisible;
-    setIsStopPending(true);
-    if (chatShowsButton) {
-      store.dispatch(actions.setStopStreamingButtonDisabled(true));
-    }
     try {
-      await serviceManager.fire({
-        type: BusEventType.STOP_STREAMING,
-      });
-      if (chatShowsButton) {
-        await serviceManager.messageService.cancelCurrentMessageRequest();
-      }
-    } catch (error) {
-      consoleError('Error stopping stream:', error);
-      store.dispatch(actions.setStopStreamingButtonDisabled(false));
+      await onStopStreaming(() => setIsStopPending(true));
     } finally {
       setIsStopPending(false);
     }
