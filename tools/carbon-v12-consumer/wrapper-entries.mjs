@@ -356,6 +356,16 @@ export const wrapperEntries = [
     {},
   ],
   [
+    '@carbon/ai-chat-components/es/react/messages-shell.js',
+    ['default'],
+    'cds-aichat-messages-shell',
+    'CDSAIChatMessagesShell',
+    'aichat-messages-shell/aichat-messages-shell.ts',
+    {
+      onMessagesShellScroll: 'cds-aichat-messages-shell-scroll',
+    },
+  ],
+  [
     '@carbon/ai-chat-components/es/react/panel.js',
     ['default'],
     'cds-aichat-panel',
