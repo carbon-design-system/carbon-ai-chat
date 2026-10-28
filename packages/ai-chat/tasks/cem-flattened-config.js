@@ -33,7 +33,10 @@ function objectProperties(ts, expression) {
   }
   const properties = new Map();
   for (const property of expression.properties) {
-    if (!ts.isPropertyAssignment(property) || ts.isComputedPropertyName(property.name)) {
+    if (
+      !ts.isPropertyAssignment(property) ||
+      ts.isComputedPropertyName(property.name)
+    ) {
       fail('unsupported object property.');
     }
     const name = property.name.text;
@@ -64,14 +67,19 @@ function readOptions(ts, expression) {
     if (name === 'attribute') {
       literal(ts, value);
     } else if (name === 'type') {
-      if (!ts.isIdentifier(value) || !['Boolean', 'String', 'Number', 'Object', 'Array'].includes(value.text)) {
+      if (
+        !ts.isIdentifier(value) ||
+        !['Boolean', 'String', 'Number', 'Object', 'Array'].includes(value.text)
+      ) {
         fail('unsupported Lit property type.');
       }
     } else if (name !== 'converter' || !ts.isIdentifier(value)) {
       fail(`unsupported Lit property option "${name}".`);
     }
   }
-  return options.has('attribute') ? literal(ts, options.get('attribute')) : true;
+  return options.has('attribute')
+    ? literal(ts, options.get('attribute'))
+    : true;
 }
 
 function readTable(ts, initializer) {
@@ -109,7 +117,11 @@ function readTable(ts, initializer) {
 function readMembers(ts, declaration) {
   const members = new Map();
   for (const member of declaration.members) {
-    if (!member.name || ts.isComputedPropertyName(member.name) || !member.type) {
+    if (
+      !member.name ||
+      ts.isComputedPropertyName(member.name) ||
+      !member.type
+    ) {
       fail(`unsupported member in ${declaration.name.text}.`);
     }
     const name = member.name.text;
@@ -150,7 +162,14 @@ function configType(member, typeModule, interfaceName = 'PublicConfig') {
   };
 }
 
-function addFields(declaration, fields, members, typeModule, overrides = new Map(), interfaceName) {
+function addFields(
+  declaration,
+  fields,
+  members,
+  typeModule,
+  overrides = new Map(),
+  interfaceName
+) {
   declaration.members ??= [];
   declaration.attributes ??= [];
   for (const [name, attribute] of fields) {
@@ -159,14 +178,30 @@ function addFields(declaration, fields, members, typeModule, overrides = new Map
     if (!source) {
       fail(`missing source type for "${name}".`);
     }
-    const member = { ...source, type: configType(source, typeModule, override ? interfaceName : 'PublicConfig') };
+    const member = {
+      ...source,
+      type: configType(
+        source,
+        typeModule,
+        override ? interfaceName : 'PublicConfig'
+      ),
+    };
     if (name === 'config') {
-      member.type = { text: 'PublicConfig', references: [{ name: 'PublicConfig', module: typeModule }] };
+      member.type = {
+        text: 'PublicConfig',
+        references: [{ name: 'PublicConfig', module: typeModule }],
+      };
     }
-    declaration.members = declaration.members.filter((item) => item.name !== name);
+    declaration.members = declaration.members.filter(
+      (item) => item.name !== name
+    );
     declaration.members.push(member);
     const attributeName = attribute === true ? name.toLowerCase() : attribute;
-    declaration.attributes = declaration.attributes.filter((item) => item.fieldName !== name && item.name !== (attributeName || name.toLowerCase()));
+    declaration.attributes = declaration.attributes.filter(
+      (item) =>
+        item.fieldName !== name &&
+        item.name !== (attributeName || name.toLowerCase())
+    );
     if (attribute !== false) {
       member.attribute = attributeName;
       declaration.attributes.push({
@@ -183,10 +218,11 @@ function reactiveProperties(ts, declaration) {
   const properties = new Map();
   for (const member of declaration.members) {
     const decorators = ts.getDecorators(member) ?? [];
-    const property = decorators.find((decorator) =>
-      ts.isCallExpression(decorator.expression) &&
-      ts.isIdentifier(decorator.expression.expression) &&
-      decorator.expression.expression.text === 'property'
+    const property = decorators.find(
+      (decorator) =>
+        ts.isCallExpression(decorator.expression) &&
+        ts.isIdentifier(decorator.expression.expression) &&
+        decorator.expression.expression.text === 'property'
     );
     if (!property) {
       continue;
@@ -197,17 +233,33 @@ function reactiveProperties(ts, declaration) {
       continue;
     }
     const name = member.name.getText();
-    const attribute = options.has('attribute') ? literal(ts, options.get('attribute')) : true;
-    const metadata = readMembers(ts, { name: declaration.name, members: [member] }).get(name);
-    if (member.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.PrivateKeyword)) {
+    const attribute = options.has('attribute')
+      ? literal(ts, options.get('attribute'))
+      : true;
+    const metadata = readMembers(ts, {
+      name: declaration.name,
+      members: [member],
+    }).get(name);
+    if (
+      member.modifiers?.some(
+        (modifier) => modifier.kind === ts.SyntaxKind.PrivateKeyword
+      )
+    ) {
       metadata.privacy = 'private';
-    } else if (member.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.ProtectedKeyword)) {
+    } else if (
+      member.modifiers?.some(
+        (modifier) => modifier.kind === ts.SyntaxKind.ProtectedKeyword
+      )
+    ) {
       metadata.privacy = 'protected';
     }
     if (member.questionToken) {
       metadata.type.text += ' | undefined';
     }
-    properties.set(name, { attribute: attribute === true ? name.toLowerCase() : attribute, member: metadata });
+    properties.set(name, {
+      attribute: attribute === true ? name.toLowerCase() : attribute,
+      member: metadata,
+    });
   }
   return properties;
 }
@@ -223,8 +275,14 @@ function normalizeReactiveMetadata(declaration, properties) {
       member = structuredClone(source);
       declaration.members.push(member);
     }
-    const oldNames = new Set([name, member.attribute, attribute].filter((value) => typeof value === 'string'));
-    declaration.attributes = declaration.attributes.filter((item) => item.fieldName !== name && !oldNames.has(item.name));
+    const oldNames = new Set(
+      [name, member.attribute, attribute].filter(
+        (value) => typeof value === 'string'
+      )
+    );
+    declaration.attributes = declaration.attributes.filter(
+      (item) => item.fieldName !== name && !oldNames.has(item.name)
+    );
     delete member.attribute;
     if (attribute === false) {
       continue;
@@ -245,10 +303,17 @@ function moduleKey(path) {
 }
 
 function moduleAt(manifest, source) {
-  return manifest.modules.find((module) => moduleKey(module.path) === moduleKey(source));
+  return manifest.modules.find(
+    (module) => moduleKey(module.path) === moduleKey(source)
+  );
 }
 
-function importsRegistration(source, registrationSource, imports, visited = new Set()) {
+function importsRegistration(
+  source,
+  registrationSource,
+  imports,
+  visited = new Set()
+) {
   const key = moduleKey(source);
   if (key === moduleKey(registrationSource)) {
     return true;
@@ -258,42 +323,66 @@ function importsRegistration(source, registrationSource, imports, visited = new 
   }
   visited.add(key);
   return (imports.get(key) ?? []).some((target) =>
-    [target, `${target}/index`].some((candidate) => importsRegistration(candidate, registrationSource, imports, visited))
+    [target, `${target}/index`].some((candidate) =>
+      importsRegistration(candidate, registrationSource, imports, visited)
+    )
   );
 }
 
 function validateRegistration(manifest, host, tagName, imports) {
   const source = host.registrationSource ?? host.barrel?.source ?? host.source;
-  const registration = moduleAt(manifest, source)?.exports?.find((entry) =>
-    entry.kind === 'custom-element-definition' && entry.name === tagName &&
-    entry.declaration.name === host.name &&
-    moduleKey(entry.declaration.module ?? source) === moduleKey(host.source)
+  const registration = moduleAt(manifest, source)?.exports?.find(
+    (entry) =>
+      entry.kind === 'custom-element-definition' &&
+      entry.name === tagName &&
+      entry.declaration.name === host.name &&
+      moduleKey(entry.declaration.module ?? source) === moduleKey(host.source)
   );
   if (!registration) {
     fail(`missing registration for "${host.name}" in "${source}".`);
   }
-  if (host.barrel && !importsRegistration(host.barrel.source, source, imports)) {
-    fail(`public barrel "${host.barrel.source}" does not load registration for "${host.name}".`);
+  if (
+    host.barrel &&
+    !importsRegistration(host.barrel.source, source, imports)
+  ) {
+    fail(
+      `public barrel "${host.barrel.source}" does not load registration for "${host.name}".`
+    );
   }
 }
 
 function projectHost(manifest, host, typeModule, reactiveNames, imports) {
   const source = moduleAt(manifest, host.source);
-  const original = source?.declarations?.find((declaration) => declaration.name === host.name);
+  const original = source?.declarations?.find(
+    (declaration) => declaration.name === host.name
+  );
   if (!original?.tagName) {
     fail(`missing tagged host "${host.name}".`);
   }
   validateRegistration(manifest, host, original.tagName, imports);
   const declaration = structuredClone(original);
-  const privateMembers = new Map((declaration.members ?? [])
-    .filter((member) => ['private', 'protected'].includes(member.privacy))
-    .map((member) => [member.name, member.privacy]));
+  const privateMembers = new Map(
+    (declaration.members ?? [])
+      .filter((member) => ['private', 'protected'].includes(member.privacy))
+      .map((member) => [member.name, member.privacy])
+  );
   delete declaration.superclass;
-  for (const kind of ['members', 'attributes', 'events', 'slots', 'cssParts', 'cssProperties', 'cssStates']) {
+  for (const kind of [
+    'members',
+    'attributes',
+    'events',
+    'slots',
+    'cssParts',
+    'cssProperties',
+    'cssStates',
+  ]) {
     declaration[kind] = (declaration[kind] ?? []).filter((item) => {
       const memberName = kind === 'members' ? item.name : item.fieldName;
       const privacy = privateMembers.get(memberName) ?? item.privacy;
-      if (['private', 'protected'].includes(privacy) && !reactiveNames.has(memberName)) {
+      if (
+        ['private', 'protected'].includes(privacy) &&
+        !reactiveNames.has(memberName)
+      ) {
         return false;
       }
       item.privacy = privacy;
@@ -301,12 +390,19 @@ function projectHost(manifest, host, typeModule, reactiveNames, imports) {
     });
     for (const item of declaration[kind]) {
       delete item.inheritedFrom;
-      publishTypeReferences(item, ['private', 'protected'].includes(item.privacy) ? undefined : typeModule);
+      publishTypeReferences(
+        item,
+        ['private', 'protected'].includes(item.privacy) ? undefined : typeModule
+      );
     }
   }
   normalizeReactiveMetadata(declaration, reactiveNames);
   const reference = { name: host.name, module: host.module };
-  const definition = { kind: 'custom-element-definition', name: declaration.tagName, declaration: reference };
+  const definition = {
+    kind: 'custom-element-definition',
+    name: declaration.tagName,
+    declaration: reference,
+  };
   const module = {
     kind: 'javascript-module',
     path: host.module,
@@ -318,22 +414,45 @@ function projectHost(manifest, host, typeModule, reactiveNames, imports) {
     return [module];
   }
   const barrel = moduleAt(manifest, host.barrel.source);
-  if (!barrel?.exports?.some((entry) => entry.kind === 'js' && entry.name === 'default')) {
+  if (
+    !barrel?.exports?.some(
+      (entry) => entry.kind === 'js' && entry.name === 'default'
+    )
+  ) {
     fail(`public barrel "${host.barrel.source}" does not export its host.`);
   }
-  if (source.exports?.some((entry) => entry.kind === 'js' && entry.name === host.name)) {
-    module.exports.push({ kind: 'js', name: host.name, declaration: reference });
+  if (
+    source.exports?.some(
+      (entry) => entry.kind === 'js' && entry.name === host.name
+    )
+  ) {
+    module.exports.push({
+      kind: 'js',
+      name: host.name,
+      declaration: reference,
+    });
   }
-  return [module, {
-    kind: 'javascript-module',
-    path: host.barrel.module,
-    declarations: [],
-    exports: [
-      ...barrel.exports.filter((entry) => entry.kind === 'js' && ['default', host.name].includes(entry.name))
-        .map((entry) => ({ kind: 'js', name: entry.name, declaration: reference })),
-      definition,
-    ],
-  }];
+  return [
+    module,
+    {
+      kind: 'javascript-module',
+      path: host.barrel.module,
+      declarations: [],
+      exports: [
+        ...barrel.exports
+          .filter(
+            (entry) =>
+              entry.kind === 'js' && ['default', host.name].includes(entry.name)
+          )
+          .map((entry) => ({
+            kind: 'js',
+            name: entry.name,
+            declaration: reference,
+          })),
+        definition,
+      ],
+    },
+  ];
 }
 
 function publishTypeReferences(value, typeModule) {
@@ -342,7 +461,9 @@ function publishTypeReferences(value, typeModule) {
   }
   if (value.references) {
     // Private reactive types describe runtime fields without linking to an unshipped type.
-    value.references = value.references.filter((reference) => reference.package || typeModule);
+    value.references = value.references.filter(
+      (reference) => reference.package || typeModule
+    );
     if (!value.references.length) {
       delete value.references;
     }
@@ -352,10 +473,18 @@ function publishTypeReferences(value, typeModule) {
       reference.module = typeModule;
     }
   }
-  Object.values(value).forEach((child) => publishTypeReferences(child, typeModule));
+  Object.values(value).forEach((child) =>
+    publishTypeReferences(child, typeModule)
+  );
 }
 
-export function createFlattenedConfigPlugin({ tablePath, publicConfigPath, basePath, hosts, typeModule }) {
+export function createFlattenedConfigPlugin({
+  tablePath,
+  publicConfigPath,
+  basePath,
+  hosts,
+  typeModule,
+}) {
   let fields;
   let configMembers;
   let synthetic;
@@ -378,33 +507,70 @@ export function createFlattenedConfigPlugin({ tablePath, publicConfigPath, baseP
       if (!ts.isSourceFile(node)) {
         return;
       }
-      const edges = node.statements.filter((statement) =>
-        (ts.isImportDeclaration(statement) || ts.isExportDeclaration(statement)) &&
-        statement.moduleSpecifier && ts.isStringLiteral(statement.moduleSpecifier) &&
-        statement.moduleSpecifier.text.startsWith('.') &&
-        !statement.isTypeOnly && !statement.importClause?.isTypeOnly &&
-        !(statement.exportClause?.elements?.length && statement.exportClause.elements.every((binding) => binding.isTypeOnly)) &&
-        !(statement.importClause?.namedBindings?.elements?.length && !statement.importClause.name && statement.importClause.namedBindings.elements.every((binding) => binding.isTypeOnly))
-      ).map((statement) => resolve(dirname(node.fileName), statement.moduleSpecifier.text));
+      const edges = node.statements
+        .filter(
+          (statement) =>
+            (ts.isImportDeclaration(statement) ||
+              ts.isExportDeclaration(statement)) &&
+            statement.moduleSpecifier &&
+            ts.isStringLiteral(statement.moduleSpecifier) &&
+            statement.moduleSpecifier.text.startsWith('.') &&
+            !statement.isTypeOnly &&
+            !statement.importClause?.isTypeOnly &&
+            !(
+              statement.exportClause?.elements?.length &&
+              statement.exportClause.elements.every(
+                (binding) => binding.isTypeOnly
+              )
+            ) &&
+            !(
+              statement.importClause?.namedBindings?.elements?.length &&
+              !statement.importClause.name &&
+              statement.importClause.namedBindings.elements.every(
+                (binding) => binding.isTypeOnly
+              )
+            )
+        )
+        .map((statement) =>
+          resolve(dirname(node.fileName), statement.moduleSpecifier.text)
+        );
       imports.set(moduleKey(node.fileName), edges);
     },
     analyzePhase({ ts, node, moduleDoc }) {
       const path = resolve(moduleDoc.path);
-      if (ts.isClassDeclaration(node) && hosts.some((host) => host.name === node.name?.text && resolve(host.source) === path)) {
+      if (
+        ts.isClassDeclaration(node) &&
+        hosts.some(
+          (host) =>
+            host.name === node.name?.text && resolve(host.source) === path
+        )
+      ) {
         reactiveMembers.set(node.name.text, reactiveProperties(ts, node));
       }
       if (ts.isInterfaceDeclaration(node)) {
         for (const host of hosts) {
           const association = host.attributesInterface;
-          if (association && resolve(association.source) === path && node.name.text === association.name) {
+          if (
+            association &&
+            resolve(association.source) === path &&
+            node.name.text === association.name
+          ) {
             hostInterfaces.set(host.name, readMembers(ts, node));
           }
         }
       }
-      if (path === resolve(tablePath) && ts.isVariableDeclaration(node) && node.name.getText() === 'FLATTENED_PUBLIC_CONFIG_FIELDS') {
+      if (
+        path === resolve(tablePath) &&
+        ts.isVariableDeclaration(node) &&
+        node.name.getText() === 'FLATTENED_PUBLIC_CONFIG_FIELDS'
+      ) {
         fields = readTable(ts, node.initializer);
       }
-      if (path === resolve(publicConfigPath) && ts.isInterfaceDeclaration(node) && node.name.text === 'PublicConfig') {
+      if (
+        path === resolve(publicConfigPath) &&
+        ts.isInterfaceDeclaration(node) &&
+        node.name.text === 'PublicConfig'
+      ) {
         if (node.heritageClauses?.length) {
           fail('PublicConfig inheritance needs explicit analyzer support.');
         }
@@ -413,36 +579,70 @@ export function createFlattenedConfigPlugin({ tablePath, publicConfigPath, baseP
       if (path !== resolve(basePath)) {
         return;
       }
-      if (ts.isClassDeclaration(node) && node.name?.text === 'FlattenedConfigElement') {
-        baseMembers = readMembers(ts, { name: node.name, members: node.members.filter((member) => ['config', 'aiDisabled'].includes(member.name?.getText())) });
+      if (
+        ts.isClassDeclaration(node) &&
+        node.name?.text === 'FlattenedConfigElement'
+      ) {
+        baseMembers = readMembers(ts, {
+          name: node.name,
+          members: node.members.filter((member) =>
+            ['config', 'aiDisabled'].includes(member.name?.getText())
+          ),
+        });
       }
-      if (ts.isFunctionDeclaration(node) && node.name?.text === 'buildFlattenedProperties') {
+      if (
+        ts.isFunctionDeclaration(node) &&
+        node.name?.text === 'buildFlattenedProperties'
+      ) {
         for (const statement of node.body.statements) {
           if (!ts.isVariableStatement(statement)) {
             continue;
           }
-          const properties = statement.declarationList.declarations.find((declaration) => declaration.name.getText() === 'properties');
+          const properties = statement.declarationList.declarations.find(
+            (declaration) => declaration.name.getText() === 'properties'
+          );
           if (properties) {
-            synthetic = new Map([...objectProperties(ts, properties.initializer)].map(([name, value]) => [name, readOptions(ts, value)]));
+            synthetic = new Map(
+              [...objectProperties(ts, properties.initializer)].map(
+                ([name, value]) => [name, readOptions(ts, value)]
+              )
+            );
           }
         }
       }
     },
     packageLinkPhase({ customElementsManifest }) {
       if (!fields || !configMembers || !synthetic || !baseMembers) {
-        fail('include the field table, PublicConfig, and FlattenedConfigElement sources in analyzer globs.');
+        fail(
+          'include the field table, PublicConfig, and FlattenedConfigElement sources in analyzer globs.'
+        );
       }
       requireMatchingNames(fields, configMembers);
       requireMatchingNames(synthetic, baseMembers);
       for (const host of hosts) {
         if (host.attributesInterface && !hostInterfaces.has(host.name)) {
-          fail(`missing associated attributes interface "${host.attributesInterface.name}" from "${host.attributesInterface.source}".`);
+          fail(
+            `missing associated attributes interface "${host.attributesInterface.name}" from "${host.attributesInterface.source}".`
+          );
         }
       }
       customElementsManifest.modules = hosts.flatMap((host) => {
-        const modules = projectHost(customElementsManifest, host, typeModule, reactiveMembers.get(host.name) ?? new Map(), imports);
+        const modules = projectHost(
+          customElementsManifest,
+          host,
+          typeModule,
+          reactiveMembers.get(host.name) ?? new Map(),
+          imports
+        );
         const declaration = modules[0].declarations[0];
-        addFields(declaration, fields, configMembers, typeModule, hostInterfaces.get(host.name), host.attributesInterface?.name);
+        addFields(
+          declaration,
+          fields,
+          configMembers,
+          typeModule,
+          hostInterfaces.get(host.name),
+          host.attributesInterface?.name
+        );
         addFields(declaration, synthetic, baseMembers, typeModule);
         return modules;
       });
