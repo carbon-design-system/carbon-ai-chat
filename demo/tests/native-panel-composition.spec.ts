@@ -524,6 +524,7 @@ for (const framework of ['react', 'web-component']) {
       name: 'Go to next slide.',
       exact: true,
     });
+    await expect(sources.getByText('1 / 3', { exact: true })).toBeVisible();
     await nextSource.click();
     await expect(sources.getByText('2 / 3', { exact: true })).toBeVisible();
     await nextSource.click();
