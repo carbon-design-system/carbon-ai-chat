@@ -16,6 +16,7 @@ We should be looking for what here can can automate, and as we do, we can remove
 - Header, launcher, homescreen configuration
 - Launcher: keyboard open/dismiss, unread labels, live avatar config, reduced motion, and missing animation events, on the React host (float, LTR) and the web-component host (float, RTL) (`tests/native-launcher.spec.ts`).
 - Header menus: arrow keys, Escape focus return, and AI-label keyboard access, on the React host (float, LTR) and the web-component host (sidebar, RTL) (`tests/overflow-menu-arrow-navigation.spec.ts`).
+- Native panel frames: direct slot chains, custom event order, option reset, focus/reactivation, and retained DOM/React state on both hosts (`tests/native-panel-composition.spec.ts`).
 - Home starters and return actions: mouse and keyboard paths, input focus, narrow RTL layout, and both host paths (`tests/homescreen.spec.ts`).
 - Chat instance controls (focus, scroll, input visibility, restart)
 - Slots, layout frame/content width settings
