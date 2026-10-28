@@ -352,7 +352,6 @@ export {
   chunkHasDisplayableContent,
   hasDisplayableContentForItem,
   deriveStreamingItemText,
-  FinalResponseChunk,
   messageHasDisplayableContent,
   resetStopStreamingButton,
   resolveChunkContext,
@@ -361,3 +360,6 @@ export {
   syncStopStreamingButton,
   StreamingTracker,
 };
+
+// A type re-export, so per-file transpilers such as the demo's Vite build drop it.
+export type { FinalResponseChunk };
