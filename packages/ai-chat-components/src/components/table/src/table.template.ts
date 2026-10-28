@@ -55,7 +55,8 @@ function tableTemplate(tableElement: CDSAIChatTable) {
         <cds-icon-button
           @click=${handleDownload}
           align=${tooltipPosition}
-          kind="ghost">
+          kind="ghost"
+          size="md">
           ${iconLoader(Download16, { slot: 'icon' })}
           <span slot="tooltip-content">${downloadLabelText}</span>
         </cds-icon-button>
