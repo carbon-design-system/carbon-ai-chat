@@ -26,6 +26,7 @@ import { ChatInstance } from '../../types/instance/ChatInstance';
 import type { TypeAndHandler } from '../../types/instance/EventHandlers';
 import type { ServiceManager } from '../../chat/services/ServiceManager';
 import type { ChatViewState } from '../../chat/services/chatViewState';
+import type { ExtensionHosts } from '../../chat/services/extensionHosts';
 import appActions from '../../chat/store/actions';
 import type { AppliedConfig } from '../../chat/utils/appConfigUpdates';
 import type { ChatAppEntryProps } from '../../chat/ChatAppEntry';
@@ -65,13 +66,14 @@ interface MountState {
   App?: ComponentType<ChatAppEntryProps>;
   serviceManager?: ServiceManager;
   viewState?: ChatViewState;
+  hosts?: ExtensionHosts;
+  announcerRegion?: HTMLDivElement;
   instance?: ChatInstance;
   bootConfig?: PublicConfig;
   appliedConfig?: AppliedConfig;
   applyConfig?: (config: PublicConfig) => void;
   renderReady: boolean;
   initialViewReady: boolean;
-  listenersReady: ResolvablePromise;
   initialViewCommitted: ResolvablePromise;
   afterRenderTimer?: ReturnType<typeof setTimeout>;
   removeWindowListeners?: () => void;
@@ -89,6 +91,7 @@ export const bootModuleLoader = {
       import('../../chat/ChatAppEntry'),
       import('../../chat/utils/customPromptLine'),
       import('../../chat/services/chatViewState'),
+      import('../../chat/services/extensionHosts'),
     ]),
 };
 
@@ -147,6 +150,9 @@ class ChatContainer extends FlattenedConfigElement {
    * @internal
    */
   hostRendersCustomPromptLine = false;
+
+  /** @internal */
+  hostRendersCustomRequestFooter = false;
 
   /**
    * Called once per mount, after the {@link ChatInstance} is ready and before the chat renders.
@@ -347,8 +353,10 @@ class ChatContainer extends FlattenedConfigElement {
       state.removeWindowListeners?.();
       // Settle the private waits so a boot paused on one resumes, finds it is
       // retired, and stops.
-      state.listenersReady.doResolve();
       state.initialViewCommitted.doResolve();
+      state.hosts?.disconnect();
+      state.viewState?.announcer.disconnect();
+      state.announcerRegion?.remove();
       state.viewState?.disconnect();
       this.viewStateProvider.setValue(undefined);
       state.mount?.unmount();
@@ -457,7 +465,6 @@ class ChatContainer extends FlattenedConfigElement {
     const state: MountState = {
       renderReady: false,
       initialViewReady: false,
-      listenersReady: resolvablePromise(),
       initialViewCommitted: resolvablePromise(),
     };
     // Recorded before mounting: a renderer can detach this element while it
@@ -492,6 +499,7 @@ class ChatContainer extends FlattenedConfigElement {
         { ChatAppEntry },
         { hasCustomPromptLine },
         { ChatViewState },
+        { ExtensionHosts },
       ] = await bootModuleLoader.loadBootModules();
       if (!isCurrent()) {
         return;
@@ -519,6 +527,15 @@ class ChatContainer extends FlattenedConfigElement {
       state.viewState = new ChatViewState(serviceManager, getWindowSize());
       state.viewState.connect();
       state.instance = instance;
+      state.hosts = new ExtensionHosts(
+        instance,
+        this,
+        serviceManager.store,
+        () =>
+          this.hostRendersCustomRequestFooter ||
+          Boolean(this.renderCustomRequestFooter)
+      );
+      state.hosts.connect();
       state.bootConfig = config;
       state.appliedConfig = createAppliedConfig(publicConfig, config);
       state.applyConfig = (nextConfig) =>
@@ -527,11 +544,6 @@ class ChatContainer extends FlattenedConfigElement {
       this.viewStateProvider.setValue(state.viewState);
 
       this.renderApp();
-      await state.listenersReady;
-      if (!isCurrent()) {
-        return;
-      }
-
       await this.runBeforeRender(instance);
       if (!isCurrent()) {
         return;
@@ -558,6 +570,7 @@ class ChatContainer extends FlattenedConfigElement {
       if (this.resolvedConfig !== state.bootConfig) {
         state.applyConfig(this.resolvedConfig);
       }
+      this.connectAnnouncer(state);
       this.renderApp();
 
       await performInitialViewChange(serviceManager);
@@ -591,9 +604,9 @@ class ChatContainer extends FlattenedConfigElement {
       serviceManager: state.serviceManager,
       viewState: state.viewState,
       instance: state.instance,
+      hosts: state.hosts,
       renderReady: state.renderReady,
       initialViewReady: state.initialViewReady,
-      onListenersReady: () => state.listenersReady.doResolve(),
       onInitialViewCommitted: () => state.initialViewCommitted.doResolve(),
       renderUserDefinedResponse: toReactUserDefinedResponse(
         this.renderUserDefinedResponse
@@ -610,13 +623,19 @@ class ChatContainer extends FlattenedConfigElement {
       renderCustomRequestFooter: toReactCustomRequestFooter(
         this.renderCustomRequestFooter
       ),
-      isCustomRequestFooterEnabled: () =>
-        Boolean(this.renderCustomRequestFooter),
       renderUserDefinedInputNode: toReactUserDefinedInputNode(
         this.renderUserDefinedInputNode
       ),
-      chatWrapper: this,
     });
+  }
+
+  private connectAnnouncer(state: MountState) {
+    const region = document.createElement('div');
+    region.className = 'cds-aichat--visually-hidden cds-aichat--aria-announcer';
+    // Outside the React target: a renderer can clear its subtree on unmount.
+    this.shadowRoot.appendChild(region);
+    state.announcerRegion = region;
+    state.viewState.announcer.connect(region);
   }
 
   /**
