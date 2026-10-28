@@ -1875,6 +1875,22 @@ interface ButtonItem<
    * is focused on the item.
    */
   alt_text?: string;
+
+  /**
+   * A Carbon icon object to render inside the button. Import an icon from `@carbon/icons` and
+   * pass it directly, e.g. `import ArrowRight from '@carbon/icons/es/arrow--right/16.js'`.
+   *
+   * Supported on all button types. Overrides the default icon for `url` (`Launch`) and
+   * the `image_url`-gated defaults for `post_back`, `custom_event`, and `show_panel`.
+   * The icon is placed on the trailing side of the button label.
+   *
+   * @example
+   * ```ts
+   * import ArrowRight from '@carbon/icons/es/arrow--right/16.js';
+   * { response_type: 'button', button_type: 'post_back', label: 'Next', icon: ArrowRight }
+   * ```
+   */
+  icon?: object;
 }
 
 /**
