@@ -10,6 +10,10 @@
 @use '@carbon/layout';
 @use '@carbon/styles/scss/type';
 
+cds-aichat-confirmation-body {
+  display: contents;
+}
+
 .cds-aichat--confirm-panel__content {
   padding: layout.$spacing-07;
 }

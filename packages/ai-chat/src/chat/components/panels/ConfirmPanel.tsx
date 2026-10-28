@@ -8,6 +8,7 @@
  */
 
 import React, { useRef } from 'react';
+import { createComponent } from '@lit/react';
 import ChatPanel from '@carbon/ai-chat-components/es/react/panel.js';
 import Button, { BUTTON_KIND } from '../carbon/Button';
 import { PanelHeader } from './PanelHeader';
@@ -15,6 +16,13 @@ import { focusOnFirstFocusableElement } from '../../utils/domUtils';
 import { useAriaAnnouncer } from '../../hooks/useAriaAnnouncer';
 import { useSelector } from '../../hooks/useSelector';
 import { AppState, ChatWidthBreakpoint } from '../../../types/state/AppState';
+import ConfirmationBody from './native/ConfirmationBody';
+
+const NativeConfirmationBody = createComponent({
+  tagName: 'cds-aichat-confirmation-body',
+  elementClass: ConfirmationBody,
+  react: React,
+});
 
 export interface ConfirmPanelButtonProps {
   onConfirm: () => void;
@@ -78,10 +86,11 @@ export function ConfirmPanel({
           onClickBack={onCancel}
         />
       </div>
-      <div slot="body" className="cds-aichat--confirm-panel__content">
-        <h2 className="cds-aichat--confirm-panel__title">{title}</h2>
-        <p className="cds-aichat--confirm-panel__message">{message}</p>
-      </div>
+      <NativeConfirmationBody
+        slot="body"
+        panelTitle={title}
+        message={message}
+      />
       <div
         slot="footer"
         ref={footerRef}

@@ -92,9 +92,12 @@ function ChatAppEntry({
 
   useEffect(() => {
     if (initialViewReady) {
-      onInitialViewCommittedRef.current();
+      return viewState.whenInitialReactCommitReady(() =>
+        onInitialViewCommittedRef.current()
+      );
     }
-  }, [initialViewReady]);
+    return undefined;
+  }, [initialViewReady, viewState]);
 
   // Stable signal of which writeable-element slots have content. A host that
   // passes live state typically rebuilds the `renderWriteableElements` map every
