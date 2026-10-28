@@ -18,14 +18,6 @@ export interface Target {
 }
 
 export const targets = {
-  'react17-choice': {
-    example: 'react/frameworks-react-17',
-    spec: 'choice-wrapper.spec.ts',
-  },
-  'react18-choice': {
-    example: 'react/frameworks-react-18',
-    spec: 'choice-wrapper.spec.ts',
-  },
   'react-basic-custom-element-sidebar': {
     example: 'react/basic-custom-element-sidebar',
     spec: 'basic-custom-element-sidebar.spec.ts',

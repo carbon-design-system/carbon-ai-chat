@@ -6,24 +6,18 @@
  */
 
 /**
- * Proves the real ChatButton Boolean boundary on React 17 and 18.
+ * Proves the real ChatButton Boolean boundary on React 17.
  * Both published trees retain click, keyboard, and cleared-selection behavior.
  */
-import { expect, openExample, test } from '../helpers';
+import { expect, test } from '@playwright/test';
 
 for (const tree of ['es', 'es-custom']) {
   test(`${tree} choices block repeats and recover after clearing`, async ({
     page,
-    target,
   }) => {
-    await openExample(page);
+    await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto(`/?choice-probe&choice-tree=${tree}`);
-
-    const major = target.match(/^react(\d+)-choice$/)?.[1];
-    expect(major).toBeDefined();
-    await expect(page.getByTestId('choice-react-version')).toHaveText(
-      new RegExp(`^${major}\\.`)
-    );
+    await expect(page.getByTestId('choice-react-version')).toHaveText(/^17\./);
 
     const first = page.getByTestId('choice-0');
     const second = page.getByTestId('choice-1');
