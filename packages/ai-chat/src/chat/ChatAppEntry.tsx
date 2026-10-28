@@ -7,12 +7,11 @@
  *  @license
  */
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { ChatContext } from './contexts/ChatContext';
-import { AriaAnnouncerRegion } from './components/aria/AriaAnnouncerRegion';
 import { ServiceManager } from './services/ServiceManager';
 import type { ChatViewState } from './services/chatViewState';
-import { ExtensionHosts } from './services/extensionHosts';
+import type { ExtensionHosts } from './services/extensionHosts';
 import { UserDefinedResponsePortalsContainer } from './components/portals/UserDefinedResponsePortalsContainer';
 import { CustomFooterPortalsContainer } from './components/portals/CustomFooterPortalsContainer';
 import { CustomRequestFooterPortalsContainer } from './components/portals/CustomRequestFooterPortalsContainer';
@@ -41,12 +40,11 @@ interface ChatAppEntryProps {
   serviceManager: ServiceManager;
   viewState: ChatViewState;
   instance: ChatInstance;
+  hosts: ExtensionHosts;
   /** False until `onBeforeRender` settles. Nothing renders before then. */
   renderReady: boolean;
   /** True once the store holds the chat's initial view. */
   initialViewReady: boolean;
-  /** Called once the slot trackers listen, before `onBeforeRender` runs. */
-  onListenersReady: () => void;
   /** Called after the commit that renders the initial view. */
   onInitialViewCommitted: () => void;
   renderUserDefinedResponse?: RenderUserDefinedResponse;
@@ -57,22 +55,11 @@ interface ChatAppEntryProps {
   removeEmptyUserDefinedResponseHost?: boolean;
   /** Removes empty custom-message-footer hosts for web-component callbacks. */
   removeEmptyCustomMessageFooterHost?: boolean;
-  /**
-   * Stable live check owned by the container: returns true when the host has
-   * set a `renderCustomRequestFooter` callback. ORed with the React prop, so a
-   * web-component property that reaches the element before the React commit
-   * still collects footers.
-   */
-  isCustomRequestFooterEnabled?: () => boolean;
   renderWriteableElements?: RenderWriteableElementResponse;
-  /** The page-level element whose light DOM holds portal hosts for extension content. */
-  chatWrapper?: HTMLElement;
 }
 
 /**
- * Renders a chat whose services `cds-aichat-container` has already started. It
- * collects extension slots from the instance, then renders the app shell once
- * the host's `onBeforeRender` has settled.
+ * Renders retained content and the shell after the container finishes before-render.
  *
  * Re-render boundary (important): the store-driven heavy tree (`AppShell` and
  * everything it renders) must never receive raw host render-props. Hosts that
@@ -88,9 +75,9 @@ function ChatAppEntry({
   serviceManager,
   viewState,
   instance,
+  hosts,
   renderReady,
   initialViewReady,
-  onListenersReady,
   onInitialViewCommitted,
   renderUserDefinedResponse,
   renderUserDefinedInputNode,
@@ -98,44 +85,10 @@ function ChatAppEntry({
   renderCustomRequestFooter,
   removeEmptyUserDefinedResponseHost,
   removeEmptyCustomMessageFooterHost,
-  isCustomRequestFooterEnabled,
   renderWriteableElements,
-  chatWrapper,
 }: ChatAppEntryProps) {
-  // Request footers arrive before the render gate opens, as for history
-  // inserted in onBeforeRender, while the adapter cannot report yet. The
-  // service asks on each event, so a prop that arrives later still counts.
-  const renderCustomRequestFooterRef = useRef(renderCustomRequestFooter);
-  renderCustomRequestFooterRef.current = renderCustomRequestFooter;
-  const isCustomRequestFooterEnabledRef = useRef(isCustomRequestFooterEnabled);
-  isCustomRequestFooterEnabledRef.current = isCustomRequestFooterEnabled;
-
-  // One per mount: the React wrapper keys this entry by mount, so the chat
-  // wrapper never changes for it.
-  const [hosts] = useState(
-    () =>
-      new ExtensionHosts(
-        instance,
-        chatWrapper,
-        serviceManager.store,
-        () =>
-          Boolean(renderCustomRequestFooterRef.current) ||
-          Boolean(isCustomRequestFooterEnabledRef.current?.())
-      )
-  );
-
-  const onListenersReadyRef = useRef(onListenersReady);
-  onListenersReadyRef.current = onListenersReady;
   const onInitialViewCommittedRef = useRef(onInitialViewCommitted);
   onInitialViewCommittedRef.current = onInitialViewCommitted;
-
-  // Connects before the host's onBeforeRender runs, so content that callback
-  // emits is already collected when the shell first renders.
-  useEffect(() => {
-    hosts.connect();
-    onListenersReadyRef.current();
-    return () => hosts.disconnect();
-  }, [hosts]);
 
   useEffect(() => {
     if (initialViewReady) {
@@ -222,8 +175,6 @@ function ChatAppEntry({
           hosts={hosts}
         />
       )}
-
-      <AriaAnnouncerRegion announcer={viewState.announcer} />
     </ChatContext.Provider>
   );
 }
