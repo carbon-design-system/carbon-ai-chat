@@ -44,7 +44,11 @@ import {
   MessageSendSource,
 } from '../../../src/types/events/eventBusTypes';
 import actions from '../../../src/chat/store/actions';
-import type { StructuredData } from '../../../src/types/messaging/Messages';
+import {
+  MessageResponseTypes,
+  type MessageRequest,
+  type StructuredData,
+} from '../../../src/types/messaging/Messages';
 import { MessageErrorState } from '../../../src/types/messaging/LocalMessageItem';
 import type { ServiceDesk } from '../../../src/types/config/ServiceDeskConfig';
 import type { JSONContent } from '@tiptap/core';
@@ -565,6 +569,103 @@ describe('human-agent send path — display_content and structured_data', () => 
       });
     }
   );
+
+  it.each(['service desk', 'send event'])(
+    'preserves a replacement when the old %s callback settles',
+    async (stage) => {
+      const { instance, store, impl, sendMessageToAgent } =
+        await setupHumanAgentChat();
+      const started = resolvablePromise();
+      const pending = resolvablePromise();
+      let messageID: string;
+      const waitForReplacement = async (message: MessageRequest) => {
+        messageID = message.id;
+        started.doResolve();
+        await pending;
+        message.input.structured_data = { user_defined: { stale: true } };
+      };
+      if (stage === 'service desk') {
+        sendMessageToAgent.mockImplementation(waitForReplacement);
+      } else {
+        instance.on({
+          type: BusEventType.HUMAN_AGENT_SEND,
+          handler: (event: any) => waitForReplacement(event.data),
+        });
+      }
+      const sending = impl.sendMessageToAgent('old request', [], undefined);
+      await started;
+      await act(async () => {
+        await instance.messaging.removeMessages([messageID]);
+        await instance.messaging.addMessage({
+          id: messageID,
+          output: {
+            generic: [
+              { response_type: MessageResponseTypes.TEXT, text: 'replacement' },
+            ],
+          },
+        });
+      });
+      const replacement = store.getState().allMessagesByID[messageID];
+      await act(async () => {
+        pending.doResolve();
+        await sending;
+      });
+      expect(store.getState().allMessagesByID[messageID]).toBe(replacement);
+      expect(instance.state.get().messages).toEqual([
+        expect.objectContaining({
+          id: messageID,
+          output: {
+            generic: [expect.objectContaining({ text: 'replacement' })],
+          },
+        }),
+      ]);
+      expect(instance.state.get().status).toBe('ready');
+    }
+  );
+
+  it('keeps timeout warnings and failures off a replacement message', async () => {
+    const { instance, store, impl, sendMessageToAgent } =
+      await setupHumanAgentChat();
+    const timer = jest.spyOn(globalThis, 'setTimeout');
+    const started = resolvablePromise();
+    const pending = resolvablePromise();
+    let messageID: string;
+    sendMessageToAgent.mockImplementation(async (message) => {
+      messageID = message.id;
+      started.doResolve();
+      await pending;
+    });
+    const sending = impl.sendMessageToAgent('old request', [], undefined);
+    await started;
+    await act(async () => {
+      await instance.messaging.removeMessages([messageID]);
+      await instance.messaging.addMessage({
+        id: messageID,
+        output: {
+          generic: [
+            { response_type: MessageResponseTypes.TEXT, text: 'replacement' },
+          ],
+        },
+      });
+    });
+    const replacement = store.getState().allMessagesByID[messageID];
+    act(() => {
+      for (const delay of [3000, 20000]) {
+        const timeout = timer.mock.calls.find(([, value]) => value === delay);
+        expect(timeout).toBeDefined();
+        (timeout[0] as () => void)();
+        expect(store.getState().allMessagesByID[messageID]).toBe(replacement);
+      }
+    });
+    expect(instance.state.get().status).toBe('error');
+    await act(async () => {
+      pending.doResolve();
+      await sending;
+    });
+    timer.mockRestore();
+    expect(store.getState().allMessagesByID[messageID]).toBe(replacement);
+    expect(instance.state.get().status).toBe('ready');
+  });
 
   it.each([false, true])(
     'clears only its own timeout after late agent success (newer failure: %s)',
