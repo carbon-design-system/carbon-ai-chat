@@ -19,6 +19,7 @@ import type { MarkdownPluginHostMountDetail, MarkdownPluginHostUpdateDetail, Mar
 import type { PromptFocusEventDetail, PromptKeydownEventDetail, PromptLineEventDetailMap, CustomListRenderEventDetail, InputChangeEventDetail, TypingEventDetail, TriggerChangeEventDetail, LightDomPortalEventDetail } from '${root}/components/aichat-prompt-line/index.js';
 import type { Action as CardAction } from '${root}/components/aichat-card/index.js';
 import type { CarouselResponse } from '${root}/components/aichat-carousel/index.js';
+import type { MessagesShellScrollDetail } from '${root}/components/aichat-messages-shell/index.js';
 
 export type PublishedEventDetails = [
   AudioPlayerErrorEventDetail, TranscriptToggleEventDetail,
@@ -34,7 +35,12 @@ export type PublishedEventDetails = [
   PromptKeydownEventDetail, CustomListRenderEventDetail,
   InputChangeEventDetail, TypingEventDetail, TriggerChangeEventDetail,
   LightDomPortalEventDetail, CardAction, CarouselResponse,
+  MessagesShellScrollDetail,
 ];
+
+export const messagesScroll: MessagesShellScrollDetail = {
+  scrollTop: 0, scrollHeight: 0, clientHeight: 0, isScrollable: false, isAtBottom: true,
+};
 
 export const pluginMount: MarkdownPluginHostMountDetail = {
   kind: 'pluginFallback', slotName: 'plugin', html: '<p>Plugin</p>', isInline: false,
