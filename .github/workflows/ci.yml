@@ -77,7 +77,7 @@ jobs:
           # launchers in web-test-runner.config.js) when the CI strategy is reworked.
           - suite: components
             browsers: chromium
-            run: npm run test --workspace=@carbon/ai-chat-components && npm run test:host-entry-consumer
+            run: npm run test --workspace=@carbon/ai-chat-components && npm run test:host-entry-consumer && npm run test:manifest-consumer
           # 👇 TEMPORARILY DISABLED: demo and example app tests (Playwright install/runtime
           # failures and 10+ minute runs). Re-enable once the CI strategy for them is reworked.
           # - suite: demo

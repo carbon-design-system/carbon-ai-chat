@@ -64,7 +64,7 @@ The tool reads tags from decorators and props from Lit. It hides internal member
 
 The root `test:manifest-consumer` packs the built package. It checks that the discovery field and JSON export find the same file. It checks shipped local paths, exports, and type references. It imports each listed tagged class alone in a fresh browser context for both `es` and `es-custom`. It checks some toolbar and truncated-text props against the built classes.
 
-Root `npm test` and `npm run ci-check` run this packed check. The current GitHub split test matrix does not. Run `npm run test:manifest-consumer` from the root for manifest changes.
+Root `npm test`, `npm run ci-check`, and the GitHub components test job run this packed check. Run `npm run test:manifest-consumer` from the root after a fresh build for manifest changes.
 
 The check does not cover all props, events, slots, or style hooks. Broader guards belong to [#2287](https://github.com/carbon-design-system/carbon-ai-chat/issues/2287). Checks of external type symbols and styles remain with [#2551](https://github.com/carbon-design-system/carbon-ai-chat/issues/2551).
 
