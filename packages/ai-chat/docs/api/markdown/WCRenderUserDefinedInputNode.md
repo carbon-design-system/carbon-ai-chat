@@ -10,7 +10,7 @@
 
 - Kind: TypeAlias
 - Category: Web component
-- Reference: https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/types/Type_reference.WCRenderUserDefinedInputNode.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/types/Type_reference.WCRenderUserDefinedInputNode.html
 
 Web-component renderer for `mention` chips, `command` chips, and custom
 TipTap nodes in user message bubbles. Mirrors
