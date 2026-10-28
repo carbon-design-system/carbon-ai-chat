@@ -120,6 +120,46 @@ async function assertTypePaths(consumer, name, program, fixture, options) {
   await assertLocalDeclarations(consumer, name, program, options);
 }
 
+function assertRootExportParity(name, program, fixture, options) {
+  const checker = program.getTypeChecker();
+  const exportsOf = (specifier) => {
+    const resolved = ts.resolveModuleName(
+      specifier,
+      fixture,
+      options,
+      ts.sys
+    ).resolvedModule;
+    assert.ok(resolved, `${name}: unresolved ${specifier}.`);
+    const source = program.getSourceFile(resolved.resolvedFileName);
+    assert.ok(source, `${name}: ${specifier} is not in the program.`);
+    return new Map(
+      checker
+        .getExportsOfModule(checker.getSymbolAtLocation(source))
+        .map((symbol) => [
+          symbol.name,
+          symbol.flags & ts.SymbolFlags.Alias
+            ? checker.getAliasedSymbol(symbol)
+            : symbol,
+        ])
+    );
+  };
+  const root = exportsOf('@carbon/ai-chat');
+  assert.ok(root.size > 0, `${name}: the root entry exports nothing.`);
+  for (const host of ['cds-aichat-container', 'cds-aichat-custom-element']) {
+    const exported = exportsOf(
+      `@carbon/ai-chat/dist/es/web-components/${host}/index.js`
+    );
+    for (const [exportName, symbol] of root) {
+      // Main resolved these paths to the root types, so each name must stay.
+      // Compare identity only: inspecting a checker symbol walks the whole program.
+      assert.ok(
+        exported.get(exportName) === symbol,
+        `${name}: ${host} must re-export the root ${exportName}.`
+      );
+    }
+  }
+}
+
 async function compileTypes(consumer, name, module, moduleResolution) {
   const fixture = join(consumer, 'resolution.ts');
   const options = {
@@ -146,6 +186,7 @@ async function compileTypes(consumer, name, module, moduleResolution) {
     `${name}: packed host type errors:\n${formatted}`
   );
   await assertTypePaths(consumer, name, program, fixture, options);
+  assertRootExportParity(name, program, fixture, options);
   console.log(
     `${name}: packed host constructors, config fields, negative types, and root React exports passed.`
   );
