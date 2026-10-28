@@ -18,6 +18,7 @@ import './components/feedback/index.js';
 import './components/file-uploads/index.js';
 import './components/launcher/index.js';
 import './components/markdown/index.js';
+import './components/messages-shell/index.js';
 import './components/processing/index.js';
 import './components/prompt-line/autocomplete/index.js';
 import './components/prompt-line/index.js';
@@ -63,6 +64,7 @@ export { default as FileUploadItemElement } from './components/file-uploads/src/
 export { default as FileUploadsElement } from './components/file-uploads/src/file-uploads.js';
 export { default as CDSAIChatLauncher } from './components/launcher/src/launcher.js';
 export { default as CDSAIChatMarkdown } from './components/markdown/src/markdown.js';
+export { default as CDSAIChatMessagesShell } from './components/messages-shell/src/messages-shell.js';
 export { default as CDSAIChatProcessing } from './components/processing/src/processing.js';
 export { default as AutocompleteElement } from './components/prompt-line/autocomplete/src/autocomplete.js';
 export { default as AutocompleteControllerElement } from './components/prompt-line/src/autocomplete-controller-element.js';

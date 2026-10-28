@@ -26,13 +26,13 @@ function componentClasses(manifest) {
   );
   assert.equal(
     components.length,
-    54,
-    'The packed CEM must describe all 54 aggregate classes.'
+    55,
+    'The packed CEM must describe all 55 aggregate classes.'
   );
   assert.equal(
     new Set(components.map((component) => component.group)).size,
-    22,
-    'The aggregate must cover all 22 component groups.'
+    23,
+    'The aggregate must cover all 23 component groups.'
   );
   assert.equal(
     new Set(components.map((component) => component.name)).size,
