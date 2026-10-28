@@ -21,6 +21,7 @@ import {
   HumanAgentMessageType,
   MessageResponse,
   MessageResponseTypes,
+  type ResponseUserProfile,
 } from '../../../src/types/messaging/Messages';
 import { createMessageResponseForItem } from '../../../src/chat/utils/messageUtils';
 import { outputItemToLocalItem } from '../../../src/chat/schema/outputItemToLocalItem';
@@ -30,6 +31,7 @@ async function createAgentFixture(fire: (event: any) => Promise<void>) {
   const manager = {
     store,
     fire,
+    intl: { formatMessage: () => 'agent status' },
     actions: {
       handleUserDefinedResponseItems: jest.fn().mockResolvedValue(undefined),
     },
@@ -80,6 +82,167 @@ describe('human-agent ownership compatibility', () => {
       Object.values(store.getState().allMessageItemsByID)[0].item
     ).toMatchObject({ text: 'post edit' });
   });
+
+  it.each([
+    ['agentJoined', false],
+    ['agentJoined', true],
+    ['beginTransferToAnotherAgent', false],
+    ['beginTransferToAnotherAgent', true],
+  ])(
+    'owns the %s profile before status callbacks (read early: %s)',
+    async (method: string, readEarly: boolean) => {
+      const cache = new PublicStateSnapshotCache();
+      let captured: ReturnType<PublicStateSnapshotCache['createSnapshot']>;
+      let statusMessage: MessageResponse;
+      const profile = { id: 'dana', nickname: 'Dana' };
+      const { store, callback } = await createAgentFixture(async (event) => {
+        if (event.type === BusEventType.HUMAN_AGENT_PRE_RECEIVE) {
+          captured = cache.createSnapshot(store.getState());
+          if (readEarly) {
+            expect(captured.humanAgent.responseUserProfile.nickname).toBe(
+              'Dana'
+            );
+          }
+          statusMessage = event.data;
+          event.data.message_options.response_user_profile.nickname =
+            'Message name';
+        }
+      });
+      await callback[method](profile);
+      expect(captured.humanAgent.responseUserProfile.nickname).toBe('Dana');
+      expect(
+        store.getState().persistedToBrowserStorage.humanAgentState
+          .responseUserProfile.nickname
+      ).toBe('Dana');
+      profile.nickname = 'Later caller edit';
+      expect(cache.createSnapshot(store.getState()).humanAgent).toMatchObject({
+        responseUserProfile: { id: 'dana', nickname: 'Dana' },
+        responseUserProfiles: { dana: { id: 'dana', nickname: 'Dana' } },
+      });
+      expect(store.getState().allMessagesByID[statusMessage.id]).toMatchObject({
+        message_options: {
+          response_user_profile: { id: 'dana', nickname: 'Message name' },
+        },
+      });
+    }
+  );
+
+  it.each([false, true])(
+    'keeps the stored profile separate from fallback status messages (read early: %s)',
+    async (readEarly) => {
+      const cache = new PublicStateSnapshotCache();
+      let captured: ReturnType<PublicStateSnapshotCache['createSnapshot']>;
+      let departing = false;
+      let messageID: string;
+      const { store, callback } = await createAgentFixture(async (event) => {
+        if (departing && event.type === BusEventType.HUMAN_AGENT_PRE_RECEIVE) {
+          messageID = event.data.id;
+          captured = cache.createSnapshot(store.getState());
+          if (readEarly) {
+            expect(captured.humanAgent.responseUserProfile.nickname).toBe(
+              'Dana'
+            );
+          }
+          event.data.message_options.response_user_profile.nickname =
+            'Left name';
+        }
+      });
+      await callback.agentJoined({ id: 'dana', nickname: 'Dana' });
+      departing = true;
+      await callback.agentLeftChat();
+      expect(captured.humanAgent.responseUserProfile.nickname).toBe('Dana');
+      expect(
+        cache.createSnapshot(store.getState()).humanAgent.responseUserProfiles
+          .dana.nickname
+      ).toBe('Dana');
+      expect(
+        cache
+          .createSnapshot(store.getState())
+          .messages.find((message) => message.id === messageID)
+      ).toMatchObject({
+        message_options: {
+          response_user_profile: { id: 'dana', nickname: 'Left name' },
+        },
+      });
+    }
+  );
+
+  it.each([
+    [undefined, false],
+    [undefined, true],
+    ['dana', false],
+    ['dana', true],
+  ])(
+    'keeps writable incoming profiles separate from state (agent ID: %s, read early: %s)',
+    async (agentID: string | undefined, readEarly: boolean) => {
+      const cache = new PublicStateSnapshotCache();
+      let captured: ReturnType<PublicStateSnapshotCache['createSnapshot']>;
+      let beforePost: ReturnType<PublicStateSnapshotCache['createSnapshot']>;
+      let eventProfile: ResponseUserProfile;
+      let receiving = false;
+      let messageID: string;
+      const { store, callback } = await createAgentFixture(async (event) => {
+        if (!receiving) {
+          return;
+        }
+        if (event.type === BusEventType.HUMAN_AGENT_PRE_RECEIVE) {
+          messageID = event.data.id;
+          captured = cache.createSnapshot(store.getState());
+          if (readEarly) {
+            expect(captured.humanAgent.responseUserProfile.nickname).toBe(
+              'Dana'
+            );
+          }
+          eventProfile = event.responseUserProfile;
+          eventProfile.nickname = 'Pre name';
+        } else if (event.type === BusEventType.HUMAN_AGENT_RECEIVE) {
+          beforePost = cache.createSnapshot(store.getState());
+          if (readEarly) {
+            expect(
+              beforePost.messages.find((message) => message.id === messageID)
+            ).toMatchObject({
+              message_options: {
+                response_user_profile: { nickname: 'Pre name' },
+              },
+            });
+          }
+          expect(event.responseUserProfile).toBe(eventProfile);
+          expect(event.data.message_options.response_user_profile).toBe(
+            eventProfile
+          );
+          eventProfile.nickname = 'Post name';
+        }
+      });
+      await callback.agentJoined({ id: 'dana', nickname: 'Dana' });
+      receiving = true;
+      await callback.sendMessageToUser('hello', agentID);
+      expect(captured.humanAgent.responseUserProfile.nickname).toBe('Dana');
+      expect(cache.createSnapshot(store.getState()).humanAgent).toMatchObject({
+        responseUserProfile: { id: 'dana', nickname: 'Dana' },
+        responseUserProfiles: { dana: { id: 'dana', nickname: 'Dana' } },
+      });
+      expect(
+        beforePost.messages.find((message) => message.id === messageID)
+      ).toMatchObject({
+        message_options: { response_user_profile: { nickname: 'Pre name' } },
+      });
+      expect(
+        cache
+          .createSnapshot(store.getState())
+          .messages.find((message) => message.id === messageID)
+      ).toMatchObject({
+        message_options: { response_user_profile: { nickname: 'Post name' } },
+      });
+      eventProfile.nickname = 'Retained edit';
+      expect(
+        cache
+          .createSnapshot(store.getState())
+          .messages.find((message) => message.id === messageID)
+      ).toMatchObject({
+        message_options: { response_user_profile: { nickname: 'Post name' } },
+      });
+    }
+  );
 
   it('freezes the same status message after pre-receive edits and before post-receive', async () => {
     let before: any;

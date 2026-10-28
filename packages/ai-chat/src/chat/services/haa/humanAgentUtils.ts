@@ -72,7 +72,8 @@ async function createHumanAgentLocalMessage(
 
   if (responseUserProfile) {
     originalMessage.message_options = originalMessage.message_options || {};
-    originalMessage.message_options.response_user_profile = responseUserProfile;
+    originalMessage.message_options.response_user_profile =
+      cloneDeep(responseUserProfile);
   }
 
   if (fireEvents) {

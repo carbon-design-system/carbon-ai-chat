@@ -1136,7 +1136,7 @@ class ServiceDeskCallbackImpl<
     this.service.cancelHumanAgentJoinedTimer();
 
     // Update the store with the current agent's profile information.
-    this.serviceManager.store.dispatch(setHumanAgentJoined(profile));
+    this.serviceManager.store.dispatch(setHumanAgentJoined(cloneDeep(profile)));
 
     // Then generate a message we can display in the UI to indicate that the agent has joined.
     await this.service.addHumanAgentLocalMessage(HUMAN_AGENT_JOINED, profile);
@@ -1228,6 +1228,8 @@ class ServiceDeskCallbackImpl<
       }
     }
 
+    responseUserProfile = cloneDeep(responseUserProfile);
+
     // Fire the pre:receive event that will allow code to customize the message.
     await serviceManager.fire({
       type: BusEventType.HUMAN_AGENT_PRE_RECEIVE,
@@ -1290,7 +1292,9 @@ class ServiceDeskCallbackImpl<
 
     if (profile) {
       // Update the store with the current agent's profile information.
-      this.serviceManager.store.dispatch(setHumanAgentJoined(profile));
+      this.serviceManager.store.dispatch(
+        setHumanAgentJoined(cloneDeep(profile))
+      );
     }
 
     await this.service.addHumanAgentLocalMessage(
