@@ -50,6 +50,7 @@ export default {
   plugins: [
     carbonElementTagPlugin({ prefix: readPrefixSetting() }),
     internalMembersPlugin(),
+    // Keep last: it replaces the module list that earlier plugins look up by source path.
     createFlattenedConfigPlugin({
       tablePath,
       publicConfigPath,
