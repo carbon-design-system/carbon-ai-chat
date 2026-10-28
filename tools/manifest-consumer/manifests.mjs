@@ -87,7 +87,7 @@ function collectLocalReference(
   declarationName,
   state
 ) {
-  const owner = `${containingModule}#${declarationName}`;
+  const owner = declarationName && `${containingModule}#${declarationName}`;
   if (globalSuperclass(value, key, owner, state.globals)) {
     return;
   }

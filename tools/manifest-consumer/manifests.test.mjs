@@ -133,6 +133,30 @@ test('packed manifest rejects parameter-shadowed Error and unresolved local base
   }
 });
 
+test('packed manifest rejects Error shadowed by module-scope hoisted and destructured bindings', async () => {
+  // Only module-scope bindings can shadow a top-level class's base.
+  for (const source of [
+    'if (true) { var Error = class {}; } export class Example extends Error {}',
+    'for (var Error of [class {}]) {} export class Example extends Error {}',
+    'const { a: Error } = { a: class {} }; export class Example extends Error {}',
+    'const [Error] = [class {}]; export class Example extends Error {}',
+  ]) {
+    await withManifest(source, { name: 'Error' }, async (read) => {
+      await assert.rejects(read, /Unpublished symbol: .*#Error/, source);
+    });
+  }
+});
+
+test('packed manifest accepts global Error beside a sibling block binding', async () => {
+  await withManifest(
+    '{ let Error = 1; } export class Example extends Error {}',
+    { name: 'Error' },
+    async (read) => {
+      await read();
+    }
+  );
+});
+
 test('packed manifest keeps explicit module and type references strict', async () => {
   const additions = {
     modules: [moduleWithClass('es/base.js', 'Other')],
