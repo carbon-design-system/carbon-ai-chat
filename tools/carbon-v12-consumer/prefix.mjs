@@ -777,7 +777,7 @@ export async function preparePrefixProofs({
 }) {
   await assertMinimalInstallation(consumer);
   const chain = await installedChain(consumer);
-  assert.equal(chain.versions['@carbon/web-components'], '3.0.0-alpha.3');
+  assert.equal(chain.versions['@carbon/web-components'], '3.0.0-alpha.5');
   await currentProvenance({ consumer, repository, chain });
   const receipts = await transformCurrent({ consumer, runNpm, chain });
   const labels = await buildProofBundle({
