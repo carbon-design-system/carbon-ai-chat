@@ -532,8 +532,10 @@ export function carbonElementTagPlugin({ prefix }) {
       const decorator = (ts.getDecorators(node) ?? []).find(
         (entry) =>
           ts.isCallExpression(entry.expression) &&
-          ts.isIdentifier(entry.expression.expression) &&
-          info.decorators.has(entry.expression.expression.text)
+          (ts.isIdentifier(entry.expression.expression)
+            ? info.decorators.has(entry.expression.expression.text)
+            : ts.isPropertyAccessExpression(entry.expression.expression) &&
+              entry.expression.expression.name.text === 'carbonElement')
       );
       const staticIs = node.members.find(
         (member) =>
@@ -676,6 +678,9 @@ function rewriteLocalModuleReferences(value, rewrite) {
   }
   if (typeof value.module === 'string' && !value.package) {
     value.module = rewrite(value.module);
+  } else if (typeof value.package === 'string' && !value.module) {
+    // Superclass, mixin, and re-export references can keep the full specifier.
+    Object.assign(value, packageReference(value.name, value.package));
   }
   Object.values(value).forEach((child) =>
     rewriteLocalModuleReferences(child, rewrite)
@@ -723,16 +728,21 @@ function referencedModulePath(reference, owner) {
     : target;
 }
 
-function externalImport(imported) {
-  const segments = imported.module.split('/');
+// Splits a bare specifier into the schema's package name and its subpath.
+function packageReference(name, specifier) {
+  const segments = specifier.split('/');
   const packageName = segments
-    .splice(0, imported.module.startsWith('@') ? 2 : 1)
+    .splice(0, specifier.startsWith('@') ? 2 : 1)
     .join('/');
   return {
-    name: imported.name,
+    name,
     package: packageName,
     ...(segments.length ? { module: segments.join('/') } : {}),
   };
+}
+
+function externalImport(imported) {
+  return packageReference(imported.name, imported.module);
 }
 
 function importedDeclaration(context, imported, owner) {
