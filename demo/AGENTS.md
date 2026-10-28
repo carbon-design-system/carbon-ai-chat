@@ -8,26 +8,12 @@ Guidance for authoring inside [demo/](.). Read this before changing the demo.
 
 ## Layout
 
-```
-demo/
-  src/
-    main.ts                     # entry — reads query params, mounts Lit root
-    framework/                  # sidebar + config plumbing
-      demo-*-switcher.ts        # one file per toggle (theme, layout, history, ...)
-      config-manager.ts,
-      react-app-manager.ts,
-      set-chat-config-manager.ts
-    customSendMessage/          # mock backend — one do*.ts per response type
-    react/                      # React-based extension examples mounted by the demo
-    web-components/             # Lit-based extension examples mounted by the demo
-    mockServiceDesk/            # fake human-agent service desk
-    fixtures/                   # canned messages used by the mock backend
-    types/
-  tests/                        # Playwright specs + node polyfills
-  playwright.config.ts
-  vite.config.ts
-  TEST_PLAN.md                  # manual QA checklist
-```
+- `src/framework/` — config switchers and state plumbing.
+- `src/customSendMessage/` — mock backend responses.
+- `src/mockServiceDesk/` — fake human-agent service desk.
+- `src/fixtures/` — canned messages for the mock backend.
+- `src/host-compatibility/` — host compatibility harness.
+- `tests/` — Playwright specs and node polyfills.
 
 ## Authoring rules
 
@@ -37,7 +23,7 @@ demo/
 - **Slots / custom footer / user-defined responses**: follow the existing `*WriteableElementExample` and `UserDefinedResponseExample` patterns and mirror them across both directories.
 - **Service desk changes**: the mock service desk in `mockServiceDesk/` is the reference implementation of the service-desk interface. Keep it updated when the interface in `@carbon/ai-chat` changes — tests here often catch breaking changes first.
 - **Playwright tests**: put new specs under `tests/`. `node-polyfill.js` is required via `NODE_OPTIONS`; use `npm test`, not `playwright test` directly. Don't reach for `--experimental-loader` here — an off-thread loader and Playwright's own sync `module.registerHooks` transform can't coexist, and the pair fails while loading the CJS entry point. When behavior changes, update [TEST_PLAN.md](TEST_PLAN.md) alongside the automated test.
-- **Carbon flavor is per-directory here**, unlike the two primary packages: `src/react/` uses `@carbon/react`, `src/web-components/` uses `@carbon/web-components`. Match the directory you're in — a React counterpart is the one place in this repo where JSX + `@carbon/react` is the correct answer. See [code-patterns.md](../references/code-patterns.md#carbon-flavor-by-area), which also overrides the `carbon-builder` skill's React default.
+- **Carbon flavor**: match the directory using [code-patterns.md](../references/code-patterns.md#carbon-flavor-by-area).
 - **Dependencies**: as a `"private": true` app, depend freely on `@carbon/react`, `@carbon/web-components`, etc. — but don't import demo-only helpers from `@carbon/ai-chat` source.
 - **Copy on screen**: the demo is a harness, not a shipped surface, so it has no copy type of its own. Voice still binds ([tone.md](../references/tone.md)), and anything a person reads follows [ui-strings.md](../.bob/skills/caic-copy-writer/references/ui-strings.md) — type 6 — minus the public-API gate that applies inside the package.
 
@@ -51,7 +37,7 @@ For guidance-only edits, use the [guidance gate](../references/definition-of-don
 
 ## Build, run, test
 
-See root [AGENTS.md](../AGENTS.md) for monorepo setup. The demo consumes the **built** artifacts of `@carbon/ai-chat` and `@carbon/ai-chat-components`, so for the dev server (`npm start`) the watcher (`npm run aiChat:start`) must be running in another terminal or Vite will resolve stale `dist/es/`. `vite.config.ts` lists those packages under `optimizeDeps.exclude` so a package rebuild reaches the browser without a manual optimizer purge.
+See root [AGENTS.md](../AGENTS.md) for monorepo setup. The demo consumes the **built** artifacts of `@carbon/ai-chat` and `@carbon/ai-chat-components`, so use the [build preflight](../references/commands.md#build-preflight). `vite.config.ts` lists those packages under `optimizeDeps.exclude` so a package rebuild reaches the browser without a manual optimizer purge.
 
 Local shortcuts from this directory:
 
@@ -70,6 +56,6 @@ npm test -- -g "pattern"
 npm test -- --ui
 ```
 
-These commands preserve the script's `NODE_OPTIONS` preload. Playwright can start a production build and preview server; coordinate that build under the [root rule](../AGENTS.md#always-on-rules).
+These commands preserve the script's `NODE_OPTIONS` preload.
 
-That build covers the demo only. It bundles whatever `@carbon/ai-chat` and `@carbon/ai-chat-components` output is on disk, so run the [build preflight](../references/commands.md#build-preflight) first. When `CI` is unset, Playwright reuses any server already on port 3001 and skips its own build and preview. The suite expects the production preview. If a server answers on port 3001, such as the `aiChat:start` dev server, do not run the suite against it. Ask the user to stop that server, build the packages after asking, then run the suite.
+When `CI` is unset, Playwright reuses any server already on port 3001 and skips its own build and preview. The suite expects the production preview. If a server answers on port 3001, such as the `aiChat:start` dev server, do not run the suite against it. Ask the user to stop that server, build the packages after asking, then run the suite.

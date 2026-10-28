@@ -13,6 +13,7 @@ import {
 } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
 import type { Editor, JSONContent } from '@tiptap/core';
 import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
+import cloneDeep from 'lodash-es/cloneDeep.js';
 
 import actions from '../store/actions';
 import {
@@ -164,7 +165,7 @@ class InputActionsService {
 
     let next: JSONContent;
     try {
-      next = updater(previous);
+      next = cloneDeep(updater(cloneDeep(previous)));
     } catch (error) {
       consoleError('An error occurred while updating the input content', error);
       return;
@@ -227,11 +228,11 @@ class InputActionsService {
     const { store } = this.serviceManager;
     const state = store.getState();
     const inputState = selectInputState(state);
-    const previousValue = inputState.manualStructuredData;
+    const previousValue = cloneDeep(inputState.manualStructuredData);
 
     let nextValue: StructuredData | undefined;
     try {
-      nextValue = updater(previousValue);
+      nextValue = cloneDeep(updater(previousValue));
     } catch (error) {
       consoleError(
         'An error occurred while updating the structured data',
@@ -281,9 +282,8 @@ class InputActionsService {
     );
 
     try {
-      const contributedData = await uploadConfig.onFileUpload(
-        file,
-        controller.signal
+      const contributedData = cloneDeep(
+        await uploadConfig.onFileUpload(file, controller.signal)
       );
       if (!controller.signal.aborted) {
         store.dispatch(

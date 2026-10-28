@@ -867,8 +867,7 @@ Lit web-component integration of `@carbon/ai-chat` demonstrating how to replace 
 | `cds-aichat-container` | `@carbon/ai-chat` element | Mounts the chat UI as a custom element. |
 | `PublicConfig` | `@carbon/ai-chat` type | Types the messaging config passed to the element. |
 | `ChatInstance` | `@carbon/ai-chat` type | Typed reference captured in `onBeforeRender`. |
-| `BusEventType` | `@carbon/ai-chat` enum | Subscribes to `STATE_CHANGE` and `FEEDBACK`. |
-| `FeedbackInteractionType` | `@carbon/ai-chat` enum | Detects `SUBMITTED` feedback interactions. |
+| `BusEventType` | `@carbon/ai-chat` enum | Subscribes to `STATE_CHANGE`. |
 | `messaging.customSendMessage` | element property | Mock backend that echoes user input. |
 | `onBeforeRender` | element property | Captures the `ChatInstance` and attaches event listeners. |
 | `renderUserDefinedResponse` | element property | Renders custom response content for user-defined response types. |
@@ -956,7 +955,7 @@ Each reasoning step's `content` is a `GenericItem[]` — a `TextItem` whose `tex
 
 ### [Upsert message user defined](./upsert-message-user-defined/README.md)
 
-Progressively updates a `user_defined` steps-card widget inside a single assistant message using `ChatInstance.messaging.upsertMessage`, and pops a Carbon toast (with a "View message" action wired to `instance.scrollToMessage`) when the run completes.
+Updates one `user_defined` steps card with `ChatInstance.messaging.upsertMessage`. You can stop a run and start again. When a run finishes, a Carbon toast links to its message with `instance.scrollToMessage`.
 
 **Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-upsert-message-user-defined`
 
@@ -965,19 +964,20 @@ Progressively updates a `user_defined` steps-card widget inside a single assista
 
 | Symbol | Kind | Role in this example |
 | --- | --- | --- |
-| `<cds-aichat-custom-element>` | custom element | Mounts the chat into a host element you style. |
-| `.messaging` / `.layout` / `.openChatByDefault` | properties | Top-level `PublicConfig` fields applied to the custom element. |
-| `.onBeforeRender` | property (callback) | Captures the `ChatInstance` for the toast action. |
-| `.renderUserDefinedResponse` | property (callback) | Returns the steps-card `HTMLElement` on every upsert; same ref ⇒ in-place update. |
-| `messaging.customSendMessage` | config prop | Mock back end: branches on the post-back trigger string and runs the long task. |
-| `messaging.upsertMessage` | `ChatInstance` method | Inserts and progressively updates the steps-card message. |
-| `MessageState.COMPLETE` | `@carbon/ai-chat` enum | Marks the message complete on the very first upsert so input stays usable. |
-| `MessageResponseTypes.BUTTON` / `ButtonItemType.POST_BACK` | `@carbon/ai-chat` enums | Welcome-message button that posts the trigger string back to start a run. |
-| `MessageResponseTypes.USER_DEFINED` | `@carbon/ai-chat` enum | Payload carrying the steps-card data updated each upsert. |
-| `instance.scrollToMessage` | `ChatInstance` method | Toast action target — scrolls the chat back to the finished message. |
-| `layout.showFrame` | config prop | Disables the built-in frame for the fullscreen baseline. |
-| `<cds-aichat-card>` / `<cds-aichat-card-steps>` / `<cds-aichat-card-footer>` | custom elements | Carbon storybook `WithSteps` composition rendered as the user_defined widget. |
-| `<cds-actionable-notification>` / `<cds-actionable-notification-button>` | custom elements | Out-of-chat completion toast with a built-in action button. |
+| `<cds-aichat-custom-element>` | custom element | Mounts the chat in your page. |
+| `.messaging` / `.layout` / `.openChatByDefault` | properties | Sets the chat config. |
+| `.onBeforeRender` | property (callback) | Keeps the chat instance for the toast action. |
+| `.renderUserDefinedResponse` | property (callback) | Updates the same card element on each upsert. |
+| `messaging.customSendMessage` | config prop | Starts the task when the user sends the trigger text. |
+| `messaging.upsertMessage` | `ChatInstance` method | Adds the card and updates its steps. |
+| `MessageState.STREAMING` / `MessageState.COMPLETE` | `@carbon/ai-chat` enum | Shows Stop while work runs. Completes the reply on success. |
+| `CustomSendMessageOptions.signal` | `@carbon/ai-chat` type property | Ends pending waits and skips later writes after Stop. |
+| `MessageResponseTypes.BUTTON` / `ButtonItemType.POST_BACK` | `@carbon/ai-chat` enums | Sends the trigger text to start a run. |
+| `MessageResponseTypes.USER_DEFINED` | `@carbon/ai-chat` enum | Holds the card data for each update. |
+| `instance.scrollToMessage` | `ChatInstance` method | Scrolls to the finished reply from the toast. |
+| `layout.showFrame` | config prop | Hides the built-in frame. |
+| `<cds-aichat-card>` / `<cds-aichat-card-steps>` / `<cds-aichat-card-footer>` | custom elements | Builds the steps card. |
+| `<cds-actionable-notification>` / `<cds-actionable-notification-button>` | custom elements | Shows a toast with a link to the finished reply. |
 
 </details>
 

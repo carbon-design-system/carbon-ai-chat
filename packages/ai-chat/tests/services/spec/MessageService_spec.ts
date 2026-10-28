@@ -7,11 +7,13 @@
  *  @license
  */
 
-import { resetStopStreamingButton } from '../../../src/chat/utils/streamingUtils';
 import MessageService, {
   PendingMessageRequest,
 } from '../../../src/chat/services/MessageService';
+import { ChunkProcessingService } from '../../../src/chat/services/ChunkProcessingService';
+import { ConversationLifecycleService } from '../../../src/chat/services/ConversationLifecycleService';
 import { ServiceManager } from '../../../src/chat/services/ServiceManager';
+import storeActions from '../../../src/chat/store/actions';
 import {
   MessageRequest,
   MessageInputType,
@@ -35,6 +37,22 @@ const createMessage = (id: string): MessageRequest<any> => ({
     silent: false,
   },
 });
+
+const createDeferred = () => {
+  let resolve: () => void;
+  let reject: (error: Error) => void;
+  const promise = new Promise<void>((promiseResolve, promiseReject) => {
+    resolve = promiseResolve;
+    reject = promiseReject;
+  });
+  return { promise, resolve: resolve!, reject: reject! };
+};
+
+const flushMessageQueue = async () => {
+  await Promise.resolve();
+  await Promise.resolve();
+  await Promise.resolve();
+};
 
 const createServiceManagerStub = (
   customSendMessage = jest.fn(),
@@ -78,22 +96,39 @@ const createServiceManagerStub = (
     fire: jest.fn().mockResolvedValue(undefined),
   };
 
+  // MessageService resolves this collaborator through ServiceManager to answer
+  // "is an upsertMessage stream still running".
+  const messageUpsertCoordinator = {
+    hasStreamingMessages: jest.fn().mockReturnValue(false),
+    endAllStreaming: jest.fn(),
+    endStreamingForRequest: jest.fn(),
+    endStreamingMessage: jest.fn((messageID, generation) => {
+      serviceManager.conversationLifecycleService.responseFinished(
+        messageID,
+        generation
+      );
+      store.dispatch(storeActions.endMessageStreaming(messageID));
+    }),
+  };
+
   const serviceManager = {
     restartCount: 0,
     store,
     actions,
     eventBus,
     instance: {},
-    messageUpsertCoordinator: {
-      hasStreamingMessages: jest.fn(() => false),
-      endAllStreaming: jest.fn(),
-    },
+    messageUpsertCoordinator,
     messageService: {
-      resetStopStreamingButtonWithoutUpserts: () =>
-        resetStopStreamingButton(store),
+      hideStopStreamingButtonIfNoUpsertStreaming: jest.fn(),
+      updateStreamingCancellation: jest.fn(),
     },
   } as unknown as ServiceManager;
 
+  serviceManager.conversationLifecycleService =
+    new ConversationLifecycleService(serviceManager);
+  serviceManager.chunkProcessingService = new ChunkProcessingService(
+    serviceManager
+  );
   return serviceManager;
 };
 
@@ -565,6 +600,277 @@ describe('MessageService', () => {
     expect((messageService as any).queue.current).toBeNull();
   });
 
+  describe('streaming terminal cleanup', () => {
+    it("keeps another stream's stop button visible after an ERROR upsert", () => {
+      const serviceManager = createServiceManagerStub(jest.fn(), {
+        isVisible: true,
+        isDisabled: false,
+      });
+      const messageService = new MessageService(serviceManager, {
+        messaging: { messageTimeoutSecs: 0 },
+      });
+      messageService.markCurrentMessageAsStreaming('response-a');
+      messageService.markCurrentMessageAsStreaming('response-b');
+
+      messageService.markStreamingResponseError('response-a');
+
+      expect(messageService.inboundStreaming.streamingMessageID).toBe(
+        'response-b'
+      );
+      expect(serviceManager.store.dispatch).not.toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'SET_STOP_STREAMING_BUTTON_VISIBLE',
+          isVisible: false,
+        })
+      );
+    });
+
+    it('hides the stop button after the only stream receives an ERROR upsert', () => {
+      const serviceManager = createServiceManagerStub(jest.fn(), {
+        isVisible: true,
+        isDisabled: false,
+      });
+      const messageService = new MessageService(serviceManager, {
+        messaging: { messageTimeoutSecs: 0 },
+      });
+      messageService.markCurrentMessageAsStreaming('response-a');
+
+      messageService.markStreamingResponseError('response-a');
+
+      expect(messageService.inboundStreaming.streamingMessageID).toBeNull();
+      expect(serviceManager.store.dispatch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'SET_STOP_STREAMING_BUTTON_VISIBLE',
+          isVisible: false,
+        })
+      );
+    });
+
+    it('advances after an ERROR upsert when the transport later succeeds', async () => {
+      const first = createDeferred();
+      const customSendMessage = jest.fn((message: MessageRequest<any>) =>
+        message.id === 'm-first' ? first.promise : Promise.resolve()
+      );
+      const serviceManager = createServiceManagerStub(customSendMessage);
+      const messageService = new MessageService(serviceManager, {
+        messaging: {
+          customSendMessage,
+          messageTimeoutSecs: 0,
+          messageLoadingIndicatorTimeoutSecs: 0,
+        },
+      } as any);
+
+      const firstSend = messageService.send(
+        createMessage('m-first'),
+        MessageSendSource.MESSAGE_INPUT,
+        'local-first'
+      );
+      await flushMessageQueue();
+      messageService.markCurrentMessageAsStreaming('response-first');
+      const secondSend = messageService.send(
+        createMessage('m-second'),
+        MessageSendSource.MESSAGE_INPUT,
+        'local-second'
+      );
+
+      messageService.markStreamingResponseError('response-first');
+      expect((messageService as any).queue.current.message.id).toBe('m-first');
+
+      first.resolve();
+      await firstSend;
+      await secondSend;
+
+      expect(customSendMessage).toHaveBeenCalledTimes(2);
+      expect((messageService as any).queue.current).toBeNull();
+    });
+
+    it('advances immediately when an ERROR upsert follows transport settlement', async () => {
+      const customSendMessage = jest.fn();
+      const serviceManager = createServiceManagerStub(customSendMessage);
+      const messageService = new MessageService(serviceManager, {
+        messaging: {
+          customSendMessage,
+          messageTimeoutSecs: 0,
+          messageLoadingIndicatorTimeoutSecs: 0,
+        },
+      } as any);
+      customSendMessage.mockImplementation((message: MessageRequest<any>) => {
+        if (message.id === 'm-first') {
+          messageService.markCurrentMessageAsStreaming('response-first');
+        }
+        return Promise.resolve();
+      });
+
+      await messageService.send(
+        createMessage('m-first'),
+        MessageSendSource.MESSAGE_INPUT,
+        'local-first'
+      );
+      const secondSend = messageService.send(
+        createMessage('m-second'),
+        MessageSendSource.MESSAGE_INPUT,
+        'local-second'
+      );
+      expect(customSendMessage).toHaveBeenCalledTimes(1);
+
+      messageService.markStreamingResponseError('response-first');
+      await secondSend;
+
+      expect(customSendMessage).toHaveBeenCalledTimes(2);
+      expect((messageService as any).queue.current).toBeNull();
+    });
+
+    it('advances after an ERROR upsert when the transport later fails', async () => {
+      const first = createDeferred();
+      const customSendMessage = jest.fn((message: MessageRequest<any>) =>
+        message.id === 'm-first' ? first.promise : Promise.resolve()
+      );
+      const serviceManager = createServiceManagerStub(customSendMessage);
+      const messageService = new MessageService(serviceManager, {
+        messaging: {
+          customSendMessage,
+          messageTimeoutSecs: 0,
+          messageLoadingIndicatorTimeoutSecs: 0,
+        },
+      } as any);
+      serviceManager.messageService = messageService;
+
+      const firstSend = messageService.send(
+        createMessage('m-first'),
+        MessageSendSource.MESSAGE_INPUT,
+        'local-first'
+      );
+      const rejectedFirstSend = expect(firstSend).rejects.toEqual(
+        new Error('{}')
+      );
+      await flushMessageQueue();
+      messageService.markCurrentMessageAsStreaming('response-first');
+      const secondSend = messageService.send(
+        createMessage('m-second'),
+        MessageSendSource.MESSAGE_INPUT,
+        'local-second'
+      );
+
+      messageService.markStreamingResponseError('response-first');
+      first.reject(new Error('failed'));
+      await rejectedFirstSend;
+      await secondSend;
+
+      expect(customSendMessage).toHaveBeenCalledTimes(2);
+      expect((messageService as any).queue.current).toBeNull();
+    });
+
+    it('clears partial-stream routing before advancing after a send failure', async () => {
+      const first = createDeferred();
+      const customSendMessage = jest.fn((message: MessageRequest<any>) =>
+        message.id === 'm-first' ? first.promise : Promise.resolve()
+      );
+      const serviceManager = createServiceManagerStub(customSendMessage);
+      const lifecycle = serviceManager.conversationLifecycleService;
+      const responseFinished = jest.spyOn(lifecycle, 'responseFinished');
+      const messageService = new MessageService(serviceManager, {
+        messaging: {
+          customSendMessage,
+          messageTimeoutSecs: 0,
+          messageLoadingIndicatorTimeoutSecs: 0,
+        },
+      } as any);
+      serviceManager.messageService = messageService;
+
+      const firstSend = messageService.send(
+        createMessage('m-first'),
+        MessageSendSource.MESSAGE_INPUT,
+        'local-first'
+      );
+      const rejectedFirstSend = expect(firstSend).rejects.toEqual(
+        new Error('{}')
+      );
+      await flushMessageQueue();
+      messageService.markCurrentMessageAsStreaming('response-first');
+      const secondSend = messageService.send(
+        createMessage('m-second'),
+        MessageSendSource.MESSAGE_INPUT,
+        'local-second'
+      );
+
+      first.reject(new Error('failed'));
+      await rejectedFirstSend;
+      await secondSend;
+
+      expect(messageService.inboundStreaming.streamingMessageID).toBeNull();
+      expect(lifecycle.responseFinished).toHaveBeenCalledWith(
+        'response-first',
+        0
+      );
+      expect(
+        customSendMessage.mock.calls.map(([message]) => message.id)
+      ).toEqual(['m-first', 'm-second']);
+      expect(responseFinished.mock.invocationCallOrder[0]).toBeLessThan(
+        customSendMessage.mock.invocationCallOrder[1]
+      );
+    });
+
+    it('clears partial-stream routing before advancing after a timeout', async () => {
+      let timeout: () => void;
+      const customSendMessage = jest.fn((message: MessageRequest<any>) =>
+        message.id === 'm-first'
+          ? new Promise<void>(() => undefined)
+          : Promise.resolve()
+      );
+      const serviceManager = createServiceManagerStub(customSendMessage);
+      const lifecycle = serviceManager.conversationLifecycleService;
+      const responseFinished = jest.spyOn(lifecycle, 'responseFinished');
+      const messageService = new MessageService(serviceManager, {
+        messaging: {
+          customSendMessage,
+          messageTimeoutSecs: 1,
+          messageLoadingIndicatorTimeoutSecs: 0,
+        },
+      } as any);
+      const startSpy = jest
+        .spyOn(messageService.messageLoadingManager, 'start')
+        .mockImplementation((_, __, onTimeout) => {
+          timeout = onTimeout;
+        });
+
+      try {
+        const firstSend = messageService.send(
+          createMessage('m-first'),
+          MessageSendSource.MESSAGE_INPUT,
+          'local-first'
+        );
+        const rejectedFirstSend = expect(firstSend).rejects.toThrow(
+          CancellationReason.TIMEOUT
+        );
+        await flushMessageQueue();
+        messageService.markCurrentMessageAsStreaming('response-first');
+        const secondSend = messageService.send(
+          createMessage('m-second'),
+          MessageSendSource.MESSAGE_INPUT,
+          'local-second'
+        );
+
+        timeout!();
+        await rejectedFirstSend;
+        await secondSend;
+
+        expect(messageService.inboundStreaming.streamingMessageID).toBeNull();
+        expect(lifecycle.responseFinished).toHaveBeenCalledWith(
+          'response-first',
+          0
+        );
+        expect(
+          customSendMessage.mock.calls.map(([message]) => message.id)
+        ).toEqual(['m-first', 'm-second']);
+        expect(responseFinished.mock.invocationCallOrder[0]).toBeLessThan(
+          customSendMessage.mock.invocationCallOrder[1]
+        );
+      } finally {
+        startSpy.mockRestore();
+      }
+    });
+  });
+
   describe('Message cancellation with system messages', () => {
     it('creates system message when canceling before streaming starts', async () => {
       const customSendMessage = jest.fn().mockImplementation(
@@ -756,6 +1062,122 @@ describe('MessageService', () => {
 
       // Verify the controller was aborted
       expect(controller.signal.aborted).toBe(true);
+    });
+  });
+
+  describe('isAnyMessageStreaming', () => {
+    const build = (stopStreamingButtonState?: {
+      isVisible: boolean;
+      isDisabled: boolean;
+    }) => {
+      const serviceManager = createServiceManagerStub(
+        jest.fn().mockResolvedValue(undefined),
+        stopStreamingButtonState
+      );
+      const messageService = new MessageService(serviceManager, {
+        messaging: { messageTimeoutSecs: 0 },
+      } as any);
+      return { serviceManager, messageService };
+    };
+
+    it('is false when nothing is streaming', () => {
+      const { messageService } = build();
+      expect(messageService.isAnyMessageStreaming()).toBe(false);
+    });
+
+    it('is true while a chunk stream is active', () => {
+      const { messageService } = build();
+      messageService.inboundStreaming.streamingMessageID = 'chunk-1';
+      expect(messageService.isAnyMessageStreaming()).toBe(true);
+    });
+
+    it('is true while an upsert stream is active', () => {
+      const { serviceManager, messageService } = build();
+      (
+        serviceManager.messageUpsertCoordinator
+          .hasStreamingMessages as jest.Mock
+      ).mockReturnValue(true);
+
+      // The chunk registry is null for a pure-upsert flow, which is exactly why the
+      // predicate cannot be built on inboundStreaming alone.
+      expect(messageService.inboundStreaming.streamingMessageID).toBeNull();
+      expect(messageService.isAnyMessageStreaming()).toBe(true);
+    });
+
+    it('hideStopStreamingButtonIfIdle leaves the button alone while anything streams', () => {
+      const { serviceManager, messageService } = build({
+        isVisible: true,
+        isDisabled: false,
+      });
+      (
+        serviceManager.messageUpsertCoordinator
+          .hasStreamingMessages as jest.Mock
+      ).mockReturnValue(true);
+
+      messageService.hideStopStreamingButtonIfIdle();
+
+      expect(serviceManager.store.dispatch).not.toHaveBeenCalled();
+    });
+
+    it('hideStopStreamingButtonIfIdle leaves the button alone while a chunk stream is active', () => {
+      // The call sites that use this variant used to pass inboundStreaming's id to
+      // resetStopStreamingButton, which kept the button up; that must still hold.
+      const { serviceManager, messageService } = build({
+        isVisible: true,
+        isDisabled: false,
+      });
+      messageService.inboundStreaming.streamingMessageID = 'chunk-1';
+
+      messageService.hideStopStreamingButtonIfIdle();
+
+      expect(serviceManager.store.dispatch).not.toHaveBeenCalled();
+    });
+
+    it('hideStopStreamingButtonIfIdle hides once nothing streams', () => {
+      const { serviceManager, messageService } = build({
+        isVisible: true,
+        isDisabled: false,
+      });
+
+      messageService.hideStopStreamingButtonIfIdle();
+
+      const types = (serviceManager.store.dispatch as jest.Mock).mock.calls.map(
+        (call) => call[0]?.type
+      );
+      expect(types).toContain('SET_STOP_STREAMING_BUTTON_VISIBLE');
+      expect(types).toContain('SET_STOP_STREAMING_BUTTON_DISABLED');
+    });
+
+    it('hideStopStreamingButtonIfNoUpsertStreaming ignores an active chunk stream', () => {
+      const { serviceManager, messageService } = build({
+        isVisible: true,
+        isDisabled: false,
+      });
+      messageService.inboundStreaming.streamingMessageID = 'chunk-1';
+
+      // The chunk flow has always hidden on its own complete_item, so this variant must
+      // not consult inboundStreaming — otherwise complete_item would stop hiding.
+      messageService.hideStopStreamingButtonIfNoUpsertStreaming();
+
+      const types = (serviceManager.store.dispatch as jest.Mock).mock.calls.map(
+        (call) => call[0]?.type
+      );
+      expect(types).toContain('SET_STOP_STREAMING_BUTTON_VISIBLE');
+    });
+
+    it('hideStopStreamingButtonIfNoUpsertStreaming respects an active upsert stream', () => {
+      const { serviceManager, messageService } = build({
+        isVisible: true,
+        isDisabled: false,
+      });
+      (
+        serviceManager.messageUpsertCoordinator
+          .hasStreamingMessages as jest.Mock
+      ).mockReturnValue(true);
+
+      messageService.hideStopStreamingButtonIfNoUpsertStreaming();
+
+      expect(serviceManager.store.dispatch).not.toHaveBeenCalled();
     });
   });
 });

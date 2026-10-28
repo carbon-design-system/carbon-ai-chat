@@ -1041,8 +1041,7 @@ React integration of `@carbon/ai-chat` demonstrating how to replace Carbon's bui
 | `ChatContainer` | `@carbon/ai-chat` component | Mounts the chat UI. |
 | `PublicConfig` | `@carbon/ai-chat` type | Types the config object passed to `ChatContainer`. |
 | `ChatInstance` | `@carbon/ai-chat` type | Typed reference captured in `onBeforeRender`. |
-| `BusEventType` | `@carbon/ai-chat` enum | Subscribes to `STATE_CHANGE` and `FEEDBACK`. |
-| `FeedbackInteractionType` | `@carbon/ai-chat` enum | Detects `SUBMITTED` feedback interactions. |
+| `BusEventType` | `@carbon/ai-chat` enum | Subscribes to `STATE_CHANGE`. |
 | `messaging.customSendMessage` | config prop | Mock backend that echoes user input. |
 | `onBeforeRender` | component prop | Captures the `ChatInstance` and attaches event listeners. |
 | `renderUserDefinedResponse` | component prop | Renders custom response content for user-defined response types. |
@@ -1129,7 +1128,7 @@ Each reasoning step's `content` is a `GenericItem[]` — a `TextItem` whose `tex
 
 ### [Upsert message user defined](./upsert-message-user-defined/README.md)
 
-Progressively updates a `user_defined` steps-card widget inside a single assistant message using `ChatInstance.messaging.upsertMessage`, and pops a Carbon toast (with a "View message" action wired to `instance.scrollToMessage`) when the run completes.
+Updates one `user_defined` steps card with `ChatInstance.messaging.upsertMessage`. You can stop a run and start again. When a run finishes, a Carbon toast links to its message with `instance.scrollToMessage`.
 
 **Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-upsert-message-user-defined`
 
@@ -1138,20 +1137,21 @@ Progressively updates a `user_defined` steps-card widget inside a single assista
 
 | Symbol | Package / kind | Role in this example |
 | --- | --- | --- |
-| `ChatCustomElement` | `@carbon/ai-chat` component | Mounts the chat into a host element you style. |
-| `PublicConfig` | `@carbon/ai-chat` type | Types the config passed to `ChatCustomElement`. |
-| `messaging.customSendMessage` | config prop | Mock back end: branches on the post-back trigger string and runs the long task. |
-| `messaging.upsertMessage` | `ChatInstance` method | Inserts and progressively updates the steps-card message. |
-| `MessageState.COMPLETE` | `@carbon/ai-chat` enum | Marks the message complete on the very first upsert so input stays usable. |
-| `MessageResponseTypes.BUTTON` / `ButtonItemType.POST_BACK` | `@carbon/ai-chat` enums | Welcome-message button that posts the trigger string back to start a run. |
-| `MessageResponseTypes.USER_DEFINED` | `@carbon/ai-chat` enum | Payload carrying the steps-card data updated each upsert. |
-| `renderUserDefinedResponse` | `ChatContainer` prop | Renders the `user_defined` payload as the `StepsCard` widget. |
-| `onBeforeRender` | `ChatContainer` prop | Captures the `ChatInstance` for the toast action. |
-| `instance.scrollToMessage` | `ChatInstance` method | Toast action target — scrolls the chat back to the finished message. |
-| `layout.showFrame` | config prop | Disables the built-in frame for the fullscreen baseline. |
+| `ChatCustomElement` | `@carbon/ai-chat` component | Mounts the chat in your page. |
+| `PublicConfig` | `@carbon/ai-chat` type | Types the chat config. |
+| `messaging.customSendMessage` | config prop | Starts the task when the user sends the trigger text. |
+| `messaging.upsertMessage` | `ChatInstance` method | Adds the card and updates its steps. |
+| `MessageState.STREAMING` / `MessageState.COMPLETE` | `@carbon/ai-chat` enum | Shows Stop while work runs. Completes the reply on success. |
+| `CustomSendMessageOptions.signal` | `@carbon/ai-chat` type property | Ends pending waits and skips later writes after Stop. |
+| `MessageResponseTypes.BUTTON` / `ButtonItemType.POST_BACK` | `@carbon/ai-chat` enums | Sends the trigger text to start a run. |
+| `MessageResponseTypes.USER_DEFINED` | `@carbon/ai-chat` enum | Holds the card data for each update. |
+| `renderUserDefinedResponse` | `ChatContainer` prop | Shows the payload in a steps card. |
+| `onBeforeRender` | `ChatContainer` prop | Keeps the chat instance for the toast action. |
+| `instance.scrollToMessage` | `ChatInstance` method | Scrolls to the finished reply from the toast. |
+| `layout.showFrame` | config prop | Hides the built-in frame. |
 | `openChatByDefault` | config prop | Opens the chat on mount. |
-| `Card` / `CardFooter` / `CardSteps` / `Toolbar` | `@carbon/ai-chat-components` React wrappers | Carbon storybook `WithSteps` composition rendered as the user_defined widget. |
-| `ActionableNotification` | `@carbon/react` component | Out-of-chat completion toast with a built-in action button. |
+| `Card` / `CardFooter` / `CardSteps` / `Toolbar` | `@carbon/ai-chat-components` React wrappers | Builds the steps card. |
+| `ActionableNotification` | `@carbon/react` component | Shows a toast with a link to the finished reply. |
 
 </details>
 
@@ -1179,9 +1179,55 @@ React example that renders `user_defined` responses through the `renderUserDefin
 
 </details>
 
-### [Watch state](./watch-state/README.md)
+### [Watch / Messages](./watch-messages/README.md)
 
-Shows how to observe `ChatInstance` state externally by reading `instance.getState()` once and then subscribing to `BusEventType.STATE_CHANGE` to keep a parent React component in sync.
+Shows how to select public messages and conversation status into React while a button starts a partial response and the host completes it.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-watch-messages`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol | Package / kind | Role in example |
+| --- | --- | --- |
+| `ChatContainer` | `@carbon/ai-chat` component | Mounts the chat UI as a float launcher. |
+| `instance.state.get()` | `ChatInstance` method | Seeds messages and status. |
+| `instance.state.select()` | `ChatInstance` method | Updates messages and status separately. |
+| `PublicChatState.messages` | `@carbon/ai-chat` state field | Supplies the public transcript. |
+| `PublicChatState.activeResponseId` | `@carbon/ai-chat` state field | Identifies the response for the host to complete. |
+| `PublicChatState.status` | `@carbon/ai-chat` state field | Supplies the current conversation phase. |
+| `instance.messaging.upsertMessage()` | `ChatInstance` method | Publishes partial and complete response snapshots. |
+| `MessageState` | `@carbon/ai-chat` enum | Marks the response as streaming or complete. |
+
+</details>
+
+### [Watch / Messages (Redux Toolkit)](./watch-messages-redux/README.md)
+
+Shows how to select public messages and conversation status into Redux Toolkit while a button starts a partial response and the host completes it.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-watch-messages-redux`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol | Package / kind | Role in example |
+| --- | --- | --- |
+| `ChatContainer` | `@carbon/ai-chat` component | Mounts the chat UI as a float launcher. |
+| `instance.state.get()` | `ChatInstance` method | Seeds messages and status. |
+| `instance.state.select()` | `ChatInstance` method | Dispatches messages and status separately. |
+| `PublicChatState.messages` | `@carbon/ai-chat` state field | Supplies the public transcript. |
+| `PublicChatState.activeResponseId` | `@carbon/ai-chat` state field | Identifies the response for the host to complete. |
+| `PublicChatState.status` | `@carbon/ai-chat` state field | Supplies the current conversation phase. |
+| `configureStore` | `@reduxjs/toolkit` function | Creates the narrow host store. |
+| `createSlice` | `@reduxjs/toolkit` function | Defines messages and status actions. |
+| `useSelector` (typed) | `react-redux` hook | Reads mirrored values in the host panel. |
+| `instance.messaging.upsertMessage()` | `ChatInstance` method | Publishes partial and complete response snapshots. |
+
+</details>
+
+### [Watch / State](./watch-state/README.md)
+
+Shows how to read one public state field and keep a React component in sync with focused updates.
 
 **Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-watch-state`
 
@@ -1193,16 +1239,16 @@ Shows how to observe `ChatInstance` state externally by reading `instance.getSta
 | `ChatContainer` | `@carbon/ai-chat` component | Mounts the chat UI as a float launcher. |
 | `PublicConfig` | `@carbon/ai-chat` type | Config shape (includes `homescreen`). |
 | `ChatInstance` | `@carbon/ai-chat` type | Provided in `onBeforeRender`. |
-| `BusEventType.STATE_CHANGE` | `@carbon/ai-chat` enum | Event subscribed to. |
-| `instance.getState()` / `instance.on` | `ChatInstance` API | Snapshot + subscription. |
+| `instance.state.get()` | `ChatInstance` method | Seeds the selected value. |
+| `instance.state.select()` | `ChatInstance` method | Updates React when the selected value changes. |
 | `homescreen.isOn` / `homescreen.greeting` / `homescreen.starters` | config | Starter buttons that trigger state transitions. |
 | `customSendMessage` | `messaging` prop | Echoes a generic response back to the chat. |
 
 </details>
 
-### [Watch state (Redux Toolkit)](./watch-state-redux/README.md)
+### [Watch / State (Redux Toolkit)](./watch-state-redux/README.md)
 
-Mirrors `ChatInstance` state into a Redux Toolkit store via the `STATE_CHANGE` bus event so any component can read chat state through `useSelector`.
+Selects one public chat state field into Redux Toolkit so any component can read it through `useSelector`.
 
 **Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-watch-state-redux`
 
@@ -1213,16 +1259,14 @@ Mirrors `ChatInstance` state into a Redux Toolkit store via the `STATE_CHANGE` b
 | --- | --- | --- |
 | `ChatContainer` | `@carbon/ai-chat` component | Mounts the chat UI as a float launcher. |
 | `messaging.customSendMessage` | config prop | Mock backend. |
-| `homescreen.isOn` | config prop | Enables the homescreen so toggling it produces `STATE_CHANGE` events. |
+| `homescreen.isOn` | config prop | Gives the selected field a visible state change. |
 | `homescreen.greeting` | config prop | Greeting text on the homescreen. |
 | `homescreen.starters` | config prop | Starter buttons. |
-| `onBeforeRender` | component prop | Captures the `ChatInstance` and wires the bus → Redux bridge. |
-| `instance.getState` | `@carbon/ai-chat` method | Seeds the Redux store on first render. |
-| `instance.on` | `@carbon/ai-chat` method | Subscribes to `STATE_CHANGE`. |
-| `BusEventType.STATE_CHANGE` | `@carbon/ai-chat` enum | Event the bridge listens to. |
-| `PublicChatState` | `@carbon/ai-chat` type | Type of the snapshot stored in Redux. |
+| `onBeforeRender` | component prop | Captures the `ChatInstance` and wires the state selection. |
+| `instance.state.get()` | `ChatInstance` method | Seeds the Redux value. |
+| `instance.state.select()` | `ChatInstance` method | Dispatches when the selected value changes. |
 | `configureStore` | `@reduxjs/toolkit` function | Creates the Redux store. |
-| `createSlice` | `@reduxjs/toolkit` function | Defines the chat-state slice with the `chatStateSync` reducer. |
+| `createSlice` | `@reduxjs/toolkit` function | Defines the selected chat-state slice. |
 | `Provider` | `react-redux` component | Provides the store to the React tree. |
 | `useSelector` (typed) | `react-redux` hook | Reads `homeScreenState.isHomeScreenOpen` from the store. |
 

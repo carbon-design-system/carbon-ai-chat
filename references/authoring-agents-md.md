@@ -2,8 +2,8 @@
 
 Load this when creating or editing AGENTS files, skills, or their references. Include the repository facts and constraints that change an agent's decisions. Assume the agent already knows general software development.
 
-- **Per-file budget**: 12 KiB per `AGENTS.md`, enforced by `npm run validate:agents`. Beyond that, split topic detail into kebab-case files under a `references/` subfolder (`references/<topic>.md`) and link to them from the parent `AGENTS.md` with a short "read when…" hint. The bare `AGENTS.md` stays the directory's entry point; only the topic detail moves into `references/`.
-- **Chain budget**: 28 KiB for the root file plus every AGENTS file down to a directory. An ancestor counts against every chain beneath it. This repository gate excludes personal instructions and references loaded later. Check the active harness configuration when diagnosing truncation; the repository limit is a safeguard, not its total context limit.
+- **Per-file budget**: 12 KiB per `AGENTS.md` and per `.md` or `.mdx` file directly under any `references/` directory, linked or not, enforced by `npm run validate:agents`. Split over-budget references by topic or replace copied lists with links. For `AGENTS.md`, split topic detail into kebab-case files under a `references/` subfolder (`references/<topic>.md`) and link to them from the parent `AGENTS.md` with a short "read when…" hint. The bare `AGENTS.md` stays the directory's entry point; only the topic detail moves into `references/`.
+- **Chain budget**: 28 KiB for `AGENTS.md` files only: the root file plus every AGENTS file down to a directory. An ancestor counts against every chain beneath it. This repository gate excludes personal instructions and references loaded later. Check the active harness configuration when diagnosing truncation; the repository limit is a safeguard, not its total context limit.
 - **Budgets use bytes as a proxy.** Soft-wrapped Markdown makes line counts misleading. Bytes are easy to compare, but they are not tokens. A passing file budget does not prove that a task's full reading path is small.
 - **One topic per file**: if a leaf file has two unrelated H2 sections, the second one is its own file.
 - **Front-load a TL;DR or pointer index**: agents scan from the top; bury nothing important.
@@ -11,14 +11,14 @@ Load this when creating or editing AGENTS files, skills, or their references. In
 - **Cross-reference, don't restate**: when a rule is repo-wide (prefix discipline, license headers, the `aiChat:start` watcher, conventional commits), link to its canonical home — [code-patterns.md](code-patterns.md) or [conventions.md](conventions.md) — instead of inlining it.
 - **Every reference link carries a "read when…" trigger, and lives in the router that owns the file's scope.** Top-level `references/` are triggered from the root [AGENTS.md](../AGENTS.md) task router; a package's own `references/` (e.g. `architecture.md`, `services.md`, `tests.md`) are triggered from that package's `AGENTS.md`. Never dump a bare list of links — the reader can't tell when to open which.
 - **Trim human-onboarding prose**: drop "we chose this because…" framing unless the _why_ changes how an agent applies the rule.
-- **Each leaf file ends with a "Related guidance" section** so an agent landing cold can navigate to neighbors without re-reading the parent.
+- **Related guidance**: routers omit the footer. Leaf references list only links absent from the body. Skills keep their footers.
+- **Link to a list's owner**, rather than copying an enumeration or count. Keep numbers only when they calibrate judgment. Link to a file or heading, not a drifting `#L` anchor.
+- **Cite an issue only when it changes what the agent does.** Drop the citation when the issue closes.
+- **Committed guidance never links to plan drafts.** Drafts are git-ignored and get deleted.
 
 ## Task-workflow skills (`.bob/skills/`)
 
-Task procedures are **skills**, not `references/` docs. The dividing line is when the guidance applies:
-
-- **A convention applies to any edit in its scope** — prefix discipline, commit format, the WCAG gate. It has to be loadable at any moment, so it stays in `references/` and the root [AGENTS.md](../AGENTS.md) routes to it.
-- **A task procedure applies only while doing that task** — writing a plan, filing an issue, drafting a PR description, reviewing a diff. It becomes a skill, because a skill's `description` is always in context (so it can trigger itself) while its body loads only on invocation.
+For the skill/reference split and mirror mechanics, read [.bob/skills/README.md](../.bob/skills/README.md).
 
 Rules for authoring them:
 
@@ -33,10 +33,3 @@ Rules for authoring them:
 - **Check both selection and behavior.** Test a request that should use the skill and a nearby request that should not. Static validators check structure, not whether the agent performs the right task.
 - **Keep the skill catalog out of root AGENTS.** Skill metadata supplies task discovery. The root router carries rules and package routes, not a second list of skills.
 - **End each skill body with `Task input from the user, if any: $ARGUMENTS`.** Some harnesses substitute invocation arguments. If the token remains literal, use the actual user request; do not treat it as missing task input.
-- **`.bob/skills/` is canonical**; `.claude/skills/` (Claude Code, Copilot) and `.agents/skills/` (Codex, Copilot) are byte-identical generated mirrors, because each assistant reads only its own directory. Edit the canonical tree, then run `npm run sync:skills` — that regenerates both mirrors wholesale, so anything living only in a mirror is deleted. `npm run validate:skills` fails in CI on drift between the trees, a broken link or anchor, a name/directory mismatch, or an unquoted frontmatter value that YAML would truncate.
-
-## Related guidance
-
-- [Root AGENTS.md](../AGENTS.md) — the router these rules produce
-- [tone.md](tone.md) — voice & quick rules for developer-facing copy
-- [.bob/skills/README.md](../.bob/skills/README.md) — the skill collection and its sync rules

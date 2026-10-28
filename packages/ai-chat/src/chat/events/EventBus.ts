@@ -86,7 +86,11 @@ class EventBus {
    * @param busEvent A single event.
    * @param instance The current instance of the Carbon AI Chat that is passed to the event handlers
    */
-  async fire<T extends BusEvent>(busEvent: T, instance: ChatInstance) {
+  async fire<T extends BusEvent>(
+    busEvent: T,
+    instance: ChatInstance,
+    isCurrent?: () => boolean
+  ) {
     logEvent('Before fire', busEvent);
     const { type } = busEvent;
 
@@ -106,7 +110,9 @@ class EventBus {
     try {
       const run = async () => {
         try {
-          await this.runHandlers(busEvent, instance);
+          if (!isCurrent || isCurrent()) {
+            await this.runHandlers(busEvent, instance);
+          }
         } finally {
           release();
         }
@@ -188,9 +194,7 @@ class EventBus {
   }
 
   /**
-   * Fires the given event and notifiers all listeners for this event type. All event listeners that listen for all
-   * ("*") events will also be notified. Events will be fired in the order in which they were registered. This
-   * function fires the events synchronously.
+   * Fires handlers for the given event type synchronously, in registration order.
    *
    * @param busEvent A single event.
    * @param instance The current instance of the Carbon AI Chat that is passed to the event handlers
@@ -205,10 +209,23 @@ class EventBus {
     if (handlersForType && handlersForType.length) {
       // Copy the array in case it's modified by an event handler.
       const handlersCopy = handlersForType.slice();
-      handlersCopy.forEach((handler) => handler(busEvent, instance));
+      handlersCopy.forEach((handler) => {
+        try {
+          handler(busEvent, instance);
+        } catch (error) {
+          consoleError(
+            `An event handler for ${type} threw, so the chat ignored the error and continued.`,
+            error
+          );
+        }
+      });
     }
 
     logEvent('After fire', busEvent);
+  }
+
+  hasListeners(type: BusEventType) {
+    return Boolean(this.handlersByType.get(type)?.length);
   }
 
   /**

@@ -43,7 +43,7 @@ After cloning your fork, set up the upstream remote:
 
 ```sh
 # Add the upstream remote to your repo
-git remote add upstream git@github.com:carbon-design-system/carbon.git
+git remote add upstream git@github.com:carbon-design-system/carbon-ai-chat.git
 
 # Verify the remote was added
 git remote -v
@@ -133,6 +133,10 @@ We are currently working on adding testing, more to come here soon!
 When you're ready to submit your changes for review, commit and push your branch. Use a descriptive commit message that follows the conventions in our [developer handbook](../docs/developer-handbook.md#commit-conventions).
 
 Then, create a PR to the main Carbon repo by following GitHub's [guide to creating a pull request from a fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork).
+
+#### Large or dependent changes
+
+Follow the [PR reviewability policy](../references/pr-reviewability.md) when sizing or splitting a change. From a fork, use sequential PRs or ask a maintainer to host dependent branches upstream.
 
 See [How to write the perfect pull request](https://github.com/blog/1943-how-to-write-the-perfect-pull-request) for tips on writing a good PR description.
 

@@ -103,6 +103,13 @@ export interface ChatInstanceMessaging {
 
   /**
    * Adds a streaming message chunk to the chat widget.
+   *
+   * A chunk stream whose `customSendMessage` throws, or that is canceled before a
+   * `final_response` chunk arrives, will have its `streamingState.isDone` settled to
+   * `true` on the items streamed so far. The host is responsible for calling
+   * `cancelCurrentMessageRequest` (or letting the chat cancel on restart) to settle
+   * the stream; simply stopping calls to `addMessageChunk` without canceling leaves
+   * `streamingState.isDone` as `false` indefinitely.
    */
   addMessageChunk: (chunk: StreamChunk) => Promise<void>;
 
@@ -135,6 +142,10 @@ export interface ChatInstanceMessaging {
    * @throws `TypeError` when the updater returns `null`/`undefined`, returns a message
    *   whose `id` differs from `messageID`, or returns a non-assistant message (a request
    *   or a human-agent message).
+   * @remarks A STREAMING sequence whose host simply stops calling `upsertMessage` without
+   *   sending a terminal COMPLETE or ERROR write will leave `streamingState.isDone` as
+   *   `false` indefinitely. The host is responsible for sending a terminal write, or for
+   *   calling `cancelCurrentMessageRequest` (or restarting the conversation) to settle it.
    * @experimental Upsert semantics and the updater signature may evolve based on consumer feedback.
    */
   upsertMessage: (

@@ -7,7 +7,7 @@ Load this when the user requests opening or updating a PR. Finish the [drafting 
 - **Use the selected repository.** Read `git remote -v`. Honor an explicit target even when both a fork and upstream exist. If the destination remains ambiguous, ask before publication.
 - **Check the full PR scope.** Resolve the base and head branches. Compare their merge-base diff with the draft. If a requested commit subset differs, resolve that mismatch before publishing; prose cannot change a PR's diff.
 - **Use a distinct head branch.** Drafting on the base branch is valid; publishing the base onto itself is not. Create a descriptive branch when needed for the authorized PR, preserving unrelated work.
-- **Verify the remote head.** Push the intended branch to its selected remote when necessary for the requested PR. Do not force-push or include unrelated local changes.
+- **Verify the remote head.** Push the intended branch to its selected remote when necessary for the requested PR. Do not force-push without explicit user permission. Keep unrelated local changes out of the push. Follow [stack authorization](../../../../references/pr-reviewability.md#get-permission-for-stack-pushes-and-rebases) before pushing or rebasing a stack.
 - **Set the title explicitly.** Use the conventional-commit format from [conventions.md](../../../../references/conventions.md). Add no agent attribution.
 
 ## Create and verify

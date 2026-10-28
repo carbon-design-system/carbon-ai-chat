@@ -911,6 +911,7 @@ function createHarness(geom?: Parameters<typeof createFakeContainer>[0]) {
   const spacer = createMockSpacer(400);
   const setSpacerHeight = jest.fn<void, [number]>();
   let messages: PortableMessage[] = [];
+  let retainedMessageIds: string[] = [];
 
   const host: ScrollHost = {
     getScrollContainer: () => container,
@@ -918,6 +919,9 @@ function createHarness(geom?: Parameters<typeof createFakeContainer>[0]) {
     setSpacerHeight,
     setScrollHeightFloor: jest.fn(),
     getMessages: () => messages,
+    hasMessage: (id) =>
+      retainedMessageIds.includes(id) ||
+      messages.some((item) => item.messageId === id),
     onScrollGeometryChanged: jest.fn(),
   };
 
@@ -929,6 +933,9 @@ function createHarness(geom?: Parameters<typeof createFakeContainer>[0]) {
     onScrollGeometryChanged: host.onScrollGeometryChanged as jest.Mock,
     setMessages: (next: PortableMessage[]) => {
       messages = next;
+    },
+    retainMessages: (ids: string[]) => {
+      retainedMessageIds = ids;
     },
   };
 }
@@ -968,6 +975,43 @@ async function flushFrames(count = 8): Promise<void> {
   }
 }
 
+/** A pin target whose nested markdown holds the pin open until `finish()` is called. */
+function createHeldPin(id: string) {
+  const pinnable = createRealPinnableMessage(id, 200, 80);
+  let finish: () => void = () => {};
+  const markdown = document.createElement('cds-aichat-markdown');
+  Object.defineProperty(markdown, 'updateComplete', {
+    value: new Promise<void>((resolve) => {
+      finish = resolve;
+    }),
+  });
+  pinnable.element?.appendChild(markdown);
+  return { pinnable, finish: () => finish() };
+}
+
+/**
+ * Creates a connected controller with an empty message list in a 500px-tall container.
+ * Call `addMessages` to hand it a new list the way the host would after an update.
+ */
+function createConnectedController() {
+  const h = createHarness({
+    scrollTop: 0,
+    clientHeight: 500,
+    scrollHeight: 1000,
+    offsetHeight: 500,
+    rectTop: 0,
+  });
+  const controller = new MessagesScrollController(h.host);
+  h.setMessages([]);
+  controller.connect();
+
+  const addMessages = (pinnable: PortableMessage) => {
+    h.setMessages([createPortableMessage({ id: 'ui-0' }), pinnable]);
+    controller.onHostUpdated(null);
+  };
+  return { h, controller, addMessages };
+}
+
 describe('MessagesScrollController', () => {
   it('isScrolledAwayFromBottom() reflects hasMessagesOutOfView using the tracked domSpacerHeight', () => {
     // domSpacerHeight starts at 0 (nothing pinned). With scrollHeight 2000,
@@ -997,6 +1041,7 @@ describe('MessagesScrollController', () => {
       setSpacerHeight: jest.fn(),
       setScrollHeightFloor: jest.fn(),
       getMessages: () => [],
+      hasMessage: () => false,
       onScrollGeometryChanged: jest.fn(),
     };
     const controller = new MessagesScrollController(host);
@@ -1157,6 +1202,94 @@ describe('MessagesScrollController', () => {
 
     controller.disconnect();
   });
+  it('a later scroll-to-bottom request replaces an earlier pin that is waiting on layout', async () => {
+    const { h, controller, addMessages } = createConnectedController();
+    const { pinnable, finish } = createHeldPin('req-1');
+
+    addMessages(pinnable);
+    await flushFrames();
+
+    controller.doAutoScroll({ scrollToBottom: 0 });
+    await flushFrames();
+    finish();
+    await flushFrames();
+
+    expect(h.container.scrollTop).toBe(500);
+    expect(h.setSpacerHeight).not.toHaveBeenCalledWith(240);
+
+    controller.disconnect();
+  });
+
+  it('a request replaced before its frame makes no writes', async () => {
+    const h = createHarness({
+      scrollTop: 0,
+      clientHeight: 500,
+      scrollHeight: 1000,
+      offsetHeight: 500,
+    });
+    const writes: number[] = [];
+    Object.defineProperty(h.container, 'scrollTop', {
+      configurable: true,
+      get: () => writes[writes.length - 1] ?? 0,
+      set: (value: number) => {
+        writes.push(value);
+      },
+    });
+
+    const controller = new MessagesScrollController(h.host);
+    controller.connect();
+
+    controller.doAutoScroll({ scrollToTop: 30 });
+    controller.doAutoScroll({ scrollToTop: 10 });
+    await flushFrames();
+
+    expect(writes).toEqual([10]);
+
+    controller.disconnect();
+  });
+
+  it('a lone pin request still waits for layout, then pins', async () => {
+    const { h, controller, addMessages } = createConnectedController();
+    const { pinnable, finish } = createHeldPin('req-1');
+
+    addMessages(pinnable);
+    await flushFrames();
+    expect(h.container.scrollTop).toBe(0);
+
+    finish();
+    await flushFrames();
+    expect(h.container.scrollTop).toBe(140);
+
+    controller.disconnect();
+  });
+
+  it('disconnect drops a pin that is waiting on layout', async () => {
+    const { h, controller, addMessages } = createConnectedController();
+    const { pinnable, finish } = createHeldPin('req-1');
+
+    addMessages(pinnable);
+    await flushFrames();
+
+    controller.disconnect();
+    h.setSpacerHeight.mockClear();
+    finish();
+    await flushFrames();
+
+    expect(h.container.scrollTop).toBe(0);
+    expect(h.setSpacerHeight).not.toHaveBeenCalled();
+  });
+
+  it('disconnect drops a request that has not reached its frame', async () => {
+    const h = createHarness({ scrollTop: 0 });
+    const controller = new MessagesScrollController(h.host);
+    controller.connect();
+
+    controller.doAutoScroll({ scrollToTop: 30 });
+    controller.disconnect();
+    await flushFrames();
+
+    expect(h.container.scrollTop).toBe(0);
+  });
 
   it('removing only the pinned message keeps the scroll position', async () => {
     const h = createHarness({
@@ -1185,6 +1318,138 @@ describe('MessagesScrollController', () => {
 
     expect(h.container.scrollTop).toBe(140);
 
+    controller.disconnect();
+  });
+
+  it('a scroll-to-bottom request issued with a pin in the same frame wins without markdown', async () => {
+    const { h, controller, addMessages } = createConnectedController();
+
+    addMessages(createRealPinnableMessage('req-1', 200, 80));
+    controller.doAutoScroll({ scrollToBottom: 0 });
+    await flushFrames();
+
+    expect(h.container.scrollTop).toBe(500);
+    expect(h.setSpacerHeight).not.toHaveBeenCalledWith(240);
+
+    controller.disconnect();
+  });
+
+  it('ignores a container resize that arrives after disconnect', async () => {
+    // connect() creates the panel observer first, then the message observer.
+    let resizeCallback: ResizeObserverCallback | null = null;
+    jest.spyOn(global, 'ResizeObserver').mockImplementation((callback) => {
+      resizeCallback ??= callback;
+      return {
+        observe: jest.fn(),
+        unobserve: jest.fn(),
+        disconnect: jest.fn(),
+      };
+    });
+    const h = createHarness({ scrollTop: 0 });
+    const controller = new MessagesScrollController(h.host);
+    controller.connect();
+
+    resizeCallback!([], {} as ResizeObserver);
+    controller.disconnect();
+    h.onScrollGeometryChanged.mockClear();
+    await flushFrames();
+
+    expect(h.onScrollGeometryChanged).not.toHaveBeenCalled();
+    jest.restoreAllMocks();
+  });
+});
+
+describe('pending throttled scroll requests', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it.each([
+    ['doAutoScroll', 'message update'],
+    ['doAutoScrollInternal', 'message update'],
+    ['doAutoScroll', 'container resize'],
+    ['doAutoScrollInternal', 'container resize'],
+  ] as const)(
+    '%s supersedes a pending %s trailing callback',
+    async (entryPoint, source) => {
+      const { h, controller } = createConnectedController();
+      const messages = [
+        createPortableMessage({ id: 'ui-0' }),
+        createRealPinnableMessage('req-1', 200, 80),
+        createPortableMessage({ id: 'response-1', isResponse: true }),
+      ];
+      h.setMessages(messages);
+      controller.onHostUpdated(null);
+      if (source === 'message update') {
+        h.setMessages([
+          ...messages,
+          createPortableMessage({ id: 'response-2', isResponse: true }),
+        ]);
+        controller.onHostUpdated(null);
+      } else {
+        controller.onContainerResize();
+        controller.onContainerResize();
+      }
+
+      controller[entryPoint]({ scrollToBottom: 0 });
+      await jest.advanceTimersByTimeAsync(16);
+      expect(h.container.scrollTop).toBe(500);
+      expect(h.setSpacerHeight).not.toHaveBeenCalled();
+
+      await jest.advanceTimersByTimeAsync(250);
+      expect(h.container.scrollTop).toBe(500);
+      expect(h.setSpacerHeight).not.toHaveBeenCalled();
+      controller.disconnect();
+    }
+  );
+
+  it('keeps a newer resize on the original trailing deadline', async () => {
+    const { h, controller } = createConnectedController();
+    controller.onContainerResize();
+    await jest.advanceTimersByTimeAsync(50);
+    controller.onContainerResize();
+    await jest.advanceTimersByTimeAsync(30);
+    controller.doAutoScroll({ scrollToTop: 30 });
+    await jest.advanceTimersByTimeAsync(20);
+    expect(h.container.scrollTop).toBe(30);
+
+    controller.onContainerResize();
+    h.onScrollGeometryChanged.mockClear();
+    await jest.advanceTimersByTimeAsync(99);
+    expect(h.onScrollGeometryChanged).not.toHaveBeenCalled();
+    await jest.advanceTimersByTimeAsync(1);
+    expect(h.onScrollGeometryChanged).toHaveBeenCalledTimes(1);
+    await jest.advanceTimersByTimeAsync(16);
+    expect(h.container.scrollTop).toBe(0);
+    controller.disconnect();
+  });
+
+  it('keeps the latest message update on the original trailing deadline', async () => {
+    const { h, controller } = createConnectedController();
+    const messages = [
+      createPortableMessage({ id: 'ui-0' }),
+      createRealPinnableMessage('req-1', 200, 80),
+      createPortableMessage({ id: 'response-1', isResponse: true }),
+    ];
+    h.setMessages(messages);
+    controller.onHostUpdated(null);
+    await jest.advanceTimersByTimeAsync(50);
+    h.setMessages([
+      ...messages,
+      createPortableMessage({ id: 'response-2', isResponse: true }),
+    ]);
+    controller.onHostUpdated(null);
+    await jest.advanceTimersByTimeAsync(50);
+
+    h.setSpacerHeight.mockClear();
+    await jest.advanceTimersByTimeAsync(59);
+    expect(h.setSpacerHeight).not.toHaveBeenCalled();
+    await jest.advanceTimersByTimeAsync(1);
+    expect(h.setSpacerHeight).toHaveBeenCalledTimes(1);
     controller.disconnect();
   });
 });
@@ -1460,4 +1725,415 @@ describe('message resize observation', () => {
     h.deliver(50, replacement);
     expect(h.setSpacerHeight).not.toHaveBeenCalled();
   });
+
+  it.each([30, 200])(
+    'protects a reading offset %ipx below the pin through completion and later layouts',
+    async (offset) => {
+      const h = await createResizeHarness(true);
+      const chosenTop = 300 + offset;
+      h.container.scrollTop = chosenTop;
+      h.container.dispatchEvent(new Event('scroll'));
+      h.resizeContent(420);
+      expect(h.container.scrollTop).toBe(chosenTop);
+      h.resizeContent(1000);
+      h.setMessages([
+        ...h.messages.slice(0, -1),
+        { ...h.response, isStreaming: false },
+      ]);
+      h.controller.onHostUpdated(chosenTop);
+      await flushFrames();
+      expect(h.container.scrollTop).toBe(chosenTop);
+      h.resizeContent(420);
+      h.deliver(20);
+      expect(h.container.scrollTop).toBe(chosenTop);
+      expect(h.getSpacerHeight()).toBe(chosenTop + 500 - 420);
+      h.resizeContent(1200);
+      h.deliver(800);
+      expect(h.getSpacerHeight()).toBe(0);
+      expect(h.container.scrollTop).toBe(chosenTop);
+      h.controller.disconnect();
+    }
+  );
+
+  it('keeps an untouched request pin when streaming reaches a terminal state', async () => {
+    const h = await createResizeHarness(true);
+    h.setMessages([
+      ...h.messages.slice(0, -1),
+      { ...h.response, isStreaming: false },
+    ]);
+    h.resizeContent(420);
+    h.controller.onHostUpdated(300);
+    await flushFrames();
+    h.deliver(20);
+    expect(h.container.scrollTop).toBe(300);
+    expect(h.getSpacerHeight()).toBe(380);
+    h.controller.disconnect();
+  });
+
+  it('uses the precommit reading offset when completion changes the row count', async () => {
+    const h = await createResizeHarness(true);
+    h.container.scrollTop = 330;
+    h.resizeContent(420);
+    h.setMessages([
+      ...h.messages.slice(0, -1),
+      { ...h.response, id: 'replacement', isStreaming: false },
+      createPortableMessage({ id: 'extra', isResponse: true }),
+    ]);
+    h.controller.onHostUpdated(330);
+    await flushFrames();
+    expect(h.container.scrollTop).toBe(330);
+    expect(h.getSpacerHeight()).toBe(410);
+    h.controller.disconnect();
+  });
+
+  it('preserves the reader when one response completes while another still streams', async () => {
+    const h = await createResizeHarness(true);
+    h.container.scrollTop = 450;
+    h.container.dispatchEvent(new Event('scroll'));
+    h.setMessages([
+      ...h.messages.slice(0, -1),
+      { ...h.response, isStreaming: false },
+      createPortableMessage({
+        id: 'other-stream',
+        isStreaming: true,
+        isResponse: true,
+      }),
+    ]);
+    h.resizeContent(420);
+    h.controller.onHostUpdated(450);
+    await flushFrames();
+    h.deliver(20);
+    expect(h.container.scrollTop).toBe(450);
+    expect(h.getSpacerHeight()).toBe(530);
+    h.controller.disconnect();
+  });
+
+  it.each([false, true])(
+    'retains an owner with no rows and rebinds its replacement (silent response: %s)',
+    async (silent) => {
+      const h = await createResizeHarness(true);
+      if (silent) {
+        h.request.isResponse = true;
+        h.request.isStreaming = true;
+      }
+      h.container.scrollTop = 450;
+      h.container.dispatchEvent(new Event('scroll'));
+      h.retainMessages([h.request.messageId]);
+      h.setMessages([]);
+      h.resizeContent(0);
+      h.controller.onHostUpdated(450);
+      await flushFrames();
+      expect(h.container.scrollTop).toBe(450);
+      expect(h.host.setScrollHeightFloor).toHaveBeenLastCalledWith(950);
+      const replacement = {
+        ...h.request,
+        id: 'replacement-owner-row',
+        isStreaming: false,
+        element: document.createElement('div'),
+      };
+      replacement.element.getBoundingClientRect =
+        h.request.element.getBoundingClientRect;
+      h.setMessages([replacement]);
+      h.resizeContent(420);
+      h.controller.onHostUpdated(450);
+      await flushFrames();
+      h.deliver(40, replacement.element);
+      expect(h.container.scrollTop).toBe(450);
+      expect(h.getSpacerHeight()).toBe(530);
+      h.controller.disconnect();
+    }
+  );
+
+  it('releases the reading floor when its owner is actually removed', async () => {
+    const h = await createResizeHarness(true);
+    h.container.scrollTop = 450;
+    h.container.dispatchEvent(new Event('scroll'));
+    h.setMessages([h.messages[0], h.response]);
+    h.controller.onHostUpdated(450);
+    await flushFrames();
+    expect(h.host.setScrollHeightFloor).toHaveBeenLastCalledWith(0);
+    h.controller.disconnect();
+  });
+
+  it('does not fall back to an older request while the silent response owner has no rows', async () => {
+    const h = await createResizeHarness(true);
+    const older = createRealPinnableMessage('older-request', 200, 40);
+    h.setMessages([h.messages[0], older, h.request, h.response]);
+    h.controller.onHostUpdated(300);
+    await flushFrames();
+    h.request.isResponse = true;
+    h.request.isStreaming = true;
+    h.container.scrollTop = 450;
+    h.container.dispatchEvent(new Event('scroll'));
+    h.retainMessages([h.request.messageId]);
+    h.setMessages([]);
+    h.resizeContent(0);
+    h.controller.onHostUpdated(450);
+    await flushFrames();
+    expect(h.container.scrollTop).toBe(450);
+    h.setMessages([h.messages[0], older]);
+    h.resizeContent(420);
+    h.controller.onHostUpdated(450);
+    await flushFrames();
+    expect(h.container.scrollTop).toBe(450);
+    expect(h.host.setScrollHeightFloor).toHaveBeenLastCalledWith(950);
+    h.setMessages([
+      h.messages[0],
+      older,
+      { ...h.request, id: 'replacement', isStreaming: false },
+    ]);
+    h.controller.onHostUpdated(450);
+    await flushFrames();
+    expect(h.container.scrollTop).toBe(450);
+    h.controller.disconnect();
+  });
+
+  it.each([350, 100, 300])(
+    'honors a newer user position of %ipx before completion work runs',
+    async (newTop) => {
+      const h = await createResizeHarness(true);
+      h.container.scrollTop = 450;
+      h.container.dispatchEvent(new Event('scroll'));
+      h.setMessages([
+        ...h.messages.slice(0, -1),
+        { ...h.response, isStreaming: false },
+      ]);
+      h.controller.onHostUpdated(450);
+      h.container.scrollTop = newTop;
+      h.container.dispatchEvent(new Event('scroll'));
+      await flushFrames();
+      h.deliver(600);
+      expect(h.container.scrollTop).toBe(newTop);
+      h.controller.disconnect();
+    }
+  );
+
+  it.each([false, true])(
+    'keeps a newer upward choice when the silent owner row is replaced (zero-row gap: %s)',
+    async (zeroGap) => {
+      const h = await createResizeHarness(true);
+      const older = createRealPinnableMessage('older-request', 200, 40);
+      h.setMessages([h.messages[0], older, h.request, h.response]);
+      h.controller.onHostUpdated(300);
+      await flushFrames();
+      h.request.isResponse = true;
+      h.request.isStreaming = true;
+      h.container.scrollTop = 450;
+      h.container.dispatchEvent(new Event('scroll'));
+      h.container.scrollTop = 100;
+      h.container.dispatchEvent(new Event('scroll'));
+      h.retainMessages([h.request.messageId]);
+      if (zeroGap) {
+        h.setMessages([]);
+        h.controller.onHostUpdated(100);
+        await flushFrames();
+        expect(h.container.scrollTop).toBe(100);
+        h.setMessages([h.messages[0], older]);
+        h.controller.onHostUpdated(100);
+        h.controller.onContainerResize();
+        await flushFrames();
+        expect(h.container.scrollTop).toBe(100);
+      }
+      h.setMessages([
+        h.messages[0],
+        older,
+        { ...h.request, id: 'replacement-owner', isStreaming: false },
+        { ...h.response, isStreaming: false },
+      ]);
+      h.controller.onHostUpdated(100);
+      await flushFrames();
+      h.deliver(600);
+      expect(h.container.scrollTop).toBe(100);
+      expect(h.host.setScrollHeightFloor).toHaveBeenLastCalledWith(0);
+      h.controller.disconnect();
+    }
+  );
+
+  it.each([330, 100])(
+    'honors a new %ipx choice after an untouched stream queues completion',
+    async (newTop) => {
+      const h = await createResizeHarness(true);
+      h.setMessages([
+        ...h.messages.slice(0, -1),
+        { ...h.response, isStreaming: false },
+      ]);
+      h.controller.onHostUpdated(300);
+      h.container.scrollTop = newTop;
+      h.container.dispatchEvent(new Event('scroll'));
+      await flushFrames();
+      h.deliver(600);
+      expect(h.container.scrollTop).toBe(newTop);
+      h.controller.disconnect();
+    }
+  );
+
+  it.each([300, 450])(
+    'uses a newer upward precommit snapshot from %ipx before its scroll event during zero-row replacement',
+    async (initialTop) => {
+      const h = await createResizeHarness(true);
+      if (initialTop !== 300) {
+        h.container.scrollTop = initialTop;
+        h.container.dispatchEvent(new Event('scroll'));
+      }
+      h.container.scrollTop = 100;
+      h.retainMessages([h.request.messageId]);
+      h.setMessages([]);
+      h.controller.onHostUpdated(100);
+      await flushFrames();
+      expect(h.container.scrollTop).toBe(100);
+      h.setMessages([
+        h.messages[0],
+        { ...h.request, id: 'replacement-owner' },
+        { ...h.response, isStreaming: false },
+      ]);
+      h.controller.onHostUpdated(100);
+      await flushFrames();
+      expect(h.container.scrollTop).toBe(100);
+      expect(h.host.setScrollHeightFloor).toHaveBeenLastCalledWith(0);
+      h.controller.disconnect();
+    }
+  );
+
+  it.each(['auto-scroll', 'scroll-to-message', 'element-into-view'])(
+    'lets an explicit %s supersede completion restoration',
+    async (command) => {
+      const h = await createResizeHarness(true);
+      h.container.scrollTop = 450;
+      h.container.dispatchEvent(new Event('scroll'));
+      h.setMessages([
+        ...h.messages.slice(0, -1),
+        { ...h.response, isStreaming: false },
+      ]);
+      h.controller.onHostUpdated(450);
+      const target = document.createElement('div');
+      Object.defineProperty(target, 'offsetTop', { value: 100 });
+      target.getBoundingClientRect = () =>
+        ({ top: -342, bottom: -302, height: 40 }) as DOMRect;
+      if (command === 'auto-scroll') {
+        h.controller.doAutoScroll({ scrollToTop: 100 });
+      } else if (command === 'scroll-to-message') {
+        h.controller.doScrollToMessageElement(target);
+      } else {
+        h.controller.scrollElementIntoView(target);
+      }
+      await flushFrames();
+      expect(h.container.scrollTop).toBe(100);
+      h.controller.disconnect();
+    }
+  );
+
+  it('reengages a newer downward precommit choice before its scroll event during zero-row replacement', async () => {
+    const h = await createResizeHarness(true);
+    h.container.scrollTop = 100;
+    h.container.dispatchEvent(new Event('scroll'));
+    h.container.scrollTop = 330;
+    h.retainMessages([h.request.messageId]);
+    h.setMessages([]);
+    h.resizeContent(0);
+    h.controller.onHostUpdated(330);
+    await flushFrames();
+    expect(h.container.scrollTop).toBe(330);
+    expect(h.host.setScrollHeightFloor).toHaveBeenLastCalledWith(830);
+    h.setMessages([
+      h.messages[0],
+      { ...h.request, id: 'replacement-owner' },
+      { ...h.response, isStreaming: false },
+    ]);
+    h.resizeContent(420);
+    h.controller.onHostUpdated(330);
+    await flushFrames();
+    expect(h.container.scrollTop).toBe(330);
+    h.controller.disconnect();
+  });
+
+  it('pins a new request instead of retaining the previous response reading target', async () => {
+    const h = await createResizeHarness(true);
+    h.container.scrollTop = 450;
+    h.container.dispatchEvent(new Event('scroll'));
+    const request = createRealPinnableMessage('new-request', 0, 40);
+    request.element.getBoundingClientRect = () =>
+      ({ top: 500 - h.container.scrollTop, height: 40 }) as DOMRect;
+    h.setMessages([...h.messages, request]);
+    h.controller.onHostUpdated(450);
+    await flushFrames();
+    expect(h.container.scrollTop).toBe(440);
+    h.controller.disconnect();
+  });
+
+  it('does not invalidate a new request pin waiting for layout on another host update', async () => {
+    const h = await createResizeHarness(true);
+    h.container.scrollTop = 450;
+    h.container.dispatchEvent(new Event('scroll'));
+    const request = createRealPinnableMessage('new-request', 0, 40);
+    request.element.getBoundingClientRect = () =>
+      ({ top: 500 - h.container.scrollTop, height: 40 }) as DOMRect;
+    let finishLayout: () => void;
+    const markdown = document.createElement('cds-aichat-markdown');
+    Object.defineProperty(markdown, 'updateComplete', {
+      value: new Promise<void>((resolve) => {
+        finishLayout = resolve;
+      }),
+    });
+    request.element.appendChild(markdown);
+    h.setMessages([...h.messages, request]);
+    h.controller.onHostUpdated(450);
+    await flushFrames(2);
+    h.setMessages([...h.messages, { ...request }]);
+    h.controller.onHostUpdated(450);
+    finishLayout();
+    await flushFrames();
+    expect(h.container.scrollTop).toBe(440);
+    h.controller.disconnect();
+  });
+
+  it('pins a genuinely new request while the previous reading owner has no rows', async () => {
+    const h = await createResizeHarness(true);
+    h.container.scrollTop = 450;
+    h.container.dispatchEvent(new Event('scroll'));
+    h.retainMessages([h.request.messageId]);
+    h.setMessages([]);
+    h.resizeContent(0);
+    h.controller.onHostUpdated(450);
+    await flushFrames();
+    const request = createRealPinnableMessage('new-request', 0, 40);
+    request.element.getBoundingClientRect = () =>
+      ({ top: 500 - h.container.scrollTop, height: 40 }) as DOMRect;
+    h.resizeContent(1000);
+    h.setMessages([h.messages[0], request]);
+    h.controller.onHostUpdated(450);
+    await flushFrames();
+    expect(h.container.scrollTop).toBe(440);
+    h.controller.disconnect();
+  });
+
+  it.each(['clear', 'disconnect', 'reconnect'])(
+    'invalidates pending completion and resize work on %s',
+    async (action) => {
+      const h = await createResizeHarness(true);
+      h.container.scrollTop = 450;
+      h.container.dispatchEvent(new Event('scroll'));
+      h.setMessages([
+        ...h.messages.slice(0, -1),
+        { ...h.response, isStreaming: false },
+      ]);
+      h.controller.onHostUpdated(450);
+      observers[0].callback([], observers[0]);
+      if (action === 'clear') {
+        h.setMessages([]);
+        h.controller.onHostUpdated(450);
+      } else {
+        h.controller.disconnect();
+        if (action === 'reconnect') {
+          h.setMessages([]);
+          h.controller.connect();
+        }
+      }
+      h.setSpacerHeight.mockClear();
+      (h.host.setScrollHeightFloor as jest.Mock).mockClear();
+      await flushFrames();
+      expect(h.setSpacerHeight).not.toHaveBeenCalled();
+      expect(h.host.setScrollHeightFloor).not.toHaveBeenCalled();
+      h.controller.disconnect();
+    }
+  );
 });

@@ -60,9 +60,21 @@ const STEP_PLANS: StepPlan[] = [
 const FINAL_TEXT =
   'Here is the response. Each reasoning step above streamed a TextItem into its content array and then appended a user_defined summary card.';
 
-function sleep(ms: number) {
-  return new Promise<void>((resolve) => {
-    setTimeout(resolve, ms);
+// Resolve as soon as Stop aborts the request, and remove the timer and listener.
+function sleep(milliseconds: number, signal?: AbortSignal) {
+  return new Promise<boolean>((resolve) => {
+    if (signal?.aborted) {
+      resolve(false);
+      return;
+    }
+    const finish = (completed: boolean) => {
+      clearTimeout(timer);
+      signal?.removeEventListener('abort', onAbort);
+      resolve(completed);
+    };
+    const onAbort = () => finish(false);
+    const timer = setTimeout(() => finish(true), milliseconds);
+    signal?.addEventListener('abort', onAbort, { once: true });
   });
 }
 
@@ -126,28 +138,18 @@ function buildSnapshot(
   };
 }
 
-function createShellMessage(
+async function pushMessageOptions(
   instance: ChatInstance,
   responseID: string,
-  messageOptions: MessageResponseOptions
+  messageOptions: MessageResponseOptions,
+  signal?: AbortSignal
 ) {
-  // First upsert is STREAMING: seed an empty-text shell so the message exists
-  // before the reasoning steps stream in.
-  return instance.messaging.upsertMessage(
-    responseID,
-    MessageState.STREAMING,
-    () => buildSnapshot(responseID, '', messageOptions, false)
-  );
-}
-
-function pushMessageOptions(
-  instance: ChatInstance,
-  responseID: string,
-  messageOptions: MessageResponseOptions
-) {
+  if (signal?.aborted) {
+    return;
+  }
   // STREAMING upsert that advances `message_options.reasoning` (the steps and
   // their streamed content arrays) while the answer text is still empty.
-  return instance.messaging.upsertMessage(
+  await instance.messaging.upsertMessage(
     responseID,
     MessageState.STREAMING,
     () => buildSnapshot(responseID, '', messageOptions, true)
@@ -158,112 +160,110 @@ async function streamFinalText(
   instance: ChatInstance,
   responseID: string,
   text: string,
-  finalMessageOptions: MessageResponseOptions,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  finalMessageOptions?: MessageResponseOptions
 ) {
-  const words = text.split(' ');
-  let canceled = false;
   let accumulated = '';
-  const onAbort = () => {
-    canceled = true;
-  };
-  signal?.addEventListener('abort', onAbort);
-
-  try {
-    for (let i = 0; i < words.length; i += 1) {
-      if (canceled) {
-        return;
-      }
-      accumulated += `${words[i]} `;
-      // Re-send the full reasoning `message_options` alongside the growing
-      // answer or the streamed steps would disappear once the answer starts.
-      await instance.messaging.upsertMessage(
-        responseID,
-        MessageState.STREAMING,
-        () => buildSnapshot(responseID, accumulated, finalMessageOptions, true)
-      );
-      await sleep(WORD_DELAY);
-    }
-
-    if (canceled) {
-      return;
-    }
-
-    // Final upsert transitions STREAMING -> COMPLETE, firing `receive` once.
-    await instance.messaging.upsertMessage(
-      responseID,
-      MessageState.COMPLETE,
-      () => buildSnapshot(responseID, text, finalMessageOptions, false)
-    );
-  } finally {
-    signal?.removeEventListener('abort', onAbort);
-  }
-}
-
-async function runScenario(instance: ChatInstance, signal?: AbortSignal) {
-  const responseID = crypto.randomUUID();
-  const steps: ReasoningStep[] = [];
-
-  await createShellMessage(instance, responseID, {
-    reasoning: { steps: [] },
-  });
-
-  for (let i = 0; i < STEP_PLANS.length; i += 1) {
+  for (const word of text.split(' ')) {
     if (signal?.aborted) {
       return;
     }
+    accumulated += `${word} `;
+    // Await each write so Stop cannot leave queued word updates behind it.
+    await instance.messaging.upsertMessage(
+      responseID,
+      MessageState.STREAMING,
+      () =>
+        buildSnapshot(responseID, accumulated, finalMessageOptions ?? {}, true)
+    );
+    if (!(await sleep(WORD_DELAY, signal))) {
+      return;
+    }
+  }
+  if (signal?.aborted) {
+    return;
+  }
+  await instance.messaging.upsertMessage(
+    responseID,
+    MessageState.COMPLETE,
+    () => buildSnapshot(responseID, text, finalMessageOptions ?? {}, false)
+  );
+}
 
-    const plan = STEP_PLANS[i];
+async function runScenario(instance: ChatInstance, signal?: AbortSignal) {
+  if (signal?.aborted) {
+    return;
+  }
+  const responseID = crypto.randomUUID();
+  const steps: ReasoningStep[] = [];
+  await pushMessageOptions(
+    instance,
+    responseID,
+    { reasoning: { steps: [] } },
+    signal
+  );
 
-    // 1. Append the new step with its title and empty content, so the user
-    //    sees the step appear before any body content streams in.
-    steps.push({
-      title: plan.title,
-      content: [] as GenericItem[],
-    });
-    await pushMessageOptions(instance, responseID, {
-      reasoning: { steps: cloneSteps(steps) },
-    });
-    await sleep(STEP_GAP);
+  for (const plan of STEP_PLANS) {
+    if (signal?.aborted) {
+      return;
+    }
+    steps.push({ title: plan.title, content: [] as GenericItem[] });
+    await pushMessageOptions(
+      instance,
+      responseID,
+      {
+        reasoning: { steps: cloneSteps(steps) },
+      },
+      signal
+    );
+    if (!(await sleep(STEP_GAP, signal))) {
+      return;
+    }
 
-    // 2. Stream the TextItem body for this step word-by-word.
-    const words = plan.body.split(' ');
     let partial = '';
-
-    for (let w = 0; w < words.length; w += 1) {
+    for (const word of plan.body.split(' ')) {
       if (signal?.aborted) {
         return;
       }
-      partial = partial ? `${partial} ${words[w]}` : words[w];
-      steps[i] = {
+      partial = partial ? `${partial} ${word}` : word;
+      steps[steps.length - 1] = {
         title: plan.title,
         content: makeStepContent(partial),
       };
-      await pushMessageOptions(instance, responseID, {
-        reasoning: { steps: cloneSteps(steps) },
-      });
-      await sleep(WORD_DELAY);
+      await pushMessageOptions(
+        instance,
+        responseID,
+        {
+          reasoning: { steps: cloneSteps(steps) },
+        },
+        signal
+      );
+      if (!(await sleep(WORD_DELAY, signal))) {
+        return;
+      }
     }
-
-    // 3. Append the user_defined summary card to this step's content array.
-    steps[i] = {
+    if (signal?.aborted) {
+      return;
+    }
+    steps[steps.length - 1] = {
       title: plan.title,
       content: makeStepContent(plan.body, plan),
     };
-    await pushMessageOptions(instance, responseID, {
-      reasoning: { steps: cloneSteps(steps) },
-    });
-
-    await sleep(STEP_GAP);
+    await pushMessageOptions(
+      instance,
+      responseID,
+      {
+        reasoning: { steps: cloneSteps(steps) },
+      },
+      signal
+    );
+    if (!(await sleep(STEP_GAP, signal))) {
+      return;
+    }
   }
-
-  await streamFinalText(
-    instance,
-    responseID,
-    FINAL_TEXT,
-    { reasoning: { steps: cloneSteps(steps) } },
-    signal
-  );
+  await streamFinalText(instance, responseID, FINAL_TEXT, signal, {
+    reasoning: { steps: cloneSteps(steps) },
+  });
 }
 
 function sendWelcome(instance: ChatInstance) {

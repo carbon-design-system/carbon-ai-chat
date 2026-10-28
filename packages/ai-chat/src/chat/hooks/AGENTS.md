@@ -10,8 +10,6 @@ Pair each hook with a plain module: `useWindowOpenState` uses `../services/windo
 - Keep observable snapshots stable until state changes. Preserve editor object identity and lazy loading.
 - Context access and React lifecycle hooks need no new core. Reuse existing plain helpers and the React 17 selector shim.
 
-## Related guidance
-
 - [Read before changing package code](../../../AGENTS.md) — package rules.
 - [Read when choosing where logic belongs](../../../../../references/code-patterns.md#framework-agnostic-logic) — the shared logic boundary.
 - [Read when writing tests](../../../references/tests.md) — test layout and commands.

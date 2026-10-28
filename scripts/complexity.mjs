@@ -20,6 +20,10 @@
  * splitting them would mean parsing three times or threading an AST between
  * modules. The length buys a single parse.
  *
+ * Render branches come from a separate parse joined to ESLint scores by
+ * position. That parse also supplies the top-level count; if it fails, render
+ * and top-level counts are 0.
+ *
  * Usage:
  *   node scripts/complexity.mjs <file> [more ...] [--max <n>] [--report <n>]
  *   node scripts/complexity.mjs --changed <base> [--max <n>] [--report <n>]

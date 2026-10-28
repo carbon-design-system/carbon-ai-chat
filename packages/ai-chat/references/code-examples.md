@@ -1,6 +1,6 @@
 # code-examples.md — writing code examples
 
-What makes a good code example on the `@carbon/ai-chat` public surface. JSDoc `@example` blocks and docs-site snippets render to the TypeDoc site, an Elasticsearch index, and an MCP server — so a block is read two ways: by a human pasting it, and by a coding agent that retrieves it **with no surrounding code**. Write for both.
+Write public code examples for humans pasting them and agents retrieving them **with no surrounding code**. See [types/AGENTS.md](../src/types/AGENTS.md) for the surfaces that publish them.
 
 Applies to `@example` blocks in [src/types/](../src/types) (see [src/types/AGENTS.md](../src/types/AGENTS.md) for where `@example` is required) and to snippets in [docs/](../docs) (see [docs/AGENTS.md](../docs/AGENTS.md) for the test-it workflow).
 
@@ -45,20 +45,9 @@ The first line after `@example` is the title; the fenced code follows. One block
 
 **Good** (above): three titled blocks. Each renders as its own captioned example, is retrievable in isolation, and reads as one complete call.
 
-**Bad** (the same content, today's shape): one `@example` with all three cases stacked inside a single fence, divided by `// Add a field…` / `// Replace…` / `// Clear…` comments. The reader can't tell where one case ends, search returns the whole blob, and the title is empty.
-
-## Sources
-
-External best practice these principles draw on:
-
-- [Google — code samples](https://developers.google.com/style/code-samples)
-- [MDN — code example guidelines](https://developer.mozilla.org/en-US/docs/MDN/Writing_guidelines/Code_style_guide)
-- [TSDoc — `@example`](https://tsdoc.org/pages/tags/example/)
-- [Fern — how to write LLM-friendly documentation](https://buildwithfern.com/post/how-to-write-llm-friendly-documentation)
+**Bad** (the same content as one block): one `@example` with all three cases stacked inside a single fence, divided by `// Add a field…` / `// Replace…` / `// Clear…` comments. The reader can't tell where one case ends, search returns the whole blob, and the title is empty.
 
 ## Related guidance
 
-- [src/types/AGENTS.md](../src/types/AGENTS.md) — where `@example` is required, plus JSDoc rules (`@category`, `{@link}`, content bar)
-- [docs/AGENTS.md](../docs/AGENTS.md) — testing docs-site snippets in `examples/`
 - [tone.md](../../../references/tone.md) — voice and quick rules for public copy
 - [packages/ai-chat/AGENTS.md](../AGENTS.md) — package overview
