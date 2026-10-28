@@ -43,6 +43,7 @@ const componentEntries = {
   'file-uploads.min': 'src/components/aichat-file-uploads/index.ts',
   'launcher.min': 'src/components/aichat-launcher/index.ts',
   'markdown.min': 'src/components/aichat-markdown/index.ts',
+  'messages-shell.min': 'src/components/aichat-messages-shell/index.ts',
   'processing.min': 'src/components/aichat-processing/index.ts',
   'prompt-line.min': 'src/components/aichat-prompt-line/index.ts',
   'reasoning-steps.min': 'src/components/aichat-reasoning-steps/index.ts',
