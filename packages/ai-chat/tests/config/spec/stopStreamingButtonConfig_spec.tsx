@@ -228,6 +228,117 @@ describe('stop streaming button from input config', () => {
     expect(selectStopStreamingButtonVisible(store.getState())).toBe(true);
   });
 
+  it('recovers from a rejected Stop handler without cancelling the pending request', async () => {
+    let resolveSend: () => void;
+    let rejectStop: (error: Error) => void;
+    let signal: AbortSignal;
+    let sendPromise: Promise<void>;
+    let sendSettled = false;
+    const customSendMessage = jest.fn(
+      (_request: unknown, options: { signal: AbortSignal }) => {
+        signal = options.signal;
+        return new Promise<void>((resolve) => {
+          resolveSend = resolve;
+        });
+      }
+    );
+    const { instance, store } = await renderChat(
+      props(
+        { showStopStreamingButton: true },
+        {
+          customSendMessage,
+          showStopButtonImmediately: true,
+          skipWelcome: true,
+        }
+      )
+    );
+    const failure = new Error('host Stop handler failed');
+    const handler = jest
+      .fn()
+      .mockImplementationOnce(
+        () =>
+          new Promise<void>((_resolve, reject) => {
+            rejectStop = reject;
+          })
+      )
+      .mockResolvedValue(undefined);
+    instance.on({ type: BusEventType.STOP_STREAMING, handler });
+    const cancel = jest.spyOn(
+      instance.serviceManager.messageService,
+      'cancelCurrentMessageRequest'
+    );
+    const log = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    try {
+      await act(async () => {
+        sendPromise = instance.send('Hello').then(() => {
+          sendSettled = true;
+        });
+      });
+      await waitFor(() => expect(customSendMessage).toHaveBeenCalledTimes(1));
+      expect(
+        store.getState().assistantInputState.stopStreamingButtonState.isVisible
+      ).toBe(true);
+      await clickStop();
+      await waitFor(() => expect(handler).toHaveBeenCalledTimes(1));
+      await waitFor(() =>
+        expect(getSendControl().isStopStreamingButtonDisabled).toBe(true)
+      );
+      expect(
+        store.getState().assistantInputState.stopStreamingButtonState.isDisabled
+      ).toBe(true);
+      expect(cancel).not.toHaveBeenCalled();
+      expect(signal.aborted).toBe(false);
+      expect(sendSettled).toBe(false);
+
+      await act(async () => {
+        rejectStop(failure);
+      });
+      await waitFor(() =>
+        expect(getSendControl().isStopStreamingButtonDisabled).toBe(false)
+      );
+      expect(log).toHaveBeenCalledWith(
+        expect.stringContaining('Error stopping stream:'),
+        failure
+      );
+      expect(
+        store.getState().assistantInputState.stopStreamingButtonState.isDisabled
+      ).toBe(false);
+      expect(
+        store.getState().assistantInputState.stopStreamingButtonState.isVisible
+      ).toBe(true);
+      expect(cancel).not.toHaveBeenCalled();
+      expect(signal.aborted).toBe(false);
+      expect(sendSettled).toBe(false);
+
+      await act(async () => {
+        resolveSend();
+        await sendPromise;
+      });
+      await waitFor(() =>
+        expect(
+          store.getState().assistantInputState.stopStreamingButtonState
+            .isVisible
+        ).toBe(false)
+      );
+      expect(getSendControl().isStopStreamingButtonVisible).toBe(true);
+      await clickStop();
+      await waitFor(() => expect(handler).toHaveBeenCalledTimes(2));
+      await waitFor(() =>
+        expect(getSendControl().isStopStreamingButtonDisabled).toBe(false)
+      );
+      expect(cancel).not.toHaveBeenCalled();
+    } finally {
+      await act(async () => {
+        rejectStop?.(failure);
+        resolveSend?.();
+        await sendPromise;
+      });
+      cancel.mockRestore();
+      log.mockRestore();
+    }
+  });
+
   it('leaves a pending request alone when only the host shows the button', async () => {
     let resolveSend: () => void;
     let signal: AbortSignal;
