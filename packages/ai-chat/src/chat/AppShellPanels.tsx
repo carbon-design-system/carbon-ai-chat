@@ -107,7 +107,7 @@ const renderMessageComponent = (props: MessageTypeComponentProps) => (
   <MessageTypeComponent {...props} />
 );
 
-export const AppShellPanels = React.memo(function AppShellPanels({
+export function useAppShellPanels({
   serviceManager,
   hosts,
   endChatConfirmation,
@@ -144,6 +144,9 @@ export const AppShellPanels = React.memo(function AppShellPanels({
 }: AppShellPanelsProps) {
   const viewState = useChatViewStateInstance();
   const native = useRef<NativePanels>(null);
+  const setNativeElement = useCallback((element: NativePanels | null) => {
+    native.current = element;
+  }, []);
   const active = useRef(true);
   const latestDisclaimerRef = useRef(disclaimerRef);
   latestDisclaimerRef.current = disclaimerRef;
@@ -445,25 +448,38 @@ export const AppShellPanels = React.memo(function AppShellPanels({
     }
   }, [nativeReady, requests, hosts, parts]);
 
+  return {
+    nativeProps: {
+      inputs,
+      callbacks,
+      hosts,
+      transformHeaderIcon: transformReactIconToCarbonIcon,
+      onTargetsReady,
+    },
+    setNativeElement,
+    content: requests.map((request) => (
+      <PanelContentAdapter
+        key={request.panel}
+        hosts={hosts}
+        request={request}
+        parts={parts}
+      />
+    )),
+  };
+}
+
+export const AppShellPanels = React.memo(function AppShellPanels(
+  props: AppShellPanelsProps
+) {
+  const { nativeProps, setNativeElement, content } = useAppShellPanels(props);
   return (
     <>
       <NativePanelsRegion
         slot="panels"
-        ref={native}
-        inputs={inputs}
-        callbacks={callbacks}
-        hosts={hosts}
-        transformHeaderIcon={transformReactIconToCarbonIcon}
-        onTargetsReady={onTargetsReady}
+        ref={setNativeElement}
+        {...nativeProps}
       />
-      {requests.map((request) => (
-        <PanelContentAdapter
-          key={request.panel}
-          hosts={hosts}
-          request={request}
-          parts={parts}
-        />
-      ))}
+      {content}
     </>
   );
 });
