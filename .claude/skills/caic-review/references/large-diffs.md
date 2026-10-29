@@ -29,16 +29,13 @@ Everything else. Risk concentrates where the diff landed, and the surrounding co
 
 ## Size is a finding
 
-A diff nobody can review well does not become reviewable by being reviewed anyway. When the change should have been several PRs, say so:
-
-- **Important** by default. Name the seams — which files would have made the second PR.
-- **Blocker** when the PR bundles unrelated work. That is scope creep, already a Blocker on its own; size is just how it surfaced.
+A diff nobody can review well does not become reviewable by being reviewed anyway. When the change should have been several PRs, say so as **Important** — including a PR that bundles unrelated work. Name the seams: which files would have made the second PR.
 
 Mechanical bulk is not the same thing. A rename sweep across sixty files is one job, and it reviews fine once the ranking above drops it into the glance tier.
 
 ## Say what you read
 
-A partial review that reads as a complete one is worse than no review. Close the summary with your coverage, alongside the dropped-finding count:
+A partial review that reads as a complete one is worse than no review. State your coverage in the summary — under **Not verified** when it was partial, in **Checked** when it was full ([layout](../SKILL.md#output-expectations)):
 
 > Read the store changes and public types in full. Skimmed 14 test-fixture updates and the lockfile.
 

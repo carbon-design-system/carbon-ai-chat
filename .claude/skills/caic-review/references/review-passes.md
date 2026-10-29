@@ -35,13 +35,13 @@ Skip the split when a single reading holds the whole diff in view. Splitting a h
 
 ## Brief every pass the same way
 
-Dispatch them in parallel when the harness gives you sub-agents (see [AGENTS.md](../../../../AGENTS.md)); run them as separate sequential passes when it doesn't. Either way, every pass gets the same brief: the diff, this rubric by path, its one dimension, and the `AGENTS.md` files governing the paths it holds ([repo-checks.md](repo-checks.md)). The finding shape and [What isn't a finding](writing-findings.md#what-isnt-a-finding) travel with the rubric. A pass told only to find things will manufacture Nits to justify itself.
+Dispatch them in parallel when the harness gives you sub-agents (see [AGENTS.md](../../../../AGENTS.md)); run them as separate sequential passes when it doesn't. Either way, every pass gets the same brief: the diff, this rubric by path, its one dimension, and the `AGENTS.md` files governing the paths it holds ([repo-checks.md](repo-checks.md)). The finding shape and [What isn't a finding](writing-findings.md#what-isnt-a-finding) travel with the rubric. A pass told only to find things will manufacture findings to justify itself.
 
 A pass returns findings and nothing else — no verdict, no cap, no ranking. It can't rank what it can't see.
 
 ## Refute before you synthesize
 
-The caps cut volume, never falsity: a wrong Blocker is unique, top-ranked, and never dropped, so it survives every other step. Take each Blocker and Important and argue the other side — name the code path that makes it wrong. A finding you can't refute ships; one you can, dies silently. Hand this to a sub-agent with the diff and the findings, not the passes' reasoning, when the harness has one; run it as your own last pass when it doesn't. Nits skip it — they are cheap to be wrong about.
+The caps cut volume, never falsity: a wrong Blocker is unique, top-ranked, and never dropped, so it survives every other step. Take each finding and argue the other side — name the code path that makes it wrong. A finding you can't refute ships; one you can, dies silently. Hand this to a sub-agent with the diff and the findings, not the passes' reasoning, when the harness has one; run it as your own last pass when it doesn't.
 
 ## Synthesize before you write anything
 

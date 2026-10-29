@@ -25,10 +25,11 @@ This rubric governs every code review in this repo — both user-requested revie
 - When reading it all at one depth would mean reading all of it shallowly, rank the files by risk first — [large-diffs.md](references/large-diffs.md).
 - **Score the diff against what it had to satisfy** — the issue's Done when, Constraints, and comments, the proofs, any API proposal, any ADR it cites. That check runs on every review, and [review-passes.md](references/review-passes.md#the-check-that-runs-every-time) carries each one and the severity a miss earns.
 - **Verify what changed and reuse current evidence.** [repo-checks.md](references/repo-checks.md) selects the gates, coordinates builds, and lists conventions no gate catches.
-- Tag every finding with a severity so real problems aren't buried under taste:
-  - **Blocker** — must fix before merge: bug, regression, security issue, broken build/tests, violated repo convention, accidental edit to generated output.
-  - **Important** — should fix: unclear naming, missing test for changed behavior, unhandled edge case, scope creep.
-  - **Nit** — optional, and it still has to earn its place: a concrete one-edit fix a later reader benefits from. Everything else is noise — see [What isn't a finding](references/writing-findings.md#what-isnt-a-finding).
+- Tag every finding by **what it costs if it merges as written**:
+  - **Blocker** — something ships broken, or a commitment breaks: wrong behavior on a path you can name, a regression, a security hole, a broken build or tests, an edit to generated output, or a missed Done when, proof, or ADR. Fix before merge.
+  - **Important** — nothing ships broken, but someone pays later: a missing test for changed behavior, a defect you couldn't confirm past the happy path, needless work such as whole-list re-renders, a misleading name or doc, scope creep, or unrelated work bundled in. The author fixes it in this PR or replies with why not; a reply is enough to merge.
+  - **If nobody pays, it isn't a finding**, however small the edit — see [What isn't a finding](references/writing-findings.md#what-isnt-a-finding).
+- **A convention break costs what its consequence costs.** It is not a Blocker by default.
 - Read enough to be sure before you call something a **Blocker**. A false Blocker costs the author as much as a missed one. If you have only read the happy path, file it as **Important** and say what you did not read.
 
 ## Run one dimension at a time
@@ -54,12 +55,42 @@ One shape, one order — orientation, then severity, the defect, what it costs, 
 
 ## Output expectations
 
-- **Open with the verdict on one line** — ship, fix blockers, or rework. Nothing precedes it: no greeting, no "great work on this", no recap of what the PR does. The author wrote the diff and does not need it read back.
-- **Then the defects, ahead of everything else** — at most three lines, carrying only what the verdict rests on, in this order: the blocking concerns, any design-level concern that outgrew a finding, then the dropped-finding count. What you checked and cleared, the gates you ran, and any strength all sit below them. A strength earns a line only when it was the risk and it landed — "the migration path handles the null case, which was the hard part." Generic praise is padding; cut it.
-- List findings grouped by severity (**Blocker**, **Important**, **Nit**), each written to the shape above.
-- **Never drop a Blocker.** List every one, however many there are. A Blocker reduced to a count in the summary blocks nothing, and merges.
-- **Cap Important and Nit at ten between them**, no more than three of those Nits, highest severity first. Drop Nits before Importants, and name the drop in one summary line: "12 further Nits (naming, comment wording) not listed." A review nobody finishes fixes nothing, and a silent cut reads as full coverage. When the Blockers alone run past ten, drop the Importants and Nits entirely — the verdict is rework, and a tail of taste under that many must-fixes is noise.
-- End with a **Test / verification gaps** section if the diff lacks coverage for changed behavior.
+**The summary — the review body above the findings — has a fixed layout.** Only the verdict is required. Drop any other section with nothing in it; never write "None."
+
+````markdown
+### AI Review
+
+**Fix blockers before merge.** 1 Blocker, 2 Important; 3 inline suggestions.
+
+**Blocking**
+- `foo.ts:42` — the early return leaks the listener on every close.
+
+**Across the diff**
+- Four reducers rebuild the whole list for one changed item; fix the pattern, not only the two flagged lines.
+
+**Not verified**
+- The retry branch of the upload queue; read the happy path only.
+
+<details><summary>Checked</summary>
+
+`npm run lint` and the `ai-chat` tests passed at `abc1234`. Read the store and public types in full; skimmed 14 fixture updates.
+
+</details>
+````
+
+- **`### AI Review` opens every review posted to GitHub**, so the PR's other readers know who wrote it. A review returned in the conversation skips it.
+- **The verdict line comes next, and nothing else precedes it**: no greeting, no "great work on this", no recap of what the PR does. The author wrote the diff and does not need it read back. Pick **Ship.** when there are no findings, **Fix or answer the Importants, then ship.** when only Importants remain, **Fix blockers before merge.** when something blocks, or **Rework.** when the approach has to change and fixing the findings one by one won't get there. Then count the findings by severity, any inline suggestions, and any dropped findings, so the author can size the job.
+- **One line per bullet.** It names the defect and where; the finding carries the why and the fix. A bullet that needs a second line is a finding.
+- **Blocking** lists every Blocker. **Never drop one**, however many there are — a Blocker reduced to a count blocks nothing, and merges.
+- **Across the diff** holds what no line comment can: a pattern across files, a design concern that outgrew a finding, or a PR that should have been several ([large-diffs.md](references/large-diffs.md#size-is-a-finding)). Flag two or three instances of a pattern as findings and ask for the rest here.
+- **Not verified** names what limits the verdict: changed behavior with no test, a gate you couldn't run, code you skimmed.
+- **A strength earns one line** above **Checked**, and only when it was the risk and it landed — "the migration path handles the null case, which was the hard part." Generic praise is padding; cut it.
+- **Checked** collapses the logistics: a base other than `main`, the gates and their results, and what you read in full. The author opens it only to question the verdict.
+- **Keep the visible part on one screen.** Past that, move the detail into a finding or into **Checked**.
+
+**The findings follow the summary**, Blockers first, then Important, each written to the shape above. On a posted review they are line comments, so the summary names only the Blockers and counts the rest.
+
+**Cap Important at ten**, highest cost first, and count the drop in the verdict line: "6 further Important not listed." A review nobody finishes fixes nothing, and a silent cut reads as full coverage. When the Blockers alone run past ten, drop the Importants entirely — the verdict is rework, and a tail of should-fixes under that many must-fixes is noise.
 
 ## Related guidance
 
