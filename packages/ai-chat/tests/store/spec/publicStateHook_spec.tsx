@@ -10,7 +10,7 @@
 import React from 'react';
 import { act, render, screen } from '@testing-library/react';
 import { usePublicChatState } from '../../../src/chat/hooks/usePublicChatState';
-import { ServiceManagerProvider } from '../../../src/chat/providers/ServiceManagerProvider';
+import { TestChatContext } from '../../test_helpers';
 import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
 import type { PublicChatState } from '../../../src/types/instance/PublicChatState';
 
@@ -53,9 +53,9 @@ describe('usePublicChatState', () => {
     }
 
     render(
-      <ServiceManagerProvider serviceManager={serviceManager}>
+      <TestChatContext serviceManager={serviceManager}>
         <Status />
-      </ServiceManagerProvider>
+      </TestChatContext>
     );
     expect(screen.getByTestId('status')).toHaveTextContent('ready');
 
@@ -99,9 +99,9 @@ describe('usePublicChatState', () => {
     }
 
     render(
-      <ServiceManagerProvider serviceManager={serviceManager}>
+      <TestChatContext serviceManager={serviceManager}>
         <LoadingBucket />
-      </ServiceManagerProvider>
+      </TestChatContext>
     );
     act(() => {
       source.update({
