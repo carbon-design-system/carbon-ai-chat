@@ -10,6 +10,7 @@
 @use '../../../globals/scss/vars' as *;
 @use '@carbon/layout';
 @use '@carbon/styles/scss/components/button/vars' as button;
+@use '@carbon/styles/scss/theme';
 @use '@carbon/styles/scss/type';
 
 $block-class: #{$prefix}-user-avatar;
@@ -52,9 +53,12 @@ $block-class: #{$prefix}-user-avatar;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: button.$button-border-width solid currentcolor;
+  border-radius: 50%;
   block-size: 100%;
-  line-height: 1;
-  text-align: center;
+  font-weight: bold;
+  inline-size: 100%;
+  text-transform: uppercase;
 }
 
 .#{$block-class}__icon {
