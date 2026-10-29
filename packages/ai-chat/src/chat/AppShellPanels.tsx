@@ -15,14 +15,12 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { createComponent } from '@lit/react';
-import { withWebComponentBridge } from '@carbon/ai-chat-components/es/react/utils/withWebComponentBridge.js';
 import { useSyncExternalStore } from 'use-sync-external-store/shim/index.js';
 import { transformReactIconToCarbonIcon } from '@carbon/ai-chat-components/es/globals/utils/iconTransform.js';
 import type CDSButton from '@carbon/web-components/es/components/button/button.js';
 import type { HumanAgentConfirmation } from './services/chatViewState';
 import type { ExtensionHosts } from './services/extensionHosts';
-import NativePanels from './components/panels/NativePanels';
+import type NativePanels from './components/panels/NativePanels';
 import {
   PanelContentAdapter,
   type PanelContentParts,
@@ -87,20 +85,6 @@ interface AppShellPanelsProps extends HasServiceManager {
   isInputReadonly: boolean;
   catastrophicErrorPanelState: AppState['catastrophicErrorPanelState'];
 }
-
-const nativePanelsRegionEvents = {};
-
-// The bridge sets the view's properties in DOM shims, where @lit/react's node
-// build passes them only to server rendering.
-const NativePanelsRegion = withWebComponentBridge(
-  createComponent({
-    tagName: 'cds-aichat-native-panels',
-    elementClass: NativePanels,
-    react: React,
-    events: nativePanelsRegionEvents,
-  }),
-  { events: nativePanelsRegionEvents }
-);
 
 const noScroll = () => {};
 const renderMessageComponent = (props: MessageTypeComponentProps) => (
@@ -467,19 +451,3 @@ export function useAppShellPanels({
     )),
   };
 }
-
-export const AppShellPanels = React.memo(function AppShellPanels(
-  props: AppShellPanelsProps
-) {
-  const { nativeProps, setNativeElement, content } = useAppShellPanels(props);
-  return (
-    <>
-      <NativePanelsRegion
-        slot="panels"
-        ref={setNativeElement}
-        {...nativeProps}
-      />
-      {content}
-    </>
-  );
-});

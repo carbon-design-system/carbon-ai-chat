@@ -7,5 +7,4 @@
  *  @license
  */
 
-export { NativeInputAdapter as Input } from './NativeInputAdapter';
 export type { InputFunctions } from '../../utils/inputTypes';
