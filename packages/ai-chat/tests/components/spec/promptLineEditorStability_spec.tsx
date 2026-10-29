@@ -16,6 +16,7 @@
  */
 
 import React from 'react';
+import Add16 from '@carbon/icons/es/add--large/16.js';
 import { render, waitFor } from '@testing-library/react';
 import type { Editor } from '@tiptap/core';
 import '@tiptap/extensions';
@@ -45,7 +46,7 @@ function buildConfig(inputHasText: boolean): PublicConfig {
       actions: [
         {
           text: inputHasText ? 'Hide starters' : 'Show starters',
-          icon: {},
+          icon: Add16,
           onClick: (): void => undefined,
           // The example ties this to whether the user has typed, so the first
           // keystroke rebuilds the host config.

@@ -7,14 +7,7 @@
  *  @license
  */
 
-import React, {
-  forwardRef,
-  Ref,
-  useCallback,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-} from 'react';
+import React, { forwardRef, Ref, useCallback, useMemo, useRef } from 'react';
 import { createComponent, type EventName } from '@lit/react';
 import {
   transformStarterItems,
@@ -135,11 +128,6 @@ function NativeInputAdapterComponent(
     },
     [publishHandle]
   );
-
-  useLayoutEffect(() => {
-    // Consumer effects can call public input methods in this same React commit.
-    elementRef.current?.commitInput();
-  });
 
   return (
     <NativeInput

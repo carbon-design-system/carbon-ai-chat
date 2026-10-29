@@ -1054,80 +1054,79 @@ function AppShell({
             </div>
 
             {!customPromptLinePresent && (
-              <div slot="input">
-                <Input
-                  ref={setInputRef}
-                  restoreDraft={restoreDraft.current}
-                  disableInput={shouldDisableInput()}
-                  disableSend={shouldDisableSend()}
-                  isInputVisible={isInputFieldVisible}
-                  onSendInput={onSendInputFromInput}
-                  onStopStreaming={onStopStreaming}
-                  onUserTyping={onUserTyping}
-                  showUploadButton={
-                    inputFields.allowFileUploads || isAssistantUploadEnabled
-                  }
-                  disableUploadButton={
-                    inputFields.allowFileUploads
-                      ? humanAgentUploadButtonDisabled
-                      : assistantUploadButtonDisabled
-                  }
-                  allowedFileUploadTypes={
-                    inputFields.allowFileUploads
-                      ? inputFields.allowedFileUploadTypes
-                      : uploadConfig?.accept
-                  }
-                  allowMultipleFileUploads={
-                    inputFields.allowFileUploads
-                      ? inputFields.allowMultipleFileUploads
-                      : uploadConfig?.maxFiles === undefined ||
-                        uploadConfig.maxFiles > 1
-                  }
-                  maxFileSizeBytes={
-                    inputFields.allowFileUploads
-                      ? inputFields.maxFileSizeBytes
-                      : uploadConfig?.maxFileSizeBytes
-                  }
-                  maxFiles={
-                    inputFields.allowFileUploads
-                      ? inputFields.maxFiles
-                      : uploadConfig?.maxFiles
-                  }
-                  pendingUploads={
-                    inputFields.allowFileUploads
-                      ? inputFields.files
-                      : assistantPendingUploadsForDisplay
-                  }
-                  onFilesSelectedForUpload={
-                    inputFields.allowFileUploads
-                      ? onFilesSelectedForUpload
-                      : onAssistantFilesSelectedForUpload
-                  }
-                  onRemoveFile={
-                    isAssistantUploadEnabled && !inputFields.allowFileUploads
-                      ? onRemoveAssistantUpload
-                      : undefined
-                  }
-                  placeholder={
-                    languagePack[agentDisplayState.inputPlaceholderKey]
-                  }
-                  isStopStreamingButtonVisible={isStopStreamingButtonVisible}
-                  isStopStreamingButtonDisabled={
-                    inputFields.stopStreamingButtonState.isDisabled ||
-                    inputFields.stopStreamingButtonState.isMetadataDisabled
-                  }
-                  maxInputChars={publicConfig.input?.maxInputCharacters}
-                  trackInputState
-                  rounded={
-                    chatWidthBreakpoint === ChatWidthBreakpoint.WIDE &&
-                    layout.hasContentMaxWidth &&
-                    (!IS_PHONE_IN_PORTRAIT_MODE ||
-                      !!publicConfig.disableCustomElementMobileEnhancements)
-                  }
-                  error={inputError}
-                  uploadErrors={inputUploadErrors}
-                />
-              </div>
+              <Input
+                ref={setInputRef}
+                contentOwner={hosts.autocompleteContent}
+                restoreDraft={restoreDraft.current}
+                disableInput={shouldDisableInput()}
+                disableSend={shouldDisableSend()}
+                isInputVisible={isInputFieldVisible}
+                onSendInput={onSendInputFromInput}
+                onStopStreaming={onStopStreaming}
+                onUserTyping={onUserTyping}
+                showUploadButton={
+                  inputFields.allowFileUploads || isAssistantUploadEnabled
+                }
+                disableUploadButton={
+                  inputFields.allowFileUploads
+                    ? humanAgentUploadButtonDisabled
+                    : assistantUploadButtonDisabled
+                }
+                allowedFileUploadTypes={
+                  inputFields.allowFileUploads
+                    ? inputFields.allowedFileUploadTypes
+                    : uploadConfig?.accept
+                }
+                allowMultipleFileUploads={
+                  inputFields.allowFileUploads
+                    ? inputFields.allowMultipleFileUploads
+                    : uploadConfig?.maxFiles === undefined ||
+                      uploadConfig.maxFiles > 1
+                }
+                maxFileSizeBytes={
+                  inputFields.allowFileUploads
+                    ? inputFields.maxFileSizeBytes
+                    : uploadConfig?.maxFileSizeBytes
+                }
+                maxFiles={
+                  inputFields.allowFileUploads
+                    ? inputFields.maxFiles
+                    : uploadConfig?.maxFiles
+                }
+                pendingUploads={
+                  inputFields.allowFileUploads
+                    ? inputFields.files
+                    : assistantPendingUploadsForDisplay
+                }
+                onFilesSelectedForUpload={
+                  inputFields.allowFileUploads
+                    ? onFilesSelectedForUpload
+                    : onAssistantFilesSelectedForUpload
+                }
+                onRemoveFile={
+                  isAssistantUploadEnabled && !inputFields.allowFileUploads
+                    ? onRemoveAssistantUpload
+                    : undefined
+                }
+                placeholder={
+                  languagePack[agentDisplayState.inputPlaceholderKey]
+                }
+                isStopStreamingButtonVisible={isStopStreamingButtonVisible}
+                isStopStreamingButtonDisabled={
+                  inputFields.stopStreamingButtonState.isDisabled ||
+                  inputFields.stopStreamingButtonState.isMetadataDisabled
+                }
+                maxInputChars={publicConfig.input?.maxInputCharacters}
+                trackInputState
+                rounded={
+                  chatWidthBreakpoint === ChatWidthBreakpoint.WIDE &&
+                  layout.hasContentMaxWidth &&
+                  (!IS_PHONE_IN_PORTRAIT_MODE ||
+                    !!publicConfig.disableCustomElementMobileEnhancements)
+                }
+                error={inputError}
+                uploadErrors={inputUploadErrors}
+              />
             )}
 
             <div slot="workspace" className="cds-aichat--widget--expand-to-fit">

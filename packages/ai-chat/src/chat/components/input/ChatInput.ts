@@ -10,6 +10,7 @@
 import { html, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { keyed } from 'lit/directives/keyed.js';
+import { ref } from 'lit/directives/ref.js';
 import { carbonElement } from '@carbon/ai-chat-components/es/globals/decorators/index.js';
 import '@carbon/ai-chat-components/es/components/prompt-line/src/prompt-line.js';
 import '@carbon/ai-chat-components/es/components/prompt-line/src/prompt-line-shell.js';
@@ -110,6 +111,10 @@ class ChatInput extends NativeChatView {
   private extensionEnabled?: boolean;
   private extensionInputs: unknown[] = [];
   private actionInputs: unknown[] = [];
+  private actionsEndSlot?: Element;
+  private readonly captureActionsEnd = (element?: Element) => {
+    this.actionsEndSlot = element;
+  };
   private effectiveActions?: ToolbarAction[];
   private extensions: Extension[] = [];
   private rawValue = '';
@@ -147,15 +152,6 @@ class ChatInput extends NativeChatView {
     return this.hasCurrentSurface
       ? this.querySelector('cds-aichat-prompt-line')
       : null;
-  }
-
-  commitInput(): void {
-    if (!this.active || !this.isConnected || !this.inputProps) {
-      return;
-    }
-    if (this.isUpdatePending) {
-      this.performUpdate();
-    }
   }
 
   get ready(): Promise<void> {
@@ -312,29 +308,14 @@ class ChatInput extends NativeChatView {
     if (!this.active || !this.inputProps) {
       return;
     }
-    if (!this.valueInitialized) {
-      const state = this.serviceManager.store.getState();
-      this.rawValue = this.inputProps.trackInputState
-        ? (selectInputState(state).rawValue ?? '')
-        : '';
-      this.mirroredSlice = selectIsInputToHumanAgent(state);
-      this.valueInitialized = true;
-    }
-    if (this.surfaceVisible !== this.inputProps.isInputVisible) {
-      this.surfaceVisible = this.inputProps.isInputVisible;
-      this.surfaceGeneration += 1;
-      this.listNavigated = false;
-    }
-    if (!this.inputProps.trackInputState && this.trackedSlice !== undefined) {
-      this.serviceManager.store.dispatch(
-        actions.updateInputState({ focused: false }, this.trackedSlice)
-      );
-      this.trackedSlice = undefined;
-    }
-    if (this.inputProps.trackInputState && this.trackedSlice === undefined) {
-      this.trackedSlice = selectIsInputToHumanAgent(
-        this.serviceManager.store.getState()
-      );
+    this.prepareValue();
+    // A same-parent move can place this owned node outside Lit's conditional part.
+    if (
+      !this.expanded &&
+      this.actionsEndSlot?.parentElement ===
+        this.querySelector('cds-aichat-prompt-line-shell')
+    ) {
+      this.actionsEndSlot.remove();
     }
     this.richLatched ||= this.configRich;
     const enabled = this.richLatched;
@@ -380,6 +361,33 @@ class ChatInput extends NativeChatView {
           this.requestUpdate();
         }
       });
+    }
+  }
+
+  private prepareValue() {
+    if (!this.valueInitialized) {
+      const state = this.serviceManager.store.getState();
+      this.rawValue = this.inputProps.trackInputState
+        ? (selectInputState(state).rawValue ?? '')
+        : '';
+      this.mirroredSlice = selectIsInputToHumanAgent(state);
+      this.valueInitialized = true;
+    }
+    if (this.surfaceVisible !== this.inputProps.isInputVisible) {
+      this.surfaceVisible = this.inputProps.isInputVisible;
+      this.surfaceGeneration += 1;
+      this.listNavigated = false;
+    }
+    if (!this.inputProps.trackInputState && this.trackedSlice !== undefined) {
+      this.serviceManager.store.dispatch(
+        actions.updateInputState({ focused: false }, this.trackedSlice)
+      );
+      this.trackedSlice = undefined;
+    }
+    if (this.inputProps.trackInputState && this.trackedSlice === undefined) {
+      this.trackedSlice = selectIsInputToHumanAgent(
+        this.serviceManager.store.getState()
+      );
     }
   }
 
@@ -744,6 +752,125 @@ class ChatInput extends NativeChatView {
       .filter(Boolean)
       .join(' ');
 
+  private renderPrompt(current: () => boolean) {
+    const props = this.inputProps;
+    const pack = this.languagePack;
+    return html`<cds-aichat-prompt-line
+      slot="editor"
+      .rich=${this.richLatched}
+      .extensions=${this.extensions}
+      .disabled=${props.disableInput}
+      .placeholder=${props.placeholder || (props.disableInput ? undefined : pack.input_placeholder) || ''}
+      aria-label=${pack.input_ariaLabel}
+      .testId=${PageObjectId.INPUT}
+      @cds-aichat-prompt-change=${this.change}
+      @cds-aichat-prompt-focus=${(event: Event) => {
+        if (current() && event.currentTarget === this.prompt) {
+          this.focusState(true);
+        }
+      }}
+      @cds-aichat-prompt-blur=${(event: Event) => {
+        if (current() && event.currentTarget === this.prompt) {
+          this.focusState(false);
+        }
+      }}
+      @cds-aichat-prompt-typing=${(
+        event: CustomEvent<{ isTyping: boolean }>
+      ) => {
+        if (current() && event.currentTarget === this.prompt) {
+          this.inputProps.onUserTyping?.(event.detail.isTyping);
+        }
+      }}
+      @cds-aichat-prompt-send-intent=${(event: CustomEvent) => {
+        event.stopPropagation();
+        if (current() && event.currentTarget === this.prompt) {
+          this.send();
+        }
+      }}></cds-aichat-prompt-line>`;
+  }
+
+  private renderAutocomplete(current: () => boolean) {
+    return html`<cds-aichat-native-autocomplete
+      .contentOwner=${this.contentOwner}
+      .mention=${this.mention}
+      .command=${this.command}
+      .autocomplete=${this.autocomplete}
+      .starters=${this.starters}
+      .isSendDisabled=${this.configDisableSend}
+      .onStarterSelected=${(text: string) => {
+        if (current()) {
+          this.rawValue = text;
+          this.requestUpdate();
+          this.send();
+        }
+      }}
+      .onSendItem=${(text: string) => {
+        if (current()) {
+          this.rawValue = text;
+          this.displayContent = null;
+          this.requestUpdate();
+          this.send();
+        }
+      }}
+      .onListNavigated=${(value: boolean) => {
+        if (current()) {
+          this.listNavigated = value;
+          this.requestUpdate();
+        }
+      }}></cds-aichat-native-autocomplete>`;
+  }
+
+  private renderSendControl(current: () => boolean) {
+    const props = this.inputProps;
+    const pack = this.languagePack;
+    return html`<cds-aichat-prompt-line-slot
+        .slotName=${WriteableElementName.PROMPT_LINE_SEND_BUTTON_START}
+        .wrapperSlot=${'send-control'}></cds-aichat-prompt-line-slot>
+      <cds-aichat-input-send-control
+        slot="send-control"
+        .hasValidInput=${hasSendableInput(this.rawValue, props.pendingUploads)}
+        .disabled=${props.disableInput}
+        .disableSend=${this.disableSend || this.listNavigated}
+        .isStopStreamingButtonVisible=${props.isStopStreamingButtonVisible}
+        .isStopStreamingButtonDisabled=${props.isStopStreamingButtonDisabled || this.stopPending}
+        .buttonLabel=${pack.input_buttonLabel}
+        .stopResponseLabel=${pack.input_stopResponse}
+        .testId=${PageObjectId.INPUT_SEND}
+        @cds-aichat-input-send=${(event: Event) => {
+          if (
+            current() &&
+            event.currentTarget ===
+              this.querySelector('cds-aichat-input-send-control')
+          ) {
+            this.send();
+          }
+        }}
+        @cds-aichat-input-stop-streaming=${(event: Event) => {
+          if (
+            current() &&
+            event.currentTarget ===
+              this.querySelector('cds-aichat-input-send-control')
+          ) {
+            return this.stop();
+          }
+          return undefined;
+        }}></cds-aichat-input-send-control>`;
+  }
+
+  private renderMessageActions(openFiles: () => void) {
+    const props = this.inputProps;
+    const pack = this.languagePack;
+    const effectiveActions = this.effectiveActions;
+    if (!props.showUploadButton && !effectiveActions) {
+      return nothing;
+    }
+    const uploadDisabled = props.disableUploadButton || props.disableInput;
+    return html`<div slot="message-actions">
+      ${props.showUploadButton ? html`<input type="file" hidden tabindex="-1" accept=${props.allowedFileUploadTypes || ''} .multiple=${props.allowMultipleFileUploads} .disabled=${uploadDisabled} @change=${this.selectFiles} />` : nothing}
+      ${effectiveActions ? html`<cds-aichat-input-actions .expanded=${this.expanded} .disabled=${props.disableInput} .actions=${effectiveActions} .menuLabel=${this.expanded ? pack.input_actionsOverflowLabel : pack.input_actionsMenuLabel} .transformIcon=${descriptorIcon}></cds-aichat-input-actions>` : html`<cds-icon-button kind="ghost" size="sm" ?disabled=${uploadDisabled} @click=${openFiles}>${iconLoader(Add16, { slot: 'icon' })}<span slot="tooltip-content">${pack.input_uploadButtonLabel}</span></cds-icon-button>`}
+    </div>`;
+  }
+
   protected renderView() {
     this.renderedLifetime = this.lifetime;
     this.renderedSurface = this.surfaceGeneration;
@@ -756,7 +883,6 @@ class ChatInput extends NativeChatView {
       return nothing;
     }
     const pack = this.languagePack;
-    const uploadDisabled = props.disableUploadButton || props.disableInput;
     const lifetime = this.lifetime;
     const surfaceGeneration = this.surfaceGeneration;
     const current = () =>
@@ -793,7 +919,6 @@ class ChatInput extends NativeChatView {
             ]
           : this.inputActions);
     }
-    const effectiveActions = this.effectiveActions;
     return keyed(
       lifetime,
       html`<cds-aichat-prompt-line-shell
@@ -802,109 +927,11 @@ class ChatInput extends NativeChatView {
         .hasError=${props.error !== undefined || this.overMaxLength}
         .disabled=${props.disableInput}
         exportparts="prompt-container">
-        <cds-aichat-prompt-line
-          slot="editor"
-          .rich=${this.richLatched}
-          .extensions=${this.extensions}
-          .disabled=${props.disableInput}
-          .placeholder=${props.placeholder || (props.disableInput ? undefined : pack.input_placeholder) || ''}
-          aria-label=${pack.input_ariaLabel}
-          .testId=${PageObjectId.INPUT}
-          @cds-aichat-prompt-change=${this.change}
-          @cds-aichat-prompt-focus=${(event: Event) => {
-            if (current() && event.currentTarget === this.prompt) {
-              this.focusState(true);
-            }
-          }}
-          @cds-aichat-prompt-blur=${(event: Event) => {
-            if (current() && event.currentTarget === this.prompt) {
-              this.focusState(false);
-            }
-          }}
-          @cds-aichat-prompt-typing=${(
-            event: CustomEvent<{ isTyping: boolean }>
-          ) => {
-            if (current() && event.currentTarget === this.prompt) {
-              this.inputProps.onUserTyping?.(event.detail.isTyping);
-            }
-          }}
-          @cds-aichat-prompt-send-intent=${(event: CustomEvent) => {
-            event.stopPropagation();
-            if (current() && event.currentTarget === this.prompt) {
-              this.send();
-            }
-          }}></cds-aichat-prompt-line>
-        <cds-aichat-native-autocomplete
-          .contentOwner=${this.contentOwner}
-          .mention=${this.mention}
-          .command=${this.command}
-          .autocomplete=${this.autocomplete}
-          .starters=${this.starters}
-          .isSendDisabled=${this.configDisableSend}
-          .onStarterSelected=${(text: string) => {
-            if (current()) {
-              this.rawValue = text;
-              this.requestUpdate();
-              this.send();
-            }
-          }}
-          .onSendItem=${(text: string) => {
-            if (current()) {
-              this.rawValue = text;
-              this.displayContent = null;
-              this.requestUpdate();
-              this.send();
-            }
-          }}
-          .onListNavigated=${(value: boolean) => {
-            if (current()) {
-              this.listNavigated = value;
-              this.requestUpdate();
-            }
-          }}></cds-aichat-native-autocomplete>
-        ${this.renderError()}
-        ${
-          props.showUploadButton || effectiveActions
-            ? html`<div slot="message-actions">
-                ${props.showUploadButton ? html`<input type="file" hidden tabindex="-1" accept=${props.allowedFileUploadTypes || ''} .multiple=${props.allowMultipleFileUploads} .disabled=${uploadDisabled} @change=${this.selectFiles} />` : nothing}
-                ${effectiveActions ? html`<cds-aichat-input-actions .expanded=${this.expanded} .disabled=${props.disableInput} .actions=${effectiveActions} .menuLabel=${this.expanded ? pack.input_actionsOverflowLabel : pack.input_actionsMenuLabel} .transformIcon=${descriptorIcon}></cds-aichat-input-actions>` : html`<cds-icon-button kind="ghost" size="sm" ?disabled=${uploadDisabled} @click=${openFiles}>${iconLoader(Add16, { slot: 'icon' })}<span slot="tooltip-content">${pack.input_uploadButtonLabel}</span></cds-icon-button>`}
-              </div>`
-            : nothing
-        }
-        ${this.expanded ? html`<cds-aichat-prompt-line-slot .slotName=${WriteableElementName.PROMPT_LINE_ACTIONS_END} .wrapperSlot=${'message-actions'}></cds-aichat-prompt-line-slot>` : nothing}
+        ${this.renderPrompt(current)} ${this.renderAutocomplete(current)}
+        ${this.renderError()} ${this.renderMessageActions(openFiles)}
+        ${this.expanded ? html`<cds-aichat-prompt-line-slot ${ref(this.captureActionsEnd)} .slotName=${WriteableElementName.PROMPT_LINE_ACTIONS_END} .wrapperSlot=${'message-actions'}></cds-aichat-prompt-line-slot>` : nothing}
         ${props.showUploadButton ? html`<cds-aichat-file-uploads slot="file-uploads" .uploads=${props.pendingUploads || EMPTY_UPLOADS} .removeFileLabel=${pack.fileSharing_removeButtonTitle} .getRemoveFileLabel=${this.removeFileLabel} .uploadingFileLabel=${pack.fileSharing_statusUploading} .getFilesAddedText=${this.filesAddedText} .getFilesUploadingText=${this.filesUploadingText} .fileRemovedLabel=${pack.fileSharing_ariaAnnounceFileRemoved} .uploadSuccessLabel=${pack.fileSharing_ariaAnnounceSuccess} .getFileUploadFailureText=${this.failureText} @cds-aichat-file-remove=${this.removeFile}></cds-aichat-file-uploads>` : nothing}
-        <cds-aichat-prompt-line-slot
-          .slotName=${WriteableElementName.PROMPT_LINE_SEND_BUTTON_START}
-          .wrapperSlot=${'send-control'}></cds-aichat-prompt-line-slot>
-        <cds-aichat-input-send-control
-          slot="send-control"
-          .hasValidInput=${hasSendableInput(this.rawValue, props.pendingUploads)}
-          .disabled=${props.disableInput}
-          .disableSend=${this.disableSend || this.listNavigated}
-          .isStopStreamingButtonVisible=${props.isStopStreamingButtonVisible}
-          .isStopStreamingButtonDisabled=${props.isStopStreamingButtonDisabled || this.stopPending}
-          .buttonLabel=${pack.input_buttonLabel}
-          .stopResponseLabel=${pack.input_stopResponse}
-          .testId=${PageObjectId.INPUT_SEND}
-          @cds-aichat-input-send=${(event: Event) => {
-            if (
-              current() &&
-              event.currentTarget ===
-                this.querySelector('cds-aichat-input-send-control')
-            ) {
-              this.send();
-            }
-          }}
-          @cds-aichat-input-stop-streaming=${(event: Event) => {
-            if (
-              current() &&
-              event.currentTarget ===
-                this.querySelector('cds-aichat-input-send-control')
-            ) {
-              return this.stop();
-            }
-            return undefined;
-          }}></cds-aichat-input-send-control>
+        ${this.renderSendControl(current)}
       </cds-aichat-prompt-line-shell>`
     );
   }
