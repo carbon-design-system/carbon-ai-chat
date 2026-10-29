@@ -280,6 +280,11 @@ type RenderUserDefinedInputNode = (
  * {@link RenderUserDefinedInputNode} but returns an `HTMLElement` (or `null`).
  * The library moves / removes the element as messages mount and unmount.
  *
+ * The chat calls it once per node and keeps the returned element while that
+ * node stays the same. A message update that leaves the node unchanged, such
+ * as a status change, does not call it again, so the element keeps its state
+ * but does not see that update. A change to the node calls it again.
+ *
  * @category Web component
  * @experimental
  */
