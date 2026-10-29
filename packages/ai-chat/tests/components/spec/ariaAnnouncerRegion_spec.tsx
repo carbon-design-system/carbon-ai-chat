@@ -8,21 +8,19 @@
  */
 
 /**
- * Tests for the rewired aria-announcer path introduced in issue #1933:
- *   - AriaAnnouncerProvider drives mountAriaAnnouncer with the correct options
- *     and forwards announcements through the context function.
+ * Tests for the aria-announcer path:
+ *   - AriaAnnouncerRegion drives mountAriaAnnouncer with the correct options,
+ *     and useAriaAnnouncer forwards announcements to the chat's announcer.
  *   - ProcessingWithText calls the announcer when visible with a typing message.
  */
 
-import React, { useContext } from 'react';
+import React, { ReactNode, useMemo } from 'react';
 import { render, act } from '@testing-library/react';
 
-jest.mock('../../../src/chat/hooks/useIntl', () => ({
-  useIntl: () => ({
-    formatMessage: ({ id }: { id: string }, values?: Record<string, string>) =>
-      values ? `${id}:${JSON.stringify(values)}` : id,
-  }),
-}));
+const testIntl = {
+  formatMessage: ({ id }: { id: string }, values?: Record<string, string>) =>
+    values ? `${id}:${JSON.stringify(values)}` : id,
+} as any;
 
 // Capture the options passed to mountAriaAnnouncer and expose a mock handle.
 const mockAnnounce = jest.fn();
@@ -39,7 +37,7 @@ jest.mock(
   })
 );
 
-// Minimal store mock — the provider subscribes to store for announceMessage.
+// Minimal store mock — the announcer subscribes to store for announceMessage.
 const storeListeners: Array<() => void> = [];
 const mockStore = {
   subscribe: (fn: () => void) => {
@@ -54,13 +52,25 @@ const mockStore = {
   getState: (): any => ({ announceMessage: null }),
 };
 
-jest.mock('../../../src/chat/hooks/useServiceManager', () => ({
-  useServiceManager: () => ({ store: mockStore }),
-}));
-
-import { AriaAnnouncerProvider } from '../../../src/chat/providers/AriaAnnouncerProvider';
-import { AriaAnnouncerContext } from '../../../src/chat/contexts/AriaAnnouncerContext';
+import { AriaAnnouncerRegion } from '../../../src/chat/components/aria/AriaAnnouncerRegion';
+import { ChatContext } from '../../../src/chat/contexts/ChatContext';
+import { useAriaAnnouncer } from '../../../src/chat/hooks/useAriaAnnouncer';
 import { ProcessingWithText } from '../../../src/chat/components/helpers/ProcessingWithText/ProcessingWithText';
+import { createTestViewState } from '../../test_helpers';
+
+/** A chat's context and its live regions, as `ChatAppEntry` renders them. */
+function ChatWithRegion({ children }: { children?: ReactNode }) {
+  const viewState = useMemo(
+    () => createTestViewState({ store: mockStore as any, intl: testIntl }),
+    []
+  );
+  return (
+    <ChatContext.Provider value={viewState}>
+      {children}
+      <AriaAnnouncerRegion announcer={viewState.announcer} />
+    </ChatContext.Provider>
+  );
+}
 
 beforeEach(() => {
   mockAnnounce.mockClear();
@@ -70,15 +80,15 @@ beforeEach(() => {
 });
 
 // ---------------------------------------------------------------------------
-// AriaAnnouncerProvider
+// AriaAnnouncerRegion
 // ---------------------------------------------------------------------------
 
-describe('AriaAnnouncerProvider', () => {
+describe('AriaAnnouncerRegion', () => {
   it('mounts live regions with politeCount=3 and assertiveCount=2', () => {
     render(
-      <AriaAnnouncerProvider>
+      <ChatWithRegion>
         <span />
-      </AriaAnnouncerProvider>
+      </ChatWithRegion>
     );
     expect(capturedMountCalls).toHaveLength(1);
     expect(capturedMountCalls[0].options).toEqual({
@@ -89,9 +99,9 @@ describe('AriaAnnouncerProvider', () => {
 
   it('disconnects the handle when unmounted', () => {
     const { unmount } = render(
-      <AriaAnnouncerProvider>
+      <ChatWithRegion>
         <span />
-      </AriaAnnouncerProvider>
+      </ChatWithRegion>
     );
     unmount();
     expect(mockDisconnect).toHaveBeenCalledTimes(1);
@@ -100,13 +110,13 @@ describe('AriaAnnouncerProvider', () => {
   it('announces a plain string via the context function', async () => {
     let contextValue: any;
     function Capture(): null {
-      contextValue = useContext(AriaAnnouncerContext);
+      contextValue = useAriaAnnouncer();
       return null;
     }
     render(
-      <AriaAnnouncerProvider>
+      <ChatWithRegion>
         <Capture />
-      </AriaAnnouncerProvider>
+      </ChatWithRegion>
     );
 
     await act(async () => {
@@ -120,13 +130,13 @@ describe('AriaAnnouncerProvider', () => {
   it('announces an assertive AnnounceMessage via the context function', async () => {
     let contextValue: any;
     function Capture(): null {
-      contextValue = useContext(AriaAnnouncerContext);
+      contextValue = useAriaAnnouncer();
       return null;
     }
     render(
-      <AriaAnnouncerProvider>
+      <ChatWithRegion>
         <Capture />
-      </AriaAnnouncerProvider>
+      </ChatWithRegion>
     );
 
     await act(async () => {
@@ -143,13 +153,13 @@ describe('AriaAnnouncerProvider', () => {
   it('coalesces same-microtask polite calls into one announce', async () => {
     let contextValue: any;
     function Capture(): null {
-      contextValue = useContext(AriaAnnouncerContext);
+      contextValue = useAriaAnnouncer();
       return null;
     }
     render(
-      <AriaAnnouncerProvider>
+      <ChatWithRegion>
         <Capture />
-      </AriaAnnouncerProvider>
+      </ChatWithRegion>
     );
 
     await act(async () => {
@@ -177,9 +187,9 @@ describe('ProcessingWithText', () => {
 
   function renderWithProvider(props: any) {
     return render(
-      <AriaAnnouncerProvider>
+      <ChatWithRegion>
         {React.createElement(ProcessingWithText, props)}
-      </AriaAnnouncerProvider>
+      </ChatWithRegion>
     );
   }
 
