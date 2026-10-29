@@ -242,6 +242,7 @@
     "postcss": "^8.5.23",
     "axios": "^1.18.1",
     "proxy-addr": "^2.0.8",
+    "glob@>=10 <14": "^14.0.3",
     "serve": {
       "compression": "^1.8.2"
     },
