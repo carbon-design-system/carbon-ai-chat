@@ -172,7 +172,10 @@ class CDSAIChatUserAvatar extends LitElement {
       class="${blockClass}__icon"
       role=${role}
       aria-label=${label}>
-      ${iconLoader(UserAvatar32, { 'aria-hidden': 'true' })}
+      ${iconLoader(UserAvatar32, {
+        class: `${blockClass}__icon-svg`,
+        'aria-hidden': 'true',
+      })}
     </div>`;
   }
 

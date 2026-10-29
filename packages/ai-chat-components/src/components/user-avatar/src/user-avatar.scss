@@ -10,7 +10,6 @@
 @use '../../../globals/scss/vars' as *;
 @use '@carbon/layout';
 @use '@carbon/styles/scss/components/button/vars' as button;
-@use '@carbon/styles/scss/theme';
 @use '@carbon/styles/scss/type';
 
 $block-class: #{$prefix}-user-avatar;
@@ -29,7 +28,6 @@ $block-class: #{$prefix}-user-avatar;
   justify-content: center;
   border-radius: 50%;
   block-size: layout.$spacing-07;
-  color: theme.$icon-primary;
   inline-size: layout.$spacing-07;
 }
 
@@ -41,14 +39,13 @@ $block-class: #{$prefix}-user-avatar;
 
 .#{$block-class}__initial {
   box-sizing: border-box;
-  padding: 2px;
+  padding: layout.$spacing-01;
   border: button.$button-border-width solid currentcolor;
   border-radius: 50%;
   background-color: transparent;
   block-size: 100%;
   font-weight: bold;
   inline-size: 100%;
-  text-transform: uppercase;
 }
 
 .#{$block-class}__letter {
@@ -66,10 +63,10 @@ $block-class: #{$prefix}-user-avatar;
   justify-content: center;
   block-size: 100%;
   inline-size: 100%;
+}
 
-  svg {
-    block-size: 100%;
-    fill: currentcolor;
-    inline-size: 100%;
-  }
+.#{$block-class}__icon-svg {
+  block-size: 100%;
+  fill: currentcolor;
+  inline-size: 100%;
 }
