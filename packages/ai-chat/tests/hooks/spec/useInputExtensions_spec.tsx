@@ -18,7 +18,7 @@ import { act, cleanup, render } from '@testing-library/react';
 import { ContextProvider } from '@lit/context';
 import { LitElement, nothing } from 'lit';
 import type { PromptLineElement } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
-import { NativeInputAdapter } from '../../../src/chat/components/input/NativeInputAdapter';
+import { NativeInputConfigHarness } from '../../components/NativeInputConfigHarness';
 import type ChatInput from '../../../src/chat/components/input/ChatInput';
 import { loadBuildCarbonExtensions } from '../../../src/chat/components/input/buildExtensionsLoader';
 import { useInputConfig } from '../../../src/chat/hooks/useInputConfig';
@@ -154,7 +154,7 @@ async function renderStarters(starters: StartersConfig) {
   const { owner, props, mount, ready } = await fixture({ starters });
   const tree = (config: StartersConfig) => (
     <InputConfigContext.Provider value={{ starters: config }}>
-      <NativeInputAdapter {...props} contentOwner={owner} />
+      <NativeInputConfigHarness {...props} contentOwner={owner} />
     </InputConfigContext.Provider>
   );
   const mounted = mount(tree(starters));
@@ -247,7 +247,7 @@ it('preserves committed extension identity after a suspended transition is aband
     refresh = () => setRevision((revision) => revision + 1);
     return (
       <InputConfigContext.Provider value={{ mention }}>
-        <NativeInputAdapter {...props} contentOwner={owner} />
+        <NativeInputConfigHarness {...props} contentOwner={owner} />
         <SuspendForMention mention={mention} />
       </InputConfigContext.Provider>
     );

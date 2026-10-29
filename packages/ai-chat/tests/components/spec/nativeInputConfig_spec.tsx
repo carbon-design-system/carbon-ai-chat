@@ -7,7 +7,7 @@
  *  @license
  */
 
-import React, { createRef } from 'react';
+import React from 'react';
 import { act, cleanup, render } from '@testing-library/react';
 import { ContextProvider } from '@lit/context';
 import { LitElement, nothing } from 'lit';
@@ -15,7 +15,7 @@ import Edit from '@carbon/icons-react/es/Edit';
 import type { CarbonIconDescriptor } from '@carbon/web-components/es/globals/internal/icon-loader-utils.js';
 import type { PromptLineElement } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
 import type InputSendControl from '@carbon/ai-chat-components/es/components/prompt-line/src/send-control.js';
-import { NativeInputAdapter } from '../../../src/chat/components/input/NativeInputAdapter';
+import { NativeInputConfigHarness } from '../NativeInputConfigHarness';
 import type ChatInput from '../../../src/chat/components/input/ChatInput';
 import type InputActions from '../../../src/chat/components/input/native/InputActions';
 import { ChatContext } from '../../../src/chat/contexts/ChatContext';
@@ -65,8 +65,7 @@ async function flush(view: ChatInput) {
 async function fixture(
   input: InputConfig = {},
   overrides: Partial<InputProps> = {},
-  prepare?: (store: ReturnType<typeof makeConfigStore>) => void,
-  lateContext = false
+  prepare?: (store: ReturnType<typeof makeConfigStore>) => void
 ) {
   const store = makeConfigStore({ input });
   prepare?.(store);
@@ -87,9 +86,7 @@ async function fixture(
   const provider = document.createElement(
     'test-native-input-adapter-provider'
   ) as InputAdapterProvider;
-  if (!lateContext) {
-    provider.provider.setValue(state);
-  }
+  provider.provider.setValue(state);
   document.body.append(provider);
   await provider.updateComplete;
   const owner = new AutocompleteContent(provider);
@@ -97,7 +94,6 @@ async function fixture(
   owners.add(owner);
   const root = document.createElement('div');
   provider.shadowRoot.append(root);
-  const ref = createRef<InputFunctions>();
   const props: InputProps = {
     disableInput: false,
     disableSend: false,
@@ -106,18 +102,9 @@ async function fixture(
     onStopStreaming: async () => {},
     ...overrides,
   };
-  const tree = (
-    nextProps = props,
-    nextRef: React.Ref<InputFunctions> = ref,
-    key = 'input'
-  ) => (
+  const tree = (nextProps = props) => (
     <ChatContext.Provider value={state}>
-      <NativeInputAdapter
-        key={key}
-        {...nextProps}
-        contentOwner={owner}
-        ref={nextRef}
-      />
+      <NativeInputConfigHarness {...nextProps} contentOwner={owner} />
     </ChatContext.Provider>
   );
   const mounted = render(tree(), { container: root });
@@ -148,7 +135,6 @@ async function fixture(
     view,
     owner,
     manager,
-    ref,
     props,
     tree,
     mounted,
@@ -352,136 +338,4 @@ it('seeds tracked send content and its length guard when React supplies the firs
   control.dispatchEvent(new CustomEvent('cds-aichat-input-send'));
   expect(props.onSendInput).toHaveBeenCalledTimes(1);
   expect(props.onSendInput).toHaveBeenCalledWith('seeded draft', undefined);
-});
-
-it('forwards the native handle once and clears old refs when the ref or input detaches', async () => {
-  const { view, ref, manager, props, tree, mounted } = await fixture();
-  const handle = ref.current;
-  expect(handle).toBe(view.inputFunctions);
-  expect(manager.getInputFunctionsRef()).toBe(handle);
-  expect(manager.setInputFunctionsRef).toHaveBeenCalledTimes(1);
-  const prompt = view.querySelector<PromptLineElement>(
-    'cds-aichat-prompt-line'
-  );
-  const setContent = jest.spyOn(prompt, 'setContent');
-  handle.setContent('Live draft');
-  expect(setContent).toHaveBeenCalledWith('Live draft');
-
-  mounted.rerender(tree({ ...props, placeholder: 'New placeholder' }));
-  await act(async () => {
-    await flush(view);
-  });
-  expect(ref.current).toBe(handle);
-  expect(view.querySelector('cds-aichat-prompt-line')).toBe(prompt);
-  const nextRef = jest.fn();
-  mounted.rerender(tree({ ...props, isInputVisible: false }, nextRef));
-  await act(async () => {
-    await flush(view);
-  });
-  expect(ref.current).toBeNull();
-  expect(nextRef).toHaveBeenLastCalledWith(handle);
-  expect(handle.requestFocus()).toBe(false);
-  expect(() => handle.setContent('Hidden')).toThrow(
-    'Input is not currently rendered'
-  );
-  expect(manager.setInputFunctionsRef).toHaveBeenCalledTimes(1);
-
-  mounted.unmount();
-  await Promise.resolve();
-  expect(nextRef).toHaveBeenLastCalledWith(null);
-  expect(manager.getInputFunctionsRef()).toBeNull();
-  expect(handle.getEditor()).toBeNull();
-});
-
-it('refreshes the forwarded handle after a real native detach and ignores the retired view after replacement', async () => {
-  const { view, ref, root, manager, props, tree, mounted } = await fixture();
-  const original = ref.current;
-  await act(async () => {
-    view.remove();
-    await Promise.resolve();
-  });
-  expect(view.inputFunctions).toBeUndefined();
-  expect(ref.current).toBeNull();
-  expect(manager.getInputFunctionsRef()).toBeNull();
-  expect(original.requestFocus()).toBe(false);
-
-  await act(async () => {
-    root.append(view);
-    await flush(view);
-  });
-  const reconnected = ref.current;
-  expect(reconnected).toBe(view.inputFunctions);
-  expect(reconnected).not.toBe(original);
-  expect(manager.getInputFunctionsRef()).toBe(reconnected);
-  const prompt = view.querySelector<PromptLineElement>(
-    'cds-aichat-prompt-line'
-  );
-  const setContent = jest.spyOn(prompt, 'setContent');
-  reconnected.setContent('Reconnected draft');
-  expect(setContent).toHaveBeenCalledWith('Reconnected draft');
-  expect(() => original.setContent('Stale')).toThrow(
-    'Input is not currently rendered'
-  );
-
-  mounted.rerender(tree(props, ref, 'replacement'));
-  const replacement = root.querySelector<ChatInput>('cds-aichat-chat-input');
-  await act(async () => {
-    await flush(replacement);
-  });
-  expect(replacement).not.toBe(view);
-  expect(view.inputFunctions).toBeUndefined();
-  expect(ref.current).toBe(replacement.inputFunctions);
-  expect(ref.current).not.toBe(reconnected);
-  expect(manager.getInputFunctionsRef()).toBe(ref.current);
-});
-
-it('publishes the actual handle when Lit context arrives after the React ref attaches', async () => {
-  const { view, ref, provider, state, manager, errorOccurred } = await fixture(
-    {},
-    {},
-    undefined,
-    true
-  );
-  expect(view.inputFunctions).toBeUndefined();
-  expect(ref.current).toBeNull();
-  expect(manager.setInputFunctionsRef).not.toHaveBeenCalled();
-  await act(async () => {
-    provider.provider.setValue(state);
-    await flush(view);
-  });
-  expect(ref.current).toBeDefined();
-  expect(ref.current).not.toBeNull();
-  expect(ref.current).toBe(view.inputFunctions);
-  expect(manager.getInputFunctionsRef()).toBe(ref.current);
-  const prompt = view.querySelector<PromptLineElement>(
-    'cds-aichat-prompt-line'
-  );
-  const setContent = jest.spyOn(prompt, 'setContent');
-  ref.current.setContent('Late context draft');
-  expect(setContent).toHaveBeenCalledWith('Late context draft');
-  expect(errorOccurred).not.toHaveBeenCalled();
-});
-
-it('runs React 19 callback-ref cleanup on ref replacement and unmount without an extra null call', async () => {
-  const { ref, props, tree, mounted } = await fixture();
-  const handle = ref.current;
-  const firstCleanup = jest.fn();
-  const firstRef = jest.fn(() => firstCleanup);
-  mounted.rerender(tree(props, firstRef));
-  expect(ref.current).toBeNull();
-  expect(firstRef).toHaveBeenCalledTimes(1);
-  expect(firstRef).toHaveBeenCalledWith(handle);
-
-  const nextCleanup = jest.fn();
-  const nextRef = jest.fn(() => nextCleanup);
-  mounted.rerender(tree(props, nextRef));
-  expect(firstCleanup).toHaveBeenCalledTimes(1);
-  expect(firstRef).toHaveBeenCalledTimes(1);
-  expect(nextRef).toHaveBeenCalledTimes(1);
-  expect(nextRef).toHaveBeenCalledWith(handle);
-  mounted.unmount();
-  await Promise.resolve();
-  expect(nextCleanup).toHaveBeenCalledTimes(1);
-  expect(nextRef).toHaveBeenCalledTimes(1);
-  expect(firstCleanup).toHaveBeenCalledTimes(1);
 });

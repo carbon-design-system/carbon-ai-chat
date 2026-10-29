@@ -21,7 +21,6 @@ import {
   PanelContentAdapter,
   type PanelContentParts,
 } from './components/panels/PanelContentAdapter';
-import HydrationPanel from './components/panels/HydrationPanel';
 import IFramePanel from './components/panels/IFramePanel';
 import ViewSourcePanel from './components/panels/ViewSourcePanel';
 import CatastrophicErrorPanel from './components/panels/CatastrophicErrorPanel';
@@ -64,7 +63,6 @@ export function useAppShellPanels({
     iFramePanelState,
     viewSourcePanelState,
     isInputReadonly,
-    isHydratingComplete,
   } = content.inputs;
   const { onRestart } = content.callbacks;
   const requestFocus = content.requestFocus;
@@ -122,7 +120,6 @@ export function useAppShellPanels({
           onRestart={onRestart}
         />
       ),
-      'hydration-body': <HydrationPanel isHydrated={isHydratingComplete} />,
       'custom-title': customTitle && (
         <MarkdownWithDefaults text={customTitle} />
       ),
@@ -177,7 +174,6 @@ export function useAppShellPanels({
     catastrophicErrorPanelState?.bodyText,
     catastrophicErrorPanelState?.hideRetryButton,
     onRestart,
-    isHydratingComplete,
     customTitle,
     responseTitle,
     item,

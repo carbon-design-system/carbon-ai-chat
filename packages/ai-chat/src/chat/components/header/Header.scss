@@ -15,7 +15,7 @@ cds-aichat-header-view {
   display: contents;
 }
 
-// Writeable element styling (used by AppShellWriteableElements)
+// Consumer header content projected through the native header slots.
 // Only apply max-width constraint when header is configured to constrain width
 .cds-aichat--widget--max-width
   .cds-aichat--header-bottom-element.cds-aichat--header-constrain-width {
