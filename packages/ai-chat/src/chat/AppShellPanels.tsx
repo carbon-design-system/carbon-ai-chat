@@ -13,14 +13,10 @@ import React, {
   useLayoutEffect,
   useMemo,
   useRef,
-  useState,
 } from 'react';
 import { useSyncExternalStore } from 'use-sync-external-store/shim/index.js';
-import { transformReactIconToCarbonIcon } from '@carbon/ai-chat-components/es/globals/utils/iconTransform.js';
-import type CDSButton from '@carbon/web-components/es/components/button/button.js';
-import type { HumanAgentConfirmation } from './services/chatViewState';
 import type { ExtensionHosts } from './services/extensionHosts';
-import type NativePanels from './components/panels/NativePanels';
+import type { ShellContentState } from './utils/shellLifecycle';
 import {
   PanelContentAdapter,
   type PanelContentParts,
@@ -38,53 +34,11 @@ import WriteableElement from './components/helpers/WriteableElement/WriteableEle
 import { useSelector } from './hooks/useSelector';
 import { useChatViewStateInstance } from './hooks/useChatViewState';
 import actions from './store/actions';
-import { DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS } from './store/reducerUtils';
 import type { ButtonItem, MessageResponse } from '../types/messaging/Messages';
 import type { AppState } from '../types/state/AppState';
 import type { OnErrorData } from '../types/config/ErrorConfig';
-import type { HasRequestFocus } from '../types/utilities/HasRequestFocus';
 import type { MessageTypeComponentProps } from '../types/messaging/MessageTypeComponentProps';
-import type { HasServiceManager } from './hocs/withServiceManager';
-import type {
-  PanelCompositionCallbacks,
-  PanelName,
-  PanelViewInputs,
-} from './utils/panelComposition';
-
-interface AppShellPanelsProps extends HasServiceManager {
-  hosts: ExtensionHosts;
-  endChatConfirmation: HumanAgentConfirmation | null;
-  showEndChatConfirmation: boolean;
-  confirmHumanAgentEndChat: () => void;
-  hideConfirmEndChat: () => void;
-  showScreenShareRequest: boolean;
-  isHydratingComplete: boolean;
-  shouldShowHydrationPanel: boolean;
-  onPanelOpenStart: (isPanel: boolean) => void;
-  onPanelOpenEnd: (event: CustomEvent) => void;
-  onPanelCloseStart: (event: CustomEvent) => void;
-  onPanelCloseEnd: (isPanel: boolean) => void;
-  onClose: () => void;
-  onRestart: () => void;
-  onToggleHomeScreen: () => void;
-  isHomeScreenActive: boolean;
-  customPanelState: AppState['customPanelState'];
-  customPanelRef: React.RefObject<HasRequestFocus | null>;
-  historyPanelState: AppState['historyPanelState'];
-  showDisclaimer: boolean;
-  disclaimerRef: React.RefObject<CDSButton | null>;
-  onAcceptDisclaimer: () => void;
-  responsePanelState: AppState['responsePanelState'];
-  responsePanelRef: React.RefObject<HasRequestFocus | null>;
-  requestFocus: () => void;
-  iFramePanelState: AppState['iFramePanelState'];
-  iframePanelRef: React.RefObject<HasRequestFocus | null>;
-  viewSourcePanelState: AppState['viewSourcePanelState'];
-  viewSourcePanelRef: React.RefObject<HasRequestFocus | null>;
-  allMessagesByID: AppState['allMessagesByID'];
-  isInputReadonly: boolean;
-  catastrophicErrorPanelState: AppState['catastrophicErrorPanelState'];
-}
+import type { ServiceManager } from './services/ServiceManager';
 
 const noScroll = () => {};
 const renderMessageComponent = (props: MessageTypeComponentProps) => (
@@ -94,49 +48,29 @@ const renderMessageComponent = (props: MessageTypeComponentProps) => (
 export function useAppShellPanels({
   serviceManager,
   hosts,
-  endChatConfirmation,
-  showEndChatConfirmation,
-  confirmHumanAgentEndChat,
-  hideConfirmEndChat,
-  showScreenShareRequest,
-  isHydratingComplete,
-  shouldShowHydrationPanel,
-  onPanelOpenStart,
-  onPanelOpenEnd,
-  onPanelCloseStart,
-  onPanelCloseEnd,
-  onClose,
-  onRestart,
-  onToggleHomeScreen,
-  isHomeScreenActive,
-  customPanelState,
-  customPanelRef,
-  historyPanelState,
-  showDisclaimer,
-  disclaimerRef,
-  onAcceptDisclaimer,
-  responsePanelState,
-  responsePanelRef,
-  requestFocus,
-  iFramePanelState,
-  iframePanelRef,
-  viewSourcePanelState,
-  viewSourcePanelRef,
-  allMessagesByID,
-  isInputReadonly,
-  catastrophicErrorPanelState,
-}: AppShellPanelsProps) {
+  content,
+  onRevision,
+}: {
+  serviceManager: ServiceManager;
+  hosts: ExtensionHosts;
+  content: ShellContentState;
+  onRevision: (parts: PanelContentParts) => void;
+}) {
   const viewState = useChatViewStateInstance();
-  const native = useRef<NativePanels>(null);
-  const setNativeElement = useCallback((element: NativePanels | null) => {
-    native.current = element;
-  }, []);
-  const active = useRef(true);
-  const latestDisclaimerRef = useRef(disclaimerRef);
-  latestDisclaimerRef.current = disclaimerRef;
-  const publishedButton = useRef<CDSButton | null>(null);
-  const [nativeReady, setNativeReady] = useState(false);
-  const releaseInitialCommit = useRef<() => void>(undefined);
+  const {
+    customPanelState,
+    responsePanelState,
+    catastrophicErrorPanelState,
+    iFramePanelState,
+    viewSourcePanelState,
+    isInputReadonly,
+    isHydratingComplete,
+  } = content.inputs;
+  const { onRestart } = content.callbacks;
+  const requestFocus = content.requestFocus;
+  const allMessagesByID = useSelector(
+    (state: AppState) => state.allMessagesByID
+  );
   const requests = useSyncExternalStore(
     hosts.subscribePanelContent,
     hosts.getPanelContentSnapshot,
@@ -261,193 +195,31 @@ export function useAppShellPanels({
     viewSourcePanelState.relatedSearchResult,
   ]);
 
-  const inputs = useMemo<PanelViewInputs>(
-    () => ({
-      endChatConfirmation,
-      showEndChatConfirmation,
-      showScreenShareRequest,
-      isHydratingComplete,
-      shouldShowHydrationPanel,
-      isHomeScreenActive,
-      customPanelState,
-      historyPanelState,
-      showDisclaimer,
-      responsePanelState,
-      responseHasMessage: Boolean(originalMessage),
-      iFramePanelState,
-      viewSourcePanelState,
-      isInputReadonly,
-      catastrophicErrorPanelState,
-      contentRevision: parts,
-    }),
-    [
-      endChatConfirmation,
-      showEndChatConfirmation,
-      showScreenShareRequest,
-      isHydratingComplete,
-      shouldShowHydrationPanel,
-      isHomeScreenActive,
-      customPanelState,
-      historyPanelState,
-      showDisclaimer,
-      responsePanelState,
-      originalMessage,
-      iFramePanelState,
-      viewSourcePanelState,
-      isInputReadonly,
-      catastrophicErrorPanelState,
-      parts,
-    ]
-  );
-  const callbacks = useMemo<PanelCompositionCallbacks>(
-    () => ({
-      onPanelOpenStart,
-      onPanelOpenEnd,
-      onPanelCloseStart,
-      onPanelCloseEnd,
-      onClose,
-      onRestart,
-      onToggleHomeScreen,
-      onAcceptDisclaimer,
-      confirmHumanAgentEndChat,
-      hideConfirmEndChat,
-      fireCustomPanelEvent: (type) => {
-        serviceManager.eventBus.fire({ type }, serviceManager.instance);
-      },
-      resetCustomPanelOptions: () => {
-        serviceManager.store.dispatch(
-          actions.setCustomPanelConfigOptions(
-            DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS
-          )
-        );
-      },
-      closeCustomPanel: () => {
-        serviceManager.store.dispatch(actions.setCustomPanelOpen(false));
-      },
-      closeResponsePanel: () => {
-        serviceManager.store.dispatch(actions.setResponsePanelIsOpen(false));
-      },
-      clearResponsePanelContent: () => {
-        serviceManager.store.dispatch(
-          actions.setResponsePanelContent(null, false)
-        );
-      },
-      closeIFramePanel: () => {
-        serviceManager.store.dispatch(actions.closeIFramePanel());
-      },
-      closeViewSourcePanel: () => {
-        serviceManager.store.dispatch(actions.setViewSourcePanelIsOpen(false));
-      },
-      closeHistoryPanel: () => {
-        serviceManager.store.dispatch(actions.setHistoryPanelOpen(false));
-      },
-      updateScreenShareRequest: (state) => {
-        serviceManager.humanAgentService?.screenShareUpdateRequestState(state);
-      },
-      announce: (text) => viewState.announcer.announce(text),
-    }),
-    [
-      onPanelOpenStart,
-      onPanelOpenEnd,
-      onPanelCloseStart,
-      onPanelCloseEnd,
-      onClose,
-      onRestart,
-      onToggleHomeScreen,
-      onAcceptDisclaimer,
-      confirmHumanAgentEndChat,
-      hideConfirmEndChat,
-      serviceManager,
-      viewState,
-    ]
-  );
-
-  const onTargetsReady = useCallback(() => {
-    if (!active.current) {
-      return;
-    }
-    const button = native.current?.disclaimerButton() ?? null;
-    latestDisclaimerRef.current.current = button;
-    publishedButton.current = button;
-    setNativeReady(Boolean(native.current?.isConnected));
-  }, []);
+  const releaseInitialCommit = useRef<() => void>(undefined);
   useLayoutEffect(() => {
-    active.current = true;
     const release = viewState.holdInitialReactCommit();
     releaseInitialCommit.current = release;
-    return () => {
-      active.current = false;
-      release();
-    };
+    return release;
   }, [viewState]);
   useLayoutEffect(() => {
-    const assignments = [
-      [customPanelRef, 'custom'],
-      [responsePanelRef, 'response'],
-      [iframePanelRef, 'iframe'],
-      [viewSourcePanelRef, 'citation'],
-    ] as const;
-    const owned = assignments
-      .filter(
-        ([, name]) => name !== 'response' || Boolean(item && originalMessage)
-      )
-      .map(([ref, name]) => {
-        const handle = {
-          requestFocus: () =>
-            native.current?.requestPanelFocus(name as PanelName) ?? false,
-        };
-        ref.current = handle;
-        return { ref, handle };
-      });
-    const button = native.current?.disclaimerButton() ?? null;
-    disclaimerRef.current = button;
-    publishedButton.current = button;
-    return () => {
-      owned.forEach(({ ref, handle }) => {
-        if (ref.current === handle) {
-          ref.current = null;
-        }
-      });
-      if (disclaimerRef.current === publishedButton.current) {
-        disclaimerRef.current = null;
-      }
-    };
-  }, [
-    customPanelRef,
-    responsePanelRef,
-    iframePanelRef,
-    viewSourcePanelRef,
-    disclaimerRef,
-    item,
-    originalMessage,
-  ]);
+    onRevision(parts);
+  }, [onRevision, parts]);
   useEffect(() => {
     if (
-      nativeReady &&
+      content.nativePanelsReady &&
       requests.every((request) =>
         hosts.isPanelContentCommitted(request.panel, parts)
       )
     ) {
       releaseInitialCommit.current?.();
     }
-  }, [nativeReady, requests, hosts, parts]);
-
-  return {
-    nativeProps: {
-      inputs,
-      callbacks,
-      hosts,
-      transformHeaderIcon: transformReactIconToCarbonIcon,
-      onTargetsReady,
-    },
-    setNativeElement,
-    content: requests.map((request) => (
-      <PanelContentAdapter
-        key={request.panel}
-        hosts={hosts}
-        request={request}
-        parts={parts}
-      />
-    )),
-  };
+  }, [requests, hosts, parts, content.nativePanelsReady]);
+  return requests.map((request) => (
+    <PanelContentAdapter
+      key={request.panel}
+      hosts={hosts}
+      request={request}
+      parts={parts}
+    />
+  ));
 }
