@@ -20,6 +20,7 @@ import { property, state } from 'lit/decorators.js';
 import { carbonElement } from '../../../globals/decorators/carbon-element.js';
 import { isBrowser } from '../../../globals/utils/browser-utils.js';
 import prefix from '../../../globals/settings.js';
+import { attachRootStyles, type RootStyles } from '../../shared/root-styles.js';
 
 import '@carbon/web-components/es/components/file-uploader/index.js';
 
@@ -233,20 +234,8 @@ class FileUploadItemElement extends LitElement {
     return Boolean(url) && url !== this._failedPreviewURL;
   }
 
-  /**
-   * Only the state the patched rules read can change what they say. The
-   * `_injectedStyle` check keeps the first cycle covered — and retries on the next
-   * one if Carbon's shadow root wasn't there to patch yet.
-   */
   updated(changedProperties: PropertyValues) {
-    if (
-      !this._injectedStyle ||
-      changedProperties.has('readOnly') ||
-      changedProperties.has('upload') ||
-      changedProperties.has('_failedPreviewURL')
-    ) {
-      this._syncInjectedStyles();
-    }
+    this._syncInjectedStyles();
 
     if (
       changedProperties.has('readOnly') ||
@@ -336,14 +325,15 @@ class FileUploadItemElement extends LitElement {
    * Overrides Carbon's `cds-file-uploader-item` styles from inside its shadow
    * root, since it exposes no `part=` for the affected elements.
    *
-   * Carbon's adopted stylesheet wins over a `<style>` at equal specificity, so
-   * some selectors repeat the `size` attribute (always set) to out-rank it.
+   * Keep the existing selector specificity for both constructed sheets and the
+   * legacy `<style>` fallback.
    */
   private _syncInjectedStyles() {
     const innerRoot = this.shadowRoot?.querySelector(
       'cds-file-uploader-item'
     )?.shadowRoot;
     if (!innerRoot) {
+      this._injectedStyles = undefined;
       return;
     }
 
@@ -385,20 +375,43 @@ class FileUploadItemElement extends LitElement {
       );
     }
 
-    const nextText = rules.join('\n');
-    if (this._injectedStyle?.textContent === nextText) {
-      return;
-    }
-
-    if (!this._injectedStyle) {
-      this._injectedStyle = document.createElement('style');
-      innerRoot.appendChild(this._injectedStyle);
-    }
-    this._injectedStyle.textContent = nextText;
+    this._applyInjectedStyles(innerRoot, rules.join('\n'));
   }
 
-  /** The `<style>` patched into Carbon's shadow root. See `_syncInjectedStyles`. */
-  private _injectedStyle: HTMLStyleElement | null = null;
+  private _applyInjectedStyles(innerRoot: ShadowRoot, nextText: string) {
+    const ownerDocument = innerRoot.ownerDocument;
+    const previous = this._injectedStyles;
+    if (
+      previous?.root === innerRoot &&
+      previous.ownerDocument === ownerDocument
+    ) {
+      previous.styles.update(nextText);
+      return;
+    }
+    // A sheet built for the old document can't stay adopted after the root
+    // moves documents. A replaced root takes its old styles with it.
+    if (previous?.root === innerRoot) {
+      previous.styles.detach();
+    }
+    this._injectedStyles = {
+      root: innerRoot,
+      ownerDocument,
+      styles: attachRootStyles(innerRoot, nextText),
+    };
+  }
+
+  /** Local to the inner root, so detaching a chip needs no stylesheet mutation. */
+  private _injectedStyles?: {
+    root: ShadowRoot;
+    ownerDocument: Document;
+    styles: RootStyles;
+  };
+
+  connectedCallback() {
+    super.connectedCallback();
+    // Recheck the document after adoption, even if no public property changed.
+    this.requestUpdate();
+  }
 
   disconnectedCallback() {
     super.disconnectedCallback();
