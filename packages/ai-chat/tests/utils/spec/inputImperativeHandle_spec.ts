@@ -7,7 +7,7 @@
  *  @license
  */
 
-import type { InputFunctions } from '../../../src/chat/components/input/Input';
+import type { InputFunctions } from '../../../src/chat/utils/inputTypes';
 import {
   createInputImperativeHandle,
   registerInputImperativeHandle,

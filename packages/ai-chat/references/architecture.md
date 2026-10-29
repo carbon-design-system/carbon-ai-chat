@@ -35,21 +35,25 @@ ChatContainer (React) ──────────→ cds-aichat-container (Li
 
 ## When to work in each layer
 
-Private native views in `src/chat/components/` render in light DOM inside the existing container shadow root. `NativeChatView` selects store and view-state values, releases subscriptions on detach, and routes render errors through the existing error callback. The home screen, header, and launcher use it behind temporary React wrappers. The header adapter keeps React icon normalization; its native view receives plain descriptors. The launcher's plain owner releases timers and animation listeners on detach. Consumer content stays in its existing React tree.
+Private native views in `src/chat/components/` render in light DOM inside the existing container shadow root. `NativeChatView` selects store and view-state values. It releases subscriptions on detach and sends render errors to the existing callback. Native owners now cover the home screen, header, launcher, input, and panels. React still wraps retained content. Consumer content stays in its existing tree.
 
-`NativePanels` composes panel frames and their direct slots in light DOM, as the shell's direct `slot="panels"` child. The existing `PanelManager` owns rank, reactivation, and opener focus. Built-in loading, disclaimer, iframe, error, and confirmation bodies are native. Messages, response bodies and footers, citations, configured markdown, and consumer content stay in the existing React tree through stable portal targets.
+`NativePanels` composes panel frames and their direct slots in light DOM, as the shell's direct `slot="panels"` child. The existing `PanelManager` owns rank, reactivation, and opener focus. Built-in loading, hydration, disclaimer, iframe, error, and confirmation bodies are native. Messages, response bodies and footers, citations, configured markdown, inline errors, and consumer content stay in the existing React tree through stable portal targets.
 
 The existing `ExtensionHosts` owner keeps panel targets separate from its page-light-DOM extension hosts. Native views place panel targets inside the container's shadow root before React mounts their content. Later frame transitions wait for the matching retained content's layout commit; each frame preserves its initial open value and synchronous transition callbacks. The native views add no shadow root. Plain owners manage loading delays, iframe source lifetimes, and the disclaimer's read flag. Same-task moves preserve DOM and retained state; actual detach releases pending work.
 
-Native targets can arrive after the first React commit. Their wrappers hold the initial acknowledgment in `ChatViewState` until retained content effects finish, or an empty fallback commits. `ChatAppEntry` then acknowledges the commit to the container. Keep this passive-effect acknowledgment separate from later panel layout commits and the container's listener-ready gate. React does not start services.
+Native targets can arrive after the first React commit. Retained content adapters hold the first commit signal in `ChatViewState` until content effects finish or an empty fallback commits. `ChatAppEntry` then reports the commit to the container. Keep this passive effect separate from panel layout commits and the container's listener-ready gate. React does not start services.
 
-The native input caller keeps raw and display values, the editor handle, lazy extensions, drafts, local pending Stop state, upload wiring, and control wiring in private `ChatInput`. It renders light DOM in the existing shadow root as the shell's direct `slot="input"` child. `NativeInputAdapter` remains a thin bridge for React configuration and icon normalization and forwards the native handle ref; `AppShell` still supplies send and HAA callbacks, while the shared private Stop command owns Stop effects. One `ExtensionHosts.autocompleteContent` owner per chat and `AutocompleteContentAdapter` keep custom React lists in the consumer React tree through stable targets. This adds no root, provider, or shadow boundary. The container's startup and listener-ready gate and React's separate commit acknowledgment remain unchanged.
+The native input owner keeps values, the editor handle, lazy extensions, drafts, pending Stop state, uploads, and controls in private `ChatInput`. It renders in the existing shadow root as the shell's direct `slot="input"` child. `AppShell` retains React normalization and messages. `ShellLifecycle` supplies input callbacks. The private Stop command owns Stop effects. Each chat has one `ExtensionHosts.autocompleteContent` owner. `AutocompleteContentAdapter` keeps custom lists in the consumer React tree through stable targets. Content adapters use the existing root and provider. Startup, the listener-ready gate, and React's commit acknowledgment stay separate.
 
-| Layer | Files | Concerns |
-| --- | --- | --- |
-| Lit | [src/web-components/](../src/web-components) | Registration, shadow DOM, slot forwarding, renderer selection, mount cleanup |
-| React wrappers | [src/react/](../src/react) | Public props, host portal, per-mount key |
-| React app | everything else under [src/chat/](../src/chat) | Application logic, state, UI components, store integration, service orchestration |
+| Owner | Remaining responsibility |
+| --- | --- |
+| Container and renderer seam | Registration, shadow DOM, slots, startup, listener gate, renderer choice, cleanup, live regions |
+| `ChatShell` / `ShellLifecycle` | Native state, DOM callbacks, focus, sizing, subscriptions, resource cleanup |
+| `NativePanels` and native panel bodies | Native frames, slots, hydration, loading, disclaimer, iframe, error, confirmation |
+| `AppShell` / `AppShellPanels` and `ChatAppEntry` | React content, messages, response bodies and footers, citations, markdown, inline errors, portals, commit signal |
+| `ChatContainer` and public React wrappers | Public props, host context, events, consumer React root |
+
+This package still requires React. React 17, 18, and 19 remain supported. The standalone renderer keeps its client import out of the React entry. A future React-optional milestone must replace the message renderer and configured Markdown, citation, error, and consumer content paths. It also needs a host contract for content that does not use React. This milestone keeps SDK exports, host names, and service shutdown unchanged.
 
 ## Debugging across the boundary
 

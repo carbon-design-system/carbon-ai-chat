@@ -7,10 +7,10 @@
 
 @use '@carbon/layout';
 @use 'CatastrophicErrorPanel';
-@use 'DisclaimerPanel';
-@use 'HydrationPanel';
+@use 'native/DisclaimerBody';
+@use 'native/HydrationBody';
 @use 'IFramePanel';
-@use 'ConfirmPanel';
+@use 'native/ConfirmationBody';
 @use 'NativePanels';
 
 /* Shared panel styles - used across multiple panel components */

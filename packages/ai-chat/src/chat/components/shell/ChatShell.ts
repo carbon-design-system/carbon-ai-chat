@@ -407,6 +407,9 @@ class ChatShell extends NativeChatView {
       this.widget?.parentElement,
       this.widget,
       this.panels,
+      this.panels?.querySelector(
+        '[data-panel-name="hydration"] > [slot="body"] > cds-aichat-hydration-body'
+      ),
       this.input,
       this.widget?.querySelector(
         ':scope > [slot="header"] > cds-aichat-header-view'
