@@ -37,7 +37,7 @@ import { SendService } from './SendService';
 import { StreamAnnouncerService } from './StreamAnnouncerService';
 import { ViewService } from './ViewService';
 import { HasRequestFocus } from '../../types/utilities/HasRequestFocus';
-import type { InputFunctions } from '../components/input/Input';
+import type { InputFunctions } from '../utils/inputTypes';
 
 interface UserDefinedElementRegistryItem {
   slotName: string;

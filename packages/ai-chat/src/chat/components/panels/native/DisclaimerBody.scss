@@ -43,36 +43,6 @@
   padding-block-end: layout.$spacing-05;
 }
 
-// Footer container styling
-.cds-aichat--disclaimer__footer {
-  display: flex;
-  justify-content: flex-end;
-}
-
-// Button styling for footer slot
-.cds-aichat--disclaimer__accept-button {
-  margin-inline-start: auto;
-}
-
-.cds-aichat--wide-width {
-  cds-button.cds-aichat--disclaimer__accept-button {
-    inline-size: 288px;
-  }
-}
-
-.cds-aichat--narrow-width,
-.cds-aichat--standard-width {
-  .cds-aichat--disclaimer__footer {
-    justify-content: stretch;
-  }
-
-  cds-button.cds-aichat--disclaimer__accept-button {
-    inline-size: 100%;
-    margin-inline-start: 0;
-    max-inline-size: unset;
-  }
-}
-
 cds-aichat-disclaimer-body {
   display: contents;
 }

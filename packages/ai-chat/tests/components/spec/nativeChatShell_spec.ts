@@ -11,6 +11,7 @@ import React from 'react';
 import { LitElement } from 'lit';
 import { act, render, waitFor } from '@testing-library/react';
 import ChatShell from '../../../src/chat/components/shell/ChatShell';
+import type HydrationBody from '../../../src/chat/components/panels/native/HydrationBody';
 import type ChatInput from '../../../src/chat/components/input/ChatInput';
 import { ChatContainer } from '../../../src/react/ChatContainer';
 import actions from '../../../src/chat/store/actions';
@@ -69,6 +70,33 @@ describe('native shell readiness and lifetime', () => {
       .querySelector('.cds-aichat--shell-messages-target')
       .appendChild(document.createElement('test-shell-pending-consumer'));
     await expect(f.view.whenReady()).resolves.toBe(true);
+  });
+
+  it('places hydration directly in the body slot and waits for its native commit', async () => {
+    const f = await boot();
+    const frame = f.view.querySelector('[data-panel-name="hydration"]');
+    const body = frame.querySelector<HydrationBody>(
+      ':scope > [slot="body"] > cds-aichat-hydration-body'
+    );
+    expect(body).not.toBeNull();
+    expect(body.getRootNode()).toBe(f.root);
+    expect(body.parentElement.className).toBe(
+      'cds-aichat--widget--expand-to-fit'
+    );
+    let complete: (value: boolean) => void;
+    const commit = new Promise<boolean>((resolve) => {
+      complete = resolve;
+    });
+    jest.spyOn(body, 'updateComplete', 'get').mockReturnValue(commit);
+    const ready = jest.fn();
+    const pending = f.view.whenReady().then(ready);
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(ready).not.toHaveBeenCalled();
+    complete(true);
+    await pending;
+    expect(ready).toHaveBeenCalledWith(true);
   });
 
   it('waits for the matching React message commit before reporting the native layout ready', async () => {

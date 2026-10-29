@@ -9,28 +9,13 @@
 
 import React from 'react';
 import { render, waitFor, act, cleanup } from '@testing-library/react';
+import { deepQuerySelector } from '@carbon/ai-chat-components/es/globals/utils/dom-utils.js';
 import { ChatContainer } from '../../../src/react/ChatContainer';
 import { ChatContainerProps } from '../../../src/types/component/ChatContainer';
-import {
-  createBaseTestProps,
-  makeConfigStore,
-  TestChatContext,
-} from '../../test_helpers';
+import { createBaseTestProps } from '../../test_helpers';
 import { WriteableElementName } from '../../../src/types/instance/WriteableElements';
 import { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import { setEnableDebugLog } from '../../../src/chat/utils/miscUtils';
-import { AppShellWriteableElements } from '../../../src/chat/AppShellWriteableElements';
-
-/**
- * Tests for the CUSTOM_HEADER writeable element.
- *
- * Testing strategy: the framework <Header> lives inside a Lit shadow root and
- * is not queryable via document.querySelector in jsdom. Tests therefore verify
- * the guard indirectly through hasMeaningfulContent on the host node — the
- * value useWriteableElementPresence reports to AppShell to suppress or restore
- * the framework header. The isOn gate is verified directly against
- * AppShellWriteableElements, whose JSX output is reachable in jsdom.
- */
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -45,10 +30,12 @@ async function renderAndGetInstance(
 ): Promise<{ instance: ChatInstance; unmount: () => void }> {
   let capturedInstance: ChatInstance | null = null;
 
+  const afterRender = jest.fn();
   const { unmount } = render(
     React.createElement(ChatContainer, {
       ...createBaseProps(),
       ...extraProps,
+      onAfterRender: afterRender,
       onBeforeRender: (instance: ChatInstance) => {
         capturedInstance = instance;
         if (extraProps.onBeforeRender) {
@@ -58,9 +45,15 @@ async function renderAndGetInstance(
     })
   );
 
-  await waitFor(() => expect(capturedInstance).not.toBeNull(), {
-    timeout: 5000,
-  });
+  await waitFor(
+    () => {
+      expect(capturedInstance).not.toBeNull();
+      expect(afterRender).toHaveBeenCalledTimes(1);
+    },
+    {
+      timeout: 5000,
+    }
+  );
 
   return { instance: capturedInstance as ChatInstance, unmount };
 }
@@ -242,8 +235,6 @@ describe('CUSTOM_HEADER — post-boot mutation', () => {
 // HeaderConfig.isOn
 // ---------------------------------------------------------------------------
 
-const stubServiceManager = { namespace: { suffix: '' } } as any;
-
 describe('isOn: false hides the header slot', () => {
   afterEach(() => {
     cleanup();
@@ -251,46 +242,34 @@ describe('isOn: false hides the header slot', () => {
     jest.clearAllMocks();
   });
 
-  function renderElements(headerIsOn: boolean | undefined) {
-    const config =
-      headerIsOn === undefined ? {} : { header: { isOn: headerIsOn } };
-    const store = makeConfigStore(config as any);
-    return render(
-      <TestChatContext store={store}>
-        <AppShellWriteableElements
-          serviceManager={stubServiceManager}
-          showHomeScreen={false}
-        />
-      </TestChatContext>
-    );
+  async function renderElements(headerIsOn: boolean | undefined) {
+    await renderAndGetInstance({
+      ...(headerIsOn === undefined ? {} : { header: { isOn: headerIsOn } }),
+      renderWriteableElements: {
+        [WriteableElementName.CUSTOM_HEADER]: <div>Custom header</div>,
+      },
+    });
+    return deepQuerySelector(document, 'cds-aichat-container').shadowRoot;
   }
 
-  it('slot is present when isOn is unset (default on)', () => {
-    const { container } = renderElements(undefined);
+  it('slot is present when isOn is unset (default on)', async () => {
+    const root = await renderElements(undefined);
     expect(
-      container.querySelector(
-        `slot[name="${WriteableElementName.CUSTOM_HEADER}"]`
-      )
+      root.querySelector(`slot[name="${WriteableElementName.CUSTOM_HEADER}"]`)
     ).not.toBeNull();
   });
 
-  it('slot is present when isOn: true', () => {
-    const { container } = renderElements(true);
+  it('slot is present when isOn: true', async () => {
+    const root = await renderElements(true);
     expect(
-      container.querySelector(
-        `slot[name="${WriteableElementName.CUSTOM_HEADER}"]`
-      )
+      root.querySelector(`slot[name="${WriteableElementName.CUSTOM_HEADER}"]`)
     ).not.toBeNull();
   });
 
   it('slot is absent when isOn: false, even if the host wrote content', async () => {
-    // isOn: false is an AppShell render gate that runs before the content check.
-    // The host node still exists in loadServices but the slot is never mounted.
-    const { container } = renderElements(false);
+    const root = await renderElements(false);
     expect(
-      container.querySelector(
-        `slot[name="${WriteableElementName.CUSTOM_HEADER}"]`
-      )
+      root.querySelector(`slot[name="${WriteableElementName.CUSTOM_HEADER}"]`)
     ).toBeNull();
   });
 
