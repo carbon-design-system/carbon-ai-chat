@@ -36,13 +36,15 @@ Cap the diagnosis at three sentences; the orientation line and fix block are sep
 
 Some observations feel like findings and aren't. Nobody pays for these, so they stay unsaid however small the edit:
 
-- **A tool already decided it.** Husky runs prettier, eslint, stylelint, and commitlint on what you commit ([commit hooks](../../../../references/conventions.md#commit-hooks)); `ci-check` adds license headers plus ADR, AGENTS, skill, and example-README validation. Formatting, quote style, import order, line length, and anything else a gate fails on are settled before you open the diff. commitlint settles commit format, not content — a body that buries or omits its why when the diff can't carry it is **Important**, citing [commit bodies](../../../../references/conventions.md#commit-bodies).
+- **A tool already decided it.** Husky runs prettier, eslint, stylelint, and commitlint on what you commit ([commit hooks](../../../../references/conventions.md#commit-hooks)); `ci-check` adds license headers plus ADR, AGENTS, skill, and example-README validation. Formatting, quote style, import order, line length, and anything else a gate fails on are settled before you open the diff. commitlint settles commit format, not content — see the note on commit bodies below the list.
 - **A naming swap with no clarity gain** — `data` → `payload`.
 - **An equivalent style alternative** — `for` versus `.map`, ternary versus `if`.
 - **"Add a comment here."** The repo's default is no comments ([comments](../../../../references/code-patterns.md#comments)). You are here to flag the ones that restate the code, not to ask for more. One narrow exception: the diff encodes a _why_ the code cannot show — a workaround for a named bug, a constraint from outside the file, an ordering that looks arbitrary and isn't. Ask for that line, and say what it has to record.
 - **Speculative extraction** — "you might want to pull this out in case…". Scope creep counts from the reviewer's side too.
 - **A different approach from the one the issue suggested.** An issue's Possible approaches are options, and the developer owns the choice. Judge the diff on whether it meets the outcomes and constraints, not on whether it took the suggested route. A route that is defective is still a finding — on its own merits.
 - **Code the diff didn't touch.** A pre-existing problem is real and is not this PR's job — file an issue. Untouched code the diff _breaks_ is a different thing: a caller left on the old signature, a consumer of a changed default, a doc snippet that no longer runs. That is a regression, and a regression is a **Blocker** wherever it surfaces.
+
+A commit body is the exception to the tool rule, because commitlint never reads it. A body that buries or omits its why when the diff can't carry it is **Important**: the reviewer walking the branch pays for it now, before the squash ([commit bodies](../../../../references/conventions.md#commit-bodies)).
 
 A pass — or a whole review — that surfaces nothing is finished, not failed. Say so and stop. Manufacturing a finding to look thorough costs the author more than the silence would.
 

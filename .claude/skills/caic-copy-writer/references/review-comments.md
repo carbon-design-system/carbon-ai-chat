@@ -46,15 +46,20 @@ After:
 
 **Fix or answer the Importants, then ship.** 4 Important; 3 inline suggestions, superseded by the complete patch.
 
-**Across the diff**
-- After applying, update the PR description: three chat shards, guidance job on, no demo build in ordinary CI.
-
 **Not verified**
 - The patch hasn't run in GitHub Actions: no three-shard run, guidance job, or release dry run.
 
-<details><summary>Complete patch — supersedes the 3 inline suggestions</summary> … </details>
+<details><summary>Complete patch</summary>
 
-<details><summary>Checked</summary> At `0d9c124`: `git apply --check`, `npm run format`, and `npm run test:versions` pass. </details>
+Target `0d9c124`; supersedes the 3 inline suggestions. After applying, update the PR description: three chat shards, guidance job on, no demo build in ordinary CI. …
+
+</details>
+
+<details><summary>Checked</summary>
+
+At `0d9c124`: `git apply --check`, `npm run format`, and `npm run test:versions` pass.
+
+</details>
 ```
 
 The line comments already carried the four findings, so the after counts them instead of listing them. The overlap rules and the verification report fold into the two collapsed blocks.

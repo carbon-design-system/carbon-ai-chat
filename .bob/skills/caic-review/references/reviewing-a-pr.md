@@ -34,7 +34,7 @@ Generate the patch from an isolated checkout of the target PR head. Include new 
 
 **Disclose overlap with inline suggestions, in one line inside the patch block.** Prefer a complete patch that applies to the named PR head on its own. If it includes inline fixes, list them and state that the complete patch supersedes those suggestions. The overlapping suggestions alone may omit required companion edits. Reconcile any already-applied overlap before applying the patch. Identify independent suggestions the patch does not include.
 
-**Include these instructions beside every patch**, with the target SHA filled in:
+**Include these instructions inside every patch's `<details>` block**, with the target SHA filled in:
 
 1. Preserve existing work, then check out the target PR revision `<full-head-SHA>` in a clean worktree.
 2. Copy the complete diff from the first `diff --git` into `fixes.patch`, excluding Markdown fences and surrounding text.

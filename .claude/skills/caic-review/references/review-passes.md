@@ -37,7 +37,7 @@ Skip the split when a single reading holds the whole diff in view. Splitting a h
 
 Dispatch them in parallel when the harness gives you sub-agents (see [AGENTS.md](../../../../AGENTS.md)); run them as separate sequential passes when it doesn't. Either way, every pass gets the same brief: the diff, this rubric by path, its one dimension, and the `AGENTS.md` files governing the paths it holds ([repo-checks.md](repo-checks.md)). The finding shape and [What isn't a finding](writing-findings.md#what-isnt-a-finding) travel with the rubric. A pass told only to find things will manufacture findings to justify itself.
 
-A pass returns findings and nothing else — no verdict, no cap, no ranking. It can't rank what it can't see.
+A pass returns its findings, plus one line on what it couldn't verify and which gates it ran, for the summary's **Not verified** and **Checked**. It returns no verdict, no cap, and no ranking. It can't rank what it can't see.
 
 ## Refute before you synthesize
 

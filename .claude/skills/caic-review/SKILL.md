@@ -71,26 +71,34 @@ One shape, one order — orientation, then severity, the defect, what it costs, 
 **Not verified**
 - The retry branch of the upload queue; read the happy path only.
 
+<details><summary>Complete patch</summary>
+
+Target `abc1234`; supersedes the 3 inline suggestions. <apply steps, then the diff>
+
+</details>
+
 <details><summary>Checked</summary>
 
-`npm run lint` and the `ai-chat` tests passed at `abc1234`. Read the store and public types in full; skimmed 14 fixture updates.
+`npm run lint` and the `ai-chat` tests passed at `abc1234`. Read every changed file in full.
 
 </details>
 ````
 
 - **`### AI Review` opens every review posted to GitHub**, so the PR's other readers know who wrote it. A review returned in the conversation skips it.
 - **The verdict line comes next, and nothing else precedes it**: no greeting, no "great work on this", no recap of what the PR does. The author wrote the diff and does not need it read back. Pick **Ship.** when there are no findings, **Fix or answer the Importants, then ship.** when only Importants remain, **Fix blockers before merge.** when something blocks, or **Rework.** when the approach has to change and fixing the findings one by one won't get there. Then count the findings by severity, any inline suggestions, and any dropped findings, so the author can size the job.
-- **One line per bullet.** It names the defect and where; the finding carries the why and the fix. A bullet that needs a second line is a finding.
+- **One line per bullet.** Each bullet under **Blocking** and **Across the diff** is one finding, counted once in the verdict line. The bullet names the defect and where; the finding carries the why and the fix.
+- **A finding with no diff line to anchor** — a pattern, a design concern, a missed Done when, a regression in untouched code — goes in full in a `<details>` block under its bullet.
 - **Blocking** lists every Blocker. **Never drop one**, however many there are — a Blocker reduced to a count blocks nothing, and merges.
-- **Across the diff** holds what no line comment can: a pattern across files, a design concern that outgrew a finding, or a PR that should have been several ([large-diffs.md](references/large-diffs.md#size-is-a-finding)). Flag two or three instances of a pattern as findings and ask for the rest here.
-- **Not verified** names what limits the verdict: changed behavior with no test, a gate you couldn't run, code you skimmed.
-- **A strength earns one line** above **Checked**, and only when it was the risk and it landed — "the migration path handles the null case, which was the hard part." Generic praise is padding; cut it.
-- **Checked** collapses the logistics: a base other than `main`, the gates and their results, and what you read in full. The author opens it only to question the verdict.
+- **Across the diff** holds what no single line does: a pattern across files, a design concern, or a PR that should have been several ([large-diffs.md](references/large-diffs.md#size-is-a-finding)). Flag two or three instances of a pattern inline and ask for the rest here.
+- **Not verified** names what you couldn't check: a gate you couldn't run, a path you didn't trace, code you skimmed. A missing test is a finding, not a gap.
+- **A strength earns one line** after **Not verified**, and only when it was the risk and it landed — "the migration path handles the null case, which was the hard part." Generic praise is padding; cut it.
+- **Complete patch**, when inline suggestions can't carry a fix, gets its own collapsed block ([reviewing-a-pr.md](references/reviewing-a-pr.md#when-suggestions-cannot-carry-the-whole-fix)).
+- **Checked** collapses the logistics: a base other than `main`, the gates and their results, what you read in full, and what you glanced at on purpose, such as a lockfile. The author opens it only to question the verdict.
 - **Keep the visible part on one screen.** Past that, move the detail into a finding or into **Checked**.
 
 **The findings follow the summary**, Blockers first, then Important, each written to the shape above. On a posted review they are line comments, so the summary names only the Blockers and counts the rest.
 
-**Cap Important at ten**, highest cost first, and count the drop in the verdict line: "6 further Important not listed." A review nobody finishes fixes nothing, and a silent cut reads as full coverage. When the Blockers alone run past ten, drop the Importants entirely — the verdict is rework, and a tail of should-fixes under that many must-fixes is noise.
+**Cap Important at ten**, highest cost first. The verdict line counts what you list, then the drop: "10 Important, 6 further not listed." A review nobody finishes fixes nothing, and a silent cut reads as full coverage. When the Blockers alone run past ten, drop the Importants entirely — the verdict is rework, and a tail of should-fixes under that many must-fixes is noise.
 
 ## Related guidance
 
