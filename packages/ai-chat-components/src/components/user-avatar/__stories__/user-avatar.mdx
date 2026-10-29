@@ -9,7 +9,7 @@ import * as Stories from './user-avatar.stories';
 
 ## Overview
 
-Use `cds-aichat-user-avatar` to show a person as a profile image, an initial, or a default icon. This element is experimental, and its API may change without a deprecation window.
+Use `cds-aichat-user-avatar` to represent a user as a profile image, an initial, or an icon.
 
 <Canvas of={Stories.Default} />
 
@@ -34,7 +34,7 @@ The avatar is 2rem square by default. Set `width` and `height` to change it. The
 
 ### Initial
 
-Without an image, a name made only of characters from U+0020 to U+00FE shows its first character. This range covers most Latin names.
+Without an image, a name made only of characters from U+0020 to U+00FE shows its first character.
 
 ```html
 <cds-aichat-user-avatar
@@ -46,12 +46,10 @@ Without an image, a name made only of characters from U+0020 to U+00FE shows its
 
 ### Icon
 
-Without an image, a name with any other character, such as Chinese, or no name shows the user icon.
+Without an image and without a name, the avatar shows the user icon.
 
 ```html
-<cds-aichat-user-avatar
-  name="王小明"
-  label="Agent avatar"></cds-aichat-user-avatar>
+<cds-aichat-user-avatar label="Agent avatar"></cds-aichat-user-avatar>
 ```
 
 <Canvas of={Stories.WithIcon} />

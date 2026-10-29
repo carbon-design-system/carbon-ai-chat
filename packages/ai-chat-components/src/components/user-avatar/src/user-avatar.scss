@@ -19,6 +19,7 @@ $block-class: #{$prefix}-user-avatar;
   display: inline-block;
   flex-shrink: 0;
   vertical-align: middle;
+  @include type.type-style('body-01');
 }
 
 .#{$block-class}__avatar {
@@ -39,17 +40,24 @@ $block-class: #{$prefix}-user-avatar;
 }
 
 .#{$block-class}__initial {
-  @include type.type-style('label-02');
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  box-sizing: border-box;
+  padding: 2px;
   border: button.$button-border-width solid currentcolor;
   border-radius: 50%;
+  background-color: transparent;
   block-size: 100%;
   font-weight: bold;
   inline-size: 100%;
   text-transform: uppercase;
+}
+
+.#{$block-class}__letter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  block-size: 100%;
+  line-height: 1;
+  text-align: center;
 }
 
 .#{$block-class}__icon {

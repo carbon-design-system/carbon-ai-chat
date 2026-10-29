@@ -23,7 +23,7 @@ export default {
 
 const render = ({ name, image, label, width, height }) => (
   <UserAvatar
-    name={name || undefined}
+    name={name ?? ''}
     image={image || undefined}
     label={label || undefined}
     width={width || undefined}

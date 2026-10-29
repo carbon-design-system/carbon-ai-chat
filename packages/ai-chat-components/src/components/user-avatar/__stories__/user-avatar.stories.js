@@ -69,6 +69,6 @@ export const WithInitial = {
 
 export const WithIcon = {
   argTypes: { ...Default.argTypes },
-  args: { ...Default.args, name: '王小明', image: '' },
+  args: { ...Default.args, name: '', image: '' },
   render: Default.render,
 };

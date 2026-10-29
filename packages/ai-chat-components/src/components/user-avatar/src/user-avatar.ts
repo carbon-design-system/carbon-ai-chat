@@ -48,7 +48,7 @@ class CDSAIChatUserAvatar extends LitElement {
   static styles = [commonStyles, styles];
 
   /**
-   * The person's name. Its first character is the fallback initial when the
+   * The user's name. Its first character is the fallback initial when the
    * name only contains characters from U+0020 to U+00FE. Any other name, or no
    * name, shows the user icon.
    */
@@ -63,8 +63,7 @@ class CDSAIChatUserAvatar extends LitElement {
   image = '';
 
   /**
-   * Accessible label for the avatar. Provide a translated string for the
-   * host's locale.
+   * Accessible label for the avatar.
    */
   @property({ type: String })
   label = '';
@@ -161,20 +160,20 @@ class CDSAIChatUserAvatar extends LitElement {
     }
 
     if (INITIAL_PATTERN.test(this.name)) {
-      return html`<span
+      return html`<div
         class="${blockClass}__initial"
         role=${role}
-        aria-label=${label}
-        >${this.name.charAt(0)}</span
-      >`;
+        aria-label=${label}>
+        <div class="${blockClass}__letter">${this.name.charAt(0)}</div>
+      </div>`;
     }
 
-    return html`<span
+    return html`<div
       class="${blockClass}__icon"
       role=${role}
-      aria-label=${label}
-      >${iconLoader(UserAvatar32, { 'aria-hidden': 'true' })}</span
-    >`;
+      aria-label=${label}>
+      ${iconLoader(UserAvatar32, { 'aria-hidden': 'true' })}
+    </div>`;
   }
 
   render() {
