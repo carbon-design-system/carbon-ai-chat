@@ -205,8 +205,7 @@ export class ShellLifecycle {
     private whenReady: () => Promise<boolean>,
     private onContent: (content: ShellContentState) => void,
     private onPanelsReady: () => void,
-    private transformIcon: ShellLayoutInputs['header']['transformIcon'],
-    private isReady: () => boolean
+    private transformIcon: ShellLayoutInputs['header']['transformIcon']
   ) {
     const manager = viewState.serviceManager;
     this.inputCallbacks = new InputCallbacks(manager, () =>
@@ -374,10 +373,6 @@ export class ShellLifecycle {
   }
 
   readonly requestReadyFocus = () => {
-    if (this.isReady()) {
-      this.requestFocus();
-      return;
-    }
     const generation = this.generation;
     void this.whenReady().then((ready) => {
       if (ready && this.connected && generation === this.generation) {

@@ -81,7 +81,6 @@ class ChatShell extends NativeChatView {
   private input?: ChatInput;
   private messageTarget?: HTMLDivElement;
   private targets?: ShellLayoutTargets;
-  private readyTargets?: ShellLayoutTargets;
   private committedMessages?: { target: HTMLElement; generation: number };
   private publishedInput?: ChatInput;
   private publishedPanels?: NativePanels;
@@ -223,8 +222,7 @@ class ChatShell extends NativeChatView {
         this.lifecycle?.markPanelsReady();
         this.signal();
       },
-      this.transformIcon,
-      () => Boolean(this.readyTargets && this.readyTargets === this.targets)
+      this.transformIcon
     );
   }
 
@@ -330,11 +328,7 @@ class ChatShell extends NativeChatView {
   async whenReady(): Promise<boolean> {
     const report = this.captureErrorReporter();
     try {
-      const ready = await this.waitUntilReady();
-      if (ready) {
-        this.readyTargets = this.targets;
-      }
-      return ready;
+      return await this.waitUntilReady();
     } catch (error) {
       report(error);
       return false;
@@ -472,7 +466,6 @@ class ChatShell extends NativeChatView {
       previous.input !== this.input ||
       previous.messages !== this.messageTarget;
     if (changed) {
-      this.readyTargets = undefined;
       this.targets = {
         generation: ++this.targetGeneration,
         container: this.container,
@@ -504,7 +497,6 @@ class ChatShell extends NativeChatView {
     this.panels = undefined;
     this.publishBindings();
     this.targets = undefined;
-    this.readyTargets = undefined;
     this.messageTarget = undefined;
     this.committedMessages = undefined;
     this.targetCallback?.(undefined);
