@@ -95,6 +95,53 @@ beforeEach(() => {
   );
 });
 
+test('updates React message props without remounting an equal input node', () => {
+  const wrapper = document.createElement('div');
+  document.body.appendChild(wrapper);
+  let mounts = 0;
+  function StatefulChip({ text }: { text: string }) {
+    const [count, setCount] = React.useState(0);
+    React.useEffect(() => {
+      mounts += 1;
+    }, []);
+    return (
+      <button type="button" onClick={() => setCount(count + 1)}>
+        {text}: {count}
+      </button>
+    );
+  }
+  const renderer = ({ message }: { message: MessageRequest }) => (
+    <StatefulChip text={message.input.text} />
+  );
+  const view = render(
+    <InputNodePortalsContainer
+      hosts={hostsFor(wrapper)}
+      chatInstance={instance}
+      renderUserDefinedInputNode={renderer}
+    />
+  );
+  const button = wrapper.querySelector('button');
+  const host = button.parentElement;
+  act(() => button.click());
+  expect(button.textContent).toBe('custom: 1');
+
+  const previous = store.getState().allMessagesByID.message as MessageRequest;
+  const updated = JSON.parse(JSON.stringify(previous)) as MessageRequest;
+  updated.input.text = 'updated';
+  act(() =>
+    store.dispatch(
+      actions.setAppStateValue('allMessagesByID', { message: updated })
+    )
+  );
+
+  expect(wrapper.querySelector('button')).toBe(button);
+  expect(button.parentElement).toBe(host);
+  expect(button.textContent).toBe('updated: 1');
+  expect(mounts).toBe(1);
+  view.unmount();
+  wrapper.remove();
+});
+
 test.each([0, 1, 2])(
   'projects a block host through %i shadow boundaries and clears every forwarder',
   (depth) => {
