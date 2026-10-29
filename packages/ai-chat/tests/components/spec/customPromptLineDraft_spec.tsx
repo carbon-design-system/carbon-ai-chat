@@ -153,6 +153,7 @@ async function setup(
     getInputFunctionsRef: () => inputFunctions,
   } as any;
   const onSendInput = jest.fn();
+  const onStopStreaming = jest.fn();
   const announce = jest.fn();
   const tree = (isInputVisible: boolean) => (
     <TestChatContext
@@ -167,6 +168,7 @@ async function setup(
         trackInputState
         restoreDraft={restoreDraft}
         onSendInput={onSendInput}
+        onStopStreaming={onStopStreaming}
       />
     </TestChatContext>
   );

@@ -100,10 +100,8 @@ import {
   PendingUpload,
 } from '../types/state/AppState';
 import type { PublicChatState } from '../types/instance/PublicChatState';
-import {
-  AutoScrollOptions,
-  HasDoAutoScroll,
-} from '../types/utilities/HasDoAutoScroll';
+import type { AutoScrollOptions } from '../types/utilities/HasDoAutoScroll';
+import type { MainWindowFunctions } from './utils/mainWindowFunctions';
 import { HasRequestFocus } from '../types/utilities/HasRequestFocus';
 import { MessageSendSource, BusEventType } from '../types/events/eventBusTypes';
 import type { JSONContent } from '@tiptap/core';
@@ -179,26 +177,6 @@ interface AppShellProps extends HasServiceManager {
    * entirely (render all default elements); see {@link AppShellWriteableElements}.
    */
   writeableElementsPresentKeys?: string;
-}
-
-/**
- * These are the public imperative functions that are available on the MainWindow component. This interface is
- * declared here to avoid taking a dependency on a specific React component implementation elsewhere.
- */
-export interface MainWindowFunctions extends HasRequestFocus, HasDoAutoScroll {
-  /**
-   * Scrolls to the (full) message with the given ID. Since there may be multiple message items in a given
-   * message, this will scroll the first message to the top of the message window.
-   *
-   * @param messageID The (full) message ID to scroll to.
-   * @param animate Whether or not the scroll should be animated. Defaults to true.
-   */
-  doScrollToMessage(messageID: string, animate?: boolean): void;
-
-  /**
-   * Returns the current scrollBottom value for the message scroll panel.
-   */
-  getMessagesScrollBottom(): number;
 }
 
 /**
@@ -454,6 +432,7 @@ function AppShell({
   // Input callbacks
   const {
     onSendInput,
+    onStopStreaming,
     onRestart,
     onClose,
     onToggleHomeScreen,
@@ -1079,6 +1058,7 @@ function AppShell({
                   disableSend={shouldDisableSend()}
                   isInputVisible={isInputFieldVisible}
                   onSendInput={onSendInputFromInput}
+                  onStopStreaming={onStopStreaming}
                   onUserTyping={onUserTyping}
                   showUploadButton={
                     inputFields.allowFileUploads || isAssistantUploadEnabled

@@ -8,33 +8,21 @@
  */
 
 import React from 'react';
-
-import Loading from '../carbon/Loading';
-import { AnnounceOnMount } from '../helpers/AnnounceOnMount/AnnounceOnMount';
-import { MountChildrenOnDelay } from '../helpers/MountChildrenOnDelay/MountChildrenOnDelay';
-import type { AppState } from '../../../types/state/AppState';
-import { useSelector } from '../../hooks/useSelector';
+import { createComponent } from '@lit/react';
+import HydrationBody from './native/HydrationBody';
 
 interface HydrationPanelProps {
   isHydrated: boolean;
 }
 
-const HydrationPanel: React.FC<HydrationPanelProps> = ({ isHydrated }) => {
-  // Select only the one string this panel renders, so it never re-renders for an
-  // unrelated language-pack change.
-  const ariaWindowLoading = useSelector(
-    (state: AppState) => state.languagePack.window_ariaWindowLoading
-  );
-  return (
-    <div className="cds-aichat--hydrating-container">
-      <div className="cds-aichat--hydrating cds-aichat--panel-content">
-        <MountChildrenOnDelay delay={400}>
-          {!isHydrated && <AnnounceOnMount announceOnce={ariaWindowLoading} />}
-          <Loading active overlay={false} assistiveText={ariaWindowLoading} />
-        </MountChildrenOnDelay>
-      </div>
-    </div>
-  );
-};
+const NativeHydrationBody = createComponent({
+  tagName: 'cds-aichat-hydration-body',
+  elementClass: HydrationBody,
+  react: React,
+});
+
+const HydrationPanel = ({ isHydrated }: HydrationPanelProps) => (
+  <NativeHydrationBody isHydrated={isHydrated} />
+);
 
 export default HydrationPanel;
