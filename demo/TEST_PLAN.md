@@ -24,7 +24,7 @@ We should be looking for what here can can automate, and as we do, we can remove
 - Writeable elements, layout frame/content width settings
 - Input "Expanded layout" toggle: editor fills its own full-width row; message actions + send control drop to a second row (actions to the start, send to the end); with the "Additional actions menu" enabled the `input.actions` render inline as icon buttons instead of in the "+" popover, and collapse into a "more" (⋯) overflow menu when the row is too narrow to fit them all (narrow the window / use a small layout to verify; confirm the hidden actions are reachable and fire from the menu). Verify non-expanded is unchanged and that toggling live reflows correctly (incl. RTL).
 - Native input actions: compact keyboard menus, disabled controls, links, fixed actions and responsive overflow; late prompt slots, consumer identity, focus, and 32px occupied layout on both hosts (`tests/native-input-actions.spec.ts`).
-- Built-in native input: check direct slots, Enter and Shift+Enter, public editor upgrades with selection, retained custom nodes, and concurrent length/upload live regions through both hosts (`tests/native-input.spec.ts`).
+- Built-in native input: check direct slots, Enter and Shift+Enter, public editor upgrades with selection, retained custom nodes, disabled textarea/rich focus, cleared and restored default placeholders, resumed editing, and concurrent length/upload live regions through both hosts (`tests/native-input.spec.ts`).
 - Writeable element `promptLineActionsEnd`: its slotted content (the green swatch in the demo) appears only when the input "Expanded layout" toggle is on; it is absent in the default compact layout.
 - Input "@mentions" / "/commands" toggles: enable one (or both) and reload — confirm the toggle stays "Enable" (query-string round-trip re-injects the callbacks). With "@mentions" on, type `@` anywhere in the message and pick a suggestion — confirm a chip renders. With "/commands" on, type `/` at the start of a line and pick a suggestion — confirm a chip renders; typing `/` mid-message should NOT open the picker. Delete a chip before sending and confirm it doesn't show up in the echoed response. Send a message with a mention/command chip and confirm the mock backend echoes the mention/command names in a text message before the normal canned response for the typed text, and the browser console shows no errors.
 
@@ -269,6 +269,7 @@ Send messages to agents and test responses:
 - [ ] **"leave"** - Agent leaving chat
 - [ ] **"markdown"** - Markdown content
 - [ ] **"upload"** - File upload capability
+  - `tests/input-actions-upload.spec.ts`: select a text file through compact and expanded actions on both hosts; check pending state, limits, completion, and removal under strict CSP.
 - [ ] **"message throw"** - Message sending errors
 - [ ] **"video"** - Video response from agent
 - [ ] **"custom"** - Custom user-defined response
