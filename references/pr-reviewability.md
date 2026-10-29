@@ -71,4 +71,4 @@ The [Cisco case study](https://static0.smartbear.co/support/media/resources/cc/b
 
 ## Related guidance
 
-- [definition-of-done.md](definition-of-done.md) — evidence to include before requesting review
+- [definition-of-done.md](definition-of-done.md) — measurement and gates; PR content follows caic-pr

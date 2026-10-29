@@ -2,7 +2,7 @@
 
 Load when measuring a review or plan. The rules live in [code-patterns.md](code-patterns.md).
 
-Run `npm run measure -- --changed <base>` before review and paste its rows per [definition-of-done.md](definition-of-done.md). **No CI job runs these.** Scores pick what to read; they are not findings. Optional gate flags can raise the exit code.
+Run `npm run measure -- --changed <base>` before review and report per [definition-of-done.md](definition-of-done.md). **No CI job runs these.** Scores pick what to read; they are not findings. Optional gate flags can raise the exit code.
 
 ## Measuring a diff
 
