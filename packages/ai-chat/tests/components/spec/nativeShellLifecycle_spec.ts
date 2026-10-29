@@ -206,6 +206,36 @@ it('updates message content without updating the shell for unrelated typing and 
   expect(update).not.toHaveBeenCalled();
 });
 
+it('waits for native readiness before automatic composer focus on reopen', async () => {
+  const f = await boot(ChatContainer, {
+    shouldTakeFocusIfOpensAutomatically: true,
+  });
+  await waitFor(() => expect(f.manager.inputComponent.hasFocus()).toBe(true));
+  const widget = f.view.querySelector('cds-aichat-shell');
+  await act(async () => {
+    await f.instance.changeView({ mainWindow: false, launcher: true });
+  });
+  await waitFor(() =>
+    expect(widget.classList.contains('cds-aichat-float--close')).toBe(true)
+  );
+  const focus = jest.spyOn(f.manager.inputComponent, 'requestFocus');
+  let release: (ready: boolean) => void;
+  const blocked = new Promise<boolean>((resolve) => {
+    release = resolve;
+  });
+  const readiness = jest.spyOn(f.view, 'whenReady').mockReturnValue(blocked);
+  await act(async () => {
+    await f.instance.changeView({ mainWindow: true, launcher: false });
+  });
+  expect(focus).not.toHaveBeenCalled();
+  expect(readiness).toHaveBeenCalled();
+  await act(async () => {
+    release(true);
+    await blocked;
+  });
+  await waitFor(() => expect(focus).toHaveBeenCalledTimes(1));
+});
+
 it('finishes receive callbacks while native input readiness is still pending', async () => {
   const f = await boot();
   const input = f.view.querySelector<ChatInput>('cds-aichat-chat-input');
