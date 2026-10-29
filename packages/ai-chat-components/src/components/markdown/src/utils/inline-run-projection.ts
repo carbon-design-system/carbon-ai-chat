@@ -18,7 +18,11 @@ import {
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import prefix from '../../../../globals/settings.js';
 import styles from '../inline-run-projection.scss?lit';
-import type { MarkdownCustomRendererMountDetail } from './plugin-host-container.js';
+import {
+  getMarkdownPluginHostTargets,
+  releaseMarkdownPluginHostClaims,
+  type MarkdownCustomRendererMountDetail,
+} from './plugin-host-container.js';
 
 const projectionHosts = new WeakSet<object>();
 const styleRoots = new WeakMap<
@@ -93,10 +97,13 @@ interface InlineRunOptions {
 class InlineRunProjection extends AsyncDirective {
   private slot?: HTMLSlotElement;
   private host?: HTMLSpanElement;
+  private hostParent?: Node | null;
+  private controllerTargets: HTMLElement[] = [];
   private forwarder?: HTMLSlotElement;
   private rootPart?: RootPart;
   private options?: InlineRunOptions;
   private mounted = false;
+  private claimed = false;
   private connectionFrame?: number;
   private releaseStyles?: () => void;
 
@@ -159,6 +166,7 @@ class InlineRunProjection extends AsyncDirective {
     forwarder.name = this.options.slotName;
     forwarder.slot = this.options.slotName;
     fallbackHost?.append(forwarder);
+    this.controllerTargets = getMarkdownPluginHostTargets(this.slot);
     const claimed = !this.slot.dispatchEvent(
       new CustomEvent(`${prefix}-markdown-plugin-host-mount`, {
         bubbles: true,
@@ -167,16 +175,21 @@ class InlineRunProjection extends AsyncDirective {
         detail,
       })
     );
+    this.claimed = claimed;
     this.mounted = true;
     if (fallbackHost) {
       if (claimed) {
         this.forwarder = forwarder;
       } else {
         forwarder.remove();
-        fallbackHost.append(this.host);
+        if (this.host.parentNode !== fallbackHost) {
+          fallbackHost.append(this.host);
+        }
       }
     }
+    this.hostParent = this.host.parentNode;
     if (this.host.isConnected) {
+      this.releaseStyles?.();
       this.releaseStyles = installInlineRunStyles(this.host);
       this.rootPart?.setConnected(true);
     }
@@ -192,6 +205,10 @@ class InlineRunProjection extends AsyncDirective {
   private unmount() {
     this.cancelConnectionFrame();
     if (this.mounted) {
+      releaseMarkdownPluginHostClaims(
+        this.controllerTargets,
+        this.options!.slotName
+      );
       this.slot?.dispatchEvent(
         new CustomEvent(`${prefix}-markdown-plugin-host-unmount`, {
           bubbles: true,
@@ -201,10 +218,15 @@ class InlineRunProjection extends AsyncDirective {
       );
     }
     this.mounted = false;
+    this.claimed = false;
+    this.controllerTargets = [];
     this.rootPart?.setConnected(false);
     this.releaseStyles?.();
     this.releaseStyles = undefined;
-    this.host?.remove();
+    if (this.host?.parentNode === this.hostParent) {
+      this.host?.remove();
+    }
+    this.hostParent = undefined;
     this.forwarder?.remove();
     this.forwarder = undefined;
   }
@@ -224,6 +246,20 @@ class InlineRunProjection extends AsyncDirective {
   }
 
   protected reconnected() {
+    if (this.mounted && this.slot) {
+      const targets = getMarkdownPluginHostTargets(this.slot);
+      if (
+        targets.length !== this.controllerTargets.length ||
+        targets.some(
+          (target, index) => target !== this.controllerTargets[index]
+        )
+      ) {
+        this.unmount();
+      } else if (targets.length === 0 && !this.claimed) {
+        // An unregistered listener may claim a previously local run on reconnect.
+        this.mounted = false;
+      }
+    }
     this.connectRun();
   }
 }
