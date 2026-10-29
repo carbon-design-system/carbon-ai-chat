@@ -140,21 +140,11 @@ export interface InputProps {
     collapsible?: boolean;
   };
 
-  /**
-   * One error per failed attachment, shown as a stacked row in the
-   * `field-messaging` slot, between the attachment chips and the text field.
-   * Titles and descriptions arrive already localized. While any are present
-   * they replace `error`, but the max-length error still takes priority over
-   * both.
-   */
+  /** Localized attachment errors replace `error`; the max-length error takes priority. */
   uploadErrors?: Array<{
-    /** The upload's unique ID, used as the row's React key. */
     id: string;
-    /** The file name. Already reflected in `title`. */
     filename: string;
-    /** The error title, already localized and including the file name. */
     title: string;
-    /** The failure reason, if any, followed by the recovery instruction. */
     description?: string;
   }>;
 }

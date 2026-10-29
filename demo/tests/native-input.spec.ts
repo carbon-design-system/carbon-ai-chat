@@ -107,6 +107,100 @@ test.afterEach(async ({ page }) => {
 });
 
 for (const framework of ['react', 'web-component']) {
+  for (const runtime of ['textarea', 'rich']) {
+    test(`${framework} ${runtime} input releases focus when disabled and restores its default placeholder when enabled`, async ({
+      page,
+    }) => {
+      await prepare(page, framework);
+      const prompt = page.locator(
+        'cds-aichat-chat-input cds-aichat-prompt-line'
+      );
+      const input = page.getByTestId(PageObjectId.INPUT);
+      if (runtime === 'rich') {
+        await page.evaluate(async () => {
+          await window.chatInstance.input.getEditor();
+        });
+        await expect(input).toHaveAttribute('contenteditable', 'true');
+      } else {
+        await expect(input).toHaveJSProperty('tagName', 'TEXTAREA');
+      }
+      const placeholder = await prompt.evaluate(
+        (element: PromptLineElement) => element.placeholder
+      );
+      expect(placeholder).not.toBe('');
+      await input.focus();
+      await expect(input).toBeFocused();
+      await page.evaluate(() =>
+        window.setChatConfig({ input: { isDisabled: true } })
+      );
+      await expect(prompt).toHaveJSProperty('disabled', true);
+      await expect(prompt).toHaveJSProperty('placeholder', '');
+      if (runtime === 'rich') {
+        await expect(input).toHaveAttribute('contenteditable', 'false');
+        const paragraph = input.locator('p.is-editor-empty').first();
+        await expect(paragraph).toHaveAttribute('data-placeholder', '');
+        expect(
+          await paragraph.evaluate(
+            (element) => getComputedStyle(element, '::before').content
+          )
+        ).not.toContain(placeholder);
+      } else {
+        await expect(input).toBeDisabled();
+        await expect(input).toHaveAttribute('placeholder', '');
+        await expect(input).toHaveJSProperty('placeholder', '');
+      }
+      await expect(input).not.toBeFocused();
+      await input.evaluate((element: HTMLElement) => element.focus());
+      await expect(input).not.toBeFocused();
+      await page.keyboard.press('Tab');
+      await expect(input).not.toBeFocused();
+      await page.keyboard.type('Blocked');
+      expect(
+        await page.evaluate(() => window.chatInstance.getState().input.rawValue)
+      ).toBe('');
+
+      await page.evaluate(() =>
+        window.setChatConfig({ input: { isDisabled: false } })
+      );
+      await expect(prompt).toHaveJSProperty('disabled', false);
+      await expect(prompt).toHaveJSProperty('placeholder', placeholder);
+      if (runtime === 'rich') {
+        await expect(input).toHaveAttribute('contenteditable', 'true');
+        const paragraph = input.locator('p.is-editor-empty').first();
+        await expect(paragraph).toHaveAttribute(
+          'data-placeholder',
+          placeholder
+        );
+        await expect(paragraph).toBeVisible();
+        expect(
+          await paragraph.evaluate(
+            (element) => getComputedStyle(element, '::before').content
+          )
+        ).toContain(placeholder);
+      } else {
+        await expect(input).toBeEnabled();
+        await expect(input).toHaveAttribute('placeholder', placeholder);
+        expect(
+          await input.evaluate((element) =>
+            element.matches(':placeholder-shown')
+          )
+        ).toBe(true);
+      }
+      await input.fill('Enabled again');
+      await expect(input).toBeFocused();
+      await expect
+        .poll(() =>
+          page.evaluate(() => window.chatInstance.getState().input.rawValue)
+        )
+        .toBe('Enabled again');
+      expect(
+        await page.evaluate(
+          () => (window as ProbeWindow).nativeInputProbe.sends
+        )
+      ).toEqual([]);
+    });
+  }
+
   test(`${framework} native input keeps direct slots and distinguishes modified Enter from a trimmed send`, async ({
     page,
   }) => {
@@ -472,6 +566,36 @@ for (const framework of ['react', 'web-component']) {
     );
     expect(accessible).toContain(reason);
     expect(accessible).toContain('Remove the attachment and try again.');
+
+    await input.fill('Fine');
+    await expect(lengthRegion).toHaveCount(0);
+    const uploadError = field.locator(
+      '[aria-live="off"] cds-aichat-error-message'
+    );
+    await expect(uploadError).toHaveCount(1);
+    await expect(uploadError).toHaveJSProperty(
+      'title',
+      `File upload error: ${filename}`
+    );
+    await expect(uploadError).toHaveJSProperty(
+      'description',
+      `${reason} Remove the attachment and try again.`
+    );
+    await expect(uploadError).toHaveJSProperty('collapsible', false);
+    await expect(uploadError).toContainText(`File upload error: ${filename}`);
+    await expect(uploadError).toContainText(reason);
+    await expect(uploadError).toContainText(
+      'Remove the attachment and try again.'
+    );
+    await expect(
+      uploadError.getByRole('button', {
+        name: 'Expand error message',
+        exact: true,
+      })
+    ).toHaveCount(0);
+    expect(await view.ariaSnapshot()).toContain(
+      `File upload error: ${filename}`
+    );
     expect(
       await page.evaluate(() => (window as ProbeWindow).nativeInputProbe.sends)
     ).toEqual([]);

@@ -11,6 +11,7 @@ import { html, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { keyed } from 'lit/directives/keyed.js';
 import { ref } from 'lit/directives/ref.js';
+import { repeat } from 'lit/directives/repeat.js';
 import { carbonElement } from '@carbon/ai-chat-components/es/globals/decorators/index.js';
 import '@carbon/ai-chat-components/es/components/prompt-line/src/prompt-line.js';
 import '@carbon/ai-chat-components/es/components/prompt-line/src/prompt-line-shell.js';
@@ -347,9 +348,11 @@ class ChatInput extends NativeChatView {
         builder
       );
     }
+    // Upload rows replace the single live error, so its announcement latch resets.
     const present =
       this.inputProps.isInputVisible &&
-      (this.overMaxLength || this.inputProps.error !== undefined);
+      (this.overMaxLength ||
+        (!this.hasUploadErrors && this.inputProps.error !== undefined));
     if (!present) {
       this.resetError();
     } else if (!this.errorPresent) {
@@ -493,11 +496,15 @@ class ChatInput extends NativeChatView {
   private get overMaxLength() {
     return this.rawValue.length > (this.inputProps.maxInputChars ?? 10000);
   }
+  private get hasUploadErrors() {
+    return (this.inputProps.uploadErrors?.length ?? 0) > 0;
+  }
   private get disableSend() {
     return (
       this.inputProps.disableSend ||
       this.configDisableSend ||
       this.overMaxLength ||
+      this.hasUploadErrors ||
       this.inputProps.error !== undefined ||
       hasInFlightUpload(this.inputProps.pendingUploads)
     );
@@ -695,7 +702,7 @@ class ChatInput extends NativeChatView {
     const error = props.error;
     return {
       ...error,
-      live: !props.pendingUploads?.some((upload) => upload.isError),
+      live: true,
       announcement: error.description
         ? `${error.title}. ${error.description}`
         : error.title,
@@ -711,6 +718,22 @@ class ChatInput extends NativeChatView {
   }
 
   private renderError() {
+    if (!this.overMaxLength && this.hasUploadErrors) {
+      return html`<div slot="field-messaging">
+        ${repeat(
+          this.inputProps.uploadErrors,
+          (entry) => entry.id,
+          (entry) =>
+            html`<div aria-live="off">
+              <cds-aichat-error-message
+                .fullscreen=${this.wide}
+                .title=${entry.title}
+                .description=${entry.description}
+                .collapsible=${false}></cds-aichat-error-message>
+            </div>`
+        )}
+      </div>`;
+    }
     const error = this.currentError;
     return error
       ? html`<div slot="field-messaging">
@@ -924,7 +947,7 @@ class ChatInput extends NativeChatView {
       html`<cds-aichat-prompt-line-shell
         .rounded=${props.rounded}
         .expanded=${this.expanded}
-        .hasError=${props.error !== undefined || this.overMaxLength}
+        .hasError=${props.error !== undefined || this.hasUploadErrors || this.overMaxLength}
         .disabled=${props.disableInput}
         exportparts="prompt-container">
         ${this.renderPrompt(current)} ${this.renderAutocomplete(current)}

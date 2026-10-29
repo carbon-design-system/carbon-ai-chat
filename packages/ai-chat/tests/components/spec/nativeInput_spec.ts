@@ -501,7 +501,7 @@ it('passes Stop its pending callback and clears local pending after settlement',
   expect(control.isStopStreamingButtonDisabled).toBe(false);
 });
 
-it('keeps a continuous error element and announcement latch, including silent upload errors becoming live', async () => {
+it('keeps configured errors live beside failed chips and retains a continuous single error', async () => {
   const upload = {
     id: 'failed',
     status: FileStatusValue.EDIT,
@@ -509,19 +509,24 @@ it('keeps a continuous error element and announcement latch, including silent up
     file: new File(['failed'], 'failed.txt'),
   };
   const { view, announce, prompt } = await fixture({
-    error: {
-      title: 'Upload failed',
-      description: 'Try again',
-      collapsible: true,
-    },
     pendingUploads: [upload],
     maxInputChars: 3,
   });
+  jest.useFakeTimers({ doNotFake: ['queueMicrotask'] });
+  await update(view, {
+    error: {
+      title: 'Configured error',
+      description: 'Configured detail',
+      collapsible: true,
+    },
+  });
+  jest.runOnlyPendingTimers();
   const error = view.querySelector<ErrorMessage>('cds-aichat-error-message');
   const live = error.parentElement;
-  expect(live.getAttribute('aria-live')).toBe('off');
-  expect(announce).not.toHaveBeenCalled();
-  jest.useFakeTimers({ doNotFake: ['queueMicrotask'] });
+  expect(live.getAttribute('aria-live')).toBe('polite');
+  expect(announce.mock.calls).toEqual([
+    ['Configured error. Configured detail'],
+  ]);
   change(prompt, 'too long');
   await flush(view);
   jest.runOnlyPendingTimers();
@@ -541,6 +546,107 @@ it('keeps a continuous error element and announcement latch, including silent up
   expect(view.querySelector('cds-aichat-error-message')).not.toBeNull();
   expect(view.querySelector('cds-aichat-error-message')).not.toBe(error);
   expect(announce).toHaveBeenCalledTimes(2);
+});
+
+it('keeps upload rows keyed and silent between max-length and configured errors', async () => {
+  const { view, prompt, control, announce, onSendInput } = await fixture({
+    maxInputChars: 3,
+  });
+  const uploadErrors: InputProps['uploadErrors'] = [
+    {
+      id: 'apple',
+      filename: 'Apple.txt',
+      title: 'File upload error: Apple.txt',
+      description: 'Apple failed. Remove the attachment and try again.',
+    },
+    {
+      id: 'zebra',
+      filename: 'zebra.txt',
+      title: 'File upload error: zebra.txt',
+      description: 'Zebra failed. Remove the attachment and try again.',
+    },
+  ];
+  const rows = () =>
+    Array.from(
+      view.querySelectorAll<ErrorMessage>(
+        '[slot="field-messaging"] cds-aichat-error-message'
+      )
+    );
+  jest.useFakeTimers({ doNotFake: ['queueMicrotask'] });
+  change(prompt, 'ok');
+  await update(view, { uploadErrors });
+  jest.runOnlyPendingTimers();
+  const [apple, zebra] = rows();
+  expect(rows().map((row) => row.title)).toEqual(
+    uploadErrors.map((entry) => entry.title)
+  );
+  expect(rows().map((row) => row.description)).toEqual(
+    uploadErrors.map((entry) => entry.description)
+  );
+  expect(rows().every((row) => row.collapsible === false)).toBe(true);
+  expect(
+    rows().map((row) => row.parentElement.getAttribute('aria-live'))
+  ).toEqual(['off', 'off']);
+  expect(
+    view.querySelector('cds-aichat-prompt-line-shell').hasAttribute('has-error')
+  ).toBe(true);
+  expect(control.disableSend).toBe(true);
+  send(control);
+  expect(onSendInput).not.toHaveBeenCalled();
+  expect(announce).not.toHaveBeenCalled();
+
+  await update(view, {
+    error: { title: 'Configured error', description: 'Configured detail' },
+    uploadErrors: [
+      uploadErrors[1],
+      { ...uploadErrors[0], description: 'Updated Apple reason.' },
+    ],
+  });
+  jest.runOnlyPendingTimers();
+  expect(rows()[0]).toBe(zebra);
+  expect(rows()[1]).toBe(apple);
+  expect(apple.description).toBe('Updated Apple reason.');
+  expect(announce).not.toHaveBeenCalled();
+
+  change(prompt, 'too long');
+  await flush(view);
+  jest.runOnlyPendingTimers();
+  expect(rows()).toHaveLength(1);
+  expect(rows()[0].title).toBe('Error: Max character count exceeded');
+  expect(rows()[0].parentElement.getAttribute('aria-live')).toBe('polite');
+  expect(announce).toHaveBeenCalledTimes(1);
+
+  change(prompt, 'ok');
+  await flush(view);
+  jest.runOnlyPendingTimers();
+  expect(rows().map((row) => row.title)).toEqual([
+    uploadErrors[1].title,
+    uploadErrors[0].title,
+  ]);
+  expect(
+    rows().map((row) => row.parentElement.getAttribute('aria-live'))
+  ).toEqual(['off', 'off']);
+  expect(announce).toHaveBeenCalledTimes(1);
+
+  await update(view, {
+    uploadErrors: [],
+    pendingUploads: [
+      {
+        id: 'failed',
+        status: FileStatusValue.EDIT,
+        isError: true,
+        file: new File(['failed'], 'failed.txt'),
+      },
+    ],
+  });
+  jest.runOnlyPendingTimers();
+  expect(rows()).toHaveLength(1);
+  expect(rows()[0].title).toBe('Configured error');
+  expect(rows()[0].parentElement.getAttribute('aria-live')).toBe('polite');
+  expect(announce).toHaveBeenCalledTimes(2);
+  expect(announce).toHaveBeenLastCalledWith(
+    'Configured error. Configured detail'
+  );
 });
 
 it('discards stale autocomplete sends and old Stop completion after reconnect', async () => {
