@@ -17,6 +17,10 @@ import {
 import type { PromptLineElement } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
 
 import type { ServiceManager } from '../../services/ServiceManager';
+import {
+  createInputImperativeHandle,
+  registerInputImperativeHandle,
+} from '../../utils/inputImperativeHandle';
 import type { InputFunctions } from './Input';
 
 interface UseInputImperativeHandleArgs {
@@ -42,14 +46,6 @@ interface UseInputImperativeHandleArgs {
   latchRich: () => void;
 }
 
-/**
- * Builds the imperative `InputFunctions` object (focus / content / editor
- * access), publishes it on the forwarded `ref`, and registers it on the
- * service manager so `InputActionsService` can drive the input. The object is
- * memoized with empty deps because it only reaches the live surface through
- * stable refs/callbacks — re-creating it would needlessly re-fire the
- * imperative handle and the registration effect.
- */
 function useInputImperativeHandle({
   ref,
   promptLineRef,
@@ -57,60 +53,18 @@ function useInputImperativeHandle({
   latchRich,
 }: UseInputImperativeHandleArgs): void {
   const inputFunctions = useMemo<InputFunctions>(
-    () => ({
-      requestFocus: () => {
-        const promptLine = promptLineRef.current;
-        if (!promptLine) {
-          return false;
-        }
-        promptLine.focus();
-        return true;
-      },
-      hasFocus: () => promptLineRef.current?.hasFocus() ?? false,
-      setContent: (next) => {
-        const promptLine = promptLineRef.current;
-        if (!promptLine) {
-          throw new Error('Input is not currently rendered');
-        }
-        promptLine.setContent(next);
-      },
-      insertContent: (content, options) => {
-        const promptLine = promptLineRef.current;
-        if (!promptLine) {
-          throw new Error('Input is not currently rendered');
-        }
-        promptLine.insertContent(content, options);
-      },
-      getEditor: () => promptLineRef.current?.getEditor() ?? null,
-      ensureEditor: () => {
-        const promptLine = promptLineRef.current;
-        if (!promptLine) {
-          throw new Error('Input is not currently rendered');
-        }
-        // Keep React's latch in sync with the element's own sticky upgrade so a
-        // later render doesn't revert `rich`/`extensions`.
-        latchRich();
-        return promptLine.ensureEditor();
-      },
-    }),
-    // `promptLineRef` is a ref and `latchRich` is a stable callback, so the
-    // object only reaches the live surface through stable identities — build it
-    // once. Re-creating it would needlessly re-fire the imperative handle and
-    // the registration effect.
+    () => createInputImperativeHandle(() => promptLineRef.current, latchRich),
+    // Stable refs and callbacks keep the handle and its registration unchanged.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
 
   useImperativeHandle(ref, () => inputFunctions, [inputFunctions]);
 
-  useEffect(() => {
-    serviceManager.setInputFunctionsRef(inputFunctions);
-    return () => {
-      if (serviceManager.getInputFunctionsRef?.() === inputFunctions) {
-        serviceManager.setInputFunctionsRef(null);
-      }
-    };
-  }, [serviceManager, inputFunctions]);
+  useEffect(
+    () => registerInputImperativeHandle(serviceManager, inputFunctions),
+    [serviceManager, inputFunctions]
+  );
 }
 
 export { useInputImperativeHandle };

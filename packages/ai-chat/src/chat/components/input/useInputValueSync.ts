@@ -20,6 +20,11 @@ import type { ServiceManager } from '../../services/ServiceManager';
 import type { FileUpload } from '../../../types/config/ServiceDeskConfig';
 import { hasInFlightUpload, hasSendableInput } from '../../utils/sendableInput';
 import { restoreInputDraft } from '../../utils/restoreInputDraft';
+import {
+  changeInputValue,
+  mirrorInputValue,
+  sendInputValue,
+} from '../../utils/inputValueSync';
 import { consoleError } from '../../utils/miscUtils';
 import { useSelector } from '../../hooks/useSelector';
 
@@ -185,22 +190,17 @@ function useInputValueSync({
       const nextInputState = selectInputState(state);
       const nextRawValue = nextInputState.rawValue ?? '';
 
-      if (nextRawValue !== rawInputValueRef.current) {
-        rawInputValueRef.current = nextRawValue;
-        setRawInputValue(nextRawValue);
-        // The restore effect applies the new slice's full document after readiness.
-        // Mirroring only its text here would erase rich nodes before that restore.
-        if (restoreDraft && sliceChanged) {
-          return;
-        }
-        // Push the Redux-driven value into the surface to keep them aligned.
-        // `getValue()` works in both textarea and rich modes (no getEditor()
-        // branch), so the sync runs regardless of which surface is mounted.
-        const promptLine = promptLineRef.current;
-        if (promptLine && promptLine.getValue() !== nextRawValue) {
-          promptLine.setContent(nextRawValue);
-        }
-      }
+      mirrorInputValue({
+        rawValue: nextRawValue,
+        sliceChanged,
+        restoreDraft,
+        getRawValue: () => rawInputValueRef.current,
+        changeLocalValue: (rawValue) => {
+          rawInputValueRef.current = rawValue;
+          setRawInputValue(rawValue);
+        },
+        getPromptLine: () => promptLineRef.current,
+      });
     });
 
     return unsubscribe;
@@ -230,63 +230,49 @@ function useInputValueSync({
   const handleInputChange = (
     event: CustomEvent<{ rawValue: string; content?: JSONContent }>
   ) => {
-    const { rawValue, content } = event.detail;
-
-    setRawInputValue(rawValue);
-    rawInputValueRef.current = rawValue;
-    displayContentRef.current = content ?? null;
-
-    if (trackInputState) {
-      const isInputToHumanAgent = selectIsInputToHumanAgent(store.getState());
-      store.dispatch(
-        actions.updateInputState(
-          { rawValue, content: content ?? { type: 'doc', content: [] } },
-          isInputToHumanAgent
-        )
-      );
-    }
+    changeInputValue(
+      event.detail,
+      (rawValue, content) => {
+        setRawInputValue(rawValue);
+        rawInputValueRef.current = rawValue;
+        displayContentRef.current = content;
+      },
+      trackInputState
+        ? (value) => {
+            const isInputToHumanAgent = selectIsInputToHumanAgent(
+              store.getState()
+            );
+            store.dispatch(
+              actions.updateInputState(value, isInputToHumanAgent)
+            );
+          }
+        : undefined
+    );
   };
 
-  /**
-   * Send the current input value - clears the editor and dispatches to Redux
-   * if tracking is enabled.
-   *
-   * Order matters here. We clear Redux BEFORE onSendInput so the store
-   * subscriber (see useEffect above) can never observe Redux holding the old
-   * value while React state is "". onSendInput dispatches downstream actions
-   * (sendWithCatch, etc.) — in React 17 those run through unbatched renders
-   * whose layout effects can synchronously fire the subscriber, which would
-   * otherwise revert React state back to the just-sent text. We also call
-   * promptLineRef.current?.clearContent() to imperatively reset the Tiptap doc
-   * in case the prop-driven sync (rawValue → setExternalRawValue) is delayed
-   * by @lit/react's native-event scheduling. See issue #1382.
-   */
   const sendCurrentValue = () => {
-    const text = rawInputValueRef.current.trim();
-    // Re-evaluate from the ref at call time: callers like the starter and
-    // autocomplete-item send paths seed the ref synchronously before calling
-    // here, so using the closure-captured `hasValidInput` (derived from
-    // `rawInputValue` state) would race the React re-render and bail early.
-    if (!hasSendableInput(text, pendingUploads)) {
-      return;
-    }
-    if (effectiveDisableSend) {
-      return;
-    }
-    onSendInput(text, displayContentRef.current ?? undefined);
-
-    setRawInputValue('');
-    displayContentRef.current = null;
-    const promptLine = promptLineRef.current;
-    promptLine?.clearContent();
-    promptLine?.resetHistory();
-
-    if (trackInputState) {
-      const isInputToHumanAgent = selectIsInputToHumanAgent(store.getState());
-      store.dispatch(
-        actions.updateInputState({ rawValue: '' }, isInputToHumanAgent)
-      );
-    }
+    sendInputValue({
+      getRawValue: () => rawInputValueRef.current,
+      getDisplayContent: () => displayContentRef.current,
+      pendingUploads,
+      effectiveDisableSend,
+      onSendInput,
+      clearLocalValue: () => {
+        setRawInputValue('');
+        displayContentRef.current = null;
+      },
+      getPromptLine: () => promptLineRef.current,
+      clearTrackedValue: trackInputState
+        ? () => {
+            const isInputToHumanAgent = selectIsInputToHumanAgent(
+              store.getState()
+            );
+            store.dispatch(
+              actions.updateInputState({ rawValue: '' }, isInputToHumanAgent)
+            );
+          }
+        : undefined,
+    });
   };
 
   const handleSendControlSend = () => {
