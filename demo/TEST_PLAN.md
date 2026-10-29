@@ -20,6 +20,7 @@ We should be looking for what here can can automate, and as we do, we can remove
 - Native autocomplete fixture: delayed list readiness, keyboard selection, retained React context and state, root replacement, borrowed elements, two chats, direct slots, editor focus, and narrow/wide height caps (`tests/native-autocomplete.spec.ts`). The production input uses the same native autocomplete owner.
 - Home starters and return actions: mouse and keyboard paths, input focus, narrow RTL layout, and both host paths (`tests/homescreen.spec.ts`).
 - Chat instance controls (focus, scroll, input visibility, restart)
+- Native shell lifecycle: phone viewport resize, same-parent moves with retained message/input and live regions, mobile programmatic-focus suppression, user focus, and close/reopen on both hosts (`tests/native-shell-lifecycle.spec.ts`).
 - Slots, layout frame/content width settings
 - Writeable elements, layout frame/content width settings
 - Input "Expanded layout" toggle: editor fills its own full-width row; message actions + send control drop to a second row (actions to the start, send to the end); with the "Additional actions menu" enabled the `input.actions` render inline as icon buttons instead of in the "+" popover, and collapse into a "more" (⋯) overflow menu when the row is too narrow to fit them all (narrow the window / use a small layout to verify; confirm the hidden actions are reachable and fire from the menu). Verify non-expanded is unchanged and that toggling live reflows correctly (incl. RTL).
