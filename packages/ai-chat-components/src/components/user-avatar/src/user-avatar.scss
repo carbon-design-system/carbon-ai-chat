@@ -10,7 +10,6 @@
 @use '../../../globals/scss/vars' as *;
 @use '@carbon/layout';
 @use '@carbon/styles/scss/components/button/vars' as button;
-@use '@carbon/styles/scss/theme';
 @use '@carbon/styles/scss/type';
 
 $block-class: #{$prefix}-user-avatar;
@@ -59,7 +58,6 @@ $block-class: #{$prefix}-user-avatar;
   block-size: 100%;
   font-weight: bold;
   inline-size: 100%;
-  text-transform: uppercase;
 }
 
 .#{$block-class}__letter {
