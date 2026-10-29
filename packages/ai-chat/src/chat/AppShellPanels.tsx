@@ -15,13 +15,12 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { createComponent } from '@lit/react';
 import { useSyncExternalStore } from 'use-sync-external-store/shim/index.js';
 import { transformReactIconToCarbonIcon } from '@carbon/ai-chat-components/es/globals/utils/iconTransform.js';
 import type CDSButton from '@carbon/web-components/es/components/button/button.js';
 import type { HumanAgentConfirmation } from './services/chatViewState';
 import type { ExtensionHosts } from './services/extensionHosts';
-import NativePanels from './components/panels/NativePanels';
+import type NativePanels from './components/panels/NativePanels';
 import {
   PanelContentAdapter,
   type PanelContentParts,
@@ -87,18 +86,12 @@ interface AppShellPanelsProps extends HasServiceManager {
   catastrophicErrorPanelState: AppState['catastrophicErrorPanelState'];
 }
 
-const NativePanelsRegion = createComponent({
-  tagName: 'cds-aichat-native-panels',
-  elementClass: NativePanels,
-  react: React,
-});
-
 const noScroll = () => {};
 const renderMessageComponent = (props: MessageTypeComponentProps) => (
   <MessageTypeComponent {...props} />
 );
 
-export const AppShellPanels = React.memo(function AppShellPanels({
+export function useAppShellPanels({
   serviceManager,
   hosts,
   endChatConfirmation,
@@ -135,6 +128,9 @@ export const AppShellPanels = React.memo(function AppShellPanels({
 }: AppShellPanelsProps) {
   const viewState = useChatViewStateInstance();
   const native = useRef<NativePanels>(null);
+  const setNativeElement = useCallback((element: NativePanels | null) => {
+    native.current = element;
+  }, []);
   const active = useRef(true);
   const latestDisclaimerRef = useRef(disclaimerRef);
   latestDisclaimerRef.current = disclaimerRef;
@@ -436,25 +432,22 @@ export const AppShellPanels = React.memo(function AppShellPanels({
     }
   }, [nativeReady, requests, hosts, parts]);
 
-  return (
-    <>
-      <NativePanelsRegion
-        slot="panels"
-        ref={native}
-        inputs={inputs}
-        callbacks={callbacks}
+  return {
+    nativeProps: {
+      inputs,
+      callbacks,
+      hosts,
+      transformHeaderIcon: transformReactIconToCarbonIcon,
+      onTargetsReady,
+    },
+    setNativeElement,
+    content: requests.map((request) => (
+      <PanelContentAdapter
+        key={request.panel}
         hosts={hosts}
-        transformHeaderIcon={transformReactIconToCarbonIcon}
-        onTargetsReady={onTargetsReady}
+        request={request}
+        parts={parts}
       />
-      {requests.map((request) => (
-        <PanelContentAdapter
-          key={request.panel}
-          hosts={hosts}
-          request={request}
-          parts={parts}
-        />
-      ))}
-    </>
-  );
-});
+    )),
+  };
+}
