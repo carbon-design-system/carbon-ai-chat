@@ -178,6 +178,30 @@ const MOUNT = 'cds-aichat-markdown-plugin-host-mount';
 const UPDATE = 'cds-aichat-markdown-plugin-host-update';
 const UNMOUNT = 'cds-aichat-markdown-plugin-host-unmount';
 
+const connectedControllers = new WeakMap<HTMLElement, (name: string) => void>();
+
+export function getMarkdownPluginHostTargets(sender: Node): HTMLElement[] {
+  const targets: HTMLElement[] = [];
+  let node: Node | null = sender;
+  while (node) {
+    if (node instanceof HTMLElement && connectedControllers.has(node)) {
+      targets.push(node);
+    }
+    node = node instanceof ShadowRoot ? node.host : node.parentNode;
+  }
+  return targets;
+}
+
+// A detached or reparented sender can no longer bubble through its old owners.
+export function releaseMarkdownPluginHostClaims(
+  targets: readonly HTMLElement[],
+  slotName: string
+) {
+  for (const target of targets) {
+    connectedControllers.get(target)?.(slotName);
+  }
+}
+
 /**
  * Answers the plugin-host offer on `target`'s behalf, hosting accepted offers
  * as slot-attributed children of `target`.
@@ -335,32 +359,39 @@ export function createMarkdownPluginHostController(
     }
   };
 
-  const handleUnmount = (event: Event) => {
-    const detail = (event as CustomEvent<{ slotName: string } | undefined>)
-      .detail;
-    if (!detail?.slotName) {
-      return;
-    }
-    senders.delete(detail.slotName);
-    if (slotNames.includes(detail.slotName)) {
-      slotNames = slotNames.filter((name) => name !== detail.slotName);
+  const releaseClaim = (slotName: string) => {
+    senders.delete(slotName);
+    if (slotNames.includes(slotName)) {
+      slotNames = slotNames.filter((name) => name !== slotName);
       onSlotNamesChange?.(slotNames);
     }
-    const host = hosts.get(detail.slotName);
+    const host = hosts.get(slotName);
     if (host?.parentNode === target) {
       host.remove();
     }
-    hosts.delete(detail.slotName);
+    hosts.delete(slotName);
+  };
+
+  const handleUnmount = (event: Event) => {
+    const detail = (event as CustomEvent<{ slotName: string } | undefined>)
+      .detail;
+    if (detail?.slotName) {
+      releaseClaim(detail.slotName);
+    }
   };
 
   return {
     hosts,
     connect() {
+      connectedControllers.set(target, releaseClaim);
       target.addEventListener(MOUNT, handleMount);
       target.addEventListener(UPDATE, handleUpdate);
       target.addEventListener(UNMOUNT, handleUnmount);
     },
     disconnect() {
+      if (connectedControllers.get(target) === releaseClaim) {
+        connectedControllers.delete(target);
+      }
       pendingPrune = undefined;
       target.removeEventListener(MOUNT, handleMount);
       target.removeEventListener(UPDATE, handleUpdate);
