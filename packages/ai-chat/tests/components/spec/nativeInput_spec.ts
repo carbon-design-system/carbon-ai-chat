@@ -940,3 +940,23 @@ it('notifies handle creation when context first arrives after attachment', async
   expect(handles).toEqual([late.inputFunctions]);
   expect(late.inputFunctions).toBeDefined();
 });
+
+it('removes its moved actions placeholder on compact layout and creates one replacement on expansion', async () => {
+  const { view, store } = await fixture();
+  applyConfigChange(store, { input: { expanded: true } });
+  await flush(view);
+  const selector = 'cds-aichat-prompt-line-slot[slot="message-actions"]';
+  const original = view.querySelector(selector);
+  expect(original).not.toBeNull();
+  original.parentElement.append(original);
+  await flush(view);
+  expect(view.querySelector(selector)).toBe(original);
+  applyConfigChange(store, { input: { expanded: false } });
+  await flush(view);
+  expect(view.querySelector(selector)).toBeNull();
+  expect(original.isConnected).toBe(false);
+  applyConfigChange(store, { input: { expanded: true } });
+  await flush(view);
+  expect(view.querySelectorAll(selector)).toHaveLength(1);
+  expect(view.querySelector(selector)).not.toBe(original);
+});
