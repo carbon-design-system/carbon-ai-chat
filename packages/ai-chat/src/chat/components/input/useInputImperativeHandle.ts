@@ -21,7 +21,7 @@ import {
   createInputImperativeHandle,
   registerInputImperativeHandle,
 } from '../../utils/inputImperativeHandle';
-import type { InputFunctions } from './Input';
+import type { InputFunctions } from '../../utils/inputTypes';
 
 interface UseInputImperativeHandleArgs {
   /**
