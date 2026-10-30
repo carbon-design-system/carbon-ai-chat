@@ -6,10 +6,6 @@ on:
     branches:
       - main
       - release/v*
-      - docs/1x-wrapper-imports
-      - fix/1x-header-actions
-      - fix/1x-host-entry-types
-      - fix/1x-components-cem
   merge_group:
     types: [checks_requested]
 
@@ -77,7 +73,7 @@ jobs:
           # launchers in web-test-runner.config.js) when the CI strategy is reworked.
           - suite: components
             browsers: chromium
-            run: npm run test --workspace=@carbon/ai-chat-components
+            run: npm run test --workspace=@carbon/ai-chat-components && npm run test:host-entry-consumer
           # 👇 Demo and example test suites run in the nightly workflow (nightly.yml), not here.
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
