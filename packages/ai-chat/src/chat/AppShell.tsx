@@ -518,38 +518,77 @@ function AppShell({
     uploadConfig?.maxFiles !== undefined &&
     inputFields.pendingUploads.length >= uploadConfig.maxFiles;
 
-  // Derive InputConfig.error
-  const inputError = useMemo(() => {
-    // check file and pending uploads first
-    const fileWithError = inputFields.files.find((f) => f.isError);
-    const pendingUploadWithError = inputFields.pendingUploads.find(
-      (u) => u.status === 'error'
-    );
+  // One error entry per errored attachment, each naming the file. Rendered as
+  // stacked rows in the field-messaging slot so every failure is visible at once
+  // rather than only the first. Errors from `inputFields.files` (host-managed
+  // uploads) and `inputFields.pendingUploads` (assistant-managed) are merged and
+  // sorted alphabetically by file name — matching the chip ordering.
+  const inputUploadErrors = useMemo(() => {
+    type ErrorEntry = {
+      id: string;
+      filename: string;
+      title: string;
+      description?: string;
+    };
 
-    const uploadError = fileWithError || pendingUploadWithError;
-    if (uploadError) {
-      // The recovery instruction is appended unconditionally: a host's message
-      // says what went wrong, not how to get out of it.
-      const hostMessage =
-        'errorMessage' in uploadError ? uploadError.errorMessage : undefined;
-      return {
-        title: languagePack.fileSharing_uploadErrorTitle,
-        description: [hostMessage, languagePack.fileSharing_uploadErrorRecovery]
+    const entries: ErrorEntry[] = [];
+
+    for (const f of inputFields.files) {
+      if (!f.isError) {
+        continue;
+      }
+      const filename = f.file?.name ?? '';
+      entries.push({
+        id: f.id,
+        filename,
+        title: intl.formatMessage(
+          { id: 'fileSharing_uploadErrorTitleWithName' },
+          { filename }
+        ),
+        description: [
+          f.errorMessage,
+          languagePack.fileSharing_uploadErrorRecovery,
+        ]
           .filter(Boolean)
           .join(' '),
-        collapsible: false,
-      };
+      });
     }
 
-    // Fall back to config-provided error if no file upload errors
-    return publicConfig.input?.error;
+    for (const u of inputFields.pendingUploads) {
+      if (u.status !== 'error') {
+        continue;
+      }
+      const filename = u.file?.name ?? '';
+      entries.push({
+        id: u.id,
+        filename,
+        title: intl.formatMessage(
+          { id: 'fileSharing_uploadErrorTitleWithName' },
+          { filename }
+        ),
+        description: [
+          u.errorMessage,
+          languagePack.fileSharing_uploadErrorRecovery,
+        ]
+          .filter(Boolean)
+          .join(' '),
+      });
+    }
+
+    entries.sort((a, b) =>
+      a.filename.localeCompare(b.filename, undefined, { sensitivity: 'base' })
+    );
+
+    return entries.length > 0 ? entries : undefined;
   }, [
     inputFields.files,
     inputFields.pendingUploads,
-    languagePack.fileSharing_uploadErrorTitle,
+    intl,
     languagePack.fileSharing_uploadErrorRecovery,
-    publicConfig.input?.error,
   ]);
+
+  // Config-provided error only; upload errors go through `inputUploadErrors`.
+  const inputError = publicConfig.input?.error;
 
   // Disable the human-agent upload button once its (optional) max number of files
   // is reached, on top of the existing connection/streaming gating.
@@ -1089,6 +1128,7 @@ function AppShell({
                         !!publicConfig.disableCustomElementMobileEnhancements)
                     }
                     error={inputError}
+                    uploadErrors={inputUploadErrors}
                   />
                 </div>
               )}

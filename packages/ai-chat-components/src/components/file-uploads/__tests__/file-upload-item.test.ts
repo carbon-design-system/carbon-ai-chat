@@ -178,6 +178,25 @@ describe('file-upload-item', () => {
       expect(getComputedStyle(filename).marginInlineStart).to.equal('2px');
     });
 
+    it('links a stated-url image preview to its url in a new tab', async () => {
+      const el = await mountReadOnly({
+        id: 'a',
+        name: 'photo.png',
+        mimeType: 'image/png',
+        url: 'https://example.com/photo.png',
+      });
+      const link = el.renderRoot.querySelector<HTMLAnchorElement>(
+        'a.cds-aichat-file-upload-item__preview-wrapper'
+      );
+      expect(link).to.exist;
+      expect(link!.getAttribute('href')).to.equal(
+        'https://example.com/photo.png'
+      );
+      expect(link!.getAttribute('target')).to.equal('_blank');
+      expect(link!.getAttribute('rel')).to.equal('noopener noreferrer');
+      expect(link!.getAttribute('aria-label')).to.equal('Open image');
+    });
+
     it('falls back to an icon for a non-image url', async () => {
       // Only images preview from a URL. Anything else keeps its file-type icon —
       // a chip on a sent message has no business fetching the file back.
@@ -231,6 +250,11 @@ describe('file-upload-item', () => {
       expect(
         el.renderRoot.querySelector('img.cds-aichat-file-upload-item__preview')
       ).to.exist;
+      expect(
+        el.renderRoot
+          .querySelector('a.cds-aichat-file-upload-item__preview-wrapper')!
+          .getAttribute('href')
+      ).to.match(/^blob:/);
     });
 
     it('renders a video preview using the objectURL', async () => {
@@ -249,6 +273,14 @@ describe('file-upload-item', () => {
 
       // The src must be an object URL (blob:), never a plain http/data path.
       expect(video!.getAttribute('src')).to.match(/^blob:/);
+
+      // Video stays a button that opens a player window. A navigated blob is
+      // downloaded when the browser can't render its type inline.
+      const button = el.renderRoot.querySelector<HTMLButtonElement>(
+        'button.cds-aichat-file-upload-item__preview-wrapper'
+      );
+      expect(button!.getAttribute('aria-label')).to.equal('Play video');
+      expect(el.renderRoot.querySelector('a')).to.not.exist;
     });
 
     it('never creates an object URL when there is no File', async () => {
@@ -341,7 +373,7 @@ describe('file-upload-item', () => {
   });
 
   describe('error state', () => {
-    it('marks the host aria-invalid and describes the remove button with the reason', async () => {
+    it('marks the host aria-invalid', async () => {
       const el = await mount(
         makeUpload('a', FileStatusValue.EDIT, {
           isError: true,
@@ -354,17 +386,47 @@ describe('file-upload-item', () => {
       // dropped.
       expect(el.getAttribute('role')).to.equal('group');
       expect(el.getAttribute('aria-invalid')).to.equal('true');
+    });
 
-      const root = innerRoot(el);
-      const button = root.querySelector('button.cds--file-close')!;
-
-      // The description must resolve to the node holding the reason — an
-      // aria-describedby pointing at nothing is the bug this fixes.
-      const describedBy = button.getAttribute('aria-describedby');
-      expect(describedBy).to.be.a('string');
-      expect(root.getElementById(describedBy!)?.textContent).to.contain(
-        'File is too large.'
+    it('makes the chip focusable and names it with the file and its reason', async () => {
+      const el = await mount(
+        makeUpload('a', FileStatusValue.EDIT, {
+          isError: true,
+          errorMessage: 'File is too large.',
+        })
       );
+      await settle(el);
+
+      expect(el.getAttribute('tabindex')).to.equal('0');
+      expect(el.getAttribute('aria-label')).to.equal(
+        'a.txt. File is too large.'
+      );
+    });
+
+    it('prefers the supplied failure text over the raw reason in the name', async () => {
+      const el = await mount(
+        makeUpload('a', FileStatusValue.EDIT, {
+          isError: true,
+          errorMessage: 'File is too large.',
+        })
+      );
+      el.errorDescription = 'Upload failed. File is too large. Try again.';
+      await settle(el);
+
+      expect(el.getAttribute('aria-label')).to.equal(
+        'a.txt. Upload failed. File is too large. Try again.'
+      );
+    });
+
+    it('does not make a read-only chip focusable', async () => {
+      const el = await fixture<FileUploadItemElement>(
+        html`<cds-aichat-file-upload-item
+          read-only
+          .upload="${makeUpload('a', FileStatusValue.EDIT)}"></cds-aichat-file-upload-item>`
+      );
+      await settle(el);
+
+      expect(el.hasAttribute('tabindex')).to.be.false;
     });
 
     it('leaves a healthy chip with no error wiring', async () => {
@@ -372,23 +434,18 @@ describe('file-upload-item', () => {
       await settle(el);
 
       expect(el.hasAttribute('aria-invalid')).to.be.false;
-      const button = innerRoot(el).querySelector('button.cds--file-close')!;
-      expect(button.hasAttribute('aria-invalid')).to.be.false;
-      expect(button.hasAttribute('aria-describedby')).to.be.false;
     });
 
-    it('describes nothing when a failure carries no reason', async () => {
+    it('stays invalid with a plain name when a failure carries no reason', async () => {
       const el = await mount(
         makeUpload('a', FileStatusValue.EDIT, { isError: true })
       );
       await settle(el);
 
       // Still invalid — the state is real even when the host said nothing about
-      // why — but pointing at Carbon's empty requirement node would describe the
-      // button with silence.
+      // why — so the name stays the file's alone.
       expect(el.getAttribute('aria-invalid')).to.equal('true');
-      const button = innerRoot(el).querySelector('button.cds--file-close')!;
-      expect(button.hasAttribute('aria-describedby')).to.be.false;
+      expect(el.getAttribute('aria-label')).to.equal('a.txt');
     });
 
     it('clears the error wiring when the upload recovers', async () => {
@@ -405,8 +462,7 @@ describe('file-upload-item', () => {
       await settle(el);
 
       expect(el.hasAttribute('aria-invalid')).to.be.false;
-      const button = innerRoot(el).querySelector('button.cds--file-close')!;
-      expect(button.hasAttribute('aria-describedby')).to.be.false;
+      expect(el.getAttribute('aria-label')).to.equal('a.txt');
     });
 
     it('does not mark a read-only chip invalid', async () => {
@@ -423,6 +479,67 @@ describe('file-upload-item', () => {
       // A sent message's attachment has no failure to report and no remove
       // button to describe.
       expect(el.hasAttribute('aria-invalid')).to.be.false;
+    });
+
+    it('keeps the inline error text out of the chip layout', async () => {
+      const el = await mount(
+        makeUpload('a', FileStatusValue.EDIT, {
+          isError: true,
+          errorMessage: 'File is too large.',
+        })
+      );
+      await settle(el);
+
+      // Carbon un-hides .cds--form-requirement whenever invalid is true. The
+      // injected styles collapse its block space so the chip keeps a healthy
+      // chip's height; the parent surfaces the message as a separate row.
+      const requirement = innerRoot(el).querySelector(
+        '.cds--form-requirement'
+      )!;
+      expect(requirement).to.exist;
+      expect(getComputedStyle(requirement).display).to.equal('none');
+    });
+
+    it('renders the error-filled icon instead of the warning icon, once', async () => {
+      const el = await mount(
+        makeUpload('a', FileStatusValue.EDIT, {
+          isError: true,
+          errorMessage: 'File is too large.',
+        })
+      );
+      await settle(el);
+
+      const iconCount = () =>
+        innerRoot(el).querySelectorAll(
+          '.cds--file__state-container .cds--file-invalid'
+        ).length;
+      expect(iconCount()).to.equal(1);
+      const icon = innerRoot(el).querySelector('[data-error-icon]')!;
+      expect(icon).to.exist;
+      // ErrorFilled16 is a circle ("M8,1C4.1..."); Carbon's WarningFilled is a
+      // triangle.
+      expect(icon.querySelector('path')!.getAttribute('d')).to.match(
+        /^M8,1C4\.1/
+      );
+
+      // A repeat sync (here, a changed message) must not stack or re-swap it.
+      el.upload = makeUpload('a', FileStatusValue.EDIT, {
+        isError: true,
+        errorMessage: 'Still too large.',
+      });
+      await settle(el);
+      expect(iconCount()).to.equal(1);
+      expect(innerRoot(el).querySelector('[data-error-icon]')).to.equal(icon);
+    });
+
+    it('spaces the name from the status area by 16px', async () => {
+      const el = await mount(makeUpload('a', FileStatusValue.EDIT));
+      await settle(el);
+
+      const uploaderItem = el.renderRoot.querySelector(
+        'cds-file-uploader-item'
+      )!;
+      expect(getComputedStyle(uploaderItem).columnGap).to.equal('16px');
     });
   });
 });

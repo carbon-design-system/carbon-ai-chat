@@ -3,7 +3,9 @@ on:
   push:
     branches: [main, release/v*]
   pull_request:
-    branches: [main, release/v*]
+    branches:
+      - main
+      - release/v*
   merge_group:
     types: [checks_requested]
 
@@ -46,6 +48,7 @@ jobs:
             packages/ai-chat-components/scss
             packages/ai-chat-components/custom-elements.json
             packages/ai-chat/dist
+            packages/ai-chat/custom-elements.json
           if-no-files-found: error
           retention-days: 1
       - name: Validate TypeDoc links
@@ -71,7 +74,7 @@ jobs:
           # launchers in web-test-runner.config.js) when the CI strategy is reworked.
           - suite: components
             browsers: chromium
-            run: npm run test --workspace=@carbon/ai-chat-components
+            run: npm run test --workspace=@carbon/ai-chat-components && npm run test:host-entry-consumer && npm run test:manifest-consumer
           # 👇 Demo and example test suites run in the nightly workflow (nightly.yml), not here.
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
