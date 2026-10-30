@@ -9,20 +9,26 @@
 
 import { ContextProvider } from '@lit/context';
 import { LitElement, nothing } from 'lit';
-import { waitFor } from '@testing-library/react';
+import React from 'react';
+import { act, render, waitFor } from '@testing-library/react';
 import HomeScreenView from '../../../src/chat/components/homeScreen/home-screen';
-// Registers the element; the default import above is only used as a type.
-import '../../../src/chat/components/homeScreen/home-screen';
 import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
 import { ChatViewState } from '../../../src/chat/services/chatViewState';
 import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
 import { NamespaceService } from '../../../src/chat/services/NamespaceService';
 import { createIntl } from '../../../src/chat/utils/i18n';
 import actions from '../../../src/chat/store/actions';
+import { ChatContainer } from '../../../src/react/ChatContainer';
+import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
+import {
+  OnErrorType,
+  type OnErrorData,
+} from '../../../src/types/config/ErrorConfig';
 import { MessageSendSource } from '../../../src/types/events/eventBusTypes';
 import { WriteableElementName } from '../../../src/types/instance/WriteableElements';
 import {
   applyConfigChange,
+  createBaseConfig,
   makeConfigStore,
   setupAfterEach,
   setupBeforeEach,
@@ -336,6 +342,113 @@ describe('native home screen', () => {
       expect(errorOccurred).toHaveBeenCalledTimes(1);
     }
   );
+
+  it('delivers native errors through the mounted chat callback and its configured error panel once', async () => {
+    let instance: ChatInstance;
+    const after = jest.fn();
+    const onError = jest.fn((error: OnErrorData) => {
+      if (error.errorType === OnErrorType.RENDER) {
+        instance.updateCatastrophicErrorPanel({
+          isOpen: true,
+          title: 'Home screen unavailable',
+          bodyText: 'The host handled this native render error.',
+        });
+      }
+    });
+    const mount = (key: string, greeting = 'Welcome') =>
+      React.createElement(ChatContainer, {
+        ...createBaseConfig(),
+        key,
+        homescreen: { ...homescreen, greeting },
+        openChatByDefault: true,
+        onBeforeRender: (chat) => {
+          instance = chat;
+        },
+        onAfterRender: after,
+        onError,
+      });
+    const mounted = render(mount('first'));
+    await waitFor(() => expect(after).toHaveBeenCalledTimes(1));
+    const host = document.querySelector('cds-aichat-container');
+    const target = host.shadowRoot.querySelector('.cds-aichat--react-app');
+    const shell = host.shadowRoot.querySelector('.cds-aichat--widget');
+    const native = host.shadowRoot.querySelector('cds-aichat-home-screen');
+    expect(native.querySelector('h2')?.textContent).toBe('Welcome');
+    const errorOccurred = jest.spyOn(
+      instance.serviceManager.actions,
+      'errorOccurred'
+    );
+    const failure = new Error('mounted native home update failed');
+    jest.spyOn(native as any, 'renderView').mockImplementation(() => {
+      throw failure;
+    });
+    act(() => {
+      native.requestUpdate();
+    });
+    await waitFor(() => expect(onError).toHaveBeenCalledTimes(1));
+    expect(errorOccurred).toHaveBeenCalledTimes(1);
+    expect(onError).toHaveBeenCalledWith(
+      expect.objectContaining({
+        errorType: OnErrorType.RENDER,
+        catastrophicErrorType: true,
+        otherData: expect.objectContaining({ error: failure }),
+      })
+    );
+    await waitFor(() =>
+      expect(
+        host.shadowRoot.querySelector(
+          '.cds-aichat--catastrophic-error__error-heading'
+        )?.textContent
+      ).toBe('Home screen unavailable')
+    );
+    const panel = host.shadowRoot
+      .querySelector('.cds-aichat--catastrophic-error')
+      .closest('cds-aichat-panel') as HTMLElement & { open: boolean };
+    expect(panel.open).toBe(true);
+    expect(instance.serviceManager.store.getState().catastrophicErrorType).toBe(
+      true
+    );
+    expect(
+      host.shadowRoot.querySelectorAll('.cds-aichat--catastrophic-error')
+    ).toHaveLength(1);
+    expect(host.shadowRoot.querySelector('.cds-aichat--react-app')).toBe(
+      target
+    );
+    expect(host.shadowRoot.querySelector('.cds-aichat--widget')).toBe(shell);
+
+    mounted.rerender(mount('first', 'A later config update'));
+    act(() => {
+      native.requestUpdate();
+    });
+    await native.updateComplete;
+    expect(onError).toHaveBeenCalledTimes(1);
+    expect(errorOccurred).toHaveBeenCalledTimes(1);
+    expect(panel.open).toBe(true);
+
+    const retired = instance;
+    mounted.rerender(mount('replacement'));
+    await waitFor(() => expect(after).toHaveBeenCalledTimes(2));
+    expect(instance).not.toBe(retired);
+    const currentHost = document.querySelector('cds-aichat-container');
+    const currentPanel = currentHost.shadowRoot
+      .querySelector('.cds-aichat--catastrophic-error')
+      .closest('cds-aichat-panel') as HTMLElement & { open: boolean };
+    act(() => {
+      native.requestUpdate();
+    });
+    await native.updateComplete;
+    expect(native.isConnected).toBe(false);
+    expect(onError).toHaveBeenCalledTimes(1);
+    expect(errorOccurred).toHaveBeenCalledTimes(1);
+    expect(
+      instance.serviceManager.store.getState().catastrophicErrorType
+    ).toBeUndefined();
+    expect(currentPanel.open).toBe(false);
+    expect(
+      currentHost.shadowRoot.querySelector('cds-aichat-home-screen h2')
+        ?.textContent
+    ).toBe('Welcome');
+  });
 
   it('does not report a retired view failure into its replacement chat context', async () => {
     const retired = await createHome();
