@@ -54,6 +54,7 @@ Repeat in React and web-component modes, including RTL and a dark theme. Automat
 
 - [ ] **Disclaimer:** Use long HTML. Accept stays disabled until the text reaches the bottom. Use the keyboard to accept.
 - [ ] **Iframe:** Open an iframe response. Change its title without reloading it. Change its source and confirm fresh content.
+- [ ] **Error:** Call `updateCatastrophicErrorPanel` with markdown text. Change the title, text, retry flag, and locale while open.
 - [ ] **Prompts:** Request screen sharing through the mock service desk. Check footer focus, Escape, and both actions. Cover it with a higher-priority error, then close the error.
 - [ ] **Speech:** With a screen reader, check loading and prompt notices. A prompt that becomes active again must not speak twice.
 

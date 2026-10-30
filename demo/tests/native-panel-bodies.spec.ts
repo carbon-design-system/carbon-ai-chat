@@ -252,4 +252,67 @@ for (const framework of ['react', 'web-component']) {
     expect(await first.evaluate((node) => node.isConnected)).toBe(false);
     await first.dispose();
   });
+
+  test(`${framework} error body keeps markdown and follows locale, retry, and theme updates`, async ({
+    page,
+  }) => {
+    await prepareHost(page, framework);
+    await openChatWindow(page);
+    await page.evaluate(() =>
+      window.chatInstance.updateCatastrophicErrorPanel({
+        isOpen: true,
+        title: 'Panel error proof',
+        bodyText: 'Retained **bold body**.',
+      })
+    );
+    const body = page.locator('cds-aichat-error-body');
+    await expect(
+      body.getByText('Panel error proof', { exact: true })
+    ).toBeVisible();
+    await expect(body.locator('strong')).toHaveText('bold body');
+    const target = await body
+      .locator('.cds-aichat--catastrophic-error__error-body')
+      .elementHandle();
+    await page.evaluate(async (theme) => {
+      await window.setChatConfig({
+        assistantName: 'Panel Assistant',
+        injectCarbonTheme: theme,
+        strings: {
+          errors_somethingWrong: 'Localized problem',
+          errors_communicating: 'Cannot reach {assistantName}.',
+          buttons_retry: 'Try again',
+        },
+      });
+      window.chatInstance.updateCatastrophicErrorPanel({
+        title: undefined,
+        bodyText: undefined,
+        hideRetryButton: true,
+      });
+    }, CarbonTheme.G100);
+    await expect(
+      body.getByText('Localized problem', { exact: true })
+    ).toBeVisible();
+    await expect(
+      body.getByText('Cannot reach Panel Assistant.', { exact: true })
+    ).toBeVisible();
+    await expect(
+      body.getByRole('button', { name: 'Try again', exact: true })
+    ).toHaveCount(0);
+    expect(await target.evaluate((node) => node.isConnected)).toBe(true);
+    expect(await body.evaluate((node) => node.shadowRoot)).toBeNull();
+    await page.evaluate(() =>
+      window.chatInstance.updateCatastrophicErrorPanel({
+        hideRetryButton: false,
+      })
+    );
+    const retry = body.getByRole('button', { name: 'Try again', exact: true });
+    await retry.focus();
+    await expect(retry).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(
+      body.getByText('Localized problem', { exact: true })
+    ).toBeHidden();
+    await expect(page.getByTestId(PageObjectId.MAIN_PANEL)).toBeVisible();
+    await target.dispose();
+  });
 }
