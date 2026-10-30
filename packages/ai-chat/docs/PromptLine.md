@@ -17,7 +17,7 @@ const config: PublicConfig = {
 };
 ```
 
-> **Note**: Only a few parts are stable. These are visibility, the disabled states, and the character limit. The rest of the prompt line is experimental and may change. Experimental members carry a badge in the API reference.
+> **Note**: The prompt line public surface is now a stable API and changes may be considered breaking.
 
 ## Replace the prompt line
 

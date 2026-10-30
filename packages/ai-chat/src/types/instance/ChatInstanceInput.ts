@@ -83,8 +83,6 @@ export interface ChatInstanceInput {
    * For cursor-position insertion, use the {@link ChatInstanceInput.getEditor}
    * escape hatch:
    * `(await instance.input.getEditor()).commands.insertContent(...)`.
-   *
-   * @experimental
    */
   updateContent: (
     updater: (previous: JSONContent) => JSONContent
@@ -126,8 +124,6 @@ export interface ChatInstanceInput {
    * ```ts
    * instance.input.updateStructuredData(() => undefined);
    * ```
-   *
-   * @experimental
    */
   updateStructuredData: (
     updater: (
@@ -206,8 +202,6 @@ export interface ChatInstanceInput {
    *    yourself are compared by reference — a fresh array of new instances
    *    every render reads as a real change and replaces the editor mid-edit,
    *    losing its undo history.
-   *
-   * @experimental
    */
   getEditor: () => Promise<Editor>;
 }
