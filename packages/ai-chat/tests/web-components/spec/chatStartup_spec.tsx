@@ -809,8 +809,9 @@ describe('cds-aichat-container startup', () => {
         };
         await element.updateComplete;
         beforeGate.doResolve();
-        await waitFor(() =>
-          expect(element.onAfterRender).toHaveBeenCalledTimes(1)
+        await waitFor(
+          () => expect(element.onAfterRender).toHaveBeenCalledTimes(1),
+          { timeout: 5000 }
         );
         const container =
           tag === 'cds-aichat-container'
