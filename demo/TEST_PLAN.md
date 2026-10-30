@@ -54,6 +54,7 @@ Automated upload checks: `input-actions-upload.spec.ts` covers file selection, p
 
 Repeat in React and web-component modes, including RTL and a dark theme. Automated cases live in `tests/native-panel-bodies.spec.ts`.
 
+- [ ] **Disclaimer:** Use long HTML. Accept stays disabled until the text reaches the bottom. Use the keyboard to accept.
 - [ ] **Iframe:** Open an iframe response. Change its title without reloading it. Change its source and confirm fresh content.
 - [ ] **Prompts:** Request screen sharing through the mock service desk. Check footer focus, Escape, and both actions. Cover it with a higher-priority error, then close the error.
 - [ ] **Speech:** With a screen reader, check loading and prompt notices. A prompt that becomes active again must not speak twice.
