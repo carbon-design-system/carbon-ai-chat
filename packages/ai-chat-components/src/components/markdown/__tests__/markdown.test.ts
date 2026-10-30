@@ -2556,6 +2556,21 @@ HTTP: http://example.com
       expect(host.firstElementChild?.tagName).to.equal('INPUT');
     });
 
+    it('sends the unmount to the new ancestor chain before the fresh offer when markdown is removed and re-added in one task', async () => {
+      const { first, second, log, mounts, el } =
+        await createExternalListeners();
+
+      el.remove();
+      second.appendChild(el);
+      await el.updateComplete;
+      await Promise.resolve();
+
+      expect(log.get(first)).to.deep.equal(['mount']);
+      expect(log.get(second)).to.deep.equal(['unmount', 'mount']);
+      expect(mounts.length).to.equal(2);
+      expect(mounts[1].parentElement === second).to.equal(true);
+    });
+
     it('sends the unmount to the new ancestor chain before the fresh offer from an unregistered listener', async () => {
       const { first, second, log, mounts, el } =
         await createExternalListeners();
