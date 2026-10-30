@@ -12,8 +12,6 @@ import { LitElement, nothing } from 'lit';
 import { waitFor } from '@testing-library/react';
 import type NativeChatHeader from '@carbon/ai-chat-components/es/components/chat-shell/src/chat-header.js';
 import HeaderView from '../../../src/chat/components/header/chat-header';
-// Registers the element; the default import above is only used as a type.
-import '../../../src/chat/components/header/chat-header';
 import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
 import { ChatViewState } from '../../../src/chat/services/chatViewState';
 import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
