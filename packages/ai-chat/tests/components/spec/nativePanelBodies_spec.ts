@@ -154,6 +154,84 @@ describe('native hydration body', () => {
     expect(announce).toHaveBeenCalledTimes(1);
   });
 
+  it('preserves its deadline, spinner and single notice through same-task host moves', async () => {
+    const { view, host, announce, subscriptions } = await hydration();
+    const activeSubscriptions = subscriptions.size;
+    const parent = host.parentNode;
+    const move = () => {
+      flushSync(() => {
+        host.remove();
+        expect(subscriptions.size).toBe(0);
+        parent.appendChild(host);
+      });
+    };
+    jest.advanceTimersByTime(200);
+    move();
+    await flush(view);
+    expect(subscriptions.size).toBe(activeSubscriptions);
+    jest.advanceTimersByTime(199);
+    await flush(view);
+    expect(view.querySelector('cds-loading')).toBeNull();
+    expect(announce).not.toHaveBeenCalled();
+    jest.advanceTimersByTime(1);
+    await flush(view);
+    const spinner = view.querySelector('cds-loading');
+    expect(spinner).not.toBeNull();
+    jest.advanceTimersByTime(1);
+    expect(announce).toHaveBeenCalledTimes(1);
+    move();
+    await flush(view);
+    expect(view.querySelector('cds-loading')).toBe(spinner);
+    expect(subscriptions.size).toBe(activeSubscriptions);
+    jest.advanceTimersByTime(401);
+    await flush(view);
+    expect(view.querySelector('cds-loading')).toBe(spinner);
+    expect(announce).toHaveBeenCalledTimes(1);
+  });
+
+  it('cancels the old deadline when a same-task move changes its chat owner', async () => {
+    const previous = await hydration();
+    const next = await createProvider();
+    jest.advanceTimersByTime(200);
+    flushSync(() => {
+      previous.view.remove();
+      next.host.shadowRoot.appendChild(previous.view);
+    });
+    await flush(previous.view);
+    expect(previous.subscriptions.size).toBe(0);
+    expect(next.subscriptions.size).toBeGreaterThan(0);
+    jest.advanceTimersByTime(200);
+    await flush(previous.view);
+    expect(previous.view.querySelector('cds-loading')).toBeNull();
+    expect(previous.announce).not.toHaveBeenCalled();
+    expect(next.announce).not.toHaveBeenCalled();
+    jest.advanceTimersByTime(200);
+    await flush(previous.view);
+    expect(previous.view.querySelector('cds-loading')).not.toBeNull();
+    jest.advanceTimersByTime(1);
+    expect(previous.announce).not.toHaveBeenCalled();
+    expect(next.announce).toHaveBeenCalledTimes(1);
+  });
+
+  it('releases hydration timers after a render failure without restarting them', async () => {
+    const { view, announce, subscriptions, errorOccurred } = await hydration();
+    jest.spyOn(view as any, 'renderView').mockImplementationOnce(() => {
+      throw new Error('Native hydration failed');
+    });
+    view.requestUpdate();
+    await flush(view);
+    expect(errorOccurred).toHaveBeenCalledTimes(1);
+    expect(subscriptions.size).toBe(0);
+    expect(jest.getTimerCount()).toBe(0);
+    view.requestUpdate();
+    await flush(view);
+    jest.advanceTimersByTime(401);
+    expect(jest.getTimerCount()).toBe(0);
+    expect(view.querySelector('cds-loading')).toBeNull();
+    expect(announce).not.toHaveBeenCalled();
+    expect(errorOccurred).toHaveBeenCalledTimes(1);
+  });
+
   it('keeps fast hydration silent, then repeats speech only for a new unhydrated cycle', async () => {
     const { view, announce } = await hydration();
     jest.advanceTimersByTime(100);
@@ -181,6 +259,8 @@ describe('native hydration body', () => {
     jest.advanceTimersByTime(399);
     view.remove();
     expect(subscriptions.size).toBe(0);
+    jest.runAllTicks();
+    expect(jest.getTimerCount()).toBe(0);
     jest.advanceTimersByTime(1000);
     expect(announce).not.toHaveBeenCalled();
     host.shadowRoot.appendChild(view);
@@ -191,6 +271,8 @@ describe('native hydration body', () => {
     await flush(view);
     expect(view.querySelector('cds-loading')).not.toBeNull();
     view.remove();
+    jest.runAllTicks();
+    expect(jest.getTimerCount()).toBe(0);
     jest.runOnlyPendingTimers();
     expect(announce).not.toHaveBeenCalled();
     expect(subscriptions.size).toBe(0);
