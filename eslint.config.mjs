@@ -40,7 +40,7 @@ const config = [
       'examples/*/dist/**',
       '**/node_modules/**',
       '**/*.snap.js',
-      'packages/ai-chat/tasks/**',
+      'packages/ai-chat/tasks/rollup.aichat.js',
       // generated output — must not be linted
       '**/custom-elements.json',
     ],

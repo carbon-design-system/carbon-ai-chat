@@ -15,6 +15,7 @@ import { promisify } from 'node:util';
 import { chromium } from '@playwright/test';
 import { createServer } from 'vite';
 import { checkReferences, readPackedManifest } from './manifests.mjs';
+import { checkPackedHosts } from './host-runtime.mjs';
 
 const runFile = promisify(execFile);
 const repository = fileURLToPath(new URL('../..', import.meta.url));
@@ -65,6 +66,14 @@ const output = await runNpm(
 const [packed] = JSON.parse(output);
 assert.equal(packed.name, packageName);
 dependencies[packageName] = `file:./${packed.filename}`;
+const [chatPacked] = JSON.parse(
+  await runNpm(
+    ['pack', '--ignore-scripts', '--json', '--pack-destination', consumer],
+    join(repository, 'packages/ai-chat')
+  )
+);
+assert.equal(chatPacked.name, '@carbon/ai-chat');
+dependencies[chatPacked.name] = `file:./${chatPacked.filename}`;
 await writeFile(
   join(consumer, 'package.json'),
   JSON.stringify(
@@ -221,3 +230,5 @@ try {
 console.log(
   'Packed discovery, published paths and symbols, and negative path/export mutations passed.'
 );
+
+await checkPackedHosts(consumer);

@@ -302,7 +302,9 @@ class ChatCustomElement extends FlattenedConfigElement {
       this.releaseMount();
     }
     this._instance = instance;
-    if (this.onViewPreChange) {
+    // The view-change props also take an HTML attribute; a string set through
+    // it is not a handler, so it must not displace the default visibility one.
+    if (typeof this.onViewPreChange === 'function') {
       this.subscribe({
         type: BusEventType.VIEW_PRE_CHANGE,
         handler: this.onViewPreChange,
@@ -310,7 +312,10 @@ class ChatCustomElement extends FlattenedConfigElement {
     }
     this.subscribe({
       type: BusEventType.VIEW_CHANGE,
-      handler: this.onViewChange || this.defaultViewChangeHandler,
+      handler:
+        typeof this.onViewChange === 'function'
+          ? this.onViewChange
+          : this.defaultViewChangeHandler,
     });
 
     if (!this.renderUserDefinedResponse) {
