@@ -2682,7 +2682,7 @@ HTTP: http://example.com
      * listener hears, in order, and what happens to the host and its content.
      */
     describe('outside-listener relocation matrix', () => {
-      type Content = 'block' | 'inline';
+      type Content = 'block' | 'inline' | 'fallback block';
       type Claim = 'claimed' | 'unclaimed';
       type Move = 'one call' | 'remove then append';
       type Destination = 'same parent' | 'new chain';
@@ -2750,6 +2750,17 @@ HTTP: http://example.com
             },
           };
           el.markdown = tableMarkdown;
+        } else if (content === 'fallback block') {
+          el.markdownItPlugins = [
+            (md: any) => {
+              blockTagPlugin(md);
+              md.renderer.rules.cds_test_block_tag = () => {
+                renders += 1;
+                return '<input>';
+              };
+            },
+          ];
+          el.markdown = '::tag::';
         } else {
           el.markdownItPlugins = [
             (md: any) => {
@@ -2792,7 +2803,7 @@ HTTP: http://example.com
       }
 
       const cells: [Content, Claim, Move, Destination][] = [];
-      for (const content of ['block', 'inline'] as const) {
+      for (const content of ['block', 'inline', 'fallback block'] as const) {
         for (const claim of ['claimed', 'unclaimed'] as const) {
           for (const move of ['one call', 'remove then append'] as const) {
             for (const destination of ['same parent', 'new chain'] as const) {
@@ -2930,6 +2941,70 @@ HTTP: http://example.com
           rerendered: false,
           sameInput: true,
           valueKept: true,
+        },
+        'fallback block | claimed | one call | same parent': {
+          first: 'mount',
+          second: '',
+          sameHost: true,
+          rerendered: false,
+          sameInput: true,
+          valueKept: true,
+        },
+        'fallback block | claimed | one call | new chain': {
+          first: 'mount',
+          second: 'unmount mount',
+          sameHost: false,
+          rerendered: true,
+          sameInput: false,
+          valueKept: false,
+        },
+        'fallback block | claimed | remove then append | same parent': {
+          first: 'mount',
+          second: '',
+          sameHost: true,
+          rerendered: false,
+          sameInput: true,
+          valueKept: true,
+        },
+        'fallback block | claimed | remove then append | new chain': {
+          first: 'mount',
+          second: 'unmount mount',
+          sameHost: false,
+          rerendered: true,
+          sameInput: false,
+          valueKept: false,
+        },
+        'fallback block | unclaimed | one call | same parent': {
+          first: 'mount',
+          second: '',
+          sameHost: true,
+          rerendered: false,
+          sameInput: true,
+          valueKept: true,
+        },
+        'fallback block | unclaimed | one call | new chain': {
+          first: 'mount',
+          second: 'mount',
+          sameHost: false,
+          rerendered: false,
+          sameInput: false,
+          valueKept: false,
+        },
+        'fallback block | unclaimed | remove then append | same parent': {
+          first: 'mount',
+          second: '',
+          sameHost: true,
+          rerendered: false,
+          sameInput: true,
+          valueKept: true,
+        },
+        'fallback block | unclaimed | remove then append | new chain': {
+          first: 'mount',
+          second: 'mount',
+          sameHost: false,
+          rerendered: false,
+          sameInput: false,
+          valueKept: false,
         },
       };
 
