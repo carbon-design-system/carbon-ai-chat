@@ -57,7 +57,10 @@ it.each([
       })
     );
     try {
-      await waitFor(() => expect(after).toHaveBeenCalledTimes(1));
+      // The first boot in a file loads the boot modules on demand.
+      await waitFor(() => expect(after).toHaveBeenCalledTimes(1), {
+        timeout: 5000,
+      });
       expect(beforeStates).toEqual([false]);
       expect(
         instance.serviceManager.store.getState().initialViewChangeComplete
