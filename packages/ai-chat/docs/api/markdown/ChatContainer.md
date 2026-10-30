@@ -8,7 +8,7 @@
 
 - Kind: Function
 - Category: React
-- Reference: https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/functions/Type_reference.ChatContainer.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/functions/Type_reference.ChatContainer.html
 
 The ChatContainer renders the chat through the `cds-aichat-container` web component, keeping the React app in the
 host application's React tree.
