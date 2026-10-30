@@ -7,94 +7,78 @@
  *  @license
  */
 
-import React, { useMemo } from 'react';
-import Restart16 from '@carbon/icons/es/restart/16.js';
-import cx from 'classnames';
-
-import ChatButton, {
-  CHAT_BUTTON_KIND,
-  CHAT_BUTTON_SIZE,
-} from '@carbon/ai-chat-components/es/react/chat-button.js';
-import { ErrorMessage } from './ErrorMessage';
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
+import { createComponent } from '@lit/react';
 import { MarkdownWithDefaults } from '../helpers/MarkdownWithDefaults/MarkdownWithDefaults';
-import { useCarbonTheme } from '../../hooks/useCarbonTheme';
-import { carbonIconToReact } from '../../utils/carbonIcon';
-import { LanguagePack } from '../../../types/config/LanguagePack';
-import { AppState } from '../../../types/state/AppState';
-import { useIntl } from '../../hooks/useIntl';
-import { useSelector } from '../../hooks/useSelector';
-import { shallowEqual } from '../../store/appStore';
+import { PanelBodyContentAdapter } from './PanelBodyContentAdapter';
+import {
+  ErrorBody,
+  type CatastrophicErrorPanelProps,
+} from './native/ErrorBody';
+import type {
+  PanelBodyContentDetail,
+  PanelBodyContentReadyEvent,
+} from './native/panelBodyContent';
+import { useChatViewStateInstance } from '../../hooks/useChatViewState';
 
-interface CatastrophicErrorPanelProps {
-  title?: string;
-  bodyText?: string;
-  onRestart: () => void;
-  hideRetryButton?: boolean;
-}
+const NativeErrorBody = createComponent({
+  tagName: 'cds-aichat-error-body',
+  elementClass: ErrorBody,
+  react: React,
+  events: { onPanelContentReady: 'panel-content-ready' },
+});
 
-const CatastrophicErrorPanel = ({
+function CatastrophicErrorPanel({
   title,
-  bodyText,
-  onRestart,
-  hideRetryButton,
-}: CatastrophicErrorPanelProps) => {
-  const intl = useIntl();
-  const { isDarkTheme } = useCarbonTheme();
-  const languagePack = useSelector(
-    (state: AppState) => ({
-      errors_somethingWrong: state.languagePack.errors_somethingWrong,
-      buttons_retry: state.languagePack.buttons_retry,
-    }),
-    shallowEqual
+  ...props
+}: CatastrophicErrorPanelProps) {
+  const viewState = useChatViewStateInstance();
+  const releaseInitialCommit = useRef<() => void>(undefined);
+  const [content, setContent] = useState<PanelBodyContentDetail | null>();
+  useLayoutEffect(() => {
+    const release = viewState.holdInitialReactCommit();
+    releaseInitialCommit.current = release;
+    return release;
+  }, [viewState]);
+  useEffect(() => {
+    if (content !== undefined) {
+      releaseInitialCommit.current?.();
+    }
+  }, [content, viewState]);
+  const onPanelContentReady = useCallback(
+    (event: PanelBodyContentReadyEvent) => {
+      const next = event.detail;
+      setContent((current) =>
+        current !== undefined &&
+        current?.target === next?.target &&
+        current?.text === next?.text
+          ? current
+          : next
+      );
+    },
+    []
   );
-  const assistantName = useSelector(
-    (state: AppState) => state.config.public.assistantName
-  );
-
-  const errorTitle = useMemo(
-    () => title ?? languagePack.errors_somethingWrong,
-    [title, languagePack]
-  );
-
-  const errorBodyText = useMemo(
-    () =>
-      bodyText ??
-      intl.formatMessage(
-        { id: 'errors_communicating' as keyof LanguagePack },
-        { assistantName }
-      ),
-    [bodyText, intl, assistantName]
-  );
-
-  const Restart = carbonIconToReact(Restart16);
 
   return (
-    <div
-      className={cx(
-        'cds-aichat--catastrophic-error',
-        'cds-aichat--panel-content'
-      )}>
-      <div className="cds-aichat--catastrophic-error__error-text-container">
-        <ErrorMessage theme={isDarkTheme ? 'dark' : 'light'} />
-        <div className="cds-aichat--catastrophic-error__error-heading">
-          {errorTitle}
-        </div>
-        <div className="cds-aichat--catastrophic-error__error-body">
-          <MarkdownWithDefaults text={errorBodyText} highlight={true} />
-        </div>
-        {!hideRetryButton && onRestart && (
-          <ChatButton
-            className="cds-aichat--catastrophic-error__restart-button"
-            kind={CHAT_BUTTON_KIND.TERTIARY}
-            size={CHAT_BUTTON_SIZE.SMALL}
-            onClick={onRestart}>
-            <Restart slot="icon" />
-            {languagePack.buttons_retry}
-          </ChatButton>
-        )}
-      </div>
-    </div>
+    <>
+      <NativeErrorBody
+        {...props}
+        panelTitle={title}
+        onPanelContentReady={onPanelContentReady}
+      />
+      {content && (
+        <PanelBodyContentAdapter target={content.target}>
+          <MarkdownWithDefaults text={content.text} highlight />
+        </PanelBodyContentAdapter>
+      )}
+    </>
   );
-};
+}
 
 export default CatastrophicErrorPanel;
