@@ -124,7 +124,12 @@ function setMetrics(
 }
 
 describe('native disclaimer body', () => {
-  beforeEach(setupBeforeEach);
+  // Acceptance persists to session storage; each case starts unaccepted.
+  beforeEach(() => {
+    setupBeforeEach();
+    window.sessionStorage.clear();
+    window.localStorage.clear();
+  });
   afterEach(() => {
     setupAfterEach();
     testStates.forEach((state) => state.disconnect());
@@ -332,6 +337,13 @@ describe('native disclaimer body', () => {
         });
       const mounted = render(host());
       await waitFor(() => expect(after).toHaveBeenCalledTimes(1));
+      // Each wrapper case starts with the disclaimer not yet accepted.
+      expect(
+        Object.values(
+          instance.serviceManager.store.getState().persistedToBrowserStorage
+            .disclaimersAccepted
+        )
+      ).not.toContain(true);
       const chat = getChatHost();
       const native = chat.shadowRoot.querySelector(
         'cds-aichat-disclaimer-body'
@@ -345,6 +357,7 @@ describe('native disclaimer body', () => {
       expect(accept.parentElement.slot).toBe('footer');
       expect(accept.parentElement.parentElement).toBe(panel);
       expect(accept.disabled).toBe(true);
+      expect(panel.open).toBe(true);
       const scrollBody =
         panel.shadowRoot.querySelector<HTMLElement>('.panel-body');
       fireEvent.scroll(scrollBody);
