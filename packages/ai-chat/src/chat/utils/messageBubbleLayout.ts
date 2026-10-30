@@ -51,11 +51,6 @@ const WIDTH_CAPS: Partial<Record<MessageResponseTypes, BubbleWidthCap>> = {
  * result into modifier classes, and the SCSS keys off those classes, never off
  * a response type. Typography and text wrapping are not layout and stay with
  * the response-type classes in `MessageComponent.scss`.
- *
- * Full-width items:
- * - Conversational-search responses
- * - Multi-item carousels (single-item carousels render at card width)
- * - User-defined responses whose `full_width` flag is `true`
  */
 export function getBubbleLayout(item: GenericItem): BubbleLayout {
   if (!item) {
@@ -73,6 +68,7 @@ export function getBubbleLayout(item: GenericItem): BubbleLayout {
     fullWidth:
       isConversationalSearch ||
       isMultiItemCarousel ||
+      // `full_width` can be undefined; `=== true` keeps `fullWidth` a strict boolean.
       isFullWidthUserDefined(item) === true,
     widthCap: WIDTH_CAPS[responseType] ?? 'none',
     insetFooter: isConversationalSearch,
