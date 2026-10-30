@@ -12,7 +12,7 @@ import { act, render, waitFor } from '@testing-library/react';
 import { ChatContainer } from '../../../src/react/ChatContainer';
 import { MinimizeButtonIconType } from '../../../src/types/config/HeaderConfig';
 import { ChatContainerProps } from '../../../src/types/component/ChatContainer';
-import { createBaseTestProps } from '../../test_helpers';
+import { createBaseTestProps, setupAfterEach } from '../../test_helpers';
 import { AppState } from '../../../src/types/state/AppState';
 import { applyConfigChangesDynamically } from '../../../src/chat/utils/dynamicConfigUpdates';
 import { doCreateStore } from '../../../src/chat/store/doCreateStore';
@@ -238,9 +238,14 @@ describe('Config Header', () => {
  * The store-state cases above render no header, so these mount the chat.
  */
 describe('header controls through the ChatContainer wrapper', () => {
+  // Earlier cases in this file mount chats too, so each case starts from a
+  // fresh saved session and view state.
+  beforeEach(() => {
+    window.sessionStorage.clear();
+    window.localStorage.clear();
+  });
   afterEach(() => {
-    document.body.innerHTML = '';
-    // Each case starts from a fresh home-screen and view state.
+    setupAfterEach();
     window.sessionStorage.clear();
     window.localStorage.clear();
   });
@@ -285,6 +290,23 @@ describe('header controls through the ChatContainer wrapper', () => {
     await waitFor(() => expect(base().headerTitle).toBe('Assistant header'));
     expect(base().navigationType).toBe('none');
     expect(base().actions.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it.each([
+    [true, 'shows'],
+    [false, 'hides'],
+  ])('with showAiLabel %s, the header %s the AI label', async (showAiLabel) => {
+    await mountChat({
+      homescreen: { isOn: false },
+      header: { title: 'AI header', showAiLabel },
+    });
+    const label = () =>
+      document
+        .querySelector('cds-aichat-container')
+        .shadowRoot.querySelector(
+          'cds-aichat-header-view .cds-aichat--header__slug'
+        );
+    await waitFor(() => expect(Boolean(label())).toBe(showAiLabel as boolean));
   });
 
   it('keeps the home view controls and the back control after leaving home', async () => {
