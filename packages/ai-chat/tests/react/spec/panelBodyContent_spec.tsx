@@ -163,7 +163,10 @@ describe('retained panel body content', () => {
         </HostContext.Provider>
       );
       const mounted = render(tree('host'));
-      await waitFor(() => expect(after).toHaveBeenCalledTimes(1));
+      // The first boot in a file loads the boot modules on demand.
+      await waitFor(() => expect(after).toHaveBeenCalledTimes(1), {
+        timeout: 5000,
+      });
       expect(markdownEffects).toHaveLength(1);
       expect(markdownEffects[0]).toMatchObject({
         connected: true,
