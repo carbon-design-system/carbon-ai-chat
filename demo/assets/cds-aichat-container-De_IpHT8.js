@@ -1,0 +1,1 @@
+import{i as e,s as t,t as n}from"./client-D5LrhmPS.js";import{t as r}from"./chat.cds-aichat-container-D2A0572s.js";import{t as i}from"./chat.react-dom-renderer-BCgkV-_S.js";var a=t({default:()=>r});e(),n(),i();export{a as t};
