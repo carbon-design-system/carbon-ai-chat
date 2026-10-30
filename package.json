@@ -239,11 +239,7 @@
     "@vscode/markdown-it-katex": {
       "katex": "0.18.2"
     },
-    "tar": "^7.5.16",
-    "shell-quote": "^1.11.0",
-    "postcss": "^8.5.23",
-    "axios": "^1.18.1",
-    "proxy-addr": "^2.0.8",
+    "glob@>=10 <14": "^14.0.3",
     "serve": {
       "compression": "^1.8.2"
     },
@@ -254,8 +250,7 @@
       "cssnano": "^7.1.9"
     },
     "stylelint-config-carbon": {
-      "stylelint-config-standard": "^40.0.0",
-      "stylelint-config-standard-scss": "^17.0.0"
+      "stylelint-config-standard": "^40.0.0"
     },
     "stylelint-config-idiomatic-order": {
       "stylelint-order": "^8.0.1"
@@ -268,7 +263,6 @@
       "vite": "^8.0.16"
     },
     "nx": {
-      "smol-toml": "^1.9.0",
       "undici": "^7.29.1"
     }
   }
