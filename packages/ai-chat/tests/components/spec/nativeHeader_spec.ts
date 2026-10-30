@@ -9,9 +9,12 @@
 
 import { ContextProvider } from '@lit/context';
 import { LitElement, nothing } from 'lit';
-import { waitFor } from '@testing-library/react';
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import { act, waitFor } from '@testing-library/react';
 import type NativeChatHeader from '@carbon/ai-chat-components/es/components/chat-shell/src/chat-header.js';
 import HeaderView from '../../../src/chat/components/header/chat-header';
+import { Header } from '../../../src/chat/components/header/Header';
 import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
 import { ChatViewState } from '../../../src/chat/services/chatViewState';
 import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
@@ -23,6 +26,7 @@ import {
   HeaderMenuClickType,
 } from '../../../src/types/events/eventBusTypes';
 import type { HeaderConfig } from '../../../src/types/config/HeaderConfig';
+import type { HasRequestFocus } from '../../../src/types/utilities/HasRequestFocus';
 import { WriteableElementName } from '../../../src/types/instance/WriteableElements';
 import {
   applyConfigChange,
@@ -423,6 +427,30 @@ describe('native header', () => {
       expect(errors).toHaveBeenCalledTimes(1);
     }
   );
+
+  it('forwards requestFocus through the React wrapper ref', async () => {
+    const { host } = await createHeader();
+    const target = document.createElement('div');
+    host.shadowRoot.appendChild(target);
+    const ref = React.createRef<HasRequestFocus>();
+    const root = createRoot(target);
+    await act(async () => {
+      root.render(
+        React.createElement(Header, {
+          ref,
+          onClose: jest.fn(),
+          onToggleHomeScreen: jest.fn(),
+        })
+      );
+    });
+    const native = target.querySelector('cds-aichat-header-view') as HeaderView;
+    const focus = jest.spyOn(native, 'requestFocus').mockReturnValue(true);
+    expect(ref.current.requestFocus()).toBe(true);
+    focus.mockReturnValue(false);
+    expect(ref.current.requestFocus()).toBe(false);
+    expect(focus).toHaveBeenCalledTimes(2);
+    act(() => root.unmount());
+  });
 
   it('delegates focus and releases selected subscriptions and writable observers on detach', async () => {
     const observe = jest.spyOn(MutationObserver.prototype, 'observe');
