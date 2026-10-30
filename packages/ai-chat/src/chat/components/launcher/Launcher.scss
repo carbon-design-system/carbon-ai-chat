@@ -13,6 +13,10 @@
 @use '../../../globals/scss/chat-launcher-layout';
 @use '@carbon/ai-chat-components/scss/utilities' as chat-config;
 
+cds-aichat-launcher-view {
+  display: contents;
+}
+
 // Web chat widget variables
 $box-shadow: chat-config.get-var('box-shadow', 1px 0 4px hsl(0deg 0% 9% / 30%));
 // Launcher Variables (container-specific sizing/positioning)
@@ -116,6 +120,11 @@ cds-button.cds-aichat--launcher__button {
 
 .cds-aichat--launcher__svg {
   fill: currentcolor;
+}
+
+.cds-aichat--launcher__svg,
+.cds-aichat--launcher-extended__close-button svg {
+  pointer-events: none;
 }
 
 .cds-aichat--launcher__avatar {
@@ -228,7 +237,7 @@ cds-button.cds-aichat--launcher-extended__close-button {
  * OPENING
  * - text-holder expands (keyframe)
  * - greeting fades in after expand completes (delayed keyframe)
- * - React listens to greeting's animationend to set state to "open"
+ * - The launcher listens to greeting's animationend to set state to "open"
  */
 
 .cds-aichat-launcher--opening {
@@ -249,7 +258,7 @@ cds-button.cds-aichat--launcher-extended__close-button {
 /**
  * OPEN
  * - final layout with expanded text-holder and visible greeting
- * - no animations needed; React has already switched state to "open"
+ * - no animations needed; The launcher has already switched state to "open"
  */
 
 .cds-aichat-launcher--open {
@@ -266,7 +275,7 @@ cds-button.cds-aichat--launcher-extended__close-button {
  * CLOSING
  * - greeting fades out first
  * - text-holder collapses after fade completes
- * - React listens to text-holder's animationend to set state to "closed"
+ * - The launcher listens to text-holder's animationend to set state to "closed"
  */
 
 .cds-aichat-launcher--closing {

@@ -7,11 +7,13 @@
  *  @license
  */
 
+import React from 'react';
 import { ContextProvider } from '@lit/context';
 import { LitElement, nothing } from 'lit';
+import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import LauncherView from '../../../src/chat/components/launcher/launcher';
-// Registers the element; the default import above is only used as a type.
-import '../../../src/chat/components/launcher/launcher';
+import { ChatContainer } from '../../../src/react/ChatContainer';
+import { ChatCustomElement } from '../../../src/react/ChatCustomElement';
 import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
 import { ChatViewState } from '../../../src/chat/services/chatViewState';
 import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
@@ -22,12 +24,14 @@ import * as reducedMotion from '../../../src/chat/utils/prefersReducedMotion';
 import actions from '../../../src/chat/store/actions';
 import { ViewType } from '../../../src/types/state/AppState';
 import type { LauncherConfig } from '../../../src/types/config/LauncherConfig';
+import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import {
   MainWindowOpenReason,
   ViewChangeReason,
 } from '../../../src/types/events/eventBusTypes';
 import {
   applyConfigChange,
+  createBaseConfig,
   makeConfigStore,
   setupAfterEach,
   setupBeforeEach,
@@ -396,4 +400,58 @@ describe('native launcher', () => {
     jest.advanceTimersByTime(2000);
     expect(store.getState().persistedToBrowserStorage).toBe(retired);
   });
+
+  it.each([
+    ['ChatContainer', ChatContainer],
+    ['ChatCustomElement', ChatCustomElement],
+  ] as const)(
+    'keeps default launcher markup and click behavior mounted through %s',
+    async (_name, Wrapper) => {
+      let instance: ChatInstance;
+      const after = jest.fn();
+      render(
+        React.createElement(Wrapper, {
+          ...createBaseConfig(),
+          className: '',
+          openChatByDefault: false,
+          onBeforeRender: (chat) => {
+            instance = chat;
+          },
+          onAfterRender: after,
+        })
+      );
+      await waitFor(() => expect(after).toHaveBeenCalledTimes(1));
+      const host = document.querySelector('cds-aichat-container');
+      const native = host.shadowRoot.querySelector('cds-aichat-launcher-view');
+      expect(native.shadowRoot).toBeNull();
+      expect(
+        native
+          .containerElement()
+          .classList.contains('cds-aichat-launcher--closed')
+      ).toBe(true);
+      expect(native.buttonElement().getAttribute('aria-label')).toBe(
+        'Open the chat window'
+      );
+      fireEvent.click(native.buttonElement());
+      await waitFor(() =>
+        expect(instance.getState().viewState.mainWindow).toBe(true)
+      );
+      await act(() => instance.changeView(ViewType.LAUNCHER));
+      await waitFor(() =>
+        expect(
+          host.shadowRoot.querySelector('cds-aichat-launcher-view')
+        ).not.toBeNull()
+      );
+      const reopened = host.shadowRoot.querySelector(
+        'cds-aichat-launcher-view'
+      );
+      await flush(reopened);
+      expect(native.isConnected).toBe(false);
+      expect(reopened).not.toBe(native);
+      expect(reopened.isConnected).toBe(true);
+      expect(instance.getState().viewState.launcher).toBe(true);
+      expect(reopened.buttonElement().getAttribute('tabindex')).not.toBe('-1');
+      expect(after).toHaveBeenCalledTimes(1);
+    }
+  );
 });
