@@ -114,6 +114,10 @@ for (const framework of ['react', 'web-component']) {
       await page.getByTestId(PageObjectId.CLOSE_CHAT).click();
       await expect(page.getByTestId(PageObjectId.MAIN_PANEL)).toBeHidden();
       await expect(launcher).toBeVisible();
+      // After a close, focus is on the page body, as with the parent React
+      // launcher (the inherited focus gap recorded for this stack). This pins
+      // today's result; it doesn't set a focus policy.
+      await expect(page.locator('body')).toBeFocused();
       await launcher.focus();
       await expect(launcher).toBeFocused();
       await page.keyboard.press('Enter');

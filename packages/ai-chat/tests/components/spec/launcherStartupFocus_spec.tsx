@@ -18,8 +18,17 @@ import {
   setupBeforeEach,
 } from '../../test_helpers';
 
-beforeEach(setupBeforeEach);
-afterEach(setupAfterEach);
+// Each wrapper case must boot from a fresh session, not the previous one's.
+beforeEach(() => {
+  setupBeforeEach();
+  window.sessionStorage.clear();
+  window.localStorage.clear();
+});
+afterEach(() => {
+  setupAfterEach();
+  window.sessionStorage.clear();
+  window.localStorage.clear();
+});
 
 it.each([
   ['ChatContainer', ChatContainer],

@@ -131,7 +131,12 @@ function hasState(view: LauncherView, state: string) {
 }
 
 describe('native launcher', () => {
-  beforeEach(setupBeforeEach);
+  // Each wrapper case must boot from a fresh session, not the previous one's.
+  beforeEach(() => {
+    setupBeforeEach();
+    window.sessionStorage.clear();
+    window.localStorage.clear();
+  });
   afterEach(() => {
     setupAfterEach();
     testStates.forEach((state) => state.disconnect());
