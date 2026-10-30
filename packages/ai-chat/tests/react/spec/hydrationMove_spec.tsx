@@ -22,9 +22,16 @@ import {
   setupBeforeEach,
 } from '../../test_helpers';
 
-beforeEach(setupBeforeEach);
+// Each wrapper case must boot from a fresh session, not the previous one's.
+beforeEach(() => {
+  setupBeforeEach();
+  window.sessionStorage.clear();
+  window.localStorage.clear();
+});
 afterEach(() => {
   setupAfterEach();
+  window.sessionStorage.clear();
+  window.localStorage.clear();
   jest.clearAllTimers();
   jest.useRealTimers();
   jest.restoreAllMocks();
