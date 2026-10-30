@@ -2787,6 +2787,36 @@ HTTP: http://example.com
       });
     }
 
+    it('offers a retained standalone inline run to a new external listener after a remove and re-add in one task', async () => {
+      const first = await fixture<HTMLElement>(html`<div></div>`);
+      const destination = await createExternalRelocationHarness();
+      const el = document.createElement(
+        MARKDOWN_ELEMENT_TAG
+      ) as MarkdownElementInstance;
+      el.markdownItPlugins = [
+        (md: any) => {
+          tagPlugin(md);
+          md.renderer.rules.cds_test_tag = () => '<input>';
+        },
+      ];
+      el.markdown = 'Hi :tag:';
+      first.appendChild(el);
+      await el.updateComplete;
+      const input = el.querySelector('input')!;
+      const host = el.querySelector<HTMLElement>('[slot]')!;
+      input.value = 'retained inline input';
+
+      el.remove();
+      destination.owner.shadowRoot?.appendChild(el);
+      await el.updateComplete;
+      await Promise.resolve();
+
+      expect(destination.offers.length).to.equal(1);
+      expect(destination.hosts[0] === host).to.equal(true);
+      expect(host.querySelector('input') === input).to.equal(true);
+      expect(input.value).to.equal('retained inline input');
+    });
+
     it('offers a retained standalone inline run to a new external listener', async () => {
       const first = await fixture<HTMLElement>(html`<div></div>`);
       const destination = await createExternalRelocationHarness();
