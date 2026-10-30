@@ -17,17 +17,17 @@ import {
 } from 'lit/directive.js';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import prefix from '../../../../globals/settings.js';
+import {
+  attachRootStyles,
+  type RootStyles,
+} from '../../../shared/root-styles.js';
 import styles from '../inline-run-projection.scss?lit';
 import type { MarkdownCustomRendererMountDetail } from './plugin-host-container.js';
 
 const projectionHosts = new WeakSet<object>();
 const styleRoots = new WeakMap<
   Document | ShadowRoot,
-  {
-    count: number;
-    sheet?: CSSStyleSheet;
-    element?: HTMLStyleElement;
-  }
+  { count: number; attached: RootStyles }
 >();
 
 export function installInlineRunStyles(host: HTMLElement): () => void {
@@ -37,18 +37,7 @@ export function installInlineRunStyles(host: HTMLElement): () => void {
   }
   let entry = styleRoots.get(root);
   if (!entry) {
-    entry = { count: 0 };
-    try {
-      const sheet = new CSSStyleSheet();
-      sheet.replaceSync(styles.cssText);
-      root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet];
-      entry.sheet = sheet;
-    } catch {
-      const element = host.ownerDocument.createElement('style');
-      element.textContent = styles.cssText;
-      (root instanceof Document ? root.head : root).append(element);
-      entry.element = element;
-    }
+    entry = { count: 0, attached: attachRootStyles(root, styles.cssText) };
     styleRoots.set(root, entry);
   }
   entry.count++;
@@ -57,12 +46,7 @@ export function installInlineRunStyles(host: HTMLElement): () => void {
     if (entry.count) {
       return;
     }
-    if (entry.sheet) {
-      root.adoptedStyleSheets = root.adoptedStyleSheets.filter(
-        (sheet) => sheet !== entry.sheet
-      );
-    }
-    entry.element?.remove();
+    entry.attached.detach();
     styleRoots.delete(root);
   };
 }
