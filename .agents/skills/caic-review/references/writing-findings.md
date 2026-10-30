@@ -25,18 +25,18 @@ Write your findings to [review-comments.md](../../caic-copy-writer/references/re
 
   **Blocker** — `packages/ai-chat/src/foo.ts:42` — the early return skips teardown, so the listener leaks on every close. Call `dispose()` before returning."
 
-The other two severities, written the same way — orientation dropped here to show the diagnosis line alone:
+Two Importants, written the same way — orientation dropped here to show the diagnosis line alone. Neither ships broken code; a user waits on the first, and a caller guesses at the second:
 
 - **Important** — `packages/ai-chat/src/chat/store/fooReducer.ts:88` — the reducer rebuilds every item, so one changed message re-renders the whole list. Copy the array and replace the one index.
-- **Nit** — `packages/ai-chat/src/types/config/FooConfig.ts:12` — the JSDoc says "the timeout" with no unit, so a caller guesses seconds. Say "in milliseconds."
+- **Important** — `packages/ai-chat/src/types/config/FooConfig.ts:12` — the JSDoc says "the timeout" with no unit, so a caller guesses seconds. Say "in milliseconds."
 
-Cap the diagnosis at three sentences; the orientation line and fix block are separate. Put a design question or a pattern spanning the diff in the summary. For a settled fix that exceeds inline suggestions, include the complete patch required by [reviewing-a-pr.md](reviewing-a-pr.md#when-suggestions-cannot-carry-the-whole-fix).
+Cap the diagnosis at three sentences; the orientation line and fix block are separate. Put a design question or a pattern spanning the diff in the summary's **Across the diff** section. For a settled fix that exceeds inline suggestions, include the complete patch required by [reviewing-a-pr.md](reviewing-a-pr.md#when-suggestions-cannot-carry-the-whole-fix).
 
 ## What isn't a finding
 
-Some observations feel like findings and aren't. These stay unsaid at every severity, not just Nit:
+Some observations feel like findings and aren't. Nobody pays for these, so they stay unsaid however small the edit:
 
-- **A tool already decided it.** Husky runs prettier, eslint, stylelint, and commitlint on what you commit ([commit hooks](../../../../references/conventions.md#commit-hooks)); `ci-check` adds license headers plus ADR, AGENTS, skill, and example-README validation. Formatting, quote style, import order, line length, and anything else a gate fails on are settled before you open the diff. commitlint settles commit format, not content — a body that buries or omits its why when the diff can't carry it is a **Nit**, citing [commit bodies](../../../../references/conventions.md#commit-bodies).
+- **A tool already decided it.** Husky runs prettier, eslint, stylelint, and commitlint on what you commit ([commit hooks](../../../../references/conventions.md#commit-hooks)); `ci-check` adds license headers plus ADR, AGENTS, skill, and example-README validation. Formatting, quote style, import order, line length, and anything else a gate fails on are settled before you open the diff. commitlint settles commit format, not content — see the note on commit bodies below the list.
 - **A naming swap with no clarity gain** — `data` → `payload`.
 - **An equivalent style alternative** — `for` versus `.map`, ternary versus `if`.
 - **"Add a comment here."** The repo's default is no comments ([comments](../../../../references/code-patterns.md#comments)). You are here to flag the ones that restate the code, not to ask for more. One narrow exception: the diff encodes a _why_ the code cannot show — a workaround for a named bug, a constraint from outside the file, an ordering that looks arbitrary and isn't. Ask for that line, and say what it has to record.
@@ -44,7 +44,9 @@ Some observations feel like findings and aren't. These stay unsaid at every seve
 - **A different approach from the one the issue suggested.** An issue's Possible approaches are options, and the developer owns the choice. Judge the diff on whether it meets the outcomes and constraints, not on whether it took the suggested route. A route that is defective is still a finding — on its own merits.
 - **Code the diff didn't touch.** A pre-existing problem is real and is not this PR's job — file an issue. Untouched code the diff _breaks_ is a different thing: a caller left on the old signature, a consumer of a changed default, a doc snippet that no longer runs. That is a regression, and a regression is a **Blocker** wherever it surfaces.
 
-A pass — or a whole review — that surfaces nothing is finished, not failed. Say so and stop. Manufacturing a Nit to look thorough costs the author more than the silence would.
+A commit body is the exception to the tool rule, because commitlint never reads it. A body that buries or omits its why when the diff can't carry it is **Important**: the reviewer walking the branch pays for it now, before the squash ([commit bodies](../../../../references/conventions.md#commit-bodies)).
+
+A pass — or a whole review — that surfaces nothing is finished, not failed. Say so and stop. Manufacturing a finding to look thorough costs the author more than the silence would.
 
 ## Related guidance
 

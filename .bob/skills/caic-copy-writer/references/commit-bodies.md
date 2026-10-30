@@ -17,7 +17,7 @@ Load this before writing a commit body. Structural owner: [conventions.md](../..
 
 ## Gate
 
-Review. commitlint checks the header's format and never reads the body, so nothing but a reader catches a body that narrates the diff — [caic-review](../../caic-review/SKILL.md) files that as a Nit.
+Review. commitlint checks the header's format and never reads the body, so nothing but a reader catches a body that narrates the diff — [caic-review](../../caic-review/SKILL.md) files that as Important.
 
 ## Related guidance
 
