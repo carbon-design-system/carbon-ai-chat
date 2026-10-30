@@ -210,6 +210,25 @@ describe('choice selection controls', () => {
     consoleSpy.mockRestore();
   });
 
+  it('passes false before selection and after selection is cleared', () => {
+    const { localMessage, renderComponent, rerender } = renderOptions([
+      { label: 'Choice', value: { input: { text: 'choice' } } },
+    ]);
+    const choice = screen.getByRole('button', { name: 'Choice' });
+    expect(choice).toHaveAttribute('data-selected', 'false');
+
+    localMessage.ui_state.optionSelected = {
+      input: { text: 'choice' },
+      history: {},
+    };
+    rerender(renderComponent());
+    expect(choice).toHaveAttribute('data-selected', 'true');
+
+    delete localMessage.ui_state.optionSelected;
+    rerender(renderComponent());
+    expect(choice).toHaveAttribute('data-selected', 'false');
+  });
+
   it('marks at most the first matching button selected', () => {
     const { localMessage, rerender } = renderOptions([
       { label: 'First', value: { input: { text: 'same' } } },
