@@ -2543,6 +2543,68 @@ HTTP: http://example.com
       expect(mounts[1].parentElement === second).to.equal(true);
     });
 
+    it('sends an inline run claimed by an unregistered listener the same unmount and fresh offer as block content', async () => {
+      const first = await fixture<HTMLElement>(html`<div></div>`);
+      const second = await fixture<HTMLElement>(html`<div></div>`);
+      const log = new Map<HTMLElement, string[]>([
+        [first, []],
+        [second, []],
+      ]);
+      const hosts: HTMLElement[] = [];
+      for (const owner of [first, second]) {
+        owner.addEventListener(
+          'cds-aichat-markdown-plugin-host-mount',
+          (event) => {
+            const detail = resolveMarkdownPluginHostMountDetail(
+              (event as CustomEvent<MarkdownPluginHostMountDetailInput>).detail
+            );
+            event.preventDefault();
+            const host =
+              detail.kind === 'customRenderer'
+                ? detail.element
+                : document.createElement('span');
+            host.slot = detail.slotName;
+            owner.appendChild(host);
+            hosts.push(host);
+            log.get(owner)!.push('mount');
+          }
+        );
+        owner.addEventListener(
+          'cds-aichat-markdown-plugin-host-unmount',
+          () => {
+            log.get(owner)!.push('unmount');
+          }
+        );
+      }
+      const el = document.createElement(
+        MARKDOWN_ELEMENT_TAG
+      ) as MarkdownElementInstance;
+      // An inline run: live inline output projected into one host.
+      el.markdownItPlugins = [
+        (md: any) => {
+          tagPlugin(md);
+          md.renderer.rules.cds_test_tag = () => '<input>';
+        },
+      ];
+      el.markdown = 'Hi :tag:';
+      first.appendChild(el);
+      await el.updateComplete;
+      expect(log.get(first)).to.deep.equal(['mount']);
+      const [host] = hosts;
+
+      second.appendChild(el);
+      await el.updateComplete;
+      await Promise.resolve();
+
+      // Like block content: the new chain hears the unmount, then the fresh
+      // offer; the old listener hears nothing more.
+      expect(log.get(first)).to.deep.equal(['mount']);
+      expect(log.get(second)).to.deep.equal(['unmount', 'mount']);
+      expect(hosts.length).to.equal(2);
+      expect(hosts[1].parentElement === second).to.equal(true);
+      expect(host.parentElement === second).to.equal(true);
+    });
+
     async function createExternalRelocationHarness(claim = true) {
       const owner = await fixture<HTMLElement>(
         html`<cds-test-markdown-relocation-host></cds-test-markdown-relocation-host>`
@@ -3320,6 +3382,9 @@ HTTP: http://example.com
       });
       const host = controller.hosts.get('orphan')!;
       expect(host.isConnected).to.equal(true);
+      // The first offer's prune runs while its sender is still on the page.
+      await Promise.resolve();
+      expect(controller.hosts.has('orphan')).to.equal(true);
 
       sender.remove();
       offer(target, {
