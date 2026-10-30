@@ -14,6 +14,7 @@ import '@carbon/web-components/es/components/loading/loading.js';
 import '@carbon/web-components/es/components/loading/loading-icon.js';
 import { NativeChatView } from '../../shared/NativeChatView';
 import { HydrationBodyLifecycle } from '../../../utils/panelBodyLifecycle';
+import type { ChatViewState } from '../../../services/chatViewState';
 
 @carbonElement('cds-aichat-hydration-body')
 class HydrationBody extends NativeChatView {
@@ -23,24 +24,47 @@ class HydrationBody extends NativeChatView {
   private loadingLabel: string;
   private lifecycle?: HydrationBodyLifecycle;
 
-  protected onViewConnected() {
+  private lifecycleOwner?: ChatViewState;
+  private releaseGeneration = 0;
+
+  protected onViewConnected(viewState: ChatViewState) {
+    this.releaseGeneration += 1;
+    if (this.lifecycleOwner && this.lifecycleOwner !== viewState) {
+      this.releaseLifecycle();
+    }
     this.selectStore(
       (state) => state.languagePack.window_ariaWindowLoading,
       (label) => {
         this.loadingLabel = label;
       }
     );
-    const announcer = this.viewState.announcer;
-    const lifecycle = new HydrationBodyLifecycle(
-      { isHydrated: this.isHydrated, announcement: this.loadingLabel },
-      (text) => announcer.announce(text)
-    );
-    this.lifecycle = lifecycle;
-    this.own(lifecycle.subscribe(() => this.requestUpdate()));
+    if (!this.lifecycle) {
+      const announcer = viewState.announcer;
+      this.lifecycle = new HydrationBodyLifecycle(
+        { isHydrated: this.isHydrated, announcement: this.loadingLabel },
+        (text) => announcer.announce(text)
+      );
+      this.lifecycleOwner = viewState;
+    }
+    this.own(this.lifecycle.subscribe(() => this.requestUpdate()));
     this.own(() => {
-      this.lifecycle = undefined;
-      lifecycle.disconnect();
+      const generation = ++this.releaseGeneration;
+      if (this.isConnected) {
+        this.releaseLifecycle();
+      } else {
+        queueMicrotask(() => {
+          if (!this.isConnected && generation === this.releaseGeneration) {
+            this.releaseLifecycle();
+          }
+        });
+      }
     });
+  }
+
+  private releaseLifecycle() {
+    this.lifecycle?.disconnect();
+    this.lifecycle = undefined;
+    this.lifecycleOwner = undefined;
   }
 
   protected updated() {
