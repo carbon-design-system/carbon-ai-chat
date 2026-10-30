@@ -2375,6 +2375,39 @@ HTTP: http://example.com
       }
     }
 
+    it('::tag:: block output keeps its host when moving sibling wrappers, 2 hops out', async () => {
+      const { levels, mounted, pluginHosts, addMarkdown } =
+        await createRelocationHarness(2);
+      const el = await addMarkdown('::tag::', {
+        markdownItPlugins: [blockTagPlugin],
+      } as Partial<MarkdownElementInstance>);
+      const firstWrapper = document.createElement('div');
+      const secondWrapper = document.createElement('div');
+      levels[1].shadowRoot?.append(firstWrapper, secondWrapper);
+      firstWrapper.appendChild(el);
+      await el.updateComplete;
+      await Promise.resolve();
+      const [slotName] = [...pluginHosts.keys()];
+      expect(slotName, 'the block output gets a host').to.be.a('string');
+      const host = pluginHosts.get(slotName)!;
+      const initialMounts = mounted.length;
+
+      secondWrapper.appendChild(el);
+      await el.updateComplete;
+      await Promise.resolve();
+
+      expect(pluginHosts.get(slotName) === host, 'same host').to.equal(true);
+      expect(mounted.length, 'no second mount').to.equal(initialMounts);
+      expect(host.isConnected).to.equal(true);
+      expect(host.textContent).to.equal('tag');
+      const slot = el.shadowRoot?.querySelector(
+        `slot[name="${slotName}"]`
+      ) as HTMLSlotElement;
+      expect(slot.assignedElements({ flatten: true })[0] === host).to.equal(
+        true
+      );
+    });
+
     it('keeps standalone renderer state through a same-task parent change', async () => {
       const first = await fixture<HTMLElement>(html`<div></div>`);
       const second = await fixture<HTMLElement>(html`<div></div>`);
@@ -2436,6 +2469,78 @@ HTTP: http://example.com
       expect(oldHost.isConnected).to.equal(false);
       expect(mounts[1].parentElement === second).to.equal(true);
       expect(mounts[1].firstElementChild?.tagName).to.equal('INPUT');
+    });
+
+    /**
+     * Records mount and unmount events per unregistered listener. A mount is
+     * claimed by appending the offered host, as an external listener would.
+     */
+    async function createExternalListeners() {
+      const first = await fixture<HTMLElement>(html`<div></div>`);
+      const second = await fixture<HTMLElement>(html`<div></div>`);
+      const log = new Map<HTMLElement, string[]>([
+        [first, []],
+        [second, []],
+      ]);
+      const mounts: HTMLElement[] = [];
+      for (const owner of [first, second]) {
+        owner.addEventListener(
+          'cds-aichat-markdown-plugin-host-mount',
+          (event) => {
+            const detail = (
+              event as CustomEvent<MarkdownCustomRendererMountDetail>
+            ).detail;
+            event.preventDefault();
+            owner.appendChild(detail.element);
+            mounts.push(detail.element);
+            log.get(owner)!.push('mount');
+          }
+        );
+        owner.addEventListener(
+          'cds-aichat-markdown-plugin-host-unmount',
+          () => {
+            log.get(owner)!.push('unmount');
+          }
+        );
+      }
+      const el = document.createElement(
+        MARKDOWN_ELEMENT_TAG
+      ) as MarkdownElementInstance;
+      el.customRenderers = { table: () => document.createElement('input') };
+      el.markdown = tableMarkdown;
+      first.appendChild(el);
+      await el.updateComplete;
+      return { first, second, log, mounts, el };
+    }
+
+    it('keeps an unregistered listener claim through a same-task re-append into the same parent', async () => {
+      const { first, log, mounts, el } = await createExternalListeners();
+      const host = mounts[0];
+
+      first.appendChild(el);
+      await el.updateComplete;
+      await Promise.resolve();
+
+      expect(log.get(first)).to.deep.equal(['mount']);
+      expect(mounts.length).to.equal(1);
+      expect(host.parentElement === first).to.equal(true);
+      expect(host.firstElementChild?.tagName).to.equal('INPUT');
+    });
+
+    it('sends the unmount to the new ancestor chain before the fresh offer from an unregistered listener', async () => {
+      const { first, second, log, mounts, el } =
+        await createExternalListeners();
+
+      second.appendChild(el);
+      await el.updateComplete;
+      await Promise.resolve();
+
+      // The old listener received its claim and hears nothing more; the new
+      // chain hears the release first, then the fresh offer.
+      expect(log.get(first)).to.deep.equal(['mount']);
+      expect(log.get(second)).to.deep.equal(['unmount', 'mount']);
+      expect(mounts.length).to.equal(2);
+      expect(mounts[1].parentElement === second).to.equal(true);
     });
 
     async function createExternalRelocationHarness(claim = true) {
@@ -3189,6 +3294,46 @@ HTTP: http://example.com
         expect(controller.hosts.has('moved-host')).to.equal(false);
       });
     }
+
+    it('drops a name whose sender left the page without releasing it', async () => {
+      const { target, controller, announced } = await createReconnectTarget();
+      const offer = (
+        sender: HTMLElement,
+        detail: MarkdownPluginHostMountDetailInput
+      ) =>
+        sender.dispatchEvent(
+          new CustomEvent('cds-aichat-markdown-plugin-host-mount', {
+            bubbles: true,
+            composed: true,
+            cancelable: true,
+            detail,
+          })
+        );
+      // A third-party emitter that never sends an unmount.
+      const sender = document.createElement('span');
+      target.appendChild(sender);
+      offer(sender, {
+        kind: 'pluginFallback',
+        slotName: 'orphan',
+        html: '<i>x</i>',
+        isInline: false,
+      });
+      const host = controller.hosts.get('orphan')!;
+      expect(host.isConnected).to.equal(true);
+
+      sender.remove();
+      offer(target, {
+        kind: 'pluginFallback',
+        slotName: 'next',
+        html: '<i>y</i>',
+        isInline: false,
+      });
+      await Promise.resolve();
+
+      expect(controller.hosts.has('orphan')).to.equal(false);
+      expect(host.isConnected).to.equal(false);
+      expect(announced.at(-1)).to.deep.equal(['next']);
+    });
 
     it('cancels pending pruning when disconnected', async () => {
       const { target, controller, announced, mount } =
