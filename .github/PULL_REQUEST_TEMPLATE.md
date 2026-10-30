@@ -2,6 +2,14 @@ Closes #
 
 {{ Short description }}
 
+#### Architecture
+
+{{ Optional. Delete unless the PR is stacked, or changes how data, events, state, or behavior move between modules }}
+
+#### Public API changes
+
+{{ Optional. Delete unless the PR changes public API. One line per symbol: added, changed, deprecated, or removed }}
+
 #### Changelog
 
 **New**

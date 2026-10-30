@@ -49,7 +49,7 @@ Keep outcomes and proofs distinct:
 | Shaping plan / epic | Outcomes and boundaries |
 | Issue | Done-when outcomes and settled constraints |
 | Implementation plan / step | Acceptance criteria, each tied to an outcome and its proof |
-| PR / review | Evidence that the change satisfies those criteria |
+| PR / review | Steps a reviewer runs for the criteria CI can't prove |
 
 A criterion traces to an issue outcome, or to the plan's own Done when when there is no issue. If an outcome changes, update affected local artifacts and identify external records needing an authorized amendment. An optional ADR does not replace the plan or require every plan to have an epic.
 
