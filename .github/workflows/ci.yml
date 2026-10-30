@@ -73,7 +73,7 @@ jobs:
           # launchers in web-test-runner.config.js) when the CI strategy is reworked.
           - suite: components
             browsers: chromium
-            run: npm run test --workspace=@carbon/ai-chat-components && npm run test:host-entry-consumer
+            run: npm run test --workspace=@carbon/ai-chat-components && npm run test:host-entry-consumer && npm run test:manifest-consumer
           # 👇 Demo and example test suites run in the nightly workflow (nightly.yml), not here.
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
