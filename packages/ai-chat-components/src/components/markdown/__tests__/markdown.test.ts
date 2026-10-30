@@ -2375,6 +2375,35 @@ HTTP: http://example.com
       }
     }
 
+    it('keeps an inline run node and value when one call moves it between sibling wrappers, 2 hops out', async () => {
+      const { levels, addMarkdown } = await createRelocationHarness(2);
+      const el = await addMarkdown('Hi :tag:', {
+        markdownItPlugins: [
+          (md: any) => {
+            tagPlugin(md);
+            md.renderer.rules.cds_test_tag = () => '<input>';
+          },
+        ],
+      } as Partial<MarkdownElementInstance>);
+      const firstWrapper = document.createElement('div');
+      const secondWrapper = document.createElement('div');
+      levels[1].shadowRoot?.append(firstWrapper, secondWrapper);
+      firstWrapper.appendChild(el);
+      await el.updateComplete;
+      await Promise.resolve();
+      const input = levels[0].querySelector('input')!;
+      expect(input, 'the run is hosted by the chat').to.not.equal(null);
+      input.value = 'retained inline value';
+
+      secondWrapper.appendChild(el);
+      await el.updateComplete;
+      await Promise.resolve();
+
+      expect(levels[0].querySelector('input') === input).to.equal(true);
+      expect(input.isConnected).to.equal(true);
+      expect(input.value).to.equal('retained inline value');
+    });
+
     it('::tag:: block output keeps its host when moving sibling wrappers, 2 hops out', async () => {
       const { levels, mounted, pluginHosts, addMarkdown } =
         await createRelocationHarness(2);
@@ -2543,7 +2572,11 @@ HTTP: http://example.com
       expect(mounts[1].parentElement === second).to.equal(true);
     });
 
-    it('sends an inline run claimed by an unregistered listener the same unmount and fresh offer as block content', async () => {
+    /**
+     * An inline run in standalone markdown, claimed by a listener outside any
+     * chat. A second listener waits on another ancestor chain.
+     */
+    async function createClaimedInlineRun() {
       const first = await fixture<HTMLElement>(html`<div></div>`);
       const second = await fixture<HTMLElement>(html`<div></div>`);
       const log = new Map<HTMLElement, string[]>([
@@ -2591,18 +2624,41 @@ HTTP: http://example.com
       await el.updateComplete;
       expect(log.get(first)).to.deep.equal(['mount']);
       const [host] = hosts;
+      return { first, second, log, hosts, host, el };
+    }
 
+    it('sends an inline run claimed by an unregistered listener an unmount and fresh offer when one insert call moves it', async () => {
+      const { first, second, log, hosts, host, el } =
+        await createClaimedInlineRun();
+
+      // One call: the run's slot is still on the page when it disconnects,
+      // so it unmounts at once and offers again from the new chain.
       second.appendChild(el);
       await el.updateComplete;
       await Promise.resolve();
 
-      // Like block content: the new chain hears the unmount, then the fresh
-      // offer; the old listener hears nothing more.
       expect(log.get(first)).to.deep.equal(['mount']);
       expect(log.get(second)).to.deep.equal(['unmount', 'mount']);
       expect(hosts.length).to.equal(2);
       expect(hosts[1].parentElement === second).to.equal(true);
       expect(host.parentElement === second).to.equal(true);
+    });
+
+    it('keeps an inline run with its first unregistered listener when it is removed and re-added in one task', async () => {
+      const { first, second, log, hosts, host, el } =
+        await createClaimedInlineRun();
+
+      el.remove();
+      second.appendChild(el);
+      await el.updateComplete;
+      await Promise.resolve();
+
+      // The run keeps its first claim, as before this change; the new chain
+      // hears nothing.
+      expect(log.get(first)).to.deep.equal(['mount']);
+      expect(log.get(second)).to.deep.equal([]);
+      expect(hosts.length).to.equal(1);
+      expect(host.parentElement === first).to.equal(true);
     });
 
     async function createExternalRelocationHarness(claim = true) {
