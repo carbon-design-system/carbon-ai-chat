@@ -145,7 +145,10 @@ class CDSAIChatHistoryToolbar extends LitElement {
           : nothing
       }
       <slot name="actions-end"></slot>
-      <cds-icon-button align="top-right" @click=${handleNewChatButtonClick}>
+      <cds-icon-button
+        align="top-right"
+        size="md"
+        @click=${handleNewChatButtonClick}>
         ${iconLoader(AddComment16, {
           slot: 'icon',
         })}

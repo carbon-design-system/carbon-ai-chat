@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.RequestUserProfile.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.RequestUserProfile.html
 
 Identifies the sender displayed for a user request.
 
@@ -26,7 +26,7 @@ interface RequestUserProfile
 
 The sender's identifier in your application. The chat does not use it to identify the current viewer.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.RequestUserProfile.html#id)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.RequestUserProfile.html#id)
 
 ### nickname
 
@@ -34,7 +34,7 @@ The sender's identifier in your application. The chat does not use it to identif
 
 The sender's visible name, trimmed before display. Blank names use the default “You” label.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.RequestUserProfile.html#nickname)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.RequestUserProfile.html#nickname)
 
 ### profile_picture_url
 
@@ -43,4 +43,4 @@ The sender's visible name, trimmed before display. Blank names use the default �
 A URL for the sender's square avatar image. The image is hidden when the name is blank or avatars are disabled.
 If the image fails to load, the sender's name remains visible.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.RequestUserProfile.html#profile_picture_url)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.RequestUserProfile.html#profile_picture_url)

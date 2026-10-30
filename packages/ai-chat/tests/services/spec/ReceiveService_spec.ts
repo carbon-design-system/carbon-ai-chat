@@ -8,8 +8,8 @@
  */
 
 import { makeConfigStore } from '../../test_helpers';
-import { ConversationLifecycleService } from '../../../src/chat/services/ConversationLifecycleService';
 import { ChunkProcessingService } from '../../../src/chat/services/ChunkProcessingService';
+import { ConversationLifecycleService } from '../../../src/chat/services/ConversationLifecycleService';
 import { HydrationService } from '../../../src/chat/services/HydrationService';
 import { MessageUpsertCoordinator } from '../../../src/chat/services/MessageUpsertCoordinator';
 import { ReceiveService } from '../../../src/chat/services/ReceiveService';
@@ -60,8 +60,10 @@ function createHarness(config: PublicConfig = {}) {
       cancelAllMessageRequests: jest.fn().mockResolvedValue(undefined),
     },
   } as unknown as ServiceManager;
-  manager.conversationLifecycleService = new ConversationLifecycleService();
   manager.chunkProcessingService = new ChunkProcessingService(manager);
+  manager.conversationLifecycleService = new ConversationLifecycleService(
+    manager
+  );
   manager.hydrationService = new HydrationService(manager);
   manager.messageUpsertCoordinator = new MessageUpsertCoordinator(manager);
   const service = new ReceiveService(manager);
@@ -287,10 +289,11 @@ describe('ReceiveService', () => {
           message.id
         ] as MessageResponse;
 
-        expect(storedMessage).toBe(message);
+        expect(storedMessage).not.toBe(message);
         expect(storedMessage).toEqual(receiveEvent.data);
         expect(storedMessage.request_id).toBe(request.id);
-        expect(receiveEvent.data).toBe(storedMessage);
+        expect(receiveEvent.data).not.toBe(storedMessage);
+        expect(receiveEvent.data).toBe(message);
         expect(Object.isFrozen(receiveEvent.data)).toBe(true);
       }
     });

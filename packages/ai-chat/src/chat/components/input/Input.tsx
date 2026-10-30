@@ -185,6 +185,24 @@ interface InputProps {
      */
     collapsible?: boolean;
   };
+
+  /**
+   * One error per failed attachment, shown as a stacked row in the
+   * `field-messaging` slot, between the attachment chips and the text field.
+   * Titles and descriptions arrive already localized. While any are present
+   * they replace `error`, but the max-length error still takes priority over
+   * both.
+   */
+  uploadErrors?: Array<{
+    /** The upload's unique ID, used as the row's React key. */
+    id: string;
+    /** The file name. Already reflected in `title`. */
+    filename: string;
+    /** The error title, already localized and including the file name. */
+    title: string;
+    /** The failure reason, if any, followed by the recovery instruction. */
+    description?: string;
+  }>;
 }
 
 /**
@@ -263,6 +281,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     restoreDraft = false,
     rounded,
     error,
+    uploadErrors,
   } = props;
 
   const serviceManager = useServiceManager();
@@ -271,6 +290,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
   const ariaAnnouncer = useAriaAnnouncer();
   const store = serviceManager.store;
   const hasErrorProp = error !== undefined;
+  const hasUploadErrors = (uploadErrors?.length ?? 0) > 0;
 
   // Locale-aware announcement formatters for batched file changes. The
   // `file-uploads` component coalesces same-frame adds/uploads into a single
@@ -309,8 +329,8 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     [intl, languagePack.fileSharing_removeButtonTitle]
   );
 
-  // Mirrors the composition in `AppShell`'s `inputError`, so the announcement and
-  // the on-screen message cannot drift apart. The title is punctuated so a screen
+  // Mirrors the composition in `AppShell`'s `inputUploadErrors`, so the announcement
+  // and the on-screen message cannot drift apart. The title is punctuated so a screen
   // reader pauses before the reason instead of running the two together.
   const getFileUploadFailureText = useMemo(
     () =>
@@ -397,7 +417,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     disableSend,
     isSendDisabledFromConfig,
     onSendInput,
-    hasErrorProp,
+    hasErrorProp: hasErrorProp || hasUploadErrors,
     pendingUploads,
     restoreDraft,
     isInputVisible,
@@ -624,38 +644,43 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
       );
     }
 
+    // Per-file upload errors: one ErrorMessage row per errored attachment.
+    // FileUploads already announces failures assertively, so AnnounceOnMount
+    // is silenced here to avoid double-speaking the same reason.
+    if (hasUploadErrors) {
+      return (
+        <div slot="field-messaging">
+          {uploadErrors!.map((entry) => (
+            <AnnounceOnMount key={entry.id} live={false}>
+              <ErrorMessage
+                fullscreen={chatWidthBreakpoint === ChatWidthBreakpoint.WIDE}
+                title={entry.title}
+                description={entry.description}
+                collapsible={false}
+              />
+            </AnnounceOnMount>
+          ))}
+        </div>
+      );
+    }
+
     if (!hasErrorProp) {
       return null;
     }
-
-    const hasUploadError =
-      pendingUploads?.some((upload) => upload.isError) ?? false;
 
     const announcement = error.description
       ? `${error.title}. ${error.description}`
       : error.title;
 
-    const errorMessage = (
-      <ErrorMessage
-        fullscreen={chatWidthBreakpoint === ChatWidthBreakpoint.WIDE}
-        title={error.title}
-        description={error?.description}
-        collapsible={error?.collapsible}
-      />
-    );
-
     return (
       <div slot="field-messaging">
-        {/*
-          <FileUploads> announces upload failures itself, so this wrapper goes
-          silent for them — otherwise its announcer call and its own live region
-          would each repeat the text. Kept mounted rather than swapped out: a
-          changed element type here remounts it, and a remount re-announces.
-        */}
-        <AnnounceOnMount
-          live={!hasUploadError}
-          announceOnce={hasUploadError ? undefined : announcement}>
-          {errorMessage}
+        <AnnounceOnMount live={true} announceOnce={announcement}>
+          <ErrorMessage
+            fullscreen={chatWidthBreakpoint === ChatWidthBreakpoint.WIDE}
+            title={error.title}
+            description={error?.description}
+            collapsible={error?.collapsible}
+          />
         </AnnounceOnMount>
       </div>
     );
@@ -671,7 +696,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     (disableInput ? undefined : languagePack.input_placeholder) ||
     '';
 
-  const hasError = hasErrorProp || overMaxLength;
+  const hasError = hasErrorProp || hasUploadErrors || overMaxLength;
 
   return (
     <PromptLineShell

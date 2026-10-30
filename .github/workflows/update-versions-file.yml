@@ -15,8 +15,21 @@ on:
         required: true
         description: 'Stable @carbon/ai-chat-components package version, without v'
         type: string
-  repository_dispatch:
-    types: [update-versions-file]
+  workflow_call:
+    inputs:
+      branch:
+        required: true
+        description: 'Release branch to commit the updated catalog to'
+        type: string
+      sha:
+        required: true
+        type: string
+      chat_version:
+        required: true
+        type: string
+      components_version:
+        required: true
+        type: string
 
 concurrency:
   group: update-versions-file
@@ -25,15 +38,14 @@ concurrency:
 
 jobs:
   update-versions-file:
-    if: github.event_name == 'workflow_dispatch' || github.event.client_payload.sha
     runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions:
       contents: read
     env:
-      BUILD_SHA: ${{ github.event.client_payload.sha || github.event.inputs.sha }}
-      CHAT_VERSION: ${{ github.event.client_payload.chat_version || github.event.inputs.chat_version }}
-      COMPONENTS_VERSION: ${{ github.event.client_payload.components_version || github.event.inputs.components_version }}
+      BUILD_SHA: ${{ inputs.sha }}
+      CHAT_VERSION: ${{ inputs.chat_version }}
+      COMPONENTS_VERSION: ${{ inputs.components_version }}
       AWS_ACCESS_KEY_ID: ${{ secrets.COMMON_COS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.COMMON_COS_SECRET_ACCESS_KEY }}
       AWS_DEFAULT_REGION: ${{ secrets.COMMON_COS_REGION }}
@@ -41,19 +53,19 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: '0'
-          ref: ${{ github.event.client_payload.branch || github.ref_name }}
+          ref: ${{ inputs.branch || github.ref_name }}
           token: ${{ secrets.PAT }}
 
       - name: Checkout current catalog updater
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.workflow_sha }}
+          ref: main
           path: catalog-tools
           persist-credentials: false
 
       - name: Sync target branch
         env:
-          TARGET_BRANCH: ${{ github.event.client_payload.branch || github.ref_name }}
+          TARGET_BRANCH: ${{ inputs.branch || github.ref_name }}
           BOT_EMAIL: ${{ secrets.CARBON_BOT_EMAIL }}
           BOT_NAME: ${{ secrets.CARBON_BOT_NAME }}
         run: |
@@ -104,7 +116,7 @@ jobs:
 
       - name: Commit updated catalog
         env:
-          TARGET_BRANCH: ${{ github.event.client_payload.branch || github.ref_name }}
+          TARGET_BRANCH: ${{ inputs.branch || github.ref_name }}
         run: |
           if git diff --quiet -- versions.js; then
             echo 'Catalog is unchanged.'

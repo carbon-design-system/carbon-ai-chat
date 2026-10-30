@@ -102,12 +102,6 @@ $message-bar-width: 3px;
 .cds-aichat--message__avatar-line
   + .cds-aichat--message--padding
   .cds-aichat--assistant-message
-  > div.cds-aichat--received.cds-aichat--received--carousel:not(
-    .cds-aichat--received--carousel-single
-  ):first-child,
-.cds-aichat--message__avatar-line
-  + .cds-aichat--message--padding
-  .cds-aichat--assistant-message
   > div.cds-aichat--received.cds-aichat--received--full-width:first-child {
   margin-block-start: layout.$spacing-03;
 }
@@ -171,34 +165,10 @@ $message-bar-width: 3px;
 
 .cds-aichat--wide-width
   .cds-aichat--message
-  .cds-aichat--received.cds-aichat--received--conversational-search,
-.cds-aichat--wide-width
-  .cds-aichat--message
-  .cds-aichat--received.cds-aichat--received--search,
-.cds-aichat--wide-width
-  .cds-aichat--message
-  .cds-aichat--received--carousel:not(.cds-aichat--received--carousel-single),
-.cds-aichat--wide-width
-  .cds-aichat--message
   .cds-aichat--received.cds-aichat--received--full-width,
 .cds-aichat--narrow-width
   .cds-aichat--message
-  .cds-aichat--received.cds-aichat--received--conversational-search,
-.cds-aichat--narrow-width
-  .cds-aichat--message
-  .cds-aichat--received.cds-aichat--received--search,
-.cds-aichat--narrow-width
-  .cds-aichat--message
   .cds-aichat--received.cds-aichat--received--full-width,
-.cds-aichat--standard-width
-  .cds-aichat--message
-  .cds-aichat--received.cds-aichat--received--conversational-search,
-.cds-aichat--standard-width
-  .cds-aichat--message
-  .cds-aichat--received.cds-aichat--received--search,
-.cds-aichat--standard-width
-  .cds-aichat--message
-  .cds-aichat--received--carousel:not(.cds-aichat--received--carousel-single),
 .cds-aichat--standard-width
   .cds-aichat--message
   .cds-aichat--received.cds-aichat--received--full-width {
@@ -256,7 +226,7 @@ $message-bar-width: 3px;
   max-inline-size: 100%;
 }
 
-.cds-aichat--received--image {
+.cds-aichat--received--width-reduced {
   position: relative;
   inline-size: 90%;
   overflow-wrap: break-word;
@@ -264,8 +234,7 @@ $message-bar-width: 3px;
   word-wrap: break-word;
 }
 
-.cds-aichat--received--video,
-.cds-aichat--received--audio {
+.cds-aichat--received--width-fill {
   inline-size: 100%;
   overflow-wrap: break-word;
   word-break: break-word;
@@ -382,7 +351,7 @@ svg.cds-aichat--sent-file-icon {
   word-wrap: break-word;
 }
 
-.cds-aichat--received--iframe-preview-card {
+.cds-aichat--received--width-contain {
   /* For some reason, without this property here, the preview card's width increases by 11 pixels if the url is too long.
    This property used to exist in the cds-aichat--received class before Carbon AI Chat 5.0 which would've prevented this issue. */
   overflow: hidden;

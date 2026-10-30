@@ -9,6 +9,7 @@
 
 import { aTimeout, expect, fixture, html, oneEvent } from '@open-wc/testing';
 import '@carbon/ai-chat-components/es/components/file-uploads/index.js';
+import '@carbon/ai-chat-components/es/components/prompt-line/index.js';
 import type FileUploadsElement from '@carbon/ai-chat-components/es/components/file-uploads/src/file-uploads.js';
 import {
   FileStatusValue,
@@ -209,6 +210,26 @@ describe('file-uploads', () => {
     const announced = liveTextIn(el, 'assertive');
     expect(announced).to.contain('Too big');
     expect(announced).to.contain('Wrong type');
+  });
+
+  it('passes the composed failure text to each failed chip', async () => {
+    const el = await mount();
+    el.getFileUploadFailureText = ({ messages }) =>
+      `failed: ${messages.join(' | ')}`;
+    await el.updateComplete;
+    await setUploads(el, [
+      makeUpload('a', FileStatusValue.EDIT, {
+        isError: true,
+        errorMessage: 'Too big',
+      }),
+      makeUpload('b', FileStatusValue.EDIT),
+    ]);
+
+    const items = el.renderRoot.querySelectorAll('cds-aichat-file-upload-item');
+    expect(items[0].getAttribute('error-description')).to.equal(
+      'failed: Too big'
+    );
+    expect(items[1].getAttribute('error-description')).to.equal('');
   });
 
   it('announces once when two uploads fail in the same frame', async () => {
@@ -414,10 +435,11 @@ describe('file-uploads', () => {
 
     // Two buttons both called "Remove file" are indistinguishable to a screen
     // reader — WCAG 2.1 AA 4.1.2. The distinctness is the requirement, not the
-    // wording.
+    // wording. Uploads are sorted alphabetically, so a-reject.txt (a) precedes
+    // ok.txt (o).
     expect(names).to.have.lengthOf(2);
-    expect(names[0]).to.contain('ok.txt');
-    expect(names[1]).to.contain('a-reject.txt');
+    expect(names[0]).to.contain('a-reject.txt');
+    expect(names[1]).to.contain('ok.txt');
     expect(names[0]).to.not.equal(names[1]);
   });
 
@@ -489,5 +511,155 @@ describe('file-uploads', () => {
     el.remove();
     await aTimeout(ANNOUNCE_DELAY);
     expect(el.isConnected).to.be.false;
+  });
+
+  describe('upload ordering', () => {
+    function chipOrder(el: FileUploadsElement): string[] {
+      return Array.from(
+        el.renderRoot.querySelectorAll('cds-aichat-file-upload-item')
+      ).map((chip) => chip.getAttribute('remove-file-named-label') ?? '');
+    }
+
+    it('sorts alphabetically, ignoring case, when nothing has failed', async () => {
+      const el = await mount();
+      await setUploads(el, [
+        makeUpload('c', FileStatusValue.EDIT, { name: 'charlie.txt' }),
+        makeUpload('a', FileStatusValue.EDIT, { name: 'Bravo.txt' }),
+        makeUpload('b', FileStatusValue.EDIT, { name: 'alpha.txt' }),
+      ]);
+      expect(chipOrder(el)).to.deep.equal([
+        'Remove alpha.txt',
+        'Remove Bravo.txt',
+        'Remove charlie.txt',
+      ]);
+    });
+
+    it('puts failed uploads first, each group sorted alphabetically', async () => {
+      const el = await mount();
+      await setUploads(el, [
+        makeUpload('a', FileStatusValue.EDIT, { name: 'alpha.txt' }),
+        makeUpload('z', FileStatusValue.EDIT, {
+          isError: true,
+          name: 'zebra.txt',
+        }),
+        makeUpload('g', FileStatusValue.EDIT, { name: 'gamma.txt' }),
+        makeUpload('p', FileStatusValue.EDIT, {
+          isError: true,
+          name: 'apple.txt',
+        }),
+      ]);
+      expect(chipOrder(el)).to.deep.equal([
+        'Remove apple.txt',
+        'Remove zebra.txt',
+        'Remove alpha.txt',
+        'Remove gamma.txt',
+      ]);
+    });
+
+    function getChipByFileName(
+      el: FileUploadsElement,
+      fileName: string
+    ): HTMLElement {
+      return Array.from(
+        el.renderRoot.querySelectorAll<HTMLElement>(
+          'cds-aichat-file-upload-item'
+        )
+      ).find(
+        (chip) =>
+          chip.getAttribute('remove-file-named-label') === `Remove ${fileName}`
+      )!;
+    }
+
+    it('keeps each chip bound to its own upload when a failure reorders the list', async () => {
+      const el = await mount();
+      await setUploads(el, [
+        makeUpload('a', FileStatusValue.UPLOADING, { name: 'alpha.txt' }),
+        makeUpload('z', FileStatusValue.UPLOADING, { name: 'zebra.txt' }),
+      ]);
+      const alphaBefore = getChipByFileName(el, 'alpha.txt');
+
+      await setUploads(el, [
+        makeUpload('a', FileStatusValue.UPLOADING, { name: 'alpha.txt' }),
+        makeUpload('z', FileStatusValue.EDIT, {
+          isError: true,
+          name: 'zebra.txt',
+        }),
+      ]);
+
+      expect(chipOrder(el)).to.deep.equal([
+        'Remove zebra.txt',
+        'Remove alpha.txt',
+      ]);
+      // Same node, not a node reused by position, so Remove acts on Alpha.
+      expect(getChipByFileName(el, 'alpha.txt')).to.equal(alphaBefore);
+
+      const inner = alphaBefore.shadowRoot!.querySelector(
+        'cds-file-uploader-item'
+      )!;
+      setTimeout(() =>
+        inner.dispatchEvent(
+          new CustomEvent('cds-file-uploader-item-deleted', { bubbles: true })
+        )
+      );
+      const event = await oneEvent(el, 'cds-aichat-file-remove');
+      expect(event.detail.fileId).to.equal('a');
+    });
+
+    it('keeps focus on the focused chip when an asynchronous failure moves it', async () => {
+      const el = await mount();
+      await setUploads(el, [
+        makeUpload('a', FileStatusValue.UPLOADING, { name: 'alpha.txt' }),
+        makeUpload('z', FileStatusValue.UPLOADING, { name: 'zebra.txt' }),
+      ]);
+      const alpha = getChipByFileName(el, 'alpha.txt');
+      alpha.focus();
+      expect(el.shadowRoot!.activeElement).to.equal(alpha);
+
+      // Zebra fails and sorts ahead of Alpha, moving Alpha's node.
+      await setUploads(el, [
+        makeUpload('a', FileStatusValue.UPLOADING, { name: 'alpha.txt' }),
+        makeUpload('z', FileStatusValue.EDIT, {
+          isError: true,
+          name: 'zebra.txt',
+        }),
+      ]);
+
+      expect(el.shadowRoot!.activeElement).to.equal(
+        getChipByFileName(el, 'alpha.txt')
+      );
+    });
+  });
+
+  it('scrolls its chips inside the prompt line shell instead of overflowing it', async () => {
+    // Real chain: shell uploads row -> slotted file-uploads (wrapping flex host)
+    // -> gradient wrapper -> scrolling container. Any link without
+    // `min-inline-size: 0` lets the chips' max-content width stretch the shell.
+    const shell = await fixture<HTMLElement>(
+      html`<cds-aichat-prompt-line-shell
+        style="display: block; inline-size: 400px">
+        <cds-aichat-file-uploads slot="file-uploads"></cds-aichat-file-uploads>
+      </cds-aichat-prompt-line-shell>`
+    );
+    const el = shell.querySelector<FileUploadsElement>(
+      'cds-aichat-file-uploads'
+    )!;
+    await setUploads(
+      el,
+      ['alpha', 'bravo', 'charlie', 'delta', 'echo'].map((name) =>
+        makeUpload(name, FileStatusValue.EDIT, {
+          name: `${name}-with-a-long-file-name.txt`,
+        })
+      )
+    );
+    await aTimeout(0);
+
+    const container = el.renderRoot.querySelector<HTMLElement>(
+      '.cds-aichat--file-uploads-container'
+    )!;
+    const shellRight = shell.getBoundingClientRect().right;
+
+    expect(container.getBoundingClientRect().right).to.be.at.most(shellRight);
+    expect(container.scrollWidth).to.be.greaterThan(container.clientWidth);
+    expect(getComputedStyle(container).overflowX).to.equal('auto');
   });
 });
