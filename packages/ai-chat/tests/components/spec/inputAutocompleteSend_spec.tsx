@@ -141,6 +141,7 @@ describe('input autocomplete send regression', () => {
                 isInputVisible: true,
                 disableSend: false,
                 onSendInput,
+                onStopStreaming: jest.fn(),
               })
             )
           )
@@ -191,6 +192,7 @@ describe('input autocomplete send regression', () => {
                 isInputVisible: true,
                 disableSend: false,
                 onSendInput,
+                onStopStreaming: jest.fn(),
               })
             )
           )

@@ -24,7 +24,7 @@ import { UserSessionStorageService } from './UserSessionStorageService';
 import { ChatInstance } from '../../types/instance/ChatInstance';
 import { WriteableElements } from '../../types/instance/WriteableElements';
 import { BusEvent } from '../../types/events/eventBusTypes';
-import { MainWindowFunctions } from '../AppShell';
+import type { MainWindowFunctions } from '../utils/mainWindowFunctions';
 import { ChatInstanceService } from './ChatInstanceService';
 import { ChunkProcessingService } from './ChunkProcessingService';
 import { HydrationService } from './HydrationService';
