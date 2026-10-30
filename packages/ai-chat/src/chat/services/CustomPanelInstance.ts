@@ -7,6 +7,8 @@
  *  @license
  */
 
+import cloneDeep from 'lodash-es/cloneDeep.js';
+import isEqual from 'lodash-es/isEqual.js';
 import {
   CustomPanelConfigOptions,
   WorkspaceCustomPanelConfigOptions,
@@ -18,6 +20,13 @@ import { BusEventType } from '../../types/events/eventBusTypes';
 import actions from '../store/actions';
 import { DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS } from '../store/reducerUtils';
 import { ServiceManager } from './ServiceManager';
+import {
+  captureMessageEvent,
+  eventLocalItems,
+} from '../utils/messageEventOwnership';
+import { deepFreeze } from '../utils/lang/objectUtils';
+import { Message } from '../../types/messaging/Messages';
+import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
 
 /**
  * This function takes in the service manager to help create a custom panel instance. The panel instance is created
@@ -30,6 +39,169 @@ function createCustomPanelInstance(
   defaultPanelOptions: CustomPanelOpenOptions = DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS
 ): CustomPanelInstance {
   let hostElement;
+  let workspaceValues: { stored: unknown; working: unknown };
+  let workspaceMessages: {
+    message: Message;
+    localItem: LocalMessageItem;
+    working: { message: Message; localItems: Record<string, LocalMessageItem> };
+  };
+
+  function captureWorkspaceEvent() {
+    const { store } = serviceManager;
+    const { workspaceID, localMessageItem, fullMessage, additionalData } =
+      store.getState().workspacePanelState;
+    if (!workspaceValues || workspaceValues.stored !== additionalData) {
+      workspaceValues = {
+        stored: additionalData,
+        working: cloneDeep(additionalData),
+      };
+    }
+    if (
+      fullMessage &&
+      localMessageItem &&
+      (workspaceMessages?.message !== fullMessage ||
+        workspaceMessages?.localItem !== localMessageItem)
+    ) {
+      const working = cloneDeep({
+        message: fullMessage,
+        localItems: { [localMessageItem.ui_state.id]: localMessageItem },
+      });
+      if (Object.isFrozen(fullMessage)) {
+        deepFreeze(working.message);
+      }
+      if (Object.isFrozen(localMessageItem.item)) {
+        deepFreeze(working.localItems[localMessageItem.ui_state.id].item);
+      }
+      workspaceMessages = {
+        message: fullMessage,
+        localItem: localMessageItem,
+        working,
+      };
+    }
+    return {
+      workspaceId: workspaceID,
+      additionalData: workspaceValues.working,
+      message:
+        localMessageItem &&
+        workspaceMessages?.working.localItems[localMessageItem.ui_state.id]
+          ?.item,
+      fullMessage: fullMessage && workspaceMessages?.working.message,
+    };
+  }
+
+  async function fireWorkspaceEvent(
+    type:
+      | BusEventType.WORKSPACE_PRE_OPEN
+      | BusEventType.WORKSPACE_OPEN
+      | BusEventType.WORKSPACE_PRE_CLOSE
+      | BusEventType.WORKSPACE_CLOSE,
+    data: ReturnType<typeof captureWorkspaceEvent>
+  ) {
+    const { store, restartCount } = serviceManager;
+    const before = store.getState().workspacePanelState;
+    const working = data.additionalData;
+    const messages = workspaceMessages;
+    let messageEvent: ReturnType<typeof captureMessageEvent>;
+    if (
+      messages?.message &&
+      messages.localItem &&
+      data.fullMessage === messages.working.message &&
+      store.getState().allMessagesByID[messages.message.id] === messages.message
+    ) {
+      const localItems = Object.fromEntries(
+        Object.entries(store.getState().allMessageItemsByID).filter(
+          ([, item]) => item?.fullMessageID === messages.message.id
+        )
+      );
+      const workingItems = eventLocalItems(
+        messages.message,
+        messages.working.message,
+        localItems
+      );
+      const selectedID = messages.localItem.ui_state.id;
+      if (workingItems[selectedID]) {
+        workingItems[selectedID].item =
+          messages.working.localItems[selectedID].item;
+      }
+      messageEvent = captureMessageEvent(
+        serviceManager,
+        messages.message,
+        localItems,
+        {
+          message: messages.working.message,
+          localItems: workingItems,
+        }
+      );
+    }
+    const ownsData =
+      workspaceValues?.working === working &&
+      workspaceValues?.stored === before.additionalData;
+    try {
+      await serviceManager.eventBus.fire(
+        { type, data },
+        serviceManager.instance
+      );
+    } finally {
+      let current = store.getState().workspacePanelState;
+      if (
+        messageEvent &&
+        store.getState().allMessagesByID[messages.message.id] ===
+          messages.message &&
+        restartCount === serviceManager.restartCount &&
+        current.fullMessage === before.fullMessage &&
+        current.localMessageItem === before.localMessageItem &&
+        current.workspaceID === before.workspaceID
+      ) {
+        messageEvent.commit();
+        const committedMessage =
+          store.getState().allMessagesByID[messages.message.id];
+        const committedLocalItem =
+          store.getState().allMessageItemsByID[messages.localItem.ui_state.id];
+        if (
+          workspaceMessages === messages &&
+          committedMessage &&
+          committedLocalItem &&
+          isEqual(committedMessage, messages.working.message) &&
+          isEqual(
+            committedLocalItem.item,
+            messages.working.localItems[messages.localItem.ui_state.id].item
+          )
+        ) {
+          messages.message = committedMessage;
+          messages.localItem = committedLocalItem;
+        }
+      }
+      current = store.getState().workspacePanelState;
+      if (
+        ownsData &&
+        restartCount === serviceManager.restartCount &&
+        current.additionalData === before.additionalData &&
+        current.workspaceID === before.workspaceID &&
+        current.fullMessage === before.fullMessage &&
+        current.localMessageItem === before.localMessageItem &&
+        (!isEqual(before.additionalData, working) ||
+          (current.fullMessage &&
+            messages === workspaceMessages &&
+            (current.fullMessage !== messages.message ||
+              current.localMessageItem !== messages.localItem)))
+      ) {
+        const action = actions.setWorkspacePanelData({
+          workspaceID: current.workspaceID,
+          localMessageItem:
+            current.localMessageItem && messages === workspaceMessages
+              ? messages.localItem
+              : current.localMessageItem,
+          fullMessage:
+            current.fullMessage && messages === workspaceMessages
+              ? messages.message
+              : current.fullMessage,
+          additionalData: working,
+        });
+        workspaceValues = { stored: action.additionalData, working };
+        store.dispatch(action);
+      }
+    }
+  }
 
   const panelActions = {
     [PanelType.WORKSPACE]: {
@@ -55,7 +227,7 @@ function createCustomPanelInstance(
     ) {
       const resolvedOptions = (options ??
         defaultPanelOptions) as CustomPanelConfigOptions;
-      const { store, eventBus, instance } = serviceManager;
+      const { store } = serviceManager;
 
       // For workspace panels, close any existing workspace before opening a new one
       if (panelType === PanelType.WORKSPACE) {
@@ -70,32 +242,23 @@ function createCustomPanelInstance(
       if (panelType === PanelType.WORKSPACE && options) {
         const workspaceOptions = options as WorkspaceCustomPanelConfigOptions;
         if (workspaceOptions.workspaceId || workspaceOptions.additionalData) {
-          store.dispatch(
-            actions.setWorkspacePanelData({
-              workspaceID: workspaceOptions.workspaceId,
-              additionalData: workspaceOptions.additionalData,
-            })
-          );
+          const action = actions.setWorkspacePanelData({
+            workspaceID: workspaceOptions.workspaceId,
+            additionalData: workspaceOptions.additionalData,
+          });
+          workspaceValues = {
+            stored: action.additionalData,
+            working: workspaceOptions.additionalData,
+          };
+          store.dispatch(action);
         }
       }
 
       // Fire pre-open event for workspace panel
       if (panelType === PanelType.WORKSPACE) {
-        const state = store.getState();
-        const { workspaceID, localMessageItem, fullMessage, additionalData } =
-          state.workspacePanelState;
-
-        await eventBus.fire(
-          {
-            type: BusEventType.WORKSPACE_PRE_OPEN,
-            data: {
-              workspaceId: workspaceID,
-              additionalData,
-              message: localMessageItem?.item,
-              fullMessage,
-            },
-          },
-          instance
+        await fireWorkspaceEvent(
+          BusEventType.WORKSPACE_PRE_OPEN,
+          captureWorkspaceEvent()
         );
       }
 
@@ -104,49 +267,23 @@ function createCustomPanelInstance(
 
       // Fire open event for workspace panel
       if (panelType === PanelType.WORKSPACE) {
-        const state = store.getState();
-        const { workspaceID, localMessageItem, fullMessage, additionalData } =
-          state.workspacePanelState;
-
-        await eventBus.fire(
-          {
-            type: BusEventType.WORKSPACE_OPEN,
-            data: {
-              workspaceId: workspaceID,
-              additionalData,
-              message: localMessageItem?.item,
-              fullMessage,
-            },
-          },
-          instance
+        await fireWorkspaceEvent(
+          BusEventType.WORKSPACE_OPEN,
+          captureWorkspaceEvent()
         );
       }
     },
 
     async close() {
-      const { store, eventBus, instance } = serviceManager;
+      const { store } = serviceManager;
 
       // For workspace panel, capture state BEFORE closing to preserve data for events
       let workspaceEventData;
       if (panelType === PanelType.WORKSPACE) {
-        const state = store.getState();
-        const { workspaceID, localMessageItem, fullMessage, additionalData } =
-          state.workspacePanelState;
-
-        workspaceEventData = {
-          workspaceId: workspaceID,
-          additionalData,
-          message: localMessageItem?.item,
-          fullMessage,
-        };
-
-        // Fire pre-close event
-        await eventBus.fire(
-          {
-            type: BusEventType.WORKSPACE_PRE_CLOSE,
-            data: workspaceEventData,
-          },
-          instance
+        workspaceEventData = captureWorkspaceEvent();
+        await fireWorkspaceEvent(
+          BusEventType.WORKSPACE_PRE_CLOSE,
+          workspaceEventData
         );
       }
 
@@ -154,12 +291,9 @@ function createCustomPanelInstance(
 
       // Fire close event for workspace panel using captured data
       if (panelType === PanelType.WORKSPACE && workspaceEventData) {
-        await eventBus.fire(
-          {
-            type: BusEventType.WORKSPACE_CLOSE,
-            data: workspaceEventData,
-          },
-          instance
+        await fireWorkspaceEvent(
+          BusEventType.WORKSPACE_CLOSE,
+          workspaceEventData
         );
       }
     },

@@ -9,10 +9,10 @@
 
 import { ChatInstanceService } from './ChatInstanceService';
 import { ChunkProcessingService } from './ChunkProcessingService';
-import { ConversationLifecycleService } from './ConversationLifecycleService';
 import { HydrationService } from './HydrationService';
 import { InputActionsService } from './InputActionsService';
 import { PublicStateService } from './PublicStateService';
+import { ConversationLifecycleService } from './ConversationLifecycleService';
 import { ReceiveService } from './ReceiveService';
 import { SlotEventService } from './SlotEventService';
 import { SendService } from './SendService';
@@ -30,7 +30,6 @@ import { UserSessionStorageService } from './UserSessionStorageService';
 import { doCreateStore } from '../store/doCreateStore';
 import {
   copyToSessionStorage,
-  fireStateChangeEvent,
   refreshLocalizationOnChange,
 } from '../store/subscriptions';
 import { AppConfig } from '../../types/state/AppConfig';
@@ -63,16 +62,16 @@ function createServiceManager(appConfig: AppConfig) {
   serviceManager.chunkProcessingService = new ChunkProcessingService(
     serviceManager
   );
-  serviceManager.conversationLifecycleService =
-    new ConversationLifecycleService();
   serviceManager.slotEventService = new SlotEventService(serviceManager);
   serviceManager.hydrationService = new HydrationService(serviceManager);
-  serviceManager.publicStateService = new PublicStateService(serviceManager);
   serviceManager.receiveService = new ReceiveService(serviceManager);
   serviceManager.sendService = new SendService(serviceManager);
   serviceManager.viewService = new ViewService(serviceManager);
   serviceManager.eventBus = new EventBus();
   serviceManager.store = doCreateStore(publicConfig, serviceManager);
+  serviceManager.publicStateService = new PublicStateService(serviceManager);
+  serviceManager.conversationLifecycleService =
+    new ConversationLifecycleService(serviceManager);
   serviceManager.historyService = new HistoryService(serviceManager);
   serviceManager.messageUpsertCoordinator = new MessageUpsertCoordinator(
     serviceManager
@@ -82,7 +81,6 @@ function createServiceManager(appConfig: AppConfig) {
     publicConfig
   );
   serviceManager.store.subscribe(copyToSessionStorage(serviceManager));
-  serviceManager.store.subscribe(fireStateChangeEvent(serviceManager));
   // Single post-boot owner of `serviceManager.intl`: rebuild it whenever the
   // strings or locale change. Boot's `setIntl` below seeds the formatter before
   // first paint (no dispatch fires during boot, so this subscription can't).

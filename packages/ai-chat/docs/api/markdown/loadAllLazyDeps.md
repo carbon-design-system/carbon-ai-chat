@@ -8,7 +8,7 @@
 
 - Kind: TypeAlias
 - Category: Testing
-- Reference: https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/types/Type_reference.loadAllLazyDeps.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/types/Type_reference.loadAllLazyDeps.html
 
 Preloads optional components and locales before rendering in tests.
 When a DOM is present, also loads the chat UI and startup modules.

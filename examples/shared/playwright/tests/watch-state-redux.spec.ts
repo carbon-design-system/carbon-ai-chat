@@ -10,10 +10,10 @@
  *
  * Runs against the React example only.
  *
- * The host bridges `BusEventType.STATE_CHANGE` into a Redux store, and a status
- * panel outside the chat reads the homescreen flag through a selector. The test
- * moves between the homescreen and the conversation twice and checks the
- * panel follows each transition.
+ * The host selects the homescreen flag with `instance.state.select()` and
+ * dispatches it into a Redux store; a status panel outside the chat reads it
+ * through a Redux selector. The test moves between the homescreen and the
+ * conversation twice and checks the panel follows each transition.
  */
 
 import { PageObjectId } from '@carbon/ai-chat/server';

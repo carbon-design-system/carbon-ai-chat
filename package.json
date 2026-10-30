@@ -67,6 +67,7 @@
     "test:host-entry-consumer": "node tools/host-entry-consumer/run.mjs"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.0",
     "@babel/core": "^8.0.0",
     "@babel/preset-env": "^8.0.0",
     "@babel/preset-react": "^8.0.0",

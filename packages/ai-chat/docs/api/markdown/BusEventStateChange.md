@@ -6,9 +6,11 @@
 
 # BusEventStateChange
 
+**Deprecated.** Use ChatInstance.state and call `state.select()` or `state.subscribe()` — removed in 2.0.0.
+
 - Kind: Interface
 - Category: Events
-- Reference: https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.BusEventStateChange.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.BusEventStateChange.html
 
 This event is fired whenever the public state returned by ChatInstance.getState() changes.
 This includes changes to viewState, showUnreadIndicator, and other persisted state.
@@ -25,22 +27,28 @@ interface BusEventStateChange
 
 `newState: PublicChatState`
 
+**Deprecated.**
+
 The new state after the change.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.BusEventStateChange.html#newstate)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.BusEventStateChange.html#newstate)
 
 ### previousState
 
 `previousState: PublicChatState`
 
+**Deprecated.**
+
 The previous state before the change.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.BusEventStateChange.html#previousstate)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.BusEventStateChange.html#previousstate)
 
 ### type
 
 `type: STATE_CHANGE`
 
+**Deprecated.**
+
 The type of the event.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.BusEventStateChange.html#type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.BusEventStateChange.html#type)
