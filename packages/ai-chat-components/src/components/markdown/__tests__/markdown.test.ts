@@ -2676,6 +2676,274 @@ HTTP: http://example.com
       expect(host.parentElement === first).to.equal(true);
     });
 
+    /**
+     * Every move of markdown claimed or offered to a listener outside any
+     * chat: content x claim x move x destination. Each cell records what each
+     * listener hears, in order, and what happens to the host and its content.
+     */
+    describe('outside-listener relocation matrix', () => {
+      type Content = 'block' | 'inline';
+      type Claim = 'claimed' | 'unclaimed';
+      type Move = 'one call' | 'remove then append';
+      type Destination = 'same parent' | 'new chain';
+
+      async function listener(claims: boolean) {
+        const owner = await fixture<HTMLElement>(
+          html`<cds-test-markdown-relocation-host></cds-test-markdown-relocation-host>`
+        );
+        const events: string[] = [];
+        owner.addEventListener(
+          'cds-aichat-markdown-plugin-host-mount',
+          (event) => {
+            events.push('mount');
+            if (!claims) {
+              return;
+            }
+            const detail = resolveMarkdownPluginHostMountDetail(
+              (event as CustomEvent<MarkdownPluginHostMountDetailInput>).detail
+            );
+            event.preventDefault();
+            const host =
+              detail.kind === 'customRenderer'
+                ? detail.element
+                : document.createElement('span');
+            host.slot = detail.slotName;
+            owner.appendChild(host);
+            if (detail.kind === 'pluginFallback') {
+              host.innerHTML = detail.html;
+            }
+          }
+        );
+        owner.addEventListener(
+          'cds-aichat-markdown-plugin-host-unmount',
+          () => {
+            events.push('unmount');
+          }
+        );
+        return { owner, events };
+      }
+
+      function assignedHost(el: MarkdownElementInstance) {
+        const slot = el.shadowRoot?.querySelector<HTMLSlotElement>(
+          'slot[name^="cds-aichat-markdown-renderer-"]'
+        );
+        return slot?.assignedElements({ flatten: true })[0] ?? null;
+      }
+
+      async function observe(
+        content: Content,
+        claim: Claim,
+        move: Move,
+        destination: Destination
+      ) {
+        const first = await listener(claim === 'claimed');
+        const second = await listener(true);
+        let renders = 0;
+        const el = document.createElement(
+          MARKDOWN_ELEMENT_TAG
+        ) as MarkdownElementInstance;
+        if (content === 'block') {
+          el.customRenderers = {
+            table: () => {
+              renders += 1;
+              return document.createElement('input');
+            },
+          };
+          el.markdown = tableMarkdown;
+        } else {
+          el.markdownItPlugins = [
+            (md: any) => {
+              tagPlugin(md);
+              md.renderer.rules.cds_test_tag = () => {
+                renders += 1;
+                return '<input>';
+              };
+            },
+          ];
+          el.markdown = 'Hi :tag:';
+        }
+        first.owner.shadowRoot?.appendChild(el);
+        await el.updateComplete;
+        await Promise.resolve();
+        const host = assignedHost(el);
+        const input = host?.querySelector('input') as HTMLInputElement;
+        input.value = 'kept';
+        const initialRenders = renders;
+        const target =
+          destination === 'same parent' ? first.owner : second.owner;
+
+        if (move === 'remove then append') {
+          el.remove();
+        }
+        target.shadowRoot?.appendChild(el);
+        await el.updateComplete;
+        await Promise.resolve();
+
+        const after = assignedHost(el);
+        const afterInput = after?.querySelector('input');
+        return {
+          first: first.events.join(' '),
+          second: second.events.join(' '),
+          sameHost: after === host,
+          rerendered: renders !== initialRenders,
+          sameInput: afterInput === input,
+          valueKept: (afterInput as HTMLInputElement | null)?.value === 'kept',
+        };
+      }
+
+      const cells: [Content, Claim, Move, Destination][] = [];
+      for (const content of ['block', 'inline'] as const) {
+        for (const claim of ['claimed', 'unclaimed'] as const) {
+          for (const move of ['one call', 'remove then append'] as const) {
+            for (const destination of ['same parent', 'new chain'] as const) {
+              cells.push([content, claim, move, destination]);
+            }
+          }
+        }
+      }
+
+      const expected: Record<string, unknown> = {
+        'block | claimed | one call | same parent': {
+          first: 'mount',
+          second: '',
+          sameHost: true,
+          rerendered: false,
+          sameInput: true,
+          valueKept: true,
+        },
+        'block | claimed | one call | new chain': {
+          first: 'mount',
+          second: 'unmount mount',
+          sameHost: false,
+          rerendered: true,
+          sameInput: false,
+          valueKept: false,
+        },
+        'block | claimed | remove then append | same parent': {
+          first: 'mount',
+          second: '',
+          sameHost: true,
+          rerendered: false,
+          sameInput: true,
+          valueKept: true,
+        },
+        'block | claimed | remove then append | new chain': {
+          first: 'mount',
+          second: 'unmount mount',
+          sameHost: false,
+          rerendered: true,
+          sameInput: false,
+          valueKept: false,
+        },
+        'block | unclaimed | one call | same parent': {
+          first: 'mount',
+          second: '',
+          sameHost: true,
+          rerendered: false,
+          sameInput: true,
+          valueKept: true,
+        },
+        'block | unclaimed | one call | new chain': {
+          first: 'mount',
+          second: 'mount',
+          sameHost: true,
+          rerendered: false,
+          sameInput: true,
+          valueKept: true,
+        },
+        'block | unclaimed | remove then append | same parent': {
+          first: 'mount',
+          second: '',
+          sameHost: true,
+          rerendered: false,
+          sameInput: true,
+          valueKept: true,
+        },
+        'block | unclaimed | remove then append | new chain': {
+          first: 'mount',
+          second: 'mount',
+          sameHost: true,
+          rerendered: false,
+          sameInput: true,
+          valueKept: true,
+        },
+        'inline | claimed | one call | same parent': {
+          first: 'mount unmount mount',
+          second: '',
+          sameHost: true,
+          rerendered: false,
+          sameInput: true,
+          valueKept: true,
+        },
+        'inline | claimed | one call | new chain': {
+          first: 'mount',
+          second: 'unmount mount',
+          sameHost: true,
+          rerendered: false,
+          sameInput: true,
+          valueKept: true,
+        },
+        'inline | claimed | remove then append | same parent': {
+          first: 'mount',
+          second: '',
+          sameHost: true,
+          rerendered: false,
+          sameInput: true,
+          valueKept: true,
+        },
+        'inline | claimed | remove then append | new chain': {
+          first: 'mount',
+          second: '',
+          sameHost: false,
+          rerendered: false,
+          sameInput: false,
+          valueKept: false,
+        },
+        'inline | unclaimed | one call | same parent': {
+          first: 'mount unmount mount',
+          second: '',
+          sameHost: true,
+          rerendered: false,
+          sameInput: true,
+          valueKept: true,
+        },
+        'inline | unclaimed | one call | new chain': {
+          first: 'mount',
+          second: 'unmount mount',
+          sameHost: true,
+          rerendered: false,
+          sameInput: true,
+          valueKept: true,
+        },
+        'inline | unclaimed | remove then append | same parent': {
+          first: 'mount mount',
+          second: '',
+          sameHost: true,
+          rerendered: false,
+          sameInput: true,
+          valueKept: true,
+        },
+        'inline | unclaimed | remove then append | new chain': {
+          first: 'mount',
+          second: 'mount',
+          sameHost: true,
+          rerendered: false,
+          sameInput: true,
+          valueKept: true,
+        },
+      };
+
+      for (const [content, claim, move, destination] of cells) {
+        const key = `${content} | ${claim} | ${move} | ${destination}`;
+        it(`relocation matrix: ${key}`, async () => {
+          const observed = await observe(content, claim, move, destination);
+          expect(JSON.stringify(observed)).to.equal(
+            JSON.stringify(expected[key])
+          );
+        });
+      }
+    });
+
     async function createExternalRelocationHarness(claim = true) {
       const owner = await fixture<HTMLElement>(
         html`<cds-test-markdown-relocation-host></cds-test-markdown-relocation-host>`
