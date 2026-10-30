@@ -1,0 +1,59 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+@use '../../../globals/scss/vars' as *;
+@use '../../../globals/scss/utilities' as utilities;
+@use '../../../globals/scss/tokens-layout' as component-layout;
+@use '@carbon/layout';
+
+$block-class: #{$prefix}-message-item-shell;
+
+// The default layout is an inset column, centered in the available width.
+:host(#{$block-class}) {
+  display: flex;
+  flex-direction: column;
+  margin-inline: auto;
+  max-inline-size: utilities.get-var(
+    'messages-max-width',
+    component-layout.$messages-max-width
+  );
+  padding-inline: layout.$spacing-05;
+}
+
+// Full width breaks the row out of the inset column.
+:host(#{$block-class}[full-width]) {
+  max-inline-size: none;
+  padding-inline: 0;
+}
+
+// A response sits at the start of the column; a request sits at the end.
+:host(#{$block-class}[row-type='response']) {
+  align-items: flex-start;
+}
+
+:host(#{$block-class}[row-type='request']) {
+  align-items: flex-end;
+}
+
+.#{$block-class}__byline,
+.#{$block-class}__content,
+.#{$block-class}__attachment,
+.#{$block-class}__footer {
+  min-inline-size: 0;
+}
+
+.#{$block-class}__content,
+.#{$block-class}__attachment,
+.#{$block-class}__footer {
+  max-inline-size: 100%;
+}
+
+:host(#{$block-class}[hidden-avatar]) .#{$block-class}__byline {
+  display: none;
+}

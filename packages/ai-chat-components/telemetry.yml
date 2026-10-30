@@ -51,6 +51,7 @@ collect:
         - size
         - slot
         - source
+        - streaming
         - test-id
         - title
         - type
@@ -168,6 +169,7 @@ collect:
         - onfeedback-buttons-click
         - positive-label
         # cds-aichat-file-upload-item
+        - error-description
         - fallback-label
         - read-only
         - remove-file-named-label
@@ -248,13 +250,21 @@ collect:
         - oncds-aichat-markdown-plugin-host-update
         - remove-html
         - sanitize-html
-        - streaming
         - table-download-label-text
         - table-filter-placeholder-text
         - table-items-per-page-text
         - table-locale
         - table-next-page-text
         - table-previous-page-text
+        # cds-aichat-message-item-shell
+        - first-item
+        - full-width
+        - group-id
+        - hidden-avatar
+        - history
+        - last-item
+        - row-id
+        - row-type
         # cds-aichat-messages-shell
         - bottom-handle-label
         - oncds-aichat-messages-shell-scroll
@@ -340,6 +350,9 @@ collect:
         - top
         - top-left
         - top-right
+        # cds-aichat-message-item-shell - row-type
+        - request
+        - response
   npm:
     dependencies: null
   js:

@@ -1,0 +1,88 @@
+import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
+import * as Stories from './message-item-shell-react.stories';
+
+<Meta of={Stories} />
+
+# Message item shell
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/message-item-shell) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+## Overview
+
+Use `MessageItemShell` as the frame for one message row. It provides slots for the byline, content, attachments, and footer. It knows nothing about message data. This component is experimental, and its API may change without a deprecation window.
+
+<Canvas of={Stories.Default} />
+
+## Layout
+
+Request and response rows use the same shell. Set `rowType` to `request` or `response` to choose the layout.
+
+| Slot         | Region                                                    |
+| ------------ | --------------------------------------------------------- |
+| `byline`     | Name, timestamp, and avatar. Available on both row types. |
+| default      | The message content.                                      |
+| `attachment` | File upload status.                                       |
+| `footer`     | Footer content from the host.                             |
+
+<Canvas of={Stories.Response} />
+
+## Examples
+
+### Full width
+
+Set `fullWidth` to break the content out of the inset column.
+
+```jsx
+import MessageItemShell from '@carbon/ai-chat-components/es/react/message-item-shell.js';
+
+function Row() {
+  return (
+    <MessageItemShell rowType="response" fullWidth>
+      <div>Wide content</div>
+    </MessageItemShell>
+  );
+}
+```
+
+<Canvas of={Stories.FullWidth} />
+
+### Hidden avatar
+
+Set `hiddenAvatar` to hide the byline area on either row type.
+
+```jsx
+import MessageItemShell from '@carbon/ai-chat-components/es/react/message-item-shell.js';
+
+function Row() {
+  return (
+    <MessageItemShell rowType="response" hiddenAvatar>
+      <div slot="byline">Assistant</div>
+      <div>Content without a byline</div>
+    </MessageItemShell>
+  );
+}
+```
+
+<Canvas of={Stories.HiddenAvatar} />
+
+### Grouped rows
+
+Give rows from the same response a shared `groupId`. Use `rowId` for a stable ID per row.
+
+<Canvas of={Stories.Grouped} />
+
+## Component API
+
+### `<MessageItemShell>`
+
+<ArgTypes of={Stories.Default} />
+
+## JSX (via import)
+
+```jsx
+import MessageItemShell from '@carbon/ai-chat-components/es/react/message-item-shell.js';
+```
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

@@ -1,0 +1,76 @@
+import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
+import * as Stories from './message-item-shell.stories';
+
+<Meta of={Stories} />
+
+# Message item shell
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/message-item-shell) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+## Overview
+
+Use `cds-aichat-message-item-shell` as the frame for one message row. It provides slots for the byline, content, attachments, and footer. It knows nothing about message data. This element is experimental, and its API may change without a deprecation window.
+
+<Canvas of={Stories.Default} />
+
+## Layout
+
+Request and response rows use the same shell. Set `row-type` to `request` or `response` to choose the layout.
+
+| Slot         | Region                                                    |
+| ------------ | --------------------------------------------------------- |
+| `byline`     | Name, timestamp, and avatar. Available on both row types. |
+| default      | The message content.                                      |
+| `attachment` | File upload status.                                       |
+| `footer`     | Footer content from the host.                             |
+
+<Canvas of={Stories.Response} />
+
+## Examples
+
+### Full width
+
+Set `full-width` to break the content out of the inset column.
+
+```html
+<cds-aichat-message-item-shell row-type="response" full-width>
+  <div>Wide content</div>
+</cds-aichat-message-item-shell>
+```
+
+<Canvas of={Stories.FullWidth} />
+
+### Hidden avatar
+
+Set `hidden-avatar` to hide the byline area on either row type.
+
+```html
+<cds-aichat-message-item-shell row-type="response" hidden-avatar>
+  <div slot="byline">Assistant</div>
+  <div>Content without a byline</div>
+</cds-aichat-message-item-shell>
+```
+
+<Canvas of={Stories.HiddenAvatar} />
+
+### Grouped rows
+
+Give rows from the same response a shared `group-id`. Use `row-id` for a stable ID per row.
+
+<Canvas of={Stories.Grouped} />
+
+## Component API
+
+### `cds-aichat-message-item-shell`
+
+<ArgTypes of="cds-aichat-message-item-shell" />
+
+## JS (via import)
+
+```javascript
+import '@carbon/ai-chat-components/es/components/message-item-shell/index.js';
+```
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

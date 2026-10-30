@@ -1,0 +1,51 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+@use '@carbon/layout';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/type' as *;
+
+$story-class: message-item-shell-story;
+
+.#{$story-class} {
+  &-container {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid theme.$border-subtle-01;
+    gap: layout.$spacing-05;
+    inline-size: 100%;
+    max-inline-size: 800px;
+    padding-block: layout.$spacing-05;
+  }
+
+  &-byline {
+    @include type-style('helper-text-01');
+
+    color: theme.$text-secondary;
+    padding-block-end: layout.$spacing-02;
+  }
+
+  &-content {
+    padding: layout.$spacing-05;
+    border-radius: layout.$spacing-02;
+    background: theme.$layer-01;
+  }
+
+  &-request &-content {
+    background: theme.$layer-accent-01;
+  }
+
+  &-attachment,
+  &-footer {
+    @include type-style('helper-text-01');
+
+    color: theme.$text-secondary;
+    padding-block-start: layout.$spacing-02;
+  }
+}
