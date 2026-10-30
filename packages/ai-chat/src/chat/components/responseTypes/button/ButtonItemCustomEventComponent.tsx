@@ -36,11 +36,15 @@ function ButtonItemCustomEventComponent({
   const serviceManager = useServiceManager();
   const messageItem = localMessageItem.item;
   const { ui_state } = localMessageItem;
-  const { image_url, alt_text, label, kind, value, size, is } = messageItem;
+  const { image_url, alt_text, label, kind, value, size, is, icon } =
+    messageItem;
   const isInputReadonly = useSelector(selectInputIsReadonly);
   const isDisabled =
     Boolean(value && ui_state.optionSelected) || isInputReadonly;
   const TouchInteraction = carbonIconToReact(TouchInteraction16);
+  const CustomIcon = icon
+    ? carbonIconToReact(icon as Parameters<typeof carbonIconToReact>[0])
+    : undefined;
 
   const onClickHandler = useCallback(async () => {
     await serviceManager.fire({
@@ -59,7 +63,7 @@ function ButtonItemCustomEventComponent({
       size={size}
       is={is}
       disabled={isDisabled}
-      renderIcon={(image_url && TouchInteraction) || undefined}
+      renderIcon={CustomIcon || (image_url && TouchInteraction) || undefined}
       onClick={onClickHandler}
     />
   );

@@ -38,9 +38,13 @@ function ButtonItemShowPanelComponent({
   isMessageForInput,
 }: ButtonItemShowPanelComponentProps) {
   const serviceManager = useServiceManager();
-  const { image_url, alt_text, label, kind, size, is } = localMessageItem.item;
+  const { image_url, alt_text, label, kind, size, is, icon } =
+    localMessageItem.item;
   const isInputReadonly = useSelector(selectInputIsReadonly);
   const ArrowRight = carbonIconToReact(ArrowRight16);
+  const CustomIcon = icon
+    ? carbonIconToReact(icon as Parameters<typeof carbonIconToReact>[0])
+    : undefined;
   const isDisabled = isInputReadonly;
 
   /**
@@ -62,7 +66,7 @@ function ButtonItemShowPanelComponent({
       is={is}
       kind={kind}
       size={size}
-      renderIcon={(image_url && ArrowRight) || undefined}
+      renderIcon={CustomIcon || (image_url && ArrowRight) || undefined}
       onClick={onClickHandler}
       disabled={isDisabled}
     />
