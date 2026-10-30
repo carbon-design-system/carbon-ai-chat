@@ -10,8 +10,6 @@ The Rollup watcher does not rerun the analyzer. After table, type, or host metad
 
 The manifest projects both concrete hosts onto their published default entries. Inherited config metadata stays on each host. The abstract base has no public module or tag. Keep declaration and export references resolvable in packed packages.
 
-The root `test:manifest-consumer` check compares the packed manifest with built runtime properties and attributes. It checks types against the packed public config and host interfaces. It also checks JSON discovery and published module references. Run it after a fresh build; see the [build preflight](../../../references/commands.md#build-preflight).
-
 ## What builds and checks do
 
 The build generates the host manifest from the literal config table, public types, and each linked host interface.
@@ -19,7 +17,7 @@ It reads existing decorators for tag names and own reactive fields. The one othe
 The analyzer rejects unsupported table syntax, duplicate fields, and table/type mismatches.
 
 The root `npm run test:manifest-consumer` checks packed discovery, shipped references, and host metadata against runtime attributes, runtime properties, and declarations.
-It runs from the root test gate. Run it after a fresh build; it does not build the packages itself.
+It runs from the root test gate. Run it after a fresh build; it does not build the packages itself (see the [build preflight](../../../references/commands.md#build-preflight)).
 The GitHub components test job runs it too. Run it before opening a PR that changes manifest inputs.
 Its negative mutations catch missing or duplicate fields, lost host overrides, and optional callback type errors.
 
