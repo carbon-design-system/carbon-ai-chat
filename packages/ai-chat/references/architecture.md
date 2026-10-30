@@ -35,6 +35,8 @@ ChatContainer (React) ──────────→ cds-aichat-container (Li
 
 ## When to work in each layer
 
+Private native views in `src/chat/components/` render in light DOM inside the existing container shadow root. `NativeChatView` selects store and view-state values, releases subscriptions on detach, and routes render errors through the existing error callback. The home screen uses it behind a temporary React wrapper. Consumer content stays in its existing React tree.
+
 | Layer | Files | Concerns |
 | --- | --- | --- |
 | Lit | [src/web-components/](../src/web-components) | Registration, shadow DOM, slot forwarding, renderer selection, mount cleanup |
