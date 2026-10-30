@@ -93,6 +93,10 @@ function assertRuntimeProperties(host, members, attributes) {
     );
     assertRuntimeAttribute(property, attributes);
   }
+  const runtimeNames = new Set(host.properties.map(({ name }) => name));
+  for (const name of members.keys()) {
+    assert.ok(runtimeNames.has(name), `Unexpected host member: ${name}`);
+  }
   for (const name of ['aiEnabled', 'aiDisabled']) {
     assert.equal(members.get(name).type.text, 'boolean');
   }
@@ -224,6 +228,9 @@ export function proveParityFailures(manifest, runtime, publishedTypes) {
   mutate((host) => {
     host.members.push(structuredClone(host.members[0]));
   }, /Duplicate host member/);
+  mutate((host) => {
+    host.members.push({ kind: 'field', name: 'unexpectedMember' });
+  }, /Unexpected host member/);
   mutate((host) => {
     host.attributes.push(structuredClone(host.attributes[0]));
   }, /Duplicate host attribute/);

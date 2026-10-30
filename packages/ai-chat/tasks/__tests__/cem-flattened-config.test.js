@@ -82,6 +82,10 @@ function hostSource(name, tagName) {
       private privateState?: object;
       @property({ state: true })
       private privatePropertyState?: object;
+      @state()
+      publicState?: object;
+      @property({ state: true })
+      publicPropertyState?: object;
       @property()
       onViewChange?: (event: ViewChange) => void;
       @property()
@@ -249,6 +253,22 @@ test('normalizes concrete reactive attributes from decorator options', () => {
     assert.ok(attributes.has('onviewchange'));
     assert.ok(attributes.has('onviewprechange'));
     assert.ok(attributes.has('own-member'));
+  }
+});
+
+test('omits Lit state fields whatever their TypeScript visibility', () => {
+  for (const module of manifest().modules) {
+    const names = new Set(
+      module.declarations[0].members.map((member) => member.name)
+    );
+    for (const name of [
+      'privateState',
+      'privatePropertyState',
+      'publicState',
+      'publicPropertyState',
+    ]) {
+      assert.equal(names.has(name), false, name);
+    }
   }
 });
 

@@ -215,6 +215,30 @@ function addFields(
   }
 }
 
+function stateFields(ts, declaration) {
+  const names = new Set();
+  for (const member of declaration.members) {
+    for (const decorator of ts.getDecorators(member) ?? []) {
+      const call = decorator.expression;
+      if (!ts.isCallExpression(call) || !ts.isIdentifier(call.expression)) {
+        continue;
+      }
+      const options = call.arguments[0]
+        ? objectProperties(ts, call.arguments[0])
+        : new Map();
+      if (
+        call.expression.text === 'state' ||
+        (call.expression.text === 'property' &&
+          options.has('state') &&
+          literal(ts, options.get('state')) === true)
+      ) {
+        names.add(member.name.getText());
+      }
+    }
+  }
+  return names;
+}
+
 function reactiveProperties(ts, declaration) {
   const properties = new Map();
   for (const member of declaration.members) {
@@ -300,7 +324,7 @@ function normalizeReactiveMetadata(declaration, properties) {
   }
 }
 
-function projectHost(manifest, host, typeModule, reactiveNames) {
+function projectHost(manifest, host, typeModule, reactiveNames, stateNames) {
   const source = manifest.modules.find(
     (module) => resolve(module.path) === resolve(host.source)
   );
@@ -328,6 +352,10 @@ function projectHost(manifest, host, typeModule, reactiveNames) {
   ]) {
     declaration[kind] = (declaration[kind] ?? []).filter((item) => {
       const memberName = kind === 'members' ? item.name : item.fieldName;
+      // Lit state is internal, so it never reaches the published host.
+      if (stateNames.has(memberName)) {
+        return false;
+      }
       const privacy = privateMembers.get(memberName) ?? item.privacy;
       if (
         ['private', 'protected'].includes(privacy) &&
@@ -421,6 +449,7 @@ export function createFlattenedConfigPlugin({
   let synthetic;
   let baseMembers;
   let reactiveMembers;
+  let stateMembers;
   let hostInterfaces;
   return {
     name: 'flattened-config',
@@ -430,6 +459,7 @@ export function createFlattenedConfigPlugin({
       synthetic = undefined;
       baseMembers = undefined;
       reactiveMembers = new Map();
+      stateMembers = new Map();
       hostInterfaces = new Map();
     },
     analyzePhase({ ts, node, moduleDoc }) {
@@ -442,6 +472,7 @@ export function createFlattenedConfigPlugin({
         )
       ) {
         reactiveMembers.set(node.name.text, reactiveProperties(ts, node));
+        stateMembers.set(node.name.text, stateFields(ts, node));
       }
       if (ts.isInterfaceDeclaration(node)) {
         for (const host of hosts) {
@@ -513,7 +544,8 @@ export function createFlattenedConfigPlugin({
           customElementsManifest,
           host,
           typeModule,
-          reactiveMembers.get(host.name) ?? new Map()
+          reactiveMembers.get(host.name) ?? new Map(),
+          stateMembers.get(host.name) ?? new Set()
         )
       );
       for (const [index, module] of modules.entries()) {
