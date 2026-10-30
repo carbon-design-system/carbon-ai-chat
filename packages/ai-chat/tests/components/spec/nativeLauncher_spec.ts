@@ -425,7 +425,10 @@ describe('native launcher', () => {
           onAfterRender: after,
         })
       );
-      await waitFor(() => expect(after).toHaveBeenCalledTimes(1));
+      // The first boot in a file loads the boot modules on demand.
+      await waitFor(() => expect(after).toHaveBeenCalledTimes(1), {
+        timeout: 5000,
+      });
       const host = document.querySelector('cds-aichat-container');
       const native = host.shadowRoot.querySelector('cds-aichat-launcher-view');
       expect(native.shadowRoot).toBeNull();
