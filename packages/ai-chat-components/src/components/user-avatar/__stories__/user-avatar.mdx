@@ -1,0 +1,75 @@
+import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
+import * as Stories from './user-avatar.stories';
+
+<Meta of={Stories} />
+
+# User avatar
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/user-avatar) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+## Overview
+
+Use `cds-aichat-user-avatar` to represent a user as a profile image, an initial, or an icon.
+
+<Canvas of={Stories.Default} />
+
+## Key features
+
+- **Fallback chain**: A missing or failed image falls back to the first letter of the name, then to the user icon.
+- **Reset on new image**: Changing `image` tries the new URL, even after an earlier one failed.
+- **Host-set size**: Set `width` and `height` to any CSS length.
+
+## Customization
+
+The avatar is 2rem square by default. Set `width` and `height` to change it. The initial and icon follow the text color of the parent through `currentcolor`.
+
+```html
+<cds-aichat-user-avatar
+  name="Alice"
+  width="48px"
+  height="48px"></cds-aichat-user-avatar>
+```
+
+## Examples
+
+### Initial
+
+Without an image, a name made only of characters from U+0020 to U+00FE shows its first character.
+
+```html
+<cds-aichat-user-avatar
+  name="Alice"
+  label="Agent avatar"></cds-aichat-user-avatar>
+```
+
+<Canvas of={Stories.WithInitial} />
+
+### Icon
+
+Without an image and without a name, the avatar shows the user icon.
+
+```html
+<cds-aichat-user-avatar label="Agent avatar"></cds-aichat-user-avatar>
+```
+
+<Canvas of={Stories.WithIcon} />
+
+### Accessible label
+
+Set `label` to a translated string. It becomes the image `alt` text, or the `aria-label` of the initial and icon. With no label, the initial and icon are plain content.
+
+## Component API
+
+### `cds-aichat-user-avatar`
+
+<ArgTypes of="cds-aichat-user-avatar" />
+
+## JS (via import)
+
+```javascript
+import '@carbon/ai-chat-components/es/components/user-avatar/index.js';
+```
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.
