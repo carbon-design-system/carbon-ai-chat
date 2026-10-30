@@ -185,4 +185,5 @@ function deriveHeaderNavigation({
   };
 }
 
+export type { HeaderProps };
 export { mergeHeaderConfig, deriveHeaderActions, deriveHeaderNavigation };
