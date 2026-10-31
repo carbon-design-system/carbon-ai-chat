@@ -9,13 +9,22 @@
 
 import React from 'react';
 import { createComponent } from '@lit/react';
+import { withWebComponentBridge } from '@carbon/ai-chat-components/es/react/utils/withWebComponentBridge.js';
 import LauncherView from './launcher';
 
-const NativeLauncher = createComponent({
-  tagName: 'cds-aichat-launcher-view',
-  elementClass: LauncherView,
-  react: React,
-});
+const nativeLauncherEvents = {};
+
+// The bridge sets the view's properties in DOM shims, where @lit/react's node
+// build passes them only to server rendering.
+const NativeLauncher = withWebComponentBridge(
+  createComponent({
+    tagName: 'cds-aichat-launcher-view',
+    elementClass: LauncherView,
+    react: React,
+    events: nativeLauncherEvents,
+  }),
+  { events: nativeLauncherEvents }
+);
 
 const LauncherContainer = React.memo(NativeLauncher);
 
