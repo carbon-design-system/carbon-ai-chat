@@ -73,6 +73,35 @@ it('places a stable page-light-DOM target before a React commit can make its rea
   f.content.disconnect();
 });
 
+it('keeps an empty React target unready and clears routing when its list disappears', async () => {
+  const f = fixture();
+  const request = f.content.prepare(f.owner, {}, {}, f.anchor, f.callbacks);
+  f.content.markPlaced(request);
+  const snapshot = f.content.getSnapshot();
+  const target = request.target;
+  expect(await f.content.commit(request)).toBe(false);
+  expect(f.content.isReady(request)).toBe(false);
+  expect(f.callbacks.onReady).not.toHaveBeenCalled();
+
+  const list = document.createElement('button');
+  target.appendChild(list);
+  expect(await f.content.commit(request)).toBe(true);
+  expect(f.callbacks.onReady).toHaveBeenCalledWith(list);
+  list.remove();
+  expect(f.content.isReady(request)).toBe(false);
+  expect(await f.content.commit(request)).toBe(false);
+  expect(f.callbacks.onClear).toHaveBeenCalledTimes(1);
+  expect(f.callbacks.onReady).toHaveBeenCalledTimes(1);
+  expect(f.content.getSnapshot()).toBe(snapshot);
+  expect(target.isConnected).toBe(true);
+
+  target.appendChild(list);
+  expect(await f.content.commit(request)).toBe(true);
+  expect(f.callbacks.onReady).toHaveBeenCalledTimes(2);
+  expect(f.callbacks.onReady).toHaveBeenLastCalledWith(list);
+  f.content.disconnect();
+});
+
 it('clears routing before a query replacement while keeping the portal target and slot', async () => {
   const f = fixture();
   const first = f.content.prepare(

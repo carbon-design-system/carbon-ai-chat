@@ -245,6 +245,7 @@ class AutocompleteContent {
     return Boolean(
       entry &&
       !entry.routingCleared &&
+      entry.readyTarget &&
       this.isPlaced(request) &&
       entry.readyTarget === this.listFor(request)
     );
@@ -256,6 +257,10 @@ class AutocompleteContent {
       return false;
     }
     const list = this.listFor(request);
+    if (!list) {
+      this.invalidateReady(request);
+      return false;
+    }
     if (this.isReady(request)) {
       return true;
     }
@@ -411,10 +416,10 @@ class AutocompleteContent {
       : undefined;
   }
 
-  private listFor(request: AutocompleteContentRecord): HTMLElement {
+  private listFor(request: AutocompleteContentRecord): HTMLElement | null {
     return request.kind === 'element'
       ? request.target
-      : ((request.target.firstElementChild as HTMLElement) ?? request.target);
+      : (request.target.firstElementChild as HTMLElement | null);
   }
 
   private readonly preventMousedown = (event: MouseEvent) => {
