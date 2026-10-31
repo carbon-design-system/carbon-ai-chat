@@ -28,6 +28,7 @@ import { LIGHT_DOM_PORTAL_EVENT } from '@carbon/ai-chat-components/es/components
 
 import '../../../src/web-components/cds-aichat-container';
 import { ChatContainer } from '../../../src/react/ChatContainer';
+import { ChatCustomElement } from '../../../src/react/ChatCustomElement';
 import type CdsAiChatContainerElement from '../../../src/web-components/cds-aichat-container/cds-aichat-container';
 import { ChatContainerProps } from '../../../src/types/component/ChatContainer';
 import { ChatInstance } from '../../../src/types/instance/ChatInstance';
@@ -868,6 +869,112 @@ describe('React render props through the shared container', () => {
       ).toBe('custom')
     );
   });
+
+  it.each([
+    ['ChatContainer', ChatContainer],
+    ['ChatCustomElement', ChatCustomElement],
+  ] as const)(
+    'keeps native home content and its assigned slot stable through %s',
+    async (_name, Wrapper) => {
+      let instance: ChatInstance;
+      const after = jest.fn();
+      const homescreen = { isOn: true, greeting: 'Welcome' };
+      const host = (withPortal: boolean, greeting = 'Welcome') => (
+        <Wrapper
+          {...config}
+          className=""
+          homescreen={{ ...homescreen, greeting }}
+          onBeforeRender={(chat) => {
+            instance = chat;
+          }}
+          onAfterRender={after}
+          renderWriteableElements={
+            withPortal
+              ? {
+                  homeScreenAfterStartersElement: (
+                    <Counter id="home-react-counter" />
+                  ),
+                }
+              : undefined
+          }
+        />
+      );
+      const mounted = render(host(false));
+      await waitFor(() => expect(after).toHaveBeenCalledTimes(1));
+      const chat = getChatHost();
+      const native = chat.shadowRoot.querySelector('cds-aichat-home-screen');
+      expect(native).not.toBeNull();
+      expect(native.shadowRoot).toBeNull();
+      const writable =
+        instance.writeableElements.homeScreenAfterStartersElement;
+      const slot = native.querySelector<HTMLSlotElement>(
+        'slot[name="homeScreenAfterStartersElement"]'
+      );
+      const body = () => native.querySelector('.cds-aichat--home-screen__body');
+      expect(writable.parentNode).toBe(chat);
+      expect(writable.assignedSlot).toBe(slot);
+      expect(slot.getRootNode()).toBe(chat.shadowRoot);
+      expect(
+        body().classList.contains(
+          'cds-aichat--home-screen__body--no-custom-content'
+        )
+      ).toBe(true);
+
+      const imperative = document.createElement('button');
+      imperative.textContent = '0';
+      imperative.onclick = () => {
+        imperative.textContent = String(Number(imperative.textContent) + 1);
+      };
+      writable.appendChild(imperative);
+      await waitFor(() =>
+        expect(
+          body().classList.contains(
+            'cds-aichat--home-screen__body--custom-content'
+          )
+        ).toBe(true)
+      );
+      imperative.click();
+      imperative.remove();
+      await waitFor(() =>
+        expect(
+          body().classList.contains(
+            'cds-aichat--home-screen__body--no-custom-content'
+          )
+        ).toBe(true)
+      );
+      writable.appendChild(imperative);
+      await waitFor(() =>
+        expect(
+          body().classList.contains(
+            'cds-aichat--home-screen__body--custom-content'
+          )
+        ).toBe(true)
+      );
+      expect(imperative.textContent).toBe('1');
+
+      mounted.rerender(host(true));
+      await waitFor(() => expect(probe('home-react-counter')).not.toBeNull());
+      const counter = probe('home-react-counter');
+      fireEvent.click(counter);
+      expect(counter.textContent).toBe('1');
+      mounted.rerender(host(true, 'Updated greeting'));
+      await waitFor(() =>
+        expect(native.querySelector('h2')?.textContent).toBe('Updated greeting')
+      );
+      expect(probe('home-react-counter')).toBe(counter);
+      expect(counter.textContent).toBe('1');
+      expect(imperative.parentNode).toBe(writable);
+      expect(imperative.textContent).toBe('1');
+      expect(instance.writeableElements.homeScreenAfterStartersElement).toBe(
+        writable
+      );
+      expect(writable.assignedSlot).toBe(slot);
+      expect(
+        native.querySelector('slot[name="homeScreenAfterStartersElement"]')
+      ).toBe(slot);
+      expect(after).toHaveBeenCalledTimes(1);
+    }
+  );
 
   it('updates writeable keys without replacing nodes or clearing imperative content', async () => {
     const { instance, update } = await boot();
