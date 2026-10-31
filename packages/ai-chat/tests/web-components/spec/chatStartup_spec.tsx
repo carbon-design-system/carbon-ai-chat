@@ -26,7 +26,7 @@ import * as containerModule from '../../../src/web-components/cds-aichat-contain
 import '../../../src/web-components/cds-aichat-custom-element';
 import type ChatElement from '../../../src/web-components/cds-aichat-container/cds-aichat-container';
 import { ChatCustomElement } from '../../../src/react/ChatCustomElement';
-import { serviceManagerContext } from '../../../src/web-components/shared/service-manager-context';
+import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
 import { ChatContainer } from '../../../src/react/ChatContainer';
 import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
 import * as extensionsLoader from '../../../src/chat/components/input/buildExtensionsLoader';
@@ -49,7 +49,7 @@ import {
 
 class StartupServicesProbe extends LitElement {
   services = new ContextConsumer(this, {
-    context: serviceManagerContext,
+    context: chatViewStateContext,
     subscribe: true,
   });
 }
@@ -313,7 +313,9 @@ describe('cds-aichat-container startup', () => {
         const current = test.last();
         const currentNodes = [...element.childNodes];
         const renderCount = test.renders.length;
-        expect(current.serviceManager === probe.services.value).toBe(true);
+        expect(
+          current.serviceManager === probe.services.value.serviceManager
+        ).toBe(true);
 
         localeGate.doResolve(frLocaleData);
         beforeGate.doResolve();
@@ -339,7 +341,9 @@ describe('cds-aichat-container startup', () => {
         expect(element.onAfterRender).toHaveBeenCalledTimes(1);
         expect(element.onAfterRender).toHaveBeenCalledWith(current.instance);
         expect(current.instance).not.toBe(retired.instance);
-        expect(probe.services.value === current.serviceManager).toBe(true);
+        expect(
+          probe.services.value.serviceManager === current.serviceManager
+        ).toBe(true);
         expect([...element.childNodes]).toEqual(currentNodes);
         expect(element.querySelector('[slot="retired-response"]')).toBeNull();
         expect(
@@ -464,7 +468,16 @@ describe('cds-aichat-container startup', () => {
     await waitFor(() => expect(element.onAfterRender).toHaveBeenCalled(), {
       timeout: 5000,
     });
-    const { serviceManager } = test.last();
+    const { serviceManager, viewState } = test.last();
+    const pageWidth = window.innerWidth;
+    const resizeTo = (width: number) => {
+      Object.defineProperty(window, 'innerWidth', {
+        configurable: true,
+        writable: true,
+        value: width,
+      });
+      window.dispatchEvent(new Event('resize'));
+    };
 
     const setVisibility = (state: DocumentVisibilityState) => {
       Object.defineProperty(document, 'visibilityState', {
@@ -477,16 +490,20 @@ describe('cds-aichat-container startup', () => {
     setVisibility('hidden');
     expect(serviceManager.store.getState().isBrowserPageVisible).toBe(false);
 
+    // A resize reaches views through the view state, without a new render.
     const rendersBefore = test.renders.length;
-    window.dispatchEvent(new Event('resize'));
-    expect(test.renders.length).toBe(rendersBefore + 1);
+    resizeTo(pageWidth - 100);
+    expect(viewState.getSnapshot().windowSize.width).toBe(pageWidth - 100);
+    expect(test.renders.length).toBe(rendersBefore);
 
     element.remove();
     await flushMicrotasks();
     setVisibility('visible');
-    window.dispatchEvent(new Event('resize'));
+    resizeTo(pageWidth - 200);
+    resizeTo(pageWidth);
     expect(serviceManager.store.getState().isBrowserPageVisible).toBe(false);
-    expect(test.renders.length).toBe(rendersBefore + 1);
+    expect(viewState.getSnapshot().windowSize.width).toBe(pageWidth - 100);
+    expect(test.renders.length).toBe(rendersBefore);
   });
 
   it('stops the theme watcher when the mount goes', async () => {

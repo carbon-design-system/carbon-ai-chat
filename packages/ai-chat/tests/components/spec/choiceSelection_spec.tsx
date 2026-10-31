@@ -10,8 +10,7 @@
 import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { OptionComponent } from '../../../src/chat/components/responseTypes/options/OptionComponent';
-import { StoreProvider } from '../../../src/chat/providers/StoreProvider';
-import { makeConfigStore } from '../../test_helpers';
+import { makeConfigStore, TestChatContext } from '../../test_helpers';
 import {
   MessageResponseTypes,
   OptionItemPreference,
@@ -88,7 +87,7 @@ function renderOptions(
   } as any;
 
   const renderComponent = (disableUserInputs = false) => (
-    <StoreProvider store={store}>
+    <TestChatContext store={store}>
       <OptionComponent
         localMessage={localMessage}
         originalMessage={{ id: 'response-id' } as any}
@@ -96,7 +95,7 @@ function renderOptions(
         requestInputFocus={requestInputFocus}
         serviceManager={serviceManager}
       />
-    </StoreProvider>
+    </TestChatContext>
   );
   const view = render(renderComponent());
 
@@ -222,7 +221,7 @@ describe('choice selection controls', () => {
 
     const store = makeConfigStore({});
     rerender(
-      <StoreProvider store={store}>
+      <TestChatContext store={store}>
         <OptionComponent
           localMessage={localMessage}
           originalMessage={{ id: 'response-id' } as any}
@@ -230,7 +229,7 @@ describe('choice selection controls', () => {
           requestInputFocus={jest.fn()}
           serviceManager={{ actions: { sendWithCatch: jest.fn() } } as any}
         />
-      </StoreProvider>
+      </TestChatContext>
     );
 
     expect(screen.getByRole('button', { name: 'First' })).toHaveAttribute(

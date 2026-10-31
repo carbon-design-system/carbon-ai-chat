@@ -7,16 +7,19 @@
  *  @license
  */
 
-import { useContext } from 'react';
-import { IntlContext } from '../contexts/IntlContext';
+import { useChatViewState } from './useChatViewState';
 import { IntlShape } from '../utils/i18n';
+import type { ChatViewStateSnapshot } from '../services/chatViewState';
+
+const selectIntl = (snapshot: ChatViewStateSnapshot) => snapshot.intl;
 
 /**
  * React hook to access the i18n formatter.
- * This replaces react-intl's useIntl() hook.
+ * This replaces react-intl's useIntl() hook. It re-renders when the chat's
+ * formatter changes, including after a locale finishes loading.
  *
- * @returns The IntlShape instance from context
- * @throws Error if used outside of IntlProvider
+ * @returns The chat's current IntlShape instance
+ * @throws Error if used outside of ChatContext
  *
  * @example
  * ```typescript
@@ -33,12 +36,11 @@ import { IntlShape } from '../utils/i18n';
  * ```
  */
 export function useIntl(): IntlShape {
-  const formatter = useContext(IntlContext);
+  const formatter = useChatViewState(selectIntl);
 
   if (!formatter) {
     throw new Error(
-      'useIntl must be used within an IntlProvider. ' +
-        'Make sure your component is wrapped with <IntlProvider>.'
+      'useIntl must be used within a ChatContext whose service manager has a formatter.'
     );
   }
 

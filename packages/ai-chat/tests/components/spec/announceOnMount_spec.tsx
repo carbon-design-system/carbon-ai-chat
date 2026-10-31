@@ -18,7 +18,7 @@ import React from 'react';
 import { render, waitFor } from '@testing-library/react';
 
 import { AnnounceOnMount } from '../../../src/chat/components/helpers/AnnounceOnMount/AnnounceOnMount';
-import { AriaAnnouncerContext } from '../../../src/chat/contexts/AriaAnnouncerContext';
+import { TestChatContext } from '../../test_helpers';
 
 interface WrapperProps {
   announceOnce?: string;
@@ -29,11 +29,11 @@ function renderWrapper(props: WrapperProps) {
   const announcer = jest.fn();
 
   const markup = (next: WrapperProps) => (
-    <AriaAnnouncerContext.Provider value={announcer}>
+    <TestChatContext announce={announcer}>
       <AnnounceOnMount {...next}>
         <span>error</span>
       </AnnounceOnMount>
-    </AriaAnnouncerContext.Provider>
+    </TestChatContext>
   );
 
   const { rerender } = render(markup(props));

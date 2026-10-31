@@ -12,6 +12,7 @@ import { useSelector } from '../../hooks/useSelector';
 
 import { useEffectDidUpdate } from '../../hooks/useEffectDidUpdate';
 import { useServiceManager } from '../../hooks/useServiceManager';
+import { useIntl } from '../../hooks/useIntl';
 import { shallowEqual } from '../../store/appStore';
 import actions from '../../store/actions';
 import { IS_PHONE } from '../../utils/browserUtils';
@@ -27,6 +28,7 @@ import { PageObjectId } from '../../../testing/PageObjectId';
 
 function LauncherContainer() {
   const serviceManager = useServiceManager();
+  const intl = useIntl();
   const languagePack = useSelector(
     (state: AppState) => ({
       launcher_mobileGreeting: state.languagePack.launcher_mobileGreeting,
@@ -214,7 +216,7 @@ function LauncherContainer() {
       closedLabel={languagePack.launcher_isClosed}
       openLabel={languagePack.launcher_isOpen}
       formatUnreadMessageLabel={({ count }) =>
-        serviceManager.intl.formatMessage(
+        intl.formatMessage(
           { id: 'icon_ariaUnreadMessages' },
           {
             count: shouldShowUnreadIndicator ? Math.max(count, 1) : count,
