@@ -17,10 +17,10 @@ import type { InputFunctions, InputProps } from '../../utils/inputTypes';
 import ChatInput from './ChatInput';
 
 const nativeInputEvents = {
-    onInputHandleChange: 'cds-aichat-input-handle-change' as EventName<
-      CustomEvent<InputFunctions | null>
-    >,
-  };
+  onInputHandleChange: 'cds-aichat-input-handle-change' as EventName<
+    CustomEvent<InputFunctions | null>
+  >,
+};
 
 // The bridge sets the view's properties in DOM shims, where @lit/react's node
 // build passes them only to server rendering.
