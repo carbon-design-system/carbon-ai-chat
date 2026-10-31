@@ -559,6 +559,11 @@ describe('native panel composition', () => {
   });
 
   it('uses native prompt buttons, focuses and announces once, and cancels Escape without bubbling', async () => {
+    // jsdom has no layout; tabbable requires a rendered rectangle.
+    const rectangle = document.body.getBoundingClientRect();
+    jest
+      .spyOn(HTMLElement.prototype, 'getClientRects')
+      .mockReturnValue(Object.assign([rectangle], { item: () => rectangle }));
     const f = await fixture();
     await f.commit();
     f.view.inputs = { ...f.view.inputs, showScreenShareRequest: true };
@@ -566,6 +571,15 @@ describe('native panel composition', () => {
     const frame = f.panel('screenShare');
     const footer = frame.querySelector('[slot="footer"]');
     const buttons = footer.querySelectorAll('cds-button');
+    const focusChain: Element[] = [];
+    for (
+      let active: Element | null = document.activeElement;
+      active;
+      active = active.shadowRoot?.activeElement ?? null
+    ) {
+      focusChain.push(active);
+    }
+    expect(focusChain).toContain(buttons[0]);
     (buttons[0] as HTMLElement).click();
     expect(f.callbacks.updateScreenShareRequest).toHaveBeenLastCalledWith(
       ScreenShareState.DECLINED

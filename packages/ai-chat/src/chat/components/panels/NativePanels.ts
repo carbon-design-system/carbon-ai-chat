@@ -240,8 +240,8 @@ class NativePanels extends NativeChatView {
     }
     const frame = this.querySelector(`[data-panel-name="${name}"]`);
     return focusPanelBodyBeforeHeader(
-      frame?.querySelector<HTMLElement>('[slot="body"]'),
-      frame?.querySelector<HTMLElement>('[slot="header"]')
+      frame?.querySelector<HTMLElement>(':scope > [slot="body"]'),
+      frame?.querySelector<HTMLElement>(':scope > [slot="header"]')
     );
   }
 
