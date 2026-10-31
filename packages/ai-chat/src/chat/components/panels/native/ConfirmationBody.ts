@@ -34,4 +34,8 @@ class ConfirmationBody extends NativeChatView {
   }
 }
 
-export default ConfirmationBody;
+declare global {
+  interface HTMLElementTagNameMap {
+    'cds-aichat-confirmation-body': ConfirmationBody;
+  }
+}
