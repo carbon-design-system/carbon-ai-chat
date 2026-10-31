@@ -15,10 +15,9 @@ import {
   MessageRichUserContent,
   INPUT_NODE_SLOT_ATTR,
 } from '../../../src/chat/components-legacy/MessageRichUserContent';
-import {
-  collectInputNodeSlots,
-  InputNodePortalsContainer,
-} from '../../../src/chat/components/portals/InputNodePortalsContainer';
+import { InputNodePortalsContainer } from '../../../src/chat/components/portals/InputNodePortalsContainer';
+import { collectInputNodeSlots } from '../../../src/chat/utils/inputNodeSlots';
+import { ExtensionHosts } from '../../../src/chat/services/extensionHosts';
 import actions from '../../../src/chat/store/actions';
 import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import { makeConfigStore, TestChatContext } from '../../test_helpers';
@@ -58,7 +57,7 @@ function renderedSlotKeys(content: JSONContent): string[] {
   ).map((el) => el.getAttribute(INPUT_NODE_SLOT_ATTR) ?? '');
 }
 
-/** Slot keys as `InputNodePortalsContainer` computes them, in document order. */
+/** Slot keys as `collectInputNodeSlots` computes them, in document order. */
 function walkedSlotKeys(content: JSONContent): string[] {
   return collectInputNodeSlots(content, MESSAGE_ID).map((s) => s.slotKey);
 }
@@ -321,12 +320,17 @@ describe('structured paragraph projection', () => {
       root.appendChild(container);
       document.body.appendChild(host);
       const callback = jest.fn(() => <b>Custom</b>);
-      const instance = {} as ChatInstance;
+      const instance = {
+        on: jest.fn(),
+        off: jest.fn(),
+      } as unknown as ChatInstance;
+      const hosts = new ExtensionHosts(instance, host, store, () => false);
+      hosts.connect();
       const view = (custom: boolean) => {
         const portal = (
           <InputNodePortalsContainer
             key="portal"
-            chatWrapper={host}
+            hosts={hosts}
             chatInstance={instance}
             renderUserDefinedInputNode={custom ? callback : () => null}
           />
@@ -374,6 +378,7 @@ describe('structured paragraph projection', () => {
         expect(host.childNodes).toHaveLength(0);
       } finally {
         unmount();
+        hosts.disconnect();
         host.remove();
       }
     }
