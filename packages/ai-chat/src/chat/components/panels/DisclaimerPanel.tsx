@@ -9,6 +9,7 @@
 
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { createComponent } from '@lit/react';
+import { withWebComponentBridge } from '@carbon/ai-chat-components/es/react/utils/withWebComponentBridge.js';
 import type CDSButton from '@carbon/web-components/es/components/button/button.js';
 import Button from '../carbon/Button';
 import { useSelector } from '../../hooks/useSelector';
@@ -29,11 +30,19 @@ interface DisclaimerPanelContent {
   onBodyScroll: (event: CustomEvent) => void;
 }
 
-const NativeDisclaimerBody = createComponent({
-  tagName: 'cds-aichat-disclaimer-body',
-  elementClass: DisclaimerBody,
-  react: React,
-});
+const nativeDisclaimerBodyEvents = {};
+
+// The bridge sets the view's properties in DOM shims, where @lit/react's node
+// build passes them only to server rendering.
+const NativeDisclaimerBody = withWebComponentBridge(
+  createComponent({
+    tagName: 'cds-aichat-disclaimer-body',
+    elementClass: DisclaimerBody,
+    react: React,
+    events: nativeDisclaimerBodyEvents,
+  }),
+  { events: nativeDisclaimerBodyEvents }
+);
 
 const DisclaimerPanel = ({
   disclaimerHTML,
