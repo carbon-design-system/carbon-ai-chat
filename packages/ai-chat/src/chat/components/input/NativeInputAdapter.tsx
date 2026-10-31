@@ -9,6 +9,7 @@
 
 import React, { forwardRef, Ref, useCallback, useMemo, useRef } from 'react';
 import { createComponent, type EventName } from '@lit/react';
+import { withWebComponentBridge } from '@carbon/ai-chat-components/es/react/utils/withWebComponentBridge.js';
 import {
   transformStarterItems,
   transformSuggestionConfig,
@@ -19,16 +20,23 @@ import type { AutocompleteContent } from '../../services/autocompleteContent';
 import type { InputFunctions, InputProps } from '../../utils/inputTypes';
 import ChatInput from './ChatInput';
 
-const NativeInput = createComponent({
-  tagName: 'cds-aichat-chat-input',
-  elementClass: ChatInput,
-  react: React,
-  events: {
-    onInputHandleChange: 'cds-aichat-input-handle-change' as EventName<
-      CustomEvent<InputFunctions | null>
-    >,
-  },
-});
+const nativeInputEvents = {
+  onInputHandleChange: 'cds-aichat-input-handle-change' as EventName<
+    CustomEvent<InputFunctions | null>
+  >,
+};
+
+// The bridge sets the view's properties in DOM shims, where @lit/react's node
+// build passes them only to server rendering.
+const NativeInput = withWebComponentBridge(
+  createComponent({
+    tagName: 'cds-aichat-chat-input',
+    elementClass: ChatInput,
+    react: React,
+    events: nativeInputEvents,
+  }),
+  { events: nativeInputEvents }
+);
 
 interface NativeInputAdapterProps extends InputProps {
   contentOwner: AutocompleteContent;
