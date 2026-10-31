@@ -63,6 +63,11 @@ for (const framework of ['react', 'web-component']) {
         'dir',
         framework === 'react' ? 'ltr' : 'rtl'
       );
+      // The launcher's one RTL path picks the tooltip side.
+      await expect(launcher).toHaveJSProperty(
+        'tooltipPosition',
+        framework === 'react' ? 'left' : 'right'
+      );
       const container = page.locator('.cds-aichat-launcher');
       if (reducedMotion === 'no-preference') {
         // Suppress completion events to exercise the unchanged 600ms fallback.
@@ -104,7 +109,10 @@ for (const framework of ['react', 'web-component']) {
           },
         })
       );
-      await expect(launcher).not.toHaveAttribute('aria-label', /Unread/);
+      await expect(launcher).toHaveAttribute(
+        'aria-label',
+        'Open the chat window'
+      );
       await expect(launcher.locator('img')).toHaveAttribute('alt', '');
       await launcher.focus();
       await page.keyboard.press('Enter');
