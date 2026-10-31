@@ -233,9 +233,9 @@ describe('Config Header', () => {
 });
 
 /**
- * PLAN-3 O1: the assistant, agent, home and mobile-history views keep their
- * header controls through the real `ChatContainer` and its `Header` wrapper.
- * The store-state cases above render no header, so these mount the chat.
+ * The assistant, agent, home and mobile-history views keep their header
+ * controls through the real `ChatContainer` and its `Header` wrapper. The
+ * store-state cases above render no header, so these mount the chat.
  */
 describe('header controls through the ChatContainer wrapper', () => {
   // Earlier cases in this file mount chats too, so each case starts from a
@@ -352,11 +352,7 @@ describe('header controls through the ChatContainer wrapper', () => {
       handler: newChat,
     });
     act(() => {
-      store.dispatch({
-        type: 'SET_HISTORY_PANEL_OPTIONS',
-        isMobile: true,
-        isOpen: false,
-      });
+      store.dispatch(actions.setHistoryPanelOptions(true, false));
     });
     const { languagePack } = store.getState();
     await waitFor(() => expect(base().navigationType).toBe('overflow'));

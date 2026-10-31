@@ -149,17 +149,13 @@ for (const framework of ['react', 'web-component']) {
     await focusFirstMenuItem(page);
 
     // Verify first item is focused
-    let focusedText = await getFocusedMenuItemText(page);
+    const focusedText = await getFocusedMenuItemText(page);
     expect(focusedText).toBe('Help');
 
     // Press ArrowDown key
     await page.keyboard.press('ArrowDown');
 
     await expect.poll(() => getFocusedMenuItemText(page)).toBe('Documentation');
-
-    // Verify second item is now focused
-    focusedText = await getFocusedMenuItemText(page);
-    expect(focusedText).toBe('Documentation');
     await page.keyboard.press('Escape');
     await expect.poll(() => getFocusedMenuItemText(page)).toBeNull();
     await expect
