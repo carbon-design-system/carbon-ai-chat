@@ -9,6 +9,10 @@
 @use '@carbon/styles/scss/theme';
 @use '@carbon/styles/scss/type';
 
+cds-aichat-error-body {
+  display: contents;
+}
+
 .cds-aichat--overlay-panel--catastrophic_panel .cds-aichat--overlay-panel {
   display: flex;
   flex-direction: column;
