@@ -16,6 +16,7 @@ import React, {
   useState,
 } from 'react';
 import { createComponent } from '@lit/react';
+import { withWebComponentBridge } from '@carbon/ai-chat-components/es/react/utils/withWebComponentBridge.js';
 import { useSyncExternalStore } from 'use-sync-external-store/shim/index.js';
 import { transformReactIconToCarbonIcon } from '@carbon/ai-chat-components/es/globals/utils/iconTransform.js';
 import type CDSButton from '@carbon/web-components/es/components/button/button.js';
@@ -87,11 +88,19 @@ interface AppShellPanelsProps extends HasServiceManager {
   catastrophicErrorPanelState: AppState['catastrophicErrorPanelState'];
 }
 
-const NativePanelsRegion = createComponent({
-  tagName: 'cds-aichat-native-panels',
-  elementClass: NativePanels,
-  react: React,
-});
+const nativePanelsRegionEvents = {};
+
+// The bridge sets the view's properties in DOM shims, where @lit/react's node
+// build passes them only to server rendering.
+const NativePanelsRegion = withWebComponentBridge(
+  createComponent({
+    tagName: 'cds-aichat-native-panels',
+    elementClass: NativePanels,
+    react: React,
+    events: nativePanelsRegionEvents,
+  }),
+  { events: nativePanelsRegionEvents }
+);
 
 const noScroll = () => {};
 const renderMessageComponent = (props: MessageTypeComponentProps) => (
