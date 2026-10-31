@@ -9,6 +9,8 @@
 
 import { ContextProvider } from '@lit/context';
 import { LitElement, nothing } from 'lit';
+import { createElement, useEffect, useState } from 'react';
+import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import '@carbon/ai-chat-components/es/components/prompt-line/src/prompt-line-shell.js';
 import type Autocomplete from '@carbon/ai-chat-components/es/components/prompt-line/autocomplete/src/autocomplete.js';
 import type PromptLine from '@carbon/ai-chat-components/es/components/prompt-line/src/prompt-line.js';
@@ -18,6 +20,7 @@ import type {
 } from '@carbon/ai-chat-components/es/components/prompt-line/src/tiptap/types.js';
 import '../../../src/chat/components/input/NativeAutocomplete';
 import type NativeAutocomplete from '../../../src/chat/components/input/NativeAutocomplete';
+import { AutocompleteContentAdapter } from '../../../src/chat/components/input/AutocompleteContentAdapter';
 import { AutocompleteContent } from '../../../src/chat/services/autocompleteContent';
 import { ChatViewState } from '../../../src/chat/services/chatViewState';
 import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
@@ -320,6 +323,89 @@ describe('native autocomplete', () => {
     });
     list.dispatchEvent(mouse);
     expect(mouse.defaultPrevented).toBe(true);
+  });
+
+  it('passes editor keys through empty React roots and resumes routing without remounting the consumer', async () => {
+    let setVisible: (visible: boolean) => void;
+    const mounts = jest.fn();
+    const keys: string[] = [];
+    function Suggestions() {
+      const [visible, show] = useState(false);
+      const [count, setCount] = useState(0);
+      setVisible = show;
+      useEffect(() => {
+        mounts();
+      }, []);
+      return visible
+        ? createElement(
+            'button',
+            {
+              type: 'button',
+              onClick: () => setCount(count + 1),
+              onKeyDown: (event) => keys.push(event.key),
+            },
+            `Count ${count}`
+          )
+        : null;
+    }
+    const renderer = jest.fn(() => createElement(Suggestions));
+    const f = await fixture((view) => {
+      view.autocomplete = { items, renderCustomList: renderer };
+    });
+    const mounted = render(
+      createElement(AutocompleteContentAdapter, { contentOwner: f.owner })
+    );
+    try {
+      await act(async () => f.trigger());
+      const request = f.owner.getSnapshot().request;
+      const target = request.target;
+      const navigationKeys = [
+        'ArrowDown',
+        'ArrowUp',
+        'Tab',
+        'Enter',
+        'Escape',
+        'Home',
+        'End',
+      ];
+      expect(renderer).toHaveBeenCalledWith(expect.objectContaining({ items }));
+      expect(target.firstElementChild).toBeNull();
+      expect(f.owner.isReady(request)).toBe(false);
+      for (const key of navigationKeys) {
+        expect(f.key(key).defaultPrevented).toBe(false);
+      }
+
+      await act(async () => setVisible(true));
+      await waitFor(() => expect(f.owner.isReady(request)).toBe(true));
+      const list = target.firstElementChild;
+      fireEvent.click(list);
+      expect(list.textContent).toBe('Count 1');
+      for (const key of navigationKeys) {
+        expect(f.key(key).defaultPrevented).toBe(true);
+      }
+      expect(keys).toEqual(navigationKeys);
+
+      await act(async () => setVisible(false));
+      expect(target.firstElementChild).toBeNull();
+      expect(f.owner.isReady(request)).toBe(false);
+      for (const key of navigationKeys) {
+        expect(f.key(key).defaultPrevented).toBe(false);
+      }
+      expect(keys).toEqual(navigationKeys);
+      expect(f.owner.getSnapshot().request).toBe(request);
+      expect(request.target).toBe(target);
+      expect(target.isConnected).toBe(true);
+
+      await act(async () => setVisible(true));
+      await waitFor(() => expect(f.owner.isReady(request)).toBe(true));
+      expect(target.firstElementChild.textContent).toBe('Count 1');
+      expect(mounts).toHaveBeenCalledTimes(1);
+      expect(f.key('ArrowDown').defaultPrevented).toBe(true);
+      expect(keys).toEqual([...navigationKeys, 'ArrowDown']);
+      expect(f.errorOccurred).not.toHaveBeenCalled();
+    } finally {
+      mounted.unmount();
+    }
   });
 
   it('clears navigation and rejects a late custom ready signal after replacement or dismissal', async () => {
