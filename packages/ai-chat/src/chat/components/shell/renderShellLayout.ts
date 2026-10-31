@@ -96,12 +96,6 @@ export interface ShellLayoutInputs {
   showLauncher: boolean;
 }
 
-export interface ShellLayoutBindings {
-  setInputElement: (element: ChatInput | null) => void;
-  onInputHandleChange: (event: CustomEvent<InputFunctions | null>) => void;
-  setPanelElement: (element: NativePanels | null) => void;
-}
-
 export interface ShellLayoutTargets {
   generation: number;
   container: HTMLDivElement;

@@ -160,6 +160,11 @@ for (const framework of ['react', 'web-component']) {
     await input.click();
     await expect(input).toBeFocused();
     await expectWithinViewport(page);
+    // Clear focus while visible. Browsers blur a hidden focused element at
+    // different times (Firefox lazily), so any focus after the reopen is the
+    // shell's own.
+    await input.blur();
+    await expect(input).not.toBeFocused();
 
     await page.evaluate(() =>
       window.chatInstance.changeView({ mainWindow: false, launcher: true })
@@ -169,6 +174,11 @@ for (const framework of ['react', 'web-component']) {
       window.chatInstance.changeView({ mainWindow: true, launcher: false })
     );
     await expect(widget).toBeVisible();
+    // The reopen's focus request waits for readiness; let it settle first.
+    await native.evaluate((element) =>
+      (element as unknown as { whenReady(): Promise<boolean> }).whenReady()
+    );
+    await expect(input).not.toBeFocused();
     await page.evaluate(() => window.chatInstance.requestFocus());
     await expect(input).not.toBeFocused();
     await input.click();

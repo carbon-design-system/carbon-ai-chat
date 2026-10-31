@@ -22,9 +22,10 @@ import { transformReactIconToCarbonIcon } from '@carbon/ai-chat-components/es/gl
 import NativeChatShell, {
   type ShellLayoutTargets,
 } from './components/shell/ChatShell';
-import type { ShellContentState } from './utils/shellLifecycle';
+import type { ShellContentState, ShellOptions } from './utils/shellLifecycle';
 import type { PanelContentParts } from './components/panels/PanelContentAdapter';
 import { useNativeInputConfig } from './hooks/useNativeInputConfig';
+import { useWriteableElementPresence } from './hooks/useWriteableElementPresence';
 import { useChatViewStateInstance } from './hooks/useChatViewState';
 import { useIntl } from './hooks/useIntl';
 import { useSelector } from './hooks/useSelector';
@@ -39,6 +40,7 @@ import type { LocalMessageItem } from '../types/messaging/LocalMessageItem';
 import type { AppState } from '../types/state/AppState';
 import type { ExtensionHosts } from './services/extensionHosts';
 import type { HasServiceManager } from './hocs/withServiceManager';
+import { WriteableElementName } from '../types/instance/WriteableElements';
 
 const nativeShellEvents = {};
 
@@ -53,6 +55,44 @@ const NativeShell = withWebComponentBridge(
   }),
   { events: nativeShellEvents }
 );
+
+const ConfiguredNativeShell = React.forwardRef<
+  NativeChatShell,
+  Omit<React.ComponentPropsWithoutRef<typeof NativeShell>, 'options'> & {
+    /** The shell options; this wrapper adds the prompt-line presence. */
+    options: Omit<ShellOptions, 'customPromptLinePresent'>;
+    normalizeInput: boolean;
+  }
+>(function ConfiguredNativeShell({ options, normalizeInput, ...props }, ref) {
+  const { serviceManager } = useChatViewStateInstance();
+  const customPromptLinePresent = useWriteableElementPresence(
+    WriteableElementName.CUSTOM_PROMPT_LINE,
+    serviceManager.writeableElements,
+    options.writeableElementsPresentKeys
+      ?.split(' ')
+      .includes(WriteableElementName.CUSTOM_PROMPT_LINE)
+  );
+  const { mention, command, autocomplete, starters, inputActions } =
+    useNativeInputConfig(normalizeInput && !customPromptLinePresent);
+  const inputConfig = useMemo(
+    () => ({ mention, command, autocomplete, starters, inputActions }),
+    [mention, command, autocomplete, starters, inputActions]
+  );
+  // Hand the same presence value to the shell so the built-in input and its
+  // normalized configuration change together.
+  const shellOptions = useMemo(
+    () => ({ ...options, customPromptLinePresent }),
+    [options, customPromptLinePresent]
+  );
+  return (
+    <NativeShell
+      {...props}
+      ref={ref}
+      options={shellOptions}
+      inputConfig={inputConfig}
+    />
+  );
+});
 
 interface AppShellProps extends HasServiceManager {
   hosts: ExtensionHosts;
@@ -147,7 +187,9 @@ function AppShell({
   writeableElementsPresentKeys,
 }: AppShellProps) {
   const viewState = useChatViewStateInstance();
-  const inputConfig = useNativeInputConfig();
+  const catastrophicErrorType = useSelector(
+    (state: AppState) => state.catastrophicErrorType
+  );
   const [targets, setTargets] = useState<ShellLayoutTargets>();
   const [content, setContent] = useState<ShellContentState>();
   const shellRef = useRef<NativeChatShell | null>(null);
@@ -157,12 +199,6 @@ function AppShell({
   const options = useMemo(
     () => ({ hosts, hostElement, writeableElementsPresentKeys }),
     [hosts, hostElement, writeableElementsPresentKeys]
-  );
-  const { mention, command, autocomplete, starters, inputActions } =
-    inputConfig;
-  const normalizedInputConfig = useMemo(
-    () => ({ mention, command, autocomplete, starters, inputActions }),
-    [mention, command, autocomplete, starters, inputActions]
   );
   const getMessages = useCallback(() => messagesRef.current, []);
   const onTargetsReady = useCallback((next: ShellLayoutTargets | undefined) => {
@@ -222,10 +258,10 @@ function AppShell({
   );
   return (
     <AppShellErrorBoundary onError={handleBoundaryError}>
-      <NativeShell
+      <ConfiguredNativeShell
         ref={setShell}
         options={options}
-        inputConfig={normalizedInputConfig}
+        normalizeInput={!catastrophicErrorType}
         transformIcon={transformReactIconToCarbonIcon}
         getMessages={getMessages}
         onContentState={onContentState}

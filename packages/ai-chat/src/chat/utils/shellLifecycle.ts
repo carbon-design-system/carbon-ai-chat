@@ -98,6 +98,12 @@ export interface ShellOptions {
   hostElement?: Element;
   hosts: ExtensionHosts;
   writeableElementsPresentKeys?: string;
+  /**
+   * Custom prompt line presence as seen by the React owner of the input
+   * configuration. It alone decides whether the built-in input renders, so
+   * the input appears in the same update as its configuration.
+   */
+  customPromptLinePresent: boolean;
 }
 export type ShellInputConfig = Omit<
   NonNullable<ShellLayoutInputs['input']>,
@@ -170,11 +176,14 @@ export class ShellLifecycle {
   private releaseMobile?: () => void;
   private releaseKeyboard?: () => void;
   private mobileEnabled?: boolean;
+  private transformIcon?: ShellLayoutInputs['header']['transformIcon'];
   private styleInputs?: unknown[];
   private announcementInputs?: unknown[];
   private hadComposerFocus = false;
   private focusFrame?: number;
-  private presence = new Map<WriteableElementName, boolean>();
+  private renderedPromptLine?: boolean;
+  private moveComposerFocus = false;
+  private customHeaderPresent?: boolean;
   private restoreDraft = false;
   private warnedCustomHeader = false;
   private inputHandle?: InputFunctions;
@@ -204,8 +213,7 @@ export class ShellLifecycle {
     private getMessages: () => MessagesComponentClass | null,
     private whenReady: () => Promise<boolean>,
     private onContent: (content: ShellContentState) => void,
-    private onPanelsReady: () => void,
-    private transformIcon: ShellLayoutInputs['header']['transformIcon']
+    private onPanelsReady: () => void
   ) {
     const manager = viewState.serviceManager;
     this.inputCallbacks = new InputCallbacks(manager, () =>
@@ -295,6 +303,11 @@ export class ShellLifecycle {
     this.contentRevision = contentRevision ?? this.initialContentRevision;
   }
 
+  /** Forgets delivered content, so the next layout offers it again. */
+  forgetContent() {
+    this.previousContent = undefined;
+  }
+
   publishHandles() {
     const manager = this.viewState.serviceManager;
     manager.mainWindow = this.mainWindow;
@@ -304,12 +317,19 @@ export class ShellLifecycle {
     this.registered = true;
   }
 
-  connect() {
+  /**
+   * Starts window state, style and layout work. A failed shell connects with
+   * `publish` false: its error view stays styled and follows the window state,
+   * but it owns no handles.
+   */
+  connect(publish = true) {
     if (this.connected) {
       return;
     }
     this.connected = true;
-    this.publishHandles();
+    if (publish) {
+      this.publishHandles();
+    }
     const manager = this.viewState.serviceManager;
     this.releases.push(this.window.subscribe(this.invalidate));
     this.window.connect();
@@ -320,40 +340,20 @@ export class ShellLifecycle {
     this.releases.push(() =>
       document.removeEventListener('focusin', trackFocus, true)
     );
-    for (const name of [
-      WriteableElementName.CUSTOM_HEADER,
-      WriteableElementName.CUSTOM_PROMPT_LINE,
-    ]) {
-      this.releases.push(
-        observeWriteableElementPresence(
-          manager.writeableElements[name],
-          (present) => {
-            const previous = this.presence.get(name);
-            this.presence.set(name, present);
-            if (name === WriteableElementName.CUSTOM_PROMPT_LINE && present) {
-              this.restoreDraft = true;
-            }
-            if (previous !== present) {
-              this.invalidate();
-              if (
-                name === WriteableElementName.CUSTOM_PROMPT_LINE &&
-                this.hadComposerFocus
-              ) {
-                if (this.focusFrame !== undefined) {
-                  cancelAnimationFrame(this.focusFrame);
-                }
-                this.focusFrame = requestAnimationFrame(() => {
-                  this.focusFrame = undefined;
-                  if (this.connected) {
-                    requestComposerFocus(manager);
-                  }
-                });
-              }
-            }
+    // The custom prompt line's presence arrives from React through
+    // `options.customPromptLinePresent`; only the header is observed here.
+    this.releases.push(
+      observeWriteableElementPresence(
+        manager.writeableElements[WriteableElementName.CUSTOM_HEADER],
+        (present) => {
+          const previous = this.customHeaderPresent;
+          this.customHeaderPresent = present;
+          if (previous !== present) {
+            this.invalidate();
           }
-        )
-      );
-    }
+        }
+      )
+    );
   }
 
   update() {
@@ -516,21 +516,24 @@ export class ShellLifecycle {
     const showLauncher =
       launcher.isOn && state.persistedToBrowserStorage.viewState.launcher;
     const inputIsVisible = selectCustomPromptLineVisible(state);
-    const customPromptLinePresent =
-      this.presence.get(WriteableElementName.CUSTOM_PROMPT_LINE) ??
-      hasMeaningfulContent(
-        serviceManager.writeableElements[
-          WriteableElementName.CUSTOM_PROMPT_LINE
-        ]
-      );
+    const { customPromptLinePresent } = this.options;
     const customHeaderPresent =
-      this.presence.get(WriteableElementName.CUSTOM_HEADER) ??
+      this.customHeaderPresent ??
       hasMeaningfulContent(
         serviceManager.writeableElements[WriteableElementName.CUSTOM_HEADER]
       );
     if (customPromptLinePresent) {
       this.restoreDraft = true;
     }
+    // Move focus only once the layout actually swaps composers.
+    if (
+      this.renderedPromptLine !== undefined &&
+      this.renderedPromptLine !== customPromptLinePresent &&
+      this.hadComposerFocus
+    ) {
+      this.moveComposerFocus = true;
+    }
+    this.renderedPromptLine = customPromptLinePresent;
     const restoreDraft = { current: this.restoreDraft };
     const {
       onSendInput,
@@ -903,7 +906,10 @@ export class ShellLifecycle {
   }
 
   attach(targets: ShellLayoutTargets) {
+    // Also rebind when nothing is held: a disconnect releases the bindings,
+    // and an update while detached may already have stored these targets.
     const changed =
+      !this.releaseResize ||
       this.targets?.container !== targets.container ||
       this.targets?.widget !== targets.widget;
     this.targets = targets;
@@ -951,6 +957,33 @@ export class ShellLifecycle {
       });
     }
     this.updateDOM(changed);
+    if (this.moveComposerFocus) {
+      this.moveComposerFocus = false;
+      if (this.focusFrame !== undefined) {
+        cancelAnimationFrame(this.focusFrame);
+      }
+      const manager = this.viewState.serviceManager;
+      this.focusFrame = requestAnimationFrame(() => {
+        this.focusFrame = undefined;
+        if (!this.connected || !this.hadComposerFocus) {
+          return;
+        }
+        // The restored built-in input accepts focus once it is ready. Move
+        // focus only if the user has not focused something else meanwhile;
+        // removing the old composer fires no focusin, so the flag survives.
+        const generation = this.generation;
+        void this.whenReady().then((ready) => {
+          if (
+            ready &&
+            this.connected &&
+            generation === this.generation &&
+            this.hadComposerFocus
+          ) {
+            requestComposerFocus(manager);
+          }
+        });
+      });
+    }
   }
 
   private updateDOM(changed: boolean) {
@@ -1019,7 +1052,7 @@ export class ShellLifecycle {
       }
     }
     if (
-      this.presence.get(WriteableElementName.CUSTOM_HEADER) &&
+      this.customHeaderPresent &&
       config.history?.isOn &&
       state.historyPanelState.isMobile &&
       !this.warnedCustomHeader &&
@@ -1071,31 +1104,23 @@ export class ShellLifecycle {
     }
   };
 
-  disconnect() {
-    if (!this.connected && !this.registered) {
-      return;
-    }
-    this.connected = false;
+  /**
+   * After a native render failure: gives up this owner's handles, input
+   * handle and pending focus work. Window state, styles, resize and mobile
+   * bindings keep serving the error view until a real detach.
+   */
+  releaseForFailure() {
+    this.releaseRegistrations();
+  }
+
+  private releaseRegistrations() {
     this.registered = false;
     this.generation += 1;
-    this.window.disconnect();
-    this.inputCallbacks.disconnect();
-    this.releases
-      .splice(0)
-      .reverse()
-      .forEach((release) => release());
-    this.releaseResize?.();
-    this.releaseResize = undefined;
-    this.releaseMobile?.();
-    this.releaseMobile = undefined;
-    this.releaseKeyboard?.();
-    this.releaseKeyboard = undefined;
     if (this.focusFrame !== undefined) {
       cancelAnimationFrame(this.focusFrame);
     }
     this.focusFrame = undefined;
-    this.styleInputs = undefined;
-    this.mobileEnabled = undefined;
+    this.moveComposerFocus = false;
     const manager = this.viewState.serviceManager;
     if (manager.mainWindow === this.mainWindow) {
       manager.mainWindow = undefined;
@@ -1110,6 +1135,28 @@ export class ShellLifecycle {
       }
     }
     this.setInputHandle(null);
+  }
+
+  disconnect() {
+    if (!this.connected && !this.registered) {
+      return;
+    }
+    this.connected = false;
+    this.releaseRegistrations();
+    this.window.disconnect();
+    this.inputCallbacks.disconnect();
+    this.releases
+      .splice(0)
+      .reverse()
+      .forEach((release) => release());
+    this.releaseResize?.();
+    this.releaseResize = undefined;
+    this.releaseMobile?.();
+    this.releaseMobile = undefined;
+    this.releaseKeyboard?.();
+    this.releaseKeyboard = undefined;
+    this.renderedPromptLine = undefined;
+    this.styleInputs = undefined;
     this.targets = undefined;
   }
 }
