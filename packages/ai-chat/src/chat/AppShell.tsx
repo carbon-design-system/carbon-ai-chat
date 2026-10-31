@@ -17,6 +17,7 @@ import React, {
 } from 'react';
 import cx from 'classnames';
 import { createComponent } from '@lit/react';
+import { withWebComponentBridge } from '@carbon/ai-chat-components/es/react/utils/withWebComponentBridge.js';
 import { createPortal } from 'react-dom';
 import { transformReactIconToCarbonIcon } from '@carbon/ai-chat-components/es/globals/utils/iconTransform.js';
 import NativeChatShell, {
@@ -119,11 +120,19 @@ import type { FileUpload } from '../types/config/ServiceDeskConfig';
 
 import styles from './AppShell.scss';
 
-const NativeShell = createComponent({
-  tagName: 'cds-aichat-chat-shell',
-  elementClass: NativeChatShell,
-  react: React,
-});
+const nativeShellEvents = {};
+
+// The bridge sets the view's properties in DOM shims, where @lit/react's node
+// build passes them only to server rendering.
+const NativeShell = withWebComponentBridge(
+  createComponent({
+    tagName: 'cds-aichat-chat-shell',
+    elementClass: NativeChatShell,
+    react: React,
+    events: nativeShellEvents,
+  }),
+  { events: nativeShellEvents }
+);
 
 const ConfiguredNativeShell = React.forwardRef<
   NativeChatShell,
