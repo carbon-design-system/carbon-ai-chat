@@ -7,140 +7,186 @@
  *  @license
  */
 
-import React from 'react';
-import {
-  act,
-  fireEvent,
-  render as renderReact,
-  screen,
-} from '@testing-library/react';
+import { fireEvent, within } from '@testing-library/react';
 import { ContextProvider } from '@lit/context';
 import { LitElement, nothing } from 'lit';
-import { EndHumanAgentChatPanel } from '../../../src/chat/components/panels/EndHumanAgentChatPanel';
-import { RequestScreenSharePanel } from '../../../src/chat/components/panels/RequestScreenSharePanel';
+import '@carbon/ai-chat-components/es/components/chat-shell/src/shell.js';
+import type NativePanel from '@carbon/ai-chat-components/es/components/chat-shell/src/panel.js';
+import type NativeShell from '@carbon/ai-chat-components/es/components/chat-shell/src/shell.js';
+import type CDSButton from '@carbon/web-components/es/components/button/button.js';
+import type Toolbar from '@carbon/ai-chat-components/es/components/toolbar/src/toolbar.js';
+import NativePanels from '../../../src/chat/components/panels/NativePanels';
+import { ExtensionHosts } from '../../../src/chat/services/extensionHosts';
+import { ChatViewState } from '../../../src/chat/services/chatViewState';
+import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
+import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
+import type {
+  PanelViewInputs,
+  PanelCompositionCallbacks,
+} from '../../../src/chat/utils/panelComposition';
 import { ScreenShareState } from '../../../src/types/config/ServiceDeskConfig';
+import { ChatWidthBreakpoint } from '../../../src/types/state/AppState';
 import languagePack from '../../../src/chat/languages/en.json';
+import { EventBus } from '../../../src/chat/events/EventBus';
+import actions from '../../../src/chat/store/actions';
+import { createIntl } from '../../../src/chat/utils/i18n';
 import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
-import { createTestViewState } from '../../test_helpers';
+import {
+  applyConfigChange,
+  makeConfigStore,
+  setupAfterEach,
+  setupBeforeEach,
+} from '../../test_helpers';
+
+const mockFocus = jest.fn();
+jest.mock('../../../src/chat/utils/domUtils', () => ({
+  ...jest.requireActual('../../../src/chat/utils/domUtils'),
+  focusOnFirstFocusableElement: (element: HTMLElement) => mockFocus(element),
+}));
 
 class PromptProvider extends LitElement {
   readonly provider = new ContextProvider(this, {
     context: chatViewStateContext,
   });
-
   render() {
     return nothing;
   }
 }
 customElements.define('test-native-prompt-provider', PromptProvider);
+const states = new Set<ChatViewState>();
 
-let promptHost: PromptProvider;
-let promptRoot: HTMLDivElement;
-
-function render(children: React.ReactElement) {
-  return renderReact(children, { container: promptRoot });
+async function flush(view: NativePanels) {
+  for (let index = 0; index < 5; index += 1) {
+    await Promise.resolve();
+    await view.updateComplete;
+    await Promise.all(
+      Array.from(
+        view.querySelectorAll<LitElement>(
+          'cds-aichat-panel, cds-aichat-confirmation-body, cds-button, cds-aichat-toolbar'
+        )
+      ).map((child) => child.updateComplete)
+    );
+  }
 }
 
-const mockAnnounce = jest.fn();
-const mockFocus = jest.fn();
-const mockUpdateSharing = jest.fn();
-let mockOnOpenEnd: (event: CustomEvent) => void;
-let mockState: {
-  languagePack: typeof languagePack;
-  persistedToBrowserStorage: {
-    humanAgentState: { isConnected: boolean; isSuspended: boolean };
-  };
-};
-
-jest.mock('../../../src/chat/hooks/useSelector', () => ({
-  useSelector: (selector: (state: typeof mockState) => unknown) =>
-    selector(mockState),
-}));
-
-jest.mock('../../../src/chat/hooks/useAriaAnnouncer', () => ({
-  useAriaAnnouncer: () => mockAnnounce,
-}));
-
-jest.mock('../../../src/chat/hooks/useServiceManager', () => ({
-  useServiceManager: () => ({
-    humanAgentService: { screenShareUpdateRequestState: mockUpdateSharing },
-  }),
-}));
-
-jest.mock('../../../src/chat/utils/domUtils', () => ({
-  focusOnFirstFocusableElement: (element: HTMLElement) => mockFocus(element),
-}));
-
-jest.mock('@carbon/ai-chat-components/es/react/panel.js', () => ({
-  __esModule: true,
-  default: ({
-    children,
-    onKeyDown,
-    onOpenEnd,
-  }: {
-    children: React.ReactNode;
-    onKeyDown: React.KeyboardEventHandler;
-    onOpenEnd: (event: CustomEvent) => void;
-  }) => {
-    mockOnOpenEnd = onOpenEnd;
-    return (
-      <div role="presentation" onKeyDown={onKeyDown}>
-        {children}
-      </div>
-    );
-  },
-}));
-
-jest.mock('../../../src/chat/components/panels/PanelHeader', () => ({
-  PanelHeader: ({
-    labelBackButton,
-    onClickBack,
-  }: {
-    labelBackButton: string;
-    onClickBack: () => void;
-  }) => (
-    <button
-      type="button"
-      aria-label={`Close: ${labelBackButton}`}
-      onClick={onClickBack}
-    />
-  ),
-}));
-
-jest.mock('../../../src/chat/components/carbon/Button', () => ({
-  __esModule: true,
-  BUTTON_KIND: { SECONDARY: 'secondary' },
-  default: ({
-    children,
-    onClick,
-  }: {
-    children: React.ReactNode;
-    onClick: () => void;
-  }) => (
-    <button type="button" onClick={onClick}>
-      {children}
-    </button>
-  ),
-}));
-
-beforeEach(() => {
-  jest.clearAllMocks();
-  mockState = {
-    languagePack,
-    persistedToBrowserStorage: {
-      humanAgentState: { isConnected: true, isSuspended: false },
-    },
-  };
-  promptHost = document.createElement(
+async function fixture(
+  name: 'endChat' | 'screenShare',
+  connected = true,
+  suspended = false,
+  confirmation: PanelViewInputs['endChatConfirmation'] = null
+) {
+  const store = makeConfigStore({});
+  const persisted = store.getState().persistedToBrowserStorage;
+  store.dispatch(
+    actions.setAppStateValue('persistedToBrowserStorage', {
+      ...persisted,
+      humanAgentState: {
+        ...persisted.humanAgentState,
+        isConnected: connected,
+        isSuspended: suspended,
+      },
+    })
+  );
+  store.dispatch(actions.setViewState({ mainWindow: true, launcher: false }));
+  const eventBus = new EventBus();
+  const manager = {
+    store,
+    eventBus,
+    intl: createIntl({ locale: 'en', messages: languagePack }),
+    actions: { errorOccurred: jest.fn() },
+  } as unknown as ServiceManager;
+  const state = new ChatViewState(manager, { width: 800, height: 600 });
+  state.connect();
+  states.add(state);
+  const provider = document.createElement(
     'test-native-prompt-provider'
   ) as PromptProvider;
-  promptHost.provider.setValue(createTestViewState());
-  promptRoot = document.createElement('div');
-  promptHost.appendChild(promptRoot);
-  document.body.appendChild(promptHost);
-});
+  provider.provider.setValue(state);
+  document.body.append(provider);
+  await provider.updateComplete;
+  const shell = document.createElement('cds-aichat-shell') as NativeShell;
+  provider.shadowRoot.append(shell);
+  const view = document.createElement(
+    'cds-aichat-native-panels'
+  ) as NativePanels;
+  view.slot = 'panels';
+  const hosts = new ExtensionHosts(
+    eventBus as unknown as ChatInstance,
+    provider,
+    store,
+    () => false
+  );
+  const callbacks: jest.Mocked<PanelCompositionCallbacks> = {
+    onPanelOpenStart: jest.fn(),
+    onPanelOpenEnd: jest.fn(),
+    onPanelCloseStart: jest.fn(),
+    onPanelCloseEnd: jest.fn(),
+    onClose: jest.fn(),
+    onRestart: jest.fn(),
+    onToggleHomeScreen: jest.fn(),
+    onAcceptDisclaimer: jest.fn(),
+    confirmHumanAgentEndChat: jest.fn(),
+    hideConfirmEndChat: jest.fn(),
+    fireCustomPanelEvent: jest.fn(),
+    resetCustomPanelOptions: jest.fn(),
+    closeCustomPanel: jest.fn(),
+    closeResponsePanel: jest.fn(),
+    clearResponsePanelContent: jest.fn(),
+    closeIFramePanel: jest.fn(),
+    closeViewSourcePanel: jest.fn(),
+    closeHistoryPanel: jest.fn(),
+    updateScreenShareRequest: jest.fn(),
+    announce: jest.fn(),
+  };
+  const current = store.getState();
+  view.inputs = {
+    endChatConfirmation: confirmation,
+    showEndChatConfirmation: name === 'endChat',
+    showScreenShareRequest: name === 'screenShare',
+    isHydratingComplete: true,
+    shouldShowHydrationPanel: false,
+    isHomeScreenActive: false,
+    customPanelState: current.customPanelState,
+    historyPanelState: current.historyPanelState,
+    showDisclaimer: false,
+    responsePanelState: current.responsePanelState,
+    responseHasMessage: false,
+    iFramePanelState: current.iFramePanelState,
+    viewSourcePanelState: current.viewSourcePanelState,
+    isInputReadonly: false,
+    catastrophicErrorPanelState: current.catastrophicErrorPanelState,
+    contentRevision: {},
+  };
+  view.hosts = hosts;
+  view.callbacks = callbacks;
+  shell.append(view);
+  await shell.updateComplete;
+  await flush(view);
+  for (const request of hosts.getPanelContentSnapshot()) {
+    expect(hosts.commitPanelContent(request)).toBe(true);
+  }
+  await flush(view);
+  const frame = view.querySelector<NativePanel>(`[data-panel-name="${name}"]`);
+  const footer = frame.querySelector<HTMLElement>('[slot="footer"]');
+  const buttons = Array.from(footer.querySelectorAll<CDSButton>('cds-button'));
+  const openEnd = (isReactivation = false) =>
+    frame.dispatchEvent(
+      new CustomEvent('openend', { detail: { isReactivation } })
+    );
+  return { view, store, frame, footer, buttons, callbacks, openEnd };
+}
 
-afterEach(() => promptHost.remove());
+beforeEach(() => {
+  setupBeforeEach();
+  jest.clearAllMocks();
+  jest.useFakeTimers({ doNotFake: ['queueMicrotask'] });
+});
+afterEach(() => {
+  setupAfterEach();
+  states.forEach((state) => state.disconnect());
+  states.clear();
+  jest.useRealTimers();
+});
 
 describe('end human agent chat panel', () => {
   it.each([
@@ -167,186 +213,229 @@ describe('end human agent chat panel', () => {
     ],
   ] as const)(
     'uses the connected=%s and suspended=%s language variant',
-    async (isConnected, isSuspended, title, message, confirmLabel) => {
-      mockState.persistedToBrowserStorage.humanAgentState = {
-        isConnected,
-        isSuspended,
-      };
-      const onConfirm = jest.fn();
-      const onCancel = jest.fn();
-      render(
-        <EndHumanAgentChatPanel
-          open
-          onConfirm={onConfirm}
-          onCancel={onCancel}
-        />
-      );
-
+    async (connected, suspended, title, message, confirmLabel) => {
+      const f = await fixture('endChat', connected, suspended);
       expect(
-        await screen.findByRole('heading', { name: languagePack[title] })
+        within(f.frame).getByRole('heading', { name: languagePack[title] })
       ).toBeTruthy();
-      expect(screen.getByText(languagePack[message])).toBeTruthy();
-      fireEvent.click(
-        screen.getByRole('button', { name: languagePack[confirmLabel] })
+      expect(within(f.frame).getByText(languagePack[message])).toBeTruthy();
+      expect(f.frame.panelAriaLabel).toBe(languagePack[title]);
+      expect(f.buttons[1].textContent).toBe(languagePack[confirmLabel]);
+      expect(f.buttons[0].textContent).toBe(
+        languagePack.agent_confirmEndChatNo
       );
-      expect(onConfirm).toHaveBeenCalledTimes(1);
-      fireEvent.click(
-        screen.getByRole('button', {
-          name: languagePack.agent_confirmEndChatNo,
-        })
-      );
-      expect(onCancel).toHaveBeenCalledTimes(1);
+      f.buttons[1].click();
+      expect(f.callbacks.confirmHumanAgentEndChat).toHaveBeenCalledTimes(1);
+      f.buttons[0].click();
+      expect(f.callbacks.hideConfirmEndChat).toHaveBeenCalledTimes(1);
     }
   );
 
-  it('uses host title and message overrides', async () => {
-    render(
-      <EndHumanAgentChatPanel
-        open
-        title="Finish support"
-        message="Leave this conversation?"
-        onConfirm={jest.fn()}
-        onCancel={jest.fn()}
-      />
-    );
-
+  it('uses card title, message, and handlers instead of the global end-chat handlers', async () => {
+    const onConfirm = jest.fn();
+    const onCancel = jest.fn();
+    const f = await fixture('endChat', true, false, {
+      title: 'Finish support',
+      message: 'Leave this conversation?',
+      onConfirm,
+      onCancel,
+    });
     expect(
-      await screen.findByRole('heading', { name: 'Finish support' })
+      within(f.frame).getByRole('heading', { name: 'Finish support' })
     ).toBeTruthy();
-    expect(screen.getByText('Leave this conversation?')).toBeTruthy();
-    act(() =>
-      mockOnOpenEnd(
-        new CustomEvent('openend', { detail: { isReactivation: false } })
-      )
+    expect(within(f.frame).getByText('Leave this conversation?')).toBeTruthy();
+    f.openEnd();
+    expect(f.callbacks.announce).toHaveBeenCalledWith(
+      'Leave this conversation?'
     );
-    expect(mockAnnounce).toHaveBeenCalledWith('Leave this conversation?');
+    f.buttons[1].click();
+    f.buttons[0].click();
+    expect(onConfirm).toHaveBeenCalledTimes(1);
+    expect(onCancel).toHaveBeenCalledTimes(1);
+    expect(f.callbacks.confirmHumanAgentEndChat).not.toHaveBeenCalled();
+    expect(f.callbacks.hideConfirmEndChat).not.toHaveBeenCalled();
   });
 
   it('updates native prompt text without interpreting host text as markup', async () => {
-    const props = { open: true, onConfirm: jest.fn(), onCancel: jest.fn() };
-    const { rerender } = render(
-      <EndHumanAgentChatPanel
-        {...props}
-        title="<strong>Finish support</strong>"
-        message="<img src=x onerror=alert(1)>"
-      />
-    );
-    const heading = await screen.findByRole('heading', {
-      name: '<strong>Finish support</strong>',
+    const confirmation = {
+      title: '<strong>Finish support</strong>',
+      message: '<img src=x onerror=alert(1)>',
+      onConfirm: jest.fn(),
+      onCancel: jest.fn(),
+    };
+    const f = await fixture('endChat', true, false, confirmation);
+    const heading = within(f.frame).getByRole('heading', {
+      name: confirmation.title,
     });
     const body = heading.closest('cds-aichat-confirmation-body');
     expect(body.shadowRoot).toBeNull();
     expect(body.getAttribute('slot')).toBe('body');
     expect(body.querySelector('strong, img')).toBeNull();
-    expect(screen.getByText('<img src=x onerror=alert(1)>')).toBeTruthy();
-
-    rerender(
-      <EndHumanAgentChatPanel
-        {...props}
-        title="Leave support"
-        message="You can start another conversation."
-      />
-    );
-    expect(await screen.findByRole('heading', { name: 'Leave support' })).toBe(
-      heading
-    );
+    expect(within(f.frame).getByText(confirmation.message)).toBeTruthy();
+    f.view.inputs = {
+      ...f.view.inputs,
+      endChatConfirmation: {
+        ...confirmation,
+        title: 'Leave support',
+        message: 'You can start another conversation.',
+      },
+    };
+    await flush(f.view);
     expect(
-      screen.getByText('You can start another conversation.')
+      within(f.frame).getByRole('heading', { name: 'Leave support' })
+    ).toBe(heading);
+    expect(
+      within(f.frame).getByText('You can start another conversation.')
     ).toBeTruthy();
+  });
+
+  it('reacts to human-agent state and translated labels without replacing the footer', async () => {
+    const f = await fixture('endChat');
+    const persisted = f.store.getState().persistedToBrowserStorage;
+    f.store.dispatch(
+      actions.setAppStateValue('persistedToBrowserStorage', {
+        ...persisted,
+        humanAgentState: {
+          ...persisted.humanAgentState,
+          isConnected: false,
+          isSuspended: true,
+        },
+      })
+    );
+    applyConfigChange(f.store, {
+      ...f.store.getState().config.public,
+      strings: {
+        agent_confirmCancelRequestTitle: 'Cancel support',
+        agent_confirmCancelRequestMessage: 'Stop waiting?',
+        agent_confirmEndSuspendedYes: 'Leave queue',
+        agent_confirmEndChatNo: 'Stay here',
+      },
+    });
+    await flush(f.view);
+    expect(
+      within(f.frame).getByRole('heading', { name: 'Cancel support' })
+    ).toBeTruthy();
+    expect(within(f.frame).getByText('Stop waiting?')).toBeTruthy();
+    expect(f.frame.querySelector('[slot="footer"]')).toBe(f.footer);
+    expect(f.buttons[1].textContent).toBe('Leave queue');
+    expect(f.buttons[0].textContent).toBe('Stay here');
+    f.openEnd();
+    expect(f.callbacks.announce).toHaveBeenLastCalledWith('Stop waiting?');
   });
 });
 
 describe('screen share request panel', () => {
   it.each([
-    ['agent_sharingAcceptButton', ScreenShareState.ACCEPTED],
-    ['agent_sharingDeclineButton', ScreenShareState.DECLINED],
-  ] as const)('maps %s to %s', (label, state) => {
-    render(<RequestScreenSharePanel open />);
-
-    fireEvent.click(screen.getByRole('button', { name: languagePack[label] }));
-
-    expect(mockUpdateSharing).toHaveBeenCalledTimes(1);
-    expect(mockUpdateSharing).toHaveBeenCalledWith(state);
+    ['agent_sharingAcceptButton', ScreenShareState.ACCEPTED, 1],
+    ['agent_sharingDeclineButton', ScreenShareState.DECLINED, 0],
+  ] as const)('maps %s to %s', async (label, state, index) => {
+    const f = await fixture('screenShare');
+    expect(f.buttons[index].textContent).toBe(languagePack[label]);
+    f.buttons[index].click();
+    expect(f.callbacks.updateScreenShareRequest).toHaveBeenCalledTimes(1);
+    expect(f.callbacks.updateScreenShareRequest).toHaveBeenCalledWith(state);
   });
 
-  it('declines from the header close button', () => {
-    render(<RequestScreenSharePanel open />);
-
-    fireEvent.click(
-      screen.getByRole('button', {
-        name: `Close: ${languagePack.agent_sharingDeclineButton}`,
-      })
+  it('declines from the actual header close button', async () => {
+    const f = await fixture('screenShare');
+    const toolbar = f.frame.querySelector<Toolbar>('cds-aichat-toolbar');
+    expect(toolbar.actions[0].text).toBe(
+      languagePack.agent_sharingDeclineButton
     );
-
-    expect(mockUpdateSharing).toHaveBeenCalledTimes(1);
-    expect(mockUpdateSharing).toHaveBeenCalledWith(ScreenShareState.DECLINED);
+    const close =
+      toolbar.shadowRoot.querySelector<HTMLElement>('cds-icon-button');
+    expect(close).not.toBeNull();
+    close.click();
+    expect(f.callbacks.updateScreenShareRequest).toHaveBeenCalledTimes(1);
+    expect(f.callbacks.updateScreenShareRequest).toHaveBeenCalledWith(
+      ScreenShareState.DECLINED
+    );
   });
 
-  it('declines on Escape and stops Escape from reaching the chat shell', () => {
+  it('declines on Escape and stops Escape from reaching the chat shell', async () => {
+    const f = await fixture('screenShare');
     const onKeyDown = jest.fn();
-    render(
-      <div role="presentation" onKeyDown={onKeyDown}>
-        <RequestScreenSharePanel open />
-      </div>
-    );
-
-    fireEvent.keyDown(
-      screen.getByRole('button', {
-        name: languagePack.agent_sharingDeclineButton,
-      }),
-      { key: 'Escape' }
-    );
-
-    expect(mockUpdateSharing).toHaveBeenCalledWith(ScreenShareState.DECLINED);
-    expect(onKeyDown).not.toHaveBeenCalled();
-  });
-
-  it('preserves focus on reactivation and resets after a close and reopen', () => {
-    const { rerender } = render(<RequestScreenSharePanel open />);
-    act(() =>
-      mockOnOpenEnd(
-        new CustomEvent('openend', { detail: { isReactivation: false } })
-      )
-    );
-    rerender(<RequestScreenSharePanel open />);
-    act(() =>
-      mockOnOpenEnd(
-        new CustomEvent('openend', { detail: { isReactivation: true } })
-      )
-    );
-
-    expect(mockFocus).toHaveBeenCalledTimes(1);
-    expect(mockAnnounce).toHaveBeenCalledTimes(1);
-
-    rerender(<RequestScreenSharePanel open={false} />);
-    rerender(<RequestScreenSharePanel open />);
-    act(() =>
-      mockOnOpenEnd(
-        new CustomEvent('openend', { detail: { isReactivation: false } })
-      )
-    );
-
-    expect(mockFocus).toHaveBeenCalledTimes(2);
-    expect(mockAnnounce).toHaveBeenCalledTimes(2);
-  });
-
-  it('requests footer focus and announces only after the panel opens', () => {
-    render(<RequestScreenSharePanel open />);
-    expect(mockFocus).not.toHaveBeenCalled();
-    expect(mockAnnounce).not.toHaveBeenCalled();
-
-    act(() =>
-      mockOnOpenEnd(
-        new CustomEvent('openend', { detail: { isReactivation: false } })
-      )
-    );
-
-    const decline = screen.getByRole('button', {
-      name: languagePack.agent_sharingDeclineButton,
+    f.view.addEventListener('keydown', onKeyDown);
+    const event = new KeyboardEvent('keydown', {
+      key: 'Escape',
+      bubbles: true,
+      cancelable: true,
     });
-    expect(mockFocus).toHaveBeenCalledWith(decline.parentElement);
-    expect(mockAnnounce).toHaveBeenCalledWith(
+    f.buttons[0].dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(true);
+    expect(f.callbacks.updateScreenShareRequest).toHaveBeenCalledWith(
+      ScreenShareState.DECLINED
+    );
+    expect(onKeyDown).not.toHaveBeenCalled();
+    fireEvent.keyDown(f.buttons[0], { key: 'Enter' });
+    expect(onKeyDown).toHaveBeenCalledTimes(1);
+    expect(f.callbacks.updateScreenShareRequest).toHaveBeenCalledTimes(1);
+  });
+
+  it('preserves focus on reactivation and resets after a close and reopen', async () => {
+    const f = await fixture('screenShare');
+    f.openEnd();
+    f.openEnd(true);
+    expect(mockFocus).toHaveBeenCalledTimes(1);
+    expect(f.callbacks.announce).toHaveBeenCalledTimes(1);
+    f.view.inputs = { ...f.view.inputs, showScreenShareRequest: false };
+    await flush(f.view);
+    jest.advanceTimersByTime(600);
+    await flush(f.view);
+    f.view.inputs = { ...f.view.inputs, showScreenShareRequest: true };
+    await flush(f.view);
+    jest.advanceTimersByTime(600);
+    await flush(f.view);
+    expect(mockFocus).toHaveBeenCalledTimes(2);
+    expect(f.callbacks.announce).toHaveBeenCalledTimes(2);
+    expect(mockFocus).toHaveBeenLastCalledWith(f.footer);
+  });
+
+  it('requests footer focus before announcing and only after the panel opens', async () => {
+    const f = await fixture('screenShare');
+    expect(mockFocus).not.toHaveBeenCalled();
+    expect(f.callbacks.announce).not.toHaveBeenCalled();
+    f.openEnd();
+    expect(mockFocus).toHaveBeenCalledWith(f.footer);
+    expect(f.callbacks.announce).toHaveBeenCalledWith(
       languagePack.agent_sharingRequestMessage
+    );
+    expect(mockFocus.mock.invocationCallOrder[0]).toBeLessThan(
+      f.callbacks.announce.mock.invocationCallOrder[0]
+    );
+  });
+
+  it('keeps frame defaults, footer classes, secondary cancel kind and responsive button sizes', async () => {
+    const f = await fixture('screenShare');
+    expect(f.frame.priority).toBe(75);
+    expect(f.frame.fullWidth).toBe(true);
+    expect(f.frame.showChatHeader).toBe(false);
+    expect(f.frame.panelAriaLabel).toBe(languagePack.agent_sharingRequestTitle);
+    expect(
+      f.footer.classList.contains('cds-aichat--confirm-panel__footer')
+    ).toBe(true);
+    expect(
+      f.buttons.every((button) =>
+        button.classList.contains('cds-aichat--confirm-panel__button')
+      )
+    ).toBe(true);
+    expect(f.buttons[0].kind).toBe('secondary');
+    expect(f.buttons[1].kind).toBe('primary');
+    f.store.dispatch(
+      actions.setAppStateValue(
+        'chatWidthBreakpoint',
+        ChatWidthBreakpoint.NARROW
+      )
+    );
+    await flush(f.view);
+    expect(f.buttons.map((button) => button.size)).toEqual(['lg', 'lg']);
+    f.store.dispatch(
+      actions.setAppStateValue('chatWidthBreakpoint', ChatWidthBreakpoint.WIDE)
+    );
+    await flush(f.view);
+    expect(f.buttons.map((button) => button.size)).toEqual(['2xl', '2xl']);
+    expect(Array.from(f.footer.querySelectorAll('cds-button'))).toEqual(
+      f.buttons
     );
   });
 });
