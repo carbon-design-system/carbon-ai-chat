@@ -12,6 +12,7 @@ import { act, render, waitFor } from '@testing-library/react';
 import { deepQuerySelector } from '@carbon/ai-chat-components/es/globals/utils/dom-utils.js';
 import { ChatContainer } from '../../../src/react/ChatContainer';
 import { ChatCustomElement } from '../../../src/react/ChatCustomElement';
+import { bootModuleLoader } from '../../../src/web-components/cds-aichat-container/cds-aichat-container';
 import type { ChatContainerProps } from '../../../src/types/component/ChatContainer';
 import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import { OnErrorType } from '../../../src/types/config/ErrorConfig';
@@ -54,6 +55,9 @@ async function boot(
   return { instance, root: container.shadowRoot };
 }
 
+// The first wrapper boot in a file loads the boot modules on demand. Load
+// them once up front so that cost stays out of every case's after-render wait.
+beforeAll(() => bootModuleLoader.loadBootModules());
 beforeEach(setupBeforeEach);
 afterEach(() => {
   setupAfterEach();
