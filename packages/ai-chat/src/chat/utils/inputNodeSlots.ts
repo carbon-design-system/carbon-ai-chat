@@ -8,6 +8,7 @@
  */
 
 import type { JSONContent } from '@tiptap/core';
+import isEqual from 'lodash-es/isEqual.js';
 import type { Message, MessageRequest } from '../../types/messaging/Messages';
 import type { RenderUserDefinedInputNodeState } from '../../types/component/ChatContainer';
 
@@ -26,14 +27,48 @@ interface InputNodeSlotEntry {
   isInline: boolean;
 }
 
-// One message's entries, kept while the store holds that message object. A
-// renderer gets the same `state` object for a slot on every render, which is
-// what the web-component adapter keys its per-slot cache on.
+// One message's entries, kept while the store holds that message object, so a
+// renderer gets the same `state` object for a slot on every render.
 const entriesByMessage = new WeakMap<MessageRequest, InputNodeSlotEntry[]>();
 
+// One token per slot and node content. It outlives a message update that
+// leaves the node unchanged, which `state` does not.
+const identities = new WeakMap<RenderUserDefinedInputNodeState, object>();
+
+/**
+ * A stable key for the node a `state` renders: the same while its slot shows
+ * the same node content, even after the message object changes. The
+ * web-component adapter caches the host's element by it.
+ */
+export function inputNodeIdentity(
+  state: RenderUserDefinedInputNodeState
+): object {
+  return identities.get(state) ?? state;
+}
+
+/**
+ * The input-node entries for every sent message. `previous` is the last
+ * result, so a replaced message's unchanged slots keep their identity.
+ */
 export function collectSlotEntries(
-  allMessagesByID: Record<string, Message>
+  allMessagesByID: Record<string, Message>,
+  previous: readonly InputNodeSlotEntry[] = []
 ): InputNodeSlotEntry[] {
+  let previousBySlot: Map<string, InputNodeSlotEntry> | undefined;
+  const createState = (
+    slotKey: string,
+    node: JSONContent,
+    message: MessageRequest
+  ) => {
+    previousBySlot ??= new Map(previous.map((entry) => [entry.slotKey, entry]));
+    const before = previousBySlot.get(slotKey)?.state;
+    const state = { node, message };
+    identities.set(
+      state,
+      before && isEqual(before.node, node) ? inputNodeIdentity(before) : {}
+    );
+    return state;
+  };
   const entries: InputNodeSlotEntry[] = [];
   for (const message of Object.values(allMessagesByID)) {
     if (!isRequestWithDisplayContent(message)) {
@@ -50,7 +85,7 @@ export function collectSlotEntries(
         messageId
       ).map(({ slotKey, node, isInline }) => ({
         slotKey,
-        state: { node, message },
+        state: createState(slotKey, node, message),
         isInline,
       }));
       entriesByMessage.set(message, messageEntries);

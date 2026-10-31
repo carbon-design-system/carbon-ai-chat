@@ -35,6 +35,7 @@ import { resolvePromptLineMode } from '../../chat/components/input/promptLineMod
 import { preloadBuildCarbonExtensions } from '../../chat/components/input/buildExtensionsLoader';
 import { consoleError } from '../../chat/utils/miscUtils';
 import { getWindowSize } from '../../chat/utils/windowSize';
+import { inputNodeIdentity } from '../../chat/utils/inputNodeSlots';
 import {
   BusEventType,
   BusEventViewChange,
@@ -43,7 +44,6 @@ import {
 import type {
   RenderCustomMessageFooter,
   RenderCustomRequestFooter,
-  RenderUserDefinedInputNodeState,
   RenderUserDefinedResponse,
   WCMarkdown,
   WCRenderCustomMessageFooter,
@@ -736,20 +736,20 @@ const toReactCustomRequestFooter = cachedAdapter(
 const toReactUserDefinedInputNode = cachedAdapter(
   (render: WCRenderUserDefinedInputNode): RenderUserDefinedInputNode => {
     // A call per render would rebuild the host's element whenever the portal
-    // re-renders. The host service hands each slot one `state` object until
-    // its message changes (`utils/inputNodeSlots.ts`), so each slot keeps its
-    // first result until then.
-    const rendered = new WeakMap<RenderUserDefinedInputNodeState, ReactNode>();
+    // re-renders, and a message update with the same node would replace it.
+    // Each slot keeps its first result while it shows the same node.
+    const rendered = new WeakMap<object, ReactNode>();
     return (state, instance) => {
-      if (!rendered.has(state)) {
+      const identity = inputNodeIdentity(state);
+      if (!rendered.has(identity)) {
         rendered.set(
-          state,
+          identity,
           renderWCSlotContent('renderUserDefinedInputNode', () =>
             render(state, instance)
           )
         );
       }
-      return rendered.get(state);
+      return rendered.get(identity);
     };
   }
 );
