@@ -10,13 +10,16 @@
 import React from 'react';
 import { LitElement } from 'lit';
 import { act, render, waitFor } from '@testing-library/react';
+import { deepQuerySelector } from '@carbon/ai-chat-components/es/globals/utils/dom-utils.js';
 import ChatShell from '../../../src/chat/components/shell/ChatShell';
 import type ChatInput from '../../../src/chat/components/input/ChatInput';
 import { ChatContainer } from '../../../src/react/ChatContainer';
 import actions from '../../../src/chat/store/actions';
+import { getDeepActiveElement } from '../../../src/chat/utils/domUtils';
 import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import type { ChatContainerProps } from '../../../src/types/component/ChatContainer';
 import { OnErrorType } from '../../../src/types/config/ErrorConfig';
+import { ViewType } from '../../../src/types/state/AppState';
 import {
   createBaseConfig,
   setupAfterEach,
@@ -96,6 +99,63 @@ describe('native shell readiness and lifetime', () => {
     ChatShell.prototype.commitMessages.call(f.view, target, generation);
     await pending;
     expect(ready).toHaveBeenCalledWith(true);
+  });
+
+  it('waits for the matching message commit before automatically focusing the input on open', async () => {
+    const f = await boot({
+      homescreen: { isOn: true, greeting: 'Welcome' },
+      shouldTakeFocusIfOpensAutomatically: true,
+    });
+    const input = f.view.querySelector<ChatInput>('cds-aichat-chat-input');
+    const editor = deepQuerySelector(input, 'textarea');
+    expect(editor).not.toBeNull();
+    await waitFor(() => expect(getDeepActiveElement()).toBe(editor));
+    await act(async () => {
+      await f.instance.changeView(ViewType.LAUNCHER);
+    });
+    await waitFor(() =>
+      expect(
+        f.view.querySelector('.cds-aichat--widget__layer--hidden')
+      ).not.toBeNull()
+    );
+
+    const outside = document.createElement('button');
+    outside.textContent = 'Outside the chat';
+    document.body.append(outside);
+    outside.focus();
+    expect(getDeepActiveElement()).toBe(outside);
+    const commits = jest
+      .spyOn(f.view, 'commitMessages')
+      .mockImplementation(() => {});
+    act(() => {
+      f.instance.serviceManager.store.dispatch(
+        actions.setHomeScreenIsOpen(false)
+      );
+    });
+    await waitFor(() => expect(commits).toHaveBeenCalled());
+    const [target, generation] =
+      commits.mock.calls[commits.mock.calls.length - 1];
+    expect(target.querySelector('.cds-aichat--messages')).not.toBeNull();
+
+    const readiness = jest.spyOn(f.view, 'whenReady');
+    await act(async () => {
+      await f.instance.changeView(ViewType.MAIN_WINDOW);
+    });
+    expect(readiness).toHaveBeenCalled();
+    expect(getDeepActiveElement()).toBe(outside);
+    expect(input.inputFunctions.hasFocus()).toBe(false);
+    await act(async () => {
+      ChatShell.prototype.commitMessages.call(f.view, target, generation - 1);
+    });
+    expect(getDeepActiveElement()).toBe(outside);
+    expect(input.inputFunctions.hasFocus()).toBe(false);
+
+    await act(async () => {
+      ChatShell.prototype.commitMessages.call(f.view, target, generation);
+    });
+    await waitFor(() => expect(getDeepActiveElement()).toBe(editor));
+    expect(input.inputFunctions.hasFocus()).toBe(true);
+    outside.remove();
   });
 
   it('keeps native targets and pending readiness through a same-task DOM move', async () => {
