@@ -15,9 +15,11 @@ import {
 import { transformReactIconToCarbonIcon } from '@carbon/ai-chat-components/es/globals/utils/iconTransform.js';
 import { useInputConfig } from './useInputConfig';
 
-export function useNativeInputConfig() {
-  const { mention, command, autocomplete, starters, actions } =
-    useInputConfig();
+export function useNativeInputConfig(enabled = true) {
+  const config = useInputConfig();
+  const { mention, command, autocomplete, starters, actions } = enabled
+    ? config
+    : {};
   const normalizedMention = useMemo(
     () => transformSuggestionConfig(mention),
     [mention]

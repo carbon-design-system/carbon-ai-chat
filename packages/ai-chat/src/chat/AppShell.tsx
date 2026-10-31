@@ -125,6 +125,27 @@ const NativeShell = createComponent({
   react: React,
 });
 
+const ConfiguredNativeShell = React.forwardRef<
+  NativeChatShell,
+  React.ComponentPropsWithoutRef<typeof NativeShell> & {
+    normalizeInput: boolean;
+  }
+>(function ConfiguredNativeShell({ layout, normalizeInput, ...props }, ref) {
+  const inputConfig = useNativeInputConfig(
+    normalizeInput && Boolean(layout.input)
+  );
+  return (
+    <NativeShell
+      {...props}
+      ref={ref}
+      layout={{
+        ...layout,
+        input: layout.input ? { ...layout.input, ...inputConfig } : undefined,
+      }}
+    />
+  );
+});
+
 function ShellMessages({
   shell,
   targets,
@@ -925,7 +946,6 @@ function AppShell({
     });
   }, [widgetContainerRef]);
 
-  const inputConfig = useNativeInputConfig();
   const { setInputRef: setInputElement, handleInputHandleChange } =
     useNativeInputHandle(setInputRef);
   const panels = useAppShellPanels({
@@ -1225,7 +1245,6 @@ function AppShell({
       ? {
           inputProps,
           contentOwner: hosts.autocompleteContent,
-          ...inputConfig,
         }
       : undefined,
     writeables: {
@@ -1241,9 +1260,10 @@ function AppShell({
 
   return (
     <AppShellErrorBoundary onError={handleBoundaryError}>
-      <NativeShell
+      <ConfiguredNativeShell
         ref={setNativeShell}
         layout={shellLayout}
+        normalizeInput={!catastrophicErrorType}
         bindings={bindings}
         onTargetsReady={onTargetsReady}
       />
