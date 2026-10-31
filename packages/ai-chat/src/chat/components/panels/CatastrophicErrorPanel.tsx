@@ -15,6 +15,7 @@ import React, {
   useState,
 } from 'react';
 import { createComponent } from '@lit/react';
+import { withWebComponentBridge } from '@carbon/ai-chat-components/es/react/utils/withWebComponentBridge.js';
 import { MarkdownWithDefaults } from '../helpers/MarkdownWithDefaults/MarkdownWithDefaults';
 import { PanelBodyContentAdapter } from './PanelBodyContentAdapter';
 import {
@@ -27,12 +28,19 @@ import type {
 } from './native/panelBodyContent';
 import { useChatViewStateInstance } from '../../hooks/useChatViewState';
 
-const NativeErrorBody = createComponent({
-  tagName: 'cds-aichat-error-body',
-  elementClass: ErrorBody,
-  react: React,
-  events: { onPanelContentReady: 'panel-content-ready' },
-});
+const nativeErrorBodyEvents = { onPanelContentReady: 'panel-content-ready' };
+
+// The bridge sets the view's properties in DOM shims, where @lit/react's node
+// build passes them only to server rendering.
+const NativeErrorBody = withWebComponentBridge(
+  createComponent({
+    tagName: 'cds-aichat-error-body',
+    elementClass: ErrorBody,
+    react: React,
+    events: nativeErrorBodyEvents,
+  }),
+  { events: nativeErrorBodyEvents }
+);
 
 function CatastrophicErrorPanel({
   title,
