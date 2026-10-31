@@ -28,6 +28,7 @@ import { LightDomHosts, type LightDomEntry } from './lightDomHosts';
 import type { AppState } from '../../types/state/AppState';
 import type { ChatInstance } from '../../types/instance/ChatInstance';
 import type { TypeAndHandler } from '../../types/instance/EventHandlers';
+import type { PanelName } from '../utils/panelComposition';
 import type {
   RenderCustomMessageFooterState,
   RenderCustomRequestFooterState,
@@ -52,6 +53,34 @@ interface ExtensionHostsSnapshot {
 
 type SlotKind = Exclude<keyof ExtensionHostsSnapshot, 'inputNode' | 'lightDom'>;
 type HostKind = SlotKind | 'inputNode';
+
+type PanelTargetName =
+  | 'error-body'
+  | 'hydration-body'
+  | 'custom-title'
+  | 'custom-body'
+  | 'response-title'
+  | 'response-body'
+  | 'response-footer'
+  | 'iframe-title'
+  | 'iframe-body'
+  | 'citation-title'
+  | 'citation-body'
+  | 'history-body';
+
+interface PanelContentRequest {
+  readonly panel: PanelName;
+  readonly revision: object;
+  readonly generation: number;
+  readonly names: readonly PanelTargetName[];
+  readonly targets: Readonly<Partial<Record<PanelTargetName, HTMLElement>>>;
+}
+
+interface PanelContentEntry {
+  request: PanelContentRequest;
+  placed: boolean;
+  committed: boolean;
+}
 
 interface MessagesStore {
   getState(): Pick<AppState, 'allMessagesByID'>;
@@ -108,6 +137,10 @@ function isTokenNode(entry: InputNodeSlotEntry): boolean {
  * renders. The service attaches it to the chat element only while the chat is
  * connected, its kind has a render callback, the view reported content, and
  * the record still exists.
+ *
+ * Panel targets stay inside the chat's shadow root. The native panel region
+ * places them, then the existing React tree commits their content. Revision
+ * tokens keep a retired render from acknowledging a newer panel update.
  */
 class ExtensionHosts {
   private snapshot = EMPTY_SNAPSHOT;
@@ -124,6 +157,11 @@ class ExtensionHosts {
   private messages: AppState['allMessagesByID'] | undefined;
   private unsubscribeStore: (() => void) | null = null;
   private readonly lightDom: LightDomHosts;
+  private panelTargets = new Map<PanelTargetName, HTMLElement>();
+  private panelContent = new Map<PanelName, PanelContentEntry>();
+  private panelSnapshot: readonly PanelContentRequest[] = Object.freeze([]);
+  private panelListeners = new Set<() => void>();
+  private panelGeneration = 0;
 
   /**
    * `isRequestFooterEnabled` is asked on each request-footer event, so a
@@ -191,7 +229,133 @@ class ExtensionHosts {
     this.unsubscribeStore?.();
     this.unsubscribeStore = null;
     this.lightDom.disconnect();
+    this.retireAllPanelContent();
     this.syncAll();
+  }
+
+  panelTargetFor(name: PanelTargetName): HTMLElement {
+    let target = this.panelTargets.get(name);
+    if (!target) {
+      target = document.createElement('div');
+      const part = name.slice(name.lastIndexOf('-') + 1);
+      target.slot = part;
+      if (part === 'body') {
+        target.className = 'cds-aichat--widget--expand-to-fit';
+      }
+      this.panelTargets.set(name, target);
+    }
+    return target;
+  }
+
+  getPanelContentSnapshot = (): readonly PanelContentRequest[] =>
+    this.panelSnapshot;
+
+  subscribePanelContent = (listener: () => void): (() => void) => {
+    this.panelListeners.add(listener);
+    return () => {
+      this.panelListeners.delete(listener);
+    };
+  };
+
+  preparePanelContent(
+    panel: PanelName,
+    revision: object,
+    names: readonly PanelTargetName[]
+  ): PanelContentRequest {
+    const previous = this.panelContent.get(panel);
+    if (
+      previous?.request.revision === revision &&
+      previous.request.names.length === names.length &&
+      previous.request.names.every((name, index) => name === names[index])
+    ) {
+      return previous.request;
+    }
+    const targets = Object.fromEntries(
+      names.map((name) => [name, this.panelTargetFor(name)])
+    );
+    const request: PanelContentRequest = Object.freeze({
+      panel,
+      revision,
+      generation: ++this.panelGeneration,
+      names: Object.freeze([...names]),
+      targets: Object.freeze(targets),
+    });
+    this.panelContent.set(panel, { request, placed: false, committed: false });
+    this.notifyPanelContent();
+    return request;
+  }
+
+  markPanelContentPlaced(request: PanelContentRequest): boolean {
+    const entry = this.panelContent.get(request.panel);
+    if (entry?.request !== request || !this.arePanelTargetsConnected(request)) {
+      return false;
+    }
+    if (!entry.placed) {
+      entry.placed = true;
+      this.notifyPanelContent();
+    }
+    return true;
+  }
+
+  commitPanelContent(request: PanelContentRequest): boolean {
+    const entry = this.panelContent.get(request.panel);
+    if (!this.isPanelContentPlaced(request)) {
+      return false;
+    }
+    if (!entry.committed) {
+      entry.committed = true;
+      this.notifyPanelContent();
+    }
+    return true;
+  }
+
+  isPanelContentPlaced(request: PanelContentRequest): boolean {
+    const entry = this.panelContent.get(request.panel);
+    return Boolean(
+      entry?.request === request &&
+      entry.placed &&
+      this.arePanelTargetsConnected(request)
+    );
+  }
+
+  isPanelContentCommitted(panel: PanelName, revision: object): boolean {
+    const entry = this.panelContent.get(panel);
+    return Boolean(
+      entry?.request.revision === revision &&
+      entry.committed &&
+      this.arePanelTargetsConnected(entry.request)
+    );
+  }
+
+  retirePanelContent(panel: PanelName): void {
+    if (this.panelContent.delete(panel)) {
+      this.notifyPanelContent();
+    }
+  }
+
+  retireAllPanelContent(): void {
+    if (this.panelContent.size) {
+      this.panelContent.clear();
+      this.notifyPanelContent();
+    }
+  }
+
+  private arePanelTargetsConnected(request: PanelContentRequest): boolean {
+    return request.names.every((name) => {
+      const target = request.targets[name];
+      return (
+        target.isConnected &&
+        (!this.chatWrapper?.shadowRoot ||
+          target.getRootNode() === this.chatWrapper.shadowRoot)
+      );
+    });
+  }
+
+  private notifyPanelContent(): void {
+    this.panelSnapshot = Object.freeze(
+      Array.from(this.panelContent.values(), (entry) => entry.request)
+    );
+    this.panelListeners.forEach((listener) => listener());
   }
 
   /** The slot's host element, created detached on first use. No DOM effect. */
