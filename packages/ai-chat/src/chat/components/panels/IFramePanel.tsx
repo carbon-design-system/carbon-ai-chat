@@ -9,6 +9,7 @@
 
 import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { createComponent, type EventName } from '@lit/react';
+import { withWebComponentBridge } from '@carbon/ai-chat-components/es/react/utils/withWebComponentBridge.js';
 import { InlineError } from '../responseTypes/error/InlineError';
 import IFrameBody, { type IFramePanelMessage } from './native/IFrameBody';
 import { PanelBodyContentAdapter } from './PanelBodyContentAdapter';
@@ -21,15 +22,22 @@ interface IFramePanelProps {
   messageItem?: IFramePanelMessage;
 }
 
-const NativeIFrameBody = createComponent({
-  tagName: 'cds-aichat-iframe-body',
-  elementClass: IFrameBody,
-  react: React,
-  events: {
-    onPanelContentReady:
-      'panel-content-ready' as EventName<PanelBodyContentReadyEvent>,
-  },
-});
+const nativeIFrameBodyEvents = {
+  onPanelContentReady:
+    'panel-content-ready' as EventName<PanelBodyContentReadyEvent>,
+};
+
+// The bridge sets the view's properties in DOM shims, where @lit/react's node
+// build passes them only to server rendering.
+const NativeIFrameBody = withWebComponentBridge(
+  createComponent({
+    tagName: 'cds-aichat-iframe-body',
+    elementClass: IFrameBody,
+    react: React,
+    events: nativeIFrameBodyEvents,
+  }),
+  { events: nativeIFrameBodyEvents }
+);
 
 const IFramePanel = ({ messageItem }: IFramePanelProps) => {
   const [content, setContent] = useState<PanelBodyContentDetail>();

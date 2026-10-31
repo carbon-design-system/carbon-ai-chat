@@ -9,6 +9,7 @@
 
 import React, { useRef } from 'react';
 import { createComponent } from '@lit/react';
+import { withWebComponentBridge } from '@carbon/ai-chat-components/es/react/utils/withWebComponentBridge.js';
 import ChatPanel from '@carbon/ai-chat-components/es/react/panel.js';
 import Button, { BUTTON_KIND } from '../carbon/Button';
 import { PanelHeader } from './PanelHeader';
@@ -18,11 +19,19 @@ import { useSelector } from '../../hooks/useSelector';
 import { AppState, ChatWidthBreakpoint } from '../../../types/state/AppState';
 import ConfirmationBody from './native/ConfirmationBody';
 
-const NativeConfirmationBody = createComponent({
-  tagName: 'cds-aichat-confirmation-body',
-  elementClass: ConfirmationBody,
-  react: React,
-});
+const nativeConfirmationBodyEvents = {};
+
+// The bridge sets the view's properties in DOM shims, where @lit/react's node
+// build passes them only to server rendering.
+const NativeConfirmationBody = withWebComponentBridge(
+  createComponent({
+    tagName: 'cds-aichat-confirmation-body',
+    elementClass: ConfirmationBody,
+    react: React,
+    events: nativeConfirmationBodyEvents,
+  }),
+  { events: nativeConfirmationBodyEvents }
+);
 
 export interface ConfirmPanelButtonProps {
   onConfirm: () => void;
