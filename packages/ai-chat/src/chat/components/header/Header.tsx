@@ -9,16 +9,25 @@
 
 import React, { forwardRef, useImperativeHandle, useRef } from 'react';
 import { createComponent } from '@lit/react';
+import { withWebComponentBridge } from '@carbon/ai-chat-components/es/react/utils/withWebComponentBridge.js';
 import { transformReactIconToCarbonIcon } from '@carbon/ai-chat-components/es/globals/utils/iconTransform.js';
 import type { HasRequestFocus } from '../../../types/utilities/HasRequestFocus';
 import type { HeaderProps } from '../../utils/headerView';
 import HeaderView from './chat-header';
 
-const NativeHeader = createComponent({
-  tagName: 'cds-aichat-header-view',
-  elementClass: HeaderView,
-  react: React,
-});
+const nativeHeaderEvents = {};
+
+// The bridge sets the view's properties in DOM shims, where @lit/react's node
+// build passes them only to server rendering.
+const NativeHeader = withWebComponentBridge(
+  createComponent({
+    tagName: 'cds-aichat-header-view',
+    elementClass: HeaderView,
+    react: React,
+    events: nativeHeaderEvents,
+  }),
+  { events: nativeHeaderEvents }
+);
 
 const Header = React.memo(
   forwardRef<HasRequestFocus, HeaderProps>(
