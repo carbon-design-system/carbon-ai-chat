@@ -27,7 +27,7 @@ import {
 import { getDeepActiveElement } from './utils/domUtils';
 
 import AppShellErrorBoundary from './AppShellErrorBoundary';
-import { LauncherContainer } from './components-legacy/launcher/LauncherContainer';
+import { LauncherContainer } from './components/launcher/LauncherContainer';
 import { InputFunctions } from './components/input/Input';
 import Layer from './components/carbon/Layer';
 import ChatShell from '@carbon/ai-chat-components/es/react/chat-shell.js';
