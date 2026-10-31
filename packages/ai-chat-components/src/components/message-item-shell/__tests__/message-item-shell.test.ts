@@ -36,12 +36,12 @@ describe('cds-aichat-message-item-shell', () => {
         expect(root.querySelector('slot[name="footer"]')).to.exist;
       });
 
-      it('wraps each slot in a part div instead of using it as a direct child', async () => {
+      it('wraps each slot in a div instead of using it as a direct child', async () => {
         const el = await renderShell(rowType);
 
         ['byline', 'content', 'attachment', 'footer'].forEach((name) => {
           const wrapper = el.shadowRoot!.querySelector(
-            `[part="slot-${name}"]`
+            `.${blockClass}__${name}`
           )!;
           expect(wrapper).to.exist;
           expect(wrapper.tagName).to.equal('DIV');
@@ -79,18 +79,18 @@ describe('cds-aichat-message-item-shell', () => {
         expect(assigned('slot[name="footer"]')[0].id).to.equal('footer');
       });
 
-      it('hides the byline wrapper when hidden-avatar is set', async () => {
+      it('reflects hide-avatar without hiding the byline wrapper', async () => {
         const el = await renderShell(rowType);
         const wrapper = el.shadowRoot!.querySelector<HTMLElement>(
           `.${blockClass}__byline`
         )!;
 
-        expect(getComputedStyle(wrapper).display).to.not.equal('none');
-
-        el.hiddenAvatar = true;
+        el.hideAvatar = true;
         await el.updateComplete;
 
-        expect(getComputedStyle(wrapper).display).to.equal('none');
+        // The byline wrapper stays visible — only the avatar image inside is hidden.
+        expect(getComputedStyle(wrapper).display).to.not.equal('none');
+        expect(el.hasAttribute('hide-avatar')).to.be.true;
       });
     });
   });
@@ -110,7 +110,7 @@ describe('cds-aichat-message-item-shell', () => {
       ['firstItem', 'first-item'],
       ['lastItem', 'last-item'],
       ['history', 'history'],
-      ['hiddenAvatar', 'hidden-avatar'],
+      ['hideAvatar', 'hide-avatar'],
       ['streaming', 'streaming'],
     ] as const
   ).forEach(([property, attribute]) => {

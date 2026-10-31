@@ -17,7 +17,6 @@ $story-class: message-item-shell-story;
   &-container {
     display: flex;
     flex-direction: column;
-    border: 1px solid theme.$border-subtle-01;
     gap: layout.$spacing-05;
     inline-size: 100%;
     max-inline-size: 800px;

@@ -7,8 +7,6 @@
  *  @license
  */
 
-/* eslint jsdoc/check-tag-names: ["error", { "definedTags": ["element", "slot", "csspart"] }] */
-
 import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { carbonElement } from '../../../globals/decorators/index.js';
@@ -32,15 +30,10 @@ export type MessageItemShellRowType = 'request' | 'response';
  * @experimental
  * @element cds-aichat-message-item-shell
  *
- * @slot byline - The name, timestamp, and avatar. Hidden when `hidden-avatar` is set.
- * @slot - Default slot. The message content.
- * @slot attachment - File upload status.
+ * @slot byline - The byline area. Contains the user name, timestamp, and avatar.
+ * @slot - default slot. The message content.
+ * @slot attachment - File upload chips or other attachments.
  * @slot footer - Footer content from the host.
- *
- * @csspart slot-byline - The wrapper around the byline slot.
- * @csspart slot-content - The wrapper around the default slot.
- * @csspart slot-attachment - The wrapper around the attachment slot.
- * @csspart slot-footer - The wrapper around the footer slot.
  */
 @carbonElement(blockClass)
 class CDSAIChatMessageItemShell extends LitElement {
@@ -96,23 +89,24 @@ class CDSAIChatMessageItemShell extends LitElement {
   history = false;
 
   /**
-   * Hides the byline area, including the avatar. Applies to both row types.
+   * Hides the avatar within the byline slot. The name and timestamp remain
+   * visible. Applies to both row types.
    */
-  @property({ type: Boolean, attribute: 'hidden-avatar', reflect: true })
-  hiddenAvatar = false;
+  @property({ type: Boolean, attribute: 'hide-avatar', reflect: true })
+  hideAvatar = false;
 
   render() {
     return html`
-      <div class="${blockClass}__byline" part="slot-byline">
+      <div class="${blockClass}__byline">
         <slot name="byline"></slot>
       </div>
-      <div class="${blockClass}__content" part="slot-content">
+      <div class="${blockClass}__content">
         <slot></slot>
       </div>
-      <div class="${blockClass}__attachment" part="slot-attachment">
+      <div class="${blockClass}__attachment">
         <slot name="attachment"></slot>
       </div>
-      <div class="${blockClass}__footer" part="slot-footer">
+      <div class="${blockClass}__footer">
         <slot name="footer"></slot>
       </div>
     `;

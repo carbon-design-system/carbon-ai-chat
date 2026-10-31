@@ -42,12 +42,18 @@ Set `full-width` to break the content out of the inset column.
 
 ### Hidden avatar
 
-Set `hidden-avatar` to hide the byline area on either row type.
+Set `hide-avatar` to hide the avatar image within the byline. The name and timestamp remain visible.
 
 ```html
-<cds-aichat-message-item-shell row-type="response" hidden-avatar>
-  <div slot="byline">Assistant</div>
-  <div>Content without a byline</div>
+<cds-aichat-message-item-shell row-type="response" hide-avatar>
+  <div slot="byline">
+    <img
+      class="cds-aichat-message-item-shell__byline-avatar"
+      src="..."
+      alt="Assistant" />
+    Assistant 10:42 AM
+  </div>
+  <div>Content</div>
 </cds-aichat-message-item-shell>
 ```
 

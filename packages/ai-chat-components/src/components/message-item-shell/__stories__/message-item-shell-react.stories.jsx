@@ -33,7 +33,7 @@ const renderRow = (args) => (
     rowId={args.rowId}
     groupId={args.groupId}
     fullWidth={args.fullWidth}
-    hiddenAvatar={args.hiddenAvatar}
+    hideAvatar={args.hideAvatar}
     streaming={args.streaming}
     firstItem={args.firstItem}
     lastItem={args.lastItem}
@@ -88,7 +88,7 @@ export const Grouped = {
     <div className={`${storyClass}-container`}>
       {renderRow({ ...args, rowType: 'request', groupId: '', rowId: 'req-1' })}
       {renderRow({ ...args, rowId: 'res-1' })}
-      {renderRow({ ...args, rowId: 'res-2', hiddenAvatar: true })}
+      {renderRow({ ...args, rowId: 'res-2', hideAvatar: true })}
     </div>
   ),
 };

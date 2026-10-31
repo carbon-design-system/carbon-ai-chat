@@ -54,6 +54,6 @@ $block-class: #{$prefix}-message-item-shell;
   max-inline-size: 100%;
 }
 
-:host(#{$block-class}[hidden-avatar]) .#{$block-class}__byline {
+:host(#{$block-class}[hide-avatar]) .#{$block-class}__byline-avatar {
   display: none;
 }

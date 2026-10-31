@@ -35,7 +35,7 @@ const argTypes = {
     control: 'boolean',
     description: 'Breaks the content out of the inset column.',
   },
-  hiddenAvatar: {
+  hideAvatar: {
     control: 'boolean',
     description: 'Hides the byline area, including the avatar.',
   },
@@ -68,7 +68,7 @@ const argTypes = {
 const defaultArgs = {
   rowType: 'request',
   fullWidth: false,
-  hiddenAvatar: false,
+  hideAvatar: false,
   rowId: 'row-1',
   groupId: '',
   streaming: false,
@@ -85,7 +85,7 @@ const renderRow = (args) => html`
     row-id=${args.rowId}
     group-id=${args.groupId}
     ?full-width=${args.fullWidth}
-    ?hidden-avatar=${args.hiddenAvatar}
+    ?hide-avatar=${args.hideAvatar}
     ?streaming=${args.streaming}
     ?first-item=${args.firstItem}
     ?last-item=${args.lastItem}
@@ -138,7 +138,7 @@ export const HiddenAvatar = {
     ...defaultArgs,
     rowType: 'response',
     rowId: 'row-4',
-    hiddenAvatar: true,
+    hideAvatar: true,
   },
   render: Default.render,
 };
@@ -150,7 +150,7 @@ export const Grouped = {
     <div class="${storyClass}-container">
       ${renderRow({ ...args, rowType: 'request', groupId: '', rowId: 'req-1' })}
       ${renderRow({ ...args, rowId: 'res-1' })}
-      ${renderRow({ ...args, rowId: 'res-2', hiddenAvatar: true })}
+      ${renderRow({ ...args, rowId: 'res-2', hideAvatar: true })}
     </div>
   `,
 };
