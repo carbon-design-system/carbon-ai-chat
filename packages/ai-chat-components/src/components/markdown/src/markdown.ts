@@ -26,6 +26,11 @@ import {
 import type {
   MarkdownCustomRendererMountDetail,
   MarkdownPluginFallbackMountDetail,
+  MarkdownPluginHostMountDetail,
+} from './utils/plugin-host-container.js';
+import {
+  getMarkdownPluginHostTargets,
+  releaseMarkdownPluginHostClaims,
 } from './utils/plugin-host-container.js';
 import {
   renderMarkdownTree,
@@ -276,6 +281,8 @@ class CDSAIChatMarkdown extends LitElement {
    */
   private slotHosts: Map<string, HTMLElement> = new Map();
 
+  private slotHostParents = new WeakMap<HTMLElement, Node | null>();
+
   /**
    * `<slot name=X slot=X>` forwarders minted for {@link customRenderers} hosts
    * an outer listener relocated into its own light DOM, keyed by slot name.
@@ -350,6 +357,12 @@ class CDSAIChatMarkdown extends LitElement {
    */
   private hasConnected = false;
 
+  private pendingDisconnect: object | null = null;
+
+  private connectedAncestors: Node[] = [];
+
+  private connectedControllerTargets: HTMLElement[] = [];
+
   /**
    * Tracks whether the markdown property has been explicitly set by the user.
    * When false, the component will monitor Light DOM changes.
@@ -372,8 +385,45 @@ class CDSAIChatMarkdown extends LitElement {
   private pendingLightDomMutations = 0;
 
   connectedCallback() {
+    const ancestors: Node[] = [this];
+    let ancestor: Node | null = this.parentNode;
+    while (ancestor) {
+      ancestors.push(ancestor);
+      ancestor =
+        ancestor instanceof ShadowRoot ? ancestor.host : ancestor.parentNode;
+    }
+    const controllerTargets = getMarkdownPluginHostTargets(this);
+    const sameControllers =
+      controllerTargets.length === this.connectedControllerTargets.length &&
+      controllerTargets.every(
+        (target, index) => target === this.connectedControllerTargets[index]
+      );
+    // External event listeners have no registered owner to compare.
+    const unknownClaim =
+      this.connectedControllerTargets.length === 0 &&
+      this.delegatedPluginSlots.size > 0;
+    const sameAncestors =
+      ancestors.length === this.connectedAncestors.length &&
+      ancestors.every(
+        (ancestor, index) => ancestor === this.connectedAncestors[index]
+      );
+    const movedWithinTask =
+      this.pendingDisconnect !== null &&
+      sameControllers &&
+      (!unknownClaim || sameAncestors);
+    const reofferLocalHosts =
+      movedWithinTask && controllerTargets.length === 0 && !sameAncestors;
+    if (this.pendingDisconnect !== null && !movedWithinTask) {
+      this.releaseRendererHosts();
+    }
+    this.pendingDisconnect = null;
+    this.connectedAncestors = ancestors;
+    this.connectedControllerTargets = controllerTargets;
     super.connectedCallback();
     this.hasConnected = true;
+    if (reofferLocalHosts) {
+      this.reofferLocalHosts();
+    }
 
     if (IS_PHONE) {
       this.setAttribute('phone', '');
@@ -389,9 +439,11 @@ class CDSAIChatMarkdown extends LitElement {
       this.handleChecklistToggle as EventListener
     );
 
-    // Ensure we parse and render on initial mount, even if markdown was set before connection
-    this.needsReparse = true;
-    this.scheduleRender();
+    // A same-task move keeps the existing renderer results and their state.
+    if (!movedWithinTask) {
+      this.needsReparse = true;
+      this.scheduleRender();
+    }
   }
 
   disconnectedCallback() {
@@ -401,14 +453,34 @@ class CDSAIChatMarkdown extends LitElement {
       this.handleChecklistToggle as EventListener
     );
     this.stopObservingLightDom();
-    // Tear down any adopted slot hosts so they don't leak across re-connect.
-    for (const host of this.slotHosts.values()) {
+    const pending = {};
+    this.pendingDisconnect = pending;
+    queueMicrotask(() => {
+      if (this.pendingDisconnect !== pending || this.isConnected) {
+        return;
+      }
+      this.pendingDisconnect = null;
+      this.releaseRendererHosts();
+      this.connectedAncestors = [];
+      this.connectedControllerTargets = [];
+    });
+  }
+
+  private releaseSlotHost(slotName: string) {
+    const host = this.slotHosts.get(slotName);
+    if (host && host.parentNode === this.slotHostParents.get(host)) {
       host.remove();
     }
-    this.slotHosts.clear();
-    // Ask any delegating chat container to drop its hosts too. The loop above
-    // already detached every relocated node — `slotHosts` holds the reference
-    // wherever the node ended up — so this retires forwarders and announces.
+    if (host) {
+      this.slotHostParents.delete(host);
+    }
+    this.slotHosts.delete(slotName);
+  }
+
+  private releaseRendererHosts() {
+    for (const slotName of this.slotHosts.keys()) {
+      this.releaseSlotHost(slotName);
+    }
     for (const slotName of this.delegatedPluginSlots.keys()) {
       this.retireDelegatedSlot(slotName);
     }
@@ -788,6 +860,63 @@ class CDSAIChatMarkdown extends LitElement {
   }
 
   /**
+   * Offers a host to a chat container and records the claim. The innermost
+   * hop back to the host is minted before the offer: the claimant fills the
+   * host while it handles the event, and content that connects then must
+   * already be slotted. An unclaimed offer removes the hop again.
+   * @internal
+   */
+  private offerHost(detail: MarkdownPluginHostMountDetail): boolean {
+    const { slotName } = detail;
+    const forwarder = document.createElement('slot');
+    forwarder.setAttribute('name', slotName);
+    forwarder.setAttribute('slot', slotName);
+    this.appendChild(forwarder);
+    const mountEvent = new CustomEvent(
+      'cds-aichat-markdown-plugin-host-mount',
+      { bubbles: true, composed: true, cancelable: true, detail }
+    );
+    this.dispatchEvent(mountEvent);
+    if (!mountEvent.defaultPrevented) {
+      forwarder.remove();
+      return false;
+    }
+    this.delegatedPluginSlots.add(slotName);
+    this.rendererForwarders.set(slotName, forwarder);
+    return true;
+  }
+
+  private reofferLocalHosts() {
+    for (const descriptor of this.latestRendererDescriptors) {
+      const { slotName } = descriptor;
+      const host = this.slotHosts.get(slotName);
+      if (!host || host.parentNode !== this) {
+        continue;
+      }
+      if (descriptor.kind === 'pluginFallback') {
+        if (
+          this.offerHost({
+            kind: 'pluginFallback',
+            slotName,
+            html: descriptor.html,
+            isInline: descriptor.isInline,
+          })
+        ) {
+          this.releaseSlotHost(slotName);
+        }
+      } else {
+        this.offerHost({
+          kind: 'customRenderer',
+          slotName,
+          element: host,
+          isInline: false,
+        });
+        this.slotHostParents.set(host, host.parentNode);
+      }
+    }
+  }
+
+  /**
    * Drops a claim: retires the forwarder minted for it, if any, then tells the
    * container to let go.
    *
@@ -796,26 +925,11 @@ class CDSAIChatMarkdown extends LitElement {
    * a removed host into a blank region instead of the default rendering.
    * @internal
    */
-  /**
-   * Records a claim and mints the innermost hop back to the host the listener
-   * just relocated. Called in the same pass that read the claim because the
-   * mount event fires once per host and is never replayed — minting here is
-   * what makes a claim without its forwarder unrepresentable.
-   * @internal
-   */
-  private adoptDelegatedSlot(slotName: string) {
-    this.delegatedPluginSlots.add(slotName);
-    const forwarder = document.createElement('slot');
-    forwarder.setAttribute('name', slotName);
-    forwarder.setAttribute('slot', slotName);
-    this.rendererForwarders.set(slotName, forwarder);
-    this.appendChild(forwarder);
-  }
-
   private retireDelegatedSlot(slotName: string) {
     this.rendererForwarders.get(slotName)?.remove();
     this.rendererForwarders.delete(slotName);
     this.delegatedPluginSlots.delete(slotName);
+    releaseMarkdownPluginHostClaims(this.connectedControllerTargets, slotName);
     this.dispatchEvent(
       new CustomEvent('cds-aichat-markdown-plugin-host-unmount', {
         bubbles: true,
@@ -853,24 +967,12 @@ class CDSAIChatMarkdown extends LitElement {
           descriptor.slotName
         );
         if (!alreadyDelegated && !this.slotHosts.has(descriptor.slotName)) {
-          const mountEvent = new CustomEvent(
-            'cds-aichat-markdown-plugin-host-mount',
-            {
-              bubbles: true,
-              composed: true,
-              cancelable: true,
-              detail: {
-                kind: 'pluginFallback',
-                slotName: descriptor.slotName,
-                html: descriptor.html,
-                isInline: descriptor.isInline,
-              } satisfies MarkdownPluginFallbackMountDetail,
-            }
-          );
-          this.dispatchEvent(mountEvent);
-          if (mountEvent.defaultPrevented) {
-            this.adoptDelegatedSlot(descriptor.slotName);
-          }
+          this.offerHost({
+            kind: 'pluginFallback',
+            slotName: descriptor.slotName,
+            html: descriptor.html,
+            isInline: descriptor.isInline,
+          } satisfies MarkdownPluginFallbackMountDetail);
         } else if (alreadyDelegated) {
           // The chain owns this slot; push HTML updates through a second
           // event so streaming chunks reach the page-level host element.
@@ -900,6 +1002,7 @@ class CDSAIChatMarkdown extends LitElement {
           host.setAttribute('slot', descriptor.slotName);
           this.slotHosts.set(descriptor.slotName, host);
           this.appendChild(host);
+          this.slotHostParents.set(host, host.parentNode);
         }
         // Only rewrite innerHTML when the plugin output actually changed;
         // streaming re-renders frequently land here with the same HTML.
@@ -932,11 +1035,7 @@ class CDSAIChatMarkdown extends LitElement {
         continue;
       }
       if (result == null) {
-        const existing = this.slotHosts.get(descriptor.slotName);
-        if (existing) {
-          existing.remove();
-          this.slotHosts.delete(descriptor.slotName);
-        }
+        this.releaseSlotHost(descriptor.slotName);
         continue;
       }
       wanted.add(descriptor.slotName);
@@ -955,36 +1054,25 @@ class CDSAIChatMarkdown extends LitElement {
         // ownership of the host's content across renders, and mints the slot
         // hop back to it below. If no ancestor takes over (standalone usage,
         // e.g. storybook), host it locally.
-        const mountEvent = new CustomEvent(
-          'cds-aichat-markdown-plugin-host-mount',
-          {
-            bubbles: true,
-            composed: true,
-            cancelable: true,
-            detail: {
-              kind: 'customRenderer',
-              slotName: descriptor.slotName,
-              element: host,
-              isInline: false,
-            } satisfies MarkdownCustomRendererMountDetail,
-          }
-        );
-        this.dispatchEvent(mountEvent);
-        if (mountEvent.defaultPrevented) {
-          this.adoptDelegatedSlot(descriptor.slotName);
-        } else {
+        const claimed = this.offerHost({
+          kind: 'customRenderer',
+          slotName: descriptor.slotName,
+          element: host,
+          isInline: false,
+        } satisfies MarkdownCustomRendererMountDetail);
+        if (!claimed) {
           this.appendChild(host);
         }
+        this.slotHostParents.set(host, host.parentNode);
       }
       if (host.firstChild !== result || host.childNodes.length !== 1) {
         host.replaceChildren(result);
       }
     }
 
-    for (const [slotName, host] of this.slotHosts) {
+    for (const slotName of this.slotHosts.keys()) {
       if (!wanted.has(slotName)) {
-        host.remove();
-        this.slotHosts.delete(slotName);
+        this.releaseSlotHost(slotName);
       }
     }
 
