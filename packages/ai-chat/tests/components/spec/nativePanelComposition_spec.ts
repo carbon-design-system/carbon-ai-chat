@@ -558,6 +558,44 @@ describe('native panel composition', () => {
     ]);
   });
 
+  it("focuses the frame's own body slot, not a body slot nested in its header", async () => {
+    // jsdom has no layout; tabbable requires a rendered rectangle.
+    const rectangle = document.body.getBoundingClientRect();
+    jest
+      .spyOn(HTMLElement.prototype, 'getClientRects')
+      .mockReturnValue(Object.assign([rectangle], { item: () => rectangle }));
+    const f = await fixture();
+    await f.commit();
+    f.view.inputs = {
+      ...f.view.inputs,
+      customPanelState: { ...f.view.inputs.customPanelState, isOpen: true },
+    };
+    await flush(f.view);
+    const frame = f.panel('custom');
+    const header = frame.querySelector(':scope > [slot="header"]');
+    const nested = document.createElement('div');
+    nested.slot = 'body';
+    const nestedButton = document.createElement('button');
+    nested.append(nestedButton);
+    header.prepend(nested);
+    const body = f.hosts.panelTargetFor('custom-body');
+    expect(body.parentElement).toBe(frame);
+    const bodyButton = document.createElement('button');
+    body.append(bodyButton);
+
+    expect(f.view.requestPanelFocus('custom')).toBe(true);
+    const focusChain: Element[] = [];
+    for (
+      let active: Element | null = document.activeElement;
+      active;
+      active = active.shadowRoot?.activeElement ?? null
+    ) {
+      focusChain.push(active);
+    }
+    expect(focusChain).toContain(bodyButton);
+    expect(focusChain).not.toContain(nestedButton);
+  });
+
   it('uses native prompt buttons, focuses and announces once, and cancels Escape without bubbling', async () => {
     // jsdom has no layout; tabbable requires a rendered rectangle.
     const rectangle = document.body.getBoundingClientRect();
