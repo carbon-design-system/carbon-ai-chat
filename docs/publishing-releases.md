@@ -18,6 +18,7 @@
   - [Force publish](#force-publish)
   - [Tag already exists](#tag-already-exists)
   - [Branch moved during the release](#branch-moved-during-the-release)
+  - [Publish failed after tags were pushed](#publish-failed-after-tags-were-pushed)
 
 ## Overview
 
@@ -266,6 +267,22 @@ Delete the git tags by going to the [tags page on GitHub](https://github.com/car
 ### Branch moved during the release
 
 If the publish step fails with `EBEHIND`, someone pushed to the release branch while the workflow was running. Lerna stops before it publishes anything, so npm and git stay in step. Re-run the workflow; it checks out the new tip.
+
+### Publish failed after tags were pushed
+
+If a publish error occurs after the git tags have already been pushed, it is now retried automatically.
+
+The retry step logs a `warning` annotation on the run, so the first failure is still visible even though the run can end green.
+
+If the retry fails with `Lerna did not push a release commit`, Lerna stopped before the release commit and tags reached the branch. Nothing was released, so re-run the workflow, as in [Branch moved during the release](#branch-moved-during-the-release).
+
+If publishing still fails after all three retries, fix the reported error, then recover the missing versions:
+
+1. Open the **Release start** workflow and select the release branch. Check that its package versions still match the failed release.
+2. Set `type` to **retry publish** and `dry-run` to **false**. The `semver-type` and `force-publish` inputs do not affect recovery.
+3. Run the workflow. It skips versioning and publishes missing versions with `lerna publish from-package`. RCs use `next`; stable versions use `latest`.
+
+A dry run skips publishing and does not exercise recovery. Do not select **subsequent RC** to recover a full release: it creates a new prerelease and leaves the failed stable version unpublished.
 
 ### Checks are stuck on pending
 

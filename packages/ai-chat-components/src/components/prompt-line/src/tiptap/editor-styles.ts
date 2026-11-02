@@ -54,7 +54,7 @@ function ensurePmContentStyleRules(): void {
     `.${PM_CONTENT_CLASS} p.is-editor-empty:first-child::before`,
     {
       content: 'attr(data-placeholder)',
-      color: 'var(--cds-text-secondary, #525252)',
+      color: 'var(--cds-text-placeholder, var(--cds-text-secondary, #525252))',
       float: 'left',
       height: '0',
       'pointer-events': 'none',
