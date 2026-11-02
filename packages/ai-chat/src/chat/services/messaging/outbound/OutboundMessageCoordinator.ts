@@ -7,10 +7,8 @@
  *  @license
  */
 
-import {
-  createLocalMessageForInlineError,
-  outputItemToLocalItem,
-} from '../../../schema/outputItemToLocalItem';
+import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
+import { OutgoingMessageService } from './OutgoingMessageService';
 import actions from '../../../store/actions';
 import { MessageLoadingManager } from '../../../utils/messageServiceUtils';
 import { MessageErrorState } from '../../../../types/messaging/LocalMessageItem';
@@ -19,21 +17,19 @@ import {
   MessageRequest,
   MessageResponse,
   MessageResponseTypes,
-  SystemMessageItem,
 } from '../../../../types/messaging/Messages';
 import { CustomSendMessageOptions } from '../../../../types/config/MessagingConfig';
 import { OnErrorType } from '../../../../types/config/ErrorConfig';
 import { PublicConfigMessaging } from '../../../../types/config/PublicConfigMessaging';
 import { ServiceManager } from '../../ServiceManager';
 import { PendingMessageRequest } from '../MessageService';
-import cloneDeep from 'lodash-es/cloneDeep.js';
 import { consoleError, debugLog } from '../../../utils/miscUtils';
 import {
   BusEventSend,
   BusEventType,
 } from '../../../../types/events/eventBusTypes';
 import { ChatInstance } from '../../../../types/instance/ChatInstance';
-import { addDefaultsToMessage } from '../../../utils/messageUtils';
+import { streamItemID, THREAD_ID_MAIN } from '../../../utils/messageUtils';
 
 type CustomSendMessageFn = (
   message: MessageRequest<any>,
@@ -58,6 +54,8 @@ function getSendErrorText(error: unknown, processingError: boolean): string {
  * Retries are expected to be handled by customSendMessage upstream.
  */
 class OutboundMessageCoordinator {
+  private outgoing = new OutgoingMessageService();
+
   constructor(
     private serviceManager: ServiceManager,
     private messageLoadingManager: MessageLoadingManager,
@@ -88,8 +86,14 @@ class OutboundMessageCoordinator {
   private addErrorMessage() {
     const { store } = this.serviceManager;
     const errorMessage = store.getState().languagePack.errors_singleMessage;
-    const { originalMessage, localMessage } =
-      createLocalMessageForInlineError(errorMessage);
+    const { originalMessage, localMessage } = this.outgoing.prepareInlineError(
+      errorMessage,
+      uuid(),
+      Date.now(),
+      uuid(),
+      THREAD_ID_MAIN,
+      MessageResponseTypes.INLINE_ERROR
+    );
     store.dispatch(
       actions.addLocalMessageItem(localMessage, originalMessage, true)
     );
@@ -207,30 +211,22 @@ class OutboundMessageCoordinator {
   createCancellationSystemMessage() {
     const { languagePack } = this.serviceManager.store.getState();
 
-    const systemMessageItem: SystemMessageItem = {
-      response_type: MessageResponseTypes.SYSTEM,
-      title: languagePack.messages_requestCancelled,
-    };
-
-    const systemMessage: MessageResponse = {
-      output: {
-        generic: [systemMessageItem],
-      },
-    };
-
-    // Add defaults (id, thread_id, history, ui_state_internal) to the message
-    addDefaultsToMessage(systemMessage);
-
-    // Add the system message to the store
+    const systemMessage = this.outgoing.prepareCancellation(
+      languagePack.messages_requestCancelled,
+      uuid(),
+      Date.now(),
+      THREAD_ID_MAIN,
+      MessageResponseTypes.SYSTEM
+    );
+    const systemMessageItem = systemMessage.output.generic[0];
     this.serviceManager.store.dispatch(actions.addMessage(systemMessage));
 
-    // Convert the generic item to a local message item and add it
-    const localMessageItem = outputItemToLocalItem(
+    // Allocate the local ID after dispatch: store listeners can send reentrantly.
+    const localMessageItem = this.outgoing.prepareResponseItem(
       systemMessageItem,
       systemMessage,
-      false // isLatestWelcomeNode
+      streamItemID(systemMessage.id, systemMessageItem) || uuid()
     );
-
     this.serviceManager.store.dispatch(
       actions.addLocalMessageItem(localMessageItem, systemMessage, true)
     );
@@ -297,10 +293,10 @@ class OutboundMessageCoordinator {
     try {
       // We may update the timezone and locale on this message so we need to clone it and then update the store with
       // the new object.
-      const message = cloneDeep(current.message);
+      const message = this.outgoing.copyRequest(current.message);
       current.message = message;
       this.serviceManager.store.dispatch(actions.updateMessage(message));
-      const customSendMessageRequest = cloneDeep(message);
+      const customSendMessageRequest = this.outgoing.copyRequest(message);
       // AbortController was already created when message was added to queue
       debugLog('Called customSendMessage', message);
       const busEventSend: BusEventSend = {

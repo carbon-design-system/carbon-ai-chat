@@ -26,7 +26,8 @@
  * - OutboundMessageCoordinator: send lifecycle (store updates, calling customSendMessage, resolving/rejecting/canceling).
  * - InboundStreamingCoordinator: streaming id tracking (response_id/item_id), finalization, cancellation cleanup.
  */
-import inputItemToLocalItem from '../../schema/inputItemToLocalItem';
+import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
+import { OutgoingMessageService } from './outbound/OutgoingMessageService';
 import actions from '../../store/actions';
 import { deepFreeze } from '../../utils/lang/objectUtils';
 import { MessageLoadingManager } from '../../utils/messageServiceUtils';
@@ -49,6 +50,7 @@ import {
   MessageInputType,
   MessageRequest,
   MessageResponse,
+  MessageResponseTypes,
 } from '../../../types/messaging/Messages';
 import { SendOptions } from '../../../types/instance/ChatInstance';
 import {
@@ -156,6 +158,8 @@ export interface PendingMessageRequest extends SendMessageRequest {
 }
 
 class MessageService {
+  private outgoing = new OutgoingMessageService();
+
   private nonCancellableResponseIDs = new Set<string>();
 
   /**
@@ -436,7 +440,7 @@ class MessageService {
       message,
       loadingIndicatorTimeout
     );
-    const originalUserText = message.history?.label || message.input.text;
+    const originalUserText = this.outgoing.originalText(message);
 
     return { startLoading, originalUserText };
   }
@@ -458,10 +462,11 @@ class MessageService {
     originalUserText: string
   ) {
     const { message } = current;
-    const localMessage = inputItemToLocalItem(
+    const { localMessage, input } = this.outgoing.prepareLocalItem(
       message,
       originalUserText,
-      current.localMessageID
+      current.localMessageID === undefined ? uuid() : current.localMessageID,
+      MessageResponseTypes.TEXT
     );
 
     // If history.silent is set to true, we don't add the message to the redux store as we do not want to show it, so
@@ -473,6 +478,7 @@ class MessageService {
       this.serviceManager.store.dispatch(actions.updateMessage(message));
     }
     deepFreeze(message);
+    deepFreeze(input);
   }
 
   private async fireSendEvent(current: PendingMessageRequest) {
