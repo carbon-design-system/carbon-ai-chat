@@ -12,8 +12,9 @@
  *
  * Demonstrates: registering `@testing-library/jest-dom` matchers, eagerly
  * resolving the chat's lazy chunks via `loadAllLazyDeps`, and stubbing
- * `ResizeObserver` so Carbon components can mount under jsdom. These smoke
- * tests check the public host and supplied light-DOM content, not layout.
+ * `ResizeObserver` and `scrollIntoView` so Carbon components can mount under
+ * jsdom. These smoke tests check the public host and supplied light-DOM
+ * content, not layout.
  *
  * APIs exercised: `loadAllLazyDeps` (`@carbon/ai-chat/server`), Jest globals
  * (`beforeAll`, `beforeEach`, `jest.fn`).
@@ -40,4 +41,7 @@ beforeEach(() => {
     unobserve: jest.fn(),
     disconnect: jest.fn(),
   }));
+  // Carbon's toggletip scrolls its button into view after each update, and
+  // jsdom has no layout to scroll.
+  Element.prototype.scrollIntoView ??= jest.fn();
 });
