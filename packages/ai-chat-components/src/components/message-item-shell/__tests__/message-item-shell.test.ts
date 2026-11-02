@@ -93,13 +93,14 @@ describe('cds-aichat-message-item-shell', () => {
         expect(el.hasAttribute('hide-avatar')).to.be.true;
       });
 
-      it('hides and shows the avatar nested in the byline slot', async () => {
+      it('hides and shows a directly slotted avatar', async () => {
         const el = await fixture<CDSAIChatMessageItemShell>(html`
           <cds-aichat-message-item-shell row-type=${rowType}>
-            <div slot="byline">
-              <span id="avatar" class="${blockClass}__byline-avatar"></span>
-              <span id="text">Assistant</span>
-            </div>
+            <span
+              slot="byline"
+              id="avatar"
+              class="${blockClass}__byline-avatar"></span>
+            <span slot="byline" id="text">Assistant</span>
           </cds-aichat-message-item-shell>
         `);
         const avatar = el.querySelector<HTMLElement>('#avatar')!;
@@ -113,6 +114,38 @@ describe('cds-aichat-message-item-shell', () => {
         el.hideAvatar = false;
         await el.updateComplete;
         expect(getComputedStyle(avatar).display).to.not.equal('none');
+      });
+
+      it('hides an avatar added after the first render', async () => {
+        const el = await fixture<CDSAIChatMessageItemShell>(html`
+          <cds-aichat-message-item-shell row-type=${rowType} hide-avatar>
+          </cds-aichat-message-item-shell>
+        `);
+        const avatar = document.createElement('span');
+        avatar.slot = 'byline';
+        avatar.className = `${blockClass}__byline-avatar`;
+        el.appendChild(avatar);
+        await el.updateComplete;
+
+        expect(getComputedStyle(avatar).display).to.equal('none');
+      });
+
+      it('leaves a host-set inline display untouched after un-hiding', async () => {
+        const el = await fixture<CDSAIChatMessageItemShell>(html`
+          <cds-aichat-message-item-shell row-type=${rowType} hide-avatar>
+            <span
+              slot="byline"
+              id="avatar"
+              class="${blockClass}__byline-avatar"
+              style="display: inline-flex"></span>
+          </cds-aichat-message-item-shell>
+        `);
+        const avatar = el.querySelector<HTMLElement>('#avatar')!;
+
+        el.hideAvatar = false;
+        await el.updateComplete;
+
+        expect(avatar.style.display).to.equal('inline-flex');
       });
     });
   });

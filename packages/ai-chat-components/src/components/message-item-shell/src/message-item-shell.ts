@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { LitElement, PropertyValues, html } from 'lit';
+import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { carbonElement } from '../../../globals/decorators/index.js';
 import prefix from '../../../globals/settings.js';
@@ -91,44 +91,18 @@ class CDSAIChatMessageItemShell extends LitElement {
   /**
    * Hides the avatar within the byline slot. The name and timestamp remain
    * visible. Applies to both row types.
+   *
+   * The avatar must be a direct child of the shell with `slot="byline"` and
+   * the class `cds-aichat-message-item-shell__byline-avatar`. Avatars nested
+   * inside another slotted element are not hidden.
    */
   @property({ type: Boolean, attribute: 'hide-avatar', reflect: true })
   hideAvatar = false;
 
-  updated(changedProperties: PropertyValues) {
-    if (changedProperties.has('hideAvatar')) {
-      this.applyHideAvatar();
-    }
-  }
-
-  /**
-   * The avatar lives in the consumer's slotted content, which shadow DOM
-   * styles cannot reach. Toggle it directly. The consumer marks it with the
-   * `__byline-avatar` class, anywhere within the byline slot.
-   */
-  private applyHideAvatar() {
-    const slot = this.shadowRoot?.querySelector<HTMLSlotElement>(
-      'slot[name="byline"]'
-    );
-    const selector = `.${blockClass}__byline-avatar`;
-    slot?.assignedElements({ flatten: true }).forEach((element) => {
-      const avatars = element.matches(selector)
-        ? [element]
-        : Array.from(element.querySelectorAll(selector));
-      avatars.forEach((avatar) => {
-        if (this.hideAvatar) {
-          (avatar as HTMLElement).style.display = 'none';
-        } else {
-          (avatar as HTMLElement).style.removeProperty('display');
-        }
-      });
-    });
-  }
-
   render() {
     return html`
       <div class="${blockClass}__byline">
-        <slot name="byline" @slotchange=${this.applyHideAvatar}></slot>
+        <slot name="byline"></slot>
       </div>
       <div class="${blockClass}__body">
         <div class="${blockClass}__content">

@@ -39,14 +39,15 @@ const renderRow = (args) => (
     firstItem={args.firstItem}
     lastItem={args.lastItem}
     history={args.history}>
-    <div slot="byline" className={`${storyClass}-byline`}>
-      {args.rowType === 'response' && (
-        <cds-aichat-user-avatar className="cds-aichat-message-item-shell__byline-avatar" />
-      )}
-      <span className={`${storyClass}-byline-text`}>
-        {args.rowType === 'request' ? 'You' : 'Assistant'} 10:42 AM
-      </span>
-    </div>
+    {args.rowType === 'response' && (
+      <cds-aichat-user-avatar
+        slot="byline"
+        className="cds-aichat-message-item-shell__byline-avatar"
+      />
+    )}
+    <span slot="byline" className={`${storyClass}-byline-text`}>
+      {args.rowType === 'request' ? 'You' : 'Assistant'} 10:42 AM
+    </span>
     <div className={`${storyClass}-content`}>
       {args.rowType === 'request'
         ? 'How do I reset my password?'

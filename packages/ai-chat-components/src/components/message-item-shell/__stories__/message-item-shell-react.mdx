@@ -52,20 +52,23 @@ function Row() {
 
 Set `hideAvatar` to hide the avatar image within the byline. The name and timestamp remain visible.
 
+Give the avatar `slot="byline"` and the class `cds-aichat-message-item-shell__byline-avatar` directly on it. Avatars nested inside another slotted element are not hidden.
+
 ```jsx
 import MessageItemShell from '@carbon/ai-chat-components/es/react/message-item-shell.js';
 
 function Row() {
   return (
     <MessageItemShell rowType="response" hideAvatar>
-      <div slot="byline">
-        <img
-          className="cds-aichat-message-item-shell__byline-avatar"
-          src="..."
-          alt="Assistant"
-        />
+      <img
+        slot="byline"
+        className="cds-aichat-message-item-shell__byline-avatar"
+        src="..."
+        alt="Assistant"
+      />
+      <span slot="byline" style={{ paddingInlineStart: '0.5rem' }}>
         Assistant 10:42 AM
-      </div>
+      </span>
       <div>Content</div>
     </MessageItemShell>
   );

@@ -38,7 +38,7 @@ const argTypes = {
   },
   hideAvatar: {
     control: 'boolean',
-    description: 'Hides the byline area, including the avatar.',
+    description: 'Hides the avatar within the byline.',
   },
   rowId: {
     control: 'text',
@@ -91,17 +91,16 @@ const renderRow = (args) => html`
     ?first-item=${args.firstItem}
     ?last-item=${args.lastItem}
     ?history=${args.history}>
-    <div slot="byline" class="${storyClass}-byline">
-      ${
-        args.rowType === 'response'
-          ? html`<cds-aichat-user-avatar
-              class="cds-aichat-message-item-shell__byline-avatar"></cds-aichat-user-avatar>`
-          : ''
-      }
-      <span class="${storyClass}-byline-text">
-        ${args.rowType === 'request' ? 'You' : 'Assistant'} 10:42 AM
-      </span>
-    </div>
+    ${
+      args.rowType === 'response'
+        ? html`<cds-aichat-user-avatar
+            slot="byline"
+            class="cds-aichat-message-item-shell__byline-avatar"></cds-aichat-user-avatar>`
+        : ''
+    }
+    <span slot="byline" class="${storyClass}-byline-text">
+      ${args.rowType === 'request' ? 'You' : 'Assistant'} 10:42 AM
+    </span>
     <div class="${storyClass}-content">
       ${
         args.rowType === 'request'
