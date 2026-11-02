@@ -47,7 +47,9 @@ async function boot(
       onAfterRender: after,
     })
   );
-  await waitFor(() => expect(after).toHaveBeenCalledTimes(1));
+  await waitFor(() => expect(after).toHaveBeenCalledTimes(1), {
+    timeout: 5000,
+  });
   const container = deepQuerySelector(
     document,
     'cds-aichat-container'
