@@ -1,0 +1,136 @@
+# Nightly integration checks: full demo suite, all example builds, and example test suites.
+# Runs on a schedule against the default branch. Manual dispatch allows any branch.
+# These checks are intentionally excluded from ordinary PR and merge queue CI to keep
+# per-PR feedback fast. Failures here can reach the dev demo before detection.
+name: nightly
+
+on:
+  schedule:
+    # 02:00 UTC — after business hours in all IBM time zones
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch, tag, or SHA to test (defaults to the default branch)'
+        required: false
+        default: ''
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+      - name: Use Node.js version from .nvmrc
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci --prefer-offline
+      - name: Build packages and demo
+        run: npm run aiChat:build
+      - name: Build all example apps
+        run: npm run examples:build
+      # 👇 Test jobs reuse this output instead of rebuilding
+      - name: Upload build output
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: build-output
+          path: |
+            packages/ai-chat-components/es
+            packages/ai-chat-components/es-custom
+            packages/ai-chat-components/dist
+            packages/ai-chat-components/scss
+            packages/ai-chat-components/custom-elements.json
+            packages/ai-chat/dist
+          if-no-files-found: error
+          retention-days: 1
+
+  demo:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+      - name: Use Node.js version from .nvmrc
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci --prefer-offline
+      - name: Install Playwright browsers
+        timeout-minutes: 10
+        run: npx playwright install --with-deps chromium firefox webkit
+      - name: Download build output
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: build-output
+          path: packages
+      - name: Run demo tests
+        run: npm run test --workspace=@carbon/ai-chat-examples-demo
+      - name: Upload failure screenshots and videos
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: demo-test-results
+          path: demo/test-results
+          retention-days: 7
+
+  example-tests:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - suite: react-17
+            browsers: chromium
+            run: npm run test --workspace=@carbon/ai-chat-examples-react-17
+          - suite: react-18
+            browsers: chromium
+            run: npm run test --workspace=@carbon/ai-chat-examples-react-18
+          - suite: tests-jest-happydom
+            run: npm run test --workspace=@carbon/ai-chat-examples-react-tests-jest-happydom
+          - suite: tests-jest-jsdom
+            run: npm run test --workspace=@carbon/ai-chat-examples-react-tests-jest-jsdom
+          - suite: tests-vitest-happydom
+            run: npm run test --workspace=@carbon/ai-chat-examples-react-tests-vitest-happydom
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+      - name: Use Node.js version from .nvmrc
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci --prefer-offline
+      - name: Install Playwright browsers
+        if: matrix.browsers
+        timeout-minutes: 10
+        run: npx playwright install --with-deps ${{ matrix.browsers }}
+      - name: Download build output
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: build-output
+          path: packages
+      - name: Run example tests (${{ matrix.suite }})
+        run: ${{ matrix.run }}
+      - name: Upload failure reports
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: example-test-results-${{ matrix.suite }}
+          path: |
+            examples/**/test-results
+            examples/**/playwright-report
+          retention-days: 7

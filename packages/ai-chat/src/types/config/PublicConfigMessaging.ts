@@ -28,11 +28,10 @@ export interface PublicConfigMessaging {
   skipWelcome?: boolean;
 
   /**
-   * Changes the timeout used by the message service when making message calls. The timeout is in seconds. The
-   * default is 150 seconds. After this time, an error will be shown in the client and an Abort signal will be sent
-   * to customSendMessage. If set to 0, the chat will never timeout.  This is tied to either {@link ChatInstanceMessaging.addMessage} or
-   * {@link ChatInstanceMessaging.addMessageChunk} being called after this message was sent. If neither of those methods
-   * are called with in the window defined here, the chat will timeout (unless the value is set to 0).
+   * Changes the message timeout, in seconds. The default is 150 seconds. Set to 0 to disable the timeout.
+   * If no response arrives in this window, the chat shows an error and sends an abort signal to
+   * {@link PublicConfigMessaging.customSendMessage}. Calling {@link ChatInstanceMessaging.addMessage},
+   * {@link ChatInstanceMessaging.addMessageChunk}, or {@link ChatInstanceMessaging.upsertMessage} ends this timeout window.
    */
   messageTimeoutSecs?: number;
 

@@ -1,11 +1,12 @@
-# Watch state (Redux Toolkit)
+# Watch / State (Redux Toolkit)
 
-Mirrors `ChatInstance` state into a Redux Toolkit store via the `STATE_CHANGE` bus event so any component can read chat state through `useSelector`.
+Selects one public chat state field into Redux Toolkit so any component can read it through `useSelector`.
 
 ## What this example shows
 
-- Bridging `BusEventType.STATE_CHANGE` into a Redux Toolkit slice with `dispatch`.
-- Seeding the store from `instance.getState()` before any events fire.
+- Seeding the store from `instance.state.get()` before changes occur.
+- Selecting `homeScreenState.isHomeScreenOpen` with `instance.state.select()`.
+- Stopping the selection when the host unmounts or replaces the chat.
 - Reading mirrored state in components via a narrow, typed `useSelector` selector.
 - Why the integration is one-way (chat → Redux) instead of Redux → chat.
 
@@ -21,16 +22,14 @@ Mirrors `ChatInstance` state into a Redux Toolkit store via the `STATE_CHANGE` b
 | --- | --- | --- |
 | `ChatContainer` | `@carbon/ai-chat` component | Mounts the chat UI as a float launcher. |
 | `messaging.customSendMessage` | config prop | Mock backend. |
-| `homescreen.isOn` | config prop | Enables the homescreen so toggling it produces `STATE_CHANGE` events. |
+| `homescreen.isOn` | config prop | Gives the selected field a visible state change. |
 | `homescreen.greeting` | config prop | Greeting text on the homescreen. |
 | `homescreen.starters` | config prop | Starter buttons. |
-| `onBeforeRender` | component prop | Captures the `ChatInstance` and wires the bus → Redux bridge. |
-| `instance.getState` | `@carbon/ai-chat` method | Seeds the Redux store on first render. |
-| `instance.on` | `@carbon/ai-chat` method | Subscribes to `STATE_CHANGE`. |
-| `BusEventType.STATE_CHANGE` | `@carbon/ai-chat` enum | Event the bridge listens to. |
-| `PublicChatState` | `@carbon/ai-chat` type | Type of the snapshot stored in Redux. |
+| `onBeforeRender` | component prop | Captures the `ChatInstance` and wires the state selection. |
+| `instance.state.get()` | `ChatInstance` method | Seeds the Redux value. |
+| `instance.state.select()` | `ChatInstance` method | Dispatches when the selected value changes. |
 | `configureStore` | `@reduxjs/toolkit` function | Creates the Redux store. |
-| `createSlice` | `@reduxjs/toolkit` function | Defines the chat-state slice with the `chatStateSync` reducer. |
+| `createSlice` | `@reduxjs/toolkit` function | Defines the selected chat-state slice. |
 | `Provider` | `react-redux` component | Provides the store to the React tree. |
 | `useSelector` (typed) | `react-redux` hook | Reads `homeScreenState.isHomeScreenOpen` from the store. |
 
