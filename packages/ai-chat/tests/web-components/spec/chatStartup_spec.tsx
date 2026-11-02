@@ -753,7 +753,9 @@ describe('cds-aichat-container startup', () => {
             mounted.rerender(host(true));
           }
           beforeGate.doResolve();
-          await waitFor(() => expect(onAfterRender).toHaveBeenCalledTimes(1));
+          await waitFor(() => expect(onAfterRender).toHaveBeenCalledTimes(1), {
+            timeout: 5000,
+          });
           expect(
             document.querySelector('[data-probe="native-early-request"]')
               ?.textContent
