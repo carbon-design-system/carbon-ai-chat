@@ -89,7 +89,6 @@ await writeFile(
   )
 );
 await runNpm(['install', '--ignore-scripts']);
-await assertPackedInlineStyles(consumer);
 const { manifest, root } = await readPackedManifest(consumer, packageName);
 
 const missingPath = structuredClone(manifest);
@@ -234,3 +233,4 @@ console.log(
 );
 
 await checkPackedHosts(consumer);
+await assertPackedInlineStyles(consumer);

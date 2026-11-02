@@ -7,7 +7,7 @@
 
 import assert from 'node:assert/strict';
 import { realpath, writeFile } from 'node:fs/promises';
-import { join, relative } from 'node:path';
+import { isAbsolute, join, relative } from 'node:path';
 import ts from 'typescript';
 
 const trees = ['es', 'es-custom'];
@@ -55,8 +55,9 @@ async function assertLocalDeclarations(root, name, program, options) {
         `${name}: missing published declaration dependency ${imported.fileName} from ${path}.`
       );
       const dependency = await realpath(resolved.resolvedFileName);
+      const local = relative(root, dependency);
       assert.ok(
-        !relative(root, dependency).startsWith('..'),
+        !local.startsWith('..') && !isAbsolute(local),
         `${name}: local style declaration dependencies must stay inside the packed components package.`
       );
       assert.match(dependency, /\.d\.[cm]?ts$/);
