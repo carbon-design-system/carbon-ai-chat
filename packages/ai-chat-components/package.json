@@ -185,7 +185,6 @@
   "main": "es/index.js",
   "module": "es/index.js",
   "types": "es/index.d.ts",
-  "customElements": "./custom-elements.json",
   "bin": {
     "create-ai-chat-components-prefixed-build": "./bin/create-ai-chat-components-prefixed-build.js"
   }
