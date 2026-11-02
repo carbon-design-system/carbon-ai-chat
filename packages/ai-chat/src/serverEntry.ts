@@ -54,6 +54,7 @@ export {
   PublicDefaultCustomPanelState,
   PublicChatHumanAgentState,
   PublicChatState,
+  ConversationStatus,
   PublicWorkspaceCustomPanelState,
 } from './types/instance/PublicChatState';
 export {

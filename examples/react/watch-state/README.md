@@ -1,12 +1,13 @@
-# Watch state
+# Watch / State
 
-Shows how to observe `ChatInstance` state externally by reading `instance.getState()` once and then subscribing to `BusEventType.STATE_CHANGE` to keep a parent React component in sync.
+Shows how to read one public state field and keep a React component in sync with focused updates.
 
 ## What this example shows
 
-- Calling `instance.getState()` in `onBeforeRender` to seed local React state.
-- Subscribing to `BusEventType.STATE_CHANGE` and reacting to changes in `homeScreenState.isHomeScreenOpen`.
-- Rendering the current view ("Homescreen" vs "Chat View") outside the chat UI.
+- Calling `instance.state.get()` in `onBeforeRender` to seed local React state.
+- Selecting `homeScreenState.isHomeScreenOpen` with `instance.state.select()`.
+- Stopping the selection when the host unmounts or replaces the chat.
+- Rendering the current view outside the chat UI.
 - A `homescreen` config block with starter buttons to drive view transitions.
 
 ## When to use this pattern
@@ -21,8 +22,8 @@ Shows how to observe `ChatInstance` state externally by reading `instance.getSta
 | `ChatContainer` | `@carbon/ai-chat` component | Mounts the chat UI as a float launcher. |
 | `PublicConfig` | `@carbon/ai-chat` type | Config shape (includes `homescreen`). |
 | `ChatInstance` | `@carbon/ai-chat` type | Provided in `onBeforeRender`. |
-| `BusEventType.STATE_CHANGE` | `@carbon/ai-chat` enum | Event subscribed to. |
-| `instance.getState()` / `instance.on` | `ChatInstance` API | Snapshot + subscription. |
+| `instance.state.get()` | `ChatInstance` method | Seeds the selected value. |
+| `instance.state.select()` | `ChatInstance` method | Updates React when the selected value changes. |
 | `homescreen.isOn` / `homescreen.greeting` / `homescreen.starters` | config | Starter buttons that trigger state transitions. |
 | `customSendMessage` | `messaging` prop | Echoes a generic response back to the chat. |
 

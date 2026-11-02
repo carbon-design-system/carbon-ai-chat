@@ -1022,7 +1022,8 @@ describe('ChatInstance.messaging.addMessage', () => {
       ] as MessageResponse;
       expect(answered).toBeDefined();
       expect(answered.request_id).toBeUndefined();
-      expect(answered).toBe(hostUnset);
+      expect(answered).not.toBe(hostUnset);
+      expect(answered).toEqual(hostUnset);
       expect(hostUnset).toMatchObject(
         response('pin-request-id', [text('Answer')])
       );
@@ -1040,7 +1041,10 @@ describe('ChatInstance.messaging.addMessage', () => {
           ] as MessageResponse
         ).request_id
       ).toBe('host-set');
-      expect(store.getState().allMessagesByID['pin-host-request-id']).toBe(
+      expect(store.getState().allMessagesByID['pin-host-request-id']).not.toBe(
+        hostSet
+      );
+      expect(store.getState().allMessagesByID['pin-host-request-id']).toEqual(
         hostSet
       );
       expect(hostSet).toMatchObject({
@@ -1099,9 +1103,9 @@ describe('ChatInstance.messaging.addMessage', () => {
       ] as MessageResponse;
       expect(stored.id).toBe(eventMessage.id);
       expect(eventMessage).toBe(message);
-      expect(stored).toBe(message);
-      expect(stored).toBe(eventMessage);
-      expect(stored.output).toBe(message.output);
+      expect(stored).not.toBe(message);
+      expect(stored).not.toBe(eventMessage);
+      expect(stored.output).not.toBe(message.output);
       expect(stored.output).toEqual(message.output);
       expect(message.id).toBe(eventMessage.id);
       expect(message.history.timestamp).toEqual(expect.any(Number));
@@ -1163,7 +1167,7 @@ describe('ChatInstance.messaging.addMessage', () => {
       expect(visible).toEqual([true, false]);
     });
 
-    it('preserves and freezes the original caller in stored and receive values', async () => {
+    it('preserves the frozen receive caller and stores a frozen owned copy', async () => {
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(createBaseConfig());
       const message = response('pin-frozen', [text('Frozen')]);
@@ -1174,12 +1178,12 @@ describe('ChatInstance.messaging.addMessage', () => {
 
       const stored = store.getState().allMessagesByID['pin-frozen'];
       const received = receive.mock.calls[0][0].data;
-      expect(stored).toBe(message);
+      expect(stored).not.toBe(message);
       expect(stored).toMatchObject(message);
-      expect((stored as MessageResponse).output).toBe(message.output);
+      expect((stored as MessageResponse).output).not.toBe(message.output);
       expect(received).toBe(message);
-      expect(received).toBe(stored);
-      expect(received.output).toBe((stored as MessageResponse).output);
+      expect(received).not.toBe(stored);
+      expect(received.output).not.toBe((stored as MessageResponse).output);
       expect(received).toEqual(stored);
       expect(Object.isFrozen(received)).toBe(true);
       expect(Object.isFrozen(message)).toBe(true);
@@ -1311,8 +1315,8 @@ describe('ChatInstance.messaging.addMessage', () => {
           const stored = store.getState().allMessagesByID[
             id
           ] as MessageResponse;
-          expect(stored).toBe(second);
-          expect(stored.output).toBe(second.output);
+          expect(stored).not.toBe(second);
+          expect(stored.output).not.toBe(second.output);
           expect(stored).toMatchObject(second);
           expect(stored.output).toEqual(second.output);
           expect(store.getState().assistantMessageState.messageIDs).toEqual([
@@ -1340,8 +1344,8 @@ describe('ChatInstance.messaging.addMessage', () => {
           expect(visibleTexts(store, id)).toEqual(['Second 1', 'First 2'])
         );
         const stored = store.getState().allMessagesByID[id] as MessageResponse;
-        expect(stored).toBe(second);
-        expect(stored.output).toBe(second.output);
+        expect(stored).not.toBe(second);
+        expect(stored.output).not.toBe(second.output);
         expect(stored).toMatchObject(second);
         expect(stored.output).toEqual(second.output);
       });
@@ -1417,8 +1421,8 @@ describe('ChatInstance.messaging.addMessage', () => {
           ).toBe(true)
         );
         const stored = store.getState().allMessagesByID[id] as MessageResponse;
-        expect(stored).toBe(second);
-        expect(stored.output).toBe(second.output);
+        expect(stored).not.toBe(second);
+        expect(stored.output).not.toBe(second.output);
         expect(stored).toMatchObject(second);
         expect(stored.output).toEqual(second.output);
         const secondReceive = fire.mock.calls.find(
@@ -1427,7 +1431,7 @@ describe('ChatInstance.messaging.addMessage', () => {
             isEqual(event.data.output, second.output)
         )?.[0] as any;
         expect(secondReceive.data).toBe(second);
-        expect(secondReceive.data).toBe(stored);
+        expect(secondReceive.data).not.toBe(stored);
         expect(secondReceive.data).toEqual(stored);
 
         firstHandler.release();
@@ -1759,8 +1763,8 @@ describe('ChatInstance.messaging.addMessage', () => {
       // Outlast the first message's pause.
       await new Promise((resolve) => setTimeout(resolve, 400));
       const stored = store.getState().allMessagesByID[id] as MessageResponse;
-      expect(stored).toBe(replacement);
-      expect(stored.output).toBe(replacement.output);
+      expect(stored).not.toBe(replacement);
+      expect(stored.output).not.toBe(replacement.output);
       expect(stored).toMatchObject(replacement);
       expect(stored.output).toEqual(replacement.output);
       expect(itemsOf(store, id).map((item: any) => item.item.text)).toEqual([
@@ -1802,8 +1806,8 @@ describe('malformed items through addMessage', () => {
     const stored = store.getState().allMessagesByID[
       message.id
     ] as MessageResponse;
-    expect(stored).toBe(message);
-    expect(stored.output).toBe(message.output);
+    expect(stored).not.toBe(message);
+    expect(stored.output).not.toBe(message.output);
     expect(stored).toMatchObject(message);
     expect(stored.output).toEqual(message.output);
   });

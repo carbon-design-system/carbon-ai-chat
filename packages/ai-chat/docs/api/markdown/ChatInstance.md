@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Instance
-- Reference: https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ChatInstance.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.ChatInstance.html
 
 The interface represents the API contract with the chat widget and contains all the public methods and properties
 that can be used with Carbon AI Chat.
@@ -42,7 +42,7 @@ await instance.changeView(ViewType.MAIN_WINDOW);
 await instance.changeView({ launcher: false, mainWindow: true });
 ```
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ChatInstance.html#changeview)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.ChatInstance.html#changeview)
 
 ### customPanels
 
@@ -50,7 +50,7 @@ await instance.changeView({ launcher: false, mainWindow: true });
 
 Manager for accessing and controlling custom panels.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ChatInstance.html#custompanels)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.ChatInstance.html#custompanels)
 
 ### destroySession
 
@@ -64,7 +64,7 @@ Remove any record of the current session from the browser's SessionStorage.
 await instance.destroySession();
 ```
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ChatInstance.html#destroysession)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.ChatInstance.html#destroysession)
 
 ### doAutoScroll
 
@@ -98,11 +98,13 @@ instance.doAutoScroll();
 instance.doAutoScroll({ scrollToBottom: 0 });
 ```
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ChatInstance.html#doautoscroll)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.ChatInstance.html#doautoscroll)
 
 ### getState
 
 `getState: () => PublicChatState`
+
+**Deprecated.** Use ChatInstance.state and call `state.get()` — removed in 2.0.0.
 
 Returns state information of the Carbon AI Chat that could be useful.
 
@@ -113,7 +115,7 @@ const state = instance.getState();
 console.log(state); // => the current PublicChatState
 ```
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ChatInstance.html#getstate)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.ChatInstance.html#getstate)
 
 ### input
 
@@ -121,7 +123,7 @@ console.log(state); // => the current PublicChatState
 
 Actions for mutating the chat input contents.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ChatInstance.html#input)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.ChatInstance.html#input)
 
 ### messaging
 
@@ -129,7 +131,7 @@ Actions for mutating the chat input contents.
 
 Messaging actions for a chat instance.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ChatInstance.html#messaging)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.ChatInstance.html#messaging)
 
 ### off
 
@@ -148,7 +150,7 @@ instance.on({ type: BusEventType.RECEIVE, handler: onReceive });
 instance.off({ type: BusEventType.RECEIVE, handler: onReceive });
 ```
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ChatInstance.html#off)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.ChatInstance.html#off)
 
 ### on
 
@@ -166,7 +168,7 @@ instance
   .on({ type: BusEventType.VIEW_CHANGE, handler: (event) => console.log(event.newViewState) });
 ```
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ChatInstance.html#on)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.ChatInstance.html#on)
 
 ### once
 
@@ -186,7 +188,7 @@ instance.once({
 });
 ```
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ChatInstance.html#once)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.ChatInstance.html#once)
 
 ### requestFocus
 
@@ -203,7 +205,7 @@ const focused = instance.requestFocus();
 // => true when a suitable focus target was found
 ```
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ChatInstance.html#requestfocus)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.ChatInstance.html#requestfocus)
 
 ### restartConversation
 
@@ -216,7 +218,7 @@ This will clear all the current assistant messages from the main assistant view 
 messages. This will also clear the current assistant session which will force a new session to start on the
 next message.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ChatInstance.html#restartconversation)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.ChatInstance.html#restartconversation)
 
 ### scrollToMessage
 
@@ -231,7 +233,7 @@ message, this will scroll the first message to the top of the message window.
 instance.scrollToMessage("a3f1c9e0-2b7d-4e51-9c8a-1d2f3b4c5d6e");
 ```
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ChatInstance.html#scrolltomessage)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.ChatInstance.html#scrolltomessage)
 
 ### send
 
@@ -265,7 +267,7 @@ await instance.send("What is the weather today?");
 await instance.send("Resync context", { silent: true });
 ```
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ChatInstance.html#send)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.ChatInstance.html#send)
 
 ### serviceDesk
 
@@ -273,7 +275,15 @@ await instance.send("Resync context", { silent: true });
 
 Actions that are related to a service desk integration.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ChatInstance.html#servicedesk)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.ChatInstance.html#servicedesk)
+
+### state
+
+`state: { get: any; select: any; subscribe: any }`
+
+Reads and observes immutable public state snapshots for this chat instance.
+
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.ChatInstance.html#state)
 
 ### updateAssistantUnreadIndicatorVisibility
 
@@ -281,7 +291,7 @@ Actions that are related to a service desk integration.
 
 **Deprecated.** Configure via LauncherConfig.showUnreadIndicator.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ChatInstance.html#updateassistantunreadindicatorvisibility)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.ChatInstance.html#updateassistantunreadindicatorvisibility)
 
 ### updateCatastrophicErrorPanel
 
@@ -304,7 +314,7 @@ instance.updateCatastrophicErrorPanel({
 instance.updateCatastrophicErrorPanel({ isOpen: false });
 ```
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ChatInstance.html#updatecatastrophicerrorpanel)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.ChatInstance.html#updatecatastrophicerrorpanel)
 
 ### updateInputFieldVisibility
 
@@ -312,7 +322,7 @@ instance.updateCatastrophicErrorPanel({ isOpen: false });
 
 **Deprecated.** Configure via InputConfig.isVisible.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ChatInstance.html#updateinputfieldvisibility)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.ChatInstance.html#updateinputfieldvisibility)
 
 ### updateInputIsDisabled
 
@@ -321,7 +331,7 @@ instance.updateCatastrophicErrorPanel({ isOpen: false });
 **Deprecated.** Configure via InputConfig.isDisabled
 or PublicConfig.isReadonly.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ChatInstance.html#updateinputisdisabled)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.ChatInstance.html#updateinputisdisabled)
 
 ### updateIsChatLoadingCounter
 
@@ -341,7 +351,7 @@ instance.updateIsChatLoadingCounter("increase");
 instance.updateIsChatLoadingCounter("decrease");
 ```
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ChatInstance.html#updateischatloadingcounter)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.ChatInstance.html#updateischatloadingcounter)
 
 ### updateIsMessageLoadingCounter
 
@@ -355,7 +365,7 @@ instance.updateIsMessageLoadingCounter("increase", "Thinking...");
 instance.updateIsMessageLoadingCounter("decrease");
 ```
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ChatInstance.html#updateismessageloadingcounter)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.ChatInstance.html#updateismessageloadingcounter)
 
 ### writeableElements
 
@@ -363,4 +373,4 @@ instance.updateIsMessageLoadingCounter("decrease");
 
 Returns the list of writable elements.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ChatInstance.html#writeableelements)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.ChatInstance.html#writeableelements)
