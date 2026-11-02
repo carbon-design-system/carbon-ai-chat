@@ -7,30 +7,17 @@
  *  @license
  */
 
-import { asyncForEach } from '../../../utils/lang/arrayUtils';
-import {
-  getRequestFooterSlotName,
-  hasRequestFooter,
-  isResponse,
-  renderAsUserDefinedMessage,
-  streamItemID,
-} from '../../../utils/messageUtils';
-import {
-  BusEventChunkUserDefinedResponse,
-  BusEventCustomRequestFooterSlot,
-  BusEventType,
-} from '../../../../types/events/eventBusTypes';
-import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
-import { DeepPartial } from '../../../../types/utilities/DeepPartial';
-import {
+import type { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
+import type { DeepPartial } from '../../../../types/utilities/DeepPartial';
+import type {
   GenericItem,
   Message,
   MessageRequest,
   MessageResponse,
   PartialOrCompleteItemChunk,
 } from '../../../../types/messaging/Messages';
-import { AppStateMessages } from '../../../../types/state/AppState';
-import { MessageState } from '../../../../types/config/MessagingConfig';
+import type { AppStateMessages } from '../../../../types/state/AppState';
+import type { MessageState } from '../../../../types/config/MessagingConfig';
 import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 import type {
   ServiceManager,
@@ -99,34 +86,18 @@ class SlotEventService {
    *
    * Note, this function does not currently support nested items inside the chunk.
    */
-  async handleUserDefinedResponseItemsChunk(
+  handleUserDefinedResponseItemsChunk(
     messageID: string,
     chunk: PartialOrCompleteItemChunk,
     messageItem: DeepPartial<GenericItem>,
     isCurrent: () => boolean = () => true
   ) {
-    if (!isCurrent()) {
-      return;
-    }
-    if (renderAsUserDefinedMessage(messageItem)) {
-      const itemID = streamItemID(messageID, messageItem);
-
-      let slotName: string;
-      if (!messageItem.user_defined?.silent) {
-        ({ slotName } = this.getOrCreateUserDefinedElement(itemID));
-      }
-
-      const userDefinedResponseEvent: BusEventChunkUserDefinedResponse = {
-        type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
-        data: {
-          messageItem,
-          chunk,
-          slot: slotName,
-        },
-      };
-
-      await this.serviceManager.fire(userDefinedResponseEvent, isCurrent);
-    }
+    return this.serviceManager.messageCoordinator.handleUserDefinedResponseItemsChunk(
+      messageID,
+      chunk,
+      messageItem,
+      isCurrent
+    );
   }
 
   /**
@@ -150,47 +121,23 @@ class SlotEventService {
    * whatever they want below it. Unlike the assistant side there are no options on the message to read, so the chat
    * mints the slot name itself.
    */
-  async handleCustomRequestFooterSlot(
+  handleCustomRequestFooterSlot(
     localMessage: LocalMessageItem,
     originalMessage: MessageRequest
   ) {
-    if (
-      originalMessage.history?.silent ||
-      !hasRequestFooter(localMessage, originalMessage)
-    ) {
-      return;
-    }
-
-    const customRequestFooterSlotEvent: BusEventCustomRequestFooterSlot = {
-      type: BusEventType.CUSTOM_REQUEST_FOOTER_SLOT,
-      data: {
-        slotName: getRequestFooterSlotName(localMessage),
-        message: originalMessage,
-      },
-    };
-
-    await this.serviceManager.fire(customRequestFooterSlotEvent);
+    return this.serviceManager.messageCoordinator.handleCustomRequestFooterSlot(
+      localMessage,
+      originalMessage
+    );
   }
 
   /**
    * Creates the custom response elements for all the messages in the given set. This is used in particular when
    * loading a list of messages from history.
    */
-  async createElementsForUserDefinedResponses(messages: AppStateMessages) {
-    await asyncForEach(
-      Object.values(messages.allMessageItemsByID),
-      (localMessage) => {
-        const originalMessage =
-          messages.allMessagesByID[localMessage.fullMessageID];
-        const messageState = isResponse(originalMessage)
-          ? MessageState.COMPLETE
-          : undefined;
-        return this.handleUserDefinedResponseItems(
-          localMessage,
-          originalMessage,
-          messageState
-        );
-      }
+  createElementsForUserDefinedResponses(messages: AppStateMessages) {
+    return this.serviceManager.messageCoordinator.createElementsForUserDefinedResponses(
+      messages
     );
   }
 
@@ -204,28 +151,8 @@ class SlotEventService {
    * `insertHistory` keys on that id, so it never matches an existing entry. Replaying the same messages therefore
    * fires them again under new slot names and leaves the previous wrappers in place until a restart.
    */
-  async replayFooterSlots(messages: AppStateMessages) {
-    await asyncForEach(
-      messages.assistantMessageState.localMessageIDs,
-      (localMessageID) => {
-        const localMessage = messages.allMessageItemsByID[localMessageID];
-        const originalMessage =
-          messages.allMessagesByID[localMessage?.fullMessageID];
-
-        if (!localMessage || !originalMessage) {
-          return undefined;
-        }
-
-        if (isResponse(originalMessage)) {
-          return this.handleCustomFooterSlot(localMessage, originalMessage);
-        }
-
-        return this.handleCustomRequestFooterSlot(
-          localMessage,
-          originalMessage as MessageRequest
-        );
-      }
-    );
+  replayFooterSlots(messages: AppStateMessages) {
+    return this.serviceManager.messageCoordinator.replayFooterSlots(messages);
   }
 }
 

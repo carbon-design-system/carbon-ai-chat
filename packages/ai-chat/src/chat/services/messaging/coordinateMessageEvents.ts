@@ -9,6 +9,10 @@
 
 import { asyncForEach } from '../../utils/lang/arrayUtils';
 import {
+  getRequestFooterSlotName,
+  hasRequestFooter,
+  isResponse,
+  streamItemID,
   isResponseWithNestedItems,
   renderAsUserDefinedMessage,
 } from '../../utils/messageUtils';
@@ -16,14 +20,21 @@ import { captureMessageEvent } from '../../utils/messageEventOwnership';
 import {
   BusEventType,
   type BusEventUserDefinedResponse,
+  type BusEventChunkUserDefinedResponse,
   type BusEventCustomFooterSlot,
+  type BusEventCustomRequestFooterSlot,
 } from '../../../types/events/eventBusTypes';
 import type { LocalMessageItem } from '../../../types/messaging/LocalMessageItem';
 import type {
+  GenericItem,
   Message,
+  MessageRequest,
   MessageResponse,
+  PartialOrCompleteItemChunk,
 } from '../../../types/messaging/Messages';
-import type { MessageState } from '../../../types/config/MessagingConfig';
+import { MessageState } from '../../../types/config/MessagingConfig';
+import type { AppStateMessages } from '../../../types/state/AppState';
+import type { DeepPartial } from '../../../types/utilities/DeepPartial';
 import type { ServiceManager } from '../ServiceManager';
 import type { MessagePresentationPort } from './presentationPort';
 
@@ -165,6 +176,38 @@ export async function coordinateUserDefinedResponseItems(
   }
 }
 
+export async function handleUserDefinedResponseItemsChunk(
+  serviceManager: ServiceManager,
+  presentation: MessagePresentationPort | undefined,
+  messageID: string,
+  chunk: PartialOrCompleteItemChunk,
+  messageItem: DeepPartial<GenericItem>,
+  isCurrent: () => boolean = () => true
+) {
+  if (!isCurrent()) {
+    return;
+  }
+  if (renderAsUserDefinedMessage(messageItem)) {
+    const itemID = streamItemID(messageID, messageItem);
+
+    let slotName: string;
+    if (!messageItem.user_defined?.silent) {
+      slotName = presentation?.getUserDefinedResponseSlot?.(itemID);
+    }
+
+    const userDefinedResponseEvent: BusEventChunkUserDefinedResponse = {
+      type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
+      data: {
+        messageItem,
+        chunk,
+        slot: slotName,
+      },
+    };
+
+    await serviceManager.fire(userDefinedResponseEvent, isCurrent);
+  }
+}
+
 export async function handleCustomFooterSlot(
   serviceManager: ServiceManager,
   localMessage: LocalMessageItem,
@@ -227,4 +270,83 @@ export async function handleCustomFooterSlot(
 
     await serviceManager.fire(customFooterSlotEvent, isCurrent);
   }
+}
+
+export async function handleCustomRequestFooterSlot(
+  serviceManager: ServiceManager,
+  localMessage: LocalMessageItem,
+  originalMessage: MessageRequest
+) {
+  if (
+    originalMessage.history?.silent ||
+    !hasRequestFooter(localMessage, originalMessage)
+  ) {
+    return;
+  }
+
+  const customRequestFooterSlotEvent: BusEventCustomRequestFooterSlot = {
+    type: BusEventType.CUSTOM_REQUEST_FOOTER_SLOT,
+    data: {
+      slotName: getRequestFooterSlotName(localMessage),
+      message: originalMessage,
+    },
+  };
+
+  await serviceManager.fire(customRequestFooterSlotEvent);
+}
+
+export async function createElementsForUserDefinedResponses(
+  serviceManager: ServiceManager,
+  presentation: MessagePresentationPort | undefined,
+  messages: AppStateMessages
+) {
+  await asyncForEach(
+    Object.values(messages.allMessageItemsByID),
+    (localMessage) => {
+      const originalMessage =
+        messages.allMessagesByID[localMessage.fullMessageID];
+      const messageState = isResponse(originalMessage)
+        ? MessageState.COMPLETE
+        : undefined;
+      return coordinateUserDefinedResponseItems(
+        serviceManager,
+        presentation,
+        localMessage,
+        originalMessage,
+        messageState
+      );
+    }
+  );
+}
+
+export async function replayFooterSlots(
+  serviceManager: ServiceManager,
+  messages: AppStateMessages
+) {
+  await asyncForEach(
+    messages.assistantMessageState.localMessageIDs,
+    (localMessageID) => {
+      const localMessage = messages.allMessageItemsByID[localMessageID];
+      const originalMessage =
+        messages.allMessagesByID[localMessage?.fullMessageID];
+
+      if (!localMessage || !originalMessage) {
+        return undefined;
+      }
+
+      if (isResponse(originalMessage)) {
+        return handleCustomFooterSlot(
+          serviceManager,
+          localMessage,
+          originalMessage
+        );
+      }
+
+      return handleCustomRequestFooterSlot(
+        serviceManager,
+        localMessage,
+        originalMessage as MessageRequest
+      );
+    }
+  );
 }

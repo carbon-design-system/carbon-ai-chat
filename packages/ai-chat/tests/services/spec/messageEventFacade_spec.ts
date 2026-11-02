@@ -42,18 +42,39 @@ it('returns the exact response-tree workflow Promise from the coordinator facade
   }
 });
 
-it('returns the exact response footer workflow Promise', () => {
+it('returns each remaining event workflow Promise without wrapping it', () => {
   const core = new MessageCoordinator(
     {} as ServiceManager,
     {} as MessagePresentationPort
   );
   const result = Promise.resolve();
-  const invoke = jest
-    .spyOn(events, 'handleCustomFooterSlot')
-    .mockReturnValue(result);
-  try {
-    expect(core.handleCustomFooterSlot({} as any, {} as any)).toBe(result);
-  } finally {
-    invoke.mockRestore();
+  const specs: ReadonlyArray<
+    readonly [
+      keyof Pick<
+        typeof events,
+        | 'handleUserDefinedResponseItemsChunk'
+        | 'handleCustomFooterSlot'
+        | 'handleCustomRequestFooterSlot'
+        | 'createElementsForUserDefinedResponses'
+        | 'replayFooterSlots'
+      >,
+      readonly unknown[],
+    ]
+  > = [
+    ['handleUserDefinedResponseItemsChunk', ['id', {}, {}, undefined]],
+    ['handleCustomFooterSlot', [{}, {}, undefined]],
+    ['handleCustomRequestFooterSlot', [{}, {}]],
+    ['createElementsForUserDefinedResponses', [{}]],
+    ['replayFooterSlots', [{}]],
+  ] as const;
+  for (const [name, args] of specs) {
+    const invoke = jest.spyOn(events, name).mockReturnValue(result);
+    try {
+      expect(
+        (core[name] as (...values: unknown[]) => Promise<void>)(...args)
+      ).toBe(result);
+    } finally {
+      invoke.mockRestore();
+    }
   }
 });
