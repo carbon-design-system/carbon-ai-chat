@@ -8,6 +8,10 @@
  */
 
 import {
+  StreamState,
+  type StreamControllerToken,
+} from '../../../src/chat/services/messaging/state/StreamState';
+import {
   applyChunk,
   chunkHasDisplayableContent,
   deriveStreamingItemText,
@@ -16,7 +20,6 @@ import {
   resolveChunkContext,
   shouldShowStopStreaming,
   syncStopStreamingButton,
-  StreamingTracker,
 } from '../../../src/chat/utils/streamingUtils';
 import actions from '../../../src/chat/store/actions';
 
@@ -302,10 +305,10 @@ describe('streamingUtils', () => {
     });
   });
 
-  describe('StreamingTracker', () => {
+  describe('StreamState', () => {
     it('tracks, resolves, and clears response/item IDs', () => {
-      const tracker = new StreamingTracker();
-      tracker.track('resp-1', 'req-1', new AbortController(), 'item-1');
+      const tracker = new StreamState();
+      tracker.track('resp-1', 'req-1', {} as StreamControllerToken, 'item-1');
       expect(tracker.resolveResponseId('item-1')).toBe('resp-1');
       expect(tracker.getMeta('resp-1')?.requestId).toBe('req-1');
 

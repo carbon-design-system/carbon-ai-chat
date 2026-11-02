@@ -47,73 +47,6 @@ interface ChunkContext {
   isFinalResponse: boolean;
 }
 
-interface StreamingResponseMeta {
-  requestId?: string;
-  itemIds: Set<string>;
-  controller?: AbortController;
-}
-
-/**
- * Tracks streaming response/item IDs and related metadata.
- */
-class StreamingTracker {
-  private responseToMeta = new Map<string, StreamingResponseMeta>();
-  private itemToResponse = new Map<string, string>();
-
-  resolveResponseId(id: string) {
-    return this.itemToResponse.get(id) ?? id;
-  }
-
-  track(
-    responseId: string,
-    requestId?: string,
-    controller?: AbortController,
-    itemId?: string
-  ) {
-    const existing = this.responseToMeta.get(responseId);
-    if (existing) {
-      if (requestId && !existing.requestId) {
-        existing.requestId = requestId;
-      }
-      if (controller && !existing.controller) {
-        existing.controller = controller;
-      }
-      if (itemId) {
-        existing.itemIds.add(itemId);
-        this.itemToResponse.set(itemId, responseId);
-      }
-      return existing;
-    }
-
-    const entry: StreamingResponseMeta = {
-      requestId,
-      controller,
-      itemIds: new Set<string>(),
-    };
-
-    if (itemId) {
-      entry.itemIds.add(itemId);
-      this.itemToResponse.set(itemId, responseId);
-    }
-
-    this.responseToMeta.set(responseId, entry);
-    return entry;
-  }
-
-  getMeta(responseId: string) {
-    return this.responseToMeta.get(responseId);
-  }
-
-  clear(responseId: string) {
-    const entry = this.responseToMeta.get(responseId);
-    if (entry) {
-      entry.itemIds.forEach((itemId) => this.itemToResponse.delete(itemId));
-      this.responseToMeta.delete(responseId);
-    }
-    return entry;
-  }
-}
-
 /**
  * Resolve chunk metadata and the associated message/item IDs.
  */
@@ -357,7 +290,5 @@ export {
   resetStopStreamingButton,
   resolveChunkContext,
   shouldShowStopStreaming,
-  StreamingResponseMeta,
   syncStopStreamingButton,
-  StreamingTracker,
 };
