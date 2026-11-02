@@ -8,9 +8,9 @@
  */
 
 /**
- * Presentational component for the Watch state (Redux Toolkit) example.
+ * Presentational component for the Watch / State (Redux Toolkit) example.
  *
- * Demonstrates: reading mirrored chat state with a narrow, typed selector.
+ * Demonstrates: reading selected chat state with a narrow, typed selector.
  * This component never touches the `ChatInstance` — it only knows about the
  * Redux store. That decoupling is the integration's main payoff: any
  * component anywhere in the tree can react to chat state without prop
@@ -28,18 +28,15 @@ import React from 'react';
 import { selectIsHomeScreenOpen, useAppSelector } from './store';
 
 function HomescreenStatus() {
-  // useSelector with a narrow selector means this component only re-renders
-  // when `homeScreenState.isHomeScreenOpen` actually flips, even though every
-  // STATE_CHANGE dispatches a full snapshot replacement. react-redux's
-  // reference-equality check on the selector return value handles the gating.
+  // This component stays decoupled from the chat instance.
   const isHomescreenVisible = useAppSelector(selectIsHomeScreenOpen);
 
   return (
-    <div>
-      <h4>Current View State (via Redux selector):</h4>
+    <>
+      <h1>Chat view state</h1>
       <p>{isHomescreenVisible ? 'Homescreen' : 'Chat View'}</p>
-      <p>Watching state via STATE_CHANGE → Redux dispatch</p>
-    </div>
+      <p>Selected into Redux with instance.state.select().</p>
+    </>
   );
 }
 

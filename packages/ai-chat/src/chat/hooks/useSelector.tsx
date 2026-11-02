@@ -42,3 +42,22 @@ export function useSelector<RootState, Selected>(
     equalityFn
   );
 }
+
+interface StateAccess<State> {
+  get(): State;
+  subscribe(listener: () => void): () => void;
+}
+
+export function useStateAccessSelector<State, Selected>(
+  stateAccess: StateAccess<State>,
+  selector: (state: State) => Selected,
+  equalityFn?: (left: Selected, right: Selected) => boolean
+): Selected {
+  return useSyncExternalStoreWithSelector(
+    stateAccess.subscribe,
+    stateAccess.get,
+    stateAccess.get,
+    selector,
+    equalityFn
+  );
+}
