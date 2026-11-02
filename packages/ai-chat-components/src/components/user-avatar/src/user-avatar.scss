@@ -52,18 +52,6 @@ $block-class: #{$prefix}-user-avatar;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: button.$button-border-width solid currentcolor;
-  border-radius: 50%;
-  background-color: transparent;
-  block-size: 100%;
-  font-weight: bold;
-  inline-size: 100%;
-}
-
-.#{$block-class}__letter {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   block-size: 100%;
   line-height: 1;
   text-align: center;
