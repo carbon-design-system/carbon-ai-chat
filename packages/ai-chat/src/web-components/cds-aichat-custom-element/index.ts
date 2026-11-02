@@ -18,7 +18,8 @@ installReactDomRenderer();
 
 defineCustomElement(ChatCustomElement);
 
-export { ChatCustomElement };
+// The host class stays a default export so `ChatCustomElement` keeps naming the
+// root React type below; import the pure class entry for a named class.
 export default ChatCustomElement;
 export type { CdsAiChatCustomElementAttributes } from './types';
 // Before these paths had their own declarations they resolved to the root ones.
