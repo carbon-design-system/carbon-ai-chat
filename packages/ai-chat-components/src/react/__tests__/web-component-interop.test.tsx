@@ -447,7 +447,7 @@ describe.each(modes)('exported wrappers (StrictMode=%s)', (isStrict) => {
     expect(textarea).not.toBeNull();
     expect(textarea!.value).toBe('first prompt');
     expect(textarea!.placeholder).toBe('First placeholder');
-    expect(textarea!.readOnly).toBe(true);
+    expect(textarea!.disabled).toBe(true);
     const nextContent = {
       type: 'doc',
       content: [
@@ -473,7 +473,7 @@ describe.each(modes)('exported wrappers (StrictMode=%s)', (isStrict) => {
     expect(host.extensions).toBe(nextExtensions);
     expect(textarea!.value).toBe('second prompt');
     expect(textarea!.placeholder).toBe('Second placeholder');
-    expect(textarea!.readOnly).toBe(false);
+    expect(textarea!.disabled).toBe(false);
     expect(onChange).toHaveBeenCalledTimes(1);
     expect(onChange.mock.calls[0][0]).toBeInstanceOf(CustomEvent);
     expect(onChange.mock.calls[0][0].detail.rawValue).toBe('second prompt');
