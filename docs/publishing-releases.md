@@ -7,6 +7,7 @@
 - [Overview](#overview)
 - [Release Team](#release-team)
 - [Process](#process)
+  - [Verify npm publication](#verify-npm-publication)
   - [Prerelease](#prerelease)
   - [Subsequent prerelease](#subsequent-prerelease)
   - [Stable release](#stable-release)
@@ -57,6 +58,28 @@ When going through a release, the release team will go through the following che
 | [Post release](#post-release) | Support the latest stable release and address any issues that may come up as a result of promoting the release to stable |
 | [Patch release](#patch-release) | Publish a patch release with hot fixes to the full release |
 
+### Verify npm publication
+
+Use the npm registry as the primary check after the release job completes:
+
+```sh
+npm view @carbon/ai-chat dist-tags --registry=https://registry.npmjs.org
+npm view @carbon/ai-chat-components dist-tags --registry=https://registry.npmjs.org
+```
+
+Compare each package's tag with the version in the release log:
+
+| Release                               | Tag to check |
+| ------------------------------------- | ------------ |
+| First or subsequent release candidate | `next`       |
+| Stable minor or patch release         | `latest`     |
+| Alpha release                         | `alpha`      |
+
+The packages have separate version numbers. If the workflow leaves a package unchanged, its tag can still point to the prior version.
+
+As a secondary check, view the versions pages for [@carbon/ai-chat](https://www.npmjs.com/package/@carbon/ai-chat?activeTab=versions) and [@carbon/ai-chat-components](https://www.npmjs.com/package/@carbon/ai-chat-components?activeTab=versions).
+The website can show stale versions after the registry has updated. If the registry shows the expected versions and tags, publication is confirmed; don't rerun the release just because the website lags.
+
 ### Prerelease
 
 The prerelease occurs on the first Monday of a sprint. During this stage, the release team will need to do the following:
@@ -76,8 +99,7 @@ The prerelease occurs on the first Monday of a sprint. During this stage, the re
 
 - [ ] Once the job has completed, which it should have failed, check the action's log. Lerna should have logged what versions it is bumping the packages to. It should bump the packages up by a minor version with the prerelease identifier (ie. `v0.10.0 ---> v0.10.0-rc.0`).
 - [ ] If the version bumps are expected, run the workflow again with the same inputs as above, but this time with dry run unchecked.
-- [ ] Once job has completed, check the packages on npm to ensure they have been published under the `next` tag:
-  - [ ] `@carbon/ai-chat`: https://www.npmjs.com/package/@carbon/ai-chat
+- [ ] [Verify npm publication](#verify-npm-publication) for both packages under the `next` tag.
 - [ ] Run the [create github tag and PR workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/create-release-tag-and-pr.yml). This workflow creates the release tag, generates the release with notes, checks if there's a change in peer dependencies and updates the `peer-dependency-changes.md` file if so, updates the `versions.js` file which is used for our documentation and demo app version selector dropdown, and opens a PR to merge the changelog and version bumps from the release branch to `main`.
   - [ ] Make sure to specify to release branch and the correct release versions. ![Screenshot of create github tag and PR workflow with options selected](https://github.com/user-attachments/assets/05ca42f4-8ec8-449e-8c42-5453e1341574)
     - The `release tag` option is the version that was just published (ie. v0.10.0-rc.0). Fill in the `previous tag` option with the previous full release (ie. v0.9.0).
@@ -100,8 +122,7 @@ Once the first prerelease / release candidate has been published, it is availabl
   - [ ] Ensure the dry run is checked
 - [ ] Once the job has completed, which it should have failed, check the action's log. Lerna should have logged what versions it is bumping the packages to. It should bump the packages up by the prerelease identifier (ie. `v0.10.0-rc.0 ---> v0.10.0-rc.1`).
 - [ ] If the version bumps are expected, run the workflow again with the same inputs as above, but this time with dry run unchecked.
-- [ ] Once job has completed, check the packages on npm to ensure they have been published under the `next` tag:
-  - [ ]`@carbon/ai-chat`: https://www.npmjs.com/package/@carbon/ai-chat
+- [ ] [Verify npm publication](#verify-npm-publication) for both packages under the `next` tag.
 - [ ] Run the [create github tag and PR workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/create-release-tag-and-pr.yml). This workflow creates the release tag, generates the release with notes, and opens a PR to merge the changelog and version bumps from the release branch to `main`.
   - [ ] Make sure to specify to release branch and the correct release versions. ![Screenshot of create github tag and PR workflow with options selected](https://github.com/user-attachments/assets/4c6ed798-24ed-4095-8802-4e0f3da64dce)
     - The `release tag` option is the version that was just published (ie. v0.10.0-rc.1). Fill in the `previous tag` option with the previous release candidate (ie. v0.10.0-rc.0)
@@ -140,8 +161,7 @@ A stable release occurs on the last Monday of the sprint and finishes later in t
 
 - [ ] Once the job has completed, which it should have failed, check the action's log. Lerna should have logged what versions it is bumping the packages to. It should bump the packages up by a minor version (ie. `v0.10.0-rc.1 ---> v0.10.0`).
 - [ ] If the version bumps are expected, run the workflow again with the same inputs as above, but this time with dry run unchecked.
-- [ ] Once job has completed, check the packages on npm to ensure they have been published under the `latest` tag:
-  - [ ]`@carbon/ai-chat`: https://www.npmjs.com/package/@carbon/ai-chat
+- [ ] [Verify npm publication](#verify-npm-publication) for both packages under the `latest` tag.
 - [ ] Run the [create github tag and PR workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/create-release-tag-and-pr.yml). This workflow creates the release tag, generates the release with notes, and opens a PR to merge the changelog and version bumps from the release branch to `main`.
   - [ ] Make sure to specify to release branch and the correct release versions. ![Screenshot of create github tag and PR workflow with options selected](https://github.com/user-attachments/assets/33162cc1-e38f-4c86-9bc8-c0b773c86eda)
     - The `release tag` option is the version that was just published (ie. v0.10.0). Fill in the `previous tag` option with the previous full release (ie. v0.9.0)
@@ -218,7 +238,7 @@ To publish an alpha:
 - [ ] If the branch will not land in the next release — say the alpha runs while `1.18.0` is already in flight but the feature ships in `1.19.0` — set the base explicitly instead of relying on `semver-type`. The two packages version independently, so fill in **both** `ai-chat-base` (e.g. `1.19.0`) and `components-base` (e.g. `1.9.0`): filling in only one fails the run, so that an alpha never pairs one package's release with another's. A base that is not ahead of the package's current version also fails.
 - [ ] If the versions look right, run the workflow again with `dry run` unchecked to publish to npm and the CDN.
 - [ ] Confirm the publish:
-  - [ ] `npm view @carbon/ai-chat dist-tags` and `npm view @carbon/ai-chat-components dist-tags` show the new `alpha` version, and `latest` / `next` are unchanged.
+  - [ ] [Verify npm publication](#verify-npm-publication) for both packages under the `alpha` tag. Confirm that `latest` and `next` are unchanged.
   - [ ] The sites are live: [demo](https://chat.carbondesignsystem.com/tag/alpha/demo/index.html), [documentation](https://chat.carbondesignsystem.com/tag/alpha/docs/documents/Overview.html), [Web Components Storybook](https://chat.carbondesignsystem.com/components/storybook/tag/alpha/index.html), and [React Storybook](https://chat.carbondesignsystem.com/components/storybook/react/tag/alpha/index.html).
 
 A few things to know:
