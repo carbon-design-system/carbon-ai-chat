@@ -16,6 +16,7 @@ import { chromium } from '@playwright/test';
 import { createServer } from 'vite';
 import { checkReferences, readPackedManifest } from './manifests.mjs';
 import { checkPackedHosts } from './host-runtime.mjs';
+import { assertPackedInlineStyles } from './inline-styles.mjs';
 
 const runFile = promisify(execFile);
 const repository = fileURLToPath(new URL('../..', import.meta.url));
@@ -250,3 +251,4 @@ console.log(
 );
 
 await checkPackedHosts(consumer);
+await assertPackedInlineStyles(consumer);
