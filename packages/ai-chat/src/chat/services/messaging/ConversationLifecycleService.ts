@@ -7,263 +7,151 @@
  *  @license
  */
 
-import type { ConversationStatus } from '../../../types/instance/PublicChatState';
 import actions from '../../store/actions';
 import type { ServiceManager } from '../ServiceManager';
+import { ConversationState } from './state/ConversationState';
 
 class ConversationLifecycleService {
-  private generation = 0;
-  private hydrating = false;
-  private activeRequests = new Map<string, { id?: string }>();
-  private requestAliases = new Map<string, string>();
-  private activeResponses = new Set<string>();
-  private responseOwners = new Map<string, string | undefined>();
-  private stoppedRequests = new Set<string>();
-  private failure: { messageID?: string; generation: number } | null = null;
-  private respondedRequests = new Set<string>();
-  private stoppedResponses = new Set<string>();
+  private state = new ConversationState();
 
   constructor(private serviceManager: ServiceManager) {}
 
   get currentGeneration() {
-    return this.generation;
+    return this.state.currentGeneration;
   }
 
   isCurrent(generation: number) {
-    return generation === this.generation;
+    return this.state.isCurrent(generation);
   }
 
   restart(skipHydration: boolean) {
-    this.generation++;
-    this.hydrating = !skipHydration;
-    this.activeRequests.clear();
-    this.requestAliases.clear();
-    this.activeResponses.clear();
-    this.responseOwners.clear();
-    this.stoppedRequests.clear();
-    this.respondedRequests.clear();
-    this.stoppedResponses.clear();
-    this.failure = null;
+    this.state.restart(skipHydration);
     this.publish();
-    return this.generation;
+    return this.currentGeneration;
   }
 
   hydrationStarted() {
-    this.hydrating = true;
-    this.failure = null;
+    this.state.hydrationStarted();
     this.publish();
-    return this.generation;
+    return this.currentGeneration;
   }
 
   hydrationFinished(generation: number) {
-    if (this.isCurrent(generation)) {
-      this.hydrating = false;
+    if (this.state.hydrationFinished(generation)) {
       this.publish();
     }
   }
 
   requestStarted(
     messageID: string,
-    generation = this.generation,
+    generation = this.currentGeneration,
     request: { id?: string } = { id: messageID }
   ) {
-    if (this.isCurrent(generation)) {
-      this.activeRequests.set(messageID, request);
-      this.requestAliases.set(messageID, messageID);
-      this.failure = null;
+    if (this.state.requestStarted(messageID, generation, request)) {
       this.publish();
     }
   }
 
-  requestFinished(messageID: string, generation = this.generation) {
-    if (this.isCurrent(generation)) {
-      const requestID = this.resolveRequestID(messageID);
-      this.activeRequests.delete(requestID);
-      this.respondedRequests.delete(requestID);
+  requestFinished(messageID: string, generation = this.currentGeneration) {
+    if (this.state.requestFinished(messageID, generation)) {
       this.publish();
     }
   }
 
-  requestStopped(messageID: string, generation = this.generation) {
-    if (!this.isCurrent(generation)) {
+  requestStopped(messageID: string, generation = this.currentGeneration) {
+    const responseIDs = this.state.requestStopped(messageID, generation);
+    if (responseIDs === undefined) {
       return [];
-    }
-    const requestID = this.resolveRequestID(messageID);
-    this.stoppedRequests.add(messageID);
-    this.stoppedRequests.add(requestID);
-    this.activeRequests.delete(requestID);
-    this.respondedRequests.delete(requestID);
-    const responseIDs: string[] = [];
-    for (const responseID of this.activeResponses) {
-      if (this.responseOwners.get(responseID) === requestID) {
-        responseIDs.push(responseID);
-        this.activeResponses.delete(responseID);
-        this.stoppedResponses.add(responseID);
-      }
     }
     this.publish();
     return responseIDs;
   }
 
   isRequestStopped(requestID?: string) {
-    return this.stoppedRequests.has(this.resolveRequestID(requestID));
+    return this.state.isRequestStopped(requestID);
   }
 
   responseRequestID(messageID: string) {
-    return this.responseOwners.get(messageID);
+    return this.state.responseRequestID(messageID);
   }
 
   isResponseOwnedByRequest(messageID: string, requestID: string) {
-    return (
-      this.responseOwners.has(messageID) &&
-      this.responseOwners.get(messageID) === this.resolveRequestID(requestID)
-    );
+    return this.state.isResponseOwnedByRequest(messageID, requestID);
   }
 
-  /** Explicit removal ends response ownership without reviving its old request. */
   responseRemoved(messageID: string) {
-    this.activeResponses.delete(messageID);
-    this.responseOwners.delete(messageID);
-    this.stoppedResponses.delete(messageID);
+    this.state.responseRemoved(messageID);
     this.publish();
   }
 
   responseStreaming(
     messageID: string,
-    generation = this.generation,
+    generation = this.currentGeneration,
     requestID?: string
   ) {
-    if (
-      !messageID ||
-      !this.isCurrent(generation) ||
-      this.isRequestStopped(requestID) ||
-      this.stoppedResponses.has(messageID)
-    ) {
+    const result = this.state.responseStreaming(
+      messageID,
+      generation,
+      requestID
+    );
+    if (!result) {
       return;
     }
-    const owner = this.recordResponseOwner(messageID, requestID);
-    if (this.stoppedRequests.has(owner)) {
-      return;
+    // Receipt subscribers can change lifecycle state before streaming publishes again.
+    if (result.receivedRequest) {
+      this.publish();
     }
-    this.activeResponses.add(messageID);
-    this.responseReceived(messageID, generation, owner);
     this.publish();
   }
 
   responseReceived(
     messageID: string,
-    generation = this.generation,
+    generation = this.currentGeneration,
     requestID?: string
   ) {
-    if (
-      !this.isCurrent(generation) ||
-      this.isRequestStopped(requestID) ||
-      this.stoppedResponses.has(messageID)
-    ) {
-      return;
-    }
-    const owner = this.recordResponseOwner(messageID, requestID);
-    if (this.activeRequests.has(owner) && !this.stoppedRequests.has(owner)) {
-      this.respondedRequests.add(owner);
+    if (this.state.responseReceived(messageID, generation, requestID)) {
       this.publish();
     }
   }
 
-  private resolveRequestID(messageID: string) {
-    // PRE_SEND may change the ID while its handler is still awaiting.
-    for (const [originalID, request] of this.activeRequests) {
-      if (originalID === messageID || request.id === messageID) {
-        this.requestAliases.set(messageID, originalID);
-        return originalID;
-      }
-    }
-    return this.requestAliases.get(messageID) ?? messageID;
-  }
-
-  private recordResponseOwner(messageID: string, requestID?: string) {
-    if (!this.responseOwners.has(messageID)) {
-      this.responseOwners.set(messageID, this.resolveRequestID(requestID));
-    }
-    return this.responseOwners.get(messageID);
-  }
-
-  responseStopped(messageID: string, generation = this.generation) {
-    if (this.isCurrent(generation)) {
-      this.stoppedResponses.add(messageID);
-      this.activeResponses.delete(messageID);
+  responseStopped(messageID: string, generation = this.currentGeneration) {
+    if (this.state.responseStopped(messageID, generation)) {
       this.publish();
     }
   }
 
-  responseFinished(messageID: string, generation = this.generation) {
-    if (this.isCurrent(generation)) {
-      this.activeResponses.delete(messageID);
+  responseFinished(messageID: string, generation = this.currentGeneration) {
+    if (this.state.responseFinished(messageID, generation)) {
       this.publish();
     }
   }
 
-  fail(error: { messageID?: string }, generation = this.generation) {
-    if (!this.isCurrent(generation)) {
-      return null;
+  fail(error: { messageID?: string }, generation = this.currentGeneration) {
+    const failure = this.state.fail(error, generation);
+    if (failure) {
+      this.publish();
     }
-    const failure = { messageID: error.messageID, generation };
-    this.failure = failure;
-    if (failure.messageID) {
-      const requestID = this.resolveRequestID(failure.messageID);
-      this.activeRequests.delete(requestID);
-      this.respondedRequests.delete(requestID);
-    }
-    this.publish();
     return failure;
   }
 
   hasFailureForRequest(messageID: string) {
-    return Boolean(
-      this.failure &&
-      this.resolveRequestID(this.failure.messageID) ===
-        this.resolveRequestID(messageID)
-    );
+    return this.state.hasFailureForRequest(messageID);
   }
 
-  clearFailure(failure: ReturnType<ConversationLifecycleService['fail']>) {
-    if (
-      failure &&
-      this.failure === failure &&
-      this.isCurrent(failure.generation)
-    ) {
-      this.failure = null;
+  clearFailure(failure: ReturnType<ConversationState['fail']>) {
+    if (this.state.clearFailure(failure)) {
       this.publish();
     }
   }
 
   private publish() {
-    const status = this.getStatus();
+    const status = this.state.getStatus();
     const state = this.serviceManager.store.getState();
     if (state.conversationStatus !== status) {
       this.serviceManager.store.dispatch(
         actions.setConversationLifecycle(status)
       );
     }
-  }
-
-  private getStatus(): ConversationStatus {
-    if (this.failure) {
-      return 'error';
-    }
-    if (this.hydrating) {
-      return 'loading';
-    }
-    if (this.activeResponses.size) {
-      return 'streaming';
-    }
-    if (this.activeRequests.size) {
-      return [...this.activeRequests.keys()].some((id) =>
-        this.respondedRequests.has(id)
-      )
-        ? 'streaming'
-        : 'submitted';
-    }
-    return 'ready';
   }
 }
 
