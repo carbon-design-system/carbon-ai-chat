@@ -196,6 +196,7 @@
   "fileSharing_statusUploading": "Uploading file",
   "fileSharing_uploadFailed": "There was an error uploading the file.",
   "fileSharing_uploadErrorTitle": "File upload error",
+  "fileSharing_uploadErrorTitleWithName": "File upload error: {filename}",
   "fileSharing_uploadErrorRecovery": "Remove the attachment and try again.",
   "fileSharing_agentMessageText": "File upload",
   "fileSharing_request": "The agent has requested you upload a file.",

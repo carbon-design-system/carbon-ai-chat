@@ -8,7 +8,7 @@
 
 - Kind: Enum
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/enums/Type_reference.SelectionDisplay.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/enums/Type_reference.SelectionDisplay.html
 
 Controls which choice text appears in the user transcript. The generated request stores the resolved text in
 MessageRequest.history, even when SingleOption.silent or ButtonItem.silent hides the message.
@@ -27,7 +27,7 @@ enum SelectionDisplay
 
 Shows `value.input.text`, or the choice label when the input text is empty.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/enums/Type_reference.SelectionDisplay.html#input_text)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/enums/Type_reference.SelectionDisplay.html#input_text)
 
 ### LABEL
 
@@ -35,7 +35,7 @@ Shows `value.input.text`, or the choice label when the input text is empty.
 
 Shows the choice label, or `value.input.text` when the label is empty.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/enums/Type_reference.SelectionDisplay.html#label)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/enums/Type_reference.SelectionDisplay.html#label)
 
 ## Related
 

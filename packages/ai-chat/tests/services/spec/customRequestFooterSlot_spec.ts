@@ -64,12 +64,15 @@ const createServiceManagerStub = () => {
       homeScreenState: { isHomeScreenOpen: false },
     },
     responsePanelState: { isOpen: false },
+    allMessagesByID: {},
+    allMessageItemsByID: {},
   };
 
   const serviceManager = {
     store: {
       dispatch: jest.fn(),
       getState: () => state,
+      subscribe: jest.fn(() => jest.fn()),
     },
     messageService: {
       send: jest.fn().mockResolvedValue(undefined),
@@ -138,6 +141,7 @@ describe('custom request footer slot', () => {
     const footerEvents = footerEventsIn(firedEvents);
     expect(footerEvents).toHaveLength(1);
     expect(footerEvents[0].data.message).toBe(message);
+    expect(message.id).toEqual(expect.any(String));
     expect(footerEvents[0].data.message.input.text).toBe(
       'what is the weather?'
     );
@@ -421,6 +425,31 @@ describe('footer replay from history', () => {
     );
     expect(incoming).toHaveLength(1);
     expect((incoming[0] as any).data.slotName).toBe('backend-slot');
+  });
+
+  it('preserves writable restored assistant footer event data', async () => {
+    const { serviceManager, firedEvents } = createServiceManagerStub();
+    const chatActions = new ChatInstanceService(serviceManager);
+    const entry = restoredResponse('m1', 'backend-slot', true);
+    const additionalData = { nested: { value: 'original' } };
+    (
+      entry.localMessage.item.message_item_options.custom_footer_slot as any
+    ).additional_data = additionalData;
+
+    await chatActions.replayFooterSlots(historyFrom([entry]) as never);
+
+    const footerEvent = firedEvents.find(
+      (event) => event.type === BusEventType.CUSTOM_FOOTER_SLOT
+    ) as any;
+    expect(footerEvent.data.message).toBe(entry.message);
+    expect(footerEvent.data.messageItem).toBe(entry.localMessage.item);
+    expect(footerEvent.data.additionalData).toBe(additionalData);
+    expect(Object.isFrozen(footerEvent.data)).toBe(false);
+    expect(Object.isFrozen(footerEvent.data.additionalData.nested)).toBe(false);
+    expect(() => {
+      footerEvent.data.additionalData.nested.value = 'mutated';
+    }).not.toThrow();
+    expect(additionalData.nested.value).toBe('mutated');
   });
 
   it('replays both directions in one pass', async () => {
