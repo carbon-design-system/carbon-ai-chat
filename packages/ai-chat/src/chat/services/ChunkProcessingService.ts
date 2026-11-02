@@ -8,6 +8,12 @@
  */
 
 import isEqual from 'lodash-es/isEqual.js';
+import cloneDeep from 'lodash-es/cloneDeep.js';
+import cloneDeepWith from 'lodash-es/cloneDeepWith.js';
+import {
+  captureMessageEvent,
+  eventValueMapper,
+} from '../utils/messageEventOwnership';
 
 import actions from '../store/actions';
 import {
@@ -25,6 +31,8 @@ import {
   isStreamFinalResponse,
   isStreamPartialItem,
   isTyping,
+  renderAsUserDefinedMessage,
+  streamItemID,
 } from '../utils/messageUtils';
 import { sleep } from '../utils/lang/promiseUtils';
 import {
@@ -162,6 +170,14 @@ class ChunkProcessingService {
       chunk,
       messageID
     );
+    const lifecycle = this.serviceManager.conversationLifecycleService;
+    if (
+      requestID &&
+      lifecycle.isRequestStopped(requestID) &&
+      !lifecycle.isResponseOwnedByRequest(extractedMessageID, requestID)
+    ) {
+      return;
+    }
     if (this.shouldSkipChunkDueToGeneration(extractedMessageID)) {
       return;
     }
@@ -277,6 +293,15 @@ class ChunkProcessingService {
         );
       }
 
+      if (messageID && isStreamFinalResponse(chunk) && isCurrent()) {
+        runCoreOperation(() =>
+          this.serviceManager.conversationLifecycleService.responseReceived(
+            messageID,
+            undefined,
+            requestID
+          )
+        );
+      }
       if (!isCurrent()) {
         this.advanceChunkQueue(chunkPromise);
         return;
@@ -314,8 +339,9 @@ class ChunkProcessingService {
         return;
       }
       if (isCompleteItem || isPartialItem) {
+        let ownedItem: DeepPartial<GenericItem>;
         try {
-          await this.commitStreamingChunk(
+          ownedItem = await this.commitStreamingChunk(
             chunk as PartialOrCompleteItemChunk,
             messageID,
             item,
@@ -332,6 +358,7 @@ class ChunkProcessingService {
             chunk as PartialOrCompleteItemChunk,
             messageID,
             item,
+            ownedItem,
             isCurrent
           );
         }
@@ -379,6 +406,9 @@ class ChunkProcessingService {
         );
       }
       if (terminalConversationFailure) {
+        this.serviceManager.conversationLifecycleService.fail({
+          messageID: requestID ?? messageID,
+        });
         requestErrors?.reportedErrors.add(error);
         this.serviceManager.actions.errorOccurred({
           errorType: OnErrorType.MESSAGE_COMMUNICATION,
@@ -419,33 +449,68 @@ class ChunkProcessingService {
       this.warnIfMissingCompleteItemStreamingId(messageID, item);
     }
     if (!messageID) {
-      return;
+      return undefined;
     }
+    const ownedItem = cloneDeep(item);
+    const ownedChunk = {
+      ...chunk,
+      partial_response: cloneDeep(chunk.partial_response),
+    };
     await this.serviceManager.messageUpsertCoordinator.upsert(
       messageID,
       MessageState.STREAMING,
-      (prev) => applyChunk(prev, chunk, messageID),
+      (prev) => applyChunk(prev, ownedChunk, messageID),
       {
         origin: 'chunk',
-        chunk: { item, isComplete: isCompleteItem, requestID },
+        chunk: { item: ownedItem, isComplete: isCompleteItem, requestID },
         isCurrent,
       }
     );
+    return ownedItem;
   }
 
   private async notifyStreamingChunk(
     chunk: PartialOrCompleteItemChunk,
     messageID: string | undefined,
     item: DeepPartial<GenericItem> | undefined,
+    ownedItem: DeepPartial<GenericItem> | undefined,
     isCurrent: () => boolean
   ) {
-    if (messageID && item) {
+    if (!messageID || !item) {
+      return;
+    }
+    const { store } = this.serviceManager;
+    const id = streamItemID(messageID, ownedItem);
+    const stored = store.getState();
+    const localItem = stored.allMessageItemsByID[id];
+    const message = stored.allMessagesByID[messageID];
+    const event =
+      renderAsUserDefinedMessage(item) && localItem && message
+        ? captureMessageEvent(
+            this.serviceManager,
+            message,
+            { [id]: localItem },
+            {
+              message,
+              localItems: {
+                [id]: cloneDeepWith(
+                  localItem,
+                  eventValueMapper(ownedItem, item)
+                ),
+              },
+            },
+            isCurrent
+          )
+        : undefined;
+    try {
       await this.serviceManager.slotEventService.handleUserDefinedResponseItemsChunk(
         messageID,
         chunk,
         item,
         isCurrent
       );
+    } finally {
+      event?.commit();
     }
   }
 

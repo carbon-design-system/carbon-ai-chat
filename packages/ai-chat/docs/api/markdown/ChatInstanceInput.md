@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Instance
-- Reference: https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ChatInstanceInput.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.ChatInstanceInput.html
 
 Methods for controlling the built-in input field.
 While WriteableElementName.CUSTOM_PROMPT_LINE has content, including
@@ -101,7 +101,7 @@ editor.commands.focus();
    every render reads as a real change and replaces the editor mid-edit,
    losing its undo history.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ChatInstanceInput.html#geteditor)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.ChatInstanceInput.html#geteditor)
 
 ### updateContent
 
@@ -148,7 +148,7 @@ For cursor-position insertion, use the {@link ChatInstanceInput.getEditor}
 escape hatch:
 `(await instance.input.getEditor()).commands.insertContent(...)`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ChatInstanceInput.html#updatecontent)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.ChatInstanceInput.html#updatecontent)
 
 ### updateRawValue
 
@@ -178,7 +178,7 @@ the rawValue projection. Emits one deprecation warning per session.
 instance.input.updateRawValue(() => "Summarize this report");
 ```
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ChatInstanceInput.html#updaterawvalue)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.ChatInstanceInput.html#updaterawvalue)
 
 ### updateStructuredData
 
@@ -221,7 +221,7 @@ instance.input.updateStructuredData(() => ({
 instance.input.updateStructuredData(() => undefined);
 ```
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ChatInstanceInput.html#updatestructureddata)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.ChatInstanceInput.html#updatestructureddata)
 
 ## Related
 
