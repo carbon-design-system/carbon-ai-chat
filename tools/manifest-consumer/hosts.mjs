@@ -185,7 +185,7 @@ export function assertHostParity(manifest, runtime, publishedTypes) {
     assert.ok(host, `Missing runtime host: ${declaration.tagName}`);
     assert.equal(
       module.path,
-      host.module.replace(/^dist\/es-custom\//, 'dist/es/'),
+      host.module,
       'Published host module must match its isolated runtime import.'
     );
     assert.ok(
@@ -219,7 +219,7 @@ export function proveParityFailures(manifest, runtime, publishedTypes) {
   };
   mutate((host, module) => {
     const other = runtime.find((entry) => entry.tag !== host.tagName);
-    module.path = other.module.replace(/^dist\/es-custom\//, 'dist/es/');
+    module.path = other.module;
   }, /Published host module/);
   const first = publishedTypes.config.keys().next().value;
   mutate((host) => {
