@@ -278,7 +278,7 @@ export async function assertPackedResolution(consumer) {
     loadPaths: [join(consumer, 'node_modules')],
     quietDeps: true,
   });
-  assert.match(result.css, /--consumer-prefix: cds-aichat/);
+  assert.match(result.css, /--consumer-prefix: cds;/);
   await writeFile(join(consumer, 'resolution.css'), result.css);
   console.log('Styles: existing packed Sass exports compile.');
 }
