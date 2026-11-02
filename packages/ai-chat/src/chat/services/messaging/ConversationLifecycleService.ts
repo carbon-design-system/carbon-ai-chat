@@ -7,9 +7,9 @@
  *  @license
  */
 
-import type { ConversationStatus } from '../../types/instance/PublicChatState';
-import actions from '../store/actions';
-import type { ServiceManager } from './ServiceManager';
+import type { ConversationStatus } from '../../../types/instance/PublicChatState';
+import actions from '../../store/actions';
+import type { ServiceManager } from '../ServiceManager';
 
 class ConversationLifecycleService {
   private generation = 0;

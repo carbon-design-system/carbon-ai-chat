@@ -10,8 +10,8 @@
 import {
   StreamingTracker,
   type StreamingResponseMeta,
-} from '../utils/streamingUtils';
-import { MessageRequest } from '../../types/messaging/Messages';
+} from '../../utils/streamingUtils';
+import { MessageRequest } from '../../../types/messaging/Messages';
 
 type StreamingCurrent =
   | {

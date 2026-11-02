@@ -8,21 +8,21 @@
  */
 
 import { ChatInstanceService } from './ChatInstanceService';
-import { ChunkProcessingService } from './ChunkProcessingService';
+import { ChunkProcessingService } from './messaging/inbound/ChunkProcessingService';
 import { HydrationService } from './HydrationService';
 import { InputActionsService } from './InputActionsService';
 import { PublicStateService } from './PublicStateService';
-import { ConversationLifecycleService } from './ConversationLifecycleService';
-import { ReceiveService } from './ReceiveService';
-import { SlotEventService } from './SlotEventService';
-import { SendService } from './SendService';
-import { StreamAnnouncerService } from './StreamAnnouncerService';
+import { ConversationLifecycleService } from './messaging/ConversationLifecycleService';
+import { ReceiveService } from './messaging/inbound/ReceiveService';
+import { SlotEventService } from './messaging/presentation/SlotEventService';
+import { SendService } from './messaging/outbound/SendService';
+import { StreamAnnouncerService } from './messaging/presentation/StreamAnnouncerService';
 import { ViewService } from './ViewService';
 import { EventBus } from '../events/EventBus';
 import { HistoryService } from './HistoryService';
 import { createCustomPanelManager } from './CustomPanelManager';
-import { MessageUpsertCoordinator } from './MessageUpsertCoordinator';
-import MessageService from './MessageService';
+import { MessageUpsertCoordinator } from './messaging/inbound/MessageUpsertCoordinator';
+import MessageService from './messaging/MessageService';
 import { NamespaceService } from './NamespaceService';
 import { ServiceManager } from './ServiceManager';
 import { ThemeWatcherService } from './ThemeWatcherService';

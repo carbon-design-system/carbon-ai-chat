@@ -9,30 +9,30 @@
 
 import merge from 'lodash-es/merge.js';
 
-import actions from '../store/actions';
-import type { MessageWriteOptions } from '../store/messageWriteTypes';
-import { AppStateMessages } from '../../types/state/AppState';
-import { deepFreeze } from '../utils/lang/objectUtils';
+import actions from '../../../store/actions';
+import type { MessageWriteOptions } from '../../../store/messageWriteTypes';
+import { AppStateMessages } from '../../../../types/state/AppState';
+import { deepFreeze } from '../../../utils/lang/objectUtils';
 import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 import {
   createMessageResponseForText,
   isResponse,
   isConnectToHumanAgent,
-} from '../utils/messageUtils';
+} from '../../../utils/messageUtils';
 import {
   BusEventPreReceive,
   BusEventType,
-} from '../../types/events/eventBusTypes';
+} from '../../../../types/events/eventBusTypes';
 import {
   MessageRequest,
   MessageResponse,
   MessageResponseTypes,
-} from '../../types/messaging/Messages';
-import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
-import { OnErrorType } from '../../types/config/ErrorConfig';
-import { MessageState } from '../../types/config/MessagingConfig';
-import { HistoryItem, HistoryNote } from '../../types/messaging/History';
-import type { ServiceManager } from './ServiceManager';
+} from '../../../../types/messaging/Messages';
+import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
+import { OnErrorType } from '../../../../types/config/ErrorConfig';
+import { MessageState } from '../../../../types/config/MessagingConfig';
+import { HistoryItem, HistoryNote } from '../../../../types/messaging/History';
+import type { ServiceManager } from '../../ServiceManager';
 
 class ReceiveService {
   private serviceManager: ServiceManager;

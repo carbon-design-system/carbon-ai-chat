@@ -12,9 +12,9 @@ import { EventBus } from '../../../src/chat/events/EventBus';
 import { HydrationService } from '../../../src/chat/services/HydrationService';
 import { InputActionsService } from '../../../src/chat/services/InputActionsService';
 import { PublicStateService } from '../../../src/chat/services/PublicStateService';
-import { ReceiveService } from '../../../src/chat/services/ReceiveService';
-import { SendService } from '../../../src/chat/services/SendService';
-import { SlotEventService } from '../../../src/chat/services/SlotEventService';
+import { ReceiveService } from '../../../src/chat/services/messaging/inbound/ReceiveService';
+import { SendService } from '../../../src/chat/services/messaging/outbound/SendService';
+import { SlotEventService } from '../../../src/chat/services/messaging/presentation/SlotEventService';
 import { ViewService } from '../../../src/chat/services/ViewService';
 import { ServiceManager } from '../../../src/chat/services/ServiceManager';
 import {
