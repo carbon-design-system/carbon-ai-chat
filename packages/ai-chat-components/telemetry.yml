@@ -260,7 +260,7 @@ collect:
         - first-item
         - full-width
         - group-id
-        - hidden-avatar
+        - hide-avatar
         - history
         - last-item
         - row-id

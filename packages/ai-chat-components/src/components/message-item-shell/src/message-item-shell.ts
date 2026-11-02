@@ -32,7 +32,7 @@ export type MessageItemShellRowType = 'request' | 'response';
  *
  * @slot byline - The byline area. Contains the user name, timestamp, and avatar.
  * @slot - default slot. The message content.
- * @slot attachment - File upload chips or other attachments.
+ * @slot attachment - File upload chips or other attachments. The shell adds no announcements; the slotted content decides what screen readers hear.
  * @slot footer - Footer content from the host.
  */
 @carbonElement(blockClass)
