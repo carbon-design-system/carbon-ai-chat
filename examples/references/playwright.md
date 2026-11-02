@@ -85,7 +85,9 @@ Prefer the host DOM for displayed state. If the host exposes its instance, poll 
 
 ## Accessibility
 
-The shared fixture does not include axe. Add `@axe-core/playwright` when a spec needs a scan. New UI behavior still needs the [repo accessibility checks](../../references/accessibility.md).
+Follow the [accessibility guide](../../references/accessibility.md) for keyboard, focus, and screen-reader checks; axe alone cannot prove conformance.
+
+Import `@axe-core/playwright` in the spec; the shared fixture omits it. Follow [watch messages](../shared/playwright/tests/watch-messages.spec.ts): await the target UI, use `.include()` for its region, and assert no violations. Use tags `wcag2a`, `wcag2aa`, `wcag21a`, and `wcag21aa`. Keep exclusions narrow and link their known issues.
 
 ## Determinism
 

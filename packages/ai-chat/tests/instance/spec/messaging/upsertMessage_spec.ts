@@ -698,73 +698,88 @@ describe('ChatInstance.messaging.upsertMessage', () => {
       }
     });
 
-    it('keeps a late owned upsert settled after Stop while updating its content', async () => {
-      const streamingReady = resolvablePromise<void>();
-      const finishResponse = resolvablePromise<void>();
-      const { instance, store, serviceManager } =
-        await renderChatAndGetInstanceWithStore({
-          ...createBaseConfig(),
-          messaging: {
-            skipWelcome: true,
-            customSendMessage: async (request, _options, chat) => {
-              const response = cancellableResponse('stopped-upsert');
-              response.request_id = request.id;
-              await chat.messaging.upsertMessage(
-                response.id,
-                MessageState.STREAMING,
-                () => response
-              );
-              streamingReady.doResolve();
-              await finishResponse;
+    it.each([
+      { explicitOwner: true, senderSettled: false },
+      { explicitOwner: false, senderSettled: false },
+      { explicitOwner: true, senderSettled: true },
+      { explicitOwner: false, senderSettled: true },
+    ])(
+      'keeps a late owned upsert settled after Stop (%j)',
+      async ({ explicitOwner, senderSettled }) => {
+        const streamingReady = resolvablePromise<void>();
+        const finishResponse = resolvablePromise<void>();
+        const { instance, store, serviceManager } =
+          await renderChatAndGetInstanceWithStore({
+            ...createBaseConfig(),
+            messaging: {
+              skipWelcome: true,
+              customSendMessage: async (request, _options, chat) => {
+                const response = cancellableResponse('stopped-upsert');
+                if (explicitOwner) {
+                  response.request_id = request.id;
+                }
+                await chat.messaging.upsertMessage(
+                  response.id,
+                  MessageState.STREAMING,
+                  () => response
+                );
+                streamingReady.doResolve();
+                await finishResponse;
+              },
             },
-          },
-        });
-      const sent = instance.send('start');
+          });
+        const sent = instance.send('start');
 
-      try {
-        await streamingReady;
-        expect(
-          store.getState().assistantInputState.stopStreamingButtonState
-            .isVisible
-        ).toBe(true);
-        await serviceManager.messageService.cancelCurrentMessageRequest();
-        await sent;
-        await instance.messaging.upsertMessage(
-          'stopped-upsert',
-          MessageState.STREAMING,
-          (previous) => ({
-            ...previous,
-            output: {
-              ...previous.output,
-              generic: [
-                { ...previous.output.generic[0], text: 'Late content' },
-              ],
-            },
-          })
-        );
+        try {
+          await streamingReady;
+          if (senderSettled) {
+            finishResponse.doResolve();
+            await sent;
+          }
+          expect(
+            store.getState().assistantInputState.stopStreamingButtonState
+              .isVisible
+          ).toBe(true);
+          await serviceManager.messageService.cancelCurrentMessageRequest();
+          await sent;
+          await instance.messaging.upsertMessage(
+            'stopped-upsert',
+            MessageState.STREAMING,
+            (previous) => ({
+              ...previous,
+              output: {
+                ...previous.output,
+                generic: [
+                  { ...previous.output.generic[0], text: 'Late content' },
+                ],
+              },
+            })
+          );
 
-        expect(
-          serviceManager.messageUpsertCoordinator.hasStreamingMessages()
-        ).toBe(false);
-        expect(
-          store.getState().assistantInputState.stopStreamingButtonState
-            .isVisible
-        ).toBe(false);
-        const item = Object.values(store.getState().allMessageItemsByID).find(
-          (item) => item.fullMessageID === 'stopped-upsert'
-        );
-        expect(item.item).toMatchObject({ text: 'Late content' });
-        expect(item.ui_state.streamingState.isDone).toBe(true);
-        expect(
-          store.getState().allMessagesByID['stopped-upsert']
-        ).toMatchObject({
-          output: { generic: [{ text: 'Late content' }] },
-        });
-      } finally {
-        finishResponse.doResolve();
-        await sent;
+          expect(
+            serviceManager.messageUpsertCoordinator.hasStreamingMessages()
+          ).toBe(false);
+          expect(
+            store.getState().assistantInputState.stopStreamingButtonState
+              .isVisible
+          ).toBe(false);
+          const item = Object.values(store.getState().allMessageItemsByID).find(
+            (item) => item.fullMessageID === 'stopped-upsert'
+          );
+          expect(item.item).toMatchObject({ text: 'Late content' });
+          expect(item.ui_state.streamingState.isDone).toBe(true);
+          expect(instance.state.get().status).toBe('ready');
+          expect(
+            store.getState().allMessagesByID['stopped-upsert']
+          ).toMatchObject({
+            output: { generic: [{ text: 'Late content' }] },
+          });
+        } finally {
+          finishResponse.doResolve();
+          await sent;
+        }
       }
-    });
+    );
 
     it('settles all current snapshots when stopped after customSendMessage resolves', async () => {
       const config = createBaseConfig();
@@ -1020,14 +1035,16 @@ describe('ChatInstance.messaging.upsertMessage', () => {
       expect(childID()).not.toBe(idBefore);
     });
 
-    it('retains and freezes the original addMessage caller payload', async () => {
+    it('preserves the addMessage caller freeze and owns the stored payload', async () => {
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(createBaseConfig());
       const message = textResponse('owned-response', 'before');
 
       await instance.messaging.addMessage(message);
 
-      expect(store.getState().allMessagesByID['owned-response']).toBe(message);
+      expect(store.getState().allMessagesByID['owned-response']).not.toBe(
+        message
+      );
       expect(Object.isFrozen(message)).toBe(true);
       expect(() => {
         (message.output.generic[0] as any).text = 'after';
@@ -1037,6 +1054,49 @@ describe('ChatInstance.messaging.upsertMessage', () => {
   });
 
   describe('writable upsert events', () => {
+    it('keeps caller item identity when a terminal event reuses a stored local item', async () => {
+      const { instance, store } =
+        await renderChatAndGetInstanceWithStore(createBaseConfig());
+      const first = userDefinedResponse('reused-slot', { value: 'before' });
+      first.output.generic.push({
+        response_type: MessageResponseTypes.TEXT,
+        text: 'first',
+      });
+      await instance.messaging.upsertMessage(
+        first.id,
+        MessageState.COMPLETE,
+        () => first
+      );
+      const response = userDefinedResponse(first.id, { value: 'before' });
+      response.output.generic.push({
+        response_type: MessageResponseTypes.TEXT,
+        text: 'second',
+      });
+      const slot = jest.fn((event: BusEventUserDefinedResponse) => {
+        expect(event.data.message).toBe(response.output.generic[0]);
+        expect(event.data.fullMessage).toBe(response);
+        event.data.message.user_defined.value = 'edited';
+      });
+      instance.on({ type: BusEventType.USER_DEFINED_RESPONSE, handler: slot });
+
+      await instance.messaging.upsertMessage(
+        response.id,
+        MessageState.ERROR,
+        () => response
+      );
+
+      expect(slot).toHaveBeenCalledTimes(1);
+      expect(response.output.generic[0].user_defined.value).toBe('edited');
+      const state = store.getState();
+      const localItem = Object.values(state.allMessageItemsByID).find(
+        (item) =>
+          item.fullMessageID === response.id &&
+          item.item.response_type === MessageResponseTypes.USER_DEFINED
+      );
+      expect(localItem.item.user_defined.value).toBe('edited');
+      expect(localItem.item).not.toBe(response.output.generic[0]);
+    });
+
     it('applies receive edits to the shared caller payload and stored message', async () => {
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(createBaseConfig());
@@ -1100,7 +1160,8 @@ describe('ChatInstance.messaging.upsertMessage', () => {
       expect(stored.output.generic[1]).toMatchObject({
         text: 'full-message edit',
       });
-      expect(response.output).toBe(stored.output);
+      expect(response.output).not.toBe(stored.output);
+      expect(response.output).toEqual(stored.output);
     });
 
     it('applies custom-footer item and message edits to stored content', async () => {
@@ -1138,7 +1199,8 @@ describe('ChatInstance.messaging.upsertMessage', () => {
       expect(stored.output.generic[1]).toMatchObject({
         text: 'footer message edit',
       });
-      expect(response.output).toBe(stored.output);
+      expect(response.output).not.toBe(stored.output);
+      expect(response.output).toEqual(stored.output);
     });
   });
 
@@ -1891,6 +1953,33 @@ describe('ChatInstance.messaging.upsertMessage', () => {
           expect(item.ui_state.streamingState?.isDone).toBe(true);
         }
         expect(isVisible(store)).toBe(false);
+      });
+
+      it('allows an unsolicited stream to restart after Stop', async () => {
+        const { instance, store, serviceManager } =
+          await renderChatAndGetInstanceWithStore({
+            ...createBaseConfig(),
+            messaging: { skipWelcome: true },
+          });
+        const update = (text: string) =>
+          instance.messaging.upsertMessage(
+            'unsolicited',
+            MessageState.STREAMING,
+            () => cancellableResponse('unsolicited', text)
+          );
+
+        await update('before');
+        await serviceManager.messageService.cancelCurrentMessageRequest();
+        expect(instance.state.get().status).toBe('ready');
+        expect(isVisible(store)).toBe(false);
+
+        await update('after');
+
+        expect(instance.state.get().status).toBe('streaming');
+        expect(isVisible(store)).toBe(true);
+        expect(
+          itemsFor(store, 'unsolicited')[0].ui_state.streamingState.isDone
+        ).toBe(false);
       });
     });
   });

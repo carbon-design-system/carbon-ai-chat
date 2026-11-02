@@ -1,7 +1,7 @@
 {
   "name": "@carbon/ai-chat-components",
   "description": "AI Chat Components",
-  "version": "1.14.0-rc.0",
+  "version": "1.14.0-rc.1",
   "type": "module",
   "customElements": "./custom-elements.json",
   "license": "Apache-2.0",
@@ -166,5 +166,6 @@
   },
   "main": "es/index.js",
   "module": "es/index.js",
-  "types": "es/index.d.ts"
+  "types": "es/index.d.ts",
+  "customElements": "./custom-elements.json"
 }
