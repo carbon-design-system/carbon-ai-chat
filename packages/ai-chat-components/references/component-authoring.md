@@ -38,7 +38,7 @@ The source build watcher does not rerun the CEM analyzer. After metadata edits, 
 
 The tool reads tags from decorators and props from Lit. It hides internal members, maps local paths to shipped files, and resolves imported exports. It drops types erased by the build and keeps runtime enums. For source globs and files to skip, check [the analyzer config](../custom-elements-manifest.config.js).
 
-The root `test:manifest-consumer` packs the built package. It checks that the discovery field and JSON export find the same file. It checks shipped local paths, exports, and type references. It imports each listed tagged class alone in a fresh browser context for both `es` and `es-custom`. It checks some toolbar and truncated-text props against the built classes.
+The root `test:manifest-consumer` packs the built package. It checks that the discovery field and JSON export find the same file. It checks shipped local paths, exports, and type references. It imports each listed tagged class alone in a fresh browser context. It checks some toolbar and truncated-text props against the built classes.
 
 Root `npm test`, `npm run ci-check`, and the GitHub components test job run this packed check. Run `npm run test:manifest-consumer` from the root after a fresh build for manifest changes.
 
