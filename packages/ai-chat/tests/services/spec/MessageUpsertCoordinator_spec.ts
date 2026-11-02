@@ -73,7 +73,7 @@ function makeStubManager(initialMessages: Record<string, unknown> = {}) {
       retainAgentItemPositions: jest.fn(),
       handleConnectToHumanAgent: jest.fn().mockResolvedValue(undefined),
     },
-    messageService: {
+    messageCoordinator: {
       finalizeStreamingMessage,
       getCurrentMessageController: jest.fn(),
       isRequestFromPreviousConversation: jest.fn().mockReturnValue(false),
@@ -84,7 +84,15 @@ function makeStubManager(initialMessages: Record<string, unknown> = {}) {
       clearAllStreamingCancellation: jest.fn(),
     },
   } as unknown as ServiceManager;
+  const messageMethods = manager.messageCoordinator;
   manager.messageCoordinator = new MessageCoordinator(manager);
+  for (const [name, value] of Object.entries(messageMethods)) {
+    Object.defineProperty(manager.messageCoordinator, name, {
+      value,
+      writable: true,
+      configurable: true,
+    });
+  }
   return {
     manager,
     state,
@@ -462,7 +470,9 @@ describe('MessageUpsertCoordinator', () => {
             manager.restartCount++;
           } else {
             jest
-              .mocked(manager.messageService.isRequestFromPreviousConversation)
+              .mocked(
+                manager.messageCoordinator.isRequestFromPreviousConversation
+              )
               .mockReturnValue(true);
           }
         });
@@ -486,7 +496,7 @@ describe('MessageUpsertCoordinator', () => {
       expect(coord.getState('m1')).toBeUndefined();
       expect(finalizeStreamingMessage).not.toHaveBeenCalled();
       expect(
-        manager.messageService.hideStopStreamingButtonIfIdle
+        manager.messageCoordinator.hideStopStreamingButtonIfIdle
       ).not.toHaveBeenCalled();
     }
   );

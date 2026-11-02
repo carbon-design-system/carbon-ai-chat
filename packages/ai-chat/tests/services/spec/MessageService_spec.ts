@@ -8,7 +8,7 @@
  */
 
 import * as uuidUtils from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
-import MessageService from '../../../src/chat/services/messaging/MessageService';
+import type { PublicConfig } from '../../../src/types/config/PublicConfig';
 import type { PendingMessageRequest } from '../../../src/chat/services/messaging/pendingRequestTypes';
 import { ChunkProcessingService } from '../../../src/chat/services/messaging/inbound/ChunkProcessingService';
 import { MessageCoordinator } from '../../../src/chat/services/messaging/MessageCoordinator';
@@ -54,13 +54,9 @@ const flushMessageQueue = async () => {
   await Promise.resolve();
 };
 
-function createMessageService(
-  manager: ServiceManager,
-  config: ConstructorParameters<typeof MessageService>[1]
-) {
-  const service = new MessageService(manager, config);
-  manager.messageService = service;
-  return service;
+function createMessageService(manager: ServiceManager, config: PublicConfig) {
+  manager.messageCoordinator.configureMessageTimeout(config);
+  return manager.messageCoordinator;
 }
 
 const createServiceManagerStub = (
@@ -124,7 +120,7 @@ const createServiceManagerStub = (
     eventBus,
     instance: {},
     messageUpsertCoordinator,
-    messageService: {
+    messageCoordinator: {
       hideStopStreamingButtonIfNoUpsertStreaming: jest.fn(),
       updateStreamingCancellation: jest.fn(),
     },
@@ -163,7 +159,7 @@ describe('MessageService', () => {
       const uuid = jest
         .spyOn(uuidUtils, 'uuid')
         .mockReturnValue('generated-local');
-      const sent = service.send(
+      const sent = service.enqueueMessage(
         createMessage('request'),
         MessageSendSource.MESSAGE_INPUT,
         localID
@@ -195,7 +191,7 @@ describe('MessageService', () => {
       messaging: { messageTimeoutSecs: 0 },
     });
 
-    await messageService.send(
+    await messageService.enqueueMessage(
       createMessage('first-request'),
       MessageSendSource.MESSAGE_INPUT,
       'local-first'
@@ -206,7 +202,7 @@ describe('MessageService', () => {
     await messageService.cancelAllMessageRequests();
     serviceManager.restartCount++;
 
-    await messageService.send(
+    await messageService.enqueueMessage(
       createMessage('second-request'),
       MessageSendSource.MESSAGE_INPUT,
       'local-second'
@@ -253,7 +249,7 @@ describe('MessageService', () => {
       }
     );
 
-    await messageService.send(
+    await messageService.enqueueMessage(
       createMessage('initial-request'),
       MessageSendSource.MESSAGE_INPUT,
       'local-request'
@@ -283,7 +279,7 @@ describe('MessageService', () => {
       return Promise.resolve();
     });
 
-    const sent = messageService.send(
+    const sent = messageService.enqueueMessage(
       createMessage('waiting-request'),
       MessageSendSource.MESSAGE_INPUT,
       'local-waiting'
@@ -305,7 +301,7 @@ describe('MessageService', () => {
     const messageService = createMessageService(serviceManager, {
       messaging: { messageTimeoutSecs: 0 },
     });
-    await messageService.send(
+    await messageService.enqueueMessage(
       createMessage('stopped-request'),
       MessageSendSource.MESSAGE_INPUT,
       'local-stopped'
@@ -339,7 +335,7 @@ describe('MessageService', () => {
     } as any);
 
     const message = createMessage('m-1');
-    await messageService.send(
+    await messageService.enqueueMessage(
       message,
       MessageSendSource.MESSAGE_INPUT,
       'local-1',
@@ -371,7 +367,7 @@ describe('MessageService', () => {
       'external-item'
     );
 
-    await messageService.send(
+    await messageService.enqueueMessage(
       createMessage('separate-request'),
       MessageSendSource.MESSAGE_INPUT,
       'local-separate',
@@ -461,16 +457,16 @@ describe('MessageService', () => {
     });
     serviceManager.messageCoordinator.takeNextRequest();
 
-    const sendPromise = messageService.send(
+    const sendPromise = messageService.enqueueMessage(
       createMessage('m-waiting'),
       MessageSendSource.MESSAGE_INPUT,
       'local-waiting',
       { silent: false }
     );
 
-    const controller = (messageService as any).messageAbortControllers.get(
-      'm-waiting'
-    );
+    const controller = (
+      serviceManager.messageCoordinator as any
+    ).terminationWorkflow.messageAbortControllers.get('m-waiting');
     expect(controller).toBeInstanceOf(AbortController);
 
     await messageService.cancelMessageRequestByID(
@@ -493,7 +489,7 @@ describe('MessageService', () => {
         messaging: { messageTimeoutSecs: 0 },
       });
 
-      await messageService.send(
+      await messageService.enqueueMessage(
         createMessage('returned-request'),
         MessageSendSource.MESSAGE_INPUT,
         'local-returned'
@@ -512,7 +508,10 @@ describe('MessageService', () => {
       expect(signal.aborted).toBe(true);
       expect(signal.reason).toBe(CancellationReason.CONVERSATION_RESTARTED);
       expect(onAbort).toHaveBeenCalledTimes(1);
-      expect((messageService as any).messageAbortControllers.size).toBe(0);
+      expect(
+        (serviceManager.messageCoordinator as any).terminationWorkflow
+          .messageAbortControllers.size
+      ).toBe(0);
       expect(messageService.inboundStreaming.streamingMessageID).toBeNull();
     }
   );
@@ -525,7 +524,7 @@ describe('MessageService', () => {
     });
 
     for (const id of ['first-request', 'second-request']) {
-      await messageService.send(
+      await messageService.enqueueMessage(
         createMessage(id),
         MessageSendSource.MESSAGE_INPUT,
         `local-${id}`
@@ -541,7 +540,10 @@ describe('MessageService', () => {
 
     expect(firstSignal.reason).toBe('custom cancellation');
     expect(secondSignal.reason).toBe('custom cancellation');
-    expect((messageService as any).messageAbortControllers.size).toBe(0);
+    expect(
+      (serviceManager.messageCoordinator as any).terminationWorkflow
+        .messageAbortControllers.size
+    ).toBe(0);
   });
 
   it('clears retained controllers that were already aborted', async () => {
@@ -551,20 +553,23 @@ describe('MessageService', () => {
       messaging: { messageTimeoutSecs: 0 },
     });
 
-    await messageService.send(
+    await messageService.enqueueMessage(
       createMessage('aborted-request'),
       MessageSendSource.MESSAGE_INPUT,
       'local-aborted'
     );
     const controller: AbortController = (
-      messageService as any
-    ).messageAbortControllers.get('aborted-request');
+      serviceManager.messageCoordinator as any
+    ).terminationWorkflow.messageAbortControllers.get('aborted-request');
     controller.abort(CancellationReason.STOP_STREAMING);
 
     await messageService.cancelAllMessageRequests();
 
     expect(controller.signal.reason).toBe(CancellationReason.STOP_STREAMING);
-    expect((messageService as any).messageAbortControllers.size).toBe(0);
+    expect(
+      (serviceManager.messageCoordinator as any).terminationWorkflow
+        .messageAbortControllers.size
+    ).toBe(0);
   });
 
   it('rejects a send when it exceeds the configured timeout', async () => {
@@ -586,7 +591,7 @@ describe('MessageService', () => {
       });
 
     try {
-      const sendPromise = messageService.send(
+      const sendPromise = messageService.enqueueMessage(
         createMessage('m-timeout'),
         MessageSendSource.MESSAGE_INPUT,
         'local-timeout',
@@ -637,7 +642,9 @@ describe('MessageService', () => {
 
     serviceManager.messageCoordinator.enqueueRequest(pendingRequest);
     serviceManager.messageCoordinator.takeNextRequest();
-    (messageService as any).messageAbortControllers.set(
+    (
+      serviceManager.messageCoordinator as any
+    ).terminationWorkflow.messageAbortControllers.set(
       'm-streaming',
       abortController
     );
@@ -718,14 +725,14 @@ describe('MessageService', () => {
         },
       } as any);
 
-      const firstSend = messageService.send(
+      const firstSend = messageService.enqueueMessage(
         createMessage('m-first'),
         MessageSendSource.MESSAGE_INPUT,
         'local-first'
       );
       await flushMessageQueue();
       messageService.markCurrentMessageAsStreaming('response-first');
-      const secondSend = messageService.send(
+      const secondSend = messageService.enqueueMessage(
         createMessage('m-second'),
         MessageSendSource.MESSAGE_INPUT,
         'local-second'
@@ -761,12 +768,12 @@ describe('MessageService', () => {
         return Promise.resolve();
       });
 
-      await messageService.send(
+      await messageService.enqueueMessage(
         createMessage('m-first'),
         MessageSendSource.MESSAGE_INPUT,
         'local-first'
       );
-      const secondSend = messageService.send(
+      const secondSend = messageService.enqueueMessage(
         createMessage('m-second'),
         MessageSendSource.MESSAGE_INPUT,
         'local-second'
@@ -793,9 +800,9 @@ describe('MessageService', () => {
           messageLoadingIndicatorTimeoutSecs: 0,
         },
       } as any);
-      serviceManager.messageService = messageService;
+      serviceManager.messageCoordinator = messageService;
 
-      const firstSend = messageService.send(
+      const firstSend = messageService.enqueueMessage(
         createMessage('m-first'),
         MessageSendSource.MESSAGE_INPUT,
         'local-first'
@@ -805,7 +812,7 @@ describe('MessageService', () => {
       );
       await flushMessageQueue();
       messageService.markCurrentMessageAsStreaming('response-first');
-      const secondSend = messageService.send(
+      const secondSend = messageService.enqueueMessage(
         createMessage('m-second'),
         MessageSendSource.MESSAGE_INPUT,
         'local-second'
@@ -835,9 +842,9 @@ describe('MessageService', () => {
           messageLoadingIndicatorTimeoutSecs: 0,
         },
       } as any);
-      serviceManager.messageService = messageService;
+      serviceManager.messageCoordinator = messageService;
 
-      const firstSend = messageService.send(
+      const firstSend = messageService.enqueueMessage(
         createMessage('m-first'),
         MessageSendSource.MESSAGE_INPUT,
         'local-first'
@@ -847,7 +854,7 @@ describe('MessageService', () => {
       );
       await flushMessageQueue();
       messageService.markCurrentMessageAsStreaming('response-first');
-      const secondSend = messageService.send(
+      const secondSend = messageService.enqueueMessage(
         createMessage('m-second'),
         MessageSendSource.MESSAGE_INPUT,
         'local-second'
@@ -894,7 +901,7 @@ describe('MessageService', () => {
         });
 
       try {
-        const firstSend = messageService.send(
+        const firstSend = messageService.enqueueMessage(
           createMessage('m-first'),
           MessageSendSource.MESSAGE_INPUT,
           'local-first'
@@ -904,7 +911,7 @@ describe('MessageService', () => {
         );
         await flushMessageQueue();
         messageService.markCurrentMessageAsStreaming('response-first');
-        const secondSend = messageService.send(
+        const secondSend = messageService.enqueueMessage(
           createMessage('m-second'),
           MessageSendSource.MESSAGE_INPUT,
           'local-second'
@@ -946,7 +953,7 @@ describe('MessageService', () => {
       } as any);
 
       const message = createMessage('m-1');
-      const sendPromise = messageService.send(
+      const sendPromise = messageService.enqueueMessage(
         message,
         MessageSendSource.MESSAGE_INPUT,
         'local-1',
@@ -1101,7 +1108,7 @@ describe('MessageService', () => {
       } as any);
 
       const message = createMessage('m-cancel');
-      const sendPromise = messageService.send(
+      const sendPromise = messageService.enqueueMessage(
         message,
         MessageSendSource.MESSAGE_INPUT,
         'local-cancel',
@@ -1109,9 +1116,9 @@ describe('MessageService', () => {
       );
 
       // Get the controller before cancellation
-      const controller = (messageService as any).messageAbortControllers.get(
-        'm-cancel'
-      );
+      const controller = (
+        serviceManager.messageCoordinator as any
+      ).terminationWorkflow.messageAbortControllers.get('m-cancel');
       expect(controller).toBeDefined();
 
       await messageService.cancelMessageRequestByID(
@@ -1256,7 +1263,7 @@ it('keeps a released request continuation from advancing the newer operation', a
   const messageService = createMessageService(serviceManager, {
     messaging: { messageTimeoutSecs: 0 },
   });
-  const firstSend = messageService.send(
+  const firstSend = messageService.enqueueMessage(
     createMessage('first'),
     MessageSendSource.MESSAGE_INPUT,
     'local-first'
@@ -1264,12 +1271,12 @@ it('keeps a released request continuation from advancing the newer operation', a
   await flushMessageQueue();
   messageService.markCurrentMessageAsStreaming('response-first');
   const retainedFirst = serviceManager.messageCoordinator.getCurrentRequest();
-  const secondSend = messageService.send(
+  const secondSend = messageService.enqueueMessage(
     createMessage('second'),
     MessageSendSource.MESSAGE_INPUT,
     'local-second'
   );
-  const thirdSend = messageService.send(
+  const thirdSend = messageService.enqueueMessage(
     createMessage('third'),
     MessageSendSource.MESSAGE_INPUT,
     'local-third'
@@ -1302,7 +1309,8 @@ it.each(['replacement-response', 'same-response'])(
     const service = createMessageService(serviceManager, { messaging: {} });
     const oldController = new AbortController();
     const nextController = new AbortController();
-    const controllers = (service as any).messageAbortControllers as Map<
+    const controllers = (serviceManager.messageCoordinator as any)
+      .terminationWorkflow.messageAbortControllers as Map<
       string,
       AbortController
     >;
@@ -1355,7 +1363,7 @@ it('settles the captured stopped request when abort restarts and clears the queu
   const service = createMessageService(serviceManager, {
     messaging: { messageTimeoutSecs: 0 },
   });
-  const sent = service.send(
+  const sent = service.enqueueMessage(
     createMessage('old-request'),
     MessageSendSource.MESSAGE_INPUT,
     'local'
@@ -1385,7 +1393,8 @@ it('uses retained stream metadata when controller aliases and queue membership a
   const serviceManager = createServiceManagerStub();
   const service = createMessageService(serviceManager, { messaging: {} });
   const controller = new AbortController();
-  const controllers = (service as any).messageAbortControllers as Map<
+  const controllers = (serviceManager.messageCoordinator as any)
+    .terminationWorkflow.messageAbortControllers as Map<
     string,
     AbortController
   >;

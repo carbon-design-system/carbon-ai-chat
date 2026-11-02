@@ -51,14 +51,16 @@ class SendWorkflow {
       (request, received) => this.processSuccess(request, received),
       () => serviceManager.store.getState().config.public.messaging || {},
       (request) =>
-        serviceManager.messageService.finishFailedStreamingResponse(request),
+        serviceManager.messageCoordinator.finishFailedStreamingResponse(
+          request
+        ),
       (id, generation) =>
         serviceManager.messageCoordinator.registerRequestGeneration(
           id,
           generation
         ),
       () =>
-        serviceManager.messageService.hideStopStreamingButtonIfNoUpsertStreaming()
+        serviceManager.messageCoordinator.hideStopStreamingButtonIfNoUpsertStreaming()
     );
   }
 
@@ -150,7 +152,7 @@ class SendWorkflow {
     if (!current.isStreaming) {
       // Hide stop streaming button if it was shown for showStopButtonImmediately, unless
       // some other message is still streaming.
-      this.serviceManager.messageService.hideStopStreamingButtonIfIdle();
+      this.serviceManager.messageCoordinator.hideStopStreamingButtonIfIdle();
       this.serviceManager.messageCoordinator.advanceRequestQueue();
     }
     this.serviceManager.messageCoordinator.requestFinished(
@@ -313,7 +315,7 @@ class SendWorkflow {
           }
         },
         () => {
-          this.serviceManager.messageService.cancelMessageRequestByID(
+          this.serviceManager.messageCoordinator.cancelMessageRequestByID(
             message.id,
             true,
             CancellationReason.TIMEOUT

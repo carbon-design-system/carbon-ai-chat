@@ -48,7 +48,7 @@ function createHarness(config: PublicConfig = {}) {
       handleConnectToHumanAgent,
     },
     streamAnnouncerService: { clearAll: jest.fn() },
-    messageService: {
+    messageCoordinator: {
       isRequestFromPreviousConversation: jest.fn().mockReturnValue(false),
       inboundStreaming: { streamingMessageID: null },
       messageLoadingManager: { end: jest.fn() },
@@ -61,7 +61,15 @@ function createHarness(config: PublicConfig = {}) {
     },
   } as unknown as ServiceManager;
   manager.chunkProcessingService = new ChunkProcessingService(manager);
+  const messageMethods = manager.messageCoordinator;
   manager.messageCoordinator = new MessageCoordinator(manager);
+  for (const [name, value] of Object.entries(messageMethods)) {
+    Object.defineProperty(manager.messageCoordinator, name, {
+      value,
+      writable: true,
+      configurable: true,
+    });
+  }
   manager.hydrationService = new HydrationService(manager);
   manager.messageUpsertCoordinator = new MessageUpsertCoordinator(manager);
   const service = new ReceiveService(manager);
@@ -440,7 +448,7 @@ describe('ReceiveService', () => {
   it('drops a message when pre:receive assigns a request from a previous conversation', async () => {
     const { service, manager, store, fire, eventTypes } = createHarness();
     jest
-      .spyOn(manager.messageService, 'isRequestFromPreviousConversation')
+      .spyOn(manager.messageCoordinator, 'isRequestFromPreviousConversation')
       .mockImplementation((requestID) => requestID === 'old-request');
     fire.mockImplementation(async (event): Promise<void> => {
       if (event.type === BusEventType.PRE_RECEIVE) {

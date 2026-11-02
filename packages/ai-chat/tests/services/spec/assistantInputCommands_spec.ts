@@ -7,6 +7,7 @@
  *  @license
  */
 
+import { MessageCoordinator } from '../../../src/chat/services/messaging/MessageCoordinator';
 import { requestStopFromInput } from '../../../src/chat/services/assistantInputCommands';
 import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
 import actions from '../../../src/chat/store/actions';
@@ -40,8 +41,11 @@ function commandHost(isVisible: boolean) {
   const manager = {
     store: { getState, dispatch },
     fire,
-    messageService: { cancelCurrentMessageRequest },
+    messageCoordinator: { cancelCurrentMessageRequest },
   } as unknown as ServiceManager;
+  manager.messageCoordinator = new MessageCoordinator(manager);
+  manager.messageCoordinator.cancelCurrentMessageRequest =
+    cancelCurrentMessageRequest;
   return {
     manager,
     button,
@@ -212,4 +216,16 @@ describe('requestStopFromInput without a mounted view', () => {
     expect(host.fire).not.toHaveBeenCalled();
     expect(log).not.toHaveBeenCalled();
   });
+});
+
+it('returns the coordinator Stop promise without another async boundary', () => {
+  const pending = resolvablePromise<void>();
+  const markPending = jest.fn();
+  const command = jest.fn(() => pending);
+  const manager = {
+    messageCoordinator: { requestStopFromInput: command },
+  } as unknown as ServiceManager;
+  expect(requestStopFromInput(manager, markPending)).toBe(pending);
+  expect(command).toHaveBeenCalledWith(markPending);
+  pending.doResolve();
 });

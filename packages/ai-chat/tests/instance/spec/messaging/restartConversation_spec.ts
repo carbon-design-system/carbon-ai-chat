@@ -363,7 +363,7 @@ describe('ChatInstance.messaging.restartConversation', () => {
           state.assistantInputState.stopStreamingButtonState.isVisible
         ).toBe(true);
         const endLoading = jest.spyOn(
-          serviceManager.messageService.messageLoadingManager,
+          serviceManager.messageCoordinator.messageLoadingManager,
           'end'
         );
         const announce = jest.spyOn(
@@ -375,7 +375,7 @@ describe('ChatInstance.messaging.restartConversation', () => {
 
         expect(store.getState()).toBe(state);
         expect(
-          serviceManager.messageService.inboundStreaming.streamingMessageID
+          serviceManager.messageCoordinator.inboundStreaming.streamingMessageID
         ).toBe('new-response');
         expect(endLoading).not.toHaveBeenCalled();
         expect(announce).not.toHaveBeenCalled();

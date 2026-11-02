@@ -27,7 +27,6 @@ import { EventBus } from '../events/EventBus';
 import { HistoryService } from './HistoryService';
 import { createCustomPanelManager } from './CustomPanelManager';
 import { MessageUpsertCoordinator } from './messaging/inbound/MessageUpsertCoordinator';
-import MessageService from './messaging/MessageService';
 import { NamespaceService } from './NamespaceService';
 import { ServiceManager } from './ServiceManager';
 import { ThemeWatcherService } from './ThemeWatcherService';
@@ -100,10 +99,7 @@ function createServiceManager(appConfig: AppConfig) {
   serviceManager.messageUpsertCoordinator = new MessageUpsertCoordinator(
     serviceManager
   );
-  serviceManager.messageService = new MessageService(
-    serviceManager,
-    publicConfig
-  );
+  serviceManager.messageCoordinator.configureMessageTimeout(publicConfig);
   serviceManager.store.subscribe(copyToSessionStorage(serviceManager));
   // Single post-boot owner of `serviceManager.intl`: rebuild it whenever the
   // strings or locale change. Boot's `setIntl` below seeds the formatter before

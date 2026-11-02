@@ -34,13 +34,14 @@ function harness(
     store,
     hydrationService: { hydrationPromise: hydration },
     slotEventService: { handleCustomRequestFooterSlot: jest.fn(() => footer) },
-    messageService: { send },
+    messageCoordinator: { enqueueMessage: send },
   } as unknown as ServiceManager;
   const sender = new MessageCoordinator(
     manager,
     typeof presentation === 'function' ? presentation(manager) : presentation
   );
   manager.messageCoordinator = sender;
+  jest.spyOn(sender, 'enqueueMessage').mockImplementation(send);
   return { store, hydration, transport, footer, send, sender, manager };
 }
 

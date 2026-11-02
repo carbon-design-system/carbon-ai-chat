@@ -192,7 +192,7 @@ describe('Config Header', () => {
       serviceManager = {
         store,
         namespace: new NamespaceService('test'),
-        messageService: { timeoutMS: 30000 } as any,
+        messageCoordinator: { timeoutMS: 30000 } as any,
         humanAgentService: null,
       } as ServiceManager;
     });

@@ -160,7 +160,7 @@ class ChunkProcessingService {
       ? chunk.final_response.request_id
       : chunk.streaming_metadata?.request_id;
     if (
-      this.serviceManager.messageService.isRequestFromPreviousConversation(
+      this.serviceManager.messageCoordinator.isRequestFromPreviousConversation(
         requestID
       )
     ) {
@@ -187,13 +187,13 @@ class ChunkProcessingService {
         extractedMessageID
       );
     try {
-      this.serviceManager.messageService.messageLoadingManager.end();
+      this.serviceManager.messageCoordinator.messageLoadingManager.end();
       if (!write.isCurrent()) {
         return;
       }
 
       if (isStreamPartialItem(chunk)) {
-        this.serviceManager.messageService.markCurrentMessageAsStreaming(
+        this.serviceManager.messageCoordinator.markCurrentMessageAsStreaming(
           extractedMessageID,
           chunk.partial_item?.streaming_metadata?.id
         );
@@ -219,10 +219,10 @@ class ChunkProcessingService {
 
       const ownerRequestID =
         requestID ??
-        this.serviceManager.messageService.inboundStreaming.getStreamingMeta(
+        this.serviceManager.messageCoordinator.inboundStreaming.getStreamingMeta(
           extractedMessageID
         )?.requestId ??
-        this.serviceManager.messageService.currentRequestID;
+        this.serviceManager.messageCoordinator.currentRequestID;
       const tracking = this.pendingSendErrors.get(ownerRequestID);
       const chunkPromise = resolvablePromise();
       this.chunkQueue.push({
@@ -311,9 +311,9 @@ class ChunkProcessingService {
         !this.serviceManager.messageCoordinator.isRequestStopped(requestID)
       ) {
         runCoreOperation(() =>
-          this.serviceManager.messageService.updateStreamingCancellation(
+          this.serviceManager.messageCoordinator.updateStreamingCancellation(
             messageID ??
-              this.serviceManager.messageService.inboundStreaming
+              this.serviceManager.messageCoordinator.inboundStreaming
                 .streamingMessageID ??
               '',
             (chunk as PartialItemChunk).partial_item?.streaming_metadata
@@ -369,7 +369,7 @@ class ChunkProcessingService {
         );
         if (messageID && isCurrent()) {
           runCoreOperation(() =>
-            this.serviceManager.messageService.finalizeStreamingMessage(
+            this.serviceManager.messageCoordinator.finalizeStreamingMessage(
               messageID
             )
           );
@@ -394,12 +394,12 @@ class ChunkProcessingService {
         return;
       }
       const responseID = messageID
-        ? this.serviceManager.messageService.inboundStreaming.resolveResponseId(
+        ? this.serviceManager.messageCoordinator.inboundStreaming.resolveResponseId(
             messageID
           )
         : undefined;
       if (responseID) {
-        this.serviceManager.messageService.markStreamingResponseError(
+        this.serviceManager.messageCoordinator.markStreamingResponseError(
           responseID
         );
       }
@@ -420,7 +420,7 @@ class ChunkProcessingService {
 
   private shouldSkipChunkDueToGeneration(messageID: string | undefined) {
     const inboundStreaming =
-      this.serviceManager.messageService.inboundStreaming;
+      this.serviceManager.messageCoordinator.inboundStreaming;
     if (
       messageID &&
       inboundStreaming &&
@@ -656,13 +656,13 @@ class ChunkProcessingService {
     messageID?: string
   ) {
     if (isCompleteItem || isStreamFinalResponse(chunk)) {
-      this.serviceManager.messageService.clearStreamingCancellation(
+      this.serviceManager.messageCoordinator.clearStreamingCancellation(
         messageID ??
-          this.serviceManager.messageService.inboundStreaming
+          this.serviceManager.messageCoordinator.inboundStreaming
             .streamingMessageID ??
           ''
       );
-      this.serviceManager.messageService.hideStopStreamingButtonIfNoUpsertStreaming();
+      this.serviceManager.messageCoordinator.hideStopStreamingButtonIfNoUpsertStreaming();
     }
   }
 

@@ -164,9 +164,9 @@ export async function applyConfigChangesDynamically(
   if (
     prevTimeoutSecs !== nextTimeoutSecs &&
     nextTimeoutSecs &&
-    serviceManager.messageService
+    serviceManager.messageCoordinator
   ) {
-    serviceManager.messageService.timeoutMS = nextTimeoutSecs * 1000;
+    serviceManager.messageCoordinator.timeoutMS = nextTimeoutSecs * 1000;
   }
 
   // SERVICE-INTERNAL MIRROR: the human-agent service coordinates a service desk

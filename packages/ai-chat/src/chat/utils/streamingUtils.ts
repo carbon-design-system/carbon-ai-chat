@@ -121,7 +121,7 @@ function syncStopStreamingButton(
 /**
  * Hides and re-enables the stop streaming button if currently visible.
  *
- * This hides unconditionally. Deciding *whether* to hide belongs to `MessageService` —
+ * This hides unconditionally. Deciding *whether* to hide belongs to `MessageCoordinator` —
  * see its `hideStopStreamingButtonIfIdle` / `hideStopStreamingButtonIfNoUpsertStreaming`,
  * which own that policy so concurrent streams cannot hide each other's button.
  *
