@@ -1,6 +1,6 @@
 {
   "name": "@carbon/ai-chat",
-  "version": "1.24.0-rc.0",
+  "version": "1.24.0-rc.1",
   "description": "Be sure to review the [chat documentation](https://chat.carbondesignsystem.com/tag/latest/docs/documents/Overview.html).",
   "author": "IBM Corp",
   "license": "Apache-2.0",
@@ -26,11 +26,11 @@
       "import": "./dist/es/serverEntry.js"
     },
     "./dist/es/web-components/cds-aichat-container/index.js": {
-      "types": "./dist/types/aiChatEntry.d.ts",
+      "types": "./dist/types/web-components/cds-aichat-container/index.d.ts",
       "import": "./dist/es/web-components/cds-aichat-container/index.js"
     },
     "./dist/es/web-components/cds-aichat-custom-element/index.js": {
-      "types": "./dist/types/aiChatEntry.d.ts",
+      "types": "./dist/types/web-components/cds-aichat-custom-element/index.d.ts",
       "import": "./dist/es/web-components/cds-aichat-custom-element/index.js"
     },
     "./scss/*": "./dist/scss/*",
@@ -51,10 +51,10 @@
         "dist/types/serverEntry.d.ts"
       ],
       "web-components/cds-aichat-container": [
-        "dist/types/aiChatEntry.d.ts"
+        "dist/types/web-components/cds-aichat-container/index.d.ts"
       ],
       "web-components/cds-aichat-custom-element": [
-        "dist/types/aiChatEntry.d.ts"
+        "dist/types/web-components/cds-aichat-custom-element/index.d.ts"
       ]
     }
   },
@@ -142,7 +142,7 @@
   },
   "dependencies": {
     "@babel/runtime-corejs3": "^7.0.0",
-    "@carbon/ai-chat-components": "^1.14.0-rc.0",
+    "@carbon/ai-chat-components": "^1.14.0-rc.1",
     "@carbon/icons": "^12.0.0-alpha.3",
     "@carbon/utilities": "^0.27.0",
     "@floating-ui/dom": "^1.6.3",

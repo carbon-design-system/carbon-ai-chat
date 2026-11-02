@@ -106,6 +106,15 @@ class ReceiveService {
         return;
       }
 
+      this.serviceManager.conversationLifecycleService.responseReceived(
+        message.id,
+        undefined,
+        message.request_id ?? requestMessage?.id
+      );
+      if (!isCurrent()) {
+        return;
+      }
+
       if (isResponse(message as any)) {
         await this.writeReceivedMessage(message, {
           origin,

@@ -17,3 +17,6 @@ installReactDomRenderer();
 
 export { default } from './cds-aichat-container';
 export type { CdsAiChatContainerAttributes } from './cds-aichat-container';
+// Before these paths had their own declarations they resolved to the root ones.
+// Keep those names so existing type imports through them still compile.
+export type * from '../../aiChatEntry';
