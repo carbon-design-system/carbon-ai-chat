@@ -8,6 +8,7 @@
  */
 
 import '../index';
+import '../../user-avatar/index';
 import { html } from 'lit';
 import styles from './story-styles.scss?lit';
 import { storyClass } from './story-data';
@@ -91,7 +92,15 @@ const renderRow = (args) => html`
     ?last-item=${args.lastItem}
     ?history=${args.history}>
     <div slot="byline" class="${storyClass}-byline">
-      ${args.rowType === 'request' ? 'You' : 'Assistant'} · 10:42 AM
+      ${
+        args.rowType === 'response'
+          ? html`<cds-aichat-user-avatar
+              class="cds-aichat-message-item-shell__byline-avatar"></cds-aichat-user-avatar>`
+          : ''
+      }
+      <span class="${storyClass}-byline-text">
+        ${args.rowType === 'request' ? 'You' : 'Assistant'} 10:42 AM
+      </span>
     </div>
     <div class="${storyClass}-content">
       ${
@@ -150,7 +159,7 @@ export const Grouped = {
     <div class="${storyClass}-container">
       ${renderRow({ ...args, rowType: 'request', groupId: '', rowId: 'req-1' })}
       ${renderRow({ ...args, rowId: 'res-1' })}
-      ${renderRow({ ...args, rowId: 'res-2', hideAvatar: true })}
+      ${renderRow({ ...args, rowId: 'res-2' })}
     </div>
   `,
 };

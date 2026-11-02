@@ -9,6 +9,7 @@
 
 /* eslint-disable */
 import React from 'react';
+import '../../user-avatar/index';
 import MessageItemShell from '../../../react/message-item-shell';
 import './story-styles.scss';
 import { storyClass } from './story-data';
@@ -39,7 +40,12 @@ const renderRow = (args) => (
     lastItem={args.lastItem}
     history={args.history}>
     <div slot="byline" className={`${storyClass}-byline`}>
-      {args.rowType === 'request' ? 'You' : 'Assistant'} · 10:42 AM
+      {args.rowType === 'response' && (
+        <cds-aichat-user-avatar className="cds-aichat-message-item-shell__byline-avatar" />
+      )}
+      <span className={`${storyClass}-byline-text`}>
+        {args.rowType === 'request' ? 'You' : 'Assistant'} 10:42 AM
+      </span>
     </div>
     <div className={`${storyClass}-content`}>
       {args.rowType === 'request'
@@ -88,7 +94,7 @@ export const Grouped = {
     <div className={`${storyClass}-container`}>
       {renderRow({ ...args, rowType: 'request', groupId: '', rowId: 'req-1' })}
       {renderRow({ ...args, rowId: 'res-1' })}
-      {renderRow({ ...args, rowId: 'res-2', hideAvatar: true })}
+      {renderRow({ ...args, rowId: 'res-2' })}
     </div>
   ),
 };

@@ -92,6 +92,28 @@ describe('cds-aichat-message-item-shell', () => {
         expect(getComputedStyle(wrapper).display).to.not.equal('none');
         expect(el.hasAttribute('hide-avatar')).to.be.true;
       });
+
+      it('hides and shows the avatar nested in the byline slot', async () => {
+        const el = await fixture<CDSAIChatMessageItemShell>(html`
+          <cds-aichat-message-item-shell row-type=${rowType}>
+            <div slot="byline">
+              <span id="avatar" class="${blockClass}__byline-avatar"></span>
+              <span id="text">Assistant</span>
+            </div>
+          </cds-aichat-message-item-shell>
+        `);
+        const avatar = el.querySelector<HTMLElement>('#avatar')!;
+        const text = el.querySelector<HTMLElement>('#text')!;
+
+        el.hideAvatar = true;
+        await el.updateComplete;
+        expect(getComputedStyle(avatar).display).to.equal('none');
+        expect(getComputedStyle(text).display).to.not.equal('none');
+
+        el.hideAvatar = false;
+        await el.updateComplete;
+        expect(getComputedStyle(avatar).display).to.not.equal('none');
+      });
     });
   });
 

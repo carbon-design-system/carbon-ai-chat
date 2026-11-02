@@ -14,7 +14,6 @@
 
 $block-class: #{$prefix}-message-item-shell;
 
-// The default layout is an inset column, centered in the available width.
 :host(#{$block-class}) {
   display: flex;
   flex-direction: column;
@@ -23,29 +22,19 @@ $block-class: #{$prefix}-message-item-shell;
     'messages-max-width',
     component-layout.$messages-max-width
   );
-  padding-inline: layout.$spacing-05;
 }
 
 // Full width breaks the row out of the inset column.
 :host(#{$block-class}[full-width]) {
   max-inline-size: none;
-  padding-inline: 0;
 }
 
-// A response sits at the start of the column; a request sits at the end.
-:host(#{$block-class}[row-type='response']) {
-  align-items: flex-start;
-}
-
-:host(#{$block-class}[row-type='request']) {
-  align-items: flex-end;
-}
-
-.#{$block-class}__byline,
-.#{$block-class}__content,
-.#{$block-class}__attachment,
-.#{$block-class}__footer {
-  min-inline-size: 0;
+.#{$block-class}__body {
+  display: flex;
+  flex-direction: column;
+  inline-size: 100%;
+  padding-inline-end: layout.$spacing-05;
+  padding-inline-start: layout.$spacing-09;
 }
 
 .#{$block-class}__content,
@@ -54,6 +43,63 @@ $block-class: #{$prefix}-message-item-shell;
   max-inline-size: 100%;
 }
 
-:host(#{$block-class}[hide-avatar]) .#{$block-class}__byline-avatar {
-  display: none;
+.#{$block-class}__attachment,
+.#{$block-class}__footer {
+  display: flex;
+  inline-size: 100%;
+}
+
+.#{$block-class}__attachment {
+  margin-block-start: layout.$spacing-02;
+}
+
+.#{$block-class}__footer {
+  margin-block-start: layout.$spacing-03;
+}
+
+// A response sits at the start of the column; a request sits at the end.
+:host(#{$block-class}[row-type='response']) {
+  align-items: flex-start;
+
+  .#{$block-class}__byline {
+    padding-inline-start: layout.$spacing-03;
+  }
+
+  .#{$block-class}__body {
+    align-items: flex-start;
+  }
+
+  .#{$block-class}__attachment,
+  .#{$block-class}__footer {
+    justify-content: flex-start;
+  }
+}
+
+:host(#{$block-class}[row-type='request']) {
+  align-items: flex-end;
+
+  .#{$block-class}__byline {
+    padding-inline-end: layout.$spacing-05;
+  }
+
+  .#{$block-class}__body {
+    align-items: flex-end;
+  }
+
+  .#{$block-class}__attachment,
+  .#{$block-class}__footer {
+    justify-content: flex-end;
+  }
+}
+
+:host(#{$block-class}[row-type='request']),
+:host(#{$block-class}[hide-avatar]) {
+  .#{$block-class}__byline {
+    padding-block-end: layout.$spacing-03;
+  }
+}
+
+:host(#{$block-class}[row-type='response'][hide-avatar])
+  .#{$block-class}__body {
+  padding-inline-start: layout.$spacing-05;
 }

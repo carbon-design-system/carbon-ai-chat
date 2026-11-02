@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { LitElement, html } from 'lit';
+import { LitElement, PropertyValues, html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { carbonElement } from '../../../globals/decorators/index.js';
 import prefix from '../../../globals/settings.js';
@@ -95,19 +95,51 @@ class CDSAIChatMessageItemShell extends LitElement {
   @property({ type: Boolean, attribute: 'hide-avatar', reflect: true })
   hideAvatar = false;
 
+  updated(changedProperties: PropertyValues) {
+    if (changedProperties.has('hideAvatar')) {
+      this.applyHideAvatar();
+    }
+  }
+
+  /**
+   * The avatar lives in the consumer's slotted content, which shadow DOM
+   * styles cannot reach. Toggle it directly. The consumer marks it with the
+   * `__byline-avatar` class, anywhere within the byline slot.
+   */
+  private applyHideAvatar() {
+    const slot = this.shadowRoot?.querySelector<HTMLSlotElement>(
+      'slot[name="byline"]'
+    );
+    const selector = `.${blockClass}__byline-avatar`;
+    slot?.assignedElements({ flatten: true }).forEach((element) => {
+      const avatars = element.matches(selector)
+        ? [element]
+        : Array.from(element.querySelectorAll(selector));
+      avatars.forEach((avatar) => {
+        if (this.hideAvatar) {
+          (avatar as HTMLElement).style.display = 'none';
+        } else {
+          (avatar as HTMLElement).style.removeProperty('display');
+        }
+      });
+    });
+  }
+
   render() {
     return html`
       <div class="${blockClass}__byline">
-        <slot name="byline"></slot>
+        <slot name="byline" @slotchange=${this.applyHideAvatar}></slot>
       </div>
-      <div class="${blockClass}__content">
-        <slot></slot>
-      </div>
-      <div class="${blockClass}__attachment">
-        <slot name="attachment"></slot>
-      </div>
-      <div class="${blockClass}__footer">
-        <slot name="footer"></slot>
+      <div class="${blockClass}__body">
+        <div class="${blockClass}__content">
+          <slot></slot>
+        </div>
+        <div class="${blockClass}__attachment">
+          <slot name="attachment"></slot>
+        </div>
+        <div class="${blockClass}__footer">
+          <slot name="footer"></slot>
+        </div>
       </div>
     `;
   }
