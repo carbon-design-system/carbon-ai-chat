@@ -40,42 +40,12 @@ const argTypes = {
     control: 'boolean',
     description: 'Hides the avatar within the byline.',
   },
-  rowId: {
-    control: 'text',
-    description: 'A stable ID for this row.',
-  },
-  groupId: {
-    control: 'text',
-    description: 'An ID shared by the rows of the same response.',
-  },
-  streaming: {
-    control: 'boolean',
-    description: 'Whether the row is streaming.',
-  },
-  firstItem: {
-    control: 'boolean',
-    description: 'Whether the row is the first in the list.',
-  },
-  lastItem: {
-    control: 'boolean',
-    description: 'Whether the row is the last in the list.',
-  },
-  history: {
-    control: 'boolean',
-    description: 'Whether the row is part of the conversation history.',
-  },
 };
 
 const defaultArgs = {
   rowType: 'request',
   fullWidth: false,
   hideAvatar: false,
-  rowId: 'row-1',
-  groupId: '',
-  streaming: false,
-  firstItem: false,
-  lastItem: false,
-  history: false,
 };
 
 /** Renders one shell row with placeholder slot content. */
@@ -83,14 +53,8 @@ const renderRow = (args) => html`
   <cds-aichat-message-item-shell
     class="${storyClass}-${args.rowType}"
     row-type=${args.rowType}
-    row-id=${args.rowId}
-    group-id=${args.groupId}
     ?full-width=${args.fullWidth}
-    ?hide-avatar=${args.hideAvatar}
-    ?streaming=${args.streaming}
-    ?first-item=${args.firstItem}
-    ?last-item=${args.lastItem}
-    ?history=${args.history}>
+    ?hide-avatar=${args.hideAvatar}>
     ${
       args.rowType === 'response'
         ? html`<cds-aichat-user-avatar
@@ -125,7 +89,7 @@ export const Default = {
 
 export const Response = {
   argTypes,
-  args: { ...defaultArgs, rowType: 'response', rowId: 'row-2' },
+  args: { ...defaultArgs, rowType: 'response' },
   render: Default.render,
 };
 
@@ -134,7 +98,6 @@ export const FullWidth = {
   args: {
     ...defaultArgs,
     rowType: 'response',
-    rowId: 'row-3',
     fullWidth: true,
   },
   render: Default.render,
@@ -145,20 +108,7 @@ export const HiddenAvatar = {
   args: {
     ...defaultArgs,
     rowType: 'response',
-    rowId: 'row-4',
     hideAvatar: true,
   },
   render: Default.render,
-};
-
-export const Grouped = {
-  argTypes,
-  args: { ...defaultArgs, rowType: 'response', groupId: 'group-1' },
-  render: (args) => html`
-    <div class="${storyClass}-container">
-      ${renderRow({ ...args, rowType: 'request', groupId: '', rowId: 'req-1' })}
-      ${renderRow({ ...args, rowId: 'res-1' })}
-      ${renderRow({ ...args, rowId: 'res-2' })}
-    </div>
-  `,
 };

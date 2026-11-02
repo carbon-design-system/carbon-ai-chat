@@ -53,42 +53,6 @@ class CDSAIChatMessageItemShell extends LitElement {
   fullWidth = false;
 
   /**
-   * A stable ID for this row.
-   */
-  @property({ attribute: 'row-id' })
-  rowId = '';
-
-  /**
-   * An ID shared by the rows that belong to the same response.
-   */
-  @property({ attribute: 'group-id' })
-  groupId = '';
-
-  /**
-   * Whether the row is streaming.
-   */
-  @property({ type: Boolean, reflect: true })
-  streaming = false;
-
-  /**
-   * Whether the row is the first in the list.
-   */
-  @property({ type: Boolean, attribute: 'first-item', reflect: true })
-  firstItem = false;
-
-  /**
-   * Whether the row is the last in the list.
-   */
-  @property({ type: Boolean, attribute: 'last-item', reflect: true })
-  lastItem = false;
-
-  /**
-   * Whether the row is part of the conversation history.
-   */
-  @property({ type: Boolean, reflect: true })
-  history = false;
-
-  /**
    * Hides the avatar within the byline slot. The name and timestamp remain
    * visible. Applies to both row types.
    *

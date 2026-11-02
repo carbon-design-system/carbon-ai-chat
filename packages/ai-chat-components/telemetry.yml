@@ -51,7 +51,6 @@ collect:
         - size
         - slot
         - source
-        - streaming
         - test-id
         - title
         - type
@@ -250,6 +249,7 @@ collect:
         - oncds-aichat-markdown-plugin-host-update
         - remove-html
         - sanitize-html
+        - streaming
         - table-download-label-text
         - table-filter-placeholder-text
         - table-items-per-page-text
@@ -257,13 +257,8 @@ collect:
         - table-next-page-text
         - table-previous-page-text
         # cds-aichat-message-item-shell
-        - first-item
         - full-width
-        - group-id
         - hide-avatar
-        - history
-        - last-item
-        - row-id
         - row-type
         # cds-aichat-messages-shell
         - bottom-handle-label

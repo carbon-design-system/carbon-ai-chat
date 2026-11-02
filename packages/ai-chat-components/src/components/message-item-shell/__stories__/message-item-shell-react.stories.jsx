@@ -18,7 +18,6 @@ import {
   Response as ResponseWC,
   FullWidth as FullWidthWC,
   HiddenAvatar as HiddenAvatarWC,
-  Grouped as GroupedWC,
 } from './message-item-shell.stories';
 
 export default {
@@ -31,14 +30,8 @@ const renderRow = (args) => (
   <MessageItemShell
     className={`${storyClass}-${args.rowType}`}
     rowType={args.rowType}
-    rowId={args.rowId}
-    groupId={args.groupId}
     fullWidth={args.fullWidth}
-    hideAvatar={args.hideAvatar}
-    streaming={args.streaming}
-    firstItem={args.firstItem}
-    lastItem={args.lastItem}
-    history={args.history}>
+    hideAvatar={args.hideAvatar}>
     {args.rowType === 'response' && (
       <cds-aichat-user-avatar
         slot="byline"
@@ -86,16 +79,4 @@ export const HiddenAvatar = {
   argTypes: HiddenAvatarWC.argTypes,
   args: HiddenAvatarWC.args,
   render: Default.render,
-};
-
-export const Grouped = {
-  argTypes: GroupedWC.argTypes,
-  args: GroupedWC.args,
-  render: (args) => (
-    <div className={`${storyClass}-container`}>
-      {renderRow({ ...args, rowType: 'request', groupId: '', rowId: 'req-1' })}
-      {renderRow({ ...args, rowId: 'res-1' })}
-      {renderRow({ ...args, rowId: 'res-2' })}
-    </div>
-  ),
 };

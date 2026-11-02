@@ -159,14 +159,48 @@ describe('cds-aichat-message-item-shell', () => {
     expect(el.getAttribute('row-type')).to.equal('request');
   });
 
+  describe('layout', () => {
+    it('limits the row width unless full-width is set', async () => {
+      const el = await renderShell('response');
+      expect(getComputedStyle(el).maxInlineSize).to.not.equal('none');
+
+      el.fullWidth = true;
+      await el.updateComplete;
+      expect(getComputedStyle(el).maxInlineSize).to.equal('none');
+
+      el.fullWidth = false;
+      await el.updateComplete;
+      expect(getComputedStyle(el).maxInlineSize).to.not.equal('none');
+    });
+
+    it('aligns a response to the start and a request to the end', async () => {
+      const response = await renderShell('response');
+      const request = await renderShell('request');
+
+      expect(getComputedStyle(response).alignItems).to.equal('flex-start');
+      expect(getComputedStyle(request).alignItems).to.equal('flex-end');
+    });
+
+    it('reduces the response body inset when hide-avatar is set', async () => {
+      const el = await renderShell('response');
+      const body = el.shadowRoot!.querySelector<HTMLElement>(
+        `.${blockClass}__body`
+      )!;
+      const withAvatar = getComputedStyle(body).paddingInlineStart;
+
+      el.hideAvatar = true;
+      await el.updateComplete;
+
+      expect(getComputedStyle(body).paddingInlineStart).to.not.equal(
+        withAvatar
+      );
+    });
+  });
+
   (
     [
       ['fullWidth', 'full-width'],
-      ['firstItem', 'first-item'],
-      ['lastItem', 'last-item'],
-      ['history', 'history'],
       ['hideAvatar', 'hide-avatar'],
-      ['streaming', 'streaming'],
     ] as const
   ).forEach(([property, attribute]) => {
     it(`reflects ${property} as ${attribute}`, async () => {
@@ -181,39 +215,5 @@ describe('cds-aichat-message-item-shell', () => {
       await el.updateComplete;
       expect(el.hasAttribute(attribute)).to.be.false;
     });
-  });
-
-  it('exposes row-id and group-id as properties', async () => {
-    const el = await renderShell('response');
-    expect(el.rowId).to.equal('');
-    expect(el.groupId).to.equal('');
-
-    el.rowId = 'row-1';
-    el.groupId = 'group-1';
-    await el.updateComplete;
-
-    expect(el.rowId).to.equal('row-1');
-    expect(el.groupId).to.equal('group-1');
-  });
-
-  it('reads attributes into row-id and group-id', async () => {
-    const el = await fixture<CDSAIChatMessageItemShell>(html`
-      <cds-aichat-message-item-shell
-        row-type="response"
-        row-id="row-2"
-        group-id="group-2">
-      </cds-aichat-message-item-shell>
-    `);
-
-    expect(el.rowId).to.equal('row-2');
-    expect(el.groupId).to.equal('group-2');
-  });
-
-  it('exposes streaming as a readable property', async () => {
-    const el = await renderShell('response');
-    el.streaming = true;
-    await el.updateComplete;
-
-    expect(el.streaming).to.be.true;
   });
 });
