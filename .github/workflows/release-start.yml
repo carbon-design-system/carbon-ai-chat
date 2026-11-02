@@ -34,6 +34,7 @@ on:
           - full release
           - first rc
           - subsequent rc
+          - retry publish
           - alpha
       dry-run:
         # Check dry run to test run lerna and confirm package version bumps
@@ -43,7 +44,7 @@ on:
         default: true
       force-publish:
         # May need to force publish at times when lerna doesn't detect changes
-        description: 'Force publish? Ignored for `alpha`.'
+        description: 'Force publish? Ignored for `alpha` and `retry publish`.'
         type: boolean
         default: false
       ai-chat-base:

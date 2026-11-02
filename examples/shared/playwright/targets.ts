@@ -178,6 +178,14 @@ export const targets = {
     example: 'react/user-defined-responses',
     spec: 'user-defined-responses.spec.ts',
   },
+  'react-watch-messages': {
+    example: 'react/watch-messages',
+    spec: 'watch-messages.spec.ts',
+  },
+  'react-watch-messages-redux': {
+    example: 'react/watch-messages-redux',
+    spec: 'watch-messages.spec.ts',
+  },
   'react-watch-state': {
     example: 'react/watch-state',
     spec: 'watch-state.spec.ts',

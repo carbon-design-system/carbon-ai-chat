@@ -12,7 +12,7 @@
  *
  * Demonstrates: serving a static welcome response and a canned reply so the
  * host UI has chat traffic to drive view transitions between the homescreen
- * and the chat view, which the `BusEventType.STATE_CHANGE` listener mirrors.
+ * and the chat view.
  *
  * APIs exercised:
  *   - `customSendMessage` (PublicConfig.messaging hook)

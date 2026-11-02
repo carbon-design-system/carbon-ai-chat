@@ -17,14 +17,15 @@ function unwrap(ts, expression) {
   if (!expression) {
     fail('expected a field table initializer.');
   }
+  let current = expression;
   while (
-    ts.isAsExpression(expression) ||
-    ts.isSatisfiesExpression(expression) ||
-    ts.isParenthesizedExpression(expression)
+    ts.isAsExpression(current) ||
+    ts.isSatisfiesExpression(current) ||
+    ts.isParenthesizedExpression(current)
   ) {
-    expression = expression.expression;
+    current = current.expression;
   }
-  return expression;
+  return current;
 }
 
 function objectProperties(ts, expression) {
@@ -214,6 +215,30 @@ function addFields(
   }
 }
 
+function stateFields(ts, declaration) {
+  const names = new Set();
+  for (const member of declaration.members) {
+    for (const decorator of ts.getDecorators(member) ?? []) {
+      const call = decorator.expression;
+      if (!ts.isCallExpression(call) || !ts.isIdentifier(call.expression)) {
+        continue;
+      }
+      const options = call.arguments[0]
+        ? objectProperties(ts, call.arguments[0])
+        : new Map();
+      if (
+        call.expression.text === 'state' ||
+        (call.expression.text === 'property' &&
+          options.has('state') &&
+          literal(ts, options.get('state')) === true)
+      ) {
+        names.add(member.name.getText());
+      }
+    }
+  }
+  return names;
+}
+
 function reactiveProperties(ts, declaration) {
   const properties = new Map();
   for (const member of declaration.members) {
@@ -254,7 +279,7 @@ function reactiveProperties(ts, declaration) {
       metadata.privacy = 'protected';
     }
     if (member.questionToken) {
-      metadata.type.text += ' | undefined';
+      metadata.type.text = `(${metadata.type.text}) | undefined`;
     }
     properties.set(name, {
       attribute: attribute === true ? name.toLowerCase() : attribute,
@@ -275,6 +300,7 @@ function normalizeReactiveMetadata(declaration, properties) {
       member = structuredClone(source);
       declaration.members.push(member);
     }
+    member.type = { ...member.type, text: source.type.text };
     const oldNames = new Set(
       [name, member.attribute, attribute].filter(
         (value) => typeof value === 'string'
@@ -351,7 +377,14 @@ function validateRegistration(manifest, host, tagName, imports) {
   }
 }
 
-function projectHost(manifest, host, typeModule, reactiveNames, imports) {
+function projectHost(
+  manifest,
+  host,
+  typeModule,
+  reactiveNames,
+  stateNames,
+  imports
+) {
   const source = moduleAt(manifest, host.source);
   const original = source?.declarations?.find(
     (declaration) => declaration.name === host.name
@@ -378,6 +411,10 @@ function projectHost(manifest, host, typeModule, reactiveNames, imports) {
   ]) {
     declaration[kind] = (declaration[kind] ?? []).filter((item) => {
       const memberName = kind === 'members' ? item.name : item.fieldName;
+      // Lit state is internal, so it never reaches the published host.
+      if (stateNames.has(memberName)) {
+        return false;
+      }
       const privacy = privateMembers.get(memberName) ?? item.privacy;
       if (
         ['private', 'protected'].includes(privacy) &&
@@ -478,6 +515,26 @@ function publishTypeReferences(value, typeModule) {
   );
 }
 
+function readSyntheticProperties(ts, node) {
+  let synthetic;
+  for (const statement of node.body.statements) {
+    if (!ts.isVariableStatement(statement)) {
+      continue;
+    }
+    const properties = statement.declarationList.declarations.find(
+      (declaration) => declaration.name.getText() === 'properties'
+    );
+    if (properties) {
+      synthetic = new Map(
+        [...objectProperties(ts, properties.initializer)].map(
+          ([name, value]) => [name, readOptions(ts, value)]
+        )
+      );
+    }
+  }
+  return synthetic;
+}
+
 export function createFlattenedConfigPlugin({
   tablePath,
   publicConfigPath,
@@ -490,6 +547,7 @@ export function createFlattenedConfigPlugin({
   let synthetic;
   let baseMembers;
   let reactiveMembers;
+  let stateMembers;
   let hostInterfaces;
   const imports = new Map();
   return {
@@ -500,6 +558,7 @@ export function createFlattenedConfigPlugin({
       synthetic = undefined;
       baseMembers = undefined;
       reactiveMembers = new Map();
+      stateMembers = new Map();
       hostInterfaces = new Map();
       imports.clear();
     },
@@ -546,6 +605,7 @@ export function createFlattenedConfigPlugin({
         )
       ) {
         reactiveMembers.set(node.name.text, reactiveProperties(ts, node));
+        stateMembers.set(node.name.text, stateFields(ts, node));
       }
       if (ts.isInterfaceDeclaration(node)) {
         for (const host of hosts) {
@@ -594,21 +654,7 @@ export function createFlattenedConfigPlugin({
         ts.isFunctionDeclaration(node) &&
         node.name?.text === 'buildFlattenedProperties'
       ) {
-        for (const statement of node.body.statements) {
-          if (!ts.isVariableStatement(statement)) {
-            continue;
-          }
-          const properties = statement.declarationList.declarations.find(
-            (declaration) => declaration.name.getText() === 'properties'
-          );
-          if (properties) {
-            synthetic = new Map(
-              [...objectProperties(ts, properties.initializer)].map(
-                ([name, value]) => [name, readOptions(ts, value)]
-              )
-            );
-          }
-        }
+        synthetic = readSyntheticProperties(ts, node);
       }
     },
     packageLinkPhase({ customElementsManifest }) {
@@ -632,6 +678,7 @@ export function createFlattenedConfigPlugin({
           host,
           typeModule,
           reactiveMembers.get(host.name) ?? new Map(),
+          stateMembers.get(host.name) ?? new Set(),
           imports
         );
         const declaration = modules[0].declarations[0];
