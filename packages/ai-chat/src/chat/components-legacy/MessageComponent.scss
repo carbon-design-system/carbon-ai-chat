@@ -102,12 +102,6 @@ $message-bar-width: 3px;
 .cds-aichat--message__avatar-line
   + .cds-aichat--message--padding
   .cds-aichat--assistant-message
-  > div.cds-aichat--received.cds-aichat--received--carousel:not(
-    .cds-aichat--received--carousel-single
-  ):first-child,
-.cds-aichat--message__avatar-line
-  + .cds-aichat--message--padding
-  .cds-aichat--assistant-message
   > div.cds-aichat--received.cds-aichat--received--full-width:first-child {
   margin-block-start: layout.$spacing-03;
 }
@@ -166,45 +160,15 @@ $message-bar-width: 3px;
       transition: margin-block-start motion.$duration-fast-02
         motion.motion(standard, productive);
     }
-
-    .cds-aichat--message
-      .cds-aichat--received.cds-aichat--received--agent-status-message {
-      transition: margin-inline motion.$duration-fast-02
-        motion.motion(standard, productive);
-    }
   }
 }
 
 .cds-aichat--wide-width
   .cds-aichat--message
-  .cds-aichat--received.cds-aichat--received--conversational-search,
-.cds-aichat--wide-width
-  .cds-aichat--message
-  .cds-aichat--received.cds-aichat--received--search,
-.cds-aichat--wide-width
-  .cds-aichat--message
-  .cds-aichat--received--carousel:not(.cds-aichat--received--carousel-single),
-.cds-aichat--wide-width
-  .cds-aichat--message
   .cds-aichat--received.cds-aichat--received--full-width,
 .cds-aichat--narrow-width
   .cds-aichat--message
-  .cds-aichat--received.cds-aichat--received--conversational-search,
-.cds-aichat--narrow-width
-  .cds-aichat--message
-  .cds-aichat--received.cds-aichat--received--search,
-.cds-aichat--narrow-width
-  .cds-aichat--message
   .cds-aichat--received.cds-aichat--received--full-width,
-.cds-aichat--standard-width
-  .cds-aichat--message
-  .cds-aichat--received.cds-aichat--received--conversational-search,
-.cds-aichat--standard-width
-  .cds-aichat--message
-  .cds-aichat--received.cds-aichat--received--search,
-.cds-aichat--standard-width
-  .cds-aichat--message
-  .cds-aichat--received--carousel:not(.cds-aichat--received--carousel-single),
 .cds-aichat--standard-width
   .cds-aichat--message
   .cds-aichat--received.cds-aichat--received--full-width {
@@ -262,7 +226,7 @@ $message-bar-width: 3px;
   max-inline-size: 100%;
 }
 
-.cds-aichat--received--image {
+.cds-aichat--received--width-reduced {
   position: relative;
   inline-size: 90%;
   overflow-wrap: break-word;
@@ -270,8 +234,7 @@ $message-bar-width: 3px;
   word-wrap: break-word;
 }
 
-.cds-aichat--received--video,
-.cds-aichat--received--audio {
+.cds-aichat--received--width-fill {
   inline-size: 100%;
   overflow-wrap: break-word;
   word-break: break-word;
@@ -388,19 +351,11 @@ svg.cds-aichat--sent-file-icon {
   word-wrap: break-word;
 }
 
-.cds-aichat--received--iframe-preview-card {
+.cds-aichat--received--width-contain {
   /* For some reason, without this property here, the preview card's width increases by 11 pixels if the url is too long.
    This property used to exist in the cds-aichat--received class before Carbon AI Chat 5.0 which would've prevented this issue. */
   overflow: hidden;
   inline-size: 100%;
-}
-
-.cds-aichat--assistant-message .cds-aichat--received--agent-status-message {
-  color: theme.$text-helper;
-  @include type.type-style('caption-01');
-
-  padding-inline: layout.$spacing-05;
-  text-align: center;
 }
 
 .cds-aichat--assistant-message .cds-aichat--received--chat-status-message {
@@ -487,42 +442,32 @@ svg.cds-aichat--sent-file-icon {
   }
 }
 
-.cds-aichat--message--response:not(
-    .cds-aichat--message--system-message
-  ).cds-aichat--message--agent-message
-  + .cds-aichat--message--response:not(
-    .cds-aichat--message--system-message
-  ).cds-aichat--message--agent-message,
-.cds-aichat--message--request + .cds-aichat--message--request {
+.cds-aichat--message--request
+  .cds-aichat--message__avatar
+  + .cds-aichat--message__label {
+  padding-block: layout.$spacing-03;
+}
+
+/* Group only unnamed requests; hiding a header at a named boundary can attribute
+   the next message to the wrong sender. */
+
+.cds-aichat--message--request:not(.cds-aichat--message--named-request)
+  + .cds-aichat--message--request:not(.cds-aichat--message--named-request) {
   padding-block-start: layout.$spacing-03;
 
   .cds-aichat--message__avatar-line {
     display: none;
   }
 
-  .cds-aichat--received--from-human,
   .cds-aichat--sent--bubble {
     border-radius: layout.$spacing-03;
   }
 }
 
-.cds-aichat--message--response:not(.cds-aichat--message--agent-message)
+.cds-aichat--message--response
   .cds-aichat--message__avatar-line
   + .cds-aichat--message--padding {
   padding-block-start: layout.$spacing-02;
-}
-
-.cds-aichat--message__avatar--agent
-  .cds-aichat--image-with-fallback
-  .cds-aichat--icon-holder {
-  background-color: theme.$chat-avatar-agent;
-}
-
-.cds-aichat--received--from-human.cds-aichat--received--text {
-  padding: layout.$spacing-03 layout.$spacing-04;
-  border: solid 1px theme.$chat-bubble-border;
-  border-radius: 0 layout.$spacing-03 layout.$spacing-03 layout.$spacing-03;
-  background-color: theme.$chat-bubble-agent;
 }
 
 .cds-aichat--received--chain-of-thought {
@@ -536,11 +481,6 @@ svg.cds-aichat--sent-file-icon {
 .cds-aichat--message__reasoning-steps--open {
   display: block;
   padding-block-end: layout.$spacing-04;
-}
-
-.cds-aichat--container--render[dir='rtl']
-  .cds-aichat--received--from-agent.cds-aichat--received--text {
-  border-radius: layout.$spacing-03 0 layout.$spacing-03 layout.$spacing-03;
 }
 
 .cds-aichat--message__avatar--assistant
@@ -560,11 +500,6 @@ svg.cds-aichat--sent-file-icon {
         .cds-aichat--assistant-message
         > div.cds-aichat--received {
         margin-block-start: 0;
-      }
-
-      .cds-aichat--message
-        .cds-aichat--received.cds-aichat--received--agent-status-message {
-        margin-inline: 0;
       }
     }
 
@@ -606,11 +541,6 @@ svg.cds-aichat--sent-file-icon {
         .cds-aichat--assistant-message
         > div.cds-aichat--received {
         margin-block-start: layout.$spacing-03;
-      }
-
-      .cds-aichat--message
-        .cds-aichat--received.cds-aichat--received--agent-status-message {
-        margin-inline: layout.$spacing-05;
       }
     }
 

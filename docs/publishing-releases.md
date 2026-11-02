@@ -18,6 +18,7 @@
   - [Force publish](#force-publish)
   - [Tag already exists](#tag-already-exists)
   - [Branch moved during the release](#branch-moved-during-the-release)
+  - [Publish failed after tags were pushed](#publish-failed-after-tags-were-pushed)
 
 ## Overview
 
@@ -82,8 +83,8 @@ The prerelease occurs on the first Monday of a sprint. During this stage, the re
     - The `release tag` option is the version that was just published (ie. v0.10.0-rc.0). Fill in the `previous tag` option with the previous full release (ie. v0.9.0).
   - [ ] Merge in the generated PR (the title of the PR should start with `chore(release):` followed by the version).
   - [ ] Check the generated [release](https://github.com/carbon-design-system/carbon-ai-chat/releases) to ensure the release notes are correct.
-  - [ ] The creation and push of the tag should have triggered:
-    - [ ] The [publish chat components cdn workflow ](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/publish-components-cdn.yml). Once this workflow has completed, check the staging environment on GitHub Pages and ensure the version in the storybook top left header has been updated.
+  - [ ] The create github tag and PR workflow should have dispatched:
+    - [ ] The [publish components cdn workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/publish-components-cdn.yml). Once this workflow has completed, check that the components Storybook for the `next` tag (release candidates only) and version has been published at https://chat.carbondesignsystem.com/components/storybook/tag/next/index.html.
     - [ ] The [publish chat cdn workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/publish-chat-cdn.yml). Once this workflow has completed, check that the docs and demo app sites for the staging tag and version has been published.
 - [ ] Post a message to the `#carbon-ai-chat` Slack channel to announce the new version of `@carbon/ai-chat`.
 
@@ -107,9 +108,8 @@ Once the first prerelease / release candidate has been published, it is availabl
   - [ ] Merge in the generated PR (the title of the PR should start with `chore(release):` followed by the version).
     - If you encounter merge conflicts in this PR, resolve them by merging the main branch into the PR branch (typically named something like `chore/v1.2.0-release`), then push the updated branch to re-run the checks and complete the merge.
   - [ ] Check the generated [release](https://github.com/carbon-design-system/carbon-ai-chat/releases) to ensure the release notes are correct.
-  - [ ] The creation and push of the tag should have triggered:
-    - [ ] The [deploy staging environment workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/deploy-staging-storybook.yml). Once this workflow has completed, check the staging environment on GitHub Pages and ensure the version in the storybook top left header has been updated.
-    - [ ] The [publish cdn workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/publish-cdn.yml). Once this workflow has completed, check that the CDN for the staging tag and version has been published.
+  - [ ] The create github tag and PR workflow should have dispatched:
+    - [ ] The [publish chat cdn workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/publish-chat-cdn.yml) and the [publish components cdn workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/publish-components-cdn.yml). Once they have completed, check that the CDN for the staging tag and version has been published.
 - [ ] Post a message to the `#carbon-ai-chat` Slack channel to announce the new version of `@carbon/ai-chat`.
   - For **release candidates**, an example message:
 
@@ -147,9 +147,9 @@ A stable release occurs on the last Monday of the sprint and finishes later in t
     - The `release tag` option is the version that was just published (ie. v0.10.0). Fill in the `previous tag` option with the previous full release (ie. v0.9.0)
   - [ ] Merge in the generated PR (the title of the PR should start with `chore(release):` followed by the version).
   - [ ] Check the generated [release](https://github.com/carbon-design-system/carbon-ai-chat/releases) to ensure the release notes are correct.
-  - [ ] The creation and push of the tag should have triggered:
-    - [ ] The [deploy staging environment workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/deploy-staging-storybook.yml) and the [deploy latest environment workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/deploy-latest-storybook.yml) Once both workflows have completed, check the staging and latest environments on GitHub Pages and ensure the version in the storybook top left header has been updated.
-    - [ ] The [publish cdn workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/publish-cdn.yml). Once this workflow has completed, check that the CDN for the latest tag and version has been published.
+  - [ ] The create github tag and PR workflow should have dispatched:
+    - [ ] The [publish chat cdn workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/publish-chat-cdn.yml). Once it has completed, check that the CDN for the `latest` tag and version has been published.
+    - [ ] The [publish components cdn workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/publish-components-cdn.yml). Its last job updates `versions.js`, which feeds the version dropdowns. Once it has passed, check that the components CDN for the `latest` tag and version has been published, that the components Storybook for the `latest` tag is live at https://chat.carbondesignsystem.com/components/storybook/tag/latest/index.html, and that its version dropdown lists the new version.
   - [ ] Edit the generated release, and change the release from `pre-release` to `latest`. ![Screenshot of release label with latest option selected](https://github.com/user-attachments/assets/f3afc692-d691-4c04-b891-73d0406be7b0)
 
 - [ ] Post a message to the `#carbon-ai-chat` Slack channel to announce the new version of `@carbon/ai-chat`. This message usually includes a list of features / fixes completed in the release - these can be pulled from the release changelog.
@@ -267,6 +267,22 @@ Delete the git tags by going to the [tags page on GitHub](https://github.com/car
 ### Branch moved during the release
 
 If the publish step fails with `EBEHIND`, someone pushed to the release branch while the workflow was running. Lerna stops before it publishes anything, so npm and git stay in step. Re-run the workflow; it checks out the new tip.
+
+### Publish failed after tags were pushed
+
+If a publish error occurs after the git tags have already been pushed, it is now retried automatically.
+
+The retry step logs a `warning` annotation on the run, so the first failure is still visible even though the run can end green.
+
+If the retry fails with `Lerna did not push a release commit`, Lerna stopped before the release commit and tags reached the branch. Nothing was released, so re-run the workflow, as in [Branch moved during the release](#branch-moved-during-the-release).
+
+If publishing still fails after all three retries, fix the reported error, then recover the missing versions:
+
+1. Open the **Release start** workflow and select the release branch. Check that its package versions still match the failed release.
+2. Set `type` to **retry publish** and `dry-run` to **false**. The `semver-type` and `force-publish` inputs do not affect recovery.
+3. Run the workflow. It skips versioning and publishes missing versions with `lerna publish from-package`. RCs use `next`; stable versions use `latest`.
+
+A dry run skips publishing and does not exercise recovery. Do not select **subsequent RC** to recover a full release: it creates a new prerelease and leaves the failed stable version unpublished.
 
 ### Checks are stuck on pending
 

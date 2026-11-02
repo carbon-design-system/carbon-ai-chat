@@ -23,10 +23,14 @@ A branch is read commit by commit before it is read as one diff. Stage it for th
 - **Every commit green.** Each builds and passes its tests alone, so the branch splits, reorders, and cherry-picks at any point.
 - **Order for the reader.** Groundwork lands before the change that needs it, cleanup after the change that exposed it — not in the order the work happened.
 
+Decompose early so commits group into PRs along the [reviewability boundaries](pr-reviewability.md#split-by-purpose-and-dependency).
+
 ## Branches & PR titles
 
-- **Branches**: kebab-case, descriptive.
+- **Branches**: use descriptive kebab-case names, such as `2457-user-message-sender-profiles`. Never include LLM or coding-agent names anywhere in a branch name, including prefixes such as `codex/`, `claude/`, or `copilot/`.
 - **PR title**: same Conventional Commit format as the eventual squash commit — the PR title _is_ the squash commit.
+
+For PR scope and branch hosting, follow [pr-reviewability.md](pr-reviewability.md).
 
 ## License headers
 
@@ -37,10 +41,7 @@ Every source file needs the Apache-2.0 header. Enforced by `npm run lint:license
 - `.husky/pre-commit` runs `lint-staged` only — prettier (+ eslint) on `*.{js,jsx,cjs,mjs,ts,tsx}`, prettier (+ stylelint) on `*.scss`, prettier on `*.md`.
 - `.husky/commit-msg` runs commitlint.
 
-Because pre-commit only touches staged files, and its license step fails on a missing header rather than adding one, run `npm run lint` + `npm run lint:license` before opening a PR if you touched more than one file.
-
 ## Related guidance
 
 - [Root AGENTS.md](../AGENTS.md) — repo overview and pointer index
-- [code-patterns.md](code-patterns.md) — naming, SCSS, component placement, comments
 - [tone.md](tone.md) — voice & quick rules for developer-facing copy

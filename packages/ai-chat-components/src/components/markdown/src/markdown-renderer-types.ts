@@ -8,6 +8,7 @@
  */
 
 import type MarkdownIt from 'markdown-it';
+import type { TemplateResult } from 'lit';
 import type { Token } from 'markdown-it';
 
 import type { TableCellData } from './utils/table-helpers.js';
@@ -291,9 +292,10 @@ export interface MarkdownCustomRenderers {
 /**
  * Internal descriptor produced by the renderer for each custom-renderable
  * element it encounters. Consumed by the markdown element's `updated()`
- * reconcile, not exposed publicly.
+ * reconcile, not part of the public component API. Its declaration is retained
+ * because the renderer's exported signatures reference it.
  *
- * @internal
+ * @hidden
  */
 export type MarkdownRendererSlotDescriptor =
   | {
@@ -331,11 +333,24 @@ export type MarkdownRendererSlotDescriptor =
     };
 
 /**
- * Internal configuration passed to the renderer.
+ * Internal configuration passed to the renderer, not part of the public
+ * component API. Its declaration is retained for exported renderer signatures.
  *
- * @internal
+ * @hidden
  */
 export interface RenderTokenTreeOptions {
+  /** Local light-DOM mount when no ancestor claims a projected inline run. */
+  projectionHost?: HTMLElement;
+
+  /** Prepared inline runs reused when Lit commits the same render again. */
+  preparedInlineRuns?: WeakMap<TokenTree, TemplateResult>;
+
+  /** Eager output preparation for a caller-owned inline root. */
+  inline?: {
+    validateAttributes: (attributes: Record<string, string>) => void;
+    renderHTML: (html: string, pluginToken?: Token) => TemplateResult;
+  };
+
   /** Whether to sanitize HTML content using DOMPurify. */
   sanitize: boolean;
 

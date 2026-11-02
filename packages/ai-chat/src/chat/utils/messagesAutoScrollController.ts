@@ -11,34 +11,15 @@ import throttle from 'lodash-es/throttle.js';
 import prefix from '@carbon/ai-chat-components/es/globals/settings.js';
 
 /**
- * Framework-agnostic scroll/spacer engine extracted from `MessagesComponent`.
+ * Framework-agnostic scroll controller, connected to the view through {@link ScrollHost}.
  *
- * This class owns the entire auto-scroll model:
- * - pin state (`pinnedMessageId`, `pinnedScrollTop`, `domSpacerHeight`)
- * - grow-only spacer maintenance during streaming (via a per-message ResizeObserver)
- * - authoritative reconcile at layout-settle points (reasoning/code snippet render end)
- * - stream-transition handling and Safari scroll-anchoring restore
- * - the public auto-scroll / scroll-to-message / scroll-into-view API
+ * A new request stays near the viewport top while its response fills the space below.
+ * The list's minimum height keeps that position reachable through transient layout changes,
+ * including content that shrinks and regrows before ResizeObserver runs.
  *
- * It depends only on the DOM and a {@link ScrollHost} adapter. There are no React
- * or `@carbon/ai-chat` imports so it can be moved into a Lit component with only an
- * import-path change.
- *
- * ## Spacer model
- *
- * When a user sends a message it is pinned to the top of the scroll viewport by sizing a spacer
- * div at the bottom of the scrollable container so the pinned message can reach the top.
- *
- * The spacer is **grow-only** during streaming: it is never shrunk as content streams in. The
- * response grows into the blank space below the pinned message, which keeps the message flush to
- * the top with no per-frame spacer churn. The spacer only grows, and only enough to keep
- * `pinnedScrollTop` reachable when content shrinks — so the browser cannot cap scrollTop and drop
- * the pin.
- *
- * The spacer is trimmed back to its true minimum at **settle points**: stream end, and the composed
- * layout-settled events (`reasoning-animation-end`, `code-snippet-render-end`) that first-party
- * content dispatches when an expand/collapse animation or async render finishes. That reconcile
- * measures the final layout directly, so there is no polling and no guessing at animation durations.
+ * The per-message observer reconciles actual sizes before paint. During streaming the spacer
+ * only grows; afterward each resize trims it to the minimum needed for the current position.
+ * A deliberate scroll-away releases the pin's minimum height and disables pin restoration.
  */
 
 // ============================================================================
@@ -93,8 +74,12 @@ export interface ScrollHost {
   getSpacer(): HTMLElement | null;
   /** Apply the spacer's block size (host keeps CSP/root knowledge). */
   setSpacerHeight(px: number): void;
+  /** Keep the scroll range reachable through transient content collapse. */
+  setScrollHeightFloor(px: number): void;
   /** All message rows in document order; host computes the flags. */
   getMessages(): PortableMessage[];
+  /** Full messages can exist before their replacement rows mount. */
+  hasMessage(messageId: string): boolean;
   /** Notify the host that scroll geometry changed (repaint scroll-to-bottom button). */
   onScrollGeometryChanged(): void;
 }
@@ -352,37 +337,6 @@ function calculateSpacerDeficit(
   return Math.max(0, Math.ceil(visibleBottom - spacerOffset));
 }
 
-/**
- * Grow-only spacer model.
- *
- * While a message is pinned we never SHRINK the spacer as content streams in — we only ever
- * GROW it, and only enough to keep `pinnedScrollTop` reachable when content shrinks (e.g. a
- * reasoning trace collapsing before its settle event lands) so the browser cannot cap
- * scrollTop and drop the pin.
- *
- * Given the current geometry, the minimum spacer needed to keep `pinnedScrollTop` reachable is
- * `pinnedScrollTop + clientHeight - contentHeightWithoutSpacer` (clamped at 0), where
- * `contentHeightWithoutSpacer = scrollHeight - currentSpacerHeight`. The returned value is the
- * max of that minimum and the current spacer height, so the spacer NEVER shrinks here — the
- * authoritative trim back to the true minimum happens at settle points via
- * reconcileSpacerAfterLayoutSettled.
- */
-function computeGrowOnlySpacerHeight(params: {
-  scrollHeight: number;
-  clientHeight: number;
-  currentSpacerHeight: number;
-  pinnedScrollTop: number;
-}): number {
-  const { scrollHeight, clientHeight, currentSpacerHeight, pinnedScrollTop } =
-    params;
-  const contentHeightWithoutSpacer = scrollHeight - currentSpacerHeight;
-  const minSpacerForPin = Math.max(
-    0,
-    pinnedScrollTop + clientHeight - contentHeightWithoutSpacer
-  );
-  return Math.max(currentSpacerHeight, minSpacerForPin);
-}
-
 function hasActiveStreaming(messages: PortableMessage[]): boolean {
   return messages.some((message) => message.isStreaming);
 }
@@ -602,6 +556,24 @@ function resolveAutoScrollAction({
   return { type: 'noop' };
 }
 
+function calculatePinnedScrollTop(
+  targetElement: HTMLElement,
+  scrollElement: HTMLElement
+): number {
+  const targetRect = targetElement.getBoundingClientRect();
+  const scrollerRect = scrollElement.getBoundingClientRect();
+  const baseScrollTop = calculateBaseScrollTop(
+    targetRect,
+    scrollerRect,
+    scrollElement.scrollTop
+  );
+  return adjustScrollTopForTallMessage(
+    baseScrollTop,
+    targetRect.height,
+    scrollerRect.height
+  );
+}
+
 function pinMessageAndScroll({
   message,
   scrollElement,
@@ -618,19 +590,8 @@ function pinMessageAndScroll({
     return null;
   }
 
-  const targetRect = targetElem.getBoundingClientRect();
+  const scrollTop = calculatePinnedScrollTop(targetElem, scrollElement);
   const scrollerRect = scrollElement.getBoundingClientRect();
-
-  const baseScrollTop = calculateBaseScrollTop(
-    targetRect,
-    scrollerRect,
-    scrollElement.scrollTop
-  );
-  const scrollTop = adjustScrollTopForTallMessage(
-    baseScrollTop,
-    targetRect.height,
-    scrollerRect.height
-  );
 
   const deficit = calculateSpacerDeficit(
     spacerElem,
@@ -701,89 +662,28 @@ function recalculatePinnedMessageSpacer({
  * the scroll spacer against the new height.
  */
 
-/**
- * Processes resize observer entries to detect significant size changes.
- * Uses delta-based tracking to compute height changes for spacer adjustment.
- *
- * Collapse/expand animations (reasoning) and async render completions (code snippets) are
- * handled authoritatively by the composed layout-settled events, so this reactive path only
- * needs to compensate for incremental size changes such as streaming text growth.
- */
-function processResizeEntries(
-  entries: ResizeObserverEntry[],
-  messageSizes: Map<Element, number>,
-  config: {
-    significantChangeThreshold: number;
-    onSignificantResize: (delta: number) => void;
-  }
-): void {
-  let totalDelta = 0;
-  let hasSignificantChange = false;
-
-  entries.forEach((entry) => {
-    const { blockSize } = entry.borderBoxSize[0];
-    const prevSize = messageSizes.get(entry.target);
-
-    // prevSize is null on the very first observation — treat as baseline, not a change.
-    if (prevSize != null) {
-      const delta = blockSize - prevSize;
-
-      if (Math.abs(delta) > config.significantChangeThreshold) {
-        hasSignificantChange = true;
-        totalDelta += delta;
-      }
-    }
-
-    messageSizes.set(entry.target, blockSize);
-  });
-
-  if (hasSignificantChange) {
-    // Wrap callback in requestAnimationFrame to avoid ResizeObserver loop errors
-    // The callback modifies DOM (spacer height), which can trigger more resize observations
-    requestAnimationFrame(() => {
-      config.onSignificantResize(totalDelta);
-    });
-  }
-}
-
-/**
- * Creates and configures a ResizeObserver for message elements.
- * The observer detects when async content (images, audio, video, streaming text) loads and
- * changes message height, triggering spacer recalculation.
- *
- * This is the reactive baseline for incremental size changes. Collapse/expand animations
- * (reasoning) and async render completions (code snippets) are reconciled authoritatively via
- * composed layout-settled events, so no frame-by-frame polling is needed here.
- */
 function createMessageResizeObserver(config: {
-  onSignificantResize: (delta: number) => void;
+  onResize: () => void;
   hasPinnedMessage: () => boolean;
-  significantChangeThreshold?: number;
 }): MessageResizeObserverState {
-  const {
-    onSignificantResize,
-    hasPinnedMessage,
-    significantChangeThreshold = 10,
-  } = config;
-
   const messageSizes = new Map<Element, number>();
-
   const observer = new ResizeObserver((entries: ResizeObserverEntry[]) => {
-    // Only recalculate if user hasn't scrolled away from pinned message
-    if (!hasPinnedMessage()) {
-      return;
-    }
-
-    processResizeEntries(entries, messageSizes, {
-      significantChangeThreshold,
-      onSignificantResize,
+    let changed = false;
+    entries.forEach((entry) => {
+      if (!messageSizes.has(entry.target)) {
+        return;
+      }
+      const { blockSize } = entry.borderBoxSize[0];
+      changed ||= messageSizes.get(entry.target) !== blockSize;
+      messageSizes.set(entry.target, blockSize);
     });
+    if (changed && config.hasPinnedMessage()) {
+      // ResizeObserver runs before paint. Deferring this write exposes a frame with a capped scrollTop.
+      // Only message rows are observed; changing their sibling spacer does not resize them.
+      config.onResize();
+    }
   });
-
-  return {
-    observer,
-    messageSizes,
-  };
+  return { observer, messageSizes };
 }
 
 /**
@@ -796,10 +696,17 @@ function updateObservedMessages(
 ): void {
   const { observer, messageSizes } = state;
 
-  // Observe all message elements that aren't already being observed
-  messageElements.forEach((element) => {
-    if (element && !messageSizes.has(element)) {
-      observer.observe(element);
+  const currentElements = new Set<Element>(messageElements);
+  messageSizes.forEach((_size, element) => {
+    if (!currentElements.has(element)) {
+      observer.unobserve(element);
+      messageSizes.delete(element);
+    }
+  });
+  currentElements.forEach((element) => {
+    if (!messageSizes.has(element)) {
+      messageSizes.set(element, NaN);
+      observer.observe(element, { box: 'border-box' });
     }
   });
 }
@@ -882,6 +789,16 @@ export class MessagesScrollController {
    */
   private pinnedMessageId: string | null = null;
 
+  private pinnedOwnerId: string | null = null;
+
+  private readingScrollTop: number | null = null;
+
+  private hasStreamedForPin = false;
+
+  private scrollGeneration = 0;
+
+  private disconnected = false;
+
   /**
    * The scrollTop value set at the moment of the last pin. Compared against the current
    * scrollTop at stream end to detect whether the user scrolled away from the pin during
@@ -899,21 +816,22 @@ export class MessagesScrollController {
    * Whether the user has deliberately scrolled away (up) from the pin. While true, every
    * auto-scroll restore/re-pin path is suppressed so we never yank the user back down; it is
    * set/cleared by the `scroll` listener (`handleUserScroll`) and reset when a new message is
-   * pinned. This is what makes manual scroll-up stop auto-scroll during streaming/reasoning.
+   * pinned. This is what makes manual scroll-up stop auto-scroll during content changes.
    */
   private userScrolledAwayFromPin = false;
-
-  /**
-   * Pending requestAnimationFrame id used to coalesce multiple content-layout-settled
-   * events into a single spacer reconciliation per frame.
-   */
-  private layoutSettledRafId: number | null = null;
 
   /**
    * The last message array observed by onHostUpdated, so we can compute change flags and
    * streaming transitions against the previous host state.
    */
   private previousMessages: PortableMessage[] = [];
+
+  /**
+   * Numbers each scroll request so older ones can be told apart from the newest.
+   * A request saves the number it was given. If the counter has moved on by the time the
+   * request runs, a newer request (or `disconnect()`) replaced it, so it must do nothing.
+   */
+  private scrollCounter = 0;
 
   constructor(host: ScrollHost) {
     this.host = host;
@@ -924,102 +842,30 @@ export class MessagesScrollController {
   // --------------------------------------------------------------------------
 
   connect(): void {
+    this.disconnected = false;
+    this.scrollGeneration++;
     const scrollContainer = this.host.getScrollContainer();
 
     // Use requestAnimationFrame to avoid ResizeObserver loop errors
     this.scrollPanelObserver = new ResizeObserver(() => {
+      const generation = this.scrollGeneration;
       requestAnimationFrame(() => {
-        this.onContainerResize();
+        if (this.isCurrentScrollWork(generation)) {
+          this.onContainerResize();
+        }
       });
     });
     if (scrollContainer) {
       this.scrollPanelObserver.observe(scrollContainer);
     }
 
-    // Create message resize observer for async content loading and streaming size changes.
-    // This is the reactive baseline: it keeps the pinned message reachable (grow-only spacer)
-    // as content changes. Authoritative shrink/reconcile happens at settle points via the
-    // composed layout-settled events (reasoning-animation-end / code-snippet-render-end).
     this.messageResizeObserverState = createMessageResizeObserver({
-      onSignificantResize: () => {
-        // Grow-only spacer model: while a message is pinned we never SHRINK the spacer as
-        // content streams in. The response simply grows into the blank space below the pinned
-        // message, which keeps the message flush to the top without any per-frame spacer
-        // churn (the source of streaming jitter). We only ever GROW the spacer here, and only
-        // enough to keep `pinnedScrollTop` reachable when content shrinks (e.g. a reasoning
-        // trace collapsing before its settle event lands) so the browser cannot cap scrollTop
-        // and drop the pin. The spacer is trimmed back to its true minimum at settle points —
-        // stream end, `reasoning-animation-end`, `code-snippet-render-end` — via
-        // reconcileSpacerAfterLayoutSettled.
-        const scrollElement = this.host.getScrollContainer();
-        const spacerElem = this.host.getSpacer();
-
-        if (scrollElement && spacerElem && this.pinnedMessageId) {
-          // Detect if scrollTop was capped by the browser due to scrollHeight reduction.
-          // When content shrinks and scrollHeight drops below pinnedScrollTop + clientHeight,
-          // the browser caps scrollTop to scrollHeight - clientHeight. This looks like the
-          // user scrolled away but is actually browser-initiated.
-          const maxScrollTop =
-            scrollElement.scrollHeight - scrollElement.clientHeight;
-          const wasBrowserCapped =
-            scrollElement.scrollTop >= maxScrollTop - 2 &&
-            scrollElement.scrollTop < this.pinnedScrollTop;
-
-          // Grow the spacer only if the current content can no longer reach pinnedScrollTop.
-          const growOnlySpacerHeight = computeGrowOnlySpacerHeight({
-            scrollHeight: scrollElement.scrollHeight,
-            clientHeight: scrollElement.clientHeight,
-            currentSpacerHeight: this.domSpacerHeight,
-            pinnedScrollTop: this.pinnedScrollTop,
-          });
-          if (growOnlySpacerHeight > this.domSpacerHeight) {
-            this.domSpacerHeight = growOnlySpacerHeight;
-            this.host.setSpacerHeight(this.domSpacerHeight);
-          }
-
-          // Restore scrollTop if user is near the pin, or if browser capped scrollTop — but
-          // never once the user has deliberately scrolled away, otherwise a transient shrink
-          // (a reasoning step collapsing) would look like a browser cap and yank them back down.
-          const scrollDelta = Math.abs(
-            scrollElement.scrollTop - this.pinnedScrollTop
-          );
-          const hasScrolledAway = scrollDelta > 50;
-          if (
-            !this.userScrolledAwayFromPin &&
-            (!hasScrolledAway || wasBrowserCapped)
-          ) {
-            scrollElement.scrollTop = this.pinnedScrollTop;
-          }
-        }
-      },
-      hasPinnedMessage: () => {
-        return this.pinnedMessageId !== null;
-      },
-      significantChangeThreshold: 2, // Low threshold to catch reasoning step animations
+      onResize: this.handleMessageResize,
+      hasPinnedMessage: () => this.pinnedMessageId !== null,
     });
 
     // Start observing current messages
     this.updateObservedMessages();
-
-    // First-party content whose height settles asynchronously announces it with a composed
-    // event: reasoning steps/content on expand/collapse (`reasoning-animation-end`) and code
-    // snippets after CodeMirror init / font load (`code-snippet-render-end`). Both bubble up
-    // to this scroll container, letting us recalculate scroll geometry against the final
-    // layout instead of polling animation frames.
-    // Fires before a reasoning container collapses, so we can reserve space up front rather
-    // than reacting a frame too late.
-    scrollContainer?.addEventListener(
-      'reasoning-animation-start',
-      this.handleContentLayoutWillShrink
-    );
-    scrollContainer?.addEventListener(
-      'reasoning-animation-end',
-      this.handleContentLayoutSettled
-    );
-    scrollContainer?.addEventListener(
-      'code-snippet-render-end',
-      this.handleContentLayoutSettled
-    );
 
     // Track deliberate user scroll-away so auto-scroll can disengage. Passive: we only read
     // scroll geometry, never call preventDefault.
@@ -1033,6 +879,17 @@ export class MessagesScrollController {
   }
 
   disconnect(): void {
+    this.scrollCounter++;
+    this.disconnected = true;
+    this.scrollGeneration++;
+    this.readingScrollTop = null;
+    this.pinnedOwnerId = null;
+    this.pinnedMessageId = null;
+    this.hasStreamedForPin = false;
+    this.host.setScrollHeightFloor(0);
+    if (this.host.getSpacer()) {
+      this.host.setSpacerHeight(0);
+    }
     // Remove the listeners and observers set up in connect().
     if (this.scrollPanelObserver) {
       this.scrollPanelObserver.disconnect();
@@ -1043,24 +900,9 @@ export class MessagesScrollController {
       this.messageResizeObserverState = null;
     }
     const scrollContainer = this.host.getScrollContainer();
-    scrollContainer?.removeEventListener(
-      'reasoning-animation-start',
-      this.handleContentLayoutWillShrink
-    );
-    scrollContainer?.removeEventListener(
-      'reasoning-animation-end',
-      this.handleContentLayoutSettled
-    );
-    scrollContainer?.removeEventListener(
-      'code-snippet-render-end',
-      this.handleContentLayoutSettled
-    );
     scrollContainer?.removeEventListener('scroll', this.handleUserScroll);
-    if (this.layoutSettledRafId !== null) {
-      cancelAnimationFrame(this.layoutSettledRafId);
-      this.layoutSettledRafId = null;
-    }
     this.doAutoScrollThrottled.cancel();
+    this.onContainerResizeThrottled.cancel();
   }
 
   /**
@@ -1070,10 +912,11 @@ export class MessagesScrollController {
    * (React `getSnapshotBeforeUpdate`), used for Safari scroll-anchoring restore.
    */
   onHostUpdated(preCommitScrollTop: number | null): void {
+    if (this.disconnected) {
+      return;
+    }
     const newItems = this.host.getMessages();
     const oldItems = this.previousMessages;
-    // Advance the baseline immediately so nested async work reads the latest state.
-    this.previousMessages = newItems;
 
     // countChanged means a new message, itemsChanged means an actual message item changed (streaming, likely)
     const { countChanged, itemsChanged } = getMessageArrayChangeFlags({
@@ -1086,9 +929,21 @@ export class MessagesScrollController {
       return;
     }
 
+    this.updateReadingTargetForHost(oldItems, newItems, preCommitScrollTop);
+    // Keep row order while the owner awaits replacement rows; earlier requests may mount first.
+    if (
+      !this.hasRetainedOwner() ||
+      newItems.some((item) => item.messageId === this.pinnedOwnerId)
+    ) {
+      this.previousMessages = newItems;
+    }
+
     // A cleared conversation must drop the old pin before anything below reads it; otherwise the
     // stale pin keeps its spacer and scroll position under the new messages.
-    if (didClearAllMessages({ oldItems, newItems })) {
+    if (
+      didClearAllMessages({ oldItems, newItems }) &&
+      !this.hasRetainedOwner()
+    ) {
       this.resetForClearedConversation();
     }
 
@@ -1097,6 +952,10 @@ export class MessagesScrollController {
     // Update observed messages when the message array changes
     if (itemsChanged) {
       this.updateObservedMessages();
+    }
+
+    if (this.reconcileRetainedPosition()) {
+      return;
     }
 
     if (countChanged) {
@@ -1127,9 +986,17 @@ export class MessagesScrollController {
    * Runs internal auto-scroll to ensure proper scrolling behavior when the container resizes.
    * (Was the scroll work inside `MessagesComponent.onResize`.)
    */
-  onContainerResize = throttle(
-    () => {
+  onContainerResize = (): void => {
+    this.onContainerResizeThrottled(++this.scrollCounter);
+  };
+
+  private onContainerResizeThrottled = throttle(
+    (counter: number) => {
+      if (counter !== this.scrollCounter || this.disconnected) {
+        return;
+      }
       // Resize can invalidate both "scroll down" visibility and pin geometry.
+      this.updateScrollHeightFloor();
       this.host.onScrollGeometryChanged();
       this.doAutoScrollInternal();
     },
@@ -1176,10 +1043,17 @@ export class MessagesScrollController {
    * some messages keeps the user's scroll position.
    */
   private resetForClearedConversation(): void {
+    this.scrollGeneration++;
+    this.readingScrollTop = null;
+    this.pinnedOwnerId = null;
+    this.hasStreamedForPin = false;
     this.pinnedMessageId = null;
     this.pinnedScrollTop = 0;
     this.userScrolledAwayFromPin = false;
     this.domSpacerHeight = 0;
+    this.previousMessages = [];
+    this.doAutoScrollThrottled.cancel();
+    this.host.setScrollHeightFloor(0);
     if (this.host.getSpacer()) {
       this.host.setSpacerHeight(0);
     }
@@ -1218,15 +1092,22 @@ export class MessagesScrollController {
       return;
     }
 
+    if (message.messageId !== this.pinnedOwnerId) {
+      this.hasStreamedForPin = hasActiveStreaming(this.host.getMessages());
+    }
+
     // Keep controller-level tracking aligned with the DOM writes performed above.
     this.domSpacerHeight = result.currentSpacerHeight;
     this.pinnedMessageId = result.pinnedMessageId;
+    this.pinnedOwnerId = message.messageId ?? this.pinnedOwnerId;
+    this.readingScrollTop = null;
     this.pinnedScrollTop = result.scrollTop;
 
     // Establishing a pin re-engages auto-scroll: a newly pinned message resets any prior
     // scroll-away. (The re-pin restore paths are gated on this flag, so they only reach here
     // when it is already false — this reset matters for pinning a genuinely new message.)
     this.userScrolledAwayFromPin = false;
+    this.updateScrollHeightFloor();
 
     debugAutoScroll(
       `[autoScroll] Pinned message, scrollTop=${result.scrollTop}, spacer=${result.currentSpacerHeight}px`
@@ -1265,6 +1146,9 @@ export class MessagesScrollController {
    * Runs synchronously inside a requestAnimationFrame — must only be called from within one.
    */
   private executeRecalculateSpacer(scrollElement: HTMLElement): void {
+    if (this.reconcileReadingPosition()) {
+      return;
+    }
     const result = recalculatePinnedMessageSpacer({
       pinnedElement: this.getPinnedElement(),
       scrollElement,
@@ -1278,11 +1162,6 @@ export class MessagesScrollController {
   }
 
   /**
-   * Handles a content-layout-settled event (`reasoning-animation-end` from reasoning
-   * collapse/expand, or `code-snippet-render-end` after a code block's async render). Several
-   * can settle in the same tick, so we coalesce to a single reconciliation on the next frame.
-   */
-  /**
    * `scroll` listener that latches whether the user has deliberately scrolled away (up) from the
    * pin. Runs from a settled scroll position, so `resolveUserScrollAway` can distinguish a real
    * scroll-up (room below the current position) from a browser cap (parked at the bottom because
@@ -1291,134 +1170,336 @@ export class MessagesScrollController {
    */
   private handleUserScroll = (): void => {
     const scrollElement = this.host.getScrollContainer();
-    if (!scrollElement || !this.pinnedMessageId) {
+    const pinnedElement = this.getPinnedElement();
+    if (!scrollElement || (!pinnedElement && !this.hasRetainedOwner())) {
+      return;
+    }
+    // Native anchoring can move scrollTop with a resized row above the pin.
+    const measuredPin = pinnedElement
+      ? calculatePinnedScrollTop(pinnedElement, scrollElement)
+      : this.pinnedScrollTop;
+    if (this.isReadingPositionCapped(scrollElement.scrollTop, scrollElement)) {
+      return;
+    }
+    const nearPreviousPin =
+      Math.abs(scrollElement.scrollTop - this.pinnedScrollTop) <=
+      USER_SCROLL_AWAY_THRESHOLD_PX;
+    if (
+      measuredPin !== this.pinnedScrollTop &&
+      (this.userScrolledAwayFromPin || nearPreviousPin)
+    ) {
       return;
     }
     const decision = resolveUserScrollAway({
       scrollTop: scrollElement.scrollTop,
-      pinnedScrollTop: this.pinnedScrollTop,
+      pinnedScrollTop: measuredPin,
       maxScrollTop: scrollElement.scrollHeight - scrollElement.clientHeight,
       thresholdPx: USER_SCROLL_AWAY_THRESHOLD_PX,
     });
     if (decision !== null) {
+      if (
+        Math.abs(
+          scrollElement.scrollTop -
+            (this.readingScrollTop ?? this.pinnedScrollTop)
+        ) > 2
+      ) {
+        this.scrollGeneration++;
+      }
       this.userScrolledAwayFromPin = decision;
+      this.captureReadingPosition(scrollElement.scrollTop);
+      this.updateScrollHeightFloor();
     }
   };
 
-  /**
-   * Reserve spacer space BEFORE an announced collapse removes content (`reasoning-animation-start`,
-   * dispatched while the collapsing element is still at full height).
-   *
-   * The grow-only spacer is otherwise purely reactive: the ResizeObserver and the settle event
-   * both fire *after* layout, so an instant collapse drops `scrollHeight` below
-   * `pinnedScrollTop + clientHeight` for one frame. The browser caps `scrollTop`, the viewport
-   * visibly jumps to the top, and the next frame restores it — a two-frame flash. Projecting the
-   * post-collapse geometry and growing the spacer now keeps `pinnedScrollTop` reachable
-   * throughout, so no cap ever happens and the collapse reflows exactly once.
-   */
-  private handleContentLayoutWillShrink = (): void => {
-    const scrollElement = this.host.getScrollContainer();
-    const spacerElem = this.host.getSpacer();
-    if (!scrollElement || !spacerElem || !this.pinnedMessageId) {
+  private captureReadingPosition(
+    scrollTop: number,
+    allowNewTarget = false
+  ): void {
+    if (!this.pinnedOwnerId) {
+      this.readingScrollTop = null;
       return;
     }
-
-    // The collapse styles have already applied (the event is dispatched from
-    // `attributeChangedCallback`), so this measures the POST-collapse layout. What matters is
-    // that we run now, in the same task, rather than from the ResizeObserver, which fires only
-    // after layout AND paint.
-    //
-    // Derive the true content height from the spacer's offset rather than `scrollHeight`
-    // (floored at `clientHeight`, so it under-reports once content falls below the viewport),
-    // and size against `pinnedScrollTop` rather than the live `scrollTop` (which the browser
-    // may already have capped). Grow-only: never shrink here, the settle pass trims.
-    const scrollerRect = scrollElement.getBoundingClientRect();
-    const spacerRect = spacerElem.getBoundingClientRect();
-    const contentHeightWithoutSpacer =
-      spacerRect.top - scrollerRect.top + scrollElement.scrollTop;
-    const requiredSpacerHeight = Math.max(
-      0,
-      Math.ceil(
-        this.pinnedScrollTop +
-          scrollElement.clientHeight -
-          contentHeightWithoutSpacer
-      )
-    );
-    if (requiredSpacerHeight > this.domSpacerHeight) {
-      this.domSpacerHeight = requiredSpacerHeight;
-      this.host.setSpacerHeight(this.domSpacerHeight);
-    }
-
-    // Forcing layout above may have let the browser cap scrollTop against the briefly-shorter
-    // content. The spacer is restored now, so put the pin back in the same task; because no
-    // paint has happened in between, the user never sees the intermediate position.
+    const scrollElement = this.host.getScrollContainer();
     if (
-      !this.userScrolledAwayFromPin &&
-      scrollElement.scrollTop < this.pinnedScrollTop
+      scrollElement &&
+      this.isReadingPositionCapped(scrollTop, scrollElement)
     ) {
-      scrollElement.scrollTop = this.pinnedScrollTop;
-    }
-  };
-
-  private handleContentLayoutSettled = (): void => {
-    if (this.layoutSettledRafId !== null) {
       return;
     }
-    this.layoutSettledRafId = requestAnimationFrame(() => {
-      this.layoutSettledRafId = null;
-      this.reconcileSpacerAfterLayoutSettled();
-    });
-  };
-
-  /**
-   * Re-establishes the pinned message's position after a content-layout change settles
-   * (reasoning collapse/expand, or a code block finishing its async render). Because the
-   * animation/render has ended, the layout is final and can be measured directly. When the
-   * user is still at the pin — or was pushed above it because a shrink capped scrollTop — we
-   * re-pin so the message stays flush to the top. Otherwise we only ensure the spacer keeps
-   * the user's current position reachable.
-   *
-   * Runs inside a requestAnimationFrame (scheduled by handleContentLayoutSettled).
-   */
-  private reconcileSpacerAfterLayoutSettled(): void {
-    const scrollElement = this.host.getScrollContainer();
-    const pinnedElement = this.getPinnedElement();
-    if (!scrollElement || !pinnedElement) {
+    if (
+      (this.readingScrollTop !== null || allowNewTarget) &&
+      scrollElement &&
+      resolveUserScrollAway({
+        scrollTop,
+        pinnedScrollTop: this.pinnedScrollTop,
+        maxScrollTop: scrollElement.scrollHeight - scrollElement.clientHeight,
+        thresholdPx: USER_SCROLL_AWAY_THRESHOLD_PX,
+      }) === true
+    ) {
+      this.scrollGeneration++;
+      this.userScrolledAwayFromPin = true;
+      this.readingScrollTop = null;
+      this.updateScrollHeightFloor();
       return;
     }
-
-    // A deliberate scroll-away disengages re-pinning: keep the spacer correct but leave the
-    // user's position alone.
+    if (
+      allowNewTarget &&
+      scrollElement &&
+      scrollTop >= this.pinnedScrollTop - USER_SCROLL_AWAY_THRESHOLD_PX
+    ) {
+      this.userScrolledAwayFromPin = false;
+    }
     if (this.userScrolledAwayFromPin) {
-      this.executeRecalculateSpacer(scrollElement);
+      this.readingScrollTop = null;
       return;
     }
+    if (scrollTop <= this.pinnedScrollTop + 2) {
+      this.readingScrollTop = null;
+    } else if (
+      this.readingScrollTop !== null ||
+      allowNewTarget ||
+      this.hasStreamedForPin ||
+      hasActiveStreaming(this.previousMessages) ||
+      hasActiveStreaming(this.host.getMessages())
+    ) {
+      this.readingScrollTop = scrollTop;
+    }
+    this.updateScrollHeightFloor();
+  }
 
-    const streamEndAction = resolveStreamEndAction({
-      nearPinThresholdPx: STREAM_END_NEAR_PIN_THRESHOLD_PX,
-      pinnedScrollTop: this.pinnedScrollTop,
-      scrollTop: scrollElement.scrollTop,
-      maxScrollTop: scrollElement.scrollHeight - scrollElement.clientHeight,
-    });
-
-    if (streamEndAction === 're_pin_and_scroll') {
-      this.executePinAndScroll(
-        {
-          id: this.pinnedMessageId as string,
-          element: pinnedElement,
-        } as PortableMessage,
-        scrollElement
-      );
-    } else {
-      this.executeRecalculateSpacer(scrollElement);
+  private updateReadingTargetForHost(
+    oldItems: PortableMessage[],
+    newItems: PortableMessage[],
+    snapshot: number | null
+  ): void {
+    const candidate = findLastPinnable(newItems);
+    const candidateIndex = oldItems.findIndex(
+      (item) => item.messageId === candidate?.messageId
+    );
+    const ownerIndex = oldItems.findIndex(
+      (item) => item.messageId === this.pinnedOwnerId
+    );
+    const isEarlierCandidate =
+      this.hasRetainedOwner() &&
+      candidateIndex >= 0 &&
+      (ownerIndex < 0 || candidateIndex < ownerIndex);
+    if (
+      candidate &&
+      candidate.messageId !== this.pinnedOwnerId &&
+      !isEarlierCandidate
+    ) {
+      if (findLastPinnable(oldItems)?.messageId !== candidate.messageId) {
+        this.scrollGeneration++;
+      }
+      this.readingScrollTop = null;
+      this.userScrolledAwayFromPin = false;
+      return;
+    }
+    if (this.pinnedOwnerId && !this.host.hasMessage(this.pinnedOwnerId)) {
+      this.scrollGeneration++;
+      this.readingScrollTop = null;
+      this.pinnedOwnerId = null;
+      this.pinnedMessageId = null;
+      this.hasStreamedForPin = false;
+      this.host.setScrollHeightFloor(0);
+      return;
+    }
+    this.hasStreamedForPin ||=
+      hasActiveStreaming(oldItems) || hasActiveStreaming(newItems);
+    if (
+      snapshot !== null &&
+      (this.readingScrollTop !== null || hasActiveStreaming(oldItems))
+    ) {
+      this.captureReadingPosition(snapshot, hasActiveStreaming(oldItems));
     }
   }
 
+  private hasReadingOwner(): boolean {
+    return (
+      this.readingScrollTop !== null &&
+      Boolean(this.pinnedOwnerId && this.host.hasMessage(this.pinnedOwnerId))
+    );
+  }
+
+  private hasRetainedOwner(): boolean {
+    return (
+      this.hasReadingOwner() ||
+      Boolean(
+        this.userScrolledAwayFromPin &&
+        this.pinnedOwnerId &&
+        this.host.hasMessage(this.pinnedOwnerId)
+      )
+    );
+  }
+
+  private rebindPinnedOwnerRow(): void {
+    const ownerRow = this.host
+      .getMessages()
+      .find(
+        (message) =>
+          message.messageId === this.pinnedOwnerId &&
+          message.isPinnable &&
+          message.element
+      );
+    if (ownerRow) {
+      this.pinnedMessageId = ownerRow.id;
+    }
+  }
+
+  private reconcileRetainedPosition(): boolean {
+    if (this.reconcileReadingPosition()) {
+      return true;
+    }
+    if (!this.userScrolledAwayFromPin || !this.hasRetainedOwner()) {
+      return false;
+    }
+    this.rebindPinnedOwnerRow();
+    const scrollElement = this.host.getScrollContainer();
+    if (scrollElement) {
+      this.executeRecalculateSpacer(scrollElement);
+    }
+    return true;
+  }
+
+  private isReadingPositionCapped(
+    scrollTop: number,
+    scrollElement: HTMLElement
+  ): boolean {
+    const maxScrollTop =
+      scrollElement.scrollHeight - scrollElement.clientHeight;
+    return (
+      this.readingScrollTop !== null &&
+      scrollTop < this.readingScrollTop - 2 &&
+      maxScrollTop < this.readingScrollTop - 2 &&
+      scrollTop >= maxScrollTop - 2
+    );
+  }
+
+  private reconcileReadingPosition(): boolean {
+    if (this.readingScrollTop === null || !this.pinnedOwnerId) {
+      return false;
+    }
+    if (!this.host.hasMessage(this.pinnedOwnerId)) {
+      this.readingScrollTop = null;
+      this.pinnedOwnerId = null;
+      this.pinnedMessageId = null;
+      this.hasStreamedForPin = false;
+      this.scrollGeneration++;
+      this.host.setScrollHeightFloor(0);
+      return false;
+    }
+    const scrollElement = this.host.getScrollContainer();
+    const spacer = this.host.getSpacer();
+    if (!scrollElement?.isConnected || !spacer) {
+      return true;
+    }
+    this.rebindPinnedOwnerRow();
+    this.updateScrollHeightFloor();
+    const height = calculateSpacerDeficit(
+      spacer,
+      scrollElement,
+      scrollElement.getBoundingClientRect(),
+      this.readingScrollTop
+    );
+    if (height !== this.domSpacerHeight) {
+      this.domSpacerHeight = height;
+      this.host.setSpacerHeight(height);
+    }
+    if (scrollElement.scrollTop !== this.readingScrollTop) {
+      scrollElement.scrollTop = this.readingScrollTop;
+    }
+    this.host.onScrollGeometryChanged();
+    return true;
+  }
+
+  private isCurrentScrollWork(generation: number): boolean {
+    return !this.disconnected && generation === this.scrollGeneration;
+  }
+
+  private prepareExplicitScroll(): void {
+    this.scrollGeneration++;
+    this.readingScrollTop = null;
+    this.userScrolledAwayFromPin = true;
+    this.host.setScrollHeightFloor(0);
+  }
+
+  private updateScrollHeightFloor(): void {
+    const scrollElement = this.host.getScrollContainer();
+    const minimumHeight =
+      scrollElement && this.pinnedMessageId && !this.userScrolledAwayFromPin
+        ? (this.readingScrollTop ?? this.pinnedScrollTop) +
+          scrollElement.clientHeight
+        : 0;
+    // A forced layout can clamp scrollTop during a collapse that regrows before ResizeObserver runs.
+    this.host.setScrollHeightFloor(minimumHeight);
+  }
+
+  private handleMessageResize = (): void => {
+    if (this.disconnected || this.reconcileReadingPosition()) {
+      return;
+    }
+    const scrollElement = this.host.getScrollContainer();
+    const spacerElem = this.host.getSpacer();
+    const pinnedElement = this.getPinnedElement();
+    if (!scrollElement || !spacerElem || !pinnedElement) {
+      return;
+    }
+
+    const previousPinnedScrollTop = this.pinnedScrollTop;
+    this.pinnedScrollTop = calculatePinnedScrollTop(
+      pinnedElement,
+      scrollElement
+    );
+    const maxScrollTop =
+      scrollElement.scrollHeight - scrollElement.clientHeight;
+    const wasBrowserCapped =
+      scrollElement.scrollTop >= maxScrollTop - 2 &&
+      scrollElement.scrollTop < this.pinnedScrollTop;
+    const nearPin =
+      Math.min(
+        Math.abs(scrollElement.scrollTop - previousPinnedScrollTop),
+        Math.abs(scrollElement.scrollTop - this.pinnedScrollTop)
+      ) <= USER_SCROLL_AWAY_THRESHOLD_PX;
+    const restorePin =
+      !this.userScrolledAwayFromPin && (nearPin || wasBrowserCapped);
+    const targetScrollTop = restorePin
+      ? this.pinnedScrollTop
+      : scrollElement.scrollTop;
+    // scrollHeight floors at clientHeight, so only the spacer offset measures a deep shrink correctly.
+    const minimumHeight = calculateSpacerDeficit(
+      spacerElem,
+      scrollElement,
+      scrollElement.getBoundingClientRect(),
+      targetScrollTop
+    );
+    const height = hasActiveStreaming(this.host.getMessages())
+      ? Math.max(this.domSpacerHeight, minimumHeight)
+      : minimumHeight;
+    this.updateScrollHeightFloor();
+    if (height !== this.domSpacerHeight) {
+      this.domSpacerHeight = height;
+      this.host.setSpacerHeight(height);
+    }
+    if (restorePin) {
+      scrollElement.scrollTop = targetScrollTop;
+    }
+    this.host.onScrollGeometryChanged();
+  };
+
   private async executeResolvedAutoScrollAction(
     options: ScrollOptions,
-    scrollElement: HTMLElement
+    scrollElement: HTMLElement,
+    counter: number,
+    generation: number
   ): Promise<void> {
     const messages = this.host.getMessages();
+    if (
+      options.scrollToTop === undefined &&
+      options.scrollToBottom === undefined &&
+      this.reconcileRetainedPosition()
+    ) {
+      return;
+    }
     const action = resolveAutoScrollAction({
       messages,
       options,
@@ -1452,8 +1533,11 @@ export class MessagesScrollController {
         return;
       case 'pin_message':
         await this.waitForMessageComponentLayout(action.message);
-        // A clear during the wait removes the target; pinning it would restore a stale pin.
+        // Stop if a newer request replaced this one while we waited, or if the target
+        // message was removed in the meantime (for example, the chat was cleared).
         if (
+          counter !== this.scrollCounter ||
+          !this.isCurrentScrollWork(generation) ||
           !scrollElement.isConnected ||
           !this.host
             .getMessages()
@@ -1511,7 +1595,7 @@ export class MessagesScrollController {
     if (hasNewResponse) {
       // Use the same throttled approach as streaming to recalculate after content settles.
       // This is more reliable than trying to time rAF perfectly.
-      this.doAutoScrollThrottled();
+      this.doAutoScrollThrottled(this.scrollCounter);
     }
   }
 
@@ -1575,10 +1659,22 @@ export class MessagesScrollController {
    * user's scroll position if they scrolled away during streaming.
    */
   private executeStreamEndScrollAction(snapshot: number | null): void {
+    const generation = this.scrollGeneration;
     requestAnimationFrame(() => {
+      if (
+        !this.isCurrentScrollWork(generation) ||
+        this.reconcileReadingPosition()
+      ) {
+        return;
+      }
       const scrollElement = this.host.getScrollContainer();
       const pinnedElement = this.getPinnedElement();
-      if (!scrollElement || !pinnedElement) {
+      if (
+        !scrollElement?.isConnected ||
+        !pinnedElement ||
+        !this.pinnedOwnerId ||
+        !this.host.hasMessage(this.pinnedOwnerId)
+      ) {
         return;
       }
 
@@ -1602,6 +1698,7 @@ export class MessagesScrollController {
         this.executePinAndScroll(
           {
             id: this.pinnedMessageId as string,
+            messageId: this.pinnedOwnerId as string,
             element: pinnedElement,
           } as PortableMessage,
           scrollElement
@@ -1626,17 +1723,40 @@ export class MessagesScrollController {
     options: ScrollOptions = {},
     includePublicSpacerReconciliation = false
   ): void => {
+    if (
+      options.scrollToTop !== undefined ||
+      options.scrollToBottom !== undefined
+    ) {
+      this.prepareExplicitScroll();
+    }
+    const counter = ++this.scrollCounter;
+    const generation = this.scrollGeneration;
     requestAnimationFrame(() => {
       void (async () => {
+        if (
+          counter !== this.scrollCounter ||
+          !this.isCurrentScrollWork(generation)
+        ) {
+          return;
+        }
         // Execute after DOM/layout settles for the current frame so measurements
         // (scrollHeight, rects) match what the user can actually see.
         const scrollElement = this.host.getScrollContainer();
-        if (!scrollElement) {
+        if (!scrollElement?.isConnected) {
           return;
         }
 
-        await this.executeResolvedAutoScrollAction(options, scrollElement);
-        if (includePublicSpacerReconciliation) {
+        await this.executeResolvedAutoScrollAction(
+          options,
+          scrollElement,
+          counter,
+          generation
+        );
+        if (
+          includePublicSpacerReconciliation &&
+          counter === this.scrollCounter &&
+          this.isCurrentScrollWork(generation)
+        ) {
           this.reconcileSpacerAfterPublicDoAutoScroll(scrollElement);
         }
       })();
@@ -1677,7 +1797,11 @@ export class MessagesScrollController {
    * This is throttled to prevent excessive scrolling during rapid updates.
    */
   private doAutoScrollThrottled = throttle(
-    this.doAutoScrollInternal,
+    (counter: number) => {
+      if (counter === this.scrollCounter) {
+        this.doAutoScrollInternal();
+      }
+    },
     AUTO_SCROLL_THROTTLE_MS,
     { leading: true, trailing: true }
   );
@@ -1731,12 +1855,14 @@ export class MessagesScrollController {
     ) {
       // The top of the element is above the fold or the element doesn't fully fit. Scroll it so its top is at the top
       // of the scroll panel.
+      this.prepareExplicitScroll();
       doScrollElement(scrollElement, topDistanceFromTop, 0);
     } else if (
       bottomDistanceFromTop >
       scrollElement.scrollTop + scrollElement.offsetHeight
     ) {
       // The bottom of the element is below the fold. Scroll it so its bottom is at the bottom of the scroll panel.
+      this.prepareExplicitScroll();
       doScrollElement(
         scrollElement,
         bottomDistanceFromTop - scrollElement.offsetHeight,
@@ -1768,6 +1894,7 @@ export class MessagesScrollController {
         const setScrollTop = messageElement.offsetTop;
 
         // Do the scrolling.
+        this.prepareExplicitScroll();
         doScrollElement(scrollElement, setScrollTop, 0, animate);
       }
     } catch (error) {
@@ -1812,7 +1939,6 @@ export class MessagesScrollController {
 
 export {
   applySafariScrollAnchoringRestore,
-  computeGrowOnlySpacerHeight,
   didClearAllMessages,
   getAnchoringRestoreTarget,
   getMessageArrayChangeFlags,

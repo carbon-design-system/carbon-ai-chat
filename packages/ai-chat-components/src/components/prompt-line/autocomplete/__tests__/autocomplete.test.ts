@@ -14,6 +14,7 @@ import type AutocompleteElement from '../src/autocomplete.js';
 import type {
   SuggestionItem,
   SuggestionItemGroup,
+  FlatEntry,
 } from '../src/autocomplete.js';
 import { defaultAutocompleteI18n } from '../src/autocomplete.js';
 import prefix from '../../../../globals/settings.js';
@@ -333,6 +334,47 @@ describe('cds-aichat-autocomplete', () => {
       );
 
       expect(activeOption?.textContent).to.include('Group item 1');
+    });
+
+    it('aria-activedescendant and --active class agree on every navigation step across a mixed flat+group list', async () => {
+      const el = await defaultFixture({
+        items: [
+          mockItems[0],
+          { id: 'flat-disabled', label: 'Flat disabled', disabled: true },
+        ],
+        groups: mockGroups,
+      });
+      const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
+
+      const steps: Array<[string, string]> = [
+        ['ArrowUp', '4--option'], // -1 wraps to the last item
+        ['Home', '1--option'],
+        ['ArrowDown', '3--option'], // skips the disabled boundary item
+        ['ArrowDown', '4--option'],
+        ['ArrowDown', '4--option'], // stays put at the end
+        ['ArrowUp', '3--option'],
+        ['ArrowUp', '1--option'], // skips the disabled boundary item
+        ['End', '4--option'],
+      ];
+      for (const [key, expectedId] of steps) {
+        el.dispatchEvent(
+          new KeyboardEvent('keydown', { key, bubbles: true, composed: true })
+        );
+        await el.updateComplete;
+
+        const activeDescendant = listbox?.getAttribute('aria-activedescendant');
+        const activeClass = `${prefix}-autocomplete-item--active`;
+        const activeOptions = Array.from(
+          el.shadowRoot?.querySelectorAll(`li[role="option"].${activeClass}`) ??
+            []
+        );
+
+        // Exactly one item carries the active class.
+        expect(activeOptions.length).to.equal(1);
+        // Its id matches what aria-activedescendant points to.
+        expect(activeOptions[0].getAttribute('id')).to.equal(activeDescendant);
+        expect(activeDescendant).to.equal(expectedId);
+      }
     });
   });
 
@@ -1287,6 +1329,40 @@ describe('cds-aichat-autocomplete', () => {
       );
     });
 
+    it('ArrowUp skips a disabled item and lands on the previous enabled item', async () => {
+      const threeItems: SuggestionItem[] = [
+        enabledItem,
+        disabledItem,
+        { id: 'enabled-2', label: 'Enabled Option 2' },
+      ];
+      const el = await defaultFixture({ items: threeItems });
+
+      // End lands on index 2 directly.
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'End',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      // ArrowUp from 2: must skip disabled at 1 and land on 0.
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowUp',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
+      expect(listbox?.getAttribute('aria-activedescendant')).to.equal(
+        'enabled-1--option'
+      );
+    });
+
     it('ArrowDown stays put when no enabled item exists beyond current', async () => {
       // Layout: enabled(0) → disabled(1).
       // Starting at -1. First ArrowDown → 0. Second ArrowDown: from 0, next=1
@@ -1422,6 +1498,37 @@ describe('cds-aichat-autocomplete', () => {
       expect(listbox?.getAttribute('aria-activedescendant') ?? '').to.equal('');
     });
 
+    it('arrow keys and Tab leave nothing active when all items are disabled', async () => {
+      const el = await defaultFixture({
+        items: [{ id: 'dis-a', label: 'Disabled A', disabled: true }],
+        groups: [
+          {
+            id: 'grp',
+            title: 'Group',
+            items: [{ id: 'dis-b', label: 'Disabled B', disabled: true }],
+          },
+        ],
+      });
+      const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
+
+      for (const key of ['ArrowDown', 'ArrowUp', 'Tab', 'Home', 'End']) {
+        el.dispatchEvent(
+          new KeyboardEvent('keydown', { key, bubbles: true, composed: true })
+        );
+        await el.updateComplete;
+        // Wait for the 50ms announcement timer so any guard regression surfaces.
+        await new Promise((resolve) => window.setTimeout(resolve, 75));
+
+        expect(listbox?.getAttribute('aria-activedescendant') ?? '').to.equal(
+          ''
+        );
+        expect(
+          el.shadowRoot?.querySelector(`.${prefix}-autocomplete-item--active`)
+        ).to.be.null;
+        expect(el.hasNavigated()).to.be.false;
+      }
+    });
+
     it('End stays put when all items are disabled', async () => {
       const items: SuggestionItem[] = [
         { id: 'dis-a', label: 'Disabled A', disabled: true },
@@ -1471,6 +1578,134 @@ describe('cds-aichat-autocomplete', () => {
     });
   });
 
+  describe('flat index mapping', () => {
+    // Builds the mapping on an element that is never rendered.
+    function buildFlatList(
+      items: SuggestionItem[],
+      groups: SuggestionItemGroup[]
+    ): FlatEntry[] {
+      const el = document.createElement(
+        `${prefix}-autocomplete`
+      ) as AutocompleteElement;
+      el.items = items;
+      el.groups = groups;
+      el.i18n = defaultAutocompleteI18n;
+      return (el as any)._buildFlatList();
+    }
+
+    it('returns an empty array when there are no items or groups', () => {
+      expect(buildFlatList([], [])).to.deep.equal([]);
+    });
+
+    it('places ungrouped items before grouped items and assigns correct group titles', () => {
+      const flatA: SuggestionItem = { id: 'flat-a', label: 'Flat A' };
+      const flatB: SuggestionItem = { id: 'flat-b', label: 'Flat B' };
+      const grpItem1: SuggestionItem = { id: 'g1-1', label: 'Group 1 item 1' };
+      const grpItem2: SuggestionItem = { id: 'g1-2', label: 'Group 1 item 2' };
+      const grpItem3: SuggestionItem = { id: 'g2-1', label: 'Group 2 item 1' };
+      const groups: SuggestionItemGroup[] = [
+        { id: 'grp-1', title: 'Group 1', items: [grpItem1, grpItem2] },
+        { id: 'grp-2', title: 'Group 2', items: [grpItem3] },
+      ];
+
+      const list = buildFlatList([flatA, flatB], groups);
+      const ungroupedTitle = defaultAutocompleteI18n.nonGroupedItemsLabel;
+
+      expect(list).to.deep.equal([
+        {
+          item: flatA,
+          index: 0,
+          groupIndex: undefined,
+          groupTitle: ungroupedTitle,
+        },
+        {
+          item: flatB,
+          index: 1,
+          groupIndex: undefined,
+          groupTitle: ungroupedTitle,
+        },
+        { item: grpItem1, index: 2, groupIndex: 0, groupTitle: 'Group 1' },
+        { item: grpItem2, index: 3, groupIndex: 0, groupTitle: 'Group 1' },
+        { item: grpItem3, index: 4, groupIndex: 1, groupTitle: 'Group 2' },
+      ]);
+    });
+
+    it('assigns undefined groupTitle to ungrouped items when there are no groups', () => {
+      const itemA: SuggestionItem = { id: 'a', label: 'A' };
+      const itemB: SuggestionItem = { id: 'b', label: 'B' };
+
+      const list = buildFlatList([itemA, itemB], []);
+
+      expect(list.length).to.equal(2);
+      expect(list[0].groupTitle).to.be.undefined;
+      expect(list[1].groupTitle).to.be.undefined;
+    });
+
+    it('produces only group items when items is empty', () => {
+      const g1: SuggestionItem = { id: 'g1', label: 'G1' };
+      const g2: SuggestionItem = { id: 'g2', label: 'G2' };
+
+      const list = buildFlatList(
+        [],
+        [{ id: 'grp', title: 'Only Group', items: [g1, g2] }]
+      );
+
+      expect(list).to.deep.equal([
+        { item: g1, index: 0, groupIndex: 0, groupTitle: 'Only Group' },
+        { item: g2, index: 1, groupIndex: 0, groupTitle: 'Only Group' },
+      ]);
+    });
+
+    it('keeps disabled items at their index', () => {
+      const enabled: SuggestionItem = { id: 'e', label: 'E' };
+      const disabled: SuggestionItem = { id: 'd', label: 'D', disabled: true };
+
+      const list = buildFlatList([disabled, enabled], []);
+
+      expect(list.map((entry) => [entry.item.id, entry.index])).to.deep.equal([
+        ['d', 0],
+        ['e', 1],
+      ]);
+    });
+  });
+
+  describe('in-place mutation', () => {
+    it('drops a removed item from the DOM and from keyboard navigation after splice + requestUpdate()', async () => {
+      const items: SuggestionItem[] = [
+        { id: 'a', label: 'A' },
+        { id: 'b', label: 'B' },
+        { id: 'c', label: 'C' },
+      ];
+      const el = await defaultFixture({ items });
+
+      items.splice(0, 1);
+      el.requestUpdate();
+      await el.updateComplete;
+
+      const options = Array.from(
+        el.shadowRoot?.querySelectorAll('li[role="option"]') ?? []
+      );
+      expect(options.map((option) => option.id)).to.deep.equal([
+        'b--option',
+        'c--option',
+      ]);
+
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Home',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
+      expect(listbox?.getAttribute('aria-activedescendant')).to.equal(
+        'b--option'
+      );
+    });
+  });
+
   describe('screen reader announcements', () => {
     it('includes the group title in arrow-key navigation announcements for grouped items', async () => {
       let announcedMessage: string | null = null;
@@ -1512,6 +1747,133 @@ describe('cds-aichat-autocomplete', () => {
       await new Promise((resolve) => window.setTimeout(resolve, 75));
 
       expect(announcedMessage).to.equal('Group item 1, Group 1, 3 of 4');
+    });
+
+    it('filtering an open list to a different count announces the new count', async () => {
+      const initialItems: SuggestionItem[] = [
+        { id: '1', label: 'Item 1' },
+        { id: '2', label: 'Item 2' },
+        { id: '3', label: 'Item 3' },
+        { id: '4', label: 'Item 4' },
+        { id: '5', label: 'Item 5' },
+        { id: '6', label: 'Item 6' },
+      ];
+
+      const announcedCounts: number[] = [];
+      const trackingI18n = {
+        ...defaultAutocompleteI18n,
+        suggestionsAvailable: (count: number) => {
+          announcedCounts.push(count);
+          return defaultAutocompleteI18n.suggestionsAvailable(count);
+        },
+      };
+
+      const el = await defaultFixture({
+        items: initialItems,
+        i18n: trackingI18n,
+      });
+
+      // Initial mount fires the open announcement immediately
+      expect(announcedCounts).to.deep.equal([6]);
+
+      // Filter down to 1 item
+      el.items = [{ id: '1', label: 'Item 1' }];
+      await el.updateComplete;
+
+      // Filter count announcements are debounced by 250ms, plus AriaAnnouncerManager 250ms delay
+      await new Promise((resolve) => window.setTimeout(resolve, 550));
+
+      expect(announcedCounts).to.deep.equal([6, 1]);
+
+      // Verify the live region text ends with the phrase for 1 suggestion
+      const liveRegions = el.shadowRoot?.querySelectorAll<HTMLDivElement>(
+        '.cds-aichat-autocomplete__live-region'
+      );
+      const textContents = Array.from(liveRegions ?? []).map(
+        (r) => r.textContent
+      );
+      const hasFinalAnnouncement = textContents.some((t) =>
+        t?.includes('1 suggestion. Use up and down arrows')
+      );
+      expect(hasFinalAnnouncement).to.be.true;
+    });
+
+    it('rapid typing does not queue one announcement per keystroke', async () => {
+      const announcedCounts: number[] = [];
+      const trackingI18n = {
+        ...defaultAutocompleteI18n,
+        suggestionsAvailable: (count: number) => {
+          announcedCounts.push(count);
+          return defaultAutocompleteI18n.suggestionsAvailable(count);
+        },
+      };
+
+      const el = await defaultFixture({
+        items: [
+          { id: '1', label: 'Item 1' },
+          { id: '2', label: 'Item 2' },
+          { id: '3', label: 'Item 3' },
+          { id: '4', label: 'Item 4' },
+        ],
+        i18n: trackingI18n,
+      });
+
+      expect(announcedCounts).to.deep.equal([4]);
+
+      // Simulate rapid keystrokes within debounce window (< 250ms)
+      el.items = [
+        { id: '1', label: 'Item 1' },
+        { id: '2', label: 'Item 2' },
+        { id: '3', label: 'Item 3' },
+      ];
+      await el.updateComplete;
+
+      await new Promise((resolve) => window.setTimeout(resolve, 50));
+
+      el.items = [
+        { id: '1', label: 'Item 1' },
+        { id: '2', label: 'Item 2' },
+      ];
+      await el.updateComplete;
+
+      await new Promise((resolve) => window.setTimeout(resolve, 50));
+
+      el.items = [{ id: '1', label: 'Item 1' }];
+      await el.updateComplete;
+
+      // Wait for debounce timer to fire
+      await new Promise((resolve) => window.setTimeout(resolve, 300));
+
+      // Only the initial count (4) and the final count (1) should have been announced
+      expect(announcedCounts).to.deep.equal([4, 1]);
+    });
+
+    it('re-announcing does not move focus or change aria-activedescendant', async () => {
+      const initialItems: SuggestionItem[] = [
+        { id: 'item-1', label: 'Apple' },
+        { id: 'item-2', label: 'Apricot' },
+        { id: 'item-3', label: 'Banana' },
+      ];
+
+      const el = await defaultFixture({
+        items: initialItems,
+      });
+
+      const listbox = el.shadowRoot?.querySelector('ul[role="listbox"]');
+      expect(listbox?.getAttribute('aria-activedescendant')).to.be.null;
+
+      // Filter list
+      el.items = [
+        { id: 'item-1', label: 'Apple' },
+        { id: 'item-2', label: 'Apricot' },
+      ];
+      await el.updateComplete;
+
+      // Wait for debounce timer
+      await new Promise((resolve) => window.setTimeout(resolve, 300));
+
+      expect(listbox?.getAttribute('aria-activedescendant')).to.be.null;
+      expect(el.hasNavigated()).to.be.false;
     });
   });
 });

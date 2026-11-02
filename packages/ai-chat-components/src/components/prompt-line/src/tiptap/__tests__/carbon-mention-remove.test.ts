@@ -12,6 +12,8 @@ import { Editor } from '@tiptap/core';
 import DocumentNode from '@tiptap/extension-document';
 import ParagraphNode from '@tiptap/extension-paragraph';
 import TextNode from '@tiptap/extension-text';
+import { UndoRedo } from '@tiptap/extensions';
+import { closeHistory } from '@tiptap/pm/history';
 
 import { carbonCommand, carbonMention } from '../carbon-mention.js';
 import { setHostOriginMeta } from '../origin-meta.js';
@@ -329,6 +331,132 @@ describe('tiptap/carbon-command Backspace', function () {
           value: '@alice',
         });
       });
+    });
+  });
+
+  describe('onSelect (lifecycle)', () => {
+    for (const { name, range, replacesExisting } of [
+      { name: 'prepended duplicate', range: 1, replacesExisting: false },
+      {
+        name: 'same-id replacement',
+        range: { from: 1, to: 2 },
+        replacesExisting: true,
+      },
+    ]) {
+      it(`fires with the new stored data for a ${name}`, () => {
+        const events: { type: string; item: SuggestionItem }[] = [];
+        const { editor, cleanup: c } = makeEditor('mention', {
+          onSelect: (item) => events.push({ type: 'select', item }),
+          onRemove: (item) => events.push({ type: 'remove', item }),
+        });
+        cleanup = c;
+
+        insertMention(editor, {
+          id: 'u1',
+          label: 'Alice',
+          value: '@alice',
+          data: { version: 1 },
+        });
+        events.length = 0;
+
+        editor.commands.insertContentAt(range, {
+          type: 'mention',
+          attrs: {
+            id: 'u1',
+            label: 'Alice',
+            value: '@alice',
+            data: { version: 2 },
+          },
+        });
+
+        const selected = {
+          type: 'select',
+          item: { id: 'u1', label: 'Alice', value: '@alice', version: 2 },
+        };
+        const removed = {
+          type: 'remove',
+          item: { id: 'u1', label: 'Alice', value: '@alice', version: 1 },
+        };
+        expect(events).to.deep.equal(
+          replacesExisting ? [removed, selected] : [selected]
+        );
+      });
+    }
+
+    it('fires with the reconstructed item when a deleted mention is restored via undo', () => {
+      const removed: SuggestionItem[] = [];
+      const inserted: SuggestionItem[] = [];
+      const mount = document.createElement('div');
+      document.body.appendChild(mount);
+      const editor = new Editor({
+        element: mount,
+        extensions: [
+          DocumentNode,
+          ParagraphNode,
+          TextNode,
+          UndoRedo,
+          carbonMention({
+            trigger: '@',
+            items: ITEMS,
+            onRemove: (item) => removed.push(item),
+            onSelect: (item) => inserted.push(item),
+          }),
+        ],
+        content: '',
+      });
+      cleanup = () => {
+        editor.destroy();
+        mount.remove();
+      };
+
+      // insertContent is user-origin → onSelect fires on initial insert.
+      // closeHistory breaks the grouping window so insert and delete land in
+      // separate undo steps — otherwise ProseMirror collapses both into one and
+      // undo would strip the mention rather than restore it.
+      insertMention(editor, {
+        id: 'u1',
+        label: 'Alice',
+        value: '@alice',
+        data: { role: 'admin' },
+      });
+      editor.view.dispatch(closeHistory(editor.state.tr));
+      expect(inserted).to.have.lengthOf(1);
+
+      deleteMentionAt(editor, tokenPositions(editor, 'mention')[0]);
+      expect(removed).to.have.lengthOf(1);
+      expect(inserted).to.have.lengthOf(1); // no additional insert yet
+
+      // Undo deletion — mention re-enters the doc via user edit → fires again.
+      editor.commands.undo();
+
+      expect(inserted).to.have.lengthOf(2);
+      expect(inserted[1]).to.deep.equal({
+        id: 'u1',
+        label: 'Alice',
+        value: '@alice',
+        role: 'admin',
+      });
+    });
+
+    it('does not fire for host-origin insertions', () => {
+      const inserted: SuggestionItem[] = [];
+      const { editor, cleanup: c } = makeEditor('mention', {
+        onSelect: (item) => inserted.push(item),
+      });
+      cleanup = c;
+
+      const tr = editor.state.tr.insert(
+        0,
+        editor.schema.nodes.mention.create({
+          id: 'u1',
+          label: 'Alice',
+          value: '@alice',
+        })
+      );
+      setHostOriginMeta(tr);
+      editor.view.dispatch(tr);
+
+      expect(inserted).to.have.lengthOf(0);
     });
   });
 });

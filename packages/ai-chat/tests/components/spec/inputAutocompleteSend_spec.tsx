@@ -68,7 +68,10 @@ jest.mock('@carbon/ai-chat-components/es/react/prompt-line.js', () => {
       ref: React.Ref<unknown>
     ): React.ReactElement => {
       capturedOnChange = props.onChange as typeof capturedOnChange;
-      React.useImperativeHandle(ref, () => ({ clearContent: clearContentSpy }));
+      React.useImperativeHandle(ref, () => ({
+        clearContent: clearContentSpy,
+        resetHistory: jest.fn(),
+      }));
       return React.createElement('div', null);
     }
   );

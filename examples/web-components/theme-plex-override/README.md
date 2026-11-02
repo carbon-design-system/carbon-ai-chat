@@ -9,7 +9,7 @@ Lit web-component integration of `@carbon/ai-chat` demonstrating how to replace 
 - Declaring a local `@font-face` rule that serves the replacement font from a bundled `.woff2` asset.
 - Mounting `cds-aichat-container` with a `PublicConfig`-shaped messaging config defined outside the component to avoid re-mount churn.
 - Implementing a mock backend via `customSendMessage` that sends and receives messages.
-- Capturing the `ChatInstance` in `onBeforeRender` and subscribing to `STATE_CHANGE` and `FEEDBACK` bus events.
+- Capturing the `ChatInstance` in `onBeforeRender` and subscribing to `STATE_CHANGE` bus events.
 - Rendering custom response content with `renderUserDefinedResponse`, re-computed off `activeResponseId`.
 
 ## When to use this pattern
@@ -25,8 +25,7 @@ Lit web-component integration of `@carbon/ai-chat` demonstrating how to replace 
 | `cds-aichat-container` | `@carbon/ai-chat` element | Mounts the chat UI as a custom element. |
 | `PublicConfig` | `@carbon/ai-chat` type | Types the messaging config passed to the element. |
 | `ChatInstance` | `@carbon/ai-chat` type | Typed reference captured in `onBeforeRender`. |
-| `BusEventType` | `@carbon/ai-chat` enum | Subscribes to `STATE_CHANGE` and `FEEDBACK`. |
-| `FeedbackInteractionType` | `@carbon/ai-chat` enum | Detects `SUBMITTED` feedback interactions. |
+| `BusEventType` | `@carbon/ai-chat` enum | Subscribes to `STATE_CHANGE`. |
 | `messaging.customSendMessage` | element property | Mock backend that echoes user input. |
 | `onBeforeRender` | element property | Captures the `ChatInstance` and attaches event listeners. |
 | `renderUserDefinedResponse` | element property | Renders custom response content for user-defined response types. |

@@ -8,7 +8,7 @@
  */
 
 /**
- * Mock backend for the custom-element-fullscreen example.
+ * Mock back end for this example.
  *
  * Demonstrates: a client-side `customSendMessage` that fakes both a
  * full-message reply and a chunked streaming reply, exercising the
@@ -18,7 +18,6 @@
  *   - `ChatInstance.messaging.addMessage`
  *   - `ChatInstance.messaging.addMessageChunk`
  *   - `MessageResponseTypes.TEXT`
- *   - `MessageResponseTypes.USER_DEFINED`
  *   - `StreamChunk` (`partial_item`, `complete_item`, `final_response`)
  *   - `CustomSendMessageOptions.signal`
  *
@@ -110,6 +109,7 @@ async function doFakeTextStreaming(
   const responseID = uuid();
   const words = TEXT.split(' ');
   let isCanceled = false;
+  let lastStreamedIndex = -1;
   const timeouts: number[] = [];
 
   // The signal fires for both the user-facing stop button and an internal
@@ -125,6 +125,7 @@ async function doFakeTextStreaming(
     words.forEach((word, index) => {
       const timeoutId = setTimeout(() => {
         if (!isCanceled) {
+          lastStreamedIndex = index;
           instance.messaging.addMessageChunk({
             partial_item: {
               response_type: MessageResponseTypes.TEXT,
@@ -143,7 +144,13 @@ async function doFakeTextStreaming(
       timeouts.push(timeoutId as unknown as number);
     });
 
-    await sleep(words.length * WORD_DELAY);
+    // Poll instead of one long sleep, so Stop ends the turn within 100 ms
+    // rather than after the whole stream's duration.
+    const totalDelay = words.length * WORD_DELAY;
+    const startTime = Date.now();
+    while (!isCanceled && Date.now() - startTime < totalDelay) {
+      await sleep(100);
+    }
 
     if (!isCanceled) {
       const completeItem = {
@@ -171,12 +178,17 @@ async function doFakeTextStreaming(
         final_response: finalResponse,
       } as StreamChunk);
     } else {
-      // On cancel, emit a truncated complete_item with `stream_stopped: true`
-      // so the chat renders the partial output as a finalized stopped stream
-      // rather than leaving a dangling in-progress bubble.
+      // On cancel, emit a complete_item with `stream_stopped: true` holding
+      // only the words streamed before Stop, so the stopped reply keeps what
+      // the user saw. The final_response then ends the turn, as it does for a
+      // finished stream.
+      const streamedText =
+        lastStreamedIndex >= 0
+          ? words.slice(0, lastStreamedIndex + 1).join(' ') + ' '
+          : '';
       const completeItem = {
         response_type: MessageResponseTypes.TEXT,
-        text: words.slice(0, Math.floor(words.length * 0.3)).join(' '),
+        text: streamedText,
         streaming_metadata: {
           id: '1',
           stream_stopped: true,
@@ -187,6 +199,17 @@ async function doFakeTextStreaming(
         streaming_metadata: {
           response_id: responseID,
         },
+      } as StreamChunk);
+
+      const finalResponse = {
+        id: responseID,
+        output: {
+          generic: [completeItem],
+        },
+      };
+
+      instance.messaging.addMessageChunk({
+        final_response: finalResponse,
       } as StreamChunk);
     }
   } finally {
@@ -223,21 +246,6 @@ async function customSendMessage(
               {
                 response_type: MessageResponseTypes.TEXT,
                 text: TEXT,
-              },
-            ],
-          },
-        });
-        break;
-      case 'user_defined':
-        instance.messaging.addMessage({
-          output: {
-            generic: [
-              {
-                response_type: MessageResponseTypes.USER_DEFINED,
-                user_defined: {
-                  user_defined_type: 'my_unique_identifier',
-                  text: 'Some text from your back-end.',
-                },
               },
             ],
           },

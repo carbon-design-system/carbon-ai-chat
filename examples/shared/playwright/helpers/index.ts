@@ -8,19 +8,22 @@
 /** Browser fixtures and setup helpers shared by Vite example suites. */
 import { expect, test as base, type Page } from '@playwright/test';
 
-import { urlVariable, type TargetId } from '../targets';
+import { urlVariable } from '../targets';
 
-export const test = base.extend<{ target: TargetId }>({
-  // Set per project in `playwright.config.ts`; never meant to be read unset.
-  target: [undefined as unknown as TargetId, { option: true }],
-  baseURL: async ({ target }, playWrightUse) => {
-    const url = process.env[urlVariable(target)];
-    if (!url) {
-      throw new Error(`The ${target} example server did not report its URL.`);
-    }
-    await playWrightUse(url);
-  },
-  page: async ({ page }, playWrightUse) => {
+export const test = base.extend<{ target: string }>({
+  // Set by each suite or project config; never meant to be read unset.
+  target: [undefined as unknown as string, { option: true }],
+  baseURL: [
+    async ({ target }, playWrightUse) => {
+      const url = process.env[urlVariable(target)];
+      if (!url) {
+        throw new Error(`The ${target} example server did not report its URL.`);
+      }
+      await playWrightUse(url);
+    },
+    { option: true },
+  ],
+  page: async ({ page, target }, playWrightUse) => {
     const errors: string[] = [];
     page.on('console', (message) => {
       // Vite may reload a cold page after its dependency optimizer changes.
@@ -32,7 +35,12 @@ export const test = base.extend<{ target: TargetId }>({
       }
     });
     page.on('pageerror', (error) => errors.push(String(error)));
+    const coverage = process.env.CAIC_E2E_COVERAGE
+      ? await import('../coverage')
+      : undefined;
+    await coverage?.startCoverage(page);
     await playWrightUse(page);
+    await coverage?.stopCoverage(page, target);
     expect(errors).toEqual([]);
   },
 });

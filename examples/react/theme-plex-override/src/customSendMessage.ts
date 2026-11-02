@@ -7,14 +7,32 @@
  *  @license
  */
 
+/**
+ * Mock back end for this example.
+ *
+ * Demonstrates: a client-side `customSendMessage` that fakes both a
+ * full-message reply and a chunked streaming reply, exercising the
+ * `MessageResponseTypes` surface without a real server.
+ *
+ * APIs exercised:
+ *   - `ChatInstance.messaging.addMessage`
+ *   - `ChatInstance.messaging.addMessageChunk`
+ *   - `MessageResponseTypes.TEXT`
+ *   - `MessageResponseTypes.USER_DEFINED`
+ *   - `StreamChunk` (`partial_item`, `complete_item`, `final_response`)
+ *   - `CustomSendMessageOptions.signal`
+ *
+ * Start reading at: the `customSendMessage` function near the bottom.
+ */
+
 import {
   ChatInstance,
   CustomSendMessageOptions,
   MessageRequest,
   MessageResponseTypes,
-  PartialItemChunkWithId,
   StreamChunk,
 } from '@carbon/ai-chat';
+import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
 async function sleep(milliseconds: number) {
   await new Promise((resolve) => {
@@ -29,8 +47,6 @@ You can try the following responses:
 - stream text
 - text
 - user_defined
-
-The "text" response includes the configuration to include user feedback (thumbs up/down, etc) in this example. You can apply feedback to any response type.
 `;
 
 const TEXT =
@@ -86,20 +102,23 @@ print(generate_lorem_ipsum(2))  # Generates 2 paragraphs of Lorem Ipsum text
 
 const WORD_DELAY = 40;
 
+// Replace with a real production implementation — this fakes streaming by
+// emitting one word per timer tick instead of consuming a server stream.
 async function doFakeTextStreaming(
   instance: ChatInstance,
   signal?: AbortSignal
 ) {
-  const responseID = crypto.randomUUID();
+  const responseID = uuid();
   const words = TEXT.split(' ');
   let isCanceled = false;
   let lastStreamedIndex = -1;
   const timeouts: number[] = [];
 
-  // Listen to abort signal (handles both stop button and restart/clear)
+  // The signal fires for both the user-facing stop button and an internal
+  // restart/clear, so a single handler covers both cancellation paths.
   const abortHandler = () => {
     isCanceled = true;
-    // Clear all pending timeouts
+    // Cancel queued chunk emissions so they do not arrive after abort.
     timeouts.forEach((timeoutId) => clearTimeout(timeoutId));
   };
   signal?.addEventListener('abort', abortHandler);
@@ -121,13 +140,14 @@ async function doFakeTextStreaming(
             streaming_metadata: {
               response_id: responseID,
             },
-          } as PartialItemChunkWithId);
+          });
         }
       }, index * WORD_DELAY);
       timeouts.push(timeoutId as unknown as number);
     });
 
-    // Wait for streaming to complete or be canceled
+    // Poll instead of one long sleep, so Stop ends the turn within 100 ms
+    // rather than after the whole stream's duration.
     const totalDelay = words.length * WORD_DELAY;
     const startTime = Date.now();
     while (!isCanceled && Date.now() - startTime < totalDelay) {
@@ -160,7 +180,10 @@ async function doFakeTextStreaming(
         final_response: finalResponse,
       } as StreamChunk);
     } else {
-      // Send stream_stopped marker with the text that was actually streamed
+      // On cancel, emit a complete_item with `stream_stopped: true` holding
+      // only the words streamed before Stop, so the stopped reply keeps what
+      // the user saw. The final_response then ends the turn, as it does for a
+      // finished stream.
       const streamedText =
         lastStreamedIndex >= 0
           ? words.slice(0, lastStreamedIndex + 1).join(' ') + ' '
@@ -196,12 +219,16 @@ async function doFakeTextStreaming(
   }
 }
 
+// Replace with a real production implementation — this routes hard-coded
+// inputs to canned responses to demonstrate the customSendMessage contract.
 async function customSendMessage(
   request: MessageRequest,
   requestOptions: CustomSendMessageOptions,
   instance: ChatInstance
 ) {
   if (request.input.text === '') {
+    // Empty input is dispatched on first open as the welcome handshake, so
+    // reply with the help text that lists the supported demo commands.
     instance.messaging.addMessage({
       output: {
         generic: [
@@ -221,34 +248,6 @@ async function customSendMessage(
               {
                 response_type: MessageResponseTypes.TEXT,
                 text: TEXT,
-                message_item_options: {
-                  feedback: {
-                    /**
-                     * Indicates if a request for feedback should be displayed.
-                     */
-                    is_on: true,
-
-                    /**
-                     * A unique identifier for this feedback. This is required for the feedback to be recorded in message history.
-                     */
-                    id: '1',
-
-                    /**
-                     * Indicates if the user should be asked for additional detailed information when providing positive feedback.
-                     */
-                    show_positive_details: false,
-
-                    /**
-                     * Indicates if the user should be asked for additional detailed information when providing negative feedback.
-                     */
-                    show_negative_details: true,
-
-                    /**
-                     * Indicates whether the prompt line should be shown.
-                     */
-                    show_prompt: true,
-                  },
-                },
               },
             ],
           },

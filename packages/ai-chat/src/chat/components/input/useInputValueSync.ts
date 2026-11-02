@@ -277,7 +277,9 @@ function useInputValueSync({
 
     setRawInputValue('');
     displayContentRef.current = null;
-    promptLineRef.current?.clearContent();
+    const promptLine = promptLineRef.current;
+    promptLine?.clearContent();
+    promptLine?.resetHistory();
 
     if (trackInputState) {
       const isInputToHumanAgent = selectIsInputToHumanAgent(store.getState());

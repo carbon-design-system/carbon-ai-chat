@@ -259,4 +259,43 @@ describe('<cds-aichat-autocomplete-controller>', () => {
       expect(extraFired).to.equal(false);
     });
   });
+
+  describe('empty state announcement with controller', () => {
+    it('announces no suggestions when a trigger resolves to 0 items', async () => {
+      const el = await fixture<AutocompleteControllerElement>(html`
+        <cds-aichat-autocomplete-controller></cds-aichat-autocomplete-controller>
+      `);
+      el.mention = {
+        trigger: '@',
+        items: () => [],
+      };
+      await el.updateComplete;
+
+      fireTriggerChange(el, {
+        type: 'mention',
+        query: 'xyz',
+        triggerOffset: 0,
+      });
+      await flush();
+      await el.updateComplete;
+
+      const autocomplete = el.querySelector('cds-aichat-autocomplete');
+      expect(autocomplete).to.exist;
+
+      // Allow announcement timeout to process
+      await new Promise((resolve) => window.setTimeout(resolve, 300));
+
+      const liveRegions =
+        autocomplete!.shadowRoot?.querySelectorAll<HTMLDivElement>(
+          '.cds-aichat-autocomplete__live-region'
+        );
+      const textContents = Array.from(liveRegions ?? []).map(
+        (r) => r.textContent
+      );
+      const hasNoSuggestions = textContents.some((t) =>
+        t?.includes('No suggestions.')
+      );
+      expect(hasNoSuggestions).to.be.true;
+    });
+  });
 });

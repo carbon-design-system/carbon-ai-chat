@@ -14,6 +14,8 @@ import {
 } from '@carbon/ai-chat';
 import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
+import { sendResponse } from './sendResponse';
+
 function doPreviewCard(
   instance: ChatInstance,
   preferredLocation?: 'start' | 'end',
@@ -21,7 +23,8 @@ function doPreviewCard(
 ) {
   const workspaceId = uuid();
 
-  instance.messaging.addMessage({
+  return sendResponse(instance, {
+    id: uuid(),
     request_id: requestID,
     output: {
       generic: [

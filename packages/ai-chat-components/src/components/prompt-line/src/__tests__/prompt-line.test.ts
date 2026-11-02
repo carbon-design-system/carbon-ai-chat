@@ -204,12 +204,21 @@ describe('<cds-aichat-prompt-line> (textarea mode)', function () {
     expect(sent).to.equal(false);
   });
 
-  it('disabled toggles the textarea readOnly state', async () => {
+  it('disabled toggles the textarea disabled state', async () => {
     const el = await makePromptLine();
-    expect(getTextarea(el).readOnly).to.equal(false);
+    expect(getTextarea(el).disabled).to.equal(false);
     el.disabled = true;
     await el.updateComplete;
-    expect(getTextarea(el).readOnly).to.equal(true);
+    expect(getTextarea(el).disabled).to.equal(true);
+  });
+
+  it('disabled releases focus from the textarea', async () => {
+    const el = await makePromptLine();
+    getTextarea(el).focus();
+    expect(el.hasFocus()).to.equal(true);
+    el.disabled = true;
+    await el.updateComplete;
+    expect(el.hasFocus()).to.equal(false);
   });
 });
 
@@ -331,6 +340,66 @@ describe('<cds-aichat-prompt-line> (rich upgrade)', function () {
 
     expect(removed).to.have.lengthOf(0);
     expect(el.getEditor()!.getText()).to.equal('');
+  });
+
+  it('keeps an undoable stack after clearContent() alone', async () => {
+    const el = await makePromptLine();
+    el.rich = true;
+    await waitForRich(el, describeUpgrade);
+
+    const editor = el.getEditor()!;
+    editor.view.dispatch(editor.state.tr.insertText('draft to clear'));
+    expect(editor.getText()).to.equal('draft to clear');
+
+    el.clearContent();
+    expect(editor.getText()).to.equal('');
+
+    expect(el.undo()).to.equal(true);
+    expect(editor.getText()).to.equal('draft to clear');
+  });
+
+  it('resetHistory() fires no events, value sync, typing indicator, or mention onRemove/onSelect', async () => {
+    const removed: SuggestionItem[] = [];
+    const inserted: SuggestionItem[] = [];
+    const changeEvents: Event[] = [];
+    const typingEvents: Event[] = [];
+    const el = await makePromptLine();
+    el.extensions = [
+      carbonMention({
+        trigger: '@',
+        items: [{ id: 'u1', label: 'Alice' }],
+        onRemove: (item) => removed.push(item),
+        onSelect: (item) => inserted.push(item),
+      }),
+    ];
+    el.rich = true;
+    await waitForRich(el, describeUpgrade);
+
+    el.addEventListener('cds-aichat-prompt-change', (e) =>
+      changeEvents.push(e)
+    );
+    el.addEventListener('cds-aichat-prompt-typing', (e) =>
+      typingEvents.push(e)
+    );
+
+    el.getEditor()!.commands.insertContent({
+      type: 'mention',
+      attrs: { id: 'u1', label: 'Alice', value: 'u1', data: null },
+    });
+    await Promise.resolve();
+
+    changeEvents.length = 0;
+    typingEvents.length = 0;
+    removed.length = 0;
+    inserted.length = 0;
+
+    el.resetHistory();
+    await Promise.resolve();
+
+    expect(changeEvents).to.have.lengthOf(0);
+    expect(typingEvents).to.have.lengthOf(0);
+    expect(removed).to.have.lengthOf(0);
+    expect(inserted).to.have.lengthOf(0);
   });
 
   it('preserves keyboard-focus state across the upgrade', async () => {

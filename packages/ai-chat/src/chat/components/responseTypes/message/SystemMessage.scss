@@ -53,8 +53,8 @@
   }
 }
 
-// Standalone: agent (rule above, smaller text)
-.cds-aichat--system-message-standalone--agent {
+// Standalone: divider (rule above)
+.cds-aichat--system-message-standalone--divider {
   border-block-start: 1px solid theme.$border-subtle;
   margin-block-start: layout.$spacing-07;
   padding-block-start: layout.$spacing-05;

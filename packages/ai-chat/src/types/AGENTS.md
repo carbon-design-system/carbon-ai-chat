@@ -25,9 +25,9 @@ npm run docs --workspace=@carbon/ai-chat
 grep -c 'tsd-index-heading' packages/ai-chat/dist/docs/carbon-tsdocs/interfaces/Type_reference.YourType.html
 ```
 
-Don't reach for `npm run docs:api` to check this. It rewrites the committed [../../docs/api/](../../docs/api/), which is regenerated on a release or release candidate, not per PR.
+For the release-owned API artifacts, follow [docs/AGENTS.md](../../docs/AGENTS.md).
 
-**Cross-package note**: many of these types are _declared_ in [@carbon/ai-chat-components](../../../ai-chat-components/) and surfaced here through a **local re-declaration**, not a transparent re-export. TypeDoc reads the JSDoc at the declaration site it sees — and the declaration site we want it to see is the local alias in this package, not the upstream source. The bar below therefore applies at the local declaration site you control. See [cross-package-types.md](references/cross-package-types.md).
+**Cross-package note**: many of these types are _declared_ in [@carbon/ai-chat-components](../../../ai-chat-components/) and surfaced here through a **local re-declaration**, not a transparent re-export. TypeDoc reads the JSDoc at the declaration site it sees — and the declaration site we want it to see is the local alias in this package, not the upstream source. The JSDoc rules apply at the local declaration site you control. See [cross-package-types.md](references/cross-package-types.md).
 
 ## Topic-specific guidance
 
@@ -37,18 +37,7 @@ Load only what you need:
 - Linking between public symbols or to third-party types → [cross-linking.md](references/cross-linking.md)
 - Documenting a prop whose referential identity matters → [prop-stability.md](references/prop-stability.md)
 - Re-declaring a type from `@carbon/ai-chat-components` → [cross-package-types.md](references/cross-package-types.md)
-- Worked good/bad examples of every rule → [jsdoc-examples.md](references/jsdoc-examples.md)
-
-## Comment content bar
-
-- **State purpose, not shape.** The signature shows the shape; JSDoc explains what it _means_ and when to use it.
-- **Document units and semantics of primitives.** `timeout: number` is useless without "milliseconds". `id: string` is useless without "must be unique across X".
-- **Complete sentences, ending in periods.** No note-form, no internal jargon, no ticket refs, no TODOs.
-- **Match the tone of existing types** ([messaging/Messages.ts](messaging/Messages.ts), [instance/ChatInstance.ts](instance/ChatInstance.ts)). JSDoc is product copy — follow [../../../../references/tone.md](../../../../references/tone.md) for voice and word economy.
-
-## Property-level JSDoc
-
-Every public property and enum member needs its own JSDoc — `?` in the signature is not an explanation.
+- Writing public JSDoc → [public-jsdoc.md](../../../../.bob/skills/caic-copy-writer/references/public-jsdoc.md)
 
 ## `@example` on public methods
 
@@ -64,15 +53,6 @@ For guidance-only edits, use the [guidance gate](../../../../references/definiti
 
 1. `npm run build --workspace=@carbon/ai-chat` — rollup only. Use `npm run build:docs --workspace=@carbon/ai-chat` to also generate TypeDoc; the build fails on `validation.invalidLink` errors.
 2. If you added a new public export, confirm it appears in both [../aiChatEntry.tsx](../aiChatEntry.tsx) and [../serverEntry.ts](../serverEntry.ts).
-3. If you added or changed a [cross-package re-export](references/cross-package-types.md), confirm its rendered page lists the type's properties — see the quick check under [Scope](#scope). Leave [../../docs/api/](../../docs/api/) alone; it is regenerated at release time.
-4. If you added or changed a public instance method, confirm it carries at least one titled `@example` that meets [code-examples.md](../../references/code-examples.md) (review gate — not build-enforced).
-5. Semver: any change to a public type is a `feat` (additive) or a `fix!` / `BREAKING CHANGE` (non-additive). See [../../AGENTS.md](../../AGENTS.md) → _Authoring rules_ → _Public API changes_.
-
-## Related Guidance
-
-- **Parent guidance**: [packages/ai-chat/AGENTS.md](../../AGENTS.md)
-- **Voice and tone**: [tone.md](../../../../references/tone.md) - Voice and word economy for all public copy
-- **Store patterns**: [../chat/store/AGENTS.md](../chat/store/AGENTS.md) - For action/state types
-- **Cross-package types**: [cross-package-types.md](references/cross-package-types.md) - Re-declaring `@carbon/ai-chat-components` types
-- **Worked examples**: [jsdoc-examples.md](references/jsdoc-examples.md) - Good and bad JSDoc, side by side
-- **Documentation**: [../../docs/AGENTS.md](../../docs/AGENTS.md) - For public API docs
+3. For a changed cross-package re-declaration, run the [rendered-properties check](#scope).
+4. For a changed public instance method, check the [`@example` review gate](#example-on-public-methods).
+5. Apply the [public-API semver rules](../../AGENTS.md#authoring-rules).

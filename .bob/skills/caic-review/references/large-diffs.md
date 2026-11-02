@@ -4,6 +4,8 @@ Load this when reading the whole diff at one depth would mean reading all of it 
 
 No line count triggers this. A 600-line lockfile bump is not a large diff; four files rewriting the store is.
 
+This triage sets reading depth; use the [reviewability policy](../../../../references/pr-reviewability.md) for PR scope and splitting.
+
 ## Rank before you read
 
 Sort the changed files by risk per line, then spend attention in that order.

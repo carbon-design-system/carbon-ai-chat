@@ -116,3 +116,7 @@ packages/ai-chat-components/scss
 
 .github/issue-drafts
 
+# Playwright test-agent scaffolding; .claude/ is ignored above
+/.mcp.json
+/specs/
+/examples/shared/playwright/tests/seed.spec.ts

@@ -55,15 +55,25 @@ jobs:
           node-version-file: '.nvmrc'
           registry-url: https://registry.npmjs.org
           cache: 'npm'
+      # 👇 TEMPORARILY chromium-only in CI: the firefox/webkit apt dependencies (~185 packages)
+      # stall the Playwright install. Restore `npx playwright install --with-deps` once the
+      # runner environment stabilises.
       - name: Install dependencies and build
         run: |
           npm ci --prefer-offline
-          npx playwright install --with-deps
+          npx playwright install --with-deps chromium
           npm run aiChat:build:docs
-      - name: Build examples
-        run: npm run examples:build
+          npm run examples:build
       - name: Continuous integration check
-        run: npm run ci-check
+        run: |
+          npm run format:staged
+          npm run lint:license
+          npm run lint
+          npm run lint:styles
+          npm run validate:adrs
+          npm run test --workspace=@carbon/ai-chat
+          npm run test:versions
+          CI=true npm run test --workspace=@carbon/ai-chat-components
 
       - name: Update telemetry.yml
         if: github.event.inputs.type == 'full release' && github.event.inputs.dry-run == 'false'
@@ -100,6 +110,8 @@ jobs:
           fi
 
       - name: Publish full minor release (ie. v1.x.0)
+        id: publish-full-minor
+        continue-on-error: ${{ github.event.inputs.dry-run == 'false' }}
         if: |
           github.event.inputs.type == 'full release' &&
           github.event.inputs.semver-type == 'minor'
@@ -110,6 +122,8 @@ jobs:
           npx lerna publish minor --conventional-graduate ${{ env.PUBLISH }} ${{ env.FORCE }}
 
       - name: Publish first minor RC (ie. v1.x.0-rc.0)
+        id: publish-first-minor-rc
+        continue-on-error: ${{ github.event.inputs.dry-run == 'false' }}
         if: |
           github.event.inputs.type == 'first rc' &&
           github.event.inputs.semver-type == 'minor'
@@ -117,6 +131,8 @@ jobs:
           npx lerna publish preminor --conventional-prerelease --preid rc --pre-dist-tag next ${{ env.PUBLISH }} ${{ env.FORCE }}
 
       - name: Publish full patch release (ie. v1.0.x)
+        id: publish-full-patch
+        continue-on-error: ${{ github.event.inputs.dry-run == 'false' }}
         if: |
           github.event.inputs.type == 'full release' &&
           github.event.inputs.semver-type == 'patch'
@@ -127,6 +143,8 @@ jobs:
           npx lerna publish patch --conventional-graduate ${{ env.PUBLISH }} ${{ env.FORCE }}
 
       - name: Publish first patch RC (ie. v1.0.x-rc.0)
+        id: publish-first-patch-rc
+        continue-on-error: ${{ github.event.inputs.dry-run == 'false' }}
         if: |
           github.event.inputs.type == 'first rc' &&
           github.event.inputs.semver-type == 'patch'
@@ -134,9 +152,40 @@ jobs:
           npx lerna publish prepatch --conventional-prerelease --preid rc --pre-dist-tag next ${{ env.PUBLISH }} ${{ env.FORCE }}
 
       - name: Publish subsequent RC (ie. v1.0.0-rc.x)
+        id: publish-subsequent-rc
+        continue-on-error: ${{ github.event.inputs.dry-run == 'false' }}
         if: github.event.inputs.type == 'subsequent rc'
         run: |
           npx lerna publish prerelease --conventional-prerelease --preid rc --pre-dist-tag next ${{ env.PUBLISH }} ${{ env.FORCE }}
+
+      - name: Explain recovery dry run
+        if: github.event.inputs.type == 'retry publish' && github.event.inputs.dry-run == 'true'
+        run: echo "Dry run skips versioning and publishing. Run retry publish with dry-run set to false to recover missing versions."
+
+      # Lerna pushes the release commit and tags before it publishes, so a
+      # publish failure (like a Sigstore TLOG 409) leaves versions git has and
+      # npm does not. `from-package` publishes exactly those versions.
+      - name: Retry publish of unpublished versions
+        if: |
+          github.event.inputs.dry-run == 'false' &&
+          (github.event.inputs.type == 'retry publish' || contains(steps.*.outcome, 'failure'))
+        env:
+          RELEASE_TYPE: ${{ inputs.type }}
+        run: |
+          echo "::warning::Retrying unpublished versions with lerna publish from-package."
+          git fetch origin "$GITHUB_REF_NAME"
+          if { [ "$RELEASE_TYPE" != "retry publish" ] && [ "$(git rev-parse HEAD)" = "$GITHUB_SHA" ]; } || ! git merge-base --is-ancestor HEAD FETCH_HEAD; then
+            echo "Lerna did not push a release commit to $GITHUB_REF_NAME; nothing to retry."
+            exit 1
+          fi
+          for attempt in 1 2 3; do
+            # --pre-dist-tag only applies to prerelease versions; stable
+            # versions still publish to `latest`.
+            npx lerna publish from-package --yes --pre-dist-tag next && exit 0
+            echo "Publish attempt $attempt failed, retrying in 30s..."
+            sleep 30
+          done
+          exit 1
 
       # Regenerate the committed API symbol index (docs/api/) so it tracks the
       # API being released. Runs for every RC and full release (not dry runs),

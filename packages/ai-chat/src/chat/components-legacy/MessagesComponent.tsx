@@ -11,6 +11,7 @@ import cx from 'classnames';
 import throttle from 'lodash-es/throttle.js';
 import React, { Fragment, PureComponent, ReactNode } from 'react';
 import { useSelector } from '../hooks/useSelector';
+import { usePublicChatState } from '../hooks/usePublicChatState';
 import DownToBottom16 from '@carbon/icons/es/down-to-bottom/16.js';
 import { HumanAgentBannerContainer } from './humanAgent/HumanAgentBannerContainer';
 import { MessagesScrollHandle } from './MessagesScrollHandle';
@@ -35,7 +36,7 @@ import { HasRequestFocus } from '../../types/utilities/HasRequestFocus';
 import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
 import { IS_MOBILE } from '../utils/browserUtils';
 import { WriteableElementName } from '../utils/constants';
-import { applyDynamicStyles } from '../utils/cspStyleUtils';
+import { applyDynamicStyles, clearDynamicStyles } from '../utils/cspStyleUtils';
 import { formatShortcutForDisplay } from '../utils/keyboardUtils';
 import { arrayLastValue } from '../utils/lang/arrayUtils';
 import {
@@ -55,6 +56,7 @@ import MessageComponent, {
   MoveFocusType,
 } from './MessageComponent';
 import { Message, MessageRequest } from '../../types/messaging/Messages';
+import type { PublicChatState } from '../../types/instance/PublicChatState';
 import { LanguagePack } from '../../types/config/LanguagePack';
 import { CarbonTheme } from '../../types/config/CarbonTheme';
 import { ChatShortcutConfig } from '../../types/config/ShortcutConfig';
@@ -70,21 +72,25 @@ const SCROLL_NOTIFICATION_THROTTLE_MS = 200;
 
 /**
  * Write `min-block-size` for the bottom spacer via the shared dynamic
- * stylesheet.
+ * stylesheet. Clears dynamic styles when deficit is 0.
  */
 function applySpacerDeficit(spacerElem: HTMLElement, deficit: number): void {
-  applyDynamicStyles(spacerElem, 'spacer', {
-    'min-block-size': `${deficit}px`,
-  });
+  if (deficit === 0) {
+    clearDynamicStyles(spacerElem, 'spacer');
+  } else {
+    applyDynamicStyles(spacerElem, 'spacer', {
+      'min-block-size': `${deficit}px`,
+    });
+  }
 }
 
 /**
  * Determines if a message qualifies as a scroll target (pin target).
  *
  * Rules:
- * - A MessageRequest always qualifies.
+ * - A MessageRequest always qualifies unless it is a welcome request.
  * - A MessageResponse qualifies only if its corresponding request had `history.silent = true`,
- *   meaning no visible user bubble was shown and the response is the right element to pin.
+ *   and was not a welcome request.
  */
 function shouldScrollToMessage(
   message: Message,
@@ -95,12 +101,20 @@ function shouldScrollToMessage(
       message?.request_id
     ] as MessageRequest;
 
+    if (messageRequest?.history?.is_welcome_request) {
+      return false;
+    }
+
     // If the request for this response was silent, scroll to the response instead of where
     // the silent user message would be.
     return Boolean(messageRequest?.history?.silent);
   }
 
-  return isRequest(message);
+  if (isRequest(message)) {
+    return !message.history?.is_welcome_request;
+  }
+
+  return false;
 }
 
 /**
@@ -185,6 +199,8 @@ interface MessagesInjectedState {
   hideAvatar: boolean | undefined;
   languagePack: MessagesLanguagePackStrings;
   keyboardShortcutConfig: Required<ChatShortcutConfig>;
+  isMessageLoadingCounter: number;
+  isMessageLoadingText?: string;
 }
 
 interface MessagesProps extends MessagesOwnProps, MessagesInjectedState {}
@@ -277,7 +293,21 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           applySpacerDeficit(spacerElem, px);
         }
       },
+      setScrollHeightFloor: (px: number) => {
+        const messagesElement = this.bottomSpacerRef.current?.parentElement;
+        if (!messagesElement) {
+          return;
+        }
+        if (px === 0) {
+          clearDynamicStyles(messagesElement, 'scroll-height-floor');
+        } else {
+          applyDynamicStyles(messagesElement, 'scroll-height-floor', {
+            'min-block-size': `${px}px`,
+          });
+        }
+      },
       getMessages: () => this.getPortableMessages(),
+      hasMessage: (id) => Boolean(this.props.allMessagesByID[id]),
       onScrollGeometryChanged: () => this.renderScrollDownNotification(),
     };
   }
@@ -288,16 +318,20 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    */
   private getPortableMessages(): PortableMessage[] {
     const { localMessageItems, allMessagesByID } = this.props;
+    let previousMessageID: string | null = null;
     return localMessageItems.map((item) => {
       const fullMessage = allMessagesByID[item.fullMessageID];
+      const isFirstItem = previousMessageID !== item.fullMessageID;
+      previousMessageID = item.fullMessageID;
       const streamingState = item.ui_state.streamingState;
       return {
         id: item.ui_state.id,
         messageId: item.fullMessageID,
         element: this.messageRefs.get(item.ui_state.id)?.ref?.current ?? null,
-        isPinnable: fullMessage
-          ? shouldScrollToMessage(fullMessage, allMessagesByID)
-          : false,
+        isPinnable:
+          isFirstItem && fullMessage
+            ? shouldScrollToMessage(fullMessage, allMessagesByID)
+            : false,
         isStreaming: Boolean(streamingState && !streamingState.isDone),
         isResponse: Boolean(fullMessage && isResponse(fullMessage)),
       };
@@ -568,12 +602,11 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       disclaimerIsOn,
       persistFeedback,
       locale,
-      messageState,
+      isMessageLoadingCounter,
       hideAvatar,
     } = this.props;
 
     const { isHumanAgentTyping } = selectHumanAgentDisplayState(this.props);
-    const { isMessageLoadingCounter } = messageState;
     const { disclaimersAccepted } = persistedToBrowserStorage;
 
     // If there is a disclaimer, messages should only be rendered once it's accepted.
@@ -811,12 +844,12 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   render() {
     const {
       localMessageItems,
-      messageState,
+      isMessageLoadingCounter,
+      isMessageLoadingText,
       intl,
       assistantName,
       languagePack,
     } = this.props;
-    const { isMessageLoadingCounter, isMessageLoadingText } = messageState;
     const { isHumanAgentTyping } = selectHumanAgentDisplayState(this.props);
     const { scrollHandleHasFocus, scrollDown } = this.state;
 
@@ -899,7 +932,10 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
 // reconciled reference / primitive value is compared instead.
 const selectMessagesState = (
   state: AppState
-): Omit<MessagesInjectedState, 'languagePack'> => ({
+): Omit<
+  MessagesInjectedState,
+  'languagePack' | 'isMessageLoadingCounter' | 'isMessageLoadingText'
+> => ({
   allMessagesByID: state.allMessagesByID,
   humanAgentState: state.humanAgentState,
   persistedToBrowserStorage: state.persistedToBrowserStorage,
@@ -926,6 +962,11 @@ const selectMessagesStrings = (
   messages_scrollMoreButton: state.languagePack.messages_scrollMoreButton,
 });
 
+const selectPublicLoadingState = (state: PublicChatState) => ({
+  isMessageLoadingCounter: state.isMessageLoadingCounter,
+  isMessageLoadingText: state.isMessageLoadingText,
+});
+
 // Functional wrapper to supply the narrow state slice via hooks
 const MessagesStateInjector = React.forwardRef<
   MessagesComponent,
@@ -933,11 +974,16 @@ const MessagesStateInjector = React.forwardRef<
 >((props, ref) => {
   const state = useSelector(selectMessagesState, shallowEqual);
   const languagePack = useSelector(selectMessagesStrings, shallowEqual);
+  const loadingState = usePublicChatState(
+    selectPublicLoadingState,
+    shallowEqual
+  );
   return (
     <MessagesComponent
       ref={ref}
       {...(props as MessagesOwnProps)}
       {...state}
+      {...loadingState}
       languagePack={languagePack}
     />
   );

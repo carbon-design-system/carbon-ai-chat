@@ -1,192 +1,42 @@
 # AGENTS.md — Carbon AI Chat store
 
-Editing rules for the store. See parent [packages/ai-chat/AGENTS.md](../../../AGENTS.md) for context — this is a custom Redux-style store reimplemented to drop `redux` / `react-redux` as deps.
+Read before editing this custom Redux-style store. Package rules: [ai-chat/AGENTS.md](../../../AGENTS.md).
 
 ## Do not add
 
-- **Middleware, enhancers, async thunk libraries, DevTools integrations.** Dispatch is synchronous-only.
-- **Direct mutation of state** from components, services, or hooks. Every change goes through a reducer.
-- **Cross-slice reducer wiring**: keep `humanAgentReducers.ts` separate from the main reducer.
-- **Imports from `redux` / `react-redux`** — those packages are intentionally not deps. Use the local `useSelector`; dispatch through `serviceManager.store.dispatch` with an action creator from `actions.ts`.
+- Middleware, enhancers, async thunk libraries, or DevTools integrations; dispatch is synchronous.
+- State mutation from components, services, or hooks; changes go through reducers.
+- Cross-slice reducer wiring; keep `humanAgentReducers.ts` separate.
+- Imports from `redux` or `react-redux`; neither is a dependency.
 
 ## Always
 
-- Reducers are pure: `(state, action) => nextState`, no I/O, no `Date.now()` unless the value is passed in the action.
-- Read state through selectors (`selectors.ts`); dispatch through action creators (`actions.ts`).
-- Side effects live in services, or in thunk-style flows in `actions.ts` / `subscriptions.ts`.
+- Keep reducers pure; pass in time values instead of calling `Date.now()`.
+- Read through `selectors.ts`; dispatch through `serviceManager.store.dispatch` with an `actions.ts` creator.
+- Put side effects in services or `subscriptions.ts` handlers.
+- Use the local `useSelector` from `../hooks/`; for object selections, use `shallowEqual` from `appStore.ts`.
 
-## Action Naming Conventions
+## Action conventions
 
-### Action Type Constants
-
-Action type strings use **module-level constants** in `SCREAMING_SNAKE_CASE`, exported by name for reducers:
-
-```typescript
-// In actions.ts
-const CHANGE_STATE = 'CHANGE_STATE';
-const SET_VIEW_STATE = 'SET_VIEW_STATE';
-const UPDATE_THEME_STATE = 'UPDATE_THEME_STATE';
-
-export { CHANGE_STATE, SET_VIEW_STATE, UPDATE_THEME_STATE };
-```
-
-Reducers import these names from `./actions`. Components and services dispatch through the action creators below.
-
-### Action Creators
-
-Dispatch helpers are **camelCase methods** on the default-exported `actions` object:
-
-```typescript
-const actions = {
-  setViewState(viewState: ViewState) {
-    return { type: SET_VIEW_STATE, viewState };
-  },
-};
-
-export default actions;
-```
-
-Import the object with `import actions from './actions'`; named imports select constants, not the actions object.
-
-### Payload Fields
-
-Action payload fields use **descriptive camelCase names**:
-
-```typescript
-{
-  type: ADD_MESSAGE,
-  messageItem: item,        // not 'msg' or 'data'
-  addAfterID: previousId,   // not 'after' or 'id'
-}
-```
-
-### Thunk-Style Flows
-
-Complex flows that dispatch multiple actions live in `actions.ts` or `subscriptions.ts`, but are **plain functions**, not Redux thunk middleware:
-
-```typescript
-// In actions.ts
-export function sendMessageFlow(text: string) {
-  return (serviceManager: ServiceManager) => {
-    // Dispatch multiple actions
-    serviceManager.store.dispatch(actions.addMessage(text));
-    serviceManager.store.dispatch(actions.setInputState({ value: '' }));
-
-    // Trigger side effects
-    serviceManager.messageService.send(text);
-  };
-}
-```
-
-**Note**: The store itself does **not** support middleware or async thunk dispatch objects. These are imperative orchestration helpers, not thunks in the Redux sense.
-
-### Examples from Codebase
-
-See [`actions.ts`](actions.ts:47) for:
-
-- Action type constants: `CHANGE_STATE`, `SET_VIEW_STATE`, `UPDATE_THEME_STATE`
-- Action creators: `changeState()`, `setViewState()`, `updateThemeState()`
-- Payload fields: `partialState`, `messageItem`, `addAfterID`
-
-## Selector Patterns
-
-### No Reselect Library
-
-This codebase **does not use `reselect`** or `createSelector()`. Selectors are plain functions that derive state:
-
-```typescript
-// In selectors.ts
-export function selectInputState(state: AppState) {
-  return state.inputState;
-}
-
-export function selectHasOpenPanel(state: AppState) {
-  return state.panels.some((p) => p.isOpen);
-}
-```
-
-### Memoization Strategy
-
-Rerender control happens at the **hook level**, not in selectors:
-
-**Primitive selections** (strings, numbers, booleans) automatically avoid rerenders when unchanged:
-
-```typescript
-const isOpen = useSelector((state) => state.isOpen);
-// Component only rerenders if isOpen value changes
-```
-
-**Object selections** need an equality function to avoid rerenders on every state change:
-
-```typescript
-import { shallowEqual } from '../store/appStore';
-
-const inputState = useSelector(
-  (state) => state.inputState,
-  shallowEqual // Compare object properties, not reference
-);
-```
-
-**Custom equality** for complex comparisons:
-
-```typescript
-const messages = useSelector(
-  (state) => state.messages,
-  (prev, next) => prev.length === next.length // Only rerender if count changes
-);
-```
-
-### When to Use Each Pattern
-
-**Simple selector** (most common):
-
-- Returns primitive value
-- Returns stable object reference
-- Used in one place
-
-**Composed selector**:
-
-- Derives from multiple state slices
-- Used in multiple components
-- Still returns primitive or uses equality function at call site
-
-**Equality function at hook**:
-
-- Selector returns fresh object
-- Object properties are what matter, not reference
-- Use `shallowEqual` for simple objects, custom function for complex logic
-
-### Examples from Tests
-
-See [`reactReduxShim_spec.tsx`](../../../tests/store/spec/reactReduxShim_spec.tsx:41) for:
-
-- Primitive selection avoiding rerenders: line 90
-- Object selection with `shallowEqual`: line 128
-- Custom equality function: line 156
+- Export `SCREAMING_SNAKE_CASE` type constants by name for reducers.
+- Put camelCase creators on the default `actions` export; named imports select constants.
+- Use descriptive camelCase payload fields, such as `messageItem` and `addAfterID`.
 
 ## Directory structure
 
-- `appStore.ts` — store construction + `dispatch` / `getState` / `subscribe`.
+- `appStore.ts` — construction, dispatch, state reads, subscriptions.
 - `reducers.ts` — main reducer tree.
-- `humanAgentReducers.ts` — separate slice for human-agent (service desk) state.
-- `actions.ts` — action creators, including thunk-style async flows that dispatch multiple actions.
-- `selectors.ts` — plain functions that derive state. All component reads go through here.
-- `subscriptions.ts` — store-subscription side effects (replaces middleware).
-
-The `useSelector` hook lives one level up in `../hooks/` and is what components import.
+- `humanAgentReducers.ts` — service-desk slice.
+- `actions.ts` — synchronous action creators.
+- `selectors.ts` — plain functions deriving state.
+- `subscriptions.ts` — store-subscription side effects.
 
 ## Adding a new state slice — checklist
 
-1. Choose: main reducer (`reducers.ts`) or human-agent slice (`humanAgentReducers.ts`).
-2. Extend the `AppState` (or equivalent slice type) in [`src/types/state/`](../../types/state/).
-3. Add the reducer case. Keep it pure.
-4. Add a selector in `selectors.ts` — never let components read the shape directly.
-5. Add an action creator in `actions.ts` if components or services need to dispatch it.
-6. If the change needs side effects (service calls, storage writes), wire a handler in `subscriptions.ts` — not inside the reducer.
-7. Add a reducer test under [`packages/ai-chat/tests/store/spec/`](../../../tests/store/spec/) (Jest, `*_spec.ts`). Reducer tests exercise the pure function directly — no React.
-
-## Related Guidance
-
-- **Parent guidance**: [packages/ai-chat/AGENTS.md](../../../AGENTS.md)
-- **Type conventions**: [../../types/AGENTS.md](../../types/AGENTS.md) - For action/state type definitions
-- **Testing**: [tests.md](../../../references/tests.md#store--hook-example) - Store testing patterns
+1. Choose `reducers.ts` or the human-agent slice.
+2. Extend `AppState` or the slice type in [src/types/state/](../../types/state/).
+3. Add a pure reducer case.
+4. Add a selector; components must not read the shape directly.
+5. Add an action creator if dispatch is needed.
+6. Wire side effects in `subscriptions.ts`, outside the reducer.
+7. Test the reducer directly, without React, in [tests/store/spec/](../../../tests/store/spec/) (Jest, `*_spec.ts`).

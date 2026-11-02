@@ -676,6 +676,7 @@ class CDSAIChatMarkdown extends LitElement {
           // Custom-renderer hooks
           customRenderers: this.customRenderers,
           slotNamespace: this.slotNamespace,
+          projectionHost: this,
           md: this.markdownItInstance,
         });
         this.renderedContent = template;

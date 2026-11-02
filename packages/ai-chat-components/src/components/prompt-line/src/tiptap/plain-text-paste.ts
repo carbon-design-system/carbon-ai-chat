@@ -15,6 +15,7 @@
  */
 
 import { Extension } from '@tiptap/core';
+import { Fragment, Slice } from '@tiptap/pm/model';
 import type { Schema } from '@tiptap/pm/model';
 import { Plugin } from '@tiptap/pm/state';
 
@@ -40,8 +41,11 @@ function createPastePlugin(): Plugin {
         const lines = text.replace(/\r\n?/g, '\n').split('\n');
         const nodes = linesToNodes(schema, lines);
 
-        const { from, to } = view.state.selection;
-        const tr = view.state.tr.replaceWith(from, to, nodes);
+        // openStart=1/openEnd=1 marks the boundary paragraphs as open so
+        // ProseMirror merges them into the surrounding content rather than
+        // inserting closed blocks that would split the enclosing paragraph.
+        const slice = new Slice(Fragment.from(nodes), 1, 1);
+        const tr = view.state.tr.replaceSelection(slice);
         view.dispatch(tr.scrollIntoView());
         return true;
       },
@@ -70,7 +74,8 @@ function createPastePlugin(): Plugin {
           return true;
         }
 
-        const tr = view.state.tr.replaceWith(pos.pos, pos.pos, nodes);
+        const slice = new Slice(Fragment.from(nodes), 1, 1);
+        const tr = view.state.tr.replace(pos.pos, pos.pos, slice);
         view.dispatch(tr.scrollIntoView());
         event.preventDefault();
         return true;

@@ -54,6 +54,7 @@ export {
   PublicDefaultCustomPanelState,
   PublicChatHumanAgentState,
   PublicChatState,
+  ConversationStatus,
   PublicWorkspaceCustomPanelState,
 } from './types/instance/PublicChatState';
 export {
@@ -232,6 +233,7 @@ export {
   MessageResponseHistory,
   MessageRequestHistory,
   ResponseUserProfile,
+  RequestUserProfile,
   AudioItem,
   BaseMessageInput,
   ButtonItem,

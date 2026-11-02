@@ -1,0 +1,25 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use '../../../globals/scss/markdown-inline';
+@use '../../../globals/scss/vars' as *;
+
+$scope: '.#{$prefix}-markdown-inline-run';
+$exclude: ':not(:where(.#{$prefix}-markdown-inline-plugin, .#{$prefix}-markdown-inline-plugin *))';
+
+@include markdown-inline.markdown-inline-emphasis($scope, $exclude);
+@include markdown-inline.markdown-inline-links($scope, $exclude);
+@include markdown-inline.markdown-inline-images($scope, $exclude);
+@include markdown-inline.markdown-inline(
+  '.#{$prefix}-markdown-inline-run--reset',
+  $exclude,
+  false
+);
+
+.#{$prefix}-markdown-inline-run {
+  font: inherit;
+}

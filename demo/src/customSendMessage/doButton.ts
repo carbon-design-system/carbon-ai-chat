@@ -14,13 +14,17 @@ import {
   MessageResponseTypes,
   SelectionDisplay,
 } from '@carbon/ai-chat';
+import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 import {
   CHAT_BUTTON_KIND,
   CHAT_BUTTON_SIZE,
 } from '@carbon/ai-chat-components/es/react/chat-button.js';
 
+import { sendResponse } from './sendResponse';
+
 function doButton(instance: ChatInstance, requestID?: MessageRequest['id']) {
-  instance.messaging.addMessage({
+  return sendResponse(instance, {
+    id: uuid(),
     request_id: requestID,
     output: {
       generic: [

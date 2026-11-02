@@ -78,6 +78,11 @@ interface StopStreamingButtonState {
   isDisabled: boolean;
 
   /**
+   * Disables cancellation during a non-interruptible part of the response.
+   */
+  isMetadataDisabled: boolean;
+
+  /**
    * The stream id of the current response with an active stream. It is used by message service to stop streamed
    * responses coming from wxa.
    */

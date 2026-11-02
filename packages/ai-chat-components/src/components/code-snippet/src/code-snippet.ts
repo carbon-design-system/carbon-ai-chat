@@ -682,7 +682,7 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
     this._lineCount = this.editorView.state.doc.lines;
 
     // Check height after editor renders, then announce that this snippet's async
-    // render has settled so a surrounding scroll manager can recalculate geometry.
+    // render has settled so host listeners can recalculate geometry.
     requestAnimationFrame(() => {
       this._checkShowMoreButton();
       this.emitRenderSettled();
@@ -702,8 +702,9 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
 
   /**
    * Announces that this snippet's async render (CodeMirror init and/or font load) has
-   * settled, so a host scroll manager can recalculate scroll geometry against the final
-   * height. Composed + bubbling so it crosses the shadow boundary up to the message list.
+   * settled, so host listeners can recalculate layout against the final height. The event is
+   * public; the message list's scroll controller no longer listens to it. Composed + bubbling
+   * so it crosses the shadow boundary.
    */
   private emitRenderSettled() {
     this.dispatchEvent(

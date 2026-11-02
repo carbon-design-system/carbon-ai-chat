@@ -6,11 +6,9 @@
 
 # StructuredFieldType
 
-**Experimental.**
-
 - Kind: TypeAlias
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.23.1/docs/types/Type_reference.StructuredFieldType.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/types/Type_reference.StructuredFieldType.html
 
 The type of a structured field.
 

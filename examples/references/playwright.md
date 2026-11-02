@@ -1,6 +1,6 @@
 # playwright.md — Playwright tests for examples
 
-Run the golden Playwright flows against both React and Web Components examples. Keep one definition of each flow in [shared/playwright/](../shared/playwright/). Each flavor has its own project and example server. Examples hold no local Playwright setup and do not depend on each other.
+Run golden flows for React and Web Components from [shared/playwright/](../shared/playwright/). Each flavor has its own project and server. Other Vite examples can use the local scaffold below.
 
 ```text
 shared/playwright/
@@ -13,31 +13,13 @@ shared/playwright/
 
 ## Which specs run against which example
 
-[targets.ts](../shared/playwright/targets.ts) maps a target name to an example directory and a spec. The name is also the Playwright project name, so a failure reads `[react-watch-state] › tests/watch-state.spec.ts:35:63`: the target, then the assertion.
-
-| Project | Example | Spec |
-| --- | --- | --- |
-| `react-fullscreen` | `react/basic-custom-element-fullscreen` | [Fullscreen](../shared/playwright/tests/fullscreen.spec.ts) |
-| `react-mentions-and-commands` | `react/prompt-line-mentions-and-commands` | [Mentions and commands](../shared/playwright/tests/mentions-and-commands.spec.ts) |
-| `react-watch-state` | `react/watch-state` | [Watch state](../shared/playwright/tests/watch-state.spec.ts) |
-| `web-components-fullscreen` | `web-components/basic-custom-element-fullscreen` | [Fullscreen](../shared/playwright/tests/fullscreen.spec.ts) |
-| `web-components-mentions-and-commands` | `web-components/prompt-line-mentions-and-commands` | [Mentions and commands](../shared/playwright/tests/mentions-and-commands.spec.ts) |
-| `web-components-watch-state` | `web-components/watch-state` | [Watch state](../shared/playwright/tests/watch-state.spec.ts) |
+Targets live in [targets.ts](../shared/playwright/targets.ts); `npm run test:e2e:goldens -- --list` shows the projects and specs. Each target name is also its Playwright project name.
 
 ### Share definitions across hosts
 
-Both flavors run the same specs in `tests/`. The suite has three specs and six
-projects: 14 cases per flavor, for 28 Chromium cases. Each execution opens only
-its own example.
+Share golden specs in `shared/playwright/tests/` when both hosts expose the same visible contract. Each target opens its own example, so both hosts' code runs. One-flavor flows such as `tests-vitest-happydom` map to one target. Shared assertions prove neither exact payload nor layout parity: the mentions spec checks labels, not every field ID/value.
 
-React mounts through the shared chat element, but each example has separate
-host code. Running both checks that code through the same visible contract.
-A passing shared spec does not prove exact payload or layout parity. The
-mentions spec checks labels in fixed summaries, not every field ID or value.
-
-If a framework needs a distinct browser check, add a separate spec in this
-folder and map it to that framework's target. Keep common flow assertions in
-the shared spec. Unit tests for local host logic may live in the example.
+Give host-specific behavior a separate spec mapped to that target; keep common flows shared. Local browser specs live in the example's `tests/`. Resolve URLs through the shared fixture. Unit tests for host logic may stay in the example.
 
 ### Add a target
 
@@ -47,24 +29,21 @@ the shared spec. Unit tests for local host logic may live in the example.
 
 An example needs a `build` script, a `vite.config.ts`, and an HTML entry. It needs no Playwright config, dependency, or script.
 
+Writing the spec with Playwright's test agents? Read [playwright-agents.md](playwright-agents.md).
+
+## Scaffold a local Vite suite
+
+For an example outside the golden suite, read [playwright-local-suite.md](playwright-local-suite.md).
+
 ## Config conventions
 
-Edit [playwright.config.ts](../shared/playwright/playwright.config.ts) for every target at once. What it sets, and why:
-
-| Setting | Value |
-| --- | --- |
-| `testDir` | `./tests` |
-| `timeout` | 60s per test |
-| `workers` | `1` — each project has one or two specs, so a pool buys nothing |
-| `retries` | `process.env.CI ? 1 : 0` |
-| `projects` | One per target, chromium only — webkit has shadow-DOM gaps, see [demo/playwright.config.ts](../../demo/playwright.config.ts) |
-| `webServer` | One per target, started with the example as its working directory |
+Edit [playwright.config.ts](../shared/playwright/playwright.config.ts) for every target at once. It sets `testDir: ./tests`, a 60s per-test `timeout`, `retries: process.env.CI ? 1 : 0`, and one chromium project and one `webServer` per target, started with the example as its working directory. Chromium is the only browser because webkit has shadow-DOM gaps; see [demo/playwright.config.ts](../../demo/playwright.config.ts). `workers: 1` makes a full run take about 12 minutes; `--workers=4` finishes in under 5 with the same peak memory. Settle the default with CI in [#2127](https://github.com/carbon-design-system/carbon-ai-chat/issues/2127).
 
 ### Ports are allocated at run time. Never add a port table.
 
-The shared [launcher](../shared/playwright/start-vite.mjs) runs `vite build` in the example, serves the output, and asks Node to bind port `0`. It reports `CAIC_E2E_URL_<TARGET>=<url>` once the listener is open. Playwright captures each URL into its own variable, and the [shared fixture](../shared/playwright/helpers/index.ts) hands the right one to the browser through the project's `target`. The operating system assigns the port while binding, so there is no gap between finding and using a port.
+The shared [launcher](../shared/playwright/start-vite.mjs) builds the example, serves it on Node port `0`, and reports `CAIC_E2E_URL_<TARGET>=<url>`. The [fixture](../shared/playwright/helpers/index.ts) uses the project's `target` to select that URL. Binding assigns the port without a find/use race.
 
-The suite serves a production build, not the dev server. On a cold cache, the dev server re-optimizes dependencies as the chat's lazy chunks load and reloads the page during the first test.
+The suite serves production output: a cold dev server re-optimizes dependencies as chat lazy chunks load, reloading the first test.
 
 Import `test` and `expect` from the shared fixture so `page.goto('/')` uses the target's URL. Call `openExample(page)` first; it also asks the page to reduce motion. For an auto-open example, use `waitForChatReady(page, PageObjectId.INPUT)` before chat assertions. For a float example, await `PageObjectId.LAUNCHER`, click it, then await the displayed panel. The fixture checks console and page errors after each test.
 
@@ -74,76 +53,51 @@ Do not add a per-example port table or a probe that closes its listener before t
 
 ## Selectors
 
-In order — use the first that works:
+Use the first that works:
 
-1. **`getByRole` / `getByLabel`**, where the element has a stable accessible name. This doubles as an accessibility check. The send button qualifies: `getByRole('button', { name: /send/i })`.
-2. **`PageObjectId`** test IDs from `@carbon/ai-chat/server`, where no dependable role or name exists — the contenteditable input, or anything dynamic or localized.
+1. **`getByRole` / `getByLabel`**, where the element has a stable accessible name.
+2. **`PageObjectId`** test IDs from `@carbon/ai-chat/server`, for the contenteditable input and dynamic or localized markup without a stable role or name.
 
-Use Playwright locators for actions and checks. They wait for the target to be ready. If a role or text matches more than once, chain or filter the locator within a stable region.
-
-Use roles, labels, or maintained test IDs for chat markup. Avoid CSS and structural selectors there.
-
-Do not assert on live model output. A fixed mock summary is a valid proof of sent data. Scope it to the response so input text or welcome copy cannot satisfy the assertion.
-
-The example's own elements are a different matter — select those however the example defines them. The fullscreen examples give their host a `.chat-custom-element` class. Use that class to check host sizing in either flavor.
-
-Shadow DOM does not decide this: Playwright locators pierce open shadow roots either way. The real web-component caveat is that ARIA IDREFs (`aria-labelledby`, `for`) do not cross a shadow-root boundary, which makes accessible names unreliable there — that is what `PageObjectId` is for.
+ARIA IDREFs (`aria-labelledby`, `for`) do not cross a shadow-root boundary, so names can fail there even though Playwright locators pierce open shadow roots. Use `PageObjectId` in that case.
 
 ## What to test
 
-Two things, in this order:
+First prove that chat mounts with a clean console. Then test the example's one concern, named by its folder and the README's "What this example shows" section. Its "APIs and props demonstrated" table identifies the API behind the behavior.
 
-1. **That the example mounts** — the chat renders, and the console stays clean.
-2. **What the example is showing you** — the one behavior it exists to demonstrate.
-
-To work out what that behavior is, read two things:
-
-- **The folder name.** It names the concern. `prompt-line-typeahead` is about typeahead in the prompt line; `history-float` is about history in a float layout.
-- **The example's `README.md`.** Its "What this example shows" section lists the behavior in plain words, and its "APIs and props demonstrated" table names the API behind each one. Test the behavior, not the API.
-
-Then stop. A second concern means a second example — see the single-purpose rule in [examples/AGENTS.md](../AGENTS.md#authoring-rules).
+A second concern belongs in a second example; see [examples/AGENTS.md](../AGENTS.md#authoring-rules).
 
 ## Suggestions and chips
 
 Read [mentions and commands](../shared/playwright/tests/mentions-and-commands.spec.ts) when testing an editor popup.
 
-- Use the `PageObjectId.INPUT` locator for the contenteditable editor. Click it and use `pressSequentially()` to type the trigger, then the query. `fill()` replaces text in one update; it does not exercise the trigger and filter updates as separate steps.
-- Await the `listbox`, then type the query. Use retrying checks for the filtered `option` count and name. After selection, await the chosen label in the input and the list's dismissal.
-- Check keyboard selection with arrow keys and Enter. Open the list again, press Escape, and await dismissal and editor focus with `toBeFocused()`.
-- Prove a chip is atomic: remove its trailing space with Backspace, then press Backspace again. Assert the whole label disappears and the trigger returns. Clear the trigger and await list dismissal. Send ordinary text and check the mock reports no structured fields.
-- For slash commands, test `/` in an empty input and after a newline made with Shift+Enter. Test that a mid-line slash leaves the list closed. Await input text before the negative list check so an unready editor cannot pass it.
-- After sending, scope the mock's `Mentions:` or `Commands:` summary to the reply in `PageObjectId.MAIN_PANEL`. A label in the editor proves display, not sent structured data.
-
-Choose the states that prove the behavior: open, filtered, selected, dismissed, and sent. Use assertions for those states; screenshots of every intermediate state add no proof.
+- Type into `PageObjectId.INPUT` with `pressSequentially()`. `fill()` replaces text in one update and skips the separate trigger and filter updates.
+- Prove chip atomicity: Backspace removes the trailing space, then a second Backspace removes the whole chip and restores its trigger.
+- Test `/` after a Shift+Enter newline and in an empty input; a mid-line slash must leave the list closed. Await input text before that negative check so an unready editor cannot pass it.
+- Scope the mock's `Mentions:` or `Commands:` summary to the reply in `PageObjectId.MAIN_PANEL`. A label in the editor proves display, not sent structured data.
 
 ## State reflected in the host
 
 Read [watch state](../shared/playwright/tests/watch-state.spec.ts) when testing a host subscription.
 
-Await the launcher before opening a float example. Open it, then await the homescreen panel and the host's `Homescreen` label. Do not assert the label before opening: the host reads `Chat View` until the chat opens and reports the homescreen. Click a conversation starter, then await the main panel and host `Chat View` label. Return home and await `Homescreen` again. Scope the label to the host's own `.watch-state-host` element in either flavor.
+The host reads `Chat View` before a float example opens. Await the launcher, open it, then await the homescreen and the host's `Homescreen` label. Scope labels to the host's `.watch-state-host` element in either flavor. Minimize and reopen alone cannot prove updates to `homeScreenState.isHomeScreenOpen`; move between the home screen and conversation.
 
-This sequence changes the mirrored `homeScreenState.isHomeScreenOpen` field. Minimize and reopen alone cannot prove that mirror updates.
-
-Prefer the host DOM when it displays the state under test. If a host already exposes its chat instance, `page.evaluate()` can read `instance.getState()` there. Wrap that field read in `expect.poll` to await asynchronous changes. Read only the relevant field rather than comparing whole state snapshots. The demo's `window.chatInstance` is not a convention for examples; do not add a global just for a test.
+Prefer the host DOM for displayed state. If the host exposes its instance, poll only the relevant `instance.getState()` field. The demo's `window.chatInstance` is not an example convention; do not add a global just for a test.
 
 ## Accessibility
 
-- Use role and label locators where they work. They check that a control has a name, but cannot prove the full flow is accessible.
-- If the example adds an interactive flow, test its keyboard path and focus when UI opens or closes. Follow [the repo accessibility guide](../../references/accessibility.md) for WCAG 2.1 AA checks and screen-reader review.
-- For an axe scan, wait until the UI reaches the state you want to test. Use `@axe-core/playwright` to scan the page or `AxeBuilder.include()` to scan one region. Assert that `violations` is empty. Add the package when an example needs a scan; it is not in the shared fixture today.
-- To scan for WCAG 2.1 A and AA rules, use `withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])`. Avoid broad exclusions: they skip every rule for all child elements. Link each known issue and keep any temporary exclusion narrow.
+Follow the [accessibility guide](../../references/accessibility.md) for keyboard, focus, and screen-reader checks; axe alone cannot prove conformance.
 
-An axe scan catches some issues, but cannot prove WCAG conformance. Check keyboard use and screen-reader output by hand for new behavior.
+Import `@axe-core/playwright` in the spec; the shared fixture omits it. Follow [watch messages](../shared/playwright/tests/watch-messages.spec.ts): await the target UI, use `.include()` for its region, and assert no violations. Use tags `wcag2a`, `wcag2aa`, `wcag21a`, and `wcag21aa`. Keep exclusions narrow and link their known issues.
 
 ## Determinism
 
-- Settle a stream before asserting on it. Assert the end of the reply, not a partial state mid-flight.
-- Use Playwright's fresh page and context for each test. Put shared navigation in `beforeEach`. Do not rely on another test's messages, storage, cookies, or order.
-- Use retrying checks such as `await expect(locator).toBeVisible()` or `toHaveText()` for UI changes. Await actions and checks. Avoid fixed sleeps and one-time checks such as `expect(await locator.isVisible()).toBe(true)`.
-- No real timestamps or randomness. If an example needs an external response, register a `page.route()` with fixed data before navigation; never depend on a live third-party service.
+- Settle a stream before asserting the end of the reply, not a partial state mid-flight.
+- Use a fresh page and context per test, with shared navigation in `beforeEach`. Never rely on another test's messages, storage, cookies, or order.
+- Use retrying checks such as `await expect(locator).toBeVisible()`, not fixed sleeps or one-time checks such as `expect(await locator.isVisible()).toBe(true)`.
+- No real timestamps or randomness. For external responses, register a `page.route()` with fixed data before navigation.
 - Disable animation where it gates an assertion.
 
-An example is non-deterministic when its reply depends on a live service or on the clock. Skip it rather than working around it.
+An example whose reply depends on a live service, the clock, or random values still gets a suite: prove its mount and any fixed behavior, never assert the varying values, and list it in `DEFERRED_EXAMPLES` ([Coverage target](playwright-coverage.md#coverage-target)). Skip an example entirely only when nothing in it runs without a live service; see [Skipped examples](#skipped-examples).
 
 ## Skipped examples
 
@@ -158,13 +112,13 @@ Four, deliberately. Do not add suites for these, and do not re-litigate them.
 
 ## Examples that deviate
 
-`frameworks-react-17` and `frameworks-react-18` keep their own Playwright suites, with fixed ports and `test` scripts. Root `npm test` still runs them. Do not copy their setup for new suites; migrate them into the shared suite in #1424.
+`frameworks-react-17` and `frameworks-react-18` keep their own Playwright suites, with fixed ports and `test` scripts. Root `npm test` still runs them. Do not copy their setup for new suites.
 
-`tests-vitest-happydom` keeps its vitest `test` script. `frameworks-next` is not a Vite app; add a separate server entry for it when its suite lands in #1424, since its `start` script runs the production server and needs a build first.
+`tests-vitest-happydom` keeps its vitest `test` script and also has the shared target `react-tests-vitest-happydom`. `frameworks-next` is not a Vite app; a suite for it needs a separate server entry, since its `start` script runs the production server and needs a build first.
 
 ## Naming
 
-`tests/<concern>.spec.ts`, kebab-case, named for the behavior under test — [fullscreen.spec.ts](../shared/playwright/tests/fullscreen.spec.ts). Never `example.spec.ts`.
+`tests/<concern>.spec.ts`, kebab-case, named for the behavior under test — [fullscreen.spec.ts](../shared/playwright/tests/fullscreen.spec.ts). Never `example.spec.ts`. A spec that only one flavor needs adds that flavor as a suffix, `<concern>-react.spec.ts` or `<concern>-web-components.spec.ts`, and its purpose comment says why the flavors differ.
 
 Open every spec with a purpose comment, per the inline-comments rule in [examples/AGENTS.md](../AGENTS.md#authoring-rules).
 
@@ -172,43 +126,37 @@ Open every spec with a purpose comment, per the inline-comments rule in [example
 
 ```bash
 npm run test:e2e:goldens
-npm run test:e2e:goldens -- --project react-watch-state
-npm run test:e2e:goldens -- --project web-components-watch-state
+CAIC_E2E_TARGETS=react-watch-state npm run test:e2e:goldens
+CAIC_E2E_TARGETS=react-watch-state,web-components-watch-state npm run test:e2e:goldens
 npm run test:e2e
 ```
 
-- From the root, install dependencies once with `npm install` and build the shared packages with `npm run aiChat:build` before testing. Rebuild a changed package before testing its examples.
+- Before testing, run the root [build preflight](../../references/commands.md#build-preflight). These suites read the built chat packages and build only the examples.
 - Check test discovery with `npm run test:e2e:goldens -- --list` before opening a browser. This catches config and fixture errors; it does not run the tests. Each shared case appears once per flavor, under its own project.
 - Install Chromium once per machine with `npx playwright install chromium`.
-- Playwright builds and serves all six target examples on every run, even when `--project` selects one. Select projects with the usual Playwright arguments.
+- Playwright starts every configured server, whatever `--project` selects. To run only some targets, list their names in `CAIC_E2E_TARGETS`, comma-separated; the config then builds, serves, and runs only those. An unknown name fails the run. Without it, every target runs.
 - Root `test:e2e` runs the central suite once, then any `test:e2e` script a workspace still defines. The React 17 and 18 suites run under `npm test` until they are migrated.
 
 When and how the suite runs in CI at scale is not decided here. See [issue #2127](https://github.com/carbon-design-system/carbon-ai-chat/issues/2127).
 
 ## Debugging
 
-Debug one project with `npm run test:e2e:goldens -- --project <name> --debug` to inspect actions and locators. For an intermittent failure, rerun one test with `npm run test:e2e:goldens -- --project <name> --grep '<test name>' --trace on`. Inspect the trace's actions, DOM snapshots, and requests. Keep full-run tracing off; when CI is added, capture traces on the first retry rather than every test.
+Debug one target with `CAIC_E2E_TARGETS=<name> npm run test:e2e:goldens -- --debug`.
 
 Failures, screenshots, and videos land in `shared/playwright/test-results/`, which is git-ignored.
 
 ## Definition of done
 
-- [ ] `npm run test:e2e:goldens -- --list` shows 28 cases across six projects, with each case once per flavor.
+- [ ] `npm run test:e2e:goldens -- --list` shows each new case once per target, and [targets.ts](../shared/playwright/targets.ts) lists the new targets.
 - [ ] `npm run test:e2e:goldens` passes on chromium.
 - [ ] `npm run build --workspace=<example>` exits 0.
-- [ ] The suite covers the example's one concern plus the baseline above.
-- [ ] The example has no Playwright config, dependency, or script, and its target assigns no port.
+- [ ] The suite covers the example's one concern plus the baseline above; no scaffold `test.fixme` placeholder remains.
+- [ ] Golden examples use the central config; local suites use the shared launcher and fixture. Neither assigns a port.
+- [ ] `CAIC_E2E_TARGETS=<targets> npm run test:e2e:coverage` ran, and the PR explains any example below the [coverage target](playwright-coverage.md#coverage-target).
 - [ ] Every spec opens with a purpose comment.
-
-## React vs Web Components
-
-Use the same spec for both flavors when they expose the same visible contract.
-Keep all browser specs in `tests/` and all target URLs in the shared fixture.
-Use separate specs for host behavior that applies to only one flavor.
 
 ## Related guidance
 
-- [examples/AGENTS.md](../AGENTS.md) — read when adding or changing an example
 - [examples/react/AGENTS.md](../react/AGENTS.md) and [examples/web-components/AGENTS.md](../web-components/AGENTS.md) — flavor deltas
 - [demo/tests/README.md](../../demo/tests/README.md) — read for existing Playwright helper patterns
 - [Playwright best practices](https://playwright.dev/docs/best-practices) — read when choosing locators, assertions, isolation, or debugging steps

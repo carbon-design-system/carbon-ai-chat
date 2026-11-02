@@ -9,9 +9,8 @@
 @use '@carbon/styles/scss/type';
 @use '@carbon/styles/scss/theme';
 @use '@carbon/layout';
-@use '@carbon/styles/scss/utilities/focus-outline' as *;
-@use '@carbon/styles/scss/motion';
 @use '../../../globals/scss/vars' as *;
+@use '../../../globals/scss/markdown-inline';
 
 :host {
   display: block;
@@ -24,21 +23,7 @@
 
   @include type.type-style('body-01');
 
-  mark {
-    border-radius: layout.$spacing-02;
-    background-color: theme.$highlight;
-    color: theme.$text-primary;
-  }
-
-  b,
-  strong {
-    font-weight: bold;
-  }
-
-  i,
-  em {
-    font-style: italic;
-  }
+  @include markdown-inline.markdown-inline-emphasis('&');
 
   blockquote {
     border-inline-start: 2px solid theme.$border-subtle-00;
@@ -88,52 +73,7 @@
     @include type.type-style('body-01');
   }
 
-  a {
-    color: theme.$link-primary;
-    outline: none;
-    text-decoration: none;
-
-    @media (prefers-reduced-motion: no-preference) {
-      transition: color motion.$duration-fast-01 motion(standard, productive);
-    }
-
-    &:hover {
-      color: theme.$link-primary-hover;
-      text-decoration: underline;
-    }
-
-    &:focus {
-      @include focus-outline;
-
-      outline-color: theme.$focus;
-      text-decoration: underline;
-    }
-
-    &:visited {
-      color: theme.$link-primary;
-    }
-
-    &:active {
-      @include focus-outline;
-
-      color: theme.$link-primary;
-      outline-color: theme.$focus;
-      text-decoration: underline;
-    }
-
-    &:visited:hover {
-      color: theme.$link-primary-hover;
-    }
-
-    &:active:visited,
-    &:active:visited:hover {
-      @include focus-outline;
-
-      color: theme.$link-primary;
-      outline-color: theme.$focus;
-      text-decoration: underline;
-    }
-  }
+  @include markdown-inline.markdown-inline-links('&');
 
   pre {
     @include type.type-style('code-02');
@@ -153,10 +93,7 @@
     block-size: 1px;
   }
 
-  img {
-    /* Make sure images in markdown do not overflow. */
-    max-inline-size: 100%;
-  }
+  @include markdown-inline.markdown-inline-images('&');
 
   h1 {
     @include type.type-style('heading-04');

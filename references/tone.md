@@ -8,7 +8,7 @@ We mirror the voice of [carbondesignsystem.com](https://carbondesignsystem.com/g
 
 Write the fewest words that convey the idea. Every word a reader skips is a word you should have cut. **Audience varies by copy type** — a JSDoc block, a docs page, and a string in the chat UI are read by three different people — so take the audience, the rules, and the gate for what you are writing from [caic-copy-writer](../.bob/skills/caic-copy-writer/SKILL.md). If you can explain a concept with code instead of prose, prefer code.
 
-Write so a developer gets it on the first read. **Grade 10 is the ceiling, and there is no floor.** A page that scores 6 because it is plain is a good page. The levers are sentence length and word choice; [revision-pass.md](../.bob/skills/caic-copy-writer/references/revision-pass.md) carries both. Keep most sentences short and one-idea, but let a sentence run when the idea needs it. Never pad a sentence to raise a score. One habit matters most for API docs. Refer to a symbol with a `{@link}`, then use plain words for it. The scorer strips `{@link}` links, so each reference is free. Carry the meaning in the plain words around it. A dotted name like `InputConfig.updateStructuredData` written as plain text or inline code still counts as one long word. Repeat it and you push the page toward a graduate reading level.
+Write so a developer gets it on the first read. **Grade 10 is the ceiling, and there is no floor.** A page that scores 6 because it is plain is a good page. The levers are sentence length and word choice; [revision-pass.md](../.bob/skills/caic-copy-writer/references/revision-pass.md) carries both. Keep most sentences short and one-idea, but let a sentence run when the idea needs it. Never pad a sentence to raise a score.
 
 Measure any doc with `npm run reading-level -- <file>`. It reports the Flesch-Kincaid grade. Treat a score above 10 as a defect to fix. No score is too low to ship.
 
@@ -46,8 +46,4 @@ Voice stays constant; tone shifts to fit the moment.
 
 ## Related guidance
 
-- [../packages/ai-chat/docs/references/doc-style.md](../packages/ai-chat/docs/references/doc-style.md) — markdown structure for the docs site.
-- [packages/ai-chat/src/types/AGENTS.md](../packages/ai-chat/src/types/AGENTS.md) — JSDoc mechanics for public types.
-- [caic-copy-writer](../.bob/skills/caic-copy-writer/SKILL.md) — which rules, audience, and gate apply to the kind of copy you're writing, from JSDoc to a commit body.
-- [revision-pass.md](../.bob/skills/caic-copy-writer/references/revision-pass.md) — the tightening pass and word economy under every one of them.
 - [AGENTS.md](../AGENTS.md) — repository-wide guidance.

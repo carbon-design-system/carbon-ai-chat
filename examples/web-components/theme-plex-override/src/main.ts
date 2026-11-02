@@ -13,7 +13,6 @@ import '@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js';
 import {
   BusEventType,
   type ChatInstance,
-  FeedbackInteractionType,
   type PublicConfig,
   type RenderUserDefinedState,
   type UserDefinedItem,
@@ -73,22 +72,6 @@ export class Demo extends LitElement {
         }
       },
     });
-
-    // Register feedback handler.
-    instance.on({ type: BusEventType.FEEDBACK, handler: this.feedbackHandler });
-  };
-
-  /**
-   * Handles when the user submits feedback.
-   */
-  feedbackHandler = (event: any) => {
-    if (event.interactionType === FeedbackInteractionType.SUBMITTED) {
-      const { ...reportData } = event;
-      setTimeout(() => {
-        // eslint-disable-next-line no-alert
-        window.alert(JSON.stringify(reportData, null, 2));
-      });
-    }
   };
 
   /**

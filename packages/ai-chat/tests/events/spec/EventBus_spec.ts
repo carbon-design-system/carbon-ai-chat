@@ -33,6 +33,54 @@ const deferred = () => {
 };
 
 describe('EventBus.fire', () => {
+  it('skips an invalidated queued fire and continues with the next fire', async () => {
+    const bus = new EventBus();
+    const gate = deferred();
+    const observed: string[] = [];
+    bus.on({
+      type: BusEventType.RECEIVE,
+      handler: async (busEvent: any) => {
+        observed.push(busEvent.data);
+        if (busEvent.data === 'held') {
+          await gate.promise;
+        }
+      },
+    });
+    let current = true;
+    const first = bus.fire(event(BusEventType.RECEIVE, 'held'), instance);
+    const stale = bus.fire(
+      event(BusEventType.RECEIVE, 'stale'),
+      instance,
+      () => current
+    );
+    const next = bus.fire(event(BusEventType.RECEIVE, 'next'), instance);
+    current = false;
+    gate.resolve();
+    await Promise.all([first, stale, next, bus.waitForEmpty()]);
+    expect(observed).toEqual(['held', 'next']);
+  });
+
+  it('finishes all listeners of a fire that already started before invalidation', async () => {
+    const bus = new EventBus();
+    let current = true;
+    const later = jest.fn();
+    bus.on([
+      {
+        type: BusEventType.RECEIVE,
+        handler: () => {
+          current = false;
+        },
+      },
+      { type: BusEventType.RECEIVE, handler: later },
+    ]);
+    await bus.fire(
+      event(BusEventType.RECEIVE, 'started'),
+      instance,
+      () => current
+    );
+    expect(later).toHaveBeenCalledTimes(1);
+  });
+
   it('runs overlapping fires of one type one at a time, in call order', async () => {
     const bus = new EventBus();
     const log: string[] = [];
@@ -273,5 +321,58 @@ describe('EventBus.fire', () => {
     await empty;
 
     expect(seen).toEqual(['first', 'second']);
+  });
+});
+
+describe('EventBus', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('reports only listeners for the exact event type', () => {
+    const eventBus = new EventBus();
+    const exactHandler = jest.fn();
+    const wildcardHandler = jest.fn();
+
+    expect(eventBus.hasListeners(BusEventType.STATE_CHANGE)).toBe(false);
+
+    eventBus.on({ type: BusEventType.STATE_CHANGE, handler: exactHandler });
+    expect(eventBus.hasListeners(BusEventType.STATE_CHANGE)).toBe(true);
+
+    eventBus.off({ type: BusEventType.STATE_CHANGE, handler: exactHandler });
+    eventBus.on({
+      type: '*' as BusEventType,
+      handler: wildcardHandler,
+    });
+    expect(eventBus.hasListeners(BusEventType.STATE_CHANGE)).toBe(false);
+
+    eventBus.off({ type: '*' as BusEventType, handler: wildcardHandler });
+    expect(eventBus.hasListeners(BusEventType.STATE_CHANGE)).toBe(false);
+  });
+
+  it('continues firing synchronous handlers after one throws', () => {
+    const eventBus = new EventBus();
+    const error = new Error('listener failed');
+    const laterHandler = jest.fn();
+    const consoleError = jest.spyOn(console, 'error').mockImplementation();
+
+    eventBus.on([
+      {
+        type: BusEventType.STATE_CHANGE,
+        handler: () => {
+          throw error;
+        },
+      },
+      { type: BusEventType.STATE_CHANGE, handler: laterHandler },
+    ]);
+
+    expect(() =>
+      eventBus.fireSync({ type: BusEventType.STATE_CHANGE }, instance)
+    ).not.toThrow();
+    expect(laterHandler).toHaveBeenCalledTimes(1);
+    expect(consoleError).toHaveBeenCalledWith(
+      '[Chat] An event handler for state:change threw, so the chat ignored the error and continued.',
+      error
+    );
   });
 });

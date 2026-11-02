@@ -16,7 +16,7 @@ function doOrderedList(
   instance: ChatInstance,
   requestID?: MessageRequest['id']
 ) {
-  doText(
+  return doText(
     instance,
     ORDERED_LIST,
     undefined,

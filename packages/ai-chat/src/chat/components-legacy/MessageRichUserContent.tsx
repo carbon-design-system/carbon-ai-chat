@@ -7,43 +7,34 @@
  *  @license
  */
 
-/**
- * Render the TipTap JSONContent captured at send time into a user message
- * bubble. Two paths:
- *
- *   Pure text: every node in the doc is `paragraph` / `text` / `hardBreak`.
- *   Flatten to a string and hand off to `<MarkdownWithDefaults>` so
- *   cross-paragraph markdown (fenced code blocks, lists, tables) keeps
- *   working — visually identical to the legacy plain-text bubble.
- *
- *   Structured: at least one node anywhere in the doc has a type outside
- *   `TEXTUAL_NODE_TYPES`. Top-level non-`paragraph` blocks go straight to
- *   `UnknownNodeSlot`. Paragraph nodes walk their inline children:
- *   text/hardBreak runs use `renderInlineMarkdown`; every other inline node
- *   — including `mention` and `command` — goes to `UnknownNodeSlot`.
- *   `UnknownNodeSlot` emits a `<slot name={slotKey}>`; `InputNodePortalsContainer`
- *   walks the same `display_content`, derives the identical slot key, and
- *   projects the consumer's `renderUserDefinedInputNode` output into it.
- *   When the renderer returns `null` (or none is registered), the slot's
- *   fallback shows through: the default `renderTokenChip` chip for `mention`
- *   and `command`, or the node's `label`/`value` text for other custom nodes.
- *   The slot-key scheme is shared via `collectInputNodeSlots` and pinned by
- *   `messageRichUserContentSlots_spec`.
- */
+// Structured paragraphs share one page-light host. WebKit cannot select words
+// reliably when paragraph text crosses shadow text and separately slotted nodes.
 
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+
+import { createPortal } from 'react-dom';
+import prefix from '@carbon/ai-chat-components/es/globals/settings.js';
+import { installInlineRunStyles } from '@carbon/ai-chat-components/es/components/markdown/src/utils/inline-run-projection.js';
+import {
+  mountHost,
+  bindProjectedOwner,
+  resolveInputNodeOwner,
+  registerInlineTarget,
+  unmountHost,
+} from '../components/portals/inputNodeHosts';
 
 import { MarkdownWithDefaults } from '../components/helpers/MarkdownWithDefaults/MarkdownWithDefaults';
-import { renderInlineMarkdown } from '../components/helpers/InlineMarkdown/InlineMarkdown';
+import { InlineMarkdown } from '../components/helpers/InlineMarkdown/InlineMarkdown';
 import { renderTokenChip } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
 import type { JSONContent } from '@tiptap/core';
 import type { MessageRequest } from '../../types/messaging/Messages';
 
-/**
- * Data attribute mirroring the `<slot>` name for an unknown TipTap node type.
- * `InputNodePortalsContainer` matches the slot by its `name`; this attribute
- * exists so the slot is also queryable (e.g. by the slot-key contract test).
- */
 export const INPUT_NODE_SLOT_ATTR = 'data-aichat-input-node-slot';
 const INPUT_NODE_TYPE_ATTR = 'data-aichat-input-node-type';
 
@@ -90,19 +81,74 @@ export function MessageRichUserContent({
 
         if (onlyTextual) {
           const joined = joinTextualInline(inlineChildren);
-          return <p key={`${blockIndex}`}>{renderInlineMarkdown(joined)}</p>;
+          return (
+            <p key={`${blockIndex}`}>
+              <InlineMarkdown text={joined} />
+            </p>
+          );
         }
 
         return (
-          <p key={`${blockIndex}`}>
+          <ProjectedParagraph
+            key={`${blockIndex}`}
+            slotKey={`${messageId}::paragraph.${blockIndex}`}>
             {renderParagraphInline({
               children: inlineChildren,
               messageId,
               blockIndex,
             })}
-          </p>
+          </ProjectedParagraph>
         );
       })}
+    </>
+  );
+}
+
+function ProjectedParagraph({
+  children,
+  slotKey,
+}: {
+  children: React.ReactNode;
+  slotKey: string;
+}) {
+  const host = useMemo(() => document.createElement('span'), []);
+  const sourceRef = useRef<HTMLParagraphElement>(null);
+  const [owner, setOwner] = useState<HTMLElement | null | undefined>(undefined);
+
+  useLayoutEffect(() => {
+    const resolved = resolveInputNodeOwner(sourceRef.current);
+    // Bind before portal children mount; their effects run before this parent's.
+    const releaseOwner = resolved
+      ? bindProjectedOwner(host, resolved)
+      : undefined;
+    setOwner(resolved);
+    return releaseOwner;
+  }, [host]);
+
+  useLayoutEffect(() => {
+    if (!owner) {
+      return undefined;
+    }
+    host.slot = slotKey;
+    host.className = `${prefix}-markdown-inline-run ${prefix}-markdown-inline-run--reset`;
+    mountHost(owner, host, slotKey, true);
+    const releaseStyles = installInlineRunStyles(host);
+    return () => {
+      releaseStyles();
+      unmountHost(owner, host, slotKey);
+    };
+  }, [owner, host, slotKey]);
+
+  return (
+    <>
+      <p ref={sourceRef}>
+        {owner === null ? (
+          children
+        ) : (
+          <slot name={slotKey} data-aichat-input-paragraph-slot={slotKey} />
+        )}
+      </p>
+      {owner && createPortal(children, host)}
     </>
   );
 }
@@ -171,31 +217,16 @@ function renderParagraphInline(
     if (!textRun) {
       return;
     }
-    // The block-level markdown parser trims leading/trailing whitespace from
-    // each run it parses. When a chip splits a paragraph into separate runs,
-    // the space between the chip and the adjacent text gets eaten. Capture the
-    // boundary whitespace explicitly and emit it as plain text siblings so the
-    // rendered bubble matches what the user composed.
-    const leading = textRun.match(/^\s+/)?.[0] ?? '';
-    const afterLeading = textRun.slice(leading.length);
-    const trailing = afterLeading.match(/\s+$/)?.[0] ?? '';
-    const trimmed = afterLeading.slice(
-      0,
-      afterLeading.length - trailing.length
+    out.push(
+      <InlineMarkdown
+        key={key}
+        text={textRun}
+        projectPluginOutput={false}
+        preserveBoundaryWhitespace
+        trimStartBreaks={out.length === 0}
+        trimEndBreaks={key === `${messageId}::${blockIndex}.tail`}
+      />
     );
-    if (leading) {
-      out.push(...renderBoundaryWhitespace(leading, `${key}-ws-pre`));
-    }
-    if (trimmed) {
-      out.push(
-        <React.Fragment key={key}>
-          {renderInlineMarkdown(trimmed)}
-        </React.Fragment>
-      );
-    }
-    if (trailing) {
-      out.push(...renderBoundaryWhitespace(trailing, `${key}-ws-post`));
-    }
     textRun = '';
   };
 
@@ -213,85 +244,50 @@ function renderParagraphInline(
 
     flushTextRun(`${baseKey}-text-pre`);
 
-    out.push(<UnknownNodeSlot key={baseKey} node={node} slotKey={baseKey} />);
+    out.push(
+      <UnknownNodeSlot key={baseKey} node={node} slotKey={baseKey} inline />
+    );
   });
 
   flushTextRun(`${messageId}::${blockIndex}.tail`);
 
-  // The block parser drops a break at the very start or end of a paragraph, so
-  // the chip path drops it too. Without this a chip-bearing paragraph renders a
-  // blank first or last line that the same text without a chip does not. The
-  // scan steps over whitespace because `renderBoundaryWhitespace` emits the
-  // spaces around a break as their own sibling, so the break is not always the
-  // edge node; that whitespace goes with it, matching what the block parser
-  // trims. Whitespace with no break beside it is left alone — it is the chip
-  // spacing the boundary capture exists for.
-  const isBreak = (node: React.ReactNode) =>
-    React.isValidElement(node) && node.type === 'br';
-  const isBlankText = (node: React.ReactNode) =>
-    React.isValidElement(node) &&
-    node.type === React.Fragment &&
-    !String((node.props as { children?: unknown }).children ?? '').trim();
-
-  let start = 0;
-  for (let index = 0; index < out.length; index++) {
-    if (isBreak(out[index])) {
-      start = index + 1;
-    } else if (!isBlankText(out[index])) {
-      break;
-    }
-  }
-  let end = out.length;
-  for (let index = out.length - 1; index >= start; index--) {
-    if (isBreak(out[index])) {
-      end = index;
-    } else if (!isBlankText(out[index])) {
-      break;
-    }
-  }
-
-  return out.slice(start, end);
-}
-
-/**
- * A `hardBreak` contributes a `\n` to the run, so a break adjacent to a chip is
- * captured as boundary whitespace and never reaches the inline token walker
- * that turns breaks into `<br>`. Emit it here instead; the spaces around it
- * stay plain text so the boundary-whitespace behavior is unchanged.
- */
-function renderBoundaryWhitespace(
-  whitespace: string,
-  keyPrefix: string
-): React.ReactNode[] {
-  const out: React.ReactNode[] = [];
-  whitespace.split('\n').forEach((segment, index) => {
-    if (index > 0) {
-      out.push(<br key={`${keyPrefix}-br-${index}`} />);
-    }
-    if (segment) {
-      out.push(
-        <React.Fragment key={`${keyPrefix}-${index}`}>{segment}</React.Fragment>
-      );
-    }
-  });
   return out;
 }
 
 interface UnknownNodeSlotProps {
+  inline?: boolean;
   node: JSONContent;
   slotKey: string;
 }
 
-function UnknownNodeSlot({ node, slotKey }: UnknownNodeSlotProps) {
-  // Rendered as a real `<slot>` element so the `InputNodePortalsContainer`
-  // can project consumer content from chatWrapper's light DOM into this
-  // position. When the renderer returns `null` or none is registered, the
-  // slot's fallback children show through.
-  //
-  // For `mention` and `command` nodes the fallback is the default
-  // `renderTokenChip` chip. For all other custom nodes it is the node's
-  // `label` or `value` as plain text.
+function UnknownNodeSlot({
+  node,
+  slotKey,
+  inline = false,
+}: UnknownNodeSlotProps) {
+  const targetRef = useRef<HTMLSpanElement>(null);
   const hostRef = useRef<HTMLSpanElement | null>(null);
+  const slotRef = useRef<HTMLSlotElement | null>(null);
+  const [hasAssignedContent, setHasAssignedContent] = useState(false);
+
+  useLayoutEffect(() => {
+    if (inline) {
+      const owner = resolveInputNodeOwner(targetRef.current);
+      return owner
+        ? registerInlineTarget(
+            owner,
+            slotKey,
+            targetRef.current,
+            hostRef.current
+          )
+        : undefined;
+    }
+    const slot = slotRef.current;
+    const update = () => setHasAssignedContent(slot.assignedNodes().length > 0);
+    update();
+    slot.addEventListener('slotchange', update);
+    return () => slot.removeEventListener('slotchange', update);
+  }, [inline, slotKey]);
   const isTokenNode = node.type === 'mention' || node.type === 'command';
 
   // Chip element is rebuilt only when its visible attrs change.
@@ -325,9 +321,20 @@ function UnknownNodeSlot({ node, slotKey }: UnknownNodeSlotProps) {
     [INPUT_NODE_SLOT_ATTR]: slotKey,
     [INPUT_NODE_TYPE_ATTR]: node.type ?? '',
   };
+  if (inline) {
+    return (
+      <span ref={targetRef} {...dataProps}>
+        <span ref={hostRef}>{isTokenNode ? null : fallback}</span>
+      </span>
+    );
+  }
   return (
-    <slot name={slotKey} {...dataProps}>
-      {isTokenNode ? <span ref={hostRef} /> : fallback}
-    </slot>
+    <>
+      <slot ref={slotRef} name={slotKey} {...dataProps} />
+      {/* Firefox omits slot fallback children from native clipboard text. */}
+      <span ref={hostRef} hidden={hasAssignedContent}>
+        {isTokenNode ? null : fallback}
+      </span>
+    </>
   );
 }

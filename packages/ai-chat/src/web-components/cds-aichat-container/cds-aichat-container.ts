@@ -322,12 +322,12 @@ class ChatContainer extends FlattenedConfigElement {
   }
 
   disconnectedCallback() {
-    this.pluginHostController.disconnect();
     // A move is a detach and reattach in one task, as when React reorders
     // keyed siblings. Keep the running chat through it; release only when the
     // element is still detached once the task's microtasks run.
     queueMicrotask(() => {
       if (!this.isConnected) {
+        this.pluginHostController.disconnect();
         this.releaseMount();
       }
     });
@@ -380,14 +380,15 @@ class ChatContainer extends FlattenedConfigElement {
 
     // Opt-in view-change observation hooks. The float container manages its own
     // visibility, so there is no default handler — a prop is only subscribed
-    // when the consumer provides it.
-    if (this.onViewPreChange) {
+    // when the consumer provides it. The props also take an HTML attribute, so
+    // ignore a string set through it rather than registering it as a handler.
+    if (typeof this.onViewPreChange === 'function') {
       this.subscribe({
         type: BusEventType.VIEW_PRE_CHANGE,
         handler: this.onViewPreChange,
       });
     }
-    if (this.onViewChange) {
+    if (typeof this.onViewChange === 'function') {
       this.subscribe({
         type: BusEventType.VIEW_CHANGE,
         handler: this.onViewChange,

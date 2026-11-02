@@ -80,6 +80,8 @@
   "messages_streamingStart": "{sender} is responding...",
   "message_labelAssistant": "{actorName} {timestamp}",
   "message_labelYou": "You {timestamp}",
+  "message_labelUser": "{actorName} {timestamp}",
+  "messages_userSaid": "{actorName} said",
   "buttons_restart": "Restart conversation",
   "buttons_cancel": "Cancel",
   "buttons_retry": "Retry",
@@ -194,6 +196,7 @@
   "fileSharing_statusUploading": "Uploading file",
   "fileSharing_uploadFailed": "There was an error uploading the file.",
   "fileSharing_uploadErrorTitle": "File upload error",
+  "fileSharing_uploadErrorTitleWithName": "File upload error: {filename}",
   "fileSharing_uploadErrorRecovery": "Remove the attachment and try again.",
   "fileSharing_agentMessageText": "File upload",
   "fileSharing_request": "The agent has requested you upload a file.",
@@ -261,5 +264,6 @@
   "aria_disclaimerPanel": "Disclaimer panel",
   "aria_responsePanel": "Response panel",
   "aria_iframePanel": "Content panel",
-  "aria_viewSourcePanel": "View source panel"
+  "aria_viewSourcePanel": "View source panel",
+  "errors_upsertItemCannotDraw": "The chat showed an error in place of the \"{responseType}\" item in message \"{messageID}\", because these fields are missing or the wrong type: {missing}."
 }

@@ -13,9 +13,14 @@ import {
   MessageRequest,
   MessageResponseTypes,
 } from '@carbon/ai-chat';
+import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 import { BUTTON_KIND } from '@carbon/web-components/es/components/button/defs.js';
+
+import { sendResponse } from './sendResponse';
+
 function doImage(instance: ChatInstance, requestID?: MessageRequest['id']) {
-  instance.messaging.addMessage({
+  return sendResponse(instance, {
+    id: uuid(),
     request_id: requestID,
     output: {
       generic: [

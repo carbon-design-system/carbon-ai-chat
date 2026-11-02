@@ -7,10 +7,12 @@
 
 /**
  * A message carrying a mention gets two replies from the mock back-end: an echo of the mention, then the normal
- * answer. Both are added with `addMessage` inside one `customSendMessage` call, back to back.
+ * answer. Both arrive inside one `customSendMessage` call, back to back, through the selected messaging API.
  */
 
-import { test, expect, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
+
+import { test, expect } from './fixtures';
 
 import {
   destroyChatSession,

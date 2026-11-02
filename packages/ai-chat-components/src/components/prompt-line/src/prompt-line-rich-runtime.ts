@@ -32,6 +32,7 @@ import ParagraphNode from '@tiptap/extension-paragraph';
 import Placeholder from '@tiptap/extension-placeholder';
 import TextNode from '@tiptap/extension-text';
 import { UndoRedo } from '@tiptap/extensions';
+import { closeHistory } from '@tiptap/pm/history';
 
 import { IS_PHONE } from '../../../globals/utils/browser-utils.js';
 import { MouseFocusController } from './prompt-line-mouse-focus.js';
@@ -98,7 +99,7 @@ class RichController
 
     host.setAttribute('aria-multiline', 'true');
     host.setAttribute('spellcheck', 'true');
-    host.setAttribute('tabindex', '-1');
+    this._syncHostTabindex();
 
     // Pointer/touch before focus marks the next focus as mouse-driven so we
     // suppress the keyboard-focus outline.
@@ -173,10 +174,14 @@ class RichController
     // firing `onRemove`. Otherwise a send would strip the just-captured
     // mention/command fields from the host's structured_data sidecar before
     // `doSend` merges them. Mirrors `_dispatchSetContent`.
+    //
+    // closeHistory() breaks the grouping window so the clear lands in its own
+    // undo step, keeping any prior user edits individually reachable.
     editor
       .chain()
       .command(({ tr }) => {
         setHostOriginMeta(tr);
+        closeHistory(tr);
         return true;
       })
       .clearContent(true)
@@ -220,7 +225,19 @@ class RichController
 
   setEditable(editable: boolean): void {
     this._disabled = !editable;
+    if (this._disabled && this.hasFocus()) {
+      this.blur();
+    }
     this._editor?.setEditable(editable);
+    this._syncHostTabindex();
+  }
+
+  private _syncHostTabindex(): void {
+    if (this._disabled) {
+      this._host?.removeAttribute('tabindex');
+    } else {
+      this._host?.setAttribute('tabindex', '-1');
+    }
   }
 
   setPlaceholder(placeholder: string): void {
@@ -295,6 +312,27 @@ class RichController
     return Boolean(this._editor?.commands.redo());
   }
 
+  resetHistory(): void {
+    const editor = this._editor;
+    if (!editor || editor.isDestroyed) {
+      return;
+    }
+
+    const plugin = editor.state.plugins.find((p) =>
+      (p as unknown as { key: string }).key.startsWith('history$')
+    );
+    const historyState = plugin?.spec.state?.init(
+      plugin.spec.config,
+      editor.state
+    );
+    if (!plugin || !historyState) {
+      return;
+    }
+    editor.view.dispatch(
+      setHostOriginMeta(editor.state.tr.setMeta(plugin, { historyState }))
+    );
+  }
+
   // -------------------------------------------------------------------------
   // Internals
   // -------------------------------------------------------------------------
@@ -337,7 +375,12 @@ class RichController
       // Resolved per decoration build rather than captured, so `setPlaceholder`
       // lands on the live editor. Tiptap snapshots an extension's options when
       // it builds plugins, so a value here could never be updated in place.
-      Placeholder.configure({ placeholder: () => this._placeholder }),
+      // `showOnlyWhenEditable: false` keeps the decoration visible when the
+      // editor is disabled so the placeholder matches the textarea runtime.
+      Placeholder.configure({
+        placeholder: () => this._placeholder,
+        showOnlyWhenEditable: false,
+      }),
       PlainTextPaste,
       Keymap,
       // Plain Enter sends (non-empty); empty Enter falls through to a newline.

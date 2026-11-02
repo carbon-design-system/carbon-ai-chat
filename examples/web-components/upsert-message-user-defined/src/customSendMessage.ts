@@ -14,8 +14,8 @@
  * widget mounted while its data progressively changes. Any user text replies
  * with a welcome message (a TEXT response plus a POST_BACK button); clicking
  * the button kicks off a long-running scenario that creates one assistant
- * message, marks it COMPLETE immediately, then mutates the embedded
- * steps-card payload over ~21 s via successive upserts to the same messageID.
+ * message, keeps it STREAMING while the steps run, then marks it COMPLETE.
+ * Stop aborts the background updates without blocking a fresh run.
  *
  * Multiple concurrent runs are supported — each button click generates a fresh
  * messageID, so the lifecycle coordinator parallelizes them (same-ID upserts
@@ -24,7 +24,7 @@
  * APIs exercised:
  *   - `ChatInstance.messaging.upsertMessage`
  *   - `ChatInstance.messaging.addMessage`
- *   - `MessageState.COMPLETE`
+ *   - `MessageState.STREAMING` / `MessageState.COMPLETE`
  *   - `MessageResponseTypes.TEXT` / `BUTTON` / `USER_DEFINED`
  *   - `ButtonItemType.POST_BACK`
  *   - `CustomSendMessageOptions.signal`
@@ -75,7 +75,7 @@ interface StepsCardPayload {
 
 /**
  * Side-effect channel for scenario completion. The host (`main.ts`) subscribes
- * to `"complete"`; `runStepsScenario` dispatches once when its final upsert
+ * to `"complete"`; `completeStepsScenario` dispatches once when its final upsert
  * resolves. Using a named `EventTarget` here keeps the signal:
  *   - co-located with the scenario logic that fires it,
  *   - free of `window`/global pollution,
@@ -115,7 +115,8 @@ function welcomeResponse(): MessageResponse {
 // produce identical output, so concurrent scenarios never collide.
 function buildResponse(
   messageID: string,
-  completedCount: number
+  completedCount: number,
+  requestID: string
 ): MessageResponse {
   const done = completedCount >= STEPS.length;
   const payload: StepsCardPayload = {
@@ -143,6 +144,7 @@ function buildResponse(
 
   return {
     id: messageID,
+    request_id: requestID,
     output: {
       generic: [
         {
@@ -151,6 +153,7 @@ function buildResponse(
         },
         {
           response_type: MessageResponseTypes.USER_DEFINED,
+          streaming_metadata: { id: 'steps-card', cancellable: !done },
           user_defined: payload as unknown as Record<string, unknown>,
         },
       ],
@@ -158,48 +161,72 @@ function buildResponse(
   };
 }
 
-function sleep(milliseconds: number) {
-  return new Promise<void>((resolve) => {
-    setTimeout(resolve, milliseconds);
+// Resolve as soon as Stop aborts the request, and remove the timer and listener.
+function sleep(milliseconds: number, signal?: AbortSignal) {
+  return new Promise<boolean>((resolve) => {
+    if (signal?.aborted) {
+      resolve(false);
+      return;
+    }
+    const finish = (completed: boolean) => {
+      clearTimeout(timer);
+      signal?.removeEventListener('abort', onAbort);
+      resolve(completed);
+    };
+    const onAbort = () => finish(false);
+    const timer = setTimeout(() => finish(true), milliseconds);
+    signal?.addEventListener('abort', onAbort, { once: true });
   });
 }
 
-// One scenario per invocation. `messageID` is local — two concurrent runs get
-// two distinct IDs, which the lifecycle coordinator parallelizes.
-async function runStepsScenario(
+async function completeStepsScenario(
   instance: ChatInstance,
-  signal: AbortSignal | undefined
+  messageID: string,
+  requestID: string,
+  signal?: AbortSignal
 ) {
-  const messageID = uuid();
-
-  // Initial upsert: COMPLETE immediately so `pre:receive`/`receive` fire once
-  // and the input stays usable — the user is not blocked by the long task.
-  await instance.messaging.upsertMessage(messageID, MessageState.COMPLETE, () =>
-    buildResponse(messageID, 0)
-  );
-
   for (let i = 0; i < STEP_TIMINGS_MS.length; i += 1) {
-    await sleep(STEP_TIMINGS_MS[i]);
-    if (signal?.aborted) {
+    if (!(await sleep(STEP_TIMINGS_MS[i], signal)) || signal?.aborted) {
       return;
     }
-    // Same `messageID` + COMPLETE: re-renders the user_defined widget in place
-    // without re-firing `receive`. The reducer reuses unchanged LocalMessageItem
-    // refs, so the slotted card content is reconciled, not remounted.
-    await instance.messaging.upsertMessage(
-      messageID,
-      MessageState.COMPLETE,
-      () => buildResponse(messageID, i + 1)
+    const state =
+      i === STEP_TIMINGS_MS.length - 1
+        ? MessageState.COMPLETE
+        : MessageState.STREAMING;
+    await instance.messaging.upsertMessage(messageID, state, () =>
+      buildResponse(messageID, i + 1, requestID)
     );
   }
-
-  // Signal the host page so it can show its completion toast. One-line side
-  // effect, co-located with the scenario — see `scenarioBus` above.
+  if (signal?.aborted) {
+    return;
+  }
   scenarioBus.dispatchEvent(
     new CustomEvent<ScenarioCompleteDetail>('complete', {
       detail: { messageID },
     })
   );
+}
+
+async function runStepsScenario(
+  instance: ChatInstance,
+  requestID: string,
+  signal?: AbortSignal
+) {
+  if (signal?.aborted) {
+    return;
+  }
+  const messageID = uuid();
+  // Register the stream before the sender settles so Stop retains its controller.
+  await instance.messaging.upsertMessage(
+    messageID,
+    MessageState.STREAMING,
+    () => buildResponse(messageID, 0, requestID)
+  );
+  if (signal?.aborted) {
+    return;
+  }
+  // Background work keeps the input usable and lets several cards run at once.
+  void completeStepsScenario(instance, messageID, requestID, signal);
 }
 
 async function customSendMessage(
@@ -208,9 +235,7 @@ async function customSendMessage(
   instance: ChatInstance
 ) {
   if (request.input.text === START_TRIGGER) {
-    // Fire-and-forget so `customSendMessage` resolves immediately; this is
-    // what re-enables the input while the scenario runs in the background.
-    void runStepsScenario(instance, requestOptions.signal);
+    await runStepsScenario(instance, request.id, requestOptions.signal);
     return;
   }
   instance.messaging.addMessage(welcomeResponse());

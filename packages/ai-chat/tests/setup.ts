@@ -16,8 +16,6 @@ const ENABLE_CONSOLE_LOGGING = false;
 // Mock Symbol.for for Lit's use of symbols and ensure all needed symbols exist
 global.Symbol.for = global.Symbol.for || ((key: string) => Symbol(key));
 
-// Mock specific symbols that Lit uses
-(globalThis as any).trustedTypes = null;
 (globalThis as any).document = global.document;
 
 // Mock CSS template literal functions

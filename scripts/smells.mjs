@@ -17,6 +17,9 @@
  * read. The other twelve are the redundancy bundle, each a one-line removal.
  * A row is a place to read, not a finding; rows carry no severity.
  *
+ * In changed mode, duplication reads the filesystem. Index and head sources
+ * are archived into a temp directory before that pass.
+ *
  * Usage:
  *   node scripts/smells.mjs <file> [more ...] [--max <n>] [--report <n>]
  *   node scripts/smells.mjs --changed <base> [--max <n>] [--report <n>]

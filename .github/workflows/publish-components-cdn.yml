@@ -21,6 +21,10 @@ permissions:
 jobs:
   publish-cdn:
     runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.release-versions.outputs.sha }}
+      chat: ${{ steps.release-versions.outputs.chat }}
+      components: ${{ steps.release-versions.outputs.components }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -205,9 +209,16 @@ jobs:
           SOURCE_DIR: 'packages/ai-chat-components/storybook-react-static'
           DEST_DIR: 'components/storybook/react/version/v${{ steps.release-versions.outputs.components }}'
 
-      - name: Update stable version catalog after both Storybooks publish
-        if: ${{ !env.PRE_RELEASE }}
-        uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4
-        with:
-          event-type: update-versions-file
-          client-payload: '{"branch":"${{ github.event.client_payload.branch || github.ref_name }}","sha":"${{ steps.release-versions.outputs.sha }}","chat_version":"${{ steps.release-versions.outputs.chat }}","components_version":"${{ steps.release-versions.outputs.components }}"}'
+  # Update the stable version catalog after both Storybooks publish. A job in
+  # this run, not a dispatch, so a failed update fails the publish. Called
+  # from `main` so a manual release-branch run still uses the current updater.
+  update-versions-file:
+    needs: publish-cdn
+    if: ${{ !contains(needs.publish-cdn.outputs.chat, '-rc.') }}
+    uses: carbon-design-system/carbon-ai-chat/.github/workflows/update-versions-file.yml@main
+    with:
+      branch: ${{ github.event.client_payload.branch || github.ref_name }}
+      sha: ${{ needs.publish-cdn.outputs.sha }}
+      chat_version: ${{ needs.publish-cdn.outputs.chat }}
+      components_version: ${{ needs.publish-cdn.outputs.components }}
+    secrets: inherit

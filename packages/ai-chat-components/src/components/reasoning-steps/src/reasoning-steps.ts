@@ -36,8 +36,9 @@ class CDSAIChatReasoningSteps extends LitElement {
   }
 
   /**
-   * Announce a collapse synchronously, from `attributeChangedCallback`, so consumers can react
-   * within the same task — before the browser lays out and paints the smaller container.
+   * Announce a collapse synchronously, from `attributeChangedCallback`, so public event
+   * listeners can react within the same task — before the browser lays out and paints the
+   * smaller container. The message list's scroll controller no longer listens to this event.
    *
    * This cannot be done from Lit's `willUpdate`/`updated`: the host sets the `open` attribute
    * directly, so the CSS collapse applies the moment the attribute lands, whereas Lit's update
@@ -123,8 +124,8 @@ class CDSAIChatReasoningSteps extends LitElement {
   /**
    * The wrapper animates `grid-template-rows` when the container expands/collapses.
    * We wait for any in-flight transition on the wrapper to finish, then emit a composed
-   * event so consumers (e.g. the message list's scroll manager) can recalculate scroll
-   * geometry against the settled layout.
+   * event so host listeners can recalculate layout against the settled geometry. The event is
+   * public; the message list's scroll controller no longer listens to it.
    *
    * Using the Web Animations API (`getAnimations`) handles both cases with one path: when
    * a transition runs we resolve on its `finished` promise, and when nothing animates

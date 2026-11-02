@@ -12,7 +12,6 @@ import { StructuredData } from '../messaging/Messages';
 /**
  * Configuration for file upload behavior in the chat input.
  *
- * @experimental
  * @category Config
  */
 export interface UploadConfig {
@@ -56,12 +55,14 @@ export interface UploadConfig {
    * error, so write it as the reason the file was rejected.
    *
    * The chat owns the rest of the copy: the title above your message, and the
-   * instruction to remove the attachment and try again. Both come from the
-   * `fileSharing_uploadErrorTitle` and `fileSharing_uploadErrorRecovery` keys of
-   * {@link LanguagePack}, so don't repeat the recovery step in your own message.
+   * instruction to remove the attachment and try again. On screen, each failed
+   * file gets its own row, titled from `fileSharing_uploadErrorTitleWithName`
+   * (which names the file). The recovery instruction comes from
+   * `fileSharing_uploadErrorRecovery`, so don't repeat it in your own message.
    * Reword either one through {@link PublicConfig.strings}.
    *
-   * The same two keys and your message make up the screen-reader announcement,
+   * `fileSharing_uploadErrorTitle` and `fileSharing_uploadErrorRecovery`, with
+   * your message, make up the screen-reader announcement,
    * which is assertive because a failed upload blocks sending.
    * `fileSharing_uploadFailed` does not reach this path — it belongs to the
    * human-agent file transfer.
@@ -69,8 +70,6 @@ export interface UploadConfig {
    * @param file - The `File` object selected by the user.
    * @param abortSignal - Fires if the user removes the pending upload before it
    *   completes, or if the chat is destroyed.
-   *
-   * @experimental
    */
   onFileUpload?: (
     file: File,

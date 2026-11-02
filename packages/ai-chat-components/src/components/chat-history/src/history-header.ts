@@ -75,6 +75,7 @@ class CDSAIChatHistoryHeader extends LitElement {
           ? html`<cds-icon-button
               class="${prefix}--history-header__close-button"
               kind="ghost"
+              size="md"
               align="right"
               @click=${handleCloseButtonClick}>
               ${iconLoader(ChevronLeft16, { slot: 'icon' })}

@@ -13,7 +13,7 @@ import { UNORDERED_LIST } from './constants';
 import { doText } from './doText';
 
 function doList(instance: ChatInstance, requestID?: MessageRequest['id']) {
-  doText(
+  return doText(
     instance,
     UNORDERED_LIST,
     undefined,

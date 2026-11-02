@@ -24,7 +24,7 @@ ChatContainer (React) ──────────→ cds-aichat-container (Li
 3. **Startup**: the container owns it. It starts services, waits for the renderer's listeners, runs `onBeforeRender`, opens the render gate, and applies the initial view. Only then does it schedule `onAfterRender`. It owns config updates and the resize and visibility listeners too. **Put new startup work here, not in React.**
 4. **Renderer seam**: [react-renderer.ts](../src/web-components/shared/react-renderer.ts) defines `mount(target)` → `render(App, inputs)` / `unmount()`. The container loads `App` (`ChatAppEntry`) with the services, so a failed chunk load is logged by startup on every surface instead of reaching the host's React tree. The container uses the renderer it was given, else the installed default. With neither, it waits for the default. A mount keeps its renderer.
 5. **Two renderers**: the public [index.ts](../src/web-components/cds-aichat-container/index.ts) installs one `createRoot` renderer for plain web-component hosts. **Import `react-dom/client` in [react-dom-renderer.ts](../src/web-components/shared/react-dom-renderer.ts) only**, and import that module from web-component entries only — React 17 does not ship it, and the React entry imports the element class directly without triggering the renderer. React [ChatContainer](../src/react/ChatContainer.tsx) portals `ChatAppEntry` from the host's own root, keyed by mount. It sets the host element's properties itself rather than through `@lit/react`, whose server build sets none. Host context, events, and error boundaries then reach the chat.
-6. **Extension content**: portal hosts and slotted content land in `cds-aichat-container`'s light DOM, where page CSS reaches them, and the app's own `<slot>` elements project them from that same shadow root. **Append extension nodes to the container, never into a shadow root.** A slot whose host is gone shows its fallback again. `cds-aichat-custom-element` adds a forwarding slot, because it wraps the container in its own shadow root. The container renders no template; the app's own `<slot>` elements project content from the container's shadow root directly.
+6. **Extension content**: portal hosts and slotted content land in `cds-aichat-container`'s light DOM, where page CSS reaches them, and the app's own `<slot>` elements project them from that same shadow root. **Append extension nodes to the container, never into a shadow root.** A slot whose host is gone shows its fallback again. `cds-aichat-custom-element` adds a forwarding slot, because it wraps the container in its own shadow root. The container renders no template.
 7. **Slot callbacks**: `ChatAppEntry`'s trackers and portal containers serve both surfaces. The container adapts each web-component callback into a React render prop; its `HTMLElement` result goes into the slot host as is (`SlotHostPortal`). **Fix slot behavior in the portal containers, not in Lit.**
 
 ## Mount cleanup
@@ -40,16 +40,6 @@ ChatContainer (React) ──────────→ cds-aichat-container (Li
 | Lit | [src/web-components/](../src/web-components) | Registration, shadow DOM, slot forwarding, renderer selection, mount cleanup |
 | React wrappers | [src/react/](../src/react) | Public props, host portal, per-mount key |
 | React app | everything else under [src/chat/](../src/chat) | Application logic, state, UI components, store integration, service orchestration |
-
-## Common patterns
-
-**Passing content out via slots** — create the node in the outer container's light DOM; the app's own `<slot>` elements project it from the container's shadow root:
-
-```typescript
-const element = document.createElement('div');
-element.setAttribute('slot', 'user-defined-response');
-chatWrapper.appendChild(element);
-```
 
 ## Debugging across the boundary
 

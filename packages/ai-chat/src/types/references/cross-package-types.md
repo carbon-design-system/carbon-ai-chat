@@ -112,4 +112,3 @@ import type { TriggerSuggestionConfig } from '../../types/config/InputConfig'; /
 
 - [src/types/AGENTS.md](../AGENTS.md) — the JSDoc bar these re-declarations have to clear
 - [tone.md](../../../../../references/tone.md) — voice and word economy for the copy you write
-- [jsdoc-examples.md](jsdoc-examples.md) — worked good/bad examples
