@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.SingleOption.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.SingleOption.html
 
 Represents an individual option that is part of an "options" response.
 
@@ -27,7 +27,7 @@ interface SingleOption
 The text shown on the control. If this value is empty, the control shows `value.input.text`. The chat does
 not render the control when both values are empty.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.SingleOption.html#label)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.SingleOption.html#label)
 
 ### selection_display
 
@@ -37,7 +37,7 @@ Controls the text shown in the generated user message. The default is SelectionD
 preferred text falls back to the other available text. The resolved text is stored in MessageRequest.history
 and remains there when SingleOption.silent hides the message.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.SingleOption.html#selection_display)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.SingleOption.html#selection_display)
 
 ### silent
 
@@ -46,10 +46,10 @@ and remains there when SingleOption.silent hides the message.
 Hides the generated user message when true. The option still enters its selected state, and its resolved text
 remains in request history.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.SingleOption.html#silent)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.SingleOption.html#silent)
 
 ### value
 
 `value: { input: MessageInput }`
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.SingleOption.html#value)
+[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.SingleOption.html#value)

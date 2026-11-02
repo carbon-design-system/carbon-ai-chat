@@ -33,7 +33,7 @@ export interface PromptLineControllerInit {
    */
   content?: JSONContent | string;
   placeholder: string;
-  /** When `true`, the surface is non-editable (still focusable). */
+  /** When `true`, the surface is non-editable and not focusable. */
   disabled: boolean;
   ariaLabel: string;
   testId: string;

@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { html } from 'lit';
+import { html, type TemplateResult } from 'lit';
 import { property, state } from 'lit/decorators.js';
 
 import { prefix } from '@carbon/ai-chat-components/es/globals/settings.js';
@@ -293,7 +293,9 @@ class ChatCustomElement extends FlattenedConfigElement {
       this.releaseMount();
     }
     this._instance = instance;
-    if (this.onViewPreChange) {
+    // The view-change props also take an HTML attribute; a string set through
+    // it is not a handler, so it must not displace the default visibility one.
+    if (typeof this.onViewPreChange === 'function') {
       this.subscribe({
         type: BusEventType.VIEW_PRE_CHANGE,
         handler: this.onViewPreChange,
@@ -301,7 +303,10 @@ class ChatCustomElement extends FlattenedConfigElement {
     }
     this.subscribe({
       type: BusEventType.VIEW_CHANGE,
-      handler: this.onViewChange || this.defaultViewChangeHandler,
+      handler:
+        typeof this.onViewChange === 'function'
+          ? this.onViewChange
+          : this.defaultViewChangeHandler,
     });
 
     if (!this.renderUserDefinedResponse) {
@@ -337,7 +342,8 @@ class ChatCustomElement extends FlattenedConfigElement {
     this._writeableElementSlots = Object.keys(this._instance.writeableElements);
   }
 
-  render() {
+  // Annotated so the published declaration imports lit, a dependency, not lit-html.
+  render(): TemplateResult {
     return html`
       <cds-aichat-container
         .config=${this.resolvedConfig}

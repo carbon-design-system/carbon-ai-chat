@@ -27,10 +27,10 @@ import { BusEvent } from '../../types/events/eventBusTypes';
 import { MainWindowFunctions } from '../AppShell';
 import { ChatInstanceService } from './ChatInstanceService';
 import { ChunkProcessingService } from './ChunkProcessingService';
-import { ConversationLifecycleService } from './ConversationLifecycleService';
 import { HydrationService } from './HydrationService';
 import { InputActionsService } from './InputActionsService';
 import { PublicStateService } from './PublicStateService';
+import { ConversationLifecycleService } from './ConversationLifecycleService';
 import { ReceiveService } from './ReceiveService';
 import { SlotEventService } from './SlotEventService';
 import { SendService } from './SendService';
@@ -90,8 +90,6 @@ class ServiceManager {
    */
   chunkProcessingService: ChunkProcessingService;
 
-  conversationLifecycleService: ConversationLifecycleService;
-
   /**
    * Service that wires user-defined response elements and fires footer-slot events.
    */
@@ -106,6 +104,9 @@ class ServiceManager {
    * Service that projects store state into the public ChatState snapshot.
    */
   publicStateService: PublicStateService;
+
+  /** Coordinates transient loading, send, stream, and error state. */
+  conversationLifecycleService: ConversationLifecycleService;
 
   /**
    * Service that owns the inbound receive path.

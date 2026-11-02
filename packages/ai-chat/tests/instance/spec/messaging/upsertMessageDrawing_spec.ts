@@ -200,6 +200,38 @@ describe('upsertMessage with an item the chat cannot draw', () => {
     expect(onError).not.toHaveBeenCalled();
   });
 
+  it('retains the drawn payload without event listeners while the updater sees the latest snapshot', async () => {
+    const { instance, store } = await renderOpenChat();
+    const valid = gridOf({ items: [text('Cell A')] });
+    const incomplete = gridOf({ items: [text('Cell A')] }, {});
+    await instance.messaging.upsertMessage(
+      'retained',
+      MessageState.STREAMING,
+      () => message('retained', [valid])
+    );
+    const [drawn] = itemsOf(store, 'retained');
+    await instance.messaging.upsertMessage(
+      'retained',
+      MessageState.STREAMING,
+      () => message('retained', [incomplete])
+    );
+    await settle();
+    expect(itemsOf(store, 'retained')[0]).toBe(drawn);
+    expect(drawn.item).toEqual(valid);
+
+    await instance.messaging.upsertMessage(
+      'retained',
+      MessageState.STREAMING,
+      (previous) => {
+        expect(previous.output.generic).toEqual([incomplete]);
+        return message('retained', [
+          gridOf({ items: [text('Cell A')] }, { items: [text('Cell B')] }),
+        ]);
+      }
+    );
+    await waitFor(() => expect(chatText()).toContain('Cell B'));
+  });
+
   it('hides a streamed item that never drew, and keeps its place', async () => {
     const { instance, store, onError } = await renderOpenChat();
     const handler = jest.fn();
