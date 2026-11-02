@@ -10,7 +10,7 @@ import { access, readFile, realpath } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { join, relative, resolve } from 'node:path';
 import ts from 'typescript';
-import { globalSuperclassReferences } from './global-superclasses.mjs';
+import { extendsLibraryGlobal } from './global-superclasses.mjs';
 
 export function localPath(root, path) {
   const target = resolve(root, path);
@@ -25,31 +25,32 @@ function bareSuperclass(reference) {
   return Boolean(reference?.name) && !reference.module && !reference.package;
 }
 
-async function publishedGlobalSuperclasses(manifest, root) {
+const programOptions = {
+  allowJs: true,
+  checkJs: false,
+  noEmit: true,
+  skipLibCheck: true,
+  types: [],
+  target: ts.ScriptTarget.ESNext,
+  module: ts.ModuleKind.ESNext,
+  moduleResolution: ts.ModuleResolutionKind.Bundler,
+};
+
+function publishedGlobalSuperclasses(manifest, root, program) {
   const globals = new Set();
   for (const module of manifest.modules) {
-    if (
-      !(module.declarations ?? []).some((entry) =>
-        bareSuperclass(entry.superclass)
-      )
-    ) {
-      continue;
-    }
-    const filename = localPath(root, module.path);
-    const source = ts.createSourceFile(
-      filename,
-      await readFile(filename, 'utf8'),
-      ts.ScriptTarget.Latest,
-      true
-    );
-    for (const [name, base] of globalSuperclassReferences(ts, source)) {
+    for (const { name, superclass } of module.declarations ?? []) {
       if (
-        source.statements.some(
-          (statement) =>
-            ts.isClassDeclaration(statement) && statement.name?.text === name
+        bareSuperclass(superclass) &&
+        extendsLibraryGlobal(
+          ts,
+          program,
+          localPath(root, module.path),
+          name,
+          superclass.name
         )
       ) {
-        globals.add(`${module.path}#${name}#${base}`);
+        globals.add(`${module.path}#${name}#${superclass.name}`);
       }
     }
   }
@@ -103,7 +104,8 @@ function collectLocalReference(
     declarationReference &&
     !state.defined.has(`${targetModule}#${value.name}`)
   ) {
-    state.symbols.push({ ...value, module: targetModule, owner });
+    const bare = key === 'superclass' && bareSuperclass(value);
+    state.symbols.push({ ...value, module: targetModule, owner, bare });
   }
 }
 
@@ -150,7 +152,11 @@ function visitReferences(value, key, containingModule, declarationName, state) {
 }
 
 export async function checkReferences(manifest, root, packageName) {
-  const globals = await publishedGlobalSuperclasses(manifest, root);
+  const program = ts.createProgram(
+    manifest.modules.map((module) => localPath(root, module.path)),
+    programOptions
+  );
+  const globals = publishedGlobalSuperclasses(manifest, root, program);
   const defined = new Set(
     manifest.modules.flatMap((module) => [
       ...(module.declarations ?? []).map(
@@ -188,10 +194,16 @@ export async function checkReferences(manifest, root, packageName) {
     assert.match(path, /\.(?:[cm]?js|d\.[cm]?ts)$/);
     await access(localPath(root, path));
   }
-  await checkPublishedSymbols(root, manifest, symbols, exports);
+  await checkPublishedSymbols(root, manifest, symbols, exports, program);
 }
 
-async function checkPublishedSymbols(root, manifest, references, exports) {
+async function checkPublishedSymbols(
+  root,
+  manifest,
+  references,
+  exports,
+  oldProgram
+) {
   const typedReferences = await Promise.all(
     references.map(async (reference) => {
       const path = localPath(root, reference.module);
@@ -214,16 +226,9 @@ async function checkPublishedSymbols(root, manifest, references, exports) {
         ...typedReferences.map((reference) => reference.module),
       ]),
     ],
-    {
-      allowJs: true,
-      checkJs: false,
-      noEmit: true,
-      skipLibCheck: true,
-      types: [],
-      target: ts.ScriptTarget.ESNext,
-      module: ts.ModuleKind.ESNext,
-      moduleResolution: ts.ModuleResolutionKind.Bundler,
-    }
+    programOptions,
+    undefined,
+    oldProgram
   );
   const checker = program.getTypeChecker();
   for (const reference of [...runtimeExports, ...typedReferences]) {
@@ -231,6 +236,10 @@ async function checkPublishedSymbols(root, manifest, references, exports) {
     const symbol = source && checker.getSymbolAtLocation(source);
     assert.ok(symbol, `Not a published module: ${reference.module}`);
     const names = checker.getExportsOfModule(symbol).map((entry) => entry.name);
+    assert.ok(
+      names.includes(reference.name) || !reference.bare,
+      `Unresolved bare superclass: \`${reference.name}\` on ${reference.owner} is neither an unshadowed default-library global in its source nor exported by ${relative(root, reference.module)}`
+    );
     assert.ok(
       names.includes(reference.name),
       `Unpublished symbol: ${reference.module}#${reference.name}${

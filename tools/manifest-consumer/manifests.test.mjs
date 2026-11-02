@@ -14,6 +14,10 @@ import { readPackedManifest } from './manifests.mjs';
 
 const packageName = '@fixture/packed-manifest';
 const exampleModule = 'es/example.js';
+const unresolved = (base) =>
+  new RegExp(
+    `Unresolved bare superclass: \`${base}\` on es/example\\.js#Example `
+  );
 
 function moduleWithClass(path, name) {
   return {
@@ -77,7 +81,7 @@ test('packed manifest accepts source-proven default-library superclasses', async
 test('packed manifest still resolves a declared Error through local metadata', async () => {
   const source = 'class Error {} export class Example extends Error {}';
   await withManifest(source, { name: 'Error' }, async (read) => {
-    await assert.rejects(read, /Unpublished symbol:/);
+    await assert.rejects(read, unresolved('Error'));
   });
   await withManifest(
     source,
@@ -100,7 +104,7 @@ test('packed manifest does not treat imported Error as a library global', async 
     source,
     { name: 'Error' },
     async (read) => {
-      await assert.rejects(read, /Unpublished symbol:/);
+      await assert.rejects(read, unresolved('Error'));
     },
     additions
   );
@@ -123,12 +127,7 @@ test('packed manifest rejects parameter-shadowed Error and unresolved local base
     ['export class Example extends MissingBase {}', 'MissingBase'],
   ]) {
     await withManifest(source, { name: base }, async (read) => {
-      await assert.rejects(
-        read,
-        new RegExp(
-          `Unpublished symbol: .*#${base} \\(from es/example\\.js#Example\\)`
-        )
-      );
+      await assert.rejects(read, unresolved(base));
     });
   }
 });
@@ -142,7 +141,7 @@ test('packed manifest rejects Error shadowed by module-scope hoisted and destruc
     'const [Error] = [class {}]; export class Example extends Error {}',
   ]) {
     await withManifest(source, { name: 'Error' }, async (read) => {
-      await assert.rejects(read, /Unpublished symbol: .*#Error/, source);
+      await assert.rejects(read, unresolved('Error'), source);
     });
   }
 });
@@ -152,10 +151,7 @@ test('packed manifest rejects a global base that differs from the source base', 
     'export class Example extends Map {}',
     { name: 'Error' },
     async (read) => {
-      await assert.rejects(
-        read,
-        /Unpublished symbol: .*#Error \(from es\/example\.js#Example\)/
-      );
+      await assert.rejects(read, unresolved('Error'));
     }
   );
 });
@@ -255,7 +251,7 @@ test('packed manifest requires the exact superclass owner and reference kind', a
     'export class Example extends MissingBase {} export class Other extends Error {}',
     { name: 'Error' },
     async (read) => {
-      await assert.rejects(read, /Unpublished symbol: .*#Error/);
+      await assert.rejects(read, unresolved('Error'));
     },
     {
       declarations: [
@@ -263,28 +259,36 @@ test('packed manifest requires the exact superclass owner and reference kind', a
       ],
     }
   );
-  for (const source of [
+  await withManifest(
     'function make() { class Example extends Error {} return Example; } export const Example = class extends MissingBase {};',
-    'export class Example extends Error {} function make() { class Example extends Error {} return Example; }',
-  ]) {
-    await withManifest(source, { name: 'Error' }, async (read) => {
-      await assert.rejects(
-        read,
-        /Unpublished symbol: .*#Error \(from es\/example\.js#Example\)/
-      );
-    });
-  }
+    { name: 'Error' },
+    async (read) => {
+      await assert.rejects(read, unresolved('Error'));
+    }
+  );
   const otherModule = moduleWithClass('es/other.js', 'Example');
   otherModule.declarations[0].superclass = { name: 'Error' };
   await withManifest(
     'export class Example extends MissingBase {}',
     { name: 'Error' },
     async (read) => {
-      await assert.rejects(read, /Unpublished symbol: .*#Error/);
+      await assert.rejects(read, unresolved('Error'));
     },
     {
       modules: [otherModule],
       files: { 'es/other.js': 'export class Example extends Error {}' },
     }
   );
+});
+
+test('packed manifest accepts a decorated class and ignores nested namesakes', async () => {
+  for (const source of [
+    'let Example = class Example extends Error {}; Example = decorate(Example); export { Example }; function decorate(value) { return value; }',
+    'export class Example extends Error {} function make() { class Example extends Map {} return Example; }',
+    'export class Example extends Error {} function make() { class Example extends Error {} return Example; }',
+  ]) {
+    await withManifest(source, { name: 'Error' }, async (read) => {
+      await read();
+    });
+  }
 });
