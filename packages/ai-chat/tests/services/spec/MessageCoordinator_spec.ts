@@ -298,3 +298,16 @@ describe('lifecycle publication', () => {
     ]);
   });
 });
+
+it('creates loading state lazily before the message facade is wired', () => {
+  const manager = {
+    get messageService() {
+      throw new Error('MessageService is not wired yet');
+    },
+  } as unknown as ServiceManager;
+  const coordinator = new MessageCoordinator(manager);
+  coordinator.configureMessageTimeout({ messaging: { messageTimeoutSecs: 0 } });
+  expect(coordinator.timeoutMS).toBe(0);
+  const loading = coordinator.messageLoadingManager;
+  expect(coordinator.messageLoadingManager).toBe(loading);
+});

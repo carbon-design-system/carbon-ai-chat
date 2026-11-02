@@ -55,6 +55,15 @@ const flushMessageQueue = async () => {
   await Promise.resolve();
 };
 
+function createMessageService(
+  manager: ServiceManager,
+  config: ConstructorParameters<typeof MessageService>[1]
+) {
+  const service = new MessageService(manager, config);
+  manager.messageService = service;
+  return service;
+}
+
 const createServiceManagerStub = (
   customSendMessage = jest.fn(),
   stopStreamingButtonState = { isVisible: false, isDisabled: false }
@@ -139,7 +148,7 @@ describe('MessageService', () => {
       const serviceManager = createServiceManagerStub(
         jest.fn().mockResolvedValue(undefined)
       );
-      const service = new MessageService(serviceManager, {
+      const service = createMessageService(serviceManager, {
         messaging: { messageTimeoutSecs: 0 },
       });
       const reachedPreSend = createDeferred();
@@ -183,7 +192,7 @@ describe('MessageService', () => {
   it('retains request ownership after its callback returns and across restarts', async () => {
     const customSendMessage = jest.fn().mockResolvedValue(undefined);
     const serviceManager = createServiceManagerStub(customSendMessage);
-    const messageService = new MessageService(serviceManager, {
+    const messageService = createMessageService(serviceManager, {
       messaging: { messageTimeoutSecs: 0 },
     });
 
@@ -234,7 +243,7 @@ describe('MessageService', () => {
       );
     });
     const serviceManager = createServiceManagerStub(customSendMessage);
-    const messageService = new MessageService(serviceManager, {
+    const messageService = createMessageService(serviceManager, {
       messaging: { messageTimeoutSecs: 0 },
     });
     (serviceManager.eventBus.fire as jest.Mock).mockImplementation(
@@ -264,7 +273,7 @@ describe('MessageService', () => {
     const reachedSendEvent = resolvablePromise<void>();
     const customSendMessage = jest.fn().mockResolvedValue(undefined);
     const serviceManager = createServiceManagerStub(customSendMessage);
-    const messageService = new MessageService(serviceManager, {
+    const messageService = createMessageService(serviceManager, {
       messaging: { messageTimeoutSecs: 0 },
     });
     (serviceManager.eventBus.fire as jest.Mock).mockImplementation((event) => {
@@ -294,7 +303,7 @@ describe('MessageService', () => {
   it('retains request ownership after stop and stream cleanup', async () => {
     const customSendMessage = jest.fn().mockResolvedValue(undefined);
     const serviceManager = createServiceManagerStub(customSendMessage);
-    const messageService = new MessageService(serviceManager, {
+    const messageService = createMessageService(serviceManager, {
       messaging: { messageTimeoutSecs: 0 },
     });
     await messageService.send(
@@ -322,7 +331,7 @@ describe('MessageService', () => {
     const customSendMessage = jest.fn().mockResolvedValue(undefined);
     const serviceManager = createServiceManagerStub(customSendMessage);
 
-    const messageService = new MessageService(serviceManager, {
+    const messageService = createMessageService(serviceManager, {
       messaging: {
         customSendMessage,
         messageTimeoutSecs: 0,
@@ -350,7 +359,7 @@ describe('MessageService', () => {
       isVisible: true,
       isDisabled: false,
     });
-    const messageService = new MessageService(serviceManager, {
+    const messageService = createMessageService(serviceManager, {
       messaging: {
         customSendMessage,
         messageTimeoutSecs: 0,
@@ -385,7 +394,7 @@ describe('MessageService', () => {
 
   it('cancels a streaming message by response id and advances the queue', async () => {
     const serviceManager = createServiceManagerStub(jest.fn());
-    const messageService = new MessageService(serviceManager, {
+    const messageService = createMessageService(serviceManager, {
       messaging: {
         customSendMessage: jest.fn().mockResolvedValue(undefined),
         messageTimeoutSecs: 0,
@@ -425,7 +434,7 @@ describe('MessageService', () => {
 
   it('cancels a waiting message using its abort controller', async () => {
     const serviceManager = createServiceManagerStub(jest.fn());
-    const messageService = new MessageService(serviceManager, {
+    const messageService = createMessageService(serviceManager, {
       messaging: {
         customSendMessage: jest.fn().mockResolvedValue(undefined),
         messageTimeoutSecs: 0,
@@ -481,7 +490,7 @@ describe('MessageService', () => {
     async (isStreaming) => {
       const customSendMessage = jest.fn().mockResolvedValue(undefined);
       const serviceManager = createServiceManagerStub(customSendMessage);
-      const messageService = new MessageService(serviceManager, {
+      const messageService = createMessageService(serviceManager, {
         messaging: { messageTimeoutSecs: 0 },
       });
 
@@ -512,7 +521,7 @@ describe('MessageService', () => {
   it('cancels retained requests even when an abort listener clears their tracking', async () => {
     const customSendMessage = jest.fn().mockResolvedValue(undefined);
     const serviceManager = createServiceManagerStub(customSendMessage);
-    const messageService = new MessageService(serviceManager, {
+    const messageService = createMessageService(serviceManager, {
       messaging: { messageTimeoutSecs: 0 },
     });
 
@@ -539,7 +548,7 @@ describe('MessageService', () => {
   it('clears retained controllers that were already aborted', async () => {
     const customSendMessage = jest.fn().mockResolvedValue(undefined);
     const serviceManager = createServiceManagerStub(customSendMessage);
-    const messageService = new MessageService(serviceManager, {
+    const messageService = createMessageService(serviceManager, {
       messaging: { messageTimeoutSecs: 0 },
     });
 
@@ -563,7 +572,7 @@ describe('MessageService', () => {
     const customSendMessage = jest.fn(() => new Promise<void>(() => undefined));
     const serviceManager = createServiceManagerStub(customSendMessage);
 
-    const messageService = new MessageService(serviceManager, {
+    const messageService = createMessageService(serviceManager, {
       messaging: {
         customSendMessage,
         messageTimeoutSecs: 1,
@@ -599,7 +608,7 @@ describe('MessageService', () => {
 
   it('cancels streaming by item id even when response_id differs', async () => {
     const serviceManager = createServiceManagerStub(jest.fn());
-    const messageService = new MessageService(serviceManager, {
+    const messageService = createMessageService(serviceManager, {
       messaging: {
         customSendMessage: jest.fn().mockResolvedValue(undefined),
         messageTimeoutSecs: 0,
@@ -656,7 +665,7 @@ describe('MessageService', () => {
         isVisible: true,
         isDisabled: false,
       });
-      const messageService = new MessageService(serviceManager, {
+      const messageService = createMessageService(serviceManager, {
         messaging: { messageTimeoutSecs: 0 },
       });
       messageService.markCurrentMessageAsStreaming('response-a');
@@ -680,7 +689,7 @@ describe('MessageService', () => {
         isVisible: true,
         isDisabled: false,
       });
-      const messageService = new MessageService(serviceManager, {
+      const messageService = createMessageService(serviceManager, {
         messaging: { messageTimeoutSecs: 0 },
       });
       messageService.markCurrentMessageAsStreaming('response-a');
@@ -702,7 +711,7 @@ describe('MessageService', () => {
         message.id === 'm-first' ? first.promise : Promise.resolve()
       );
       const serviceManager = createServiceManagerStub(customSendMessage);
-      const messageService = new MessageService(serviceManager, {
+      const messageService = createMessageService(serviceManager, {
         messaging: {
           customSendMessage,
           messageTimeoutSecs: 0,
@@ -739,7 +748,7 @@ describe('MessageService', () => {
     it('advances immediately when an ERROR upsert follows transport settlement', async () => {
       const customSendMessage = jest.fn();
       const serviceManager = createServiceManagerStub(customSendMessage);
-      const messageService = new MessageService(serviceManager, {
+      const messageService = createMessageService(serviceManager, {
         messaging: {
           customSendMessage,
           messageTimeoutSecs: 0,
@@ -778,7 +787,7 @@ describe('MessageService', () => {
         message.id === 'm-first' ? first.promise : Promise.resolve()
       );
       const serviceManager = createServiceManagerStub(customSendMessage);
-      const messageService = new MessageService(serviceManager, {
+      const messageService = createMessageService(serviceManager, {
         messaging: {
           customSendMessage,
           messageTimeoutSecs: 0,
@@ -820,7 +829,7 @@ describe('MessageService', () => {
       const serviceManager = createServiceManagerStub(customSendMessage);
       const lifecycle = serviceManager.messageCoordinator;
       const responseFinished = jest.spyOn(lifecycle, 'responseFinished');
-      const messageService = new MessageService(serviceManager, {
+      const messageService = createMessageService(serviceManager, {
         messaging: {
           customSendMessage,
           messageTimeoutSecs: 0,
@@ -872,7 +881,7 @@ describe('MessageService', () => {
       const serviceManager = createServiceManagerStub(customSendMessage);
       const lifecycle = serviceManager.messageCoordinator;
       const responseFinished = jest.spyOn(lifecycle, 'responseFinished');
-      const messageService = new MessageService(serviceManager, {
+      const messageService = createMessageService(serviceManager, {
         messaging: {
           customSendMessage,
           messageTimeoutSecs: 1,
@@ -929,7 +938,7 @@ describe('MessageService', () => {
         () => new Promise<void>(() => undefined) // Never resolves
       );
       const serviceManager = createServiceManagerStub(customSendMessage);
-      const messageService = new MessageService(serviceManager, {
+      const messageService = createMessageService(serviceManager, {
         messaging: {
           customSendMessage,
           messageTimeoutSecs: 0,
@@ -966,7 +975,7 @@ describe('MessageService', () => {
     it('does not create duplicate system message when canceling during streaming', async () => {
       const customSendMessage = jest.fn().mockResolvedValue(undefined);
       const serviceManager = createServiceManagerStub(customSendMessage);
-      const messageService = new MessageService(serviceManager, {
+      const messageService = createMessageService(serviceManager, {
         messaging: {
           customSendMessage,
           messageTimeoutSecs: 0,
@@ -1025,7 +1034,7 @@ describe('MessageService', () => {
         isVisible: true,
         isDisabled: true,
       });
-      const messageService = new MessageService(serviceManager, {
+      const messageService = createMessageService(serviceManager, {
         messaging: {
           customSendMessage: jest.fn().mockResolvedValue(undefined),
           messageTimeoutSecs: 0,
@@ -1084,7 +1093,7 @@ describe('MessageService', () => {
         .fn()
         .mockImplementation(() => new Promise<void>(() => undefined));
       const serviceManager = createServiceManagerStub(customSendMessage);
-      const messageService = new MessageService(serviceManager, {
+      const messageService = createMessageService(serviceManager, {
         messaging: {
           customSendMessage,
           messageTimeoutSecs: 0,
@@ -1128,7 +1137,7 @@ describe('MessageService', () => {
         jest.fn().mockResolvedValue(undefined),
         stopStreamingButtonState
       );
-      const messageService = new MessageService(serviceManager, {
+      const messageService = createMessageService(serviceManager, {
         messaging: { messageTimeoutSecs: 0 },
       } as any);
       return { serviceManager, messageService };
@@ -1245,7 +1254,7 @@ it('keeps a released request continuation from advancing the newer operation', a
     .mockImplementationOnce(() => second.promise)
     .mockResolvedValue(undefined);
   const serviceManager = createServiceManagerStub(customSendMessage);
-  const messageService = new MessageService(serviceManager, {
+  const messageService = createMessageService(serviceManager, {
     messaging: { messageTimeoutSecs: 0 },
   });
   const firstSend = messageService.send(
