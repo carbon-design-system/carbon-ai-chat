@@ -1,4 +1,4 @@
-# reviewing-a-pr.md — what changes when the target is a pull request
+# reviewing-a-pr.md: what changes when the target is a pull request
 
 Load this when reviewing a pull request, including your own. For a local diff or branch review, use [caic-review's scope rules](../SKILL.md#scope-the-review-first).
 
@@ -58,7 +58,7 @@ When publication is authorized, build the whole review as one payload and submit
       "path": "packages/ai-chat/src/foo.ts",
       "line": 42,
       "side": "RIGHT",
-      "body": "**Context:** this early return is the already-closed guard, and the listener it skips past was registered a few lines above.\n\n**Blocker** — the early return skips teardown, so the listener leaks on every close. Call `dispose()` before returning.\n\n```suggestion\ndispose();\nreturn;\n```"
+      "body": "**Context:** this early return is the already-closed guard, and the listener it skips past was registered a few lines above.\n\n**Blocker**: the early return skips teardown, so the listener leaks on every close. Call `dispose()` before returning.\n\n```suggestion\ndispose();\nreturn;\n```"
     }
   ]
 }
@@ -69,13 +69,13 @@ gh api --method POST repos/<owner>/<repo>/pulls/<pr>/reviews --input .github/pr-
 ```
 
 - **`event`** is `COMMENT` (feedback only), `APPROVE`, or `REQUEST_CHANGES`. Use the event the user authorized; a request to post feedback uses `COMMENT`. Ask only when the intended event is unclear. The verdict line still opens the body, per [Output expectations](../SKILL.md#output-expectations). GitHub rejects `APPROVE` and `REQUEST_CHANGES` on your own PR; explain that limit if it conflicts with the request.
-- **`line`** is the line number in the file as of `commit_id`, and it must fall inside the diff. `side: "RIGHT"` is the post-change file; use `"LEFT"` for a removed line. For a range, add `start_line` (and `start_side`). These fields carry the citation, so drop `file:line` from the comment body and keep the rest of the finding's order — the orientation line still comes first, since a notification shows the body long before the code ([review-comments.md](../../caic-copy-writer/references/review-comments.md)).
+- **`line`** is the line number in the file as of `commit_id`, and it must fall inside the diff. `side: "RIGHT"` is the post-change file; use `"LEFT"` for a removed line. For a range, add `start_line` (and `start_side`). These fields carry the citation, so drop `in file:line` from the severity line, leaving `**Blocker**: <what is wrong>`. Keep the rest of the finding's order: the orientation line still comes first, since a notification shows the body long before the code ([review-comments.md](../../caic-copy-writer/references/review-comments.md)).
 - **Before submission, recheck the PR head.** If it moved, refresh the findings, anchors, patch, and affected checks against the new revision.
 - **If GitHub rejects a range**, keep the finding and complete fix in the summary `body` as a patch with the instructions above. Do not drop the edit or substitute prose. After an uncertain submission result, inspect existing reviews before retrying to avoid duplicate feedback.
 
 ## Related guidance
 
-- [caic-review](../SKILL.md) — the rubric that produces the findings posted here
-- [caic-pr](../../caic-pr/SKILL.md) — drafting the PR description, and opening the PR itself
-- [conventions.md](../../../../references/conventions.md) — commits, branches, PR titles
-- [Root AGENTS.md](../../../../AGENTS.md) — repo overview and pointer index
+- [caic-review](../SKILL.md): the rubric that produces the findings posted here
+- [caic-pr](../../caic-pr/SKILL.md): drafting the PR description, and opening the PR itself
+- [conventions.md](../../../../references/conventions.md): commits, branches, PR titles
+- [Root AGENTS.md](../../../../AGENTS.md): repo overview and pointer index

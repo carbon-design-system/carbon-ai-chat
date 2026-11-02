@@ -16,12 +16,12 @@ Load this before writing a review finding or a review summary. Structural owner:
 
 From the review of #2305, on `file-uploads.ts:265`:
 
-- Before: "**Important** — `hasUploadError` in `Input.tsx:611` is a _state_ predicate but this announces only on _edges_, so a frame where the visible reason changes without crossing an edge is announced by neither."
+- Before: "**Important**: `hasUploadError` in `Input.tsx:611` is a _state_ predicate but this announces only on _edges_, so a frame where the visible reason changes without crossing an edge is announced by neither."
 - After: "**What this block does:** `_announceTransitions` walks this frame's uploads against last frame's, collects what changed, and speaks it. The loop above sorts each upload by the edge it crossed; this block turns that into one announcement.
 
-  **Important** — `hasUploadError` in `Input.tsx:611` is a _state_ predicate but this announces only on _edges_, so a frame where the visible reason changes without crossing an edge is announced by neither."
+  **Important**: `hasUploadError` in `Input.tsx:611` is a _state_ predicate but this announces only on _edges_, so a frame where the visible reason changes without crossing an edge is announced by neither."
 
-Both quote the diagnosis as it was posted, so only the opening differs. The fix that shipped with it, a `suggestion` block, is trimmed here. The diagnosis in the before is correct, but the author can't follow it without the file open.
+Both use the same diagnosis, so only the opening differs. The fix that shipped with it, a `suggestion` block, is trimmed here. The diagnosis in the before is correct, but the author can't follow it without the file open.
 
 ## Gate
 
