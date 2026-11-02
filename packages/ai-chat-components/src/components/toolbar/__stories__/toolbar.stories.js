@@ -62,6 +62,7 @@ export default {
         home: html` <div slot="navigation" data-rounded="top-left">
           <cds-icon-button
             kind="ghost"
+            size="md"
             @click=${action('onClick')}
             align="bottom-start"
             enter-delay-ms="0"
@@ -73,6 +74,7 @@ export default {
         back: html` <div slot="navigation" data-rounded="top-left">
           <cds-icon-button
             kind="ghost"
+            size="md"
             align="bottom-start"
             @click=${action('onClick')}
             enter-delay-ms="0"
