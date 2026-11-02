@@ -67,7 +67,8 @@
     "test:carbon-consumer": "npm run test:carbon-consumer:manifests && node tools/carbon-v12-consumer/run.mjs",
     "test:carbon-consumer:manifests": "node --test tools/carbon-v12-consumer/manifests.test.mjs",
     "test:host-entry-consumer": "node tools/host-entry-consumer/run.mjs",
-    "test:manifest-consumer": "node tools/manifest-consumer/run.mjs"
+    "test:manifest-consumer:references": "node --test tools/manifest-consumer/manifests.test.mjs",
+    "test:manifest-consumer": "npm run test:manifest-consumer:references && node tools/manifest-consumer/run.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.0",

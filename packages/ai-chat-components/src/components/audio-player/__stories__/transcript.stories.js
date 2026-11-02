@@ -14,6 +14,11 @@ import isChromatic from 'chromatic/isChromatic';
 const WITH_TRANSCRIPT_SOURCE_CHROMATIC_DATA_URI =
   'data:audio/wav;base64,UklGRiUAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQEAAACA';
 
+// The transcript is controlled, so each story applies the requested state.
+const toggle = (event) => {
+  event.currentTarget.expanded = event.detail.expanded;
+};
+
 export default {
   component: 'cds-aichat-transcript',
   title: 'Components/Audio player/Transcript',
@@ -43,7 +48,11 @@ export const Default = {
     const { text, label, language } = args;
 
     return html`
-      <cds-aichat-transcript text=${text} label=${label} language=${language}>
+      <cds-aichat-transcript
+        text=${text}
+        label=${label}
+        language=${language}
+        @cds-aichat-transcript-toggle=${toggle}>
       </cds-aichat-transcript>
     `;
   },
@@ -69,7 +78,11 @@ This makes it ideal for providing detailed transcripts of audio content without 
     const { text, label, language } = args;
 
     return html`
-      <cds-aichat-transcript text=${text} label=${label} language=${language}>
+      <cds-aichat-transcript
+        text=${text}
+        label=${label}
+        language=${language}
+        @cds-aichat-transcript-toggle=${toggle}>
       </cds-aichat-transcript>
     `;
   },
@@ -121,7 +134,8 @@ export const WithAudioPlayer = {
           <cds-aichat-transcript
             text=${text}
             label=${label}
-            language=${language}>
+            language=${language}
+            @cds-aichat-transcript-toggle=${toggle}>
           </cds-aichat-transcript>
         </div>
       </cds-aichat-card>
@@ -136,19 +150,22 @@ export const MultipleLanguages = {
         <cds-aichat-transcript
           text="This is an English transcript."
           label="English Transcript"
-          language="en">
+          language="en"
+          @cds-aichat-transcript-toggle=${toggle}>
         </cds-aichat-transcript>
 
         <cds-aichat-transcript
           text="Esta es una transcripción en español."
           label="Transcripción en español"
-          language="es">
+          language="es"
+          @cds-aichat-transcript-toggle=${toggle}>
         </cds-aichat-transcript>
 
         <cds-aichat-transcript
           text="これは日本語の文字起こしです。"
           label="日本語の文字起こし"
-          language="ja">
+          language="ja"
+          @cds-aichat-transcript-toggle=${toggle}>
         </cds-aichat-transcript>
       </div>
     `;
