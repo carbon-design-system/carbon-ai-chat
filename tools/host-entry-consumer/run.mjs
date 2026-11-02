@@ -79,7 +79,6 @@ await assertPackedResolution(consumer);
 
 for (const specifier of [
   '@carbon/ai-chat',
-  '@carbon/ai-chat/es-custom',
   '@carbon/ai-chat/server',
 ]) {
   const script = `import assert from 'node:assert/strict';

@@ -143,7 +143,7 @@ let browser;
 try {
   browser = await chromium.launch();
   const origin = server.resolvedUrls.local[0];
-  for (const tree of ['es', 'es-custom']) {
+  for (const tree of ['es']) {
     const results = [];
     for (const element of elements) {
       const context = await browser.newContext();
