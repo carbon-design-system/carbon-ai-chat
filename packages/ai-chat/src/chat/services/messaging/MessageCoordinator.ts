@@ -14,10 +14,14 @@ import type { MessageSendSource } from '../../../types/events/eventBusTypes';
 import type { SendOptions } from '../../../types/instance/ChatInstance';
 import actions from '../../store/actions';
 import type { ServiceManager } from '../ServiceManager';
+import { RequestQueue, type RequestToken } from './state/RequestQueue';
+import type { PendingMessageRequest } from './MessageService';
 import { ConversationState } from './state/ConversationState';
 
 class MessageCoordinator {
   private state = new ConversationState();
+  private requestQueue = new RequestQueue();
+  private requests = new WeakMap<RequestToken, PendingMessageRequest>();
 
   constructor(
     private serviceManager: ServiceManager,
@@ -50,6 +54,47 @@ class MessageCoordinator {
       options,
       ignoreHydration
     );
+  }
+
+  enqueueRequest(request: PendingMessageRequest) {
+    const token = Object.freeze({ identity: Symbol() });
+    this.requests.set(token, request);
+    this.requestQueue.enqueue(token);
+  }
+
+  getCurrentRequest() {
+    const token = this.requestQueue.getCurrent();
+    return token ? this.requests.get(token) : null;
+  }
+
+  getWaitingRequestCount() {
+    return this.requestQueue.getWaitingCount();
+  }
+
+  getFirstWaitingRequest() {
+    const token = this.requestQueue.getWaitingAt(0);
+    return token ? this.requests.get(token) : undefined;
+  }
+
+  takeNextRequest() {
+    const token = this.requestQueue.takeNext();
+    return token ? this.requests.get(token) : null;
+  }
+
+  clearCurrentRequest() {
+    this.requestQueue.clearCurrent();
+  }
+
+  removeWaitingRequest(messageID: string) {
+    for (let index = 0; index < this.requestQueue.getWaitingCount(); index++) {
+      const token = this.requestQueue.getWaitingAt(index);
+      const request = this.requests.get(token);
+      if (request.message.id === messageID) {
+        this.requestQueue.removeWaiting(token);
+        return request;
+      }
+    }
+    return undefined;
   }
 
   get currentGeneration() {

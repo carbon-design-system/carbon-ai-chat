@@ -336,8 +336,8 @@ describe('ChatInstance.messaging.upsertMessage', () => {
         const sendB = instance.send('B');
         await waitFor(() =>
           expect(
-            (serviceManager.messageService as any).queue.waiting
-          ).toHaveLength(1)
+            serviceManager.messageCoordinator.getWaitingRequestCount()
+          ).toBe(1)
         );
         const signal = customSend.mock.calls[0][1].signal;
         await instance.messaging.upsertMessage(

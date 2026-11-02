@@ -341,7 +341,7 @@ describe('MessageService', () => {
     expect(customSendMessage).toHaveBeenCalledTimes(1);
     const [, options] = customSendMessage.mock.calls[0];
     expect(options.signal).toBeInstanceOf(AbortSignal);
-    expect((messageService as any).queue.current).toBeNull();
+    expect(serviceManager.messageCoordinator.getCurrentRequest()).toBeNull();
   });
 
   it("keeps an external stream's stop button visible when another request completes", async () => {
@@ -371,7 +371,7 @@ describe('MessageService', () => {
     );
 
     expect(customSendMessage).toHaveBeenCalledTimes(1);
-    expect((messageService as any).queue.current).toBeNull();
+    expect(serviceManager.messageCoordinator.getCurrentRequest()).toBeNull();
     expect(messageService.inboundStreaming.streamingMessageID).toBe(
       'external-response'
     );
@@ -413,13 +413,14 @@ describe('MessageService', () => {
       sendMessageController: abortController,
     };
 
-    (messageService as any).queue.current = pendingRequest;
+    serviceManager.messageCoordinator.enqueueRequest(pendingRequest);
+    serviceManager.messageCoordinator.takeNextRequest();
     messageService.markCurrentMessageAsStreaming('resp-1', 'item-1');
 
     await messageService.cancelCurrentMessageRequest();
 
     expect(abortController.signal.aborted).toBe(true);
-    expect((messageService as any).queue.current).toBeNull();
+    expect(serviceManager.messageCoordinator.getCurrentRequest()).toBeNull();
   });
 
   it('cancels a waiting message using its abort controller', async () => {
@@ -433,7 +434,7 @@ describe('MessageService', () => {
     } as any);
 
     // Keep the queue busy so the next send stays in the waiting list.
-    (messageService as any).queue.current = {
+    serviceManager.messageCoordinator.enqueueRequest({
       restartGeneration: 0,
       localMessageID: 'local-current',
       message: createMessage('m-current'),
@@ -449,7 +450,8 @@ describe('MessageService', () => {
       isProcessed: false,
       source: MessageSendSource.MESSAGE_INPUT,
       sendMessageController: new AbortController(),
-    };
+    });
+    serviceManager.messageCoordinator.takeNextRequest();
 
     const sendPromise = messageService.send(
       createMessage('m-waiting'),
@@ -471,7 +473,7 @@ describe('MessageService', () => {
 
     await expect(sendPromise).resolves.toBeUndefined();
     expect(controller.signal.aborted).toBe(true);
-    expect((messageService as any).queue.waiting).toHaveLength(0);
+    expect(serviceManager.messageCoordinator.getWaitingRequestCount()).toBe(0);
   });
 
   it.each([false, true])(
@@ -491,7 +493,7 @@ describe('MessageService', () => {
       const signal: AbortSignal = customSendMessage.mock.calls[0][1].signal;
       const onAbort = jest.fn();
       signal.addEventListener('abort', onAbort);
-      expect((messageService as any).queue.current).toBeNull();
+      expect(serviceManager.messageCoordinator.getCurrentRequest()).toBeNull();
 
       if (isStreaming) {
         messageService.markCurrentMessageAsStreaming('response-id', 'item-id');
@@ -625,7 +627,8 @@ describe('MessageService', () => {
       sendMessageController: abortController,
     };
 
-    (messageService as any).queue.current = pendingRequest;
+    serviceManager.messageCoordinator.enqueueRequest(pendingRequest);
+    serviceManager.messageCoordinator.takeNextRequest();
     (messageService as any).messageAbortControllers.set(
       'm-streaming',
       abortController
@@ -644,7 +647,7 @@ describe('MessageService', () => {
     expect((messageService as any).inboundStreaming.streamingMessageID).toBe(
       null
     );
-    expect((messageService as any).queue.current).toBeNull();
+    expect(serviceManager.messageCoordinator.getCurrentRequest()).toBeNull();
   });
 
   describe('streaming terminal cleanup', () => {
@@ -721,14 +724,16 @@ describe('MessageService', () => {
       );
 
       messageService.markStreamingResponseError('response-first');
-      expect((messageService as any).queue.current.message.id).toBe('m-first');
+      expect(
+        serviceManager.messageCoordinator.getCurrentRequest().message.id
+      ).toBe('m-first');
 
       first.resolve();
       await firstSend;
       await secondSend;
 
       expect(customSendMessage).toHaveBeenCalledTimes(2);
-      expect((messageService as any).queue.current).toBeNull();
+      expect(serviceManager.messageCoordinator.getCurrentRequest()).toBeNull();
     });
 
     it('advances immediately when an ERROR upsert follows transport settlement', async () => {
@@ -764,7 +769,7 @@ describe('MessageService', () => {
       await secondSend;
 
       expect(customSendMessage).toHaveBeenCalledTimes(2);
-      expect((messageService as any).queue.current).toBeNull();
+      expect(serviceManager.messageCoordinator.getCurrentRequest()).toBeNull();
     });
 
     it('advances after an ERROR upsert when the transport later fails', async () => {
@@ -804,7 +809,7 @@ describe('MessageService', () => {
       await secondSend;
 
       expect(customSendMessage).toHaveBeenCalledTimes(2);
-      expect((messageService as any).queue.current).toBeNull();
+      expect(serviceManager.messageCoordinator.getCurrentRequest()).toBeNull();
     });
 
     it('clears partial-stream routing before advancing after a send failure', async () => {
@@ -990,7 +995,8 @@ describe('MessageService', () => {
         isStreaming: true, // Mark as streaming
       };
 
-      (messageService as any).queue.current = pendingRequest;
+      serviceManager.messageCoordinator.enqueueRequest(pendingRequest);
+      serviceManager.messageCoordinator.takeNextRequest();
       messageService.markCurrentMessageAsStreaming('resp-1', 'item-1');
 
       const initialDispatchCount = (serviceManager.store.dispatch as jest.Mock)
@@ -1047,7 +1053,8 @@ describe('MessageService', () => {
         isStreaming: true,
       };
 
-      (messageService as any).queue.current = pendingRequest;
+      serviceManager.messageCoordinator.enqueueRequest(pendingRequest);
+      serviceManager.messageCoordinator.takeNextRequest();
       messageService.markCurrentMessageAsStreaming('resp-1', 'item-1');
 
       await messageService.cancelMessageRequestByID(
@@ -1227,4 +1234,55 @@ describe('MessageService', () => {
       expect(serviceManager.store.dispatch).not.toHaveBeenCalled();
     });
   });
+});
+
+it('keeps a released request continuation from advancing the newer operation', async () => {
+  const first = createDeferred();
+  const second = createDeferred();
+  const customSendMessage = jest
+    .fn()
+    .mockImplementationOnce(() => first.promise)
+    .mockImplementationOnce(() => second.promise)
+    .mockResolvedValue(undefined);
+  const serviceManager = createServiceManagerStub(customSendMessage);
+  const messageService = new MessageService(serviceManager, {
+    messaging: { messageTimeoutSecs: 0 },
+  });
+  const firstSend = messageService.send(
+    createMessage('first'),
+    MessageSendSource.MESSAGE_INPUT,
+    'local-first'
+  );
+  await flushMessageQueue();
+  messageService.markCurrentMessageAsStreaming('response-first');
+  const retainedFirst = serviceManager.messageCoordinator.getCurrentRequest();
+  const secondSend = messageService.send(
+    createMessage('second'),
+    MessageSendSource.MESSAGE_INPUT,
+    'local-second'
+  );
+  const thirdSend = messageService.send(
+    createMessage('third'),
+    MessageSendSource.MESSAGE_INPUT,
+    'local-third'
+  );
+  messageService.finalizeStreamingMessage('response-first');
+  await flushMessageQueue();
+  const currentSecond = serviceManager.messageCoordinator.getCurrentRequest();
+  expect(currentSecond.message.id).toBe('second');
+  expect(customSendMessage).toHaveBeenCalledTimes(2);
+  expect(retainedFirst.isProcessed).toBe(false);
+  first.resolve();
+  await firstSend;
+  expect(retainedFirst.isProcessed).toBe(true);
+  expect(serviceManager.messageCoordinator.getCurrentRequest()).toBe(
+    currentSecond
+  );
+  expect(serviceManager.messageCoordinator.getWaitingRequestCount()).toBe(1);
+  expect(customSendMessage).toHaveBeenCalledTimes(2);
+  second.resolve();
+  await secondSend;
+  await thirdSend;
+  expect(customSendMessage).toHaveBeenCalledTimes(3);
+  expect(serviceManager.messageCoordinator.getCurrentRequest()).toBeNull();
 });

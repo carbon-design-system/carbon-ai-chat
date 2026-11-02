@@ -22,7 +22,8 @@
  * 5) FinalResponseChunk or cancellation clears streaming tracking and moves to the next queued message.
  *
  * Responsibilities:
- * - MessageService: queueing/orchestration, PRE_SEND/SEND events, loading/timeout setup, cancellation entrypoints.
+ * - MessageCoordinator: queue membership and pending request lookup.
+ * - MessageService: queue execution, PRE_SEND/SEND events, loading/timeout setup, cancellation entrypoints.
  * - OutboundMessageCoordinator: send lifecycle (store updates, calling customSendMessage, resolving/rejecting/canceling).
  * - InboundStreamingCoordinator: streaming id tracking (response_id/item_id), finalization, cancellation cleanup.
  */
@@ -173,23 +174,6 @@ class MessageService {
   public timeoutMS: number;
 
   /**
-   * This queue will take any messages sent to the service and will process them in the order they were received,
-   * starting with index 0.
-   */
-  private queue: {
-    /**
-     * All the messages that are waiting for an attempt to be sent. If a message is currently in the process of
-     * being sent, it will not appear in this list.
-     */
-    waiting: PendingMessageRequest[];
-
-    /**
-     * The message that is currently in the process of being sent to the assistant.
-     */
-    current: PendingMessageRequest;
-  };
-
-  /**
    * Handles inbound streaming tracking and lifecycle.
    */
   public inboundStreaming: InboundStreamingCoordinator;
@@ -220,7 +204,7 @@ class MessageService {
   public messageLoadingManager: MessageLoadingManager;
 
   get currentRequestID() {
-    const current = this.queue.current;
+    const current = this.serviceManager.messageCoordinator.getCurrentRequest();
     return current && !current.isProcessed ? current.message.id : undefined;
   }
 
@@ -253,7 +237,7 @@ class MessageService {
       this.messageLoadingManager,
       (pendingRequest, errorState) =>
         this.setMessageErrorState(pendingRequest, errorState),
-      () => this.queue.current,
+      () => this.serviceManager.messageCoordinator.getCurrentRequest(),
       () => this.moveToNextQueueItem(),
       (pendingRequest, received) =>
         this.processSuccess(pendingRequest, received),
@@ -263,10 +247,6 @@ class MessageService {
         this.registerRequestGeneration(requestID, restartGeneration),
       () => this.hideStopStreamingButtonIfNoUpsertStreaming()
     );
-    this.queue = {
-      waiting: [],
-      current: null,
-    };
 
     const timeoutOverride = publicConfig.messaging?.messageTimeoutSecs;
     this.timeoutMS =
@@ -377,13 +357,10 @@ class MessageService {
    * this.sendToAssistant.
    */
   private async runQueueIfReady() {
-    if (this.queue.current || this.queue.waiting.length === 0) {
+    const current = this.serviceManager.messageCoordinator.takeNextRequest();
+    if (!current) {
       return;
     }
-
-    this.clearCurrentQueueItem();
-    this.queue.current = this.queue.waiting.shift();
-    const { current } = this.queue;
     this.serviceManager.messageCoordinator.requestStarted(
       current.message.id,
       current.generation,
@@ -529,16 +506,14 @@ class MessageService {
       sendMessageController: controller,
     };
 
-    this.queue.waiting.push(newPendingMessage);
+    this.serviceManager.messageCoordinator.enqueueRequest(newPendingMessage);
   }
 
   /**
    * Performs any finishes steps necessary to complete the current queue item.
    */
   private clearCurrentQueueItem() {
-    if (this.queue.current) {
-      this.queue.current = null;
-    }
+    this.serviceManager.messageCoordinator.clearCurrentRequest();
   }
 
   /**
@@ -684,16 +659,17 @@ class MessageService {
     // Abort listeners can remove controllers from tracking before cancellation finishes.
     const messageAbortControllers = Array.from(this.messageAbortControllers);
 
-    while (this.queue.waiting.length) {
+    while (this.serviceManager.messageCoordinator.getWaitingRequestCount()) {
       await this.cancelMessageRequestByID(
-        this.queue.waiting[0].message.id,
+        this.serviceManager.messageCoordinator.getFirstWaitingRequest().message
+          .id,
         false,
         reason
       );
     }
-    if (this.queue.current) {
+    if (this.serviceManager.messageCoordinator.getCurrentRequest()) {
       await this.cancelMessageRequestByID(
-        this.queue.current.message.id,
+        this.serviceManager.messageCoordinator.getCurrentRequest().message.id,
         false,
         reason
       );
@@ -724,7 +700,7 @@ class MessageService {
    */
   public markCurrentMessageAsStreaming(messageID?: string, itemID?: string) {
     this.inboundStreaming.markStreaming(
-      this.queue.current,
+      this.serviceManager.messageCoordinator.getCurrentRequest(),
       messageID,
       itemID,
       this.lastProcessedMessageID
@@ -743,7 +719,7 @@ class MessageService {
   public markStreamingResponseError(messageID: string) {
     const responseID = this.inboundStreaming.resolveResponseId(messageID);
     const streamingMeta = this.inboundStreaming.getStreamingMeta(responseID);
-    const current = this.queue.current;
+    const current = this.serviceManager.messageCoordinator.getCurrentRequest();
     const isCurrentResponse = Boolean(
       current &&
       (current.message.id === responseID ||
@@ -792,7 +768,8 @@ class MessageService {
   }
 
   getCurrentMessageController() {
-    return this.queue.current?.sendMessageController;
+    return this.serviceManager.messageCoordinator.getCurrentRequest()
+      ?.sendMessageController;
   }
 
   /**
@@ -815,7 +792,8 @@ class MessageService {
   public hideStopStreamingButtonIfIdle() {
     if (
       !this.isAnyMessageStreaming() &&
-      (!this.queue.current || this.queue.current.isProcessed)
+      (!this.serviceManager.messageCoordinator.getCurrentRequest() ||
+        this.serviceManager.messageCoordinator.getCurrentRequest().isProcessed)
     ) {
       resetStopStreamingButton(this.serviceManager.store);
     }
@@ -884,9 +862,9 @@ class MessageService {
       return;
     }
 
-    if (this.queue.current) {
+    if (this.serviceManager.messageCoordinator.getCurrentRequest()) {
       await this.cancelMessageRequestByID(
-        this.queue.current.message.id,
+        this.serviceManager.messageCoordinator.getCurrentRequest().message.id,
         false,
         reason
       );
@@ -899,30 +877,27 @@ class MessageService {
     streamingEntry?: { requestId?: string }
   ) {
     if (
-      this.queue.current?.message.id === responseId ||
+      this.serviceManager.messageCoordinator.getCurrentRequest()?.message.id ===
+        responseId ||
       (streamingEntry &&
-        this.queue.current?.message.id === streamingEntry.requestId)
+        this.serviceManager.messageCoordinator.getCurrentRequest()?.message
+          .id === streamingEntry.requestId)
     ) {
-      return this.queue.current;
+      return this.serviceManager.messageCoordinator.getCurrentRequest();
     }
 
     if (
-      this.queue.current?.isStreaming &&
+      this.serviceManager.messageCoordinator.getCurrentRequest()?.isStreaming &&
       this.inboundStreaming.streamingMessageID
     ) {
       // The streaming response_id can differ from the original message.id
       // so treat the current streaming request as a match for cancellation.
-      return this.queue.current;
+      return this.serviceManager.messageCoordinator.getCurrentRequest();
     }
 
-    const index = this.queue.waiting.findIndex(
-      (item) => item.message.id === responseId
+    return this.serviceManager.messageCoordinator.removeWaitingRequest(
+      responseId
     );
-    if (index !== -1) {
-      const [pendingRequest] = this.queue.waiting.splice(index, 1);
-      return pendingRequest;
-    }
-    return undefined;
   }
 
   private findAbortControllerForCancellation(
@@ -1021,7 +996,10 @@ class MessageService {
         // This hid unconditionally before `upsertMessage` existed, so it still ignores
         // other chunk streams; only a running upsert stream keeps the button up.
         this.hideStopStreamingButtonIfNoUpsertStreaming();
-        if (pendingRequest === this.queue.current) {
+        if (
+          pendingRequest ===
+          this.serviceManager.messageCoordinator.getCurrentRequest()
+        ) {
           this.moveToNextQueueItem();
         }
       } else {
