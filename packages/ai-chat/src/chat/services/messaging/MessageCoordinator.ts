@@ -26,7 +26,30 @@ import { RequestQueue, type RequestToken } from './state/RequestQueue';
 import type { PendingMessageRequest } from './pendingRequestTypes';
 import { ConversationState } from './state/ConversationState';
 
+import { coordinateUserDefinedResponseItems } from './coordinateMessageEvents';
+import type { LocalMessageItem } from '../../../types/messaging/LocalMessageItem';
+import type { Message } from '../../../types/messaging/Messages';
+import type { MessageState } from '../../../types/config/MessagingConfig';
+
 class MessageCoordinator {
+  handleUserDefinedResponseItems(
+    localMessage: LocalMessageItem,
+    originalMessage: Message,
+    messageState?: MessageState,
+    localItemsByID?: Record<string, LocalMessageItem>,
+    isCurrent?: () => boolean
+  ) {
+    return coordinateUserDefinedResponseItems(
+      this.serviceManager,
+      this.presentation,
+      localMessage,
+      originalMessage,
+      messageState,
+      localItemsByID,
+      isCurrent
+    );
+  }
+
   private state = new ConversationState();
   private terminationWorkflow: TerminationWorkflow;
   private sendWorkflow?: SendWorkflow;

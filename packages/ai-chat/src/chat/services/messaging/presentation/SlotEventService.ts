@@ -12,7 +12,6 @@ import {
   getRequestFooterSlotName,
   hasRequestFooter,
   isResponse,
-  isResponseWithNestedItems,
   renderAsUserDefinedMessage,
   streamItemID,
 } from '../../../utils/messageUtils';
@@ -21,7 +20,6 @@ import {
   BusEventCustomFooterSlot,
   BusEventCustomRequestFooterSlot,
   BusEventType,
-  BusEventUserDefinedResponse,
 } from '../../../../types/events/eventBusTypes';
 import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
 import { DeepPartial } from '../../../../types/utilities/DeepPartial';
@@ -77,7 +75,7 @@ class SlotEventService {
    * message from `addMessage` passes the items it built, since its events fire before
    * they are stored.
    */
-  async handleUserDefinedResponseItems(
+  handleUserDefinedResponseItems(
     localMessage: LocalMessageItem,
     originalMessage: Message,
     messageState?: MessageState,
@@ -87,125 +85,13 @@ class SlotEventService {
     > = this.serviceManager.store.getState().allMessageItemsByID,
     isCurrent: () => boolean = () => true
   ) {
-    if (!isCurrent()) {
-      return;
-    }
-    if (
-      !renderAsUserDefinedMessage(localMessage.item) &&
-      !isResponseWithNestedItems(localMessage.item)
-    ) {
-      return;
-    }
-    const state = this.serviceManager.store.getState();
-    if (
-      !Object.isFrozen(originalMessage) &&
-      (state.allMessagesByID[originalMessage.id] === originalMessage ||
-        state.allMessageItemsByID[localMessage.ui_state.id] === localMessage)
-    ) {
-      const localItems = Object.fromEntries(
-        Object.entries(localItemsByID).filter(
-          ([, item]) => item.fullMessageID === originalMessage.id
-        )
-      );
-      const write = this.serviceManager.messageUpsertCoordinator.trackWrite(
-        originalMessage.id
-      );
-      const isEventCurrent = () => isCurrent() && write.isCurrent();
-      const eventValues = captureMessageEvent(
-        this.serviceManager,
-        originalMessage,
-        localItems,
-        undefined,
-        isEventCurrent
-      );
-      try {
-        await this.handleUserDefinedResponseItems(
-          eventValues.localItems[localMessage.ui_state.id] ?? localMessage,
-          eventValues.message,
-          messageState,
-          eventValues.localItems,
-          isEventCurrent
-        );
-      } finally {
-        try {
-          eventValues.commit();
-        } finally {
-          write.release();
-        }
-      }
-      return;
-    }
-    if (renderAsUserDefinedMessage(localMessage.item)) {
-      let slotName: string;
-      if (!localMessage.item.user_defined?.silent) {
-        ({ slotName } = this.getOrCreateUserDefinedElement(
-          localMessage.ui_state.id
-        ));
-      }
-
-      const userDefinedResponseEvent: BusEventUserDefinedResponse = {
-        type: BusEventType.USER_DEFINED_RESPONSE,
-        data: {
-          message: localMessage.item,
-          fullMessage: originalMessage,
-          slot: slotName,
-          state: messageState,
-        },
-      };
-
-      await this.serviceManager.fire(userDefinedResponseEvent, isCurrent);
-    } else if (isResponseWithNestedItems(localMessage.item)) {
-      const {
-        itemsLocalMessageItemIDs,
-        bodyLocalMessageItemIDs,
-        footerLocalMessageItemIDs,
-        gridLocalMessageItemIDs,
-      } = localMessage.ui_state;
-
-      const createElementForNestedUserDefinedResponse = (
-        localMessageItemID: string
-      ) => {
-        const nestedLocalMessage = localItemsByID[localMessageItemID];
-        return this.handleUserDefinedResponseItems(
-          nestedLocalMessage,
-          originalMessage,
-          messageState,
-          localItemsByID,
-          isCurrent
-        );
-      };
-
-      if (gridLocalMessageItemIDs?.length) {
-        await asyncForEach(gridLocalMessageItemIDs, (row) =>
-          asyncForEach(row, (cell) =>
-            asyncForEach(cell, (itemID) =>
-              createElementForNestedUserDefinedResponse(itemID)
-            )
-          )
-        );
-      }
-
-      if (itemsLocalMessageItemIDs?.length) {
-        await asyncForEach(
-          itemsLocalMessageItemIDs,
-          createElementForNestedUserDefinedResponse
-        );
-      }
-
-      if (bodyLocalMessageItemIDs?.length) {
-        await asyncForEach(
-          bodyLocalMessageItemIDs,
-          createElementForNestedUserDefinedResponse
-        );
-      }
-
-      if (footerLocalMessageItemIDs?.length) {
-        await asyncForEach(
-          footerLocalMessageItemIDs,
-          createElementForNestedUserDefinedResponse
-        );
-      }
-    }
+    return this.serviceManager.messageCoordinator.handleUserDefinedResponseItems(
+      localMessage,
+      originalMessage,
+      messageState,
+      localItemsByID,
+      isCurrent
+    );
   }
 
   /**
