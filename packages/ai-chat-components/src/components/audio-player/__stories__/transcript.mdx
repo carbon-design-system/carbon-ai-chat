@@ -72,11 +72,13 @@ import '@carbon/ai-chat-components/es/components/audio-player/index.js';
 
 ## Synchronize transcript state
 
+The transcript doesn't open or close itself, so set `expanded` from the toggle event:
+
 ```javascript
 const transcript = document.querySelector('cds-aichat-transcript');
 
 transcript.addEventListener('cds-aichat-transcript-toggle', (event) => {
-  console.log('Transcript expanded:', event.detail.expanded);
+  transcript.expanded = event.detail.expanded;
 });
 ```
 
