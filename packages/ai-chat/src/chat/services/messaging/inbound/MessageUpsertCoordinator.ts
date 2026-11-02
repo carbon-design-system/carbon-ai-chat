@@ -57,6 +57,10 @@ import { deepFreeze } from '../../../utils/lang/objectUtils';
 import { consoleError } from '../../../utils/miscUtils';
 import { hasDisplayableContentForItem } from '../../../utils/streamingUtils';
 import { ServiceManager } from '../../ServiceManager';
+import {
+  retainNativeMessageOrigin,
+  snapshotNativeMessageEvent,
+} from '../nativeMessageEvents';
 
 /**
  * Whether an upserted item counts as content for the stream-start announcement. A text
@@ -517,9 +521,11 @@ class MessageUpsertCoordinator {
             (id) =>
               previousState.allMessageItemsByID[id]?.fullMessageID === messageID
           );
+    const ownedResult = cloneDeep(result);
+    retainNativeMessageOrigin(ownedResult);
     this.serviceManager.store.dispatch(
       actions.upsertMessage(
-        cloneDeep(result),
+        ownedResult,
         nextState === MessageState.STREAMING && !isStopped,
         holdFromIndex,
         options
@@ -952,8 +958,10 @@ class MessageUpsertCoordinator {
       const previousHoldFromIndex = pauseIndex;
       pauseIndex = this.findPauseToRun(messageID, result);
       const refsBefore = this.snapshotLocalItemRefs(messageID);
+      const ownedResult = cloneDeep(result);
+      retainNativeMessageOrigin(ownedResult);
       store.dispatch(
-        actions.upsertMessage(cloneDeep(result), isStreaming, pauseIndex, {
+        actions.upsertMessage(ownedResult, isStreaming, pauseIndex, {
           pauseReveal: { originalLocalIDs, previousHoldFromIndex },
         })
       );
@@ -1379,6 +1387,7 @@ class MessageUpsertCoordinator {
       ...eventValues,
       commit: () => {
         eventValues.commit((committed) => {
+          retainNativeMessageOrigin(committed as MessageResponse);
           stamp.eventMessage = committed as MessageResponse;
         });
       },
@@ -1426,47 +1435,51 @@ class MessageUpsertCoordinator {
     if (!eventValues) {
       return;
     }
-    try {
-      for (const entry of this.fanOutEntries(messageID, result, toIndex)) {
+    const snapshot = snapshotNativeMessageEvent({
+      message: eventValues.message as MessageResponse,
+      localItems: eventValues.localItems,
+    });
+    for (const entry of this.fanOutEntries(messageID, result, toIndex)) {
+      if (isStale()) {
+        return;
+      }
+      const storedLocalItem =
+        entry.index >= fromIndex
+          ? this.localItemToFanOut(messageID, result, entry, skipsUnchanged)
+          : undefined;
+      if (storedLocalItem) {
+        const localItem = entry.isHidden
+          ? {
+              ...storedLocalItem,
+              item: snapshot.message.output.generic[entry.index],
+              ui_state: { ...storedLocalItem.ui_state },
+            }
+          : snapshot.localItems[storedLocalItem.ui_state.id];
+        if (!localItem) {
+          continue;
+        }
+        const nestedItems = entry.isHidden
+          ? {
+              ...snapshot.localItems,
+              ...this.createHiddenNestedItems(localItem, snapshot.message),
+            }
+          : snapshot.localItems;
+        await chatActions.handleUserDefinedResponseItems(
+          localItem,
+          snapshot.message,
+          nextState,
+          nestedItems,
+          () => !isStale()
+        );
         if (isStale()) {
           return;
         }
-        const storedLocalItem =
-          entry.index >= fromIndex
-            ? this.localItemToFanOut(messageID, result, entry, skipsUnchanged)
-            : undefined;
-        if (storedLocalItem) {
-          const localItem = entry.isHidden
-            ? storedLocalItem
-            : eventValues.localItems[storedLocalItem.ui_state.id];
-          if (!localItem) {
-            continue;
-          }
-          const nestedItems = entry.isHidden
-            ? {
-                ...eventValues.localItems,
-                ...this.createHiddenNestedItems(localItem, result),
-              }
-            : eventValues.localItems;
-          await chatActions.handleUserDefinedResponseItems(
-            localItem,
-            result,
-            nextState,
-            nestedItems,
-            () => !isStale()
-          );
-          if (isStale()) {
-            return;
-          }
-          await chatActions.handleCustomFooterSlot(
-            localItem,
-            result,
-            () => !isStale()
-          );
-        }
+        await chatActions.handleCustomFooterSlot(
+          localItem,
+          snapshot.message,
+          () => !isStale()
+        );
       }
-    } finally {
-      eventValues.commit();
     }
   }
 
@@ -1584,11 +1597,12 @@ class MessageUpsertCoordinator {
     result: MessageResponse,
     stamp: UpsertStamp
   ): Promise<void> {
+    // Capture current internal metadata before creating the detached notification.
+    this.captureUpsertEvent(messageID, result, stamp);
     const receiveEvent: BusEventReceive = {
       type: BusEventType.RECEIVE,
-      data: result,
+      data: snapshotNativeMessageEvent(result),
     };
-    const eventValues = this.captureUpsertEvent(messageID, result, stamp);
     try {
       await this.serviceManager.fire(
         receiveEvent,
@@ -1596,8 +1610,6 @@ class MessageUpsertCoordinator {
       );
     } catch (error) {
       consoleError('upsertMessage: receive handler threw, continuing.', error);
-    } finally {
-      eventValues?.commit();
     }
     if (!this.isStale(stamp, result.request_id)) {
       this.serviceManager.messageService.finalizeStreamingMessage(messageID);

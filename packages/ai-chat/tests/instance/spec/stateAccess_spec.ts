@@ -11,6 +11,7 @@ import { act } from '@testing-library/react';
 import actions from '../../../src/chat/store/actions';
 import { MessageState } from '../../../src/types/config/MessagingConfig';
 import {
+  GenericItem,
   MessageResponse,
   MessageResponseTypes,
 } from '../../../src/types/messaging/Messages';
@@ -30,17 +31,15 @@ describe('ChatInstance.state', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  it('retains slot edits when the handler throws without changing the old snapshot', async () => {
+  it('rejects native slot mutations without changing retained or current snapshots', async () => {
     const { instance } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
     let snapshot: PublicChatState;
-    const failure = new Error('slot handler failed');
     instance.on({
       type: BusEventType.USER_DEFINED_RESPONSE,
       handler: (event: any) => {
         snapshot = instance.state.get();
         event.data.message.user_defined.value = 'after';
-        throw failure;
       },
     });
     await expect(
@@ -58,7 +57,7 @@ describe('ChatInstance.state', () => {
           },
         })
       )
-    ).rejects.toThrow(failure);
+    ).rejects.toThrow(TypeError);
     expect(
       (
         snapshot.messages.find(
@@ -74,23 +73,27 @@ describe('ChatInstance.state', () => {
             (message) => message.id === 'throwing-slot'
           ) as MessageResponse
       ).output.generic[0].user_defined.value
-    ).toBe('after');
+    ).toBe('before');
   });
 
-  it('keeps local item edits aligned across successive mutable slot handlers', async () => {
+  it('keeps native item snapshots aligned across response and footer handlers', async () => {
     const { instance, store } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
     instance.on([
       {
         type: BusEventType.USER_DEFINED_RESPONSE,
         handler: (event: any) => {
-          event.data.message.user_defined.first = true;
+          expect(() => {
+            event.data.message.user_defined.first = true;
+          }).toThrow(TypeError);
         },
       },
       {
         type: BusEventType.CUSTOM_FOOTER_SLOT,
         handler: (event: any) => {
-          event.data.message.output.generic[0].user_defined.second = true;
+          expect(() => {
+            event.data.message.output.generic[0].user_defined.second = true;
+          }).toThrow(TypeError);
         },
       },
     ]);
@@ -114,7 +117,7 @@ describe('ChatInstance.state', () => {
     const local = Object.values(store.getState().allMessageItemsByID).find(
       (item) => item.fullMessageID === 'successive'
     );
-    expect(local.item.user_defined).toEqual({ first: true, second: true });
+    expect(local.item.user_defined).toEqual({});
     expect(
       (store.getState().allMessagesByID.successive as MessageResponse).output
         .generic[0]
@@ -153,20 +156,20 @@ describe('ChatInstance.state', () => {
   });
 
   it.each([BusEventType.USER_DEFINED_RESPONSE, BusEventType.RECEIVE])(
-    'captures unread snapshots before supported edits in %s',
+    'keeps unread snapshots isolated from native notifications in %s',
     async (type) => {
       const { instance } =
         await renderChatAndGetInstanceWithStore(createBaseConfig());
       let snapshot: PublicChatState;
+      let notificationItem: GenericItem;
       instance.on({
         type,
         handler: (event: any) => {
           snapshot = instance.state.get();
-          const item =
+          notificationItem =
             type === BusEventType.RECEIVE
               ? event.data.output.generic[0]
               : event.data.message;
-          item.user_defined.value = 'after';
         },
       });
       await instance.messaging.upsertMessage(
@@ -184,6 +187,9 @@ describe('ChatInstance.state', () => {
           },
         })
       );
+      expect(() => {
+        notificationItem.user_defined.value = 'after';
+      }).toThrow(TypeError);
       const oldMessage = snapshot.messages.find(
         (message) => message.id === 'owned'
       ) as MessageResponse;
@@ -191,7 +197,9 @@ describe('ChatInstance.state', () => {
         .get()
         .messages.find((message) => message.id === 'owned') as MessageResponse;
       expect(oldMessage.output.generic[0].user_defined.value).toBe('before');
-      expect(currentMessage.output.generic[0].user_defined.value).toBe('after');
+      expect(currentMessage.output.generic[0].user_defined.value).toBe(
+        'before'
+      );
       expect(Object.isFrozen(oldMessage.output.generic[0].user_defined)).toBe(
         true
       );

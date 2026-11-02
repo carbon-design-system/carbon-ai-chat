@@ -87,6 +87,16 @@ The other delivery methods follow the same rule:
 
 So regenerating a message that is already `COMPLETE` does not fire {@link BusEventType.RECEIVE | RECEIVE}. It is not a new turn landing. But inserting a brand-new `COMPLETE` message does fire it.
 
+## Callback snapshots
+
+For `upsertMessage`, the message data passed to user-defined response, custom message footer, and receive callbacks is a detached snapshot. This also applies to message data in React and web component render callbacks. Edits to these copies do not write back to the chat or affect your updater result.
+
+Plain objects and arrays in a snapshot are frozen. Special values, such as dates, typed arrays, maps, and sets, are copied and keep their usual APIs. Those copies remain mutable, but their changes affect only the snapshot. They do not share mutable data with your updater result or the stored message.
+
+Use the updater or {@link BusEventType.PRE_RECEIVE | pre:receive} to change message content. Pre-receive data stays mutable. The shared callback types stay unchanged: snapshot isolation and freezing apply at runtime, not through TypeScript. These rules apply only to `upsertMessage`. The stable add-message, chunk, and human-agent paths keep their existing mutation contracts.
+
+An attempted write to frozen data may throw. The upsert keeps its existing callback and pause waits. Rejection from an awaited response or footer callback still rejects it. Receive-handler errors remain logged without rejecting the upsert. Render notifications that run independently still do not delay completion.
+
 ## User-defined responses
 
 For `user_defined` items, `upsertMessage` reuses the existing {@link BusEventType.USER_DEFINED_RESPONSE | USER_DEFINED_RESPONSE} event. It fires once per user-defined item per call. This holds for both inserts and updates. The payload has an optional `state` field on {@link BusEventUserDefinedResponse | BusEventUserDefinedResponse}. That field carries the current {@link MessageState | MessageState} whenever the chat has a recorded lifecycle for the message. This includes messages from `upsertMessage`, {@link ChatInstanceMessaging.addMessage | addMessage}, and the final-response transition of {@link ChatInstanceMessaging.addMessageChunk | addMessageChunk}. The field is additive, so existing consumers ignore it. In React, the same value sits on {@link RenderUserDefinedState | RenderUserDefinedState} as `state`.

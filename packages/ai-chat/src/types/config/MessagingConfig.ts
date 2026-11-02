@@ -130,6 +130,19 @@ export interface ChatInstanceMessaging {
    * message did not previously exist. STREAMING-to-STREAMING and COMPLETE-to-COMPLETE
    * upserts do not fire these events.
    *
+   * Message data in user-defined response, custom message footer, and receive callbacks
+   * is a detached snapshot. Plain objects and arrays are frozen. Special values, such
+   * as dates and typed arrays, remain mutable copies with their usual APIs. Edits affect
+   * only the snapshot, not the stored message or your updater result. Use the updater
+   * or mutable {@link BusEventType.PRE_RECEIVE} data to change the message.
+   * Shared callback types stay unchanged; these runtime rules apply only to this method.
+   * Stable add-message, chunk, and human-agent paths are unchanged.
+   *
+   * This call keeps its existing callback and pause waits. Rejection from an awaited
+   * response or footer callback still rejects the upsert. Receive-handler errors are
+   * logged without rejecting it. Render notifications that run independently still do
+   * not delay completion. An attempted write to frozen data follows these same error rules.
+   *
    * If the returned message has no `id`, Carbon AI Chat assigns `messageID`. The
    * cancellation contract for outbound messages is unchanged — see
    * {@link CustomSendMessageOptions}.

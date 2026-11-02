@@ -48,6 +48,12 @@ import { MessageState } from '../config/MessagingConfig';
 /**
  * The user_defined message object passed into the renderUserDefinedResponse property on the main chat components.
  *
+ * For {@link ChatInstanceMessaging.upsertMessage}, message data is a detached snapshot.
+ * Plain objects and arrays are frozen; special values remain mutable copies.
+ * Use the updater or {@link BusEventType.PRE_RECEIVE} to change content;
+ * renderer edits do not write back. This runtime rule leaves shared types and other
+ * delivery paths unchanged.
+ *
  * @category React
  */
 interface RenderUserDefinedState {
@@ -85,6 +91,12 @@ interface RenderUserDefinedState {
 /**
  * The type of the render function that is used to render a custom footer. This function should return a
  * component that renders the custom message footer.
+ *
+ * For {@link ChatInstanceMessaging.upsertMessage}, message data is a detached snapshot.
+ * Plain objects and arrays are frozen; special values remain mutable copies.
+ * Use the updater or {@link BusEventType.PRE_RECEIVE} to change content;
+ * renderer edits do not write back. This runtime rule leaves shared types and other
+ * delivery paths unchanged.
  *
  * @param slotName The unique identifier for this footer slot.
  * @param message The assistant response object that contains the messageItem.
@@ -162,6 +174,12 @@ type WCRenderUserDefinedResponse = (
 /**
  * The accumulated state for one custom message footer slot, passed to the
  * web component {@link WCRenderCustomMessageFooter} callback.
+ *
+ * For {@link ChatInstanceMessaging.upsertMessage}, message data is a detached snapshot.
+ * Plain objects and arrays are frozen; special values remain mutable copies.
+ * Use the updater or {@link BusEventType.PRE_RECEIVE} to change content;
+ * renderer edits do not write back. This runtime rule leaves shared types and other
+ * delivery paths unchanged.
  *
  * @category Web component
  */
