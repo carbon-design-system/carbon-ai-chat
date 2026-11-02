@@ -49,6 +49,7 @@ test.each([
         );
       });
       const button = container.querySelector(tag) as ChatButtonElement;
+      expect(button).not.toBeNull();
       await button.updateComplete;
       return button;
     };

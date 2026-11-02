@@ -12,7 +12,7 @@
 import { expect, test } from '@playwright/test';
 
 for (const tree of ['es', 'es-custom']) {
-  test(`${tree} choices block repeats and recover after clearing`, async ({
+  test(`${tree} choices block repeats and recovers after clearing`, async ({
     page,
   }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -84,6 +84,7 @@ for (const tree of ['es', 'es-custom']) {
     await page.keyboard.press('Space');
     await expect(calls).toHaveText('2,2');
     await expect(first).toHaveJSProperty('isSelected', true);
+    await before.focus();
     await page.keyboard.press('Tab');
     await expect(second).toBeFocused();
     await expect(calls).toHaveText('2,2');
