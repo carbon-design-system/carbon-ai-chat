@@ -35,6 +35,7 @@ import {
 import { AppStateMessages } from '../../types/state/AppState';
 import { MessageState } from '../../types/config/MessagingConfig';
 import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
+import { captureMessageEvent } from '../utils/messageEventOwnership';
 import type {
   ServiceManager,
   UserDefinedElementRegistryItem,
@@ -87,6 +88,51 @@ class SlotEventService {
     isCurrent: () => boolean = () => true
   ) {
     if (!isCurrent()) {
+      return;
+    }
+    if (
+      !renderAsUserDefinedMessage(localMessage.item) &&
+      !isResponseWithNestedItems(localMessage.item)
+    ) {
+      return;
+    }
+    const state = this.serviceManager.store.getState();
+    if (
+      !Object.isFrozen(originalMessage) &&
+      (state.allMessagesByID[originalMessage.id] === originalMessage ||
+        state.allMessageItemsByID[localMessage.ui_state.id] === localMessage)
+    ) {
+      const localItems = Object.fromEntries(
+        Object.entries(localItemsByID).filter(
+          ([, item]) => item.fullMessageID === originalMessage.id
+        )
+      );
+      const write = this.serviceManager.messageUpsertCoordinator.trackWrite(
+        originalMessage.id
+      );
+      const isEventCurrent = () => isCurrent() && write.isCurrent();
+      const eventValues = captureMessageEvent(
+        this.serviceManager,
+        originalMessage,
+        localItems,
+        undefined,
+        isEventCurrent
+      );
+      try {
+        await this.handleUserDefinedResponseItems(
+          eventValues.localItems[localMessage.ui_state.id] ?? localMessage,
+          eventValues.message,
+          messageState,
+          eventValues.localItems,
+          isEventCurrent
+        );
+      } finally {
+        try {
+          eventValues.commit();
+        } finally {
+          write.release();
+        }
+      }
       return;
     }
     if (renderAsUserDefinedMessage(localMessage.item)) {
@@ -213,8 +259,44 @@ class SlotEventService {
     }
     const footerOptions =
       localMessage.item.message_item_options?.custom_footer_slot;
-
-    if (footerOptions && footerOptions.is_on !== false) {
+    if (!footerOptions || footerOptions.is_on === false) {
+      return;
+    }
+    const state = this.serviceManager.store.getState();
+    if (
+      !Object.isFrozen(originalMessage) &&
+      (state.allMessagesByID[originalMessage.id] === originalMessage ||
+        state.allMessageItemsByID[localMessage.ui_state.id] === localMessage)
+    ) {
+      const write = this.serviceManager.messageUpsertCoordinator.trackWrite(
+        originalMessage.id
+      );
+      const isEventCurrent = () => isCurrent() && write.isCurrent();
+      const eventValues = captureMessageEvent(
+        this.serviceManager,
+        originalMessage,
+        {
+          [localMessage.ui_state.id]: localMessage,
+        },
+        undefined,
+        isEventCurrent
+      );
+      try {
+        await this.handleCustomFooterSlot(
+          eventValues.localItems[localMessage.ui_state.id],
+          eventValues.message as MessageResponse,
+          isEventCurrent
+        );
+      } finally {
+        try {
+          eventValues.commit();
+        } finally {
+          write.release();
+        }
+      }
+      return;
+    }
+    {
       const customFooterSlotEvent: BusEventCustomFooterSlot = {
         type: BusEventType.CUSTOM_FOOTER_SLOT,
         data: {

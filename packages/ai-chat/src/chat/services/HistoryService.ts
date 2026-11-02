@@ -65,6 +65,7 @@ class HistoryService {
         'An error occurred while attempting to load the conversation history',
         error
       );
+      throw error;
     }
 
     return null;

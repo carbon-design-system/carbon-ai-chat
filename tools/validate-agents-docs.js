@@ -403,6 +403,7 @@ const EXCLUDED_DIRECTORIES = new Set([
 const EXCLUDED_PATHS = [
   '.agents/skills',
   '.claude/skills',
+  '.claude/worktrees',
   '.bob/skills/carbon-builder',
   '.github/plan-drafts',
   '.github/pr-drafts',

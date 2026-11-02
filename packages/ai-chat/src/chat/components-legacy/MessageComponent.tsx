@@ -77,15 +77,14 @@ import {
   getSpeakerName,
   hasRequestFooter,
   isConnectToHumanAgent,
-  isFullWidthUserDefined,
   isItemStillStreaming,
   isOptionItem,
   isRequest,
   isResponse,
-  isSingleItemCarousel,
   hasRequestBubbleContent,
   renderAsUserDefinedMessage,
 } from '../utils/messageUtils';
+import { getBubbleLayout } from '../utils/messageBubbleLayout';
 import { getMessageFileAttachments } from '../utils/fileAttachments';
 import MessageCustomRequestFooterSlot from './MessageCustomRequestFooterSlot';
 import { MessageFileAttachments } from '../components/helpers/MessageFileAttachments/MessageFileAttachments';
@@ -1344,6 +1343,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     );
 
     const isCustomMessage = renderAsUserDefinedMessage(localMessageItem.item);
+    const bubbleLayout = getBubbleLayout(localMessageItem.item);
 
     const messageIsRequest = isRequest(message);
     const isSystemMessage = isStatusMessage(messageItem.agent_message_type);
@@ -1417,36 +1417,15 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
                   {
                     'cds-aichat--received--text':
                       responseType === MessageResponseTypes.TEXT,
-                    'cds-aichat--received--image':
-                      responseType === MessageResponseTypes.IMAGE,
                     'cds-aichat--received--options':
                       responseType === MessageResponseTypes.OPTION,
                     'cds-aichat--received--inline-error':
                       responseType === MessageResponseTypes.INLINE_ERROR,
-                    'cds-aichat--received--iframe-preview-card':
-                      responseType === MessageResponseTypes.IFRAME,
-                    'cds-aichat--received--video':
-                      responseType === MessageResponseTypes.VIDEO,
-                    'cds-aichat--received--audio':
-                      responseType === MessageResponseTypes.AUDIO,
-                    'cds-aichat--received--date':
-                      responseType === MessageResponseTypes.DATE,
-                    'cds-aichat--received--card':
-                      responseType === MessageResponseTypes.CARD,
-                    'cds-aichat--received--carousel':
-                      responseType === MessageResponseTypes.CAROUSEL,
-                    'cds-aichat--received--conversational-search':
-                      responseType ===
-                      MessageResponseTypes.CONVERSATIONAL_SEARCH,
-                    'cds-aichat--received--carousel-single':
-                      isSingleItemCarousel(localMessageItem.item),
-                    'cds-aichat--received--button':
-                      responseType === MessageResponseTypes.BUTTON,
-                    'cds-aichat--received--grid':
-                      responseType === MessageResponseTypes.GRID,
-                    'cds-aichat--received--full-width': isFullWidthUserDefined(
-                      localMessageItem.item
-                    ),
+                    'cds-aichat--received--full-width': bubbleLayout.fullWidth,
+                    'cds-aichat--received--inset-footer':
+                      bubbleLayout.insetFooter,
+                    [`cds-aichat--received--width-${bubbleLayout.widthCap}`]:
+                      bubbleLayout.widthCap !== 'none',
                     'cds-aichat--received--chat-status-message':
                       isConnectionNotice,
                     'cds-aichat--message--historical': fromHistory,

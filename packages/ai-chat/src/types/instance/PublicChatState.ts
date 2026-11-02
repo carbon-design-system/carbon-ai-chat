@@ -10,11 +10,30 @@
 import { WorkspaceCustomPanelConfigOptions } from './apiTypes';
 import type { PersistedState } from '../state/AppState';
 import type { PersistedHumanAgentState } from '../state/PersistedHumanAgentState';
-import { StructuredData } from '../messaging/Messages';
+import type { Message, StructuredData } from '../messaging/Messages';
 import type { JSONContent } from '@tiptap/core';
 
 /**
- * This is the state made available by calling {@link ChatInstance.getState}. This is a public method that returns immutable values.
+ * The current phase of conversation work, exposed as `status` on {@link PublicChatState}.
+ *
+ * - `loading`: history and the welcome are loading.
+ * - `submitted`: a send is waiting for its first associated response.
+ * - `streaming`: a response is active, or its sender is still pending after a response arrives.
+ *   This includes the gap after the response completes and before the sender settles.
+ * - `ready`: no send or response remains active.
+ * - `error`: the conversation is in a failure state.
+ *
+ * Failure takes precedence over loading, and loading takes precedence over turn activity.
+ * You can retain error details received through {@link PublicConfig.onError}. An error
+ * status does not guarantee an error callback.
+ *
+ * @category Instance
+ */
+export type ConversationStatus =
+  'ready' | 'loading' | 'submitted' | 'streaming' | 'error';
+
+/**
+ * Public input state available through {@link ChatInstance.state}. Its values are immutable snapshots.
  *
  * @category Instance
  */
@@ -138,12 +157,23 @@ export interface PublicCustomPanelsState {
 }
 
 /**
- * Type returned by {@link ChatInstance.getState}.
+ * Immutable public state returned by `state.get()` on {@link ChatInstance.state}.
  *
+ * @interface
  * @category Instance
  */
 export type PublicChatState = Readonly<
   Omit<PersistedState, 'humanAgentState'> & {
+    /**
+     * Conversation messages, oldest first, or `[]` when empty. Partial
+     * streaming content is included as it arrives. The array and its message
+     * values are immutable snapshots, and internal UI state is omitted.
+     */
+    messages: readonly Readonly<Message>[];
+
+    /** The current conversation phase. See {@link ConversationStatus} for each value and its precedence. */
+    status: ConversationStatus;
+
     /**
      * Current human agent state.
      */
@@ -162,6 +192,8 @@ export type PublicChatState = Readonly<
 
     /**
      * Counter that indicates if the chat is hydrating and a full screen loading state should be displayed.
+     *
+     * @deprecated Read `status` as a {@link ConversationStatus} and check for `loading` — removed in 2.0.0.
      */
     isHydratingCounter: number;
 

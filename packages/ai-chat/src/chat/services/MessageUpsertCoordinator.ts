@@ -31,6 +31,10 @@ import { OnErrorType } from '../../types/config/ErrorConfig';
 import isEqual from 'lodash-es/isEqual.js';
 import cloneDeep from 'lodash-es/cloneDeep.js';
 import actions from '../store/actions';
+import {
+  captureMessageEvent,
+  eventLocalItems,
+} from '../utils/messageEventOwnership';
 import type {
   MessageWriteOptions,
   ReceivedLocalItems,
@@ -113,6 +117,9 @@ interface UpsertStamp {
   generation: number;
   restartCount: number;
   isCurrent: () => boolean;
+  eventMessage?: MessageResponse;
+  eventHoldFromIndex?: number;
+  originalLocalIDs?: string[];
 }
 
 class MessageUpsertCoordinator {
@@ -312,13 +319,15 @@ class MessageUpsertCoordinator {
     this.chainByID.delete(messageID);
     this.streamingIDs.delete(messageID);
     this.streamingControllers.delete(messageID);
-    this.serviceManager.conversationLifecycleService.responseFinished(
-      messageID
-    );
+    this.serviceManager.conversationLifecycleService.responseRemoved(messageID);
     this.pausesRunByID.delete(messageID);
     if (wasStreaming) {
       this.serviceManager.messageService.hideStopStreamingButtonIfIdle();
     }
+  }
+
+  invalidatePendingUpserts() {
+    this.generation++;
   }
 
   /**
@@ -469,7 +478,7 @@ class MessageUpsertCoordinator {
     );
 
     if (willFireReceive) {
-      await this.firePreReceive(messageID, result, stamp);
+      await this.firePreReceive(messageID, result, isStale);
       if (isStale()) {
         return;
       }
@@ -486,7 +495,12 @@ class MessageUpsertCoordinator {
     if (isStale()) {
       return;
     }
-    const ownerRequestID = result.request_id ?? requestID;
+    const ownerRequestID =
+      result.request_id ??
+      this.serviceManager.conversationLifecycleService.responseRequestID(
+        messageID
+      ) ??
+      requestID;
     const isStopped =
       this.serviceManager.conversationLifecycleService.isRequestStopped(
         ownerRequestID
@@ -505,7 +519,7 @@ class MessageUpsertCoordinator {
           );
     this.serviceManager.store.dispatch(
       actions.upsertMessage(
-        result,
+        cloneDeep(result),
         nextState === MessageState.STREAMING && !isStopped,
         holdFromIndex,
         options
@@ -516,12 +530,18 @@ class MessageUpsertCoordinator {
     }
     const committedResult = this.serviceManager.store.getState()
       .allMessagesByID[messageID] as MessageResponse;
+    stamp.eventMessage = committedResult;
+    stamp.eventHoldFromIndex = holdFromIndex;
+    stamp.originalLocalIDs = originalLocalIDs;
     this.reportUndrawableItems(
       messageID,
       refsBefore,
       !(isStopped && nextState === MessageState.STREAMING)
     );
 
+    if (isStale()) {
+      return;
+    }
     this.serviceManager.receiveService.retainAgentItemPositions(
       messageID,
       new Set(
@@ -547,7 +567,7 @@ class MessageUpsertCoordinator {
 
     await this.fanOutChangedSlots(
       messageID,
-      committedResult,
+      result,
       isStopped && nextState === MessageState.STREAMING
         ? MessageState.COMPLETE
         : nextState,
@@ -564,7 +584,7 @@ class MessageUpsertCoordinator {
 
     const revealed = await this.revealAfterPauses(
       messageID,
-      committedResult,
+      result,
       nextState,
       holdFromIndex,
       originalLocalIDs,
@@ -576,11 +596,7 @@ class MessageUpsertCoordinator {
     }
 
     if (nextState === MessageState.COMPLETE) {
-      await this.handleNewConnectToAgentItems(
-        messageID,
-        committedResult,
-        stamp
-      );
+      await this.handleNewConnectToAgentItems(messageID, result, stamp);
       if (isStale()) {
         return;
       }
@@ -589,7 +605,7 @@ class MessageUpsertCoordinator {
     this.stateByID.set(messageID, nextState);
 
     if (willFireReceive) {
-      await this.firePostReceiveAndFinalize(messageID, committedResult, stamp);
+      await this.firePostReceiveAndFinalize(messageID, result, stamp);
     } else if (nextState !== MessageState.STREAMING) {
       this.serviceManager.messageService.finalizeStreamingMessage(messageID);
     }
@@ -696,6 +712,11 @@ class MessageUpsertCoordinator {
       return;
     }
     deepFreeze(message);
+    const storedMessage =
+      this.serviceManager.store.getState().allMessagesByID[messageID];
+    if (storedMessage) {
+      deepFreeze(storedMessage);
+    }
     await this.serviceManager.fire(
       {
         type: BusEventType.RECEIVE,
@@ -722,13 +743,38 @@ class MessageUpsertCoordinator {
 
     message.request_id ??= options.requestMessage?.id;
     addDefaultsToMessage(message);
-    const write = (received: ReceivedLocalItems) =>
+    let storedMessage: MessageResponse;
+    const write = (received: ReceivedLocalItems) => {
+      if (!isCurrent()) {
+        return;
+      }
+      const owned = cloneDeep({ message, received });
+      if (Object.isFrozen(message)) {
+        deepFreeze(owned.message);
+      }
+      if (
+        received.localItem &&
+        store.getState().allMessagesByID[message.id] === storedMessage &&
+        !isEqual(storedMessage, message)
+      ) {
+        store.dispatch(actions.updateMessage(owned.message));
+        storedMessage = owned.message;
+      }
+      if (!isCurrent()) {
+        return;
+      }
       store.dispatch(
-        actions.upsertMessage(message, false, undefined, {
+        actions.upsertMessage(owned.message, false, undefined, {
           origin: options.origin,
-          received,
+          received: owned.received,
         })
       );
+      if (!received.localItem) {
+        storedMessage = store.getState().allMessagesByID[
+          message.id
+        ] as MessageResponse;
+      }
+    };
     write({ nestedLocalItems: [] });
 
     // `showStopButtonImmediately` put the button up for the request; the response takes
@@ -907,14 +953,21 @@ class MessageUpsertCoordinator {
       pauseIndex = this.findPauseToRun(messageID, result);
       const refsBefore = this.snapshotLocalItemRefs(messageID);
       store.dispatch(
-        actions.upsertMessage(result, isStreaming, pauseIndex, {
+        actions.upsertMessage(cloneDeep(result), isStreaming, pauseIndex, {
           pauseReveal: { originalLocalIDs, previousHoldFromIndex },
         })
       );
       if (this.isStale(stamp, result.request_id)) {
         return false;
       }
+      stamp.eventMessage = store.getState().allMessagesByID[
+        messageID
+      ] as MessageResponse;
+      stamp.eventHoldFromIndex = pauseIndex;
       this.reportUndrawableItems(messageID, refsBefore);
+      if (this.isStale(stamp, result.request_id)) {
+        return false;
+      }
       if (isStreaming) {
         this.announceStreamStarts(result, pauseIndex);
       }
@@ -972,12 +1025,29 @@ class MessageUpsertCoordinator {
           true
         )
       );
-      await this.serviceManager.receiveService.handleConnectToHumanAgent(
-        item,
-        result,
-        () => !this.isStale(stamp, result.request_id),
-        { identity: this.agentItemIdentity(result, entry.index) }
-      );
+      if (this.isStale(stamp, result.request_id)) {
+        return;
+      }
+      const eventValues = this.captureUpsertEvent(messageID, result, stamp);
+      if (!eventValues) {
+        return;
+      }
+      const eventItem = entry.isHidden
+        ? item
+        : eventValues.localItems[item.ui_state.id];
+      if (!eventItem) {
+        continue;
+      }
+      try {
+        await this.serviceManager.receiveService.handleConnectToHumanAgent(
+          eventItem,
+          result,
+          () => !this.isStale(stamp, result.request_id),
+          { identity: this.agentItemIdentity(result, entry.index) }
+        );
+      } finally {
+        eventValues.commit();
+      }
     }
   }
 
@@ -1027,6 +1097,9 @@ class MessageUpsertCoordinator {
     }
     const wasStreaming = this.streamingIDs.delete(messageID);
     this.streamingControllers.delete(messageID);
+    if (nextState === MessageState.COMPLETE) {
+      lifecycle.responseReceived(messageID, undefined, requestID);
+    }
     lifecycle.responseFinished(messageID);
     this.syncStopStreamingButton(nextState, result, wasStreaming);
   }
@@ -1122,13 +1195,15 @@ class MessageUpsertCoordinator {
       );
     }
 
-    result = {
-      ...result,
-      history: { ...result.history },
-      ui_state_internal: {
-        ...previousMessage?.ui_state_internal,
-        ...result.ui_state_internal,
-      },
+    if (Object.isFrozen(result)) {
+      result = cloneDeep(result);
+    }
+    if (Object.isFrozen(result.history)) {
+      result.history = { ...result.history };
+    }
+    result.ui_state_internal = {
+      ...previousMessage?.ui_state_internal,
+      ...result.ui_state_internal,
     };
 
     if (result.id === undefined || result.id === null) {
@@ -1148,16 +1223,13 @@ class MessageUpsertCoordinator {
   private async firePreReceive(
     messageID: string,
     result: MessageResponse,
-    stamp: UpsertStamp
+    isStale: () => boolean
   ): Promise<void> {
     const preReceiveEvent: BusEventPreReceive = {
       type: BusEventType.PRE_RECEIVE,
       data: result,
     };
-    await this.serviceManager.fire(
-      preReceiveEvent,
-      () => !this.isStale(stamp, result.request_id)
-    );
+    await this.serviceManager.fire(preReceiveEvent, () => !isStale());
     if (result.id !== messageID) {
       if (!result.id) {
         result.id = messageID;
@@ -1232,11 +1304,85 @@ class MessageUpsertCoordinator {
         otherData: {
           messageID,
           responseType,
-          missing: cannotDraw.missing,
-          item: localItem.item,
+          missing: [...cannotDraw.missing],
+          item: cloneDeep(localItem.item),
         },
       });
     }
+  }
+
+  private captureUpsertEvent(
+    messageID: string,
+    result: MessageResponse,
+    stamp: UpsertStamp
+  ) {
+    const { store } = this.serviceManager;
+    const state = store.getState();
+    const storedMessage = state.allMessagesByID[messageID] as MessageResponse;
+    const ownsMessage = () => {
+      const current = store.getState().allMessagesByID[
+        messageID
+      ] as MessageResponse;
+      return stamp.eventMessage?.output
+        ? current?.output === stamp.eventMessage.output
+        : current === stamp.eventMessage;
+    };
+    if (!ownsMessage()) {
+      return undefined;
+    }
+    const localItems = Object.fromEntries(
+      Object.entries(state.allMessageItemsByID).filter(
+        ([, item]) => item.fullMessageID === messageID
+      )
+    );
+    result.ui_state_internal = {
+      ...result.ui_state_internal,
+      ...storedMessage.ui_state_internal,
+    };
+    let shownPosition = 0;
+    const itemPairs: [object, object][] = [];
+    for (const entry of this.fanOutEntries(messageID, result, Infinity)) {
+      if (entry.isHidden) {
+        continue;
+      }
+      const position = shownPosition++;
+      let localItem = entry.shownLocalItem;
+      if (entry.index >= (stamp.eventHoldFromIndex ?? Infinity)) {
+        const streamID = streamItemID(messageID, entry.item);
+        const localID = streamID ?? stamp.originalLocalIDs?.[position];
+        localItem = localItems[localID];
+        if (!streamID && localItem && streamItemID(messageID, localItem.item)) {
+          localItem = undefined;
+        }
+      }
+      // Retained drawing fallbacks belong to older payloads, not this caller's item.
+      if (localItem && isEqual(localItem.item, entry.item)) {
+        itemPairs.push([localItem.item, entry.item]);
+      }
+    }
+    const eventValues = captureMessageEvent(
+      this.serviceManager,
+      storedMessage,
+      localItems,
+      {
+        message: result,
+        localItems: eventLocalItems(
+          storedMessage,
+          result,
+          localItems,
+          itemPairs
+        ),
+      },
+      () => !this.isStale(stamp, result.request_id) && ownsMessage()
+    );
+    return {
+      ...eventValues,
+      commit: () => {
+        eventValues.commit((committed) => {
+          stamp.eventMessage = committed as MessageResponse;
+        });
+      },
+    };
   }
 
   /**
@@ -1269,38 +1415,58 @@ class MessageUpsertCoordinator {
   ): Promise<void> {
     const { actions: chatActions } = this.serviceManager;
     const isStale = () => this.isStale(stamp, result.request_id);
+    if (isStale()) {
+      return;
+    }
     const skipsUnchanged: SkipsUnchanged | undefined = firesEveryItem
       ? undefined
       : { refsBefore, previousItems: previousMessage?.output?.generic ?? [] };
 
-    for (const entry of this.fanOutEntries(messageID, result, toIndex)) {
-      if (isStale()) {
-        return;
-      }
-      const localItem =
-        entry.index >= fromIndex
-          ? this.localItemToFanOut(messageID, result, entry, skipsUnchanged)
-          : undefined;
-      if (localItem) {
-        const nestedItems = entry.isHidden
-          ? this.createHiddenNestedItems(localItem, result)
-          : undefined;
-        await chatActions.handleUserDefinedResponseItems(
-          localItem,
-          result,
-          nextState,
-          nestedItems,
-          () => !isStale()
-        );
+    const eventValues = this.captureUpsertEvent(messageID, result, stamp);
+    if (!eventValues) {
+      return;
+    }
+    try {
+      for (const entry of this.fanOutEntries(messageID, result, toIndex)) {
         if (isStale()) {
           return;
         }
-        await chatActions.handleCustomFooterSlot(
-          localItem,
-          result,
-          () => !isStale()
-        );
+        const storedLocalItem =
+          entry.index >= fromIndex
+            ? this.localItemToFanOut(messageID, result, entry, skipsUnchanged)
+            : undefined;
+        if (storedLocalItem) {
+          const localItem = entry.isHidden
+            ? storedLocalItem
+            : eventValues.localItems[storedLocalItem.ui_state.id];
+          if (!localItem) {
+            continue;
+          }
+          const nestedItems = entry.isHidden
+            ? {
+                ...eventValues.localItems,
+                ...this.createHiddenNestedItems(localItem, result),
+              }
+            : eventValues.localItems;
+          await chatActions.handleUserDefinedResponseItems(
+            localItem,
+            result,
+            nextState,
+            nestedItems,
+            () => !isStale()
+          );
+          if (isStale()) {
+            return;
+          }
+          await chatActions.handleCustomFooterSlot(
+            localItem,
+            result,
+            () => !isStale()
+          );
+        }
       }
+    } finally {
+      eventValues.commit();
     }
   }
 
@@ -1422,6 +1588,7 @@ class MessageUpsertCoordinator {
       type: BusEventType.RECEIVE,
       data: result,
     };
+    const eventValues = this.captureUpsertEvent(messageID, result, stamp);
     try {
       await this.serviceManager.fire(
         receiveEvent,
@@ -1429,6 +1596,8 @@ class MessageUpsertCoordinator {
       );
     } catch (error) {
       consoleError('upsertMessage: receive handler threw, continuing.', error);
+    } finally {
+      eventValues?.commit();
     }
     if (!this.isStale(stamp, result.request_id)) {
       this.serviceManager.messageService.finalizeStreamingMessage(messageID);
