@@ -153,18 +153,21 @@ function assertCallbacks(members, publicHost) {
   }
 }
 
-function assertHostExports(module, declaration) {
+function assertHostExports(module, registration, declaration) {
   const target = { name: declaration.name, module: module.path };
-  const definitions = module.exports.filter(
-    (entry) => entry.kind === 'custom-element-definition'
-  );
-  assert.equal(definitions.length, 1);
-  assert.equal(definitions[0].name, declaration.tagName);
-  assert.deepEqual(definitions[0].declaration, target);
-  const exported = module.exports.find(
-    (entry) => entry.kind === 'js' && entry.name === 'default'
-  );
-  assert.deepEqual(exported?.declaration, target);
+  const definitions = (entry) =>
+    entry.exports.filter((item) => item.kind === 'custom-element-definition');
+  // The pure class module only exports; its registering entry defines the tag.
+  assert.equal(definitions(module).length, 0);
+  assert.equal(definitions(registration).length, 1);
+  assert.equal(definitions(registration)[0].name, declaration.tagName);
+  assert.deepEqual(definitions(registration)[0].declaration, target);
+  for (const entry of [module, registration]) {
+    const exported = entry.exports.find(
+      (item) => item.kind === 'js' && item.name === 'default'
+    );
+    assert.deepEqual(exported?.declaration, target);
+  }
 }
 
 export function assertHostParity(manifest, runtime, publishedTypes) {
@@ -222,7 +225,7 @@ export function assertHostParity(manifest, runtime, publishedTypes) {
     assertRuntimeProperties(host, members, attributes);
     assertConfigTypes(members, publicHost, publishedTypes.config);
     assertCallbacks(members, publicHost);
-    assertHostExports(module, declaration);
+    assertHostExports(module, registration, declaration);
   }
 }
 
