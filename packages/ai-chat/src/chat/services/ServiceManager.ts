@@ -30,7 +30,7 @@ import { ChunkProcessingService } from './messaging/inbound/ChunkProcessingServi
 import { HydrationService } from './HydrationService';
 import { InputActionsService } from './InputActionsService';
 import { PublicStateService } from './PublicStateService';
-import { ConversationLifecycleService } from './messaging/ConversationLifecycleService';
+import { MessageCoordinator } from './messaging/MessageCoordinator';
 import { ReceiveService } from './messaging/inbound/ReceiveService';
 import { SlotEventService } from './messaging/presentation/SlotEventService';
 import { SendService } from './messaging/outbound/SendService';
@@ -106,7 +106,7 @@ class ServiceManager {
   publicStateService: PublicStateService;
 
   /** Coordinates transient loading, send, stream, and error state. */
-  conversationLifecycleService: ConversationLifecycleService;
+  messageCoordinator: MessageCoordinator;
 
   /**
    * Service that owns the inbound receive path.

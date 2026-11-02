@@ -7,16 +7,16 @@
  *  @license
  */
 
-import { ConversationLifecycleService } from '../../../src/chat/services/messaging/ConversationLifecycleService';
+import { MessageCoordinator } from '../../../src/chat/services/messaging/MessageCoordinator';
 import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
 
-describe('ConversationLifecycleService', () => {
-  let service: ConversationLifecycleService;
+describe('MessageCoordinator', () => {
+  let service: MessageCoordinator;
   let status: string;
 
   beforeEach(() => {
     status = 'ready';
-    service = new ConversationLifecycleService({
+    service = new MessageCoordinator({
       store: {
         getState: () => ({ conversationStatus: status }),
         dispatch: (action: { status: string }) => {
@@ -182,7 +182,7 @@ describe('lifecycle publication', () => {
     const dispatch = jest.fn((action: { status: string }) => {
       status = action.status;
     });
-    const service = new ConversationLifecycleService({
+    const service = new MessageCoordinator({
       store: { getState, dispatch },
     } as unknown as ServiceManager);
     return {
@@ -249,7 +249,7 @@ describe('lifecycle publication', () => {
 
   it('returns the captured failure token when a listener creates a newer failure', () => {
     const { service, dispatch, setStatus } = setup();
-    let current: ReturnType<ConversationLifecycleService['fail']>;
+    let current: ReturnType<MessageCoordinator['fail']>;
     dispatch.mockImplementationOnce((action) => {
       setStatus(action.status);
       current = service.fail({ messageID: 'newer' });

@@ -9,7 +9,7 @@
 
 import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
 import { MessageUpsertCoordinator } from '../../../src/chat/services/messaging/inbound/MessageUpsertCoordinator';
-import { ConversationLifecycleService } from '../../../src/chat/services/messaging/ConversationLifecycleService';
+import { MessageCoordinator } from '../../../src/chat/services/messaging/MessageCoordinator';
 import { ServiceManager } from '../../../src/chat/services/ServiceManager';
 import { MessageState } from '../../../src/types/config/MessagingConfig';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
@@ -84,9 +84,7 @@ function makeStubManager(initialMessages: Record<string, unknown> = {}) {
       clearAllStreamingCancellation: jest.fn(),
     },
   } as unknown as ServiceManager;
-  manager.conversationLifecycleService = new ConversationLifecycleService(
-    manager
-  );
+  manager.messageCoordinator = new MessageCoordinator(manager);
   return {
     manager,
     state,
