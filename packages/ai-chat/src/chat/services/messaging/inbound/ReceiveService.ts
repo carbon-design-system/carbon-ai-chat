@@ -277,7 +277,7 @@ class ReceiveService {
     // If we're inserting more history into a chat that already has messages, we want to preserve the relative
     // scroll position of the existing messages from the bottom.
     const scrollBottom =
-      this.serviceManager.mainWindow?.getMessagesScrollBottom();
+      this.serviceManager.messageCoordinator.getMessagesScrollBottom();
 
     const state = this.serviceManager.store.getState();
 
@@ -360,9 +360,7 @@ class ReceiveService {
     );
 
     // Restore the scroll position.
-    this.serviceManager.mainWindow?.doAutoScroll({
-      scrollToBottom: scrollBottom,
-    });
+    this.serviceManager.messageCoordinator.restoreMessagesScroll(scrollBottom);
   }
 }
 
