@@ -192,7 +192,12 @@ export function assertHostParity(manifest, runtime, publishedTypes) {
       host.defaultExportRegistered,
       'The published default must be the registered class.'
     );
-    const members = unique(declaration.members ?? [], 'name', 'host member');
+    // Runtime properties are per instance; the static tag name is not one.
+    const members = unique(
+      (declaration.members ?? []).filter((member) => !member.static),
+      'name',
+      'host member'
+    );
     const attributes = unique(
       declaration.attributes ?? [],
       'name',
