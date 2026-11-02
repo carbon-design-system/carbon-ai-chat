@@ -28,8 +28,8 @@ const blockClass = `${prefix}-aichat-carousel`;
  * Carousel component
  *
  * @element cds-aichat-carousel
- * @slot - Carousel views.
  * @fires {CustomEvent<CarouselResponse>} cds-aichat-carousel-onchange - The carousel finishes moving to a view.
+ * @slot - Carousel views.
  */
 class CDSAICarousel extends LitElement {
   static get is() {

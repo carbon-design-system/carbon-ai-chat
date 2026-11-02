@@ -98,6 +98,7 @@ function TranscriptWithState() {
         text="Transcript text here..."
         label="English Transcript"
         language="en"
+        expanded={isExpanded}
         onTranscriptToggle={(e) => {
           setIsExpanded(e.detail.expanded);
         }}
