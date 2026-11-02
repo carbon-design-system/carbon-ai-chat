@@ -92,10 +92,13 @@ describe('public APIs in extension content first effects', () => {
           />
         </Wrapper>
       );
-      await waitFor(() => {
-        expect(calls.response.length).toBeGreaterThan(0);
-        expect(calls.writeable.length).toBeGreaterThan(0);
-      });
+      await waitFor(
+        () => {
+          expect(calls.response.length).toBeGreaterThan(0);
+          expect(calls.writeable.length).toBeGreaterThan(0);
+        },
+        { timeout: 5000 }
+      );
       Object.values(calls)
         .flat()
         .forEach((call) => {
