@@ -231,7 +231,9 @@ export function proveParityFailures(manifest, runtime, publishedTypes) {
     host.members = host.members.filter((member) => member.name !== first);
   }, /Missing (?:runtime|config) property/);
   mutate((host) => {
-    host.members.push(structuredClone(host.members[0]));
+    host.members.push(
+      structuredClone(host.members.find((member) => !member.static))
+    );
   }, /Duplicate host member/);
   mutate((host) => {
     host.members.push({ kind: 'field', name: 'unexpectedMember' });
