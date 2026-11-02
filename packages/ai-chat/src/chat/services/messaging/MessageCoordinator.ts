@@ -22,7 +22,7 @@ import type {
 import actions from '../../store/actions';
 import type { ServiceManager } from '../ServiceManager';
 import { RequestQueue, type RequestToken } from './state/RequestQueue';
-import type { PendingMessageRequest } from './MessageService';
+import type { PendingMessageRequest } from './pendingRequestTypes';
 import { ConversationState } from './state/ConversationState';
 
 class MessageCoordinator {
@@ -65,6 +65,27 @@ class MessageCoordinator {
       source,
       options,
       ignoreHydration
+    );
+  }
+
+  registerMessageController(messageID: string, controller: AbortController) {
+    this.serviceManager.messageService.registerMessageController(
+      messageID,
+      controller
+    );
+  }
+
+  enqueueMessage(
+    message: MessageRequest<any>,
+    source: MessageSendSource,
+    localMessageID?: string,
+    options?: SendOptions
+  ) {
+    return this.getSendWorkflow().enqueueMessage(
+      message,
+      source,
+      localMessageID,
+      options
     );
   }
 
