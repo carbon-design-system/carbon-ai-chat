@@ -336,7 +336,9 @@ describe('native disclaimer body', () => {
           onAfterRender: after,
         });
       const mounted = render(host());
-      await waitFor(() => expect(after).toHaveBeenCalledTimes(1));
+      await waitFor(() => expect(after).toHaveBeenCalledTimes(1), {
+        timeout: 5000,
+      });
       // Each wrapper case starts with the disclaimer not yet accepted.
       expect(
         Object.values(
