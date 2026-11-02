@@ -176,17 +176,33 @@ export function assertHostParity(manifest, runtime, publishedTypes) {
     2,
     'The chat manifest describes exactly two hosts.'
   );
-  assert.equal(manifest.modules.length, 2);
+  // Each host has a pure class module and a registering entry.
+  assert.equal(manifest.modules.length, 4);
   assert.ok(!JSON.stringify(manifest).includes('FlattenedConfigElement'));
   for (const { module, declaration } of hosts) {
     const publicHost = publishedTypes.hosts.get(declaration.name);
     assert.ok(publicHost, `Missing published host type: ${declaration.name}`);
     const host = runtime.find((entry) => entry.tag === declaration.tagName);
     assert.ok(host, `Missing runtime host: ${declaration.tagName}`);
+    const registration = manifest.modules.find((entry) =>
+      entry.exports?.some(
+        (item) =>
+          item.kind === 'custom-element-definition' &&
+          item.name === declaration.tagName
+      )
+    );
+    const definition = registration?.exports.find(
+      (item) => item.kind === 'custom-element-definition'
+    );
     assert.equal(
-      module.path,
+      registration?.path,
       host.module,
       'Published host module must match its isolated runtime import.'
+    );
+    assert.deepEqual(
+      definition.declaration,
+      { name: declaration.name, module: module.path },
+      'Published host module must define the pure host class.'
     );
     assert.ok(
       host.defaultExportRegistered,
