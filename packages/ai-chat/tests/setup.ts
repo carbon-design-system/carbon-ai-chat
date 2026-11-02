@@ -84,6 +84,12 @@ if (
     .mockReturnValue(null);
 }
 
+// Carbon v12's toggletip scrolls its button into view after each update, and
+// jsdom has no layout to scroll.
+if (!Element.prototype.scrollIntoView) {
+  Element.prototype.scrollIntoView = jest.fn();
+}
+
 // `cds-aichat-custom-element` appends its hide-sheet to the shadow root's
 // `adoptedStyleSheets`, which jsdom's ShadowRoot does not implement, so
 // connecting that element would throw before anything renders.
