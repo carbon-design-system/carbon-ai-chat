@@ -55,6 +55,46 @@ The native input owner keeps values, the editor handle, lazy extensions, drafts,
 
 This package still requires React. React 17, 18, and 19 remain supported. The standalone renderer keeps its client import out of the React entry. A future React-optional milestone must replace the message renderer and configured Markdown, citation, error, and consumer content paths. It also needs a host contract for content that does not use React. This milestone keeps SDK exports, host names, and service shutdown unchanged.
 
+## Panel content handshake
+
+```mermaid
+sequenceDiagram
+  participant P as AppShellPanels (React)
+  participant V as ChatViewState
+  participant S as ChatShell, NativePanels
+  participant H as ExtensionHosts
+  participant E as ChatAppEntry
+  P->>V: holdInitialReactCommit()
+  P->>S: onRevision(parts) sets contentRevision
+  S->>H: preparePanelContent, then markPanelContentPlaced
+  H-->>P: snapshot of requests
+  P->>H: portal content, then commitPanelContent
+  H-->>S: frames open once all commit
+  P->>V: release once native panels commit
+  V-->>E: whenInitialReactCommitReady
+  E->>E: onInitialViewCommitted (after-render may run)
+```
+
+The revision is React's `parts` object; a request counts only for it, while its targets stay connected. `AppShell` and `CatastrophicErrorPanel` also hold the initial commit.
+
+## Lifetime guards
+
+| Guard | Owner | Protects |
+| --- | --- | --- |
+| `current` / `isCurrent()` | `cds-aichat-container` | `boot()` awaits and host callbacks |
+| Microtask release on disconnect | Container, `cds-aichat-custom-element`, `ChatShell` | The chat through a same-task move |
+| `generation` | `NativeChatView` | Deferred work and error reports |
+| `lifetime` | `ChatShell` | `whenReady()` waits |
+| `targetGeneration` | `ChatShell` | Message commits for old layout targets |
+| `generation` | `ShellLifecycle` | Queued ready focus and frame callbacks |
+| Current request per panel | `ExtensionHosts` | Stale placement and commits |
+| `lifetime`, `draftGeneration` | `ChatInput` | Handle and draft work |
+| `initialReactGeneration` | `ChatViewState` | The queued initial-commit check |
+
+## Hand-off to #2349
+
+#1732 must split the container's `boot()` after `initServiceManagerAndInstance` creates the services; the code after it creates view owners (`ChatViewState`, `ExtensionHosts`, window listeners, the announcer region). `ExtensionHosts` records are the view-side slot bookkeeping #1741 replaces. `ShellLifecycle` publishes view handles to services: `publishHandles` sets `mainWindow`, `appWindow`, and `ariaAnnouncer`, and `setInputHandle` sets `inputComponent`. `ChatInput` publishes the input functions ref separately, through `registerInputImperativeHandle`.
+
 ## Debugging across the boundary
 
 | Symptom | Likely cause | Fix |
