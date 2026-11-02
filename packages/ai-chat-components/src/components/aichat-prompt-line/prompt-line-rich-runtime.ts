@@ -101,7 +101,7 @@ class RichController
 
     host.setAttribute('aria-multiline', 'true');
     host.setAttribute('spellcheck', 'true');
-    host.setAttribute('tabindex', '-1');
+    this._syncHostTabindex();
 
     // Pointer/touch before focus marks the next focus as mouse-driven so we
     // suppress the keyboard-focus outline.
@@ -227,7 +227,19 @@ class RichController
 
   setEditable(editable: boolean): void {
     this._disabled = !editable;
+    if (this._disabled && this.hasFocus()) {
+      this.blur();
+    }
     this._editor?.setEditable(editable);
+    this._syncHostTabindex();
+  }
+
+  private _syncHostTabindex(): void {
+    if (this._disabled) {
+      this._host?.removeAttribute('tabindex');
+    } else {
+      this._host?.setAttribute('tabindex', '-1');
+    }
   }
 
   setPlaceholder(placeholder: string): void {
@@ -365,7 +377,12 @@ class RichController
       // Resolved per decoration build rather than captured, so `setPlaceholder`
       // lands on the live editor. Tiptap snapshots an extension's options when
       // it builds plugins, so a value here could never be updated in place.
-      Placeholder.configure({ placeholder: () => this._placeholder }),
+      // `showOnlyWhenEditable: false` keeps the decoration visible when the
+      // editor is disabled so the placeholder matches the textarea runtime.
+      Placeholder.configure({
+        placeholder: () => this._placeholder,
+        showOnlyWhenEditable: false,
+      }),
       PlainTextPaste,
       Keymap,
       // Plain Enter sends (non-empty); empty Enter falls through to a newline.

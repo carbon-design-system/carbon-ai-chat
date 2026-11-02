@@ -34,7 +34,6 @@ import {
   getLastAssistantResponseWithContext,
   THREAD_ID_MAIN,
 } from '../utils/messageUtils';
-import { safeFetchTextWithTimeout } from '../utils/miscUtils';
 import {
   ResolvablePromise,
   resolvablePromise,
@@ -129,11 +128,6 @@ export interface PendingMessageRequest extends SendMessageRequest {
    * The AbortController for when using customSendMessage.
    */
   sendMessageController?: AbortController;
-
-  /**
-   * The last response that was received during a send attempt. This may be a failure response.
-   */
-  lastResponse?: Response;
 
   /**
    * The options that were included when the request was sent.
@@ -350,6 +344,10 @@ class MessageService {
       this.hideStopStreamingButtonIfIdle();
       this.moveToNextQueueItem();
     }
+    this.serviceManager.conversationLifecycleService.requestFinished(
+      current.message.id,
+      current.generation
+    );
   }
 
   /**
@@ -382,6 +380,11 @@ class MessageService {
     this.clearCurrentQueueItem();
     this.queue.current = this.queue.waiting.shift();
     const { current } = this.queue;
+    this.serviceManager.conversationLifecycleService.requestStarted(
+      current.message.id,
+      current.generation,
+      current.message
+    );
     const { message } = current;
     current.timeFirstRequest = Date.now();
 
@@ -948,7 +951,9 @@ class MessageService {
       return;
     }
 
-    const { lastResponse } = pendingRequest || {};
+    // Abort listeners may restart the chat, so read the generation first.
+    const generation =
+      this.serviceManager.conversationLifecycleService.currentGeneration;
     const sendMessageController =
       controller || pendingRequest?.sendMessageController;
 
@@ -957,6 +962,13 @@ class MessageService {
 
     // Clean up the controller from the map and streaming tracking
     this.inboundStreaming.clearStreamingResponse(responseId);
+    if (!pendingRequest) {
+      // The sender already settled, so only the response stream remains.
+      this.serviceManager.conversationLifecycleService.responseStopped(
+        responseId,
+        generation
+      );
+    }
 
     // Only process the pending request if it exists (it may have already been cleared from queue)
     if (pendingRequest) {
@@ -967,15 +979,25 @@ class MessageService {
         );
       }
       if (reason === CancellationReason.TIMEOUT) {
+        if (logError) {
+          this.serviceManager.conversationLifecycleService.fail(
+            {
+              messageID: pendingRequest.message.id,
+            },
+            pendingRequest.generation
+          );
+        }
         this.outboundCoordinator.rejectFinalErrorOnMessage(
           pendingRequest,
           reason
         );
         if (logError) {
+          // Preserve the callback's microtask boundary after rejecting the request.
+          await Promise.resolve();
           this.serviceManager.actions.errorOccurred({
             errorType: OnErrorType.MESSAGE_COMMUNICATION,
             message: reason,
-            otherData: await safeFetchTextWithTimeout(lastResponse),
+            otherData: undefined,
           });
         }
       } else if (pendingRequest.isStreaming) {
@@ -985,7 +1007,11 @@ class MessageService {
         // Mark as processed and advance the queue
         pendingRequest.sendMessagePromise.doResolve();
         pendingRequest.isProcessed = true;
-        this.serviceManager.conversationLifecycleService.responseFinished(
+        this.serviceManager.conversationLifecycleService.requestFinished(
+          pendingRequest.message.id,
+          pendingRequest.generation
+        );
+        this.serviceManager.conversationLifecycleService.responseStopped(
           responseId,
           pendingRequest.generation
         );
