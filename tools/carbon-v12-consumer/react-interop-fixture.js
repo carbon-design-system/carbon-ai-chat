@@ -430,7 +430,7 @@ function assertPromptMount(prompt, promptRef, firstContent, firstExtensions) {
     'PromptLine must render initial content.'
   );
   equal(
-    textarea.readOnly,
+    textarea.disabled,
     true,
     'PromptLine disabled must reach the textarea.'
   );
@@ -521,7 +521,7 @@ async function probePromptLine({ mount, host, unmount }) {
     'PromptLine array identity must update.'
   );
   equal(textarea.value, 'second prompt', 'PromptLine content must update.');
-  equal(textarea.readOnly, false, 'PromptLine disabled must update.');
+  equal(textarea.disabled, false, 'PromptLine disabled must update.');
   equal(textarea.placeholder, 'Second', 'PromptLine placeholder must update.');
   assertPromptChanges(prompt, textarea, changes, initialChanges);
   unmount();
