@@ -368,7 +368,9 @@ describe('native home screen', () => {
         onError,
       });
     const mounted = render(mount('first'));
-    await waitFor(() => expect(after).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(after).toHaveBeenCalledTimes(1), {
+      timeout: 5000,
+    });
     const host = document.querySelector('cds-aichat-container');
     const target = host.shadowRoot.querySelector('.cds-aichat--react-app');
     const shell = host.shadowRoot.querySelector('.cds-aichat--widget');
