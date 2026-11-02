@@ -89,9 +89,11 @@ So regenerating a message that is already `COMPLETE` does not fire {@link BusEve
 
 ## Callback snapshots
 
-For `upsertMessage`, the message data passed to user-defined response, custom message footer, and receive callbacks is a detached snapshot. This also applies to message data in React and web component render callbacks. Edits to these copies do not write back to the chat or affect your updater result.
+For `upsertMessage`, the message data passed to user-defined response, custom message footer, and receive callbacks is a detached snapshot. This also applies to message data in React and web component render callbacks. Edits to copied message data do not write back to the chat. Some values remain shared, as described below.
 
-Plain objects and arrays in a snapshot are frozen. Special values, such as dates, typed arrays, maps, and sets, are copied and keep their usual APIs. Those copies remain mutable, but their changes affect only the snapshot. They do not share mutable data with your updater result or the stored message.
+Plain objects and arrays in a snapshot are frozen. Cloneable special values, such as dates, typed arrays, maps, and sets, are copied and keep their usual APIs. Those copies remain mutable. Changes to copied data affect only the snapshot.
+
+Opaque values that cannot be cloned, such as WeakMap, WeakSet, Promise, and Error objects, keep their original references and APIs. Their internal state remains shared with your updater result and the stored message. Functions remain callable or constructable as before, but closures, private state, and inherited prototype data remain shared. Calling these APIs can affect shared state; the snapshot does not isolate host code. This is separate from callback writeback: edits to copied message fields are not applied back to the chat.
 
 Use the updater or {@link BusEventType.PRE_RECEIVE | pre:receive} to change message content. Pre-receive data stays mutable. The shared callback types stay unchanged: snapshot isolation and freezing apply at runtime, not through TypeScript. These rules apply only to `upsertMessage`. The stable add-message, chunk, and human-agent paths keep their existing mutation contracts.
 

@@ -131,10 +131,14 @@ export interface ChatInstanceMessaging {
    * upserts do not fire these events.
    *
    * Message data in user-defined response, custom message footer, and receive callbacks
-   * is a detached snapshot. Plain objects and arrays are frozen. Special values, such
-   * as dates and typed arrays, remain mutable copies with their usual APIs. Edits affect
-   * only the snapshot, not the stored message or your updater result. Use the updater
-   * or mutable {@link BusEventType.PRE_RECEIVE} data to change the message.
+   * uses a snapshot. Plain objects and arrays are frozen. Cloneable special values,
+   * such as dates and typed arrays, remain mutable copies with their usual APIs.
+   * Opaque values, such as WeakMap, WeakSet, Promise, and Error objects, keep their
+   * original references and shared internal state. Functions keep their APIs, but
+   * closures, private state, and inherited prototype data remain shared. Calling
+   * these APIs can affect shared state. Edits to copied message fields do not write
+   * back. Use the updater or mutable {@link BusEventType.PRE_RECEIVE} data to change
+   * the message.
    * Shared callback types stay unchanged; these runtime rules apply only to this method.
    * Stable add-message, chunk, and human-agent paths are unchanged.
    *

@@ -175,3 +175,298 @@ it('preserves an alias from a shared buffer back to its view', () => {
   event.bytes[0] = 9;
   expect(bytes[0]).toBe(1);
 });
+
+it('keeps classes constructable without running them while copying, including subclass new.target', () => {
+  let constructions = 0;
+  class Widget {
+    target: typeof Widget;
+    constructor(public label: string) {
+      constructions++;
+      this.target = new.target;
+    }
+    render() {
+      return this.label;
+    }
+  }
+  const source = Object.assign(Widget, { settings: { value: 'before' } });
+  const event = snapshotNativeMessageEvent({
+    prototype: source.prototype,
+    source,
+    alias: source,
+  });
+  expect(constructions).toBe(0);
+  expect(event.source).toBe(event.alias);
+  expect(event.source.prototype).toBe(event.prototype);
+  const instance = new event.source('label');
+  expect(instance.render()).toBe('label');
+  expect(instance.target).toBe(source);
+  expect(instance).toBeInstanceOf(source);
+  expect(instance).toBeInstanceOf(event.source);
+  class Child extends event.source {}
+  const child = new Child('child');
+  expect(child.target).toBe(Child);
+  expect(child).toBeInstanceOf(Child);
+  expect(child).toBeInstanceOf(event.source);
+  expect(event.source.settings).not.toBe(source.settings);
+  expect(() => {
+    event.source.settings.value = 'after';
+  }).toThrow(TypeError);
+  expect(source.settings.value).toBe('before');
+  expect(Object.isFrozen(source)).toBe(false);
+  expect(Object.isFrozen(source.prototype)).toBe(false);
+});
+
+it('preserves ordinary constructors, bound constructors and nonconstructable arrows', () => {
+  function Widget(this: { label: string }, label: string) {
+    this.label = label;
+  }
+  Widget.prototype.render = function () {
+    return this.label;
+  };
+  const source = {
+    Widget,
+    bound: Widget.bind(null, 'bound'),
+    arrow: () => 'called',
+  };
+  const event = snapshotNativeMessageEvent(source);
+  const Constructor = event.Widget as unknown as new (label: string) => {
+    render(): string;
+  };
+  const Bound = event.bound as unknown as new () => { render(): string };
+  expect(new Constructor('ordinary').render()).toBe('ordinary');
+  expect(new Constructor('ordinary')).toBeInstanceOf(Widget);
+  expect(new Bound().render()).toBe('bound');
+  expect(new Bound()).toBeInstanceOf(Bound);
+  expect(event.arrow()).toBe('called');
+  expect(() => Reflect.construct(event.arrow, [])).toThrow(TypeError);
+});
+
+it('leaves objects explicitly returned by a constructor untouched', () => {
+  const cached = Object.freeze({ value: 'cached' });
+  function Returning() {
+    return cached;
+  }
+  const event = snapshotNativeMessageEvent({ Returning });
+  expect(Reflect.construct(event.Returning, [])).toBe(cached);
+  expect(Object.getPrototypeOf(cached)).toBe(Object.prototype);
+});
+
+it('preserves static methods, accessors and custom instanceof without reading getters during copy', () => {
+  let reads = 0;
+  class Widget {
+    static #value = 4;
+    static method() {
+      return this.#value;
+    }
+    static get value() {
+      reads++;
+      return this.#value;
+    }
+    static set value(value: number) {
+      this.#value = value;
+    }
+    static receiver() {
+      return this;
+    }
+  }
+  Object.defineProperty(Widget, Symbol.hasInstance, {
+    enumerable: true,
+    value: function (this: unknown) {
+      return this === Widget;
+    },
+  });
+  const event = snapshotNativeMessageEvent({ Widget });
+  expect(reads).toBe(0);
+  expect(event.Widget.name).toBe(Widget.name);
+  expect(event.Widget.length).toBe(Widget.length);
+  expect(event.Widget.method()).toBe(4);
+  expect(event.Widget.value).toBe(4);
+  event.Widget.value = 5;
+  expect(event.Widget.method()).toBe(5);
+  expect(event.Widget.receiver()).toBe(Widget);
+  const custom = {};
+  expect(event.Widget.receiver.call(custom)).toBe(custom);
+  expect({} instanceof event.Widget).toBe(true);
+  expect(
+    Object.getOwnPropertyDescriptor(event.Widget, 'method').enumerable
+  ).toBe(false);
+});
+
+it('preserves getter metadata without invoking it while binding the callable', () => {
+  function Source() {}
+  let reads = 0;
+  Object.defineProperty(Source, 'name', {
+    configurable: true,
+    get: () => {
+      reads++;
+      return 'source';
+    },
+  });
+  Object.defineProperty(Source, 'length', {
+    configurable: true,
+    get: () => {
+      reads++;
+      return 3;
+    },
+  });
+  const event = snapshotNativeMessageEvent({ Source });
+  expect(reads).toBe(0);
+  expect(event.Source.name).toBe('source');
+  expect(event.Source.length).toBe(3);
+  expect(reads).toBe(2);
+});
+
+it.each([false, true])(
+  'links prototype-first aliases without a constructor backlink; callable prototype=%s',
+  (callable) => {
+    function Source() {}
+    const prototype = Object.assign(callable ? function Prototype() {} : {}, {
+      method: () => 'method',
+      settings: { value: 1 },
+    });
+    Source.prototype = prototype;
+    const event = snapshotNativeMessageEvent({ prototype, Source });
+    expect(event.Source.prototype).toBe(event.prototype);
+    class Child extends (event.Source as unknown as new () => {
+      method(): string;
+    }) {}
+    const child = new Child();
+    expect(child).toBeInstanceOf(Source);
+    expect(child).toBeInstanceOf(event.Source);
+    expect(child.method()).toBe('method');
+    expect(event.prototype.settings).not.toBe(prototype.settings);
+    expect(Object.isFrozen(event.prototype.settings)).toBe(true);
+    expect(Object.isFrozen(prototype.settings)).toBe(false);
+  }
+);
+
+it('copies frozen constructors and immutable metadata without violating proxy invariants', () => {
+  class Frozen {
+    constructor(public value: string) {}
+    render() {
+      return this.value;
+    }
+  }
+  Object.freeze(Frozen);
+  function NoMetadata() {}
+  Object.defineProperty(NoMetadata, 'name', {
+    configurable: false,
+    get: undefined,
+  });
+  Object.defineProperty(NoMetadata, 'length', {
+    configurable: false,
+    get: undefined,
+  });
+  const event = snapshotNativeMessageEvent({ Frozen, NoMetadata });
+  expect(new event.Frozen('value').render()).toBe('value');
+  expect(event.Frozen.name).toBe(Frozen.name);
+  expect(event.Frozen.length).toBe(Frozen.length);
+  expect(event.NoMetadata.name).toBeUndefined();
+  expect(event.NoMetadata.length).toBeUndefined();
+  expect(() => Reflect.construct(event.NoMetadata, [])).not.toThrow();
+});
+
+it('keeps unrelated copied function receivers while remapping owning static members', () => {
+  class Owner {
+    static #value = 7;
+    static read() {
+      return this.#value;
+    }
+    static inspect() {
+      return this;
+    }
+  }
+  function Other() {}
+  function inspect(this: unknown) {
+    return this;
+  }
+  const event = snapshotNativeMessageEvent({ Owner, Other, inspect });
+  expect(event.Owner.read()).toBe(7);
+  expect(event.Owner.inspect()).toBe(Owner);
+  expect(event.inspect.call(event.Other)).toBe(event.Other);
+  expect(event.Owner.inspect.call(event.Other)).toBe(event.Other);
+  const custom = {};
+  expect(event.Owner.inspect.call(custom)).toBe(custom);
+});
+
+it('preserves opaque references and APIs without reading their enumerable properties', async () => {
+  const key = {};
+  const weakMap = new WeakMap([[key, 7]]);
+  const weakSet = new WeakSet([key]);
+  const promise = Promise.resolve(7);
+  const error = new Error('host failure');
+  const getter = jest.fn(() => {
+    throw new Error('opaque getter');
+  });
+  Object.defineProperty(weakMap, 'extra', { enumerable: true, get: getter });
+  const source = { weakMap, alias: weakMap, weakSet, promise, error };
+  const event = snapshotNativeMessageEvent(source);
+  expect(event).not.toBe(source);
+  expect(Object.isFrozen(event)).toBe(true);
+  expect(event.weakMap).toBe(weakMap);
+  expect(event.alias).toBe(weakMap);
+  expect(event.weakSet).toBe(weakSet);
+  expect(event.promise).toBe(promise);
+  expect(event.error).toBe(error);
+  expect(event.weakMap.get(key)).toBe(7);
+  expect(event.weakSet.has(key)).toBe(true);
+  await expect(event.promise).resolves.toBe(7);
+  event.weakMap.set(key, 8);
+  expect(weakMap.get(key)).toBe(8); // Approved opaque-reference exception.
+  expect(getter).not.toHaveBeenCalled();
+  expect(Object.isFrozen(weakMap)).toBe(false);
+});
+
+it('retains cloneable fallback values and does not mistake a spoofed tag for opaque state', () => {
+  const buffer = new ArrayBuffer(2);
+  const date = new Date(123);
+  const regexp = /answer/gi;
+  const source = {
+    date,
+    regexp,
+    buffer,
+    tagged: { [Symbol.toStringTag]: 'Promise', nested: { value: 1 } },
+  };
+  const event = snapshotNativeMessageEvent(source);
+  expect(event.date).not.toBe(date);
+  expect(event.date.getTime()).toBe(123);
+  expect(event.regexp).not.toBe(regexp);
+  expect(event.regexp.source).toBe(regexp.source);
+  expect(event.regexp.flags).toBe(regexp.flags);
+  expect(event.buffer).not.toBe(buffer);
+  new Uint8Array(event.buffer)[0] = 9;
+  expect(new Uint8Array(buffer)[0]).toBe(0);
+  expect(event.tagged).not.toBe(source.tagged);
+  expect(Object.isFrozen(event.tagged)).toBe(true);
+  expect(event.tagged.nested).not.toBe(source.tagged.nested);
+});
+
+it('does not mutate an opaque value used as a callable prototype', () => {
+  function Host() {}
+  const prototype = new WeakMap();
+  Host.prototype = prototype;
+  const originalParent = Object.getPrototypeOf(prototype);
+  const event = snapshotNativeMessageEvent({ Host, prototype });
+  expect(event.Host.prototype).toBe(prototype);
+  expect(event.prototype).toBe(prototype);
+  expect(Object.getPrototypeOf(prototype)).toBe(originalParent);
+  expect(Reflect.construct(event.Host, [])).toBeInstanceOf(Host);
+});
+
+it.each([Object.prototype, null])(
+  'copies and freezes plain records with a readonly opaque-looking tag',
+  (prototype) => {
+    const tagged = Object.assign(Object.create(prototype), {
+      nested: { value: 1 },
+    });
+    const tagGetter = jest.fn(() => 'Promise');
+    Object.defineProperty(tagged, Symbol.toStringTag, { get: tagGetter });
+    const event = snapshotNativeMessageEvent({ tagged });
+    expect(event.tagged).not.toBe(tagged);
+    expect(event.tagged.nested).not.toBe(tagged.nested);
+    expect(Object.isFrozen(event.tagged)).toBe(true);
+    expect(Object.isFrozen(event.tagged.nested)).toBe(true);
+    expect(Object.isFrozen(tagged)).toBe(false);
+    expect(tagGetter).not.toHaveBeenCalled();
+  }
+);

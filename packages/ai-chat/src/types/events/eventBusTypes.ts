@@ -377,9 +377,10 @@ export interface BusEventPreReceive extends BusEvent {
 export interface BusEventReceive extends BusEvent {
   type: BusEventType.RECEIVE;
   /**
-   * For {@link ChatInstanceMessaging.upsertMessage}, a detached message snapshot with no
-   * callback writeback. Plain objects and arrays are frozen; special values remain mutable
-   * copies. Use the updater or {@link BusEventType.PRE_RECEIVE} to change content.
+   * For {@link ChatInstanceMessaging.upsertMessage}, a message snapshot with no
+   * callback writeback. Plain objects and arrays are frozen. Cloneable special values
+   * stay mutable copies; opaque values and function closure/private state remain shared.
+   * Use the updater or {@link BusEventType.PRE_RECEIVE} to change content.
    * These runtime rules do not change the shared type or other delivery paths.
    */
   data: MessageResponse;
@@ -573,9 +574,10 @@ export interface BusEventMessageItemCustom extends BusEvent {
  * Used to populate user_defined responses. Please see the React or web component documentation as usage of this
  * differs based on implementation.
  *
- * For {@link ChatInstanceMessaging.upsertMessage}, message data is a detached snapshot.
- * Plain objects and arrays are frozen; special values remain mutable copies. Callback
- * edits do not write back. Use the updater or {@link BusEventType.PRE_RECEIVE}
+ * For {@link ChatInstanceMessaging.upsertMessage}, message data uses a snapshot.
+ * Plain objects and arrays are frozen. Cloneable special values stay mutable copies;
+ * opaque values and function closure/private state remain shared. Edits to copied
+ * fields do not write back. Use the updater or {@link BusEventType.PRE_RECEIVE}
  * to change content. This runtime rule leaves shared types and other delivery paths unchanged.
  *
  * @category Events
@@ -639,9 +641,10 @@ export interface BusEventChunkUserDefinedResponse extends BusEvent {
 /**
  * Used to populate custom message footer slots.
  *
- * For {@link ChatInstanceMessaging.upsertMessage}, message data is a detached snapshot.
- * Plain objects and arrays are frozen; special values remain mutable copies. Callback
- * edits do not write back. Use the updater or {@link BusEventType.PRE_RECEIVE}
+ * For {@link ChatInstanceMessaging.upsertMessage}, message data uses a snapshot.
+ * Plain objects and arrays are frozen. Cloneable special values stay mutable copies;
+ * opaque values and function closure/private state remain shared. Edits to copied
+ * fields do not write back. Use the updater or {@link BusEventType.PRE_RECEIVE}
  * to change content. This runtime rule leaves shared types and other delivery paths unchanged.
  *
  * @category Events
