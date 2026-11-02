@@ -98,7 +98,8 @@ function TranscriptWithState() {
         text="Transcript text here..."
         label="English Transcript"
         language="en"
-        onCdsAichatTranscriptToggle={(e) => {
+        expanded={isExpanded}
+        onTranscriptToggle={(e) => {
           setIsExpanded(e.detail.expanded);
         }}
       />
@@ -113,7 +114,7 @@ The component supports the following event:
 
 | Event Name | Description | Event Detail |
 | --- | --- | --- |
-| `onCdsAichatTranscriptToggle` | Fired when transcript is expanded or collapsed | `{ expanded: boolean }` |
+| `onTranscriptToggle` | Fired when transcript is expanded or collapsed | `{ expanded: boolean }` |
 
 ## Component API
 
