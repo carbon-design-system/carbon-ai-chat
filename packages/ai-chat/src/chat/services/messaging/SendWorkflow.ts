@@ -7,19 +7,32 @@
  *  @license
  */
 
+import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 import actions from '../../store/actions';
+import { deepFreeze } from '../../utils/lang/objectUtils';
+import {
+  getLastAssistantResponseWithContext,
+  THREAD_ID_MAIN,
+} from '../../utils/messageUtils';
+import { OutgoingMessageService } from './outbound/OutgoingMessageService';
 import { OutboundMessageCoordinator } from './OutboundMessageCoordinator';
 import type { ServiceManager } from '../ServiceManager';
 import type { PendingMessageRequest } from './MessageService';
 import {
   MessageInputType,
+  MessageResponseTypes,
   type MessageRequest,
   type MessageResponse,
 } from '../../../types/messaging/Messages';
+import { BusEventType } from '../../../types/events/eventBusTypes';
 import type { LanguagePack } from '../../../types/config/LanguagePack';
 import { MessageErrorState } from '../../../types/messaging/LocalMessageItem';
+import { CancellationReason } from '../../../types/config/MessagingConfig';
+
+const MS_MAX_SILENT_LOADING = 4000;
 
 class SendWorkflow {
+  private outgoing = new OutgoingMessageService();
   private outboundCoordinator: OutboundMessageCoordinator;
 
   constructor(private serviceManager: ServiceManager) {
@@ -28,13 +41,16 @@ class SendWorkflow {
       this.messageLoadingManager,
       (request, state) => this.setMessageErrorState(request, state),
       () => serviceManager.messageCoordinator.getCurrentRequest(),
-      () => serviceManager.messageService.moveToNextQueueItem(),
+      () => serviceManager.messageCoordinator.advanceRequestQueue(),
       (request, received) => this.processSuccess(request, received),
       () => serviceManager.store.getState().config.public.messaging || {},
       (request) =>
         serviceManager.messageService.finishFailedStreamingResponse(request),
       (id, generation) =>
-        serviceManager.messageService.registerRequestGeneration(id, generation),
+        serviceManager.messageCoordinator.registerRequestGeneration(
+          id,
+          generation
+        ),
       () =>
         serviceManager.messageService.hideStopStreamingButtonIfNoUpsertStreaming()
     );
@@ -42,6 +58,10 @@ class SendWorkflow {
 
   private get messageLoadingManager() {
     return this.serviceManager.messageCoordinator.messageLoadingManager;
+  }
+
+  private get timeoutMS() {
+    return this.serviceManager.messageCoordinator.timeoutMS;
   }
 
   rejectFinalErrorOnMessage(request: PendingMessageRequest, text?: string) {
@@ -125,7 +145,7 @@ class SendWorkflow {
       // Hide stop streaming button if it was shown for showStopButtonImmediately, unless
       // some other message is still streaming.
       this.serviceManager.messageService.hideStopStreamingButtonIfIdle();
-      this.serviceManager.messageService.moveToNextQueueItem();
+      this.serviceManager.messageCoordinator.advanceRequestQueue();
     }
     this.serviceManager.messageCoordinator.requestFinished(
       current.message.id,
@@ -138,7 +158,7 @@ class SendWorkflow {
    *
    * @param current The current item in the send queue.
    */
-  async sendToAssistant(
+  private async sendToAssistant(
     current: PendingMessageRequest,
     startLoading: (() => void) | null
   ) {
@@ -149,6 +169,153 @@ class SendWorkflow {
       customSendMessage,
       startLoading
     );
+  }
+
+  /**
+   * If there are items in the send queue, will grab the zero index item and send it to the assistant back-end via
+   * this.sendToAssistant.
+   */
+  async runQueueIfReady() {
+    const current = this.serviceManager.messageCoordinator.takeNextRequest();
+    if (!current) {
+      return;
+    }
+    this.serviceManager.messageCoordinator.requestStarted(
+      current.message.id,
+      current.generation,
+      current.message
+    );
+    const { message } = current;
+    current.timeFirstRequest = Date.now();
+
+    if (message.input.message_type === MessageInputType.EVENT) {
+      this.sendToAssistant(current, null);
+      return;
+    }
+
+    const { startLoading, originalUserText } =
+      this.prepareCurrentRequest(current);
+
+    if (current.isProcessed) {
+      // This message was canceled.
+      return;
+    }
+
+    await this.firePreSendEvent(current);
+
+    if (current.isProcessed) {
+      // This message was canceled.
+      return;
+    }
+
+    this.commitOutgoingMessage(current, originalUserText);
+
+    await this.fireSendEvent(current);
+
+    this.sendToAssistant(current, startLoading);
+  }
+
+  private prepareCurrentRequest(current: PendingMessageRequest) {
+    const { store } = this.serviceManager;
+    const state = store.getState();
+    const { public: publicConfig } = state.config;
+    const { message } = current;
+
+    const lastResponse = getLastAssistantResponseWithContext(state);
+    if (lastResponse) {
+      message.thread_id = THREAD_ID_MAIN;
+    }
+
+    const loadingIndicatorTimeout =
+      !publicConfig.messaging?.messageLoadingIndicatorTimeoutSecs &&
+      publicConfig.messaging?.messageLoadingIndicatorTimeoutSecs !== 0
+        ? MS_MAX_SILENT_LOADING
+        : publicConfig.messaging.messageLoadingIndicatorTimeoutSecs * 1000;
+
+    const startLoading = this.buildStartLoading(
+      message,
+      loadingIndicatorTimeout
+    );
+    const originalUserText = this.outgoing.originalText(message);
+
+    return { startLoading, originalUserText };
+  }
+
+  private async firePreSendEvent(current: PendingMessageRequest) {
+    const { message, source } = current;
+    await this.serviceManager.eventBus.fire(
+      {
+        type: BusEventType.PRE_SEND,
+        data: message,
+        source,
+      },
+      this.serviceManager.instance
+    );
+  }
+
+  private commitOutgoingMessage(
+    current: PendingMessageRequest,
+    originalUserText: string
+  ) {
+    const { message } = current;
+    const { localMessage } = this.outgoing.prepareLocalItem(
+      message,
+      originalUserText,
+      current.localMessageID === undefined ? uuid() : current.localMessageID,
+      MessageResponseTypes.TEXT
+    );
+
+    // If history.silent is set to true, we don't add the message to the redux store as we do not want to show it, so
+    // we don't need to update it here either.
+    if (!message.history.silent) {
+      this.serviceManager.store.dispatch(
+        actions.updateLocalMessageItem(localMessage)
+      );
+      this.serviceManager.store.dispatch(actions.updateMessage(message));
+    }
+    deepFreeze(message);
+  }
+
+  private async fireSendEvent(current: PendingMessageRequest) {
+    const { message, source } = current;
+    await this.serviceManager.eventBus.fire(
+      { type: BusEventType.SEND, data: message, source },
+      this.serviceManager.instance
+    );
+  }
+
+  /**
+   * Builds a function that starts the loading manager and timeout handling for a message.
+   */
+  private buildStartLoading(
+    message: MessageRequest<any>,
+    loadingIndicatorTimeoutMS?: number
+  ): (() => void) | null {
+    const loadingTimeout = loadingIndicatorTimeoutMS || 0;
+    if (!loadingTimeout && !this.timeoutMS) {
+      return null;
+    }
+
+    return () =>
+      this.messageLoadingManager.start(
+        () => {
+          this.serviceManager.store.dispatch(actions.addIsLoadingCounter(1));
+        },
+        (didExceedMaxLoading: boolean) => {
+          if (didExceedMaxLoading) {
+            this.serviceManager.store.dispatch(actions.addIsLoadingCounter(-1));
+          }
+        },
+        () => {
+          this.serviceManager.messageService.cancelMessageRequestByID(
+            message.id,
+            true,
+            CancellationReason.TIMEOUT
+          );
+        },
+        loadingTimeout,
+        this.timeoutMS
+      );
   }
 
   /**

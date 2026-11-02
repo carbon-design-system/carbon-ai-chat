@@ -310,4 +310,9 @@ it('creates loading state lazily before the message facade is wired', () => {
   expect(coordinator.timeoutMS).toBe(0);
   const loading = coordinator.messageLoadingManager;
   expect(coordinator.messageLoadingManager).toBe(loading);
+  coordinator.registerRequestGeneration('old-request', 0);
+  manager.restartCount = 1;
+  expect(coordinator.isRequestFromPreviousConversation('old-request')).toBe(
+    true
+  );
 });
