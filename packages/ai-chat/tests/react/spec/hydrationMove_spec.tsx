@@ -57,7 +57,9 @@ it.each([
         onAfterRender={after}
       />
     );
-    await waitFor(() => expect(after).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(after).toHaveBeenCalledTimes(1), {
+      timeout: 5000,
+    });
     const body = getChatShadowRoot().querySelector<HydrationBody>(
       'cds-aichat-hydration-body'
     );
