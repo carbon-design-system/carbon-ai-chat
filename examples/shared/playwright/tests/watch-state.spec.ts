@@ -13,7 +13,8 @@
  *
  * Opens the floating chat and checks the host's state mirror through homescreen,
  * conversation, and return-home transitions. Checks the initial visible mirror
- * and updates from the STATE_CHANGE subscription. Start with the launcher below.
+ * and updates from the host's subscription: `instance.state.select()` in the
+ * React host, STATE_CHANGE in Web Components. Start with the launcher below.
  */
 
 import { PageObjectId } from '@carbon/ai-chat/server';
@@ -29,8 +30,9 @@ test('mirrors chat view state changes to the host UI', async ({ page }) => {
   await expect(homescreen).toBeHidden();
   await expect(page.getByTestId(PageObjectId.INPUT)).toBeHidden();
 
-  // The host mirror reads `Homescreen` only until startup reports the state,
-  // then `Chat View` until the chat opens. Assert after opening, when it settles.
+  // The React host mirror reads `Chat View` until the chat opens; the Web
+  // Components host first reads `Homescreen` until startup reports the state.
+  // Assert after opening, when both hosts have settled.
   await launcher.click();
   await expect(homescreen).toBeVisible();
   await expect(host.getByText('Homescreen', { exact: true })).toBeVisible();

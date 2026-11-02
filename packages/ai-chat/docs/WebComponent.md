@@ -107,6 +107,17 @@ The `cds-aichat-container` component creates the chat instance when it mounts an
 
 See {@link CdsAiChatContainerAttributes} for the properties and attributes it accepts.
 
+## Element metadata
+
+Each chat package ships `custom-elements.json`. Tools can find it through `package.json.customElements`. Both packages set that path to `./custom-elements.json`. They also export the file:
+
+| Package | JSON export |
+| --- | --- |
+| `@carbon/ai-chat` | `@carbon/ai-chat/custom-elements.json` |
+| `@carbon/ai-chat-components` | `@carbon/ai-chat-components/custom-elements.json` |
+
+The chat manifest lists both host tags. It describes their public properties and HTML attributes. Some options are properties only. They have no HTML attribute. Reading the file does not register tags.
+
 ## Accessing instance methods
 
 Capture the {@link ChatInstance} from {@link CdsAiChatContainerAttributes.onBeforeRender} or {@link CdsAiChatContainerAttributes.onAfterRender} when you need to call instance methods later. See those props for an example.
