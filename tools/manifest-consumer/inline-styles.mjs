@@ -29,7 +29,8 @@ export { regularStyles, customStyles, regularIsAny, customIsAny };
 
 async function assertLocalDeclarations(root, name, program, options) {
   const pending = trees.map((tree) =>
-    join(root, tree, 'components/markdown/src/inline-markdown.d.ts')
+    // The legacy markdown entry forwards to the aichat-markdown family.
+    join(root, tree, 'components/aichat-markdown/inline-markdown.d.ts')
   );
   const visited = new Set();
   while (pending.length) {
