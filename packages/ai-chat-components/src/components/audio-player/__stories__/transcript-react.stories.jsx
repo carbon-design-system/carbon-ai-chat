@@ -17,6 +17,19 @@ import './transcript-react.stories.css';
 const WITH_TRANSCRIPT_SOURCE_CHROMATIC_DATA_URI =
   'data:audio/wav;base64,UklGRiUAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQEAAACA';
 
+// The transcript is controlled, so each story keeps its own expanded state.
+function ToggleableTranscript(props) {
+  const [expanded, setExpanded] = React.useState(false);
+
+  return (
+    <Transcript
+      {...props}
+      expanded={expanded}
+      onTranscriptToggle={(e) => setExpanded(e.detail.expanded)}
+    />
+  );
+}
+
 export default {
   title: 'Components/Audio player/Transcript',
   component: Transcript,
@@ -45,7 +58,9 @@ export const Default = {
   render: (args) => {
     const { text, label, language } = args;
 
-    return <Transcript text={text} label={label} language={language} />;
+    return (
+      <ToggleableTranscript text={text} label={label} language={language} />
+    );
   },
 };
 
@@ -68,7 +83,9 @@ This makes it ideal for providing detailed transcripts of audio content without 
   render: (args) => {
     const { text, label, language } = args;
 
-    return <Transcript text={text} label={label} language={language} />;
+    return (
+      <ToggleableTranscript text={text} label={label} language={language} />
+    );
   },
 };
 
@@ -113,7 +130,7 @@ export const WithAudioPlayer = {
         <div slot="body" className="audio-player-card-body">
           <h4 className="audio-player-card-title">{audioTitle}</h4>
           <p className="audio-player-card-description">{audioDescription}</p>
-          <Transcript text={text} label={label} language={language} />
+          <ToggleableTranscript text={text} label={label} language={language} />
         </div>
       </Card>
     );
@@ -124,19 +141,19 @@ export const MultipleLanguages = {
   render: () => {
     return (
       <div className="transcript-examples-container">
-        <Transcript
+        <ToggleableTranscript
           text="This is an English transcript."
           label="English Transcript"
           language="en"
         />
 
-        <Transcript
+        <ToggleableTranscript
           text="Esta es una transcripción en español."
           label="Transcripción en español"
           language="es"
         />
 
-        <Transcript
+        <ToggleableTranscript
           text="これは日本語の文字起こしです。"
           label="日本語の文字起こし"
           language="ja"
