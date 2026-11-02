@@ -17,7 +17,6 @@ import {
 } from '../../../utils/messageUtils';
 import {
   BusEventChunkUserDefinedResponse,
-  BusEventCustomFooterSlot,
   BusEventCustomRequestFooterSlot,
   BusEventType,
 } from '../../../../types/events/eventBusTypes';
@@ -33,7 +32,6 @@ import {
 import { AppStateMessages } from '../../../../types/state/AppState';
 import { MessageState } from '../../../../types/config/MessagingConfig';
 import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
-import { captureMessageEvent } from '../../../utils/messageEventOwnership';
 import type {
   ServiceManager,
   UserDefinedElementRegistryItem,
@@ -135,66 +133,16 @@ class SlotEventService {
    * If the given message should contain a custom footer slot, this will fire the {@link BusEventType.CUSTOM_FOOTER_SLOT}
    * event so that the event listeners can attach whatever they want to the host element.
    */
-  async handleCustomFooterSlot(
+  handleCustomFooterSlot(
     localMessage: LocalMessageItem,
     originalMessage: MessageResponse,
     isCurrent: () => boolean = () => true
   ) {
-    if (!isCurrent()) {
-      return;
-    }
-    const footerOptions =
-      localMessage.item.message_item_options?.custom_footer_slot;
-    if (!footerOptions || footerOptions.is_on === false) {
-      return;
-    }
-    const state = this.serviceManager.store.getState();
-    if (
-      !Object.isFrozen(originalMessage) &&
-      (state.allMessagesByID[originalMessage.id] === originalMessage ||
-        state.allMessageItemsByID[localMessage.ui_state.id] === localMessage)
-    ) {
-      const write = this.serviceManager.messageUpsertCoordinator.trackWrite(
-        originalMessage.id
-      );
-      const isEventCurrent = () => isCurrent() && write.isCurrent();
-      const eventValues = captureMessageEvent(
-        this.serviceManager,
-        originalMessage,
-        {
-          [localMessage.ui_state.id]: localMessage,
-        },
-        undefined,
-        isEventCurrent
-      );
-      try {
-        await this.handleCustomFooterSlot(
-          eventValues.localItems[localMessage.ui_state.id],
-          eventValues.message as MessageResponse,
-          isEventCurrent
-        );
-      } finally {
-        try {
-          eventValues.commit();
-        } finally {
-          write.release();
-        }
-      }
-      return;
-    }
-    {
-      const customFooterSlotEvent: BusEventCustomFooterSlot = {
-        type: BusEventType.CUSTOM_FOOTER_SLOT,
-        data: {
-          slotName: footerOptions.slot_name,
-          messageItem: localMessage.item,
-          message: originalMessage,
-          additionalData: footerOptions.additional_data,
-        },
-      };
-
-      await this.serviceManager.fire(customFooterSlotEvent, isCurrent);
-    }
+    return this.serviceManager.messageCoordinator.handleCustomFooterSlot(
+      localMessage,
+      originalMessage,
+      isCurrent
+    );
   }
 
   /**

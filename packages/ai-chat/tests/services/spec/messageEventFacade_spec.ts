@@ -41,3 +41,19 @@ it('returns the exact response-tree workflow Promise from the coordinator facade
     invoke.mockRestore();
   }
 });
+
+it('returns the exact response footer workflow Promise', () => {
+  const core = new MessageCoordinator(
+    {} as ServiceManager,
+    {} as MessagePresentationPort
+  );
+  const result = Promise.resolve();
+  const invoke = jest
+    .spyOn(events, 'handleCustomFooterSlot')
+    .mockReturnValue(result);
+  try {
+    expect(core.handleCustomFooterSlot({} as any, {} as any)).toBe(result);
+  } finally {
+    invoke.mockRestore();
+  }
+});

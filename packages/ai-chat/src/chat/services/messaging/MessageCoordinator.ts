@@ -31,7 +31,23 @@ import type { LocalMessageItem } from '../../../types/messaging/LocalMessageItem
 import type { Message } from '../../../types/messaging/Messages';
 import type { MessageState } from '../../../types/config/MessagingConfig';
 
+import * as messageEvents from './coordinateMessageEvents';
+import type { MessageResponse } from '../../../types/messaging/Messages';
+
 class MessageCoordinator {
+  handleCustomFooterSlot(
+    local: LocalMessageItem,
+    message: MessageResponse,
+    isCurrent?: () => boolean
+  ) {
+    return messageEvents.handleCustomFooterSlot(
+      this.serviceManager,
+      local,
+      message,
+      isCurrent
+    );
+  }
+
   handleUserDefinedResponseItems(
     localMessage: LocalMessageItem,
     originalMessage: Message,
