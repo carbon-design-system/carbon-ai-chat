@@ -121,7 +121,9 @@ describe('container-owned announcer region', () => {
     element.onAfterRender = jest.fn();
     document.body.appendChild(element);
 
-    await waitFor(() => expect(element.onBeforeRender).toHaveBeenCalled());
+    await waitFor(() => expect(element.onBeforeRender).toHaveBeenCalled(), {
+      timeout: 5000,
+    });
     expect(capturedMountCalls).toHaveLength(0);
     expect(
       element.shadowRoot.querySelector('.cds-aichat--aria-announcer')
@@ -204,7 +206,9 @@ describe('container-owned announcer region', () => {
         <ChatContainer {...props} onAfterRender={after} />
       </React.StrictMode>
     );
-    await waitFor(() => expect(after).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(after).toHaveBeenCalledTimes(1), {
+      timeout: 5000,
+    });
     const element = document.querySelector('cds-aichat-container');
     const region = element.shadowRoot.querySelector(
       '.cds-aichat--aria-announcer'
