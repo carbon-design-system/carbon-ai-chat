@@ -77,8 +77,7 @@ Compare each package's tag with the version in the release log:
 
 The packages have separate version numbers. If the workflow leaves a package unchanged, its tag can still point to the prior version.
 
-As a secondary check, view the versions pages for [@carbon/ai-chat](https://www.npmjs.com/package/@carbon/ai-chat?activeTab=versions) and [@carbon/ai-chat-components](https://www.npmjs.com/package/@carbon/ai-chat-components?activeTab=versions).
-The website can show stale versions after the registry has updated. If the registry shows the expected versions and tags, publication is confirmed; don't rerun the release just because the website lags.
+As a secondary check, view the versions pages for [@carbon/ai-chat](https://www.npmjs.com/package/@carbon/ai-chat?activeTab=versions) and [@carbon/ai-chat-components](https://www.npmjs.com/package/@carbon/ai-chat-components?activeTab=versions). The website can show stale versions after the registry has updated. If the registry shows the expected versions and tags, publication is confirmed; don't rerun the release just because the website lags.
 
 ### Prerelease
 
