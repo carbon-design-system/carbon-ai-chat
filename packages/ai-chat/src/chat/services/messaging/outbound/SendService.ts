@@ -20,10 +20,8 @@ import {
 } from '../../../utils/messageUtils';
 import { consoleError } from '../../../utils/miscUtils';
 import { deepFreeze } from '../../../utils/lang/objectUtils';
-import {
-  hasCustomPromptLine,
-  requestComposerFocus,
-} from '../../../utils/customPromptLine';
+import { assertNoInFlightUpload } from '../assertNoInFlightUpload';
+import type { MessagePresentationPort } from '../presentationPort';
 import { MessageSendSource } from '../../../../types/events/eventBusTypes';
 import {
   MessageInputType,
@@ -38,7 +36,10 @@ class SendService {
 
   private serviceManager: ServiceManager;
 
-  constructor(serviceManager: ServiceManager) {
+  constructor(
+    serviceManager: ServiceManager,
+    private presentation?: MessagePresentationPort
+  ) {
     this.serviceManager = serviceManager;
   }
 
@@ -60,8 +61,8 @@ class SendService {
     options: SendOptions = {},
     ignoreHydration = false
   ) {
-    this.serviceManager.inputActionsService.assertNoInFlightUpload();
-    const useBuiltInData = !hasCustomPromptLine(this.serviceManager);
+    assertNoInFlightUpload(this.serviceManager.store.getState());
+    const useBuiltInData = !(this.presentation?.hasCustomPromptLine() ?? false);
 
     const messageRequest =
       typeof message === 'string'
@@ -74,30 +75,14 @@ class SendService {
           )
         : message;
 
-    // Announce that the message is being sent for screen reader users
-    if (this.serviceManager.ariaAnnouncer) {
-      const languagePack = this.serviceManager.store.getState().languagePack;
-      this.serviceManager.ariaAnnouncer(languagePack.input_sendingMessage);
-    }
-
-    requestComposerFocus(this.serviceManager);
+    this.presentation?.announceSending();
+    this.presentation?.requestComposerFocus();
 
     // Clear any currently active response while awaiting the next one (even before hydration).
     this.serviceManager.store.dispatch(actions.setActiveResponseId(null));
 
-    // If the home screen is open, we want to close it as soon as a message is sent. Note that this will also apply
-    // if the Carbon AI Chat hasn't been opened yet.
-    if (
-      this.serviceManager.store.getState().persistedToBrowserStorage
-        .homeScreenState.isHomeScreenOpen
-    ) {
-      this.serviceManager.store.dispatch(actions.setHomeScreenIsOpen(false));
-    }
-
-    // If the response panel is open, it should be closed on every message sent.
-    if (this.serviceManager.store.getState().responsePanelState.isOpen) {
-      this.serviceManager.store.dispatch(actions.setResponsePanelIsOpen(false));
-    }
+    this.presentation?.closeHomeScreenIfOpen();
+    this.presentation?.closeResponsePanelIfOpen();
 
     if (
       this.serviceManager.hydrationService.hydrationPromise ||
@@ -109,7 +94,7 @@ class SendService {
     } else {
       // If no hydration has started, then we need to start the hydration and use this message as the alternate for
       // the welcome node.
-      this.serviceManager.store.dispatch(actions.setHomeScreenIsOpen(false));
+      this.presentation?.closeHomeScreen();
       await this.serviceManager.hydrationService.hydrateChat(
         messageRequest,
         options
@@ -118,7 +103,7 @@ class SendService {
 
     // Re-check: an upload can begin while hydration is awaited above, and the
     // message would otherwise go out without that file's contributed data.
-    this.serviceManager.inputActionsService.assertNoInFlightUpload();
+    assertNoInFlightUpload(this.serviceManager.store.getState());
 
     await this.doSend(messageRequest, source, options, useBuiltInData);
   }
