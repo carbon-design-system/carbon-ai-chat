@@ -44,6 +44,54 @@ const config: PublicConfig = {
 const showCustomElement =
   new URLSearchParams(window.location.search).get('wrapper') === 'custom';
 
+// `?choice-tree=es-custom` loads the fixed-prefix wrapper, so one probe covers both published trees.
+const choiceTree = new URLSearchParams(window.location.search).get(
+  'choice-tree'
+);
+const ChatButton = React.lazy(() =>
+  choiceTree === 'es-custom'
+    ? import('@carbon/ai-chat-components/es-custom/react/chat-button.js')
+    : import('@carbon/ai-chat-components/es/react/chat-button.js')
+);
+
+/** The query-only fixture checks Boolean choice selection against this example's React version. */
+function ChoiceButtonProbe() {
+  const [selectedIndex, setSelectedIndex] = React.useState<number | null>(null);
+  const [calls, setCalls] = React.useState([0, 0]);
+
+  function select(index: number) {
+    setCalls((counts) => [
+      counts[0] + Number(index === 0),
+      counts[1] + Number(index === 1),
+    ]);
+    setSelectedIndex(index);
+  }
+
+  return (
+    <main>
+      <h1>Choice wrapper probe</h1>
+      <output data-testid="choice-react-version">{React.version}</output>
+      <button type="button">Before choices</button>
+      <React.Suspense fallback={<p>Loading choices</p>}>
+        {['First choice', 'Second choice'].map((label, index) => (
+          <ChatButton
+            key={label}
+            data-testid={`choice-${index}`}
+            isQuickAction
+            isSelected={index === selectedIndex}
+            onClick={() => select(index)}>
+            {label}
+          </ChatButton>
+        ))}
+      </React.Suspense>
+      <button type="button" onClick={() => setSelectedIndex(null)}>
+        Clear selection
+      </button>
+      <output data-testid="choice-calls">{calls.join(',')}</output>
+    </main>
+  );
+}
+
 /** The query-only fixture checks DOM props against this example's React version. */
 function HostPropsProbe() {
   const [phase, setPhase] = React.useState('initial');
@@ -93,6 +141,9 @@ function HostPropsProbe() {
 }
 
 function App() {
+  if (new URLSearchParams(window.location.search).has('choice-probe')) {
+    return <ChoiceButtonProbe />;
+  }
   if (new URLSearchParams(window.location.search).has('host-props')) {
     return <HostPropsProbe />;
   }

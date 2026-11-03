@@ -201,8 +201,6 @@ describe(blockClass, () => {
       el.width = '';
       el.height = '';
       await el.updateComplete;
-      // The shared sheet rewrites on a microtask.
-      await Promise.resolve();
       const rect = el
         .shadowRoot!.querySelector(avatarSelector)!
         .getBoundingClientRect();
@@ -222,7 +220,6 @@ describe(blockClass, () => {
       box.removeChild(el);
       box.appendChild(el);
       await el.updateComplete;
-      await Promise.resolve();
       const rect = el
         .shadowRoot!.querySelector(avatarSelector)!
         .getBoundingClientRect();
