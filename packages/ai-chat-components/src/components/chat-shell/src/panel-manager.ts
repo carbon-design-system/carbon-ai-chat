@@ -8,25 +8,13 @@
  */
 
 import {
+  composedContains,
   getDeepActiveElement,
   isElementInvisible,
   tryFocus,
   walkComposedTree,
 } from '../../../globals/utils/focus-utils.js';
 import prefix from '../../../globals/settings.js';
-
-function composedContains(
-  container: HTMLElement,
-  element: Element | null
-): boolean {
-  for (let node = element; node;) {
-    if (node === container) {
-      return true;
-    }
-    node = node.parentElement ?? (node.getRootNode() as ShadowRoot).host;
-  }
-  return false;
-}
 
 function hasLostPanelFocus(focused: Element | null, focusPath: EventTarget[]) {
   return (
@@ -237,13 +225,15 @@ export class PanelManager {
       );
       return;
     }
+    // A body opener means nothing had focus when the panel opened.
     if (
       target instanceof HTMLElement &&
+      target !== document.body &&
       target.isConnected &&
       (!this.activePanel || composedContains(this.activePanel, target))
     ) {
       target.focus();
-      if (getDeepActiveElement() === target) {
+      if (composedContains(target, getDeepActiveElement())) {
         return;
       }
     }

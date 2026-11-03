@@ -134,6 +134,72 @@ describe('PanelManager focus restoration', () => {
     expect(getDeepActiveElement()).to.equal(trigger);
   });
 
+  /** Moves the shell into a shadow root and slots a new button into `target`. */
+  async function slotIntoPanel(target: HTMLElement, label: string) {
+    const outer = document.createElement('div');
+    host.parentElement!.append(outer);
+    outer.attachShadow({ mode: 'open' }).append(host);
+    const slot = document.createElement('slot');
+    slot.name = 'panel-content';
+    target.append(slot);
+    const slotted = document.createElement('button');
+    slotted.slot = 'panel-content';
+    slotted.textContent = label;
+    outer.append(slotted);
+    return slotted;
+  }
+
+  it('restores the trigger when slotted panel content had focus', async () => {
+    panel.removeAttribute('open');
+    await settle();
+    const slotted = await slotIntoPanel(panel, 'Close panel');
+    trigger.focus();
+    panel.setAttribute('open', '');
+    await settle();
+    slotted.focus();
+    panel.removeAttribute('open');
+    await settle();
+    expect(getDeepActiveElement()).to.equal(trigger);
+    expect(fallbackCount).to.equal(0);
+  });
+
+  it('requests fallback when nothing had focus at open', async () => {
+    panel.removeAttribute('open');
+    await settle();
+    trigger.blur();
+    expect(document.activeElement).to.equal(document.body);
+    panel.setAttribute('open', '');
+    await settle();
+    action.focus();
+    panel.removeAttribute('open');
+    // Focus is already on the page body before the restore frame runs.
+    action.blur();
+    await settle();
+    expect(fallbackCount).to.equal(1);
+  });
+
+  it('restores slotted content in the lower panel after a higher-priority panel closes', async () => {
+    panel.removeAttribute('open');
+    await settle();
+    const slotted = await slotIntoPanel(panel, 'Counter');
+    trigger.focus();
+    panel.setAttribute('open', '');
+    await settle();
+    slotted.focus();
+    const top = document.createElement('cds-aichat-panel');
+    top.setAttribute('priority', '10');
+    const topAction = document.createElement('button');
+    topAction.textContent = 'Decline';
+    top.append(topAction);
+    panel.parentElement!.append(top);
+    top.setAttribute('open', '');
+    await settle();
+    topAction.focus();
+    top.removeAttribute('open');
+    await settle();
+    expect(getDeepActiveElement()).to.equal(slotted);
+  });
+
   it('restores a trigger inside a nested shadow root', async () => {
     panel.removeAttribute('open');
     await settle();

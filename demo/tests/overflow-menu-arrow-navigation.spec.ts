@@ -207,8 +207,8 @@ for (const framework of ['react', 'web-component']) {
     await expect(panelButton).toBeFocused();
     await panelButton.click();
     await expect(panelButton).toBeHidden();
-    // The parent header also leaves page focus after this programmatic panel flow.
-    await expect(page.locator('body')).toBeFocused();
+    // Closing the panel from its slotted content returns focus to its opener.
+    await expect(opener).toBeFocused();
     // Start from outside the header, so the header's own focus result shows.
     await page.getByRole('textbox').focus();
     const headerFocused = await opener.evaluate((button) => {

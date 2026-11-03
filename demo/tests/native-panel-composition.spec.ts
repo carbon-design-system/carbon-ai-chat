@@ -382,14 +382,9 @@ for (const framework of ['react', 'web-component']) {
       await page.keyboard.press('Escape');
       await expect(prompt).toBeHidden();
       await expect(counter).toBeVisible();
-      // The parent restores the first header control after a covered panel's
-      // closeend resets its options; reactivation skips the body's focus hook.
-      await expect(
-        custom.getByRole('button', {
-          name: 'Return to conversation',
-          exact: true,
-        })
-      ).toBeFocused();
+      // Closing the cover returns focus to the control it covered. The
+      // covered panel's options still reset (#2700).
+      await expect(counter).toBeFocused();
       await expect(counter).toHaveText('Panel count 1');
       expect(
         await counter.evaluate((node) => {
