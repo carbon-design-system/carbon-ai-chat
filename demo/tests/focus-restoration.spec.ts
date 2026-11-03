@@ -42,7 +42,8 @@ test.afterEach(async ({ page }) => {
 async function openChat(
   page: Page,
   framework: (typeof hosts)[number],
-  direction: (typeof directions)[number]
+  direction: (typeof directions)[number],
+  config: Record<string, unknown> = {}
 ) {
   await prepareDemoPage(page, {
     settings: {
@@ -57,15 +58,20 @@ async function openChat(
       window.chatInstance?.serviceManager?.store.getState()
         .initialViewChangeComplete
   );
-  await page.evaluate(async () => {
+  await page.evaluate(async (config) => {
     await window.setChatConfig!({
       launcher: { isOn: false },
       openChatByDefault: true,
+      ...config,
     });
-  });
+  }, config);
   await waitForSetChatConfigApplied(page);
   await openChatWindow(page);
-  await waitForChatReady(page, { panelTestId: PageObjectId.MAIN_PANEL });
+  await waitForChatReady(page, {
+    panelTestId: config.homescreen
+      ? PageObjectId.HOME_SCREEN_PANEL
+      : PageObjectId.MAIN_PANEL,
+  });
   await expect(page.locator('html')).toHaveAttribute('dir', direction);
   await expect(page.locator('cds-aichat-custom-element')).toHaveCount(
     framework === 'react' ? 0 : 1
@@ -219,6 +225,48 @@ for (const framework of hosts) {
         await page.keyboard.press('Escape');
         await expect(menu).toHaveCount(0);
         await expect(button).toBeFocused();
+      });
+    }
+
+    for (const keyboard of [false, true]) {
+      test(`${framework} ${direction}: Return to conversation by ${keyboard ? 'keyboard' : 'mouse'} focuses the input`, async ({
+        page,
+      }) => {
+        await openChat(page, framework, direction, {
+          homescreen: {
+            isOn: true,
+            greeting: 'Choose a topic',
+            starters: {
+              isOn: true,
+              buttons: [{ label: 'Start conversation' }],
+            },
+          },
+        });
+        const homePanel = page.getByTestId(PageObjectId.HOME_SCREEN_PANEL);
+        await expect(homePanel).toBeVisible();
+        await page
+          .getByRole('button', { name: 'Start conversation', exact: true })
+          .click();
+        await expect(homePanel).toBeHidden();
+        await page
+          .getByRole('button', {
+            name: 'Return to the home screen',
+            exact: true,
+          })
+          .click();
+        await expect(homePanel).toBeVisible();
+        const back = page.getByRole('button', {
+          name: 'Return to conversation',
+          exact: true,
+        });
+        if (keyboard) {
+          await back.focus();
+          await page.keyboard.press('Space');
+        } else {
+          await back.click();
+        }
+        await expect(homePanel).toBeHidden();
+        await expect(page.getByTestId(PageObjectId.INPUT)).toBeFocused();
       });
     }
 
