@@ -118,6 +118,24 @@ class InputActions extends NativeChatView {
     }
   }
 
+  private onMenuClosed = (
+    event: CustomEvent<{ triggerEventType?: string }>
+  ) => {
+    this.open = false;
+    // Escape closes the menu with focus still inside it, and this update
+    // removes the menu. A blur already moved focus, and an activated action
+    // owns where focus goes next.
+    if (event.detail?.triggerEventType === 'keydown') {
+      void this.updateComplete.then(() => {
+        if (this.isConnected) {
+          this.querySelector<HTMLElement>(
+            '[data-input-actions-trigger]'
+          )?.focus();
+        }
+      });
+    }
+  };
+
   private activate(action: ToolbarAction, close: boolean) {
     if (!this.isConnected || !this.viewState) {
       return;
@@ -200,9 +218,7 @@ class InputActions extends NativeChatView {
         ? html`<cds-menu
             .open=${true}
             .label=${this.menuLabel}
-            @cds-menu-closed=${() => {
-              this.open = false;
-            }}>
+            @cds-menu-closed=${this.onMenuClosed}>
             ${repeat(
               menuActions,
               (action, index) => action.id ?? index,

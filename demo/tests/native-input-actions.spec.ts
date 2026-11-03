@@ -203,8 +203,7 @@ for (const framework of ['react', 'web-component']) {
       .toBe(true);
     await page.keyboard.press('Escape');
     await expect(menu).toHaveCount(0);
-    // The parent also drops focus on Escape; automatic return is a known gap.
-    await trigger.getByRole('button').focus();
+    await expect(trigger.getByRole('button')).toBeFocused();
     await trigger.click();
     await actions.getByTestId('input-action-link').click();
     await expect(actions.locator('cds-menu')).toHaveCount(0);

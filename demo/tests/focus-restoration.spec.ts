@@ -5,6 +5,7 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
+import Add16 from '@carbon/icons/es/add--large/16.js';
 import type { Page } from '@playwright/test';
 import { test, expect } from './fixtures';
 import { PageObjectId } from '@carbon/ai-chat/server';
@@ -170,6 +171,54 @@ for (const framework of hosts) {
         await page.keyboard.press('Escape');
         await expect(prompt).toBeHidden();
         await expect(counter).toBeFocused();
+      });
+    }
+
+    for (const expanded of [false, true]) {
+      const trigger = expanded ? 'expanded overflow' : 'compact';
+
+      test(`${framework} ${direction}: Escape in the ${trigger} input-actions menu returns focus to its trigger`, async ({
+        page,
+      }) => {
+        await openChat(page, framework, direction);
+        await page.evaluate(
+          async ({ expanded, icon }) => {
+            const actions = Array.from(
+              { length: expanded ? 12 : 2 },
+              (_, index) => ({
+                id: `focus-action-${index}`,
+                text: `Action ${index + 1}`,
+                testId: `focus-action-${index}`,
+                icon,
+                onClick: () => {},
+              })
+            );
+            await window.setChatConfig!({
+              launcher: { isOn: false },
+              openChatByDefault: true,
+              input: { expanded, actions },
+            });
+          },
+          { expanded, icon: Add16 }
+        );
+        await waitForSetChatConfigApplied(page);
+        const actions = page.locator('cds-aichat-input-actions');
+        const button = actions
+          .getByTestId(
+            expanded
+              ? 'cds-aichat-input-actions-overflow-trigger'
+              : 'cds-aichat-input-actions-trigger'
+          )
+          .getByRole('button');
+        await expect(button).toBeVisible();
+        await button.focus();
+        await page.keyboard.press('Enter');
+        const menu = actions.locator('cds-menu');
+        await expect(menu.getByRole('menu')).toBeVisible();
+        await page.keyboard.press('ArrowDown');
+        await page.keyboard.press('Escape');
+        await expect(menu).toHaveCount(0);
+        await expect(button).toBeFocused();
       });
     }
 
