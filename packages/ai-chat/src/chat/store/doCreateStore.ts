@@ -25,6 +25,7 @@ import { DeepPartial } from '../../types/utilities/DeepPartial';
 import { validateCustomProperties } from '../utils/styleUtils';
 import { reducers } from './reducers';
 import { AppStore, createAppStore } from './appStore';
+import { enableMessageOwnership } from './messageOwnership';
 import {
   DEFAULT_CITATION_PANEL_STATE,
   DEFAULT_CUSTOM_PANEL_STATE,
@@ -373,7 +374,9 @@ function doCreateStore(
       config.public.launcher.showUnreadIndicator;
   }
 
-  return createAppStore(reducerFunction, initialState);
+  const store = createAppStore(reducerFunction, initialState);
+  enableMessageOwnership(store);
+  return store;
 }
 
 /**

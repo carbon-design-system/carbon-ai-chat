@@ -14,6 +14,10 @@ import type { Message } from '../../types/messaging/Messages';
 import type { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
 import type { ServiceManager } from '../services/ServiceManager';
 import actions from '../store/actions';
+import {
+  retainMessageCloneOwnership,
+  retainLocalCloneOwnership,
+} from '../store/messageOwnership';
 
 /** Keep writable event values separate from snapshots, then accept edits without retaining host aliases. */
 export function captureMessageEvent(
@@ -41,7 +45,13 @@ export function captureMessageEvent(
       ) {
         const committedMessage = own().message;
         onMessageCommit?.(committedMessage);
-        store.dispatch(actions.updateMessage(committedMessage));
+        store.dispatch(
+          retainMessageCloneOwnership(
+            actions.updateMessage(committedMessage),
+            store,
+            message.id
+          )
+        );
       }
       for (const [id, item] of Object.entries(localItems)) {
         if (!item || !working.localItems[id]) {
@@ -55,16 +65,26 @@ export function captureMessageEvent(
           before.allMessageItemsByID[id] === current &&
           !isEqual(item, working.localItems[id])
         ) {
-          store.dispatch(actions.updateLocalMessageItem(own().localItems[id]));
+          store.dispatch(
+            retainLocalCloneOwnership(
+              actions.updateLocalMessageItem(own().localItems[id]),
+              store,
+              id
+            )
+          );
         } else if (
           current?.item === item.item &&
           !isEqual(item.item, working.localItems[id].item)
         ) {
           store.dispatch(
-            actions.updateLocalMessageItem({
-              ...current,
-              item: own().localItems[id].item,
-            })
+            retainLocalCloneOwnership(
+              actions.updateLocalMessageItem({
+                ...current,
+                item: own().localItems[id].item,
+              }),
+              store,
+              id
+            )
           );
         }
       }
