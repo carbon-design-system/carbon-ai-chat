@@ -104,7 +104,7 @@ import {
 } from '../types/state/AppState';
 import type { PublicChatState } from '../types/instance/PublicChatState';
 import type { AutoScrollOptions } from '../types/utilities/HasDoAutoScroll';
-import type { MainWindowFunctions } from './utils/mainWindowFunctions';
+import type { MainWindowFunctions } from '../types/utilities/MainWindowFunctions';
 import { HasRequestFocus } from '../types/utilities/HasRequestFocus';
 import { MessageSendSource, BusEventType } from '../types/events/eventBusTypes';
 import type { JSONContent } from '@tiptap/core';
