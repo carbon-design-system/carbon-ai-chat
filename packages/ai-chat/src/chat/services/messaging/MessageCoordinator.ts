@@ -48,9 +48,58 @@ import { coordinateReasoningEvents } from './coordinateReasoningEvents';
 import { HeadlessReasoningObserver } from './HeadlessReasoningObserver';
 
 import { FullResponseWorkflow } from './FullResponseWorkflow';
+import type { UpsertStamp } from './incomingWriteTypes';
 import type { MessageWriteOptions } from '../../store/messageWriteTypes';
+import type { UpsertMessageUpdater } from '../../../types/config/MessagingConfig';
 
 class MessageCoordinator {
+  private fullResponseWorkflow?: FullResponseWorkflow;
+
+  private getFullResponseWorkflow() {
+    return (this.fullResponseWorkflow ??= new FullResponseWorkflow(
+      this.serviceManager
+    ));
+  }
+
+  isIncomingWriteStale(stamp: UpsertStamp, requestID?: string): boolean {
+    return (
+      !stamp.isCurrent() ||
+      stamp.generation !== this.incomingWriteLifetime.state.generation ||
+      stamp.restartCount !== this.serviceManager.restartCount ||
+      this.isRequestFromPreviousConversation(requestID)
+    );
+  }
+
+  receive(
+    message: MessageResponse,
+    isLatestWelcomeNode = false,
+    requestMessage?: MessageRequest,
+    origin: 'addMessage' | 'chunk' = 'addMessage',
+    isCallerCurrent: () => boolean = () => true
+  ) {
+    return this.getFullResponseWorkflow().receive(
+      message,
+      isLatestWelcomeNode,
+      requestMessage,
+      origin,
+      isCallerCurrent
+    );
+  }
+
+  runReceivedWrite(
+    messageID: string,
+    updater: UpsertMessageUpdater,
+    options: MessageWriteOptions,
+    stamp: UpsertStamp
+  ) {
+    return this.getFullResponseWorkflow().runReceivedWrite(
+      messageID,
+      updater,
+      options,
+      stamp
+    );
+  }
+
   handleConnectToHumanAgent(
     localMessageItem: LocalMessageItem,
     fullMessage: MessageResponse,
@@ -76,34 +125,12 @@ class MessageCoordinator {
     return this.getFullResponseWorkflow().clearProcessedAgentItems();
   }
 
+  removeMessages(messageIDs: string[]) {
+    return this.getFullResponseWorkflow().removeMessages(messageIDs);
+  }
+
   incomingAgentItemIdentity(message: MessageResponse, index: number) {
     return this.getFullResponseWorkflow().agentItemIdentity(message, index);
-  }
-
-  forgetProcessedAgentMessage(messageID: string) {
-    this.getFullResponseWorkflow().forgetProcessedAgentMessage(messageID);
-  }
-
-  private fullResponseWorkflow?: FullResponseWorkflow;
-
-  private getFullResponseWorkflow() {
-    return (this.fullResponseWorkflow ??= new FullResponseWorkflow(
-      this.serviceManager
-    ));
-  }
-
-  storeReceivedMessage(
-    message: MessageResponse,
-    options: MessageWriteOptions,
-    isCurrent: () => boolean,
-    initialRestartCount: number
-  ): Promise<void> {
-    return this.getFullResponseWorkflow().storeReceivedMessage(
-      message,
-      options,
-      isCurrent,
-      initialRestartCount
-    );
   }
 
   readonly incomingWriteLifetime = new IncomingWriteLifetime(
