@@ -154,10 +154,8 @@ describe('ReceiveService', () => {
     const callbackStarted = resolvablePromise<void>();
     const finishCallback = resolvablePromise<void>();
     const coordinator = manager.messageUpsertCoordinator;
-    const pendingWrites = (coordinator as any).pendingWrites as Map<
-      string,
-      unknown
-    >;
+    const pendingWrites = manager.messageCoordinator.incomingWriteLifetime.state
+      .pendingWrites as Map<string, unknown>;
     fire.mockImplementation(async (event) => {
       if (event.type === BusEventType.RECEIVE) {
         callbackStarted.doResolve();
@@ -202,7 +200,7 @@ describe('ReceiveService', () => {
 
   it('keeps overlapping reveals alive until both writes finish', async () => {
     const { service, manager, slotEventService, localItems } = createHarness();
-    const pendingWrites = (manager.messageUpsertCoordinator as any)
+    const pendingWrites = manager.messageCoordinator.incomingWriteLifetime.state
       .pendingWrites as Map<string, unknown>;
     await service.receive(
       response([
@@ -239,7 +237,7 @@ describe('ReceiveService', () => {
 
   it('releases the write after a rejected receive callback and its remaining reveal settle', async () => {
     const { service, manager, fire, localItems } = createHarness();
-    const pendingWrites = (manager.messageUpsertCoordinator as any)
+    const pendingWrites = manager.messageCoordinator.incomingWriteLifetime.state
       .pendingWrites as Map<string, unknown>;
     const failure = new Error('Receive failed');
     fire.mockImplementation(async (event) => {
@@ -498,9 +496,10 @@ describe('ReceiveService', () => {
       expect(received).toBe(true);
       expect(eventTypes()).toContain(BusEventType.RECEIVE);
       expect(localItems()).toEqual([]);
-      expect((manager.messageUpsertCoordinator as any).pendingWrites.size).toBe(
-        1
-      );
+      expect(
+        manager.messageCoordinator.incomingWriteLifetime.state.pendingWrites
+          .size
+      ).toBe(1);
     } finally {
       pendingSlot.doResolve();
       await receiving;
@@ -508,9 +507,9 @@ describe('ReceiveService', () => {
     }
 
     expect(localItems()).toHaveLength(1);
-    expect((manager.messageUpsertCoordinator as any).pendingWrites.size).toBe(
-      0
-    );
+    expect(
+      manager.messageCoordinator.incomingWriteLifetime.state.pendingWrites.size
+    ).toBe(0);
   });
 
   it.each([
@@ -525,8 +524,8 @@ describe('ReceiveService', () => {
     await jest.advanceTimersByTimeAsync(0);
 
     expect(eventTypes()).toContain(BusEventType.RECEIVE);
-    expect((manager.messageUpsertCoordinator as any).pendingWrites.size).toBe(
-      0
-    );
+    expect(
+      manager.messageCoordinator.incomingWriteLifetime.state.pendingWrites.size
+    ).toBe(0);
   });
 });
