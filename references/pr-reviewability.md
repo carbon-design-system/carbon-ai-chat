@@ -35,6 +35,8 @@ Useful seams include a behavior-preserving refactor before a feature, or a share
 
 Independent changes use separate PRs. For dependent changes, prefer a native stack hosted upstream when the contributor has write access. Fork contributors use sequential PRs or maintainer help, as described below.
 
+When a stack moves ownership or data flow in stages, use the PR skill's [flow-map guidance](../.bob/skills/caic-pr/SKILL.md#flow-maps).
+
 ## Choose a stack path that fits your access
 
 ### Native stacks need upstream-hosted branches
