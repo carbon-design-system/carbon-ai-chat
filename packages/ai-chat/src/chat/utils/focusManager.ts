@@ -7,8 +7,9 @@
  *  @license
  */
 
+import { composedContains } from '@carbon/ai-chat-components/es/globals/utils/focus-utils.js';
 import { IS_MOBILE } from './browserUtils';
-import { doFocus } from './domUtils';
+import { doFocus, getDeepActiveElement } from './domUtils';
 import { consoleError } from './miscUtils';
 import type { HasRequestFocus } from '../../types/utilities/HasRequestFocus';
 
@@ -27,25 +28,41 @@ export interface FocusManagerOptions {
   input: HasRequestFocus | null;
 }
 
-export function requestFocus(options: FocusManagerOptions): void {
+/**
+ * Focuses the best place in the open chat.
+ *
+ * @returns Whether it found a place to focus. A target may finish taking focus
+ * a frame later, as the rich editor does.
+ */
+export function requestFocus(options: FocusManagerOptions): boolean {
   try {
     if (!options.shouldAutoFocus || IS_MOBILE) {
-      return;
+      return false;
     }
     if (options.showDisclaimer) {
-      doFocus(options.disclaimer);
-    } else if (options.iFramePanelIsOpen) {
-      options.iframePanel?.requestFocus();
-    } else if (options.viewSourcePanelIsOpen) {
-      options.viewSourcePanel?.requestFocus();
-    } else if (options.customPanelIsOpen) {
-      options.customPanel?.requestFocus();
-    } else if (options.responsePanelIsOpen) {
-      options.responsePanel?.requestFocus();
-    } else {
-      options.input?.requestFocus();
+      const { disclaimer } = options;
+      if (!disclaimer) {
+        return false;
+      }
+      doFocus(disclaimer);
+      // The accept button delegates focus into its shadow root.
+      return composedContains(disclaimer, getDeepActiveElement());
     }
+    let target: HasRequestFocus | null;
+    if (options.iFramePanelIsOpen) {
+      target = options.iframePanel;
+    } else if (options.viewSourcePanelIsOpen) {
+      target = options.viewSourcePanel;
+    } else if (options.customPanelIsOpen) {
+      target = options.customPanel;
+    } else if (options.responsePanelIsOpen) {
+      target = options.responsePanel;
+    } else {
+      target = options.input;
+    }
+    return target?.requestFocus() === true;
   } catch (error) {
     consoleError('An error occurred in MainWindow.requestFocus', error);
+    return false;
   }
 }

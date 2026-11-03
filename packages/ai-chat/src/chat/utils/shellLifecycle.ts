@@ -205,7 +205,7 @@ export class ShellLifecycle {
   private readonly window: WindowOpenState;
   readonly panelCallbacks: PanelCompositionCallbacks;
   readonly mainWindow: MainWindowFunctions;
-  private readonly appWindow: { requestFocus: () => void };
+  private readonly appWindow: { requestFocus: () => boolean };
 
   constructor(
     readonly viewState: ChatViewState,
@@ -236,14 +236,13 @@ export class ShellLifecycle {
     this.appWindow = {
       requestFocus: () => {
         try {
-          if (
+          return (
             manager.store.getState().persistedToBrowserStorage.viewState
-              .mainWindow
-          ) {
-            this.mainWindow.requestFocus();
-          }
+              .mainWindow && this.requestFocus()
+          );
         } catch (error) {
           consoleError('An error occurred in App.requestFocus', error);
+          return false;
         }
       },
     };
@@ -396,7 +395,7 @@ export class ShellLifecycle {
     const handle = (
       name: Parameters<NonNullable<typeof panels>['requestPanelFocus']>[0]
     ) => ({ requestFocus: () => panels?.requestPanelFocus(name) ?? false });
-    focusTargets({
+    return focusTargets({
       shouldAutoFocus:
         state.config.public.shouldTakeFocusIfOpensAutomatically ?? true,
       showDisclaimer: derived.showDisclaimer,

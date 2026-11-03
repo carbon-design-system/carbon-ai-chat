@@ -270,6 +270,42 @@ for (const framework of hosts) {
       });
     }
 
+    test(`${framework} ${direction}: requestFocus reports whether it found a place to focus`, async ({
+      page,
+    }) => {
+      await openChat(page, framework, direction);
+      await page.evaluate(() => {
+        const button = document.createElement('button');
+        button.textContent = 'Page control';
+        document.body.prepend(button);
+      });
+      const pageControl = page.getByRole('button', {
+        name: 'Page control',
+        exact: true,
+      });
+      await pageControl.focus();
+      expect(
+        await page.evaluate(() => window.chatInstance.requestFocus())
+      ).toBe(true);
+      await expect(page.getByTestId(PageObjectId.INPUT)).toBeFocused();
+
+      await page.evaluate(() =>
+        window.chatInstance.changeView({ mainWindow: false, launcher: true })
+      );
+      await expect
+        .poll(() =>
+          page.evaluate(
+            () => window.chatInstance.getState().viewState.mainWindow
+          )
+        )
+        .toBe(false);
+      await pageControl.focus();
+      expect(
+        await page.evaluate(() => window.chatInstance.requestFocus())
+      ).toBe(false);
+      await expect(pageControl).toBeFocused();
+    });
+
     test(`${framework} ${direction}: closing a panel opened with nothing focused focuses the input`, async ({
       page,
     }) => {
