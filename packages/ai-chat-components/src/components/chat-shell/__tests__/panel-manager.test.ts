@@ -9,7 +9,11 @@
 
 import { expect, fixture, html } from '@open-wc/testing';
 import { PanelManager } from '../src/panel-manager.js';
-import { getDeepActiveElement } from '../../../globals/utils/focus-utils.js';
+import {
+  composedContains,
+  getDeepActiveElement,
+  tryFocus,
+} from '../../../globals/utils/focus-utils.js';
 
 const settle = () =>
   new Promise<void>((resolve) =>
@@ -183,5 +187,46 @@ describe('PanelManager focus restoration', () => {
     panel.classList.remove('panel-container--animating');
     await settle();
     expect(getDeepActiveElement()).to.equal(action);
+  });
+});
+
+describe('flat-tree focus checks', () => {
+  it('counts slotted and nested shadow content as inside a container', async () => {
+    const outer = await fixture<HTMLDivElement>(html`
+      <div><button id="slotted">Slotted</button></div>
+    `);
+    const root = outer.attachShadow({ mode: 'open' });
+    root.innerHTML =
+      '<div id="container"><slot></slot><div id="nested"></div></div><div id="sibling"></div>';
+    const container = root.querySelector<HTMLElement>('#container')!;
+    const deep = document.createElement('button');
+    root.querySelector('#nested')!.attachShadow({ mode: 'open' }).append(deep);
+
+    expect(composedContains(container, outer.querySelector('#slotted'))).to.be
+      .true;
+    expect(composedContains(container, deep)).to.be.true;
+    expect(composedContains(container, container)).to.be.true;
+    expect(composedContains(container, root.querySelector('#sibling'))).to.be
+      .false;
+  });
+
+  it('reports success when a host delegates focus into its shadow root', async () => {
+    class DelegatingHost extends HTMLElement {
+      constructor() {
+        super();
+        this.attachShadow({ mode: 'open', delegatesFocus: true }).append(
+          document.createElement('input')
+        );
+      }
+    }
+    customElements.define('panel-manager-delegating-host', DelegatingHost);
+    const delegating = await fixture<DelegatingHost>(
+      html`<panel-manager-delegating-host></panel-manager-delegating-host>`
+    );
+
+    expect(tryFocus(delegating)).to.be.true;
+    expect(getDeepActiveElement()).to.equal(
+      delegating.shadowRoot!.querySelector('input')
+    );
   });
 });

@@ -54,6 +54,32 @@ function getDeepActiveElement(): Element | null {
 }
 
 /**
+ * Checks whether `node` is `container` or sits inside it in the flat tree.
+ * Each step goes to the node's assigned slot, else its parent, else the host
+ * of its shadow root. So slotted content and shadow content both count as
+ * inside.
+ *
+ * @param container - The node that may contain `node`
+ * @param node - The node to look for
+ * @returns True if `node` is `container` or inside it
+ */
+function composedContains(
+  container: Node,
+  node: Node | null | undefined
+): boolean {
+  for (let current = node; current;) {
+    if (current === container) {
+      return true;
+    }
+    current =
+      (current as Element | Text).assignedSlot ??
+      current.parentElement ??
+      (current.getRootNode() as ShadowRoot).host;
+  }
+  return false;
+}
+
+/**
  * Checks if an element should be ignored due to visibility or accessibility attributes.
  *
  * @param element - The DOM element to check
@@ -151,12 +177,9 @@ function tryFocus(
     element.focus();
   }
 
-  // Verify focus was actually set by checking the deep active element
-  // This works across shadow DOM boundaries, with slotted elements, and delegatesFocus configurations
-  const currentActiveElement = getDeepActiveElement();
-  return (
-    currentActiveElement === element || element.contains(currentActiveElement)
-  );
+  // Verify focus landed in the element. A host that delegates focus moves it
+  // into its shadow root, so the check follows the flat tree.
+  return composedContains(element, getDeepActiveElement());
 }
 
 /**
@@ -247,6 +270,7 @@ function focusElementAfterRepaint(
 }
 
 export {
+  composedContains,
   getDeepActiveElement,
   isElementInvisible,
   isFocusable,

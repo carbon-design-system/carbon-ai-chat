@@ -209,12 +209,15 @@ for (const framework of ['react', 'web-component']) {
     await expect(panelButton).toBeHidden();
     // The parent header also leaves page focus after this programmatic panel flow.
     await expect(page.locator('body')).toBeFocused();
-    await opener.evaluate((button) => {
+    // Start from outside the header, so the header's own focus result shows.
+    await page.getByRole('textbox').focus();
+    const headerFocused = await opener.evaluate((button) => {
       let node: Element | null = button;
       while (node) {
         if (node.localName === 'cds-aichat-header-view') {
-          (node as HTMLElement & { requestFocus(): boolean }).requestFocus();
-          return;
+          return (
+            node as HTMLElement & { requestFocus(): boolean }
+          ).requestFocus();
         }
         const root = node.getRootNode();
         node =
@@ -222,6 +225,10 @@ for (const framework of ['react', 'web-component']) {
       }
       throw new Error('Native header focus handle is missing');
     });
+    // The Options trigger doesn't delegate focus, so the header skips it.
+    // Close the chat window delegates focus into its shadow root, and the
+    // header now counts that as success.
+    expect(headerFocused).toBe(true);
     await expect(opener).toBeFocused();
   });
 }

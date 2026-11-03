@@ -60,7 +60,7 @@ class CdsAiChatChatHeader extends LitElement {
    *   tryFocus() utility already performs comprehensive validation including:
    *   - Visibility checks (display, visibility, hidden, inert, aria-hidden)
    *   - Focusability validation (handles standard elements and custom elements with delegatesFocus)
-   *   - Actual focus verification (checks if document.activeElement changed)
+   *   - Actual focus verification (checks that the deep active element sits inside it)
    *   This approach avoids duplicating validation logic and properly handles Carbon components.
    */
   private static readonly BUTTON_SELECTORS =
