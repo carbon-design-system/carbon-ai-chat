@@ -16,9 +16,8 @@ import {
   VIEW_STATE_LAUNCHER_OPEN,
 } from '../store/reducerUtils';
 import { AppState } from '../../types/state/AppState';
-import { createWelcomeRequest, isResponse } from '../utils/messageUtils';
+import { createWelcomeRequest } from '../utils/messageUtils';
 import { consoleWarn, debugLog } from '../utils/miscUtils';
-import { resetStopStreamingButton } from '../utils/streamingUtils';
 import {
   BusEventType,
   MessageSendSource,
@@ -99,7 +98,7 @@ class HydrationService {
         this.hydrating = true;
         const generation =
           this.serviceManager.messageCoordinator.hydrationStarted();
-        this.serviceManager.store.dispatch(actions.addIsHydratingCounter(1));
+        this.serviceManager.messageCoordinator.changeHydrationCounter(1);
         this.hydrationPromise = this.doHydrateChat(
           alternateWelcomeRequest,
           alternateOptions,
@@ -117,11 +116,9 @@ class HydrationService {
           })
           .finally(() => {
             if (this.serviceManager.messageCoordinator.isCurrent(generation)) {
-              this.serviceManager.store.dispatch(actions.chatWasHydrated());
+              this.serviceManager.messageCoordinator.markChatHydrated();
             }
-            this.serviceManager.store.dispatch(
-              actions.addIsHydratingCounter(-1)
-            );
+            this.serviceManager.messageCoordinator.changeHydrationCounter(-1);
             this.serviceManager.messageCoordinator.hydrationFinished(
               generation
             );
@@ -215,7 +212,7 @@ class HydrationService {
     const { serviceManager } = this;
     const state = serviceManager.store.getState();
     if (state.config.public.homescreen?.isOn) {
-      serviceManager.store.dispatch(actions.setHomeScreenIsOpen(true));
+      serviceManager.messageCoordinator.openHomeScreen();
       return;
     }
     if (
@@ -244,35 +241,9 @@ class HydrationService {
     }
   }
 
-  private async applyLoadedHistory(history: LoadedHistory): Promise<void> {
-    const { serviceManager } = this;
-    // User-defined response handlers read history from the store when their events fire.
-    serviceManager.store.dispatch(
-      actions.hydrateMessageHistory(history.messageHistory)
-    );
-    const { messageIDs } = history.messageHistory.assistantMessageState;
-    const lastId = messageIDs[messageIDs.length - 1];
-    const lastMessage = lastId
-      ? history.messageHistory.allMessagesByID[lastId]
-      : null;
-    serviceManager.store.dispatch(
-      actions.setActiveResponseId(
-        lastMessage && isResponse(lastMessage) ? lastMessage.id : null
-      )
-    );
-    await serviceManager.actions.createElementsForUserDefinedResponses(
-      history.messageHistory
-    );
-    await serviceManager.actions.replayFooterSlots(history.messageHistory);
-
-    if (history.latestPanelLocalMessageItem) {
-      serviceManager.actions.openResponsePanel(
-        history.latestPanelLocalMessageItem,
-        true
-      );
-    }
+  private applyLoadedHistory(history: LoadedHistory): Promise<void> {
+    return this.serviceManager.messageCoordinator.applyLoadedHistory(history);
   }
-
   /**
    * Restarts the conversation with the assistant. This does not make any changes to a conversation
    * with a human agent. This will clear all the current assistant messages from the main assistant
@@ -317,13 +288,13 @@ class HydrationService {
       this.serviceManager.messageCoordinator.bumpChunkRestartGeneration();
 
       this.serviceManager.streamAnnouncerService.clearAll();
-      this.serviceManager.receiveService.clearProcessedAgentItems();
+      this.serviceManager.messageCoordinator.clearProcessedAgentItems();
 
       // Mark all existing messages as belonging to the OLD generation by keeping them in the map
       // (don't clear - this way we can detect stale chunks from old messages)
 
       // Set isRestarting to true to signal that we're in the middle of a restart
-      store.dispatch(actions.setIsRestarting(true));
+      serviceManager.messageCoordinator.setRestartInProgress(true);
 
       serviceManager.restartCount++;
       serviceManager.messageCoordinator.clearAllIncomingWrites();
@@ -334,7 +305,7 @@ class HydrationService {
       if (
         state.config.public.messaging.messageLoadingIndicatorTimeoutSecs !== 0
       ) {
-        store.dispatch(actions.resetIsLoadingCounter());
+        serviceManager.messageCoordinator.resetMessageLoadingCounter();
       }
 
       if (this.hydrating) {
@@ -357,9 +328,9 @@ class HydrationService {
       // Hide the stop streaming button since we've canceled all streams. Unconditional
       // on purpose — everything was just canceled, so there is no other stream to keep
       // it visible for.
-      resetStopStreamingButton(store);
+      serviceManager.messageCoordinator.resetStopButton();
 
-      store.dispatch(actions.restartConversation());
+      serviceManager.messageCoordinator.resetConversationStore();
       if (!skipHydration) {
         // Clear this promise in case the restart event below triggers another hydration.
         this.hydrationPromise = null;
@@ -382,7 +353,7 @@ class HydrationService {
           await serviceManager.actions.hydrateChat();
         }
       } else {
-        store.dispatch(actions.chatWasHydrated());
+        serviceManager.messageCoordinator.markChatHydrated();
       }
       if (!didHydrate) {
         serviceManager.messageCoordinator.hydrationFinished(restartGeneration);
@@ -390,7 +361,7 @@ class HydrationService {
     } finally {
       this.restarting = false;
       // Clear isRestarting flag to allow new messages and chunks to be processed
-      this.serviceManager.store.dispatch(actions.setIsRestarting(false));
+      this.serviceManager.messageCoordinator.setRestartInProgress(false);
     }
   }
 

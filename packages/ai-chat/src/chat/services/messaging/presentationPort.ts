@@ -16,7 +16,11 @@ interface StreamAnnouncementContent {
   responseUserProfile?: DeepPartial<ResponseUserProfile>;
 }
 
+import type { LocalMessageItem } from '../../../types/messaging/LocalMessageItem';
+
 interface MessagePresentationPort {
+  openHomeScreen?(): void;
+  openHistoryResponsePanel?(local: LocalMessageItem): void;
   getMessagesScrollBottom?(): number | undefined;
   restoreMessagesScroll?(scrollBottom: number | undefined): void;
   announceSendFailure?(): void;
