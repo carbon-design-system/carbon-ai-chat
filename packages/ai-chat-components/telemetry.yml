@@ -301,6 +301,10 @@ collect:
         - oncds-aichat-transcript-toggle
         - show-label
         - text
+        # cds-aichat-user-avatar
+        - height
+        - image
+        - width
         # cds-aichat-video-player
         - aspect-ratio-percentage
         - oncds-aichat-video-player-error
