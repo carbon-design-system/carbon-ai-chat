@@ -134,10 +134,19 @@ An example needs a `build` script, a `vite.config.ts`, and an HTML entry. It nee
 Playwright's test agents can plan, write, and repair a spec. Install them once per checkout against the shared config and one target, then start a new agent session so they load:
 
 ```bash
-npx playwright init-agents --loop=claude -c examples/shared/playwright/playwright.config.ts --project <target>
+npx playwright init-agents --loop=<loop> -c examples/shared/playwright/playwright.config.ts --project <target>
 ```
 
-This writes the `playwright-test-planner`, `playwright-test-generator`, and `playwright-test-healer` agents under `.claude/agents/`, a `.mcp.json` for their test server, a seed spec, and a `specs/` folder for plans. Add `--config examples/shared/playwright/playwright.config.ts` to the `run-test-mcp-server` args in `.mcp.json`; `init-agents` never writes it, and without it the agents run against a default config with no example server. Run the agents with `CAIC_E2E_TARGETS=<target>` set, so they build only that example.
+`<loop>` names the tool that runs the agents: `vscode`, `claude`, `codex`, or `opencode`. This writes the `playwright-test-planner`, `playwright-test-generator`, and `playwright-test-healer` agents, an entry for their test server, a seed spec, and a `specs/` folder for plans. The agents and the server entry land in the tool's own files:
+
+| Loop | Agents | Test server entry |
+| --- | --- | --- |
+| `vscode` | `.github/agents/` | `.vscode/mcp.json` |
+| `claude` | `.claude/agents/` | `.mcp.json` |
+| `codex` | `.codex/agents/` | `[mcp_servers.playwright-test]` in each agent file |
+| `opencode` | `.opencode/prompts/` | `opencode.json` |
+
+Add `--config examples/shared/playwright/playwright.config.ts` to the `run-test-mcp-server` args in that entry; `init-agents` never writes it, and without it the agents run against a default config with no example server. Run the agents with `CAIC_E2E_TARGETS=<target>` set, so they build only that example.
 
 Replace the seed's body so it opens the example the way every spec does, then point the planner at it:
 
