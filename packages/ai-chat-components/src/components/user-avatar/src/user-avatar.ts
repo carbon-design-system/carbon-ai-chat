@@ -7,23 +7,16 @@
  *  @license
  */
 
-import { LitElement, html, nothing } from 'lit';
-import { property, state } from 'lit/decorators.js';
+import { LitElement, html, nothing, type PropertyValues } from 'lit';
+import { property, query, state } from 'lit/decorators.js';
 import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
 import UserAvatar32 from '@carbon/icons/es/user--avatar/32.js';
 import { carbonElement } from '../../../globals/decorators/index.js';
 import prefix from '../../../globals/settings.js';
 import commonStyles from '../../../globals/scss/common.scss?lit';
-import {
-  adoptOnRoot,
-  clearSelector,
-  clearVarsForSelector,
-  setVarsForSelector,
-} from '../../shared/dynamic-css-var-sheet.js';
 import styles from './user-avatar.scss?lit';
 
 const blockClass = `${prefix}-user-avatar`;
-const INSTANCE_ATTR = 'data-instance-id';
 
 /**
  * A name made only of characters from U+0020 to U+00FE can use its first
@@ -31,8 +24,6 @@ const INSTANCE_ATTR = 'data-instance-id';
  * name with any other character, such as Chinese, gets the icon instead.
  */
 const INITIAL_PATTERN = /^[\x20-\xFE]+$/;
-
-let instanceCounter = 0;
 
 /**
  * Shows a person as a profile image, the first letter of their name, or a
@@ -84,63 +75,23 @@ class CDSAIChatUserAvatar extends LitElement {
   @state()
   private _hasImageError = false;
 
-  private readonly _instanceId = `ua-${++instanceCounter}`;
+  @query(`.${blockClass}__avatar`)
+  private readonly _avatar!: HTMLElement;
 
-  private get _instanceSelector(): string {
-    return `[${INSTANCE_ATTR}="${this._instanceId}"]`;
-  }
-
-  connectedCallback() {
-    super.connectedCallback();
-    // The size rule is removed on disconnect, so restore it if the element moves.
-    if (this.hasUpdated) {
-      this._syncSize();
-    }
-  }
-
-  disconnectedCallback() {
-    clearSelector(this._instanceSelector);
-    super.disconnectedCallback();
-  }
-
-  protected willUpdate(changed: Map<string, unknown>) {
+  protected willUpdate(changed: PropertyValues) {
     // A new URL deserves a new attempt, so forget the earlier failure.
     if (changed.has('image')) {
       this._hasImageError = false;
     }
   }
 
-  protected firstUpdated() {
-    adoptOnRoot(this.renderRoot as ShadowRoot);
-  }
-
-  protected updated(changed: Map<string, unknown>) {
-    if (changed.has('width') || changed.has('height')) {
-      this._syncSize();
+  protected updated(changed: PropertyValues) {
+    if (changed.has('width')) {
+      this._avatar.style.inlineSize = this.width;
     }
-  }
-
-  /** Applies the host's width and height through the shared dynamic sheet. */
-  private _syncSize() {
-    const selector = this._instanceSelector;
-    const sizes: Record<string, string> = {
-      'inline-size': this.width,
-      'block-size': this.height,
-    };
-    const set: Record<string, string> = {};
-    const unset: string[] = [];
-    for (const [prop, value] of Object.entries(sizes)) {
-      if (value) {
-        set[prop] = value;
-      } else {
-        unset.push(prop);
-      }
+    if (changed.has('height')) {
+      this._avatar.style.blockSize = this.height;
     }
-    if (Object.keys(set).length) {
-      setVarsForSelector(selector, set);
-    }
-    // A cleared width or height returns to the default size.
-    clearVarsForSelector(selector, unset);
   }
 
   private _onImageError = (): void => {
@@ -159,19 +110,23 @@ class CDSAIChatUserAvatar extends LitElement {
         @error=${this._onImageError} />`;
     }
 
+    const hidden = this.label ? nothing : 'true';
+
     if (INITIAL_PATTERN.test(this.name)) {
       return html`<div
         class="${blockClass}__initial"
         role=${role}
-        aria-label=${label}>
-        <div class="${blockClass}__letter">${this.name.charAt(0)}</div>
+        aria-label=${label}
+        aria-hidden=${hidden}>
+        <div class="${blockClass}__letter">${this.name.trim().charAt(0)}</div>
       </div>`;
     }
 
     return html`<div
       class="${blockClass}__icon"
       role=${role}
-      aria-label=${label}>
+      aria-label=${label}
+      aria-hidden=${hidden}>
       ${iconLoader(UserAvatar32, {
         class: `${blockClass}__icon-svg`,
         'aria-hidden': 'true',
@@ -180,9 +135,7 @@ class CDSAIChatUserAvatar extends LitElement {
   }
 
   render() {
-    return html`<div
-      class="${blockClass}__avatar"
-      data-instance-id=${this._instanceId}>
+    return html`<div class="${blockClass}__avatar">
       ${this._renderContent()}
     </div>`;
   }
