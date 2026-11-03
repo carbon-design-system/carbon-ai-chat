@@ -24,6 +24,7 @@ import { ChatContainerProps } from '../../../src/types/component/ChatContainer';
 import { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
+import { CancellationReason } from '../../../src/types/config/MessagingConfig';
 import { AppState } from '../../../src/types/state/AppState';
 import { MessageResponseTypes } from '../../../src/types/messaging/Messages';
 import { selectStopStreamingButtonVisible } from '../../../src/chat/store/selectors';
@@ -380,6 +381,48 @@ describe('stop streaming button from input config', () => {
 
     await act(async () => {
       resolveSend();
+      await sendPromise;
+    });
+  });
+
+  it('cancels the pending request when the chat shows the button', async () => {
+    let signal: AbortSignal;
+    const customSendMessage = jest.fn(
+      (_request: unknown, options: { signal: AbortSignal }) => {
+        signal = options.signal;
+        return new Promise<void>((resolve) => {
+          signal.addEventListener('abort', () => resolve());
+        });
+      }
+    );
+    const { instance, store } = await renderChat(
+      props(
+        {},
+        {
+          customSendMessage,
+          showStopButtonImmediately: true,
+          skipWelcome: true,
+        }
+      )
+    );
+    const handler = jest.fn();
+    instance.on({ type: BusEventType.STOP_STREAMING, handler });
+
+    let sendPromise: Promise<void>;
+    await act(async () => {
+      sendPromise = instance.send('Hello');
+    });
+    await waitFor(() => expect(customSendMessage).toHaveBeenCalled());
+    expect(
+      store.getState().assistantInputState.stopStreamingButtonState.isVisible
+    ).toBe(true);
+
+    await clickStop();
+
+    await waitFor(() => expect(signal.aborted).toBe(true));
+    expect(signal.reason).toBe(CancellationReason.STOP_STREAMING);
+    expect(handler).toHaveBeenCalledTimes(1);
+    await act(async () => {
       await sendPromise;
     });
   });
