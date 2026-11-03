@@ -19,12 +19,14 @@ import {
   isConnectToHumanAgent,
   isPause,
   isHiddenOutputItem,
+  streamItemID,
 } from '../../utils/messageUtils';
 import type {
   MessageResponse,
   PauseItem,
 } from '../../../types/messaging/Messages';
 import type { LocalMessageItem } from '../../../types/messaging/LocalMessageItem';
+import { OnErrorType } from '../../../types/config/ErrorConfig';
 import { MessageState } from '../../../types/config/MessagingConfig';
 import type { ServiceManager } from '../ServiceManager';
 import { IncomingMessageService } from './inbound/IncomingMessageService';
@@ -34,6 +36,99 @@ import {
 } from '../../schema/outputItemToLocalItem';
 
 class FullResponseWorkflow {
+  private processedAgentItems = new Map<string, Set<string>>();
+  async handleConnectToHumanAgent(
+    localMessageItem: LocalMessageItem,
+    fullMessage: MessageResponse,
+    isCurrent: () => boolean = () => true,
+    options: {
+      identity?: string;
+      deduplicateByLocalID?: boolean;
+    } = {}
+  ) {
+    const localIdentity = `local:${localMessageItem.ui_state.id}`;
+    const itemIdentity = options.identity ?? localIdentity;
+    const deduplicationKey = options.deduplicateByLocalID
+      ? localIdentity
+      : itemIdentity;
+    if (
+      !isCurrent() ||
+      !isConnectToHumanAgent(localMessageItem.item) ||
+      this.processedAgentItems
+        .get(localMessageItem.fullMessageID)
+        ?.has(deduplicationKey)
+    ) {
+      return;
+    }
+    let processedItems = this.processedAgentItems.get(
+      localMessageItem.fullMessageID
+    );
+    if (!processedItems) {
+      processedItems = new Set();
+      this.processedAgentItems.set(
+        localMessageItem.fullMessageID,
+        processedItems
+      );
+    }
+    processedItems.add(itemIdentity);
+    processedItems.add(localIdentity);
+
+    const { store, humanAgentService, restartCount } = this.serviceManager;
+    const { config } = store.getState();
+    if (humanAgentService) {
+      await humanAgentService.handleConnectToHumanAgent(
+        localMessageItem,
+        fullMessage,
+        config,
+        restartCount,
+        isCurrent
+      );
+      return;
+    }
+
+    this.serviceManager.actions.errorOccurred({
+      errorType: OnErrorType.INTEGRATION_ERROR,
+      message:
+        'Web chat received a "connect_to_agent" message but there is no service desk configured. Check your chat configuration.',
+    });
+    if (!isCurrent()) {
+      return;
+    }
+    store.dispatch(
+      actions.setMessageUIStateInternalProperty(
+        localMessageItem.fullMessageID,
+        'agent_no_service_desk',
+        true
+      )
+    );
+  }
+
+  retainAgentItemPositions(messageID: string, identities: Set<string>) {
+    const processed = this.processedAgentItems.get(messageID);
+    processed?.forEach((identity) => {
+      if (identity.startsWith('position:') && !identities.has(identity)) {
+        processed.delete(identity);
+      }
+    });
+  }
+
+  clearProcessedAgentItems() {
+    this.processedAgentItems.clear();
+  }
+
+  agentItemIdentity(message: MessageResponse, index: number): string {
+    const item = message.output.generic[index];
+    const position = message.output.generic
+      .slice(0, index)
+      .filter((previous) => previous && !isPause(previous)).length;
+    const streamID = streamItemID(message.id, item);
+    return streamID ? `stream:${streamID}` : `position:${position}`;
+  }
+
+  forgetProcessedAgentMessage(messageID: string) {
+    this.processedAgentItems.delete(messageID);
+  }
+
   private readonly incomingMessageService = new IncomingMessageService();
   constructor(private serviceManager: ServiceManager) {}
 
@@ -160,11 +255,7 @@ class FullResponseWorkflow {
           message,
           isCurrent,
           {
-            identity:
-              this.serviceManager.messageUpsertCoordinator.agentItemIdentity(
-                message,
-                index
-              ),
+            identity: this.agentItemIdentity(message, index),
             deduplicateByLocalID: true,
           }
         );

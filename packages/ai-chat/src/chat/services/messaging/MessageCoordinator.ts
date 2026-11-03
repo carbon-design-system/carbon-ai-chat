@@ -51,6 +51,39 @@ import { FullResponseWorkflow } from './FullResponseWorkflow';
 import type { MessageWriteOptions } from '../../store/messageWriteTypes';
 
 class MessageCoordinator {
+  handleConnectToHumanAgent(
+    localMessageItem: LocalMessageItem,
+    fullMessage: MessageResponse,
+    isCurrent: () => boolean = () => true,
+    options: { identity?: string; deduplicateByLocalID?: boolean } = {}
+  ) {
+    return this.getFullResponseWorkflow().handleConnectToHumanAgent(
+      localMessageItem,
+      fullMessage,
+      isCurrent,
+      options
+    );
+  }
+
+  retainAgentItemPositions(messageID: string, identities: Set<string>) {
+    return this.getFullResponseWorkflow().retainAgentItemPositions(
+      messageID,
+      identities
+    );
+  }
+
+  clearProcessedAgentItems() {
+    return this.getFullResponseWorkflow().clearProcessedAgentItems();
+  }
+
+  incomingAgentItemIdentity(message: MessageResponse, index: number) {
+    return this.getFullResponseWorkflow().agentItemIdentity(message, index);
+  }
+
+  forgetProcessedAgentMessage(messageID: string) {
+    this.getFullResponseWorkflow().forgetProcessedAgentMessage(messageID);
+  }
+
   private fullResponseWorkflow?: FullResponseWorkflow;
 
   private getFullResponseWorkflow() {
