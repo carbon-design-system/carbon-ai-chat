@@ -144,7 +144,7 @@ class SlotEventService {
   /**
    * Fires the footer-slot events for messages restored from history, in both directions.
    *
-   * The live events fire from `MessageUpsertCoordinator` and `doSend`, neither of which runs during hydration, so
+   * The live events fire from `UpsertWorkflow` and `doSend`, neither of which runs during hydration, so
    * without this a restored message renders its slot and nothing ever fills it.
    *
    * Outbound slot names are minted from the local item's id, and a restore always mints a fresh one — the merge in

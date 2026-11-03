@@ -63,8 +63,11 @@ function fixture() {
     restartCount: 0,
     store: { getState: () => state, dispatch },
     fire,
-    messageUpsertCoordinator: {
-      trackWrite: jest.fn(() => ({ isCurrent: () => current, release })),
+    messageCoordinator: {
+      trackIncomingWrite: jest.fn(() => ({
+        isCurrent: () => current,
+        release,
+      })),
     },
   } as unknown as ServiceManager;
   return {
@@ -126,7 +129,7 @@ describe.each([false, true])(
       pending.resolve();
       await work;
       expect(
-        f.manager.messageUpsertCoordinator.trackWrite
+        f.manager.messageCoordinator.trackIncomingWrite
       ).not.toHaveBeenCalled();
       expect(f.dispatch).not.toHaveBeenCalled();
     });

@@ -78,7 +78,7 @@ class FullResponseWorkflow {
       message.id = uuid();
     }
 
-    const write = this.serviceManager.messageUpsertCoordinator.trackWrite(
+    const write = this.serviceManager.messageCoordinator.trackIncomingWrite(
       message.id
     );
     // A writable pre:receive handler can choose its final ID after a removal.
@@ -147,7 +147,7 @@ class FullResponseWorkflow {
         isCurrent() &&
         initialRestartCount === this.serviceManager.restartCount
       ) {
-        this.serviceManager.messageUpsertCoordinator.markComplete(message.id);
+        this.serviceManager.messageCoordinator.markIncomingComplete(message.id);
       }
     } finally {
       this.pendingReceiveRemovals.delete(removedIDs);
@@ -159,7 +159,7 @@ class FullResponseWorkflow {
     message: MessageResponse,
     options: MessageWriteOptions
   ): Promise<void> {
-    return this.serviceManager.messageUpsertCoordinator.upsert(
+    return this.serviceManager.messageCoordinator.upsertMessage(
       message.id,
       MessageState.COMPLETE,
       () => message,
@@ -252,7 +252,7 @@ class FullResponseWorkflow {
     });
     for (const id of messageIDs) {
       this.processedAgentItems.delete(id);
-      this.serviceManager.messageUpsertCoordinator.clear(id);
+      this.serviceManager.messageCoordinator.clearIncomingMessage(id);
     }
     this.serviceManager.store.dispatch(actions.removeMessages(messageIDs));
   }
@@ -314,7 +314,7 @@ class FullResponseWorkflow {
       isCurrent
     );
     if (isCurrent()) {
-      this.serviceManager.messageUpsertCoordinator.markComplete(messageID);
+      this.serviceManager.messageCoordinator.markIncomingComplete(messageID);
     }
   }
 

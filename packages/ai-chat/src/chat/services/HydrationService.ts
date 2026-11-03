@@ -297,7 +297,7 @@ class HydrationService {
 
     this.restarting = true;
     // A pre-restart handler can release an awaited upsert, so invalidate it first.
-    this.serviceManager.messageUpsertCoordinator.invalidatePendingUpserts();
+    this.serviceManager.messageCoordinator.invalidatePendingUpserts();
 
     try {
       const { serviceManager } = this;
@@ -326,7 +326,7 @@ class HydrationService {
       store.dispatch(actions.setIsRestarting(true));
 
       serviceManager.restartCount++;
-      serviceManager.messageUpsertCoordinator.clearAll();
+      serviceManager.messageCoordinator.clearAllIncomingWrites();
 
       // A request that got no reply has already left the queue, so the cancel below never ends its timers.
       serviceManager.messageCoordinator.messageLoadingManager.end();
@@ -416,7 +416,7 @@ class HydrationService {
     }
     this.serviceManager.messageCoordinator.cancelAllMessageRequests();
 
-    this.serviceManager.messageUpsertCoordinator.clearAll();
+    this.serviceManager.messageCoordinator.clearAllIncomingWrites();
 
     // When the host owns persistence there is no sessionStorage to clear; the state reset dispatched
     // below flows to its onStateChange callback like any other change.

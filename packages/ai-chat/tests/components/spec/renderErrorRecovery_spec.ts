@@ -437,7 +437,7 @@ describe('holding a render error until the stream completes', () => {
     expect(onError).not.toHaveBeenCalled();
 
     act(() => {
-      serviceManager.messageUpsertCoordinator.endAllStreaming();
+      serviceManager.messageCoordinator.endAllIncomingStreaming();
     });
     await waitFor(() => expect(chatText()).toContain(ERROR_TEXT));
     expect(onError).not.toHaveBeenCalled();

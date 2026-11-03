@@ -149,13 +149,13 @@ class ReceiveService {
 
     // History messages are semantically COMPLETE — record so a later upsertMessage on
     // a historical id suppresses `pre:receive` / `receive`.
-    const upsertCoordinator = this.serviceManager.messageUpsertCoordinator;
+    const upsertCoordinator = this.serviceManager.messageCoordinator;
     for (const historicalID of history.messageHistory.assistantMessageState
       .messageIDs) {
       const historicalMessage =
         history.messageHistory.allMessagesByID[historicalID];
       if (historicalMessage && isResponse(historicalMessage)) {
-        upsertCoordinator.markComplete(historicalID);
+        upsertCoordinator.markIncomingComplete(historicalID);
       }
     }
 

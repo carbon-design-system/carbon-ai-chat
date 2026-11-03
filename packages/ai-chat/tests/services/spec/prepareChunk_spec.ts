@@ -112,7 +112,7 @@ it('reads the clock only inside the queued updater when the response is absent',
     }
   );
   const service = new ChunkProcessingService({
-    messageUpsertCoordinator: { upsert },
+    messageCoordinator: { upsertMessage: upsert },
   } as unknown as ServiceManager);
   // Exercise the workflow seam; public route/lifetime suites remain unchanged.
   const commit = service as unknown as {
