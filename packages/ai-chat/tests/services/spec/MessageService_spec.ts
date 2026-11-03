@@ -10,7 +10,6 @@
 import * as uuidUtils from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 import type { PublicConfig } from '../../../src/types/config/PublicConfig';
 import type { PendingMessageRequest } from '../../../src/chat/services/messaging/pendingRequestTypes';
-import { ChunkProcessingService } from '../../../src/chat/services/messaging/inbound/ChunkProcessingService';
 import { MessageCoordinator } from '../../../src/chat/services/messaging/MessageCoordinator';
 import { ServiceManager } from '../../../src/chat/services/ServiceManager';
 import storeActions from '../../../src/chat/store/actions';
@@ -132,9 +131,6 @@ const createServiceManagerStub = (
 
   serviceManager.messageCoordinator = new MessageCoordinator(serviceManager);
   Object.assign(serviceManager.messageCoordinator, incomingMethods);
-  serviceManager.chunkProcessingService = new ChunkProcessingService(
-    serviceManager
-  );
   return serviceManager;
 };
 

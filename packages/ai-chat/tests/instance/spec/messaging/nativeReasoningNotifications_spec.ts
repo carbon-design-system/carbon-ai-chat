@@ -268,7 +268,7 @@ it.each(['pause', 'handoff'])(
           HumanAgentsOnlineStatus.OFFLINE;
       });
     const wait = jest
-      .spyOn(serviceManager.chunkProcessingService, 'waitForPause')
+      .spyOn(serviceManager.messageCoordinator, 'waitForPause')
       .mockResolvedValue(undefined);
     const message = response(['native']);
     message.output.generic.unshift(

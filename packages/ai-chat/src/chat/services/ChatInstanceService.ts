@@ -181,7 +181,7 @@ class ChatInstanceService {
     messageID?: string,
     options: AddMessageOptions = {}
   ) {
-    return this.serviceManager.chunkProcessingService.receiveChunk(
+    return this.serviceManager.messageCoordinator.receiveChunk(
       chunk,
       messageID,
       options

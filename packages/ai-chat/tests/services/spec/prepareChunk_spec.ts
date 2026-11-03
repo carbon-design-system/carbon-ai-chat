@@ -8,7 +8,7 @@
  */
 
 import { IncomingMessageService } from '../../../src/chat/services/messaging/inbound/IncomingMessageService';
-import { ChunkProcessingService } from '../../../src/chat/services/messaging/inbound/ChunkProcessingService';
+import { ChunkWorkflow } from '../../../src/chat/services/messaging/ChunkWorkflow';
 import type { MessageWriteOptions } from '../../../src/chat/store/messageWriteTypes';
 import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
 import {
@@ -111,7 +111,7 @@ it('reads the clock only inside the queued updater when the response is absent',
       return release;
     }
   );
-  const service = new ChunkProcessingService({
+  const service = new ChunkWorkflow({
     messageCoordinator: { upsertMessage: upsert },
   } as unknown as ServiceManager);
   // Exercise the workflow seam; public route/lifetime suites remain unchanged.
