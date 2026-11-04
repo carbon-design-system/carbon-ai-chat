@@ -1,4 +1,4 @@
-# adr-prose.md — ADR prose (type 11)
+# adr-prose.md: ADR prose (type 11)
 
 Load this before writing the body of a numbered ADR under `docs/adr/`. Structural owner: [caic-adr](../../caic-adr/SKILL.md) and [docs/adr/template.md](../../../../docs/adr/template.md), which own the sections and what each settles.
 
@@ -24,7 +24,7 @@ Apply [the shared skim-reading rule](../SKILL.md#write-for-readers-who-skip-to-c
 
 ## Related guidance
 
-- [caic-copy-writer](../SKILL.md) — the routing table and the draft-measure-revise loop
-- [caic-adr](../../caic-adr/SKILL.md) — the sections, the review, and opening the discussion
-- [revision-pass.md](revision-pass.md) — the tightening pass, and the claim-before-scaffolding rule
-- [issue-bodies.md](issue-bodies.md) — the same plain-language opening, for issues
+- [caic-copy-writer](../SKILL.md): the routing table and the draft-measure-revise loop
+- [caic-adr](../../caic-adr/SKILL.md): the sections, the review, and opening the discussion
+- [revision-pass.md](revision-pass.md): the tightening pass, and the claim-before-scaffolding rule
+- [issue-bodies.md](issue-bodies.md): the same plain-language opening, for issues
