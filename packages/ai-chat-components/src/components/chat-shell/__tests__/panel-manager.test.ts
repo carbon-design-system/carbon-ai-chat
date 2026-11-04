@@ -277,6 +277,45 @@ describe('PanelManager focus restoration', () => {
     expect(fallbackCount).to.equal(0);
   });
 
+  it('keeps restoring into the active panel when a lower panel opens with the cover close', async () => {
+    const top = document.createElement('cds-aichat-panel');
+    top.setAttribute('priority', '10');
+    const topAction = document.createElement('button');
+    topAction.textContent = 'Decline';
+    top.append(topAction);
+    const lower = document.createElement('cds-aichat-panel');
+    lower.setAttribute('priority', '-1');
+    lower.append(document.createElement('button'));
+    panel.parentElement!.append(top, lower);
+    top.setAttribute('open', '');
+    await settle();
+    topAction.focus();
+    // The cover closes and a lower-priority panel opens in the same task, so
+    // the covered panel becomes active again.
+    top.removeAttribute('open');
+    lower.setAttribute('open', '');
+    await settle();
+    expect(getDeepActiveElement()).to.equal(action);
+  });
+
+  it('falls back inside a reopened panel that set no focus', async () => {
+    panel.removeAttribute('open');
+    await Promise.resolve();
+    await Promise.resolve();
+    panel.setAttribute('open', '');
+    await Promise.resolve();
+    action.blur();
+    expect(document.activeElement === document.body).to.equal(true);
+    await settle();
+    // Name the focused element: a failure that prints the page body can stall
+    // the runner.
+    const focused = getDeepActiveElement();
+    expect(focused === action, `focus is on ${focused?.localName}`).to.equal(
+      true
+    );
+    expect(fallbackCount).to.equal(0);
+  });
+
   it('does not override focus moved outside while restoration is pending', async () => {
     panel.removeAttribute('open');
     panel.dispatchEvent(
