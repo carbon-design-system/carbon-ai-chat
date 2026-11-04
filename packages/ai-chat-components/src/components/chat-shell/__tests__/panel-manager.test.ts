@@ -256,6 +256,27 @@ describe('PanelManager focus restoration', () => {
     expect(fallbackCount).to.equal(0);
   });
 
+  it('drops a pending restore when another panel opens in the same batch', async () => {
+    const next = document.createElement('cds-aichat-panel');
+    const nextFirst = document.createElement('button');
+    nextFirst.textContent = 'Next first';
+    const nextAction = document.createElement('button');
+    nextAction.textContent = 'Next action';
+    next.append(nextFirst, nextAction);
+    panel.parentElement!.append(next);
+    await Promise.resolve();
+    // Close one panel and open another in the same task, so one update sees
+    // both changes. The new panel then sets its own initial focus.
+    panel.removeAttribute('open');
+    next.setAttribute('open', '');
+    await Promise.resolve();
+    await Promise.resolve();
+    nextAction.focus();
+    await settle();
+    expect(getDeepActiveElement()).to.equal(nextAction);
+    expect(fallbackCount).to.equal(0);
+  });
+
   it('does not override focus moved outside while restoration is pending', async () => {
     panel.removeAttribute('open');
     panel.dispatchEvent(

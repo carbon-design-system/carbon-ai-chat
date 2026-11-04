@@ -41,6 +41,7 @@ export class PanelManager {
   private focusedPanel?: HTMLElement;
   private focusPath: EventTarget[] = [];
   private restoreFrame?: number;
+  private openPanels = new Set<HTMLElement>();
   private contentObserver = new MutationObserver(() => {
     this.observeAssignedPanels();
     this.updateState();
@@ -145,6 +146,10 @@ export class PanelManager {
     const previous = this.activePanel;
     const focused = getDeepActiveElement();
     const shouldRestore = this.shouldRestoreOnClose(previous, active, focused);
+    const openBefore = this.openPanels;
+    this.openPanels = new Set(
+      panels.filter((panel) => panel.open).map((panel) => panel.element)
+    );
     this.activePanel = active?.element;
     if (active && !this.returnTargets.has(active.element)) {
       this.returnTargets.set(active.element, focused);
@@ -170,14 +175,17 @@ export class PanelManager {
 
     if (shouldRestore && previous) {
       const target = this.returnTargets.get(previous);
-      const openAtClose = new Set(
-        panels.filter((panel) => panel.open).map((panel) => panel.element)
+      // Only panels that were already open before this close may stay open
+      // for the restore. One that opens in the same batch, or later, owns
+      // its own focus.
+      const stillOpen = new Set(
+        [...this.openPanels].filter((panel) => openBefore.has(panel))
       );
       if (this.restoreFrame !== undefined) {
         cancelAnimationFrame(this.restoreFrame);
       }
       this.restoreFrame = requestAnimationFrame(() =>
-        this.restoreFocus(previous, target, openAtClose)
+        this.restoreFocus(previous, target, stillOpen)
       );
     }
     for (const panel of this.returnTargets.keys()) {
@@ -216,14 +224,14 @@ export class PanelManager {
   private restoreFocus(
     panel: HTMLElement,
     target: Element | null | undefined,
-    openAtClose: Set<HTMLElement>
+    stillOpen: Set<HTMLElement>
   ) {
-    // A panel that opened after this close owns focus now, including the
-    // closed panel opening again. A panel that was only covered still counts
-    // as open, so closing a cover keeps restoring into it.
+    // A panel that opened with or after this close owns focus now, including
+    // the closed panel opening again. A panel that was only covered stays
+    // open throughout, so closing a cover keeps restoring into it.
     if (
       this.getPanelStates().some(
-        (state) => state.open && !openAtClose.has(state.element)
+        (state) => state.open && !stillOpen.has(state.element)
       )
     ) {
       return;
@@ -238,7 +246,7 @@ export class PanelManager {
     }
     if (this.activePanel && this.isPanelAnimating(this.activePanel)) {
       this.restoreFrame = requestAnimationFrame(() =>
-        this.restoreFocus(panel, target, openAtClose)
+        this.restoreFocus(panel, target, stillOpen)
       );
       return;
     }
