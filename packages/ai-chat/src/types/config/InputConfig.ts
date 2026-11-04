@@ -186,6 +186,9 @@ export interface InputConfig {
    * Tiptap-shaped configuration. The `tiptap` namespace signals "you're
    * stepping into Tiptap's API directly" — use {@link InputConfig.mention} /
    * `command` / `autocomplete` / `starters` for Carbon-curated chat features.
+   *
+   * The types in this namespace come from Tiptap and follow its releases.
+   * Supported range: `@tiptap/core` `^3.22.5`.
    */
   tiptap?: {
     /**

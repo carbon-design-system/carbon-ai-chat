@@ -167,6 +167,9 @@ export interface ChatInstanceInput {
    * - `editor.extensionStorage` for per-extension state
    * - `editor.on(...)` for low-level event subscriptions
    *
+   * The resolved `Editor` is Tiptap's, and its API follows Tiptap's releases.
+   * Supported range: `@tiptap/core` `^3.22.5`.
+   *
    * Rejects while no input is rendered. The chat hands you the
    * {@link ChatInstance} before it renders, so this is not available from
    * `onBeforeRender`, and a host that hides the input has none to resolve.
