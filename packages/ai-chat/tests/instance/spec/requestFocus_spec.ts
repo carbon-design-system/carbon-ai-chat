@@ -66,6 +66,16 @@ describe('ChatInstance.requestFocus', () => {
     expect(instance.requestFocus()).toBe(false);
   });
 
+  it('returns false while the input is disabled', async () => {
+    const instance = await renderChatAndGetInstance({
+      ...createBaseConfig(),
+      openChatByDefault: true,
+      input: { isDisabled: true },
+    });
+
+    expect(instance.requestFocus()).toBe(false);
+  });
+
   it('returns false after the chat unmounts', async () => {
     const instance = await renderChatAndGetInstance({
       ...createBaseConfig(),
