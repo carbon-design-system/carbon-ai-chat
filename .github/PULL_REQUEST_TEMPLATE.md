@@ -2,6 +2,10 @@ Closes #
 
 {{ Short description }}
 
+#### Commit map
+
+{{ Optional. Delete unless the PR has several commits that each stand on their own. One numbered line per commit, oldest first }}
+
 #### Architecture
 
 {{ Optional. Delete unless the PR is stacked, or changes how data, events, state, or behavior move between modules }}

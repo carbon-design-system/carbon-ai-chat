@@ -12,7 +12,8 @@ Record its owner as `ADR_OWNER` and repository name as `ADR_REPO`. Use them for 
 
 1. Move the draft to `docs/adr/NNNN-<slug>.md`. Recheck the next free number before doing so.
 2. Run `npm run sync:adrs` and `npm run validate:adrs`.
-3. Use [caic-pr](../../caic-pr/SKILL.md) to prepare and open the requested PR. Use `docs: ADR-NNNN <title>`. Put source citations in your hand-back to the developer, not the PR description.
+3. Use [caic-pr](../../caic-pr/SKILL.md) to prepare and open the requested PR. Use `docs: ADR-NNNN <title>`. Leave source citations out of the PR description.
+4. Hand back to the developer: the PR link, the file:line citation behind each evidence claim, and your Summary restatement from the [review](adr-review.md#phase-1--read-only-the-summary). A later reviewer re-verifies each claim against the code, per [Phase 2](adr-review.md#phase-2--sort-the-claims), rather than relying on these.
 
 The ADR stays `proposed` when merged. Opening the PR does not authorize an agent to merge it or decide its status. Follow the [maintainer-owned lifecycle](../../../../docs/adr/README.md).
 

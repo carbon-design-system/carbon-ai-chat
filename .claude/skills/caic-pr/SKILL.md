@@ -23,7 +23,7 @@ Use the range, commits, or PR the user named. Do not ask them to confirm it agai
 
 - **Branch PR:** inspect `git log <BASE>..<HEAD> --oneline` and `git diff <BASE>...<HEAD>`. The diff starts at the merge base, so changes made only on the base branch stay out.
 - **Explicit endpoint comparison:** honor the requested endpoints with `git diff <START> <END>`; do not silently substitute a merge-base comparison.
-- **Selected commits:** read each selected commit's patch and message. State the selection in the draft by commit subject, not hash. Excluding a commit from prose does not exclude it from an eventual PR.
+- **Selected commits:** read each selected commit's patch and message. State the selection in the draft by commit subject, not hash. When subjects repeat, or the range was rebased or squashed, add what each commit changes so the selection stays unambiguous, and list the hashes in the hand-back. Excluding a commit from prose does not exclude it from an eventual PR.
 - **No changes in scope:** report that fact rather than inventing a range or changelog.
 
 Local drafting does not require a branch switch or creation. A supplied historical range can be described while checked out on the base branch. Resolve publishable branch state when submission is requested.
@@ -32,7 +32,7 @@ Local drafting does not require a branch switch or creation. A supplied historic
 
 1. **Record the selected scope.** Use the resolved inputs above. Ask about missing information only when it changes the description.
 
-2. **Re-read the template.** Always read [.github/PULL_REQUEST_TEMPLATE.md](../../../.github/PULL_REQUEST_TEMPLATE.md) fresh — its structure may have changed since this file was written. Keep its sections in this order: short description, `#### Commit map`, `#### Architecture`, `#### Public API changes`, `#### Changelog`, `#### Testing / Reviewing`. Commit map is this skill's only addition to the template. Delete each optional section you don't use; step 4 says when each earns its place.
+2. **Re-read the template.** Always read [.github/PULL_REQUEST_TEMPLATE.md](../../../.github/PULL_REQUEST_TEMPLATE.md) fresh — its structure may have changed since this file was written. Keep its sections in this order: short description, `#### Commit map`, `#### Architecture`, `#### Public API changes`, `#### Changelog`, `#### Testing / Reviewing`. Delete each optional section you don't use; step 4 says when each earns its place.
 
 3. **Inspect the actual patches.** Use the comparison for the selected scope, then read the affected code. Call out files with complex changes that deserve a reviewer's attention.
 
@@ -55,10 +55,11 @@ Local drafting does not require a branch switch or creation. A supplied historic
      1. **The demo site.** Check [demo/AGENTS.md](../../../demo/AGENTS.md) for the query-param toggles, switchers, writeable elements, mock backend, and mock service desk.
      2. **An existing example** under `examples/`, run as it is.
      3. **An existing example with edits.** Supply the snippet or patch.
+     4. **Otherwise**, such as for a refactor or a type-only change, point to the unit tests that cover it, by file and case, or give manual steps.
      - List each manual check you didn't do and a reviewer should, such as a screen-reader pass, one per line.
    - **Measurement** — always measure the PR's actual scope, and report it only by exception.
-     - Run `npm run measure -- --changed <PR base> --source head`; a stacked layer uses its parent branch as the base. If the checkout isn't at the PR head, run it in a git worktree at the head. Never measure a working tree that doesn't match the selection.
-     - Mention size only past the [Over 400 row](../../../references/pr-reviewability.md#use-size-to-find-useful-boundaries). Then write one sentence with the counted lines and why the change stays together; don't paste the `== size` block. Quote only the rows the tool labels with a severity. Otherwise say nothing about measurement.
+     - Run `npm run measure -- --changed <PR base> --source head`; a stacked layer uses its parent branch as the base. If the checkout isn't at the PR head, run it in a git worktree at the head. Never measure a working tree that doesn't match the selection. `--source head` can't reproduce a historical range or a commit subset; when no measurement matches the selection, say so in the hand-back, so a skipped run doesn't read as a clean one.
+     - Mention size only past the [Over 400 row](../../../references/pr-reviewability.md#use-size-to-find-useful-boundaries). Then write one sentence with the counted lines and why the change stays together; don't paste the `== size` block. Quote only the rows the tool labels with a severity. Otherwise say nothing about measurement in the PR.
    - **Leave out**, in every PR, including an ADR PR:
      - commit hashes and base/head lines; hashes go stale on rebase, and GitHub shows the base;
      - results of checks CI runs, such as tests, lint, and builds;
