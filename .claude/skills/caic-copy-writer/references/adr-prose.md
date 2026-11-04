@@ -10,7 +10,7 @@ Load this before writing the body of a numbered ADR under `docs/adr/`. Structura
 - **Show code before prose in Proposal, and in Consumer impact when a record has one.** A sample of what a host writes carries a surface faster than a paragraph about it. Words carry only what the code can't show.
 - **Make Reference precise enough to review a diff against.** State defaults, failure paths, and timing as facts. A hedge here reads as two allowed behaviors.
 - **Use the contract's native form in Reference**, per [caic-adr](../../caic-adr/SKILL.md): commented types for APIs, CSS and markup for styling, tables for policy. Read code comments for plainness; `reading-level` cannot score them.
-- **Describe costs as what a host experiences.** "Your build fails with a missing-module error," not "the peer dependency is no longer auto-installed." Evidence from the source goes in the PR description, never as file:line citations in the ADR.
+- **Describe costs as what a host experiences.** "Your build fails with a missing-module error," not "the peer dependency is no longer auto-installed." Evidence from the source goes in your hand-back to the developer, never as file:line citations in the ADR or the PR description.
 - **Gloss an internal name on first use**, and in the clause that links another ADR, epic, or issue, say what it decided. Years later, half of those links are closed.
 - **Address the reader as "you."** Per [tone.md](../../../../references/tone.md), write "this proposal", not "we propose".
 
