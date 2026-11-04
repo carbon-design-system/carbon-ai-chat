@@ -124,9 +124,21 @@ const TEXT_STREAM_ID = 'text-1';
 const WORD_DELAY = 40;
 const REASONING_STEP_DELAY = 3000;
 
-async function sleep(milliseconds: number) {
-  await new Promise((resolve) => {
-    setTimeout(resolve, milliseconds);
+// Resolve as soon as Stop aborts the request, and remove the timer and listener.
+function sleep(milliseconds: number, signal?: AbortSignal) {
+  return new Promise<boolean>((resolve) => {
+    if (signal?.aborted) {
+      resolve(false);
+      return;
+    }
+    const finish = (completed: boolean) => {
+      clearTimeout(timer);
+      signal?.removeEventListener('abort', onAbort);
+      resolve(completed);
+    };
+    const onAbort = () => finish(false);
+    const timer = setTimeout(() => finish(true), milliseconds);
+    signal?.addEventListener('abort', onAbort, { once: true });
   });
 }
 
@@ -158,28 +170,18 @@ function buildSnapshot(
   };
 }
 
-function createShellMessage(
+async function pushMessageOptions(
   instance: ChatInstance,
   responseID: string,
-  messageOptions?: MessageResponseOptions
+  messageOptions: MessageResponseOptions,
+  signal?: AbortSignal
 ) {
-  // First upsert is STREAMING: seed an empty-text shell so the message exists
-  // before reasoning updates arrive.
-  return instance.messaging.upsertMessage(
-    responseID,
-    MessageState.STREAMING,
-    () => buildSnapshot(responseID, '', messageOptions ?? {}, false)
-  );
-}
-
-function pushMessageOptions(
-  instance: ChatInstance,
-  responseID: string,
-  messageOptions: MessageResponseOptions
-) {
+  if (signal?.aborted) {
+    return;
+  }
   // STREAMING upsert that advances `message_options.reasoning` while the
   // user-facing text is still empty.
-  return instance.messaging.upsertMessage(
+  await instance.messaging.upsertMessage(
     responseID,
     MessageState.STREAMING,
     () => buildSnapshot(responseID, '', messageOptions, true)
@@ -193,61 +195,31 @@ async function streamText(
   signal?: AbortSignal,
   finalMessageOptions?: MessageResponseOptions
 ) {
-  const words = text.split(' ');
-  let isCanceled = false;
   let accumulated = '';
-  const timeouts: number[] = [];
-
-  // The abort handler must clear every queued setTimeout because each word is
-  // scheduled up front rather than chained sequentially; otherwise stopping the
-  // response would leave residual upserts applying after cancellation.
-  const abortHandler = () => {
-    isCanceled = true;
-    timeouts.forEach((timeoutId) => clearTimeout(timeoutId));
-  };
-  signal?.addEventListener('abort', abortHandler);
-
-  try {
-    words.forEach((word, index) => {
-      const timeoutId = setTimeout(() => {
-        if (!isCanceled) {
-          accumulated += `${word} `;
-          // Capture the text for this tick so the updater renders this word's
-          // snapshot even if the serialized upserts apply slightly later.
-          const snapshotText = accumulated;
-          // Each snapshot replaces the stored message, so re-send the reasoning
-          // `message_options` alongside the growing text or the panel would
-          // disappear the moment the answer starts streaming.
-          void instance.messaging.upsertMessage(
-            responseID,
-            MessageState.STREAMING,
-            () =>
-              buildSnapshot(
-                responseID,
-                snapshotText,
-                finalMessageOptions ?? {},
-                true
-              )
-          );
-        }
-      }, index * WORD_DELAY);
-      timeouts.push(timeoutId as unknown as number);
-    });
-
-    await sleep(words.length * WORD_DELAY);
-
-    if (!isCanceled) {
-      // Final upsert transitions STREAMING -> COMPLETE, which fires `receive`
-      // exactly once — the same transition the chunk flow's final_response made.
-      await instance.messaging.upsertMessage(
-        responseID,
-        MessageState.COMPLETE,
-        () => buildSnapshot(responseID, text, finalMessageOptions ?? {}, false)
-      );
+  for (const word of text.split(' ')) {
+    if (signal?.aborted) {
+      return;
     }
-  } finally {
-    signal?.removeEventListener('abort', abortHandler);
+    accumulated += `${word} `;
+    // Await each write so Stop cannot leave queued word updates behind it.
+    await instance.messaging.upsertMessage(
+      responseID,
+      MessageState.STREAMING,
+      () =>
+        buildSnapshot(responseID, accumulated, finalMessageOptions ?? {}, true)
+    );
+    if (!(await sleep(WORD_DELAY, signal))) {
+      return;
+    }
   }
+  if (signal?.aborted) {
+    return;
+  }
+  await instance.messaging.upsertMessage(
+    responseID,
+    MessageState.COMPLETE,
+    () => buildSnapshot(responseID, text, finalMessageOptions ?? {}, false)
+  );
 }
 
 async function streamReasoningContentFirst(
@@ -256,58 +228,68 @@ async function streamReasoningContentFirst(
   content: string,
   signal?: AbortSignal
 ) {
-  const tokens = content.match(/\S+\s*/g) ?? [content];
-  let isCanceled = false;
-  // Sequential await loop, so a single flag is sufficient — the next token
-  // will short-circuit before scheduling further sleeps.
-  const abortHandler = () => {
-    isCanceled = true;
-  };
-
-  signal?.addEventListener('abort', abortHandler);
-
-  try {
-    let partial = '';
-    for (const token of tokens) {
-      if (isCanceled) {
-        break;
-      }
-      partial += token;
-      await pushMessageOptions(instance, responseID, {
-        reasoning: { content: partial },
-      });
-      await sleep(WORD_DELAY);
+  let partial = '';
+  for (const token of content.match(/\S+\s*/g) ?? [content]) {
+    if (signal?.aborted) {
+      return false;
     }
-  } finally {
-    signal?.removeEventListener('abort', abortHandler);
+    partial += token;
+    await pushMessageOptions(
+      instance,
+      responseID,
+      {
+        reasoning: { content: partial },
+      },
+      signal
+    );
+    if (!(await sleep(WORD_DELAY, signal))) {
+      return false;
+    }
   }
-
-  return !isCanceled;
+  return !signal?.aborted;
 }
 
 export async function runReasoningStepsScenario(
   instance: ChatInstance,
   signal?: AbortSignal
 ) {
+  if (signal?.aborted) {
+    return;
+  }
   const responseID = uuid();
   const collectedSteps: ReasoningStep[] = [];
-
-  await createShellMessage(instance, responseID, { reasoning: { steps: [] } });
+  await pushMessageOptions(
+    instance,
+    responseID,
+    { reasoning: { steps: [] } },
+    signal
+  );
 
   for (const step of REASONING_STEPS) {
+    if (signal?.aborted) {
+      return;
+    }
     collectedSteps.push(step);
-    await pushMessageOptions(instance, responseID, {
-      reasoning: { steps: [...collectedSteps] },
-    });
-    await sleep(REASONING_STEP_DELAY);
+    await pushMessageOptions(
+      instance,
+      responseID,
+      {
+        reasoning: { steps: [...collectedSteps] },
+      },
+      signal
+    );
+    if (!(await sleep(REASONING_STEP_DELAY, signal))) {
+      return;
+    }
   }
-
   await streamText(
     instance,
     responseID,
     scenarios['Reasoning steps'].text,
     signal,
-    { reasoning: { steps: [...collectedSteps] } }
+    {
+      reasoning: { steps: [...collectedSteps] },
+    }
   );
 }
 
@@ -315,30 +297,35 @@ export async function runReasoningContentScenario(
   instance: ChatInstance,
   signal?: AbortSignal
 ) {
+  if (signal?.aborted) {
+    return;
+  }
   const responseID = uuid();
-
-  await createShellMessage(instance, responseID, {
-    reasoning: { content: '' },
-  });
-
+  await pushMessageOptions(
+    instance,
+    responseID,
+    {
+      reasoning: { content: '' },
+    },
+    signal
+  );
   const completed = await streamReasoningContentFirst(
     instance,
     responseID,
     REASONING_TRACE_CONTENT,
     signal
   );
-
-  // Bail out before streaming the user-facing answer if the request was aborted mid-reasoning.
-  if (!completed) {
+  if (!completed || signal?.aborted) {
     return;
   }
-
   await streamText(
     instance,
     responseID,
     scenarios['Reasoning content'].text,
     signal,
-    { reasoning: { content: REASONING_TRACE_CONTENT } }
+    {
+      reasoning: { content: REASONING_TRACE_CONTENT },
+    }
   );
 }
 

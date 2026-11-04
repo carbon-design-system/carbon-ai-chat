@@ -155,7 +155,7 @@ class OptionComponent extends Component<OptionProps> {
                     is-quick-action
                     size={CHAT_BUTTON_SIZE.SMALL}
                     disabled={disableUserInputs}
-                    isselected={index === selectedIndex}
+                    isSelected={index === selectedIndex}
                     onClick={(event: MouseEvent) => {
                       this.onButtonClick(event, item);
                     }}>

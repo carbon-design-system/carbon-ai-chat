@@ -30,7 +30,7 @@ const blockClass = `${prefix}-carousel`;
  *
  * @element cds-aichat-carousel
  * @fires cds-aichat-carousel-onchange custom event for when the carousel changes
- * @slot body The body
+ * @slot - Carousel views.
  */
 @carbonElement(blockClass)
 class CDSAICarousel extends LitElement {

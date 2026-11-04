@@ -56,20 +56,6 @@ Add when: new React components, prop changes, user interaction flows.
 
 Add when: new user-facing features, cross-component workflows, config-dependent behavior. Patterns live in [demo/AGENTS.md](../../../demo/AGENTS.md).
 
-## Coverage
-
-**Required**:
-
-- All store actions and reducers.
-- All service public methods.
-- All user-facing component interactions.
-
-**Optional**:
-
-- Private helpers (if complex).
-- Edge cases (especially regression-prone ones).
-- Performance-critical paths (with benchmarks).
-
 ## Running tests
 
 From `packages/ai-chat/`:
@@ -87,9 +73,6 @@ Test setup: `tests/setup.ts` installs DOM + testing-library setup; `tests/test_h
 
 | Symptom | Likely cause | Fix |
 | --- | --- | --- |
-| Test timeout | Unresolved promise or unmocked timer | Verify `jest.useFakeTimers()` is set; await all promises; bump with `jest.setTimeout(10000)` if genuinely long |
-| Flaky test | Race condition or shared state | Add `await waitFor()` for async updates; reset shared mocks between tests; isolate with `--runInBand --testNamePattern="…"` |
-| Mock not applied | `jest.mock()` runs after import | Move `jest.mock()` to top of file; `jest.resetModules()` between tests if needed |
 | Failure in `@carbon/ai-chat-components` code that is correct in its source | Jest reads that package's built `es/`, and `es/` is stale | Rebuild it first — see the [build preflight](../../../references/commands.md#build-preflight) |
 
 ## Related guidance
@@ -97,4 +80,3 @@ Test setup: `tests/setup.ts` installs DOM + testing-library setup; `tests/test_h
 - [packages/ai-chat/AGENTS.md](../AGENTS.md) — package overview
 - [services.md](services.md) — service archetypes (test pattern background)
 - [src/chat/store/AGENTS.md](../src/chat/store/AGENTS.md) — store rules
-- [demo/AGENTS.md](../../../demo/AGENTS.md) — Playwright integration tests

@@ -41,6 +41,7 @@ interface UseInputCallbacksProps {
 }
 
 interface UseInputCallbacksReturn {
+  onStopStreaming: (markPending: () => void) => Promise<void>;
   onSendInput: (
     text: string,
     source: MessageSendSource,
@@ -104,6 +105,7 @@ export function useInputCallbacks({
     shallowEqual
   );
   return {
+    onStopStreaming: controller.onStopStreaming,
     onSendInput: controller.onSendInput,
     onRestart: controller.onRestart,
     onClose: controller.onClose,

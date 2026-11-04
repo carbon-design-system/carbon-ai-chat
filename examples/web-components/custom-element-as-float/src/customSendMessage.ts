@@ -8,19 +8,18 @@
  */
 
 /**
- * Mock customSendMessage handler for the float-layout example.
+ * Mock `customSendMessage` for this example.
  *
- * Demonstrates: a fully client-side back-end that returns canned text,
- * markdown, and a fake streaming response so the example can run with
- * no network dependency.
+ * Demonstrates: a client-side stand-in for a real chat back end that drives both
+ * the non-streaming `instance.messaging.addMessage` path and the streaming
+ * `instance.messaging.addMessageChunk` path, including stop-button cancellation.
  *
  * APIs exercised:
  *   - `PublicConfig.messaging.customSendMessage`
- *   - `instance.messaging.addMessage`
- *   - `instance.messaging.addMessageChunk` (partial / complete / final)
- *   - `CustomSendMessageOptions.signal` for stop-streaming + clear/restart
+ *   - `ChatInstance.messaging.addMessage` / `addMessageChunk`
+ *   - `MessageResponseTypes.TEXT`, `StreamChunk`, `CustomSendMessageOptions.signal`
  *
- * Start reading at: the exported `customSendMessage` function below.
+ * Start reading at: the exported `customSendMessage` function near the bottom.
  */
 
 import {
@@ -43,8 +42,7 @@ const WELCOME_TEXT = `Welcome to this example of a custom back-end. This back-en
 You can try the following responses:
 
 - stream text
-- text
-- user_defined`;
+- text`;
 
 const TEXT =
   `Lorem ipsum odor amet, consectetuer adipiscing elit. \`Inline Code Venenatis\` aliquet non platea elementum morbi porta accumsan. Tortor libero consectetur dapibus volutpat porta vestibulum.
@@ -103,19 +101,20 @@ async function doFakeTextStreaming(
   instance: ChatInstance,
   signal?: AbortSignal
 ) {
+  // mock scaffolding that fakes word-by-word streaming via setTimeout. Replace
+  // with a real production implementation that pipes server-sent events or a
+  // websocket into `instance.messaging.addMessageChunk`.
   const responseID = uuid();
   const words = TEXT.split(' ');
   let isCanceled = false;
+  let lastStreamedIndex = -1;
   const timeouts: number[] = [];
 
-  // Replace with a real production implementation. The abort signal fires for
-  // both the stop-streaming button and full chat restart/clear, so the handler
-  // must cancel any in-flight word emission to avoid posting chunks for a
-  // response the user has already dismissed.
+  // a single AbortSignal covers both the user pressing the stop button and
+  // the chat being cleared/restarted while a stream is in flight, so both paths
+  // must clear pending timeouts before they fire stale chunks at a closed stream.
   const abortHandler = () => {
     isCanceled = true;
-    // Pending setTimeout callbacks would otherwise still fire and call
-    // addMessageChunk after cancellation, leaving stale partial text on screen.
     timeouts.forEach((timeoutId) => clearTimeout(timeoutId));
   };
   signal?.addEventListener('abort', abortHandler);
@@ -124,6 +123,7 @@ async function doFakeTextStreaming(
     words.forEach((word, index) => {
       const timeoutId = setTimeout(() => {
         if (!isCanceled) {
+          lastStreamedIndex = index;
           instance.messaging.addMessageChunk({
             partial_item: {
               response_type: MessageResponseTypes.TEXT,
@@ -142,9 +142,18 @@ async function doFakeTextStreaming(
       timeouts.push(timeoutId as unknown as number);
     });
 
-    await sleep(words.length * WORD_DELAY);
+    // poll instead of one long sleep, so Stop ends the turn within 100 ms
+    // rather than after the whole stream's duration.
+    const totalDelay = words.length * WORD_DELAY;
+    const startTime = Date.now();
+    while (!isCanceled && Date.now() - startTime < totalDelay) {
+      await sleep(100);
+    }
 
     if (!isCanceled) {
+      // stream completion is two chunks, not one — `complete_item` flushes the
+      // assembled text the chat already rendered word-by-word, then `final_response`
+      // hands the chat the canonical message it can store in history.
       const completeItem = {
         response_type: MessageResponseTypes.TEXT,
         text: `${TEXT}\n\nMore stuff on the end when adding as a complete item.`,
@@ -170,12 +179,16 @@ async function doFakeTextStreaming(
         final_response: finalResponse,
       } as StreamChunk);
     } else {
-      // Emit a truncated complete_item with stream_stopped: true so the chat
-      // renders the partial text as a finalized, non-streaming message instead
-      // of leaving it stuck in a streaming state after the user pressed stop.
+      // a stopped stream still has to be closed out — emit a `complete_item`
+      // flagged with `stream_stopped` that holds only the words streamed before
+      // Stop, then a `final_response` that ends the turn, as a finished stream does.
+      const streamedText =
+        lastStreamedIndex >= 0
+          ? words.slice(0, lastStreamedIndex + 1).join(' ') + ' '
+          : '';
       const completeItem = {
         response_type: MessageResponseTypes.TEXT,
-        text: words.slice(0, Math.floor(words.length * 0.3)).join(' '),
+        text: streamedText,
         streaming_metadata: {
           id: '1',
           stream_stopped: true,
@@ -186,6 +199,17 @@ async function doFakeTextStreaming(
         streaming_metadata: {
           response_id: responseID,
         },
+      } as StreamChunk);
+
+      const finalResponse = {
+        id: responseID,
+        output: {
+          generic: [completeItem],
+        },
+      };
+
+      instance.messaging.addMessageChunk({
+        final_response: finalResponse,
       } as StreamChunk);
     }
   } finally {
@@ -198,9 +222,9 @@ async function customSendMessage(
   requestOptions: CustomSendMessageOptions,
   instance: ChatInstance
 ) {
-  // Replace with a real production implementation. The chat treats the first
-  // turn (empty input.text) as a hello/welcome trigger, so we emit the menu of
-  // demo prompts here instead of forwarding to a back-end.
+  // the chat invokes `customSendMessage` once with empty input on the
+  // welcome turn before the user has typed anything; treat that as the cue to
+  // greet the user with the canned welcome text.
   if (request.input.text === '') {
     instance.messaging.addMessage({
       output: {

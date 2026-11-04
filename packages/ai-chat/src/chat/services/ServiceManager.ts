@@ -24,12 +24,13 @@ import { UserSessionStorageService } from './UserSessionStorageService';
 import { ChatInstance } from '../../types/instance/ChatInstance';
 import { WriteableElements } from '../../types/instance/WriteableElements';
 import { BusEvent } from '../../types/events/eventBusTypes';
-import { MainWindowFunctions } from '../AppShell';
+import type { MainWindowFunctions } from '../../types/utilities/MainWindowFunctions';
 import { ChatInstanceService } from './ChatInstanceService';
 import { ChunkProcessingService } from './ChunkProcessingService';
 import { HydrationService } from './HydrationService';
 import { InputActionsService } from './InputActionsService';
 import { PublicStateService } from './PublicStateService';
+import { ConversationLifecycleService } from './ConversationLifecycleService';
 import { ReceiveService } from './ReceiveService';
 import { SlotEventService } from './SlotEventService';
 import { SendService } from './SendService';
@@ -103,6 +104,9 @@ class ServiceManager {
    * Service that projects store state into the public ChatState snapshot.
    */
   publicStateService: PublicStateService;
+
+  /** Coordinates transient loading, send, stream, and error state. */
+  conversationLifecycleService: ConversationLifecycleService;
 
   /**
    * Service that owns the inbound receive path.
@@ -232,8 +236,8 @@ class ServiceManager {
   /**
    * Convenience functions for firing events on the event bus.
    */
-  async fire<T extends BusEvent>(busEvent: T) {
-    return this.eventBus.fire(busEvent, this.instance);
+  async fire<T extends BusEvent>(busEvent: T, isCurrent?: () => boolean) {
+    return this.eventBus.fire(busEvent, this.instance, isCurrent);
   }
 
   /**

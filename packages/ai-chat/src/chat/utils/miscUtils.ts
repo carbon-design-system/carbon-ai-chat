@@ -15,7 +15,6 @@ import type { ErrorInfo } from 'react';
 
 import { FileUpload } from '../../types/config/ServiceDeskConfig';
 import { FileStatusValue, WA_CONSOLE_PREFIX } from './constants';
-import { resolveOrTimeout } from './lang/promiseUtils';
 import { OnErrorData, OnErrorType } from '../../types/config/ErrorConfig';
 
 /**
@@ -86,21 +85,6 @@ function isEnableDebugLog() {
 }
 
 /**
- * Safely returns the text from the given fetch response or undefined if there is an error. This will also impose a
- * timeout on getting the text
- */
-async function safeFetchTextWithTimeout(response: Response): Promise<string> {
-  try {
-    if (response) {
-      return resolveOrTimeout(response.text(), 2000, 'Getting response text');
-    }
-  } catch (error) {
-    consoleError('Error getting fetch text', error);
-  }
-  return undefined;
-}
-
-/**
  * Returns a {@link OnErrorData} that represents an error that occurred while rendering a component.
  */
 function createDidCatchErrorData(
@@ -161,6 +145,5 @@ export {
   isEnableDebugLog,
   getResponsiveElementPaddingValue,
   isValidForUpload,
-  safeFetchTextWithTimeout,
   callOnError,
 };

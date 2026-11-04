@@ -31,7 +31,7 @@ package-lock.json
 .agents
 references
 
-packages/ai-chat/tasks/**
+packages/ai-chat/tasks/rollup.aichat.js
 
 # Generated API symbol index — validated by the docs/api drift check, not prettier.
 # (The markdown embeds TypeDoc signatures / author @example code verbatim, which

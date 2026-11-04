@@ -7,12 +7,11 @@ collect:
   wc:
     elements:
       allowedAttributeNames:
-        # General
-        - element
         # cds-aichat-container
         - ai-disabled
         - ai-enabled
         - assistant-name
+        - assistantavatarurl
         - debug
         - disable-custom-element-mobile-enhancements
         - disclaimer
@@ -38,12 +37,7 @@ collect:
         - should-sanitize-html
         - should-take-focus-if-opens-automatically
         - strings
-        # cds-aichat-internal
-        - config
-        - onAfterRender
-        - onBeforeRender
       allowedAttributeStringValues:
-        # General - boolean attributes
         - "true"
         - "false"
       allowedAttributeObjectKeys:

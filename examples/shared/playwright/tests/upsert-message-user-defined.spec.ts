@@ -15,6 +15,7 @@
  * when a run finishes. The test runs two cards at once and checks each updates
  * in place and that the toast scrolls to the finished card. A fixme records
  * that the welcome button cannot start a second run as its copy says.
+ * Stop leaves the old card unchanged without a completion toast; a fresh card finishes.
  */
 
 import { PageObjectId } from '@carbon/ai-chat/server';
@@ -27,6 +28,50 @@ test.beforeEach(async ({ page }) => {
 
 test('mounts with a usable chat surface', async ({ page }) => {
   await expect(page.getByTestId(PageObjectId.INPUT)).toBeEditable();
+});
+
+test('stops a card without late completion and finishes a fresh card', async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  await page.clock.install();
+  const cards = page.locator('.steps-card-container').filter({ visible: true });
+  const stop = page.getByRole('button', { name: 'Stop response', exact: true });
+  const view = page.getByRole('button', { name: 'View message', exact: true });
+  await page
+    .getByRole('button', { name: 'Start steps demo', exact: true })
+    .click();
+  await expect(cards).toHaveCount(1);
+  await expect(
+    cards.getByText('Status: running', { exact: true })
+  ).toBeVisible();
+  await stop.click();
+  await expect(stop).toHaveCount(0);
+  const stoppedCard = cards.first();
+  const stopped = await stoppedCard.ariaSnapshot();
+  await page.clock.runFor(30_000);
+  expect(await stoppedCard.ariaSnapshot()).toBe(stopped);
+  await expect(
+    cards.getByText('Completed successfully', { exact: true })
+  ).toHaveCount(0);
+  await expect(view).toHaveCount(0);
+  await page.getByTestId(PageObjectId.INPUT).fill('Show me the upsert demo');
+  await page.getByRole('button', { name: 'Send message', exact: true }).click();
+  await expect(cards).toHaveCount(2);
+  await expect(stop).toBeVisible();
+  await page.clock.runFor(30_000);
+  await expect(cards.filter({ hasText: 'Status: completed' })).toHaveCount(1, {
+    timeout: 30_000,
+  });
+  await expect(
+    cards.last().getByText('Completed successfully', { exact: true })
+  ).toHaveCount(5);
+  await expect(stop).toHaveCount(0);
+  await expect(view).toHaveCount(1);
+  await view.click();
+  await expect(view).toHaveCount(0);
+  await expect(page.getByTestId(PageObjectId.INPUT)).toBeEditable();
+  expect(await stoppedCard.ariaSnapshot()).toBe(stopped);
 });
 
 // The welcome copy says to click `Start steps demo` again while a run is in
@@ -66,7 +111,7 @@ test('runs cards concurrently and scrolls to the finished one', async ({
   // The input stays usable mid-run; sending asks for a fresh welcome whose
   // button, as the latest message, can start the second run.
   await input.fill('another run');
-  await page.getByRole('button', { name: 'Send message', exact: true }).click();
+  await input.press('Enter');
   await page
     .getByRole('button', {
       name: 'Start steps demo',

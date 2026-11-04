@@ -1,75 +1,46 @@
 # indexer-contract.md — examples README format
 
-Every example README must follow this structure so the repo indexer can parse and display it. Validation runs as part of `ci-check`.
+Use this format for each README. The repo indexer reads it; `ci-check` checks it.
 
 ## Required sections (in order)
 
-### 1. `## What this example shows`
+- `## What this example shows` — one bullet per capability.
+- `## When to use this pattern` — one bullet per use case.
+- `## APIs and props demonstrated` — a three-column table:
 
-One bullet per capability demonstrated:
-
-```markdown
-## What this example shows
-
-- How to initialize the chat with custom configuration.
-- How to handle user-defined response types.
-- How to integrate with an external authentication system.
-```
-
-### 2. `## When to use this pattern`
-
-One bullet per scenario where this pattern applies:
-
-```markdown
-## When to use this pattern
-
-- You need to customize the chat appearance beyond theme variables.
-- Your application requires SSO integration.
-- You want to add custom message types.
-```
-
-### 3. `## APIs and props demonstrated`
-
-Three-column table — Symbol / Package / kind / Role in example:
-
-```markdown
-## APIs and props demonstrated
-
-| Symbol | Package / kind | Role in example |
-| --- | --- | --- |
-| `ChatContainer` | `@carbon/ai-chat` / React component | Main chat UI container |
-| `messaging.customSendMessage` | `@carbon/ai-chat` / config prop | Intercepts outbound messages |
-| `renderUserDefinedResponse` | `@carbon/ai-chat` / config prop | Renders custom message types |
-```
+  ```markdown
+  | Symbol | Package / kind | Role in example |
+  | --- | --- | --- |
+  | `ChatContainer` | `@carbon/ai-chat` / React component | Mounts the chat UI. |
+  ```
 
 ## Format rules
 
-1. **Section headers must match exactly** — case-sensitive, including "this" in the first header.
-2. **Bullets** start with a capital letter and end with a period.
-3. **Table** has exactly 3 columns with the headers shown above.
-4. **If a section doesn't apply**, use `N/A - <reason>`:
+1. Match the section headers exactly, including case and "this".
+2. Start bullets with a capital letter and end them with a period.
+3. Use exactly three table columns with the headers above.
+4. For a section that does not apply, use `N/A - <reason>` instead of leaving it empty.
 
-   ```markdown
-   ## When to use this pattern
+The indexer checks all sections, headers, and table columns. It rejects empty sections. A failed README does not appear on the docs site.
 
-   N/A - This is a minimal reference implementation.
-   ```
+## Title naming
 
-## Validation
+Match the `# H1` title to the slug family. This groups related examples in the list.
 
-The indexer checks:
+| Slug | Title format | Example |
+| --- | --- | --- |
+| Prefix shared by 3+ siblings | `<Prefix> / <Variant>`; capitalize prefix, sentence-case variant | `prompt-line-typeahead` → `Prompt line / Typeahead` |
+| `basic-*` | `Basic / <Variant>` | `Basic / Float` |
+| Variant of one base | `<Base name> (<variant>)` | `Workspace (sidebar)` |
+| No shared family | Flat sentence case | `Feedback` |
+| Variant of a slash-family entry | Append variant in parens; keep one slash | `Prompt line / Typeahead (custom list)` |
 
-- All three sections present.
-- Section headers match exactly.
-- Table has correct structure.
-- No empty sections (unless `N/A - <reason>`).
-
-If validation fails, the example won't appear on the docs site.
+Capitalize a new family prefix even for a singleton when you expect siblings, such as `Integrations / watsonx.ai`.
 
 ## Templates
 
-- **Reference implementation**: [examples/react/basic-custom-element-fullscreen/README.md](../react/basic-custom-element-fullscreen/README.md)
-- **New-example template**: [examples/README_TEMPLATE.md](../README_TEMPLATE.md)
+- [Reference implementation](../react/basic-custom-element-fullscreen/README.md)
+- [New-example template](../README_TEMPLATE.md)
 
 ## Related guidance
 
