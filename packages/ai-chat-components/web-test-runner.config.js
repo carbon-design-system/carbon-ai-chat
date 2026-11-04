@@ -79,8 +79,13 @@ export default {
   ],
   browsers: [
     playwrightLauncher({ product: 'chromium' }),
-    // Concurrent Firefox pages can stall native selection gestures and overlap later tests.
-    playwrightLauncher({ product: 'firefox', concurrency: 1 }),
-    playwrightLauncher({ product: 'webkit' }),
+    // TEMPORARILY chromium-only in CI (see .github/workflows/ci.yml). Local runs keep all browsers.
+    ...(process.env.CI
+      ? []
+      : [
+          // Concurrent Firefox pages can stall native selection gestures and overlap later tests.
+          playwrightLauncher({ product: 'firefox', concurrency: 1 }),
+          playwrightLauncher({ product: 'webkit' }),
+        ]),
   ],
 };

@@ -41,12 +41,13 @@
     "lint:license:staged": "tools/check-license.js -w",
     "lint:styles": "stylelint '**/*.scss' --report-needless-disables --report-invalid-scope-disables",
     "telemetry:config": "lerna run telemetry:config",
-    "test": "lerna run test --stream --no-bail && npm run test:versions && npm run test:example-e2e-scaffold",
+    "test": "lerna run test --stream --no-bail && npm run test:versions && npm run test:example-e2e-scaffold && npm run test:measure && npm run test:host-entry-consumer && npm run test:manifest-consumer",
     "test:e2e": "node scripts/run-example-e2e.mjs",
     "test:e2e:goldens": "playwright test --config examples/shared/playwright/playwright.config.ts",
     "test:e2e:coverage": "node scripts/run-example-coverage.mjs",
     "test:examples": "lerna run test --stream --no-bail --ignore @carbon/ai-chat --ignore @carbon/ai-chat-components --ignore @carbon/ai-chat-examples-demo",
     "test:guidance": "node --test tools/validate-guidance.test.js",
+    "test:measure": "node --test scripts/measure.test.mjs",
     "test:versions": "node --test scripts/update-versions-file.test.cjs",
     "validate:adrs": "node tools/validate-adrs.js",
     "validate:agents": "node tools/validate-agents-docs.js",
@@ -62,9 +63,13 @@
     "measure": "node scripts/measure.mjs",
     "postinstall": "patch-package && husky",
     "scaffold:example-e2e": "node scripts/scaffold-example-e2e/cli.mjs",
-    "test:example-e2e-scaffold": "node --test scripts/scaffold-example-e2e/scaffold.test.mjs"
+    "test:example-e2e-scaffold": "node --test scripts/scaffold-example-e2e/scaffold.test.mjs",
+    "test:host-entry-consumer": "node tools/host-entry-consumer/run.mjs",
+    "test:manifest-consumer:references": "node --test tools/manifest-consumer/manifests.test.mjs",
+    "test:manifest-consumer": "npm run test:manifest-consumer:references && node tools/manifest-consumer/run.mjs"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.0",
     "@babel/core": "^8.0.0",
     "@babel/preset-env": "^8.0.0",
     "@babel/preset-react": "^8.0.0",
@@ -95,7 +100,7 @@
     "knip": "^6.34.0",
     "lerna": "^10.0.1",
     "lint-staged": "^17.0.0",
-    "monocart-coverage-reports": "2.13.0",
+    "monocart-coverage-reports": "2.13.2",
     "patch-package": "^8.0.1",
     "prettier": "^3.0.0",
     "prettier-config-carbon": "^0.12.0",
@@ -235,14 +240,18 @@
     "@vscode/markdown-it-katex": {
       "katex": "0.18.2"
     },
-    "tar": "^7.5.16",
-    "shell-quote": "^1.11.0",
-    "postcss": "^8.5.23",
-    "axios": "^1.18.1",
-    "proxy-addr": "^2.0.8",
+    "glob@>=10 <14": "^14.0.3",
+    "serve": {
+      "compression": "^1.8.2"
+    },
+    "get-uri": {
+      "basic-ftp": "^6.2.3"
+    },
+    "rollup-plugin-postcss": {
+      "cssnano": "^7.1.9"
+    },
     "stylelint-config-carbon": {
-      "stylelint-config-standard": "^40.0.0",
-      "stylelint-config-standard-scss": "^17.0.0"
+      "stylelint-config-standard": "^40.0.0"
     },
     "stylelint-config-idiomatic-order": {
       "stylelint-order": "^8.0.1"
@@ -254,12 +263,8 @@
     "@mordech/vite-lit-loader": {
       "vite": "^8.0.16"
     },
-    "lerna": {
-      "js-yaml": "^4.3.2",
-      "pacote": "^21.5.1"
-    },
     "nx": {
-      "smol-toml": "^1.9.0"
+      "undici": "^7.29.1"
     }
   }
 }

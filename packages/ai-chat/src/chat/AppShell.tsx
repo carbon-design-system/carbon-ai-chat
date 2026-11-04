@@ -47,7 +47,7 @@ import { AppShellPanels } from './AppShellPanels';
 import { HasServiceManager } from './hocs/withServiceManager';
 import { useMobileViewportLayout } from './hooks/useMobileViewportLayout';
 import { useOnMount } from './hooks/useOnMount';
-import { useSelector } from './hooks/useSelector';
+import { useSelector, useStateAccessSelector } from './hooks/useSelector';
 import { useWindowOpenState } from './hooks/useWindowOpenState';
 import { useFocusManager } from './hooks/useFocusManager';
 import { useStyleInjection } from './hooks/useStyleInjection';
@@ -102,10 +102,9 @@ import {
   ChatWidthBreakpoint,
   PendingUpload,
 } from '../types/state/AppState';
-import {
-  AutoScrollOptions,
-  HasDoAutoScroll,
-} from '../types/utilities/HasDoAutoScroll';
+import type { PublicChatState } from '../types/instance/PublicChatState';
+import type { AutoScrollOptions } from '../types/utilities/HasDoAutoScroll';
+import type { MainWindowFunctions } from '../types/utilities/MainWindowFunctions';
 import { HasRequestFocus } from '../types/utilities/HasRequestFocus';
 import { MessageSendSource, BusEventType } from '../types/events/eventBusTypes';
 import type { JSONContent } from '@tiptap/core';
@@ -148,6 +147,8 @@ const selectPersistedToBrowserStorage = (state: AppState) =>
 const selectIsHydrated = (state: AppState) => state.isHydrated;
 const selectAssistantMessageState = (state: AppState) =>
   state.assistantMessageState;
+const selectIsHydratingCounter = (state: PublicChatState) =>
+  state.isHydratingCounter;
 const selectHumanAgentStateSlice = (state: AppState) => state.humanAgentState;
 const selectWorkspacePanelState = (state: AppState) =>
   state.workspacePanelState;
@@ -180,26 +181,6 @@ interface AppShellProps extends HasServiceManager {
 }
 
 /**
- * These are the public imperative functions that are available on the MainWindow component. This interface is
- * declared here to avoid taking a dependency on a specific React component implementation elsewhere.
- */
-export interface MainWindowFunctions extends HasRequestFocus, HasDoAutoScroll {
-  /**
-   * Scrolls to the (full) message with the given ID. Since there may be multiple message items in a given
-   * message, this will scroll the first message to the top of the message window.
-   *
-   * @param messageID The (full) message ID to scroll to.
-   * @param animate Whether or not the scroll should be animated. Defaults to true.
-   */
-  doScrollToMessage(messageID: string, animate?: boolean): void;
-
-  /**
-   * Returns the current scrollBottom value for the message scroll panel.
-   */
-  getMessagesScrollBottom(): number;
-}
-
-/**
  * The store-driven application shell. This is the heavy, memoized boundary of
  * the chat: it must depend only on `serviceManager`, store-derived values (via
  * `useSelector`), and stable derived signals. It must never receive raw host
@@ -225,6 +206,10 @@ function AppShell({
   );
   const isHydrated = useSelector(selectIsHydrated);
   const assistantMessageState = useSelector(selectAssistantMessageState);
+  const isHydratingCounter = useStateAccessSelector(
+    serviceManager.instance.state,
+    selectIsHydratingCounter
+  );
   const humanAgentState = useSelector(selectHumanAgentStateSlice);
   const workspacePanelState = useSelector(selectWorkspacePanelState);
   const historyPanelState = useSelector(selectHistoryPanelState);
@@ -365,7 +350,7 @@ function AppShell({
   } = useDerivedState({
     publicConfig,
     persistedToBrowserStorage,
-    isHydratingCounter: assistantMessageState.isHydratingCounter,
+    isHydratingCounter,
     catastrophicErrorType,
     viewStateMainWindow: viewState.mainWindow,
   });
@@ -444,6 +429,7 @@ function AppShell({
   // Input callbacks
   const {
     onSendInput,
+    onStopStreaming,
     onRestart,
     onClose,
     onToggleHomeScreen,
@@ -511,38 +497,77 @@ function AppShell({
     uploadConfig?.maxFiles !== undefined &&
     inputFields.pendingUploads.length >= uploadConfig.maxFiles;
 
-  // Derive InputConfig.error
-  const inputError = useMemo(() => {
-    // check file and pending uploads first
-    const fileWithError = inputFields.files.find((f) => f.isError);
-    const pendingUploadWithError = inputFields.pendingUploads.find(
-      (u) => u.status === 'error'
-    );
+  // One error entry per errored attachment, each naming the file. Rendered as
+  // stacked rows in the field-messaging slot so every failure is visible at once
+  // rather than only the first. Errors from `inputFields.files` (host-managed
+  // uploads) and `inputFields.pendingUploads` (assistant-managed) are merged and
+  // sorted alphabetically by file name — matching the chip ordering.
+  const inputUploadErrors = useMemo(() => {
+    type ErrorEntry = {
+      id: string;
+      filename: string;
+      title: string;
+      description?: string;
+    };
 
-    const uploadError = fileWithError || pendingUploadWithError;
-    if (uploadError) {
-      // The recovery instruction is appended unconditionally: a host's message
-      // says what went wrong, not how to get out of it.
-      const hostMessage =
-        'errorMessage' in uploadError ? uploadError.errorMessage : undefined;
-      return {
-        title: languagePack.fileSharing_uploadErrorTitle,
-        description: [hostMessage, languagePack.fileSharing_uploadErrorRecovery]
+    const entries: ErrorEntry[] = [];
+
+    for (const f of inputFields.files) {
+      if (!f.isError) {
+        continue;
+      }
+      const filename = f.file?.name ?? '';
+      entries.push({
+        id: f.id,
+        filename,
+        title: intl.formatMessage(
+          { id: 'fileSharing_uploadErrorTitleWithName' },
+          { filename }
+        ),
+        description: [
+          f.errorMessage,
+          languagePack.fileSharing_uploadErrorRecovery,
+        ]
           .filter(Boolean)
           .join(' '),
-        collapsible: false,
-      };
+      });
     }
 
-    // Fall back to config-provided error if no file upload errors
-    return publicConfig.input?.error;
+    for (const u of inputFields.pendingUploads) {
+      if (u.status !== 'error') {
+        continue;
+      }
+      const filename = u.file?.name ?? '';
+      entries.push({
+        id: u.id,
+        filename,
+        title: intl.formatMessage(
+          { id: 'fileSharing_uploadErrorTitleWithName' },
+          { filename }
+        ),
+        description: [
+          u.errorMessage,
+          languagePack.fileSharing_uploadErrorRecovery,
+        ]
+          .filter(Boolean)
+          .join(' '),
+      });
+    }
+
+    entries.sort((a, b) =>
+      a.filename.localeCompare(b.filename, undefined, { sensitivity: 'base' })
+    );
+
+    return entries.length > 0 ? entries : undefined;
   }, [
     inputFields.files,
     inputFields.pendingUploads,
-    languagePack.fileSharing_uploadErrorTitle,
+    intl,
     languagePack.fileSharing_uploadErrorRecovery,
-    publicConfig.input?.error,
   ]);
+
+  // Config-provided error only; upload errors go through `inputUploadErrors`.
+  const inputError = publicConfig.input?.error;
 
   // Disable the human-agent upload button once its (optional) max number of files
   // is reached, on top of the existing connection/streaming gating.
@@ -1020,6 +1045,7 @@ function AppShell({
                     disableSend={shouldDisableSend()}
                     isInputVisible={isInputFieldVisible}
                     onSendInput={onSendInputFromInput}
+                    onStopStreaming={onStopStreaming}
                     onUserTyping={onUserTyping}
                     showUploadButton={
                       inputFields.allowFileUploads || isAssistantUploadEnabled
@@ -1070,7 +1096,8 @@ function AppShell({
                     }
                     isStopStreamingButtonVisible={isStopStreamingButtonVisible}
                     isStopStreamingButtonDisabled={
-                      inputFields.stopStreamingButtonState.isDisabled
+                      inputFields.stopStreamingButtonState.isDisabled ||
+                      inputFields.stopStreamingButtonState.isMetadataDisabled
                     }
                     maxInputChars={publicConfig.input?.maxInputCharacters}
                     trackInputState
@@ -1081,6 +1108,7 @@ function AppShell({
                         !!publicConfig.disableCustomElementMobileEnhancements)
                     }
                     error={inputError}
+                    uploadErrors={inputUploadErrors}
                   />
                 </div>
               )}

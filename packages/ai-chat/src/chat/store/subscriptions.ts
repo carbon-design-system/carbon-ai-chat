@@ -12,8 +12,6 @@
  */
 
 import { ServiceManager } from '../services/ServiceManager';
-import { BusEventType } from '../../types/events/eventBusTypes';
-import { PublicChatState } from '../../types/instance/PublicChatState';
 import isEqual from 'lodash-es/isEqual.js';
 import { refreshLocalization } from '../utils/intlUtils';
 import { toPersistableState } from './persistenceUtils';
@@ -54,31 +52,6 @@ function copyToSessionStorage(serviceManager: ServiceManager) {
 }
 
 /**
- * Fires a STATE_CHANGE event whenever the public state changes.
- */
-function fireStateChangeEvent(serviceManager: ServiceManager) {
-  let previousState: PublicChatState =
-    serviceManager.actions.getPublicChatState();
-
-  return () => {
-    const newState = serviceManager.actions.getPublicChatState();
-
-    if (!isEqual(previousState, newState)) {
-      serviceManager.eventBus.fireSync(
-        {
-          type: BusEventType.STATE_CHANGE,
-          previousState,
-          newState,
-        },
-        serviceManager.instance
-      );
-
-      previousState = newState;
-    }
-  };
-}
-
-/**
  * Rebuilds the i18n formatter whenever the active strings or locale change. The
  * `languagePack` slice and `serviceManager.intl` are two sinks for the same
  * strings; deriving `intl` here from the slice (rather than rebuilding it at each
@@ -96,11 +69,7 @@ function refreshLocalizationOnChange(serviceManager: ServiceManager) {
     const { languagePack } = state;
     const locale = state.config.public.locale;
 
-    // Compare the pack by value, not reference: an unrelated `changeState` that
-    // carries a non-config slice deep-clones the whole tree (see the CHANGE_STATE
-    // reducer), handing `languagePack` a fresh reference with identical content.
-    // The cheap reference check short-circuits the deep compare for the common
-    // case where the reference is preserved.
+    // Equal string values need no formatter rebuild, even when their container changes.
     const languageChanged =
       previousLanguagePack !== languagePack &&
       !isEqual(previousLanguagePack, languagePack);
@@ -115,8 +84,4 @@ function refreshLocalizationOnChange(serviceManager: ServiceManager) {
   };
 }
 
-export {
-  copyToSessionStorage,
-  fireStateChangeEvent,
-  refreshLocalizationOnChange,
-};
+export { copyToSessionStorage, refreshLocalizationOnChange };

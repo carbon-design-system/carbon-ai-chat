@@ -122,10 +122,15 @@
 // `flex-wrap: wrap`, so setting `flex-basis: 100%` here is enough to force
 // the row break.
 // -----------------------------------------------------------
+
+// `min-inline-size: 0` stops this flex item's automatic minimum (its content's
+// min-content width) from stretching the row past the shell when the slotted
+// file chips are wider than the available space; the chips scroll instead.
 .#{$prefix}--input-uploads-and-autocomplete {
   position: relative;
   box-sizing: border-box;
   flex-basis: 100%;
+  min-inline-size: 0;
 }
 
 .#{$prefix}--input-uploads-and-autocomplete--has-uploads::after {
@@ -203,6 +208,13 @@
   flex: 1 0;
   inline-size: 100%;
   min-block-size: 0;
+}
+
+:host([disabled]) {
+  ::slotted(textarea)::placeholder,
+  ::slotted([slot='editor'])::placeholder {
+    color: theme.$text-disabled;
+  }
 }
 
 // -----------------------------------------------------------

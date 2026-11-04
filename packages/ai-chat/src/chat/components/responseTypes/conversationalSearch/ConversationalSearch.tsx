@@ -26,6 +26,7 @@ import {
 import { ScrollElementIntoViewFunction } from '../../../components-legacy/MessagesComponent';
 import { useSelector } from '../../../hooks/useSelector';
 import { shallowEqual } from '../../../store/appStore';
+import { deriveStreamingItemText } from '../../../utils/streamingUtils';
 import { AppState } from '../../../../types/state/AppState';
 import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
 import { ConversationalSearchItem } from '../../../../types/messaging/Messages';
@@ -74,9 +75,7 @@ function ConversationalSearch({
   );
   const streamingState = localMessageItem.ui_state.streamingState;
   const streaming = Boolean(streamingState && !streamingState.isDone);
-  const text = streaming
-    ? streamingState.chunks.map((chunk) => chunk.text).join('')
-    : messageItem.text;
+  const text = deriveStreamingItemText(messageItem.text, streamingState);
   const highlightedText = insertHighlightMarkdown(
     text,
     citationsOpen ? sortedCitations?.[selectedCitationIndex] : null

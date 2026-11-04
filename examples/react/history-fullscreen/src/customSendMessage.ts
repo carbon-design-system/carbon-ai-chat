@@ -106,6 +106,7 @@ async function doFakeTextStreaming(
   const responseID = uuid();
   const words = TEXT.split(' ');
   let isCanceled = false;
+  let lastStreamedIndex = -1;
   const timeouts: number[] = [];
 
   // the AbortSignal fires for both the user's stop button and a programmatic restart/clear, so a single handler must cancel any in-flight chunk emission and pending timers.
@@ -119,6 +120,7 @@ async function doFakeTextStreaming(
     words.forEach((word, index) => {
       const timeoutId = setTimeout(() => {
         if (!isCanceled) {
+          lastStreamedIndex = index;
           instance.messaging.addMessageChunk({
             partial_item: {
               response_type: MessageResponseTypes.TEXT,
@@ -137,7 +139,13 @@ async function doFakeTextStreaming(
       timeouts.push(timeoutId as unknown as number);
     });
 
-    await sleep(words.length * WORD_DELAY);
+    // Poll instead of one long sleep, so Stop ends the turn within 100 ms
+    // rather than after the whole stream's duration.
+    const totalDelay = words.length * WORD_DELAY;
+    const startTime = Date.now();
+    while (!isCanceled && Date.now() - startTime < totalDelay) {
+      await sleep(100);
+    }
 
     if (!isCanceled) {
       const completeItem = {
@@ -166,9 +174,13 @@ async function doFakeTextStreaming(
       } as StreamChunk);
     } else {
       // on cancellation, send a final chunk with `stream_stopped: true` so the chat UI commits a partial transcript instead of leaving a dangling streaming bubble.
+      const streamedText =
+        lastStreamedIndex >= 0
+          ? words.slice(0, lastStreamedIndex + 1).join(' ') + ' '
+          : '';
       const completeItem = {
         response_type: MessageResponseTypes.TEXT,
-        text: words.slice(0, Math.floor(words.length * 0.3)).join(' '),
+        text: streamedText,
         streaming_metadata: {
           id: '1',
           stream_stopped: true,
@@ -179,6 +191,17 @@ async function doFakeTextStreaming(
         streaming_metadata: {
           response_id: responseID,
         },
+      } as StreamChunk);
+
+      const finalResponse = {
+        id: responseID,
+        output: {
+          generic: [completeItem],
+        },
+      };
+
+      instance.messaging.addMessageChunk({
+        final_response: finalResponse,
       } as StreamChunk);
     }
   } finally {

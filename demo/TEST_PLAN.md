@@ -4,6 +4,8 @@
 
 We should be looking for what here can can automate, and as we do, we can remove it from this list.
 
+Automated upload checks: `input-actions-upload.spec.ts` covers file selection, pending state, and upload limits through both hosts. `file-upload-styles.spec.ts` checks chip styles, moves, and cleanup under strict CSP.
+
 ## Testing Tracks
 
 ### Track 1: Core Configuration & Instance Control
@@ -44,6 +46,13 @@ We should be looking for what here can can automate, and as we do, we can remove
 - [ ] **Session management:** `instance.destroySession()`
 - [ ] **State access:** `instance.getState()`
 - [ ] **Custom panels:** `instance.customPanels`
+
+#### Stream completion reading position
+
+- [ ] In chunk mode and `?useUpsertMessage`, stream a long text answer. Scroll down a little (about 30px), then farther (about 200px). At completion, the same text stays at the same viewport offset; the chat does not move to the bottom.
+- [ ] Repeat with `complete_item` before `final_response`, a final response with a second item, and delayed final rows. Check the frames around completion for a jump or surplus blank space. The scroll-down button reflects remaining text.
+- [ ] Scroll back up with the wheel or Page Up during completion. The newer position stays. Keep focus on the same history handle or input control and check keyboard scrolling.
+- [ ] Leave one stream untouched, stop another, then restart. Request pins and Stop behavior still work. Repeat in Safari and record the version.
 
 ### Track 2: Message Response Types
 
@@ -155,6 +164,12 @@ Run these in both modes:
 - [ ] Send **user_defined (stream)** and **conversational search (stream)**.
 - [ ] Send **text (stream early resolve)** with "Show stop button immediately" on.
 - [ ] Stop a stream partway: the message settles and the stop button goes away.
+- [ ] Run `stop-streaming-cancellable.spec.ts` in both send modes. When `cancellable` changes from `true` to `false`, Stop stays visible but disabled. An omitted value leaves it disabled; `true` enables it again. Disabled Stop ignores clicks, Enter, and Space. A completed stream hides it.
+- [ ] **card (stream)** and **carousel (stream)**: these entries only appear when `?useUpsertMessage` is set, alphabetically beside their non-streaming versions. The card's body and footer appear before the stream ends; carousel cards arrive one at a time.
+- [ ] After **carousel (stream)** ends, Next reaches all three cards and the count advances from "1 / 3" to "3 / 3".
+- [ ] The request stays pinned through carousel initialization and stream completion, including with conversation history. Check each frame for jumps.
+- [ ] Both side borders stay visible on every carousel card.
+- [ ] As each carousel card arrives, the first card stays visible and the new card does not flash below it before joining the carousel.
 - [ ] With VoiceOver, both modes announce the same things.
 
 #### Auto-scroll after content resizes

@@ -6,7 +6,7 @@ Load this before writing or editing a page under `packages/ai-chat/docs/`. For a
 
 - **Conceptual and task guides only.** Never hand-write a page that lists a type's properties — TypeDoc already renders those from [public-jsdoc.md](public-jsdoc.md).
 - **The YAML `title` renders as the page heading, so the body starts at `##`** — no H1 of your own ([Page anatomy](../../../../packages/ai-chat/docs/references/doc-style.md#page-anatomy)).
-- **An unregistered page never renders.** Add it to `projectDocuments` in `packages/ai-chat/typedoc.json` at the sidebar position you want; the page is not done when the prose is done.
+- **Register new pages** using [doc-style.md](../../../../packages/ai-chat/docs/references/doc-style.md#page-anatomy).
 - **This is a scored surface** — step 3 of the loop applies to every page you touch, and the number is trustworthy here because the file is plain markdown.
 
 ## Before and after
@@ -16,7 +16,7 @@ Load this before writing or editing a page under `packages/ai-chat/docs/`. For a
 
 ## Gate
 
-`npm run reading-level -- <file>` at grade 10 or below, and the page registered in `projectDocuments`.
+`npm run reading-level -- <file>` at grade 10 or below, plus the [page-registration check](../../../../packages/ai-chat/docs/references/doc-style.md#page-anatomy).
 
 ## Related guidance
 

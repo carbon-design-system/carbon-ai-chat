@@ -78,6 +78,8 @@ export interface ScrollHost {
   setScrollHeightFloor(px: number): void;
   /** All message rows in document order; host computes the flags. */
   getMessages(): PortableMessage[];
+  /** Full messages can exist before their replacement rows mount. */
+  hasMessage(messageId: string): boolean;
   /** Notify the host that scroll geometry changed (repaint scroll-to-bottom button). */
   onScrollGeometryChanged(): void;
 }
@@ -787,6 +789,16 @@ export class MessagesScrollController {
    */
   private pinnedMessageId: string | null = null;
 
+  private pinnedOwnerId: string | null = null;
+
+  private readingScrollTop: number | null = null;
+
+  private hasStreamedForPin = false;
+
+  private scrollGeneration = 0;
+
+  private disconnected = false;
+
   /**
    * The scrollTop value set at the moment of the last pin. Compared against the current
    * scrollTop at stream end to detect whether the user scrolled away from the pin during
@@ -814,6 +826,13 @@ export class MessagesScrollController {
    */
   private previousMessages: PortableMessage[] = [];
 
+  /**
+   * Numbers each scroll request so older ones can be told apart from the newest.
+   * A request saves the number it was given. If the counter has moved on by the time the
+   * request runs, a newer request (or `disconnect()`) replaced it, so it must do nothing.
+   */
+  private scrollCounter = 0;
+
   constructor(host: ScrollHost) {
     this.host = host;
   }
@@ -823,12 +842,17 @@ export class MessagesScrollController {
   // --------------------------------------------------------------------------
 
   connect(): void {
+    this.disconnected = false;
+    this.scrollGeneration++;
     const scrollContainer = this.host.getScrollContainer();
 
     // Use requestAnimationFrame to avoid ResizeObserver loop errors
     this.scrollPanelObserver = new ResizeObserver(() => {
+      const generation = this.scrollGeneration;
       requestAnimationFrame(() => {
-        this.onContainerResize();
+        if (this.isCurrentScrollWork(generation)) {
+          this.onContainerResize();
+        }
       });
     });
     if (scrollContainer) {
@@ -855,6 +879,13 @@ export class MessagesScrollController {
   }
 
   disconnect(): void {
+    this.scrollCounter++;
+    this.disconnected = true;
+    this.scrollGeneration++;
+    this.readingScrollTop = null;
+    this.pinnedOwnerId = null;
+    this.pinnedMessageId = null;
+    this.hasStreamedForPin = false;
     this.host.setScrollHeightFloor(0);
     if (this.host.getSpacer()) {
       this.host.setSpacerHeight(0);
@@ -871,6 +902,7 @@ export class MessagesScrollController {
     const scrollContainer = this.host.getScrollContainer();
     scrollContainer?.removeEventListener('scroll', this.handleUserScroll);
     this.doAutoScrollThrottled.cancel();
+    this.onContainerResizeThrottled.cancel();
   }
 
   /**
@@ -880,10 +912,11 @@ export class MessagesScrollController {
    * (React `getSnapshotBeforeUpdate`), used for Safari scroll-anchoring restore.
    */
   onHostUpdated(preCommitScrollTop: number | null): void {
+    if (this.disconnected) {
+      return;
+    }
     const newItems = this.host.getMessages();
     const oldItems = this.previousMessages;
-    // Advance the baseline immediately so nested async work reads the latest state.
-    this.previousMessages = newItems;
 
     // countChanged means a new message, itemsChanged means an actual message item changed (streaming, likely)
     const { countChanged, itemsChanged } = getMessageArrayChangeFlags({
@@ -896,9 +929,21 @@ export class MessagesScrollController {
       return;
     }
 
+    this.updateReadingTargetForHost(oldItems, newItems, preCommitScrollTop);
+    // Keep row order while the owner awaits replacement rows; earlier requests may mount first.
+    if (
+      !this.hasRetainedOwner() ||
+      newItems.some((item) => item.messageId === this.pinnedOwnerId)
+    ) {
+      this.previousMessages = newItems;
+    }
+
     // A cleared conversation must drop the old pin before anything below reads it; otherwise the
     // stale pin keeps its spacer and scroll position under the new messages.
-    if (didClearAllMessages({ oldItems, newItems })) {
+    if (
+      didClearAllMessages({ oldItems, newItems }) &&
+      !this.hasRetainedOwner()
+    ) {
       this.resetForClearedConversation();
     }
 
@@ -907,6 +952,10 @@ export class MessagesScrollController {
     // Update observed messages when the message array changes
     if (itemsChanged) {
       this.updateObservedMessages();
+    }
+
+    if (this.reconcileRetainedPosition()) {
+      return;
     }
 
     if (countChanged) {
@@ -937,8 +986,15 @@ export class MessagesScrollController {
    * Runs internal auto-scroll to ensure proper scrolling behavior when the container resizes.
    * (Was the scroll work inside `MessagesComponent.onResize`.)
    */
-  onContainerResize = throttle(
-    () => {
+  onContainerResize = (): void => {
+    this.onContainerResizeThrottled(++this.scrollCounter);
+  };
+
+  private onContainerResizeThrottled = throttle(
+    (counter: number) => {
+      if (counter !== this.scrollCounter || this.disconnected) {
+        return;
+      }
       // Resize can invalidate both "scroll down" visibility and pin geometry.
       this.updateScrollHeightFloor();
       this.host.onScrollGeometryChanged();
@@ -987,6 +1043,10 @@ export class MessagesScrollController {
    * some messages keeps the user's scroll position.
    */
   private resetForClearedConversation(): void {
+    this.scrollGeneration++;
+    this.readingScrollTop = null;
+    this.pinnedOwnerId = null;
+    this.hasStreamedForPin = false;
     this.pinnedMessageId = null;
     this.pinnedScrollTop = 0;
     this.userScrolledAwayFromPin = false;
@@ -1032,9 +1092,15 @@ export class MessagesScrollController {
       return;
     }
 
+    if (message.messageId !== this.pinnedOwnerId) {
+      this.hasStreamedForPin = hasActiveStreaming(this.host.getMessages());
+    }
+
     // Keep controller-level tracking aligned with the DOM writes performed above.
     this.domSpacerHeight = result.currentSpacerHeight;
     this.pinnedMessageId = result.pinnedMessageId;
+    this.pinnedOwnerId = message.messageId ?? this.pinnedOwnerId;
+    this.readingScrollTop = null;
     this.pinnedScrollTop = result.scrollTop;
 
     // Establishing a pin re-engages auto-scroll: a newly pinned message resets any prior
@@ -1080,6 +1146,9 @@ export class MessagesScrollController {
    * Runs synchronously inside a requestAnimationFrame — must only be called from within one.
    */
   private executeRecalculateSpacer(scrollElement: HTMLElement): void {
+    if (this.reconcileReadingPosition()) {
+      return;
+    }
     const result = recalculatePinnedMessageSpacer({
       pinnedElement: this.getPinnedElement(),
       scrollElement,
@@ -1102,11 +1171,16 @@ export class MessagesScrollController {
   private handleUserScroll = (): void => {
     const scrollElement = this.host.getScrollContainer();
     const pinnedElement = this.getPinnedElement();
-    if (!scrollElement || !pinnedElement) {
+    if (!scrollElement || (!pinnedElement && !this.hasRetainedOwner())) {
       return;
     }
     // Native anchoring can move scrollTop with a resized row above the pin.
-    const measuredPin = calculatePinnedScrollTop(pinnedElement, scrollElement);
+    const measuredPin = pinnedElement
+      ? calculatePinnedScrollTop(pinnedElement, scrollElement)
+      : this.pinnedScrollTop;
+    if (this.isReadingPositionCapped(scrollElement.scrollTop, scrollElement)) {
+      return;
+    }
     const nearPreviousPin =
       Math.abs(scrollElement.scrollTop - this.pinnedScrollTop) <=
       USER_SCROLL_AWAY_THRESHOLD_PX;
@@ -1123,22 +1197,247 @@ export class MessagesScrollController {
       thresholdPx: USER_SCROLL_AWAY_THRESHOLD_PX,
     });
     if (decision !== null) {
+      if (
+        Math.abs(
+          scrollElement.scrollTop -
+            (this.readingScrollTop ?? this.pinnedScrollTop)
+        ) > 2
+      ) {
+        this.scrollGeneration++;
+      }
       this.userScrolledAwayFromPin = decision;
+      this.captureReadingPosition(scrollElement.scrollTop);
       this.updateScrollHeightFloor();
     }
   };
+
+  private captureReadingPosition(
+    scrollTop: number,
+    allowNewTarget = false
+  ): void {
+    if (!this.pinnedOwnerId) {
+      this.readingScrollTop = null;
+      return;
+    }
+    const scrollElement = this.host.getScrollContainer();
+    if (
+      scrollElement &&
+      this.isReadingPositionCapped(scrollTop, scrollElement)
+    ) {
+      return;
+    }
+    if (
+      (this.readingScrollTop !== null || allowNewTarget) &&
+      scrollElement &&
+      resolveUserScrollAway({
+        scrollTop,
+        pinnedScrollTop: this.pinnedScrollTop,
+        maxScrollTop: scrollElement.scrollHeight - scrollElement.clientHeight,
+        thresholdPx: USER_SCROLL_AWAY_THRESHOLD_PX,
+      }) === true
+    ) {
+      this.scrollGeneration++;
+      this.userScrolledAwayFromPin = true;
+      this.readingScrollTop = null;
+      this.updateScrollHeightFloor();
+      return;
+    }
+    if (
+      allowNewTarget &&
+      scrollElement &&
+      scrollTop >= this.pinnedScrollTop - USER_SCROLL_AWAY_THRESHOLD_PX
+    ) {
+      this.userScrolledAwayFromPin = false;
+    }
+    if (this.userScrolledAwayFromPin) {
+      this.readingScrollTop = null;
+      return;
+    }
+    if (scrollTop <= this.pinnedScrollTop + 2) {
+      this.readingScrollTop = null;
+    } else if (
+      this.readingScrollTop !== null ||
+      allowNewTarget ||
+      this.hasStreamedForPin ||
+      hasActiveStreaming(this.previousMessages) ||
+      hasActiveStreaming(this.host.getMessages())
+    ) {
+      this.readingScrollTop = scrollTop;
+    }
+    this.updateScrollHeightFloor();
+  }
+
+  private updateReadingTargetForHost(
+    oldItems: PortableMessage[],
+    newItems: PortableMessage[],
+    snapshot: number | null
+  ): void {
+    const candidate = findLastPinnable(newItems);
+    const candidateIndex = oldItems.findIndex(
+      (item) => item.messageId === candidate?.messageId
+    );
+    const ownerIndex = oldItems.findIndex(
+      (item) => item.messageId === this.pinnedOwnerId
+    );
+    const isEarlierCandidate =
+      this.hasRetainedOwner() &&
+      candidateIndex >= 0 &&
+      (ownerIndex < 0 || candidateIndex < ownerIndex);
+    if (
+      candidate &&
+      candidate.messageId !== this.pinnedOwnerId &&
+      !isEarlierCandidate
+    ) {
+      if (findLastPinnable(oldItems)?.messageId !== candidate.messageId) {
+        this.scrollGeneration++;
+      }
+      this.readingScrollTop = null;
+      this.userScrolledAwayFromPin = false;
+      return;
+    }
+    if (this.pinnedOwnerId && !this.host.hasMessage(this.pinnedOwnerId)) {
+      this.scrollGeneration++;
+      this.readingScrollTop = null;
+      this.pinnedOwnerId = null;
+      this.pinnedMessageId = null;
+      this.hasStreamedForPin = false;
+      this.host.setScrollHeightFloor(0);
+      return;
+    }
+    this.hasStreamedForPin ||=
+      hasActiveStreaming(oldItems) || hasActiveStreaming(newItems);
+    if (
+      snapshot !== null &&
+      (this.readingScrollTop !== null || hasActiveStreaming(oldItems))
+    ) {
+      this.captureReadingPosition(snapshot, hasActiveStreaming(oldItems));
+    }
+  }
+
+  private hasReadingOwner(): boolean {
+    return (
+      this.readingScrollTop !== null &&
+      Boolean(this.pinnedOwnerId && this.host.hasMessage(this.pinnedOwnerId))
+    );
+  }
+
+  private hasRetainedOwner(): boolean {
+    return (
+      this.hasReadingOwner() ||
+      Boolean(
+        this.userScrolledAwayFromPin &&
+        this.pinnedOwnerId &&
+        this.host.hasMessage(this.pinnedOwnerId)
+      )
+    );
+  }
+
+  private rebindPinnedOwnerRow(): void {
+    const ownerRow = this.host
+      .getMessages()
+      .find(
+        (message) =>
+          message.messageId === this.pinnedOwnerId &&
+          message.isPinnable &&
+          message.element
+      );
+    if (ownerRow) {
+      this.pinnedMessageId = ownerRow.id;
+    }
+  }
+
+  private reconcileRetainedPosition(): boolean {
+    if (this.reconcileReadingPosition()) {
+      return true;
+    }
+    if (!this.userScrolledAwayFromPin || !this.hasRetainedOwner()) {
+      return false;
+    }
+    this.rebindPinnedOwnerRow();
+    const scrollElement = this.host.getScrollContainer();
+    if (scrollElement) {
+      this.executeRecalculateSpacer(scrollElement);
+    }
+    return true;
+  }
+
+  private isReadingPositionCapped(
+    scrollTop: number,
+    scrollElement: HTMLElement
+  ): boolean {
+    const maxScrollTop =
+      scrollElement.scrollHeight - scrollElement.clientHeight;
+    return (
+      this.readingScrollTop !== null &&
+      scrollTop < this.readingScrollTop - 2 &&
+      maxScrollTop < this.readingScrollTop - 2 &&
+      scrollTop >= maxScrollTop - 2
+    );
+  }
+
+  private reconcileReadingPosition(): boolean {
+    if (this.readingScrollTop === null || !this.pinnedOwnerId) {
+      return false;
+    }
+    if (!this.host.hasMessage(this.pinnedOwnerId)) {
+      this.readingScrollTop = null;
+      this.pinnedOwnerId = null;
+      this.pinnedMessageId = null;
+      this.hasStreamedForPin = false;
+      this.scrollGeneration++;
+      this.host.setScrollHeightFloor(0);
+      return false;
+    }
+    const scrollElement = this.host.getScrollContainer();
+    const spacer = this.host.getSpacer();
+    if (!scrollElement?.isConnected || !spacer) {
+      return true;
+    }
+    this.rebindPinnedOwnerRow();
+    this.updateScrollHeightFloor();
+    const height = calculateSpacerDeficit(
+      spacer,
+      scrollElement,
+      scrollElement.getBoundingClientRect(),
+      this.readingScrollTop
+    );
+    if (height !== this.domSpacerHeight) {
+      this.domSpacerHeight = height;
+      this.host.setSpacerHeight(height);
+    }
+    if (scrollElement.scrollTop !== this.readingScrollTop) {
+      scrollElement.scrollTop = this.readingScrollTop;
+    }
+    this.host.onScrollGeometryChanged();
+    return true;
+  }
+
+  private isCurrentScrollWork(generation: number): boolean {
+    return !this.disconnected && generation === this.scrollGeneration;
+  }
+
+  private prepareExplicitScroll(): void {
+    this.scrollGeneration++;
+    this.readingScrollTop = null;
+    this.userScrolledAwayFromPin = true;
+    this.host.setScrollHeightFloor(0);
+  }
 
   private updateScrollHeightFloor(): void {
     const scrollElement = this.host.getScrollContainer();
     const minimumHeight =
       scrollElement && this.pinnedMessageId && !this.userScrolledAwayFromPin
-        ? this.pinnedScrollTop + scrollElement.clientHeight
+        ? (this.readingScrollTop ?? this.pinnedScrollTop) +
+          scrollElement.clientHeight
         : 0;
     // A forced layout can clamp scrollTop during a collapse that regrows before ResizeObserver runs.
     this.host.setScrollHeightFloor(minimumHeight);
   }
 
   private handleMessageResize = (): void => {
+    if (this.disconnected || this.reconcileReadingPosition()) {
+      return;
+    }
     const scrollElement = this.host.getScrollContainer();
     const spacerElem = this.host.getSpacer();
     const pinnedElement = this.getPinnedElement();
@@ -1189,9 +1488,18 @@ export class MessagesScrollController {
 
   private async executeResolvedAutoScrollAction(
     options: ScrollOptions,
-    scrollElement: HTMLElement
+    scrollElement: HTMLElement,
+    counter: number,
+    generation: number
   ): Promise<void> {
     const messages = this.host.getMessages();
+    if (
+      options.scrollToTop === undefined &&
+      options.scrollToBottom === undefined &&
+      this.reconcileRetainedPosition()
+    ) {
+      return;
+    }
     const action = resolveAutoScrollAction({
       messages,
       options,
@@ -1225,8 +1533,11 @@ export class MessagesScrollController {
         return;
       case 'pin_message':
         await this.waitForMessageComponentLayout(action.message);
-        // A clear during the wait removes the target; pinning it would restore a stale pin.
+        // Stop if a newer request replaced this one while we waited, or if the target
+        // message was removed in the meantime (for example, the chat was cleared).
         if (
+          counter !== this.scrollCounter ||
+          !this.isCurrentScrollWork(generation) ||
           !scrollElement.isConnected ||
           !this.host
             .getMessages()
@@ -1284,7 +1595,7 @@ export class MessagesScrollController {
     if (hasNewResponse) {
       // Use the same throttled approach as streaming to recalculate after content settles.
       // This is more reliable than trying to time rAF perfectly.
-      this.doAutoScrollThrottled();
+      this.doAutoScrollThrottled(this.scrollCounter);
     }
   }
 
@@ -1348,10 +1659,22 @@ export class MessagesScrollController {
    * user's scroll position if they scrolled away during streaming.
    */
   private executeStreamEndScrollAction(snapshot: number | null): void {
+    const generation = this.scrollGeneration;
     requestAnimationFrame(() => {
+      if (
+        !this.isCurrentScrollWork(generation) ||
+        this.reconcileReadingPosition()
+      ) {
+        return;
+      }
       const scrollElement = this.host.getScrollContainer();
       const pinnedElement = this.getPinnedElement();
-      if (!scrollElement || !pinnedElement) {
+      if (
+        !scrollElement?.isConnected ||
+        !pinnedElement ||
+        !this.pinnedOwnerId ||
+        !this.host.hasMessage(this.pinnedOwnerId)
+      ) {
         return;
       }
 
@@ -1375,6 +1698,7 @@ export class MessagesScrollController {
         this.executePinAndScroll(
           {
             id: this.pinnedMessageId as string,
+            messageId: this.pinnedOwnerId as string,
             element: pinnedElement,
           } as PortableMessage,
           scrollElement
@@ -1399,17 +1723,40 @@ export class MessagesScrollController {
     options: ScrollOptions = {},
     includePublicSpacerReconciliation = false
   ): void => {
+    if (
+      options.scrollToTop !== undefined ||
+      options.scrollToBottom !== undefined
+    ) {
+      this.prepareExplicitScroll();
+    }
+    const counter = ++this.scrollCounter;
+    const generation = this.scrollGeneration;
     requestAnimationFrame(() => {
       void (async () => {
+        if (
+          counter !== this.scrollCounter ||
+          !this.isCurrentScrollWork(generation)
+        ) {
+          return;
+        }
         // Execute after DOM/layout settles for the current frame so measurements
         // (scrollHeight, rects) match what the user can actually see.
         const scrollElement = this.host.getScrollContainer();
-        if (!scrollElement) {
+        if (!scrollElement?.isConnected) {
           return;
         }
 
-        await this.executeResolvedAutoScrollAction(options, scrollElement);
-        if (includePublicSpacerReconciliation) {
+        await this.executeResolvedAutoScrollAction(
+          options,
+          scrollElement,
+          counter,
+          generation
+        );
+        if (
+          includePublicSpacerReconciliation &&
+          counter === this.scrollCounter &&
+          this.isCurrentScrollWork(generation)
+        ) {
           this.reconcileSpacerAfterPublicDoAutoScroll(scrollElement);
         }
       })();
@@ -1450,7 +1797,11 @@ export class MessagesScrollController {
    * This is throttled to prevent excessive scrolling during rapid updates.
    */
   private doAutoScrollThrottled = throttle(
-    this.doAutoScrollInternal,
+    (counter: number) => {
+      if (counter === this.scrollCounter) {
+        this.doAutoScrollInternal();
+      }
+    },
     AUTO_SCROLL_THROTTLE_MS,
     { leading: true, trailing: true }
   );
@@ -1504,12 +1855,14 @@ export class MessagesScrollController {
     ) {
       // The top of the element is above the fold or the element doesn't fully fit. Scroll it so its top is at the top
       // of the scroll panel.
+      this.prepareExplicitScroll();
       doScrollElement(scrollElement, topDistanceFromTop, 0);
     } else if (
       bottomDistanceFromTop >
       scrollElement.scrollTop + scrollElement.offsetHeight
     ) {
       // The bottom of the element is below the fold. Scroll it so its bottom is at the bottom of the scroll panel.
+      this.prepareExplicitScroll();
       doScrollElement(
         scrollElement,
         bottomDistanceFromTop - scrollElement.offsetHeight,
@@ -1541,6 +1894,7 @@ export class MessagesScrollController {
         const setScrollTop = messageElement.offsetTop;
 
         // Do the scrolling.
+        this.prepareExplicitScroll();
         doScrollElement(scrollElement, setScrollTop, 0, animate);
       }
     } catch (error) {

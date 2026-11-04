@@ -105,31 +105,30 @@ test.describe('basic fullscreen', () => {
   test('stops a streaming reply', async ({ page }) => {
     await send(page, 'stream text');
     const panel = page.getByTestId(PageObjectId.MAIN_PANEL);
-    await expect(
-      panel.getByText('Lorem ipsum odor amet', { exact: false })
-    ).toBeVisible();
+    // Stop once the stream passes 30% of its words, so a reply that kept a
+    // fixed share instead of the words shown would lose this line.
+    const shownLine = panel.getByText('generate_lorem_ipsum(paragraphs=1)', {
+      exact: false,
+    });
+    await expect(shownLine).toBeVisible({ timeout: 15 * 1000 });
     const stop = page.getByRole('button', {
       name: 'Stop response',
       exact: true,
     });
     await stop.click();
 
-    // The back end answers the abort with a `stream_stopped` final item once
-    // its full stream time has passed, so wait as long as an unstopped
-    // stream would take; by then the stopped reply must lack its last line.
+    // The back end answers the abort with a `stream_stopped` final item. The
+    // stopped reply keeps the words shown and lacks the stream's last line.
     await expect(
       panel.getByText('Response stopped', { exact: true })
-    ).toBeVisible({ timeout: 45 * 1000 });
+    ).toBeVisible();
+    await expect(shownLine).toBeVisible();
     await expect(
       panel.getByText('print(generate_lorem_ipsum(2))', { exact: false })
     ).toHaveCount(0);
   });
 
-  // After Stop, the mock back end stays in `sleep(words.length * WORD_DELAY)`
-  // (about 17 seconds) before it ends the turn, so the next message cannot be
-  // sent until then.
-  // Tracked in #2521.
-  test.fixme('accepts a new message right after a stop', async ({ page }) => {
+  test('accepts a new message right after a stop', async ({ page }) => {
     await send(page, 'stream text');
     const panel = page.getByTestId(PageObjectId.MAIN_PANEL);
     await expect(

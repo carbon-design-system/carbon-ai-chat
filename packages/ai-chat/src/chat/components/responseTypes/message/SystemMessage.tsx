@@ -81,7 +81,7 @@ function SystemMessage({
     ? variant === 'date'
       ? `${className}--date`
       : variant === 'agent'
-        ? `${className}--agent`
+        ? `${className}--divider`
         : ''
     : '';
 

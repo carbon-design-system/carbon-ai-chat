@@ -224,6 +224,11 @@ test('AGENTS discovery skips artifacts, drafts, mirrors, and directory symlinks'
     'packages/ai-chat/docs/api/markdown',
   ]) {
     write(root, `${directory}/AGENTS.md`, '[bad](missing.md)\n');
+    write(
+      root,
+      `${directory}/references/big.md`,
+      '[bad](missing.md)\n' + 'x'.repeat(12 * 1024)
+    );
   }
   write(path.dirname(root), 'outside/AGENTS.md', '[bad](missing.md)\n');
   fs.symlinkSync(
@@ -241,6 +246,215 @@ test('AGENTS per-file budget remains 12 KiB', (context) => {
   run(root, 'validate-agents-docs.js', 0);
   write(root, 'AGENTS.md', 'x'.repeat(12 * 1024 + 1));
   run(root, 'validate-agents-docs.js', 1, /12.0 KiB per-file budget/);
+});
+
+test('reference budget accepts 12 KiB and rejects one byte over', (context) => {
+  const root = fixture(context);
+  write(root, 'AGENTS.md', '[topic](nested/references/big.md)\n');
+  write(root, 'nested/references/big.md', 'x'.repeat(12 * 1024));
+  run(root, 'validate-agents-docs.js', 0, /Checked 1 reference files/);
+  write(root, 'nested/references/big.md', 'x'.repeat(12 * 1024 + 1));
+  run(
+    root,
+    'validate-agents-docs.js',
+    1,
+    /nested\/references\/big.md.*per-file budget/
+  );
+});
+
+test('unlinked references retain the 12 KiB budget', (context) => {
+  const root = fixture(context);
+  write(root, 'nested/references/orphan.md', 'x'.repeat(12 * 1024 + 1));
+  run(
+    root,
+    'validate-agents-docs.js',
+    1,
+    /nested\/references\/orphan.md.*per-file budget/
+  );
+});
+
+test('MDX references retain the 12 KiB budget', (context) => {
+  const root = fixture(context);
+  write(root, 'nested/references/big.template.mdx', 'x'.repeat(12 * 1024 + 1));
+  run(root, 'validate-agents-docs.js', 1, /big.template.mdx.*per-file budget/);
+});
+
+for (const [flavor, directory] of [
+  ['lit', '.storybook'],
+  ['react', '.storybook-react'],
+]) {
+  const template = `packages/ai-chat-components/references/overview-${flavor}.template.mdx`;
+  const page = `packages/ai-chat-components/${directory}/welcome/styling-and-modifiers.mdx`;
+  const config = `packages/ai-chat-components/${directory}/main.js`;
+  const route = '/docs/introduction-styling-modifiers--overview';
+
+  function storybookFixture(context) {
+    const root = fixture(context);
+    write(root, template, `[Styling & Modifiers](${route})\n`);
+    write(root, page, '<Meta title="Introduction/Styling & Modifiers" />\n');
+    write(
+      root,
+      config,
+      "export default { stories: ['./welcome/styling-and-modifiers.mdx'], docs: { defaultName: 'Overview' } };\n"
+    );
+    return root;
+  }
+
+  test(`${flavor} template validates its source-backed Storybook route`, (context) => {
+    const root = storybookFixture(context);
+    const output = run(root, 'validate-agents-docs.js', 0);
+    assert.doesNotMatch(output, /Absolute path in link/);
+    fs.appendFileSync(path.join(root, template), 'x'.repeat(12 * 1024));
+    run(root, 'validate-agents-docs.js', 1, /per-file budget/);
+  });
+
+  test(`${flavor} template rejects missing and wrongly titled Storybook sources`, (context) => {
+    const root = storybookFixture(context);
+    fs.renameSync(path.join(root, page), path.join(root, page + '.moved'));
+    run(root, 'validate-agents-docs.js', 1, /does not resolve relative/);
+    write(root, page, '<Meta title="Introduction/Other page" />\n');
+    run(root, 'validate-agents-docs.js', 1, /no matching Meta title/);
+    write(
+      root,
+      page,
+      '```mdx\n<Meta title="Introduction/Styling & Modifiers" />\n```\n'
+    );
+    run(root, 'validate-agents-docs.js', 1, /no matching Meta title/);
+  });
+
+  test(`${flavor} template requires its own Storybook source tree`, (context) => {
+    const root = storybookFixture(context);
+    const otherDirectory = flavor === 'lit' ? '.storybook-react' : '.storybook';
+    fs.renameSync(
+      path.join(root, 'packages/ai-chat-components', directory),
+      path.join(root, 'packages/ai-chat-components', otherDirectory)
+    );
+    run(root, 'validate-agents-docs.js', 1, /does not resolve relative/);
+  });
+
+  test(`${flavor} template requires registration and the Overview docs name`, (context) => {
+    const root = storybookFixture(context);
+    write(
+      root,
+      config,
+      "export default { stories: [], docs: { defaultName: 'Overview' } };\n"
+    );
+    run(
+      root,
+      'validate-agents-docs.js',
+      1,
+      /does not register the source page/
+    );
+    write(
+      root,
+      config,
+      "export default { stories: ['./welcome/styling-and-modifiers.mdx'], docs: { defaultName: 'Docs' } };\n"
+    );
+    run(
+      root,
+      'validate-agents-docs.js',
+      1,
+      /does not name the docs page Overview/
+    );
+  });
+
+  for (const disabled of [
+    "// './welcome/styling-and-modifiers.mdx',\n",
+    "/* './welcome/styling-and-modifiers.mdx', */",
+  ]) {
+    test(`${flavor} template rejects registration disabled with ${disabled.slice(0, 2)}`, (context) => {
+      const root = storybookFixture(context);
+      write(
+        root,
+        config,
+        `export default { stories: [${disabled}], docs: { defaultName: 'Overview' } };\n`
+      );
+      run(
+        root,
+        'validate-agents-docs.js',
+        1,
+        /does not register the source page/
+      );
+    });
+  }
+
+  test(`${flavor} template rejects a Meta declaration inside an MDX comment`, (context) => {
+    const root = storybookFixture(context);
+    write(
+      root,
+      page,
+      'A developer\'s guide.\n{/*\n<Meta title="Introduction/Styling & Modifiers" />\n*/}\n'
+    );
+    run(root, 'validate-agents-docs.js', 1, /no matching Meta title/);
+  });
+
+  test(`${flavor} template preserves quoted URLs, globs, and escaped quotes`, (context) => {
+    const root = storybookFixture(context);
+    write(
+      root,
+      config,
+      "export default { url: 'https://example.com', label: 'it\\'s /* quoted */', glob: `../src/**/*.mdx`, stories: ['./welcome/styling-and-modifiers.mdx'], docs: { defaultName: 'Overview' } };\n"
+    );
+    run(root, 'validate-agents-docs.js', 0);
+  });
+
+  test(`${flavor} template keeps ordinary link and unknown route checks`, (context) => {
+    const root = storybookFixture(context);
+    fs.appendFileSync(
+      path.join(root, template),
+      `[missing](missing.md) [route](/docs/introduction-other--overview)\n[wrong view](${route.replace('--overview', '--docs')})\n`
+    );
+    const output = run(
+      root,
+      'validate-agents-docs.js',
+      1,
+      /missing.md.*does not resolve relative/
+    );
+    assert.match(
+      output,
+      /introduction-other--overview.*outside the repository/
+    );
+    assert.match(output, /styling-modifiers--docs.*outside the repository/);
+  });
+
+  test(`${flavor} Storybook route is not exempted in other guidance`, (context) => {
+    const root = storybookFixture(context);
+    write(root, 'AGENTS.md', `[route](${route})\n`);
+    write(
+      root,
+      'nested/references/overview-lit.template.mdx',
+      `[route](${route})\n`
+    );
+    const output = run(
+      root,
+      'validate-agents-docs.js',
+      1,
+      /AGENTS.md.*outside the repository/
+    );
+    assert.match(
+      output,
+      /nested\/references\/overview-lit.template.mdx.*outside the repository/
+    );
+  });
+}
+
+test('unlinked references receive link and file-reference checks', (context) => {
+  const root = fixture(context);
+  write(
+    root,
+    'nested/references/orphan.md',
+    '[bad](absent.md)\n`missing.ts`\n'
+  );
+  const output = run(
+    root,
+    'validate-agents-docs.js',
+    1,
+    /orphan.md.*absent.md/
+  );
+  assert.match(
+    output,
+    /orphan.md.*File reference may be outdated: `missing.ts`/
+  );
 });
 
 test('AGENTS ancestor chain budget remains 28 KiB', (context) => {

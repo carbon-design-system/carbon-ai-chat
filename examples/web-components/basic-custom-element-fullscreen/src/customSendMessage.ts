@@ -8,7 +8,7 @@
  */
 
 /**
- * Mock `customSendMessage` for the Custom element (Fullscreen) Web components example.
+ * Mock `customSendMessage` for this example.
  *
  * Demonstrates: a client-side stand-in for a real chat back end that drives both
  * the non-streaming `instance.messaging.addMessage` path and the streaming
@@ -42,8 +42,7 @@ const WELCOME_TEXT = `Welcome to this example of a custom back-end. This back-en
 You can try the following responses:
 
 - stream text
-- text
-- user_defined`;
+- text`;
 
 const TEXT =
   `Lorem ipsum odor amet, consectetuer adipiscing elit. \`Inline Code Venenatis\` aliquet non platea elementum morbi porta accumsan. Tortor libero consectetur dapibus volutpat porta vestibulum.
@@ -108,6 +107,7 @@ async function doFakeTextStreaming(
   const responseID = uuid();
   const words = TEXT.split(' ');
   let isCanceled = false;
+  let lastStreamedIndex = -1;
   const timeouts: number[] = [];
 
   // a single AbortSignal covers both the user pressing the stop button and
@@ -123,6 +123,7 @@ async function doFakeTextStreaming(
     words.forEach((word, index) => {
       const timeoutId = setTimeout(() => {
         if (!isCanceled) {
+          lastStreamedIndex = index;
           instance.messaging.addMessageChunk({
             partial_item: {
               response_type: MessageResponseTypes.TEXT,
@@ -141,7 +142,13 @@ async function doFakeTextStreaming(
       timeouts.push(timeoutId as unknown as number);
     });
 
-    await sleep(words.length * WORD_DELAY);
+    // poll instead of one long sleep, so Stop ends the turn within 100 ms
+    // rather than after the whole stream's duration.
+    const totalDelay = words.length * WORD_DELAY;
+    const startTime = Date.now();
+    while (!isCanceled && Date.now() - startTime < totalDelay) {
+      await sleep(100);
+    }
 
     if (!isCanceled) {
       // stream completion is two chunks, not one — `complete_item` flushes the
@@ -172,12 +179,16 @@ async function doFakeTextStreaming(
         final_response: finalResponse,
       } as StreamChunk);
     } else {
-      // a stopped stream still has to be closed out — emit a truncated
-      // `complete_item` flagged with `stream_stopped` so the UI can render the
-      // partial response with stop affordances instead of leaving it "live".
+      // a stopped stream still has to be closed out — emit a `complete_item`
+      // flagged with `stream_stopped` that holds only the words streamed before
+      // Stop, then a `final_response` that ends the turn, as a finished stream does.
+      const streamedText =
+        lastStreamedIndex >= 0
+          ? words.slice(0, lastStreamedIndex + 1).join(' ') + ' '
+          : '';
       const completeItem = {
         response_type: MessageResponseTypes.TEXT,
-        text: words.slice(0, Math.floor(words.length * 0.3)).join(' '),
+        text: streamedText,
         streaming_metadata: {
           id: '1',
           stream_stopped: true,
@@ -188,6 +199,17 @@ async function doFakeTextStreaming(
         streaming_metadata: {
           response_id: responseID,
         },
+      } as StreamChunk);
+
+      const finalResponse = {
+        id: responseID,
+        output: {
+          generic: [completeItem],
+        },
+      };
+
+      instance.messaging.addMessageChunk({
+        final_response: finalResponse,
       } as StreamChunk);
     }
   } finally {

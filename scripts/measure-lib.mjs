@@ -8,7 +8,14 @@
  */
 
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import {
+  existsSync,
+  lstatSync,
+  mkdtempSync,
+  readFileSync,
+  readlinkSync,
+  rmSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
@@ -87,11 +94,18 @@ function git(args) {
 // left side of the diff is that merge base and not `<base>` itself. Resolving
 // it once lets every diff and every `git show` below share one left side —
 // otherwise a base that moved ahead reads its own newer content as "before".
-function resolveBase(base) {
+function resolveBase(base, usage) {
   const result = spawnSync('git', ['merge-base', base, 'HEAD'], {
     encoding: 'utf8',
   });
-  return result.status === 0 ? result.stdout.trim() : base;
+  if (result.status !== 0) {
+    const detail = result.stderr.trim();
+    fail(
+      `cannot resolve the merge base of ${base} and HEAD${detail ? `\n${detail}` : ''}`,
+      usage
+    );
+  }
+  return result.stdout.trim();
 }
 
 // Against the merge base: the disk, the index, or HEAD.
@@ -103,6 +117,230 @@ function diffArgs(source, base) {
     return ['--cached', base];
   }
   return [base];
+}
+
+const SIZE_RULES = [
+  ['lockfiles', /(^|\/)package-lock\.json$/],
+  [
+    'generated',
+    /^(?:\.(?:claude|agents)\/skills\/|\.bob\/skills\/carbon-builder\/|packages\/ai-chat\/docs\/api\/(?:markdown\/|symbol-index\.json$)|packages\/[^/]+\/telemetry\.yml$|versions\.js$)/,
+  ],
+  ['snapshots', /(?:^|\/)__snapshots__\/|\.snap$/],
+  ['fixtures', /(?:^|\/)(?:fixtures|__fixtures__)\//],
+  ['test cases', /(?:^|\/)[^/]*(?:_spec\.|\.test\.|\.spec\.)[^/]*$/],
+  [
+    'shared test infrastructure',
+    /^examples\/shared\/playwright\/|^(?!examples\/)(?:(?:.*\/)?(?:jest|web-test-runner|playwright|vitest)\.config\.[^/]+$|packages\/ai-chat\/tests\/(?:setup|test_helpers)\.ts$|packages\/ai-chat-components\/src\/testing\/|(?:.*\/)?__tests__\/|demo\/tests\/)/,
+  ],
+  ['examples and demo', /^(?:examples|demo)\//],
+  ['docs', /\.(?:md|mdx)$|^docs\//],
+];
+const COUNTED = new Set(['code', 'shared test infrastructure']);
+
+export function classify(path) {
+  return SIZE_RULES.find(([, pattern]) => pattern.test(path))?.[0] ?? 'code';
+}
+
+export function band(counted) {
+  if (counted <= 200) {
+    return '≤200: preferred';
+  }
+  return counted <= 400
+    ? '201–400: consider a split'
+    : '>400: split or explain why the change stays together';
+}
+
+export function parseNumstat(raw) {
+  const fields = raw.split('\0');
+  const rows = [];
+  for (let index = 0; index < fields.length - 1; index++) {
+    const [, added, deleted, name] = fields[index].match(
+      /^([^\t]+)\t([^\t]+)\t([\s\S]*)$/
+    );
+    const oldPath = name === '' ? fields[++index] : null;
+    const path = name === '' ? fields[++index] : name;
+    rows.push({
+      path,
+      oldPath,
+      added: Number(added) || 0,
+      deleted: Number(deleted) || 0,
+      binary: added === '-',
+      untracked: false,
+    });
+  }
+  return rows;
+}
+
+function worktreeBytes(path) {
+  return lstatSync(path).isSymbolicLink()
+    ? Buffer.from(readlinkSync(path))
+    : readFileSync(path);
+}
+
+function lineCount(content) {
+  const text = String(content);
+  return (
+    (text.match(/\n/g)?.length ?? 0) +
+    Number(!text.endsWith('\n') && text !== '')
+  );
+}
+
+function untrackedRows(source) {
+  if (source !== 'worktree') {
+    return [];
+  }
+  return git(['ls-files', '--others', '--exclude-standard', '-z'])
+    .split('\0')
+    .filter((path) => path !== '' && !path.endsWith('/'))
+    .map((path) => {
+      const bytes = worktreeBytes(path);
+      const binary = bytes.subarray(0, 8000).includes(0);
+      return {
+        path,
+        oldPath: null,
+        added: binary ? 0 : lineCount(bytes),
+        deleted: 0,
+        binary,
+        untracked: true,
+      };
+    });
+}
+
+function moveRows(row, base, source) {
+  if (row.binary) {
+    return [{ ...row, path: row.oldPath }, row];
+  }
+  const before = contentAt(base, row.oldPath);
+  const after =
+    source === 'worktree'
+      ? worktreeBytes(row.path)
+      : contentOf(source, row.path);
+  return [
+    { ...row, path: row.oldPath, added: 0, deleted: lineCount(before) },
+    { ...row, added: lineCount(after), deleted: 0 },
+  ];
+}
+
+function tally() {
+  return { added: 0, deleted: 0, files: new Set() };
+}
+
+function addSize(total, row, id = row.path) {
+  total.added += row.added;
+  total.deleted += row.deleted;
+  total.files.add(id);
+}
+
+function sizeTotals(rows) {
+  const counted = tally();
+  const excluded = new Map();
+  const areas = new Map();
+  for (const row of rows) {
+    const category = classify(row.path);
+    if (!COUNTED.has(category)) {
+      const total = excluded.get(category) ?? tally();
+      addSize(total, row);
+      excluded.set(category, total);
+      continue;
+    }
+    addSize(counted, row, row.id);
+    const area = areaOf(row.path);
+    const files = areas.get(area) ?? new Set();
+    files.add(row.id);
+    areas.set(area, files);
+  }
+  return { counted, excluded, areas };
+}
+
+function areaOf(path) {
+  const segments = path.split('/');
+  if (segments.length === 1) {
+    return '(root)';
+  }
+  return segments.slice(0, segments[0] === 'packages' ? 2 : 1).join('/');
+}
+
+function filesLabel(count) {
+  return `${count} file${count === 1 ? '' : 's'}`;
+}
+
+function totalLabel(total) {
+  return `${total.added + total.deleted} lines (+${total.added} −${total.deleted}) in ${filesLabel(total.files.size)}`;
+}
+
+function moveLabel(row, parts) {
+  const amount = parts
+    .filter((part) => COUNTED.has(classify(part.path)))
+    .reduce((sum, part) => sum + part.added + part.deleted, 0);
+  return `${row.oldPath} → ${row.path} (${classify(row.oldPath)} → ${classify(row.path)}, ${amount} counted lines)`;
+}
+
+function binaryLabel(row) {
+  const destination = `${row.path}: ${classify(row.path)}`;
+  return row.oldPath === null
+    ? destination
+    : `${row.oldPath}: ${classify(row.oldPath)} → ${destination}`;
+}
+
+function metadataRows(rows, moves) {
+  const renames = rows.filter((row) => row.oldPath !== null);
+  const pure = renames.filter(
+    (row) => row.added + row.deleted === 0 && !row.binary
+  );
+  const binary = rows.filter((row) => row.binary);
+  const untracked = rows.filter((row) => row.untracked);
+  const untrackedCounted = untracked.filter((row) =>
+    COUNTED.has(classify(row.path))
+  );
+  const added = untrackedCounted.reduce((sum, row) => sum + row.added, 0);
+  return [
+    `renames: ${pure.length} pure (0 edited lines), ${renames.length - pure.length} with edits or binary`,
+    `moved across categories: ${moves.join(' · ') || 'none'}`,
+    `binary: ${filesLabel(binary.length)}${binary.length ? ` (${binary.map(binaryLabel).join(' · ')})` : ''}`,
+    `untracked: ${filesLabel(untrackedCounted.length)} counted (+${added}); ${filesLabel(untracked.length - untrackedCounted.length)} excluded`,
+  ];
+}
+
+export function sizeReport(base, source) {
+  const rows = [
+    ...parseNumstat(
+      git(['diff', '--numstat', '-z', '-M', ...diffArgs(source, base)])
+    ),
+    ...untrackedRows(source),
+  ];
+  const moves = new Map(
+    rows
+      .filter(
+        (row) =>
+          row.oldPath !== null && classify(row.oldPath) !== classify(row.path)
+      )
+      .map((row) => [row, moveRows(row, base, source)])
+  );
+  const contributions = rows.flatMap((row) =>
+    (moves.get(row) ?? [row]).map((part) => ({
+      ...part,
+      id: row.oldPath === null ? row.path : `${row.oldPath} → ${row.path}`,
+    }))
+  );
+  const { counted, excluded, areas } = sizeTotals(contributions);
+  const areaLabels = [...areas].map(
+    ([area, files]) => `${area} ${filesLabel(files.size)}`
+  );
+  const excludedLabels = [...excluded].map(
+    ([category, total]) => `  ${category}: ${totalLabel(total)}`
+  );
+  return [
+    '== size',
+    `counted: ${totalLabel(counted)} — ${band(counted.added + counted.deleted)} (references/pr-reviewability.md)`,
+    `areas: ${areaLabels.join(' · ') || 'none'}`,
+    `counted files: ${[...counted.files].join(' · ') || 'none'}`,
+    'excluded from the threshold:',
+    ...excludedLabels,
+    ...metadataRows(
+      rows,
+      [...moves].map(([row, parts]) => moveLabel(row, parts))
+    ),
+  ].join('\n');
 }
 
 export function changedPaths(base, source) {
@@ -352,7 +590,7 @@ export function parseCli({ ints, defaults = {}, usage }) {
     process.exit(2);
   }
   const source = parseSource(values.source, changed, usage);
-  const base = changed === null ? null : resolveBase(changed);
+  const base = changed === null ? null : resolveBase(changed, usage);
   return {
     files,
     changed,

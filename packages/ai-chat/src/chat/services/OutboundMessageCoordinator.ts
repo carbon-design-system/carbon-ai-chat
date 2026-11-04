@@ -38,6 +38,18 @@ type CustomSendMessageFn = (
   instance: ChatInstance
 ) => void | Promise<void>;
 
+function getSendErrorText(error: unknown, processingError: boolean): string {
+  if (processingError) {
+    return error instanceof Error
+      ? error.message
+      : 'The chat could not process the message chunk.';
+  }
+  return (
+    (error && (typeof error === 'string' ? error : JSON.stringify(error))) ||
+    'There was an unidentified error.'
+  );
+}
+
 /**
  * Handles outbound send lifecycle concerns: inline errors, error states, and queue advancement.
  * Retries are expected to be handled by customSendMessage upstream.
@@ -57,10 +69,14 @@ class OutboundMessageCoordinator {
       received?: MessageResponse
     ) => Promise<void>,
     private getMessagingConfig: () => PublicConfigMessaging,
+    private finishStreamingResponse: (
+      pendingRequest: PendingMessageRequest
+    ) => void,
     private registerRequestGeneration: (
       requestID: string,
       restartGeneration: number
-    ) => void
+    ) => void,
+    private hideStopStreamingButtonIfNoUpsertStreaming: () => void
   ) {}
 
   /**
@@ -82,7 +98,8 @@ class OutboundMessageCoordinator {
    */
   async processError(
     pendingRequest: PendingMessageRequest,
-    resultText: string
+    resultText: string,
+    reportSendError = true
   ) {
     const { timeFirstRequest, timeLastRequest, isProcessed, requestOptions } =
       pendingRequest;
@@ -100,14 +117,44 @@ class OutboundMessageCoordinator {
       this.addErrorMessage();
     }
 
-    this.serviceManager.actions.errorOccurred({
-      errorType: OnErrorType.MESSAGE_COMMUNICATION,
-      message: 'An error occurred sending a message',
-      otherData: resultText,
-    });
+    this.serviceManager.conversationLifecycleService.fail(
+      { messageID: pendingRequest.message.id },
+      pendingRequest.generation
+    );
+    if (reportSendError) {
+      this.serviceManager.actions.errorOccurred({
+        errorType: OnErrorType.MESSAGE_COMMUNICATION,
+        message: 'An error occurred sending a message',
+        otherData: resultText,
+      });
+    }
 
-    // Hide stop streaming button if visible
-    this.serviceManager.messageService.resetStopStreamingButtonWithoutUpserts();
+    // A `customSendMessage` that throws mid-stream never sends a closing chunk, so settle
+    // the items it had streamed — only if that stream belongs to this request, since a
+    // host can still be streaming a response to an earlier one.
+    const { inboundStreaming } = this.serviceManager.messageService;
+    const { streamingMessageID } = inboundStreaming;
+    const streamingMeta =
+      streamingMessageID &&
+      inboundStreaming.getStreamingMeta(streamingMessageID);
+    if (
+      streamingMeta &&
+      streamingMeta.requestId === pendingRequest.message.id
+    ) {
+      this.serviceManager.store.dispatch(
+        actions.endMessageStreaming(streamingMessageID)
+      );
+    }
+
+    this.serviceManager.messageUpsertCoordinator.endStreamingForRequest(
+      pendingRequest.message.id,
+      pendingRequest.generation
+    );
+
+    // Hide stop streaming button if visible. This hid unconditionally before
+    // `upsertMessage` existed, so it still ignores chunk streams; only a running upsert
+    // stream keeps the button up.
+    this.hideStopStreamingButtonIfNoUpsertStreaming();
 
     this.rejectFinalErrorOnMessage(pendingRequest, resultText);
   }
@@ -137,8 +184,13 @@ class OutboundMessageCoordinator {
     }
 
     // Reject the promise that lets the original caller who sent the message know that the message failed to be sent.
+    this.finishStreamingResponse(pendingRequest);
     sendMessagePromise.doReject(new Error(resultText));
     pendingRequest.isProcessed = true;
+    this.serviceManager.conversationLifecycleService.requestFinished(
+      pendingRequest.message.id,
+      pendingRequest.generation
+    );
 
     if (pendingRequest === this.getCurrent()) {
       // Move on to next item in queue.
@@ -199,11 +251,17 @@ class OutboundMessageCoordinator {
       this.messageLoadingManager.end();
     }
 
-    // Hide stop streaming button if visible
-    this.serviceManager.messageService.resetStopStreamingButtonWithoutUpserts();
+    // Hide stop streaming button if visible. This hid unconditionally before
+    // `upsertMessage` existed, so it still ignores chunk streams; only a running upsert
+    // stream keeps the button up.
+    this.hideStopStreamingButtonIfNoUpsertStreaming();
 
     sendMessagePromise.doResolve();
     pendingRequest.isProcessed = true;
+    this.serviceManager.conversationLifecycleService.requestFinished(
+      pendingRequest.message.id,
+      pendingRequest.generation
+    );
 
     if (pendingRequest === this.getCurrent()) {
       this.moveToNextQueueItem();
@@ -224,17 +282,27 @@ class OutboundMessageCoordinator {
       return;
     }
 
+    const { chunkProcessingService } = this.serviceManager;
+    const {
+      formattingErrors: chunkErrors,
+      reportedErrors,
+      finish,
+    } = chunkProcessingService.trackRequestErrors(
+      current.message.id,
+      current.sendMessageController.signal
+    );
     try {
       // We may update the timezone and locale on this message so we need to clone it and then update the store with
       // the new object.
       const message = cloneDeep(current.message);
       current.message = message;
       this.serviceManager.store.dispatch(actions.updateMessage(message));
+      const customSendMessageRequest = cloneDeep(message);
       // AbortController was already created when message was added to queue
       debugLog('Called customSendMessage', message);
       const busEventSend: BusEventSend = {
         type: BusEventType.SEND,
-        data: message,
+        data: customSendMessageRequest,
         source: current.source,
       };
       startLoading?.();
@@ -252,12 +320,16 @@ class OutboundMessageCoordinator {
         if (!stopStreamingState.isVisible) {
           store.dispatch(actions.setStopStreamingButtonVisible(true));
         }
+        // Apply disablement from any other in-flight non-cancellable stream.
+        this.serviceManager.messageService.updateStreamingCancellation(
+          message.id
+        );
       }
 
       this.registerRequestGeneration(message.id, current.restartGeneration);
       await Promise.resolve(
         customSendMessage(
-          message,
+          customSendMessageRequest,
           {
             signal: current.sendMessageController.signal,
             silent: current.requestOptions.silent,
@@ -269,13 +341,11 @@ class OutboundMessageCoordinator {
       await this.processSuccess(current, null);
     } catch (error) {
       consoleError('An error occurred while sending a message', error);
-      const resultText =
-        (error &&
-          (typeof error === 'string' ? error : JSON.stringify(error))) ||
-        'There was an unidentified error.';
-      this.processError(current, resultText);
+      const processingError = chunkErrors.has(error);
+      const resultText = getSendErrorText(error, processingError);
+      this.processError(current, resultText, !reportedErrors.has(error));
     } finally {
-      // Loading manager is ended via processSuccess/reject handlers.
+      finish();
     }
   }
 }
