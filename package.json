@@ -41,7 +41,7 @@
     "lint:license:staged": "tools/check-license.js -w",
     "lint:styles": "stylelint '**/*.scss' --report-needless-disables --report-invalid-scope-disables",
     "telemetry:config": "lerna run telemetry:config",
-    "test": "lerna run test --stream --no-bail && npm run test:versions && npm run test:example-e2e-scaffold && npm run test:measure",
+    "test": "lerna run test --stream --no-bail && npm run test:versions && npm run test:example-e2e-scaffold && npm run test:measure && npm run test:host-entry-consumer && npm run test:manifest-consumer",
     "test:e2e": "node scripts/run-example-e2e.mjs",
     "test:e2e:goldens": "playwright test --config examples/shared/playwright/playwright.config.ts",
     "test:e2e:coverage": "node scripts/run-example-coverage.mjs",
@@ -63,7 +63,10 @@
     "measure": "node scripts/measure.mjs",
     "postinstall": "patch-package && husky",
     "scaffold:example-e2e": "node scripts/scaffold-example-e2e/cli.mjs",
-    "test:example-e2e-scaffold": "node --test scripts/scaffold-example-e2e/scaffold.test.mjs"
+    "test:example-e2e-scaffold": "node --test scripts/scaffold-example-e2e/scaffold.test.mjs",
+    "test:host-entry-consumer": "node tools/host-entry-consumer/run.mjs",
+    "test:manifest-consumer:references": "node --test tools/manifest-consumer/manifests.test.mjs",
+    "test:manifest-consumer": "npm run test:manifest-consumer:references && node tools/manifest-consumer/run.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.0",
@@ -237,11 +240,7 @@
     "@vscode/markdown-it-katex": {
       "katex": "0.18.2"
     },
-    "tar": "^7.5.16",
-    "shell-quote": "^1.11.0",
-    "postcss": "^8.5.23",
-    "axios": "^1.18.1",
-    "proxy-addr": "^2.0.8",
+    "glob@>=10 <14": "^14.0.3",
     "serve": {
       "compression": "^1.8.2"
     },
@@ -252,8 +251,7 @@
       "cssnano": "^7.1.9"
     },
     "stylelint-config-carbon": {
-      "stylelint-config-standard": "^40.0.0",
-      "stylelint-config-standard-scss": "^17.0.0"
+      "stylelint-config-standard": "^40.0.0"
     },
     "stylelint-config-idiomatic-order": {
       "stylelint-order": "^8.0.1"
@@ -266,7 +264,6 @@
       "vite": "^8.0.16"
     },
     "nx": {
-      "smol-toml": "^1.9.0",
       "undici": "^7.29.1"
     }
   }

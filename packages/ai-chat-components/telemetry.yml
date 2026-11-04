@@ -168,6 +168,7 @@ collect:
         - onfeedback-buttons-click
         - positive-label
         # cds-aichat-file-upload-item
+        - error-description
         - fallback-label
         - read-only
         - remove-file-named-label
@@ -255,6 +256,10 @@ collect:
         - table-locale
         - table-next-page-text
         - table-previous-page-text
+        # cds-aichat-message-item-shell
+        - full-width
+        - hide-avatar
+        - row-type
         # cds-aichat-messages-shell
         - bottom-handle-label
         - oncds-aichat-messages-shell-scroll
@@ -301,6 +306,10 @@ collect:
         - oncds-aichat-transcript-toggle
         - show-label
         - text
+        # cds-aichat-user-avatar
+        - height
+        - image
+        - width
         # cds-aichat-video-player
         - aspect-ratio-percentage
         - oncds-aichat-video-player-error
@@ -336,6 +345,9 @@ collect:
         - top
         - top-left
         - top-right
+        # cds-aichat-message-item-shell - row-type
+        - request
+        - response
   npm:
     dependencies: null
   js:

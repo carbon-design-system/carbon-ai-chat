@@ -72,13 +72,13 @@ import '@carbon/ai-chat-components/es/components/audio-player/index.js';
 
 ## Events
 
-The component fires the following custom event:
+The component fires the following custom event. The transcript doesn't open or close itself, so set `expanded` from the event:
 
 ```javascript
 const transcript = document.querySelector('cds-aichat-transcript');
 
 transcript.addEventListener('cds-aichat-transcript-toggle', (event) => {
-  console.log('Transcript expanded:', event.detail.expanded);
+  transcript.expanded = event.detail.expanded;
 });
 ```
 

@@ -248,15 +248,13 @@ async function runRollup() {
       input: {
         aiChatEntry: path.join(paths.src, '/aiChatEntry.tsx'),
         serverEntry: path.join(paths.src, '/serverEntry.ts'),
+        'web-components/cds-aichat-container/index': path.join(paths.src, '/web-components/cds-aichat-container/index.ts'),
+        'web-components/cds-aichat-custom-element/index': path.join(paths.src, '/web-components/cds-aichat-custom-element/index.ts'),
       },
       output: {
         dir: path.join(paths.dist, '/types'),
         format: 'es',
-        entryFileNames: chunkInfo => {
-          const inputFile = chunkInfo.facadeModuleId || chunkInfo.moduleIds[0];
-          const baseName = path.basename(inputFile, path.extname(inputFile)); // Get the base name of the file
-          return `${baseName}.d.ts`;
-        },
+        entryFileNames: '[name].d.ts',
       },
       external,
       plugins: [

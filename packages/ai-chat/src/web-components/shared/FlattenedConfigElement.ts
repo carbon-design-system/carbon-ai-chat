@@ -66,11 +66,12 @@ interface FlattenedConfigElement extends Partial<PublicConfig> {}
  * Base class contributing all flattened `PublicConfig` reactive properties.
  * Not registered as a custom element — only the concrete subclasses are.
  *
- * The `@attr` tags below exist solely so that web-component-analyzer can
- * discover the HTML attributes derived from {@link FLATTENED_PUBLIC_CONFIG_FIELDS}.
- * Lit registers them at runtime via `static properties = buildFlattenedProperties()`,
- * which WCA cannot statically analyze. Keep this list in sync with that table
- * (property-only fields with `attribute: false` are intentionally omitted).
+ * The CEM plugin reads the field table and public types to describe this
+ * runtime-generated surface. The `@attr` tags below exist for
+ * web-component-analyzer, which `telemetry:config` runs and which cannot
+ * evaluate `buildFlattenedProperties()`. A manifest test fails when they drift
+ * from {@link FLATTENED_PUBLIC_CONFIG_FIELDS}; property-only fields with
+ * `attribute: false` are intentionally omitted.
  *
  * @attr ai-disabled
  * @attr ai-enabled

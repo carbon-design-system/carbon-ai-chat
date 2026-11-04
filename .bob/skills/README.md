@@ -16,6 +16,7 @@ Skills exist because always-on guidance and task guidance need different deliver
 | [caic-pr](caic-pr/SKILL.md)         | drafting a PR description                                                          | the architecture diagram rules        |
 | [caic-review](caic-review/SKILL.md) | reviewing a diff, including self-review before marking a task done                 | PR posting, and large-diff triage     |
 | [caic-copy-writer](caic-copy-writer/SKILL.md) | writing any copy this repo ships — JSDoc, docs pages, READMEs, UI strings, thrown errors, review findings, and the bodies of commits, PRs, issues, and ADRs | a rules file per copy type, and the revision pass under all of them |
+| [caic-write-example-test](caic-write-example-test/SKILL.md) | adding or changing the Playwright test for an example: target, spec, run, coverage | a pitfalls file for assertions that pass without proving anything, and a prompt to hand to a new agent session |
 
 `carbon-builder` also lives here. It is a vendored Carbon Design System skill from upstream, not a repo workflow — the sync and mirror rules below apply to it, but its content is not ours to edit.
 
@@ -32,7 +33,7 @@ All three are committed, because an assistant has to find its skills in a fresh 
 
 Edit this copy and sync — never edit a mirror, it gets overwritten. `validate:skills` runs in `ci-check` and in CI, and fails on drift between the trees, a `SKILL.md` whose frontmatter `name` doesn't match its directory, a frontmatter value YAML would silently truncate, or a broken link inside a `caic-*` skill.
 
-Bob and Claude Code expose each skill as a slash command — `/caic-adr`, `/caic-plan`, `/caic-issue`, `/caic-pr`, `/caic-review`, `/caic-copy-writer`. Codex lists the same six under `$`.
+Bob and Claude Code expose each skill as a slash command — `/caic-adr`, `/caic-plan`, `/caic-issue`, `/caic-pr`, `/caic-review`, `/caic-copy-writer`, `/caic-write-example-test`. Codex lists the same seven under `$`.
 
 ## Authoring
 

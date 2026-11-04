@@ -68,7 +68,7 @@ export interface Action extends BaseOverflowMenuItem {
  * @slot navigation - Defines the navigation area of the toolbar.
  * @slot title - Defines the title section of the toolbar.
  * @slot fixed-actions - Defines the area for displaying actions that are always visible (not overflowed) in the toolbar.
- * @slot toolbar-ai-label - Defines the area for displaying the AI label in the toolbar.
+ * @slot decorator - Decorative content such as an AI label.
  *
  */
 @carbonElement(blockClass)

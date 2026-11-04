@@ -15,16 +15,18 @@ Load this when the PR is stacked, or moves data or event flow, or ownership of s
 - **Draw a Mermaid `flowchart`** in a `mermaid` fence under `#### Architecture`. Put a bold **As is** or **To be** lead-in above each stacked diagram.
 - **Mark the nodes this PR changes** with a thick border and a `THIS PR` label, so the cue doesn't rely on color. Use `classDef thisPR stroke-width:4px`.
 - **Leave every other node plain.** Use no other classes, colors, or labels.
+- **Say what the arrows mean**, such as calls, data, or time order, when the edges alone don't make it clear.
+- **Keep node names stable** across the stack, so each PR's diagrams line up with the plan's.
 - **Write a 1–3 line explainer** under each diagram. Leave out commit hashes and check results.
 
 ## Stacked PRs
 
-**As is** shows the system at this PR's head. Scope it to the part of the stack this PR edits. Its explainer says what this PR moved and what's still on the old path.
+**As is** shows the system at this PR's head. Scope it to the part of the stack this PR edits, and include old paths and temporary delegates that still matter. Its explainer says what this PR moved and what's still on the old path.
 
 **To be** comes from the stack's plan, which keeps one To be diagram in this format:
 
 1. Copy the plan's diagram.
-2. Strip any existing labels and color classes, such as `INHERITED` or `LATER`.
+2. Strip any labels and color classes it carries. Plans written to the earlier flow-map guidance may mark nodes `INHERITED` or `LATER`.
 3. Mark this PR's nodes as above.
 
 If the plan has no diagram, draw the stack's end state in this format. Its explainer says what the rest of the stack still has to do. For the last PR, say what this PR finishes.
@@ -56,6 +58,10 @@ flowchart LR
 ```
 
 Message sending and history loading move out of ChatActions into their own services. ChatActions now only delegates.
+
+## Keep diagrams current
+
+Check each diagram against the PR's base-to-head scope; for a stacked layer, the base is its parent branch. Redraw it after the branch changes or is rebased. A diagram explains structure. It doesn't replace the changelog, the testing steps, or the size note.
 
 ## Related guidance
 
