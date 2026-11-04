@@ -8,7 +8,11 @@
 import Add16 from '@carbon/icons/es/add--large/16.js';
 import type { Page } from '@playwright/test';
 import { test, expect } from './fixtures';
-import { PageObjectId } from '@carbon/ai-chat/server';
+import {
+  ButtonItemType,
+  MessageResponseTypes,
+  PageObjectId,
+} from '@carbon/ai-chat/server';
 import {
   prepareDemoPage,
   destroyChatSession,
@@ -341,3 +345,88 @@ test('reduced motion: closing a custom panel from its content returns focus to t
   await expect(close).toBeHidden();
   await expect(opener).toBeFocused();
 });
+
+for (const framework of hosts) {
+  test(`${framework}: closing a cover returns focus to a control in user-defined response panel content`, async ({
+    page,
+  }) => {
+    await openChat(page, framework, 'ltr');
+    await page.evaluate(
+      async ({ ButtonItemType, MessageResponseTypes }) => {
+        await window.chatInstance.messaging.addMessage({
+          output: {
+            generic: [
+              {
+                response_type: MessageResponseTypes.BUTTON,
+                button_type: ButtonItemType.SHOW_PANEL,
+                label: 'Open the user-defined panel',
+                panel: {
+                  title: 'User-defined panel',
+                  body: [
+                    {
+                      response_type: MessageResponseTypes.USER_DEFINED,
+                      user_defined: {
+                        user_defined_type: 'green',
+                        text: 'panel content',
+                      },
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        } as never);
+      },
+      { ButtonItemType, MessageResponseTypes }
+    );
+    await page
+      .getByRole('button', { name: 'Open the user-defined panel', exact: true })
+      .click();
+    const response = page.locator(
+      'cds-aichat-native-panels [data-panel-name="response"]'
+    );
+    await expect(response).toBeVisible();
+    const content = page
+      .getByText(/^This is a user_defined response type with external styles/)
+      .first();
+    await expect(content).toBeVisible();
+    // The example content has no control, so add one to its slotted host. The
+    // web component example renders its text in its own shadow root.
+    await content.evaluate((node) => {
+      const root = node.getRootNode();
+      const example = root instanceof ShadowRoot ? root.host : node;
+      const button = document.createElement('button');
+      button.textContent = 'Panel content control';
+      example.parentElement!.append(button);
+    });
+    const control = page.getByRole('button', {
+      name: 'Panel content control',
+      exact: true,
+    });
+    await expect(control).toBeVisible();
+    await control.focus();
+    await page.evaluate(() => {
+      const { store } = window.chatInstance.serviceManager;
+      store.dispatch({
+        type: 'HA_SET_HUMAN_AGENT_JOINED',
+        responseUserProfile: { id: 'focus-agent', nickname: 'Agent' },
+      });
+      store.dispatch({
+        type: 'HA_SET_SHOW_SCREEN_SHARE_REQUEST',
+        showRequest: true,
+      });
+    });
+    const prompt = page.locator(
+      'cds-aichat-native-panels [data-panel-name="screenShare"]'
+    );
+    await expect(prompt).toBeVisible();
+    await expect(
+      prompt
+        .locator('[slot="footer"]')
+        .getByRole('button', { name: 'Decline', exact: true })
+    ).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(prompt).toBeHidden();
+    await expect(control).toBeFocused();
+  });
+}
