@@ -138,6 +138,13 @@ function isFocusable(element: Element): boolean {
     return false;
   }
 
+  // Carbon's cds-overflow-menu attaches its shadow root before Lit can set
+  // delegatesFocus, but its focus() still moves focus to the trigger. Remove
+  // this once Carbon sets delegatesFocus on that root.
+  if (element.localName === 'cds-overflow-menu') {
+    return true;
+  }
+
   return element.shadowRoot?.delegatesFocus ?? false;
 }
 

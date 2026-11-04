@@ -8,6 +8,7 @@
  */
 
 import { html, fixture, expect } from '@open-wc/testing';
+import '@carbon/web-components/es/components/overflow-menu/index.js';
 import {
   getDeepActiveElement,
   isElementInvisible,
@@ -516,6 +517,25 @@ describe('focus-utils', function () {
       const input =
         delegateElement.shadowRoot?.querySelector('#delegate-input');
       expect(deepActive).to.equal(input);
+    });
+
+    it('should focus the trigger of a Carbon overflow menu', async () => {
+      const menu = await fixture<
+        HTMLElement & { updateComplete: Promise<unknown> }
+      >(
+        html`<cds-overflow-menu>
+          <span slot="tooltip-content">Options</span>
+          <cds-overflow-menu-body>
+            <cds-overflow-menu-item>Settings</cds-overflow-menu-item>
+          </cds-overflow-menu-body>
+        </cds-overflow-menu>`
+      );
+      await menu.updateComplete;
+
+      expect(tryFocus(menu)).to.be.true;
+      expect(getDeepActiveElement()).to.equal(
+        menu.shadowRoot!.querySelector('button')
+      );
     });
   });
 

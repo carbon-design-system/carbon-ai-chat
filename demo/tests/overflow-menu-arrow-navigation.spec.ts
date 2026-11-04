@@ -225,10 +225,11 @@ for (const framework of ['react', 'web-component']) {
       }
       throw new Error('Native header focus handle is missing');
     });
-    // The Options trigger doesn't delegate focus, so the header skips it.
-    // Close the chat window delegates focus into its shadow root, and the
-    // header now counts that as success.
+    // Navigation comes first, so the header focuses the Options trigger
+    // inside the overflow menu's shadow root and counts that as success.
     expect(headerFocused).toBe(true);
-    await expect(opener).toBeFocused();
+    await expect(
+      page.getByRole('button', { name: 'Options', exact: true })
+    ).toBeFocused();
   });
 }

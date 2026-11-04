@@ -385,12 +385,15 @@ describe('cds-aichat-chat-header', function () {
       );
     });
 
-    async function renderedControls(el: CdsAiChatHeader) {
+    async function renderedControls(
+      el: CdsAiChatHeader,
+      navigationSelector = 'cds-icon-button'
+    ) {
       await el.updateComplete;
       const toolbar = el.shadowRoot!.querySelector<any>('cds-aichat-toolbar');
       await toolbar.updateComplete;
       const navigation = toolbar.querySelector(
-        'div[slot="navigation"] cds-icon-button'
+        `div[slot="navigation"] ${navigationSelector}`
       ) as HTMLElement & { updateComplete: Promise<unknown> };
       await navigation.updateComplete;
       // Carbon buttons finish their own setup after the first update.
@@ -421,6 +424,30 @@ describe('cds-aichat-chat-header', function () {
 
       expect(el.requestFocus()).to.be.true;
       expect(composedContains(navigation, getDeepActiveElement())).to.be.true;
+      expect(actionFocusCalls()).to.equal(0);
+    });
+
+    it('stops at an overflow navigation trigger that takes focus', async () => {
+      const actions = [
+        { renderIcon: Restart, iconDescription: 'Restart', onClick: () => {} },
+      ];
+      const items = [{ text: 'Settings', onClick: () => {} }];
+      const el = await fixture<CdsAiChatHeader>(
+        html`<cds-aichat-chat-header
+          navigation-type="overflow"
+          navigation-overflow-label="Options"
+          .navigationOverflowItems=${items}
+          .actions=${actions}></cds-aichat-chat-header>`
+      );
+      const { navigation, actionFocusCalls } = await renderedControls(
+        el,
+        'cds-overflow-menu'
+      );
+
+      expect(el.requestFocus()).to.be.true;
+      expect(getDeepActiveElement()).to.equal(
+        navigation.shadowRoot!.querySelector('button')
+      );
       expect(actionFocusCalls()).to.equal(0);
     });
 
