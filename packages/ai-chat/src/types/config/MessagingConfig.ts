@@ -133,9 +133,13 @@ export interface ChatInstanceMessaging {
    * Message data in user-defined response, custom message footer, and receive callbacks
    * uses a snapshot. Plain objects and arrays are frozen. Cloneable special values,
    * such as dates and typed arrays, remain mutable copies with their usual APIs.
+   * Copied typed arrays and DataViews use fixed bounds from their current offset and
+   * length. Copied backing buffers keep their resize or grow APIs, but the views do
+   * not expand when those buffers grow. Shrinking a copied buffer can put a view out
+   * of bounds.
    * Opaque values, such as WeakMap, WeakSet, Promise, and Error objects, keep their
    * original references and shared internal state. Functions keep their APIs, but
-   * closures, private state, and inherited prototype data remain shared. Calling
+   * closures, accessors, private state, and inherited prototype data remain shared. Calling
    * these APIs can affect shared state. Edits to copied message fields do not write
    * back. Use the updater or mutable {@link BusEventType.PRE_RECEIVE} data to change
    * the message.
@@ -144,8 +148,9 @@ export interface ChatInstanceMessaging {
    *
    * This call keeps its existing callback and pause waits. Rejection from an awaited
    * response or footer callback still rejects the upsert. Receive-handler errors are
-   * logged without rejecting it. Render notifications that run independently still do
-   * not delay completion. An attempted write to frozen data follows these same error rules.
+   * logged without rejecting it. Detached render notifications are not directly awaited.
+   * A later awaited callback of the same event type can still wait behind them in the
+   * shared queue. An attempted write to frozen data follows these same error rules.
    *
    * If the returned message has no `id`, Carbon AI Chat assigns `messageID`. The
    * cancellation contract for outbound messages is unchanged — see

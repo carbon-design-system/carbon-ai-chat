@@ -7,8 +7,10 @@
  *  @license
  */
 
+import { runInNewContext } from 'node:vm';
 import {
   prepareReasoningMessageEvent,
+  retainCopiedNativeMessageOrigin,
   retainNativeMessageOrigin,
   snapshotNativeMessageEvent,
 } from '../../../src/chat/services/messaging/nativeMessageEvents';
@@ -470,3 +472,268 @@ it.each([Object.prototype, null])(
     expect(tagGetter).not.toHaveBeenCalled();
   }
 );
+
+it('isolates shared buffers while retaining aliases between copied views', () => {
+  const buffer = new SharedArrayBuffer(8);
+  const bytes = new Uint8Array(buffer, 1, 4);
+  const view = new DataView(buffer, 2, 2);
+  bytes.set([1, 2, 3, 4]);
+  const event = snapshotNativeMessageEvent({ bytes, view, buffer });
+  expect(event.buffer).not.toBe(buffer);
+  expect(event.bytes.buffer).toBe(event.buffer);
+  expect(event.view.buffer).toBe(event.buffer);
+  expect(event.bytes.byteOffset).toBe(1);
+  expect(event.view.byteOffset).toBe(2);
+  expect(event.view.byteLength).toBe(2);
+  event.bytes[1] = 9;
+  expect(event.view.getUint8(0)).toBe(9);
+  expect(bytes[1]).toBe(2);
+  event.view.setUint8(1, 8);
+  expect(event.bytes[2]).toBe(8);
+  expect(bytes[2]).toBe(3);
+});
+
+it('copies boxed strings with immutable indices and owned custom fields', () => {
+  const shared = { value: 'before' };
+  const boxed = Object.assign(
+    Object('text') as { valueOf(): string; [index: number]: string },
+    { shared }
+  );
+  const event = snapshotNativeMessageEvent({ boxed, shared });
+  expect(event.boxed).not.toBe(boxed);
+  expect(event.boxed.valueOf()).toBe('text');
+  expect(event.boxed[0]).toBe('t');
+  expect(Object.getOwnPropertyDescriptor(event.boxed, '0')).toEqual(
+    Object.getOwnPropertyDescriptor(boxed, '0')
+  );
+  expect(event.boxed.shared).toBe(event.shared);
+  expect(event.shared).not.toBe(shared);
+  expect(() => {
+    event.boxed.shared.value = 'after';
+  }).toThrow(TypeError);
+  expect(shared.value).toBe('before');
+});
+
+it('copies foreign collection entries in the same snapshot graph', () => {
+  const source = runInNewContext(`(() => {
+    const key = { value: 'before' };
+    return { key, map: new Map([[key, key]]), set: new Set([key]) };
+  })()`) as {
+    key: { value: string };
+    map: Map<object, object>;
+    set: Set<object>;
+  };
+  expect(source.map instanceof Map).toBe(false);
+  expect(source.set instanceof Set).toBe(false);
+  const event = snapshotNativeMessageEvent(source);
+  expect(event.map.get(event.key)).toBe(event.key);
+  expect(event.map.has(source.key)).toBe(false);
+  expect(event.set.has(event.key)).toBe(true);
+  expect(event.set.has(source.key)).toBe(false);
+  expect(() => {
+    (event.map.keys().next().value as { value: string }).value = 'after';
+  }).toThrow(TypeError);
+  event.map.clear();
+  event.set.clear();
+  expect(source.map.get(source.key)).toBe(source.key);
+  expect(source.set.has(source.key)).toBe(true);
+  expect(source.key.value).toBe('before');
+});
+
+it('keeps the bounds and shared-buffer links of a foreign DataView', () => {
+  const source = runInNewContext(`(() => {
+    const buffer = new ArrayBuffer(8);
+    const view = new DataView(buffer, 2, 2);
+    view.setUint8(0, 7);
+    return { view, buffer };
+  })()`) as { view: DataView; buffer: ArrayBuffer };
+  expect(source.view instanceof DataView).toBe(false);
+  const event = snapshotNativeMessageEvent(source);
+  expect(event.view.buffer).toBe(event.buffer);
+  expect(event.buffer).not.toBe(source.buffer);
+  expect(event.view.byteOffset).toBe(2);
+  expect(event.view.byteLength).toBe(2);
+  expect(event.view.getUint8(0)).toBe(7);
+  expect(() => event.view.getUint8(2)).toThrow(RangeError);
+  event.view.setUint8(0, 9);
+  expect(source.view.getUint8(0)).toBe(7);
+});
+
+it.each([
+  [ArrayBuffer, 'resizable', 'resize'],
+  [SharedArrayBuffer, 'growable', 'grow'],
+] as const)(
+  'retains the %s backing buffer growth API without sharing memory',
+  (BufferConstructor, flexible, changeLength) => {
+    const buffer = Reflect.construct(BufferConstructor, [
+      4,
+      { maxByteLength: 8 },
+    ]);
+    const bytes = new Uint8Array(buffer, 0, 4);
+    bytes[0] = 7;
+    const event = snapshotNativeMessageEvent({ buffer, bytes });
+    expect(event.buffer).not.toBe(buffer);
+    expect(event.buffer[flexible]).toBe(true);
+    expect(event.buffer.maxByteLength).toBe(8);
+    expect(event.bytes.buffer).toBe(event.buffer);
+    event.buffer[changeLength](8);
+    expect(event.buffer.byteLength).toBe(8);
+    expect(buffer.byteLength).toBe(4);
+    event.bytes[0] = 9;
+    expect(bytes[0]).toBe(7);
+  }
+);
+
+it.each([
+  [ArrayBuffer, 'resizable', 'resize'],
+  [SharedArrayBuffer, 'growable', 'grow'],
+] as const)(
+  'captures fixed bounds for length-tracking views over a %s buffer',
+  (BufferConstructor, flexible, changeLength) => {
+    const buffer = Reflect.construct(BufferConstructor, [
+      4,
+      { maxByteLength: 8 },
+    ]);
+    const bytes = new Uint8Array(buffer, 1);
+    const view = new DataView(buffer, 2);
+    bytes.set([1, 2, 3]);
+    const event = snapshotNativeMessageEvent({ bytes, view, buffer });
+    expect(event.buffer).not.toBe(buffer);
+    expect(event.buffer[flexible]).toBe(true);
+    expect(event.buffer.maxByteLength).toBe(8);
+    expect(event.bytes.buffer).toBe(event.buffer);
+    expect(event.view.buffer).toBe(event.buffer);
+    expect(event.bytes.byteOffset).toBe(1);
+    expect(event.bytes.length).toBe(3);
+    expect(event.view.byteOffset).toBe(2);
+    expect(event.view.byteLength).toBe(2);
+
+    event.buffer[changeLength](8);
+    expect(event.buffer.byteLength).toBe(8);
+    expect(event.bytes.byteOffset).toBe(1);
+    expect(event.bytes.length).toBe(3);
+    expect(event.view.byteOffset).toBe(2);
+    expect(event.view.byteLength).toBe(2);
+    expect(() => event.view.getUint8(2)).toThrow(RangeError);
+    event.bytes[1] = 9;
+    expect(event.view.getUint8(0)).toBe(9);
+    event.view.setUint8(1, 8);
+    expect(event.bytes[2]).toBe(8);
+    expect(buffer.byteLength).toBe(4);
+    expect(bytes.length).toBe(3);
+    expect(view.byteLength).toBe(2);
+    expect(Array.from(new Uint8Array(buffer))).toEqual([0, 1, 2, 3]);
+  }
+);
+
+it.each([ArrayBuffer, SharedArrayBuffer])(
+  'copies a real %s buffer whose display tag looks like an ordinary object',
+  (BufferConstructor) => {
+    const buffer = new BufferConstructor(4);
+    Object.defineProperty(buffer, Symbol.toStringTag, { value: 'Object' });
+    const bytes = new Uint8Array(buffer);
+    bytes[0] = 7;
+    const event = snapshotNativeMessageEvent({ bytes, buffer });
+    expect(event.buffer).not.toBe(buffer);
+    expect(event.bytes.buffer).toBe(event.buffer);
+    expect(event.bytes[0]).toBe(7);
+    event.bytes[0] = 9;
+    expect(bytes[0]).toBe(7);
+  }
+);
+
+it.each([false, true])(
+  'retains opaque values despite an Object display tag; foreign realm=%s',
+  async (foreign) => {
+    const source = (
+      foreign
+        ? runInNewContext(`({
+          weakMap: new WeakMap(),
+          weakSet: new WeakSet(),
+          promise: Promise.resolve(7),
+          error: new Error('host error'),
+          typeError: new TypeError('host type error'),
+          aggregateError: new AggregateError([], 'host aggregate error'),
+          customError: new (class extends TypeError {})('host subclass'),
+        })`)
+        : {
+            weakMap: new WeakMap(),
+            weakSet: new WeakSet(),
+            promise: Promise.resolve(7),
+            error: new Error('host error'),
+            typeError: new TypeError('host type error'),
+            aggregateError: new AggregateError([], 'host aggregate error'),
+            customError: new (class extends TypeError {})('host subclass'),
+          }
+    ) as {
+      weakMap: WeakMap<object, unknown>;
+      weakSet: WeakSet<object>;
+      promise: Promise<number>;
+      error: Error;
+      typeError: TypeError;
+      aggregateError: AggregateError;
+      customError: TypeError;
+    };
+    const getter = jest.fn(() => {
+      throw new Error('opaque getter');
+    });
+    for (const value of Object.values(source)) {
+      Object.defineProperty(value, Symbol.toStringTag, { value: 'Object' });
+      Object.defineProperty(value, 'extra', { enumerable: true, get: getter });
+    }
+    const event = snapshotNativeMessageEvent(source);
+    for (const key of Object.keys(source) as (keyof typeof source)[]) {
+      expect(event[key]).toBe(source[key]);
+      expect(Object.isFrozen(source[key])).toBe(false);
+    }
+    const key = {};
+    event.weakMap.set(key, 9);
+    event.weakSet.add(key);
+    expect(source.weakMap.get(key)).toBe(9);
+    expect(source.weakSet.has(key)).toBe(true);
+    await expect(event.promise).resolves.toBe(7);
+    expect(event.error.message).toBe('host error');
+    expect(getter).not.toHaveBeenCalled();
+  }
+);
+
+it('carries native origin only to equal copied content', () => {
+  const source = fixture();
+  retainNativeMessageOrigin(source.message);
+  const copied = fixture();
+  copied.message.history = { timestamp: 1 };
+  retainCopiedNativeMessageOrigin(source.message, copied.message);
+  expect(
+    Object.isFrozen(
+      prepareReasoningMessageEvent(copied.message, copied.localItem).message
+    )
+  ).toBe(true);
+  const changed = fixture();
+  changed.localItem.item.user_defined.value = 'legacy';
+  retainCopiedNativeMessageOrigin(source.message, changed.message);
+  expect(
+    prepareReasoningMessageEvent(changed.message, changed.localItem).message
+  ).toBe(changed.message);
+  const legacy = fixture();
+  const legacyCopy = fixture();
+  retainCopiedNativeMessageOrigin(legacy.message, legacyCopy.message);
+  expect(
+    prepareReasoningMessageEvent(legacyCopy.message, legacyCopy.localItem)
+      .message
+  ).toBe(legacyCopy.message);
+});
+
+it('copies ordinary class data despite an opaque-looking display tag', () => {
+  class Payload {
+    nested = { value: 'before' };
+  }
+  const payload = new Payload();
+  Object.defineProperty(payload, Symbol.toStringTag, { value: 'Promise' });
+  const event = snapshotNativeMessageEvent({ payload });
+  expect(event.payload).not.toBe(payload);
+  expect(event.payload).toBeInstanceOf(Payload);
+  expect(event.payload.nested).not.toBe(payload.nested);
+  expect(Object.isFrozen(event.payload)).toBe(true);
+  expect(Object.isFrozen(event.payload.nested)).toBe(true);
+  expect(Object.isFrozen(payload)).toBe(false);
+});

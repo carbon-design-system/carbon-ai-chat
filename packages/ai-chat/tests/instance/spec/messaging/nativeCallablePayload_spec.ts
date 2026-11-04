@@ -9,8 +9,10 @@
 
 import { MessageState } from '../../../../src/types/config/MessagingConfig';
 import { MessageResponseTypes } from '../../../../src/types/messaging/Messages';
+import type { MessageResponse } from '../../../../src/types/messaging/Messages';
 import {
   BusEventType,
+  type BusEventReceive,
   type BusEventUserDefinedResponse,
 } from '../../../../src/types/events/eventBusTypes';
 import {
@@ -116,4 +118,98 @@ it('keeps accepted opaque APIs in native callbacks with the approved shared-refe
       stored.output.generic[0].user_defined.lookup as WeakMap<object, string>
     ).get(key)
   ).toBe('after');
+});
+
+it('delivers accepted boxed strings to response and receive callbacks', async () => {
+  const { instance } =
+    await renderChatAndGetInstanceWithStore(createBaseConfig());
+  const label = Object.assign(Object('host label'), {
+    metadata: { value: 'before' },
+  });
+  const delivered: (typeof label)[] = [];
+  instance.on({
+    type: BusEventType.USER_DEFINED_RESPONSE,
+    handler: (event: BusEventUserDefinedResponse) => {
+      delivered.push(event.data.message.user_defined.label);
+    },
+  });
+  instance.on({
+    type: BusEventType.RECEIVE,
+    handler: (event: BusEventReceive) => {
+      delivered.push(event.data.output.generic[0].user_defined.label);
+    },
+  });
+  await instance.messaging.upsertMessage(
+    'boxed',
+    MessageState.COMPLETE,
+    () => ({
+      output: {
+        generic: [
+          {
+            response_type: MessageResponseTypes.USER_DEFINED,
+            user_defined: { label },
+          },
+        ],
+      },
+    })
+  );
+  expect(delivered).toHaveLength(2);
+  for (const copy of delivered) {
+    expect(copy).not.toBe(label);
+    expect(copy.valueOf()).toBe('host label');
+    expect(copy[0]).toBe('h');
+    expect(Object.isFrozen(copy.metadata)).toBe(true);
+  }
+  expect(Object.isFrozen(label.metadata)).toBe(false);
+});
+
+it('isolates shared-buffer bytes in response and receive snapshots', async () => {
+  const { instance, store } =
+    await renderChatAndGetInstanceWithStore(createBaseConfig());
+  const buffer = new SharedArrayBuffer(4);
+  const bytes = new Uint8Array(buffer);
+  bytes.set([1, 2, 3, 4]);
+  const source = { buffer, bytes, view: new DataView(buffer, 1, 2) };
+  const delivered: (typeof source)[] = [];
+  instance.on({
+    type: BusEventType.USER_DEFINED_RESPONSE,
+    handler: (event: BusEventUserDefinedResponse) => {
+      delivered.push(event.data.message.user_defined as typeof source);
+    },
+  });
+  instance.on({
+    type: BusEventType.RECEIVE,
+    handler: (event: BusEventReceive) => {
+      delivered.push(
+        event.data.output.generic[0].user_defined as typeof source
+      );
+    },
+  });
+  await instance.messaging.upsertMessage(
+    'shared',
+    MessageState.COMPLETE,
+    () => ({
+      output: {
+        generic: [
+          {
+            response_type: MessageResponseTypes.USER_DEFINED,
+            user_defined: source,
+          },
+        ],
+      },
+    })
+  );
+  expect(delivered).toHaveLength(2);
+  for (const copy of delivered) {
+    expect(copy.buffer).not.toBe(buffer);
+    expect(copy.bytes.buffer).toBe(copy.buffer);
+    expect(copy.view.buffer).toBe(copy.buffer);
+    copy.bytes[0] = 9;
+    copy.view.setUint8(0, 8);
+  }
+  expect(Array.from(bytes)).toEqual([1, 2, 3, 4]);
+  const stored = store.getState().allMessagesByID.shared as MessageResponse;
+  expect(
+    Array.from(stored.output.generic[0].user_defined.bytes as Uint8Array)
+  ).toEqual([1, 2, 3, 4]);
 });

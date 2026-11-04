@@ -8,11 +8,90 @@
  */
 
 import cloneDeep from 'lodash-es/cloneDeep.js';
+import isEqual from 'lodash-es/isEqual.js';
 import type { MessageResponse } from '../../../types/messaging/Messages';
 import type { LocalMessageItem } from '../../../types/messaging/LocalMessageItem';
 
 const nativeContent = new WeakMap<object, WeakSet<object>>();
 const noOptions = {};
+const constructorSource = (constructor: object) =>
+  Function.prototype.toString.call(constructor);
+const opaqueConstructors = new Set(
+  [WeakMap, WeakSet, Promise, Error].map(constructorSource)
+);
+const objectConstructor = constructorSource(Object);
+
+function nativeConstructorSource(value: object): string | undefined {
+  let firstNativeSource: string;
+  for (
+    let prototype = Object.getPrototypeOf(value);
+    prototype;
+    prototype = Object.getPrototypeOf(prototype)
+  ) {
+    const constructor = Object.getOwnPropertyDescriptor(
+      prototype,
+      'constructor'
+    )?.value;
+    if (
+      typeof constructor === 'function' &&
+      Object.getOwnPropertyDescriptor(constructor, 'prototype')?.value ===
+        prototype
+    ) {
+      const source = constructorSource(constructor);
+      if (/^function\b[^{}]*\{\s*\[native code\]\s*\}$/.test(source)) {
+        if (opaqueConstructors.has(source)) {
+          return source;
+        }
+        firstNativeSource ??= source;
+      }
+    }
+  }
+  return firstNativeSource;
+}
+
+function isCollection(value: object, prototype: Map<any, any> | Set<any>) {
+  try {
+    prototype.has.call(value, noOptions);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function copyBuffer(value: object): ArrayBufferLike | undefined {
+  const constructors =
+    typeof SharedArrayBuffer === 'undefined'
+      ? [ArrayBuffer]
+      : [ArrayBuffer, SharedArrayBuffer];
+  for (const BufferConstructor of constructors) {
+    const prototype = BufferConstructor.prototype;
+    let byteLength: number;
+    try {
+      byteLength = Object.getOwnPropertyDescriptor(
+        prototype,
+        'byteLength'
+      ).get.call(value);
+    } catch {
+      continue;
+    }
+    const flexible = Object.getOwnPropertyDescriptor(
+      prototype,
+      BufferConstructor === ArrayBuffer ? 'resizable' : 'growable'
+    )?.get.call(value);
+    const maxByteLength = flexible
+      ? Object.getOwnPropertyDescriptor(prototype, 'maxByteLength').get.call(
+          value
+        )
+      : undefined;
+    const owned = Reflect.construct(
+      BufferConstructor,
+      flexible ? [byteLength, { maxByteLength }] : [byteLength]
+    );
+    new Uint8Array(owned).set(new Uint8Array(value as ArrayBufferLike));
+    return owned;
+  }
+  return undefined;
+}
 
 export function retainNativeMessageOrigin(message: MessageResponse) {
   if (!message.output) {
@@ -24,6 +103,21 @@ export function retainNativeMessageOrigin(message: MessageResponse) {
     nativeContent.set(message.output, options);
   }
   options.add(message.message_options ?? noOptions);
+}
+
+export function retainCopiedNativeMessageOrigin(
+  source: MessageResponse,
+  copied: MessageResponse
+) {
+  if (
+    nativeContent
+      .get(source.output)
+      ?.has(source.message_options ?? noOptions) &&
+    isEqual(source.output, copied.output) &&
+    isEqual(source.message_options, copied.message_options)
+  ) {
+    retainNativeMessageOrigin(copied);
+  }
 }
 
 export function snapshotNativeMessageEvent<T>(values: T): T {
@@ -42,6 +136,8 @@ export function snapshotNativeMessageEvent<T>(values: T): T {
     }
     let owned: any;
     let ordinary = false;
+    let map = false;
+    let set = false;
     if (typeof value === 'function') {
       // Binding preserves constructability. Shield metadata reads from host getters.
       const bindingTarget = new Proxy(value, {
@@ -94,38 +190,69 @@ export function snapshotNativeMessageEvent<T>(values: T): T {
           },
         });
       }
-    } else if (value instanceof Map) {
-      owned = new Map();
-    } else if (value instanceof Set) {
-      owned = new Set();
+    } else if (Array.isArray(value)) {
+      owned = new Array(value.length);
+      ordinary = true;
     } else if (ArrayBuffer.isView(value)) {
       const buffer = copy(value.buffer);
       if (copies.has(value)) {
         return copies.get(value);
       }
+      let viewByteLength: number;
+      try {
+        viewByteLength = Object.getOwnPropertyDescriptor(
+          DataView.prototype,
+          'byteLength'
+        ).get.call(value);
+      } catch {
+        // Typed arrays lack the DataView slot, even when they share its realm.
+      }
       owned =
-        value instanceof DataView
-          ? new DataView(buffer, value.byteOffset, value.byteLength)
-          : new (value.constructor as any)(
+        viewByteLength === undefined
+          ? new (value.constructor as any)(
               buffer,
               value.byteOffset,
               (value as any).length
-            );
-    } else if (Array.isArray(value)) {
-      owned = new Array(value.length);
-      ordinary = true;
+            )
+          : new DataView(buffer, value.byteOffset, viewByteLength);
     } else {
       const prototype = Object.getPrototypeOf(value);
+      const nativeConstructor =
+        prototype === null || prototype === Object.prototype
+          ? undefined
+          : nativeConstructorSource(value);
       if (
-        prototype === null ||
-        prototype === Object.prototype ||
-        Object.prototype.toString.call(value) === '[object Object]'
+        value instanceof WeakMap ||
+        value instanceof WeakSet ||
+        value instanceof Promise ||
+        value instanceof Error ||
+        opaqueConstructors.has(nativeConstructor)
       ) {
+        copies.set(value, value);
+        return value;
+      }
+      if (prototype === null || prototype === Object.prototype) {
         owned = Object.create(prototype);
         ordinary = true;
+      } else if (isCollection(value, Map.prototype)) {
+        owned = new Map();
+        map = true;
+      } else if (isCollection(value, Set.prototype)) {
+        owned = new Set();
+        set = true;
       } else {
-        // Match nested message cloning: opaque values keep their existing APIs.
-        owned = cloneDeep({ value }).value;
+        owned = copyBuffer(value);
+        if (
+          !owned &&
+          (nativeConstructor === objectConstructor ||
+            Object.prototype.toString.call(value) === '[object Object]')
+        ) {
+          owned = Object.create(prototype);
+          ordinary = true;
+        } else if (!owned) {
+          // Match nested message cloning: opaque values keep their existing APIs.
+          owned = cloneDeep({ value }).value;
+        }
         if (owned === value) {
           copies.set(value, value);
           return value;
@@ -133,10 +260,12 @@ export function snapshotNativeMessageEvent<T>(values: T): T {
       }
     }
     copies.set(value, owned);
-    if (value instanceof Map) {
-      value.forEach((entry, key) => owned.set(copy(key), copy(entry)));
-    } else if (value instanceof Set) {
-      value.forEach((entry) => owned.add(copy(entry)));
+    if (map) {
+      (value as Map<unknown, unknown>).forEach((entry, key) =>
+        owned.set(copy(key), copy(entry))
+      );
+    } else if (set) {
+      (value as Set<unknown>).forEach((entry) => owned.add(copy(entry)));
     }
     const copyStaticMember =
       typeof value === 'function'
@@ -173,6 +302,16 @@ export function snapshotNativeMessageEvent<T>(values: T): T {
         }
         Object.defineProperty(owned, key, descriptor);
       } else if (descriptor.enumerable) {
+        const existing = Object.getOwnPropertyDescriptor(owned, key);
+        if (
+          existing &&
+          !existing.configurable &&
+          'value' in existing &&
+          !existing.writable &&
+          Object.is(existing.value, descriptor.value)
+        ) {
+          continue;
+        }
         Object.defineProperty(owned, key, {
           value: copy(value[key]),
           enumerable: true,

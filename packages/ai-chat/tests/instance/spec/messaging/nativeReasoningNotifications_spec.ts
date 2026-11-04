@@ -49,6 +49,104 @@ const response = (values: string[]): MessageResponse => ({
 beforeEach(setupBeforeEach);
 afterEach(setupAfterEach);
 
+it('keeps native reasoning detached after unrelated history insertion', async () => {
+  const { instance, store } =
+    await renderChatAndGetInstanceWithStore(createBaseConfig());
+  const message = response(['native']);
+  await act(async () => {
+    await instance.messaging.upsertMessage(
+      message.id,
+      MessageState.COMPLETE,
+      () => message
+    );
+  });
+  const before = store.getState().allMessagesByID[
+    message.id
+  ] as MessageResponse;
+  const beforeItem = synthesizeReasoningLocalMessageItem(
+    (before.message_options.reasoning.content as GenericItem[])[0],
+    before.id,
+    'retained-reasoning'
+  );
+  expect(
+    Object.isFrozen(prepareReasoningMessageEvent(before, beforeItem).message)
+  ).toBe(true);
+  const historical = response([]);
+  historical.id = 'older-history';
+  await act(async () => {
+    await instance.messaging.insertHistory([
+      { message: historical, time: '2026-11-02T12:00:00.000Z' },
+    ]);
+  });
+  const current = store.getState().allMessagesByID[
+    message.id
+  ] as MessageResponse;
+  expect(current.output).not.toBe(before.output);
+  const localItem = synthesizeReasoningLocalMessageItem(
+    (current.message_options.reasoning.content as GenericItem[])[0],
+    current.id,
+    'retained-reasoning'
+  );
+  const notification = prepareReasoningMessageEvent(current, localItem);
+  expect(notification.message).not.toBe(current);
+  expect(Object.isFrozen(notification.message)).toBe(true);
+  expect(notification.localItem.item).toBe(
+    notification.message.message_options.reasoning.content[0]
+  );
+  expect(() => {
+    notification.localItem.item.user_defined.value = 'notification edit';
+  }).toThrow(TypeError);
+  expect(
+    (current.message_options.reasoning.content as GenericItem[])[0].user_defined
+      .value
+  ).toBe('native');
+  expect(
+    (message.message_options.reasoning.content as GenericItem[])[0].user_defined
+      .value
+  ).toBe('native');
+  expect(Object.isFrozen(message.message_options.reasoning.content[0])).toBe(
+    false
+  );
+});
+
+it('keeps new reasoning from a same-ID history merge on the legacy mutation path', async () => {
+  const { instance } =
+    await renderChatAndGetInstanceWithStore(createBaseConfig());
+  const message = response(['native']);
+  const observations: boolean[] = [];
+  instance.on({
+    type: BusEventType.USER_DEFINED_RESPONSE,
+    handler: (event: BusEventUserDefinedResponse) => {
+      if (event.data.message.user_defined.value === 'legacy appended') {
+        observations.push(Object.isFrozen(event.data.fullMessage));
+        event.data.message.user_defined.value = 'legacy edit';
+        expect(event.data.message.user_defined.value).toBe('legacy edit');
+      }
+    },
+  });
+  await act(async () => {
+    await instance.messaging.upsertMessage(
+      message.id,
+      MessageState.COMPLETE,
+      () => message
+    );
+  });
+  await act(async () => {
+    await instance.messaging.insertHistory([
+      {
+        message: response(['old first item', 'legacy appended']),
+        time: '2026-11-02T12:00:00.000Z',
+      },
+    ]);
+  });
+  await waitFor(() => expect(observations.length).toBeGreaterThan(0));
+  expect(observations.every((frozen) => !frozen)).toBe(true);
+  expect(
+    (message.message_options.reasoning.content as GenericItem[])[0].user_defined
+      .value
+  ).toBe('native');
+});
+
 it('keeps native reasoning frozen and legacy chunk reasoning mutable without refiring existing items', async () => {
   const { instance, store } =
     await renderChatAndGetInstanceWithStore(createBaseConfig());
