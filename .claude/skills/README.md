@@ -16,7 +16,7 @@ Skills exist because always-on guidance and task guidance need different deliver
 | [caic-pr](caic-pr/SKILL.md)         | drafting a PR description                                                          | —                                     |
 | [caic-review](caic-review/SKILL.md) | reviewing a diff, including self-review before marking a task done                 | PR posting, and large-diff triage     |
 | [caic-copy-writer](caic-copy-writer/SKILL.md) | writing any copy this repo ships — JSDoc, docs pages, READMEs, UI strings, thrown errors, review findings, and the bodies of commits, PRs, issues, and ADRs | a rules file per copy type, and the revision pass under all of them |
-| [caic-write-example-test](caic-write-example-test/SKILL.md) | adding or changing the Playwright test for an example: target, spec, run, coverage | a pitfalls file for assertions that pass without proving anything |
+| [caic-write-example-test](caic-write-example-test/SKILL.md) | adding or changing the Playwright test for an example: target, spec, run, coverage | a pitfalls file for assertions that pass without proving anything, and a prompt to hand to a new agent session |
 
 `carbon-builder` also lives here. It is a vendored Carbon Design System skill from upstream, not a repo workflow — the sync and mirror rules below apply to it, but its content is not ours to edit.
 

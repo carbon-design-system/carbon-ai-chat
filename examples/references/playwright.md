@@ -29,47 +29,7 @@ Give host-specific behavior a separate spec mapped to that target; keep common f
 
 An example needs a `build` script, a `vite.config.ts`, and an HTML entry. It needs no Playwright config, dependency, or script.
 
-### Generate a spec with Playwright agents
-
-Playwright's test agents can plan, write, and repair a spec. Install them once per checkout against the shared config and one target, then start a new agent session so they load:
-
-```bash
-npx playwright init-agents --loop=<loop> -c examples/shared/playwright/playwright.config.ts --project <target>
-```
-
-`<loop>` names the tool that runs the agents: `vscode`, `claude`, `codex`, or `opencode`. This writes the `playwright-test-planner`, `playwright-test-generator`, and `playwright-test-healer` agents, an entry for their test server, a seed spec, and a `specs/` folder for plans. The agents and the server entry land in the tool's own files:
-
-| Loop | Agents | Test server entry |
-| --- | --- | --- |
-| `vscode` | `.github/agents/` | `.vscode/mcp.json` |
-| `claude` | `.claude/agents/` | `.mcp.json` |
-| `codex` | `.codex/agents/` | `[mcp_servers.playwright-test]` in each agent file |
-| `opencode` | `.opencode/prompts/` | `opencode.json` |
-
-Add `--config examples/shared/playwright/playwright.config.ts` to the `run-test-mcp-server` args in that entry; `init-agents` never writes it, and without it the agents run against a default config with no example server. Run the agents with `CAIC_E2E_TARGETS=<target>` set, so they build only that example.
-
-Replace the seed's body so it opens the example the way every spec does, then point the planner at it:
-
-```ts
-import { openExample, test } from '../helpers';
-
-test('seed', async ({ page }) => {
-  await openExample(page);
-});
-```
-
-1. **Plan with `playwright-test-planner`.** Give it the example directory, its `README.md`, and this guide. It explores the running example and writes a plan in `specs/`: a mount scenario and the example's one concern, each with its start state, steps, and expected result. Check the plan against [What to test](#what-to-test) and [Determinism](#determinism) before generating.
-2. **Generate with `playwright-test-generator`.** It runs each planned scenario in a browser and writes one test per file from the locators it confirmed. Merge those tests into the one concern spec, `tests/<concern>.spec.ts`, importing from `../helpers` rather than `@playwright/test`. Drop the generator's `// spec:` and `// seed:` header comments, then add the target as above.
-3. **Repair with `playwright-test-healer`.** When a test fails, the healer replays it, reads the failure snapshot, and fixes the locator or wait. It must not weaken an assertion to pass. When the example itself misbehaves, mark that test `test.fixme` with one line that records what happens, file the bug, and put the issue number in that line.
-
-Agent output follows the same rules as a hand-written spec. Before committing:
-
-- Follow [Selectors](#selectors): no `.first()`, `.last()`, or `.nth()` to hide an ambiguous match, and no chat-internal CSS classes.
-- The chat's live-region announcer repeats reply text. Scope reply assertions under `page.getByTestId(PageObjectId.MAIN_PANEL)`, or match a leaf with `{ exact: true }`. Host-rendered content is slotted, not inside `MAIN_PANEL`; select it by the example's own class.
-- A negative check must follow the state that would precede what it rules out. Await the reply, or open the list, before asserting something is absent.
-- No `waitForTimeout`, fixed sleeps, dates, or random values.
-- Take fixture text from each flavor's own `src/`; React and Web Components mocks can differ. Read a per-flavor value from the `target` fixture rather than forking the spec.
-- Check the example against the [coverage target](#coverage-target).
+Writing the spec with Playwright's test agents? Read [playwright-agents.md](playwright-agents.md).
 
 ## Scaffold a local Vite suite
 

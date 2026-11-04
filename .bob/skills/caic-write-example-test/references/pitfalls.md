@@ -73,6 +73,38 @@ A test that sends again after Stop can pass only because the mock stays busy for
 
 `.first()`, `.last()`, and `.nth()` hide ambiguity. Removing one has exposed a real bug. Scope the locator, or match a whole element exactly. Keep a positional locator only when order is what the test checks, and say why in a comment.
 
+## `force: true` skips the checks
+
+`click({ force: true })` skips the actionability checks that catch a covered or hidden control. The generator adds it by habit, and the test usually passes without it.
+
+```ts
+// ✗ hides a covered or disabled target
+await editor.click({ force: true });
+
+// ✓ let the click wait for the control
+await editor.click();
+```
+
+Keep `force` only where a comment says what blocks the click and why that is expected.
+
+## A loop bound nobody chose
+
+A loop that presses Tab "up to 10 times" has a number with no reason behind it, and the helper that tests focus inside it hides which press failed.
+
+```ts
+// ✗ why 10? and which press reached the editor?
+for (let i = 0; i < 10; i++) {
+  if (await editor.evaluate((el) => el.matches(':focus'))) break;
+  await page.keyboard.press('Tab');
+}
+
+// ✓ press the known number of times, then check
+await page.keyboard.press('Tab');
+await expect(editor).toBeFocused();
+```
+
+When the number of presses is not known, count the focusable controls before the target and say so in a comment.
+
 ## Related guidance
 
 - [playwright.md](../../../../examples/references/playwright.md) — the guide's Selectors and Determinism sections
