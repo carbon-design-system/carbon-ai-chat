@@ -10,8 +10,7 @@
 import { createComponent } from '@lit/react';
 import React from 'react';
 
-// Export the actual class for the component that will *directly* be wrapped with React.
-import CarbonMenuElement from '@carbon/web-components/es/components/menu/menu.js';
+import { CDSMenu as CarbonMenuElement } from '@carbon/web-components/es/components/menu/index.js';
 const Menu = createComponent({
   tagName: 'cds-menu',
   elementClass: CarbonMenuElement,

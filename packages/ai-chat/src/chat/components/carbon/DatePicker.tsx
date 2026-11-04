@@ -10,9 +10,10 @@
 import { createComponent } from '@lit/react';
 import React from 'react';
 
-// Export the actual class for the component that will *directly* be wrapped with React.
-import CarbonDatePickerElement from '@carbon/web-components/es/components/date-picker/date-picker.js';
-import CarbonDatePickerInputElement from '@carbon/web-components/es/components/date-picker/date-picker-input.js';
+import {
+  CDSDatePicker as CarbonDatePickerElement,
+  CDSDatePickerInput as CarbonDatePickerInputElement,
+} from '@carbon/web-components/es/components/date-picker/index.js';
 
 const DatePicker = createComponent({
   tagName: 'cds-date-picker',

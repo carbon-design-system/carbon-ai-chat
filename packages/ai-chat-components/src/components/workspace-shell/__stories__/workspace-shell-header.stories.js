@@ -8,8 +8,8 @@
  */
 
 import '../index';
-import '@carbon/web-components/es/components/button/button.js';
-import '@carbon/web-components/es/components/tag/tag.js';
+import '@carbon/web-components/es/components/button/index.js';
+import '@carbon/web-components/es/components/tag/index.js';
 import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
 import { html } from 'lit';
 import Edit16 from '@carbon/icons/es/edit/16.js';

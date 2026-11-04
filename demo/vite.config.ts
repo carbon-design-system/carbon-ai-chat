@@ -68,6 +68,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: path.resolve(__dirname, 'index.html'),
+        carbonRegistration: path.resolve(__dirname, 'carbon-registration.html'),
         // Loads the package entries in a chosen order for the host
         // compatibility tests; not linked from the demo.
         hostCompatibility: path.resolve(__dirname, 'host-compatibility.html'),

@@ -7,23 +7,29 @@
  *  @license
  */
 
-import type CDSOverflowMenuItem from '@carbon/web-components/es/components/overflow-menu/overflow-menu-item.js';
-
 /**
- * Base type for overflow menu items.
- * Extends properties from CDSOverflowMenuItem to ensure type safety
- * and compatibility with Carbon Design System components.
- *
- * This base type is used by:
- * - Action (toolbar.ts) - for toolbar actions that can overflow
- * - NavigationOverflowItem (chat-header.ts) - for navigation menu items
+ * Shared options for toolbar actions and header navigation menu items.
  */
-export interface BaseOverflowMenuItem extends Partial<
-  Pick<
-    CDSOverflowMenuItem,
-    'danger' | 'dangerDescription' | 'disabled' | 'divider' | 'href'
-  >
-> {
+export interface BaseOverflowMenuItem {
+  /** Whether the item represents a destructive action. */
+  danger?: boolean;
+
+  /** Accessible description of a destructive action. */
+  dangerDescription?: string;
+
+  /** Whether activation is disabled. */
+  disabled?: boolean;
+
+  /** Whether a divider appears before the item. */
+  divider?: boolean;
+
+  /**
+   * URL to open when the item is activated.
+   * Menu items navigate through script and announce as menu items rather than links.
+   * Native link actions such as middle-click and copy link address are unavailable.
+   */
+  href?: string;
+
   /**
    * Display text for the menu item.
    */

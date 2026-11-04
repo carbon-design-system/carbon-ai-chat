@@ -13,7 +13,7 @@ import spread from '@carbon/web-components/es/globals/directives/spread.js';
 import prefix from '../../../globals/settings.js';
 import { carbonElement } from '../../../globals/decorators/carbon-element.js';
 
-import '@carbon/web-components/es/components/search/search.js';
+import '@carbon/web-components/es/components/search/index.js';
 import '@carbon/web-components/es/components/icon-button/index.js';
 import AddComment16 from '@carbon/icons/es/add-comment/16.js';
 import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
