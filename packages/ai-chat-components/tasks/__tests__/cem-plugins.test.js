@@ -12,11 +12,11 @@ import path from 'node:path';
 import { test } from 'node:test';
 import { create, ts } from '@custom-elements-manifest/analyzer';
 import { globby } from 'globby';
-import { litPlugin } from '@custom-elements-manifest/analyzer/src/features/framework-plugins/lit/lit.js';
 import config from '../../custom-elements-manifest.config.js';
 import {
   carbonElementTagPlugin,
   componentModulePathsPlugin,
+  globalSuperclassReferences,
   internalMembersPlugin,
   readPrefixSetting,
 } from '../cem-plugins.js';
@@ -28,7 +28,6 @@ function analyze(files, prefix = 'fixture-chat') {
   return create({
     modules,
     plugins: [
-      ...litPlugin(),
       carbonElementTagPlugin({ prefix }),
       internalMembersPlugin(),
       componentModulePathsPlugin(),
@@ -117,6 +116,88 @@ test('resolves literal tags, local constants and imported decorator aliases', ()
   ]);
 });
 
+test('registering barrels reference static names without tagging abstract or unnamed classes', () => {
+  const manifest = analyze({
+    'src/element.ts': `
+      import prefix from './settings.js';
+      abstract class Base extends HTMLElement { static is = 'abstract-element'; }
+      class Unnamed extends HTMLElement {}
+      class Example extends Base { static is = \`\${prefix}-element\`; }
+      export default Example;
+      export { Base, Unnamed };
+    `,
+    'src/index.ts': `
+      import Example, { Base, Unnamed } from './element.js';
+      import defineCustomElement from './register.js';
+      defineCustomElement(Example);
+      defineCustomElement(Base);
+      defineCustomElement(Unnamed);
+      export { default } from './element.js';
+    `,
+  });
+  assert.equal(declaration(manifest, 'Base').tagName, undefined);
+  assert.equal(declaration(manifest, 'Unnamed').tagName, undefined);
+  assert.equal(
+    declaration(manifest, 'Example').tagName,
+    'fixture-chat-element'
+  );
+  const barrel = manifest.modules.find(
+    (module) => module.path === 'es/index.js'
+  );
+  assert.deepEqual(
+    barrel.exports.find((entry) => entry.kind === 'custom-element-definition'),
+    {
+      kind: 'custom-element-definition',
+      name: 'fixture-chat-element',
+      declaration: { name: 'Example', module: 'es/element.js' },
+    }
+  );
+  assert.equal(
+    barrel.exports.filter((entry) => entry.kind === 'custom-element-definition')
+      .length,
+    1
+  );
+});
+
+test('recognizes a pure static-is class and its registering barrel', () => {
+  const manifest = analyze({
+    'src/element.ts':
+      "export default class Example extends HTMLElement { static readonly is = 'static-element'; }",
+    'src/index.ts':
+      "import Example from './element.js'; defineCustomElement(Example); export { Example };",
+  });
+  assert.equal(declaration(manifest, 'Example').tagName, 'static-element');
+  const owner = manifest.modules.find(
+    (module) => module.path === 'es/element.js'
+  );
+  assert.equal(
+    (owner.exports ?? []).filter(
+      (entry) => entry.kind === 'custom-element-definition'
+    ).length,
+    0
+  );
+  const barrel = manifest.modules.find(
+    (module) => module.path === 'es/index.js'
+  );
+  assert.equal(
+    barrel.exports.filter((entry) => entry.kind === 'custom-element-definition')
+      .length,
+    1
+  );
+});
+
+test('keeping a decorator alongside static is does not duplicate a tag', () => {
+  const manifest = analyze({
+    'src/element.ts':
+      "@carbonElement('same-element') class Example extends HTMLElement { static is = 'same-element'; }",
+  });
+  const definitions = manifest.modules
+    .flatMap((module) => module.exports ?? [])
+    .filter((entry) => entry.kind === 'custom-element-definition');
+  assert.equal(definitions.length, 1);
+  assert.equal(definitions[0].name, 'same-element');
+});
+
 test('imported reexports point to their declarations through aliases and barrels', () => {
   const manifest = analyze({
     'src/loader.ts':
@@ -151,18 +232,45 @@ test('imported external reexports retain the package and public subpath', () => 
   });
 });
 
-test('direct external reexports split the package from its subpath', () => {
+test('external reexports through barrels and export * split the package from its subpath', () => {
   const manifest = analyze({
-    'src/external.ts':
-      "export { Item } from '@other/package/items.js'; export { Root } from 'plain';",
+    'src/direct.ts': "export { Item } from '@other/package/items.js';",
+    'src/barrel.ts': "export { Item } from './direct.js';",
+    'src/star.ts': "export * from '@other/package/items.js';",
   });
-  assert.deepEqual(
-    manifest.modules[0].exports.map((entry) => entry.declaration),
-    [
-      { name: 'Item', package: '@other/package', module: 'items.js' },
-      { name: 'Root', package: 'plain' },
-    ]
-  );
+  const exported = (path) =>
+    manifest.modules.find((entry) => entry.path === path).exports;
+  for (const path of ['es/direct.js', 'es/barrel.js']) {
+    assert.deepEqual(exported(path)[0].declaration, {
+      name: 'Item',
+      package: '@other/package',
+      module: 'items.js',
+    });
+  }
+  assert.deepEqual(exported('es/star.js')[0].declaration, {
+    name: '*',
+    package: '@other/package',
+    module: 'items.js',
+  });
+});
+
+test('external base classes and mixins split the package from its subpath', () => {
+  const manifest = analyze({
+    'src/derived.ts': `
+      import { Base } from '@other/package/base.js';
+      import { Mixin } from '@other/package/mixins/mixin.js';
+      export class Derived extends Mixin(Base) {}
+    `,
+  });
+  const derived = declaration(manifest, 'Derived');
+  assert.deepEqual(derived.superclass, {
+    name: 'Base',
+    package: '@other/package',
+    module: 'base.js',
+  });
+  assert.deepEqual(derived.mixins, [
+    { name: 'Mixin', package: '@other/package', module: 'mixins/mixin.js' },
+  ]);
 });
 
 test('type-only exports are omitted while runtime enums and values remain', () => {
@@ -212,23 +320,98 @@ test('imported base classes use package-relative published paths', () => {
   });
 });
 
-test('external base classes and mixins split the package from its subpath', () => {
+test('omits source-proven stylesheet resource exports and preserves JavaScript exports', () => {
   const manifest = analyze({
-    'src/derived.ts': `
-      import { Base } from '@other/package/base.js';
-      import { Mixin } from '@other/package/mixins/mixin.js';
-      export class Derived extends Mixin(Base) {}
+    'src/resources.ts': String.raw`
+      import importedStyle from './theme.scss';
+      export { importedStyle };
+      export { default as directStyle } from './inline.scss?lit';
+      export { default as escapedStyle } from './escaped.scss\u003flit\u0023inline';
+      export { default as packageStyle } from '@fixture/theme/base.sass?lit';
+      export { default as stylesheetNamedValue } from './theme.scss.js';
+    `,
+    'src/theme.scss.ts':
+      'const JavaScriptValue = 42; export default JavaScriptValue;',
+    'src/barrel.ts': `
+      export { directStyle as renamedStyle, importedStyle, packageStyle,
+        stylesheetNamedValue } from './resources.js';
+      export { default as ordinaryStyles } from './styles.js';
+    `,
+    'src/styles.ts': 'const Styles = 7; export default Styles;',
+  });
+  const exportsOf = (module) =>
+    manifest.modules.find((entry) => entry.path === module).exports;
+  assert.deepEqual(
+    exportsOf('es/resources.js').map((entry) => entry.name),
+    ['stylesheetNamedValue']
+  );
+  assert.deepEqual(
+    exportsOf('es/barrel.js').map((entry) => entry.name),
+    ['stylesheetNamedValue', 'ordinaryStyles']
+  );
+  assert.deepEqual(
+    exportsOf('es/barrel.js').map((entry) => entry.declaration),
+    [
+      { name: 'JavaScriptValue', module: 'es/theme.scss.js' },
+      { name: 'Styles', module: 'es/styles.js' },
+    ]
+  );
+});
+
+test('recognizes genuine library globals while retaining local, imported, shadowed and unknown superclass edges', () => {
+  const manifest = analyze({
+    'src/bases.ts': `
+      export class NativeError extends Error {}
+      export class NativeMap extends Map {}
+      export class Unknown extends MissingBase {}
+      class LocalBase {}
+      export class Local extends LocalBase {}
+    `,
+    'src/imported.ts': `
+      import { Error } from 'other-package';
+      export class Imported extends Error {}
     `,
   });
-  const derived = declaration(manifest, 'Derived');
-  assert.deepEqual(derived.superclass, {
-    name: 'Base',
-    package: '@other/package',
-    module: 'base.js',
+  for (const [name, base] of [
+    ['NativeError', 'Error'],
+    ['NativeMap', 'Map'],
+  ]) {
+    assert.deepEqual(declaration(manifest, name).superclass, { name: base });
+  }
+  for (const [name, base] of [
+    ['Unknown', 'MissingBase'],
+    ['Local', 'LocalBase'],
+  ]) {
+    assert.deepEqual(declaration(manifest, name).superclass, {
+      name: base,
+      module: 'es/bases.js',
+    });
+  }
+  assert.deepEqual(declaration(manifest, 'Imported').superclass, {
+    name: 'Error',
+    package: 'other-package',
   });
-  assert.deepEqual(derived.mixins, [
-    { name: 'Mixin', package: '@other/package', module: 'mixins/mixin.js' },
-  ]);
+  const source = ts.createSourceFile(
+    'src/scopes.ts',
+    `
+    function scoped(Error: new () => object) { class Shadowed extends Error {} }
+    function hoisted() { class Hoisted extends Error {} if (true) { var Error = Object; } }
+    for (let Error of [Object]) { class LoopShadowed extends Error {} }
+    class Container { Error() { class Native extends Error {} } }
+    function sibling() { try {} catch (Error) {} class NativeCatchSibling extends Error {} }
+    class Ambiguous extends Error {}
+    function nested(Error: new () => object) { class Ambiguous extends Error {} }
+  `,
+    ts.ScriptTarget.Latest,
+    true
+  );
+  assert.deepEqual(
+    [...globalSuperclassReferences(ts, source)],
+    [
+      ['Native', 'Error'],
+      ['NativeCatchSibling', 'Error'],
+    ]
+  );
 });
 
 test('dynamic registration helpers do not invent element definitions', () => {
@@ -314,6 +497,17 @@ test('rewrites local declaration, inheritance, export and type references to pub
   ]);
 });
 
+test('rejects a decorator/static-is disagreement', () => {
+  assert.throws(
+    () =>
+      analyze({
+        'src/element.ts':
+          "@carbonElement('first-element') class Example extends HTMLElement { static is = 'second-element'; }",
+      }),
+    /Conflicting tag names/
+  );
+});
+
 test('the analyzer includes public source while excluding fixture, story and declaration-only sources', async () => {
   const directory = mkdtempSync(path.join(tmpdir(), 'cem-sources-'));
   try {
@@ -338,19 +532,4 @@ test('the analyzer includes public source while excluding fixture, story and dec
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
-});
-
-test('stylesheet reexports use emitted modules and builtin Error stays global', () => {
-  const manifest = analyze({
-    'src/inline.ts':
-      "export { default as inlineStyles } from './inline.scss?lit'; export class InlineError extends Error {}",
-  });
-  assert.deepEqual(
-    manifest.modules[0].exports.find((entry) => entry.name === 'inlineStyles')
-      .declaration,
-    { name: 'default', module: 'es/inline.scss.js' }
-  );
-  assert.deepEqual(declaration(manifest, 'InlineError').superclass, {
-    name: 'Error',
-  });
 });

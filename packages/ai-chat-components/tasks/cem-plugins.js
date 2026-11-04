@@ -82,6 +82,24 @@ function collectImportBindings(ts, statement, imports, decorators) {
   }
 }
 
+function collectExportBindings(ts, statement, exports) {
+  if (
+    !ts.isExportDeclaration(statement) ||
+    !statement.moduleSpecifier ||
+    !ts.isStringLiteral(statement.moduleSpecifier) ||
+    !statement.exportClause ||
+    !ts.isNamedExports(statement.exportClause)
+  ) {
+    return;
+  }
+  for (const binding of statement.exportClause.elements) {
+    exports.set(binding.name.text, {
+      name: (binding.propertyName ?? binding.name).text,
+      module: statement.moduleSpecifier.text,
+    });
+  }
+}
+
 function localTypeNames(ts, source, imports) {
   const names = new Set(
     [...imports].filter(([, binding]) => binding.typeOnly).map(([name]) => name)
@@ -170,13 +188,208 @@ function dynamicRegistrationNames(ts, source) {
   return names;
 }
 
+function stylesheetResourceSpecifiers(ts, source) {
+  return new Set(
+    source.statements.flatMap((statement) => {
+      if (
+        (ts.isImportDeclaration(statement) ||
+          ts.isExportDeclaration(statement)) &&
+        statement.moduleSpecifier &&
+        ts.isStringLiteral(statement.moduleSpecifier) &&
+        /\.(?:css|scss|sass)(?:[?#].*)?$/i.test(statement.moduleSpecifier.text)
+      ) {
+        return [statement.moduleSpecifier.text];
+      }
+      return [];
+    })
+  );
+}
+
+let libraryProgram;
+
+function libraryValue(name) {
+  libraryProgram ??= typescript.createProgram(
+    [
+      typescript.getDefaultLibFilePath({
+        target: typescript.ScriptTarget.ESNext,
+      }),
+    ],
+    { target: typescript.ScriptTarget.ESNext, types: [], noEmit: true }
+  );
+  const symbol = libraryProgram
+    .getTypeChecker()
+    .resolveName(name, undefined, typescript.SymbolFlags.Value, false);
+  return (
+    Boolean(symbol?.declarations?.length) &&
+    symbol.declarations.every((declaration) =>
+      libraryProgram.isSourceFileDefaultLibrary(declaration.getSourceFile())
+    )
+  );
+}
+
+function bindsName(ts, declaration, name) {
+  if (!declaration) {
+    return false;
+  }
+  if (ts.isIdentifier(declaration)) {
+    return declaration.text === name;
+  }
+  if (
+    ts.isObjectBindingPattern(declaration) ||
+    ts.isArrayBindingPattern(declaration)
+  ) {
+    return declaration.elements.some((entry) =>
+      bindsName(ts, entry.name, name)
+    );
+  }
+  return false;
+}
+
+function statementBinds(ts, statement, name) {
+  if (ts.isVariableStatement(statement)) {
+    return statement.declarationList.declarations.some((entry) =>
+      bindsName(ts, entry.name, name)
+    );
+  }
+  if (ts.isImportDeclaration(statement)) {
+    const clause = statement.importClause;
+    const bindings = clause?.namedBindings;
+    return (
+      bindsName(ts, clause?.name, name) ||
+      Boolean(
+        bindings &&
+        (ts.isNamedImports(bindings)
+          ? bindings.elements.some((entry) => entry.name.text === name)
+          : bindings.name.text === name)
+      )
+    );
+  }
+  return (
+    (ts.isClassDeclaration(statement) ||
+      ts.isFunctionDeclaration(statement) ||
+      ts.isEnumDeclaration(statement) ||
+      ts.isModuleDeclaration(statement) ||
+      ts.isImportEqualsDeclaration(statement)) &&
+    bindsName(ts, statement.name, name)
+  );
+}
+
+function hoistedBinding(ts, scope, name) {
+  let found = false;
+  const visit = (node) => {
+    if (node !== scope && (ts.isFunctionLike(node) || ts.isClassLike(node))) {
+      return;
+    }
+    if (
+      ts.isVariableDeclaration(node) &&
+      ts.isVariableDeclarationList(node.parent) &&
+      !(node.parent.flags & ts.NodeFlags.BlockScoped) &&
+      bindsName(ts, node.name, name)
+    ) {
+      found = true;
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(scope);
+  return found;
+}
+
+function scopeNameBinds(ts, scope, name) {
+  return (
+    (ts.isClassLike(scope) ||
+      ts.isFunctionDeclaration(scope) ||
+      ts.isFunctionExpression(scope)) &&
+    bindsName(ts, scope.name, name)
+  );
+}
+
+function scopeBinds(ts, scope, name) {
+  if (scopeNameBinds(ts, scope, name)) {
+    return true;
+  }
+  if (
+    scope.parameters?.some((parameter) => bindsName(ts, parameter.name, name))
+  ) {
+    return true;
+  }
+  if (
+    ts.isCatchClause(scope) &&
+    bindsName(ts, scope.variableDeclaration?.name, name)
+  ) {
+    return true;
+  }
+  const statements = ts.isCaseBlock(scope)
+    ? scope.clauses.flatMap((clause) => [...clause.statements])
+    : (scope.statements ?? []);
+  if (statements.some((statement) => statementBinds(ts, statement, name))) {
+    return true;
+  }
+  if (
+    scope.initializer &&
+    ts.isVariableDeclarationList(scope.initializer) &&
+    scope.initializer.declarations.some((entry) =>
+      bindsName(ts, entry.name, name)
+    )
+  ) {
+    return true;
+  }
+  return (
+    (ts.isSourceFile(scope) || ts.isFunctionLike(scope)) &&
+    hoistedBinding(ts, scope, name)
+  );
+}
+
+function lexicalBinding(ts, expression, name) {
+  for (let scope = expression.parent; scope; scope = scope.parent) {
+    if (scopeBinds(ts, scope, name)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+export function globalSuperclassReferences(ts, source) {
+  const references = new Map();
+  const seen = new Set();
+  const ambiguous = new Set();
+  const visit = (node) => {
+    if (ts.isClassDeclaration(node) && node.name) {
+      const name = node.name.text;
+      if (seen.has(name)) {
+        ambiguous.add(name);
+      }
+      seen.add(name);
+      const base = node.heritageClauses?.find(
+        (clause) => clause.token === ts.SyntaxKind.ExtendsKeyword
+      )?.types[0]?.expression;
+      if (
+        base &&
+        ts.isIdentifier(base) &&
+        !lexicalBinding(ts, base, base.text) &&
+        libraryValue(base.text)
+      ) {
+        references.set(name, base.text);
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  for (const name of ambiguous) {
+    references.delete(name);
+  }
+  return references;
+}
+
 function sourceInfo(ts, source) {
   const constants = new Map();
   const imports = new Map();
+  const exports = new Map();
   const decorators = new Set(['carbonElement']);
+  const resources = stylesheetResourceSpecifiers(ts, source);
   let defaultName;
   for (const statement of source.statements) {
     collectImportBindings(ts, statement, imports, decorators);
+    collectExportBindings(ts, statement, exports);
     if (ts.isVariableStatement(statement)) {
       for (const declaration of statement.declarationList.declarations) {
         if (ts.isIdentifier(declaration.name) && declaration.initializer) {
@@ -203,7 +416,10 @@ function sourceInfo(ts, source) {
   return {
     constants,
     imports,
+    exports,
     decorators,
+    resources,
+    globalBases: globalSuperclassReferences(ts, source),
     defaultName,
     types: { names, exported: typeOnlyExportNames(ts, source, names) },
     dynamicRegistrations: dynamicRegistrationNames(ts, source),
@@ -251,12 +467,14 @@ function addDefinition(module, tagName, declaration) {
 }
 
 export function carbonElementTagPlugin({ prefix }) {
-  const elements = [];
+  const classes = [];
+  const registrations = [];
   const sources = new Map();
   return {
     name: 'carbon-element-tag',
     initialize() {
-      elements.length = 0;
+      classes.length = 0;
+      registrations.length = 0;
       sources.clear();
     },
     collectPhase({ ts, node }) {
@@ -265,13 +483,52 @@ export function carbonElementTagPlugin({ prefix }) {
       }
     },
     analyzePhase({ ts, node, moduleDoc }) {
+      const source = node.getSourceFile();
+      const info = sources.get(moduleKey(source.fileName));
+      if (
+        ts.isExpressionStatement(node) &&
+        ts.isCallExpression(node.expression)
+      ) {
+        const call = node.expression;
+        if (
+          !ts.isIdentifier(call.expression) ||
+          !call.arguments[0] ||
+          !ts.isIdentifier(call.arguments[0])
+        ) {
+          return;
+        }
+        const imported = info.imports.get(call.expression.text);
+        if (
+          call.expression.text === 'defineCustomElement' ||
+          imported?.name === 'defineCustomElement'
+        ) {
+          registrations.push({
+            module: moduleDoc.path,
+            className: call.arguments[0].text,
+            info,
+          });
+        }
+      }
       if (!ts.isClassDeclaration(node) || !node.name) {
         return;
       }
       const declaration = moduleDoc.declarations?.find(
         (entry) => entry.name === node.name.text
       );
-      const info = sources.get(moduleKey(node.getSourceFile().fileName));
+      if (!declaration) {
+        return;
+      }
+      const abstract = node.modifiers?.some(
+        (modifier) => modifier.kind === ts.SyntaxKind.AbstractKeyword
+      );
+      if (abstract) {
+        classes.push({
+          module: moduleDoc.path,
+          name: node.name.text,
+          abstract: true,
+        });
+        return;
+      }
       const decorator = (ts.getDecorators(node) ?? []).find(
         (entry) =>
           ts.isCallExpression(entry.expression) &&
@@ -280,36 +537,106 @@ export function carbonElementTagPlugin({ prefix }) {
             : ts.isPropertyAccessExpression(entry.expression.expression) &&
               entry.expression.expression.name.text === 'carbonElement')
       );
-      if (!declaration || !decorator) {
+      const staticIs = node.members.find(
+        (member) =>
+          member.name?.getText() === 'is' &&
+          member.modifiers?.some(
+            (modifier) => modifier.kind === ts.SyntaxKind.StaticKeyword
+          )
+      );
+      const decoratorTag =
+        decorator &&
+        stringValue(
+          ts,
+          decorator.expression.arguments[0],
+          info.constants,
+          prefix
+        );
+      const staticTag =
+        staticIs?.initializer &&
+        stringValue(ts, staticIs.initializer, info.constants, prefix);
+      if (decoratorTag && staticTag && decoratorTag !== staticTag) {
+        throw new Error(`Conflicting tag names for ${node.name.text}.`);
+      }
+      const tagName = decoratorTag || staticTag;
+      if (!tagName) {
         return;
       }
-      const tagName = stringValue(
-        ts,
-        decorator.expression.arguments[0],
-        info.constants,
-        prefix
-      );
       declaration.tagName = tagName;
       declaration.customElement = true;
-      addDefinition(moduleDoc, tagName, {
-        name: node.name.text,
+      if (decorator) {
+        addDefinition(moduleDoc, tagName, {
+          name: node.name.text,
+          module: moduleDoc.path,
+        });
+      }
+      classes.push({
         module: moduleDoc.path,
+        name: node.name.text,
+        tagName,
+        registered: Boolean(decorator),
       });
-      elements.push({ module: moduleDoc.path, name: node.name.text, tagName });
     },
     packageLinkPhase({ customElementsManifest }) {
-      for (const element of elements) {
-        const module = customElementsManifest.modules.find(
+      const modules = customElementsManifest.modules;
+      for (const element of classes) {
+        const module = modules.find(
           (entry) => moduleKey(entry.path) === moduleKey(element.module)
         );
-        module.exports = module.exports?.filter(
+        const declaration = module?.declarations?.find(
+          (entry) => entry.name === element.name
+        );
+        if (!declaration) {
+          continue;
+        }
+        if (element.abstract) {
+          delete declaration.tagName;
+          module.exports = module.exports?.filter(
+            (entry) =>
+              entry.kind !== 'custom-element-definition' ||
+              entry.declaration.name !== element.name
+          );
+          continue;
+        }
+        declaration.tagName = element.tagName;
+        if (element.registered) {
+          module.exports = module.exports?.filter(
+            (entry) =>
+              entry.kind !== 'custom-element-definition' ||
+              entry.declaration.name !== element.name
+          );
+          addDefinition(module, element.tagName, {
+            name: element.name,
+            module: module.path,
+          });
+        }
+      }
+      for (const registration of registrations) {
+        const imported = registration.info.imports.get(registration.className);
+        const sourceModule = imported?.module.startsWith('.')
+          ? path.posix.join(
+              path.posix.dirname(registration.module),
+              imported.module
+            )
+          : registration.module;
+        const name =
+          imported?.name === 'default'
+            ? sources.get(moduleKey(sourceModule))?.defaultName
+            : (imported?.name ?? registration.className);
+        const element = classes.find(
           (entry) =>
-            entry.kind !== 'custom-element-definition' ||
-            entry.declaration.name !== element.name
+            moduleKey(entry.module) === moduleKey(sourceModule) &&
+            entry.name === name
+        );
+        if (!element?.tagName || element.abstract) {
+          continue;
+        }
+        const module = modules.find(
+          (entry) => entry.path === registration.module
         );
         addDefinition(module, element.tagName, {
           name: element.name,
-          module: module.path,
+          module: element.module,
         });
       }
     },
@@ -345,8 +672,64 @@ export function internalMembersPlugin() {
   };
 }
 
+function rewriteLocalModuleReferences(value, rewrite) {
+  if (!value || typeof value !== 'object') {
+    return;
+  }
+  if (typeof value.module === 'string' && !value.package) {
+    value.module = rewrite(value.module);
+  } else if (typeof value.package === 'string' && !value.module) {
+    // Superclass, mixin, and re-export references can keep the full specifier.
+    Object.assign(value, packageReference(value.name, value.package));
+  }
+  Object.values(value).forEach((child) =>
+    rewriteLocalModuleReferences(child, rewrite)
+  );
+}
+
+function stylesheetResourceReferences(sources) {
+  const resources = new Set();
+  for (const [module, info] of sources) {
+    for (const resource of info.resources) {
+      resources.add(
+        resource.startsWith('.')
+          ? resourceModuleKey(
+              path.posix.join(path.posix.dirname(module), resource)
+            )
+          : resource
+      );
+    }
+  }
+  return resources;
+}
+
+function resourceModuleKey(module) {
+  return path.posix
+    .normalize(module.replaceAll('\\', '/'))
+    .replace(/^\/src\//, 'src/');
+}
+
+function resourceReferenceKey(reference, module) {
+  if (reference.package) {
+    return [reference.package, reference.module].filter(Boolean).join('/');
+  }
+  const target = reference.module ?? module.path;
+  return resourceModuleKey(
+    target.startsWith('.')
+      ? path.posix.join(path.posix.dirname(module.path), target)
+      : target
+  );
+}
+
+function referencedModulePath(reference, owner) {
+  const target = reference.module ?? owner.path;
+  return target.startsWith('.')
+    ? path.posix.join(path.posix.dirname(owner.path), target)
+    : target;
+}
+
 // Splits a bare specifier into the schema's package name and its subpath.
-const packageReference = (name, specifier) => {
+function packageReference(name, specifier) {
   const segments = specifier.split('/');
   const packageName = segments
     .splice(0, specifier.startsWith('@') ? 2 : 1)
@@ -356,7 +739,148 @@ const packageReference = (name, specifier) => {
     package: packageName,
     ...(segments.length ? { module: segments.join('/') } : {}),
   };
-};
+}
+
+function externalImport(imported) {
+  return packageReference(imported.name, imported.module);
+}
+
+function importedDeclaration(context, imported, owner) {
+  if (!imported.module.startsWith('.')) {
+    return { declaration: externalImport(imported), owner };
+  }
+  const target = path.posix.join(
+    path.posix.dirname(owner.path),
+    imported.module
+  );
+  if (context.resources.has(resourceModuleKey(target))) {
+    return { declaration: { name: imported.name, module: target }, owner };
+  }
+  const module = context.modules.find(
+    (entry) => moduleKey(entry.path) === moduleKey(target)
+  );
+  const exported = module?.exports?.find(
+    (entry) => entry.kind === 'js' && entry.name === imported.name
+  );
+  return {
+    declaration: exported?.declaration ?? {
+      name:
+        imported.name === 'default'
+          ? (context.sources.get(moduleKey(target))?.defaultName ?? 'default')
+          : imported.name,
+      module: module?.path ?? target,
+    },
+    owner: module ?? owner,
+  };
+}
+
+function redirectedExport(reference, module) {
+  const reexport = module.exports?.find(
+    (entry) => entry.kind === 'js' && entry.name === reference.name
+  )?.declaration;
+  return reexport &&
+    (reexport.package ||
+      reexport.name !== reference.name ||
+      moduleKey(reexport.module ?? module.path) !==
+        moduleKey(reference.module ?? module.path))
+    ? { declaration: reexport, owner: module }
+    : undefined;
+}
+
+function resolveModuleDeclaration(
+  context,
+  reference,
+  owner,
+  visited = new Set()
+) {
+  if (
+    reference.package ||
+    context.resources.has(resourceReferenceKey(reference, owner))
+  ) {
+    return reference;
+  }
+  const target = referencedModulePath(reference, owner);
+  const module = context.modules.find(
+    (entry) => moduleKey(entry.path) === moduleKey(target)
+  );
+  if (
+    !module ||
+    module.declarations?.some((entry) => entry.name === reference.name)
+  ) {
+    return reference;
+  }
+  const key = `${module.path}#${reference.name}`;
+  if (visited.has(key)) {
+    throw new Error(`Circular manifest export: ${key}`);
+  }
+  const imported = context.sources
+    .get(moduleKey(module.path))
+    ?.imports.get(reference.name);
+  const redirect =
+    redirectedExport(reference, module) ??
+    (imported ? importedDeclaration(context, imported, module) : undefined);
+  return redirect
+    ? resolveModuleDeclaration(
+        context,
+        redirect.declaration,
+        redirect.owner,
+        new Set([...visited, key])
+      )
+    : reference;
+}
+
+function resolveExports(context, module) {
+  const info = context.sources.get(moduleKey(module.path));
+  for (const entry of module.exports ?? []) {
+    if (entry.kind === 'js') {
+      const exported = info?.exports.get(entry.name);
+      const target = exported
+        ? importedDeclaration(context, exported, module)
+        : { declaration: entry.declaration, owner: module };
+      entry.declaration = resolveModuleDeclaration(
+        context,
+        target.declaration,
+        target.owner
+      );
+    }
+  }
+}
+
+function unqualifyGlobalBases(module, info) {
+  for (const declaration of module.declarations ?? []) {
+    if (
+      declaration.superclass &&
+      info?.globalBases.get(declaration.name) === declaration.superclass.name
+    ) {
+      delete declaration.superclass.module;
+    }
+  }
+}
+
+function includeManifestExport(context, module, entry) {
+  const info = context.sources.get(moduleKey(module.path));
+  if (entry.kind === 'custom-element-definition') {
+    return !info?.dynamicRegistrations.has(entry.name);
+  }
+  if (entry.kind !== 'js') {
+    return true;
+  }
+  if (info?.types.exported.has(entry.name)) {
+    return false;
+  }
+  const reference = entry.declaration;
+  // Stylesheet loaders supply values, not JavaScript CEM declarations.
+  // Only omit references proven by resource import/export source syntax.
+  if (context.resources.has(resourceReferenceKey(reference, module))) {
+    return false;
+  }
+  if (reference.package) {
+    return true;
+  }
+  return !context.sources
+    .get(moduleKey(referencedModulePath(reference, module)))
+    ?.types.names.has(reference.name);
+}
 
 export function componentModulePathsPlugin() {
   const sources = new Map();
@@ -372,7 +896,6 @@ export function componentModulePathsPlugin() {
     }
     const published = normalized
       .replace(/^src\//, 'es/')
-      .replace(/\.scss\?lit$/, '.scss.js')
       .replace(/\.[jt]sx?$/, '.js');
     return path.posix.extname(published) ? published : `${published}.js`;
   };
@@ -413,113 +936,27 @@ export function componentModulePathsPlugin() {
     },
     packageLinkPhase({ customElementsManifest }) {
       const modules = customElementsManifest.modules;
-      const resolveDeclaration = (reference, owner, visited = new Set()) => {
-        if (reference.package) {
-          // A direct bare re-export arrives with its full specifier as the package.
-          return reference.module
-            ? reference
-            : packageReference(reference.name, reference.package);
-        }
-        const target = reference.module?.startsWith('.')
-          ? path.posix.join(path.posix.dirname(owner.path), reference.module)
-          : (reference.module ?? owner.path);
-        const module = modules.find(
-          (entry) => moduleKey(entry.path) === moduleKey(target)
-        );
-        if (
-          !module ||
-          module.declarations?.some((entry) => entry.name === reference.name)
-        ) {
-          return reference;
-        }
-        const key = `${module.path}#${reference.name}`;
-        if (visited.has(key)) {
-          throw new Error(`Circular manifest export: ${key}`);
-        }
-        const imported = sources
-          .get(moduleKey(module.path))
-          ?.imports.get(reference.name);
-        if (!imported) {
-          return reference;
-        }
-        if (!imported.module.startsWith('.')) {
-          return packageReference(imported.name, imported.module);
-        }
-        const importedPath = path.posix.join(
-          path.posix.dirname(module.path),
-          imported.module
-        );
-        const importedModule = modules.find(
-          (entry) => moduleKey(entry.path) === moduleKey(importedPath)
-        );
-        const exported = importedModule?.exports?.find(
-          (entry) => entry.kind === 'js' && entry.name === imported.name
-        );
-        const declaration = exported?.declaration ?? {
-          name:
-            imported.name === 'default'
-              ? (sources.get(moduleKey(importedPath))?.defaultName ?? 'default')
-              : imported.name,
-          module: importedModule?.path ?? importedPath,
-        };
-        return resolveDeclaration(
-          declaration,
-          importedModule ?? module,
-          new Set([...visited, key])
-        );
-      };
+      const resources = stylesheetResourceReferences(sources);
       for (const module of modules) {
-        const info = sources.get(moduleKey(module.path));
-        for (const declaration of module.declarations ?? []) {
-          if (
-            declaration.superclass?.name === 'Error' &&
-            !info?.imports.has('Error') &&
-            !module.declarations.some((entry) => entry.name === 'Error')
-          ) {
-            delete declaration.superclass.module;
-          }
-        }
-        module.exports = module.exports?.filter((entry) => {
-          if (entry.kind === 'custom-element-definition') {
-            return !info?.dynamicRegistrations.has(entry.name);
-          }
-          if (entry.kind !== 'js') {
-            return true;
-          }
-          if (info?.types.exported.has(entry.name)) {
-            return false;
-          }
-          entry.declaration = resolveDeclaration(entry.declaration, module);
-          const reference = entry.declaration;
-          if (reference.package) {
-            return true;
-          }
-          const target = reference.module?.startsWith('.')
-            ? path.posix.join(path.posix.dirname(module.path), reference.module)
-            : (reference.module ?? module.path);
-          return !sources
-            .get(moduleKey(target))
-            ?.types.names.has(reference.name);
-        });
+        rewriteLocalModuleReferences(module, (target) =>
+          target.startsWith('.')
+            ? path.posix.join(path.posix.dirname(module.path), target)
+            : target
+        );
+      }
+      const context = { modules, sources, resources };
+      for (const module of modules) {
+        resolveExports(context, module);
+      }
+      for (const module of modules) {
+        unqualifyGlobalBases(module, sources.get(moduleKey(module.path)));
+        module.exports = module.exports?.filter((entry) =>
+          includeManifestExport(context, module, entry)
+        );
       }
       for (const module of customElementsManifest.modules) {
         const source = module.path;
-        const rewrite = (value) => {
-          if (!value || typeof value !== 'object') {
-            return;
-          }
-          if (typeof value.module === 'string' && !value.package) {
-            const target = value.module.startsWith('.')
-              ? path.posix.join(path.posix.dirname(source), value.module)
-              : value.module;
-            value.module = publishedPath(target);
-          } else if (typeof value.package === 'string' && !value.module) {
-            // Superclass and mixin references keep the analyzer's full specifier.
-            Object.assign(value, packageReference(value.name, value.package));
-          }
-          Object.values(value).forEach(rewrite);
-        };
-        rewrite(module);
+        rewriteLocalModuleReferences(module, publishedPath);
         module.path = publishedPath(source);
       }
     },
