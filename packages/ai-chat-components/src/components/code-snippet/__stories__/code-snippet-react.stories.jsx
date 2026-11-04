@@ -38,6 +38,8 @@ const renderSnippet = (args, code) => {
     showMoreText,
     showLessText,
     copyButtonTooltipContent,
+    feedback,
+    feedbackTimeout,
     language,
     defaultLanguage,
     onChange,
@@ -73,6 +75,12 @@ const renderSnippet = (args, code) => {
   }
   if (typeof copyButtonTooltipContent !== 'undefined') {
     commonProps.copyButtonTooltipContent = copyButtonTooltipContent;
+  }
+  if (typeof feedback !== 'undefined') {
+    commonProps.feedback = feedback;
+  }
+  if (typeof feedbackTimeout !== 'undefined') {
+    commonProps.feedbackTimeout = feedbackTimeout;
   }
   if (typeof language !== 'undefined') {
     commonProps.language = language;
@@ -115,6 +123,8 @@ const StreamingDemo = (args) => {
     showMoreText,
     showLessText,
     copyButtonTooltipContent,
+    feedback,
+    feedbackTimeout,
   } = args;
 
   const [streamedContent, setStreamedContent] = useState('');
@@ -184,6 +194,12 @@ const StreamingDemo = (args) => {
   }
   if (typeof copyButtonTooltipContent !== 'undefined') {
     commonProps.copyButtonTooltipContent = copyButtonTooltipContent;
+  }
+  if (typeof feedback !== 'undefined') {
+    commonProps.feedback = feedback;
+  }
+  if (typeof feedbackTimeout !== 'undefined') {
+    commonProps.feedbackTimeout = feedbackTimeout;
   }
 
   const snippet = <CodeSnippet {...commonProps} />;

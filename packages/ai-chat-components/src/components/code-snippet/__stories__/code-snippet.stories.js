@@ -36,7 +36,9 @@ const renderSnippet = (args, code) => {
       min-expanded-number-of-rows=${ifDefined(args.minExpandedNumberOfRows)}
       show-more-text=${ifDefined(args.showMoreText)}
       show-less-text=${ifDefined(args.showLessText)}
-      copy-button-tooltip-content=${ifDefined(args.copyButtonTooltipContent)}>
+      copy-button-tooltip-content=${ifDefined(args.copyButtonTooltipContent)}
+      feedback=${ifDefined(args.feedback)}
+      feedback-timeout=${ifDefined(args.feedbackTimeout)}>
     </cds-aichat-code-snippet>
   `;
 
