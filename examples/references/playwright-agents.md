@@ -17,7 +17,7 @@ npx playwright init-agents --loop=<loop> -c examples/shared/playwright/playwrigh
 
 Add `--config examples/shared/playwright/playwright.config.ts` to the `run-test-mcp-server` args in that entry; `init-agents` never writes it, and without it the agents run against a default config with no example server. Set `CAIC_E2E_TARGETS=<target>` in that entry's `env`, so the agents build only that example. A tool that starts the server itself does not pass your shell's variables to it. Restart the server after editing the entry.
 
-The `vscode` loop also writes `.github/agents/` and `.github/workflows/copilot-setup-steps.yml`. Git does not ignore them; do not commit them.
+The `vscode` loop also writes `.github/workflows/copilot-setup-steps.yml`. The repo ignores it, `.github/agents/`, and the OpenCode files.
 
 Replace the seed's body so it opens the example the way every spec does, then point the planner at it:
 

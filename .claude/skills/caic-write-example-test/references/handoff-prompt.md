@@ -20,18 +20,18 @@ Fill every `<...>`. Take the concern and the mock replies from the README and `s
 ```text
 Run Playwright's planner, generator, and healer agents on <slug> and write its spec. Do not change the example.
 
-Setup: tests/seed.spec.ts in examples/shared/playwright must open the example with openExample(page) from '../helpers'. If it still has the default body, replace it first. The <react target> entry in targets.ts has its spec set to 'seed.spec.ts' so the seed belongs to a project; set it back to '<slug>.spec.ts' once you merge the generated tests.
+Setup: tests/seed.spec.ts in examples/shared/playwright must open the example with openExample(page) from '../helpers'. If it still has the default body, replace it first. The <react target> entry in targets.ts has its spec set to 'seed.spec.ts' so the seed belongs to a project; set it back to '<concern>.spec.ts' once you merge the generated tests.
 
 Read first:
 - <react dir>/README.md and src/, and <web-components dir>/README.md and src/
 - examples/references/playwright.md: "What to test", "Selectors", "Determinism", "Naming"
 - .agents/skills/caic-write-example-test/references/pitfalls.md
 
-The one concern: <concern>. The mock backend: <what it replies, and what stays fixed>.
+The one concern: <concern> (kebab-case; also the spec's base file name, before any -react or -web-components suffix the target's spec already has). The mock backend: <what it replies, and what stays fixed>.
 Targets: <react target>, <web-components target>, already in examples/shared/playwright/targets.ts.
 
 1. Plan with playwright-test-planner. Cover the mount, the concern, one negative case, and the keyboard path. Save one plan in specs/.
-2. Generate with playwright-test-generator. Merge its tests into examples/shared/playwright/tests/<slug>.spec.ts, import from '../helpers', and drop the // spec: and // seed: comments.
+2. Generate with playwright-test-generator. Merge its tests into examples/shared/playwright/tests/<concern>.spec.ts, import from '../helpers', and drop the // spec: and // seed: comments.
 3. Heal with playwright-test-healer. Never weaken an assertion; mark a real example bug test.fixme with one line on what happens.
 
 Rules:
