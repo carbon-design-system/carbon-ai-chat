@@ -72,13 +72,13 @@ describe('OutgoingMessageService', () => {
     ).toBe(false);
   });
 
-  it('keeps the visible text while accepting a new request ID and owned input', () => {
+  it('keeps the visible text and nested input aliases after accepting a new request ID', () => {
     const original = frozenRequest();
     const accepted = outgoing.copyRequest(original);
     const text = outgoing.originalText(original);
     accepted.id = 'accepted-id';
     accepted.input.text = 'transport text';
-    const { localMessage: local, input } = outgoing.prepareLocalItem(
+    const { localMessage: local } = outgoing.prepareLocalItem(
       accepted,
       text,
       'local-id',
@@ -93,17 +93,17 @@ describe('OutgoingMessageService', () => {
     expect(local.item).toMatchObject({ text: 'transport text' });
     expect(local.item).not.toBe(accepted.input);
     expect(local.item).toMatchObject({
-      structured_data: input.structured_data,
+      structured_data: accepted.input.structured_data,
     });
     expect(Reflect.get(local.item, 'structured_data')).toBe(
-      input.structured_data
+      accepted.input.structured_data
     );
-    expect(input.structured_data).not.toBe(accepted.input.structured_data);
     accepted.input.structured_data.user_defined.nested.value = 2;
     expect(local.item).toMatchObject({
-      structured_data: { user_defined: { nested: { value: 1 } } },
+      structured_data: { user_defined: { nested: { value: 2 } } },
     });
     expect(original.input.text).toBe('host text');
+    expect(original.input.structured_data.user_defined.nested.value).toBe(1);
     expect(original.history).toEqual({
       label: 'visible text',
       silent: true,
@@ -121,6 +121,37 @@ describe('OutgoingMessageService', () => {
     expect(stored.input.structured_data.user_defined.nested.value).toBe(1);
     expect(queued.history.label).toBe('visible text');
     expect(original.history.label).toBe('visible text');
+  });
+
+  it('reads input fields before capturing the full message ID', () => {
+    const reads: string[] = [];
+    let messageID = 'before';
+    const message: MessageRequest = {
+      get id() {
+        reads.push('id');
+        return messageID;
+      },
+      get input() {
+        reads.push('input');
+        return {
+          get text() {
+            reads.push('text');
+            messageID = 'after';
+            return 'visible';
+          },
+        };
+      },
+    };
+
+    const { localMessage } = outgoing.prepareLocalItem(
+      message,
+      'original',
+      'local',
+      MessageResponseTypes.TEXT
+    );
+
+    expect(localMessage.fullMessageID).toBe('after');
+    expect(reads).toEqual(['input', 'text', 'id']);
   });
 
   it('prepares cancel and error data from supplied IDs, time, and locale text', () => {
@@ -147,7 +178,7 @@ describe('OutgoingMessageService', () => {
       'local'
     );
     expect(local.ui_state).toEqual({ id: 'local', needsAnnouncement: true });
-    expect(local.item).not.toBe(cancelled.output.generic[0]);
+    expect(local.item).toBe(cancelled.output.generic[0]);
     const error = outgoing.prepareInlineError(
       'Failed',
       'error',

@@ -54,14 +54,13 @@ class OutgoingMessageService {
     id: string,
     responseType: MessageResponseTypes.TEXT
   ) {
-    const input = cloneDeep(message.input);
     const localMessage = inputItemData(
-      { id: message.id, input },
+      message,
       originalUserText,
       id,
       responseType
     );
-    return { localMessage, input };
+    return { localMessage };
   }
 
   prepareCancellation(
@@ -106,7 +105,7 @@ class OutgoingMessageService {
     message: MessageResponse,
     localID: string
   ) {
-    return outputItemData(cloneDeep(item), message, localID);
+    return outputItemData(item, message, localID);
   }
 
   private prepareResponse(

@@ -462,7 +462,7 @@ class MessageService {
     originalUserText: string
   ) {
     const { message } = current;
-    const { localMessage, input } = this.outgoing.prepareLocalItem(
+    const { localMessage } = this.outgoing.prepareLocalItem(
       message,
       originalUserText,
       current.localMessageID === undefined ? uuid() : current.localMessageID,
@@ -478,7 +478,6 @@ class MessageService {
       this.serviceManager.store.dispatch(actions.updateMessage(message));
     }
     deepFreeze(message);
-    deepFreeze(input);
   }
 
   private async fireSendEvent(current: PendingMessageRequest) {

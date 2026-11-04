@@ -22,7 +22,7 @@ import type { MessageInput } from '../../../src/types/messaging/Messages';
 beforeEach(setupBeforeEach);
 afterEach(setupAfterEach);
 
-it('freezes owned nested local input at admission and after accepted pre-send edits', async () => {
+it('preserves nested input aliases when freezing admitted and accepted requests', async () => {
   const { instance, store } = await renderChatAndGetInstanceWithStore({
     ...createBaseConfig(),
     messaging: { skipWelcome: true, customSendMessage: async () => undefined },
@@ -64,11 +64,12 @@ it('freezes owned nested local input at admission and after accepted pre-send ed
     expect(Object.isFrozen(item.structured_data.user_defined.nested)).toBe(
       true
     );
-    expect(item.structured_data).not.toBe(request.input.structured_data);
     item.text = 'local top level stays writable';
     expect(item.text).toBe('local top level stays writable');
   }
-  expect(accepted.structured_data).not.toBe(preSendInput.structured_data);
+  expect(admitted.structured_data).toBe(request.input.structured_data);
+  expect(accepted.structured_data).toBe(preSendInput.structured_data);
+  expect(accepted.structured_data).not.toBe(request.input.structured_data);
   expect(admitted.structured_data.user_defined.nested.value).toBe(1);
   expect(accepted.structured_data.user_defined.nested.value).toBe(2);
   expect(request.input.structured_data.user_defined.nested.value).toBe(1);

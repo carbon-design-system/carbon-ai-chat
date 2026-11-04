@@ -168,7 +168,7 @@ class SendService {
       message.history.silent = true;
     }
 
-    const { localMessage, input } = this.outgoing.prepareLocalItem(
+    const { localMessage } = this.outgoing.prepareLocalItem(
       message,
       originalUserText,
       uuid(),
@@ -199,7 +199,6 @@ class SendService {
     // MessageService receives a writable copy for pre:send handlers when this request leaves the queue;
     // their accepted edits replace the stored request.
     deepFreeze(message);
-    deepFreeze(input);
 
     // Fire after dispatch so the slot exists when a host reacts. The event wrapper remains writable,
     // while its message is the original, now-frozen caller object.
