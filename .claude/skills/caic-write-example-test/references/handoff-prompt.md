@@ -6,12 +6,12 @@ The tool loads the agents and the `playwright-test` server when a session starts
 
 | Tool | Open |
 | --- | --- |
-| VS Code | A new chat in Agent mode, with the `playwright-test` server running from `.vscode/mcp.json` |
-| Claude | A new session at the repo root; approve the project `.mcp.json` when asked |
+| VS Code | A new chat in Agent mode, with the `playwright-test` server running from the VS Code MCP config |
+| Claude | A new session at the repo root; approve the project MCP config when asked |
 | Codex | A new session at the repo root |
 | OpenCode | A new session at the repo root |
 
-Step 3 already put `CAIC_E2E_TARGETS` in the server entry's `env`. Tell the user to restart the server so it picks that up (VS Code: **Restart** above the server in `.vscode/mcp.json`, or **MCP: List Servers**), and to resume here at step 6 when the new session reports.
+Step 3 already put `CAIC_E2E_TARGETS` in the server entry's `env`. Tell the user to restart the server so it picks that up (VS Code: **Restart** above the server in the VS Code MCP config, or **MCP: List Servers**), and to resume here at step 6 when the new session reports.
 
 ## Template
 
