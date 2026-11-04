@@ -170,11 +170,14 @@ export class PanelManager {
 
     if (shouldRestore && previous) {
       const target = this.returnTargets.get(previous);
+      const openAtClose = new Set(
+        panels.filter((panel) => panel.open).map((panel) => panel.element)
+      );
       if (this.restoreFrame !== undefined) {
         cancelAnimationFrame(this.restoreFrame);
       }
       this.restoreFrame = requestAnimationFrame(() =>
-        this.restoreFocus(previous, target)
+        this.restoreFocus(previous, target, openAtClose)
       );
     }
     for (const panel of this.returnTargets.keys()) {
@@ -210,7 +213,21 @@ export class PanelManager {
     );
   };
 
-  private restoreFocus(panel: HTMLElement, target: Element | null | undefined) {
+  private restoreFocus(
+    panel: HTMLElement,
+    target: Element | null | undefined,
+    openAtClose: Set<HTMLElement>
+  ) {
+    // A panel that opened after this close owns focus now, including the
+    // closed panel opening again. A panel that was only covered still counts
+    // as open, so closing a cover keeps restoring into it.
+    if (
+      this.getPanelStates().some(
+        (state) => state.open && !openAtClose.has(state.element)
+      )
+    ) {
+      return;
+    }
     const focused = getDeepActiveElement();
     if (
       !hasLostPanelFocus(focused, this.focusPath) &&
@@ -221,7 +238,7 @@ export class PanelManager {
     }
     if (this.activePanel && this.isPanelAnimating(this.activePanel)) {
       this.restoreFrame = requestAnimationFrame(() =>
-        this.restoreFocus(panel, target)
+        this.restoreFocus(panel, target, openAtClose)
       );
       return;
     }

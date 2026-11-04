@@ -219,6 +219,43 @@ describe('PanelManager focus restoration', () => {
     expect(getDeepActiveElement()).to.equal(nestedTrigger);
   });
 
+  it('drops a pending restore when the closed panel opens again first', async () => {
+    const other = document.createElement('button');
+    other.textContent = 'Other action';
+    panel.append(other);
+    panel.removeAttribute('open');
+    // Let the attribute observer schedule the restore, then reopen the panel
+    // and give it new initial focus before the restore frame runs.
+    await Promise.resolve();
+    await Promise.resolve();
+    panel.setAttribute('open', '');
+    await Promise.resolve();
+    other.focus();
+    await settle();
+    expect(getDeepActiveElement()).to.equal(other);
+    expect(fallbackCount).to.equal(0);
+  });
+
+  it('drops a pending restore when another panel opens first', async () => {
+    const next = document.createElement('cds-aichat-panel');
+    const nextFirst = document.createElement('button');
+    nextFirst.textContent = 'Next first';
+    const nextAction = document.createElement('button');
+    nextAction.textContent = 'Next action';
+    next.append(nextFirst, nextAction);
+    panel.parentElement!.append(next);
+    await Promise.resolve();
+    panel.removeAttribute('open');
+    await Promise.resolve();
+    await Promise.resolve();
+    next.setAttribute('open', '');
+    await Promise.resolve();
+    nextAction.focus();
+    await settle();
+    expect(getDeepActiveElement()).to.equal(nextAction);
+    expect(fallbackCount).to.equal(0);
+  });
+
   it('does not override focus moved outside while restoration is pending', async () => {
     panel.removeAttribute('open');
     panel.dispatchEvent(
