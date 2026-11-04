@@ -4,6 +4,10 @@ Load this when adding, editing, or testing a service. Services are orchestration
 
 For view-owned classes, follow [the hook core contract](../src/chat/hooks/AGENTS.md). The initialization, manager lookup, and teardown rules below apply to chat-instance services.
 
+For assistant message flows, read [messaging ownership](../src/chat/services/messaging/AGENTS.md). `MessageCoordinator` owns the private workflows. Pure data helpers live in `inbound/`, `outbound/`, and `state/`; view work goes through the narrow `presentation/` port. Human-agent sends and writes stay in `services/haa/`.
+
+Keep the outbound queue, chunk FIFO, per-ID native write chains, and event queues separate. Their waits and release points differ. Shared event capture still serves legacy and human-agent paths; it is not a second assistant flow owner.
+
 ## Initialization order
 
 See [`createServiceManager()`](../src/chat/services/loadServices.ts) for service initialization order.
@@ -29,7 +33,7 @@ This supports lazy initialization, handles circular dependencies, and makes test
 
 - **Simple data adapter:** [`HistoryService`](../src/chat/services/HistoryService.ts) loads and transforms history data.
 - **Lifecycle watcher:** [`ThemeWatcherService`](../src/chat/services/ThemeWatcherService.ts) watches browser theme changes and exposes start/stop methods.
-- **Orchestration engine:** [`MessageService`](../src/chat/services/MessageService.ts) manages the message queue and inbound/outbound coordinators.
+- **Orchestration engine:** [`MessageCoordinator`](../src/chat/services/messaging/MessageCoordinator.ts) owns assistant flows through private workflows and pure state models.
 
 ## When to create a service
 
@@ -41,6 +45,7 @@ Put state transformations in reducers and pure utilities or small setup/cleanup 
 
 ## Wiring & teardown
 
+- Keep messaging workflows private to `MessageCoordinator`; do not register them or pure data helpers as services.
 - Register new chat-instance services through [`ServiceManager`](../src/chat/services/ServiceManager.ts) and [`loadServices`](../src/chat/services/loadServices.ts).
 - **Full chat-instance teardown is still pending.** Detaching a host retires its mount — the renderer unmounts, listeners and bus handlers go, pending callbacks are dropped — but every store subscription, timer, and in-flight request a service owns keeps running. Keep the unsubscribe handle and the timer id you create, so the teardown that #1681 builds can dispose them. `destroySession()` resets session data; it is not a teardown.
 - Public methods on `ChatInstanceService` must be reflected on the `ChatInstance` type in [`src/types/instance/ChatInstance.ts`](../src/types/instance/ChatInstance.ts). The instance object is constructed in [`src/chat/utils/chatBoot.ts`](../src/chat/utils/chatBoot.ts).

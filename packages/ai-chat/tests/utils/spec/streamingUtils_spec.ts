@@ -8,7 +8,10 @@
  */
 
 import {
-  applyChunk,
+  StreamState,
+  type StreamControllerToken,
+} from '../../../src/chat/services/messaging/state/StreamState';
+import {
   chunkHasDisplayableContent,
   deriveStreamingItemText,
   messageHasDisplayableContent,
@@ -16,8 +19,8 @@ import {
   resolveChunkContext,
   shouldShowStopStreaming,
   syncStopStreamingButton,
-  StreamingTracker,
 } from '../../../src/chat/utils/streamingUtils';
+import { applyChunkData } from '../../../src/chat/services/messaging/inbound/prepareChunk';
 import actions from '../../../src/chat/store/actions';
 
 describe('streamingUtils', () => {
@@ -227,7 +230,7 @@ describe('streamingUtils', () => {
     });
   });
 
-  describe('applyChunk', () => {
+  describe('applyChunkData', () => {
     const chunkWithOptions = (messageOptions?: Record<string, unknown>) =>
       ({
         streaming_metadata: { response_id: 'msg-1' },
@@ -238,12 +241,17 @@ describe('streamingUtils', () => {
       }) as any;
 
     it('starts a new stream from an empty placeholder', () => {
-      const message = applyChunk(undefined, chunkWithOptions(), 'msg-1');
+      const message = applyChunkData(
+        undefined,
+        chunkWithOptions(),
+        'msg-1',
+        123
+      );
 
       expect(message).toEqual({
         id: 'msg-1',
         output: { generic: [] },
-        history: { timestamp: expect.any(Number) },
+        history: { timestamp: 123 },
       });
     });
 
@@ -254,7 +262,9 @@ describe('streamingUtils', () => {
         history: { timestamp: 1 },
       } as any;
 
-      expect(applyChunk(prev, chunkWithOptions(), 'msg-1')).toBe(prev);
+      expect(applyChunkData(prev, chunkWithOptions(), 'msg-1', undefined)).toBe(
+        prev
+      );
     });
 
     it('deep-merges message_options into a copy, the way lodash merge does', () => {
@@ -274,13 +284,14 @@ describe('streamingUtils', () => {
         }),
       }) as any;
 
-      const message = applyChunk(
+      const message = applyChunkData(
         prev,
         chunkWithOptions({
           reasoning: { steps: [{ content: 'c1' }] },
           response_user_profile: { nickname: undefined },
         }),
-        'msg-1'
+        'msg-1',
+        undefined
       );
 
       expect(message).not.toBe(prev);
@@ -302,10 +313,10 @@ describe('streamingUtils', () => {
     });
   });
 
-  describe('StreamingTracker', () => {
+  describe('StreamState', () => {
     it('tracks, resolves, and clears response/item IDs', () => {
-      const tracker = new StreamingTracker();
-      tracker.track('resp-1', 'req-1', new AbortController(), 'item-1');
+      const tracker = new StreamState();
+      tracker.track('resp-1', 'req-1', {} as StreamControllerToken, 'item-1');
       expect(tracker.resolveResponseId('item-1')).toBe('resp-1');
       expect(tracker.getMeta('resp-1')?.requestId).toBe('req-1');
 

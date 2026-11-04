@@ -8,37 +8,36 @@
  */
 
 import isEqual from 'lodash-es/isEqual.js';
-import cloneDeep from 'lodash-es/cloneDeep.js';
+import { IncomingMessageService } from './inbound/IncomingMessageService';
 import cloneDeepWith from 'lodash-es/cloneDeepWith.js';
 import {
   captureMessageEvent,
   eventValueMapper,
-} from '../utils/messageEventOwnership';
+} from '../../utils/messageEventOwnership';
 
-import actions from '../store/actions';
+import actions from '../../store/actions';
 import {
-  applyChunk,
   chunkHasDisplayableContent,
   FinalResponseChunk,
   resolveChunkContext,
-} from '../utils/streamingUtils';
-import { consoleError, consoleWarn } from '../utils/miscUtils';
+} from '../../utils/streamingUtils';
+import { consoleError, consoleWarn } from '../../utils/miscUtils';
 import {
   ResolvablePromise,
   resolvablePromise,
-} from '../utils/resolvablePromise';
+} from '../../utils/resolvablePromise';
 import {
   isStreamFinalResponse,
   isStreamPartialItem,
   isTyping,
   renderAsUserDefinedMessage,
   streamItemID,
-} from '../utils/messageUtils';
-import { sleep } from '../utils/lang/promiseUtils';
+} from '../../utils/messageUtils';
+import { sleep } from '../../utils/lang/promiseUtils';
 import {
   AddMessageOptions,
   MessageState,
-} from '../../types/config/MessagingConfig';
+} from '../../../types/config/MessagingConfig';
 import {
   GenericItem,
   ItemStreamingMetadata,
@@ -47,10 +46,10 @@ import {
   PartialOrCompleteItemChunk,
   PauseItem,
   StreamChunk,
-} from '../../types/messaging/Messages';
-import { DeepPartial } from '../../types/utilities/DeepPartial';
-import { OnErrorType } from '../../types/config/ErrorConfig';
-import type { ServiceManager } from './ServiceManager';
+} from '../../../types/messaging/Messages';
+import { DeepPartial } from '../../../types/utilities/DeepPartial';
+import { OnErrorType } from '../../../types/config/ErrorConfig';
+import type { ServiceManager } from '../ServiceManager';
 
 interface RequestChunkErrors {
   restartGeneration: number;
@@ -58,7 +57,9 @@ interface RequestChunkErrors {
   reportedErrors: Set<unknown>;
 }
 
-class ChunkProcessingService {
+class ChunkWorkflow {
+  private readonly incomingMessageService = new IncomingMessageService();
+
   private serviceManager: ServiceManager;
 
   // A sender can still await chunks after its response advances the send queue.
@@ -160,7 +161,7 @@ class ChunkProcessingService {
       ? chunk.final_response.request_id
       : chunk.streaming_metadata?.request_id;
     if (
-      this.serviceManager.messageService.isRequestFromPreviousConversation(
+      this.serviceManager.messageCoordinator.isRequestFromPreviousConversation(
         requestID
       )
     ) {
@@ -170,7 +171,7 @@ class ChunkProcessingService {
       chunk,
       messageID
     );
-    const lifecycle = this.serviceManager.conversationLifecycleService;
+    const lifecycle = this.serviceManager.messageCoordinator;
     if (
       requestID &&
       lifecycle.isRequestStopped(requestID) &&
@@ -183,27 +184,27 @@ class ChunkProcessingService {
     }
 
     const write =
-      this.serviceManager.messageUpsertCoordinator.trackWrite(
+      this.serviceManager.messageCoordinator.trackIncomingWrite(
         extractedMessageID
       );
     try {
-      this.serviceManager.messageService.messageLoadingManager.end();
+      this.serviceManager.messageCoordinator.messageLoadingManager.end();
       if (!write.isCurrent()) {
         return;
       }
 
       if (isStreamPartialItem(chunk)) {
-        this.serviceManager.messageService.markCurrentMessageAsStreaming(
+        this.serviceManager.messageCoordinator.markCurrentMessageAsStreaming(
           extractedMessageID,
           chunk.partial_item?.streaming_metadata?.id
         );
 
-        this.serviceManager.messageUpsertCoordinator.markStreaming(
+        this.serviceManager.messageCoordinator.markIncomingStreaming(
           extractedMessageID || undefined
         );
 
         if (extractedMessageID) {
-          this.serviceManager.streamAnnouncerService.announceStreamStarts(
+          this.serviceManager.messageCoordinator.announceStreamStarts(
             extractedMessageID,
             {
               hasReasoning: Boolean(
@@ -219,10 +220,10 @@ class ChunkProcessingService {
 
       const ownerRequestID =
         requestID ??
-        this.serviceManager.messageService.inboundStreaming.getStreamingMeta(
+        this.serviceManager.messageCoordinator.inboundStreaming.getStreamingMeta(
           extractedMessageID
         )?.requestId ??
-        this.serviceManager.messageService.currentRequestID;
+        this.serviceManager.messageCoordinator.currentRequestID;
       const tracking = this.pendingSendErrors.get(ownerRequestID);
       const chunkPromise = resolvablePromise();
       this.chunkQueue.push({
@@ -285,7 +286,7 @@ class ChunkProcessingService {
 
       if (messageID && (isPartialItem || isCompleteItem)) {
         runCoreOperation(() =>
-          this.serviceManager.conversationLifecycleService.responseStreaming(
+          this.serviceManager.messageCoordinator.responseStreaming(
             messageID,
             undefined,
             requestID
@@ -295,7 +296,7 @@ class ChunkProcessingService {
 
       if (messageID && isStreamFinalResponse(chunk) && isCurrent()) {
         runCoreOperation(() =>
-          this.serviceManager.conversationLifecycleService.responseReceived(
+          this.serviceManager.messageCoordinator.responseReceived(
             messageID,
             undefined,
             requestID
@@ -308,14 +309,12 @@ class ChunkProcessingService {
       }
       if (
         isPartialItem &&
-        !this.serviceManager.conversationLifecycleService.isRequestStopped(
-          requestID
-        )
+        !this.serviceManager.messageCoordinator.isRequestStopped(requestID)
       ) {
         runCoreOperation(() =>
-          this.serviceManager.messageService.updateStreamingCancellation(
+          this.serviceManager.messageCoordinator.updateStreamingCancellation(
             messageID ??
-              this.serviceManager.messageService.inboundStreaming
+              this.serviceManager.messageCoordinator.inboundStreaming
                 .streamingMessageID ??
               '',
             (chunk as PartialItemChunk).partial_item?.streaming_metadata
@@ -371,7 +370,7 @@ class ChunkProcessingService {
         );
         if (messageID && isCurrent()) {
           runCoreOperation(() =>
-            this.serviceManager.messageService.finalizeStreamingMessage(
+            this.serviceManager.messageCoordinator.finalizeStreamingMessage(
               messageID
             )
           );
@@ -396,17 +395,17 @@ class ChunkProcessingService {
         return;
       }
       const responseID = messageID
-        ? this.serviceManager.messageService.inboundStreaming.resolveResponseId(
+        ? this.serviceManager.messageCoordinator.inboundStreaming.resolveResponseId(
             messageID
           )
         : undefined;
       if (responseID) {
-        this.serviceManager.messageService.markStreamingResponseError(
+        this.serviceManager.messageCoordinator.markStreamingResponseError(
           responseID
         );
       }
       if (terminalConversationFailure) {
-        this.serviceManager.conversationLifecycleService.fail({
+        this.serviceManager.messageCoordinator.fail({
           messageID: requestID ?? messageID,
         });
         requestErrors?.reportedErrors.add(error);
@@ -422,7 +421,7 @@ class ChunkProcessingService {
 
   private shouldSkipChunkDueToGeneration(messageID: string | undefined) {
     const inboundStreaming =
-      this.serviceManager.messageService.inboundStreaming;
+      this.serviceManager.messageCoordinator.inboundStreaming;
     if (
       messageID &&
       inboundStreaming &&
@@ -451,15 +450,18 @@ class ChunkProcessingService {
     if (!messageID) {
       return undefined;
     }
-    const ownedItem = cloneDeep(item);
-    const ownedChunk = {
-      ...chunk,
-      partial_response: cloneDeep(chunk.partial_response),
-    };
-    await this.serviceManager.messageUpsertCoordinator.upsert(
+    const { ownedItem, ownedChunk } =
+      this.incomingMessageService.prepareChunkValues(chunk, item);
+    await this.serviceManager.messageCoordinator.upsertMessage(
       messageID,
       MessageState.STREAMING,
-      (prev) => applyChunk(prev, ownedChunk, messageID),
+      (prev) =>
+        this.incomingMessageService.applyChunkData(
+          prev,
+          ownedChunk,
+          messageID,
+          prev === null || prev === undefined ? Date.now() : undefined
+        ),
       {
         origin: 'chunk',
         chunk: { item: ownedItem, isComplete: isCompleteItem, requestID },
@@ -503,7 +505,7 @@ class ChunkProcessingService {
           )
         : undefined;
     try {
-      await this.serviceManager.slotEventService.handleUserDefinedResponseItemsChunk(
+      await this.serviceManager.messageCoordinator.handleUserDefinedResponseItemsChunk(
         messageID,
         chunk,
         item,
@@ -528,7 +530,7 @@ class ChunkProcessingService {
       messageID,
       chunk.final_response
     );
-    await this.serviceManager.receiveService.receive(
+    await this.serviceManager.messageCoordinator.receive(
       finalResponse,
       options.isLatestWelcomeNode,
       null,
@@ -658,13 +660,13 @@ class ChunkProcessingService {
     messageID?: string
   ) {
     if (isCompleteItem || isStreamFinalResponse(chunk)) {
-      this.serviceManager.messageService.clearStreamingCancellation(
+      this.serviceManager.messageCoordinator.clearStreamingCancellation(
         messageID ??
-          this.serviceManager.messageService.inboundStreaming
+          this.serviceManager.messageCoordinator.inboundStreaming
             .streamingMessageID ??
           ''
       );
-      this.serviceManager.messageService.hideStopStreamingButtonIfNoUpsertStreaming();
+      this.serviceManager.messageCoordinator.hideStopStreamingButtonIfNoUpsertStreaming();
     }
   }
 
@@ -684,4 +686,4 @@ class ChunkProcessingService {
   }
 }
 
-export { ChunkProcessingService };
+export { ChunkWorkflow };

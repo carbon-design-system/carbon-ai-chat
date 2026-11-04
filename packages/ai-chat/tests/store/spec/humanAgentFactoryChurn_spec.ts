@@ -81,7 +81,7 @@ function setup(
   const serviceManager = {
     store: createStore(initialState),
     namespace: { suffix: '' },
-    messageService: { timeoutMS: 30000 },
+    messageCoordinator: { timeoutMS: 30000 },
     humanAgentService,
   } as any as ServiceManager;
 

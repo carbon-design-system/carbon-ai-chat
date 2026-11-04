@@ -87,6 +87,18 @@ The other delivery methods follow the same rule:
 
 So regenerating a message that is already `COMPLETE` does not fire {@link BusEventType.RECEIVE | RECEIVE}. It is not a new turn landing. But inserting a brand-new `COMPLETE` message does fire it.
 
+## Callback snapshots
+
+For `upsertMessage`, the message data passed to user-defined response, custom message footer, and receive callbacks is a detached snapshot. This also applies to message data in React and web component render callbacks. Edits to copied message data do not write back to the chat. Some values remain shared, as described below.
+
+Plain objects and arrays in a snapshot are frozen. Cloneable special values, such as dates, typed arrays, maps, and sets, are copied and keep their usual APIs. Those copies remain mutable. Changes to copied data affect only the snapshot. Copied typed arrays and DataViews use fixed bounds from their current offset and length. Their copied backing buffers keep their resize or grow APIs, but the views do not expand when those buffers grow. Shrinking a copied buffer can put a view out of bounds.
+
+Opaque values that cannot be cloned, such as WeakMap, WeakSet, Promise, and Error objects, keep their original references and APIs. Their internal state remains shared with your updater result and the stored message. Functions remain callable or constructable as before, but closures, accessors, private state, and inherited prototype data remain shared. Calling these APIs can affect shared state; the snapshot does not isolate host code. This is separate from callback writeback: edits to copied message fields are not applied back to the chat.
+
+Use the updater or {@link BusEventType.PRE_RECEIVE | pre:receive} to change message content. Pre-receive data stays mutable. The shared callback types stay unchanged: snapshot isolation and freezing apply at runtime, not through TypeScript. These rules apply only to `upsertMessage`. The stable add-message, chunk, and human-agent paths keep their existing mutation contracts.
+
+An attempted write to frozen data may throw. The upsert keeps its existing callback and pause waits. Rejection from an awaited response or footer callback still rejects it. Receive-handler errors remain logged without rejecting the upsert. Detached render notifications are not directly awaited. A later awaited callback of the same event type can still wait behind them in the shared queue.
+
 ## User-defined responses
 
 For `user_defined` items, `upsertMessage` reuses the existing {@link BusEventType.USER_DEFINED_RESPONSE | USER_DEFINED_RESPONSE} event. It fires once per user-defined item per call. This holds for both inserts and updates. The payload has an optional `state` field on {@link BusEventUserDefinedResponse | BusEventUserDefinedResponse}. That field carries the current {@link MessageState | MessageState} whenever the chat has a recorded lifecycle for the message. This includes messages from `upsertMessage`, {@link ChatInstanceMessaging.addMessage | addMessage}, and the final-response transition of {@link ChatInstanceMessaging.addMessageChunk | addMessageChunk}. The field is additive, so existing consumers ignore it. In React, the same value sits on {@link RenderUserDefinedState | RenderUserDefinedState} as `state`.
