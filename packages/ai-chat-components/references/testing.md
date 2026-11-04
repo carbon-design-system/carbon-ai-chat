@@ -6,10 +6,10 @@ Tests are colocated with source (opposite of `@carbon/ai-chat`, which puts specs
 
 ## Two runners
 
-| Runner                   | Covers              | Location                                      | Command                       |
-| ------------------------ | ------------------- | --------------------------------------------- | ----------------------------- |
+| Runner                   | Covers                                           | Location                                                                                         | Command                       |
+| ------------------------ | ------------------------------------------------ | ------------------------------------------------------------------------------------------------ | ----------------------------- |
 | `@web/test-runner` (WTR) | Lit custom elements, and the `focus-utils` suite | `src/components/<c>/__tests__/<name>.test.ts`, `src/globals/utils/__tests__/focus-utils.test.ts` | `npm run test:web-components` |
-| Jest                     | React wrappers      | `src/react/__tests__/<file>.test.ts`          | `npm run test:react`          |
+| Jest                     | React wrappers                                   | `src/react/__tests__/<file>.test.ts`                                                             | `npm run test:react`          |
 
 `npm test` runs both. WTR runs only the files its script names: everything under `src/components/**` plus the focus-utils suite, which needs real focus. Use the right runner for the file — a Lit element test under Jest (or vice versa) will fail to resolve its environment.
 
