@@ -12,7 +12,7 @@ A model picks the wording that fits the most readers and subjects. A person writ
 4. **Check the facts both ways.** Compare the revision with the draft. Add no default, version, number, or behavior the source doesn't support. Drop no qualifier, failure, or limit that carries the contract. Merges and cuts lose facts most often.
 5. **Re-scan for survivors.** Contrasts, closers, and dashes outlive a rewrite most often. Search for them once more.
 
-**Weigh the evidence.** Act on [staged prose](#staged-prose) at one sighting. A weak tell, such as one hedge or one passive sentence, needs company in the same passage before it earns an edit or a review Nit.
+**Weigh the evidence.** Act on [staged prose](#staged-prose) at one sighting. A weak tell, such as one hedge or one passive sentence, needs company in the same passage before it earns an edit or a review finding.
 
 **Leave alone** quotations, titles, names, and text that discusses a phrase rather than uses it. Keep repetition the writer chose for parallel structure.
 
