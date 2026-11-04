@@ -86,12 +86,14 @@ class MessageCoordinator {
   }
 
   removeWaitingRequest(messageID: string) {
-    for (let index = 0; index < this.requestQueue.getWaitingCount(); index++) {
+    // Match the original findIndex scan: ID getters can reenter cancellation.
+    const count = this.requestQueue.getWaitingCount();
+    for (let index = 0; index < count; index++) {
       const token = this.requestQueue.getWaitingAt(index);
       const request = this.requests.get(token);
       if (request.message.id === messageID) {
-        this.requestQueue.removeWaiting(token);
-        return request;
+        // Remove the entry now at this index, after the ID getter has run.
+        return this.requests.get(this.requestQueue.removeWaitingAt(index));
       }
     }
     return undefined;

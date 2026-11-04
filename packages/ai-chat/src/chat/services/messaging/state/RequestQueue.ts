@@ -41,6 +41,10 @@ class RequestQueue {
     this.current = null;
   }
 
+  removeWaitingAt(index: number) {
+    return this.waiting.splice(index, 1)[0];
+  }
+
   removeWaiting(token: RequestToken) {
     const index = this.waiting.indexOf(token);
     if (index !== -1) {
