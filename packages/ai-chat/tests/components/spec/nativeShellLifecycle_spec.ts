@@ -731,7 +731,8 @@ describe.each(wrappers)('content re-attach through %s', (_name, Wrapper) => {
     act(() => {
       f.view.setContentConnected(false);
     });
-    expect(f.viewState.inputComponent).toBeNull();
+    // The input stays rendered, so its one handle stays published.
+    expect(f.viewState.inputComponent).toBe(input.inputFunctions);
     act(() => {
       f.view.setContentConnected(true);
     });
@@ -776,10 +777,15 @@ it('restores the input registration when an Activity boundary hides and shows th
   await before.view.whenReady();
   expect(before.viewState.inputComponent).toBeTruthy();
 
+  const handle = before.viewState.inputComponent;
   act(() => {
     setMode('hidden');
   });
-  expect(before.viewState.inputComponent).toBeNull();
+  // Hidden content keeps the input rendered, so its one handle stays
+  // published and the public input API still reaches it.
+  expect(before.viewState.inputComponent).toBe(handle);
+  expect(before.manager.view.current.instance.input()).toBe(handle);
+  expect(before.viewState.mainWindow).toBeUndefined();
   // The shell updates while hidden, as when a stream ends there.
   await act(async () => {
     before.view.requestUpdate();

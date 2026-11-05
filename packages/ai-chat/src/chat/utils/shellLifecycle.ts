@@ -1134,6 +1134,7 @@ export class ShellLifecycle {
    */
   releaseForFailure() {
     this.releaseRegistrations();
+    this.setInputHandle(null);
   }
 
   private releaseRegistrations() {
@@ -1157,10 +1158,18 @@ export class ShellLifecycle {
         viewState.ariaAnnouncer = undefined;
       }
     }
-    this.setInputHandle(null);
   }
 
-  disconnect() {
+  /**
+   * Stops this owner's work and gives up its handles. With `keepInput`, the
+   * input's handle stays published: React hid the content, but the input is
+   * still rendered, so the public input API keeps reaching it.
+   */
+  disconnect(keepInput = false) {
+    // A hidden shell kept its input handle; retiring it later must drop it.
+    if (!keepInput) {
+      this.setInputHandle(null);
+    }
     if (!this.connected && !this.registered) {
       return;
     }
