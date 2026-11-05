@@ -33,7 +33,6 @@ function harness(
   const manager = {
     store,
     hydrationService: { hydrationPromise: hydration },
-    slotEventService: { handleCustomRequestFooterSlot: jest.fn(() => footer) },
     messageCoordinator: { enqueueMessage: send },
   } as unknown as ServiceManager;
   const sender = new MessageCoordinator(
@@ -42,6 +41,9 @@ function harness(
   );
   manager.messageCoordinator = sender;
   jest.spyOn(sender, 'enqueueMessage').mockImplementation(send);
+  jest
+    .spyOn(sender, 'handleCustomRequestFooterSlot')
+    .mockImplementation(() => footer);
   return { store, hydration, transport, footer, send, sender, manager };
 }
 
@@ -227,7 +229,7 @@ it('publishes the same conversation states with an adapter or without a view', a
       ]);
       expect(footerSettled).toBe(false);
       expect(
-        manager.slotEventService.handleCustomRequestFooterSlot
+        manager.messageCoordinator.handleCustomRequestFooterSlot
       ).toHaveBeenCalledTimes(1);
       expect(announce).toHaveBeenCalledTimes(withAdapter ? 1 : 0);
       expect(focus).toHaveBeenCalledTimes(withAdapter ? 1 : 0);
