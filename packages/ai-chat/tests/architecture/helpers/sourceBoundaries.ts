@@ -43,6 +43,8 @@ export interface FolderRule {
 }
 
 export interface BoundaryException {
+  /** For a framework exception, the framework-free folder whose walk reaches it. */
+  folder?: string;
   from: string;
   to: string;
   /** The chunk or issue that removes this exception. */
@@ -50,16 +52,27 @@ export interface BoundaryException {
   reason: string;
 }
 
-const COMPONENTS_PREFIX = '@carbon/ai-chat-components/es/';
+// Both builds map to the same source; `es-custom` only renames tags.
+const COMPONENTS_PREFIX = /^@carbon\/ai-chat-components\/es(-custom)?\//;
 const FRAMEWORKS = [
   /^react(\/|$)/,
   /^react-dom(\/|$)/,
+  /^use-sync-external-store(\/|$)/,
   /^lit(\/|$)/,
+  /^lit-html(\/|$)/,
+  /^lit-element(\/|$)/,
   /^@lit\//,
+  /^@lit-labs\//,
+  /^@carbon\/react(\/|$)/,
+  // Carbon's element modules register on load; only `defs` modules are data.
+  /^@carbon\/web-components\/es(-custom)?\/components\/(?!.*\/defs\.js$)/,
 ];
+const COMPONENTS_SOURCE = '../ai-chat-components/src';
 // Style sheets the components package imports; they carry no code edges.
 const STYLES = /\.s?css(\?.*)?$/;
-const REGISTERS = /@carbonElement\(|@customElement\(|customElements\.define\(/;
+// A decorator, or any use of `customElements` besides a lookup, aliases included.
+const REGISTERS =
+  /@carbonElement\(|@customElement\(|\bcustomElements\b(?!\s*\??\.\s*(get|whenDefined)\b)/;
 
 export function isFramework(specifier: string) {
   return FRAMEWORKS.some((pattern) => pattern.test(specifier));
@@ -178,6 +191,14 @@ export class SourceGraph {
         all.add(node.argument.literal.text);
       } else if (
         ts.isCallExpression(node) &&
+        ts.isIdentifier(node.expression) &&
+        node.expression.text === 'require' &&
+        node.arguments[0] &&
+        ts.isStringLiteralLike(node.arguments[0])
+      ) {
+        all.add(node.arguments[0].text);
+      } else if (
+        ts.isCallExpression(node) &&
         node.expression.kind === ts.SyntaxKind.ImportKeyword
       ) {
         let [argument] = node.arguments;
@@ -198,9 +219,17 @@ export class SourceGraph {
       ts.forEachChild(node, visit);
     };
     visit(source);
+    for (const reference of source.referencedFiles) {
+      all.add(reference.fileName);
+    }
+    for (const reference of source.typeReferenceDirectives) {
+      all.add(reference.fileName);
+    }
     const runtime = file.endsWith('.d.ts')
       ? new Set<string>()
       : this.runtimeSpecifiers(file, text);
+    // Emit can add a specifier the source never names, such as a JSX runtime.
+    runtime.forEach((specifier) => all.add(specifier));
     return [...all]
       .filter((specifier) => !STYLES.test(specifier))
       .map((specifier) => {
@@ -242,11 +271,17 @@ export class SourceGraph {
         specifiers.add(node.moduleSpecifier.text);
       } else if (
         ts.isCallExpression(node) &&
-        node.expression.kind === ts.SyntaxKind.ImportKeyword &&
-        node.arguments[0] &&
-        ts.isStringLiteralLike(node.arguments[0])
+        (node.expression.kind === ts.SyntaxKind.ImportKeyword ||
+          (ts.isIdentifier(node.expression) &&
+            node.expression.text === 'require'))
       ) {
-        specifiers.add(node.arguments[0].text);
+        let [argument] = node.arguments;
+        while (argument && ts.isParenthesizedExpression(argument)) {
+          argument = argument.expression;
+        }
+        if (argument && ts.isStringLiteralLike(argument)) {
+          specifiers.add(argument.text);
+        }
       }
       ts.forEachChild(node, visit);
     };
@@ -262,11 +297,11 @@ export class SourceGraph {
     let base: string;
     if (specifier.startsWith('.')) {
       base = path.resolve(path.dirname(this.absolute(file)), specifier);
-    } else if (specifier.startsWith(COMPONENTS_PREFIX)) {
+    } else if (COMPONENTS_PREFIX.test(specifier)) {
       base = path.resolve(
         this.packageRoot,
-        '../ai-chat-components/src',
-        specifier.slice(COMPONENTS_PREFIX.length)
+        COMPONENTS_SOURCE,
+        specifier.replace(COMPONENTS_PREFIX, '')
       );
     } else {
       return undefined;
@@ -325,10 +360,11 @@ export function folderViolations(
       continue;
     }
     for (const edge of graph.edgesOf(file)) {
-      if (edge.external || edge.to.startsWith('../')) {
+      if (edge.external || isComponents(edge.to)) {
         continue;
       }
-      if (!allows(rule, edge)) {
+      // Any other path out of this package is never allowed.
+      if (edge.to.startsWith('../') || !allows(rule, edge)) {
         violations.add(`${edge.from} -> ${edge.to}`);
       }
     }
@@ -337,10 +373,12 @@ export function folderViolations(
 }
 
 /**
- * Follows every edge from the framework-free folders through this package's
- * own files. Reports each edge that imports a framework, or that enters the
- * components package at a module that reaches a framework or registers an
- * element, through any edge kind. Each violation is `from -> to`.
+ * For each framework-free folder, follows every edge from its files through
+ * this package's own files. Reports each edge that imports a framework, or
+ * that enters the components package at a module that reaches a framework or
+ * registers an element, through any edge kind. A root that registers an
+ * element is reported too. Each violation is `folder: from -> to`, so one
+ * folder's exception doesn't cover a new path from another.
  */
 export function frameworkViolations(
   graph: SourceGraph,
@@ -362,34 +400,48 @@ export function frameworkViolations(
     }
     return tainted.get(entry);
   };
-  const roots = files.filter((file) => ruleFor(rules, file)?.frameworkFree);
   const violations = new Set<string>();
-  const seen = new Set<string>();
-  const pending = [...roots];
-  while (pending.length) {
-    const file = pending.shift()!;
-    if (seen.has(file)) {
-      continue;
-    }
-    seen.add(file);
-    for (const edge of graph.edgesOf(file)) {
-      if (edge.external) {
-        if (isFramework(edge.to)) {
-          violations.add(`${edge.from} -> ${edge.to}`);
+  for (const rule of rules.filter((candidate) => candidate.frameworkFree)) {
+    const roots = files.filter((file) => ruleFor(rules, file) === rule);
+    const report = (from: string, to: string) =>
+      violations.add(`${rule.folder}: ${from} -> ${to}`);
+    roots
+      .filter((root) => graph.registers(root))
+      .forEach((root) => report(root, 'customElements'));
+    const seen = new Set<string>();
+    const pending = [...roots];
+    while (pending.length) {
+      const file = pending.shift()!;
+      if (seen.has(file)) {
+        continue;
+      }
+      seen.add(file);
+      for (const edge of graph.edgesOf(file)) {
+        if (edge.external) {
+          if (isFramework(edge.to)) {
+            report(edge.from, edge.to);
+          }
+        } else if (isComponents(edge.to)) {
+          if (taints(edge.to)) {
+            report(edge.from, edge.to);
+          }
+        } else if (graph.registers(edge.to)) {
+          report(edge.from, edge.to);
+        } else if (
+          !edge.to.startsWith('../') &&
+          allows(ruleFor(rules, file), edge)
+        ) {
+          // A disallowed edge is a folder violation; don't follow it into view code.
+          pending.push(edge.to);
         }
-      } else if (edge.to.startsWith('../')) {
-        if (taints(edge.to)) {
-          violations.add(`${edge.from} -> ${edge.to}`);
-        }
-      } else if (graph.registers(edge.to)) {
-        violations.add(`${edge.from} -> ${edge.to}`);
-      } else if (allows(ruleFor(rules, file), edge)) {
-        // A disallowed edge is a folder violation; don't follow it into view code.
-        pending.push(edge.to);
       }
     }
   }
   return violations;
+}
+
+function isComponents(file: string) {
+  return file.startsWith(COMPONENTS_SOURCE + '/');
 }
 
 /**
