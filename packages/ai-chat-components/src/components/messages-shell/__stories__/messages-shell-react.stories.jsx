@@ -11,6 +11,7 @@
 import React from 'react';
 import MessagesShell from '../../../react/messages-shell';
 import { action } from 'storybook/actions';
+import { manifestEventArgTypes } from '../../../../.storybook-react/manifest-event-arg-types.js';
 import './story-styles.scss';
 import { placeholderMessages, storyClass } from './story-data';
 import {
@@ -30,11 +31,7 @@ export const Default = {
         DefaultWC.argTypes;
       return rest;
     })(),
-    onMessagesShellScroll: {
-      action: 'scroll',
-      control: 'none',
-      table: { category: 'events' },
-    },
+    ...manifestEventArgTypes(MessagesShell),
   },
   args: {
     ...DefaultWC.args,
@@ -84,4 +81,10 @@ export const NoContent = {
       />
     </div>
   ),
+};
+
+export const MessagesShellEvents = {
+  tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
+  argTypes: { ...manifestEventArgTypes(MessagesShell) },
 };

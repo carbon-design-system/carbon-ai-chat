@@ -15,6 +15,9 @@
  * directly — no higher-level `ChatCustomElement` wrapper.
  */
 
+import FileUploadItem from '../../../react/file-upload-item';
+import AutocompleteController from '../../../react/autocomplete-controller.js';
+import { manifestEventArgTypes } from '../../../../.storybook-react/manifest-event-arg-types.js';
 import React, {
   useState,
   useRef,
@@ -1177,4 +1180,46 @@ export const CDSAIChatErrorMessageArgTypes = {
   tags: ['!dev'],
   parameters: { chromatic: { disable: true } },
   argTypes: CDSAIChatErrorMessageAPI.argTypes,
+};
+
+export const PromptLineEvents = {
+  tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
+  argTypes: { ...manifestEventArgTypes(PromptLine) },
+};
+
+export const CDSAIChatInputSendControlEvents = {
+  tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
+  argTypes: { ...manifestEventArgTypes(CDSAIChatInputSendControl) },
+};
+
+export const CDSAIChatAutocompleteEvents = {
+  tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
+  argTypes: { ...manifestEventArgTypes(CDSAIChatAutocomplete) },
+};
+
+export const CDSAIChatFileUploadsEvents = {
+  tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
+  argTypes: { ...manifestEventArgTypes(CDSAIChatFileUploads) },
+};
+
+export const PromptLineShellEvents = {
+  tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
+  argTypes: { ...manifestEventArgTypes(PromptLineShell) },
+};
+
+export const FileUploadItemEvents = {
+  tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
+  argTypes: { ...manifestEventArgTypes(FileUploadItem) },
+};
+
+export const AutocompleteControllerEvents = {
+  tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
+  argTypes: { ...manifestEventArgTypes(AutocompleteController) },
 };

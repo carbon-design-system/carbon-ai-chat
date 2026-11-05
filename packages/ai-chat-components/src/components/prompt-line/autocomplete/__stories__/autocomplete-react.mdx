@@ -71,63 +71,9 @@ Use CSS custom properties to adjust layout sizing. Apply them to a wrapper aroun
 
 ## Events
 
-The autocomplete React component emits the following custom events that you can listen for to handle user interactions:
+### `CDSAIChatAutocomplete`
 
-<table style={{ width: '100%' }}>
-  <thead>
-    <tr>
-      <th>Event Prop</th>
-      <th>Event Name</th>
-      <th>Description</th>
-      <th>Event Detail Properties</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>
-        <code>onSend</code>
-      </td>
-      <td>
-        <code>cds-aichat-autocomplete-send</code>
-      </td>
-      <td>
-        Fired when a suggestion item is clicked/activated and{' '}
-        <code>disableDirectSend</code> is <code>false</code> (default). The item
-        text is sent directly to chat.
-      </td>
-      <td>
-        • <code>text</code> (string) - The text of the suggestion item (
-        <code>value</code> if set, otherwise <code>label</code>)
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <code>onSelect</code>
-      </td>
-      <td>
-        <code>cds-aichat-autocomplete-select</code>
-      </td>
-      <td>
-        Fired when a suggestion item is clicked/activated and{' '}
-        <code>disableDirectSend</code> is <code>true</code>, or via a{' '}
-        <code>renderCustomList</code> <code>onSelect</code> callback.
-      </td>
-      <td>
-        • <code>item</code> (SuggestionItem) - The selected suggestion item
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <code>onDismiss</code>
-      </td>
-      <td>
-        <code>cds-aichat-autocomplete-dismiss</code>
-      </td>
-      <td>Fired when the autocomplete panel is dismissed.</td>
-      <td>None</td>
-    </tr>
-  </tbody>
-</table>
+<ArgTypes of={AutocompleteReactStories.CDSAIChatAutocompleteEvents} />
 
 ## Component API
 

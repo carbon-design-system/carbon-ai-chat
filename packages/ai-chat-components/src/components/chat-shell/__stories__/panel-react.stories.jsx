@@ -8,6 +8,7 @@
  */
 
 /* eslint-disable */
+import { manifestEventArgTypes } from '../../../../.storybook-react/manifest-event-arg-types.js';
 import React, { useState } from 'react';
 import '@carbon/web-components/es/components/toggle/index.js';
 
@@ -349,4 +350,10 @@ export const Embedded = {
       </>
     );
   },
+};
+
+export const ChatPanelEvents = {
+  tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
+  argTypes: { ...manifestEventArgTypes(ChatPanel) },
 };
