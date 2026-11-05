@@ -2,166 +2,166 @@
 
 exports[`reports every type and field the SDK entry reaches 1`] = `
 "enum BusEventType (src/types/events/eventBusTypes.ts)
-  CLOSE_PANEL_BUTTON_TOGGLED
-  PRE_RECEIVE
-  RECEIVE
-  PRE_SEND
-  SEND
-  VIEW_PRE_CHANGE
-  VIEW_CHANGE
-  MESSAGE_ITEM_CUSTOM
-  USER_DEFINED_RESPONSE
-  CUSTOM_FOOTER_SLOT
-  CUSTOM_REQUEST_FOOTER_SLOT
-  HISTORY_BEGIN
-  HISTORY_END
-  HISTORY_PANEL_NEW_CHAT
-  HISTORY_PANEL_PRE_OPEN
-  PRE_RESTART_CONVERSATION
-  RESTART_CONVERSATION
-  CHAT_READY
-  CUSTOM_PANEL_PRE_OPEN
-  CUSTOM_PANEL_OPEN
-  CUSTOM_PANEL_PRE_CLOSE
-  CUSTOM_PANEL_CLOSE
-  WORKSPACE_PRE_OPEN
-  WORKSPACE_OPEN
-  WORKSPACE_PRE_CLOSE
-  WORKSPACE_CLOSE
-  HUMAN_AGENT_PRE_RECEIVE
-  HUMAN_AGENT_RECEIVE
-  HUMAN_AGENT_PRE_SEND
-  HUMAN_AGENT_SEND
-  HUMAN_AGENT_PRE_START_CHAT
-  HUMAN_AGENT_PRE_END_CHAT
-  HUMAN_AGENT_END_CHAT
-  HUMAN_AGENT_ARE_ANY_AGENTS_ONLINE
-  CHUNK_USER_DEFINED_RESPONSE
-  FEEDBACK
-  STOP_STREAMING
-  STATE_CHANGE
-  DISCLAIMER_ACCEPTED
-  HEADER_MENU_CLICK
+  CLOSE_PANEL_BUTTON_TOGGLED = 'closePanelButton:toggled'
+  PRE_RECEIVE = 'pre:receive'
+  RECEIVE = 'receive'
+  PRE_SEND = 'pre:send'
+  SEND = 'send'
+  VIEW_PRE_CHANGE = 'view:pre:change'
+  VIEW_CHANGE = 'view:change'
+  MESSAGE_ITEM_CUSTOM = 'messageItemCustom'
+  USER_DEFINED_RESPONSE = 'userDefinedResponse'
+  CUSTOM_FOOTER_SLOT = 'customFooterSlot'
+  CUSTOM_REQUEST_FOOTER_SLOT = 'customRequestFooterSlot'
+  HISTORY_BEGIN = 'history:begin'
+  HISTORY_END = 'history:end'
+  HISTORY_PANEL_NEW_CHAT = 'history:newChat'
+  HISTORY_PANEL_PRE_OPEN = 'historyPanel:pre:open'
+  PRE_RESTART_CONVERSATION = 'pre:restartConversation'
+  RESTART_CONVERSATION = 'restartConversation'
+  CHAT_READY = 'chat:ready'
+  CUSTOM_PANEL_PRE_OPEN = 'customPanel:pre:open'
+  CUSTOM_PANEL_OPEN = 'customPanel:open'
+  CUSTOM_PANEL_PRE_CLOSE = 'customPanel:pre:close'
+  CUSTOM_PANEL_CLOSE = 'customPanel:close'
+  WORKSPACE_PRE_OPEN = 'workspace:pre:open'
+  WORKSPACE_OPEN = 'workspace:open'
+  WORKSPACE_PRE_CLOSE = 'workspace:pre:close'
+  WORKSPACE_CLOSE = 'workspace:close'
+  HUMAN_AGENT_PRE_RECEIVE = 'human_agent:pre:receive'
+  HUMAN_AGENT_RECEIVE = 'human_agent:receive'
+  HUMAN_AGENT_PRE_SEND = 'human_agent:pre:send'
+  HUMAN_AGENT_SEND = 'human_agent:send'
+  HUMAN_AGENT_PRE_START_CHAT = 'human_agent:pre:startChat'
+  HUMAN_AGENT_PRE_END_CHAT = 'human_agent:pre:endChat'
+  HUMAN_AGENT_END_CHAT = 'human_agent:endChat'
+  HUMAN_AGENT_ARE_ANY_AGENTS_ONLINE = 'human_agent:areAnyAgentsOnline'
+  CHUNK_USER_DEFINED_RESPONSE = 'chunk:userDefinedResponse'
+  FEEDBACK = 'feedback'
+  STOP_STREAMING = 'stopStreaming'
+  STATE_CHANGE = 'state:change'
+  DISCLAIMER_ACCEPTED = 'disclaimerAccepted'
+  HEADER_MENU_CLICK = 'header:menuClick'
 
 enum ButtonItemType (src/types/messaging/Messages.ts)
-  POST_BACK
-  CUSTOM_EVENT
-  SHOW_PANEL
-  URL
+  POST_BACK = 'post_back'
+  CUSTOM_EVENT = 'custom_event'
+  SHOW_PANEL = 'show_panel'
+  URL = 'url'
 
 enum HumanAgentMessageType (src/types/messaging/Messages.ts)
-  INLINE_ERROR
-  FROM_HUMAN_AGENT
-  FROM_USER
-  HUMAN_AGENT_LEFT_CHAT
-  HUMAN_AGENT_ENDED_CHAT
-  HUMAN_AGENT_JOINED
-  RELOAD_WARNING
-  TRANSFER_TO_HUMAN_AGENT
-  USER_ENDED_CHAT
-  CHAT_WAS_ENDED
-  DISCONNECTED
-  RECONNECTED
-  SHARING_REQUESTED
-  SHARING_ACCEPTED
-  SHARING_DECLINED
-  SHARING_CANCELLED
-  SHARING_ENDED
-  SYSTEM
+  INLINE_ERROR = 'inline_error'
+  FROM_HUMAN_AGENT = 'from_agent'
+  FROM_USER = 'from_user'
+  HUMAN_AGENT_LEFT_CHAT = 'agent_left_chat'
+  HUMAN_AGENT_ENDED_CHAT = 'agent_ended_chat'
+  HUMAN_AGENT_JOINED = 'agent_joined'
+  RELOAD_WARNING = 'user_connected_warning'
+  TRANSFER_TO_HUMAN_AGENT = 'transfer_to_agent'
+  USER_ENDED_CHAT = 'user_ended_chat'
+  CHAT_WAS_ENDED = 'chat_was_ended'
+  DISCONNECTED = 'disconnected'
+  RECONNECTED = 'reconnected'
+  SHARING_REQUESTED = 'sharing_requested'
+  SHARING_ACCEPTED = 'sharing_accepted'
+  SHARING_DECLINED = 'sharing_declined'
+  SHARING_CANCELLED = 'sharing_cancelled'
+  SHARING_ENDED = 'sharing_ended'
+  SYSTEM = 'system'
 
 enum HumanAgentsOnlineStatus (src/types/config/ServiceDeskConfig.ts)
-  ONLINE
-  OFFLINE
-  UNKNOWN
+  ONLINE = 'online'
+  OFFLINE = 'offline'
+  UNKNOWN = 'unknown'
 
 enum IFrameItemDisplayOption (src/types/messaging/Messages.ts)
-  INLINE
-  PANEL
+  INLINE = 'inline'
+  PANEL = 'panel'
 
 enum MessageErrorState (src/types/messaging/LocalMessageItem.ts)
-  NONE
-  FAILED
-  FAILED_WHILE_STREAMING
-  RETRYING
-  WAITING
+  NONE = 1
+  FAILED = 2
+  FAILED_WHILE_STREAMING = 3
+  RETRYING = 4
+  WAITING = 5
 
 enum MessageInputType (src/types/messaging/Messages.ts)
-  TEXT
-  EVENT
+  TEXT = 'text'
+  EVENT = 'event'
 
 enum MessageResponseTypes (src/types/messaging/Messages.ts)
-  TEXT
-  OPTION
-  CONNECT_TO_HUMAN_AGENT
-  IMAGE
-  PAUSE
-  USER_DEFINED
-  IFRAME
-  VIDEO
-  AUDIO
-  DATE
-  INLINE_ERROR
-  CARD
-  CAROUSEL
-  BUTTON
-  GRID
-  CONVERSATIONAL_SEARCH
-  PREVIEW_CARD
-  SYSTEM
+  TEXT = 'text'
+  OPTION = 'option'
+  CONNECT_TO_HUMAN_AGENT = 'connect_to_agent'
+  IMAGE = 'image'
+  PAUSE = 'pause'
+  USER_DEFINED = 'user_defined'
+  IFRAME = 'iframe'
+  VIDEO = 'video'
+  AUDIO = 'audio'
+  DATE = 'date'
+  INLINE_ERROR = 'inline_error'
+  CARD = 'card'
+  CAROUSEL = 'carousel'
+  BUTTON = 'button'
+  GRID = 'grid'
+  CONVERSATIONAL_SEARCH = 'conversational_search'
+  PREVIEW_CARD = 'preview_card'
+  SYSTEM = 'system'
 
 enum MessageSendSource (src/types/events/eventBusTypes.ts)
-  MESSAGE_INPUT
-  HOME_SCREEN_INPUT
-  OPTION_BUTTON
-  OPTION_DROP_DOWN
-  HISTORY_UPDATE
-  INSTANCE_SEND
-  DATE_PICKER
-  POST_BACK_BUTTON
-  HOME_SCREEN_STARTER
-  WELCOME_REQUEST
-  EVENT
-  OTHER
+  MESSAGE_INPUT = 'messageInput'
+  HOME_SCREEN_INPUT = 'homeScreenInput'
+  OPTION_BUTTON = 'optionButton'
+  OPTION_DROP_DOWN = 'optionDropDown'
+  HISTORY_UPDATE = 'historyUpdate'
+  INSTANCE_SEND = 'instanceSend'
+  DATE_PICKER = 'datePicker'
+  POST_BACK_BUTTON = 'postBackButton'
+  HOME_SCREEN_STARTER = 'homeScreenStarter'
+  WELCOME_REQUEST = 'welcomeRequest'
+  EVENT = 'event'
+  OTHER = 'other'
 
 enum MessageState (src/types/config/MessagingConfig.ts)
-  STREAMING
-  COMPLETE
-  ERROR
+  STREAMING = 'streaming'
+  COMPLETE = 'complete'
+  ERROR = 'error'
 
 enum OnErrorType (src/types/config/ErrorConfig.ts)
-  MESSAGE_COMMUNICATION
-  RENDER
-  INTEGRATION_ERROR
-  HYDRATION
+  MESSAGE_COMMUNICATION = 'MESSAGE_COMMUNICATION'
+  RENDER = 'RENDER'
+  INTEGRATION_ERROR = 'INTEGRATION_ERROR'
+  HYDRATION = 'HYDRATION'
 
 enum OptionItemPreference (src/types/messaging/Messages.ts)
-  DROPDOWN
-  BUTTON
+  DROPDOWN = 'dropdown'
+  BUTTON = 'button'
 
 enum ReasoningStepOpenState (src/types/messaging/Messages.ts)
-  OPEN
-  CLOSE
-  DEFAULT
+  OPEN = 'open'
+  CLOSE = 'close'
+  DEFAULT = 'default'
 
 enum ScreenShareState (src/types/config/ServiceDeskConfig.ts)
-  ACCEPTED
-  DECLINED
-  CANCELLED
-  ENDED
+  ACCEPTED = 'accepted'
+  DECLINED = 'declined'
+  CANCELLED = 'cancelled'
+  ENDED = 'ended'
 
 enum SelectionDisplay (src/types/messaging/Messages.ts)
-  LABEL
-  INPUT_TEXT
+  LABEL = 'label'
+  INPUT_TEXT = 'input_text'
 
 enum UserType (src/types/messaging/Messages.ts)
-  HUMAN
-  BOT
-  WATSONX
+  HUMAN = 'human'
+  BOT = 'bot'
+  WATSONX = 'watsonx'
 
 enum WidthOptions (src/types/messaging/Messages.ts)
-  SMALL
-  MEDIUM
-  LARGE
+  SMALL = 'small'
+  MEDIUM = 'medium'
+  LARGE = 'large'
 
 interface AdditionalDataToAgent (src/types/config/ServiceDeskConfig.ts)
   filesToUpload?: Array<_FileUpload>
@@ -693,10 +693,10 @@ type CardItem (src/types/messaging/Messages.ts)
   = BaseGenericItem<TUserDefinedType> & WithBodyAndFooter & WithWidthOptions
 
 type ChatSDKEventType (src/types/instance/ChatSDKInstance.ts)
-  = | BusEventType.PRE_SEND | BusEventType.SEND | BusEventType.PRE_RECEIVE | BusEventType.RECEIVE | BusEventType.USER_DEFINED_RESPONSE | BusEventType.STOP_STREAMING // Lifecycle | BusEventType.HISTORY_BEGIN | BusEventType.HISTORY_END | BusEventType.PRE_RESTART_CONVERSATION | BusEventType.RESTART_CONVERSATION // Human agents | BusEventType.HUMAN_AGENT_PRE_RECEIVE | BusEventType.HUMAN_AGENT_RECEIVE | BusEventType.HUMAN_AGENT_PRE_SEND | BusEventType.HUMAN_AGENT_SEND | BusEventType.HUMAN_AGENT_PRE_START_CHAT | BusEventType.HUMAN_AGENT_PRE_END_CHAT | BusEventType.HUMAN_AGENT_END_CHAT | BusEventType.HUMAN_AGENT_ARE_ANY_AGENTS_ONLINE
+  = BusEventType.PRE_SEND | BusEventType.SEND | BusEventType.PRE_RECEIVE | BusEventType.RECEIVE | BusEventType.USER_DEFINED_RESPONSE | BusEventType.STOP_STREAMING | BusEventType.HISTORY_BEGIN | BusEventType.HISTORY_END | BusEventType.PRE_RESTART_CONVERSATION | BusEventType.RESTART_CONVERSATION | BusEventType.HUMAN_AGENT_PRE_RECEIVE | BusEventType.HUMAN_AGENT_RECEIVE | BusEventType.HUMAN_AGENT_PRE_SEND | BusEventType.HUMAN_AGENT_SEND | BusEventType.HUMAN_AGENT_PRE_START_CHAT | BusEventType.HUMAN_AGENT_PRE_END_CHAT | BusEventType.HUMAN_AGENT_END_CHAT | BusEventType.HUMAN_AGENT_ARE_ANY_AGENTS_ONLINE
 
 type ChatSDKHandlers (src/types/instance/ChatSDKInstance.ts)
-  = | TypeAndHandler<ChatSDKInstance, ChatSDKEventType> | TypeAndHandler<ChatSDKInstance, ChatSDKEventType>[]
+  = TypeAndHandler<ChatSDKInstance, ChatSDKEventType> | TypeAndHandler<ChatSDKInstance, ChatSDKEventType>[]
 
 type ConversationStatus (src/types/instance/ChatSDKState.ts)
   = 'ready' | 'loading' | 'submitted' | 'streaming' | 'error'
@@ -708,10 +708,10 @@ type DeepPartial (src/types/utilities/DeepPartial.d.ts)
   = { [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P]; }
 
 type EventBusHandler (src/types/instance/EventHandlers.ts)
-  = ( event: T, instance: I ) => unknown
+  = (event: T, instance: I) => unknown
 
 type GenericItem (src/types/messaging/Messages.ts)
-  = | TextItem<TUserDefinedType> | OptionItem<TUserDefinedType> | ConnectToHumanAgentItem<TUserDefinedType> | ImageItem<TUserDefinedType> | PauseItem<TUserDefinedType> | UserDefinedItem<TUserDefinedType> | IFrameItem<TUserDefinedType> | VideoItem<TUserDefinedType> | AudioItem<TUserDefinedType> | DateItem<TUserDefinedType> | InlineErrorItem<TUserDefinedType> | CardItem<TUserDefinedType> | CarouselItem<TUserDefinedType> | ButtonItem<TUserDefinedType> | GridItem<TUserDefinedType> | ConversationalSearchItem<TUserDefinedType> | PreviewCardItem<TUserDefinedType> | SystemMessageItem<TUserDefinedType>
+  = TextItem<TUserDefinedType> | OptionItem<TUserDefinedType> | ConnectToHumanAgentItem<TUserDefinedType> | ImageItem<TUserDefinedType> | PauseItem<TUserDefinedType> | UserDefinedItem<TUserDefinedType> | IFrameItem<TUserDefinedType> | VideoItem<TUserDefinedType> | AudioItem<TUserDefinedType> | DateItem<TUserDefinedType> | InlineErrorItem<TUserDefinedType> | CardItem<TUserDefinedType> | CarouselItem<TUserDefinedType> | ButtonItem<TUserDefinedType> | GridItem<TUserDefinedType> | ConversationalSearchItem<TUserDefinedType> | PreviewCardItem<TUserDefinedType> | SystemMessageItem<TUserDefinedType>
 
 type HorizontalCellAlignment (src/types/messaging/Messages.ts)
   = 'left' | 'center' | 'right'
@@ -726,13 +726,13 @@ type ServiceDeskErrorInfo (src/types/config/ServiceDeskConfig.ts)
   = ConnectingErrorInfo | DisconnectedErrorInfo | UserMessageErrorInfo
 
 type StructuredFieldType (src/types/messaging/Messages.ts)
-  = | 'file' | 'mention' | 'command' // \`string & {}\` widens to any string while keeping the three literals in // autocomplete — a plain \`| string\` would collapse the whole union to \`string\`. | (string & {})
+  = 'file' | 'mention' | 'command' | (string & {})
 
 type SystemMessageVariant (src/types/messaging/Messages.ts)
   = 'default' | 'date' | 'agent'
 
 type UpsertMessageUpdater (src/types/config/MessagingConfig.ts)
-  = ( previous: MessageResponse | undefined ) => Promise<MessageResponse> | MessageResponse
+  = (previous: MessageResponse | undefined) => Promise<MessageResponse> | MessageResponse
 
 type VerticalCellAlignment (src/types/messaging/Messages.ts)
   = 'top' | 'center' | 'bottom'

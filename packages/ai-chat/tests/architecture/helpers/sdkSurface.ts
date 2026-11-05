@@ -30,7 +30,9 @@ export function surfaceReport(
   if (!source) {
     throw new Error(`Missing surface entry ${entry}`);
   }
-  const src = path.join(packageRoot, 'src') + path.sep;
+  // TypeScript reports file names with forward slashes on every platform.
+  const src = path.join(packageRoot, 'src').replaceAll('\\', '/') + '/';
+  const printer = ts.createPrinter({ removeComments: true });
   // Only named declarations get a block; anonymous types are walked through.
   const ownDeclaration = (symbol: ts.Symbol | undefined) =>
     symbol?.declarations?.find(
@@ -110,16 +112,27 @@ export function surfaceReport(
     const name = checker.symbolToString(symbol);
     if (ts.isTypeAliasDeclaration(declaration)) {
       const type = checker.getTypeAtLocation(declaration.type);
-      blocks.push(
-        `type ${name} (${file})\n  = ${declaration.type.getText().replace(/\s+/g, ' ')}`
-      );
+      const text = printer
+        .printNode(
+          ts.EmitHint.Unspecified,
+          declaration.type,
+          declaration.getSourceFile()
+        )
+        .replace(/\s+/g, ' ');
+      blocks.push(`type ${name} (${file})\n  = ${text}`);
       collect(type);
       continue;
     }
     if (ts.isEnumDeclaration(declaration)) {
       blocks.push(
         `enum ${name} (${file})\n` +
-          declaration.members.map((m) => `  ${m.name.getText()}`).join('\n')
+          declaration.members
+            .map((m) =>
+              m.initializer
+                ? `  ${m.name.getText()} = ${m.initializer.getText()}`
+                : `  ${m.name.getText()}`
+            )
+            .join('\n')
       );
       continue;
     }
@@ -133,6 +146,12 @@ export function surfaceReport(
         return `  ${property.name}${optional}: ${checker.typeToString(member, declaration, FORMAT)}`;
       })
       .sort();
+    for (const index of checker.getIndexInfosOfType(type)) {
+      lines.push(
+        `  [key: ${checker.typeToString(index.keyType)}]: ${checker.typeToString(index.type, declaration, FORMAT)}`
+      );
+      collect(index.type);
+    }
     for (const base of type.isClassOrInterface()
       ? (checker.getBaseTypes(type) ?? [])
       : []) {
