@@ -16,7 +16,7 @@ Use `cds-aichat-message-byline` to show who sent a message, with an optional ava
 ## Key features
 
 - **Optional avatar**: With nothing in the `avatar` slot, the byline renders no avatar space.
-- **Reasoning controls**: Place a toggle in the `reasoning` slot. The reasoning steps stay at the top of the message, and the toggle opens and closes them from the byline.
+- **Reasoning controls**: Place a reasoning steps toggle or a chain of thought toggle in the `reasoning` slot. The byline adds a separator before it. The reasoning steps stay at the top of the message, and the toggle opens and closes them from the byline.
 - **Host-supplied text**: The byline shows the `label` and `timestamp` you pass in.
 
 ## Examples
@@ -31,15 +31,41 @@ Use `cds-aichat-message-byline` to show who sent a message, with an optional ava
 
 <Canvas of={Stories.WithoutAvatar} />
 
-### With reasoning controls
+### With reasoning steps
+
+The byline only holds the toggle. Render the `cds-aichat-reasoning-steps` panel below it and link the two with `panel-id` and `id`.
 
 ```html
 <cds-aichat-message-byline label="Assistant" timestamp="10:42 AM">
-  <button slot="reasoning" type="button">Show reasoning</button>
+  <cds-aichat-reasoning-steps-toggle
+    slot="reasoning"
+    panel-id="reasoning-panel"></cds-aichat-reasoning-steps-toggle>
 </cds-aichat-message-byline>
+<cds-aichat-reasoning-steps id="reasoning-panel">
+  <cds-aichat-reasoning-step title="Understand the request">
+  </cds-aichat-reasoning-step>
+</cds-aichat-reasoning-steps>
 ```
 
-<Canvas of={Stories.WithReasoning} />
+<Canvas of={Stories.WithReasoningSteps} />
+
+### With chain of thought
+
+```html
+<cds-aichat-message-byline label="Assistant" timestamp="10:42 AM">
+  <cds-aichat-chain-of-thought-toggle
+    slot="reasoning"
+    panel-id="chain-of-thought-panel"></cds-aichat-chain-of-thought-toggle>
+</cds-aichat-message-byline>
+<cds-aichat-chain-of-thought
+  id="chain-of-thought-panel"
+  panel-id="chain-of-thought-panel">
+  <cds-aichat-chain-of-thought-step title="Search documentation">
+  </cds-aichat-chain-of-thought-step>
+</cds-aichat-chain-of-thought>
+```
+
+<Canvas of={Stories.WithChainOfThought} />
 
 ### Human agent
 

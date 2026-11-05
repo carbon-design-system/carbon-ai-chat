@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { LitElement, html, nothing } from 'lit';
+import { LitElement, html } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { carbonElement } from '../../../globals/decorators/index.js';
 import prefix from '../../../globals/settings.js';
@@ -17,25 +17,22 @@ import styles from './message-byline.scss?lit';
 const blockClass = `${prefix}-message-byline`;
 
 /**
- * Shows who sent a message: an optional avatar, the sender label, a timestamp,
+ * The top section of a message: an optional avatar, the sender label, a timestamp,
  * and optional reasoning controls. It knows nothing about message data; the
  * host supplies every value.
- *
- * Do not give a slotted avatar its own label. The sender `label` already
- * names the sender, and a second label makes screen readers say it twice.
  *
  * @experimental
  * @element cds-aichat-message-byline
  *
  * @slot avatar - Optional avatar. Nothing is rendered for this slot while it is empty.
- * @slot reasoning - Optional reasoning controls, such as a toggle that opens the reasoning steps above the message.
+ * @slot reasoning - Optional reasoning controls, such as a `cds-aichat-reasoning-steps-toggle` or `cds-aichat-chain-of-thought-toggle`. The byline adds a separator before them. The host renders the panel the toggle controls outside the byline.
  */
 @carbonElement(blockClass)
 class CDSAIChatMessageByline extends LitElement {
   static styles = [commonStyles, styles];
 
   /**
-   * The sender name or role, such as "Assistant" or "Jane Doe".
+   * The sender name to display.
    */
   @property({ type: String })
   label = '';
@@ -47,18 +44,21 @@ class CDSAIChatMessageByline extends LitElement {
   timestamp = '';
 
   /**
+   * Whether the `avatar` slot has content.
+   */
+  @state()
+  private _hasAvatar = false;
+
+  /**
    * Whether the `reasoning` slot has content.
    */
   @state()
   private _hasReasoning = false;
 
   private _onAvatarSlotChange = (event: Event): void => {
-    // Reflect slot state as `has-avatar` so hosts can style on it.
-    this.toggleAttribute(
-      'has-avatar',
+    this._hasAvatar =
       (event.target as HTMLSlotElement).assignedNodes({ flatten: true })
-        .length > 0
-    );
+        .length > 0;
   };
 
   private _onReasoningSlotChange = (event: Event): void => {
@@ -69,16 +69,17 @@ class CDSAIChatMessageByline extends LitElement {
 
   render() {
     return html`
-      <slot name="avatar" @slotchange=${this._onAvatarSlotChange}></slot>
-      <span class="${blockClass}__label">${this.label}</span>
-      ${
-        this.timestamp
-          ? html`<span class="${blockClass}__timestamp"
-              >${this.timestamp}</span
-            >`
-          : nothing
-      }
+      <slot
+        name="avatar"
+        ?hidden=${!this._hasAvatar}
+        @slotchange=${this._onAvatarSlotChange}></slot>
+      <span class="${blockClass}__label"
+        >${[this.label, this.timestamp].filter(Boolean).join(' ')}</span
+      >
       <span class="${blockClass}__reasoning" ?hidden=${!this._hasReasoning}>
+        <span class="${blockClass}__reasoning-separator" aria-hidden="true"
+          >|</span
+        >
         <slot
           name="reasoning"
           @slotchange=${this._onReasoningSlotChange}></slot>

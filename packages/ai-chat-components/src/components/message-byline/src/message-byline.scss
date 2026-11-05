@@ -21,8 +21,21 @@ $block-class: #{$prefix}-message-byline;
   @include type.type-style('caption-01');
 }
 
-.#{$block-class}__label,
-.#{$block-class}__timestamp {
+// The avatar sits in a square box, as in the legacy avatar line. The slot is
+// hidden while it is empty, so no empty box is left behind.
+slot[name='avatar'] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  block-size: layout.$spacing-07;
+  inline-size: layout.$spacing-07;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.#{$block-class}__label {
   padding-inline-start: layout.$spacing-03;
 }
 
@@ -34,4 +47,9 @@ $block-class: #{$prefix}-message-byline;
   &[hidden] {
     display: none;
   }
+}
+
+.#{$block-class}__reasoning-separator {
+  color: theme.$text-secondary;
+  margin-inline-end: layout.$spacing-03;
 }

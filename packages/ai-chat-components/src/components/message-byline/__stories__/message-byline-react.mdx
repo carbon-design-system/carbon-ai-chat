@@ -16,7 +16,7 @@ Use `MessageByline` to show who sent a message, with an optional avatar, timesta
 ## Key features
 
 - **Optional avatar**: With nothing in the `avatar` slot, the byline renders no avatar space.
-- **Reasoning controls**: Place a toggle in the `reasoning` slot. The reasoning steps stay at the top of the message, and the toggle opens and closes them from the byline.
+- **Reasoning controls**: Place a reasoning steps toggle or a chain of thought toggle in the `reasoning` slot. The byline adds a separator before it. The reasoning steps stay at the top of the message, and the toggle opens and closes them from the byline.
 - **Host-supplied text**: The byline shows the `label` and `timestamp` you pass in.
 
 ## Examples
@@ -33,17 +33,43 @@ function Sender() {
 
 <Canvas of={Stories.WithoutAvatar} />
 
-### With reasoning controls
+### With reasoning steps
+
+The byline only holds the toggle. Render the `ReasoningSteps` panel below it and link the two with `panelID` and `id`.
 
 ```jsx
 <MessageByline label="Assistant" timestamp="10:42 AM">
-  <button slot="reasoning" type="button">
-    Show reasoning
-  </button>
+  <ReasoningStepsToggle
+    slot="reasoning"
+    panelID="reasoning-panel"
+    open={open}
+    onToggle={(event) => setOpen(event.detail.open)}
+  />
 </MessageByline>
+<ReasoningSteps id="reasoning-panel" open={open}>
+  <ReasoningStep title="Understand the request" />
+</ReasoningSteps>
 ```
 
-<Canvas of={Stories.WithReasoning} />
+<Canvas of={Stories.WithReasoningSteps} />
+
+### With chain of thought
+
+```jsx
+<MessageByline label="Assistant" timestamp="10:42 AM">
+  <ChainOfThoughtToggle
+    slot="reasoning"
+    panelId="chain-of-thought-panel"
+    open={open}
+    onToggle={(event) => setOpen(event.detail.open)}
+  />
+</MessageByline>
+<ChainOfThought id="chain-of-thought-panel" panelId="chain-of-thought-panel" open={open}>
+  <ChainOfThoughtStep title="Search documentation" />
+</ChainOfThought>
+```
+
+<Canvas of={Stories.WithChainOfThought} />
 
 ### Human agent
 

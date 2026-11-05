@@ -17,27 +17,24 @@ const blockClass = `${prefix}-message-byline`;
 
 describe(blockClass, () => {
   describe('label and timestamp', () => {
-    it('renders the label and timestamp', async () => {
+    it('renders the label and timestamp in one element', async () => {
       const el = await fixture<CDSAIChatMessageByline>(html`
         <cds-aichat-message-byline label="Assistant" timestamp="10:42 AM">
         </cds-aichat-message-byline>
       `);
-      const root = el.shadowRoot!;
-      expect(root.querySelector(`.${blockClass}__label`)!.textContent).to.equal(
-        'Assistant'
-      );
       expect(
-        root.querySelector(`.${blockClass}__timestamp`)!.textContent
-      ).to.equal('10:42 AM');
+        el.shadowRoot!.querySelector(`.${blockClass}__label`)!.textContent
+      ).to.equal('Assistant 10:42 AM');
     });
 
-    it('omits the timestamp element when there is no timestamp', async () => {
+    it('renders only the label when there is no timestamp', async () => {
       const el = await fixture<CDSAIChatMessageByline>(
         html`<cds-aichat-message-byline
           label="You"></cds-aichat-message-byline>`
       );
-      expect(el.shadowRoot!.querySelector(`.${blockClass}__timestamp`)).to.not
-        .exist;
+      expect(
+        el.shadowRoot!.querySelector(`.${blockClass}__label`)!.textContent
+      ).to.equal('You');
     });
 
     it('exposes the label in exactly one node', async () => {
@@ -59,32 +56,32 @@ describe(blockClass, () => {
   });
 
   describe('avatar slot', () => {
-    it('renders no avatar wrapper and no has-avatar attribute when empty', async () => {
+    const getAvatarSlot = (el: CDSAIChatMessageByline) =>
+      el.shadowRoot!.querySelector<HTMLSlotElement>('slot[name="avatar"]')!;
+
+    it('takes no space when the avatar slot is empty', async () => {
       const el = await fixture<CDSAIChatMessageByline>(
         html`<cds-aichat-message-byline
           label="You"></cds-aichat-message-byline>`
       );
       await el.updateComplete;
-      expect(el.shadowRoot!.querySelector(`.${blockClass}__avatar`)).to.not
-        .exist;
-      expect(el.hasAttribute('has-avatar')).to.be.false;
+      expect(getAvatarSlot(el).hidden).to.be.true;
+      expect(getComputedStyle(getAvatarSlot(el)).display).to.equal('none');
     });
 
-    it('sets has-avatar when an avatar is slotted', async () => {
+    it('shows the avatar slot when an avatar is slotted', async () => {
       const el = await fixture<CDSAIChatMessageByline>(html`
         <cds-aichat-message-byline label="Assistant">
           <span slot="avatar" id="avatar"></span>
         </cds-aichat-message-byline>
       `);
       await el.updateComplete;
-      expect(el.hasAttribute('has-avatar')).to.be.true;
-      const slot = el.shadowRoot!.querySelector<HTMLSlotElement>(
-        'slot[name="avatar"]'
-      )!;
+      const slot = getAvatarSlot(el);
+      expect(slot.hidden).to.be.false;
       expect(slot.assignedElements()[0].id).to.equal('avatar');
     });
 
-    it('clears has-avatar when the avatar is removed', async () => {
+    it('hides the avatar slot again when the avatar is removed', async () => {
       const el = await fixture<CDSAIChatMessageByline>(html`
         <cds-aichat-message-byline label="Assistant">
           <span slot="avatar" id="avatar"></span>
@@ -92,13 +89,27 @@ describe(blockClass, () => {
       `);
       await el.updateComplete;
       el.querySelector('#avatar')!.remove();
-      // slotchange fires asynchronously.
+      // slotchange fires asynchronously, then the re-render follows.
       await new Promise((resolve) => setTimeout(resolve, 0));
-      expect(el.hasAttribute('has-avatar')).to.be.false;
+      await el.updateComplete;
+      expect(getAvatarSlot(el).hidden).to.be.true;
     });
   });
 
   describe('reasoning slot', () => {
+    it('renders a decorative separator before slotted controls', async () => {
+      const el = await fixture<CDSAIChatMessageByline>(html`
+        <cds-aichat-message-byline label="Assistant">
+          <button slot="reasoning">Show reasoning</button>
+        </cds-aichat-message-byline>
+      `);
+      await el.updateComplete;
+      const separator = el.shadowRoot!.querySelector(
+        `.${blockClass}__reasoning-separator`
+      )!;
+      expect(separator.getAttribute('aria-hidden')).to.equal('true');
+    });
+
     it('hides the reasoning wrapper when the slot is empty', async () => {
       const el = await fixture<CDSAIChatMessageByline>(
         html`<cds-aichat-message-byline label="Assistant">
