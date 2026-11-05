@@ -16,9 +16,13 @@ import { captureMessageEvent } from '../../utils/messageEventOwnership';
 import {
   BusEventType,
   type BusEventUserDefinedResponse,
+  type BusEventCustomFooterSlot,
 } from '../../../types/events/eventBusTypes';
 import type { LocalMessageItem } from '../../../types/messaging/LocalMessageItem';
-import type { Message } from '../../../types/messaging/Messages';
+import type {
+  Message,
+  MessageResponse,
+} from '../../../types/messaging/Messages';
 import type { MessageState } from '../../../types/config/MessagingConfig';
 import type { ServiceManager } from '../ServiceManager';
 import type { MessagePresentationPort } from './presentationPort';
@@ -158,5 +162,69 @@ export async function coordinateUserDefinedResponseItems(
         createElementForNestedUserDefinedResponse
       );
     }
+  }
+}
+
+export async function handleCustomFooterSlot(
+  serviceManager: ServiceManager,
+  localMessage: LocalMessageItem,
+  originalMessage: MessageResponse,
+  isCurrent: () => boolean = () => true
+) {
+  if (!isCurrent()) {
+    return;
+  }
+  const footerOptions =
+    localMessage.item.message_item_options?.custom_footer_slot;
+  if (!footerOptions || footerOptions.is_on === false) {
+    return;
+  }
+  const state = serviceManager.store.getState();
+  if (
+    !Object.isFrozen(originalMessage) &&
+    (state.allMessagesByID[originalMessage.id] === originalMessage ||
+      state.allMessageItemsByID[localMessage.ui_state.id] === localMessage)
+  ) {
+    const write = serviceManager.messageUpsertCoordinator.trackWrite(
+      originalMessage.id
+    );
+    const isEventCurrent = () => isCurrent() && write.isCurrent();
+    const eventValues = captureMessageEvent(
+      serviceManager,
+      originalMessage,
+      {
+        [localMessage.ui_state.id]: localMessage,
+      },
+      undefined,
+      isEventCurrent
+    );
+    try {
+      await handleCustomFooterSlot(
+        serviceManager,
+        eventValues.localItems[localMessage.ui_state.id],
+        eventValues.message as MessageResponse,
+        isEventCurrent
+      );
+    } finally {
+      try {
+        eventValues.commit();
+      } finally {
+        write.release();
+      }
+    }
+    return;
+  }
+  {
+    const customFooterSlotEvent: BusEventCustomFooterSlot = {
+      type: BusEventType.CUSTOM_FOOTER_SLOT,
+      data: {
+        slotName: footerOptions.slot_name,
+        messageItem: localMessage.item,
+        message: originalMessage,
+        additionalData: footerOptions.additional_data,
+      },
+    };
+
+    await serviceManager.fire(customFooterSlotEvent, isCurrent);
   }
 }
