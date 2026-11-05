@@ -17,7 +17,7 @@ import type { HistoryItem } from '../messaging/History';
  * with the settings for the prebuilt chat's loading indicator and stop button.
  *
  * A `createChatSDK` function that starts a conversation with no interface arrives with the
- * `@carbon/ai-chat/sdk` entry point in 2.0.0.
+ * `@carbon/ai-chat/sdk` entry point in a 2.x minor release.
  *
  * @typeParam I The instance each callback receives. Defaults to {@link ChatSDKInstance}; the prebuilt
  * chat passes {@link ChatInstance}.
