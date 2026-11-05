@@ -7,6 +7,11 @@
  *  @license
  */
 
+import type {
+  MarkdownPluginHostMountDetail,
+  MarkdownPluginHostUpdateDetail,
+  MarkdownPluginHostUnmountDetail,
+} from './utils/plugin-host-container.js';
 import { html, LitElement, PropertyValues, TemplateResult } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { prefix } from '../../globals/settings.js';
@@ -105,6 +110,9 @@ function readLightDomMarkdownSource(element: Element): string {
  * - `./utils/streaming-table.ts` — heuristics that hold a streaming table in a skeleton "loading" state until its tail stabilizes.
  *
  * @element cds-aichat-markdown
+ * @fires {CustomEvent<MarkdownPluginHostMountDetail>} cds-aichat-markdown-plugin-host-mount - Offers a renderer host. Call preventDefault() to transfer hosting to the listener.
+ * @fires {CustomEvent<MarkdownPluginHostUpdateDetail>} cds-aichat-markdown-plugin-host-update - Updates HTML in a host accepted by an ancestor.
+ * @fires {CustomEvent<MarkdownPluginHostUnmountDetail>} cds-aichat-markdown-plugin-host-unmount - Releases a host accepted by an ancestor.
  */
 class CDSAIChatMarkdown extends LitElement {
   static get is() {
@@ -819,11 +827,14 @@ class CDSAIChatMarkdown extends LitElement {
     this.rendererForwarders.delete(slotName);
     this.delegatedPluginSlots.delete(slotName);
     this.dispatchEvent(
-      new CustomEvent('cds-aichat-markdown-plugin-host-unmount', {
-        bubbles: true,
-        composed: true,
-        detail: { slotName },
-      })
+      new CustomEvent<MarkdownPluginHostUnmountDetail>(
+        'cds-aichat-markdown-plugin-host-unmount',
+        {
+          bubbles: true,
+          composed: true,
+          detail: { slotName },
+        }
+      )
     );
   }
 
@@ -855,7 +866,7 @@ class CDSAIChatMarkdown extends LitElement {
           descriptor.slotName
         );
         if (!alreadyDelegated && !this.slotHosts.has(descriptor.slotName)) {
-          const mountEvent = new CustomEvent(
+          const mountEvent = new CustomEvent<MarkdownPluginHostMountDetail>(
             'cds-aichat-markdown-plugin-host-mount',
             {
               bubbles: true,
@@ -877,14 +888,17 @@ class CDSAIChatMarkdown extends LitElement {
           // The chain owns this slot; push HTML updates through a second
           // event so streaming chunks reach the page-level host element.
           this.dispatchEvent(
-            new CustomEvent('cds-aichat-markdown-plugin-host-update', {
-              bubbles: true,
-              composed: true,
-              detail: {
-                slotName: descriptor.slotName,
-                html: descriptor.html,
-              },
-            })
+            new CustomEvent<MarkdownPluginHostUpdateDetail>(
+              'cds-aichat-markdown-plugin-host-update',
+              {
+                bubbles: true,
+                composed: true,
+                detail: {
+                  slotName: descriptor.slotName,
+                  html: descriptor.html,
+                },
+              }
+            )
           );
         }
 
@@ -957,7 +971,7 @@ class CDSAIChatMarkdown extends LitElement {
         // ownership of the host's content across renders, and mints the slot
         // hop back to it below. If no ancestor takes over (standalone usage,
         // e.g. storybook), host it locally.
-        const mountEvent = new CustomEvent(
+        const mountEvent = new CustomEvent<MarkdownPluginHostMountDetail>(
           'cds-aichat-markdown-plugin-host-mount',
           {
             bubbles: true,

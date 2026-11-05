@@ -37,13 +37,11 @@ type TooltipAlignment =
  * Chat History panel item input.
  *
  * @element cds-aichat-history-panel-item-input
- * @fires history-panel-item-input-change
- *   The custom event fired when the input value is changed.
- * @fires history-panel-item-input-cancel
- *   The custom event fired after an input is canceled.
- * @fires history-panel-item-input-save
- *   The custom event fired after an input is saved.
+
  *
+ * @fires {CustomEvent<HistoryRenameChangeEventDetail>} history-panel-item-input-change - The rename input value changes.
+ * @fires {CustomEvent<null>} history-panel-item-input-cancel - The rename is canceled.
+ * @fires {CustomEvent<HistoryRenameSaveEventDetail>} history-panel-item-input-save - The rename is submitted.
  */
 class CDSAIChatHistoryPanelItemInput extends HostListenerMixin(
   FocusMixin(LitElement)
@@ -142,7 +140,7 @@ class CDSAIChatHistoryPanelItemInput extends HostListenerMixin(
     this.value = (target as HTMLInputElement).value;
     this._valueChanged = this.value !== this._initialValue;
 
-    const inputChangeEvent = new CustomEvent(
+    const inputChangeEvent = new CustomEvent<HistoryRenameChangeEventDetail>(
       'history-panel-item-input-change',
       {
         bubbles: true,
@@ -165,7 +163,7 @@ class CDSAIChatHistoryPanelItemInput extends HostListenerMixin(
       bubbles: true,
       composed: true,
     };
-    const inputCancelEvent = new CustomEvent(
+    const inputCancelEvent = new CustomEvent<null>(
       'history-panel-item-input-cancel',
       init
     );
@@ -185,7 +183,7 @@ class CDSAIChatHistoryPanelItemInput extends HostListenerMixin(
         itemId: this.itemId,
       },
     };
-    const inputSaveEvent = new CustomEvent(
+    const inputSaveEvent = new CustomEvent<HistoryRenameSaveEventDetail>(
       'history-panel-item-input-save',
       init
     );
@@ -333,3 +331,19 @@ class CDSAIChatHistoryPanelItemInput extends HostListenerMixin(
 
 export { CDSAIChatHistoryPanelItemInput };
 export default CDSAIChatHistoryPanelItemInput;
+
+/** Contains an edited history name. */
+export interface HistoryRenameChangeEventDetail {
+  /** Current rename input value. */
+  value: string;
+  /** Identifier of the history row being renamed. */
+  itemId: string;
+}
+
+/** Contains a submitted history name. */
+export interface HistoryRenameSaveEventDetail {
+  /** Name submitted for the history row. */
+  newName: string;
+  /** Identifier of the history row being renamed. */
+  itemId: string;
+}

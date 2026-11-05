@@ -7,6 +7,34 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import type { TriggerChangeEventDetail } from './tiptap/types.js';
+import type { LightDomPortalEventDetail } from './tiptap/render-in-light-dom.js';
+import type {
+  InputChangeEventDetail,
+  PromptFocusEventDetail,
+  PromptKeydownEventDetail,
+  TypingEventDetail,
+} from './types.js';
+import type { Editor, Extension, JSONContent } from '@tiptap/core';
+import { css, html, LitElement, unsafeCSS } from 'lit';
+import { property } from 'lit/decorators.js';
+
+import { prefix } from '../../globals/settings.js';
+import { adoptOnRoot } from '../shared/dynamic-css-var-sheet.js';
+import type {
+  PromptLineController,
+  PromptLineControllerInit,
+  SetContentUpdater,
+} from './prompt-line-controller.js';
+import { TextareaController } from './prompt-line-textarea-runtime.js';
+import {
+  getRichRuntimeIfLoaded,
+  loadRichRuntime,
+} from './prompt-line-rich-loader.js';
+import { getRawText, textOffsetToDocPos } from './tiptap/json-utils.js';
+
+import styles from './aichat-prompt-line.scss?lit';
+
 /**
  * `<cds-aichat-prompt-line>` — the editing-surface layer of the chat input
  * stack.
@@ -35,28 +63,15 @@
  * @element cds-aichat-prompt-line
  *
  * @experimental
+ * @fires {CustomEvent<InputChangeEventDetail>} cds-aichat-prompt-change - The editor content changes.
+ * @fires {CustomEvent<PromptFocusEventDetail>} cds-aichat-prompt-focus - The editor gains focus.
+ * @fires {CustomEvent<null>} cds-aichat-prompt-blur - The editor loses focus.
+ * @fires {CustomEvent<TypingEventDetail>} cds-aichat-prompt-typing - The user starts or stops typing.
+ * @fires {CustomEvent<PromptKeydownEventDetail>} cds-aichat-prompt-keydown - The editor receives a keydown event.
+ * @fires {CustomEvent<null>} cds-aichat-prompt-send-intent - The editor requests a send action.
+ * @fires {CustomEvent<TriggerChangeEventDetail | null>} cds-aichat-trigger-change - The active suggestion trigger changes or ends.
+ * @fires {CustomEvent<LightDomPortalEventDetail>} cds-aichat-light-dom-portal - Requests content projection into the page light DOM.
  */
-
-import type { Editor, Extension, JSONContent } from '@tiptap/core';
-import { css, html, LitElement, unsafeCSS } from 'lit';
-import { property } from 'lit/decorators.js';
-
-import { prefix } from '../../globals/settings.js';
-import { adoptOnRoot } from '../shared/dynamic-css-var-sheet.js';
-import type {
-  PromptLineController,
-  PromptLineControllerInit,
-  SetContentUpdater,
-} from './prompt-line-controller.js';
-import { TextareaController } from './prompt-line-textarea-runtime.js';
-import {
-  getRichRuntimeIfLoaded,
-  loadRichRuntime,
-} from './prompt-line-rich-loader.js';
-import { getRawText, textOffsetToDocPos } from './tiptap/json-utils.js';
-
-import styles from './aichat-prompt-line.scss?lit';
-
 class PromptLineElement extends LitElement {
   static get is() {
     return `${prefix}-aichat-prompt-line`;
@@ -646,3 +661,12 @@ declare global {
 }
 
 export default PromptLineElement;
+
+export type {
+  InputChangeEventDetail,
+  PromptFocusEventDetail,
+  PromptKeydownEventDetail,
+  TypingEventDetail,
+  TriggerChangeEventDetail,
+  LightDomPortalEventDetail,
+};

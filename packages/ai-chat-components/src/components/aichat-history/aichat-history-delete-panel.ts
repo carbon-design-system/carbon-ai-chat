@@ -20,6 +20,8 @@ import styles from './chat-history.scss?lit';
  *
  * @element cds-aichat-history-delete-panel
  *
+ * @fires {CustomEvent<null>} history-delete-cancel - The deletion is canceled.
+ * @fires {CustomEvent<HistoryDeleteConfirmEventDetail>} history-delete-confirm - The deletion is confirmed with the next focus target, when available.
  */
 class CDSAIChatHistoryDeletePanel extends LitElement {
   static get is() {
@@ -83,7 +85,7 @@ class CDSAIChatHistoryDeletePanel extends LitElement {
    */
   _handleCancelClick = () => {
     this.dispatchEvent(
-      new CustomEvent('history-delete-cancel', {
+      new CustomEvent<null>('history-delete-cancel', {
         bubbles: true,
         composed: true,
       })
@@ -100,13 +102,16 @@ class CDSAIChatHistoryDeletePanel extends LitElement {
         : {};
 
     this.dispatchEvent(
-      new CustomEvent('history-delete-confirm', {
-        bubbles: true,
-        composed: true,
-        detail: {
-          ...focusDetail,
-        },
-      })
+      new CustomEvent<HistoryDeleteConfirmEventDetail>(
+        'history-delete-confirm',
+        {
+          bubbles: true,
+          composed: true,
+          detail: {
+            ...focusDetail,
+          },
+        }
+      )
     );
   };
 
@@ -149,3 +154,13 @@ class CDSAIChatHistoryDeletePanel extends LitElement {
 
 export { CDSAIChatHistoryDeletePanel };
 export default CDSAIChatHistoryDeletePanel;
+
+/** Describes focus recovery after a history row is deleted. */
+export interface HistoryDeleteConfirmEventDetail {
+  /** Identifier of the deleted history row, when supplied. */
+  itemId?: string;
+  /** Identifier of the next row to focus, when one exists. */
+  nextItemId?: string;
+  /** Whether the deleted row was selected. */
+  deletedItemWasSelected?: boolean;
+}

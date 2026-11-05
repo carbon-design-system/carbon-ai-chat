@@ -18,7 +18,45 @@ import {
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import prefix from '../../../globals/settings.js';
 import styles from '../inline-run-projection.scss?lit';
-import type { MarkdownCustomRendererMountDetail } from './plugin-host-container.js';
+import type {
+  MarkdownCustomRendererMountDetail,
+  MarkdownPluginHostMountDetail,
+  MarkdownPluginHostUnmountDetail,
+} from './plugin-host-container.js';
+
+/**
+ * Offers a projected inline run to an ancestor.
+ * @eventProtocol
+ * @fires {CustomEvent<MarkdownPluginHostMountDetail>} cds-aichat-markdown-plugin-host-mount - Requests hosting for the projected inline run. Call preventDefault() to claim the host.
+ */
+export function dispatchInlineRunMount(
+  target: HTMLSlotElement,
+  detail: MarkdownPluginHostMountDetail
+): boolean {
+  return target.dispatchEvent(
+    new CustomEvent<MarkdownPluginHostMountDetail>(
+      `${prefix}-aichat-markdown-plugin-host-mount`,
+      { bubbles: true, composed: true, cancelable: true, detail }
+    )
+  );
+}
+
+/**
+ * Releases a projected inline run from its ancestor.
+ * @eventProtocol
+ * @fires {CustomEvent<MarkdownPluginHostUnmountDetail>} cds-aichat-markdown-plugin-host-unmount - Releases the projected inline run host.
+ */
+export function dispatchInlineRunUnmount(
+  target: HTMLSlotElement,
+  detail: MarkdownPluginHostUnmountDetail
+): boolean {
+  return target.dispatchEvent(
+    new CustomEvent<MarkdownPluginHostUnmountDetail>(
+      `${prefix}-aichat-markdown-plugin-host-unmount`,
+      { bubbles: true, composed: true, detail }
+    )
+  );
+}
 
 const projectionHosts = new WeakSet<object>();
 const styleRoots = new WeakMap<
@@ -151,14 +189,7 @@ class InlineRunProjection extends AsyncDirective {
       element: this.host,
       isInline: true,
     };
-    const claimed = !this.slot.dispatchEvent(
-      new CustomEvent(`${prefix}-aichat-markdown-plugin-host-mount`, {
-        bubbles: true,
-        composed: true,
-        cancelable: true,
-        detail,
-      })
-    );
+    const claimed = !dispatchInlineRunMount(this.slot, detail);
     this.mounted = true;
     if (this.options.fallbackHost) {
       if (claimed) {
@@ -186,13 +217,10 @@ class InlineRunProjection extends AsyncDirective {
   private unmount() {
     this.cancelConnectionFrame();
     if (this.mounted) {
-      this.slot?.dispatchEvent(
-        new CustomEvent(`${prefix}-aichat-markdown-plugin-host-unmount`, {
-          bubbles: true,
-          composed: true,
-          detail: { slotName: this.options!.slotName },
-        })
-      );
+      const slot = this.slot;
+      if (slot) {
+        dispatchInlineRunUnmount(slot, { slotName: this.options!.slotName });
+      }
     }
     this.mounted = false;
     this.rootPart?.setConnected(false);

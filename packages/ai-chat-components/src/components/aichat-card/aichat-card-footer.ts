@@ -40,6 +40,7 @@ export type Action = {
  * Footer action bar that renders Carbon buttons and emits an `action` event.
  * Consumers listen for events instead of passing callbacks.
  * @element cds-aichat-card-footer
+ * @fires {CustomEvent<Action>} cds-aichat-card-footer-action - A footer action is activated.
  */
 class CardFooter extends LitElement {
   static get is() {
@@ -69,7 +70,7 @@ class CardFooter extends LitElement {
       action.onClick();
     }
     this.dispatchEvent(
-      new CustomEvent('cds-aichat-card-footer-action', {
+      new CustomEvent<Action>('cds-aichat-card-footer-action', {
         detail: action,
         bubbles: true,
         composed: true,

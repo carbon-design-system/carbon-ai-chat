@@ -7,6 +7,7 @@
  *  @license
  */
 
+import type { ReasoningStepsToggleEventDetail } from './aichat-reasoning-steps-toggle.js';
 import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
 import commonStyles from '../../globals/scss/common.scss?lit';
@@ -19,6 +20,8 @@ const stepSelector = `${prefix}-aichat-reasoning-step`;
 /**
  * Reasoning steps container component
  * @element cds-aichat-reasoning-steps
+ * @fires {CustomEvent<ReasoningStepsToggleEventDetail>} reasoning-animation-start - The steps begin their close animation.
+ * @fires {CustomEvent<ReasoningStepsToggleEventDetail>} reasoning-animation-end - The steps finish their open or close animation.
  */
 class CDSAIChatReasoningSteps extends LitElement {
   static get is() {
@@ -54,11 +57,14 @@ class CDSAIChatReasoningSteps extends LitElement {
   ) {
     if (name === 'open' && old !== null && value === null) {
       this.dispatchEvent(
-        new CustomEvent('reasoning-animation-start', {
-          bubbles: true,
-          composed: true,
-          detail: { open: false },
-        })
+        new CustomEvent<ReasoningStepsToggleEventDetail>(
+          'reasoning-animation-start',
+          {
+            bubbles: true,
+            composed: true,
+            detail: { open: false },
+          }
+        )
       );
     }
     super.attributeChangedCallback(name, old, value);
@@ -142,11 +148,14 @@ class CDSAIChatReasoningSteps extends LitElement {
       );
       const emit = () =>
         this.dispatchEvent(
-          new CustomEvent('reasoning-animation-end', {
-            bubbles: true,
-            composed: true,
-            detail: { open: this.open },
-          })
+          new CustomEvent<ReasoningStepsToggleEventDetail>(
+            'reasoning-animation-end',
+            {
+              bubbles: true,
+              composed: true,
+              detail: { open: this.open },
+            }
+          )
         );
       // Only the `grid-template-rows` transition changes block size; awaiting the
       // wrapper's opacity/padding transitions too can delay the emit well past the

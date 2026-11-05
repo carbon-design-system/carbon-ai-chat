@@ -7,6 +7,10 @@
  *  @license
  */
 
+import type {
+  HistoryRenameChangeEventDetail,
+  HistoryRenameSaveEventDetail,
+} from './aichat-history-panel-item-input.js';
 import { LitElement, html, nothing } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
@@ -41,13 +45,13 @@ export interface Action {
  * Chat History panel item.
  *
  * @element cds-aichat-history-panel-item
- * @fires history-panel-item-input-change
- *   Bubbles up from the inner input component on every input value change when `rename` is true.
- * @fires history-panel-item-input-cancel
- *   Bubbles up from the inner input component when the rename is canceled.
- * @fires history-panel-item-input-save
- *   Bubbles up from the inner input component when the rename is saved.
+
  *
+ * @fires {CustomEvent<HistoryRenameChangeEventDetail>} history-panel-item-input-change - The rename input value changes.
+ * @fires {CustomEvent<null>} history-panel-item-input-cancel - The rename is canceled.
+ * @fires {CustomEvent<HistoryRenameSaveEventDetail>} history-panel-item-input-save - The rename is submitted.
+ * @fires {CustomEvent<HistoryMenuActionEventDetail>} history-item-menu-action - A row menu action is activated.
+ * @fires {CustomEvent<HistoryItemSelectedEventDetail>} history-item-selected - The history row is selected.
  */
 class CDSAIChatHistoryPanelItem extends HostListenerMixin(
   FocusMixin(LitElement)
@@ -145,16 +149,19 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
    */
   private _handleMenuItemClick = (action: Action) => {
     // Dispatch a custom event with item details
-    const itemActionEvent = new CustomEvent('history-item-menu-action', {
-      bubbles: true,
-      composed: true,
-      detail: {
-        action: action.text,
-        itemId: this.id,
-        itemName: this.name,
-        element: this,
-      },
-    });
+    const itemActionEvent = new CustomEvent<HistoryMenuActionEventDetail>(
+      'history-item-menu-action',
+      {
+        bubbles: true,
+        composed: true,
+        detail: {
+          action: action.text,
+          itemId: this.id,
+          itemName: this.name,
+          element: this,
+        },
+      }
+    );
     this.dispatchEvent(itemActionEvent);
   };
 
@@ -183,15 +190,18 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
     }
 
     // Dispatch a custom event with item details
-    const itemActionEvent = new CustomEvent('history-item-selected', {
-      bubbles: true,
-      composed: true,
-      detail: {
-        itemId: this.id,
-        itemName: this.name,
-        element: this,
-      },
-    });
+    const itemActionEvent = new CustomEvent<HistoryItemSelectedEventDetail>(
+      'history-item-selected',
+      {
+        bubbles: true,
+        composed: true,
+        detail: {
+          itemId: this.id,
+          itemName: this.name,
+          element: this,
+        },
+      }
+    );
     this.dispatchEvent(itemActionEvent);
   }
 
@@ -361,3 +371,27 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
 
 export { CDSAIChatHistoryPanelItem };
 export default CDSAIChatHistoryPanelItem;
+
+/** Identifies a selected history row. */
+export interface HistoryItemSelectedEventDetail {
+  /** Identifier of the selected history row. */
+  itemId: string;
+  /** Display name of the selected history row. */
+  itemName: string;
+  /** History row element selected by the user or focus recovery. */
+  element: HTMLElement;
+}
+
+/** Identifies an activated history row action. */
+export interface HistoryMenuActionEventDetail {
+  /** Text of the activated menu action. */
+  action: string;
+  /** Identifier of the history row. */
+  itemId: string;
+  /** Display name of the history row. */
+  itemName: string;
+  /** History row that owns the menu. */
+  element: HTMLElement;
+}
+
+export type { HistoryRenameChangeEventDetail, HistoryRenameSaveEventDetail };

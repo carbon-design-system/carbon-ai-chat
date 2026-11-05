@@ -28,7 +28,7 @@ const blockClass = `${prefix}-aichat-carousel`;
  * Carousel component
  *
  * @element cds-aichat-carousel
- * @fires cds-aichat-carousel-onchange custom event for when the carousel changes
+ * @fires {CustomEvent<CarouselResponse>} cds-aichat-carousel-onchange - The carousel finishes moving to a view.
  * @slot - Carousel views.
  */
 class CDSAICarousel extends LitElement {
@@ -74,7 +74,7 @@ class CDSAICarousel extends LitElement {
       composed: true,
     };
     this.dispatchEvent(
-      new CustomEvent(
+      new CustomEvent<CarouselResponse>(
         (this.constructor as typeof CDSAICarousel).eventOnChange,
         init
       )

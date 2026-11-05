@@ -19,6 +19,7 @@
  * if it wants downstream readers (typing-indicator) to recognize it.
  */
 
+import type { InputChangeEventDetail } from '../types.js';
 import { Extension } from '@tiptap/core';
 import { Plugin } from '@tiptap/pm/state';
 
@@ -29,6 +30,9 @@ export interface ValueSyncStorage {
   lastTransactionIsHost: boolean;
 }
 
+/**
+ * @eventOwner {import('../aichat-prompt-line.js').default}
+ */
 export const ValueSync = Extension.create<unknown, ValueSyncStorage>({
   name: 'carbonValueSync',
 
@@ -52,14 +56,17 @@ export const ValueSync = Extension.create<unknown, ValueSyncStorage>({
               return;
             }
             view.dom.dispatchEvent(
-              new CustomEvent('cds-aichat-prompt-change', {
-                detail: {
-                  rawValue: editor.getText(),
-                  content: editor.getJSON(),
-                },
-                bubbles: true,
-                composed: true,
-              })
+              new CustomEvent<InputChangeEventDetail>(
+                'cds-aichat-prompt-change',
+                {
+                  detail: {
+                    rawValue: editor.getText(),
+                    content: editor.getJSON(),
+                  },
+                  bubbles: true,
+                  composed: true,
+                }
+              )
             );
           },
         }),
