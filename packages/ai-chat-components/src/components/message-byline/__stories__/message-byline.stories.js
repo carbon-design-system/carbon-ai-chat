@@ -15,6 +15,7 @@ import '../../message-item-shell/index';
 import { html, nothing } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { reasoningSteps } from './story-data';
+import { profileImage } from '../../user-avatar/__stories__/story-data';
 
 export default {
   title: 'Preview/Message byline',
@@ -37,18 +38,12 @@ const argTypes = {
     description:
       'Story-only. Name for the slotted user avatar. Leave empty to render the byline with no avatar.',
   },
-  open: {
-    control: 'boolean',
-    description:
-      'Story-only. Whether the reasoning panel starts open. Only used by the reasoning steps story.',
-  },
 };
 
 const defaultArgs = {
   label: 'Assistant',
   timestamp: '10:42 AM',
   avatarName: 'Assistant',
-  open: false,
 };
 
 const renderAvatar = (args) =>
@@ -56,8 +51,9 @@ const renderAvatar = (args) =>
     ? html`<cds-aichat-user-avatar
         slot="avatar"
         name=${args.avatarName}
-        width="32px"
-        height="32px"></cds-aichat-user-avatar>`
+        image=${profileImage}
+        width="28px"
+        height="28px"></cds-aichat-user-avatar>`
     : nothing;
 
 /** Opens or closes the panel in the same message row as the toggle. */
@@ -88,19 +84,13 @@ export const WithoutAvatar = {
   render: Default.render,
 };
 
-export const HumanAgent = {
-  argTypes,
-  args: { ...defaultArgs, label: 'Jane Doe', avatarName: 'Jane Doe' },
-  render: Default.render,
-};
-
 /**
  * The reasoning steps toggle sits in the byline's `reasoning` slot. The steps
  * render at the top of the message content, inside the message item shell.
  */
 export const WithReasoningSteps = {
   argTypes,
-  args: { ...defaultArgs, open: true },
+  args: defaultArgs,
   render: (args) => {
     const panelId = `story-reasoning-steps-${panelCount++}`;
     return html`
@@ -113,12 +103,12 @@ export const WithReasoningSteps = {
           <cds-aichat-reasoning-steps-toggle
             slot="reasoning"
             panel-id=${panelId}
-            ?open=${args.open}
+            open
             @reasoning-steps-toggle=${syncPanel(
               'cds-aichat-reasoning-steps'
             )}></cds-aichat-reasoning-steps-toggle>
         </cds-aichat-message-byline>
-        <cds-aichat-reasoning-steps id=${panelId} ?open=${args.open}>
+        <cds-aichat-reasoning-steps id=${panelId} open>
           ${reasoningSteps.map(
             (step) => html`
               <cds-aichat-reasoning-step

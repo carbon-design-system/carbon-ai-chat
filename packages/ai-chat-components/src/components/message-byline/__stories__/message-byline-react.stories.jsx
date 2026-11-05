@@ -8,7 +8,7 @@
  */
 
 /* eslint-disable */
-import React, { useEffect, useId, useState } from 'react';
+import React, { useId, useState } from 'react';
 import MessageByline from '../../../react/message-byline';
 import MessageItemShell from '../../../react/message-item-shell';
 import UserAvatar from '../../../react/user-avatar';
@@ -17,11 +17,11 @@ import ReasoningSteps from '../../../react/reasoning-steps';
 import ReasoningStep from '../../../react/reasoning-step';
 import Markdown from '../../../react/markdown';
 import { reasoningSteps } from './story-data';
+import { profileImage } from '../../user-avatar/__stories__/story-data';
 import {
   Default as DefaultWC,
   WithoutAvatar as WithoutAvatarWC,
   WithReasoningSteps as WithReasoningStepsWC,
-  HumanAgent as HumanAgentWC,
 } from './message-byline.stories';
 
 export default {
@@ -31,7 +31,13 @@ export default {
 
 const renderAvatar = (avatarName) =>
   avatarName ? (
-    <UserAvatar slot="avatar" name={avatarName} width="32px" height="32px" />
+    <UserAvatar
+      slot="avatar"
+      name={avatarName}
+      image={profileImage}
+      width="28px"
+      height="28px"
+    />
   ) : null;
 
 const render = ({ label, timestamp, avatarName }) => (
@@ -41,10 +47,9 @@ const render = ({ label, timestamp, avatarName }) => (
 );
 
 /** The reasoning steps toggle in the byline controls the panel in the message content. */
-const ReasoningStepsMessage = ({ label, timestamp, avatarName, open }) => {
+const ReasoningStepsMessage = ({ label, timestamp, avatarName }) => {
   const panelId = useId();
-  const [isOpen, setIsOpen] = useState(open);
-  useEffect(() => setIsOpen(open), [open]);
+  const [isOpen, setIsOpen] = useState(true);
 
   return (
     <MessageItemShell rowType="response">
@@ -83,12 +88,6 @@ export const Default = {
 export const WithoutAvatar = {
   argTypes: { ...Default.argTypes },
   args: { ...WithoutAvatarWC.args },
-  render,
-};
-
-export const HumanAgent = {
-  argTypes: { ...Default.argTypes },
-  args: { ...HumanAgentWC.args },
   render,
 };
 

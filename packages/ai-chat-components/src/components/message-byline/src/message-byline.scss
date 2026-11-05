@@ -22,6 +22,20 @@ $block-class: #{$prefix}-message-byline;
   color: theme.$text-secondary;
 }
 
+// The box is always the same size, so labels line up across avatars. The host
+// sizes the avatar itself; the box centers it.
+.#{$block-class}__avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  block-size: layout.$spacing-07;
+  inline-size: layout.$spacing-07;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
 .#{$block-class}__label {
   padding: layout.$spacing-03;
   line-height: layout.$spacing-05;

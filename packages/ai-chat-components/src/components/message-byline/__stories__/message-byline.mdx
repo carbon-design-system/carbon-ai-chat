@@ -15,9 +15,9 @@ Use `cds-aichat-message-byline` to show who sent a message, with an optional ava
 
 ## Key features
 
-- **Optional avatar**: With nothing in the `avatar` slot, the byline renders no avatar space.
+- **Optional avatar**: The byline centers a slotted avatar in a fixed square box, so labels line up whatever size you give the avatar. With nothing in the `avatar` slot, the byline renders no box and no space.
 - **Reasoning steps control**: Place a reasoning steps toggle in the `reasoning` slot. The byline adds a separator before it. The reasoning steps stay at the top of the message, and the toggle opens and closes them from the byline.
-- **Host-supplied text**: The byline shows the `label` and `timestamp` you pass in.
+- **Host-supplied text**: The byline shows the `label` and `timestamp` you pass in as one line of text, separated by a space.
 
 ## Examples
 
@@ -31,21 +31,9 @@ Use `cds-aichat-message-byline` to show who sent a message, with an optional ava
 
 <Canvas of={Stories.WithoutAvatar} />
 
-### Human agent
-
-```html
-<cds-aichat-message-byline label="Jane Doe" timestamp="10:42 AM">
-  <cds-aichat-user-avatar
-    slot="avatar"
-    name="Jane Doe"></cds-aichat-user-avatar>
-</cds-aichat-message-byline>
-```
-
-<Canvas of={Stories.HumanAgent} />
-
 ### With reasoning steps
 
-The byline only holds the toggle. Render the `cds-aichat-reasoning-steps` panel at the top of the message content inside `cds-aichat-message-item-shell`, and link the two with `panel-id` and `id`.
+The byline only holds the toggle. Render the `cds-aichat-reasoning-steps` panel at the top of the message content inside `cds-aichat-message-item-shell`. Set `panel-id` on the toggle to the panel's `id` so assistive technology can connect them. The toggle does not open the panel itself, so listen for `reasoning-steps-toggle` and set `open` on the panel.
 
 ```html
 <cds-aichat-message-item-shell row-type="response">
@@ -59,17 +47,31 @@ The byline only holds the toggle. Render the `cds-aichat-reasoning-steps` panel 
   </cds-aichat-message-byline>
   <cds-aichat-reasoning-steps id="reasoning-panel">
     <cds-aichat-reasoning-step title="Understand the request">
+      Parsed the intent and restated it as a concise objective.
     </cds-aichat-reasoning-step>
   </cds-aichat-reasoning-steps>
   <p>The answer.</p>
 </cds-aichat-message-item-shell>
 ```
 
+```javascript
+import '@carbon/ai-chat-components/es/components/message-byline/index.js';
+import '@carbon/ai-chat-components/es/components/message-item-shell/index.js';
+import '@carbon/ai-chat-components/es/components/reasoning-steps/index.js';
+
+const toggle = document.querySelector('cds-aichat-reasoning-steps-toggle');
+const panel = document.getElementById('reasoning-panel');
+
+toggle.addEventListener('reasoning-steps-toggle', (event) => {
+  panel.open = event.detail.open;
+});
+```
+
 <Canvas of={Stories.WithReasoningSteps} />
 
 ## Accessibility
 
-The `label` is the only place the sender name is read. Do not add a label to a slotted avatar, or screen readers read the name twice.
+The `label` is the only place the sender name is read. Do not add a label to a slotted avatar, or screen readers read the name twice. The separator before the reasoning steps toggle is hidden from assistive technology.
 
 ## Component API
 

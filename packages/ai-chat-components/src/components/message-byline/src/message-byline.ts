@@ -24,7 +24,7 @@ const blockClass = `${prefix}-message-byline`;
  * @experimental
  * @element cds-aichat-message-byline
  *
- * @slot avatar - Optional avatar. Nothing is rendered for this slot while it is empty.
+ * @slot avatar - Optional avatar. The byline centers it in a fixed square box. Nothing is rendered for this slot while it is empty.
  * @slot reasoning - Optional reasoning steps control, such as a `cds-aichat-reasoning-steps-toggle`. The byline adds a separator before it. The host renders the panel the toggle controls outside the byline.
  */
 @carbonElement(blockClass)
@@ -44,10 +44,22 @@ class CDSAIChatMessageByline extends LitElement {
   timestamp = '';
 
   /**
+   * Whether the `avatar` slot has content.
+   */
+  @state()
+  private _hasAvatar = false;
+
+  /**
    * Whether the `reasoning` slot has content.
    */
   @state()
   private _hasReasoning = false;
+
+  private _onAvatarSlotChange = (event: Event): void => {
+    this._hasAvatar =
+      (event.target as HTMLSlotElement).assignedNodes({ flatten: true })
+        .length > 0;
+  };
 
   private _onReasoningSlotChange = (event: Event): void => {
     this._hasReasoning =
@@ -57,7 +69,9 @@ class CDSAIChatMessageByline extends LitElement {
 
   render() {
     return html`
-      <slot name="avatar"></slot>
+      <span class="${blockClass}__avatar" ?hidden=${!this._hasAvatar}>
+        <slot name="avatar" @slotchange=${this._onAvatarSlotChange}></slot>
+      </span>
       <span class="${blockClass}__label"
         >${[this.label, this.timestamp].filter(Boolean).join(' ')}</span
       >

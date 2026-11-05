@@ -15,9 +15,9 @@ Use `MessageByline` to show who sent a message, with an optional avatar, timesta
 
 ## Key features
 
-- **Optional avatar**: With nothing in the `avatar` slot, the byline renders no avatar space.
+- **Optional avatar**: The byline centers a slotted avatar in a fixed square box, so labels line up whatever size you give the avatar. With nothing in the `avatar` slot, the byline renders no box and no space.
 - **Reasoning steps control**: Place a reasoning steps toggle in the `reasoning` slot. The byline adds a separator before it. The reasoning steps stay at the top of the message, and the toggle opens and closes them from the byline.
-- **Host-supplied text**: The byline shows the `label` and `timestamp` you pass in.
+- **Host-supplied text**: The byline shows the `label` and `timestamp` you pass in as one line of text, separated by a space.
 
 ## Examples
 
@@ -33,42 +33,47 @@ function Sender() {
 
 <Canvas of={Stories.WithoutAvatar} />
 
-### Human agent
-
-```jsx
-<MessageByline label="Jane Doe" timestamp="10:42 AM">
-  <UserAvatar slot="avatar" name="Jane Doe" />
-</MessageByline>
-```
-
-<Canvas of={Stories.HumanAgent} />
-
 ### With reasoning steps
 
-The byline only holds the toggle. Render the `ReasoningSteps` panel at the top of the message content inside `MessageItemShell`, and link the two with `panelID` and `id`.
+The byline only holds the toggle. Render the `ReasoningSteps` panel at the top of the message content inside `MessageItemShell`. Set `panelID` on the toggle to the panel's `id` so assistive technology can connect them. The toggle does not open the panel itself, so keep the open state in your component and pass it to both.
 
 ```jsx
-<MessageItemShell rowType="response">
-  <MessageByline slot="byline" label="Assistant" timestamp="10:42 AM">
-    <ReasoningStepsToggle
-      slot="reasoning"
-      panelID="reasoning-panel"
-      open={open}
-      onToggle={(event) => setOpen(event.detail.open)}
-    />
-  </MessageByline>
-  <ReasoningSteps id="reasoning-panel" open={open}>
-    <ReasoningStep title="Understand the request" />
-  </ReasoningSteps>
-  <p>The answer.</p>
-</MessageItemShell>
+import { useState } from 'react';
+import MessageByline from '@carbon/ai-chat-components/es/react/message-byline.js';
+import MessageItemShell from '@carbon/ai-chat-components/es/react/message-item-shell.js';
+import ReasoningSteps from '@carbon/ai-chat-components/es/react/reasoning-steps.js';
+import ReasoningStep from '@carbon/ai-chat-components/es/react/reasoning-step.js';
+import ReasoningStepsToggle from '@carbon/ai-chat-components/es/react/reasoning-steps-toggle.js';
+
+function Message() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <MessageItemShell rowType="response">
+      <MessageByline slot="byline" label="Assistant" timestamp="10:42 AM">
+        <ReasoningStepsToggle
+          slot="reasoning"
+          panelID="reasoning-panel"
+          open={open}
+          onToggle={(event) => setOpen(event.detail.open)}
+        />
+      </MessageByline>
+      <ReasoningSteps id="reasoning-panel" open={open}>
+        <ReasoningStep title="Understand the request">
+          Parsed the intent and restated it as a concise objective.
+        </ReasoningStep>
+      </ReasoningSteps>
+      <p>The answer.</p>
+    </MessageItemShell>
+  );
+}
 ```
 
 <Canvas of={Stories.WithReasoningSteps} />
 
 ## Accessibility
 
-The `label` is the only place the sender name is read. Do not add a label to a slotted avatar, or screen readers read the name twice.
+The `label` is the only place the sender name is read. Do not add a label to a slotted avatar, or screen readers read the name twice. The separator before the reasoning steps toggle is hidden from assistive technology.
 
 ## Component API
 
