@@ -474,7 +474,12 @@ class MessageUpsertCoordinator {
       new Set(
         (committedResult.output?.generic ?? []).flatMap((item, index) =>
           isConnectToHumanAgent(item)
-            ? [this.agentItemIdentity(committedResult, index)]
+            ? [
+                this.serviceManager.messageCoordinator.incomingAgentItemIdentity(
+                  committedResult,
+                  index
+                ),
+              ]
             : []
         )
       )
@@ -834,21 +839,18 @@ class MessageUpsertCoordinator {
           eventItem,
           result,
           () => !this.isStale(stamp, result.request_id),
-          { identity: this.agentItemIdentity(result, entry.index) }
+          {
+            identity:
+              this.serviceManager.messageCoordinator.incomingAgentItemIdentity(
+                result,
+                entry.index
+              ),
+          }
         );
       } finally {
         eventValues.commit();
       }
     }
-  }
-
-  agentItemIdentity(message: MessageResponse, index: number): string {
-    const item = message.output.generic[index];
-    const position = message.output.generic
-      .slice(0, index)
-      .filter((previous) => previous && !isPause(previous)).length;
-    const streamID = streamItemID(message.id, item);
-    return streamID ? `stream:${streamID}` : `position:${position}`;
   }
 
   /**
