@@ -7,6 +7,12 @@
  *  @license
  */
 
+import {
+  ResolvablePromise,
+  resolvablePromise,
+} from '../../utils/resolvablePromise';
+import type { SendOptions } from '../../../types/instance/ChatInstance';
+import type { MessageSendSource } from '../../../types/events/eventBusTypes';
 import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 import actions from '../../store/actions';
 import { deepFreeze } from '../../utils/lang/objectUtils';
@@ -17,7 +23,7 @@ import {
 import { OutgoingMessageService } from './outbound/OutgoingMessageService';
 import { OutboundMessageCoordinator } from './OutboundMessageCoordinator';
 import type { ServiceManager } from '../ServiceManager';
-import type { PendingMessageRequest } from './MessageService';
+import type { PendingMessageRequest } from './pendingRequestTypes';
 import {
   MessageInputType,
   MessageResponseTypes,
@@ -368,6 +374,92 @@ class SendWorkflow {
         ] as MessageRequest<any>;
       }
     }
+  }
+
+  /**
+   * Add a new message to the message queue.
+   *
+   * @param message A new message to add to the message queue.
+   @param source The source of the message.
+   * @param localMessageID The ID of the {@link LocalMessageItem} created from the current request.
+   * @param sendMessagePromise A promise that we will resolve or reject if the message is sent.
+   * @param requestOptions The options that were included when the request was sent.
+   */
+  private addToMessageQueue(
+    message: MessageRequest<any>,
+    source: MessageSendSource,
+    localMessageID: string,
+    sendMessagePromise: ResolvablePromise<void>,
+    requestOptions: SendOptions = {}
+  ) {
+    // Create AbortController immediately so it can be aborted even if message is still waiting
+    const controller = new AbortController();
+
+    // Store controller in map so it persists even after message is cleared from queue
+    this.serviceManager.messageCoordinator.registerMessageController(
+      message.id,
+      controller
+    );
+
+    const newPendingMessage: PendingMessageRequest = {
+      generation: this.serviceManager.messageCoordinator.currentGeneration,
+      restartGeneration: this.serviceManager.restartCount,
+      localMessageID,
+      message,
+      sendMessagePromise,
+      requestOptions: requestOptions || {},
+      timeFirstRequest: 0,
+      timeLastRequest: 0,
+      trackData: {
+        numErrors: 0,
+        lastRequestTime: 0,
+        totalRequestTime: 0,
+      },
+      isProcessed: false,
+      source,
+      sendMessageController: controller,
+    };
+
+    this.serviceManager.messageCoordinator.enqueueRequest(newPendingMessage);
+  }
+
+  /**
+   * Send a message to the backend. Returns "any" in the error case.
+   *
+   * @param message Takes a {@link MessageRequest} object.
+   * @param source The source of the message.
+   * @param localMessageID The ID of the {@link LocalMessageItem} created from the current request.
+   * @param requestOptions The options that were included when the request was sent.
+   */
+  public enqueueMessage(
+    message: MessageRequest<any>,
+    source: MessageSendSource,
+    localMessageID?: string,
+    requestOptions?: SendOptions
+  ): Promise<MessageResponse | any> {
+    message.history.timestamp = message.history.timestamp || Date.now();
+
+    // The messageService does different things based off the message type so lets make sure one exists.
+    message.input = message.input || {};
+    message.input.message_type =
+      message.input.message_type || MessageInputType.TEXT;
+
+    // Create a Promise that the caller can wait on that we'll resolve if/when the message is finally successfully sent
+    // to the assistant. This gets resolved or rejected by the core success or error workflow.
+    const sendMessagePromise = resolvablePromise<void>();
+
+    // Add our new message to the queue and kick off the queue.
+    this.addToMessageQueue(
+      message,
+      source,
+      localMessageID,
+      sendMessagePromise,
+      requestOptions
+    );
+    this.serviceManager.messageCoordinator.runQueueIfReady();
+
+    // Return the promise that is either successfully resolve or rejected in this.processSuccess or this.processError.
+    return sendMessagePromise;
   }
 }
 
