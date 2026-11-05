@@ -106,7 +106,7 @@ const noop = () => {
 };
 
 /**
- * Engine behind {@link ChatInstanceMessaging#upsertMessage}. `MessageService` owns the
+ * Engine behind {@link ChatInstanceMessaging#upsertMessage}. `MessageCoordinator` owns the
  * send / stream / receive arc; this coordinator's job is narrower:
  *
  * - Serialize concurrent `upsertMessage` calls for the same message ID so the reducer
@@ -201,7 +201,9 @@ class MessageUpsertCoordinator {
    */
   markComplete(messageID: string | undefined) {
     if (messageID) {
-      this.serviceManager.messageService.clearStreamingCancellation(messageID);
+      this.serviceManager.messageCoordinator.clearStreamingCancellation(
+        messageID
+      );
       this.stateByID.set(messageID, MessageState.COMPLETE);
       this.streamingControllers.delete(messageID);
       // `addMessage` and history already ran, or are running, this message's pauses, so
@@ -214,7 +216,7 @@ class MessageUpsertCoordinator {
       // nothing left to take it down.
       if (this.streamingIDs.delete(messageID)) {
         this.serviceManager.messageCoordinator.responseFinished(messageID);
-        this.serviceManager.messageService.hideStopStreamingButtonIfIdle();
+        this.serviceManager.messageCoordinator.hideStopStreamingButtonIfIdle();
       }
     }
   }
@@ -281,13 +283,13 @@ class MessageUpsertCoordinator {
     let settledAny = false;
     for (const messageID of responseIDs) {
       this.endStreamingMessage(messageID);
-      this.serviceManager.messageService.inboundStreaming.clearStreamingResponse(
+      this.serviceManager.messageCoordinator.inboundStreaming.clearStreamingResponse(
         messageID
       );
       settledAny = true;
     }
     if (settledAny) {
-      this.serviceManager.messageService.hideStopStreamingButtonIfNoUpsertStreaming();
+      this.serviceManager.messageCoordinator.hideStopStreamingButtonIfNoUpsertStreaming();
     }
   }
 
@@ -298,7 +300,9 @@ class MessageUpsertCoordinator {
       messageID,
       generation
     );
-    this.serviceManager.messageService.clearStreamingCancellation(messageID);
+    this.serviceManager.messageCoordinator.clearStreamingCancellation(
+      messageID
+    );
     const refsBefore = this.snapshotLocalItemRefs(messageID);
     this.serviceManager.store.dispatch(actions.endMessageStreaming(messageID));
     this.reportUndrawableItems(messageID, refsBefore, false);
@@ -315,7 +319,9 @@ class MessageUpsertCoordinator {
       pending.valid = false;
       this.pendingWrites.delete(messageID);
     }
-    this.serviceManager.messageService.clearStreamingCancellation(messageID);
+    this.serviceManager.messageCoordinator.clearStreamingCancellation(
+      messageID
+    );
     const wasStreaming = this.streamingIDs.has(messageID);
     this.stateByID.delete(messageID);
     this.chainByID.delete(messageID);
@@ -324,7 +330,7 @@ class MessageUpsertCoordinator {
     this.serviceManager.messageCoordinator.responseRemoved(messageID);
     this.pausesRunByID.delete(messageID);
     if (wasStreaming) {
-      this.serviceManager.messageService.hideStopStreamingButtonIfIdle();
+      this.serviceManager.messageCoordinator.hideStopStreamingButtonIfIdle();
     }
   }
 
@@ -342,7 +348,7 @@ class MessageUpsertCoordinator {
     for (const controller of controllers) {
       controller.abort(CancellationReason.CONVERSATION_RESTARTED);
     }
-    this.serviceManager.messageService.clearAllStreamingCancellation();
+    this.serviceManager.messageCoordinator.clearAllStreamingCancellation();
     this.generation++;
     this.chainByID.clear();
     this.stateByID.clear();
@@ -402,7 +408,7 @@ class MessageUpsertCoordinator {
           this.runChunkWrite(messageID, updater, options, stamp)
         );
       }
-      const requestID = this.serviceManager.messageService.currentRequestID;
+      const requestID = this.serviceManager.messageCoordinator.currentRequestID;
       return await this.enqueue(messageID, () =>
         this.runOne(messageID, nextState, updater, options, stamp, requestID)
       );
@@ -467,7 +473,7 @@ class MessageUpsertCoordinator {
     if (isStale()) {
       return;
     }
-    this.serviceManager.messageService.messageLoadingManager.end();
+    this.serviceManager.messageCoordinator.messageLoadingManager.end();
     if (isStale()) {
       return;
     }
@@ -605,7 +611,9 @@ class MessageUpsertCoordinator {
     if (willFireReceive) {
       await this.firePostReceiveAndFinalize(messageID, result, stamp);
     } else if (nextState !== MessageState.STREAMING) {
-      this.serviceManager.messageService.finalizeStreamingMessage(messageID);
+      this.serviceManager.messageCoordinator.finalizeStreamingMessage(
+        messageID
+      );
     }
   }
 
@@ -622,7 +630,7 @@ class MessageUpsertCoordinator {
       !stamp.isCurrent() ||
       stamp.generation !== this.generation ||
       stamp.restartCount !== this.serviceManager.restartCount ||
-      this.serviceManager.messageService.isRequestFromPreviousConversation(
+      this.serviceManager.messageCoordinator.isRequestFromPreviousConversation(
         requestID
       )
     );
@@ -736,7 +744,7 @@ class MessageUpsertCoordinator {
     isCurrent: () => boolean,
     initialRestartCount: number
   ): Promise<void> {
-    const { store, messageService } = this.serviceManager;
+    const { store, messageCoordinator: messageService } = this.serviceManager;
 
     message.request_id ??= options.requestMessage?.id;
     addDefaultsToMessage(message);
@@ -1076,14 +1084,14 @@ class MessageUpsertCoordinator {
       lifecycle.isRequestStopped(requestID)
     ) {
       this.endStreamingMessage(messageID);
-      this.serviceManager.messageService.hideStopStreamingButtonIfIdle();
+      this.serviceManager.messageCoordinator.hideStopStreamingButtonIfIdle();
       return;
     }
     if (nextState === MessageState.STREAMING) {
       this.stateByID.set(messageID, nextState);
       if (!this.streamingIDs.has(messageID)) {
         const controller =
-          this.serviceManager.messageService.getCurrentMessageController();
+          this.serviceManager.messageCoordinator.getCurrentMessageController();
         if (controller) {
           this.streamingControllers.set(messageID, controller);
         }
@@ -1108,7 +1116,7 @@ class MessageUpsertCoordinator {
     result: MessageResponse,
     wasStreaming: boolean
   ) {
-    const { messageService } = this.serviceManager;
+    const { messageCoordinator: messageService } = this.serviceManager;
 
     if (nextState === MessageState.STREAMING) {
       const flags = (result.output?.generic ?? []).map(
@@ -1130,7 +1138,7 @@ class MessageUpsertCoordinator {
     // A message that never streamed leaves the button alone: it may be up for another
     // request (`showStopButtonImmediately`), and upserts never touched it before.
     if (wasStreaming) {
-      this.serviceManager.messageService.hideStopStreamingButtonIfIdle();
+      this.serviceManager.messageCoordinator.hideStopStreamingButtonIfIdle();
     }
   }
 
@@ -1578,8 +1586,8 @@ class MessageUpsertCoordinator {
   }
 
   /**
-   * Phase 5: fire `receive` and finalize the streaming state that `MessageService`
-   * owns. We call into `MessageService` here because a message reaching COMPLETE via
+   * Phase 5: fire `receive` and finalize the streaming state that `MessageCoordinator`
+   * owns. We call into `MessageCoordinator` here because a message reaching COMPLETE via
    * `upsertMessage` must clear the same streaming UI state that an `addMessage` /
    * `addMessageChunk` flow would have cleared on completion.
    */
@@ -1603,7 +1611,9 @@ class MessageUpsertCoordinator {
       consoleError('upsertMessage: receive handler threw, continuing.', error);
     }
     if (!this.isStale(stamp, result.request_id)) {
-      this.serviceManager.messageService.finalizeStreamingMessage(messageID);
+      this.serviceManager.messageCoordinator.finalizeStreamingMessage(
+        messageID
+      );
     }
   }
 }

@@ -7,28 +7,9 @@
  *  @license
  */
 
-/**
- * MessageService orchestrates outbound sends and inbound streaming for the chat widget.
- *
- * High-level flow:
- * 1) `send()` queues a `MessageRequest` and kicks off the queue.
- * 2) `SendWorkflow.runQueueIfReady()` pulls the next pending request, fires PRE_SEND/SEND events, starts loading/timeout timers,
- *    and delegates the actual send to `customSendMessage` via `OutboundMessageCoordinator`.
- * 3) OutboundCoordinator clones/updates the message in store, calls `customSendMessage` (sync or async), and on success
- *    calls back into `processSuccess`; on error/cancel it resolves/rejects and advances the queue.
- * 4) Incoming stream chunks are handled through `ChunkProcessingService`, which marks streaming and finalization via
- *    `InboundStreamingCoordinator`. InboundCoordinator tracks response_id/item_id pairs so cancellations and
- *    finalization can advance the queue even when response_id differs from the original request id.
- * 5) FinalResponseChunk or cancellation clears streaming tracking and moves to the next queued message.
- *
- * Responsibilities:
- * - MessageCoordinator: queue membership and pending request lookup.
- * - SendWorkflow: queue execution, PRE_SEND/SEND events, loading and settlement.
- * - MessageService: queue entry, controller and stream tracking, cancellation entrypoints.
- * - OutboundMessageCoordinator: send lifecycle (store updates, calling customSendMessage, resolving/rejecting/canceling).
- * - InboundStreamingCoordinator: streaming id tracking (response_id/item_id), finalization, cancellation cleanup.
- */
 import actions from '../../store/actions';
+import { BusEventType } from '../../../types/events/eventBusTypes';
+import { consoleError } from '../../utils/miscUtils';
 import type { PendingMessageRequest } from './pendingRequestTypes';
 import {
   resetStopStreamingButton,
@@ -37,33 +18,33 @@ import {
 import { ServiceManager } from '../ServiceManager';
 import { InboundStreamingCoordinator } from './InboundStreamingCoordinator';
 import type { StreamResponseMeta } from './state/StreamState';
-import {
-  MessageRequest,
-  MessageResponse,
-} from '../../../types/messaging/Messages';
-import { SendOptions } from '../../../types/instance/ChatInstance';
-import { MessageSendSource } from '../../../types/events/eventBusTypes';
-import { PublicConfig } from '../../../types/config/PublicConfig';
 import { OnErrorType } from '../../../types/config/ErrorConfig';
 import { CancellationReason } from '../../../types/config/MessagingConfig';
 
-class MessageService {
-  registerMessageController(messageID: string, controller: AbortController) {
-    this.messageAbortControllers.set(messageID, controller);
+class TerminationWorkflow {
+  async requestStopFromInput(markPending: () => void): Promise<void> {
+    const serviceManager = this.serviceManager;
+    const { store } = serviceManager;
+    // Pending UI can flush host effects; capture visibility before calling it.
+    const chatShowsButton =
+      store.getState().assistantInputState.stopStreamingButtonState.isVisible;
+    markPending();
+    if (chatShowsButton) {
+      store.dispatch(actions.setStopStreamingButtonDisabled(true));
+    }
+    try {
+      await serviceManager.fire({ type: BusEventType.STOP_STREAMING });
+      if (chatShowsButton) {
+        await serviceManager.messageCoordinator.cancelCurrentMessageRequest();
+      }
+    } catch (error) {
+      consoleError('Error stopping stream:', error);
+      store.dispatch(actions.setStopStreamingButtonDisabled(false));
+    }
   }
 
-  public send(
-    message: MessageRequest<any>,
-    source: MessageSendSource,
-    localMessageID?: string,
-    requestOptions?: SendOptions
-  ): Promise<MessageResponse | any> {
-    return this.serviceManager.messageCoordinator.enqueueMessage(
-      message,
-      source,
-      localMessageID,
-      requestOptions
-    );
+  registerMessageController(messageID: string, controller: AbortController) {
+    this.messageAbortControllers.set(messageID, controller);
   }
 
   private nonCancellableResponseIDs = new Set<string>();
@@ -80,51 +61,19 @@ class MessageService {
 
   /**
    * Maps message IDs to their AbortControllers. This persists even after messages are cleared from the queue,
-   * allowing cancellation of streaming messages that have already "completed" from MessageService's perspective.
+   * allowing cancellation of streaming messages that have already "completed" from MessageCoordinator's perspective.
    */
   private messageAbortControllers = new Map<string, AbortController>();
-
-  get messageLoadingManager() {
-    return this.serviceManager.messageCoordinator.messageLoadingManager;
-  }
-
-  get timeoutMS() {
-    return this.serviceManager.messageCoordinator.timeoutMS;
-  }
-
-  set timeoutMS(value: number) {
-    this.serviceManager.messageCoordinator.timeoutMS = value;
-  }
 
   get currentRequestID() {
     const current = this.serviceManager.messageCoordinator.getCurrentRequest();
     return current && !current.isProcessed ? current.message.id : undefined;
   }
-  public registerRequestGeneration(
-    requestID: string,
-    restartGeneration: number
-  ) {
-    this.serviceManager.messageCoordinator.registerRequestGeneration(
-      requestID,
-      restartGeneration
-    );
-  }
-  public isRequestFromPreviousConversation(
-    requestID: string | undefined
-  ): boolean {
-    return this.serviceManager.messageCoordinator.isRequestFromPreviousConversation(
-      requestID
-    );
-  }
 
-  constructor(serviceManager: ServiceManager, publicConfig: PublicConfig) {
+  constructor(serviceManager: ServiceManager) {
     this.serviceManager = serviceManager;
     this.inboundStreaming = new InboundStreamingCoordinator(
       this.messageAbortControllers
-    );
-
-    this.serviceManager.messageCoordinator.configureMessageTimeout(
-      publicConfig
     );
   }
 
@@ -553,4 +502,4 @@ class MessageService {
   }
 }
 
-export default MessageService;
+export { TerminationWorkflow };

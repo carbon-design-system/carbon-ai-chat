@@ -81,7 +81,7 @@ async function coordinateSend(
 
 /**
  * Inner send: fires `pre:send` and `send`, then calls `customSendMessage` via
- * `MessageService`. Resolves when `customSendMessage` completes or the turn
+ * `MessageCoordinator`. Resolves when `customSendMessage` completes or the turn
  * is stopped; rejects when `customSendMessage` throws or the send path fails
  * terminally. Retries are handled upstream by `customSendMessage`.
  */
@@ -149,7 +149,7 @@ async function doSend(
   }
 
   // Preserve the caller's existing freeze after assigning defaults and adding the message.
-  // MessageService receives a writable copy for pre:send handlers when this request leaves the queue;
+  // MessageCoordinator receives a writable copy for pre:send handlers when this request leaves the queue;
   // their accepted edits replace the stored request.
   deepFreeze(message);
 
@@ -164,7 +164,7 @@ async function doSend(
       consoleError('A customRequestFooterSlot handler failed.', error);
     });
 
-  await serviceManager.messageService.send(
+  await serviceManager.messageCoordinator.enqueueMessage(
     outgoing.copyRequest(message),
     source,
     localMessage.ui_state.id,

@@ -17,7 +17,6 @@ import { HumanAgentService } from './haa/HumanAgentService';
 import { CustomPanelManager } from './CustomPanelManager';
 import { HistoryService } from './HistoryService';
 import { MessageUpsertCoordinator } from './messaging/inbound/MessageUpsertCoordinator';
-import MessageService from './messaging/MessageService';
 import { NamespaceService } from './NamespaceService';
 import { ThemeWatcherService } from './ThemeWatcherService';
 import { UserSessionStorageService } from './UserSessionStorageService';
@@ -139,15 +138,10 @@ class ServiceManager {
   store: AppStore<AppState>;
 
   /**
-   * The message service used to send and receive messages.
-   */
-  messageService: MessageService;
-
-  /**
    * Engine for {@link ChatInstanceMessaging#upsertMessage}: serializes calls for the
    * same message ID and tracks {@link MessageState} per ID so `addMessage`,
    * `addMessageChunk`, and `upsertMessage` can be mixed without double-firing
-   * `pre:receive` / `receive`. {@link messageService} still owns the send / stream /
+   * `pre:receive` / `receive`. {@link messageCoordinator} still owns the send / stream /
    * receive arc.
    */
   messageUpsertCoordinator: MessageUpsertCoordinator;
