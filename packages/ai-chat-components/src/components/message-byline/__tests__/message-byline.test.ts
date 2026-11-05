@@ -10,6 +10,7 @@
 import { fixture, html, expect } from '@open-wc/testing';
 import prefix from '../../../globals/settings.js';
 import '../index.js';
+import '../../user-avatar/index.js';
 import '../../message-item-shell/index.js';
 import type CDSAIChatMessageByline from '../src/message-byline.js';
 
@@ -62,16 +63,20 @@ describe(blockClass, () => {
     const getAvatarBox = (el: CDSAIChatMessageByline) =>
       el.shadowRoot!.querySelector<HTMLElement>(`.${blockClass}__avatar`)!;
 
-    it('renders no box when the avatar slot is empty', async () => {
+    /** Waits for the observer callback and the re-render that follows. */
+    const settle = async (el: CDSAIChatMessageByline) => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      await el.updateComplete;
+    };
+
+    it('does not render the box when the avatar slot is empty', async () => {
       const el = await fixture<CDSAIChatMessageByline>(
         html`<cds-aichat-message-byline
           label="You"></cds-aichat-message-byline>`
       );
       await el.updateComplete;
-      const box = getAvatarBox(el);
-      expect(box.hidden).to.be.true;
-      expect(getComputedStyle(box).display).to.equal('none');
-      expect(box.getBoundingClientRect().width).to.equal(0);
+      expect(getAvatarBox(el)).to.be.null;
+      expect(getAvatarSlot(el)).to.be.null;
     });
 
     it('renders a fixed 32px box around a slotted avatar', async () => {
@@ -85,7 +90,6 @@ describe(blockClass, () => {
       `);
       await el.updateComplete;
       const box = getAvatarBox(el);
-      expect(box.hidden).to.be.false;
       expect(getAvatarSlot(el).assignedElements()[0].id).to.equal('avatar');
       const boxRect = box.getBoundingClientRect();
       expect(boxRect.width).to.equal(32);
@@ -109,18 +113,80 @@ describe(blockClass, () => {
       expect(getAvatarBox(el).getBoundingClientRect().width).to.equal(32);
     });
 
-    it('hides the box again when the avatar is removed', async () => {
+    it('removes the box when the avatar is removed', async () => {
       const el = await fixture<CDSAIChatMessageByline>(html`
         <cds-aichat-message-byline label="Assistant">
           <span slot="avatar" id="avatar"></span>
         </cds-aichat-message-byline>
       `);
       await el.updateComplete;
+      expect(getAvatarBox(el)).to.exist;
+
       el.querySelector('#avatar')!.remove();
-      // slotchange fires asynchronously, then the re-render follows.
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      await settle(el);
+
+      expect(getAvatarBox(el)).to.be.null;
+    });
+
+    it('adds the box when an avatar is slotted later', async () => {
+      const el = await fixture<CDSAIChatMessageByline>(
+        html`<cds-aichat-message-byline
+          label="Assistant"></cds-aichat-message-byline>`
+      );
+      const avatar = document.createElement('span');
+      avatar.slot = 'avatar';
+      el.appendChild(avatar);
+      await settle(el);
+
+      expect(getAvatarBox(el)).to.exist;
+    });
+
+    it('removes the box and the slot while the avatar is hidden', async () => {
+      const el = await fixture<CDSAIChatMessageByline>(html`
+        <cds-aichat-message-byline label="Assistant">
+          <cds-aichat-user-avatar
+            slot="avatar"
+            id="avatar"
+            name="Assistant"></cds-aichat-user-avatar>
+        </cds-aichat-message-byline>
+      `);
       await el.updateComplete;
-      expect(getAvatarBox(el).hidden).to.be.true;
+      const avatar = el.querySelector<HTMLElement>('#avatar')!;
+
+      avatar.hidden = true;
+      await settle(el);
+      expect(getAvatarBox(el)).to.be.null;
+      expect(getAvatarSlot(el)).to.be.null;
+      expect(avatar.assignedSlot).to.be.null;
+
+      avatar.hidden = false;
+      await settle(el);
+      expect(getAvatarBox(el)).to.exist;
+    });
+
+    it('does not render the box for an initially hidden avatar', async () => {
+      const el = await fixture<CDSAIChatMessageByline>(html`
+        <cds-aichat-message-byline label="Assistant">
+          <span slot="avatar" hidden></span>
+        </cds-aichat-message-byline>
+      `);
+      await el.updateComplete;
+
+      expect(getAvatarBox(el)).to.be.null;
+    });
+
+    it('gives the avatar the primary text color, not the label color', async () => {
+      const el = await fixture<CDSAIChatMessageByline>(html`
+        <cds-aichat-message-byline label="Assistant">
+          <span slot="avatar" id="avatar"></span>
+        </cds-aichat-message-byline>
+      `);
+      await el.updateComplete;
+      const label = el.shadowRoot!.querySelector(`.${blockClass}__label`)!;
+
+      expect(getComputedStyle(el.querySelector('#avatar')!).color).to.not.equal(
+        getComputedStyle(label).color
+      );
     });
   });
 

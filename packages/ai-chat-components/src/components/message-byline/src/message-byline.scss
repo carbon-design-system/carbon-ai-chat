@@ -30,15 +30,17 @@ $block-class: #{$prefix}-message-byline;
   justify-content: center;
   block-size: layout.$spacing-07;
   inline-size: layout.$spacing-07;
+}
 
-  &[hidden] {
-    display: none;
-  }
+// The byline's secondary text color is for the label. The avatar draws its
+// initial and border with `currentcolor`, so give it the default text color.
+::slotted([slot='avatar']) {
+  color: theme.$text-primary;
 }
 
 .#{$block-class}__label {
-  padding: layout.$spacing-03;
   line-height: layout.$spacing-05;
+  padding-inline-start: layout.$spacing-03;
 }
 
 .#{$block-class}__reasoning {
@@ -51,5 +53,5 @@ $block-class: #{$prefix}-message-byline;
 }
 
 .#{$block-class}__reasoning-separator {
-  margin-inline-end: layout.$spacing-03;
+  margin-inline: layout.$spacing-03;
 }

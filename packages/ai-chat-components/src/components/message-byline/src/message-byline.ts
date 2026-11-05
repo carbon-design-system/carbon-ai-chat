@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { LitElement, html } from 'lit';
+import { LitElement, html, nothing } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { carbonElement } from '../../../globals/decorators/index.js';
 import prefix from '../../../globals/settings.js';
@@ -24,7 +24,7 @@ const blockClass = `${prefix}-message-byline`;
  * @experimental
  * @element cds-aichat-message-byline
  *
- * @slot avatar - Optional avatar. The byline centers it in a fixed square box. Nothing is rendered for this slot while it is empty.
+ * @slot avatar - Optional avatar. The byline centers it in a fixed square box. Nothing is rendered for this slot while it is empty or the avatar has the `hidden` attribute.
  * @slot reasoning - Optional reasoning steps control, such as a `cds-aichat-reasoning-steps-toggle`. The byline adds a separator before it. The host renders the panel the toggle controls outside the byline.
  */
 @carbonElement(blockClass)
@@ -44,22 +44,44 @@ class CDSAIChatMessageByline extends LitElement {
   timestamp = '';
 
   /**
-   * Whether the `avatar` slot has content.
+   * Whether a visible avatar is slotted. The avatar box only renders then.
    */
   @state()
   private _hasAvatar = false;
+
+  /**
+   * Watches the avatar child. Without the box, the `avatar` slot does not
+   * exist, so `slotchange` cannot report it.
+   */
+  private _avatarObserver = new MutationObserver(() => this._syncAvatar());
+
+  connectedCallback(): void {
+    super.connectedCallback();
+    this._syncAvatar();
+    this._avatarObserver.observe(this, {
+      childList: true,
+      attributes: true,
+      attributeFilter: ['slot', 'hidden'],
+      subtree: true,
+    });
+  }
+
+  disconnectedCallback(): void {
+    this._avatarObserver.disconnect();
+    super.disconnectedCallback();
+  }
+
+  private _syncAvatar(): void {
+    this._hasAvatar = Array.from(this.children).some(
+      (child) => child.slot === 'avatar' && !(child as HTMLElement).hidden
+    );
+  }
 
   /**
    * Whether the `reasoning` slot has content.
    */
   @state()
   private _hasReasoning = false;
-
-  private _onAvatarSlotChange = (event: Event): void => {
-    this._hasAvatar =
-      (event.target as HTMLSlotElement).assignedNodes({ flatten: true })
-        .length > 0;
-  };
 
   private _onReasoningSlotChange = (event: Event): void => {
     this._hasReasoning =
@@ -69,9 +91,13 @@ class CDSAIChatMessageByline extends LitElement {
 
   render() {
     return html`
-      <span class="${blockClass}__avatar" ?hidden=${!this._hasAvatar}>
-        <slot name="avatar" @slotchange=${this._onAvatarSlotChange}></slot>
-      </span>
+      ${
+        this._hasAvatar
+          ? html`<span class="${blockClass}__avatar"
+              ><slot name="avatar"></slot
+            ></span>`
+          : nothing
+      }
       <span class="${blockClass}__label"
         >${[this.label, this.timestamp].filter(Boolean).join(' ')}</span
       >
