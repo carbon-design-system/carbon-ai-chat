@@ -7,22 +7,22 @@
  *  @license
  */
 
-import actions from '../store/actions';
+import actions from '../../shared/store/actions';
 import {
   selectInputState,
   selectIsInputToHumanAgent,
-} from '../store/selectors';
-import { createMessageRequestForText } from '../utils/messageUtils';
-import { shouldSendSilently } from '../utils/fileAttachments';
+} from '../../shared/store/selectors';
+import { createMessageRequestForText } from '../../shared/utils/messageUtils';
+import { shouldSendSilently } from '../../shared/utils/fileAttachments';
 import {
   BusEventType,
   MessageSendSource,
 } from '../../types/events/eventBusTypes';
-import type { ServiceManager } from './ServiceManager';
+import type { ServiceManager } from '../../shared/services/ServiceManager';
 import type { AppState } from '../../types/state/AppState';
 import type { SendOptions } from '../../types/instance/ChatInstance';
 import type { JSONContent } from '@tiptap/core';
-import { requestStopFromInput } from './assistantInputCommands';
+import { requestStopFromInput } from '../../shared/services/assistantInputCommands';
 
 export class InputCallbacks {
   private scrollTimers = new Set<ReturnType<typeof setTimeout>>();

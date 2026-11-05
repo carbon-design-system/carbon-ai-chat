@@ -28,7 +28,7 @@ import {
   MessageResponse,
   MessageResponseTypes,
 } from '../../../src/types/messaging/Messages';
-import { withMessagingView } from '../helpers/viewBindings';
+import { withMessagingView, withViewCounters } from '../helpers/viewBindings';
 
 function createHarness(config: PublicConfig = {}) {
   const store = makeConfigStore({ messaging: {}, ...config });
@@ -70,6 +70,7 @@ function createHarness(config: PublicConfig = {}) {
     });
   }
   manager.hydrationService = new HydrationService(manager);
+  withViewCounters(manager);
   const service = manager.messageCoordinator;
 
   const localItems = () => {

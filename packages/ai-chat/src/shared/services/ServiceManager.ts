@@ -13,7 +13,6 @@ import { IntlShape } from '../utils/i18n';
 import { EventBus } from '../events/EventBus';
 import { AppState } from '../../types/state/AppState';
 import { HumanAgentService } from './haa/HumanAgentService';
-import { CustomPanelManager } from './CustomPanelManager';
 import { HistoryService } from './HistoryService';
 import { NamespaceService } from './NamespaceService';
 import { ThemeWatcherService } from './ThemeWatcherService';
@@ -140,11 +139,6 @@ class ServiceManager {
    * An object defining the namespace of this Carbon AI Chat and derived properties from that namespace name.
    */
   namespace: NamespaceService;
-
-  /**
-   * This is a custom panel manager that currently only fetches 1 custom panel.
-   */
-  customPanelManager: CustomPanelManager;
 
   /**
    * Service that watches CSS variables and updates theme when CarbonTheme is not set.

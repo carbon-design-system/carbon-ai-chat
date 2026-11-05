@@ -789,7 +789,9 @@ class HumanAgentServiceImpl implements HumanAgentService {
       return;
     }
 
-    store.dispatch(actions.addIsLoadingCounter(1));
+    this.serviceManager.view?.current?.humanAgent.changeMessageLoadingCounter?.(
+      1
+    );
     let agentAvailability: HumanAgentsOnlineStatus;
     try {
       if (!canApply()) {
@@ -829,7 +831,9 @@ class HumanAgentServiceImpl implements HumanAgentService {
     } finally {
       // Removal leaves this operation's loading counter active; restart resets it.
       if (initialRestartCount === this.serviceManager.restartCount) {
-        store.dispatch(actions.addIsLoadingCounter(-1));
+        this.serviceManager.view?.current?.humanAgent.changeMessageLoadingCounter?.(
+          -1
+        );
       }
     }
 
@@ -1483,11 +1487,9 @@ class ServiceDeskCallbackImpl<
         // below is rendered but not announced on its own (the status icon
         // deliberately carries no aria-label to avoid the message live region
         // double-reading), mirroring the success announcement above.
-        store.dispatch(
-          actions.announceMessage({
-            messageID: 'fileSharing_uploadFailed',
-          })
-        );
+        this.serviceManager.view?.current?.humanAgent.announce?.({
+          messageID: 'fileSharing_uploadFailed',
+        });
 
         if (errorMessage) {
           // Generate an inline error message to show the error to the user.
@@ -1511,11 +1513,9 @@ class ServiceDeskCallbackImpl<
             FileStatusValue.SUCCESS
           )
         );
-        store.dispatch(
-          actions.announceMessage({
-            messageID: 'fileSharing_ariaAnnounceSuccess',
-          })
-        );
+        this.serviceManager.view?.current?.humanAgent.announce?.({
+          messageID: 'fileSharing_ariaAnnounceSuccess',
+        });
       }
     } else if (isError) {
       // Update the input area.
