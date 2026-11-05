@@ -62,8 +62,4 @@ function attachViewState(
 export { attachViewState };
 export { default as viewActions } from './actions';
 export * from './defaults';
-export {
-  createDefaultViewPersistedState,
-  joinPersistedState,
-  viewHalfOf,
-} from './persisted';
+export { joinPersistedState, viewHalfOf } from './persisted';

@@ -61,4 +61,4 @@ function createCustomPanelManager(serviceManger: ServiceManager): CustomPanels {
   });
 }
 
-export { createCustomPanelManager, CustomPanels as CustomPanelManager };
+export { createCustomPanelManager };
