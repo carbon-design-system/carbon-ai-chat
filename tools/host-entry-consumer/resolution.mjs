@@ -17,7 +17,6 @@ import ts from 'typescript';
 const source = `
 import { createElement, type ComponentType } from 'react';
 import { ChatContainer, ChatCustomElement } from '@carbon/ai-chat';
-import { ChatContainer as CustomChatContainer } from '@carbon/ai-chat/es-custom';
 import ContainerHost from '@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js';
 import CustomElementHost from '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
 import type { ChatInstance, PublicConfig } from '@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js';
@@ -34,7 +33,6 @@ outer.openChatByDefault = true;
 outer.header = { title: 'Packed host' };
 createElement(ChatContainer, { openChatByDefault: true });
 createElement(ChatCustomElement, { className: 'packed-host', openChatByDefault: true });
-createElement(CustomChatContainer, { openChatByDefault: true });
 // @ts-expect-error Hosts are HTMLElement constructors rather than React components.
 const containerAsReact: ComponentType<any> = ContainerHost;
 // @ts-expect-error Hosts are HTMLElement constructors rather than React components.
@@ -242,7 +240,7 @@ export async function assertPackedResolution(consumer) {
       await realpath(join(consumer, 'node_modules/@carbon/ai-chat', types))
     );
 
-    for (const tree of ['es', 'es-custom']) {
+    for (const tree of ['es']) {
       const specifier = `@carbon/ai-chat/dist/${tree}/web-components/${host}/index.js`;
       const url = execFileSync(
         process.execPath,
