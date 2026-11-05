@@ -37,7 +37,7 @@ const config: PublicConfig = {
 
 Setting either field turns off the internal `sessionStorage` completely, so the chat no longer reads, writes, or clears it.
 
-The chat treats a restored session as an existing one, so {@link PublicConfig.openChatByDefault | openChatByDefault} doesn't re-open the chat on reload.
+Passing any {@link PersistedStateConfig.initialState | initialState} counts as a restored session, so {@link PublicConfig.openChatByDefault | openChatByDefault} doesn't open the chat. This holds for a value you build yourself, not only one you saved.
 
 ## Do not drop fields
 
