@@ -26,36 +26,3 @@ export const reasoningSteps = [
     body: 'Combined the prompt with trusted context into a structured reply.',
   },
 ];
-
-/**
- * Sample chain of thought steps in the same shape the chat receives in
- * `message_options.chain_of_thought`.
- */
-export const chainOfThoughtSteps = [
-  {
-    title: 'Search documentation',
-    description:
-      'Searching the product documentation for relevant information.',
-    tool_name: 'documentation_search',
-    request: {
-      args: '```\n{\n  "query": "API authentication methods"\n}\n```',
-    },
-    response: {
-      content:
-        '```\n{\n  "results": ["OAuth 2.0", "API keys"],\n  "count": 2\n}\n```',
-    },
-    status: 'success',
-  },
-  {
-    title: 'Generate response',
-    description: 'Synthesizing the information into a final answer.',
-    tool_name: 'response_generator',
-    request: {
-      args: '```\n{\n  "context": "authentication",\n  "format": "markdown"\n}\n```',
-    },
-    response: {
-      content: '```\n{\n  "summary": "You are using OAuth 2.0."\n}\n```',
-    },
-    status: 'success',
-  },
-];

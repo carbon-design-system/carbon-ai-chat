@@ -15,34 +15,21 @@
 $block-class: #{$prefix}-message-byline;
 
 :host(#{$block-class}) {
+  @include type.type-style('caption-01');
+
   display: flex;
   align-items: center;
   color: theme.$text-secondary;
-  @include type.type-style('caption-01');
-}
-
-// The avatar sits in a square box, as in the legacy avatar line. The slot is
-// hidden while it is empty, so no empty box is left behind.
-slot[name='avatar'] {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  block-size: layout.$spacing-07;
-  inline-size: layout.$spacing-07;
-
-  &[hidden] {
-    display: none;
-  }
 }
 
 .#{$block-class}__label {
-  padding-inline-start: layout.$spacing-03;
+  padding: layout.$spacing-03;
+  line-height: layout.$spacing-05;
 }
 
 .#{$block-class}__reasoning {
   display: flex;
   align-items: center;
-  margin-inline-start: layout.$spacing-03;
 
   &[hidden] {
     display: none;
@@ -50,6 +37,5 @@ slot[name='avatar'] {
 }
 
 .#{$block-class}__reasoning-separator {
-  color: theme.$text-secondary;
   margin-inline-end: layout.$spacing-03;
 }

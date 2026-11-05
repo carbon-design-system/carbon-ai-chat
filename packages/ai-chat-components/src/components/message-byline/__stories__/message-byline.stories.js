@@ -10,11 +10,11 @@
 import '../index';
 import '../../user-avatar/index';
 import '../../reasoning-steps/index';
-import '../../chain-of-thought/index';
 import '../../markdown/index';
+import '../../message-item-shell/index';
 import { html, nothing } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { chainOfThoughtSteps, reasoningSteps } from './story-data';
+import { reasoningSteps } from './story-data';
 
 export default {
   title: 'Preview/Message byline',
@@ -40,7 +40,7 @@ const argTypes = {
   open: {
     control: 'boolean',
     description:
-      'Story-only. Whether the reasoning panel starts open. Only used by the reasoning stories.',
+      'Story-only. Whether the reasoning panel starts open. Only used by the reasoning steps story.',
   },
 };
 
@@ -56,14 +56,14 @@ const renderAvatar = (args) =>
     ? html`<cds-aichat-user-avatar
         slot="avatar"
         name=${args.avatarName}
-        width="1.5rem"
-        height="1.5rem"></cds-aichat-user-avatar>`
+        width="32px"
+        height="32px"></cds-aichat-user-avatar>`
     : nothing;
 
-/** Opens or closes the panel next to the byline that holds the toggle. */
+/** Opens or closes the panel in the same message row as the toggle. */
 const syncPanel = (selector) => (event) => {
   const panel = event.target
-    .closest('[data-story-message]')
+    .closest('cds-aichat-message-item-shell')
     ?.querySelector(selector);
   if (panel) {
     panel.open = event.detail?.open ?? false;
@@ -88,9 +88,15 @@ export const WithoutAvatar = {
   render: Default.render,
 };
 
+export const HumanAgent = {
+  argTypes,
+  args: { ...defaultArgs, label: 'Jane Doe', avatarName: 'Jane Doe' },
+  render: Default.render,
+};
+
 /**
- * The reasoning steps toggle sits in the `reasoning` slot. The host renders the
- * steps in the panel below the byline, as the chat does.
+ * The reasoning steps toggle sits in the byline's `reasoning` slot. The steps
+ * render at the top of the message content, inside the message item shell.
  */
 export const WithReasoningSteps = {
   argTypes,
@@ -98,8 +104,9 @@ export const WithReasoningSteps = {
   render: (args) => {
     const panelId = `story-reasoning-steps-${panelCount++}`;
     return html`
-      <div data-story-message>
+      <cds-aichat-message-item-shell row-type="response">
         <cds-aichat-message-byline
+          slot="byline"
           label=${ifDefined(args.label || undefined)}
           timestamp=${ifDefined(args.timestamp || undefined)}>
           ${renderAvatar(args)}
@@ -123,71 +130,7 @@ export const WithReasoningSteps = {
             `
           )}
         </cds-aichat-reasoning-steps>
-      </div>
+      </cds-aichat-message-item-shell>
     `;
   },
-};
-
-/**
- * The chain of thought toggle sits in the `reasoning` slot. The host renders the
- * steps in the panel below the byline.
- */
-export const WithChainOfThought = {
-  argTypes,
-  args: { ...defaultArgs, open: true },
-  render: (args) => {
-    const panelId = `story-chain-of-thought-${panelCount++}`;
-    return html`
-      <div data-story-message>
-        <cds-aichat-message-byline
-          label=${ifDefined(args.label || undefined)}
-          timestamp=${ifDefined(args.timestamp || undefined)}>
-          ${renderAvatar(args)}
-          <cds-aichat-chain-of-thought-toggle
-            slot="reasoning"
-            panel-id=${panelId}
-            ?open=${args.open}
-            open-label-text="Hide chain of thought"
-            closed-label-text="Show chain of thought"
-            @chain-of-thought-toggle=${syncPanel(
-              'cds-aichat-chain-of-thought'
-            )}></cds-aichat-chain-of-thought-toggle>
-        </cds-aichat-message-byline>
-        <cds-aichat-chain-of-thought
-          id=${panelId}
-          panel-id=${panelId}
-          ?open=${args.open}>
-          ${chainOfThoughtSteps.map(
-            (step, index) => html`
-              <cds-aichat-chain-of-thought-step
-                title=${step.title}
-                status=${step.status}
-                step-number=${index + 1}>
-                <cds-aichat-tool-call-data tool-name=${step.tool_name}>
-                  <div slot="description">
-                    <cds-aichat-markdown
-                      .markdown=${step.description}></cds-aichat-markdown>
-                  </div>
-                  <div slot="input">
-                    <cds-aichat-markdown
-                      .markdown=${step.request.args}></cds-aichat-markdown>
-                  </div>
-                  <div slot="output">
-                    <cds-aichat-markdown
-                      .markdown=${step.response.content}></cds-aichat-markdown>
-                  </div>
-                </cds-aichat-tool-call-data>
-              </cds-aichat-chain-of-thought-step>
-            `
-          )}
-        </cds-aichat-chain-of-thought>
-      </div>
-    `;
-  },
-};
-
-export const HumanAgent = {
-  argTypes,
-  args: { ...defaultArgs, label: 'Jane Doe', avatarName: 'Jane Doe' },
-  render: Default.render,
 };

@@ -78,6 +78,7 @@ $block-class: #{$prefix}-message-item-shell;
 
   .#{$block-class}__body {
     align-items: flex-start;
+    padding-block-start: layout.$spacing-02;
   }
 
   .#{$block-class}__attachment,

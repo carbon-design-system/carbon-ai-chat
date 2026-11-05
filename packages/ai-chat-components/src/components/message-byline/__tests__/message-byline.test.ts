@@ -59,17 +59,20 @@ describe(blockClass, () => {
     const getAvatarSlot = (el: CDSAIChatMessageByline) =>
       el.shadowRoot!.querySelector<HTMLSlotElement>('slot[name="avatar"]')!;
 
-    it('takes no space when the avatar slot is empty', async () => {
+    it('renders no wrapper or box when the avatar slot is empty', async () => {
       const el = await fixture<CDSAIChatMessageByline>(
         html`<cds-aichat-message-byline
           label="You"></cds-aichat-message-byline>`
       );
       await el.updateComplete;
-      expect(getAvatarSlot(el).hidden).to.be.true;
-      expect(getComputedStyle(getAvatarSlot(el)).display).to.equal('none');
+      const slot = getAvatarSlot(el);
+      expect(slot.assignedNodes()).to.have.length(0);
+      // The slot is a direct child of the shadow root and generates no box.
+      expect(slot.parentElement).to.be.null;
+      expect(getComputedStyle(slot).display).to.equal('contents');
     });
 
-    it('shows the avatar slot when an avatar is slotted', async () => {
+    it('renders a slotted avatar directly in the byline', async () => {
       const el = await fixture<CDSAIChatMessageByline>(html`
         <cds-aichat-message-byline label="Assistant">
           <span slot="avatar" id="avatar"></span>
@@ -77,22 +80,8 @@ describe(blockClass, () => {
       `);
       await el.updateComplete;
       const slot = getAvatarSlot(el);
-      expect(slot.hidden).to.be.false;
+      expect(slot.parentElement).to.be.null;
       expect(slot.assignedElements()[0].id).to.equal('avatar');
-    });
-
-    it('hides the avatar slot again when the avatar is removed', async () => {
-      const el = await fixture<CDSAIChatMessageByline>(html`
-        <cds-aichat-message-byline label="Assistant">
-          <span slot="avatar" id="avatar"></span>
-        </cds-aichat-message-byline>
-      `);
-      await el.updateComplete;
-      el.querySelector('#avatar')!.remove();
-      // slotchange fires asynchronously, then the re-render follows.
-      await new Promise((resolve) => setTimeout(resolve, 0));
-      await el.updateComplete;
-      expect(getAvatarSlot(el).hidden).to.be.true;
     });
   });
 

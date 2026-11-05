@@ -9,14 +9,14 @@ import * as Stories from './message-byline-react.stories';
 
 ## Overview
 
-Use `MessageByline` to show who sent a message, with an optional avatar, timestamp, and reasoning controls. It knows nothing about message data. This component is experimental, and its API may change without a deprecation window.
+Use `MessageByline` to show who sent a message, with an optional avatar, timestamp, and reasoning steps control. It knows nothing about message data. This component is experimental, and its API may change without a deprecation window.
 
 <Canvas of={Stories.Default} />
 
 ## Key features
 
 - **Optional avatar**: With nothing in the `avatar` slot, the byline renders no avatar space.
-- **Reasoning controls**: Place a reasoning steps toggle or a chain of thought toggle in the `reasoning` slot. The byline adds a separator before it. The reasoning steps stay at the top of the message, and the toggle opens and closes them from the byline.
+- **Reasoning steps control**: Place a reasoning steps toggle in the `reasoning` slot. The byline adds a separator before it. The reasoning steps stay at the top of the message, and the toggle opens and closes them from the byline.
 - **Host-supplied text**: The byline shows the `label` and `timestamp` you pass in.
 
 ## Examples
@@ -33,44 +33,6 @@ function Sender() {
 
 <Canvas of={Stories.WithoutAvatar} />
 
-### With reasoning steps
-
-The byline only holds the toggle. Render the `ReasoningSteps` panel below it and link the two with `panelID` and `id`.
-
-```jsx
-<MessageByline label="Assistant" timestamp="10:42 AM">
-  <ReasoningStepsToggle
-    slot="reasoning"
-    panelID="reasoning-panel"
-    open={open}
-    onToggle={(event) => setOpen(event.detail.open)}
-  />
-</MessageByline>
-<ReasoningSteps id="reasoning-panel" open={open}>
-  <ReasoningStep title="Understand the request" />
-</ReasoningSteps>
-```
-
-<Canvas of={Stories.WithReasoningSteps} />
-
-### With chain of thought
-
-```jsx
-<MessageByline label="Assistant" timestamp="10:42 AM">
-  <ChainOfThoughtToggle
-    slot="reasoning"
-    panelId="chain-of-thought-panel"
-    open={open}
-    onToggle={(event) => setOpen(event.detail.open)}
-  />
-</MessageByline>
-<ChainOfThought id="chain-of-thought-panel" panelId="chain-of-thought-panel" open={open}>
-  <ChainOfThoughtStep title="Search documentation" />
-</ChainOfThought>
-```
-
-<Canvas of={Stories.WithChainOfThought} />
-
 ### Human agent
 
 ```jsx
@@ -80,6 +42,29 @@ The byline only holds the toggle. Render the `ReasoningSteps` panel below it and
 ```
 
 <Canvas of={Stories.HumanAgent} />
+
+### With reasoning steps
+
+The byline only holds the toggle. Render the `ReasoningSteps` panel at the top of the message content inside `MessageItemShell`, and link the two with `panelID` and `id`.
+
+```jsx
+<MessageItemShell rowType="response">
+  <MessageByline slot="byline" label="Assistant" timestamp="10:42 AM">
+    <ReasoningStepsToggle
+      slot="reasoning"
+      panelID="reasoning-panel"
+      open={open}
+      onToggle={(event) => setOpen(event.detail.open)}
+    />
+  </MessageByline>
+  <ReasoningSteps id="reasoning-panel" open={open}>
+    <ReasoningStep title="Understand the request" />
+  </ReasoningSteps>
+  <p>The answer.</p>
+</MessageItemShell>
+```
+
+<Canvas of={Stories.WithReasoningSteps} />
 
 ## Accessibility
 

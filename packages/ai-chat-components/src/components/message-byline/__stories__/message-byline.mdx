@@ -9,14 +9,14 @@ import * as Stories from './message-byline.stories';
 
 ## Overview
 
-Use `cds-aichat-message-byline` to show who sent a message, with an optional avatar, timestamp, and reasoning controls. It knows nothing about message data. This element is experimental, and its API may change without a deprecation window.
+Use `cds-aichat-message-byline` to show who sent a message, with an optional avatar, timestamp, and reasoning steps control. It knows nothing about message data. This element is experimental, and its API may change without a deprecation window.
 
 <Canvas of={Stories.Default} />
 
 ## Key features
 
 - **Optional avatar**: With nothing in the `avatar` slot, the byline renders no avatar space.
-- **Reasoning controls**: Place a reasoning steps toggle or a chain of thought toggle in the `reasoning` slot. The byline adds a separator before it. The reasoning steps stay at the top of the message, and the toggle opens and closes them from the byline.
+- **Reasoning steps control**: Place a reasoning steps toggle in the `reasoning` slot. The byline adds a separator before it. The reasoning steps stay at the top of the message, and the toggle opens and closes them from the byline.
 - **Host-supplied text**: The byline shows the `label` and `timestamp` you pass in.
 
 ## Examples
@@ -31,42 +31,6 @@ Use `cds-aichat-message-byline` to show who sent a message, with an optional ava
 
 <Canvas of={Stories.WithoutAvatar} />
 
-### With reasoning steps
-
-The byline only holds the toggle. Render the `cds-aichat-reasoning-steps` panel below it and link the two with `panel-id` and `id`.
-
-```html
-<cds-aichat-message-byline label="Assistant" timestamp="10:42 AM">
-  <cds-aichat-reasoning-steps-toggle
-    slot="reasoning"
-    panel-id="reasoning-panel"></cds-aichat-reasoning-steps-toggle>
-</cds-aichat-message-byline>
-<cds-aichat-reasoning-steps id="reasoning-panel">
-  <cds-aichat-reasoning-step title="Understand the request">
-  </cds-aichat-reasoning-step>
-</cds-aichat-reasoning-steps>
-```
-
-<Canvas of={Stories.WithReasoningSteps} />
-
-### With chain of thought
-
-```html
-<cds-aichat-message-byline label="Assistant" timestamp="10:42 AM">
-  <cds-aichat-chain-of-thought-toggle
-    slot="reasoning"
-    panel-id="chain-of-thought-panel"></cds-aichat-chain-of-thought-toggle>
-</cds-aichat-message-byline>
-<cds-aichat-chain-of-thought
-  id="chain-of-thought-panel"
-  panel-id="chain-of-thought-panel">
-  <cds-aichat-chain-of-thought-step title="Search documentation">
-  </cds-aichat-chain-of-thought-step>
-</cds-aichat-chain-of-thought>
-```
-
-<Canvas of={Stories.WithChainOfThought} />
-
 ### Human agent
 
 ```html
@@ -78,6 +42,30 @@ The byline only holds the toggle. Render the `cds-aichat-reasoning-steps` panel 
 ```
 
 <Canvas of={Stories.HumanAgent} />
+
+### With reasoning steps
+
+The byline only holds the toggle. Render the `cds-aichat-reasoning-steps` panel at the top of the message content inside `cds-aichat-message-item-shell`, and link the two with `panel-id` and `id`.
+
+```html
+<cds-aichat-message-item-shell row-type="response">
+  <cds-aichat-message-byline
+    slot="byline"
+    label="Assistant"
+    timestamp="10:42 AM">
+    <cds-aichat-reasoning-steps-toggle
+      slot="reasoning"
+      panel-id="reasoning-panel"></cds-aichat-reasoning-steps-toggle>
+  </cds-aichat-message-byline>
+  <cds-aichat-reasoning-steps id="reasoning-panel">
+    <cds-aichat-reasoning-step title="Understand the request">
+    </cds-aichat-reasoning-step>
+  </cds-aichat-reasoning-steps>
+  <p>The answer.</p>
+</cds-aichat-message-item-shell>
+```
+
+<Canvas of={Stories.WithReasoningSteps} />
 
 ## Accessibility
 
