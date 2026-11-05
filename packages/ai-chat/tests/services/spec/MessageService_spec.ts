@@ -64,6 +64,7 @@ const createServiceManagerStub = (
   stopStreamingButtonState = { isVisible: false, isDisabled: false }
 ) => {
   const store = {
+    subscribe: jest.fn(() => jest.fn()),
     dispatch: jest.fn(),
     getState: () => ({
       config: {
@@ -80,11 +81,15 @@ const createServiceManagerStub = (
         errors_singleMessage: 'error',
         messages_requestCancelled: 'Request cancelled',
       },
-      assistantMessageState: { messageIDs: [] as string[] },
+      assistantMessageState: {
+        messageIDs: [] as string[],
+        localMessageIDs: [] as string[],
+      },
       assistantInputState: {
         stopStreamingButtonState,
       },
       allMessagesByID: {},
+      allMessageItemsByID: {},
       targetViewState: {},
       persistedToBrowserStorage: {
         launcherState: { wasLoadedFromBrowser: false },

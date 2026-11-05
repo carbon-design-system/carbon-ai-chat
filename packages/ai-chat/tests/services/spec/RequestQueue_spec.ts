@@ -34,7 +34,9 @@ it('keeps opaque operations in FIFO order until the current operation releases',
 });
 
 it('keeps record identity separate from mutable message IDs and queue membership', () => {
-  const coordinator = new MessageCoordinator({} as ServiceManager);
+  const coordinator = new MessageCoordinator({
+    store: { subscribe: jest.fn(() => jest.fn()) },
+  } as unknown as ServiceManager);
   const first = {
     message: { id: 'same' },
     isProcessed: false,
