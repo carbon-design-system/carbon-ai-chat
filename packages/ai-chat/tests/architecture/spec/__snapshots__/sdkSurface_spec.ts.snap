@@ -1,0 +1,743 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`reports every type and field the SDK entry reaches 1`] = `
+"enum BusEventType (src/types/events/eventBusTypes.ts)
+  CLOSE_PANEL_BUTTON_TOGGLED
+  PRE_RECEIVE
+  RECEIVE
+  PRE_SEND
+  SEND
+  VIEW_PRE_CHANGE
+  VIEW_CHANGE
+  MESSAGE_ITEM_CUSTOM
+  USER_DEFINED_RESPONSE
+  CUSTOM_FOOTER_SLOT
+  CUSTOM_REQUEST_FOOTER_SLOT
+  HISTORY_BEGIN
+  HISTORY_END
+  HISTORY_PANEL_NEW_CHAT
+  HISTORY_PANEL_PRE_OPEN
+  PRE_RESTART_CONVERSATION
+  RESTART_CONVERSATION
+  CHAT_READY
+  CUSTOM_PANEL_PRE_OPEN
+  CUSTOM_PANEL_OPEN
+  CUSTOM_PANEL_PRE_CLOSE
+  CUSTOM_PANEL_CLOSE
+  WORKSPACE_PRE_OPEN
+  WORKSPACE_OPEN
+  WORKSPACE_PRE_CLOSE
+  WORKSPACE_CLOSE
+  HUMAN_AGENT_PRE_RECEIVE
+  HUMAN_AGENT_RECEIVE
+  HUMAN_AGENT_PRE_SEND
+  HUMAN_AGENT_SEND
+  HUMAN_AGENT_PRE_START_CHAT
+  HUMAN_AGENT_PRE_END_CHAT
+  HUMAN_AGENT_END_CHAT
+  HUMAN_AGENT_ARE_ANY_AGENTS_ONLINE
+  CHUNK_USER_DEFINED_RESPONSE
+  FEEDBACK
+  STOP_STREAMING
+  STATE_CHANGE
+  DISCLAIMER_ACCEPTED
+  HEADER_MENU_CLICK
+
+enum ButtonItemType (src/types/messaging/Messages.ts)
+  POST_BACK
+  CUSTOM_EVENT
+  SHOW_PANEL
+  URL
+
+enum HumanAgentMessageType (src/types/messaging/Messages.ts)
+  INLINE_ERROR
+  FROM_HUMAN_AGENT
+  FROM_USER
+  HUMAN_AGENT_LEFT_CHAT
+  HUMAN_AGENT_ENDED_CHAT
+  HUMAN_AGENT_JOINED
+  RELOAD_WARNING
+  TRANSFER_TO_HUMAN_AGENT
+  USER_ENDED_CHAT
+  CHAT_WAS_ENDED
+  DISCONNECTED
+  RECONNECTED
+  SHARING_REQUESTED
+  SHARING_ACCEPTED
+  SHARING_DECLINED
+  SHARING_CANCELLED
+  SHARING_ENDED
+  SYSTEM
+
+enum HumanAgentsOnlineStatus (src/types/config/ServiceDeskConfig.ts)
+  ONLINE
+  OFFLINE
+  UNKNOWN
+
+enum IFrameItemDisplayOption (src/types/messaging/Messages.ts)
+  INLINE
+  PANEL
+
+enum MessageErrorState (src/types/messaging/LocalMessageItem.ts)
+  NONE
+  FAILED
+  FAILED_WHILE_STREAMING
+  RETRYING
+  WAITING
+
+enum MessageInputType (src/types/messaging/Messages.ts)
+  TEXT
+  EVENT
+
+enum MessageResponseTypes (src/types/messaging/Messages.ts)
+  TEXT
+  OPTION
+  CONNECT_TO_HUMAN_AGENT
+  IMAGE
+  PAUSE
+  USER_DEFINED
+  IFRAME
+  VIDEO
+  AUDIO
+  DATE
+  INLINE_ERROR
+  CARD
+  CAROUSEL
+  BUTTON
+  GRID
+  CONVERSATIONAL_SEARCH
+  PREVIEW_CARD
+  SYSTEM
+
+enum MessageSendSource (src/types/events/eventBusTypes.ts)
+  MESSAGE_INPUT
+  HOME_SCREEN_INPUT
+  OPTION_BUTTON
+  OPTION_DROP_DOWN
+  HISTORY_UPDATE
+  INSTANCE_SEND
+  DATE_PICKER
+  POST_BACK_BUTTON
+  HOME_SCREEN_STARTER
+  WELCOME_REQUEST
+  EVENT
+  OTHER
+
+enum MessageState (src/types/config/MessagingConfig.ts)
+  STREAMING
+  COMPLETE
+  ERROR
+
+enum OnErrorType (src/types/config/ErrorConfig.ts)
+  MESSAGE_COMMUNICATION
+  RENDER
+  INTEGRATION_ERROR
+  HYDRATION
+
+enum OptionItemPreference (src/types/messaging/Messages.ts)
+  DROPDOWN
+  BUTTON
+
+enum ReasoningStepOpenState (src/types/messaging/Messages.ts)
+  OPEN
+  CLOSE
+  DEFAULT
+
+enum ScreenShareState (src/types/config/ServiceDeskConfig.ts)
+  ACCEPTED
+  DECLINED
+  CANCELLED
+  ENDED
+
+enum SelectionDisplay (src/types/messaging/Messages.ts)
+  LABEL
+  INPUT_TEXT
+
+enum UserType (src/types/messaging/Messages.ts)
+  HUMAN
+  BOT
+  WATSONX
+
+enum WidthOptions (src/types/messaging/Messages.ts)
+  SMALL
+  MEDIUM
+  LARGE
+
+interface AdditionalDataToAgent (src/types/config/ServiceDeskConfig.ts)
+  filesToUpload?: Array<_FileUpload>
+
+interface AgentAvailability (src/types/config/ServiceDeskConfig.ts)
+  estimatedWaitTime?: number
+  message?: string
+  positionInQueue?: number
+
+interface BaseErrorInfo (src/types/config/ServiceDeskConfig.ts)
+  logInfo?: unknown
+
+interface BaseGenericItem (src/types/messaging/Messages.ts)
+  agent_message_type?: HumanAgentMessageType
+  message_item_options?: GenericItemMessageOptions
+  response_type: MessageResponseTypes
+  streaming_metadata?: ItemStreamingMetadata
+  user_defined?: TUserDefinedType
+
+interface BaseMessageInput (src/types/messaging/Messages.ts)
+  message_type?: MessageInputType
+
+interface BusEvent (src/types/events/eventBusTypes.ts)
+  type: BusEventType
+
+interface BusEventSend (src/types/events/eventBusTypes.ts)
+  data: MessageRequest<import("../messaging/Messages").MessageInput>
+  source: MessageSendSource
+  type: BusEventType.SEND
+
+interface ButtonItem (src/types/messaging/Messages.ts)
+  agent_message_type?: HumanAgentMessageType
+  alt_text?: string
+  button_type: ButtonItemType
+  custom_event_name?: string
+  image_url?: string
+  is?: "standard-button"
+  kind?: BUTTON_KIND | "LINK"
+  label?: string
+  message_item_options?: GenericItemMessageOptions
+  panel?: MessageItemPanelInfo
+  response_type: MessageResponseTypes
+  selection_display?: SelectionDisplay
+  silent?: boolean
+  size?: BUTTON_SIZE | _CHAT_BUTTON_SIZE
+  streaming_metadata?: ItemStreamingMetadata
+  target?: string
+  url?: string
+  user_defined?: TUserDefinedType
+  value?: { input: MessageInput; }
+
+interface CarouselItem (src/types/messaging/Messages.ts)
+  agent_message_type?: HumanAgentMessageType
+  items: Array<GenericItem<Record<string, unknown>>>
+  message_item_options?: GenericItemMessageOptions
+  response_type: MessageResponseTypes
+  streaming_metadata?: ItemStreamingMetadata
+  user_defined?: TUserDefinedType
+
+interface ChainOfThoughtStep (src/types/messaging/Messages.ts)
+  description?: string
+  request?: { args?: unknown; }
+  response?: { content: unknown; }
+  status?: _ChainOfThoughtStepStatus
+  title?: string
+  tool_name?: string
+
+interface ChatInstanceServiceDeskActions (src/types/instance/ChatInstanceServiceDeskActions.ts)
+  endConversation: () => Promise<void>
+  updateIsSuspended: (isSuspended: boolean) => Promise<void>
+
+interface ChatSDKConfig (src/types/config/ChatSDKConfig.ts)
+  debug?: boolean
+  humanAgentState?: ChatSDKPersistedStateConfig<PersistedHumanAgentState>
+  isReadonly?: boolean
+  messaging?: ChatSDKConfigMessaging<I>
+  namespace?: string
+  onError?: (data: ChatSDKErrorData) => void
+  serviceDesk?: ChatSDKServiceDeskConfig
+  serviceDeskFactory?: (parameters: ServiceDeskFactoryParameters<I>) => Promise<ServiceDesk>
+
+interface ChatSDKConfigMessaging (src/types/config/ChatSDKConfigMessaging.ts)
+  customLoadHistory?: (instance: I) => Promise<HistoryItem[]>
+  customSendMessage?: (request: MessageRequest, requestOptions: CustomSendMessageOptions, instance: I) => Promise<void> | void
+  messageTimeoutSecs?: number
+  skipWelcome?: boolean
+
+interface ChatSDKErrorData (src/types/config/ChatSDKErrorData.ts)
+  errorType: OnErrorType
+  message: string
+  otherData?: unknown
+
+interface ChatSDKInstance (src/types/instance/ChatSDKInstance.ts)
+  messaging: ChatSDKInstanceMessaging
+  off: (handlers: ChatSDKHandlers) => ChatSDKInstance
+  on: (handlers: ChatSDKHandlers) => ChatSDKInstance
+  once: (handlers: ChatSDKHandlers) => ChatSDKInstance
+  serviceDesk: ChatInstanceServiceDeskActions
+  state: ChatSDKStateAccess<import("./ChatSDKState").ChatSDKState>
+
+interface ChatSDKInstanceMessaging (src/types/config/ChatSDKInstanceMessaging.ts)
+  clearConversation: () => Promise<void>
+  insertHistory: (messages: HistoryItem[]) => Promise<void>
+  removeMessages: (messageIDs: string[]) => Promise<void>
+  restartConversation: () => Promise<void>
+  upsertMessage: (messageID: string, state: MessageState, updater: UpsertMessageUpdater) => Promise<void>
+
+interface ChatSDKPersistedStateConfig (src/types/config/ChatSDKPersistedStateConfig.ts)
+  initialState?: S
+  onStateChange?: (state: S) => void
+
+interface ChatSDKServiceDeskConfig (src/types/config/ChatSDKServiceDeskConfig.ts)
+  agentJoinTimeoutSeconds?: number
+  allowReconnect?: boolean
+  availabilityTimeoutSeconds?: number
+
+interface ChatSDKState (src/types/instance/ChatSDKState.ts)
+  activeResponseId: string
+  humanAgent: Readonly<PersistedHumanAgentState & { isConnecting: boolean; }>
+  messages: ReadonlyArray<Readonly<Message>>
+  status: ConversationStatus
+
+interface ChatSDKStateAccess (src/types/instance/ChatSDKState.ts)
+  get: () => S
+  select: <Selected>(selector: (state: S) => Selected, listener: (value: Selected) => void, options?: { isEqual?: (left: Selected, right: Selected) => boolean; }) => () => void
+  subscribe: (listener: () => void) => () => void
+
+interface ConnectToHumanAgentItem (src/types/messaging/Messages.ts)
+  agent_available?: { message: string; }
+  agent_message_type?: HumanAgentMessageType
+  agent_unavailable?: { message: string; }
+  message_item_options?: GenericItemMessageOptions
+  message_to_human_agent?: string
+  response_type: MessageResponseTypes
+  streaming_metadata?: ItemStreamingMetadata
+  transfer_info?: ConnectToHumanAgentItemTransferInfo
+  user_defined?: TUserDefinedType
+
+interface ConnectToHumanAgentItemTransferInfo (src/types/messaging/Messages.ts)
+  additional_data?: { [key: string]: string; }
+  summary_message_to_agent?: Array<TextItem<Record<string, unknown>>>
+
+interface ConnectingErrorInfo (src/types/config/ServiceDeskConfig.ts)
+  logInfo?: unknown
+  messageToUser?: string
+  type: ErrorType.CONNECTING
+
+interface ConversationalSearchItem (src/types/messaging/Messages.ts)
+  agent_message_type?: HumanAgentMessageType
+  citations?: Array<ConversationalSearchItemCitation>
+  message_item_options?: GenericItemMessageOptions
+  response_type: MessageResponseTypes
+  search_results?: Array<SearchResult>
+  streaming_metadata?: ItemStreamingMetadata
+  text: string
+  user_defined?: TUserDefinedType
+
+interface ConversationalSearchItemCitation (src/types/messaging/Messages.ts)
+  ranges?: Array<{ start: number; end: number; }>
+  search_result_idx?: number
+  text?: string
+  title?: string
+  url?: string
+
+interface CustomSendMessageOptions (src/types/config/MessagingConfig.ts)
+  busEventSend?: BusEventSend
+  signal: AbortSignal
+  silent: boolean
+
+interface DisconnectedErrorInfo (src/types/config/ServiceDeskConfig.ts)
+  isDisconnected: boolean
+  logInfo?: unknown
+  type: ErrorType.DISCONNECTED
+
+interface EndChatInfo (src/types/config/ServiceDeskConfig.ts)
+  endedByHumanAgent: boolean
+  preEndChatPayload: TPayloadType
+
+interface EventInput (src/types/messaging/Messages.ts)
+  event: TEventInputType
+  message_type: MessageInputType.EVENT
+
+interface EventInputData (src/types/messaging/Messages.ts)
+  name: TNameType
+
+interface FileUploadCapabilities (src/types/instance/FileUploadCapabilities.ts)
+  allowFileUploads: boolean
+  allowMultipleFileUploads: boolean
+  allowedFileUploadTypes: string
+  maxFileSizeBytes?: number
+  maxFiles?: number
+
+interface GenericItemCustomFooterSlotOptions (src/types/messaging/Messages.ts)
+  additional_data?: Record<string, unknown>
+  is_on?: boolean
+  slot_name: string
+
+interface GenericItemMessageFeedbackCategories (src/types/messaging/Messages.ts)
+  negative?: Array<string>
+  positive?: Array<string>
+
+interface GenericItemMessageFeedbackOptions (src/types/messaging/Messages.ts)
+  categories?: Array<string> | GenericItemMessageFeedbackCategories
+  disclaimer?: string
+  disclaimerCheckbox?: string
+  id?: string
+  is_on?: boolean
+  max_length?: number
+  placeholder?: string
+  prompt?: string
+  show_negative_details?: boolean
+  show_positive_details?: boolean
+  show_prompt?: boolean
+  show_text_area?: boolean
+  title?: string
+
+interface GenericItemMessageOptions (src/types/messaging/Messages.ts)
+  custom_footer_slot?: GenericItemCustomFooterSlotOptions
+  feedback?: GenericItemMessageFeedbackOptions
+
+interface GridItem (src/types/messaging/Messages.ts)
+  agent_message_type?: HumanAgentMessageType
+  columns: Array<{ width: string; }>
+  horizontal_alignment?: HorizontalCellAlignment
+  max_width?: WidthOptions
+  message_item_options?: GenericItemMessageOptions
+  response_type: MessageResponseTypes
+  rows: Array<{ cells: { horizontal_alignment?: HorizontalCellAlignment; vertical_alignment?: VerticalCellAlignment; items: GenericItem[]; }[]; }>
+  streaming_metadata?: ItemStreamingMetadata
+  user_defined?: TUserDefinedType
+  vertical_alignment?: VerticalCellAlignment
+
+interface HistoryItem (src/types/messaging/History.ts)
+  message: MessageRequest<import("./Messages").MessageInput> | MessageResponse<Array<import("./Messages").GenericItem<Record<string, unknown>>>>
+  time: string
+
+interface IFrameItem (src/types/messaging/Messages.ts)
+  agent_message_type?: HumanAgentMessageType
+  description?: string
+  display?: IFrameItemDisplayOption
+  image_url?: string
+  message_item_options?: GenericItemMessageOptions
+  response_type: MessageResponseTypes
+  source: string
+  streaming_metadata?: ItemStreamingMetadata
+  title?: string
+  user_defined?: TUserDefinedType
+
+interface InlineErrorItem (src/types/messaging/Messages.ts)
+  agent_message_type?: HumanAgentMessageType
+  debug?: { statusCode?: number; text?: string; info?: Record<string, unknown>; }
+  message_item_options?: GenericItemMessageOptions
+  response_type: MessageResponseTypes
+  streaming_metadata?: ItemStreamingMetadata
+  text?: string
+  user_defined?: TUserDefinedType
+
+interface ItemStreamingMetadata (src/types/messaging/Messages.ts)
+  cancellable?: boolean
+  id: string
+  stream_stopped?: boolean
+
+interface MediaFileAccessibility (src/types/messaging/Messages.ts)
+  subtitle_tracks?: Array<MediaSubtitleTrack>
+  transcript?: MediaTranscript
+
+interface MediaItem (src/types/messaging/Messages.ts)
+  agent_message_type?: HumanAgentMessageType
+  alt_text?: string
+  description?: string
+  dimensions?: MediaItemDimensions
+  file_accessibility?: MediaFileAccessibility
+  message_item_options?: GenericItemMessageOptions
+  response_type: MessageResponseTypes
+  source: string
+  streaming_metadata?: ItemStreamingMetadata
+  title?: string
+  user_defined?: TUserDefinedType
+
+interface MediaItemDimensions (src/types/messaging/Messages.ts)
+  base_height?: number
+
+interface MediaSubtitleTrack (src/types/messaging/Messages.ts)
+  default?: boolean
+  kind?: "subtitles" | "captions" | "descriptions"
+  label: string
+  language: string
+  src: string
+
+interface MediaTranscript (src/types/messaging/Messages.ts)
+  label?: string
+  language?: string
+  text: string
+
+interface MessageInput (src/types/messaging/Messages.ts)
+  agent_message_type?: HumanAgentMessageType
+  display_content?: JSONContent
+  message_type?: MessageInputType
+  structured_data?: StructuredData
+  text?: string
+
+interface MessageItemPanelInfo (src/types/messaging/Messages.ts)
+  ai_enabled?: boolean
+  body?: Array<GenericItem<Record<string, unknown>>>
+  footer?: Array<ButtonItem<Record<string, unknown>>>
+  full_width?: boolean
+  show_animations?: boolean
+  show_frame?: boolean
+  show_header?: boolean
+  title?: string
+
+interface MessageOutput (src/types/messaging/Messages.ts)
+  generic?: TGenericType
+
+interface MessageRequest (src/types/messaging/Messages.ts)
+  context?: unknown
+  history?: MessageRequestHistory
+  id?: string
+  input: TInputType
+  parent_thread_id?: string
+  thread_id?: string
+  ui_state_internal?: MessageUIStateInternal
+
+interface MessageRequestHistory (src/types/messaging/Messages.ts)
+  error_state?: MessageErrorState
+  file_upload_status?: import("@carbon/ai-chat-components/es/components/prompt-line/index.js").FileStatusValue
+  is_choice_request?: boolean
+  is_welcome_request?: boolean
+  label?: string
+  related_message_id?: string
+  silent?: boolean
+  timestamp?: number
+  user_profile?: RequestUserProfile
+
+interface MessageResponse (src/types/messaging/Messages.ts)
+  context?: unknown
+  history?: MessageResponseHistory
+  id?: string
+  message_options?: MessageResponseOptions
+  output: MessageOutput<TGenericType>
+  request_id?: string
+  thread_id?: string
+  ui_state_internal?: MessageUIStateInternal
+
+interface MessageResponseHistory (src/types/messaging/Messages.ts)
+  error_state?: MessageErrorState
+  feedback?: { [feedbackID: string]: MessageHistoryFeedback; }
+  file_upload_status?: import("@carbon/ai-chat-components/es/components/prompt-line/index.js").FileStatusValue
+  silent?: boolean
+  timestamp?: number
+
+interface MessageResponseOptions (src/types/messaging/Messages.ts)
+  chain_of_thought?: Array<ChainOfThoughtStep>
+  reasoning?: ReasoningSteps
+  response_user_profile?: ResponseUserProfile
+
+interface MessageUIStateInternal (src/types/messaging/Messages.ts)
+  agent_availability?: HumanAgentsOnlineStatus
+  agent_no_service_desk?: boolean
+  from_history?: boolean
+
+interface OptionItem (src/types/messaging/Messages.ts)
+  agent_message_type?: HumanAgentMessageType
+  description?: string
+  message_item_options?: GenericItemMessageOptions
+  options: Array<SingleOption>
+  preference?: OptionItemPreference
+  response_type: MessageResponseTypes
+  streaming_metadata?: ItemStreamingMetadata
+  title?: string
+  user_defined?: TUserDefinedType
+
+interface PauseItem (src/types/messaging/Messages.ts)
+  agent_message_type?: HumanAgentMessageType
+  message_item_options?: GenericItemMessageOptions
+  response_type: MessageResponseTypes
+  streaming_metadata?: ItemStreamingMetadata
+  time?: number
+  typing?: boolean
+  user_defined?: TUserDefinedType
+
+interface PersistedHumanAgentState (src/types/state/PersistedHumanAgentState.ts)
+  isConnected: boolean
+  isSuspended: boolean
+  responseUserProfile?: ResponseUserProfile
+  responseUserProfiles: Record<string, ResponseUserProfile>
+  serviceDeskState?: unknown
+
+interface PreviewCardItem (src/types/messaging/Messages.ts)
+  additional_data?: unknown
+  agent_message_type?: HumanAgentMessageType
+  message_item_options?: GenericItemMessageOptions
+  response_type: MessageResponseTypes
+  streaming_metadata?: ItemStreamingMetadata
+  subtitle?: string
+  title?: string
+  user_defined?: TUserDefinedType
+  workspace_id: string
+  workspace_options?: WorkspaceCustomPanelConfigOptions
+
+interface ReasoningStep (src/types/messaging/Messages.ts)
+  content?: string | Array<GenericItem<Record<string, unknown>>>
+  open_state?: ReasoningStepOpenState
+  title: string
+
+interface ReasoningSteps (src/types/messaging/Messages.ts)
+  content?: string | Array<GenericItem<Record<string, unknown>>>
+  open_state?: ReasoningStepOpenState
+  steps?: Array<ReasoningStep>
+
+interface RequestUserProfile (src/types/messaging/Messages.ts)
+  id: string
+  nickname: string
+  profile_picture_url?: string
+
+interface ResponseUserProfile (src/types/messaging/Messages.ts)
+  id: string
+  nickname: string
+  profile_picture_url?: string
+  user_type: UserType
+
+interface SearchResult (src/types/messaging/Messages.ts)
+  body?: string
+
+interface ServiceDesk (src/types/config/ServiceDeskConfig.ts)
+  areAnyAgentsOnline?: (connectMessage: MessageResponse) => Promise<boolean | null>
+  endChat: (info: EndChatInfo<unknown>) => Promise<void>
+  filesSelectedForUpload?: (uploads: FileUpload[]) => void
+  getName?: () => string
+  reconnect?: () => Promise<boolean>
+  screenShareStop?: () => Promise<void>
+  sendMessageToAgent: (message: MessageRequest, messageID: string, additionalData: AdditionalDataToAgent) => Promise<void>
+  startChat: (connectMessage: MessageResponse, startChatOptions: StartChatOptions) => Promise<void>
+  userReadMessages?: () => Promise<void>
+  userTyping?: (isTyping: boolean) => Promise<void>
+
+interface ServiceDeskCallback (src/types/config/ServiceDeskConfig.ts)
+  agentEndedChat: () => Promise<void>
+  agentJoined: (profile: ResponseUserProfile) => Promise<void>
+  agentLeftChat: () => Promise<void>
+  agentReadMessages: () => Promise<void>
+  agentTyping: (isTyping: boolean) => Promise<void>
+  beginTransferToAnotherAgent: (profile?: ResponseUserProfile) => Promise<void>
+  persistedState: () => TPersistedStateType
+  screenShareEnded: () => Promise<void>
+  screenShareRequest: () => Promise<ScreenShareState>
+  sendMessageToUser: (message: MessageResponse | string, agentID?: string) => Promise<void>
+  setErrorStatus: (errorInfo: ServiceDeskErrorInfo) => Promise<void>
+  setFileUploadStatus: (fileID: string, isError?: boolean, errorMessage?: string) => Promise<void>
+  updateAgentAvailability: (availability: AgentAvailability) => Promise<void>
+  updateCapabilities: (capabilities: Partial<ServiceDeskCapabilities>) => void
+  updatePersistedState: (state: DeepPartial<TPersistedStateType>, mergeWithCurrent?: boolean) => void
+
+interface ServiceDeskFactoryParameters (src/types/config/ServiceDeskConfig.ts)
+  callback: ServiceDeskCallback<unknown>
+  instance: I
+  persistedState: unknown
+
+interface SingleOption (src/types/messaging/Messages.ts)
+  label: string
+  selection_display?: SelectionDisplay
+  silent?: boolean
+  value: { input: MessageInput; }
+
+interface StartChatOptions (src/types/config/ServiceDeskConfig.ts)
+  preStartChatPayload: TPayloadType
+
+interface StructuredData (src/types/messaging/Messages.ts)
+  fields?: Array<StructuredField>
+  user_defined?: Record<string, any>
+
+interface StructuredField (src/types/messaging/Messages.ts)
+  id: string
+  label?: string
+  type?: StructuredFieldType
+  value: unknown
+
+interface SystemMessageItem (src/types/messaging/Messages.ts)
+  agent_message_type?: HumanAgentMessageType
+  message_item_options?: GenericItemMessageOptions
+  response_type: MessageResponseTypes.SYSTEM
+  streaming_metadata?: ItemStreamingMetadata
+  title: string
+  user_defined?: TUserDefinedType
+  variant?: SystemMessageVariant
+
+interface TextItem (src/types/messaging/Messages.ts)
+  agent_message_type?: HumanAgentMessageType
+  message_item_options?: GenericItemMessageOptions
+  response_type: MessageResponseTypes
+  streaming_metadata?: ItemStreamingMetadata
+  text?: string
+  user_defined?: TUserDefinedType
+
+interface TypeAndHandler (src/types/instance/EventHandlers.ts)
+  handler: EventBusHandler<BusEvent, I>
+  type: E
+
+interface UserDefinedItem (src/types/messaging/Messages.ts)
+  agent_message_type?: HumanAgentMessageType
+  full_width?: boolean
+  message_item_options?: GenericItemMessageOptions
+  response_type: MessageResponseTypes
+  streaming_metadata?: ItemStreamingMetadata
+  user_defined?: TUserDefinedType
+
+interface UserMessageErrorInfo (src/types/config/ServiceDeskConfig.ts)
+  logInfo?: unknown
+  messageID: string
+  type: ErrorType.USER_MESSAGE
+
+interface WithBodyAndFooter (src/types/messaging/Messages.ts)
+  body?: Array<GenericItem<Record<string, unknown>>>
+  footer?: Array<ButtonItem<Record<string, unknown>>>
+
+interface WithWidthOptions (src/types/messaging/Messages.ts)
+  max_width?: WidthOptions
+
+interface WorkspaceCustomPanelConfigOptions (src/types/instance/apiTypes.ts)
+  additionalData?: unknown
+  preferredLocation?: "start" | "end"
+  title?: string
+  workspaceId?: string
+
+type AudioItem (src/types/messaging/Messages.ts)
+  = MediaItem<TUserDefinedType>
+
+type CardItem (src/types/messaging/Messages.ts)
+  = BaseGenericItem<TUserDefinedType> & WithBodyAndFooter & WithWidthOptions
+
+type ChatSDKEventType (src/types/instance/ChatSDKInstance.ts)
+  = | BusEventType.PRE_SEND | BusEventType.SEND | BusEventType.PRE_RECEIVE | BusEventType.RECEIVE | BusEventType.USER_DEFINED_RESPONSE | BusEventType.STOP_STREAMING // Lifecycle | BusEventType.HISTORY_BEGIN | BusEventType.HISTORY_END | BusEventType.PRE_RESTART_CONVERSATION | BusEventType.RESTART_CONVERSATION // Human agents | BusEventType.HUMAN_AGENT_PRE_RECEIVE | BusEventType.HUMAN_AGENT_RECEIVE | BusEventType.HUMAN_AGENT_PRE_SEND | BusEventType.HUMAN_AGENT_SEND | BusEventType.HUMAN_AGENT_PRE_START_CHAT | BusEventType.HUMAN_AGENT_PRE_END_CHAT | BusEventType.HUMAN_AGENT_END_CHAT | BusEventType.HUMAN_AGENT_ARE_ANY_AGENTS_ONLINE
+
+type ChatSDKHandlers (src/types/instance/ChatSDKInstance.ts)
+  = | TypeAndHandler<ChatSDKInstance, ChatSDKEventType> | TypeAndHandler<ChatSDKInstance, ChatSDKEventType>[]
+
+type ConversationStatus (src/types/instance/ChatSDKState.ts)
+  = 'ready' | 'loading' | 'submitted' | 'streaming' | 'error'
+
+type DateItem (src/types/messaging/Messages.ts)
+  = BaseGenericItem<TUserDefinedType>
+
+type DeepPartial (src/types/utilities/DeepPartial.d.ts)
+  = { [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P]; }
+
+type EventBusHandler (src/types/instance/EventHandlers.ts)
+  = ( event: T, instance: I ) => unknown
+
+type GenericItem (src/types/messaging/Messages.ts)
+  = | TextItem<TUserDefinedType> | OptionItem<TUserDefinedType> | ConnectToHumanAgentItem<TUserDefinedType> | ImageItem<TUserDefinedType> | PauseItem<TUserDefinedType> | UserDefinedItem<TUserDefinedType> | IFrameItem<TUserDefinedType> | VideoItem<TUserDefinedType> | AudioItem<TUserDefinedType> | DateItem<TUserDefinedType> | InlineErrorItem<TUserDefinedType> | CardItem<TUserDefinedType> | CarouselItem<TUserDefinedType> | ButtonItem<TUserDefinedType> | GridItem<TUserDefinedType> | ConversationalSearchItem<TUserDefinedType> | PreviewCardItem<TUserDefinedType> | SystemMessageItem<TUserDefinedType>
+
+type HorizontalCellAlignment (src/types/messaging/Messages.ts)
+  = 'left' | 'center' | 'right'
+
+type ImageItem (src/types/messaging/Messages.ts)
+  = MediaItem<TUserDefinedType>
+
+type Message (src/types/messaging/Messages.ts)
+  = MessageRequest<MessageInput> | MessageRequest<EventInput> | MessageResponse
+
+type ServiceDeskErrorInfo (src/types/config/ServiceDeskConfig.ts)
+  = ConnectingErrorInfo | DisconnectedErrorInfo | UserMessageErrorInfo
+
+type StructuredFieldType (src/types/messaging/Messages.ts)
+  = | 'file' | 'mention' | 'command' // \`string & {}\` widens to any string while keeping the three literals in // autocomplete — a plain \`| string\` would collapse the whole union to \`string\`. | (string & {})
+
+type SystemMessageVariant (src/types/messaging/Messages.ts)
+  = 'default' | 'date' | 'agent'
+
+type UpsertMessageUpdater (src/types/config/MessagingConfig.ts)
+  = ( previous: MessageResponse | undefined ) => Promise<MessageResponse> | MessageResponse
+
+type VerticalCellAlignment (src/types/messaging/Messages.ts)
+  = 'top' | 'center' | 'bottom'
+
+type VideoItem (src/types/messaging/Messages.ts)
+  = MediaItem<TUserDefinedType>
+"
+`;
