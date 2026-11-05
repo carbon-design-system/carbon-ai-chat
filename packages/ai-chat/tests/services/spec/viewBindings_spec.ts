@@ -202,6 +202,7 @@ describe('view handles', () => {
     expect(none).toBe(true);
   });
 
+  // The handles are getters, so a stray assignment fails to compile.
   it('are published only by the shell lifecycle', () => {
     const root = path.resolve(__dirname, '../../../src');
     const walk = (dir: string): string[] =>
@@ -214,9 +215,7 @@ describe('view handles', () => {
       });
     const writers = walk(root)
       .filter((file) =>
-        /\.(mainWindow|appWindow|ariaAnnouncer|inputComponent)\s*=[^=]/.test(
-          fs.readFileSync(file, 'utf8')
-        )
+        /\.setShellHandle\(/.test(fs.readFileSync(file, 'utf8'))
       )
       .map((file) => path.relative(root, file).replaceAll('\\', '/'));
     expect(writers).toEqual(['chat/utils/shellLifecycle.ts']);

@@ -320,9 +320,9 @@ export class ShellLifecycle {
 
   publishHandles() {
     const { viewState } = this;
-    viewState.mainWindow = this.mainWindow;
-    viewState.appWindow = this.appWindow;
-    viewState.ariaAnnouncer = viewState.announcer.announce;
+    viewState.setShellHandle('mainWindow', this.mainWindow);
+    viewState.setShellHandle('appWindow', this.appWindow);
+    viewState.setShellHandle('ariaAnnouncer', viewState.announcer.announce);
     announcerOwners.set(viewState, this);
     this.registered = true;
   }
@@ -463,7 +463,7 @@ export class ShellLifecycle {
   setInputHandle(handle: InputFunctions | null) {
     const { viewState } = this;
     if (handle || viewState.inputComponent === this.inputHandle) {
-      viewState.inputComponent = handle;
+      viewState.setShellHandle('inputComponent', handle);
     }
     this.inputHandle = handle;
   }
@@ -1147,15 +1147,15 @@ export class ShellLifecycle {
     this.moveComposerFocus = false;
     const { viewState } = this;
     if (viewState.mainWindow === this.mainWindow) {
-      viewState.mainWindow = undefined;
+      viewState.setShellHandle('mainWindow', undefined);
     }
     if (viewState.appWindow === this.appWindow) {
-      viewState.appWindow = undefined;
+      viewState.setShellHandle('appWindow', undefined);
     }
     if (announcerOwners.get(viewState) === this) {
       announcerOwners.delete(viewState);
       if (viewState.ariaAnnouncer === viewState.announcer.announce) {
-        viewState.ariaAnnouncer = undefined;
+        viewState.setShellHandle('ariaAnnouncer', undefined);
       }
     }
   }

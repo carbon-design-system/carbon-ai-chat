@@ -25,6 +25,14 @@ interface HumanAgentConfirmation {
   onCancel: () => void;
 }
 
+/** What a connected shell publishes for the view ports. */
+interface ShellHandles {
+  mainWindow?: MainWindowFunctions;
+  appWindow?: HasRequestFocus;
+  ariaAnnouncer?: AriaAnnouncerFunctionType;
+  inputComponent?: InputFunctions | null;
+}
+
 interface ChatViewStateSnapshot {
   readonly serviceManager: ServiceManager;
   readonly intl: IntlShape;
@@ -44,13 +52,34 @@ interface ChatViewStateSnapshot {
 class ChatViewState {
   readonly announcer: AriaAnnouncer;
 
-  // Handles the connected shell publishes while it's connected, and clears on
-  // release. Only `ShellLifecycle` writes them; the view ports read them.
-  mainWindow?: MainWindowFunctions;
-  appWindow?: HasRequestFocus;
-  ariaAnnouncer?: AriaAnnouncerFunctionType;
+  // Handles the connected shell publishes, read by the view ports. They're
+  // read-only here; `ShellLifecycle` writes them through `setShellHandle`.
+  private shellHandles: ShellHandles = {};
+
+  get mainWindow() {
+    return this.shellHandles.mainWindow;
+  }
+
+  get appWindow() {
+    return this.shellHandles.appWindow;
+  }
+
+  get ariaAnnouncer() {
+    return this.shellHandles.ariaAnnouncer;
+  }
+
   /** The input's one handle, while it's rendered. */
-  inputComponent?: InputFunctions | null;
+  get inputComponent() {
+    return this.shellHandles.inputComponent;
+  }
+
+  /** Publishes or clears one shell handle. Only `ShellLifecycle` calls this. */
+  setShellHandle<K extends keyof ShellHandles>(
+    name: K,
+    value: ShellHandles[K]
+  ): void {
+    this.shellHandles[name] = value;
+  }
 
   private snapshot: ChatViewStateSnapshot;
   private listeners = new Set<() => void>();
