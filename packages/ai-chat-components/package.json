@@ -42,7 +42,8 @@
     "scss/**/*",
     "custom-elements.json",
     "package.json",
-    "telemetry.yml"
+    "telemetry.yml",
+    "bin/**/*"
   ],
   "scripts": {
     "build": "npm run clean && node tasks/build.js && node tasks/build-dist.js && npm run custom-elements",
@@ -59,7 +60,8 @@
     "test:react": "jest",
     "test:updateSnapshot": "web-test-runner \"src/{components,globals/__tests__}/**/*.test.ts\" --node-resolve --update-snapshots",
     "test:web-components": "web-test-runner \"src/{components,globals/__tests__}/**/*.test.ts\" --node-resolve",
-    "test:manifest": "node --test tasks/__tests__/*.test.js"
+    "test:manifest": "node --test tasks/__tests__/*.test.js",
+    "test:prefix-build": "node --test tasks/__tests__/prefix-build.test.js"
   },
   "peerDependencies": {
     "react": ">=17.0.0 <20.0.0"
@@ -115,7 +117,8 @@
     "lit": "^3.1.0",
     "lodash-es": "^4.18.1",
     "markdown-it": "^14.3.3",
-    "tslib": "^2.6.3"
+    "tslib": "^2.6.3",
+    "@babel/parser": "^7.29.9"
   },
   "devDependencies": {
     "@babel/core": "^8.0.0",
@@ -176,5 +179,8 @@
   },
   "main": "es/index.js",
   "module": "es/index.js",
-  "types": "es/index.d.ts"
+  "types": "es/index.d.ts",
+  "bin": {
+    "create-ai-chat-components-prefixed-build": "./bin/create-ai-chat-components-prefixed-build.js"
+  }
 }
