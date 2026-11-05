@@ -9,12 +9,16 @@
 
 import { SendWorkflow } from './SendWorkflow';
 import { MessageLoadingManager } from '../../utils/messageServiceUtils';
+import { consoleError } from '../../utils/miscUtils';
 import type { PublicConfig } from '../../../types/config/PublicConfig';
 import { coordinateSend } from './coordinateSend';
 import type { MessagePresentationPort } from './presentationPort';
 import type { MessageRequest } from '../../../types/messaging/Messages';
 import type { MessageSendSource } from '../../../types/events/eventBusTypes';
-import type { SendOptions } from '../../../types/instance/ChatInstance';
+import type {
+  SendOptions,
+  IncreaseOrDecrease,
+} from '../../../types/instance/ChatInstance';
 import actions from '../../store/actions';
 import type { ServiceManager } from '../ServiceManager';
 import { RequestQueue, type RequestToken } from './state/RequestQueue';
@@ -25,6 +29,7 @@ class MessageCoordinator {
   private state = new ConversationState();
   private sendWorkflow?: SendWorkflow;
   private loadingManager?: MessageLoadingManager;
+  private requestGenerations = new Map<string, number>();
   private processedMessageID: string | null = null;
   public timeoutMS: number;
   private requestQueue = new RequestQueue();
@@ -87,6 +92,15 @@ class MessageCoordinator {
     this.processedMessageID = messageID;
   }
 
+  runQueueIfReady() {
+    return this.getSendWorkflow().runQueueIfReady();
+  }
+
+  advanceRequestQueue() {
+    this.clearCurrentRequest();
+    this.runQueueIfReady();
+  }
+
   rejectFinalErrorOnMessage(request: PendingMessageRequest, text?: string) {
     this.getSendWorkflow().rejectFinalErrorOnMessage(request, text);
   }
@@ -95,11 +109,64 @@ class MessageCoordinator {
     this.getSendWorkflow().resolveCancelledMessage(request);
   }
 
-  sendToAssistant(
-    current: PendingMessageRequest,
-    startLoading: (() => void) | null
+  public registerRequestGeneration(
+    requestID: string,
+    restartGeneration: number
   ) {
-    return this.getSendWorkflow().sendToAssistant(current, startLoading);
+    this.requestGenerations.set(requestID, restartGeneration);
+  }
+
+  public isRequestFromPreviousConversation(
+    requestID: string | undefined
+  ): boolean {
+    const restartGeneration = this.requestGenerations.get(requestID);
+    return (
+      restartGeneration !== undefined &&
+      restartGeneration !== this.serviceManager.restartCount
+    );
+  }
+
+  updateIsMessageLoadingCounter(
+    direction: IncreaseOrDecrease,
+    message?: string
+  ): void {
+    const { store } = this.serviceManager;
+
+    if (direction === 'reset') {
+      store.dispatch(actions.resetIsLoadingCounter());
+    } else if (direction === 'increase') {
+      store.dispatch(actions.addIsLoadingCounter(1, message));
+    } else if (direction === 'decrease') {
+      if (store.getState().assistantMessageState.isMessageLoadingCounter <= 0) {
+        return;
+      }
+      store.dispatch(actions.addIsLoadingCounter(-1, message));
+    } else if (!direction && message) {
+      store.dispatch(actions.addIsLoadingCounter(0, message));
+    } else if (direction) {
+      consoleError(
+        `[updateIsMessageLoadingCounter] Invalid direction: ${direction}. Valid values are undefined (with loading message), "reset", "increase" and "decrease".`
+      );
+    }
+  }
+
+  updateIsChatLoadingCounter(direction: string): void {
+    const { store } = this.serviceManager;
+
+    if (direction === 'reset') {
+      store.dispatch(actions.resetIsHydratingCounter());
+    } else if (direction === 'increase') {
+      store.dispatch(actions.addIsHydratingCounter(1));
+    } else if (direction === 'decrease') {
+      if (store.getState().assistantMessageState.isHydratingCounter <= 0) {
+        return;
+      }
+      store.dispatch(actions.addIsHydratingCounter(-1));
+    } else {
+      consoleError(
+        `[updateIsChatLoadingCounter] Invalid direction: ${direction}. Valid values are "reset", "increase" and "decrease".`
+      );
+    }
   }
 
   enqueueRequest(request: PendingMessageRequest) {

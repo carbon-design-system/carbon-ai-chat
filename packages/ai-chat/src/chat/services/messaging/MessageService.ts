@@ -12,7 +12,7 @@
  *
  * High-level flow:
  * 1) `send()` queues a `MessageRequest` and kicks off the queue.
- * 2) `runQueueIfReady()` pulls the next pending request, fires PRE_SEND/SEND events, starts loading/timeout timers,
+ * 2) `SendWorkflow.runQueueIfReady()` pulls the next pending request, fires PRE_SEND/SEND events, starts loading/timeout timers,
  *    and delegates the actual send to `customSendMessage` via `OutboundMessageCoordinator`.
  * 3) OutboundCoordinator clones/updates the message in store, calls `customSendMessage` (sync or async), and on success
  *    calls back into `processSuccess`; on error/cancel it resolves/rejects and advances the queue.
@@ -23,19 +23,12 @@
  *
  * Responsibilities:
  * - MessageCoordinator: queue membership and pending request lookup.
- * - MessageService: queue execution, PRE_SEND/SEND events, cancellation entrypoints.
- * - SendWorkflow: transport, success/error settlement, and loading state through the coordinator.
+ * - SendWorkflow: queue execution, PRE_SEND/SEND events, loading and settlement.
+ * - MessageService: queue entry, controller and stream tracking, cancellation entrypoints.
  * - OutboundMessageCoordinator: send lifecycle (store updates, calling customSendMessage, resolving/rejecting/canceling).
  * - InboundStreamingCoordinator: streaming id tracking (response_id/item_id), finalization, cancellation cleanup.
  */
-import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
-import { OutgoingMessageService } from './outbound/OutgoingMessageService';
 import actions from '../../store/actions';
-import { deepFreeze } from '../../utils/lang/objectUtils';
-import {
-  getLastAssistantResponseWithContext,
-  THREAD_ID_MAIN,
-} from '../../utils/messageUtils';
 import {
   ResolvablePromise,
   resolvablePromise,
@@ -50,19 +43,12 @@ import {
   MessageInputType,
   MessageRequest,
   MessageResponse,
-  MessageResponseTypes,
 } from '../../../types/messaging/Messages';
 import { SendOptions } from '../../../types/instance/ChatInstance';
-import {
-  BusEventType,
-  MessageSendSource,
-} from '../../../types/events/eventBusTypes';
+import { MessageSendSource } from '../../../types/events/eventBusTypes';
 import { PublicConfig } from '../../../types/config/PublicConfig';
 import { OnErrorType } from '../../../types/config/ErrorConfig';
 import { CancellationReason } from '../../../types/config/MessagingConfig';
-
-// The maximum amount of time we allow to pass before the loading indicator becomes visible.
-const MS_MAX_SILENT_LOADING = 4000;
 
 /**
  * Extra data about a message response that we want included in the track event when the response is received.
@@ -152,8 +138,6 @@ export interface PendingMessageRequest extends SendMessageRequest {
 }
 
 class MessageService {
-  private outgoing = new OutgoingMessageService();
-
   private nonCancellableResponseIDs = new Set<string>();
 
   /**
@@ -172,9 +156,6 @@ class MessageService {
    */
   private messageAbortControllers = new Map<string, AbortController>();
 
-  // A first reply can arrive after cancellation, so retain IDs for the instance's lifetime.
-  private requestGenerations = new Map<string, number>();
-
   get messageLoadingManager() {
     return this.serviceManager.messageCoordinator.messageLoadingManager;
   }
@@ -191,21 +172,20 @@ class MessageService {
     const current = this.serviceManager.messageCoordinator.getCurrentRequest();
     return current && !current.isProcessed ? current.message.id : undefined;
   }
-
   public registerRequestGeneration(
     requestID: string,
     restartGeneration: number
   ) {
-    this.requestGenerations.set(requestID, restartGeneration);
+    this.serviceManager.messageCoordinator.registerRequestGeneration(
+      requestID,
+      restartGeneration
+    );
   }
-
   public isRequestFromPreviousConversation(
     requestID: string | undefined
   ): boolean {
-    const restartGeneration = this.requestGenerations.get(requestID);
-    return (
-      restartGeneration !== undefined &&
-      restartGeneration !== this.serviceManager.restartCount
+    return this.serviceManager.messageCoordinator.isRequestFromPreviousConversation(
+      requestID
     );
   }
 
@@ -218,122 +198,6 @@ class MessageService {
 
     this.serviceManager.messageCoordinator.configureMessageTimeout(
       publicConfig
-    );
-  }
-
-  /**
-   * If there are items in the send queue, will grab the zero index item and send it to the assistant back-end via
-   * this.sendToAssistant.
-   */
-  private async runQueueIfReady() {
-    const current = this.serviceManager.messageCoordinator.takeNextRequest();
-    if (!current) {
-      return;
-    }
-    this.serviceManager.messageCoordinator.requestStarted(
-      current.message.id,
-      current.generation,
-      current.message
-    );
-    const { message } = current;
-    current.timeFirstRequest = Date.now();
-
-    if (message.input.message_type === MessageInputType.EVENT) {
-      this.serviceManager.messageCoordinator.sendToAssistant(current, null);
-      return;
-    }
-
-    const { startLoading, originalUserText } =
-      this.prepareCurrentRequest(current);
-
-    if (current.isProcessed) {
-      // This message was canceled.
-      return;
-    }
-
-    await this.firePreSendEvent(current);
-
-    if (current.isProcessed) {
-      // This message was canceled.
-      return;
-    }
-
-    this.commitOutgoingMessage(current, originalUserText);
-
-    await this.fireSendEvent(current);
-
-    this.serviceManager.messageCoordinator.sendToAssistant(
-      current,
-      startLoading
-    );
-  }
-
-  private prepareCurrentRequest(current: PendingMessageRequest) {
-    const { store } = this.serviceManager;
-    const state = store.getState();
-    const { public: publicConfig } = state.config;
-    const { message } = current;
-
-    const lastResponse = getLastAssistantResponseWithContext(state);
-    if (lastResponse) {
-      message.thread_id = THREAD_ID_MAIN;
-    }
-
-    const loadingIndicatorTimeout =
-      !publicConfig.messaging?.messageLoadingIndicatorTimeoutSecs &&
-      publicConfig.messaging?.messageLoadingIndicatorTimeoutSecs !== 0
-        ? MS_MAX_SILENT_LOADING
-        : publicConfig.messaging.messageLoadingIndicatorTimeoutSecs * 1000;
-
-    const startLoading = this.buildStartLoading(
-      message,
-      loadingIndicatorTimeout
-    );
-    const originalUserText = this.outgoing.originalText(message);
-
-    return { startLoading, originalUserText };
-  }
-
-  private async firePreSendEvent(current: PendingMessageRequest) {
-    const { message, source } = current;
-    await this.serviceManager.eventBus.fire(
-      {
-        type: BusEventType.PRE_SEND,
-        data: message,
-        source,
-      },
-      this.serviceManager.instance
-    );
-  }
-
-  private commitOutgoingMessage(
-    current: PendingMessageRequest,
-    originalUserText: string
-  ) {
-    const { message } = current;
-    const { localMessage } = this.outgoing.prepareLocalItem(
-      message,
-      originalUserText,
-      current.localMessageID === undefined ? uuid() : current.localMessageID,
-      MessageResponseTypes.TEXT
-    );
-
-    // If history.silent is set to true, we don't add the message to the redux store as we do not want to show it, so
-    // we don't need to update it here either.
-    if (!message.history.silent) {
-      this.serviceManager.store.dispatch(
-        actions.updateLocalMessageItem(localMessage)
-      );
-      this.serviceManager.store.dispatch(actions.updateMessage(message));
-    }
-    deepFreeze(message);
-  }
-
-  private async fireSendEvent(current: PendingMessageRequest) {
-    const { message, source } = current;
-    await this.serviceManager.eventBus.fire(
-      { type: BusEventType.SEND, data: message, source },
-      this.serviceManager.instance
     );
   }
 
@@ -387,47 +251,8 @@ class MessageService {
   private clearCurrentQueueItem() {
     this.serviceManager.messageCoordinator.clearCurrentRequest();
   }
-
-  /**
-   * Builds a function that starts the loading manager and timeout handling for a message.
-   */
-  private buildStartLoading(
-    message: MessageRequest<any>,
-    loadingIndicatorTimeoutMS?: number
-  ): (() => void) | null {
-    const loadingTimeout = loadingIndicatorTimeoutMS || 0;
-    if (!loadingTimeout && !this.timeoutMS) {
-      return null;
-    }
-
-    return () =>
-      this.messageLoadingManager.start(
-        () => {
-          this.serviceManager.store.dispatch(actions.addIsLoadingCounter(1));
-        },
-        (didExceedMaxLoading: boolean) => {
-          if (didExceedMaxLoading) {
-            this.serviceManager.store.dispatch(actions.addIsLoadingCounter(-1));
-          }
-        },
-        () => {
-          this.cancelMessageRequestByID(
-            message.id,
-            true,
-            CancellationReason.TIMEOUT
-          );
-        },
-        loadingTimeout,
-        this.timeoutMS
-      );
-  }
-
-  /**
-   * Move to next step in queue.
-   */
-  public moveToNextQueueItem() {
-    this.clearCurrentQueueItem();
-    this.runQueueIfReady();
+  private moveToNextQueueItem() {
+    this.serviceManager.messageCoordinator.advanceRequestQueue();
   }
 
   /**
@@ -452,7 +277,7 @@ class MessageService {
       message.input.message_type || MessageInputType.TEXT;
 
     // Create a Promise that the caller can wait on that we'll resolve if/when the message is finally successfully sent
-    // to the assistant. This gets resolved or rejected in this.processSuccess or this.processError respectively.
+    // to the assistant. This gets resolved or rejected by the core success or error workflow.
     const sendMessagePromise = resolvablePromise<void>();
 
     // Add our new message to the queue and kick off the queue.
@@ -463,7 +288,7 @@ class MessageService {
       sendMessagePromise,
       requestOptions
     );
-    this.runQueueIfReady();
+    this.serviceManager.messageCoordinator.runQueueIfReady();
 
     // Return the promise that is either successfully resolve or rejected in this.processSuccess or this.processError.
     return sendMessagePromise;
