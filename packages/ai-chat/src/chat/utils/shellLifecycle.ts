@@ -100,10 +100,7 @@ const cssVariableOverrideStylesheet =
   typeof CSSStyleSheet !== 'undefined' ? new CSSStyleSheet() : null;
 const SCROLLBAR_WIDTH_ATTR = 'data-cds-aichat-widget-id';
 let scrollbarWidthCounter = 0;
-const announcerOwners = new WeakMap<
-  ChatViewState['serviceManager'],
-  ShellLifecycle
->();
+const announcerOwners = new WeakMap<ChatViewState, ShellLifecycle>();
 const WIDTH_BREAKPOINT_STANDARD = 'cds-aichat--standard-width';
 const WIDTH_BREAKPOINT_NARROW = 'cds-aichat--narrow-width';
 const WIDTH_BREAKPOINT_WIDE = 'cds-aichat--wide-width';
@@ -322,11 +319,11 @@ export class ShellLifecycle {
   }
 
   publishHandles() {
-    const manager = this.viewState.serviceManager;
-    manager.mainWindow = this.mainWindow;
-    manager.appWindow = this.appWindow;
-    manager.ariaAnnouncer = this.viewState.announcer.announce;
-    announcerOwners.set(manager, this);
+    const { viewState } = this;
+    viewState.mainWindow = this.mainWindow;
+    viewState.appWindow = this.appWindow;
+    viewState.ariaAnnouncer = viewState.announcer.announce;
+    announcerOwners.set(viewState, this);
     this.registered = true;
   }
 
@@ -464,9 +461,9 @@ export class ShellLifecycle {
     );
   };
   setInputHandle(handle: InputFunctions | null) {
-    const manager = this.viewState.serviceManager;
-    if (handle || manager.inputComponent === this.inputHandle) {
-      manager.inputComponent = handle;
+    const { viewState } = this;
+    if (handle || viewState.inputComponent === this.inputHandle) {
+      viewState.inputComponent = handle;
     }
     this.inputHandle = handle;
   }
@@ -1137,6 +1134,7 @@ export class ShellLifecycle {
    */
   releaseForFailure() {
     this.releaseRegistrations();
+    this.setInputHandle(null);
   }
 
   private releaseRegistrations() {
@@ -1147,23 +1145,31 @@ export class ShellLifecycle {
     }
     this.focusFrame = undefined;
     this.moveComposerFocus = false;
-    const manager = this.viewState.serviceManager;
-    if (manager.mainWindow === this.mainWindow) {
-      manager.mainWindow = undefined;
+    const { viewState } = this;
+    if (viewState.mainWindow === this.mainWindow) {
+      viewState.mainWindow = undefined;
     }
-    if (manager.appWindow === this.appWindow) {
-      manager.appWindow = undefined;
+    if (viewState.appWindow === this.appWindow) {
+      viewState.appWindow = undefined;
     }
-    if (announcerOwners.get(manager) === this) {
-      announcerOwners.delete(manager);
-      if (manager.ariaAnnouncer === this.viewState.announcer.announce) {
-        manager.ariaAnnouncer = undefined;
+    if (announcerOwners.get(viewState) === this) {
+      announcerOwners.delete(viewState);
+      if (viewState.ariaAnnouncer === viewState.announcer.announce) {
+        viewState.ariaAnnouncer = undefined;
       }
     }
-    this.setInputHandle(null);
   }
 
-  disconnect() {
+  /**
+   * Stops this owner's work and gives up its handles. With `keepInput`, the
+   * input's handle stays published: React hid the content, but the input is
+   * still rendered, so the public input API keeps reaching it.
+   */
+  disconnect(keepInput = false) {
+    // A hidden shell kept its input handle; retiring it later must drop it.
+    if (!keepInput) {
+      this.setInputHandle(null);
+    }
     if (!this.connected && !this.registered) {
       return;
     }

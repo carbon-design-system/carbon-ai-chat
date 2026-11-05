@@ -16,6 +16,12 @@ import type { ServiceManager } from '../../../src/shared/services/ServiceManager
 import { WriteableElementName } from '../../../src/types/instance/WriteableElements';
 import actions from '../../../src/shared/store/actions';
 import { makeConfigStore } from '../../test_helpers';
+import {
+  InputViewPort,
+  ViewConnection,
+} from '../../../src/shared/services/viewBindings';
+import type { MessagePresentationPort } from '../../../src/shared/services/messaging/presentationPort';
+import { idleInstancePort } from '../../services/helpers/viewBindings';
 
 function setup(visible = true) {
   const store = makeConfigStore({ input: { isVisible: visible } });
@@ -35,15 +41,28 @@ function setup(visible = true) {
       return true;
     }),
   };
+  let input: typeof inputComponent | null = inputComponent;
+  const view = new ViewConnection();
+  view.attach({
+    messaging: {} as MessagePresentationPort,
+    humanAgent: { requestFocus: () => undefined },
+    instance: {
+      ...idleInstancePort(),
+      input: () => input as unknown as InputViewPort,
+    },
+  });
   const manager = {
     store,
-    inputComponent,
+    view,
     writeableElements: {
       [WriteableElementName.CUSTOM_PROMPT_LINE]: host,
     },
   } as unknown as ServiceManager;
   outside.focus();
-  return { manager, store, host, builtIn, outside, inputComponent };
+  const setInput = (next: typeof inputComponent | null) => {
+    input = next;
+  };
+  return { manager, store, host, builtIn, outside, inputComponent, setInput };
 }
 
 beforeEach(() => {
@@ -60,13 +79,13 @@ afterEach(() => {
 });
 
 it('delegates to the built-in composer when custom content is absent', () => {
-  const { manager, builtIn, inputComponent } = setup();
+  const { manager, builtIn, inputComponent, setInput } = setup();
   expect(composerHasFocus(manager)).toBe(false);
   expect(requestComposerFocus(manager)).toBe(true);
   expect(document.activeElement).toBe(builtIn);
   expect(composerHasFocus(manager)).toBe(true);
   expect(inputComponent.requestFocus).toHaveBeenCalledTimes(1);
-  manager.inputComponent = null;
+  setInput(null);
   expect(composerHasFocus(manager)).toBe(false);
   expect(requestComposerFocus(manager)).toBe(false);
 });

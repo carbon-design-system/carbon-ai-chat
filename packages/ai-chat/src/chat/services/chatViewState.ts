@@ -12,6 +12,10 @@ import { subscribeToIntl } from '../../shared/utils/intlUtils';
 import type { ServiceManager } from '../../shared/services/ServiceManager';
 import type { IntlShape } from '../../shared/utils/i18n';
 import type { Dimension } from '../../types/utilities/Dimension';
+import type { HasRequestFocus } from '../../types/utilities/HasRequestFocus';
+import type { MainWindowFunctions } from '../../types/utilities/MainWindowFunctions';
+import type { AriaAnnouncerFunctionType } from './ariaAnnouncer';
+import type { InputFunctions } from '../utils/inputTypes';
 
 /** A response card's own confirmation, shown in the end-chat panel. */
 interface HumanAgentConfirmation {
@@ -39,6 +43,15 @@ interface ChatViewStateSnapshot {
  */
 class ChatViewState {
   readonly announcer: AriaAnnouncer;
+
+  // Handles the connected shell publishes while it's connected, and clears on
+  // release. Only `ShellLifecycle` writes them; the view ports read them.
+  mainWindow?: MainWindowFunctions;
+  appWindow?: HasRequestFocus;
+  ariaAnnouncer?: AriaAnnouncerFunctionType;
+  /** The input's one handle, while it's rendered. */
+  inputComponent?: InputFunctions | null;
+
   private snapshot: ChatViewStateSnapshot;
   private listeners = new Set<() => void>();
   private unsubscribeIntl: (() => void) | null = null;

@@ -207,7 +207,7 @@ export async function initServiceManagerAndInstance(options: {
 
     doAutoScroll: (options: AutoScrollOptions = {}) => {
       debugLog('Called instance.doAutoScroll', options);
-      serviceManager.mainWindow?.doAutoScroll?.(options);
+      serviceManager.view.current?.instance.doAutoScroll(options);
     },
 
     updateInputFieldVisibility: (isVisible: boolean) => {
@@ -313,7 +313,7 @@ export async function initServiceManagerAndInstance(options: {
 
     scrollToMessage: (messageID: string, animate?: boolean) => {
       debugLog('Called instance.scrollToMessage', messageID, animate);
-      serviceManager.mainWindow?.doScrollToMessage(messageID, animate);
+      serviceManager.view.current?.instance.scrollToMessage(messageID, animate);
     },
 
     updateCatastrophicErrorPanel: (
@@ -441,7 +441,7 @@ export async function initServiceManagerAndInstance(options: {
 
     requestFocus: () => {
       debugLog('Called instance.requestFocus');
-      return serviceManager.appWindow?.requestFocus() === true;
+      return serviceManager.view.current?.instance.requestFocus() === true;
     },
 
     serviceDesk: {

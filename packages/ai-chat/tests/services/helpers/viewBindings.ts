@@ -8,16 +8,32 @@
  */
 
 import {
+  InstanceViewPort,
   ViewBindings,
   ViewConnection,
 } from '../../../src/shared/services/viewBindings';
 import type { MessagePresentationPort } from '../../../src/shared/services/messaging/presentationPort';
 
+/** An instance port whose view members do nothing, like a view not yet drawn. */
+export function idleInstancePort(): InstanceViewPort {
+  return {
+    changeView: async () => {
+      throw new Error('This test view does not change views.');
+    },
+    requestFocus: () => false,
+    doAutoScroll: () => undefined,
+    scrollToMessage: () => undefined,
+    input: () => null,
+    hasCustomPromptLine: () => false,
+  };
+}
+
 /**
  * Attaches a view with this messaging port to a real or stub manager, as the
  * container does at boot, and returns the manager. A stub without a view
- * connection gets one. Attach before building a coordinator, so it starts in
- * mounted mode the way a coordinator given a port at construction did.
+ * connection gets one. Attaching before building a coordinator skips its
+ * headless observer, as a port given at construction did; production builds
+ * the coordinator first, so its observer always exists.
  */
 export function withMessagingView<T extends object>(
   manager: T,
@@ -31,11 +47,7 @@ export function withMessagingView<T extends object>(
   target.view.attach({
     messaging,
     humanAgent: { requestFocus: () => undefined },
-    instance: {
-      changeView: async () => {
-        throw new Error('This test view does not change views.');
-      },
-    },
+    instance: idleInstancePort(),
     ...bindings,
   });
   return manager;

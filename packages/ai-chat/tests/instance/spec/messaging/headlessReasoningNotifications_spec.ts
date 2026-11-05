@@ -22,6 +22,7 @@ import {
   setupAfterEach,
   setupBeforeEach,
 } from '../../../test_helpers';
+import { idleInstancePort } from '../../../services/helpers/viewBindings';
 
 const response = (id: string, value: string): MessageResponse => ({
   id,
@@ -274,7 +275,7 @@ describe('switching between mounted and headless delivery', () => {
       const detach = manager.view.attach({
         messaging: {} as any,
         humanAgent: { requestFocus: () => undefined },
-        instance: { changeView: async () => undefined as any },
+        instance: idleInstancePort(),
       });
       const localID = () =>
         store.getState().allMessagesByID.switch &&

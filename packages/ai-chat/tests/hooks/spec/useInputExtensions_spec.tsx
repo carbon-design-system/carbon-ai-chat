@@ -26,10 +26,7 @@ import { ChatContext } from '../../../src/chat/contexts/ChatContext';
 import { ChatViewState } from '../../../src/chat/services/chatViewState';
 import { AutocompleteContent } from '../../../src/chat/services/autocompleteContent';
 import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
-import type {
-  InputFunctions,
-  InputProps,
-} from '../../../src/chat/utils/inputTypes';
+import type { InputProps } from '../../../src/chat/utils/inputTypes';
 import { createIntl } from '../../../src/shared/utils/i18n';
 import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
 import type {
@@ -92,16 +89,11 @@ async function flush(view: ChatInput) {
 async function fixture(input: InputConfig) {
   await loadBuildCarbonExtensions();
   const store = makeConfigStore({ input });
-  let currentHandle: InputFunctions | null = null;
   const errorOccurred = jest.fn();
   const manager = {
     store,
     intl: createIntl({ locale: 'en', messages: store.getState().languagePack }),
     actions: { errorOccurred },
-    setInputFunctionsRef: (handle: InputFunctions | null) => {
-      currentHandle = handle;
-    },
-    getInputFunctionsRef: () => currentHandle,
   } as unknown as ServiceManager;
   const state = new ChatViewState(manager, { width: 800, height: 600 });
   state.connect();

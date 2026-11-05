@@ -48,26 +48,7 @@ const rules: FolderRule[] = [
  * Each known violation and the issue whose work removes it. The list only
  * shrinks: a new violation fails, and so does an entry that no longer applies.
  */
-const folderExceptions: BoundaryException[] = [
-  {
-    from: 'src/shared/services/InputActionsService.ts',
-    to: 'src/chat/utils/customPromptLine.ts',
-    owner: '#2694',
-    reason: 'asks the view whether a custom prompt line replaces the input',
-  },
-  {
-    from: 'src/shared/services/ServiceManager.ts',
-    to: 'src/chat/services/ariaAnnouncer.ts',
-    owner: '#2694',
-    reason: 'holds the shell announcer',
-  },
-  {
-    from: 'src/shared/services/ServiceManager.ts',
-    to: 'src/chat/utils/inputTypes.ts',
-    owner: '#2694',
-    reason: 'holds two input handles',
-  },
-];
+const folderExceptions: BoundaryException[] = [];
 
 // Each root folder lists its own exceptions, so a path from a new folder fails
 // even where another folder's path to the same edge is listed. The SDK's own
@@ -146,27 +127,6 @@ const viewHandleExceptions: Array<{
   owner: string;
   reason: string;
 }> = [
-  {
-    reference:
-      'src/shared/services/ServiceManager.ts: AriaAnnouncerFunctionType',
-    owner: '#2694',
-    reason: 'the shell announcer',
-  },
-  {
-    reference: 'src/shared/services/ServiceManager.ts: HasRequestFocus',
-    owner: '#2694',
-    reason: 'appWindow',
-  },
-  {
-    reference: 'src/shared/services/ServiceManager.ts: InputFunctions',
-    owner: '#2694',
-    reason: 'the two input handles',
-  },
-  {
-    reference: 'src/shared/services/ServiceManager.ts: MainWindowFunctions',
-    owner: '#2694',
-    reason: 'mainWindow',
-  },
   {
     reference: 'src/shared/services/ServiceManager.ts: HTMLElement',
     owner: '#1732',

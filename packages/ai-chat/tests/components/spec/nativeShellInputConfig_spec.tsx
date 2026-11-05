@@ -115,9 +115,8 @@ function framesAsMicrotasks() {
 }
 
 /** The service manager the shell itself registers handles on. */
-function shellManager(shell: ChatShell) {
-  return (shell as unknown as { viewState: ChatViewState }).viewState
-    .serviceManager;
+function shellViewState(shell: ChatShell) {
+  return (shell as unknown as { viewState: ChatViewState }).viewState;
 }
 
 // The first wrapper boot in a file loads the boot modules on demand. Load
@@ -387,7 +386,7 @@ describe.each(wrappers)('input configuration through %s', (_name, Wrapper) => {
       const input = f.builtIn();
       expect(input).not.toBeNull();
       act(() => {
-        shellManager(f.shell).inputComponent.requestFocus();
+        shellViewState(f.shell).inputComponent.requestFocus();
       });
       await waitFor(() =>
         expect(composedWithin(input, deepActiveElement())).toBe(true)

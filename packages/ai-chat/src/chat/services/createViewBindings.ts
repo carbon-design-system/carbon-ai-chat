@@ -8,7 +8,7 @@
  */
 
 import actions from '../../shared/store/actions';
-import type { ServiceManager } from '../../shared/services/ServiceManager';
+import type { ChatViewState } from './chatViewState';
 import type { ViewBindings } from '../../shared/services/viewBindings';
 import { MessagePresentationAdapter } from './MessagePresentationAdapter';
 import { ViewService } from './ViewService';
@@ -19,9 +19,14 @@ import {
 
 /**
  * Builds the prebuilt interface's implementation of every view port. The
- * container attaches the result when it boots a mount.
+ * container attaches the result when it boots a mount. Members backed by the
+ * shell's handles (focus, scroll, announcements, the input) read them from
+ * this mount's view state on each call, so they do nothing before the shell
+ * connects or after it releases. Store-backed members, such as changeView,
+ * work as soon as the bindings attach.
  */
-function createViewBindings(serviceManager: ServiceManager): ViewBindings {
+function createViewBindings(viewState: ChatViewState): ViewBindings {
+  const { serviceManager } = viewState;
   const { store } = serviceManager;
   const viewService = new ViewService(serviceManager);
   return {
@@ -32,9 +37,9 @@ function createViewBindings(serviceManager: ServiceManager): ViewBindings {
         store.dispatch(actions.setResponsePanelIsOpen(true));
       },
       getMessagesScrollBottom: () =>
-        serviceManager.mainWindow?.getMessagesScrollBottom(),
+        viewState.mainWindow?.getMessagesScrollBottom(),
       restoreMessagesScroll: (scrollBottom) =>
-        serviceManager.mainWindow?.doAutoScroll({
+        viewState.mainWindow?.doAutoScroll({
           scrollToBottom: scrollBottom,
         }),
       announceSendFailure: () =>
@@ -52,9 +57,9 @@ function createViewBindings(serviceManager: ServiceManager): ViewBindings {
       hasCustomPromptLine: () => hasCustomPromptLine(serviceManager),
       requestComposerFocus: () => requestComposerFocus(serviceManager),
       announceSending: () => {
-        if (serviceManager.ariaAnnouncer) {
+        if (viewState.ariaAnnouncer) {
           const { languagePack } = store.getState();
-          serviceManager.ariaAnnouncer(languagePack.input_sendingMessage);
+          viewState.ariaAnnouncer(languagePack.input_sendingMessage);
         }
       },
       isHomeScreenOpen: () =>
@@ -67,10 +72,16 @@ function createViewBindings(serviceManager: ServiceManager): ViewBindings {
     }),
     humanAgent: {
       requestFocus: () => {
-        serviceManager.appWindow?.requestFocus();
+        viewState.appWindow?.requestFocus();
       },
     },
     instance: {
+      requestFocus: () => viewState.appWindow?.requestFocus() === true,
+      doAutoScroll: (options) => viewState.mainWindow?.doAutoScroll?.(options),
+      scrollToMessage: (messageID, animate) =>
+        viewState.mainWindow?.doScrollToMessage(messageID, animate),
+      input: () => viewState.inputComponent ?? null,
+      hasCustomPromptLine: () => hasCustomPromptLine(serviceManager),
       changeView: (newView, reason, tryHydrating, forceViewChange) =>
         viewService.changeView(newView, reason, tryHydrating, forceViewChange),
     },

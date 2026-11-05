@@ -9,7 +9,6 @@
 
 import type { PromptLineElement } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
 import type { InputFunctions } from './inputTypes';
-import type { ServiceManager } from '../../shared/services/ServiceManager';
 
 type InputImperativeSurface = Pick<
   PromptLineElement,
@@ -64,24 +63,4 @@ function createInputImperativeHandle(
   };
 }
 
-function registerInputImperativeHandle(
-  serviceManager: Pick<
-    ServiceManager,
-    'getInputFunctionsRef' | 'setInputFunctionsRef'
-  >,
-  inputFunctions: InputFunctions
-): () => void {
-  serviceManager.setInputFunctionsRef(inputFunctions);
-  let released = false;
-  return () => {
-    if (released) {
-      return;
-    }
-    released = true;
-    if (serviceManager.getInputFunctionsRef?.() === inputFunctions) {
-      serviceManager.setInputFunctionsRef(null);
-    }
-  };
-}
-
-export { createInputImperativeHandle, registerInputImperativeHandle };
+export { createInputImperativeHandle };

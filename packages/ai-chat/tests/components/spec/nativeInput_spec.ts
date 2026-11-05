@@ -88,10 +88,6 @@ async function fixture(
     store,
     intl: createIntl({ locale: 'en', messages: store.getState().languagePack }),
     actions: { errorOccurred },
-    setInputFunctionsRef: jest.fn((handle) => {
-      currentHandle = handle;
-    }),
-    getInputFunctionsRef: () => currentHandle,
   } as unknown as ServiceManager;
   const state = new ChatViewState(manager, { width: 800, height: 600 });
   state.connect();
@@ -107,6 +103,14 @@ async function fixture(
   owner.connect();
   owners.add(owner);
   const view = document.createElement('cds-aichat-chat-input');
+  // The shell publishes whatever handle this event carries.
+  view.addEventListener(
+    'cds-aichat-input-handle-change',
+    (event: CustomEvent<InputFunctions | null>) => {
+      currentHandle = event.detail;
+    }
+  );
+  const published = () => currentHandle;
   const onSendInput = jest.fn();
   const inputProps: InputProps = {
     disableInput: false,
@@ -137,6 +141,7 @@ async function fixture(
     provider,
     prompt,
     control,
+    published,
     store,
     state,
     manager,
@@ -282,9 +287,9 @@ it('uses the same value guard for Enter, configured errors, lengths and transfer
 });
 
 it('retains one handle across visibility changes and makes old handles inert after reconnect', async () => {
-  const { view, provider, prompt, manager } = await fixture();
+  const { view, provider, prompt, published } = await fixture();
   const handle = view.inputFunctions;
-  expect(manager.getInputFunctionsRef()).toBe(handle);
+  expect(published()).toBe(handle);
   const set = jest.spyOn(prompt, 'setContent');
   handle.setContent('draft');
   expect(set).toHaveBeenCalledWith('draft');
@@ -300,7 +305,7 @@ it('retains one handle across visibility changes and makes old handles inert aft
   expect(view.inputFunctions).toBe(handle);
   view.remove();
   await Promise.resolve();
-  expect(manager.getInputFunctionsRef()).toBeNull();
+  expect(published()).toBeNull();
   provider.shadowRoot.append(view);
   await flush(view);
   expect(view.inputFunctions).not.toBe(handle);
@@ -986,7 +991,7 @@ it('does not update the input view for an unrelated store notification with no v
 });
 
 it('notifies current handle changes for real lifetimes while same-task moves retain their handle', async () => {
-  const { view, provider, manager } = await fixture();
+  const { view, provider, published } = await fixture();
   const initial = view.inputFunctions;
   const notifications: (InputFunctions | null)[] = [];
   view.addEventListener(
@@ -1006,7 +1011,7 @@ it('notifies current handle changes for real lifetimes while same-task moves ret
   view.remove();
   await Promise.resolve();
   expect(view.inputFunctions).toBeUndefined();
-  expect(manager.getInputFunctionsRef()).toBeNull();
+  expect(published()).toBeNull();
   expect(notifications).toEqual([null]);
   provider.shadowRoot.append(view);
   const replacement = view.inputFunctions;
@@ -1015,7 +1020,7 @@ it('notifies current handle changes for real lifetimes while same-task moves ret
   expect(notifications).toEqual([null, replacement]);
   expect(initial.requestFocus()).toBe(false);
   await flush(view);
-  expect(manager.getInputFunctionsRef()).toBe(replacement);
+  expect(published()).toBe(replacement);
   expect(replacement.requestFocus()).toBe(true);
 });
 
