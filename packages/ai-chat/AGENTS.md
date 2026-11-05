@@ -44,9 +44,23 @@ Load only what you need:
   - `services/` — view-owned classes with explicit cleanup: `ChatViewState`, extension hosts, the announcer, the messaging presentation adapter, and the human-agent view callbacks.
   - `utils/` — view helpers, including DOM, focus, and shell lifecycle code.
   - `components/` and `components-legacy/` — follow [component placement](../../references/code-patterns.md#component-placement) when adding or moving UI. Private Lit views that read chat state extend `components/shared/NativeChatView.ts`.
+- [src/sdk/](src/sdk/) — the headless SDK. Internal in 1.x: `index.ts` is its future public entry, and no package entry point exports it.
 - [src/react/](src/react/) — public React wrapper components re-exported from the package root.
 - [src/web-components/](src/web-components/) — Lit hosts. They own startup, config updates, live regions, and extension hosts. Put new startup work here, not in React.
 - [src/types/](src/types/) — public type surface. Anything exported through `aiChatEntry.tsx` is public API; treat edits with semver discipline. TypeDoc output ships as the public docs site.
+
+## Source boundaries
+
+A test fails when a folder imports outside its rules, through type-only imports too:
+
+| Folder          | May import                                                |
+| --------------- | --------------------------------------------------------- |
+| `src/shared/`   | `src/shared/`, `src/types/`                               |
+| `src/sdk/`      | `src/sdk/`, `src/shared/`, `src/types/`                   |
+| `src/types/`    | `src/types/`, plus types and JSON data from `src/shared/` |
+| everything else | anything                                                  |
+
+Nothing `src/shared/` or `src/sdk/` reaches may import React, React DOM, Lit, or a module that registers a custom element. So a new service that works without a view goes in `src/shared/services/`. One that touches the DOM or `ChatViewState` goes in `src/chat/services/`. The rules, their exceptions, and the issue that removes each exception are in [the boundary spec](tests/architecture/spec/sourceBoundaries_spec.ts). [The SDK surface snapshot](tests/architecture/spec/sdkSurface_spec.ts) lists every type and field the SDK entry reaches, so a change to it shows up in review.
 
 ## Build, test, lint
 
