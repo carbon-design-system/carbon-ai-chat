@@ -95,11 +95,11 @@ export interface ChatSDKInstance {
    *
    * @example Listen for received messages
    * ```ts
-   * import { BusEventType } from "@carbon/ai-chat";
+   * import { BusEventType, type BusEventReceive } from "@carbon/ai-chat";
    *
    * instance.on({
    *   type: BusEventType.RECEIVE,
-   *   handler: (event) => console.log(event.data),
+   *   handler: (event) => console.log((event as BusEventReceive).data.id),
    * });
    * ```
    */
@@ -114,10 +114,11 @@ export interface ChatSDKInstance {
    *
    * @example Remove a previously registered handler
    * ```ts
-   * import { BusEventType } from "@carbon/ai-chat";
+   * import { BusEventType, type BusEvent, type BusEventReceive } from "@carbon/ai-chat";
    *
    * // off requires the same handler reference passed to on.
-   * const onReceive = (event) => console.log(event.data);
+   * const onReceive = (event: BusEvent) =>
+   *   console.log((event as BusEventReceive).data.id);
    * instance.on({ type: BusEventType.RECEIVE, handler: onReceive });
    * instance.off({ type: BusEventType.RECEIVE, handler: onReceive });
    * ```

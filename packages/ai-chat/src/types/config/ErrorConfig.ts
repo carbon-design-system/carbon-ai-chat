@@ -52,6 +52,13 @@ export enum OnErrorType {
  */
 export interface OnErrorData extends ChatSDKErrorData {
   /**
+   * An extra blob of data associated with the error. This may be a stack trace for thrown errors. For a
+   * {@link OnErrorType.RENDER} report about an upserted item the chat can't draw, it names the item and the fields
+   * it's missing.
+   */
+  otherData?: unknown;
+
+  /**
    * If the error is of the severity that requires a whole restart of Carbon AI Chat.
    */
   catastrophicErrorType?: boolean;

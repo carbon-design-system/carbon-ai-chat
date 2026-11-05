@@ -15,7 +15,8 @@ import type { MessageState, UpsertMessageUpdater } from './MessagingConfig';
  * so a prebuilt chat has all of these too.
  *
  * {@link ChatSDKInstanceMessaging.upsertMessage} writes every assistant message, streamed or not.
- * The older `addMessage` and `addMessageChunk` stay on {@link ChatInstanceMessaging}.
+ * The older {@link ChatInstanceMessaging.addMessage} and {@link ChatInstanceMessaging.addMessageChunk}
+ * stay on {@link ChatInstanceMessaging}.
  *
  * A `createChatSDK` function that starts a conversation with no interface arrives with the
  * `@carbon/ai-chat/sdk` entry point in 2.0.0.
@@ -87,28 +88,26 @@ export interface ChatSDKInstanceMessaging {
   ) => Promise<void>;
 
   /**
-   * Removes the messages with the given IDs from the chat view.
+   * Removes the messages with the given IDs from the conversation.
    */
   removeMessages: (messageIDs: string[]) => Promise<void>;
 
   /**
-   * Clears the current conversation. This will trigger a restart of the conversation but will not start a new
-   * conversation (hydration). It will also clear any loading indicators UNLESS you have set
-   * {@link PublicConfigMessaging.messageLoadingIndicatorTimeoutSecs} to 0.
+   * Clears the current conversation without starting a new one, so no welcome message or history is
+   * loaded.
    */
   clearConversation: () => Promise<void>;
 
   /**
-   * Inserts the given messages into the chat window as part of the chat history. This will fire the history:begin
-   * and history:end events.
+   * Inserts the given messages into the conversation as history. Fires the `history:begin` and
+   * `history:end` events.
    */
   insertHistory: (messages: HistoryItem[]) => Promise<void>;
 
   /**
-   * Restarts the conversation with the assistant. This does not make any changes to a conversation with a human agent.
-   * This will clear all the current assistant messages from the main assistant view and cancel any outstanding
-   * messages. It will also clear any loading indicators UNLESS you have set
-   * {@link PublicConfigMessaging.messageLoadingIndicatorTimeoutSecs} to 0.
+   * Restarts the conversation with the assistant. Clears the current assistant messages, cancels any
+   * outstanding messages, and clears the assistant session, so the next message starts a new one. A
+   * conversation with a human agent is unchanged.
    */
   restartConversation: () => Promise<void>;
 }

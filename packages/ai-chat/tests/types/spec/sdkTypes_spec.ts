@@ -60,27 +60,43 @@ it.each(fixtures.map((file) => [path.basename(file), file]))(
   }
 );
 
+const checker = program.getTypeChecker();
+
+/** Reads a `*Probe` type alias that a fixture exports. */
+function probe(fixture: string, name: string) {
+  const source = program.getSourceFile(path.join(fixtureRoot, fixture))!;
+  const symbol = checker
+    .getExportsOfModule(checker.getSymbolAtLocation(source)!)
+    .find((candidate) => candidate.name === name)!;
+  return checker.getDeclaredTypeOfSymbol(symbol);
+}
+
 it('keeps PublicConfig unassignable to ChatSDKConfig', () => {
-  const checker = program.getTypeChecker();
-  const source = program.getSourceFile(
-    path.join(fixtureRoot, 'sdkConfig.fixture.ts')
-  )!;
-  const probe = (name: string) => {
-    const symbol = checker
-      .getExportsOfModule(checker.getSymbolAtLocation(source)!)
-      .find((candidate) => candidate.name === name)!;
-    return checker.getDeclaredTypeOfSymbol(symbol);
-  };
-  const publicConfig = probe('PublicConfigProbe');
+  const config = (name: string) => probe('sdkConfig.fixture.ts', name);
+  const publicConfig = config('PublicConfigProbe');
   // Its callbacks may use view members the SDK cannot supply.
   expect(
-    checker.isTypeAssignableTo(publicConfig, probe('ChatSDKConfigProbe'))
+    checker.isTypeAssignableTo(publicConfig, config('ChatSDKConfigProbe'))
   ).toBe(false);
   // Only the callback instance type blocks it: bound to ChatInstance, the full config fits.
   expect(
     checker.isTypeAssignableTo(
       publicConfig,
-      probe('ChatSDKConfigForChatInstanceProbe')
+      config('ChatSDKConfigForChatInstanceProbe')
     )
+  ).toBe(true);
+});
+
+it('rejects a handler typed for the prebuilt chat as an SDK handler', () => {
+  const instance = (name: string) => probe('sdkInstance.fixture.ts', name);
+  const handlers = instance('ChatSDKHandlersProbe');
+  expect(
+    checker.isTypeAssignableTo(
+      instance('PrebuiltReceiveHandlerProbe'),
+      handlers
+    )
+  ).toBe(false);
+  expect(
+    checker.isTypeAssignableTo(instance('SDKReceiveHandlerProbe'), handlers)
   ).toBe(true);
 });

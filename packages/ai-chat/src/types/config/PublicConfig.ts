@@ -8,7 +8,11 @@
  */
 
 import { HomeScreenConfig } from './HomeScreenConfig';
-import type { ServiceDeskPublicConfig } from './ServiceDeskConfig';
+import type {
+  ServiceDesk,
+  ServiceDeskFactoryParameters,
+  ServiceDeskPublicConfig,
+} from './ServiceDeskConfig';
 import type { ChatInstance } from '../instance/ChatInstance';
 import type { ChatSDKConfig } from './ChatSDKConfig';
 import { LauncherConfig } from './LauncherConfig';
@@ -71,6 +75,11 @@ export interface PublicConfig extends Omit<
   disableCustomElementMobileEnhancements?: boolean;
 
   /**
+   * Add a bunch of noisy console.log messages!
+   */
+  debug?: boolean;
+
+  /**
    * Expose internal serviceManager on ChatInstance for testing purposes.
    * This should only be used in test environments.
    *
@@ -90,6 +99,22 @@ export interface PublicConfig extends Omit<
   aiEnabled?: boolean;
 
   /**
+   * This is a factory for producing custom implementations of service desks. If this value is set, then this will
+   * be used to create an instance of a {@link ServiceDesk} when the user attempts to connect to an agent.
+   *
+   * If it is changed in the middle of a conversation (you should obviously avoid this) the conversation with the
+   * human agent will be disconnected.
+   *
+   * This factory is compared by reference. Provide a stable reference (for example
+   * a module-level function or a memoized `useCallback`); a new function identity
+   * on every render is treated as a change and, while an agent chat is active, tears
+   * down and rebuilds the service desk connection.
+   */
+  serviceDeskFactory?: (
+    parameters: ServiceDeskFactoryParameters
+  ) => Promise<ServiceDesk>;
+
+  /**
    * Any public config to apply to service desks.
    */
   serviceDesk?: ServiceDeskPublicConfig;
@@ -98,6 +123,17 @@ export interface PublicConfig extends Omit<
    * If the Carbon AI Chat should grab focus if the chat is open on page load.
    */
   shouldTakeFocusIfOpensAutomatically?: boolean;
+
+  /**
+   * An optional namespace that can be added to the Carbon AI Chat that must be 30 characters or under. This value is
+   * intended to enable multiple instances of the Carbon AI Chat to be used on the same page. The namespace for this web
+   * chat. This value is used to generate a value to append to anything unique (id, session keys, etc) to allow
+   * multiple Carbon AI Chats on the same page.
+   *
+   * Note: this value is used in the aria region label for the Carbon AI Chat. This means this value will be read out loud
+   * by users using a screen reader.
+   */
+  namespace?: string;
 
   /**
    * Indicates if Carbon AI Chat should sanitize HTML from the assistant.
@@ -131,6 +167,11 @@ export interface PublicConfig extends Omit<
    * Config options for controlling messaging.
    */
   messaging?: PublicConfigMessaging;
+
+  /**
+   * Sets the chat into a read only mode for displaying old conversations.
+   */
+  isReadonly?: boolean;
 
   /**
    * Allows for feedback to persist in all messages, not just the latest message.
