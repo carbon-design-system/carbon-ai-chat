@@ -190,7 +190,7 @@ export const unsubscribe: () => void = sdk.state.select(
 
 // The prebuilt chat reads the wider state through the same primitive.
 export const prebuiltState: PublicChatState = chat.state.get();
-export const prebuiltStateAsSdk: ChatSDKState = prebuiltState;
+export const prebuiltStateAsSdk: ChatSDKState = chat.state.get();
 export const prebuiltStateAccess: ChatSDKStateAccess<PublicChatState> =
   chat.state;
 export const isMainWindowOpen = chat.state.get().viewState.mainWindow;
