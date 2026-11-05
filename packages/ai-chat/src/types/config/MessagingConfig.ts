@@ -22,6 +22,7 @@ import type { ChatSDKInstanceMessaging } from './ChatSDKInstanceMessaging';
  * {@link COMPLETE}.
  *
  * @category Messaging
+ * @category SDK
  * @experimental
  */
 export enum MessageState {
@@ -59,6 +60,7 @@ export enum MessageState {
  *   first upsert of a new id.
  * @returns The {@link MessageResponse} to store, optionally as a Promise.
  * @category Messaging
+ * @category SDK
  * @experimental
  */
 export type UpsertMessageUpdater = (
@@ -131,6 +133,7 @@ export interface AddMessageOptions {
 
 /**
  * @category Messaging
+ * @category SDK
  */
 export interface CustomSendMessageOptions {
   /**

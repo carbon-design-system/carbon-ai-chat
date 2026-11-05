@@ -271,6 +271,7 @@ export interface DefaultCustomPanelConfigOptions {
  * Options supported by the workspace custom panel implementation.
  *
  * @category Instance
+ * @category SDK
  */
 export interface WorkspaceCustomPanelConfigOptions {
   /**
