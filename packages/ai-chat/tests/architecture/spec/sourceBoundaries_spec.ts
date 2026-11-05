@@ -34,7 +34,8 @@ const rules: FolderRule[] = [
   },
   {
     // Public types may name a shared type or read shared JSON data. Shared
-    // code reaches only `types/`, so this can't lead into view code.
+    // code may import only shared and types, so this leads into view code
+    // only through one of shared's listed exceptions.
     folder: 'src/types/',
     mayImport: [
       'src/types/',
@@ -92,60 +93,76 @@ const folderExceptions: BoundaryException[] = [
   },
 ];
 
+// Each root folder lists its own exceptions, so a path from a new folder fails
+// even where another folder's path to the same edge is listed. The SDK's own
+// types reach these edges: ChatSDKInstance -> eventBusTypes -> PublicChatState
+// -> AppState -> AppConfig -> PublicConfig, and ChatSDKConfig -> ServiceDeskConfig.
 const frameworkExceptions: BoundaryException[] = [
+  'src/shared/',
+  'src/sdk/',
+].flatMap((folder) => [
   {
+    folder,
     from: 'src/types/config/HeaderConfig.ts',
     to: '../ai-chat-components/src/react/toolbar.tsx',
     owner: '#1831',
     reason: 'shared state holds PublicConfig until it takes ChatSDKConfig',
   },
   {
+    folder,
     from: 'src/types/config/InputConfig.ts',
     to: '../ai-chat-components/src/components/prompt-line/index.ts',
     owner: '#1831',
     reason: 'shared state holds PublicConfig until it takes ChatSDKConfig',
   },
   {
+    folder,
     from: 'src/types/config/MarkdownConfig.ts',
     to: '../ai-chat-components/src/components/markdown/index.ts',
     owner: '#1831',
     reason: 'markdownConfig moves to the view partition',
   },
   {
+    folder,
     from: 'src/types/config/MarkdownConfig.ts',
     to: 'react',
     owner: '#1831',
     reason: 'markdownConfig moves to the view partition',
   },
   {
+    folder,
     from: 'src/types/config/PublicConfig.ts',
     to: '../ai-chat-components/src/components/markdown/index.ts',
     owner: '#1831',
     reason: 'shared state holds PublicConfig until it takes ChatSDKConfig',
   },
   {
+    folder,
     from: 'src/types/config/ServiceDeskConfig.ts',
     to: '../ai-chat-components/src/components/prompt-line/src/types.ts',
     owner: '#1732',
     reason: "FileUpload's module also types the autocomplete's React parts",
   },
-];
+]);
 
 /** View objects and view handles that conversation services must not hold. */
 const viewHandleTypes = new Set([
   'AriaAnnouncerFunctionType',
+  'EventTarget',
   'ChatViewState',
   'Document',
   'Element',
   'HasRequestFocus',
   'HTMLDivElement',
   'HTMLElement',
+  'HTMLInputElement',
   'InputFunctions',
   'MainWindowFunctions',
   'Node',
   'ShadowRoot',
   'ViewService',
   'WriteableElements',
+  'Window',
 ]);
 
 const viewHandleExceptions: Array<{
@@ -236,7 +253,11 @@ const relative = (file: string) =>
 const files = sourceFiles(path.join(root, 'src')).map(relative);
 const read = (file: string) => fs.readFileSync(path.join(root, file), 'utf8');
 const keys = (list: BoundaryException[]) =>
-  list.map(({ from, to }) => `${from} -> ${to}`).sort();
+  list
+    .map(({ folder, from, to }) =>
+      folder ? `${folder}: ${from} -> ${to}` : `${from} -> ${to}`
+    )
+    .sort();
 const base = new SourceGraph(root);
 
 function check(graph = base) {
@@ -265,9 +286,10 @@ it('keeps frameworks and element registration out of what shared and sdk code re
   expect(current.frameworks).toEqual(keys(frameworkExceptions));
 });
 
-it('keeps view handles out of conversation services', () => {
-  const services = files.filter((file) =>
-    file.startsWith('src/shared/services/')
+it('keeps view handles out of conversation services and the SDK', () => {
+  const services = files.filter(
+    (file) =>
+      file.startsWith('src/shared/services/') || file.startsWith('src/sdk/')
   );
   expect([...typeReferences(read, services, viewHandleTypes)].sort()).toEqual(
     viewHandleExceptions.map(({ reference }) => reference).sort()
@@ -297,7 +319,9 @@ describe('planted imports', () => {
       '@lit/reactive-element',
     ],
   ])('fails shared code that imports a framework: %s', (line, target) => {
-    expect(plant(shared, line).frameworks).toContain(`${shared} -> ${target}`);
+    expect(plant(shared, line).frameworks).toContain(
+      `src/shared/: ${shared} -> ${target}`
+    );
   });
 
   it('fails shared code that loads an element-registering module, even as a type', () => {
@@ -306,7 +330,7 @@ describe('planted imports', () => {
       "import type { CDSAIChatMarkdown } from '@carbon/ai-chat-components/es/components/markdown/index.js';"
     );
     expect(result.frameworks).toContain(
-      `${shared} -> ../ai-chat-components/src/components/markdown/index.ts`
+      `src/shared/: ${shared} -> ../ai-chat-components/src/components/markdown/index.ts`
     );
   });
 
@@ -342,17 +366,78 @@ describe('planted imports', () => {
   it('fails the SDK entry that reaches a framework or view code', () => {
     const sdk = 'src/sdk/index.ts';
     expect(plant(sdk, "import 'react-dom/client';").frameworks).toContain(
-      `${sdk} -> react-dom/client`
+      `src/sdk/: ${sdk} -> react-dom/client`
     );
     expect(
       plant(sdk, "import type { AppShell } from '../chat/AppShell';").folders
     ).toContain(`${sdk} -> src/chat/AppShell.tsx`);
   });
 
+  it.each([
+    [
+      "import 'use-sync-external-store/shim/index.js';",
+      'use-sync-external-store/shim/index.js',
+    ],
+    [
+      "import '@carbon/web-components/es/components/button/index.js';",
+      '@carbon/web-components/es/components/button/index.js',
+    ],
+    ["const react = require('react');", 'react'],
+    ['/// <reference types="react" />', 'react'],
+  ])(
+    'fails shared code that reaches a framework another way: %s',
+    (line, target) => {
+      expect(plant(shared, line).frameworks).toContain(
+        `src/shared/: ${shared} -> ${target}`
+      );
+    }
+  );
+
+  it('fails the custom-prefix build of an element-registering module', () => {
+    const result = plant(
+      shared,
+      "import '@carbon/ai-chat-components/es-custom/components/markdown/index.js';"
+    );
+    expect(result.frameworks).toContain(
+      `src/shared/: ${shared} -> ../ai-chat-components/src/components/markdown/index.ts`
+    );
+  });
+
+  it('fails a framework-free file that registers an element itself, even through an alias', () => {
+    const result = plant(
+      shared,
+      "const registry = customElements;\nregistry.define('x-planted', class extends HTMLElement {});"
+    );
+    expect(result.frameworks).toContain(
+      `src/shared/: ${shared} -> customElements`
+    );
+  });
+
+  it('fails an import that leaves the package outside the components source', () => {
+    const result = plant(
+      shared,
+      "import '../../../../ai-chat-components/package.json';"
+    );
+    expect(result.folders).toContain(
+      `${shared} -> ../ai-chat-components/package.json`
+    );
+  });
+
+  it('counts a parenthesized dynamic import as a runtime load', () => {
+    const types = 'src/types/config/CornersType.ts';
+    const result = plant(
+      types,
+      "export const load = () => import(('../../shared/utils/constants'));"
+    );
+    expect(result.folders).toContain(
+      `${types} -> src/shared/utils/constants.ts`
+    );
+  });
+
   it('fails a framework that shared code reaches through a type', () => {
     const types = 'src/types/config/CornersType.ts';
     expect(
       plant(types, "import type { TemplateResult } from 'lit';").frameworks
-    ).toContain(`${types} -> lit`);
+    ).toContain(`src/shared/: ${types} -> lit`);
   });
 });
