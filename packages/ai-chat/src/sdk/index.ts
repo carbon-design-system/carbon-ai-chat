@@ -9,7 +9,7 @@
 
 /**
  * The headless SDK's entry. It's internal in 1.x: no package entry point
- * exports it, and `@carbon/ai-chat/sdk` publishes it in 2.0.0 (#1834). Until
+ * exports it, and `@carbon/ai-chat/sdk` publishes it in a 2.x minor release (#1834). Until
  * `createChatSDK` lands (#1732), it re-exports the SDK types that the root
  * entry already exports, so the boundary and surface checks have a root.
  */
