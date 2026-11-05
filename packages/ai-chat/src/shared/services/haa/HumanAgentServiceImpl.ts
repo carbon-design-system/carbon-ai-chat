@@ -879,6 +879,14 @@ class HumanAgentServiceImpl implements HumanAgentService {
     );
   }
 
+  /** Asks the attached view, if any, to move focus into the chat on the next task. */
+  private requestViewFocus() {
+    const view = this.serviceManager.view?.current;
+    if (view) {
+      setTimeout(() => view.humanAgent.requestFocus());
+    }
+  }
+
   /**
    * This is called when an agent fails to join a chat after a given period of time.
    */
@@ -972,7 +980,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
         // If the user was previously connected to an agent, we need to see if we can reconnect the user to the agent.
         try {
           store.dispatch(setIsReconnecting(true));
-          setTimeout(this.serviceManager?.appWindow?.requestFocus);
+          this.requestViewFocus();
 
           // Let the service desk do whatever it needs to do to reconnect.
           didReconnect = await this.serviceDesk.reconnect();
@@ -989,7 +997,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
         return;
       }
 
-      setTimeout(this.serviceManager?.appWindow?.requestFocus);
+      this.requestViewFocus();
 
       if (!didReconnect) {
         // If we didn't reconnected, then just end the chat.

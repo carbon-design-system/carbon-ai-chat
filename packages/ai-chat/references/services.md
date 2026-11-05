@@ -41,7 +41,7 @@ Put state transformations in reducers. Put pure utilities that conversation code
 
 ## Who starts services
 
-[`cds-aichat-container`](../src/web-components/cds-aichat-container/cds-aichat-container.ts) starts them, for every host. React starts nothing. The container calls [`initServiceManagerAndInstance`](../src/chat/utils/chatBoot.ts), runs the host application's `onBeforeRender`, then lets the renderer show the app. **A Lit element reads the chat's view state, which holds the manager, from the context in [chat-view-state-context.ts](../src/web-components/shared/chat-view-state-context.ts)**, never from a singleton. The value is `undefined` before startup and after detach.
+[`cds-aichat-container`](../src/web-components/cds-aichat-container/cds-aichat-container.ts) starts them, for every host. React starts nothing. The container calls [`initServiceManagerAndInstance`](../src/chat/utils/chatBoot.ts), runs the host application's `onBeforeRender`, then lets the renderer show the app. Right after it creates `ChatViewState`, it attaches the view's ports from [`createViewBindings`](../src/chat/services/createViewBindings.ts); release detaches them. **Conversation services reach the view only through `serviceManager.view.current`**, which is `undefined` with no view attached, so each view call there must do nothing without one. **A Lit element reads the chat's view state, which holds the manager, from the context in [chat-view-state-context.ts](../src/web-components/shared/chat-view-state-context.ts)**, never from a singleton. The value is `undefined` before startup and after detach.
 
 ## Wiring & teardown
 

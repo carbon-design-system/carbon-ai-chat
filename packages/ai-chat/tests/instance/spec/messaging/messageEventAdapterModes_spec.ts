@@ -35,6 +35,8 @@ it.each([true, false])(
     let core = manager.messageCoordinator;
     if (!withAdapter) {
       cleanup();
+      // The boot coordinator goes headless once cleanup detaches the view; retire it.
+      manager.messageCoordinator.disposeReasoningObserver();
       core = new MessageCoordinator(manager);
       manager.messageCoordinator = core;
     }
@@ -98,6 +100,8 @@ it.each([true, false])(
     let core = manager.messageCoordinator;
     if (!withAdapter) {
       cleanup();
+      // The boot coordinator goes headless once cleanup detaches the view; retire it.
+      manager.messageCoordinator.disposeReasoningObserver();
       core = new MessageCoordinator(manager);
       manager.messageCoordinator = core;
     }

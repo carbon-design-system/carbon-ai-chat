@@ -30,8 +30,8 @@ import { PublicStateService } from './PublicStateService';
 import { MessageCoordinator } from './messaging/MessageCoordinator';
 import { SlotEventService } from './messaging/presentation/SlotEventService';
 import { StreamAnnouncerService } from './messaging/presentation/StreamAnnouncerService';
-import { ViewService } from '../../chat/services/ViewService';
 import { HasRequestFocus } from '../../types/utilities/HasRequestFocus';
+import { ViewConnection } from './viewBindings';
 import type { InputFunctions } from '../../chat/utils/inputTypes';
 
 interface UserDefinedElementRegistryItem {
@@ -99,9 +99,10 @@ class ServiceManager {
   messageCoordinator: MessageCoordinator;
 
   /**
-   * Service that manages view transitions and fires view-change events.
+   * The mounted view's bindings, if a view is attached. Conversation code
+   * reaches the view only through them, looked up on each call.
    */
-  viewService: ViewService;
+  readonly view = new ViewConnection();
 
   /**
    * The optional custom element for rendering provided in the publicConfig.
