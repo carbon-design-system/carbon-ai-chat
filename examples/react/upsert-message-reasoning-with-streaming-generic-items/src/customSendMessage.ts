@@ -268,7 +268,7 @@ async function runScenario(instance: ChatInstance, signal?: AbortSignal) {
 
 function sendWelcome(instance: ChatInstance) {
   // Deliver the static welcome through upsertMessage too: a brand-new COMPLETE
-  // insert under a fresh messageID fires `receive` once, matching addMessage.
+  // insert under a fresh messageID fires `receive` once.
   // The post-back button kicks off the scenario when clicked.
   return instance.messaging.upsertMessage(
     crypto.randomUUID(),
