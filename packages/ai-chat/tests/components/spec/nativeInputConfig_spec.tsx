@@ -22,10 +22,7 @@ import { ChatContext } from '../../../src/chat/contexts/ChatContext';
 import { ChatViewState } from '../../../src/chat/services/chatViewState';
 import { AutocompleteContent } from '../../../src/chat/services/autocompleteContent';
 import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
-import type {
-  InputFunctions,
-  InputProps,
-} from '../../../src/chat/utils/inputTypes';
+import type { InputProps } from '../../../src/chat/utils/inputTypes';
 import type { InputConfig } from '../../../src/types/config/InputConfig';
 import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
 import { createIntl } from '../../../src/shared/utils/i18n';
@@ -69,16 +66,11 @@ async function fixture(
 ) {
   const store = makeConfigStore({ input });
   prepare?.(store);
-  let currentHandle: InputFunctions | null = null;
   const errorOccurred = jest.fn();
   const manager = {
     store,
     intl: createIntl({ locale: 'en', messages: store.getState().languagePack }),
     actions: { errorOccurred },
-    setInputFunctionsRef: jest.fn((handle) => {
-      currentHandle = handle;
-    }),
-    getInputFunctionsRef: () => currentHandle,
   } as unknown as ServiceManager;
   const state = new ChatViewState(manager, { width: 800, height: 600 });
   state.connect();

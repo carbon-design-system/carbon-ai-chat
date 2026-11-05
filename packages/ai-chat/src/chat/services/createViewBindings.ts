@@ -19,9 +19,11 @@ import {
 
 /**
  * Builds the prebuilt interface's implementation of every view port. The
- * container attaches the result when it boots a mount. Each port reads the
- * handles the shell publishes to this mount's view state on each call, so a
- * call before the shell connects or after it releases does nothing.
+ * container attaches the result when it boots a mount. Members backed by the
+ * shell's handles (focus, scroll, announcements, the input) read them from
+ * this mount's view state on each call, so they do nothing before the shell
+ * connects or after it releases. Store-backed members, such as changeView,
+ * work as soon as the bindings attach.
  */
 function createViewBindings(viewState: ChatViewState): ViewBindings {
   const { serviceManager } = viewState;

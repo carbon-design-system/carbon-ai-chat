@@ -185,9 +185,7 @@ it('keeps core runtime imports and capabilities independent of the view', () => 
     )
   ).toEqual([]);
   const viewRights = new Set([
-    'mainWindow',
-    'inputComponent',
-    'ariaAnnouncer',
+    'view',
     'slotEventService',
     'streamAnnouncerService',
   ]);
@@ -199,7 +197,11 @@ it('keeps core runtime imports and capabilities independent of the view', () => 
       viewRights
     )
   );
-  expect(issues).toEqual([]);
+  // Only these owners look up the attached view, once per call.
+  expect([...new Set(issues.map((issue) => relative(issue)))].sort()).toEqual([
+    messaging + 'HeadlessReasoningObserver.ts: view',
+    messaging + 'MessageCoordinator.ts: view',
+  ]);
   // Only runtime imports create another entry owner; mixed/type-only imports are erased.
   for (const file of allFiles.filter((f) => !f.endsWith('.d.ts'))) {
     const text = ts.transpileModule(get(relative(file)).text, {

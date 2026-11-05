@@ -31,8 +31,9 @@ export function idleInstancePort(): InstanceViewPort {
 /**
  * Attaches a view with this messaging port to a real or stub manager, as the
  * container does at boot, and returns the manager. A stub without a view
- * connection gets one. Attach before building a coordinator, so it starts in
- * mounted mode the way a coordinator given a port at construction did.
+ * connection gets one. Attaching before building a coordinator skips its
+ * headless observer, as a port given at construction did; production builds
+ * the coordinator first, so its observer always exists.
  */
 export function withMessagingView<T extends object>(
   manager: T,
