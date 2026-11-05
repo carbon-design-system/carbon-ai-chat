@@ -21,7 +21,7 @@ import {
   resolveChoiceText,
 } from '../../../utils/messageUtils';
 import { consoleError } from '../../../utils/miscUtils';
-import actions from '../../../store/actions';
+import { setMessageOptionSelectedFromView } from '../../../utils/messageMetadataCommands';
 import { MessageSendSource } from '../../../../types/events/eventBusTypes';
 import { ButtonItem } from '../../../../types/messaging/Messages';
 import { BaseButtonItemComponent } from './BaseButtonItemComponent';
@@ -61,21 +61,16 @@ function ButtonItemPostBackComponent({
     );
 
     requestFocus();
-    serviceManager.store.dispatch(
-      actions.messageSetOptionSelected(ui_state.id, messageRequest)
+    setMessageOptionSelectedFromView(
+      serviceManager,
+      ui_state.id,
+      messageRequest
     );
     serviceManager.actions.sendWithCatch(
       messageRequest,
       MessageSendSource.POST_BACK_BUTTON
     );
-  }, [
-    messageItem,
-    fullMessageID,
-    requestFocus,
-    serviceManager.store,
-    serviceManager.actions,
-    ui_state.id,
-  ]);
+  }, [messageItem, fullMessageID, requestFocus, serviceManager, ui_state.id]);
 
   if (!controlText) {
     consoleError(

@@ -12,6 +12,7 @@ import { fireEvent, render, waitFor } from '@testing-library/react';
 import { ButtonItemPostBackComponent } from '../../../src/chat/components/responseTypes/button/ButtonItemPostBackComponent';
 import { ServiceManagerContext } from '../../../src/chat/contexts/ServiceManagerContext';
 import { StoreProvider } from '../../../src/chat/providers/StoreProvider';
+import { MessageCoordinator } from '../../../src/chat/services/messaging/MessageCoordinator';
 import { makeConfigStore } from '../../test_helpers';
 import {
   ButtonItemType,
@@ -42,6 +43,14 @@ function renderPostBack(overrides: Record<string, unknown> = {}) {
     store: { dispatch },
     actions: { sendWithCatch },
   } as any;
+  serviceManager.messageCoordinator = new MessageCoordinator(serviceManager, {
+    hasCustomPromptLine: () => false,
+    announceSending: () => undefined,
+    requestComposerFocus: () => undefined,
+    closeHomeScreenIfOpen: () => undefined,
+    closeResponsePanelIfOpen: () => undefined,
+    closeHomeScreen: () => undefined,
+  });
   const localMessageItem = {
     item: {
       response_type: MessageResponseTypes.BUTTON,
