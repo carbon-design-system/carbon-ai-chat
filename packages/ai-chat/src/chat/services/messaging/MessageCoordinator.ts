@@ -7,6 +7,11 @@
  *  @license
  */
 
+import { coordinateSend } from './coordinateSend';
+import type { MessagePresentationPort } from './presentationPort';
+import type { MessageRequest } from '../../../types/messaging/Messages';
+import type { MessageSendSource } from '../../../types/events/eventBusTypes';
+import type { SendOptions } from '../../../types/instance/ChatInstance';
 import actions from '../../store/actions';
 import type { ServiceManager } from '../ServiceManager';
 import { ConversationState } from './state/ConversationState';
@@ -14,7 +19,38 @@ import { ConversationState } from './state/ConversationState';
 class MessageCoordinator {
   private state = new ConversationState();
 
-  constructor(private serviceManager: ServiceManager) {}
+  constructor(
+    private serviceManager: ServiceManager,
+    private presentation?: MessagePresentationPort
+  ) {}
+
+  /**
+   * Sends the given message to the assistant. Fires `pre:send` then `send` on
+   * the event bus before delegating to `customSendMessage`. Resolves when
+   * `customSendMessage` completes or when the turn is stopped; rejects when
+   * `customSendMessage` throws, when the send path fails terminally, or when a
+   * file upload is still in progress.
+   *
+   * @param message The message to send.
+   * @param source The source of the message.
+   * @param options Options for the sent message.
+   * @param [ignoreHydration=false]
+   */
+  send(
+    message: MessageRequest | string,
+    source: MessageSendSource,
+    options: SendOptions = {},
+    ignoreHydration = false
+  ) {
+    return coordinateSend(
+      this.serviceManager,
+      this.presentation,
+      message,
+      source,
+      options,
+      ignoreHydration
+    );
+  }
 
   get currentGeneration() {
     return this.state.currentGeneration;

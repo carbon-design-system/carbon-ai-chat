@@ -13,7 +13,7 @@ import { HydrationService } from '../../../src/chat/services/HydrationService';
 import { InputActionsService } from '../../../src/chat/services/InputActionsService';
 import { PublicStateService } from '../../../src/chat/services/PublicStateService';
 import { ReceiveService } from '../../../src/chat/services/messaging/inbound/ReceiveService';
-import { SendService } from '../../../src/chat/services/messaging/outbound/SendService';
+import { MessageCoordinator } from '../../../src/chat/services/messaging/MessageCoordinator';
 import { SlotEventService } from '../../../src/chat/services/messaging/presentation/SlotEventService';
 import { ViewService } from '../../../src/chat/services/ViewService';
 import { ServiceManager } from '../../../src/chat/services/ServiceManager';
@@ -97,7 +97,7 @@ const createServiceManagerStub = () => {
     serviceManager
   );
   (serviceManager as any).receiveService = new ReceiveService(serviceManager);
-  (serviceManager as any).sendService = new SendService(serviceManager);
+  serviceManager.messageCoordinator = new MessageCoordinator(serviceManager);
   (serviceManager as any).viewService = new ViewService(serviceManager);
 
   return { serviceManager, firedEvents };

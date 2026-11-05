@@ -21,7 +21,6 @@ import { PublicStateService } from './PublicStateService';
 import { MessageCoordinator } from './messaging/MessageCoordinator';
 import { ReceiveService } from './messaging/inbound/ReceiveService';
 import { SlotEventService } from './messaging/presentation/SlotEventService';
-import { SendService } from './messaging/outbound/SendService';
 import { StreamAnnouncerService } from './messaging/presentation/StreamAnnouncerService';
 import { ViewService } from './ViewService';
 import { EventBus } from '../events/EventBus';
@@ -71,7 +70,11 @@ function createServiceManager(appConfig: AppConfig) {
   serviceManager.slotEventService = new SlotEventService(serviceManager);
   serviceManager.hydrationService = new HydrationService(serviceManager);
   serviceManager.receiveService = new ReceiveService(serviceManager);
-  serviceManager.sendService = new SendService(
+  serviceManager.viewService = new ViewService(serviceManager);
+  serviceManager.eventBus = new EventBus();
+  serviceManager.store = doCreateStore(publicConfig, serviceManager);
+  serviceManager.publicStateService = new PublicStateService(serviceManager);
+  serviceManager.messageCoordinator = new MessageCoordinator(
     serviceManager,
     new MessagePresentationAdapter({
       hasCustomPromptLine: () => hasCustomPromptLine(serviceManager),
@@ -93,11 +96,6 @@ function createServiceManager(appConfig: AppConfig) {
         serviceManager.store.dispatch(actions.setResponsePanelIsOpen(false)),
     })
   );
-  serviceManager.viewService = new ViewService(serviceManager);
-  serviceManager.eventBus = new EventBus();
-  serviceManager.store = doCreateStore(publicConfig, serviceManager);
-  serviceManager.publicStateService = new PublicStateService(serviceManager);
-  serviceManager.messageCoordinator = new MessageCoordinator(serviceManager);
   serviceManager.historyService = new HistoryService(serviceManager);
   serviceManager.messageUpsertCoordinator = new MessageUpsertCoordinator(
     serviceManager
