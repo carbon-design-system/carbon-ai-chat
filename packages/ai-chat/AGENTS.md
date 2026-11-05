@@ -45,6 +45,7 @@ Load only what you need:
   - `utils/` — view helpers, including DOM, focus, and shell lifecycle code.
   - `components/` and `components-legacy/` — follow [component placement](../../references/code-patterns.md#component-placement) when adding or moving UI. Private Lit views that read chat state extend `components/shared/NativeChatView.ts`.
 - [src/sdk/](src/sdk/) — the headless SDK. Internal in 1.x: `index.ts` is its future public entry, and no package entry point exports it.
+  - `internal/` — the seams other folders in this package use, such as attaching a store partition. Never exported.
 - [src/react/](src/react/) — public React wrapper components re-exported from the package root.
 - [src/web-components/](src/web-components/) — Lit hosts. They own startup, config updates, live regions, and extension hosts. Put new startup work here, not in React.
 - [src/types/](src/types/) — public type surface. Anything exported through `aiChatEntry.tsx` is public API; treat edits with semver discipline. TypeDoc output ships as the public docs site.
