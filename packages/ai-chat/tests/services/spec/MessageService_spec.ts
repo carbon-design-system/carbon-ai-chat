@@ -1295,3 +1295,130 @@ it('keeps a released request continuation from advancing the newer operation', a
   expect(customSendMessage).toHaveBeenCalledTimes(3);
   expect(serviceManager.messageCoordinator.getCurrentRequest()).toBeNull();
 });
+
+it.each(['replacement-response', 'same-response'])(
+  'cleans tracking after queue advancement creates %s',
+  (nextResponse) => {
+    const serviceManager = createServiceManagerStub();
+    const service = createMessageService(serviceManager, { messaging: {} });
+    const oldController = new AbortController();
+    const nextController = new AbortController();
+    const controllers = (service as any).messageAbortControllers as Map<
+      string,
+      AbortController
+    >;
+    controllers.set('old-request', oldController);
+    service.inboundStreaming.markStreaming(
+      {
+        message: createMessage('old-request'),
+        sendMessageController: oldController,
+      },
+      'same-response',
+      'old-item'
+    );
+    const advance = jest
+      .spyOn(serviceManager.messageCoordinator, 'advanceRequestQueue')
+      .mockImplementation(() => {
+        service.inboundStreaming.clearStreamingResponse('same-response');
+        controllers.set('next-request', nextController);
+        service.inboundStreaming.markStreaming(
+          {
+            message: createMessage('next-request'),
+            sendMessageController: nextController,
+          },
+          nextResponse,
+          'next-item'
+        );
+      });
+    service.finalizeStreamingMessage('old-item');
+    expect(advance).toHaveBeenCalledTimes(1);
+    if (nextResponse === 'same-response') {
+      expect(
+        service.inboundStreaming.getStreamingMeta(nextResponse)
+      ).toBeUndefined();
+      expect(controllers.has('next-request')).toBe(false);
+      expect(service.inboundStreaming.streamingMessageID).toBeNull();
+    } else {
+      expect(
+        service.inboundStreaming.getStreamingMeta(nextResponse).requestId
+      ).toBe('next-request');
+      expect(controllers.get('next-request')).toBe(nextController);
+      expect(service.inboundStreaming.streamingMessageID).toBe(nextResponse);
+    }
+  }
+);
+
+it('settles the captured stopped request when abort restarts and clears the queue', async () => {
+  const transport = createDeferred();
+  const serviceManager = createServiceManagerStub(
+    jest.fn(() => transport.promise)
+  );
+  const service = createMessageService(serviceManager, {
+    messaging: { messageTimeoutSecs: 0 },
+  });
+  const sent = service.send(
+    createMessage('old-request'),
+    MessageSendSource.MESSAGE_INPUT,
+    'local'
+  );
+  await flushMessageQueue();
+  const captured = serviceManager.messageCoordinator.getCurrentRequest();
+  service.markCurrentMessageAsStreaming('response', 'item');
+  captured.sendMessageController.signal.addEventListener('abort', () => {
+    serviceManager.messageCoordinator.restart(true);
+    serviceManager.restartCount++;
+    serviceManager.messageCoordinator.clearCurrentRequest();
+    service.inboundStreaming.clearStreamingResponse('response');
+  });
+  await service.cancelMessageRequestByID(
+    'item',
+    false,
+    CancellationReason.STOP_STREAMING
+  );
+  await expect(sent).resolves.toBeUndefined();
+  expect(captured.isProcessed).toBe(true);
+  expect(captured.sendMessageController.signal.aborted).toBe(true);
+  expect(serviceManager.messageCoordinator.getCurrentRequest()).toBeNull();
+  transport.resolve();
+});
+
+it('uses retained stream metadata when controller aliases and queue membership are gone', async () => {
+  const serviceManager = createServiceManagerStub();
+  const service = createMessageService(serviceManager, { messaging: {} });
+  const controller = new AbortController();
+  const controllers = (service as any).messageAbortControllers as Map<
+    string,
+    AbortController
+  >;
+  controllers.set('request', controller);
+  service.inboundStreaming.markStreaming(
+    { message: createMessage('request'), sendMessageController: controller },
+    'response',
+    'item'
+  );
+  serviceManager.messageCoordinator.responseStreaming(
+    'response',
+    undefined,
+    'request'
+  );
+  const metadata = service.inboundStreaming.getStreamingMeta('response');
+  const responseStopped = jest.spyOn(
+    serviceManager.messageCoordinator,
+    'responseStopped'
+  );
+  controllers.delete('request');
+  controllers.delete('response');
+  expect(serviceManager.messageCoordinator.getCurrentRequest()).toBeNull();
+  await service.cancelMessageRequestByID(
+    'item',
+    false,
+    CancellationReason.STOP_STREAMING
+  );
+  expect(controller.signal.aborted).toBe(true);
+  expect(metadata.requestId).toBe('request');
+  expect(responseStopped).toHaveBeenCalledWith('response', 0);
+  expect(service.inboundStreaming.getStreamingMeta('response')).toBeUndefined();
+  expect(serviceManager.messageCoordinator.isRequestStopped('request')).toBe(
+    false
+  );
+});

@@ -39,6 +39,7 @@ import {
 } from '../../utils/streamingUtils';
 import { ServiceManager } from '../ServiceManager';
 import { InboundStreamingCoordinator } from './InboundStreamingCoordinator';
+import type { StreamResponseMeta } from './state/StreamState';
 import {
   MessageInputType,
   MessageRequest,
@@ -192,8 +193,7 @@ class MessageService {
   constructor(serviceManager: ServiceManager, publicConfig: PublicConfig) {
     this.serviceManager = serviceManager;
     this.inboundStreaming = new InboundStreamingCoordinator(
-      this.messageAbortControllers,
-      () => this.moveToNextQueueItem()
+      this.messageAbortControllers
     );
 
     this.serviceManager.messageCoordinator.configureMessageTimeout(
@@ -356,7 +356,11 @@ class MessageService {
    * Called when a FinalResponseChunk is processed to clear the streaming message from the queue.
    */
   public finalizeStreamingMessage(messageID: string) {
-    this.inboundStreaming.finalizeStreamingMessage(messageID);
+    const responseId = this.inboundStreaming.resolveResponseId(messageID);
+    if (this.inboundStreaming.streamingMessageID === responseId) {
+      this.moveToNextQueueItem();
+    }
+    this.inboundStreaming.clearStreamingResponse(responseId);
     this.serviceManager.messageCoordinator.responseFinished(messageID);
   }
 
@@ -547,7 +551,7 @@ class MessageService {
 
   private findAbortControllerForCancellation(
     responseId: string,
-    streamingEntry: { requestId?: string; controller?: AbortController } | null,
+    streamingEntry: StreamResponseMeta | null,
     pendingRequest?: PendingMessageRequest
   ) {
     return (
@@ -558,7 +562,7 @@ class MessageService {
       (pendingRequest
         ? this.messageAbortControllers.get(pendingRequest.message.id)
         : undefined) ||
-      streamingEntry?.controller
+      this.inboundStreaming.getController(streamingEntry?.controllerToken)
     );
   }
 
