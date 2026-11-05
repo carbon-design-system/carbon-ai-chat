@@ -9,7 +9,12 @@
 
 import cloneDeep from 'lodash-es/cloneDeep.js';
 import { makeConfigStore } from '../../test_helpers';
-import { createAppStore } from '../../../src/chat/store/appStore';
+import {
+  createAppStore,
+  createStoreFromReduction,
+} from '../../../src/chat/store/appStore';
+import { reduceWithMessageOwnership } from '../../../src/chat/store/reducers';
+import { ADD_LOCAL_MESSAGE_ITEM } from '../../../src/chat/store/messageActionTypes';
 import actions from '../../../src/chat/store/actions';
 import {
   captureMessageOwnership,
@@ -159,8 +164,24 @@ it('transfers ownership for same-state core writes without scanning sibling mess
     local: first.local,
     'sibling-local': sibling.local,
   });
-  const reducer = jest.fn((state) => state);
-  const store = createAppStore(reducer, seed);
+  // Seed the private fixture without enumerating its guarded transcript maps.
+  // Subsequent writes use the real chunk/no-item reduction and return this state.
+  const reducer = jest.fn((state, action) =>
+    action.type === ADD_LOCAL_MESSAGE_ITEM
+      ? {
+          state,
+          ownership: {
+            kind: 'addLocal' as const,
+            messageID: action.message.id,
+            local: {
+              id: action.messageItem.ui_state.id,
+              parentID: action.message.id,
+            },
+          },
+        }
+      : reduceWithMessageOwnership(state, action)
+  );
+  const store = createStoreFromReduction(reducer, seed);
   enableMessageOwnership(store);
   store.dispatch(
     markHumanAgentIngress(
@@ -174,6 +195,13 @@ it('transfers ownership for same-state core writes without scanning sibling mess
   );
   const listener = jest.fn();
   store.subscribe(listener);
+  store.dispatch(
+    actions.upsertMessage({ id: first.message.id, input: { text: 'ignored' } })
+  );
+  expect(store.getState()).toBe(seed);
+  expect(listener).not.toHaveBeenCalled();
+  expect(isHumanAgentMessageOwner(store, first.message.id)).toBe(true);
+  expect(isHumanAgentLocalOwner(store, first.local.ui_state.id)).toBe(true);
   const visited: unknown[] = [];
   const setIterator = Set.prototype[Symbol.iterator];
   const mapIterator = Map.prototype[Symbol.iterator];
@@ -201,7 +229,12 @@ it('transfers ownership for same-state core writes without scanning sibling mess
     });
   try {
     for (let index = 0; index < 100; index++) {
-      store.dispatch(actions.upsertMessage(first.message, true));
+      store.dispatch(
+        actions.upsertMessage(first.message, true, undefined, {
+          origin: 'chunk',
+          chunk: { item: undefined, isComplete: false },
+        })
+      );
     }
   } finally {
     sets.mockRestore();
@@ -210,7 +243,7 @@ it('transfers ownership for same-state core writes without scanning sibling mess
   expect(visited).toEqual(['local']);
   expect(listener).not.toHaveBeenCalled();
   expect(store.getState()).toBe(seed);
-  expect(reducer).toHaveBeenCalledTimes(102);
+  expect(reducer).toHaveBeenCalledTimes(103);
   expect(isHumanAgentMessageOwner(store, first.message.id)).toBe(false);
   expect(isHumanAgentLocalOwner(store, first.local.ui_state.id)).toBe(false);
   expect(isHumanAgentMessageOwner(store, sibling.message.id)).toBe(true);
@@ -230,18 +263,34 @@ it('leaves generic stores unregistered and does not transfer ownership when the 
   expect(store.dispatch(ingress)).toBe(ingress);
   expect(isHumanAgentMessageOwner(store, message.id)).toBe(false);
   expect(reducer).toHaveBeenCalledTimes(1);
-  enableMessageOwnership(store);
-  store.dispatch(ingress);
-  expect(isHumanAgentMessageOwner(store, message.id)).toBe(true);
+  const ownedStore = createStoreFromReduction(
+    (state, action) => ({
+      state: reducer(state),
+      ownership:
+        action === ingress
+          ? {
+              kind: 'addLocal',
+              messageID: 'message',
+              local: { id: 'local', parentID: 'message' },
+            }
+          : { kind: 'upsert', messageID: 'message' },
+    }),
+    seed
+  );
+  enableMessageOwnership(ownedStore);
+  ownedStore.dispatch(ingress);
+  expect(isHumanAgentMessageOwner(ownedStore, message.id)).toBe(true);
   const failure = new Error('reducer failed');
   reducer.mockImplementationOnce(() => {
     throw failure;
   });
   const listener = jest.fn();
-  store.subscribe(listener);
-  expect(() => store.dispatch(actions.upsertMessage(message))).toThrow(failure);
-  expect(store.getState()).toBe(seed);
-  expect(isHumanAgentMessageOwner(store, message.id)).toBe(true);
+  ownedStore.subscribe(listener);
+  expect(() => ownedStore.dispatch(actions.upsertMessage(message))).toThrow(
+    failure
+  );
+  expect(ownedStore.getState()).toBe(seed);
+  expect(isHumanAgentMessageOwner(ownedStore, message.id)).toBe(true);
   expect(listener).not.toHaveBeenCalled();
   expect(reducer).toHaveBeenCalledTimes(3);
 });
