@@ -11,7 +11,7 @@ import type { AppStore } from '../store/appStore';
 import { IntlShape } from '../utils/i18n';
 
 import { EventBus } from '../events/EventBus';
-import { AppState } from '../../types/state/AppState';
+import { ConversationState } from '../../types/state/AppState';
 import { HumanAgentService } from './haa/HumanAgentService';
 import { HistoryService } from './HistoryService';
 import { NamespaceService } from './NamespaceService';
@@ -103,7 +103,7 @@ class ServiceManager {
   /**
    * The redux store holding the application state.
    */
-  store: AppStore<AppState>;
+  store: AppStore<ConversationState>;
 
   /**
    * The service to use to connect to a human agent. Note that this value will not be defined if no service desk is

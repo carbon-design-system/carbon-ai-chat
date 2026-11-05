@@ -9,11 +9,14 @@
 
 import isEqual from 'lodash-es/isEqual.js';
 
-import actions from '../../shared/store/actions';
 import { ViewState, ViewType } from '../../types/state/AppState';
+
 import { deepFreeze } from '../../shared/utils/lang/objectUtils';
+
 import { constructViewState } from '../utils/viewStateUtils';
+
 import { consoleError, debugLog } from '../../shared/utils/miscUtils';
+
 import {
   BusEventType,
   BusEventViewChange,
@@ -22,7 +25,12 @@ import {
   MainWindowOpenReason,
   ViewChangeReason,
 } from '../../types/events/eventBusTypes';
+
 import type { ServiceManager } from '../../shared/services/ServiceManager';
+
+import { viewActions } from '../../view/state';
+
+import { chatStore } from './attachChatView';
 
 class ViewService {
   private serviceManager: ServiceManager;
@@ -47,8 +55,8 @@ class ViewService {
     tryHydrating = true,
     forceViewChange = false
   ): Promise<ViewState> {
-    const { store } = this.serviceManager;
-    const { viewState } = store.getState().persistedToBrowserStorage;
+    const store = chatStore(this.serviceManager);
+    const { viewState } = store.getState().view.persistedToBrowserStorage;
 
     // Build the new viewState object.
     let newViewState = constructViewState(newView, store.getState());
@@ -63,7 +71,7 @@ class ViewService {
       await this.fireViewChangeEventsAndChangeView(newViewState, reason);
 
       // Check and see if the chat should be hydrated.
-      newViewState = store.getState().persistedToBrowserStorage.viewState;
+      newViewState = store.getState().view.persistedToBrowserStorage.viewState;
 
       // A host's view:pre:change/view:change handler may force the main window open (for example by
       // mutating event.newViewState.mainWindow) even when the caller didn't request it and passed
@@ -109,18 +117,18 @@ class ViewService {
       mainWindowCloseReason?: MainWindowCloseReason;
     }
   ): Promise<void> {
-    const { store } = this.serviceManager;
+    const store = chatStore(this.serviceManager);
 
-    if (store.getState().viewChanging) {
+    if (store.getState().view.viewChanging) {
       // If the view is already in the middle of changing then throw an error.
       throw new Error(
         'The view may not be changed while a view change event is already running. Please make sure to resolve any promises from these events.'
       );
     }
 
-    store.dispatch(actions.setViewChanging(true));
+    store.dispatch(viewActions.setViewChanging(true));
 
-    const { viewState } = store.getState().persistedToBrowserStorage;
+    const { viewState } = store.getState().view.persistedToBrowserStorage;
     // If we have a mainWindowOpenReason or mainWindowCloseReason then this viewChangeReason will be determined lower down.
     const { viewChangeReason } = reason;
 
@@ -148,7 +156,7 @@ class ViewService {
       newViewState = preViewChangeEvent.newViewState;
 
       // Actually change the viewState in store.
-      store.dispatch(actions.setViewState(deepFreeze(newViewState)));
+      store.dispatch(viewActions.setViewState(deepFreeze(newViewState)));
 
       // Create the view:change event and fire it.
       const viewChangeEvent: BusEventViewChange = {
@@ -163,7 +171,7 @@ class ViewService {
       if (viewChangeEvent.cancelViewChange) {
         // If the view changing was canceled in the event then log a message and switch the viewState back to what it was
         // originally.
-        store.dispatch(actions.setViewState(oldViewState));
+        store.dispatch(viewActions.setViewState(oldViewState));
         debugLog('The view changing was canceled by a view:change event.');
         return;
       }
@@ -172,9 +180,9 @@ class ViewService {
       newViewState = viewChangeEvent.newViewState;
 
       // Actually change the viewState in store for the last time.
-      store.dispatch(actions.setViewState(deepFreeze(newViewState)));
+      store.dispatch(viewActions.setViewState(deepFreeze(newViewState)));
     } finally {
-      store.dispatch(actions.setViewChanging(false));
+      store.dispatch(viewActions.setViewChanging(false));
     }
   }
 }

@@ -9,15 +9,26 @@
 
 import React from 'react';
 import { render, waitFor } from '@testing-library/react';
+
 import { ChatContainer } from '../../../src/react/ChatContainer';
+
 import { ChatContainerProps } from '../../../src/types/component/ChatContainer';
+
 import { createBaseTestProps } from '../../test_helpers';
-import { AppState } from '../../../src/types/state/AppState';
+
 import { applyConfigChangesDynamically } from '../../../src/chat/utils/dynamicConfigUpdates';
+
 import { doCreateStore } from '../../../src/shared/store/doCreateStore';
+
 import { ServiceManager } from '../../../src/shared/services/ServiceManager';
+
 import { NamespaceService } from '../../../src/shared/services/NamespaceService';
+
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
+
+import { chatStore } from '../../../src/chat/services/attachChatView';
+
+import { withView } from '../../test_helpers';
 
 describe('Config Launcher', () => {
   const createBaseProps = (): Partial<ChatContainerProps> => ({
@@ -54,7 +65,7 @@ describe('Config Launcher', () => {
       );
 
       const store = (capturedInstance as any).serviceManager.store;
-      const state: AppState = store.getState();
+      const state = store.getState();
       expect(state.config.derived.launcher.isOn).toBe(true);
     });
 
@@ -79,7 +90,7 @@ describe('Config Launcher', () => {
       );
 
       const store = (capturedInstance as any).serviceManager.store;
-      const state: AppState = store.getState();
+      const state = store.getState();
       expect(state.config.derived.launcher.isOn).toBe(false);
     });
 
@@ -104,7 +115,7 @@ describe('Config Launcher', () => {
       );
 
       const store = (capturedInstance as any).serviceManager.store;
-      const state: AppState = store.getState();
+      const state = store.getState();
       expect(state.config.derived.launcher.isOn).toBe(true); // default value
     });
 
@@ -129,8 +140,10 @@ describe('Config Launcher', () => {
       );
 
       const store = (capturedInstance as any).serviceManager.store;
-      const state: AppState = store.getState();
-      expect(state.persistedToBrowserStorage.showUnreadIndicator).toBe(true);
+      const state = store.getState();
+      expect(state.view.persistedToBrowserStorage.showUnreadIndicator).toBe(
+        true
+      );
       expect(state.config.public.launcher?.showUnreadIndicator).toBe(true);
     });
   });
@@ -157,7 +170,7 @@ describe('Config Launcher', () => {
       );
 
       const store = (capturedInstance as any).serviceManager.store;
-      const state: AppState = store.getState();
+      const state = store.getState();
       expect(state.config.public.openChatByDefault).toBe(true);
     });
 
@@ -187,7 +200,7 @@ describe('Config Launcher', () => {
       );
 
       const store = (capturedInstance as any).serviceManager.store;
-      const state: AppState = store.getState();
+      const state = store.getState();
       expect(state.config.public.openChatByDefault).toBe(false);
     });
 
@@ -217,7 +230,7 @@ describe('Config Launcher', () => {
       );
 
       const store = (capturedInstance as any).serviceManager.store;
-      const state: AppState = store.getState();
+      const state = store.getState();
       expect(state.config.public.openChatByDefault).toBe(false); // default value
     });
   });
@@ -230,13 +243,16 @@ describe('Config Launcher', () => {
         assistantName: 'Test Assistant',
       };
 
-      const store = doCreateStore(initialConfig, {} as ServiceManager);
+      const store = withView(
+        doCreateStore(initialConfig, {} as ServiceManager),
+        initialConfig
+      );
       serviceManager = {
         store,
         namespace: new NamespaceService('test'),
         messageCoordinator: { timeoutMS: 30000 } as any,
         humanAgentService: null,
-      } as ServiceManager;
+      } as unknown as ServiceManager;
     });
 
     it('should handle launcher config changes dynamically', async () => {
@@ -262,7 +278,7 @@ describe('Config Launcher', () => {
         serviceManager
       );
 
-      const state: AppState = serviceManager.store.getState();
+      const state = serviceManager.store.getState();
       expect(state.config.public.launcher?.isOn).toBe(false);
       expect(state.config.public.launcher?.desktop?.title).toBe(
         'New Desktop Title'
@@ -291,8 +307,10 @@ describe('Config Launcher', () => {
         serviceManager
       );
 
-      const state: AppState = serviceManager.store.getState();
-      expect(state.persistedToBrowserStorage.showUnreadIndicator).toBe(true);
+      const state = chatStore(serviceManager).getState();
+      expect(state.view.persistedToBrowserStorage.showUnreadIndicator).toBe(
+        true
+      );
       expect(state.config.public.launcher?.showUnreadIndicator).toBe(true);
     });
   });

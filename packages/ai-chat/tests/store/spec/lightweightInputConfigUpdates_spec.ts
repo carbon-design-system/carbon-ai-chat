@@ -31,15 +31,15 @@ import {
 import { reducers } from '../../../src/shared/store/reducers';
 import actions from '../../../src/shared/store/actions';
 import { ServiceManager } from '../../../src/shared/services/ServiceManager';
-import { AppState } from '../../../src/types/state/AppState';
+import { ConversationState } from '../../../src/types/state/AppState';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
 
-function createStore(initialState: AppState) {
+function createStore(initialState: ConversationState) {
   return createAppStore(
     (
-      state: AppState,
+      state: ConversationState,
       action: { type: string; [key: string]: unknown } | undefined
-    ): AppState =>
+    ): ConversationState =>
       action && reducers[action.type]
         ? reducers[action.type](state, action)
         : state,
@@ -47,7 +47,7 @@ function createStore(initialState: AppState) {
   );
 }
 
-function makeServiceManager(initialState: AppState): ServiceManager {
+function makeServiceManager(initialState: ConversationState): ServiceManager {
   return {
     store: createStore(initialState),
     namespace: { suffix: '' },
@@ -55,7 +55,7 @@ function makeServiceManager(initialState: AppState): ServiceManager {
   } as any;
 }
 
-function initialAppState(config: PublicConfig): AppState {
+function initialAppState(config: PublicConfig): ConversationState {
   return createInitialState(createAppConfig(config));
 }
 

@@ -28,6 +28,7 @@ import {
   setupAfterEach,
   setupBeforeEach,
 } from '../../test_helpers';
+import { viewActions } from '../../../src/view/state';
 
 const wrappers = [
   ['ChatContainer', ChatContainer],
@@ -124,7 +125,7 @@ describe.each(wrappers)('shell callbacks through %s', (_name, Wrapper) => {
 
     // Leave the home screen; the same input now sends from messages.
     act(() => {
-      manager.store.dispatch(actions.setHomeScreenIsOpen(false));
+      manager.store.dispatch(viewActions.setHomeScreenIsOpen(false));
     });
     await waitFor(() =>
       expect(view.querySelector('cds-aichat-home-screen')).toBeNull()

@@ -192,6 +192,7 @@ interface MessagesInjectedState {
   allMessagesByID: AppState['allMessagesByID'];
   humanAgentState: AppState['humanAgentState'];
   persistedToBrowserStorage: AppState['persistedToBrowserStorage'];
+  disclaimersAccepted: AppState['view']['persistedToBrowserStorage']['disclaimersAccepted'];
   /** Effective whole-chat read-only state (override or config). */
   isInputReadonly: boolean;
   disclaimerIsOn: boolean | undefined;
@@ -595,7 +596,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     const {
       serviceManager,
       requestInputFocus,
-      persistedToBrowserStorage,
+      disclaimersAccepted,
       assistantName,
       assistantAvatarUrl,
       isInputReadonly,
@@ -607,7 +608,6 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     } = this.props;
 
     const { isHumanAgentTyping } = selectHumanAgentDisplayState(this.props);
-    const { disclaimersAccepted } = persistedToBrowserStorage;
 
     // If there is a disclaimer, messages should only be rendered once it's accepted.
     if (disclaimerIsOn && !disclaimersAccepted[window.location.hostname]) {
@@ -939,6 +939,7 @@ const selectMessagesState = (
   allMessagesByID: state.allMessagesByID,
   humanAgentState: state.humanAgentState,
   persistedToBrowserStorage: state.persistedToBrowserStorage,
+  disclaimersAccepted: state.view.persistedToBrowserStorage.disclaimersAccepted,
   isInputReadonly: selectInputIsReadonly(state),
   disclaimerIsOn: state.config.public.disclaimer?.isOn,
   persistFeedback: state.config.public.persistFeedback,

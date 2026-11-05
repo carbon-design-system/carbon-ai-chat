@@ -22,6 +22,7 @@ import {
   setupAfterEach,
   setupBeforeEach,
 } from '../../test_helpers';
+import { viewActions } from '../../../src/view/state';
 
 const customSlot = WriteableElementName.CUSTOM_PROMPT_LINE;
 const query = (selector: string) => deepQuerySelector(document, selector);
@@ -103,7 +104,9 @@ describe.each(['React', 'web component'])(
           homescreen: { isOn: home },
         });
         await act(async () => {
-          manager(instance).store.dispatch(actions.setHomeScreenIsOpen(home));
+          manager(instance).store.dispatch(
+            viewActions.setHomeScreenIsOpen(home)
+          );
         });
         await waitFor(() => {
           expect(outlet(customSlot)).not.toBeNull();
@@ -247,7 +250,7 @@ describe('custom prompt line slot composition', () => {
           content.textContent = name;
           instance.writeableElements[name].append(content);
         }
-        manager(instance).store.dispatch(actions.setHomeScreenIsOpen(home));
+        manager(instance).store.dispatch(viewActions.setHomeScreenIsOpen(home));
       });
       await waitFor(() => {
         expect(outlet(WriteableElementName.PROMPT_LINE_ACTIONS_END)).toBeNull();

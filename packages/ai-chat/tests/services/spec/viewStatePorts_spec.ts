@@ -15,6 +15,7 @@ import {
   setupAfterEach,
   setupBeforeEach,
 } from '../../test_helpers';
+import { chatStore } from '../../../src/chat/services/attachChatView';
 
 beforeEach(setupBeforeEach);
 afterEach(async () => {
@@ -39,18 +40,18 @@ async function boot() {
 describe('view state that conversation code writes', () => {
   it('reaches the attached view', async () => {
     const { instance, serviceManager } = await boot();
-    const { store, messageCoordinator, actions } = serviceManager;
+    const { messageCoordinator, actions } = serviceManager;
 
     instance.updateIsMessageLoadingCounter('increase', 'Thinking');
     instance.updateIsChatLoadingCounter('increase');
     messageCoordinator.changeMessageLoadingCounter(1);
     actions.errorOccurred(catastrophic);
 
-    const state = store.getState();
-    expect(state.assistantMessageState.isMessageLoadingCounter).toBe(2);
-    expect(state.assistantMessageState.isMessageLoadingText).toBeUndefined();
-    expect(state.assistantMessageState.isHydratingCounter).toBe(1);
-    expect(state.catastrophicErrorType).toBe(true);
+    const state = chatStore(serviceManager).getState();
+    expect(state.view.isMessageLoadingCounter).toBe(2);
+    expect(state.view.isMessageLoadingText).toBeUndefined();
+    expect(state.view.isHydratingCounter).toBe(1);
+    expect(state.view.catastrophicErrorType).toBe(true);
   });
 
   it('does nothing, and does not throw, with no view attached', async () => {

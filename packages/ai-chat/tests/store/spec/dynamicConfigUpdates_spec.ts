@@ -8,32 +8,35 @@
  */
 
 import { applyConfigChangesDynamically } from '../../../src/chat/utils/dynamicConfigUpdates';
+
 import { selectInputIsReadonly } from '../../../src/shared/store/selectors';
+
 import { createAppStore } from '../../../src/shared/store/appStore';
+
 import {
   createAppConfig,
   createInitialState,
 } from '../../../src/shared/store/doCreateStore';
-import { reducers } from '../../../src/shared/store/reducers';
+
 import { ServiceManager } from '../../../src/shared/services/ServiceManager';
+
 import { AppState } from '../../../src/types/state/AppState';
+
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
+
 import { enLanguagePack } from '../../../src/types/config/LanguagePack';
+
 import { CarbonTheme } from '../../../src/types/config/CarbonTheme';
+
+import { appRootReducer } from '../../test_helpers';
+
+import { createInitialViewState } from '../../../src/view/state/initialState';
+
+import { chatStore } from '../../../src/chat/services/attachChatView';
 
 // Mock ServiceManager for testing
 const createMockServiceManager = (initialState: AppState): ServiceManager => {
-  const store = createAppStore(
-    (
-      state: AppState,
-      action: { type: string; [key: string]: unknown } | undefined
-    ): AppState => {
-      return action && reducers[action.type]
-        ? reducers[action.type](state, action)
-        : state;
-    },
-    initialState
-  );
+  const store = createAppStore(appRootReducer, initialState);
 
   return {
     store,
@@ -44,7 +47,10 @@ const createMockServiceManager = (initialState: AppState): ServiceManager => {
 };
 
 function createInitialAppState(config: PublicConfig = {}): AppState {
-  return createInitialState(createAppConfig(config));
+  return {
+    ...createInitialState(createAppConfig(config)),
+    view: createInitialViewState(config, null),
+  };
 }
 
 describe('Dynamic Config Updates', () => {
@@ -300,8 +306,8 @@ describe('Dynamic Config Updates', () => {
 
       // Homescreen state should be opened since messageIDs length is 0
       expect(
-        (updatedState as AppState).persistedToBrowserStorage.homeScreenState
-          .isHomeScreenOpen
+        (updatedState as AppState).view.persistedToBrowserStorage
+          .homeScreenState.isHomeScreenOpen
       ).toBe(true);
     });
 
@@ -313,10 +319,11 @@ describe('Dynamic Config Updates', () => {
       const stateWithHomescreenOpen = createInitialAppState(
         initialConfigWithHomescreen
       );
-      stateWithHomescreenOpen.persistedToBrowserStorage = {
-        ...stateWithHomescreenOpen.persistedToBrowserStorage,
+      stateWithHomescreenOpen.view.persistedToBrowserStorage = {
+        ...stateWithHomescreenOpen.view.persistedToBrowserStorage,
         homeScreenState: {
-          ...stateWithHomescreenOpen.persistedToBrowserStorage.homeScreenState,
+          ...stateWithHomescreenOpen.view.persistedToBrowserStorage
+            .homeScreenState,
           isHomeScreenOpen: true,
         },
       };
@@ -342,8 +349,8 @@ describe('Dynamic Config Updates', () => {
 
       // Homescreen state should be closed
       expect(
-        (updatedState as AppState).persistedToBrowserStorage.homeScreenState
-          .isHomeScreenOpen
+        (updatedState as AppState).view.persistedToBrowserStorage
+          .homeScreenState.isHomeScreenOpen
       ).toBe(false);
     });
 
@@ -504,8 +511,8 @@ describe('Dynamic Config Updates', () => {
       // Effective readonly derives from config; homescreen state is applied.
       expect(selectInputIsReadonly(updatedState as AppState)).toBe(true);
       expect(
-        (updatedState as AppState).persistedToBrowserStorage.homeScreenState
-          .isHomeScreenOpen
+        (updatedState as AppState).view.persistedToBrowserStorage
+          .homeScreenState.isHomeScreenOpen
       ).toBe(true);
     });
 
@@ -516,8 +523,8 @@ describe('Dynamic Config Updates', () => {
         const stateWithAcceptance = createInitialAppState({
           disclaimer: { isOn: true, disclaimerHTML: '<p>Original</p>' },
         });
-        stateWithAcceptance.persistedToBrowserStorage = {
-          ...stateWithAcceptance.persistedToBrowserStorage,
+        stateWithAcceptance.view.persistedToBrowserStorage = {
+          ...stateWithAcceptance.view.persistedToBrowserStorage,
           disclaimersAccepted: {
             [hostname]: true,
             'other-host.example': true,
@@ -535,7 +542,8 @@ describe('Dynamic Config Updates', () => {
         );
 
         const accepted =
-          sm.store.getState().persistedToBrowserStorage.disclaimersAccepted;
+          chatStore(sm).getState().view.persistedToBrowserStorage
+            .disclaimersAccepted;
         // This hostname must re-accept the new disclaimer. Acceptance is a truthy
         // read, and the value is set false (not deleted) so it survives the
         // reducer's deep merge of persistedToBrowserStorage.

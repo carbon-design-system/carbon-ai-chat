@@ -161,6 +161,7 @@ const chatServices = [
   'MessagePresentationAdapter.ts',
   'ViewService.ts',
   'ariaAnnouncer.ts',
+  'attachChatView.ts',
   'autocompleteContent.ts',
   'chatViewState.ts',
   'createViewBindings.ts',
@@ -232,6 +233,21 @@ it('keeps view handles out of conversation services and the SDK', () => {
   );
 });
 
+// The whole store's type includes the view partition, so only chat/ and view/
+// may name it. Conversation code sees ConversationState (#1831 O5, O6).
+it('keeps the view partition out of conversation and SDK code', () => {
+  const conversation = files.filter(
+    (file) => file.startsWith('src/shared/') || file.startsWith('src/sdk/')
+  );
+  expect([
+    ...typeReferences(
+      read,
+      conversation,
+      new Set(['AppState', 'ViewPartitionState', 'ViewPersistedState'])
+    ),
+  ]).toEqual([]);
+});
+
 it('keeps conversation folders out of chat/', () => {
   for (const folder of ['store', 'events', 'schema', 'languages']) {
     expect(fs.existsSync(path.join(root, 'src/chat', folder))).toBe(false);
@@ -268,6 +284,14 @@ describe('planted imports', () => {
     expect(result.frameworks).toContain(
       `src/shared/: ${shared} -> ../ai-chat-components/src/components/markdown/index.ts`
     );
+  });
+
+  it('fails shared code that imports view state, even as a type', () => {
+    const result = plant(
+      shared,
+      "import type { viewActions } from '../../view/state';"
+    );
+    expect(result.folders).toContain(`${shared} -> src/view/state/index.ts`);
   });
 
   it('fails shared code that imports chat/, even as a type', () => {

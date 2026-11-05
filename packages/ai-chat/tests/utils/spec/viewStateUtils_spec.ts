@@ -13,10 +13,12 @@ import { ViewType } from '../../../src/types/state/AppState';
 
 describe('viewStateUtils', () => {
   const baseState = {
-    persistedToBrowserStorage: {
-      viewState: {
-        launcher: false,
-        mainWindow: true,
+    view: {
+      persistedToBrowserStorage: {
+        viewState: {
+          launcher: false,
+          mainWindow: true,
+        },
       },
     },
   } as any;

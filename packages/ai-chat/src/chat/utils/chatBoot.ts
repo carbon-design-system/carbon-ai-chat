@@ -21,6 +21,7 @@ import { selectInputIsReadonly } from '../../shared/store/selectors';
 import { ServiceManager } from '../../shared/services/ServiceManager';
 import { createAppConfig } from '../../shared/store/doCreateStore';
 import { createCustomPanelManager } from '../services/CustomPanelManager';
+import { attachChatView, chatStore } from '../services/attachChatView';
 import { setIntl } from '../../shared/utils/intlUtils';
 import {
   consoleDebug,
@@ -57,6 +58,7 @@ import {
   ViewType,
 } from '../../types/state/AppState';
 import { AutoScrollOptions } from '../../types/utilities/HasDoAutoScroll';
+import { viewActions } from '../../view/state';
 
 let bootContainerRulesInstalled = false;
 
@@ -124,6 +126,7 @@ export async function initServiceManagerAndInstance(options: {
   // Create service manager
   const appConfig = createAppConfig(publicConfig);
   const serviceManager = createServiceManager(appConfig);
+  attachChatView(serviceManager, publicConfig);
 
   // Set container + hosting information
   serviceManager.container = container;
@@ -238,7 +241,7 @@ export async function initServiceManagerAndInstance(options: {
         isVisible
       );
       serviceManager.store.dispatch(
-        actions.setLauncherProperty('showUnreadIndicator', isVisible)
+        viewActions.setLauncherProperty('showUnreadIndicator', isVisible)
       );
     },
 
@@ -324,17 +327,15 @@ export async function initServiceManagerAndInstance(options: {
 
       if (
         panelState.isOpen &&
-        serviceManager.store.getState().catastrophicErrorType !== true
+        chatStore(serviceManager).getState().view.catastrophicErrorType !== true
       ) {
-        serviceManager.store.dispatch({
-          type: 'SET_APP_STATE_VALUE',
-          key: 'catastrophicErrorType',
-          value: true,
-        });
+        serviceManager.store.dispatch(
+          viewActions.setViewValue('catastrophicErrorType', true)
+        );
       }
 
       serviceManager.store.dispatch(
-        actions.updateCatastrophicErrorPanel(panelState)
+        viewActions.updateCatastrophicErrorPanel(panelState)
       );
     },
 
@@ -487,9 +488,9 @@ export async function initServiceManagerAndInstance(options: {
  * tests and callers can reason about what happens immediately after boot.
  */
 export async function performInitialViewChange(serviceManager: ServiceManager) {
-  const initialState = serviceManager.store.getState();
-  const { wasLoadedFromBrowser } = initialState.persistedToBrowserStorage;
-  const { targetViewState } = initialState;
+  const initialState = chatStore(serviceManager).getState();
+  const { wasLoadedFromBrowser } = initialState.view.persistedToBrowserStorage;
+  const { targetViewState } = initialState.view;
   const { openChatByDefault } = initialState.config.public;
 
   if (targetViewState.mainWindow) {

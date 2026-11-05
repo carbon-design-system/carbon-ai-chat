@@ -16,17 +16,28 @@ import {
   CustomPanelOpenOptions,
   PanelType,
 } from '../../types/instance/apiTypes';
+
 import { BusEventType } from '../../types/events/eventBusTypes';
-import actions from '../../shared/store/actions';
-import { DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS } from '../../shared/store/reducerUtils';
+
 import { ServiceManager } from '../../shared/services/ServiceManager';
+
 import {
   captureMessageEvent,
   eventLocalItems,
 } from '../../shared/utils/messageEventOwnership';
+
 import { deepFreeze } from '../../shared/utils/lang/objectUtils';
+
 import { Message } from '../../types/messaging/Messages';
+
 import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
+
+import {
+  DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS,
+  viewActions,
+} from '../../view/state';
+
+import { chatStore } from './attachChatView';
 
 /**
  * This function takes in the service manager to help create a custom panel instance. The panel instance is created
@@ -47,9 +58,9 @@ function createCustomPanelInstance(
   };
 
   function captureWorkspaceEvent() {
-    const { store } = serviceManager;
+    const store = chatStore(serviceManager);
     const { workspaceID, localMessageItem, fullMessage, additionalData } =
-      store.getState().workspacePanelState;
+      store.getState().view.workspacePanelState;
     if (!workspaceValues || workspaceValues.stored !== additionalData) {
       workspaceValues = {
         stored: additionalData,
@@ -97,8 +108,9 @@ function createCustomPanelInstance(
       | BusEventType.WORKSPACE_CLOSE,
     data: ReturnType<typeof captureWorkspaceEvent>
   ) {
-    const { store, restartCount } = serviceManager;
-    const before = store.getState().workspacePanelState;
+    const store = chatStore(serviceManager);
+    const { restartCount } = serviceManager;
+    const before = store.getState().view.workspacePanelState;
     const working = data.additionalData;
     const messages = workspaceMessages;
     let messageEvent: ReturnType<typeof captureMessageEvent>;
@@ -142,7 +154,7 @@ function createCustomPanelInstance(
         serviceManager.instance
       );
     } finally {
-      let current = store.getState().workspacePanelState;
+      let current = store.getState().view.workspacePanelState;
       if (
         messageEvent &&
         store.getState().allMessagesByID[messages.message.id] ===
@@ -171,7 +183,7 @@ function createCustomPanelInstance(
           messages.localItem = committedLocalItem;
         }
       }
-      current = store.getState().workspacePanelState;
+      current = store.getState().view.workspacePanelState;
       if (
         ownsData &&
         restartCount === serviceManager.restartCount &&
@@ -185,7 +197,7 @@ function createCustomPanelInstance(
             (current.fullMessage !== messages.message ||
               current.localMessageItem !== messages.localItem)))
       ) {
-        const action = actions.setWorkspacePanelData({
+        const action = viewActions.setWorkspacePanelData({
           workspaceID: current.workspaceID,
           localMessageItem:
             current.localMessageItem && messages === workspaceMessages
@@ -205,16 +217,16 @@ function createCustomPanelInstance(
 
   const panelActions = {
     [PanelType.WORKSPACE]: {
-      setConfig: actions.setWorkspaceCustomPanelConfigOptions,
-      setOpen: actions.setWorkspaceCustomPanelOpen,
+      setConfig: viewActions.setWorkspaceCustomPanelConfigOptions,
+      setOpen: viewActions.setWorkspaceCustomPanelOpen,
     },
     [PanelType.DEFAULT]: {
-      setConfig: actions.setCustomPanelConfigOptions,
-      setOpen: actions.setCustomPanelOpen,
+      setConfig: viewActions.setCustomPanelConfigOptions,
+      setOpen: viewActions.setCustomPanelOpen,
     },
     [PanelType.HISTORY]: {
-      setConfig: actions.setCustomPanelConfigOptions,
-      setOpen: actions.setHistoryPanelOpen,
+      setConfig: viewActions.setCustomPanelConfigOptions,
+      setOpen: viewActions.setHistoryPanelOpen,
     },
   } as const;
 
@@ -227,12 +239,12 @@ function createCustomPanelInstance(
     ) {
       const resolvedOptions = (options ??
         defaultPanelOptions) as CustomPanelConfigOptions;
-      const { store } = serviceManager;
+      const store = chatStore(serviceManager);
 
       // For workspace panels, close any existing workspace before opening a new one
       if (panelType === PanelType.WORKSPACE) {
         const state = store.getState();
-        if (state.workspacePanelState.isOpen) {
+        if (state.view.workspacePanelState.isOpen) {
           // Close the existing workspace panel first
           customPanelInstance.close();
         }
@@ -242,7 +254,7 @@ function createCustomPanelInstance(
       if (panelType === PanelType.WORKSPACE && options) {
         const workspaceOptions = options as WorkspaceCustomPanelConfigOptions;
         if (workspaceOptions.workspaceId || workspaceOptions.additionalData) {
-          const action = actions.setWorkspacePanelData({
+          const action = viewActions.setWorkspacePanelData({
             workspaceID: workspaceOptions.workspaceId,
             additionalData: workspaceOptions.additionalData,
           });

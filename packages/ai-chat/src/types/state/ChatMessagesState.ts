@@ -29,22 +29,6 @@ interface ChatMessagesState {
    * The id of the most recently active response (including streaming).
    */
   activeResponseId: string | null;
-
-  /**
-   * Counter that indicates if a message is loading and a loading indicator should be displayed.
-   * If "0" then we do not show loading indicator.
-   */
-  isMessageLoadingCounter: number;
-
-  /**
-   * Optional string to display next to the loading indicator.
-   */
-  isMessageLoadingText?: string;
-
-  /**
-   * Counter that indicates if the chat is hydrating and a full screen loading state should be displayed.
-   */
-  isHydratingCounter: number;
 }
 
 /**

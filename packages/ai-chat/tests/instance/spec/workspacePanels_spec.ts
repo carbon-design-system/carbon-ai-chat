@@ -70,16 +70,18 @@ describe('ChatInstance.customPanels - Workspace Panels', () => {
 
       // Verify initial state
       let state = store.getState();
-      expect(state.workspacePanelState.isOpen).toBe(false);
+      expect(state.view.workspacePanelState.isOpen).toBe(false);
 
       // Open panel
       await panel.open();
 
       // Verify Redux state updated
       state = store.getState();
-      expect(state.workspacePanelState.isOpen).toBe(true);
+      expect(state.view.workspacePanelState.isOpen).toBe(true);
       // Default workspace panel has preferredLocation: "end"
-      expect(state.workspacePanelState.options.preferredLocation).toBe('end');
+      expect(state.view.workspacePanelState.options.preferredLocation).toBe(
+        'end'
+      );
     });
 
     it('should open workspace panel with WorkspaceCustomPanelConfigOptions', async () => {
@@ -95,8 +97,10 @@ describe('ChatInstance.customPanels - Workspace Panels', () => {
       await panel.open(workspaceOptions);
 
       const state = store.getState();
-      expect(state.workspacePanelState.isOpen).toBe(true);
-      expect(state.workspacePanelState.options.preferredLocation).toBe('start');
+      expect(state.view.workspacePanelState.isOpen).toBe(true);
+      expect(state.view.workspacePanelState.options.preferredLocation).toBe(
+        'start'
+      );
     });
 
     it('should store workspaceId when provided in options', async () => {
@@ -113,9 +117,11 @@ describe('ChatInstance.customPanels - Workspace Panels', () => {
       await panel.open(workspaceOptions);
 
       const state = store.getState();
-      expect(state.workspacePanelState.isOpen).toBe(true);
-      expect(state.workspacePanelState.workspaceID).toBe('workspace-123');
-      expect(state.workspacePanelState.options.preferredLocation).toBe('end');
+      expect(state.view.workspacePanelState.isOpen).toBe(true);
+      expect(state.view.workspacePanelState.workspaceID).toBe('workspace-123');
+      expect(state.view.workspacePanelState.options.preferredLocation).toBe(
+        'end'
+      );
     });
 
     it('should store additionalData when provided in options', async () => {
@@ -133,9 +139,9 @@ describe('ChatInstance.customPanels - Workspace Panels', () => {
       await panel.open(workspaceOptions);
 
       const state = store.getState();
-      expect(state.workspacePanelState.isOpen).toBe(true);
-      expect(state.workspacePanelState.workspaceID).toBe('workspace-456');
-      expect(state.workspacePanelState.additionalData).toEqual({
+      expect(state.view.workspacePanelState.isOpen).toBe(true);
+      expect(state.view.workspacePanelState.workspaceID).toBe('workspace-456');
+      expect(state.view.workspacePanelState.additionalData).toEqual({
         userId: 'user-789',
         context: 'test',
       });
@@ -155,9 +161,9 @@ describe('ChatInstance.customPanels - Workspace Panels', () => {
       await panel.open(workspaceOptions);
 
       const state = store.getState();
-      expect(state.workspacePanelState.isOpen).toBe(true);
-      expect(state.workspacePanelState.workspaceID).toBe('ws-only-id');
-      expect(state.workspacePanelState.additionalData).toEqual({
+      expect(state.view.workspacePanelState.isOpen).toBe(true);
+      expect(state.view.workspacePanelState.workspaceID).toBe('ws-only-id');
+      expect(state.view.workspacePanelState.additionalData).toEqual({
         test: 'data',
       });
     });
@@ -178,19 +184,19 @@ describe('ChatInstance.customPanels - Workspace Panels', () => {
       });
 
       let state = store.getState();
-      expect(state.workspacePanelState.isOpen).toBe(true);
-      expect(state.workspacePanelState.workspaceID).toBe('workspace-123');
+      expect(state.view.workspacePanelState.isOpen).toBe(true);
+      expect(state.view.workspacePanelState.workspaceID).toBe('workspace-123');
 
       // Close the panel
       await panel.close();
 
       // Verify Redux state reset
       state = store.getState();
-      expect(state.workspacePanelState.isOpen).toBe(false);
-      expect(state.workspacePanelState.workspaceID).toBeUndefined();
-      expect(state.workspacePanelState.additionalData).toBeUndefined();
-      expect(state.workspacePanelState.localMessageItem).toBeUndefined();
-      expect(state.workspacePanelState.fullMessage).toBeUndefined();
+      expect(state.view.workspacePanelState.isOpen).toBe(false);
+      expect(state.view.workspacePanelState.workspaceID).toBeUndefined();
+      expect(state.view.workspacePanelState.additionalData).toBeUndefined();
+      expect(state.view.workspacePanelState.localMessageItem).toBeUndefined();
+      expect(state.view.workspacePanelState.fullMessage).toBeUndefined();
     });
 
     it('should handle multiple open/close cycles with data cleanup', async () => {
@@ -205,11 +211,11 @@ describe('ChatInstance.customPanels - Workspace Panels', () => {
         additionalData: { cycle: 1 },
       });
       let state = store.getState();
-      expect(state.workspacePanelState.workspaceID).toBe('workspace-1');
+      expect(state.view.workspacePanelState.workspaceID).toBe('workspace-1');
 
       await panel.close();
       state = store.getState();
-      expect(state.workspacePanelState.workspaceID).toBeUndefined();
+      expect(state.view.workspacePanelState.workspaceID).toBeUndefined();
 
       // Second cycle with different data
       await panel.open({
@@ -217,13 +223,15 @@ describe('ChatInstance.customPanels - Workspace Panels', () => {
         additionalData: { cycle: 2 },
       });
       state = store.getState();
-      expect(state.workspacePanelState.workspaceID).toBe('workspace-2');
-      expect(state.workspacePanelState.additionalData).toEqual({ cycle: 2 });
+      expect(state.view.workspacePanelState.workspaceID).toBe('workspace-2');
+      expect(state.view.workspacePanelState.additionalData).toEqual({
+        cycle: 2,
+      });
 
       await panel.close();
       state = store.getState();
-      expect(state.workspacePanelState.workspaceID).toBeUndefined();
-      expect(state.workspacePanelState.additionalData).toBeUndefined();
+      expect(state.view.workspacePanelState.workspaceID).toBeUndefined();
+      expect(state.view.workspacePanelState.additionalData).toBeUndefined();
     });
   });
 
@@ -554,26 +562,26 @@ describe('ChatInstance.customPanels - Workspace Panels', () => {
       // Open default panel
       await defaultPanel.open({ title: 'Default Panel' });
       let state = store.getState();
-      expect(state.customPanelState.isOpen).toBe(true);
-      expect(state.customPanelState.options.title).toBe('Default Panel');
+      expect(state.view.customPanelState.isOpen).toBe(true);
+      expect(state.view.customPanelState.options.title).toBe('Default Panel');
 
       // Open workspace panel
       await workspacePanel.open({ workspaceId: 'workspace-123' });
       state = store.getState();
-      expect(state.workspacePanelState.isOpen).toBe(true);
-      expect(state.workspacePanelState.workspaceID).toBe('workspace-123');
+      expect(state.view.workspacePanelState.isOpen).toBe(true);
+      expect(state.view.workspacePanelState.workspaceID).toBe('workspace-123');
 
       // Default panel should still be open
-      expect(state.customPanelState.isOpen).toBe(true);
-      expect(state.customPanelState.options.title).toBe('Default Panel');
+      expect(state.view.customPanelState.isOpen).toBe(true);
+      expect(state.view.customPanelState.options.title).toBe('Default Panel');
 
       // Close workspace panel
       await workspacePanel.close();
       state = store.getState();
-      expect(state.workspacePanelState.isOpen).toBe(false);
+      expect(state.view.workspacePanelState.isOpen).toBe(false);
 
       // Default panel should still be open
-      expect(state.customPanelState.isOpen).toBe(true);
+      expect(state.view.customPanelState.isOpen).toBe(true);
     });
   });
 });

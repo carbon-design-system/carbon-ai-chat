@@ -20,6 +20,8 @@ import type { MessageRequest } from '../../../src/types/messaging/Messages';
 import { MessageSendSource } from '../../../src/types/events/eventBusTypes';
 import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
 import { withMessagingView } from '../helpers/viewBindings';
+import { viewActions } from '../../../src/view/state';
+import { chatStore } from '../../../src/chat/services/attachChatView';
 
 function harness(
   presentation?:
@@ -163,14 +165,14 @@ it('publishes the same conversation states with an adapter or without a view', a
         announceSending: announce,
         requestComposerFocus: focus,
         isHomeScreenOpen: () =>
-          manager.store.getState().persistedToBrowserStorage.homeScreenState
-            .isHomeScreenOpen,
+          chatStore(manager).getState().view.persistedToBrowserStorage
+            .homeScreenState.isHomeScreenOpen,
         closeHomeScreen: () =>
-          manager.store.dispatch(actions.setHomeScreenIsOpen(false)),
+          manager.store.dispatch(viewActions.setHomeScreenIsOpen(false)),
         isResponsePanelOpen: () =>
-          manager.store.getState().responsePanelState.isOpen,
+          chatStore(manager).getState().view.responsePanelState.isOpen,
         closeResponsePanel: () =>
-          manager.store.dispatch(actions.setResponsePanelIsOpen(false)),
+          manager.store.dispatch(viewActions.setResponsePanelIsOpen(false)),
       });
     const { store, hydration, transport, footer, send, manager, sender } =
       harness(withAdapter ? makeAdapter : undefined);
@@ -178,7 +180,7 @@ it('publishes the same conversation states with an adapter or without a view', a
       hasListeners: () => false,
     } as unknown as ServiceManager['eventBus'];
     const coordinator = sender;
-    store.dispatch(actions.setHomeScreenIsOpen(false));
+    store.dispatch(viewActions.setHomeScreenIsOpen(false));
     store.dispatch(actions.setActiveResponseId('existing-response'));
     store.dispatch(
       actions.updateStructuredData({ user_defined: { value: 1 } }, false)

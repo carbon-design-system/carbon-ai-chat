@@ -9,7 +9,7 @@
 
 import type { AppStore } from '../store/appStore';
 import { CarbonTheme } from '../../types/config/CarbonTheme';
-import { AppState, ThemeState } from '../../types/state/AppState';
+import { ConversationState, ThemeState } from '../../types/state/AppState';
 import { getCSSVariableValue, isColorLighterThan } from '../utils/colors';
 import { consoleError } from '../utils/miscUtils';
 import { UPDATE_THEME_STATE } from '../store/actions';
@@ -26,7 +26,7 @@ enum CARBON_BG_HEX {
  * Specifically monitors --cds-background and switches between themes based on detected values.
  */
 class ThemeWatcherService {
-  private store: AppStore<AppState>;
+  private store: AppStore<ConversationState>;
   private observer: MutationObserver | null = null;
   private pollInterval: number | null = null;
   private isWatching = false;
@@ -34,7 +34,10 @@ class ThemeWatcherService {
   private lastBgColor: string | null = null;
   private parentElement: HTMLElement;
 
-  constructor(store: AppStore<AppState>, element = document.documentElement) {
+  constructor(
+    store: AppStore<ConversationState>,
+    element = document.documentElement
+  ) {
     this.store = store;
     this.parentElement = element;
   }

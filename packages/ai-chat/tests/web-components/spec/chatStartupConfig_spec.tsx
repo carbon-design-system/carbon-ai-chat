@@ -35,6 +35,7 @@ import {
   setupAfterEach,
   setupBeforeEach,
 } from '../../test_helpers';
+import { chatStore } from '../../../src/chat/services/attachChatView';
 
 type ContainerElement = HTMLElement & {
   config: PublicConfig;
@@ -45,7 +46,7 @@ type ContainerElement = HTMLElement & {
 };
 
 function storeOf(instance: ChatInstance) {
-  return instance.serviceManager.store;
+  return chatStore(instance.serviceManager);
 }
 
 interface Surface {
@@ -189,18 +190,18 @@ describe('config updates after startup', () => {
     const first = { markdownItPlugins: [plugin] };
     await set({ markdown: first });
     await waitFor(() =>
-      expect(storeOf(instance).getState().markdownConfig).toBe(first)
+      expect(storeOf(instance).getState().view.markdownConfig).toBe(first)
     );
 
     const second = { markdownItPlugins: [plugin, plugin] };
     await set({ markdown: second });
     await waitFor(() =>
-      expect(storeOf(instance).getState().markdownConfig).toBe(second)
+      expect(storeOf(instance).getState().view.markdownConfig).toBe(second)
     );
 
     await set({ markdown: undefined });
     await waitFor(() =>
-      expect(storeOf(instance).getState().markdownConfig).toBeUndefined()
+      expect(storeOf(instance).getState().view.markdownConfig).toBeUndefined()
     );
   });
 

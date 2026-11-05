@@ -24,7 +24,7 @@ import { waitFor } from '@testing-library/react';
 
 import '../../../src/web-components/cds-aichat-container';
 import { createBaseConfig } from '../../test_helpers';
-import { AppState } from '../../../src/types/state/AppState';
+
 import { enLanguagePack } from '../../../src/types/config/LanguagePack';
 
 describe('Web component: strings supplied through config', () => {
@@ -58,7 +58,7 @@ describe('Web component: strings supplied through config', () => {
     );
 
     const { serviceManager } = capturedInstance;
-    const state: AppState = serviceManager.store.getState();
+    const state = serviceManager.store.getState();
     // Overridden key reflects the custom string.
     expect(state.languagePack.input_placeholder).toBe('Ask me anything…');
     // Unspecified keys retain the English defaults.

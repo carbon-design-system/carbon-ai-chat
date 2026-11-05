@@ -35,6 +35,7 @@ import {
   fixtureMessage,
   observeWrite,
 } from '../../../utils/itemDrawabilityFixtures';
+import { viewActions } from '../../../../src/view/state';
 
 describe('ChatInstance.messaging.addMessage', () => {
   beforeEach(setupBeforeEach);
@@ -617,7 +618,7 @@ describe('ChatInstance.messaging.addMessage', () => {
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(createBaseConfig());
       const loadingCounter = () =>
-        store.getState().assistantMessageState.isMessageLoadingCounter;
+        store.getState().view.isMessageLoadingCounter;
       const baseline = loadingCounter();
       const id = 'pin-pause';
 
@@ -811,11 +812,11 @@ describe('ChatInstance.messaging.addMessage', () => {
         config as any
       );
       const isHomeScreenOpen = () =>
-        store.getState().persistedToBrowserStorage.homeScreenState
+        store.getState().view.persistedToBrowserStorage.homeScreenState
           .isHomeScreenOpen;
 
       act(() => {
-        store.dispatch(actions.setHomeScreenIsOpen(true));
+        store.dispatch(viewActions.setHomeScreenIsOpen(true));
       });
       expect(isHomeScreenOpen()).toBe(true);
 
@@ -835,7 +836,7 @@ describe('ChatInstance.messaging.addMessage', () => {
         handler: areAnyAgentsOnlineEvent,
       });
       const loadingCounter = () =>
-        store.getState().assistantMessageState.isMessageLoadingCounter;
+        store.getState().view.isMessageLoadingCounter;
       const baseline = loadingCounter();
       const id = 'pin-connect-to-agent';
 
@@ -867,7 +868,7 @@ describe('ChatInstance.messaging.addMessage', () => {
         onError,
       });
       const loadingCounter = () =>
-        store.getState().assistantMessageState.isMessageLoadingCounter;
+        store.getState().view.isMessageLoadingCounter;
       const baseline = loadingCounter();
       const receive = jest.fn();
       instance.on({ type: BusEventType.RECEIVE, handler: receive });
@@ -915,7 +916,7 @@ describe('ChatInstance.messaging.addMessage', () => {
       const { instance, store, availability } =
         await renderWithPendingAvailability();
       const loadingCounter = () =>
-        store.getState().assistantMessageState.isMessageLoadingCounter;
+        store.getState().view.isMessageLoadingCounter;
       const baseline = loadingCounter();
       const id = 'pin-connect-restart';
 
@@ -939,7 +940,7 @@ describe('ChatInstance.messaging.addMessage', () => {
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(createBaseConfig());
       const loadingCounter = () =>
-        store.getState().assistantMessageState.isMessageLoadingCounter;
+        store.getState().view.isMessageLoadingCounter;
       const baseline = loadingCounter();
       const counts: number[] = [];
       const unsubscribe = store.subscribe(() => counts.push(loadingCounter()));

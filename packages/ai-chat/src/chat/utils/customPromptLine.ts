@@ -16,6 +16,7 @@ import {
   hasMeaningfulContent,
 } from './writeableElementPresence';
 import { focusOnFirstFocusableElement, getDeepActiveElement } from './domUtils';
+import { chatStore } from '../services/attachChatView';
 
 export function hasCustomPromptLine(manager: ServiceManager): boolean {
   return hasMeaningfulContent(
@@ -53,10 +54,10 @@ export function requestComposerFocus(manager: ServiceManager): boolean {
   if (!hasCustomPromptLine(manager)) {
     return manager.view.current?.instance.input()?.requestFocus() ?? false;
   }
-  const state = manager.store.getState();
+  const state = chatStore(manager).getState();
   if (
     !selectCustomPromptLineVisible(state) ||
-    !state.persistedToBrowserStorage.viewState.mainWindow
+    !state.view.persistedToBrowserStorage.viewState.mainWindow
   ) {
     return false;
   }

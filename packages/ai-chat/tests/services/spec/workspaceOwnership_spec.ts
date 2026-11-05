@@ -24,6 +24,8 @@ import {
   MessageResponseTypes,
   PreviewCardItem,
 } from '../../../src/types/messaging/Messages';
+import { viewActions } from '../../../src/view/state';
+import { viewPublicFields } from '../../../src/view/state/publicFields';
 
 function fixture(fire: (event: any) => Promise<void>) {
   const store = makeConfigStore({});
@@ -52,6 +54,7 @@ describe('workspace event ownership', () => {
     'isolates retained preview messages for $type (read early: $readEarly)',
     async ({ type, readEarly }) => {
       const cache = new PublicStateSnapshotCache();
+      cache.addDefinitions(viewPublicFields);
       let snapshot: ReturnType<PublicStateSnapshotCache['createSnapshot']>;
       let workingMessage: MessageResponse;
       const { store, panel } = fixture(async (event) => {
@@ -85,7 +88,7 @@ describe('workspace event ownership', () => {
       const localItem = Object.values(store.getState().allMessageItemsByID)[0];
       // Match PreviewCardComponent's dispatch and public open options, including an empty workspace ID.
       store.dispatch(
-        actions.setWorkspacePanelData({
+        viewActions.setWorkspacePanelData({
           workspaceID: item.workspace_id,
           fullMessage: message,
           localMessageItem: localItem,
@@ -152,7 +155,7 @@ describe('workspace event ownership', () => {
         actions.upsertMessage({ id: 'preview', output: { generic: [item] } })
       );
       store.dispatch(
-        actions.setWorkspacePanelData({
+        viewActions.setWorkspacePanelData({
           workspaceID: '',
           fullMessage: store.getState().allMessagesByID.preview,
           localMessageItem: Object.values(
@@ -205,7 +208,7 @@ describe('workspace event ownership', () => {
       (local) => local.item.response_type === MessageResponseTypes.TEXT
     );
     store.dispatch(
-      actions.setWorkspacePanelData({
+      viewActions.setWorkspacePanelData({
         workspaceID: '',
         fullMessage: store.getState().allMessagesByID.preview,
         localMessageItem: previewItem,
@@ -242,21 +245,21 @@ describe('workspace event ownership', () => {
       });
       if (path === 'preview options') {
         store.dispatch(
-          actions.setWorkspacePanelData({
+          viewActions.setWorkspacePanelData({
             workspaceID: 'workspace',
             additionalData,
           })
         );
       }
       await panel.open({ workspaceId: 'workspace', additionalData });
-      expect(store.getState().workspacePanelState.additionalData).toEqual(
+      expect(store.getState().view.workspacePanelState.additionalData).toEqual(
         additionalData
       );
       await panel.close();
       expect(eventData).toBe(additionalData);
       expect(additionalData.value).toBe('edited');
       expect(
-        store.getState().workspacePanelState.additionalData
+        store.getState().view.workspacePanelState.additionalData
       ).toBeUndefined();
     }
   );
@@ -271,6 +274,7 @@ describe('workspace event ownership', () => {
     'keeps old snapshots stable and future edits visible for $type (read early: $readEarly)',
     async ({ type, readEarly }) => {
       const cache = new PublicStateSnapshotCache();
+      cache.addDefinitions(viewPublicFields);
       let snapshot: ReturnType<PublicStateSnapshotCache['createSnapshot']>;
       const { store, panel } = fixture(async (event) => {
         if (event.type === type) {
@@ -322,7 +326,7 @@ describe('workspace event ownership', () => {
             manager.restartCount += 1;
           }
           store.dispatch(
-            actions.setWorkspacePanelData({
+            viewActions.setWorkspacePanelData({
               workspaceID: 'new',
               additionalData: { value: 'new' },
             })
@@ -334,7 +338,7 @@ describe('workspace event ownership', () => {
         workspaceId: 'old',
         additionalData: { value: 'old' },
       });
-      expect(store.getState().workspacePanelState.additionalData).toEqual({
+      expect(store.getState().view.workspacePanelState.additionalData).toEqual({
         value: 'new',
       });
     }
@@ -352,7 +356,7 @@ describe('workspace event ownership', () => {
     store.subscribe(() => {
       if (
         !replaced &&
-        store.getState().workspacePanelState.workspaceID === 'old'
+        store.getState().view.workspacePanelState.workspaceID === 'old'
       ) {
         replaced = true;
         replacementOpen = panel.open({
@@ -397,7 +401,7 @@ describe('received preview workspace freeze contract', () => {
       store.getState().allMessageItemsByID
     ).find((local) => local.fullMessageID === 'received-preview');
     store.dispatch(
-      actions.setWorkspacePanelData({
+      viewActions.setWorkspacePanelData({
         workspaceID: item.workspace_id,
         fullMessage,
         localMessageItem,

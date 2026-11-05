@@ -8,9 +8,9 @@
  */
 
 import { selectHasInFlightUpload } from '../../store/selectors';
-import type { AppState } from '../../../types/state/AppState';
+import type { ConversationState } from '../../../types/state/AppState';
 
-function assertNoInFlightUpload(state: AppState) {
+function assertNoInFlightUpload(state: ConversationState) {
   if (selectHasInFlightUpload(state)) {
     throw new Error(
       'Cannot send while a file upload is in progress. Check instance.getState().input.hasInFlightUploads before sending, or wait for the upload to finish.'

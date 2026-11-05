@@ -115,13 +115,13 @@ class NativeAutocomplete extends NativeChatView {
       this.lifetime.report = this.captureErrorReporter();
     }
     this.selectStore(
-      (state) => state.chatWidthBreakpoint,
+      (state) => state.view.chatWidthBreakpoint,
       (breakpoint) => {
         this.attached = breakpoint !== ChatWidthBreakpoint.WIDE;
       }
     );
     this.selectStore(
-      (state) => state.chatHeight,
+      (state) => state.view.chatHeight,
       (height) => {
         this.maxHeight = `${Math.floor(height * 0.4)}px`;
       }

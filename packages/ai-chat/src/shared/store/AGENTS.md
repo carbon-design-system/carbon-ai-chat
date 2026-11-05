@@ -33,12 +33,14 @@ Read before editing this custom Redux-style store. Package rules: [ai-chat/AGENT
 
 ## Partitions
 
-Another layer adds its own part of the state with `attachStorePartition` from `src/sdk/internal/`. A partition's reducer runs after the store's own reducer on every action and receives the store state after it, so one dispatch updates both and notifies once. Attaching a key the store already has a partition for does nothing.
+Another layer adds its own part of the state with `attachStorePartition` from `src/sdk/internal/`. A partition's reducer runs after the store's own reducer on every action and receives the store state after it, so one dispatch updates both and notifies once. Attaching a key the store already has a partition for does nothing. A partition reducer returns the same object when nothing changed, or every dispatch notifies. If it throws, the whole dispatch fails.
+
+The prebuilt chat's view partition lives under `view` ([src/view/state/](../../view/state/)). These reducers never write view state: the view reacts to the conversation actions `src/sdk/internal/` lists, in the same dispatch.
 
 ## Adding a new state slice — checklist
 
 1. Choose `reducers.ts` or the human-agent slice.
-2. Extend `AppState` or the slice type in [src/types/state/](../../types/state/).
+2. Extend `ConversationState` or the slice type in [src/types/state/](../../types/state/).
 3. Add a pure reducer case.
 4. Add a selector; components must not read the shape directly.
 5. Add an action creator if dispatch is needed.

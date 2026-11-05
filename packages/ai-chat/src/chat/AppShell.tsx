@@ -188,7 +188,7 @@ function AppShell({
 }: AppShellProps) {
   const viewState = useChatViewStateInstance();
   const catastrophicErrorType = useSelector(
-    (state: AppState) => state.catastrophicErrorType
+    (state: AppState) => state.view.catastrophicErrorType
   );
   const [targets, setTargets] = useState<ShellLayoutTargets>();
   const [content, setContent] = useState<ShellContentState>();

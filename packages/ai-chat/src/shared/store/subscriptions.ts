@@ -14,42 +14,6 @@
 import { ServiceManager } from '../services/ServiceManager';
 import isEqual from 'lodash-es/isEqual.js';
 import { refreshLocalization } from '../utils/intlUtils';
-import { toPersistableState } from './persistenceUtils';
-
-/**
- * Persists `persistedToBrowserStorage` whenever it changes. By default this writes to the browser's
- * sessionStorage. When the host owns persistence (`config.persistedState`), the change is reported to
- * its `onStateChange` callback instead — the persisted-slice reference gate below is exactly "the
- * persistable state changed", so the callback is not fired on transient changes such as input text.
- */
-function copyToSessionStorage(serviceManager: ServiceManager) {
-  let previousPersistedToBrowserStorage =
-    serviceManager.store.getState().persistedToBrowserStorage;
-  return () => {
-    const { persistedToBrowserStorage, config } =
-      serviceManager.store.getState();
-    const persistChatSession =
-      previousPersistedToBrowserStorage !== persistedToBrowserStorage;
-
-    if (persistChatSession) {
-      previousPersistedToBrowserStorage = persistedToBrowserStorage;
-
-      const persistedStateConfig = config.public.persistedState;
-      if (
-        persistedStateConfig?.initialState ||
-        persistedStateConfig?.onStateChange
-      ) {
-        persistedStateConfig.onStateChange?.(
-          toPersistableState(persistedToBrowserStorage)
-        );
-      } else {
-        serviceManager.userSessionStorageService.persistSession(
-          persistedToBrowserStorage
-        );
-      }
-    }
-  };
-}
 
 /**
  * Rebuilds the i18n formatter whenever the active strings or locale change. The
@@ -84,4 +48,4 @@ function refreshLocalizationOnChange(serviceManager: ServiceManager) {
   };
 }
 
-export { copyToSessionStorage, refreshLocalizationOnChange };
+export { refreshLocalizationOnChange };

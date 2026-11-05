@@ -32,6 +32,8 @@ import {
   setupAfterEach,
   setupBeforeEach,
 } from '../../test_helpers';
+import { viewActions } from '../../../src/view/state';
+import { chatStore } from '../../../src/chat/services/attachChatView';
 
 class DisclaimerProvider extends LitElement {
   readonly provider = new ContextProvider(this, {
@@ -53,7 +55,9 @@ async function flush(view: DisclaimerBody) {
 
 async function createBody() {
   const store = makeConfigStore({});
-  store.dispatch(actions.setViewState({ mainWindow: true, launcher: false }));
+  store.dispatch(
+    viewActions.setViewState({ mainWindow: true, launcher: false })
+  );
   const subscriptions = new Set<() => void>();
   const subscribe = store.subscribe;
   store.subscribe = (listener) => {
@@ -201,9 +205,7 @@ describe('native disclaimer body', () => {
     input.value = 'Kept';
     const gradientID = view.querySelector('linearGradient').id;
     const renderView = jest.spyOn(view as any, 'renderView');
-    store.dispatch(
-      actions.setChatMessagesStateProperty('isMessageLoadingCounter', 1)
-    );
+    store.dispatch(viewActions.setViewValue('isMessageLoadingCounter', 1));
     store.dispatch(
       actions.setAppStateValue('humanAgentState', {
         ...store.getState().humanAgentState,
@@ -238,11 +240,15 @@ describe('native disclaimer body', () => {
     expect(count).toBeGreaterThan(0);
     const scroll = jest.fn();
     scrollBody.addEventListener('scroll', scroll);
-    store.dispatch(actions.setViewState({ mainWindow: false, launcher: true }));
+    store.dispatch(
+      viewActions.setViewState({ mainWindow: false, launcher: true })
+    );
     await flush(view);
     jest.advanceTimersByTime(500);
     expect(scroll).not.toHaveBeenCalled();
-    store.dispatch(actions.setViewState({ mainWindow: true, launcher: false }));
+    store.dispatch(
+      viewActions.setViewState({ mainWindow: true, launcher: false })
+    );
     await flush(view);
     jest.advanceTimersByTime(50);
     view.remove();
@@ -342,8 +348,8 @@ describe('native disclaimer body', () => {
       // Each wrapper case starts with the disclaimer not yet accepted.
       expect(
         Object.values(
-          instance.serviceManager.store.getState().persistedToBrowserStorage
-            .disclaimersAccepted
+          chatStore(instance.serviceManager).getState().view
+            .persistedToBrowserStorage.disclaimersAccepted
         )
       ).not.toContain(true);
       const chat = getChatHost();
@@ -374,7 +380,7 @@ describe('native disclaimer body', () => {
       mounted.rerender(host(true));
       act(() => {
         instance.serviceManager.store.dispatch(
-          actions.setAppStateValue(
+          viewActions.setViewValue(
             'chatWidthBreakpoint',
             ChatWidthBreakpoint.WIDE
           )
@@ -393,8 +399,8 @@ describe('native disclaimer body', () => {
       await waitFor(() => expect(panel.open).toBe(false));
       expect(
         Object.values(
-          instance.serviceManager.store.getState().persistedToBrowserStorage
-            .disclaimersAccepted
+          chatStore(instance.serviceManager).getState().view
+            .persistedToBrowserStorage.disclaimersAccepted
         )
       ).toContain(true);
       expect(after).toHaveBeenCalledTimes(1);

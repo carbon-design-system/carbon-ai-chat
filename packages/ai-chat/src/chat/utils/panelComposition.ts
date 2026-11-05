@@ -44,15 +44,15 @@ interface PanelViewInputs {
   isHydratingComplete: boolean;
   shouldShowHydrationPanel: boolean;
   isHomeScreenActive: boolean;
-  customPanelState: AppState['customPanelState'];
-  historyPanelState: AppState['historyPanelState'];
+  customPanelState: AppState['view']['customPanelState'];
+  historyPanelState: AppState['view']['historyPanelState'];
   showDisclaimer: boolean;
-  responsePanelState: AppState['responsePanelState'];
+  responsePanelState: AppState['view']['responsePanelState'];
   responseHasMessage: boolean;
-  iFramePanelState: AppState['iFramePanelState'];
-  viewSourcePanelState: AppState['viewSourcePanelState'];
+  iFramePanelState: AppState['view']['iFramePanelState'];
+  viewSourcePanelState: AppState['view']['viewSourcePanelState'];
   isInputReadonly: boolean;
-  catastrophicErrorPanelState: AppState['catastrophicErrorPanelState'];
+  catastrophicErrorPanelState: AppState['view']['catastrophicErrorPanelState'];
   contentRevision: object;
 }
 

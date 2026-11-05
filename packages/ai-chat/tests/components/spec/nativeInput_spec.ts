@@ -41,6 +41,7 @@ import {
   setupAfterEach,
   setupBeforeEach,
 } from '../../test_helpers';
+import { viewActions } from '../../../src/view/state';
 
 class InputProvider extends LitElement {
   readonly provider = new ContextProvider(this, {
@@ -820,7 +821,7 @@ it('announces the focus shortcut once after an initially disabled shortcut is en
   prompt.dispatchEvent(new CustomEvent('cds-aichat-prompt-focus'));
   expect(dispatch).toHaveBeenCalledTimes(1);
   expect(dispatch).toHaveBeenCalledWith(
-    actions.announceMessage({
+    viewActions.announceMessage({
       messageID: 'input_keyboardShortcutAnnouncement',
       messageValues: { key: 'F6' },
     })
@@ -976,7 +977,7 @@ it('mirrors local divergence on a store notification even when the tracked raw v
   );
   autocomplete.onStarterSelected('ok');
   expect(onSendInput).not.toHaveBeenCalled();
-  store.dispatch(actions.changeState({ chatHeight: 501 }));
+  store.dispatch(viewActions.setViewValue('chatHeight', 501));
   await update(view, { maxInputChars: 100 });
   send(control);
   expect(onSendInput.mock.calls[0][0]).toBe('stored over limit');
@@ -985,7 +986,7 @@ it('mirrors local divergence on a store notification even when the tracked raw v
 it('does not update the input view for an unrelated store notification with no value or slice change', async () => {
   const { view, store } = await fixture({ trackInputState: true });
   const requestUpdate = jest.spyOn(view, 'requestUpdate');
-  store.dispatch(actions.changeState({ chatHeight: 501 }));
+  store.dispatch(viewActions.setViewValue('chatHeight', 501));
   await Promise.resolve();
   expect(requestUpdate).not.toHaveBeenCalled();
 });

@@ -26,6 +26,7 @@ import actions from '../../../src/shared/store/actions';
 import { buildLanguagePack } from '../../../src/shared/store/doCreateStore';
 import { ServiceManager } from '../../../src/shared/services/ServiceManager';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
+import { viewActions } from '../../../src/view/state';
 
 const BASE_CONFIG: PublicConfig = { locale: 'en' };
 
@@ -53,7 +54,9 @@ describe('refreshLocalizationOnChange', () => {
     const serviceManager = { store } as unknown as ServiceManager;
     store.subscribe(refreshLocalizationOnChange(serviceManager));
 
-    store.dispatch(actions.changeState({ showNonHeaderBackgroundCover: true }));
+    store.dispatch(
+      viewActions.setViewValue('showNonHeaderBackgroundCover', true)
+    );
 
     expect(serviceManager.intl).toBeUndefined();
   });

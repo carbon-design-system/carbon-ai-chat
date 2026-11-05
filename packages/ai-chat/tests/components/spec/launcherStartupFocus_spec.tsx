@@ -17,6 +17,7 @@ import {
   setupAfterEach,
   setupBeforeEach,
 } from '../../test_helpers';
+import { chatStore } from '../../../src/chat/services/attachChatView';
 
 // Each wrapper case must boot from a fresh session, not the previous one's.
 beforeEach(() => {
@@ -50,7 +51,8 @@ it.each([
         onBeforeRender: (chat) => {
           instance = chat;
           beforeStates.push(
-            chat.serviceManager.store.getState().initialViewChangeComplete
+            chatStore(chat.serviceManager).getState().view
+              .initialViewChangeComplete
           );
         },
         onAfterRender: after,
@@ -63,7 +65,8 @@ it.each([
       });
       expect(beforeStates).toEqual([false]);
       expect(
-        instance.serviceManager.store.getState().initialViewChangeComplete
+        chatStore(instance.serviceManager).getState().view
+          .initialViewChangeComplete
       ).toBe(true);
       expect(document.activeElement).toBe(outside);
     } finally {

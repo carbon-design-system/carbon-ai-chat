@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { AppState } from '../../types/state/AppState';
+import { ConversationState } from '../../types/state/AppState';
 import {
   HA_END_CHAT,
   HA_SET_HUMAN_AGENT_AVAILABILITY,
@@ -34,9 +34,9 @@ import { ResponseUserProfile } from '../../types/messaging/Messages';
 
 const humanAgentReducers: { [key: string]: ReducerType } = {
   [HA_SET_IS_CONNECTING]: (
-    state: AppState,
+    state: ConversationState,
     action: { isConnecting: boolean; localMessageID: string }
-  ): AppState => {
+  ): ConversationState => {
     const { isConnecting, localMessageID } = action;
     return {
       ...state,
@@ -44,10 +44,6 @@ const humanAgentReducers: { [key: string]: ReducerType } = {
         ...state.humanAgentState,
         isConnecting,
         activeLocalMessageID: localMessageID,
-        // When connecting, clear any unread messages from a previous conversation.
-        numUnreadMessages: isConnecting
-          ? 0
-          : state.humanAgentState.numUnreadMessages,
       },
       persistedToBrowserStorage: {
         ...state.persistedToBrowserStorage,
@@ -62,9 +58,9 @@ const humanAgentReducers: { [key: string]: ReducerType } = {
   },
 
   [HA_SET_IS_RECONNECTING]: (
-    state: AppState,
+    state: ConversationState,
     action: { isReconnecting: boolean }
-  ): AppState => {
+  ): ConversationState => {
     const { isReconnecting } = action;
     return {
       ...state,
@@ -76,9 +72,9 @@ const humanAgentReducers: { [key: string]: ReducerType } = {
   },
 
   [HA_SET_HUMAN_AGENT_AVAILABILITY]: (
-    state: AppState,
+    state: ConversationState,
     action: any
-  ): AppState => {
+  ): ConversationState => {
     if (!state.humanAgentState.isConnecting) {
       // If the agent is not currently connecting, just ignore the availability update.
       return state;
@@ -95,9 +91,9 @@ const humanAgentReducers: { [key: string]: ReducerType } = {
   },
 
   [HA_SET_SHOW_SCREEN_SHARE_REQUEST]: (
-    state: AppState,
+    state: ConversationState,
     { showRequest }: any
-  ): AppState => {
+  ): ConversationState => {
     return {
       ...state,
       humanAgentState: {
@@ -108,9 +104,9 @@ const humanAgentReducers: { [key: string]: ReducerType } = {
   },
 
   [HA_SET_HUMAN_AGENT_JOINED]: (
-    state: AppState,
+    state: ConversationState,
     action: { responseUserProfile?: ResponseUserProfile }
-  ): AppState => {
+  ): ConversationState => {
     const responseUserProfiles = {
       ...state.persistedToBrowserStorage.humanAgentState.responseUserProfiles,
     };
@@ -140,9 +136,9 @@ const humanAgentReducers: { [key: string]: ReducerType } = {
   },
 
   [HA_SET_PERSISTED_STATE]: (
-    state: AppState,
+    state: ConversationState,
     action: { state: unknown }
-  ): AppState => ({
+  ): ConversationState => ({
     ...state,
     persistedToBrowserStorage: {
       ...state.persistedToBrowserStorage,
@@ -154,9 +150,9 @@ const humanAgentReducers: { [key: string]: ReducerType } = {
   }),
 
   [HA_UPDATE_IS_SUSPENDED]: (
-    state: AppState,
+    state: ConversationState,
     action: { isSuspended: boolean }
-  ): AppState => {
+  ): ConversationState => {
     if (
       !state.humanAgentState.isConnecting &&
       !state.persistedToBrowserStorage.humanAgentState.isConnected
@@ -177,9 +173,9 @@ const humanAgentReducers: { [key: string]: ReducerType } = {
   },
 
   [HA_UPDATE_IS_TYPING]: (
-    state: AppState,
+    state: ConversationState,
     action: { isTyping: boolean }
-  ): AppState => {
+  ): ConversationState => {
     return {
       ...state,
       humanAgentState: {
@@ -189,7 +185,9 @@ const humanAgentReducers: { [key: string]: ReducerType } = {
     };
   },
 
-  [HA_SET_HUMAN_AGENT_LEFT_CHAT]: (state: AppState): AppState =>
+  [HA_SET_HUMAN_AGENT_LEFT_CHAT]: (
+    state: ConversationState
+  ): ConversationState =>
     // Remove the agent's profile and typing indicator.
     ({
       ...state,
@@ -210,9 +208,9 @@ const humanAgentReducers: { [key: string]: ReducerType } = {
     }),
 
   [HA_UPDATE_CAPABILITIES]: (
-    state: AppState,
+    state: ConversationState,
     action: { capabilities: ServiceDeskCapabilities }
-  ): AppState => {
+  ): ConversationState => {
     const newInputState = {
       ...state.humanAgentState.inputState,
       ...action.capabilities,
@@ -230,9 +228,9 @@ const humanAgentReducers: { [key: string]: ReducerType } = {
   },
 
   [HA_SET_IS_SCREEN_SHARING]: (
-    state: AppState,
+    state: ConversationState,
     { isSharing }: { isSharing: boolean }
-  ): AppState => ({
+  ): ConversationState => ({
     ...state,
     humanAgentState: {
       ...state.humanAgentState,
@@ -241,9 +239,9 @@ const humanAgentReducers: { [key: string]: ReducerType } = {
   }),
 
   [HA_UPDATE_FILE_UPLOAD_IN_PROGRESS]: (
-    state: AppState,
+    state: ConversationState,
     action: { fileUploadInProgress: boolean }
-  ): AppState => ({
+  ): ConversationState => ({
     ...state,
     humanAgentState: {
       ...state.humanAgentState,
@@ -251,7 +249,7 @@ const humanAgentReducers: { [key: string]: ReducerType } = {
     },
   }),
 
-  [HA_END_CHAT]: (state: AppState): AppState => {
+  [HA_END_CHAT]: (state: ConversationState): ConversationState => {
     // Update the UI state of the current CTA message to indicate that chat was ended.
     let newState = applyLocalMessageUIState(
       state,

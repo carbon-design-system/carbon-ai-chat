@@ -15,29 +15,45 @@ import React, {
   useRef,
 } from 'react';
 import { useSyncExternalStore } from 'use-sync-external-store/shim/index.js';
+
 import type { ExtensionHosts } from './services/extensionHosts';
+
 import type { ShellContentState } from './utils/shellLifecycle';
+
 import {
   PanelContentAdapter,
   type PanelContentParts,
 } from './components/panels/PanelContentAdapter';
+
 import IFramePanel from './components/panels/IFramePanel';
 import ViewSourcePanel from './components/panels/ViewSourcePanel';
 import CatastrophicErrorPanel from './components/panels/CatastrophicErrorPanel';
 import { PanelContentErrorBoundary } from './components/panels/PanelContentErrorBoundary';
+
 import { BodyMessageComponents } from './components/responseTypes/message/BodyMessageComponents';
+
 import { FooterButtonComponents } from './components/responseTypes/button/FooterButtonComponents';
+
 import { MessageTypeComponent } from './components-legacy/MessageTypeComponent';
+
 import { MarkdownWithDefaults } from './components/helpers/MarkdownWithDefaults/MarkdownWithDefaults';
+
 import WriteableElement from './components/helpers/WriteableElement/WriteableElement';
 import { useSelector } from './hooks/useSelector';
+
 import { useChatViewStateInstance } from './hooks/useChatViewState';
-import actions from '../shared/store/actions';
+
 import type { ButtonItem, MessageResponse } from '../types/messaging/Messages';
+
 import type { AppState } from '../types/state/AppState';
+
 import type { OnErrorData } from '../types/config/ErrorConfig';
+
 import type { MessageTypeComponentProps } from './components-legacy/MessageTypeComponentProps';
+
 import type { ServiceManager } from '../shared/services/ServiceManager';
+
+import { viewActions } from '../view/state';
 
 const noScroll = () => {};
 const renderMessageComponent = (props: MessageTypeComponentProps) => (
@@ -81,7 +97,7 @@ export function useAppShellPanels({
     (errorData: OnErrorData) => {
       serviceManager.actions.errorOccurred(errorData);
       serviceManager.store.dispatch(
-        actions.announceMessage({ messageID: 'errors_singleMessage' })
+        viewActions.announceMessage({ messageID: 'errors_singleMessage' })
       );
     },
     [serviceManager]
