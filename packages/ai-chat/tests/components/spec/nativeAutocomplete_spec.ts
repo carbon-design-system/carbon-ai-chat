@@ -8,9 +8,13 @@
  */
 
 import { ContextProvider } from '@lit/context';
+
 import { LitElement, nothing } from 'lit';
+
 import { createElement, useEffect, useState } from 'react';
+
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
+
 import '@carbon/ai-chat-components/es/components/prompt-line/src/prompt-line-shell.js';
 import type Autocomplete from '@carbon/ai-chat-components/es/components/prompt-line/autocomplete/src/autocomplete.js';
 import type PromptLine from '@carbon/ai-chat-components/es/components/prompt-line/src/prompt-line.js';
@@ -18,21 +22,30 @@ import type {
   CustomListProps,
   TriggerChangeEventDetail,
 } from '@carbon/ai-chat-components/es/components/prompt-line/src/tiptap/types.js';
+
 import '../../../src/chat/components/input/NativeAutocomplete';
 import type NativeAutocomplete from '../../../src/chat/components/input/NativeAutocomplete';
 import { AutocompleteContentAdapter } from '../../../src/chat/components/input/AutocompleteContentAdapter';
+
 import { AutocompleteContent } from '../../../src/chat/services/autocompleteContent';
+
 import { ChatViewState } from '../../../src/chat/services/chatViewState';
+
 import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
+
 import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
+
 import { createIntl } from '../../../src/shared/utils/i18n';
-import actions from '../../../src/shared/store/actions';
+
 import { ChatWidthBreakpoint } from '../../../src/types/state/AppState';
+
 import {
   makeConfigStore,
   setupAfterEach,
   setupBeforeEach,
 } from '../../test_helpers';
+
+import { viewActions } from '../../../src/view/state';
 
 class AutocompleteProvider extends LitElement {
   readonly provider = new ContextProvider(this, {
@@ -78,11 +91,12 @@ async function flush(view: NativeAutocomplete) {
 async function fixture(configure?: (view: NativeAutocomplete) => void) {
   const store = makeConfigStore({});
   store.dispatch(
-    actions.changeState({
-      chatWidthBreakpoint: ChatWidthBreakpoint.STANDARD,
-      chatHeight: 601,
-    })
+    viewActions.setViewValue(
+      'chatWidthBreakpoint',
+      ChatWidthBreakpoint.STANDARD
+    )
   );
+  store.dispatch(viewActions.setViewValue('chatHeight', 601));
   const subscriptions = new Set<() => void>();
   const subscribe = store.subscribe;
   store.subscribe = (listener) => {
@@ -226,11 +240,9 @@ describe('native autocomplete', () => {
       list.style.getPropertyValue('--cds-aichat-autocomplete-max-height')
     ).toBe('240px');
     f.store.dispatch(
-      actions.changeState({
-        chatWidthBreakpoint: ChatWidthBreakpoint.WIDE,
-        chatHeight: 1001,
-      })
+      viewActions.setViewValue('chatWidthBreakpoint', ChatWidthBreakpoint.WIDE)
     );
+    f.store.dispatch(viewActions.setViewValue('chatHeight', 1001));
     await flush(f.view);
     expect(f.shell.querySelector('cds-aichat-autocomplete')).toBe(list);
     expect(list.attached).toBe(false);
@@ -481,7 +493,7 @@ describe('native autocomplete', () => {
     pending.get('slow').resolve([items[0]]);
     await flush(f.view);
     expect(list.items).toEqual([items[1]]);
-    f.store.dispatch(actions.setAppStateValue('chatHeight', 900));
+    f.store.dispatch(viewActions.setViewValue('chatHeight', 900));
     await flush(f.view);
     expect(resolver.mock.calls.map(([query]) => query)).toEqual([
       'first',
@@ -592,7 +604,7 @@ describe('native autocomplete', () => {
     const consumer = document.createElement('section');
     document.body.append(consumer);
     consumer.append(list);
-    f.store.dispatch(actions.setAppStateValue('chatHeight', 700));
+    f.store.dispatch(viewActions.setViewValue('chatHeight', 700));
     await flush(f.view);
     expect(list.parentElement).toBe(consumer);
     await f.clear();

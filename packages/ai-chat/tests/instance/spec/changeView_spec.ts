@@ -53,14 +53,18 @@ describe('ChatInstance.changeView', () => {
     // Test launcher view
     await instance.changeView('launcher' as ViewType);
     let state = store.getState();
-    expect(state.persistedToBrowserStorage.viewState.launcher).toBe(true);
-    expect(state.persistedToBrowserStorage.viewState.mainWindow).toBe(false);
+    expect(state.view.persistedToBrowserStorage.viewState.launcher).toBe(true);
+    expect(state.view.persistedToBrowserStorage.viewState.mainWindow).toBe(
+      false
+    );
 
     // Test mainWindow view
     await instance.changeView('mainWindow' as ViewType);
     state = store.getState();
-    expect(state.persistedToBrowserStorage.viewState.launcher).toBe(false);
-    expect(state.persistedToBrowserStorage.viewState.mainWindow).toBe(true);
+    expect(state.view.persistedToBrowserStorage.viewState.launcher).toBe(false);
+    expect(state.view.persistedToBrowserStorage.viewState.mainWindow).toBe(
+      true
+    );
   });
 
   it('should accept ViewState object and update Redux state', async () => {
@@ -75,8 +79,10 @@ describe('ChatInstance.changeView', () => {
     await instance.changeView(viewState);
 
     const state = store.getState();
-    expect(state.persistedToBrowserStorage.viewState.launcher).toBe(true);
-    expect(state.persistedToBrowserStorage.viewState.mainWindow).toBe(false);
+    expect(state.view.persistedToBrowserStorage.viewState.launcher).toBe(true);
+    expect(state.view.persistedToBrowserStorage.viewState.mainWindow).toBe(
+      false
+    );
   });
 
   it('should accept partial ViewState object and update Redux state', async () => {
@@ -86,8 +92,10 @@ describe('ChatInstance.changeView', () => {
     // First set both views to a known state
     await instance.changeView({ launcher: true, mainWindow: true });
     let state = store.getState();
-    expect(state.persistedToBrowserStorage.viewState.launcher).toBe(true);
-    expect(state.persistedToBrowserStorage.viewState.mainWindow).toBe(true);
+    expect(state.view.persistedToBrowserStorage.viewState.launcher).toBe(true);
+    expect(state.view.persistedToBrowserStorage.viewState.mainWindow).toBe(
+      true
+    );
 
     // Now update only launcher with partial ViewState
     const partialViewState = {
@@ -97,9 +105,11 @@ describe('ChatInstance.changeView', () => {
     await instance.changeView(partialViewState as ViewState);
 
     state = store.getState();
-    expect(state.persistedToBrowserStorage.viewState.launcher).toBe(false);
+    expect(state.view.persistedToBrowserStorage.viewState.launcher).toBe(false);
     // mainWindow should remain unchanged
-    expect(state.persistedToBrowserStorage.viewState.mainWindow).toBe(true);
+    expect(state.view.persistedToBrowserStorage.viewState.mainWindow).toBe(
+      true
+    );
   });
 
   it('should update view state accessible through getState', async () => {
@@ -118,17 +128,19 @@ describe('ChatInstance.changeView', () => {
     expect(newInstanceState.viewState.launcher).toBe(true);
     expect(newInstanceState.viewState.mainWindow).toBe(false);
 
-    expect(newStoreState.persistedToBrowserStorage.viewState).toBeDefined();
-    expect(newStoreState.persistedToBrowserStorage.viewState.launcher).toBe(
-      true
-    );
-    expect(newStoreState.persistedToBrowserStorage.viewState.mainWindow).toBe(
-      false
-    );
+    expect(
+      newStoreState.view.persistedToBrowserStorage.viewState
+    ).toBeDefined();
+    expect(
+      newStoreState.view.persistedToBrowserStorage.viewState.launcher
+    ).toBe(true);
+    expect(
+      newStoreState.view.persistedToBrowserStorage.viewState.mainWindow
+    ).toBe(false);
 
     // Verify instance and store states are in sync
     expect(newInstanceState.viewState).toEqual(
-      newStoreState.persistedToBrowserStorage.viewState
+      newStoreState.view.persistedToBrowserStorage.viewState
     );
   });
 
@@ -154,20 +166,32 @@ describe('ChatInstance.changeView', () => {
       // Test switching to launcher
       await instance.changeView('launcher' as ViewType);
       let state = store.getState();
-      expect(state.persistedToBrowserStorage.viewState.launcher).toBe(true);
-      expect(state.persistedToBrowserStorage.viewState.mainWindow).toBe(false);
+      expect(state.view.persistedToBrowserStorage.viewState.launcher).toBe(
+        true
+      );
+      expect(state.view.persistedToBrowserStorage.viewState.mainWindow).toBe(
+        false
+      );
 
       // Test switching to mainWindow
       await instance.changeView('mainWindow' as ViewType);
       state = store.getState();
-      expect(state.persistedToBrowserStorage.viewState.launcher).toBe(false);
-      expect(state.persistedToBrowserStorage.viewState.mainWindow).toBe(true);
+      expect(state.view.persistedToBrowserStorage.viewState.launcher).toBe(
+        false
+      );
+      expect(state.view.persistedToBrowserStorage.viewState.mainWindow).toBe(
+        true
+      );
 
       // Test switching back to launcher
       await instance.changeView('launcher' as ViewType);
       state = store.getState();
-      expect(state.persistedToBrowserStorage.viewState.launcher).toBe(true);
-      expect(state.persistedToBrowserStorage.viewState.mainWindow).toBe(false);
+      expect(state.view.persistedToBrowserStorage.viewState.launcher).toBe(
+        true
+      );
+      expect(state.view.persistedToBrowserStorage.viewState.mainWindow).toBe(
+        false
+      );
     });
 
     it('should handle ViewState with both views true', async () => {
@@ -183,8 +207,12 @@ describe('ChatInstance.changeView', () => {
       await instance.changeView(viewState);
 
       const state = store.getState();
-      expect(state.persistedToBrowserStorage.viewState.launcher).toBe(true);
-      expect(state.persistedToBrowserStorage.viewState.mainWindow).toBe(true);
+      expect(state.view.persistedToBrowserStorage.viewState.launcher).toBe(
+        true
+      );
+      expect(state.view.persistedToBrowserStorage.viewState.mainWindow).toBe(
+        true
+      );
     });
 
     it('should handle ViewState with both views false', async () => {
@@ -204,8 +232,12 @@ describe('ChatInstance.changeView', () => {
       await instance.changeView(viewState);
 
       const state = store.getState();
-      expect(state.persistedToBrowserStorage.viewState.launcher).toBe(false);
-      expect(state.persistedToBrowserStorage.viewState.mainWindow).toBe(false);
+      expect(state.view.persistedToBrowserStorage.viewState.launcher).toBe(
+        false
+      );
+      expect(state.view.persistedToBrowserStorage.viewState.mainWindow).toBe(
+        false
+      );
     });
   });
 
@@ -239,7 +271,7 @@ describe('ChatInstance.changeView', () => {
       );
 
       expect(
-        store.getState().persistedToBrowserStorage.viewState.mainWindow
+        store.getState().view.persistedToBrowserStorage.viewState.mainWindow
       ).toBe(true);
       expect(hydrateSpy).toHaveBeenCalled();
     });
@@ -260,7 +292,7 @@ describe('ChatInstance.changeView', () => {
       );
 
       expect(
-        store.getState().persistedToBrowserStorage.viewState.mainWindow
+        store.getState().view.persistedToBrowserStorage.viewState.mainWindow
       ).toBe(false);
       expect(hydrateSpy).not.toHaveBeenCalled();
     });

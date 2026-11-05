@@ -84,7 +84,7 @@ async function prepareHost(
   });
   await page.waitForFunction(
     () =>
-      window.chatInstance?.serviceManager?.store.getState()
+      window.chatInstance?.serviceManager?.store.getState().view
         .initialViewChangeComplete
   );
   await page.evaluate(() =>
@@ -133,7 +133,7 @@ for (const framework of ['react', 'web-component']) {
             host,
             button,
             defaults: {
-              ...instance.serviceManager.store.getState().customPanelState
+              ...instance.serviceManager.store.getState().view.customPanelState
                 .options,
             },
             events: [],
@@ -145,7 +145,8 @@ for (const framework of ['react', 'web-component']) {
               type,
               handler: (event) => {
                 const state =
-                  instance.serviceManager.store.getState().customPanelState;
+                  instance.serviceManager.store.getState().view
+                    .customPanelState;
                 probe.events.push({
                   type: event.type,
                   open: state.isOpen,
@@ -307,8 +308,8 @@ for (const framework of ['react', 'web-component']) {
       expect(
         await page.evaluate(
           () =>
-            window.chatInstance.serviceManager.store.getState().customPanelState
-              .options
+            window.chatInstance.serviceManager.store.getState().view
+              .customPanelState.options
         )
       ).toEqual(
         await page.evaluate(
@@ -342,8 +343,8 @@ for (const framework of ['react', 'web-component']) {
       expect(
         await page.evaluate(
           () =>
-            window.chatInstance.serviceManager.store.getState().customPanelState
-              .options
+            window.chatInstance.serviceManager.store.getState().view
+              .customPanelState.options
         )
       ).toEqual(
         await page.evaluate(
@@ -399,8 +400,8 @@ for (const framework of ['react', 'web-component']) {
       expect(
         await page.evaluate(
           () =>
-            window.chatInstance.serviceManager.store.getState().customPanelState
-              .options
+            window.chatInstance.serviceManager.store.getState().view
+              .customPanelState.options
         )
       ).toEqual(
         await page.evaluate(
@@ -427,8 +428,8 @@ for (const framework of ['react', 'web-component']) {
       expect(
         await page.evaluate(
           () =>
-            window.chatInstance.serviceManager.store.getState().customPanelState
-              .options
+            window.chatInstance.serviceManager.store.getState().view
+              .customPanelState.options
         )
       ).toEqual(
         await page.evaluate(
@@ -674,8 +675,8 @@ test('native custom panel preserves ordinary animation events and keyboard close
           handler: (event) => {
             probe.animationPanelEvents.push({
               type: event.type,
-              open: instance.serviceManager.store.getState().customPanelState
-                .isOpen,
+              open: instance.serviceManager.store.getState().view
+                .customPanelState.isOpen,
               content: button.textContent,
               connected: host.isConnected,
             });

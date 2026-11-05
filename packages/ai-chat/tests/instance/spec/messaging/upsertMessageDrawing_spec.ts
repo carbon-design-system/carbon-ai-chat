@@ -258,7 +258,7 @@ describe('upsertMessage with an item the chat cannot draw', () => {
       kind: 'after',
     });
     expect(failedItemCount()).toBe(0);
-    expect(store.getState().catastrophicErrorType).toBeFalsy();
+    expect(store.getState().view.catastrophicErrorType).toBeFalsy();
     expect(onError).not.toHaveBeenCalled();
   });
 

@@ -9,7 +9,7 @@
 
 import { LoadedHistory } from '../schema/historyToMessages';
 import actions from '../store/actions';
-import { AppState } from '../../types/state/AppState';
+import { ConversationState } from '../../types/state/AppState';
 import { createWelcomeRequest } from '../utils/messageUtils';
 import { consoleWarn, debugLog } from '../utils/miscUtils';
 import {
@@ -398,7 +398,7 @@ class HydrationService {
    * @param state The current application state
    * @returns true if welcome messages should be skipped, false otherwise
    */
-  private shouldSkipWelcomeForAgentSession(state: AppState): boolean {
+  private shouldSkipWelcomeForAgentSession(state: ConversationState): boolean {
     const { humanAgentState } = state.persistedToBrowserStorage;
 
     // Skip welcome if currently connected to an agent

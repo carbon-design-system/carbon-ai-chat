@@ -138,10 +138,12 @@ describe('chatBoot utils', () => {
         actions: { changeView },
         store: {
           getState: () => ({
-            persistedToBrowserStorage: {
-              launcherState: { wasLoadedFromBrowser: false },
+            view: {
+              persistedToBrowserStorage: {
+                launcherState: { wasLoadedFromBrowser: false },
+              },
+              targetViewState: { mainWindow: true },
             },
-            targetViewState: { mainWindow: true },
             config: { public: { openChatByDefault: true } },
           }),
         },
@@ -160,10 +162,12 @@ describe('chatBoot utils', () => {
         actions: { changeView },
         store: {
           getState: () => ({
-            persistedToBrowserStorage: {
-              launcherState: { wasLoadedFromBrowser: true },
+            view: {
+              persistedToBrowserStorage: {
+                launcherState: { wasLoadedFromBrowser: true },
+              },
+              targetViewState: { mainWindow: false },
             },
-            targetViewState: { mainWindow: false },
             config: { public: { openChatByDefault: false } },
           }),
         },

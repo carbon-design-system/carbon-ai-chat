@@ -9,24 +9,37 @@
 
 import React from 'react';
 import { LitElement } from 'lit';
+
 import { act, render, waitFor } from '@testing-library/react';
+
 import { deepQuerySelector } from '@carbon/ai-chat-components/es/globals/utils/dom-utils.js';
+
 import ChatShell from '../../../src/chat/components/shell/ChatShell';
 import type HydrationBody from '../../../src/chat/components/panels/native/HydrationBody';
 import type ChatInput from '../../../src/chat/components/input/ChatInput';
 import type { ChatViewState } from '../../../src/chat/services/chatViewState';
+
 import { ChatContainer } from '../../../src/react/ChatContainer';
-import actions from '../../../src/shared/store/actions';
+
 import { getDeepActiveElement } from '../../../src/chat/utils/domUtils';
+
 import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
+
 import type { ChatContainerProps } from '../../../src/types/component/ChatContainer';
+
 import { OnErrorType } from '../../../src/types/config/ErrorConfig';
+
 import { ViewType } from '../../../src/types/state/AppState';
+
 import {
   createBaseConfig,
   setupAfterEach,
   setupBeforeEach,
 } from '../../test_helpers';
+
+import { viewActions } from '../../../src/view/state';
+
+import { chatStore } from '../../../src/chat/services/attachChatView';
 
 class PendingConsumer extends LitElement {
   get updateComplete(): Promise<boolean> {
@@ -110,7 +123,7 @@ describe('native shell readiness and lifetime', () => {
       .mockImplementation(() => {});
     act(() => {
       f.instance.serviceManager.store.dispatch(
-        actions.setHomeScreenIsOpen(false)
+        viewActions.setHomeScreenIsOpen(false)
       );
     });
     await waitFor(() => expect(commits).toHaveBeenCalled());
@@ -158,7 +171,7 @@ describe('native shell readiness and lifetime', () => {
       .mockImplementation(() => {});
     act(() => {
       f.instance.serviceManager.store.dispatch(
-        actions.setHomeScreenIsOpen(false)
+        viewActions.setHomeScreenIsOpen(false)
       );
     });
     await waitFor(() => expect(commits).toHaveBeenCalled());
@@ -299,7 +312,8 @@ describe('native shell failure surface', () => {
       );
       expect(errorOccurred).toHaveBeenCalledTimes(1);
       expect(
-        f.instance.serviceManager.store.getState().catastrophicErrorType
+        chatStore(f.instance.serviceManager).getState().view
+          .catastrophicErrorType
       ).toBe(true);
       await expect(f.view.whenReady()).resolves.toBe(false);
       act(() => {

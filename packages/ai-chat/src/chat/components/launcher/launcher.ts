@@ -8,10 +8,15 @@
  */
 
 import { html, nothing } from 'lit';
+
 import { classMap } from 'lit/directives/class-map.js';
+
 import { ifDefined } from 'lit/directives/if-defined.js';
+
 import { carbonElement } from '@carbon/ai-chat-components/es/globals/decorators/index.js';
+
 import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
+
 import CDSButton, {
   BUTTON_KIND,
   BUTTON_SIZE,
@@ -19,25 +24,37 @@ import CDSButton, {
   BUTTON_TYPE,
 } from '@carbon/web-components/es/components/button/button.js';
 import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
+
 import AiLaunch24 from '@carbon/icons/es/ai-launch/24.js';
 import ChatLaunch24 from '@carbon/icons/es/chat--launch/24.js';
 import Close16 from '@carbon/icons/es/close/16.js';
 
 import type { AppState } from '../../../types/state/AppState';
+
 import { ViewType } from '../../../types/state/AppState';
+
 import { TIME_TO_ENTRANCE_ANIMATION_START } from '../../../types/config/LauncherConfig';
+
 import {
   MainWindowOpenReason,
   ViewChangeReason,
 } from '../../../types/events/eventBusTypes';
+
 import { PageObjectId } from '../../../testing/PageObjectId';
+
 import { NativeChatView } from '../shared/NativeChatView';
+
 import { LauncherState, LauncherOpenState } from '../../services/launcherState';
+
 import { shallowEqual } from '../../../shared/store/appStore';
-import actions from '../../../shared/store/actions';
+
 import { IS_PHONE } from '../../../shared/utils/browserUtils';
+
 import { doFocus, isDirectionRTL } from '../../utils/domUtils';
+
 import type { IntlShape } from '../../../shared/utils/i18n';
+
+import { viewActions } from '../../../view/state';
 
 type LauncherLanguage = Pick<
   AppState['languagePack'],
@@ -95,14 +112,17 @@ class LauncherView extends NativeChatView {
     );
     this.selectStore(
       (state) => ({
-        isLauncherVisible: state.persistedToBrowserStorage.viewState.launcher,
-        isMainWindowOpen: state.persistedToBrowserStorage.viewState.mainWindow,
-        launcherIsExpanded: state.persistedToBrowserStorage.launcherIsExpanded,
+        isLauncherVisible:
+          state.view.persistedToBrowserStorage.viewState.launcher,
+        isMainWindowOpen:
+          state.view.persistedToBrowserStorage.viewState.mainWindow,
+        launcherIsExpanded:
+          state.view.persistedToBrowserStorage.launcherIsExpanded,
         shouldStartCounter:
-          state.persistedToBrowserStorage
+          state.view.persistedToBrowserStorage
             .launcherShouldStartCallToActionCounterIfEnabled,
         showUnreadIndicator:
-          state.persistedToBrowserStorage.showUnreadIndicator,
+          state.view.persistedToBrowserStorage.showUnreadIndicator,
       }),
       (state) => {
         Object.assign(this, state);
@@ -110,7 +130,7 @@ class LauncherView extends NativeChatView {
       shallowEqual
     );
     this.selectStore(
-      (state) => state.humanAgentState.numUnreadMessages,
+      (state) => state.view.numUnreadMessages,
       (count) => {
         this.unreadMessageCount = count;
       }
@@ -122,7 +142,7 @@ class LauncherView extends NativeChatView {
       }
     );
     this.selectStore(
-      (state) => state.initialViewChangeComplete,
+      (state) => state.view.initialViewChangeComplete,
       (complete) => {
         this.initialViewChangeComplete = complete;
       }
@@ -131,12 +151,12 @@ class LauncherView extends NativeChatView {
     const owner = new LauncherState(this.stateOptions(), {
       setExpanded: (value) => {
         store.dispatch(
-          actions.setLauncherProperty('launcherIsExpanded', value)
+          viewActions.setLauncherProperty('launcherIsExpanded', value)
         );
       },
       setShouldStartCounter: (value) => {
         store.dispatch(
-          actions.setLauncherProperty(
+          viewActions.setLauncherProperty(
             'launcherShouldStartCallToActionCounterIfEnabled',
             value
           )

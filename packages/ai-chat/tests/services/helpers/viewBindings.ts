@@ -15,7 +15,7 @@ import {
 import type { MessagePresentationPort } from '../../../src/shared/services/messaging/presentationPort';
 import type { AppStore } from '../../../src/shared/store/appStore';
 import type { AppState } from '../../../src/types/state/AppState';
-import actions from '../../../src/shared/store/actions';
+import { viewActions } from '../../../src/view/state';
 import { createLoadingCounters } from '../../../src/chat/services/loadingCounters';
 
 /** An instance port whose view members do nothing, like a view not yet drawn. */
@@ -62,12 +62,11 @@ export function withMessagingView<T extends object>(
  * and nothing else, for specs that build a manager by hand and check those
  * values in its store. A mounted chat always has them.
  */
-export function withViewCounters<T extends { store: AppStore<AppState> }>(
-  manager: T
-): T {
-  const counters = createLoadingCounters(manager.store);
+export function withViewCounters<T extends { store: unknown }>(manager: T): T {
+  const store = manager.store as AppStore<AppState>;
+  const counters = createLoadingCounters(store);
   const announce = (message: { messageID: string }) =>
-    manager.store.dispatch(actions.announceMessage(message as never));
+    store.dispatch(viewActions.announceMessage(message as never));
   return withMessagingView(
     manager,
     {

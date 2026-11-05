@@ -18,12 +18,17 @@ jest.mock('../../../src/chat/hooks/useIntl', () => ({
 
 import type MarkdownIt from 'markdown-it';
 import { MessageRichUserContent } from '../../../src/chat/components-legacy/MessageRichUserContent';
+
 import type { JSONContent } from '@tiptap/core';
+
 import type { MessageRequest } from '../../../src/types/messaging/Messages';
+
 import type { MarkdownConfig } from '../../../src/types/config/MarkdownConfig';
-import actions from '../../../src/shared/store/actions';
+
 import * as miscUtils from '../../../src/shared/utils/miscUtils';
 import { makeConfigStore, TestChatContext } from '../../test_helpers';
+
+import { viewActions } from '../../../src/view/state';
 
 function renderInline(text: string) {
   return render(
@@ -153,7 +158,7 @@ describe('InlineMarkdown bridge', () => {
 
   function setup(text: string, config?: MarkdownConfig, strict = false) {
     const store = makeConfigStore({ shouldSanitizeHTML: false });
-    store.dispatch(actions.setAppStateValue('markdownConfig', config));
+    store.dispatch(viewActions.setViewValue('markdownConfig', config));
     const tree = (source: string) => {
       const content = (
         <TestChatContext store={store}>
@@ -216,7 +221,7 @@ describe('InlineMarkdown bridge', () => {
     };
     const store = makeConfigStore({});
     store.dispatch(
-      actions.setAppStateValue('markdownConfig', {
+      viewActions.setViewValue('markdownConfig', {
         markdownItPlugins: [plugin],
       })
     );
@@ -275,7 +280,7 @@ describe('InlineMarkdown bridge', () => {
     });
     act(() =>
       store.dispatch(
-        actions.setAppStateValue('markdownConfig', {
+        viewActions.setViewValue('markdownConfig', {
           customRenderers: {
             link: () => ({ href: '#new', onClick: newClick }),
           },
@@ -334,7 +339,7 @@ describe('InlineMarkdown bridge', () => {
     expect(JSON.stringify(diagnostic.mock.calls)).not.toContain('secret');
     act(() =>
       store.dispatch(
-        actions.setAppStateValue('markdownConfig', {
+        viewActions.setViewValue('markdownConfig', {
           markdownItPlugins: [
             (md: MarkdownIt) => {
               md.renderer.rules.code_inline = () => '<div>block</div>';

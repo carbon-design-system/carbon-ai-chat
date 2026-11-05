@@ -23,10 +23,7 @@ import { ServiceManager } from './ServiceManager';
 import { ThemeWatcherService } from './ThemeWatcherService';
 import { UserSessionStorageService } from './UserSessionStorageService';
 import { doCreateStore } from '../store/doCreateStore';
-import {
-  copyToSessionStorage,
-  refreshLocalizationOnChange,
-} from '../store/subscriptions';
+import { refreshLocalizationOnChange } from '../store/subscriptions';
 import { AppConfig } from '../../types/state/AppConfig';
 import { WriteableElementName } from '../utils/constants';
 import { assertType, setEnableDebugLog } from '../utils/miscUtils';
@@ -88,7 +85,6 @@ function createServiceManager(appConfig: AppConfig) {
   serviceManager.messageCoordinator = new MessageCoordinator(serviceManager);
   serviceManager.historyService = new HistoryService(serviceManager);
   serviceManager.messageCoordinator.configureMessageTimeout(publicConfig);
-  serviceManager.store.subscribe(copyToSessionStorage(serviceManager));
   // Single post-boot owner of `serviceManager.intl`: rebuild it whenever the
   // strings or locale change. Boot's `setIntl` below seeds the formatter before
   // first paint (no dispatch fires during boot, so this subscription can't).

@@ -36,7 +36,11 @@ function setup() {
     },
     persistedToBrowserStorage: {
       humanAgentState: { isConnected: false },
-      homeScreenState: { isHomeScreenOpen: true },
+    },
+    view: {
+      persistedToBrowserStorage: {
+        homeScreenState: { isHomeScreenOpen: true },
+      },
     },
   };
   const order: string[] = [];
@@ -116,7 +120,7 @@ it('cancels deferred scroll on disconnect and delegates navigation and disclaime
   controller.onToggleHomeScreen();
   jest.runAllTimers();
   expect(scroll).toHaveBeenCalledTimes(1);
-  state.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen = false;
+  state.view.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen = false;
   controller.onToggleHomeScreen();
   jest.runAllTimers();
   expect(scroll).toHaveBeenCalledTimes(1);

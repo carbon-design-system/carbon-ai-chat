@@ -8,6 +8,7 @@
  */
 
 import { act, waitFor } from '@testing-library/react';
+
 import { resolvablePromise } from '../../../../src/shared/utils/resolvablePromise';
 
 import {
@@ -17,27 +18,34 @@ import {
   setupBeforeEach,
   setupAfterEach,
 } from '../../../test_helpers';
+
 import {
   MessageResponse,
   MessageResponseTypes,
   TextItem,
 } from '../../../../src/types/messaging/Messages';
+
 import {
   CancellationReason,
   MessageState,
 } from '../../../../src/types/config/MessagingConfig';
+
 import {
   BusEventType,
   BusEventReceive,
   BusEventUserDefinedResponse,
 } from '../../../../src/types/events/eventBusTypes';
-import actions from '../../../../src/shared/store/actions';
+
 import { OnErrorType } from '../../../../src/types/config/ErrorConfig';
+
 import {
   HumanAgentsOnlineStatus,
   ServiceDesk,
 } from '../../../../src/types/config/ServiceDeskConfig';
+
 import { ViewType } from '../../../../src/types/instance/apiTypes';
+
+import { viewActions } from '../../../../src/view/state';
 
 function textResponse(id: string, text: string): MessageResponse {
   return {
@@ -2032,11 +2040,11 @@ describe('ChatInstance.messaging.upsertMessage', () => {
         const config = { ...createBaseConfig(), homescreen: { isOn: true } };
         const rendered = await renderChatAndGetInstanceWithStore(config as any);
         act(() => {
-          rendered.store.dispatch(actions.setHomeScreenIsOpen(true));
+          rendered.store.dispatch(viewActions.setHomeScreenIsOpen(true));
         });
         const isHomeScreenOpen = () =>
-          rendered.store.getState().persistedToBrowserStorage.homeScreenState
-            .isHomeScreenOpen;
+          rendered.store.getState().view.persistedToBrowserStorage
+            .homeScreenState.isHomeScreenOpen;
         expect(isHomeScreenOpen()).toBe(true);
         return { ...rendered, isHomeScreenOpen };
       };
@@ -2607,9 +2615,9 @@ describe('ChatInstance.messaging.upsertMessage', () => {
       /** Records the language key of every announcement the chat makes. */
       const recordAnnouncements = (store: any) => {
         const keys: string[] = [];
-        let last = store.getState().announceMessage;
+        let last = store.getState().view.announceMessage;
         store.subscribe(() => {
-          const current = store.getState().announceMessage;
+          const current = store.getState().view.announceMessage;
           if (current && current !== last) {
             keys.push(current.messageID);
           }
@@ -2953,7 +2961,7 @@ describe('ChatInstance.messaging.upsertMessage', () => {
         await instance.changeView(ViewType.MAIN_WINDOW);
         await waitFor(() => expect(store.getState().isHydrated).toBe(true));
         const loadingCounter = () =>
-          store.getState().assistantMessageState.isMessageLoadingCounter;
+          store.getState().view.isMessageLoadingCounter;
         const baseline = loadingCounter();
         const id = 'upsert-connect';
 
@@ -3311,7 +3319,7 @@ describe('ChatInstance.messaging.upsertMessage', () => {
           onError,
         });
         const loadingCounter = () =>
-          store.getState().assistantMessageState.isMessageLoadingCounter;
+          store.getState().view.isMessageLoadingCounter;
         const baseline = loadingCounter();
         const id = 'upsert-connect-no-desk';
 
@@ -3356,7 +3364,7 @@ describe('ChatInstance.messaging.upsertMessage', () => {
         const { instance, store } =
           await renderChatAndGetInstanceWithStore(createBaseConfig());
         const loadingCounter = () =>
-          store.getState().assistantMessageState.isMessageLoadingCounter;
+          store.getState().view.isMessageLoadingCounter;
         const baseline = loadingCounter();
         const userDefined = jest.fn();
         const receive = jest.fn();
@@ -3416,7 +3424,7 @@ describe('ChatInstance.messaging.upsertMessage', () => {
         const { instance, store } =
           await renderChatAndGetInstanceWithStore(createBaseConfig());
         const loadingCounter = () =>
-          store.getState().assistantMessageState.isMessageLoadingCounter;
+          store.getState().view.isMessageLoadingCounter;
         const baseline = loadingCounter();
         const id = 'upsert-pause-quiet';
 
@@ -3478,7 +3486,7 @@ describe('ChatInstance.messaging.upsertMessage', () => {
         const { instance, store } =
           await renderChatAndGetInstanceWithStore(createBaseConfig());
         const loadingCounter = () =>
-          store.getState().assistantMessageState.isMessageLoadingCounter;
+          store.getState().view.isMessageLoadingCounter;
         const baseline = loadingCounter();
         const receive = jest.fn();
         instance.on({ type: BusEventType.RECEIVE, handler: receive });
@@ -3511,7 +3519,7 @@ describe('ChatInstance.messaging.upsertMessage', () => {
         const { instance, store } =
           await renderChatAndGetInstanceWithStore(createBaseConfig());
         const loadingCounter = () =>
-          store.getState().assistantMessageState.isMessageLoadingCounter;
+          store.getState().view.isMessageLoadingCounter;
         const baseline = loadingCounter();
         instance.on({
           type: BusEventType.USER_DEFINED_RESPONSE,
@@ -3588,7 +3596,7 @@ describe('ChatInstance.messaging.upsertMessage', () => {
         const { instance, store } =
           await renderChatAndGetInstanceWithStore(createBaseConfig());
         const loadingCounter = () =>
-          store.getState().assistantMessageState.isMessageLoadingCounter;
+          store.getState().view.isMessageLoadingCounter;
         const baseline = loadingCounter();
         const id = 'add-then-upsert-pause';
         const message = (second: string) =>

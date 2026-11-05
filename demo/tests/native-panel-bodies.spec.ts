@@ -28,7 +28,7 @@ async function prepareHost(page: Page, framework: string) {
   });
   await page.waitForFunction(
     () =>
-      window.chatInstance?.serviceManager?.store.getState()
+      window.chatInstance?.serviceManager?.store.getState().view
         .initialViewChangeComplete
   );
   await expect(page.locator('cds-aichat-custom-element')).toHaveCount(

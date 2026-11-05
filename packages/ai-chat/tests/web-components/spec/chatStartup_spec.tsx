@@ -46,6 +46,7 @@ import {
   setupAfterEach,
   setupBeforeEach,
 } from '../../test_helpers';
+import { chatStore } from '../../../src/chat/services/attachChatView';
 
 class StartupServicesProbe extends LitElement {
   services = new ContextConsumer(this, {
@@ -583,7 +584,8 @@ describe('cds-aichat-container startup', () => {
         true
       );
       expect(
-        retired.serviceManager.store.getState().initialViewChangeComplete
+        chatStore(retired.serviceManager).getState().view
+          .initialViewChangeComplete
       ).toBe(false);
       expect(element.onAfterRender).not.toHaveBeenCalled();
       expect(test.unmount).toHaveBeenCalledTimes(1);
@@ -631,7 +633,9 @@ describe('cds-aichat-container startup', () => {
     };
 
     setVisibility('hidden');
-    expect(serviceManager.store.getState().isBrowserPageVisible).toBe(false);
+    expect(chatStore(serviceManager).getState().view.isBrowserPageVisible).toBe(
+      false
+    );
 
     // A resize reaches views through the view state, without a new render.
     const rendersBefore = test.renders.length;
@@ -644,7 +648,9 @@ describe('cds-aichat-container startup', () => {
     setVisibility('visible');
     resizeTo(pageWidth - 200);
     resizeTo(pageWidth);
-    expect(serviceManager.store.getState().isBrowserPageVisible).toBe(false);
+    expect(chatStore(serviceManager).getState().view.isBrowserPageVisible).toBe(
+      false
+    );
     expect(viewState.getSnapshot().windowSize.width).toBe(pageWidth - 100);
     expect(test.renders.length).toBe(rendersBefore);
   });

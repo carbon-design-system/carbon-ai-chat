@@ -9,20 +9,28 @@
 
 import React, { useCallback, useMemo } from 'react';
 import { Card, CardFooter } from '@carbon/ai-chat-components/es/react/card.js';
+
 import Maximize16 from '@carbon/icons/es/maximize/16.js';
 import View16 from '@carbon/icons/es/view/16.js';
 
 import { useServiceManager } from '../../../hooks/useServiceManager';
+
 import { PanelType } from '../../../../types/instance/apiTypes';
+
 import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
+
 import { AppState } from '../../../../types/state/AppState';
+
 import { useSelector } from '../../../hooks/useSelector';
+
 import { shallowEqual } from '../../../../shared/store/appStore';
+
 import {
   PreviewCardItem,
   MessageResponse,
 } from '../../../../types/messaging/Messages';
-import actions from '../../../../shared/store/actions';
+
+import { viewActions } from '../../../../view/state';
 
 interface PreviewCardComponentProps {
   localMessageItem: LocalMessageItem;
@@ -41,8 +49,8 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
   const serviceManager = useServiceManager();
   const { isOpen, workspaceID } = useSelector(
     (state: AppState) => ({
-      isOpen: state.workspacePanelState.isOpen,
-      workspaceID: state.workspacePanelState.workspaceID,
+      isOpen: state.view.workspacePanelState.isOpen,
+      workspaceID: state.view.workspacePanelState.workspaceID,
     }),
     shallowEqual
   );
@@ -55,7 +63,7 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
   const handleClick = useCallback(() => {
     // Store workspace panel data in Redux before opening
     serviceManager.store.dispatch(
-      actions.setWorkspacePanelData({
+      viewActions.setWorkspacePanelData({
         workspaceID: workspace_id,
         localMessageItem,
         fullMessage,

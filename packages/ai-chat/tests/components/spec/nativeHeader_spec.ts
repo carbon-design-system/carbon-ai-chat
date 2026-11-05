@@ -30,6 +30,7 @@ import {
   setupAfterEach,
   setupBeforeEach,
 } from '../../test_helpers';
+import { viewActions } from '../../../src/view/state';
 
 class HeaderProvider extends LitElement {
   readonly provider = new ContextProvider(this, {
@@ -302,9 +303,7 @@ describe('native header', () => {
   it('does not update for unrelated assistant or agent typing and window changes', async () => {
     const { view, state, store } = await createHeader();
     const renderView = jest.spyOn(view as any, 'renderView');
-    store.dispatch(
-      actions.setChatMessagesStateProperty('isMessageLoadingCounter', 1)
-    );
+    store.dispatch(viewActions.setViewValue('isMessageLoadingCounter', 1));
     store.dispatch(
       actions.setAppStateValue('humanAgentState', {
         ...store.getState().humanAgentState,

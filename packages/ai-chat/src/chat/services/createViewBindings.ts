@@ -7,18 +7,28 @@
  *  @license
  */
 
-import actions from '../../shared/store/actions';
 import type { ChatViewState } from './chatViewState';
+
 import type { ViewBindings } from '../../shared/services/viewBindings';
+
 import { MessagePresentationAdapter } from './MessagePresentationAdapter';
+
 import { ViewService } from './ViewService';
+
 import { createLoadingCounters } from './loadingCounters';
+
 import type { PortAnnouncement } from '../../shared/services/messaging/presentationPort';
+
 import type { AnnounceMessage } from '../../types/state/AnnounceMessage';
+
 import {
   hasCustomPromptLine,
   requestComposerFocus,
 } from '../utils/customPromptLine';
+
+import { viewActions } from '../../view/state';
+
+import { chatStore } from './attachChatView';
 
 /**
  * Builds the prebuilt interface's implementation of every view port. The
@@ -30,18 +40,19 @@ import {
  */
 function createViewBindings(viewState: ChatViewState): ViewBindings {
   const { serviceManager } = viewState;
-  const { store } = serviceManager;
+  const store = chatStore(serviceManager);
   const viewService = new ViewService(serviceManager);
   const counters = createLoadingCounters(store);
   const announce = (message: PortAnnouncement) =>
     // The port carries plain strings; these IDs come from the language pack.
-    store.dispatch(actions.announceMessage(message as AnnounceMessage));
+    store.dispatch(viewActions.announceMessage(message as AnnounceMessage));
   return {
     messaging: new MessagePresentationAdapter({
-      openHomeScreen: () => store.dispatch(actions.setHomeScreenIsOpen(true)),
+      openHomeScreen: () =>
+        store.dispatch(viewActions.setHomeScreenIsOpen(true)),
       openHistoryResponsePanel: (local) => {
-        store.dispatch(actions.setResponsePanelContent(local, true));
-        store.dispatch(actions.setResponsePanelIsOpen(true));
+        store.dispatch(viewActions.setResponsePanelContent(local, true));
+        store.dispatch(viewActions.setResponsePanelIsOpen(true));
       },
       getMessagesScrollBottom: () =>
         viewState.mainWindow?.getMessagesScrollBottom(),
@@ -51,7 +62,7 @@ function createViewBindings(viewState: ChatViewState): ViewBindings {
         }),
       announceSendFailure: () =>
         store.dispatch(
-          actions.announceMessage({ messageID: 'errors_ariaMessageFailed' })
+          viewActions.announceMessage({ messageID: 'errors_ariaMessageFailed' })
         ),
       announceStreamStarts: (messageID, content) =>
         serviceManager.streamAnnouncerService.announceStreamStarts(
@@ -70,12 +81,14 @@ function createViewBindings(viewState: ChatViewState): ViewBindings {
         }
       },
       isHomeScreenOpen: () =>
-        store.getState().persistedToBrowserStorage.homeScreenState
+        store.getState().view.persistedToBrowserStorage.homeScreenState
           .isHomeScreenOpen,
-      closeHomeScreen: () => store.dispatch(actions.setHomeScreenIsOpen(false)),
-      isResponsePanelOpen: () => store.getState().responsePanelState.isOpen,
+      closeHomeScreen: () =>
+        store.dispatch(viewActions.setHomeScreenIsOpen(false)),
+      isResponsePanelOpen: () =>
+        store.getState().view.responsePanelState.isOpen,
       closeResponsePanel: () =>
-        store.dispatch(actions.setResponsePanelIsOpen(false)),
+        store.dispatch(viewActions.setResponsePanelIsOpen(false)),
       announce: (message) => announce(message),
       changeMessageLoadingCounter: (amount) =>
         counters.changeMessageLoadingCounter(amount),
@@ -101,9 +114,9 @@ function createViewBindings(viewState: ChatViewState): ViewBindings {
       input: () => viewState.inputComponent ?? null,
       hasCustomPromptLine: () => hasCustomPromptLine(serviceManager),
       isMainWindowOpen: () =>
-        store.getState().persistedToBrowserStorage.viewState.mainWindow,
+        store.getState().view.persistedToBrowserStorage.viewState.mainWindow,
       showCatastrophicError: () =>
-        store.dispatch(actions.setAppStateValue('catastrophicErrorType', true)),
+        store.dispatch(viewActions.setViewValue('catastrophicErrorType', true)),
       changeView: (newView, reason, tryHydrating, forceViewChange) =>
         viewService.changeView(newView, reason, tryHydrating, forceViewChange),
     },

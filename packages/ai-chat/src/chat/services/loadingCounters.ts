@@ -7,10 +7,13 @@
  *  @license
  */
 
-import actions from '../../shared/store/actions';
 import type { AppState } from '../../types/state/AppState';
+
 import type { AppStore } from '../../shared/store/appStore';
+
 import type { LoadingDirection } from '../../shared/services/messaging/presentationPort';
+
+import { viewActions } from '../../view/state';
 
 /**
  * The view's message and chat loading counters, as the conversation layer
@@ -18,34 +21,34 @@ import type { LoadingDirection } from '../../shared/services/messaging/presentat
  * directions first.
  */
 function createLoadingCounters(store: AppStore<AppState>) {
-  const counters = () => store.getState().assistantMessageState;
+  const counters = () => store.getState().view;
   return {
     changeMessageLoadingCounter(amount: number) {
-      store.dispatch(actions.addIsLoadingCounter(amount));
+      store.dispatch(viewActions.addIsLoadingCounter(amount));
     },
     updateMessageLoadingCounter(direction: LoadingDirection, message?: string) {
       if (direction === 'reset') {
-        store.dispatch(actions.resetIsLoadingCounter());
+        store.dispatch(viewActions.resetIsLoadingCounter());
       } else if (direction === 'increase') {
-        store.dispatch(actions.addIsLoadingCounter(1, message));
+        store.dispatch(viewActions.addIsLoadingCounter(1, message));
       } else if (direction === 'decrease') {
         if (counters().isMessageLoadingCounter > 0) {
-          store.dispatch(actions.addIsLoadingCounter(-1, message));
+          store.dispatch(viewActions.addIsLoadingCounter(-1, message));
         }
       } else {
-        store.dispatch(actions.addIsLoadingCounter(0, message));
+        store.dispatch(viewActions.addIsLoadingCounter(0, message));
       }
     },
     changeChatLoadingCounter(amount: number) {
-      store.dispatch(actions.addIsHydratingCounter(amount));
+      store.dispatch(viewActions.addIsHydratingCounter(amount));
     },
     updateChatLoadingCounter(direction: LoadingDirection) {
       if (direction === 'reset') {
-        store.dispatch(actions.resetIsHydratingCounter());
+        store.dispatch(viewActions.resetIsHydratingCounter());
       } else if (direction === 'increase') {
-        store.dispatch(actions.addIsHydratingCounter(1));
+        store.dispatch(viewActions.addIsHydratingCounter(1));
       } else if (counters().isHydratingCounter > 0) {
-        store.dispatch(actions.addIsHydratingCounter(-1));
+        store.dispatch(viewActions.addIsHydratingCounter(-1));
       }
     },
   };

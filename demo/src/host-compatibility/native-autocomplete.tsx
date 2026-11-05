@@ -41,7 +41,9 @@ interface Container extends HTMLElement {
     viewState: {
       serviceManager: {
         store: {
-          getState(): { chatHeight: number; chatWidthBreakpoint: string };
+          getState(): {
+            view: { chatHeight: number; chatWidthBreakpoint: string };
+          };
         };
       };
     };
@@ -257,8 +259,8 @@ export function installNativeAutocompleteHarness(
           ready: Boolean(request && autocompleteContent.isReady(request)),
           target: request?.target ?? null,
           anchor: request?.anchor ?? null,
-          chatHeight: state.chatHeight,
-          breakpoint: state.chatWidthBreakpoint,
+          chatHeight: state.view.chatHeight,
+          breakpoint: state.view.chatWidthBreakpoint,
         };
       },
     };

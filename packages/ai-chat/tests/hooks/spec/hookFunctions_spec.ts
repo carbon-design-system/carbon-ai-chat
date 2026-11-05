@@ -11,23 +11,31 @@ import {
   getDerivedState,
   type DerivedStateOptions,
 } from '../../../src/chat/utils/derivedState';
+
 import {
   requestFocus,
   type FocusManagerOptions,
 } from '../../../src/chat/utils/focusManager';
+
 import { updateHistoryMobileDetection } from '../../../src/chat/utils/historyMobileDetection';
+
 import {
   getWindowSize,
   observeWindowSize,
 } from '../../../src/chat/utils/windowSize';
+
 import { getCarbonTheme } from '../../../src/chat/utils/carbonTheme';
+
 import { CarbonTheme } from '../../../src/types/config/CarbonTheme';
+
 import { createAppStore } from '../../../src/shared/store/appStore';
+
 import type {
   AppState,
   PersistedState,
 } from '../../../src/types/state/AppState';
-import actions from '../../../src/shared/store/actions';
+
+import { viewActions } from '../../../src/view/state';
 
 jest.mock('../../../src/shared/utils/browserUtils', () => ({
   IS_MOBILE: false,
@@ -145,8 +153,8 @@ describe('plain hook functions', () => {
   it('preserves history open state when startClosed is set', () => {
     const state = {
       config: { public: { history: { startClosed: true } } },
-      historyPanelState: { isMobile: false, isOpen: true },
-    } as AppState;
+      view: { historyPanelState: { isMobile: false, isOpen: true } },
+    } as unknown as AppState;
     const store = createAppStore((current: AppState) => current, state);
     const dispatch = jest.spyOn(store, 'dispatch');
     const container = document.createElement('div');
@@ -155,7 +163,7 @@ describe('plain hook functions', () => {
       300
     );
     expect(dispatch).toHaveBeenCalledWith(
-      actions.setHistoryPanelOptions(true, true)
+      viewActions.setHistoryPanelOptions(true, true)
     );
     dispatch.mockClear();
     updateHistoryMobileDetection(

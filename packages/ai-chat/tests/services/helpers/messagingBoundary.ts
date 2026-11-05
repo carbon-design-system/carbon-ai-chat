@@ -988,8 +988,10 @@ export function isRawStoreDispatch(
   checker: ts.TypeChecker,
   node: ts.CallExpression,
   storeFile: string,
-  actionsFile: string
+  actionsFile: string | readonly string[]
 ) {
+  const actionsFiles =
+    typeof actionsFile === 'string' ? [actionsFile] : actionsFile;
   const signature = checker.getResolvedSignature(node)?.declaration;
   if (!signature || signature.getSourceFile().fileName !== storeFile) {
     return false;
@@ -1008,8 +1010,10 @@ export function isRawStoreDispatch(
     node.arguments.length !== 1 ||
     !argument ||
     !ts.isCallExpression(argument) ||
-    checker.getResolvedSignature(argument)?.declaration?.getSourceFile()
-      .fileName !== actionsFile
+    !actionsFiles.includes(
+      checker.getResolvedSignature(argument)?.declaration?.getSourceFile()
+        .fileName
+    )
   );
 }
 

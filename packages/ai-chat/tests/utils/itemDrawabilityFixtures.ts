@@ -493,7 +493,7 @@ async function observeWrite(
       ([data]) => `${data.errorType}: ${data.message}`
     ),
     failedItems: failedItemCount(),
-    catastrophic: Boolean(store.getState().catastrophicErrorType),
+    catastrophic: Boolean(store.getState().view.catastrophicErrorType),
   };
 }
 

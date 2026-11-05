@@ -8,40 +8,64 @@
  */
 
 import { ContextProvider } from '@lit/context';
+
 import { css, nothing, type PropertyValues } from 'lit';
+
 import { property, state } from 'lit/decorators.js';
 
 import { carbonElement } from '@carbon/ai-chat-components/es/globals/decorators/index.js';
+
 import { createMarkdownPluginHostController } from '@carbon/ai-chat-components/es/components/markdown/src/utils/plugin-host-container.js';
+
 import { preloadPromptLineRich } from '@carbon/ai-chat-components/es/components/prompt-line/src/prompt-line-rich-loader.js';
+
 import { PublicConfig } from '../../types/config/PublicConfig';
+
 import { FlattenedConfigElement } from '../shared/FlattenedConfigElement';
+
 import {
   getDefaultRenderer,
   whenDefaultRenderer,
 } from '../shared/react-renderer';
+
 import type { ChatRenderer, ChatRenderMount } from '../shared/react-renderer';
+
 import { chatViewStateContext } from '../shared/chat-view-state-context';
+
 import { ChatInstance } from '../../types/instance/ChatInstance';
+
 import type { TypeAndHandler } from '../../types/instance/EventHandlers';
+
 import type { ServiceManager } from '../../shared/services/ServiceManager';
+
 import type { ChatViewState } from '../../chat/services/chatViewState';
+
 import type { ExtensionHosts } from '../../chat/services/extensionHosts';
-import appActions from '../../shared/store/actions';
+
 import type { AppliedConfig } from '../../chat/utils/appConfigUpdates';
+
 import type { ChatAppEntryProps } from '../../chat/ChatAppEntry';
+
 import { resolvablePromise } from '../../shared/utils/resolvablePromise';
+
 import type { ResolvablePromise } from '../../shared/utils/resolvablePromise';
+
 import { resolvePromptLineMode } from '../../chat/components/input/promptLineMode';
+
 import { preloadBuildCarbonExtensions } from '../../chat/components/input/buildExtensionsLoader';
+
 import { consoleError } from '../../shared/utils/miscUtils';
+
 import { getWindowSize } from '../../chat/utils/windowSize';
+
 import { inputNodeIdentity } from '../../chat/utils/inputNodeSlots';
+
 import {
   BusEventType,
   BusEventViewChange,
   BusEventViewPreChange,
 } from '../../types/events/eventBusTypes';
+
 import type {
   RenderCustomMessageFooter,
   RenderCustomRequestFooter,
@@ -53,7 +77,10 @@ import type {
   WCRenderUserDefinedInputNode,
   RenderUserDefinedInputNode,
 } from '../../types/component/ChatContainer';
+
 import type { ComponentType, ReactNode } from 'react';
+
+import { viewActions } from '../../view/state';
 
 // Derived rather than written out: the es-custom build rewrites lowercase
 // `cds-aichat` text in its output, so an uppercase literal would never match
@@ -523,7 +550,7 @@ class ChatContainer extends FlattenedConfigElement {
       // host's plugin and renderer references for the slice's isEqual guard.
       if (config.markdown) {
         serviceManager.store.dispatch(
-          appActions.setAppStateValue('markdownConfig', config.markdown)
+          viewActions.setViewValue('markdownConfig', config.markdown)
         );
       }
       state.App = ChatAppEntry;
@@ -587,7 +614,7 @@ class ChatContainer extends FlattenedConfigElement {
         return;
       }
       serviceManager.store.dispatch(
-        appActions.setInitialViewChangeComplete(true)
+        viewActions.setInitialViewChangeComplete(true)
       );
       state.initialViewReady = true;
       this.renderApp();
@@ -659,7 +686,7 @@ class ChatContainer extends FlattenedConfigElement {
     };
     const onVisibilityChange = () => {
       serviceManager.store.dispatch(
-        appActions.setIsBrowserPageVisible(
+        viewActions.setIsBrowserPageVisible(
           document.visibilityState === 'visible'
         )
       );

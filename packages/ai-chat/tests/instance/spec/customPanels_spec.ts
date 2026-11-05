@@ -112,21 +112,21 @@ describe('ChatInstance.customPanels', () => {
 
       // Verify initial state
       let state = store.getState();
-      expect(state.customPanelState.isOpen).toBe(false);
+      expect(state.view.customPanelState.isOpen).toBe(false);
 
       // Open panel
       panel.open();
 
       // Verify Redux state updated
       state = store.getState();
-      expect(state.customPanelState.isOpen).toBe(true);
-      expect(state.customPanelState.options.title).toBeUndefined();
+      expect(state.view.customPanelState.isOpen).toBe(true);
+      expect(state.view.customPanelState.options.title).toBeUndefined();
       expect(
-        (state.customPanelState.options as DefaultCustomPanelConfigOptions)
+        (state.view.customPanelState.options as DefaultCustomPanelConfigOptions)
           .hideBackButton
       ).toBe(false);
       expect(
-        (state.customPanelState.options as DefaultCustomPanelConfigOptions)
+        (state.view.customPanelState.options as DefaultCustomPanelConfigOptions)
           .disableAnimation
       ).toBe(false);
     });
@@ -146,10 +146,10 @@ describe('ChatInstance.customPanels', () => {
       panel.open(defaultPanelOptions);
 
       const state = store.getState();
-      expect(state.customPanelState.isOpen).toBe(true);
-      expect(state.customPanelState.options.title).toBe('Default Panel');
-      expect(state.customPanelState.options.hideBackButton).toBe(true);
-      expect(state.customPanelState.options.disableAnimation).toBe(true);
+      expect(state.view.customPanelState.isOpen).toBe(true);
+      expect(state.view.customPanelState.options.title).toBe('Default Panel');
+      expect(state.view.customPanelState.options.hideBackButton).toBe(true);
+      expect(state.view.customPanelState.options.disableAnimation).toBe(true);
     });
 
     it('should open panel with legacy CustomPanelConfigOptions and update Redux state', async () => {
@@ -168,16 +168,16 @@ describe('ChatInstance.customPanels', () => {
 
       // Verify initial state
       let state = store.getState();
-      expect(state.customPanelState.isOpen).toBe(false);
+      expect(state.view.customPanelState.isOpen).toBe(false);
 
       // Open panel with custom options
       panel.open(customOptions);
 
       // Verify Redux state updated
       state = store.getState();
-      const options = state.customPanelState
+      const options = state.view.customPanelState
         .options as CustomPanelConfigOptions;
-      expect(state.customPanelState.isOpen).toBe(true);
+      expect(state.view.customPanelState.isOpen).toBe(true);
       expect(options.title).toBe('Test Panel');
       expect(options.hideCloseButton).toBe(true);
       expect(options.disableAnimation).toBe(true);
@@ -199,10 +199,10 @@ describe('ChatInstance.customPanels', () => {
       panel.open(defaultPanelOptions);
 
       const state = store.getState();
-      expect(state.customPanelState.isOpen).toBe(true);
-      expect(state.customPanelState.options.title).toBe('Side Panel');
+      expect(state.view.customPanelState.isOpen).toBe(true);
+      expect(state.view.customPanelState.options.title).toBe('Side Panel');
       expect(
-        (state.customPanelState.options as DefaultCustomPanelConfigOptions)
+        (state.view.customPanelState.options as DefaultCustomPanelConfigOptions)
           .openFromSide
       ).toBe(true);
     });
@@ -218,7 +218,7 @@ describe('ChatInstance.customPanels', () => {
 
       const state = store.getState();
       expect(
-        (state.customPanelState.options as CustomPanelConfigOptions)
+        (state.view.customPanelState.options as CustomPanelConfigOptions)
           .hideCloseButton
       ).toBe(true);
     });
@@ -237,7 +237,7 @@ describe('ChatInstance.customPanels', () => {
       panel.open(options);
 
       const state = store.getState();
-      const stateOptions = state.customPanelState
+      const stateOptions = state.view.customPanelState
         .options as CustomPanelConfigOptions;
       expect(stateOptions.disableDefaultCloseAction).toBe(true);
       expect(stateOptions.onClickClose).toBe(onClickClose);
@@ -256,7 +256,7 @@ describe('ChatInstance.customPanels', () => {
       panel.open(callbacks);
 
       const state = store.getState();
-      const options = state.customPanelState
+      const options = state.view.customPanelState
         .options as CustomPanelConfigOptions;
       expect(options.onClickBack).toBe(callbacks.onClickBack);
       expect(options.onClickRestart).toBe(callbacks.onClickRestart);
@@ -273,14 +273,14 @@ describe('ChatInstance.customPanels', () => {
       // First open the panel
       panel.open();
       let state = store.getState();
-      expect(state.customPanelState.isOpen).toBe(true);
+      expect(state.view.customPanelState.isOpen).toBe(true);
 
       // Close the panel
       panel.close();
 
       // Verify Redux state updated
       state = store.getState();
-      expect(state.customPanelState.isOpen).toBe(false);
+      expect(state.view.customPanelState.isOpen).toBe(false);
     });
 
     it('should be able to open and close panel multiple times with correct Redux state', async () => {
@@ -291,26 +291,26 @@ describe('ChatInstance.customPanels', () => {
 
       // Verify initial state
       let state = store.getState();
-      expect(state.customPanelState.isOpen).toBe(false);
+      expect(state.view.customPanelState.isOpen).toBe(false);
 
       // First open/close cycle
       panel.open();
       state = store.getState();
-      expect(state.customPanelState.isOpen).toBe(true);
+      expect(state.view.customPanelState.isOpen).toBe(true);
 
       panel.close();
       state = store.getState();
-      expect(state.customPanelState.isOpen).toBe(false);
+      expect(state.view.customPanelState.isOpen).toBe(false);
 
       // Second open/close cycle with custom options
       panel.open({ title: 'Second Open' });
       state = store.getState();
-      expect(state.customPanelState.isOpen).toBe(true);
-      expect(state.customPanelState.options.title).toBe('Second Open');
+      expect(state.view.customPanelState.isOpen).toBe(true);
+      expect(state.view.customPanelState.options.title).toBe('Second Open');
 
       panel.close();
       state = store.getState();
-      expect(state.customPanelState.isOpen).toBe(false);
+      expect(state.view.customPanelState.isOpen).toBe(false);
     });
 
     it("should close panel even if it wasn't opened first", async () => {
@@ -321,14 +321,14 @@ describe('ChatInstance.customPanels', () => {
 
       // Verify initial state
       let state = store.getState();
-      expect(state.customPanelState.isOpen).toBe(false);
+      expect(state.view.customPanelState.isOpen).toBe(false);
 
       // Close panel (should not throw even if already closed)
       panel.close();
 
       // Verify state remains false
       state = store.getState();
-      expect(state.customPanelState.isOpen).toBe(false);
+      expect(state.view.customPanelState.isOpen).toBe(false);
     });
   });
 

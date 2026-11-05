@@ -15,6 +15,8 @@ import actions from '../../../src/shared/store/actions';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
 import { MessageResponseTypes } from '../../../src/types/messaging/Messages';
 import { createBaseConfig, makeConfigStore } from '../../test_helpers';
+import { viewActions } from '../../../src/view/state';
+import { viewPublicFields } from '../../../src/view/state/publicFields';
 
 function createService() {
   const counts = new Map<string, number>();
@@ -24,10 +26,12 @@ function createService() {
     store,
     eventBus,
     instance: {},
-  } as ServiceManager;
+  } as unknown as ServiceManager;
   const service = new PublicStateService(serviceManager, {
     onProject: (field) => counts.set(field, (counts.get(field) ?? 0) + 1),
   });
+  // A mounted chat adds the view's fields when it attaches the view.
+  service.addFields(viewPublicFields);
   serviceManager.publicStateService = service;
   return { counts, eventBus, service, store };
 }
@@ -47,12 +51,12 @@ describe('PublicStateService', () => {
     service.get();
     expect(sources).not.toHaveBeenCalled();
     store.dispatch(
-      actions.setAppStateValue('announceMessage', {
+      viewActions.setViewValue('announceMessage', {
         messageText: 'Private update',
       })
     );
     expect(sources).not.toHaveBeenCalled();
-    store.dispatch(actions.addIsLoadingCounter(1));
+    store.dispatch(viewActions.addIsLoadingCounter(1));
     expect(sources).not.toHaveBeenCalled();
     expect(prepare).not.toHaveBeenCalled();
   });
@@ -104,7 +108,7 @@ describe('PublicStateService', () => {
     const { counts, service, store } = createService();
 
     store.dispatch(
-      actions.setAppStateValue('announceMessage', {
+      viewActions.setViewValue('announceMessage', {
         messageText: 'Private state update',
       })
     );
@@ -114,11 +118,11 @@ describe('PublicStateService', () => {
     expect(counts.size).toBe(0);
 
     expect(snapshot.version).toBe(
-      store.getState().persistedToBrowserStorage.version
+      store.getState().view.persistedToBrowserStorage.version
     );
     expect(counts.get('version')).toBe(1);
     expect(snapshot.version).toBe(
-      store.getState().persistedToBrowserStorage.version
+      store.getState().view.persistedToBrowserStorage.version
     );
     expect(counts.get('version')).toBe(1);
     expect(counts.has('input')).toBe(false);
@@ -130,7 +134,7 @@ describe('PublicStateService', () => {
     const firstInput = first.input;
 
     store.dispatch(
-      actions.setAppStateValue('announceMessage', {
+      viewActions.setViewValue('announceMessage', {
         messageText: 'Private state update',
       })
     );
@@ -156,12 +160,12 @@ describe('PublicStateService', () => {
   it('reuses newer field projections after an older snapshot is read late', () => {
     const { service, store } = createService();
     store.dispatch(
-      actions.setWorkspacePanelData({ additionalData: { version: 1 } })
+      viewActions.setWorkspacePanelData({ additionalData: { version: 1 } })
     );
     const previous = service.get();
 
     store.dispatch(
-      actions.setWorkspacePanelData({ additionalData: { version: 2 } })
+      viewActions.setWorkspacePanelData({ additionalData: { version: 2 } })
     );
     const current = service.get();
     const currentWorkspace = current.workspace;
@@ -175,12 +179,12 @@ describe('PublicStateService', () => {
     const { service, store } = createService();
     const additionalData = { nested: { value: 'source' } };
     const workspacePanelState = {
-      ...store.getState().workspacePanelState,
+      ...store.getState().view.workspacePanelState,
       additionalData,
     };
 
     store.dispatch(
-      actions.setAppStateValue('workspacePanelState', workspacePanelState)
+      viewActions.setViewValue('workspacePanelState', workspacePanelState)
     );
     const projected = service.get().workspace
       .additionalData as typeof additionalData;
@@ -196,14 +200,14 @@ describe('PublicStateService', () => {
     const { service, store } = createService();
     const additionalData = { nested: { value: 'original' } };
 
-    store.dispatch(actions.setWorkspacePanelData({ additionalData }));
+    store.dispatch(viewActions.setWorkspacePanelData({ additionalData }));
     const snapshot = service.get();
     additionalData.nested.value = 'mutated';
 
     expect(snapshot.workspace.additionalData).toEqual({
       nested: { value: 'original' },
     });
-    expect(store.getState().workspacePanelState.additionalData).not.toBe(
+    expect(store.getState().view.workspacePanelState.additionalData).not.toBe(
       additionalData
     );
   });
@@ -307,7 +311,7 @@ describe('PublicStateService', () => {
     service.subscribe(listener);
 
     store.dispatch(
-      actions.setAppStateValue('announceMessage', {
+      viewActions.setViewValue('announceMessage', {
         messageText: 'Private state update',
       })
     );

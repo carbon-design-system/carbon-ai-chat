@@ -9,19 +9,33 @@
 
 import React from 'react';
 import { act, render, waitFor } from '@testing-library/react';
+
 import { ChatContainer } from '../../../src/react/ChatContainer';
+
 import { MinimizeButtonIconType } from '../../../src/types/config/HeaderConfig';
+
 import { ChatContainerProps } from '../../../src/types/component/ChatContainer';
+
 import { createBaseTestProps, setupAfterEach } from '../../test_helpers';
-import { AppState } from '../../../src/types/state/AppState';
+
 import { applyConfigChangesDynamically } from '../../../src/chat/utils/dynamicConfigUpdates';
+
 import { doCreateStore } from '../../../src/shared/store/doCreateStore';
+
 import { ServiceManager } from '../../../src/shared/services/ServiceManager';
+
 import { NamespaceService } from '../../../src/shared/services/NamespaceService';
+
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
+
 import actions from '../../../src/shared/store/actions';
 import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
+
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
+
+import { viewActions } from '../../../src/view/state';
+
+import { withView } from '../../test_helpers';
 
 describe('Config Header', () => {
   const createBaseProps = (): Partial<ChatContainerProps> => ({
@@ -64,7 +78,7 @@ describe('Config Header', () => {
       );
 
       const store = (capturedInstance as any).serviceManager.store;
-      const state: AppState = store.getState();
+      const state = store.getState();
       expect(state.config.public.header).toEqual(header);
     });
 
@@ -93,7 +107,7 @@ describe('Config Header', () => {
       );
 
       const store = (capturedInstance as any).serviceManager.store;
-      const state: AppState = store.getState();
+      const state = store.getState();
       expect(state.config.public.header).toEqual(header);
     });
 
@@ -123,7 +137,7 @@ describe('Config Header', () => {
       );
 
       const store = (capturedInstance as any).serviceManager.store;
-      const state: AppState = store.getState();
+      const state = store.getState();
       expect(state.config.public.header).toEqual(header);
     });
 
@@ -153,7 +167,7 @@ describe('Config Header', () => {
       );
 
       const store = (capturedInstance as any).serviceManager.store;
-      const state: AppState = store.getState();
+      const state = store.getState();
       expect(state.config.public.header).toEqual(header);
     });
 
@@ -178,7 +192,7 @@ describe('Config Header', () => {
       );
 
       const store = (capturedInstance as any).serviceManager.store;
-      const state: AppState = store.getState();
+      const state = store.getState();
       expect(state.config.public.header).toBeUndefined();
     });
   });
@@ -191,13 +205,16 @@ describe('Config Header', () => {
         assistantName: 'Test Assistant',
       };
 
-      const store = doCreateStore(initialConfig, {} as ServiceManager);
+      const store = withView(
+        doCreateStore(initialConfig, {} as ServiceManager),
+        initialConfig
+      );
       serviceManager = {
         store,
         namespace: new NamespaceService('test'),
         messageCoordinator: { timeoutMS: 30000 } as any,
         humanAgentService: null,
-      } as ServiceManager;
+      } as unknown as ServiceManager;
     });
 
     it('should handle header config changes dynamically', async () => {
@@ -223,7 +240,7 @@ describe('Config Header', () => {
         serviceManager
       );
 
-      const state: AppState = serviceManager.store.getState();
+      const state = serviceManager.store.getState();
       expect(state.config.public.header?.title).toBe('New Header');
       expect(state.config.public.header?.hideMinimizeButton).toBe(true);
       expect(state.config.public.header?.showRestartButton).toBe(true);
@@ -317,7 +334,7 @@ describe('header controls through the ChatContainer wrapper', () => {
     await waitFor(() => expect(base().headerTitle).toBe('Home header'));
     await waitFor(() => expect(base().navigationType).toBe('none'));
     act(() => {
-      store.dispatch(actions.toggleHomeScreen());
+      store.dispatch(viewActions.toggleHomeScreen());
     });
     await waitFor(() => expect(base().navigationType).toBe('back'));
   });
@@ -327,7 +344,7 @@ describe('header controls through the ChatContainer wrapper', () => {
       homescreen: { isOn: true, greeting: 'Welcome' },
     });
     act(() => {
-      store.dispatch(actions.toggleHomeScreen());
+      store.dispatch(viewActions.toggleHomeScreen());
     });
     await waitFor(() => expect(base().navigationType).toBe('back'));
     act(() => {
@@ -352,7 +369,7 @@ describe('header controls through the ChatContainer wrapper', () => {
       handler: newChat,
     });
     act(() => {
-      store.dispatch(actions.setHistoryPanelOptions(true, false));
+      store.dispatch(viewActions.setHistoryPanelOptions(true, false));
     });
     const { languagePack } = store.getState();
     await waitFor(() => expect(base().navigationType).toBe('overflow'));

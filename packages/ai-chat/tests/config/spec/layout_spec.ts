@@ -9,16 +9,26 @@
 
 import React from 'react';
 import { render, waitFor } from '@testing-library/react';
+
 import { ChatContainer } from '../../../src/react/ChatContainer';
+
 import { ChatContainerProps } from '../../../src/types/component/ChatContainer';
+
 import { createBaseTestProps } from '../../test_helpers';
-import { AppState } from '../../../src/types/state/AppState';
+
 import { applyConfigChangesDynamically } from '../../../src/chat/utils/dynamicConfigUpdates';
+
 import { doCreateStore } from '../../../src/shared/store/doCreateStore';
+
 import { ServiceManager } from '../../../src/shared/services/ServiceManager';
+
 import { NamespaceService } from '../../../src/shared/services/NamespaceService';
+
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
+
 import { CornersType } from '../../../src/types/config/CornersType';
+
+import { withView } from '../../test_helpers';
 
 describe('Config Layout', () => {
   const createBaseProps = (): Partial<ChatContainerProps> => ({
@@ -60,7 +70,7 @@ describe('Config Layout', () => {
       );
 
       const store = (capturedInstance as any).serviceManager.store;
-      const state: AppState = store.getState();
+      const state = store.getState();
       expect(state.config.public.layout).toEqual(layout);
     });
 
@@ -94,7 +104,7 @@ describe('Config Layout', () => {
       );
 
       const store = (capturedInstance as any).serviceManager.store;
-      const state: AppState = store.getState();
+      const state = store.getState();
       expect(state.config.public.layout).toEqual(layout);
     });
 
@@ -128,7 +138,7 @@ describe('Config Layout', () => {
       );
 
       const store = (capturedInstance as any).serviceManager.store;
-      const state: AppState = store.getState();
+      const state = store.getState();
       expect(state.config.public.layout).toEqual(layout);
     });
 
@@ -158,7 +168,7 @@ describe('Config Layout', () => {
       );
 
       const store = (capturedInstance as any).serviceManager.store;
-      const state: AppState = store.getState();
+      const state = store.getState();
       expect(state.config.public.layout).toBeUndefined();
     });
 
@@ -170,13 +180,16 @@ describe('Config Layout', () => {
           assistantName: 'Test Assistant',
         };
 
-        const store = doCreateStore(initialConfig, {} as ServiceManager);
+        const store = withView(
+          doCreateStore(initialConfig, {} as ServiceManager),
+          initialConfig
+        );
         serviceManager = {
           store,
           namespace: new NamespaceService('test'),
           messageCoordinator: { timeoutMS: 30000 } as any,
           humanAgentService: null,
-        } as ServiceManager;
+        } as unknown as ServiceManager;
       });
 
       it('should handle layout config changes dynamically', async () => {
@@ -206,7 +219,7 @@ describe('Config Layout', () => {
           serviceManager
         );
 
-        const state: AppState = serviceManager.store.getState();
+        const state = serviceManager.store.getState();
         expect(state.config.public.layout?.showFrame).toBe(false);
         expect(state.config.public.layout?.hasContentMaxWidth).toBe(true);
         expect(state.config.derived.themeWithDefaults.corners).toEqual({
@@ -242,7 +255,7 @@ describe('Config Layout', () => {
           serviceManager
         );
 
-        const state: AppState = serviceManager.store.getState();
+        const state = serviceManager.store.getState();
         expect(state.config.derived.themeWithDefaults.corners).toEqual({
           startStart: CornersType.ROUND,
           startEnd: CornersType.SQUARE,
@@ -282,7 +295,7 @@ describe('Config Layout', () => {
           serviceManager
         );
 
-        const state: AppState = serviceManager.store.getState();
+        const state = serviceManager.store.getState();
         // All corners should be forced to square when showFrame is false
         expect(state.config.derived.themeWithDefaults.corners).toEqual({
           startStart: CornersType.SQUARE,

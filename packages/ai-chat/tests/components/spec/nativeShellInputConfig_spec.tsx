@@ -26,6 +26,7 @@ import {
   setupAfterEach,
   setupBeforeEach,
 } from '../../test_helpers';
+import { chatStore } from '../../../src/chat/services/attachChatView';
 
 const wrappers = [
   ['ChatContainer', ChatContainer],
@@ -479,7 +480,7 @@ describe.each(wrappers)('input configuration through %s', (_name, Wrapper) => {
       })
     );
     expect(
-      f.instance.serviceManager.store.getState().catastrophicErrorType
+      chatStore(f.instance.serviceManager).getState().view.catastrophicErrorType
     ).toBe(true);
     expect(f.root.querySelector('cds-aichat-chat-shell')).not.toBeNull();
     const attempts = renderIcon.mock.calls.length;

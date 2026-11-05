@@ -24,7 +24,7 @@ import {
 } from '../../../src/shared/store/doCreateStore';
 import { reducers } from '../../../src/shared/store/reducers';
 import { ServiceManager } from '../../../src/shared/services/ServiceManager';
-import { AppState } from '../../../src/types/state/AppState';
+import { ConversationState } from '../../../src/types/state/AppState';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
 
 jest.mock('../../../src/shared/services/haa/HumanAgentServiceImpl', () => ({
@@ -37,12 +37,12 @@ jest.mock('../../../src/shared/services/haa/HumanAgentServiceImpl', () => ({
 }));
 import createHumanAgentService from '../../../src/shared/services/haa/HumanAgentServiceImpl';
 
-function createStore(initialState: AppState) {
+function createStore(initialState: ConversationState) {
   return createAppStore(
     (
-      state: AppState,
+      state: ConversationState,
       action: { type: string; [key: string]: unknown } | undefined
-    ): AppState =>
+    ): ConversationState =>
       action && reducers[action.type]
         ? reducers[action.type](state, action)
         : state,
