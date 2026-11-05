@@ -8,6 +8,7 @@
  */
 
 import isEqual from 'lodash-es/isEqual.js';
+import { outputItemData } from './outputItemData';
 
 import {
   LocalMessageItem,
@@ -60,22 +61,7 @@ function outputItemToLocalItem(
   // If the item comes with a streaming id, use that. Otherwise assign a new id.
   const id = streamItemID(fullMessage.id, messageItem) || uuid();
 
-  // Create the LocalMessage. It will temporarily have the extra "output" property it gets from the original
-  // MessageResponse object.
-  const localMessage: LocalMessageItem = {
-    ui_state: {
-      id,
-      needsAnnouncement: !fullMessage.ui_state_internal?.from_history,
-    },
-    item: messageItem,
-    fullMessageID: fullMessage.id,
-  };
-
-  if (isLatestWelcomeNode) {
-    localMessage.ui_state.isWelcomeResponse = true;
-  }
-
-  return localMessage as LocalMessageItem;
+  return outputItemData(messageItem, fullMessage, id, isLatestWelcomeNode);
 }
 
 /**

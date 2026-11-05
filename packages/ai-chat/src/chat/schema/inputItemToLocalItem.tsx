@@ -7,6 +7,7 @@
  *  @license
  */
 
+import { inputItemData } from './inputItemData';
 import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
 import {
   MessageRequest,
@@ -29,22 +30,12 @@ function inputItemToLocalItem(
   originalUserText: string,
   id: string = uuid()
 ): LocalMessageItem {
-  const localMessage: LocalMessageItem = {
-    // The individual message in the format of an item from output.generic in the docs above.
-    item: {
-      response_type: MessageResponseTypes.TEXT,
-      ...message.input,
-    },
-    // ui_state is for rendering concerns and is not persistent.
-    ui_state: {
-      id,
-      originalUserText,
-      needsAnnouncement: false, // We don't announce text that came from the user.
-    },
-    fullMessageID: message.id,
-  };
-
-  return localMessage;
+  return inputItemData(
+    message,
+    originalUserText,
+    id,
+    MessageResponseTypes.TEXT
+  );
 }
 
 export default inputItemToLocalItem;
