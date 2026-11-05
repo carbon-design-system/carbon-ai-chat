@@ -457,9 +457,11 @@ export function pureEffectIssues(
           imported &&
           ts.isImportDeclaration(imported) &&
           ts.isStringLiteral(imported.moduleSpecifier) &&
-          ['lodash-es/cloneDeep.js', 'lodash-es/merge.js'].includes(
-            imported.moduleSpecifier.text
-          )
+          [
+            'lodash-es/cloneDeep.js',
+            'lodash-es/isEqual.js',
+            'lodash-es/merge.js',
+          ].includes(imported.moduleSpecifier.text)
         ) {
           return true;
         }
@@ -636,6 +638,100 @@ export function snapshotDataCalls(
     }
     return false;
   };
+  // A collection flag is a type guard only when every assignment directly follows creating that collection.
+  const flagGuards = (flag: string, collection: string) => {
+    let marked = false;
+    let exact = true;
+    visit(source, (node) => {
+      if (
+        !ts.isBinaryExpression(node) ||
+        node.operatorToken.kind !== ts.SyntaxKind.EqualsToken ||
+        compact(node.left) !== flag
+      ) {
+        return;
+      }
+      const statement = node.parent;
+      const block = statement.parent;
+      const previous =
+        ts.isExpressionStatement(statement) && ts.isBlock(block)
+          ? block.statements[block.statements.indexOf(statement) - 1]
+          : undefined;
+      if (
+        compact(node.right) === 'true' &&
+        previous &&
+        compact(previous) === `owned=new${collection}();`
+      ) {
+        marked = true;
+      } else {
+        exact = false;
+      }
+    });
+    return marked && exact;
+  };
+  const initializer = (node: ts.Node | undefined) => {
+    const symbol = node && checker.getSymbolAtLocation(node);
+    const declaration = symbol?.valueDeclaration;
+    return declaration && ts.isVariableDeclaration(declaration)
+      ? declaration
+      : undefined;
+  };
+  // The copier's buffer loop visits exactly the built-in buffer constructors.
+  const bufferConstructor = (node: ts.Node | undefined) => {
+    const declaration = initializer(node);
+    const loop = declaration?.parent.parent;
+    return Boolean(
+      loop &&
+      ts.isForOfStatement(loop) &&
+      compact(initializer(loop.expression)?.initializer ?? loop) ===
+        "typeofSharedArrayBuffer==='undefined'?[ArrayBuffer]:[ArrayBuffer,SharedArrayBuffer]"
+    );
+  };
+  const bufferPrototype = (node: ts.Node | undefined) => {
+    const value = initializer(node)?.initializer;
+    return Boolean(
+      value &&
+      ts.isPropertyAccessExpression(value) &&
+      value.name.text === 'prototype' &&
+      bufferConstructor(value.expression)
+    );
+  };
+  const slotGetters = new Set([
+    "Object.getOwnPropertyDescriptor(prototype,'byteLength').get.call",
+    "Object.getOwnPropertyDescriptor(prototype,BufferConstructor===ArrayBuffer?'resizable':'growable')?.get.call",
+    "Object.getOwnPropertyDescriptor(prototype,'maxByteLength').get.call",
+  ]);
+  const descriptorTarget = (node: ts.CallExpression) => {
+    let expression: ts.Expression = node.expression;
+    while (ts.isPropertyAccessExpression(expression)) {
+      expression = expression.expression;
+    }
+    return ts.isCallExpression(expression)
+      ? expression.arguments[0]
+      : undefined;
+  };
+  // isCollection is a brand check only when every use passes a built-in collection prototype.
+  const collectionUses: ts.Node[] = [];
+  visit(source, (node) => {
+    if (
+      ts.isIdentifier(node) &&
+      node.text === 'isCollection' &&
+      !ts.isFunctionDeclaration(node.parent)
+    ) {
+      collectionUses.push(node);
+    }
+  });
+  const collectionPrototypes =
+    collectionUses.length > 0 &&
+    collectionUses.every(
+      (use) =>
+        ts.isCallExpression(use.parent) &&
+        use.parent.expression === use &&
+        ['Map.prototype', 'Set.prototype'].includes(
+          compact(use.parent.arguments[1])
+        )
+    );
+  const mapGuard = flagGuards('map', 'Map');
+  const setGuard = flagGuards('set', 'Set');
   visit(source, (node) => {
     if (!ts.isCallExpression(node) && !ts.isNewExpression(node)) {
       return;
@@ -708,7 +804,29 @@ export function snapshotDataCalls(
       [
         'Object.prototype.hasOwnProperty.call',
         'Object.prototype.toString.call',
+        'Function.prototype.toString.call',
       ].includes(compact(node.expression))
+    ) {
+      allowed.add(node);
+    }
+    // Built-in brand checks and slot getters read an internal slot or throw; they never run host code.
+    if (
+      ts.isCallExpression(node) &&
+      builtIn(node, 'call') &&
+      ((compact(node.expression) === 'prototype.has.call' &&
+        collectionPrototypes) ||
+        (slotGetters.has(compact(node.expression)) &&
+          bufferPrototype(descriptorTarget(node))) ||
+        compact(node.expression) ===
+          "Object.getOwnPropertyDescriptor(DataView.prototype,'byteLength').get.call")
+    ) {
+      allowed.add(node);
+    }
+    if (
+      ts.isCallExpression(node) &&
+      builtIn(node, 'construct') &&
+      compact(node.expression) === 'Reflect.construct' &&
+      bufferConstructor(node.arguments[0])
     ) {
       allowed.add(node);
     }
@@ -723,9 +841,11 @@ export function snapshotDataCalls(
     if (
       ts.isCallExpression(node) &&
       ((compact(node) === 'owned.set(copy(key),copy(entry))' &&
-        withinBranch(node, 'valueinstanceofMap')) ||
+        mapGuard &&
+        withinBranch(node, 'map')) ||
         (compact(node) === 'owned.add(copy(entry))' &&
-          withinBranch(node, 'valueinstanceofSet')))
+          setGuard &&
+          withinBranch(node, 'set')))
     ) {
       allowed.add(node);
     }
