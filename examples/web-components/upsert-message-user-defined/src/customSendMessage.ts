@@ -23,7 +23,6 @@
  *
  * APIs exercised:
  *   - `ChatInstance.messaging.upsertMessage`
- *   - `ChatInstance.messaging.addMessage`
  *   - `MessageState.STREAMING` / `MessageState.COMPLETE`
  *   - `MessageResponseTypes.TEXT` / `BUTTON` / `USER_DEFINED`
  *   - `ButtonItemType.POST_BACK`
@@ -84,8 +83,13 @@ interface StepsCardPayload {
 export const scenarioBus = new EventTarget();
 export type ScenarioCompleteDetail = { messageID: string };
 
-function welcomeResponse(): MessageResponse {
+function welcomeResponse(
+  messageID: string,
+  requestID: string
+): MessageResponse {
   return {
+    id: messageID,
+    request_id: requestID,
     output: {
       generic: [
         {
@@ -238,7 +242,10 @@ async function customSendMessage(
     await runStepsScenario(instance, request.id, requestOptions.signal);
     return;
   }
-  instance.messaging.addMessage(welcomeResponse());
+  const messageID = uuid();
+  await instance.messaging.upsertMessage(messageID, MessageState.COMPLETE, () =>
+    welcomeResponse(messageID, request.id)
+  );
 }
 
 export { customSendMessage };
