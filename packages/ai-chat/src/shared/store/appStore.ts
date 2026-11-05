@@ -81,9 +81,34 @@ export interface AppStore<
 }
 
 /**
+ * A reducer for a partition: a part of the state that another layer adds to a
+ * store with {@link attachPartition}. It runs after the store's own reducer,
+ * on every action, and gets the store's state after that reducer ran. So a
+ * partition can react to the store's own actions in the same dispatch.
+ *
+ * @typeParam PartState - The partition's state.
+ * @typeParam StoreState - The store's own state.
+ */
+export type PartitionReducer<PartState, StoreState> = (
+  state: Readonly<PartState>,
+  action: Readonly<UnknownAction>,
+  storeStateAfter: Readonly<StoreState>
+) => PartState;
+
+type PartitionAttacher = (
+  key: string,
+  reducer: PartitionReducer<unknown, unknown>,
+  initialState: unknown
+) => boolean;
+
+/** How to attach a partition to each store {@link createAppStore} made. */
+const partitionAttachers = new WeakMap<object, PartitionAttacher>();
+
+/**
  * Creates a lightweight, synchronous store.
  *
- * - Calls the provided reducer synchronously on each dispatch
+ * - Calls the provided reducer synchronously on each dispatch, then the
+ *   reducer of each attached partition
  * - Notifies subscribers only when the state reference changes
  *
  * @typeParam StateShape - The state shape contained in the store.
@@ -101,8 +126,39 @@ export function createAppStore<
 ): AppStore<StateShape, ActionType> {
   let currentState: StateShape = preloadedState;
   const listeners: Set<StoreListener> = new Set();
+  const partitions = new Map<string, PartitionReducer<unknown, StateShape>>();
 
   const getState = (): StateShape => currentState;
+
+  const notify = () => {
+    listeners.forEach((listener) => {
+      try {
+        listener();
+      } catch {
+        // Deliberately swallow to keep other listeners functioning
+      }
+    });
+  };
+
+  // Each partition reads its value from the state before the action, so the
+  // store's own reducer can't drop or change it.
+  const reduce = (
+    state: StateShape,
+    action: Readonly<ActionType>
+  ): StateShape => {
+    let next = reducer(state, action);
+    partitions.forEach((partitionReducer, key) => {
+      const part = partitionReducer(
+        (state as Record<string, unknown>)[key],
+        action,
+        next
+      );
+      if (!Object.is(part, (next as Record<string, unknown>)[key])) {
+        next = { ...next, [key]: part };
+      }
+    });
+    return next;
+  };
 
   const dispatch: DispatchFunction<ActionType> = (
     action: Readonly<ActionType>
@@ -116,7 +172,7 @@ export function createAppStore<
       );
     }
 
-    const nextState = reducer(previousState, action);
+    const nextState = reduce(previousState, action);
     if (nextState !== previousState) {
       if (isEnableDebugLog()) {
         // Compute a shallow set of changed top-level keys for quick visibility.
@@ -138,13 +194,7 @@ export function createAppStore<
       }
       currentState = nextState;
       commitMessageOwnership(store, currentState, action);
-      listeners.forEach((listener) => {
-        try {
-          listener();
-        } catch {
-          // Deliberately swallow to keep other listeners functioning
-        }
-      });
+      notify();
     } else {
       commitMessageOwnership(store, currentState, action);
     }
@@ -159,7 +209,51 @@ export function createAppStore<
   };
 
   const store = { getState, dispatch, subscribe };
+  partitionAttachers.set(store, (key, partitionReducer, initialState) => {
+    if (partitions.has(key)) {
+      return false;
+    }
+    if (Object.prototype.hasOwnProperty.call(currentState, key)) {
+      throw new Error(`The store already has a "${key}" value.`);
+    }
+    partitions.set(key, partitionReducer);
+    currentState = { ...currentState, [key]: initialState };
+    notify();
+    return true;
+  });
   return store;
+}
+
+/**
+ * Adds a partition to a store made by {@link createAppStore}. The partition's
+ * value lives under `key` in the store's state, and `reducer` updates it on
+ * every dispatch. A dispatch that changes the store's own state and the
+ * partition notifies subscribers once. Attaching notifies them too.
+ *
+ * Attaching a key the store already has a partition for does nothing, so a
+ * partition lives as long as its store.
+ *
+ * @param store - A store from {@link createAppStore}.
+ * @param key - Where the partition's value lives in the state.
+ * @param reducer - Updates the partition's value.
+ * @param initialState - The partition's first value.
+ * @returns Whether this call added the partition.
+ */
+export function attachPartition<StoreState, PartState>(
+  store: AppStore<StoreState>,
+  key: string,
+  reducer: PartitionReducer<PartState, StoreState>,
+  initialState: PartState
+): boolean {
+  const attach = partitionAttachers.get(store);
+  if (!attach) {
+    throw new Error('Only a store from createAppStore takes partitions.');
+  }
+  return attach(
+    key,
+    reducer as PartitionReducer<unknown, unknown>,
+    initialState
+  );
 }
 
 /**

@@ -31,6 +31,10 @@ Read before editing this custom Redux-style store. Package rules: [ai-chat/AGENT
 - `selectors.ts` — plain functions deriving state.
 - `subscriptions.ts` — store-subscription side effects.
 
+## Partitions
+
+Another layer adds its own part of the state with `attachStorePartition` from `src/sdk/internal/`. A partition's reducer runs after the store's own reducer on every action and receives the store state after it, so one dispatch updates both and notifies once. Attaching a key the store already has a partition for does nothing.
+
 ## Adding a new state slice — checklist
 
 1. Choose `reducers.ts` or the human-agent slice.
