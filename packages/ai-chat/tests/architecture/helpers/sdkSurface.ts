@@ -30,134 +30,177 @@ export function surfaceReport(
   if (!source) {
     throw new Error(`Missing surface entry ${entry}`);
   }
+  const walker = new SurfaceWalker(checker, packageRoot);
+  checker
+    .getExportsOfModule(checker.getSymbolAtLocation(source)!)
+    .forEach((symbol) =>
+      walker.enqueue(
+        symbol.flags & ts.SymbolFlags.Alias
+          ? checker.getAliasedSymbol(symbol)
+          : symbol
+      )
+    );
+  return walker.run();
+}
+
+class SurfaceWalker {
+  private pending: ts.Symbol[] = [];
+  private seen = new Set<ts.Symbol>();
+  private printer = ts.createPrinter({ removeComments: true });
   // TypeScript reports file names with forward slashes on every platform.
-  const src = path.join(packageRoot, 'src').replaceAll('\\', '/') + '/';
-  const printer = ts.createPrinter({ removeComments: true });
-  // Only named declarations get a block; anonymous types are walked through.
-  const ownDeclaration = (symbol: ts.Symbol | undefined) =>
-    symbol?.declarations?.find(
+  private src: string;
+
+  constructor(
+    private checker: ts.TypeChecker,
+    private packageRoot: string
+  ) {
+    this.src = path.join(packageRoot, 'src').replaceAll('\\', '/') + '/';
+  }
+
+  enqueue(symbol: ts.Symbol) {
+    this.pending.push(symbol);
+  }
+
+  run() {
+    const blocks: string[] = [];
+    while (this.pending.length) {
+      const symbol = this.pending.shift()!;
+      if (this.seen.has(symbol)) {
+        continue;
+      }
+      this.seen.add(symbol);
+      const declaration = this.ownDeclaration(symbol);
+      // An enum member and a type parameter are reported by their owner.
+      if (
+        declaration &&
+        !(
+          symbol.flags &
+          (ts.SymbolFlags.EnumMember | ts.SymbolFlags.TypeParameter)
+        )
+      ) {
+        blocks.push(this.block(symbol, declaration));
+      }
+    }
+    return blocks.sort().join('\n\n') + '\n';
+  }
+
+  /** Only named declarations get a block; anonymous types are walked through. */
+  private ownDeclaration(symbol: ts.Symbol | undefined) {
+    return symbol?.declarations?.find(
       (d) =>
-        d.getSourceFile().fileName.startsWith(src) &&
+        d.getSourceFile().fileName.startsWith(this.src) &&
         (ts.isInterfaceDeclaration(d) ||
           ts.isTypeAliasDeclaration(d) ||
           ts.isEnumDeclaration(d) ||
           ts.isClassDeclaration(d))
     );
-  const pending: ts.Symbol[] = checker
-    .getExportsOfModule(checker.getSymbolAtLocation(source)!)
-    .map((symbol) =>
-      symbol.flags & ts.SymbolFlags.Alias
-        ? checker.getAliasedSymbol(symbol)
-        : symbol
-    );
-  const seen = new Set<ts.Symbol>();
-  const blocks: string[] = [];
+  }
 
-  const collect = (type: ts.Type, depth = 0) => {
-    if (depth > 4) {
-      return;
-    }
-    for (const symbol of [type.aliasSymbol, type.getSymbol()]) {
-      if (ownDeclaration(symbol) && !seen.has(symbol)) {
-        pending.push(symbol);
-      }
-    }
-    for (const argument of type.aliasTypeArguments ?? []) {
-      collect(argument, depth + 1);
-    }
-    if (type.isUnionOrIntersection()) {
-      type.types.forEach((member) => collect(member, depth + 1));
-    }
-    if (type.flags & ts.TypeFlags.Object) {
-      const object = type as ts.ObjectType;
-      if (object.objectFlags & ts.ObjectFlags.Reference) {
-        checker
-          .getTypeArguments(object as ts.TypeReference)
-          .forEach((argument) => collect(argument, depth + 1));
-      }
-      if (!ownDeclaration(type.getSymbol())) {
-        // An anonymous object or a function: report what its members reach.
-        for (const signature of type.getCallSignatures()) {
-          signature.parameters.forEach((parameter) =>
-            collect(checker.getTypeOfSymbol(parameter), depth + 1)
-          );
-          collect(signature.getReturnType(), depth + 1);
-        }
-        if (object.objectFlags & ts.ObjectFlags.Anonymous) {
-          for (const property of type.getProperties()) {
-            collect(checker.getTypeOfSymbol(property), depth + 1);
-          }
-        }
-      }
-    }
-  };
-
-  while (pending.length) {
-    const symbol = pending.shift()!;
-    if (seen.has(symbol)) {
-      continue;
-    }
-    seen.add(symbol);
-    const declaration = ownDeclaration(symbol);
-    // An enum member and a type parameter are reported by their owner.
-    if (
-      !declaration ||
-      symbol.flags & (ts.SymbolFlags.EnumMember | ts.SymbolFlags.TypeParameter)
-    ) {
-      continue;
-    }
+  private block(symbol: ts.Symbol, declaration: ts.Declaration) {
     const file = path
-      .relative(packageRoot, declaration.getSourceFile().fileName)
+      .relative(this.packageRoot, declaration.getSourceFile().fileName)
       .replaceAll('\\', '/');
-    const name = checker.symbolToString(symbol);
+    const name = this.checker.symbolToString(symbol);
     if (ts.isTypeAliasDeclaration(declaration)) {
-      const type = checker.getTypeAtLocation(declaration.type);
-      const text = printer
-        .printNode(
-          ts.EmitHint.Unspecified,
-          declaration.type,
-          declaration.getSourceFile()
-        )
-        .replace(/\s+/g, ' ');
-      blocks.push(`type ${name} (${file})\n  = ${text}`);
-      collect(type);
-      continue;
+      return `type ${name} (${file})\n  = ${this.aliasText(declaration)}`;
     }
     if (ts.isEnumDeclaration(declaration)) {
-      blocks.push(
-        `enum ${name} (${file})\n` +
-          declaration.members
-            .map((m) =>
-              m.initializer
-                ? `  ${m.name.getText()} = ${m.initializer.getText()}`
-                : `  ${m.name.getText()}`
-            )
-            .join('\n')
-      );
-      continue;
+      return `enum ${name} (${file})\n${this.enumLines(declaration)}`;
     }
+    return `interface ${name} (${file})\n${this.memberLines(symbol, declaration)}`;
+  }
+
+  private aliasText(declaration: ts.TypeAliasDeclaration) {
+    this.collect(this.checker.getTypeAtLocation(declaration.type));
+    return this.printer
+      .printNode(
+        ts.EmitHint.Unspecified,
+        declaration.type,
+        declaration.getSourceFile()
+      )
+      .replace(/\s+/g, ' ');
+  }
+
+  private enumLines(declaration: ts.EnumDeclaration) {
+    return declaration.members
+      .map((m) =>
+        m.initializer
+          ? `  ${m.name.getText()} = ${m.initializer.getText()}`
+          : `  ${m.name.getText()}`
+      )
+      .join('\n');
+  }
+
+  private memberLines(symbol: ts.Symbol, declaration: ts.Declaration) {
+    const { checker } = this;
     const type = checker.getDeclaredTypeOfSymbol(symbol);
+    const write = (member: ts.Type) =>
+      checker.typeToString(member, declaration, FORMAT);
     const lines = type
       .getProperties()
       .map((property) => {
         const optional = property.flags & ts.SymbolFlags.Optional ? '?' : '';
         const member = checker.getTypeOfSymbolAtLocation(property, declaration);
-        collect(member);
-        return `  ${property.name}${optional}: ${checker.typeToString(member, declaration, FORMAT)}`;
+        this.collect(member);
+        return `  ${property.name}${optional}: ${write(member)}`;
       })
       .sort();
     for (const index of checker.getIndexInfosOfType(type)) {
       lines.push(
-        `  [key: ${checker.typeToString(index.keyType)}]: ${checker.typeToString(index.type, declaration, FORMAT)}`
+        `  [key: ${checker.typeToString(index.keyType)}]: ${write(index.type)}`
       );
-      collect(index.type);
+      this.collect(index.type);
     }
-    for (const base of type.isClassOrInterface()
-      ? (checker.getBaseTypes(type) ?? [])
-      : []) {
-      collect(base);
+    if (type.isClassOrInterface()) {
+      (checker.getBaseTypes(type) ?? []).forEach((base) => this.collect(base));
     }
-    blocks.push(`interface ${name} (${file})\n${lines.join('\n')}`);
+    return lines.join('\n');
   }
-  return blocks.sort().join('\n\n') + '\n';
+
+  /** Queues each named type `type` reaches, a few levels deep. */
+  private collect(type: ts.Type, depth = 0) {
+    if (depth > 4) {
+      return;
+    }
+    for (const symbol of [type.aliasSymbol, type.getSymbol()]) {
+      if (this.ownDeclaration(symbol) && !this.seen.has(symbol)) {
+        this.pending.push(symbol);
+      }
+    }
+    this.childTypes(type).forEach((child) => this.collect(child, depth + 1));
+  }
+
+  /** The types inside `type`: arguments, union members, and, for an anonymous object or function, its members. */
+  private childTypes(type: ts.Type): ts.Type[] {
+    const children = [...(type.aliasTypeArguments ?? [])];
+    if (type.isUnionOrIntersection()) {
+      children.push(...type.types);
+    }
+    if (!(type.flags & ts.TypeFlags.Object)) {
+      return children;
+    }
+    const object = type as ts.ObjectType;
+    if (object.objectFlags & ts.ObjectFlags.Reference) {
+      children.push(
+        ...this.checker.getTypeArguments(object as ts.TypeReference)
+      );
+    }
+    if (this.ownDeclaration(type.getSymbol())) {
+      return children;
+    }
+    for (const signature of type.getCallSignatures()) {
+      signature.parameters.forEach((parameter) =>
+        children.push(this.checker.getTypeOfSymbol(parameter))
+      );
+      children.push(signature.getReturnType());
+    }
+    if (object.objectFlags & ts.ObjectFlags.Anonymous) {
+      type
+        .getProperties()
+        .forEach((property) =>
+          children.push(this.checker.getTypeOfSymbol(property))
+        );
+    }
+    return children;
+  }
 }
