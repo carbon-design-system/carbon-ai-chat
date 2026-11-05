@@ -59,3 +59,23 @@ it.each(fixtures.map((file) => [path.basename(file), file]))(
     expect(ts.formatDiagnostics(diagnostics, formatHost)).toBe('');
   }
 );
+
+it('rejects a handler typed for the prebuilt chat as an SDK handler', () => {
+  const checker = program.getTypeChecker();
+  const source = program.getSourceFile(
+    path.join(fixtureRoot, 'sdkInstance.fixture.ts')
+  )!;
+  const probe = (name: string) => {
+    const symbol = checker
+      .getExportsOfModule(checker.getSymbolAtLocation(source)!)
+      .find((candidate) => candidate.name === name)!;
+    return checker.getDeclaredTypeOfSymbol(symbol);
+  };
+  const handlers = probe('ChatSDKHandlersProbe');
+  expect(
+    checker.isTypeAssignableTo(probe('PrebuiltReceiveHandlerProbe'), handlers)
+  ).toBe(false);
+  expect(
+    checker.isTypeAssignableTo(probe('SDKReceiveHandlerProbe'), handlers)
+  ).toBe(true);
+});
