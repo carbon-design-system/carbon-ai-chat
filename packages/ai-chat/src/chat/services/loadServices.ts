@@ -8,6 +8,8 @@
  */
 
 import actions from '../store/actions';
+import { getSpeakerName } from '../utils/messageUtils';
+import type { MessageResponse } from '../../types/messaging/Messages';
 import {
   hasCustomPromptLine,
   requestComposerFocus,
@@ -60,9 +62,37 @@ function createServiceManager(appConfig: AppConfig) {
   );
   serviceManager.actions = new ChatInstanceService(serviceManager);
   serviceManager.inputActionsService = new InputActionsService(serviceManager);
-  serviceManager.streamAnnouncerService = new StreamAnnouncerService(
-    serviceManager
-  );
+  serviceManager.streamAnnouncerService = new StreamAnnouncerService({
+    announceStreamStart: (messageID, languageKey, responseUserProfile) => {
+      const { store } = serviceManager;
+      const { config } = store.getState();
+
+      const assistantName = config.public.assistantName;
+
+      const message = store.getState().allMessagesByID[messageID] as
+        MessageResponse | undefined;
+
+      const messageWithProfile: MessageResponse | undefined =
+        responseUserProfile
+          ? ({
+              ...message,
+              message_options: {
+                ...message?.message_options,
+                response_user_profile: responseUserProfile,
+              },
+            } as MessageResponse)
+          : message;
+
+      const speakerName = getSpeakerName(messageWithProfile, assistantName);
+
+      store.dispatch(
+        actions.announceMessage({
+          messageID: languageKey,
+          messageValues: { sender: speakerName },
+        })
+      );
+    },
+  });
   serviceManager.chunkProcessingService = new ChunkProcessingService(
     serviceManager
   );
@@ -76,6 +106,21 @@ function createServiceManager(appConfig: AppConfig) {
   serviceManager.messageCoordinator = new MessageCoordinator(
     serviceManager,
     new MessagePresentationAdapter({
+      getMessagesScrollBottom: () =>
+        serviceManager.mainWindow?.getMessagesScrollBottom(),
+      restoreMessagesScroll: (scrollBottom) =>
+        serviceManager.mainWindow?.doAutoScroll({
+          scrollToBottom: scrollBottom,
+        }),
+      announceSendFailure: () =>
+        serviceManager.store.dispatch(
+          actions.announceMessage({ messageID: 'errors_ariaMessageFailed' })
+        ),
+      announceStreamStarts: (messageID, content) =>
+        serviceManager.streamAnnouncerService.announceStreamStarts(
+          messageID,
+          content
+        ),
       getUserDefinedResponseSlot: (id) =>
         serviceManager.slotEventService.getOrCreateUserDefinedElement(id)
           .slotName,

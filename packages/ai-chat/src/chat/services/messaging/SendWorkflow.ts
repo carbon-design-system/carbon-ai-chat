@@ -358,9 +358,7 @@ class SendWorkflow {
 
         // Announce the change if necessary.
         if (announceMessageID) {
-          this.serviceManager.store.dispatch(
-            actions.announceMessage({ messageID: announceMessageID })
-          );
+          this.serviceManager.messageCoordinator.announceSendFailure();
         }
 
         this.serviceManager.store.dispatch(

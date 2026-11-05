@@ -13,7 +13,10 @@ import { MessageLoadingManager } from '../../utils/messageServiceUtils';
 import { consoleError } from '../../utils/miscUtils';
 import type { PublicConfig } from '../../../types/config/PublicConfig';
 import { coordinateSend } from './coordinateSend';
-import type { MessagePresentationPort } from './presentationPort';
+import type {
+  MessagePresentationPort,
+  StreamAnnouncementContent,
+} from './presentationPort';
 import type { MessageRequest } from '../../../types/messaging/Messages';
 import type { MessageSendSource } from '../../../types/events/eventBusTypes';
 import type {
@@ -44,6 +47,22 @@ import { coordinateReasoningEvents } from './coordinateReasoningEvents';
 import { HeadlessReasoningObserver } from './HeadlessReasoningObserver';
 
 class MessageCoordinator {
+  getMessagesScrollBottom() {
+    return this.presentation?.getMessagesScrollBottom?.();
+  }
+
+  restoreMessagesScroll(scrollBottom: number | undefined) {
+    this.presentation?.restoreMessagesScroll?.(scrollBottom);
+  }
+
+  announceSendFailure() {
+    this.presentation?.announceSendFailure?.();
+  }
+
+  announceStreamStarts(messageID: string, content: StreamAnnouncementContent) {
+    this.presentation?.announceStreamStarts?.(messageID, content);
+  }
+
   private reasoningObserver?: HeadlessReasoningObserver;
 
   onInstanceReady() {
