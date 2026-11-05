@@ -93,10 +93,4 @@ class ViewConnection {
   }
 }
 
-export {
-  HumanAgentPresentationPort,
-  InstanceViewPort,
-  ViewBindings,
-  ViewChangeReasons,
-  ViewConnection,
-};
+export { ViewBindings, ViewConnection };
