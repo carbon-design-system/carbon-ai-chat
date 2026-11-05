@@ -12,7 +12,7 @@
  * extends it with `skipConnectHumanAgentCard`, which only the prebuilt chat's connect card uses.
  *
  * A `createChatSDK` function that starts a conversation with no interface arrives with the
- * `@carbon/ai-chat/sdk` entry point in 2.0.0.
+ * `@carbon/ai-chat/sdk` entry point in a 2.x minor release.
  *
  * @category SDK
  */
