@@ -74,6 +74,40 @@ const STYLES = /\.s?css(\?.*)?$/;
 const REGISTERS =
   /@carbonElement\(|@customElement\(|\bcustomElements\b(?!\s*\??\.\s*(get|whenDefined)\b)/;
 
+/** A string literal under any casts and parentheses, as in `import(('x' as any))`. */
+function literalText(node: ts.Expression | undefined) {
+  while (
+    node &&
+    (ts.isAsExpression(node) || ts.isParenthesizedExpression(node))
+  ) {
+    node = node.expression;
+  }
+  return node && ts.isStringLiteralLike(node) ? node.text : undefined;
+}
+
+/**
+ * The module a node imports: an import or export declaration, an `import()`
+ * type or call, or a `require` call. Null marks a dynamic import whose
+ * argument isn't a literal.
+ */
+function importedModule(node: ts.Node): string | null | undefined {
+  if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
+    return literalText(node.moduleSpecifier);
+  }
+  if (ts.isImportTypeNode(node) && ts.isLiteralTypeNode(node.argument)) {
+    return literalText(node.argument.literal as ts.Expression);
+  }
+  if (!ts.isCallExpression(node)) {
+    return undefined;
+  }
+  if (node.expression.kind === ts.SyntaxKind.ImportKeyword) {
+    return literalText(node.arguments[0]) ?? null;
+  }
+  const isRequire =
+    ts.isIdentifier(node.expression) && node.expression.text === 'require';
+  return isRequire ? literalText(node.arguments[0]) : undefined;
+}
+
 export function isFramework(specifier: string) {
   return FRAMEWORKS.some((pattern) => pattern.test(specifier));
 }
@@ -177,44 +211,11 @@ export class SourceGraph {
       true
     );
     const visit = (node: ts.Node) => {
-      if (
-        (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) &&
-        node.moduleSpecifier &&
-        ts.isStringLiteral(node.moduleSpecifier)
-      ) {
-        all.add(node.moduleSpecifier.text);
-      } else if (
-        ts.isImportTypeNode(node) &&
-        ts.isLiteralTypeNode(node.argument) &&
-        ts.isStringLiteral(node.argument.literal)
-      ) {
-        all.add(node.argument.literal.text);
-      } else if (
-        ts.isCallExpression(node) &&
-        ts.isIdentifier(node.expression) &&
-        node.expression.text === 'require' &&
-        node.arguments[0] &&
-        ts.isStringLiteralLike(node.arguments[0])
-      ) {
-        all.add(node.arguments[0].text);
-      } else if (
-        ts.isCallExpression(node) &&
-        node.expression.kind === ts.SyntaxKind.ImportKeyword
-      ) {
-        let [argument] = node.arguments;
-        // `import('x' as any)` keeps a literal under the cast.
-        while (
-          argument &&
-          (ts.isAsExpression(argument) ||
-            ts.isParenthesizedExpression(argument))
-        ) {
-          argument = argument.expression;
-        }
-        if (argument && ts.isStringLiteralLike(argument)) {
-          all.add(argument.text);
-        } else {
-          this.issues.push(`${file}: nonliteral dynamic import`);
-        }
+      const specifier = importedModule(node);
+      if (specifier === null) {
+        this.issues.push(`${file}: nonliteral dynamic import`);
+      } else if (specifier) {
+        all.add(specifier);
       }
       ts.forEachChild(node, visit);
     };
@@ -263,25 +264,9 @@ export class SourceGraph {
       ts.ScriptKind.JS
     );
     const visit = (node: ts.Node) => {
-      if (
-        (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) &&
-        node.moduleSpecifier &&
-        ts.isStringLiteral(node.moduleSpecifier)
-      ) {
-        specifiers.add(node.moduleSpecifier.text);
-      } else if (
-        ts.isCallExpression(node) &&
-        (node.expression.kind === ts.SyntaxKind.ImportKeyword ||
-          (ts.isIdentifier(node.expression) &&
-            node.expression.text === 'require'))
-      ) {
-        let [argument] = node.arguments;
-        while (argument && ts.isParenthesizedExpression(argument)) {
-          argument = argument.expression;
-        }
-        if (argument && ts.isStringLiteralLike(argument)) {
-          specifiers.add(argument.text);
-        }
+      const specifier = importedModule(node);
+      if (specifier) {
+        specifiers.add(specifier);
       }
       ts.forEachChild(node, visit);
     };
@@ -385,21 +370,7 @@ export function frameworkViolations(
   rules: FolderRule[],
   files: string[]
 ) {
-  const tainted = new Map<string, boolean>();
-  const taints = (entry: string) => {
-    if (!tainted.has(entry)) {
-      const reached = graph.reach([entry]);
-      tainted.set(
-        entry,
-        [...reached].some(
-          (file) =>
-            graph.registers(file) ||
-            graph.edgesOf(file).some((e) => e.external && isFramework(e.to))
-        )
-      );
-    }
-    return tainted.get(entry);
-  };
+  const taints = componentTaint(graph);
   const violations = new Set<string>();
   for (const rule of rules.filter((candidate) => candidate.frameworkFree)) {
     const roots = files.filter((file) => ruleFor(rules, file) === rule);
@@ -408,36 +379,71 @@ export function frameworkViolations(
     roots
       .filter((root) => graph.registers(root))
       .forEach((root) => report(root, 'customElements'));
-    const seen = new Set<string>();
-    const pending = [...roots];
-    while (pending.length) {
-      const file = pending.shift()!;
-      if (seen.has(file)) {
-        continue;
-      }
-      seen.add(file);
-      for (const edge of graph.edgesOf(file)) {
-        if (edge.external) {
-          if (isFramework(edge.to)) {
-            report(edge.from, edge.to);
-          }
-        } else if (isComponents(edge.to)) {
-          if (taints(edge.to)) {
-            report(edge.from, edge.to);
-          }
-        } else if (graph.registers(edge.to)) {
-          report(edge.from, edge.to);
-        } else if (
-          !edge.to.startsWith('../') &&
-          allows(ruleFor(rules, file), edge)
-        ) {
-          // A disallowed edge is a folder violation; don't follow it into view code.
-          pending.push(edge.to);
-        }
+    walkFrameworkFree(graph, rules, roots, taints, report);
+  }
+  return violations;
+}
+
+/** Whether a components-package module reaches a framework or a registration. */
+function componentTaint(graph: SourceGraph) {
+  const tainted = new Map<string, boolean>();
+  return (entry: string) => {
+    if (!tainted.has(entry)) {
+      const reached = [...graph.reach([entry])];
+      tainted.set(
+        entry,
+        reached.some(
+          (file) =>
+            graph.registers(file) ||
+            graph.edgesOf(file).some((e) => e.external && isFramework(e.to))
+        )
+      );
+    }
+    return tainted.get(entry);
+  };
+}
+
+/** Reports each framework edge reachable from `roots` through allowed edges. */
+function walkFrameworkFree(
+  graph: SourceGraph,
+  rules: FolderRule[],
+  roots: string[],
+  taints: (entry: string) => boolean,
+  report: (from: string, to: string) => void
+) {
+  const seen = new Set<string>();
+  const pending = [...roots];
+  while (pending.length) {
+    const file = pending.shift()!;
+    if (seen.has(file)) {
+      continue;
+    }
+    seen.add(file);
+    for (const edge of graph.edgesOf(file)) {
+      if (frameworkEdge(graph, edge, taints)) {
+        report(edge.from, edge.to);
+      } else if (
+        !edge.external &&
+        !isComponents(edge.to) &&
+        !edge.to.startsWith('../') &&
+        allows(ruleFor(rules, file), edge)
+      ) {
+        // A disallowed edge is a folder violation; don't follow it into view code.
+        pending.push(edge.to);
       }
     }
   }
-  return violations;
+}
+
+function frameworkEdge(
+  graph: SourceGraph,
+  edge: SourceEdge,
+  taints: (entry: string) => boolean
+) {
+  if (edge.external) {
+    return isFramework(edge.to);
+  }
+  return isComponents(edge.to) ? taints(edge.to) : graph.registers(edge.to);
 }
 
 function isComponents(file: string) {
