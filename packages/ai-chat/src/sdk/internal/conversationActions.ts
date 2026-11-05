@@ -9,6 +9,7 @@
 
 import {
   ADD_LOCAL_MESSAGE_ITEM,
+  HYDRATE_MESSAGE_HISTORY,
   RESTART_CONVERSATION,
   UPSERT_MESSAGE,
 } from '../../shared/store/messageActionTypes';
@@ -26,6 +27,8 @@ import { HA_SET_IS_CONNECTING } from '../../shared/store/humanAgentActions';
 const conversationActions = {
   /** The conversation was cleared. */
   RESTART_CONVERSATION,
+  /** History was loaded: `{ messageHistory, insertsHistory }`. */
+  HYDRATE_MESSAGE_HISTORY,
   /** A local item was added: `{ messageItem, message }`. */
   ADD_LOCAL_MESSAGE_ITEM,
   /** A message was written: `{ message, isStreaming, options }`. */

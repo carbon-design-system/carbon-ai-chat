@@ -227,19 +227,22 @@ export async function applyConfigChangesDynamically(
   // hostname to force them to accept the new disclaimer again.
   if (!isEqual(prevConfig?.disclaimer, newConfig.disclaimer)) {
     const hostname = isBrowser() ? window.location.hostname : '';
-    const updatedDisclaimersAccepted = {
-      ...store.getState().view.persistedToBrowserStorage.disclaimersAccepted,
-    };
+    const currentDisclaimersAccepted =
+      store.getState().view.persistedToBrowserStorage.disclaimersAccepted;
+    const updatedDisclaimersAccepted = { ...currentDisclaimersAccepted };
     // Mark this hostname as not-accepted rather than deleting the key, as
     // before. Acceptance is read as a truthy check, so `false` re-shows it.
     updatedDisclaimersAccepted[hostname] = false;
 
-    store.dispatch(
-      viewActions.setLauncherProperty(
-        'disclaimersAccepted',
-        updatedDisclaimersAccepted
-      )
-    );
+    // An unchanged value saves nothing, as the old merge didn't.
+    if (currentDisclaimersAccepted[hostname] !== false) {
+      store.dispatch(
+        viewActions.setLauncherProperty(
+          'disclaimersAccepted',
+          updatedDisclaimersAccepted
+        )
+      );
+    }
   }
 
   // CONFIG-SEEDED PERSISTED RUNTIME STATE: `showUnreadIndicator` is not pure

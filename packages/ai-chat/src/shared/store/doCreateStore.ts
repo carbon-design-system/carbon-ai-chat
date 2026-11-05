@@ -287,6 +287,22 @@ function loadSavedSession(
   publicConfig: PublicConfig,
   serviceManager: ServiceManager
 ): PersistedState | null {
+  // Load once per chat: loading can clear a stale session from storage.
+  if (savedSessions.has(serviceManager)) {
+    return savedSessions.get(serviceManager);
+  }
+  const saved = readSavedSession(publicConfig, serviceManager);
+  savedSessions.set(serviceManager, saved);
+  return saved;
+}
+
+/** The saved session each chat loaded at boot. */
+const savedSessions = new WeakMap<object, PersistedState | null>();
+
+function readSavedSession(
+  publicConfig: PublicConfig,
+  serviceManager: ServiceManager
+): PersistedState | null {
   const persistedStateConfig = publicConfig.persistedState;
   const externallyPersisted = Boolean(
     persistedStateConfig?.initialState || persistedStateConfig?.onStateChange

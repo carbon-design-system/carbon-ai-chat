@@ -107,8 +107,15 @@ const actions = {
     return { type: HYDRATE_CHAT };
   },
 
-  hydrateMessageHistory(messageHistory: AppStateMessages) {
-    return { type: HYDRATE_MESSAGE_HISTORY, messageHistory };
+  /**
+   * Replaces the transcript with loaded history. `insertsHistory` is true when
+   * the history was merged in front of the current transcript instead.
+   */
+  hydrateMessageHistory(
+    messageHistory: AppStateMessages,
+    insertsHistory = false
+  ) {
+    return { type: HYDRATE_MESSAGE_HISTORY, messageHistory, insertsHistory };
   },
 
   removeMessages(messageIDs: string[]) {
