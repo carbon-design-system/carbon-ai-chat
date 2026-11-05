@@ -7,9 +7,10 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import '../../../aichat-autocomplete/index.js';
+
 import { html } from 'lit';
 import { fixture, expect } from '@open-wc/testing';
-import '../src/autocomplete.js';
 import type AutocompleteElement from '../src/autocomplete.js';
 import type {
   SuggestionItem,
@@ -17,7 +18,7 @@ import type {
   FlatEntry,
 } from '../src/autocomplete.js';
 import { defaultAutocompleteI18n } from '../src/autocomplete.js';
-import prefix from '../../../../globals/settings.js';
+import { prefix } from '../../../../globals/settings.js';
 
 describe('cds-aichat-autocomplete', () => {
   const mockItems: SuggestionItem[] = [
@@ -363,7 +364,7 @@ describe('cds-aichat-autocomplete', () => {
         await el.updateComplete;
 
         const activeDescendant = listbox?.getAttribute('aria-activedescendant');
-        const activeClass = `${prefix}-autocomplete-item--active`;
+        const activeClass = `${prefix}-aichat-autocomplete-item--active`;
         const activeOptions = Array.from(
           el.shadowRoot?.querySelectorAll(`li[role="option"].${activeClass}`) ??
             []
@@ -1223,7 +1224,7 @@ describe('cds-aichat-autocomplete', () => {
       const el = await defaultFixture({ items: [disabledItem] });
 
       const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
-      const disabledClass = `${prefix}-autocomplete-item--disabled`;
+      const disabledClass = `${prefix}-aichat-autocomplete-item--disabled`;
 
       expect((options?.[0] as HTMLElement).classList.contains(disabledClass)).to
         .be.true;
@@ -1523,7 +1524,9 @@ describe('cds-aichat-autocomplete', () => {
           ''
         );
         expect(
-          el.shadowRoot?.querySelector(`.${prefix}-autocomplete-item--active`)
+          el.shadowRoot?.querySelector(
+            `.${prefix}-aichat-autocomplete-item--active`
+          )
         ).to.be.null;
         expect(el.hasNavigated()).to.be.false;
       }
@@ -1585,7 +1588,7 @@ describe('cds-aichat-autocomplete', () => {
       groups: SuggestionItemGroup[]
     ): FlatEntry[] {
       const el = document.createElement(
-        `${prefix}-autocomplete`
+        `${prefix}-aichat-autocomplete`
       ) as AutocompleteElement;
       el.items = items;
       el.groups = groups;

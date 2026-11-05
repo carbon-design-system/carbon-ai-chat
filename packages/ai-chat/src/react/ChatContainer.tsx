@@ -19,7 +19,7 @@ import React, {
 import { createPortal } from 'react-dom';
 
 import type { ChatAppEntryProps } from '../chat/ChatAppEntry';
-import CdsAiChatContainer from '../web-components/cds-aichat-container/cds-aichat-container';
+import { ChatContainer as CdsAiChatContainer } from '../web-components/cds-aichat-container/register';
 import type { ChatRenderer } from '../web-components/shared/react-renderer';
 import { ChatContainerProps } from '../types/component/ChatContainer';
 import { WriteableElementName } from '../types/instance/WriteableElements';
@@ -225,7 +225,7 @@ function ChatContainer(
 
   return (
     <>
-      {React.createElement('cds-aichat-container', {
+      {React.createElement(CdsAiChatContainer.is, {
         ...domProps,
         ref: hostRef,
       })}

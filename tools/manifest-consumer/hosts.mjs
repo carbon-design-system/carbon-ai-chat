@@ -153,18 +153,21 @@ function assertCallbacks(members, publicHost) {
   }
 }
 
-function assertHostExports(module, declaration) {
+function assertHostExports(module, registration, declaration) {
   const target = { name: declaration.name, module: module.path };
-  const definitions = module.exports.filter(
-    (entry) => entry.kind === 'custom-element-definition'
-  );
-  assert.equal(definitions.length, 1);
-  assert.equal(definitions[0].name, declaration.tagName);
-  assert.deepEqual(definitions[0].declaration, target);
-  const exported = module.exports.find(
-    (entry) => entry.kind === 'js' && entry.name === 'default'
-  );
-  assert.deepEqual(exported?.declaration, target);
+  const definitions = (entry) =>
+    entry.exports.filter((item) => item.kind === 'custom-element-definition');
+  // The pure class module only exports; its registering entry defines the tag.
+  assert.equal(definitions(module).length, 0);
+  assert.equal(definitions(registration).length, 1);
+  assert.equal(definitions(registration)[0].name, declaration.tagName);
+  assert.deepEqual(definitions(registration)[0].declaration, target);
+  for (const entry of [module, registration]) {
+    const exported = entry.exports.find(
+      (item) => item.kind === 'js' && item.name === 'default'
+    );
+    assert.deepEqual(exported?.declaration, target);
+  }
 }
 
 export function assertHostParity(manifest, runtime, publishedTypes) {
@@ -176,17 +179,33 @@ export function assertHostParity(manifest, runtime, publishedTypes) {
     2,
     'The chat manifest describes exactly two hosts.'
   );
-  assert.equal(manifest.modules.length, 2);
+  // Each host has a pure class module and a registering entry.
+  assert.equal(manifest.modules.length, 4);
   assert.ok(!JSON.stringify(manifest).includes('FlattenedConfigElement'));
   for (const { module, declaration } of hosts) {
     const publicHost = publishedTypes.hosts.get(declaration.name);
     assert.ok(publicHost, `Missing published host type: ${declaration.name}`);
     const host = runtime.find((entry) => entry.tag === declaration.tagName);
     assert.ok(host, `Missing runtime host: ${declaration.tagName}`);
+    const registration = manifest.modules.find((entry) =>
+      entry.exports?.some(
+        (item) =>
+          item.kind === 'custom-element-definition' &&
+          item.name === declaration.tagName
+      )
+    );
+    const definition = registration?.exports.find(
+      (item) => item.kind === 'custom-element-definition'
+    );
     assert.equal(
-      module.path,
+      registration?.path,
       host.module.replace(/^dist\/es-custom\//, 'dist/es/'),
       'Published host module must match its isolated runtime import.'
+    );
+    assert.deepEqual(
+      definition.declaration,
+      { name: declaration.name, module: module.path },
+      'Published host module must define the pure host class.'
     );
     assert.ok(
       host.defaultExportRegistered,
@@ -206,7 +225,7 @@ export function assertHostParity(manifest, runtime, publishedTypes) {
     assertRuntimeProperties(host, members, attributes);
     assertConfigTypes(members, publicHost, publishedTypes.config);
     assertCallbacks(members, publicHost);
-    assertHostExports(module, declaration);
+    assertHostExports(module, registration, declaration);
   }
 }
 

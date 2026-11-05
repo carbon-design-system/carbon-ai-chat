@@ -21,7 +21,7 @@ import type {
   StartersConfig,
   SuggestionItem,
   TriggerSuggestionConfig,
-} from '../../components/prompt-line/src/tiptap/types.js';
+} from '../../components/aichat-prompt-line/tiptap/types.js';
 
 const ICON_SIZE = 16;
 

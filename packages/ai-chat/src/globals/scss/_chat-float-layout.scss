@@ -66,7 +66,7 @@ $left-position: get-var('left-position', auto);
      Uses logical properties for automatic RTL support
      ============================================================================ */
 
-  .#{$prefix}-float--open {
+  .#{$prefix}-aichat-float--open {
     position: fixed;
     z-index: chat-theme.$z-index;
     block-size: $height;
@@ -85,12 +85,12 @@ $left-position: get-var('left-position', auto);
      Animation when chat is opening
      ============================================================================ */
 
-  .#{$prefix}-float--opening {
+  .#{$prefix}-aichat-float--opening {
     animation: none;
   }
 
   @media screen and (prefers-reduced-motion: no-preference) {
-    .#{$prefix}-float--opening:not(.#{$prefix}-float--mobile) {
+    .#{$prefix}-aichat-float--opening:not(.#{$prefix}-aichat-float--mobile) {
       animation: cds-aichat-float-in motion.$duration-moderate-02
         motion.motion(entrance, expressive) both;
     }
@@ -101,13 +101,13 @@ $left-position: get-var('left-position', auto);
      Animation when chat is closing
      ============================================================================ */
 
-  .#{$prefix}-float--closing {
+  .#{$prefix}-aichat-float--closing {
     animation: cds-aichat-float-out motion.$duration-fast-02
       motion.motion(exit, expressive) both;
   }
 
   @media screen and (prefers-reduced-motion: reduce) {
-    .#{$prefix}-float--closing {
+    .#{$prefix}-aichat-float--closing {
       animation: none;
     }
   }
@@ -117,7 +117,7 @@ $left-position: get-var('left-position', auto);
      Styles when chat is fully closed
      ============================================================================ */
 
-  .#{$prefix}-float--close {
+  .#{$prefix}-aichat-float--close {
     display: none;
     overflow: hidden;
     border: none;
@@ -129,7 +129,7 @@ $left-position: get-var('left-position', auto);
      Mobile-specific positioning and animations
      ============================================================================ */
 
-  .#{$prefix}-float--mobile {
+  .#{$prefix}-aichat-float--mobile {
     position: fixed;
     z-index: chat-theme.$z-index;
     block-size: $height;
@@ -143,13 +143,13 @@ $left-position: get-var('left-position', auto);
     min-block-size: $min-height;
   }
 
-  .#{$prefix}-float--mobile.#{$prefix}-float--opening {
+  .#{$prefix}-aichat-float--mobile.#{$prefix}-aichat-float--opening {
     inset-block-end: 1px;
     inset-inline-start: 1px;
   }
 
   @media screen and (prefers-reduced-motion: no-preference) {
-    .#{$prefix}-float--mobile.#{$prefix}-float--opening {
+    .#{$prefix}-aichat-float--mobile.#{$prefix}-aichat-float--opening {
       animation: cds-aichat-float-in motion.$duration-moderate-02
         motion.motion(entrance, expressive) both;
     }

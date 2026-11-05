@@ -182,7 +182,7 @@ cds-button.cds-aichat--launcher-extended__close-button {
 
 /* ---------- KEYFRAMES FOR CTA ANIMATIONS ---------- */
 
-@keyframes #{chat-config.$prefix}-launcher-opening-text-holder {
+@keyframes #{chat-config.$prefix}-aichat-launcher-opening-text-holder {
   from {
     inline-size: 0;
   }
@@ -192,7 +192,7 @@ cds-button.cds-aichat--launcher-extended__close-button {
   }
 }
 
-@keyframes #{chat-config.$prefix}-launcher-closing-text-holder {
+@keyframes #{chat-config.$prefix}-aichat-launcher-closing-text-holder {
   from {
     inline-size: $launcher-extended-width;
   }
@@ -202,7 +202,7 @@ cds-button.cds-aichat--launcher-extended__close-button {
   }
 }
 
-@keyframes #{chat-config.$prefix}-launcher-opening-greeting {
+@keyframes #{chat-config.$prefix}-aichat-launcher-opening-greeting {
   from {
     opacity: 0;
   }
@@ -212,7 +212,7 @@ cds-button.cds-aichat--launcher-extended__close-button {
   }
 }
 
-@keyframes #{chat-config.$prefix}-launcher-closing-greeting {
+@keyframes #{chat-config.$prefix}-aichat-launcher-closing-greeting {
   from {
     opacity: 1;
   }
@@ -234,12 +234,12 @@ cds-button.cds-aichat--launcher-extended__close-button {
 .cds-aichat-launcher--opening {
   @media (prefers-reduced-motion: no-preference) {
     .cds-aichat--launcher-extended__text-holder {
-      animation: #{chat-config.$prefix}-launcher-opening-text-holder
+      animation: #{chat-config.$prefix}-aichat-launcher-opening-text-holder
         $launcher-expand-duration $launcher-easing forwards;
     }
 
     .cds-aichat--launcher-extended__greeting {
-      animation: #{chat-config.$prefix}-launcher-opening-greeting
+      animation: #{chat-config.$prefix}-aichat-launcher-opening-greeting
         $launcher-fade-duration $launcher-easing forwards;
       animation-delay: $launcher-expand-duration;
     }
@@ -272,12 +272,12 @@ cds-button.cds-aichat--launcher-extended__close-button {
 .cds-aichat-launcher--closing {
   @media (prefers-reduced-motion: no-preference) {
     .cds-aichat--launcher-extended__greeting {
-      animation: #{chat-config.$prefix}-launcher-closing-greeting
+      animation: #{chat-config.$prefix}-aichat-launcher-closing-greeting
         $launcher-fade-duration $launcher-easing forwards;
     }
 
     .cds-aichat--launcher-extended__text-holder {
-      animation: #{chat-config.$prefix}-launcher-closing-text-holder
+      animation: #{chat-config.$prefix}-aichat-launcher-closing-text-holder
         $launcher-expand-duration $launcher-easing forwards;
       animation-delay: $launcher-fade-duration;
     }

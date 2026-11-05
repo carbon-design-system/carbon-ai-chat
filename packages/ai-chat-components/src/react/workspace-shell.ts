@@ -10,17 +10,18 @@
 import { createComponent } from '@lit/react';
 import React from 'react';
 
-// Export the actual class for the component that will *directly* be wrapped with React.
-import CDSAIChatWorkspaceShell from '../components/workspace-shell/src/workspace-shell.js';
-import CDSAIChatWorkspaceShellHeader from '../components/workspace-shell/src/workspace-shell-header.js';
-import CDSAIChatWorkspaceShellBody from '../components/workspace-shell/src/workspace-shell-body.js';
-import CDSAIChatWorkspaceShellFooter from '../components/workspace-shell/src/workspace-shell-footer.js';
+import {
+  CDSAIChatWorkspaceShell,
+  CDSAIChatWorkspaceShellHeader,
+  CDSAIChatWorkspaceShellBody,
+  CDSAIChatWorkspaceShellFooter,
+} from '../components/aichat-workspace-shell/index.js';
 
 import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
 const WorkspaceShell = withWebComponentBridge(
   createComponent({
-    tagName: 'cds-aichat-workspace-shell',
+    tagName: CDSAIChatWorkspaceShell.is,
     elementClass: CDSAIChatWorkspaceShell,
     react: React,
   })
@@ -28,7 +29,7 @@ const WorkspaceShell = withWebComponentBridge(
 
 const WorkspaceShellHeader = withWebComponentBridge(
   createComponent({
-    tagName: 'cds-aichat-workspace-shell-header',
+    tagName: CDSAIChatWorkspaceShellHeader.is,
     elementClass: CDSAIChatWorkspaceShellHeader,
     react: React,
   })
@@ -36,7 +37,7 @@ const WorkspaceShellHeader = withWebComponentBridge(
 
 const WorkspaceShellBody = withWebComponentBridge(
   createComponent({
-    tagName: 'cds-aichat-workspace-shell-body',
+    tagName: CDSAIChatWorkspaceShellBody.is,
     elementClass: CDSAIChatWorkspaceShellBody,
     react: React,
   })
@@ -44,7 +45,7 @@ const WorkspaceShellBody = withWebComponentBridge(
 
 const WorkspaceShellFooter = withWebComponentBridge(
   createComponent({
-    tagName: 'cds-aichat-workspace-shell-footer',
+    tagName: CDSAIChatWorkspaceShellFooter.is,
     elementClass: CDSAIChatWorkspaceShellFooter,
     react: React,
     events: {

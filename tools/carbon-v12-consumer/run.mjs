@@ -33,6 +33,8 @@ import {
 } from './registration.mjs';
 import { assertPackedResolution } from './resolution.mjs';
 import { assertAggregateProof, prepareAggregateProof } from './aggregate.mjs';
+import { assertIsolationProofs, prepareIsolationProofs } from './isolation.mjs';
+import { assertParentBaseline } from './baseline.mjs';
 
 const runFile = promisify(execFile);
 const fixtureDirectory = dirname(fileURLToPath(import.meta.url));
@@ -175,9 +177,24 @@ assert.equal(
   'The consumer must share one utilities copy.'
 );
 await assertPackedResolution({ consumer });
+const baselineFlag = process.argv.indexOf('--baseline');
+if (baselineFlag !== -1) {
+  assert.ok(process.argv[baselineFlag + 1], '--baseline requires a JSON path.');
+}
+await assertParentBaseline({
+  consumer,
+  baselinePath:
+    baselineFlag === -1 ? undefined : process.argv[baselineFlag + 1],
+});
 await runNpm(['run', 'build']);
 await prepareRegistrationProofs({ consumer, runNpm });
 await prepareAggregateProof({
+  consumer,
+  manifest: componentsMetadata.manifest,
+  runNpm,
+});
+
+const isolationCases = await prepareIsolationProofs({
   consumer,
   manifest: componentsMetadata.manifest,
   runNpm,
@@ -225,6 +242,12 @@ try {
     manifest: componentsMetadata.manifest,
     browser,
     origin,
+  });
+  await assertIsolationProofs({
+    consumer,
+    browser,
+    origin,
+    cases: isolationCases,
   });
   const hostCases = variants.flatMap((variant) =>
     ['container', 'custom-element'].map((hostType) => ({
@@ -295,6 +318,18 @@ try {
             (message) => message.input?.text === text
           ),
         `packed ${label}`
+      );
+      await page.evaluate(() => window.consumerState.remountHost());
+      await page.waitForFunction(() => window.consumerState.ready);
+      await page.getByTestId('input_field').click();
+      await page.keyboard.type(`remounted ${label}`);
+      await page.getByTestId('input_send').click();
+      await page.waitForFunction(
+        (text) =>
+          window.consumerState.sent.some(
+            (message) => message.input?.text === text
+          ),
+        `remounted ${label}`
       );
       const tags = await page.evaluate(async () => {
         const collect = (root) =>

@@ -1,25 +1,8 @@
 /*
- *  Copyright IBM Corp. 2025, 2026
+ * Copyright IBM Corp. 2026
  *
- *  This source code is licensed under the Apache-2.0 license found in the
- *  LICENSE file in the root directory of this source tree.
- *
- *  @license
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
  */
 
-type TableRuntimeModule = typeof import('./table-runtime.js');
-
-let tableRuntimePromise: Promise<TableRuntimeModule> | null = null;
-
-export function loadTableRuntime(): Promise<TableRuntimeModule> {
-  if (!tableRuntimePromise) {
-    tableRuntimePromise = import('./table-runtime.js');
-  }
-  return tableRuntimePromise;
-}
-
-export function loadTableDeps(): Promise<TableRuntimeModule> {
-  return loadTableRuntime();
-}
-
-export type { TableRuntimeModule };
+export * from '../../aichat-table/table-loader.js';

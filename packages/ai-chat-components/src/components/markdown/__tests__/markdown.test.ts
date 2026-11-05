@@ -7,6 +7,8 @@
  *  @license
  */
 
+import '../../aichat-markdown/index.js';
+
 import { expect, fixture, html, waitUntil } from '@open-wc/testing';
 import CDSAIChatMarkdownElement from '../src/markdown.js';
 import {

@@ -10,18 +10,18 @@
 import { createComponent } from '@lit/react';
 import React from 'react';
 
-import CDSAIChatChainOfThought from '../components/chain-of-thought/src/chain-of-thought.js';
+import { CDSAIChatChainOfThought } from '../components/aichat-chain-of-thought/index.js';
 import {
   type ChainOfThoughtOnToggle,
   ChainOfThoughtStepStatus,
   type ChainOfThoughtStepToggleEventDetail,
   type ChainOfThoughtToggleEventDetail,
-} from '../components/chain-of-thought/defs.js';
+} from '../components/aichat-chain-of-thought/defs.js';
 import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
 const ChainOfThought = withWebComponentBridge(
   createComponent({
-    tagName: 'cds-aichat-chain-of-thought',
+    tagName: CDSAIChatChainOfThought.is,
     elementClass: CDSAIChatChainOfThought,
     react: React,
     events: {

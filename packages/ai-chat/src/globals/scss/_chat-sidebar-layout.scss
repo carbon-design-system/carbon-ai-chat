@@ -53,7 +53,7 @@ $sidebar-offscreen: calc((#{$sidebar-width} + #{layout.$spacing-05}) * -1);
      RTL support.
      ============================================================================ */
 
-  .#{$prefix}-sidebar {
+  .#{$prefix}-aichat-sidebar {
     position: fixed;
     z-index: $sidebar-z-index;
     block-size: calc(100vh - #{$sidebar-inset-block-start});
@@ -66,7 +66,7 @@ $sidebar-offscreen: calc((#{$sidebar-width} + #{layout.$spacing-05}) * -1);
   }
 
   @media screen and (prefers-reduced-motion: reduce) {
-    .#{$prefix}-sidebar {
+    .#{$prefix}-aichat-sidebar {
       transition: none;
     }
   }
@@ -77,8 +77,8 @@ $sidebar-offscreen: calc((#{$sidebar-width} + #{layout.$spacing-05}) * -1);
      transition is visible before the chat unmounts.
      ============================================================================ */
 
-  .#{$prefix}-sidebar--closing,
-  .#{$prefix}-sidebar--closed {
+  .#{$prefix}-aichat-sidebar--closing,
+  .#{$prefix}-aichat-sidebar--closed {
     inset-inline-end: $sidebar-offscreen;
   }
 
@@ -88,7 +88,7 @@ $sidebar-offscreen: calc((#{$sidebar-width} + #{layout.$spacing-05}) * -1);
      accessibility tree once the slide-out has finished.
      ============================================================================ */
 
-  .#{$prefix}-sidebar--closed {
+  .#{$prefix}-aichat-sidebar--closed {
     visibility: hidden;
   }
 }
