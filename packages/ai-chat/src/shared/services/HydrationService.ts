@@ -342,7 +342,7 @@ class HydrationService {
       if (!skipHydration && !serviceManager.store.getState().isHydrated) {
         // Trigger re-hydration.
         this.hydrationPromise = null;
-        if (serviceManager.view?.current?.instance.isMainWindowOpen?.()) {
+        if (this.isMainWindowOpen()) {
           didHydrate = true;
           await serviceManager.actions.hydrateChat();
         }
@@ -357,6 +357,13 @@ class HydrationService {
       // Clear isRestarting flag to allow new messages and chunks to be processed
       this.serviceManager.messageCoordinator.setRestartInProgress(false);
     }
+  }
+
+  /** True while the attached view's main window is open. False with no view. */
+  private isMainWindowOpen() {
+    return Boolean(
+      this.serviceManager.view?.current?.instance.isMainWindowOpen?.()
+    );
   }
 
   /**
