@@ -20,6 +20,8 @@ import { createFlattenedConfigPlugin } from '../cem-flattened-config.js';
 
 const tablePath = 'fixture/table.ts';
 const publicConfigPath = 'fixture/config.ts';
+const configBasePath = 'fixture/configBase.ts';
+const fixtureBases = [{ name: 'ConfigBase', source: configBasePath }];
 const basePath = 'fixture/base.ts';
 const typeModule = 'dist/types/aiChatEntry.d.ts';
 const hosts = [
@@ -46,6 +48,11 @@ const config = `export interface PublicConfig {
   assistantAvatarUrl?: string;
   keyboardShortcuts?: Shortcuts;
   onError?: (error: ErrorData) => void;
+}`;
+const configBase = `export interface ConfigBase<I = unknown> {
+  /** Inherited from the base. */
+  baseOnly?: string;
+  dropped?: (instance: I) => void;
 }`;
 const base = `
   import type { PublicConfig } from './config';
@@ -98,10 +105,16 @@ function hostSource(name, tagName) {
   `;
 }
 
-function manifest(overrides = {}, plugins = [], selectedHosts = hosts) {
+function manifest(
+  overrides = {},
+  plugins = [],
+  selectedHosts = hosts,
+  configBases = fixtureBases
+) {
   const sources = {
     [tablePath]: `export const FLATTENED_PUBLIC_CONFIG_FIELDS = [${fields}] as const satisfies readonly Entry[];`,
     [publicConfigPath]: config,
+    [configBasePath]: configBase,
     [basePath]: base,
     [hosts[0].source]: hostSource('First', 'fixture-first'),
     [hosts[1].source]: hostSource('Second', 'fixture-second'),
@@ -119,6 +132,7 @@ function manifest(overrides = {}, plugins = [], selectedHosts = hosts) {
       createFlattenedConfigPlugin({
         tablePath,
         publicConfigPath,
+        configBases,
         basePath,
         hosts: selectedHosts,
         typeModule,
@@ -493,9 +507,65 @@ test('fails when synthetic property declarations and options disagree', () => {
   );
 });
 
+test('reads fields PublicConfig inherits from a config base, minus omitted keys', () => {
+  const result = manifest({
+    [tablePath]: `export const FLATTENED_PUBLIC_CONFIG_FIELDS = [${fields},
+      { name: 'baseOnly', options: { type: String } }
+    ] as const satisfies readonly Entry[];`,
+    [publicConfigPath]: config.replace(
+      'export interface PublicConfig {',
+      "export interface PublicConfig extends Omit<ConfigBase<Instance>, 'dropped'> {"
+    ),
+  });
+  const declaration = result.modules[0].declarations[0];
+  const inherited = declaration.members.find(
+    (member) => member.name === 'baseOnly'
+  );
+  assert.equal(inherited.type.text, 'string');
+  assert.equal(inherited.description, 'Inherited from the base.');
+  assert.ok(
+    declaration.attributes.some((attribute) => attribute.name === 'baseonly')
+  );
+  assert.equal(
+    declaration.members.some((member) => member.name === 'dropped'),
+    false
+  );
+});
+
+test('fails when PublicConfig extends a type that is not a config base', () => {
+  assert.throws(
+    () =>
+      manifest({
+        [publicConfigPath]: config.replace(
+          'export interface PublicConfig {',
+          'export interface PublicConfig extends Other {'
+        ),
+      }),
+    /inheritance needs explicit analyzer support/
+  );
+});
+
+test('fails when PublicConfig omits a key its config base lacks', () => {
+  assert.throws(
+    () =>
+      manifest({
+        [publicConfigPath]: config.replace(
+          'export interface PublicConfig {',
+          "export interface PublicConfig extends Omit<ConfigBase, 'absent'> {"
+        ),
+      }),
+    /omits "absent"/
+  );
+});
+
 test('reads all current source fields without loading a DOM-dependent host', () => {
   const publicConfigSource = readFileSync(
     new URL('../../src/types/config/PublicConfig.ts', import.meta.url),
+    'utf8'
+  );
+  const sdkConfigPath = 'fixture/ChatSDKConfig.ts';
+  const sdkConfigSource = readFileSync(
+    new URL('../../src/types/config/ChatSDKConfig.ts', import.meta.url),
     'utf8'
   );
   const baseSource = readFileSync(
@@ -505,17 +575,23 @@ test('reads all current source fields without loading a DOM-dependent host', () 
     ),
     'utf8'
   );
-  const result = manifest({
-    [tablePath]: readFileSync(
-      new URL(
-        '../../src/web-components/shared/flattenedPublicConfig.ts',
-        import.meta.url
+  const result = manifest(
+    {
+      [tablePath]: readFileSync(
+        new URL(
+          '../../src/web-components/shared/flattenedPublicConfig.ts',
+          import.meta.url
+        ),
+        'utf8'
       ),
-      'utf8'
-    ),
-    [publicConfigPath]: publicConfigSource,
-    [basePath]: baseSource,
-  });
+      [publicConfigPath]: publicConfigSource,
+      [sdkConfigPath]: sdkConfigSource,
+      [basePath]: baseSource,
+    },
+    [],
+    hosts,
+    [{ name: 'ChatSDKConfig', source: sdkConfigPath }]
+  );
   const declaration = result.modules[0].declarations[0];
   const names = new Set(declaration.members.map((member) => member.name));
   const configInterface = ts
@@ -529,9 +605,29 @@ test('reads all current source fields without loading a DOM-dependent host', () 
       (node) =>
         ts.isInterfaceDeclaration(node) && node.name.text === 'PublicConfig'
     );
+  const sdkConfigInterface = ts
+    .createSourceFile(
+      sdkConfigPath,
+      sdkConfigSource,
+      ts.ScriptTarget.Latest,
+      true
+    )
+    .statements.find(
+      (node) =>
+        ts.isInterfaceDeclaration(node) && node.name.text === 'ChatSDKConfig'
+    );
   assert.ok(configInterface.members.length > 0);
-  for (const field of configInterface.members) {
-    assert.ok(names.has(field.name.text), field.name.text);
+  assert.ok(sdkConfigInterface.members.length > 0);
+  for (const field of [
+    ...configInterface.members,
+    ...sdkConfigInterface.members,
+  ]) {
+    if (field.name.text === 'humanAgentState') {
+      // PublicConfig omits it; persistedState saves the connection instead.
+      assert.equal(names.has(field.name.text), false);
+    } else {
+      assert.ok(names.has(field.name.text), field.name.text);
+    }
   }
   for (const name of [
     'onError',

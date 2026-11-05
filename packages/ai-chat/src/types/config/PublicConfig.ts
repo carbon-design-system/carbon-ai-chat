@@ -13,6 +13,8 @@ import type {
   ServiceDeskFactoryParameters,
   ServiceDeskPublicConfig,
 } from './ServiceDeskConfig';
+import type { ChatInstance } from '../instance/ChatInstance';
+import type { ChatSDKConfig } from './ChatSDKConfig';
 import { LauncherConfig } from './LauncherConfig';
 import { PersistedStateConfig } from './PersistedStateConfig';
 import { DeepPartial } from '../utilities/DeepPartial';
@@ -35,11 +37,18 @@ import { UploadConfig } from './UploadConfig';
  */
 
 /**
- * Configuration interface for Carbon AI Chat.
+ * Configuration interface for Carbon AI Chat. It extends {@link ChatSDKConfig} with every setting for
+ * the interface, and its callbacks receive {@link ChatInstance}. It is not assignable to
+ * {@link ChatSDKConfig}, because a callback here may use interface members a conversation with no
+ * interface doesn't have. {@link ChatSDKConfig.humanAgentState} is left out, because
+ * {@link PublicConfig.persistedState} saves the human agent connection with the rest of the session.
  *
  * @category Config
  */
-export interface PublicConfig {
+export interface PublicConfig extends Omit<
+  ChatSDKConfig<ChatInstance>,
+  'humanAgentState'
+> {
   /**
    * This is a one-off listener for catastrophic errors. This is used instead of a normal event bus handler because this function can be
    * defined and called before the event bus has been created.

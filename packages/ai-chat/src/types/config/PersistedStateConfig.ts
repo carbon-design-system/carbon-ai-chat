@@ -8,6 +8,7 @@
  */
 
 import { PersistedState } from '../state/AppState';
+import type { ChatSDKPersistedStateConfig } from './ChatSDKPersistedStateConfig';
 
 /**
  * The subset of session state that Carbon AI Chat can persist and restore, consumed by
@@ -40,7 +41,7 @@ export type PersistableState = Omit<
  * @category Config
  * @experimental
  */
-export interface PersistedStateConfig {
+export interface PersistedStateConfig extends ChatSDKPersistedStateConfig<PersistableState> {
   /**
    * The session state to boot from, used in place of reading `sessionStorage`. Resolve any
    * asynchronous load (for example from your own backend) before constructing the chat and pass the

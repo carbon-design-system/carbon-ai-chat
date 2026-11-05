@@ -15,6 +15,7 @@ import {
   MessageResponse,
 } from '../messaging/Messages';
 import type { ChatInstance } from '../instance/ChatInstance';
+import type { ChatSDKServiceDeskConfig } from './ChatSDKServiceDeskConfig';
 import type { FileUploadCapabilities } from '../instance/FileUploadCapabilities';
 
 // Canonical declarations live in @carbon/ai-chat-components; local
@@ -50,7 +51,7 @@ export type FileUpload = _FileUpload;
  *
  * @category Service desk
  */
-export interface ServiceDeskPublicConfig {
+export interface ServiceDeskPublicConfig extends ChatSDKServiceDeskConfig {
   /**
    * The timeout value in seconds to use when determining agent availability. When a connect_to_agent response is
    * received, the system will ask the service desk if any agents are available. If no response is received within
@@ -105,9 +106,11 @@ export enum HumanAgentsOnlineStatus {
 /**
  * The parameters that are passed to a service desk factory.
  *
+ * @typeParam I The instance the factory receives. Defaults to {@link ChatInstance}; a factory on
+ * {@link ChatSDKConfig} receives {@link ChatSDKInstance}.
  * @category Service desk
  */
-export interface ServiceDeskFactoryParameters {
+export interface ServiceDeskFactoryParameters<I = ChatInstance> {
   /**
    * The callback used by the service desk to communicate with the widget.
    */
@@ -116,7 +119,7 @@ export interface ServiceDeskFactoryParameters {
   /**
    * The instance of Carbon AI Chat.
    */
-  instance: ChatInstance;
+  instance: I;
 
   /**
    * Any state that was stored for the service desk. This value may be undefined if no state has been stored.

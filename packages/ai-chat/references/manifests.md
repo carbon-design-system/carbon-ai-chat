@@ -23,7 +23,7 @@ Its negative mutations catch missing or duplicate fields, lost host overrides, a
 
 ## Steps for a config or host change
 
-- Add config fields to `PublicConfig` and `FLATTENED_PUBLIC_CONFIG_FIELDS`. Use literal entries that the analyzer can read.
+- Add config fields to `PublicConfig` and `FLATTENED_PUBLIC_CONFIG_FIELDS`. Use literal entries that the analyzer can read. A conversation field that belongs on `ChatSDKConfig` goes there instead: `PublicConfig` inherits it, and the analyzer reads the bases listed in `configBases`, minus the keys `PublicConfig` omits.
 - Keep runtime attribute options accurate. `attribute: false` means property-only. Keep `aiEnabled` Boolean in the public type despite its custom converter.
 - Put host-specific type overrides in the linked public host interface. Keep that interface association in the analyzer config.
 - For own reactive fields, keep the decorator, source type, and public interface aligned. Default Lit attribute names are lowercase.
