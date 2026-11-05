@@ -323,13 +323,52 @@ class MessageCoordinator {
   }
 
   private reasoningObserver?: HeadlessReasoningObserver;
+  private reasoningDisposed = false;
+  private stopWatchingView?: () => void;
 
   onInstanceReady() {
     this.reasoningObserver?.observe();
   }
 
   disposeReasoningObserver() {
+    this.reasoningDisposed = true;
+    this.stopWatchingView?.();
     this.reasoningObserver?.dispose();
+  }
+
+  /**
+   * Starts headless reasoning delivery once no view is attached. The observer
+   * then keeps the per-item sessions for both modes, and notifies only while
+   * no view is attached.
+   */
+  private startReasoningObserver() {
+    if (
+      !this.reasoningObserver &&
+      !this.reasoningDisposed &&
+      !this.serviceManager.view?.current
+    ) {
+      this.reasoningObserver = new HeadlessReasoningObserver(
+        this.serviceManager,
+        (session, message, isCurrent) =>
+          this.notifyReasoning(session, message, isCurrent)
+      );
+    }
+  }
+
+  /**
+   * Fires reasoning user-defined responses for a mounted message. It shares the
+   * headless observer's session for the item, so neither mode fires an item
+   * the other already fired. `fallback` serves an item outside the visible list.
+   */
+  notifyMountedReasoning(
+    localItemID: string,
+    message: Message,
+    fallback: Set<string>
+  ) {
+    this.notifyReasoning(
+      this.reasoningObserver?.sessionFor(localItemID) ?? fallback,
+      message
+    );
   }
 
   notifyReasoning(
@@ -432,18 +471,19 @@ class MessageCoordinator {
   private requestQueue = new RequestQueue();
   private requests = new WeakMap<RequestToken, PendingMessageRequest>();
 
-  constructor(
-    private serviceManager: ServiceManager,
-    private presentation?: MessagePresentationPort
-  ) {
+  /** The attached view's port, looked up on each call. */
+  private get presentation(): MessagePresentationPort | undefined {
+    return this.serviceManager.view?.current?.messaging;
+  }
+
+  constructor(private serviceManager: ServiceManager) {
     this.terminationWorkflow = new TerminationWorkflow(serviceManager);
-    if (!presentation) {
-      this.reasoningObserver = new HeadlessReasoningObserver(
-        serviceManager,
-        (session, message, isCurrent) =>
-          this.notifyReasoning(session, message, isCurrent)
-      );
-    }
+    // Boot builds the coordinator before a view attaches, so the observer
+    // normally starts here and lives as long as the chat.
+    this.startReasoningObserver();
+    this.stopWatchingView = serviceManager.view?.subscribe(() =>
+      this.startReasoningObserver()
+    );
   }
 
   /**

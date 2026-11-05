@@ -673,7 +673,8 @@ it('keeps the adapter types and actual boot bindings view-only', () => {
     ].sort()
   );
   let found = false;
-  visit(get('src/shared/services/loadServices.ts'), (node) => {
+  // The container attaches these bindings when it boots a mount.
+  visit(get('src/chat/services/createViewBindings.ts'), (node) => {
     if (!ts.isNewExpression(node) || !ts.isIdentifier(node.expression)) {
       return;
     }

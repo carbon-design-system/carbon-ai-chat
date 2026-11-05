@@ -56,12 +56,6 @@ const folderExceptions: BoundaryException[] = [
   },
   {
     from: 'src/shared/services/ServiceManager.ts',
-    to: 'src/chat/services/ViewService.ts',
-    owner: '#2694',
-    reason: 'holds viewService',
-  },
-  {
-    from: 'src/shared/services/ServiceManager.ts',
     to: 'src/chat/services/ariaAnnouncer.ts',
     owner: '#2694',
     reason: 'holds the shell announcer',
@@ -71,24 +65,6 @@ const folderExceptions: BoundaryException[] = [
     to: 'src/chat/utils/inputTypes.ts',
     owner: '#2694',
     reason: 'holds two input handles',
-  },
-  {
-    from: 'src/shared/services/loadServices.ts',
-    to: 'src/chat/services/MessagePresentationAdapter.ts',
-    owner: '#2694',
-    reason: 'builds the messaging view adapter',
-  },
-  {
-    from: 'src/shared/services/loadServices.ts',
-    to: 'src/chat/services/ViewService.ts',
-    owner: '#2694',
-    reason: 'builds viewService',
-  },
-  {
-    from: 'src/shared/services/loadServices.ts',
-    to: 'src/chat/utils/customPromptLine.ts',
-    owner: '#2694',
-    reason: 'wires composer focus into the messaging view adapter',
   },
 ];
 
@@ -175,11 +151,6 @@ const viewHandleExceptions: Array<{
     reason: 'mainWindow',
   },
   {
-    reference: 'src/shared/services/ServiceManager.ts: ViewService',
-    owner: '#2694',
-    reason: 'viewService',
-  },
-  {
     reference: 'src/shared/services/ServiceManager.ts: HTMLElement',
     owner: '#1732',
     reason: 'container and customHostElement move to the view attach',
@@ -213,6 +184,7 @@ const chatServices = [
   'ariaAnnouncer.ts',
   'autocompleteContent.ts',
   'chatViewState.ts',
+  'createViewBindings.ts',
   'extensionHosts.ts',
   'humanAgentCallbacks.ts',
   'inputExtensions.ts',

@@ -16,10 +16,13 @@ import type {
   StreamChunk,
 } from '../../../src/types/messaging/Messages';
 import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
+import { withMessagingView } from '../helpers/viewBindings';
 
 it('returns the original chunk and pause promises from the core', () => {
   const manager = {} as ServiceManager;
-  const core = new MessageCoordinator(manager, {} as MessagePresentationPort);
+  const core = new MessageCoordinator(
+    withMessagingView(manager, {} as MessagePresentationPort)
+  );
   manager.messageCoordinator = core;
   const chunkResult = resolvablePromise<void>();
   const pauseResult = resolvablePromise<void>();
@@ -48,7 +51,9 @@ it('returns the original chunk and pause promises from the core', () => {
 
 it('retains captured error sets when the same request ID gets new tracking', () => {
   const manager = {} as ServiceManager;
-  const core = new MessageCoordinator(manager, {} as MessagePresentationPort);
+  const core = new MessageCoordinator(
+    withMessagingView(manager, {} as MessagePresentationPort)
+  );
   manager.messageCoordinator = core;
   const firstController = new AbortController();
   const secondController = new AbortController();

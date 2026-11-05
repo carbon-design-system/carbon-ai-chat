@@ -60,7 +60,7 @@ A test fails when a folder imports outside its rules, through type-only imports 
 | `src/types/`    | `src/types/`, plus types and JSON data from `src/shared/` |
 | everything else | anything                                                  |
 
-Nothing `src/shared/` or `src/sdk/` reaches may import React, React DOM, Lit, or a module that registers a custom element. So a new service that works without a view goes in `src/shared/services/`. One that touches the DOM or `ChatViewState` goes in `src/chat/services/`. The rules, their exceptions, and the issue that removes each exception are in [the boundary spec](tests/architecture/spec/sourceBoundaries_spec.ts). [The SDK surface snapshot](tests/architecture/spec/sdkSurface_spec.ts) lists every type and field the SDK entry reaches, so a change to it shows up in review.
+Nothing `src/shared/` or `src/sdk/` reaches may import React, React DOM, Lit, or a module that registers a custom element. So a new service that works without a view goes in `src/shared/services/`. One that touches the DOM or `ChatViewState` goes in `src/chat/services/`. Shared code reaches the view only through the ports in [viewBindings.ts](src/shared/services/viewBindings.ts), which the mounted view attaches. The rules, their exceptions, and the issue that removes each exception are in [the boundary spec](tests/architecture/spec/sourceBoundaries_spec.ts). [The SDK surface snapshot](tests/architecture/spec/sdkSurface_spec.ts) lists every type and field the SDK entry reaches, so a change to it shows up in review.
 
 ## Build, test, lint
 
