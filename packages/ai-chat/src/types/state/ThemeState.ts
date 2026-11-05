@@ -8,7 +8,7 @@
  */
 
 import type { CarbonTheme } from '../config/CarbonTheme';
-import type { CornersType } from '../../shared/utils/constants';
+import type { CornersType } from '../config/CornersType';
 
 /**
  * The theme state.

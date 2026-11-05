@@ -56,7 +56,7 @@ import {
   LocalMessageItem,
   MessageErrorState,
 } from '../../types/messaging/LocalMessageItem';
-import { MessageTypeComponentProps } from '../../types/messaging/MessageTypeComponentProps';
+import { MessageTypeComponentProps } from './MessageTypeComponentProps';
 import {
   getMediaDimensions,
   getRequestBubbleText,

@@ -24,7 +24,7 @@ import {
   MessageResponse,
   WidthOptions,
 } from '../../../../types/messaging/Messages';
-import { MessageTypeComponentProps } from '../../../../types/messaging/MessageTypeComponentProps';
+import { MessageTypeComponentProps } from '../../../components-legacy/MessageTypeComponentProps';
 
 interface CardItemComponentProps extends HasRequestFocus {
   localMessageItem: LocalMessageItem;

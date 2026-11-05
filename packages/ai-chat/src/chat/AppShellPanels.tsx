@@ -36,7 +36,7 @@ import actions from '../shared/store/actions';
 import type { ButtonItem, MessageResponse } from '../types/messaging/Messages';
 import type { AppState } from '../types/state/AppState';
 import type { OnErrorData } from '../types/config/ErrorConfig';
-import type { MessageTypeComponentProps } from '../types/messaging/MessageTypeComponentProps';
+import type { MessageTypeComponentProps } from './components-legacy/MessageTypeComponentProps';
 import type { ServiceManager } from '../shared/services/ServiceManager';
 
 const noScroll = () => {};

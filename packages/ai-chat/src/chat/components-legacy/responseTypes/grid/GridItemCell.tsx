@@ -25,7 +25,7 @@ import {
   MessageResponse,
   VerticalCellAlignment,
 } from '../../../../types/messaging/Messages';
-import { MessageTypeComponentProps } from '../../../../types/messaging/MessageTypeComponentProps';
+import { MessageTypeComponentProps } from '../../MessageTypeComponentProps';
 
 function GridItemCell({
   cell,
