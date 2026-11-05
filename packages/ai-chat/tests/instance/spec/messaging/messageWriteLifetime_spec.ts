@@ -201,7 +201,7 @@ describe('message write lifetime', () => {
     const entered = resolvablePromise();
     const release = resolvablePromise();
     const pause = jest
-      .spyOn(serviceManager.chunkProcessingService, 'waitForPause')
+      .spyOn(serviceManager.messageCoordinator, 'waitForPause')
       .mockImplementationOnce(async () => {
         entered.doResolve();
         await release;

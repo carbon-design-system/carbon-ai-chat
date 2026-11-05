@@ -442,7 +442,7 @@ class FullResponseWorkflow {
         });
       }
       if (isPause(item)) {
-        await this.serviceManager.chunkProcessingService.waitForPause(
+        await this.serviceManager.messageCoordinator.waitForPause(
           item as PauseItem,
           initialRestartCount
         );

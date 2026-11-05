@@ -69,7 +69,6 @@ function makeStubManager(initialMessages: Record<string, unknown> = {}) {
     },
     fire,
     actions: chatActions,
-    chunkProcessingService: { handleUpsertStreaming: jest.fn() },
     receiveService: {
       retainAgentItemPositions: jest.fn(),
       handleConnectToHumanAgent: jest.fn().mockResolvedValue(undefined),

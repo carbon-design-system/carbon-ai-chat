@@ -54,7 +54,37 @@ import type { UpsertMessageUpdater } from '../../../types/config/MessagingConfig
 
 import { UpsertWorkflow } from './UpsertWorkflow';
 
+import { ChunkWorkflow } from './ChunkWorkflow';
+import type { StreamChunk, PauseItem } from '../../../types/messaging/Messages';
+import type { AddMessageOptions } from '../../../types/config/MessagingConfig';
+
 class MessageCoordinator {
+  private chunkWorkflow?: ChunkWorkflow;
+
+  private getChunkWorkflow() {
+    return (this.chunkWorkflow ??= new ChunkWorkflow(this.serviceManager));
+  }
+
+  receiveChunk(
+    chunk: StreamChunk,
+    messageID?: string,
+    options?: AddMessageOptions
+  ) {
+    return this.getChunkWorkflow().receiveChunk(chunk, messageID, options);
+  }
+
+  waitForPause(pause: PauseItem, initialRestartCount: number) {
+    return this.getChunkWorkflow().waitForPause(pause, initialRestartCount);
+  }
+
+  trackChunkRequestErrors(requestID: string, signal: AbortSignal) {
+    return this.getChunkWorkflow().trackRequestErrors(requestID, signal);
+  }
+
+  bumpChunkRestartGeneration() {
+    return this.getChunkWorkflow().bumpRestartGeneration();
+  }
+
   private upsertWorkflow?: UpsertWorkflow;
 
   private getUpsertWorkflow() {
