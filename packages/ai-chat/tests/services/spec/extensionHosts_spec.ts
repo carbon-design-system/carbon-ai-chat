@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { EventBus } from '../../../src/chat/events/EventBus';
+import { EventBus } from '../../../src/shared/events/EventBus';
 import { ExtensionHosts } from '../../../src/chat/services/extensionHosts';
 import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';

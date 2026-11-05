@@ -14,22 +14,27 @@ import isEqual from 'lodash-es/isEqual.js';
 
 import { setVarsForSelector } from '@carbon/ai-chat-components/es/components/shared/dynamic-css-var-sheet.js';
 
-import { createServiceManager } from '../services/loadServices';
-import actions from '../store/actions';
-import { selectInputIsReadonly } from '../store/selectors';
+import { createServiceManager } from '../../shared/services/loadServices';
+import actions from '../../shared/store/actions';
+import { selectInputIsReadonly } from '../../shared/store/selectors';
 
-import { ServiceManager } from '../services/ServiceManager';
-import { createAppConfig } from '../store/doCreateStore';
-import { setIntl } from './intlUtils';
-import { consoleDebug, consoleError, consoleWarn, debugLog } from './miscUtils';
-import createHumanAgentService from '../services/haa/HumanAgentServiceImpl';
+import { ServiceManager } from '../../shared/services/ServiceManager';
+import { createAppConfig } from '../../shared/store/doCreateStore';
+import { setIntl } from '../../shared/utils/intlUtils';
+import {
+  consoleDebug,
+  consoleError,
+  consoleWarn,
+  debugLog,
+} from '../../shared/utils/miscUtils';
+import createHumanAgentService from '../../shared/services/haa/HumanAgentServiceImpl';
 
 import {
   MainWindowOpenReason,
   MessageSendSource,
   ViewChangeReason,
 } from '../../types/events/eventBusTypes';
-import { VIEW_STATE_ALL_CLOSED } from '../store/reducerUtils';
+import { VIEW_STATE_ALL_CLOSED } from '../../shared/store/reducerUtils';
 import { PublicConfig } from '../../types/config/PublicConfig';
 import {
   ChatInstance,
@@ -38,7 +43,7 @@ import {
 } from '../../types/instance/ChatInstance';
 import { TypeAndHandler } from '../../types/instance/EventHandlers';
 import { AddMessageOptions } from '../../types/config/MessagingConfig';
-import { loadLocale } from './languageUtils';
+import { loadLocale } from '../../shared/utils/languageUtils';
 import { HistoryItem } from '../../types/messaging/History';
 import {
   MessageRequest,

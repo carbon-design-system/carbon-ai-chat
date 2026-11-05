@@ -9,7 +9,7 @@
 
 import type { PromptLineElement } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
 import type { InputFunctions } from './inputTypes';
-import type { ServiceManager } from '../services/ServiceManager';
+import type { ServiceManager } from '../../shared/services/ServiceManager';
 
 type InputImperativeSurface = Pick<
   PromptLineElement,

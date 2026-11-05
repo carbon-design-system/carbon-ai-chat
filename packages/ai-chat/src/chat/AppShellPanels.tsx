@@ -32,12 +32,12 @@ import { MarkdownWithDefaults } from './components/helpers/MarkdownWithDefaults/
 import WriteableElement from './components/helpers/WriteableElement/WriteableElement';
 import { useSelector } from './hooks/useSelector';
 import { useChatViewStateInstance } from './hooks/useChatViewState';
-import actions from './store/actions';
+import actions from '../shared/store/actions';
 import type { ButtonItem, MessageResponse } from '../types/messaging/Messages';
 import type { AppState } from '../types/state/AppState';
 import type { OnErrorData } from '../types/config/ErrorConfig';
 import type { MessageTypeComponentProps } from '../types/messaging/MessageTypeComponentProps';
-import type { ServiceManager } from './services/ServiceManager';
+import type { ServiceManager } from '../shared/services/ServiceManager';
 
 const noScroll = () => {};
 const renderMessageComponent = (props: MessageTypeComponentProps) => (

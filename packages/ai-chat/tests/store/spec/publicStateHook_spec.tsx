@@ -11,7 +11,7 @@ import React from 'react';
 import { act, render, screen } from '@testing-library/react';
 import { usePublicChatState } from '../../../src/chat/hooks/usePublicChatState';
 import { TestChatContext } from '../../test_helpers';
-import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
+import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
 import type { PublicChatState } from '../../../src/types/instance/PublicChatState';
 
 function createStateSource(initialState: PublicChatState) {

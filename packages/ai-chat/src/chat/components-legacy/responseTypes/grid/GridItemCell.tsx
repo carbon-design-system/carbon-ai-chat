@@ -10,10 +10,10 @@
 import React, { useLayoutEffect, useRef } from 'react';
 import { useSelector } from '../../../hooks/useSelector';
 import { useServiceManager } from '../../../hooks/useServiceManager';
-import { selectInputIsReadonly } from '../../../store/selectors';
+import { selectInputIsReadonly } from '../../../../shared/store/selectors';
 import { AppState } from '../../../../types/state/AppState';
 import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
-import { THROW_ERROR } from '../../../utils/constants';
+import { THROW_ERROR } from '../../../../shared/utils/constants';
 import {
   applyDynamicStyles,
   clearDynamicStyles,

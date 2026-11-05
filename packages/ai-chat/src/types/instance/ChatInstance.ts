@@ -11,7 +11,7 @@ import { CustomPanels, ViewState, ViewType } from './apiTypes';
 import { ChatInstanceMessaging } from '../config/MessagingConfig';
 import type { CatastrophicErrorPanelState } from '../state/AppState';
 import { MessageRequest } from '../messaging/Messages';
-import type { ServiceManager } from '../../chat/services/ServiceManager';
+import type { ServiceManager } from '../../shared/services/ServiceManager';
 import { AutoScrollOptions } from '../utilities/HasDoAutoScroll';
 import type { EventHandlers, TypeAndHandler } from './EventHandlers';
 import type { PublicChatState } from './PublicChatState';

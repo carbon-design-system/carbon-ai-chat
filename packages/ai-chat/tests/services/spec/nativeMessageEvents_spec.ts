@@ -13,8 +13,8 @@ import {
   retainCopiedNativeMessageOrigin,
   retainNativeMessageOrigin,
   snapshotNativeMessageEvent,
-} from '../../../src/chat/services/messaging/nativeMessageEvents';
-import { synthesizeReasoningLocalMessageItem } from '../../../src/chat/utils/reasoningContent';
+} from '../../../src/shared/services/messaging/nativeMessageEvents';
+import { synthesizeReasoningLocalMessageItem } from '../../../src/shared/utils/reasoningContent';
 import {
   MessageResponse,
   MessageResponseTypes,

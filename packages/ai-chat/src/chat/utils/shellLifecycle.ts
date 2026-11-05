@@ -36,12 +36,12 @@ import {
   shouldDisableInput,
   shouldDisableSend,
   isUploadButtonDisabled,
-} from '../services/inputCallbacks';
-import { HumanAgentCallbacks } from '../services/haa/humanAgentCallbacks';
+} from '../../shared/services/inputCallbacks';
+import { HumanAgentCallbacks } from '../services/humanAgentCallbacks';
 import { WindowOpenState } from '../services/windowOpenState';
-import { shallowEqual } from '../store/appStore';
-import actions from '../store/actions';
-import { DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS } from '../store/reducerUtils';
+import { shallowEqual } from '../../shared/store/appStore';
+import actions from '../../shared/store/actions';
+import { DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS } from '../../shared/store/reducerUtils';
 import {
   selectHumanAgentDisplayState,
   selectInputIsReadonly,
@@ -49,7 +49,7 @@ import {
   selectInputFieldVisible,
   selectInputUploadAndStreamingFields,
   selectStopStreamingButtonVisible,
-} from '../store/selectors';
+} from '../../shared/store/selectors';
 import { getDerivedState } from './derivedState';
 import { requestFocus as focusTargets } from './focusManager';
 import { connectMobileViewportLayout } from './mobileViewportLayout';
@@ -66,10 +66,24 @@ import {
 } from './customPromptLine';
 import { matchesShortcut } from './keyboardUtils';
 import { getDeepActiveElement, SCROLLBAR_WIDTH } from './domUtils';
-import { consoleError, consoleWarn, isEnableDebugLog } from './miscUtils';
-import { IS_PHONE, IS_PHONE_IN_PORTRAIT_MODE, isBrowser } from './browserUtils';
-import { convertCSSVariablesToString, getThemeClassNames } from './styleUtils';
-import { WriteableElementName, FileStatusValue } from './constants';
+import {
+  consoleError,
+  consoleWarn,
+  isEnableDebugLog,
+} from '../../shared/utils/miscUtils';
+import {
+  IS_PHONE,
+  IS_PHONE_IN_PORTRAIT_MODE,
+  isBrowser,
+} from '../../shared/utils/browserUtils';
+import {
+  convertCSSVariablesToString,
+  getThemeClassNames,
+} from '../../shared/utils/styleUtils';
+import {
+  WriteableElementName,
+  FileStatusValue,
+} from '../../shared/utils/constants';
 import {
   hasMeaningfulContent,
   observeWriteableElementPresence,

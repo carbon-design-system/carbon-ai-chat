@@ -25,7 +25,7 @@ import {
 } from '../helpers/messagingBoundary';
 
 const root = path.resolve(__dirname, '../../..');
-const messaging = 'src/chat/services/messaging/';
+const messaging = 'src/shared/services/messaging/';
 const pureRoots = [
   'outbound/OutgoingMessageService.ts',
   'inbound/IncomingMessageService.ts',
@@ -51,8 +51,8 @@ const workflows = [
   'coordinateReasoningEvents.ts',
 ].map((name) => messaging + name);
 const pureOutside = new Set([
-  'src/chat/schema/inputItemData.ts',
-  'src/chat/schema/outputItemData.ts',
+  'src/shared/schema/inputItemData.ts',
+  'src/shared/schema/outputItemData.ts',
   'src/types/config/MessagingConfig.ts',
 ]);
 const externalData = new Set(['lodash-es/cloneDeep.js', 'lodash-es/merge.js']);
@@ -195,7 +195,7 @@ it('keeps core runtime imports and capabilities independent of the view', () => 
     viewCapabilityReads(
       checker,
       program.getSourceFile(file)!,
-      path.join(root, 'src/chat/services/ServiceManager.ts'),
+      path.join(root, 'src/shared/services/ServiceManager.ts'),
       viewRights
     )
   );
@@ -271,16 +271,16 @@ const transcriptWrites = new Set([
   'setIsRestarting',
 ]);
 const sharedWrites: Record<string, string[]> = {
-  'src/chat/utils/messageEventOwnership.ts': [
+  'src/shared/utils/messageEventOwnership.ts': [
     'updateMessage',
     'updateLocalMessageItem',
   ],
-  'src/chat/utils/streamingUtils.ts': [
+  'src/shared/utils/streamingUtils.ts': [
     'setStopStreamingButtonVisible',
     'setStopStreamingButtonDisabled',
     'setStopStreamingButtonMetadataDisabled',
   ],
-  'src/chat/services/haa/HumanAgentServiceImpl.ts': [
+  'src/shared/services/haa/HumanAgentServiceImpl.ts': [
     'updateMessage',
     'updateLocalMessageItem',
     'addIsLoadingCounter',
@@ -288,15 +288,15 @@ const sharedWrites: Record<string, string[]> = {
     'setMessageErrorState',
     'setMessageResponseHistoryProperty',
   ],
-  'src/chat/services/haa/humanAgentUtils.ts': ['addLocalMessageItem'],
+  'src/shared/services/haa/humanAgentUtils.ts': ['addLocalMessageItem'],
 };
 const captureRoots = new Set([
   messaging + 'coordinateMessageEvents.ts',
   messaging + 'UpsertWorkflow.ts',
   messaging + 'ChunkWorkflow.ts',
-  'src/chat/services/haa/HumanAgentServiceImpl.ts',
-  'src/chat/services/haa/humanAgentUtils.ts',
-  'src/chat/services/CustomPanelInstance.ts',
+  'src/shared/services/haa/HumanAgentServiceImpl.ts',
+  'src/shared/services/haa/humanAgentUtils.ts',
+  'src/shared/services/CustomPanelInstance.ts',
 ]);
 const calls = callsIn(
   checker,
@@ -343,7 +343,7 @@ function guardedMetadataWrites() {
     if (
       !predicate ||
       relative(predicate.getSourceFile().fileName) !==
-        'src/chat/store/messageOwnership.ts' ||
+        'src/shared/store/messageOwnership.ts' ||
       predicate.name?.text !== names[0]
     ) {
       issues.push('metadata routing lost ingress provenance');
@@ -367,7 +367,7 @@ function guardedMetadataWrites() {
       .slice(1)
       .map((p) => checker.getSymbolAtLocation(p.name));
     for (const [block, expectedName, targetFile] of [
-      [branch.thenStatement, names[1], 'src/chat/store/actions.ts'],
+      [branch.thenStatement, names[1], 'src/shared/store/actions.ts'],
       [branch.elseStatement, names[2], messaging + 'MessageCoordinator.ts'],
     ] as const) {
       if (!block || !ts.isBlock(block) || block.statements.length !== 1) {
@@ -386,8 +386,8 @@ function guardedMetadataWrites() {
         statement.expression
       )?.declaration;
       const expectedOuter =
-        targetFile === 'src/chat/store/actions.ts'
-          ? 'src/chat/store/appStore.ts'
+        targetFile === 'src/shared/store/actions.ts'
+          ? 'src/shared/store/appStore.ts'
           : targetFile;
       if (
         !outer ||
@@ -420,13 +420,13 @@ function guardedMetadataWrites() {
         ) {
           issues.push('metadata argument identity changed');
         }
-        if (targetFile === 'src/chat/store/actions.ts') {
+        if (targetFile === 'src/shared/store/actions.ts') {
           guarded.add(node);
         }
       });
       if (
         matched !== 1 ||
-        callCount !== (targetFile === 'src/chat/store/actions.ts' ? 2 : 1)
+        callCount !== (targetFile === 'src/shared/store/actions.ts' ? 2 : 1)
       ) {
         issues.push('metadata route lost its exact writer');
       }
@@ -446,11 +446,11 @@ it('roots assistant writes and shared guarded helpers in named owners', () => {
   for (const call of calls) {
     const file = relative(call.source.fileName),
       target = relative(call.file);
-    if (file === 'src/chat/store/actions.ts') {
+    if (file === 'src/shared/store/actions.ts') {
       continue;
     }
     if (
-      target === 'src/chat/store/actions.ts' &&
+      target === 'src/shared/store/actions.ts' &&
       transcriptWrites.has(call.name ?? '') &&
       !workflows.includes(file) &&
       !sharedWrites[file]?.includes(call.name!) &&
@@ -459,7 +459,7 @@ it('roots assistant writes and shared guarded helpers in named owners', () => {
       issues.push(`${file}: ${call.name}`);
     }
     if (
-      target === 'src/chat/utils/messageEventOwnership.ts' &&
+      target === 'src/shared/utils/messageEventOwnership.ts' &&
       call.name === 'captureMessageEvent'
     ) {
       seenCaptures.add(file);
@@ -468,7 +468,7 @@ it('roots assistant writes and shared guarded helpers in named owners', () => {
       }
     }
     if (
-      target === 'src/chat/utils/streamingUtils.ts' &&
+      target === 'src/shared/utils/streamingUtils.ts' &&
       ['resetStopStreamingButton', 'syncStopStreamingButton'].includes(
         call.name ?? ''
       ) &&
@@ -483,13 +483,13 @@ it('roots assistant writes and shared guarded helpers in named owners', () => {
 
 it('keeps ownership bookkeeping and ingress annotations at their exact internal seams', () => {
   const roots: Record<string, string[]> = {
-    enableMessageOwnership: ['src/chat/store/doCreateStore.ts'],
-    commitMessageOwnership: ['src/chat/store/appStore.ts'],
-    markHumanAgentIngress: ['src/chat/services/haa/humanAgentUtils.ts'],
+    enableMessageOwnership: ['src/shared/store/doCreateStore.ts'],
+    commitMessageOwnership: ['src/shared/store/appStore.ts'],
+    markHumanAgentIngress: ['src/shared/services/haa/humanAgentUtils.ts'],
     captureMessageOwnership: [messaging + 'HistoryWorkflow.ts'],
     retainHistoryOwnership: [messaging + 'HistoryWorkflow.ts'],
-    retainMessageCloneOwnership: ['src/chat/utils/messageEventOwnership.ts'],
-    retainLocalCloneOwnership: ['src/chat/utils/messageEventOwnership.ts'],
+    retainMessageCloneOwnership: ['src/shared/utils/messageEventOwnership.ts'],
+    retainLocalCloneOwnership: ['src/shared/utils/messageEventOwnership.ts'],
     isHumanAgentMessageOwner: [metadataFile],
     isHumanAgentLocalOwner: [metadataFile],
   };
@@ -497,8 +497,8 @@ it('keeps ownership bookkeeping and ingress annotations at their exact internal 
   for (const call of calls) {
     const file = relative(call.source.fileName);
     if (
-      relative(call.file) !== 'src/chat/store/messageOwnership.ts' ||
-      file === 'src/chat/store/messageOwnership.ts'
+      relative(call.file) !== 'src/shared/store/messageOwnership.ts' ||
+      file === 'src/shared/store/messageOwnership.ts'
     ) {
       continue;
     }
@@ -523,8 +523,8 @@ function isAllowedStateField(
       'chatHeight',
       'chatWidthBreakpoint',
     ],
-    'src/chat/services/ChatInstanceService.ts': ['catastrophicErrorType'],
-    'src/chat/services/HydrationService.ts': ['persistedToBrowserStorage'],
+    'src/shared/services/ChatInstanceService.ts': ['catastrophicErrorType'],
+    'src/shared/services/HydrationService.ts': ['persistedToBrowserStorage'],
     'src/chat/utils/dynamicConfigUpdates.ts': ['languagePack'],
     'src/chat/utils/appConfigUpdates.ts': ['markdownConfig'],
     'src/web-components/cds-aichat-container/cds-aichat-container.ts': [
@@ -538,7 +538,7 @@ function isAllowedStateField(
 
 it('limits broad state writes to exact non-transcript fields', () => {
   for (const call of calls) {
-    if (relative(call.file) !== 'src/chat/store/actions.ts') {
+    if (relative(call.file) !== 'src/shared/store/actions.ts') {
       continue;
     }
     const file = relative(call.source.fileName);
@@ -615,7 +615,7 @@ function walkBoundCalls(
 }
 
 it('keeps the adapter types and actual boot bindings view-only', () => {
-  const adapter = messaging + 'presentation/MessagePresentationAdapter.ts';
+  const adapter = 'src/chat/services/MessagePresentationAdapter.ts';
   const announcer = messaging + 'presentation/StreamAnnouncerService.ts';
   const adapterGraph = graph([adapter, announcer], new Set());
   expect(adapterGraph.issues).toEqual([]);
@@ -673,7 +673,7 @@ it('keeps the adapter types and actual boot bindings view-only', () => {
     ].sort()
   );
   let found = false;
-  visit(get('src/chat/services/loadServices.ts'), (node) => {
+  visit(get('src/shared/services/loadServices.ts'), (node) => {
     if (!ts.isNewExpression(node) || !ts.isIdentifier(node.expression)) {
       return;
     }
@@ -709,8 +709,8 @@ it('keeps the adapter types and actual boot bindings view-only', () => {
           isRawStoreDispatch(
             checker,
             call,
-            path.join(root, 'src/chat/store/appStore.ts'),
-            path.join(root, 'src/chat/store/actions.ts')
+            path.join(root, 'src/shared/store/appStore.ts'),
+            path.join(root, 'src/shared/store/actions.ts')
           )
         ).toBe(false);
         if (!ts.isCallExpression(call)) {
@@ -721,7 +721,7 @@ it('keeps the adapter types and actual boot bindings view-only', () => {
           return;
         }
         const target = relative(signature.getSourceFile().fileName);
-        if (target === 'src/chat/store/actions.ts') {
+        if (target === 'src/shared/store/actions.ts') {
           const name = (signature as ts.MethodDeclaration).name?.getText();
           if (name) {
             actual.push(name);
@@ -730,8 +730,8 @@ it('keeps the adapter types and actual boot bindings view-only', () => {
         // These named operations may not hide a send, event, or core write.
         expect(
           target === messaging + 'MessageCoordinator.ts' ||
-            target === 'src/chat/services/ChatInstanceService.ts' ||
-            target === 'src/chat/events/EventBus.ts'
+            target === 'src/shared/services/ChatInstanceService.ts' ||
+            target === 'src/shared/events/EventBus.ts'
         ).toBe(false);
       });
       expect(actual).toEqual(expected);
@@ -740,7 +740,7 @@ it('keeps the adapter types and actual boot bindings view-only', () => {
   expect(found).toBe(true);
   // Follow the separate stream-announcer callback too; an interface call alone hides its boot binding.
   let foundStream = false;
-  visit(get('src/chat/services/loadServices.ts'), (node) => {
+  visit(get('src/shared/services/loadServices.ts'), (node) => {
     if (!ts.isNewExpression(node)) {
       return;
     }
@@ -767,8 +767,8 @@ it('keeps the adapter types and actual boot bindings view-only', () => {
         isRawStoreDispatch(
           checker,
           call,
-          path.join(root, 'src/chat/store/appStore.ts'),
-          path.join(root, 'src/chat/store/actions.ts')
+          path.join(root, 'src/shared/store/appStore.ts'),
+          path.join(root, 'src/shared/store/actions.ts')
         )
       ).toBe(false);
       const d = checker.getResolvedSignature(call)?.declaration;
@@ -778,10 +778,10 @@ it('keeps the adapter types and actual boot bindings view-only', () => {
       const file = relative(d.getSourceFile().fileName);
       expect(
         file === messaging + 'MessageCoordinator.ts' ||
-          file === 'src/chat/services/ChatInstanceService.ts' ||
-          file === 'src/chat/events/EventBus.ts'
+          file === 'src/shared/services/ChatInstanceService.ts' ||
+          file === 'src/shared/events/EventBus.ts'
       ).toBe(false);
-      if (file === 'src/chat/store/actions.ts') {
+      if (file === 'src/shared/store/actions.ts') {
         sinks.push((d as ts.MethodDeclaration).name.getText());
       }
     });
@@ -791,8 +791,8 @@ it('keeps the adapter types and actual boot bindings view-only', () => {
   // Other boot dispatches remain view-only too.
   const streamCalls = calls.filter(
     (c) =>
-      relative(c.source.fileName) === 'src/chat/services/loadServices.ts' &&
-      relative(c.file) === 'src/chat/store/actions.ts'
+      relative(c.source.fileName) === 'src/shared/services/loadServices.ts' &&
+      relative(c.file) === 'src/shared/store/actions.ts'
   );
   expect(
     streamCalls.every((c) =>

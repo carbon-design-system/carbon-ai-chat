@@ -13,7 +13,7 @@ import ts from 'typescript';
 import {
   StreamState,
   type StreamControllerToken,
-} from '../../../src/chat/services/messaging/state/StreamState';
+} from '../../../src/shared/services/messaging/state/StreamState';
 
 it('retains the first owner and controller token while adding item aliases', () => {
   const state = new StreamState();
@@ -53,7 +53,7 @@ it('keeps the existing clear behavior when an item alias was reused', () => {
 it('has no imports, controllers, or effect callbacks', () => {
   const file = path.resolve(
     __dirname,
-    '../../../src/chat/services/messaging/state/StreamState.ts'
+    '../../../src/shared/services/messaging/state/StreamState.ts'
   );
   const source = ts.createSourceFile(
     file,

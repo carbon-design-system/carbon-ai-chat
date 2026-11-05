@@ -31,7 +31,7 @@ import { deepQuerySelector } from '@carbon/ai-chat-components/es/globals/utils/d
 
 import '../../../src/web-components/cds-aichat-container';
 import { ChatContainer } from '../../../src/react/ChatContainer';
-import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
+import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
 import { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import {

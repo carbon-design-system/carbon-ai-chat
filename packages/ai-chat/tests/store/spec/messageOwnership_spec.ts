@@ -9,8 +9,8 @@
 
 import cloneDeep from 'lodash-es/cloneDeep.js';
 import { makeConfigStore } from '../../test_helpers';
-import { createAppStore } from '../../../src/chat/store/appStore';
-import actions from '../../../src/chat/store/actions';
+import { createAppStore } from '../../../src/shared/store/appStore';
+import actions from '../../../src/shared/store/actions';
 import {
   captureMessageOwnership,
   enableMessageOwnership,
@@ -18,7 +18,7 @@ import {
   isHumanAgentMessageOwner,
   markHumanAgentIngress,
   retainHistoryOwnership,
-} from '../../../src/chat/store/messageOwnership';
+} from '../../../src/shared/store/messageOwnership';
 import {
   MessageResponseTypes,
   HumanAgentMessageType,

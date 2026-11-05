@@ -18,7 +18,7 @@ import type { PromptLineElement } from '@carbon/ai-chat-components/es/components
 import type ChatInput from '../../../src/chat/components/input/ChatInput';
 import type ChatShell from '../../../src/chat/components/shell/ChatShell';
 import type { ChatViewState } from '../../../src/chat/services/chatViewState';
-import actions from '../../../src/chat/store/actions';
+import actions from '../../../src/shared/store/actions';
 import { ChatContainer } from '../../../src/react/ChatContainer';
 import { ChatCustomElement } from '../../../src/react/ChatCustomElement';
 import type { ChatContainerProps } from '../../../src/types/component/ChatContainer';

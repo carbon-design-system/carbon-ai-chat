@@ -16,25 +16,25 @@ import { ChatContainer } from '../src/react/ChatContainer';
 import { PublicConfig } from '../src/types/config/PublicConfig';
 import { ChatContainerProps } from '../src/types/component/ChatContainer';
 import { ChatInstance } from '../src/types/instance/ChatInstance';
-import { createAppStore, type AppStore } from '../src/chat/store/appStore';
-import { enableMessageOwnership } from '../src/chat/store/messageOwnership';
+import { createAppStore, type AppStore } from '../src/shared/store/appStore';
+import { enableMessageOwnership } from '../src/shared/store/messageOwnership';
 import { AppState } from '../src/types/state/AppState';
 import { MessageResponseTypes } from '../src/types/messaging/Messages';
-import { ServiceManager } from '../src/chat/services/ServiceManager';
+import { ServiceManager } from '../src/shared/services/ServiceManager';
 import { ChatViewState } from '../src/chat/services/chatViewState';
 import type { AriaAnnouncerFunctionType } from '../src/chat/services/ariaAnnouncer';
 import { ChatContext } from '../src/chat/contexts/ChatContext';
-import type { IntlShape } from '../src/chat/utils/i18n';
+import type { IntlShape } from '../src/shared/utils/i18n';
 import { getWindowSize } from '../src/chat/utils/windowSize';
-import { reducers } from '../src/chat/store/reducers';
-import actions from '../src/chat/store/actions';
+import { reducers } from '../src/shared/store/reducers';
+import actions from '../src/shared/store/actions';
 import isEqual from 'lodash-es/isEqual.js';
 import {
   buildLanguagePack,
   createAppConfig,
   createInitialState,
   reconcileAppConfigReferences,
-} from '../src/chat/store/doCreateStore';
+} from '../src/shared/store/doCreateStore';
 
 // ============================================================================
 // Configuration helpers

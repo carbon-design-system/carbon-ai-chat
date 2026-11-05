@@ -9,10 +9,10 @@
 
 import * as uuidUtils from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 import type { PublicConfig } from '../../../src/types/config/PublicConfig';
-import type { PendingMessageRequest } from '../../../src/chat/services/messaging/pendingRequestTypes';
-import { MessageCoordinator } from '../../../src/chat/services/messaging/MessageCoordinator';
-import { ServiceManager } from '../../../src/chat/services/ServiceManager';
-import storeActions from '../../../src/chat/store/actions';
+import type { PendingMessageRequest } from '../../../src/shared/services/messaging/pendingRequestTypes';
+import { MessageCoordinator } from '../../../src/shared/services/messaging/MessageCoordinator';
+import { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import storeActions from '../../../src/shared/store/actions';
 import {
   MessageRequest,
   MessageInputType,
@@ -21,7 +21,7 @@ import {
   BusEventType,
   MessageSendSource,
 } from '../../../src/types/events/eventBusTypes';
-import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
+import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
 import { OnErrorType } from '../../../src/types/config/ErrorConfig';
 import { CancellationReason } from '../../../src/types/config/MessagingConfig';
 

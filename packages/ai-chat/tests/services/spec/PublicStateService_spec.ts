@@ -7,11 +7,11 @@
  *  @license
  */
 
-import * as publicMessages from '../../../src/chat/utils/publicMessages';
-import { EventBus } from '../../../src/chat/events/EventBus';
-import { PublicStateService } from '../../../src/chat/services/PublicStateService';
-import { ServiceManager } from '../../../src/chat/services/ServiceManager';
-import actions from '../../../src/chat/store/actions';
+import * as publicMessages from '../../../src/shared/utils/publicMessages';
+import { EventBus } from '../../../src/shared/events/EventBus';
+import { PublicStateService } from '../../../src/shared/services/PublicStateService';
+import { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import actions from '../../../src/shared/store/actions';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
 import { MessageResponseTypes } from '../../../src/types/messaging/Messages';
 import { createBaseConfig, makeConfigStore } from '../../test_helpers';

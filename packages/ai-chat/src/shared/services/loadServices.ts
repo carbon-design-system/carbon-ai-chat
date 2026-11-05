@@ -13,8 +13,8 @@ import type { MessageResponse } from '../../types/messaging/Messages';
 import {
   hasCustomPromptLine,
   requestComposerFocus,
-} from '../utils/customPromptLine';
-import { MessagePresentationAdapter } from './messaging/presentation/MessagePresentationAdapter';
+} from '../../chat/utils/customPromptLine';
+import { MessagePresentationAdapter } from '../../chat/services/MessagePresentationAdapter';
 import { ChatInstanceService } from './ChatInstanceService';
 import { HydrationService } from './HydrationService';
 import { InputActionsService } from './InputActionsService';
@@ -22,7 +22,7 @@ import { PublicStateService } from './PublicStateService';
 import { MessageCoordinator } from './messaging/MessageCoordinator';
 import { SlotEventService } from './messaging/presentation/SlotEventService';
 import { StreamAnnouncerService } from './messaging/presentation/StreamAnnouncerService';
-import { ViewService } from './ViewService';
+import { ViewService } from '../../chat/services/ViewService';
 import { EventBus } from '../events/EventBus';
 import { HistoryService } from './HistoryService';
 import { createCustomPanelManager } from './CustomPanelManager';

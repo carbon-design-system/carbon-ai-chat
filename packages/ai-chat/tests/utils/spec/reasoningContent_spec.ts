@@ -11,7 +11,7 @@ import {
   hasReasoningContent,
   resolveReasoningContainerOpen,
   synthesizeReasoningLocalMessageItem,
-} from '../../../src/chat/utils/reasoningContent';
+} from '../../../src/shared/utils/reasoningContent';
 import {
   GenericItem,
   MessageResponseTypes,

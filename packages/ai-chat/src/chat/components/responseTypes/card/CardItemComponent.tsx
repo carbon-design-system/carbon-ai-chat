@@ -13,10 +13,10 @@ import React from 'react';
 
 import { useSelector } from '../../../hooks/useSelector';
 import { useServiceManager } from '../../../hooks/useServiceManager';
-import { selectInputIsReadonly } from '../../../store/selectors';
+import { selectInputIsReadonly } from '../../../../shared/store/selectors';
 import { HasRequestFocus } from '../../../../types/utilities/HasRequestFocus';
 import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
-import { THROW_ERROR } from '../../../utils/constants';
+import { THROW_ERROR } from '../../../../shared/utils/constants';
 import { BodyMessageComponents } from '../message/BodyMessageComponents';
 import { FooterButtonComponents } from '../button/FooterButtonComponents';
 import {

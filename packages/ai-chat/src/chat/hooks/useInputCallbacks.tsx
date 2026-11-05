@@ -13,8 +13,8 @@ import { useSelector } from './useSelector';
 import {
   selectInputIsReadonly,
   selectInputIsDisabled,
-} from '../store/selectors';
-import { shallowEqual } from '../store/appStore';
+} from '../../shared/store/selectors';
+import { shallowEqual } from '../../shared/store/appStore';
 import {
   InputCallbacks,
   requestInputFocus as focusInput,
@@ -22,9 +22,9 @@ import {
   shouldDisableSend as sendDisabled,
   selectInputUploads,
   isUploadButtonDisabled,
-} from '../services/inputCallbacks';
+} from '../../shared/services/inputCallbacks';
 import type { MessageSendSource } from '../../types/events/eventBusTypes';
-import type { ServiceManager } from '../services/ServiceManager';
+import type { ServiceManager } from '../../shared/services/ServiceManager';
 import type { SendOptions } from '../../types/instance/ChatInstance';
 import type { MessagesComponentClass } from '../components-legacy/MessagesComponent';
 import type { JSONContent } from '@tiptap/core';

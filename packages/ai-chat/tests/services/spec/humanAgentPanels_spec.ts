@@ -7,9 +7,9 @@
  *  @license
  */
 
-import createHumanAgentService from '../../../src/chat/services/haa/HumanAgentServiceImpl';
-import { ServiceManager } from '../../../src/chat/services/ServiceManager';
-import { humanAgentReducers } from '../../../src/chat/store/humanAgentReducers';
+import createHumanAgentService from '../../../src/shared/services/haa/HumanAgentServiceImpl';
+import { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import { humanAgentReducers } from '../../../src/shared/store/humanAgentReducers';
 import {
   ScreenShareState,
   ServiceDeskCallback,

@@ -21,10 +21,10 @@
 import { waitFor } from '@testing-library/react';
 
 import { makeConfigStore, applyConfigChange } from '../../test_helpers';
-import { refreshLocalizationOnChange } from '../../../src/chat/store/subscriptions';
-import actions from '../../../src/chat/store/actions';
-import { buildLanguagePack } from '../../../src/chat/store/doCreateStore';
-import { ServiceManager } from '../../../src/chat/services/ServiceManager';
+import { refreshLocalizationOnChange } from '../../../src/shared/store/subscriptions';
+import actions from '../../../src/shared/store/actions';
+import { buildLanguagePack } from '../../../src/shared/store/doCreateStore';
+import { ServiceManager } from '../../../src/shared/services/ServiceManager';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
 
 const BASE_CONFIG: PublicConfig = { locale: 'en' };

@@ -14,7 +14,7 @@
 import React from 'react';
 
 import { useServiceManager } from '../hooks/useServiceManager';
-import { ServiceManager } from '../services/ServiceManager';
+import { ServiceManager } from '../../shared/services/ServiceManager';
 
 /**
  * A simple interface that represents an injected service manager.
