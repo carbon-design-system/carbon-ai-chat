@@ -86,6 +86,8 @@ export const Default = {
     maxCollapsedNumberOfRows: 15,
     showMoreText: 'Show more',
     showLessText: 'Show less',
+    feedback: 'Copied!',
+    feedbackTimeout: 2000,
   },
   render: (args) => renderSnippet(args, multilineCode),
 };
