@@ -9,7 +9,6 @@
 
 import type { AppStore } from '../store/appStore';
 import { IntlShape } from '../utils/i18n';
-import type { AriaAnnouncerFunctionType } from '../../chat/services/ariaAnnouncer';
 
 import { EventBus } from '../events/EventBus';
 import { AppState } from '../../types/state/AppState';
@@ -22,7 +21,6 @@ import { UserSessionStorageService } from './UserSessionStorageService';
 import { ChatInstance } from '../../types/instance/ChatInstance';
 import { WriteableElements } from '../../types/instance/WriteableElements';
 import { BusEvent } from '../../types/events/eventBusTypes';
-import type { MainWindowFunctions } from '../../types/utilities/MainWindowFunctions';
 import { ChatInstanceService } from './ChatInstanceService';
 import { HydrationService } from './HydrationService';
 import { InputActionsService } from './InputActionsService';
@@ -30,9 +28,7 @@ import { PublicStateService } from './PublicStateService';
 import { MessageCoordinator } from './messaging/MessageCoordinator';
 import { SlotEventService } from './messaging/presentation/SlotEventService';
 import { StreamAnnouncerService } from './messaging/presentation/StreamAnnouncerService';
-import { HasRequestFocus } from '../../types/utilities/HasRequestFocus';
 import { ViewConnection } from './viewBindings';
-import type { InputFunctions } from '../../chat/utils/inputTypes';
 
 interface UserDefinedElementRegistryItem {
   slotName: string;
@@ -49,21 +45,6 @@ class ServiceManager {
    * The current instance of the Carbon AI Chat.
    */
   instance: ChatInstance;
-
-  /**
-   * The current instance of the {@link MainWindow} component. This value is not set until the window is mounted.
-   */
-  mainWindow: MainWindowFunctions;
-
-  /**
-   * The current instance of the {@link App} component. This value is not set until app is mounted.
-   */
-  appWindow: HasRequestFocus;
-
-  /**
-   * The current instance of the Input component. This value is not set until the input is mounted.
-   */
-  inputComponent: InputFunctions;
 
   /**
    * The class used by the client to execute various chat actions.
@@ -184,13 +165,6 @@ class ServiceManager {
   intl: IntlShape;
 
   /**
-   * The aria announcer function that can be used to make screen reader announcements.
-   * `ShellLifecycle.publishHandles` sets it while the native shell is connected and
-   * clears it on release.
-   */
-  ariaAnnouncer: AriaAnnouncerFunctionType;
-
-  /**
    * As part of the view change work a bug was exposed where someone calling openWindow, closeWindow, or toggleOpen,
    * immediately after calling instance.render(), without waiting for render to finish, would trigger viewChange to
    * throw an error because it was in the middle of changing the view to set the view to the targetViewState and
@@ -206,23 +180,6 @@ class ServiceManager {
    */
   async fire<T extends BusEvent>(busEvent: T, isCurrent?: () => boolean) {
     return this.eventBus.fire(busEvent, this.instance, isCurrent);
-  }
-
-  /**
-   * Live ref to the native input's imperative handle. `ChatInput` registers
-   * it through `registerInputImperativeHandle` while connected and clears it
-   * on release. `InputActionsService` uses it for content writes that must
-   * reach the ProseMirror view synchronously (the legacy Redux-driven path
-   * cannot dispatch PM transactions).
-   */
-  private _inputFunctionsRef: InputFunctions | null = null;
-
-  setInputFunctionsRef(ref: InputFunctions | null): void {
-    this._inputFunctionsRef = ref;
-  }
-
-  getInputFunctionsRef(): InputFunctions | null {
-    return this._inputFunctionsRef;
   }
 }
 

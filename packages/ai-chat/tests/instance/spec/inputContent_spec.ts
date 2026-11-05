@@ -306,7 +306,7 @@ describe('custom prompt line input ownership', () => {
       const manager = (
         serviceManager.actions as unknown as { serviceManager: ServiceManager }
       ).serviceManager;
-      const ref = manager.getInputFunctionsRef();
+      const ref = manager.view.current.instance.input();
       let finish: (
         editor: Awaited<ReturnType<typeof ref.ensureEditor>>
       ) => void;
@@ -331,7 +331,9 @@ describe('custom prompt line input ownership', () => {
           WriteableElementName.CUSTOM_PROMPT_LINE
         ].append(document.createElement('input'));
       } else {
-        jest.spyOn(manager, 'getInputFunctionsRef').mockReturnValue(null);
+        jest
+          .spyOn(manager.view.current.instance, 'input')
+          .mockReturnValue(null);
       }
       finish(null);
       await rejected;

@@ -7,7 +7,9 @@
  *  @license
  */
 
+import type { Editor, JSONContent } from '@tiptap/core';
 import type { MessagePresentationPort } from './messaging/presentationPort';
+import type { AutoScrollOptions } from '../../types/utilities/HasDoAutoScroll';
 import type { ViewState, ViewType } from '../../types/state/AppState';
 import type {
   MainWindowCloseReason,
@@ -31,8 +33,29 @@ interface ViewChangeReasons {
   mainWindowCloseReason?: MainWindowCloseReason;
 }
 
+/** The rendered input's handle. The view publishes one while it's rendered. */
+interface InputViewPort {
+  requestFocus(): boolean;
+  hasFocus(): boolean;
+  /** Replaces the content. Throws if the editor isn't rendered. */
+  setContent(next: JSONContent | string): void;
+  /** The live editor, or null when it isn't mounted. Never loads one. */
+  getEditor(): Editor | null;
+  /** Loads the editor if needed. Rejects when the input isn't rendered. */
+  ensureEditor(): Promise<Editor>;
+}
+
 /** The view members behind `ChatInstance` and the instance-facing services. */
 interface InstanceViewPort {
+  /** Moves focus into the chat. Returns true when something took focus. */
+  requestFocus(): boolean;
+  doAutoScroll(options?: AutoScrollOptions): void;
+  scrollToMessage(messageID: string, animate?: boolean): void;
+  /** The input's handle while it's rendered, else null. */
+  input(): InputViewPort | null;
+  /** True while host content in CUSTOM_PROMPT_LINE replaces the input. */
+  hasCustomPromptLine(): boolean;
+
   /** Changes the main window and launcher state, and fires the view events. */
   changeView(
     newView: ViewType | Partial<ViewState>,
@@ -95,6 +118,7 @@ class ViewConnection {
 
 export {
   HumanAgentPresentationPort,
+  InputViewPort,
   InstanceViewPort,
   ViewBindings,
   ViewChangeReasons,

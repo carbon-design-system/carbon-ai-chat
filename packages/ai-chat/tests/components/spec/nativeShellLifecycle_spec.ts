@@ -315,9 +315,9 @@ async function boot(
   const root = document.querySelector('cds-aichat-container').shadowRoot;
   const view = root.querySelector<ChatShell>('cds-aichat-chat-shell');
   await view.whenReady();
-  const manager = (view as unknown as { viewState: ChatViewState }).viewState
-    .serviceManager;
-  return { instance, root, view, mounted, manager };
+  const { viewState } = view as unknown as { viewState: ChatViewState };
+  const manager = viewState.serviceManager;
+  return { instance, root, view, mounted, manager, viewState };
 }
 
 beforeEach(setupBeforeEach);
@@ -340,11 +340,11 @@ describe.each(wrappers)(
     it('publishes renderer handles before the first consumer passive effect', async () => {
       const seen = jest.fn();
       function Consumer(): React.ReactElement | null {
-        const { serviceManager } = useChatViewStateInstance();
+        const viewState = useChatViewStateInstance();
         useEffect(() => {
-          const { appWindow, mainWindow } = serviceManager;
+          const { appWindow, mainWindow } = viewState;
           seen(appWindow, mainWindow);
-        }, [serviceManager]);
+        }, [viewState]);
         return null;
       }
       const f = await boot(Wrapper, {
@@ -359,11 +359,11 @@ describe.each(wrappers)(
       expect(mainWindow?.doAutoScroll).toEqual(expect.any(Function));
       expect(mainWindow?.doScrollToMessage).toEqual(expect.any(Function));
       expect(mainWindow?.getMessagesScrollBottom).toEqual(expect.any(Function));
-      expect(f.manager.appWindow).toBe(appWindow);
-      expect(f.manager.mainWindow).toBe(mainWindow);
+      expect(f.viewState.appWindow).toBe(appWindow);
+      expect(f.viewState.mainWindow).toBe(mainWindow);
       f.mounted.unmount();
-      expect(f.manager.appWindow).toBeUndefined();
-      expect(f.manager.mainWindow).toBeUndefined();
+      expect(f.viewState.appWindow).toBeUndefined();
+      expect(f.viewState.mainWindow).toBeUndefined();
     });
   }
 );
@@ -391,20 +391,20 @@ const FAILED_VIEW_RESOURCES = [
   'subscription:window',
 ];
 
-function registrations(manager: ChatViewState['serviceManager']) {
+function registrations(viewState: ChatViewState) {
   return {
-    appWindow: manager.appWindow,
-    mainWindow: manager.mainWindow,
-    inputComponent: manager.inputComponent,
-    ariaAnnouncer: manager.ariaAnnouncer,
+    appWindow: viewState.appWindow,
+    mainWindow: viewState.mainWindow,
+    inputComponent: viewState.inputComponent,
+    ariaAnnouncer: viewState.ariaAnnouncer,
   };
 }
 
-function expectNoRegistrations(manager: ChatViewState['serviceManager']) {
-  expect(manager.appWindow).toBeUndefined();
-  expect(manager.mainWindow).toBeUndefined();
-  expect(manager.inputComponent).toBeNull();
-  expect(manager.ariaAnnouncer).toBeUndefined();
+function expectNoRegistrations(viewState: ChatViewState) {
+  expect(viewState.appWindow).toBeUndefined();
+  expect(viewState.mainWindow).toBeUndefined();
+  expect(viewState.inputComponent).toBeNull();
+  expect(viewState.ariaAnnouncer).toBeUndefined();
 }
 
 async function detach(view: ChatShell) {
@@ -424,13 +424,13 @@ it('releases every shell resource and registration on each real detach and recon
   expect(tracker.active(f.view, first)).toEqual(
     expect.arrayContaining(SHELL_RESOURCES)
   );
-  expect(f.manager.mainWindow).toBe(first.mainWindow);
-  expect(f.manager.inputComponent).toBeTruthy();
+  expect(f.viewState.mainWindow).toBe(first.mainWindow);
+  expect(f.viewState.inputComponent).toBeTruthy();
   const firstViewReleases = tracker.releasesOf(f.view);
 
   await detach(f.view);
   expect(tracker.active(f.view, first)).toEqual([]);
-  expectNoRegistrations(f.manager);
+  expectNoRegistrations(f.viewState);
 
   act(() => {
     parent.appendChild(f.view);
@@ -441,7 +441,7 @@ it('releases every shell resource and registration on each real detach and recon
   expect(tracker.active(first)).toEqual([]);
   const live = tracker.active(f.view, second);
   expect(live).toEqual(expect.arrayContaining(SHELL_RESOURCES));
-  const current = registrations(f.manager);
+  const current = registrations(f.viewState);
   expect(current.mainWindow).toBe(second.mainWindow);
   expect(current.inputComponent).toBe(
     f.view.querySelector<ChatInput>('cds-aichat-chat-input').inputFunctions
@@ -453,7 +453,7 @@ it('releases every shell resource and registration on each real detach and recon
     release()
   );
   first.disconnect();
-  expect(registrations(f.manager)).toEqual(current);
+  expect(registrations(f.viewState)).toEqual(current);
   expect(tracker.active(f.view, second)).toEqual(live);
 
   // Detach again while the close animation still holds its listener and
@@ -466,7 +466,7 @@ it('releases every shell resource and registration on each real detach and recon
   );
   await detach(f.view);
   expect(tracker.active(f.view, first, second)).toEqual([]);
-  expectNoRegistrations(f.manager);
+  expectNoRegistrations(f.viewState);
   expect(tracker.lifecycles).toHaveLength(2);
   act(() => {
     parent.appendChild(f.view);
@@ -493,11 +493,11 @@ it('keeps a replacement shell live when the stale shell detaches after it connec
   await waitFor(() => {
     const input = replacement.querySelector<ChatInput>('cds-aichat-chat-input');
     expect(input?.inputFunctions).toBeTruthy();
-    expect(f.manager.inputComponent).toBe(input.inputFunctions);
+    expect(f.viewState.inputComponent).toBe(input.inputFunctions);
   });
   expect(tracker.lifecycles).toHaveLength(2);
   const [, fresh] = tracker.lifecycles;
-  const live = registrations(f.manager);
+  const live = registrations(f.viewState);
   expect(live.mainWindow).toBe(fresh.mainWindow);
   expect(live.mainWindow).not.toBe(stale.mainWindow);
   expect(live.appWindow?.requestFocus).toEqual(expect.any(Function));
@@ -511,14 +511,14 @@ it('keeps a replacement shell live when the stale shell detaches after it connec
   expect(tracker.active(f.view, stale)).toEqual([]);
   staleReleases.forEach((release) => release());
   stale.disconnect();
-  expect(registrations(f.manager)).toEqual(live);
-  expect(f.manager.ariaAnnouncer).toBe(live.ariaAnnouncer);
+  expect(registrations(f.viewState)).toEqual(live);
+  expect(f.viewState.ariaAnnouncer).toBe(live.ariaAnnouncer);
   expect(tracker.active(replacement, fresh)).toEqual(freshResources);
   expect(tracker.lifecycles).toHaveLength(2);
 
   await detach(replacement);
   expect(tracker.active(replacement, fresh)).toEqual([]);
-  expectNoRegistrations(f.manager);
+  expectNoRegistrations(f.viewState);
   act(() => {
     parent.appendChild(f.view);
   });
@@ -543,7 +543,7 @@ it('releases the failed shell error view and its live bindings on a real detach'
   expect(tracker.active(f.view, ...tracker.lifecycles)).toEqual(
     FAILED_VIEW_RESOURCES
   );
-  expectNoRegistrations(f.manager);
+  expectNoRegistrations(f.viewState);
 
   await detach(f.view);
   expect(tracker.active(f.view, ...tracker.lifecycles)).toEqual([]);
@@ -658,18 +658,18 @@ function composedWithin(container: Node | null, node: Node | null): boolean {
 
 async function expectLiveInputRegistration(f: {
   view: ChatShell;
-  manager: ChatViewState['serviceManager'];
+  viewState: ChatViewState;
 }) {
   const input = f.view.querySelector<ChatInput>('cds-aichat-chat-input');
-  await waitFor(() => expect(f.manager.inputComponent).toBeTruthy());
-  expect(f.manager.inputComponent).toBe(input.inputFunctions);
+  await waitFor(() => expect(f.viewState.inputComponent).toBeTruthy());
+  expect(f.viewState.inputComponent).toBe(input.inputFunctions);
   act(() => {
     (deepActiveElement() as HTMLElement | null)?.blur();
   });
   expect(composedWithin(input, deepActiveElement())).toBe(false);
   // The chat's own focus route reaches the input through the registration.
   act(() => {
-    f.manager.mainWindow.requestFocus();
+    f.viewState.mainWindow.requestFocus();
   });
   await waitFor(() =>
     expect(composedWithin(input, deepActiveElement())).toBe(true)
@@ -726,12 +726,12 @@ describe.each(wrappers)('content re-attach through %s', (_name, Wrapper) => {
       shouldTakeFocusIfOpensAutomatically: true,
     });
     const input = f.view.querySelector<ChatInput>('cds-aichat-chat-input');
-    expect(f.manager.inputComponent).toBe(input.inputFunctions);
+    expect(f.viewState.inputComponent).toBe(input.inputFunctions);
 
     act(() => {
       f.view.setContentConnected(false);
     });
-    expect(f.manager.inputComponent).toBeNull();
+    expect(f.viewState.inputComponent).toBeNull();
     act(() => {
       f.view.setContentConnected(true);
     });
@@ -769,20 +769,17 @@ it('restores the input registration when an Activity boundary hides and shows th
     const view = document
       .querySelector('cds-aichat-container')
       .shadowRoot.querySelector<ChatShell>('cds-aichat-chat-shell');
-    return {
-      view,
-      manager: (view as unknown as { viewState: ChatViewState }).viewState
-        ?.serviceManager,
-    };
+    const { viewState } = view as unknown as { viewState: ChatViewState };
+    return { view, viewState, manager: viewState?.serviceManager };
   };
   const before = currentShell();
   await before.view.whenReady();
-  expect(before.manager.inputComponent).toBeTruthy();
+  expect(before.viewState.inputComponent).toBeTruthy();
 
   act(() => {
     setMode('hidden');
   });
-  expect(before.manager.inputComponent).toBeNull();
+  expect(before.viewState.inputComponent).toBeNull();
   // The shell updates while hidden, as when a stream ends there.
   await act(async () => {
     before.view.requestUpdate();
@@ -937,7 +934,7 @@ it('shows error panel content configured while an Activity boundary hides a fail
     ).toBe(true)
   );
   expectNoRegistrations(
-    (view as unknown as { viewState: ChatViewState }).viewState.serviceManager
+    (view as unknown as { viewState: ChatViewState }).viewState
   );
 });
 
@@ -995,7 +992,7 @@ it('waits for native readiness before automatic composer focus on reopen', async
   const f = await boot(ChatContainer, {
     shouldTakeFocusIfOpensAutomatically: true,
   });
-  await waitFor(() => expect(f.manager.inputComponent.hasFocus()).toBe(true));
+  await waitFor(() => expect(f.viewState.inputComponent.hasFocus()).toBe(true));
   const widget = f.view.querySelector('cds-aichat-shell');
   await act(async () => {
     await f.instance.changeView({ mainWindow: false, launcher: true });
@@ -1003,7 +1000,7 @@ it('waits for native readiness before automatic composer focus on reopen', async
   await waitFor(() =>
     expect(widget.classList.contains('cds-aichat-float--close')).toBe(true)
   );
-  const focus = jest.spyOn(f.manager.inputComponent, 'requestFocus');
+  const focus = jest.spyOn(f.viewState.inputComponent, 'requestFocus');
   let release: (ready: boolean) => void;
   const blocked = new Promise<boolean>((resolve) => {
     release = resolve;
@@ -1037,7 +1034,7 @@ describe('Return to conversation focus', () => {
       expect(found).not.toBeNull();
       return found as unknown as { onToggleHomeScreen: () => void };
     });
-    const focus = jest.spyOn(f.manager.inputComponent, 'requestFocus');
+    const focus = jest.spyOn(f.viewState.inputComponent, 'requestFocus');
     let release: (ready: boolean) => void;
     const blocked = new Promise<boolean>((resolve) => {
       release = resolve;

@@ -8,10 +8,25 @@
  */
 
 import {
+  InstanceViewPort,
   ViewBindings,
   ViewConnection,
 } from '../../../src/shared/services/viewBindings';
 import type { MessagePresentationPort } from '../../../src/shared/services/messaging/presentationPort';
+
+/** An instance port whose view members do nothing, like a view not yet drawn. */
+export function idleInstancePort(): InstanceViewPort {
+  return {
+    changeView: async () => {
+      throw new Error('This test view does not change views.');
+    },
+    requestFocus: () => false,
+    doAutoScroll: () => undefined,
+    scrollToMessage: () => undefined,
+    input: () => null,
+    hasCustomPromptLine: () => false,
+  };
+}
 
 /**
  * Attaches a view with this messaging port to a real or stub manager, as the
@@ -31,11 +46,7 @@ export function withMessagingView<T extends object>(
   target.view.attach({
     messaging,
     humanAgent: { requestFocus: () => undefined },
-    instance: {
-      changeView: async () => {
-        throw new Error('This test view does not change views.');
-      },
-    },
+    instance: idleInstancePort(),
     ...bindings,
   });
   return manager;

@@ -13,9 +13,31 @@ import {
   hasCustomPromptLine,
   requestComposerFocus,
 } from '../../../src/chat/utils/customPromptLine';
+import {
+  InputViewPort,
+  ViewConnection,
+} from '../../../src/shared/services/viewBindings';
+import type { MessagePresentationPort } from '../../../src/shared/services/messaging/presentationPort';
+import { idleInstancePort } from '../helpers/viewBindings';
+
+/** A manager whose attached view reports `input` as its input handle. */
+function managerWithInput() {
+  const input: { current?: Partial<InputViewPort> } = {};
+  const view = new ViewConnection();
+  view.attach({
+    messaging: {} as MessagePresentationPort,
+    humanAgent: { requestFocus: () => undefined },
+    instance: {
+      ...idleInstancePort(),
+      input: () => (input.current ?? null) as InputViewPort,
+    },
+  });
+  return { manager: { view } as unknown as ServiceManager, input };
+}
 
 it('resolves absent and replaced composer handles for each call', () => {
-  const manager = {} as ServiceManager;
+  const { manager, input } = managerWithInput();
+  const handles: { ariaAnnouncer?: (text: string) => void } = {};
   let homeOpen = true;
   let responseOpen = false;
   const closeResponse = jest.fn();
@@ -26,7 +48,7 @@ it('resolves absent and replaced composer handles for each call', () => {
   const adapter = new MessagePresentationAdapter({
     hasCustomPromptLine: () => hasCustomPromptLine(manager),
     requestComposerFocus: () => requestComposerFocus(manager),
-    announceSending: () => manager.ariaAnnouncer?.('sending'),
+    announceSending: () => handles.ariaAnnouncer?.('sending'),
     isHomeScreenOpen: () => homeOpen,
     closeHomeScreen: closeHome,
     isResponsePanelOpen: () => responseOpen,
@@ -37,17 +59,13 @@ it('resolves absent and replaced composer handles for each call', () => {
   expect(() => adapter.announceSending()).not.toThrow();
   const first = jest.fn(() => true);
   const second = jest.fn(() => true);
-  manager.inputComponent = {
-    requestFocus: first,
-  } as unknown as ServiceManager['inputComponent'];
+  input.current = { requestFocus: first };
   adapter.requestComposerFocus();
-  manager.inputComponent = {
-    requestFocus: second,
-  } as unknown as ServiceManager['inputComponent'];
+  input.current = { requestFocus: second };
   adapter.requestComposerFocus();
   expect(first).toHaveBeenCalledTimes(1);
   expect(second).toHaveBeenCalledTimes(1);
-  manager.inputComponent = undefined;
+  input.current = undefined;
   adapter.requestComposerFocus();
   expect(second).toHaveBeenCalledTimes(1);
   adapter.closeHomeScreenIfOpen();
@@ -60,11 +78,11 @@ it('resolves absent and replaced composer handles for each call', () => {
 });
 
 it('uses the current announcer on each call and tolerates its removal', () => {
-  const manager = {} as ServiceManager;
+  const handles: { ariaAnnouncer?: (text: string) => void } = {};
   const adapter = new MessagePresentationAdapter({
     hasCustomPromptLine: () => false,
     requestComposerFocus: () => false,
-    announceSending: () => manager.ariaAnnouncer?.('sending'),
+    announceSending: () => handles.ariaAnnouncer?.('sending'),
     isHomeScreenOpen: () => false,
     closeHomeScreen: jest.fn(),
     isResponsePanelOpen: () => false,
@@ -73,11 +91,11 @@ it('uses the current announcer on each call and tolerates its removal', () => {
   expect(() => adapter.announceSending()).not.toThrow();
   const first = jest.fn();
   const replacement = jest.fn();
-  manager.ariaAnnouncer = first;
+  handles.ariaAnnouncer = first;
   adapter.announceSending();
-  manager.ariaAnnouncer = replacement;
+  handles.ariaAnnouncer = replacement;
   adapter.announceSending();
-  manager.ariaAnnouncer = undefined;
+  handles.ariaAnnouncer = undefined;
   expect(() => adapter.announceSending()).not.toThrow();
   expect(first).toHaveBeenCalledTimes(1);
   expect(first).toHaveBeenCalledWith('sending');
