@@ -28,7 +28,10 @@ import { HumanAgentsOnlineStatus } from '../config/ServiceDeskConfig';
 import { PublicChatState } from '../instance/PublicChatState';
 import { MessageState } from '../config/MessagingConfig';
 
-/** @category Events */
+/**
+ * @category Events
+ * @category SDK
+ */
 export enum BusEventType {
   /**
    * When a panel has been closed.
@@ -277,6 +280,7 @@ export enum ViewChangeReason {
  * The different sources that can cause a send event to occur.
  *
  * @category Events
+ * @category SDK
  */
 export enum MessageSendSource {
   /**
@@ -343,6 +347,7 @@ export enum MessageSendSource {
 /**
  * The discriminating union of all the possible bus event types.
  * @category Events
+ * @category SDK
  */
 export interface BusEvent {
   /**
@@ -362,6 +367,7 @@ export interface BusEventClosePanelButtonClicked extends BusEvent {
 
 /**
  * @category Events
+ * @category SDK
  */
 export interface BusEventPreReceive extends BusEvent {
   type: BusEventType.PRE_RECEIVE;
@@ -373,6 +379,7 @@ export interface BusEventPreReceive extends BusEvent {
 
 /**
  * @category Events
+ * @category SDK
  */
 export interface BusEventReceive extends BusEvent {
   type: BusEventType.RECEIVE;
@@ -388,6 +395,7 @@ export interface BusEventReceive extends BusEvent {
 
 /**
  * @category Events
+ * @category SDK
  */
 export interface BusEventPreSend extends BusEvent {
   type: BusEventType.PRE_SEND;
@@ -401,6 +409,7 @@ export interface BusEventPreSend extends BusEvent {
 
 /**
  * @category Events
+ * @category SDK
  */
 export interface BusEventSend extends BusEvent {
   type: BusEventType.SEND;
@@ -414,6 +423,7 @@ export interface BusEventSend extends BusEvent {
 
 /**
  * @category Service desk
+ * @category SDK
  */
 export interface BusEventHumanAgentPreReceive extends BusEvent {
   type: BusEventType.HUMAN_AGENT_PRE_RECEIVE;
@@ -423,6 +433,7 @@ export interface BusEventHumanAgentPreReceive extends BusEvent {
 
 /**
  * @category Service desk
+ * @category SDK
  */
 export interface BusEventHumanAgentReceive extends BusEvent {
   type: BusEventType.HUMAN_AGENT_RECEIVE;
@@ -432,6 +443,7 @@ export interface BusEventHumanAgentReceive extends BusEvent {
 
 /**
  * @category Service desk
+ * @category SDK
  */
 export interface BusEventHumanAgentPreSend extends BusEvent {
   type: BusEventType.HUMAN_AGENT_PRE_SEND;
@@ -441,6 +453,7 @@ export interface BusEventHumanAgentPreSend extends BusEvent {
 
 /**
  * @category Service desk
+ * @category SDK
  */
 export interface BusEventHumanAgentSend extends BusEvent {
   type: BusEventType.HUMAN_AGENT_SEND;
@@ -531,6 +544,7 @@ export interface BusEventViewChange extends BusEvent {
 
 /**
  * @category Events
+ * @category SDK
  */
 export interface BusEventReset extends BusEvent {
   type: BusEventType.RESTART_CONVERSATION;
@@ -545,6 +559,7 @@ export interface BusEventChatReady extends BusEvent {
 
 /**
  * @category Events
+ * @category SDK
  */
 export interface BusEventPreReset extends BusEvent {
   type: BusEventType.PRE_RESTART_CONVERSATION;
@@ -581,6 +596,7 @@ export interface BusEventMessageItemCustom extends BusEvent {
  * to change content. This runtime rule leaves shared types and other delivery paths unchanged.
  *
  * @category Events
+ * @category SDK
  */
 export interface BusEventUserDefinedResponse extends BusEvent {
   type: BusEventType.USER_DEFINED_RESPONSE;
@@ -708,6 +724,7 @@ export interface BusEventCustomRequestFooterSlot extends BusEvent {
  * handlers.
  *
  * @category Events
+ * @category SDK
  */
 export interface BusEventHistoryBegin extends BusEvent {
   /**
@@ -738,6 +755,7 @@ export interface BusEventHistoryBegin extends BusEvent {
  * by the event handlers.
  *
  * @category Events
+ * @category SDK
  */
 export interface BusEventHistoryEnd extends BusEvent {
   /**
@@ -914,6 +932,7 @@ export interface BusEventWorkspaceClose extends BusEvent {
  * "Request agent" button and before any attempt is made to communicate with the service desk.
  *
  * @category Service desk
+ * @category SDK
  */
 export interface BusEventHumanAgentPreStartChat<
   TPayloadType = unknown,
@@ -944,6 +963,7 @@ export interface BusEventHumanAgentPreStartChat<
  * confirmation modal but it can also be fired if the chat is ended by the agent.
  *
  * @category Service desk
+ * @category SDK
  */
 export interface BusEventHumanAgentPreEndChat<
   TPayloadType = unknown,
@@ -975,6 +995,7 @@ export interface BusEventHumanAgentPreEndChat<
  * can be fired both from the user leaving the chat or the agent ending the chat.
  *
  * @category Service desk
+ * @category SDK
  */
 export interface BusEventHumanAgentEndChat extends BusEvent {
   /**
@@ -999,6 +1020,7 @@ export interface BusEventHumanAgentEndChat extends BusEvent {
  * from that call. This is particularly useful if some custom code wants to take action if no agents are online.
  *
  * @category Service desk
+ * @category SDK
  */
 export interface BusEventHumanAgentAreAnyAgentsOnline extends BusEvent {
   /**
