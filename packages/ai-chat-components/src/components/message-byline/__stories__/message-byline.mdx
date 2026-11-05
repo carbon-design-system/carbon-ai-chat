@@ -1,0 +1,74 @@
+import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
+import * as Stories from './message-byline.stories';
+
+<Meta of={Stories} />
+
+# Message byline
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/message-byline) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+## Overview
+
+Use `cds-aichat-message-byline` to show who sent a message, with an optional avatar, timestamp, and reasoning controls. It knows nothing about message data. This element is experimental, and its API may change without a deprecation window.
+
+<Canvas of={Stories.Default} />
+
+## Key features
+
+- **Optional avatar**: With nothing in the `avatar` slot, the byline renders no avatar space.
+- **Reasoning controls**: Place a toggle in the `reasoning` slot. The reasoning steps stay at the top of the message, and the toggle opens and closes them from the byline.
+- **Host-supplied text**: The byline shows the `label` and `timestamp` you pass in.
+
+## Examples
+
+### Without an avatar
+
+```html
+<cds-aichat-message-byline
+  label="You"
+  timestamp="10:42 AM"></cds-aichat-message-byline>
+```
+
+<Canvas of={Stories.WithoutAvatar} />
+
+### With reasoning controls
+
+```html
+<cds-aichat-message-byline label="Assistant" timestamp="10:42 AM">
+  <button slot="reasoning" type="button">Show reasoning</button>
+</cds-aichat-message-byline>
+```
+
+<Canvas of={Stories.WithReasoning} />
+
+### Human agent
+
+```html
+<cds-aichat-message-byline label="Jane Doe" timestamp="10:42 AM">
+  <cds-aichat-user-avatar
+    slot="avatar"
+    name="Jane Doe"></cds-aichat-user-avatar>
+</cds-aichat-message-byline>
+```
+
+<Canvas of={Stories.HumanAgent} />
+
+## Accessibility
+
+The `label` is the only place the sender name is read. Do not add a label to a slotted avatar, or screen readers read the name twice.
+
+## Component API
+
+### `cds-aichat-message-byline`
+
+<ArgTypes of="cds-aichat-message-byline" />
+
+## JS (via import)
+
+```javascript
+import '@carbon/ai-chat-components/es/components/message-byline/index.js';
+```
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.
