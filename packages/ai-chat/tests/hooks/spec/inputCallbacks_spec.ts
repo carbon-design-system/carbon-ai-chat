@@ -13,13 +13,13 @@ import {
   isUploadButtonDisabled,
   shouldDisableInput,
   shouldDisableSend,
-} from '../../../src/chat/services/inputCallbacks';
+} from '../../../src/shared/services/inputCallbacks';
 import { createAssistantUploadCallbacks } from '../../../src/chat/utils/assistantUploadCallbacks';
 import { createPanelCallbacks } from '../../../src/chat/utils/panelCallbacks';
 import { selectInputConfig } from '../../../src/chat/utils/inputConfig';
-import { shallowEqual } from '../../../src/chat/store/appStore';
+import { shallowEqual } from '../../../src/shared/store/appStore';
 import type { AppState } from '../../../src/types/state/AppState';
-import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
+import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
 import {
   MessageSendSource,
   BusEventType,

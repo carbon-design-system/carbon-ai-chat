@@ -28,7 +28,7 @@ import {
   makeConfigStore,
   TestChatContext,
 } from '../../test_helpers';
-import actions from '../../../src/chat/store/actions';
+import actions from '../../../src/shared/store/actions';
 
 let store: ReturnType<typeof makeConfigStore>;
 function render(ui: React.ReactElement) {

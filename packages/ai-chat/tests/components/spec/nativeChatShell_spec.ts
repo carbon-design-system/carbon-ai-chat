@@ -16,7 +16,7 @@ import type HydrationBody from '../../../src/chat/components/panels/native/Hydra
 import type ChatInput from '../../../src/chat/components/input/ChatInput';
 import type { ChatViewState } from '../../../src/chat/services/chatViewState';
 import { ChatContainer } from '../../../src/react/ChatContainer';
-import actions from '../../../src/chat/store/actions';
+import actions from '../../../src/shared/store/actions';
 import { getDeepActiveElement } from '../../../src/chat/utils/domUtils';
 import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import type { ChatContainerProps } from '../../../src/types/component/ChatContainer';

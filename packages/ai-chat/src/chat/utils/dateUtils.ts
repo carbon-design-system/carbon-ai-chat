@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { RIGHT_TO_LEFT_MARK } from './constants';
+import { RIGHT_TO_LEFT_MARK } from '../../shared/utils/constants';
 
 // A regex object that checks for white space/right-left-mark characters in a string and a period at the end of a
 // string.

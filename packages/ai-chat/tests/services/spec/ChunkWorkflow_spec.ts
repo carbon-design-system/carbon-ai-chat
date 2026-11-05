@@ -7,15 +7,15 @@
  *  @license
  */
 
-import { ChunkWorkflow } from '../../../src/chat/services/messaging/ChunkWorkflow';
-import { MessageCoordinator } from '../../../src/chat/services/messaging/MessageCoordinator';
-import type { MessagePresentationPort } from '../../../src/chat/services/messaging/presentationPort';
-import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
+import { ChunkWorkflow } from '../../../src/shared/services/messaging/ChunkWorkflow';
+import { MessageCoordinator } from '../../../src/shared/services/messaging/MessageCoordinator';
+import type { MessagePresentationPort } from '../../../src/shared/services/messaging/presentationPort';
+import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
 import type {
   PauseItem,
   StreamChunk,
 } from '../../../src/types/messaging/Messages';
-import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
+import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
 
 it('returns the original chunk and pause promises from the core', () => {
   const manager = {} as ServiceManager;

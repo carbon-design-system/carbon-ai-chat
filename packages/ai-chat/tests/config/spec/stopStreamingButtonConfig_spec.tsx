@@ -27,11 +27,11 @@ import { PublicConfig } from '../../../src/types/config/PublicConfig';
 import { CancellationReason } from '../../../src/types/config/MessagingConfig';
 import { AppState } from '../../../src/types/state/AppState';
 import { MessageResponseTypes } from '../../../src/types/messaging/Messages';
-import { selectStopStreamingButtonVisible } from '../../../src/chat/store/selectors';
+import { selectStopStreamingButtonVisible } from '../../../src/shared/store/selectors';
 import {
   createAppConfig,
   createInitialState,
-} from '../../../src/chat/store/doCreateStore';
+} from '../../../src/shared/store/doCreateStore';
 import {
   getChatShadowRoot,
   mockCustomSendMessage,

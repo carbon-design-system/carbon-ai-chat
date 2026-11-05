@@ -8,7 +8,7 @@
  */
 
 import { act, waitFor } from '@testing-library/react';
-import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
+import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
 import { HistoryItem } from '../../../src/types/messaging/History';
 import { CancellationReason } from '../../../src/types/config/MessagingConfig';
 import { OnErrorType } from '../../../src/types/config/ErrorConfig';

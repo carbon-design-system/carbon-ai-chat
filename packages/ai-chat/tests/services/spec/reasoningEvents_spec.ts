@@ -7,8 +7,8 @@
  *  @license
  */
 
-import { coordinateReasoningEvents } from '../../../src/chat/services/messaging/coordinateReasoningEvents';
-import { retainNativeMessageOrigin } from '../../../src/chat/services/messaging/nativeMessageEvents';
+import { coordinateReasoningEvents } from '../../../src/shared/services/messaging/coordinateReasoningEvents';
+import { retainNativeMessageOrigin } from '../../../src/shared/services/messaging/nativeMessageEvents';
 import {
   MessageResponse,
   MessageResponseTypes,

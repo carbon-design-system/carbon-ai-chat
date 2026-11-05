@@ -12,8 +12,8 @@ import cx from 'classnames';
 import React, { useCallback, useEffect, useState } from 'react';
 import VisuallyHidden from '../../../components/helpers/VisuallyHidden/VisuallyHidden';
 import { HasClassName } from '../../../../types/utilities/HasClassName';
-import { getURLHostName } from '../../../utils/browserUtils';
-import { RESPONSE_TYPE_TIMEOUT_MS } from '../../../utils/constants';
+import { getURLHostName } from '../../../../shared/utils/browserUtils';
+import { RESPONSE_TYPE_TIMEOUT_MS } from '../../../../shared/utils/constants';
 import { InlineError } from '../../../components/responseTypes/error/InlineError';
 import { TextBlock } from '../../../components/helpers/TextBlock/TextBlock';
 

@@ -20,25 +20,29 @@ Load only what you need:
 
 - Working across the React/Lit boundary, shadow DOM, or slots → [architecture.md](references/architecture.md)
 - Adding, editing, or wiring a service → [services.md](references/services.md)
-- Changing assistant message flows, data helpers, or view ports → [messaging ownership](src/chat/services/messaging/AGENTS.md)
+- Changing assistant message flows, data helpers, or view ports → [messaging ownership](src/shared/services/messaging/AGENTS.md)
 - Changing hooks or view-owned logic in `utils/` or `services/` → [hooks/AGENTS.md](src/chat/hooks/AGENTS.md)
 - Adding config fields or host properties/attributes, or editing CEM metadata → [manifests.md](references/manifests.md)
 - Writing or fixing a Jest test → [tests.md](references/tests.md)
 - Shipping any UI change (WCAG 2.1 AA checklist, live-region patterns, the announcer helpers, and when an announcement should be `assertive`) → [Root accessibility.md](../../references/accessibility.md)
-- Touching the store → [src/chat/store/AGENTS.md](src/chat/store/AGENTS.md)
+- Touching the store → [src/shared/store/AGENTS.md](src/shared/store/AGENTS.md)
 - Touching public types or JSDoc → [src/types/AGENTS.md](src/types/AGENTS.md)
 - Writing a code example (JSDoc `@example`, docs snippet) → [code-examples.md](references/code-examples.md)
 - Editing public docs in [docs/](docs/) → [docs/AGENTS.md](docs/AGENTS.md)
 
 ## Where things live
 
-- [src/chat/](src/chat/) — the chat application. Do most feature work here.
+- [src/shared/](src/shared/) — the conversation layer: everything a chat needs to run without a view.
   - `store/` — Redux-style store.
-  - `services/` — chat-instance services wired through `ServiceManager.ts` and `loadServices.ts`, plus view-owned classes with explicit cleanup. `ChatInstanceService.ts` is the instance-facing API — public methods added here must also be reflected on `ChatInstance` in [`src/types/instance/ChatInstance.ts`](src/types/instance/ChatInstance.ts).
-  - `services/messaging/` — `MessageCoordinator` and its private workflows, pure `inbound/`, `outbound/`, and `state/` helpers, and the `presentation/` view adapter. Human-agent callbacks live in `services/haa/`.
+  - `services/` — chat-instance services wired through `ServiceManager.ts` and `loadServices.ts`. `ChatInstanceService.ts` is the instance-facing API — public methods added here must also be reflected on `ChatInstance` in [`src/types/instance/ChatInstance.ts`](src/types/instance/ChatInstance.ts).
+  - `services/messaging/` — `MessageCoordinator` and its private workflows, pure `inbound/`, `outbound/`, and `state/` helpers, and the presentation port. The human-agent service lives in `services/haa/`.
   - `events/` — typed pub/sub for the public event API. Event names and payloads are part of the public contract.
   - `schema/` — runtime message/config schema. Keep in sync with types in [src/types/](src/types/).
+  - `utils/` — helpers that conversation code uses. View code may import them too.
   - `languages/` — `intl-messageformat` string bundles, one locale file. [LanguagePack.ts](src/types/config/LanguagePack.ts) declares the public `LanguagePack` type over it, so adding a key widens public API and renaming one breaks it. Hosts translate through `PublicConfig.strings`; word new strings per [ui-strings.md](../../.bob/skills/caic-copy-writer/references/ui-strings.md).
+- [src/chat/](src/chat/) — the prebuilt interface. Do most feature work here.
+  - `services/` — view-owned classes with explicit cleanup: `ChatViewState`, extension hosts, the announcer, the messaging presentation adapter, and the human-agent view callbacks.
+  - `utils/` — view helpers, including DOM, focus, and shell lifecycle code.
   - `components/` and `components-legacy/` — follow [component placement](../../references/code-patterns.md#component-placement) when adding or moving UI. Private Lit views that read chat state extend `components/shared/NativeChatView.ts`.
 - [src/react/](src/react/) — public React wrapper components re-exported from the package root.
 - [src/web-components/](src/web-components/) — Lit hosts. They own startup, config updates, live regions, and extension hosts. Put new startup work here, not in React.
@@ -58,7 +62,7 @@ npm start          # rollup --watch + typedoc --watch + local doc server on :500
 
 ## Gotchas
 
-- **Custom store hooks**: `useSelector` comes from `src/chat/hooks/` — **not** `react-redux`. There is no `useDispatch`; dispatch through `serviceManager.store.dispatch` with an action creator from `store/actions.ts`.
+- **Custom store hooks**: `useSelector` comes from `src/chat/hooks/` — **not** `react-redux`. There is no `useDispatch`; dispatch through `serviceManager.store.dispatch` with an action creator from `src/shared/store/actions.ts`.
 - **Import extensions**: `moduleResolution` is `bundler`, so relative imports of TS source resolve **with or without** a trailing `.js`; extensionless is the convention across the tree, and rollup, `tsc --noEmit`, and Jest all accept either. A deep import into a dependency is different: `bundler` enforces the package's `exports` map, so write the real built file, `.js` included (e.g. `@carbon/ai-chat-components/es/react/card.js`).
 - **Relaxed TS strictness**: `tsconfig` sets `strictNullChecks: false` and `strictFunctionTypes: false`. Don't assume null safety; check explicitly or add guards.
 - **React runs inside shadow DOM**: the `cds-aichat-*` custom elements mount React into a shadow root. User-defined responses and writeable elements use slotted content; follow existing patterns. Background in [architecture.md](references/architecture.md).

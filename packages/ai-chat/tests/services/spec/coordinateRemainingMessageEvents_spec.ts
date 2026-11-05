@@ -13,9 +13,9 @@ import {
   handleCustomRequestFooterSlot,
   createElementsForUserDefinedResponses,
   replayFooterSlots,
-} from '../../../src/chat/services/messaging/coordinateMessageEvents';
-import type { MessagePresentationPort } from '../../../src/chat/services/messaging/presentationPort';
-import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
+} from '../../../src/shared/services/messaging/coordinateMessageEvents';
+import type { MessagePresentationPort } from '../../../src/shared/services/messaging/presentationPort';
+import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
 import {
   MessageResponseTypes,
   type MessageResponse,
@@ -29,7 +29,7 @@ import {
   BusEventType,
   type BusEventCustomFooterSlot,
 } from '../../../src/types/events/eventBusTypes';
-import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
+import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
 
 function fixture() {
   const item: UserDefinedItem = {

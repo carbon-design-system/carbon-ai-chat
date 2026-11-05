@@ -27,30 +27,30 @@ import {
 import {
   selectHumanAgentDisplayState,
   selectInputIsReadonly,
-} from '../store/selectors';
+} from '../../shared/store/selectors';
 import { AppState, ChatMessagesState } from '../../types/state/AppState';
-import { shallowEqual } from '../store/appStore';
+import { shallowEqual } from '../../shared/store/appStore';
 import { AutoScrollOptions } from '../../types/utilities/HasDoAutoScroll';
 import HasIntl from '../../types/utilities/HasIntl';
 import { HasRequestFocus } from '../../types/utilities/HasRequestFocus';
 import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
-import { IS_MOBILE } from '../utils/browserUtils';
-import { WriteableElementName } from '../utils/constants';
+import { IS_MOBILE } from '../../shared/utils/browserUtils';
+import { WriteableElementName } from '../../shared/utils/constants';
 import { applyDynamicStyles, clearDynamicStyles } from '../utils/cspStyleUtils';
 import { formatShortcutForDisplay } from '../utils/keyboardUtils';
-import { arrayLastValue } from '../utils/lang/arrayUtils';
+import { arrayLastValue } from '../../shared/utils/lang/arrayUtils';
 import {
   isRequest,
   isResponse,
   getMessageIDForUserInput,
-} from '../utils/messageUtils';
+} from '../../shared/utils/messageUtils';
 import {
   MessagesScrollController,
   type PortableMessage,
   type ScrollHost,
 } from '../utils/messagesAutoScrollController';
 import { buildRenderableMessageMetadata } from '../utils/messagesRenderUtils';
-import { consoleError } from '../utils/miscUtils';
+import { consoleError } from '../../shared/utils/miscUtils';
 import MessageComponent, {
   MessageClass,
   MoveFocusType,

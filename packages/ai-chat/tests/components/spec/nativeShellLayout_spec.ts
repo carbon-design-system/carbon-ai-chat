@@ -15,7 +15,7 @@ import '../../../src/web-components/cds-aichat-custom-element';
 import { ChatContainer } from '../../../src/react/ChatContainer';
 import { ChatCustomElement } from '../../../src/react/ChatCustomElement';
 import { MessagesComponentClass } from '../../../src/chat/components-legacy/MessagesComponent';
-import actions from '../../../src/chat/store/actions';
+import actions from '../../../src/shared/store/actions';
 import type { ChatContainerProps } from '../../../src/types/component/ChatContainer';
 import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import type { PublicConfig } from '../../../src/types/config/PublicConfig';

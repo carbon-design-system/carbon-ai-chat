@@ -20,7 +20,7 @@ import { validateInlineTree } from '@carbon/ai-chat-components/es/components/mar
 import { renderInlineMarkdownInRun } from '@carbon/ai-chat-components/es/components/markdown/src/inline-markdown.js';
 
 import { useMarkdownSettings } from '../MarkdownWithDefaults/useMarkdownSettings';
-import { consoleError } from '../../../utils/miscUtils';
+import { consoleError } from '../../../../shared/utils/miscUtils';
 
 const FALLBACK_CLASS = 'cds-aichat--inline-markdown-fallback';
 

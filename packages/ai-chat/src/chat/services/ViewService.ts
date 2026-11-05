@@ -9,11 +9,11 @@
 
 import isEqual from 'lodash-es/isEqual.js';
 
-import actions from '../store/actions';
+import actions from '../../shared/store/actions';
 import { ViewState, ViewType } from '../../types/state/AppState';
-import { deepFreeze } from '../utils/lang/objectUtils';
+import { deepFreeze } from '../../shared/utils/lang/objectUtils';
 import { constructViewState } from '../utils/viewStateUtils';
-import { consoleError, debugLog } from '../utils/miscUtils';
+import { consoleError, debugLog } from '../../shared/utils/miscUtils';
 import {
   BusEventType,
   BusEventViewChange,
@@ -22,7 +22,7 @@ import {
   MainWindowOpenReason,
   ViewChangeReason,
 } from '../../types/events/eventBusTypes';
-import type { ServiceManager } from './ServiceManager';
+import type { ServiceManager } from '../../shared/services/ServiceManager';
 
 class ViewService {
   private serviceManager: ServiceManager;

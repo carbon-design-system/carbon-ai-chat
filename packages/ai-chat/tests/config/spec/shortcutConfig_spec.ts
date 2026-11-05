@@ -11,7 +11,7 @@ import {
   ChatShortcutConfig,
   KeyboardShortcuts,
 } from '../../../src/types/config/ShortcutConfig';
-import { DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT } from '../../../src/chat/store/reducerUtils';
+import { DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT } from '../../../src/shared/store/reducerUtils';
 
 describe('ShortcutConfig', () => {
   describe('Type Exports', () => {

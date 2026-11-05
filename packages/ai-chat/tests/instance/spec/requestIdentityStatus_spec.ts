@@ -10,7 +10,7 @@
 import { act } from '@testing-library/react';
 import { MessageResponse } from '../../../src/types/messaging/Messages';
 import { MessageState } from '../../../src/types/config/MessagingConfig';
-import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
+import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
 import {
   BusEventPreSend,
   BusEventType,

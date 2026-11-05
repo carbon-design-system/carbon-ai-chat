@@ -14,9 +14,9 @@ import { useIntl } from '../../../hooks/useIntl';
 import { useSelector } from '../../../hooks/useSelector';
 
 import { useServiceManager } from '../../../hooks/useServiceManager';
-import actions from '../../../store/actions';
+import actions from '../../../../shared/store/actions';
 import { AppState } from '../../../../types/state/AppState';
-import { getURLHostName } from '../../../utils/browserUtils';
+import { getURLHostName } from '../../../../shared/utils/browserUtils';
 import VisuallyHidden from '../../../components/helpers/VisuallyHidden/VisuallyHidden';
 import { IFrameItem } from '../../../../types/messaging/Messages';
 import { Image } from '../image/Image';

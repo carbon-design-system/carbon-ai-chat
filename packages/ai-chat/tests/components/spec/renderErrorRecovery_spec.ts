@@ -24,8 +24,8 @@ import { OnErrorType } from '../../../src/types/config/ErrorConfig';
 import { MessageState } from '../../../src/types/config/MessagingConfig';
 import { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import { MessageClass } from '../../../src/chat/components-legacy/MessageComponent';
-import actions from '../../../src/chat/store/actions';
-import enLanguagePack from '../../../src/chat/languages/en.json';
+import actions from '../../../src/shared/store/actions';
+import enLanguagePack from '../../../src/shared/languages/en.json';
 
 // Records every announcement instead of speaking it.
 const mockAnnounce = jest.fn();

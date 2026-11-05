@@ -17,11 +17,11 @@ import {
 import { fireEvent } from '@testing-library/react';
 import { MessageResponseTypes } from '../../../src/types/messaging/Messages';
 import type { KeyboardShortcuts } from '../../../src/types/config/ShortcutConfig';
-import type { AppStore } from '../../../src/chat/store/appStore';
+import type { AppStore } from '../../../src/shared/store/appStore';
 import type { AppState } from '../../../src/types/state/AppState';
-import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
+import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
 import { getDeepActiveElement } from '../../../src/chat/utils/domUtils';
-import actions from '../../../src/chat/store/actions';
+import actions from '../../../src/shared/store/actions';
 
 const ANNOUNCEMENT_ID = 'input_keyboardShortcutAnnouncement';
 

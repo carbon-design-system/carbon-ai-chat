@@ -7,13 +7,13 @@
  *  @license
  */
 
-import { createAppStore } from '../../../src/chat/store/appStore';
+import { createAppStore } from '../../../src/shared/store/appStore';
 import {
   buildLanguagePack,
   createAppConfig,
-} from '../../../src/chat/store/doCreateStore';
-import actions from '../../../src/chat/store/actions';
-import { reducers } from '../../../src/chat/store/reducers';
+} from '../../../src/shared/store/doCreateStore';
+import actions from '../../../src/shared/store/actions';
+import { reducers } from '../../../src/shared/store/reducers';
 import { AppState } from '../../../src/types/state/AppState';
 import {
   DEFAULT_CITATION_PANEL_STATE,
@@ -27,7 +27,7 @@ import {
   DEFAULT_PERSISTED_TO_BROWSER,
   DEFAULT_HUMAN_AGENT_STATE,
   VIEW_STATE_ALL_CLOSED,
-} from '../../../src/chat/store/reducerUtils';
+} from '../../../src/shared/store/reducerUtils';
 import {
   ButtonItemType,
   CardItem,
@@ -38,7 +38,7 @@ import {
 } from '../../../src/types/messaging/Messages';
 import { LocalMessageItem } from '../../../src/types/messaging/LocalMessageItem';
 import { HumanAgentsOnlineStatus } from '../../../src/types/config/ServiceDeskConfig';
-import { deriveStreamingItemText } from '../../../src/chat/utils/streamingUtils';
+import { deriveStreamingItemText } from '../../../src/shared/utils/streamingUtils';
 
 function rootReducer(
   state: AppState,

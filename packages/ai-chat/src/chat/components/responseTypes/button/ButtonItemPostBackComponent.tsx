@@ -13,14 +13,14 @@ import React, { useCallback } from 'react';
 import { useSelector } from '../../../hooks/useSelector';
 
 import { useServiceManager } from '../../../hooks/useServiceManager';
-import { selectInputIsReadonly } from '../../../store/selectors';
+import { selectInputIsReadonly } from '../../../../shared/store/selectors';
 import { HasRequestFocus } from '../../../../types/utilities/HasRequestFocus';
 import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
 import {
   createMessageRequestForButtonItemOption,
   resolveChoiceText,
-} from '../../../utils/messageUtils';
-import { consoleError } from '../../../utils/miscUtils';
+} from '../../../../shared/utils/messageUtils';
+import { consoleError } from '../../../../shared/utils/miscUtils';
 import { setMessageOptionSelectedFromView } from '../../../utils/messageMetadataCommands';
 import { MessageSendSource } from '../../../../types/events/eventBusTypes';
 import { ButtonItem } from '../../../../types/messaging/Messages';

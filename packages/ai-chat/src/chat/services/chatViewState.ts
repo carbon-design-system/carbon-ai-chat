@@ -8,9 +8,9 @@
  */
 
 import { AriaAnnouncer } from './ariaAnnouncer';
-import { subscribeToIntl } from '../utils/intlUtils';
-import type { ServiceManager } from './ServiceManager';
-import type { IntlShape } from '../utils/i18n';
+import { subscribeToIntl } from '../../shared/utils/intlUtils';
+import type { ServiceManager } from '../../shared/services/ServiceManager';
+import type { IntlShape } from '../../shared/utils/i18n';
 import type { Dimension } from '../../types/utilities/Dimension';
 
 /** A response card's own confirmation, shown in the end-chat panel. */

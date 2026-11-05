@@ -31,7 +31,7 @@ Before handing back copy, skim only its headings, tables, and code, or the visib
 | 3 | Docs-site pages | [docs-pages.md](references/docs-pages.md) | `packages/ai-chat/docs/` | Consumer developers | `reading-level`, and registered in `projectDocuments` |
 | 4 | Storybook MDX | [storybook-mdx.md](references/storybook-mdx.md) | `__stories__/` in `packages/ai-chat-components/` | Developers evaluating a component | Clean `addon-a11y` on 6006 and 7007 |
 | 5 | Example copy | [example-copy.md](references/example-copy.md) | READMEs and source comments under `examples/` | A developer copying a starting point | `npm run verify:example-readmes` |
-| 6 | End-user UI strings | [ui-strings.md](references/ui-strings.md) | `packages/ai-chat/src/chat/languages/en.json` | **The person using the chat** | The public-types surface |
+| 6 | End-user UI strings | [ui-strings.md](references/ui-strings.md) | `packages/ai-chat/src/shared/languages/en.json` | **The person using the chat** | The public-types surface |
 | 7 | Agent guidance | [agent-guidance.md](references/agent-guidance.md) | `AGENTS.md`, `references/`, `.bob/skills/` | Agents | `validate:agents`, `validate:skills` |
 | 8 | Commit bodies | [commit-bodies.md](references/commit-bodies.md) | the commit message | The reviewer walking the branch | Review |
 | 9 | PR descriptions | [pr-descriptions.md](references/pr-descriptions.md) | `.github/pr-drafts/` | The reviewer, then anyone reading post-merge | `reading-level` on the draft |

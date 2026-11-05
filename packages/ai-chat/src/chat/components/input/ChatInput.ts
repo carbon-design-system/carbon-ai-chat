@@ -43,18 +43,18 @@ import type { InputFunctions, InputProps } from '../../utils/inputTypes';
 import type { AutocompleteContent } from '../../services/autocompleteContent';
 import type { ChatViewState } from '../../services/chatViewState';
 import type { ToolbarAction } from '../../../types/config/HeaderConfig';
-import type { IntlShape } from '../../utils/i18n';
+import type { IntlShape } from '../../../shared/utils/i18n';
 import type { LanguagePack } from '../../../types/config/LanguagePack';
 import { ChatWidthBreakpoint } from '../../../types/state/AppState';
 import { WriteableElementName } from '../../../types/instance/WriteableElements';
 import { PageObjectId } from '../../../testing/PageObjectId';
-import { shallowEqual } from '../../store/appStore';
-import actions from '../../store/actions';
+import { shallowEqual } from '../../../shared/store/appStore';
+import actions from '../../../shared/store/actions';
 import {
   selectInputState,
   selectIsInputToHumanAgent,
   selectLanguagePack,
-} from '../../store/selectors';
+} from '../../../shared/store/selectors';
 import {
   InputExtensions,
   buildInputExtensions,
@@ -73,7 +73,7 @@ import { hasInFlightUpload, hasSendableInput } from '../../utils/sendableInput';
 import { restoreInputDraft } from '../../utils/restoreInputDraft';
 import { validateFileSelection } from '../../utils/fileUploadValidation';
 import { formatShortcutForDisplay } from '../../utils/keyboardUtils';
-import { consoleError } from '../../utils/miscUtils';
+import { consoleError } from '../../../shared/utils/miscUtils';
 
 const EMPTY_UPLOADS: FileUpload[] = [];
 const descriptorIcon = (icon: ToolbarAction['icon']) => icon as CarbonIcon;

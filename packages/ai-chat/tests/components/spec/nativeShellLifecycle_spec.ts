@@ -16,7 +16,7 @@ import type { ChatViewState } from '../../../src/chat/services/chatViewState';
 import { useChatViewStateInstance } from '../../../src/chat/hooks/useChatViewState';
 import { ChatContainer } from '../../../src/react/ChatContainer';
 import { ChatCustomElement } from '../../../src/react/ChatCustomElement';
-import actions from '../../../src/chat/store/actions';
+import actions from '../../../src/shared/store/actions';
 import * as resizeLifecycle from '../../../src/chat/utils/resizeObserver';
 import * as mobileLifecycle from '../../../src/chat/utils/mobileViewportLayout';
 import * as writablePresence from '../../../src/chat/utils/writeableElementPresence';

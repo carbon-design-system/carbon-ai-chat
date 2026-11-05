@@ -7,8 +7,8 @@
  *  @license
  */
 
-import { MessagePresentationAdapter } from '../../../src/chat/services/messaging/presentation/MessagePresentationAdapter';
-import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
+import { MessagePresentationAdapter } from '../../../src/chat/services/MessagePresentationAdapter';
+import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
 import {
   hasCustomPromptLine,
   requestComposerFocus,

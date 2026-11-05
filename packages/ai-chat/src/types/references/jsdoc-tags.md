@@ -24,7 +24,7 @@ Public API that may still change. It renders as a visible badge on the docs site
 
 ## `@internal`
 
-Symbols the build pipeline forces into the public types for mechanical reasons, but that consumers must never rely on — for example the plumbing adjacent to [../../chat/services/ChatInstanceService.ts](../../chat/services/ChatInstanceService.ts) reached through `ChatInstance.serviceManager`. TypeDoc strips `@internal` from its output, so the rule is simple: if a reader should never see it, tag it.
+Symbols the build pipeline forces into the public types for mechanical reasons, but that consumers must never rely on — for example the plumbing adjacent to [../../shared/services/ChatInstanceService.ts](../../shared/services/ChatInstanceService.ts) reached through `ChatInstance.serviceManager`. TypeDoc strips `@internal` from its output, so the rule is simple: if a reader should never see it, tag it.
 
 ## `@deprecated`
 

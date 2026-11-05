@@ -12,9 +12,9 @@ import React, { useCallback, useEffect, useState } from 'react';
 
 import { useAriaAnnouncer } from '../../../hooks/useAriaAnnouncer';
 import { useSelector } from '../../../hooks/useSelector';
-import { shallowEqual } from '../../../store/appStore';
+import { shallowEqual } from '../../../../shared/store/appStore';
 import { AppState } from '../../../../types/state/AppState';
-import { RESPONSE_TYPE_TIMEOUT_MS } from '../../../utils/constants';
+import { RESPONSE_TYPE_TIMEOUT_MS } from '../../../../shared/utils/constants';
 import { MountChildrenOnDelay } from '../../../components/helpers/MountChildrenOnDelay/MountChildrenOnDelay';
 import { InlineError } from '../../../components/responseTypes/error/InlineError';
 

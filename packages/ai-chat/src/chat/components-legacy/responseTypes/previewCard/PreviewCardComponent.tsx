@@ -17,12 +17,12 @@ import { PanelType } from '../../../../types/instance/apiTypes';
 import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
 import { AppState } from '../../../../types/state/AppState';
 import { useSelector } from '../../../hooks/useSelector';
-import { shallowEqual } from '../../../store/appStore';
+import { shallowEqual } from '../../../../shared/store/appStore';
 import {
   PreviewCardItem,
   MessageResponse,
 } from '../../../../types/messaging/Messages';
-import actions from '../../../store/actions';
+import actions from '../../../../shared/store/actions';
 
 interface PreviewCardComponentProps {
   localMessageItem: LocalMessageItem;

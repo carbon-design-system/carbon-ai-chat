@@ -27,7 +27,7 @@ import { renderPanelHeader } from './native/panelHeader';
 import type { AppState } from '../../../types/state/AppState';
 import { ChatWidthBreakpoint } from '../../../types/state/AppState';
 import { PageObjectId } from '../../../testing/PageObjectId';
-import { shallowEqual } from '../../store/appStore';
+import { shallowEqual } from '../../../shared/store/appStore';
 import {
   ExtensionHosts,
   type PanelContentRequest,
