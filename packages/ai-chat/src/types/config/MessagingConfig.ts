@@ -8,6 +8,7 @@
  */
 
 import type { MessageResponse, StreamChunk } from '../messaging/Messages';
+import type { HistoryItem } from '../messaging/History';
 import { BusEventSend } from '../events/eventBusTypes';
 import type { ChatSDKInstanceMessaging } from './ChatSDKInstanceMessaging';
 
@@ -114,6 +115,32 @@ export interface ChatInstanceMessaging extends ChatSDKInstanceMessaging {
    * `streamingState.isDone` as `false` indefinitely.
    */
   addMessageChunk: (chunk: StreamChunk) => Promise<void>;
+
+  /**
+   * Removes the messages with the given IDs from the chat view.
+   */
+  removeMessages: (messageIDs: string[]) => Promise<void>;
+
+  /**
+   * Clears the current conversation. This will trigger a restart of the conversation but will not start a new
+   * conversation (hydration). It will also clear any loading indicators UNLESS you have set
+   * {@link PublicConfigMessaging.messageLoadingIndicatorTimeoutSecs} to 0.
+   */
+  clearConversation: () => Promise<void>;
+
+  /**
+   * Inserts the given messages into the chat window as part of the chat history. This will fire the history:begin
+   * and history:end events.
+   */
+  insertHistory: (messages: HistoryItem[]) => Promise<void>;
+
+  /**
+   * Restarts the conversation with the assistant. This does not make any changes to a conversation with a human agent.
+   * This will clear all the current assistant messages from the main assistant view and cancel any outstanding
+   * messages. It will also clear any loading indicators UNLESS you have set
+   * {@link PublicConfigMessaging.messageLoadingIndicatorTimeoutSecs} to 0.
+   */
+  restartConversation: () => Promise<void>;
 }
 
 /**
