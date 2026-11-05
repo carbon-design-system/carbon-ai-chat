@@ -62,7 +62,7 @@ class StopStreamingButton extends LitElement {
   @property({ type: Object })
   onClick: (() => void) | undefined;
 
-  _handleOnClick = () => {
+  private _handleOnClick = () => {
     this.onClick?.();
   };
 

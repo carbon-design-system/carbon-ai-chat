@@ -25,6 +25,9 @@ type AnimationState = 'closed' | 'closing' | 'opening' | 'open';
  * @fires {CustomEvent<null>} closestart - The panel starts closing.
  * @fires {CustomEvent<null>} closeend - The panel finishes closing.
  * @fires {CustomEvent<PanelBodyScrollEventDetail>} body-scroll - The panel body scrolls.
+ * @slot header - Panel heading and header controls.
+ * @slot body - Main panel content.
+ * @slot footer - Panel footer content.
  */
 class CDSAIChatPanel extends LitElement {
   static get is() {
