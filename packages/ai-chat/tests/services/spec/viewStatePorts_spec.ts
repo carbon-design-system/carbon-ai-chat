@@ -54,6 +54,30 @@ describe('view state that conversation code writes', () => {
     expect(state.view.catastrophicErrorType).toBe(true);
   });
 
+  it('reaches the attached view through the agent and messaging ports', async () => {
+    const { serviceManager } = await boot();
+    const { humanAgent, messaging } = serviceManager.view.current;
+
+    const view = () => chatStore(serviceManager).getState().view;
+
+    humanAgent.changeMessageLoadingCounter(1);
+    expect(view().isMessageLoadingCounter).toBe(1);
+
+    humanAgent.announce({ messageID: 'fileSharing_uploadFailed' });
+    expect(view().announceMessage).toEqual({
+      messageID: 'fileSharing_uploadFailed',
+    });
+
+    messaging.announce({
+      messageID: 'messages_streamingStart',
+      messageValues: { sender: 'Bot' },
+    });
+    expect(view().announceMessage).toEqual({
+      messageID: 'messages_streamingStart',
+      messageValues: { sender: 'Bot' },
+    });
+  });
+
   it('does nothing, and does not throw, with no view attached', async () => {
     const { instance, serviceManager } = await boot();
     const { store, messageCoordinator, actions } = serviceManager;
