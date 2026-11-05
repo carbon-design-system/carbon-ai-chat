@@ -82,26 +82,34 @@ export interface EventHandlers {
  * {@link ChatInstanceMessaging.addMessage} inside a {@link BusEventType.RECEIVE} handler. After 10 seconds the chat
  * rejects that inner call and skips its handlers.
  *
+ * @typeParam T The event this handler receives.
+ * @typeParam I The instance this handler receives. Defaults to {@link ChatInstance}; handlers registered
+ * through {@link ChatSDKInstance.on} receive {@link ChatSDKInstance}.
  * @category Instance
  */
-export type EventBusHandler<T extends BusEvent = BusEvent> = (
+export type EventBusHandler<T extends BusEvent = BusEvent, I = ChatInstance> = (
   event: T,
-  instance: ChatInstance
+  instance: I
 ) => unknown;
 
 /**
  * The type of the object that is passed to the event bus functions (e.g. "on") when registering a handler.
  *
+ * @typeParam I The instance the handler receives. Defaults to {@link ChatInstance}.
+ * @typeParam E The event types the handler can register for. Defaults to every {@link BusEventType}.
  * @category Instance
  */
-export interface TypeAndHandler {
+export interface TypeAndHandler<
+  I = ChatInstance,
+  E extends BusEventType = BusEventType,
+> {
   /**
    * The type of event this handler is for.
    */
-  type: BusEventType;
+  type: E;
 
   /**
    * The handler for events of this type.
    */
-  handler: EventBusHandler;
+  handler: EventBusHandler<BusEvent, I>;
 }
