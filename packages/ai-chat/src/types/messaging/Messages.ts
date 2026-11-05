@@ -140,6 +140,7 @@ interface EventInput<
  * specific string in order to create type safety ensuring each event has the right name (e.g. "typeof MY_EVENT_NAME").
  *
  * @category Messaging
+ * @category SDK
  */
 interface EventInputData<TNameType extends string = string> {
   /**

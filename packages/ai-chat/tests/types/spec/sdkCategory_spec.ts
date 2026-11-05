@@ -41,8 +41,7 @@ it('stops at the conversation, without reaching the prebuilt chat', () => {
 
 it('tags every reachable exported type with @category SDK', () => {
   const missing = surface
-    // The value half of a paired const and type carries no category of its own.
-    .filter(({ node }) => categories(node).length > 0)
+    .filter(({ pairedType }) => !pairedType)
     .filter(({ node }) => !categories(node).includes('SDK'))
     .map(({ name, file }) => `${name} (${file})`);
   expect([...new Set(missing)].sort()).toEqual([]);

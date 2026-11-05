@@ -33,6 +33,11 @@ export interface SDKDeclaration {
   name: string;
   file: string;
   node: ts.Declaration;
+  /**
+   * The type half of a paired `export const X` and `export type X`. Its JSDoc sits on the const, and
+   * TypeDoc lists both halves from there.
+   */
+  pairedType: boolean;
 }
 
 function resolve(checker: ts.TypeChecker, symbol: ts.Symbol) {
@@ -44,9 +49,10 @@ function resolve(checker: ts.TypeChecker, symbol: ts.Symbol) {
 /**
  * Every type an SDK host can reach from {@link SDK_ROOTS}, plus the payloads of the events in
  * `ChatSDKEventType`. The walk follows type references through members, heritage clauses, and type
- * arguments, but not type-parameter defaults: `TypeAndHandler<I = ChatInstance>` reaches
- * `ChatInstance` only when a caller leaves `I` out, which the SDK never does. Returns the reachable
- * declarations that the root entry exports.
+ * arguments. It follows a type-parameter default only where a reference leaves that argument out:
+ * `TypeAndHandler<I = ChatInstance>` reaches `ChatInstance` only when a reference omits `I`, which
+ * the SDK's references never do, while `EventInput` with no argument reaches its default
+ * `EventInputData`. Returns the reachable declarations that the root entry exports.
  */
 export function sdkSurface() {
   const program = ts.createProgram([entry], {
@@ -86,7 +92,7 @@ export function sdkSurface() {
   };
   const visit = (node: ts.Node, owner: ts.Symbol) => {
     if (ts.isTypeParameterDeclaration(node)) {
-      // Skip the default, which only applies when a caller omits the argument.
+      // A reference that omits this argument visits the default instead; see below.
       if (node.constraint) {
         visit(node.constraint, owner);
       }
@@ -103,6 +109,19 @@ export function sdkSurface() {
         ts.isQualifiedName(name) ? name.right : name
       );
       enqueue(symbol);
+      const given = node.typeArguments?.length ?? 0;
+      for (const declaration of symbol
+        ? (resolve(checker, symbol).declarations ?? [])
+        : []) {
+        const parameters = ts.getEffectiveTypeParameterDeclarations(
+          declaration as ts.DeclarationWithTypeParameters
+        );
+        for (const parameter of parameters.slice(given)) {
+          if (parameter.default) {
+            visit(parameter.default, owner);
+          }
+        }
+      }
       if (owner.name === 'ChatSDKEventType' && symbol) {
         sdkEvents.add(resolve(checker, symbol));
       }
@@ -128,6 +147,9 @@ export function sdkSurface() {
             name: exported.get(symbol)!,
             file: path.relative(packageRoot, node.getSourceFile().fileName),
             node,
+            pairedType:
+              ts.isTypeAliasDeclaration(node) &&
+              (symbol.declarations ?? []).some(ts.isVariableDeclaration),
           });
         }
         visit(node, symbol);
