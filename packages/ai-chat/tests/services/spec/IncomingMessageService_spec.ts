@@ -123,9 +123,12 @@ it('keeps incoming processors free of runtime effects and capability inputs', ()
     'IncomingMessageService',
     'prepareReceivedMessage',
     'prepareUpsertMessage',
+    'prepareChunk',
   ];
   const allowed = new Set([
     'lodash-es/cloneDeep.js',
+    'lodash-es/merge.js',
+    './prepareChunk',
     './prepareReceivedMessage',
     './prepareUpsertMessage',
     '../../../../types/config/MessagingConfig',
