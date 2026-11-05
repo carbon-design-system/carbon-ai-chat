@@ -11,7 +11,7 @@ import {
   CancellationReason,
   MessageState,
   UpsertMessageUpdater,
-} from '../../types/config/MessagingConfig';
+} from '../../../../types/config/MessagingConfig';
 import {
   GenericItem,
   Message,
@@ -20,30 +20,30 @@ import {
   MessageResponseTypes,
   PauseItem,
   TextItem,
-} from '../../types/messaging/Messages';
+} from '../../../../types/messaging/Messages';
 import {
   BusEventPreReceive,
   BusEventReceive,
   BusEventType,
-} from '../../types/events/eventBusTypes';
-import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
-import { OnErrorType } from '../../types/config/ErrorConfig';
+} from '../../../../types/events/eventBusTypes';
+import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
+import { OnErrorType } from '../../../../types/config/ErrorConfig';
 import isEqual from 'lodash-es/isEqual.js';
 import cloneDeep from 'lodash-es/cloneDeep.js';
-import actions from '../store/actions';
+import actions from '../../../store/actions';
 import {
   captureMessageEvent,
   eventLocalItems,
-} from '../utils/messageEventOwnership';
+} from '../../../utils/messageEventOwnership';
 import type {
   MessageWriteOptions,
   ReceivedLocalItems,
-} from '../store/messageWriteTypes';
+} from '../../../store/messageWriteTypes';
 import {
   createLocalMessageItemsForNestedMessageItems,
   findDrawIssues,
   outputItemToLocalItem,
-} from '../schema/outputItemToLocalItem';
+} from '../../../schema/outputItemToLocalItem';
 import {
   addDefaultsToMessage,
   isConnectToHumanAgent,
@@ -52,11 +52,11 @@ import {
   isItemStillStreaming,
   isRequest,
   streamItemID,
-} from '../utils/messageUtils';
-import { deepFreeze } from '../utils/lang/objectUtils';
-import { consoleError } from '../utils/miscUtils';
-import { hasDisplayableContentForItem } from '../utils/streamingUtils';
-import { ServiceManager } from './ServiceManager';
+} from '../../../utils/messageUtils';
+import { deepFreeze } from '../../../utils/lang/objectUtils';
+import { consoleError } from '../../../utils/miscUtils';
+import { hasDisplayableContentForItem } from '../../../utils/streamingUtils';
+import { ServiceManager } from '../../ServiceManager';
 
 /**
  * Whether an upserted item counts as content for the stream-start announcement. A text

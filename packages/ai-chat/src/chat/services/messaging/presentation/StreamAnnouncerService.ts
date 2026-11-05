@@ -7,14 +7,14 @@
  *  @license
  */
 
-import actions from '../store/actions';
-import { getSpeakerName } from '../utils/messageUtils';
-import { DeepPartial } from '../../types/utilities/DeepPartial';
+import actions from '../../../store/actions';
+import { getSpeakerName } from '../../../utils/messageUtils';
+import { DeepPartial } from '../../../../types/utilities/DeepPartial';
 import {
   MessageResponse,
   ResponseUserProfile,
-} from '../../types/messaging/Messages';
-import type { ServiceManager } from './ServiceManager';
+} from '../../../../types/messaging/Messages';
+import type { ServiceManager } from '../../ServiceManager';
 
 class StreamAnnouncerService {
   private serviceManager: ServiceManager;

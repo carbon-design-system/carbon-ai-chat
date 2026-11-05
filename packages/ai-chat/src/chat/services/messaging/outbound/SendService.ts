@@ -9,26 +9,26 @@
 
 import cloneDeep from 'lodash-es/cloneDeep.js';
 
-import inputItemToLocalItem from '../schema/inputItemToLocalItem';
-import actions from '../store/actions';
+import inputItemToLocalItem from '../../../schema/inputItemToLocalItem';
+import actions from '../../../store/actions';
 import {
   selectInputState,
   selectIsInputToHumanAgent,
-} from '../store/selectors';
+} from '../../../store/selectors';
 import {
   addDefaultsToMessage,
   createMessageRequestForText,
-} from '../utils/messageUtils';
-import { consoleError } from '../utils/miscUtils';
-import { deepFreeze } from '../utils/lang/objectUtils';
+} from '../../../utils/messageUtils';
+import { consoleError } from '../../../utils/miscUtils';
+import { deepFreeze } from '../../../utils/lang/objectUtils';
 import {
   hasCustomPromptLine,
   requestComposerFocus,
-} from '../utils/customPromptLine';
-import { MessageSendSource } from '../../types/events/eventBusTypes';
-import { MessageRequest } from '../../types/messaging/Messages';
-import { SendOptions } from '../../types/instance/ChatInstance';
-import type { ServiceManager } from './ServiceManager';
+} from '../../../utils/customPromptLine';
+import { MessageSendSource } from '../../../../types/events/eventBusTypes';
+import { MessageRequest } from '../../../../types/messaging/Messages';
+import { SendOptions } from '../../../../types/instance/ChatInstance';
+import type { ServiceManager } from '../../ServiceManager';
 
 class SendService {
   private serviceManager: ServiceManager;

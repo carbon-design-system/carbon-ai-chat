@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { asyncForEach } from '../utils/lang/arrayUtils';
+import { asyncForEach } from '../../../utils/lang/arrayUtils';
 import {
   getRequestFooterSlotName,
   hasRequestFooter,
@@ -15,31 +15,31 @@ import {
   isResponseWithNestedItems,
   renderAsUserDefinedMessage,
   streamItemID,
-} from '../utils/messageUtils';
+} from '../../../utils/messageUtils';
 import {
   BusEventChunkUserDefinedResponse,
   BusEventCustomFooterSlot,
   BusEventCustomRequestFooterSlot,
   BusEventType,
   BusEventUserDefinedResponse,
-} from '../../types/events/eventBusTypes';
-import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
-import { DeepPartial } from '../../types/utilities/DeepPartial';
+} from '../../../../types/events/eventBusTypes';
+import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
+import { DeepPartial } from '../../../../types/utilities/DeepPartial';
 import {
   GenericItem,
   Message,
   MessageRequest,
   MessageResponse,
   PartialOrCompleteItemChunk,
-} from '../../types/messaging/Messages';
-import { AppStateMessages } from '../../types/state/AppState';
-import { MessageState } from '../../types/config/MessagingConfig';
+} from '../../../../types/messaging/Messages';
+import { AppStateMessages } from '../../../../types/state/AppState';
+import { MessageState } from '../../../../types/config/MessagingConfig';
 import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
-import { captureMessageEvent } from '../utils/messageEventOwnership';
+import { captureMessageEvent } from '../../../utils/messageEventOwnership';
 import type {
   ServiceManager,
   UserDefinedElementRegistryItem,
-} from './ServiceManager';
+} from '../../ServiceManager';
 
 class SlotEventService {
   private serviceManager: ServiceManager;

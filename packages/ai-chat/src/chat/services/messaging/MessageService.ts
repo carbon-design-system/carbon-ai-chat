@@ -26,40 +26,40 @@
  * - OutboundMessageCoordinator: send lifecycle (store updates, calling customSendMessage, resolving/rejecting/canceling).
  * - InboundStreamingCoordinator: streaming id tracking (response_id/item_id), finalization, cancellation cleanup.
  */
-import inputItemToLocalItem from '../schema/inputItemToLocalItem';
-import actions from '../store/actions';
-import { deepFreeze } from '../utils/lang/objectUtils';
-import { MessageLoadingManager } from '../utils/messageServiceUtils';
+import inputItemToLocalItem from '../../schema/inputItemToLocalItem';
+import actions from '../../store/actions';
+import { deepFreeze } from '../../utils/lang/objectUtils';
+import { MessageLoadingManager } from '../../utils/messageServiceUtils';
 import {
   getLastAssistantResponseWithContext,
   THREAD_ID_MAIN,
-} from '../utils/messageUtils';
+} from '../../utils/messageUtils';
 import {
   ResolvablePromise,
   resolvablePromise,
-} from '../utils/resolvablePromise';
+} from '../../utils/resolvablePromise';
 import {
   resetStopStreamingButton,
   syncStopStreamingButton,
-} from '../utils/streamingUtils';
-import { ServiceManager } from './ServiceManager';
+} from '../../utils/streamingUtils';
+import { ServiceManager } from '../ServiceManager';
 import { InboundStreamingCoordinator } from './InboundStreamingCoordinator';
-import { OutboundMessageCoordinator } from './OutboundMessageCoordinator';
+import { OutboundMessageCoordinator } from './outbound/OutboundMessageCoordinator';
 import {
   MessageInputType,
   MessageRequest,
   MessageResponse,
-} from '../../types/messaging/Messages';
-import { SendOptions } from '../../types/instance/ChatInstance';
+} from '../../../types/messaging/Messages';
+import { SendOptions } from '../../../types/instance/ChatInstance';
 import {
   BusEventType,
   MessageSendSource,
-} from '../../types/events/eventBusTypes';
-import { PublicConfig } from '../../types/config/PublicConfig';
-import { OnErrorType } from '../../types/config/ErrorConfig';
-import { LanguagePack } from '../../types/config/LanguagePack';
-import { MessageErrorState } from '../../types/messaging/LocalMessageItem';
-import { CancellationReason } from '../../types/config/MessagingConfig';
+} from '../../../types/events/eventBusTypes';
+import { PublicConfig } from '../../../types/config/PublicConfig';
+import { OnErrorType } from '../../../types/config/ErrorConfig';
+import { LanguagePack } from '../../../types/config/LanguagePack';
+import { MessageErrorState } from '../../../types/messaging/LocalMessageItem';
+import { CancellationReason } from '../../../types/config/MessagingConfig';
 
 // The maximum amount of time we allow sending to take place. If we pass this time limit, we throw an error, and
 // move on to the next item in the queue.

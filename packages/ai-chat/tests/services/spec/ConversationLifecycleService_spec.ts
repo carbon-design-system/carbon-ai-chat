@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { ConversationLifecycleService } from '../../../src/chat/services/ConversationLifecycleService';
+import { ConversationLifecycleService } from '../../../src/chat/services/messaging/ConversationLifecycleService';
 import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
 
 describe('ConversationLifecycleService', () => {
