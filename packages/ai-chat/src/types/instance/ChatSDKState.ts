@@ -49,7 +49,7 @@ export type PublicChatHumanAgentState = Readonly<
  * chat keeps for its views, input, and panels.
  *
  * Read it through {@link ChatSDKInstance.state}. A `createChatSDK` function that starts a
- * conversation with no interface arrives with the `@carbon/ai-chat/sdk` entry point in 2.0.0.
+ * conversation with no interface arrives with the `@carbon/ai-chat/sdk` entry point in a 2.x minor release.
  *
  * @category SDK
  */
@@ -84,7 +84,7 @@ export interface ChatSDKState {
  * {@link PublicChatState}.
  *
  * A `createChatSDK` function that starts a conversation with no interface arrives with the
- * `@carbon/ai-chat/sdk` entry point in 2.0.0.
+ * `@carbon/ai-chat/sdk` entry point in a 2.x minor release.
  *
  * @typeParam S The state snapshot this reads.
  * @category SDK
