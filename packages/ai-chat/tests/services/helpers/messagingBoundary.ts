@@ -638,17 +638,77 @@ export function snapshotDataCalls(
     }
     return false;
   };
+  // Any assignment, update, or destructuring target is a write.
+  const isWrite = (use: ts.Identifier): boolean => {
+    let node: ts.Node = use;
+    while (
+      ts.isParenthesizedExpression(node.parent) ||
+      ts.isShorthandPropertyAssignment(node.parent) ||
+      ts.isPropertyAssignment(node.parent) ||
+      ts.isArrayLiteralExpression(node.parent) ||
+      ts.isObjectLiteralExpression(node.parent) ||
+      ts.isSpreadElement(node.parent) ||
+      ts.isSpreadAssignment(node.parent)
+    ) {
+      if (ts.isPropertyAssignment(node.parent) && node.parent.name === node) {
+        return false;
+      }
+      node = node.parent;
+    }
+    const parent = node.parent;
+    return (
+      (ts.isBinaryExpression(parent) &&
+        parent.left === node &&
+        parent.operatorToken.kind >= ts.SyntaxKind.FirstAssignment &&
+        parent.operatorToken.kind <= ts.SyntaxKind.LastAssignment) ||
+      ((ts.isPrefixUnaryExpression(parent) ||
+        ts.isPostfixUnaryExpression(parent)) &&
+        [ts.SyntaxKind.PlusPlusToken, ts.SyntaxKind.MinusMinusToken].includes(
+          parent.operator
+        )) ||
+      ((ts.isForOfStatement(parent) || ts.isForInStatement(parent)) &&
+        parent.initializer === node)
+    );
+  };
   // A collection flag is a type guard only when every assignment directly follows creating that collection.
   const flagGuards = (flag: string, collection: string) => {
-    let marked = false;
-    let exact = true;
+    const symbols = new Set<ts.Symbol>();
     visit(source, (node) => {
       if (
-        !ts.isBinaryExpression(node) ||
-        node.operatorToken.kind !== ts.SyntaxKind.EqualsToken ||
-        compact(node.left) !== flag
+        ts.isIdentifier(node) &&
+        node.text === flag &&
+        !(
+          ts.isPropertyAccessExpression(node.parent) &&
+          node.parent.name === node
+        )
       ) {
-        return;
+        symbols.add(checker.getSymbolAtLocation(node)!);
+      }
+    });
+    const [symbol] = symbols;
+    const declaration = symbol?.valueDeclaration;
+    if (
+      symbols.size !== 1 ||
+      !declaration ||
+      !ts.isVariableDeclaration(declaration) ||
+      compact(declaration.initializer ?? declaration) !== 'false'
+    ) {
+      return false;
+    }
+    let marked = false;
+    let exact = true;
+    for (const use of references(symbol)) {
+      if (use === declaration.name || !isWrite(use)) {
+        continue;
+      }
+      const node = use.parent;
+      if (
+        !ts.isBinaryExpression(node) ||
+        node.left !== use ||
+        node.operatorToken.kind !== ts.SyntaxKind.EqualsToken
+      ) {
+        exact = false;
+        continue;
       }
       const statement = node.parent;
       const block = statement.parent;
@@ -665,13 +725,29 @@ export function snapshotDataCalls(
       } else {
         exact = false;
       }
-    });
+    }
     return marked && exact;
   };
+  const references = (symbol: ts.Symbol) => {
+    const found: ts.Identifier[] = [];
+    visit(source, (node) => {
+      if (
+        ts.isIdentifier(node) &&
+        checker.getSymbolAtLocation(node) === symbol
+      ) {
+        found.push(node);
+      }
+    });
+    return found;
+  };
+  // Only a const binding keeps the value its initializer proves.
   const initializer = (node: ts.Node | undefined) => {
     const symbol = node && checker.getSymbolAtLocation(node);
     const declaration = symbol?.valueDeclaration;
-    return declaration && ts.isVariableDeclaration(declaration)
+    return declaration &&
+      ts.isVariableDeclaration(declaration) &&
+      ts.isVariableDeclarationList(declaration.parent) &&
+      declaration.parent.flags & ts.NodeFlags.Const
       ? declaration
       : undefined;
   };
@@ -679,11 +755,20 @@ export function snapshotDataCalls(
   const bufferConstructor = (node: ts.Node | undefined) => {
     const declaration = initializer(node);
     const loop = declaration?.parent.parent;
+    if (!loop || !ts.isForOfStatement(loop)) {
+      return false;
+    }
+    const list = initializer(loop.expression);
+    const symbol = checker.getSymbolAtLocation(loop.expression);
     return Boolean(
-      loop &&
-      ts.isForOfStatement(loop) &&
-      compact(initializer(loop.expression)?.initializer ?? loop) ===
-        "typeofSharedArrayBuffer==='undefined'?[ArrayBuffer]:[ArrayBuffer,SharedArrayBuffer]"
+      list &&
+      symbol &&
+      compact(list.initializer ?? list) ===
+        "typeofSharedArrayBuffer==='undefined'?[ArrayBuffer]:[ArrayBuffer,SharedArrayBuffer]" &&
+      // Only the loop reads the list, so nothing can add a host constructor to it.
+      references(symbol).every(
+        (use) => use === list.name || use === loop.expression
+      )
     );
   };
   const bufferPrototype = (node: ts.Node | undefined) => {
@@ -730,6 +815,23 @@ export function snapshotDataCalls(
           compact(use.parent.arguments[1])
         )
     );
+  const collectionParameter = (node: ts.CallExpression) => {
+    let receiver: ts.Expression = node.expression;
+    while (ts.isPropertyAccessExpression(receiver)) {
+      receiver = receiver.expression;
+    }
+    const symbol = checker.getSymbolAtLocation(receiver);
+    const parameter = symbol?.valueDeclaration;
+    return Boolean(
+      collectionPrototypes &&
+      symbol &&
+      parameter &&
+      ts.isParameter(parameter) &&
+      ts.isFunctionDeclaration(parameter.parent) &&
+      parameter.parent.name?.text === 'isCollection' &&
+      references(symbol).every((use) => use === parameter.name || !isWrite(use))
+    );
+  };
   const mapGuard = flagGuards('map', 'Map');
   const setGuard = flagGuards('set', 'Set');
   visit(source, (node) => {
@@ -814,7 +916,7 @@ export function snapshotDataCalls(
       ts.isCallExpression(node) &&
       builtIn(node, 'call') &&
       ((compact(node.expression) === 'prototype.has.call' &&
-        collectionPrototypes) ||
+        collectionParameter(node)) ||
         (slotGetters.has(compact(node.expression)) &&
           bufferPrototype(descriptorTarget(node))) ||
         compact(node.expression) ===
@@ -826,7 +928,10 @@ export function snapshotDataCalls(
       ts.isCallExpression(node) &&
       builtIn(node, 'construct') &&
       compact(node.expression) === 'Reflect.construct' &&
-      bufferConstructor(node.arguments[0])
+      node.arguments.length === 2 &&
+      bufferConstructor(node.arguments[0]) &&
+      compact(node.arguments[1]) ===
+        'flexible?[byteLength,{maxByteLength}]:[byteLength]'
     ) {
       allowed.add(node);
     }
