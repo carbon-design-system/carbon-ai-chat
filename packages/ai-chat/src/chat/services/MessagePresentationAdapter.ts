@@ -8,7 +8,9 @@
  */
 
 import type {
+  LoadingDirection,
   MessagePresentationPort,
+  PortAnnouncement,
   StreamAnnouncementContent,
 } from '../../shared/services/messaging/presentationPort';
 
@@ -32,6 +34,14 @@ interface MessagePresentationCapabilities {
   closeHomeScreen(): void;
   isResponsePanelOpen(): boolean;
   closeResponsePanel(): void;
+  announce?(message: PortAnnouncement): void;
+  changeMessageLoadingCounter?(amount: number): void;
+  updateMessageLoadingCounter?(
+    direction: LoadingDirection,
+    message?: string
+  ): void;
+  changeChatLoadingCounter?(amount: number): void;
+  updateChatLoadingCounter?(direction: LoadingDirection): void;
 }
 
 class MessagePresentationAdapter implements MessagePresentationPort {
@@ -90,6 +100,26 @@ class MessagePresentationAdapter implements MessagePresentationPort {
 
   closeHomeScreen() {
     this.capabilities.closeHomeScreen();
+  }
+
+  announce(message: PortAnnouncement) {
+    this.capabilities.announce?.(message);
+  }
+
+  changeMessageLoadingCounter(amount: number) {
+    this.capabilities.changeMessageLoadingCounter?.(amount);
+  }
+
+  updateMessageLoadingCounter(direction: LoadingDirection, message?: string) {
+    this.capabilities.updateMessageLoadingCounter?.(direction, message);
+  }
+
+  changeChatLoadingCounter(amount: number) {
+    this.capabilities.changeChatLoadingCounter?.(amount);
+  }
+
+  updateChatLoadingCounter(direction: LoadingDirection) {
+    this.capabilities.updateChatLoadingCounter?.(direction);
   }
 }
 

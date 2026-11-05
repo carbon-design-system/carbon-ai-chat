@@ -36,7 +36,7 @@ import {
   shouldDisableInput,
   shouldDisableSend,
   isUploadButtonDisabled,
-} from '../../shared/services/inputCallbacks';
+} from '../services/inputCallbacks';
 import { HumanAgentCallbacks } from '../services/humanAgentCallbacks';
 import { WindowOpenState } from '../services/windowOpenState';
 import { shallowEqual } from '../../shared/store/appStore';

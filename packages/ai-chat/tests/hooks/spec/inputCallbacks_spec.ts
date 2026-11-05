@@ -13,7 +13,7 @@ import {
   isUploadButtonDisabled,
   shouldDisableInput,
   shouldDisableSend,
-} from '../../../src/shared/services/inputCallbacks';
+} from '../../../src/chat/services/inputCallbacks';
 import { createAssistantUploadCallbacks } from '../../../src/chat/utils/assistantUploadCallbacks';
 import { createPanelCallbacks } from '../../../src/chat/utils/panelCallbacks';
 import { selectInputConfig } from '../../../src/chat/utils/inputConfig';

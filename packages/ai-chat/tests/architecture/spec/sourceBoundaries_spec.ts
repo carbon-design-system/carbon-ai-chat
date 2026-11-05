@@ -156,6 +156,8 @@ const viewHandleExceptions: Array<{
 
 /** View-owned classes that stay in `chat/services/`; conversation services go in `shared/`. */
 const chatServices = [
+  'CustomPanelInstance.ts',
+  'CustomPanelManager.ts',
   'MessagePresentationAdapter.ts',
   'ViewService.ts',
   'ariaAnnouncer.ts',
@@ -164,9 +166,11 @@ const chatServices = [
   'createViewBindings.ts',
   'extensionHosts.ts',
   'humanAgentCallbacks.ts',
+  'inputCallbacks.ts',
   'inputExtensions.ts',
   'launcherState.ts',
   'lightDomHosts.ts',
+  'loadingCounters.ts',
   'windowOpenState.ts',
 ];
 

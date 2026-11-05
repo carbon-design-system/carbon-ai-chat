@@ -83,6 +83,7 @@ const UPDATE_CATASTROPHIC_ERROR_PANEL = 'UPDATE_CATASTROPHIC_ERROR_PANEL';
 const UPDATE_HAS_SENT_NON_WELCOME_MESSAGE =
   'UPDATE_HAS_SENT_NON_WELCOME_MESSAGE';
 const UPDATE_PERSISTED_STATE = 'UPDATE_PERSISTED_STATE';
+const RESET_PERSISTED_STATE = 'RESET_PERSISTED_STATE';
 const SET_HOME_SCREEN_IS_OPEN = 'SET_HOME_SCREEN_IS_OPEN';
 const END_MESSAGE_STREAMING = 'END_MESSAGE_STREAMING';
 const SET_LAUNCHER_MINIMIZED = 'SET_LAUNCHER_MINIMIZED';
@@ -268,6 +269,18 @@ const actions = {
     return {
       type: UPDATE_PERSISTED_STATE,
       chatState,
+    };
+  },
+
+  /**
+   * Returns the saved session state to its defaults. The main window and
+   * launcher keep their state when `keepOpenState` is true; otherwise the
+   * launcher shows.
+   */
+  resetPersistedState(keepOpenState: boolean) {
+    return {
+      type: RESET_PERSISTED_STATE,
+      keepOpenState,
     };
   },
 
@@ -732,6 +745,7 @@ export {
   UPDATE_CATASTROPHIC_ERROR_PANEL,
   UPDATE_HAS_SENT_NON_WELCOME_MESSAGE,
   UPDATE_PERSISTED_STATE,
+  RESET_PERSISTED_STATE,
   SET_HOME_SCREEN_IS_OPEN,
   SET_MESSAGE_RESPONSE_HISTORY_PROPERTY,
   UPDATE_MESSAGE,

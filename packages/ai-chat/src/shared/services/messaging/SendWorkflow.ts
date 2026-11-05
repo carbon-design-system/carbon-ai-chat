@@ -307,11 +307,13 @@ class SendWorkflow {
     return () =>
       this.messageLoadingManager.start(
         () => {
-          this.serviceManager.store.dispatch(actions.addIsLoadingCounter(1));
+          this.serviceManager.messageCoordinator.changeMessageLoadingCounter(1);
         },
         (didExceedMaxLoading: boolean) => {
           if (didExceedMaxLoading) {
-            this.serviceManager.store.dispatch(actions.addIsLoadingCounter(-1));
+            this.serviceManager.messageCoordinator.changeMessageLoadingCounter(
+              -1
+            );
           }
         },
         () => {

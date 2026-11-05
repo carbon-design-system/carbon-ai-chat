@@ -144,9 +144,11 @@ describe('late lookup through the attached view', () => {
     const services = manager();
     const actions = new ChatInstanceService(services);
     const reason = { viewChangeReason: ViewChangeReason.CALLED_CHANGE_VIEW };
+    // With nothing drawn, nothing is open.
     await expect(
       actions.changeView(ViewType.MAIN_WINDOW, reason)
     ).resolves.toEqual({
+      launcher: false,
       mainWindow: false,
     });
     const view = bindings();

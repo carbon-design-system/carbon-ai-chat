@@ -7,7 +7,6 @@
  *  @license
  */
 
-import actions from '../store/actions';
 import { getSpeakerName } from '../utils/messageUtils';
 import type { MessageResponse } from '../../types/messaging/Messages';
 import { ChatInstanceService } from './ChatInstanceService';
@@ -19,7 +18,6 @@ import { SlotEventService } from './messaging/presentation/SlotEventService';
 import { StreamAnnouncerService } from './messaging/presentation/StreamAnnouncerService';
 import { EventBus } from '../events/EventBus';
 import { HistoryService } from './HistoryService';
-import { createCustomPanelManager } from './CustomPanelManager';
 import { NamespaceService } from './NamespaceService';
 import { ServiceManager } from './ServiceManager';
 import { ThemeWatcherService } from './ThemeWatcherService';
@@ -76,12 +74,10 @@ function createServiceManager(appConfig: AppConfig) {
 
       const speakerName = getSpeakerName(messageWithProfile, assistantName);
 
-      store.dispatch(
-        actions.announceMessage({
-          messageID: languageKey,
-          messageValues: { sender: speakerName },
-        })
-      );
+      serviceManager.view?.current?.messaging.announce?.({
+        messageID: languageKey,
+        messageValues: { sender: speakerName },
+      });
     },
   });
   serviceManager.slotEventService = new SlotEventService(serviceManager);
@@ -112,7 +108,6 @@ function createServiceManager(appConfig: AppConfig) {
       currentOriginalTheme = newOriginalTheme;
     }
   });
-  serviceManager.customPanelManager = createCustomPanelManager(serviceManager);
   serviceManager.themeWatcherService = new ThemeWatcherService(
     serviceManager.store,
     serviceManager.container

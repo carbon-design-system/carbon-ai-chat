@@ -8,7 +8,10 @@
  */
 
 import type { Editor, JSONContent } from '@tiptap/core';
-import type { MessagePresentationPort } from './messaging/presentationPort';
+import type {
+  MessagePresentationPort,
+  PortAnnouncement,
+} from './messaging/presentationPort';
 import type { AutoScrollOptions } from '../../types/utilities/HasDoAutoScroll';
 import type { ViewState, ViewType } from '../../types/state/AppState';
 import type {
@@ -24,6 +27,10 @@ import type {
 interface HumanAgentPresentationPort {
   /** Moves focus into the chat after an agent chat starts or ends. */
   requestFocus(): void;
+  /** Reads a file upload's result to screen readers. */
+  announce?(message: PortAnnouncement): void;
+  /** Raises or lowers the message loading counter while agent availability loads. */
+  changeMessageLoadingCounter?(amount: number): void;
 }
 
 /** Reasons a view change records on its events. */
@@ -55,6 +62,10 @@ interface InstanceViewPort {
   input(): InputViewPort | null;
   /** True while host content in CUSTOM_PROMPT_LINE replaces the input. */
   hasCustomPromptLine(): boolean;
+  /** True while the main window is open. */
+  isMainWindowOpen?(): boolean;
+  /** Shows the error screen the chat can't recover from. */
+  showCatastrophicError?(): void;
 
   /** Changes the main window and launcher state, and fires the view events. */
   changeView(
