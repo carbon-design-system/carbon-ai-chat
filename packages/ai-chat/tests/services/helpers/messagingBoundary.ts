@@ -63,6 +63,103 @@ export function visit(node: ts.Node, fn: (node: ts.Node) => void) {
   ts.forEachChild(node, (child) => visit(child, fn));
 }
 
+function isGlobalObject(node: ts.Node | undefined, checker: ts.TypeChecker) {
+  while (node && ts.isParenthesizedExpression(node)) {
+    node = node.expression;
+  }
+  return (
+    node &&
+    ts.isIdentifier(node) &&
+    (node.text === 'globalThis' || node.text === 'global') &&
+    !checker.getSymbolAtLocation(node)?.declarations?.length
+  );
+}
+
+function isRequireName(node: ts.Node) {
+  if (ts.isComputedPropertyName(node)) {
+    return (
+      ts.isStringLiteralLike(node.expression) &&
+      node.expression.text === 'require'
+    );
+  }
+  return (
+    (ts.isIdentifier(node) || ts.isStringLiteralLike(node)) &&
+    node.text === 'require'
+  );
+}
+
+function isGlobalRequireAssignment(
+  node: ts.Node,
+  checker: ts.TypeChecker
+): boolean {
+  if (
+    !ts.isBinaryExpression(node) ||
+    node.operatorToken.kind !== ts.SyntaxKind.EqualsToken ||
+    !ts.isObjectLiteralExpression(node.left) ||
+    !isGlobalObject(node.right, checker)
+  ) {
+    return false;
+  }
+  return node.left.properties.some(
+    (property) =>
+      (ts.isPropertyAssignment(property) ||
+        ts.isShorthandPropertyAssignment(property)) &&
+      isRequireName(property.name)
+  );
+}
+
+function isGlobalRequire(node: ts.Node, checker: ts.TypeChecker): boolean {
+  if (ts.isPropertyAccessExpression(node) && isRequireName(node.name)) {
+    return Boolean(isGlobalObject(node.expression, checker));
+  }
+  if (
+    ts.isElementAccessExpression(node) &&
+    ts.isStringLiteralLike(node.argumentExpression) &&
+    isRequireName(node.argumentExpression)
+  ) {
+    return Boolean(isGlobalObject(node.expression, checker));
+  }
+  if (
+    ts.isBindingElement(node) &&
+    ts.isObjectBindingPattern(node.parent) &&
+    isRequireName(node.propertyName ?? node.name)
+  ) {
+    const declaration = node.parent.parent;
+    return (
+      ts.isVariableDeclaration(declaration) &&
+      Boolean(isGlobalObject(declaration.initializer, checker))
+    );
+  }
+  return false;
+}
+
+function isUnboundRequire(node: ts.Node, checker: ts.TypeChecker): boolean {
+  if (
+    isGlobalRequire(node, checker) ||
+    isGlobalRequireAssignment(node, checker)
+  ) {
+    return true;
+  }
+  if (!ts.isIdentifier(node) || node.text !== 'require') {
+    return false;
+  }
+  const parent = node.parent;
+  if (
+    (ts.isPropertyAccessExpression(parent) && parent.name === node) ||
+    (ts.isBindingElement(parent) && parent.propertyName === node) ||
+    ((ts.isLabeledStatement(parent) ||
+      ts.isBreakStatement(parent) ||
+      ts.isContinueStatement(parent)) &&
+      parent.label === node)
+  ) {
+    return false;
+  }
+  const symbol = ts.isShorthandPropertyAssignment(parent)
+    ? checker.getShorthandAssignmentValueSymbol(parent)
+    : checker.getSymbolAtLocation(node);
+  return !symbol?.declarations?.length;
+}
+
 export function runtimeGraph(
   roots: string[],
   read: (file: string) => string,
@@ -131,18 +228,13 @@ export function runtimeGraph(
         node.expression.kind === ts.SyntaxKind.ImportKeyword
       ) {
         const argument = node.arguments[0];
-        if (argument && ts.isStringLiteral(argument)) {
+        if (argument && ts.isStringLiteralLike(argument)) {
           add(argument.text);
         } else {
           issues.push(`${file}: nonliteral dynamic import`);
         }
       }
-      if (
-        ts.isCallExpression(node) &&
-        ts.isIdentifier(node.expression) &&
-        node.expression.text === 'require' &&
-        !bindings.getSymbolAtLocation(node.expression)?.declarations?.length
-      ) {
+      if (isUnboundRequire(node, bindings)) {
         issues.push(`${file}: require is not a supported boundary edge`);
       }
     });
@@ -185,7 +277,86 @@ function declarationName(node: ts.Declaration): string | undefined {
     : undefined;
 }
 
-/** Check data surfaces by resolved type, including mapped-type inputs. */
+function sensitiveOrigin(symbol: ts.Symbol | undefined) {
+  return symbol?.declarations?.some((declaration) => {
+    const file = declaration.getSourceFile().fileName.replaceAll('\\', '/');
+    const service =
+      /\/(?:ServiceManager|ChatInstance|ChatInstanceService|appStore|AppState|PublicConfig)\.[^/]+$/.test(
+        file
+      );
+    const browser =
+      /\/lib\.[^/]+\.d\.ts$/.test(file) &&
+      [
+        'Promise',
+        'AbortController',
+        'AbortSignal',
+        'Window',
+        'Document',
+        'HTMLElement',
+      ].includes(declarationName(declaration) ?? '');
+    return service || browser;
+  });
+}
+
+function resolvedSymbol(checker: ts.TypeChecker, node: ts.Node | undefined) {
+  const symbol = node && checker.getSymbolAtLocation(node);
+  return symbol && symbol.flags & ts.SymbolFlags.Alias
+    ? checker.getAliasedSymbol(symbol)
+    : symbol;
+}
+
+function typeArguments(checker: ts.TypeChecker, type: ts.Type) {
+  return [
+    ...(type.aliasTypeArguments ?? []),
+    ...(type.flags & ts.TypeFlags.Object
+      ? checker.getTypeArguments(type as ts.TypeReference)
+      : []),
+  ];
+}
+
+function dataWrapper(type: ts.Type, args: readonly ts.Type[]) {
+  return (
+    type.aliasSymbol &&
+    args.length &&
+    type.aliasSymbol.declarations?.every((declaration) =>
+      /(?:\/lib\.[^/]+\.d\.ts|\/types\/utilities\/DeepPartial(?:\.d)?\.ts)$/.test(
+        declaration.getSourceFile().fileName
+      )
+    )
+  );
+}
+
+function dataLibrary(type: ts.Type) {
+  const declarations = type.symbol?.declarations ?? [];
+  return (
+    declarations.length &&
+    declarations.every((declaration) =>
+      /\/lib\.[^/]+\.d\.ts$/.test(declaration.getSourceFile().fileName)
+    ) &&
+    [
+      'Array',
+      'ReadonlyArray',
+      'Map',
+      'ReadonlyMap',
+      'Set',
+      'ReadonlySet',
+      'Date',
+    ].includes(type.symbol.name)
+  );
+}
+
+function methodLike(
+  node: ts.Node
+): node is
+  ts.MethodDeclaration | ts.GetAccessorDeclaration | ts.SetAccessorDeclaration {
+  return (
+    ts.isMethodDeclaration(node) ||
+    ts.isGetAccessorDeclaration(node) ||
+    ts.isSetAccessorDeclaration(node)
+  );
+}
+
+/** Check data surfaces and their named origins, even when a type reduces to a primitive. */
 export function capabilityIssues(
   checker: ts.TypeChecker,
   source: ts.SourceFile,
@@ -195,218 +366,226 @@ export function capabilityIssues(
   const issues = new Set<string>();
   const checked = new Set<ts.Type>();
   const checkedOrigins = new Set<ts.Symbol>();
-  const sensitive = (symbol: ts.Symbol | undefined) =>
-    symbol?.declarations?.some((d) => {
-      const file = d.getSourceFile().fileName.replaceAll('\\', '/');
-      return (
-        /\/(?:ServiceManager|ChatInstance|ChatInstanceService|appStore|AppState|PublicConfig)\.[^/]+$/.test(
-          file
-        ) ||
-        (/\/lib\.[^/]+\.d\.ts$/.test(file) &&
-          [
-            'Promise',
-            'AbortController',
-            'AbortSignal',
-            'Window',
-            'Document',
-            'HTMLElement',
-          ].includes(declarationName(d) ?? ''))
+
+  function inspectSignature(
+    signature: ts.Signature,
+    declaration: ts.Node,
+    label: string
+  ) {
+    for (const parameter of signature.getParameters()) {
+      inspect(
+        checker.getTypeOfSymbolAtLocation(parameter, declaration),
+        label + ' argument'
       );
-    });
-  const inspect = (type: ts.Type, label: string, methodContainer = false) => {
+    }
+    inspect(signature.getReturnType(), label + ' result');
+  }
+
+  function inspectProperties(
+    type: ts.Type,
+    label: string,
+    methodContainer: boolean
+  ) {
+    for (const index of checker.getIndexInfosOfType(type)) {
+      inspect(index.type, label + ' indexed value');
+    }
+    for (const property of checker.getPropertiesOfType(type)) {
+      const declaration =
+        property.valueDeclaration ?? property.declarations?.[0];
+      if (!declaration) {
+        continue;
+      }
+      const propertyType = checker.getTypeOfSymbolAtLocation(
+        property,
+        declaration
+      );
+      const method =
+        ts.isMethodSignature(declaration) ||
+        ts.isMethodDeclaration(declaration);
+      if (methodContainer && method) {
+        propertyType
+          .getCallSignatures()
+          .forEach((signature) =>
+            inspectSignature(
+              signature,
+              declaration,
+              label + '.' + property.name
+            )
+          );
+      } else {
+        inspect(propertyType, label + '.' + property.name);
+      }
+    }
+  }
+
+  function inspectReference(node: ts.Node, label?: string) {
+    if (!ts.isTypeReferenceNode(node) && !ts.isImportTypeNode(node)) {
+      return;
+    }
+    const referenceLabel = label ?? node.getText();
+    const name = ts.isTypeReferenceNode(node) ? node.typeName : node.qualifier;
+    inspectOrigin(resolvedSymbol(checker, name), referenceLabel);
+    const type = checker.getTypeAtLocation(node);
+    if (sensitiveOrigin(type.symbol) || sensitiveOrigin(type.aliasSymbol)) {
+      issues.add(referenceLabel + ': effect type origin');
+    }
+  }
+
+  function inspectOriginDeclaration(
+    declaration: ts.Declaration,
+    label: string
+  ) {
+    if (ts.isTypeAliasDeclaration(declaration)) {
+      visit(declaration.type, (node) => inspectReference(node, label));
+    } else if (
+      (ts.isInterfaceDeclaration(declaration) || ts.isClassLike(declaration)) &&
+      !/\/lib\.[^/]+\.d\.ts$/.test(declaration.getSourceFile().fileName)
+    ) {
+      inspectHeritage(declaration, label);
+      declaration.members.forEach((member) =>
+        visit(member, (node) => inspectReference(node, label))
+      );
+    }
+  }
+
+  function inspectOrigin(symbol: ts.Symbol | undefined, label: string) {
+    if (!symbol || dataLeaves.has(symbol) || checkedOrigins.has(symbol)) {
+      return;
+    }
+    checkedOrigins.add(symbol);
+    if (sensitiveOrigin(symbol)) {
+      issues.add(label + ': effect type origin');
+      return;
+    }
+    for (const declaration of symbol.declarations ?? []) {
+      inspectOriginDeclaration(declaration, label);
+    }
+  }
+
+  function inspect(type: ts.Type, label: string, methodContainer = false) {
     if (checked.has(type)) {
       return;
     }
     checked.add(type);
-    for (const symbol of [type.symbol, type.aliasSymbol]) {
-      if (!symbol || checkedOrigins.has(symbol) || dataLeaves.has(symbol)) {
-        continue;
-      }
-      checkedOrigins.add(symbol);
-      for (const d of symbol.declarations ?? []) {
-        if (ts.isTypeAliasDeclaration(d)) {
-          visit(d.type, (node) => {
-            if (ts.isTypeReferenceNode(node) || ts.isImportTypeNode(node)) {
-              inspect(checker.getTypeAtLocation(node), label);
-            }
-          });
-        }
-      }
-    }
-    if (sensitive(type.symbol) || sensitive(type.aliasSymbol)) {
-      issues.add(`${label}: effect capability`);
+    inspectOrigin(type.symbol, label);
+    inspectOrigin(type.aliasSymbol, label);
+    if (sensitiveOrigin(type.symbol) || sensitiveOrigin(type.aliasSymbol)) {
+      issues.add(label + ': effect capability');
       return;
     }
     if (dataLeaves.has(type.symbol) || dataLeaves.has(type.aliasSymbol)) {
       return;
     }
-    const args = [
-      ...(type.aliasTypeArguments ?? []),
-      ...(type.flags & ts.TypeFlags.Object
-        ? checker.getTypeArguments(type as ts.TypeReference)
-        : []),
-    ];
-    for (const arg of args) {
-      inspect(arg, label);
-    }
-    const wrapper = type.aliasSymbol;
-    if (
-      wrapper &&
-      args.length &&
-      wrapper.declarations?.every((d) =>
-        /(?:\/lib\.[^/]+\.d\.ts|\/types\/utilities\/DeepPartial(?:\.d)?\.ts)$/.test(
-          d.getSourceFile().fileName
-        )
-      )
-    ) {
+    const args = typeArguments(checker, type);
+    args.forEach((argument) => inspect(argument, label));
+    if (dataWrapper(type, args)) {
       return;
     }
     if (type.isUnionOrIntersection()) {
-      type.types.forEach((t) => inspect(t, label));
+      type.types.forEach((member) => inspect(member, label));
       return;
     }
     if (type.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) {
-      issues.add(`${label}: unscoped opaque type`);
+      issues.add(label + ': unscoped opaque type');
       return;
     }
-    const declarations = type.symbol?.declarations ?? [];
-    const library =
-      declarations.length &&
-      declarations.every((d) =>
-        /\/lib\.[^/]+\.d\.ts$/.test(d.getSourceFile().fileName)
-      );
-    if (
-      library &&
-      [
-        'Array',
-        'ReadonlyArray',
-        'Map',
-        'ReadonlyMap',
-        'Set',
-        'ReadonlySet',
-        'Date',
-      ].includes(type.symbol.name)
-    ) {
+    if (dataLibrary(type)) {
       return;
     }
     if (
       type.getCallSignatures().length ||
       type.getConstructSignatures().length
     ) {
-      issues.add(`${label}: callback capability`);
+      issues.add(label + ': callback capability');
       return;
     }
-    if (!(type.flags & ts.TypeFlags.Object)) {
-      return;
+    if (type.flags & ts.TypeFlags.Object) {
+      inspectProperties(type, label, methodContainer);
     }
-    for (const index of checker.getIndexInfosOfType(type)) {
-      inspect(index.type, label + ' indexed value');
-    }
-    for (const property of checker.getPropertiesOfType(type)) {
-      const d = property.valueDeclaration ?? property.declarations?.[0];
-      if (!d) {
-        continue;
-      }
-      const propertyType = checker.getTypeOfSymbolAtLocation(property, d);
-      if (
-        methodContainer &&
-        (ts.isMethodSignature(d) || ts.isMethodDeclaration(d))
-      ) {
-        for (const sig of propertyType.getCallSignatures()) {
-          for (const param of sig.getParameters()) {
-            inspect(
-              checker.getTypeOfSymbolAtLocation(param, d),
-              `${label}.${property.name} argument`
-            );
-          }
-          inspect(sig.getReturnType(), `${label}.${property.name} result`);
-        }
-      } else {
-        inspect(propertyType, `${label}.${property.name}`);
+  }
+
+  function inspectCallable(
+    node: ts.SignatureDeclaration,
+    label: string,
+    methods = false
+  ) {
+    node.parameters.forEach((parameter) =>
+      inspect(
+        checker.getTypeAtLocation(parameter),
+        parameter.name.getText(source),
+        methods
+      )
+    );
+    if (!ts.isConstructorDeclaration(node)) {
+      const signature = checker.getSignatureFromDeclaration(node);
+      if (signature) {
+        inspect(signature.getReturnType(), label + ' result');
       }
     }
-  };
-  // Explicit references catch a Pick that erases the sensitive part of its source.
-  visit(source, (node) => {
-    if (ts.isTypeReferenceNode(node) || ts.isImportTypeNode(node)) {
-      const t = checker.getTypeAtLocation(node);
-      if (sensitive(t.symbol) || sensitive(t.aliasSymbol)) {
-        issues.add(`${node.getText(source)}: effect type origin`);
+  }
+
+  function inspectProperty(member: ts.PropertyDeclaration) {
+    const symbol =
+      member.initializer && ts.isIdentifier(member.initializer)
+        ? resolvedSymbol(checker, member.initializer)
+        : undefined;
+    const type = checker.getTypeAtLocation(member);
+    const label = member.name.getText(source);
+    if (symbol?.declarations?.every(ts.isFunctionDeclaration)) {
+      type
+        .getCallSignatures()
+        .forEach((signature) => inspectSignature(signature, member, label));
+    } else {
+      inspect(type, label, allowMethods);
+    }
+  }
+
+  function inspectHeritage(
+    node: ts.ClassLikeDeclaration | ts.InterfaceDeclaration,
+    label: string
+  ) {
+    for (const clause of node.heritageClauses ?? []) {
+      for (const base of clause.types) {
+        inspectOrigin(resolvedSymbol(checker, base.expression), label);
+        inspect(checker.getTypeAtLocation(base), label);
       }
     }
+  }
+
+  function inspectClass(node: ts.ClassLikeDeclaration) {
+    inspectHeritage(node, node.name?.text ?? 'class');
+    for (const member of node.members) {
+      if (ts.isConstructorDeclaration(member) || methodLike(member)) {
+        inspectCallable(
+          member,
+          member.name?.getText(source) ?? 'constructor',
+          allowMethods
+        );
+      } else if (ts.isPropertyDeclaration(member)) {
+        inspectProperty(member);
+      }
+    }
+  }
+
+  function inspectDeclaration(node: ts.Node) {
+    inspectReference(node);
     if (allowMethods && ts.isInterfaceDeclaration(node)) {
       inspect(checker.getTypeAtLocation(node), node.name.text, true);
     }
-    if (ts.isClassDeclaration(node)) {
-      for (const member of node.members) {
-        if (
-          ts.isConstructorDeclaration(member) ||
-          ts.isMethodDeclaration(member)
-        ) {
-          member.parameters.forEach((p) =>
-            inspect(
-              checker.getTypeAtLocation(p),
-              p.name.getText(source),
-              allowMethods
-            )
-          );
-          if (ts.isMethodDeclaration(member)) {
-            const sig = checker.getSignatureFromDeclaration(member);
-            if (sig) {
-              inspect(
-                sig.getReturnType(),
-                member.name.getText(source) + ' result'
-              );
-            }
-          }
-        } else if (ts.isPropertyDeclaration(member)) {
-          let symbol =
-            member.initializer && ts.isIdentifier(member.initializer)
-              ? checker.getSymbolAtLocation(member.initializer)
-              : undefined;
-          if (symbol && symbol.flags & ts.SymbolFlags.Alias) {
-            symbol = checker.getAliasedSymbol(symbol);
-          }
-          if (symbol?.declarations?.every(ts.isFunctionDeclaration)) {
-            const type = checker.getTypeAtLocation(member);
-            for (const sig of type.getCallSignatures()) {
-              for (const param of sig.getParameters()) {
-                inspect(
-                  checker.getTypeOfSymbolAtLocation(param, member),
-                  member.name.getText(source) + ' argument'
-                );
-              }
-              inspect(
-                sig.getReturnType(),
-                member.name.getText(source) + ' result'
-              );
-            }
-          } else {
-            inspect(
-              checker.getTypeAtLocation(member),
-              member.name.getText(source),
-              allowMethods
-            );
-          }
-        }
-      }
+    if (ts.isClassLike(node)) {
+      inspectClass(node);
     }
     if (
       ts.isFunctionDeclaration(node) ||
       ts.isArrowFunction(node) ||
       ts.isFunctionExpression(node)
     ) {
-      node.parameters.forEach((p) =>
-        inspect(checker.getTypeAtLocation(p), p.name.getText(source))
-      );
-      const sig = checker.getSignatureFromDeclaration(node);
-      if (sig) {
-        inspect(
-          sig.getReturnType(),
-          (('name' in node && node.name?.text) || 'function') + ' result'
-        );
-      }
+      inspectCallable(node, ('name' in node && node.name?.text) || 'function');
+    } else if (methodLike(node) && !ts.isClassLike(node.parent)) {
+      inspectCallable(node, node.name.getText(source));
     }
-  });
+  }
+
+  visit(source, inspectDeclaration);
   return [...issues];
 }
