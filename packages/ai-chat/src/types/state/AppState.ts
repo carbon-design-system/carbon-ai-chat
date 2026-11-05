@@ -19,19 +19,8 @@ export type {
   HumanAgentDisplayState,
 } from './HumanAgentState';
 export type { ThemeState } from './ThemeState';
-export type {
-  ViewPartitionState,
-  ViewPersistedState,
-} from './ViewPartitionState';
 export type { PersistedState } from './PersistedState'; // public — @category Instance
-export type { AnnounceMessage } from './AnnounceMessage';
 export { ChatWidthBreakpoint } from './ChatWidthBreakpoint'; // enum (runtime value)
-export type { IFramePanelState } from './panels/IFramePanelState';
-export type { ViewSourcePanelState } from './panels/ViewSourcePanelState';
-export type { CustomPanelState } from './panels/CustomPanelState';
-export type { WorkspacePanelState } from './panels/WorkspacePanelState';
-export type { HistoryPanelState } from './panels/HistoryPanelState';
-export type { MessagePanelState } from './panels/MessagePanelState';
 export type { CatastrophicErrorPanelState } from './panels/CatastrophicErrorPanelState'; // public — @category Instance
 
 // Pass-throughs that real code imports via state/AppState — kept verbatim:
