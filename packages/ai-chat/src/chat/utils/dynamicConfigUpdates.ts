@@ -22,6 +22,8 @@ import {
 import { isBrowser } from '../../shared/utils/browserUtils';
 import { viewActions } from '../../view/state';
 import { chatStore } from '../services/attachChatView';
+import type { AppStore } from '../../shared/store/appStore';
+import type { AppState } from '../../types/state/AppState';
 
 /**
  * Applies a runtime `PublicConfig` change to an already-booted `ServiceManager`
@@ -226,23 +228,7 @@ export async function applyConfigChangesDynamically(
   // acceptance is no longer meaningful, so clear the recorded acceptance for this
   // hostname to force them to accept the new disclaimer again.
   if (!isEqual(prevConfig?.disclaimer, newConfig.disclaimer)) {
-    const hostname = isBrowser() ? window.location.hostname : '';
-    const currentDisclaimersAccepted =
-      store.getState().view.persistedToBrowserStorage.disclaimersAccepted;
-    const updatedDisclaimersAccepted = { ...currentDisclaimersAccepted };
-    // Mark this hostname as not-accepted rather than deleting the key, as
-    // before. Acceptance is read as a truthy check, so `false` re-shows it.
-    updatedDisclaimersAccepted[hostname] = false;
-
-    // An unchanged value saves nothing, as the old merge didn't.
-    if (currentDisclaimersAccepted[hostname] !== false) {
-      store.dispatch(
-        viewActions.setLauncherProperty(
-          'disclaimersAccepted',
-          updatedDisclaimersAccepted
-        )
-      );
-    }
+    clearDisclaimerAcceptance(store);
   }
 
   // CONFIG-SEEDED PERSISTED RUNTIME STATE: `showUnreadIndicator` is not pure
@@ -267,6 +253,26 @@ export async function applyConfigChangesDynamically(
         )
       );
     }
+  }
+}
+
+/**
+ * Clears this hostname's disclaimer acceptance. It marks the hostname as not
+ * accepted rather than deleting the key, as before. Acceptance is read as a
+ * truthy check, so `false` shows the disclaimer again. An unchanged value saves
+ * nothing, as the old merge didn't.
+ */
+function clearDisclaimerAcceptance(store: AppStore<AppState>) {
+  const hostname = isBrowser() ? window.location.hostname : '';
+  const accepted =
+    store.getState().view.persistedToBrowserStorage.disclaimersAccepted;
+  if (accepted[hostname] !== false) {
+    store.dispatch(
+      viewActions.setLauncherProperty('disclaimersAccepted', {
+        ...accepted,
+        [hostname]: false,
+      })
+    );
   }
 }
 
