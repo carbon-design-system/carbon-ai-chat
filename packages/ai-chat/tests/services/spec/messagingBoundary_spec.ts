@@ -163,7 +163,7 @@ it('keeps all processor and state runtime dependencies pure', () => {
 it('checks native snapshot preparation while allowing only deferred host callable bodies', () => {
   const source = get(messaging + 'nativeMessageEvents.ts');
   const allowed = snapshotDataCalls(checker, source);
-  expect(allowed.size).toBe(9); // Three deferred calls, one bind, two intrinsic reads and three data operations.
+  expect(allowed.size).toBe(16); // Three deferred calls, one bind, three intrinsic reads, five brand or slot checks, one buffer construct and three data operations.
   expect(pureEffectIssues(checker, source, allowed)).toEqual([]);
 });
 
