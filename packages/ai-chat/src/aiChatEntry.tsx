@@ -156,6 +156,11 @@ export {
 export { ChatSDKInstanceMessaging } from './types/config/ChatSDKInstanceMessaging';
 
 export { PublicConfig } from './types/config/PublicConfig';
+export { ChatSDKConfig } from './types/config/ChatSDKConfig';
+export { ChatSDKConfigMessaging } from './types/config/ChatSDKConfigMessaging';
+export { ChatSDKErrorData } from './types/config/ChatSDKErrorData';
+export { ChatSDKPersistedStateConfig } from './types/config/ChatSDKPersistedStateConfig';
+export { ChatSDKServiceDeskConfig } from './types/config/ChatSDKServiceDeskConfig';
 export { CarbonTheme } from './types/config/CarbonTheme';
 export { DisclaimerPublicConfig } from './types/config/DisclaimerConfig';
 export {

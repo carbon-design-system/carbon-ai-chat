@@ -15,6 +15,7 @@ import {
   MessageResponse,
 } from '../messaging/Messages';
 import type { ChatInstance } from '../instance/ChatInstance';
+import type { ChatSDKServiceDeskConfig } from './ChatSDKServiceDeskConfig';
 import type { FileUploadCapabilities } from '../instance/FileUploadCapabilities';
 
 // Canonical declarations live in @carbon/ai-chat-components; local
@@ -50,33 +51,13 @@ export type FileUpload = _FileUpload;
  *
  * @category Service desk
  */
-export interface ServiceDeskPublicConfig {
-  /**
-   * The timeout value in seconds to use when determining agent availability. When a connect_to_agent response is
-   * received, the system will ask the service desk if any agents are available. If no response is received within
-   * the timeout window, the system will return "false" to indicate no agents are available.
-   */
-  availabilityTimeoutSeconds?: number;
-
+export interface ServiceDeskPublicConfig extends ChatSDKServiceDeskConfig {
   /**
    * Indicates if Carbon AI Chat should auto-connect to an agent whenever it receives a connect_to_agent response and
    * agents are available. This essentially mimics the user clicking the "Request agent" button on the card. The
    * card is still displayed to the user.
    */
   skipConnectHumanAgentCard?: boolean;
-
-  /**
-   * The timeout value is seconds to use when waiting for an agent to join the chat after an agent has been
-   * requested. If no agent joins after this time, the chat will be ended and an error message will be displayed to
-   * the user. By default, there is no timeout.
-   */
-  agentJoinTimeoutSeconds?: number;
-
-  /**
-   * Indicates if Carbon AI Chat should automatically attempt to reconnect the user to a human agent when it is loaded. This
-   * only works if the service desk integration being used supports reconnecting. This value defaults to true.
-   */
-  allowReconnect?: boolean;
 }
 
 /**
@@ -105,9 +86,11 @@ export enum HumanAgentsOnlineStatus {
 /**
  * The parameters that are passed to a service desk factory.
  *
+ * @typeParam I The instance the factory receives. Defaults to {@link ChatInstance}; a factory on
+ * {@link ChatSDKConfig} receives {@link ChatSDKInstance}.
  * @category Service desk
  */
-export interface ServiceDeskFactoryParameters {
+export interface ServiceDeskFactoryParameters<I = ChatInstance> {
   /**
    * The callback used by the service desk to communicate with the widget.
    */
@@ -116,7 +99,7 @@ export interface ServiceDeskFactoryParameters {
   /**
    * The instance of Carbon AI Chat.
    */
-  instance: ChatInstance;
+  instance: I;
 
   /**
    * Any state that was stored for the service desk. This value may be undefined if no state has been stored.

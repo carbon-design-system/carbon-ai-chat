@@ -437,15 +437,67 @@ function readSyntheticProperties(ts, node) {
   return synthetic;
 }
 
+function configHeritage(ts, declaration, baseNames) {
+  const clauses = declaration.heritageClauses ?? [];
+  if (!clauses.length) {
+    return undefined;
+  }
+  const types = clauses.flatMap((clause) => clause.types);
+  if (clauses.length !== 1 || types.length !== 1) {
+    fail('PublicConfig may extend only one config base.');
+  }
+  const [type] = types;
+  let base = type.expression;
+  const omitted = new Set();
+  if (ts.isIdentifier(base) && base.text === 'Omit') {
+    const [target, keys] = type.typeArguments ?? [];
+    if (!target || !keys || !ts.isTypeReferenceNode(target)) {
+      fail('PublicConfig must omit keys from a named config base.');
+    }
+    for (const key of ts.isUnionTypeNode(keys) ? keys.types : [keys]) {
+      if (!ts.isLiteralTypeNode(key) || !ts.isStringLiteral(key.literal)) {
+        fail('PublicConfig must omit string-literal keys.');
+      }
+      omitted.add(key.literal.text);
+    }
+    base = target.typeName;
+  }
+  if (!ts.isIdentifier(base) || !baseNames.includes(base.text)) {
+    fail('PublicConfig inheritance needs explicit analyzer support.');
+  }
+  return { name: base.text, omitted };
+}
+
+function inheritedMembers(base, heritage, own) {
+  if (!base) {
+    fail(`include the config base "${heritage.name}" in analyzer globs.`);
+  }
+  for (const name of heritage.omitted) {
+    if (!base.has(name)) {
+      fail(`PublicConfig omits "${name}", which ${heritage.name} lacks.`);
+    }
+  }
+  const members = new Map(
+    [...base].filter(([name]) => !heritage.omitted.has(name))
+  );
+  for (const [name, member] of own) {
+    members.set(name, member);
+  }
+  return members;
+}
+
 export function createFlattenedConfigPlugin({
   tablePath,
   publicConfigPath,
+  configBases = [],
   basePath,
   hosts,
   typeModule,
 }) {
   let fields;
   let configMembers;
+  let configHeritageInfo;
+  let configBaseMembers;
   let synthetic;
   let baseMembers;
   let reactiveMembers;
@@ -456,6 +508,8 @@ export function createFlattenedConfigPlugin({
     initialize() {
       fields = undefined;
       configMembers = undefined;
+      configHeritageInfo = undefined;
+      configBaseMembers = new Map();
       synthetic = undefined;
       baseMembers = undefined;
       reactiveMembers = new Map();
@@ -498,10 +552,24 @@ export function createFlattenedConfigPlugin({
         ts.isInterfaceDeclaration(node) &&
         node.name.text === 'PublicConfig'
       ) {
-        if (node.heritageClauses?.length) {
-          fail('PublicConfig inheritance needs explicit analyzer support.');
-        }
+        configHeritageInfo = configHeritage(
+          ts,
+          node,
+          configBases.map(({ name }) => name)
+        );
         configMembers = readMembers(ts, node);
+      }
+      for (const base of configBases) {
+        if (
+          path === resolve(base.source) &&
+          ts.isInterfaceDeclaration(node) &&
+          node.name.text === base.name
+        ) {
+          if (node.heritageClauses?.length) {
+            fail(`config base "${base.name}" must not extend another type.`);
+          }
+          configBaseMembers.set(base.name, readMembers(ts, node));
+        }
       }
       if (path !== resolve(basePath)) {
         return;
@@ -528,6 +596,13 @@ export function createFlattenedConfigPlugin({
       if (!fields || !configMembers || !synthetic || !baseMembers) {
         fail(
           'include the field table, PublicConfig, and FlattenedConfigElement sources in analyzer globs.'
+        );
+      }
+      if (configHeritageInfo) {
+        configMembers = inheritedMembers(
+          configBaseMembers.get(configHeritageInfo.name),
+          configHeritageInfo,
+          configMembers
         );
       }
       requireMatchingNames(fields, configMembers);

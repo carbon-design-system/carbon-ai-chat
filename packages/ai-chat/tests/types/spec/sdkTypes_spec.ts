@@ -59,3 +59,28 @@ it.each(fixtures.map((file) => [path.basename(file), file]))(
     expect(ts.formatDiagnostics(diagnostics, formatHost)).toBe('');
   }
 );
+
+it('keeps PublicConfig unassignable to ChatSDKConfig', () => {
+  const checker = program.getTypeChecker();
+  const source = program.getSourceFile(
+    path.join(fixtureRoot, 'sdkConfig.fixture.ts')
+  )!;
+  const probe = (name: string) => {
+    const symbol = checker
+      .getExportsOfModule(checker.getSymbolAtLocation(source)!)
+      .find((candidate) => candidate.name === name)!;
+    return checker.getDeclaredTypeOfSymbol(symbol);
+  };
+  const publicConfig = probe('PublicConfigProbe');
+  // Its callbacks may use view members the SDK cannot supply.
+  expect(
+    checker.isTypeAssignableTo(publicConfig, probe('ChatSDKConfigProbe'))
+  ).toBe(false);
+  // Only the callback instance type blocks it: bound to ChatInstance, the full config fits.
+  expect(
+    checker.isTypeAssignableTo(
+      publicConfig,
+      probe('ChatSDKConfigForChatInstanceProbe')
+    )
+  ).toBe(true);
+});
