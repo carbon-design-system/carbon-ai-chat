@@ -528,4 +528,46 @@ describe('ReceiveService', () => {
       manager.messageCoordinator.incomingWriteLifetime.state.pendingWrites.size
     ).toBe(0);
   });
+  it('keeps a rejected receive reveal leased until removal invalidates it', async () => {
+    const { service, manager, fire, localItems } = createHarness();
+    const pending =
+      manager.messageCoordinator.incomingWriteLifetime.state.pendingWrites;
+    const failure = new Error('receive rejected');
+    fire.mockImplementation(async (event) => {
+      if (event.type === BusEventType.RECEIVE) {
+        throw failure;
+      }
+    });
+    await expect(
+      service.receive(
+        response([
+          { response_type: MessageResponseTypes.PAUSE, time: 100 },
+          textItem('must stay removed'),
+        ])
+      )
+    ).rejects.toBe(failure);
+    expect(pending.get('response-1').count).toBe(1);
+    expect(
+      manager.messageUpsertCoordinator.getState('response-1')
+    ).toBeUndefined();
+    await service.removeMessages(['response-1']);
+    expect(pending.has('response-1')).toBe(false);
+    await jest.advanceTimersByTimeAsync(100);
+    expect(localItems()).toEqual([]);
+    expect(
+      manager.store.getState().allMessagesByID['response-1']
+    ).toBeUndefined();
+  });
+
+  it('returns the core receive and removal promises without an adoption wrapper', () => {
+    const pending = resolvablePromise<void>();
+    const receive = jest.fn(() => pending);
+    const removeMessages = jest.fn(() => pending);
+    const service = new ReceiveService({
+      messageCoordinator: { receive, removeMessages },
+    } as unknown as ServiceManager);
+    expect(service.receive(response())).toBe(pending);
+    expect(service.removeMessages(['response-1'])).toBe(pending);
+    pending.doResolve();
+  });
 });

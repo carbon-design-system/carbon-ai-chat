@@ -30,6 +30,7 @@ import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
 import { OnErrorType } from '../../../../types/config/ErrorConfig';
 import isEqual from 'lodash-es/isEqual.js';
 import cloneDeep from 'lodash-es/cloneDeep.js';
+import type { UpsertStamp } from '../incomingWriteTypes';
 import { IncomingMessageService } from './IncomingMessageService';
 import actions from '../../../store/actions';
 import {
@@ -51,7 +52,6 @@ import {
   isRequest,
   streamItemID,
 } from '../../../utils/messageUtils';
-import { deepFreeze } from '../../../utils/lang/objectUtils';
 import { consoleError } from '../../../utils/miscUtils';
 import { hasDisplayableContentForItem } from '../../../utils/streamingUtils';
 import { ServiceManager } from '../../ServiceManager';
@@ -111,14 +111,6 @@ interface SkipsUnchanged {
  * - Track which message IDs are currently mid-stream, so the stop streaming button
  *   survives one concurrent stream finishing while another is still running.
  */
-interface UpsertStamp {
-  generation: number;
-  restartCount: number;
-  isCurrent: () => boolean;
-  eventMessage?: MessageResponse;
-  eventHoldFromIndex?: number;
-  originalLocalIDs?: string[];
-}
 
 class MessageUpsertCoordinator {
   private readonly serviceManager: ServiceManager;
@@ -554,16 +546,11 @@ class MessageUpsertCoordinator {
   }
 
   private isStale(stamp: UpsertStamp, requestID?: string): boolean {
-    return (
-      !stamp.isCurrent() ||
-      stamp.generation !== this.lifetime.state.generation ||
-      stamp.restartCount !== this.serviceManager.restartCount ||
-      this.serviceManager.messageCoordinator.isRequestFromPreviousConversation(
-        requestID
-      )
+    return this.serviceManager.messageCoordinator.isIncomingWriteStale(
+      stamp,
+      requestID
     );
   }
-
   /**
    * Stores a streaming write from `addMessageChunk`. Until `final_response` the chunk path
    * keeps its own events, announcements, stop button, and send-queue hold, and records
@@ -606,77 +593,17 @@ class MessageUpsertCoordinator {
    * this id, and the write ends once `receive` has fired. A `receive` handler's error
    * rejects the write.
    */
-  private async runReceivedWrite(
+  private runReceivedWrite(
     messageID: string,
     updater: UpsertMessageUpdater,
     options: MessageWriteOptions,
     stamp: UpsertStamp
   ): Promise<void> {
-    const initialRestartCount = options.restartCount ?? stamp.restartCount;
-    const message = await updater(
-      this.serviceManager.store.getState().allMessagesByID[
-        messageID
-      ] as MessageResponse
-    );
-    const isCurrent = () =>
-      !this.isStale(stamp, message.request_id) &&
-      initialRestartCount === this.serviceManager.restartCount;
-    if (!isCurrent()) {
-      return;
-    }
-
-    // Reveals outlive receive(), so they retain the same removal guard separately.
-    const reveal = this.trackWrite(messageID);
-    this.storeReceivedMessage(message, options, isCurrent, initialRestartCount)
-      .catch((error) => {
-        consoleError('Error processing the message response', error);
-      })
-      .finally(reveal.release);
-
-    if (!isCurrent()) {
-      return;
-    }
-    if (!options.isLatestWelcomeNode) {
-      this.serviceManager.store.dispatch(
-        actions.updateHasSentNonWelcomeMessage(true)
-      );
-    }
-    if (!isCurrent()) {
-      return;
-    }
-    deepFreeze(message);
-    const storedMessage =
-      this.serviceManager.store.getState().allMessagesByID[messageID];
-    if (storedMessage) {
-      deepFreeze(storedMessage);
-    }
-    await this.serviceManager.fire(
-      {
-        type: BusEventType.RECEIVE,
-        data: message,
-      },
-      isCurrent
-    );
-    if (isCurrent()) {
-      this.markComplete(messageID);
-    }
-  }
-
-  /**
-   * Stores a message from `addMessage` or `final_response`, then shows its items. Only the
-   * part before the first item's wait runs before `receive` fires.
-   */
-  private storeReceivedMessage(
-    message: MessageResponse,
-    options: MessageWriteOptions,
-    isCurrent: () => boolean,
-    initialRestartCount: number
-  ): Promise<void> {
-    return this.serviceManager.messageCoordinator.storeReceivedMessage(
-      message,
+    return this.serviceManager.messageCoordinator.runReceivedWrite(
+      messageID,
+      updater,
       options,
-      isCurrent,
-      initialRestartCount
+      stamp
     );
   }
 
