@@ -186,16 +186,13 @@ describe('hydration and timeout isolation', () => {
       );
       await waitFor(() => expect(customSendMessage).toHaveBeenCalledTimes(1));
       const next = instance.send('next');
-      const queue = (
-        serviceManager.messageService as unknown as {
-          queue: {
-            waiting: unknown[];
-            current: { sendMessagePromise: { isRejected: boolean } };
-          };
-        }
-      ).queue;
-      await waitFor(() => expect(queue.waiting).toHaveLength(1));
-      const timedOutRequest = queue.current;
+      await waitFor(() =>
+        expect(serviceManager.messageCoordinator.getWaitingRequestCount()).toBe(
+          1
+        )
+      );
+      const timedOutRequest =
+        serviceManager.messageCoordinator.getCurrentRequest();
       await act(async () => {
         timeout();
         expect(timedOutRequest.sendMessagePromise.isRejected).toBe(true);
