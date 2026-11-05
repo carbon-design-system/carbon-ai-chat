@@ -517,6 +517,29 @@ describe('Dynamic Config Updates', () => {
     });
 
     describe('disclaimer invalidation', () => {
+      it('saves nothing when the acceptance is already cleared', async () => {
+        const hostname = window.location.hostname;
+        const state = createInitialAppState({
+          disclaimer: { isOn: true, disclaimerHTML: '<p>Original</p>' },
+        });
+        state.view.persistedToBrowserStorage = {
+          ...state.view.persistedToBrowserStorage,
+          disclaimersAccepted: { [hostname]: false },
+        };
+        const sm = createMockServiceManager(state);
+        const before = chatStore(sm).getState().view.persistedToBrowserStorage;
+
+        await applyConfigChangesDynamically(
+          state.config.public,
+          { disclaimer: { isOn: true, disclaimerHTML: '<p>Updated</p>' } },
+          sm
+        );
+
+        expect(chatStore(sm).getState().view.persistedToBrowserStorage).toBe(
+          before
+        );
+      });
+
       it('clears the recorded acceptance for the current hostname when the disclaimer content changes', async () => {
         const hostname = window.location.hostname;
 

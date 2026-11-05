@@ -79,7 +79,7 @@ class HistoryWorkflow {
 
     this.serviceManager.store.dispatch(
       retainHistoryOwnership(
-        actions.hydrateMessageHistory(newAppStateMessages),
+        actions.hydrateMessageHistory(newAppStateMessages, true),
         ownership
       )
     );

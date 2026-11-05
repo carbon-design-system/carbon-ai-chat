@@ -28,7 +28,14 @@ import {
 } from '../../../src/types/messaging/Messages';
 import { outputItemToLocalItem } from '../../../src/shared/schema/outputItemToLocalItem';
 import { viewActions } from '../../../src/view/state';
-import { makeConfigStore } from '../../test_helpers';
+import { UserSessionStorageService } from '../../../src/shared/services/UserSessionStorageService';
+import {
+  createBaseConfig,
+  makeConfigStore,
+  renderChatAndGetInstanceWithStore,
+  setupAfterEach,
+  setupBeforeEach,
+} from '../../test_helpers';
 
 // O1: each slice is in exactly one partition. Saved state is the one slice
 // split by field (#1831 O4): each partition holds a half, with no field in both.
@@ -76,6 +83,12 @@ function view(store: AppStore<AppState>) {
 }
 
 describe('the view partition', () => {
+  beforeEach(setupBeforeEach);
+  afterEach(async () => {
+    jest.restoreAllMocks();
+    await setupAfterEach();
+  });
+
   it('declares every slice in one partition only', () => {
     expect([
       noOverlap,
@@ -138,6 +151,43 @@ describe('the view partition', () => {
 
     store.dispatch(setIsConnecting(true, null));
     expect(view(store).numUnreadMessages).toBe(0);
+  });
+
+  it('clears the loading counters when history loads, and keeps them when history is inserted', () => {
+    const store = makeConfigStore({});
+    const raise = () => {
+      store.dispatch(viewActions.setViewValue('isMessageLoadingCounter', 2));
+      store.dispatch(viewActions.setViewValue('isMessageLoadingText', 'Wait'));
+      store.dispatch(viewActions.setViewValue('isHydratingCounter', 1));
+    };
+    const { allMessageItemsByID, allMessagesByID, assistantMessageState } =
+      store.getState();
+    const history = {
+      allMessageItemsByID,
+      allMessagesByID,
+      assistantMessageState,
+    };
+
+    raise();
+    store.dispatch(actions.hydrateMessageHistory(history, true));
+    expect(view(store)).toMatchObject({
+      isMessageLoadingCounter: 2,
+      isMessageLoadingText: 'Wait',
+      isHydratingCounter: 1,
+    });
+
+    store.dispatch(actions.hydrateMessageHistory(history));
+    expect(view(store)).toMatchObject({
+      isMessageLoadingCounter: 0,
+      isMessageLoadingText: undefined,
+      isHydratingCounter: 0,
+    });
+  });
+
+  it('loads the saved session once per chat', async () => {
+    const load = jest.spyOn(UserSessionStorageService.prototype, 'loadSession');
+    await renderChatAndGetInstanceWithStore(createBaseConfig());
+    expect(load).toHaveBeenCalledTimes(1);
   });
 
   it('keeps the references of everything a view-only change leaves alone', () => {

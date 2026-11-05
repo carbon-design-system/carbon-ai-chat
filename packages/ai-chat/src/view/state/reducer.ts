@@ -634,6 +634,18 @@ function reactToConversation(
   switch (action.type) {
     case conversationActions.RESTART_CONVERSATION:
       return resetPanels(state, after);
+    case conversationActions.HYDRATE_MESSAGE_HISTORY:
+      // Loaded history replaces the message state the counters used to live
+      // in, so it clears them. History inserted in front of the transcript
+      // keeps them, as before.
+      return action.insertsHistory
+        ? state
+        : {
+            ...state,
+            isMessageLoadingCounter: 0,
+            isMessageLoadingText: undefined,
+            isHydratingCounter: 0,
+          };
     case conversationActions.ADD_LOCAL_MESSAGE_ITEM:
       return action.message.history?.silent
         ? state
