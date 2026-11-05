@@ -49,7 +49,9 @@ The `body` slot takes any block element, including `cds-aichat-markdown`. Use bl
 
 <Canvas of={Stories.MarkdownBody} />
 
-## Preview status
+## Selection
+
+The shell, not the card, owns selection. `cds-aichat-conversational-search-shell` sets `selected` on the card whose `index` matches its `selectedCitationIndex`. It also turns the card's events into `cds-aichat-citations-select`. `selected` adds no styles of its own. See the shell's [example with citation cards](/docs/preview-conversational-search-shell--overview#with-citation-cards).
 
 This element is in preview. A Carbon core card is planned to replace it.
 
