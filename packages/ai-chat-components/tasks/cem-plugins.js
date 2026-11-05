@@ -466,6 +466,25 @@ function addDefinition(module, tagName, declaration) {
   }
 }
 
+function staticIsValue(ts, staticIs, className) {
+  if (!staticIs) {
+    return undefined;
+  }
+  if (staticIs.initializer) {
+    return staticIs.initializer;
+  }
+  const statements = staticIs.body?.statements ?? [];
+  if (
+    ts.isGetAccessorDeclaration(staticIs) &&
+    statements.length === 1 &&
+    ts.isReturnStatement(statements[0]) &&
+    statements[0].expression
+  ) {
+    return statements[0].expression;
+  }
+  throw new Error(`Unsupported static is declaration for ${className}.`);
+}
+
 export function carbonElementTagPlugin({ prefix }) {
   const classes = [];
   const registrations = [];
@@ -552,18 +571,7 @@ export function carbonElementTagPlugin({ prefix }) {
           info.constants,
           prefix
         );
-      const getterReturn =
-        staticIs &&
-        ts.isGetAccessorDeclaration(staticIs) &&
-        staticIs.body?.statements.length === 1 &&
-        ts.isReturnStatement(staticIs.body.statements[0]) &&
-        staticIs.body.statements[0].expression;
-      const staticValue = staticIs?.initializer || getterReturn;
-      if (staticIs && !staticValue) {
-        throw new Error(
-          `Unsupported static is declaration for ${node.name.text}.`
-        );
-      }
+      const staticValue = staticIsValue(ts, staticIs, node.name.text);
       const staticTag =
         staticValue && stringValue(ts, staticValue, info.constants, prefix);
       if (decoratorTag && staticTag && decoratorTag !== staticTag) {
