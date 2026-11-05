@@ -225,7 +225,7 @@ it('keeps core runtime imports and capabilities independent of the view', () => 
               node.expression.kind === ts.SyntaxKind.ImportKeyword
             ? node.arguments[0]
             : undefined;
-      if (!specifier || !ts.isStringLiteral(specifier)) {
+      if (!specifier || !ts.isStringLiteralLike(specifier)) {
         return;
       }
       const target = resolveSource(file, specifier.text, root);
@@ -883,6 +883,15 @@ it.each([
   "import type { ServiceManager as Renamed } from './ServiceManager'; type Selected = Pick<Renamed, 'store'>; export function prepare(value: Selected) { return 1; }",
   "export function prepare(value: import('./ServiceManager').ServiceManager['store']) { return 1; }",
   "import type { Wrapped } from './alias'; export function prepare(value: Wrapped) { return 1; }",
+  "import type { Primitive } from './primitiveAlias'; export function prepare(value: Primitive) { return value; }",
+  'export class Processor { get later() { return () => 1; } }',
+  'export class Processor { set effect(value: () => void) { value(); } }',
+  'export const processor = { prepare(effect: () => void) { effect(); } };',
+  'export class Processor extends Map<string, () => void> {}',
+  'export const Processor = class extends Map<string, () => void> {};',
+  "import type { PropertyView } from './interfaceAlias'; export function prepare(value: PropertyView) { return value; }",
+  "import type { InheritedView } from './interfaceAlias'; export function prepare(value: InheritedView) { return value; }",
+  "import type { Holder } from './classAlias'; export function prepare(value: Holder) { return value; }",
   "import type { AppStore } from './appStore'; type Value = AppStore['label']; export function prepare(value: Value) { return value; }",
   'export function prepare() { return { nested: { later: () => 1 } }; }',
   'export const prepare = (effect: () => void) => effect();',
@@ -896,6 +905,12 @@ it.each([
       'export interface ServiceManager { store: { dispatch(action: unknown): void }; namespace: string }',
     'alias.ts':
       "import type { ServiceManager } from './ServiceManager'; export type Wrapped = Pick<ServiceManager, 'namespace'>;",
+    'primitiveAlias.ts':
+      "import type { ServiceManager } from './ServiceManager'; export type Primitive = ServiceManager['namespace'];",
+    'interfaceAlias.ts':
+      "import type { ServiceManager } from './ServiceManager'; export interface PropertyView { namespace: ServiceManager['namespace'] }; export interface InheritedView extends Pick<ServiceManager, 'namespace'> {}",
+    'classAlias.ts':
+      "import type { ServiceManager } from './ServiceManager'; export class Holder { value: ServiceManager['namespace'] = 'namespace'; }",
   });
   expect(
     capabilityIssues(f.checker, f.source(), new Set()).length
@@ -1044,4 +1059,26 @@ it('allows deferred Proxy call traps but still checks preparation-time getter tr
   expect(pureEffectIssues(f.checker, f.source(), allowed)).toEqual([
     expect.stringContaining('reflective host invocation'),
   ]);
+});
+
+it('accepts data getters, setters, object methods and inherited data containers', () => {
+  const f = fixture({
+    'dataTypes.ts':
+      "interface Fields { label: string }; export interface DataView extends Pick<Fields, 'label'> { value: Fields['label'] }; export class DataHolder { value: Fields['label'] = 'data'; }",
+    'entry.ts': `
+      import type { DataView, DataHolder } from './dataTypes';
+      export const DataValues = class extends Map<string, string> {};
+      export class DataState extends Map<string, string> {
+        get label() { return 'ready'; }
+        fail() { return { value: 'failed' }; }
+        set label(value: string) { this.set('label', value); }
+      }
+      type Result = ReturnType<DataState['fail']>;
+      export const processor = {
+        prepare(value: string, date: Date) { return { value, time: date.getTime() }; },
+        result(value: Result, view: DataView, holder: DataHolder) { return { value, view, holder }; },
+      };
+    `,
+  });
+  expect(capabilityIssues(f.checker, f.source(), new Set())).toEqual([]);
 });
