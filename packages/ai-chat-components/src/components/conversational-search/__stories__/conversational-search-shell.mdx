@@ -19,7 +19,15 @@ The shell owns spacing between the answer, toggle, and citations region. The reg
 
 `citationsOpen` controls the region's visibility. The shell hides closed citations while keeping your slotted content mounted. Your host can choose when to mount that content, load sources, or show a loading or error state.
 
-The shell does not select citations or scroll them into view. Your host owns those actions, Markdown streaming, and answer highlights.
+The shell doesn't scroll citations into view or change your Markdown. Your host owns scrolling, streaming, and answer highlights.
+
+## Selection
+
+Set `selectedCitationIndex` to let the shell apply a selection. It marks the slotted `cds-aichat-citation-card` whose `index` matches as `selected`. It also shows that card's slide in the first slotted `cds-aichat-carousel`. Cards and carousels inside slotted wrappers count, including ones mounted later.
+
+When a card gets focus or is clicked, or the carousel changes slides, the shell fires `cds-aichat-citations-select` with `event.detail.index`. Set `selectedCitationIndex` to that index to accept it. The shell fires nothing for the index that's already selected. It stops the card's own `cds-aichat-citation-select` event, so listen to the shell instead.
+
+Leave `selectedCitationIndex` unset and the shell leaves slotted cards and carousels alone. It still fires `cds-aichat-citations-select` for their events.
 
 ## Examples
 
@@ -37,9 +45,15 @@ Hide the toggle when the answer has no citations.
 
 ### Highlighted answer
 
-Supply Markdown with `==highlight==` spans to mark text tied to a selected citation. Your host owns the selection and updates the slotted Markdown.
+Supply Markdown with `==highlight==` spans to mark text tied to a selected citation. Your host computes them from `selectedCitationIndex` and updates the slotted Markdown.
 
 <Canvas of={Stories.Highlighted} />
+
+### With citation cards
+
+Focus a card or change slides, and the host accepts the new index. Then it highlights that source's text in the answer. Close the citations and the highlight goes away, while the selection stays.
+
+<Canvas of={Stories.WithCitationCards} />
 
 ### Streaming answer
 
