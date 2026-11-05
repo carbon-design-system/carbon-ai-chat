@@ -29,23 +29,29 @@ async function customSendMessage(
   instance: ChatInstance
 ) {
   if (request.input.text !== 'start-response') {
-    await instance.messaging.addMessage({
-      request_id: request.id,
-      output: {
-        generic: [
-          {
-            response_type: MessageResponseTypes.TEXT,
-            text: 'Choose Start response to watch messages and status change.',
-          },
-          {
-            response_type: MessageResponseTypes.BUTTON,
-            button_type: ButtonItemType.POST_BACK,
-            label: 'Start response',
-            value: { input: { text: 'start-response' } },
-          },
-        ],
-      },
-    });
+    const welcomeID = `watch-messages-welcome-${request.id}`;
+    await instance.messaging.upsertMessage(
+      welcomeID,
+      MessageState.COMPLETE,
+      () => ({
+        id: welcomeID,
+        request_id: request.id,
+        output: {
+          generic: [
+            {
+              response_type: MessageResponseTypes.TEXT,
+              text: 'Choose Start response to watch messages and status change.',
+            },
+            {
+              response_type: MessageResponseTypes.BUTTON,
+              button_type: ButtonItemType.POST_BACK,
+              label: 'Start response',
+              value: { input: { text: 'start-response' } },
+            },
+          ],
+        },
+      })
+    );
     return;
   }
 
