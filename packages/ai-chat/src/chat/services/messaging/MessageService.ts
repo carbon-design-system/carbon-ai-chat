@@ -23,7 +23,8 @@
  *
  * Responsibilities:
  * - MessageCoordinator: queue membership and pending request lookup.
- * - MessageService: queue execution, PRE_SEND/SEND events, loading/timeout setup, cancellation entrypoints.
+ * - MessageService: queue execution, PRE_SEND/SEND events, cancellation entrypoints.
+ * - SendWorkflow: transport, success/error settlement, and loading state through the coordinator.
  * - OutboundMessageCoordinator: send lifecycle (store updates, calling customSendMessage, resolving/rejecting/canceling).
  * - InboundStreamingCoordinator: streaming id tracking (response_id/item_id), finalization, cancellation cleanup.
  */
@@ -31,7 +32,6 @@ import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 import { OutgoingMessageService } from './outbound/OutgoingMessageService';
 import actions from '../../store/actions';
 import { deepFreeze } from '../../utils/lang/objectUtils';
-import { MessageLoadingManager } from '../../utils/messageServiceUtils';
 import {
   getLastAssistantResponseWithContext,
   THREAD_ID_MAIN,
@@ -46,7 +46,6 @@ import {
 } from '../../utils/streamingUtils';
 import { ServiceManager } from '../ServiceManager';
 import { InboundStreamingCoordinator } from './InboundStreamingCoordinator';
-import { OutboundMessageCoordinator } from './outbound/OutboundMessageCoordinator';
 import {
   MessageInputType,
   MessageRequest,
@@ -60,13 +59,7 @@ import {
 } from '../../../types/events/eventBusTypes';
 import { PublicConfig } from '../../../types/config/PublicConfig';
 import { OnErrorType } from '../../../types/config/ErrorConfig';
-import { LanguagePack } from '../../../types/config/LanguagePack';
-import { MessageErrorState } from '../../../types/messaging/LocalMessageItem';
 import { CancellationReason } from '../../../types/config/MessagingConfig';
-
-// The maximum amount of time we allow sending to take place. If we pass this time limit, we throw an error, and
-// move on to the next item in the queue.
-const MS_MAX_ATTEMPT = 150 * 1000;
 
 // The maximum amount of time we allow to pass before the loading indicator becomes visible.
 const MS_MAX_SILENT_LOADING = 4000;
@@ -169,25 +162,9 @@ class MessageService {
   private serviceManager: ServiceManager;
 
   /**
-   * The amount of time in milliseconds to wait before timing out a message.
-   */
-  public timeoutMS: number;
-
-  /**
    * Handles inbound streaming tracking and lifecycle.
    */
   public inboundStreaming: InboundStreamingCoordinator;
-
-  /**
-   * Handles outbound send lifecycle concerns (errors, cancellations).
-   */
-  private outboundCoordinator: OutboundMessageCoordinator;
-
-  /**
-   * Tracks the original message.id when processSuccess completes, so we can look up the controller
-   * when chunks arrive with a different response_id.
-   */
-  private lastProcessedMessageID: string | null = null;
 
   /**
    * Maps message IDs to their AbortControllers. This persists even after messages are cleared from the queue,
@@ -198,10 +175,17 @@ class MessageService {
   // A first reply can arrive after cancellation, so retain IDs for the instance's lifetime.
   private requestGenerations = new Map<string, number>();
 
-  /**
-   * The instance of the messageLoadingManager to manage timeouts and showing of loading states.
-   */
-  public messageLoadingManager: MessageLoadingManager;
+  get messageLoadingManager() {
+    return this.serviceManager.messageCoordinator.messageLoadingManager;
+  }
+
+  get timeoutMS() {
+    return this.serviceManager.messageCoordinator.timeoutMS;
+  }
+
+  set timeoutMS(value: number) {
+    this.serviceManager.messageCoordinator.timeoutMS = value;
+  }
 
   get currentRequestID() {
     const current = this.serviceManager.messageCoordinator.getCurrentRequest();
@@ -227,128 +211,13 @@ class MessageService {
 
   constructor(serviceManager: ServiceManager, publicConfig: PublicConfig) {
     this.serviceManager = serviceManager;
-    this.messageLoadingManager = new MessageLoadingManager();
     this.inboundStreaming = new InboundStreamingCoordinator(
       this.messageAbortControllers,
       () => this.moveToNextQueueItem()
     );
-    this.outboundCoordinator = new OutboundMessageCoordinator(
-      this.serviceManager,
-      this.messageLoadingManager,
-      (pendingRequest, errorState) =>
-        this.setMessageErrorState(pendingRequest, errorState),
-      () => this.serviceManager.messageCoordinator.getCurrentRequest(),
-      () => this.moveToNextQueueItem(),
-      (pendingRequest, received) =>
-        this.processSuccess(pendingRequest, received),
-      () => this.serviceManager.store.getState().config.public.messaging || {},
-      (pendingRequest) => this.finishFailedStreamingResponse(pendingRequest),
-      (requestID, restartGeneration) =>
-        this.registerRequestGeneration(requestID, restartGeneration),
-      () => this.hideStopStreamingButtonIfNoUpsertStreaming()
-    );
 
-    const timeoutOverride = publicConfig.messaging?.messageTimeoutSecs;
-    this.timeoutMS =
-      timeoutOverride || timeoutOverride === 0
-        ? timeoutOverride * 1000
-        : MS_MAX_ATTEMPT;
-  }
-
-  /**
-   * Process a response from the assistant send path, return the messageResponse.
-   *
-   * @param current The current item in the send queue.
-   * @param received A {@link MessageResponse}.
-   */
-  private async processSuccess(
-    current: PendingMessageRequest,
-    received?: MessageResponse
-  ) {
-    const { isProcessed } = current;
-
-    // If this message was already invalidated (cancel/timeout/error already resolved it), bail out.
-    if (isProcessed) {
-      return;
-    }
-    // Clear any error state that may be associated with the message.
-    this.setMessageErrorState(current, MessageErrorState.NONE);
-
-    // After updating the error state get the message from the pendingRequest since it has potentially been updated by
-    // setting the error state.
-    const { message } = current;
-
-    // Do all the normal things for our general message requests, however for event messages we skip this.
-    if (received) {
-      if (message.input.message_type !== MessageInputType.EVENT) {
-        received.history = received.history || {};
-        received.history.timestamp = received.history.timestamp || Date.now();
-
-        current.trackData.lastRequestTime =
-          Date.now() - current.timeLastRequest;
-        current.trackData.totalRequestTime =
-          Date.now() - current.timeFirstRequest;
-
-        // Send receive event.
-        await this.serviceManager.actions.receive(
-          received,
-          Boolean(current.message.history.is_welcome_request),
-          message
-        );
-      }
-      this.messageLoadingManager.end();
-    }
-
-    if (current.isProcessed) {
-      // If the response has already been processed (perhaps the message was canceled) then stop processing.
-      return;
-    }
-
-    // If the received message is part one of a two-step response then we need to respond a little differently. We
-    // need to disable user input, then send another request to the assistant to get the second part. When that
-    // message is completed, we can "resume" the original message. We will not resolve the promise for the original
-    // message until the entire process is completed.
-    let rejected;
-
-    // Resolve the promise that lets the original caller who sent the message know that the message has been sent
-    // successfully.
-    if (!rejected) {
-      current.sendMessagePromise.doResolve();
-      current.isProcessed = true;
-    }
-
-    // Track the message ID so we can link it to the response_id when chunks arrive
-    this.lastProcessedMessageID = current.message.id;
-
-    // For streaming messages, don't clear the queue yet - wait for FinalResponseChunk to arrive
-    // For non-streaming messages (addMessage), clear immediately
-    if (!current.isStreaming) {
-      // Hide stop streaming button if it was shown for showStopButtonImmediately, unless
-      // some other message is still streaming.
-      this.hideStopStreamingButtonIfIdle();
-      this.moveToNextQueueItem();
-    }
-    this.serviceManager.messageCoordinator.requestFinished(
-      current.message.id,
-      current.generation
-    );
-  }
-
-  /**
-   * Sends the message via customSendMessage.
-   *
-   * @param current The current item in the send queue.
-   */
-  private async sendToAssistant(
-    current: PendingMessageRequest,
-    startLoading: (() => void) | null
-  ) {
-    const state = this.serviceManager.store.getState();
-    const { customSendMessage } = state.config.public.messaging;
-    await this.outboundCoordinator.send(
-      current,
-      customSendMessage,
-      startLoading
+    this.serviceManager.messageCoordinator.configureMessageTimeout(
+      publicConfig
     );
   }
 
@@ -370,7 +239,7 @@ class MessageService {
     current.timeFirstRequest = Date.now();
 
     if (message.input.message_type === MessageInputType.EVENT) {
-      this.sendToAssistant(current, null);
+      this.serviceManager.messageCoordinator.sendToAssistant(current, null);
       return;
     }
 
@@ -393,7 +262,10 @@ class MessageService {
 
     await this.fireSendEvent(current);
 
-    this.sendToAssistant(current, startLoading);
+    this.serviceManager.messageCoordinator.sendToAssistant(
+      current,
+      startLoading
+    );
   }
 
   private prepareCurrentRequest(current: PendingMessageRequest) {
@@ -553,61 +425,9 @@ class MessageService {
   /**
    * Move to next step in queue.
    */
-  private moveToNextQueueItem() {
+  public moveToNextQueueItem() {
     this.clearCurrentQueueItem();
     this.runQueueIfReady();
-  }
-
-  /**
-   * Changes the error state for the message with the given id and makes an a11y announcement if appropriate.
-   */
-  private setMessageErrorState(
-    pendingRequest: PendingMessageRequest,
-    errorState: MessageErrorState
-  ) {
-    const { message } = pendingRequest;
-    // Find the current state for the message. Note that we want to look up the current state from the store which
-    // might be different from the message object we originally sent.
-    const { allMessagesByID } = this.serviceManager.store.getState();
-
-    // Update the error state if it's changed (but don't try to change an undefined state to NONE).
-    const messageToUpdate = allMessagesByID[message.id];
-    if (messageToUpdate) {
-      const currentState = messageToUpdate.history?.error_state;
-      const errorSame =
-        currentState === errorState ||
-        (errorState === MessageErrorState.NONE && !currentState);
-      if (!errorSame) {
-        // Figure out what announcement we need to make. Note that we don't announce changes in to the WAITING state.
-        let announceMessageID: keyof LanguagePack;
-
-        switch (errorState) {
-          case MessageErrorState.FAILED: {
-            announceMessageID = 'errors_ariaMessageFailed';
-            break;
-          }
-        }
-
-        // Announce the change if necessary.
-        if (announceMessageID) {
-          this.serviceManager.store.dispatch(
-            actions.announceMessage({ messageID: announceMessageID })
-          );
-        }
-
-        this.serviceManager.store.dispatch(
-          actions.setMessageErrorState(message.id, errorState)
-        );
-
-        // After updating store get the updated message back from store and use it within the messageService. If we
-        // don't get the updated message back within the message service we could try to save an updated version of this
-        // message in store in the future but the copy within this service will be out of date.
-        const { allMessagesByID } = this.serviceManager.store.getState();
-        pendingRequest.message = allMessagesByID[
-          message.id
-        ] as MessageRequest<any>;
-      }
-    }
   }
 
   /**
@@ -703,7 +523,7 @@ class MessageService {
       this.serviceManager.messageCoordinator.getCurrentRequest(),
       messageID,
       itemID,
-      this.lastProcessedMessageID
+      this.serviceManager.messageCoordinator.lastProcessedMessageID
     );
   }
 
@@ -741,7 +561,7 @@ class MessageService {
     this.hideStopStreamingButtonIfIdle();
   }
 
-  private finishFailedStreamingResponse(pendingRequest: PendingMessageRequest) {
+  public finishFailedStreamingResponse(pendingRequest: PendingMessageRequest) {
     this.serviceManager.messageUpsertCoordinator.endStreamingForRequest(
       pendingRequest.message.id,
       pendingRequest.generation
@@ -963,7 +783,7 @@ class MessageService {
             pendingRequest.generation
           );
         }
-        this.outboundCoordinator.rejectFinalErrorOnMessage(
+        this.serviceManager.messageCoordinator.rejectFinalErrorOnMessage(
           pendingRequest,
           reason
         );
@@ -1004,7 +824,9 @@ class MessageService {
         }
       } else {
         // Only create "Request canceled" system message if we haven't started streaming yet
-        this.outboundCoordinator.resolveCancelledMessage(pendingRequest);
+        this.serviceManager.messageCoordinator.resolveCancelledMessage(
+          pendingRequest
+        );
       }
     }
   }
