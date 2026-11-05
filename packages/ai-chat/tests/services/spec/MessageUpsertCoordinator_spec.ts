@@ -580,9 +580,12 @@ describe('MessageUpsertCoordinator', () => {
       const stored = state.allMessagesByID.m1 as MessageResponse;
       expect((stored.output.generic[0] as any).text).toBe('from pre:receive');
       expect(receivePayload).not.toBe(stored);
-      expect(Object.isFrozen(receivePayload)).toBe(false);
-      (receivePayload.output.generic[0] as any).text =
-        'retained receive mutation';
+      expect(Object.isFrozen(receivePayload)).toBe(true);
+      expect(receivePayload).not.toBe(preReceivePayload);
+      expect(() => {
+        (receivePayload.output.generic[0] as any).text =
+          'retained receive mutation';
+      }).toThrow(TypeError);
       expect((stored.output.generic[0] as any).text).toBe('from pre:receive');
 
       (preReceivePayload.output.generic[0] as any).text = 'retained mutation';
