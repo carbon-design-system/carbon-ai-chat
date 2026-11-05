@@ -21,6 +21,7 @@ import {
   type ChatSDKEventType,
   type ChatSDKHandlers,
   type ChatSDKInstance,
+  type ChatSDKInstanceMessaging,
   type ChatSDKState,
   type ChatSDKStateAccess,
   type EventBusHandler,
@@ -105,6 +106,20 @@ sdk.off({
 });
 export const sdkChained: ChatSDKInstance = sdk.on(sdkHandlers).off(sdkHandlers);
 
+// sdkTypes_spec.ts checks these probes: a handler typed for the prebuilt chat (an EventBusHandler with
+// its ChatInstance default, or an arrow annotated with ChatInstance) is not an SDK handler under
+// strictFunctionTypes. Assignability is checked there, not here, because the package tsconfig
+// compiles this fixture with that flag off.
+export type PrebuiltReceiveHandlerProbe = TypeAndHandler<
+  ChatInstance,
+  BusEventType.RECEIVE
+>;
+export type SDKReceiveHandlerProbe = TypeAndHandler<
+  ChatSDKInstance,
+  BusEventType.RECEIVE
+>;
+export type ChatSDKHandlersProbe = ChatSDKHandlers;
+
 // Prebuilt-chat handlers still accept every event with the full chat instance.
 export const prebuiltChained: ChatInstance = chat
   .on({
@@ -130,6 +145,16 @@ export const typedHandler: TypeAndHandler = {
   handler: (_event, instance) => instance.requestFocus(),
 };
 chat.off(typedHandler);
+
+// SDK messaging has exactly these methods.
+export const sdkMessagingMembers: Record<keyof ChatSDKInstanceMessaging, true> =
+  {
+    upsertMessage: true,
+    removeMessages: true,
+    clearConversation: true,
+    insertHistory: true,
+    restartConversation: true,
+  };
 
 // SDK messaging writes through upsertMessage only.
 sdk.messaging.upsertMessage('message-1', MessageState.COMPLETE, () => message);
