@@ -30,6 +30,7 @@ import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
 import { OnErrorType } from '../../../../types/config/ErrorConfig';
 import isEqual from 'lodash-es/isEqual.js';
 import cloneDeep from 'lodash-es/cloneDeep.js';
+import { IncomingMessageService } from './IncomingMessageService';
 import actions from '../../../store/actions';
 import {
   captureMessageEvent,
@@ -128,6 +129,8 @@ interface UpsertStamp {
 
 class MessageUpsertCoordinator {
   private readonly serviceManager: ServiceManager;
+
+  private readonly incomingMessageService = new IncomingMessageService();
 
   private readonly chainByID = new Map<string, Promise<void>>();
 
@@ -478,10 +481,11 @@ class MessageUpsertCoordinator {
       return;
     }
 
-    const { willFireReceive, settlesMessage } = transitionOf(
-      this.stateByID.get(messageID),
-      nextState
-    );
+    const { willFireReceive, settlesMessage } =
+      this.incomingMessageService.transitionOf(
+        this.stateByID.get(messageID),
+        nextState
+      );
 
     if (willFireReceive) {
       await this.firePreReceive(messageID, result, isStale);
@@ -519,7 +523,7 @@ class MessageUpsertCoordinator {
             (id) =>
               previousState.allMessageItemsByID[id]?.fullMessageID === messageID
           );
-    const ownedResult = cloneDeep(result);
+    const ownedResult = this.incomingMessageService.copyNativeMessage(result);
     retainNativeMessageOrigin(ownedResult);
     this.serviceManager.store.dispatch(
       actions.upsertMessage(
@@ -753,7 +757,10 @@ class MessageUpsertCoordinator {
       if (!isCurrent()) {
         return;
       }
-      const owned = cloneDeep({ message, received });
+      const owned = this.incomingMessageService.prepareReceivedMessage(
+        message,
+        received
+      );
       if (Object.isFrozen(message)) {
         deepFreeze(owned.message);
       }
@@ -957,7 +964,7 @@ class MessageUpsertCoordinator {
       const previousHoldFromIndex = pauseIndex;
       pauseIndex = this.findPauseToRun(messageID, result);
       const refsBefore = this.snapshotLocalItemRefs(messageID);
-      const ownedResult = cloneDeep(result);
+      const ownedResult = this.incomingMessageService.copyNativeMessage(result);
       retainNativeMessageOrigin(ownedResult);
       store.dispatch(
         actions.upsertMessage(ownedResult, isStreaming, pauseIndex, {
@@ -1191,20 +1198,7 @@ class MessageUpsertCoordinator {
       : undefined;
     let result = await updater(previousMessage);
 
-    if (result === null || result === undefined) {
-      throw new TypeError(
-        'upsertMessage: updater must return a MessageResponse, received null/undefined.'
-      );
-    }
-    if (typeof result !== 'object') {
-      throw new TypeError(
-        'upsertMessage: updater must return a MessageResponse object.'
-      );
-    }
-
-    if (Object.isFrozen(result)) {
-      result = cloneDeep(result);
-    }
+    result = this.incomingMessageService.prepareUpsertMessage(result);
     if (Object.isFrozen(result.history)) {
       result.history = { ...result.history };
     }
@@ -1616,24 +1610,6 @@ class MessageUpsertCoordinator {
       );
     }
   }
-}
-
-/**
- * What moving from `previousState` to `nextState` means for a message: whether it fires
- * `receive` (its first COMPLETE), and whether it settles every item's slots (that, or its
- * first ERROR).
- */
-function transitionOf(
-  previousState: MessageState | undefined,
-  nextState: MessageState
-) {
-  const willFireReceive =
-    nextState === MessageState.COMPLETE &&
-    previousState !== MessageState.COMPLETE;
-  const settlesMessage =
-    willFireReceive ||
-    (nextState === MessageState.ERROR && previousState !== MessageState.ERROR);
-  return { willFireReceive, settlesMessage };
 }
 
 export { MessageUpsertCoordinator };
