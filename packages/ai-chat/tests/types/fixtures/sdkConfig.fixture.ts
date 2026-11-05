@@ -125,7 +125,11 @@ export const prebuilt: PublicConfig = {
     parameters.instance.scrollToMessage('message-1');
     return serviceDesk;
   },
-  onError: (data: OnErrorData) => data.catastrophicErrorType,
+  onError: (data) => {
+    // Contextually typed, so this fails if PublicConfig stops restating onError with OnErrorData.
+    const catastrophic: boolean | undefined = data.catastrophicErrorType;
+    return catastrophic;
+  },
 };
 export const prebuiltMessaging: ChatSDKConfigMessaging<ChatInstance> =
   {} as PublicConfigMessaging;
