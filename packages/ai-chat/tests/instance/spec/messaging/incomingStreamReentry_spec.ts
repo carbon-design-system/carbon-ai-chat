@@ -8,6 +8,7 @@
  */
 
 import { act } from '@testing-library/react';
+import { UpsertWorkflow } from '../../../../src/chat/services/messaging/UpsertWorkflow';
 import {
   CancellationReason,
   MessageState,
@@ -78,10 +79,7 @@ it('walks live stream IDs but aborts captured controllers after a store callback
       once: true,
     });
   }
-  const endings = jest.spyOn(
-    serviceManager.messageUpsertCoordinator,
-    'endStreamingMessage'
-  );
+  const endings = jest.spyOn(UpsertWorkflow.prototype, 'endStreamingMessage');
   let removal: Promise<void>;
   const unsubscribe = store.subscribe(() => {
     const item = store.getState().allMessageItemsByID['a-text'];
@@ -108,9 +106,9 @@ it('walks live stream IDs but aborts captured controllers after a store callback
       expect(signal.aborted).toBe(true);
       expect(signal.reason).toBe(CancellationReason.STOP_STREAMING);
     }
-    expect(serviceManager.messageUpsertCoordinator.hasStreamingMessages()).toBe(
-      false
-    );
+    expect(
+      serviceManager.messageCoordinator.hasIncomingStreamingMessages()
+    ).toBe(false);
     expect(instance.state.get().status).toBe('ready');
   } finally {
     unsubscribe();
