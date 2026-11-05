@@ -19,10 +19,10 @@ import { BusEventSend } from '../events/eventBusTypes';
  * `addMessage`, `addMessageChunk`, and `upsertMessage` may all target the same message
  * id without producing duplicate `pre:receive` / `receive` events — Carbon AI Chat tracks
  * the recorded state per id and fires those events only on the first transition to
- * {@link COMPLETE}.
+ * {@link COMPLETE}. Mixing the flows this way isn't recommended or fully tested, though, so
+ * pick one flow for your messages.
  *
  * @category Messaging
- * @experimental
  */
 export enum MessageState {
   /**
@@ -59,7 +59,6 @@ export enum MessageState {
  *   first upsert of a new id.
  * @returns The {@link MessageResponse} to store, optionally as a Promise.
  * @category Messaging
- * @experimental
  */
 export type UpsertMessageUpdater = (
   previous: MessageResponse | undefined
@@ -97,12 +96,22 @@ export interface ChatInstanceMessaging {
    * Instructs the widget to process the given message as an incoming message received from the assistant. This will
    * fire a "pre:receive" event immediately and a "receive" event after the event has been processed by the widget.
    *
+   * This is the legacy way to add a message. It's fully supported and not deprecated, and there are no plans to
+   * remove it. For new work, especially more complex UI that updates a message after it renders, use
+   * {@link ChatInstanceMessaging.upsertMessage}. Nothing stops you from mixing the two flows, but it isn't
+   * recommended or fully tested.
+   *
    * @param message A {@link MessageResponse} object.
    */
   addMessage: (message: MessageResponse) => Promise<void>;
 
   /**
    * Adds a streaming message chunk to the chat widget.
+   *
+   * This is the legacy way to stream a message. It's fully supported and not deprecated, and there are no plans to
+   * remove it. For new work, especially more complex UI, use {@link ChatInstanceMessaging.upsertMessage}. You build
+   * up the message in your app and apply each update with one call, instead of matching the {@link StreamChunk}
+   * shapes. Nothing stops you from mixing the two flows, but it isn't recommended or fully tested.
    *
    * A chunk stream whose `customSendMessage` throws, or that is canceled before a
    * `final_response` chunk arrives, will have its `streamingState.isDone` settled to
@@ -117,6 +126,12 @@ export interface ChatInstanceMessaging {
    * Inserts or updates a single message identified by `messageID`. The `updater` receives
    * the {@link MessageResponse} currently stored under `messageID` (or `undefined` when no
    * message with that ID exists) and returns the message that should replace it.
+   *
+   * This is the recommended way to add messages for new work, especially more complex UI. One
+   * method covers inserting, streaming, correcting, and regenerating a message.
+   * {@link ChatInstanceMessaging.addMessage} and {@link ChatInstanceMessaging.addMessageChunk}
+   * remain fully supported as the legacy flow, and there are no plans to remove them. Nothing
+   * stops you from mixing the two flows, but it isn't recommended or fully tested.
    *
    * Calls targeting the same `messageID` are serialized — each call awaits the previous
    * call for that ID before running. Calls targeting different `messageID`s run
@@ -146,7 +161,6 @@ export interface ChatInstanceMessaging {
    *   sending a terminal COMPLETE or ERROR write will leave `streamingState.isDone` as
    *   `false` indefinitely. The host is responsible for sending a terminal write, or for
    *   calling `cancelCurrentMessageRequest` (or restarting the conversation) to settle it.
-   * @experimental Upsert semantics and the updater signature may evolve based on consumer feedback.
    */
   upsertMessage: (
     messageID: string,
