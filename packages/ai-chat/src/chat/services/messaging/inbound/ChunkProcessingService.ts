@@ -170,7 +170,7 @@ class ChunkProcessingService {
       chunk,
       messageID
     );
-    const lifecycle = this.serviceManager.conversationLifecycleService;
+    const lifecycle = this.serviceManager.messageCoordinator;
     if (
       requestID &&
       lifecycle.isRequestStopped(requestID) &&
@@ -285,7 +285,7 @@ class ChunkProcessingService {
 
       if (messageID && (isPartialItem || isCompleteItem)) {
         runCoreOperation(() =>
-          this.serviceManager.conversationLifecycleService.responseStreaming(
+          this.serviceManager.messageCoordinator.responseStreaming(
             messageID,
             undefined,
             requestID
@@ -295,7 +295,7 @@ class ChunkProcessingService {
 
       if (messageID && isStreamFinalResponse(chunk) && isCurrent()) {
         runCoreOperation(() =>
-          this.serviceManager.conversationLifecycleService.responseReceived(
+          this.serviceManager.messageCoordinator.responseReceived(
             messageID,
             undefined,
             requestID
@@ -308,9 +308,7 @@ class ChunkProcessingService {
       }
       if (
         isPartialItem &&
-        !this.serviceManager.conversationLifecycleService.isRequestStopped(
-          requestID
-        )
+        !this.serviceManager.messageCoordinator.isRequestStopped(requestID)
       ) {
         runCoreOperation(() =>
           this.serviceManager.messageService.updateStreamingCancellation(
@@ -406,7 +404,7 @@ class ChunkProcessingService {
         );
       }
       if (terminalConversationFailure) {
-        this.serviceManager.conversationLifecycleService.fail({
+        this.serviceManager.messageCoordinator.fail({
           messageID: requestID ?? messageID,
         });
         requestErrors?.reportedErrors.add(error);

@@ -9,7 +9,7 @@
 
 import { makeConfigStore } from '../../test_helpers';
 import { ChunkProcessingService } from '../../../src/chat/services/messaging/inbound/ChunkProcessingService';
-import { ConversationLifecycleService } from '../../../src/chat/services/messaging/ConversationLifecycleService';
+import { MessageCoordinator } from '../../../src/chat/services/messaging/MessageCoordinator';
 import { HydrationService } from '../../../src/chat/services/HydrationService';
 import { MessageUpsertCoordinator } from '../../../src/chat/services/messaging/inbound/MessageUpsertCoordinator';
 import { ReceiveService } from '../../../src/chat/services/messaging/inbound/ReceiveService';
@@ -61,9 +61,7 @@ function createHarness(config: PublicConfig = {}) {
     },
   } as unknown as ServiceManager;
   manager.chunkProcessingService = new ChunkProcessingService(manager);
-  manager.conversationLifecycleService = new ConversationLifecycleService(
-    manager
-  );
+  manager.messageCoordinator = new MessageCoordinator(manager);
   manager.hydrationService = new HydrationService(manager);
   manager.messageUpsertCoordinator = new MessageUpsertCoordinator(manager);
   const service = new ReceiveService(manager);

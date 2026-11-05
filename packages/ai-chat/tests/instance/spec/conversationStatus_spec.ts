@@ -35,7 +35,7 @@ describe('conversation status', () => {
   it('starts ready and reports hydration until the shared operation finishes', async () => {
     const { instance, serviceManager } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
-    const lifecycle = serviceManager.conversationLifecycleService;
+    const lifecycle = serviceManager.messageCoordinator;
 
     expect(instance.getState().status).toBe('ready');
 
@@ -52,7 +52,7 @@ describe('conversation status', () => {
   it('keeps overlapping responses streaming until every response finishes', async () => {
     const { instance, serviceManager } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
-    const lifecycle = serviceManager.conversationLifecycleService;
+    const lifecycle = serviceManager.messageCoordinator;
 
     act(() => {
       lifecycle.requestStarted('request-a');
@@ -119,9 +119,7 @@ describe('conversation status', () => {
     expect(onError).toHaveBeenCalledTimes(1);
     expect(instance.state.get().status).toBe('error');
     expect(
-      serviceManager.conversationLifecycleService.hasFailureForRequest(
-        welcomeRequestID
-      )
+      serviceManager.messageCoordinator.hasFailureForRequest(welcomeRequestID)
     ).toBe(true);
     expect(onError.mock.calls[0][0]).not.toHaveProperty('messageID');
     expect(instance.state.get()).not.toHaveProperty('error');
@@ -130,7 +128,7 @@ describe('conversation status', () => {
   it('ignores stale completion and errors after restart', async () => {
     const { instance, serviceManager } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
-    const lifecycle = serviceManager.conversationLifecycleService;
+    const lifecycle = serviceManager.messageCoordinator;
     const staleGeneration = lifecycle.currentGeneration;
 
     act(() => {
@@ -676,7 +674,7 @@ describe('conversation status', () => {
   it('does not mark a newer request responded when an older stream updates', async () => {
     const { instance, serviceManager } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
-    const lifecycle = serviceManager.conversationLifecycleService;
+    const lifecycle = serviceManager.messageCoordinator;
     act(() => {
       lifecycle.requestStarted('first');
       lifecycle.responseStreaming('answer', undefined, 'first');
@@ -859,7 +857,7 @@ describe('conversation status', () => {
         messaging: { skipWelcome: true },
       });
     await instance.changeView(ViewType.MAIN_WINDOW);
-    act(() => serviceManager.conversationLifecycleService.fail({}));
+    act(() => serviceManager.messageCoordinator.fail({}));
     const statuses: string[] = [];
     const unsubscribe = instance.state.select(
       (state) => state.status,
@@ -886,7 +884,7 @@ describe('conversation status', () => {
         },
       });
     await serviceManager.actions.hydrateChat();
-    act(() => serviceManager.conversationLifecycleService.fail({}));
+    act(() => serviceManager.messageCoordinator.fail({}));
     const statuses: string[] = [];
     const unsubscribe = instance.state.select(
       (state) => state.status,
@@ -1010,9 +1008,7 @@ describe('conversation status', () => {
       let cleared: Promise<void>;
       const { instance, serviceManager, store } =
         await renderChatAndGetInstanceWithStore(createBaseConfig());
-      act(() =>
-        serviceManager.conversationLifecycleService.requestStarted('pending')
-      );
+      act(() => serviceManager.messageCoordinator.requestStarted('pending'));
       instance.on({
         type: BusEventType.USER_DEFINED_RESPONSE,
         handler: () => holdItem,

@@ -554,9 +554,8 @@ class HumanAgentServiceImpl implements HumanAgentService {
     try {
       await addMessages(pairs, !this.isSuspended(), serviceManager);
 
-      const generation =
-        serviceManager.conversationLifecycleService.currentGeneration;
-      serviceManager.conversationLifecycleService.requestStarted(
+      const generation = serviceManager.messageCoordinator.currentGeneration;
+      serviceManager.messageCoordinator.requestStarted(
         originalMessage.id,
         generation
       );
@@ -565,15 +564,13 @@ class HumanAgentServiceImpl implements HumanAgentService {
       // sent successfully (or it failed).
       let messageSucceeded = false;
       let messageFailed = false;
-      let failure: ReturnType<
-        typeof serviceManager.conversationLifecycleService.fail
-      >;
+      let failure: ReturnType<typeof serviceManager.messageCoordinator.fail>;
       const reportFailure = () => {
         if (messageSucceeded || messageFailed) {
           return;
         }
         messageFailed = true;
-        failure = serviceManager.conversationLifecycleService.fail(
+        failure = serviceManager.messageCoordinator.fail(
           { messageID: originalMessage.id },
           generation
         );
@@ -603,8 +600,8 @@ class HumanAgentServiceImpl implements HumanAgentService {
         );
         this.commitOutgoingEdits(originalMessage, textMessage, write.isCurrent);
         messageSucceeded = true;
-        serviceManager.conversationLifecycleService.clearFailure(failure);
-        serviceManager.conversationLifecycleService.requestFinished(
+        serviceManager.messageCoordinator.clearFailure(failure);
+        serviceManager.messageCoordinator.requestFinished(
           originalMessage.id,
           generation
         );

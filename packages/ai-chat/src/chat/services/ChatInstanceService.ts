@@ -322,10 +322,7 @@ class ChatInstanceService {
   }
 
   conversationErrorOccurred(error: OnErrorData, generation?: number) {
-    const failure = this.serviceManager.conversationLifecycleService.fail(
-      {},
-      generation
-    );
+    const failure = this.serviceManager.messageCoordinator.fail({}, generation);
     if (failure) {
       this.errorOccurred(error);
     }
