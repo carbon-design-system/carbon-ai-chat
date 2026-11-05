@@ -115,7 +115,7 @@ function InputNodePortal({
       return undefined;
     }
     if (isInline) {
-      host.className = `${prefix}-markdown-inline-plugin`;
+      host.className = `${prefix}-aichat-markdown-inline-plugin`;
       return mountInlineHost(chatWrapper, slotKey, host);
     }
     host.setAttribute('slot', slotKey);
