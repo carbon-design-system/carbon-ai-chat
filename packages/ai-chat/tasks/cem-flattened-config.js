@@ -437,6 +437,21 @@ function readSyntheticProperties(ts, node) {
   return synthetic;
 }
 
+function omittedKeys(ts, typeArguments) {
+  const [target, keys] = typeArguments ?? [];
+  if (!target || !keys || !ts.isTypeReferenceNode(target)) {
+    fail('PublicConfig must omit keys from a named config base.');
+  }
+  const omitted = new Set();
+  for (const key of ts.isUnionTypeNode(keys) ? keys.types : [keys]) {
+    if (!ts.isLiteralTypeNode(key) || !ts.isStringLiteral(key.literal)) {
+      fail('PublicConfig must omit string-literal keys.');
+    }
+    omitted.add(key.literal.text);
+  }
+  return { base: target.typeName, omitted };
+}
+
 function configHeritage(ts, declaration, baseNames) {
   const clauses = declaration.heritageClauses ?? [];
   if (!clauses.length) {
@@ -447,25 +462,30 @@ function configHeritage(ts, declaration, baseNames) {
     fail('PublicConfig may extend only one config base.');
   }
   const [type] = types;
-  let base = type.expression;
-  const omitted = new Set();
-  if (ts.isIdentifier(base) && base.text === 'Omit') {
-    const [target, keys] = type.typeArguments ?? [];
-    if (!target || !keys || !ts.isTypeReferenceNode(target)) {
-      fail('PublicConfig must omit keys from a named config base.');
-    }
-    for (const key of ts.isUnionTypeNode(keys) ? keys.types : [keys]) {
-      if (!ts.isLiteralTypeNode(key) || !ts.isStringLiteral(key.literal)) {
-        fail('PublicConfig must omit string-literal keys.');
-      }
-      omitted.add(key.literal.text);
-    }
-    base = target.typeName;
-  }
+  const { base, omitted } =
+    ts.isIdentifier(type.expression) && type.expression.text === 'Omit'
+      ? omittedKeys(ts, type.typeArguments)
+      : { base: type.expression, omitted: new Set() };
   if (!ts.isIdentifier(base) || !baseNames.includes(base.text)) {
     fail('PublicConfig inheritance needs explicit analyzer support.');
   }
   return { name: base.text, omitted };
+}
+
+function readConfigBase(ts, node, path, configBases, members) {
+  if (!ts.isInterfaceDeclaration(node)) {
+    return;
+  }
+  const base = configBases.find(
+    ({ name, source }) => path === resolve(source) && node.name.text === name
+  );
+  if (!base) {
+    return;
+  }
+  if (node.heritageClauses?.length) {
+    fail(`config base "${base.name}" must not extend another type.`);
+  }
+  members.set(base.name, readMembers(ts, node));
 }
 
 function inheritedMembers(base, heritage, own) {
@@ -559,18 +579,7 @@ export function createFlattenedConfigPlugin({
         );
         configMembers = readMembers(ts, node);
       }
-      for (const base of configBases) {
-        if (
-          path === resolve(base.source) &&
-          ts.isInterfaceDeclaration(node) &&
-          node.name.text === base.name
-        ) {
-          if (node.heritageClauses?.length) {
-            fail(`config base "${base.name}" must not extend another type.`);
-          }
-          configBaseMembers.set(base.name, readMembers(ts, node));
-        }
-      }
+      readConfigBase(ts, node, path, configBases, configBaseMembers);
       if (path !== resolve(basePath)) {
         return;
       }
