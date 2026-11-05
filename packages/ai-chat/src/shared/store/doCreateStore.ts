@@ -44,6 +44,10 @@ import {
 import { enLanguagePack } from '../../types/config/LanguagePack';
 import { LayoutConfig } from '../../types/config/LayoutConfig';
 import { fromPersistableState } from './persistenceUtils';
+import {
+  humanAgentStateConfig,
+  pickHumanAgentState,
+} from './humanAgentStatePersistence';
 
 /**
  * Deep merge helper that:
@@ -320,6 +324,18 @@ function doCreateStore(
           ...humanAgentState.responseUserProfiles,
           ...saved.humanAgentState?.responseUserProfiles,
         },
+      },
+    };
+  }
+
+  // The SDK's agent connection config restores only that connection.
+  const restoredAgent = humanAgentStateConfig(publicConfig)?.initialState;
+  if (restoredAgent) {
+    initialState.persistedToBrowserStorage = {
+      ...initialState.persistedToBrowserStorage,
+      humanAgentState: {
+        ...initialState.persistedToBrowserStorage.humanAgentState,
+        ...pickHumanAgentState(restoredAgent),
       },
     };
   }

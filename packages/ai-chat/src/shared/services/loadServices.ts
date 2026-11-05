@@ -22,6 +22,10 @@ import { NamespaceService } from './NamespaceService';
 import { ServiceManager } from './ServiceManager';
 import { ThemeWatcherService } from './ThemeWatcherService';
 import { UserSessionStorageService } from './UserSessionStorageService';
+import {
+  humanAgentStateConfig,
+  reportHumanAgentStateOnChange,
+} from '../store/humanAgentStatePersistence';
 import { doCreateStore } from '../store/doCreateStore';
 import { refreshLocalizationOnChange } from '../store/subscriptions';
 import { AppConfig } from '../../types/state/AppConfig';
@@ -89,6 +93,11 @@ function createServiceManager(appConfig: AppConfig) {
   // strings or locale change. Boot's `setIntl` below seeds the formatter before
   // first paint (no dispatch fires during boot, so this subscription can't).
   serviceManager.store.subscribe(refreshLocalizationOnChange(serviceManager));
+  if (humanAgentStateConfig(publicConfig)?.onStateChange) {
+    serviceManager.store.subscribe(
+      reportHumanAgentStateOnChange(serviceManager)
+    );
+  }
 
   // Subscribe to theme changes to start/stop the theme watcher as needed
   let currentOriginalTheme =
