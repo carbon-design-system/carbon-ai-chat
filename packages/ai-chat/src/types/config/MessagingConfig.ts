@@ -19,8 +19,7 @@ import { BusEventSend } from '../events/eventBusTypes';
  * `addMessage`, `addMessageChunk`, and `upsertMessage` may all target the same message
  * id without producing duplicate `pre:receive` / `receive` events — Carbon AI Chat tracks
  * the recorded state per id and fires those events only on the first transition to
- * {@link COMPLETE}. Mixing the flows this way isn't recommended or fully tested, though, so
- * pick one flow for your messages.
+ * {@link COMPLETE}. Mixing the flows this way isn't recommended or fully tested, though.
  *
  * @category Messaging
  */
@@ -161,6 +160,41 @@ export interface ChatInstanceMessaging {
    *   sending a terminal COMPLETE or ERROR write will leave `streamingState.isDone` as
    *   `false` indefinitely. The host is responsible for sending a terminal write, or for
    *   calling `cancelCurrentMessageRequest` (or restarting the conversation) to settle it.
+   *
+   * @example Insert a complete message
+   * ```ts
+   * await instance.messaging.upsertMessage('welcome', MessageState.COMPLETE, () => ({
+   *   id: 'welcome',
+   *   output: {
+   *     generic: [{ response_type: MessageResponseTypes.TEXT, text: 'Hi! How can I help?' }],
+   *   },
+   * }));
+   * // The message shows, and the chat fires pre:receive and receive once.
+   * ```
+   *
+   * @example Stream a reply, then complete it
+   * ```ts
+   * // Inside customSendMessage(request, options, instance).
+   * // streamAnswer stands in for your own async iterable of text pieces.
+   * const messageID = `${request.id}-reply`;
+   * const toMessage = (text: string): MessageResponse => ({
+   *   id: messageID,
+   *   request_id: request.id,
+   *   output: {
+   *     generic: [
+   *       { response_type: MessageResponseTypes.TEXT, text, streaming_metadata: { id: 'answer' } },
+   *     ],
+   *   },
+   * });
+   *
+   * let text = '';
+   * for await (const piece of streamAnswer(request)) {
+   *   text += piece;
+   *   await instance.messaging.upsertMessage(messageID, MessageState.STREAMING, () => toMessage(text));
+   * }
+   * await instance.messaging.upsertMessage(messageID, MessageState.COMPLETE, () => toMessage(text));
+   * // receive fires once, on the final call.
+   * ```
    */
   upsertMessage: (
     messageID: string,

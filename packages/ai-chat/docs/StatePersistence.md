@@ -12,7 +12,7 @@ Set {@link PublicConfig.persistedState | persisted state} to take over that stor
 
 ## What is persisted
 
-{@link PersistableState} is the value passed to and from your storage. Treat it as an opaque blob: store the whole thing and hand it back unchanged. It carries session and UI state such as disclaimer acceptance, home-screen state, and the part of the human-agent connection needed to reconnect after a reload. It never contains conversation message text.
+{@link PersistableState} is the value passed to and from your storage. Treat a saved value as an opaque blob: store the whole thing and hand it back unchanged. It carries session and UI state such as disclaimer acceptance, home-screen state, and the part of the human-agent connection needed to reconnect after a reload. It never contains conversation message text.
 
 ## Providing your own storage
 

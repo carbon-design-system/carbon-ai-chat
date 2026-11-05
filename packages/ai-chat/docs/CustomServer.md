@@ -47,10 +47,12 @@ If you do not return a promise, the chat does not queue your messages, and it sk
 
 ## Delivering responses
 
-When you have a response, or part of one, push it to the screen through {@link ChatInstanceMessaging | messaging}. You have two flows. Nothing stops you from mixing them, but it isn't recommended or fully tested, so pick one:
+When you have a response, or part of one, push it to the screen through {@link ChatInstanceMessaging | messaging}. You have two flows:
 
 - **Recommended flow:** {@link ChatInstanceMessaging.upsertMessage | upsertMessage} inserts or updates a message by ID through an updater function. One method covers streaming, regenerate, post-stream fixes, and optimistic updates. Use it for new work, especially more complex UI. See [Adding messages](./UpsertMessage.md).
 - **Legacy flow:** {@link ChatInstanceMessaging.addMessage | addMessage} for one-shot, non-streaming inserts, and {@link ChatInstanceMessaging.addMessageChunk | addMessageChunk} for chunked streaming. Both are fully supported and not deprecated, and there are no plans to remove them. See [Adding messages (legacy)](./AddMessageChunk.md).
+
+Nothing stops you from mixing the two flows, but it isn't recommended or fully tested.
 
 For the data shape in either flow, see [Message format](./MessageFormat.md).
 
@@ -351,7 +353,7 @@ const input = useMemo(
 
 By default, if the homescreen is disabled, the chat sends a {@link MessageRequest | message request} the first time a user opens it, with `input.text` set to a blank string and `history.is_welcome_request` set to true. This lets you inject a hard-coded greeting. To skip it, set {@link PublicConfigMessaging.skipWelcome | skipWelcome} to `true`.
 
-To send your own welcome message, set {@link PublicConfigMessaging.skipWelcome | skipWelcome} to `true` and deliver the greeting yourself. For example, you might vary the text by user and respond in kind. Call {@link ChatInstanceMessaging.addMessage | addMessage} for a one-shot greeting, or {@link ChatInstanceMessaging.upsertMessage | upsertMessage} if you want to update that greeting later.
+To send your own welcome message, set {@link PublicConfigMessaging.skipWelcome | skipWelcome} to `true` and deliver the greeting yourself. For example, you might vary the text by user and respond in kind. Call {@link ChatInstanceMessaging.upsertMessage | upsertMessage} with `MessageState.COMPLETE`, which also lets you update the greeting later. If you use the legacy flow, call {@link ChatInstanceMessaging.addMessage | addMessage} instead.
 
 ## Message loading indicators
 

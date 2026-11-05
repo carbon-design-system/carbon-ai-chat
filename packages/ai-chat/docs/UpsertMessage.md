@@ -8,7 +8,7 @@ title: Adding messages
 
 Use this flow for new work, especially for more complex UI such as streaming, corrections, and regenerated responses. The older {@link ChatInstanceMessaging.addMessage | addMessage} and {@link ChatInstanceMessaging.addMessageChunk | addMessageChunk} methods are the legacy flow. They're fully supported and not deprecated, and there are no plans to remove them. See [Adding messages (legacy)](./AddMessageChunk.md).
 
-> **Note:** Nothing stops you from mixing the two flows, but it isn't recommended or fully tested. Pick one flow for your messages.
+> **Note:** Nothing stops you from mixing the two flows, but it isn't recommended or fully tested.
 
 The examples below call `instance.messaging`, so get a {@link ChatInstance | ChatInstance} from the `onBeforeRender` prop first.
 
