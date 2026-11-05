@@ -18,22 +18,20 @@
  */
 export interface ChatSDKServiceDeskConfig {
   /**
-   * The timeout value in seconds to use when determining agent availability. When a connect_to_agent response is
-   * received, the system will ask the service desk if any agents are available. If no response is received within
-   * the timeout window, the system will return "false" to indicate no agents are available.
+   * How long to wait, in seconds, for the service desk to say whether any agents are available. If
+   * it doesn't answer in time, the chat treats no agents as available.
    */
   availabilityTimeoutSeconds?: number;
 
   /**
-   * The timeout value is seconds to use when waiting for an agent to join the chat after an agent has been
-   * requested. If no agent joins after this time, the chat will be ended and an error message will be displayed to
-   * the user. By default, there is no timeout.
+   * How long to wait, in seconds, for an agent to join after one is requested, before the chat ends
+   * the request. No limit by default.
    */
   agentJoinTimeoutSeconds?: number;
 
   /**
-   * Indicates if Carbon AI Chat should automatically attempt to reconnect the user to a human agent when it is loaded. This
-   * only works if the service desk integration being used supports reconnecting. This value defaults to true.
+   * Whether the chat reconnects to a live human agent conversation when it starts. Works only with a
+   * service desk that supports reconnecting. Defaults to true.
    */
   allowReconnect?: boolean;
 }
