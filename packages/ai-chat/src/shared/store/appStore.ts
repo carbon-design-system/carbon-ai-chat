@@ -86,6 +86,10 @@ export interface AppStore<
  * on every action, and gets the store's state after that reducer ran. So a
  * partition can react to the store's own actions in the same dispatch.
  *
+ * Return the same state when nothing changed, or every dispatch notifies
+ * subscribers. If it throws, the whole dispatch fails, as a throw in the
+ * store's own reducer does.
+ *
  * @typeParam PartState - The partition's state.
  * @typeParam StoreState - The store's own state.
  */
