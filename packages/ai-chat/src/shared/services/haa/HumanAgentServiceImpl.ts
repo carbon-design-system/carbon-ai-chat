@@ -203,6 +203,13 @@ class HumanAgentServiceImpl implements HumanAgentService {
     this.serviceManager = serviceManager;
   }
 
+  /** Changes the attached view's message loading counter, if one is attached. */
+  private changeViewLoadingCounter(amount: number) {
+    this.serviceManager.view?.current?.humanAgent.changeMessageLoadingCounter?.(
+      amount
+    );
+  }
+
   /**
    * If a custom service desk is configured, returns the name.
    */
@@ -789,9 +796,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
       return;
     }
 
-    this.serviceManager.view?.current?.humanAgent.changeMessageLoadingCounter?.(
-      1
-    );
+    this.changeViewLoadingCounter(1);
     let agentAvailability: HumanAgentsOnlineStatus;
     try {
       if (!canApply()) {
@@ -831,9 +836,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
     } finally {
       // Removal leaves this operation's loading counter active; restart resets it.
       if (initialRestartCount === this.serviceManager.restartCount) {
-        this.serviceManager.view?.current?.humanAgent.changeMessageLoadingCounter?.(
-          -1
-        );
+        this.changeViewLoadingCounter(-1);
       }
     }
 
@@ -1105,6 +1108,10 @@ class ServiceDeskCallbackImpl<
   constructor(serviceManager: ServiceManager, service: HumanAgentServiceImpl) {
     this.serviceManager = serviceManager;
     this.service = service;
+  }
+  /** Reads a message to screen readers in the attached view, if one is attached. */
+  private announceInView(messageID: string) {
+    this.serviceManager.view?.current?.humanAgent.announce?.({ messageID });
   }
 
   /**
@@ -1487,9 +1494,7 @@ class ServiceDeskCallbackImpl<
         // below is rendered but not announced on its own (the status icon
         // deliberately carries no aria-label to avoid the message live region
         // double-reading), mirroring the success announcement above.
-        this.serviceManager.view?.current?.humanAgent.announce?.({
-          messageID: 'fileSharing_uploadFailed',
-        });
+        this.announceInView('fileSharing_uploadFailed');
 
         if (errorMessage) {
           // Generate an inline error message to show the error to the user.
@@ -1513,9 +1518,7 @@ class ServiceDeskCallbackImpl<
             FileStatusValue.SUCCESS
           )
         );
-        this.serviceManager.view?.current?.humanAgent.announce?.({
-          messageID: 'fileSharing_ariaAnnounceSuccess',
-        });
+        this.announceInView('fileSharing_ariaAnnounceSuccess');
       }
     } else if (isError) {
       // Update the input area.
