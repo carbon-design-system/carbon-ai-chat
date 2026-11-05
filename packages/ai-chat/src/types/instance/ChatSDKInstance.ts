@@ -66,7 +66,7 @@ export type ChatSDKHandlers =
  *
  * Code written against this type works with any chat, because it uses no view, panel, input, or
  * focus member. A `createChatSDK` function that starts a conversation with no interface arrives with
- * the `@carbon/ai-chat/sdk` entry point in 2.0.0.
+ * the `@carbon/ai-chat/sdk` entry point in a 2.x minor release.
  *
  * @category SDK
  */
