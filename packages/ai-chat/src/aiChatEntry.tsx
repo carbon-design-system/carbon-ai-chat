@@ -37,6 +37,15 @@ export {
   IncreaseOrDecrease,
   SendOptions,
 } from './types/instance/ChatInstance';
+export {
+  ChatSDKEventType,
+  ChatSDKHandlers,
+  ChatSDKInstance,
+} from './types/instance/ChatSDKInstance';
+export {
+  ChatSDKState,
+  ChatSDKStateAccess,
+} from './types/instance/ChatSDKState';
 export { ChatInstanceInput } from './types/instance/ChatInstanceInput';
 export { ChatInstanceServiceDeskActions } from './types/instance/ChatInstanceServiceDeskActions';
 export {
@@ -144,6 +153,7 @@ export {
   MessageState,
   UpsertMessageUpdater,
 } from './types/config/MessagingConfig';
+export { ChatSDKInstanceMessaging } from './types/config/ChatSDKInstanceMessaging';
 
 export { PublicConfig } from './types/config/PublicConfig';
 export { CarbonTheme } from './types/config/CarbonTheme';

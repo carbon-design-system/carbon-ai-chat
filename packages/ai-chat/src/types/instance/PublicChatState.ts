@@ -9,28 +9,15 @@
 
 import { WorkspaceCustomPanelConfigOptions } from './apiTypes';
 import type { PersistedState } from '../state/AppState';
-import type { PersistedHumanAgentState } from '../state/PersistedHumanAgentState';
-import type { Message, StructuredData } from '../messaging/Messages';
+import type { StructuredData } from '../messaging/Messages';
 import type { JSONContent } from '@tiptap/core';
+import type {
+  ChatSDKState,
+  ConversationStatus,
+  PublicChatHumanAgentState,
+} from './ChatSDKState';
 
-/**
- * The current phase of conversation work, exposed as `status` on {@link PublicChatState}.
- *
- * - `loading`: history and the welcome are loading.
- * - `submitted`: a send is waiting for its first associated response.
- * - `streaming`: a response is active, or its sender is still pending after a response arrives.
- *   This includes the gap after the response completes and before the sender settles.
- * - `ready`: no send or response remains active.
- * - `error`: the conversation is in a failure state.
- *
- * Failure takes precedence over loading, and loading takes precedence over turn activity.
- * You can retain error details received through {@link PublicConfig.onError}. An error
- * status does not guarantee an error callback.
- *
- * @category Instance
- */
-export type ConversationStatus =
-  'ready' | 'loading' | 'submitted' | 'streaming' | 'error';
+export type { ConversationStatus, PublicChatHumanAgentState };
 
 /**
  * Public input state available through {@link ChatInstance.state}. Its values are immutable snapshots.
@@ -157,79 +144,46 @@ export interface PublicCustomPanelsState {
 }
 
 /**
- * Immutable public state returned by `state.get()` on {@link ChatInstance.state}.
+ * Immutable public state returned by `state.get()` on {@link ChatInstance.state}. It extends
+ * {@link ChatSDKState} with the state the prebuilt chat keeps for its views, input, and panels.
  *
  * @interface
  * @category Instance
  */
 export type PublicChatState = Readonly<
-  Omit<PersistedState, 'humanAgentState'> & {
-    /**
-     * Conversation messages, oldest first, or `[]` when empty. Partial
-     * streaming content is included as it arrives. The array and its message
-     * values are immutable snapshots, and internal UI state is omitted.
-     */
-    messages: readonly Readonly<Message>[];
+  ChatSDKState &
+    Omit<PersistedState, 'humanAgentState'> & {
+      /**
+       * Counter that indicates if a message is loading and a loading indicator should be displayed.
+       * If "0" then we do not show loading indicator.
+       */
+      isMessageLoadingCounter: number;
 
-    /** The current conversation phase. See {@link ConversationStatus} for each value and its precedence. */
-    status: ConversationStatus;
+      /**
+       * Optional string to display next to the loading indicator.
+       */
+      isMessageLoadingText?: string;
 
-    /**
-     * Current human agent state.
-     */
-    humanAgent: PublicChatHumanAgentState;
+      /**
+       * Counter that indicates if the chat is hydrating and a full screen loading state should be displayed.
+       *
+       * @deprecated Read `status` as a {@link ConversationStatus} and check for `loading` — removed in 2.0.0.
+       */
+      isHydratingCounter: number;
 
-    /**
-     * Counter that indicates if a message is loading and a loading indicator should be displayed.
-     * If "0" then we do not show loading indicator.
-     */
-    isMessageLoadingCounter: number;
+      /**
+       * @experimental State representing the main input surface.
+       */
+      input: PublicInputState;
 
-    /**
-     * Optional string to display next to the loading indicator.
-     */
-    isMessageLoadingText?: string;
+      /**
+       * State for any surfaced custom panels.
+       */
+      customPanels: PublicCustomPanelsState;
 
-    /**
-     * Counter that indicates if the chat is hydrating and a full screen loading state should be displayed.
-     *
-     * @deprecated Read `status` as a {@link ConversationStatus} and check for `loading` — removed in 2.0.0.
-     */
-    isHydratingCounter: number;
-
-    /**
-     * The message id of the currently active response. The "active response" is the latest response that has been
-     * received or is expected. For instance, if you send another message the current activeResponseId will be set to
-     * null until you get a new response back. This is meant to be used to disable any user inputs in a user_defined
-     * response that you don't want active if its not a message you should be receiving inputs from.
-     */
-    activeResponseId: string | null;
-
-    /**
-     * @experimental State representing the main input surface.
-     */
-    input: PublicInputState;
-
-    /**
-     * State for any surfaced custom panels.
-     */
-    customPanels: PublicCustomPanelsState;
-
-    /**
-     * State for the workspace panel.
-     */
-    workspace: PublicWorkspaceCustomPanelState;
-  }
->;
-
-/**
- * Current connection state of the human agent experience.
- *
- * @category Instance
- */
-export type PublicChatHumanAgentState = Readonly<
-  PersistedHumanAgentState & {
-    /** Indicates if Carbon AI Chat is attempting to connect to an agent. */
-    isConnecting: boolean;
-  }
+      /**
+       * State for the workspace panel.
+       */
+      workspace: PublicWorkspaceCustomPanelState;
+    }
 >;
