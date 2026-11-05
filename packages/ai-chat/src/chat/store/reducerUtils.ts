@@ -654,7 +654,7 @@ function keepsLastDrawn(
  * 2. **Reference stability** — if the new item is deep-equal to the previously stored
  *    `LocalMessageItem.item`, the existing `LocalMessageItem` reference is reused
  *    verbatim. Components subscribed to that item via `useSelector` see no diff and
- *    skip re-rendering. This matches {@link applyChunkWrite} and is critical when only
+ *    skip re-rendering. This matches {@link applyChunkWriteWithIdentity} and is critical when only
  *    one item in `output.generic[]` actually changes between calls.
  *
  * Nested CARD/CAROUSEL/GRID/BUTTON local items are rebuilt when their parent changes,
@@ -934,10 +934,6 @@ function applyFullMessageWithIdentity(state: AppState, message: Message) {
   return { state: newState, messageID };
 }
 
-function applyFullMessage(state: AppState, message: Message): AppState {
-  return applyFullMessageWithIdentity(state, message).state;
-}
-
 /**
  * Builds the local item for the first chunk of a streamed item. The item is the chunk
  * itself, and it stays hidden (`isIntermediateStreaming`) until `final_response`, even
@@ -1079,14 +1075,6 @@ function applyChunkWriteWithIdentity(
   return { state: nextState, messageID: full.messageID };
 }
 
-function applyChunkWrite(
-  state: AppState,
-  message: MessageResponse,
-  chunk: MessageWriteOptions['chunk']
-): AppState {
-  return applyChunkWriteWithIdentity(state, message, chunk).state;
-}
-
 export {
   DEFAULT_HEADER,
   DEFAULT_MESSAGE_STATE,
@@ -1112,9 +1100,7 @@ export {
   setHomeScreenOpenState,
   applyAssistantMessageState,
   handleViewStateChange,
-  applyChunkWrite,
   applyChunkWriteWithIdentity,
-  applyFullMessage,
   applyFullMessageWithIdentity,
   applyLocalMessageUIState,
   computeLocalIDInsertionPoint,
