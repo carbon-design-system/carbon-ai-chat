@@ -13,19 +13,16 @@ import {
   CDSAIChatMessagesShell,
   type MessagesShellScrollDetail,
 } from '../components/aichat-messages-shell/index.js';
-import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
-const MessagesShell = withWebComponentBridge(
-  createComponent({
-    tagName: CDSAIChatMessagesShell.is,
-    elementClass: CDSAIChatMessagesShell,
-    react: React,
-    events: {
-      onMessagesShellScroll: CDSAIChatMessagesShell.eventScroll as EventName<
-        CustomEvent<MessagesShellScrollDetail>
-      >,
-    },
-  })
-);
+const MessagesShell = createComponent({
+  tagName: CDSAIChatMessagesShell.is,
+  elementClass: CDSAIChatMessagesShell,
+  react: React,
+  events: {
+    onMessagesShellScroll: CDSAIChatMessagesShell.eventScroll as EventName<
+      CustomEvent<MessagesShellScrollDetail>
+    >,
+  },
+});
 
 export default MessagesShell;

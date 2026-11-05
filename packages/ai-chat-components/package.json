@@ -53,13 +53,15 @@
     "storybook:react": "storybook dev -p 7007 -c .storybook-react",
     "storybook:react:build": "storybook build -c .storybook-react -o storybook-react-static",
     "telemetry:config": "npx -y @ibm/telemetry-js-config-generator generate --id 62aa153d-8a70-4d12-9e8d-069511e80e65 --endpoint https://www-api.ibm.com/ibm-telemetry/v1/metrics --files ./src/components --wc",
-    "test": "npm run test:manifest && npm run test:web-components && npm run test:react",
+    "test": "npm run test:manifest && npm run test:web-components && npm run test:react && npm run test:react:interop && npm run test:react:types",
     "test:react": "jest",
     "test:updateSnapshot": "web-test-runner \"src/{components,globals/__tests__}/**/*.test.ts\" --node-resolve --update-snapshots",
     "test:web-components": "web-test-runner \"src/{components,globals/__tests__}/**/*.test.ts\" --node-resolve",
     "test:manifest": "node --test tasks/__tests__/*.test.js",
     "test:prefix-build": "node --test tasks/__tests__/prefix-build.test.js",
-    "validate:manifest": "node tasks/validate-manifest.js"
+    "validate:manifest": "node tasks/validate-manifest.js",
+    "test:react:interop": "jest --config jest.interop.config.cjs --runInBand",
+    "test:react:types": "node ../../tools/carbon-v12-consumer/react-types.mjs"
   },
   "peerDependencies": {
     "react": ">=17.0.0 <20.0.0"

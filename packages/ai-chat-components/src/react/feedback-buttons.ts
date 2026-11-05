@@ -7,21 +7,21 @@
  *  @license
  */
 
-import { createComponent } from '@lit/react';
+import { createComponent, type EventName } from '@lit/react';
 import React from 'react';
 
 import { CDSAIChatFeedbackButtons } from '../components/aichat-feedback/index.js';
-import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
+import type { FeedbackButtonsClickEventDetail } from '../components/aichat-feedback/index.js';
 
-const FeedbackButtons = withWebComponentBridge(
-  createComponent({
-    tagName: CDSAIChatFeedbackButtons.is,
-    elementClass: CDSAIChatFeedbackButtons,
-    react: React,
-    events: {
-      onClick: 'feedback-buttons-click',
-    },
-  })
-);
+const FeedbackButtons = createComponent({
+  tagName: CDSAIChatFeedbackButtons.is,
+  elementClass: CDSAIChatFeedbackButtons,
+  react: React,
+  events: {
+    onClick: 'feedback-buttons-click' as EventName<
+      CustomEvent<FeedbackButtonsClickEventDetail>
+    >,
+  },
+});
 
 export default FeedbackButtons;

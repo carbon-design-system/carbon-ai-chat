@@ -7,14 +7,14 @@
  *  @license
  */
 
-import { createComponent } from '@lit/react';
+import { createComponent, type EventName } from '@lit/react';
 import React from 'react';
 import { CarbonIcon } from '@carbon/web-components/es/globals/internal/icon-loader-utils.js';
-import { BUTTON_SIZE } from '@carbon/web-components/es/components/button/defs.js';
 
 import { CDSAIChatCodeSnippet } from '../components/aichat-code-snippet/index.js';
-import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
+import type { Action } from '../components/aichat-code-snippet/index.js';
 import { transformReactIconToCarbonIcon } from '../globals/utils/iconTransform.js';
+import type { CodeSnippetChangeEventDetail } from '../components/aichat-code-snippet/index.js';
 
 // Re-export the Action interface from the web component
 export type { Action } from '../components/aichat-code-snippet/aichat-code-snippet.js';
@@ -23,25 +23,22 @@ export type { Action } from '../components/aichat-code-snippet/aichat-code-snipp
  * React-specific Action interface that accepts both CarbonIcon and React icon components.
  * This allows React developers to use @carbon/icons-react directly.
  */
-export interface ReactAction {
-  text: string;
+export interface ReactAction extends Omit<Action, 'icon'> {
   icon: CarbonIcon | React.ComponentType<any>;
-  size?: BUTTON_SIZE;
-  fixed?: boolean;
-  onClick: () => void;
 }
 
 // Base code snippet component from @lit/react
-const BaseCodeSnippet = withWebComponentBridge(
-  createComponent({
-    tagName: CDSAIChatCodeSnippet.is,
-    elementClass: CDSAIChatCodeSnippet,
-    react: React,
-    events: {
-      onChange: 'content-change',
-    },
-  })
-);
+const BaseCodeSnippet = createComponent({
+  tagName: CDSAIChatCodeSnippet.is,
+  elementClass: CDSAIChatCodeSnippet,
+  react: React,
+  events: {
+    onChange: 'content-change' as EventName<
+      CustomEvent<CodeSnippetChangeEventDetail>
+    >,
+    onRenderEnd: 'code-snippet-render-end' as EventName<CustomEvent<null>>,
+  },
+});
 
 /**
  * CodeSnippet component with automatic icon transformation support.
@@ -63,59 +60,68 @@ const BaseCodeSnippet = withWebComponentBridge(
  * </CodeSnippet>
  * ```
  */
-const CodeSnippet = React.forwardRef<any, any>((props, ref) => {
-  const { actions, children, ...restProps } = props;
+export interface CodeSnippetProps extends Omit<
+  React.ComponentPropsWithoutRef<typeof BaseCodeSnippet>,
+  'actions'
+> {
+  actions?: ReactAction[];
+}
 
-  // Transform action icons if actions are provided
-  const transformedActions = React.useMemo(() => {
-    if (!actions || !Array.isArray(actions)) {
-      return [];
-    }
+const CodeSnippet = React.forwardRef<CDSAIChatCodeSnippet, CodeSnippetProps>(
+  (props, ref) => {
+    const { actions, children, ...restProps } = props;
 
-    return actions.map((action: ReactAction) => ({
-      ...action,
-      icon: transformReactIconToCarbonIcon(action.icon, 16),
-    }));
-  }, [actions]);
+    // Transform action icons if actions are provided
+    const transformedActions = React.useMemo(() => {
+      if (!actions || !Array.isArray(actions)) {
+        return [];
+      }
 
-  // Separate slotted children from default content
-  const { slottedChildren, defaultChildren } = React.useMemo(() => {
-    const slotted: Record<string, React.ReactNode[]> = {};
-    const defaultContent: React.ReactNode[] = [];
+      return actions.map((action: ReactAction) => ({
+        ...action,
+        icon: transformReactIconToCarbonIcon(action.icon, 16),
+      }));
+    }, [actions]);
 
-    React.Children.forEach(children, (child) => {
-      if (React.isValidElement(child)) {
-        const childProps = child.props as any;
-        if (childProps.slot) {
-          const slotName = childProps.slot as string;
-          if (!slotted[slotName]) {
-            slotted[slotName] = [];
+    // Separate slotted children from default content
+    const { slottedChildren, defaultChildren } = React.useMemo(() => {
+      const slotted: Record<string, React.ReactNode[]> = {};
+      const defaultContent: React.ReactNode[] = [];
+
+      React.Children.forEach(children, (child) => {
+        if (React.isValidElement<{ slot?: string }>(child)) {
+          const childProps = child.props;
+          if (childProps.slot) {
+            const slotName = childProps.slot as string;
+            if (!slotted[slotName]) {
+              slotted[slotName] = [];
+            }
+            // Clone the element without the slot prop to avoid React warnings
+            const { slot: _slot, ...restChildProps } = childProps;
+            slotted[slotName].push(React.cloneElement(child, restChildProps));
+          } else {
+            defaultContent.push(child);
           }
-          // Clone the element without the slot prop to avoid React warnings
-          const { slot: _slot, ...restChildProps } = childProps;
-          slotted[slotName].push(React.cloneElement(child, restChildProps));
         } else {
           defaultContent.push(child);
         }
-      } else {
-        defaultContent.push(child);
-      }
-    });
+      });
 
-    return { slottedChildren: slotted, defaultChildren: defaultContent };
-  }, [children]);
+      return { slottedChildren: slotted, defaultChildren: defaultContent };
+    }, [children]);
 
-  return (
-    <BaseCodeSnippet ref={ref} actions={transformedActions} {...restProps}>
-      {Object.entries(slottedChildren).map(([slotName, nodes]) => (
-        <div key={slotName} slot={slotName}>
-          {nodes}
-        </div>
-      ))}
-      {defaultChildren}
-    </BaseCodeSnippet>
-  );
-});
+    return (
+      <BaseCodeSnippet ref={ref} actions={transformedActions} {...restProps}>
+        {Object.entries(slottedChildren).map(([slotName, nodes]) => (
+          <div key={slotName} slot={slotName}>
+            {nodes}
+          </div>
+        ))}
+        {defaultChildren}
+      </BaseCodeSnippet>
+    );
+  }
+);
 
 CodeSnippet.displayName = 'CodeSnippet';
 

@@ -177,6 +177,7 @@ function readCallbacks(model, options) {
   if (!ts.isObjectLiteralExpression(object)) {
     model.fail(events, 'Use an object literal for the wrapper event map.');
   }
+  const callbacks = new Set();
   return object.properties.map((entry) => {
     if (
       !ts.isPropertyAssignment(entry) ||
@@ -187,6 +188,13 @@ function readCallbacks(model, options) {
         'Use named callback properties in the wrapper event map.'
       );
     }
+    if (callbacks.has(entry.name.text)) {
+      model.fail(
+        entry,
+        `Declare the wrapper callback ${entry.name.text} once.`
+      );
+    }
+    callbacks.add(entry.name.text);
     const names = model.values(entry.initializer);
     if (names.length !== 1) {
       model.fail(entry, 'A wrapper callback must bind one event name.');
@@ -536,7 +544,7 @@ export function readWrappers(model, { requireEventTypes = false } = {}) {
   return records;
 }
 
-export function validateWrapperEvents(model, wrappers) {
+function requireEventTypes(model, wrappers) {
   for (const wrapper of wrappers) {
     for (const callback of wrapper.callbacks) {
       if (
@@ -549,6 +557,344 @@ export function validateWrapperEvents(model, wrappers) {
           `Cast ${callback.callback} with EventName and a concrete DOM event type.`
         );
       }
+    }
+  }
+}
+
+function canonicalFamily(model, element) {
+  const filename = path.resolve(
+    model.root,
+    path.dirname(element.module),
+    'index.ts'
+  );
+  const exports = familyExports(model, filename);
+  if (!exports) {
+    model.fail(element.node, 'Resolve the owning canonical family barrel.');
+  }
+  return exports;
+}
+
+function familyExports(model, filename) {
+  const source = model.program.getSourceFile(filename);
+  const module = source && model.checker.getSymbolAtLocation(source);
+  if (!module) {
+    return undefined;
+  }
+  return new Set(
+    model.checker
+      .getExportsOfModule(module)
+      .map((symbol) =>
+        symbol.flags & model.ts.SymbolFlags.Alias
+          ? model.checker.getAliasedSymbol(symbol)
+          : symbol
+      )
+  );
+}
+
+function publicDetail(model, symbol, publicTypes) {
+  if (publicTypes.has(symbol)) {
+    return true;
+  }
+  return symbol.declarations.some((declaration) => {
+    const relative = path
+      .relative(model.root, declaration.getSourceFile().fileName)
+      .replaceAll('\\', '/');
+    const family = relative.match(/^src\/components\/aichat-[^/]+\//)?.[0];
+    return (
+      family &&
+      familyExports(model, path.resolve(model.root, family, 'index.ts'))?.has(
+        symbol
+      )
+    );
+  });
+}
+
+function namedContractSymbol(model, name, context) {
+  const { ts, checker } = model;
+  const parts = name.getText().split('.');
+  let symbol = checker.resolveName(
+    parts.shift(),
+    context,
+    ts.SymbolFlags.Type | ts.SymbolFlags.Namespace | ts.SymbolFlags.Alias,
+    false
+  );
+  const unalias = (entry) =>
+    entry?.flags & ts.SymbolFlags.Alias
+      ? checker.getAliasedSymbol(entry)
+      : entry;
+  symbol = unalias(symbol);
+  for (const part of parts) {
+    symbol =
+      symbol &&
+      unalias(
+        checker.getExportsOfModule(symbol).find((entry) => entry.name === part)
+      );
+  }
+  if (!symbol?.declarations?.length) {
+    model.fail(context, `Resolve the public event type ${name.getText()}.`);
+  }
+  return symbol;
+}
+
+function contractDetails(model, node, context, publicTypes) {
+  const { ts } = model;
+  if (ts.isUnionTypeNode(node)) {
+    return node.types.flatMap((entry) =>
+      contractDetails(model, entry, context, publicTypes)
+    );
+  }
+  if (
+    ts.isLiteralTypeNode(node) &&
+    node.literal.kind === ts.SyntaxKind.NullKeyword
+  ) {
+    return [null];
+  }
+  if (!ts.isTypeReferenceNode(node) || node.typeArguments?.length) {
+    model.fail(
+      context,
+      `Use the exported public detail type instead of ${node.getText()}.`
+    );
+  }
+  const symbol = namedContractSymbol(model, node.typeName, context);
+  const type = model.checker.getDeclaredTypeOfSymbol(symbol);
+  if (
+    type.flags &
+    (ts.TypeFlags.Any |
+      ts.TypeFlags.Unknown |
+      ts.TypeFlags.Never |
+      ts.TypeFlags.TypeParameter)
+  ) {
+    model.fail(
+      context,
+      `Use a concrete exported public detail type instead of ${node.getText()}.`
+    );
+  }
+  if (publicTypes && !publicDetail(model, symbol, publicTypes)) {
+    model.fail(
+      context,
+      `Export public event detail ${node.getText()} from its owning canonical family.`
+    );
+  }
+  return [symbol];
+}
+
+function eventContract(model, node, context, publicTypes) {
+  const { ts, checker } = model;
+  while (ts.isParenthesizedTypeNode(node)) {
+    node = node.type;
+  }
+  if (!ts.isTypeReferenceNode(node)) {
+    model.fail(context, 'Use a concrete named DOM event type.');
+  }
+  const symbol = namedContractSymbol(model, node.typeName, context);
+  const custom = checker.resolveName(
+    'CustomEvent',
+    undefined,
+    ts.SymbolFlags.Type,
+    false
+  );
+  if (symbol === custom) {
+    if (node.typeArguments?.length !== 1) {
+      model.fail(context, 'Give CustomEvent its exported public detail type.');
+    }
+    return {
+      symbol,
+      details: contractDetails(
+        model,
+        node.typeArguments[0],
+        context,
+        publicTypes
+      ),
+    };
+  }
+  const event = checker.resolveName(
+    'Event',
+    undefined,
+    ts.SymbolFlags.Type,
+    false
+  );
+  const type = checker.getDeclaredTypeOfSymbol(symbol);
+  if (
+    node.typeArguments?.length ||
+    !event ||
+    !checker.isTypeAssignableTo(type, checker.getDeclaredTypeOfSymbol(event))
+  ) {
+    model.fail(
+      context,
+      'Use a concrete native DOM event type or typed CustomEvent.'
+    );
+  }
+  return { symbol, details: [] };
+}
+
+function pairContract(model, pair) {
+  const { ts } = model;
+  const source = ts.createSourceFile(
+    'wrapper-contract.ts',
+    `type Contract = ${pair.type};`,
+    ts.ScriptTarget.Latest,
+    true
+  );
+  const node = source.statements[0]?.type;
+  if (!node || source.parseDiagnostics.length) {
+    model.fail(
+      pair.element.node,
+      `Resolve the manifest event type ${pair.type}.`
+    );
+  }
+  return eventContract(
+    model,
+    node,
+    pair.element.node,
+    canonicalFamily(model, pair.element)
+  );
+}
+
+function sameContract(actual, expected) {
+  return (
+    actual.symbol === expected.symbol &&
+    actual.details.every((symbol) => expected.details.includes(symbol)) &&
+    expected.details.every((symbol) => actual.details.includes(symbol))
+  );
+}
+
+const hostProtocolTypes = new Map([
+  ['mount', 'MarkdownPluginHostMountDetail'],
+  ['update', 'MarkdownPluginHostUpdateDetail'],
+  ['unmount', 'MarkdownPluginHostUnmountDetail'],
+]);
+
+function hostProtocolRoles(model) {
+  const roles = new Map();
+  const markdown = model.elements.find(
+    (element) =>
+      element.module === 'src/components/aichat-markdown/aichat-markdown.ts'
+  );
+  const publicTypes = markdown && canonicalFamily(model, markdown);
+  for (const source of model.sources) {
+    model.visit(source, (node) => {
+      const tags = model.ts
+        .getJSDocTags(node)
+        .filter((tag) => tag.tagName.text === 'reactHostProtocol');
+      if (!tags.length) {
+        return;
+      }
+      const role =
+        typeof tags[0].comment === 'string' ? tags[0].comment.trim() : '';
+      const validDeclaration =
+        model.ts.isInterfaceDeclaration(node) ||
+        model.ts.isTypeAliasDeclaration(node);
+      const symbol = node.name && model.symbol(node.name);
+      if (
+        tags.length !== 1 ||
+        !validDeclaration ||
+        !markdown ||
+        path.relative(model.root, source.fileName).replaceAll('\\', '/') !==
+          'src/components/aichat-markdown/utils/plugin-host-container.ts' ||
+        node.name.text !== hostProtocolTypes.get(role) ||
+        !publicTypes.has(symbol) ||
+        roles.has(role)
+      ) {
+        model.fail(
+          node,
+          'Use one distinct Markdown hosting protocol role on its existing exported public detail declaration.'
+        );
+      }
+      roles.set(role, symbol);
+    });
+  }
+  if (markdown && roles.size !== hostProtocolTypes.size) {
+    model.fail(
+      markdown.node,
+      'Declare all three Markdown hosting protocol detail roles.'
+    );
+  }
+  return { markdown, roles };
+}
+
+function hostProtocolPairs(model, pairs, contracts) {
+  const { markdown, roles } = hostProtocolRoles(model);
+  const exempt = new Set();
+  for (const [role, symbol] of roles) {
+    const matches = pairs.filter(
+      (pair) =>
+        pair.element === markdown &&
+        contracts.get(pair).details.length === 1 &&
+        contracts.get(pair).details[0] === symbol
+    );
+    if (matches.length !== 1) {
+      model.fail(
+        markdown.node,
+        `Resolve exactly one Markdown hosting event for its ${role} detail role.`
+      );
+    }
+    exempt.add(matches[0]);
+  }
+  return exempt;
+}
+
+function validateWrapper(model, wrapper, pairs, contracts, exempt) {
+  const owned = pairs.filter((pair) => pair.element === wrapper.element);
+  for (const callback of wrapper.callbacks) {
+    const pair = owned.find((entry) => entry.name === callback.eventName);
+    if (!pair) {
+      model.fail(
+        callback.node,
+        `Undocumented wrapper binding ${callback.callback} for ${callback.eventName}.`
+      );
+    }
+    if (exempt.has(pair)) {
+      model.fail(
+        callback.node,
+        'Markdown hosting protocol events are not React callback props.'
+      );
+    }
+    const actual = eventContract(model, callback.typeNode, callback.node);
+    if (!sameContract(actual, contracts.get(pair))) {
+      model.fail(
+        callback.node,
+        `Cast ${callback.callback} with EventName<${pair.type}> using its exported public detail type.`
+      );
+    }
+  }
+  for (const pair of owned) {
+    if (
+      !exempt.has(pair) &&
+      !wrapper.callbacks.some((callback) => callback.eventName === pair.name)
+    ) {
+      model.fail(
+        wrapper.node,
+        `Missing React callback for ${wrapper.element.tagName} event ${pair.name}.`
+      );
+    }
+  }
+}
+
+export function validateWrapperEvents(model, wrappers, pairs) {
+  requireEventTypes(model, wrappers);
+  if (!pairs) {
+    return;
+  }
+  const contracts = new Map(
+    pairs.map((pair) => [pair, pairContract(model, pair)])
+  );
+  const exempt = hostProtocolPairs(model, pairs, contracts);
+  for (const pair of pairs) {
+    if (
+      !exempt.has(pair) &&
+      !wrappers.some((wrapper) => wrapper.element === pair.element)
+    ) {
+      model.fail(
+        pair.element.node,
+        `Missing exported React wrapper for ${pair.element.tagName} event ${pair.name}.`
+      );
+    }
+  }
+  const checked = new Set();
+  for (const wrapper of wrappers) {
+    if (!checked.has(wrapper.node)) {
+      validateWrapper(model, wrapper, pairs, contracts, exempt);
+      checked.add(wrapper.node);
     }
   }
 }

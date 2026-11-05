@@ -164,7 +164,7 @@ function BaseButtonItemComponent({
     );
   }
   const RenderIcon = renderIcon; // todo: enable passing custom icon
-  const buttonKind = getButtonKind(kind) || 'primary';
+  const buttonKind = getButtonKind(kind) || BUTTON_KIND.PRIMARY;
   const isStandard = is === 'standard-button';
 
   const commonBtnProps = {
@@ -174,12 +174,9 @@ function BaseButtonItemComponent({
     }),
     disabled,
     href: url,
-    kind: isStandard
-      ? (buttonKind as BUTTON_KIND)
-      : (buttonKind as CHAT_BUTTON_KIND),
+    kind: buttonKind,
     onClick,
     rel: url ? 'noopener noreferrer' : undefined,
-    size: isStandard ? (size as BUTTON_SIZE) : (size as CHAT_BUTTON_SIZE),
     target: linkTarget,
     ref: setButtonRef,
   };
@@ -191,11 +188,25 @@ function BaseButtonItemComponent({
     </>
   );
 
-  if (is === 'standard-button') {
-    return <Button {...commonBtnProps}>{body}</Button>;
+  if (isStandard) {
+    const buttonSize = Object.values(BUTTON_SIZE).find(
+      (value) => value === size
+    );
+    return (
+      <Button {...commonBtnProps} size={buttonSize}>
+        {body}
+      </Button>
+    );
   }
 
-  return <ChatButton {...commonBtnProps}>{body}</ChatButton>;
+  const buttonSize =
+    Object.values(CHAT_BUTTON_SIZE).find((value) => value === size) ??
+    CHAT_BUTTON_SIZE.LARGE;
+  return (
+    <ChatButton {...commonBtnProps} size={buttonSize}>
+      {body}
+    </ChatButton>
+  );
 }
 
 function getButtonKind(style: BUTTON_KIND | 'LINK'): BUTTON_KIND {

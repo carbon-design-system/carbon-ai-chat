@@ -7,21 +7,20 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { createComponent } from '@lit/react';
+import { createComponent, type EventName } from '@lit/react';
 import React from 'react';
 import { InputSendControlElement } from '../components/aichat-prompt-line/index.js';
-import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
-const CDSAIChatInputSendControl = withWebComponentBridge(
-  createComponent({
-    tagName: InputSendControlElement.is,
-    elementClass: InputSendControlElement,
-    react: React,
-    events: {
-      onSend: 'cds-aichat-input-send',
-      onStopStreaming: 'cds-aichat-input-stop-streaming',
-    },
-  })
-);
+const CDSAIChatInputSendControl = createComponent({
+  tagName: InputSendControlElement.is,
+  elementClass: InputSendControlElement,
+  react: React,
+  events: {
+    onSend: 'cds-aichat-input-send' as EventName<CustomEvent<null>>,
+    onStopStreaming: 'cds-aichat-input-stop-streaming' as EventName<
+      CustomEvent<null>
+    >,
+  },
+});
 
 export default CDSAIChatInputSendControl;
