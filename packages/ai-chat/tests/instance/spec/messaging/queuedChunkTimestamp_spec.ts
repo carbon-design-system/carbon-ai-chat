@@ -44,7 +44,7 @@ it('timestamps the first public chunk when its queued updater runs', async () =>
   await entered;
 
   const now = jest.spyOn(Date, 'now').mockReturnValue(1000);
-  const writes = jest.spyOn(serviceManager.messageUpsertCoordinator, 'upsert');
+  const writes = jest.spyOn(serviceManager.messageCoordinator, 'upsertMessage');
   let chunkSettled = false;
   let chunk: Promise<void>;
   try {
