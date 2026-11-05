@@ -57,3 +57,12 @@ export function sortCitations<T extends CitationWithRanges>(
   );
   return withRanges.concat(withoutRanges);
 }
+
+/** Returns the hostname of a URL, or `undefined` when it doesn't parse. */
+export function citationHostname(url: string): string | undefined {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return undefined;
+  }
+}
