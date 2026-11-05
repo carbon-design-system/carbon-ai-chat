@@ -69,11 +69,9 @@ function makeStubManager(initialMessages: Record<string, unknown> = {}) {
     },
     fire,
     actions: chatActions,
-    receiveService: {
+    messageCoordinator: {
       retainAgentItemPositions: jest.fn(),
       handleConnectToHumanAgent: jest.fn().mockResolvedValue(undefined),
-    },
-    messageCoordinator: {
       finalizeStreamingMessage,
       getCurrentMessageController: jest.fn(),
       isRequestFromPreviousConversation: jest.fn().mockReturnValue(false),
@@ -462,7 +460,7 @@ describe('UpsertWorkflow', () => {
       };
       state.assistantMessageState.localMessageIDs = ['item1'];
       jest
-        .mocked(manager.receiveService.handleConnectToHumanAgent)
+        .mocked(manager.messageCoordinator.handleConnectToHumanAgent)
         .mockImplementation(async () => {
           if (boundary === 'clearAll') {
             coord.clearAll();
@@ -488,7 +486,7 @@ describe('UpsertWorkflow', () => {
       }));
 
       expect(
-        manager.receiveService.handleConnectToHumanAgent
+        manager.messageCoordinator.handleConnectToHumanAgent
       ).toHaveBeenCalledTimes(1);
       expect(fire.mock.calls.map(([event]) => event.type)).toEqual([
         BusEventType.PRE_RECEIVE,

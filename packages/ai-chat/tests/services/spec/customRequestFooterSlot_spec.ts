@@ -12,7 +12,6 @@ import { EventBus } from '../../../src/chat/events/EventBus';
 import { HydrationService } from '../../../src/chat/services/HydrationService';
 import { InputActionsService } from '../../../src/chat/services/InputActionsService';
 import { PublicStateService } from '../../../src/chat/services/PublicStateService';
-import { ReceiveService } from '../../../src/chat/services/messaging/inbound/ReceiveService';
 import { MessageCoordinator } from '../../../src/chat/services/messaging/MessageCoordinator';
 import { SlotEventService } from '../../../src/chat/services/messaging/presentation/SlotEventService';
 import { ViewService } from '../../../src/chat/services/ViewService';
@@ -96,7 +95,6 @@ const createServiceManagerStub = () => {
   (serviceManager as any).publicStateService = new PublicStateService(
     serviceManager
   );
-  (serviceManager as any).receiveService = new ReceiveService(serviceManager);
   const messageMethods = serviceManager.messageCoordinator;
   serviceManager.messageCoordinator = new MessageCoordinator(serviceManager);
   for (const [name, value] of Object.entries(messageMethods)) {

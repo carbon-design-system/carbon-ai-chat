@@ -148,14 +148,14 @@ class ChatInstanceService {
     );
   }
 
-  /** @see ReceiveService.receive */
+  /** @see MessageCoordinator.receive */
   async receive(
     message: MessageResponse,
     isLatestWelcomeNode = false,
     requestMessage?: MessageRequest,
     origin: 'addMessage' | 'chunk' = 'addMessage'
   ) {
-    return this.serviceManager.receiveService.receive(
+    return this.serviceManager.messageCoordinator.receive(
       message,
       isLatestWelcomeNode,
       requestMessage,
@@ -163,14 +163,14 @@ class ChatInstanceService {
     );
   }
 
-  /** @see ReceiveService.removeMessages */
+  /** @see MessageCoordinator.removeMessages */
   async removeMessages(messageIDs: string[]) {
-    return this.serviceManager.receiveService.removeMessages(messageIDs);
+    return this.serviceManager.messageCoordinator.removeMessages(messageIDs);
   }
 
-  /** @see ReceiveService.insertHistory */
+  /** @see MessageCoordinator.insertHistory */
   async insertHistory(messages: HistoryItem[]) {
-    return this.serviceManager.receiveService.insertHistory(messages);
+    return this.serviceManager.messageCoordinator.insertHistory(messages);
   }
 
   /**

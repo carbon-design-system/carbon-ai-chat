@@ -10,7 +10,8 @@
 import { makeConfigStore } from '../../test_helpers';
 import { MessageCoordinator } from '../../../src/chat/services/messaging/MessageCoordinator';
 import { HydrationService } from '../../../src/chat/services/HydrationService';
-import { ReceiveService } from '../../../src/chat/services/messaging/inbound/ReceiveService';
+import { FullResponseWorkflow } from '../../../src/chat/services/messaging/FullResponseWorkflow';
+import type { MessagePresentationPort } from '../../../src/chat/services/messaging/presentationPort';
 import { ServiceManager } from '../../../src/chat/services/ServiceManager';
 import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
@@ -68,8 +69,7 @@ function createHarness(config: PublicConfig = {}) {
     });
   }
   manager.hydrationService = new HydrationService(manager);
-  const service = new ReceiveService(manager);
-  manager.receiveService = service;
+  const service = manager.messageCoordinator;
 
   const localItems = () => {
     const state = store.getState();
@@ -99,7 +99,7 @@ function response(items: GenericItem[] = [textItem('Hello')]): MessageResponse {
   return { id: 'response-1', output: { generic: items } };
 }
 
-describe('ReceiveService', () => {
+describe('Full response core', () => {
   beforeEach(() => {
     jest.useFakeTimers();
   });
@@ -559,13 +559,20 @@ describe('ReceiveService', () => {
 
   it('returns the core receive and removal promises without an adoption wrapper', () => {
     const pending = resolvablePromise<void>();
-    const receive = jest.fn(() => pending);
-    const removeMessages = jest.fn(() => pending);
-    const service = new ReceiveService({
-      messageCoordinator: { receive, removeMessages },
-    } as unknown as ServiceManager);
+    const receive = jest
+      .spyOn(FullResponseWorkflow.prototype, 'receive')
+      .mockReturnValue(pending);
+    const removeMessages = jest
+      .spyOn(FullResponseWorkflow.prototype, 'removeMessages')
+      .mockReturnValue(pending);
+    const service = new MessageCoordinator(
+      {} as ServiceManager,
+      {} as MessagePresentationPort
+    );
     expect(service.receive(response())).toBe(pending);
     expect(service.removeMessages(['response-1'])).toBe(pending);
+    receive.mockRestore();
+    removeMessages.mockRestore();
     pending.doResolve();
   });
 });

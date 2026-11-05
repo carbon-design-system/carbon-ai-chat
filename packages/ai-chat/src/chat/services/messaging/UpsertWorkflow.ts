@@ -461,7 +461,7 @@ class UpsertWorkflow {
     if (isStale()) {
       return;
     }
-    this.serviceManager.receiveService.retainAgentItemPositions(
+    this.serviceManager.messageCoordinator.retainAgentItemPositions(
       messageID,
       new Set(
         (committedResult.output?.generic ?? []).flatMap((item, index) =>
@@ -762,7 +762,7 @@ class UpsertWorkflow {
         continue;
       }
       try {
-        await this.serviceManager.receiveService.handleConnectToHumanAgent(
+        await this.serviceManager.messageCoordinator.handleConnectToHumanAgent(
           eventItem,
           result,
           () => !this.isStale(stamp, result.request_id),
