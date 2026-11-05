@@ -15,7 +15,7 @@
  * connection alone.
  *
  * A `createChatSDK` function that starts a conversation with no interface arrives with the
- * `@carbon/ai-chat/sdk` entry point in 2.0.0.
+ * `@carbon/ai-chat/sdk` entry point in a 2.x minor release.
  *
  * @typeParam S The state that is saved and restored.
  * @category SDK
