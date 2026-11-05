@@ -471,7 +471,10 @@ class MessageCoordinator {
   private requestQueue = new RequestQueue();
   private requests = new WeakMap<RequestToken, PendingMessageRequest>();
 
-  /** The attached view's port, looked up on each call. */
+  /**
+   * The attached view's port, looked up on each call. `view?.` here and in the
+   * observer and agent service: unit tests build these on partial managers.
+   */
   private get presentation(): MessagePresentationPort | undefined {
     return this.serviceManager.view?.current?.messaging;
   }
