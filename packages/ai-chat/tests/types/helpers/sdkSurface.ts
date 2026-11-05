@@ -46,6 +46,35 @@ function resolve(checker: ts.TypeChecker, symbol: ts.Symbol) {
     : symbol;
 }
 
+function referencedSymbol(
+  checker: ts.TypeChecker,
+  node: ts.TypeReferenceNode | ts.ExpressionWithTypeArguments
+) {
+  const name = ts.isTypeReferenceNode(node) ? node.typeName : node.expression;
+  return checker.getSymbolAtLocation(
+    ts.isQualifiedName(name) ? name.right : name
+  );
+}
+
+/** The defaults of the type parameters a reference with `given` arguments leaves out. */
+function omittedDefaults(
+  checker: ts.TypeChecker,
+  symbol: ts.Symbol | undefined,
+  given: number
+) {
+  if (!symbol) {
+    return [];
+  }
+  return (resolve(checker, symbol).declarations ?? []).flatMap((declaration) =>
+    ts
+      .getEffectiveTypeParameterDeclarations(
+        declaration as ts.DeclarationWithTypeParameters
+      )
+      .slice(given)
+      .flatMap((parameter) => (parameter.default ? [parameter.default] : []))
+  );
+}
+
 /**
  * Every type an SDK host can reach from {@link SDK_ROOTS}, plus the payloads of the events in
  * `ChatSDKEventType`. The walk follows type references through members, heritage clauses, and type
@@ -102,25 +131,14 @@ export function sdkSurface() {
       ts.isTypeReferenceNode(node) ||
       ts.isExpressionWithTypeArguments(node)
     ) {
-      const name = ts.isTypeReferenceNode(node)
-        ? node.typeName
-        : node.expression;
-      const symbol = checker.getSymbolAtLocation(
-        ts.isQualifiedName(name) ? name.right : name
-      );
+      const symbol = referencedSymbol(checker, node);
       enqueue(symbol);
-      const given = node.typeArguments?.length ?? 0;
-      for (const declaration of symbol
-        ? (resolve(checker, symbol).declarations ?? [])
-        : []) {
-        const parameters = ts.getEffectiveTypeParameterDeclarations(
-          declaration as ts.DeclarationWithTypeParameters
-        );
-        for (const parameter of parameters.slice(given)) {
-          if (parameter.default) {
-            visit(parameter.default, owner);
-          }
-        }
+      for (const fallback of omittedDefaults(
+        checker,
+        symbol,
+        node.typeArguments?.length ?? 0
+      )) {
+        visit(fallback, owner);
       }
       if (owner.name === 'ChatSDKEventType' && symbol) {
         sdkEvents.add(resolve(checker, symbol));
