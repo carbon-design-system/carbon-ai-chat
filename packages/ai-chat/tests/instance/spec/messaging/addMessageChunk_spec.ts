@@ -73,7 +73,10 @@ describe('ChatInstance.messaging.addMessageChunk', () => {
       type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
       handler: chunkEvent,
     });
-    const write = jest.spyOn(serviceManager.messageUpsertCoordinator, 'upsert');
+    const write = jest.spyOn(
+      serviceManager.messageCoordinator,
+      'upsertMessage'
+    );
     const pendingUpsert = instance.messaging.upsertMessage(
       'queued-chunk',
       MessageState.STREAMING,
@@ -3036,8 +3039,8 @@ describe('ChatInstance.messaging.addMessageChunk', () => {
       const { instance, store, serviceManager } =
         await renderChatAndGetInstanceWithStore(createBaseConfig());
       const upsert = jest.spyOn(
-        serviceManager.messageUpsertCoordinator,
-        'upsert'
+        serviceManager.messageCoordinator,
+        'upsertMessage'
       );
       const dispatch = jest.spyOn(store, 'dispatch');
       const partial = partialChunk('path-1', 'Hi');
@@ -3120,8 +3123,8 @@ describe('ChatInstance.messaging.addMessageChunk', () => {
         partialChunk(responseId, 'Streamed')
       );
       const upsert = jest.spyOn(
-        serviceManager.messageUpsertCoordinator,
-        'upsert'
+        serviceManager.messageCoordinator,
+        'upsertMessage'
       );
       const dispatch = jest.spyOn(store, 'dispatch');
 

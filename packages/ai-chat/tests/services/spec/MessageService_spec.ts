@@ -108,11 +108,11 @@ const createServiceManagerStub = (
 
   // MessageService resolves this collaborator through ServiceManager to answer
   // "is an upsertMessage stream still running".
-  const messageUpsertCoordinator = {
-    hasStreamingMessages: jest.fn().mockReturnValue(false),
-    endAllStreaming: jest.fn(),
-    endStreamingForRequest: jest.fn(),
-    endStreamingMessage: jest.fn((messageID, generation) => {
+  const incomingMethods = {
+    hasIncomingStreamingMessages: jest.fn().mockReturnValue(false),
+    endAllIncomingStreaming: jest.fn(),
+    endIncomingStreamingForRequest: jest.fn(),
+    endIncomingStreamingMessage: jest.fn((messageID, generation) => {
       serviceManager.messageCoordinator.responseFinished(messageID, generation);
       store.dispatch(storeActions.endMessageStreaming(messageID));
     }),
@@ -124,7 +124,6 @@ const createServiceManagerStub = (
     actions,
     eventBus,
     instance: {},
-    messageUpsertCoordinator,
     messageCoordinator: {
       hideStopStreamingButtonIfNoUpsertStreaming: jest.fn(),
       updateStreamingCancellation: jest.fn(),
@@ -132,6 +131,7 @@ const createServiceManagerStub = (
   } as unknown as ServiceManager;
 
   serviceManager.messageCoordinator = new MessageCoordinator(serviceManager);
+  Object.assign(serviceManager.messageCoordinator, incomingMethods);
   serviceManager.chunkProcessingService = new ChunkProcessingService(
     serviceManager
   );
@@ -1168,8 +1168,8 @@ describe('MessageService', () => {
     it('is true while an upsert stream is active', () => {
       const { serviceManager, messageService } = build();
       (
-        serviceManager.messageUpsertCoordinator
-          .hasStreamingMessages as jest.Mock
+        serviceManager.messageCoordinator
+          .hasIncomingStreamingMessages as jest.Mock
       ).mockReturnValue(true);
 
       // The chunk registry is null for a pure-upsert flow, which is exactly why the
@@ -1184,8 +1184,8 @@ describe('MessageService', () => {
         isDisabled: false,
       });
       (
-        serviceManager.messageUpsertCoordinator
-          .hasStreamingMessages as jest.Mock
+        serviceManager.messageCoordinator
+          .hasIncomingStreamingMessages as jest.Mock
       ).mockReturnValue(true);
 
       messageService.hideStopStreamingButtonIfIdle();
@@ -1245,8 +1245,8 @@ describe('MessageService', () => {
         isDisabled: false,
       });
       (
-        serviceManager.messageUpsertCoordinator
-          .hasStreamingMessages as jest.Mock
+        serviceManager.messageCoordinator
+          .hasIncomingStreamingMessages as jest.Mock
       ).mockReturnValue(true);
 
       messageService.hideStopStreamingButtonIfNoUpsertStreaming();

@@ -107,9 +107,9 @@ describe('upsert rendering and public-state integration', () => {
     );
     expect(instance.state.get().status).toBe('streaming');
     await serviceManager.messageCoordinator.cancelCurrentMessageRequest();
-    expect(serviceManager.messageUpsertCoordinator.hasStreamingMessages()).toBe(
-      false
-    );
+    expect(
+      serviceManager.messageCoordinator.hasIncomingStreamingMessages()
+    ).toBe(false);
     expect(instance.state.get().status).toBe('ready');
   });
 
@@ -130,7 +130,7 @@ describe('upsert rendering and public-state integration', () => {
         await serviceManager.receiveService.removeMessages(['mixed']);
       }
       expect(
-        serviceManager.messageUpsertCoordinator.hasStreamingMessages()
+        serviceManager.messageCoordinator.hasIncomingStreamingMessages()
       ).toBe(false);
       expect(instance.state.get().status).toBe('ready');
     }
@@ -158,9 +158,9 @@ describe('upsert rendering and public-state integration', () => {
       await renderChatAndGetInstanceWithStore(config);
     const sending = instance.send('start');
     await completed;
-    expect(serviceManager.messageUpsertCoordinator.hasStreamingMessages()).toBe(
-      false
-    );
+    expect(
+      serviceManager.messageCoordinator.hasIncomingStreamingMessages()
+    ).toBe(false);
     expect(instance.state.get().status).toBe('streaming');
     releaseSend.doResolve();
     await sending;

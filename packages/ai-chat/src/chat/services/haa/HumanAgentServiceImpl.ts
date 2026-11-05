@@ -543,7 +543,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
       updateFilesUploadInProgress(this.uploadingFiles.size > 0)
     );
 
-    const write = serviceManager.messageUpsertCoordinator.trackWrite(
+    const write = serviceManager.messageCoordinator.trackIncomingWrite(
       originalMessage.id
     );
     const setCurrentMessageErrorState = (errorState: MessageErrorState) => {
