@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { fixture, html, expect, oneEvent } from '@open-wc/testing';
+import { fixture, html, expect, oneEvent, aTimeout } from '@open-wc/testing';
 import { sendKeys } from '@web/test-runner-commands';
 import prefix from '../../../globals/settings.js';
 import '../index.js';
@@ -268,6 +268,184 @@ describe(blockClass, () => {
       const { detail } = await eventPromise;
 
       expect(detail.scrollTop).to.equal(50);
+    });
+  });
+
+  describe('autoscroll engine', () => {
+    const buttonSelector = '[part="scroll-down-button"]';
+
+    /**
+     * Renders a scrollable shell with both handles and the built-in scroll-down button.
+     * The shell is placed inside a 200 px tall box so content taller than that will overflow.
+     */
+    async function renderWithButton(rowHeight: number) {
+      const box = await fixture<HTMLElement>(html`
+        <div style="block-size:200px;inline-size:200px">
+          <cds-aichat-messages-shell
+            scroll-down-button-label="Scroll to bottom"
+            top-handle-label="Top"
+            bottom-handle-label="Bottom">
+            <div
+              id="row1"
+              data-message-id="row1"
+              style="block-size:${rowHeight}px"></div>
+          </cds-aichat-messages-shell>
+        </div>
+      `);
+      const shell = box.querySelector<CDSAIChatMessagesShell>(
+        'cds-aichat-messages-shell'
+      )!;
+      const scroller =
+        shell.shadowRoot!.querySelector<HTMLElement>(scrollerSelector)!;
+      const button =
+        shell.shadowRoot!.querySelector<HTMLButtonElement>(buttonSelector)!;
+      return { shell, scroller, button };
+    }
+
+    it('renders the built-in scroll-down button when a label is provided', async () => {
+      const el = await fixture<CDSAIChatMessagesShell>(html`
+        <cds-aichat-messages-shell scroll-down-button-label="Go to bottom">
+        </cds-aichat-messages-shell>
+      `);
+      const button = el.shadowRoot!.querySelector(buttonSelector);
+      expect(button).to.exist;
+      expect(button!.textContent?.trim()).to.equal('Go to bottom');
+    });
+
+    it('does not render the scroll-down button when no label is provided', async () => {
+      const root = await renderShell();
+      expect(root.querySelector(buttonSelector)).to.be.null;
+    });
+
+    it('shows the scroll-down button when scrolled away from the bottom', async () => {
+      // Render with a tall row so the list overflows.
+      const { scroller, button } = await renderWithButton(600);
+
+      // Start at the top — far from the bottom.
+      scroller.scrollTop = 0;
+      scroller.dispatchEvent(new Event('scroll'));
+
+      // Wait for the 200 ms trailing throttle to fire.
+      await aTimeout(250);
+
+      expect(button.hidden).to.be.false;
+    });
+
+    it('hides the scroll-down button when back at the bottom', async () => {
+      const { scroller, button } = await renderWithButton(600);
+
+      // Scroll away first so the button can appear.
+      scroller.scrollTop = 0;
+      scroller.dispatchEvent(new Event('scroll'));
+      await aTimeout(250);
+
+      // Scroll back to the bottom.
+      scroller.scrollTop = scroller.scrollHeight - scroller.clientHeight;
+      scroller.dispatchEvent(new Event('scroll'));
+      await aTimeout(250);
+
+      expect(button.hidden).to.be.true;
+    });
+
+    it('hides the scroll-down button while a scroll handle has focus', async () => {
+      const { shell, scroller, button } = await renderWithButton(600);
+
+      // Scroll away so the button would normally be visible.
+      scroller.scrollTop = 0;
+      scroller.dispatchEvent(new Event('scroll'));
+      await aTimeout(250);
+
+      // Now focus one of the handles — button must be suppressed.
+      const handle =
+        shell.shadowRoot!.querySelector<HTMLButtonElement>(handleSelector)!;
+      handle.focus();
+      await aTimeout(250);
+
+      expect(button.hidden).to.be.true;
+    });
+
+    it('clicking the scroll-down button scrolls the list to the bottom', async () => {
+      const { scroller, button } = await renderWithButton(600);
+
+      // Scroll to the top.
+      scroller.scrollTop = 0;
+      scroller.dispatchEvent(new Event('scroll'));
+      await aTimeout(250);
+
+      // Click the button and wait for the rAF + scroll to settle.
+      button.click();
+      // Allow two rAF cycles plus some breathing room.
+      await aTimeout(200);
+
+      // The scroller should be at or near the bottom.
+      // Smooth scroll may not complete fully in headless browsers, so accept
+      // any position past the halfway mark as evidence the scroll fired.
+      const maxScrollTop = scroller.scrollHeight - scroller.clientHeight;
+      expect(scroller.scrollTop).to.be.greaterThan(maxScrollTop / 2);
+    });
+
+    it('exposes the scroll-down button hidden state as a property', async () => {
+      const { button } = await renderWithButton(600);
+      // The hidden attribute must be a boolean that hosts can read.
+      expect(typeof button.hidden).to.equal('boolean');
+    });
+
+    it('stops scroll handling after removal from the DOM', async () => {
+      const { shell } = await renderWithButton(600);
+      const parent = shell.parentElement!;
+
+      // Remove the shell — this calls disconnectedCallback.
+      parent.removeChild(shell);
+
+      // No error should be thrown, and the public API returns a safe default.
+      expect(() => shell.getContainerScrollBottom()).to.not.throw;
+      expect(shell.getContainerScrollBottom()).to.equal(0);
+    });
+
+    it('re-connects the engine after the shell is moved in the DOM', async () => {
+      const { shell, scroller } = await renderWithButton(600);
+      const parent = shell.parentElement!;
+
+      // Move the element (remove + re-append triggers disconnect + reconnect).
+      parent.removeChild(shell);
+      parent.appendChild(shell);
+      await shell.updateComplete;
+
+      // Engine should be alive again: scroll events still fire.
+      const eventPromise = oneEvent(shell, scrollEvent);
+      scroller.scrollTop = 50;
+      const { detail } = await eventPromise;
+      expect(detail.scrollTop).to.equal(50);
+    });
+
+    it('builds a portable message list from slotted rows', async () => {
+      const el = await fixture<CDSAIChatMessagesShell>(html`
+        <cds-aichat-messages-shell>
+          <div id="msg1" data-message-id="msg1" data-aichat-pinnable></div>
+          <div id="msg2" data-message-id="msg2" data-aichat-response></div>
+        </cds-aichat-messages-shell>
+      `);
+      await el.updateComplete;
+
+      const messages = el.getMessages();
+      expect(messages.length).to.equal(2);
+      expect(messages[0].id).to.equal('msg1');
+      expect(messages[0].isPinnable).to.be.true;
+      expect(messages[0].isStreaming).to.be.false;
+      expect(messages[1].id).to.equal('msg2');
+      expect(messages[1].isResponse).to.be.true;
+    });
+
+    it('hasMessage returns true for a slotted row id', async () => {
+      const el = await fixture<CDSAIChatMessagesShell>(html`
+        <cds-aichat-messages-shell>
+          <div id="m1" data-message-id="owner1"></div>
+        </cds-aichat-messages-shell>
+      `);
+      await el.updateComplete;
+
+      expect(el.hasMessage('owner1')).to.be.true;
+      expect(el.hasMessage('unknown')).to.be.false;
     });
   });
 });
