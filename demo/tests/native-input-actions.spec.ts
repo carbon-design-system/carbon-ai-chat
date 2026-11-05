@@ -59,7 +59,7 @@ async function prepare(
   }
   await page.waitForFunction(
     () =>
-      window.chatInstance?.serviceManager?.store.getState()
+      window.chatInstance?.serviceManager?.store.getState().view
         .initialViewChangeComplete
   );
   if (mode === 'config') {
