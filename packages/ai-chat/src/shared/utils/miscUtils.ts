@@ -11,8 +11,6 @@
  * Miscellaneous utilities that don't fit anywhere else.
  */
 
-import type { ErrorInfo } from 'react';
-
 import { FileUpload } from '../../types/config/ServiceDeskConfig';
 import { FileStatusValue, WA_CONSOLE_PREFIX } from './constants';
 import { OnErrorData, OnErrorType } from '../../types/config/ErrorConfig';
@@ -85,12 +83,20 @@ function isEnableDebugLog() {
 }
 
 /**
+ * The component-stack details a render error boundary reports. React's
+ * `ErrorInfo` and the native views' own details both fit this shape.
+ */
+interface RenderErrorInfo {
+  componentStack?: string | null;
+}
+
+/**
  * Returns a {@link OnErrorData} that represents an error that occurred while rendering a component.
  */
 function createDidCatchErrorData(
   component: string,
   error: Error,
-  errorInfo: ErrorInfo,
+  errorInfo: RenderErrorInfo,
   isCatastrophicError?: boolean
 ): OnErrorData {
   return {
