@@ -7,10 +7,11 @@
  *  @license
  */
 
+// The pure helpers module: the prompt-line entry registers its elements.
 import {
   getRawText,
   textToDoc,
-} from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
+} from '@carbon/ai-chat-components/es/components/prompt-line/src/tiptap/json-utils.js';
 import type { Editor, JSONContent } from '@tiptap/core';
 import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 import cloneDeep from 'lodash-es/cloneDeep.js';
