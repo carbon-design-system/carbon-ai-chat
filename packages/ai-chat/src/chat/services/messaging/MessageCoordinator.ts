@@ -47,7 +47,32 @@ import type { AppStateMessages } from '../../../types/state/AppState';
 import { coordinateReasoningEvents } from './coordinateReasoningEvents';
 import { HeadlessReasoningObserver } from './HeadlessReasoningObserver';
 
+import { FullResponseWorkflow } from './FullResponseWorkflow';
+import type { MessageWriteOptions } from '../../store/messageWriteTypes';
+
 class MessageCoordinator {
+  private fullResponseWorkflow?: FullResponseWorkflow;
+
+  private getFullResponseWorkflow() {
+    return (this.fullResponseWorkflow ??= new FullResponseWorkflow(
+      this.serviceManager
+    ));
+  }
+
+  storeReceivedMessage(
+    message: MessageResponse,
+    options: MessageWriteOptions,
+    isCurrent: () => boolean,
+    initialRestartCount: number
+  ): Promise<void> {
+    return this.getFullResponseWorkflow().storeReceivedMessage(
+      message,
+      options,
+      isCurrent,
+      initialRestartCount
+    );
+  }
+
   readonly incomingWriteLifetime = new IncomingWriteLifetime(
     () => this.serviceManager.restartCount
   );
