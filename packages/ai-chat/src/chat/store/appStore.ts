@@ -7,6 +7,7 @@
  *  @license
  */
 import { commitMessageOwnership } from './messageOwnership';
+import type { MessageOwnershipReceipt } from './messageOwnership';
 import { debugLog, isEnableDebugLog } from '../utils/miscUtils';
 
 /**
@@ -99,6 +100,28 @@ export function createAppStore<
   reducer: Reducer<StateShape, ActionType>,
   preloadedState: StateShape
 ): AppStore<StateShape, ActionType> {
+  return createStoreFromReduction(
+    (state, action) => ({ state: reducer(state, action) }),
+    preloadedState
+  );
+}
+
+/** A private chat reduction carries facts already observed while producing state. */
+export interface StoreReduction<StateShape> {
+  state: StateShape;
+  ownership?: MessageOwnershipReceipt;
+}
+
+export function createStoreFromReduction<
+  StateShape,
+  ActionType extends UnknownAction = UnknownAction,
+>(
+  reducer: (
+    state: Readonly<StateShape>,
+    action: Readonly<ActionType>
+  ) => StoreReduction<StateShape>,
+  preloadedState: StateShape
+): AppStore<StateShape, ActionType> {
   let currentState: StateShape = preloadedState;
   const listeners: Set<StoreListener> = new Set();
 
@@ -116,7 +139,8 @@ export function createAppStore<
       );
     }
 
-    const nextState = reducer(previousState, action);
+    const reduction = reducer(previousState, action);
+    const nextState = reduction.state;
     if (nextState !== previousState) {
       if (isEnableDebugLog()) {
         // Compute a shallow set of changed top-level keys for quick visibility.
@@ -137,7 +161,7 @@ export function createAppStore<
         debugLog('[store] notifying listeners', listeners.size);
       }
       currentState = nextState;
-      commitMessageOwnership(store, currentState, action);
+      commitMessageOwnership(store, reduction.ownership, action);
       listeners.forEach((listener) => {
         try {
           listener();
@@ -146,7 +170,7 @@ export function createAppStore<
         }
       });
     } else {
-      commitMessageOwnership(store, currentState, action);
+      commitMessageOwnership(store, reduction.ownership, action);
     }
     return action as ActionType;
   };
