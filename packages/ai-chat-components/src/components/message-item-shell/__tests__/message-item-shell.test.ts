@@ -124,6 +124,38 @@ describe('cds-aichat-message-item-shell', () => {
 
         expect(el.querySelector<HTMLElement>('#avatar')!.hidden).to.be.true;
       });
+
+      it('hides an avatar added to the byline after hide-avatar is set', async () => {
+        const el = await fixture<CDSAIChatMessageItemShell>(html`
+          <cds-aichat-message-item-shell row-type=${rowType} hide-avatar>
+            <cds-aichat-message-byline slot="byline" label="Assistant">
+            </cds-aichat-message-byline>
+          </cds-aichat-message-item-shell>
+        `);
+        const avatar = document.createElement('span');
+        avatar.slot = 'avatar';
+
+        el.querySelector('cds-aichat-message-byline')!.append(avatar);
+        await new Promise((resolve) => setTimeout(resolve));
+
+        expect(avatar.hidden).to.be.true;
+      });
+
+      it('hides an avatar swapped into the avatar slot after hide-avatar is set', async () => {
+        const el = await fixture<CDSAIChatMessageItemShell>(html`
+          <cds-aichat-message-item-shell row-type=${rowType} hide-avatar>
+            <cds-aichat-message-byline slot="byline" label="Assistant">
+              <span id="avatar"></span>
+            </cds-aichat-message-byline>
+          </cds-aichat-message-item-shell>
+        `);
+        const avatar = el.querySelector<HTMLElement>('#avatar')!;
+
+        avatar.slot = 'avatar';
+        await new Promise((resolve) => setTimeout(resolve));
+
+        expect(avatar.hidden).to.be.true;
+      });
     });
   });
 

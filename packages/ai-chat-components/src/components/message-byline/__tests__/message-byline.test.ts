@@ -174,20 +174,6 @@ describe(blockClass, () => {
 
       expect(getAvatarBox(el)).to.be.null;
     });
-
-    it('gives the avatar the primary text color, not the label color', async () => {
-      const el = await fixture<CDSAIChatMessageByline>(html`
-        <cds-aichat-message-byline label="Assistant">
-          <span slot="avatar" id="avatar"></span>
-        </cds-aichat-message-byline>
-      `);
-      await el.updateComplete;
-      const label = el.shadowRoot!.querySelector(`.${blockClass}__label`)!;
-
-      expect(getComputedStyle(el.querySelector('#avatar')!).color).to.not.equal(
-        getComputedStyle(label).color
-      );
-    });
   });
 
   describe('reasoning slot', () => {

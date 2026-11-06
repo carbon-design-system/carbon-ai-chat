@@ -63,23 +63,44 @@ class CDSAIChatMessageItemShell extends LitElement {
   @property({ type: Boolean, attribute: 'hide-avatar', reflect: true })
   hideAvatar = false;
 
+  /**
+   * Watches the slotted byline for an avatar added, removed, or re-slotted
+   * after the byline itself was slotted. `slotchange` does not report those.
+   */
+  private _bylineObserver = new MutationObserver(() => this._syncAvatar());
+
+  connectedCallback() {
+    super.connectedCallback();
+    if (this.hasUpdated) {
+      this._observeByline();
+    }
+  }
+
+  disconnectedCallback() {
+    this._bylineObserver.disconnect();
+    super.disconnectedCallback();
+  }
+
   protected updated(changed: PropertyValues<this>) {
     if (changed.has('hideAvatar')) {
       this._syncAvatar();
     }
   }
 
+  private _getByline(): Element | undefined {
+    const slot = this.renderRoot.querySelector<HTMLSlotElement>(
+      'slot[name="byline"]'
+    );
+    return slot
+      ?.assignedElements({ flatten: true })
+      .find((el) => el.localName === `${prefix}-message-byline`);
+  }
+
   /**
    * Sets `hidden` on the byline's avatar to match `hideAvatar`.
    */
   private _syncAvatar = (): void => {
-    const slot = this.renderRoot.querySelector<HTMLSlotElement>(
-      'slot[name="byline"]'
-    );
-    const byline = slot
-      ?.assignedElements({ flatten: true })
-      .find((el) => el.localName === `${prefix}-message-byline`);
-    const avatar = byline?.querySelector<HTMLElement>(
+    const avatar = this._getByline()?.querySelector<HTMLElement>(
       ':scope > [slot="avatar"]'
     );
     if (avatar) {
@@ -87,10 +108,31 @@ class CDSAIChatMessageItemShell extends LitElement {
     }
   };
 
+  /**
+   * Re-targets the observer at the current byline, then syncs the avatar.
+   */
+  private _handleBylineSlotChange = (): void => {
+    this._observeByline();
+    this._syncAvatar();
+  };
+
+  private _observeByline(): void {
+    this._bylineObserver.disconnect();
+    const byline = this._getByline();
+    if (byline) {
+      this._bylineObserver.observe(byline, {
+        childList: true,
+        attributes: true,
+        attributeFilter: ['slot'],
+        subtree: true,
+      });
+    }
+  }
+
   render() {
     return html`
       <div class="${blockClass}__byline">
-        <slot name="byline" @slotchange=${this._syncAvatar}></slot>
+        <slot name="byline" @slotchange=${this._handleBylineSlotChange}></slot>
       </div>
       <div class="${blockClass}__body">
         <div class="${blockClass}__content">
