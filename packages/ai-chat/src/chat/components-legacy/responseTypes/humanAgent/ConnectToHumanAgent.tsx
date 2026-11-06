@@ -69,7 +69,7 @@ function ConnectToHumanAgent(props: ConnectToHumanAgentProps) {
     (state: AppState) => state.humanAgentState,
     shallowEqual
   );
-  const persistedHumanAgentState = usePublicChatState(
+  const humanAgent = usePublicChatState(
     (state) => state.humanAgent,
     shallowEqual
   );
@@ -90,7 +90,7 @@ function ConnectToHumanAgent(props: ConnectToHumanAgentProps) {
         serviceManager={serviceManager}
         disableUserInputs={childDisableUserInputs}
         humanAgentState={humanAgentState}
-        persistedHumanAgentState={persistedHumanAgentState}
+        persistedHumanAgentState={humanAgent}
         agentDisplayState={agentDisplayState}
         requestFocus={requestFocus}
       />
