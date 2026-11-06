@@ -36,6 +36,7 @@ import {
   makeConfigStore,
   setupAfterEach,
   setupBeforeEach,
+  withPublicState,
 } from '../../test_helpers';
 import { viewActions } from '../../../src/view/state';
 
@@ -92,12 +93,12 @@ async function fixture(
     viewActions.setViewState({ mainWindow: true, launcher: false })
   );
   const eventBus = new EventBus();
-  const manager = {
+  const manager = withPublicState({
     store,
     eventBus,
     intl: createIntl({ locale: 'en', messages: languagePack }),
     actions: { errorOccurred: jest.fn() },
-  } as unknown as ServiceManager;
+  } as unknown as ServiceManager);
   const state = new ChatViewState(manager, { width: 800, height: 600 });
   state.connect();
   states.add(state);

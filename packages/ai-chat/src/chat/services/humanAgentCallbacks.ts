@@ -32,10 +32,7 @@ export class HumanAgentCallbacks {
   };
 
   onUserTyping = (isTyping: boolean) => {
-    if (
-      this.serviceManager.store.getState().persistedToBrowserStorage
-        .humanAgentState.isConnected
-    ) {
+    if (this.serviceManager.instance.state.get().humanAgent.isConnected) {
       this.serviceManager.humanAgentService.userTyping(isTyping);
     }
   };
