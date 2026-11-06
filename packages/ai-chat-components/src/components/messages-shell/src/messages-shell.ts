@@ -30,6 +30,16 @@ const blockClass = `${prefix}-messages-shell`;
 const focusClass = `${blockClass}__scroller--handle-focused`;
 
 /**
+ * Attribute set on the inner `.cds-aichat-messages-shell__scroller` element to
+ * create a per-instance CSS selector. The var-sheet rules are adopted on the
+ * shadow root, so the selector must target an element *inside* the shadow tree —
+ * the host's `id` lives in the light DOM and cannot be matched from inside.
+ *
+ * Pattern mirrors `data-cds-aichat-shell-id` in chat-shell.
+ */
+const INSTANCE_ATTR = 'data-cds-aichat-messages-shell-id';
+
+/**
  * Throttle delay (ms) for updating the scroll-to-bottom button visibility.
  * Matches the 200 ms trailing debounce used in the React MessagesComponent
  * (SCROLL_NOTIFICATION_THROTTLE_MS in MessagesComponent.tsx).
@@ -147,11 +157,19 @@ class CDSAIChatMessagesShell extends LitElement {
   private _showScrollDownButton = false;
 
   /**
-   * Per-instance CSS selector used as the key for the dynamic var-sheet rules.
-   * Set once in connectedCallback and stable for the lifetime of the element.
+   * Per-instance CSS selectors used as the key for the dynamic var-sheet rules.
+   * Built once in firstUpdated after the shadow DOM is ready, then stable for
+   * the lifetime of the element. Keyed on a data attribute set on the scroller
+   * element inside the shadow tree so the selectors match within the adopted sheet.
    */
   private _spacerSelector = '';
   private _floorSelector = '';
+
+  /** scrollTop captured just before rebuilding the portable-message list, passed to the engine as the pre-commit snapshot for Safari scroll-anchoring restore. */
+  private _lastScrollTop: number | null = null;
+
+  /** MutationObserver that watches for data-aichat-streaming / data-aichat-pinnable changes on slotted rows. Rebuilt on every slotchange. */
+  private _rowObserver: MutationObserver | null = null;
 
   // --------------------------------------------------------------------------
   // ScrollHost implementation
@@ -166,6 +184,10 @@ class CDSAIChatMessagesShell extends LitElement {
   /**
    * Write the spacer's min-block-size through the shared CSP-safe stylesheet.
    * Avoids inline `style` attributes, which a strict `style-src-attr` CSP blocks.
+   *
+   * The selector targets the spacer element by its class name, scoped to the
+   * per-instance attribute on `.__scroller`. This keeps the rule inside the
+   * shadow tree where the adopted sheet's selectors apply.
    */
   setSpacerHeight = (px: number): void => {
     if (px === 0) {
@@ -205,24 +227,43 @@ class CDSAIChatMessagesShell extends LitElement {
   connectedCallback() {
     super.connectedCallback();
 
-    // Adopt the shared dynamic var sheet on this shadow root so
-    // setVarsForSelector rules apply inside the component tree.
-    this.updateComplete.then(() => {
-      adoptOnRoot(this.renderRoot as ShadowRoot);
-    });
-
-    // Assign a stable unique ID if the host did not supply one.
-    // This ID anchors the per-instance CSS rules in the var sheet.
-    if (!this.id) {
-      this.id = `${blockClass}-${instanceCount++}`;
-    }
-    this._spacerSelector = `#${this.id} .${blockClass}__spacer`;
-    // The floor targets the content container (parent of the spacer), matching
-    // the React implementation where it targets bottomSpacerRef.current?.parentElement.
-    this._floorSelector = `#${this.id} .${blockClass}__content`;
-
-    // Create and connect the scroll engine, passing this element as the host.
+    // Create the engine immediately so onHostUpdated calls before first render
+    // are safely buffered (the engine guards with `this.disconnected`). The
+    // observer and scroll-listener are attached in firstUpdated once the
+    // shadow DOM has rendered and the scroller element is available.
     this._scroll = new MessagesScrollController(this as unknown as ScrollHost);
+
+    if (this.hasUpdated) {
+      // Re-attaching after a real teardown — shadow DOM already exists.
+      this._connectEngine();
+    }
+    // else: firstUpdated will call _connectEngine on the initial render.
+  }
+
+  protected firstUpdated() {
+    this._connectEngine();
+  }
+
+  /**
+   * Set up the per-instance CSS selectors and connect the scroll engine.
+   * Called from firstUpdated on first mount and from connectedCallback on
+   * re-attachment (matching the chat-shell pattern in shell.ts).
+   */
+  private _connectEngine(): void {
+    // Assign a stable per-instance attribute on the scroller element so the
+    // var-sheet selectors target elements inside the shadow tree.
+    // (The host's `id` is light-DOM and cannot be matched inside an adopted sheet.)
+    const instanceId = `${instanceCount++}`;
+    this._scroller.setAttribute(INSTANCE_ATTR, instanceId);
+
+    const scopedAttr = `[${INSTANCE_ATTR}="${instanceId}"]`;
+    this._spacerSelector = `${scopedAttr} .${blockClass}__spacer`;
+    this._floorSelector = `${scopedAttr} .${blockClass}__content`;
+
+    // Adopt the shared dynamic var sheet so rules written by setVarsForSelector
+    // apply inside this shadow root.
+    adoptOnRoot(this.renderRoot as ShadowRoot);
+
     this._scroll.connect();
   }
 
@@ -230,6 +271,9 @@ class CDSAIChatMessagesShell extends LitElement {
     super.disconnectedCallback();
     this._scroll?.disconnect();
     this._updateScrollDownButton.cancel();
+    // Stop watching slotted rows for attribute changes.
+    this._rowObserver?.disconnect();
+    this._rowObserver = null;
     // Remove any lingering var-sheet rules for this instance.
     clearSelector(this._spacerSelector);
     clearSelector(this._floorSelector);
@@ -247,10 +291,18 @@ class CDSAIChatMessagesShell extends LitElement {
    * `data-aichat-pinnable` and `data-aichat-streaming` to decide scroll targets;
    * these attributes come from `cds-aichat-message-item-shell`. Hosts using
    * custom rows must add the attributes themselves.
+   *
+   * `slotchange` fires on slot-assignment changes (rows added/removed) but not
+   * on in-place attribute mutations. A MutationObserver handles the streaming
+   * flag (see `_connectRowObserver`).
    */
   private _onDefaultSlotChange = (): void => {
+    // Capture scrollTop before the rebuild so the engine can use it as the
+    // pre-commit snapshot for Safari scroll-anchoring restore.
+    this._lastScrollTop = this._scroller?.scrollTop ?? null;
     this._portableMessages = this._buildPortableMessages();
-    this._scroll?.onHostUpdated(null);
+    this._scroll?.onHostUpdated(this._lastScrollTop);
+    this._connectRowObserver();
   };
 
   private _buildPortableMessages(): PortableMessage[] {
@@ -270,6 +322,39 @@ class CDSAIChatMessagesShell extends LitElement {
         isResponse: elem.hasAttribute('data-aichat-response'),
       };
     });
+  }
+
+  /**
+   * Watch each slotted row for changes to the three `data-aichat-*` attributes.
+   * `slotchange` only fires when slot assignments change (rows added/removed),
+   * not when an existing row's attributes are mutated in place. A MutationObserver
+   * catches the in-place case — for example, when `data-aichat-streaming` is
+   * removed after the AI response finishes, triggering the stream-end re-pin.
+   */
+  private _connectRowObserver(): void {
+    this._rowObserver?.disconnect();
+    const elements = this._portableMessages
+      .map((m) => m.element)
+      .filter(Boolean) as HTMLElement[];
+    if (!elements.length) {
+      this._rowObserver = null;
+      return;
+    }
+    this._rowObserver = new MutationObserver(() => {
+      this._lastScrollTop = this._scroller?.scrollTop ?? null;
+      this._portableMessages = this._buildPortableMessages();
+      this._scroll?.onHostUpdated(this._lastScrollTop);
+    });
+    for (const el of elements) {
+      this._rowObserver.observe(el, {
+        attributes: true,
+        attributeFilter: [
+          'data-aichat-pinnable',
+          'data-aichat-streaming',
+          'data-aichat-response',
+        ],
+      });
+    }
   }
 
   // --------------------------------------------------------------------------

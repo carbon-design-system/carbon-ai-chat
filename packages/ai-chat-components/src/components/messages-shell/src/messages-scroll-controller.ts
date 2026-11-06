@@ -29,13 +29,17 @@ import prefix from '../../../globals/settings.js';
 /**
  * A framework-neutral view of a single message row, as seen by the scroll engine.
  * The host computes the semantic flags; the controller only ever needs the element.
+ *
+ * When used with `cds-aichat-messages-shell`, `id` comes from the row element's
+ * `id` attribute and `messageId` from its `data-message-id` attribute.
  */
 export interface PortableMessage {
-  /** Stable per-row id (the local message item's `ui_state.id`). */
+  /** Stable per-row id (the `id` attribute on the row element). */
   id: string;
   /**
-   * The id of the full message this row belongs to. Unlike `id`, it survives a message's
-   * items being rebuilt (e.g. when a stream finalizes).
+   * The id of the full message this row belongs to. Unlike `id`, it survives a
+   * message's rows being rebuilt (e.g. when a stream finalizes). Set via the
+   * `data-message-id` attribute on the row element.
    */
   messageId: string;
   /** The rendered root element for this row, or null if not yet mounted. */
@@ -63,12 +67,12 @@ export interface ScrollOptions {
 }
 
 /**
- * The adapter the host (React `MessagesComponent` today, Lit `messages-shell`
- * later) implements so the controller can read/write the DOM without knowing
- * about the host framework.
+ * The adapter the host implements so the controller can read/write the DOM
+ * without knowing about the host framework. Implemented by
+ * `CDSAIChatMessagesShell` in `@carbon/ai-chat-components`.
  */
 export interface ScrollHost {
-  /** The scrollable container (`.cds-aichat--messages__wrapper`). */
+  /** The scrollable container element. */
   getScrollContainer(): HTMLElement | null;
   /** The bottom spacer element that is measured/grown to keep the pin reachable. */
   getSpacer(): HTMLElement | null;
@@ -1778,9 +1782,9 @@ export class MessagesScrollController {
   };
 
   /**
-   * Public auto-scroll entry point exposed through ChatInstance/AppShell.
-   * In addition to normal auto-scroll resolution, this always runs a spacer
-   * reconciliation pass so external callers get up-to-date pin/spacer geometry.
+   * Public auto-scroll entry point for external callers (e.g. `CDSAIChatMessagesShell`).
+   * Runs a spacer reconciliation pass after normal auto-scroll resolution so
+   * callers get up-to-date pin/spacer geometry.
    */
   doAutoScroll = (options: ScrollOptions = {}): void => {
     try {

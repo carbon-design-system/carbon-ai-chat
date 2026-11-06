@@ -384,22 +384,42 @@ describe(blockClass, () => {
       expect(scroller.scrollTop).to.be.greaterThan(maxScrollTop / 2);
     });
 
-    it('exposes the scroll-down button hidden state as a property', async () => {
-      const { button } = await renderWithButton(600);
-      // The hidden attribute must be a boolean that hosts can read.
-      expect(typeof button.hidden).to.equal('boolean');
+    it('button is hidden when at the bottom and visible when scrolled away', async () => {
+      const { scroller, button } = await renderWithButton(600);
+
+      // At the bottom on mount — button must be hidden.
+      scroller.scrollTop = scroller.scrollHeight - scroller.clientHeight;
+      scroller.dispatchEvent(new Event('scroll'));
+      await aTimeout(250);
+      expect(button.hidden).to.be.true;
+
+      // Scroll away — button must become visible.
+      scroller.scrollTop = 0;
+      scroller.dispatchEvent(new Event('scroll'));
+      await aTimeout(250);
+      expect(button.hidden).to.be.false;
     });
 
     it('stops scroll handling after removal from the DOM', async () => {
-      const { shell } = await renderWithButton(600);
+      const { shell, scroller } = await renderWithButton(600);
       const parent = shell.parentElement!;
 
-      // Remove the shell — this calls disconnectedCallback.
+      // Scroll away so the button is visible before removal.
+      scroller.scrollTop = 0;
+      scroller.dispatchEvent(new Event('scroll'));
+      await aTimeout(250);
+      const buttonBefore = shell.shadowRoot!.querySelector<HTMLButtonElement>(
+        '[part="scroll-down-button"]'
+      )!;
+      expect(buttonBefore.hidden).to.be.false;
+
+      // Remove — disconnectedCallback must run and cancel the throttle.
       parent.removeChild(shell);
 
-      // No error should be thrown, and the public API returns a safe default.
-      expect(() => shell.getContainerScrollBottom()).to.not.throw;
+      // getContainerScrollBottom must return a safe default after disconnect.
       expect(shell.getContainerScrollBottom()).to.equal(0);
+      // isScrolledAwayFromBottom must return false after disconnect.
+      expect(shell.isScrolledAwayFromBottom()).to.be.false;
     });
 
     it('re-connects the engine after the shell is moved in the DOM', async () => {
@@ -446,6 +466,34 @@ describe(blockClass, () => {
 
       expect(el.hasMessage('owner1')).to.be.true;
       expect(el.hasMessage('unknown')).to.be.false;
+    });
+
+    it('reflects streaming flag changes on existing rows without a slotchange', async () => {
+      // slotchange does not fire when an attribute is mutated in place.
+      // The MutationObserver must pick up the change and update getMessages().
+      const el = await fixture<CDSAIChatMessagesShell>(html`
+        <cds-aichat-messages-shell>
+          <div id="row1" data-message-id="row1"></div>
+        </cds-aichat-messages-shell>
+      `);
+      await el.updateComplete;
+
+      expect(el.getMessages()[0].isStreaming).to.be.false;
+
+      // Add the streaming attribute in place — no slot reassignment.
+      const row = el.querySelector<HTMLElement>('#row1')!;
+      row.setAttribute('data-aichat-streaming', '');
+
+      // MutationObserver fires asynchronously; wait a microtask.
+      await aTimeout(0);
+
+      expect(el.getMessages()[0].isStreaming).to.be.true;
+
+      // Remove it — simulates stream end.
+      row.removeAttribute('data-aichat-streaming');
+      await aTimeout(0);
+
+      expect(el.getMessages()[0].isStreaming).to.be.false;
     });
   });
 });

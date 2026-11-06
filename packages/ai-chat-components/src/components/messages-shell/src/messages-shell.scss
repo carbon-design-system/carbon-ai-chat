@@ -119,4 +119,11 @@ slot[name='error'] {
   z-index: 1;
   display: block;
   inset-block-end: layout.$spacing-05;
+
+  // Restore UA [hidden] behaviour: `display: block` above is an author rule
+  // and beats the UA sheet's `[hidden] { display: none }` at equal specificity.
+  // Explicitly re-hide when the hidden attribute is present.
+  &[hidden] {
+    display: none;
+  }
 }
