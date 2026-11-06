@@ -48,6 +48,7 @@ function createInitialAppState(config: PublicConfig = {}): AppState {
   const appConfig = createAppConfig(config);
   return {
     ...createInitialState(appConfig),
+    // The same object; restated so the state is typed with the whole config.
     config: appConfig,
     view: createInitialViewState(config, null),
   };

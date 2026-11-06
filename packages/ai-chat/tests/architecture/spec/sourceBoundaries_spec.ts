@@ -276,6 +276,11 @@ describe('planted imports', () => {
       '../ai-chat-components/src/components/prompt-line/index.ts',
     ],
     [
+      "import type { AppConfig } from '../../types/state/AppConfig';",
+      'src/types/config/PublicConfig.ts',
+      '../ai-chat-components/src/components/markdown/index.ts',
+    ],
+    [
       "import type { AppState } from '../../types/state/AppState';",
       'src/types/config/MarkdownConfig.ts',
       'react',

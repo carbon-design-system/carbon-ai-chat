@@ -27,7 +27,8 @@ import type { ThemeState } from './ThemeState';
 /**
  * The config conversation code reads: the SDK config, plus the prebuilt-chat
  * fields it still reads. The prebuilt chat stores its whole `PublicConfig`
- * here, so each field matches `PublicConfig`'s type. Internal.
+ * here, so each field has `PublicConfig`'s type, except `humanAgentState`,
+ * which only the SDK sets. `conversationConfig.fixture.ts` checks it. Internal.
  */
 interface ConversationConfig extends Omit<
   ChatSDKConfig<ChatInstance>,
