@@ -114,6 +114,8 @@ See {@link ChatContainerProps} for the accepted props.
 
 To call instance methods later, capture the {@link ChatInstance} from {@link ChatContainerProps.onBeforeRender | onBeforeRender} or {@link ChatContainerProps.onAfterRender | onAfterRender}. See those props for an example.
 
+The chat input is ready to use once `onAfterRender` runs. A first effect in content you render, such as a user-defined response or a writeable element, can run before the input editor is in place. A call such as `requestFocus` can then do nothing. Wait for `onAfterRender` before you call it.
+
 ## User-defined responses
 
 This component can also manage `user_defined` responses (see {@link UserDefinedItem}). To learn what they are and how they're styled, see [Customizing responses](./Responses.md). You must pass a {@link ChatContainerProps.renderUserDefinedResponse | renderUserDefinedResponse} function as a render prop, which returns a React component that renders content for the message tied to that response.
