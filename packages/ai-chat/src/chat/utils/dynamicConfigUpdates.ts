@@ -14,11 +14,8 @@ import { NamespaceService } from '../../shared/services/NamespaceService';
 import actions from '../../shared/store/actions';
 import createHumanAgentService from '../../shared/services/haa/HumanAgentServiceImpl';
 import { consoleDebug, consoleError } from '../../shared/utils/miscUtils';
-import {
-  buildLanguagePack,
-  createAppConfig,
-  reconcileAppConfigReferences,
-} from '../../shared/store/doCreateStore';
+import { buildLanguagePack } from '../../shared/store/doCreateStore';
+import { createAppConfig, reconcileAppConfigReferences } from './appConfig';
 import { isBrowser } from '../../shared/utils/browserUtils';
 import { viewActions } from '../../view/state';
 import { chatStore } from '../services/attachChatView';

@@ -9,7 +9,7 @@
 
 import { LoadedHistory } from '../schema/historyToMessages';
 import actions from '../store/actions';
-import { ConversationState } from '../../types/state/AppState';
+import { ConversationState } from '../../types/state/ConversationState';
 import { createWelcomeRequest } from '../utils/messageUtils';
 import { consoleWarn, debugLog } from '../utils/miscUtils';
 import {

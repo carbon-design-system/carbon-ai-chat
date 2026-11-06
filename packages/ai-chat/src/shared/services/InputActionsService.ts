@@ -22,7 +22,7 @@ import {
   selectInputState,
   selectIsInputToHumanAgent,
 } from '../store/selectors';
-import { PendingUploadStatus } from '../../types/state/AppState';
+import { PendingUploadStatus } from '../../types/state/InputState';
 import { StructuredData } from '../../types/messaging/Messages';
 import { consoleError, consoleWarn } from '../utils/miscUtils';
 import { isPlainTextDoc } from '../utils/inputContent';

@@ -11,7 +11,7 @@ import { SendWorkflow } from './SendWorkflow';
 import { TerminationWorkflow } from './TerminationWorkflow';
 import { MessageLoadingManager } from '../../utils/messageServiceUtils';
 import { consoleError } from '../../utils/miscUtils';
-import type { PublicConfig } from '../../../types/config/PublicConfig';
+import type { ConversationConfig } from '../../../types/state/ConversationState';
 import { coordinateSend } from './coordinateSend';
 import type {
   LoadingDirection,
@@ -43,7 +43,7 @@ import type {
   PartialOrCompleteItemChunk,
 } from '../../../types/messaging/Messages';
 import type { DeepPartial } from '../../../types/utilities/DeepPartial';
-import type { AppStateMessages } from '../../../types/state/AppState';
+import type { AppStateMessages } from '../../../types/state/ChatMessagesState';
 
 import { coordinateReasoningEvents } from './coordinateReasoningEvents';
 import { HeadlessReasoningObserver } from './HeadlessReasoningObserver';
@@ -616,7 +616,7 @@ class MessageCoordinator {
     return (this.loadingManager ??= new MessageLoadingManager());
   }
 
-  configureMessageTimeout(publicConfig: PublicConfig) {
+  configureMessageTimeout(publicConfig: ConversationConfig) {
     const timeoutOverride = publicConfig.messaging?.messageTimeoutSecs;
     this.timeoutMS =
       timeoutOverride || timeoutOverride === 0

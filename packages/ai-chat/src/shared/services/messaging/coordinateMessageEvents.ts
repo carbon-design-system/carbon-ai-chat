@@ -33,7 +33,7 @@ import type {
   PartialOrCompleteItemChunk,
 } from '../../../types/messaging/Messages';
 import { MessageState } from '../../../types/config/MessagingConfig';
-import type { AppStateMessages } from '../../../types/state/AppState';
+import type { AppStateMessages } from '../../../types/state/ChatMessagesState';
 import type { DeepPartial } from '../../../types/utilities/DeepPartial';
 import type { ServiceManager } from '../ServiceManager';
 import type { MessagePresentationPort } from './presentationPort';

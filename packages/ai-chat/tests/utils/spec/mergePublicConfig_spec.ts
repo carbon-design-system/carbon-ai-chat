@@ -15,7 +15,7 @@
  * pass's job; see configReferenceSharing_spec.
  */
 
-import { createAppConfig } from '../../../src/shared/store/doCreateStore';
+import { createAppConfig } from '../../../src/chat/utils/appConfig';
 import {
   DEFAULT_PUBLIC_CONFIG,
   mergePublicConfig,

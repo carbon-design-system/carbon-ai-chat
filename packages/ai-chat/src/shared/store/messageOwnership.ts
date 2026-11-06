@@ -7,7 +7,7 @@
  *  @license
  */
 
-import type { ConversationState } from '../../types/state/AppState';
+import type { ConversationState } from '../../types/state/ConversationState';
 import type { Message, MessageResponse } from '../../types/messaging/Messages';
 import type { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
 import type { AppStore, UnknownAction } from './appStore';

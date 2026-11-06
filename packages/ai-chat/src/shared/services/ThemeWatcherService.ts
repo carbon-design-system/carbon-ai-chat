@@ -9,7 +9,8 @@
 
 import type { AppStore } from '../store/appStore';
 import { CarbonTheme } from '../../types/config/CarbonTheme';
-import { ConversationState, ThemeState } from '../../types/state/AppState';
+import { ConversationState } from '../../types/state/ConversationState';
+import { ThemeState } from '../../types/state/ThemeState';
 import { getCSSVariableValue, isColorLighterThan } from '../utils/colors';
 import { consoleError } from '../utils/miscUtils';
 import { UPDATE_THEME_STATE } from '../store/actions';

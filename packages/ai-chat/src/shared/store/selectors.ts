@@ -7,12 +7,9 @@
  *  @license
  */
 
-import {
-  ConversationState,
-  HumanAgentDisplayState,
-  InputState,
-  PendingUploadStatus,
-} from '../../types/state/AppState';
+import { ConversationState } from '../../types/state/ConversationState';
+import { HumanAgentDisplayState } from '../../types/state/HumanAgentState';
+import { InputState, PendingUploadStatus } from '../../types/state/InputState';
 import { LanguagePack } from '../../types/config/LanguagePack';
 
 const getAssistantInputState = (

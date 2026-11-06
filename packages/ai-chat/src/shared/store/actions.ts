@@ -23,15 +23,15 @@ import { DeepPartial } from '../../types/utilities/DeepPartial';
 
 import type { MessageWriteOptions } from './messageWriteTypes';
 
+import { ConversationState } from '../../types/state/ConversationState';
 import {
-  ConversationState,
   AppStateMessages,
   ChatMessagesState,
-  FileUpload,
-  InputState,
-  PersistedState,
-  ThemeState,
-} from '../../types/state/AppState';
+} from '../../types/state/ChatMessagesState';
+import { FileUpload } from '../../types/config/ServiceDeskConfig';
+import { InputState } from '../../types/state/InputState';
+import { PersistedState } from '../../types/state/PersistedState';
+import { ThemeState } from '../../types/state/ThemeState';
 import type { StructuredData } from '../../types/messaging/Messages';
 
 import type { ConversationStatus } from '../../types/instance/PublicChatState';
@@ -471,7 +471,7 @@ const actions = {
    * Adds a new pending upload entry to the input state.
    */
   addPendingUpload(
-    upload: import('../../types/state/AppState').PendingUpload,
+    upload: import('../../types/state/InputState').PendingUpload,
     isInputToHumanAgent: boolean
   ) {
     return { type: ADD_PENDING_UPLOAD, upload, isInputToHumanAgent };
@@ -482,7 +482,7 @@ const actions = {
    */
   updatePendingUpload(
     uploadId: string,
-    patch: Partial<import('../../types/state/AppState').PendingUpload>,
+    patch: Partial<import('../../types/state/InputState').PendingUpload>,
     isInputToHumanAgent: boolean
   ) {
     return {

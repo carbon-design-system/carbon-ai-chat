@@ -22,6 +22,7 @@ import type { Editor } from '@tiptap/core';
 import '@tiptap/extensions';
 
 import { ChatContainer } from '../../../src/react/ChatContainer';
+import { chatStore } from '../../../src/chat/services/attachChatView';
 import {
   createBaseConfig,
   setupAfterEach,
@@ -59,7 +60,7 @@ function buildConfig(inputHasText: boolean): PublicConfig {
 
 /** The input config as it landed in the store, past all the reconciliation. */
 function storedInput(instance: ChatInstance) {
-  return instance.serviceManager.store.getState().config.public.input;
+  return chatStore(instance.serviceManager).getState().config.public.input;
 }
 
 /** The starter trigger's live storage on the mounted editor. */

@@ -19,6 +19,7 @@ import { createBaseTestProps } from '../../test_helpers';
 import { applyConfigChangesDynamically } from '../../../src/chat/utils/dynamicConfigUpdates';
 
 import { doCreateStore } from '../../../src/shared/store/doCreateStore';
+import { createAppConfig } from '../../../src/chat/utils/appConfig';
 
 import { ServiceManager } from '../../../src/shared/services/ServiceManager';
 
@@ -244,7 +245,7 @@ describe('Config Launcher', () => {
       };
 
       const store = withView(
-        doCreateStore(initialConfig, {} as ServiceManager),
+        doCreateStore(createAppConfig(initialConfig), {} as ServiceManager),
         initialConfig
       );
       serviceManager = {
@@ -278,7 +279,7 @@ describe('Config Launcher', () => {
         serviceManager
       );
 
-      const state = serviceManager.store.getState();
+      const state = chatStore(serviceManager).getState();
       expect(state.config.public.launcher?.isOn).toBe(false);
       expect(state.config.public.launcher?.desktop?.title).toBe(
         'New Desktop Title'

@@ -18,6 +18,7 @@ import { ChatViewState } from '../../../src/chat/services/chatViewState';
 import { AutocompleteContent } from '../../../src/chat/services/autocompleteContent';
 import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
 import type { InputFunctions } from '../../../src/chat/utils/inputTypes';
+import type { AppConfig } from '../../../src/types/state/AppConfig';
 import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
 import { createIntl } from '../../../src/shared/utils/i18n';
 import * as miscUtils from '../../../src/shared/utils/miscUtils';
@@ -229,23 +230,20 @@ describe('custom prompt line draft restoration', () => {
           const config = store.getState().config;
           const extensions = config.public.input?.tiptap?.extensions ?? [];
           if (!extensions.includes(bold)) {
-            store.dispatch(
-              actions.changeState({
-                config: {
-                  ...config,
-                  public: {
-                    ...config.public,
-                    input: {
-                      ...config.public.input,
-                      tiptap: {
-                        ...config.public.input?.tiptap,
-                        extensions: [...extensions, bold],
-                      },
-                    },
+            const next: AppConfig = {
+              ...config,
+              public: {
+                ...config.public,
+                input: {
+                  ...config.public.input,
+                  tiptap: {
+                    ...config.public.input?.tiptap,
+                    extensions: [...extensions, bold],
                   },
                 },
-              })
-            );
+              },
+            };
+            store.dispatch(actions.changeState({ config: next }));
           }
           await flush(view);
           await this.updateComplete;

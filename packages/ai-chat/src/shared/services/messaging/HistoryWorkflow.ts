@@ -13,7 +13,7 @@ import {
   captureMessageOwnership,
   retainHistoryOwnership,
 } from '../../store/messageOwnership';
-import type { AppStateMessages } from '../../../types/state/AppState';
+import type { AppStateMessages } from '../../../types/state/ChatMessagesState';
 import { isResponse } from '../../utils/messageUtils';
 import type {
   HistoryItem,
