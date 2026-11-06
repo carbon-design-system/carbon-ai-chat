@@ -7,6 +7,27 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import type { Editor, Extension, JSONContent } from '@tiptap/core';
+import { css, html, LitElement, unsafeCSS } from 'lit';
+import { property } from 'lit/decorators.js';
+
+import { carbonElement } from '../../../globals/decorators/carbon-element.js';
+import prefix from '../../../globals/settings.js';
+import { adoptOnRoot } from '../../shared/dynamic-css-var-sheet.js';
+import type {
+  PromptLineController,
+  PromptLineControllerInit,
+  SetContentUpdater,
+} from './prompt-line-controller.js';
+import { TextareaController } from './prompt-line-textarea-runtime.js';
+import {
+  getRichRuntimeIfLoaded,
+  loadRichRuntime,
+} from './prompt-line-rich-loader.js';
+import { getRawText, textOffsetToDocPos } from './tiptap/json-utils.js';
+
+import styles from './prompt-line.scss?lit';
+
 /**
  * `<cds-aichat-prompt-line>` — the editing-surface layer of the chat input
  * stack.
@@ -33,31 +54,17 @@
  * should compose their own element against `@tiptap/core` directly.
  *
  * @element cds-aichat-prompt-line
+ * @fires {CustomEvent<InputChangeEventDetail>} cds-aichat-prompt-change - Fired when the content changes.
+ * @fires {CustomEvent<{ keyboard: boolean }>} cds-aichat-prompt-focus - Fired when the editing surface gains focus. `keyboard` is false for mouse focus.
+ * @fires {CustomEvent} cds-aichat-prompt-blur - Fired when the editing surface loses focus.
+ * @fires {CustomEvent<TypingEventDetail>} cds-aichat-prompt-typing - Fired when the user starts or stops typing.
+ * @fires {CustomEvent<{ originalEvent: KeyboardEvent }>} cds-aichat-prompt-keydown - Fired for each key press in the editing surface.
+ * @fires {CustomEvent} cds-aichat-prompt-send-intent - Fired when the user presses Enter (inline) or Mod+Enter (expanded) to send.
+ * @fires {CustomEvent<TriggerChangeEventDetail>} cds-aichat-trigger-change - Fired when an autocomplete trigger such as `@` or `/` starts, changes, or ends.
+ * @fires {CustomEvent<LightDomPortalEventDetail>} cds-aichat-light-dom-portal - Fired when a rich-editor node asks the host to render content in the light DOM.
  *
  * @experimental
  */
-
-import type { Editor, Extension, JSONContent } from '@tiptap/core';
-import { css, html, LitElement, unsafeCSS } from 'lit';
-import { property } from 'lit/decorators.js';
-
-import { carbonElement } from '../../../globals/decorators/carbon-element.js';
-import prefix from '../../../globals/settings.js';
-import { adoptOnRoot } from '../../shared/dynamic-css-var-sheet.js';
-import type {
-  PromptLineController,
-  PromptLineControllerInit,
-  SetContentUpdater,
-} from './prompt-line-controller.js';
-import { TextareaController } from './prompt-line-textarea-runtime.js';
-import {
-  getRichRuntimeIfLoaded,
-  loadRichRuntime,
-} from './prompt-line-rich-loader.js';
-import { getRawText, textOffsetToDocPos } from './tiptap/json-utils.js';
-
-import styles from './prompt-line.scss?lit';
-
 @carbonElement(`${prefix}-prompt-line`)
 class PromptLineElement extends LitElement {
   static styles = css`
