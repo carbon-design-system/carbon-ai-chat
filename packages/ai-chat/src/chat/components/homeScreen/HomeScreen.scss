@@ -11,6 +11,10 @@
 @use '@carbon/styles/scss/type';
 @use '@carbon/styles/scss/utilities/ai-gradient' as *;
 
+cds-aichat-home-screen {
+  display: contents;
+}
+
 .cds-aichat--widget--max-width
   .cds-aichat--home-screen__home-screen-bottom-element,
 .cds-aichat--home-screen {
