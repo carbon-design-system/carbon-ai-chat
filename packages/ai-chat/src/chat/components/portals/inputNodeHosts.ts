@@ -11,6 +11,8 @@ interface InlineEntry {
   target?: HTMLElement;
   fallback?: HTMLElement;
   host?: HTMLElement;
+  /** Called each time the host lands in its target, attached or not. */
+  onPlaced?: () => void;
 }
 
 const entries = new WeakMap<HTMLElement, Map<string, InlineEntry>>();
@@ -64,6 +66,7 @@ export function registerInlineTarget(
   if (entry.host) {
     target.appendChild(entry.host);
     fallback.hidden = true;
+    entry.onPlaced?.();
   }
   return () => {
     entry.host?.remove();
@@ -78,17 +81,23 @@ export function registerInlineTarget(
 export function mountInlineHost(
   owner: HTMLElement,
   key: string,
-  host: HTMLElement
+  host: HTMLElement,
+  onPlaced?: () => void
 ) {
   const { slots, entry } = entryFor(owner, key);
   entry.host = host;
-  entry.target?.appendChild(host);
+  entry.onPlaced = onPlaced;
+  if (entry.target) {
+    entry.target.appendChild(host);
+    onPlaced?.();
+  }
   if (entry.fallback) {
     entry.fallback.hidden = true;
   }
   return () => {
     host.remove();
     delete entry.host;
+    delete entry.onPlaced;
     if (entry.fallback) {
       entry.fallback.hidden = false;
     }
