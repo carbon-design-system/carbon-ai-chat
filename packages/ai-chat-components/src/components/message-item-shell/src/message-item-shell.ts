@@ -81,6 +81,11 @@ class CDSAIChatMessageItemShell extends LitElement {
     super.disconnectedCallback();
   }
 
+  protected firstUpdated() {
+    this._observeByline();
+    this._syncAvatar();
+  }
+
   protected updated(changed: PropertyValues<this>) {
     if (changed.has('hideAvatar')) {
       this._syncAvatar();
