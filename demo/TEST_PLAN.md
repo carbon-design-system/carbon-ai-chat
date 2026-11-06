@@ -50,6 +50,14 @@ Automated upload checks: `input-actions-upload.spec.ts` covers file selection, p
 - [ ] **State access:** `instance.getState()`
 - [ ] **Custom panels:** `instance.customPanels`
 
+#### Built-in panel bodies
+
+Repeat in React and web-component modes, including RTL and a dark theme. Automated cases live in `tests/native-panel-bodies.spec.ts`.
+
+- [ ] **Iframe:** Open an iframe response. Change its title without reloading it. Change its source and confirm fresh content.
+- [ ] **Prompts:** Request screen sharing through the mock service desk. Check footer focus, Escape, and both actions. Cover it with a higher-priority error, then close the error.
+- [ ] **Speech:** With a screen reader, check loading and prompt notices. A prompt that becomes active again must not speak twice.
+
 #### Stream completion reading position
 
 - [ ] In chunk mode and `?useUpsertMessage`, stream a long text answer. Scroll down a little (about 30px), then farther (about 200px). At completion, the same text stays at the same viewport offset; the chat does not move to the bottom.
