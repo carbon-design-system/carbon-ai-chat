@@ -207,14 +207,17 @@ for (const framework of ['react', 'web-component']) {
     await expect(panelButton).toBeFocused();
     await panelButton.click();
     await expect(panelButton).toBeHidden();
-    // The parent header also leaves page focus after this programmatic panel flow.
-    await expect(page.locator('body')).toBeFocused();
-    await opener.evaluate((button) => {
+    // Closing the panel from its slotted content returns focus to its opener.
+    await expect(opener).toBeFocused();
+    // Start from outside the header, so the header's own focus result shows.
+    await page.getByRole('textbox').focus();
+    const headerFocused = await opener.evaluate((button) => {
       let node: Element | null = button;
       while (node) {
         if (node.localName === 'cds-aichat-header-view') {
-          (node as HTMLElement & { requestFocus(): boolean }).requestFocus();
-          return;
+          return (
+            node as HTMLElement & { requestFocus(): boolean }
+          ).requestFocus();
         }
         const root = node.getRootNode();
         node =
@@ -222,6 +225,11 @@ for (const framework of ['react', 'web-component']) {
       }
       throw new Error('Native header focus handle is missing');
     });
-    await expect(opener).toBeFocused();
+    // Navigation comes first, so the header focuses the Options trigger
+    // inside the overflow menu's shadow root and counts that as success.
+    expect(headerFocused).toBe(true);
+    await expect(
+      page.getByRole('button', { name: 'Options', exact: true })
+    ).toBeFocused();
   });
 }

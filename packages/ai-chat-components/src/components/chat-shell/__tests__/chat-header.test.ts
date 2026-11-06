@@ -10,6 +10,10 @@
 import { html, fixture, expect } from '@open-wc/testing';
 import '@carbon/ai-chat-components/es/components/chat-shell/index.js';
 import CdsAiChatHeader from '@carbon/ai-chat-components/es/components/chat-shell/src/chat-header.js';
+import {
+  composedContains,
+  getDeepActiveElement,
+} from '@carbon/ai-chat-components/es/globals/utils/focus-utils.js';
 
 // Mock icon objects for testing
 const Close = { name: 'close', size: 16 };
@@ -375,13 +379,76 @@ describe('cds-aichat-chat-header', function () {
       await new Promise((resolve) => setTimeout(resolve, 100));
 
       const result = el.requestFocus();
-      // The method should return a boolean (true if focus succeeded, false otherwise)
-      expect(result).to.be.a('boolean');
+      expect(result).to.be.true;
+      expect(getDeepActiveElement()).to.equal(
+        backButton!.shadowRoot!.querySelector('button')
+      );
+    });
 
-      // If focus succeeded, verify navigation button exists
-      if (result) {
-        expect(backButton).to.exist;
-      }
+    async function renderedControls(
+      el: CdsAiChatHeader,
+      navigationSelector = 'cds-icon-button'
+    ) {
+      await el.updateComplete;
+      const toolbar = el.shadowRoot!.querySelector<any>('cds-aichat-toolbar');
+      await toolbar.updateComplete;
+      const navigation = toolbar.querySelector(
+        `div[slot="navigation"] ${navigationSelector}`
+      ) as HTMLElement & { updateComplete: Promise<unknown> };
+      await navigation.updateComplete;
+      // Carbon buttons finish their own setup after the first update.
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      const action = toolbar.shadowRoot!.querySelector(
+        'cds-icon-button:not([disabled])'
+      ) as HTMLElement;
+      let actionFocusCalls = 0;
+      const focus = action.focus;
+      action.focus = function (this: HTMLElement, options?: FocusOptions) {
+        actionFocusCalls++;
+        focus.call(this, options);
+      };
+      return { navigation, actionFocusCalls: () => actionFocusCalls };
+    }
+
+    it('stops at a back button that takes focus', async () => {
+      const actions = [
+        { renderIcon: Restart, iconDescription: 'Restart', onClick: () => {} },
+      ];
+      const el = await fixture<CdsAiChatHeader>(
+        html`<cds-aichat-chat-header
+          navigation-type="back"
+          .navigationBackIcon=${{ name: 'arrow--left', size: 16 }}
+          .actions=${actions}></cds-aichat-chat-header>`
+      );
+      const { navigation, actionFocusCalls } = await renderedControls(el);
+
+      expect(el.requestFocus()).to.be.true;
+      expect(composedContains(navigation, getDeepActiveElement())).to.be.true;
+      expect(actionFocusCalls()).to.equal(0);
+    });
+
+    it('stops at an overflow navigation trigger that takes focus', async () => {
+      const actions = [
+        { renderIcon: Restart, iconDescription: 'Restart', onClick: () => {} },
+      ];
+      const items = [{ text: 'Settings', onClick: () => {} }];
+      const el = await fixture<CdsAiChatHeader>(
+        html`<cds-aichat-chat-header
+          navigation-type="overflow"
+          navigation-overflow-label="Options"
+          .navigationOverflowItems=${items}
+          .actions=${actions}></cds-aichat-chat-header>`
+      );
+      const { navigation, actionFocusCalls } = await renderedControls(
+        el,
+        'cds-overflow-menu'
+      );
+
+      expect(el.requestFocus()).to.be.true;
+      expect(getDeepActiveElement()).to.equal(
+        navigation.shadowRoot!.querySelector('button')
+      );
+      expect(actionFocusCalls()).to.equal(0);
     });
 
     it('should focus first action when navigation not available', async () => {

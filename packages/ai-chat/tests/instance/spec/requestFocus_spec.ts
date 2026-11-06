@@ -7,6 +7,7 @@
  *  @license
  */
 
+import { cleanup } from '@testing-library/react';
 import {
   createBaseConfig,
   renderChatAndGetInstance,
@@ -16,7 +17,12 @@ import {
 
 describe('ChatInstance.requestFocus', () => {
   beforeEach(setupBeforeEach);
-  afterEach(setupAfterEach);
+  afterEach(() => {
+    setupAfterEach();
+    // The chat keeps its open state in session storage. Clear it so each case
+    // boots with its own openChatByDefault.
+    window.sessionStorage.clear();
+  });
 
   it('should have requestFocus method available', async () => {
     const config = createBaseConfig();
@@ -32,11 +38,51 @@ describe('ChatInstance.requestFocus', () => {
     expect(() => instance.requestFocus()).not.toThrow();
   });
 
-  it('should return boolean or void', async () => {
-    const config = createBaseConfig();
-    const instance = await renderChatAndGetInstance(config);
+  it('returns true when the open chat finds a place to focus', async () => {
+    const instance = await renderChatAndGetInstance({
+      ...createBaseConfig(),
+      openChatByDefault: true,
+    });
 
-    const result = instance.requestFocus();
-    expect(result === undefined || typeof result === 'boolean').toBe(true);
+    expect(instance.requestFocus()).toBe(true);
+  });
+
+  it('returns false while the main window is closed', async () => {
+    const instance = await renderChatAndGetInstance({
+      ...createBaseConfig(),
+      openChatByDefault: false,
+    });
+
+    expect(instance.requestFocus()).toBe(false);
+  });
+
+  it('returns false when shouldTakeFocusIfOpensAutomatically is false', async () => {
+    const instance = await renderChatAndGetInstance({
+      ...createBaseConfig(),
+      openChatByDefault: true,
+      shouldTakeFocusIfOpensAutomatically: false,
+    });
+
+    expect(instance.requestFocus()).toBe(false);
+  });
+
+  it('returns false while the input is disabled', async () => {
+    const instance = await renderChatAndGetInstance({
+      ...createBaseConfig(),
+      openChatByDefault: true,
+      input: { isDisabled: true },
+    });
+
+    expect(instance.requestFocus()).toBe(false);
+  });
+
+  it('returns false after the chat unmounts', async () => {
+    const instance = await renderChatAndGetInstance({
+      ...createBaseConfig(),
+      openChatByDefault: true,
+    });
+    cleanup();
+
+    expect(instance.requestFocus()).toBe(false);
   });
 });

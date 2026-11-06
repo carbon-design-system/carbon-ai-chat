@@ -8,25 +8,13 @@
  */
 
 import {
+  composedContains,
   getDeepActiveElement,
   isElementInvisible,
   tryFocus,
   walkComposedTree,
 } from '../../../globals/utils/focus-utils.js';
 import prefix from '../../../globals/settings.js';
-
-function composedContains(
-  container: HTMLElement,
-  element: Element | null
-): boolean {
-  for (let node = element; node;) {
-    if (node === container) {
-      return true;
-    }
-    node = node.parentElement ?? (node.getRootNode() as ShadowRoot).host;
-  }
-  return false;
-}
 
 function hasLostPanelFocus(focused: Element | null, focusPath: EventTarget[]) {
   return (
@@ -53,6 +41,7 @@ export class PanelManager {
   private focusedPanel?: HTMLElement;
   private focusPath: EventTarget[] = [];
   private restoreFrame?: number;
+  private openPanels = new Set<HTMLElement>();
   private contentObserver = new MutationObserver(() => {
     this.observeAssignedPanels();
     this.updateState();
@@ -85,7 +74,12 @@ export class PanelManager {
     if (this.restoreFrame !== undefined) {
       cancelAnimationFrame(this.restoreFrame);
     }
+    this.restoreFrame = undefined;
     this.returnTargets.clear();
+    this.openPanels.clear();
+    this.activePanel = undefined;
+    this.focusedPanel = undefined;
+    this.focusPath = [];
     this.panelsSlot.removeEventListener('slotchange', this.onSlotChange);
     this.stopObservingPanels();
   }
@@ -157,6 +151,10 @@ export class PanelManager {
     const previous = this.activePanel;
     const focused = getDeepActiveElement();
     const shouldRestore = this.shouldRestoreOnClose(previous, active, focused);
+    const openBefore = this.openPanels;
+    this.openPanels = new Set(
+      panels.filter((panel) => panel.open).map((panel) => panel.element)
+    );
     this.activePanel = active?.element;
     if (active && !this.returnTargets.has(active.element)) {
       this.returnTargets.set(active.element, focused);
@@ -182,11 +180,17 @@ export class PanelManager {
 
     if (shouldRestore && previous) {
       const target = this.returnTargets.get(previous);
+      // Only panels that were already open before this close may stay open
+      // for the restore. One that opens in the same batch, or later, owns
+      // its own focus.
+      const stillOpen = new Set(
+        [...this.openPanels].filter((panel) => openBefore.has(panel))
+      );
       if (this.restoreFrame !== undefined) {
         cancelAnimationFrame(this.restoreFrame);
       }
       this.restoreFrame = requestAnimationFrame(() =>
-        this.restoreFocus(previous, target)
+        this.restoreFocus(previous, target, stillOpen)
       );
     }
     for (const panel of this.returnTargets.keys()) {
@@ -222,7 +226,29 @@ export class PanelManager {
     );
   };
 
-  private restoreFocus(panel: HTMLElement, target: Element | null | undefined) {
+  private restoreFocus(
+    panel: HTMLElement,
+    target: Element | null | undefined,
+    stillOpen: Set<HTMLElement>
+  ) {
+    if (this.activePanel && this.isPanelAnimating(this.activePanel)) {
+      this.restoreFrame = requestAnimationFrame(() =>
+        this.restoreFocus(panel, target, stillOpen)
+      );
+      return;
+    }
+    // An active panel that opened with or after this close owns focus now,
+    // including the closed panel opening again. A covered panel, or one that
+    // opens beneath it, leaves the active panel unchanged, so the restore
+    // still runs. If the new panel set no focus, use the fallback so focus
+    // doesn't stay on the page body.
+    if (this.activePanel && !stillOpen.has(this.activePanel)) {
+      const focused = getDeepActiveElement();
+      if (!focused || focused === document.body) {
+        this.focusFallback();
+      }
+      return;
+    }
     const focused = getDeepActiveElement();
     if (
       !hasLostPanelFocus(focused, this.focusPath) &&
@@ -231,22 +257,26 @@ export class PanelManager {
     ) {
       return;
     }
-    if (this.activePanel && this.isPanelAnimating(this.activePanel)) {
-      this.restoreFrame = requestAnimationFrame(() =>
-        this.restoreFocus(panel, target)
-      );
-      return;
-    }
+    // A body opener means nothing had focus when the panel opened.
     if (
       target instanceof HTMLElement &&
+      target !== document.body &&
       target.isConnected &&
       (!this.activePanel || composedContains(this.activePanel, target))
     ) {
       target.focus();
-      if (getDeepActiveElement() === target) {
+      if (composedContains(target, getDeepActiveElement())) {
         return;
       }
     }
+    this.focusFallback();
+  }
+
+  /**
+   * Focuses the active panel's first available control, else its dialog. With
+   * no active panel, asks the host for a fallback.
+   */
+  private focusFallback() {
     if (!this.activePanel) {
       this.shellRoot.dispatchEvent(
         new CustomEvent(`${prefix}-shell-panel-focus-fallback`, {

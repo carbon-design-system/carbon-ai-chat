@@ -42,8 +42,8 @@
     "telemetry:config": "npx -y @ibm/telemetry-js-config-generator generate --id 62aa153d-8a70-4d12-9e8d-069511e80e65 --endpoint https://www-api.ibm.com/ibm-telemetry/v1/metrics --files ./src/components --wc",
     "test": "npm run test:manifest && npm run test:web-components && npm run test:react",
     "test:react": "jest",
-    "test:updateSnapshot": "web-test-runner \"src/components/**/*.test.ts\" --node-resolve --update-snapshots",
-    "test:web-components": "web-test-runner \"src/components/**/*.test.ts\" --node-resolve",
+    "test:updateSnapshot": "web-test-runner \"src/components/**/*.test.ts\" \"src/globals/utils/__tests__/focus-utils.test.ts\" --node-resolve --update-snapshots",
+    "test:web-components": "web-test-runner \"src/components/**/*.test.ts\" \"src/globals/utils/__tests__/focus-utils.test.ts\" --node-resolve",
     "test:manifest": "node --test tasks/__tests__/cem-plugins.test.js"
   },
   "peerDependencies": {

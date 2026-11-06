@@ -21,6 +21,7 @@ function createSurface() {
   return {
     field,
     promptLine: {
+      disabled: false,
       focus: jest.fn(() => field.focus()),
       hasFocus: jest.fn(() => document.activeElement === field),
       setContent: jest.fn(),
@@ -64,6 +65,22 @@ describe('createInputImperativeHandle', () => {
       'Input is not currently rendered'
     );
     expect(latchRich).not.toHaveBeenCalled();
+  });
+
+  it('reports no focus target while the input is disabled', () => {
+    const { promptLine } = createSurface();
+    const { requestFocus } = createInputImperativeHandle(
+      () => promptLine,
+      jest.fn()
+    );
+
+    promptLine.disabled = true;
+    expect(requestFocus()).toBe(false);
+    expect(promptLine.focus).not.toHaveBeenCalled();
+
+    promptLine.disabled = false;
+    expect(requestFocus()).toBe(true);
+    expect(promptLine.focus).toHaveBeenCalledTimes(1);
   });
 
   it('keeps retained methods on the live surface through replacement and removal', () => {

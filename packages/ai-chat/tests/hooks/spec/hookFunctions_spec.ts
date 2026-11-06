@@ -87,6 +87,59 @@ describe('plain hook functions', () => {
     expect(iframePanel.requestFocus).toHaveBeenCalledTimes(1);
   });
 
+  it('returns whether each branch found a place to focus', () => {
+    const closed: FocusManagerOptions = {
+      shouldAutoFocus: true,
+      showDisclaimer: false,
+      iFramePanelIsOpen: false,
+      viewSourcePanelIsOpen: false,
+      customPanelIsOpen: false,
+      responsePanelIsOpen: false,
+      disclaimer: null,
+      iframePanel: null,
+      viewSourcePanel: null,
+      customPanel: null,
+      responsePanel: null,
+      input: null,
+    };
+    const found = { requestFocus: jest.fn(() => true) };
+    const missed = { requestFocus: jest.fn(() => false) };
+    expect(requestFocus({ ...closed, input: found })).toBe(true);
+    expect(requestFocus({ ...closed, input: missed })).toBe(false);
+    expect(requestFocus(closed)).toBe(false);
+    expect(
+      requestFocus({ ...closed, customPanelIsOpen: true, customPanel: found })
+    ).toBe(true);
+    expect(
+      requestFocus({
+        ...closed,
+        responsePanelIsOpen: true,
+        responsePanel: null,
+      })
+    ).toBe(false);
+    expect(
+      requestFocus({ ...closed, shouldAutoFocus: false, input: found })
+    ).toBe(false);
+    const thrown = {
+      requestFocus: jest.fn(() => {
+        throw new Error('focus failed');
+      }),
+    };
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+    expect(requestFocus({ ...closed, input: thrown })).toBe(false);
+
+    const disclaimer = document.createElement('button');
+    document.body.appendChild(disclaimer);
+    expect(requestFocus({ ...closed, showDisclaimer: true, disclaimer })).toBe(
+      true
+    );
+    expect(document.activeElement).toBe(disclaimer);
+    expect(
+      requestFocus({ ...closed, showDisclaimer: true, disclaimer: null })
+    ).toBe(false);
+    disclaimer.remove();
+  });
+
   it('preserves history open state when startClosed is set', () => {
     const state = {
       config: { public: { history: { startClosed: true } } },
