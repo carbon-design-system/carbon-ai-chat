@@ -109,3 +109,21 @@ slot[name='error'] {
   display: block;
   flex-shrink: 0;
 }
+
+// The built-in scroll-to-bottom button is sticky inside the scroller.
+// Hosts can customise appearance via the `scroll-down-button` CSS part;
+// we only enforce stickiness and z-index here.
+.#{$block-class}__scroll-down-button,
+::part(scroll-down-button) {
+  position: sticky;
+  z-index: 1;
+  display: block;
+  inset-block-end: layout.$spacing-05;
+
+  // Restore UA [hidden] behaviour: `display: block` above is an author rule
+  // and beats the UA sheet's `[hidden] { display: none }` at equal specificity.
+  // Explicitly re-hide when the hidden attribute is present.
+  &[hidden] {
+    display: none;
+  }
+}
