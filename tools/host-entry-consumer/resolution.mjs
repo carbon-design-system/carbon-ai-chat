@@ -9,12 +9,14 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { readFile, realpath, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
-import { join, relative } from 'node:path';
+import { isAbsolute, join, relative } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import * as sass from 'sass';
 import ts from 'typescript';
 
+const styleTrees = ['es', 'es-custom'];
 const source = `
+import type { CSSResult } from 'lit';
 import { createElement, type ComponentType } from 'react';
 import { ChatContainer, ChatCustomElement } from '@carbon/ai-chat';
 import { ChatContainer as CustomChatContainer } from '@carbon/ai-chat/es-custom';
@@ -22,6 +24,8 @@ import ContainerHost from '@carbon/ai-chat/dist/es/web-components/cds-aichat-con
 import CustomElementHost from '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
 import type { ChatInstance, PublicConfig } from '@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js';
 import type { ChatInstance as OuterInstance, PublicConfig as OuterConfig } from '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
+import { inlineMarkdownStyles } from '@carbon/ai-chat-components/es/components/markdown/index.js';
+import { inlineMarkdownStyles as customInlineMarkdownStyles } from '@carbon/ai-chat-components/es-custom/components/markdown/index.js';
 const containerConstructor: CustomElementConstructor = ContainerHost;
 const outerConstructor: CustomElementConstructor = CustomElementHost;
 const container = new ContainerHost();
@@ -49,9 +53,26 @@ outer.openChatByDefault = 'yes';
 const hostConfig: PublicConfig = { openChatByDefault: true };
 const outerConfig: OuterConfig = hostConfig;
 type HostInstances = [ChatInstance, OuterInstance];
+// Both trees publish inline Markdown styles as a resolvable CSSResult.
+const regularStyles: CSSResult = inlineMarkdownStyles;
+const customStyles: CSSResult = customInlineMarkdownStyles;
+type IsAny<T> = 0 extends 1 & T ? true : false;
+const regularIsAny: IsAny<typeof inlineMarkdownStyles> = false;
+const customIsAny: IsAny<typeof customInlineMarkdownStyles> = false;
+// @ts-expect-error The regular style value is not a number.
+const regularNumber: number = inlineMarkdownStyles;
+// @ts-expect-error The custom style value is not a number.
+const customNumber: number = customInlineMarkdownStyles;
 export { containerConstructor, outerConstructor, container, outer, outerConfig };
+export { regularStyles, customStyles, regularIsAny, customIsAny };
 export type { HostInstances };
 `;
+
+// A cross-drive Windows path is absolute rather than starting with '..'.
+function inside(root, path) {
+  const local = relative(root, path);
+  return !local.startsWith('..') && !isAbsolute(local);
+}
 
 async function assertLocalDeclarations(consumer, name, program, options) {
   const chatRoot = await realpath(
@@ -68,7 +89,7 @@ async function assertLocalDeclarations(consumer, name, program, options) {
   for (const declaration of program.getSourceFiles()) {
     if (
       !declaration.isDeclarationFile ||
-      relative(chatRoot, declaration.fileName).startsWith('..')
+      !inside(chatRoot, declaration.fileName)
     ) {
       continue;
     }
@@ -96,10 +117,7 @@ async function assertLocalDeclarations(consumer, name, program, options) {
         `${name}: missing published declaration dependency ${imported.fileName} from ${declaration.fileName}.`
       );
       assert.ok(
-        !relative(
-          chatRoot,
-          await realpath(resolved.resolvedFileName)
-        ).startsWith('..'),
+        inside(chatRoot, await realpath(resolved.resolvedFileName)),
         'Local declaration references must stay inside the packed chat package.'
       );
     }
@@ -127,14 +145,73 @@ async function assertTypePaths(consumer, name, program, fixture, options) {
     ).resolvedModule;
     assert.ok(resolved, `${name}: unresolved import ${specifier}.`);
     assert.ok(
-      !relative(
-        installed,
-        await realpath(resolved.resolvedFileName)
-      ).startsWith('..'),
+      inside(installed, await realpath(resolved.resolvedFileName)),
       `${specifier} must resolve inside the packed consumer.`
     );
   }
   await assertLocalDeclarations(consumer, name, program, options);
+}
+
+async function assertInlineStyleDeclarations(
+  consumer,
+  name,
+  program,
+  fixture,
+  options
+) {
+  const root = await realpath(
+    join(consumer, 'node_modules/@carbon/ai-chat-components')
+  );
+  for (const tree of styleTrees) {
+    const specifier = `@carbon/ai-chat-components/${tree}/components/markdown/index.js`;
+    const resolved = ts.resolveModuleName(
+      specifier,
+      fixture,
+      options,
+      ts.sys
+    ).resolvedModule;
+    assert.ok(resolved, `${name}: unresolved style import ${specifier}.`);
+    assert.equal(
+      await realpath(resolved.resolvedFileName),
+      join(root, tree, 'components/markdown/index.d.ts'),
+      `${name}: style imports must resolve to the installed packed declarations.`
+    );
+  }
+  const pending = styleTrees.map((tree) =>
+    join(root, tree, 'components/markdown/src/inline-markdown.d.ts')
+  );
+  const visited = new Set();
+  while (pending.length) {
+    const path = pending.pop();
+    if (visited.has(path)) {
+      continue;
+    }
+    visited.add(path);
+    const declaration = program.getSourceFile(path);
+    assert.ok(declaration, `${name}: missing style declaration ${path}.`);
+    for (const imported of ts.preProcessFile(declaration.text).importedFiles) {
+      if (!imported.fileName.startsWith('.')) {
+        continue;
+      }
+      const resolved = ts.resolveModuleName(
+        imported.fileName,
+        declaration.fileName,
+        options,
+        ts.sys
+      ).resolvedModule;
+      assert.ok(
+        resolved,
+        `${name}: missing published declaration dependency ${imported.fileName} from ${path}.`
+      );
+      const dependency = await realpath(resolved.resolvedFileName);
+      assert.ok(
+        inside(root, dependency),
+        `${name}: local style declaration dependencies must stay inside the packed components package.`
+      );
+      assert.match(dependency, /\.d\.[cm]?ts$/);
+      pending.push(dependency);
+    }
+  }
 }
 
 function assertRootExportParity(name, program, fixture, options) {
@@ -203,9 +280,16 @@ async function compileTypes(consumer, name, module, moduleResolution) {
     `${name}: packed host type errors:\n${formatted}`
   );
   await assertTypePaths(consumer, name, program, fixture, options);
+  await assertInlineStyleDeclarations(
+    consumer,
+    name,
+    program,
+    fixture,
+    options
+  );
   assertRootExportParity(name, program, fixture, options);
   console.log(
-    `${name}: packed host constructors, config fields, negative types, and root React exports passed.`
+    `${name}: packed host constructors, config fields, negative types, root React exports, and inline Markdown styles passed.`
   );
 }
 
