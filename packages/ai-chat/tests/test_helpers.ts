@@ -307,7 +307,9 @@ export function makeConfigStore(config: PublicConfig): AppStore<AppState> {
 
 /**
  * Gives a service manager made without boot the public state a booted chat
- * reads through `instance.state`, built from its store.
+ * reads through `instance.state`, built from its store. It adds an event bus
+ * when the manager has none, as boot always creates one; a spec about a
+ * missing bus can't use it.
  */
 export function withPublicState<Manager extends Pick<ServiceManager, 'store'>>(
   manager: Manager

@@ -17,17 +17,21 @@ const ROOTS = new Set(['ConversationState', 'AppStateMessages']);
 const NOT_DATA = new Set(['config', 'languagePack']);
 
 /**
- * Lists each read of conversation data in `files`, as `file: read`. A read is
- * one of:
+ * Counts each read of conversation data in `files`, keyed `file: read`. A
+ * read is one of:
  *
  * - a field of the conversation partition's top level, read from the store
- *   state, written as the path of state fields it continues through, such as
- *   `persistedToBrowserStorage.humanAgentState.isConnected`;
- * - a use of a selector (a function in `src/` whose first parameter holds
- *   part of the store state) that reads one, written as `selectName()`.
+ *   state by name, index, or destructuring (a rest binding reads each field it
+ *   takes). It's written as the path of state fields it continues through,
+ *   such as `persistedToBrowserStorage.humanAgentState.isConnected`.
+ * - a use of a reader that reads one, written as `name()`. A reader is a
+ *   function in `src/` with a parameter that holds part of the store state, a
+ *   store, or a service manager.
  *
  * It uses the type checker, so a read through a destructured state, a
- * selector callback's parameter, or a re-exported selector still counts.
+ * selector callback's parameter, or a re-exported selector still counts. Each
+ * occurrence counts, so a second read in a file, or one through an alias,
+ * raises its count.
  */
 export function conversationReads(
   program: ts.Program,
@@ -39,8 +43,8 @@ export function conversationReads(
     path.join(packageRoot, 'src', folder, '/').replaceAll('\\', '/');
   const sources = src('');
   const state = src('types/state');
-  const selectors = new Map<ts.Declaration, boolean>();
-  const reads = new Set<string>();
+  const readers = new Map<ts.Declaration, boolean>();
+  const reads = new Map<string, number>();
 
   const isRoot = (symbol: ts.Symbol | undefined) =>
     Boolean(
@@ -54,14 +58,38 @@ export function conversationReads(
       )
     );
 
-  /** Whether `node` reads conversation data, directly or through a selector. */
+  /** Whether a value of `type` holds state: its fields, a store, or a manager. */
+  const holdsState = (type: ts.Type, depth = 0): boolean => {
+    if (type.getProperties().some(isRoot)) {
+      return true;
+    }
+    if (depth > 1) {
+      return false;
+    }
+    const getState = type.getProperty('getState');
+    const store = type.getProperty('store');
+    return [getState, store].some((member) => {
+      if (!member) {
+        return false;
+      }
+      const memberType = checker.getTypeOfSymbol(member);
+      const returned = memberType
+        .getCallSignatures()
+        .map((signature) => signature.getReturnType());
+      return [memberType, ...returned].some((candidate) =>
+        holdsState(candidate, depth + 1)
+      );
+    });
+  };
+
+  /** Whether `node` reads conversation data, directly or through a reader. */
   const readsData = (node: ts.Node): boolean => {
     let found = false;
     const visit = (child: ts.Node) => {
       if (found) {
         return;
       }
-      if (rootRead(child) || selectorOf(child)) {
+      if (rootReads(child).length || readerOf(child)) {
         found = true;
         return;
       }
@@ -71,29 +99,45 @@ export function conversationReads(
     return found;
   };
 
-  /** The root field `node` reads, if it reads one. */
-  const rootRead = (node: ts.Node) => {
+  /** The paths of the root fields `node` reads, if it reads any. */
+  const rootReads = (node: ts.Node): string[] => {
     if (ts.isPropertyAccessExpression(node)) {
-      return isRoot(checker.getSymbolAtLocation(node.name)) ? node : undefined;
+      return isRoot(checker.getSymbolAtLocation(node.name))
+        ? [pathOf(node, node.name.text)]
+        : [];
     }
-    if (
-      ts.isBindingElement(node) &&
-      ts.isObjectBindingPattern(node.parent) &&
-      !node.dotDotDotToken
-    ) {
+    if (ts.isElementAccessExpression(node)) {
+      const key = checker.getTypeAtLocation(node.argumentExpression);
+      const property =
+        key.isStringLiteral() &&
+        checker.getTypeAtLocation(node.expression).getProperty(key.value);
+      return property && isRoot(property) ? [pathOf(node, key.value)] : [];
+    }
+    if (ts.isBindingElement(node) && ts.isObjectBindingPattern(node.parent)) {
+      if (node.dotDotDotToken) {
+        return checker
+          .getTypeAtLocation(node)
+          .getProperties()
+          .filter(isRoot)
+          .map((property) => property.name);
+      }
       const type = checker.getTypeAtLocation(node.parent);
       const name = (node.propertyName ?? node.name).getText();
-      return isRoot(type.getProperty(name)) ? node : undefined;
+      return isRoot(type.getProperty(name)) ? [name] : [];
     }
-    return undefined;
+    return [];
   };
 
-  /** The shared selector `node` names, if it names one that reads data. */
-  const selectorOf = (node: ts.Node) => {
+  /** The reader `node` names, if it names one that reads data. */
+  const readerOf = (node: ts.Node) => {
     if (
       !ts.isIdentifier(node) ||
       ts.isImportSpecifier(node.parent) ||
-      ts.isExportSpecifier(node.parent)
+      ts.isExportSpecifier(node.parent) ||
+      // A reader's own name where it's declared isn't a use.
+      ((ts.isFunctionDeclaration(node.parent) ||
+        ts.isVariableDeclaration(node.parent)) &&
+        node.parent.name === node)
     ) {
       return undefined;
     }
@@ -102,20 +146,20 @@ export function conversationReads(
       symbol = checker.getAliasedSymbol(symbol);
     }
     const declaration = symbol?.valueDeclaration;
-    const fn = declaration && selectorFunction(declaration);
+    const fn = declaration && readerFunction(declaration);
     if (!fn || !fn.getSourceFile().fileName.startsWith(sources)) {
       return undefined;
     }
-    if (!selectors.has(fn)) {
-      // Guards a selector that reaches itself.
-      selectors.set(fn, false);
-      selectors.set(fn, readsData(fn));
+    if (!readers.has(fn)) {
+      // Guards a reader that reaches itself.
+      readers.set(fn, false);
+      readers.set(fn, readsData(fn));
     }
-    return selectors.get(fn) ? symbol.name : undefined;
+    return readers.get(fn) ? symbol.name : undefined;
   };
 
-  /** The function, when its first parameter holds part of the store state. */
-  const selectorFunction = (declaration: ts.Declaration) => {
+  /** The function, when a parameter holds state, a store, or a manager. */
+  const readerFunction = (declaration: ts.Declaration) => {
     const fn =
       ts.isVariableDeclaration(declaration) && declaration.initializer
         ? declaration.initializer
@@ -127,20 +171,16 @@ export function conversationReads(
     ) {
       return undefined;
     }
-    const first = fn.parameters[0];
-    if (!first) {
-      return undefined;
-    }
-    const type = checker.getTypeAtLocation(first);
-    return type.getProperties().some(isRoot) ? fn : undefined;
+    return fn.parameters.some((parameter) =>
+      holdsState(checker.getTypeAtLocation(parameter))
+    )
+      ? fn
+      : undefined;
   };
 
   /** The read's path: the root field, then each state field after it. */
-  const pathOf = (node: ts.PropertyAccessExpression | ts.BindingElement) => {
-    if (ts.isBindingElement(node)) {
-      return (node.propertyName ?? node.name).getText();
-    }
-    const names = [node.name.text];
+  const pathOf = (node: ts.Expression, root: string) => {
+    const names = [root];
     let current: ts.Node = node;
     while (
       ts.isPropertyAccessExpression(current.parent) &&
@@ -153,19 +193,18 @@ export function conversationReads(
     return names.join('.');
   };
 
+  const count = (read: string) => reads.set(read, (reads.get(read) ?? 0) + 1);
+
   for (const file of files) {
     const source = program.getSourceFile(path.join(packageRoot, file));
     if (!source) {
       throw new Error(`Missing source file ${file}`);
     }
     const visit = (node: ts.Node) => {
-      const root = rootRead(node);
-      if (root) {
-        reads.add(`${file}: ${pathOf(root)}`);
-      }
-      const selector = selectorOf(node);
-      if (selector) {
-        reads.add(`${file}: ${selector}()`);
+      rootReads(node).forEach((read) => count(`${file}: ${read}`));
+      const reader = readerOf(node);
+      if (reader) {
+        count(`${file}: ${reader}()`);
       }
       ts.forEachChild(node, visit);
     };
