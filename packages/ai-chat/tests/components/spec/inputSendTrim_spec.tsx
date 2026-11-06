@@ -7,174 +7,159 @@
  *  @license
  */
 
-/**
- * Regression: the text handed to onSendInput must be trimmed, matching the
- * 1.18 behavior.
- *
- * sendCurrentValue() reads rawInputValueRef.current and passes it to
- * onSendInput. The fix adds a .trim() at that read so leading/trailing
- * whitespace (and Shift+Enter trailing newlines) never reach the host.
- *
- * Tested by capturing the onChange / onSendIntent props that Input.tsx
- * passes to the mock PromptLine element, calling them directly in the test,
- * and asserting onSendInput receives the trimmed value.
- */
-
-import React from 'react';
-import { render, act, waitFor } from '@testing-library/react';
-
-import { createIntl } from '../../../src/chat/utils/i18n';
+import { act, waitFor } from '@testing-library/react';
+import type { JSONContent } from '@tiptap/core';
+import type { PromptLineElement } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
+import type ChatInput from '../../../src/chat/components/input/ChatInput';
+import { MessageSendSource } from '../../../src/types/events/eventBusTypes';
 import {
-  makeConfigStore,
+  createBaseConfig,
+  getChatShadowRoot,
+  renderChatAndGetInstanceWithStore,
   setupAfterEach,
   setupBeforeEach,
-  TestChatContext,
 } from '../../test_helpers';
 
-const testIntl = createIntl({ locale: 'en', messages: {} });
-
-// ---------------------------------------------------------------------------
-// Capture the onChange / onSendIntent props wired to PromptLine by Input.tsx
-// ---------------------------------------------------------------------------
-
-type MockPromptLineProps = {
-  onChange?: (event: CustomEvent<{ rawValue: string }>) => void;
-  onSendIntent?: (event: CustomEvent) => void;
-  [key: string]: unknown;
-};
-let capturedOnChange: MockPromptLineProps['onChange'] | undefined;
-let capturedOnSendIntent: MockPromptLineProps['onSendIntent'] | undefined;
-const clearContentSpy = jest.fn();
-const resetHistorySpy = jest.fn();
-
-jest.mock('@carbon/ai-chat-components/es/react/prompt-line-shell.js', () => ({
-  __esModule: true,
-  default: ({ children }: { children: React.ReactNode }): React.ReactElement =>
-    React.createElement('div', null, children),
-}));
-
-jest.mock('@carbon/ai-chat-components/es/react/prompt-line.js', () => {
-  const MockPromptLine = React.forwardRef(
-    (
-      props: MockPromptLineProps,
-      ref: React.Ref<unknown>
-    ): React.ReactElement => {
-      // Capture the callbacks on every render so we always have the latest.
-      capturedOnChange = props.onChange;
-      capturedOnSendIntent = props.onSendIntent;
-      React.useImperativeHandle(ref, () => ({
-        clearContent: clearContentSpy,
-        resetHistory: resetHistorySpy,
-      }));
-      return React.createElement('div', null);
-    }
+async function renderInput() {
+  const { instance, serviceManager } = await renderChatAndGetInstanceWithStore({
+    ...createBaseConfig(),
+    openChatByDefault: true,
+    homescreen: { isOn: false },
+  });
+  const root = getChatShadowRoot();
+  const view = await waitFor(() => {
+    const input = root.querySelector<ChatInput>('cds-aichat-chat-input');
+    expect(input).not.toBeNull();
+    return input;
+  });
+  await view.ready;
+  const prompt = view.querySelector<PromptLineElement>(
+    'cds-aichat-prompt-line'
   );
-  MockPromptLine.displayName = 'MockPromptLine';
-  return { __esModule: true, default: MockPromptLine };
-});
-
-jest.mock(
-  '@carbon/ai-chat-components/es/react/hooks/useChatAutocomplete.js',
-  () => ({
-    __esModule: true,
-    useChatAutocomplete: (): {
-      onTriggerChange: () => void;
-      autocompleteContent: null;
-    } => ({
-      onTriggerChange: () => {},
-      autocompleteContent: null,
-    }),
-  })
-);
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-async function renderInput(onSendInput: jest.Mock) {
-  const { Input: InputExport } =
-    await import('../../../src/chat/components/input/Input');
-
-  const store = makeConfigStore({});
-  const serviceManager = {
-    store,
-    setInputFunctionsRef: jest.fn(),
-  } as any;
-
-  render(
-    React.createElement(
-      TestChatContext,
-      { store, intl: testIntl, serviceManager, announce: jest.fn() },
-      React.createElement(InputExport, {
-        disableInput: false,
-        isInputVisible: true,
-        disableSend: false,
-        onSendInput,
-        onStopStreaming: jest.fn(),
-      })
-    )
-  );
-
-  await waitFor(() => expect(capturedOnSendIntent).toBeDefined());
+  expect(prompt).not.toBeNull();
+  const send = jest.spyOn(serviceManager.actions, 'sendWithCatch');
+  const clear = jest.spyOn(prompt, 'clearContent');
+  const resetHistory = jest.spyOn(prompt, 'resetHistory');
+  return { instance, view, prompt, send, clear, resetHistory };
 }
 
-// ---------------------------------------------------------------------------
-// Tests
-// ---------------------------------------------------------------------------
-
-describe('sendCurrentValue trims leading/trailing whitespace', () => {
-  beforeEach(() => {
-    setupBeforeEach();
-    clearContentSpy.mockClear();
-    resetHistorySpy.mockClear();
-    capturedOnChange = undefined;
-    capturedOnSendIntent = undefined;
+async function change(
+  view: ChatInput,
+  prompt: PromptLineElement,
+  rawValue: string,
+  content?: JSONContent
+) {
+  await act(async () => {
+    prompt.setContent(rawValue);
+    prompt.dispatchEvent(
+      new CustomEvent('cds-aichat-prompt-change', {
+        bubbles: true,
+        composed: true,
+        detail: { rawValue, content },
+      })
+    );
+    await view.updateComplete;
   });
-  afterEach(setupAfterEach);
+}
 
-  it('trims surrounding spaces before calling onSendInput', async () => {
-    const onSendInput = jest.fn();
-    await renderInput(onSendInput);
+async function sendIntent(view: ChatInput, prompt: PromptLineElement) {
+  await act(async () => {
+    prompt.dispatchEvent(
+      new CustomEvent('cds-aichat-prompt-send-intent', {
+        bubbles: true,
+        composed: true,
+      })
+    );
+    await view.updateComplete;
+    await prompt.updateComplete;
+  });
+}
 
-    act(() => {
-      // Seed the ref with a padded value via the onChange callback.
-      capturedOnChange?.(
-        new CustomEvent('change', {
-          detail: { rawValue: '   padded message   ' },
-        }) as CustomEvent<{ rawValue: string }>
-      );
-    });
+beforeEach(setupBeforeEach);
+afterEach(() => {
+  setupAfterEach();
+  jest.restoreAllMocks();
+});
 
-    act(() => {
-      // Fire the send intent — routes through handlePromptSendIntent →
-      // sendCurrentValue → onSendInput with the trimmed value.
-      capturedOnSendIntent?.(new CustomEvent('send-intent'));
-    });
+describe('the mounted input trims sends before clearing its surface', () => {
+  it('trims surrounding spaces before sending and clears content and history once', async () => {
+    const { instance, view, prompt, send, clear, resetHistory } =
+      await renderInput();
+    await change(view, prompt, '   padded message   ');
+    expect(prompt.getValue()).toBe('   padded message   ');
 
-    expect(onSendInput).toHaveBeenCalledTimes(1);
-    expect(onSendInput).toHaveBeenCalledWith('padded message', undefined);
-    // clearContent() + resetHistory() are both called by sendCurrentValue() on send.
-    expect(clearContentSpy).toHaveBeenCalledTimes(1);
-    expect(resetHistorySpy).toHaveBeenCalledTimes(1);
+    await sendIntent(view, prompt);
+
+    expect(send).toHaveBeenCalledTimes(1);
+    expect(send.mock.calls[0][0]).toEqual(
+      expect.objectContaining({
+        input: expect.objectContaining({ text: 'padded message' }),
+      })
+    );
+    expect(send.mock.calls[0][0]).not.toHaveProperty('input.display_content');
+    expect(send.mock.calls[0][1]).toBe(MessageSendSource.MESSAGE_INPUT);
+    expect(clear).toHaveBeenCalledTimes(1);
+    expect(resetHistory).toHaveBeenCalledTimes(1);
+    expect(send.mock.invocationCallOrder[0]).toBeLessThan(
+      clear.mock.invocationCallOrder[0]
+    );
+    expect(clear.mock.invocationCallOrder[0]).toBeLessThan(
+      resetHistory.mock.invocationCallOrder[0]
+    );
+    expect(prompt.getValue()).toBe('');
+    expect(instance.getState().input.rawValue).toBe('');
   });
 
   it('strips a trailing newline left by Shift+Enter', async () => {
-    const onSendInput = jest.fn();
-    await renderInput(onSendInput);
+    const { view, prompt, send, clear, resetHistory } = await renderInput();
+    await change(view, prompt, 'hello\n');
 
-    act(() => {
-      capturedOnChange?.(
-        new CustomEvent('change', {
-          detail: { rawValue: 'hello\n' },
-        }) as CustomEvent<{ rawValue: string }>
-      );
-    });
+    await sendIntent(view, prompt);
 
-    act(() => {
-      capturedOnSendIntent?.(new CustomEvent('send-intent'));
-    });
+    expect(send).toHaveBeenCalledTimes(1);
+    expect(send.mock.calls[0][0]).toEqual(
+      expect.objectContaining({
+        input: expect.objectContaining({ text: 'hello' }),
+      })
+    );
+    expect(send.mock.calls[0][0]).not.toHaveProperty('input.display_content');
+    expect(clear).toHaveBeenCalledTimes(1);
+    expect(resetHistory).toHaveBeenCalledTimes(1);
+    expect(prompt.getValue()).toBe('');
+  });
 
-    expect(onSendInput).toHaveBeenCalledTimes(1);
-    expect(onSendInput).toHaveBeenCalledWith('hello', undefined);
+  it('forwards the current document by identity before clearing it', async () => {
+    const { view, prompt, send, clear, resetHistory } = await renderInput();
+    const content: JSONContent = {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [{ type: 'text', text: 'current document' }],
+        },
+      ],
+    };
+    await change(view, prompt, '  current document  ', content);
+
+    await sendIntent(view, prompt);
+
+    expect(send).toHaveBeenCalledTimes(1);
+    const request = send.mock.calls[0][0];
+    expect(request).toEqual(
+      expect.objectContaining({
+        input: expect.objectContaining({ text: 'current document' }),
+      })
+    );
+    expect(typeof request).not.toBe('string');
+    if (typeof request === 'string') {
+      throw new Error('Input sent a string instead of a message request.');
+    }
+    expect(request.input.display_content).toBe(content);
+    expect(clear).toHaveBeenCalledTimes(1);
+    expect(resetHistory).toHaveBeenCalledTimes(1);
+    expect(send.mock.invocationCallOrder[0]).toBeLessThan(
+      clear.mock.invocationCallOrder[0]
+    );
+    expect(prompt.getValue()).toBe('');
   });
 });

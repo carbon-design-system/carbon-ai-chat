@@ -12,7 +12,7 @@
  * pulls `@tiptap/*` (every carbon factory imports it), so it must stay out of
  * the default render path — only chats that use the rich editor download it.
  * Mirrors the prompt-line runtime loader: a memoized dynamic `import()` plus a
- * synchronous cache so `useInputExtensions` can build extensions on first
+ * synchronous cache so the input owner can build extensions on first
  * render once warmed (the chat boot warms it alongside the rich runtime).
  */
 
