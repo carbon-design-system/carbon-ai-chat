@@ -22,15 +22,18 @@ import type { WCRenderUserDefinedInputNode } from '../../../src/types/component/
 import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import type { MessageRequest } from '../../../src/types/messaging/Messages';
 
-import { StoreProvider } from '../../../src/chat/providers/StoreProvider';
-import { createBaseConfig, makeConfigStore } from '../../test_helpers';
+import {
+  createBaseConfig,
+  makeConfigStore,
+  TestChatContext,
+} from '../../test_helpers';
 import actions from '../../../src/chat/store/actions';
 
 let store: ReturnType<typeof makeConfigStore>;
 function render(ui: React.ReactElement) {
   return renderWithTestingLibrary(ui, {
     wrapper: ({ children }) => (
-      <StoreProvider store={store}>{children}</StoreProvider>
+      <TestChatContext store={store}>{children}</TestChatContext>
     ),
   });
 }

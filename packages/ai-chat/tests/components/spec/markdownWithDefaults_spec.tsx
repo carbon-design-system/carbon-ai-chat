@@ -39,18 +39,17 @@ jest.mock('@carbon/ai-chat-components/es/react/markdown.js', () => ({
   },
 }));
 
-import { StoreProvider } from '../../../src/chat/providers/StoreProvider';
 import actions from '../../../src/chat/store/actions';
 import { MarkdownConfig } from '../../../src/types/config/MarkdownConfig';
 import { MarkdownWithDefaults } from '../../../src/chat/components/helpers/MarkdownWithDefaults/MarkdownWithDefaults';
-import { makeConfigStore } from '../../test_helpers';
+import { makeConfigStore, TestChatContext } from '../../test_helpers';
 
 function renderWithStore(ui: ReactElement, markdownConfig?: MarkdownConfig) {
   const store = makeConfigStore({});
   if (markdownConfig !== undefined) {
     store.dispatch(actions.setAppStateValue('markdownConfig', markdownConfig));
   }
-  return render(<StoreProvider store={store}>{ui}</StoreProvider>);
+  return render(<TestChatContext store={store}>{ui}</TestChatContext>);
 }
 
 beforeEach(() => {
@@ -95,9 +94,9 @@ describe('MarkdownWithDefaults', () => {
     // element needs it to leave its trailing-table loading mode.
     const store = makeConfigStore({});
     const tree = (streaming: boolean) => (
-      <StoreProvider store={store}>
+      <TestChatContext store={store}>
         <MarkdownWithDefaults text="| a |\n| - |" streaming={streaming} />
-      </StoreProvider>
+      </TestChatContext>
     );
 
     const { rerender } = render(tree(true));
@@ -111,7 +110,7 @@ describe('MarkdownWithDefaults', () => {
   it('preserves per-call options, locale, translations, and format callbacks', () => {
     const store = makeConfigStore({ locale: 'fr' });
     render(
-      <StoreProvider store={store}>
+      <TestChatContext store={store}>
         <MarkdownWithDefaults
           text="source"
           removeHTML
@@ -119,7 +118,7 @@ describe('MarkdownWithDefaults', () => {
           streaming
           highlight={false}
         />
-      </StoreProvider>
+      </TestChatContext>
     );
     const props = capturedProps[0];
     expect(props).toMatchObject({

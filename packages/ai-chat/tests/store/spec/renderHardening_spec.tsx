@@ -17,7 +17,6 @@
 import React, { ReactElement } from 'react';
 import { render, act } from '@testing-library/react';
 
-import { StoreProvider } from '../../../src/chat/providers/StoreProvider';
 import { useSelector } from '../../../src/chat/hooks/useSelector';
 import { selectMessagesState } from '../../../src/chat/components-legacy/MessagesComponent';
 import { selectLanguagePack } from '../../../src/chat/store/selectors';
@@ -25,7 +24,7 @@ import actions from '../../../src/chat/store/actions';
 import { shallowEqual } from '../../../src/chat/store/appStore';
 import { AppState } from '../../../src/types/state/AppState';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
-import { makeConfigStore } from '../../test_helpers';
+import { makeConfigStore, TestChatContext } from '../../test_helpers';
 
 const makeStore = makeConfigStore;
 
@@ -51,9 +50,9 @@ describe('render hardening', () => {
     }
 
     render(
-      <StoreProvider store={store}>
+      <TestChatContext store={store}>
         <MessagesBagProbe />
-      </StoreProvider>
+      </TestChatContext>
     );
     expect(messageBagRenders).toBe(1);
 
@@ -109,10 +108,10 @@ describe('render hardening', () => {
     }
 
     render(
-      <StoreProvider store={store}>
+      <TestChatContext store={store}>
         <LanguagePackProbe />
         <HeaderProbe />
-      </StoreProvider>
+      </TestChatContext>
     );
     expect(languagePackRenders).toBe(1);
     expect(headerRenders).toBe(1);

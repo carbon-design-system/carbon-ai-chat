@@ -8,7 +8,7 @@ Tests are organized by what they validate. Naming is `_spec.ts(x)` (not `.test.t
 
 | Category | Location | Validates | Pattern |
 | --- | --- | --- | --- |
-| Store & hooks | `tests/store/spec/` | Redux-like store + custom hooks | Local test store, wrap in `StoreProvider`, assert state |
+| Store & hooks | `tests/store/spec/` | Redux-like store + custom hooks | Local test store, wrap in `TestChatContext` from `test_helpers.ts`, assert state |
 | Services | `tests/services/spec/` | Service orchestration & side effects | Stub `ServiceManager`, instantiate directly, assert calls/state |
 | Components | `tests/components/spec/` | React component rendering & interactions | Testing Library, simulate user, assert DOM |
 | Integration | `demo/tests/` (Playwright) | End-to-end flows across the full stack | See [demo/AGENTS.md](../../../demo/AGENTS.md) |
@@ -20,13 +20,15 @@ Tests are organized by what they validate. Naming is `_spec.ts(x)` (not `.test.t
 ```typescript
 const store = createAppStore(initialState);
 render(
-  <StoreProvider store={store}>
+  <TestChatContext store={store}>
     <TestComponent />
-  </StoreProvider>
+  </TestChatContext>
 );
 store.dispatch(someAction());
 expect(screen.getByText('expected')).toBeInTheDocument();
 ```
+
+`TestChatContext` also takes `intl`, a stub `serviceManager`, and an `announce` mock. It replaces every per-chat provider: hooks such as `useSelector`, `useIntl`, and `useAriaAnnouncer` all read the one `ChatContext`. For a spec that needs the view state itself, `createTestViewState` builds the same one.
 
 Add when: new actions/reducers, new `useSelector` patterns, state-dependent component behavior.
 

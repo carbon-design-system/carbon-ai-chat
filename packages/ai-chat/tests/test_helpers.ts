@@ -7,7 +7,7 @@
  *  @license
  */
 
-import React from 'react';
+import React, { ReactNode, useMemo } from 'react';
 import { cleanup, render, waitFor, act } from '@testing-library/react';
 // Production defers this module for SSR. Load it here so cold Jest transforms
 // finish before tests start timing mount readiness.
@@ -20,6 +20,11 @@ import { createAppStore, type AppStore } from '../src/chat/store/appStore';
 import { AppState } from '../src/types/state/AppState';
 import { MessageResponseTypes } from '../src/types/messaging/Messages';
 import { ServiceManager } from '../src/chat/services/ServiceManager';
+import { ChatViewState } from '../src/chat/services/chatViewState';
+import type { AriaAnnouncerFunctionType } from '../src/chat/services/ariaAnnouncer';
+import { ChatContext } from '../src/chat/contexts/ChatContext';
+import type { IntlShape } from '../src/chat/utils/i18n';
+import { getWindowSize } from '../src/chat/utils/windowSize';
 import { reducers } from '../src/chat/store/reducers';
 import actions from '../src/chat/store/actions';
 import isEqual from 'lodash-es/isEqual.js';
@@ -178,6 +183,75 @@ export const renderChatAndGetInstanceWithStore = async (
     serviceManager,
   };
 };
+
+// ============================================================================
+// Chat context helpers
+// ============================================================================
+
+export interface TestChatContextOptions {
+  /** The store `useSelector` reads. Ignored when `serviceManager` has one. */
+  store?: AppStore<any, any>;
+  /** The formatter `useIntl` reads. Ignored when `serviceManager` has one. */
+  intl?: IntlShape;
+  /**
+   * A stub service manager. It gains `store` and `intl` when it lacks them,
+   * and must not already hold a different one.
+   */
+  serviceManager?: object;
+  /** Replaces the announcer's `announce`, which `useAriaAnnouncer` returns. */
+  announce?: AriaAnnouncerFunctionType;
+}
+
+/**
+ * Builds a chat view state for a component or hook spec, the way the
+ * container does for a mount. It is not connected, so formatter changes do
+ * not reach it.
+ */
+export function createTestViewState({
+  store,
+  intl,
+  serviceManager = {},
+  announce,
+}: TestChatContextOptions = {}): ChatViewState {
+  const manager = serviceManager as ServiceManager;
+  if (
+    (store && manager.store && manager.store !== store) ||
+    (intl && manager.intl && manager.intl !== intl)
+  ) {
+    throw new Error(
+      'The stub service manager already holds a different store or intl.'
+    );
+  }
+  manager.store ??= store;
+  manager.intl ??= intl;
+  const viewState = new ChatViewState(manager, getWindowSize());
+  if (announce) {
+    viewState.announcer.announce = announce;
+  }
+  return viewState;
+}
+
+/**
+ * Provides a chat view state built from these options. It builds a new one
+ * only when an option's identity changes, as a remount would.
+ */
+export function TestChatContext({
+  store,
+  intl,
+  serviceManager,
+  announce,
+  children,
+}: TestChatContextOptions & { children?: ReactNode }) {
+  const viewState = useMemo(
+    () => createTestViewState({ store, intl, serviceManager, announce }),
+    [store, intl, serviceManager, announce]
+  );
+  return React.createElement(
+    ChatContext.Provider,
+    { value: viewState },
+    children
+  );
+}
 
 // ============================================================================
 // Store / config-change re-render harness

@@ -10,10 +10,8 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { MessageTypeComponent } from '../../../src/chat/components-legacy/MessageTypeComponent';
-import { IntlProvider } from '../../../src/chat/providers/IntlProvider';
-import { StoreProvider } from '../../../src/chat/providers/StoreProvider';
 import { createIntl } from '../../../src/chat/utils/i18n';
-import { makeConfigStore } from '../../test_helpers';
+import { makeConfigStore, TestChatContext } from '../../test_helpers';
 import {
   MessageRequestHistory,
   MessageResponseTypes,
@@ -55,22 +53,20 @@ function renderRequest(history: MessageRequestHistory) {
   } as any;
 
   render(
-    <StoreProvider store={makeConfigStore({})}>
-      <IntlProvider intl={intl}>
-        <MessageTypeComponent
-          message={message}
-          originalMessage={originalMessage}
-          serviceManager={{} as any}
-          requestInputFocus={jest.fn()}
-          disableUserInputs={false}
-          isMessageForInput={false}
-          scrollElementIntoView={jest.fn()}
-          showChainOfThought={false}
-          hideFeedback
-          allowNewFeedback={false}
-        />
-      </IntlProvider>
-    </StoreProvider>
+    <TestChatContext store={makeConfigStore({})} intl={intl}>
+      <MessageTypeComponent
+        message={message}
+        originalMessage={originalMessage}
+        serviceManager={{} as any}
+        requestInputFocus={jest.fn()}
+        disableUserInputs={false}
+        isMessageForInput={false}
+        scrollElementIntoView={jest.fn()}
+        showChainOfThought={false}
+        hideFeedback
+        allowNewFeedback={false}
+      />
+    </TestChatContext>
   );
 }
 

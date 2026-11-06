@@ -16,16 +16,21 @@
  */
 
 import React from 'react';
-import { act, render, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import { deepQuerySelector } from '@carbon/ai-chat-components/es/globals/utils/dom-utils.js';
+import dayjs from 'dayjs';
+import frLocaleData from 'dayjs/locale/fr.js';
 
 import '../../../src/web-components/cds-aichat-container';
 import { ChatContainer } from '../../../src/react/ChatContainer';
 import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
+import { localeLoaders } from '../../../src/chat/utils/languageUtils';
+import { useIntl } from '../../../src/chat/hooks/useIntl';
 import { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
 import { MessageResponseTypes } from '../../../src/types/messaging/Messages';
 import {
+  addUserDefinedResponse,
   createBaseConfig,
   setupAfterEach,
   setupBeforeEach,
@@ -197,6 +202,56 @@ describe('config updates after startup', () => {
     await waitFor(() =>
       expect(storeOf(instance).getState().markdownConfig).toBeUndefined()
     );
+  });
+
+  it('shows a new locale once its data loads, with no other update', async () => {
+    const localeGate = resolvablePromise<ILocale>();
+    const loadFrench = jest
+      .spyOn(localeLoaders, 'fr')
+      .mockReturnValueOnce(localeGate);
+    function LocaleProbe() {
+      return <span data-testid="locale">{useIntl().locale}</span>;
+    }
+    const renderUserDefinedResponse = () => <LocaleProbe />;
+    let instance: ChatInstance;
+    const onAfterRender = jest.fn();
+    const chat = (locale: string) => (
+      <ChatContainer
+        {...base}
+        locale={locale}
+        onBeforeRender={(next) => {
+          instance = next;
+        }}
+        onAfterRender={onAfterRender}
+        renderUserDefinedResponse={renderUserDefinedResponse}
+      />
+    );
+
+    try {
+      const view = render(chat('en'));
+      await waitFor(() => expect(onAfterRender).toHaveBeenCalled(), {
+        timeout: 5000,
+      });
+      await addUserDefinedResponse(instance, 'locale-probe');
+      const probe = await screen.findByTestId('locale');
+      expect(probe).toHaveTextContent('en');
+
+      view.rerender(chat('fr'));
+      await waitFor(() => expect(loadFrench).toHaveBeenCalled());
+      expect(probe).toHaveTextContent('en');
+
+      // Only the load finishing may change the view: nothing else is sent.
+      const dispatch = jest.spyOn(storeOf(instance), 'dispatch');
+      await act(async () => {
+        localeGate.doResolve(frLocaleData);
+        await localeGate;
+      });
+
+      await waitFor(() => expect(probe).toHaveTextContent('fr'));
+      expect(dispatch).not.toHaveBeenCalled();
+    } finally {
+      dayjs.locale('en');
+    }
   });
 });
 
