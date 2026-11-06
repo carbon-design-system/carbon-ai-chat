@@ -10,8 +10,8 @@
 /**
  * `CarbonTokenNodeView` is Tiptap's NodeView for inline tokens (mentions,
  * commands). Via {@link renderTokenChip} it dispatches the light-DOM portal
- * event that consumer-side React portal listeners (`LightDomPortalsContainer`)
- * hydrate into chips.
+ * event. The chat's host service answers it with a host in the page's light
+ * DOM, and the chat's React adapter renders any React content into that host.
  *
  * The actual chip-DOM construction (default chip, `renderCustomToken`
  * honoring, and the light-DOM portal handshake) lives in {@link renderTokenChip},

@@ -15,16 +15,20 @@
  */
 
 import React from 'react';
-import { render } from '@testing-library/react';
+import { act, render } from '@testing-library/react';
 
 import { CustomRequestFooterPortalsContainer } from '../../../src/chat/components/portals/CustomRequestFooterPortalsContainer';
+import { EventBus } from '../../../src/chat/events/EventBus';
+import { ExtensionHosts } from '../../../src/chat/services/extensionHosts';
+import { BusEventType } from '../../../src/types/events/eventBusTypes';
 import { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import {
   MessageInputType,
   MessageRequest,
 } from '../../../src/types/messaging/Messages';
 
-const chatInstance = {} as ChatInstance;
+const eventBus = new EventBus();
+const chatInstance = eventBus as unknown as ChatInstance;
 
 const createRequest = (text: string): MessageRequest => ({
   id: `msg-${text}`,
@@ -39,10 +43,36 @@ const slotState = (slotName: string, text: string) => ({
   message: createRequest(text),
 });
 
+const connectedHosts: ExtensionHosts[] = [];
+afterEach(() => connectedHosts.splice(0).forEach((h) => h.disconnect()));
+
+/** A connected host service that has recorded one footer per slot. */
+function hostsWith(chatWrapper: HTMLElement, ...slots: [string, string][]) {
+  const hosts = new ExtensionHosts(
+    chatInstance,
+    chatWrapper,
+    { getState: () => ({ allMessagesByID: {} }), subscribe: () => () => {} },
+    () => true
+  );
+  hosts.connect();
+  connectedHosts.push(hosts);
+  slots.forEach(([slotName, text]) =>
+    eventBus.fireSync(
+      {
+        type: BusEventType.CUSTOM_REQUEST_FOOTER_SLOT,
+        data: slotState(slotName, text),
+      } as never,
+      chatInstance
+    )
+  );
+  return hosts;
+}
+
 describe('CustomRequestFooterPortalsContainer', () => {
   it('renders returned content for a sent message', () => {
     const chatWrapper = document.createElement('div');
     document.body.appendChild(chatWrapper);
+    const hosts = hostsWith(chatWrapper, ['request-footer-1', 'hello']);
 
     render(
       <CustomRequestFooterPortalsContainer
@@ -50,10 +80,7 @@ describe('CustomRequestFooterPortalsContainer', () => {
         renderCustomRequestFooter={(slotName, message) => (
           <button type="button">Copy {message.input.text}</button>
         )}
-        customRequestFooterEventsBySlot={{
-          'request-footer-1': slotState('request-footer-1', 'hello'),
-        }}
-        chatWrapper={chatWrapper}
+        hosts={hosts}
       />
     );
 
@@ -65,15 +92,13 @@ describe('CustomRequestFooterPortalsContainer', () => {
   it('gives incoming-only hosts no outbound footer', () => {
     const chatWrapper = document.createElement('div');
     document.body.appendChild(chatWrapper);
+    const hosts = hostsWith(chatWrapper, ['request-footer-1', 'hello']);
 
     render(
       <CustomRequestFooterPortalsContainer
         chatInstance={chatInstance}
         renderCustomRequestFooter={undefined}
-        customRequestFooterEventsBySlot={{
-          'request-footer-1': slotState('request-footer-1', 'hello'),
-        }}
-        chatWrapper={chatWrapper}
+        hosts={hosts}
       />
     );
 
@@ -84,15 +109,13 @@ describe('CustomRequestFooterPortalsContainer', () => {
   it('creates no host element when the callback returns null', () => {
     const chatWrapper = document.createElement('div');
     document.body.appendChild(chatWrapper);
+    const hosts = hostsWith(chatWrapper, ['request-footer-1', 'hello']);
 
     render(
       <CustomRequestFooterPortalsContainer
         chatInstance={chatInstance}
         renderCustomRequestFooter={() => null}
-        customRequestFooterEventsBySlot={{
-          'request-footer-1': slotState('request-footer-1', 'hello'),
-        }}
-        chatWrapper={chatWrapper}
+        hosts={hosts}
       />
     );
 
@@ -105,15 +128,13 @@ describe('CustomRequestFooterPortalsContainer', () => {
   it('removes the host element when the callback starts returning null', () => {
     const chatWrapper = document.createElement('div');
     document.body.appendChild(chatWrapper);
+    const hosts = hostsWith(chatWrapper, ['request-footer-1', 'hello']);
 
     const { rerender } = render(
       <CustomRequestFooterPortalsContainer
         chatInstance={chatInstance}
         renderCustomRequestFooter={() => <span>footer</span>}
-        customRequestFooterEventsBySlot={{
-          'request-footer-1': slotState('request-footer-1', 'hello'),
-        }}
-        chatWrapper={chatWrapper}
+        hosts={hosts}
       />
     );
     expect(
@@ -124,10 +145,7 @@ describe('CustomRequestFooterPortalsContainer', () => {
       <CustomRequestFooterPortalsContainer
         chatInstance={chatInstance}
         renderCustomRequestFooter={() => null}
-        customRequestFooterEventsBySlot={{
-          'request-footer-1': slotState('request-footer-1', 'hello'),
-        }}
-        chatWrapper={chatWrapper}
+        hosts={hosts}
       />
     );
 
@@ -137,16 +155,14 @@ describe('CustomRequestFooterPortalsContainer', () => {
   it('passes the submitted message to the callback', () => {
     const chatWrapper = document.createElement('div');
     document.body.appendChild(chatWrapper);
+    const hosts = hostsWith(chatWrapper, ['request-footer-1', 'hello']);
     const renderCustomRequestFooter = jest.fn().mockReturnValue(null);
 
     render(
       <CustomRequestFooterPortalsContainer
         chatInstance={chatInstance}
         renderCustomRequestFooter={renderCustomRequestFooter}
-        customRequestFooterEventsBySlot={{
-          'request-footer-1': slotState('request-footer-1', 'hello'),
-        }}
-        chatWrapper={chatWrapper}
+        hosts={hosts}
       />
     );
 
@@ -162,29 +178,25 @@ describe('CustomRequestFooterPortalsContainer', () => {
   it('removes the host element for a slot that left state', () => {
     const chatWrapper = document.createElement('div');
     document.body.appendChild(chatWrapper);
+    const hosts = hostsWith(chatWrapper, ['request-footer-1', 'hello']);
 
-    const { rerender } = render(
+    render(
       <CustomRequestFooterPortalsContainer
         chatInstance={chatInstance}
         renderCustomRequestFooter={() => <span>footer</span>}
-        customRequestFooterEventsBySlot={{
-          'request-footer-1': slotState('request-footer-1', 'hello'),
-        }}
-        chatWrapper={chatWrapper}
+        hosts={hosts}
       />
     );
     expect(
       chatWrapper.querySelector('[slot="request-footer-1"]')
     ).not.toBeNull();
 
-    rerender(
-      <CustomRequestFooterPortalsContainer
-        chatInstance={chatInstance}
-        renderCustomRequestFooter={() => <span>footer</span>}
-        customRequestFooterEventsBySlot={{}}
-        chatWrapper={chatWrapper}
-      />
-    );
+    act(() => {
+      eventBus.fireSync(
+        { type: BusEventType.RESTART_CONVERSATION } as never,
+        chatInstance
+      );
+    });
 
     expect(chatWrapper.querySelector('[slot="request-footer-1"]')).toBeNull();
   });
