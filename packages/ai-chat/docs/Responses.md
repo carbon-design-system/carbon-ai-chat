@@ -58,9 +58,9 @@ For each `user_defined` response, your framework renderer receives the accumulat
 
 ### Streaming and updates
 
-Prefer {@link ChatInstanceMessaging.upsertMessage | upsertMessage} to insert, stream, correct, and regenerate `user_defined` responses. One method covers all four. It drives a streaming UI from any source: SSE, WebSocket, polling, or whole-message snapshots. It also preserves component identity across updates. You accumulate state in your app and apply it with one call per update. This skips the chunk-shape contract below. It is the recommended direction for new code, but experimental. Its semantics and updater signature may still evolve. See [Adding messages (experimental)](./UpsertMessage.md). The chat supports nested `user_defined` items inside {@link MessageResponseTypes.CARD | card}, {@link MessageResponseTypes.CAROUSEL | carousel}, and {@link MessageResponseTypes.GRID | grid} containers.
+Prefer {@link ChatInstanceMessaging.upsertMessage | upsertMessage} to insert, stream, correct, and regenerate `user_defined` responses. One method covers all four. It drives a streaming UI from any source: SSE, WebSocket, polling, or whole-message snapshots. It also preserves component identity across updates. You accumulate state in your app and apply it with one call per update. This skips the chunk-shape contract below. See [Adding messages](./UpsertMessage.md). The chat supports nested `user_defined` items inside {@link MessageResponseTypes.CARD | card}, {@link MessageResponseTypes.CAROUSEL | carousel}, and {@link MessageResponseTypes.GRID | grid} containers.
 
-{@link ChatInstanceMessaging.addMessageChunk | addMessageChunk} is the stable streaming path. It is fully supported with no deprecation, and the right choice if you prefer a settled API. If you stream with it, read [Adding messages (legacy)](./AddMessageChunk.md) first. The model is the same in every framework:
+{@link ChatInstanceMessaging.addMessageChunk | addMessageChunk} is the legacy streaming path. It's fully supported and not deprecated, and there are no plans to remove it. If you stream with it, read [Adding messages (legacy)](./AddMessageChunk.md) first. The model is the same in every framework:
 
 - {@link RenderUserDefinedState.partialItems | `partialItems`} is an array of every chunk received, **not** concatenated for you. The streaming API sends string chunks, not partial JSON. So stringify your JSON, then concatenate and parse the chunks in your renderer with `try`/`catch` or an optimistic parser.
 - Include `streaming_metadata.response_id` for the message and {@link ItemStreamingMetadata.id | `id`} for each item so chunks correlate correctly.
@@ -69,5 +69,5 @@ Prefer {@link ChatInstanceMessaging.upsertMessage | upsertMessage} to insert, st
 
 - [Using with React](./React.md#user-defined-responses) — render user-defined responses in React.
 - [Using as a Web component](./WebComponent.md#user-defined-responses) — render user-defined responses with web components.
-- [Adding messages (experimental)](./UpsertMessage.md) — insert, stream, and regenerate responses while preserving component identity.
+- [Adding messages](./UpsertMessage.md) — insert, stream, and regenerate responses while preserving component identity.
 - [Adding messages (legacy)](./AddMessageChunk.md) — stream message chunks with {@link ChatInstanceMessaging.addMessageChunk}.

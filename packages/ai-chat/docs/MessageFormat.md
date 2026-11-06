@@ -67,10 +67,10 @@ Footers under a user's own message work the other way around: the chat creates t
 
 ## Streaming
 
-The shapes above describe a complete message. To build a response piece by piece, wrap items in chunk envelopes and apply them one at a time. You can deliver a response two ways:
+The shapes above describe a complete message. To build a response piece by piece, you have two ways to deliver it:
 
-- [Adding messages (legacy)](./AddMessageChunk.md) — the current flow. It documents the full chunk reference: {@link StreamChunk}, {@link PartialItemChunk}, {@link CompleteItemChunk}, and {@link FinalResponseChunk}.
-- [Adding messages (experimental)](./UpsertMessage.md) — the forward-thinking flow. You accumulate state in your app code and apply each update with one call, which sidesteps the chunk-shape contract.
+- [Adding messages](./UpsertMessage.md) — the recommended flow. You accumulate state in your app code and apply each update with one call, which sidesteps the chunk-shape contract.
+- [Adding messages (legacy)](./AddMessageChunk.md) — the older chunk flow. It documents the full chunk reference: {@link StreamChunk}, {@link PartialItemChunk}, {@link CompleteItemChunk}, and {@link FinalResponseChunk}.
 
 Both render the same {@link MessageResponse | response} shape shown above.
 
@@ -78,7 +78,7 @@ Both render the same {@link MessageResponse | response} shape shown above.
 
 - [Server communication](./CustomServer.md) — wire the chat to your server.
 - [Structured data](./StructuredData.md) — send typed fields and uploaded files on the request.
+- [Adding messages](./UpsertMessage.md) — accumulate state and apply each update with one call.
 - [Adding messages (legacy)](./AddMessageChunk.md) — deliver a response piece by piece.
-- [Adding messages (experimental)](./UpsertMessage.md) — accumulate state and apply each update with one call.
 - [Custom message footer](./CustomMessageFooter.md) — render your own content under an assistant item with `custom_footer_slot`.
 - [Conversation history](./CustomHistory.md) — persist and replay responses.
