@@ -7,17 +7,18 @@
  *  @license
  */
 
-import { ConversationLifecycleService } from '../../../src/chat/services/ConversationLifecycleService';
+import { MessageCoordinator } from '../../../src/chat/services/messaging/MessageCoordinator';
 import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
 
-describe('ConversationLifecycleService', () => {
-  let service: ConversationLifecycleService;
+describe('MessageCoordinator', () => {
+  let service: MessageCoordinator;
   let status: string;
 
   beforeEach(() => {
     status = 'ready';
-    service = new ConversationLifecycleService({
+    service = new MessageCoordinator({
       store: {
+        subscribe: jest.fn(() => jest.fn()),
         getState: () => ({ conversationStatus: status }),
         dispatch: (action: { status: string }) => {
           status = action.status;
@@ -173,4 +174,147 @@ describe('ConversationLifecycleService', () => {
 
     expect(service.requestStopped('request')).toEqual([]);
   });
+});
+
+describe('lifecycle publication', () => {
+  function setup() {
+    let status = 'ready';
+    const getState = jest.fn(() => ({ conversationStatus: status }));
+    const dispatch = jest.fn((action: { status: string }) => {
+      status = action.status;
+    });
+    const service = new MessageCoordinator({
+      store: { getState, dispatch, subscribe: () => () => {} },
+    } as unknown as ServiceManager);
+    return {
+      service,
+      getState,
+      dispatch,
+      setStatus: (value: string) => {
+        status = value;
+      },
+    };
+  }
+
+  it('skips unchanged status dispatches but still consults the store', () => {
+    const { service, getState, dispatch } = setup();
+    service.requestStarted('request');
+    service.requestStarted('other');
+    expect(getState).toHaveBeenCalledTimes(2);
+    expect(dispatch).toHaveBeenCalledTimes(1);
+    expect(dispatch.mock.calls[0][0].status).toBe('submitted');
+  });
+
+  it('does not consult the store for stale or rejected operations', () => {
+    const { service, getState, dispatch } = setup();
+    const generation = service.currentGeneration;
+    const token = service.fail({});
+    service.restart(true);
+    getState.mockClear();
+    dispatch.mockClear();
+    service.hydrationFinished(generation);
+    service.requestStarted('request', generation);
+    service.requestFinished('request', generation);
+    expect(service.requestStopped('request', generation)).toEqual([]);
+    service.responseStreaming('response', generation);
+    service.responseStreaming('');
+    service.responseReceived('response', generation);
+    service.responseStopped('response', generation);
+    service.responseFinished('response', generation);
+    expect(service.fail({}, generation)).toBeNull();
+    service.clearFailure(token);
+    expect(getState).not.toHaveBeenCalled();
+    expect(dispatch).not.toHaveBeenCalled();
+  });
+
+  it.each(['restart', 'hydrationStarted'] as const)(
+    '%s returns the generation after a reentrant restart',
+    (method) => {
+      const { service, dispatch, setStatus } = setup();
+      dispatch.mockImplementationOnce((action) => {
+        setStatus(action.status);
+        service.restart(true);
+      });
+      const returned =
+        method === 'restart'
+          ? service.restart(false)
+          : service.hydrationStarted();
+      expect(returned).toBe(method === 'restart' ? 2 : 1);
+      expect(returned).toBe(service.currentGeneration);
+      expect(dispatch.mock.calls.map(([action]) => action.status)).toEqual([
+        'loading',
+        'ready',
+      ]);
+    }
+  );
+
+  it('returns the captured failure token when a listener creates a newer failure', () => {
+    const { service, dispatch, setStatus } = setup();
+    let current: ReturnType<MessageCoordinator['fail']>;
+    dispatch.mockImplementationOnce((action) => {
+      setStatus(action.status);
+      current = service.fail({ messageID: 'newer' });
+    });
+    const first = service.fail({ messageID: 'first' });
+    expect(first.messageID).toBe('first');
+    expect(first).not.toBe(current);
+    service.clearFailure(first);
+    expect(service.hasFailureForRequest('newer')).toBe(true);
+    service.clearFailure(current);
+    expect(dispatch.mock.calls.map(([action]) => action.status)).toEqual([
+      'error',
+      'ready',
+    ]);
+  });
+
+  it('reads fresh model and store status for both streaming publication attempts', () => {
+    const { service, getState, dispatch, setStatus } = setup();
+    service.requestStarted('request');
+    getState.mockClear();
+    dispatch.mockClear();
+    dispatch.mockImplementationOnce((action) => {
+      setStatus(action.status);
+      service.restart(true);
+      // A subscriber may also replace public status before dispatch returns.
+      setStatus('submitted');
+    });
+    service.responseStreaming('response', service.currentGeneration, 'request');
+    expect(dispatch.mock.calls.map(([action]) => action.status)).toEqual([
+      'streaming',
+      'ready',
+      'ready',
+    ]);
+    expect(getState).toHaveBeenCalledTimes(3);
+    expect(service.currentGeneration).toBe(1);
+  });
+
+  it('publishes once for an unowned stream and not for receipt without an active owner', () => {
+    const { service, getState, dispatch } = setup();
+    service.responseReceived('response');
+    expect(getState).not.toHaveBeenCalled();
+    service.responseStreaming('response');
+    expect(getState).toHaveBeenCalledTimes(1);
+    expect(dispatch.mock.calls.map(([action]) => action.status)).toEqual([
+      'streaming',
+    ]);
+  });
+});
+
+it('creates loading state lazily before the message facade is wired', () => {
+  const manager = {
+    store: { subscribe: () => () => {} },
+    get messageService() {
+      throw new Error('MessageService is not wired yet');
+    },
+  } as unknown as ServiceManager;
+  const coordinator = new MessageCoordinator(manager);
+  coordinator.configureMessageTimeout({ messaging: { messageTimeoutSecs: 0 } });
+  expect(coordinator.timeoutMS).toBe(0);
+  const loading = coordinator.messageLoadingManager;
+  expect(coordinator.messageLoadingManager).toBe(loading);
+  coordinator.registerRequestGeneration('old-request', 0);
+  manager.restartCount = 1;
+  expect(coordinator.isRequestFromPreviousConversation('old-request')).toBe(
+    true
+  );
 });

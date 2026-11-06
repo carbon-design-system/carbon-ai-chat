@@ -7,11 +7,10 @@
  *  @license
  */
 
-import MessageService, {
-  PendingMessageRequest,
-} from '../../../src/chat/services/MessageService';
-import { ChunkProcessingService } from '../../../src/chat/services/ChunkProcessingService';
-import { ConversationLifecycleService } from '../../../src/chat/services/ConversationLifecycleService';
+import * as uuidUtils from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
+import type { PublicConfig } from '../../../src/types/config/PublicConfig';
+import type { PendingMessageRequest } from '../../../src/chat/services/messaging/pendingRequestTypes';
+import { MessageCoordinator } from '../../../src/chat/services/messaging/MessageCoordinator';
 import { ServiceManager } from '../../../src/chat/services/ServiceManager';
 import storeActions from '../../../src/chat/store/actions';
 import {
@@ -54,11 +53,17 @@ const flushMessageQueue = async () => {
   await Promise.resolve();
 };
 
+function createMessageService(manager: ServiceManager, config: PublicConfig) {
+  manager.messageCoordinator.configureMessageTimeout(config);
+  return manager.messageCoordinator;
+}
+
 const createServiceManagerStub = (
   customSendMessage = jest.fn(),
   stopStreamingButtonState = { isVisible: false, isDisabled: false }
 ) => {
   const store = {
+    subscribe: jest.fn(() => jest.fn()),
     dispatch: jest.fn(),
     getState: () => ({
       config: {
@@ -75,11 +80,15 @@ const createServiceManagerStub = (
         errors_singleMessage: 'error',
         messages_requestCancelled: 'Request cancelled',
       },
-      assistantMessageState: { messageIDs: [] as string[] },
+      assistantMessageState: {
+        messageIDs: [] as string[],
+        localMessageIDs: [] as string[],
+      },
       assistantInputState: {
         stopStreamingButtonState,
       },
       allMessagesByID: {},
+      allMessageItemsByID: {},
       targetViewState: {},
       persistedToBrowserStorage: {
         launcherState: { wasLoadedFromBrowser: false },
@@ -98,15 +107,12 @@ const createServiceManagerStub = (
 
   // MessageService resolves this collaborator through ServiceManager to answer
   // "is an upsertMessage stream still running".
-  const messageUpsertCoordinator = {
-    hasStreamingMessages: jest.fn().mockReturnValue(false),
-    endAllStreaming: jest.fn(),
-    endStreamingForRequest: jest.fn(),
-    endStreamingMessage: jest.fn((messageID, generation) => {
-      serviceManager.conversationLifecycleService.responseFinished(
-        messageID,
-        generation
-      );
+  const incomingMethods = {
+    hasIncomingStreamingMessages: jest.fn().mockReturnValue(false),
+    endAllIncomingStreaming: jest.fn(),
+    endIncomingStreamingForRequest: jest.fn(),
+    endIncomingStreamingMessage: jest.fn((messageID, generation) => {
+      serviceManager.messageCoordinator.responseFinished(messageID, generation);
       store.dispatch(storeActions.endMessageStreaming(messageID));
     }),
   };
@@ -117,30 +123,76 @@ const createServiceManagerStub = (
     actions,
     eventBus,
     instance: {},
-    messageUpsertCoordinator,
-    messageService: {
+    messageCoordinator: {
       hideStopStreamingButtonIfNoUpsertStreaming: jest.fn(),
       updateStreamingCancellation: jest.fn(),
     },
   } as unknown as ServiceManager;
 
-  serviceManager.conversationLifecycleService =
-    new ConversationLifecycleService(serviceManager);
-  serviceManager.chunkProcessingService = new ChunkProcessingService(
-    serviceManager
-  );
+  serviceManager.messageCoordinator = new MessageCoordinator(serviceManager);
+  Object.assign(serviceManager.messageCoordinator, incomingMethods);
   return serviceManager;
 };
 
 describe('MessageService', () => {
+  it.each<[string | undefined, string, number]>([
+    [undefined, 'generated-local', 1],
+    ['', '', 0],
+  ])(
+    'defaults local ID %p only after pre-send completes',
+    async (localID, expectedID, allocations) => {
+      const serviceManager = createServiceManagerStub(
+        jest.fn().mockResolvedValue(undefined)
+      );
+      const service = createMessageService(serviceManager, {
+        messaging: { messageTimeoutSecs: 0 },
+      });
+      const reachedPreSend = createDeferred();
+      const releasePreSend = createDeferred();
+      (serviceManager.eventBus.fire as jest.Mock).mockImplementation(
+        async (event) => {
+          if (event.type === BusEventType.PRE_SEND) {
+            reachedPreSend.resolve();
+            await releasePreSend.promise;
+          }
+        }
+      );
+      const uuid = jest
+        .spyOn(uuidUtils, 'uuid')
+        .mockReturnValue('generated-local');
+      const sent = service.enqueueMessage(
+        createMessage('request'),
+        MessageSendSource.MESSAGE_INPUT,
+        localID
+      );
+      try {
+        await reachedPreSend.promise;
+        expect(uuid).not.toHaveBeenCalled();
+        releasePreSend.resolve();
+        await sent;
+        expect(uuid).toHaveBeenCalledTimes(allocations);
+        expect(serviceManager.store.dispatch).toHaveBeenCalledWith(
+          expect.objectContaining({
+            type: 'UPDATE_LOCAL_MESSAGE_ITEM',
+            messageItem: expect.objectContaining({
+              ui_state: expect.objectContaining({ id: expectedID }),
+            }),
+          })
+        );
+      } finally {
+        releasePreSend.resolve();
+        uuid.mockRestore();
+      }
+    }
+  );
   it('retains request ownership after its callback returns and across restarts', async () => {
     const customSendMessage = jest.fn().mockResolvedValue(undefined);
     const serviceManager = createServiceManagerStub(customSendMessage);
-    const messageService = new MessageService(serviceManager, {
+    const messageService = createMessageService(serviceManager, {
       messaging: { messageTimeoutSecs: 0 },
     });
 
-    await messageService.send(
+    await messageService.enqueueMessage(
       createMessage('first-request'),
       MessageSendSource.MESSAGE_INPUT,
       'local-first'
@@ -151,7 +203,7 @@ describe('MessageService', () => {
     await messageService.cancelAllMessageRequests();
     serviceManager.restartCount++;
 
-    await messageService.send(
+    await messageService.enqueueMessage(
       createMessage('second-request'),
       MessageSendSource.MESSAGE_INPUT,
       'local-second'
@@ -187,7 +239,7 @@ describe('MessageService', () => {
       );
     });
     const serviceManager = createServiceManagerStub(customSendMessage);
-    const messageService = new MessageService(serviceManager, {
+    const messageService = createMessageService(serviceManager, {
       messaging: { messageTimeoutSecs: 0 },
     });
     (serviceManager.eventBus.fire as jest.Mock).mockImplementation(
@@ -198,7 +250,7 @@ describe('MessageService', () => {
       }
     );
 
-    await messageService.send(
+    await messageService.enqueueMessage(
       createMessage('initial-request'),
       MessageSendSource.MESSAGE_INPUT,
       'local-request'
@@ -217,7 +269,7 @@ describe('MessageService', () => {
     const reachedSendEvent = resolvablePromise<void>();
     const customSendMessage = jest.fn().mockResolvedValue(undefined);
     const serviceManager = createServiceManagerStub(customSendMessage);
-    const messageService = new MessageService(serviceManager, {
+    const messageService = createMessageService(serviceManager, {
       messaging: { messageTimeoutSecs: 0 },
     });
     (serviceManager.eventBus.fire as jest.Mock).mockImplementation((event) => {
@@ -228,7 +280,7 @@ describe('MessageService', () => {
       return Promise.resolve();
     });
 
-    const sent = messageService.send(
+    const sent = messageService.enqueueMessage(
       createMessage('waiting-request'),
       MessageSendSource.MESSAGE_INPUT,
       'local-waiting'
@@ -247,10 +299,10 @@ describe('MessageService', () => {
   it('retains request ownership after stop and stream cleanup', async () => {
     const customSendMessage = jest.fn().mockResolvedValue(undefined);
     const serviceManager = createServiceManagerStub(customSendMessage);
-    const messageService = new MessageService(serviceManager, {
+    const messageService = createMessageService(serviceManager, {
       messaging: { messageTimeoutSecs: 0 },
     });
-    await messageService.send(
+    await messageService.enqueueMessage(
       createMessage('stopped-request'),
       MessageSendSource.MESSAGE_INPUT,
       'local-stopped'
@@ -275,7 +327,7 @@ describe('MessageService', () => {
     const customSendMessage = jest.fn().mockResolvedValue(undefined);
     const serviceManager = createServiceManagerStub(customSendMessage);
 
-    const messageService = new MessageService(serviceManager, {
+    const messageService = createMessageService(serviceManager, {
       messaging: {
         customSendMessage,
         messageTimeoutSecs: 0,
@@ -284,7 +336,7 @@ describe('MessageService', () => {
     } as any);
 
     const message = createMessage('m-1');
-    await messageService.send(
+    await messageService.enqueueMessage(
       message,
       MessageSendSource.MESSAGE_INPUT,
       'local-1',
@@ -294,7 +346,7 @@ describe('MessageService', () => {
     expect(customSendMessage).toHaveBeenCalledTimes(1);
     const [, options] = customSendMessage.mock.calls[0];
     expect(options.signal).toBeInstanceOf(AbortSignal);
-    expect((messageService as any).queue.current).toBeNull();
+    expect(serviceManager.messageCoordinator.getCurrentRequest()).toBeNull();
   });
 
   it("keeps an external stream's stop button visible when another request completes", async () => {
@@ -303,7 +355,7 @@ describe('MessageService', () => {
       isVisible: true,
       isDisabled: false,
     });
-    const messageService = new MessageService(serviceManager, {
+    const messageService = createMessageService(serviceManager, {
       messaging: {
         customSendMessage,
         messageTimeoutSecs: 0,
@@ -316,7 +368,7 @@ describe('MessageService', () => {
       'external-item'
     );
 
-    await messageService.send(
+    await messageService.enqueueMessage(
       createMessage('separate-request'),
       MessageSendSource.MESSAGE_INPUT,
       'local-separate',
@@ -324,7 +376,7 @@ describe('MessageService', () => {
     );
 
     expect(customSendMessage).toHaveBeenCalledTimes(1);
-    expect((messageService as any).queue.current).toBeNull();
+    expect(serviceManager.messageCoordinator.getCurrentRequest()).toBeNull();
     expect(messageService.inboundStreaming.streamingMessageID).toBe(
       'external-response'
     );
@@ -338,7 +390,7 @@ describe('MessageService', () => {
 
   it('cancels a streaming message by response id and advances the queue', async () => {
     const serviceManager = createServiceManagerStub(jest.fn());
-    const messageService = new MessageService(serviceManager, {
+    const messageService = createMessageService(serviceManager, {
       messaging: {
         customSendMessage: jest.fn().mockResolvedValue(undefined),
         messageTimeoutSecs: 0,
@@ -366,18 +418,19 @@ describe('MessageService', () => {
       sendMessageController: abortController,
     };
 
-    (messageService as any).queue.current = pendingRequest;
+    serviceManager.messageCoordinator.enqueueRequest(pendingRequest);
+    serviceManager.messageCoordinator.takeNextRequest();
     messageService.markCurrentMessageAsStreaming('resp-1', 'item-1');
 
     await messageService.cancelCurrentMessageRequest();
 
     expect(abortController.signal.aborted).toBe(true);
-    expect((messageService as any).queue.current).toBeNull();
+    expect(serviceManager.messageCoordinator.getCurrentRequest()).toBeNull();
   });
 
   it('cancels a waiting message using its abort controller', async () => {
     const serviceManager = createServiceManagerStub(jest.fn());
-    const messageService = new MessageService(serviceManager, {
+    const messageService = createMessageService(serviceManager, {
       messaging: {
         customSendMessage: jest.fn().mockResolvedValue(undefined),
         messageTimeoutSecs: 0,
@@ -386,7 +439,7 @@ describe('MessageService', () => {
     } as any);
 
     // Keep the queue busy so the next send stays in the waiting list.
-    (messageService as any).queue.current = {
+    serviceManager.messageCoordinator.enqueueRequest({
       restartGeneration: 0,
       localMessageID: 'local-current',
       message: createMessage('m-current'),
@@ -402,18 +455,19 @@ describe('MessageService', () => {
       isProcessed: false,
       source: MessageSendSource.MESSAGE_INPUT,
       sendMessageController: new AbortController(),
-    };
+    });
+    serviceManager.messageCoordinator.takeNextRequest();
 
-    const sendPromise = messageService.send(
+    const sendPromise = messageService.enqueueMessage(
       createMessage('m-waiting'),
       MessageSendSource.MESSAGE_INPUT,
       'local-waiting',
       { silent: false }
     );
 
-    const controller = (messageService as any).messageAbortControllers.get(
-      'm-waiting'
-    );
+    const controller = (
+      serviceManager.messageCoordinator as any
+    ).terminationWorkflow.messageAbortControllers.get('m-waiting');
     expect(controller).toBeInstanceOf(AbortController);
 
     await messageService.cancelMessageRequestByID(
@@ -424,7 +478,7 @@ describe('MessageService', () => {
 
     await expect(sendPromise).resolves.toBeUndefined();
     expect(controller.signal.aborted).toBe(true);
-    expect((messageService as any).queue.waiting).toHaveLength(0);
+    expect(serviceManager.messageCoordinator.getWaitingRequestCount()).toBe(0);
   });
 
   it.each([false, true])(
@@ -432,11 +486,11 @@ describe('MessageService', () => {
     async (isStreaming) => {
       const customSendMessage = jest.fn().mockResolvedValue(undefined);
       const serviceManager = createServiceManagerStub(customSendMessage);
-      const messageService = new MessageService(serviceManager, {
+      const messageService = createMessageService(serviceManager, {
         messaging: { messageTimeoutSecs: 0 },
       });
 
-      await messageService.send(
+      await messageService.enqueueMessage(
         createMessage('returned-request'),
         MessageSendSource.MESSAGE_INPUT,
         'local-returned'
@@ -444,7 +498,7 @@ describe('MessageService', () => {
       const signal: AbortSignal = customSendMessage.mock.calls[0][1].signal;
       const onAbort = jest.fn();
       signal.addEventListener('abort', onAbort);
-      expect((messageService as any).queue.current).toBeNull();
+      expect(serviceManager.messageCoordinator.getCurrentRequest()).toBeNull();
 
       if (isStreaming) {
         messageService.markCurrentMessageAsStreaming('response-id', 'item-id');
@@ -455,7 +509,10 @@ describe('MessageService', () => {
       expect(signal.aborted).toBe(true);
       expect(signal.reason).toBe(CancellationReason.CONVERSATION_RESTARTED);
       expect(onAbort).toHaveBeenCalledTimes(1);
-      expect((messageService as any).messageAbortControllers.size).toBe(0);
+      expect(
+        (serviceManager.messageCoordinator as any).terminationWorkflow
+          .messageAbortControllers.size
+      ).toBe(0);
       expect(messageService.inboundStreaming.streamingMessageID).toBeNull();
     }
   );
@@ -463,12 +520,12 @@ describe('MessageService', () => {
   it('cancels retained requests even when an abort listener clears their tracking', async () => {
     const customSendMessage = jest.fn().mockResolvedValue(undefined);
     const serviceManager = createServiceManagerStub(customSendMessage);
-    const messageService = new MessageService(serviceManager, {
+    const messageService = createMessageService(serviceManager, {
       messaging: { messageTimeoutSecs: 0 },
     });
 
     for (const id of ['first-request', 'second-request']) {
-      await messageService.send(
+      await messageService.enqueueMessage(
         createMessage(id),
         MessageSendSource.MESSAGE_INPUT,
         `local-${id}`
@@ -484,37 +541,43 @@ describe('MessageService', () => {
 
     expect(firstSignal.reason).toBe('custom cancellation');
     expect(secondSignal.reason).toBe('custom cancellation');
-    expect((messageService as any).messageAbortControllers.size).toBe(0);
+    expect(
+      (serviceManager.messageCoordinator as any).terminationWorkflow
+        .messageAbortControllers.size
+    ).toBe(0);
   });
 
   it('clears retained controllers that were already aborted', async () => {
     const customSendMessage = jest.fn().mockResolvedValue(undefined);
     const serviceManager = createServiceManagerStub(customSendMessage);
-    const messageService = new MessageService(serviceManager, {
+    const messageService = createMessageService(serviceManager, {
       messaging: { messageTimeoutSecs: 0 },
     });
 
-    await messageService.send(
+    await messageService.enqueueMessage(
       createMessage('aborted-request'),
       MessageSendSource.MESSAGE_INPUT,
       'local-aborted'
     );
     const controller: AbortController = (
-      messageService as any
-    ).messageAbortControllers.get('aborted-request');
+      serviceManager.messageCoordinator as any
+    ).terminationWorkflow.messageAbortControllers.get('aborted-request');
     controller.abort(CancellationReason.STOP_STREAMING);
 
     await messageService.cancelAllMessageRequests();
 
     expect(controller.signal.reason).toBe(CancellationReason.STOP_STREAMING);
-    expect((messageService as any).messageAbortControllers.size).toBe(0);
+    expect(
+      (serviceManager.messageCoordinator as any).terminationWorkflow
+        .messageAbortControllers.size
+    ).toBe(0);
   });
 
   it('rejects a send when it exceeds the configured timeout', async () => {
     const customSendMessage = jest.fn(() => new Promise<void>(() => undefined));
     const serviceManager = createServiceManagerStub(customSendMessage);
 
-    const messageService = new MessageService(serviceManager, {
+    const messageService = createMessageService(serviceManager, {
       messaging: {
         customSendMessage,
         messageTimeoutSecs: 1,
@@ -529,7 +592,7 @@ describe('MessageService', () => {
       });
 
     try {
-      const sendPromise = messageService.send(
+      const sendPromise = messageService.enqueueMessage(
         createMessage('m-timeout'),
         MessageSendSource.MESSAGE_INPUT,
         'local-timeout',
@@ -550,7 +613,7 @@ describe('MessageService', () => {
 
   it('cancels streaming by item id even when response_id differs', async () => {
     const serviceManager = createServiceManagerStub(jest.fn());
-    const messageService = new MessageService(serviceManager, {
+    const messageService = createMessageService(serviceManager, {
       messaging: {
         customSendMessage: jest.fn().mockResolvedValue(undefined),
         messageTimeoutSecs: 0,
@@ -578,8 +641,11 @@ describe('MessageService', () => {
       sendMessageController: abortController,
     };
 
-    (messageService as any).queue.current = pendingRequest;
-    (messageService as any).messageAbortControllers.set(
+    serviceManager.messageCoordinator.enqueueRequest(pendingRequest);
+    serviceManager.messageCoordinator.takeNextRequest();
+    (
+      serviceManager.messageCoordinator as any
+    ).terminationWorkflow.messageAbortControllers.set(
       'm-streaming',
       abortController
     );
@@ -597,7 +663,7 @@ describe('MessageService', () => {
     expect((messageService as any).inboundStreaming.streamingMessageID).toBe(
       null
     );
-    expect((messageService as any).queue.current).toBeNull();
+    expect(serviceManager.messageCoordinator.getCurrentRequest()).toBeNull();
   });
 
   describe('streaming terminal cleanup', () => {
@@ -606,7 +672,7 @@ describe('MessageService', () => {
         isVisible: true,
         isDisabled: false,
       });
-      const messageService = new MessageService(serviceManager, {
+      const messageService = createMessageService(serviceManager, {
         messaging: { messageTimeoutSecs: 0 },
       });
       messageService.markCurrentMessageAsStreaming('response-a');
@@ -630,7 +696,7 @@ describe('MessageService', () => {
         isVisible: true,
         isDisabled: false,
       });
-      const messageService = new MessageService(serviceManager, {
+      const messageService = createMessageService(serviceManager, {
         messaging: { messageTimeoutSecs: 0 },
       });
       messageService.markCurrentMessageAsStreaming('response-a');
@@ -652,7 +718,7 @@ describe('MessageService', () => {
         message.id === 'm-first' ? first.promise : Promise.resolve()
       );
       const serviceManager = createServiceManagerStub(customSendMessage);
-      const messageService = new MessageService(serviceManager, {
+      const messageService = createMessageService(serviceManager, {
         messaging: {
           customSendMessage,
           messageTimeoutSecs: 0,
@@ -660,34 +726,36 @@ describe('MessageService', () => {
         },
       } as any);
 
-      const firstSend = messageService.send(
+      const firstSend = messageService.enqueueMessage(
         createMessage('m-first'),
         MessageSendSource.MESSAGE_INPUT,
         'local-first'
       );
       await flushMessageQueue();
       messageService.markCurrentMessageAsStreaming('response-first');
-      const secondSend = messageService.send(
+      const secondSend = messageService.enqueueMessage(
         createMessage('m-second'),
         MessageSendSource.MESSAGE_INPUT,
         'local-second'
       );
 
       messageService.markStreamingResponseError('response-first');
-      expect((messageService as any).queue.current.message.id).toBe('m-first');
+      expect(
+        serviceManager.messageCoordinator.getCurrentRequest().message.id
+      ).toBe('m-first');
 
       first.resolve();
       await firstSend;
       await secondSend;
 
       expect(customSendMessage).toHaveBeenCalledTimes(2);
-      expect((messageService as any).queue.current).toBeNull();
+      expect(serviceManager.messageCoordinator.getCurrentRequest()).toBeNull();
     });
 
     it('advances immediately when an ERROR upsert follows transport settlement', async () => {
       const customSendMessage = jest.fn();
       const serviceManager = createServiceManagerStub(customSendMessage);
-      const messageService = new MessageService(serviceManager, {
+      const messageService = createMessageService(serviceManager, {
         messaging: {
           customSendMessage,
           messageTimeoutSecs: 0,
@@ -701,12 +769,12 @@ describe('MessageService', () => {
         return Promise.resolve();
       });
 
-      await messageService.send(
+      await messageService.enqueueMessage(
         createMessage('m-first'),
         MessageSendSource.MESSAGE_INPUT,
         'local-first'
       );
-      const secondSend = messageService.send(
+      const secondSend = messageService.enqueueMessage(
         createMessage('m-second'),
         MessageSendSource.MESSAGE_INPUT,
         'local-second'
@@ -717,7 +785,7 @@ describe('MessageService', () => {
       await secondSend;
 
       expect(customSendMessage).toHaveBeenCalledTimes(2);
-      expect((messageService as any).queue.current).toBeNull();
+      expect(serviceManager.messageCoordinator.getCurrentRequest()).toBeNull();
     });
 
     it('advances after an ERROR upsert when the transport later fails', async () => {
@@ -726,16 +794,16 @@ describe('MessageService', () => {
         message.id === 'm-first' ? first.promise : Promise.resolve()
       );
       const serviceManager = createServiceManagerStub(customSendMessage);
-      const messageService = new MessageService(serviceManager, {
+      const messageService = createMessageService(serviceManager, {
         messaging: {
           customSendMessage,
           messageTimeoutSecs: 0,
           messageLoadingIndicatorTimeoutSecs: 0,
         },
       } as any);
-      serviceManager.messageService = messageService;
+      serviceManager.messageCoordinator = messageService;
 
-      const firstSend = messageService.send(
+      const firstSend = messageService.enqueueMessage(
         createMessage('m-first'),
         MessageSendSource.MESSAGE_INPUT,
         'local-first'
@@ -745,7 +813,7 @@ describe('MessageService', () => {
       );
       await flushMessageQueue();
       messageService.markCurrentMessageAsStreaming('response-first');
-      const secondSend = messageService.send(
+      const secondSend = messageService.enqueueMessage(
         createMessage('m-second'),
         MessageSendSource.MESSAGE_INPUT,
         'local-second'
@@ -757,7 +825,7 @@ describe('MessageService', () => {
       await secondSend;
 
       expect(customSendMessage).toHaveBeenCalledTimes(2);
-      expect((messageService as any).queue.current).toBeNull();
+      expect(serviceManager.messageCoordinator.getCurrentRequest()).toBeNull();
     });
 
     it('clears partial-stream routing before advancing after a send failure', async () => {
@@ -766,18 +834,18 @@ describe('MessageService', () => {
         message.id === 'm-first' ? first.promise : Promise.resolve()
       );
       const serviceManager = createServiceManagerStub(customSendMessage);
-      const lifecycle = serviceManager.conversationLifecycleService;
+      const lifecycle = serviceManager.messageCoordinator;
       const responseFinished = jest.spyOn(lifecycle, 'responseFinished');
-      const messageService = new MessageService(serviceManager, {
+      const messageService = createMessageService(serviceManager, {
         messaging: {
           customSendMessage,
           messageTimeoutSecs: 0,
           messageLoadingIndicatorTimeoutSecs: 0,
         },
       } as any);
-      serviceManager.messageService = messageService;
+      serviceManager.messageCoordinator = messageService;
 
-      const firstSend = messageService.send(
+      const firstSend = messageService.enqueueMessage(
         createMessage('m-first'),
         MessageSendSource.MESSAGE_INPUT,
         'local-first'
@@ -787,7 +855,7 @@ describe('MessageService', () => {
       );
       await flushMessageQueue();
       messageService.markCurrentMessageAsStreaming('response-first');
-      const secondSend = messageService.send(
+      const secondSend = messageService.enqueueMessage(
         createMessage('m-second'),
         MessageSendSource.MESSAGE_INPUT,
         'local-second'
@@ -818,9 +886,9 @@ describe('MessageService', () => {
           : Promise.resolve()
       );
       const serviceManager = createServiceManagerStub(customSendMessage);
-      const lifecycle = serviceManager.conversationLifecycleService;
+      const lifecycle = serviceManager.messageCoordinator;
       const responseFinished = jest.spyOn(lifecycle, 'responseFinished');
-      const messageService = new MessageService(serviceManager, {
+      const messageService = createMessageService(serviceManager, {
         messaging: {
           customSendMessage,
           messageTimeoutSecs: 1,
@@ -834,7 +902,7 @@ describe('MessageService', () => {
         });
 
       try {
-        const firstSend = messageService.send(
+        const firstSend = messageService.enqueueMessage(
           createMessage('m-first'),
           MessageSendSource.MESSAGE_INPUT,
           'local-first'
@@ -844,7 +912,7 @@ describe('MessageService', () => {
         );
         await flushMessageQueue();
         messageService.markCurrentMessageAsStreaming('response-first');
-        const secondSend = messageService.send(
+        const secondSend = messageService.enqueueMessage(
           createMessage('m-second'),
           MessageSendSource.MESSAGE_INPUT,
           'local-second'
@@ -877,7 +945,7 @@ describe('MessageService', () => {
         () => new Promise<void>(() => undefined) // Never resolves
       );
       const serviceManager = createServiceManagerStub(customSendMessage);
-      const messageService = new MessageService(serviceManager, {
+      const messageService = createMessageService(serviceManager, {
         messaging: {
           customSendMessage,
           messageTimeoutSecs: 0,
@@ -886,7 +954,7 @@ describe('MessageService', () => {
       } as any);
 
       const message = createMessage('m-1');
-      const sendPromise = messageService.send(
+      const sendPromise = messageService.enqueueMessage(
         message,
         MessageSendSource.MESSAGE_INPUT,
         'local-1',
@@ -914,7 +982,7 @@ describe('MessageService', () => {
     it('does not create duplicate system message when canceling during streaming', async () => {
       const customSendMessage = jest.fn().mockResolvedValue(undefined);
       const serviceManager = createServiceManagerStub(customSendMessage);
-      const messageService = new MessageService(serviceManager, {
+      const messageService = createMessageService(serviceManager, {
         messaging: {
           customSendMessage,
           messageTimeoutSecs: 0,
@@ -943,7 +1011,8 @@ describe('MessageService', () => {
         isStreaming: true, // Mark as streaming
       };
 
-      (messageService as any).queue.current = pendingRequest;
+      serviceManager.messageCoordinator.enqueueRequest(pendingRequest);
+      serviceManager.messageCoordinator.takeNextRequest();
       messageService.markCurrentMessageAsStreaming('resp-1', 'item-1');
 
       const initialDispatchCount = (serviceManager.store.dispatch as jest.Mock)
@@ -972,7 +1041,7 @@ describe('MessageService', () => {
         isVisible: true,
         isDisabled: true,
       });
-      const messageService = new MessageService(serviceManager, {
+      const messageService = createMessageService(serviceManager, {
         messaging: {
           customSendMessage: jest.fn().mockResolvedValue(undefined),
           messageTimeoutSecs: 0,
@@ -1000,7 +1069,8 @@ describe('MessageService', () => {
         isStreaming: true,
       };
 
-      (messageService as any).queue.current = pendingRequest;
+      serviceManager.messageCoordinator.enqueueRequest(pendingRequest);
+      serviceManager.messageCoordinator.takeNextRequest();
       messageService.markCurrentMessageAsStreaming('resp-1', 'item-1');
 
       await messageService.cancelMessageRequestByID(
@@ -1030,7 +1100,7 @@ describe('MessageService', () => {
         .fn()
         .mockImplementation(() => new Promise<void>(() => undefined));
       const serviceManager = createServiceManagerStub(customSendMessage);
-      const messageService = new MessageService(serviceManager, {
+      const messageService = createMessageService(serviceManager, {
         messaging: {
           customSendMessage,
           messageTimeoutSecs: 0,
@@ -1039,7 +1109,7 @@ describe('MessageService', () => {
       } as any);
 
       const message = createMessage('m-cancel');
-      const sendPromise = messageService.send(
+      const sendPromise = messageService.enqueueMessage(
         message,
         MessageSendSource.MESSAGE_INPUT,
         'local-cancel',
@@ -1047,9 +1117,9 @@ describe('MessageService', () => {
       );
 
       // Get the controller before cancellation
-      const controller = (messageService as any).messageAbortControllers.get(
-        'm-cancel'
-      );
+      const controller = (
+        serviceManager.messageCoordinator as any
+      ).terminationWorkflow.messageAbortControllers.get('m-cancel');
       expect(controller).toBeDefined();
 
       await messageService.cancelMessageRequestByID(
@@ -1074,7 +1144,7 @@ describe('MessageService', () => {
         jest.fn().mockResolvedValue(undefined),
         stopStreamingButtonState
       );
-      const messageService = new MessageService(serviceManager, {
+      const messageService = createMessageService(serviceManager, {
         messaging: { messageTimeoutSecs: 0 },
       } as any);
       return { serviceManager, messageService };
@@ -1094,8 +1164,8 @@ describe('MessageService', () => {
     it('is true while an upsert stream is active', () => {
       const { serviceManager, messageService } = build();
       (
-        serviceManager.messageUpsertCoordinator
-          .hasStreamingMessages as jest.Mock
+        serviceManager.messageCoordinator
+          .hasIncomingStreamingMessages as jest.Mock
       ).mockReturnValue(true);
 
       // The chunk registry is null for a pure-upsert flow, which is exactly why the
@@ -1110,8 +1180,8 @@ describe('MessageService', () => {
         isDisabled: false,
       });
       (
-        serviceManager.messageUpsertCoordinator
-          .hasStreamingMessages as jest.Mock
+        serviceManager.messageCoordinator
+          .hasIncomingStreamingMessages as jest.Mock
       ).mockReturnValue(true);
 
       messageService.hideStopStreamingButtonIfIdle();
@@ -1171,8 +1241,8 @@ describe('MessageService', () => {
         isDisabled: false,
       });
       (
-        serviceManager.messageUpsertCoordinator
-          .hasStreamingMessages as jest.Mock
+        serviceManager.messageCoordinator
+          .hasIncomingStreamingMessages as jest.Mock
       ).mockReturnValue(true);
 
       messageService.hideStopStreamingButtonIfNoUpsertStreaming();
@@ -1180,4 +1250,184 @@ describe('MessageService', () => {
       expect(serviceManager.store.dispatch).not.toHaveBeenCalled();
     });
   });
+});
+
+it('keeps a released request continuation from advancing the newer operation', async () => {
+  const first = createDeferred();
+  const second = createDeferred();
+  const customSendMessage = jest
+    .fn()
+    .mockImplementationOnce(() => first.promise)
+    .mockImplementationOnce(() => second.promise)
+    .mockResolvedValue(undefined);
+  const serviceManager = createServiceManagerStub(customSendMessage);
+  const messageService = createMessageService(serviceManager, {
+    messaging: { messageTimeoutSecs: 0 },
+  });
+  const firstSend = messageService.enqueueMessage(
+    createMessage('first'),
+    MessageSendSource.MESSAGE_INPUT,
+    'local-first'
+  );
+  await flushMessageQueue();
+  messageService.markCurrentMessageAsStreaming('response-first');
+  const retainedFirst = serviceManager.messageCoordinator.getCurrentRequest();
+  const secondSend = messageService.enqueueMessage(
+    createMessage('second'),
+    MessageSendSource.MESSAGE_INPUT,
+    'local-second'
+  );
+  const thirdSend = messageService.enqueueMessage(
+    createMessage('third'),
+    MessageSendSource.MESSAGE_INPUT,
+    'local-third'
+  );
+  messageService.finalizeStreamingMessage('response-first');
+  await flushMessageQueue();
+  const currentSecond = serviceManager.messageCoordinator.getCurrentRequest();
+  expect(currentSecond.message.id).toBe('second');
+  expect(customSendMessage).toHaveBeenCalledTimes(2);
+  expect(retainedFirst.isProcessed).toBe(false);
+  first.resolve();
+  await firstSend;
+  expect(retainedFirst.isProcessed).toBe(true);
+  expect(serviceManager.messageCoordinator.getCurrentRequest()).toBe(
+    currentSecond
+  );
+  expect(serviceManager.messageCoordinator.getWaitingRequestCount()).toBe(1);
+  expect(customSendMessage).toHaveBeenCalledTimes(2);
+  second.resolve();
+  await secondSend;
+  await thirdSend;
+  expect(customSendMessage).toHaveBeenCalledTimes(3);
+  expect(serviceManager.messageCoordinator.getCurrentRequest()).toBeNull();
+});
+
+it.each(['replacement-response', 'same-response'])(
+  'cleans tracking after queue advancement creates %s',
+  (nextResponse) => {
+    const serviceManager = createServiceManagerStub();
+    const service = createMessageService(serviceManager, { messaging: {} });
+    const oldController = new AbortController();
+    const nextController = new AbortController();
+    const controllers = (serviceManager.messageCoordinator as any)
+      .terminationWorkflow.messageAbortControllers as Map<
+      string,
+      AbortController
+    >;
+    controllers.set('old-request', oldController);
+    service.inboundStreaming.markStreaming(
+      {
+        message: createMessage('old-request'),
+        sendMessageController: oldController,
+      },
+      'same-response',
+      'old-item'
+    );
+    const advance = jest
+      .spyOn(serviceManager.messageCoordinator, 'advanceRequestQueue')
+      .mockImplementation(() => {
+        service.inboundStreaming.clearStreamingResponse('same-response');
+        controllers.set('next-request', nextController);
+        service.inboundStreaming.markStreaming(
+          {
+            message: createMessage('next-request'),
+            sendMessageController: nextController,
+          },
+          nextResponse,
+          'next-item'
+        );
+      });
+    service.finalizeStreamingMessage('old-item');
+    expect(advance).toHaveBeenCalledTimes(1);
+    if (nextResponse === 'same-response') {
+      expect(
+        service.inboundStreaming.getStreamingMeta(nextResponse)
+      ).toBeUndefined();
+      expect(controllers.has('next-request')).toBe(false);
+      expect(service.inboundStreaming.streamingMessageID).toBeNull();
+    } else {
+      expect(
+        service.inboundStreaming.getStreamingMeta(nextResponse).requestId
+      ).toBe('next-request');
+      expect(controllers.get('next-request')).toBe(nextController);
+      expect(service.inboundStreaming.streamingMessageID).toBe(nextResponse);
+    }
+  }
+);
+
+it('settles the captured stopped request when abort restarts and clears the queue', async () => {
+  const transport = createDeferred();
+  const serviceManager = createServiceManagerStub(
+    jest.fn(() => transport.promise)
+  );
+  const service = createMessageService(serviceManager, {
+    messaging: { messageTimeoutSecs: 0 },
+  });
+  const sent = service.enqueueMessage(
+    createMessage('old-request'),
+    MessageSendSource.MESSAGE_INPUT,
+    'local'
+  );
+  await flushMessageQueue();
+  const captured = serviceManager.messageCoordinator.getCurrentRequest();
+  service.markCurrentMessageAsStreaming('response', 'item');
+  captured.sendMessageController.signal.addEventListener('abort', () => {
+    serviceManager.messageCoordinator.restart(true);
+    serviceManager.restartCount++;
+    serviceManager.messageCoordinator.clearCurrentRequest();
+    service.inboundStreaming.clearStreamingResponse('response');
+  });
+  await service.cancelMessageRequestByID(
+    'item',
+    false,
+    CancellationReason.STOP_STREAMING
+  );
+  await expect(sent).resolves.toBeUndefined();
+  expect(captured.isProcessed).toBe(true);
+  expect(captured.sendMessageController.signal.aborted).toBe(true);
+  expect(serviceManager.messageCoordinator.getCurrentRequest()).toBeNull();
+  transport.resolve();
+});
+
+it('uses retained stream metadata when controller aliases and queue membership are gone', async () => {
+  const serviceManager = createServiceManagerStub();
+  const service = createMessageService(serviceManager, { messaging: {} });
+  const controller = new AbortController();
+  const controllers = (serviceManager.messageCoordinator as any)
+    .terminationWorkflow.messageAbortControllers as Map<
+    string,
+    AbortController
+  >;
+  controllers.set('request', controller);
+  service.inboundStreaming.markStreaming(
+    { message: createMessage('request'), sendMessageController: controller },
+    'response',
+    'item'
+  );
+  serviceManager.messageCoordinator.responseStreaming(
+    'response',
+    undefined,
+    'request'
+  );
+  const metadata = service.inboundStreaming.getStreamingMeta('response');
+  const responseStopped = jest.spyOn(
+    serviceManager.messageCoordinator,
+    'responseStopped'
+  );
+  controllers.delete('request');
+  controllers.delete('response');
+  expect(serviceManager.messageCoordinator.getCurrentRequest()).toBeNull();
+  await service.cancelMessageRequestByID(
+    'item',
+    false,
+    CancellationReason.STOP_STREAMING
+  );
+  expect(controller.signal.aborted).toBe(true);
+  expect(metadata.requestId).toBe('request');
+  expect(responseStopped).toHaveBeenCalledWith('response', 0);
+  expect(service.inboundStreaming.getStreamingMeta('response')).toBeUndefined();
+  expect(serviceManager.messageCoordinator.isRequestStopped('request')).toBe(
+    false
+  );
 });

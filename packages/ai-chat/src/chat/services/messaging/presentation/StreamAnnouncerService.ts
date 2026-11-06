@@ -7,18 +7,18 @@
  *  @license
  */
 
-import actions from '../store/actions';
-import { getSpeakerName } from '../utils/messageUtils';
-import { DeepPartial } from '../../types/utilities/DeepPartial';
-import {
-  MessageResponse,
-  ResponseUserProfile,
-} from '../../types/messaging/Messages';
-import type { ServiceManager } from './ServiceManager';
+import type { DeepPartial } from '../../../../types/utilities/DeepPartial';
+import type { ResponseUserProfile } from '../../../../types/messaging/Messages';
+
+interface StreamAnnouncementCapabilities {
+  announceStreamStart(
+    messageID: string,
+    languageKey: 'messages_streamingStart' | 'messages_reasoningStart',
+    responseUserProfile: DeepPartial<ResponseUserProfile> | undefined
+  ): void;
+}
 
 class StreamAnnouncerService {
-  private serviceManager: ServiceManager;
-
   /**
    * Tracks which message IDs have had their "streaming start" announced.
    * Prevents duplicate announcements for the same streaming message.
@@ -31,9 +31,7 @@ class StreamAnnouncerService {
    */
   private announcedReasoningStarts = new Set<string>();
 
-  constructor(serviceManager: ServiceManager) {
-    this.serviceManager = serviceManager;
-  }
+  constructor(private capabilities: StreamAnnouncementCapabilities) {}
 
   /**
    * Clears all announcement tracking. Called on restart so announcements
@@ -96,31 +94,10 @@ class StreamAnnouncerService {
     languageKey: 'messages_streamingStart' | 'messages_reasoningStart',
     responseUserProfile: DeepPartial<ResponseUserProfile> | undefined
   ) {
-    const { store } = this.serviceManager;
-    const { config } = store.getState();
-
-    const assistantName = config.public.assistantName;
-
-    const message = store.getState().allMessagesByID[messageID] as
-      MessageResponse | undefined;
-
-    const messageWithProfile: MessageResponse | undefined = responseUserProfile
-      ? ({
-          ...message,
-          message_options: {
-            ...message?.message_options,
-            response_user_profile: responseUserProfile,
-          },
-        } as MessageResponse)
-      : message;
-
-    const speakerName = getSpeakerName(messageWithProfile, assistantName);
-
-    store.dispatch(
-      actions.announceMessage({
-        messageID: languageKey,
-        messageValues: { sender: speakerName },
-      })
+    this.capabilities.announceStreamStart(
+      messageID,
+      languageKey,
+      responseUserProfile
     );
   }
 }

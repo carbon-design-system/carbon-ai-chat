@@ -17,6 +17,7 @@ import { PublicConfig } from '../src/types/config/PublicConfig';
 import { ChatContainerProps } from '../src/types/component/ChatContainer';
 import { ChatInstance } from '../src/types/instance/ChatInstance';
 import { createAppStore, type AppStore } from '../src/chat/store/appStore';
+import { enableMessageOwnership } from '../src/chat/store/messageOwnership';
 import { AppState } from '../src/types/state/AppState';
 import { MessageResponseTypes } from '../src/types/messaging/Messages';
 import { ServiceManager } from '../src/chat/services/ServiceManager';
@@ -272,10 +273,12 @@ const rootReducer = (
  * re-render tests.
  */
 export function makeConfigStore(config: PublicConfig): AppStore<AppState> {
-  return createAppStore<AppState>(
+  const store = createAppStore<AppState>(
     rootReducer as never,
     createInitialState(createAppConfig(config))
   );
+  enableMessageOwnership(store);
+  return store;
 }
 
 /**

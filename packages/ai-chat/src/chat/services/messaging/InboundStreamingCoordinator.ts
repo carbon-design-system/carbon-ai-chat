@@ -8,10 +8,11 @@
  */
 
 import {
-  StreamingTracker,
-  type StreamingResponseMeta,
-} from '../utils/streamingUtils';
-import { MessageRequest } from '../../types/messaging/Messages';
+  StreamState,
+  type StreamControllerToken,
+  type StreamResponseMeta,
+} from './state/StreamState';
+import { MessageRequest } from '../../../types/messaging/Messages';
 
 type StreamingCurrent =
   | {
@@ -32,12 +33,31 @@ class InboundStreamingCoordinator {
   /**
    * Tracks streaming response/item mappings.
    */
-  private streamingTracker = new StreamingTracker();
+  private streamingTracker = new StreamState();
+  private controllerTokens = new WeakMap<
+    AbortController,
+    StreamControllerToken
+  >();
+  private controllers = new WeakMap<StreamControllerToken, AbortController>();
 
-  constructor(
-    private messageAbortControllers: Map<string, AbortController>,
-    private moveToNextQueueItem: () => void
-  ) {}
+  private tokenFor(controller: AbortController | undefined) {
+    if (!controller) {
+      return undefined;
+    }
+    let token = this.controllerTokens.get(controller);
+    if (!token) {
+      token = {} as StreamControllerToken;
+      this.controllerTokens.set(controller, token);
+      this.controllers.set(token, controller);
+    }
+    return token;
+  }
+
+  getController(token: StreamControllerToken | undefined) {
+    return token && this.controllers.get(token);
+  }
+
+  constructor(private messageAbortControllers: Map<string, AbortController>) {}
 
   /**
    * Resolve a responseId from a provided id (could be an item_id or response_id).
@@ -49,7 +69,7 @@ class InboundStreamingCoordinator {
   /**
    * Returns metadata for a streaming response.
    */
-  getStreamingMeta(responseId: string): StreamingResponseMeta | undefined {
+  getStreamingMeta(responseId: string): StreamResponseMeta | undefined {
     return this.streamingTracker.getMeta(responseId);
   }
 
@@ -98,37 +118,15 @@ class InboundStreamingCoordinator {
     this.streamingTracker.track(
       responseId,
       current.message.id,
-      controller,
+      this.tokenFor(controller),
       itemID
     );
   }
 
   /**
-   * Called when a FinalResponseChunk is processed to clear the streaming message from the queue.
-   */
-  finalizeStreamingMessage(messageID: string) {
-    const responseId = this.resolveResponseId(messageID);
-    if (this.streamingMessageID === responseId) {
-      this.moveToNextQueueItem();
-    }
-
-    // Clean up tracking for this streaming response
-    const cleared = this.streamingTracker.clear(responseId);
-    this.messageAbortControllers.delete(responseId);
-    if (cleared?.requestId && cleared.requestId !== responseId) {
-      this.messageAbortControllers.delete(cleared.requestId);
-    }
-    if (this.streamingMessageID === responseId) {
-      this.streamingMessageID = null;
-    }
-  }
-
-  /**
    * Clear tracking (without queue movement) and return metadata for the response.
    */
-  clearStreamingResponse(
-    responseId: string
-  ): StreamingResponseMeta | undefined {
+  clearStreamingResponse(responseId: string): StreamResponseMeta | undefined {
     const cleared = this.streamingTracker.clear(responseId);
     this.messageAbortControllers.delete(responseId);
     if (cleared?.requestId && cleared.requestId !== responseId) {

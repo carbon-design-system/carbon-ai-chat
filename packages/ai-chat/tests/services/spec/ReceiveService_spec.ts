@@ -8,11 +8,10 @@
  */
 
 import { makeConfigStore } from '../../test_helpers';
-import { ChunkProcessingService } from '../../../src/chat/services/ChunkProcessingService';
-import { ConversationLifecycleService } from '../../../src/chat/services/ConversationLifecycleService';
+import { MessageCoordinator } from '../../../src/chat/services/messaging/MessageCoordinator';
 import { HydrationService } from '../../../src/chat/services/HydrationService';
-import { MessageUpsertCoordinator } from '../../../src/chat/services/MessageUpsertCoordinator';
-import { ReceiveService } from '../../../src/chat/services/ReceiveService';
+import { FullResponseWorkflow } from '../../../src/chat/services/messaging/FullResponseWorkflow';
+import type { MessagePresentationPort } from '../../../src/chat/services/messaging/presentationPort';
 import { ServiceManager } from '../../../src/chat/services/ServiceManager';
 import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
@@ -48,7 +47,7 @@ function createHarness(config: PublicConfig = {}) {
       handleConnectToHumanAgent,
     },
     streamAnnouncerService: { clearAll: jest.fn() },
-    messageService: {
+    messageCoordinator: {
       isRequestFromPreviousConversation: jest.fn().mockReturnValue(false),
       inboundStreaming: { streamingMessageID: null },
       messageLoadingManager: { end: jest.fn() },
@@ -60,14 +59,17 @@ function createHarness(config: PublicConfig = {}) {
       cancelAllMessageRequests: jest.fn().mockResolvedValue(undefined),
     },
   } as unknown as ServiceManager;
-  manager.chunkProcessingService = new ChunkProcessingService(manager);
-  manager.conversationLifecycleService = new ConversationLifecycleService(
-    manager
-  );
+  const messageMethods = manager.messageCoordinator;
+  manager.messageCoordinator = new MessageCoordinator(manager);
+  for (const [name, value] of Object.entries(messageMethods)) {
+    Object.defineProperty(manager.messageCoordinator, name, {
+      value,
+      writable: true,
+      configurable: true,
+    });
+  }
   manager.hydrationService = new HydrationService(manager);
-  manager.messageUpsertCoordinator = new MessageUpsertCoordinator(manager);
-  const service = new ReceiveService(manager);
-  manager.receiveService = service;
+  const service = manager.messageCoordinator;
 
   const localItems = () => {
     const state = store.getState();
@@ -97,7 +99,7 @@ function response(items: GenericItem[] = [textItem('Hello')]): MessageResponse {
   return { id: 'response-1', output: { generic: items } };
 }
 
-describe('ReceiveService', () => {
+describe('Full response core', () => {
   beforeEach(() => {
     jest.useFakeTimers();
   });
@@ -147,11 +149,9 @@ describe('ReceiveService', () => {
     const { service, manager, fire, localItems, eventTypes } = createHarness();
     const callbackStarted = resolvablePromise<void>();
     const finishCallback = resolvablePromise<void>();
-    const coordinator = manager.messageUpsertCoordinator;
-    const pendingWrites = (coordinator as any).pendingWrites as Map<
-      string,
-      unknown
-    >;
+    const coordinator = manager.messageCoordinator;
+    const pendingWrites = manager.messageCoordinator.incomingWriteLifetime.state
+      .pendingWrites as Map<string, unknown>;
     fire.mockImplementation(async (event) => {
       if (event.type === BusEventType.RECEIVE) {
         callbackStarted.doResolve();
@@ -172,13 +172,15 @@ describe('ReceiveService', () => {
         textItem('Revealed'),
       ]);
       expect(pendingWrites.size).toBe(1);
-      expect(coordinator.getState('response-1')).toBeUndefined();
+      expect(coordinator.getIncomingState('response-1')).toBeUndefined();
       finishCallback.doResolve();
       await receiving;
       expect(pendingWrites.size).toBe(0);
-      expect(coordinator.getState('response-1')).toBe(MessageState.COMPLETE);
+      expect(coordinator.getIncomingState('response-1')).toBe(
+        MessageState.COMPLETE
+      );
 
-      await coordinator.upsert('response-1', MessageState.COMPLETE, () =>
+      await coordinator.upsertMessage('response-1', MessageState.COMPLETE, () =>
         response([textItem('Updated')])
       );
       expect(
@@ -196,7 +198,7 @@ describe('ReceiveService', () => {
 
   it('keeps overlapping reveals alive until both writes finish', async () => {
     const { service, manager, slotEventService, localItems } = createHarness();
-    const pendingWrites = (manager.messageUpsertCoordinator as any)
+    const pendingWrites = manager.messageCoordinator.incomingWriteLifetime.state
       .pendingWrites as Map<string, unknown>;
     await service.receive(
       response([
@@ -233,7 +235,7 @@ describe('ReceiveService', () => {
 
   it('releases the write after a rejected receive callback and its remaining reveal settle', async () => {
     const { service, manager, fire, localItems } = createHarness();
-    const pendingWrites = (manager.messageUpsertCoordinator as any)
+    const pendingWrites = manager.messageCoordinator.incomingWriteLifetime.state
       .pendingWrites as Map<string, unknown>;
     const failure = new Error('Receive failed');
     fire.mockImplementation(async (event) => {
@@ -442,7 +444,7 @@ describe('ReceiveService', () => {
   it('drops a message when pre:receive assigns a request from a previous conversation', async () => {
     const { service, manager, store, fire, eventTypes } = createHarness();
     jest
-      .spyOn(manager.messageService, 'isRequestFromPreviousConversation')
+      .spyOn(manager.messageCoordinator, 'isRequestFromPreviousConversation')
       .mockImplementation((requestID) => requestID === 'old-request');
     fire.mockImplementation(async (event): Promise<void> => {
       if (event.type === BusEventType.PRE_RECEIVE) {
@@ -492,9 +494,10 @@ describe('ReceiveService', () => {
       expect(received).toBe(true);
       expect(eventTypes()).toContain(BusEventType.RECEIVE);
       expect(localItems()).toEqual([]);
-      expect((manager.messageUpsertCoordinator as any).pendingWrites.size).toBe(
-        1
-      );
+      expect(
+        manager.messageCoordinator.incomingWriteLifetime.state.pendingWrites
+          .size
+      ).toBe(1);
     } finally {
       pendingSlot.doResolve();
       await receiving;
@@ -502,9 +505,9 @@ describe('ReceiveService', () => {
     }
 
     expect(localItems()).toHaveLength(1);
-    expect((manager.messageUpsertCoordinator as any).pendingWrites.size).toBe(
-      0
-    );
+    expect(
+      manager.messageCoordinator.incomingWriteLifetime.state.pendingWrites.size
+    ).toBe(0);
   });
 
   it.each([
@@ -519,8 +522,57 @@ describe('ReceiveService', () => {
     await jest.advanceTimersByTimeAsync(0);
 
     expect(eventTypes()).toContain(BusEventType.RECEIVE);
-    expect((manager.messageUpsertCoordinator as any).pendingWrites.size).toBe(
-      0
+    expect(
+      manager.messageCoordinator.incomingWriteLifetime.state.pendingWrites.size
+    ).toBe(0);
+  });
+  it('keeps a rejected receive reveal leased until removal invalidates it', async () => {
+    const { service, manager, fire, localItems } = createHarness();
+    const pending =
+      manager.messageCoordinator.incomingWriteLifetime.state.pendingWrites;
+    const failure = new Error('receive rejected');
+    fire.mockImplementation(async (event) => {
+      if (event.type === BusEventType.RECEIVE) {
+        throw failure;
+      }
+    });
+    await expect(
+      service.receive(
+        response([
+          { response_type: MessageResponseTypes.PAUSE, time: 100 },
+          textItem('must stay removed'),
+        ])
+      )
+    ).rejects.toBe(failure);
+    expect(pending.get('response-1').count).toBe(1);
+    expect(
+      manager.messageCoordinator.getIncomingState('response-1')
+    ).toBeUndefined();
+    await service.removeMessages(['response-1']);
+    expect(pending.has('response-1')).toBe(false);
+    await jest.advanceTimersByTimeAsync(100);
+    expect(localItems()).toEqual([]);
+    expect(
+      manager.store.getState().allMessagesByID['response-1']
+    ).toBeUndefined();
+  });
+
+  it('returns the core receive and removal promises without an adoption wrapper', () => {
+    const pending = resolvablePromise<void>();
+    const receive = jest
+      .spyOn(FullResponseWorkflow.prototype, 'receive')
+      .mockReturnValue(pending);
+    const removeMessages = jest
+      .spyOn(FullResponseWorkflow.prototype, 'removeMessages')
+      .mockReturnValue(pending);
+    const service = new MessageCoordinator(
+      {} as ServiceManager,
+      {} as MessagePresentationPort
     );
+    expect(service.receive(response())).toBe(pending);
+    expect(service.removeMessages(['response-1'])).toBe(pending);
+    receive.mockRestore();
+    removeMessages.mockRestore();
+    pending.doResolve();
   });
 });

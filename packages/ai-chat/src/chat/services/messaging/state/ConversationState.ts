@@ -7,11 +7,9 @@
  *  @license
  */
 
-import type { ConversationStatus } from '../../types/instance/PublicChatState';
-import actions from '../store/actions';
-import type { ServiceManager } from './ServiceManager';
+import type { ConversationStatus } from '../../../../types/instance/PublicChatState';
 
-class ConversationLifecycleService {
+class ConversationState {
   private generation = 0;
   private hydrating = false;
   private activeRequests = new Map<string, { id?: string }>();
@@ -22,8 +20,6 @@ class ConversationLifecycleService {
   private failure: { messageID?: string; generation: number } | null = null;
   private respondedRequests = new Set<string>();
   private stoppedResponses = new Set<string>();
-
-  constructor(private serviceManager: ServiceManager) {}
 
   get currentGeneration() {
     return this.generation;
@@ -44,22 +40,21 @@ class ConversationLifecycleService {
     this.respondedRequests.clear();
     this.stoppedResponses.clear();
     this.failure = null;
-    this.publish();
     return this.generation;
   }
 
   hydrationStarted() {
     this.hydrating = true;
     this.failure = null;
-    this.publish();
     return this.generation;
   }
 
   hydrationFinished(generation: number) {
     if (this.isCurrent(generation)) {
       this.hydrating = false;
-      this.publish();
+      return true;
     }
+    return false;
   }
 
   requestStarted(
@@ -71,8 +66,9 @@ class ConversationLifecycleService {
       this.activeRequests.set(messageID, request);
       this.requestAliases.set(messageID, messageID);
       this.failure = null;
-      this.publish();
+      return true;
     }
+    return false;
   }
 
   requestFinished(messageID: string, generation = this.generation) {
@@ -80,13 +76,14 @@ class ConversationLifecycleService {
       const requestID = this.resolveRequestID(messageID);
       this.activeRequests.delete(requestID);
       this.respondedRequests.delete(requestID);
-      this.publish();
+      return true;
     }
+    return false;
   }
 
   requestStopped(messageID: string, generation = this.generation) {
     if (!this.isCurrent(generation)) {
-      return [];
+      return undefined;
     }
     const requestID = this.resolveRequestID(messageID);
     this.stoppedRequests.add(messageID);
@@ -101,7 +98,6 @@ class ConversationLifecycleService {
         this.stoppedResponses.add(responseID);
       }
     }
-    this.publish();
     return responseIDs;
   }
 
@@ -125,7 +121,6 @@ class ConversationLifecycleService {
     this.activeResponses.delete(messageID);
     this.responseOwners.delete(messageID);
     this.stoppedResponses.delete(messageID);
-    this.publish();
   }
 
   responseStreaming(
@@ -139,15 +134,16 @@ class ConversationLifecycleService {
       this.isRequestStopped(requestID) ||
       this.stoppedResponses.has(messageID)
     ) {
-      return;
+      return undefined;
     }
     const owner = this.recordResponseOwner(messageID, requestID);
     if (this.stoppedRequests.has(owner)) {
-      return;
+      return undefined;
     }
     this.activeResponses.add(messageID);
-    this.responseReceived(messageID, generation, owner);
-    this.publish();
+    return {
+      receivedRequest: this.responseReceived(messageID, generation, owner),
+    };
   }
 
   responseReceived(
@@ -160,13 +156,14 @@ class ConversationLifecycleService {
       this.isRequestStopped(requestID) ||
       this.stoppedResponses.has(messageID)
     ) {
-      return;
+      return false;
     }
     const owner = this.recordResponseOwner(messageID, requestID);
     if (this.activeRequests.has(owner) && !this.stoppedRequests.has(owner)) {
       this.respondedRequests.add(owner);
-      this.publish();
+      return true;
     }
+    return false;
   }
 
   private resolveRequestID(messageID: string) {
@@ -191,15 +188,17 @@ class ConversationLifecycleService {
     if (this.isCurrent(generation)) {
       this.stoppedResponses.add(messageID);
       this.activeResponses.delete(messageID);
-      this.publish();
+      return true;
     }
+    return false;
   }
 
   responseFinished(messageID: string, generation = this.generation) {
     if (this.isCurrent(generation)) {
       this.activeResponses.delete(messageID);
-      this.publish();
+      return true;
     }
+    return false;
   }
 
   fail(error: { messageID?: string }, generation = this.generation) {
@@ -213,7 +212,6 @@ class ConversationLifecycleService {
       this.activeRequests.delete(requestID);
       this.respondedRequests.delete(requestID);
     }
-    this.publish();
     return failure;
   }
 
@@ -225,28 +223,19 @@ class ConversationLifecycleService {
     );
   }
 
-  clearFailure(failure: ReturnType<ConversationLifecycleService['fail']>) {
+  clearFailure(failure: ReturnType<ConversationState['fail']>) {
     if (
       failure &&
       this.failure === failure &&
       this.isCurrent(failure.generation)
     ) {
       this.failure = null;
-      this.publish();
+      return true;
     }
+    return false;
   }
 
-  private publish() {
-    const status = this.getStatus();
-    const state = this.serviceManager.store.getState();
-    if (state.conversationStatus !== status) {
-      this.serviceManager.store.dispatch(
-        actions.setConversationLifecycle(status)
-      );
-    }
-  }
-
-  private getStatus(): ConversationStatus {
+  getStatus(): ConversationStatus {
     if (this.failure) {
       return 'error';
     }
@@ -267,4 +256,4 @@ class ConversationLifecycleService {
   }
 }
 
-export { ConversationLifecycleService };
+export { ConversationState };

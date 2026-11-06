@@ -66,7 +66,7 @@ describe('Disabling the assistant input', () => {
     expect(selectInputIsDisabled(store.getState())).toBe(false);
 
     const cancelSpy = jest.spyOn(
-      serviceManager.messageService,
+      serviceManager.messageCoordinator,
       'cancelAllMessageRequests'
     );
     const clearSpy = jest.spyOn(

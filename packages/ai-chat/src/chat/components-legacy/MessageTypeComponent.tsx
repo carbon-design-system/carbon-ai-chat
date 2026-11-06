@@ -51,7 +51,7 @@ import { useSelector } from '../hooks/useSelector';
 import { shallowEqual } from '../store/appStore';
 import { AppState } from '../../types/state/AppState';
 import { useUUID } from '../hooks/useUUID';
-import actions from '../store/actions';
+import { mergeMessageHistoryFromView } from '../utils/messageMetadataCommands';
 import {
   LocalMessageItem,
   MessageErrorState,
@@ -819,8 +819,10 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
             [feedbackID]: data,
           },
         };
-        serviceManager.store.dispatch(
-          actions.mergeMessageHistory(localMessageItem.fullMessageID, history)
+        mergeMessageHistoryFromView(
+          serviceManager,
+          localMessageItem.fullMessageID,
+          history
         );
       }
     }

@@ -51,7 +51,7 @@ function makeServiceManager(initialState: AppState): ServiceManager {
   return {
     store: createStore(initialState),
     namespace: { suffix: '' },
-    messageService: { timeoutMS: 30000 },
+    messageCoordinator: { timeoutMS: 30000 },
   } as any;
 }
 

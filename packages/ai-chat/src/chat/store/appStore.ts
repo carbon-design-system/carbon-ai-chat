@@ -6,6 +6,7 @@
  *
  *  @license
  */
+import { commitMessageOwnership } from './messageOwnership';
 import { debugLog, isEnableDebugLog } from '../utils/miscUtils';
 
 /**
@@ -136,6 +137,7 @@ export function createAppStore<
         debugLog('[store] notifying listeners', listeners.size);
       }
       currentState = nextState;
+      commitMessageOwnership(store, currentState, action);
       listeners.forEach((listener) => {
         try {
           listener();
@@ -143,6 +145,8 @@ export function createAppStore<
           // Deliberately swallow to keep other listeners functioning
         }
       });
+    } else {
+      commitMessageOwnership(store, currentState, action);
     }
     return action as ActionType;
   };
@@ -154,7 +158,8 @@ export function createAppStore<
     };
   };
 
-  return { getState, dispatch, subscribe };
+  const store = { getState, dispatch, subscribe };
+  return store;
 }
 
 /**

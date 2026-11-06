@@ -37,7 +37,7 @@ import {
   shouldDisableSend,
   isUploadButtonDisabled,
 } from '../services/inputCallbacks';
-import { HumanAgentCallbacks } from '../services/humanAgentCallbacks';
+import { HumanAgentCallbacks } from '../services/haa/humanAgentCallbacks';
 import { WindowOpenState } from '../services/windowOpenState';
 import { shallowEqual } from '../store/appStore';
 import actions from '../store/actions';
