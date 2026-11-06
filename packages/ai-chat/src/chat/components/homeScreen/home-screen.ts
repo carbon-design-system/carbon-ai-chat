@@ -220,4 +220,5 @@ declare global {
   }
 }
 
+export type { HomeScreenProps };
 export default HomeScreenView;

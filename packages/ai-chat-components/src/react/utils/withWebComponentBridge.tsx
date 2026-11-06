@@ -108,13 +108,25 @@ function isInTestEnvironment(): boolean {
 
 const shouldEnableBridge = isInTestEnvironment();
 
+interface WebComponentBridgeOptions {
+  /**
+   * The `events` map passed to `createComponent`. Passing it, even as `{}`,
+   * also assigns `onX` callback properties the element declares.
+   */
+  events?: Record<string, string>;
+}
+
 /**
  * Wrap a Lit `createComponent` result so that every prop is mirrored onto the underlying custom element as a property.
  * This wrapper uses a generic type that preserves component compatibility across React 17-19.
  * The return type is intentionally loose to avoid breaking existing code that relies on flexible prop types.
+ *
+ * Without `options`, every `onX` prop is skipped. With `options`, an `onX` prop is assigned when the element declares
+ * it as a property and it is not a key of `options.events`; `@lit/react` binds those keys as listeners.
  */
 export function withWebComponentBridge<C extends React.ComponentType<any>>(
-  Component: C
+  Component: C,
+  options?: WebComponentBridgeOptions
 ): React.ComponentType<any> {
   // Early return if bridge is disabled (production browsers)
   if (!shouldEnableBridge) {
@@ -146,9 +158,18 @@ export function withWebComponentBridge<C extends React.ComponentType<any>>(
           key[2] === key[2].toUpperCase();
 
         if (isEventProp) {
-          // @lit/react already wires events when the prop follows the onEvent
-          // convention. Avoid double-binding here.
-          return;
+          // @lit/react binds keys of its events map as listeners, so never
+          // assign those. Without options, skip every onX prop as before. With
+          // options, assign an onX callback the element declares as its own
+          // property; skip native handlers and anything it doesn't declare.
+          if (
+            !options ||
+            key in (options.events ?? {}) ||
+            !(key in element) ||
+            key in HTMLElement.prototype
+          ) {
+            return;
+          }
         }
 
         try {
