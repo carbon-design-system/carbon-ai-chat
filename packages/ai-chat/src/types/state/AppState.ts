@@ -18,7 +18,6 @@ export type {
   HumanAgentState,
   HumanAgentDisplayState,
 } from './HumanAgentState';
-export type { ThemeState } from './ThemeState';
 export type { PersistedState } from './PersistedState'; // public — @category Instance
 export { ChatWidthBreakpoint } from './ChatWidthBreakpoint'; // enum (runtime value)
 export type { CatastrophicErrorPanelState } from './panels/CatastrophicErrorPanelState'; // public — @category Instance
@@ -34,8 +33,6 @@ import type { ConversationState } from './ConversationState';
 import type { ViewPartitionState } from './ViewPartitionState';
 
 export type {
-  ConversationAppConfig,
-  ConversationConfig,
   ConversationPersistedState,
   ConversationState,
 } from './ConversationState';
