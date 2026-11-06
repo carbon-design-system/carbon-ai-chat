@@ -199,12 +199,10 @@ class NativePanels extends NativeChatView {
         this.buttonSize = wide ? '2xl' : 'lg';
       }
     );
-    this.selectStore(
+    this.selectChat(
       (state) => ({
-        isConnected:
-          state.persistedToBrowserStorage.humanAgentState.isConnected,
-        isSuspended:
-          state.persistedToBrowserStorage.humanAgentState.isSuspended,
+        isConnected: state.humanAgent.isConnected,
+        isSuspended: state.humanAgent.isSuspended,
       }),
       (value) => {
         this.isAgentConnected = value.isConnected;

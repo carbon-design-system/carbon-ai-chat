@@ -39,6 +39,8 @@ import {
 } from '../src/chat/utils/appConfig';
 import { chatStore } from '../src/chat/services/attachChatView';
 import { attachStorePartition } from '../src/sdk/internal';
+import { PublicStateService } from '../src/shared/services/PublicStateService';
+import { EventBus } from '../src/shared/events/EventBus';
 import { viewReducer } from '../src/view/state/reducer';
 import { createInitialViewState } from '../src/view/state/initialState';
 import type { ConversationState } from '../src/types/state/AppState';
@@ -301,6 +303,33 @@ export function makeConfigStore(config: PublicConfig): AppStore<AppState> {
   );
   enableMessageOwnership(store);
   return withView(store, config);
+}
+
+/**
+ * Gives a service manager made without boot the public state a booted chat
+ * reads through `instance.state`, built from its store. It adds an event bus
+ * when the manager has none, as boot always creates one; a spec about a
+ * missing bus can't use it.
+ */
+export function withPublicState<Manager extends Pick<ServiceManager, 'store'>>(
+  manager: Manager
+): Manager {
+  const { eventBus = new EventBus() } = manager as Partial<ServiceManager>;
+  const service = new PublicStateService(
+    Object.assign(manager, { eventBus }) as unknown as ServiceManager
+  );
+  Object.assign(manager, {
+    publicStateService: service,
+    instance: {
+      ...(manager as Partial<ServiceManager>).instance,
+      state: {
+        get: service.get,
+        subscribe: service.subscribe,
+        select: service.select,
+      },
+    },
+  });
+  return manager;
 }
 
 /**

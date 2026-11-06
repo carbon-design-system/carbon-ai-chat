@@ -279,9 +279,6 @@ function clearDisclaimerAcceptance(store: AppStore<AppState>) {
  * existing connection before rebuilding the service.
  */
 function isHumanAgentChatActive(serviceManager: ServiceManager): boolean {
-  const state = serviceManager.store.getState();
-  return (
-    state.persistedToBrowserStorage.humanAgentState.isConnected ||
-    state.humanAgentState.isConnecting
-  );
+  const { humanAgent } = serviceManager.instance.state.get();
+  return humanAgent.isConnected || humanAgent.isConnecting;
 }
