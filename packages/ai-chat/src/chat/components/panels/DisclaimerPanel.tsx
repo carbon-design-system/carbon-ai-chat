@@ -7,16 +7,16 @@
  *  @license
  */
 
-import React, { useEffect, useMemo } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { createComponent } from '@lit/react';
+import { withWebComponentBridge } from '@carbon/ai-chat-components/es/react/utils/withWebComponentBridge.js';
 import type CDSButton from '@carbon/web-components/es/components/button/button.js';
-
 import Button from '../carbon/Button';
-import { ChatBubble } from './ChatBubble';
 import { useSelector } from '../../hooks/useSelector';
 import { shallowEqual } from '../../store/appStore';
 import { PageObjectId } from '../../../testing/PageObjectId';
 import { AppState, ChatWidthBreakpoint } from '../../../types/state/AppState';
-import { CarbonTheme } from '../../../types/config/CarbonTheme';
+import DisclaimerBody from './native/DisclaimerBody';
 
 interface DisclaimerPanelProps {
   disclaimerHTML?: string;
@@ -30,6 +30,20 @@ interface DisclaimerPanelContent {
   onBodyScroll: (event: CustomEvent) => void;
 }
 
+const nativeDisclaimerBodyEvents = {};
+
+// The bridge sets the view's properties in DOM shims, where @lit/react's node
+// build passes them only to server rendering.
+const NativeDisclaimerBody = withWebComponentBridge(
+  createComponent({
+    tagName: 'cds-aichat-disclaimer-body',
+    elementClass: DisclaimerBody,
+    react: React,
+    events: nativeDisclaimerBodyEvents,
+  }),
+  { events: nativeDisclaimerBodyEvents }
+);
+
 const DisclaimerPanel = ({
   disclaimerHTML,
   disclaimerAcceptButtonRef,
@@ -37,8 +51,6 @@ const DisclaimerPanel = ({
 }: DisclaimerPanelProps): DisclaimerPanelContent => {
   const languagePack = useSelector(
     (state: AppState) => ({
-      disclaimer_icon_label: state.languagePack.disclaimer_icon_label,
-      disclaimer_title: state.languagePack.disclaimer_title,
       disclaimer_acceptance_label:
         state.languagePack.disclaimer_acceptance_label,
       disclaimer_accept: state.languagePack.disclaimer_accept,
@@ -48,86 +60,20 @@ const DisclaimerPanel = ({
   const chatWidthBreakpoint = useSelector(
     (state: AppState) => state.chatWidthBreakpoint
   );
-
-  const derivedCarbonTheme = useSelector(
-    (state: AppState) =>
-      state.config.derived.themeWithDefaults.derivedCarbonTheme
-  );
-
-  const isOpen = useSelector(
-    (state: AppState) => state.persistedToBrowserStorage.viewState.mainWindow
-  );
-
-  const isDarkTheme =
-    derivedCarbonTheme === CarbonTheme.G90 ||
-    derivedCarbonTheme === CarbonTheme.G100;
-
-  const [hasReadDisclaimer, setHasReadDisclaimer] = React.useState(false);
-  const disclaimerContent = React.useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (!isOpen) {
-      return undefined;
-    }
-    const panelElement = disclaimerContent.current?.closest('cds-aichat-panel');
-    if (!panelElement) {
-      return undefined;
-    }
-
-    // Trigger initial check by dispatching a fake scroll event
-    // This will be picked up by the panel's scroll listener
-    const checkInitialState = () => {
-      const panelBody = panelElement.shadowRoot?.querySelector('.panel-body');
-      if (panelBody) {
-        const scrollEvent = new Event('scroll', { bubbles: true });
-        panelBody.dispatchEvent(scrollEvent);
-      }
-    };
-
-    // Check multiple times to ensure content is rendered and measured
-    const timeoutId1 = setTimeout(checkInitialState, 100);
-    const timeoutId2 = setTimeout(checkInitialState, 300);
-    const timeoutId3 = setTimeout(checkInitialState, 500);
-
-    return () => {
-      clearTimeout(timeoutId1);
-      clearTimeout(timeoutId2);
-      clearTimeout(timeoutId3);
-    };
-  }, [isOpen]);
-
-  const handleBodyScroll = React.useCallback((event: CustomEvent) => {
-    const { isScrollable, isAtBottom } = event.detail;
-
-    // Enable button if content is not scrollable OR user has scrolled to bottom
-    if (!isScrollable || isAtBottom) {
-      setHasReadDisclaimer(true);
-    }
+  const [hasReadDisclaimer, setHasReadDisclaimer] = useState(false);
+  const bodyRef = useRef<DisclaimerBody>(null);
+  const handleBodyScroll = useCallback((event: CustomEvent) => {
+    bodyRef.current?.observeScroll(event.detail);
   }, []);
 
-  const disclaimerDescriptionClassName = 'cds-aichat--disclaimer__description';
-
-  // Memoize the returned object to prevent infinite re-renders
   return useMemo(
     () => ({
       body: (
-        <div
-          className="cds-aichat--panel-content cds-aichat--disclaimer__content"
-          ref={disclaimerContent}>
-          <div className="cds-aichat--disclaimer__icon">
-            <ChatBubble
-              theme={isDarkTheme ? 'dark' : 'light'}
-              label={languagePack.disclaimer_icon_label}
-            />
-          </div>
-          <h1 className="cds-aichat--disclaimer__title">
-            {languagePack.disclaimer_title}
-          </h1>
-          <div
-            dangerouslySetInnerHTML={{ __html: disclaimerHTML }}
-            className={disclaimerDescriptionClassName}
-          />
-        </div>
+        <NativeDisclaimerBody
+          ref={bodyRef}
+          disclaimerHTML={disclaimerHTML}
+          onReadChange={setHasReadDisclaimer}
+        />
       ),
       footer: (
         <Button
@@ -145,13 +91,12 @@ const DisclaimerPanel = ({
       onBodyScroll: handleBodyScroll,
     }),
     [
-      isDarkTheme,
-      languagePack,
       disclaimerHTML,
       disclaimerAcceptButtonRef,
       onAcceptDisclaimer,
       chatWidthBreakpoint,
       hasReadDisclaimer,
+      languagePack,
       handleBodyScroll,
     ]
   );
