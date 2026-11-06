@@ -46,8 +46,12 @@ import React, {
   type ReactNode,
 } from 'react';
 import { createRoot } from 'react-dom/client';
+import {
+  installNativeAutocompleteHarness,
+  type NativeAutocompleteHarness,
+} from './native-autocomplete';
 
-interface Harness {
+interface Harness extends NativeAutocompleteHarness {
   reactInstance?: ChatInstance;
   wcInstance?: ChatInstance;
   setTheme?: (theme: string) => void;
@@ -106,6 +110,7 @@ const config: PublicConfig = {
 };
 
 const ThemeContext = createContext('none');
+installNativeAutocompleteHarness(harness, ThemeContext);
 
 function Counter() {
   const theme = useContext(ThemeContext);
@@ -232,6 +237,7 @@ async function mountWebComponent(surface: string) {
   }
   const element = document.createElement(tagName) as HTMLElement &
     Record<string, unknown>;
+  element.id = 'host-compat-wc';
   if (surface === 'wc-custom') {
     element.className = 'sized';
   }
@@ -257,6 +263,11 @@ async function mountWebComponent(surface: string) {
 
 async function run() {
   const params = new URLSearchParams(window.location.search);
+  if (params.get('autocomplete') === 'both') {
+    await mountReact('react-custom');
+    await mountWebComponent('wc-custom');
+    return;
+  }
   const surface = params.get('surface');
   if (surface?.startsWith('wc-')) {
     await mountWebComponent(surface);
