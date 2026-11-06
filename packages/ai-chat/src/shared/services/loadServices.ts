@@ -28,19 +28,21 @@ import {
 } from '../store/humanAgentStatePersistence';
 import { doCreateStore } from '../store/doCreateStore';
 import { refreshLocalizationOnChange } from '../store/subscriptions';
-import { AppConfig } from '../../types/state/AppConfig';
+import type { ConversationAppConfig } from '../../types/state/ConversationState';
 import { WriteableElementName } from '../utils/constants';
 import { assertType, setEnableDebugLog } from '../utils/miscUtils';
 import { setIntl } from '../utils/intlUtils';
 import { isBrowser } from '../utils/browserUtils';
 
-type CreateServiceManagerFunction = (appConfig: AppConfig) => ServiceManager;
+type CreateServiceManagerFunction = (
+  appConfig: ConversationAppConfig
+) => ServiceManager;
 
 /**
  * This file contains the code needed to bootstrap all the shared services in Carbon AI Chat. Services are used to hold
  * functions that are used throughout the application that need access to the current instance of the Carbon AI Chat.
  */
-function createServiceManager(appConfig: AppConfig) {
+function createServiceManager(appConfig: ConversationAppConfig) {
   const publicConfig = appConfig.public;
 
   const serviceManager = new ServiceManager();
@@ -84,7 +86,7 @@ function createServiceManager(appConfig: AppConfig) {
   serviceManager.slotEventService = new SlotEventService(serviceManager);
   serviceManager.hydrationService = new HydrationService(serviceManager);
   serviceManager.eventBus = new EventBus();
-  serviceManager.store = doCreateStore(publicConfig, serviceManager);
+  serviceManager.store = doCreateStore(appConfig, serviceManager);
   serviceManager.publicStateService = new PublicStateService(serviceManager);
   serviceManager.messageCoordinator = new MessageCoordinator(serviceManager);
   serviceManager.historyService = new HistoryService(serviceManager);

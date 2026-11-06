@@ -11,6 +11,7 @@ import React from 'react';
 import { act, render, waitFor } from '@testing-library/react';
 
 import { ChatContainer } from '../../../src/react/ChatContainer';
+import { chatStore } from '../../../src/chat/services/attachChatView';
 
 import { MinimizeButtonIconType } from '../../../src/types/config/HeaderConfig';
 
@@ -21,6 +22,7 @@ import { createBaseTestProps, setupAfterEach } from '../../test_helpers';
 import { applyConfigChangesDynamically } from '../../../src/chat/utils/dynamicConfigUpdates';
 
 import { doCreateStore } from '../../../src/shared/store/doCreateStore';
+import { createAppConfig } from '../../../src/chat/utils/appConfig';
 
 import { ServiceManager } from '../../../src/shared/services/ServiceManager';
 
@@ -206,7 +208,7 @@ describe('Config Header', () => {
       };
 
       const store = withView(
-        doCreateStore(initialConfig, {} as ServiceManager),
+        doCreateStore(createAppConfig(initialConfig), {} as ServiceManager),
         initialConfig
       );
       serviceManager = {
@@ -240,7 +242,7 @@ describe('Config Header', () => {
         serviceManager
       );
 
-      const state = serviceManager.store.getState();
+      const state = chatStore(serviceManager).getState();
       expect(state.config.public.header?.title).toBe('New Header');
       expect(state.config.public.header?.hideMinimizeButton).toBe(true);
       expect(state.config.public.header?.showRestartButton).toBe(true);

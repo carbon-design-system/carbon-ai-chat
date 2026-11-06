@@ -52,47 +52,11 @@ const folderExceptions: BoundaryException[] = [];
 
 // Each root folder lists its own exceptions, so a path from a new folder fails
 // even where another folder's path to the same edge is listed. The SDK's own
-// types reach these edges: ChatSDKInstance -> eventBusTypes -> PublicChatState
-// -> AppState -> AppConfig -> PublicConfig, and ChatSDKConfig -> ServiceDeskConfig.
+// types reach this edge through ChatSDKConfig -> ServiceDeskConfig.
 const frameworkExceptions: BoundaryException[] = [
   'src/shared/',
   'src/sdk/',
 ].flatMap((folder) => [
-  {
-    folder,
-    from: 'src/types/config/HeaderConfig.ts',
-    to: '../ai-chat-components/src/react/toolbar.tsx',
-    owner: '#1831',
-    reason: 'shared state holds PublicConfig until it takes ChatSDKConfig',
-  },
-  {
-    folder,
-    from: 'src/types/config/InputConfig.ts',
-    to: '../ai-chat-components/src/components/prompt-line/index.ts',
-    owner: '#1831',
-    reason: 'shared state holds PublicConfig until it takes ChatSDKConfig',
-  },
-  {
-    folder,
-    from: 'src/types/config/MarkdownConfig.ts',
-    to: '../ai-chat-components/src/components/markdown/index.ts',
-    owner: '#1831',
-    reason: 'markdownConfig moves to the view partition',
-  },
-  {
-    folder,
-    from: 'src/types/config/MarkdownConfig.ts',
-    to: 'react',
-    owner: '#1831',
-    reason: 'markdownConfig moves to the view partition',
-  },
-  {
-    folder,
-    from: 'src/types/config/PublicConfig.ts',
-    to: '../ai-chat-components/src/components/markdown/index.ts',
-    owner: '#1831',
-    reason: 'shared state holds PublicConfig until it takes ChatSDKConfig',
-  },
   {
     folder,
     from: 'src/types/config/ServiceDeskConfig.ts',
@@ -234,8 +198,10 @@ it('keeps view handles out of conversation services and the SDK', () => {
 });
 
 // The whole store's type includes the view partition, so only chat/ and view/
-// may name it. Conversation code sees ConversationState (#1831 O5, O6).
-it('keeps the view partition out of conversation and SDK code', () => {
+// may name it. Conversation code sees ConversationState (#1831 O5, O6). The
+// whole config reaches view code too, so conversation code reads
+// ConversationConfig, which the shell's PublicConfig fills (D5).
+it('keeps the view partition and the whole config out of conversation and SDK code', () => {
   const conversation = files.filter(
     (file) => file.startsWith('src/shared/') || file.startsWith('src/sdk/')
   );
@@ -243,7 +209,13 @@ it('keeps the view partition out of conversation and SDK code', () => {
     ...typeReferences(
       read,
       conversation,
-      new Set(['AppState', 'ViewPartitionState', 'ViewPersistedState'])
+      new Set([
+        'AppConfig',
+        'AppState',
+        'PublicConfig',
+        'ViewPartitionState',
+        'ViewPersistedState',
+      ])
     ),
   ]).toEqual([]);
 });
@@ -285,6 +257,42 @@ describe('planted imports', () => {
       `src/shared/: ${shared} -> ../ai-chat-components/src/components/markdown/index.ts`
     );
   });
+
+  // These types once leaked view code into shared code (#1831, D5).
+  it.each([
+    [
+      "import type { PublicConfig } from '../../types/config/PublicConfig';",
+      'src/types/config/PublicConfig.ts',
+      '../ai-chat-components/src/components/markdown/index.ts',
+    ],
+    [
+      "import type { HeaderConfig } from '../../types/config/HeaderConfig';",
+      'src/types/config/HeaderConfig.ts',
+      '../ai-chat-components/src/react/toolbar.tsx',
+    ],
+    [
+      "import type { InputConfig } from '../../types/config/InputConfig';",
+      'src/types/config/InputConfig.ts',
+      '../ai-chat-components/src/components/prompt-line/index.ts',
+    ],
+    [
+      "import type { AppConfig } from '../../types/state/AppConfig';",
+      'src/types/config/PublicConfig.ts',
+      '../ai-chat-components/src/components/markdown/index.ts',
+    ],
+    [
+      "import type { AppState } from '../../types/state/AppState';",
+      'src/types/config/MarkdownConfig.ts',
+      'react',
+    ],
+  ])(
+    'fails shared code that reaches view code through a config type: %s',
+    (line, from, to) => {
+      expect(plant(shared, line).frameworks).toContain(
+        `src/shared/: ${from} -> ${to}`
+      );
+    }
+  );
 
   it('fails shared code that imports view state, even as a type', () => {
     const result = plant(

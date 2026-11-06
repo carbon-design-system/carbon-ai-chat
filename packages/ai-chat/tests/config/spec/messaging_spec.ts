@@ -19,6 +19,7 @@ import { createBaseTestProps, mockCustomSendMessage } from '../../test_helpers';
 import { applyConfigChangesDynamically } from '../../../src/chat/utils/dynamicConfigUpdates';
 
 import { doCreateStore } from '../../../src/shared/store/doCreateStore';
+import { createAppConfig } from '../../../src/chat/utils/appConfig';
 
 import { ServiceManager } from '../../../src/shared/services/ServiceManager';
 
@@ -187,7 +188,7 @@ describe('Config Messaging', () => {
         };
 
         const store = withView(
-          doCreateStore(initialConfig, {} as ServiceManager),
+          doCreateStore(createAppConfig(initialConfig), {} as ServiceManager),
           initialConfig
         );
         serviceManager = {

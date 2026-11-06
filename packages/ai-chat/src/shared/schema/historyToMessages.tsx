@@ -16,7 +16,7 @@ import { DEFAULT_CHAT_MESSAGES_STATE } from '../store/reducerUtils';
 import {
   AppStateMessages,
   ChatMessagesState,
-} from '../../types/state/AppState';
+} from '../../types/state/ChatMessagesState';
 import {
   LocalMessageItem,
   MessageErrorState,

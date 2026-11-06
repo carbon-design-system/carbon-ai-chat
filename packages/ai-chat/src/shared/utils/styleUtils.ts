@@ -12,7 +12,7 @@
  * of CSS variables into CSS and properly injecting default Carbon colors into CSS variables.
  */
 
-import { ThemeState } from '../../types/state/AppState';
+import { ThemeState } from '../../types/state/ThemeState';
 import ObjectMap from '../../types/utilities/ObjectMap';
 import { WA_CONSOLE_PREFIX } from './constants';
 import { CarbonTheme } from '../../types/config/CarbonTheme';

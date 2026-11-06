@@ -20,10 +20,8 @@ import {
   selectInputIsDisabled,
   selectInputFieldVisible,
 } from '../../../src/shared/store/selectors';
-import {
-  createAppConfig,
-  createInitialState,
-} from '../../../src/shared/store/doCreateStore';
+import { createInitialState } from '../../../src/shared/store/doCreateStore';
+import { createAppConfig } from '../../../src/chat/utils/appConfig';
 import {
   ConversationState,
   InputState,

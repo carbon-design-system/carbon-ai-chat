@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { ConversationState } from '../../types/state/AppState';
+import { ConversationState } from '../../types/state/ConversationState';
 import {
   HA_END_CHAT,
   HA_SET_HUMAN_AGENT_AVAILABILITY,

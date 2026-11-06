@@ -1139,7 +1139,7 @@ export class ShellLifecycle {
   private readonly handleKeyDown = (event: KeyboardEvent) => {
     const manager = this.viewState.serviceManager;
     const shortcut =
-      manager.store.getState().config.derived.keyboardShortcuts
+      chatStore(manager).getState().config.derived.keyboardShortcuts
         .messageFocusToggle;
     if (shortcut.isOn && matchesShortcut(event, shortcut)) {
       let focused = false;

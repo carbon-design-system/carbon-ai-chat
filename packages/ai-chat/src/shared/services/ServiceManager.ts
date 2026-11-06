@@ -11,7 +11,7 @@ import type { AppStore } from '../store/appStore';
 import { IntlShape } from '../utils/i18n';
 
 import { EventBus } from '../events/EventBus';
-import { ConversationState } from '../../types/state/AppState';
+import { ConversationState } from '../../types/state/ConversationState';
 import { HumanAgentService } from './haa/HumanAgentService';
 import { HistoryService } from './HistoryService';
 import { NamespaceService } from './NamespaceService';

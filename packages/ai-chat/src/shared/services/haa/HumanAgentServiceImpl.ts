@@ -75,7 +75,7 @@ import {
   MessageResponse,
   TextItem,
 } from '../../../types/messaging/Messages';
-import { AppConfig } from '../../../types/state/AppConfig';
+import type { ConversationAppConfig } from '../../../types/state/ConversationState';
 import { OnErrorType } from '../../../types/config/ErrorConfig';
 import {
   AdditionalDataToAgent,
@@ -785,7 +785,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
   async handleConnectToHumanAgent(
     localMessageItem: LocalMessageItem,
     fullMessage: MessageResponse,
-    config: AppConfig,
+    config: ConversationAppConfig,
     initialRestartCount: number,
     isCurrent: () => boolean = () => true
   ) {

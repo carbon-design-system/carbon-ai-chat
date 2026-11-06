@@ -13,7 +13,7 @@ import type {
   PortAnnouncement,
 } from './messaging/presentationPort';
 import type { AutoScrollOptions } from '../../types/utilities/HasDoAutoScroll';
-import type { ViewState, ViewType } from '../../types/state/AppState';
+import type { ViewState, ViewType } from '../../types/instance/apiTypes';
 import type {
   MainWindowCloseReason,
   MainWindowOpenReason,

@@ -21,6 +21,7 @@ import { HomeScreenConfig } from '../../../src/types/config/HomeScreenConfig';
 import { applyConfigChangesDynamically } from '../../../src/chat/utils/dynamicConfigUpdates';
 
 import { doCreateStore } from '../../../src/shared/store/doCreateStore';
+import { createAppConfig } from '../../../src/chat/utils/appConfig';
 
 import { ServiceManager } from '../../../src/shared/services/ServiceManager';
 
@@ -149,7 +150,7 @@ describe('Config Homescreen', () => {
         };
 
         const store = withView(
-          doCreateStore(initialConfig, {} as ServiceManager),
+          doCreateStore(createAppConfig(initialConfig), {} as ServiceManager),
           initialConfig
         );
         serviceManager = {

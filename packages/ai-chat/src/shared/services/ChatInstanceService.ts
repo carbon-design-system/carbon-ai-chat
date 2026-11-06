@@ -13,11 +13,8 @@ import {
 } from './ServiceManager';
 import { VIEW_STATE_ALL_CLOSED } from '../store/reducerUtils';
 import { agentUpdateIsSuspended } from '../store/humanAgentActions';
-import {
-  AppStateMessages,
-  ViewState,
-  ViewType,
-} from '../../types/state/AppState';
+import { AppStateMessages } from '../../types/state/ChatMessagesState';
+import { ViewState, ViewType } from '../../types/instance/apiTypes';
 
 import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
 

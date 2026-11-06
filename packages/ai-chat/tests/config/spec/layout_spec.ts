@@ -11,6 +11,7 @@ import React from 'react';
 import { render, waitFor } from '@testing-library/react';
 
 import { ChatContainer } from '../../../src/react/ChatContainer';
+import { chatStore } from '../../../src/chat/services/attachChatView';
 
 import { ChatContainerProps } from '../../../src/types/component/ChatContainer';
 
@@ -19,6 +20,7 @@ import { createBaseTestProps } from '../../test_helpers';
 import { applyConfigChangesDynamically } from '../../../src/chat/utils/dynamicConfigUpdates';
 
 import { doCreateStore } from '../../../src/shared/store/doCreateStore';
+import { createAppConfig } from '../../../src/chat/utils/appConfig';
 
 import { ServiceManager } from '../../../src/shared/services/ServiceManager';
 
@@ -181,7 +183,7 @@ describe('Config Layout', () => {
         };
 
         const store = withView(
-          doCreateStore(initialConfig, {} as ServiceManager),
+          doCreateStore(createAppConfig(initialConfig), {} as ServiceManager),
           initialConfig
         );
         serviceManager = {
@@ -219,7 +221,7 @@ describe('Config Layout', () => {
           serviceManager
         );
 
-        const state = serviceManager.store.getState();
+        const state = chatStore(serviceManager).getState();
         expect(state.config.public.layout?.showFrame).toBe(false);
         expect(state.config.public.layout?.hasContentMaxWidth).toBe(true);
         expect(state.config.derived.themeWithDefaults.corners).toEqual({
@@ -255,7 +257,7 @@ describe('Config Layout', () => {
           serviceManager
         );
 
-        const state = serviceManager.store.getState();
+        const state = chatStore(serviceManager).getState();
         expect(state.config.derived.themeWithDefaults.corners).toEqual({
           startStart: CornersType.ROUND,
           startEnd: CornersType.SQUARE,
@@ -295,7 +297,7 @@ describe('Config Layout', () => {
           serviceManager
         );
 
-        const state = serviceManager.store.getState();
+        const state = chatStore(serviceManager).getState();
         // All corners should be forced to square when showFrame is false
         expect(state.config.derived.themeWithDefaults.corners).toEqual({
           startStart: CornersType.SQUARE,

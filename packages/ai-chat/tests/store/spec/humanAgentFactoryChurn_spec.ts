@@ -18,10 +18,8 @@
 
 import { applyConfigChangesDynamically } from '../../../src/chat/utils/dynamicConfigUpdates';
 import { createAppStore } from '../../../src/shared/store/appStore';
-import {
-  createAppConfig,
-  createInitialState,
-} from '../../../src/shared/store/doCreateStore';
+import { createInitialState } from '../../../src/shared/store/doCreateStore';
+import { createAppConfig } from '../../../src/chat/utils/appConfig';
 import { reducers } from '../../../src/shared/store/reducers';
 import { ServiceManager } from '../../../src/shared/services/ServiceManager';
 import { ConversationState } from '../../../src/types/state/AppState';

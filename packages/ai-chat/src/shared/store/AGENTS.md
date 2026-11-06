@@ -39,6 +39,8 @@ Saved state is split the same way. The conversation saves `hasSentNonWelcomeMess
 
 The prebuilt chat's view partition lives under `view` ([src/view/state/](../../view/state/)). These reducers never write view state: the view reacts to the conversation actions `src/sdk/internal/` lists, in the same dispatch.
 
+Config is typed the same way. The shell builds its whole `AppConfig` ([appConfig.ts](../../chat/utils/appConfig.ts)) and stores it in `config`. These reducers and conversation code read it as `ConversationAppConfig`, so a field they need that `ChatSDKConfig` lacks goes on `ConversationConfig`, with the type `PublicConfig` gives it.
+
 ## Adding a new state slice — checklist
 
 1. Choose `reducers.ts` or the human-agent slice.

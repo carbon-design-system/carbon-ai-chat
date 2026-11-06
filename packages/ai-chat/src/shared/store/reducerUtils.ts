@@ -11,32 +11,18 @@ import isEqual from 'lodash-es/isEqual.js';
 
 import { VERSION } from '../utils/environmentVariables';
 
+import { ConversationState } from '../../types/state/ConversationState';
 import {
-  ConversationState,
   AppStateMessages,
   ChatMessagesState,
-  HumanAgentState,
-  InputState,
-  ThemeState,
-  ViewState,
-  PersistedState,
-} from '../../types/state/AppState';
-import {
-  LauncherConfig,
-  TIME_TO_ENTRANCE_ANIMATION_START,
-} from '../../types/config/LauncherConfig';
-
+} from '../../types/state/ChatMessagesState';
+import { HumanAgentState } from '../../types/state/HumanAgentState';
+import { InputState } from '../../types/state/InputState';
+import { ThemeState } from '../../types/state/ThemeState';
+import { ViewState } from '../../types/instance/apiTypes';
+import { PersistedState } from '../../types/state/PersistedState';
 import { CornersType } from '../utils/constants';
 import { deepFreeze } from '../utils/lang/objectUtils';
-
-import {
-  HeaderConfig,
-  MinimizeButtonIconType,
-} from '../../types/config/HeaderConfig';
-
-import { LayoutConfig } from '../../types/config/LayoutConfig';
-
-import { ChatShortcutConfig } from '../../types/config/ShortcutConfig';
 
 import {
   LocalMessageItem,
@@ -76,48 +62,6 @@ import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 /**
  * Miscellaneous utilities to help in reducers.
  */
-
-const DEFAULT_HEADER: HeaderConfig = {
-  isOn: true,
-  minimizeButtonIconType: MinimizeButtonIconType.MINIMIZE,
-  showAiLabel: true,
-  hasContentMaxWidth: false,
-};
-
-deepFreeze(DEFAULT_HEADER);
-
-const DEFAULT_LAUNCHER: LauncherConfig = {
-  isOn: true,
-  mobile: {
-    isOn: false,
-    title: '',
-    timeToExpand: TIME_TO_ENTRANCE_ANIMATION_START,
-  },
-  desktop: {
-    isOn: false,
-    title: '',
-    timeToExpand: TIME_TO_ENTRANCE_ANIMATION_START,
-  },
-};
-deepFreeze(DEFAULT_LAUNCHER);
-
-/**
- * Defaults for the message focus toggle shortcut, merged field by field with whatever the
- * host passes on {@link KeyboardShortcuts.messageFocusToggle}, so a host that sets only
- * `key` still gets the default `modifiers` and `isOn`.
- *
- * F6 is a standard accessibility shortcut used in Windows and many applications for cycling
- * between major regions and panels. It doesn't produce special characters and is widely
- * recognized for navigation purposes.
- *
- * The shortcut is off by default; a host opts in with `isOn: true`.
- */
-const DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT: ChatShortcutConfig = {
-  key: 'F6',
-  modifiers: {},
-  isOn: false,
-};
-deepFreeze(DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT);
 
 const VIEW_STATE_ALL_CLOSED: ViewState = {
   launcher: false,
@@ -212,12 +156,6 @@ const DEFAULT_THEME_STATE: ThemeState = {
   },
 };
 deepFreeze(DEFAULT_THEME_STATE);
-
-const DEFAULT_LAYOUT_STATE: LayoutConfig = {
-  showFrame: true,
-  hasContentMaxWidth: true,
-};
-deepFreeze(DEFAULT_LAYOUT_STATE);
 
 /**
  * Returns a new state that has the {@link ChatMessagesState} modified for the given chat type with the new properties.
@@ -905,16 +843,12 @@ function applyChunkWrite(
 }
 
 export {
-  DEFAULT_HEADER,
   DEFAULT_MESSAGE_STATE,
   DEFAULT_CHAT_MESSAGES_STATE,
   DEFAULT_PERSISTED_TO_BROWSER,
   DEFAULT_HUMAN_AGENT_STATE,
   VIEW_STATE_ALL_CLOSED,
-  DEFAULT_LAUNCHER,
-  DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT,
   DEFAULT_THEME_STATE,
-  DEFAULT_LAYOUT_STATE,
   DEFAULT_INPUT_STATE,
   applyAssistantMessageState,
   applyChunkWrite,

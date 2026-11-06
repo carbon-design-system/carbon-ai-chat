@@ -9,10 +9,8 @@
 
 import { createAppStore } from '../../../src/shared/store/appStore';
 
-import {
-  buildLanguagePack,
-  createAppConfig,
-} from '../../../src/shared/store/doCreateStore';
+import { buildLanguagePack } from '../../../src/shared/store/doCreateStore';
+import { createAppConfig } from '../../../src/chat/utils/appConfig';
 
 import actions from '../../../src/shared/store/actions';
 import { AppState } from '../../../src/types/state/AppState';
@@ -39,6 +37,18 @@ import { appRootReducer } from '../../test_helpers';
 import { createInitialViewState } from '../../../src/view/state/initialState';
 
 import { VIEW_STATE_ALL_CLOSED, viewHalfOf } from '../../../src/view/state';
+import type { AppConfig } from '../../../src/types/state/AppConfig';
+import type { ConversationState } from '../../../src/types/state/ConversationState';
+import type { DeepPartial } from '../../../src/types/utilities/DeepPartial';
+
+/** `changeState` as the shell calls it, with part of its whole `AppConfig`. */
+function changeAppState(
+  partialState: Omit<DeepPartial<ConversationState>, 'config'> & {
+    config: DeepPartial<AppConfig>;
+  }
+) {
+  return actions.changeState(partialState as DeepPartial<ConversationState>);
+}
 
 // Helper to create initial state like doCreateStore does
 function createInitialAppState(): AppState {
@@ -139,7 +149,7 @@ describe('Store Reducers', () => {
       };
 
       store.dispatch(
-        actions.changeState({
+        changeAppState({
           config: {
             public: {
               header: headerConfig,
@@ -173,7 +183,7 @@ describe('Store Reducers', () => {
         };
 
         store.dispatch(
-          actions.changeState({
+          changeAppState({
             config: {
               public: {
                 header: initialHeaderConfig,
@@ -194,7 +204,7 @@ describe('Store Reducers', () => {
         };
 
         store.dispatch(
-          actions.changeState({
+          changeAppState({
             config: {
               public: {
                 header: updatedHeaderConfig,
@@ -226,7 +236,7 @@ describe('Store Reducers', () => {
         };
 
         store.dispatch(
-          actions.changeState({
+          changeAppState({
             config: {
               public: {
                 header: newHeaderConfig,
@@ -248,7 +258,7 @@ describe('Store Reducers', () => {
 
       it('should handle empty objects (delete all properties)', () => {
         store.dispatch(
-          actions.changeState({
+          changeAppState({
             config: {
               public: {
                 header: {},
@@ -276,7 +286,7 @@ describe('Store Reducers', () => {
           .namespace;
 
         store.dispatch(
-          actions.changeState({
+          changeAppState({
             config: {
               public: {
                 header: {
@@ -300,7 +310,7 @@ describe('Store Reducers', () => {
 
     it('should handle multiple nested property updates simultaneously', () => {
       store.dispatch(
-        actions.changeState({
+        changeAppState({
           config: {
             public: {
               debug: true,
@@ -495,7 +505,7 @@ describe('Store Reducers', () => {
     it('should handle multiple action types in sequence', () => {
       // Test that multiple different actions work correctly together
       store.dispatch(
-        actions.changeState({
+        changeAppState({
           config: {
             public: {
               header: { title: 'Test Title' },
@@ -520,7 +530,7 @@ describe('Store Reducers', () => {
     it('should handle null and undefined values gracefully', () => {
       expect(() => {
         store.dispatch(
-          actions.changeState({
+          changeAppState({
             config: {
               public: {
                 header: null as any,
@@ -537,7 +547,7 @@ describe('Store Reducers', () => {
     it('should handle deeply nested undefined values', () => {
       expect(() => {
         store.dispatch(
-          actions.changeState({
+          changeAppState({
             config: {
               public: {
                 header: {
