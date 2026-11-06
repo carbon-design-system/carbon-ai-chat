@@ -12,10 +12,14 @@ import { subscribeToIntl } from '../utils/intlUtils';
 import type { ServiceManager } from './ServiceManager';
 import type { IntlShape } from '../utils/i18n';
 import type { Dimension } from '../../types/utilities/Dimension';
-import type { EndHumanAgentChatPanelProps } from '../components/panels/EndHumanAgentChatPanel';
 
 /** A response card's own confirmation, shown in the end-chat panel. */
-type HumanAgentConfirmation = Omit<EndHumanAgentChatPanelProps, 'open'>;
+interface HumanAgentConfirmation {
+  title?: string;
+  message?: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}
 
 interface ChatViewStateSnapshot {
   readonly serviceManager: ServiceManager;
