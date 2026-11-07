@@ -18,6 +18,8 @@
  *   - `ChatInstance.messaging.addMessage`
  *   - `ChatInstance.messaging.addMessageChunk`
  *   - `MessageResponseTypes.TEXT`
+ *   - `MessageResponseTypes.BUTTON` with `ButtonItem.icon`
+ *   - `ButtonItemType.POST_BACK`
  *   - `StreamChunk` (`partial_item`, `complete_item`, `final_response`)
  *   - `CustomSendMessageOptions.signal`
  *
@@ -25,12 +27,14 @@
  */
 
 import {
+  ButtonItemType,
   ChatInstance,
   CustomSendMessageOptions,
   MessageRequest,
   MessageResponseTypes,
   StreamChunk,
 } from '@carbon/ai-chat';
+import ArrowRight16 from '@carbon/icons/es/arrow--right/16.js';
 import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
 async function sleep(milliseconds: number) {
@@ -45,6 +49,7 @@ You can try the following responses:
 
 - stream text
 - text
+- buttons
 `;
 
 const TEXT =
@@ -253,6 +258,36 @@ async function customSendMessage(
         break;
       case 'stream text':
         doFakeTextStreaming(instance as ChatInstance, requestOptions.signal);
+        break;
+      case 'buttons':
+        // Pass a Carbon icon object via `ButtonItem.icon`. The component calls
+        // `carbonIconToReact` on it internally and passes the result to `renderIcon`
+        // on `BaseButtonItemComponent`, which slots it on the trailing side of the label.
+        instance.messaging.addMessage({
+          output: {
+            generic: [
+              {
+                response_type: MessageResponseTypes.TEXT,
+                text: 'These buttons use `ButtonItem.icon`. The first has no icon. The second passes `ArrowRight16` via `icon: ArrowRight16`.',
+              },
+              {
+                response_type: MessageResponseTypes.BUTTON,
+                button_type: ButtonItemType.POST_BACK,
+                label: 'No icon',
+                value: { input: { text: 'buttons' } },
+              },
+              {
+                response_type: MessageResponseTypes.BUTTON,
+                button_type: ButtonItemType.POST_BACK,
+                label: 'With arrow icon',
+                // ArrowRight16 is the raw Carbon icon object — the component
+                // converts it to a React component via `carbonIconToReact`.
+                icon: ArrowRight16,
+                value: { input: { text: 'buttons' } },
+              },
+            ],
+          },
+        });
         break;
       default:
         instance.messaging.addMessage({

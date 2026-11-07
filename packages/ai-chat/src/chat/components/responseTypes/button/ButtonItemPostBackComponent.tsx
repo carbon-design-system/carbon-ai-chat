@@ -48,7 +48,10 @@ function ButtonItemPostBackComponent({
   const Send = carbonIconToReact(Send16);
   const messageItem = localMessageItem.item;
   const { ui_state, fullMessageID } = localMessageItem;
-  const { image_url, alt_text, kind, size, is } = messageItem;
+  const { image_url, alt_text, kind, size, is, icon } = messageItem;
+  const CustomIcon = icon
+    ? carbonIconToReact(icon as Parameters<typeof carbonIconToReact>[0])
+    : undefined;
   const isInputReadonly = useSelector(selectInputIsReadonly);
   const { controlText } = resolveChoiceText(messageItem);
   const isSelected = Boolean(ui_state.optionSelected);
@@ -93,7 +96,7 @@ function ButtonItemPostBackComponent({
       size={size}
       is={is}
       onClick={onClickHandler}
-      renderIcon={(image_url && Send) || undefined}
+      renderIcon={CustomIcon || (image_url && Send) || undefined}
       disabled={isDisabled}
       selected={isSelected}
     />
