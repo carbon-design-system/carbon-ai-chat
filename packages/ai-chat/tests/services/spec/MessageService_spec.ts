@@ -958,7 +958,7 @@ describe('MessageService', () => {
       await expect(sendMessagePromise).resolves.toBeUndefined();
 
       // Verify no additional system message was created
-      // (MessageTypeComponent renders the stopped message inline via stream_stopped metadata)
+      // (the host owns any stopped indicator, via stream_stopped metadata)
       const finalDispatchCount = (serviceManager.store.dispatch as jest.Mock)
         .mock.calls.length;
       const newDispatches = finalDispatchCount - initialDispatchCount;
