@@ -75,8 +75,10 @@ function setSlot<T>(
 
 /**
  * Starts keeping the chat's slot state in stores, from the slot events on its
- * bus, and returns them. A restart empties both. Calling it again for the
- * same chat returns the same stores and adds no second listener.
+ * bus, and returns them. A restart empties both, the response store first, so
+ * a listener reading both stores can see the footers emptied a moment later.
+ * Calling it again for the same chat returns the same stores and adds no
+ * second listener.
  *
  * The records follow the same rules as the view's extension hosts, so the
  * view can read them from here instead.
