@@ -347,7 +347,7 @@ class HydrationService {
         // Trigger re-hydration.
         this.hydrationPromise = null;
         this.hydrationFailure = undefined;
-        if (this.loadsWithoutView || this.isMainWindowOpen()) {
+        if (this.shouldHydrateAfterRestart()) {
           didHydrate = true;
           await serviceManager.actions.hydrateChat();
         }
@@ -365,6 +365,11 @@ class HydrationService {
   }
 
   /** True while the attached view's main window is open. False with no view. */
+  /** An SDK chat loads at once; the prebuilt chat waits for its window. */
+  private shouldHydrateAfterRestart() {
+    return this.loadsWithoutView || this.isMainWindowOpen();
+  }
+
   private isMainWindowOpen() {
     return Boolean(
       this.serviceManager.view?.current?.instance.isMainWindowOpen?.()
@@ -427,4 +432,3 @@ class HydrationService {
 }
 
 export { HydrationService };
-export type { HydrationFailure };
