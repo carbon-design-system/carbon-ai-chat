@@ -171,10 +171,12 @@ class ServiceManager {
 
   private shutdownPromise?: Promise<void>;
 
-  /** True once {@link shutdown} has started. Late async work checks it. */
-  get isShutdown() {
-    return Boolean(this.shutdownPromise);
-  }
+  /**
+   * True once {@link shutdown} has started, including while its first steps
+   * run, so an abort listener that calls back in sees it. Late async work
+   * checks it.
+   */
+  isShutdown = false;
 
   /**
    * Stops this chat's service work for good. Removing the chat's element calls
@@ -185,7 +187,10 @@ class ServiceManager {
    * call returns the first call's promise.
    */
   shutdown(): Promise<void> {
-    this.shutdownPromise ??= this.stopServices();
+    if (!this.shutdownPromise) {
+      this.isShutdown = true;
+      this.shutdownPromise = this.stopServices();
+    }
     return this.shutdownPromise;
   }
 

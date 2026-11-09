@@ -200,6 +200,19 @@ describe('ServiceManager.shutdown', () => {
     expect(chat.serviceManager.isShutdown).toBe(true);
   });
 
+  it('reports shutdown to code its first steps call back into', async () => {
+    const chat = await heldChat();
+    await chat.send('hello');
+    const seen: boolean[] = [];
+    chat.held[0].signal.addEventListener('abort', () =>
+      seen.push(chat.serviceManager.isShutdown)
+    );
+
+    await chat.serviceManager.shutdown();
+
+    expect(seen).toEqual([true]);
+  });
+
   it('keeps a late reply to a held send out of the chat (O10)', async () => {
     const chat = await heldChat();
     const receive = jest.fn();
