@@ -8,10 +8,11 @@
  */
 
 import { act } from '@testing-library/react';
-import type { ServiceManager } from '../../../../src/shared/services/ServiceManager';
+import { ChatViewState } from '../../../../src/chat/services/chatViewState';
 import { resolvablePromise } from '../../../../src/shared/utils/resolvablePromise';
 import { BusEventType } from '../../../../src/types/events/eventBusTypes';
 import { MessageResponseTypes } from '../../../../src/types/messaging/Messages';
+import type { MainWindowFunctions } from '../../../../src/types/utilities/MainWindowFunctions';
 import {
   createBaseConfig,
   renderChatAndGetInstanceWithStore,
@@ -26,16 +27,27 @@ it.each(['replacement', 'missing'])(
   'restores history scroll through the current boot capability after replay: %s handle',
   async (mode) => {
     const boot = await renderChatAndGetInstanceWithStore(createBaseConfig());
-    const manager = (boot.serviceManager.messageCoordinator as any)
-      .serviceManager as ServiceManager;
-    const original = manager.mainWindow;
+    // The shell publishes the main window handle on the view state; swap what
+    // that getter returns, so the real view bindings read the replacement.
+    const shellMainWindow = Object.getOwnPropertyDescriptor(
+      ChatViewState.prototype,
+      'mainWindow'
+    )!.get!;
+    let replace = (
+      handle: MainWindowFunctions | undefined
+    ): MainWindowFunctions | undefined => handle;
+    const mainWindow = jest
+      .spyOn(ChatViewState.prototype, 'mainWindow', 'get')
+      .mockImplementation(function (this: ChatViewState) {
+        return replace(shellMainWindow.call(this));
+      });
     const oldRestore = jest.fn();
     const capture = jest.fn(() => 71);
-    manager.mainWindow = {
-      ...original,
+    replace = (handle) => ({
+      ...handle!,
       getMessagesScrollBottom: capture,
       doAutoScroll: oldRestore,
-    };
+    });
     const entered = resolvablePromise<void>();
     const release = resolvablePromise<void>();
     const trace: string[] = [];
@@ -84,14 +96,14 @@ it.each(['replacement', 'missing'])(
       expect(trace).toEqual(['footer:start']);
       expect(settled).toBe(false);
       const newRestore = jest.fn();
-      manager.mainWindow =
+      replace =
         mode === 'replacement'
-          ? {
-              ...original,
+          ? (handle) => ({
+              ...handle!,
               getMessagesScrollBottom: () => 99,
               doAutoScroll: newRestore,
-            }
-          : undefined;
+            })
+          : () => undefined;
       await act(async () => {
         release.doResolve();
         await work;
@@ -112,7 +124,7 @@ it.each(['replacement', 'missing'])(
         release.doResolve();
         await work;
       });
-      manager.mainWindow = original;
+      mainWindow.mockRestore();
     }
   }
 );
