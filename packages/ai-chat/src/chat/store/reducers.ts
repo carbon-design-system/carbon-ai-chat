@@ -6,6 +6,8 @@
  *
  *  @license
  */
+import type { StoreReduction } from './appStore';
+import type { MessageOwnershipReceipt } from './messageOwnership';
 
 import isEqual from 'lodash-es/isEqual.js';
 import isPlainObject from 'lodash-es/isPlainObject.js';
@@ -113,8 +115,8 @@ import type {
 import { humanAgentReducers } from './humanAgentReducers';
 import {
   applyAssistantMessageState,
-  applyChunkWrite,
-  applyFullMessage,
+  applyChunkWriteWithIdentity,
+  applyFullMessageWithIdentity,
   applyLocalMessageUIState,
   computeLocalIDInsertionPoint,
   rebuildLocalItemsForUpsert,
@@ -296,7 +298,7 @@ function applyLocalItemShown(
  * Shows a local item, placed by {@link withLocalMessageID}, and replaces any local item
  * with its id. Nothing shows for a `history.silent` message.
  */
-function applyLocalMessageItem(
+function applyLocalMessageItemWithOwnership(
   state: AppState,
   {
     messageItem,
@@ -309,12 +311,19 @@ function applyLocalMessageItem(
     addMessage: boolean;
     addAfterID: string;
   }
-): AppState {
-  const withMessage = addMessage ? applyFullMessage(state, message) : state;
+): StoreReduction<AppState> {
+  const full = addMessage
+    ? applyFullMessageWithIdentity(state, message)
+    : undefined;
+  const withMessage = full ? full.state : state;
+  const ownership: MessageOwnershipReceipt = {
+    kind: 'addLocal',
+    messageID: full?.messageID,
+  };
 
   // If we receive back a silent message, we don't want to add to the store.
   if (message.history.silent) {
-    return withMessage;
+    return { state: withMessage, ownership };
   }
 
   const { id } = messageItem.ui_state;
@@ -333,7 +342,17 @@ function applyLocalMessageItem(
       ),
     },
   };
-  return applyLocalItemShown(state, newState, messageItem, message);
+  const shown = applyLocalItemShown(state, newState, messageItem, message);
+  // The local wrapper is an internal DTO; host callbacks receive its item only.
+  ownership.local = { id, parentID: messageItem.fullMessageID };
+  return { state: shown, ownership };
+}
+
+function applyLocalMessageItem(
+  state: AppState,
+  action: Parameters<typeof applyLocalMessageItemWithOwnership>[1]
+): AppState {
+  return applyLocalMessageItemWithOwnership(state, action).state;
 }
 
 /**
@@ -345,23 +364,33 @@ function applyLocalMessageItem(
 function applyReceivedWrite(
   state: AppState,
   message: MessageResponse,
-  { localItem, nestedLocalItems, addAfterID }: ReceivedLocalItems
-): AppState {
+  { localItem, nestedLocalItems, addAfterID }: ReceivedLocalItems,
+  messageID: string
+): StoreReduction<AppState> {
   if (!localItem) {
-    return applyAssistantMessageState(
-      applyFullMessage(keepStreamedItemsOnly(state, message), message),
-      { activeResponseId: message.id }
+    const full = applyFullMessageWithIdentity(
+      keepStreamedItemsOnly(state, message),
+      message
     );
+    return {
+      state: applyAssistantMessageState(full.state, {
+        activeResponseId: message.id,
+      }),
+      ownership: { kind: 'upsert', messageID: full.messageID },
+    };
   }
 
   const allMessageItemsByID = { ...state.allMessageItemsByID };
   nestedLocalItems.forEach((nested) => {
     allMessageItemsByID[nested.ui_state.id] = nested;
   });
-  return applyLocalMessageItem(
-    { ...state, allMessageItemsByID },
-    { messageItem: localItem, message, addMessage: false, addAfterID }
-  );
+  return {
+    state: applyLocalMessageItem(
+      { ...state, allMessageItemsByID },
+      { messageItem: localItem, message, addMessage: false, addAfterID }
+    ),
+    ownership: { kind: 'upsert', messageID },
+  };
 }
 
 // Keep unchanged branches stable while preserving the existing index-wise array patch behavior.
@@ -415,7 +444,7 @@ function mergeStatePatch(currentValue: unknown, patchValue: unknown): unknown {
   return patchValue;
 }
 
-const reducers: { [key: string]: ReducerType } = {
+const stateReducers: { [key: string]: ReducerType } = {
   [CHANGE_STATE]: (
     state: AppState,
     action: { partialState: DeepPartial<AppState> }
@@ -538,181 +567,6 @@ const reducers: { [key: string]: ReducerType } = {
     };
   },
 
-  [ADD_LOCAL_MESSAGE_ITEM]: (
-    state: AppState,
-    action: {
-      messageItem: LocalMessageItem;
-      message: Message;
-      addMessage: boolean;
-      addAfterID: string;
-    }
-  ): AppState => applyLocalMessageItem(state, action),
-
-  [REMOVE_MESSAGES]: (
-    state: AppState,
-    { messageIDs }: { messageIDs: string[] }
-  ): AppState => {
-    const idsSet = new Set(messageIDs);
-
-    const newAllMessages = { ...state.allMessagesByID };
-    const newAllMessageItems = { ...state.allMessageItemsByID };
-
-    // Remove all the message IDs from the message list.
-    const newMessageIDs = state.assistantMessageState.messageIDs.filter(
-      (messageID) => !idsSet.has(messageID)
-    );
-
-    // Remove all the message items from the items list for items that are part of one of the messages being
-    // removed. Also remove the matching items from the map.
-    const newMessageItemsIDs =
-      state.assistantMessageState.localMessageIDs.filter((messageItemID) => {
-        const messageItem = newAllMessageItems[messageItemID];
-        const removeItem = idsSet.has(messageItem?.fullMessageID);
-        if (removeItem) {
-          delete newAllMessageItems[messageItemID];
-        }
-        return !removeItem;
-      });
-
-    // Remove the message objects from the map.
-    messageIDs.forEach((messageID) => {
-      delete newAllMessages[messageID];
-    });
-
-    const newState: AppState = {
-      ...state,
-      allMessagesByID: newAllMessages,
-      allMessageItemsByID: newAllMessageItems,
-      assistantMessageState: {
-        ...state.assistantMessageState,
-        messageIDs: newMessageIDs,
-        localMessageIDs: newMessageItemsIDs,
-        activeResponseId: newMessageIDs.length
-          ? newMessageIDs[newMessageIDs.length - 1]
-          : null,
-      },
-    };
-
-    return newState;
-  },
-
-  [UPDATE_LOCAL_MESSAGE_ITEM]: (
-    state: AppState,
-    action: { messageItem: LocalMessageItem }
-  ): AppState => {
-    const { messageItem } = action;
-    return {
-      ...state,
-      allMessageItemsByID: {
-        ...state.allMessageItemsByID,
-        [messageItem.ui_state.id]: messageItem,
-      },
-    };
-  },
-
-  [UPDATE_MESSAGE]: (
-    state: AppState,
-    action: { message: Message }
-  ): AppState => {
-    const { message } = action;
-    return {
-      ...state,
-      allMessagesByID: {
-        ...state.allMessagesByID,
-        [message.id]: message,
-      },
-    };
-  },
-
-  [UPSERT_MESSAGE]: (
-    state: AppState,
-    action: {
-      message: Message;
-      isStreaming?: boolean;
-      holdFromIndex?: number;
-      options?: MessageWriteOptions;
-    }
-  ): AppState => {
-    const { message, isStreaming = false, holdFromIndex, options } = action;
-    const messageID = message.id;
-
-    if (!isResponse(message)) {
-      return state;
-    }
-
-    // Until `final_response`, a chunk stream keeps the rules it has always had.
-    if (options?.origin === 'chunk' && isStreaming) {
-      return applyChunkWrite(state, message, options.chunk);
-    }
-
-    // A message from `addMessage` or `final_response` keeps the rules it has always had.
-    if (options?.received) {
-      return applyReceivedWrite(state, message, options.received);
-    }
-
-    const messageResponse = keepPriorUIStateInternal(
-      message,
-      state.allMessagesByID[messageID]
-    );
-
-    const { newLocalItemsByID, newLocalIDsForMessage } =
-      rebuildLocalItemsForUpsert(
-        state,
-        messageResponse,
-        isStreaming,
-        true,
-        holdFromIndex,
-        options?.pauseReveal
-      );
-
-    const { otherLocalIDs, insertPoint } = computeLocalIDInsertionPoint(
-      state.assistantMessageState.localMessageIDs,
-      state.allMessageItemsByID,
-      messageID
-    );
-    const newLocalMessageIDs = [
-      ...otherLocalIDs.slice(0, insertPoint),
-      ...newLocalIDsForMessage,
-      ...otherLocalIDs.slice(insertPoint),
-    ];
-
-    const prevMessage = state.allMessagesByID[messageID];
-    const nextMessageRef = keepMessageRefIfUnchanged(
-      state,
-      messageResponse,
-      newLocalIDsForMessage,
-      newLocalItemsByID
-    );
-
-    let nextMessageIDs = state.assistantMessageState.messageIDs;
-    if (!prevMessage) {
-      nextMessageIDs = [...nextMessageIDs, messageID];
-    }
-
-    const newState: AppState = {
-      ...state,
-      allMessagesByID: {
-        ...state.allMessagesByID,
-        [messageID]: nextMessageRef,
-      },
-      allMessageItemsByID: newLocalItemsByID,
-      assistantMessageState: {
-        ...state.assistantMessageState,
-        messageIDs: nextMessageIDs,
-        localMessageIDs: newLocalMessageIDs,
-        activeResponseId: messageID,
-      },
-    };
-
-    if (
-      newLocalIDsForMessage.length &&
-      newState.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen
-    ) {
-      return setHomeScreenOpenState(newState, false);
-    }
-    return newState;
-  },
-
   [END_MESSAGE_STREAMING]: (
     state: AppState,
     action: { messageID: string }
@@ -764,9 +618,6 @@ const reducers: { [key: string]: ReducerType } = {
 
     return { ...state, allMessageItemsByID: newLocalItems };
   },
-
-  [ADD_MESSAGE]: (state: AppState, action: { message: Message }): AppState =>
-    applyFullMessage(state, action.message),
 
   [MESSAGE_SET_OPTION_SELECTED]: (
     state: AppState,
@@ -1371,30 +1222,6 @@ const reducers: { [key: string]: ReducerType } = {
     );
   },
 
-  [REMOVE_LOCAL_MESSAGE_ITEM]: (
-    state: AppState,
-    { localMessageItemID }: { localMessageItemID: string }
-  ) => {
-    const newLocalMessageIDs =
-      state.assistantMessageState.localMessageIDs.filter(
-        (id) => id !== localMessageItemID
-      );
-    const allMessageItemsByID = {
-      ...state.allMessageItemsByID,
-    };
-    if (allMessageItemsByID[localMessageItemID]) {
-      delete allMessageItemsByID[localMessageItemID];
-    }
-    return {
-      ...state,
-      allMessageItemsByID,
-      assistantMessageState: {
-        ...state.assistantMessageState,
-        localMessageIDs: newLocalMessageIDs,
-      },
-    };
-  },
-
   [CLEAR_INPUT_FILES]: (
     state: AppState,
     { isInputToHumanAgent }: { isInputToHumanAgent: boolean }
@@ -1695,6 +1522,285 @@ function getInputState(state: AppState, isInputToHumanAgent: boolean) {
 }
 
 // Merge in the other reducers.
-Object.assign(reducers, humanAgentReducers);
+Object.assign(stateReducers, humanAgentReducers);
 
-export { reducers, ReducerType };
+const ownershipReducers: {
+  [key: string]: (state: AppState, action: any) => StoreReduction<AppState>;
+} = {
+  [ADD_LOCAL_MESSAGE_ITEM]: (
+    state: AppState,
+    action: {
+      messageItem: LocalMessageItem;
+      message: Message;
+      addMessage: boolean;
+      addAfterID: string;
+    }
+  ): StoreReduction<AppState> =>
+    applyLocalMessageItemWithOwnership(state, action),
+  [REMOVE_MESSAGES]: (
+    state: AppState,
+    { messageIDs }: { messageIDs: string[] }
+  ): StoreReduction<AppState> => {
+    const idsSet = new Set(messageIDs);
+    const removedMessages: string[] = [];
+    const removedLocals: string[] = [];
+
+    const newAllMessages = { ...state.allMessagesByID };
+    const newAllMessageItems = { ...state.allMessageItemsByID };
+
+    // Remove all the message IDs from the message list.
+    const newMessageIDs = state.assistantMessageState.messageIDs.filter(
+      (messageID) => !idsSet.has(messageID)
+    );
+
+    // Remove all the message items from the items list for items that are part of one of the messages being
+    // removed. Also remove the matching items from the map.
+    const newMessageItemsIDs =
+      state.assistantMessageState.localMessageIDs.filter((messageItemID) => {
+        const messageItem = newAllMessageItems[messageItemID];
+        const removeItem = idsSet.has(messageItem?.fullMessageID);
+        if (removeItem) {
+          delete newAllMessageItems[messageItemID];
+          removedLocals.push(messageItemID);
+        }
+        return !removeItem;
+      });
+
+    // Remove the message objects from the map.
+    messageIDs.forEach((messageID) => {
+      delete newAllMessages[messageID];
+      removedMessages.push(messageID);
+    });
+
+    const newState: AppState = {
+      ...state,
+      allMessagesByID: newAllMessages,
+      allMessageItemsByID: newAllMessageItems,
+      assistantMessageState: {
+        ...state.assistantMessageState,
+        messageIDs: newMessageIDs,
+        localMessageIDs: newMessageItemsIDs,
+        activeResponseId: newMessageIDs.length
+          ? newMessageIDs[newMessageIDs.length - 1]
+          : null,
+      },
+    };
+
+    return {
+      state: newState,
+      ownership: {
+        kind: 'remove',
+        messageIDs: removedMessages,
+        localIDs: removedLocals,
+      },
+    };
+  },
+  [UPDATE_LOCAL_MESSAGE_ITEM]: (
+    state: AppState,
+    action: { messageItem: LocalMessageItem }
+  ): StoreReduction<AppState> => {
+    const { messageItem } = action;
+    let localID: string;
+    const nextState = {
+      ...state,
+      allMessageItemsByID: {
+        ...state.allMessageItemsByID,
+        [(localID = messageItem.ui_state.id)]: messageItem,
+      },
+    };
+    return {
+      state: nextState,
+      ownership: {
+        kind: 'updateLocal',
+        localID,
+        parentID: messageItem.fullMessageID,
+      },
+    };
+  },
+  [UPDATE_MESSAGE]: (
+    state: AppState,
+    action: { message: Message }
+  ): StoreReduction<AppState> => {
+    const { message } = action;
+    let messageID: string;
+    const nextState = {
+      ...state,
+      allMessagesByID: {
+        ...state.allMessagesByID,
+        [(messageID = message.id)]: message,
+      },
+    };
+    return {
+      state: nextState,
+      ownership: { kind: 'updateMessage', messageID },
+    };
+  },
+  [UPSERT_MESSAGE]: (
+    state: AppState,
+    action: {
+      message: Message;
+      isStreaming?: boolean;
+      holdFromIndex?: number;
+      options?: MessageWriteOptions;
+    }
+  ): StoreReduction<AppState> => {
+    const { message, isStreaming = false, holdFromIndex, options } = action;
+    const messageID = message.id;
+
+    if (!isResponse(message)) {
+      return { state };
+    }
+
+    const ownership: MessageOwnershipReceipt = { kind: 'upsert', messageID };
+
+    // Until `final_response`, a chunk stream keeps the rules it has always had.
+    if (options?.origin === 'chunk' && isStreaming) {
+      const result = applyChunkWriteWithIdentity(state, message, options.chunk);
+      return {
+        state: result.state,
+        ownership: { kind: 'upsert', messageID: result.messageID },
+      };
+    }
+
+    // A message from `addMessage` or `final_response` keeps the rules it has always had.
+    if (options?.received) {
+      return applyReceivedWrite(state, message, options.received, messageID);
+    }
+
+    const messageResponse = keepPriorUIStateInternal(
+      message,
+      state.allMessagesByID[messageID]
+    );
+
+    const { newLocalItemsByID, newLocalIDsForMessage } =
+      rebuildLocalItemsForUpsert(
+        state,
+        messageResponse,
+        isStreaming,
+        true,
+        holdFromIndex,
+        options?.pauseReveal
+      );
+
+    const { otherLocalIDs, insertPoint } = computeLocalIDInsertionPoint(
+      state.assistantMessageState.localMessageIDs,
+      state.allMessageItemsByID,
+      messageID
+    );
+    const newLocalMessageIDs = [
+      ...otherLocalIDs.slice(0, insertPoint),
+      ...newLocalIDsForMessage,
+      ...otherLocalIDs.slice(insertPoint),
+    ];
+
+    const prevMessage = state.allMessagesByID[messageID];
+    const nextMessageRef = keepMessageRefIfUnchanged(
+      state,
+      messageResponse,
+      newLocalIDsForMessage,
+      newLocalItemsByID
+    );
+
+    let nextMessageIDs = state.assistantMessageState.messageIDs;
+    if (!prevMessage) {
+      nextMessageIDs = [...nextMessageIDs, messageID];
+    }
+
+    const newState: AppState = {
+      ...state,
+      allMessagesByID: {
+        ...state.allMessagesByID,
+        [messageID]: nextMessageRef,
+      },
+      allMessageItemsByID: newLocalItemsByID,
+      assistantMessageState: {
+        ...state.assistantMessageState,
+        messageIDs: nextMessageIDs,
+        localMessageIDs: newLocalMessageIDs,
+        activeResponseId: messageID,
+      },
+    };
+
+    if (
+      newLocalIDsForMessage.length &&
+      newState.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen
+    ) {
+      return { state: setHomeScreenOpenState(newState, false), ownership };
+    }
+    return { state: newState, ownership };
+  },
+  [ADD_MESSAGE]: (
+    state: AppState,
+    action: { message: Message }
+  ): StoreReduction<AppState> => {
+    const result = applyFullMessageWithIdentity(state, action.message);
+    return {
+      state: result.state,
+      ownership: { kind: 'addMessage', messageID: result.messageID },
+    };
+  },
+  [REMOVE_LOCAL_MESSAGE_ITEM]: (
+    state: AppState,
+    { localMessageItemID }: { localMessageItemID: string }
+  ) => {
+    const newLocalMessageIDs =
+      state.assistantMessageState.localMessageIDs.filter(
+        (id) => id !== localMessageItemID
+      );
+    const allMessageItemsByID = {
+      ...state.allMessageItemsByID,
+    };
+    if (allMessageItemsByID[localMessageItemID]) {
+      delete allMessageItemsByID[localMessageItemID];
+    }
+    const nextState = {
+      ...state,
+      allMessageItemsByID,
+      assistantMessageState: {
+        ...state.assistantMessageState,
+        localMessageIDs: newLocalMessageIDs,
+      },
+    };
+    return {
+      state: nextState,
+      ownership: { kind: 'removeLocal', localID: localMessageItemID },
+    };
+  },
+  [RESTART_CONVERSATION]: (state, action) => ({
+    state: stateReducers[RESTART_CONVERSATION](state, action),
+    ownership: { kind: 'reset' },
+  }),
+  [HYDRATE_MESSAGE_HISTORY]: (state, action) => ({
+    state: stateReducers[HYDRATE_MESSAGE_HISTORY](state, action),
+    ownership: { kind: 'history' },
+  }),
+};
+
+const reductions: typeof ownershipReducers = {
+  ...Object.fromEntries(
+    Object.entries(stateReducers).map(([type, reduce]) => [
+      type,
+      (state: AppState, action: any) => ({ state: reduce(state, action) }),
+    ])
+  ),
+  ...ownershipReducers,
+};
+
+const reducers: { [key: string]: ReducerType } = Object.fromEntries(
+  Object.entries(reductions).map(([type, reduce]) => [
+    type,
+    (state: AppState, action: any) => reduce(state, action).state,
+  ])
+);
+
+/** Selects the same reducer at the same action-type reads as the state-only root. */
+function reduceWithMessageOwnership(
+  state: AppState,
+  action: { type: string; [key: string]: unknown } | undefined
+): StoreReduction<AppState> {
+  return action && reductions[action.type]
+    ? reductions[action.type](state, action)
+    : { state };
+}
+
+export { reducers, ReducerType, reduceWithMessageOwnership };

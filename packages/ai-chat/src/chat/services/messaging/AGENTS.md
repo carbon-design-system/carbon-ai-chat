@@ -12,8 +12,8 @@ flowchart LR
 ```
 
 - C owns assistant message writes, lifecycle changes, event delivery and transport effects. Keep queue execution, promises, controllers and effect closures in C-owned workflows.
-- Keep `inbound/`, `outbound/` and `state/` data-only. Pass values and opaque tokens, not managers, stores or callbacks. Allocate IDs and read clocks in core callers. Preserve each queue and lifetime domain.
-- Use the view port only for view work. With no adapter, keep the same callback waits, public results and chat state. Mounted reasoning keeps its component lifetime; headless reasoning uses the committed-state observer. Both use the shared event queue.
+- Keep `inbound/`, `outbound/` and `state/` data-only. Pass values and opaque tokens, not managers, stores or effect callbacks. Opaque callable host data can pass through unchanged. Allocate IDs and read clocks in core callers. Preserve each queue and lifetime domain.
+- Use the view port only for view work. With no adapter, preserve callback waits, public results, conversation data and lifecycle. View-only state can differ. Mounted reasoning keeps its component lifetime; headless reasoning uses the committed-state observer. Both use the shared event queue.
 - Keep human-agent writes and sends in their own path. Route shared UI metadata through `messageMetadataCommands`; its private store provenance selects C or the existing human-agent action. Do not trust speaker fields supplied by the caller.
 - Keep public types, event order, aliases and waits unchanged. Native snapshots freeze plain records and arrays. Special copies can stay mutable; opaque references and function state can remain shared. See [the snapshot contract when changing payload copies](../../../../docs/UpsertMessage.md).
 
