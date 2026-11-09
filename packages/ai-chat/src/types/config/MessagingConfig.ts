@@ -80,8 +80,7 @@ export enum CancellationReason {
   STOP_STREAMING = 'Stop streaming',
 
   /**
-   * User restarted or cleared the conversation, or the chat was removed from the page. A removed chat keeps its saved
-   * session, so the next chat on the page can pick the conversation up again.
+   * User restarted or cleared the conversation.
    */
   CONVERSATION_RESTARTED = 'Conversation restarted',
 

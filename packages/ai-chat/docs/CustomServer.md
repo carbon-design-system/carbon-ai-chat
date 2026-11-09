@@ -192,7 +192,7 @@ For chunks, send a partial item with `cancellable: false`, then send one with `t
 The {@link CustomSendMessageOptions.signal | abort signal} fires when a message request is cancelled. On abort, the signal's `reason` holds one value from the {@link CancellationReason} enum:
 
 - {@link CancellationReason.STOP_STREAMING} (`"Stop streaming"`) - the user clicked the stop streaming button
-- {@link CancellationReason.CONVERSATION_RESTARTED} (`"Conversation restarted"`) - the user restarted or cleared the conversation, or the chat was removed from the page. A removed chat keeps its saved session, so don't treat this reason alone as the end of the conversation on your server.
+- {@link CancellationReason.CONVERSATION_RESTARTED} (`"Conversation restarted"`) - the user restarted or cleared the conversation
 - {@link CancellationReason.TIMEOUT} (`"Request timeout"`) - the request exceeded the configured timeout
 - {@link CancellationReason.CHAT_REMOVED} (`"Chat removed"`) - the chat was removed from the page. Its saved session stays, so the next chat on the page can resume the conversation. Don't end the conversation on your server for this reason.
 
