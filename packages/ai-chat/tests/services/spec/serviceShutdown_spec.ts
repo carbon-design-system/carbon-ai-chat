@@ -11,7 +11,11 @@ import actions from '../../../src/shared/store/actions';
 import { MessageSendSource } from '../../../src/types/events/eventBusTypes';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
 import type { PublicConfig } from '../../../src/types/config/PublicConfig';
-import type { CustomSendMessageOptions } from '../../../src/types/config/MessagingConfig';
+import {
+  CancellationReason,
+  MessageState,
+  type CustomSendMessageOptions,
+} from '../../../src/types/config/MessagingConfig';
 import type {
   MessageRequest,
   MessageResponse,
@@ -169,6 +173,8 @@ describe('ServiceManager.shutdown', () => {
 
     expect(chat.held[0].signal.aborted).toBe(true);
     expect(uploads[0].aborted).toBe(true);
+    expect(chat.held[0].signal.reason).toBe(CancellationReason.CHAT_REMOVED);
+    expect(uploads[0].reason).toBe(CancellationReason.CHAT_REMOVED);
   });
 
   it('keeps the saved session as it was at shutdown (O6)', async () => {
@@ -251,8 +257,31 @@ describe('ServiceManager.shutdown', () => {
         'first',
       ]);
       expect(chat.held[0].signal.aborted).toBe(true);
+      expect(chat.held[0].signal.reason).toBe(CancellationReason.CHAT_REMOVED);
     }
   );
+
+  it('aborts a streaming upsert with the removal reason (O4)', async () => {
+    const chat = await heldChat();
+    await chat.send('hello');
+    await chat.instance.messaging.upsertMessage(
+      'streamed',
+      MessageState.STREAMING,
+      () => ({
+        id: 'streamed',
+        output: {
+          generic: [{ response_type: MessageResponseTypes.TEXT, text: 'x' }],
+        },
+      })
+    );
+    expect(
+      chat.serviceManager.messageCoordinator.hasIncomingStreamingMessages()
+    ).toBe(true);
+
+    await chat.serviceManager.shutdown();
+
+    expect(chat.held[0].signal.reason).toBe(CancellationReason.CHAT_REMOVED);
+  });
 
   it('asks the host for nothing new after shutdown (O10)', async () => {
     const onFileUpload = jest.fn(async () => ({}));

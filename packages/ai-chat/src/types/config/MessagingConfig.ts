@@ -89,6 +89,12 @@ export enum CancellationReason {
    * Message request exceeded the configured timeout duration.
    */
   TIMEOUT = 'Request timeout',
+
+  /**
+   * The chat was removed from the page. Its saved session stays, so the next chat on the page can pick the
+   * conversation up again. Don't treat this reason as the end of the conversation on your server.
+   */
+  CHAT_REMOVED = 'Chat removed',
 }
 
 /**

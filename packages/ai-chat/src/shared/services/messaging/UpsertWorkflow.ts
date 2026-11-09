@@ -274,12 +274,12 @@ class UpsertWorkflow {
   /**
    * Drops every entry from every collection. Called from `restartConversation` and
    * from {@link ChatInstance.destroySession} so a reset chat does not carry stale state
-   * into a fresh session.
+   * into a fresh session, and from shutdown with its own abort reason.
    */
-  clearAll() {
+  clearAll(reason: string = CancellationReason.CONVERSATION_RESTARTED) {
     const controllers = new Set(this.lifetime.streamingControllers.values());
     for (const controller of controllers) {
-      controller.abort(CancellationReason.CONVERSATION_RESTARTED);
+      controller.abort(reason);
     }
     this.serviceManager.messageCoordinator.clearAllStreamingCancellation();
     this.lifetime.state.generation++;
