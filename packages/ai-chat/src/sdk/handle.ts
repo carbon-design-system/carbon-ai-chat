@@ -55,12 +55,17 @@ function createHandle(serviceManager: ServiceManager): ChatSDKHandle {
     ...createConversationInstance(serviceManager, () => handle),
     release: shutdown,
     destroy: shutdown,
-    updateConfig: (next) =>
-      applyConversationConfig(serviceManager, {
+    updateConfig: async (next) => {
+      // A chat that shut down takes no more config.
+      if (serviceManager.isShutdown) {
+        return;
+      }
+      await applyConversationConfig(serviceManager, {
         ...createSDKAppConfig(next),
         // Derived values come from the view, which an SDK chat has none of.
         derived: serviceManager.store.getState().config.derived,
-      }),
+      });
+    },
   };
   chats.set(handle, serviceManager);
   return handle;
