@@ -20,6 +20,7 @@ import { DeepPartial } from '../../types/utilities/DeepPartial';
 import { reduceWithMessageOwnership } from './reducers';
 import { AppStore, createStoreFromReduction } from './appStore';
 import { enableMessageOwnership } from './messageOwnership';
+import { copyConfig } from '../utils/copyConfig';
 import {
   DEFAULT_INPUT_STATE,
   DEFAULT_MESSAGE_STATE,
@@ -128,9 +129,12 @@ function readSavedSession(
  * `PublicConfig` and the values derived from it.
  */
 function doCreateStore(
-  config: ConversationAppConfig,
+  appConfig: ConversationAppConfig,
   serviceManager: ServiceManager
 ): AppStore<ConversationState> {
+  // Every path that creates a store copies the config's plain data, so the
+  // caller editing its object later changes nothing stored (#1833 O6).
+  const config = { ...appConfig, public: copyConfig(appConfig.public) };
   const { public: publicConfig } = config;
   const initialState: ConversationState = createInitialState(config);
 

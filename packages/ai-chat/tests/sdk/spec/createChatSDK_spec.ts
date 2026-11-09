@@ -8,7 +8,7 @@
  */
 
 import { createChatSDK } from '../../../src/sdk';
-import { DEFAULT_SDK_CONFIG } from '../../../src/sdk/createChatSDK';
+import { DEFAULT_SDK_CONFIG } from '../../../src/sdk/sdkAppConfig';
 import { chatOf } from '../../../src/sdk/internal';
 import { ServiceManager } from '../../../src/shared/services/ServiceManager';
 import { MessageState } from '../../../src/types/config/MessagingConfig';
@@ -281,6 +281,7 @@ describe('the handle (#1732 O9–O11)', () => {
         'release',
         'serviceDesk',
         'state',
+        'updateConfig',
       ].sort()
     );
     expect(Object.keys(chat.messaging).sort()).toEqual(
@@ -296,6 +297,7 @@ describe('the handle (#1732 O9–O11)', () => {
     expect(callbackInstance).not.toBe(chat);
     expect('release' in callbackInstance).toBe(false);
     expect('destroy' in callbackInstance).toBe(false);
+    expect('updateConfig' in callbackInstance).toBe(false);
     const handler = {
       type: BusEventType.SEND as const,
       handler: (): void => undefined,

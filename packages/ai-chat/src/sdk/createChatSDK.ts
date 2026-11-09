@@ -7,33 +7,17 @@
  *  @license
  */
 
-import merge from 'lodash-es/merge.js';
-
 import createHumanAgentService from '../shared/services/haa/HumanAgentServiceImpl';
 import { createServiceManager } from '../shared/services/loadServices';
 import { attachSlotTracking } from '../shared/services/slotTracking';
 import { createConversationInstance } from '../shared/services/conversationInstance';
 import type { ServiceManager } from '../shared/services/ServiceManager';
-import { DEFAULT_THEME_STATE } from '../shared/store/reducerUtils';
 import type { ChatSDKConfig } from '../types/config/ChatSDKConfig';
 import type { ChatInstance } from '../types/instance/ChatInstance';
 import type { ChatSDKInstance } from '../types/instance/ChatSDKInstance';
-import type {
-  ConversationAppConfig,
-  ConversationConfig,
-} from '../types/state/ConversationState';
+import type { ConversationAppConfig } from '../types/state/ConversationState';
 import { createHandle, type ChatSDKHandle } from './handle';
-
-/**
- * The config a chat starts from. The conversation reads `messaging` and
- * `serviceDesk` without checking them, so both always exist. The config is
- * merged into it field by field, and each service applies its own default for
- * a field left out, such as the message timeout.
- */
-const DEFAULT_SDK_CONFIG: ChatSDKConfig = {
-  messaging: {},
-  serviceDesk: {},
-};
+import { createSDKAppConfig } from './sdkAppConfig';
 
 /** The prebuilt chat's boot options. Internal; the SDK entry never takes them. */
 interface ChatSDKBootOptions {
@@ -59,16 +43,6 @@ interface ChatSDKBootOptions {
    * instance. The prebuilt chat attaches its view partition here.
    */
   onServicesCreated?: (serviceManager: ServiceManager) => void;
-}
-
-/** Builds the config the store holds for a chat with no view. */
-function createSDKAppConfig(config: ChatSDKConfig): ConversationAppConfig {
-  return {
-    // The SDK's callbacks take `ChatSDKInstance`; the conversation code that
-    // calls them passes the chat's instance, which is one.
-    public: merge({}, DEFAULT_SDK_CONFIG, config) as ConversationConfig,
-    derived: { themeWithDefaults: DEFAULT_THEME_STATE },
-  };
 }
 
 /**
@@ -120,4 +94,4 @@ async function createChatSDK(
   return createHandle(serviceManager);
 }
 
-export { createChatSDK, DEFAULT_SDK_CONFIG };
+export { createChatSDK };

@@ -29,6 +29,7 @@ import {
   debugLog,
 } from '../../shared/utils/miscUtils';
 import { createConversationInstance } from '../../shared/services/conversationInstance';
+import { copyConfig } from '../../shared/utils/copyConfig';
 import { createWriteableElements } from './writeableElements';
 
 import {
@@ -79,7 +80,8 @@ export const DEFAULT_PUBLIC_CONFIG: Partial<PublicConfig> = {
  * produce a complete `PublicConfig` used throughout the app.
  */
 export function mergePublicConfig(config: Partial<PublicConfig>): PublicConfig {
-  return merge({}, DEFAULT_PUBLIC_CONFIG, config) as PublicConfig;
+  // A copy, so the host editing its object later changes nothing (#1833).
+  return merge({}, DEFAULT_PUBLIC_CONFIG, copyConfig(config)) as PublicConfig;
 }
 
 /**

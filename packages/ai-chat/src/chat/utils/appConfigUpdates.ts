@@ -22,6 +22,7 @@ import { consoleError, consoleWarn } from '../../shared/utils/miscUtils';
 import { viewActions } from '../../view/state';
 
 import { chatStore } from '../services/attachChatView';
+import { copyConfig } from '../../shared/utils/copyConfig';
 
 /**
  * The config a mount last applied, plus the props it has already warned about.
@@ -67,10 +68,12 @@ function warnUnstableProp(
 }
 
 /**
- * Keeps the markdownConfig slice in sync with `config.markdown`. It lives in
- * its own slice rather than the config tree, and is compared by value so an
- * inline object with unchanged content does not re-render every markdown
- * message.
+ * Keeps the markdownConfig slice in sync with `config.markdown`, at startup
+ * and on every update; it's the slice's one writer. It lives in its own slice
+ * rather than the config tree, and is compared by value so an inline object
+ * with unchanged content does not re-render every markdown message (#1833
+ * O10). The slice holds a copy, so the host editing its object later changes
+ * nothing; plugins and renderers keep their references.
  */
 function syncMarkdownConfig(
   applied: AppliedConfig,
@@ -85,8 +88,20 @@ function syncMarkdownConfig(
     return;
   }
   serviceManager.store.dispatch(
-    viewActions.setViewValue('markdownConfig', markdown)
+    viewActions.setViewValue('markdownConfig', copyConfig(markdown))
   );
+}
+
+/**
+ * Applies the view's half of the config a mount starts with. The
+ * conversation's half went in when the chat booted.
+ */
+function applyBootConfig(
+  applied: AppliedConfig,
+  config: PublicConfig,
+  serviceManager: ServiceManager
+) {
+  syncMarkdownConfig(applied, config.markdown, serviceManager);
 }
 
 /**
@@ -114,4 +129,9 @@ function applyConfigUpdate(
   syncMarkdownConfig(applied, config.markdown, serviceManager);
 }
 
-export { AppliedConfig, applyConfigUpdate, createAppliedConfig };
+export {
+  AppliedConfig,
+  applyBootConfig,
+  applyConfigUpdate,
+  createAppliedConfig,
+};
