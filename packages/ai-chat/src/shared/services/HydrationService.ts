@@ -74,8 +74,8 @@ class HydrationService {
 
   /**
    * True for a chat `createChatSDK` started on its own: it has no window to
-   * wait for, so a restart loads history and the welcome message at once. The
-   * prebuilt chat loads them when its main window opens.
+   * wait for, so a restart loads the welcome message at once. The prebuilt chat
+   * waits for its main window to open. History loads once per chat either way.
    */
   loadsWithoutView = false;
 

@@ -50,8 +50,11 @@ function createHandle(serviceManager: ServiceManager): ChatSDKHandle {
   return handle;
 }
 
-/** The service manager behind a handle. Internal: never exported from an entry. */
-function chatOf(handle: ChatSDKHandle): ServiceManager {
+/**
+ * The service manager behind a handle, or `undefined` for anything else.
+ * Internal: never exported from an entry.
+ */
+function chatOf(handle: ChatSDKHandle): ServiceManager | undefined {
   return chats.get(handle);
 }
 

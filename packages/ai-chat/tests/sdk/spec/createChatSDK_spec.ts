@@ -135,10 +135,28 @@ describe('storage (#1732 O4, O7)', () => {
     }
   });
 
-  it('starts fresh with no saved state, and has no session store', async () => {
+  it('touches no storage when its modules load', async () => {
+    jest.resetModules();
+    const spies = (['getItem', 'setItem', 'removeItem'] as const).map(
+      (method) => jest.spyOn(Storage.prototype, method)
+    );
+    try {
+      const sdk = await import('../../../src/sdk');
+      const chat = await sdk.createChatSDK({
+        messaging: { skipWelcome: true },
+      });
+      chat.destroy();
+      spies.forEach((spy) => expect(spy).not.toHaveBeenCalled());
+    } finally {
+      spies.forEach((spy) => spy.mockRestore());
+    }
+  });
+
+  it('starts fresh with no saved state, no session store, and no page elements', async () => {
     const chat = await createChatSDK({ messaging: { skipWelcome: true } });
     const manager = chatOf(chat);
     expect(manager.userSessionStorageService).toBeUndefined();
+    expect(manager.writeableElements).toEqual({});
     expect(chat.state.get().messages).toEqual([]);
     expect(chat.state.get().humanAgent.isConnected).toBe(false);
     chat.destroy();
@@ -221,6 +239,8 @@ describe('config defaults (#1732 O8)', () => {
       ...DEFAULT_SDK_CONFIG,
       messaging: { skipWelcome: true },
     });
+    // A field left out gets the service's own default.
+    expect(chatOf(empty).messageCoordinator.timeoutMS).toBe(150 * 1000);
     empty.destroy();
 
     const partial = await createChatSDK({
@@ -294,11 +314,12 @@ describe('the handle (#1732 O9–O11)', () => {
       const manager = chatOf(chat);
       const stop = jest.spyOn(manager as any, 'stopServices');
       chat[verb]();
+      // Shutdown starts synchronously, so this is the verb's doing.
+      expect(manager.isShutdown).toBe(true);
+      expect(stop).toHaveBeenCalledTimes(1);
       chat[verb]();
       chat.release();
       chat.destroy();
-      await manager.shutdown();
-      expect(manager.isShutdown).toBe(true);
       expect(stop).toHaveBeenCalledTimes(1);
     }
   );

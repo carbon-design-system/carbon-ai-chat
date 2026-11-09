@@ -61,7 +61,7 @@ function saveSessionOnChange(serviceManager: ServiceManager) {
     ) {
       persistedStateConfig.onStateChange?.(toPersistableState(saved));
     } else {
-      serviceManager.userSessionStorageService.persistSession(saved);
+      serviceManager.userSessionStorageService?.persistSession(saved);
     }
   });
 }

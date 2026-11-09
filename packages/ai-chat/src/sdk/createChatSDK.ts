@@ -24,8 +24,10 @@ import type {
 import { createHandle, type ChatSDKHandle } from './handle';
 
 /**
- * What a chat gets for each field the config leaves out. Merged field by field,
- * so a partial `messaging` or `serviceDesk` keeps the rest of its defaults.
+ * The config a chat starts from. The conversation reads `messaging` and
+ * `serviceDesk` without checking them, so both always exist. The config is
+ * merged into it field by field, and each service applies its own default for
+ * a field left out, such as the message timeout.
  */
 const DEFAULT_SDK_CONFIG: ChatSDKConfig = {
   messaging: {},
@@ -41,6 +43,8 @@ interface ChatSDKBootOptions {
   appConfig?: ConversationAppConfig;
   /** Saves and restores the session in browser session storage. */
   sessionStorage?: boolean;
+  /** Creates the page elements hosts write into. */
+  writeableElements?: boolean;
   /**
    * Loads history and the welcome message before resolving. The prebuilt chat
    * passes `false`: it loads them when its main window first opens.
@@ -81,11 +85,13 @@ async function createChatSDK(
   config: ChatSDKConfig = {},
   options: ChatSDKBootOptions = {}
 ): Promise<ChatSDKHandle> {
-  const appConfig = options.appConfig ?? createSDKAppConfig(config);
-  const serviceManager = createServiceManager(appConfig, {
-    sessionStorage: options.sessionStorage ?? false,
-  });
+  let serviceManager: ServiceManager | undefined;
   try {
+    const appConfig = options.appConfig ?? createSDKAppConfig(config);
+    serviceManager = createServiceManager(appConfig, {
+      sessionStorage: options.sessionStorage ?? false,
+      writeableElements: options.writeableElements ?? false,
+    });
     serviceManager.humanAgentService = createHumanAgentService(serviceManager);
 
     const conversation: ChatSDKInstance = createConversationInstance(
@@ -105,7 +111,7 @@ async function createChatSDK(
       }
     }
   } catch (error) {
-    await serviceManager.shutdown();
+    await serviceManager?.shutdown();
     throw error;
   }
   return createHandle(serviceManager);

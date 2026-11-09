@@ -41,6 +41,11 @@ interface CreateServiceManagerOptions {
    * reads and writes no storage of its own (#1732).
    */
   sessionStorage?: boolean;
+  /**
+   * Creates the page elements hosts write into, as the prebuilt chat does. A
+   * chat `createChatSDK` starts passes `false`, so it touches no DOM.
+   */
+  writeableElements?: boolean;
 }
 
 type CreateServiceManagerFunction = (
@@ -54,7 +59,10 @@ type CreateServiceManagerFunction = (
  */
 function createServiceManager(
   appConfig: ConversationAppConfig,
-  { sessionStorage = true }: CreateServiceManagerOptions = {}
+  {
+    sessionStorage = true,
+    writeableElements = true,
+  }: CreateServiceManagerOptions = {}
 ) {
   const publicConfig = appConfig.public;
 
@@ -124,7 +132,7 @@ function createServiceManager(
 
   // Create all custom elements for Deb.
   serviceManager.writeableElements = {};
-  if (isBrowser()) {
+  if (writeableElements && isBrowser()) {
     serviceManager.writeableElements = {
       [WriteableElementName.AI_TOOLTIP_AFTER_DESCRIPTION_ELEMENT]:
         document.createElement('div'),
