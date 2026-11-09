@@ -117,11 +117,9 @@ test.describe('basic fullscreen', () => {
     });
     await stop.click();
 
-    // The back end answers the abort with a `stream_stopped` final item. The
-    // stopped reply keeps the words shown and lacks the stream's last line.
-    await expect(
-      panel.getByText('Response stopped', { exact: true })
-    ).toBeVisible();
+    // The back end answers the abort with a final item, which hides the button.
+    // The stopped reply keeps the words shown and lacks the stream's last line.
+    await expect(stop).toBeHidden();
     await expect(shownLine).toBeVisible();
     await expect(
       panel.getByText('print(generate_lorem_ipsum(2))', { exact: false })

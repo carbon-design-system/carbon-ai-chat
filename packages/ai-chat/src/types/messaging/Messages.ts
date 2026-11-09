@@ -662,8 +662,10 @@ export interface ItemStreamingMetadata {
   cancellable?: boolean;
 
   /**
-   * Indicates if the stream has stopped which will trigger the UI to respond with appropriate a11y states
-   * and messaging.
+   * Marks the item as stopped before it finished, for example after the user clicks the stop
+   * streaming button. Set it on the last version of the item you send, including its copy in a
+   * final response. The chat stores the flag but renders nothing for it, so render your own
+   * indicator if you want one.
    */
   stream_stopped?: boolean;
 }

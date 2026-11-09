@@ -211,12 +211,9 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 
     if (isResponse(message)) {
       const response = renderResponse(localMessageItem, message);
-      const isResponseStopped =
-        localMessageItem.item.streaming_metadata?.stream_stopped;
       return (
         <>
           {response}
-          {isResponseStopped && <SystemMessage responseStopped />}
           {props.showChainOfThought &&
             renderChainOfThought(localMessageItem, message)}
           {renderFeedbackAndCustomFooter(localMessageItem, message)}
