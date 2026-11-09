@@ -8,6 +8,7 @@
  */
 
 import { closeStore, type AppStore } from '../store/appStore';
+import { consoleError } from '../utils/miscUtils';
 import { IntlShape } from '../utils/i18n';
 
 import { EventBus } from '../events/EventBus';
@@ -189,14 +190,29 @@ class ServiceManager {
   }
 
   private async stopServices() {
+    // The steps run back to back, and each runs even if one before it throws.
+    const run = (step: () => unknown) => {
+      try {
+        return step();
+      } catch (error) {
+        consoleError('A step of the chat shutdown failed.', error);
+        return undefined;
+      }
+    };
     if (this.store) {
-      closeStore(this.store);
+      run(() => closeStore(this.store));
     }
-    this.eventBus?.clear();
-    this.publicStateService?.destroy();
-    this.inputActionsService?.abortAllUploads();
-    this.humanAgentService?.shutdown();
-    await this.messageCoordinator?.shutdown();
+    run(() => this.eventBus?.clear());
+    // Before anything aborts: an abort listener that ends the agent chat must
+    // not reach the real desk.
+    run(() => this.humanAgentService?.shutdown());
+    run(() => this.publicStateService?.destroy());
+    run(() => this.inputActionsService?.abortAllUploads());
+    try {
+      await run(() => this.messageCoordinator?.shutdown());
+    } catch (error) {
+      consoleError('A step of the chat shutdown failed.', error);
+    }
   }
 
   /**

@@ -268,7 +268,8 @@ export function closeStore(store: AppStore<unknown>): void {
  * @param key - Where the partition's value lives in the state.
  * @param reducer - Updates the partition's value.
  * @param initialState - The partition's first value.
- * @returns Whether this call added the partition.
+ * @returns Whether this call added the partition. False when the store
+ * already had it, or was closed by {@link closeStore}.
  */
 export function attachPartition<StoreState, PartState>(
   store: AppStore<StoreState>,

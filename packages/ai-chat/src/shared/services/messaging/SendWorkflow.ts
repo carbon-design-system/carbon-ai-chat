@@ -184,6 +184,10 @@ class SendWorkflow {
    * this.sendToAssistant.
    */
   async runQueueIfReady() {
+    // A cancel during shutdown can advance the queue; nothing new may start.
+    if (this.serviceManager.isShutdown) {
+      return;
+    }
     const current = this.serviceManager.messageCoordinator.takeNextRequest();
     if (!current) {
       return;
@@ -439,6 +443,10 @@ class SendWorkflow {
     localMessageID?: string,
     requestOptions?: SendOptions
   ): Promise<MessageResponse | any> {
+    // A chat that shut down sends nothing.
+    if (this.serviceManager.isShutdown) {
+      return Promise.resolve();
+    }
     message.history.timestamp = message.history.timestamp || Date.now();
 
     // The messageService does different things based off the message type so lets make sure one exists.
