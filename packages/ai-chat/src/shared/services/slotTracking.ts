@@ -158,9 +158,4 @@ function readOnly<T>({ get, subscribe }: ValueStore<T>): ReadableValueStore<T> {
 }
 
 export { attachSlotTracking };
-export type {
-  CustomFooterSlotState,
-  SlotRecords,
-  SlotStores,
-  UserDefinedSlotState,
-};
+export type { CustomFooterSlotState, UserDefinedSlotState };
