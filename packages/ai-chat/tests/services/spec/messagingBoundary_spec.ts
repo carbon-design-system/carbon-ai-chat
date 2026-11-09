@@ -671,7 +671,7 @@ function walkBoundCalls(
 }
 
 it('keeps the adapter types and actual boot bindings view-only', () => {
-  const adapter = messaging + 'presentation/MessagePresentationAdapter.ts';
+  const adapter = 'src/chat/services/MessagePresentationAdapter.ts';
   const announcer = messaging + 'presentation/StreamAnnouncerService.ts';
   const adapterGraph = graph([adapter, announcer], new Set());
   expect(adapterGraph.issues).toEqual([]);
