@@ -114,5 +114,4 @@ async function createChatSDK(
   return createHandle(serviceManager);
 }
 
-export { createChatSDK, createSDKAppConfig, DEFAULT_SDK_CONFIG };
-export type { ChatSDKBootOptions };
+export { createChatSDK, DEFAULT_SDK_CONFIG };
