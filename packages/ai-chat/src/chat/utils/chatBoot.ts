@@ -101,10 +101,12 @@ export async function bootPrebuiltChat(options: {
 
   // Extend dayjs with LocalizedFormat plugin once before usage
   dayjs.extend(LocalizedFormat);
+  // Before the locale loads, as before, so config warnings print first.
+  const appConfig = createAppConfig(publicConfig);
   const localePack = await loadLocale(publicConfig.locale || 'en');
 
   const handle = await createChatSDK(undefined, {
-    appConfig: createAppConfig(publicConfig),
+    appConfig,
     sessionStorage: true,
     loadHistory: false,
     onServicesCreated: (serviceManager) => {
@@ -121,7 +123,6 @@ export async function bootPrebuiltChat(options: {
     createInstance: createPrebuiltInstance,
   });
   const serviceManager = chatOf(handle);
-  warnAboutUploadConfig(serviceManager);
   return { handle, serviceManager, instance: serviceManager.instance };
 }
 
@@ -149,6 +150,8 @@ function warnAboutUploadConfig(serviceManager: ServiceManager) {
  * chat `createChatSDK` starts has, plus the members that drive the view.
  */
 function createPrebuiltInstance(serviceManager: ServiceManager): ChatInstance {
+  warnAboutUploadConfig(serviceManager);
+
   // Create the chat instance. Its conversation members are the ones a chat
   // `createChatSDK` starts has; the rest drive the view.
   const conversation = createConversationInstance(
