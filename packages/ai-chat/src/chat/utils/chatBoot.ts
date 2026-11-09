@@ -30,6 +30,7 @@ import {
   debugLog,
 } from '../../shared/utils/miscUtils';
 import createHumanAgentService from '../../shared/services/haa/HumanAgentServiceImpl';
+import { createConversationInstance } from '../../shared/services/conversationInstance';
 
 import {
   MainWindowOpenReason,
@@ -43,10 +44,8 @@ import {
   IncreaseOrDecrease,
   SendOptions,
 } from '../../types/instance/ChatInstance';
-import { TypeAndHandler } from '../../types/instance/EventHandlers';
 import { AddMessageOptions } from '../../types/config/MessagingConfig';
 import { loadLocale } from '../../shared/utils/languageUtils';
-import { HistoryItem } from '../../types/messaging/History';
 import {
   MessageRequest,
   MessageResponse,
@@ -174,28 +173,14 @@ export async function initServiceManagerAndInstance(options: {
     );
   }
 
-  // Create the chat instance
-  const state = {
-    get: serviceManager.publicStateService.get,
-    subscribe: serviceManager.publicStateService.subscribe,
-    select: serviceManager.publicStateService.select,
-  };
+  // Create the chat instance. Its conversation members are the ones a chat
+  // `createChatSDK` starts has; the rest drive the view.
+  const conversation = createConversationInstance(
+    serviceManager,
+    () => instance
+  );
   const instance: ChatInstance = {
-    state,
-    on: (handlers: TypeAndHandler | TypeAndHandler[]) => {
-      serviceManager.eventBus.on(handlers);
-      return instance;
-    },
-
-    off: (handlers: TypeAndHandler | TypeAndHandler[]) => {
-      serviceManager.eventBus.off(handlers);
-      return instance;
-    },
-
-    once: (handlers: TypeAndHandler | TypeAndHandler[]) => {
-      serviceManager.eventBus.once(handlers);
-      return instance;
-    },
+    ...conversation,
 
     send: async (message: MessageRequest | string, options?: SendOptions) => {
       debugLog('Called instance.send', message, options);
@@ -399,46 +384,7 @@ export async function initServiceManagerAndInstance(options: {
         }
       },
 
-      upsertMessage: async (messageID, state, updater) => {
-        debugLog('Called instance.messaging.upsertMessage', messageID, state);
-        const { restartCount } = serviceManager;
-        try {
-          await serviceManager.messageCoordinator.upsertMessage(
-            messageID,
-            state,
-            updater
-          );
-        } catch (error) {
-          if (restartCount === serviceManager.restartCount) {
-            serviceManager.messageCoordinator.messageLoadingManager.end();
-          }
-          throw error;
-        }
-      },
-
-      removeMessages: async (messageIDs: string[]) => {
-        debugLog('Called instance.messaging.removeMessages', messageIDs);
-        return serviceManager.actions.removeMessages(messageIDs);
-      },
-
-      clearConversation: () => {
-        debugLog('Called instance.messaging.clearConversation');
-        return serviceManager.actions.restartConversation({
-          skipHydration: true,
-          endHumanAgentConversation: false,
-          fireEvents: false,
-        });
-      },
-
-      insertHistory: (messages: HistoryItem[]) => {
-        debugLog('Called instance.messaging.insertHistory', messages);
-        return serviceManager.actions.insertHistory(messages);
-      },
-
-      restartConversation: async () => {
-        debugLog('Called instance.messaging.restartConversation');
-        return serviceManager.actions.restartConversation();
-      },
+      ...conversation.messaging,
     },
 
     requestFocus: () => {
@@ -446,17 +392,7 @@ export async function initServiceManagerAndInstance(options: {
       return serviceManager.view.current?.instance.requestFocus() === true;
     },
 
-    serviceDesk: {
-      endConversation: () => {
-        debugLog('Called instance.serviceDesk.endConversation');
-        return serviceManager.actions.agentEndConversation(false);
-      },
-
-      updateIsSuspended: async (isSuspended: boolean) => {
-        debugLog('Called instance.serviceDesk.updateIsSuspended', isSuspended);
-        return serviceManager.actions.agentUpdateIsSuspended(isSuspended);
-      },
-    },
+    serviceDesk: conversation.serviceDesk,
 
     destroySession: async (keepOpenState: boolean) => {
       debugLog('Called instance.destroySession', keepOpenState);
