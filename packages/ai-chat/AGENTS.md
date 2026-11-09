@@ -44,7 +44,7 @@ Load only what you need:
   - `services/` — view-owned classes with explicit cleanup: `ChatViewState`, extension hosts, the announcer, the theme watcher, the messaging presentation adapter, and the human-agent view callbacks.
   - `utils/` — view helpers, including DOM, focus, and shell lifecycle code.
   - `components/` and `components-legacy/` — follow [component placement](../../references/code-patterns.md#component-placement) when adding or moving UI. Private Lit views that read chat state extend `components/shared/NativeChatView.ts`.
-- [src/sdk/](src/sdk/) — the headless SDK. Internal in 1.x: `index.ts` is its future public entry, and no package entry point exports it.
+- [src/sdk/](src/sdk/) — the headless SDK: `createChatSDK` starts a chat with no view, DOM, or storage, and returns a handle with `release()` and `destroy()`. Internal in 1.x: `index.ts` is its future public entry, and no package entry point exports it.
   - `internal/` — the seams other folders in this package use, such as attaching a store partition. Never exported.
 - [src/view/state/](src/view/state/) — the prebuilt chat's view partition, under `view` in the chat's one store: panels, layout, loading indicators, announcements, the unread agent count, and the view half of saved state. Only `chat/` and `view/` use it; conversation code can't see it. Internal; never exported.
 - [src/react/](src/react/) — public React wrapper components re-exported from the package root.

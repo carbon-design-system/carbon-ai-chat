@@ -254,6 +254,16 @@ interface ChatSDKErrorData (src/types/config/ChatSDKErrorData.ts)
   message: string
   otherData?: unknown
 
+interface ChatSDKHandle (src/sdk/handle.ts)
+  destroy: () => void
+  messaging: import(".").ChatSDKInstanceMessaging
+  off: (handlers: import(".").ChatSDKHandlers) => ChatSDKHandle
+  on: (handlers: import(".").ChatSDKHandlers) => ChatSDKHandle
+  once: (handlers: import(".").ChatSDKHandlers) => ChatSDKHandle
+  release: () => void
+  serviceDesk: import("../types/instance/ChatInstanceServiceDeskActions").ChatInstanceServiceDeskActions
+  state: import(".").ChatSDKStateAccess<import(".").ChatSDKState>
+
 interface ChatSDKInstance (src/types/instance/ChatSDKInstance.ts)
   messaging: ChatSDKInstanceMessaging
   off: (handlers: ChatSDKHandlers) => ChatSDKInstance
