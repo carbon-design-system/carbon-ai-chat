@@ -290,7 +290,7 @@ describe('upload UI wiring – handleFileSelectedForUpload', () => {
       upload: { isOn: true }, // no onFileUpload
     };
 
-    // The validation runs in initServiceManagerAndInstance() which completes before onBeforeRender.
+    // The validation runs in bootPrebuiltChat() which completes before onBeforeRender.
     await renderChatAndGetInstanceWithStore(config);
 
     expect(consoleSpy).toHaveBeenCalledWith(

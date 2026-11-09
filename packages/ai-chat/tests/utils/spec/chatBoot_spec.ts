@@ -9,7 +9,7 @@
 
 import {
   mergePublicConfig,
-  initServiceManagerAndInstance,
+  bootPrebuiltChat,
   performInitialViewChange,
 } from '../../../src/chat/utils/chatBoot';
 
@@ -74,12 +74,12 @@ describe('chatBoot utils', () => {
     });
   });
 
-  describe('initServiceManagerAndInstance', () => {
+  describe('bootPrebuiltChat', () => {
     it('initializes ServiceManager and creates the instance, with no DOM holders', async () => {
       const props = createBaseTestProps();
       const publicConfig = mergePublicConfig(props);
 
-      const { serviceManager, instance } = await initServiceManagerAndInstance({
+      const { serviceManager, instance } = await bootPrebuiltChat({
         publicConfig,
       });
 

@@ -12,7 +12,8 @@ import LocalizedFormat from 'dayjs/plugin/localizedFormat.js';
 import merge from 'lodash-es/merge.js';
 import isEqual from 'lodash-es/isEqual.js';
 
-import { createServiceManager } from '../../shared/services/loadServices';
+import { createChatSDK } from '../../sdk/createChatSDK';
+import { chatOf, type ChatSDKHandle } from '../../sdk/handle';
 import actions from '../../shared/store/actions';
 import { selectInputIsReadonly } from '../../shared/store/selectors';
 
@@ -27,7 +28,6 @@ import {
   consoleWarn,
   debugLog,
 } from '../../shared/utils/miscUtils';
-import createHumanAgentService from '../../shared/services/haa/HumanAgentServiceImpl';
 import { createConversationInstance } from '../../shared/services/conversationInstance';
 import { createWriteableElements } from './writeableElements';
 
@@ -83,43 +83,53 @@ export function mergePublicConfig(config: Partial<PublicConfig>): PublicConfig {
 }
 
 /**
- * Creates a {@link ServiceManager}, initializes localization, wires the
- * `humanAgentService`, and constructs the {@link ChatInstance}.
+ * Boots the prebuilt chat through `createChatSDK`, with what only the prebuilt
+ * chat has: the view partition, session storage, the formatter's locale, and
+ * the full {@link ChatInstance}. History waits for the main window to open.
  *
- * This function does not render. Its caller, `cds-aichat-container`, renders
- * the app after the host's `onBeforeRender`.
+ * This function does not render. Its caller, `cds-aichat-container`, attaches
+ * the view and renders the app after the host's `onBeforeRender`.
  */
-export async function initServiceManagerAndInstance(options: {
+export async function bootPrebuiltChat(options: {
   publicConfig: PublicConfig;
-}): Promise<{ serviceManager: ServiceManager; instance: ChatInstance }> {
+}): Promise<{
+  handle: ChatSDKHandle;
+  serviceManager: ServiceManager;
+  instance: ChatInstance;
+}> {
   const { publicConfig } = options;
 
   // Extend dayjs with LocalizedFormat plugin once before usage
   dayjs.extend(LocalizedFormat);
+  const localePack = await loadLocale(publicConfig.locale || 'en');
 
-  // Create service manager
-  const appConfig = createAppConfig(publicConfig);
-  const serviceManager = createServiceManager(appConfig);
-  attachChatView(serviceManager, publicConfig);
+  const handle = await createChatSDK(undefined, {
+    appConfig: createAppConfig(publicConfig),
+    sessionStorage: true,
+    loadHistory: false,
+    onServicesCreated: (serviceManager) => {
+      attachChatView(serviceManager, publicConfig);
+      // Update Redux with new values for language, locale, and messages
+      setIntl(
+        serviceManager,
+        localePack.name,
+        serviceManager.store.getState().languagePack
+      );
+      // Tell dayjs to globally use the locale
+      dayjs.locale(localePack);
+    },
+    createInstance: createPrebuiltInstance,
+  });
+  const serviceManager = chatOf(handle);
+  warnAboutUploadConfig(serviceManager);
+  return { handle, serviceManager, instance: serviceManager.instance };
+}
 
-  // Load language and locale
-  const languagePack = serviceManager.store.getState().languagePack;
-  const localePack = await loadLocale(
-    serviceManager.store.getState().config.public.locale || 'en'
-  );
-
-  // Set up human agent service (created once here; may be recreated
-  // dynamically later by config updates)
-  serviceManager.humanAgentService = createHumanAgentService(serviceManager);
-
-  // Update Redux with new values for language, locale, and messages
-  setIntl(serviceManager, localePack.name, languagePack);
-
-  // Tell dayjs to globally use the locale
-  dayjs.locale(localePack);
-
-  // Validate UploadConfig at startup so misconfiguration is surfaced early,
-  // regardless of whether the main window is open.
+/**
+ * Validates UploadConfig at startup so misconfiguration is surfaced early,
+ * regardless of whether the main window is open.
+ */
+function warnAboutUploadConfig(serviceManager: ServiceManager) {
   const uploadConfig = serviceManager.store.getState().config.public.upload;
   if (uploadConfig?.isOn && !uploadConfig.onFileUpload) {
     consoleError(
@@ -132,7 +142,13 @@ export async function initServiceManagerAndInstance(options: {
         'File upload will be disabled. Set isOn: true in config.upload to enable it.'
     );
   }
+}
 
+/**
+ * Builds the prebuilt chat's {@link ChatInstance}: the conversation members a
+ * chat `createChatSDK` starts has, plus the members that drive the view.
+ */
+function createPrebuiltInstance(serviceManager: ServiceManager): ChatInstance {
   // Create the chat instance. Its conversation members are the ones a chat
   // `createChatSDK` starts has; the rest drive the view.
   const conversation = createConversationInstance(
@@ -373,10 +389,7 @@ export async function initServiceManagerAndInstance(options: {
     consoleDebug('[chatBoot] Created chat instance', instance);
   }
 
-  serviceManager.instance = instance;
-  serviceManager.messageCoordinator.onInstanceReady();
-
-  return { serviceManager, instance };
+  return instance;
 }
 
 /**

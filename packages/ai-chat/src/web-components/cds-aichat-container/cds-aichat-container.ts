@@ -39,6 +39,7 @@ import type { TypeAndHandler } from '../../types/instance/EventHandlers';
 import type { ServiceManager } from '../../shared/services/ServiceManager';
 
 import type { MountView } from '../../chat/utils/attachMountView';
+import type { ChatSDKHandle } from '../../sdk/handle';
 
 import type { AppliedConfig } from '../../chat/utils/appConfigUpdates';
 
@@ -88,6 +89,8 @@ interface MountState {
   mount?: ChatRenderMount;
   App?: ComponentType<ChatAppEntryProps>;
   serviceManager?: ServiceManager;
+  /** The chat's handle from `createChatSDK`; releasing the mount releases it. */
+  handle?: ChatSDKHandle;
   /** The view attached to the chat: view state, extension hosts, listeners. */
   view?: MountView;
   instance?: ChatInstance;
@@ -382,7 +385,7 @@ class ChatContainer extends FlattenedConfigElement {
       } else {
         unmountApp();
       }
-      void state.serviceManager?.shutdown();
+      state.handle?.release();
     }
 
     this._instance?.off(this._mountHandlers);
@@ -513,11 +516,7 @@ class ChatContainer extends FlattenedConfigElement {
       // globals. Keep registration server-safe and load them only for a live
       // mount, so a failed load lands in the catch below for every host.
       const [
-        {
-          initServiceManagerAndInstance,
-          mergePublicConfig,
-          performInitialViewChange,
-        },
+        { bootPrebuiltChat, mergePublicConfig, performInitialViewChange },
         { applyConfigUpdate, createAppliedConfig },
         { ChatAppEntry },
         { hasCustomPromptLine },
@@ -528,16 +527,17 @@ class ChatContainer extends FlattenedConfigElement {
       }
       const config = this.resolvedConfig;
       const publicConfig = mergePublicConfig(config);
-      const { serviceManager, instance } = await initServiceManagerAndInstance({
+      const { handle, serviceManager, instance } = await bootPrebuiltChat({
         publicConfig,
       });
       if (!isCurrent()) {
         // Released while its services started; nothing else holds them.
-        void serviceManager.shutdown();
+        handle.release();
         return;
       }
       // Held first, so a release reaches it even if a step below throws.
       state.serviceManager = serviceManager;
+      state.handle = handle;
 
       // Read markdown off the original config, not the merged one, to keep the
       // host's plugin and renderer references for the slice's isEqual guard.

@@ -379,7 +379,7 @@ describe('cds-aichat-container startup', () => {
       const loadLocale = jest
         .spyOn(localeLoaders, 'fr')
         .mockReturnValueOnce(localeGate);
-      const initialize = jest.spyOn(chatBoot, 'initServiceManagerAndInstance');
+      const initialize = jest.spyOn(chatBoot, 'bootPrebuiltChat');
       const test = createTestRenderer();
       const element = createChatElement(test.renderer, {
         locale: phase === 'locale loading' ? 'fr' : 'en',
@@ -411,9 +411,8 @@ describe('cds-aichat-container startup', () => {
             expect(element.onBeforeRender).toHaveBeenCalledTimes(1);
           }
         });
-        const retiredBoot: ReturnType<
-          typeof chatBoot.initServiceManagerAndInstance
-        > = initialize.mock.results[0].value;
+        const retiredBoot: ReturnType<typeof chatBoot.bootPrebuiltChat> =
+          initialize.mock.results[0].value;
         element.remove();
         await flushMicrotasks();
         document.body.appendChild(element);

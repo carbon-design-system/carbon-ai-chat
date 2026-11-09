@@ -153,10 +153,10 @@ describe('shutdown through the mount path', () => {
 
   describe('removal during startup (O9)', () => {
     it('shuts down services created after the host left', async () => {
-      const original = chatBoot.initServiceManagerAndInstance;
+      const original = chatBoot.bootPrebuiltChat;
       const gate = resolvablePromise<void>();
       jest
-        .spyOn(chatBoot, 'initServiceManagerAndInstance')
+        .spyOn(chatBoot, 'bootPrebuiltChat')
         .mockImplementationOnce(async (options) => {
           await gate;
           return original(options);
@@ -164,9 +164,7 @@ describe('shutdown through the mount path', () => {
       const element = chatElement();
       element.onBeforeRender = jest.fn();
       document.body.appendChild(element);
-      await waitFor(() =>
-        expect(chatBoot.initServiceManagerAndInstance).toHaveBeenCalled()
-      );
+      await waitFor(() => expect(chatBoot.bootPrebuiltChat).toHaveBeenCalled());
 
       element.remove();
       await flushMicrotasks();
