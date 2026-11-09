@@ -1437,7 +1437,7 @@ function allowedRawAction(
     );
   }
   return (
-    file === 'src/shared/services/ThemeWatcherService.ts' &&
+    file === 'src/chat/services/ThemeWatcherService.ts' &&
     properties.size === 2 &&
     properties.has('themeState') &&
     rawActionConstant(typeChecker, type, actionsFile, 'UPDATE_THEME_STATE')
@@ -1504,17 +1504,17 @@ it.each([
     false,
   ],
   [
-    'src/shared/services/ThemeWatcherService.ts',
+    'src/chat/services/ThemeWatcherService.ts',
     '{type: UPDATE_THEME_STATE, themeState: {}}',
     true,
   ],
   [
-    'src/shared/services/ThemeWatcherService.ts',
+    'src/chat/services/ThemeWatcherService.ts',
     "{type: 'UPDATE_THEME_STATE', themeState: {}}",
     false,
   ],
   [
-    'src/shared/services/ThemeWatcherService.ts',
+    'src/chat/services/ThemeWatcherService.ts',
     "{type: 'ADD_MESSAGE', message: {}}",
     false,
   ],
