@@ -16,7 +16,10 @@ import { ChatContainer } from '../src/react/ChatContainer';
 import { PublicConfig } from '../src/types/config/PublicConfig';
 import { ChatContainerProps } from '../src/types/component/ChatContainer';
 import { ChatInstance } from '../src/types/instance/ChatInstance';
-import { createAppStore, type AppStore } from '../src/shared/store/appStore';
+import {
+  createStoreFromReduction,
+  type AppStore,
+} from '../src/shared/store/appStore';
 import { enableMessageOwnership } from '../src/shared/store/messageOwnership';
 import { AppState } from '../src/types/state/AppState';
 import { MessageResponseTypes } from '../src/types/messaging/Messages';
@@ -26,7 +29,7 @@ import type { AriaAnnouncerFunctionType } from '../src/chat/services/ariaAnnounc
 import { ChatContext } from '../src/chat/contexts/ChatContext';
 import type { IntlShape } from '../src/shared/utils/i18n';
 import { getWindowSize } from '../src/chat/utils/windowSize';
-import { reducers } from '../src/shared/store/reducers';
+import { reduceWithMessageOwnership } from '../src/shared/store/reducers';
 import actions from '../src/shared/store/actions';
 import isEqual from 'lodash-es/isEqual.js';
 import {
@@ -258,23 +261,14 @@ export function TestChatContext({
 // Store / config-change re-render harness
 // ============================================================================
 
-/** The real root reducer (mirrors `reducerFunction` in doCreateStore). */
-const rootReducer = (
-  state: AppState,
-  action: { type: string; [key: string]: unknown } | undefined
-): AppState =>
-  action && reducers[action.type]
-    ? reducers[action.type](state, action)
-    : state;
-
 /**
  * Builds a real store seeded from a PublicConfig, exactly the way doCreateStore
  * does. Use with {@link applyConfigChange} to drive runtime config updates in
  * re-render tests.
  */
 export function makeConfigStore(config: PublicConfig): AppStore<AppState> {
-  const store = createAppStore<AppState>(
-    rootReducer as never,
+  const store = createStoreFromReduction<AppState>(
+    reduceWithMessageOwnership,
     createInitialState(createAppConfig(config))
   );
   enableMessageOwnership(store);
