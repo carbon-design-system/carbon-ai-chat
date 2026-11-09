@@ -6,6 +6,8 @@
  *
  *  @license
  */
+import type { StoreReduction } from './appStore';
+import type { MessageOwnershipReceipt } from './messageOwnership';
 
 import cloneDeep from 'lodash-es/cloneDeep.js';
 import isEqual from 'lodash-es/isEqual.js';
@@ -87,8 +89,8 @@ import { humanAgentReducers } from './humanAgentReducers';
 
 import {
   applyAssistantMessageState,
-  applyChunkWrite,
-  applyFullMessage,
+  applyChunkWriteWithIdentity,
+  applyFullMessageWithIdentity,
   applyLocalMessageUIState,
   computeLocalIDInsertionPoint,
   rebuildLocalItemsForUpsert,
@@ -211,7 +213,7 @@ function withLocalMessageID(
  * Shows a local item, placed by {@link withLocalMessageID}, and replaces any local item
  * with its id. Nothing shows for a `history.silent` message.
  */
-function applyLocalMessageItem(
+function applyLocalMessageItemWithOwnership(
   state: ConversationState,
   {
     messageItem,
@@ -224,12 +226,19 @@ function applyLocalMessageItem(
     addMessage: boolean;
     addAfterID: string;
   }
-): ConversationState {
-  const withMessage = addMessage ? applyFullMessage(state, message) : state;
+): StoreReduction<ConversationState> {
+  const full = addMessage
+    ? applyFullMessageWithIdentity(state, message)
+    : undefined;
+  const withMessage = full ? full.state : state;
+  const ownership: MessageOwnershipReceipt = {
+    kind: 'addLocal',
+    messageID: full?.messageID,
+  };
 
   // If we receive back a silent message, we don't want to add to the store.
   if (message.history.silent) {
-    return withMessage;
+    return { state: withMessage, ownership };
   }
 
   const { id } = messageItem.ui_state;
@@ -248,7 +257,16 @@ function applyLocalMessageItem(
       ),
     },
   };
-  return newState;
+  // The local wrapper is an internal DTO; host callbacks receive its item only.
+  ownership.local = { id, parentID: messageItem.fullMessageID };
+  return { state: newState, ownership };
+}
+
+function applyLocalMessageItem(
+  state: ConversationState,
+  action: Parameters<typeof applyLocalMessageItemWithOwnership>[1]
+): ConversationState {
+  return applyLocalMessageItemWithOwnership(state, action).state;
 }
 
 /**
@@ -260,23 +278,33 @@ function applyLocalMessageItem(
 function applyReceivedWrite(
   state: ConversationState,
   message: MessageResponse,
-  { localItem, nestedLocalItems, addAfterID }: ReceivedLocalItems
-): ConversationState {
+  { localItem, nestedLocalItems, addAfterID }: ReceivedLocalItems,
+  messageID: string
+): StoreReduction<ConversationState> {
   if (!localItem) {
-    return applyAssistantMessageState(
-      applyFullMessage(keepStreamedItemsOnly(state, message), message),
-      { activeResponseId: message.id }
+    const full = applyFullMessageWithIdentity(
+      keepStreamedItemsOnly(state, message),
+      message
     );
+    return {
+      state: applyAssistantMessageState(full.state, {
+        activeResponseId: message.id,
+      }),
+      ownership: { kind: 'upsert', messageID: full.messageID },
+    };
   }
 
   const allMessageItemsByID = { ...state.allMessageItemsByID };
   nestedLocalItems.forEach((nested) => {
     allMessageItemsByID[nested.ui_state.id] = nested;
   });
-  return applyLocalMessageItem(
-    { ...state, allMessageItemsByID },
-    { messageItem: localItem, message, addMessage: false, addAfterID }
-  );
+  return {
+    state: applyLocalMessageItem(
+      { ...state, allMessageItemsByID },
+      { messageItem: localItem, message, addMessage: false, addAfterID }
+    ),
+    ownership: { kind: 'upsert', messageID },
+  };
 }
 
 // Keep unchanged branches stable while preserving the existing index-wise array patch behavior.
@@ -330,7 +358,7 @@ function mergeStatePatch(currentValue: unknown, patchValue: unknown): unknown {
   return patchValue;
 }
 
-const reducers: { [key: string]: ReducerType } = {
+const stateReducers: { [key: string]: ReducerType } = {
   [CHANGE_STATE]: (
     state: ConversationState,
     action: { partialState: DeepPartial<ConversationState> }
@@ -430,175 +458,6 @@ const reducers: { [key: string]: ReducerType } = {
     };
   },
 
-  [ADD_LOCAL_MESSAGE_ITEM]: (
-    state: ConversationState,
-    action: {
-      messageItem: LocalMessageItem;
-      message: Message;
-      addMessage: boolean;
-      addAfterID: string;
-    }
-  ): ConversationState => applyLocalMessageItem(state, action),
-
-  [REMOVE_MESSAGES]: (
-    state: ConversationState,
-    { messageIDs }: { messageIDs: string[] }
-  ): ConversationState => {
-    const idsSet = new Set(messageIDs);
-
-    const newAllMessages = { ...state.allMessagesByID };
-    const newAllMessageItems = { ...state.allMessageItemsByID };
-
-    // Remove all the message IDs from the message list.
-    const newMessageIDs = state.assistantMessageState.messageIDs.filter(
-      (messageID) => !idsSet.has(messageID)
-    );
-
-    // Remove all the message items from the items list for items that are part of one of the messages being
-    // removed. Also remove the matching items from the map.
-    const newMessageItemsIDs =
-      state.assistantMessageState.localMessageIDs.filter((messageItemID) => {
-        const messageItem = newAllMessageItems[messageItemID];
-        const removeItem = idsSet.has(messageItem?.fullMessageID);
-        if (removeItem) {
-          delete newAllMessageItems[messageItemID];
-        }
-        return !removeItem;
-      });
-
-    // Remove the message objects from the map.
-    messageIDs.forEach((messageID) => {
-      delete newAllMessages[messageID];
-    });
-
-    const newState: ConversationState = {
-      ...state,
-      allMessagesByID: newAllMessages,
-      allMessageItemsByID: newAllMessageItems,
-      assistantMessageState: {
-        ...state.assistantMessageState,
-        messageIDs: newMessageIDs,
-        localMessageIDs: newMessageItemsIDs,
-        activeResponseId: newMessageIDs.length
-          ? newMessageIDs[newMessageIDs.length - 1]
-          : null,
-      },
-    };
-
-    return newState;
-  },
-
-  [UPDATE_LOCAL_MESSAGE_ITEM]: (
-    state: ConversationState,
-    action: { messageItem: LocalMessageItem }
-  ): ConversationState => {
-    const { messageItem } = action;
-    return {
-      ...state,
-      allMessageItemsByID: {
-        ...state.allMessageItemsByID,
-        [messageItem.ui_state.id]: messageItem,
-      },
-    };
-  },
-
-  [UPDATE_MESSAGE]: (
-    state: ConversationState,
-    action: { message: Message }
-  ): ConversationState => {
-    const { message } = action;
-    return {
-      ...state,
-      allMessagesByID: {
-        ...state.allMessagesByID,
-        [message.id]: message,
-      },
-    };
-  },
-
-  [UPSERT_MESSAGE]: (
-    state: ConversationState,
-    action: {
-      message: Message;
-      isStreaming?: boolean;
-      holdFromIndex?: number;
-      options?: MessageWriteOptions;
-    }
-  ): ConversationState => {
-    const { message, isStreaming = false, holdFromIndex, options } = action;
-    const messageID = message.id;
-
-    if (!isResponse(message)) {
-      return state;
-    }
-
-    // Until `final_response`, a chunk stream keeps the rules it has always had.
-    if (options?.origin === 'chunk' && isStreaming) {
-      return applyChunkWrite(state, message, options.chunk);
-    }
-
-    // A message from `addMessage` or `final_response` keeps the rules it has always had.
-    if (options?.received) {
-      return applyReceivedWrite(state, message, options.received);
-    }
-
-    const messageResponse = keepPriorUIStateInternal(
-      message,
-      state.allMessagesByID[messageID]
-    );
-
-    const { newLocalItemsByID, newLocalIDsForMessage } =
-      rebuildLocalItemsForUpsert(
-        state,
-        messageResponse,
-        isStreaming,
-        true,
-        holdFromIndex,
-        options?.pauseReveal
-      );
-
-    const { otherLocalIDs, insertPoint } = computeLocalIDInsertionPoint(
-      state.assistantMessageState.localMessageIDs,
-      state.allMessageItemsByID,
-      messageID
-    );
-    const newLocalMessageIDs = [
-      ...otherLocalIDs.slice(0, insertPoint),
-      ...newLocalIDsForMessage,
-      ...otherLocalIDs.slice(insertPoint),
-    ];
-
-    const prevMessage = state.allMessagesByID[messageID];
-    const nextMessageRef = keepMessageRefIfUnchanged(
-      state,
-      messageResponse,
-      newLocalIDsForMessage,
-      newLocalItemsByID
-    );
-
-    let nextMessageIDs = state.assistantMessageState.messageIDs;
-    if (!prevMessage) {
-      nextMessageIDs = [...nextMessageIDs, messageID];
-    }
-
-    const newState: ConversationState = {
-      ...state,
-      allMessagesByID: {
-        ...state.allMessagesByID,
-        [messageID]: nextMessageRef,
-      },
-      allMessageItemsByID: newLocalItemsByID,
-      assistantMessageState: {
-        ...state.assistantMessageState,
-        messageIDs: nextMessageIDs,
-        localMessageIDs: newLocalMessageIDs,
-        activeResponseId: messageID,
-      },
-    };
-
-    return newState;
-  },
-
   [END_MESSAGE_STREAMING]: (
     state: ConversationState,
     action: { messageID: string }
@@ -650,11 +509,6 @@ const reducers: { [key: string]: ReducerType } = {
 
     return { ...state, allMessageItemsByID: newLocalItems };
   },
-
-  [ADD_MESSAGE]: (
-    state: ConversationState,
-    action: { message: Message }
-  ): ConversationState => applyFullMessage(state, action.message),
 
   [MESSAGE_SET_OPTION_SELECTED]: (
     state: ConversationState,
@@ -930,30 +784,6 @@ const reducers: { [key: string]: ReducerType } = {
     );
   },
 
-  [REMOVE_LOCAL_MESSAGE_ITEM]: (
-    state: ConversationState,
-    { localMessageItemID }: { localMessageItemID: string }
-  ) => {
-    const newLocalMessageIDs =
-      state.assistantMessageState.localMessageIDs.filter(
-        (id) => id !== localMessageItemID
-      );
-    const allMessageItemsByID = {
-      ...state.allMessageItemsByID,
-    };
-    if (allMessageItemsByID[localMessageItemID]) {
-      delete allMessageItemsByID[localMessageItemID];
-    }
-    return {
-      ...state,
-      allMessageItemsByID,
-      assistantMessageState: {
-        ...state.assistantMessageState,
-        localMessageIDs: newLocalMessageIDs,
-      },
-    };
-  },
-
   [CLEAR_INPUT_FILES]: (
     state: ConversationState,
     { isInputToHumanAgent }: { isInputToHumanAgent: boolean }
@@ -1224,6 +1054,284 @@ function getInputState(state: ConversationState, isInputToHumanAgent: boolean) {
 }
 
 // Merge in the other reducers.
-Object.assign(reducers, humanAgentReducers);
+Object.assign(stateReducers, humanAgentReducers);
 
-export { reducers, ReducerType };
+const ownershipReducers: {
+  [key: string]: (
+    state: ConversationState,
+    action: any
+  ) => StoreReduction<ConversationState>;
+} = {
+  [ADD_LOCAL_MESSAGE_ITEM]: (
+    state: ConversationState,
+    action: {
+      messageItem: LocalMessageItem;
+      message: Message;
+      addMessage: boolean;
+      addAfterID: string;
+    }
+  ): StoreReduction<ConversationState> =>
+    applyLocalMessageItemWithOwnership(state, action),
+  [REMOVE_MESSAGES]: (
+    state: ConversationState,
+    { messageIDs }: { messageIDs: string[] }
+  ): StoreReduction<ConversationState> => {
+    const idsSet = new Set(messageIDs);
+    const removedMessages: string[] = [];
+    const removedLocals: string[] = [];
+
+    const newAllMessages = { ...state.allMessagesByID };
+    const newAllMessageItems = { ...state.allMessageItemsByID };
+
+    // Remove all the message IDs from the message list.
+    const newMessageIDs = state.assistantMessageState.messageIDs.filter(
+      (messageID) => !idsSet.has(messageID)
+    );
+
+    // Remove all the message items from the items list for items that are part of one of the messages being
+    // removed. Also remove the matching items from the map.
+    const newMessageItemsIDs =
+      state.assistantMessageState.localMessageIDs.filter((messageItemID) => {
+        const messageItem = newAllMessageItems[messageItemID];
+        const removeItem = idsSet.has(messageItem?.fullMessageID);
+        if (removeItem) {
+          delete newAllMessageItems[messageItemID];
+          removedLocals.push(messageItemID);
+        }
+        return !removeItem;
+      });
+
+    // Remove the message objects from the map.
+    messageIDs.forEach((messageID) => {
+      delete newAllMessages[messageID];
+      removedMessages.push(messageID);
+    });
+
+    const newState: ConversationState = {
+      ...state,
+      allMessagesByID: newAllMessages,
+      allMessageItemsByID: newAllMessageItems,
+      assistantMessageState: {
+        ...state.assistantMessageState,
+        messageIDs: newMessageIDs,
+        localMessageIDs: newMessageItemsIDs,
+        activeResponseId: newMessageIDs.length
+          ? newMessageIDs[newMessageIDs.length - 1]
+          : null,
+      },
+    };
+
+    return {
+      state: newState,
+      ownership: {
+        kind: 'remove',
+        messageIDs: removedMessages,
+        localIDs: removedLocals,
+      },
+    };
+  },
+  [UPDATE_LOCAL_MESSAGE_ITEM]: (
+    state: ConversationState,
+    action: { messageItem: LocalMessageItem }
+  ): StoreReduction<ConversationState> => {
+    const { messageItem } = action;
+    let localID: string;
+    const nextState = {
+      ...state,
+      allMessageItemsByID: {
+        ...state.allMessageItemsByID,
+        [(localID = messageItem.ui_state.id)]: messageItem,
+      },
+    };
+    return {
+      state: nextState,
+      ownership: {
+        kind: 'updateLocal',
+        localID,
+        parentID: messageItem.fullMessageID,
+      },
+    };
+  },
+  [UPDATE_MESSAGE]: (
+    state: ConversationState,
+    action: { message: Message }
+  ): StoreReduction<ConversationState> => {
+    const { message } = action;
+    let messageID: string;
+    const nextState = {
+      ...state,
+      allMessagesByID: {
+        ...state.allMessagesByID,
+        [(messageID = message.id)]: message,
+      },
+    };
+    return {
+      state: nextState,
+      ownership: { kind: 'updateMessage', messageID },
+    };
+  },
+  [UPSERT_MESSAGE]: (
+    state: ConversationState,
+    action: {
+      message: Message;
+      isStreaming?: boolean;
+      holdFromIndex?: number;
+      options?: MessageWriteOptions;
+    }
+  ): StoreReduction<ConversationState> => {
+    const { message, isStreaming = false, holdFromIndex, options } = action;
+    const messageID = message.id;
+
+    if (!isResponse(message)) {
+      return { state };
+    }
+
+    const ownership: MessageOwnershipReceipt = { kind: 'upsert', messageID };
+
+    // Until `final_response`, a chunk stream keeps the rules it has always had.
+    if (options?.origin === 'chunk' && isStreaming) {
+      const result = applyChunkWriteWithIdentity(state, message, options.chunk);
+      return {
+        state: result.state,
+        ownership: { kind: 'upsert', messageID: result.messageID },
+      };
+    }
+
+    // A message from `addMessage` or `final_response` keeps the rules it has always had.
+    if (options?.received) {
+      return applyReceivedWrite(state, message, options.received, messageID);
+    }
+
+    const messageResponse = keepPriorUIStateInternal(
+      message,
+      state.allMessagesByID[messageID]
+    );
+
+    const { newLocalItemsByID, newLocalIDsForMessage } =
+      rebuildLocalItemsForUpsert(
+        state,
+        messageResponse,
+        isStreaming,
+        true,
+        holdFromIndex,
+        options?.pauseReveal
+      );
+
+    const { otherLocalIDs, insertPoint } = computeLocalIDInsertionPoint(
+      state.assistantMessageState.localMessageIDs,
+      state.allMessageItemsByID,
+      messageID
+    );
+    const newLocalMessageIDs = [
+      ...otherLocalIDs.slice(0, insertPoint),
+      ...newLocalIDsForMessage,
+      ...otherLocalIDs.slice(insertPoint),
+    ];
+
+    const prevMessage = state.allMessagesByID[messageID];
+    const nextMessageRef = keepMessageRefIfUnchanged(
+      state,
+      messageResponse,
+      newLocalIDsForMessage,
+      newLocalItemsByID
+    );
+
+    let nextMessageIDs = state.assistantMessageState.messageIDs;
+    if (!prevMessage) {
+      nextMessageIDs = [...nextMessageIDs, messageID];
+    }
+
+    const newState: ConversationState = {
+      ...state,
+      allMessagesByID: {
+        ...state.allMessagesByID,
+        [messageID]: nextMessageRef,
+      },
+      allMessageItemsByID: newLocalItemsByID,
+      assistantMessageState: {
+        ...state.assistantMessageState,
+        messageIDs: nextMessageIDs,
+        localMessageIDs: newLocalMessageIDs,
+        activeResponseId: messageID,
+      },
+    };
+
+    return { state: newState, ownership };
+  },
+  [ADD_MESSAGE]: (
+    state: ConversationState,
+    action: { message: Message }
+  ): StoreReduction<ConversationState> => {
+    const result = applyFullMessageWithIdentity(state, action.message);
+    return {
+      state: result.state,
+      ownership: { kind: 'addMessage', messageID: result.messageID },
+    };
+  },
+  [REMOVE_LOCAL_MESSAGE_ITEM]: (
+    state: ConversationState,
+    { localMessageItemID }: { localMessageItemID: string }
+  ) => {
+    const newLocalMessageIDs =
+      state.assistantMessageState.localMessageIDs.filter(
+        (id) => id !== localMessageItemID
+      );
+    const allMessageItemsByID = {
+      ...state.allMessageItemsByID,
+    };
+    if (allMessageItemsByID[localMessageItemID]) {
+      delete allMessageItemsByID[localMessageItemID];
+    }
+    const nextState = {
+      ...state,
+      allMessageItemsByID,
+      assistantMessageState: {
+        ...state.assistantMessageState,
+        localMessageIDs: newLocalMessageIDs,
+      },
+    };
+    return {
+      state: nextState,
+      ownership: { kind: 'removeLocal', localID: localMessageItemID },
+    };
+  },
+  [RESTART_CONVERSATION]: (state, action) => ({
+    state: stateReducers[RESTART_CONVERSATION](state, action),
+    ownership: { kind: 'reset' },
+  }),
+  [HYDRATE_MESSAGE_HISTORY]: (state, action) => ({
+    state: stateReducers[HYDRATE_MESSAGE_HISTORY](state, action),
+    ownership: { kind: 'history' },
+  }),
+};
+
+const reductions: typeof ownershipReducers = {
+  ...Object.fromEntries(
+    Object.entries(stateReducers).map(([type, reduce]) => [
+      type,
+      (state: ConversationState, action: any) => ({
+        state: reduce(state, action),
+      }),
+    ])
+  ),
+  ...ownershipReducers,
+};
+
+const reducers: { [key: string]: ReducerType } = Object.fromEntries(
+  Object.entries(reductions).map(([type, reduce]) => [
+    type,
+    (state: ConversationState, action: any) => reduce(state, action).state,
+  ])
+);
+
+/** Selects the same reducer at the same action-type reads as the state-only root. */
+function reduceWithMessageOwnership(
+  state: ConversationState,
+  action: { type: string; [key: string]: unknown } | undefined
+): StoreReduction<ConversationState> {
+  return action && reductions[action.type]
+    ? reductions[action.type](state, action)
+    : { state };
+}
+
+export { reducers, ReducerType, reduceWithMessageOwnership };

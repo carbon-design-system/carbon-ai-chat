@@ -38,9 +38,10 @@ export function captureMessageEvent(
       }
       let owned: typeof working;
       const own = () => (owned ??= cloneDeep(working));
+      let sourceMessageID: string;
       if (
         before.allMessagesByID[message.id] ===
-          store.getState().allMessagesByID[message.id] &&
+          store.getState().allMessagesByID[(sourceMessageID = message.id)] &&
         !isEqual(message, working.message)
       ) {
         const committedMessage = own().message;
@@ -49,7 +50,7 @@ export function captureMessageEvent(
           retainMessageCloneOwnership(
             actions.updateMessage(committedMessage),
             store,
-            message.id
+            sourceMessageID
           )
         );
       }
