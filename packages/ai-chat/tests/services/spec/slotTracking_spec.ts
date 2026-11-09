@@ -7,11 +7,11 @@
  *  @license
  */
 
-import fs from 'node:fs';
-import path from 'node:path';
 import { EventBus } from '../../../src/shared/events/EventBus';
 import { ExtensionHosts } from '../../../src/chat/services/extensionHosts';
 import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import { createChatSDK } from '../../../src/sdk';
+import { chatOf } from '../../../src/sdk/internal';
 import {
   attachSlotTracking,
   collectRequestFooters,
@@ -336,23 +336,20 @@ describe('attachSlotTracking', () => {
     expect(stores.customRequestFooter.get()).toEqual({});
   });
 
-  it('is attached once per chat, at boot (#1732 O17)', () => {
-    const src = path.resolve(__dirname, '../../../src');
-    const callers = (function walk(dir: string): string[] {
-      return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
-        const file = path.join(dir, entry.name);
-        if (entry.isDirectory()) {
-          return walk(file);
-        }
-        return /\.tsx?$/.test(file) &&
-          fs.readFileSync(file, 'utf8').includes('attachSlotTracking')
-          ? [path.relative(src, file)]
-          : [];
-      });
-    })(src);
-    expect(callers.sort()).toEqual([
-      'sdk/createChatSDK.ts',
-      'shared/services/slotTracking.ts',
+  it('is attached once per chat, at boot (#1732 O17)', async () => {
+    const chat = await createChatSDK({ messaging: { skipWelcome: true } });
+    const manager = chatOf(chat);
+    // A slot event before any view exists still lands in the chat's stores.
+    await manager.fire({
+      type: BusEventType.USER_DEFINED_RESPONSE,
+      data: { slot: 'before-view', message: item('a'), fullMessage: message },
+    } as BusEvent);
+    const stores = attachSlotTracking(manager);
+    expect(Object.keys(stores.userDefinedResponse.get())).toEqual([
+      'before-view',
     ]);
+    // Attaching again gives the same stores.
+    expect(attachSlotTracking(manager)).toBe(stores);
+    chat.destroy();
   });
 });

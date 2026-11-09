@@ -19,7 +19,10 @@ import {
 } from '../utils/inputNodeSlots';
 import { LightDomHosts, type LightDomEntry } from './lightDomHosts';
 import type { AppState } from '../../types/state/AppState';
-import type { SlotSource } from '../../shared/services/slotTracking';
+import {
+  EMPTY_SLOT_RECORDS,
+  type SlotSource,
+} from '../../shared/services/slotTracking';
 import type { PanelName } from '../utils/panelComposition';
 import { AutocompleteContent } from './autocompleteContent';
 import type {
@@ -103,10 +106,12 @@ interface InputNodeHost extends SlotHost {
   placed: boolean;
 }
 
+// The slot stores' own empty records, so connecting to empty stores notifies
+// nobody.
 const EMPTY_SNAPSHOT: ExtensionHostsSnapshot = {
-  userDefinedResponse: {},
-  customFooter: {},
-  customRequestFooter: {},
+  userDefinedResponse: EMPTY_SLOT_RECORDS,
+  customFooter: EMPTY_SLOT_RECORDS,
+  customRequestFooter: EMPTY_SLOT_RECORDS,
   inputNode: [],
   lightDom: [],
 };
@@ -121,8 +126,9 @@ function isTokenNode(entry: InputNodeSlotEntry): boolean {
  * user-defined responses, message footers, request footers, sent input
  * nodes, and editor light-DOM content, and the light-DOM host each record
  * renders into. The slot records are the chat's slot stores' own objects
- * (#1741), read while connected; this service keeps no copy, so records
- * collected while no view was connected show on the next connect. Editor
+ * (#1741), read while connected; this service keeps no copy, so responses
+ * and message footers collected while no view was connected show on the next
+ * connect. Request footers are collected only while a view is connected. Editor
  * light-DOM hosts live in `LightDomHosts`, which this service connects. Each
  * kind's records stay the same object until that kind changes, so a view that
  * renders one kind re-renders only for it.

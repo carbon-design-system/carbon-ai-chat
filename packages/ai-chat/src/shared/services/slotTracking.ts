@@ -50,12 +50,12 @@ interface CustomFooterSlotState {
   additionalData?: Record<string, unknown>;
 }
 
-/** Each slot's state, by slot name. */
 interface CustomRequestFooterSlotState {
   slotName: string;
   message: MessageRequest;
 }
 
+/** Each slot's state, by slot name. */
 type SlotRecords<T> = Readonly<Record<string, T>>;
 
 /** The slot state of one chat, readable without a view. */
@@ -79,6 +79,7 @@ interface SlotStores {
 /** Each chat's request-footer gates: a footer is kept if any says so. */
 const requestFooterGates = new WeakMap<ServiceManager, Set<() => boolean>>();
 
+/** The empty records every store starts at and returns to on restart. */
 const EMPTY: SlotRecords<never> = Object.freeze({});
 
 const tracked = new WeakMap<ServiceManager, SlotStores>();
@@ -93,8 +94,9 @@ function setSlot<T>(
 
 /**
  * Starts keeping the chat's slot state in stores, from the slot events on its
- * bus, and returns them. A restart empties both, the response store first, so
- * a listener reading both stores can see the footers emptied a moment later.
+ * bus, and returns them. A restart empties all three, the response store
+ * first, so a listener reading several stores can see the later ones emptied
+ * a moment later.
  * Calling it again for the same chat returns the same stores and adds no
  * second listener.
  *
@@ -222,7 +224,12 @@ function slotSource(serviceManager: ServiceManager): SlotSource {
   };
 }
 
-export { attachSlotTracking, collectRequestFooters, slotSource };
+export {
+  attachSlotTracking,
+  collectRequestFooters,
+  EMPTY as EMPTY_SLOT_RECORDS,
+  slotSource,
+};
 export type {
   CustomFooterSlotState,
   CustomRequestFooterSlotState,
