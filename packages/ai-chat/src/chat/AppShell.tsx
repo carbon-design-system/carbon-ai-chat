@@ -41,6 +41,7 @@ import type { AppState } from '../types/state/AppState';
 import type { ExtensionHosts } from './services/extensionHosts';
 import type { HasServiceManager } from './hocs/withServiceManager';
 import { WriteableElementName } from '../types/instance/WriteableElements';
+import { writeableElementsOf } from './utils/writeableElements';
 
 const nativeShellEvents = {};
 
@@ -67,7 +68,7 @@ const ConfiguredNativeShell = React.forwardRef<
   const { serviceManager } = useChatViewStateInstance();
   const customPromptLinePresent = useWriteableElementPresence(
     WriteableElementName.CUSTOM_PROMPT_LINE,
-    serviceManager.writeableElements,
+    writeableElementsOf(serviceManager),
     options.writeableElementsPresentKeys
       ?.split(' ')
       .includes(WriteableElementName.CUSTOM_PROMPT_LINE)

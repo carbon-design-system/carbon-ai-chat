@@ -39,6 +39,7 @@ import {
   deriveHeaderNavigation,
   type HeaderProps,
 } from '../../utils/headerView';
+import { writeableElementsOf } from '../../utils/writeableElements';
 
 type HeaderLanguage = Pick<
   AppState['languagePack'],
@@ -151,7 +152,7 @@ class HeaderView extends NativeChatView implements HeaderProps {
     );
     this.own(
       observeWriteableElementPresence(
-        this.serviceManager.writeableElements[
+        writeableElementsOf(this.serviceManager)[
           WriteableElementName.EXPLAINABILITY_POPOVER_CONTENT
         ],
         (present) => {

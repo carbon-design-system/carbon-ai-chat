@@ -90,18 +90,7 @@ const viewHandleExceptions: Array<{
   reference: string;
   owner: string;
   reason: string;
-}> = [
-  {
-    reference: 'src/shared/services/ServiceManager.ts: HTMLElement',
-    owner: '#1732',
-    reason: 'container and customHostElement move to the view attach',
-  },
-  {
-    reference: 'src/shared/services/ServiceManager.ts: WriteableElements',
-    owner: '#1732',
-    reason: 'writeable elements move to the view attach',
-  },
-];
+}> = [];
 
 /** View-owned classes that stay in `chat/services/`; conversation services go in `shared/`. */
 const chatServices = [

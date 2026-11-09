@@ -43,8 +43,6 @@ interface ChatSDKBootOptions {
   appConfig?: ConversationAppConfig;
   /** Saves and restores the session in browser session storage. */
   sessionStorage?: boolean;
-  /** Creates the page elements hosts write into. */
-  writeableElements?: boolean;
   /**
    * Loads history and the welcome message before resolving. The prebuilt chat
    * passes `false`: it loads them when its main window first opens.
@@ -90,7 +88,6 @@ async function createChatSDK(
     const appConfig = options.appConfig ?? createSDKAppConfig(config);
     serviceManager = createServiceManager(appConfig, {
       sessionStorage: options.sessionStorage ?? false,
-      writeableElements: options.writeableElements ?? false,
     });
     serviceManager.humanAgentService = createHumanAgentService(serviceManager);
 

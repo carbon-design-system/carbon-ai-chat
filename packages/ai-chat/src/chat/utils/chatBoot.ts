@@ -12,8 +12,6 @@ import LocalizedFormat from 'dayjs/plugin/localizedFormat.js';
 import merge from 'lodash-es/merge.js';
 import isEqual from 'lodash-es/isEqual.js';
 
-import { setVarsForSelector } from '@carbon/ai-chat-components/es/components/shared/dynamic-css-var-sheet.js';
-
 import { createServiceManager } from '../../shared/services/loadServices';
 import actions from '../../shared/store/actions';
 import { selectInputIsReadonly } from '../../shared/store/selectors';
@@ -31,6 +29,7 @@ import {
 } from '../../shared/utils/miscUtils';
 import createHumanAgentService from '../../shared/services/haa/HumanAgentServiceImpl';
 import { createConversationInstance } from '../../shared/services/conversationInstance';
+import { createWriteableElements } from './writeableElements';
 
 import {
   MainWindowOpenReason,
@@ -58,28 +57,6 @@ import {
 } from '../../types/state/AppState';
 import { AutoScrollOptions } from '../../types/utilities/HasDoAutoScroll';
 import { viewActions } from '../../view/state';
-
-let bootContainerRulesInstalled = false;
-
-/**
- * Install boot-container size rules on the shared dynamic stylesheet. The
- * container fills the host element when one is provided and otherwise stays
- * collapsed (0×0) until the chat floats out.
- */
-function ensureBootContainerStyleRules(): void {
-  if (bootContainerRulesInstalled) {
-    return;
-  }
-  setVarsForSelector('.cds-aichat--boot-container--filled', {
-    width: '100% !important',
-    height: '100% !important',
-  });
-  setVarsForSelector('.cds-aichat--boot-container--collapsed', {
-    width: '0 !important',
-    height: '0 !important',
-  });
-  bootContainerRulesInstalled = true;
-}
 
 /**
  * Default values applied to the provided `PublicConfig` before boot. This keeps
@@ -114,10 +91,8 @@ export function mergePublicConfig(config: Partial<PublicConfig>): PublicConfig {
  */
 export async function initServiceManagerAndInstance(options: {
   publicConfig: PublicConfig;
-  container: HTMLElement;
-  customHostElement?: HTMLElement;
 }): Promise<{ serviceManager: ServiceManager; instance: ChatInstance }> {
-  const { publicConfig, container, customHostElement } = options;
+  const { publicConfig } = options;
 
   // Extend dayjs with LocalizedFormat plugin once before usage
   dayjs.extend(LocalizedFormat);
@@ -126,21 +101,6 @@ export async function initServiceManagerAndInstance(options: {
   const appConfig = createAppConfig(publicConfig);
   const serviceManager = createServiceManager(appConfig);
   attachChatView(serviceManager, publicConfig);
-
-  // Set container + hosting information
-  serviceManager.container = container;
-  serviceManager.customHostElement = customHostElement;
-
-  ensureBootContainerStyleRules();
-  container.classList.add('cds-aichat--boot-container');
-  container.classList.toggle(
-    'cds-aichat--boot-container--filled',
-    !!serviceManager.customHostElement
-  );
-  container.classList.toggle(
-    'cds-aichat--boot-container--collapsed',
-    !serviceManager.customHostElement
-  );
 
   // Load language and locale
   const languagePack = serviceManager.store.getState().languagePack;
@@ -298,7 +258,7 @@ export async function initServiceManagerAndInstance(options: {
 
     getState: serviceManager.publicStateService.getLive,
 
-    writeableElements: serviceManager.writeableElements,
+    writeableElements: createWriteableElements(),
 
     scrollToMessage: (messageID: string, animate?: boolean) => {
       debugLog('Called instance.scrollToMessage', messageID, animate);

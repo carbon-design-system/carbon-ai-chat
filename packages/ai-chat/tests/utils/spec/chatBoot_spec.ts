@@ -75,58 +75,22 @@ describe('chatBoot utils', () => {
   });
 
   describe('initServiceManagerAndInstance', () => {
-    it('initializes ServiceManager, sets container styles and creates instance (with host element)', async () => {
-      const container = document.createElement('div');
-      const host = document.createElement('div');
-
+    it('initializes ServiceManager and creates the instance, with no DOM holders', async () => {
       const props = createBaseTestProps();
       const publicConfig = mergePublicConfig(props);
 
       const { serviceManager, instance } = await initServiceManagerAndInstance({
         publicConfig,
-        container,
-        customHostElement: host,
       });
 
       expect(serviceManager).toBeTruthy();
       expect(instance).toBeTruthy();
       expect(serviceManager.instance).toBe(instance);
-      expect(serviceManager.container).toBe(container);
-      expect(serviceManager.customHostElement).toBe(host);
-
-      // Container should be tagged with the boot-container fill class. The
-      // matching dynamic-stylesheet rule applies width/height: 100% !important.
-      expect(
-        container.classList.contains('cds-aichat--boot-container--filled')
-      ).toBe(true);
-      expect(
-        container.classList.contains('cds-aichat--boot-container--collapsed')
-      ).toBe(false);
-    });
-
-    it('initializes with default container styles when no host element provided', async () => {
-      const container = document.createElement('div');
-
-      const props = createBaseTestProps();
-      const publicConfig = mergePublicConfig(props);
-
-      const { serviceManager, instance } = await initServiceManagerAndInstance({
-        publicConfig,
-        container,
-      });
-
-      expect(serviceManager).toBeTruthy();
-      expect(instance).toBeTruthy();
-      expect(serviceManager.customHostElement).toBeUndefined();
-
-      // Container should be tagged with the boot-container collapsed class.
-      // The matching dynamic-stylesheet rule applies width/height: 0 !important.
-      expect(
-        container.classList.contains('cds-aichat--boot-container--collapsed')
-      ).toBe(true);
-      expect(
-        container.classList.contains('cds-aichat--boot-container--filled')
-      ).toBe(false);
+      // The view attach owns the render target and host element (#1732).
+      expect('container' in serviceManager).toBe(false);
+      expect('customHostElement' in serviceManager).toBe(false);
+      expect('writeableElements' in serviceManager).toBe(false);
+      expect(Object.keys(instance.writeableElements).length).toBeGreaterThan(0);
     });
   });
 

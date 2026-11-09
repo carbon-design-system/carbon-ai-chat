@@ -18,7 +18,6 @@ import { HistoryService } from './HistoryService';
 import { NamespaceService } from './NamespaceService';
 import { UserSessionStorageService } from './UserSessionStorageService';
 import { ChatInstance } from '../../types/instance/ChatInstance';
-import { WriteableElements } from '../../types/instance/WriteableElements';
 import { BusEvent } from '../../types/events/eventBusTypes';
 import { ChatInstanceService } from './ChatInstanceService';
 import { HydrationService } from './HydrationService';
@@ -85,17 +84,6 @@ class ServiceManager {
   readonly view = new ViewConnection();
 
   /**
-   * The optional custom element for rendering provided in the publicConfig.
-   */
-  customHostElement: HTMLElement;
-
-  /**
-   * The entire wrapping element for the chat that includes styles and render. This is the element that
-   * is either appended to the body or the custom element. It includes the main window, and the launcher.
-   */
-  container: HTMLElement;
-
-  /**
    * The event bus on which events can be fired.
    */
   eventBus: EventBus;
@@ -124,11 +112,6 @@ class ServiceManager {
    */
   userDefinedElementRegistry: Map<string, UserDefinedElementRegistryItem> =
     new Map();
-
-  /**
-   * An object of elements we expose to developers to write to.
-   */
-  writeableElements: Partial<WriteableElements>;
 
   /**
    * A service to write and read items in browser storage related to the session. Only the

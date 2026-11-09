@@ -27,6 +27,7 @@ import { PageObjectId } from '../../../testing/PageObjectId';
 import { shallowEqual } from '../../../shared/store/appStore';
 import { observeWriteableElementPresence } from '../../utils/writeableElementPresence';
 import { NativeChatView } from '../shared/NativeChatView';
+import { writeableElementsOf } from '../../utils/writeableElements';
 
 interface HomeScreenProps {
   isHydrated: boolean;
@@ -95,7 +96,7 @@ class HomeScreenView extends NativeChatView implements HomeScreenProps {
     );
     this.own(
       observeWriteableElementPresence(
-        this.serviceManager.writeableElements[
+        writeableElementsOf(this.serviceManager)[
           WriteableElementName.HOME_SCREEN_AFTER_STARTERS_ELEMENT
         ],
         (present) => {
