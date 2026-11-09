@@ -27,6 +27,12 @@ import {
   readPackedManifest,
   readPublishedHostTypes,
 } from './manifests.mjs';
+import {
+  assertRegistrationProofs,
+  prepareRegistrationProofs,
+} from './registration.mjs';
+import { assertPackedResolution } from './resolution.mjs';
+import { assertAggregateProof, prepareAggregateProof } from './aggregate.mjs';
 
 const runFile = promisify(execFile);
 const fixtureDirectory = dirname(fileURLToPath(import.meta.url));
@@ -141,7 +147,10 @@ const installed = await runNpm([
 ]);
 await writeFile(join(consumer, 'installed.json'), installed);
 
-await readPackedManifest(consumer, '@carbon/ai-chat-components');
+const componentsMetadata = await readPackedManifest(
+  consumer,
+  '@carbon/ai-chat-components'
+);
 const chatMetadata = await readPackedManifest(consumer, '@carbon/ai-chat');
 const publishedTypes = await readPublishedHostTypes(
   chatMetadata.root,
@@ -165,7 +174,14 @@ assert.equal(
   1,
   'The consumer must share one utilities copy.'
 );
+await assertPackedResolution({ consumer });
 await runNpm(['run', 'build']);
+await prepareRegistrationProofs({ consumer, runNpm });
+await prepareAggregateProof({
+  consumer,
+  manifest: componentsMetadata.manifest,
+  runNpm,
+});
 
 const dist = join(consumer, 'dist');
 const mime = {
@@ -203,7 +219,25 @@ let browser;
 try {
   browser = await chromium.launch();
   const origin = `http://127.0.0.1:${server.address().port}`;
-  for (const { name, prefix } of variants) {
+  await assertRegistrationProofs({ consumer, browser, origin });
+  await assertAggregateProof({
+    consumer,
+    manifest: componentsMetadata.manifest,
+    browser,
+    origin,
+  });
+  const hostCases = variants.flatMap((variant) =>
+    ['container', 'custom-element'].map((hostType) => ({
+      ...variant,
+      hostType,
+      label:
+        hostType === 'container'
+          ? variant.name
+          : `${variant.name}-custom-element`,
+    }))
+  );
+  const hostsByVariant = new Map(variants.map(({ name }) => [name, []]));
+  for (const { name, prefix, hostType, label } of hostCases) {
     const context = await browser.newContext();
     const page = await context.newPage();
     page.setDefaultTimeout(30000);
@@ -226,21 +260,21 @@ try {
       }
     });
     try {
-      await page.goto(`${origin}/${name}.html`);
+      await page.goto(`${origin}/${name}.html?host=${hostType}`);
       await page.waitForFunction(() => window.consumerState?.ready);
       const hosts = await page.evaluate(() => window.consumerState.hosts);
+      assert.deepEqual(
+        hosts.map((host) => host.tag),
+        [`${prefix}-aichat-${hostType}`],
+        'Each fresh context must collect only its selected host metadata.'
+      );
       const canonicalHosts = hosts.map((host) => ({
         ...host,
         tag: host.tag.replace(`${prefix}-`, 'cds-'),
       }));
-      assertHostParity(chatMetadata.manifest, canonicalHosts, publishedTypes);
-      proveParityFailures(
-        chatMetadata.manifest,
-        canonicalHosts,
-        publishedTypes
-      );
+      hostsByVariant.get(name).push(...canonicalHosts);
       await writeFile(
-        join(consumer, `${name}-manifest-parity.json`),
+        join(consumer, `${label}-manifest-parity.json`),
         JSON.stringify(
           { hosts, fields: [...publishedTypes.config.keys()] },
           null,
@@ -253,14 +287,14 @@ try {
         .click();
       await page.waitForFunction(() => window.consumerState.actions === 1);
       await page.getByTestId('input_field').click();
-      await page.keyboard.type(`packed ${name}`);
+      await page.keyboard.type(`packed ${label}`);
       await page.getByTestId('input_send').click();
       await page.waitForFunction(
         (text) =>
           window.consumerState.sent.some(
             (message) => message.input?.text === text
           ),
-        `packed ${name}`
+        `packed ${label}`
       );
       const tags = await page.evaluate(async () => {
         const collect = (root) =>
@@ -307,7 +341,7 @@ try {
           });
       });
       await writeFile(
-        join(consumer, `${name}-runtime.json`),
+        join(consumer, `${label}-runtime.json`),
         JSON.stringify({ tags, errors, messages, failedRequests }, null, 2)
       );
       assert.ok(
@@ -316,6 +350,14 @@ try {
         ),
         'The packed chat host must render its shadow root.'
       );
+      if (hostType === 'custom-element') {
+        assert.ok(
+          tags.some(
+            (tag) => tag.tag === `${prefix}-aichat-custom-element` && tag.shadow
+          ),
+          'The packed outer custom-element host must render its shadow root.'
+        );
+      }
       assert.ok(
         tags.some((tag) => tag.tag === `${prefix}-icon-button`),
         'The toolbar must render a Carbon control.'
@@ -348,15 +390,15 @@ try {
         'Deprecated menu composition must not render.'
       );
       await page.screenshot({
-        path: join(consumer, `${name}.png`),
+        path: join(consumer, `${label}.png`),
         fullPage: true,
       });
       console.log(
-        `${name}: packed chat send, Carbon action, and ${tags.length} upgraded tags passed.`
+        `${label}: packed chat send, Carbon action, and ${tags.length} upgraded tags passed.`
       );
     } catch (error) {
       await writeFile(
-        join(consumer, `${name}-failure.json`),
+        join(consumer, `${label}-failure.json`),
         JSON.stringify(
           { error: String(error), errors, messages, failedRequests },
           null,
@@ -365,7 +407,7 @@ try {
       );
       await page
         .screenshot({
-          path: join(consumer, `${name}-failure.png`),
+          path: join(consumer, `${label}-failure.png`),
           fullPage: true,
         })
         .catch(() => {});
@@ -373,6 +415,19 @@ try {
     } finally {
       await context.close();
     }
+  }
+  for (const { name } of variants) {
+    const hosts = hostsByVariant.get(name);
+    assertHostParity(chatMetadata.manifest, hosts, publishedTypes);
+    proveParityFailures(chatMetadata.manifest, hosts, publishedTypes);
+    await writeFile(
+      join(consumer, `${name}-combined-manifest-parity.json`),
+      JSON.stringify(
+        { hosts, fields: [...publishedTypes.config.keys()] },
+        null,
+        2
+      )
+    );
   }
 } finally {
   await browser?.close();
