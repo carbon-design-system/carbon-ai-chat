@@ -105,4 +105,4 @@ function reconcileAppConfigReferences<
   return { ...next, public: publicConfig, derived };
 }
 
-export { reconcileAppConfigReferences, reconcileObjectReferences };
+export { reconcileAppConfigReferences };
