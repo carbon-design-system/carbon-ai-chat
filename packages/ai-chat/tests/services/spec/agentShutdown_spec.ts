@@ -47,6 +47,7 @@ const connectMessage: MessageResponse = {
 
 function mockDesk(overrides: Partial<ServiceDesk> = {}) {
   return {
+    getName: () => 'Test desk',
     startChat: jest.fn(async () => {}),
     endChat: jest.fn(async () => {}),
     sendMessageToAgent: jest.fn(async () => {}),
@@ -95,7 +96,11 @@ async function connect(chat: Awaited<ReturnType<typeof agentChat>>) {
 }
 
 describe('agent connection at shutdown', () => {
-  beforeEach(setupBeforeEach);
+  beforeEach(() => {
+    setupBeforeEach();
+    // Each case connects an agent, which the next chat would restore.
+    sessionStorage.clear();
+  });
   afterEach(setupAfterEach);
 
   it('disconnects without ending the conversation on the desk (O5)', async () => {
