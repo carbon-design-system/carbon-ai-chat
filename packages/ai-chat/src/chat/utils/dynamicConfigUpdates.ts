@@ -86,32 +86,7 @@ export async function applyConfigChangesDynamically(
   const conversationUpdate = applyConversationConfig(
     serviceManager,
     newAppConfig,
-    () => {
-      // STATE TRANSITION: whether the homescreen is currently open is session/runtime
-      // state, not a config value, so toggling `homescreen.isOn` has to decide what
-      // the open/closed flag should become — it can't be derived by a reactive read.
-      if (prevConfig?.homescreen?.isOn !== newConfig.homescreen?.isOn) {
-        // Going off -> on: open the homescreen, but only when the conversation is
-        // empty (don't yank the user away from an in-progress conversation).
-        if (
-          newConfig.homescreen?.isOn &&
-          !currentState.config.public.homescreen?.isOn &&
-          currentState.assistantMessageState.messageIDs.length === 0
-        ) {
-          store.dispatch(viewActions.setHomeScreenIsOpen(true));
-        }
-        // Going on -> off (or switching to "splash" with active messages): make sure
-        // the homescreen is not left open.
-        if (
-          (!newConfig.homescreen?.isOn &&
-            currentState.config.public.homescreen?.isOn) ||
-          (newConfig.homescreen?.disableReturn &&
-            currentState.assistantMessageState.messageIDs.length > 0)
-        ) {
-          store.dispatch(viewActions.setHomeScreenIsOpen(false));
-        }
-      }
-    }
+    () => applyHomeScreenToggle(prevConfig, newConfig, currentState, store)
   );
 
   // (Custom panel state is driven imperatively by ChatInstance, so there is
@@ -149,6 +124,52 @@ export async function applyConfigChangesDynamically(
       );
     }
   }
+}
+
+/**
+ * STATE TRANSITION: whether the home screen is open is session state, not a
+ * config value, so toggling `homescreen.isOn` has to decide what the open flag
+ * becomes; a reactive read can't. `currentState` is from before the replace.
+ */
+function applyHomeScreenToggle(
+  prevConfig: PublicConfig | null,
+  newConfig: PublicConfig,
+  currentState: AppState,
+  store: AppStore<AppState>
+) {
+  if (prevConfig?.homescreen?.isOn === newConfig.homescreen?.isOn) {
+    return;
+  }
+  if (shouldOpenHomeScreen(newConfig, currentState)) {
+    store.dispatch(viewActions.setHomeScreenIsOpen(true));
+  }
+  if (shouldCloseHomeScreen(newConfig, currentState)) {
+    store.dispatch(viewActions.setHomeScreenIsOpen(false));
+  }
+}
+
+/**
+ * Going off to on opens the home screen, but only when the conversation is
+ * empty, so the user isn't pulled out of one in progress.
+ */
+function shouldOpenHomeScreen(newConfig: PublicConfig, current: AppState) {
+  return (
+    newConfig.homescreen?.isOn &&
+    !current.config.public.homescreen?.isOn &&
+    current.assistantMessageState.messageIDs.length === 0
+  );
+}
+
+/**
+ * Going on to off, or to "splash" with messages, makes sure the home screen
+ * isn't left open.
+ */
+function shouldCloseHomeScreen(newConfig: PublicConfig, current: AppState) {
+  return (
+    (!newConfig.homescreen?.isOn && current.config.public.homescreen?.isOn) ||
+    (newConfig.homescreen?.disableReturn &&
+      current.assistantMessageState.messageIDs.length > 0)
+  );
 }
 
 /**

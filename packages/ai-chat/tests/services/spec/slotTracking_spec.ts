@@ -18,6 +18,7 @@ import {
   slotSource,
   type CustomFooterSlotState,
   type CustomRequestFooterSlotState,
+  type SlotStores,
   type UserDefinedSlotState,
 } from '../../../src/shared/services/slotTracking';
 import type {
@@ -344,7 +345,7 @@ describe('attachSlotTracking', () => {
       type: BusEventType.USER_DEFINED_RESPONSE,
       data: { slot: 'before-view', message: item('a'), fullMessage: message },
     } as BusEvent);
-    const stores = attachSlotTracking(manager);
+    const stores: SlotStores = attachSlotTracking(manager);
     expect(Object.keys(stores.userDefinedResponse.get())).toEqual([
       'before-view',
     ]);
