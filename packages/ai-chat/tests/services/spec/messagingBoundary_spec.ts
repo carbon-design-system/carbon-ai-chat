@@ -163,7 +163,7 @@ it('keeps all processor and state runtime dependencies pure', () => {
 it('checks native snapshot preparation while allowing only deferred host callable bodies', () => {
   const source = get(messaging + 'nativeMessageEvents.ts');
   const allowed = snapshotDataCalls(checker, source);
-  expect(allowed.size).toBe(16); // Three deferred calls, one bind, three intrinsic reads, five brand or slot checks, one buffer construct and three data operations.
+  expect(allowed.size).toBe(16); // Deferred traps, intrinsic reads and owned data operations.
   expect(pureEffectIssues(checker, source, allowed)).toEqual([]);
 });
 
@@ -225,7 +225,7 @@ it('keeps core runtime imports and capabilities independent of the view', () => 
               node.expression.kind === ts.SyntaxKind.ImportKeyword
             ? node.arguments[0]
             : undefined;
-      if (!specifier || !ts.isStringLiteral(specifier)) {
+      if (!specifier || !ts.isStringLiteralLike(specifier)) {
         return;
       }
       const target = resolveSource(file, specifier.text, root);
@@ -240,7 +240,14 @@ it('keeps core runtime imports and capabilities independent of the view', () => 
   }
 });
 
+it('requires every allowed workflow owner to exist', () => {
+  for (const file of workflows) {
+    expect(get(file).fileName).toBe(path.join(root, file));
+  }
+});
+
 const transcriptWrites = new Set([
+  'setChatMessagesStateProperty',
   'chatWasHydrated',
   'hydrateMessageHistory',
   'removeMessages',
@@ -304,6 +311,131 @@ const calls = callsIn(
 );
 
 const metadataFile = 'src/chat/utils/messageMetadataCommands.ts';
+function metadataEntryBranch(fn: ts.FunctionDeclaration) {
+  const branch = fn.body?.statements[0];
+  if (
+    fn.modifiers?.some((m) => m.kind === ts.SyntaxKind.AsyncKeyword) ||
+    fn.body?.statements.length !== 1 ||
+    !branch ||
+    !ts.isIfStatement(branch) ||
+    !ts.isCallExpression(branch.expression)
+  ) {
+    return undefined;
+  }
+  return { branch, predicateCall: branch.expression };
+}
+
+function metadataPredicateIssues(
+  fn: ts.FunctionDeclaration,
+  call: ts.CallExpression,
+  expectedName: string
+) {
+  const issues: string[] = [];
+  const predicate = checker.getResolvedSignature(call)?.declaration as
+    ts.FunctionDeclaration | undefined;
+  if (
+    !predicate ||
+    relative(predicate.getSourceFile().fileName) !==
+      'src/shared/store/messageOwnership.ts' ||
+    predicate.name?.text !== expectedName
+  ) {
+    issues.push('metadata routing lost ingress provenance');
+  }
+  const managerSymbol = checker.getSymbolAtLocation(fn.parameters[0].name);
+  const predicateStore = call.arguments[0];
+  if (
+    fn.parameters.length !== 3 ||
+    call.arguments.length !== 2 ||
+    !predicateStore ||
+    !ts.isPropertyAccessExpression(predicateStore) ||
+    predicateStore.name.text !== 'store' ||
+    checker.getSymbolAtLocation(predicateStore.expression) !== managerSymbol ||
+    checker.getSymbolAtLocation(call.arguments[1]) !==
+      checker.getSymbolAtLocation(fn.parameters[1].name)
+  ) {
+    issues.push('metadata predicate arguments changed');
+  }
+  return issues;
+}
+
+function metadataWriterCalls(
+  block: ts.Block,
+  expectedName: string,
+  targetFile: string,
+  args: ts.Symbol[]
+) {
+  const guarded = new Set<ts.Node>();
+  const issues: string[] = [];
+  let matched = 0;
+  let callCount = 0;
+  visit(block, (node) => {
+    if (!ts.isCallExpression(node)) {
+      return;
+    }
+    callCount++;
+    const declaration = checker.getResolvedSignature(node)?.declaration as
+      ts.MethodDeclaration | undefined;
+    if (
+      !declaration ||
+      relative(declaration.getSourceFile().fileName) !== targetFile ||
+      declaration.name?.getText() !== expectedName
+    ) {
+      return;
+    }
+    matched++;
+    if (
+      node.arguments.length !== args.length ||
+      node.arguments.some(
+        (arg, index) => checker.getSymbolAtLocation(arg) !== args[index]
+      )
+    ) {
+      issues.push('metadata argument identity changed');
+    }
+    if (targetFile === 'src/shared/store/actions.ts') {
+      guarded.add(node);
+    }
+  });
+  if (
+    matched !== 1 ||
+    callCount !== (targetFile === 'src/shared/store/actions.ts' ? 2 : 1)
+  ) {
+    issues.push('metadata route lost its exact writer');
+  }
+  return { guarded, issues };
+}
+
+function metadataBranchWrites(
+  block: ts.Statement | undefined,
+  expectedName: string,
+  targetFile: string,
+  args: ts.Symbol[]
+) {
+  const guarded = new Set<ts.Node>();
+  const issues: string[] = [];
+  if (!block || !ts.isBlock(block) || block.statements.length !== 1) {
+    issues.push('metadata branch gained effects');
+    return { guarded, issues };
+  }
+  const statement = block.statements[0];
+  if (
+    !ts.isExpressionStatement(statement) ||
+    !ts.isCallExpression(statement.expression)
+  ) {
+    issues.push('metadata branch is not one synchronous call');
+    return { guarded, issues };
+  }
+  const outer = checker.getResolvedSignature(statement.expression)?.declaration;
+  const expectedOuter =
+    targetFile === 'src/shared/store/actions.ts'
+      ? 'src/shared/store/appStore.ts'
+      : targetFile;
+  if (!outer || relative(outer.getSourceFile().fileName) !== expectedOuter) {
+    issues.push('metadata branch changed its dispatch owner');
+  }
+  const writes = metadataWriterCalls(block, expectedName, targetFile, args);
+  return { guarded: writes.guarded, issues: [...issues, ...writes.issues] };
+}
+
 function guardedMetadataWrites() {
   const guarded = new Set<ts.Node>();
   const issues: string[] = [];
@@ -319,117 +451,39 @@ function guardedMetadataWrites() {
       'setMessageOptionSelected',
     ],
   };
-  const source = get(metadataFile);
-  const functions = source.statements.filter(ts.isFunctionDeclaration);
+  const functions = get(metadataFile).statements.filter(
+    ts.isFunctionDeclaration
+  );
   if (functions.length !== 2) {
     issues.push('unexpected metadata entry');
   }
   for (const fn of functions) {
     const names = expected[fn.name?.text ?? ''];
-    const branch = fn.body?.statements[0];
-    if (
-      !names ||
-      fn.modifiers?.some((m) => m.kind === ts.SyntaxKind.AsyncKeyword) ||
-      fn.body?.statements.length !== 1 ||
-      !branch ||
-      !ts.isIfStatement(branch) ||
-      !ts.isCallExpression(branch.expression)
-    ) {
+    const route = metadataEntryBranch(fn);
+    if (!names || !route) {
       issues.push('metadata routing shape changed');
       continue;
     }
-    const predicate = checker.getResolvedSignature(branch.expression)
-      ?.declaration as ts.FunctionDeclaration | undefined;
-    if (
-      !predicate ||
-      relative(predicate.getSourceFile().fileName) !==
-        'src/shared/store/messageOwnership.ts' ||
-      predicate.name?.text !== names[0]
-    ) {
-      issues.push('metadata routing lost ingress provenance');
-    }
-    const managerSymbol = checker.getSymbolAtLocation(fn.parameters[0].name);
-    const predicateStore = branch.expression.arguments[0];
-    if (
-      fn.parameters.length !== 3 ||
-      branch.expression.arguments.length !== 2 ||
-      !predicateStore ||
-      !ts.isPropertyAccessExpression(predicateStore) ||
-      predicateStore.name.text !== 'store' ||
-      checker.getSymbolAtLocation(predicateStore.expression) !==
-        managerSymbol ||
-      checker.getSymbolAtLocation(branch.expression.arguments[1]) !==
-        checker.getSymbolAtLocation(fn.parameters[1].name)
-    ) {
-      issues.push('metadata predicate arguments changed');
-    }
+    issues.push(...metadataPredicateIssues(fn, route.predicateCall, names[0]));
     const args = fn.parameters
       .slice(1)
       .map((p) => checker.getSymbolAtLocation(p.name));
     for (const [block, expectedName, targetFile] of [
-      [branch.thenStatement, names[1], 'src/shared/store/actions.ts'],
-      [branch.elseStatement, names[2], messaging + 'MessageCoordinator.ts'],
+      [route.branch.thenStatement, names[1], 'src/shared/store/actions.ts'],
+      [
+        route.branch.elseStatement,
+        names[2],
+        messaging + 'MessageCoordinator.ts',
+      ],
     ] as const) {
-      if (!block || !ts.isBlock(block) || block.statements.length !== 1) {
-        issues.push('metadata branch gained effects');
-        continue;
-      }
-      const statement = block.statements[0];
-      if (
-        !ts.isExpressionStatement(statement) ||
-        !ts.isCallExpression(statement.expression)
-      ) {
-        issues.push('metadata branch is not one synchronous call');
-        continue;
-      }
-      const outer = checker.getResolvedSignature(
-        statement.expression
-      )?.declaration;
-      const expectedOuter =
-        targetFile === 'src/shared/store/actions.ts'
-          ? 'src/shared/store/appStore.ts'
-          : targetFile;
-      if (
-        !outer ||
-        relative(outer.getSourceFile().fileName) !== expectedOuter
-      ) {
-        issues.push('metadata branch changed its dispatch owner');
-      }
-      let matched = 0;
-      let callCount = 0;
-      visit(block, (node) => {
-        if (!ts.isCallExpression(node)) {
-          return;
-        }
-        callCount++;
-        const d = checker.getResolvedSignature(node)?.declaration as
-          ts.MethodDeclaration | undefined;
-        if (
-          !d ||
-          relative(d.getSourceFile().fileName) !== targetFile ||
-          d.name?.getText() !== expectedName
-        ) {
-          return;
-        }
-        matched++;
-        if (
-          node.arguments.length !== args.length ||
-          node.arguments.some(
-            (a, i) => checker.getSymbolAtLocation(a) !== args[i]
-          )
-        ) {
-          issues.push('metadata argument identity changed');
-        }
-        if (targetFile === 'src/shared/store/actions.ts') {
-          guarded.add(node);
-        }
-      });
-      if (
-        matched !== 1 ||
-        callCount !== (targetFile === 'src/shared/store/actions.ts' ? 2 : 1)
-      ) {
-        issues.push('metadata route lost its exact writer');
-      }
+      const writes = metadataBranchWrites(
+        block,
+        expectedName,
+        targetFile,
+        args
+      );
+      issues.push(...writes.issues);
+      writes.guarded.forEach((node) => guarded.add(node));
     }
   }
   return { guarded, issues };
@@ -615,7 +669,7 @@ function walkBoundCalls(
 }
 
 it('keeps the adapter types and actual boot bindings view-only', () => {
-  const adapter = 'src/chat/services/MessagePresentationAdapter.ts';
+  const adapter = messaging + 'presentation/MessagePresentationAdapter.ts';
   const announcer = messaging + 'presentation/StreamAnnouncerService.ts';
   const adapterGraph = graph([adapter, announcer], new Set());
   expect(adapterGraph.issues).toEqual([]);
@@ -884,6 +938,15 @@ it.each([
   "import type { ServiceManager as Renamed } from './ServiceManager'; type Selected = Pick<Renamed, 'store'>; export function prepare(value: Selected) { return 1; }",
   "export function prepare(value: import('./ServiceManager').ServiceManager['store']) { return 1; }",
   "import type { Wrapped } from './alias'; export function prepare(value: Wrapped) { return 1; }",
+  "import type { Primitive } from './primitiveAlias'; export function prepare(value: Primitive) { return value; }",
+  'export class Processor { get later() { return () => 1; } }',
+  'export class Processor { set effect(value: () => void) { value(); } }',
+  'export const processor = { prepare(effect: () => void) { effect(); } };',
+  'export class Processor extends Map<string, () => void> {}',
+  'export const Processor = class extends Map<string, () => void> {};',
+  "import type { PropertyView } from './interfaceAlias'; export function prepare(value: PropertyView) { return value; }",
+  "import type { InheritedView } from './interfaceAlias'; export function prepare(value: InheritedView) { return value; }",
+  "import type { Holder } from './classAlias'; export function prepare(value: Holder) { return value; }",
   "import type { AppStore } from './appStore'; type Value = AppStore['label']; export function prepare(value: Value) { return value; }",
   'export function prepare() { return { nested: { later: () => 1 } }; }',
   'export const prepare = (effect: () => void) => effect();',
@@ -897,6 +960,12 @@ it.each([
       'export interface ServiceManager { store: { dispatch(action: unknown): void }; namespace: string }',
     'alias.ts':
       "import type { ServiceManager } from './ServiceManager'; export type Wrapped = Pick<ServiceManager, 'namespace'>;",
+    'primitiveAlias.ts':
+      "import type { ServiceManager } from './ServiceManager'; export type Primitive = ServiceManager['namespace'];",
+    'interfaceAlias.ts':
+      "import type { ServiceManager } from './ServiceManager'; export interface PropertyView { namespace: ServiceManager['namespace'] }; export interface InheritedView extends Pick<ServiceManager, 'namespace'> {}",
+    'classAlias.ts':
+      "import type { ServiceManager } from './ServiceManager'; export class Holder { value: ServiceManager['namespace'] = 'namespace'; }",
   });
   expect(
     capabilityIssues(f.checker, f.source(), new Set()).length
@@ -1045,4 +1114,524 @@ it('allows deferred Proxy call traps but still checks preparation-time getter tr
   expect(pureEffectIssues(f.checker, f.source(), allowed)).toEqual([
     expect.stringContaining('reflective host invocation'),
   ]);
+});
+
+it('accepts data getters, setters, object methods and inherited data containers', () => {
+  const f = fixture({
+    'dataTypes.ts':
+      "interface Fields { label: string }; export interface DataView extends Pick<Fields, 'label'> { value: Fields['label'] }; export class DataHolder { value: Fields['label'] = 'data'; }",
+    'entry.ts': `
+      import type { DataView, DataHolder } from './dataTypes';
+      export const DataValues = class extends Map<string, string> {};
+      export class DataState extends Map<string, string> {
+        get label() { return 'ready'; }
+        fail() { return { value: 'failed' }; }
+        set label(value: string) { this.set('label', value); }
+      }
+      type Result = ReturnType<DataState['fail']>;
+      export const processor = {
+        prepare(value: string, date: Date) { return { value, time: date.getTime() }; },
+        result(value: Result, view: DataView, holder: DataHolder) { return { value, view, holder }; },
+      };
+    `,
+  });
+  expect(capabilityIssues(f.checker, f.source(), new Set())).toEqual([]);
+});
+
+it.each([
+  "document['title'];",
+  'document[`title`];',
+  'const { title: read } = document; read;',
+  'function read({ title }: Document) { return title; }',
+])('rejects resolved ambient property reads: %s', (entry) => {
+  const f = fixture({ 'entry.ts': entry });
+  expect(pureEffectIssues(f.checker, f.source()).length).toBeGreaterThan(0);
+});
+
+it.each([
+  'export function read(manager: ServiceManager) { return manager[`mainWindow`]; }',
+  'export function read({ mainWindow: view }: ServiceManager) { return view; }',
+])('rejects resolved view rights through property syntax: %s', (entry) => {
+  const f = fixture({
+    'entry.ts': `import type { ServiceManager } from './ServiceManager'; ${entry}`,
+    'ServiceManager.ts':
+      'export interface ServiceManager { mainWindow: string }',
+  });
+  expect(
+    viewCapabilityReads(
+      f.checker,
+      f.source(),
+      f.source('ServiceManager.ts').fileName,
+      new Set(['mainWindow'])
+    )
+  ).toHaveLength(1);
+});
+
+it('accepts ordinary data properties with ambient and view names', () => {
+  const f = fixture({
+    'entry.ts':
+      'interface Data { title: string; mainWindow: string }; export function read({ title }: Data, data: Data) { const { mainWindow } = data; return [title, mainWindow, data[`mainWindow`], data["title"]]; }',
+    'ServiceManager.ts':
+      'export interface ServiceManager { mainWindow: string }',
+  });
+  expect(pureEffectIssues(f.checker, f.source())).toEqual([]);
+  expect(
+    viewCapabilityReads(
+      f.checker,
+      f.source(),
+      f.source('ServiceManager.ts').fileName,
+      new Set(['mainWindow'])
+    )
+  ).toEqual([]);
+});
+
+it('allows implemented view methods only in view mode and keeps their arguments data-only', () => {
+  const f = fixture({
+    'entry.ts':
+      "import type { ViewPort } from './port'; export class Adapter implements ViewPort { close() {} }",
+    'port.ts': 'export interface ViewPort { close(): void }',
+  });
+  expect(capabilityIssues(f.checker, f.source(), new Set(), true)).toEqual([]);
+  expect(
+    capabilityIssues(f.checker, f.source(), new Set()).length
+  ).toBeGreaterThan(0);
+  const bad = fixture({
+    'entry.ts':
+      "import type { ViewPort } from './port'; export class Adapter implements ViewPort { close(callback: () => void) {} }",
+    'port.ts':
+      'export interface ViewPort { close(callback: () => void): void }',
+  });
+  expect(
+    capabilityIssues(bad.checker, bad.source(), new Set(), true).length
+  ).toBeGreaterThan(0);
+});
+
+it('classifies a destructured broad message-state setter as an assistant write', () => {
+  const f = fixture({
+    'entry.ts':
+      "import actions from './actions'; const { setChatMessagesStateProperty: write } = actions; write('messageIDs', []);",
+    'actions.ts':
+      'export default { setChatMessagesStateProperty(key: string, value: unknown) { return { key, value }; } };',
+  });
+  const writes = callsIn(f.checker, [f.source()]).filter(
+    (call) =>
+      call.file === f.source('actions.ts').fileName &&
+      transcriptWrites.has(call.name ?? '')
+  );
+  expect(writes.map((call) => call.name)).toEqual([
+    'setChatMessagesStateProperty',
+  ]);
+});
+
+it('recognizes current intrinsic snapshot preparation without eager host invocation', () => {
+  const source = get(messaging + 'nativeMessageEvents.ts');
+  const allowed = snapshotDataCalls(checker, source);
+  expect(pureEffectIssues(checker, source, allowed)).toEqual([]);
+});
+
+it.each([
+  [
+    'Reflect.construct(\n      BufferConstructor,',
+    'Reflect.construct(\n      value as Function,',
+  ],
+  ['isCollection(value, Map.prototype)', 'isCollection(value, value as any)'],
+  [
+    '? [ArrayBuffer]\n      : [ArrayBuffer, SharedArrayBuffer]',
+    '? [ArrayBuffer]\n      : [ArrayBuffer, value as any]',
+  ],
+  [
+    'Function.prototype.toString.call(constructor)',
+    '(constructor as Function).call(undefined)',
+  ],
+  [
+    'copies.set(value, owned);\n    if (map)',
+    'copies.set(value, owned);\n    owned = value;\n    if (map)',
+  ],
+])('rejects replacing an intrinsic snapshot binding: %s', (before, after) => {
+  const original = get(messaging + 'nativeMessageEvents.ts').text;
+  expect(original).toContain(before);
+  const file = '../src/shared/services/messaging/nativeMessageEvents.ts';
+  const f = fixture({ [file]: original.replace(before, after) });
+  const source = f.source(file);
+  expect(
+    pureEffectIssues(f.checker, source, snapshotDataCalls(f.checker, source))
+      .length
+  ).toBeGreaterThan(0);
+});
+
+it.each([
+  'const read = Date.now.bind(Date); read();',
+  'const random = Math.random.bind(Math); random();',
+  'export function prepare(effect: () => string) { const run = effect.bind(undefined); return run(); }',
+])('rejects a bound effect or supplied callback: %s', (entry) => {
+  const f = fixture({ 'entry.ts': entry });
+  expect(pureEffectIssues(f.checker, f.source()).length).toBeGreaterThan(0);
+});
+
+it('accepts binding and invoking a known local data function', () => {
+  const f = fixture({
+    'entry.ts':
+      'function double(value: number) { return value * 2; } const read = double.bind(undefined, 2); export const value = read();',
+  });
+  expect(pureEffectIssues(f.checker, f.source())).toEqual([]);
+});
+
+function rawActionValue(
+  typeChecker: ts.TypeChecker,
+  node: ts.Expression | undefined,
+  creatorFiles: Set<string>,
+  ownershipFile: string,
+  seen = new Set<ts.Symbol>()
+): boolean {
+  if (!node) {
+    return false;
+  }
+  if (ts.isCallExpression(node)) {
+    const declaration = typeChecker.getResolvedSignature(node)?.declaration;
+    if (!declaration) {
+      return false;
+    }
+    const file = declaration.getSourceFile().fileName;
+    if (creatorFiles.has(file)) {
+      return true;
+    }
+    const name = (declaration as ts.FunctionDeclaration).name?.getText();
+    return (
+      file === ownershipFile &&
+      [
+        'markHumanAgentIngress',
+        'retainHistoryOwnership',
+        'retainMessageCloneOwnership',
+        'retainLocalCloneOwnership',
+      ].includes(name ?? '') &&
+      rawActionValue(
+        typeChecker,
+        node.arguments[0],
+        creatorFiles,
+        ownershipFile,
+        seen
+      )
+    );
+  }
+  if (!ts.isIdentifier(node)) {
+    return false;
+  }
+  const symbol = typeChecker.getSymbolAtLocation(node);
+  if (!symbol || seen.has(symbol)) {
+    return false;
+  }
+  seen.add(symbol);
+  const declaration = symbol.valueDeclaration;
+  return Boolean(
+    declaration &&
+    ts.isVariableDeclaration(declaration) &&
+    ts.isVariableDeclarationList(declaration.parent) &&
+    declaration.parent.flags & ts.NodeFlags.Const &&
+    rawActionValue(
+      typeChecker,
+      declaration.initializer,
+      creatorFiles,
+      ownershipFile,
+      seen
+    )
+  );
+}
+
+function rawActionProperties(node: ts.Expression | undefined) {
+  if (!node || !ts.isObjectLiteralExpression(node)) {
+    return undefined;
+  }
+  const properties = new Map<string, ts.Expression>();
+  for (const property of node.properties) {
+    if (
+      !ts.isPropertyAssignment(property) ||
+      (!ts.isIdentifier(property.name) &&
+        !ts.isStringLiteralLike(property.name))
+    ) {
+      return undefined;
+    }
+    if (properties.has(property.name.text)) {
+      return undefined;
+    }
+    properties.set(property.name.text, property.initializer);
+  }
+  return properties;
+}
+
+function rawActionConstant(
+  typeChecker: ts.TypeChecker,
+  value: ts.Expression | undefined,
+  file: string,
+  text: string
+) {
+  if (!value || !ts.isIdentifier(value)) {
+    return false;
+  }
+  let symbol = typeChecker.getSymbolAtLocation(value);
+  if (symbol?.flags & ts.SymbolFlags.Alias) {
+    symbol = typeChecker.getAliasedSymbol(symbol);
+  }
+  const declaration = symbol?.valueDeclaration;
+  return Boolean(
+    declaration &&
+    ts.isVariableDeclaration(declaration) &&
+    declaration.getSourceFile().fileName === file &&
+    declaration.initializer &&
+    ts.isStringLiteralLike(declaration.initializer) &&
+    declaration.initializer.text === text
+  );
+}
+
+function allowedRawAction(
+  typeChecker: ts.TypeChecker,
+  file: string,
+  node: ts.Expression | undefined,
+  actionsFile: string
+) {
+  const properties = rawActionProperties(node);
+  if (!properties) {
+    return false;
+  }
+  const type = properties.get('type');
+  if (file === 'src/chat/utils/chatBoot.ts') {
+    const key = properties.get('key');
+    return (
+      properties.size === 3 &&
+      type &&
+      ts.isStringLiteralLike(type) &&
+      type.text === 'SET_APP_STATE_VALUE' &&
+      key &&
+      ts.isStringLiteralLike(key) &&
+      key.text === 'catastrophicErrorType' &&
+      properties.get('value')?.kind === ts.SyntaxKind.TrueKeyword
+    );
+  }
+  return (
+    file === 'src/shared/services/ThemeWatcherService.ts' &&
+    properties.size === 2 &&
+    properties.has('themeState') &&
+    rawActionConstant(typeChecker, type, actionsFile, 'UPDATE_THEME_STATE')
+  );
+}
+
+it('rejects raw store writes throughout the package except exact existing view state actions', () => {
+  const actionsFile = path.join(root, 'src/shared/store/actions.ts');
+  const creatorFiles = new Set([
+    actionsFile,
+    path.join(root, 'src/shared/store/humanAgentActions.ts'),
+  ]);
+  const ownershipFile = path.join(root, 'src/shared/store/messageOwnership.ts');
+  const issues: string[] = [];
+  for (const call of calls) {
+    if (
+      !ts.isCallExpression(call.node) ||
+      !isRawStoreDispatch(
+        checker,
+        call.node,
+        path.join(root, 'src/shared/store/appStore.ts'),
+        actionsFile
+      )
+    ) {
+      continue;
+    }
+    const argument = call.node.arguments[0];
+    if (
+      !rawActionValue(checker, argument, creatorFiles, ownershipFile) &&
+      !allowedRawAction(
+        checker,
+        relative(call.source.fileName),
+        argument,
+        actionsFile
+      )
+    ) {
+      issues.push(`${relative(call.source.fileName)}: ${argument?.getText()}`);
+    }
+  }
+  expect(issues).toEqual([]);
+});
+
+it.each([
+  [
+    'src/chat/utils/chatBoot.ts',
+    "{type: 'SET_APP_STATE_VALUE', key: 'catastrophicErrorType', value: true}",
+    true,
+  ],
+  [
+    'src/chat/utils/chatBoot.ts',
+    "{type: 'SET_APP_STATE_VALUE', key: 'assistantMessageState', value: true}",
+    false,
+  ],
+  [
+    'src/chat/utils/chatBoot.ts',
+    "{type: 'SET_APP_STATE_VALUE', key: 'catastrophicErrorType', value: true, message: {}}",
+    false,
+  ],
+  [
+    'src/chat/utils/other.ts',
+    "{type: 'SET_APP_STATE_VALUE', key: 'catastrophicErrorType', value: true}",
+    false,
+  ],
+  [
+    'src/shared/services/ThemeWatcherService.ts',
+    '{type: UPDATE_THEME_STATE, themeState: {}}',
+    true,
+  ],
+  [
+    'src/shared/services/ThemeWatcherService.ts',
+    "{type: 'UPDATE_THEME_STATE', themeState: {}}",
+    false,
+  ],
+  [
+    'src/shared/services/ThemeWatcherService.ts',
+    "{type: 'ADD_MESSAGE', message: {}}",
+    false,
+  ],
+])(
+  'allows only the exact raw state action at %s: %s',
+  (file, expression, expected) => {
+    const f = fixture({
+      'entry.ts': `import { UPDATE_THEME_STATE } from './actions'; export const action = ${expression};`,
+      'actions.ts': "export const UPDATE_THEME_STATE = 'UPDATE_THEME_STATE';",
+    });
+    const declaration = f.source().statements.find(ts.isVariableStatement)!
+      .declarationList.declarations[0];
+    expect(
+      allowedRawAction(
+        f.checker,
+        file,
+        declaration.initializer,
+        f.source('actions.ts').fileName
+      )
+    ).toBe(expected);
+  }
+);
+
+it('follows const action and private provenance wrappers without allowing raw transcript literals', () => {
+  const f = fixture({
+    'entry.ts':
+      "import actions from './actions'; import { markHumanAgentIngress } from './ownership'; const legitimate = actions.addMessage(); const hidden = { type: 'ADD_MESSAGE' }; export const first = markHumanAgentIngress(legitimate); export const second = markHumanAgentIngress(hidden);",
+    'actions.ts':
+      "export default { addMessage() { return { type: 'ADD_MESSAGE' }; } };",
+    'ownership.ts':
+      'export function markHumanAgentIngress<T extends object>(action: T): T { return action; }',
+  });
+  const values = f
+    .source()
+    .statements.filter(ts.isVariableStatement)
+    .flatMap((statement) => statement.declarationList.declarations)
+    .slice(-2);
+  expect(
+    values.map((declaration) =>
+      rawActionValue(
+        f.checker,
+        declaration.initializer,
+        new Set([f.source('actions.ts').fileName]),
+        f.source('ownership.ts').fileName
+      )
+    )
+  ).toEqual([true, false]);
+});
+
+it('wires private reduction receipts before listeners without rereading action payloads', () => {
+  const storeFile = 'src/shared/store/appStore.ts';
+  const ownershipFile = 'src/shared/store/messageOwnership.ts';
+  const constructors = calls.filter(
+    (call) =>
+      relative(call.file) === storeFile &&
+      call.name === 'createStoreFromReduction'
+  );
+  expect(
+    constructors.map((call) => relative(call.source.fileName)).sort()
+  ).toEqual([storeFile, 'src/shared/store/doCreateStore.ts'].sort());
+  const boot = constructors.find(
+    (call) =>
+      relative(call.source.fileName) === 'src/shared/store/doCreateStore.ts'
+  )!;
+  const reducer = boot.node.arguments![0];
+  let reducerSymbol = checker.getSymbolAtLocation(reducer)!;
+  if (reducerSymbol.flags & ts.SymbolFlags.Alias) {
+    reducerSymbol = checker.getAliasedSymbol(reducerSymbol);
+  }
+  expect(
+    reducerSymbol.declarations!.map((declaration) => [
+      relative(declaration.getSourceFile().fileName),
+      (declaration as ts.FunctionDeclaration).name?.text,
+    ])
+  ).toEqual([['src/shared/store/reducers.ts', 'reduceWithMessageOwnership']]);
+  const storeDeclaration = boot.node.parent;
+  expect(ts.isVariableDeclaration(storeDeclaration)).toBe(true);
+  const enable = calls.find(
+    (call) =>
+      relative(call.source.fileName) === 'src/shared/store/doCreateStore.ts' &&
+      relative(call.file) === ownershipFile &&
+      call.name === 'enableMessageOwnership'
+  )!;
+  expect(checker.getSymbolAtLocation(enable.node.arguments![0])).toBe(
+    checker.getSymbolAtLocation(
+      (storeDeclaration as ts.VariableDeclaration).name
+    )
+  );
+  const commits = calls.filter(
+    (call) =>
+      relative(call.source.fileName) === storeFile &&
+      relative(call.file) === ownershipFile &&
+      call.name === 'commitMessageOwnership'
+  );
+  expect(commits).toHaveLength(2);
+  const bindings = new Map<string, ts.Symbol>();
+  visit(get(storeFile), (node) => {
+    if (
+      ts.isVariableDeclaration(node) &&
+      ts.isIdentifier(node.name) &&
+      ['store', 'reduction', 'currentState', 'nextState', 'listeners'].includes(
+        node.name.text
+      )
+    ) {
+      bindings.set(node.name.text, checker.getSymbolAtLocation(node.name)!);
+    }
+  });
+  for (const commit of commits) {
+    expect(commit.node.arguments).toHaveLength(3);
+    const [store, receipt, action] = commit.node.arguments!;
+    expect(checker.getSymbolAtLocation(store)).toBe(bindings.get('store'));
+    expect(ts.isPropertyAccessExpression(receipt)).toBe(true);
+    if (ts.isPropertyAccessExpression(receipt)) {
+      expect(receipt.name.text).toBe('ownership');
+      expect(checker.getSymbolAtLocation(receipt.expression)).toBe(
+        bindings.get('reduction')
+      );
+    }
+    const reduction = bindings.get('reduction')!
+      .valueDeclaration as ts.VariableDeclaration;
+    expect(ts.isCallExpression(reduction.initializer!)).toBe(true);
+    expect(checker.getSymbolAtLocation(action)).toBe(
+      checker.getSymbolAtLocation(
+        (reduction.initializer as ts.CallExpression).arguments[1]
+      )
+    );
+  }
+  const statement = commits[0].node.parent as ts.ExpressionStatement;
+  const block = statement.parent as ts.Block;
+  const index = block.statements.indexOf(statement);
+  const before = block.statements[index - 1] as ts.ExpressionStatement;
+  expect(ts.isBinaryExpression(before.expression)).toBe(true);
+  const assignment = before.expression as ts.BinaryExpression;
+  expect(assignment.operatorToken.kind).toBe(ts.SyntaxKind.EqualsToken);
+  expect(checker.getSymbolAtLocation(assignment.left)).toBe(
+    bindings.get('currentState')
+  );
+  expect(checker.getSymbolAtLocation(assignment.right)).toBe(
+    bindings.get('nextState')
+  );
+  const after = (block.statements[index + 1] as ts.ExpressionStatement)
+    .expression as ts.CallExpression;
+  expect(ts.isPropertyAccessExpression(after.expression)).toBe(true);
+  expect(
+    checker.getSymbolAtLocation(
+      (after.expression as ts.PropertyAccessExpression).expression
+    )
+  ).toBe(bindings.get('listeners'));
+  const unchangedBlock = commits[1].node.parent.parent as ts.Block;
+  expect(unchangedBlock.statements).toHaveLength(1);
+  expect((block.parent as ts.IfStatement).elseStatement).toBe(unchangedBlock);
 });

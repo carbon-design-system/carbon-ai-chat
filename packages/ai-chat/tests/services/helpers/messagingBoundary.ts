@@ -63,6 +63,103 @@ export function visit(node: ts.Node, fn: (node: ts.Node) => void) {
   ts.forEachChild(node, (child) => visit(child, fn));
 }
 
+function isGlobalObject(node: ts.Node | undefined, checker: ts.TypeChecker) {
+  while (node && ts.isParenthesizedExpression(node)) {
+    node = node.expression;
+  }
+  return (
+    node &&
+    ts.isIdentifier(node) &&
+    (node.text === 'globalThis' || node.text === 'global') &&
+    !checker.getSymbolAtLocation(node)?.declarations?.length
+  );
+}
+
+function isRequireName(node: ts.Node) {
+  if (ts.isComputedPropertyName(node)) {
+    return (
+      ts.isStringLiteralLike(node.expression) &&
+      node.expression.text === 'require'
+    );
+  }
+  return (
+    (ts.isIdentifier(node) || ts.isStringLiteralLike(node)) &&
+    node.text === 'require'
+  );
+}
+
+function isGlobalRequireAssignment(
+  node: ts.Node,
+  checker: ts.TypeChecker
+): boolean {
+  if (
+    !ts.isBinaryExpression(node) ||
+    node.operatorToken.kind !== ts.SyntaxKind.EqualsToken ||
+    !ts.isObjectLiteralExpression(node.left) ||
+    !isGlobalObject(node.right, checker)
+  ) {
+    return false;
+  }
+  return node.left.properties.some(
+    (property) =>
+      (ts.isPropertyAssignment(property) ||
+        ts.isShorthandPropertyAssignment(property)) &&
+      isRequireName(property.name)
+  );
+}
+
+function isGlobalRequire(node: ts.Node, checker: ts.TypeChecker): boolean {
+  if (ts.isPropertyAccessExpression(node) && isRequireName(node.name)) {
+    return Boolean(isGlobalObject(node.expression, checker));
+  }
+  if (
+    ts.isElementAccessExpression(node) &&
+    ts.isStringLiteralLike(node.argumentExpression) &&
+    isRequireName(node.argumentExpression)
+  ) {
+    return Boolean(isGlobalObject(node.expression, checker));
+  }
+  if (
+    ts.isBindingElement(node) &&
+    ts.isObjectBindingPattern(node.parent) &&
+    isRequireName(node.propertyName ?? node.name)
+  ) {
+    const declaration = node.parent.parent;
+    return (
+      ts.isVariableDeclaration(declaration) &&
+      Boolean(isGlobalObject(declaration.initializer, checker))
+    );
+  }
+  return false;
+}
+
+function isUnboundRequire(node: ts.Node, checker: ts.TypeChecker): boolean {
+  if (
+    isGlobalRequire(node, checker) ||
+    isGlobalRequireAssignment(node, checker)
+  ) {
+    return true;
+  }
+  if (!ts.isIdentifier(node) || node.text !== 'require') {
+    return false;
+  }
+  const parent = node.parent;
+  if (
+    (ts.isPropertyAccessExpression(parent) && parent.name === node) ||
+    (ts.isBindingElement(parent) && parent.propertyName === node) ||
+    ((ts.isLabeledStatement(parent) ||
+      ts.isBreakStatement(parent) ||
+      ts.isContinueStatement(parent)) &&
+      parent.label === node)
+  ) {
+    return false;
+  }
+  const symbol = ts.isShorthandPropertyAssignment(parent)
+    ? checker.getShorthandAssignmentValueSymbol(parent)
+    : checker.getSymbolAtLocation(node);
+  return !symbol?.declarations?.length;
+}
+
 export function runtimeGraph(
   roots: string[],
   read: (file: string) => string,
@@ -131,18 +228,13 @@ export function runtimeGraph(
         node.expression.kind === ts.SyntaxKind.ImportKeyword
       ) {
         const argument = node.arguments[0];
-        if (argument && ts.isStringLiteral(argument)) {
+        if (argument && ts.isStringLiteralLike(argument)) {
           add(argument.text);
         } else {
           issues.push(`${file}: nonliteral dynamic import`);
         }
       }
-      if (
-        ts.isCallExpression(node) &&
-        ts.isIdentifier(node.expression) &&
-        node.expression.text === 'require' &&
-        !bindings.getSymbolAtLocation(node.expression)?.declarations?.length
-      ) {
+      if (isUnboundRequire(node, bindings)) {
         issues.push(`${file}: require is not a supported boundary edge`);
       }
     });
@@ -199,7 +291,86 @@ export function resolvedCall(
     : undefined;
 }
 
-/** Check data surfaces by resolved type, including mapped-type inputs. */
+function sensitiveOrigin(symbol: ts.Symbol | undefined) {
+  return symbol?.declarations?.some((declaration) => {
+    const file = declaration.getSourceFile().fileName.replaceAll('\\', '/');
+    const service =
+      /\/(?:ServiceManager|ChatInstance|ChatInstanceService|appStore|AppState|PublicConfig)\.[^/]+$/.test(
+        file
+      );
+    const browser =
+      /\/lib\.[^/]+\.d\.ts$/.test(file) &&
+      [
+        'Promise',
+        'AbortController',
+        'AbortSignal',
+        'Window',
+        'Document',
+        'HTMLElement',
+      ].includes(declarationName(declaration) ?? '');
+    return service || browser;
+  });
+}
+
+function resolvedSymbol(checker: ts.TypeChecker, node: ts.Node | undefined) {
+  const symbol = node && checker.getSymbolAtLocation(node);
+  return symbol && symbol.flags & ts.SymbolFlags.Alias
+    ? checker.getAliasedSymbol(symbol)
+    : symbol;
+}
+
+function typeArguments(checker: ts.TypeChecker, type: ts.Type) {
+  return [
+    ...(type.aliasTypeArguments ?? []),
+    ...(type.flags & ts.TypeFlags.Object
+      ? checker.getTypeArguments(type as ts.TypeReference)
+      : []),
+  ];
+}
+
+function dataWrapper(type: ts.Type, args: readonly ts.Type[]) {
+  return (
+    type.aliasSymbol &&
+    args.length &&
+    type.aliasSymbol.declarations?.every((declaration) =>
+      /(?:\/lib\.[^/]+\.d\.ts|\/types\/utilities\/DeepPartial(?:\.d)?\.ts)$/.test(
+        declaration.getSourceFile().fileName
+      )
+    )
+  );
+}
+
+function dataLibrary(type: ts.Type) {
+  const declarations = type.symbol?.declarations ?? [];
+  return (
+    declarations.length &&
+    declarations.every((declaration) =>
+      /\/lib\.[^/]+\.d\.ts$/.test(declaration.getSourceFile().fileName)
+    ) &&
+    [
+      'Array',
+      'ReadonlyArray',
+      'Map',
+      'ReadonlyMap',
+      'Set',
+      'ReadonlySet',
+      'Date',
+    ].includes(type.symbol.name)
+  );
+}
+
+function methodLike(
+  node: ts.Node
+): node is
+  ts.MethodDeclaration | ts.GetAccessorDeclaration | ts.SetAccessorDeclaration {
+  return (
+    ts.isMethodDeclaration(node) ||
+    ts.isGetAccessorDeclaration(node) ||
+    ts.isSetAccessorDeclaration(node)
+  );
+}
+
+/** Check data surfaces and their named origins, even when a type reduces to a primitive. */
 export function capabilityIssues(
   checker: ts.TypeChecker,
   source: ts.SourceFile,
@@ -209,748 +380,965 @@ export function capabilityIssues(
   const issues = new Set<string>();
   const checked = new Set<ts.Type>();
   const checkedOrigins = new Set<ts.Symbol>();
-  const sensitive = (symbol: ts.Symbol | undefined) =>
-    symbol?.declarations?.some((d) => {
-      const file = d.getSourceFile().fileName.replaceAll('\\', '/');
-      return (
-        /\/(?:ServiceManager|ChatInstance|ChatInstanceService|appStore|AppState|PublicConfig)\.[^/]+$/.test(
-          file
-        ) ||
-        (/\/lib\.[^/]+\.d\.ts$/.test(file) &&
-          [
-            'Promise',
-            'AbortController',
-            'AbortSignal',
-            'Window',
-            'Document',
-            'HTMLElement',
-          ].includes(declarationName(d) ?? ''))
+
+  function inspectSignature(
+    signature: ts.Signature,
+    declaration: ts.Node,
+    label: string
+  ) {
+    for (const parameter of signature.getParameters()) {
+      inspect(
+        checker.getTypeOfSymbolAtLocation(parameter, declaration),
+        label + ' argument'
       );
-    });
-  const inspect = (type: ts.Type, label: string, methodContainer = false) => {
+    }
+    inspect(signature.getReturnType(), label + ' result');
+  }
+
+  function inspectProperties(
+    type: ts.Type,
+    label: string,
+    methodContainer: boolean
+  ) {
+    for (const index of checker.getIndexInfosOfType(type)) {
+      inspect(index.type, label + ' indexed value');
+    }
+    for (const property of checker.getPropertiesOfType(type)) {
+      const declaration =
+        property.valueDeclaration ?? property.declarations?.[0];
+      if (!declaration) {
+        continue;
+      }
+      const propertyType = checker.getTypeOfSymbolAtLocation(
+        property,
+        declaration
+      );
+      const method =
+        ts.isMethodSignature(declaration) ||
+        ts.isMethodDeclaration(declaration);
+      if (methodContainer && method) {
+        propertyType
+          .getCallSignatures()
+          .forEach((signature) =>
+            inspectSignature(
+              signature,
+              declaration,
+              label + '.' + property.name
+            )
+          );
+      } else {
+        inspect(propertyType, label + '.' + property.name);
+      }
+    }
+  }
+
+  function inspectReference(node: ts.Node, label?: string) {
+    if (!ts.isTypeReferenceNode(node) && !ts.isImportTypeNode(node)) {
+      return;
+    }
+    const referenceLabel = label ?? node.getText();
+    const name = ts.isTypeReferenceNode(node) ? node.typeName : node.qualifier;
+    inspectOrigin(resolvedSymbol(checker, name), referenceLabel);
+    const type = checker.getTypeAtLocation(node);
+    if (sensitiveOrigin(type.symbol) || sensitiveOrigin(type.aliasSymbol)) {
+      issues.add(referenceLabel + ': effect type origin');
+    }
+  }
+
+  function inspectOriginDeclaration(
+    declaration: ts.Declaration,
+    label: string
+  ) {
+    if (ts.isTypeAliasDeclaration(declaration)) {
+      visit(declaration.type, (node) => inspectReference(node, label));
+    } else if (
+      (ts.isInterfaceDeclaration(declaration) || ts.isClassLike(declaration)) &&
+      !/\/lib\.[^/]+\.d\.ts$/.test(declaration.getSourceFile().fileName)
+    ) {
+      inspectHeritage(declaration, label);
+      declaration.members.forEach((member) =>
+        visit(member, (node) => inspectReference(node, label))
+      );
+    }
+  }
+
+  function inspectOrigin(symbol: ts.Symbol | undefined, label: string) {
+    if (!symbol || dataLeaves.has(symbol) || checkedOrigins.has(symbol)) {
+      return;
+    }
+    checkedOrigins.add(symbol);
+    if (sensitiveOrigin(symbol)) {
+      issues.add(label + ': effect type origin');
+      return;
+    }
+    for (const declaration of symbol.declarations ?? []) {
+      inspectOriginDeclaration(declaration, label);
+    }
+  }
+
+  function inspect(type: ts.Type, label: string, methodContainer = false) {
     if (checked.has(type)) {
       return;
     }
     checked.add(type);
-    for (const symbol of [type.symbol, type.aliasSymbol]) {
-      if (!symbol || checkedOrigins.has(symbol) || dataLeaves.has(symbol)) {
-        continue;
-      }
-      checkedOrigins.add(symbol);
-      for (const d of symbol.declarations ?? []) {
-        if (ts.isTypeAliasDeclaration(d)) {
-          visit(d.type, (node) => {
-            if (ts.isTypeReferenceNode(node) || ts.isImportTypeNode(node)) {
-              inspect(checker.getTypeAtLocation(node), label);
-            }
-          });
-        }
-      }
-    }
-    if (sensitive(type.symbol) || sensitive(type.aliasSymbol)) {
-      issues.add(`${label}: effect capability`);
+    inspectOrigin(type.symbol, label);
+    inspectOrigin(type.aliasSymbol, label);
+    if (sensitiveOrigin(type.symbol) || sensitiveOrigin(type.aliasSymbol)) {
+      issues.add(label + ': effect capability');
       return;
     }
     if (dataLeaves.has(type.symbol) || dataLeaves.has(type.aliasSymbol)) {
       return;
     }
-    const args = [
-      ...(type.aliasTypeArguments ?? []),
-      ...(type.flags & ts.TypeFlags.Object
-        ? checker.getTypeArguments(type as ts.TypeReference)
-        : []),
-    ];
-    for (const arg of args) {
-      inspect(arg, label);
-    }
-    const wrapper = type.aliasSymbol;
-    if (
-      wrapper &&
-      args.length &&
-      wrapper.declarations?.every((d) =>
-        /(?:\/lib\.[^/]+\.d\.ts|\/types\/utilities\/DeepPartial(?:\.d)?\.ts)$/.test(
-          d.getSourceFile().fileName
-        )
-      )
-    ) {
+    const args = typeArguments(checker, type);
+    args.forEach((argument) => inspect(argument, label));
+    if (dataWrapper(type, args)) {
       return;
     }
     if (type.isUnionOrIntersection()) {
-      type.types.forEach((t) => inspect(t, label));
+      type.types.forEach((member) => inspect(member, label));
       return;
     }
     if (type.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) {
-      issues.add(`${label}: unscoped opaque type`);
+      issues.add(label + ': unscoped opaque type');
       return;
     }
-    const declarations = type.symbol?.declarations ?? [];
-    const library =
-      declarations.length &&
-      declarations.every((d) =>
-        /\/lib\.[^/]+\.d\.ts$/.test(d.getSourceFile().fileName)
-      );
-    if (
-      library &&
-      [
-        'Array',
-        'ReadonlyArray',
-        'Map',
-        'ReadonlyMap',
-        'Set',
-        'ReadonlySet',
-        'Date',
-      ].includes(type.symbol.name)
-    ) {
+    if (dataLibrary(type)) {
       return;
     }
     if (
       type.getCallSignatures().length ||
       type.getConstructSignatures().length
     ) {
-      issues.add(`${label}: callback capability`);
+      issues.add(label + ': callback capability');
       return;
     }
-    if (!(type.flags & ts.TypeFlags.Object)) {
-      return;
+    if (type.flags & ts.TypeFlags.Object) {
+      inspectProperties(type, label, methodContainer);
     }
-    for (const index of checker.getIndexInfosOfType(type)) {
-      inspect(index.type, label + ' indexed value');
-    }
-    for (const property of checker.getPropertiesOfType(type)) {
-      const d = property.valueDeclaration ?? property.declarations?.[0];
-      if (!d) {
-        continue;
-      }
-      const propertyType = checker.getTypeOfSymbolAtLocation(property, d);
-      if (
-        methodContainer &&
-        (ts.isMethodSignature(d) || ts.isMethodDeclaration(d))
-      ) {
-        for (const sig of propertyType.getCallSignatures()) {
-          for (const param of sig.getParameters()) {
-            inspect(
-              checker.getTypeOfSymbolAtLocation(param, d),
-              `${label}.${property.name} argument`
-            );
-          }
-          inspect(sig.getReturnType(), `${label}.${property.name} result`);
-        }
-      } else {
-        inspect(propertyType, `${label}.${property.name}`);
+  }
+
+  function inspectCallable(
+    node: ts.SignatureDeclaration,
+    label: string,
+    methods = false
+  ) {
+    node.parameters.forEach((parameter) =>
+      inspect(
+        checker.getTypeAtLocation(parameter),
+        parameter.name.getText(source),
+        methods
+      )
+    );
+    if (!ts.isConstructorDeclaration(node)) {
+      const signature = checker.getSignatureFromDeclaration(node);
+      if (signature) {
+        inspect(signature.getReturnType(), label + ' result');
       }
     }
-  };
-  // Explicit references catch a Pick that erases the sensitive part of its source.
-  visit(source, (node) => {
-    if (ts.isTypeReferenceNode(node) || ts.isImportTypeNode(node)) {
-      const t = checker.getTypeAtLocation(node);
-      if (sensitive(t.symbol) || sensitive(t.aliasSymbol)) {
-        issues.add(`${node.getText(source)}: effect type origin`);
+  }
+
+  function inspectProperty(member: ts.PropertyDeclaration) {
+    const symbol =
+      member.initializer && ts.isIdentifier(member.initializer)
+        ? resolvedSymbol(checker, member.initializer)
+        : undefined;
+    const type = checker.getTypeAtLocation(member);
+    const label = member.name.getText(source);
+    if (symbol?.declarations?.every(ts.isFunctionDeclaration)) {
+      type
+        .getCallSignatures()
+        .forEach((signature) => inspectSignature(signature, member, label));
+    } else {
+      inspect(type, label, allowMethods);
+    }
+  }
+
+  function inspectHeritage(
+    node: ts.ClassLikeDeclaration | ts.InterfaceDeclaration,
+    label: string
+  ) {
+    for (const clause of node.heritageClauses ?? []) {
+      for (const base of clause.types) {
+        inspectOrigin(resolvedSymbol(checker, base.expression), label);
+        inspect(checker.getTypeAtLocation(base), label, allowMethods);
       }
     }
+  }
+
+  function inspectClass(node: ts.ClassLikeDeclaration) {
+    inspectHeritage(node, node.name?.text ?? 'class');
+    for (const member of node.members) {
+      if (ts.isConstructorDeclaration(member) || methodLike(member)) {
+        inspectCallable(
+          member,
+          member.name?.getText(source) ?? 'constructor',
+          allowMethods
+        );
+      } else if (ts.isPropertyDeclaration(member)) {
+        inspectProperty(member);
+      }
+    }
+  }
+
+  function inspectDeclaration(node: ts.Node) {
+    inspectReference(node);
     if (allowMethods && ts.isInterfaceDeclaration(node)) {
       inspect(checker.getTypeAtLocation(node), node.name.text, true);
     }
-    if (ts.isClassDeclaration(node)) {
-      for (const member of node.members) {
-        if (
-          ts.isConstructorDeclaration(member) ||
-          ts.isMethodDeclaration(member)
-        ) {
-          member.parameters.forEach((p) =>
-            inspect(
-              checker.getTypeAtLocation(p),
-              p.name.getText(source),
-              allowMethods
-            )
-          );
-          if (ts.isMethodDeclaration(member)) {
-            const sig = checker.getSignatureFromDeclaration(member);
-            if (sig) {
-              inspect(
-                sig.getReturnType(),
-                member.name.getText(source) + ' result'
-              );
-            }
-          }
-        } else if (ts.isPropertyDeclaration(member)) {
-          let symbol =
-            member.initializer && ts.isIdentifier(member.initializer)
-              ? checker.getSymbolAtLocation(member.initializer)
-              : undefined;
-          if (symbol && symbol.flags & ts.SymbolFlags.Alias) {
-            symbol = checker.getAliasedSymbol(symbol);
-          }
-          if (symbol?.declarations?.every(ts.isFunctionDeclaration)) {
-            const type = checker.getTypeAtLocation(member);
-            for (const sig of type.getCallSignatures()) {
-              for (const param of sig.getParameters()) {
-                inspect(
-                  checker.getTypeOfSymbolAtLocation(param, member),
-                  member.name.getText(source) + ' argument'
-                );
-              }
-              inspect(
-                sig.getReturnType(),
-                member.name.getText(source) + ' result'
-              );
-            }
-          } else {
-            inspect(
-              checker.getTypeAtLocation(member),
-              member.name.getText(source),
-              allowMethods
-            );
-          }
-        }
-      }
+    if (ts.isClassLike(node)) {
+      inspectClass(node);
     }
     if (
       ts.isFunctionDeclaration(node) ||
       ts.isArrowFunction(node) ||
       ts.isFunctionExpression(node)
     ) {
-      node.parameters.forEach((p) =>
-        inspect(checker.getTypeAtLocation(p), p.name.getText(source))
-      );
-      const sig = checker.getSignatureFromDeclaration(node);
-      if (sig) {
-        inspect(
-          sig.getReturnType(),
-          (('name' in node && node.name?.text) || 'function') + ' result'
-        );
-      }
+      inspectCallable(node, ('name' in node && node.name?.text) || 'function');
+    } else if (methodLike(node) && !ts.isClassLike(node.parent)) {
+      inspectCallable(node, node.name.getText(source));
     }
-  });
+  }
+
+  visit(source, inspectDeclaration);
   return [...issues];
 }
 
-/** Resolve calls to built-in declarations; supplied Date methods are data operations. */
+function propertyReadSymbol(checker: ts.TypeChecker, node: ts.Node) {
+  if (ts.isPropertyAccessExpression(node)) {
+    return checker.getSymbolAtLocation(node.name);
+  }
+  if (
+    ts.isElementAccessExpression(node) &&
+    ts.isStringLiteralLike(node.argumentExpression)
+  ) {
+    return checker
+      .getTypeAtLocation(node.expression)
+      .getProperty(node.argumentExpression.text);
+  }
+  if (ts.isBindingElement(node) && ts.isObjectBindingPattern(node.parent)) {
+    const key = node.propertyName ?? node.name;
+    if (ts.isIdentifier(key) || ts.isStringLiteralLike(key)) {
+      return checker.getTypeAtLocation(node.parent).getProperty(key.text);
+    }
+  }
+  return undefined;
+}
+
+function libraryDeclaration(declaration: ts.Node) {
+  return /(?:\/lib\.[^/]+\.d\.ts|\/@types\/node\/.*\.d\.ts)$/.test(
+    declaration.getSourceFile().fileName
+  );
+}
+
+function declarationOwner(declaration: ts.Declaration) {
+  const parent = declaration.parent as ts.NamedDeclaration;
+  return parent.name && ts.isIdentifier(parent.name) ? parent.name.text : '';
+}
+
+function knownFunctionDeclaration(
+  checker: ts.TypeChecker,
+  declaration: ts.Declaration,
+  seen: Set<ts.Symbol>
+): boolean {
+  let imported: ts.Node | undefined = declaration;
+  while (imported && !ts.isImportDeclaration(imported)) {
+    imported = imported.parent;
+  }
+  if (
+    imported &&
+    ts.isImportDeclaration(imported) &&
+    ts.isStringLiteralLike(imported.moduleSpecifier)
+  ) {
+    return [
+      'lodash-es/cloneDeep.js',
+      'lodash-es/merge.js',
+      'lodash-es/isEqual.js',
+    ].includes(imported.moduleSpecifier.text);
+  }
+  if (ts.isFunctionDeclaration(declaration) && declaration.body) {
+    return true;
+  }
+  if (ts.isVariableDeclaration(declaration) && declaration.initializer) {
+    return (
+      ts.isArrowFunction(declaration.initializer) ||
+      ts.isFunctionExpression(declaration.initializer) ||
+      knownFunction(checker, declaration.initializer, seen)
+    );
+  }
+  return false;
+}
+
+function knownFunction(
+  checker: ts.TypeChecker,
+  expression: ts.Expression,
+  seen = new Set<ts.Symbol>()
+): boolean {
+  if (ts.isParenthesizedExpression(expression)) {
+    return knownFunction(checker, expression.expression, seen);
+  }
+  if (!ts.isIdentifier(expression)) {
+    return false;
+  }
+  const symbol = checker.getSymbolAtLocation(expression);
+  if (!symbol || seen.has(symbol)) {
+    return false;
+  }
+  seen.add(symbol);
+  return Boolean(
+    symbol.declarations?.some((declaration) =>
+      knownFunctionDeclaration(checker, declaration, seen)
+    )
+  );
+}
+
+const ambientCalls = new Set([
+  'fetch',
+  'setTimeout',
+  'setInterval',
+  'setImmediate',
+  'clearTimeout',
+  'clearInterval',
+  'clearImmediate',
+  'queueMicrotask',
+  'requestAnimationFrame',
+  'cancelAnimationFrame',
+]);
+const browserOwners = new Set(['Window', 'Document', 'Element', 'HTMLElement']);
+
+function ambientRead(checker: ts.TypeChecker, node: ts.Node) {
+  const symbol = propertyReadSymbol(checker, node);
+  return (
+    symbol?.declarations?.flatMap((declaration) => {
+      const owner = declarationOwner(declaration);
+      return libraryDeclaration(declaration) &&
+        (browserOwners.has(owner) ||
+          (owner === 'Performance' && symbol.name === 'timeOrigin'))
+        ? [`ambient read ${owner}.${symbol.name}`]
+        : [];
+    }) ?? []
+  );
+}
+
+function ambientInvocation(
+  call: NonNullable<ReturnType<typeof resolvedCall>>,
+  node: ts.CallExpression | ts.NewExpression
+) {
+  const owner = declarationOwner(call.declaration);
+  const isAmbient =
+    call.file.endsWith('.d.ts') && ambientCalls.has(call.name ?? '');
+  if (!libraryDeclaration(call.declaration) && !isAmbient) {
+    return undefined;
+  }
+  const readsClock =
+    owner === 'DateConstructor' &&
+    (call.name === 'now' ||
+      (!call.name && (!ts.isNewExpression(node) || !node.arguments?.length)));
+  const readsRandom =
+    (owner === 'Math' && call.name === 'random') ||
+    (owner === 'Crypto' &&
+      ['getRandomValues', 'randomUUID'].includes(call.name ?? ''));
+  const readsPerformance = owner === 'Performance' && call.name === 'now';
+  const touchesBrowser =
+    browserOwners.has(owner) ||
+    ['EventTarget', 'AbortController'].includes(owner);
+  return readsClock ||
+    readsRandom ||
+    readsPerformance ||
+    touchesBrowser ||
+    ambientCalls.has(call.name ?? '')
+    ? `effect ${owner}.${call.name ?? 'new'}`
+    : undefined;
+}
+
+function indirectInvocation(
+  call: NonNullable<ReturnType<typeof resolvedCall>>
+) {
+  if (!libraryDeclaration(call.declaration)) {
+    return undefined;
+  }
+  const parent = call.declaration.parent;
+  if (
+    ts.isModuleBlock(parent) &&
+    ts.isModuleDeclaration(parent.parent) &&
+    parent.parent.name.text === 'Reflect' &&
+    ['apply', 'construct'].includes(call.name ?? '')
+  ) {
+    return 'reflective host invocation';
+  }
+  if (
+    ts.isInterfaceDeclaration(parent) &&
+    ['Function', 'CallableFunction', 'NewableFunction'].includes(
+      parent.name.text
+    ) &&
+    ['apply', 'call'].includes(call.name ?? '')
+  ) {
+    return 'indirect host invocation';
+  }
+  return undefined;
+}
+
+function callableInvocation(
+  checker: ts.TypeChecker,
+  node: ts.CallExpression | ts.NewExpression,
+  call: ReturnType<typeof resolvedCall>
+) {
+  if (!call) {
+    return checker.getTypeAtLocation(node.expression).flags &
+      (ts.TypeFlags.Any | ts.TypeFlags.Unknown)
+      ? 'invocation of opaque data'
+      : undefined;
+  }
+  const declaration = call.declaration;
+  if (
+    !libraryDeclaration(declaration) &&
+    !knownFunction(checker, node.expression) &&
+    (ts.isFunctionTypeNode(declaration) ||
+      ts.isCallSignatureDeclaration(declaration) ||
+      ts.isMethodSignature(declaration))
+  ) {
+    return 'invocation of supplied callable';
+  }
+  return undefined;
+}
+
+/** Resolve effects by binding, while supplied Dates and math remain data operations. */
 export function pureEffectIssues(
   checker: ts.TypeChecker,
   source: ts.SourceFile,
   allowedDataCalls = new Set<ts.Node>()
 ) {
   const issues: string[] = [];
-  const knownFunction = (
-    expression: ts.Expression,
-    seen = new Set<ts.Symbol>()
-  ): boolean => {
-    if (ts.isParenthesizedExpression(expression)) {
-      return knownFunction(expression.expression, seen);
+  const add = (issue: string | undefined) => {
+    if (issue) {
+      issues.push(`${source.fileName}: ${issue}`);
     }
-    if (!ts.isIdentifier(expression)) {
-      return false;
-    }
-    const symbol = checker.getSymbolAtLocation(expression);
-    if (!symbol || seen.has(symbol)) {
-      return false;
-    }
-    seen.add(symbol);
-    return Boolean(
-      symbol.declarations?.some((d) => {
-        let imported: ts.Node | undefined = d;
-        while (imported && !ts.isImportDeclaration(imported)) {
-          imported = imported.parent;
-        }
-        if (
-          imported &&
-          ts.isImportDeclaration(imported) &&
-          ts.isStringLiteral(imported.moduleSpecifier) &&
-          [
-            'lodash-es/cloneDeep.js',
-            'lodash-es/isEqual.js',
-            'lodash-es/merge.js',
-          ].includes(imported.moduleSpecifier.text)
-        ) {
-          return true;
-        }
-        if (ts.isFunctionDeclaration(d) && d.body) {
-          return true;
-        }
-        if (ts.isVariableDeclaration(d) && d.initializer) {
-          return (
-            ts.isArrowFunction(d.initializer) ||
-            ts.isFunctionExpression(d.initializer) ||
-            knownFunction(d.initializer, seen)
-          );
-        }
-        return false;
-      })
-    );
   };
   visit(source, (node) => {
-    if (ts.isPropertyAccessExpression(node)) {
-      const symbol = checker.getSymbolAtLocation(node.name);
-      for (const d of symbol?.declarations ?? []) {
-        const file = d.getSourceFile().fileName;
-        const parent = d.parent as ts.NamedDeclaration;
-        const owner =
-          parent.name && ts.isIdentifier(parent.name) ? parent.name.text : '';
-        if (
-          /\/lib\.[^/]+\.d\.ts$/.test(file) &&
-          (['Window', 'Document', 'Element', 'HTMLElement'].includes(owner) ||
-            (owner === 'Performance' && node.name.text === 'timeOrigin'))
-        ) {
-          issues.push(
-            `${source.fileName}: ambient read ${owner}.${node.name.text}`
-          );
-        }
-      }
-    }
+    ambientRead(checker, node).forEach(add);
     if (!ts.isCallExpression(node) && !ts.isNewExpression(node)) {
       return;
     }
     const call = resolvedCall(checker, node);
-    const lib =
-      call &&
-      /(?:\/lib\.[^/]+\.d\.ts|\/@types\/node\/.*\.d\.ts)$/.test(call.file);
-    const ambientEffect =
-      call &&
-      call.file.endsWith('.d.ts') &&
-      [
-        'fetch',
-        'setTimeout',
-        'setInterval',
-        'setImmediate',
-        'clearTimeout',
-        'clearInterval',
-        'clearImmediate',
-        'queueMicrotask',
-        'requestAnimationFrame',
-        'cancelAnimationFrame',
-      ].includes(call.name ?? '');
-    if (lib || ambientEffect) {
-      const parent = call.declaration.parent as ts.NamedDeclaration;
-      const owner =
-        parent.name && ts.isIdentifier(parent.name) ? parent.name.text : '';
-      if (
-        (owner === 'DateConstructor' &&
-          (call.name === 'now' ||
-            (!call.name &&
-              (!ts.isNewExpression(node) || !node.arguments?.length)))) ||
-        (owner === 'Math' && call.name === 'random') ||
-        (owner === 'Performance' && call.name === 'now') ||
-        (owner === 'Crypto' &&
-          ['getRandomValues', 'randomUUID'].includes(call.name ?? '')) ||
-        [
-          'fetch',
-          'setTimeout',
-          'setInterval',
-          'setImmediate',
-          'clearTimeout',
-          'clearInterval',
-          'clearImmediate',
-          'queueMicrotask',
-          'requestAnimationFrame',
-          'cancelAnimationFrame',
-        ].includes(call.name ?? '') ||
-        [
-          'Window',
-          'Document',
-          'Element',
-          'HTMLElement',
-          'EventTarget',
-          'AbortController',
-        ].includes(owner)
-      ) {
-        issues.push(
-          `${source.fileName}: effect ${owner}.${call.name ?? 'new'}`
-        );
-      }
+    if (call) {
+      add(ambientInvocation(call, node));
     }
     if (allowedDataCalls.has(node)) {
       return;
     }
-    if (
-      call &&
-      lib &&
-      ts.isModuleBlock(call.declaration.parent) &&
-      ts.isModuleDeclaration(call.declaration.parent.parent) &&
-      call.declaration.parent.parent.name.text === 'Reflect' &&
-      ['apply', 'construct'].includes(call.name ?? '')
-    ) {
-      issues.push(`${source.fileName}: reflective host invocation`);
+    if (call) {
+      add(indirectInvocation(call));
+      if (/\/uuid\.[tj]s$/.test(call.file)) {
+        add('UUID allocation');
+      }
     }
-    if (
-      call &&
-      lib &&
-      ts.isInterfaceDeclaration(call.declaration.parent) &&
-      ['Function', 'CallableFunction', 'NewableFunction'].includes(
-        call.declaration.parent.name.text
-      ) &&
-      ['apply', 'call'].includes(call.name ?? '')
-    ) {
-      issues.push(`${source.fileName}: indirect host invocation`);
-    }
-    if (
-      call &&
-      !lib &&
-      !knownFunction(node.expression) &&
-      (ts.isFunctionTypeNode(call.declaration) ||
-        ts.isCallSignatureDeclaration(call.declaration) ||
-        ts.isMethodSignature(call.declaration))
-    ) {
-      issues.push(`${source.fileName}: invocation of supplied callable`);
-    }
-    if (call && /\/uuid\.[tj]s$/.test(call.file)) {
-      issues.push(`${source.fileName}: UUID allocation`);
-    }
-    // An opaque host value is valid data, but invoking it is not processor work.
-    if (
-      !call &&
-      checker.getTypeAtLocation(node.expression).flags &
-        (ts.TypeFlags.Any | ts.TypeFlags.Unknown)
-    ) {
-      issues.push(`${source.fileName}: invocation of opaque data`);
-    }
+    add(callableInvocation(checker, node, call));
   });
   return issues;
 }
 
-/** Exact deferred callable-data seams in the native snapshot copier, not a file exemption. */
+function compactNode(node: ts.Node) {
+  return node.getText().replace(/\s/g, '');
+}
+
+function builtInOperation(
+  checker: ts.TypeChecker,
+  node: ts.CallExpression | ts.NewExpression,
+  owner: string,
+  name: string
+) {
+  const call = resolvedCall(checker, node);
+  return Boolean(
+    call &&
+    libraryDeclaration(call.declaration) &&
+    declarationOwner(call.declaration) === owner &&
+    call.name === name
+  );
+}
+
+function globalBuiltIn(
+  checker: ts.TypeChecker,
+  node: ts.Node,
+  names: string[]
+) {
+  if (!ts.isIdentifier(node) || !names.includes(node.text)) {
+    return false;
+  }
+  return Boolean(
+    checker.getSymbolAtLocation(node)?.declarations?.some(libraryDeclaration)
+  );
+}
+
+function builtInPrototype(
+  checker: ts.TypeChecker,
+  node: ts.Node | undefined,
+  names: string[]
+) {
+  return (
+    Boolean(node) &&
+    ts.isPropertyAccessExpression(node) &&
+    node.name.text === 'prototype' &&
+    globalBuiltIn(checker, node.expression, names)
+  );
+}
+
+function constantInitializer(checker: ts.TypeChecker, node: ts.Node) {
+  const declaration = checker.getSymbolAtLocation(node)?.valueDeclaration;
+  return declaration &&
+    ts.isVariableDeclaration(declaration) &&
+    ts.isVariableDeclarationList(declaration.parent) &&
+    declaration.parent.flags & ts.NodeFlags.Const
+    ? declaration.initializer
+    : undefined;
+}
+
+function parentMatching<T extends ts.Node>(
+  node: ts.Node,
+  matches: (parent: ts.Node) => parent is T
+): T | undefined {
+  for (let parent = node.parent; parent; parent = parent.parent) {
+    if (matches(parent)) {
+      return parent;
+    }
+  }
+  return undefined;
+}
+
+function trueBranch(node: ts.Node) {
+  for (
+    let child = node, parent = node.parent;
+    parent;
+    child = parent, parent = parent.parent
+  ) {
+    if (ts.isIfStatement(parent) && parent.thenStatement === child) {
+      return parent;
+    }
+  }
+  return undefined;
+}
+
+function deferredSnapshotCall(
+  checker: ts.TypeChecker,
+  node: ts.CallExpression | ts.NewExpression
+) {
+  const call = resolvedCall(checker, node);
+  if (!call || indirectInvocation(call) !== 'reflective host invocation') {
+    return false;
+  }
+  const fn = parentMatching(
+    node,
+    (parent): parent is ts.ArrowFunction | ts.FunctionExpression =>
+      ts.isArrowFunction(parent) || ts.isFunctionExpression(parent)
+  );
+  const property = fn?.parent;
+  if (
+    !property ||
+    !ts.isPropertyAssignment(property) ||
+    !ts.isObjectLiteralExpression(property.parent)
+  ) {
+    return false;
+  }
+  const container = property.parent.parent;
+  if (ts.isNewExpression(container)) {
+    return (
+      globalBuiltIn(checker, container.expression, ['Proxy']) &&
+      container.arguments?.[1] === property.parent &&
+      ['apply', 'construct'].includes(property.name.getText()) &&
+      compactNode(container.arguments[0]) ===
+        'Function.prototype.bind.call(bindingTarget,undefined)'
+    );
+  }
+  return (
+    ts.isCallExpression(container) &&
+    builtInOperation(
+      checker,
+      container,
+      'ObjectConstructor',
+      'defineProperty'
+    ) &&
+    compactNode(container.arguments[0]) === 'owned' &&
+    compactNode(container.arguments[1]) === 'Symbol.hasInstance' &&
+    property.name.getText() === 'value'
+  );
+}
+
+function intrinsicFunctionCall(
+  checker: ts.TypeChecker,
+  node: ts.CallExpression | ts.NewExpression
+) {
+  if (
+    !ts.isCallExpression(node) ||
+    !ts.isPropertyAccessExpression(node.expression) ||
+    node.expression.name.text !== 'call'
+  ) {
+    return false;
+  }
+  const method = node.expression.expression;
+  if (!ts.isPropertyAccessExpression(method)) {
+    return false;
+  }
+  if (builtInPrototype(checker, method.expression, ['Object'])) {
+    return ['hasOwnProperty', 'toString'].includes(method.name.text);
+  }
+  if (!builtInPrototype(checker, method.expression, ['Function'])) {
+    return false;
+  }
+  return (
+    method.name.text === 'toString' ||
+    (method.name.text === 'bind' &&
+      compactNode(node) ===
+        'Function.prototype.bind.call(bindingTarget,undefined)')
+  );
+}
+
+function onlyBufferConstructors(
+  checker: ts.TypeChecker,
+  node: ts.Expression
+): boolean {
+  if (ts.isConditionalExpression(node)) {
+    return (
+      onlyBufferConstructors(checker, node.whenTrue) &&
+      onlyBufferConstructors(checker, node.whenFalse)
+    );
+  }
+  return (
+    ts.isArrayLiteralExpression(node) &&
+    node.elements.length > 0 &&
+    node.elements.every((element) =>
+      globalBuiltIn(checker, element, ['ArrayBuffer', 'SharedArrayBuffer'])
+    )
+  );
+}
+
+function bufferConstructor(checker: ts.TypeChecker, node: ts.Node) {
+  const declaration = checker.getSymbolAtLocation(node)?.valueDeclaration;
+  if (
+    !declaration ||
+    !ts.isVariableDeclaration(declaration) ||
+    !ts.isVariableDeclarationList(declaration.parent) ||
+    !ts.isForOfStatement(declaration.parent.parent)
+  ) {
+    return false;
+  }
+  const values = constantInitializer(
+    checker,
+    declaration.parent.parent.expression
+  );
+  return Boolean(values && onlyBufferConstructors(checker, values));
+}
+
+function bufferPrototype(checker: ts.TypeChecker, node: ts.Node) {
+  if (builtInPrototype(checker, node, ['DataView'])) {
+    return true;
+  }
+  const initializer = constantInitializer(checker, node);
+  return Boolean(
+    initializer &&
+    ts.isPropertyAccessExpression(initializer) &&
+    initializer.name.text === 'prototype' &&
+    bufferConstructor(checker, initializer.expression)
+  );
+}
+
+function intrinsicBufferKey(node: ts.Expression): boolean {
+  if (ts.isConditionalExpression(node)) {
+    return (
+      intrinsicBufferKey(node.whenTrue) && intrinsicBufferKey(node.whenFalse)
+    );
+  }
+  return (
+    ts.isStringLiteralLike(node) &&
+    ['byteLength', 'maxByteLength', 'resizable', 'growable'].includes(node.text)
+  );
+}
+
+function intrinsicGetterCall(
+  checker: ts.TypeChecker,
+  node: ts.CallExpression | ts.NewExpression
+) {
+  if (
+    !ts.isCallExpression(node) ||
+    !ts.isPropertyAccessExpression(node.expression) ||
+    node.expression.name.text !== 'call'
+  ) {
+    return false;
+  }
+  const getter = node.expression.expression;
+  if (
+    !ts.isPropertyAccessExpression(getter) ||
+    getter.name.text !== 'get' ||
+    !ts.isCallExpression(getter.expression)
+  ) {
+    return false;
+  }
+  const descriptor = getter.expression;
+  return (
+    builtInOperation(
+      checker,
+      descriptor,
+      'ObjectConstructor',
+      'getOwnPropertyDescriptor'
+    ) &&
+    descriptor.arguments.length === 2 &&
+    bufferPrototype(checker, descriptor.arguments[0]) &&
+    intrinsicBufferKey(descriptor.arguments[1])
+  );
+}
+
+function privateCollectionProbe(
+  checker: ts.TypeChecker,
+  source: ts.SourceFile,
+  declaration: ts.FunctionDeclaration
+) {
+  if (
+    !declaration.name ||
+    declaration.modifiers?.some(
+      (modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword
+    )
+  ) {
+    return false;
+  }
+  const symbol = checker.getSymbolAtLocation(declaration.name);
+  let seen = false;
+  let safe = true;
+  visit(source, (node) => {
+    if (
+      !ts.isIdentifier(node) ||
+      node === declaration.name ||
+      checker.getSymbolAtLocation(node) !== symbol
+    ) {
+      return;
+    }
+    seen = true;
+    const parent = node.parent;
+    safe &&=
+      ts.isCallExpression(parent) &&
+      parent.expression === node &&
+      parent.arguments.length === 2 &&
+      builtInPrototype(checker, parent.arguments[1], ['Map', 'Set']);
+  });
+  return seen && safe;
+}
+
+function intrinsicCollectionCall(
+  checker: ts.TypeChecker,
+  source: ts.SourceFile,
+  node: ts.CallExpression | ts.NewExpression
+) {
+  if (
+    !ts.isCallExpression(node) ||
+    !ts.isPropertyAccessExpression(node.expression) ||
+    node.expression.name.text !== 'call'
+  ) {
+    return false;
+  }
+  const method = node.expression.expression;
+  if (!ts.isPropertyAccessExpression(method) || method.name.text !== 'has') {
+    return false;
+  }
+  const parameter = checker.getSymbolAtLocation(
+    method.expression
+  )?.valueDeclaration;
+  return Boolean(
+    parameter &&
+    ts.isParameter(parameter) &&
+    ts.isFunctionDeclaration(parameter.parent) &&
+    parameter.parent.parameters[1] === parameter &&
+    privateCollectionProbe(checker, source, parameter.parent)
+  );
+}
+
+function isAssignmentTo(
+  checker: ts.TypeChecker,
+  node: ts.Node,
+  symbol: ts.Symbol | undefined
+): node is ts.BinaryExpression {
+  return (
+    ts.isBinaryExpression(node) &&
+    node.operatorToken.kind >= ts.SyntaxKind.FirstAssignment &&
+    node.operatorToken.kind <= ts.SyntaxKind.LastAssignment &&
+    checker.getSymbolAtLocation(node.left) === symbol
+  );
+}
+
+function writesStayInAllocation(
+  checker: ts.TypeChecker,
+  source: ts.SourceFile,
+  owned: ts.Symbol,
+  allocation: ts.IfStatement
+) {
+  let region: ts.Node = allocation;
+  for (
+    let parent = region.parent;
+    parent && !ts.isFunctionLike(parent);
+    parent = parent.parent
+  ) {
+    if (ts.isIfStatement(parent)) {
+      region = parent;
+    }
+  }
+  let safe = true;
+  visit(source, (node) => {
+    if (!isAssignmentTo(checker, node, owned)) {
+      return;
+    }
+    let parent: ts.Node | undefined = node;
+    while (parent && parent !== region) {
+      parent = parent.parent;
+    }
+    safe &&= parent === region;
+  });
+  return safe;
+}
+
+function collectionAllocation(
+  checker: ts.TypeChecker,
+  source: ts.SourceFile,
+  flag: ts.Symbol,
+  owned: ts.Symbol,
+  kind: string
+) {
+  const writes: ts.BinaryExpression[] = [];
+  visit(source, (node) => {
+    if (isAssignmentTo(checker, node, flag)) {
+      writes.push(node);
+    }
+  });
+  if (
+    writes.length !== 1 ||
+    writes[0].right.kind !== ts.SyntaxKind.TrueKeyword
+  ) {
+    return false;
+  }
+  const block = writes[0].parent.parent;
+  if (
+    !ts.isBlock(block) ||
+    block.statements.length !== 2 ||
+    !ts.isIfStatement(block.parent) ||
+    block.parent.thenStatement !== block
+  ) {
+    return false;
+  }
+  const allocation = block.statements[0];
+  if (
+    !ts.isExpressionStatement(allocation) ||
+    !isAssignmentTo(checker, allocation.expression, owned)
+  ) {
+    return false;
+  }
+  const value = allocation.expression.right;
+  const condition = block.parent.expression;
+  if (
+    !ts.isNewExpression(value) ||
+    !globalBuiltIn(checker, value.expression, [kind]) ||
+    !ts.isCallExpression(condition) ||
+    !builtInPrototype(checker, condition.arguments[1], [kind])
+  ) {
+    return false;
+  }
+  const declaration = checker.getResolvedSignature(condition)?.declaration;
+  return Boolean(
+    declaration &&
+    ts.isFunctionDeclaration(declaration) &&
+    privateCollectionProbe(checker, source, declaration) &&
+    writesStayInAllocation(checker, source, owned, block.parent)
+  );
+}
+
+function ownedCollectionCall(
+  checker: ts.TypeChecker,
+  source: ts.SourceFile,
+  node: ts.CallExpression | ts.NewExpression
+) {
+  if (
+    !ts.isCallExpression(node) ||
+    !ts.isPropertyAccessExpression(node.expression)
+  ) {
+    return false;
+  }
+  const kind =
+    node.expression.name.text === 'set'
+      ? 'Map'
+      : node.expression.name.text === 'add'
+        ? 'Set'
+        : undefined;
+  const branch = trueBranch(node);
+  if (!kind || !branch || !ts.isIdentifier(branch.expression)) {
+    return false;
+  }
+  const flag = checker.getSymbolAtLocation(branch.expression);
+  const owned = checker.getSymbolAtLocation(node.expression.expression);
+  const declaration = flag?.valueDeclaration;
+  return Boolean(
+    flag &&
+    owned &&
+    declaration &&
+    ts.isVariableDeclaration(declaration) &&
+    declaration.initializer?.kind === ts.SyntaxKind.FalseKeyword &&
+    collectionAllocation(checker, source, flag, owned, kind)
+  );
+}
+
+function dataViewConstructor(
+  checker: ts.TypeChecker,
+  node: ts.CallExpression | ts.NewExpression
+) {
+  if (
+    !ts.isNewExpression(node) ||
+    compactNode(node.expression) !== '(value.constructorasany)'
+  ) {
+    return false;
+  }
+  const branch = trueBranch(node);
+  const cast = (node.expression as ts.ParenthesizedExpression)
+    .expression as ts.AsExpression;
+  const target = (cast.expression as ts.PropertyAccessExpression).expression;
+  return Boolean(
+    branch &&
+    ts.isCallExpression(branch.expression) &&
+    builtInOperation(
+      checker,
+      branch.expression,
+      'ArrayBufferConstructor',
+      'isView'
+    ) &&
+    checker.getSymbolAtLocation(branch.expression.arguments[0]) ===
+      checker.getSymbolAtLocation(target)
+  );
+}
+
+function ownedBufferConstruction(
+  checker: ts.TypeChecker,
+  node: ts.CallExpression | ts.NewExpression
+) {
+  const call = resolvedCall(checker, node);
+  return Boolean(
+    call &&
+    indirectInvocation(call) === 'reflective host invocation' &&
+    call.name === 'construct' &&
+    node.arguments?.[0] &&
+    bufferConstructor(checker, node.arguments[0])
+  );
+}
+
+/** Allow only intrinsic data operations and the returned callable's deferred traps. */
 export function snapshotDataCalls(
   checker: ts.TypeChecker,
   source: ts.SourceFile
 ) {
   const allowed = new Set<ts.Node>();
-  const compact = (node: ts.Node) => node.getText(source).replace(/\s/g, '');
-  const builtIn = (
-    node: ts.CallExpression | ts.NewExpression,
-    name: string
-  ) => {
-    const call = resolvedCall(checker, node);
-    return call?.name === name && /\/lib\.[^/]+\.d\.ts$/.test(call.file);
-  };
-  const withinBranch = (node: ts.Node, condition: string) => {
-    for (
-      let child = node, parent = node.parent;
-      parent;
-      child = parent, parent = parent.parent
-    ) {
-      if (
-        ts.isIfStatement(parent) &&
-        parent.thenStatement === child &&
-        compact(parent.expression) === condition
-      ) {
-        return true;
-      }
-    }
-    return false;
-  };
-  // Any assignment, update, or destructuring target is a write.
-  const isWrite = (use: ts.Identifier): boolean => {
-    let node: ts.Node = use;
-    while (
-      ts.isParenthesizedExpression(node.parent) ||
-      ts.isShorthandPropertyAssignment(node.parent) ||
-      ts.isPropertyAssignment(node.parent) ||
-      ts.isArrayLiteralExpression(node.parent) ||
-      ts.isObjectLiteralExpression(node.parent) ||
-      ts.isSpreadElement(node.parent) ||
-      ts.isSpreadAssignment(node.parent)
-    ) {
-      if (ts.isPropertyAssignment(node.parent) && node.parent.name === node) {
-        return false;
-      }
-      node = node.parent;
-    }
-    const parent = node.parent;
-    return (
-      (ts.isBinaryExpression(parent) &&
-        parent.left === node &&
-        parent.operatorToken.kind >= ts.SyntaxKind.FirstAssignment &&
-        parent.operatorToken.kind <= ts.SyntaxKind.LastAssignment) ||
-      ((ts.isPrefixUnaryExpression(parent) ||
-        ts.isPostfixUnaryExpression(parent)) &&
-        [ts.SyntaxKind.PlusPlusToken, ts.SyntaxKind.MinusMinusToken].includes(
-          parent.operator
-        )) ||
-      ((ts.isForOfStatement(parent) || ts.isForInStatement(parent)) &&
-        parent.initializer === node)
-    );
-  };
-  // A collection flag is a type guard only when every assignment directly follows creating that collection.
-  const flagGuards = (flag: string, collection: string) => {
-    const symbols = new Set<ts.Symbol>();
-    visit(source, (node) => {
-      if (
-        ts.isIdentifier(node) &&
-        node.text === flag &&
-        !(
-          ts.isPropertyAccessExpression(node.parent) &&
-          node.parent.name === node
-        )
-      ) {
-        symbols.add(checker.getSymbolAtLocation(node)!);
-      }
-    });
-    const [symbol] = symbols;
-    const declaration = symbol?.valueDeclaration;
-    if (
-      symbols.size !== 1 ||
-      !declaration ||
-      !ts.isVariableDeclaration(declaration) ||
-      compact(declaration.initializer ?? declaration) !== 'false'
-    ) {
-      return false;
-    }
-    let marked = false;
-    let exact = true;
-    for (const use of references(symbol)) {
-      if (use === declaration.name || !isWrite(use)) {
-        continue;
-      }
-      const node = use.parent;
-      if (
-        !ts.isBinaryExpression(node) ||
-        node.left !== use ||
-        node.operatorToken.kind !== ts.SyntaxKind.EqualsToken
-      ) {
-        exact = false;
-        continue;
-      }
-      const statement = node.parent;
-      const block = statement.parent;
-      const previous =
-        ts.isExpressionStatement(statement) && ts.isBlock(block)
-          ? block.statements[block.statements.indexOf(statement) - 1]
-          : undefined;
-      if (
-        compact(node.right) === 'true' &&
-        previous &&
-        compact(previous) === `owned=new${collection}();`
-      ) {
-        marked = true;
-      } else {
-        exact = false;
-      }
-    }
-    return marked && exact;
-  };
-  const references = (symbol: ts.Symbol) => {
-    const found: ts.Identifier[] = [];
-    visit(source, (node) => {
-      if (
-        ts.isIdentifier(node) &&
-        checker.getSymbolAtLocation(node) === symbol
-      ) {
-        found.push(node);
-      }
-    });
-    return found;
-  };
-  // Only a const binding keeps the value its initializer proves.
-  const initializer = (node: ts.Node | undefined) => {
-    const symbol = node && checker.getSymbolAtLocation(node);
-    const declaration = symbol?.valueDeclaration;
-    return declaration &&
-      ts.isVariableDeclaration(declaration) &&
-      ts.isVariableDeclarationList(declaration.parent) &&
-      declaration.parent.flags & ts.NodeFlags.Const
-      ? declaration
-      : undefined;
-  };
-  // The copier's buffer loop visits exactly the built-in buffer constructors.
-  const bufferConstructor = (node: ts.Node | undefined) => {
-    const declaration = initializer(node);
-    const loop = declaration?.parent.parent;
-    if (!loop || !ts.isForOfStatement(loop)) {
-      return false;
-    }
-    const list = initializer(loop.expression);
-    const symbol = checker.getSymbolAtLocation(loop.expression);
-    return Boolean(
-      list &&
-      symbol &&
-      compact(list.initializer ?? list) ===
-        "typeofSharedArrayBuffer==='undefined'?[ArrayBuffer]:[ArrayBuffer,SharedArrayBuffer]" &&
-      // Only the loop reads the list, so nothing can add a host constructor to it.
-      references(symbol).every(
-        (use) => use === list.name || use === loop.expression
-      )
-    );
-  };
-  const bufferPrototype = (node: ts.Node | undefined) => {
-    const value = initializer(node)?.initializer;
-    return Boolean(
-      value &&
-      ts.isPropertyAccessExpression(value) &&
-      value.name.text === 'prototype' &&
-      bufferConstructor(value.expression)
-    );
-  };
-  const slotGetters = new Set([
-    "Object.getOwnPropertyDescriptor(prototype,'byteLength').get.call",
-    "Object.getOwnPropertyDescriptor(prototype,BufferConstructor===ArrayBuffer?'resizable':'growable')?.get.call",
-    "Object.getOwnPropertyDescriptor(prototype,'maxByteLength').get.call",
-  ]);
-  const descriptorTarget = (node: ts.CallExpression) => {
-    let expression: ts.Expression = node.expression;
-    while (ts.isPropertyAccessExpression(expression)) {
-      expression = expression.expression;
-    }
-    return ts.isCallExpression(expression)
-      ? expression.arguments[0]
-      : undefined;
-  };
-  // isCollection is a brand check only when every use passes a built-in collection prototype.
-  const collectionUses: ts.Node[] = [];
-  visit(source, (node) => {
-    if (
-      ts.isIdentifier(node) &&
-      node.text === 'isCollection' &&
-      !ts.isFunctionDeclaration(node.parent)
-    ) {
-      collectionUses.push(node);
-    }
-  });
-  const collectionPrototypes =
-    collectionUses.length > 0 &&
-    collectionUses.every(
-      (use) =>
-        ts.isCallExpression(use.parent) &&
-        use.parent.expression === use &&
-        ['Map.prototype', 'Set.prototype'].includes(
-          compact(use.parent.arguments[1])
-        )
-    );
-  const collectionParameter = (node: ts.CallExpression) => {
-    let receiver: ts.Expression = node.expression;
-    while (ts.isPropertyAccessExpression(receiver)) {
-      receiver = receiver.expression;
-    }
-    const symbol = checker.getSymbolAtLocation(receiver);
-    const parameter = symbol?.valueDeclaration;
-    return Boolean(
-      collectionPrototypes &&
-      symbol &&
-      parameter &&
-      ts.isParameter(parameter) &&
-      ts.isFunctionDeclaration(parameter.parent) &&
-      parameter.parent.name?.text === 'isCollection' &&
-      references(symbol).every((use) => use === parameter.name || !isWrite(use))
-    );
-  };
-  const mapGuard = flagGuards('map', 'Map');
-  const setGuard = flagGuards('set', 'Set');
   visit(source, (node) => {
     if (!ts.isCallExpression(node) && !ts.isNewExpression(node)) {
       return;
     }
-    const call = resolvedCall(checker, node);
     if (
-      call &&
-      /\/lib\.[^/]+\.d\.ts$/.test(call.file) &&
-      ts.isModuleBlock(call.declaration.parent) &&
-      ts.isModuleDeclaration(call.declaration.parent.parent) &&
-      call.declaration.parent.parent.name.text === 'Reflect' &&
-      ['apply', 'construct'].includes(call.name ?? '')
-    ) {
-      for (let parent = node.parent; parent; parent = parent.parent) {
-        if (!ts.isArrowFunction(parent) && !ts.isFunctionExpression(parent)) {
-          continue;
-        }
-        const property = parent.parent;
-        if (
-          !ts.isPropertyAssignment(property) ||
-          !ts.isObjectLiteralExpression(property.parent)
-        ) {
-          break;
-        }
-        const container = property.parent.parent;
-        // Proxy apply/construct traps execute only when the returned callable is used.
-        if (
-          ts.isNewExpression(container) &&
-          container.expression.getText(source) === 'Proxy' &&
-          container.arguments?.[1] === property.parent &&
-          ['apply', 'construct'].includes(property.name.getText(source)) &&
-          compact(container.arguments[0]) ===
-            'Function.prototype.bind.call(bindingTarget,undefined)'
-        ) {
-          const signature =
-            checker.getResolvedSignature(container)?.declaration;
-          if (
-            signature &&
-            /\/lib\.[^/]+\.d\.ts$/.test(signature.getSourceFile().fileName)
-          ) {
-            allowed.add(node);
-          }
-        }
-        // Object.defineProperty stores this function; snapshot creation does not invoke it.
-        if (
-          ts.isCallExpression(container) &&
-          builtIn(container, 'defineProperty') &&
-          compact(container.expression) === 'Object.defineProperty' &&
-          compact(container.arguments[0]) === 'owned' &&
-          compact(container.arguments[1]) === 'Symbol.hasInstance' &&
-          property.name.getText(source) === 'value'
-        ) {
-          allowed.add(node);
-        }
-        break;
-      }
-    }
-    // Binding creates callable data without invoking the target. Its get trap remains checked.
-    if (
-      ts.isCallExpression(node) &&
-      builtIn(node, 'call') &&
-      compact(node) === 'Function.prototype.bind.call(bindingTarget,undefined)'
-    ) {
-      allowed.add(node);
-    }
-    // Intrinsic object inspection does not invoke an opaque callable value.
-    if (
-      ts.isCallExpression(node) &&
-      builtIn(node, 'call') &&
-      [
-        'Object.prototype.hasOwnProperty.call',
-        'Object.prototype.toString.call',
-        'Function.prototype.toString.call',
-      ].includes(compact(node.expression))
-    ) {
-      allowed.add(node);
-    }
-    // Built-in brand checks and slot getters read an internal slot or throw; they never run host code.
-    if (
-      ts.isCallExpression(node) &&
-      builtIn(node, 'call') &&
-      ((compact(node.expression) === 'prototype.has.call' &&
-        collectionParameter(node)) ||
-        (slotGetters.has(compact(node.expression)) &&
-          bufferPrototype(descriptorTarget(node))) ||
-        compact(node.expression) ===
-          "Object.getOwnPropertyDescriptor(DataView.prototype,'byteLength').get.call")
-    ) {
-      allowed.add(node);
-    }
-    if (
-      ts.isCallExpression(node) &&
-      builtIn(node, 'construct') &&
-      compact(node.expression) === 'Reflect.construct' &&
-      node.arguments.length === 2 &&
-      bufferConstructor(node.arguments[0]) &&
-      compact(node.arguments[1]) ===
-        'flexible?[byteLength,{maxByteLength}]:[byteLength]'
-    ) {
-      allowed.add(node);
-    }
-    // Existing data allocation/mutation on owned values, under their exact type guards.
-    if (
-      ts.isNewExpression(node) &&
-      compact(node.expression) === '(value.constructorasany)' &&
-      withinBranch(node, 'ArrayBuffer.isView(value)')
-    ) {
-      allowed.add(node);
-    }
-    if (
-      ts.isCallExpression(node) &&
-      ((compact(node) === 'owned.set(copy(key),copy(entry))' &&
-        mapGuard &&
-        withinBranch(node, 'map')) ||
-        (compact(node) === 'owned.add(copy(entry))' &&
-          setGuard &&
-          withinBranch(node, 'set')))
+      deferredSnapshotCall(checker, node) ||
+      intrinsicFunctionCall(checker, node) ||
+      intrinsicGetterCall(checker, node) ||
+      intrinsicCollectionCall(checker, source, node) ||
+      ownedCollectionCall(checker, source, node) ||
+      dataViewConstructor(checker, node) ||
+      ownedBufferConstruction(checker, node)
     ) {
       allowed.add(node);
     }
@@ -1021,29 +1409,7 @@ export function viewCapabilityReads(
 ) {
   const issues: string[] = [];
   visit(source, (node) => {
-    let symbol: ts.Symbol | undefined;
-    if (ts.isPropertyAccessExpression(node)) {
-      symbol = checker.getSymbolAtLocation(node.name);
-    } else if (
-      ts.isElementAccessExpression(node) &&
-      ts.isStringLiteral(node.argumentExpression)
-    ) {
-      symbol = checker
-        .getTypeAtLocation(node.expression)
-        .getProperty(node.argumentExpression.text);
-    } else if (
-      ts.isBindingElement(node) &&
-      ts.isObjectBindingPattern(node.parent) &&
-      ts.isVariableDeclaration(node.parent.parent) &&
-      node.parent.parent.initializer
-    ) {
-      const key = node.propertyName ?? node.name;
-      if (ts.isIdentifier(key) || ts.isStringLiteral(key)) {
-        symbol = checker
-          .getTypeAtLocation(node.parent.parent.initializer)
-          .getProperty(key.text);
-      }
-    }
+    const symbol = propertyReadSymbol(checker, node);
     if (
       names.has(symbol?.name ?? '') &&
       symbol?.declarations?.some(
