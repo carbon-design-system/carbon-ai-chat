@@ -272,6 +272,9 @@ describe('history panel item actions', () => {
       ]);
       if (whileOpen) {
         await state.open();
+        expect(state.items[0].matches(':focus-within')).to.be.true;
+      } else {
+        state.trigger.focus();
       }
       const deleteItem = state.items[1];
       for (const disabled of [true, false]) {
@@ -288,6 +291,12 @@ describe('history panel item actions', () => {
         expect(deleteItem.disabled).to.equal(disabled);
         expect(button(deleteItem).disabled).to.equal(disabled);
         expect(state.menu.open).to.equal(whileOpen);
+        if (whileOpen) {
+          expect(state.items[0].matches(':focus-within')).to.be.true;
+        } else {
+          expect(state.menu.shadowRoot!.activeElement === state.trigger).to.be
+            .true;
+        }
         if (disabled) {
           deleteItem.click();
           for (const key of ['Enter', ' ']) {
@@ -360,13 +369,14 @@ describe('history panel item actions', () => {
     expect(state.events).to.have.length(0);
   });
 
-  it('blocks an action disabled while focused and allows it again after an update', async () => {
+  it('returns focus to the trigger when the focused action is disabled, and allows it again after an update', async () => {
     const state = await setup([
       { text: 'Rename' },
       { text: 'Delete', delete: true },
     ]);
     await state.open();
     state.items[1].focus();
+    expect(state.items[1].matches(':focus-within')).to.be.true;
     for (const disabled of [true, false]) {
       state.item.actions = state.item.actions.map((action) => ({
         ...action,
@@ -375,6 +385,15 @@ describe('history panel item actions', () => {
       await state.item.updateComplete;
       await state.items[1].updateComplete;
       if (disabled) {
+        await state.menu.updateComplete;
+        await state.body.updateComplete;
+        expect(state.menu.open).to.be.false;
+        expect(state.body.open).to.be.false;
+        expect(state.menu.shadowRoot!.activeElement === state.trigger).to.be
+          .true;
+        expect(state.item.shadowRoot!.activeElement === state.menu).to.be.true;
+        expect(document.activeElement === state.item).to.be.true;
+        state.items[1].click();
         state.items[1].dispatchEvent(
           new KeyboardEvent('keydown', {
             key: 'Enter',
@@ -385,9 +404,6 @@ describe('history panel item actions', () => {
         expect(state.events).to.have.length(0);
       }
     }
-    state.trigger.focus();
-    state.menu.open = false;
-    await state.menu.updateComplete;
     await state.open();
     state.items[1].focus();
     await sendKeys({ press: 'Enter' });
@@ -395,4 +411,78 @@ describe('history panel item actions', () => {
       'Delete',
     ]);
   });
+
+  it('keeps Delete focused and the menu open when another action becomes disabled', async () => {
+    const state = await setup([
+      { text: 'Rename' },
+      { text: 'Delete', delete: true },
+    ]);
+    await state.open();
+    state.items[1].focus();
+    expect(state.items[1].matches(':focus-within')).to.be.true;
+    state.item.actions = state.item.actions.map((action) => ({
+      ...action,
+      disabled: action.text === 'Rename',
+    }));
+    await state.item.updateComplete;
+    await Promise.all(state.items.map((entry) => entry.updateComplete));
+    await state.menu.updateComplete;
+    expect(state.menu.open).to.be.true;
+    expect(state.items[1].matches(':focus-within')).to.be.true;
+    expect(state.events).to.have.length(0);
+  });
+
+  it('tracks the focused action by its key when labels contain whitespace or icon text and actions reorder', async () => {
+    const state = await setup([
+      { text: 'Rename' },
+      {
+        text: ' Delete ',
+        icon: html`<svg slot="icon" aria-hidden="true">
+          <title>Delete action</title>
+        </svg>`,
+      },
+    ]);
+    await state.open();
+    state.items[1].focus();
+    expect(state.items[1].matches(':focus-within')).to.be.true;
+    state.item.actions = state.item.actions
+      .map((action) => ({ ...action, disabled: action.text === ' Delete ' }))
+      .reverse();
+    await state.item.updateComplete;
+    await Promise.all(state.items.map((entry) => entry.updateComplete));
+    await state.menu.updateComplete;
+    expect(state.menu.open).to.be.false;
+    expect(state.menu.shadowRoot!.activeElement === state.trigger).to.be.true;
+    expect(document.activeElement === state.item).to.be.true;
+    expect(state.events).to.have.length(0);
+  });
+
+  for (const focusTarget of ['trigger', 'another menu']) {
+    it(`does not move focus from ${focusTarget} when no action in this menu is focused`, async () => {
+      const state = await setup([{ text: 'Delete' }]);
+      const other = await setup([{ text: 'Delete' }]);
+      if (focusTarget === 'trigger') {
+        state.trigger.focus();
+      } else {
+        await other.open();
+        expect(other.items[0].matches(':focus-within')).to.be.true;
+      }
+      state.menu.open = true;
+      state.item.actions = [{ ...state.item.actions[0], disabled: true }];
+      await state.item.updateComplete;
+      await state.items[0].updateComplete;
+      await state.menu.updateComplete;
+      await state.body.updateComplete;
+      expect(state.menu.open).to.be.true;
+      expect(state.items[0].disabled).to.be.true;
+      if (focusTarget === 'trigger') {
+        expect(state.menu.shadowRoot!.activeElement === state.trigger).to.be
+          .true;
+      } else {
+        expect(other.menu.open).to.be.true;
+        expect(other.items[0].matches(':focus-within')).to.be.true;
+      }
+      expect(state.events).to.have.length(0);
+    });
+  }
 });

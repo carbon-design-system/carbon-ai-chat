@@ -252,6 +252,43 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
   };
 
   /**
+   * Restore focus before rendering a disabled button can drop it to the body.
+   */
+  willUpdate(changedProperties: Map<string, any>) {
+    super.willUpdate(changedProperties);
+    const menu = this.overflowMenu as (HTMLElement & { open: boolean }) | null;
+    if (!changedProperties.has('actions') || !menu?.open) {
+      return;
+    }
+    // Carbon portals the menu body out of this shadow root, so follow focus.
+    let focused = this.ownerDocument.activeElement;
+    while (
+      focused?.shadowRoot?.activeElement &&
+      !focused.matches('cds-overflow-menu-item')
+    ) {
+      focused = focused.shadowRoot.activeElement;
+    }
+    const body = focused?.closest('cds-overflow-menu-body') as
+      (HTMLElement & { parent: HTMLElement }) | null;
+    if (!focused?.matches('cds-overflow-menu-item') || body?.parent !== menu) {
+      return;
+    }
+    const focusedIndex = Array.from(
+      body.querySelectorAll('cds-overflow-menu-item')
+    ).indexOf(focused);
+    const focusedAction = changedProperties.get('actions')?.[focusedIndex];
+    if (
+      focusedAction &&
+      this.actions.some(
+        (action) => action.disabled && action.text === focusedAction.text
+      )
+    ) {
+      menu.open = false;
+      menu.focus();
+    }
+  }
+
+  /**
    * Handler for menu item keydown event
    *
    * * @param event The event.
