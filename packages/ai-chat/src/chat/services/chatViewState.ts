@@ -250,4 +250,4 @@ class ChatViewState {
 }
 
 export { ChatViewState };
-export type { ChatViewStateSnapshot, HumanAgentConfirmation };
+export type { ChatViewStateSnapshot };
