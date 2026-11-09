@@ -367,35 +367,41 @@ it('keeps per-local-item sessions and detects new reasoning positions from a chu
   }
 });
 
-it('resamples a reentrant removal before notifying a sibling local session', async () => {
-  const { instance, core } = await headless();
-  const values: string[] = [];
-  let removal: Promise<void>;
-  instance.on({
-    type: BusEventType.USER_DEFINED_RESPONSE,
-    handler: (event: any) => {
-      values.push(event.data.message.user_defined.value);
-      removal = instance.messaging.removeMessages(['removed']);
-    },
-  });
-  try {
-    const message = response('removed', 'first');
-    message.output.generic.push({
-      response_type: MessageResponseTypes.TEXT,
-      text: 'Second',
-      streaming_metadata: { id: 'second' },
+it.each(['removal', 'restart'])(
+  'resamples a reentrant %s before notifying a sibling local session',
+  async (mode) => {
+    const { instance, core } = await headless();
+    const values: string[] = [];
+    let transition: Promise<void>;
+    instance.on({
+      type: BusEventType.USER_DEFINED_RESPONSE,
+      handler: (event: any) => {
+        values.push(event.data.message.user_defined.value);
+        transition =
+          mode === 'removal'
+            ? instance.messaging.removeMessages(['removed'])
+            : instance.messaging.restartConversation();
+      },
     });
-    await instance.messaging.upsertMessage(
-      message.id,
-      MessageState.COMPLETE,
-      () => message
-    );
-    await removal;
-    expect(values).toEqual(['first']);
-  } finally {
-    core.disposeReasoningObserver();
+    try {
+      const message = response('removed', 'first');
+      message.output.generic.push({
+        response_type: MessageResponseTypes.TEXT,
+        text: 'Second',
+        streaming_metadata: { id: 'second' },
+      });
+      await instance.messaging.upsertMessage(
+        message.id,
+        MessageState.COMPLETE,
+        () => message
+      );
+      await transition;
+      expect(values).toEqual(['first']);
+    } finally {
+      core.disposeReasoningObserver();
+    }
   }
-});
+);
 
 it('notifies core of instance readiness after actual bootstrap assigns the instance', async () => {
   const original = MessageCoordinator.prototype.onInstanceReady;

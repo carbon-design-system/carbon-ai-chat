@@ -17,8 +17,8 @@ import {
 import { PersistedState } from '../../types/state/PersistedState';
 import { LanguagePack } from '../../types/config/LanguagePack';
 import { DeepPartial } from '../../types/utilities/DeepPartial';
-import { reducers } from './reducers';
-import { AppStore, createAppStore } from './appStore';
+import { reduceWithMessageOwnership } from './reducers';
+import { AppStore, createStoreFromReduction } from './appStore';
 import { enableMessageOwnership } from './messageOwnership';
 import {
   DEFAULT_INPUT_STATE,
@@ -166,22 +166,12 @@ function doCreateStore(
     };
   }
 
-  const store = createAppStore(reducerFunction, initialState);
+  const store = createStoreFromReduction(
+    reduceWithMessageOwnership,
+    initialState
+  );
   enableMessageOwnership(store);
   return store;
-}
-
-/**
- * This is the global reducer for the redux store. It will use the map of reducers from the "reducers" array to map
- * the action type to the sub-reducer for that specific action.
- */
-function reducerFunction(
-  state: ConversationState,
-  action: { type: string; [key: string]: unknown } | undefined
-): ConversationState {
-  return action && reducers[action.type]
-    ? reducers[action.type](state, action)
-    : state;
 }
 
 export {
