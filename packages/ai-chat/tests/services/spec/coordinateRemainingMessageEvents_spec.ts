@@ -28,6 +28,7 @@ import type { AppStateMessages } from '../../../src/types/state/AppState';
 import {
   BusEventType,
   type BusEventCustomFooterSlot,
+  type BusEventUserDefinedResponse,
 } from '../../../src/types/events/eventBusTypes';
 import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
 
@@ -229,6 +230,12 @@ it('keeps response history recursion separate from visible footer order', async 
     BusEventType.USER_DEFINED_RESPONSE,
     BusEventType.USER_DEFINED_RESPONSE,
   ]);
+  const responseItems = f.fire.mock.calls.map(
+    ([event]) => (event as BusEventUserDefinedResponse).data.message
+  );
+  expect(responseItems[0]).toBe(child.item);
+  expect(responseItems[1]).toBe(child.item);
+  expect(responseItems[2]).toBe(other.item);
   f.fire.mockClear();
   await replayFooterSlots(f.manager, f.state);
   expect(f.fire.mock.calls).toHaveLength(2);
