@@ -160,15 +160,14 @@ export function createStoreFromReduction<
 
   const getState = (): StateShape => currentState;
 
-  const notify = () => {
-    listeners.forEach((listener) => {
-      try {
-        listener();
-      } catch {
-        // Deliberately swallow to keep other listeners functioning
-      }
-    });
+  const callListener = (listener: StoreListener) => {
+    try {
+      listener();
+    } catch {
+      // Deliberately swallow to keep other listeners functioning
+    }
   };
+  const notify = () => listeners.forEach(callListener);
 
   // Each partition reads its value from the state before the action, so the
   // store's own reducer can't drop or change it.
@@ -226,7 +225,9 @@ export function createStoreFromReduction<
       }
       currentState = nextState;
       commitMessageOwnership(store, reduction.ownership, action);
-      notify();
+      // Called here rather than through notify, so the boundary proof sees
+      // ownership committed right before listeners run.
+      listeners.forEach(callListener);
     } else {
       commitMessageOwnership(store, reduction.ownership, action);
     }
