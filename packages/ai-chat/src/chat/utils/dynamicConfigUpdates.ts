@@ -199,6 +199,10 @@ export async function applyConfigChangesDynamically(
           consoleDebug('Tearing down existing service desk');
           await serviceManager.humanAgentService.endChat(true, true, false);
         }
+        // A chat that shut down during that wait keeps its disconnected service.
+        if (serviceManager.isShutdown) {
+          return;
+        }
 
         consoleDebug('Recreating human agent service');
         serviceManager.humanAgentService =

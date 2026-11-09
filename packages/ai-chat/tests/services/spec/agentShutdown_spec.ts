@@ -24,6 +24,9 @@ import {
   type ConnectToHumanAgentItem,
   type MessageResponse,
 } from '../../../src/types/messaging/Messages';
+import type { PublicConfig } from '../../../src/types/config/PublicConfig';
+import { BusEventType } from '../../../src/types/events/eventBusTypes';
+import createHumanAgentService from '../../../src/shared/services/haa/HumanAgentServiceImpl';
 import {
   createBaseConfig,
   renderChatAndGetInstanceWithStore,
@@ -60,16 +63,21 @@ function mockDesk(overrides: Partial<ServiceDesk> = {}) {
 async function agentChat(
   factory: (
     parameters: ServiceDeskFactoryParameters
-  ) => Promise<ServiceDesk> | ServiceDesk
+  ) => Promise<ServiceDesk> | ServiceDesk,
+  config: Partial<PublicConfig> = {}
 ) {
   let callback: ServiceDeskCallback;
+  const serviceDeskFactory = jest.fn(
+    async (parameters: ServiceDeskFactoryParameters) => {
+      callback = parameters.callback;
+      return factory(parameters);
+    }
+  );
   const chat = await renderChatAndGetInstanceWithStore({
     ...createBaseConfig(),
     messaging: { ...createBaseConfig().messaging, skipWelcome: true },
-    serviceDeskFactory: async (parameters) => {
-      callback = parameters.callback;
-      return factory(parameters);
-    },
+    serviceDeskFactory,
+    ...config,
   });
   const serviceManager = (
     chat.serviceManager.messageCoordinator as unknown as {
@@ -77,7 +85,12 @@ async function agentChat(
     }
   ).serviceManager;
   void chat.instance.changeView(ViewType.MAIN_WINDOW);
-  return { ...chat, serviceManager, callback: () => callback };
+  return {
+    ...chat,
+    serviceManager,
+    serviceDeskFactory,
+    callback: () => callback,
+  };
 }
 
 /** Puts the chat in a conversation with an agent, through the desk's callback. */
@@ -153,6 +166,72 @@ describe('agent connection at shutdown', () => {
     await chat.serviceManager.shutdown();
 
     expect(service.waitingForHumanAgentJoinedTimer).toBeNull();
+  });
+
+  it('starts no join timer when shutdown lands during the pre-start handlers (O3)', async () => {
+    const desk = mockDesk();
+    const chat = await agentChat(() => desk, {
+      serviceDesk: { agentJoinTimeoutSeconds: 30 },
+    });
+    await waitFor(() => expect(chat.callback()).toBeDefined());
+    await waitFor(() => expect(chat.store.getState().isHydrated).toBe(true));
+    const handlerRelease = resolvablePromise<void>();
+    const handler = jest.fn(() => handlerRelease);
+    chat.instance.on({
+      type: BusEventType.HUMAN_AGENT_PRE_START_CHAT,
+      handler,
+    });
+    const local = outputItemToLocalItem(
+      connectMessage.output.generic[0],
+      connectMessage
+    );
+    const service = chat.serviceManager.humanAgentService as unknown as {
+      waitingForHumanAgentJoinedTimer: unknown;
+    };
+    const connecting = chat.serviceManager.humanAgentService
+      .startChat(local as never, connectMessage)
+      .catch(() => {});
+    await waitFor(() => expect(handler).toHaveBeenCalled());
+
+    await chat.serviceManager.shutdown();
+    handlerRelease.doResolve();
+    await connecting;
+
+    expect(service.waitingForHumanAgentJoinedTimer).toBeFalsy();
+    expect(desk.startChat).not.toHaveBeenCalled();
+  });
+
+  it('stops the send warning and failure timers (O3)', async () => {
+    const desk = mockDesk({
+      sendMessageToAgent: jest.fn(() => new Promise<void>(() => {})),
+    });
+    const chat = await agentChat(() => desk);
+    await connect(chat);
+    const service = chat.serviceManager.humanAgentService as unknown as {
+      sendTimers: Set<unknown>;
+    };
+    void chat.serviceManager.humanAgentService
+      .sendMessageToAgent('hello', [])
+      .catch(() => {});
+    await waitFor(() => expect(desk.sendMessageToAgent).toHaveBeenCalled());
+    expect(service.sendTimers.size).toBe(2);
+
+    await chat.serviceManager.shutdown();
+
+    expect(service.sendTimers.size).toBe(0);
+  });
+
+  it('calls no desk factory once shut down, as a factory swap would (O10)', async () => {
+    const chat = await agentChat(() => mockDesk());
+    await waitFor(() => expect(chat.callback()).toBeDefined());
+    const calls = chat.serviceDeskFactory.mock.calls.length;
+
+    await chat.serviceManager.shutdown();
+    const replacement = createHumanAgentService(chat.serviceManager);
+    await replacement.initialize();
+    await replacement.handleHydration(true, true);
+
+    expect(chat.serviceDeskFactory).toHaveBeenCalledTimes(calls);
   });
 
   it('keeps a held desk connect from reaching the chat after shutdown (O10)', async () => {

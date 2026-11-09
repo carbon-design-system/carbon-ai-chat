@@ -243,6 +243,12 @@ class HumanAgentServiceImpl implements HumanAgentService {
 
     this.hasInitialized = true;
 
+    // A chat that shut down creates no desk.
+    if (this.serviceManager.isShutdown) {
+      this.serviceDesk = DISCONNECTED_DESK;
+      return;
+    }
+
     const { store, instance } = this.serviceManager;
     const state = store.getState();
     const { config, persistedToBrowserStorage } = state;
@@ -339,7 +345,8 @@ class HumanAgentServiceImpl implements HumanAgentService {
       const agentJoinTimeout =
         serviceManager.store.getState().config.public.serviceDesk
           ?.agentJoinTimeoutSeconds;
-      if (agentJoinTimeout) {
+      // Shutdown can land while the pre-start handlers run.
+      if (agentJoinTimeout && !this.serviceManager.isShutdown) {
         this.waitingForHumanAgentJoinedTimer = setTimeout(
           () => this.handleHumanAgentJoinedTimeout(),
           agentJoinTimeout * 1000
@@ -933,6 +940,10 @@ class HumanAgentServiceImpl implements HumanAgentService {
   }
 
   private startSendTimer(callback: () => void, delay: number) {
+    // Shutdown can land while the message is being added.
+    if (this.serviceManager.isShutdown) {
+      return;
+    }
     const timer = setTimeout(() => {
       this.sendTimers.delete(timer);
       callback();
