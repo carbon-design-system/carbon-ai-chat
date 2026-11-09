@@ -27,6 +27,7 @@ import { StructuredData } from '../../types/messaging/Messages';
 import { consoleError, consoleWarn } from '../utils/miscUtils';
 import { isPlainTextDoc } from '../utils/inputContent';
 import type { ServiceManager } from './ServiceManager';
+import { CancellationReason } from '../../types/config/MessagingConfig';
 
 /**
  * Module-scoped flag so the deprecation warning for `updateRawValue` is
@@ -272,7 +273,9 @@ class InputActionsService {
 
   /** Aborts every upload still running, for a chat that shut down. */
   abortAllUploads() {
-    this.uploadAbortControllers.forEach((controller) => controller.abort());
+    this.uploadAbortControllers.forEach((controller) =>
+      controller.abort(CancellationReason.CHAT_REMOVED)
+    );
     this.uploadAbortControllers.clear();
   }
 

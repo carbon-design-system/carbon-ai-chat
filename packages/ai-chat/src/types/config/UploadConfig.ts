@@ -69,7 +69,8 @@ export interface UploadConfig {
    *
    * @param file - The `File` object selected by the user.
    * @param abortSignal - Fires if the user removes the pending upload before it
-   *   completes, or if the chat is destroyed.
+   *   completes, or with reason {@link CancellationReason.CHAT_REMOVED} if the chat
+   *   is removed from the page.
    */
   onFileUpload?: (
     file: File,
