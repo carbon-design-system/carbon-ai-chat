@@ -23,6 +23,41 @@ import type { AppStore } from '../../shared/store/appStore';
 import type { AppState } from '../../types/state/AppState';
 
 /**
+ * Rebuilds the human-agent service for a new desk factory. A live chat ends
+ * quietly first (mirrors a user-initiated end), so no connection is stranded
+ * on the old service. The new service initializes only if the old one had,
+ * so a swap keeps the prior started state.
+ */
+async function replaceHumanAgentService(
+  serviceManager: ServiceManager,
+  isActive: boolean,
+  wasInitialized: boolean
+) {
+  try {
+    if (isActive) {
+      consoleDebug('Tearing down existing service desk');
+      await serviceManager.humanAgentService.endChat(true, true, false);
+    }
+    // A chat that shut down during that wait keeps its disconnected service.
+    if (serviceManager.isShutdown) {
+      return;
+    }
+
+    consoleDebug('Recreating human agent service');
+    serviceManager.humanAgentService = createHumanAgentService(serviceManager);
+
+    if (wasInitialized) {
+      consoleDebug('Human agent service restarting');
+      await serviceManager.humanAgentService.initialize();
+    }
+  } catch (error) {
+    // Surface failure to the caller, which decides on any fallback.
+    consoleError('Failed to update human agent service dynamically:', error);
+    throw error;
+  }
+}
+
+/**
  * Applies a runtime `PublicConfig` change to an already-booted `ServiceManager`
  * in place — without tearing down and rebuilding the chat.
  *
@@ -191,37 +226,7 @@ export async function applyConfigChangesDynamically(
     );
 
     if (isActive || wasInitialized) {
-      try {
-        // If a chat is in progress/connecting, end it quietly first (mirrors a
-        // user-initiated end) so we don't strand a live connection on the old
-        // service instance.
-        if (isActive) {
-          consoleDebug('Tearing down existing service desk');
-          await serviceManager.humanAgentService.endChat(true, true, false);
-        }
-        // A chat that shut down during that wait keeps its disconnected service.
-        if (serviceManager.isShutdown) {
-          return;
-        }
-
-        consoleDebug('Recreating human agent service');
-        serviceManager.humanAgentService =
-          createHumanAgentService(serviceManager);
-
-        // Re-initialize only if the previous service had already initialized, so
-        // a factory swap preserves the prior started state.
-        if (wasInitialized) {
-          consoleDebug('Human agent service restarting');
-          await serviceManager.humanAgentService.initialize();
-        }
-      } catch (error) {
-        // Surface failure to the caller, which decides on any fallback.
-        consoleError(
-          'Failed to update human agent service dynamically:',
-          error
-        );
-        throw error;
-      }
+      await replaceHumanAgentService(serviceManager, isActive, wasInitialized);
     }
   }
 
