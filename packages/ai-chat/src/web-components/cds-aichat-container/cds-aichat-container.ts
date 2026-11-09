@@ -554,6 +554,8 @@ class ChatContainer extends FlattenedConfigElement {
         void serviceManager.shutdown();
         return;
       }
+      // Held first, so a release reaches it even if a step below throws.
+      state.serviceManager = serviceManager;
 
       // Read markdown off the original config, not the merged one, to keep the
       // host's plugin and renderer references for the slice's isEqual guard.
@@ -563,7 +565,6 @@ class ChatContainer extends FlattenedConfigElement {
         );
       }
       state.App = ChatAppEntry;
-      state.serviceManager = serviceManager;
       state.viewState = new ChatViewState(serviceManager, getWindowSize());
       state.viewState.connect();
       state.themeWatcher = new ThemeWatcherService(serviceManager.store);

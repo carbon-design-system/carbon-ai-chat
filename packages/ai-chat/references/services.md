@@ -50,8 +50,8 @@ Put state transformations in reducers. Put pure utilities that conversation code
 - **Removing a host shuts its chat down.** The container's release retires the mount, then calls `ServiceManager.shutdown()`; boot calls it too when the host left while services were starting. Hosts never call it. Shutdown runs once; a repeat call returns the same promise. In order, it:
   - closes the store: every subscription goes, and later dispatches change nothing, so saved session state stays as it was at removal;
   - clears the event bus;
+  - disconnects the human-agent service from the desk without ending the conversation there (`HumanAgentServiceImpl.shutdown()`). This comes before anything aborts, so an abort listener can't reach the real desk;
   - destroys `PublicStateService` and aborts uploads in `InputActionsService`;
-  - disconnects the human-agent service from the desk without ending the conversation there (`HumanAgentServiceImpl.shutdown()`);
   - stops `MessageCoordinator` through restart's own steps (`MessageCoordinator.shutdown()`), which cancels every request and ends its timers.
 - **A new service with live work adds its stop to `ServiceManager.shutdown()`.** Keep the timer id or controller you create, so you can stop it there. A store subscription needs nothing more; closing the store drops it. Late async work that reaches outside the store, such as a host callback or a global, checks `serviceManager.isShutdown` first.
 - `destroySession()` resets session data; it is not a shutdown.

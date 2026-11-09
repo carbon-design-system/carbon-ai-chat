@@ -180,13 +180,11 @@ describe('shutdown through the mount path', () => {
     it('shuts down a chat whose host left during onBeforeRender', async () => {
       const gate = resolvablePromise<void>();
       const element = chatElement();
-      element.onBeforeRender = () => gate;
+      element.onBeforeRender = jest.fn(() => gate);
       element.onAfterRender = jest.fn();
       document.body.appendChild(element);
-      await waitFor(() =>
-        expect(chatBoot.initServiceManagerAndInstance).toBeDefined()
-      );
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await waitFor(() => expect(element.onBeforeRender).toHaveBeenCalled());
+      expect(shutdown).not.toHaveBeenCalled();
 
       element.remove();
       await flushMicrotasks();
