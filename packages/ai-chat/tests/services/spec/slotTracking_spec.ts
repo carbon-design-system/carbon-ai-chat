@@ -10,6 +10,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { EventBus } from '../../../src/shared/events/EventBus';
+import { ExtensionHosts } from '../../../src/chat/services/extensionHosts';
 import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
 import {
   attachSlotTracking,
@@ -214,6 +215,83 @@ describe('attachSlotTracking', () => {
       'subscribe',
     ]);
     expect(Object.isFrozen(stores)).toBe(true);
+  });
+
+  it('builds the same records as the view extension hosts, event by event', () => {
+    const eventBus = new EventBus();
+    const instance = eventBus as unknown as ChatInstance;
+    const hosts = new ExtensionHosts(
+      instance,
+      document.createElement('div'),
+      { getState: () => ({ allMessagesByID: {} }), subscribe: () => () => {} },
+      () => true
+    );
+    hosts.connect();
+    const stores = attachSlotTracking({
+      eventBus,
+    } as unknown as ServiceManager);
+    const sequence = [
+      {
+        type: BusEventType.USER_DEFINED_RESPONSE,
+        data: { slot: 'a', message: item('a'), fullMessage: message },
+      },
+      {
+        type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
+        data: {
+          slot: 'b',
+          messageItem: {},
+          chunk: { partial_item: { user_defined: { text: '1' } } },
+        },
+      },
+      {
+        type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
+        data: {
+          slot: 'b',
+          messageItem: {},
+          chunk: { partial_item: { user_defined: { text: '2' } } },
+        },
+      },
+      {
+        type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
+        data: {
+          slot: 'b',
+          messageItem: {},
+          chunk: { complete_item: item('b') },
+        },
+      },
+      {
+        type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
+        data: {
+          slot: 'a',
+          messageItem: {},
+          chunk: { partial_item: { user_defined: { text: 'after' } } },
+        },
+      },
+      {
+        type: BusEventType.CUSTOM_FOOTER_SLOT,
+        data: { slotName: 'f1', message, messageItem: item('a') },
+      },
+      {
+        type: BusEventType.CUSTOM_FOOTER_SLOT,
+        data: {
+          slotName: 'f2',
+          message,
+          messageItem: item('b'),
+          additionalData: { rating: true },
+        },
+      },
+      { type: BusEventType.RESTART_CONVERSATION },
+    ];
+
+    sequence.forEach((event) => {
+      eventBus.fireSync(event as never, instance);
+      const snapshot = hosts.getSnapshot();
+      expect(stores.userDefinedResponse.get()).toStrictEqual(
+        snapshot.userDefinedResponse
+      );
+      expect(stores.customFooter.get()).toStrictEqual(snapshot.customFooter);
+    });
+    hosts.disconnect();
   });
 
   it('lands inert: only tests call it (O15)', () => {
