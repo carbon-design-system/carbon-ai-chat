@@ -353,6 +353,42 @@ describe('extension slot hosts', () => {
     expect(hosts.hostFor('userDefinedResponse', 'r1')).not.toBe(responseHost);
   });
 
+  it('shows records collected while disconnected, but no request footers', () => {
+    const { hosts, fire } = setup();
+    hosts.disconnect();
+    fire(response('while-away'));
+    fire({
+      type: BusEventType.CUSTOM_REQUEST_FOOTER_SLOT,
+      data: { slotName: 'away-footer', message: { id: 'm', input: {} } },
+    });
+    const listener = jest.fn();
+    hosts.subscribe(listener);
+
+    hosts.connect();
+    expect(Object.keys(hosts.getSnapshot().userDefinedResponse)).toEqual([
+      'while-away',
+    ]);
+    expect(listener).toHaveBeenCalledTimes(1);
+    // No view gate was registered while disconnected.
+    expect(hosts.getSnapshot().customRequestFooter).toEqual({});
+  });
+
+  it('releases hosts on reconnect when a restart emptied their records meanwhile', () => {
+    const { hosts, chatWrapper, fire } = setup();
+    fire(response('r1'));
+    hosts.setRendererPresent('userDefinedResponse', true);
+    const host = hosts.hostFor('userDefinedResponse', 'r1');
+    hosts.setHasContent('userDefinedResponse', 'r1', true);
+    hosts.disconnect();
+    fire(restartEvent);
+
+    hosts.connect();
+    expect(hosts.getSnapshot().userDefinedResponse).toEqual({});
+    expect(attached(chatWrapper)).toEqual([]);
+    fire(response('r1'));
+    expect(hosts.hostFor('userDefinedResponse', 'r1')).not.toBe(host);
+  });
+
   it('leaves a host that was moved out of the chat element', () => {
     const { hosts, fire } = setup();
     fire(response('r1'));
