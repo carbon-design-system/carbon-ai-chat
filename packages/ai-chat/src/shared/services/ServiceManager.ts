@@ -15,7 +15,6 @@ import { ConversationState } from '../../types/state/ConversationState';
 import { HumanAgentService } from './haa/HumanAgentService';
 import { HistoryService } from './HistoryService';
 import { NamespaceService } from './NamespaceService';
-import { ThemeWatcherService } from './ThemeWatcherService';
 import { UserSessionStorageService } from './UserSessionStorageService';
 import { ChatInstance } from '../../types/instance/ChatInstance';
 import { WriteableElements } from '../../types/instance/WriteableElements';
@@ -139,11 +138,6 @@ class ServiceManager {
    * An object defining the namespace of this Carbon AI Chat and derived properties from that namespace name.
    */
   namespace: NamespaceService;
-
-  /**
-   * Service that watches CSS variables and updates theme when CarbonTheme is not set.
-   */
-  themeWatcherService: ThemeWatcherService;
 
   /**
    * Indicates the number of times that a restart has occurred. This can be used by various asynchronous operations to

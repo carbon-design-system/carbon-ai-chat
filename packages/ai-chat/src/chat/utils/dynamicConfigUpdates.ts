@@ -68,9 +68,8 @@ export async function applyConfigChangesDynamically(
   // theme forward — but ONLY when staying in inherit mode. On an explicit →
   // inherit transition the previous derivedCarbonTheme is the *explicit* value,
   // which would now be stale; leaving it at the freshly-built null lets the
-  // ThemeWatcherService (re-)resolve the host theme. The watcher is kicked off
-  // by the originalCarbonTheme change via the store subscription in
-  // loadServices.ts.
+  // ThemeWatcherService (re-)resolve the host theme. The mounted watcher starts
+  // when it sees originalCarbonTheme change to null.
   const prevInheritMode =
     currentState.config.derived.themeWithDefaults.originalCarbonTheme === null;
   const nextInheritMode =

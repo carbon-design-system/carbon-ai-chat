@@ -20,7 +20,6 @@ import { EventBus } from '../events/EventBus';
 import { HistoryService } from './HistoryService';
 import { NamespaceService } from './NamespaceService';
 import { ServiceManager } from './ServiceManager';
-import { ThemeWatcherService } from './ThemeWatcherService';
 import { UserSessionStorageService } from './UserSessionStorageService';
 import {
   humanAgentStateConfig,
@@ -100,29 +99,6 @@ function createServiceManager(appConfig: ConversationAppConfig) {
       reportHumanAgentStateOnChange(serviceManager)
     );
   }
-
-  // Subscribe to theme changes to start/stop the theme watcher as needed
-  let currentOriginalTheme =
-    serviceManager.store.getState().config.derived.themeWithDefaults
-      .originalCarbonTheme;
-
-  serviceManager.store.subscribe(() => {
-    const newOriginalTheme =
-      serviceManager.store.getState().config.derived.themeWithDefaults
-        .originalCarbonTheme;
-    if (newOriginalTheme !== currentOriginalTheme) {
-      serviceManager.themeWatcherService.onThemeChange(newOriginalTheme);
-      currentOriginalTheme = newOriginalTheme;
-    }
-  });
-  serviceManager.themeWatcherService = new ThemeWatcherService(
-    serviceManager.store,
-    serviceManager.container
-  );
-
-  // Start theme watching if initially inheriting tokens
-  // If later we make the theme mutable, we will have to consider that here.
-  serviceManager.themeWatcherService.onThemeChange(currentOriginalTheme);
 
   setIntl(
     serviceManager,

@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { cleanup, waitFor } from '@testing-library/react';
+import { waitFor } from '@testing-library/react';
 import { MessageCoordinator } from '../../../../src/shared/services/messaging/MessageCoordinator';
 import type { ServiceManager } from '../../../../src/shared/services/ServiceManager';
 import { MessageState } from '../../../../src/types/config/MessagingConfig';
@@ -21,6 +21,7 @@ import {
   renderChatAndGetInstanceWithStore,
   setupAfterEach,
   setupBeforeEach,
+  unmountKeepingServices,
 } from '../../../test_helpers';
 
 beforeEach(setupBeforeEach);
@@ -34,8 +35,8 @@ it.each([true, false])(
       .serviceManager as ServiceManager;
     let core = manager.messageCoordinator;
     if (!withAdapter) {
-      cleanup();
-      // The boot coordinator goes headless once cleanup detaches the view; retire it.
+      unmountKeepingServices(boot.instance);
+      // The boot coordinator goes headless once the view detaches; retire it.
       manager.messageCoordinator.disposeReasoningObserver();
       core = new MessageCoordinator(manager);
       manager.messageCoordinator = core;
@@ -99,8 +100,8 @@ it.each([true, false])(
       .serviceManager as ServiceManager;
     let core = manager.messageCoordinator;
     if (!withAdapter) {
-      cleanup();
-      // The boot coordinator goes headless once cleanup detaches the view; retire it.
+      unmountKeepingServices(boot.instance);
+      // The boot coordinator goes headless once the view detaches; retire it.
       manager.messageCoordinator.disposeReasoningObserver();
       core = new MessageCoordinator(manager);
       manager.messageCoordinator = core;

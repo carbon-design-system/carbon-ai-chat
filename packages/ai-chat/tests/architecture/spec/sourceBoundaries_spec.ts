@@ -101,21 +101,6 @@ const viewHandleExceptions: Array<{
     owner: '#1732',
     reason: 'writeable elements move to the view attach',
   },
-  {
-    reference: 'src/shared/services/ThemeWatcherService.ts: Element',
-    owner: '#1681',
-    reason: 'the theme watcher reads CSS variables from the container',
-  },
-  {
-    reference: 'src/shared/services/ThemeWatcherService.ts: HTMLElement',
-    owner: '#1681',
-    reason: 'the theme watcher reads CSS variables from the container',
-  },
-  {
-    reference: 'src/shared/services/ThemeWatcherService.ts: ShadowRoot',
-    owner: '#1681',
-    reason: 'the theme watcher reads CSS variables from the container',
-  },
 ];
 
 /** View-owned classes that stay in `chat/services/`; conversation services go in `shared/`. */
@@ -123,6 +108,7 @@ const chatServices = [
   'CustomPanelInstance.ts',
   'CustomPanelManager.ts',
   'MessagePresentationAdapter.ts',
+  'ThemeWatcherService.ts',
   'ViewService.ts',
   'ariaAnnouncer.ts',
   'attachChatView.ts',

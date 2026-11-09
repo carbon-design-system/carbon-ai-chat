@@ -28,6 +28,7 @@ import {
   renderChatAndGetInstanceWithStore,
   setupAfterEach,
   setupBeforeEach,
+  unmountKeepingServices,
 } from '../../../test_helpers';
 
 beforeEach(setupBeforeEach);
@@ -66,8 +67,8 @@ async function bootMode(
   const manager = (boot.serviceManager.messageCoordinator as any)
     .serviceManager as ServiceManager;
   if (!withAdapter) {
-    cleanup();
-    // The boot coordinator goes headless once cleanup detaches the view; retire it.
+    unmountKeepingServices(boot.instance);
+    // The boot coordinator goes headless once the view detaches; retire it.
     manager.messageCoordinator.disposeReasoningObserver();
     manager.messageCoordinator = new MessageCoordinator(manager);
     manager.messageCoordinator.configureMessageTimeout(config);
