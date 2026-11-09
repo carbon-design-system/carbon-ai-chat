@@ -46,6 +46,12 @@ interface HumanAgentService {
   readonly serviceDeskFactory?: unknown;
 
   /**
+   * True from the moment a chat starts, including while its `pre:startChat`
+   * handlers run and before the store says it's connecting, until it ends.
+   */
+  readonly chatStarted?: boolean;
+
+  /**
    * If a custom service desk is configured, returns the name.
    */
   getCustomServiceDeskName(): string;

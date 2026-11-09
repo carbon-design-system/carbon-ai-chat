@@ -14,6 +14,7 @@ import { buildLanguagePack } from '../store/doCreateStore';
 import type { ConversationAppConfig } from '../../types/state/ConversationState';
 import { consoleDebug, consoleError } from '../utils/miscUtils';
 import { reconcileAppConfigReferences } from '../utils/reconcileConfig';
+import { BusEventType } from '../../types/events/eventBusTypes';
 import createHumanAgentService from './haa/HumanAgentServiceImpl';
 import { messageTimeoutMS } from './messaging/MessageCoordinator';
 import { NamespaceService } from './NamespaceService';
@@ -27,7 +28,9 @@ import type { ServiceManager } from './ServiceManager';
  *
  * The steps before the service desk's run before this returns its promise, so
  * a caller's next statement sees the new config in the store. The promise
- * resolves once the service desk step is done too.
+ * resolves once the service desk step is done. When that step has to wait for
+ * a live agent chat to end, it resolves at once; the switch runs later, and a
+ * failure then is logged rather than returned.
  *
  * - **The config replace** writes `next` into the store. Sub-objects that
  *   didn't change keep their previous references, so a one-field change
@@ -135,22 +138,33 @@ async function syncServiceDeskFactory(serviceManager: ServiceManager) {
   await replaceHumanAgentService(serviceManager);
 }
 
-/** Runs {@link syncServiceDeskFactory} again once no agent chat is live. */
+/**
+ * Runs {@link syncServiceDeskFactory} again once no agent chat is live. A chat
+ * that ends changes the store, or at least fires the end-chat event, so both
+ * are watched; the first that finds the chat over stops both.
+ */
 function waitForAgentChatEnd(serviceManager: ServiceManager) {
   if (waitingForAgentChatEnd.has(serviceManager)) {
     return;
   }
   waitingForAgentChatEnd.add(serviceManager);
-  const unsubscribe = serviceManager.store.subscribe(() => {
+  const onChange = () => {
     if (isHumanAgentChatActive(serviceManager)) {
       return;
     }
     unsubscribe();
+    serviceManager.eventBus.off(endChatHandler);
     waitingForAgentChatEnd.delete(serviceManager);
     syncServiceDeskFactory(serviceManager).catch((error) =>
       consoleError('Failed to switch to the new service desk factory:', error)
     );
-  });
+  };
+  const endChatHandler = {
+    type: BusEventType.HUMAN_AGENT_END_CHAT,
+    handler: onChange,
+  };
+  const unsubscribe = serviceManager.store.subscribe(onChange);
+  serviceManager.eventBus.on(endChatHandler);
 }
 
 /**
@@ -174,10 +188,17 @@ async function replaceHumanAgentService(serviceManager: ServiceManager) {
   }
 }
 
-/** True if a human agent chat is connected or connecting. */
+/**
+ * True while a human agent chat is live: started (its `pre:startChat`
+ * handlers may still be running), connecting, or connected.
+ */
 function isHumanAgentChatActive(serviceManager: ServiceManager): boolean {
   const { humanAgent } = serviceManager.instance.state.get();
-  return humanAgent.isConnected || humanAgent.isConnecting;
+  return (
+    Boolean(serviceManager.humanAgentService?.chatStarted) ||
+    humanAgent.isConnected ||
+    humanAgent.isConnecting
+  );
 }
 
 export { applyConversationConfig };

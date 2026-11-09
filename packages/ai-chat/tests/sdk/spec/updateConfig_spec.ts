@@ -199,6 +199,29 @@ describe('a new desk factory waits for the agent chat (#2353 O3, O6)', () => {
     return { factory, created };
   }
 
+  it('switches at once when the host ends the chat first (O6)', async () => {
+    const desks: string[] = [];
+    const first = mockFactory('first', desks);
+    const second = mockFactory('second', desks);
+    const handle = await chat({
+      messaging: { skipWelcome: true },
+      serviceDeskFactory: first.factory,
+    });
+    (chatOf(handle).humanAgentService as any).chatStarted = true;
+    await first.created[0].callback.agentJoined({
+      id: 'dana',
+      nickname: 'Dana',
+      user_type: UserType.HUMAN,
+    });
+
+    await handle.serviceDesk.endConversation();
+    await handle.updateConfig({
+      messaging: { skipWelcome: true },
+      serviceDeskFactory: second.factory,
+    });
+    expect(desks).toEqual(['first', 'second']);
+  });
+
   it('keeps the live chat on its desk until endConversation, then switches', async () => {
     const desks: string[] = [];
     const first = mockFactory('first', desks);
