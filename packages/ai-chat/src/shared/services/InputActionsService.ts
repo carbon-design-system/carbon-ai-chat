@@ -280,7 +280,11 @@ class InputActionsService {
     const { store } = this.serviceManager;
     const uploadConfig = store.getState().config.public.upload;
 
-    if (!uploadConfig?.isOn || !uploadConfig.onFileUpload) {
+    if (
+      !uploadConfig?.isOn ||
+      !uploadConfig.onFileUpload ||
+      this.serviceManager.isShutdown
+    ) {
       return;
     }
 

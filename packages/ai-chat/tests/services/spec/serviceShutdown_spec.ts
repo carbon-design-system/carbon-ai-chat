@@ -16,7 +16,10 @@ import type {
   MessageRequest,
   MessageResponse,
 } from '../../../src/types/messaging/Messages';
-import { MessageResponseTypes } from '../../../src/types/messaging/Messages';
+import {
+  MessageInputType,
+  MessageResponseTypes,
+} from '../../../src/types/messaging/Messages';
 import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
 import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
 import {
@@ -137,6 +140,7 @@ describe('ServiceManager.shutdown', () => {
       // Past the 30-second timeout: nothing is left to fire it.
       await jest.advanceTimersByTimeAsync(60_000);
       expect(cancel).not.toHaveBeenCalled();
+      expect(jest.getTimerCount()).toBe(0);
     } finally {
       jest.useRealTimers();
     }
@@ -211,6 +215,84 @@ describe('ServiceManager.shutdown', () => {
     await chat.serviceManager.shutdown();
 
     expect(seen).toEqual([true]);
+  });
+
+  it.each(['event', 'text'] as const)(
+    'starts no %s queued behind a stream while shutdown cancels the stream (O4)',
+    async (kind) => {
+      const chat = await heldChat({ messaging: { messageTimeoutSecs: 0 } });
+      await chat.send('first');
+      await chat.instance.messaging.addMessageChunk({
+        streaming_metadata: { response_id: 'first-response' },
+        partial_item: {
+          streaming_metadata: { id: 'item-1' },
+          response_type: MessageResponseTypes.TEXT,
+          text: 'partial',
+        },
+      } as never);
+      void chat.instance
+        .send(
+          kind === 'event'
+            ? ({
+                input: { message_type: MessageInputType.EVENT, text: 'queued' },
+              } as never)
+            : 'queued'
+        )
+        .catch(() => {});
+      await chat.flush();
+      expect(
+        chat.serviceManager.messageCoordinator.getWaitingRequestCount()
+      ).toBe(1);
+
+      await chat.serviceManager.shutdown();
+      await chat.flush();
+
+      expect(chat.held.map(({ request }) => request.input.text)).toEqual([
+        'first',
+      ]);
+      expect(chat.held[0].signal.aborted).toBe(true);
+    }
+  );
+
+  it('asks the host for nothing new after shutdown (O10)', async () => {
+    const onFileUpload = jest.fn(async () => ({}));
+    const customLoadHistory = jest.fn(async (): Promise<never[]> => []);
+    const chat = await heldChat({
+      upload: { isOn: true, onFileUpload },
+      messaging: { customLoadHistory },
+    });
+    customLoadHistory.mockClear();
+
+    await chat.serviceManager.shutdown();
+    await expect(chat.instance.send('late')).resolves.toBeUndefined();
+    await chat.serviceManager.inputActionsService.handleFileSelectedForUpload(
+      new File(['x'], 'x.txt')
+    );
+    await expect(
+      chat.serviceManager.historyService.loadHistory()
+    ).resolves.toBeNull();
+    await chat.flush();
+
+    expect(chat.held).toHaveLength(0);
+    expect(onFileUpload).not.toHaveBeenCalled();
+    expect(customLoadHistory).not.toHaveBeenCalled();
+  });
+
+  it('runs every step when one of them throws (O7)', async () => {
+    const chat = await heldChat();
+    await chat.send('hello');
+    jest
+      .spyOn(chat.serviceManager.publicStateService, 'destroy')
+      .mockImplementation(() => {
+        throw new Error('destroy failed');
+      });
+    const error = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    await expect(chat.serviceManager.shutdown()).resolves.toBeUndefined();
+
+    expect(chat.held[0].signal.aborted).toBe(true);
+    expect(error).toHaveBeenCalled();
+    error.mockRestore();
   });
 
   it('keeps a late reply to a held send out of the chat (O10)', async () => {
