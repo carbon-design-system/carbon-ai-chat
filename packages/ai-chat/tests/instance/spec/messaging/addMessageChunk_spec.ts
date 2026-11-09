@@ -747,6 +747,147 @@ describe('ChatInstance.messaging.addMessageChunk', () => {
     );
   });
 
+  it('keeps newer chunk error tracking when an older sender with the same request ID finishes', async () => {
+    const firstFinalized = resolvablePromise<void>();
+    const finishFirst = resolvablePromise<void>();
+    const secondStarted = resolvablePromise<void>();
+    const failSecond = resolvablePromise<void>();
+    const failure = Object.freeze(
+      new TypeError('new sender chunk callback failed')
+    );
+    const onError = jest.fn();
+    const callback = jest.fn(() => {
+      throw failure;
+    });
+    const customSendMessage = jest.fn(
+      async (request: MessageRequest, _options, chat: ChatInstance) => {
+        if (request.input.text === 'first') {
+          await chat.messaging.addMessageChunk({
+            streaming_metadata: {
+              response_id: 'first-response',
+              request_id: request.id,
+            },
+            partial_item: {
+              response_type: MessageResponseTypes.TEXT,
+              text: 'First answer',
+              streaming_metadata: { id: 'text' },
+            },
+          });
+          await chat.messaging.addMessageChunk({
+            final_response: {
+              id: 'first-response',
+              request_id: request.id,
+              output: {
+                generic: [
+                  {
+                    response_type: MessageResponseTypes.TEXT,
+                    text: 'First answer',
+                    streaming_metadata: { id: 'text' },
+                  },
+                ],
+              },
+            },
+          });
+          firstFinalized.doResolve();
+          await finishFirst;
+        } else if (request.input.text === 'second') {
+          secondStarted.doResolve();
+          await failSecond;
+          await chat.messaging.addMessageChunk({
+            streaming_metadata: {
+              response_id: 'second-response',
+              request_id: request.id,
+            },
+            partial_item: {
+              response_type: MessageResponseTypes.USER_DEFINED,
+              streaming_metadata: { id: 'custom' },
+              user_defined: { value: 'second' },
+            },
+          });
+        }
+      }
+    );
+    const { instance } = await renderChatAndGetInstanceWithStore({
+      ...createBaseConfig(),
+      onError,
+      messaging: {
+        skipWelcome: true,
+        messageTimeoutSecs: 0,
+        customSendMessage,
+      },
+    });
+    instance.on({
+      type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
+      handler: callback,
+    });
+    const log = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => undefined);
+    const first = instance.send({
+      id: 'reused-request',
+      input: { text: 'first' },
+    });
+    let secondFailure: Promise<void>;
+    let third: Promise<void>;
+    try {
+      await firstFinalized;
+      const second = instance.send({
+        id: 'reused-request',
+        input: { text: 'second' },
+      });
+      secondFailure = expect(second).rejects.toEqual(
+        new Error(failure.message)
+      );
+      await secondStarted;
+      third = instance.send('third');
+      expect(
+        customSendMessage.mock.calls.slice(0, 2).map(([request]) => request.id)
+      ).toEqual(['reused-request', 'reused-request']);
+      finishFirst.doResolve();
+      await first;
+      await instance.messaging.upsertMessage(
+        'tracking-barrier',
+        MessageState.STREAMING,
+        () => ({
+          id: 'tracking-barrier',
+          output: {
+            generic: [
+              { response_type: MessageResponseTypes.TEXT, text: 'Barrier' },
+            ],
+          },
+        })
+      );
+      expect(
+        customSendMessage.mock.calls.map(([request]) => request.input.text)
+      ).toEqual(['first', 'second']);
+      expect(onError).not.toHaveBeenCalled();
+
+      failSecond.doResolve();
+      await secondFailure;
+      await third;
+      expect(callback).toHaveBeenCalledTimes(1);
+      expect(onError).toHaveBeenCalledTimes(1);
+      expect(onError).toHaveBeenCalledWith(
+        expect.objectContaining({
+          errorType: OnErrorType.MESSAGE_COMMUNICATION,
+          message: 'An error occurred sending a message',
+          otherData: failure.message,
+        })
+      );
+      expect(
+        customSendMessage.mock.calls.map(([request]) => request.input.text)
+      ).toEqual(['first', 'second', 'third']);
+    } finally {
+      finishFirst.doResolve();
+      failSecond.doResolve();
+      try {
+        await Promise.all([first, secondFailure, third]);
+      } finally {
+        log.mockRestore();
+      }
+    }
+  });
+
   describe.each([BusEventType.PRE_RECEIVE, BusEventType.RECEIVE])(
     'final response callback failure in %s',
     (eventType) => {
@@ -1150,89 +1291,144 @@ describe('ChatInstance.messaging.addMessageChunk', () => {
     expect(stored.item.user_defined).toEqual({ value: 'original' });
   });
 
-  it('preserves a reused response after a pre-restart final chunk handler rejects', async () => {
-    const handlerStarted = resolvablePromise<void>();
-    const releaseHandler = resolvablePromise<void>();
-    const onError = jest.fn();
-    const { instance, store } = await renderChatAndGetInstanceWithStore({
-      ...createBaseConfig(),
-      onError,
-      messaging: { skipWelcome: true, customSendMessage: () => {} },
-    });
-    jest.spyOn(console, 'error').mockImplementation(() => undefined);
-    instance.on({
-      type: BusEventType.PRE_RECEIVE,
-      handler: jest.fn().mockImplementationOnce(() => {
-        handlerStarted.doResolve();
-        return releaseHandler;
-      }),
-    });
+  it.each(['partial text', 'final'] as const)(
+    'preserves a reused response and queues fresh %s after a pre-restart final chunk handler rejects',
+    async (freshKind) => {
+      const handlerStarted = resolvablePromise<void>();
+      const releaseHandler = resolvablePromise<void>();
+      const onError = jest.fn();
+      const { instance, store } = await renderChatAndGetInstanceWithStore({
+        ...createBaseConfig(),
+        onError,
+        messaging: { skipWelcome: true, customSendMessage: () => {} },
+      });
+      jest.spyOn(console, 'error').mockImplementation(() => undefined);
+      instance.on({
+        type: BusEventType.PRE_RECEIVE,
+        handler: jest.fn().mockImplementationOnce(() => {
+          handlerStarted.doResolve();
+          return releaseHandler;
+        }),
+      });
 
-    const oldChunk = instance.messaging.addMessageChunk({
-      final_response: {
+      const oldChunk = instance.messaging.addMessageChunk({
+        final_response: {
+          id: 'reused-response',
+          output: { generic: [] },
+        },
+      });
+      const oldChunkFailure =
+        expect(oldChunk).rejects.toThrow('old handler failed');
+      await handlerStarted;
+      await instance.messaging.restartConversation();
+
+      const newResponse: MessageResponse = {
         id: 'reused-response',
-        output: { generic: [] },
-      },
-    });
-    const oldChunkFailure =
-      expect(oldChunk).rejects.toThrow('old handler failed');
-    await handlerStarted;
-    await instance.messaging.restartConversation();
+        output: {
+          generic: [
+            { response_type: MessageResponseTypes.TEXT, text: 'New response' },
+          ],
+        },
+      };
+      await instance.messaging.upsertMessage(
+        newResponse.id,
+        MessageState.STREAMING,
+        () => newResponse
+      );
+      expect(
+        Object.values(store.getState().allMessageItemsByID).find(
+          (item) => item.fullMessageID === newResponse.id
+        ).ui_state.streamingState.isDone
+      ).toBe(false);
+      expect(instance.state.get().status).toBe('streaming');
 
-    const newResponse: MessageResponse = {
-      id: 'reused-response',
-      output: {
-        generic: [
-          { response_type: MessageResponseTypes.TEXT, text: 'New response' },
-        ],
-      },
-    };
-    await instance.messaging.upsertMessage(
-      newResponse.id,
-      MessageState.STREAMING,
-      () => newResponse
-    );
-    expect(
-      Object.values(store.getState().allMessageItemsByID).find(
-        (item) => item.fullMessageID === newResponse.id
-      ).ui_state.streamingState.isDone
-    ).toBe(false);
-    expect(instance.state.get().status).toBe('streaming');
+      let freshSettled = false;
+      const queuedChunk = instance.messaging
+        .addMessageChunk(
+          freshKind === 'partial text'
+            ? {
+                streaming_metadata: { response_id: 'queued-response' },
+                partial_item: {
+                  response_type: MessageResponseTypes.TEXT,
+                  text: 'Fresh queued text',
+                  streaming_metadata: { id: 'text' },
+                },
+              }
+            : {
+                final_response: {
+                  id: 'queued-response',
+                  output: { generic: [] },
+                },
+              }
+        )
+        .then(() => {
+          freshSettled = true;
+        });
+      try {
+        await instance.messaging.upsertMessage(
+          newResponse.id,
+          MessageState.STREAMING,
+          (previous) => previous
+        );
+        expect(freshSettled).toBe(false);
+        expect(
+          store.getState().allMessagesByID['queued-response']
+        ).toBeUndefined();
+        releaseHandler.doReject(new Error('old handler failed'));
+        await oldChunkFailure;
+        await queuedChunk;
 
-    const queuedChunk = instance.messaging.addMessageChunk({
-      final_response: {
-        id: 'queued-response',
-        output: { generic: [] },
-      },
-    });
-    releaseHandler.doReject(new Error('old handler failed'));
-    await oldChunkFailure;
-    await queuedChunk;
+        expect(
+          Object.values(store.getState().allMessageItemsByID).find(
+            (item) => item.fullMessageID === newResponse.id
+          ).ui_state.streamingState.isDone
+        ).toBe(false);
+        expect(instance.state.get().status).toBe('streaming');
+        expect(onError).not.toHaveBeenCalled();
+        expect(store.getState().allMessagesByID[newResponse.id]).toMatchObject(
+          newResponse
+        );
+        expect(
+          store.getState().allMessagesByID['queued-response']
+        ).toBeDefined();
+        expect(freshSettled).toBe(true);
+        if (freshKind === 'partial text') {
+          expect(
+            store.getState().allMessageItemsByID['queued-response-text'].item
+          ).toMatchObject({ text: 'Fresh queued text' });
+          await instance.messaging.addMessageChunk({
+            final_response: {
+              id: 'queued-response',
+              output: {
+                generic: [
+                  {
+                    response_type: MessageResponseTypes.TEXT,
+                    text: 'Fresh queued text',
+                    streaming_metadata: { id: 'text' },
+                  },
+                ],
+              },
+            },
+          });
+        }
 
-    expect(
-      Object.values(store.getState().allMessageItemsByID).find(
-        (item) => item.fullMessageID === newResponse.id
-      ).ui_state.streamingState.isDone
-    ).toBe(false);
-    expect(instance.state.get().status).toBe('streaming');
-    expect(onError).not.toHaveBeenCalled();
-    expect(store.getState().allMessagesByID[newResponse.id]).toMatchObject(
-      newResponse
-    );
-    expect(store.getState().allMessagesByID['queued-response']).toBeDefined();
-
-    await instance.messaging.upsertMessage(
-      newResponse.id,
-      MessageState.COMPLETE,
-      () => newResponse
-    );
-    expect(
-      Object.values(store.getState().allMessageItemsByID).find(
-        (item) => item.fullMessageID === newResponse.id
-      ).ui_state.streamingState.isDone
-    ).toBe(true);
-    expect(instance.state.get().status).toBe('ready');
-  });
+        await instance.messaging.upsertMessage(
+          newResponse.id,
+          MessageState.COMPLETE,
+          () => newResponse
+        );
+        expect(
+          Object.values(store.getState().allMessageItemsByID).find(
+            (item) => item.fullMessageID === newResponse.id
+          ).ui_state.streamingState.isDone
+        ).toBe(true);
+        expect(instance.state.get().status).toBe('ready');
+      } finally {
+        releaseHandler.doReject(new Error('old handler failed'));
+        await Promise.all([oldChunkFailure, queuedChunk]);
+      }
+    }
+  );
 
   it('preserves chunk caller identity and mutable event edits', async () => {
     const { instance, store } =

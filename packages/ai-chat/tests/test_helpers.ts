@@ -16,7 +16,10 @@ import { ChatContainer } from '../src/react/ChatContainer';
 import { PublicConfig } from '../src/types/config/PublicConfig';
 import { ChatContainerProps } from '../src/types/component/ChatContainer';
 import { ChatInstance } from '../src/types/instance/ChatInstance';
-import { createAppStore, type AppStore } from '../src/shared/store/appStore';
+import {
+  createStoreFromReduction,
+  type AppStore,
+} from '../src/shared/store/appStore';
 import { enableMessageOwnership } from '../src/shared/store/messageOwnership';
 import { AppState } from '../src/types/state/AppState';
 import { MessageResponseTypes } from '../src/types/messaging/Messages';
@@ -26,7 +29,7 @@ import type { AriaAnnouncerFunctionType } from '../src/chat/services/ariaAnnounc
 import { ChatContext } from '../src/chat/contexts/ChatContext';
 import type { IntlShape } from '../src/shared/utils/i18n';
 import { getWindowSize } from '../src/chat/utils/windowSize';
-import { reducers } from '../src/shared/store/reducers';
+import { reduceWithMessageOwnership } from '../src/shared/store/reducers';
 import actions from '../src/shared/store/actions';
 import isEqual from 'lodash-es/isEqual.js';
 import {
@@ -267,15 +270,6 @@ export function TestChatContext({
 // Store / config-change re-render harness
 // ============================================================================
 
-/** The real conversation reducer (mirrors `reducerFunction` in doCreateStore). */
-const rootReducer = (
-  state: ConversationState,
-  action: { type: string; [key: string]: unknown } | undefined
-): ConversationState =>
-  action && reducers[action.type]
-    ? reducers[action.type](state, action)
-    : state;
-
 /**
  * Runs one action through both partitions the way the store does: the
  * conversation reducer, then the view's with the conversation state after it.
@@ -284,7 +278,8 @@ export function appRootReducer(
   state: AppState,
   action: { type: string; [key: string]: unknown }
 ): AppState {
-  const conversation = rootReducer(state, action) as AppState;
+  const conversation = reduceWithMessageOwnership(state, action)
+    .state as AppState;
   const view = viewReducer(state.view, action, conversation);
   return Object.is(view, conversation.view)
     ? conversation
@@ -297,8 +292,8 @@ export function appRootReducer(
  * re-render tests.
  */
 export function makeConfigStore(config: PublicConfig): AppStore<AppState> {
-  const store = createAppStore<ConversationState>(
-    rootReducer as never,
+  const store = createStoreFromReduction<ConversationState>(
+    reduceWithMessageOwnership,
     createInitialState(createAppConfig(config))
   );
   enableMessageOwnership(store);
