@@ -20,8 +20,4 @@ export {
   extendPublicState,
   type PublicStateFieldDefinition,
 } from './extendPublicState';
-export {
-  createChatSDK as bootChatSDK,
-  type ChatSDKBootOptions,
-} from '../createChatSDK';
 export { chatOf } from '../handle';
