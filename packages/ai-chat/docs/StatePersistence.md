@@ -12,7 +12,7 @@ Set {@link PublicConfig.persistedState | persisted state} to take over that stor
 
 ## What is persisted
 
-{@link PersistableState} is the value passed to and from your storage. Treat it as an opaque blob: store the whole thing and hand it back unchanged. It carries session and UI state such as disclaimer acceptance, home-screen state, and the part of the human-agent connection needed to reconnect after a reload. It never contains conversation message text.
+{@link PersistableState} is the value passed to and from your storage. Treat a saved value as an opaque blob: store the whole thing and hand it back unchanged. It carries session and UI state such as disclaimer acceptance, home-screen state, and the part of the human-agent connection needed to reconnect after a reload. It never contains conversation message text.
 
 ## Providing your own storage
 
@@ -37,7 +37,7 @@ const config: PublicConfig = {
 
 Setting either field turns off the internal `sessionStorage` completely, so the chat no longer reads, writes, or clears it.
 
-The chat treats a restored session as an existing one, so {@link PublicConfig.openChatByDefault | openChatByDefault} doesn't re-open the chat on reload.
+Passing any {@link PersistedStateConfig.initialState | initialState} counts as a restored session, so {@link PublicConfig.openChatByDefault | openChatByDefault} doesn't open the chat. This holds for a value you build yourself, not only one you saved.
 
 ## Do not drop fields
 
