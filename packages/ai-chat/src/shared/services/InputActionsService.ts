@@ -270,6 +270,12 @@ class InputActionsService {
     );
   }
 
+  /** Aborts every upload still running, for a chat that shut down. */
+  abortAllUploads() {
+    this.uploadAbortControllers.forEach((controller) => controller.abort());
+    this.uploadAbortControllers.clear();
+  }
+
   async handleFileSelectedForUpload(file: File): Promise<void> {
     const { store } = this.serviceManager;
     const uploadConfig = store.getState().config.public.upload;

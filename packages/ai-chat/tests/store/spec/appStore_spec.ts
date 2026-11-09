@@ -8,6 +8,8 @@
  */
 
 import {
+  attachPartition,
+  closeStore,
   createAppStore,
   UnknownAction,
 } from '../../../src/shared/store/appStore';
@@ -137,5 +139,56 @@ describe('appStore', () => {
       store.dispatch({ type: 'noop' } as CounterAction);
     }
     expect(notifications).toBe(1);
+  });
+});
+
+describe('closeStore', () => {
+  const create = () =>
+    createAppStore<CounterState, CounterAction>(counterReducer, { count: 0 });
+
+  it('drops subscribers and ignores later dispatches, keeping the last state', () => {
+    const store = create();
+    const listener = jest.fn();
+    store.subscribe(listener);
+    store.dispatch({ type: 'increment' } as CounterAction);
+    const last = store.getState();
+    listener.mockClear();
+
+    closeStore(store);
+    const action = { type: 'increment' } as CounterAction;
+
+    expect(store.dispatch(action)).toBe(action);
+    expect(store.getState()).toBe(last);
+    expect(listener).not.toHaveBeenCalled();
+  });
+
+  it('never calls a subscriber added after closing', () => {
+    const store = create();
+    closeStore(store);
+    const listener = jest.fn();
+    const unsubscribe = store.subscribe(listener);
+    store.dispatch({ type: 'increment' } as CounterAction);
+
+    expect(listener).not.toHaveBeenCalled();
+    expect(() => unsubscribe()).not.toThrow();
+  });
+
+  it('takes no new partition and can be closed again', () => {
+    const store = create();
+    closeStore(store);
+    closeStore(store);
+
+    expect(attachPartition(store, 'view', (state) => state, {})).toBe(false);
+    expect(store.getState()).toEqual({ count: 0 });
+  });
+
+  it('ignores a store it did not make', () => {
+    expect(() =>
+      closeStore({
+        getState: () => ({}),
+        dispatch: (action) => action,
+        subscribe: () => () => {},
+      })
+    ).not.toThrow();
   });
 });

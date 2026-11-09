@@ -345,6 +345,24 @@ class MessageCoordinator {
   }
 
   /**
+   * Stops this chat's message work for good, through the same steps a restart
+   * uses: later chunks and writes are stale, the loading timers end, and every
+   * queued, running, or streaming request is cancelled, which aborts its
+   * signal. The chat's service manager calls this once, after closing the
+   * store, so none of it changes state or saved session data.
+   */
+  shutdown() {
+    this.invalidatePendingUpserts();
+    this.restart(true);
+    this.bumpChunkRestartGeneration();
+    this.serviceManager.restartCount++;
+    this.clearAllIncomingWrites();
+    this.messageLoadingManager.end();
+    this.disposeReasoningObserver();
+    return this.cancelAllMessageRequests();
+  }
+
+  /**
    * Starts headless reasoning delivery once no view is attached. The observer
    * then keeps the per-item sessions for both modes, and notifies only while
    * no view is attached.

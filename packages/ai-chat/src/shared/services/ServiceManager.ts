@@ -7,7 +7,7 @@
  *  @license
  */
 
-import type { AppStore } from '../store/appStore';
+import { closeStore, type AppStore } from '../store/appStore';
 import { IntlShape } from '../utils/i18n';
 
 import { EventBus } from '../events/EventBus';
@@ -168,6 +168,36 @@ class ServiceManager {
    * methods and events are removed.
    */
   renderPromise: Promise<ChatInstance>;
+
+  private shutdownPromise?: Promise<void>;
+
+  /** True once {@link shutdown} has started. Late async work checks it. */
+  get isShutdown() {
+    return Boolean(this.shutdownPromise);
+  }
+
+  /**
+   * Stops this chat's service work for good. Removing the chat's element calls
+   * it; hosts never do. The store closes first: its subscriptions go, and
+   * later dispatches change nothing, so saved session state stays as it was
+   * at removal. Then the bus drops every handler, and requests, streams,
+   * uploads, and timers stop. Works for a chat still starting up. A repeat
+   * call returns the first call's promise.
+   */
+  shutdown(): Promise<void> {
+    this.shutdownPromise ??= this.stopServices();
+    return this.shutdownPromise;
+  }
+
+  private async stopServices() {
+    if (this.store) {
+      closeStore(this.store);
+    }
+    this.eventBus?.clear();
+    this.publicStateService?.destroy();
+    this.inputActionsService?.abortAllUploads();
+    await this.messageCoordinator?.shutdown();
+  }
 
   /**
    * Convenience functions for firing events on the event bus.
