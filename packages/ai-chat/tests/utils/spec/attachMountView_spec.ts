@@ -108,3 +108,16 @@ it('attaches the view ports and takes everything off in order, once', async () =
   expect(chat.serviceManager.view.current).toBeUndefined();
   await chat.serviceManager.shutdown();
 });
+
+it('undoes what it started when a step throws', async () => {
+  const chat = await bootChat();
+  const failure = new Error('hosts failed');
+  jest.spyOn(ExtensionHosts.prototype, 'connect').mockImplementation(() => {
+    throw failure;
+  });
+  const disconnect = jest.spyOn(ChatViewState.prototype, 'disconnect');
+  expect(() => attach(chat)).toThrow(failure);
+  expect(disconnect).toHaveBeenCalledTimes(1);
+  expect(chat.serviceManager.view.current).toBeUndefined();
+  await chat.serviceManager.shutdown();
+});

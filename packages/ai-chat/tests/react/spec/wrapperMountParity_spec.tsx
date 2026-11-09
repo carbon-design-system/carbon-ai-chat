@@ -464,11 +464,10 @@ describe('how each host mounts the chat', () => {
             getChatHost(document.querySelector(`[data-chat="${name}"]`))
           )?.serviceManager
       );
-      const chats = instances.map(
-        (chat) => (chat.serviceManager.messageCoordinator as any).serviceManager
-      );
       expect(new Set(shown).size).toBe(2);
-      expect(shown).toEqual(expect.arrayContaining(chats));
+      expect(shown.map((chat) => chat.instance)).toEqual(
+        expect.arrayContaining(instances)
+      );
 
       const [firstState, secondState] = ['first', 'second'].map((name) =>
         viewStateOf(
