@@ -140,6 +140,16 @@ const {
   SHARING_ENDED,
 } = HumanAgentMessageType;
 
+/**
+ * Stands in for the service desk once the chat shuts down, so no later call
+ * reaches the real one. It has no `reconnect`, so nothing reconnects either.
+ */
+const DISCONNECTED_DESK: ServiceDesk = Object.freeze({
+  startChat: async () => {},
+  endChat: async () => {},
+  sendMessageToAgent: async () => {},
+});
+
 class HumanAgentServiceImpl implements HumanAgentService {
   /**
    * The service manager to use to access services.
@@ -182,6 +192,9 @@ class HumanAgentServiceImpl implements HumanAgentService {
    * be displayed.
    */
   waitingForHumanAgentJoinedTimer: ReturnType<typeof setTimeout>;
+
+  /** The send warning and failure timers still waiting, so shutdown can stop them. */
+  private sendTimers = new Set<ReturnType<typeof setTimeout>>();
 
   /**
    * The current set of files that are being uploaded.
@@ -249,7 +262,12 @@ class HumanAgentServiceImpl implements HumanAgentService {
         instance,
         persistedState: serviceDeskState,
       };
-      this.serviceDesk = await config.public.serviceDeskFactory(parameters);
+      const serviceDesk = await config.public.serviceDeskFactory(parameters);
+      if (this.serviceManager.isShutdown) {
+        this.serviceDesk = DISCONNECTED_DESK;
+        return;
+      }
+      this.serviceDesk = serviceDesk;
       validateCustomServiceDesk(this.serviceDesk);
       debugLog('Initializing a custom service desk');
     }
@@ -582,12 +600,12 @@ class HumanAgentServiceImpl implements HumanAgentService {
           generation
         );
       };
-      setTimeout(() => {
+      this.startSendTimer(() => {
         if (!messageSucceeded && !messageFailed) {
           setCurrentMessageErrorState(MessageErrorState.RETRYING);
         }
       }, SEND_TIMEOUT_WARNING_MS);
-      setTimeout(() => {
+      this.startSendTimer(() => {
         if (!messageSucceeded && !messageFailed) {
           setCurrentMessageErrorState(MessageErrorState.FAILED);
           reportFailure();
@@ -914,6 +932,33 @@ class HumanAgentServiceImpl implements HumanAgentService {
     this.endChat(false);
   }
 
+  private startSendTimer(callback: () => void, delay: number) {
+    const timer = setTimeout(() => {
+      this.sendTimers.delete(timer);
+      callback();
+    }, delay);
+    this.sendTimers.add(timer);
+  }
+
+  /**
+   * Disconnects from the service desk without ending the conversation there,
+   * for a chat that shut down. Later calls go to a desk that does nothing, so
+   * nothing ends the conversation or reconnects. The desk's own calls back do
+   * nothing, and the join and send timers stop. A screen-share request still
+   * waiting gets `CANCELLED`. Saved agent state stays, so a later mount
+   * reconnects as it does after a page reload.
+   */
+  shutdown() {
+    if (this.serviceDesk) {
+      this.serviceDesk = DISCONNECTED_DESK;
+    }
+    this.cancelHumanAgentJoinedTimer();
+    this.sendTimers.forEach((timer) => clearTimeout(timer));
+    this.sendTimers.clear();
+    this.screenShareRequestPromise?.doResolve(ScreenShareState.CANCELLED);
+    this.screenShareRequestPromise = null;
+  }
+
   /**
    * Cancels the agent joined timer if one is running.
    */
@@ -1109,6 +1154,11 @@ class ServiceDeskCallbackImpl<
     this.serviceManager = serviceManager;
     this.service = service;
   }
+  /** True once the chat shut down; the desk's calls then do nothing. */
+  private get isDisconnected() {
+    return this.serviceManager.isShutdown;
+  }
+
   /** Reads a message to screen readers in the attached view, if one is attached. */
   private announceInView(messageID: string) {
     this.serviceManager.view?.current?.humanAgent.announce?.({ messageID });
@@ -1121,6 +1171,9 @@ class ServiceDeskCallbackImpl<
    * @param capabilities The set of capabilities to update. Only properties that need to be changed need to be included.
    */
   updateCapabilities(capabilities: Partial<ServiceDeskCapabilities>): void {
+    if (this.isDisconnected) {
+      return;
+    }
     this.serviceManager.store.dispatch(
       updateCapabilities(cloneDeep(capabilities))
     );
@@ -1133,6 +1186,9 @@ class ServiceDeskCallbackImpl<
    * @param availability The availability information to display to the user.
    */
   async updateAgentAvailability(availability: AgentAvailability) {
+    if (this.isDisconnected) {
+      return;
+    }
     if (!this.service.chatStarted) {
       // The chat is no longer running.
       return;
@@ -1144,6 +1200,9 @@ class ServiceDeskCallbackImpl<
    * Informs the chat widget that the agent has read all the messages that have been sent to the service desk.
    */
   async agentJoined(profile: ResponseUserProfile) {
+    if (this.isDisconnected) {
+      return;
+    }
     if (!this.service.chatStarted) {
       // The chat is no longer running.
       return;
@@ -1169,6 +1228,9 @@ class ServiceDeskCallbackImpl<
    * This functionality is not yet implemented.
    */
   async agentReadMessages() {
+    if (this.isDisconnected) {
+      return;
+    }
     if (!this.service.chatStarted) {
       // The chat is no longer running.
       return;
@@ -1182,6 +1244,9 @@ class ServiceDeskCallbackImpl<
    * @param isTyping If true, indicates that the agent is typing. False indicates the agent has stopped typing.
    */
   async agentTyping(isTyping: boolean) {
+    if (this.isDisconnected) {
+      return;
+    }
     if (
       this.persistedHumanAgentState().isConnected &&
       isTyping !== this.service.isHumanAgentTyping
@@ -1203,6 +1268,9 @@ class ServiceDeskCallbackImpl<
    * agent who joined the conversation will be used.
    */
   async sendMessageToUser(message: MessageResponse | string, agentID?: string) {
+    if (this.isDisconnected) {
+      return;
+    }
     if (!this.service.chatStarted || !message) {
       // The chat is no longer running or no message was actually provided.
       return;
@@ -1301,6 +1369,9 @@ class ServiceDeskCallbackImpl<
    * sending a {@link agentJoined} message later.
    */
   async beginTransferToAnotherAgent(profile?: ResponseUserProfile) {
+    if (this.isDisconnected) {
+      return;
+    }
     if (!this.service.chatStarted) {
       // The chat is no longer running.
       return;
@@ -1323,6 +1394,9 @@ class ServiceDeskCallbackImpl<
    * Informs the chat widget that the current agent has left the conversation.
    */
   async agentLeftChat(): Promise<void> {
+    if (this.isDisconnected) {
+      return;
+    }
     if (!this.service.chatStarted) {
       // The chat is no longer running.
       return;
@@ -1338,6 +1412,9 @@ class ServiceDeskCallbackImpl<
    * Informs the chat widget that the agent has closed the conversation.
    */
   async agentEndedChat(): Promise<void> {
+    if (this.isDisconnected) {
+      return;
+    }
     if (!this.service.chatStarted) {
       // The chat is no longer running.
       return;
@@ -1363,6 +1440,9 @@ class ServiceDeskCallbackImpl<
    * @param errorInfo Details for the error whose state is being set.
    */
   async setErrorStatus(errorInfo: ServiceDeskErrorInfo) {
+    if (this.isDisconnected) {
+      return;
+    }
     if (!this.service.chatStarted) {
       // The chat is no longer running.
       return;
@@ -1463,6 +1543,9 @@ class ServiceDeskCallbackImpl<
     isError?: boolean,
     errorMessage?: string
   ): Promise<void> {
+    if (this.isDisconnected) {
+      return;
+    }
     const { store } = this.serviceManager;
 
     // First we need to determine if the file upload has been sent or not. A message will exist in the store if so;
@@ -1540,20 +1623,26 @@ class ServiceDeskCallbackImpl<
    * chat with an agent is currently running.
    */
   async screenShareRequest() {
+    if (this.isDisconnected) {
+      return ScreenShareState.CANCELLED;
+    }
     if (!this.persistedHumanAgentState().isConnected) {
       return Promise.reject(
         new Error('Cannot request screen sharing if no chat is in progress.')
       );
     }
 
-    if (!this.service.screenShareRequestPromise) {
-      this.service.screenShareRequestPromise = resolvablePromise();
+    // Held here: shutdown can answer and clear the request during the await.
+    let request = this.service.screenShareRequestPromise;
+    if (!request) {
+      request = resolvablePromise();
+      this.service.screenShareRequestPromise = request;
       this.serviceManager.store.dispatch(setShowScreenShareRequest(true));
 
       await this.service.addHumanAgentLocalMessage(SHARING_REQUESTED);
     }
 
-    return this.service.screenShareRequestPromise;
+    return request;
   }
 
   /**
@@ -1561,6 +1650,9 @@ class ServiceDeskCallbackImpl<
    * screen sharing request to be accepted or while screen sharing is in progress.
    */
   async screenShareEnded() {
+    if (this.isDisconnected) {
+      return;
+    }
     const wasScreenSharing =
       this.serviceManager.store.getState().humanAgentState.isScreenSharing;
     const requestPending = this.service.screenShareRequestPromise;
@@ -1607,6 +1699,9 @@ class ServiceDeskCallbackImpl<
     state: DeepPartial<TPersistedStateType>,
     mergeWithCurrent = true
   ): void {
+    if (this.isDisconnected) {
+      return;
+    }
     const { store } = this.serviceManager;
     let newState;
     if (mergeWithCurrent) {

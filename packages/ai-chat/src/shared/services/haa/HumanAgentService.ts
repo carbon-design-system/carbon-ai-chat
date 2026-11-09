@@ -160,6 +160,12 @@ interface HumanAgentService {
     allowReconnect: boolean,
     allowEndChatMessages: boolean
   ): Promise<void>;
+
+  /**
+   * Disconnects from the service desk without ending the conversation there,
+   * for a chat that shut down.
+   */
+  shutdown(): void;
 }
 
 /**

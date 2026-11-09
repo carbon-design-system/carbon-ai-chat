@@ -201,6 +201,7 @@ class ServiceManager {
     this.eventBus?.clear();
     this.publicStateService?.destroy();
     this.inputActionsService?.abortAllUploads();
+    this.humanAgentService?.shutdown();
     await this.messageCoordinator?.shutdown();
   }
 
