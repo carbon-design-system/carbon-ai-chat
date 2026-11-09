@@ -665,7 +665,7 @@ function walkBoundCalls(
 }
 
 it('keeps the adapter types and actual boot bindings view-only', () => {
-  const adapter = messaging + 'presentation/MessagePresentationAdapter.ts';
+  const adapter = 'src/chat/services/MessagePresentationAdapter.ts';
   const announcer = messaging + 'presentation/StreamAnnouncerService.ts';
   const adapterGraph = graph([adapter, announcer], new Set());
   expect(adapterGraph.issues).toEqual([]);
@@ -1449,6 +1449,8 @@ it('rejects raw store writes throughout the package except exact existing view s
   const creatorFiles = new Set([
     actionsFile,
     path.join(root, 'src/shared/store/humanAgentActions.ts'),
+    // The view partition's own creators (#1831).
+    path.join(root, 'src/view/state/actions.ts'),
   ]);
   const ownershipFile = path.join(root, 'src/shared/store/messageOwnership.ts');
   const issues: string[] = [];
