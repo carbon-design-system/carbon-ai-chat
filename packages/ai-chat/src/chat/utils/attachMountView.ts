@@ -92,27 +92,40 @@ function attachMountView({
     !customHostElement
   );
 
+  // Each step's undo, newest first, so a throw part way undoes what started.
+  const undo: Array<() => void> = [];
   const viewState = new ChatViewState(
     serviceManager,
     getWindowSize(),
     customHostElement
   );
-  viewState.connect();
-  const themeWatcher = new ThemeWatcherService(serviceManager.store);
-  themeWatcher.connect();
-  // Before the host's callbacks and the initial view change, which both may
-  // change the view before the shell renders.
-  const detachBindings = serviceManager.view.attach(
-    createViewBindings(viewState)
-  );
-  const hosts = new ExtensionHosts(
-    instance,
-    chatElement,
-    serviceManager.store,
-    isRequestFooterEnabled
-  );
-  hosts.connect();
-  const removeWindowListeners = listenToWindow(viewState);
+  let themeWatcher: ThemeWatcherService;
+  let detachBindings: () => void;
+  let hosts: ExtensionHosts;
+  let removeWindowListeners: () => void;
+  try {
+    viewState.connect();
+    undo.unshift(() => viewState.disconnect());
+    themeWatcher = new ThemeWatcherService(serviceManager.store);
+    themeWatcher.connect();
+    undo.unshift(() => themeWatcher.disconnect());
+    // Before the host's callbacks and the initial view change, which both may
+    // change the view before the shell renders.
+    detachBindings = serviceManager.view.attach(createViewBindings(viewState));
+    undo.unshift(detachBindings);
+    hosts = new ExtensionHosts(
+      instance,
+      chatElement,
+      serviceManager.store,
+      isRequestFooterEnabled
+    );
+    hosts.connect();
+    undo.unshift(() => hosts.disconnect());
+    removeWindowListeners = listenToWindow(viewState);
+  } catch (error) {
+    undo.forEach((step) => step());
+    throw error;
+  }
 
   let announcerRegion: HTMLDivElement | undefined;
   let detached = false;

@@ -114,7 +114,6 @@ async function setup(
     store,
     intl: createIntl({ locale: 'en', messages: store.getState().languagePack }),
     actions: { errorOccurred: jest.fn() },
-    writeableElements: { [WriteableElementName.CUSTOM_PROMPT_LINE]: wrapper },
     instance: {
       writeableElements: { [WriteableElementName.CUSTOM_PROMPT_LINE]: wrapper },
     },

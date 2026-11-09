@@ -56,8 +56,11 @@ function setup(visible = true) {
   const manager = {
     store,
     view,
-    writeableElements: {
-      [WriteableElementName.CUSTOM_PROMPT_LINE]: host,
+    // The chat's instance holds its writeable elements.
+    instance: {
+      writeableElements: {
+        [WriteableElementName.CUSTOM_PROMPT_LINE]: host,
+      },
     },
   } as unknown as ServiceManager;
   outside.focus();

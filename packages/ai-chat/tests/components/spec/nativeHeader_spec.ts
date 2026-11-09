@@ -97,7 +97,8 @@ async function createHeader(
     store,
     intl: createIntl({ locale: 'en', messages: store.getState().languagePack }),
     namespace: new NamespaceService('header-test'),
-    writeableElements,
+    // The chat's instance holds its writeable elements.
+    instance: { writeableElements },
     fire,
     actions: { errorOccurred: jest.fn() },
   } as unknown as ServiceManager;
