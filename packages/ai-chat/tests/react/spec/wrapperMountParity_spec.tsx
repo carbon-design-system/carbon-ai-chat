@@ -261,34 +261,38 @@ describe('how each host mounts the chat', () => {
   ])('%s renders through the container element', async (_name, mount) => {
     const boot = jest.spyOn(sdkBoot, 'createChatSDK');
     const onAfterRender = jest.fn();
-    const mounted = mount(onAfterRender);
-    await waitFor(() => expect(onAfterRender).toHaveBeenCalled(), {
-      timeout: 5000,
-    });
-    // Every shell boots through the SDK (#1732 O13), and its callbacks still
-    // get the full ChatInstance (O14).
-    expect(boot).toHaveBeenCalledTimes(1);
-    expect(boot.mock.calls[0][1]).toEqual(
-      expect.objectContaining({ sessionStorage: true, loadHistory: false })
-    );
-    const [instance] = onAfterRender.mock.calls[0] as [ChatInstance];
-    const handle = await boot.mock.results[0].value;
-    expect(instance).not.toBe(handle);
-    expect('release' in instance).toBe(false);
-    for (const member of [
-      'changeView',
-      'customPanels',
-      'writeableElements',
-      'send',
-      'input',
-      'requestFocus',
-      'destroySession',
-    ]) {
-      expect(instance).toHaveProperty(member);
+    let mounted: ReturnType<typeof mount>;
+    try {
+      mounted = mount(onAfterRender);
+      await waitFor(() => expect(onAfterRender).toHaveBeenCalled(), {
+        timeout: 5000,
+      });
+      // Every shell boots through the SDK (#1732 O13), and its callbacks still
+      // get the full ChatInstance (O14).
+      expect(boot).toHaveBeenCalledTimes(1);
+      expect(boot.mock.calls[0][1]).toEqual(
+        expect.objectContaining({ sessionStorage: true, loadHistory: false })
+      );
+      const [instance] = onAfterRender.mock.calls[0] as [ChatInstance];
+      const handle = await boot.mock.results[0].value;
+      expect(instance).not.toBe(handle);
+      expect('release' in instance).toBe(false);
+      for (const member of [
+        'changeView',
+        'customPanels',
+        'writeableElements',
+        'send',
+        'input',
+        'requestFocus',
+        'destroySession',
+      ]) {
+        expect(instance).toHaveProperty(member);
+      }
+      expect(instance.messaging).toHaveProperty('addMessage');
+      expect(instance.messaging).toHaveProperty('upsertMessage');
+    } finally {
+      boot.mockRestore();
     }
-    expect(instance.messaging).toHaveProperty('addMessage');
-    expect(instance.messaging).toHaveProperty('upsertMessage');
-    boot.mockRestore();
     const container =
       typeof mounted === 'function' ? mounted() : (mounted as Element);
 
