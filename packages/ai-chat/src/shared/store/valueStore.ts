@@ -28,7 +28,9 @@ interface ValueStore<T> extends ReadableValueStore<T> {
    * Stores `next`. A value equal by `Object.is` changes nothing and notifies
    * nobody. A different one notifies each listener once. A listener that
    * writes again stops the rest of this round, because that write already
-   * gave every listener the newer value.
+   * gave every listener the newer value. A listener that throws stops the
+   * round too: the value is already stored, and the rest hear of the next
+   * change.
    */
   set: (next: T) => void;
 }
