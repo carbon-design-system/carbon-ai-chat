@@ -14,6 +14,7 @@ import { BusEventType } from '../../../src/types/events/eventBusTypes';
 import { registerInlineTarget } from '../../../src/chat/components/portals/inputNodeHosts';
 import { inputNodeIdentity } from '../../../src/chat/utils/inputNodeSlots';
 import { LIGHT_DOM_PORTAL_EVENT } from '@carbon/ai-chat-components/es/components/prompt-line/src/tiptap/render-in-light-dom.js';
+import { slotSourceOf } from '../../test_helpers';
 
 const noMessages = {
   getState: () => ({ allMessagesByID: {} }),
@@ -26,7 +27,7 @@ function setup(isRequestFooterEnabled: () => boolean = () => true) {
   const chatWrapper = document.createElement('div');
   document.body.append(chatWrapper);
   const hosts = new ExtensionHosts(
-    instance,
+    slotSourceOf(instance),
     chatWrapper,
     noMessages,
     isRequestFooterEnabled
@@ -484,7 +485,7 @@ it('stops following the store after disconnect', () => {
     },
   };
   const hosts = new ExtensionHosts(
-    new EventBus() as unknown as ChatInstance,
+    slotSourceOf(new EventBus()),
     document.createElement('div'),
     store,
     () => false
@@ -526,7 +527,12 @@ describe('input-node hosts', () => {
     const instance = eventBus as unknown as ChatInstance;
     const chatWrapper = document.createElement('div');
     document.body.append(chatWrapper);
-    const hosts = new ExtensionHosts(instance, chatWrapper, store, () => false);
+    const hosts = new ExtensionHosts(
+      slotSourceOf(instance),
+      chatWrapper,
+      store,
+      () => false
+    );
     hosts.connect();
     const setMessages = (next: Record<string, unknown>) => {
       allMessagesByID = next;

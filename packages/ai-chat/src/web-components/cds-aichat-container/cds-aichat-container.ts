@@ -552,7 +552,6 @@ class ChatContainer extends FlattenedConfigElement {
       // may change the view before the shell renders.
       state.view = attachMountView({
         serviceManager,
-        instance,
         chatElement: this,
         renderTarget: this.renderTarget,
         customHostElement: this.element,

@@ -11,6 +11,7 @@ import merge from 'lodash-es/merge.js';
 
 import createHumanAgentService from '../shared/services/haa/HumanAgentServiceImpl';
 import { createServiceManager } from '../shared/services/loadServices';
+import { attachSlotTracking } from '../shared/services/slotTracking';
 import { createConversationInstance } from '../shared/services/conversationInstance';
 import type { ServiceManager } from '../shared/services/ServiceManager';
 import { DEFAULT_THEME_STATE } from '../shared/store/reducerUtils';
@@ -91,6 +92,8 @@ async function createChatSDK(
     serviceManager = createServiceManager(appConfig, {
       sessionStorage: options.sessionStorage ?? false,
     });
+    // Slot records live as long as the chat, not a mount (#1741).
+    attachSlotTracking(serviceManager);
     options.onServicesCreated?.(serviceManager);
     serviceManager.humanAgentService = createHumanAgentService(serviceManager);
 

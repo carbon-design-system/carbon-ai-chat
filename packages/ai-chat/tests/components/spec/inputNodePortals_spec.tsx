@@ -27,6 +27,7 @@ import {
   createBaseConfig,
   makeConfigStore,
   TestChatContext,
+  slotSourceOf,
 } from '../../test_helpers';
 import actions from '../../../src/shared/store/actions';
 
@@ -47,7 +48,12 @@ afterEach(() => connectedHosts.splice(0).forEach((h) => h.disconnect()));
 
 /** A connected host service for one mount, as `ChatAppEntry` creates it. */
 function hostsFor(chatWrapper: HTMLElement) {
-  const hosts = new ExtensionHosts(instance, chatWrapper, store, () => false);
+  const hosts = new ExtensionHosts(
+    slotSourceOf(instance),
+    chatWrapper,
+    store,
+    () => false
+  );
   hosts.connect();
   connectedHosts.push(hosts);
   return hosts;

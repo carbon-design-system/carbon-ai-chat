@@ -26,6 +26,7 @@ import {
   MessageInputType,
   MessageRequest,
 } from '../../../src/types/messaging/Messages';
+import { slotSourceOf } from '../../test_helpers';
 
 const eventBus = new EventBus();
 const chatInstance = eventBus as unknown as ChatInstance;
@@ -49,7 +50,7 @@ afterEach(() => connectedHosts.splice(0).forEach((h) => h.disconnect()));
 /** A connected host service that has recorded one footer per slot. */
 function hostsWith(chatWrapper: HTMLElement, ...slots: [string, string][]) {
   const hosts = new ExtensionHosts(
-    chatInstance,
+    slotSourceOf(chatInstance),
     chatWrapper,
     { getState: () => ({ allMessagesByID: {} }), subscribe: () => () => {} },
     () => true
