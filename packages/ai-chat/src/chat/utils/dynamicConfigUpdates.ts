@@ -79,38 +79,40 @@ export async function applyConfigChangesDynamically(
 
   // BACKBONE: the shared update path replaces the config, keeping the
   // references of unchanged sub-objects, and pushes the conversation's
-  // service mirrors (language pack, namespace, timeout, service desk). Its
-  // store writes happen before it returns the promise, so the view steps below
-  // see the new config. They read `currentState`, from before the replace.
+  // service mirrors (language pack, namespace, timeout, service desk). The
+  // home screen step runs inside it, right after the config replace and before
+  // the service steps, as before. Steps read `currentState`, from before the
+  // replace.
   const conversationUpdate = applyConversationConfig(
     serviceManager,
-    newAppConfig
+    newAppConfig,
+    () => {
+      // STATE TRANSITION: whether the homescreen is currently open is session/runtime
+      // state, not a config value, so toggling `homescreen.isOn` has to decide what
+      // the open/closed flag should become — it can't be derived by a reactive read.
+      if (prevConfig?.homescreen?.isOn !== newConfig.homescreen?.isOn) {
+        // Going off -> on: open the homescreen, but only when the conversation is
+        // empty (don't yank the user away from an in-progress conversation).
+        if (
+          newConfig.homescreen?.isOn &&
+          !currentState.config.public.homescreen?.isOn &&
+          currentState.assistantMessageState.messageIDs.length === 0
+        ) {
+          store.dispatch(viewActions.setHomeScreenIsOpen(true));
+        }
+        // Going on -> off (or switching to "splash" with active messages): make sure
+        // the homescreen is not left open.
+        if (
+          (!newConfig.homescreen?.isOn &&
+            currentState.config.public.homescreen?.isOn) ||
+          (newConfig.homescreen?.disableReturn &&
+            currentState.assistantMessageState.messageIDs.length > 0)
+        ) {
+          store.dispatch(viewActions.setHomeScreenIsOpen(false));
+        }
+      }
+    }
   );
-
-  // STATE TRANSITION: whether the homescreen is currently open is session/runtime
-  // state, not a config value, so toggling `homescreen.isOn` has to decide what
-  // the open/closed flag should become — it can't be derived by a reactive read.
-  if (prevConfig?.homescreen?.isOn !== newConfig.homescreen?.isOn) {
-    // Going off -> on: open the homescreen, but only when the conversation is
-    // empty (don't yank the user away from an in-progress conversation).
-    if (
-      newConfig.homescreen?.isOn &&
-      !currentState.config.public.homescreen?.isOn &&
-      currentState.assistantMessageState.messageIDs.length === 0
-    ) {
-      store.dispatch(viewActions.setHomeScreenIsOpen(true));
-    }
-    // Going on -> off (or switching to "splash" with active messages): make sure
-    // the homescreen is not left open.
-    if (
-      (!newConfig.homescreen?.isOn &&
-        currentState.config.public.homescreen?.isOn) ||
-      (newConfig.homescreen?.disableReturn &&
-        currentState.assistantMessageState.messageIDs.length > 0)
-    ) {
-      store.dispatch(viewActions.setHomeScreenIsOpen(false));
-    }
-  }
 
   // (Custom panel state is driven imperatively by ChatInstance, so there is
   // nothing to apply from config here.)

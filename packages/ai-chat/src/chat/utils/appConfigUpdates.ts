@@ -78,11 +78,14 @@ function warnUnstableProp(
 function syncMarkdownConfig(
   applied: AppliedConfig,
   markdown: PublicConfig['markdown'],
-  serviceManager: ServiceManager
+  serviceManager: ServiceManager,
+  previousMarkdown?: PublicConfig['markdown']
 ) {
   const current = chatStore(serviceManager).getState().view.markdownConfig;
   if (isEqual(current, markdown)) {
-    if (markdown !== undefined && markdown !== current) {
+    // The slice holds a copy, so compare the host's own objects to tell a
+    // re-created prop from a stable one.
+    if (markdown !== undefined && markdown !== previousMarkdown) {
       warnUnstableProp(applied, serviceManager, 'markdown');
     }
     return;
@@ -116,6 +119,7 @@ function applyConfigUpdate(
 ) {
   const next = mergePublicConfig(config);
   const previous = applied.effective;
+  const previousMarkdown = applied.source.markdown;
   applied.source = config;
   if (isEqual(previous, next)) {
     warnUnstableProp(applied, serviceManager, 'config');
@@ -126,7 +130,12 @@ function applyConfigUpdate(
         consoleError('Failed to apply config changes dynamically:', error)
     );
   }
-  syncMarkdownConfig(applied, config.markdown, serviceManager);
+  syncMarkdownConfig(
+    applied,
+    config.markdown,
+    serviceManager,
+    previousMarkdown
+  );
 }
 
 export {

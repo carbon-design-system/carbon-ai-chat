@@ -61,6 +61,18 @@ describe('updateConfig (#1833 O1–O3)', () => {
     expect(manager.messageCoordinator.timeoutMS).toBe(DEFAULT_TIMEOUT_MS);
   });
 
+  it('does nothing once the chat has shut down', async () => {
+    const handle = await createChatSDK({
+      namespace: 'kept',
+      messaging: { skipWelcome: true },
+    });
+    const manager = chatOf(handle);
+    handle.destroy();
+    await handle.updateConfig({ namespace: 'changed' });
+    expect(manager.store.getState().config.public.namespace).toBe('kept');
+    expect(manager.namespace.originalName).toBe('kept');
+  });
+
   it('goes through the shared update path, and is applied when it resolves', async () => {
     const handle = await chat({ messaging: { skipWelcome: true } });
     const apply = jest.spyOn(applyConfigModule, 'applyConversationConfig');

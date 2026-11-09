@@ -76,3 +76,38 @@ it('applies markdown at startup and on update, and skips equal content (O5, O10)
   expect(store.getState().view.markdownConfig).toStrictEqual(changed.markdown);
   expect(renders).toBe(3);
 });
+
+it('warns about a re-created markdown prop only when the host re-created it', () => {
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+  try {
+    const plugin = (): void => undefined;
+    const markdown = { markdownItPlugins: [plugin] };
+    const config: PublicConfig = { debug: true, markdown };
+    const store = makeConfigStore(config);
+    const serviceManager = { store } as unknown as ServiceManager;
+    const applied = createAppliedConfig(mergePublicConfig(config), config);
+    applyBootConfig(applied, config, serviceManager);
+
+    // A stable markdown object with another field changed: no warning.
+    applyConfigUpdate(
+      applied,
+      { debug: true, markdown, assistantName: 'Other' },
+      serviceManager
+    );
+    expect(warn).not.toHaveBeenCalledWith(expect.stringContaining('markdown'));
+
+    // The same content in a new object: one warning.
+    applyConfigUpdate(
+      applied,
+      {
+        debug: true,
+        markdown: { markdownItPlugins: [plugin] },
+        assistantName: 'Other',
+      },
+      serviceManager
+    );
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('`markdown`'));
+  } finally {
+    warn.mockRestore();
+  }
+});

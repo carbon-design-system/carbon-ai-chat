@@ -41,10 +41,13 @@ import type { ServiceManager } from './ServiceManager';
  *
  * @param serviceManager - The running chat.
  * @param next - The whole config it should now have.
+ * @param afterReplace - Runs right after the config and language pack are
+ *   written, before the service steps. The prebuilt chat's view steps go here.
  */
 async function applyConversationConfig(
   serviceManager: ServiceManager,
-  next: ConversationAppConfig
+  next: ConversationAppConfig,
+  afterReplace?: () => void
 ): Promise<void> {
   const { store } = serviceManager;
   const current = store.getState();
@@ -71,6 +74,10 @@ async function applyConversationConfig(
       );
     }
   }
+
+  // The prebuilt chat's view steps that read the new config run here, before
+  // the namespace moves the saved session.
+  afterReplace?.();
 
   // The namespace is baked into the session-storage key, which
   // UserSessionStorageService reads from `serviceManager.namespace` on each

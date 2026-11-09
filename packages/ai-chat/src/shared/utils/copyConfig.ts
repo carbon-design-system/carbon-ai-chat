@@ -7,13 +7,7 @@
  *  @license
  */
 
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  if (value === null || typeof value !== 'object') {
-    return false;
-  }
-  const prototype = Object.getPrototypeOf(value);
-  return prototype === Object.prototype || prototype === null;
-}
+import isLodashPlainObject from 'lodash-es/isPlainObject.js';
 
 /**
  * Copies a config the chat is handed, so later edits to the caller's object
@@ -28,6 +22,11 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 function copyConfig<T>(value: T): T {
   return copy(value, new WeakMap()) as T;
 }
+
+// lodash's check also accepts a plain object from another realm, such as an
+// iframe, whose prototype isn't this realm's `Object.prototype`.
+const isPlainObject = (value: unknown): value is Record<string, unknown> =>
+  isLodashPlainObject(value);
 
 function copy(value: unknown, seen: WeakMap<object, unknown>): unknown {
   if (Array.isArray(value)) {
