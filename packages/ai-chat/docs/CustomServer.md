@@ -192,7 +192,7 @@ For chunks, send a partial item with `cancellable: false`, then send one with `t
 The {@link CustomSendMessageOptions.signal | abort signal} fires when a message request is cancelled. On abort, the signal's `reason` holds one value from the {@link CancellationReason} enum:
 
 - {@link CancellationReason.STOP_STREAMING} (`"Stop streaming"`) - the user clicked the stop streaming button
-- {@link CancellationReason.CONVERSATION_RESTARTED} (`"Conversation restarted"`) - the user restarted or cleared the conversation
+- {@link CancellationReason.CONVERSATION_RESTARTED} (`"Conversation restarted"`) - the user restarted or cleared the conversation, or the chat was removed from the page. A removed chat keeps its saved session, so don't treat this reason alone as the end of the conversation on your server.
 - {@link CancellationReason.TIMEOUT} (`"Request timeout"`) - the request exceeded the configured timeout
 
 Check whether the request was cancelled with `signal.aborted`, or by listening for the "abort" event, and read the reason from `signal.reason`. The abort signal handles every cancellation the same way.
@@ -310,7 +310,7 @@ await instance.messaging.upsertMessage(
 - The "stop streaming" button appears with `cancellable: true`. An explicit `false` disables it; see the rules above for mixed items.
 - Clicking the button fires the abort signal (with reason {@link CancellationReason.STOP_STREAMING}), but it does not stop your streaming on its own.
 - Listen for the abort signal and stop your streaming logic. After the stop button, deliver the final state. After restart or clear, skip it.
-- The abort signal also fires on conversation restarts and clears ({@link CancellationReason.CONVERSATION_RESTARTED}) and on timeouts ({@link CancellationReason.TIMEOUT}).
+- The abort signal also fires on conversation restarts and clears, and when the chat is removed from the page ({@link CancellationReason.CONVERSATION_RESTARTED}), and on timeouts ({@link CancellationReason.TIMEOUT}).
 - With {@link ChatInstanceMessaging.addMessageChunk | addMessageChunk}, the button stays visible but disabled until a {@link FinalResponseChunk | final response chunk} arrives. With {@link ChatInstanceMessaging.upsertMessage | upsertMessage}, it hides when the message reaches {@link MessageState.COMPLETE | complete} (or {@link MessageState.ERROR | error}).
 - If a {@link CancellationReason.TIMEOUT | timeout} cancels the message, the UI marks it as errored.
 
