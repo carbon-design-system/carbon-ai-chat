@@ -489,7 +489,7 @@ function keepsLastDrawn(
  * 2. **Reference stability** — if the new item is deep-equal to the previously stored
  *    `LocalMessageItem.item`, the existing `LocalMessageItem` reference is reused
  *    verbatim. Components subscribed to that item via `useSelector` see no diff and
- *    skip re-rendering. This matches {@link applyChunkWrite} and is critical when only
+ *    skip re-rendering. This matches {@link applyChunkWriteWithIdentity} and is critical when only
  *    one item in `output.generic[]` actually changes between calls.
  *
  * Nested CARD/CAROUSEL/GRID/BUTTON local items are rebuilt when their parent changes,
@@ -743,16 +743,17 @@ function computeLocalIDInsertionPoint(
  * Adds the given full message to the redux store. This will add it global to the global map as well as add the
  * id to the specific chat type.
  */
-function applyFullMessage(
+function applyFullMessageWithIdentity(
   state: ConversationState,
   message: Message
-): ConversationState {
+) {
+  let messageID: string;
   // Add the original message to the global map.
   const newState = {
     ...state,
     allMessagesByID: {
       ...state.allMessagesByID,
-      [message.id]: message,
+      [(messageID = message.id)]: message,
     },
   };
 
@@ -760,10 +761,15 @@ function applyFullMessage(
   if (!state.allMessagesByID[message.id]) {
     const currentMessageIDs = state.assistantMessageState.messageIDs;
     const newMessageIDs = [...currentMessageIDs, message.id];
-    return applyAssistantMessageState(newState, { messageIDs: newMessageIDs });
+    return {
+      state: applyAssistantMessageState(newState, {
+        messageIDs: newMessageIDs,
+      }),
+      messageID,
+    };
   }
 
-  return newState;
+  return { state: newState, messageID };
 }
 
 /**
@@ -871,18 +877,20 @@ function nextChunkLocalItem(
  * message's other items keep their references. A new item goes at the end of the whole
  * list rather than with its message, and no nested items are built for it.
  */
-function applyChunkWrite(
+function applyChunkWriteWithIdentity(
   state: ConversationState,
   message: MessageResponse,
   { item: chunkItem, isComplete, isStopped }: MessageWriteOptions['chunk']
-): ConversationState {
-  const withMessage =
-    state.allMessagesByID[message.id] === message
-      ? state
-      : applyFullMessage(state, message);
+) {
+  let messageID: string;
+  const full =
+    state.allMessagesByID[(messageID = message.id)] === message
+      ? { state, messageID }
+      : applyFullMessageWithIdentity(state, message);
+  const withMessage = full.state;
   // A chunk with no item only ever merged its message_options.
   if (!chunkItem) {
-    return withMessage;
+    return full;
   }
 
   const localID = chunkItemLocalID(message.id, chunkItem);
@@ -892,7 +900,7 @@ function applyChunkWrite(
     : newChunkLocalItem(chunkItem, message, isComplete, isStopped);
 
   const { localMessageIDs } = state.assistantMessageState;
-  return {
+  const nextState = {
     ...withMessage,
     allMessageItemsByID: { ...state.allMessageItemsByID, [localID]: localItem },
     assistantMessageState: {
@@ -902,6 +910,7 @@ function applyChunkWrite(
         : [...localMessageIDs, localID],
     },
   };
+  return { state: nextState, messageID: full.messageID };
 }
 
 export {
@@ -917,8 +926,8 @@ export {
   DEFAULT_LAYOUT_STATE,
   DEFAULT_INPUT_STATE,
   applyAssistantMessageState,
-  applyChunkWrite,
-  applyFullMessage,
+  applyChunkWriteWithIdentity,
+  applyFullMessageWithIdentity,
   applyLocalMessageUIState,
   computeLocalIDInsertionPoint,
   rebuildLocalItemsForUpsert,

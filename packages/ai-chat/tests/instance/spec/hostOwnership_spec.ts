@@ -56,6 +56,65 @@ describe('existing host ownership contracts', () => {
     ).toBe('after');
   });
 
+  it('commits current chunk edits when a deferred callback rejects', async () => {
+    const onError = jest.fn();
+    const { instance, store } = await renderChatAndGetInstanceWithStore({
+      ...createBaseConfig(),
+      onError,
+    });
+    const entered = resolvablePromise<void>();
+    const release = resolvablePromise<void>();
+    const failure = new Error('chunk callback failed');
+    const chunk = {
+      streaming_metadata: { response_id: 'held-chunk' },
+      partial_item: {
+        response_type: MessageResponseTypes.USER_DEFINED,
+        user_defined: { value: 'before' },
+        streaming_metadata: { id: 'item' },
+      },
+    };
+    instance.on({
+      type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
+      handler: async (event: any) => {
+        expect(event.data.chunk).toBe(chunk);
+        expect(event.data.messageItem).toBe(chunk.partial_item);
+        event.data.messageItem.user_defined.value = 'during';
+        entered.doResolve();
+        await release;
+        event.data.messageItem.user_defined.value = 'after';
+        throw failure;
+      },
+    });
+    let rejected: Promise<void>;
+    try {
+      await act(async () => {
+        const work = instance.messaging.addMessageChunk(chunk);
+        rejected = expect(work).rejects.toBe(failure);
+        await entered;
+      });
+      expect(chunk.partial_item.user_defined.value).toBe('during');
+      expect(
+        store.getState().allMessageItemsByID['held-chunk-item'].item
+          .user_defined.value
+      ).toBe('before');
+      await act(async () => {
+        release.doResolve();
+        await rejected;
+      });
+      expect(chunk.partial_item.user_defined.value).toBe('after');
+      expect(
+        store.getState().allMessageItemsByID['held-chunk-item'].item
+          .user_defined.value
+      ).toBe('after');
+      expect(onError).not.toHaveBeenCalled();
+    } finally {
+      await act(async () => {
+        release.doResolve();
+        await rejected;
+      });
+    }
+  });
+
   it.each([false, true])(
     'discards held chunk event edits after removal and replacement (reject: %p)',
     async (reject) => {

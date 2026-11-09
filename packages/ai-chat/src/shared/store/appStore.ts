@@ -7,6 +7,7 @@
  *  @license
  */
 import { commitMessageOwnership } from './messageOwnership';
+import type { MessageOwnershipReceipt } from './messageOwnership';
 import { debugLog, isEnableDebugLog } from '../utils/miscUtils';
 
 /**
@@ -105,7 +106,10 @@ type PartitionAttacher = (
   initialState: unknown
 ) => boolean;
 
-/** How to attach a partition to each store {@link createAppStore} made. */
+/**
+ * How to attach a partition to each store {@link createStoreFromReduction}
+ * made, including those made through {@link createAppStore}.
+ */
 const partitionAttachers = new WeakMap<object, PartitionAttacher>();
 
 /**
@@ -126,6 +130,28 @@ export function createAppStore<
   ActionType extends UnknownAction = UnknownAction,
 >(
   reducer: Reducer<StateShape, ActionType>,
+  preloadedState: StateShape
+): AppStore<StateShape, ActionType> {
+  return createStoreFromReduction(
+    (state, action) => ({ state: reducer(state, action) }),
+    preloadedState
+  );
+}
+
+/** A private chat reduction carries facts already observed while producing state. */
+export interface StoreReduction<StateShape> {
+  state: StateShape;
+  ownership?: MessageOwnershipReceipt;
+}
+
+export function createStoreFromReduction<
+  StateShape,
+  ActionType extends UnknownAction = UnknownAction,
+>(
+  reducer: (
+    state: Readonly<StateShape>,
+    action: Readonly<ActionType>
+  ) => StoreReduction<StateShape>,
   preloadedState: StateShape
 ): AppStore<StateShape, ActionType> {
   let currentState: StateShape = preloadedState;
@@ -149,8 +175,9 @@ export function createAppStore<
   const reduce = (
     state: StateShape,
     action: Readonly<ActionType>
-  ): StateShape => {
-    let next = reducer(state, action);
+  ): StoreReduction<StateShape> => {
+    const reduction = reducer(state, action);
+    let next = reduction.state;
     partitions.forEach((partitionReducer, key) => {
       const part = partitionReducer(
         (state as Record<string, unknown>)[key],
@@ -161,7 +188,7 @@ export function createAppStore<
         next = { ...next, [key]: part };
       }
     });
-    return next;
+    return next === reduction.state ? reduction : { ...reduction, state: next };
   };
 
   const dispatch: DispatchFunction<ActionType> = (
@@ -176,7 +203,8 @@ export function createAppStore<
       );
     }
 
-    const nextState = reduce(previousState, action);
+    const reduction = reduce(previousState, action);
+    const nextState = reduction.state;
     if (nextState !== previousState) {
       if (isEnableDebugLog()) {
         // Compute a shallow set of changed top-level keys for quick visibility.
@@ -197,10 +225,10 @@ export function createAppStore<
         debugLog('[store] notifying listeners', listeners.size);
       }
       currentState = nextState;
-      commitMessageOwnership(store, currentState, action);
+      commitMessageOwnership(store, reduction.ownership, action);
       notify();
     } else {
-      commitMessageOwnership(store, currentState, action);
+      commitMessageOwnership(store, reduction.ownership, action);
     }
     return action as ActionType;
   };
@@ -229,7 +257,8 @@ export function createAppStore<
 }
 
 /**
- * Adds a partition to a store made by {@link createAppStore}. The partition's
+ * Adds a partition to a store made by {@link createStoreFromReduction} or
+ * {@link createAppStore}. The partition's
  * value lives under `key` in the store's state, and `reducer` updates it on
  * every dispatch. A dispatch that changes the store's own state and the
  * partition notifies subscribers once. Attaching notifies them too.
@@ -237,7 +266,8 @@ export function createAppStore<
  * Attaching a key the store already has a partition for does nothing, so a
  * partition lives as long as its store.
  *
- * @param store - A store from {@link createAppStore}.
+ * @param store - A store from {@link createStoreFromReduction} or
+ *   {@link createAppStore}.
  * @param key - Where the partition's value lives in the state.
  * @param reducer - Updates the partition's value.
  * @param initialState - The partition's first value.

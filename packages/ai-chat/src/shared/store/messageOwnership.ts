@@ -8,20 +8,19 @@
  */
 
 import type { ConversationState } from '../../types/state/AppState';
-import type { Message, MessageResponse } from '../../types/messaging/Messages';
-import type { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
 import type { AppStore, UnknownAction } from './appStore';
-import {
-  ADD_MESSAGE,
-  ADD_LOCAL_MESSAGE_ITEM,
-  UPSERT_MESSAGE,
-  HYDRATE_MESSAGE_HISTORY,
-  REMOVE_MESSAGES,
-  REMOVE_LOCAL_MESSAGE_ITEM,
-  RESTART_CONVERSATION,
-  UPDATE_MESSAGE,
-  UPDATE_LOCAL_MESSAGE_ITEM,
-} from './messageActionTypes';
+
+export type MessageOwnershipReceipt =
+  | { kind: 'reset' | 'history' }
+  | { kind: 'remove'; messageIDs: string[]; localIDs: string[] }
+  | { kind: 'removeLocal'; localID: string }
+  | { kind: 'updateMessage' | 'addMessage' | 'upsert'; messageID: string }
+  | { kind: 'updateLocal'; localID: string; parentID: string }
+  | {
+      kind: 'addLocal';
+      messageID?: string;
+      local?: { id: string; parentID: string };
+    };
 
 interface Ownership {
   messages: Set<string>;
@@ -134,97 +133,97 @@ export function retainLocalCloneOwnership<T extends object>(
   return action;
 }
 
+function restoreOwnership(ownership: Ownership, retained?: Ownership) {
+  ownership.messages = new Set(retained?.messages);
+  ownership.locals = new Map();
+  ownership.localsByMessage = new Map();
+  if (retained) {
+    for (const [id, parentID] of retained.locals) {
+      addLocal(ownership, id, parentID);
+    }
+  }
+}
+
+function transferMessage(ownership: Ownership, id: string, action: object) {
+  if (!retainedCloneOwnership.has(action)) {
+    return;
+  }
+  if (retainedCloneOwnership.get(action)) {
+    ownership.messages.add(id);
+  } else {
+    ownership.messages.delete(id);
+  }
+}
+
+function transferLocal(
+  ownership: Ownership,
+  localID: string,
+  parentID: string,
+  action: object
+) {
+  const isHumanAgent =
+    retainedCloneOwnership.get(action) ?? ownership.locals.has(localID);
+  if (isHumanAgent) {
+    addLocal(ownership, localID, parentID);
+  } else {
+    removeLocal(ownership, localID);
+  }
+}
+
+function applyInsertion(
+  ownership: Ownership,
+  receipt: Extract<MessageOwnershipReceipt, { kind: 'addLocal' }>,
+  action: object
+) {
+  const isHumanAgent = humanAgentIngress.has(action);
+  if (receipt.messageID !== undefined) {
+    if (isHumanAgent) {
+      ownership.messages.add(receipt.messageID);
+    } else {
+      ownership.messages.delete(receipt.messageID);
+    }
+  }
+  if (receipt.local) {
+    if (isHumanAgent) {
+      addLocal(ownership, receipt.local.id, receipt.local.parentID);
+    } else {
+      removeLocal(ownership, receipt.local.id);
+    }
+  }
+}
+
 function applyOwnership(
   ownership: Ownership,
-  state: ConversationState,
+  receipt: MessageOwnershipReceipt,
   action: UnknownAction
 ) {
-  switch (action.type) {
-    case RESTART_CONVERSATION:
-    case HYDRATE_MESSAGE_HISTORY: {
-      const retained =
-        action.type === HYDRATE_MESSAGE_HISTORY
-          ? retainedHistory.get(action)
-          : undefined;
-      ownership.messages = new Set();
-      ownership.locals = new Map();
-      ownership.localsByMessage = new Map();
-      if (retained) {
-        for (const id of retained.messages) {
-          if (state.allMessagesByID[id]) {
-            ownership.messages.add(id);
-          }
-        }
-        for (const [id, messageID] of retained.locals) {
-          if (state.allMessageItemsByID[id]?.fullMessageID === messageID) {
-            addLocal(ownership, id, messageID);
-          }
-        }
-      }
-      break;
-    }
-    case REMOVE_MESSAGES:
-      for (const id of action.messageIDs as string[]) {
-        clearMessage(ownership, id);
-      }
-      break;
-    case REMOVE_LOCAL_MESSAGE_ITEM:
-      removeLocal(ownership, action.localMessageItemID as string);
-      break;
-    case UPDATE_MESSAGE:
-      if (retainedCloneOwnership.has(action)) {
-        const id = (action.message as Message).id;
-        if (retainedCloneOwnership.get(action)) {
-          ownership.messages.add(id);
-        } else {
-          ownership.messages.delete(id);
-        }
-      }
-      break;
-    case UPDATE_LOCAL_MESSAGE_ITEM: {
-      const local = action.messageItem as LocalMessageItem;
-      const isHumanAgent =
-        retainedCloneOwnership.get(action) ??
-        ownership.locals.has(local.ui_state.id);
-      if (isHumanAgent) {
-        addLocal(ownership, local.ui_state.id, local.fullMessageID);
-      } else {
-        removeLocal(ownership, local.ui_state.id);
-      }
-      break;
-    }
-    case ADD_MESSAGE:
-      ownership.messages.delete((action.message as Message).id);
-      break;
-    case UPSERT_MESSAGE: {
-      const message = action.message as Message;
-      // A request passed to this reducer is ignored; valid core writes transfer
-      // ownership even when the reducer retains the previous message/local refs.
-      if ((message as MessageResponse).output !== undefined) {
-        clearMessage(ownership, message.id);
-      }
-      break;
-    }
-    case ADD_LOCAL_MESSAGE_ITEM: {
-      const message = action.message as Message;
-      const local = action.messageItem as LocalMessageItem;
-      const isHumanAgent = humanAgentIngress.has(action);
-      if (action.addMessage) {
-        if (isHumanAgent) {
-          ownership.messages.add(message.id);
-        } else {
-          ownership.messages.delete(message.id);
-        }
-      }
-      if (state.allMessageItemsByID[local.ui_state.id] === local) {
-        if (isHumanAgent) {
-          addLocal(ownership, local.ui_state.id, message.id);
-        } else {
-          removeLocal(ownership, local.ui_state.id);
-        }
-      }
-      break;
-    }
+  switch (receipt.kind) {
+    case 'reset':
+      return restoreOwnership(ownership);
+    case 'history':
+      return restoreOwnership(ownership, retainedHistory.get(action));
+    case 'remove':
+      receipt.messageIDs.forEach((id) => clearMessage(ownership, id));
+      receipt.localIDs.forEach((id) => removeLocal(ownership, id));
+      return;
+    case 'removeLocal':
+      return removeLocal(ownership, receipt.localID);
+    case 'updateMessage':
+      return transferMessage(ownership, receipt.messageID, action);
+    case 'updateLocal':
+      return transferLocal(
+        ownership,
+        receipt.localID,
+        receipt.parentID,
+        action
+      );
+    case 'addMessage':
+      ownership.messages.delete(receipt.messageID);
+      return;
+    case 'upsert':
+      return clearMessage(ownership, receipt.messageID);
+    case 'addLocal':
+      return applyInsertion(ownership, receipt, action);
   }
 }
 
@@ -238,11 +237,11 @@ export function enableMessageOwnership(
 /** Called by native store dispatch after commit and before subscriber delivery. */
 export function commitMessageOwnership(
   store: object,
-  nextState: unknown,
+  receipt: MessageOwnershipReceipt | undefined,
   action: UnknownAction
 ): void {
   const ownership = stores.get(store);
-  if (ownership) {
-    applyOwnership(ownership, nextState as ConversationState, action);
+  if (ownership && receipt) {
+    applyOwnership(ownership, receipt, action);
   }
 }
