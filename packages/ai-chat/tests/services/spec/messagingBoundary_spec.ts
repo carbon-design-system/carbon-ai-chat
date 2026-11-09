@@ -1449,6 +1449,8 @@ it('rejects raw store writes throughout the package except exact existing view s
   const creatorFiles = new Set([
     actionsFile,
     path.join(root, 'src/shared/store/humanAgentActions.ts'),
+    // The view partition's own creators (#1831).
+    path.join(root, 'src/view/state/actions.ts'),
   ]);
   const ownershipFile = path.join(root, 'src/shared/store/messageOwnership.ts');
   const issues: string[] = [];
