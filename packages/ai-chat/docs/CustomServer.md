@@ -244,10 +244,10 @@ After a restart or clear, stop the loop and skip the final state. The conversati
 
 #### With addMessageChunk
 
-Send a {@link FinalResponseChunk | final response chunk}. Optionally send a {@link CompleteItemChunk | complete item chunk} with `stream_stopped: true` first, to trigger the right a11y states:
+Send a {@link FinalResponseChunk | final response chunk}. Optionally send a {@link CompleteItemChunk | complete item chunk} with `stream_stopped: true` first, and keep the flag on that item in the final response. The chat shows "Response stopped" below the item:
 
 ```typescript
-// Optional: mark the item as stopped for a11y messaging.
+// Optional: mark the item as stopped.
 await instance.messaging.addMessageChunk({
   complete_item: {
     response_type: MessageResponseTypes.TEXT,
@@ -273,6 +273,8 @@ await instance.messaging.addMessageChunk({
         {
           response_type: MessageResponseTypes.TEXT,
           text: partialText,
+          // Keep the flag; the final item replaces the stopped one.
+          streaming_metadata: { id: '1', stream_stopped: true },
         },
       ],
     },
@@ -282,7 +284,7 @@ await instance.messaging.addMessageChunk({
 
 #### With upsertMessage
 
-Call {@link ChatInstanceMessaging.upsertMessage | upsertMessage} with {@link MessageState.COMPLETE | the complete state}, which moves the message out of streaming and hides the "stop streaming" button. Set `streaming_metadata.stream_stopped: true` on the items to trigger the "Response stopped" a11y announcement:
+Call {@link ChatInstanceMessaging.upsertMessage | upsertMessage} with {@link MessageState.COMPLETE | the complete state}, which moves the message out of streaming and hides the "stop streaming" button. To show "Response stopped" below the response, set `streaming_metadata.stream_stopped: true` on its last item. The chat shows the line below every item that carries the flag. The flag needs the item's streaming `id`, so an item without streaming metadata can't carry it:
 
 ```typescript
 await instance.messaging.upsertMessage(
@@ -293,13 +295,17 @@ await instance.messaging.upsertMessage(
     request_id: request.id,
     output: {
       generic:
-        prev?.output.generic?.map((item) => ({
-          ...item,
-          streaming_metadata: {
-            ...item.streaming_metadata,
-            stream_stopped: isCanceled || undefined,
-          },
-        })) ?? [],
+        prev?.output.generic?.map((item, index, items) =>
+          index === items.length - 1 && item.streaming_metadata
+            ? {
+                ...item,
+                streaming_metadata: {
+                  ...item.streaming_metadata,
+                  stream_stopped: isCanceled || undefined,
+                },
+              }
+            : item
+        ) ?? [],
     },
   })
 );
