@@ -102,13 +102,13 @@ export interface PublicConfig extends Omit<
    * This is a factory for producing custom implementations of service desks. If this value is set, then this will
    * be used to create an instance of a {@link ServiceDesk} when the user attempts to connect to an agent.
    *
-   * If it is changed in the middle of a conversation (you should obviously avoid this) the conversation with the
-   * human agent will be disconnected.
+   * A new factory never cuts off a live human agent conversation: the running service desk stays until that
+   * conversation ends, and the new factory takes over after it. To switch desks at once, call
+   * `serviceDesk.endConversation()` before changing it.
    *
    * This factory is compared by reference. Provide a stable reference (for example
    * a module-level function or a memoized `useCallback`); a new function identity
-   * on every render is treated as a change and, while an agent chat is active, tears
-   * down and rebuilds the service desk connection.
+   * on every render is treated as a change, and rebuilds an idle service desk connection.
    */
   serviceDeskFactory?: (
     parameters: ServiceDeskFactoryParameters

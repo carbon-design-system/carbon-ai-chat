@@ -35,6 +35,8 @@ jest.mock('../../../src/shared/services/haa/HumanAgentServiceImpl', () => ({
 }));
 import createHumanAgentService from '../../../src/shared/services/haa/HumanAgentServiceImpl';
 import { withPublicState } from '../../test_helpers';
+import { endChat } from '../../../src/shared/store/humanAgentActions';
+import { waitFor } from '@testing-library/react';
 
 function createStore(initialState: ConversationState) {
   return createAppStore(
@@ -141,14 +143,84 @@ describe('human-agent serviceDeskFactory reference change', () => {
     expect(rebuilt.initialize).toHaveBeenCalledTimes(1);
   });
 
-  it('ends and rebuilds an active service', async () => {
+  it('keeps a live agent chat on its desk, and switches once it ends (#2353 O1, O2)', async () => {
     const { serviceManager, humanAgentService } = setup({
       hasInitialized: true,
       connected: true,
     });
     await applyFactoryChange(serviceManager);
 
-    expect(humanAgentService.endChat).toHaveBeenCalledTimes(1);
+    expect(humanAgentService.endChat).not.toHaveBeenCalled();
+    expect(createHumanAgentService).not.toHaveBeenCalled();
+    expect(serviceManager.humanAgentService).toBe(humanAgentService);
+
+    serviceManager.store.dispatch(endChat());
+    await waitFor(() =>
+      expect(createHumanAgentService).toHaveBeenCalledTimes(1)
+    );
+    expect(humanAgentService.endChat).not.toHaveBeenCalled();
+    const rebuilt = serviceManager.humanAgentService as unknown as {
+      initialize: jest.Mock;
+    };
+    expect(rebuilt).not.toBe(humanAgentService);
+    await waitFor(() => expect(rebuilt.initialize).toHaveBeenCalledTimes(1));
+  });
+
+  it('waits once however many times the factory changes during the chat', async () => {
+    const { serviceManager } = setup({ hasInitialized: true, connected: true });
+    await applyFactoryChange(serviceManager);
+    const prev = serviceManager.store.getState().config.public;
+    await applyConfigChangesDynamically(
+      prev,
+      { serviceDeskFactory: factoryA },
+      serviceManager
+    );
+    await applyConfigChangesDynamically(
+      serviceManager.store.getState().config.public,
+      { serviceDeskFactory: factoryB },
+      serviceManager
+    );
+
+    serviceManager.store.dispatch(endChat());
+    await waitFor(() =>
+      expect(createHumanAgentService).toHaveBeenCalledTimes(1)
+    );
+    await new Promise((resolve) => setTimeout(resolve, 20));
     expect(createHumanAgentService).toHaveBeenCalledTimes(1);
+  });
+
+  it('waits the same way when the factory is removed during the chat', async () => {
+    const { serviceManager, humanAgentService } = setup({
+      hasInitialized: true,
+      connected: true,
+    });
+    await applyConfigChangesDynamically(
+      serviceManager.store.getState().config.public,
+      {},
+      serviceManager
+    );
+    expect(serviceManager.humanAgentService).toBe(humanAgentService);
+    expect(humanAgentService.endChat).not.toHaveBeenCalled();
+  });
+
+  it('switches at once when the host ended the chat first (O5, O6)', async () => {
+    const { serviceManager, humanAgentService } = setup({
+      hasInitialized: true,
+      connected: true,
+    });
+    // `serviceDesk.endConversation()` ends the chat through the store.
+    serviceManager.store.dispatch(endChat());
+    await applyFactoryChange(serviceManager);
+    expect(createHumanAgentService).toHaveBeenCalledTimes(1);
+    expect(humanAgentService.endChat).not.toHaveBeenCalled();
+  });
+
+  it('leaves a service whose desk already came from the new factory', async () => {
+    const { serviceManager, humanAgentService } = setup({
+      hasInitialized: true,
+    });
+    Object.assign(humanAgentService, { serviceDeskFactory: factoryB });
+    await applyFactoryChange(serviceManager);
+    expect(createHumanAgentService).not.toHaveBeenCalled();
   });
 });

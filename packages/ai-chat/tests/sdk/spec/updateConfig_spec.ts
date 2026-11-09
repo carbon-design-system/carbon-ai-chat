@@ -17,6 +17,12 @@ import * as applyConfigModule from '../../../src/shared/services/applyConfig';
 import { createServiceManager } from '../../../src/shared/services/loadServices';
 import { DEFAULT_THEME_STATE } from '../../../src/shared/store/reducerUtils';
 import type { ChatSDKConfig } from '../../../src/types/config/ChatSDKConfig';
+import type {
+  ServiceDesk,
+  ServiceDeskCallback,
+} from '../../../src/types/config/ServiceDeskConfig';
+import { UserType } from '../../../src/types/messaging/Messages';
+import { waitFor } from '@testing-library/react';
 import type { PublicConfig } from '../../../src/types/config/PublicConfig';
 import type { ConversationConfig } from '../../../src/types/state/ConversationState';
 
@@ -158,5 +164,57 @@ describe('copies of the caller config (#1833 O6–O8)', () => {
     expect(stored.header.title).toBe('Before');
     expect(stored.onError).toBe(onError);
     await serviceManager.shutdown();
+  });
+});
+
+describe('a new desk factory waits for the agent chat (#2353 O3, O6)', () => {
+  function mockFactory(name: string, desks: string[]) {
+    const created: Array<{
+      endChat: jest.Mock;
+      callback: ServiceDeskCallback;
+    }> = [];
+    const factory = async (parameters: { callback: ServiceDeskCallback }) => {
+      desks.push(name);
+      const desk = {
+        getName: () => name,
+        startChat: jest.fn(async () => {}),
+        endChat: jest.fn(async () => {}),
+        sendMessageToAgent: jest.fn(async () => {}),
+      };
+      created.push({ endChat: desk.endChat, callback: parameters.callback });
+      return desk as unknown as ServiceDesk;
+    };
+    return { factory, created };
+  }
+
+  it('keeps the live chat on its desk until endConversation, then switches', async () => {
+    const desks: string[] = [];
+    const first = mockFactory('first', desks);
+    const second = mockFactory('second', desks);
+    const handle = await chat({
+      messaging: { skipWelcome: true },
+      serviceDeskFactory: first.factory,
+    });
+    expect(desks).toEqual(['first']);
+    const manager = chatOf(handle);
+    (manager.humanAgentService as any).chatStarted = true;
+    await first.created[0].callback.agentJoined({
+      id: 'dana',
+      nickname: 'Dana',
+      user_type: UserType.HUMAN,
+    });
+    expect(handle.state.get().humanAgent.isConnected).toBe(true);
+
+    await handle.updateConfig({
+      messaging: { skipWelcome: true },
+      serviceDeskFactory: second.factory,
+    });
+    expect(desks).toEqual(['first']);
+    expect(first.created[0].endChat).not.toHaveBeenCalled();
+    expect(handle.state.get().humanAgent.isConnected).toBe(true);
+
+    await handle.serviceDesk.endConversation();
+    expect(first.created[0].endChat).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(desks).toEqual(['first', 'second']));
   });
 });

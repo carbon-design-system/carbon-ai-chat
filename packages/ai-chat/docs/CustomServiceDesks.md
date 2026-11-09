@@ -61,7 +61,7 @@ class MyServiceDesk {
 
 ## Keep the service desk factory stable
 
-Changing `serviceDeskFactory` at runtime ends any connecting or active human‑agent chat and reinitializes the integration, so prefer a stable factory identity.
+A new `serviceDeskFactory` never ends a connecting or active human‑agent chat. The running integration stays until that chat ends, then the new factory takes over. To switch now, call `instance.serviceDesk.endConversation()` before you change it. The factory is compared by reference, and a new one rebuilds an idle integration, so prefer a stable factory identity.
 
 React (stable via useCallback):
 
