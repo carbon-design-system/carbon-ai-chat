@@ -61,12 +61,15 @@ class ChatInstanceService {
     this.serviceManager = serviceManager;
   }
 
-  /** @see HydrationService.hydrateChat */
+  /**
+   * @see HydrationService.hydrateChat. A failure was already reported through
+   * `onError`; only `createChatSDK` acts on it, so this resolves without it.
+   */
   async hydrateChat(
     alternateWelcomeRequest?: MessageRequest,
     alternateOptions?: SendOptions
-  ) {
-    return this.serviceManager.hydrationService.hydrateChat(
+  ): Promise<void> {
+    await this.serviceManager.hydrationService.hydrateChat(
       alternateWelcomeRequest,
       alternateOptions
     );
