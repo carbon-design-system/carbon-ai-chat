@@ -7,8 +7,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import '../src/carousel';
-import '../../card/src/card';
+import '../../aichat-card/index.js';
+import '../../aichat-carousel/index.js';
+
 import { html } from 'lit';
 import styles from './story-styles.scss?lit';
 import { map } from 'lit/directives/map.js';

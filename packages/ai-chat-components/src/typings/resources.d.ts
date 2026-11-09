@@ -6,4 +6,8 @@
  */
 
 declare module '*.scss';
-declare module '*.scss?lit';
+declare module '*.scss?lit' {
+  import type { CSSResult } from 'lit';
+  const styles: CSSResult;
+  export default styles;
+}

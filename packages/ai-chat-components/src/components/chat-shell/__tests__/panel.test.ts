@@ -7,6 +7,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import '../../aichat-shell/index.js';
+
 import { html, fixture, expect } from '@open-wc/testing';
 import CDSAIChatPanel from '../src/panel.js';
 

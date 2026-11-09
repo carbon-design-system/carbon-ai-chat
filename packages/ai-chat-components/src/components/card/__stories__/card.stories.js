@@ -7,10 +7,10 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import '../../aichat-card/index.js';
+
 // https://storybook.js.org/docs/essentials/controls#conditional-controls
 
-import '../src/card';
-import '../src/card-footer';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import styles from './story-styles.scss?lit';

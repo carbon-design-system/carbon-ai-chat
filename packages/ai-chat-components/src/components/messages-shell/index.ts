@@ -7,7 +7,4 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import './src/messages-shell.js';
-
-export { default as CDSAIChatMessagesShell } from './src/messages-shell.js';
-export type { MessagesShellScrollDetail } from './src/messages-shell.js';
+export * from '../aichat-messages-shell/index.js';

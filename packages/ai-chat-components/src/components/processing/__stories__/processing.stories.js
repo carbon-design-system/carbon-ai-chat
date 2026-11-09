@@ -7,7 +7,8 @@
  *  @license
  */
 
-import '../src/processing';
+import '../../aichat-processing/index.js';
+
 import { html } from 'lit';
 
 export default {

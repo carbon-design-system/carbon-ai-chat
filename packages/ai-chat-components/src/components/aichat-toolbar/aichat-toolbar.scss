@@ -1,0 +1,111 @@
+/*
+ *  Copyright IBM Corp. 2025, 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+@use '../../globals/scss/vars' as *;
+@use '../../globals/scss/modifiers' as *;
+@use '@carbon/styles/scss/theme';
+@use '@carbon/layout';
+@use '@carbon/styles/scss/type';
+
+$block-class: #{$prefix}-aichat-toolbar;
+
+/* Toolbar styles */
+:host([data-measuring]) {
+  visibility: hidden;
+}
+
+:host {
+  @include rounded-modifiers;
+
+  display: block;
+  border-start-end-radius: var(--cds-aichat-border-radius, 0);
+  border-start-start-radius: var(--cds-aichat-border-radius, 0);
+  max-inline-size: 100%;
+  min-inline-size: 0;
+
+  .#{$block-class} {
+    display: flex;
+    block-size: 100%;
+    inline-size: 100%;
+    max-inline-size: 100%;
+    min-block-size: layout.$spacing-08;
+    min-inline-size: 0;
+
+    &-overflow-icon {
+      // Web components ghost icon only button bug override
+      align-self: unset;
+      color: theme.$icon-primary;
+    }
+  }
+
+  .#{$block-class}__navigation {
+    display: flex;
+    align-items: center;
+  }
+
+  .#{$block-class}__title {
+    @include type.type-style('body-compact-01');
+
+    flex: 1;
+    margin-block: auto;
+    margin-inline-end: auto;
+    min-inline-size: layout.$spacing-10;
+    padding-inline-end: layout.$spacing-04;
+    padding-inline-start: var(
+      --#{$prefix}-aichat-toolbar-title-padding-inline-start,
+      #{layout.$spacing-04}
+    );
+  }
+
+  // Style for name text - this needs to be at the host level to style slotted content
+  .#{$block-class}__name {
+    font-weight: bold;
+  }
+
+  .#{$block-class}__navigation:has(::slotted(*)) ~ .#{$block-class}__title {
+    padding-inline-start: 0;
+  }
+
+  .#{$block-class}__fixed-actions {
+    margin-block: auto;
+  }
+
+  .#{$block-class}__start,
+  .#{$block-class}__end {
+    display: flex;
+    flex: 1 0 50%;
+    min-inline-size: 0;
+  }
+
+  .#{$block-class}__end {
+    position: relative;
+  }
+
+  .#{$block-class}__actions-container {
+    display: flex;
+    flex: 1;
+    justify-content: end;
+    min-inline-size: 0;
+  }
+
+  ::slotted([slot='navigation']) {
+    display: flex;
+    align-items: center;
+    margin-block: auto;
+  }
+
+  ::slotted([slot='decorator']) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-block: auto;
+    min-block-size: layout.$spacing-08;
+    min-inline-size: layout.$spacing-08;
+  }
+}

@@ -9,7 +9,7 @@
 
 import { createComponent } from '@lit/react';
 import React from 'react';
-import CdsAiChatChatHeader from '../components/chat-shell/src/chat-header.js';
+import { CdsAiChatChatHeader } from '../components/aichat-shell/index.js';
 import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 import { transformReactIconToCarbonIcon } from '../globals/utils/iconTransform.js';
 import type { ToolbarAction } from './toolbar.js';
@@ -93,7 +93,7 @@ export interface ChatHeaderHandle {
 // Base chat header component from @lit/react
 const BaseChatHeader = withWebComponentBridge(
   createComponent({
-    tagName: 'cds-aichat-chat-header',
+    tagName: CdsAiChatChatHeader.is,
     elementClass: CdsAiChatChatHeader,
     react: React,
   })

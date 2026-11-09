@@ -1,0 +1,133 @@
+/**
+ * @license
+ *
+ * Copyright IBM Corp. 2026
+ *
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/**
+ * `carbonAutocomplete` factory. Wraps `@tiptap/suggestion` directly (no
+ * Mention node). Activates whenever the input has any non-empty text (the
+ * legacy autocomplete contract).
+ *
+ * Dispatches `cds-aichat-trigger-change` with `type: "autocomplete"` from
+ * the suggestion-render lifecycle via the shared `dispatchTriggerChange`
+ * helper. Selection is routed through `AutocompleteController.select()` —
+ * the `@tiptap/suggestion` `command` hook is intentionally unused.
+ */
+
+import { Extension } from '@tiptap/core';
+import { PluginKey } from '@tiptap/pm/state';
+import Suggestion from '@tiptap/suggestion';
+
+import { dispatchTriggerChange } from './trigger-utils.js';
+import type { SuggestionItem } from './types.js';
+
+/**
+ * A trigger character that autocomplete stands down for, so a co-installed
+ * mention or command picker wins while its trigger is active. Pass a list of
+ * these as the only argument to {@link carbonAutocomplete}.
+ */
+export interface ExcludedTrigger {
+  /** The character to stand down for, such as `"@"` or `"/"`. */
+  char: string;
+  /**
+   * Where that character has to sit. `"anywhere"` stands down for any word
+   * starting with it; `"start"` stands down only when that word starts the
+   * line. Mirrors the picker's own
+   * {@link TriggerSuggestionConfig.triggerPosition}.
+   */
+  position: 'anywhere' | 'start';
+}
+
+export function carbonAutocomplete(
+  excludeTriggers: ExcludedTrigger[] = []
+): Extension {
+  const pluginKey = new PluginKey('carbonAutocompleteSuggestion');
+
+  return Extension.create({
+    name: 'carbonAutocomplete',
+
+    addProseMirrorPlugins() {
+      const editor = this.editor;
+      let lastQuery: string | null = null;
+
+      return [
+        Suggestion<SuggestionItem>({
+          editor,
+          char: '',
+          pluginKey,
+          // Match any non-empty text as the autocomplete query.
+          allowedPrefixes: null,
+          findSuggestionMatch: ({ $position }) => {
+            const text = $position.parent.textBetween(
+              0,
+              $position.parentOffset,
+              '\n',
+              '\0'
+            );
+            if (!text || text.length === 0) {
+              return null;
+            }
+            // Yield to co-installed mention/command extensions so they win
+            // when their trigger char is the active (trailing) word.
+            const trailing = /\S+$/.exec(text);
+            if (trailing) {
+              const trailingWord = trailing[0];
+              for (const excluded of excludeTriggers) {
+                if (!trailingWord.startsWith(excluded.char)) {
+                  continue;
+                }
+                if (excluded.position === 'anywhere') {
+                  return null;
+                }
+                // text matches an excluded trigger
+                if (text === trailingWord) {
+                  return null;
+                }
+              }
+            }
+            // Use the full paragraph text as the query so spaces are included.
+            const matchStart = $position.start();
+            return {
+              range: {
+                from: matchStart,
+                to: $position.start() + $position.parentOffset,
+              },
+              query: text,
+              text,
+            };
+          },
+          render: () => ({
+            onStart: (props) => {
+              lastQuery = props.query;
+              dispatchTriggerChange(props.editor, {
+                type: 'autocomplete',
+                query: props.query,
+                triggerOffset: props.range.from,
+              });
+            },
+            onUpdate: (props) => {
+              if (props.query === lastQuery) {
+                return;
+              }
+              lastQuery = props.query;
+              dispatchTriggerChange(props.editor, {
+                type: 'autocomplete',
+                query: props.query,
+                triggerOffset: props.range.from,
+              });
+            },
+            onExit: (props) => {
+              lastQuery = null;
+              dispatchTriggerChange(props.editor, null, 'autocomplete');
+            },
+            onKeyDown: () => false,
+          }),
+        }),
+      ];
+    },
+  });
+}

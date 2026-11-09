@@ -9,12 +9,12 @@
 
 import { createComponent } from '@lit/react';
 import React from 'react';
-import ErrorMessage from '../components/prompt-line/src/error-message.js';
+import { ErrorMessage } from '../components/aichat-prompt-line/index.js';
 import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
 const CDSAIChatErrorMessage = withWebComponentBridge(
   createComponent({
-    tagName: 'cds-aichat-error-message',
+    tagName: ErrorMessage.is,
     elementClass: ErrorMessage,
     react: React,
   })

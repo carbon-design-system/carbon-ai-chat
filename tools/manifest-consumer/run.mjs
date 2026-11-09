@@ -114,8 +114,18 @@ const elements = manifest.modules.flatMap((module) =>
           entry.kind === 'js' && entry.declaration.name === declaration.name
       );
       assert.ok(exported, `Missing constructor export: ${declaration.name}`);
+      // Pure class modules leave registration to their family barrel.
+      const registration = manifest.modules.find((entry) =>
+        entry.exports?.some(
+          (item) =>
+            item.kind === 'custom-element-definition' &&
+            item.name === declaration.tagName
+        )
+      );
+      assert.ok(registration, `Missing registration: ${declaration.tagName}`);
       return {
         module: module.path,
+        registration: registration.path,
         tag: declaration.tagName,
         name: exported.name,
       };
@@ -156,6 +166,10 @@ try {
         const result = await page.evaluate(
           async ({ element, tree, packageName }) => {
             const path = element.module.replace(/^es\//, `${tree}/`);
+            const registration = element.registration.replace(
+              /^es\//,
+              `${tree}/`
+            );
             const tag =
               tree === 'es'
                 ? element.tag
@@ -167,8 +181,12 @@ try {
               `/node_modules/${packageName}/${path}`
             );
             const constructor = exports[element.name];
+            if (customElements.get(tag)) {
+              throw new Error(`The pure class import registered ${tag}.`);
+            }
+            await import(`/node_modules/${packageName}/${registration}`);
             if (customElements.get(tag) !== constructor) {
-              throw new Error(`The class import did not register ${tag}.`);
+              throw new Error(`The barrel import did not register ${tag}.`);
             }
             const instance = document.createElement(tag);
             if (!(instance instanceof constructor)) {

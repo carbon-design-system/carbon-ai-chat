@@ -40,7 +40,7 @@
      Container for all explainability popover content
      ============================================================================ */
 
-  .#{$prefix}-explainability-popover--content {
+  .#{$prefix}-aichat-explainability-popover--content {
     display: flex;
     flex-direction: column;
     gap: layout.$spacing-06;
@@ -52,7 +52,7 @@
      Header containing eyebrow label, confidence score, title, and description
      ============================================================================ */
 
-  .#{$prefix}-explainability-popover--content__header {
+  .#{$prefix}-aichat-explainability-popover--content__header {
     display: flex;
     flex-direction: column;
     gap: layout.$spacing-03;
@@ -63,7 +63,7 @@
      Top row containing label and optional tag/badge
      ============================================================================ */
 
-  .#{$prefix}-explainability-popover--content__eyebrow-row {
+  .#{$prefix}-aichat-explainability-popover--content__eyebrow-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -74,7 +74,7 @@
      Secondary text label (eyebrow text)
      ============================================================================ */
 
-  .#{$prefix}-explainability-popover--content__label {
+  .#{$prefix}-aichat-explainability-popover--content__label {
     @include type.type-style('label-02');
 
     color: theme.$text-secondary;
@@ -85,7 +85,7 @@
      Main heading for the explainability content
      ============================================================================ */
 
-  .#{$prefix}-explainability-popover--content__title {
+  .#{$prefix}-aichat-explainability-popover--content__title {
     @include type.type-style('heading-04');
   }
 
@@ -94,7 +94,7 @@
      Text description below header title
      ============================================================================ */
 
-  .#{$prefix}-explainability-popover--content__description {
+  .#{$prefix}-aichat-explainability-popover--content__description {
     @include type.type-style('body-01');
 
     color: theme.$text-secondary;
@@ -106,7 +106,7 @@
      ============================================================================ */
 
   // Add top spacing to all sections except the first one
-  .#{$prefix}-explainability-popover--content__section {
+  .#{$prefix}-aichat-explainability-popover--content__section {
     display: flex;
     flex-direction: column;
     border-block-start: 1px solid theme.$border-subtle-00;
@@ -115,25 +115,25 @@
   }
 
   // Extra padding after last section
-  .#{$prefix}-explainability-popover--content__section:last-of-type {
+  .#{$prefix}-aichat-explainability-popover--content__section:last-of-type {
     padding-block-end: layout.$spacing-06;
   }
 
   // Subheadings within explainability content sections
-  .#{$prefix}-explainability-popover--content__section h3,
-  .#{$prefix}-explainability-popover--content__section h4,
-  .#{$prefix}-explainability-popover--content__section h5,
-  .#{$prefix}-explainability-popover--content__section h6 {
+  .#{$prefix}-aichat-explainability-popover--content__section h3,
+  .#{$prefix}-aichat-explainability-popover--content__section h4,
+  .#{$prefix}-aichat-explainability-popover--content__section h5,
+  .#{$prefix}-aichat-explainability-popover--content__section h6 {
     @include type.type-style('body-01');
 
     color: theme.$text-secondary;
   }
 
-  .#{$prefix}-explainability-popover--content__section p {
+  .#{$prefix}-aichat-explainability-popover--content__section p {
     @include type.type-style('body-01');
   }
 
-  .#{$prefix}-explainability-popover--content__section
+  .#{$prefix}-aichat-explainability-popover--content__section
     .cds--list--ordered
     .cds--list__item::before {
     position: static;
@@ -146,7 +146,7 @@
      Container for action buttons in the popover
      ============================================================================ */
 
-  .#{$prefix}-explainability-popover--actions {
+  .#{$prefix}-aichat-explainability-popover--actions {
     display: flex;
   }
 }
