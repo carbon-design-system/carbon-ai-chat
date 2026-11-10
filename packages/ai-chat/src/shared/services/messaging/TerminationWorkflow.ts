@@ -399,11 +399,15 @@ class TerminationWorkflow {
         );
       }
       if (reason === CancellationReason.TIMEOUT) {
+        const timeoutError = {
+          errorType: OnErrorType.MESSAGE_COMMUNICATION,
+          message: reason,
+          otherData: undefined as unknown,
+          messageID: pendingRequest.message.id,
+        };
         if (logError) {
           this.serviceManager.messageCoordinator.fail(
-            {
-              messageID: pendingRequest.message.id,
-            },
+            timeoutError,
             pendingRequest.generation
           );
         }
@@ -414,11 +418,7 @@ class TerminationWorkflow {
         if (logError) {
           // Preserve the callback's microtask boundary after rejecting the request.
           await Promise.resolve();
-          this.serviceManager.actions.errorOccurred({
-            errorType: OnErrorType.MESSAGE_COMMUNICATION,
-            message: reason,
-            otherData: undefined,
-          });
+          this.serviceManager.actions.errorOccurred(timeoutError);
         }
       } else if (pendingRequest.isStreaming) {
         // No system message here: the host marks a stopped stream itself with

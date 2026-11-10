@@ -33,4 +33,10 @@ export interface ChatSDKErrorData {
    * Extra data about the error, such as a stack trace for a thrown error.
    */
   otherData?: unknown;
+
+  /**
+   * The ID of the request whose turn failed, when the error belongs to a turn. Errors that don't,
+   * such as a failed history load, leave it out.
+   */
+  messageID?: string;
 }

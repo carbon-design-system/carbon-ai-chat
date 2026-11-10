@@ -311,7 +311,10 @@ class ChatInstanceService {
   }
 
   conversationErrorOccurred(error: OnErrorData, generation?: number) {
-    const failure = this.serviceManager.messageCoordinator.fail({}, generation);
+    const failure = this.serviceManager.messageCoordinator.fail(
+      error,
+      generation
+    );
     if (failure) {
       this.errorOccurred(error);
     }

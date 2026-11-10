@@ -28,6 +28,15 @@ import {
   setupBeforeEach,
 } from '../../test_helpers';
 
+/** Error data for a failure a spec creates directly. */
+function failedWith(messageID?: string) {
+  return {
+    errorType: OnErrorType.MESSAGE_COMMUNICATION,
+    message: 'failed',
+    ...(messageID && { messageID }),
+  };
+}
+
 describe('conversation status', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
@@ -73,7 +82,7 @@ describe('conversation status', () => {
     expect(instance.getState().status).toBe('ready');
   });
 
-  it('publishes failure status without freezing the existing callback payload', async () => {
+  it('publishes failure status and a frozen copy of the error, without freezing the callback payload', async () => {
     const onError = jest.fn();
     const { instance, serviceManager } =
       await renderChatAndGetInstanceWithStore({
@@ -92,7 +101,12 @@ describe('conversation status', () => {
     expect(Object.isFrozen(error)).toBe(false);
     expect(Object.isFrozen(error.otherData)).toBe(false);
     expect(instance.state.get().status).toBe('error');
-    expect(instance.state.get()).not.toHaveProperty('error');
+    const stateError = instance.state.get().error;
+    expect(stateError).toEqual(error);
+    expect(stateError).not.toBe(error);
+    expect(Object.isFrozen(stateError)).toBe(true);
+    expect(stateError.otherData).toBe(error.otherData);
+    expect(instance.getState().error).toBe(stateError);
   });
 
   it('keeps a rejected welcome send as one message error with its request ID', async () => {
@@ -121,8 +135,11 @@ describe('conversation status', () => {
     expect(
       serviceManager.messageCoordinator.hasFailureForRequest(welcomeRequestID)
     ).toBe(true);
-    expect(onError.mock.calls[0][0]).not.toHaveProperty('messageID');
-    expect(instance.state.get()).not.toHaveProperty('error');
+    expect(onError.mock.calls[0][0]).toHaveProperty(
+      'messageID',
+      welcomeRequestID
+    );
+    expect(instance.state.get().error).toEqual(onError.mock.calls[0][0]);
   });
 
   it('ignores stale completion and errors after restart', async () => {
@@ -136,16 +153,11 @@ describe('conversation status', () => {
       lifecycle.restart(true);
       lifecycle.requestStarted('new-request');
       lifecycle.requestFinished('old-request', staleGeneration);
-      lifecycle.fail(
-        {
-          messageID: 'old-request',
-        },
-        staleGeneration
-      );
+      lifecycle.fail(failedWith('old-request'), staleGeneration);
     });
 
     expect(instance.getState().status).toBe('submitted');
-    expect(instance.getState()).not.toHaveProperty('error');
+    expect(instance.getState().error).toBeNull();
   });
 
   it('keeps other responses streaming when an ERROR upsert finishes one response', async () => {
@@ -175,7 +187,7 @@ describe('conversation status', () => {
       () => ({ id: 'response-b', output: { generic: [] } })
     );
     expect(instance.getState().status).toBe('ready');
-    expect(instance.getState()).not.toHaveProperty('error');
+    expect(instance.getState().error).toBeNull();
     expect(onError).not.toHaveBeenCalled();
   });
 
@@ -386,7 +398,7 @@ describe('conversation status', () => {
       await Promise.all(queuedChunks);
 
       expect(instance.state.get().status).toBe('ready');
-      expect(instance.state.get()).not.toHaveProperty('error');
+      expect(instance.state.get().error).toBeNull();
       expect(
         instance.state.get().messages.map((message) => message.id)
       ).toEqual(
@@ -798,7 +810,7 @@ describe('conversation status', () => {
     expect(instance.state.get().status).toBe('ready');
   });
 
-  it('preserves mutable legacy send-error data without exposing an error snapshot', async () => {
+  it('preserves mutable legacy send-error data and exposes a frozen copy as state.error', async () => {
     const onError = jest.fn();
     const failure = new Error('failed');
     const config = createBaseConfig();
@@ -813,15 +825,18 @@ describe('conversation status', () => {
     jest.spyOn(console, 'error').mockImplementation(() => undefined);
     await expect(instance.send('question')).rejects.toThrow('{}');
     expect(onError).toHaveBeenCalledTimes(1);
+    const requestID = instance.state.get().messages[0].id;
     expect(onError.mock.calls[0][0]).toEqual({
       errorType: OnErrorType.MESSAGE_COMMUNICATION,
       message: 'An error occurred sending a message',
       otherData: '{}',
+      messageID: requestID,
     });
     expect(Object.isFrozen(onError.mock.calls[0][0])).toBe(false);
     expect(Object.isFrozen(failure)).toBe(false);
-    expect(instance.state.get()).not.toHaveProperty('error');
-    expect(instance.getState()).not.toHaveProperty('error');
+    expect(instance.state.get().error).toEqual(onError.mock.calls[0][0]);
+    expect(Object.isFrozen(instance.state.get().error)).toBe(true);
+    expect(instance.getState().error).toBe(instance.state.get().error);
     expect(instance.state.get().status).toBe('error');
   });
 
@@ -857,7 +872,7 @@ describe('conversation status', () => {
         messaging: { skipWelcome: true },
       });
     await instance.changeView(ViewType.MAIN_WINDOW);
-    act(() => serviceManager.messageCoordinator.fail({}));
+    act(() => serviceManager.messageCoordinator.fail(failedWith()));
     const statuses: string[] = [];
     const unsubscribe = instance.state.select(
       (state) => state.status,
@@ -866,7 +881,7 @@ describe('conversation status', () => {
     await instance.restartConversation();
     unsubscribe();
     expect(statuses).toEqual(['loading', 'ready']);
-    expect(instance.state.get()).not.toHaveProperty('error');
+    expect(instance.state.get().error).toBeNull();
   });
 
   it('starts the next send submitted and ignores unrelated completed responses', async () => {
@@ -884,7 +899,7 @@ describe('conversation status', () => {
         },
       });
     await serviceManager.actions.hydrateChat();
-    act(() => serviceManager.messageCoordinator.fail({}));
+    act(() => serviceManager.messageCoordinator.fail(failedWith()));
     const statuses: string[] = [];
     const unsubscribe = instance.state.select(
       (state) => state.status,

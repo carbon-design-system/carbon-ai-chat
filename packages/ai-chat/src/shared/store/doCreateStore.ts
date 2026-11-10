@@ -67,6 +67,7 @@ function createInitialState(config: ConversationAppConfig): ConversationState {
 
     isRestarting: false,
     conversationStatus: 'ready',
+    conversationError: null,
 
     // Input state
     assistantInputState,

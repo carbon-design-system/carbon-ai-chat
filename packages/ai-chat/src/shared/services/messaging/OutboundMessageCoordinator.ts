@@ -124,16 +124,22 @@ class OutboundMessageCoordinator {
       this.addErrorMessage();
     }
 
-    this.serviceManager.messageCoordinator.fail(
-      { messageID: pendingRequest.message.id },
+    const { messageCoordinator } = this.serviceManager;
+    const messageID = pendingRequest.message.id;
+    const sendError = {
+      errorType: OnErrorType.MESSAGE_COMMUNICATION,
+      message: 'An error occurred sending a message',
+      otherData: resultText,
+      messageID,
+    };
+    // An error that was already reported, such as a failed chunk, stays the one state.error holds.
+    messageCoordinator.fail(
+      (!reportSendError && messageCoordinator.errorForRequest(messageID)) ||
+        sendError,
       pendingRequest.generation
     );
     if (reportSendError) {
-      this.serviceManager.actions.errorOccurred({
-        errorType: OnErrorType.MESSAGE_COMMUNICATION,
-        message: 'An error occurred sending a message',
-        otherData: resultText,
-      });
+      this.serviceManager.actions.errorOccurred(sendError);
     }
 
     // A `customSendMessage` that throws mid-stream never sends a closing chunk, so settle

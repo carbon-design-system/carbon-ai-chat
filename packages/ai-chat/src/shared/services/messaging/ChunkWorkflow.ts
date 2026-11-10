@@ -405,15 +405,17 @@ class ChunkWorkflow {
         );
       }
       if (terminalConversationFailure) {
-        this.serviceManager.messageCoordinator.fail({
-          messageID: requestID ?? messageID,
-        });
-        requestErrors?.reportedErrors.add(error);
-        this.serviceManager.actions.errorOccurred({
+        const { messageCoordinator } = this.serviceManager;
+        const failedID = requestID ?? messageID;
+        const chunkError = {
           errorType: OnErrorType.MESSAGE_COMMUNICATION,
           message: 'The chat could not process a streamed response.',
           otherData: error,
-        });
+          messageID: messageCoordinator.responseRequestID(failedID) ?? failedID,
+        };
+        messageCoordinator.fail(chunkError);
+        requestErrors?.reportedErrors.add(error);
+        this.serviceManager.actions.errorOccurred(chunkError);
       }
       this.advanceChunkQueue(chunkPromise, { error });
     }

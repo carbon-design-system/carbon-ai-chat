@@ -215,6 +215,11 @@ class ConversationState {
     return failure;
   }
 
+  /** The current failure token, or `null`. */
+  getFailure() {
+    return this.failure;
+  }
+
   hasFailureForRequest(messageID: string) {
     return Boolean(
       this.failure &&

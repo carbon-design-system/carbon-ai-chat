@@ -65,6 +65,7 @@ export const sdkErrorFields: Record<keyof ChatSDKErrorData, true> = {
   errorType: true,
   message: true,
   otherData: true,
+  messageID: true,
 };
 
 // SDK callbacks receive the conversation; a view member fails to compile.

@@ -607,7 +607,12 @@ class HumanAgentServiceImpl implements HumanAgentService {
         }
         messageFailed = true;
         failure = serviceManager.messageCoordinator.fail(
-          { messageID: originalMessage.id },
+          {
+            errorType: OnErrorType.MESSAGE_COMMUNICATION,
+            message:
+              'The service desk did not confirm that the message was sent, so the chat marked it failed.',
+            messageID: originalMessage.id,
+          },
           generation
         );
       };
