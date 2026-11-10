@@ -482,6 +482,8 @@ export function renderTokenTree(
       codeSnippetShowLessText,
       codeSnippetShowMoreText,
       codeSnippetCopyButtonTooltipContent,
+      codeSnippetFeedback,
+      codeSnippetFeedbackTimeout,
       codeSnippetGetLineCountText = defaultLineCountText,
       codeSnippetAriaLabelReadOnly,
       codeSnippetAriaLabelEditable,
@@ -497,6 +499,8 @@ export function renderTokenTree(
           .showLessText=${codeSnippetShowLessText}
           .showMoreText=${codeSnippetShowMoreText}
           .copyButtonTooltipContent=${codeSnippetCopyButtonTooltipContent}
+          .feedback=${codeSnippetFeedback}
+          .feedbackTimeout=${codeSnippetFeedbackTimeout}
           .getLineCountText=${codeSnippetGetLineCountText}
           .ariaLabelReadOnly=${codeSnippetAriaLabelReadOnly}
           .ariaLabelEditable=${codeSnippetAriaLabelEditable}
