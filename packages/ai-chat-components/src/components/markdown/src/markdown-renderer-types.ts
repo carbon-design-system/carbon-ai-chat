@@ -372,6 +372,8 @@ export interface RenderTokenTreeOptions {
   codeSnippetHighlight?: boolean;
   /** Feedback text shown after copying. */
   codeSnippetFeedback?: string;
+  /** The number in milliseconds to determine how long the feedback tooltip should remain. */
+  codeSnippetFeedbackTimeout?: number;
   /** Text for show less button. */
   codeSnippetShowLessText?: string;
   /** Text for show more button. */
