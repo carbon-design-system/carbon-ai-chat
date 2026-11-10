@@ -1,0 +1,72 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+@use '../../../globals/scss/vars' as *;
+@use '@carbon/layout';
+@use '@carbon/styles/scss/components/button/vars' as button;
+@use '@carbon/styles/scss/type';
+
+$block-class: #{$prefix}-user-avatar;
+
+:host(#{$block-class}) {
+  display: inline-block;
+  flex-shrink: 0;
+  vertical-align: middle;
+  @include type.type-style('body-01');
+}
+
+.#{$block-class}__avatar {
+  display: flex;
+  overflow: hidden;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  block-size: layout.$spacing-07;
+  inline-size: layout.$spacing-07;
+}
+
+.#{$block-class}__image {
+  block-size: 100%;
+  inline-size: 100%;
+  object-fit: cover;
+}
+
+.#{$block-class}__initial {
+  box-sizing: border-box;
+  padding: layout.$spacing-01;
+  border: button.$button-border-width solid currentcolor;
+  border-radius: 50%;
+  background-color: transparent;
+  block-size: 100%;
+  font-weight: bold;
+  inline-size: 100%;
+}
+
+.#{$block-class}__letter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  block-size: 100%;
+  line-height: 1;
+  text-align: center;
+}
+
+.#{$block-class}__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  block-size: 100%;
+  inline-size: 100%;
+}
+
+.#{$block-class}__icon-svg {
+  block-size: 100%;
+  fill: currentcolor;
+  inline-size: 100%;
+}
