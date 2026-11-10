@@ -82,19 +82,23 @@ export interface ChatSDKInstanceMessaging {
    * event, then aborts the turn's `customSendMessage` signal with
    * {@link CancellationReason.STOP_STREAMING}.
    *
-   * A turn is active while `state.get().status` is `'submitted'` or `'streaming'`. A stop works
-   * on any active turn, even one whose stream isn't marked cancellable.
+   * A turn is active from the time a message is sent until its response stops streaming, which
+   * you usually see as `state.get().status` being `'submitted'` or `'streaming'`. A stop works on
+   * any active turn, even one whose stream isn't marked cancellable. Messages to a human agent
+   * aren't turns, so a stop leaves them alone.
    *
    * The stop settles the turn at once: `status` returns to `'ready'`, and the stopped turn's
    * {@link ChatSDKInstanceMessaging.send} promise resolves. Content already streamed stays in the
    * conversation. Chunks that arrive for the stopped turn afterward are dropped. An
    * `upsertMessage` call still writes, because it's your own write, but it doesn't make the turn
-   * active again. Queued messages go out once your `customSendMessage` for the stopped turn
-   * returns, so return when its signal aborts.
+   * active again. Queued messages still go out.
    *
    * Resolves once the abort signal is delivered, without waiting for your `customSendMessage`
    * to return. With no active turn, it resolves at once, fires no event, and changes nothing.
-   * Calls made while a stop is running share it, so the turn is stopped once. It never rejects.
+   * Calls made while a stop is running share it, so the turn is stopped once. It never rejects:
+   * if a `stopStreaming` handler throws, the error is logged and the turn still stops. If a handler
+   * ends the turn itself, or the conversation restarts while handlers run, nothing more is
+   * stopped.
    *
    * @example Stop the response from your own button
    * ```ts

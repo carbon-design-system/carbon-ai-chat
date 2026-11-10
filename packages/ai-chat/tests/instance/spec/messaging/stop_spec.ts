@@ -14,6 +14,9 @@
 
 import { waitFor } from '@testing-library/react';
 import { requestStopFromInput } from '../../../../src/shared/services/assistantInputCommands';
+import createHumanAgentService from '../../../../src/shared/services/haa/HumanAgentServiceImpl';
+import actions from '../../../../src/shared/store/actions';
+import type { ServiceDesk } from '../../../../src/types/config/ServiceDeskConfig';
 import { resolvablePromise } from '../../../../src/shared/utils/resolvablePromise';
 import {
   CancellationReason,
@@ -48,33 +51,32 @@ interface Turn {
  */
 function streamingHost(
   stream: Stream,
-  {
-    cancellable,
-    returnOnAbort,
-  }: { cancellable?: boolean; returnOnAbort?: boolean } = {}
+  { cancellable, silent }: { cancellable?: boolean; silent?: boolean } = {}
 ) {
   const turns: Turn[] = [];
   const log: string[] = [];
+  /** Ends every turn. */
   const finish = resolvablePromise<void>();
+  /** One per turn, to end a single turn. */
+  const holds: ReturnType<typeof resolvablePromise<void>>[] = [];
   const customSendMessage = async (
     request: MessageRequest,
     { signal }: { signal: AbortSignal },
     instance: ChatInstance
   ) => {
     turns.push({ request, signal });
-    signal.addEventListener('abort', () => {
-      log.push(`abort ${signal.reason}`);
-      if (returnOnAbort) {
-        finish.doResolve();
-      }
-    });
+    const hold = resolvablePromise<void>();
+    holds.push(hold);
+    signal.addEventListener('abort', () => log.push(`abort ${signal.reason}`));
     const responseID = `response-${turns.length}`;
-    await writePartial(instance, stream, request, responseID, 'Partial', {
-      cancellable,
-    });
-    await finish;
+    if (!silent) {
+      await writePartial(instance, stream, request, responseID, 'Partial', {
+        cancellable,
+      });
+    }
+    await Promise.race([finish, hold]);
   };
-  return { turns, log, finish, customSendMessage };
+  return { turns, log, finish, holds, customSendMessage };
 }
 
 async function writePartial(
@@ -109,12 +111,15 @@ async function writePartial(
   );
 }
 
-async function chatWith(host: ReturnType<typeof streamingHost>) {
+async function chatWith(
+  host: ReturnType<typeof streamingHost>,
+  { showStopButtonImmediately = true } = {}
+) {
   const config: PublicConfig = {
     ...createBaseConfig(),
     messaging: {
       skipWelcome: true,
-      showStopButtonImmediately: true,
+      showStopButtonImmediately,
       customSendMessage: host.customSendMessage,
     },
   };
@@ -217,7 +222,28 @@ describe('messaging.stop (#1816)', () => {
     expect(instance.state.get()).toBe(before);
   });
 
-  it('never rejects, even when a stopStreaming handler throws (O5)', async () => {
+  it('never rejects, and still stops the turn, when a stopStreaming handler throws (O5)', async () => {
+    const host = streamingHost('chunk');
+    const instance = await chatWith(host);
+    instance.on({
+      type: BusEventType.STOP_STREAMING,
+      handler: () => {
+        throw new Error('handler failed');
+      },
+    });
+    jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    const sending = instance.messaging.send('Hello');
+    await waitFor(() => expect(instance.state.get().status).toBe('streaming'));
+
+    await expect(instance.messaging.stop()).resolves.toBeUndefined();
+    await sending;
+
+    expect(host.turns[0].signal.aborted).toBe(true);
+    expect(instance.state.get().status).toBe('ready');
+    host.finish.doResolve();
+  });
+
+  it("keeps the button's recovery when a stopStreaming handler throws", async () => {
     const host = streamingHost('chunk');
     const instance = await chatWith(host);
     instance.on({
@@ -230,24 +256,112 @@ describe('messaging.stop (#1816)', () => {
     void instance.messaging.send('Hello');
     await waitFor(() => expect(instance.state.get().status).toBe('streaming'));
 
-    await expect(instance.messaging.stop()).resolves.toBeUndefined();
+    await requestStopFromInput(instance.serviceManager, () => undefined);
+
+    // As before: the turn keeps running and the button can be pressed again.
+    expect(host.turns[0].signal.aborted).toBe(false);
+    expect(
+      instance.serviceManager.store.getState().assistantInputState
+        .stopStreamingButtonState.isDisabled
+    ).toBe(false);
     host.finish.doResolve();
   });
 
-  it('lets queued turns send once the stopped host returns (O7)', async () => {
-    const host = streamingHost('chunk', { returnOnAbort: true });
-    const instance = await chatWith(host);
-    const first = instance.messaging.send('First');
-    const second = instance.messaging.send('Second');
-    await waitFor(() => expect(host.turns).toHaveLength(1));
+  it('stops a submitted turn with no stream and no visible button', async () => {
+    const host = streamingHost('chunk', { silent: true });
+    const instance = await chatWith(host, { showStopButtonImmediately: false });
+    const sending = instance.messaging.send('Hello');
+    await waitFor(() => expect(instance.state.get().status).toBe('submitted'));
+    expect(
+      instance.serviceManager.store.getState().assistantInputState
+        .stopStreamingButtonState.isVisible
+    ).toBe(false);
 
     await instance.messaging.stop();
-    await first;
+    await sending;
 
-    await waitFor(() => expect(host.turns).toHaveLength(2));
-    expect(host.turns[1].request.input.text).toBe('Second');
+    expect(host.log).toEqual([
+      'stopStreaming',
+      `abort ${CancellationReason.STOP_STREAMING}`,
+    ]);
+    expect(instance.state.get().status).toBe('ready');
+    host.finish.doResolve();
+  });
+
+  it.each([
+    ['a stream', false],
+    ['no stream', true],
+  ])(
+    'sends a queued turn while the stopped host never returns, with %s (O7)',
+    async (_case, silent) => {
+      const host = streamingHost('chunk', { silent });
+      const instance = await chatWith(host);
+      void instance.messaging.send('First');
+      const second = instance.messaging.send('Second');
+      await waitFor(() => expect(host.turns).toHaveLength(1));
+
+      await instance.messaging.stop();
+
+      await waitFor(() => expect(host.turns).toHaveLength(2));
+      expect(host.turns[1].request.input.text).toBe('Second');
+      expect(host.turns[1].signal.aborted).toBe(false);
+      host.finish.doResolve();
+      await second;
+    }
+  );
+
+  it('does not cancel the next turn when a handler ends the stopped one', async () => {
+    const host = streamingHost('chunk', { silent: true });
+    const instance = await chatWith(host);
+    void instance.messaging.send('First');
+    void instance.messaging.send('Second');
+    await waitFor(() => expect(host.turns).toHaveLength(1));
+    // The host's handler ends its first turn, so the queue moves on before the stop cancels.
+    instance.on({
+      type: BusEventType.STOP_STREAMING,
+      handler: async () => {
+        host.holds[0].doResolve();
+        await waitFor(() => expect(host.turns).toHaveLength(2));
+      },
+    });
+
+    await instance.messaging.stop();
+
     expect(host.turns[1].signal.aborted).toBe(false);
-    await second;
+    expect(instance.state.get().status).toBe('submitted');
+    host.finish.doResolve();
+  });
+
+  it('leaves a message to a human agent alone', async () => {
+    const host = streamingHost('chunk');
+    const instance = await chatWith(host);
+    const { serviceManager } = instance;
+    (serviceManager as any).instance = instance;
+    (serviceManager as any).fire = (busEvent: any) =>
+      serviceManager.eventBus.fire(busEvent, instance);
+    const pendingDesk = resolvablePromise<void>();
+    const impl = createHumanAgentService(serviceManager);
+    (impl as any).serviceDesk = {
+      getName: () => 'stub-desk',
+      startChat: jest.fn().mockResolvedValue(undefined),
+      endChat: jest.fn().mockResolvedValue(undefined),
+      sendMessageToAgent: () => pendingDesk,
+    } as unknown as ServiceDesk;
+    (impl as any).chatStarted = true;
+    (serviceManager as any).humanAgentService = impl;
+    serviceManager.store.dispatch(
+      actions.changeState({
+        persistedToBrowserStorage: { humanAgentState: { isConnected: true } },
+      })
+    );
+
+    void impl.sendMessageToAgent('Hi', []);
+    await waitFor(() => expect(instance.state.get().status).toBe('submitted'));
+    await instance.messaging.stop();
+
+    expect(host.log).toEqual([]);
+    expect(instance.state.get().status).toBe('submitted');
+    pendingDesk.doResolve();
   });
 
   it('cancels once for overlapping calls (O8)', async () => {
