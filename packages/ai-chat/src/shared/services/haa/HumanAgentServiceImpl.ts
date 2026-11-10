@@ -328,6 +328,8 @@ class HumanAgentServiceImpl implements HumanAgentService {
     }
 
     const { serviceManager } = this;
+    // A throw while this is set came from a host's handler, not the desk.
+    let inPreStartHandlers = false;
 
     try {
       this.chatStarted = true;
@@ -345,7 +347,9 @@ class HumanAgentServiceImpl implements HumanAgentService {
           ? { preStartChatPayload: options.payload }
           : {}),
       };
+      inPreStartHandlers = true;
       await serviceManager.fire(event);
+      inPreStartHandlers = false;
 
       if (event.cancelStartChat) {
         // Abort the connecting.
@@ -377,14 +381,17 @@ class HumanAgentServiceImpl implements HumanAgentService {
       });
     } catch (error) {
       consoleError(
-        '[startChat] An error with the service desk occurred.',
+        inPreStartHandlers
+          ? 'A human_agent:pre:startChat handler threw, so the chat did not start the conversation with an agent and showed its connecting error.'
+          : '[startChat] An error with the service desk occurred.',
         error
       );
       // If it failed to start, then stop connecting and clear the service desk.
       if (this.serviceDeskCallback) {
         await this.serviceDeskCallback.setErrorStatus({
           type: ErrorType.CONNECTING,
-          logInfo: error,
+          // A handler's throw is logged once, above; the desk didn't fail.
+          ...(!inPreStartHandlers && { logInfo: error }),
         });
       }
 
