@@ -8,8 +8,8 @@
  */
 
 /**
- * `state.error` (#2354, PROPOSAL-2354): every failure that sets `status: 'error'` sets it, with the
- * same fields `onError` gets, and it clears with `status`.
+ * `state.error`: every failure that sets `status: 'error'` sets it, with the same fields
+ * `onError` gets, and it clears with `status`.
  */
 
 import { act, waitFor } from '@testing-library/react';

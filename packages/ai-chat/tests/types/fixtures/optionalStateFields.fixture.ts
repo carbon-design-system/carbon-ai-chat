@@ -10,7 +10,7 @@
 /**
  * Compiled under `strict: true` by sdkTypes_spec.ts and never run. Fields added to state and to the
  * objects hosts receive are optional in 1.x, so a host's object written against the older types,
- * with none of them, still compiles. 2.0.0 makes the state fields required (#2746).
+ * with none of them, still compiles. 2.0.0 makes the state fields required.
  */
 
 import {
