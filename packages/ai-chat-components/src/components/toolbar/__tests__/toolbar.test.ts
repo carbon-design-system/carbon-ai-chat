@@ -268,4 +268,49 @@ describe('toolbar', function () {
       expect(innerBtn.getAttribute('aria-checked')).to.equal('false');
     });
   });
+
+  describe('feedback / copy button', function () {
+    it('should render cds-copy-button when feedback is specified', async () => {
+      let clicked = false;
+      const actions: Action[] = [
+        {
+          text: 'Copy to clipboard',
+          feedback: 'Copied!',
+          feedbackTimeout: 3000,
+          onClick: () => {
+            clicked = true;
+          },
+        },
+      ];
+      const el = await fixture<Toolbar>(
+        html`<cds-aichat-toolbar .actions=${actions}></cds-aichat-toolbar>`
+      );
+      const copyBtn = el.shadowRoot!.querySelector('cds-copy-button');
+      expect(copyBtn).to.exist;
+      expect(copyBtn!.getAttribute('feedback')).to.equal('Copied!');
+      expect(copyBtn!.getAttribute('feedback-timeout')).to.equal('3000');
+      expect(copyBtn!.getAttribute('kind')).to.equal('ghost');
+      expect(copyBtn!.textContent?.trim()).to.equal('Copy to clipboard');
+
+      copyBtn!.click();
+      expect(clicked).to.be.true;
+    });
+
+    it('should render cds-icon-button when feedback is not specified', async () => {
+      const actions: Action[] = [
+        {
+          text: 'Normal action',
+          icon: Version16,
+          onClick: () => {},
+        },
+      ];
+      const el = await fixture<Toolbar>(
+        html`<cds-aichat-toolbar .actions=${actions}></cds-aichat-toolbar>`
+      );
+      const iconBtn = el.shadowRoot!.querySelector('cds-icon-button');
+      const copyBtn = el.shadowRoot!.querySelector('cds-copy-button');
+      expect(iconBtn).to.exist;
+      expect(copyBtn).to.not.exist;
+    });
+  });
 });
