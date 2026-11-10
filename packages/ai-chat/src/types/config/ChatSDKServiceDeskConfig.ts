@@ -56,9 +56,12 @@ export interface ChatSDKServiceDeskConfig {
    *
    * @example Ask with your own dialog
    * ```ts
+   * import { ScreenShareState } from "@carbon/ai-chat";
+   *
    * const config = {
    *   serviceDesk: {
    *     onScreenShareRequest: async ({ signal }) => {
+   *       // openConsentDialog is your own UI. It resolves true when the user agrees.
    *       const dialog = openConsentDialog();
    *       signal.addEventListener("abort", () => dialog.close());
    *       const accepted = await dialog.answer;

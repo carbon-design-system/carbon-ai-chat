@@ -109,6 +109,12 @@ describe('screen-share consent', () => {
 
   it('answers DECLINED when a chat with no view has no hook', async () => {
     const { chat, callback } = await connectedChat();
+    const modalShown: boolean[] = [];
+    chatOf(chat).store.subscribe(() =>
+      modalShown.push(
+        chatOf(chat).store.getState().humanAgentState.showScreenShareRequest
+      )
+    );
 
     await expect(callback().screenShareRequest()).resolves.toBe(
       ScreenShareState.DECLINED
@@ -118,9 +124,7 @@ describe('screen-share consent', () => {
     expect(agentNotes(state)).toEqual(
       expect.arrayContaining([SHARING_REQUESTED, SHARING_DECLINED])
     );
-    expect(
-      chatOf(chat).store.getState().humanAgentState.showScreenShareRequest
-    ).toBe(false);
+    expect(modalShown).not.toContain(true);
   });
 
   it.each([
@@ -200,6 +204,53 @@ describe('screen-share consent', () => {
       expect(agentNotes(chat.state.get())).not.toContain(SHARING_ACCEPTED);
     });
 
+    it('when the conversation restarts and ends the agent conversation', async () => {
+      const { hook, answer, signals } = hookAnswering();
+      const { chat, callback } = await connectedChat(hook);
+      const request = callback().screenShareRequest();
+      await settle();
+
+      await chat.messaging.restartConversation();
+
+      expect(signals[0].aborted).toBe(true);
+      await expect(request).resolves.toBe(ScreenShareState.CANCELLED);
+      answer.doResolve(ScreenShareState.ACCEPTED);
+      await settle();
+      expect(chat.state.get().humanAgent.isScreenSharing).toBe(false);
+    });
+
+    it('when a reconnect fails while a request waits', async () => {
+      const mock = mockDesk();
+      const reconnect = resolvablePromise<boolean>();
+      const desk = { ...mock.desk, reconnect: () => reconnect };
+      const { hook, signals } = hookAnswering();
+      const chat = await createChatSDK({
+        messaging: { skipWelcome: true },
+        serviceDeskFactory: async (parameters) => {
+          await mock.factory(parameters);
+          return desk as unknown as ServiceDesk;
+        },
+        serviceDesk: { onScreenShareRequest: hook },
+        humanAgentState: {
+          initialState: {
+            isConnected: true,
+            isSuspended: false,
+            responseUserProfile: AGENT,
+            responseUserProfiles: {},
+          },
+        },
+      });
+      chats.push(chat);
+      const request = mock.callback().screenShareRequest();
+      await settle();
+      expect(hook).toHaveBeenCalledTimes(1);
+
+      reconnect.doResolve(false);
+
+      await expect(request).resolves.toBe(ScreenShareState.CANCELLED);
+      expect(signals[0].aborted).toBe(true);
+    });
+
     it('when the chat is removed, without logging the rejection that follows', async () => {
       const error = jest.spyOn(console, 'error').mockImplementation(() => {});
       error.mockClear();
@@ -223,6 +274,45 @@ describe('screen-share consent', () => {
     });
   });
 
+  it('never calls the hook when the desk ends the request before it was asked', async () => {
+    const { hook } = hookAnswering();
+    const { callback } = await connectedChat(hook);
+
+    const request = callback().screenShareRequest();
+    await callback().screenShareEnded();
+    await settle();
+
+    await expect(request).resolves.toBe(ScreenShareState.CANCELLED);
+    expect(hook).not.toHaveBeenCalled();
+  });
+
+  it('ignores an answer to an earlier request that comes after a new request', async () => {
+    const answers = [
+      resolvablePromise<ScreenShareState>(),
+      resolvablePromise<ScreenShareState>(),
+    ];
+    let calls = 0;
+    const hook = jest.fn<Promise<ScreenShareState>, [{ signal: AbortSignal }]>(
+      () => answers[calls++]
+    );
+    const { chat, callback } = await connectedChat(hook);
+    const first = callback().screenShareRequest();
+    await settle();
+    await callback().screenShareEnded();
+    await expect(first).resolves.toBe(ScreenShareState.CANCELLED);
+    const second = callback().screenShareRequest();
+    await settle();
+    expect(hook).toHaveBeenCalledTimes(2);
+
+    answers[0].doResolve(ScreenShareState.ACCEPTED);
+    await settle();
+    expect(chat.state.get().humanAgent.isScreenSharing).toBe(false);
+    answers[1].doResolve(ScreenShareState.DECLINED);
+
+    await expect(second).resolves.toBe(ScreenShareState.DECLINED);
+    expect(chat.state.get().humanAgent.isScreenSharing).toBe(false);
+  });
+
   describe('answers DECLINED with one console error', () => {
     it.each<[string, Hook]>([
       [
@@ -236,6 +326,10 @@ describe('screen-share consent', () => {
       [
         'a hook that resolves another value',
         async () => 'yes' as unknown as ScreenShareState,
+      ],
+      [
+        'a hook that resolves a value with no string form',
+        async () => Object.create(null) as ScreenShareState,
       ],
     ])('for %s', async (_case, hook) => {
       const error = jest.spyOn(console, 'error').mockImplementation(() => {});
@@ -328,17 +422,22 @@ describe('isScreenSharing and stopScreenShare', () => {
   it('does nothing on a removed chat', async () => {
     const { chat, desk } = await sharingChat();
     chat.destroy();
+    const before = chat.state.get();
 
     await expect(chat.serviceDesk.stopScreenShare()).resolves.toBeUndefined();
     expect(desk.screenShareStop).not.toHaveBeenCalled();
+    expect(chat.state.get()).toBe(before);
   });
 
   it('keeps the humanAgent object while nothing in it changes', async () => {
-    const { chat } = await sharingChat();
+    const { chat, callback } = await sharingChat();
     const before = chat.state.get().humanAgent;
 
-    await chat.messaging.insertHistory([]);
+    await callback().agentTyping(true);
 
+    expect(
+      chatOf(chat).store.getState().humanAgentState.isHumanAgentTyping
+    ).toBe(true);
     expect(chat.state.get().humanAgent).toBe(before);
   });
 });
@@ -374,16 +473,20 @@ describe('screen-share consent in the prebuilt chat', () => {
   });
 
   it('calls the hook instead of showing the modal', async () => {
+    const answer = resolvablePromise<ScreenShareState>();
     const hook = jest.fn<Promise<ScreenShareState>, [{ signal: AbortSignal }]>(
-      async () => ScreenShareState.ACCEPTED
+      () => answer
     );
     const { store, instance, callback } = await connectedPrebuilt(hook);
 
-    await expect(callback().screenShareRequest()).resolves.toBe(
-      ScreenShareState.ACCEPTED
-    );
-
+    const request = callback().screenShareRequest();
+    await settle();
     expect(hook).toHaveBeenCalledTimes(1);
+    // While the host decides, the modal stays closed.
+    expect(store.getState().humanAgentState.showScreenShareRequest).toBe(false);
+    answer.doResolve(ScreenShareState.ACCEPTED);
+
+    await expect(request).resolves.toBe(ScreenShareState.ACCEPTED);
     expect(store.getState().humanAgentState.showScreenShareRequest).toBe(false);
     expect(instance.state.get().humanAgent.isScreenSharing).toBe(true);
   });

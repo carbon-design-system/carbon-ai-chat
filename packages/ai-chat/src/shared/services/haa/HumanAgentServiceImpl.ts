@@ -1141,6 +1141,10 @@ class HumanAgentServiceImpl implements HumanAgentService {
         // If we didn't reconnected, then just end the chat.
         this.chatStarted = false;
         const wasSuspended = this.isSuspended();
+        // A screen-share request made during the reconnect ends with the chat.
+        if (this.screenShareRequestPromise) {
+          this.closeScreenShareRequestPanel(ScreenShareState.CANCELLED);
+        }
         store.dispatch(endChat());
 
         if (allowEndChatMessages) {
@@ -1215,7 +1219,8 @@ class HumanAgentServiceImpl implements HumanAgentService {
       );
     } else if (!isScreenShareAnswer(answer)) {
       consoleError(
-        `serviceDesk.onScreenShareRequest resolved with "${String(answer)}", not ACCEPTED, DECLINED, or CANCELLED, so the chat declined the screen share.`
+        'serviceDesk.onScreenShareRequest resolved with a value other than ACCEPTED, DECLINED, or CANCELLED, so the chat declined the screen share.',
+        answer
       );
     }
     await this.screenShareUpdateRequestState(
@@ -1792,7 +1797,12 @@ class ServiceDeskCallbackImpl<
       // The desk or shutdown can end the request during the await.
       if (this.service.screenShareRequestPromise === request) {
         if (onScreenShareRequest) {
-          this.service.askHostForScreenShare(onScreenShareRequest, request);
+          // The desk already has its answer if adding the note fails.
+          this.service
+            .askHostForScreenShare(onScreenShareRequest, request)
+            .catch((error) =>
+              consoleError('Failed to answer a screen-share request.', error)
+            );
         } else if (!hasView) {
           await this.service.screenShareUpdateRequestState(
             ScreenShareState.DECLINED
