@@ -173,16 +173,20 @@ class OutboundMessageCoordinator {
   }
 
   /**
-   * Marks a message as failed.
+   * Marks a message as failed. `markFailed: false` rejects and settles the request without
+   * marking it, for a turn whose responses show the failure instead.
    */
   rejectFinalErrorOnMessage(
     pendingRequest: PendingMessageRequest,
-    resultText = 'An undefined error occurred trying to send your message.'
+    resultText = 'An undefined error occurred trying to send your message.',
+    markFailed = true
   ) {
     const { sendMessagePromise } = pendingRequest;
 
     // At this point we've failed; mark the message accordingly.
-    this.setMessageErrorState(pendingRequest, MessageErrorState.FAILED);
+    if (markFailed) {
+      this.setMessageErrorState(pendingRequest, MessageErrorState.FAILED);
+    }
 
     // After updating the error state get the message from the pendingRequest since it has potentially been updated by
     // setting the error state.

@@ -101,6 +101,25 @@ class ConversationState {
     return responseIDs;
   }
 
+  /** The responses still streaming for the request `messageID` names. */
+  activeResponsesOf(messageID: string) {
+    const requestID = this.resolveRequestID(messageID);
+    return [...this.activeResponses].filter(
+      (responseID) => this.responseOwners.get(responseID) === requestID
+    );
+  }
+
+  /** The request that owns a response still streaming, if any. */
+  activeResponseOwner() {
+    for (const responseID of this.activeResponses) {
+      const owner = this.responseOwners.get(responseID);
+      if (owner) {
+        return owner;
+      }
+    }
+    return undefined;
+  }
+
   isRequestStopped(requestID?: string) {
     return this.stoppedRequests.has(this.resolveRequestID(requestID));
   }
@@ -228,7 +247,7 @@ class ConversationState {
     );
   }
 
-  clearFailure(failure: ReturnType<ConversationState['fail']>) {
+  clearFailure(failure: ReturnType<ConversationState['getFailure']>) {
     if (
       failure &&
       this.failure === failure &&

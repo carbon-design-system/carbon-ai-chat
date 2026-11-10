@@ -60,6 +60,7 @@ import type { StreamChunk, PauseItem } from '../../../types/messaging/Messages';
 import type { AddMessageOptions } from '../../../types/config/MessagingConfig';
 import { CancellationReason } from '../../../types/config/MessagingConfig';
 import type { ChatSDKErrorData } from '../../../types/config/ChatSDKErrorData';
+import type { FailTurnOptions } from '../../../types/config/ChatSDKInstanceMessaging';
 
 import { HistoryWorkflow } from './HistoryWorkflow';
 import type { HistoryItem } from '../../../types/messaging/History';
@@ -589,6 +590,19 @@ class MessageCoordinator {
     return this.terminationWorkflow.stop();
   }
 
+  /** @see TerminationWorkflow.failTurn */
+  failTurn(options?: FailTurnOptions): Promise<void> {
+    return this.terminationWorkflow.failTurn(options);
+  }
+
+  /**
+   * `messaging.clearError()` (#2354): clears the current failure, whoever set it. Message marks
+   * stay. A later `clearFailure` with the cleared token does nothing.
+   */
+  clearError() {
+    this.clearFailure(this.state.getFailure());
+  }
+
   requestStopFromInput(markPending: () => void): Promise<void> {
     return this.terminationWorkflow.requestStopFromInput(markPending);
   }
@@ -701,8 +715,12 @@ class MessageCoordinator {
     this.runQueueIfReady();
   }
 
-  rejectFinalErrorOnMessage(request: PendingMessageRequest, text?: string) {
-    this.getSendWorkflow().rejectFinalErrorOnMessage(request, text);
+  rejectFinalErrorOnMessage(
+    request: PendingMessageRequest,
+    text?: string,
+    markFailed?: boolean
+  ) {
+    this.getSendWorkflow().rejectFinalErrorOnMessage(request, text, markFailed);
   }
 
   resolveCancelledMessage(request: PendingMessageRequest) {
@@ -769,6 +787,17 @@ class MessageCoordinator {
 
   getWaitingRequestCount() {
     return this.requestQueue.getWaitingCount();
+  }
+
+  /** The IDs of the requests waiting behind the current one. */
+  waitingRequestIDs() {
+    const ids = new Set<string>();
+    for (let index = 0; index < this.requestQueue.getWaitingCount(); index++) {
+      ids.add(
+        this.requests.get(this.requestQueue.getWaitingAt(index)).message.id
+      );
+    }
+    return ids;
   }
 
   getFirstWaitingRequest() {
@@ -856,6 +885,14 @@ class MessageCoordinator {
 
   responseRequestID(messageID: string) {
     return this.state.responseRequestID(messageID);
+  }
+
+  activeResponsesOf(requestID: string) {
+    return this.state.activeResponsesOf(requestID);
+  }
+
+  activeResponseOwner() {
+    return this.state.activeResponseOwner();
   }
 
   isResponseOwnedByRequest(messageID: string, requestID: string) {
@@ -957,7 +994,7 @@ class MessageCoordinator {
     return this.hasFailureForRequest(messageID) ? this.currentError() : null;
   }
 
-  clearFailure(failure: ReturnType<ConversationState['fail']>) {
+  clearFailure(failure: ReturnType<ConversationState['getFailure']>) {
     if (this.state.clearFailure(failure)) {
       this.publish();
     }

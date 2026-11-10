@@ -46,6 +46,16 @@ function createConversationInstance<Self>(
       return serviceManager.messageCoordinator.stop();
     },
 
+    failTurn: (options) => {
+      debugLog('Called instance.messaging.failTurn', options);
+      return serviceManager.messageCoordinator.failTurn(options);
+    },
+
+    clearError: () => {
+      debugLog('Called instance.messaging.clearError');
+      serviceManager.messageCoordinator.clearError();
+    },
+
     upsertMessage: async (messageID, state, updater) => {
       debugLog('Called instance.messaging.upsertMessage', messageID, state);
       const { restartCount } = serviceManager;

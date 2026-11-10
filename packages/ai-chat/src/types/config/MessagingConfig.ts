@@ -94,6 +94,12 @@ export enum CancellationReason {
    * conversation up again. Don't treat this reason as the end of the conversation on your server.
    */
   CHAT_REMOVED = 'Chat removed',
+
+  /**
+   * You marked the turn failed with {@link ChatSDKInstanceMessaging.failTurn} while it was still
+   * running.
+   */
+  TURN_FAILED = 'Turn failed',
 }
 
 /**

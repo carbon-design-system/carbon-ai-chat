@@ -153,7 +153,10 @@ export {
   MessageState,
   UpsertMessageUpdater,
 } from './types/config/MessagingConfig';
-export { ChatSDKInstanceMessaging } from './types/config/ChatSDKInstanceMessaging';
+export {
+  ChatSDKInstanceMessaging,
+  FailTurnOptions,
+} from './types/config/ChatSDKInstanceMessaging';
 
 export { PublicConfig } from './types/config/PublicConfig';
 export { ChatSDKConfig } from './types/config/ChatSDKConfig';

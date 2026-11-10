@@ -20,6 +20,18 @@ import { InboundStreamingCoordinator } from './InboundStreamingCoordinator';
 import type { StreamResponseMeta } from './state/StreamState';
 import { OnErrorType } from '../../../types/config/ErrorConfig';
 import { CancellationReason } from '../../../types/config/MessagingConfig';
+import type { ChatSDKErrorData } from '../../../types/config/ChatSDKErrorData';
+import type { FailTurnOptions } from '../../../types/config/ChatSDKInstanceMessaging';
+import { MessageErrorState } from '../../../types/messaging/LocalMessageItem';
+import {
+  isAgentTurn,
+  lastTurnRequestID,
+  turnHasResponse,
+  turnRequestID,
+} from './state/turnTarget';
+
+/** What `state.error.message` says when `failTurn` gets no message. */
+const DEFAULT_TURN_FAILED_MESSAGE = 'The turn was marked failed.';
 
 /** The turn a stop was started for: the current request, if any, in its chat generation. */
 interface StopTarget {
@@ -41,6 +53,200 @@ class TerminationWorkflow {
       return Promise.resolve();
     }
     return this.stopTurn(this.chatShowsStopButton(), false);
+  }
+
+  /**
+   * `messaging.failTurn()` (#2354): fails the active turn, else the last one, with the display and
+   * announcement of a failure the chat finds, but without `onError`. A running turn ends the way a
+   * timed-out one does, not the way Stop ends it: no `STOP_STREAMING`, no "Request canceled" note.
+   */
+  async failTurn(options: FailTurnOptions = {}): Promise<void> {
+    const { messageCoordinator } = this.serviceManager;
+    // A removed chat's leftover instance does nothing.
+    if (this.serviceManager.isShutdown) {
+      return;
+    }
+    const target = this.failTurnTarget(options.messageID);
+    const error: ChatSDKErrorData = {
+      errorType: OnErrorType.MESSAGE_COMMUNICATION,
+      message: options.error?.message ?? DEFAULT_TURN_FAILED_MESSAGE,
+      otherData: options.error?.otherData,
+      messageID: target.requestID,
+    };
+    // A failed turn only takes the new error; it already shows and announced its failure.
+    if (messageCoordinator.hasFailureForRequest(target.requestID)) {
+      messageCoordinator.fail(error);
+      return;
+    }
+    const current = messageCoordinator.getCurrentRequest();
+    const pending =
+      current?.message.id === target.requestID ? current : undefined;
+    const generation = messageCoordinator.currentGeneration;
+    for (const controller of this.turnControllers(target.requestID, pending)) {
+      controller.abort(CancellationReason.TURN_FAILED);
+    }
+    // An abort listener can restart the chat, which settles the turn itself.
+    if (!messageCoordinator.isCurrent(generation)) {
+      return;
+    }
+    messageCoordinator.fail(error, generation);
+    // Stopping the request also drops chunks that arrive for it later.
+    const streamingIDs = messageCoordinator.requestStopped(
+      target.requestID,
+      generation
+    );
+    this.showTurnFailure(target, streamingIDs, generation);
+    this.settleFailedRequest(pending);
+    if (target.isActive) {
+      messageCoordinator.messageLoadingManager.end();
+    }
+    this.hideStopStreamingButtonIfIdle();
+    messageCoordinator.announceSendFailure();
+  }
+
+  /**
+   * The turn `failTurn` targets, by its request ID. Throws for an unknown ID, an agent turn, a turn
+   * that's neither active nor last, or a conversation with no turn.
+   */
+  private failTurnTarget(messageID: string | undefined) {
+    const { messageCoordinator } = this.serviceManager;
+    const turnMessages = this.turnMessages();
+    const activeID = this.activeTurnRequestID();
+    const lastID = lastTurnRequestID(
+      turnMessages,
+      messageCoordinator.waitingRequestIDs()
+    );
+    if (messageID === undefined) {
+      const requestID = activeID ?? lastID;
+      if (!requestID) {
+        throw new Error(
+          'The conversation has no turn to fail. Call failTurn after a message is sent.'
+        );
+      }
+      return { requestID, isActive: requestID === activeID };
+    }
+    const requestID =
+      messageID === activeID
+        ? activeID
+        : turnRequestID(
+            messageID,
+            turnMessages,
+            messageCoordinator.responseRequestID(messageID)
+          );
+    if (!requestID) {
+      throw new Error(
+        `No message has the ID "${messageID}", so failTurn failed nothing.`
+      );
+    }
+    if (
+      isAgentTurn(requestID, turnMessages) ||
+      (requestID !== activeID && requestID !== lastID)
+    ) {
+      throw new Error(
+        `The message "${messageID}" isn't in the active or last turn, so failTurn failed nothing. Pass an ID from that turn, or leave messageID out.`
+      );
+    }
+    return { requestID, isActive: requestID === activeID };
+  }
+
+  private turnMessages() {
+    const state = this.serviceManager.store.getState();
+    return {
+      messageIDs: state.assistantMessageState.messageIDs,
+      messagesByID: state.allMessagesByID,
+    };
+  }
+
+  /** The request still sending or streaming, else the owner of a response still streaming. */
+  private activeTurnRequestID() {
+    const { messageCoordinator } = this.serviceManager;
+    const current = messageCoordinator.getCurrentRequest();
+    if (current && (!current.isProcessed || current.isStreaming)) {
+      return current.message.id;
+    }
+    return messageCoordinator.activeResponseOwner();
+  }
+
+  /** Every abort controller the turn's send and streams listen to. They're usually one. */
+  private turnControllers(
+    requestID: string,
+    pending: PendingMessageRequest | undefined
+  ) {
+    const controllers = new Set<AbortController>();
+    const add = (controller: AbortController | undefined) => {
+      if (controller && !controller.signal.aborted) {
+        controllers.add(controller);
+      }
+    };
+    add(pending?.sendMessageController);
+    add(this.messageAbortControllers.get(requestID));
+    for (const responseID of this.serviceManager.messageCoordinator.activeResponsesOf(
+      requestID
+    )) {
+      add(this.messageAbortControllers.get(responseID));
+      add(
+        this.inboundStreaming.getController(
+          this.inboundStreaming.getStreamingMeta(responseID)?.controllerToken
+        )
+      );
+    }
+    return controllers;
+  }
+
+  /**
+   * Ends the turn's streams and marks what failed: each response still streaming shows the inline
+   * error; a turn with no response marks its request failed, as a failed send does.
+   */
+  private showTurnFailure(
+    target: { requestID: string },
+    streamingIDs: string[],
+    generation: number
+  ) {
+    const { messageCoordinator, store } = this.serviceManager;
+    for (const responseID of streamingIDs) {
+      this.inboundStreaming.clearStreamingResponse(responseID);
+      this.clearStreamingCancellation(responseID);
+      messageCoordinator.endIncomingStreamingMessage(responseID, generation);
+      store.dispatch(
+        actions.setMessageErrorState(
+          responseID,
+          MessageErrorState.FAILED_WHILE_STREAMING
+        )
+      );
+    }
+    const request = store.getState().allMessagesByID[target.requestID];
+    if (
+      !turnHasResponse(target.requestID, this.turnMessages()) &&
+      request?.history?.error_state !== MessageErrorState.FAILED
+    ) {
+      store.dispatch(
+        actions.setMessageErrorState(target.requestID, MessageErrorState.FAILED)
+      );
+    }
+  }
+
+  /**
+   * Settles the turn's request if it's still in the queue: a send not yet settled rejects with
+   * the error, and the queue moves on. A late resolve from the host is ignored.
+   */
+  private settleFailedRequest(pending: PendingMessageRequest | undefined) {
+    if (!pending) {
+      return;
+    }
+    if (!pending.isProcessed) {
+      // showTurnFailure marked the request, if the turn marks it.
+      this.serviceManager.messageCoordinator.rejectFinalErrorOnMessage(
+        pending,
+        this.serviceManager.messageCoordinator.errorForRequest(
+          pending.message.id
+        )?.message,
+        false
+      );
+    } else if (pending.isStreaming) {
+      // The send resolved, but its chunk stream kept the queue waiting for a final response.
+      pending.isStreaming = false;
+      this.moveToNextQueueItem();
+    }
   }
 
   async requestStopFromInput(markPending: () => void): Promise<void> {

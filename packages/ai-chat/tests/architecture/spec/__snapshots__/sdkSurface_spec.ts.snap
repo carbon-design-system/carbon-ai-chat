@@ -276,6 +276,8 @@ interface ChatSDKInstance (src/types/instance/ChatSDKInstance.ts)
 
 interface ChatSDKInstanceMessaging (src/types/config/ChatSDKInstanceMessaging.ts)
   clearConversation: () => Promise<void>
+  clearError: () => void
+  failTurn: (options?: FailTurnOptions) => Promise<void>
   insertHistory: (messages: HistoryItem[]) => Promise<void>
   removeMessages: (messageIDs: string[]) => Promise<void>
   restartConversation: () => Promise<void>
@@ -361,6 +363,10 @@ interface EventInput (src/types/messaging/Messages.ts)
 
 interface EventInputData (src/types/messaging/Messages.ts)
   name: TNameType
+
+interface FailTurnOptions (src/types/config/ChatSDKInstanceMessaging.ts)
+  error?: { message?: string; otherData?: unknown; }
+  messageID?: string
 
 interface FileUploadCapabilities (src/types/instance/FileUploadCapabilities.ts)
   allowFileUploads: boolean
