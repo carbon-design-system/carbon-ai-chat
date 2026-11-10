@@ -83,8 +83,6 @@ export interface ChatInstanceInput {
    * For cursor-position insertion, use the {@link ChatInstanceInput.getEditor}
    * escape hatch:
    * `(await instance.input.getEditor()).commands.insertContent(...)`.
-   *
-   * @experimental
    */
   updateContent: (
     updater: (previous: JSONContent) => JSONContent
@@ -126,8 +124,6 @@ export interface ChatInstanceInput {
    * ```ts
    * instance.input.updateStructuredData(() => undefined);
    * ```
-   *
-   * @experimental
    */
   updateStructuredData: (
     updater: (
@@ -171,6 +167,9 @@ export interface ChatInstanceInput {
    * - `editor.extensionStorage` for per-extension state
    * - `editor.on(...)` for low-level event subscriptions
    *
+   * The resolved `Editor` is Tiptap's, and its API follows Tiptap's releases.
+   * Supported range: `@tiptap/core` `^3.22.5`.
+   *
    * Rejects while no input is rendered. The chat hands you the
    * {@link ChatInstance} before it renders, so this is not available from
    * `onBeforeRender`, and a host that hides the input has none to resolve.
@@ -206,8 +205,6 @@ export interface ChatInstanceInput {
    *    yourself are compared by reference — a fresh array of new instances
    *    every render reads as a real change and replaces the editor mid-edit,
    *    losing its undo history.
-   *
-   * @experimental
    */
   getEditor: () => Promise<Editor>;
 }
