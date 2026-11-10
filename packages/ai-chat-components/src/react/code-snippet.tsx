@@ -26,9 +26,12 @@ export type { Action } from '../components/code-snippet/src/code-snippet.js';
  */
 export interface ReactAction {
   text: string;
-  icon: CarbonIcon | React.ComponentType<any>;
+  icon?: CarbonIcon | React.ComponentType<any>;
   size?: BUTTON_SIZE;
   fixed?: boolean;
+  isSelected?: boolean;
+  feedback?: string;
+  feedbackTimeout?: number;
   onClick: () => void;
 }
 
@@ -75,7 +78,9 @@ const CodeSnippet = React.forwardRef<any, any>((props, ref) => {
 
     return actions.map((action: ReactAction) => ({
       ...action,
-      icon: transformReactIconToCarbonIcon(action.icon, 16),
+      icon: action.icon
+        ? transformReactIconToCarbonIcon(action.icon, 16)
+        : undefined,
     }));
   }, [actions]);
 
