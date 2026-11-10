@@ -22,19 +22,25 @@ export interface ChatInstanceServiceDeskActions {
    * With no options, the chat starts one on its own behalf, so your assistant doesn't have to send a
    * `connect_to_agent` response first. Your service desk's {@link ServiceDesk.startChat} then gets a
    * message holding one `connect_to_agent` item with no transfer details, which the chat doesn't add
-   * to the conversation. The prebuilt chat shows its connecting state without a card.
+   * to the conversation. The prebuilt chat closes its home screen if it's open and shows its
+   * connecting state without a card.
    *
-   * The {@link BusEventType.HUMAN_AGENT_PRE_START_CHAT} event still fires first, and a handler can
-   * still cancel the start. Then the promise resolves and nothing starts.
+   * With `messageID`, the start doesn't check what that response's card shows. A response whose
+   * check found no agents online, or an older response, still starts a conversation.
    *
-   * If the chat hasn't loaded its history yet, it loads it first, as a send does. The promise
-   * resolves when your service desk's `startChat` resolves, which doesn't mean an agent has joined.
-   * Read `state.get().humanAgent` to follow the connection.
+   * The {@link BusEventType.HUMAN_AGENT_PRE_START_CHAT} event fires first, and a handler can cancel
+   * the start. Then the promise resolves and nothing starts.
+   *
+   * If the chat hasn't loaded its history yet, it loads it first. It sends no welcome message then,
+   * since the agent conversation takes the welcome's place. The promise resolves when your service
+   * desk's `startChat` resolves, which doesn't mean an agent has joined. Read
+   * `state.get().humanAgent` to follow the connection.
    *
    * Rejects when no service desk is configured, when `messageID` names no response with a
-   * `connect_to_agent` item, when a conversation with an agent is already connecting or connected,
-   * when the service desk's `startChat` throws, or after the chat was removed. A suspended
-   * conversation is ended first, as the card does.
+   * `connect_to_agent` item, or when a conversation with an agent is connecting, connected, or
+   * suspended. Call {@link ChatInstanceServiceDeskActions.endConversation} first to replace one. It
+   * also rejects when the history fails to load, when the conversation restarts while it loads,
+   * when your service desk's `startChat` throws, or after the chat was removed.
    *
    * @param options Optional. Leave it out to start a conversation without a response.
    * @param options.messageID The ID of a response in the conversation that holds a `connect_to_agent`

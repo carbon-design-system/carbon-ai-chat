@@ -397,37 +397,47 @@ class HumanAgentServiceImpl implements HumanAgentService {
   }
 
   /**
-   * `serviceDesk.startConversation()`. With `messageID`, starts the chat
-   * that response's first `connect_to_agent` card would. With none, starts one
-   * from a code-made response holding a bare `connect_to_agent` item. That
-   * response isn't added to the conversation, so no card shows.
+   * `serviceDesk.startConversation()`. With `messageID`, starts the chat that
+   * response's first `connect_to_agent` card would. With none, starts one from
+   * a code-made response holding a bare `connect_to_agent` item. That response
+   * isn't added to the conversation, so no card shows. Unlike the card, it
+   * never ends a suspended conversation: that's for the host to do.
    */
   public async startConversation(
     options: StartConversationOptions = {}
   ): Promise<void> {
-    const { messageID } = options;
-    if (messageID === undefined) {
-      const message = createMessageResponseForItem<ConnectToHumanAgentItem>({
-        response_type: MessageResponseTypes.CONNECT_TO_HUMAN_AGENT,
-      });
-      return this.startChat(null, message, options);
-    }
-    const state = this.serviceManager.store.getState();
-    const message = state.allMessagesByID[messageID];
-    const localItem = isResponse(message)
-      ? state.assistantMessageState.localMessageIDs
-          .map((id) => state.allMessageItemsByID[id])
-          .find(
-            (item): item is LocalMessageItem<ConnectToHumanAgentItem> =>
-              item?.fullMessageID === messageID &&
-              isConnectToHumanAgent(item.item)
-          )
-      : undefined;
-    if (!localItem) {
+    if (this.chatStarted) {
       throw new Error(
-        `No response with a connect_to_agent item has the ID "${messageID}", so startConversation started nothing.`
+        'A conversation with a human agent is already connecting, connected, or suspended, so startConversation started nothing. Call serviceDesk.endConversation() first.'
       );
     }
+    const { messageID } = options;
+    let localItem: LocalMessageItem<ConnectToHumanAgentItem> | null = null;
+    let message: Message;
+    if (messageID === undefined) {
+      message = createMessageResponseForItem<ConnectToHumanAgentItem>({
+        response_type: MessageResponseTypes.CONNECT_TO_HUMAN_AGENT,
+      });
+    } else {
+      const state = this.serviceManager.store.getState();
+      message = state.allMessagesByID[messageID];
+      localItem = isResponse(message)
+        ? state.assistantMessageState.localMessageIDs
+            .map((id) => state.allMessageItemsByID[id])
+            .find(
+              (item): item is LocalMessageItem<ConnectToHumanAgentItem> =>
+                item?.fullMessageID === messageID &&
+                isConnectToHumanAgent(item.item)
+            )
+        : undefined;
+      if (!localItem) {
+        throw new Error(
+          `No response with a connect_to_agent item has the ID "${messageID}", so startConversation started nothing.`
+        );
+      }
+    }
+    // The connecting state shows in the conversation, not on the home screen.
+    this.serviceManager.view?.current?.messaging.closeHomeScreenIfOpen?.();
     return this.startChat(localItem, message, options);
   }
 
