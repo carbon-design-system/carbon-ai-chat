@@ -26,7 +26,10 @@ import {
   BusEventReceive,
   BusEventType,
 } from '../../../types/events/eventBusTypes';
-import { LocalMessageItem } from '../../../types/messaging/LocalMessageItem';
+import {
+  LocalMessageItem,
+  MessageErrorState,
+} from '../../../types/messaging/LocalMessageItem';
 import { OnErrorType } from '../../../types/config/ErrorConfig';
 import isEqual from 'lodash-es/isEqual.js';
 import cloneDeep from 'lodash-es/cloneDeep.js';
@@ -223,6 +226,24 @@ class UpsertWorkflow {
     }
     if (settledAny) {
       this.serviceManager.messageCoordinator.hideStopStreamingButtonIfNoUpsertStreaming();
+    }
+  }
+
+  /**
+   * A response `failTurn` marked keeps its inline error through a late write that sets no error
+   * state of its own (#2354 O3, O6).
+   */
+  private keepTurnFailureMark(messageID: string, message: MessageResponse) {
+    if (
+      this.serviceManager.messageCoordinator.isResponseFailedWhileStreaming(
+        messageID
+      ) &&
+      message.history?.error_state === undefined
+    ) {
+      message.history = {
+        ...message.history,
+        error_state: MessageErrorState.FAILED_WHILE_STREAMING,
+      };
     }
   }
 
@@ -436,6 +457,7 @@ class UpsertWorkflow {
           );
     const ownedResult = this.incomingMessageService.copyNativeMessage(result);
     retainNativeMessageOrigin(ownedResult);
+    this.keepTurnFailureMark(messageID, ownedResult);
     this.serviceManager.store.dispatch(
       actions.upsertMessage(
         ownedResult,
@@ -675,6 +697,7 @@ class UpsertWorkflow {
       const refsBefore = this.snapshotLocalItemRefs(messageID);
       const ownedResult = this.incomingMessageService.copyNativeMessage(result);
       retainNativeMessageOrigin(ownedResult);
+      this.keepTurnFailureMark(messageID, ownedResult);
       store.dispatch(
         actions.upsertMessage(ownedResult, isStreaming, pauseIndex, {
           pauseReveal: { originalLocalIDs, previousHoldFromIndex },

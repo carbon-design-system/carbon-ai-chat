@@ -23,9 +23,16 @@ function isRequestMessage(message: Message): message is MessageRequest {
   return (message as MessageRequest)?.input !== undefined;
 }
 
-/** A request sent to a human agent. Those turns belong to the agent service. */
-function isAgentRequest(message: Message) {
-  return isRequestMessage(message) && Boolean(message.input.agent_message_type);
+/** A message sent to, or written by, a human agent. Those turns belong to the agent service. */
+function isAgentMessageData(message: Message) {
+  if (isRequestMessage(message)) {
+    return Boolean(message.input.agent_message_type);
+  }
+  return Boolean(
+    (message as MessageResponse)?.output?.generic?.some(
+      (item) => item?.agent_message_type
+    )
+  );
 }
 
 /**
@@ -58,18 +65,14 @@ function turnRequestID(
   return undefined;
 }
 
-/** The last request to the assistant that isn't waiting in the queue, or `undefined`. */
+/** The last request that isn't waiting in the queue, or `undefined`. It may be to a human agent. */
 function lastTurnRequestID(
   { messageIDs, messagesByID }: TurnMessages,
   waiting: ReadonlySet<string>
 ) {
   for (let index = messageIDs.length - 1; index >= 0; index--) {
     const message = messagesByID[messageIDs[index]];
-    if (
-      isRequestMessage(message) &&
-      !isAgentRequest(message) &&
-      !waiting.has(message.id)
-    ) {
+    if (isRequestMessage(message) && !waiting.has(message.id)) {
       return message.id;
     }
   }
@@ -97,13 +100,14 @@ function turnHasResponse(
   return false;
 }
 
-/** Whether `requestID` names a request sent to a human agent. */
-function isAgentTurn(requestID: string, { messagesByID }: TurnMessages) {
-  return isAgentRequest(messagesByID[requestID]);
+/** Whether `messageID` names a message sent to, or written by, a human agent. */
+function isAgentMessage(messageID: string, { messagesByID }: TurnMessages) {
+  const message = messagesByID[messageID];
+  return Boolean(message) && isAgentMessageData(message);
 }
 
 export {
-  isAgentTurn,
+  isAgentMessage,
   lastTurnRequestID,
   turnHasResponse,
   turnRequestID,

@@ -272,16 +272,132 @@ describe('messaging.failTurn (#2354)', () => {
     ).toBeTruthy();
   });
 
-  it.each([
-    ['the request ID', (request: MessageRequest) => request.id],
-    ['a response ID', () => 'response-1'],
-    ['nothing', (): string => undefined],
-  ])('names the turn by its request ID when given %s (O2)', async (_, idOf) => {
-    const { instance, request } = await streamingTurn('upsert');
+  it.each<[Stream, string, (request: MessageRequest) => string]>([
+    ['chunk', 'the request ID', (request) => request.id],
+    ['chunk', 'a response ID', () => 'response-1'],
+    ['chunk', 'nothing', () => undefined],
+    ['upsert', 'the request ID', (request) => request.id],
+    ['upsert', 'a response ID', () => 'response-1'],
+    ['upsert', 'nothing', () => undefined],
+  ])(
+    'names a %s turn by its request ID when given %s (O2)',
+    async (stream, _, idOf) => {
+      const { instance, request } = await streamingTurn(stream);
 
-    await instance.messaging.failTurn({ messageID: idOf(request) });
+      await instance.messaging.failTurn({ messageID: idOf(request) });
 
-    expect(instance.state.get().error.messageID).toBe(request.id);
+      expect(instance.state.get().error.messageID).toBe(request.id);
+    }
+  );
+
+  it.each<Stream>(['chunk', 'upsert'])(
+    'finds a %s turn whose request a pre:send handler renamed, and reports the name the host got',
+    async (stream) => {
+      const sender = host(stream, { resolve: true });
+      const { instance } = await chatWith(sender);
+      instance.on({
+        type: BusEventType.PRE_SEND,
+        handler: (event: any) => {
+          event.data.id = `renamed-${event.data.id}`;
+        },
+      });
+      await instance.messaging.send('Hello');
+      await waitFor(() =>
+        expect(instance.state.get().status).toBe('streaming')
+      );
+      const hostID = sender.turns[0].request.id;
+      expect(hostID).toMatch(/^renamed-/);
+
+      await instance.messaging.failTurn({ messageID: hostID });
+
+      expect(instance.state.get().status).toBe('error');
+      expect(instance.state.get().error.messageID).toBe(hostID);
+      expect(messageOf(instance, 'response-1').history.error_state).toBe(
+        MessageErrorState.FAILED_WHILE_STREAMING
+      );
+      // A repeat call by the same name finds the same turn.
+      await instance.messaging.failTurn({
+        messageID: hostID,
+        error: { message: 'Again' },
+      });
+      expect(instance.state.get().error).toMatchObject({
+        message: 'Again',
+        messageID: hostID,
+      });
+    }
+  );
+
+  it('fails an older turn still streaming while a newer one runs, leaving the newer one alone', async () => {
+    // The first turn resolves and keeps streaming; the second holds, so it stays the current request.
+    const sender = host('none', { resolve: true });
+    const holdSecond = resolvablePromise<void>();
+    sender.customSendMessage = async (request, { signal }, instance) => {
+      sender.turns.push({ request, signal });
+      signal.addEventListener('abort', () =>
+        sender.log.push(`abort ${request.id} ${signal.reason}`)
+      );
+      if (sender.turns.length === 1) {
+        await writePartial(instance, 'upsert', request, 'response-1', 'One');
+        return;
+      }
+      await holdSecond;
+    };
+    const { instance } = await chatWith(sender);
+    await instance.messaging.send('First');
+    const second = instance.messaging.send('Second');
+    await waitFor(() => expect(sender.turns).toHaveLength(2));
+    const [first, next] = sender.turns;
+
+    await instance.messaging.failTurn({ messageID: 'response-1' });
+
+    expect(instance.state.get().error.messageID).toBe(first.request.id);
+    expect(messageOf(instance, 'response-1').history.error_state).toBe(
+      MessageErrorState.FAILED_WHILE_STREAMING
+    );
+    expect(sender.log).toEqual([
+      `abort ${first.request.id} ${CancellationReason.TURN_FAILED}`,
+    ]);
+    // The newer turn still runs, and its send resolves as usual.
+    expect(next.signal.aborted).toBe(false);
+    holdSecond.doResolve();
+    await second;
+    expect(instance.state.get().status).toBe('error');
+  });
+
+  it('settles a stream with no request_id as part of the last turn', async () => {
+    const sender = host('none', { resolve: true });
+    const { instance } = await chatWith(sender);
+    await instance.messaging.send('Hello');
+    await instance.messaging.upsertMessage(
+      'ownerless',
+      MessageState.STREAMING,
+      (): MessageResponse => ({
+        id: 'ownerless',
+        output: {
+          generic: [{ response_type: MessageResponseTypes.TEXT, text: 'x' }],
+        },
+      })
+    );
+    expect(instance.state.get().status).toBe('streaming');
+
+    await instance.messaging.failTurn();
+
+    expect(messageOf(instance, 'ownerless').history.error_state).toBe(
+      MessageErrorState.FAILED_WHILE_STREAMING
+    );
+    instance.messaging.clearError();
+    expect(instance.state.get().status).toBe('ready');
+  });
+
+  it('does not abort a turn that already finished', async () => {
+    const sender = host('none', { resolve: true });
+    const { instance } = await chatWith(sender);
+    await instance.messaging.send('Hello');
+
+    await instance.messaging.failTurn();
+
+    expect(instance.state.get().status).toBe('error');
+    expect(sender.log).toEqual([]);
   });
 
   it('rejects a send still running, aborts it with TURN_FAILED, ignores its late resolve, and sends the queued turn', async () => {
@@ -354,6 +470,10 @@ describe('messaging.failTurn (#2354)', () => {
         stream === 'chunk' ? ['Partial'] : ['Partial and more']
       );
       expect(instance.state.get().status).toBe('error');
+      // The failure mark stays either way (O3, O6).
+      expect(messageOf(instance, 'response-1').history.error_state).toBe(
+        MessageErrorState.FAILED_WHILE_STREAMING
+      );
     }
   );
 
@@ -473,19 +593,22 @@ describe('messaging.clearError (#2354)', () => {
   });
 
   it('leaves the catastrophic error panel open (O9)', async () => {
-    const { instance } = await chatWith(host('none', { resolve: true }));
+    const { instance } = await streamingTurn('upsert');
+    await instance.messaging.failTurn();
     instance.serviceManager.actions.errorOccurred({
       errorType: OnErrorType.RENDER,
       message: 'The chat failed.',
       catastrophicErrorType: true,
     });
-    const viewState = () =>
+    const panelOpen = () =>
       (instance.serviceManager.store.getState() as any).view
         .catastrophicErrorType;
-    expect(viewState()).toBe(true);
+    expect(panelOpen()).toBe(true);
 
     instance.messaging.clearError();
 
-    expect(viewState()).toBe(true);
+    expect(instance.state.get().error).toBeNull();
+    expect(instance.state.get().status).toBe('ready');
+    expect(panelOpen()).toBe(true);
   });
 });

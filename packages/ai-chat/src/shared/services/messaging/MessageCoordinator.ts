@@ -530,6 +530,7 @@ class MessageCoordinator {
   /** Each failure token's frozen error. State helpers hold no opaque data. */
   private failureErrors = new WeakMap<object, Readonly<ChatSDKErrorData>>();
   private frozenErrors = new WeakSet<ChatSDKErrorData>();
+  private failedWhileStreaming = new Set<string>();
   private terminationWorkflow: TerminationWorkflow;
   private sendWorkflow?: SendWorkflow;
   private loadingManager?: MessageLoadingManager;
@@ -837,6 +838,7 @@ class MessageCoordinator {
   }
 
   restart(skipHydration: boolean) {
+    this.failedWhileStreaming.clear();
     this.state.restart(skipHydration);
     this.publish();
     return this.currentGeneration;
@@ -887,12 +889,24 @@ class MessageCoordinator {
     return this.state.responseRequestID(messageID);
   }
 
-  activeResponsesOf(requestID: string) {
-    return this.state.activeResponsesOf(requestID);
+  requestKey(messageID: string) {
+    return this.state.requestKey(messageID);
   }
 
-  activeResponseOwner() {
-    return this.state.activeResponseOwner();
+  hostRequestID(key: string) {
+    return this.state.hostRequestID(key);
+  }
+
+  activeResponsesOf(key: string) {
+    return this.state.activeResponsesOf(key);
+  }
+
+  activeResponseOwners() {
+    return this.state.activeResponseOwners();
+  }
+
+  ownerlessActiveResponses() {
+    return this.state.ownerlessActiveResponses();
   }
 
   isResponseOwnedByRequest(messageID: string, requestID: string) {
@@ -937,7 +951,21 @@ class MessageCoordinator {
   responseStopped(messageID: string, generation = this.currentGeneration) {
     if (this.state.responseStopped(messageID, generation)) {
       this.publish();
+      return true;
     }
+    return false;
+  }
+
+  /**
+   * Records a response `failTurn` marked `FAILED_WHILE_STREAMING`, so a late upsert from the host
+   * keeps the mark. Restart forgets them with the conversation.
+   */
+  markResponseFailedWhileStreaming(messageID: string) {
+    this.failedWhileStreaming.add(messageID);
+  }
+
+  isResponseFailedWhileStreaming(messageID: string) {
+    return this.failedWhileStreaming.has(messageID);
   }
 
   responseFinished(messageID: string, generation = this.currentGeneration) {

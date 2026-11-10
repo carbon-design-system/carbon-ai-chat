@@ -127,7 +127,8 @@ export interface ChatSDKInstanceMessaging {
    *
    * With no `messageID`, it fails the active turn, else the last one. A turn is active from the time
    * its message is sent until its response stops streaming. Pass `messageID` to name the turn by
-   * its request or by any of its responses. It fails assistant turns only.
+   * its request or by any of its responses. A response you stream without a `request_id` counts as
+   * part of the last turn. It fails assistant turns only.
    *
    * **On a turn that's still running:** it aborts the turn's `customSendMessage` signal with
    * {@link CancellationReason.TURN_FAILED}. If that turn's {@link ChatSDKInstanceMessaging.send}
@@ -146,17 +147,23 @@ export interface ChatSDKInstanceMessaging {
    * or {@link ChatSDKInstanceMessaging.clearError} clears the error.
    *
    * Resolves once the abort is delivered and the state is updated. Rejects when `messageID` names no
-   * message, or a turn other than the active or last one, or when the conversation has no turn.
+   * message, or a turn other than the active or last one, when the turn is with a human agent, or
+   * when the conversation has no turn.
    *
    * @param options The turn to fail, and the error to show in `state.get().error`.
    *
    * @example Fail the turn when your stream breaks
    * ```ts
-   * stream.on("error", (error) => {
-   *   instance.messaging.failTurn({
-   *     error: { message: "The response stream closed early.", otherData: error },
+   * async function customSendMessage(request, { signal }, instance) {
+   *   const stream = openStream(request, signal);
+   *   stream.on("error", (error) => {
+   *     // Name the turn: a later message may have started by the time the stream breaks.
+   *     instance.messaging.failTurn({
+   *       messageID: request.id,
+   *       error: { message: "The response stream closed early.", otherData: error },
+   *     });
    *   });
-   * });
+   * }
    * ```
    */
   failTurn: (options?: FailTurnOptions) => Promise<void>;
