@@ -371,7 +371,7 @@ const conversationReadGaps: ConversationReadGap[] = [
   {
     file: 'src/chat/utils/dynamicConfigUpdates.ts',
     read: 'assistantMessageState.messageIDs',
-    count: 2,
+    count: 1,
     owner: '#2693',
   },
   {
