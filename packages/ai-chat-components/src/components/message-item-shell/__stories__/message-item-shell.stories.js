@@ -8,6 +8,7 @@
  */
 
 import '../index';
+import '../../message-byline/index';
 import '../../user-avatar/index';
 import { html } from 'lit';
 import styles from './story-styles.scss?lit';
@@ -38,7 +39,8 @@ const argTypes = {
   },
   hideAvatar: {
     control: 'boolean',
-    description: 'Hides the avatar within the byline.',
+    description:
+      'Hides the avatar slotted in the byline. The byline keeps the label and timestamp.',
   },
 };
 
@@ -55,16 +57,19 @@ const renderRow = (args) => html`
     row-type=${args.rowType}
     ?full-width=${args.fullWidth}
     ?hide-avatar=${args.hideAvatar}>
-    ${
-      args.rowType === 'response'
-        ? html`<cds-aichat-user-avatar
-            slot="byline"
-            class="cds-aichat-message-item-shell__byline-avatar"></cds-aichat-user-avatar>`
-        : ''
-    }
-    <span slot="byline" class="${storyClass}-byline-text">
-      ${args.rowType === 'request' ? 'You' : 'Assistant'} 10:42 AM
-    </span>
+    <cds-aichat-message-byline
+      slot="byline"
+      label=${args.rowType === 'request' ? 'You' : 'Assistant'}
+      timestamp="10:42 AM">
+      ${
+        args.rowType === 'response'
+          ? html`<cds-aichat-user-avatar
+              slot="avatar"
+              width="28px"
+              height="28px"></cds-aichat-user-avatar>`
+          : ''
+      }
+    </cds-aichat-message-byline>
     <div class="${storyClass}-content">
       ${
         args.rowType === 'request'
