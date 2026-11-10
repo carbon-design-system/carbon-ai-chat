@@ -39,7 +39,7 @@ export type ConversationStatus =
  */
 export interface PublicInputState {
   /**
-   * @experimental Raw text currently queued in the input before being sent to customSendMessage.
+   * Raw text currently queued in the input before being sent to customSendMessage.
    */
   rawValue: string;
 
@@ -53,8 +53,6 @@ export interface PublicInputState {
    * Hosts persisting this value should serialize through `editor.getJSON()`
    * (canonical) rather than partial walks; the JSONContent shape is
    * governed by Tiptap's stability guarantees.
-   *
-   * @experimental
    */
   content: JSONContent;
 
@@ -67,24 +65,18 @@ export interface PublicInputState {
    * Toggles in the same dispatch pass as the underlying focus event, so
    * subscribing via {@link BusEventType.STATE_CHANGE} fires once per
    * focus/blur transition.
-   *
-   * @experimental
    */
   focused: boolean;
 
   /**
    * A snapshot of the pending structured data currently queued in the input. This data will be merged
    * into the next outgoing {@link MessageRequest} when the user sends a message via the UI.
-   *
-   * @experimental
    */
   structuredData?: StructuredData;
 
   /**
    * `true` while one or more file uploads initiated via {@link UploadConfig.onFileUpload} are still
    * in progress.  The send button is disabled while this is `true`.
-   *
-   * @experimental
    */
   hasInFlightUploads: boolean;
 }
@@ -206,7 +198,7 @@ export type PublicChatState = Readonly<
     activeResponseId: string | null;
 
     /**
-     * @experimental State representing the main input surface.
+     * State representing the main input surface.
      */
     input: PublicInputState;
 
