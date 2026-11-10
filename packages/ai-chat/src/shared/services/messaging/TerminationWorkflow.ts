@@ -131,7 +131,33 @@ class TerminationWorkflow {
    */
   private failTurnTarget(messageID: string | undefined): FailTarget {
     const { messageCoordinator } = this.serviceManager;
-    const turnMessages = this.turnMessages();
+    const { currentKey, activeKeys, lastKey } = this.turnKeys();
+    const key =
+      messageID === undefined
+        ? (currentKey ?? [...activeKeys][0] ?? lastKey)
+        : this.turnKeyOf(messageID, activeKeys, lastKey);
+    this.assertCanFail(key, messageID, activeKeys, lastKey);
+    // A stream with no owner belongs to the last turn; stop() settles it the same way.
+    const ownerless =
+      key === lastKey ? messageCoordinator.ownerlessActiveResponses() : [];
+    const current = messageCoordinator.getCurrentRequest();
+    return {
+      key,
+      isActive: activeKeys.has(key) || ownerless.length > 0,
+      pending:
+        current && messageCoordinator.requestKey(current.message.id) === key
+          ? current
+          : undefined,
+      ownerless,
+    };
+  }
+
+  /**
+   * The current request's key while it sends or streams; every turn with a response still
+   * streaming; and the last turn, by its request's key.
+   */
+  private turnKeys() {
+    const { messageCoordinator } = this.serviceManager;
     const current = messageCoordinator.getCurrentRequest();
     const currentKey =
       current && (!current.isProcessed || current.isStreaming)
@@ -142,20 +168,25 @@ class TerminationWorkflow {
       activeKeys.add(currentKey);
     }
     const lastID = lastTurnRequestID(
-      turnMessages,
+      this.turnMessages(),
       messageCoordinator.waitingRequestIDs()
     );
     const lastKey = lastID && messageCoordinator.requestKey(lastID);
-    const key =
-      messageID === undefined
-        ? (currentKey ?? [...activeKeys][0] ?? lastKey)
-        : this.turnKeyOf(messageID, activeKeys, lastKey);
+    return { currentKey, activeKeys, lastKey };
+  }
+
+  private assertCanFail(
+    key: string | undefined,
+    messageID: string | undefined,
+    activeKeys: ReadonlySet<string>,
+    lastKey: string | undefined
+  ) {
     if (!key) {
       throw new Error(
         'The conversation has no turn to fail. Call failTurn after a message is sent.'
       );
     }
-    if (isAgentMessage(key, turnMessages)) {
+    if (isAgentMessage(key, this.turnMessages())) {
       throw new Error(
         'The turn is with a human agent, so failTurn failed nothing. It fails assistant turns only.'
       );
@@ -165,18 +196,6 @@ class TerminationWorkflow {
         `The message "${messageID}" isn't in the active or last turn, so failTurn failed nothing. Pass an ID from that turn, or leave messageID out.`
       );
     }
-    // A stream with no owner belongs to the last turn; stop() settles it the same way.
-    const ownerless =
-      key === lastKey ? messageCoordinator.ownerlessActiveResponses() : [];
-    return {
-      key,
-      isActive: activeKeys.has(key) || ownerless.length > 0,
-      pending:
-        current && messageCoordinator.requestKey(current.message.id) === key
-          ? current
-          : undefined,
-      ownerless,
-    };
   }
 
   /** The key of the request whose turn `messageID` names, by any of its IDs. */
