@@ -340,13 +340,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
       );
 
       // Fire off the pre-start event.
-      const event: BusEventHumanAgentPreStartChat = {
-        type: BusEventType.HUMAN_AGENT_PRE_START_CHAT,
-        message: originalMessage as MessageResponse,
-        ...(options && 'payload' in options
-          ? { preStartChatPayload: options.payload }
-          : {}),
-      };
+      const event = createPreStartChatEvent(originalMessage, options);
       inPreStartHandlers = true;
       await serviceManager.fire(event);
       inPreStartHandlers = false;
@@ -380,27 +374,34 @@ class HumanAgentServiceImpl implements HumanAgentService {
         preStartChatPayload: event.preStartChatPayload,
       });
     } catch (error) {
-      consoleError(
-        inPreStartHandlers
-          ? 'A human_agent:pre:startChat handler threw, so the chat did not start the conversation with an agent and showed its connecting error.'
-          : '[startChat] An error with the service desk occurred.',
-        error
-      );
-      // If it failed to start, then stop connecting and clear the service desk.
-      if (this.serviceDeskCallback) {
-        await this.serviceDeskCallback.setErrorStatus({
-          type: ErrorType.CONNECTING,
-          // A handler's throw is logged once, above; the desk didn't fail.
-          ...(!inPreStartHandlers && { logInfo: error }),
-        });
-      }
-
-      serviceManager.store.dispatch(setIsConnecting(false, null));
-      this.chatStarted = false;
-      this.cancelHumanAgentJoinedTimer();
-
+      await this.abandonFailedStart(error, inPreStartHandlers);
       throw error;
     }
+  }
+
+  /**
+   * Backs out of a start that threw: shows the connecting error and stops
+   * connecting. `fromHandler` says a `pre:startChat` handler threw, not the desk.
+   */
+  private async abandonFailedStart(error: unknown, fromHandler: boolean) {
+    consoleError(
+      fromHandler
+        ? 'A human_agent:pre:startChat handler threw, so the chat did not start the conversation with an agent and showed its connecting error.'
+        : '[startChat] An error with the service desk occurred.',
+      error
+    );
+    // If it failed to start, then stop connecting and clear the service desk.
+    if (this.serviceDeskCallback) {
+      await this.serviceDeskCallback.setErrorStatus({
+        type: ErrorType.CONNECTING,
+        // A handler's throw is logged once, above; the desk didn't fail.
+        ...(!fromHandler && { logInfo: error }),
+      });
+    }
+
+    this.serviceManager.store.dispatch(setIsConnecting(false, null));
+    this.chatStarted = false;
+    this.cancelHumanAgentJoinedTimer();
   }
 
   /**
@@ -1801,6 +1802,24 @@ class ServiceDeskCallbackImpl<
     }
     store.dispatch(setPersistedServiceDeskState(deepFreeze(newState)));
   }
+}
+
+/**
+ * The `pre:startChat` event for a start. A `payload` from
+ * `startConversation` seeds `preStartChatPayload`; without one the event has
+ * no such key, as before.
+ */
+function createPreStartChatEvent(
+  originalMessage: Message,
+  options?: Pick<StartConversationOptions, 'payload'>
+): BusEventHumanAgentPreStartChat {
+  return {
+    type: BusEventType.HUMAN_AGENT_PRE_START_CHAT,
+    message: originalMessage as MessageResponse,
+    ...(options && 'payload' in options
+      ? { preStartChatPayload: options.payload }
+      : {}),
+  };
 }
 
 /**
