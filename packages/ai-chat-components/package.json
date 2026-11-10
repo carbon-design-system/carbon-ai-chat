@@ -44,7 +44,7 @@
     "test:react": "jest",
     "test:updateSnapshot": "web-test-runner \"src/components/**/*.test.ts\" --node-resolve --update-snapshots",
     "test:web-components": "web-test-runner \"src/components/**/*.test.ts\" --node-resolve",
-    "test:manifest": "node --test tasks/__tests__/cem-plugins.test.js"
+    "test:manifest": "node --test \"tasks/__tests__/*.test.js\""
   },
   "peerDependencies": {
     "react": ">=17.0.0 <20.0.0"
