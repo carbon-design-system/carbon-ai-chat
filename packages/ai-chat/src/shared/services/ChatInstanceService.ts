@@ -11,7 +11,9 @@ import {
   ServiceManager,
   type UserDefinedElementRegistryItem,
 } from './ServiceManager';
+import type { StartConversationOptions } from './haa/HumanAgentService';
 import { VIEW_STATE_ALL_CLOSED } from '../store/reducerUtils';
+import { hasServiceDesk } from '../utils/messageUtils';
 import { agentUpdateIsSuspended } from '../store/humanAgentActions';
 import { AppStateMessages } from '../../types/state/ChatMessagesState';
 import { ViewState, ViewType } from '../../types/instance/apiTypes';
@@ -341,6 +343,32 @@ class ChatInstanceService {
    */
   agentEndConversation(endedByUser: boolean) {
     return this.serviceManager.humanAgentService.endChat(endedByUser);
+  }
+
+  /**
+   * `serviceDesk.startConversation()`. The desk is created while the
+   * chat loads, so a chat that hasn't loaded loads first, as a send does. The
+   * service is looked up after the load, since a factory change can replace it.
+   */
+  async agentStartConversation(options?: StartConversationOptions) {
+    const { serviceManager } = this;
+    const removed = () =>
+      new Error(
+        'The chat was removed from the page, so startConversation started nothing.'
+      );
+    if (serviceManager.isShutdown) {
+      throw removed();
+    }
+    if (!hasServiceDesk(serviceManager.store.getState().config)) {
+      throw new Error(
+        "There's no serviceDeskFactory in the config, so startConversation started nothing."
+      );
+    }
+    await this.hydrateChat();
+    if (serviceManager.isShutdown) {
+      throw removed();
+    }
+    return serviceManager.humanAgentService.startConversation(options);
   }
 
   /**

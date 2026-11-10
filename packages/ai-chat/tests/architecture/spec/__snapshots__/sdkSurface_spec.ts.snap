@@ -231,6 +231,7 @@ interface ChainOfThoughtStep (src/types/messaging/Messages.ts)
 
 interface ChatInstanceServiceDeskActions (src/types/instance/ChatInstanceServiceDeskActions.ts)
   endConversation: () => Promise<void>
+  startConversation: (options?: { messageID?: string; payload?: unknown; }) => Promise<void>
   updateIsSuspended: (isSuspended: boolean) => Promise<void>
 
 interface ChatSDKConfig (src/types/config/ChatSDKConfig.ts)

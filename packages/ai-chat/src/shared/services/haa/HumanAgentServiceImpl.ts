@@ -45,8 +45,11 @@ import {
   addDefaultsToMessage,
   createMessageRequestForFileUpload,
   createMessageRequestForText,
+  createMessageResponseForItem,
   createMessageResponseForText,
   hasServiceDesk,
+  isConnectToHumanAgent,
+  isResponse,
 } from '../../utils/messageUtils';
 import { assertType, consoleError, debugLog } from '../../utils/miscUtils';
 import {
@@ -58,6 +61,7 @@ import {
   HumanAgentsOnlineStatus,
   CreateHumanAgentServiceFunction,
   HumanAgentService,
+  StartConversationOptions,
 } from './HumanAgentService';
 import {
   addHumanAgentEndChatMessage,
@@ -73,6 +77,7 @@ import {
   ConnectToHumanAgentItem,
   Message,
   MessageResponse,
+  MessageResponseTypes,
   TextItem,
 } from '../../../types/messaging/Messages';
 import type { ConversationAppConfig } from '../../../types/state/ConversationState';
@@ -294,10 +299,12 @@ class HumanAgentServiceImpl implements HumanAgentService {
    * contain specific information to send to the service desk as part of the connection. This can include things
    * like a message to display to a human agent.
    * @param originalMessage The full original message that this Connect to Agent item belongs to.
+   * @param options `payload` seeds the pre-start event's `preStartChatPayload`.
    */
   public async startChat(
-    localConnectMessage: LocalMessageItem<ConnectToHumanAgentItem>,
-    originalMessage: Message
+    localConnectMessage: LocalMessageItem<ConnectToHumanAgentItem> | null,
+    originalMessage: Message,
+    options?: Pick<StartConversationOptions, 'payload'>
   ): Promise<void> {
     if (!this.serviceDesk) {
       // No service desk connected.
@@ -334,6 +341,9 @@ class HumanAgentServiceImpl implements HumanAgentService {
       const event: BusEventHumanAgentPreStartChat = {
         type: BusEventType.HUMAN_AGENT_PRE_START_CHAT,
         message: originalMessage as MessageResponse,
+        ...(options && 'payload' in options
+          ? { preStartChatPayload: options.payload }
+          : {}),
       };
       await serviceManager.fire(event);
 
@@ -357,8 +367,9 @@ class HumanAgentServiceImpl implements HumanAgentService {
         );
       }
 
+      // A start from code has no card; the connecting state shows without one.
       serviceManager.store.dispatch(
-        setIsConnecting(true, localConnectMessage.ui_state.id)
+        setIsConnecting(true, localConnectMessage?.ui_state.id ?? null)
       );
 
       await this.serviceDesk.startChat(originalMessage as MessageResponse, {
@@ -383,6 +394,41 @@ class HumanAgentServiceImpl implements HumanAgentService {
 
       throw error;
     }
+  }
+
+  /**
+   * `serviceDesk.startConversation()`. With `messageID`, starts the chat
+   * that response's first `connect_to_agent` card would. With none, starts one
+   * from a code-made response holding a bare `connect_to_agent` item. That
+   * response isn't added to the conversation, so no card shows.
+   */
+  public async startConversation(
+    options: StartConversationOptions = {}
+  ): Promise<void> {
+    const { messageID } = options;
+    if (messageID === undefined) {
+      const message = createMessageResponseForItem<ConnectToHumanAgentItem>({
+        response_type: MessageResponseTypes.CONNECT_TO_HUMAN_AGENT,
+      });
+      return this.startChat(null, message, options);
+    }
+    const state = this.serviceManager.store.getState();
+    const message = state.allMessagesByID[messageID];
+    const localItem = isResponse(message)
+      ? state.assistantMessageState.localMessageIDs
+          .map((id) => state.allMessageItemsByID[id])
+          .find(
+            (item): item is LocalMessageItem<ConnectToHumanAgentItem> =>
+              item?.fullMessageID === messageID &&
+              isConnectToHumanAgent(item.item)
+          )
+      : undefined;
+    if (!localItem) {
+      throw new Error(
+        `No response with a connect_to_agent item has the ID "${messageID}", so startConversation started nothing.`
+      );
+    }
+    return this.startChat(localItem, message, options);
   }
 
   /**

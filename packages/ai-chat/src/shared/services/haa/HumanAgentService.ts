@@ -20,6 +20,7 @@ import {
   MessageResponse,
 } from '../../../types/messaging/Messages';
 import type { ConversationAppConfig } from '../../../types/state/ConversationState';
+import type { ChatInstanceServiceDeskActions } from '../../../types/instance/ChatInstanceServiceDeskActions';
 import { JSONContent } from '@tiptap/core';
 
 /**
@@ -65,13 +66,22 @@ interface HumanAgentService {
    * contain specific information to send to the service desk as part of the connection. This can include things
    * like a message to display to a human agent.
    * @param originalMessage The full original message that this Connect to Agent item belongs to.
+   * @param options `payload` seeds the `pre:startChat` event's `preStartChatPayload`.
    * @returns Returns a Promise that resolves when the service desk has successfully started a new chat. This does
    * not necessarily mean that an agent has joined the conversation or has read any messages sent by the user.
    */
   startChat(
-    localConnectMessage: LocalMessageItem<ConnectToHumanAgentItem>,
-    originalMessage: Message
+    localConnectMessage: LocalMessageItem<ConnectToHumanAgentItem> | null,
+    originalMessage: Message,
+    options?: Pick<StartConversationOptions, 'payload'>
   ): Promise<void>;
+
+  /**
+   * `serviceDesk.startConversation()`: starts the chat the response's
+   * first `connect_to_agent` card would, or, with no `messageID`, one from a
+   * code-made response that isn't added to the conversation and shows no card.
+   */
+  startConversation(options?: StartConversationOptions): Promise<void>;
 
   /**
    * Tells the service desk to terminate the chat.
@@ -180,6 +190,11 @@ interface HumanAgentService {
   shutdown(): void;
 }
 
+/** The options of `serviceDesk.startConversation()`. */
+type StartConversationOptions = Parameters<
+  ChatInstanceServiceDeskActions['startConversation']
+>[0];
+
 /**
  * The type signature of the "createService" function in the implementation.
  */
@@ -192,4 +207,5 @@ export {
   HumanAgentService,
   CreateHumanAgentServiceFunction,
   HumanAgentsOnlineStatus,
+  StartConversationOptions,
 };
