@@ -64,6 +64,9 @@ export interface PublicInputState {
   /**
    * `true` while one or more file uploads initiated via {@link UploadConfig.onFileUpload} are still
    * in progress.  The send button is disabled while this is `true`.
+   *
+   * @deprecated Read {@link ChatSDKState.hasInFlightUploads} on the root of the state instead. It
+   * holds the same value. Version 2.0.0 removes this field.
    */
   hasInFlightUploads: boolean;
 }

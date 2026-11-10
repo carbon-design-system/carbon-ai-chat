@@ -69,7 +69,7 @@ import {
 } from '../../utils/inputValueSync';
 import { hasInFlightUpload, hasSendableInput } from '../../utils/sendableInput';
 import { restoreInputDraft } from '../../utils/restoreInputDraft';
-import { validateFileSelection } from '../../utils/fileUploadValidation';
+import { validateFileSelection } from '../../../shared/utils/fileUploadValidation';
 import { formatShortcutForDisplay } from '../../utils/keyboardUtils';
 import { consoleError } from '../../../shared/utils/miscUtils';
 import { viewActions } from '../../../view/state';

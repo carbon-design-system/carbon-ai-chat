@@ -51,6 +51,16 @@ function createConversationInstance<Self>(
       return serviceManager.messageCoordinator.failTurn(options);
     },
 
+    addFile: (file) => {
+      debugLog('Called instance.messaging.addFile', file);
+      return serviceManager.inputActionsService.addFile(file);
+    },
+
+    removeFile: (id) => {
+      debugLog('Called instance.messaging.removeFile', id);
+      serviceManager.inputActionsService.removeFile(id);
+    },
+
     clearError: () => {
       debugLog('Called instance.messaging.clearError');
       serviceManager.messageCoordinator.clearError();

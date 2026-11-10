@@ -242,6 +242,7 @@ interface ChatSDKConfig (src/types/config/ChatSDKConfig.ts)
   onError?: (data: ChatSDKErrorData) => void
   serviceDesk?: ChatSDKServiceDeskConfig
   serviceDeskFactory?: (parameters: ServiceDeskFactoryParameters<I>) => Promise<ServiceDesk>
+  upload?: ChatSDKUploadConfig
 
 interface ChatSDKConfigMessaging (src/types/config/ChatSDKConfigMessaging.ts)
   customLoadHistory?: (instance: I) => Promise<HistoryItem[]>
@@ -275,15 +276,24 @@ interface ChatSDKInstance (src/types/instance/ChatSDKInstance.ts)
   state: ChatSDKStateAccess<import("./ChatSDKState").ChatSDKState>
 
 interface ChatSDKInstanceMessaging (src/types/config/ChatSDKInstanceMessaging.ts)
+  addFile: (file: File) => Promise<{ id: string; }>
   clearConversation: () => Promise<void>
   clearError: () => void
   failTurn: (options?: FailTurnOptions) => Promise<void>
   insertHistory: (messages: HistoryItem[]) => Promise<void>
+  removeFile: (id: string) => void
   removeMessages: (messageIDs: string[]) => Promise<void>
   restartConversation: () => Promise<void>
   send: (message: MessageRequest | string, options?: SendOptions) => Promise<void>
   stop: () => Promise<void>
   upsertMessage: (messageID: string, state: MessageState, updater: UpsertMessageUpdater) => Promise<void>
+
+interface ChatSDKPendingUpload (src/types/instance/ChatSDKState.ts)
+  contributedData?: StructuredData
+  errorMessage?: string
+  file: File
+  id: string
+  status: "uploading" | "complete" | "error"
 
 interface ChatSDKPersistedStateConfig (src/types/config/ChatSDKPersistedStateConfig.ts)
   initialState?: S
@@ -297,14 +307,22 @@ interface ChatSDKServiceDeskConfig (src/types/config/ChatSDKServiceDeskConfig.ts
 interface ChatSDKState (src/types/instance/ChatSDKState.ts)
   activeResponseId: string
   error?: Readonly<ChatSDKErrorData>
+  hasInFlightUploads?: boolean
   humanAgent: Readonly<PersistedHumanAgentState & { isConnecting: boolean; }>
   messages: ReadonlyArray<Readonly<Message>>
+  pendingUploads?: ReadonlyArray<ChatSDKPendingUpload>
   status: ConversationStatus
 
 interface ChatSDKStateAccess (src/types/instance/ChatSDKState.ts)
   get: () => S
   select: <Selected>(selector: (state: S) => Selected, listener: (value: Selected) => void, options?: { isEqual?: (left: Selected, right: Selected) => boolean; }) => () => void
   subscribe: (listener: () => void) => () => void
+
+interface ChatSDKUploadConfig (src/types/config/ChatSDKUploadConfig.ts)
+  accept?: string
+  maxFileSizeBytes?: number
+  maxFiles?: number
+  onFileUpload?: (file: File, abortSignal: AbortSignal) => Promise<StructuredData>
 
 interface ConnectToHumanAgentItem (src/types/messaging/Messages.ts)
   agent_available?: { message: string; }

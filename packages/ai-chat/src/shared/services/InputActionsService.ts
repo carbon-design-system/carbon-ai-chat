@@ -25,6 +25,14 @@ import {
 import { PendingUploadStatus } from '../../types/state/InputState';
 import { StructuredData } from '../../types/messaging/Messages';
 import { consoleError, consoleWarn } from '../utils/miscUtils';
+import {
+  validateFileSelection,
+  type FileUploadValidationConfig,
+} from '../utils/fileUploadValidation';
+import {
+  FileStatusValue,
+  type FileUpload,
+} from '../../types/config/ServiceDeskConfig';
 import { isPlainTextDoc } from '../utils/inputContent';
 import type { ServiceManager } from './ServiceManager';
 import { CancellationReason } from '../../types/config/MessagingConfig';
@@ -35,6 +43,42 @@ import { CancellationReason } from '../../types/config/MessagingConfig';
  * times the host calls it.
  */
 let hasWarnedAboutUpdateRawValueDeprecation = false;
+
+/**
+ * Throws a developer-facing error when `file` breaks one of `limits`, which come from the config's
+ * `upload` or from the service desk.
+ */
+function assertFileFits(
+  file: File,
+  existingCount: number,
+  limits: FileUploadValidationConfig,
+  source: 'config' | 'desk'
+) {
+  const [rejection] = validateFileSelection(
+    [file],
+    existingCount,
+    limits
+  ).rejections;
+  if (!rejection) {
+    return;
+  }
+  const { maxFileSizeBytes, maxFiles } = limits;
+  const reasons: Record<string, string> =
+    source === 'config'
+      ? {
+          fileSharing_unsupportedType: "isn't a type upload.accept allows",
+          fileSharing_fileTooLarge: `is larger than upload.maxFileSizeBytes (${maxFileSizeBytes} bytes)`,
+          fileSharing_tooManyFiles: `would go past upload.maxFiles (${maxFiles})`,
+        }
+      : {
+          fileSharing_unsupportedType: "isn't a type the service desk accepts",
+          fileSharing_fileTooLarge: `is larger than the service desk allows (${maxFileSizeBytes} bytes)`,
+          fileSharing_tooManyFiles: `would go past the ${maxFiles} files the service desk takes in one message`,
+        };
+  throw new Error(
+    `The file "${file.name}" ${reasons[rejection.messageID]}, so addFile didn't attach it.`
+  );
+}
 
 class InputActionsService {
   private serviceManager: ServiceManager;
@@ -280,9 +324,8 @@ class InputActionsService {
   }
 
   async handleFileSelectedForUpload(file: File): Promise<void> {
-    const { store } = this.serviceManager;
-    const uploadConfig = store.getState().config.public.upload;
-
+    const uploadConfig =
+      this.serviceManager.store.getState().config.public.upload;
     if (
       !uploadConfig?.isOn ||
       !uploadConfig.onFileUpload ||
@@ -290,7 +333,97 @@ class InputActionsService {
     ) {
       return;
     }
+    await this.startUpload(file, uploadConfig.onFileUpload).done;
+  }
 
+  /**
+   * `messaging.addFile()` (#2351): checks the limits, then starts the upload the prebuilt input
+   * would. During a human agent conversation the file goes to the service desk instead. Resolves
+   * with the file's ID once the upload starts.
+   */
+  async addFile(file: File): Promise<{ id: string }> {
+    const { store } = this.serviceManager;
+    if (this.serviceManager.isShutdown) {
+      throw new Error(
+        'The chat was removed from the page, so addFile attached nothing.'
+      );
+    }
+    const state = store.getState();
+    if (selectIsInputToHumanAgent(state)) {
+      return { id: this.addFileForHumanAgent(file) };
+    }
+    const uploadConfig = state.config.public.upload;
+    if (!uploadConfig?.onFileUpload) {
+      throw new Error(
+        `There's no upload.onFileUpload in the config, so addFile didn't attach "${file.name}". Set onFileUpload to turn uploads on.`
+      );
+    }
+    assertFileFits(
+      file,
+      selectInputState(state).pendingUploads.length,
+      uploadConfig,
+      'config'
+    );
+    return { id: this.startUpload(file, uploadConfig.onFileUpload).id };
+  }
+
+  /** Stages a file for the service desk, which receives it with the next message. */
+  private addFileForHumanAgent(file: File) {
+    const { store } = this.serviceManager;
+    const slice = selectInputState(store.getState());
+    if (!slice.allowFileUploads) {
+      throw new Error(
+        `The service desk doesn't take files in this conversation, so addFile didn't attach "${file.name}".`
+      );
+    }
+    assertFileFits(
+      file,
+      slice.files.length,
+      {
+        accept: slice.allowedFileUploadTypes,
+        maxFileSizeBytes: slice.maxFileSizeBytes,
+        maxFiles: slice.allowMultipleFileUploads ? slice.maxFiles : 1,
+      },
+      'desk'
+    );
+    const upload: FileUpload = {
+      id: uuid(),
+      file,
+      status: FileStatusValue.EDIT,
+    };
+    store.dispatch(actions.addInputFile(upload, true));
+    this.serviceManager.humanAgentService?.filesSelectedForUpload([upload]);
+    return upload.id;
+  }
+
+  /**
+   * `messaging.removeFile()` (#2351): aborts or drops a file attached to the next message. An
+   * unknown ID does nothing.
+   */
+  removeFile(id: string) {
+    const { store } = this.serviceManager;
+    const slice = selectInputState(store.getState());
+    if (slice.pendingUploads.some((upload) => upload.id === id)) {
+      this.removePendingUpload(id);
+    } else if (slice.files.some((upload) => upload.id === id)) {
+      store.dispatch(
+        actions.removeFileUpload(
+          id,
+          selectIsInputToHumanAgent(store.getState())
+        )
+      );
+    }
+  }
+
+  /**
+   * Adds a pending upload and runs `onFileUpload` for it. Returns its ID at once, and `done`
+   * once the upload settles.
+   */
+  private startUpload(
+    file: File,
+    onFileUpload: (file: File, signal: AbortSignal) => Promise<StructuredData>
+  ) {
+    const { store } = this.serviceManager;
     const uploadId = uuid();
     const controller = new AbortController();
     this.uploadAbortControllers.set(uploadId, controller);
@@ -302,35 +435,38 @@ class InputActionsService {
       )
     );
 
-    try {
-      const contributedData = cloneDeep(
-        await uploadConfig.onFileUpload(file, controller.signal)
-      );
-      if (!controller.signal.aborted) {
+    const done = (async () => {
+      try {
+        const contributedData = cloneDeep(
+          await onFileUpload(file, controller.signal)
+        );
+        if (!controller.signal.aborted) {
+          store.dispatch(
+            actions.updatePendingUpload(
+              uploadId,
+              { status: PendingUploadStatus.COMPLETE, contributedData },
+              selectIsInputToHumanAgent(store.getState())
+            )
+          );
+        }
+      } catch (error) {
+        if (controller.signal.aborted) {
+          return;
+        }
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
         store.dispatch(
           actions.updatePendingUpload(
             uploadId,
-            { status: PendingUploadStatus.COMPLETE, contributedData },
+            { status: PendingUploadStatus.ERROR, errorMessage },
             selectIsInputToHumanAgent(store.getState())
           )
         );
+      } finally {
+        this.uploadAbortControllers.delete(uploadId);
       }
-    } catch (error) {
-      if (controller.signal.aborted) {
-        return;
-      }
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      store.dispatch(
-        actions.updatePendingUpload(
-          uploadId,
-          { status: PendingUploadStatus.ERROR, errorMessage },
-          selectIsInputToHumanAgent(store.getState())
-        )
-      );
-    } finally {
-      this.uploadAbortControllers.delete(uploadId);
-    }
+    })();
+    return { id: uploadId, done };
   }
 
   assertNoInFlightUpload() {

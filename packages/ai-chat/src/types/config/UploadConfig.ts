@@ -8,13 +8,16 @@
  */
 
 import { StructuredData } from '../messaging/Messages';
+import type { ChatSDKUploadConfig } from './ChatSDKUploadConfig';
 
 /**
- * Configuration for file upload behavior in the chat input.
+ * Configuration for file upload behavior in the chat input. It extends {@link ChatSDKUploadConfig}
+ * with `isOn`, which draws the attach button. {@link ChatInstanceMessaging.addFile} works whenever
+ * `onFileUpload` is set, so you can attach files from your own control with the button off.
  *
  * @category Config
  */
-export interface UploadConfig {
+export interface UploadConfig extends ChatSDKUploadConfig {
   /**
    * Whether file upload is enabled. When `true`, the chat renders a file attachment button
    * in the input area. Defaults to `false`.

@@ -285,8 +285,10 @@ describe('the handle (#1732 O9–O11)', () => {
       [
         'clearConversation',
         'insertHistory',
+        'addFile',
         'clearError',
         'failTurn',
+        'removeFile',
         'removeMessages',
         'restartConversation',
         'send',

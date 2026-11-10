@@ -138,12 +138,9 @@ function warnAboutUploadConfig(serviceManager: ServiceManager) {
       '[upload] UploadConfig.isOn is true but onFileUpload is not provided. ' +
         'File upload will be disabled. Please provide an onFileUpload handler in config.upload.'
     );
-  } else if (uploadConfig?.onFileUpload && !uploadConfig.isOn) {
-    consoleError(
-      '[upload] UploadConfig.onFileUpload is provided but isOn is not true. ' +
-        'File upload will be disabled. Set isOn: true in config.upload to enable it.'
-    );
   }
+  // onFileUpload with isOn off is valid: messaging.addFile attaches files from the host's own
+  // control, and isOn only draws the attach button (#2351 O5).
 }
 
 /**
