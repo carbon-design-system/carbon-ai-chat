@@ -146,7 +146,7 @@ class ViewService {
       };
       await this.serviceManager.fire(preViewChangeEvent);
 
-      if (preViewChangeEvent.cancelViewChange) {
+      if (preViewChangeEvent.cancel || preViewChangeEvent.cancelViewChange) {
         // If the view changing was canceled in the event then log a message and don't change the view.
         debugLog('The view changing was canceled by a view:pre:change event.');
         return;

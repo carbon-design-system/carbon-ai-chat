@@ -77,6 +77,8 @@ class FullResponseWorkflow {
     if (!message.id) {
       message.id = uuid();
     }
+    // A handler may change the ID; a streamed reply shows under this one.
+    const receivedID = message.id;
 
     const write = this.serviceManager.messageCoordinator.trackIncomingWrite(
       message.id
@@ -100,6 +102,10 @@ class FullResponseWorkflow {
         messageService.isRequestFromPreviousConversation(message.request_id)
       ) {
         // If a restart occurred during the await above, we need to exit.
+        return;
+      }
+      if (preReceiveEvent.cancel) {
+        await this.dropCanceledReply(receivedID);
         return;
       }
 
@@ -255,6 +261,22 @@ class FullResponseWorkflow {
       this.serviceManager.messageCoordinator.clearIncomingMessage(id);
     }
     this.serviceManager.store.dispatch(actions.removeMessages(messageIDs));
+  }
+
+  /**
+   * Keeps a reply out of the conversation after a `pre:receive` handler canceled it. A reply
+   * that is still streaming already shows, so its stream ends the way a final response ends
+   * it, and then the reply is removed. A settled message stored under the ID stays.
+   */
+  async dropCanceledReply(messageID: string) {
+    const coordinator = this.serviceManager.messageCoordinator;
+    if (!coordinator.isResponseStreaming(messageID)) {
+      return;
+    }
+    coordinator.finalizeStreamingMessage(messageID);
+    await this.removeMessages([messageID]);
+    // Removal hides the button only for upsert streams; a chunk stream needs it here.
+    coordinator.hideStopStreamingButtonIfIdle();
   }
 
   async runReceivedWrite(

@@ -52,23 +52,22 @@ export class InputCallbacks {
     const isInputToHumanAgent = selectIsInputToHumanAgent(currentState);
     const { files, pendingStructuredData } = selectInputState(currentState);
     if (isInputToHumanAgent) {
+      // It clears the agent input's files once no pre:send handler cancels.
       this.serviceManager.humanAgentService.sendMessageToAgent(
         text,
         files,
         displayContent
       );
-    } else {
-      const messageRequest = createMessageRequestForText(text, displayContent);
-      this.serviceManager.actions.sendWithCatch(messageRequest, source, {
-        ...options,
-        silent:
-          options?.silent ?? shouldSendSilently(text, pendingStructuredData),
-      });
+      return;
     }
+    const messageRequest = createMessageRequestForText(text, displayContent);
+    this.serviceManager.actions.sendWithCatch(messageRequest, source, {
+      ...options,
+      silent:
+        options?.silent ?? shouldSendSilently(text, pendingStructuredData),
+    });
     if (files.length) {
-      this.serviceManager.store.dispatch(
-        actions.clearInputFiles(isInputToHumanAgent)
-      );
+      this.serviceManager.store.dispatch(actions.clearInputFiles(false));
     }
   };
 

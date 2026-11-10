@@ -96,6 +96,8 @@ import {
 } from '../../../types/config/ServiceDeskConfig';
 import {
   BusEventHumanAgentPreEndChat,
+  BusEventHumanAgentPreReceive,
+  BusEventHumanAgentPreSend,
   BusEventHumanAgentPreStartChat,
   BusEventType,
 } from '../../../types/events/eventBusTypes';
@@ -352,7 +354,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
       await serviceManager.fire(event);
       inPreStartHandlers = false;
 
-      if (event.cancelStartChat) {
+      if (event.cancel || event.cancelStartChat) {
         // Abort the connecting.
         this.chatStarted = false;
         await this.fireEndChat(false, true);
@@ -511,7 +513,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
     let event: BusEventHumanAgentPreEndChat;
     if (isConnected) {
       event = await this.firePreEndChat(false);
-      if (event.cancelEndChat) {
+      if (event.cancel || event.cancelEndChat) {
         return;
       }
     }
@@ -580,8 +582,26 @@ class HumanAgentServiceImpl implements HumanAgentService {
     }
   }
 
+  /** Takes sent files out of the agent input, keeping any added while the pre:send handlers ran. */
+  private clearSentFiles(uploads: FileUpload[]) {
+    if (!uploads.length) {
+      return;
+    }
+    const { store } = this.serviceManager;
+    const sentIDs = new Set(uploads.map(({ id }) => id));
+    const { files } = store.getState().humanAgentState.inputState;
+    if (files.every(({ id }) => sentIDs.has(id))) {
+      store.dispatch(actions.clearInputFiles(true));
+      return;
+    }
+    uploads.forEach(({ id }) =>
+      store.dispatch(actions.removeFileUpload(id, true))
+    );
+  }
+
   /**
-   * Sends a message to the agent in the service desk.
+   * Sends a message to the agent in the service desk. A `human_agent:pre:send` handler can cancel
+   * it, which leaves the agent input's files and structured data in place.
    *
    * @param text The message from the user.
    * @param uploads An optional set of files to upload.
@@ -610,14 +630,20 @@ class HumanAgentServiceImpl implements HumanAgentService {
       originalMessage.input.structured_data = cloneDeep(pendingStructuredData);
     }
 
-    serviceManager.store.dispatch(actions.clearStructuredData(true));
-
     // Fire the pre:send event that will allow code to customize the message.
-    await serviceManager.fire({
+    const preSendEvent: BusEventHumanAgentPreSend = {
       type: BusEventType.HUMAN_AGENT_PRE_SEND,
       data: originalMessage,
       files: uploads,
-    });
+    };
+    await serviceManager.fire(preSendEvent);
+    if (preSendEvent.cancel) {
+      // The input keeps its files and structured data for the next message.
+      return;
+    }
+
+    serviceManager.store.dispatch(actions.clearStructuredData(true));
+    this.clearSentFiles(uploads);
 
     // Add the outgoing message to the store immediately.
     const textMessage: LocalMessageItem<TextItem> = inputItemToLocalItem(
@@ -1262,15 +1288,17 @@ class HumanAgentServiceImpl implements HumanAgentService {
     if (!responseUserProfile) {
       responseUserProfile = this.persistedHumanAgentState().responseUserProfile;
     }
-    const { localMessage, originalMessage } =
-      await createHumanAgentLocalMessage(
-        agentMessageType,
-        this.serviceManager,
-        responseUserProfile,
-        fireEvents
-      );
+    const created = await createHumanAgentLocalMessage(
+      agentMessageType,
+      this.serviceManager,
+      responseUserProfile,
+      fireEvents
+    );
+    if (!created) {
+      return;
+    }
     await addMessages(
-      [toPair([localMessage], originalMessage)],
+      [toPair([created.localMessage], created.originalMessage)],
       !this.isSuspended(),
       this.serviceManager
     );
@@ -1475,11 +1503,15 @@ class ServiceDeskCallbackImpl<
     responseUserProfile = cloneDeep(responseUserProfile);
 
     // Fire the pre:receive event that will allow code to customize the message.
-    await serviceManager.fire({
+    const preReceiveEvent: BusEventHumanAgentPreReceive = {
       type: BusEventType.HUMAN_AGENT_PRE_RECEIVE,
       data: messageResponse,
       responseUserProfile,
-    });
+    };
+    await serviceManager.fire(preReceiveEvent);
+    if (preReceiveEvent.cancel) {
+      return;
+    }
 
     messageResponse.message_options = messageResponse.message_options || {};
     messageResponse.message_options.response_user_profile = responseUserProfile;
@@ -1581,7 +1613,7 @@ class ServiceDeskCallbackImpl<
     }
 
     const event = await this.service.firePreEndChat(true);
-    if (event.cancelEndChat) {
+    if (event.cancel || event.cancelEndChat) {
       return;
     }
 

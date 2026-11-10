@@ -13,6 +13,7 @@ import { ConversationState } from '../../types/state/ConversationState';
 import { createWelcomeRequest } from '../utils/messageUtils';
 import { consoleWarn, debugLog } from '../utils/miscUtils';
 import {
+  BusEventPreReset,
   BusEventType,
   MessageSendSource,
 } from '../../types/events/eventBusTypes';
@@ -289,7 +290,9 @@ class HydrationService {
 
     this.restarting = true;
     // A pre-restart handler can release an awaited upsert, so invalidate it first.
+    // A canceled restart doesn't bring those upserts back.
     this.serviceManager.messageCoordinator.invalidatePendingUpserts();
+    let canceled = false;
 
     try {
       const { serviceManager } = this;
@@ -297,9 +300,17 @@ class HydrationService {
       const state = store.getState();
 
       if (fireEvents) {
-        await serviceManager.fire({
+        const preRestartEvent: BusEventPreReset = {
           type: BusEventType.PRE_RESTART_CONVERSATION,
-        });
+        };
+        await serviceManager.fire(preRestartEvent);
+        if (preRestartEvent.cancel) {
+          canceled = true;
+          debugLog(
+            'The restart was canceled by a pre:restartConversation event.'
+          );
+          return;
+        }
       }
 
       const restartGeneration =
@@ -366,8 +377,11 @@ class HydrationService {
       }
     } finally {
       this.restarting = false;
-      // Clear isRestarting flag to allow new messages and chunks to be processed
-      this.serviceManager.messageCoordinator.setRestartInProgress(false);
+      // Clear isRestarting flag to allow new messages and chunks to be processed.
+      // A canceled restart never set it, and the dispatch would notify subscribers.
+      if (!canceled) {
+        this.serviceManager.messageCoordinator.setRestartInProgress(false);
+      }
     }
   }
 

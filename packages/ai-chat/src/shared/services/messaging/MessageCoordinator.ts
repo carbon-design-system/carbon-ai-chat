@@ -322,6 +322,10 @@ class MessageCoordinator {
     return this.getFullResponseWorkflow().removeMessages(messageIDs);
   }
 
+  dropCanceledReply(messageID: string) {
+    return this.getFullResponseWorkflow().dropCanceledReply(messageID);
+  }
+
   incomingAgentItemIdentity(message: MessageResponse, index: number) {
     return this.getFullResponseWorkflow().agentItemIdentity(message, index);
   }
@@ -911,6 +915,10 @@ class MessageCoordinator {
 
   isResponseOwnedByRequest(messageID: string, requestID: string) {
     return this.state.isResponseOwnedByRequest(messageID, requestID);
+  }
+
+  isResponseStreaming(messageID: string) {
+    return this.state.isResponseStreaming(messageID);
   }
 
   responseRemoved(messageID: string) {

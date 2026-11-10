@@ -375,6 +375,14 @@ export interface BusEventPreReceive extends BusEvent {
    * Mutable message data before acceptance, including for {@link ChatInstanceMessaging.upsertMessage}.
    */
   data: MessageResponse;
+
+  /**
+   * Set to `true` to keep this message out of the conversation. The chat doesn't add it, and
+   * {@link BusEventType.RECEIVE} doesn't fire. A message that streamed in fires this event when it
+   * completes, so the chat removes what it already showed and ends the stream. You can set this
+   * after an `await`, such as after a check on your server.
+   */
+  cancel?: boolean;
 }
 
 /**
@@ -394,6 +402,10 @@ export interface BusEventReceive extends BusEvent {
 }
 
 /**
+ * Fires when a message leaves the send queue, before the chat sends it. The user's message
+ * already shows in the conversation. Handlers can change the message that goes out, but this
+ * event can't cancel the send.
+ *
  * @category Events
  * @category SDK
  */
@@ -429,6 +441,14 @@ export interface BusEventHumanAgentPreReceive extends BusEvent {
   type: BusEventType.HUMAN_AGENT_PRE_RECEIVE;
   data: MessageResponse;
   responseUserProfile?: ResponseUserProfile;
+
+  /**
+   * Set to `true` to keep this message out of the conversation. The chat doesn't show it, and
+   * {@link BusEventType.HUMAN_AGENT_RECEIVE} doesn't fire. This also works for the chat's own
+   * status messages, such as the one that says an agent joined. The change such a message reports
+   * still happens. You can set this after an `await`.
+   */
+  cancel?: boolean;
 }
 
 /**
@@ -449,6 +469,14 @@ export interface BusEventHumanAgentPreSend extends BusEvent {
   type: BusEventType.HUMAN_AGENT_PRE_SEND;
   data: MessageRequest;
   files: FileUpload[];
+
+  /**
+   * Set to `true` to stop this message. The chat doesn't show it or pass it to the service desk,
+   * and {@link BusEventType.HUMAN_AGENT_SEND} doesn't fire. Its files and structured data stay
+   * attached for the next message. You can set this after an `await`, such as after asking the user
+   * to confirm.
+   */
+  cancel?: boolean;
 }
 
 /**
@@ -495,8 +523,16 @@ export interface BusEventViewPreChange extends BusEvent {
   newViewState: ViewState;
 
   /**
+   * Set to `true` to cancel the view change. The view stays as it is, and
+   * {@link BusEventType.VIEW_CHANGE} doesn't fire. You can set this after an `await`.
+   */
+  cancel?: boolean;
+
+  /**
    * This is used by the event handler to indicate that the view change should be cancelled and Carbon AI Chat's view should
    * not be changed.
+   *
+   * @deprecated Use {@link BusEventViewPreChange.cancel} — removed in 2.0.0.
    */
   cancelViewChange: boolean;
 }
@@ -563,6 +599,16 @@ export interface BusEventChatReady extends BusEvent {
  */
 export interface BusEventPreReset extends BusEvent {
   type: BusEventType.PRE_RESTART_CONVERSATION;
+
+  /**
+   * Set to `true` to stop the restart. The conversation, its queued messages, and any agent chat
+   * stay as they were. {@link BusEventType.RESTART_CONVERSATION} doesn't fire, and
+   * {@link ChatSDKInstanceMessaging.restartConversation} resolves. One write doesn't come back: an
+   * {@link ChatSDKInstanceMessaging.upsertMessage} call that was still waiting on its updater when the
+   * restart began is dropped, even if you cancel. You can set this after an `await`, such as after
+   * asking the user to confirm.
+   */
+  cancel?: boolean;
 }
 
 /**
@@ -948,7 +994,17 @@ export interface BusEventHumanAgentPreStartChat<
   message: MessageResponse;
 
   /**
+   * Set to `true` to cancel the start. The chat doesn't contact the service desk, and it fires
+   * {@link BusEventType.HUMAN_AGENT_END_CHAT} with `requestCancelled` set. A start from
+   * {@link ChatInstanceServiceDeskActions.startConversation} resolves. You can set this after an
+   * `await`.
+   */
+  cancel?: boolean;
+
+  /**
    * This flag can be set by a listener to indicate that the connection process should be cancelled.
+   *
+   * @deprecated Use {@link BusEventHumanAgentPreStartChat.cancel} — removed in 2.0.0.
    */
   cancelStartChat?: boolean;
 
@@ -987,7 +1043,17 @@ export interface BusEventHumanAgentPreEndChat<
   preEndChatPayload: TPayloadType;
 
   /**
+   * Set to `true` to keep the agent chat going. The chat doesn't end it or call
+   * {@link ServiceDesk.endChat}, and {@link BusEventType.HUMAN_AGENT_END_CHAT} doesn't fire. A call to
+   * {@link ChatInstanceServiceDeskActions.endConversation} resolves. You can set this after an
+   * `await`.
+   */
+  cancel?: boolean;
+
+  /**
    * This value may be set by a listener to indicate that the process of ending the chat should be cancelled.
+   *
+   * @deprecated Use {@link BusEventHumanAgentPreEndChat.cancel} — removed in 2.0.0.
    */
   cancelEndChat: boolean;
 }

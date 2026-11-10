@@ -420,8 +420,14 @@ class UpsertWorkflow {
       );
 
     if (willFireReceive) {
-      await this.firePreReceive(messageID, result, isStale);
+      const canceled = await this.firePreReceive(messageID, result, isStale);
       if (isStale()) {
+        return;
+      }
+      if (canceled) {
+        await this.serviceManager.messageCoordinator.dropCanceledReply(
+          messageID
+        );
         return;
       }
     }
@@ -949,12 +955,13 @@ class UpsertWorkflow {
 
   /**
    * Phase 2: fire `pre:receive` and re-validate the id in case a listener mutated it.
+   * Returns true when a handler canceled the write.
    */
   private async firePreReceive(
     messageID: string,
     result: MessageResponse,
     isStale: () => boolean
-  ): Promise<void> {
+  ): Promise<boolean> {
     const preReceiveEvent: BusEventPreReceive = {
       type: BusEventType.PRE_RECEIVE,
       data: result,
@@ -969,6 +976,7 @@ class UpsertWorkflow {
         );
       }
     }
+    return Boolean(preReceiveEvent.cancel);
   }
 
   /**
