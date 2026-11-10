@@ -178,24 +178,26 @@ async function assertInlineStyleDeclarations(
     join(consumer, 'node_modules/@carbon/ai-chat-components')
   );
   const declared = await declaredPackages(root);
+  const resolve = (specifier, from) =>
+    ts.resolveModuleName(specifier, from, options, ts.sys).resolvedModule
+      ?.resolvedFileName;
+  // The program keeps a symlink inside a package under the path TypeScript
+  // resolved, so the walk keys files by that path. Real paths only check
+  // containment.
+  const pending = [];
   for (const tree of trees) {
     const specifier = `@carbon/ai-chat-components/${tree}/components/markdown/index.js`;
-    const resolved = ts.resolveModuleName(
-      specifier,
-      fixture,
-      options,
-      ts.sys
-    ).resolvedModule;
-    assert.ok(resolved, `${name}: unresolved style import ${specifier}.`);
+    const index = resolve(specifier, fixture);
+    assert.ok(index, `${name}: unresolved style import ${specifier}.`);
     assert.equal(
-      await realpath(resolved.resolvedFileName),
+      await realpath(index),
       join(root, tree, 'components/markdown/index.d.ts'),
       `${name}: style imports must resolve to the installed packed declarations.`
     );
+    const styles = resolve('./src/inline-markdown.js', index);
+    assert.ok(styles, `${name}: unresolved inline Markdown styles in ${tree}.`);
+    pending.push(styles);
   }
-  const pending = trees.map((tree) =>
-    join(root, tree, 'components/markdown/src/inline-markdown.d.ts')
-  );
   const visited = new Set();
   while (pending.length) {
     const path = pending.pop();
@@ -210,19 +212,13 @@ async function assertInlineStyleDeclarations(
         assertDeclaredImport(name, declared, imported.fileName, path);
         continue;
       }
-      const resolved = ts.resolveModuleName(
-        imported.fileName,
-        declaration.fileName,
-        options,
-        ts.sys
-      ).resolvedModule;
+      const dependency = resolve(imported.fileName, declaration.fileName);
       assert.ok(
-        resolved,
+        dependency,
         `${name}: missing published declaration dependency ${imported.fileName} from ${path}.`
       );
-      const dependency = await realpath(resolved.resolvedFileName);
       assert.ok(
-        inside(root, dependency),
+        inside(root, await realpath(dependency)),
         `${name}: local style declaration dependencies must stay inside the packed components package.`
       );
       assert.match(dependency, /\.d\.[cm]?ts$/);
