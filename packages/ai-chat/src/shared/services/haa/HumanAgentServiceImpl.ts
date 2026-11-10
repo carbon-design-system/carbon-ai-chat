@@ -1138,30 +1138,37 @@ class HumanAgentServiceImpl implements HumanAgentService {
       this.requestViewFocus();
 
       if (!didReconnect) {
-        // If we didn't reconnected, then just end the chat.
-        this.chatStarted = false;
-        const wasSuspended = this.isSuspended();
-        // A screen-share request made during the reconnect ends with the chat.
-        if (this.screenShareRequestPromise) {
-          this.closeScreenShareRequestPanel(ScreenShareState.CANCELLED);
-        }
-        store.dispatch(endChat());
-
-        if (allowEndChatMessages) {
-          // If we didn't reconnect, then show the "end chat" messages to the user.
-          const { responseUserProfile } = this.persistedHumanAgentState();
-          await addHumanAgentEndChatMessage(
-            HumanAgentMessageType.CHAT_WAS_ENDED,
-            responseUserProfile,
-            false,
-            wasSuspended,
-            this.serviceManager
-          );
-          await addAssistantReturnMessage(0, wasSuspended, this.serviceManager);
-        }
+        await this.endChatAfterFailedReconnect(allowEndChatMessages);
       } else {
         this.showLeaveWarning = false;
       }
+    }
+  }
+
+  /**
+   * Ends a saved agent conversation that didn't reconnect, with the "end chat"
+   * messages when `allowEndChatMessages` is set.
+   */
+  private async endChatAfterFailedReconnect(allowEndChatMessages: boolean) {
+    this.chatStarted = false;
+    const wasSuspended = this.isSuspended();
+    // A screen-share request made during the reconnect ends with the chat.
+    if (this.screenShareRequestPromise) {
+      this.closeScreenShareRequestPanel(ScreenShareState.CANCELLED);
+    }
+    this.serviceManager.store.dispatch(endChat());
+
+    if (allowEndChatMessages) {
+      // If we didn't reconnect, then show the "end chat" messages to the user.
+      const { responseUserProfile } = this.persistedHumanAgentState();
+      await addHumanAgentEndChatMessage(
+        HumanAgentMessageType.CHAT_WAS_ENDED,
+        responseUserProfile,
+        false,
+        wasSuspended,
+        this.serviceManager
+      );
+      await addAssistantReturnMessage(0, wasSuspended, this.serviceManager);
     }
   }
 
