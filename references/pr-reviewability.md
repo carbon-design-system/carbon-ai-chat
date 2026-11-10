@@ -35,7 +35,7 @@ Useful seams include a behavior-preserving refactor before a feature, or a share
 
 Independent changes use separate PRs. For dependent changes, prefer a native stack hosted upstream when the contributor has write access. Fork contributors use sequential PRs or maintainer help, as described below.
 
-When a stack moves ownership or data flow in stages, use the PR skill's [flow-map guidance](../.bob/skills/caic-pr/SKILL.md#flow-maps).
+When a stack moves ownership or data flow in stages, use the PR skill's [diagram rules](../.bob/skills/caic-pr/references/diagrams.md).
 
 ## Choose a stack path that fits your access
 
@@ -73,4 +73,4 @@ The [Cisco case study](https://static0.smartbear.co/support/media/resources/cc/b
 
 ## Related guidance
 
-- [definition-of-done.md](definition-of-done.md) — evidence to include before requesting review
+- [definition-of-done.md](definition-of-done.md) — measurement and gates; PR content follows caic-pr
