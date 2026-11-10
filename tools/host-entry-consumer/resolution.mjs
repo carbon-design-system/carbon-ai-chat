@@ -9,7 +9,7 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { readFile, realpath, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
-import { isAbsolute, join, relative } from 'node:path';
+import { isAbsolute, join, relative, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import * as sass from 'sass';
 import ts from 'typescript';
@@ -69,10 +69,11 @@ export { regularStyles, customStyles, regularIsAny, customIsAny };
 export type { HostInstances };
 `;
 
+// Match a whole '..' segment so a name like '..foo' stays inside.
 // A cross-drive Windows path is absolute rather than starting with '..'.
 function inside(root, path) {
   const local = relative(root, path);
-  return !local.startsWith('..') && !isAbsolute(local);
+  return local !== '..' && !local.startsWith(`..${sep}`) && !isAbsolute(local);
 }
 
 async function assertLocalDeclarations(consumer, name, program, options) {
