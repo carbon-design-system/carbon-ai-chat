@@ -332,7 +332,8 @@ interface ChatActions {
 export type IncreaseOrDecrease = 'increase' | 'decrease' | 'reset' | undefined;
 
 /**
- * This interface represents the options for when a MessageRequest is sent to the server with the send method.
+ * This interface represents the options for when a MessageRequest is sent to the server with
+ * {@link ChatInstanceMessaging.send}.
  *
  * @category Instance
  * @category SDK

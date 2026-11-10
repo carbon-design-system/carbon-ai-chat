@@ -17,11 +17,14 @@ const ROOTS = new Set(['ConversationState', 'AppStateMessages']);
 const NOT_DATA = new Set(['config', 'languagePack']);
 
 /**
- * The SDK instance's builder, under `src/`. Its verbs read conversation state
- * for the instance, the way they do for a host, so the interface building the
- * instance or calling a verb isn't a read.
+ * The SDK instance's builder, as `file under src/: function`. Its verbs read
+ * conversation state for the instance, the way they do for a host, so the
+ * interface building the instance or calling a verb isn't a read. Only the
+ * named function is exempt; another reader in its file still counts.
  */
-const SDK_ROUTES = ['shared/services/conversationInstance.ts'];
+const SDK_ROUTES = new Set([
+  'shared/services/conversationInstance.ts: createConversationInstance',
+]);
 
 /**
  * Counts each read of conversation data in `files`, keyed `file: read`. A
@@ -158,7 +161,7 @@ export function conversationReads(
     if (
       !fn ||
       !fileName.startsWith(sources) ||
-      SDK_ROUTES.some((route) => fileName === sources + route)
+      SDK_ROUTES.has(`${fileName.slice(sources.length)}: ${symbol.name}`)
     ) {
       return undefined;
     }

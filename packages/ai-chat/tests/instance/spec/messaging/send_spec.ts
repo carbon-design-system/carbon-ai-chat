@@ -166,6 +166,8 @@ async function runQueuedScenario(entry: Entry, hydrated: boolean) {
 
   await waitFor(() => expect(host.calls).toHaveLength(1));
   const whileHeld = normalize(instance.state.get());
+  // No promise settles while customSendMessage is still running.
+  const settledWhileHeld = [...settled];
   release.doResolve();
   await sends;
 
@@ -173,13 +175,18 @@ async function runQueuedScenario(entry: Entry, hydrated: boolean) {
     events,
     calls: normalize(host.calls) as typeof host.calls,
     whileHeld,
+    settledWhileHeld,
     after: normalize(instance.state.get()),
     settled,
   };
 }
 
 describe('messaging.send (#1826)', () => {
-  beforeEach(setupBeforeEach);
+  beforeEach(() => {
+    setupBeforeEach();
+    sessionStorage.clear();
+    localStorage.clear();
+  });
   afterEach(setupAfterEach);
 
   // Before hydration, the first send starts it, and sends made while it loads go out first.
@@ -225,6 +232,7 @@ describe('messaging.send (#1826)', () => {
         )
       ).toHaveLength(3);
       expect(root.whileHeld).toMatchObject({ status: 'submitted' });
+      expect(root.settledWhileHeld).toEqual([]);
       expect(root.after).toMatchObject({ status: 'ready', error: null });
       if (hydrated) {
         // Queued in the order sent.
@@ -267,9 +275,8 @@ describe('messaging.send (#1826)', () => {
   );
 
   describe('on a chat with no view', () => {
-    it('sends from code and resolves once the turn is processed', async () => {
+    it('sends from code and resolves once customSendMessage resolves', async () => {
       const release = resolvablePromise<void>();
-      release.doResolve();
       const host = hostReplies(release);
       const chat = await createChatSDK({
         messaging: {
@@ -277,22 +284,31 @@ describe('messaging.send (#1826)', () => {
           customSendMessage: host.customSendMessage,
         },
       });
-      const sources: unknown[] = [];
-      chat.on({
-        type: BusEventType.SEND,
-        handler: (event: BusEventSend) => sources.push(event.source),
-      });
+      try {
+        const sources: unknown[] = [];
+        chat.on({
+          type: BusEventType.SEND,
+          handler: (event: BusEventSend) => sources.push(event.source),
+        });
 
-      await chat.messaging.send('Hello');
+        let resolved = false;
+        const sending = chat.messaging.send('Hello').then(() => {
+          resolved = true;
+        });
+        await waitFor(() => expect(host.calls).toHaveLength(1));
+        expect(resolved).toBe(false);
+        release.doResolve();
+        await sending;
 
-      expect(sources).toEqual([MessageSendSource.INSTANCE_SEND]);
-      expect(host.calls).toHaveLength(1);
-      expect(chat.state.get().status).toBe('ready');
-      expect(chat.state.get().messages.map((message) => message.id)).toEqual([
-        host.calls[0].request.id,
-        'reply-1',
-      ]);
-      chat.destroy();
+        expect(sources).toEqual([MessageSendSource.INSTANCE_SEND]);
+        expect(chat.state.get().status).toBe('ready');
+        expect(chat.state.get().messages.map((message) => message.id)).toEqual([
+          host.calls[0].request.id,
+          'reply-1',
+        ]);
+      } finally {
+        chat.destroy();
+      }
     });
 
     it('rejects while isReadonly is set', async () => {
@@ -302,11 +318,14 @@ describe('messaging.send (#1826)', () => {
         messaging: { skipWelcome: true, customSendMessage },
       });
 
-      await expect(chat.messaging.send('Hello')).rejects.toThrow(
-        'You are unable to send messages in read only mode.'
-      );
-      expect(customSendMessage).not.toHaveBeenCalled();
-      chat.destroy();
+      try {
+        await expect(chat.messaging.send('Hello')).rejects.toThrow(
+          'You are unable to send messages in read only mode.'
+        );
+        expect(customSendMessage).not.toHaveBeenCalled();
+      } finally {
+        chat.destroy();
+      }
     });
   });
 });

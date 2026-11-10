@@ -32,17 +32,19 @@ export interface ChatSDKInstanceMessaging {
    * wait in a queue and go out in order.
    *
    * **When the promise resolves:**
-   * - After `customSendMessage` resolves and the chat finishes processing the turn. It doesn't
-   *   wait for a reply. To react to the assistant's messages, listen for the `receive` event.
+   * - When `customSendMessage` resolves and the chat records the turn as sent. It doesn't wait
+   *   for a reply: a response that's still streaming keeps streaming after the promise resolves.
+   *   To react to the assistant's messages, listen for the `receive` event.
    * - When the turn is stopped or canceled before it finishes, or when the conversation restarts
-   *   while the message waits or runs.
+   *   while the message waits in the queue or runs.
    *
    * **When the promise rejects:**
    * - When `customSendMessage` throws or rejects, or the turn times out
    *   ({@link ChatSDKConfigMessaging.messageTimeoutSecs}). The conversation's `status` becomes
    *   `'error'`.
-   * - In read-only mode ({@link ChatSDKConfig.isReadonly}), or while a file upload is still
-   *   running. In these cases the message isn't sent and `pre:send` doesn't fire.
+   * - In read-only mode, or while a file upload is still running. In these cases the message isn't
+   *   sent and `pre:send` doesn't fire. In a prebuilt chat, `state.get().input.hasInFlightUploads`
+   *   is `true` while an upload runs.
    *
    * It never throws: every failure comes back as a rejected promise.
    *
