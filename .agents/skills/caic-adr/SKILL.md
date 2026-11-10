@@ -20,7 +20,7 @@ If the user asks why an existing decision was made, read its record and explain 
 
 **Answer three questions per option, then stop:** can it be built, what breaks for whom, and is it one PR or ten? If you are writing per-step files or a Files touched list to justify an option, you are planning, not proposing.
 
-**Verify every claim against today's code**, not against an older ADR, issue, or plan. Keep file:line citations in your notes and the PR description. They never go in the ADR, where they go stale within a sprint.
+**Verify every claim against today's code**, not against an older ADR, issue, or plan. Keep file:line citations in your notes and your hand-back to the developer. They never go in the PR description, or in the ADR, where they go stale within a sprint.
 
 **Look for the alternative nobody raised.** The middle path — deprecate now and remove later, ship the type and defer the runtime — and the option you dismissed in the first minute are the ones a reader will raise.
 
@@ -122,7 +122,7 @@ Prepare requested updates locally. Posting replies, editing discussions, and ope
 ## Anti-patterns
 
 - **Burying the proposal.** If a reader must pass evidence or history to learn what's proposed, move the Summary's claim up and cut the scaffolding.
-- **Arguing from line numbers.** Say what a host experiences; keep citations in the PR.
+- **Arguing from line numbers.** Say what a host experiences; keep citations in your hand-back.
 - **Padding the optional sections.** An option nobody would propose, or a drawback the record already states elsewhere, makes it look thorough and teaches nothing. Delete the heading instead.
 - **Splitting one surface across records that only make sense together.**
 - **Writing it after the code.** An ADR filed to document a merged PR is a changelog.
