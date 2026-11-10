@@ -3,7 +3,7 @@ name: caic-review
 description: Review a local diff, branch, or pull request with severity-tagged findings and verification gaps. Use for code-review requests and self-review before marking work complete. Publish feedback only when the user authorizes it; use caic-plan for plan reviews.
 ---
 
-This rubric governs every code review in this repo — both user-requested reviews and the self-review an agent runs against its own diff before marking a task done (see [AGENTS.md](../../../AGENTS.md)).
+This rubric governs every code review in this repo: both user-requested reviews and the self-review an agent runs against its own diff before marking a task done (see [AGENTS.md](../../../AGENTS.md)).
 
 **Before drafting any copy**, read [caic-copy-writer](../caic-copy-writer/SKILL.md) and apply its shared skim-reading rule and workflow. This includes local drafts and final artifacts. Reuse it if already loaded.
 
@@ -21,14 +21,14 @@ This rubric governs every code review in this repo — both user-requested revie
 
 ## How to review
 
-- Read the actual diff (`git diff`, `gh pr diff`, etc.) and referenced files — never a summary of what changed.
-- When reading it all at one depth would mean reading all of it shallowly, rank the files by risk first — [large-diffs.md](references/large-diffs.md).
-- **Score the diff against what it had to satisfy** — the issue's Done when, Constraints, and comments, the proofs, any API proposal, any ADR it cites. That check runs on every review, and [review-passes.md](references/review-passes.md#the-check-that-runs-every-time) carries each one and the severity a miss earns.
+- Read the actual diff (`git diff`, `gh pr diff`, etc.) and referenced files, never a summary of what changed.
+- When reading it all at one depth would mean reading all of it shallowly, rank the files by risk first ([large-diffs.md](references/large-diffs.md)).
+- **Score the diff against what it had to satisfy:** the issue's Done when, Constraints, and comments, the proofs, any API proposal, and any ADR it cites. That check runs on every review, and [review-passes.md](references/review-passes.md#the-check-that-runs-every-time) carries each one and the severity a miss earns.
 - **Verify what changed and reuse current evidence.** [repo-checks.md](references/repo-checks.md) selects the gates, coordinates builds, and lists conventions no gate catches.
 - Tag every finding by **what it costs if it merges as written**:
-  - **Blocker** — something ships broken, or a commitment breaks: wrong behavior on a path you can name, a regression, a security hole, a broken build or tests, an edit to generated output, or a missed Done when, proof, or ADR. Fix before merge.
-  - **Important** — nothing ships broken, but someone pays later: a missing test for changed behavior, a defect you couldn't confirm past the happy path, needless work such as whole-list re-renders, a misleading name or doc, scope creep, or unrelated work bundled in. The author fixes it in this PR or replies with why not; a reply is enough to merge.
-  - **If nobody pays, it isn't a finding**, however small the edit — see [What isn't a finding](references/writing-findings.md#what-isnt-a-finding).
+  - **Blocker**: something ships broken, or a commitment breaks: wrong behavior on a path you can name, a regression, a security hole, a broken build or tests, an edit to generated output, or a missed Done when, proof, or ADR. Fix before merge.
+  - **Important**: nothing ships broken, but someone pays later: a missing test for changed behavior, a defect you couldn't confirm past the happy path, needless work such as whole-list re-renders, a misleading name or doc, scope creep, or unrelated work bundled in. The author fixes it in this PR or replies with why not; a reply is enough to merge.
+  - **If nobody pays, it isn't a finding**, however small the edit. See [What isn't a finding](references/writing-findings.md#what-isnt-a-finding).
 - **A convention break costs what its consequence costs.** It is not a Blocker by default.
 - Read enough to be sure before you call something a **Blocker**. A false Blocker costs the author as much as a missed one. If you have only read the happy path, file it as **Important** and say what you did not read.
 
@@ -36,26 +36,26 @@ This rubric governs every code review in this repo — both user-requested revie
 
 One pass over every check spends its attention on the first dimension and skims the rest. Split the review into independent passes, each holding the whole diff and one job, and pick them from the changed paths. Skip the split when a single reading holds the whole diff in view.
 
-- [review-passes.md](references/review-passes.md) — read before the passes start: the pass-by-path table, the brief each one gets, and the refute-then-synthesize steps that merge them.
-- [evaluating-changes.md](references/evaluating-changes.md) — read when a pass holds docs and text, code, or test coverage: the checklist for each, including `npm run measure` and the weakened-proof check.
+- [review-passes.md](references/review-passes.md): read before the passes start: the pass-by-path table, the brief each one gets, and the refute-then-synthesize steps that merge them.
+- [evaluating-changes.md](references/evaluating-changes.md): read when a pass holds docs and text, code, or test coverage: the checklist for each, including `npm run measure` and the weakened-proof check.
 
 ## How to write a finding
 
-One shape, one order — orientation, then severity, the defect, what it costs, the fix:
+One shape, one order: orientation, then severity, the defect, what it costs, the fix:
 
 ```
 **<Orientation label>:** <what the code under discussion does, and when it runs.>
 
-**<Severity>** — `path/to/file.ts:42` — <what is wrong>, so <what it costs>. <The fix.>
+**<Severity>** in `path/to/file.ts:42`: <what is wrong>, so <what it costs>. <The fix.>
 ```
 
-**The orientation line is what makes a finding readable a day later**, in a notification, with none of the code open — which is how the author reads it. [review-comments.md](../caic-copy-writer/references/review-comments.md) owns its wording and lists the four labels that work.
+**The orientation line is what makes a finding readable a day later**, in a notification, with none of the code open, which is how the author reads it. [review-comments.md](../caic-copy-writer/references/review-comments.md) owns its wording and lists the four labels that work.
 
-**Never post the objection without the fix**, and let the consequence name the input or path that reaches the defect. [writing-findings.md](references/writing-findings.md) carries both rules in full — read it before your first finding, with a worked finding at each severity, the three habits that weaken one, and what isn't a finding at all.
+**Never post the objection without the fix**, and let the consequence name the input or path that reaches the defect. [writing-findings.md](references/writing-findings.md) carries both rules in full. Read it before your first finding. It has a worked finding at each severity, the three habits that weaken one, and what isn't a finding at all.
 
 ## Output expectations
 
-**The summary — the review body above the findings — has a fixed layout.** Only the verdict is required. Drop any other section with nothing in it; never write "None."
+**The summary, the review body above the findings, has a fixed layout.** Only the verdict is required. Drop any other section with nothing in it; never write "None."
 
 ````markdown
 ### AI Review
@@ -63,7 +63,7 @@ One shape, one order — orientation, then severity, the defect, what it costs, 
 **Fix blockers before merge.** 1 Blocker, 2 Important; 3 inline suggestions.
 
 **Blocking**
-- `foo.ts:42` — the early return leaks the listener on every close.
+- `foo.ts:42`: the early return leaks the listener on every close.
 
 **Across the diff**
 - Four reducers rebuild the whole list for one changed item; fix the pattern, not only the two flagged lines.
@@ -87,18 +87,18 @@ Target `abc1234`; supersedes the 3 inline suggestions. <apply steps, then the di
 - **`### AI Review` opens every review posted to GitHub**, so the PR's other readers know who wrote it. A review returned in the conversation skips it.
 - **The verdict line comes next, and nothing else precedes it**: no greeting, no "great work on this", no recap of what the PR does. The author wrote the diff and does not need it read back. Pick **Ship.** when there are no findings, **Fix or answer the Importants, then ship.** when only Importants remain, **Fix blockers before merge.** when something blocks, or **Rework.** when the approach has to change and fixing the findings one by one won't get there. Then count the findings by severity, any inline suggestions, and any dropped findings, so the author can size the job.
 - **One line per bullet.** Each bullet under **Blocking** and **Across the diff** is one finding, counted once in the verdict line. The bullet names the defect and where; the finding carries the why and the fix.
-- **A finding with no diff line to anchor** — a pattern, a design concern, a missed Done when, a regression in untouched code — goes in full in a `<details>` block under its bullet.
-- **Blocking** lists every Blocker. **Never drop one**, however many there are — a Blocker reduced to a count blocks nothing, and merges.
+- **A finding with no diff line to anchor** (a pattern, a design concern, a missed Done when, a regression in untouched code) goes in full in a `<details>` block under its bullet.
+- **Blocking** lists every Blocker. **Never drop one**, however many there are. A Blocker reduced to a count blocks nothing, and merges.
 - **Across the diff** holds what no single line does: a pattern across files, a design concern, or a PR that should have been several ([large-diffs.md](references/large-diffs.md#size-is-a-finding)). Flag two or three instances of a pattern inline and ask for the rest here.
 - **Not verified** names what you couldn't check: a gate you couldn't run, a path you didn't trace, code you skimmed. A missing test is a finding, not a gap.
-- **A strength earns one line** after **Not verified**, and only when it was the risk and it landed — "the migration path handles the null case, which was the hard part." Generic praise is padding; cut it.
+- **A strength earns one line** after **Not verified**, and only when it was the risk and it landed: "the migration path handles the null case, which was the hard part." Generic praise is padding; cut it.
 - **Complete patch**, when inline suggestions can't carry a fix, gets its own collapsed block ([reviewing-a-pr.md](references/reviewing-a-pr.md#when-suggestions-cannot-carry-the-whole-fix)).
 - **Checked** collapses the logistics: a base other than `main`, the gates and their results, what you read in full, and what you glanced at on purpose, such as a lockfile. The author opens it only to question the verdict.
 - **Keep the visible part on one screen.** Past that, move the detail into a finding or into **Checked**.
 
 **The findings follow the summary**, Blockers first, then Important, each written to the shape above. On a posted review they are line comments, so the summary names only the Blockers and counts the rest.
 
-**Cap Important at ten**, highest cost first. The verdict line counts what you list, then the drop: "10 Important, 6 further not listed." A review nobody finishes fixes nothing, and a silent cut reads as full coverage. When the Blockers alone run past ten, drop the Importants entirely — the verdict is rework, and a tail of should-fixes under that many must-fixes is noise.
+**Cap Important at ten**, highest cost first. The verdict line counts what you list, then the drop: "10 Important, 6 further not listed." A review nobody finishes fixes nothing, and a silent cut reads as full coverage. When the Blockers alone run past ten, drop the Importants entirely. The verdict is rework, and a tail of should-fixes under that many must-fixes is noise.
 
 ## Related guidance
 
@@ -106,7 +106,7 @@ Cross-reference these for the "why" behind what you enforce.
 
 | Read when | Read |
 | --- | --- |
-| A pass needs its checklist — docs, code, or tests | [evaluating-changes.md](references/evaluating-changes.md) |
+| A pass needs its checklist: docs, code, or tests | [evaluating-changes.md](references/evaluating-changes.md) |
 | Splitting the review into passes, or merging them | [review-passes.md](references/review-passes.md) |
 | Filing a finding, or unsure an observation is one | [writing-findings.md](references/writing-findings.md) |
 | Running the gates, or flagging a repo convention | [repo-checks.md](references/repo-checks.md) |
