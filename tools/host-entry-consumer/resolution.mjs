@@ -14,7 +14,8 @@ import { pathToFileURL } from 'node:url';
 import * as sass from 'sass';
 import ts from 'typescript';
 
-const styleTrees = ['es', 'es-custom'];
+// Both packed packages publish these two trees.
+const trees = ['es', 'es-custom'];
 const source = `
 import type { CSSResult } from 'lit';
 import { createElement, type ComponentType } from 'react';
@@ -162,7 +163,7 @@ async function assertInlineStyleDeclarations(
   const root = await realpath(
     join(consumer, 'node_modules/@carbon/ai-chat-components')
   );
-  for (const tree of styleTrees) {
+  for (const tree of trees) {
     const specifier = `@carbon/ai-chat-components/${tree}/components/markdown/index.js`;
     const resolved = ts.resolveModuleName(
       specifier,
@@ -177,7 +178,7 @@ async function assertInlineStyleDeclarations(
       `${name}: style imports must resolve to the installed packed declarations.`
     );
   }
-  const pending = styleTrees.map((tree) =>
+  const pending = trees.map((tree) =>
     join(root, tree, 'components/markdown/src/inline-markdown.d.ts')
   );
   const visited = new Set();
@@ -326,7 +327,7 @@ export async function assertPackedResolution(consumer) {
       await realpath(join(consumer, 'node_modules/@carbon/ai-chat', types))
     );
 
-    for (const tree of ['es', 'es-custom']) {
+    for (const tree of trees) {
       const specifier = `@carbon/ai-chat/dist/${tree}/web-components/${host}/index.js`;
       const url = execFileSync(
         process.execPath,
