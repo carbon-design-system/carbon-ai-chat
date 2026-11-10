@@ -78,6 +78,44 @@ export interface ChatSDKInstanceMessaging {
   ) => Promise<void>;
 
   /**
+   * Stops the active turn, the way the chat's Stop button does. It fires the `stopStreaming`
+   * event, then aborts the turn's `customSendMessage` signal with
+   * {@link CancellationReason.STOP_STREAMING}.
+   *
+   * A turn is active while `state.get().status` is `'submitted'` or `'streaming'`. A stop works
+   * on any active turn, even one whose stream isn't marked cancellable.
+   *
+   * The stop settles the turn at once: `status` returns to `'ready'`, and the stopped turn's
+   * {@link ChatSDKInstanceMessaging.send} promise resolves. Content already streamed stays in the
+   * conversation. Chunks that arrive for the stopped turn afterward are dropped. An
+   * `upsertMessage` call still writes, because it's your own write, but it doesn't make the turn
+   * active again. Queued messages go out once your `customSendMessage` for the stopped turn
+   * returns, so return when its signal aborts.
+   *
+   * Resolves once the abort signal is delivered, without waiting for your `customSendMessage`
+   * to return. With no active turn, it resolves at once, fires no event, and changes nothing.
+   * Calls made while a stop is running share it, so the turn is stopped once. It never rejects.
+   *
+   * @example Stop the response from your own button
+   * ```ts
+   * stopButton.addEventListener("click", () => {
+   *   instance.messaging.stop();
+   * });
+   * ```
+   *
+   * @example Show your Stop button only while a turn can be stopped
+   * ```ts
+   * instance.state.select(
+   *   (state) => state.status === "submitted" || state.status === "streaming",
+   *   (canStop) => {
+   *     stopButton.hidden = !canStop;
+   *   },
+   * );
+   * ```
+   */
+  stop: () => Promise<void>;
+
+  /**
    * Inserts or updates a single message identified by `messageID`. The `updater` receives
    * the {@link MessageResponse} currently stored under `messageID` (or `undefined` when no
    * message with that ID exists) and returns the message that should replace it.

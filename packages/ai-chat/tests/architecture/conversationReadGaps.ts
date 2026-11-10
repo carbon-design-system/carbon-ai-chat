@@ -22,10 +22,12 @@
  * - #2693: messages and message items, which the message model replaces, and
  *   restart in progress.
  * - #2352: the agent state the interface shows beyond the connection.
- * - #2351: pending uploads. #1816: whether the turn can be stopped.
+ * - #2351: pending uploads.
  * - #2747: read-only state, the history load trigger, and attaching the view.
  * - #2748: the shell's home screen and loading decisions.
- * - #2751: the input slice, its routing to the agent, and its flags.
+ * - #2751: the input slice, its routing to the agent, and its flags,
+ *   including when the Stop button shows. Hosts tell whether a turn can be
+ *   stopped from `status` (#2693 O8, amended November 10).
  * - #1741: slot bookkeeping. #1732: saving the session.
  * - #1833: config updates.
  */
@@ -463,7 +465,7 @@ const conversationReadGaps: ConversationReadGap[] = [
     file: 'src/chat/utils/shellLifecycle.ts',
     read: 'selectStopStreamingButtonVisible()',
     count: 2,
-    owner: '#1816',
+    owner: '#2751',
   },
 ];
 

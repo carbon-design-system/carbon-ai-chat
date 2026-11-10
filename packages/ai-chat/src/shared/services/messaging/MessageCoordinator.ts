@@ -584,6 +584,11 @@ class MessageCoordinator {
     );
   }
 
+  /** @see TerminationWorkflow.stop */
+  stop(): Promise<void> {
+    return this.terminationWorkflow.stop();
+  }
+
   requestStopFromInput(markPending: () => void): Promise<void> {
     return this.terminationWorkflow.requestStopFromInput(markPending);
   }

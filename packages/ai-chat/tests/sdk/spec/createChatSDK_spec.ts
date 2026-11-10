@@ -288,6 +288,7 @@ describe('the handle (#1732 O9–O11)', () => {
         'removeMessages',
         'restartConversation',
         'send',
+        'stop',
         'upsertMessage',
       ].sort()
     );

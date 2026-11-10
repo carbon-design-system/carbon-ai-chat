@@ -280,6 +280,7 @@ interface ChatSDKInstanceMessaging (src/types/config/ChatSDKInstanceMessaging.ts
   removeMessages: (messageIDs: string[]) => Promise<void>
   restartConversation: () => Promise<void>
   send: (message: MessageRequest | string, options?: SendOptions) => Promise<void>
+  stop: () => Promise<void>
   upsertMessage: (messageID: string, state: MessageState, updater: UpsertMessageUpdater) => Promise<void>
 
 interface ChatSDKPersistedStateConfig (src/types/config/ChatSDKPersistedStateConfig.ts)

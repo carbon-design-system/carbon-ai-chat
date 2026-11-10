@@ -22,21 +22,62 @@ import { OnErrorType } from '../../../types/config/ErrorConfig';
 import { CancellationReason } from '../../../types/config/MessagingConfig';
 
 class TerminationWorkflow {
+  /** The stop in progress. Overlapping stops share it, so they cancel once. */
+  private stopping: Promise<void> | undefined;
+
+  /**
+   * `messaging.stop()`: fires `STOP_STREAMING`, then aborts the active turn, the way the
+   * chat's own Stop button does. Resolves once the abort signal is delivered, or at once
+   * when no turn is submitted or streaming. Never rejects.
+   */
+  stop(): Promise<void> {
+    const status = this.serviceManager.store.getState().conversationStatus;
+    if (!this.stopping && status !== 'submitted' && status !== 'streaming') {
+      return Promise.resolve();
+    }
+    return this.stopActiveTurn(this.chatShowsStopButton());
+  }
+
   async requestStopFromInput(markPending: () => void): Promise<void> {
-    const serviceManager = this.serviceManager;
-    const { store } = serviceManager;
     // Pending UI can flush host effects; capture visibility before calling it.
-    const chatShowsButton =
-      store.getState().assistantInputState.stopStreamingButtonState.isVisible;
+    const chatShowsButton = this.chatShowsStopButton();
     markPending();
+    if (chatShowsButton) {
+      return this.stopActiveTurn(true);
+    }
+    // A button the host shows for its own work only tells the host.
+    try {
+      await this.serviceManager.fire({ type: BusEventType.STOP_STREAMING });
+    } catch (error) {
+      consoleError('Error stopping stream:', error);
+      this.serviceManager.store.dispatch(
+        actions.setStopStreamingButtonDisabled(false)
+      );
+    }
+  }
+
+  private chatShowsStopButton() {
+    return this.serviceManager.store.getState().assistantInputState
+      .stopStreamingButtonState.isVisible;
+  }
+
+  private stopActiveTurn(chatShowsButton: boolean): Promise<void> {
+    if (!this.stopping) {
+      this.stopping = this.runStop(chatShowsButton).finally(() => {
+        this.stopping = undefined;
+      });
+    }
+    return this.stopping;
+  }
+
+  private async runStop(chatShowsButton: boolean) {
+    const { store } = this.serviceManager;
     if (chatShowsButton) {
       store.dispatch(actions.setStopStreamingButtonDisabled(true));
     }
     try {
-      await serviceManager.fire({ type: BusEventType.STOP_STREAMING });
-      if (chatShowsButton) {
-        await serviceManager.messageCoordinator.cancelCurrentMessageRequest();
-      }
+      await this.serviceManager.fire({ type: BusEventType.STOP_STREAMING });
+      await this.serviceManager.messageCoordinator.cancelCurrentMessageRequest();
     } catch (error) {
       consoleError('Error stopping stream:', error);
       store.dispatch(actions.setStopStreamingButtonDisabled(false));
