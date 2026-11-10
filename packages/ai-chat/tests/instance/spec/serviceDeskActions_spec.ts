@@ -348,6 +348,35 @@ describe('serviceDesk.startConversation', () => {
       expect(chat.state.get().humanAgent).toBe(before);
     });
 
+    it('with the error a pre-start handler throws, logged once as the handler', async () => {
+      const { chat, desk } = await track(sdkChat());
+      const failure = new Error('handler blew up');
+      let throws = true;
+      chat.on({
+        type: BusEventType.HUMAN_AGENT_PRE_START_CHAT,
+        handler: async () => {
+          if (throws) {
+            throw failure;
+          }
+        },
+      });
+      const errors = jest.spyOn(console, 'error').mockImplementation(() => {});
+      errors.mockClear();
+
+      await expect(chat.serviceDesk.startConversation()).rejects.toBe(failure);
+
+      expect(desk.startChat).not.toHaveBeenCalled();
+      expect(errors).toHaveBeenCalledTimes(1);
+      expect(String(errors.mock.calls[0][0])).toContain(
+        'A human_agent:pre:startChat handler threw'
+      );
+      expect(chat.state.get().humanAgent.isConnecting).toBe(false);
+      // The chat can start once the handler stops throwing.
+      throws = false;
+      await chat.serviceDesk.startConversation();
+      expect(desk.startChat).toHaveBeenCalledTimes(1);
+    });
+
     it('when the chat is removed while pre-start handlers run', async () => {
       const { chat, desk } = await track(sdkChat());
       chat.on({
