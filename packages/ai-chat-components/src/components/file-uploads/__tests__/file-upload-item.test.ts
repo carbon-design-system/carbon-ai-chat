@@ -63,6 +63,176 @@ describe('file-upload-item', () => {
     expect(el.renderRoot.querySelector('cds-file-uploader-item')).to.exist;
   });
 
+  it('keeps editable chip spacing without an inline stylesheet', async () => {
+    const el = await mount(makeUpload('a', FileStatusValue.EDIT));
+    await settle(el);
+    const root = innerRoot(el);
+    expect(root.querySelector('style')).to.equal(null);
+    expect(getComputedStyle(root.host).columnGap).to.equal('16px');
+    expect(
+      getComputedStyle(root.querySelector('.cds--file__state-container')!).gap
+    ).to.equal('4px');
+  });
+
+  it('reuses its sheet and preserves other sheets across updates and moves', async () => {
+    const el = await mount(makeUpload('a', FileStatusValue.EDIT));
+    await settle(el);
+    const root = innerRoot(el);
+    const sheets = [...root.adoptedStyleSheets];
+    const other = new CSSStyleSheet();
+    other.replaceSync(':host { --unrelated-upload-test: preserved; }');
+    root.adoptedStyleSheets = [...sheets, other];
+    const expected = [...root.adoptedStyleSheets];
+    const parent = el.parentElement!;
+    const destination = document.createElement('div');
+    parent.append(destination);
+
+    for (let index = 0; index < 2; index++) {
+      el.upload = makeUpload('a', FileStatusValue.EDIT, {
+        isError: index === 0,
+      });
+      await settle(el);
+      expect([...root.adoptedStyleSheets]).to.deep.equal(expected);
+    }
+
+    destination.append(el);
+    await settle(el);
+    expect(innerRoot(el)).to.equal(root);
+    expect([...root.adoptedStyleSheets]).to.deep.equal(expected);
+    el.remove();
+    await aTimeout(0);
+    parent.append(el);
+    await settle(el);
+    expect([...root.adoptedStyleSheets]).to.deep.equal(expected);
+    expect(getComputedStyle(root.host).columnGap).to.equal('16px');
+    expect(
+      getComputedStyle(root.host).getPropertyValue('--unrelated-upload-test')
+    ).to.equal('preserved');
+    expect(root.querySelector('style')).to.equal(null);
+  });
+
+  it('styles a new inner root after a null upload with unchanged CSS', async () => {
+    const upload = makeUpload('a', FileStatusValue.EDIT);
+    const el = await mount(upload);
+    await settle(el);
+    const previousRoot = innerRoot(el);
+    const previousSheets = [...previousRoot.adoptedStyleSheets];
+    el.upload = null;
+    await settle(el);
+    expect(el.renderRoot.querySelector('cds-file-uploader-item')).to.equal(
+      null
+    );
+    el.upload = upload;
+    await settle(el);
+    const root = innerRoot(el);
+    expect(root).not.to.equal(previousRoot);
+    expect(root.querySelector('style')).to.equal(null);
+    expect(getComputedStyle(root.host).columnGap).to.equal('16px');
+    expect(root.adoptedStyleSheets.length).to.equal(previousSheets.length);
+    expect(root.adoptedStyleSheets.slice(-1)[0]).not.to.equal(
+      previousSheets.slice(-1)[0]
+    );
+  });
+
+  it('keeps independent error and read-only styles while states change', async () => {
+    const editable = await mount(makeUpload('a', FileStatusValue.EDIT));
+    const readOnly = await mount(makeUpload('b', FileStatusValue.EDIT));
+    readOnly.readOnly = true;
+    await settle(editable);
+    await settle(readOnly);
+    const editableRoot = innerRoot(editable);
+    const readOnlyRoot = innerRoot(readOnly);
+    const state = () =>
+      readOnlyRoot.querySelector('.cds--file__state-container')!;
+    const filename = readOnlyRoot.querySelector('.cds--file-filename')!;
+    expect(editableRoot.adoptedStyleSheets.slice(-1)[0]).not.to.equal(
+      readOnlyRoot.adoptedStyleSheets.slice(-1)[0]
+    );
+    editable.upload = makeUpload('a', FileStatusValue.EDIT, {
+      isError: true,
+      errorMessage: 'Too large',
+    });
+    await settle(editable);
+    expect(getComputedStyle(editableRoot.host).padding).to.equal('0px');
+    expect(getComputedStyle(editableRoot.host).outlineStyle).to.equal('none');
+    const outline = getComputedStyle(editableRoot.host, '::after');
+    expect(outline.outlineWidth).to.equal('2px');
+    expect(outline.outlineOffset).to.equal('-2px');
+    expect(outline.borderRadius).to.equal('8px');
+    expect(outline.pointerEvents).to.equal('none');
+    expect(outline.outlineStyle).to.equal(
+      matchMedia('screen and (prefers-contrast)').matches ? 'dotted' : 'solid'
+    );
+    expect(getComputedStyle(state()).display).to.equal('none');
+    expect(getComputedStyle(filename).marginInlineEnd).to.equal('16px');
+    expect(
+      getComputedStyle(readOnlyRoot.host, '::after').outlineStyle
+    ).to.equal('none');
+
+    editable.upload = makeUpload('a', FileStatusValue.EDIT);
+    readOnly.readOnly = false;
+    await settle(editable);
+    await settle(readOnly);
+    expect(
+      getComputedStyle(editableRoot.host, '::after').outlineStyle
+    ).to.equal('none');
+    expect(getComputedStyle(state()).display).not.to.equal('none');
+    expect(getComputedStyle(readOnlyRoot.host).columnGap).to.equal('16px');
+    expect(editableRoot.querySelector('style')).to.equal(null);
+    expect(readOnlyRoot.querySelector('style')).to.equal(null);
+  });
+
+  it('binds its sheet to the new document after adoption', async () => {
+    const el = await mount(makeUpload('a', FileStatusValue.EDIT));
+    await settle(el);
+    const previousSheet = innerRoot(el).adoptedStyleSheets.slice(-1)[0];
+    const parent = el.parentElement!;
+    const frame = document.createElement('iframe');
+    parent.append(frame);
+    try {
+      const target = frame.contentDocument!;
+      target.body.append(target.adoptNode(el));
+      await settle(el);
+      const root = innerRoot(el);
+      expect(root.ownerDocument).to.equal(target);
+      expect(root.adoptedStyleSheets.slice(-1)[0]).not.to.equal(previousSheet);
+      expect(root.querySelector('style')).to.equal(null);
+      expect(
+        target.defaultView!.getComputedStyle(root.host).columnGap
+      ).to.equal('16px');
+    } finally {
+      parent.append(el);
+      frame.remove();
+      await settle(el);
+    }
+  });
+
+  it('reuses one legacy style when constructed sheet writes are unavailable', async () => {
+    const replaceSync = CSSStyleSheet.prototype.replaceSync;
+    CSSStyleSheet.prototype.replaceSync = function (text: string) {
+      if (text.includes(':host(cds-file-uploader-item[size][size=md])')) {
+        throw new Error('Constructed stylesheet writes are unavailable');
+      }
+      replaceSync.call(this, text);
+    };
+    try {
+      const el = await mount(makeUpload('a', FileStatusValue.EDIT));
+      await settle(el);
+      const root = innerRoot(el);
+      const style = root.querySelector('style');
+      expect(style).to.exist;
+      expect(style!.ownerDocument).to.equal(el.ownerDocument);
+      expect(getComputedStyle(root.host).columnGap).to.equal('16px');
+      el.upload = makeUpload('a', FileStatusValue.EDIT, { isError: true });
+      await settle(el);
+      expect(root.querySelectorAll('style').length).to.equal(1);
+      expect(root.querySelector('style')).to.equal(style);
+      expect(getComputedStyle(root.host).padding).to.equal('0px');
+    } finally {
+      CSSStyleSheet.prototype.replaceSync = replaceSync;
+    }
+  });
+
   it('forwards cds-file-uploader-item-deleted as cds-aichat-file-remove with the correct fileId', async () => {
     const el = await mount(makeUpload('a', FileStatusValue.EDIT));
 
@@ -229,6 +399,10 @@ describe('file-upload-item', () => {
         'img.cds-aichat-file-upload-item__preview'
       );
       expect(image).to.exist;
+      const root = innerRoot(el);
+      const sheet = root.adoptedStyleSheets.slice(-1)[0];
+      const filename = root.querySelector('.cds--file-filename')!;
+      expect(getComputedStyle(filename).marginInlineStart).to.equal('2px');
 
       image!.dispatchEvent(new Event('error'));
       await el.updateComplete;
@@ -236,6 +410,9 @@ describe('file-upload-item', () => {
       expect(
         el.renderRoot.querySelector('img.cds-aichat-file-upload-item__preview')
       ).to.not.exist;
+      expect(getComputedStyle(filename).marginInlineStart).not.to.equal('2px');
+      expect(root.adoptedStyleSheets.slice(-1)[0]).to.equal(sheet);
+      expect(root.querySelector('style')).to.equal(null);
     });
 
     it('previews a File carried on an attachment, which has no upload status', async () => {
