@@ -81,6 +81,7 @@ import {
   TextItem,
 } from '../../../types/messaging/Messages';
 import type { ConversationAppConfig } from '../../../types/state/ConversationState';
+import type { ChatSDKServiceDeskConfig } from '../../../types/config/ChatSDKServiceDeskConfig';
 import { OnErrorType } from '../../../types/config/ErrorConfig';
 import {
   AdditionalDataToAgent,
@@ -213,6 +214,12 @@ class HumanAgentServiceImpl implements HumanAgentService {
    * If we are displaying a screen sharing request to the user, this Promise is used to resolve the user's response.
    */
   screenShareRequestPromise: ResolvablePromise<ScreenShareState>;
+
+  /**
+   * Aborts the signal the host's `onScreenShareRequest` got, when the request
+   * it's answering ends before it answers.
+   */
+  private screenShareAbortController: AbortController | null = null;
 
   /**
    * We only want to show the refresh/leave warning when the first agent joins, so we use this boolean to track if the
@@ -1023,6 +1030,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
     this.cancelHumanAgentJoinedTimer();
     this.sendTimers.forEach((timer) => clearTimeout(timer));
     this.sendTimers.clear();
+    this.abortScreenShareConsent();
     this.screenShareRequestPromise?.doResolve(ScreenShareState.CANCELLED);
     this.screenShareRequestPromise = null;
   }
@@ -1147,6 +1155,8 @@ class HumanAgentServiceImpl implements HumanAgentService {
    * Closes the screen share request panel and completes the promise waiting on it.
    */
   closeScreenShareRequestPanel(state: ScreenShareState) {
+    // A host still deciding learns the request ended without its answer.
+    this.abortScreenShareConsent();
     this.serviceManager.store.dispatch(setShowScreenShareRequest(false));
 
     // If someone is waiting on the Promise, then resolve it.
@@ -1157,6 +1167,58 @@ class HumanAgentServiceImpl implements HumanAgentService {
     this.serviceManager.store.dispatch(
       setIsScreenSharing(state === ScreenShareState.ACCEPTED)
     );
+  }
+
+  /**
+   * Asks the host's `onScreenShareRequest` to answer `request`. An answer that
+   * comes after the request ended is ignored. A throw, a rejection, or any
+   * other value answers `DECLINED`, with one console error.
+   */
+  async askHostForScreenShare(
+    onScreenShareRequest: ScreenShareRequestHook,
+    request: ResolvablePromise<ScreenShareState>
+  ) {
+    const controller = new AbortController();
+    this.screenShareAbortController = controller;
+    let answer: unknown;
+    let failed = false;
+    try {
+      answer = await new Promise((resolve) => {
+        resolve(onScreenShareRequest({ signal: controller.signal }));
+      });
+    } catch (error) {
+      failed = true;
+      answer = error;
+    }
+    if (
+      controller.signal.aborted ||
+      this.screenShareAbortController !== controller ||
+      this.screenShareRequestPromise !== request
+    ) {
+      return;
+    }
+    this.screenShareAbortController = null;
+    if (failed) {
+      consoleError(
+        'serviceDesk.onScreenShareRequest failed, so the chat declined the screen share.',
+        answer
+      );
+    } else if (!isScreenShareAnswer(answer)) {
+      consoleError(
+        `serviceDesk.onScreenShareRequest resolved with "${String(answer)}", not ACCEPTED, DECLINED, or CANCELLED, so the chat declined the screen share.`
+      );
+    }
+    await this.screenShareUpdateRequestState(
+      !failed && isScreenShareAnswer(answer)
+        ? answer
+        : ScreenShareState.DECLINED
+    );
+  }
+
+  /** Aborts the signal of a host still deciding on a screen share, if any. */
+  private abortScreenShareConsent() {
+    this.screenShareAbortController?.abort();
+    this.screenShareAbortController = null;
   }
 
   /**
@@ -1705,9 +1767,28 @@ class ServiceDeskCallbackImpl<
     if (!request) {
       request = resolvablePromise();
       this.service.screenShareRequestPromise = request;
-      this.serviceManager.store.dispatch(setShowScreenShareRequest(true));
+      // With no hook, a mounted chat asks with its modal and one with no view
+      // declines. A second request while this one waits gets the same answer.
+      const onScreenShareRequest =
+        this.serviceManager.store.getState().config.public.serviceDesk
+          ?.onScreenShareRequest;
+      const hasView = Boolean(this.serviceManager.view?.current);
+      if (!onScreenShareRequest && hasView) {
+        this.serviceManager.store.dispatch(setShowScreenShareRequest(true));
+      }
 
       await this.service.addHumanAgentLocalMessage(SHARING_REQUESTED);
+
+      // The desk or shutdown can end the request during the await.
+      if (this.service.screenShareRequestPromise === request) {
+        if (onScreenShareRequest) {
+          this.service.askHostForScreenShare(onScreenShareRequest, request);
+        } else if (!hasView) {
+          await this.service.screenShareUpdateRequestState(
+            ScreenShareState.DECLINED
+          );
+        }
+      }
     }
 
     return request;
@@ -1784,6 +1865,20 @@ class ServiceDeskCallbackImpl<
     }
     store.dispatch(setPersistedServiceDeskState(deepFreeze(newState)));
   }
+}
+
+/** The host's `serviceDesk.onScreenShareRequest`. */
+type ScreenShareRequestHook = NonNullable<
+  ChatSDKServiceDeskConfig['onScreenShareRequest']
+>;
+
+/** The answers a host's `onScreenShareRequest` may give. */
+function isScreenShareAnswer(value: unknown): value is ScreenShareState {
+  return (
+    value === ScreenShareState.ACCEPTED ||
+    value === ScreenShareState.DECLINED ||
+    value === ScreenShareState.CANCELLED
+  );
 }
 
 /**

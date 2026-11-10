@@ -113,6 +113,11 @@ function createConversationInstance<Self>(
       return serviceManager.actions.agentStartConversation(options);
     },
 
+    stopScreenShare: () => {
+      debugLog('Called instance.serviceDesk.stopScreenShare');
+      return serviceManager.actions.agentStopScreenShare();
+    },
+
     endConversation: () => {
       debugLog('Called instance.serviceDesk.endConversation');
       return serviceManager.actions.agentEndConversation(false);

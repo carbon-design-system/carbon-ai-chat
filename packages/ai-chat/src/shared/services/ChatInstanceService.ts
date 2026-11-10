@@ -372,6 +372,21 @@ class ChatInstanceService {
   }
 
   /**
+   * `serviceDesk.stopScreenShare()`: what the "stop sharing" button does, and
+   * nothing when no share is running, including on a removed chat.
+   */
+  async agentStopScreenShare() {
+    const { serviceManager } = this;
+    if (
+      serviceManager.isShutdown ||
+      !serviceManager.store.getState().humanAgentState.isScreenSharing
+    ) {
+      return;
+    }
+    await serviceManager.humanAgentService.screenShareStop();
+  }
+
+  /**
    * Sets the suspended state for an agent conversation. A conversation can be suspended or un-suspended only if the
    * user is currently connecting or connected to an agent. If a conversation is suspended, then messages from the user
    * will no longer be routed to the service desk and incoming messages from the service desk will not be displayed. In

@@ -17,6 +17,8 @@ import {
 } from '../../../src/types/config/ServiceDeskConfig';
 import { HumanAgentMessageType } from '../../../src/types/messaging/Messages';
 import { ConversationState } from '../../../src/types/state/AppState';
+import type { MessagePresentationPort } from '../../../src/shared/services/messaging/presentationPort';
+import { withMessagingView } from '../helpers/viewBindings';
 
 async function createFixture(isConnected = true) {
   let callback: ServiceDeskCallback<unknown>;
@@ -39,14 +41,18 @@ async function createFixture(isConnected = true) {
     humanAgentState: { isScreenSharing: false, showScreenShareRequest: false },
     persistedToBrowserStorage: { humanAgentState: { isConnected } },
   } as unknown as ConversationState;
-  const manager = {
-    store: {
-      getState: () => state,
-      dispatch: jest.fn((action) => {
-        state = humanAgentReducers[action.type](state, action);
-      }),
-    },
-  } as unknown as ServiceManager;
+  // The consent modal belongs to a mounted chat, which always has a view.
+  const manager = withMessagingView(
+    {
+      store: {
+        getState: () => state,
+        dispatch: jest.fn((action) => {
+          state = humanAgentReducers[action.type](state, action);
+        }),
+      },
+    } as unknown as ServiceManager,
+    {} as MessagePresentationPort
+  );
   const service = createHumanAgentService(manager);
   const addMessage = jest
     .spyOn(
