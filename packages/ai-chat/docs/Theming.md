@@ -4,35 +4,26 @@ title: Theming
 
 ## Overview
 
-Customize the Carbon theme of the chat. By default, it inherits a Carbon theme from the host page. If your site doesn't use Carbon and you don't set `injectCarbonTheme`, the chat renders the white theme - it reads your page background and switches to a dark theme only when your page is dark. To take control, pick one of four built-in themes, or inject your own and override specific colors.
+Set the chat's Carbon theme with CSS on your page. The chat reads the Carbon `--cds-*` tokens that cascade into it, so it follows the theme your page sets. If your page sets no Carbon theme, the chat renders the white theme. It reads your page background and switches to a dark theme only when your page is dark.
 
-## Pick a built-in theme
+## Use your page's Carbon theme
 
-If your site doesn't use Carbon, set {@link PublicConfig.injectCarbonTheme | injectCarbonTheme} to one of four themes:
+If your site already uses Carbon, the chat picks up its theme. You don't need to configure anything.
 
-- {@link CarbonTheme.WHITE}
-- {@link CarbonTheme.G10} (Gray 10)
-- {@link CarbonTheme.G90} (Gray 90)
-- {@link CarbonTheme.G100} (Gray 100)
+## Add a Carbon theme to a page that doesn't use Carbon
 
-This injects the correct CSS custom properties into the chat's shadow DOM.
+Add Carbon's theme tokens at the root of your page. With Sass and `@carbon/styles`:
 
-Set `injectCarbonTheme` on the {@link PublicConfig} object you pass to the container:
+```scss
+@use '@carbon/styles/scss/themes';
+@use '@carbon/styles/scss/theme';
 
-```tsx
-import { ChatContainer, CarbonTheme } from '@carbon/ai-chat';
-import type { PublicConfig } from '@carbon/ai-chat';
-
-const config: PublicConfig = {
-  injectCarbonTheme: CarbonTheme.G100,
-};
-
-function App() {
-  return <ChatContainer {...config} />;
+:root {
+  @include theme.theme(themes.$g100);
 }
 ```
 
-See [React](./React.md) and [web components](./WebComponent.md) for how config reaches the chat.
+Use `themes.$white`, `themes.$g10`, `themes.$g90`, or `themes.$g100`. Set the theme on `:root`, not on an element around the chat. The chat checks the page root to decide whether the theme is light or dark, so a theme set on a smaller element can leave parts of the chat in the wrong mode.
 
 ## Override specific colors
 
@@ -41,9 +32,7 @@ The chat exposes two layers of CSS custom properties:
 - `--cds-aichat-*` tokens style the chat's own shell and launcher.
 - The underlying Carbon `--cds-*` tokens style the Carbon components rendered inside the chat — buttons, links, inputs, and surfaces.
 
-### Override with your own CSS
-
-The simplest way to recolor or resize the chat is to set these custom properties on a host element. They inherit through the chat's shadow boundary, so the chat picks them up:
+Set them on an element that contains the chat. They inherit through the chat's shadow boundary, so the chat picks them up:
 
 ```css
 .my-host {
@@ -55,16 +44,17 @@ The simplest way to recolor or resize the chat is to set these custom properties
 }
 ```
 
-You can override the `--cds-aichat-*` shell tokens this way in every theme mode. You can override the Carbon `--cds-*` tokens this way whenever the chat inherits its theme — the default, or when your site uses Carbon.
+## Deprecated: force a theme from config
 
-### Override under a forced theme
+> **Deprecated:** {@link PublicConfig.injectCarbonTheme | injectCarbonTheme} and {@link LayoutConfig.customProperties | customProperties} are deprecated, and 2.0.0 removes them. Set your theme and your overrides with CSS instead, as shown above. Both keep working until 2.0.0. [ADR-0004](https://github.com/carbon-design-system/carbon-ai-chat/blob/main/docs/adr/0004-component-styling-contract.md) explains the change.
 
-If you force a theme with {@link PublicConfig.injectCarbonTheme}, the chat supplies its own Carbon `--cds-*` tokens, so page-level `--cds-*` overrides no longer reach the Carbon components. Set them through {@link LayoutConfig.customProperties | customProperties} instead: the chat injects these inside its own DOM, so they win over the forced theme. A bare key sets a `--cds-aichat-*` shell token; a key prefixed with `$` sets a Carbon `--cds-*` token, and `$`-prefixed values must be hexadecimal colors:
+`injectCarbonTheme` forces one of four themes — {@link CarbonTheme.WHITE}, {@link CarbonTheme.G10}, {@link CarbonTheme.G90}, or {@link CarbonTheme.G100} — by injecting its tokens into the chat's shadow DOM. A forced theme also stops page-level `--cds-*` overrides from reaching the Carbon components inside the chat. Until you move off it, set those overrides through `customProperties`, which the chat injects inside its own DOM. A bare key sets a `--cds-aichat-*` token, and a key prefixed with `$` sets a Carbon `--cds-*` token. `$`-prefixed values must be hexadecimal colors.
 
 ```tsx
 import { ChatContainer, CarbonTheme } from '@carbon/ai-chat';
 import type { PublicConfig } from '@carbon/ai-chat';
 
+// Deprecated: removed in 2.0.0. Use page CSS instead.
 const config: PublicConfig = {
   injectCarbonTheme: CarbonTheme.G100,
   layout: {
@@ -77,12 +67,18 @@ const config: PublicConfig = {
     },
   },
 };
+
+function App() {
+  return <ChatContainer {...config} />;
+}
 ```
 
-[Layout](./Layout.md) documents the `--cds-aichat-*` sizing and placement tokens and how to set them through {@link LayoutConfig.customProperties}; [Launcher](./Launcher.md) documents the launcher and unread-indicator tokens.
+To move to CSS, drop `injectCarbonTheme`, add the theme to your page as shown above, and turn each `customProperties` key into a custom property: `'launcher-color-background'` becomes `--cds-aichat-launcher-color-background`, and `'$button-primary'` becomes `--cds-button-primary`.
+
+See [React](./React.md) and [web components](./WebComponent.md) for how config reaches the chat.
 
 ## Related
 
-- [Layout](./Layout.md) — override `--cds-aichat-*` tokens and size the chat.
+- [Layout](./Layout.md) — the `--cds-aichat-*` sizing and placement tokens. [Launcher](./Launcher.md) covers the launcher and unread-indicator tokens.
 - [@carbon/themes](https://github.com/carbon-design-system/carbon/tree/main/packages/themes) — theme tokens and palette.
 - {@link PublicConfig} — full config reference.
