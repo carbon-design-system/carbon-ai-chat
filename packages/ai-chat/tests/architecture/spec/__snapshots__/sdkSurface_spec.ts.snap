@@ -498,7 +498,7 @@ interface MessageRequest (src/types/messaging/Messages.ts)
 
 interface MessageRequestHistory (src/types/messaging/Messages.ts)
   error_state?: MessageErrorState
-  file_upload_status?: import("@carbon/ai-chat-components/es/components/prompt-line/src/types.js").FileStatusValue
+  file_upload_status?: import("@carbon/ai-chat-components/es/components/prompt-line/src/file-upload-types.js").FileStatusValue
   is_choice_request?: boolean
   is_welcome_request?: boolean
   label?: string
@@ -520,7 +520,7 @@ interface MessageResponse (src/types/messaging/Messages.ts)
 interface MessageResponseHistory (src/types/messaging/Messages.ts)
   error_state?: MessageErrorState
   feedback?: { [feedbackID: string]: MessageHistoryFeedback; }
-  file_upload_status?: import("@carbon/ai-chat-components/es/components/prompt-line/src/types.js").FileStatusValue
+  file_upload_status?: import("@carbon/ai-chat-components/es/components/prompt-line/src/file-upload-types.js").FileStatusValue
   silent?: boolean
   timestamp?: number
 

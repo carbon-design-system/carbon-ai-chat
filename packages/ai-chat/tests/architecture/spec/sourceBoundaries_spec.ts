@@ -51,20 +51,10 @@ const rules: FolderRule[] = [
 const folderExceptions: BoundaryException[] = [];
 
 // Each root folder lists its own exceptions, so a path from a new folder fails
-// even where another folder's path to the same edge is listed. The SDK's own
-// types reach this edge through ChatSDKConfig -> ServiceDeskConfig.
-const frameworkExceptions: BoundaryException[] = [
-  'src/shared/',
-  'src/sdk/',
-].flatMap((folder) => [
-  {
-    folder,
-    from: 'src/types/config/ServiceDeskConfig.ts',
-    to: '../ai-chat-components/src/components/prompt-line/src/types.ts',
-    owner: '#1732',
-    reason: "FileUpload's module also types the autocomplete's React parts",
-  },
-]);
+// even where another folder's path to the same edge is listed. The list is
+// empty: the last entry (ServiceDeskConfig reaching the input's editor types
+// through FileUpload) closed with #1732.
+const frameworkExceptions: BoundaryException[] = [];
 
 /** View objects and view handles that conversation services must not hold. */
 const viewHandleTypes = new Set([
@@ -335,6 +325,26 @@ describe('planted imports', () => {
       );
     }
   );
+
+  // FileUpload moved out of this module so conversation code stops reaching
+  // the input's editor types (#1732 O19). The old path must still fail.
+  it("fails shared code that imports the input's full types module", () => {
+    const result = plant(
+      shared,
+      "import type { FileUpload } from '@carbon/ai-chat-components/es/components/prompt-line/src/types.js';"
+    );
+    expect(result.frameworks).toContain(
+      `src/shared/: ${shared} -> ../ai-chat-components/src/components/prompt-line/src/types.ts`
+    );
+  });
+
+  it('allows shared code to import the file upload types module', () => {
+    const result = plant(
+      shared,
+      "import type { FileUpload } from '@carbon/ai-chat-components/es/components/prompt-line/src/file-upload-types.js';"
+    );
+    expect(result.frameworks).toEqual([]);
+  });
 
   it('fails the custom-prefix build of an element-registering module', () => {
     const result = plant(
