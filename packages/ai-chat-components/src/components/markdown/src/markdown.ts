@@ -188,6 +188,14 @@ class CDSAIChatMarkdown extends LitElement {
   })
   codeSnippetCopyButtonTooltipContent = 'Copy code';
 
+  /** Feedback text shown after copying code in code blocks. */
+  @property({ type: String, attribute: 'code-snippet-feedback' })
+  codeSnippetFeedback = 'Copied!';
+
+  /** The number in milliseconds to determine how long the code block feedback tooltip should remain. */
+  @property({ type: Number, attribute: 'code-snippet-feedback-timeout' })
+  codeSnippetFeedbackTimeout = 2000;
+
   /** Formatter for the code block line count. */
   @property({ type: Object, attribute: false })
   codeSnippetGetLineCountText?: ({ count }: { count: number }) => string;
@@ -621,6 +629,8 @@ class CDSAIChatMarkdown extends LitElement {
       changed.has('codeSnippetShowLessText') ||
       changed.has('codeSnippetShowMoreText') ||
       changed.has('codeSnippetCopyButtonTooltipContent') ||
+      changed.has('codeSnippetFeedback') ||
+      changed.has('codeSnippetFeedbackTimeout') ||
       changed.has('codeSnippetGetLineCountText') ||
       changed.has('codeSnippetAriaLabelReadOnly') ||
       changed.has('codeSnippetAriaLabelEditable') ||
@@ -732,6 +742,8 @@ class CDSAIChatMarkdown extends LitElement {
           codeSnippetShowMoreText: this.codeSnippetShowMoreText,
           codeSnippetCopyButtonTooltipContent:
             this.codeSnippetCopyButtonTooltipContent,
+          codeSnippetFeedback: this.codeSnippetFeedback,
+          codeSnippetFeedbackTimeout: this.codeSnippetFeedbackTimeout,
           codeSnippetGetLineCountText: this.codeSnippetGetLineCountText,
           codeSnippetAriaLabelReadOnly: this.codeSnippetAriaLabelReadOnly,
           codeSnippetAriaLabelEditable: this.codeSnippetAriaLabelEditable,
