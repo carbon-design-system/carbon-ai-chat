@@ -22,7 +22,7 @@ For the skill/reference split and mirror mechanics, read [.bob/skills/README.md]
 
 Rules for authoring them:
 
-- **Keep one skill per task.** The six owned skills cover ADRs, plans, issues, PRs, reviews, and copy. Put substeps in the skill's references. The [copy skill](../.bob/skills/caic-copy-writer/SKILL.md) routes among audiences; other workflows link to it for wording.
+- **Keep one skill per task.** Each owned skill covers one task; the [skills README](../.bob/skills/README.md) lists them. Put substeps in the skill's references. The [copy skill](../.bob/skills/caic-copy-writer/SKILL.md) routes among audiences; other workflows link to it for wording.
 - **Put writing rules in one place.** Voice rules live in [tone.md](tone.md). Rules that vary by copy type live in [caic-copy-writer](../.bob/skills/caic-copy-writer/SKILL.md). Link to the needed type rather than copying its rules.
 - **Name them `caic-` + a short task name.** The repository prefix avoids collisions with unrelated skills and harness commands.
 - **Use `name` and `description` frontmatter.** This is the repository's shared metadata convention, not a claim that other fields are unsupported everywhere. Match the name to the directory. Describe the capability and its triggers briefly; include incidental use during implementation when relevant. Put subtype catalogs and workflow details in the body.
