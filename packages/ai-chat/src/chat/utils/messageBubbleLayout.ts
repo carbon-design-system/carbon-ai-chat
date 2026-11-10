@@ -18,7 +18,7 @@ import { isSingleItemCarousel, isFullWidthUserDefined } from './messageUtils';
  * - `contain`: the full width of the column, clipping overflow so long content
  *   cannot widen the bubble.
  */
-export type BubbleWidthCap = 'none' | 'reduced' | 'fill' | 'contain';
+type BubbleWidthCap = 'none' | 'reduced' | 'fill' | 'contain';
 
 export interface BubbleLayout {
   /**
