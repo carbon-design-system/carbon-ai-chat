@@ -49,7 +49,10 @@ export interface ChatSDKPendingUpload {
   /** What your `onFileUpload` returned, once it resolved. */
   readonly contributedData?: StructuredData;
 
-  /** The message your `onFileUpload` threw, when `status` is `'error'`. */
+  /**
+   * Why the file failed, when `status` is `'error'`: the message your `onFileUpload` threw, or, for
+   * a file staged for a service desk, the message the desk reported.
+   */
   readonly errorMessage?: string;
 }
 
@@ -109,7 +112,8 @@ export interface ChatSDKState {
    * status. {@link ChatSDKInstanceMessaging.addFile} adds one, and
    * {@link ChatSDKInstanceMessaging.removeFile} takes one out. The next send carries them, then the
    * list empties. During a human agent conversation it lists the files for the service desk, which
-   * transfers them when the message is sent; until then they show as `'complete'`.
+   * transfers them when the message is sent; until then they show as `'complete'`. A restart keeps
+   * them, as it keeps the prebuilt input's attachments.
    *
    * Optional in 1.x so that objects typed as this state still compile; the chat always sets it.
    */

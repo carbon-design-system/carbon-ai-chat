@@ -192,7 +192,8 @@ export interface ChatSDKInstanceMessaging {
    * gate it. During a human agent conversation, it checks the service desk's limits instead and
    * hands the file to the desk, which receives it with the next message.
    *
-   * Resolves with the file's ID once the upload starts, so you can pass the ID to
+   * Resolves with the file's ID once the upload starts (or, for a service desk, once the file is
+   * staged), so you can pass the ID to
    * {@link ChatSDKInstanceMessaging.removeFile} while it runs. Progress and failure show in
    * `state.get().pendingUploads`. Rejects when a file breaks a limit, when there's no
    * `onFileUpload` (or, during a human agent conversation, when the desk doesn't take files), or

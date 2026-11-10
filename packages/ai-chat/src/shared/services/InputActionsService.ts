@@ -73,7 +73,7 @@ function assertFileFits(
       : {
           fileSharing_unsupportedType: "isn't a type the service desk accepts",
           fileSharing_fileTooLarge: `is larger than the service desk allows (${maxFileSizeBytes} bytes)`,
-          fileSharing_tooManyFiles: `would go past the ${maxFiles} files the service desk takes in one message`,
+          fileSharing_tooManyFiles: `would go past the service desk's limit of ${maxFiles} for one message`,
         };
   throw new Error(
     `The file "${file.name}" ${reasons[rejection.messageID]}, so addFile didn't attach it.`
@@ -376,6 +376,14 @@ class InputActionsService {
         `The service desk doesn't take files in this conversation, so addFile didn't attach "${file.name}".`
       );
     }
+    if (
+      !slice.allowMultipleFileUploads &&
+      store.getState().humanAgentState.fileUploadInProgress
+    ) {
+      throw new Error(
+        `The service desk is still receiving a file and takes one at a time, so addFile didn't attach "${file.name}".`
+      );
+    }
     assertFileFits(
       file,
       slice.files.length,
@@ -402,16 +410,22 @@ class InputActionsService {
    */
   removeFile(id: string) {
     const { store } = this.serviceManager;
-    const slice = selectInputState(store.getState());
-    if (slice.pendingUploads.some((upload) => upload.id === id)) {
-      this.removePendingUpload(id);
-    } else if (slice.files.some((upload) => upload.id === id)) {
-      store.dispatch(
-        actions.removeFileUpload(
-          id,
-          selectIsInputToHumanAgent(store.getState())
-        )
-      );
+    const state = store.getState();
+    // An upload can sit in the slice it started in after the input switches to an agent.
+    for (const toHumanAgent of [false, true]) {
+      const slice = toHumanAgent
+        ? state.humanAgentState.inputState
+        : state.assistantInputState;
+      if (slice.pendingUploads.some((upload) => upload.id === id)) {
+        this.uploadAbortControllers.get(id)?.abort();
+        this.uploadAbortControllers.delete(id);
+        store.dispatch(actions.removePendingUpload(id, toHumanAgent));
+        return;
+      }
+      if (slice.files.some((upload) => upload.id === id)) {
+        store.dispatch(actions.removeFileUpload(id, toHumanAgent));
+        return;
+      }
     }
   }
 
@@ -427,11 +441,13 @@ class InputActionsService {
     const uploadId = uuid();
     const controller = new AbortController();
     this.uploadAbortControllers.set(uploadId, controller);
+    // The upload settles in the slice it started in, even if an agent connects meanwhile.
+    const toHumanAgent = selectIsInputToHumanAgent(store.getState());
 
     store.dispatch(
       actions.addPendingUpload(
         { id: uploadId, file, status: PendingUploadStatus.UPLOADING },
-        selectIsInputToHumanAgent(store.getState())
+        toHumanAgent
       )
     );
 
@@ -445,7 +461,7 @@ class InputActionsService {
             actions.updatePendingUpload(
               uploadId,
               { status: PendingUploadStatus.COMPLETE, contributedData },
-              selectIsInputToHumanAgent(store.getState())
+              toHumanAgent
             )
           );
         }
@@ -459,7 +475,7 @@ class InputActionsService {
           actions.updatePendingUpload(
             uploadId,
             { status: PendingUploadStatus.ERROR, errorMessage },
-            selectIsInputToHumanAgent(store.getState())
+            toHumanAgent
           )
         );
       } finally {

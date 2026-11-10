@@ -13,12 +13,14 @@
  */
 
 import { waitFor } from '@testing-library/react';
+import { deepQuerySelector } from '@carbon/ai-chat-components/es/globals/utils/dom-utils.js';
 import createHumanAgentService from '../../../../src/shared/services/haa/HumanAgentServiceImpl';
 import { selectInputState } from '../../../../src/shared/store/selectors';
 import actions from '../../../../src/shared/store/actions';
 import { updateCapabilities } from '../../../../src/shared/store/humanAgentActions';
 import { resolvablePromise } from '../../../../src/shared/utils/resolvablePromise';
 import type { PublicConfig } from '../../../../src/types/config/PublicConfig';
+import { CancellationReason } from '../../../../src/types/config/MessagingConfig';
 import type { ServiceDesk } from '../../../../src/types/config/ServiceDeskConfig';
 import type { UploadConfig } from '../../../../src/types/config/UploadConfig';
 import type { ChatInstance } from '../../../../src/types/instance/ChatInstance';
@@ -29,6 +31,7 @@ import type {
 } from '../../../../src/types/messaging/Messages';
 import {
   createBaseConfig,
+  getChatShadowRoot,
   renderChatAndGetInstance,
   setupAfterEach,
   setupBeforeEach,
@@ -247,6 +250,95 @@ describe('messaging.addFile and removeFile (#2351)', () => {
     expect(host.onFileUpload).not.toHaveBeenCalled();
   });
 
+  it('keeps an unchanged entry and the list object while nothing about them changes', async () => {
+    const host = uploader();
+    const instance = await chatWith({ onFileUpload: host.onFileUpload });
+    await instance.messaging.addFile(file('a.txt'));
+    await instance.messaging.addFile(file('b.txt'));
+    const [first] = uploads(instance);
+    const list = uploads(instance);
+
+    instance.input.updateRawValue(() => 'typing');
+    expect(uploads(instance)).toBe(list);
+
+    host.calls[1].done.doResolve(dataFor('b'));
+    await waitFor(() => expect(uploads(instance)[1].status).toBe('complete'));
+    expect(uploads(instance)[0]).toBe(first);
+  });
+
+  it('marks a file failed when onFileUpload throws at once', async () => {
+    const instance = await chatWith({
+      onFileUpload: () => {
+        throw new Error('No uploads today.');
+      },
+    });
+
+    await instance.messaging.addFile(file('a.txt'));
+
+    await waitFor(() =>
+      expect(uploads(instance)[0]).toMatchObject({
+        status: 'error',
+        errorMessage: 'No uploads today.',
+      })
+    );
+  });
+
+  it('aborts a running upload with CHAT_REMOVED when the chat shuts down', async () => {
+    const host = uploader();
+    const instance = await chatWith({ onFileUpload: host.onFileUpload });
+    await instance.messaging.addFile(file('a.txt'));
+
+    await (
+      instance.serviceManager.inputActionsService as any
+    ).serviceManager.shutdown();
+
+    expect(host.calls[0].signal.reason).toBe(CancellationReason.CHAT_REMOVED);
+  });
+
+  it('settles an upload in the input it started in when an agent connects meanwhile', async () => {
+    const host = uploader();
+    const instance = await chatWith({ onFileUpload: host.onFileUpload });
+    const { id } = await instance.messaging.addFile(file('a.txt'));
+    const manager = (instance.serviceManager.inputActionsService as any)
+      .serviceManager;
+    manager.store.dispatch(
+      actions.changeState({
+        persistedToBrowserStorage: { humanAgentState: { isConnected: true } },
+      })
+    );
+
+    host.calls[0].done.doResolve(dataFor('a'));
+    await waitFor(() =>
+      expect(
+        manager.store.getState().assistantInputState.pendingUploads[0].status
+      ).toBe('complete')
+    );
+    // removeFile finds it even though the input now goes to the agent.
+    instance.messaging.removeFile(id);
+    expect(manager.store.getState().assistantInputState.pendingUploads).toEqual(
+      []
+    );
+  });
+
+  it('keeps a host-only upload failure out of the input when the attach button is off', async () => {
+    const instance = await chatWith({
+      onFileUpload: async () => {
+        throw new Error('Rejected by the server.');
+      },
+    });
+    await instance.messaging.addFile(file('a.txt'));
+    await waitFor(() => expect(uploads(instance)[0].status).toBe('error'));
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    const input = deepQuerySelector(
+      getChatShadowRoot(),
+      'cds-aichat-chat-input'
+    ) as unknown as { inputProps: { uploadErrors?: unknown[] } };
+    expect(input).toBeTruthy();
+    // No banner pointing at an attachment the input can't show, and send isn't blocked.
+    expect(input.inputProps.uploadErrors ?? []).toEqual([]);
+  });
+
   describe('during a human agent conversation (O6)', () => {
     async function agentChat(capabilities: Record<string, unknown>) {
       const host = uploader();
@@ -321,6 +413,18 @@ describe('messaging.addFile and removeFile (#2351)', () => {
       );
       instance.messaging.removeFile(id);
       expect(uploads(instance)).toEqual([]);
+    });
+
+    it('takes one file at a time when the desk allows only one', async () => {
+      const { instance } = await agentChat({
+        allowFileUploads: true,
+        allowMultipleFileUploads: false,
+      });
+      await instance.messaging.addFile(file('a.txt'));
+
+      await expect(instance.messaging.addFile(file('b.txt'))).rejects.toThrow(
+        "would go past the service desk's limit of 1 for one message"
+      );
     });
 
     it('rejects when the desk takes no files', async () => {

@@ -652,6 +652,7 @@ export class ShellLifecycle {
     const errorInputs = [
       inputFields.files,
       inputFields.pendingUploads,
+      isAssistantUploadEnabled,
       intl,
       languagePack.fileSharing_uploadErrorRecovery,
     ];
@@ -677,7 +678,11 @@ export class ShellLifecycle {
           });
         }
       }
-      for (const upload of inputFields.pendingUploads) {
+      // With the attach button off, only the host's own control adds files (messaging.addFile),
+      // so the input has nothing to remove and the host shows the failure itself.
+      for (const upload of isAssistantUploadEnabled
+        ? inputFields.pendingUploads
+        : []) {
         if (upload.status === 'error') {
           const filename = upload.file?.name ?? '';
           errors.push({
