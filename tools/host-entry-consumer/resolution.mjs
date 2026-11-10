@@ -205,6 +205,8 @@ async function assertInlineStyleDeclarations(
       continue;
     }
     visited.add(path);
+    // A sibling .ts source wins resolution, and consumers would type-check it.
+    assert.match(path, /\.d\.[cm]?ts$/);
     const declaration = program.getSourceFile(path);
     assert.ok(declaration, `${name}: missing style declaration ${path}.`);
     for (const imported of ts.preProcessFile(declaration.text).importedFiles) {
@@ -221,7 +223,6 @@ async function assertInlineStyleDeclarations(
         inside(root, await realpath(dependency)),
         `${name}: local style declaration dependencies must stay inside the packed components package.`
       );
-      assert.match(dependency, /\.d\.[cm]?ts$/);
       pending.push(dependency);
     }
   }
