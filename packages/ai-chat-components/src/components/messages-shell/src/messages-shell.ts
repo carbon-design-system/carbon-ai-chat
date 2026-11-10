@@ -264,7 +264,9 @@ class CDSAIChatMessagesShell extends LitElement {
     // apply inside this shadow root.
     adoptOnRoot(this.renderRoot as ShadowRoot);
 
+    this._portableMessages = this._buildPortableMessages();
     this._scroll.connect();
+    this._connectRowObserver();
   }
 
   disconnectedCallback() {

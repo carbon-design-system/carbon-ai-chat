@@ -329,6 +329,7 @@ describe(blockClass, () => {
       await aTimeout(250);
 
       expect(button.hidden).to.be.false;
+      expect(getComputedStyle(button).display).to.equal('block');
     });
 
     it('hides the scroll-down button when back at the bottom', async () => {
@@ -345,6 +346,7 @@ describe(blockClass, () => {
       await aTimeout(250);
 
       expect(button.hidden).to.be.true;
+      expect(getComputedStyle(button).display).to.equal('none');
     });
 
     it('hides the scroll-down button while a scroll handle has focus', async () => {
@@ -392,12 +394,14 @@ describe(blockClass, () => {
       scroller.dispatchEvent(new Event('scroll'));
       await aTimeout(250);
       expect(button.hidden).to.be.true;
+      expect(getComputedStyle(button).display).to.equal('none');
 
       // Scroll away — button must become visible.
       scroller.scrollTop = 0;
       scroller.dispatchEvent(new Event('scroll'));
       await aTimeout(250);
       expect(button.hidden).to.be.false;
+      expect(getComputedStyle(button).display).to.equal('block');
     });
 
     it('stops scroll handling after removal from the DOM', async () => {
@@ -490,6 +494,33 @@ describe(blockClass, () => {
       expect(el.getMessages()[0].isStreaming).to.be.true;
 
       // Remove it — simulates stream end.
+      row.removeAttribute('data-aichat-streaming');
+      await aTimeout(0);
+
+      expect(el.getMessages()[0].isStreaming).to.be.false;
+    });
+
+    it('reflects streaming flag changes after the shell is moved in the DOM', async () => {
+      const el = await fixture<CDSAIChatMessagesShell>(html`
+        <cds-aichat-messages-shell>
+          <div id="row1" data-message-id="row1"></div>
+        </cds-aichat-messages-shell>
+      `);
+      await el.updateComplete;
+
+      const parent = el.parentElement!;
+      parent.removeChild(el);
+      parent.appendChild(el);
+      await el.updateComplete;
+
+      expect(el.getMessages()[0].isStreaming).to.be.false;
+
+      const row = el.querySelector<HTMLElement>('#row1')!;
+      row.setAttribute('data-aichat-streaming', '');
+      await aTimeout(0);
+
+      expect(el.getMessages()[0].isStreaming).to.be.true;
+
       row.removeAttribute('data-aichat-streaming');
       await aTimeout(0);
 
