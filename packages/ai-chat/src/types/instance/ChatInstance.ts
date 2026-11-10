@@ -116,36 +116,23 @@ interface ChatActions {
   requestFocus: () => boolean | void;
 
   /**
-   * Sends the given message to the assistant. Fires `pre:send` then `send` on
-   * the event bus before delegating to `customSendMessage`.
-   *
-   * **Settlement points:**
-   * - Resolves when `customSendMessage` completes, or when the turn is stopped
-   *   or the conversation restarted while the message is in flight.
-   * - Rejects when `customSendMessage` throws, when the send path fails
-   *   terminally (for example a timeout), when called in read-only mode, or
-   *   when a file upload is still in progress. For the upload case, check
-   *   `instance.getState().input.hasInFlightUploads` before calling.
-   *
-   * The promise settling does **not** mean a response has arrived. Response
-   * delivery is handled asynchronously by `customSendMessage` itself; use
-   * `{@link EventHandlers.on}` with the `receive` event to react to incoming
-   * messages.
+   * Sends the given message to the assistant. It does the same thing as
+   * {@link ChatInstanceMessaging.send}, with the same events, queue, and promise: it resolves after
+   * `customSendMessage` resolves, without waiting for a reply, and rejects when the send fails, times
+   * out, or can't start.
    *
    * @param message The message to send.
    * @param options Options for the message sent.
    *
-   * @example Send a plain-text message
+   * @example Move a call to messaging.send
    * ```ts
+   * // Before
    * await instance.send("What is the weather today?");
-   * // The promise resolves once customSendMessage has completed.
-   * // Listen for the receive event to handle the assistant's response.
+   * // After
+   * await instance.messaging.send("What is the weather today?");
    * ```
    *
-   * @example Send a message to the assistant without showing it in the UI
-   * ```ts
-   * await instance.send("Resync context", { silent: true });
-   * ```
+   * @deprecated Use {@link ChatInstanceMessaging.send} instead — removed in 2.0.0.
    */
   send: (
     message: MessageRequest | string,
@@ -237,7 +224,7 @@ interface ChatActions {
    * messages. This will also clear the current assistant session which will force a new session to start on the
    * next message.
    *
-   * @deprecated Use {@link ChatInstanceMessaging.restartConversation} instead.
+   * @deprecated Use {@link ChatInstanceMessaging.restartConversation} instead — removed in 2.0.0.
    */
   restartConversation: () => Promise<void>;
 
@@ -348,6 +335,7 @@ export type IncreaseOrDecrease = 'increase' | 'decrease' | 'reset' | undefined;
  * This interface represents the options for when a MessageRequest is sent to the server with the send method.
  *
  * @category Instance
+ * @category SDK
  */
 export interface SendOptions {
   /**

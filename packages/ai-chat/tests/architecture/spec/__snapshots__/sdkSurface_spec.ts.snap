@@ -279,6 +279,7 @@ interface ChatSDKInstanceMessaging (src/types/config/ChatSDKInstanceMessaging.ts
   insertHistory: (messages: HistoryItem[]) => Promise<void>
   removeMessages: (messageIDs: string[]) => Promise<void>
   restartConversation: () => Promise<void>
+  send: (message: MessageRequest | string, options?: SendOptions) => Promise<void>
   upsertMessage: (messageID: string, state: MessageState, updater: UpsertMessageUpdater) => Promise<void>
 
 interface ChatSDKPersistedStateConfig (src/types/config/ChatSDKPersistedStateConfig.ts)
@@ -598,6 +599,10 @@ interface ResponseUserProfile (src/types/messaging/Messages.ts)
 
 interface SearchResult (src/types/messaging/Messages.ts)
   body?: string
+
+interface SendOptions (src/types/instance/ChatInstance.ts)
+  setValueSelectedForMessageID?: string
+  silent?: boolean
 
 interface ServiceDesk (src/types/config/ServiceDeskConfig.ts)
   areAnyAgentsOnline?: (connectMessage: MessageResponse) => Promise<boolean | null>

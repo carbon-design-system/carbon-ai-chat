@@ -7,7 +7,9 @@
  *  @license
  */
 
+import type { SendOptions } from '../instance/ChatInstance';
 import type { HistoryItem } from '../messaging/History';
+import type { MessageRequest } from '../messaging/Messages';
 import type { MessageState, UpsertMessageUpdater } from './MessagingConfig';
 
 /**
@@ -24,6 +26,55 @@ import type { MessageState, UpsertMessageUpdater } from './MessagingConfig';
  * @category SDK
  */
 export interface ChatSDKInstanceMessaging {
+  /**
+   * Sends a message to the assistant. Fires `pre:send` and then `send` on the event bus, then
+   * calls {@link ChatSDKConfigMessaging.customSendMessage}. Messages sent while another turn runs
+   * wait in a queue and go out in order.
+   *
+   * **When the promise resolves:**
+   * - After `customSendMessage` resolves and the chat finishes processing the turn. It doesn't
+   *   wait for a reply. To react to the assistant's messages, listen for the `receive` event.
+   * - When the turn is stopped or canceled before it finishes, or when the conversation restarts
+   *   while the message waits or runs.
+   *
+   * **When the promise rejects:**
+   * - When `customSendMessage` throws or rejects, or the turn times out
+   *   ({@link ChatSDKConfigMessaging.messageTimeoutSecs}). The conversation's `status` becomes
+   *   `'error'`.
+   * - In read-only mode ({@link ChatSDKConfig.isReadonly}), or while a file upload is still
+   *   running. In these cases the message isn't sent and `pre:send` doesn't fire.
+   *
+   * It never throws: every failure comes back as a rejected promise.
+   *
+   * @param message The message to send: its text, or a full {@link MessageRequest}.
+   * @param options Options for this message, such as sending it without showing it.
+   *
+   * @example Send a message and wait for the turn
+   * ```ts
+   * await instance.messaging.send("What is the weather today?");
+   * // customSendMessage has resolved. Replies arrive through the receive event.
+   * ```
+   *
+   * @example Send a message the conversation doesn't show
+   * ```ts
+   * await instance.messaging.send("Resync context", { silent: true });
+   * ```
+   *
+   * @example Handle a failed send
+   * ```ts
+   * try {
+   *   await instance.messaging.send({ input: { text: "Book a table for two" } });
+   * } catch (error) {
+   *   // The send failed, timed out, or the chat is read-only.
+   *   console.error(error);
+   * }
+   * ```
+   */
+  send: (
+    message: MessageRequest | string,
+    options?: SendOptions
+  ) => Promise<void>;
+
   /**
    * Inserts or updates a single message identified by `messageID`. The `updater` receives
    * the {@link MessageResponse} currently stored under `messageID` (or `undefined` when no

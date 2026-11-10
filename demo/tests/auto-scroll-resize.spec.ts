@@ -257,7 +257,7 @@ async function startReadingStream(page: Page, useUpsertMessage: boolean) {
         generic: [{ response_type: 'text', text: 'Earlier conversation' }],
       },
     });
-    void window.chatInstance!.send('Read this answer');
+    void window.chatInstance!.messaging.send('Read this answer');
   });
   await expect(
     page.locator('.cds-aichat--message--request').last()

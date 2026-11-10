@@ -75,7 +75,8 @@ export interface ChatSDKConfig<I extends ChatSDKInstance = ChatSDKInstance> {
   messaging?: ChatSDKConfigMessaging<I>;
 
   /**
-   * Blocks sending, for displaying a past conversation.
+   * Blocks sending, for displaying a past conversation. {@link ChatSDKInstanceMessaging.send}
+   * rejects while it's set.
    */
   isReadonly?: boolean;
 

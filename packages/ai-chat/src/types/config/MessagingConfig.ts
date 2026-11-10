@@ -195,7 +195,7 @@ export interface CustomSendMessageOptions {
    *   response.
    * - {@link MessageSendSource.DATE_PICKER} — a date-picker response.
    * - {@link MessageSendSource.INSTANCE_SEND} — a programmatic call to
-   *   {@link ChatInstance.send}.
+   *   {@link ChatInstanceMessaging.send}, or to the deprecated {@link ChatInstance.send}.
    * - {@link MessageSendSource.WELCOME_REQUEST} — the internally generated
    *   welcome request fired during hydration.
    *

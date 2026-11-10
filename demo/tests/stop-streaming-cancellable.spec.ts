@@ -104,7 +104,7 @@ async function startStream(
   );
   if (immediate) {
     await page.evaluate(() => {
-      void window.chatInstance!.send('Start streaming');
+      void window.chatInstance!.messaging.send('Start streaming');
     });
     await expect(
       page.getByRole('button', { name: 'Stop response' })

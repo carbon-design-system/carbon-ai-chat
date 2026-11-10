@@ -189,6 +189,15 @@ import type { ServiceManager } from '../../shared/services/ServiceManager';
     expect(reads.get(read)).toBe(counts.get(read) + 1);
   });
 
+  it('passes building the SDK instance, whose verbs read for it', () => {
+    const reads = readsWith({
+      [planted]:
+        header +
+        "import { createConversationInstance } from '../../shared/services/conversationInstance';\nexport const build = (manager: ServiceManager) => createConversationInstance(manager, () => undefined);",
+    });
+    expect([...reads].filter((read) => read.startsWith(planted))).toEqual([]);
+  });
+
   it('passes view state and config reads', () => {
     const reads = readsWith({
       [planted]:

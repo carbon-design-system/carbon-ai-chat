@@ -196,7 +196,7 @@ export async function sendUserMessage(
   // happy-dom in this harness, so React's `rawInputValue` state never
   // updates and the send button stays disabled. Tests that need to send a
   // message should capture the chat instance via `onBeforeRender` and call
-  // `instance.send(...)` (or `instance.messaging.addMessage(...)`) directly
+  // `instance.messaging.send(...)` (or `instance.messaging.addMessage(...)`) directly
   // — `sendUserMessage` is left in place for future tests that only need
   // to populate the input doc.
   const promptLineShell = input.closest('cds-aichat-prompt-line-shell') as

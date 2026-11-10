@@ -249,7 +249,7 @@ async function triggerSlot(page: Page, instanceKey: string, kind: SlotKind) {
   } else if (kind === 'request-footer' || kind === 'input-node') {
     await page.evaluate(
       (key) =>
-        window.hostCompatibility[key as 'reactInstance'].send({
+        window.hostCompatibility[key as 'reactInstance'].messaging.send({
           id: 'rich',
           input: {
             message_type: 'text',
@@ -271,7 +271,7 @@ async function triggerSlot(page: Page, instanceKey: string, kind: SlotKind) {
     // A chip makes the paragraph structured, so the plugin renders inline.
     await page.evaluate(
       (key) =>
-        window.hostCompatibility[key as 'reactInstance'].send({
+        window.hostCompatibility[key as 'reactInstance'].messaging.send({
           id: 'inline',
           input: {
             message_type: 'text',

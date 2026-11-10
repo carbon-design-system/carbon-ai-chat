@@ -17,6 +17,13 @@ const ROOTS = new Set(['ConversationState', 'AppStateMessages']);
 const NOT_DATA = new Set(['config', 'languagePack']);
 
 /**
+ * The SDK instance's builder, under `src/`. Its verbs read conversation state
+ * for the instance, the way they do for a host, so the interface building the
+ * instance or calling a verb isn't a read.
+ */
+const SDK_ROUTES = ['shared/services/conversationInstance.ts'];
+
+/**
  * Counts each read of conversation data in `files`, keyed `file: read`. A
  * read is one of:
  *
@@ -26,7 +33,7 @@ const NOT_DATA = new Set(['config', 'languagePack']);
  *   such as `persistedToBrowserStorage.humanAgentState.isConnected`.
  * - a use of a reader that reads one, written as `name()`. A reader is a
  *   function in `src/` with a parameter that holds part of the store state, a
- *   store, or a service manager.
+ *   store, or a service manager. The SDK instance's builder isn't one.
  *
  * It uses the type checker, so a read through a destructured state, a
  * selector callback's parameter, or a re-exported selector still counts. Each
@@ -147,7 +154,12 @@ export function conversationReads(
     }
     const declaration = symbol?.valueDeclaration;
     const fn = declaration && readerFunction(declaration);
-    if (!fn || !fn.getSourceFile().fileName.startsWith(sources)) {
+    const fileName = fn?.getSourceFile().fileName;
+    if (
+      !fn ||
+      !fileName.startsWith(sources) ||
+      SDK_ROUTES.some((route) => fileName === sources + route)
+    ) {
       return undefined;
     }
     if (!readers.has(fn)) {

@@ -8,9 +8,13 @@
  */
 
 import type { ChatSDKInstanceMessaging } from '../../types/config/ChatSDKInstanceMessaging';
+import { MessageSendSource } from '../../types/events/eventBusTypes';
+import type { SendOptions } from '../../types/instance/ChatInstance';
 import type { ChatInstanceServiceDeskActions } from '../../types/instance/ChatInstanceServiceDeskActions';
 import type { TypeAndHandler } from '../../types/instance/EventHandlers';
 import type { HistoryItem } from '../../types/messaging/History';
+import type { MessageRequest } from '../../types/messaging/Messages';
+import { selectInputIsReadonly } from '../store/selectors';
 import { debugLog } from '../utils/miscUtils';
 import type { ServiceManager } from './ServiceManager';
 
@@ -25,6 +29,18 @@ function createConversationInstance<Self>(
 ) {
   const { publicStateService } = serviceManager;
   const messaging: ChatSDKInstanceMessaging = {
+    send: async (message: MessageRequest | string, options?: SendOptions) => {
+      debugLog('Called instance.messaging.send', message, options);
+      if (selectInputIsReadonly(serviceManager.store.getState())) {
+        throw new Error('You are unable to send messages in read only mode.');
+      }
+      return serviceManager.actions.send(
+        message,
+        MessageSendSource.INSTANCE_SEND,
+        options
+      );
+    },
+
     upsertMessage: async (messageID, state, updater) => {
       debugLog('Called instance.messaging.upsertMessage', messageID, state);
       const { restartCount } = serviceManager;

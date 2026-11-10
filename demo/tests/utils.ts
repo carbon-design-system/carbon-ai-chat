@@ -413,7 +413,7 @@ export const sendChatMessage = async (page: Page, text: string) => {
     });
 
     // Send the message
-    await window.chatInstance.send(message);
+    await window.chatInstance.messaging.send(message);
 
     // Wait for the response
     await responseReceived;

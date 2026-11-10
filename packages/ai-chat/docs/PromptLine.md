@@ -27,7 +27,7 @@ See [Slots](./WriteableElements.md#custom-prompt-line-custom_prompt_line) for vi
 
 ### Send from your composer
 
-Send through {@link ChatInstance.send | send} with your text and any `input.structured_data`. Keep your own draft. While custom content exists, sends do not consume the built-in draft, pending structured data, or completed attachments. Removing your content restores those values. Selection and undo history are not retained.
+Send through {@link ChatInstanceMessaging.send | messaging.send} with your text and any `input.structured_data`. Keep your own draft. While custom content exists, sends do not consume the built-in draft, pending structured data, or completed attachments. Removing your content restores those values. Selection and undo history are not retained.
 
 Your application owns the input label, keyboard behavior, limits and their announcements, errors, busy state, and send button. The chat still announces incoming messages. Use a labeled, focusable control so chat focus actions can reach your composer. If it has no focusable control, those actions leave focus where it is.
 
@@ -56,7 +56,7 @@ Failed writes do not call your updater or queue a value. Without custom content,
 
 ## Visibility, disabled states, and errors
 
-Hide the input with {@link InputConfig.isVisible | isVisible}. Make it read-only with {@link InputConfig.isDisabled | isDisabled}. That is the narrow form of {@link PublicConfig.isReadonly | isReadonly}, which freezes the whole chat. {@link InputConfig.isSendDisabled | isSendDisabled} gates only the send button and the Enter key. The editor stays editable. A {@link ChatInstance.send | send} call from your code is never gated. To show the stop streaming button for work that outlives a request, set {@link InputConfig.showStopStreamingButton | showStopStreamingButton}; see [Server communication](./CustomServer.md#show-the-button-for-work-outside-a-request). To show a message in the prompt line, set {@link InputConfig.error | error}. It takes a title, an optional description, and an optional collapsible flag.
+Hide the input with {@link InputConfig.isVisible | isVisible}. Make it read-only with {@link InputConfig.isDisabled | isDisabled}. That is the narrow form of {@link PublicConfig.isReadonly | isReadonly}, which freezes the whole chat. {@link InputConfig.isSendDisabled | isSendDisabled} gates only the send button and the Enter key. The editor stays editable. A {@link ChatInstanceMessaging.send | messaging.send} call from your code is never gated. To show the stop streaming button for work that outlives a request, set {@link InputConfig.showStopStreamingButton | showStopStreamingButton}; see [Server communication](./CustomServer.md#show-the-button-for-work-outside-a-request). To show a message in the prompt line, set {@link InputConfig.error | error}. It takes a title, an optional description, and an optional collapsible flag.
 
 > **Note**: {@link ChatInstance.updateInputFieldVisibility | updateInputFieldVisibility} and {@link ChatInstance.updateInputIsDisabled | updateInputIsDisabled} are deprecated. Use {@link InputConfig.isVisible | isVisible} and {@link InputConfig.isDisabled | isDisabled} instead.
 
