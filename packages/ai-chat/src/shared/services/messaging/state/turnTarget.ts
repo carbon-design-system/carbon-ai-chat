@@ -106,9 +106,4 @@ function isAgentMessage(messageID: string, { messagesByID }: TurnMessages) {
   return Boolean(message) && isAgentMessageData(message);
 }
 
-export {
-  isAgentMessage,
-  lastTurnRequestID,
-  turnHasResponse,
-  turnRequestID,
-};
+export { isAgentMessage, lastTurnRequestID, turnHasResponse, turnRequestID };
