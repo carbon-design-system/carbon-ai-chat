@@ -76,18 +76,34 @@ function inside(root, path) {
   return local !== '..' && !local.startsWith(`..${sep}`) && !isAbsolute(local);
 }
 
+async function declaredPackages(root) {
+  const manifest = JSON.parse(
+    await readFile(join(root, 'package.json'), 'utf8')
+  );
+  return new Set([
+    manifest.name,
+    ...Object.keys(manifest.dependencies ?? {}),
+    ...Object.keys(manifest.peerDependencies ?? {}),
+  ]);
+}
+
+// Strict installs resolve only declared packages from published declarations.
+function assertDeclaredImport(name, declared, specifier, from) {
+  const packageName = specifier
+    .split('/')
+    .slice(0, specifier.startsWith('@') ? 2 : 1)
+    .join('/');
+  assert.ok(
+    declared.has(packageName),
+    `${name}: ${from} imports undeclared ${packageName}.`
+  );
+}
+
 async function assertLocalDeclarations(consumer, name, program, options) {
   const chatRoot = await realpath(
     join(consumer, 'node_modules/@carbon/ai-chat')
   );
-  const chat = JSON.parse(
-    await readFile(join(chatRoot, 'package.json'), 'utf8')
-  );
-  const declared = new Set([
-    chat.name,
-    ...Object.keys(chat.dependencies ?? {}),
-    ...Object.keys(chat.peerDependencies ?? {}),
-  ]);
+  const declared = await declaredPackages(chatRoot);
   for (const declaration of program.getSourceFiles()) {
     if (
       !declaration.isDeclarationFile ||
@@ -97,14 +113,11 @@ async function assertLocalDeclarations(consumer, name, program, options) {
     }
     for (const imported of ts.preProcessFile(declaration.text).importedFiles) {
       if (!imported.fileName.startsWith('.')) {
-        // Strict installs resolve only declared packages from these declarations.
-        const segments = imported.fileName.split('/');
-        const packageName = segments
-          .slice(0, imported.fileName.startsWith('@') ? 2 : 1)
-          .join('/');
-        assert.ok(
-          declared.has(packageName),
-          `${name}: ${declaration.fileName} imports undeclared ${packageName}.`
+        assertDeclaredImport(
+          name,
+          declared,
+          imported.fileName,
+          declaration.fileName
         );
         continue;
       }
@@ -164,6 +177,7 @@ async function assertInlineStyleDeclarations(
   const root = await realpath(
     join(consumer, 'node_modules/@carbon/ai-chat-components')
   );
+  const declared = await declaredPackages(root);
   for (const tree of trees) {
     const specifier = `@carbon/ai-chat-components/${tree}/components/markdown/index.js`;
     const resolved = ts.resolveModuleName(
@@ -193,6 +207,7 @@ async function assertInlineStyleDeclarations(
     assert.ok(declaration, `${name}: missing style declaration ${path}.`);
     for (const imported of ts.preProcessFile(declaration.text).importedFiles) {
       if (!imported.fileName.startsWith('.')) {
+        assertDeclaredImport(name, declared, imported.fileName, path);
         continue;
       }
       const resolved = ts.resolveModuleName(
