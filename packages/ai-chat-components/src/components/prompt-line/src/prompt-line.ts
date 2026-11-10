@@ -42,10 +42,12 @@ import styles from './prompt-line.scss?lit';
  * for the rest of its life.
  *
  * Both modes expose the same imperative API (`getEditor`, `setContent`,
- * `insertContent`, …) and emit the same events, so the React wrapper and
- * `@carbon/ai-chat`'s `Input` are mode-agnostic. `getEditor()` returns `null`
- * in textarea mode (it's a probe — it never triggers a load); call
- * `ensureEditor()` to force the upgrade and resolve with the live editor.
+ * `insertContent`, …) and emit the same `cds-aichat-prompt-*` events, so the
+ * React wrapper and `@carbon/ai-chat`'s `Input` are mode-agnostic. Only rich
+ * mode fires `cds-aichat-trigger-change` and `cds-aichat-light-dom-portal`.
+ * `getEditor()` returns `null` in textarea mode (it's a probe — it never
+ * triggers a load); call `ensureEditor()` to force the upgrade and resolve
+ * with the live editor.
  *
  * The Carbon Tiptap bundle the rich editor installs — schema, value-sync,
  * typing-indicator, plain-text paste, keymap (`Mod-Enter`/`Enter` →
@@ -59,9 +61,9 @@ import styles from './prompt-line.scss?lit';
  * @fires {CustomEvent} cds-aichat-prompt-blur - Fired when the editing surface loses focus.
  * @fires {CustomEvent<TypingEventDetail>} cds-aichat-prompt-typing - Fired when the user starts or stops typing.
  * @fires {CustomEvent<{ originalEvent: KeyboardEvent }>} cds-aichat-prompt-keydown - Fired for each key press in the editing surface.
- * @fires {CustomEvent} cds-aichat-prompt-send-intent - Fired when the user presses Enter (inline) or Mod+Enter (expanded) to send.
- * @fires {CustomEvent<TriggerChangeEventDetail>} cds-aichat-trigger-change - Fired when an autocomplete trigger such as `@` or `/` starts, changes, or ends.
- * @fires {CustomEvent<LightDomPortalEventDetail>} cds-aichat-light-dom-portal - Fired when a rich-editor node asks the host to render content in the light DOM.
+ * @fires {CustomEvent} cds-aichat-prompt-send-intent - Fired when the user presses Enter in a non-empty field, or Cmd+Enter (Ctrl+Enter on Windows and Linux) even when the field is empty.
+ * @fires {CustomEvent<TriggerChangeEventDetail>} cds-aichat-trigger-change - Fired when an autocomplete trigger such as `@` or `/` starts, changes, or ends. Rich mode only.
+ * @fires {CustomEvent<LightDomPortalEventDetail>} cds-aichat-light-dom-portal - Fired when a rich-editor node asks the host to render content in the light DOM. Rich mode only.
  *
  * @experimental
  */
