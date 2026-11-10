@@ -138,6 +138,15 @@ export function conversationReads(
     return [];
   };
 
+  /** Whether a function under `src/` named `name` can count as a reader. */
+  const inScope = (fn: ts.Node, name: string) => {
+    const fileName = fn.getSourceFile().fileName;
+    return (
+      fileName.startsWith(sources) &&
+      !SDK_ROUTES.has(`${fileName.slice(sources.length)}: ${name}`)
+    );
+  };
+
   /** The reader `node` names, if it names one that reads data. */
   const readerOf = (node: ts.Node) => {
     if (
@@ -157,12 +166,7 @@ export function conversationReads(
     }
     const declaration = symbol?.valueDeclaration;
     const fn = declaration && readerFunction(declaration);
-    const fileName = fn?.getSourceFile().fileName;
-    if (
-      !fn ||
-      !fileName.startsWith(sources) ||
-      SDK_ROUTES.has(`${fileName.slice(sources.length)}: ${symbol.name}`)
-    ) {
+    if (!fn || !inScope(fn, symbol.name)) {
       return undefined;
     }
     if (!readers.has(fn)) {
