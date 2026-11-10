@@ -116,6 +116,8 @@ collect:
         - default-language
         - detect-language
         - editable
+        - feedback
+        - feedback-timeout
         - fold-collapse-label
         - fold-expand-label
         - hide-copy-button
@@ -240,6 +242,8 @@ collect:
         - code-snippet-aria-label-editable
         - code-snippet-aria-label-readonly
         - code-snippet-copy-button-tooltip-content
+        - code-snippet-feedback
+        - code-snippet-feedback-timeout
         - code-snippet-highlight
         - code-snippet-show-less-text
         - code-snippet-show-more-text
