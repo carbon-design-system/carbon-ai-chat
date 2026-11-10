@@ -137,10 +137,21 @@ describe('state.error', () => {
       return originalDispatch(action);
     });
 
+    const published: unknown[] = [];
+    const stop = instance.state.subscribe(() => {
+      const { error } = instance.state.get();
+      if (error !== published[published.length - 1]) {
+        published.push(error);
+      }
+    });
     await expect(instance.send('trigger')).rejects.toThrow(
       'stream reducer failed'
     );
+    stop();
 
+    // The send's own failure keeps the chunk's error: same object, published once.
+    expect(published.filter(Boolean)).toHaveLength(1);
+    expect(instance.state.get().error).toBe(published[published.length - 1]);
     const [requestID] = requestIDs(instance);
     expect(onError).toHaveBeenCalledTimes(1);
     expect(instance.state.get().error).toEqual({
@@ -150,6 +161,42 @@ describe('state.error', () => {
       messageID: requestID,
     });
     expect(instance.state.get().error.otherData).toBe(processingFailure);
+  });
+
+  it('leaves messageID out for a chunk the host added with no request', async () => {
+    const processingFailure = new Error('stream reducer failed');
+    const onError = jest.fn();
+    const { instance, store } = await renderChatAndGetInstanceWithStore({
+      ...createBaseConfig(),
+      onError,
+      messaging: { skipWelcome: true },
+    });
+    const originalDispatch = store.dispatch;
+    jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    jest.spyOn(store, 'dispatch').mockImplementation((action) => {
+      if (
+        action.type === UPSERT_MESSAGE &&
+        (action.options as MessageWriteOptions | undefined)?.origin === 'chunk'
+      ) {
+        throw processingFailure;
+      }
+      return originalDispatch(action);
+    });
+
+    await expect(
+      instance.messaging.addMessageChunk({
+        streaming_metadata: { response_id: 'standalone-response' },
+        partial_item: {
+          streaming_metadata: { id: 'standalone-item' },
+          response_type: MessageResponseTypes.TEXT,
+          text: 'partial',
+        },
+      })
+    ).rejects.toBe(processingFailure);
+
+    expect(instance.state.get().status).toBe('error');
+    expect(instance.state.get().error).toEqual(onError.mock.calls[0][0]);
+    expect(instance.state.get().error).not.toHaveProperty('messageID');
   });
 
   it('clears on restart', async () => {
@@ -170,68 +217,92 @@ describe('state.error', () => {
     expect(instance.state.get().error).toBeNull();
   });
 
-  it("holds a human agent's send timeout, which onError doesn't get", async () => {
-    try {
-      let callback: ServiceDeskCallback;
-      const desk = {
-        getName: () => 'Test desk',
-        startChat: jest.fn(async () => {}),
-        endChat: jest.fn(async () => {}),
-        // The desk never confirms the send.
-        sendMessageToAgent: jest.fn(() => new Promise<void>(() => {})),
-      };
-      const onError = jest.fn();
-      const { instance, store, serviceManager } =
-        await renderChatAndGetInstanceWithStore({
-          ...createBaseConfig(),
-          onError,
-          messaging: { skipWelcome: true },
-          serviceDeskFactory: async (parameters) => {
-            callback = parameters.callback;
-            return desk as unknown as ServiceDesk;
-          },
-        });
-      const agentService = (
-        serviceManager.messageCoordinator as unknown as {
-          serviceManager: ServiceManager;
-        }
-      ).serviceManager.humanAgentService as unknown as {
-        chatStarted: boolean;
-        sendMessageToAgent(text: string, files: unknown[]): Promise<void>;
-      };
-      void instance.changeView(ViewType.MAIN_WINDOW);
-      await waitFor(() => expect(callback).toBeDefined());
-      await waitFor(() => expect(store.getState().isHydrated).toBe(true));
-      agentService.chatStarted = true;
-      await callback.agentJoined({
-        id: 'dana',
-        nickname: 'Dana',
-        user_type: UserType.HUMAN,
+  /** A chat connected to a human agent on `sendMessageToAgent`'s desk. */
+  async function agentChat(sendMessageToAgent: () => Promise<void>) {
+    let callback: ServiceDeskCallback;
+    const desk = {
+      getName: () => 'Test desk',
+      startChat: jest.fn(async () => {}),
+      endChat: jest.fn(async () => {}),
+      sendMessageToAgent: jest.fn(sendMessageToAgent),
+    };
+    const onError = jest.fn();
+    const { instance, store, serviceManager } =
+      await renderChatAndGetInstanceWithStore({
+        ...createBaseConfig(),
+        onError,
+        messaging: { skipWelcome: true },
+        serviceDeskFactory: async (parameters) => {
+          callback = parameters.callback;
+          return desk as unknown as ServiceDesk;
+        },
       });
+    const agentService = (
+      serviceManager.messageCoordinator as unknown as {
+        serviceManager: ServiceManager;
+      }
+    ).serviceManager.humanAgentService as unknown as {
+      chatStarted: boolean;
+      sendMessageToAgent(text: string, files: unknown[]): Promise<void>;
+    };
+    void instance.changeView(ViewType.MAIN_WINDOW);
+    await waitFor(() => expect(callback).toBeDefined());
+    await waitFor(() => expect(store.getState().isHydrated).toBe(true));
+    agentService.chatStarted = true;
+    await callback.agentJoined({
+      id: 'dana',
+      nickname: 'Dana',
+      user_type: UserType.HUMAN,
+    });
+    const requestID = () =>
+      (desk.sendMessageToAgent.mock.calls[0] as unknown as [{ id: string }])[0]
+        .id;
+    return { instance, onError, agentService, desk, requestID };
+  }
 
-      jest.useFakeTimers();
-      void agentService.sendMessageToAgent('hello', []);
+  it("holds a human agent's send timeout, which onError doesn't get", async () => {
+    // The desk never confirms the send.
+    const chat = await agentChat(() => new Promise<void>(() => {}));
+    jest.useFakeTimers();
+    try {
+      void chat.agentService.sendMessageToAgent('hello', []);
       await act(async () => {
         await jest.advanceTimersByTimeAsync(0);
       });
-      expect(desk.sendMessageToAgent).toHaveBeenCalled();
-      const [request] = desk.sendMessageToAgent.mock.calls[0] as unknown as [
-        { id: string },
-      ];
+      expect(chat.desk.sendMessageToAgent).toHaveBeenCalled();
       await act(async () => {
         jest.advanceTimersByTime(20000);
       });
 
-      expect(instance.state.get().status).toBe('error');
-      expect(instance.state.get().error).toEqual({
+      expect(chat.instance.state.get().status).toBe('error');
+      expect(chat.instance.state.get().error).toEqual({
         errorType: OnErrorType.MESSAGE_COMMUNICATION,
         message:
           'The service desk did not confirm that the message was sent, so the chat marked it failed.',
-        messageID: request.id,
+        messageID: chat.requestID(),
       });
-      expect(onError).not.toHaveBeenCalled();
+      expect(chat.onError).not.toHaveBeenCalled();
     } finally {
       jest.useRealTimers();
     }
+  });
+
+  it("holds a human agent's rejected send, with the desk's error", async () => {
+    const deskError = new Error('desk is down');
+    const chat = await agentChat(() => Promise.reject(deskError));
+    jest.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    await chat.agentService.sendMessageToAgent('hello', []);
+
+    expect(chat.instance.state.get().status).toBe('error');
+    expect(chat.instance.state.get().error).toEqual({
+      errorType: OnErrorType.MESSAGE_COMMUNICATION,
+      message:
+        'The service desk could not send the message, so the chat marked it failed.',
+      otherData: deskError,
+      messageID: chat.requestID(),
+    });
+    expect(chat.instance.state.get().error.otherData).toBe(deskError);
+    expect(chat.onError).not.toHaveBeenCalled();
   });
 });

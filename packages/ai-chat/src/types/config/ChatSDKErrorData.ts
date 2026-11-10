@@ -35,8 +35,8 @@ export interface ChatSDKErrorData {
   otherData?: unknown;
 
   /**
-   * The ID of the request whose turn failed, when the error belongs to a turn. Errors that don't,
-   * such as a failed history load, leave it out.
+   * The ID of the request whose turn failed, for a failure that sets `status` to `error`. Other
+   * errors, such as a failed history load or an item the chat can't draw, leave it out.
    */
   messageID?: string;
 }

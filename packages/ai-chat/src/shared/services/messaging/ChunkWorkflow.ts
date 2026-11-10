@@ -406,7 +406,7 @@ class ChunkWorkflow {
       }
       if (terminalConversationFailure) {
         requestErrors?.reportedErrors.add(error);
-        this.failConversation(requestID ?? messageID, error);
+        this.failConversation(requestID, messageID, error);
       }
       this.advanceChunkQueue(chunkPromise, { error });
     }
@@ -414,18 +414,29 @@ class ChunkWorkflow {
 
   /**
    * Fails the conversation for a chunk the chat couldn't process, and reports
-   * it. `failedID` is the request's ID, or the response's when the chunk
-   * named no request; either way the error names the request.
+   * it. The error names the response's request, and has no `messageID` when
+   * there is none, such as a chunk the host added on its own.
    */
-  private failConversation(failedID: string, error: unknown) {
+  private failConversation(
+    requestID: string | undefined,
+    responseID: string | undefined,
+    error: unknown
+  ) {
     const { messageCoordinator } = this.serviceManager;
+    const ownerID =
+      requestID ??
+      (responseID && messageCoordinator.responseRequestID(responseID));
     const chunkError = {
       errorType: OnErrorType.MESSAGE_COMMUNICATION,
       message: 'The chat could not process a streamed response.',
       otherData: error,
-      messageID: messageCoordinator.responseRequestID(failedID) ?? failedID,
+      ...(ownerID && { messageID: ownerID }),
     };
-    messageCoordinator.fail(chunkError);
+    messageCoordinator.fail(
+      chunkError,
+      messageCoordinator.currentGeneration,
+      requestID ?? responseID
+    );
     this.serviceManager.actions.errorOccurred(chunkError);
   }
 

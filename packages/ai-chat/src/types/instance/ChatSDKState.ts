@@ -67,8 +67,9 @@ export interface ChatSDKState {
 
   /**
    * The failure behind a `status` of `error`, or `null` when there is none. It's set and cleared
-   * together with `status`: a failed send, a failed history load, or a streamed response the chat
-   * can't process sets it, and the next send or a restart clears it.
+   * together with `status`. A send that fails or times out, a failed history load, or a streamed
+   * response the chat can't process sets it. The next send, a restart, or a history load clears it,
+   * and so does a human agent's send that the service desk confirms late.
    *
    * It has the same fields as the object {@link PublicConfig.onError} gets for that failure,
    * with `messageID` naming the failed request when the error belongs to a turn. A failure the

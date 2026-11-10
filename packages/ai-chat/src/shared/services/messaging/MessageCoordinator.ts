@@ -528,6 +528,7 @@ class MessageCoordinator {
   private state = new ConversationState();
   /** Each failure token's frozen error. State helpers hold no opaque data. */
   private failureErrors = new WeakMap<object, Readonly<ChatSDKErrorData>>();
+  private frozenErrors = new WeakSet<ChatSDKErrorData>();
   private terminationWorkflow: TerminationWorkflow;
   private sendWorkflow?: SendWorkflow;
   private loadingManager?: MessageLoadingManager;
@@ -904,17 +905,36 @@ class MessageCoordinator {
   }
 
   /**
-   * Fails the conversation with `error`, the object `state.error` then holds.
-   * It's the same object a caller reports through `onError`, if it does.
+   * Fails the conversation with `error`, whose fields `state.error` then
+   * holds; it's the object a caller reports through `onError`, if it does.
+   * `failedID` names what failed when that's not a request, such as a
+   * response with no request.
    */
-  fail(error: ChatSDKErrorData, generation = this.currentGeneration) {
-    const failure = this.state.fail(error, generation);
+  fail(
+    error: ChatSDKErrorData,
+    generation = this.currentGeneration,
+    failedID = error.messageID
+  ) {
+    const failure = this.state.fail({ messageID: failedID }, generation);
     if (failure) {
-      // Only the outer object is frozen: otherData keeps its reference.
-      this.failureErrors.set(failure, Object.freeze({ ...error }));
+      this.failureErrors.set(failure, this.frozenError(error));
       this.publish();
     }
     return failure;
+  }
+
+  /**
+   * Freezes a copy of `error`'s outer object; `otherData` keeps its reference.
+   * An error this coordinator already froze is reused, so failing again with
+   * the same error publishes nothing new.
+   */
+  private frozenError(error: ChatSDKErrorData) {
+    if (this.frozenErrors.has(error)) {
+      return error;
+    }
+    const frozen = Object.freeze({ ...error });
+    this.frozenErrors.add(frozen);
+    return frozen;
   }
 
   /** The error behind `status: 'error'`, or `null`. */
