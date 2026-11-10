@@ -11,7 +11,7 @@ An ADR is a request for feedback. Its expensive failures are a proposal a reader
 - **If you couldn't write all three, that's the top finding.** The Summary fails its one job.
 - **If the rest of the ADR contradicts what you wrote,** the Summary is wrong or the Proposal drifted.
 - **If a Feedback wanted question can be answered "yes" without reading further,** it's too vague to draw a useful reply.
-- **Include your restatement in the write-up.** It goes in the PR description as evidence the Summary works on its own.
+- **Include your restatement in the write-up.** It goes in your hand-back to the developer as evidence the Summary works on its own, not in the PR description.
 
 **Next, check the [shared skim-reading rule](../../caic-copy-writer/SKILL.md#write-for-readers-who-skip-to-code).** Read only headings, tables, and code blocks. Record what a reader would do, which release or status it applies to, and the main limit. Compare that restatement with the full proposal and check each example copied on its own.
 
@@ -38,7 +38,7 @@ Put every assertion in one bucket. They get different treatment.
 
 ## Phase 4 — Check the shape
 
-- **No file:line citations or line-number evidence in the ADR.** Those go in the PR description.
+- **No file:line citations or line-number evidence in the ADR.** Those go in your hand-back to the developer, not the ADR or the PR description.
 - **It reads alone.** A reader shouldn't have to open another ADR or git-ignored research notes to understand this proposal. An appendix may hold evidence, but not a decision-critical caveat.
 - **The Motivation opening and the Summary use no type names or paths before the problem is stated.**
 - **Run `npm run validate:adrs` and `npm run reading-level -- <file>`.** Report a grade above 10.
