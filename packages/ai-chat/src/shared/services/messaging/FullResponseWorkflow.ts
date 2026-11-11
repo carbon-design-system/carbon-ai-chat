@@ -139,17 +139,27 @@ class FullResponseWorkflow {
         isCurrent
       );
 
-      // Record COMPLETE so a later `upsertMessage(id, MessageState.COMPLETE, ...)` for
-      // the same id suppresses a second `pre:receive` / `receive`.
-      if (
-        isCurrent() &&
-        initialRestartCount === this.serviceManager.restartCount
-      ) {
-        this.serviceManager.messageCoordinator.markIncomingComplete(message.id);
-      }
+      this.recordComplete(message.id, initialRestartCount, isCurrent);
     } finally {
       this.pendingReceiveRemovals.delete(removedIDs);
       write.release();
+    }
+  }
+
+  /**
+   * Records COMPLETE so a later `upsertMessage(id, MessageState.COMPLETE, ...)` for the same
+   * id suppresses a second `pre:receive` / `receive`.
+   */
+  private recordComplete(
+    messageID: string,
+    initialRestartCount: number,
+    isCurrent: () => boolean
+  ) {
+    if (
+      isCurrent() &&
+      initialRestartCount === this.serviceManager.restartCount
+    ) {
+      this.serviceManager.messageCoordinator.markIncomingComplete(messageID);
     }
   }
 
