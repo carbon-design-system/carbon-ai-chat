@@ -38,6 +38,14 @@ $block-class: #{$prefix}-user-message-content;
   display: flex;
 }
 
+.cds-aichat--token {
+  white-space: normal;
+}
+
+.cds-aichat--token[data-token-context='historical'] {
+  color: theme.$link-secondary;
+}
+
 // Text the inline renderer rejected keeps its line breaks.
 .#{$block-class}__plain {
   white-space: pre-wrap;

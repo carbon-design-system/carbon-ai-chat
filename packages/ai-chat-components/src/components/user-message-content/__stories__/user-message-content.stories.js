@@ -8,14 +8,14 @@
  */
 
 import '../index';
-import '../../message-item-shell/index';
-import '../../message-byline/index';
-import '../../prompt-line/index';
-import { html, LitElement, nothing } from 'lit';
-import { ref, createRef } from 'lit/directives/ref.js';
-import { buildCarbonExtensions } from '../../prompt-line/index';
-import { mentionItems } from '../../prompt-line/__stories__/story-data';
-import { sampleContent } from './story-data';
+import '@carbon/web-components/es/components/tile/index.js';
+import { html } from 'lit';
+import {
+  textContent,
+  chipContent,
+  customNodeContent,
+  tileChip,
+} from './story-data';
 
 export default {
   title: 'Preview/User message content',
@@ -34,126 +34,56 @@ const defaultArgs = {
   slotPrefix: 'message-1',
 };
 
-/** Renders a sent message the way the chat does: a request row in the shell. */
-const renderMessage = (content, args) => html`
-  <cds-aichat-message-item-shell row-type="request">
-    <cds-aichat-message-byline
-      slot="byline"
-      label="You"
-      timestamp="10:42 AM"></cds-aichat-message-byline>
-    <cds-aichat-user-message-content
-      slot-prefix=${args.slotPrefix}
-      .content=${content}>
-      ${
-        // The host fills the chart slot. An unfilled slot shows its label.
-        content === sampleContent
-          ? html`<strong slot="${args.slotPrefix}::0.5">Chart 4 (live)</strong>`
-          : nothing
-      }
-    </cds-aichat-user-message-content>
-  </cds-aichat-message-item-shell>
-`;
-
+/** Text and markdown only. */
 export const Default = {
   argTypes,
   args: defaultArgs,
-  render: (args) => renderMessage(sampleContent, args),
+  render: (args) => html`
+    <div
+      style="display: flex; flex-direction: column; align-items: flex-end; max-inline-size: 400px;">
+      <cds-aichat-user-message-content
+        slot-prefix=${args.slotPrefix}
+        .content=${textContent}></cds-aichat-user-message-content>
+    </div>
+  `,
 };
 
-class UserMessageContentComposerStory extends LitElement {
-  static properties = {
-    slotPrefix: { attribute: false },
-    _sent: { state: true },
-  };
-
-  constructor() {
-    super();
-    this.slotPrefix = 'message-1';
-    this._sent = [];
-    this._draft = null;
-    this._promptLine = createRef();
-    this._mention = {
-      trigger: '@',
-      items: async (query) =>
-        query
-          ? mentionItems.filter((item) =>
-              item.label.toLowerCase().includes(query.toLowerCase())
-            )
-          : mentionItems,
-    };
-    this._extensions = buildCarbonExtensions({ mention: this._mention });
-  }
-
-  createRenderRoot() {
-    return this;
-  }
-
-  _onChange(event) {
-    this._draft = event.detail.content ?? null;
-  }
-
-  _send() {
-    if (!this._draft || !this._promptLine.value?.getValue().trim()) {
-      return;
-    }
-    this._sent = [...this._sent, this._draft];
-    this._draft = null;
-    this._promptLine.value.clearContent();
-  }
-
-  render() {
-    return html`
-      <div style="inline-size: 640px; max-inline-size: 100%;">
-        <p>
-          Type a message, use <code>@</code> to mention someone, and send it.
-        </p>
-        ${this._sent.map((content, index) =>
-          renderMessage(content, {
-            slotPrefix: `${this.slotPrefix}-${index}`,
-          })
-        )}
-        <div style="margin-block-start: 320px;">
-          <cds-aichat-prompt-line-shell rounded expanded>
-            <cds-aichat-prompt-line
-              slot="editor"
-              placeholder="Type a message..."
-              rich
-              .extensions=${this._extensions}
-              @cds-aichat-prompt-change=${(e) => this._onChange(e)}
-              @cds-aichat-prompt-send-intent=${() => this._send()}
-              ${ref(this._promptLine)}></cds-aichat-prompt-line>
-            <cds-aichat-autocomplete-controller
-              slot="autocomplete-content"
-              .mention=${this._mention}></cds-aichat-autocomplete-controller>
-            <cds-aichat-input-send-control
-              slot="send-control"
-              @cds-aichat-input-send=${() =>
-                this._send()}></cds-aichat-input-send-control>
-          </cds-aichat-prompt-line-shell>
-        </div>
-      </div>
-    `;
-  }
-}
-
-if (!customElements.get('user-message-content-story-composer')) {
-  customElements.define(
-    'user-message-content-story-composer',
-    UserMessageContentComposerStory
-  );
-}
-
-/**
- * Type a message with a mention, send it, and see the captured document
- * through `cds-aichat-user-message-content`.
- */
-export const TypeSendView = {
-  name: 'Type, send, view',
+/** A mention node shows a chip until the host fills its slot. */
+export const WithChip = {
+  name: 'With Chip',
   argTypes,
   args: defaultArgs,
-  render: (args) => {
-    const el = document.createElement('user-message-content-story-composer');
-    el.slotPrefix = args.slotPrefix;
-    return el;
-  },
+  render: (args) => html`
+    <div
+      style="display: flex; flex-direction: column; align-items: flex-end; max-inline-size: 400px;">
+      <cds-aichat-user-message-content
+        slot-prefix=${args.slotPrefix}
+        .content=${chipContent}></cds-aichat-user-message-content>
+    </div>
+  `,
+};
+
+/** Renders a Carbon tile in the slot. */
+export const WithCustomNode = {
+  name: 'With Custom Node',
+  argTypes,
+  args: defaultArgs,
+  render: (args) => html`
+    <div
+      style="display: flex; flex-direction: column; align-items: flex-end; max-inline-size: 400px;">
+      <cds-aichat-user-message-content
+        slot-prefix=${args.slotPrefix}
+        .content=${customNodeContent}>
+        <cds-tile
+          slot="${args.slotPrefix}::0.1"
+          style="max-inline-size: 320px;">
+          <strong style="display: block;">${tileChip.label}</strong>
+          <span
+            style="display: block; margin-block-start: 0.25rem; color: #525252; font-size: 0.875rem;"
+            >${tileChip.description}</span
+          >
+        </cds-tile>
+      </cds-aichat-user-message-content>
+    </div>
+  `,
 };

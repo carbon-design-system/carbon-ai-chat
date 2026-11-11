@@ -9,7 +9,7 @@ import * as Stories from './user-message-content.stories';
 
 ## Overview
 
-Use `cds-aichat-user-message-content` to show a sent message, including its text, chips, and your own nodes. It fills the default slot of `cds-aichat-message-item-shell`. This element is experimental, and its API may change without a deprecation window.
+Use `cds-aichat-user-message-content` to show a sent message, including its text, chips, and custom nodes. It fills the default slot of `cds-aichat-message-item-shell`. This element is experimental, and its API may change without a deprecation window.
 
 <Canvas of={Stories.Default} />
 
@@ -39,11 +39,17 @@ const message = document.querySelector('cds-aichat-user-message-content');
 message.content = savedDocument;
 ```
 
-### Type, send, view
+### With chip
 
-This story captures the document from the prompt line when you send, then renders it with the element.
+A `mention` node shows a chip until you fill its slot.
 
-<Canvas of={Stories.TypeSendView} />
+<Canvas of={Stories.WithChip} />
+
+### With custom node
+
+This story renders a Carbon tile in the slot.
+
+<Canvas of={Stories.WithCustomNode} />
 
 ## Accessibility
 

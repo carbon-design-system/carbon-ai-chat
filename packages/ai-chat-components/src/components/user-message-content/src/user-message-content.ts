@@ -13,7 +13,6 @@ import type { JSONContent } from '@tiptap/core';
 import { carbonElement } from '../../../globals/decorators/index.js';
 import prefix from '../../../globals/settings.js';
 import commonStyles from '../../../globals/scss/common.scss?lit';
-import { adoptOnRoot } from '../../shared/dynamic-css-var-sheet.js';
 import {
   inlineMarkdownStyles,
   renderInlineMarkdown,
@@ -90,10 +89,6 @@ class CDSAIChatUserMessageContent extends LitElement {
    */
   private _chips = new WeakMap<JSONContent, HTMLElement>();
 
-  protected firstUpdated(): void {
-    adoptOnRoot(this.renderRoot as ShadowRoot);
-  }
-
   render() {
     const content = this.content;
     if (!content) {
@@ -154,18 +149,22 @@ class CDSAIChatUserMessageContent extends LitElement {
 
   /**
    * Renders one run of text. The inline renderer drops newlines at the edge of
-   * a run, so a break beside a chip is restored here. A run the renderer
-   * rejects, such as one that reads as a heading, shows as plain text so none
-   * of it is lost.
+   * a run, so a break beside a chip is restored here. A break at the start or
+   * end of the paragraph is dropped, and a run of only newlines renders each
+   * break once. A run the renderer rejects, such as one that reads as a
+   * heading, shows as plain text so none of it is lost.
    */
   private _renderRun(
     run: string,
     isFirst: boolean,
     isLast: boolean
   ): TemplateResult {
-    const leading = isFirst ? '' : (run.match(/^\n+/)?.[0] ?? '');
-    const trailing = isLast ? '' : (run.match(/\n+$/)?.[0] ?? '');
-    const body = run.slice(leading.length, run.length - trailing.length);
+    const onlyBreaks = /^\n+$/.test(run);
+    const leading =
+      isFirst || (isLast && onlyBreaks) ? '' : (run.match(/^\n+/)?.[0] ?? '');
+    const rest = run.slice(leading.length);
+    const trailing = isLast ? '' : (rest.match(/\n+$/)?.[0] ?? '');
+    const body = rest.slice(0, rest.length - trailing.length);
 
     let rendered: TemplateResult | typeof nothing = nothing;
     if (body) {

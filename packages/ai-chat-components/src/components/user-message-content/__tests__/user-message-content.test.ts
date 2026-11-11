@@ -168,6 +168,20 @@ describe(blockClass, () => {
       ).to.be.greaterThan(0);
     });
 
+    it('renders one break between two chips', async () => {
+      const el = await render(
+        doc(paragraph(mention('Alice'), { type: 'hardBreak' }, mention('Bob')))
+      );
+      expect(el.shadowRoot!.querySelectorAll('p br')).to.have.length(1);
+    });
+
+    it('drops a break at the end of a paragraph', async () => {
+      const el = await render(
+        doc(paragraph(mention('Alice'), { type: 'hardBreak' }))
+      );
+      expect(el.shadowRoot!.querySelectorAll('p br')).to.have.length(0);
+    });
+
     it('shows a run the inline renderer rejects as plain text', async () => {
       const el = await render(
         doc(paragraph(text('# not inline '), mention('Alice')))
