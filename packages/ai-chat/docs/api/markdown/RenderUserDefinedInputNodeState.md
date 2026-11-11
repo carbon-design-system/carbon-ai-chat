@@ -6,11 +6,9 @@
 
 # RenderUserDefinedInputNodeState
 
-**Experimental.**
-
 - Kind: Interface
 - Category: React
-- Reference: https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.RenderUserDefinedInputNodeState.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.RenderUserDefinedInputNodeState.html
 
 The state passed to a `renderUserDefinedInputNode` call. The chat surfaces
 one call per non-text TipTap node inside a sent user message's
@@ -29,18 +27,14 @@ interface RenderUserDefinedInputNodeState
 
 `message: MessageRequest`
 
-**Experimental.**
-
 The full user message this node belongs to.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.RenderUserDefinedInputNodeState.html#message)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.RenderUserDefinedInputNodeState.html#message)
 
 ### node
 
 `node: JSONContent`
 
-**Experimental.**
-
 The TipTap JSONContent node being rendered (carries `type`, `attrs`, etc.).
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.RenderUserDefinedInputNodeState.html#node)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.RenderUserDefinedInputNodeState.html#node)

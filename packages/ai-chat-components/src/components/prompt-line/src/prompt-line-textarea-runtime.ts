@@ -110,7 +110,7 @@ function ensureTextareaStyleRules(): void {
     'max-block-size': PROMPT_LINE_MAX_BLOCK_SIZE,
   });
   setVarsForSelector(`.${TA_FIELD_CLASS}::placeholder`, {
-    color: 'var(--cds-text-secondary, #525252)',
+    color: 'var(--cds-text-placeholder, var(--cds-text-secondary, #525252))',
     opacity: '1',
   });
   setVarsForSelector(`.${TA_MIRROR_CLASS}`, {
@@ -165,7 +165,7 @@ export class TextareaController
     textarea.setAttribute('tabindex', '0');
     textarea.placeholder = init.placeholder;
     textarea.value = init.value;
-    textarea.readOnly = init.disabled;
+    textarea.disabled = init.disabled;
     if (init.ariaLabel) {
       textarea.setAttribute('aria-label', init.ariaLabel);
     }
@@ -308,9 +308,14 @@ export class TextareaController
   }
 
   setEditable(editable: boolean): void {
-    if (this._textarea) {
-      this._textarea.readOnly = !editable;
+    const ta = this._textarea;
+    if (!ta) {
+      return;
     }
+    if (!editable && this.hasFocus()) {
+      ta.blur();
+    }
+    ta.disabled = !editable;
   }
 
   setPlaceholder(placeholder: string): void {

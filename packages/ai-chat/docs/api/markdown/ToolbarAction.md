@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Config
-- Reference: https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ToolbarAction.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.ToolbarAction.html
 
 A single custom action button, used by both the chat header toolbar
 (HeaderConfig.actions) and the chat input actions row
@@ -37,7 +37,7 @@ interface ToolbarAction
 
 `true` if the action is danger.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ToolbarAction.html#danger)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.ToolbarAction.html#danger)
 
 ### dangerDescription
 
@@ -45,7 +45,7 @@ interface ToolbarAction
 
 Specify the message read by screen readers for the danger over flow menu item variant
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ToolbarAction.html#dangerdescription)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.ToolbarAction.html#dangerdescription)
 
 ### disabled
 
@@ -53,7 +53,7 @@ Specify the message read by screen readers for the danger over flow menu item va
 
 `true` if the overflow menu item should be disabled.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ToolbarAction.html#disabled)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.ToolbarAction.html#disabled)
 
 ### divider
 
@@ -61,7 +61,24 @@ Specify the message read by screen readers for the danger over flow menu item va
 
 `true` if the item has a divider
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ToolbarAction.html#divider)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.ToolbarAction.html#divider)
+
+### feedback
+
+`feedback?: string`
+
+When provided, renders this action using `<cds-copy-button>` with the
+specified feedback text shown after copying (e.g. "Copied!").
+
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.ToolbarAction.html#feedback)
+
+### feedbackTimeout
+
+`feedbackTimeout?: number`
+
+The number in milliseconds to determine how long the feedback tooltip should remain.
+
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.ToolbarAction.html#feedbacktimeout)
 
 ### fixed
 
@@ -69,7 +86,7 @@ Specify the message read by screen readers for the danger over flow menu item va
 
 When overflow handling is enabled, setting fixed to true will force this action out of the overflow menu.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ToolbarAction.html#fixed)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.ToolbarAction.html#fixed)
 
 ### href
 
@@ -77,15 +94,15 @@ When overflow handling is enabled, setting fixed to true will force this action 
 
 The link href of the overflow menu item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ToolbarAction.html#href)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.ToolbarAction.html#href)
 
 ### icon
 
-`icon: ComponentType<any> | CarbonIcon`
+`icon?: ComponentType<any> | CarbonIcon`
 
 Either an icon from `@carbon/icons` or from `@carbon/icons-react`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ToolbarAction.html#icon)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.ToolbarAction.html#icon)
 
 ### id
 
@@ -93,7 +110,7 @@ Either an icon from `@carbon/icons` or from `@carbon/icons-react`.
 
 Optional ID
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ToolbarAction.html#id)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.ToolbarAction.html#id)
 
 ### isSelected
 
@@ -104,7 +121,7 @@ When `true` or `false`, the button exposes `aria-pressed` and a visible
 pressed treatment. Omit the field for a plain button with no toggle
 semantics — `undefined` is intentionally distinct from `false`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ToolbarAction.html#isselected)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.ToolbarAction.html#isselected)
 
 ### onClick
 
@@ -113,7 +130,7 @@ semantics — `undefined` is intentionally distinct from `false`.
 Click handler for the menu item.
 Optional to allow for link-only items (using href).
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ToolbarAction.html#onclick)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.ToolbarAction.html#onclick)
 
 ### size
 
@@ -121,7 +138,7 @@ Optional to allow for link-only items (using href).
 
 Size of button. Defaults to BUTTON_SIZE.MEDIUM.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ToolbarAction.html#size)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.ToolbarAction.html#size)
 
 ### target
 
@@ -130,7 +147,7 @@ Size of button. Defaults to BUTTON_SIZE.MEDIUM.
 Link target attribute (e.g., '_blank', '_self').
 Used when href is provided.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ToolbarAction.html#target)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.ToolbarAction.html#target)
 
 ### testId
 
@@ -138,7 +155,7 @@ Used when href is provided.
 
 Optional data-testid string for e2e testing.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ToolbarAction.html#testid)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.ToolbarAction.html#testid)
 
 ### text
 
@@ -146,7 +163,7 @@ Optional data-testid string for e2e testing.
 
 Display text for the menu item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.0/docs/interfaces/Type_reference.ToolbarAction.html#text)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.ToolbarAction.html#text)
 
 ## Related
 

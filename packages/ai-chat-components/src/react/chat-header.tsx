@@ -125,12 +125,14 @@ const ChatHeader = React.forwardRef<any, any>((props, ref) => {
   // Transform action icons if actions are provided
   const transformedActions = React.useMemo(() => {
     if (!actions) {
-      return undefined;
+      return [];
     }
 
     return actions.map((action: ToolbarAction) => ({
       ...action,
-      icon: transformReactIconToCarbonIcon(action.icon, 16),
+      icon: action.icon
+        ? transformReactIconToCarbonIcon(action.icon, 16)
+        : undefined,
     }));
   }, [actions]);
 

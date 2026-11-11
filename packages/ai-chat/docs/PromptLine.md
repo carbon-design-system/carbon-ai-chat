@@ -17,7 +17,7 @@ const config: PublicConfig = {
 };
 ```
 
-> **Note**: Only a few parts are stable. These are visibility, the disabled states, and the character limit. The rest of the prompt line is experimental and may change. Experimental members carry a badge in the API reference.
+> **Note**: The prompt line public surface is stable. Breaking changes follow semver. This includes the Tiptap-backed parts, {@link InputConfig.tiptap | tiptap} and {@link ChatInstanceInput.getEditor | getEditor}. Their types come from Tiptap, and the supported range is `@tiptap/core` `^3.22.5`.
 
 ## Replace the prompt line
 

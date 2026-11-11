@@ -204,12 +204,21 @@ describe('<cds-aichat-prompt-line> (textarea mode)', function () {
     expect(sent).to.equal(false);
   });
 
-  it('disabled toggles the textarea readOnly state', async () => {
+  it('disabled toggles the textarea disabled state', async () => {
     const el = await makePromptLine();
-    expect(getTextarea(el).readOnly).to.equal(false);
+    expect(getTextarea(el).disabled).to.equal(false);
     el.disabled = true;
     await el.updateComplete;
-    expect(getTextarea(el).readOnly).to.equal(true);
+    expect(getTextarea(el).disabled).to.equal(true);
+  });
+
+  it('disabled releases focus from the textarea', async () => {
+    const el = await makePromptLine();
+    getTextarea(el).focus();
+    expect(el.hasFocus()).to.equal(true);
+    el.disabled = true;
+    await el.updateComplete;
+    expect(el.hasFocus()).to.equal(false);
   });
 });
 

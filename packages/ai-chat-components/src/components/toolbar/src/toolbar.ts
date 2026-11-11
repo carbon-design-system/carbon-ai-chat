@@ -11,6 +11,7 @@ import { LitElement, html, nothing } from 'lit';
 import { property, state, query } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 import '@carbon/web-components/es/components/button/index.js';
+import '@carbon/web-components/es/components/copy-button/index.js';
 import '@carbon/web-components/es/components/overflow-menu/index.js';
 import { OVERFLOW_MENU_SIZE } from '@carbon/web-components/es/components/overflow-menu/defs.js';
 import OverflowMenuVertical16 from '@carbon/icons/es/overflow-menu--vertical/16.js';
@@ -38,9 +39,9 @@ import { BUTTON_SIZE } from '@carbon/web-components/es/components/button/defs.js
  */
 export interface Action extends BaseOverflowMenuItem {
   /**
-   * `@carbon/icons` icon for the action.
+   * `@carbon/icons` icon for the action. Optional when `feedback` is specified (defaults to Carbon copy icon).
    */
-  icon: CarbonIcon;
+  icon?: CarbonIcon;
 
   /**
    * Size of button. Defaults to BUTTON_SIZE.MEDIUM.
@@ -59,6 +60,17 @@ export interface Action extends BaseOverflowMenuItem {
    * semantics — `undefined` is intentionally distinct from `false`.
    */
   isSelected?: boolean;
+
+  /**
+   * When provided, renders this action using `<cds-copy-button>` with the
+   * specified feedback text shown after copying (e.g. "Copied!").
+   */
+  feedback?: string;
+
+  /**
+   * The number in milliseconds to determine how long the feedback tooltip should remain.
+   */
+  feedbackTimeout?: number;
 }
 
 /**
@@ -68,7 +80,7 @@ export interface Action extends BaseOverflowMenuItem {
  * @slot navigation - Defines the navigation area of the toolbar.
  * @slot title - Defines the title section of the toolbar.
  * @slot fixed-actions - Defines the area for displaying actions that are always visible (not overflowed) in the toolbar.
- * @slot toolbar-ai-label - Defines the area for displaying the AI label in the toolbar.
+ * @slot decorator - Decorative content such as an AI label.
  *
  */
 @carbonElement(blockClass)
@@ -303,14 +315,37 @@ class CDSAIChatToolbar extends LitElement {
   };
 
   /**
-   * Renders an action as an icon button.
+   * Renders an action as an icon button or copy button.
    * Note: Some Action properties only apply when rendered in overflow menu:
    * - danger/dangerDescription: cds-icon-button doesn't support danger variant
    * - divider: Only applicable in menu context
    */
   private renderIconButton = (action: Action) => {
     const tooltipAlign = this.isRTL ? 'bottom-start' : 'bottom-end';
-    const { isSelected } = action;
+    const { isSelected, feedback } = action;
+
+    if (feedback !== undefined) {
+      return html`
+        <cds-copy-button
+          align=${tooltipAlign}
+          @click=${action.onClick}
+          ?data-fixed=${action.fixed}
+          data-testid=${action.testId || nothing}
+          ?disabled=${action.disabled}
+          enter-delay-ms="0"
+          feedback=${feedback}
+          feedback-timeout=${
+            action.feedbackTimeout !== undefined
+              ? action.feedbackTimeout
+              : nothing
+          }
+          kind="ghost"
+          leave-delay-ms="0"
+          size=${action.size || BUTTON_SIZE.MEDIUM}>
+          ${action.text}
+        </cds-copy-button>
+      `;
+    }
 
     return html`
       <cds-icon-button
@@ -328,9 +363,13 @@ class CDSAIChatToolbar extends LitElement {
         leave-delay-ms="0"
         size=${action.size || BUTTON_SIZE.MEDIUM}
         target=${action.href ? action.target || '_self' : nothing}>
-        ${iconLoader(action.icon, {
-          slot: 'icon',
-        })}
+        ${
+          action.icon
+            ? iconLoader(action.icon, {
+                slot: 'icon',
+              })
+            : nothing
+        }
         <span slot="tooltip-content">${action.text}</span>
       </cds-icon-button>
     `;
