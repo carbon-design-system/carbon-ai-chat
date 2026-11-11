@@ -220,6 +220,7 @@ export const sdkStateFields: Record<keyof ChatSDKState, true> = {
   error: true,
   pendingUploads: true,
   hasInFlightUploads: true,
+  isRestarting: true,
   humanAgent: true,
   activeResponseId: true,
 };

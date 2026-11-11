@@ -142,6 +142,7 @@ const PUBLIC_FIELD_ORDER: readonly PublicStateField[] = [
   'error',
   'pendingUploads',
   'hasInFlightUploads',
+  'isRestarting',
   'isMessageLoadingCounter',
   'isMessageLoadingText',
   'isHydratingCounter',
@@ -163,16 +164,33 @@ const fieldDefinitions: readonly PublicStateFieldDefinition[] = [
   },
   {
     name: 'humanAgent',
+    // The one place internal agent fields take their public names.
     sources: (state) => [
       state.persistedToBrowserStorage.humanAgentState,
       state.humanAgentState.isConnecting,
       state.humanAgentState.isScreenSharing,
+      state.humanAgentState.isReconnecting,
+      state.humanAgentState.isHumanAgentTyping,
+      state.humanAgentState.availability,
+      state.humanAgentState.fileUploadInProgress,
     ],
-    project: ([persisted, isConnecting, isScreenSharing]) =>
+    project: ([
+      persisted,
+      isConnecting,
+      isScreenSharing,
+      isReconnecting,
+      isTyping,
+      availability,
+      isUploadingFile,
+    ]) =>
       freezeClone({
         ...(persisted as object),
         isConnecting,
         isScreenSharing,
+        isReconnecting,
+        isTyping,
+        availability,
+        isUploadingFile,
       }),
   },
   {
@@ -201,6 +219,11 @@ const fieldDefinitions: readonly PublicStateFieldDefinition[] = [
   {
     name: 'hasInFlightUploads',
     sources: (state) => [selectHasInFlightUpload(state)],
+    project: ([value]) => value,
+  },
+  {
+    name: 'isRestarting',
+    sources: (state) => [state.isRestarting],
     project: ([value]) => value,
   },
   {

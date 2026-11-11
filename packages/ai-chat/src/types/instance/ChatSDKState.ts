@@ -10,6 +10,7 @@
 import type { PersistedHumanAgentState } from '../state/PersistedHumanAgentState';
 import type { Message, StructuredData } from '../messaging/Messages';
 import type { ChatSDKErrorData } from '../config/ChatSDKErrorData';
+import type { AgentAvailability } from '../config/ServiceDeskConfig';
 
 /**
  * The current phase of conversation work, exposed as `status` on {@link PublicChatState}.
@@ -77,6 +78,36 @@ export type PublicChatHumanAgentState = Readonly<
      * Optional in 1.x so that objects typed as this state still compile; the chat always sets it.
      */
     isScreenSharing?: boolean;
+
+    /**
+     * `true` while the chat reconnects to an agent conversation saved from an earlier page load.
+     * It ends once the service desk reconnects, or the reconnect fails.
+     *
+     * Optional in 1.x so that objects typed as this state still compile; the chat always sets it.
+     */
+    isReconnecting?: boolean;
+
+    /**
+     * `true` while the service desk reports that the agent is typing.
+     *
+     * Optional in 1.x so that objects typed as this state still compile; the chat always sets it.
+     */
+    isTyping?: boolean;
+
+    /**
+     * What the service desk last reported about the wait for an agent, such as a position in the
+     * queue, or `null` when it hasn't reported any. The chat shows it while it connects.
+     *
+     * Optional in 1.x so that objects typed as this state still compile; the chat always sets it.
+     */
+    availability?: AgentAvailability | null;
+
+    /**
+     * `true` while files sent to the agent are still uploading to the service desk.
+     *
+     * Optional in 1.x so that objects typed as this state still compile; the chat always sets it.
+     */
+    isUploadingFile?: boolean;
   }
 >;
 
@@ -137,6 +168,15 @@ export interface ChatSDKState {
    * Optional in 1.x so that objects typed as this state still compile; the chat always sets it.
    */
   readonly hasInFlightUploads?: boolean;
+
+  /**
+   * `true` while {@link ChatSDKInstanceMessaging.restartConversation} clears the conversation, from
+   * when the restart begins until it's done. It stays `false` when a
+   * {@link BusEventType.PRE_RESTART_CONVERSATION} handler cancels the restart.
+   *
+   * Optional in 1.x so that objects typed as this state still compile; the chat always sets it.
+   */
+  readonly isRestarting?: boolean;
 
   /**
    * Current human agent state.

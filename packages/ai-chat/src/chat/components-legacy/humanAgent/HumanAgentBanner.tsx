@@ -23,7 +23,7 @@ import { usePublicChatState } from '../../hooks/usePublicChatState';
 import { shallowEqual } from '../../../shared/store/appStore';
 
 import { useServiceManager } from '../../hooks/useServiceManager';
-import { selectHumanAgentDisplayState } from '../../../shared/store/selectors';
+import { humanAgentDisplayStateOf } from '../../../shared/store/selectors';
 import { AppState } from '../../../types/state/AppState';
 import { HasRequestFocus } from '../../../types/utilities/HasRequestFocus';
 import { doFocusRef } from '../../utils/domUtils';
@@ -64,14 +64,10 @@ function HumanAgentBanner(
     shallowEqual
   );
   const serviceManager = useServiceManager();
-  const responseUserProfile = usePublicChatState(
-    (state) => state.humanAgent.responseUserProfile
-  );
-  const humanAgentState = useSelector(
-    (state: AppState) => state.humanAgentState
-  );
-  const { isConnecting, availability, isScreenSharing } = humanAgentState;
-  const displayState = useSelector(selectHumanAgentDisplayState, shallowEqual);
+  const humanAgent = usePublicChatState((state) => state.humanAgent);
+  const { responseUserProfile, isConnecting, availability, isScreenSharing } =
+    humanAgent;
+  const displayState = humanAgentDisplayStateOf(humanAgent);
   const buttonRef = useRef<CDSButton>(undefined);
 
   let line1;
