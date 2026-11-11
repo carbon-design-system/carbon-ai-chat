@@ -21,6 +21,7 @@ import { createChatSDK } from '../../../src/sdk';
 import { chatRegistry } from '../../../src/sdk/createChatSDK';
 import { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
+import type { ExtensionHosts } from '../../../src/chat/services/extensionHosts';
 import type { ChatRenderer } from '../../../src/web-components/shared/react-renderer';
 import { OnErrorType } from '../../../src/types/config/ErrorConfig';
 import type { PublicConfig } from '../../../src/types/config/PublicConfig';
@@ -32,6 +33,7 @@ import type {
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
 import { PanelType, ViewType } from '../../../src/types/instance/apiTypes';
 import {
+  type MessageResponse,
   MessageResponseTypes,
   UserType,
 } from '../../../src/types/messaging/Messages';
@@ -44,12 +46,16 @@ import {
 /** Each mount the stub renderer was asked to draw into, by element. */
 const rendered = new Set<HTMLElement>();
 
+/** The extension hosts each element's latest render got. */
+const hostsOf = new Map<HTMLElement, ExtensionHosts>();
+
 /** A renderer that renders nothing and reports the first commit at once. */
 function rendererFor(element: HTMLElement): ChatRenderer {
   return {
     mount: () => ({
       render(_App, inputs) {
         rendered.add(element);
+        hostsOf.set(element, inputs.hosts);
         if (inputs.initialViewReady) {
           queueMicrotask(inputs.onInitialViewCommitted);
         }
@@ -168,6 +174,7 @@ beforeEach(() => {
   setupBeforeEach();
   sessionStorage.clear();
   rendered.clear();
+  hostsOf.clear();
   shutdown = jest.spyOn(ServiceManager.prototype, 'shutdown');
 });
 
@@ -723,5 +730,110 @@ describe('a new desk factory during the main window’s first load (O16)', () =>
     await waitFor(() => expect(next.desks[0].startChat).toHaveBeenCalled());
     expect(old.desk.startChat).not.toHaveBeenCalled();
     expect(old.desk.reconnect).not.toHaveBeenCalled();
+  });
+});
+
+/** A response with one user-defined item, under a custom footer. */
+function userDefinedResponse(id: string): MessageResponse {
+  return {
+    id,
+    output: {
+      generic: [
+        {
+          response_type: MessageResponseTypes.USER_DEFINED,
+          user_defined: { id },
+          message_item_options: {
+            custom_footer_slot: { slot_name: `footer-${id}`, is_on: true },
+          },
+        },
+      ],
+    },
+  };
+}
+
+/** The slot name the chat gave a message's first item. */
+function slotOf(chat: ServiceManager, messageID: string) {
+  const item = Object.values(chat.store.getState().allMessageItemsByID).find(
+    (local) => local.fullMessageID === messageID
+  );
+  return chat.userDefinedElementRegistry.get(item?.ui_state.id)?.slotName;
+}
+
+describe('slots reach the view that adopts the chat', () => {
+  it('a view that detaches during a host-awaited history replay leaves every slot to the next', async () => {
+    const namespace = freshNamespace();
+    const history = ['history-1', 'history-2'].map((id) => ({
+      message: userDefinedResponse(id),
+      time: new Date().toISOString(),
+    }));
+    const replaying = resolvablePromise<void>();
+    const gate = resolvablePromise<void>();
+    const first = await mountElement(
+      reuseConfig(namespace, {
+        messaging: {
+          skipWelcome: true,
+          customLoadHistory: async () => history,
+        },
+      }),
+      (instance) =>
+        instance.on({
+          type: BusEventType.USER_DEFINED_RESPONSE,
+          handler: () => {
+            replaying.doResolve();
+            return gate;
+          },
+        })
+    );
+    const chat = managerOf(first.instance);
+    const oldHosts = hostsOf.get(first.element);
+    await first.instance.changeView(ViewType.MAIN_WINDOW);
+    await replaying;
+
+    await unmount(first);
+    const oldRecords = oldHosts.getSnapshot();
+    const second = await mountElement(
+      reuseConfig(namespace, {
+        messaging: {
+          skipWelcome: true,
+          customLoadHistory: async () => history,
+        },
+      })
+    );
+    gate.doResolve();
+    await waitFor(() =>
+      expect(
+        Object.keys(hostsOf.get(second.element).getSnapshot().customFooter)
+      ).toHaveLength(2)
+    );
+
+    const records = hostsOf.get(second.element).getSnapshot();
+    const slots = ['history-1', 'history-2'].map((id) => slotOf(chat, id));
+    expect(slots.every(Boolean)).toBe(true);
+    expect(Object.keys(records.userDefinedResponse).sort()).toEqual(
+      [...slots].sort()
+    );
+    expect(Object.keys(records.customFooter).sort()).toEqual([
+      'footer-history-1',
+      'footer-history-2',
+    ]);
+    // The old view kept what it had at detach.
+    expect(oldHosts.getSnapshot()).toBe(oldRecords);
+  });
+
+  it('a released chat’s slots from inside the window show in the adopting view', async () => {
+    const namespace = freshNamespace();
+    const first = await mountElement(reuseConfig(namespace));
+    await first.instance.changeView(ViewType.MAIN_WINDOW);
+    const chat = managerOf(first.instance);
+    await unmount(first);
+
+    await first.instance.messaging.addMessage(userDefinedResponse('in-window'));
+    const second = await mountElement(reuseConfig(namespace));
+
+    const records = hostsOf.get(second.element).getSnapshot();
+    const slot = slotOf(chat, 'in-window');
+    expect(slot).toBeTruthy();
+    expect(Object.keys(records.userDefinedResponse)).toContain(slot);
+    expect(Object.keys(records.customFooter)).toEqual(['footer-in-window']);
   });
 });

@@ -33,10 +33,13 @@ import { createConversationInstance } from '../../sdk/services/conversationInsta
 import { createWriteableElements } from './writeableElements';
 import { dropSubscriptions, mountSubscriptions } from './mountSubscriptions';
 import { applyConfigChangesDynamically } from './dynamicConfigUpdates';
+import { renderAsUserDefinedMessage } from '../../sdk/utils/messageUtils';
 
 import {
+  BusEventType,
   MainWindowOpenReason,
   ViewChangeReason,
+  type BusEventUserDefinedResponse,
 } from '../../types/events/eventBusTypes';
 import { VIEW_STATE_ALL_CLOSED } from '../../sdk/store/reducerUtils';
 import { PublicConfig } from '../../types/config/PublicConfig';
@@ -126,6 +129,9 @@ export async function bootPrebuiltChat(options: {
     loadHistory: false,
     onServicesCreated: (serviceManager) => {
       attachChatView(serviceManager, publicConfig, derivedConfig);
+      if (publicConfig.lifecycle?.reuseInstance === true) {
+        collectSlotlessResponses(serviceManager);
+      }
       // Update Redux with new values for language, locale, and messages
       setIntl(
         serviceManager,
@@ -481,8 +487,11 @@ function createPrebuiltInstance(serviceManager: ServiceManager): ChatInstance {
  * Applies the first view transition after boot, deciding between restoring a
  * session or opening the default view. Keeps this sequencing in one place so
  * tests and callers can reason about what happens immediately after boot.
+ * First, it names the slots an adopted chat missed; see
+ * {@link nameSlotsMissedWithoutView}.
  */
 export async function performInitialViewChange(serviceManager: ServiceManager) {
+  await nameSlotsMissedWithoutView(serviceManager);
   const initialState = chatStore(serviceManager).getState();
   const { wasLoadedFromBrowser } = initialState.view.persistedToBrowserStorage;
   const { targetViewState } = initialState.view;
@@ -507,6 +516,56 @@ export async function performInitialViewChange(serviceManager: ServiceManager) {
       { viewChangeReason },
       tryHydrating,
       forceViewChange
+    );
+  }
+}
+
+/** Per reusable chat, the messages whose user-defined responses had no slot. */
+const slotlessMessages = new WeakMap<ServiceManager, Set<string>>();
+
+/**
+ * Notes each message whose user-defined response fired with no slot, which
+ * happens while no view is attached: a released chat in its grace window.
+ */
+function collectSlotlessResponses(serviceManager: ServiceManager) {
+  const messageIDs = new Set<string>();
+  slotlessMessages.set(serviceManager, messageIDs);
+  serviceManager.eventBus.on({
+    type: BusEventType.USER_DEFINED_RESPONSE,
+    handler: ({ data }: BusEventUserDefinedResponse) => {
+      if (!data.slot && !data.message.user_defined?.silent) {
+        messageIDs.add(data.fullMessage.id);
+      }
+    },
+  });
+}
+
+/**
+ * Names the slots of user-defined responses that fired while no view was
+ * attached, and fires their events again with the slot, so this mount's
+ * handlers and extension hosts get them. Only a chat adopted after its grace
+ * window has any; items a view already named, and silent ones, are skipped.
+ */
+async function nameSlotsMissedWithoutView(serviceManager: ServiceManager) {
+  const messageIDs = slotlessMessages.get(serviceManager);
+  if (!messageIDs?.size) {
+    return;
+  }
+  const { allMessageItemsByID, allMessagesByID, assistantMessageState } =
+    serviceManager.store.getState();
+  const missed = Object.fromEntries(
+    Object.entries(allMessageItemsByID).filter(
+      ([, local]) =>
+        messageIDs.has(local.fullMessageID) &&
+        renderAsUserDefinedMessage(local.item) &&
+        !local.item.user_defined?.silent &&
+        !serviceManager.userDefinedElementRegistry.has(local.ui_state.id)
+    )
+  );
+  messageIDs.clear();
+  if (Object.keys(missed).length) {
+    await serviceManager.messageCoordinator.createElementsForUserDefinedResponses(
+      { allMessageItemsByID: missed, allMessagesByID, assistantMessageState }
     );
   }
 }
