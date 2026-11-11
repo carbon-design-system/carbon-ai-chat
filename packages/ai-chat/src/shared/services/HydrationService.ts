@@ -299,8 +299,18 @@ class HydrationService {
       const { store } = serviceManager;
       const state = store.getState();
 
-      canceled = await this.isRestartCanceled(fireEvents);
-      if (canceled) {
+      // Only a handler sets cancel, so with events off it stays unset.
+      const preRestartEvent: BusEventPreReset = {
+        type: BusEventType.PRE_RESTART_CONVERSATION,
+      };
+      if (fireEvents) {
+        await serviceManager.fire(preRestartEvent);
+      }
+      if (preRestartEvent.cancel) {
+        canceled = true;
+        debugLog(
+          'The restart was canceled by a pre:restartConversation event.'
+        );
         return;
       }
 
@@ -308,24 +318,14 @@ class HydrationService {
         serviceManager.messageCoordinator.beginRestart(skipHydration);
       this.serviceManager.streamAnnouncerService.clearAll();
 
-      if (
-        state.config.public.messaging.messageLoadingIndicatorTimeoutSecs !== 0
-      ) {
-        serviceManager.messageCoordinator.resetMessageLoadingCounter();
-      }
+      this.resetLoadingCounterUnlessOff(state);
 
       if (this.hydrating) {
         await this.hydrationPromise;
       }
 
-      const currentState = store.getState();
-
       // If we're connected to an agent, we need to end the agent chat.
-      const { isConnecting } = currentState.humanAgentState;
-      const { isConnected } =
-        currentState.persistedToBrowserStorage.humanAgentState;
-
-      if ((isConnected || isConnecting) && endHumanAgentConversation) {
+      if (endHumanAgentConversation && this.isAgentChatLive()) {
         await serviceManager.humanAgentService.endChat(true, false, false);
       }
 
@@ -351,7 +351,21 @@ class HydrationService {
         await this.hydrationPromise;
       }
 
-      await this.rehydrateAfterRestart(skipHydration, restartGeneration);
+      let didHydrate = false;
+      if (!skipHydration && !serviceManager.store.getState().isHydrated) {
+        // Trigger re-hydration.
+        this.hydrationPromise = null;
+        this.hydrationFailure = undefined;
+        if (this.shouldHydrateAfterRestart()) {
+          didHydrate = true;
+          await serviceManager.actions.hydrateChat();
+        }
+      } else {
+        serviceManager.messageCoordinator.markChatHydrated();
+      }
+      if (!didHydrate) {
+        serviceManager.messageCoordinator.hydrationFinished(restartGeneration);
+      }
     } finally {
       this.restarting = false;
       // Clear isRestarting flag to allow new messages and chunks to be processed.
@@ -362,42 +376,22 @@ class HydrationService {
     }
   }
 
-  /** Fires `pre:restartConversation`, and returns true when a handler canceled the restart. */
-  private async isRestartCanceled(fireEvents: boolean) {
-    if (!fireEvents) {
-      return false;
+  /** Resets the message loading counter, unless the host turned the indicator off. */
+  private resetLoadingCounterUnlessOff(state: ConversationState) {
+    if (
+      state.config.public.messaging.messageLoadingIndicatorTimeoutSecs !== 0
+    ) {
+      this.serviceManager.messageCoordinator.resetMessageLoadingCounter();
     }
-    const preRestartEvent: BusEventPreReset = {
-      type: BusEventType.PRE_RESTART_CONVERSATION,
-    };
-    await this.serviceManager.fire(preRestartEvent);
-    if (preRestartEvent.cancel) {
-      debugLog('The restart was canceled by a pre:restartConversation event.');
-    }
-    return Boolean(preRestartEvent.cancel);
   }
 
-  /** Loads the restarted conversation, or marks it loaded when it can't or needn't load now. */
-  private async rehydrateAfterRestart(
-    skipHydration: boolean,
-    restartGeneration: number
-  ) {
-    const { serviceManager } = this;
-    let didHydrate = false;
-    if (!skipHydration && !serviceManager.store.getState().isHydrated) {
-      // Trigger re-hydration.
-      this.hydrationPromise = null;
-      this.hydrationFailure = undefined;
-      if (this.shouldHydrateAfterRestart()) {
-        didHydrate = true;
-        await serviceManager.actions.hydrateChat();
-      }
-    } else {
-      serviceManager.messageCoordinator.markChatHydrated();
-    }
-    if (!didHydrate) {
-      serviceManager.messageCoordinator.hydrationFinished(restartGeneration);
-    }
+  /** True while an agent chat is connected or connecting. */
+  private isAgentChatLive() {
+    const currentState = this.serviceManager.store.getState();
+    const { isConnecting } = currentState.humanAgentState;
+    const { isConnected } =
+      currentState.persistedToBrowserStorage.humanAgentState;
+    return isConnected || isConnecting;
   }
 
   /** True while the attached view's main window is open. False with no view. */

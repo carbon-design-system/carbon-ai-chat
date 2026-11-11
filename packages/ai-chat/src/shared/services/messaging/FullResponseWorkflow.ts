@@ -89,14 +89,19 @@ class FullResponseWorkflow {
     const isCurrent = () =>
       write.isCurrent() && isCallerCurrent() && !removedIDs.has(message.id);
     try {
-      if (
-        !(await this.passesPreReceive(
-          message,
-          receivedID,
-          initialRestartCount,
-          isCurrent
-        ))
-      ) {
+      const preReceiveEvent: BusEventPreReceive = {
+        type: BusEventType.PRE_RECEIVE,
+        data: message,
+      };
+      // Fire the pre:receive event. User code is allowed to modify the message at this point.
+      await this.serviceManager.fire(preReceiveEvent, isCurrent);
+
+      if (this.isOvertaken(message, initialRestartCount, isCurrent)) {
+        // If a restart occurred during the await above, we need to exit.
+        return;
+      }
+      if (preReceiveEvent.cancel) {
+        await this.dropCanceledReply(receivedID);
         return;
       }
 
@@ -152,38 +157,19 @@ class FullResponseWorkflow {
     }
   }
 
-  /**
-   * Fires `pre:receive`; user code is allowed to modify the message at this point. Returns
-   * false when the write goes no further: a restart happened during the handlers, or a
-   * handler canceled it, which drops a reply that already streamed in under `receivedID`.
-   */
-  private async passesPreReceive(
+  /** True when a restart or removal while the `pre:receive` handlers ran overtook this write. */
+  private isOvertaken(
     message: MessageResponse,
-    receivedID: string,
     initialRestartCount: number,
     isCurrent: () => boolean
-  ): Promise<boolean> {
-    const preReceiveEvent: BusEventPreReceive = {
-      type: BusEventType.PRE_RECEIVE,
-      data: message,
-    };
-    await this.serviceManager.fire(preReceiveEvent, isCurrent);
-
-    if (
+  ) {
+    return (
       !isCurrent() ||
       initialRestartCount !== this.serviceManager.restartCount ||
       this.serviceManager.messageCoordinator.isRequestFromPreviousConversation(
         message.request_id
       )
-    ) {
-      // If a restart occurred during the await above, we need to exit.
-      return false;
-    }
-    if (preReceiveEvent.cancel) {
-      await this.dropCanceledReply(receivedID);
-      return false;
-    }
-    return true;
+    );
   }
 
   private writeReceivedMessage(
