@@ -342,7 +342,7 @@ describe('the handle (#1732 O9–O11)', () => {
     jest.useFakeTimers();
     try {
       chat.release();
-      // The window keeps it running for a create on its namespace (#2357).
+      // The window keeps it running for a create on its namespace.
       expect(manager.isShutdown).toBe(false);
       jest.advanceTimersByTime(DEFAULT_RELEASE_GRACE_MS);
       await waitForShutdown(manager);

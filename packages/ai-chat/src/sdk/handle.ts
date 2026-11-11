@@ -34,8 +34,8 @@ interface ChatSDKHandle extends ChatSDKInstance {
   /**
    * Shuts the chat down now, even if another handle holds it, and nothing can
    * get it back afterward. A create on the namespace waits for the shutdown.
-   * Ending a human agent conversation and clearing saved state come with
-   * #2358. Calling it again does nothing.
+   * It doesn't yet end a human agent conversation or clear saved state.
+   * Calling it again does nothing.
    */
   destroy(): void;
 

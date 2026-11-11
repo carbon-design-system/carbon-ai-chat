@@ -602,7 +602,7 @@ describe('ending a chat (#2358 O1, O4, as destroy uses it)', () => {
     expect(second.boot).toHaveBeenCalledTimes(1);
   });
 
-  it('an adoption still waiting rejects, naming the namespace, and skips adopt', async () => {
+  it('an adoption still waiting rejects, naming the namespace, and skips adopt; a running one doesn’t hold up the end', async () => {
     const registry = createChatRegistry<FakeChat>();
     const slow = resolvablePromise<void>();
     const firstClaim = registry.claim('support', options());
@@ -619,15 +619,22 @@ describe('ending a chat (#2358 O1, O4, as destroy uses it)', () => {
 
     firstClaim.end();
     await settle();
-    // Not during the running adoption: shutdown waits for it to settle.
-    expect(chat.shutdown).not.toHaveBeenCalled();
+    // Now, not after the running adoption, which may never settle.
+    expect(chat.shutdown).toHaveBeenCalledTimes(1);
+    const next = options();
+    const nextClaim = registry.claim('support', next);
+    await expect(nextClaim.chat).resolves.not.toBe(chat);
+    expect(next.boot).toHaveBeenCalledTimes(1);
+
+    const rejected = Promise.all([
+      expect(adopting.chat).rejects.toThrow(
+        'A chat with the namespace "support" was destroyed while this one waited to reuse it'
+      ),
+      expect(waitingClaim.chat).rejects.toThrow(/was destroyed/),
+    ]);
     slow.doResolve();
-    await expect(adopting.chat).rejects.toThrow(
-      'A chat with the namespace "support" was destroyed before this one could reuse it'
-    );
-    await expect(waitingClaim.chat).rejects.toThrow(/was destroyed/);
+    await rejected;
     expect(waiting.adopt).not.toHaveBeenCalled();
-    await settle();
     expect(chat.shutdown).toHaveBeenCalledTimes(1);
   });
 
@@ -694,7 +701,7 @@ describe('moving a chat to another namespace', () => {
     const chat = await claim.chat;
 
     expect(() => claim.move('new')).toThrow(
-      'A chat with the namespace "new" is already running'
+      'A chat with the namespace "new" is already running, so this chat\'s config didn\'t change.'
     );
     expect(() => registry.claim(undefined, options())).toThrow(
       'A chat with no namespace is already running'

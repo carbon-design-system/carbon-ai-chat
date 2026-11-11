@@ -64,17 +64,19 @@ interface ChatClaim<Chat> {
   release(): void;
 
   /**
-   * Shuts the chat down for good, whoever holds it now, without waiting for
-   * the grace window. Nothing adopts it afterward, and a claim still waiting
-   * for it rejects. A new chat on the namespace waits for the shutdown. Does
-   * nothing once the chat has shut down or ended.
+   * Shuts the chat down for good, whoever holds it now, as soon as boot
+   * finishes. It doesn't wait for the grace window or a running adoption.
+   * Nothing adopts it afterward, and a claim still waiting for it rejects. A
+   * new chat on the namespace waits for the shutdown. Does nothing once the
+   * chat has shut down or ended.
    */
   end(): void;
 
   /**
    * Files the chat under another namespace, so a claim there collides with it
    * and one on the old namespace starts a new chat. Does nothing unless this
-   * claim is live.
+   * claim is live. It doesn't wait for a chat on the new namespace that is
+   * still shutting down; a new chat there waits for both.
    *
    * @throws If the namespace already has a chat, running or in its grace
    * window.
@@ -138,11 +140,18 @@ function collisionMessage(namespace: string) {
   return `A chat ${which} is already running, so this one didn't start. Give each chat its own namespace.`;
 }
 
+function moveCollisionMessage(namespace: string) {
+  const which = namespace
+    ? `with the namespace "${namespace}"`
+    : 'with no namespace';
+  return `A chat ${which} is already running, so this chat's config didn't change. Give each chat its own namespace; a config that leaves it out means no namespace.`;
+}
+
 function endedMessage(namespace: string) {
   const which = namespace
     ? `with the namespace "${namespace}"`
     : 'with no namespace';
-  return `A chat ${which} was destroyed before this one could reuse it, so this one didn't start. Start it again.`;
+  return `A chat ${which} was destroyed while this one waited to reuse it, so no chat started. Start a new one.`;
 }
 
 function graceMsOf(entry: Entry<unknown>) {
@@ -170,17 +179,22 @@ function createChatRegistry<Chat extends RegisteredChat>(): ChatRegistry<Chat> {
     return entries.get(entry.key) === entry;
   }
 
-  /** Removes the entry and shuts its chat down once boot and adoption settle. */
+  /**
+   * Removes the entry and shuts its chat down once boot and any adoption
+   * settle, or once boot does for an ended chat.
+   */
   function shutDown(entry: Entry<Chat>) {
     const { key } = entry;
     clearTimeout(entry.graceTimer);
     entries.delete(key);
     // A boot that failed has nothing to shut down. `shutdown` must not
     // reject; if it does anyway, the namespace still frees up.
-    const own = entry.settled
-      .then(() => entry.booted)
-      .then((chat) => chat.shutdown())
-      .catch(ignore);
+    // An end means now: a running adoption, which may never settle, doesn't
+    // hold it up.
+    const ready = entry.ended
+      ? entry.booted
+      : entry.settled.then(() => entry.booted);
+    const own = ready.then((chat) => chat.shutdown()).catch(ignore);
     // A chat moved onto a namespace that was still shutting down holds that
     // shutdown's place, so the next boot there waits for both.
     const previous = closing.get(key);
@@ -224,7 +238,7 @@ function createChatRegistry<Chat extends RegisteredChat>(): ChatRegistry<Chat> {
       return;
     }
     if (entries.has(key)) {
-      throw new Error(collisionMessage(key));
+      throw new Error(moveCollisionMessage(key));
     }
     entries.delete(entry.key);
     entry.key = key;

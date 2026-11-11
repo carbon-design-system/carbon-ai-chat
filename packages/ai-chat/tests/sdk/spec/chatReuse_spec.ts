@@ -19,6 +19,7 @@ import { chatOf } from '../../../src/sdk/handle';
 import { DEFAULT_RELEASE_GRACE_MS } from '../../../src/sdk/registry';
 import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 import type { ChatSDKConfig } from '../../../src/types/config/ChatSDKConfig';
+import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
 import { MessageState } from '../../../src/types/config/MessagingConfig';
 import type {
   ServiceDesk,
@@ -163,7 +164,7 @@ describe('reuse through the SDK entry (#2357)', () => {
     };
     const adopting = createChatSDK(config);
     // Copied at the call, though adoption runs later: an edit made while it
-    // waits changes nothing (#1833).
+    // waits changes nothing.
     config.isReadonly = true;
     const second = await adopting;
     handles.push(second);
@@ -219,12 +220,18 @@ describe('reuse through the SDK entry (#2357)', () => {
     await waitFor(() => expect(desks).toEqual(['first', 'second']));
   });
 
-  it('a released handle no longer configures the chat', async () => {
+  it('a released handle no longer configures or moves the chat', async () => {
     const first = await create({ namespace: 'support', isReadonly: true });
     first.release();
     const second = await create({ namespace: 'support', isReadonly: true });
-    await first.updateConfig({ namespace: 'support' });
-    expect(chatOf(second).store.getState().config.public.isReadonly).toBe(true);
+    await first.updateConfig({ namespace: 'elsewhere' });
+    const manager = chatOf(second);
+    expect(manager.store.getState().config.public.isReadonly).toBe(true);
+    expect(manager.namespace.originalName).toBe('support');
+    await expect(create({ namespace: 'support' })).rejects.toThrow(
+      /already running/
+    );
+    await expect(create({ namespace: 'elsewhere' })).resolves.toBeDefined();
   });
 });
 
@@ -239,6 +246,42 @@ describe('destroy through the SDK entry (#2358 O1, O4)', () => {
     const next = await create({ namespace: 'support' });
     expect(chatOf(next)).not.toBe(manager);
     expect(next.state.get().messages).toEqual([]);
+  });
+
+  it('rejects a create still adopting the chat, without waiting for it', async () => {
+    const fakeDesk = (name: string) =>
+      ({
+        getName: () => name,
+        startChat: async () => {},
+        endChat: async () => {},
+        sendMessageToAgent: async () => {},
+      }) as unknown as ServiceDesk;
+    const desk = resolvablePromise<ServiceDesk>();
+    const first = await create({
+      namespace: 'support',
+      serviceDeskFactory: async () => fakeDesk('first'),
+    });
+    const manager = chatOf(first);
+    first.release();
+    const newFactory = jest.fn(() => desk);
+    // Its new desk factory keeps the adoption running.
+    const adopting = createChatSDK({
+      namespace: 'support',
+      messaging: { skipWelcome: true },
+      serviceDeskFactory: newFactory,
+    });
+    const rejected = expect(adopting).rejects.toThrow(
+      'A chat with the namespace "support" was destroyed while this one waited to reuse it, so no chat started. Start a new one.'
+    );
+    await waitFor(() => expect(newFactory).toHaveBeenCalled());
+
+    first.destroy();
+    expect(manager.isShutdown).toBe(true);
+    const next = await create({ namespace: 'support' });
+    expect(chatOf(next)).not.toBe(manager);
+
+    desk.doResolve(fakeDesk('second'));
+    await rejected;
   });
 
   it('shuts the chat down even when a newer handle holds it', async () => {
@@ -276,12 +319,27 @@ describe('a namespace change through updateConfig', () => {
     const manager = chatOf(handle);
     await expect(
       handle.updateConfig({ namespace: 'taken', isReadonly: false })
-    ).rejects.toThrow('A chat with the namespace "taken" is already running');
+    ).rejects.toThrow(
+      'A chat with the namespace "taken" is already running, so this chat\'s config didn\'t change.'
+    );
     expect(manager.store.getState().config.public.isReadonly).toBe(true);
     expect(manager.namespace.originalName).toBe('mine');
     await expect(create({ namespace: 'mine' })).rejects.toThrow(
       /already running/
     );
+  });
+});
+
+describe('a namespace left out of updateConfig', () => {
+  it('means no namespace, so it collides with a chat that has none', async () => {
+    await create();
+    const handle = await create({ namespace: 'support' });
+    await expect(
+      handle.updateConfig({ messaging: { skipWelcome: true } })
+    ).rejects.toThrow(
+      "A chat with no namespace is already running, so this chat's config didn't change. Give each chat its own namespace; a config that leaves it out means no namespace."
+    );
+    expect(chatOf(handle).namespace.originalName).toBe('support');
   });
 });
 

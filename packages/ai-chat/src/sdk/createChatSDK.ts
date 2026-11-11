@@ -58,11 +58,6 @@ interface ChatSDKBootOptions {
    * collides with another chat.
    */
   reuse?: boolean;
-  /**
-   * How long a released chat waits to be adopted, in milliseconds. 3000 if
-   * left out. Read when the handle is released.
-   */
-  releaseGraceMs?: number;
 }
 
 /**
@@ -88,14 +83,13 @@ async function createChatSDK(
     return createHandle(await bootChat(config, options));
   }
   // Copied now: boot can wait for an old chat's shutdown, and adoption for
-  // boot, and the host may change its object meanwhile (#1833).
+  // boot, and the host may change its object meanwhile.
   const appConfig = options.appConfig ?? createSDKAppConfig(config);
   const claim = chatRegistry.claim(appConfig.public.namespace, {
     boot: () => bootChat(config, { ...options, appConfig }),
     // A replacement, as `updateConfig` applies one.
     adopt: (serviceManager) =>
       applyConversationConfig(serviceManager, appConfig),
-    releaseGraceMs: () => options.releaseGraceMs,
   });
   return createHandle(await claim.chat, claim);
 }
