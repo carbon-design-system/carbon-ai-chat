@@ -8,7 +8,10 @@
  */
 
 import TouchInteraction16 from '@carbon/icons/es/touch--interaction/16.js';
-import { carbonIconToReact } from '../../../utils/carbonIcon';
+import {
+  carbonIconToReact,
+  customIconToReact,
+} from '../../../utils/carbonIcon';
 import React, { useCallback } from 'react';
 import { useSelector } from '../../../hooks/useSelector';
 
@@ -42,9 +45,7 @@ function ButtonItemCustomEventComponent({
   const isDisabled =
     Boolean(value && ui_state.optionSelected) || isInputReadonly;
   const TouchInteraction = carbonIconToReact(TouchInteraction16);
-  const CustomIcon = icon
-    ? carbonIconToReact(icon as Parameters<typeof carbonIconToReact>[0])
-    : undefined;
+  const CustomIcon = customIconToReact(icon);
 
   const onClickHandler = useCallback(async () => {
     await serviceManager.fire({

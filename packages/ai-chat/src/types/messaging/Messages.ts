@@ -25,6 +25,8 @@ import { CHAT_BUTTON_SIZE as _CHAT_BUTTON_SIZE } from '@carbon/ai-chat-component
 import { ChainOfThoughtStepStatus as _ChainOfThoughtStepStatus } from '@carbon/ai-chat-components/es/components/chain-of-thought/defs.js';
 import { WorkspaceCustomPanelConfigOptions } from '../instance/apiTypes';
 import type { JSONContent } from '@tiptap/core';
+import type { ComponentType } from 'react';
+import type { CarbonIcon } from '@carbon/web-components/es/globals/internal/icon-loader-utils.js';
 
 /**
  * This is the main interface that represents a request from a user sent to an assistant.
@@ -1875,8 +1877,8 @@ interface ButtonItem<
   alt_text?: string;
 
   /**
-   * A Carbon icon object to render inside the button. Import an icon from `@carbon/icons` and
-   * pass it directly, e.g. `import ArrowRight from '@carbon/icons/es/arrow--right/16.js'`.
+   * The icon to render inside the button. Accepts an icon from `@carbon/icons`, e.g.
+   * `import ArrowRight from '@carbon/icons/es/arrow--right/16.js'`, or a component from `@carbon/icons-react`.
    *
    * Supported on all button types. Overrides the default icon for `url` (`Launch`) and
    * the `image_url`-gated defaults for `post_back`, `custom_event`, and `show_panel`.
@@ -1888,7 +1890,7 @@ interface ButtonItem<
    * { response_type: 'button', button_type: 'post_back', label: 'Next', icon: ArrowRight }
    * ```
    */
-  icon?: object;
+  icon?: CarbonIcon | ComponentType<any>;
 }
 
 /**

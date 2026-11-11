@@ -8,7 +8,10 @@
  */
 
 import ArrowRight16 from '@carbon/icons/es/arrow--right/16.js';
-import { carbonIconToReact } from '../../../utils/carbonIcon';
+import {
+  carbonIconToReact,
+  customIconToReact,
+} from '../../../utils/carbonIcon';
 import React, { useCallback } from 'react';
 import { useSelector } from '../../../hooks/useSelector';
 
@@ -42,9 +45,7 @@ function ButtonItemShowPanelComponent({
     localMessageItem.item;
   const isInputReadonly = useSelector(selectInputIsReadonly);
   const ArrowRight = carbonIconToReact(ArrowRight16);
-  const CustomIcon = icon
-    ? carbonIconToReact(icon as Parameters<typeof carbonIconToReact>[0])
-    : undefined;
+  const CustomIcon = customIconToReact(icon);
   const isDisabled = isInputReadonly;
 
   /**
