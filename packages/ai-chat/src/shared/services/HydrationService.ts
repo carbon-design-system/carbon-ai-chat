@@ -351,19 +351,9 @@ class HydrationService {
         await this.hydrationPromise;
       }
 
-      let didHydrate = false;
-      if (!skipHydration && !serviceManager.store.getState().isHydrated) {
-        // Trigger re-hydration.
-        this.hydrationPromise = null;
-        this.hydrationFailure = undefined;
-        if (this.shouldHydrateAfterRestart()) {
-          didHydrate = true;
-          await serviceManager.actions.hydrateChat();
-        }
+      if (this.prepareRehydration(skipHydration)) {
+        await serviceManager.actions.hydrateChat();
       } else {
-        serviceManager.messageCoordinator.markChatHydrated();
-      }
-      if (!didHydrate) {
         serviceManager.messageCoordinator.hydrationFinished(restartGeneration);
       }
     } finally {
@@ -374,6 +364,21 @@ class HydrationService {
         this.serviceManager.messageCoordinator.setRestartInProgress(false);
       }
     }
+  }
+
+  /**
+   * Readies a restarted chat to load again, or marks it loaded when it skips loading.
+   * Returns true when it should load now.
+   */
+  private prepareRehydration(skipHydration: boolean) {
+    if (!skipHydration && !this.serviceManager.store.getState().isHydrated) {
+      // Trigger re-hydration.
+      this.hydrationPromise = null;
+      this.hydrationFailure = undefined;
+      return this.shouldHydrateAfterRestart();
+    }
+    this.serviceManager.messageCoordinator.markChatHydrated();
+    return false;
   }
 
   /** Resets the message loading counter, unless the host turned the indicator off. */

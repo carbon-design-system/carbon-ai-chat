@@ -63,12 +63,8 @@ class FullResponseWorkflow {
     isCallerCurrent: () => boolean = () => true
   ) {
     const { restartCount: initialRestartCount } = this.serviceManager;
-    const { messageCoordinator: messageService } = this.serviceManager;
     if (
-      !isCallerCurrent() ||
-      messageService.isRequestFromPreviousConversation(
-        message.request_id ?? requestMessage?.id
-      )
+      this.isOutdated(isCallerCurrent, message.request_id ?? requestMessage?.id)
     ) {
       return;
     }
@@ -155,6 +151,16 @@ class FullResponseWorkflow {
       this.pendingReceiveRemovals.delete(removedIDs);
       write.release();
     }
+  }
+
+  /** True when the caller's write ended, or the request belongs to an earlier conversation. */
+  private isOutdated(isCallerCurrent: () => boolean, requestID?: string) {
+    return (
+      !isCallerCurrent() ||
+      this.serviceManager.messageCoordinator.isRequestFromPreviousConversation(
+        requestID
+      )
+    );
   }
 
   /** True when a restart or removal while the `pre:receive` handlers ran overtook this write. */
