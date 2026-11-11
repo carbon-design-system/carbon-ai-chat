@@ -165,6 +165,7 @@ export { ChatSDKErrorData } from './types/config/ChatSDKErrorData';
 export { ChatSDKPersistedStateConfig } from './types/config/ChatSDKPersistedStateConfig';
 export { ChatSDKServiceDeskConfig } from './types/config/ChatSDKServiceDeskConfig';
 export { ChatSDKUploadConfig } from './types/config/ChatSDKUploadConfig';
+export { ChatSDKLifecycleConfig } from './types/config/ChatSDKLifecycleConfig';
 export { CarbonTheme } from './types/config/CarbonTheme';
 export { DisclaimerPublicConfig } from './types/config/DisclaimerConfig';
 export {
@@ -188,6 +189,7 @@ export { LayoutConfig } from './types/config/LayoutConfig';
 export { OnErrorData, OnErrorType } from './types/config/ErrorConfig';
 export { PublicConfigMessaging } from './types/config/PublicConfigMessaging';
 export { UploadConfig } from './types/config/UploadConfig';
+export { LifecycleConfig } from './types/config/LifecycleConfig';
 
 export {
   ChatShortcutConfig,

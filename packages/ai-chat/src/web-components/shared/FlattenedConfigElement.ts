@@ -90,6 +90,7 @@ interface FlattenedConfigElement extends Partial<PublicConfig> {}
  * @attr keyboardshortcuts
  * @attr launcher
  * @attr layout
+ * @attr lifecycle
  * @attr locale
  * @attr messaging
  * @attr namespace

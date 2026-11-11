@@ -44,6 +44,7 @@ const UPDATE_CATASTROPHIC_ERROR_PANEL = 'UPDATE_CATASTROPHIC_ERROR_PANEL';
 const SET_VIEW_STATE = 'SET_VIEW_STATE';
 const SET_VIEW_CHANGING = 'SET_VIEW_CHANGING';
 const SET_INITIAL_VIEW_CHANGE_COMPLETE = 'SET_INITIAL_VIEW_CHANGE_COMPLETE';
+const START_NEW_MOUNT = 'START_NEW_MOUNT';
 const ANNOUNCE_MESSAGE = 'ANNOUNCE_MESSAGE';
 const ACCEPTED_DISCLAIMER = 'ACCEPTED_DISCLAIMER';
 const SET_HOME_SCREEN_IS_OPEN = 'SET_HOME_SCREEN_IS_OPEN';
@@ -141,6 +142,14 @@ const viewActions = {
   },
   setInitialViewChangeComplete(changeComplete: boolean) {
     return { type: SET_INITIAL_VIEW_CHANGE_COMPLETE, changeComplete };
+  },
+  /**
+   * Readies a running chat for a new mount, as a saved session readies a new
+   * chat: nothing is drawn yet, and the view that was showing becomes the one
+   * the mount's initial view change opens.
+   */
+  startNewMount() {
+    return { type: START_NEW_MOUNT };
   },
   /**
    * Sets the value of one of the properties of {@link PersistedState}.
@@ -268,6 +277,7 @@ export {
   SET_VIEW_STATE,
   SET_VIEW_CHANGING,
   SET_INITIAL_VIEW_CHANGE_COMPLETE,
+  START_NEW_MOUNT,
   ANNOUNCE_MESSAGE,
   ACCEPTED_DISCLAIMER,
   SET_HOME_SCREEN_IS_OPEN,

@@ -51,3 +51,4 @@ export type {
 export type { ChatSDKPersistedStateConfig } from '../types/config/ChatSDKPersistedStateConfig';
 export type { ChatSDKServiceDeskConfig } from '../types/config/ChatSDKServiceDeskConfig';
 export type { ChatSDKUploadConfig } from '../types/config/ChatSDKUploadConfig';
+export type { ChatSDKLifecycleConfig } from '../types/config/ChatSDKLifecycleConfig';

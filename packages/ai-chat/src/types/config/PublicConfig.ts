@@ -27,6 +27,7 @@ import { HistoryConfig } from './HistoryConfig';
 import { InputConfig } from './InputConfig';
 import { LanguagePack } from './LanguagePack';
 import { LayoutConfig } from './LayoutConfig';
+import type { LifecycleConfig } from './LifecycleConfig';
 import { OnErrorData } from './ErrorConfig';
 import { PublicConfigMessaging } from './PublicConfigMessaging';
 import { UploadConfig } from './UploadConfig';
@@ -256,6 +257,12 @@ export interface PublicConfig extends Omit<
    * web-component layers extend this with their own `customRenderers` member.
    */
   markdown?: PublicConfigMarkdown;
+
+  /**
+   * How long the conversation outlives the chat's element. Set
+   * {@link LifecycleConfig.reuseInstance} to keep it through a remount.
+   */
+  lifecycle?: LifecycleConfig;
 }
 
 /**

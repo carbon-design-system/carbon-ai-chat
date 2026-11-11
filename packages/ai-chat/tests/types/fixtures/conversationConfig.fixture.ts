@@ -54,6 +54,7 @@ export const fieldsMatch: Matches = {
   upload: true,
   homescreen: true,
   persistedState: true,
+  lifecycle: true,
 };
 
 type ConversationInput = NonNullable<ConversationConfig['input']>;

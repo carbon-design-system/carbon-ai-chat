@@ -11,6 +11,7 @@ import type { ChatSDKInstance } from '../instance/ChatSDKInstance';
 import type { PersistedHumanAgentState } from '../state/PersistedHumanAgentState';
 import type { ChatSDKConfigMessaging } from './ChatSDKConfigMessaging';
 import type { ChatSDKErrorData } from './ChatSDKErrorData';
+import type { ChatSDKLifecycleConfig } from './ChatSDKLifecycleConfig';
 import type { ChatSDKPersistedStateConfig } from './ChatSDKPersistedStateConfig';
 import type { ChatSDKServiceDeskConfig } from './ChatSDKServiceDeskConfig';
 import type { ChatSDKUploadConfig } from './ChatSDKUploadConfig';
@@ -92,4 +93,9 @@ export interface ChatSDKConfig<I extends ChatSDKInstance = ChatSDKInstance> {
    * transfers each file.
    */
   upload?: ChatSDKUploadConfig;
+
+  /**
+   * How long the conversation outlives the code that started it.
+   */
+  lifecycle?: ChatSDKLifecycleConfig;
 }
