@@ -44,9 +44,11 @@ import {
 import sidebarLayoutCss from '@carbon/ai-chat/css/chat-sidebar-layout.css?raw';
 import { css, html, LitElement, PropertyValues, unsafeCSS } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { keyed } from 'lit/directives/keyed.js';
 import { DeepPartial } from '../types/DeepPartial';
 
 import { addCustomFooterSlots } from '../framework/custom-footer-slots';
+import { REMOUNT_CHAT_EVENT } from '../framework/demo-lifecycle-switcher';
 import { Settings } from '../framework/types';
 import { MockServiceDesk } from '../mockServiceDesk/mockServiceDesk';
 
@@ -149,6 +151,14 @@ export class DemoApp extends LitElement {
   @state()
   accessor valueFromParent: string = Date.now().toString();
 
+  /** Changing it renders a new chat element; see the lifecycle switcher. */
+  @state()
+  accessor mountKey: number = 0;
+
+  private remountChat = () => {
+    this.mountKey += 1;
+  };
+
   /**
    * Tracks user-defined-response elements created by the callback so we can
    * push parent-state updates (like valueFromParent) to them reactively.
@@ -231,8 +241,14 @@ export class DemoApp extends LitElement {
     }
   }
 
+  connectedCallback(): void {
+    super.connectedCallback();
+    window.addEventListener(REMOUNT_CHAT_EVENT, this.remountChat);
+  }
+
   disconnectedCallback(): void {
     super.disconnectedCallback();
+    window.removeEventListener(REMOUNT_CHAT_EVENT, this.remountChat);
     if (this._interval) {
       clearInterval(this._interval);
     }
@@ -581,6 +597,10 @@ export class DemoApp extends LitElement {
 
   // Depending on which layout is setting in settings, render the right version of AI chat.
   render() {
+    return keyed(this.mountKey, this.renderChat());
+  }
+
+  private renderChat() {
     return html`
       ${
         this.settings.layout === 'float'
