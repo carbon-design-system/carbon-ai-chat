@@ -344,6 +344,22 @@ describe('two shells on one namespace (O12–O14)', () => {
     expect(rendered.has(element)).toBe(false);
   });
 
+  it('O5: two reuse-on shells with no namespace collide too', async () => {
+    const config = {
+      messaging: { skipWelcome: true },
+      lifecycle: { reuseInstance: true },
+    };
+    await mountElement(config);
+    const onError = jest.fn();
+    const element = chatElement({ ...config, onError });
+    element.onBeforeRender = jest.fn();
+    document.body.appendChild(element);
+
+    await waitFor(() => expect(onError).toHaveBeenCalledTimes(1));
+    expect(onError.mock.calls[0][0].message).toContain('with no namespace');
+    expect(element.onBeforeRender).not.toHaveBeenCalled();
+  });
+
   it('two reuse-off shells on one namespace each run their own chat', async () => {
     const config = { namespace: 'shared', messaging: { skipWelcome: true } };
     const claim = jest.spyOn(chatRegistry, 'claim');
