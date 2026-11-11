@@ -244,7 +244,6 @@ function selectLanguagePack(
 }
 
 export {
-  selectHumanAgentDisplayState,
   humanAgentDisplayStateOf,
   selectIsInputToHumanAgent,
   selectInputState,
