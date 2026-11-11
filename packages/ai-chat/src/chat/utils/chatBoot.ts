@@ -541,10 +541,11 @@ function collectSlotlessResponses(serviceManager: ServiceManager) {
 }
 
 /**
- * Names the slots of user-defined responses that fired while no view was
- * attached, and fires their events again with the slot, so this mount's
- * handlers and extension hosts get them. Only a chat adopted after its grace
- * window has any; items a view already named, and silent ones, are skipped.
+ * Fires again, with a slot, the user-defined responses whose last event
+ * fired while no view was attached, so this mount's handlers and extension
+ * hosts get their current content. An item a view named before keeps its
+ * slot. Only a chat adopted from its grace window has any; silent items are
+ * skipped.
  */
 async function nameSlotsMissedWithoutView(serviceManager: ServiceManager) {
   const messageIDs = slotlessMessages.get(serviceManager);
@@ -558,8 +559,7 @@ async function nameSlotsMissedWithoutView(serviceManager: ServiceManager) {
       ([, local]) =>
         messageIDs.has(local.fullMessageID) &&
         renderAsUserDefinedMessage(local.item) &&
-        !local.item.user_defined?.silent &&
-        !serviceManager.userDefinedElementRegistry.has(local.ui_state.id)
+        !local.item.user_defined?.silent
     )
   );
   messageIDs.clear();

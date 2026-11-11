@@ -30,6 +30,7 @@ import type {
   ServiceDesk,
   ServiceDeskCallback,
 } from '../../../src/types/config/ServiceDeskConfig';
+import { MessageState } from '../../../src/types/config/MessagingConfig';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
 import { PanelType, ViewType } from '../../../src/types/instance/apiTypes';
 import {
@@ -835,5 +836,27 @@ describe('slots reach the view that adopts the chat', () => {
     expect(slot).toBeTruthy();
     expect(Object.keys(records.userDefinedResponse)).toContain(slot);
     expect(Object.keys(records.customFooter)).toEqual(['footer-in-window']);
+  });
+
+  it('an item named before release and updated in the window shows its update', async () => {
+    const namespace = freshNamespace();
+    const first = await mountElement(reuseConfig(namespace));
+    await first.instance.changeView(ViewType.MAIN_WINDOW);
+    const chat = managerOf(first.instance);
+    const upsert = (state: MessageState) =>
+      first.instance.messaging.upsertMessage('updated', state, () =>
+        userDefinedResponse('updated')
+      );
+    await upsert(MessageState.STREAMING);
+    const slot = slotOf(chat, 'updated');
+    expect(slot).toBeTruthy();
+    await unmount(first);
+
+    await upsert(MessageState.COMPLETE);
+    const second = await mountElement(reuseConfig(namespace));
+
+    const records = hostsOf.get(second.element).getSnapshot();
+    expect(slotOf(chat, 'updated')).toBe(slot);
+    expect(records.userDefinedResponse[slot].state).toBe(MessageState.COMPLETE);
   });
 });
