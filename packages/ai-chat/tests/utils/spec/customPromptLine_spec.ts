@@ -22,7 +22,7 @@ import {
 } from '../../../src/shared/services/viewBindings';
 import type { MessagePresentationPort } from '../../../src/shared/services/messaging/presentationPort';
 import { idleInstancePort } from '../../services/helpers/viewBindings';
-import { viewActions } from '../../../src/view/state';
+import { viewActions } from '../../../src/chat/state';
 
 function setup(visible = true) {
   const store = makeConfigStore({ input: { isVisible: visible } });

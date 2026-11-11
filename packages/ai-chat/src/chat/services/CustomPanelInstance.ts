@@ -32,10 +32,7 @@ import { Message } from '../../types/messaging/Messages';
 
 import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
 
-import {
-  DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS,
-  viewActions,
-} from '../../view/state';
+import { DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS, viewActions } from '../state';
 
 import { chatStore } from './attachChatView';
 

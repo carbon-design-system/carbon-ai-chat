@@ -26,7 +26,7 @@ import { IFrameItem } from '../../../../types/messaging/Messages';
 
 import { Image } from '../image/Image';
 
-import { viewActions } from '../../../../view/state';
+import { viewActions } from '../../../state';
 
 interface IFramePreviewCardComponentProps {
   /**

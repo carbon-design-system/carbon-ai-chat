@@ -15,8 +15,11 @@ import { conversationReadGaps } from '../conversationReadGaps';
 
 const root = path.resolve(__dirname, '../../..');
 
-/** The prebuilt interface. `src/view/` reacts to conversation state by design. */
+/** The prebuilt interface. */
 const interfaceFolders = ['src/chat', 'src/react', 'src/web-components'];
+
+/** The view partition reacts to conversation state by design. */
+const exemptFolders = ['src/chat/state/'];
 
 function sourceFiles(dir: string): string[] {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
@@ -28,11 +31,13 @@ function sourceFiles(dir: string): string[] {
   });
 }
 
-const files = interfaceFolders.flatMap((folder) =>
-  sourceFiles(path.join(root, folder)).map((file) =>
-    path.relative(root, file).replaceAll('\\', '/')
+const files = interfaceFolders
+  .flatMap((folder) =>
+    sourceFiles(path.join(root, folder)).map((file) =>
+      path.relative(root, file).replaceAll('\\', '/')
+    )
   )
-);
+  .filter((file) => !exemptFolders.some((folder) => file.startsWith(folder)));
 const { config } = ts.readConfigFile(
   path.join(root, 'tsconfig.json'),
   ts.sys.readFile

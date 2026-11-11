@@ -21,7 +21,7 @@ import {
   MessageResponseTypes,
 } from '../../../src/types/messaging/Messages';
 import { withViewCounters } from '../helpers/viewBindings';
-import { viewActions } from '../../../src/view/state';
+import { viewActions } from '../../../src/chat/state';
 
 function createFixture(
   skipConnectHumanAgentCard = true,

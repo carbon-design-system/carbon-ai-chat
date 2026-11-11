@@ -38,7 +38,7 @@ Another layer adds its own part of the state with `attachStorePartition` from `s
 
 Saved state is split the same way. The conversation saves `hasSentNonWelcomeMessage` and the agent connection; the SDK's `humanAgentState` config saves and restores only the connection (`humanAgentStatePersistence.ts`). The shell joins both halves for `persistedState` and session storage.
 
-The prebuilt chat's view partition lives under `view` ([src/view/state/](../../view/state/)). These reducers never write view state: the view reacts to the conversation actions `src/sdk/internal/` lists, in the same dispatch.
+The prebuilt chat's view partition lives under `view` ([src/chat/state/](../../chat/state/)). These reducers never write view state: the view reacts to the conversation actions `src/sdk/internal/` lists, in the same dispatch.
 
 Config is typed the same way. The shell builds its whole `AppConfig` ([appConfig.ts](../../chat/utils/appConfig.ts)) and stores it in `config`. These reducers and conversation code read it as `ConversationAppConfig`, so a field they need that `ChatSDKConfig` lacks goes on `ConversationConfig`, with the type `PublicConfig` gives it.
 

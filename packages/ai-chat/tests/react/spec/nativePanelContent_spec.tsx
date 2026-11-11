@@ -42,7 +42,7 @@ import {
   slotSourceOf,
 } from '../../test_helpers';
 
-import { viewActions } from '../../../src/view/state';
+import { viewActions } from '../../../src/chat/state';
 
 const Context = createContext('missing');
 const firstEffects: Array<{

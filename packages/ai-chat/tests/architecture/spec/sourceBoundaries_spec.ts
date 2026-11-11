@@ -20,7 +20,7 @@ import {
 
 const root = path.resolve(__dirname, '../../..');
 
-/** Which folders each folder may import. #2706 adds a rule for `src/view/`. */
+/** Which folders each folder may import. */
 const rules: FolderRule[] = [
   {
     folder: 'src/shared/',
@@ -262,9 +262,9 @@ describe('planted imports', () => {
   it('fails shared code that imports view state, even as a type', () => {
     const result = plant(
       shared,
-      "import type { viewActions } from '../../view/state';"
+      "import type { viewActions } from '../../chat/state';"
     );
-    expect(result.folders).toContain(`${shared} -> src/view/state/index.ts`);
+    expect(result.folders).toContain(`${shared} -> src/chat/state/index.ts`);
   });
 
   it('fails shared code that imports chat/, even as a type', () => {

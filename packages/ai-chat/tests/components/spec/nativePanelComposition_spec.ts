@@ -48,7 +48,7 @@ import {
   slotSourceOf,
 } from '../../test_helpers';
 
-import { viewActions } from '../../../src/view/state';
+import { viewActions } from '../../../src/chat/state';
 
 class PanelProvider extends LitElement {
   readonly provider = new ContextProvider(this, {

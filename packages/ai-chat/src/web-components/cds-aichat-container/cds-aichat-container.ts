@@ -77,7 +77,7 @@ import type {
 
 import type { ComponentType, ReactNode } from 'react';
 
-import { viewActions } from '../../view/state';
+import { viewActions } from '../../chat/state';
 
 // Derived rather than written out: the es-custom build rewrites lowercase
 // `cds-aichat` text in its output, so an uppercase literal would never match

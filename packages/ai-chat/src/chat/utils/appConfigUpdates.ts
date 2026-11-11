@@ -19,7 +19,7 @@ import { applyConfigChangesDynamically } from './dynamicConfigUpdates';
 
 import { consoleError, consoleWarn } from '../../shared/utils/miscUtils';
 
-import { viewActions } from '../../view/state';
+import { viewActions } from '../state';
 
 import { chatStore } from '../services/attachChatView';
 import { copyConfig } from '../../shared/utils/copyConfig';

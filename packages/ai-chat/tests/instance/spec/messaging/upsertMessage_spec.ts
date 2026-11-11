@@ -45,7 +45,7 @@ import {
 
 import { ViewType } from '../../../../src/types/instance/apiTypes';
 
-import { viewActions } from '../../../../src/view/state';
+import { viewActions } from '../../../../src/chat/state';
 
 function textResponse(id: string, text: string): MessageResponse {
   return {

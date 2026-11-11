@@ -28,7 +28,7 @@ import { CarbonTheme } from '../../../src/types/config/CarbonTheme';
 
 import { appRootReducer } from '../../test_helpers';
 
-import { createInitialViewState } from '../../../src/view/state/initialState';
+import { createInitialViewState } from '../../../src/chat/state/initialState';
 
 import { chatStore } from '../../../src/chat/services/attachChatView';
 

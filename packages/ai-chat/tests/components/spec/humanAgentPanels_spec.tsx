@@ -38,7 +38,7 @@ import {
   withPublicState,
   slotSourceOf,
 } from '../../test_helpers';
-import { viewActions } from '../../../src/view/state';
+import { viewActions } from '../../../src/chat/state';
 
 const mockFocus = jest.fn();
 jest.mock('../../../src/chat/utils/domUtils', () => ({

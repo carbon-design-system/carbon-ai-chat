@@ -23,7 +23,7 @@ import type { AppState } from '../../types/state/AppState';
 import type { SendOptions } from '../../types/instance/ChatInstance';
 import type { JSONContent } from '@tiptap/core';
 import { requestStopFromInput } from '../../shared/services/assistantInputCommands';
-import { viewActions } from '../../view/state';
+import { viewActions } from '../state';
 import { chatStore } from './attachChatView';
 
 export class InputCallbacks {

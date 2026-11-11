@@ -54,7 +54,7 @@ import {
   ViewType,
 } from '../../types/state/AppState';
 import { AutoScrollOptions } from '../../types/utilities/HasDoAutoScroll';
-import { viewActions } from '../../view/state';
+import { viewActions } from '../state';
 
 /**
  * Default values applied to the provided `PublicConfig` before boot. This keeps

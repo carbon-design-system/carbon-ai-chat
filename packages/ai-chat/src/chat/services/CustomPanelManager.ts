@@ -19,7 +19,7 @@ import {
   CustomPanelInstance,
 } from './CustomPanelInstance';
 import { ServiceManager } from '../../shared/services/ServiceManager';
-import { PANEL_CONFIG_OPTIONS_BY_TYPE } from '../../view/state';
+import { PANEL_CONFIG_OPTIONS_BY_TYPE } from '../state';
 
 /**
  * This function takes in the service manager to help create a custom panel manager. The panel manager is created

@@ -13,11 +13,7 @@ import { loadSavedSession } from '../../shared/store/doCreateStore';
 import { toPersistableState } from '../../shared/store/persistenceUtils';
 import type { PublicConfig } from '../../types/config/PublicConfig';
 import type { AppState } from '../../types/state/AppState';
-import {
-  attachViewState,
-  joinPersistedState,
-  viewHalfOf,
-} from '../../view/state';
+import { attachViewState, joinPersistedState, viewHalfOf } from '../state';
 
 /**
  * The prebuilt chat's store: the conversation partition plus the view

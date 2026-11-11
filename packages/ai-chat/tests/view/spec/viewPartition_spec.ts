@@ -27,7 +27,7 @@ import {
   MessageResponseTypes,
 } from '../../../src/types/messaging/Messages';
 import { outputItemToLocalItem } from '../../../src/shared/schema/outputItemToLocalItem';
-import { viewActions } from '../../../src/view/state';
+import { viewActions } from '../../../src/chat/state';
 import { UserSessionStorageService } from '../../../src/shared/services/UserSessionStorageService';
 import {
   createBaseConfig,

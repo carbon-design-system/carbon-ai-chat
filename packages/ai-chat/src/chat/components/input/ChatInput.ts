@@ -72,7 +72,7 @@ import { restoreInputDraft } from '../../utils/restoreInputDraft';
 import { validateFileSelection } from '../../../shared/utils/fileUploadValidation';
 import { formatShortcutForDisplay } from '../../utils/keyboardUtils';
 import { consoleError } from '../../../shared/utils/miscUtils';
-import { viewActions } from '../../../view/state';
+import { viewActions } from '../../state';
 
 const EMPTY_UPLOADS: FileUpload[] = [];
 const descriptorIcon = (icon: ToolbarAction['icon']) => icon as CarbonIcon;

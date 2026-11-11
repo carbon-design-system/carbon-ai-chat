@@ -23,7 +23,7 @@ import { ButtonItem } from '../../../../types/messaging/Messages';
 
 import { BaseButtonItemComponent } from './BaseButtonItemComponent';
 
-import { viewActions } from '../../../../view/state';
+import { viewActions } from '../../../state';
 
 interface ButtonItemShowPanelComponentProps {
   localMessageItem: LocalMessageItem<ButtonItem>;

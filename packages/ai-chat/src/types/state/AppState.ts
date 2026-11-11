@@ -8,7 +8,7 @@
  */
 
 // ─── Barrel re-exports ───────────────────────────────────────────────────────
-// For `chat/` and `view/`. Conversation code and public types import each
+// For `chat/`. Conversation code and public types import each
 // module directly, because `AppState` below reaches view code.
 
 export type { AppStateMessages, ChatMessagesState } from './ChatMessagesState';
@@ -39,7 +39,7 @@ export type {
 /**
  * The prebuilt chat's whole store: the conversation partition, with the whole
  * `AppConfig` it stores in `config`, plus the view partition under `view`. Only
- * `chat/` and `view/` see this type. Conversation code imports the modules this
+ * `chat/` sees this type. Conversation code imports the modules this
  * file re-exports, never this file, because the whole config reaches view code.
  */
 type AppState = Omit<ConversationState, 'config'> & {

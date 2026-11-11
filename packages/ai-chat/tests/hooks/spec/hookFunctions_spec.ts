@@ -35,7 +35,7 @@ import type {
   PersistedState,
 } from '../../../src/types/state/AppState';
 
-import { viewActions } from '../../../src/view/state';
+import { viewActions } from '../../../src/chat/state';
 
 jest.mock('../../../src/shared/utils/browserUtils', () => ({
   IS_MOBILE: false,

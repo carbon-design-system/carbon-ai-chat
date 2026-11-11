@@ -26,7 +26,7 @@ import actions from '../../../src/shared/store/actions';
 import { buildLanguagePack } from '../../../src/shared/store/doCreateStore';
 import { ServiceManager } from '../../../src/shared/services/ServiceManager';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
-import { viewActions } from '../../../src/view/state';
+import { viewActions } from '../../../src/chat/state';
 
 const BASE_CONFIG: PublicConfig = { locale: 'en' };
 

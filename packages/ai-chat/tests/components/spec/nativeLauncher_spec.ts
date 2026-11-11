@@ -36,7 +36,7 @@ import {
   setupAfterEach,
   setupBeforeEach,
 } from '../../test_helpers';
-import { viewActions } from '../../../src/view/state';
+import { viewActions } from '../../../src/chat/state';
 
 jest.mock('../../../src/shared/utils/browserUtils', () => ({
   ...jest.requireActual('../../../src/shared/utils/browserUtils'),

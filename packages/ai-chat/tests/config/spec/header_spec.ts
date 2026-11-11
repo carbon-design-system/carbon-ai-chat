@@ -35,7 +35,7 @@ import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
 
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
 
-import { viewActions } from '../../../src/view/state';
+import { viewActions } from '../../../src/chat/state';
 
 import { withView } from '../../test_helpers';
 

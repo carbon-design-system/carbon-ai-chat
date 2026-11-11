@@ -26,7 +26,7 @@ import {
   requestComposerFocus,
 } from '../utils/customPromptLine';
 
-import { viewActions } from '../../view/state';
+import { viewActions } from '../state';
 
 import { chatStore } from './attachChatView';
 

@@ -16,7 +16,7 @@ import {
   setupBeforeEach,
   setupAfterEach,
 } from '../../test_helpers';
-import { viewActions } from '../../../src/view/state';
+import { viewActions } from '../../../src/chat/state';
 
 describe('ChatInstance.destroySession', () => {
   beforeEach(setupBeforeEach);

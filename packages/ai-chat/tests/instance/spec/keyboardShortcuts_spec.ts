@@ -29,7 +29,7 @@ import type { ServiceManager } from '../../../src/shared/services/ServiceManager
 
 import { getDeepActiveElement } from '../../../src/chat/utils/domUtils';
 
-import { viewActions } from '../../../src/view/state';
+import { viewActions } from '../../../src/chat/state';
 
 const ANNOUNCEMENT_ID = 'input_keyboardShortcutAnnouncement';
 

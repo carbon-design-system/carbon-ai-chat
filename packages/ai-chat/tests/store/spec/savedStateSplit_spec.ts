@@ -21,7 +21,7 @@ import {
   joinPersistedState,
   viewActions,
   viewHalfOf,
-} from '../../../src/view/state';
+} from '../../../src/chat/state';
 import {
   createBaseConfig,
   renderChatAndGetInstanceWithStore,
