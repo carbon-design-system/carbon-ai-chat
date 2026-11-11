@@ -9,6 +9,7 @@
 
 import { createChatSDK } from '../../../src/sdk';
 import { chatOf } from '../../../src/sdk/internal';
+import actions from '../../../src/shared/store/actions';
 import type { ChatSDKHandle } from '../../../src/sdk/handle';
 import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
 import type { ChatSDKServiceDeskConfig } from '../../../src/types/config/ChatSDKServiceDeskConfig';
@@ -430,14 +431,17 @@ describe('isScreenSharing and stopScreenShare', () => {
   });
 
   it('keeps the humanAgent object while nothing in it changes', async () => {
-    const { chat, callback } = await sharingChat();
+    const { chat } = await sharingChat();
     const before = chat.state.get().humanAgent;
 
-    await callback().agentTyping(true);
+    // The agent input's text lives in the agent slice but isn't published.
+    chatOf(chat).store.dispatch(
+      actions.updateInputState({ rawValue: 'Hello' }, true)
+    );
 
     expect(
-      chatOf(chat).store.getState().humanAgentState.isHumanAgentTyping
-    ).toBe(true);
+      chatOf(chat).store.getState().humanAgentState.inputState.rawValue
+    ).toBe('Hello');
     expect(chat.state.get().humanAgent).toBe(before);
   });
 });

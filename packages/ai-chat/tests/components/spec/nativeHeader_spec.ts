@@ -27,6 +27,7 @@ import { WriteableElementName } from '../../../src/types/instance/WriteableEleme
 import {
   applyConfigChange,
   makeConfigStore,
+  withPublicState,
   setupAfterEach,
   setupBeforeEach,
 } from '../../test_helpers';
@@ -65,18 +66,6 @@ async function createHeader(
     },
   };
   const store = makeConfigStore(config);
-  const subscriptions = new Set<() => void>();
-  let subscriptionPeak = 0;
-  const subscribe = store.subscribe;
-  store.subscribe = (listener) => {
-    subscriptions.add(listener);
-    subscriptionPeak = Math.max(subscriptionPeak, subscriptions.size);
-    const release = subscribe(listener);
-    return () => {
-      subscriptions.delete(listener);
-      release();
-    };
-  };
   const writeableElements = Object.fromEntries(
     [
       WriteableElementName.EXPLAINABILITY_POPOVER_CONTENT,
@@ -93,7 +82,8 @@ async function createHeader(
   const fire = jest.fn((event) => {
     order.push(`event:${event.clickType}`);
   });
-  const manager = {
+  // The header reads agent and restart state from public state, as a host does.
+  const manager = withPublicState({
     store,
     intl: createIntl({ locale: 'en', messages: store.getState().languagePack }),
     namespace: new NamespaceService('header-test'),
@@ -101,7 +91,27 @@ async function createHeader(
     instance: { writeableElements },
     fire,
     actions: { errorOccurred: jest.fn() },
-  } as unknown as ServiceManager;
+  } as unknown as ServiceManager);
+  // Count the header's subscriptions to the store and to public state. Public
+  // state's own store listener comes first, so it isn't counted.
+  const subscriptions = new Set<() => void>();
+  let subscriptionPeak = 0;
+  const counted =
+    (subscribe: (listener: () => void) => () => void) =>
+    (listener: () => void) => {
+      subscriptions.add(listener);
+      subscriptionPeak = Math.max(subscriptionPeak, subscriptions.size);
+      const release = subscribe(listener);
+      return () => {
+        subscriptions.delete(listener);
+        release();
+      };
+    };
+  store.subscribe = counted(store.subscribe);
+  const publicState = manager.instance.state as {
+    subscribe: typeof store.subscribe;
+  };
+  publicState.subscribe = counted(publicState.subscribe);
   const state = new ChatViewState(manager, { width: 800, height: 600 });
   state.connect();
   testStates.add(state);

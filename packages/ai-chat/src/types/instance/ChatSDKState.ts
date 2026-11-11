@@ -80,8 +80,9 @@ export type PublicChatHumanAgentState = Readonly<
     isScreenSharing?: boolean;
 
     /**
-     * `true` while the chat reconnects to an agent conversation saved from an earlier page load.
-     * It ends once the service desk reconnects, or the reconnect fails.
+     * `true` while the chat reconnects to an agent conversation saved from an earlier session, when
+     * the service desk supports reconnecting. It ends once the desk reconnects, or the reconnect
+     * fails.
      *
      * Optional in 1.x so that objects typed as this state still compile; the chat always sets it.
      */
@@ -95,8 +96,9 @@ export type PublicChatHumanAgentState = Readonly<
     isTyping?: boolean;
 
     /**
-     * What the service desk last reported about the wait for an agent, such as a position in the
-     * queue, or `null` when it hasn't reported any. The chat shows it while it connects.
+     * While the chat connects to an agent, what the service desk last reported about the wait, such
+     * as a position in the queue. It's `null` before the desk reports any, and whenever the chat
+     * isn't connecting.
      *
      * Optional in 1.x so that objects typed as this state still compile; the chat always sets it.
      */
@@ -170,9 +172,10 @@ export interface ChatSDKState {
   readonly hasInFlightUploads?: boolean;
 
   /**
-   * `true` while {@link ChatSDKInstanceMessaging.restartConversation} clears the conversation, from
-   * when the restart begins until it's done. It stays `false` when a
-   * {@link BusEventType.PRE_RESTART_CONVERSATION} handler cancels the restart.
+   * `true` while {@link ChatSDKInstanceMessaging.restartConversation} or
+   * {@link ChatSDKInstanceMessaging.clearConversation} clears the conversation, from when it begins
+   * until it's done. It stays `false` when a {@link BusEventType.PRE_RESTART_CONVERSATION} handler
+   * cancels a restart.
    *
    * Optional in 1.x so that objects typed as this state still compile; the chat always sets it.
    */

@@ -9,7 +9,8 @@
 
 /**
  * Public state publishes the agent fields the prebuilt chat shows, and whether a restart is
- * running. Each case drives an SDK chat with no view through a mock service desk.
+ * running. The state cases drive an SDK chat with no view through a mock service desk; the
+ * last case renders the prebuilt chat.
  */
 
 import { createChatSDK } from '../../../src/sdk';
@@ -19,6 +20,7 @@ import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
 import type { ChatSDKConfig } from '../../../src/types/config/ChatSDKConfig';
 import { MessageState } from '../../../src/types/config/MessagingConfig';
 import {
+  ErrorType,
   FileStatusValue,
   type ServiceDesk,
   type ServiceDeskCallback,
@@ -28,6 +30,16 @@ import {
   type BusEventPreReset,
 } from '../../../src/types/events/eventBusTypes';
 import type { PersistedHumanAgentState } from '../../../src/types/state/PersistedHumanAgentState';
+import { setIsReconnecting } from '../../../src/shared/store/humanAgentActions';
+import { ViewType } from '../../../src/types/instance/apiTypes';
+import { waitFor } from '@testing-library/react';
+import {
+  createBaseConfig,
+  getChatShadowRoot,
+  renderChatAndGetInstanceWithStore,
+  setupAfterEach,
+  setupBeforeEach,
+} from '../../test_helpers';
 import {
   MessageResponseTypes,
   UserType,
@@ -99,6 +111,14 @@ describe('public agent and restart state', () => {
     expect(chat.state.get().humanAgent.availability).toEqual({
       positionInQueue: 3,
     });
+
+    // A failed connect ends the wait, though the chat's own record keeps it.
+    await callback().setErrorStatus({ type: ErrorType.CONNECTING });
+    expect(chat.state.get().humanAgent.isConnecting).toBe(false);
+    expect(chatOf(chat).store.getState().humanAgentState.availability).toEqual({
+      positionInQueue: 3,
+    });
+    expect(chat.state.get().humanAgent.availability).toBeNull();
   });
 
   it('publishes typing, and keeps the agent state reference when nothing in it changed', async () => {
@@ -154,6 +174,27 @@ describe('public agent and restart state', () => {
     expect(chat.state.get().humanAgent.isConnected).toBe(true);
   });
 
+  it('ends isReconnecting when the reconnect fails', async () => {
+    const mock = mockDesk();
+    mock.desk.reconnect.mockResolvedValue(false);
+    const { chat } = await sdkChat(
+      {
+        humanAgentState: {
+          initialState: {
+            isConnected: true,
+            isSuspended: false,
+            responseUserProfile: AGENT,
+            responseUserProfiles: {},
+          },
+        },
+      },
+      mock
+    );
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(chat.state.get().humanAgent.isReconnecting).toBe(false);
+    expect(chat.state.get().humanAgent.isConnected).toBe(false);
+  });
+
   it('publishes isRestarting while a restart runs, and notifies select', async () => {
     const { chat, desk } = await connectedChat();
     const endEntered = resolvablePromise<void>();
@@ -180,6 +221,21 @@ describe('public agent and restart state', () => {
     expect(seen).toEqual([true, false]);
   });
 
+  it('publishes isRestarting while clearConversation runs', async () => {
+    const { chat } = await sdkChat();
+    const seen: boolean[] = [];
+    chat.state.select(
+      (state) => state.isRestarting,
+      (isRestarting) => {
+        seen.push(isRestarting);
+      }
+    );
+
+    await chat.messaging.clearConversation();
+
+    expect(seen).toEqual([true, false]);
+  });
+
   it('keeps isRestarting false when a handler cancels the restart', async () => {
     const { chat } = await sdkChat();
     const seen: boolean[] = [];
@@ -200,5 +256,34 @@ describe('public agent and restart state', () => {
 
     expect(chat.state.get().isRestarting).toBe(false);
     expect(seen).toEqual([]);
+  });
+});
+
+describe('the prebuilt shell reads agent state from public state', () => {
+  beforeEach(setupBeforeEach);
+  afterEach(setupAfterEach);
+
+  it('updates the input when only public agent state changes', async () => {
+    const { instance, store } =
+      await renderChatAndGetInstanceWithStore(createBaseConfig());
+    await instance.changeView(ViewType.MAIN_WINDOW);
+    const input = () =>
+      getChatShadowRoot()?.querySelector('cds-aichat-chat-input') as
+        | (HTMLElement & {
+            inputProps: { placeholder?: string; disableInput?: boolean };
+          })
+        | null;
+    await waitFor(() => expect(input()).toBeTruthy());
+
+    // No store field the shell selects reads isReconnecting; only public agent state does.
+    store.dispatch(setIsReconnecting(true));
+
+    const { languagePack } = store.getState();
+    await waitFor(() =>
+      expect(input().inputProps.placeholder).toBe(
+        languagePack.agent_inputPlaceholderReconnecting
+      )
+    );
+    expect(input().inputProps.disableInput).toBe(true);
   });
 });

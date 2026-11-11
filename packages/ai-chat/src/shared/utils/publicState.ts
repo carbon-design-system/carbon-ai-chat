@@ -189,7 +189,8 @@ const fieldDefinitions: readonly PublicStateFieldDefinition[] = [
         isScreenSharing,
         isReconnecting,
         isTyping,
-        availability,
+        // Only a wait for a connecting agent is current; the desk may leave one behind.
+        availability: isConnecting ? (availability ?? null) : null,
         isUploadingFile,
       }),
   },
