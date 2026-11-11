@@ -139,8 +139,11 @@ async function addMessage(instance: ChatInstance, id: string) {
 
 /** A desk that records itself, for agent-chat cases. */
 function deskFactory() {
-  const desks: Array<{ endChat: jest.Mock; callback: ServiceDeskCallback }> =
-    [];
+  const desks: Array<{
+    startChat: jest.Mock;
+    endChat: jest.Mock;
+    callback: ServiceDeskCallback;
+  }> = [];
   const factory = async (parameters: { callback: ServiceDeskCallback }) => {
     const desk = {
       getName: () => 'Test desk',
@@ -149,7 +152,11 @@ function deskFactory() {
       sendMessageToAgent: jest.fn(async () => {}),
       reconnect: jest.fn(async () => true),
     };
-    desks.push({ endChat: desk.endChat, callback: parameters.callback });
+    desks.push({
+      startChat: desk.startChat,
+      endChat: desk.endChat,
+      callback: parameters.callback,
+    });
     return desk as unknown as ServiceDesk;
   };
   return { desks, factory };
@@ -601,5 +608,120 @@ describe('a prebuilt chat and an SDK chat never adopt each other', () => {
     await expect(createChatSDK({ namespace })).rejects.toThrow(
       `"${namespace}"`
     );
+  });
+});
+
+/** The desk a chat's agent service holds now. */
+function deskOf(chat: ServiceManager) {
+  return (chat.humanAgentService as any).serviceDesk;
+}
+
+/** A desk whose factory call waits until the test lets it finish. */
+function deferredDeskFactory() {
+  const gate = resolvablePromise<void>();
+  const desk = {
+    getName: () => 'Old desk',
+    startChat: jest.fn(async () => {}),
+    endChat: jest.fn(async () => {}),
+    sendMessageToAgent: jest.fn(async () => {}),
+    reconnect: jest.fn(async () => true),
+  };
+  let callback: ServiceDeskCallback;
+  const factory = jest.fn(
+    async (parameters: { callback: ServiceDeskCallback }) => {
+      callback = parameters.callback;
+      await gate;
+      return desk as unknown as ServiceDesk;
+    }
+  );
+  return { desk, factory, gate, callback: () => callback };
+}
+
+describe('a new desk factory during the main window’s first load (O16)', () => {
+  it('a saved agent chat reconnects on the old desk, then the chat moves to the new one', async () => {
+    const namespace = freshNamespace();
+    // A reuse-off chat leaves an agent chat connected in the saved session,
+    // as a page reload would.
+    const saved = deskFactory();
+    const before = await mountElement({
+      namespace,
+      messaging: { skipWelcome: true },
+      serviceDeskFactory: saved.factory,
+    });
+    await before.instance.changeView(ViewType.MAIN_WINDOW);
+    await before.instance.serviceDesk.startConversation();
+    await waitFor(() => expect(saved.desks).toHaveLength(1));
+    await saved.desks[0].callback.agentJoined({
+      id: 'dana',
+      nickname: 'Dana',
+      user_type: UserType.HUMAN,
+    });
+    const savedChat = managerOf(before.instance);
+    await unmount(before);
+    // A repeat call returns the shutdown already running.
+    await savedChat.shutdown();
+
+    // The reuse-on chat opens its saved window, and its agent service waits on
+    // the first factory.
+    const old = deferredDeskFactory();
+    const first = await mountElement(
+      reuseConfig(namespace, { serviceDeskFactory: old.factory })
+    );
+    await waitFor(() => expect(old.factory).toHaveBeenCalledTimes(1));
+    const chat = managerOf(first.instance);
+    await unmount(first);
+
+    const next = deskFactory();
+    const second = await mountElement(
+      reuseConfig(namespace, { serviceDeskFactory: next.factory })
+    );
+    expect(managerOf(second.instance)).toBe(chat);
+    old.gate.doResolve();
+
+    await waitFor(() => expect(old.desk.reconnect).toHaveBeenCalledTimes(1));
+    await waitFor(() =>
+      expect(second.instance.state.get().humanAgent.isReconnecting).toBe(false)
+    );
+    expect(second.instance.state.get().humanAgent.isConnected).toBe(true);
+    // The live agent chat keeps its desk.
+    expect(next.desks).toHaveLength(0);
+    expect(deskOf(chat)).toBe(old.desk);
+
+    await second.instance.serviceDesk.endConversation();
+
+    expect(old.desk.endChat).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(next.desks).toHaveLength(1));
+    await waitFor(() =>
+      expect(chat.humanAgentService.serviceDeskFactory).toBe(next.factory)
+    );
+    expect(deskOf(chat)).not.toBe(old.desk);
+  });
+
+  it('with no saved agent chat, the chat ends on the new desk', async () => {
+    const namespace = freshNamespace();
+    const old = deferredDeskFactory();
+    const first = await mountElement(
+      reuseConfig(namespace, { serviceDeskFactory: old.factory })
+    );
+    await first.instance.changeView(ViewType.MAIN_WINDOW);
+    await waitFor(() => expect(old.factory).toHaveBeenCalledTimes(1));
+    const chat = managerOf(first.instance);
+    await unmount(first);
+
+    const next = deskFactory();
+    const second = await mountElement(
+      reuseConfig(namespace, { serviceDeskFactory: next.factory })
+    );
+    old.gate.doResolve();
+    await flushMicrotasks(30);
+
+    await waitFor(() => expect(next.desks).toHaveLength(1));
+    expect(chat.humanAgentService.serviceDeskFactory).toBe(next.factory);
+    expect(deskOf(chat)).not.toBe(old.desk);
+
+    await second.instance.serviceDesk.startConversation();
+    await waitFor(() => expect(next.desks[0].startChat).toHaveBeenCalled());
+    expect(old.desk.startChat).not.toHaveBeenCalled();
+    expect(old.desk.reconnect).not.toHaveBeenCalled();
   });
 });

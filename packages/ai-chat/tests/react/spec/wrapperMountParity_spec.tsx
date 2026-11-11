@@ -436,6 +436,37 @@ describe('how each host mounts the chat', () => {
       ).toHaveLength(2);
     });
 
+    it('starts one chat under StrictMode with reuse on', async () => {
+      const claim = jest.spyOn(sdkBoot.chatRegistry, 'claim');
+      const onBeforeRender = jest.fn();
+      const onAfterRender = jest.fn();
+      const onError = jest.fn();
+      const mounted = render(
+        <StrictMode>
+          <ChatContainer
+            {...createBaseConfig()}
+            namespace="strict-reuse"
+            lifecycle={{ reuseInstance: true }}
+            onBeforeRender={onBeforeRender}
+            onAfterRender={onAfterRender}
+            onError={onError}
+          />
+        </StrictMode>
+      );
+      await waitFor(() => expect(onAfterRender).toHaveBeenCalled(), {
+        timeout: 5000,
+      });
+
+      expect(claim).toHaveBeenCalledTimes(1);
+      expect(onBeforeRender).toHaveBeenCalledTimes(1);
+      expect(onError).not.toHaveBeenCalled();
+      expect(document.querySelectorAll(getChatHost().localName)).toHaveLength(
+        1
+      );
+      mounted.unmount();
+      claim.mockRestore();
+    });
+
     it('keeps two chats independent', async () => {
       const instances: ChatInstance[] = [];
       const capture = (chat: ChatInstance) => {
