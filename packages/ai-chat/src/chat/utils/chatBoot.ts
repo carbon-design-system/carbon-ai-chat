@@ -149,9 +149,28 @@ export async function bootPrebuiltChat(options: {
   };
 }
 
-/** Whether boot failed because another chat holds the namespace. */
-export function isNamespaceError(error: unknown) {
-  return error instanceof ChatNamespaceError;
+/**
+ * Handles a boot failure that's part of reuse, and returns whether it did:
+ *
+ * - For the current mount, another chat holding the namespace is reported
+ *   through `onError` and the console, and the mount renders nothing.
+ * - For a mount already gone, its own release or a namespace taken meanwhile
+ *   needs no report: nobody is left to tell.
+ *
+ * Any other failure returns `false`, for the caller to log.
+ */
+export function handleBootFailure(
+  error: unknown,
+  mount: {
+    current: boolean;
+    signal: AbortSignal;
+    config: Pick<PublicConfig, 'onError'>;
+  }
+): boolean {
+  if (!mount.current) {
+    return error === mount.signal.reason || error instanceof ChatNamespaceError;
+  }
+  return reportNamespaceError(error, mount.config);
 }
 
 /**
@@ -163,7 +182,7 @@ export function reportNamespaceError(
   error: unknown,
   config: Pick<PublicConfig, 'onError'>
 ): boolean {
-  if (!isNamespaceError(error)) {
+  if (!(error instanceof ChatNamespaceError)) {
     return false;
   }
   consoleError(error.message);

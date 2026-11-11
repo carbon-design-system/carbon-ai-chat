@@ -532,14 +532,7 @@ class ChatContainer extends FlattenedConfigElement {
       // globals. Keep registration server-safe and load them only for a live
       // mount, so a failed load lands in the catch below for every host.
       const [
-        {
-          bootPrebuiltChat,
-          mergePublicConfig,
-          performInitialViewChange,
-          reportNamespaceError,
-          isNamespaceError,
-          dropSubscriptions,
-        },
+        chatBoot,
         { applyBootConfig, applyConfigUpdate, createAppliedConfig },
         { ChatAppEntry },
         { hasCustomPromptLine },
@@ -548,29 +541,18 @@ class ChatContainer extends FlattenedConfigElement {
       if (!isCurrent()) {
         return;
       }
+      const { mergePublicConfig, performInitialViewChange, dropSubscriptions } =
+        chatBoot;
       const config = this.resolvedConfig;
       const publicConfig = mergePublicConfig(config);
-      let booted: Awaited<ReturnType<typeof bootPrebuiltChat>>;
-      try {
-        booted = await bootPrebuiltChat({
-          publicConfig,
-          signal: state.released.signal,
-        });
-      } catch (error) {
-        if (!isCurrent()) {
-          // Released before it claimed, or after a remount took the
-          // namespace: nobody is left to tell.
-          if (
-            error === state.released.signal.reason ||
-            isNamespaceError(error)
-          ) {
-            return;
-          }
-        } else if (reportNamespaceError(error, publicConfig)) {
-          // Another mount holds the namespace: this one renders nothing.
-          return;
-        }
-        throw error;
+      const booted = await bootMountChat(
+        chatBoot,
+        publicConfig,
+        state,
+        isCurrent
+      );
+      if (!booted) {
+        return;
       }
       const { handle, serviceManager, instance, claim } = booted;
       if (!isCurrent()) {
@@ -716,6 +698,35 @@ class ChatContainer extends FlattenedConfigElement {
       this.shadowRoot.appendChild(this.renderTarget);
     }
     return this.renderTarget;
+  }
+}
+
+/**
+ * Boots a mount's chat. Resolves with nothing when it failed in a way reuse
+ * expects, such as another mount holding the namespace, which `chatBoot`
+ * has already reported if anyone is left to tell.
+ */
+async function bootMountChat(
+  chatBoot: typeof import('../../chat/utils/chatBoot'),
+  publicConfig: PublicConfig,
+  state: MountState,
+  isCurrent: () => boolean
+) {
+  try {
+    return await chatBoot.bootPrebuiltChat({
+      publicConfig,
+      signal: state.released.signal,
+    });
+  } catch (error) {
+    const handled = chatBoot.handleBootFailure(error, {
+      current: isCurrent(),
+      signal: state.released.signal,
+      config: publicConfig,
+    });
+    if (handled) {
+      return undefined;
+    }
+    throw error;
   }
 }
 
