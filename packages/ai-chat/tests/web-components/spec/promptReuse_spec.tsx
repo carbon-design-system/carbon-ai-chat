@@ -27,6 +27,13 @@ import { chatStore } from '../../../src/chat/services/attachChatView';
 import { openPrompt } from '../../../src/chat/state';
 import actions from '../../../src/sdk/store/actions';
 import enLanguagePack from '../../../src/sdk/languages/en.json';
+import type { PublicConfig } from '../../../src/types/config/PublicConfig';
+import type { ServiceDesk } from '../../../src/types/config/ServiceDeskConfig';
+import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
+import {
+  type MessageResponse,
+  MessageResponseTypes,
+} from '../../../src/types/messaging/Messages';
 import {
   createBaseConfig,
   getChatHost,
@@ -93,21 +100,46 @@ function setAgent(
 let namespaceCount = 0;
 
 /** Renders a reuse-on chat and resolves once it rendered. */
-async function mountChat(namespace: string) {
+async function mountChat(
+  namespace: string,
+  config: Partial<PublicConfig> = {}
+) {
   const onAfterRender = jest.fn();
+  let instance: ChatInstance;
   const view = render(
     <ChatContainer
       {...createBaseConfig()}
+      {...config}
       namespace={namespace}
       lifecycle={{ reuseInstance: true, releaseGraceMs: 2000 }}
       openChatByDefault
+      onBeforeRender={(value) => {
+        instance = value;
+      }}
       onAfterRender={onAfterRender}
     />
   );
   await waitFor(() => expect(onAfterRender).toHaveBeenCalled(), {
     timeout: 8000,
   });
-  return { view, mountState: mountStateOf(getChatHost()) };
+  return { view, instance, mountState: mountStateOf(getChatHost()) };
+}
+
+/** A desk that accepts every call; the specs spy on the chat's service. */
+function stubDesk(): ServiceDesk {
+  return {
+    getName: () => 'stub desk',
+    startChat: jest.fn(async () => {}),
+    endChat: jest.fn(async () => {}),
+    sendMessageToAgent: jest.fn(async () => {}),
+  } as unknown as ServiceDesk;
+}
+
+/** Clicks the first element in the chat's shadow root that matches. */
+function clickInChat(selector: string) {
+  const element = getChatShadowRoot()?.querySelector<HTMLElement>(selector);
+  expect(element).toBeTruthy();
+  act(() => element.click());
 }
 
 beforeEach(setupBeforeEach);
@@ -187,6 +219,66 @@ describe('an open confirmation across a reuse remount (O20)', () => {
     );
     expect(card.onConfirm).not.toHaveBeenCalled();
     expect(card.onCancel).not.toHaveBeenCalled();
+    second.view.unmount();
+  }, 30000);
+
+  it("keeps a real connect card's prompt through a React host's remount, and starts its chat", async () => {
+    namespaceCount += 1;
+    const namespace = `prompt-reuse-${namespaceCount}`;
+    const config = { serviceDeskFactory: async () => stubDesk() };
+    const first = await mountChat(namespace, config);
+    const chat = first.mountState.serviceManager;
+    const store = chatStore(chat);
+    act(() => setAgent(store, { isConnected: true, isSuspended: true }));
+    await act(() =>
+      first.instance.messaging.addMessage({
+        id: 'connect-card',
+        output: {
+          generic: [
+            {
+              response_type: MessageResponseTypes.CONNECT_TO_HUMAN_AGENT,
+              message_to_human_agent: 'The user needs help',
+            },
+          ],
+        },
+      } as MessageResponse)
+    );
+    const cardButton =
+      '.cds-aichat--connect-to-human-agent__request-button:not([disabled])';
+    await waitFor(() =>
+      expect(getChatShadowRoot()?.querySelector(cardButton)).toBeTruthy()
+    );
+
+    clickInChat(cardButton);
+    await waitFor(() =>
+      expect(openPromptTitles()).toEqual([
+        enLanguagePack.agent_confirmSuspendedEndChatTitle,
+      ])
+    );
+    const opened = store.getState().view.prompt;
+
+    // The host unmounts its ChatContainer: React runs the card's cleanup
+    // before the container detaches the mount.
+    first.view.unmount();
+    const second = await mountChat(namespace, config);
+    expect(second.mountState.serviceManager).toBe(chat);
+    expect(store.getState().view.prompt).toBe(opened);
+    await waitFor(() =>
+      expect(openPromptTitles()).toEqual([
+        enLanguagePack.agent_confirmSuspendedEndChatTitle,
+      ])
+    );
+
+    const startChat = jest
+      .spyOn(chat.humanAgentService, 'startChat')
+      .mockResolvedValue(undefined);
+    clickPromptButton(enLanguagePack.agent_confirmEndSuspendedYes);
+
+    expect(startChat).toHaveBeenCalledTimes(1);
+    const [localMessage, originalMessage] = startChat.mock.calls[0];
+    expect(originalMessage.id).toBe('connect-card');
+    expect(localMessage.fullMessageID).toBe('connect-card');
+    await waitFor(() => expect(openPromptTitles()).toEqual([]));
     second.view.unmount();
   }, 30000);
 

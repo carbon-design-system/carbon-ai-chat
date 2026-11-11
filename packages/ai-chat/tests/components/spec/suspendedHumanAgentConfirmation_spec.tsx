@@ -41,9 +41,15 @@ jest.mock('../../../src/chat/components/carbon/Button', () => ({
   ),
 }));
 
+/** Runs the microtask in which the card checks whether its mount detached. */
+function flushMicrotasks() {
+  act(() => jest.runAllTicks());
+}
+
 function renderSuspendedCard() {
   const startChat = jest.fn();
   const requestFocus = jest.fn();
+  const focusChat = jest.fn();
   const props = {
     localMessage: { item: {}, ui_state: { id: 'new-request' } },
     originalMessage: {},
@@ -51,6 +57,7 @@ function renderSuspendedCard() {
     serviceManager: {
       humanAgentService: { startChat },
       store: makeConfigStore({}),
+      view: { current: { instance: { requestFocus: focusChat } } },
     },
     humanAgent: { isSuspended: true },
     agentDisplayState: {},
@@ -77,6 +84,7 @@ function renderSuspendedCard() {
     props,
     startChat,
     requestFocus,
+    focusChat,
     viewState,
     store,
     currentConfirmation,
@@ -93,6 +101,7 @@ describe('suspended human agent card confirmation', () => {
       props,
       startChat,
       requestFocus,
+      focusChat,
       store,
       currentConfirmation,
       confirmation,
@@ -115,12 +124,14 @@ describe('suspended human agent card confirmation', () => {
     expect(currentConfirmation()).toBeNull();
     act(() => jest.runOnlyPendingTimers());
     expect(requestFocus).toHaveBeenCalledTimes(1);
+    expect(focusChat).not.toHaveBeenCalled();
   });
 
   it('clears its confirmation on unmount', () => {
     const { unmount, currentConfirmation, startChat } = renderSuspendedCard();
 
     unmount();
+    flushMicrotasks();
 
     expect(currentConfirmation()).toBeNull();
     expect(startChat).not.toHaveBeenCalled();
@@ -140,6 +151,7 @@ describe('suspended human agent card confirmation', () => {
     expect(newerConfirmation.id).not.toBe(confirmation.id);
 
     unmount();
+    flushMicrotasks();
 
     expect(currentConfirmation()).toBe(newerConfirmation);
     expect(startChat).not.toHaveBeenCalled();
@@ -155,10 +167,14 @@ describe('suspended human agent card confirmation', () => {
       confirmation,
       startChat,
       requestFocus,
+      focusChat,
     } = renderSuspendedCard();
 
-    viewState.disconnect();
+    // A React host unmounts the card first; the container detaches its mount
+    // in a microtask queued when the element left the page.
     unmount();
+    viewState.disconnect();
+    flushMicrotasks();
 
     expect(currentConfirmation()).toBe(confirmation);
     act(() => answerPrompt(store, confirmation.id, 'confirm'));
@@ -167,9 +183,10 @@ describe('suspended human agent card confirmation', () => {
       props.originalMessage
     );
     expect(currentConfirmation()).toBeNull();
-    // The card is gone, so nothing moves focus to it.
+    // The card is gone, so focus goes to the chat instead of to it.
     act(() => jest.runOnlyPendingTimers());
     expect(requestFocus).not.toHaveBeenCalled();
+    expect(focusChat).toHaveBeenCalledTimes(1);
   });
 
   it('cancels without starting the request', () => {

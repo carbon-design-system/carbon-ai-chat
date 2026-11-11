@@ -119,7 +119,14 @@ function RealConnectToHumanAgent(props: RealConnectToHumanAgentProps) {
   const [showConfirmSuspended, setShowConfirmSuspended] = useState(false);
   const mountState = useChatMountStateInstance();
   // The prompt can outlive this card when a reuse remount keeps the chat, so
-  // its answers reach the card's focus only while the card is mounted.
+  // its answers reach the card's state and focus only while it's mounted.
+  const cardMounted = useRef(false);
+  useEffect(() => {
+    cardMounted.current = true;
+    return () => {
+      cardMounted.current = false;
+    };
+  }, []);
   const focusCard = useRef<(() => void) | null>(null);
   useEffect(() => {
     focusCard.current = requestFocus;
@@ -141,22 +148,40 @@ function RealConnectToHumanAgent(props: RealConnectToHumanAgentProps) {
       },
       {
         onConfirm: () => {
-          setShowConfirmSuspended(false);
+          if (cardMounted.current) {
+            setShowConfirmSuspended(false);
+          }
           serviceManager.humanAgentService.startChat(
             localMessage,
             originalMessage
           );
-          setTimeout(() => focusCard.current?.());
+          // Focus the card's button once it renders. With the card gone after
+          // a remount, focus the chat instead, so focus isn't lost.
+          setTimeout(() => {
+            if (focusCard.current) {
+              focusCard.current();
+            } else {
+              serviceManager.view?.current?.instance.requestFocus();
+            }
+          });
         },
-        onCancel: () => setShowConfirmSuspended(false),
+        onCancel: () => {
+          if (cardMounted.current) {
+            setShowConfirmSuspended(false);
+          }
+        },
       }
     );
     return () => {
       // When the mount detaches, the prompt stays open for the next mount of
-      // a reused chat. Any other cleanup closes it.
-      if (!mountState.detached) {
-        release();
-      }
+      // a reused chat; any other cleanup closes it. A React host unmounts the
+      // card before the container detaches its mount, in a microtask queued
+      // when the element left the page, so check after that microtask runs.
+      queueMicrotask(() => {
+        if (!mountState.detached) {
+          release();
+        }
+      });
     };
   }, [
     showConfirmSuspended,
