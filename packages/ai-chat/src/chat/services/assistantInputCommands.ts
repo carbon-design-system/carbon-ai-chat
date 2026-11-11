@@ -7,7 +7,7 @@
  *  @license
  */
 
-import type { ServiceManager } from './ServiceManager';
+import type { ServiceManager } from '../../shared/services/ServiceManager';
 
 function requestStopFromInput(
   serviceManager: ServiceManager,

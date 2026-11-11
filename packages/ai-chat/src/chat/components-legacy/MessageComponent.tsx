@@ -85,7 +85,7 @@ import {
   renderAsUserDefinedMessage,
 } from '../../shared/utils/messageUtils';
 import { getBubbleLayout } from '../utils/messageBubbleLayout';
-import { getMessageFileAttachments } from '../../shared/utils/fileAttachments';
+import { getMessageFileAttachments } from '../utils/fileAttachments';
 import MessageCustomRequestFooterSlot from './MessageCustomRequestFooterSlot';
 import { MessageFileAttachments } from '../components/helpers/MessageFileAttachments/MessageFileAttachments';
 import { messageHasDisplayableContent } from '../../shared/utils/streamingUtils';

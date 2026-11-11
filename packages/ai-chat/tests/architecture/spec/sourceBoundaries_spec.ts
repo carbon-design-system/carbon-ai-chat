@@ -90,6 +90,7 @@ const chatServices = [
   'ThemeWatcherService.ts',
   'ViewService.ts',
   'ariaAnnouncer.ts',
+  'assistantInputCommands.ts',
   'attachChatView.ts',
   'autocompleteContent.ts',
   'chatViewState.ts',

@@ -11,10 +11,7 @@ import type { AppStore } from '../../shared/store/appStore';
 import { CarbonTheme } from '../../types/config/CarbonTheme';
 import { ConversationState } from '../../types/state/ConversationState';
 import { ThemeState } from '../../types/state/ThemeState';
-import {
-  getCSSVariableValue,
-  isColorLighterThan,
-} from '../../shared/utils/colors';
+import { getCSSVariableValue, isColorLighterThan } from '../utils/colors';
 import { consoleError } from '../../shared/utils/miscUtils';
 import { UPDATE_THEME_STATE } from '../../shared/store/actions';
 

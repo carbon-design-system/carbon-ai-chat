@@ -8,7 +8,7 @@
  */
 
 import { MessageCoordinator } from '../../../src/shared/services/messaging/MessageCoordinator';
-import { requestStopFromInput } from '../../../src/shared/services/assistantInputCommands';
+import { requestStopFromInput } from '../../../src/chat/services/assistantInputCommands';
 import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
 import actions from '../../../src/shared/store/actions';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';

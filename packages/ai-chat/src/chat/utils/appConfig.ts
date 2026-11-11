@@ -34,7 +34,7 @@ import {
 } from '../../types/config/LauncherConfig';
 import { LayoutConfig } from '../../types/config/LayoutConfig';
 import { ChatShortcutConfig } from '../../types/config/ShortcutConfig';
-import { validateCustomProperties } from '../../shared/utils/styleUtils';
+import { validateCustomProperties } from './styleUtils';
 import { DEFAULT_THEME_STATE } from '../../shared/store/reducerUtils';
 
 const DEFAULT_HEADER: HeaderConfig = {

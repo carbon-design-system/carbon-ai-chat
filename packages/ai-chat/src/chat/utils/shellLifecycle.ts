@@ -107,10 +107,7 @@ import {
   isBrowser,
 } from '../../shared/utils/browserUtils';
 
-import {
-  convertCSSVariablesToString,
-  getThemeClassNames,
-} from '../../shared/utils/styleUtils';
+import { convertCSSVariablesToString, getThemeClassNames } from './styleUtils';
 
 import {
   WriteableElementName,

@@ -18,7 +18,7 @@
 import {
   getMessageFileAttachments,
   shouldSendSilently,
-} from '../../../src/shared/utils/fileAttachments';
+} from '../../../src/chat/utils/fileAttachments';
 import { deepFreeze } from '../../../src/shared/utils/lang/objectUtils';
 import type { StructuredData } from '../../../src/types/messaging/Messages';
 

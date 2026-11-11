@@ -9,7 +9,7 @@
 
 import { act, cleanup } from '@testing-library/react';
 import type { ServiceManager } from '../../../../src/shared/services/ServiceManager';
-import { requestStopFromInput } from '../../../../src/shared/services/assistantInputCommands';
+import { requestStopFromInput } from '../../../../src/chat/services/assistantInputCommands';
 import { MessageState } from '../../../../src/types/config/MessagingConfig';
 import type { PublicConfig } from '../../../../src/types/config/PublicConfig';
 import {

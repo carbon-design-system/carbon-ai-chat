@@ -13,7 +13,7 @@
  */
 
 import { waitFor } from '@testing-library/react';
-import { requestStopFromInput } from '../../../../src/shared/services/assistantInputCommands';
+import { requestStopFromInput } from '../../../../src/chat/services/assistantInputCommands';
 import createHumanAgentService from '../../../../src/shared/services/haa/HumanAgentServiceImpl';
 import actions from '../../../../src/shared/store/actions';
 import type { ServiceDesk } from '../../../../src/types/config/ServiceDeskConfig';

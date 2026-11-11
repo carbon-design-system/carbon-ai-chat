@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { getCSSVariableValue } from '../../shared/utils/colors';
+import { getCSSVariableValue } from './colors';
 
 import type { ServiceManager } from '../../shared/services/ServiceManager';
 
