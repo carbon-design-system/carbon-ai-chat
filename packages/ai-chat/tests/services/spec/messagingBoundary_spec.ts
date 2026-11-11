@@ -308,7 +308,7 @@ const calls = callsIn(
   allFiles.map((f) => program.getSourceFile(f)!)
 );
 
-const metadataFile = 'src/chat/utils/messageMetadataCommands.ts';
+const metadataFile = 'src/sdk/utils/messageMetadataCommands.ts';
 function metadataEntryBranch(fn: ts.FunctionDeclaration) {
   const branch = fn.body?.statements[0];
   if (

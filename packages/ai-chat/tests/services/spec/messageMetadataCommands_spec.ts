@@ -14,7 +14,7 @@ import { addMessages } from '../../../src/sdk/services/haa/humanAgentUtils';
 import {
   mergeMessageHistoryFromView,
   setMessageOptionSelectedFromView,
-} from '../../../src/chat/utils/messageMetadataCommands';
+} from '../../../src/sdk/utils/messageMetadataCommands';
 import { captureMessageEvent } from '../../../src/sdk/utils/messageEventOwnership';
 import { handleCustomFooterSlot } from '../../../src/sdk/services/messaging/coordinateMessageEvents';
 import {

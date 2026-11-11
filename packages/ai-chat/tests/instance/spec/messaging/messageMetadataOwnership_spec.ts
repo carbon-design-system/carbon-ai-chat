@@ -13,7 +13,7 @@ import { addMessages } from '../../../../src/sdk/services/haa/humanAgentUtils';
 import {
   mergeMessageHistoryFromView,
   setMessageOptionSelectedFromView,
-} from '../../../../src/chat/utils/messageMetadataCommands';
+} from '../../../../src/sdk/utils/messageMetadataCommands';
 import { resolvablePromise } from '../../../../src/sdk/utils/resolvablePromise';
 import { BusEventType } from '../../../../src/types/events/eventBusTypes';
 import { MessageState } from '../../../../src/types/config/MessagingConfig';

@@ -21,7 +21,7 @@ import {
   resolveChoiceText,
 } from '../../../../sdk/utils/messageUtils';
 import { consoleError } from '../../../../sdk/utils/miscUtils';
-import { setMessageOptionSelectedFromView } from '../../../utils/messageMetadataCommands';
+import { setMessageOptionSelectedFromView } from '../../../../sdk/utils/messageMetadataCommands';
 import { MessageSendSource } from '../../../../types/events/eventBusTypes';
 import { ButtonItem } from '../../../../types/messaging/Messages';
 import { BaseButtonItemComponent } from './BaseButtonItemComponent';

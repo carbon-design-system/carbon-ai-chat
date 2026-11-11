@@ -51,7 +51,7 @@ import { useSelector } from '../hooks/useSelector';
 import { shallowEqual } from '../../sdk/store/appStore';
 import { AppState } from '../../types/state/AppState';
 import { useUUID } from '../hooks/useUUID';
-import { mergeMessageHistoryFromView } from '../utils/messageMetadataCommands';
+import { mergeMessageHistoryFromView } from '../../sdk/utils/messageMetadataCommands';
 import {
   LocalMessageItem,
   MessageErrorState,
