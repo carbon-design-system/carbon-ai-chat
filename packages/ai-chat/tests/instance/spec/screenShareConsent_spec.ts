@@ -8,7 +8,7 @@
  */
 
 import { createChatSDK } from '../../../src/sdk';
-import { chatOf } from '../../../src/sdk/internal';
+import { chatOf } from '../../../src/sdk/handle';
 import actions from '../../../src/sdk/store/actions';
 import type { ChatSDKHandle } from '../../../src/sdk/handle';
 import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';

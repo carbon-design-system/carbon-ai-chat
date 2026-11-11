@@ -9,7 +9,7 @@
 
 import { createChatSDK } from '../../../src/sdk';
 import { DEFAULT_SDK_CONFIG } from '../../../src/sdk/sdkAppConfig';
-import { chatOf } from '../../../src/sdk/internal';
+import { chatOf } from '../../../src/sdk/handle';
 import { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 import { MessageState } from '../../../src/types/config/MessagingConfig';
 import type {

@@ -14,7 +14,8 @@
  * package entry point.
  */
 
-import { attachStorePartition, extendPublicState } from '../../sdk/internal';
+import { attachStorePartition } from '../../sdk/store/attachStorePartition';
+import { extendPublicState } from '../../sdk/store/extendPublicState';
 import type { PublicStateService } from '../../sdk/services/PublicStateService';
 import type { AppStore } from '../../sdk/store/appStore';
 import type { PublicConfig } from '../../types/config/PublicConfig';

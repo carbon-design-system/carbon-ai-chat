@@ -11,7 +11,7 @@ import { EventBus } from '../../../src/sdk/events/EventBus';
 import { ExtensionHosts } from '../../../src/chat/services/extensionHosts';
 import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 import { createChatSDK } from '../../../src/sdk';
-import { chatOf } from '../../../src/sdk/internal';
+import { chatOf } from '../../../src/sdk/handle';
 import {
   attachSlotTracking,
   collectRequestFooters,

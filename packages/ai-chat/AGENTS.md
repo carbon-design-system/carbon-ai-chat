@@ -34,13 +34,12 @@ Load only what you need:
 ## Where things live
 
 - [src/sdk/](src/sdk/) — the headless engine: everything a chat needs to run without a view. `createChatSDK` starts a chat with no view, DOM, or storage, and returns a handle with `release()` and `destroy()`. Internal in 1.x: `index.ts` is its future public entry, and no package entry point exports it.
-  - `store/` — Redux-style store.
+  - `store/` — Redux-style store, plus the seams the prebuilt chat uses to attach its view partition to it.
   - `services/` — chat-instance services wired through `ServiceManager.ts` and `loadServices.ts`. `ChatInstanceService.ts` is the instance-facing API — public methods added here must also be reflected on `ChatInstance` in [`src/types/instance/ChatInstance.ts`](src/types/instance/ChatInstance.ts).
   - `services/messaging/` — `MessageCoordinator` and its private workflows, pure `inbound/`, `outbound/`, and `state/` helpers, and the presentation port. The human-agent service lives in `services/haa/`.
   - `events/` — typed pub/sub for the public event API. Event names and payloads are part of the public contract.
   - `schema/` — runtime message/config schema. Keep in sync with types in [src/types/](src/types/).
   - `utils/` — helpers that conversation code uses. View code may import them too.
-  - `internal/` — the seams other folders in this package use, such as attaching a store partition. Never exported.
   - `languages/` — `intl-messageformat` string bundles, one locale file. [LanguagePack.ts](src/types/config/LanguagePack.ts) declares the public `LanguagePack` type over it, so adding a key widens public API and renaming one breaks it. Hosts translate through `PublicConfig.strings`; word new strings per [ui-strings.md](../../.bob/skills/caic-copy-writer/references/ui-strings.md).
 - [src/chat/](src/chat/) — the prebuilt interface. Do most feature work here.
   - `state/` — the view partition, under `view` in the chat's one store: panels, layout, loading indicators, announcements, the unread agent count, and the view half of saved state. Conversation code can't see it. Internal; never exported.

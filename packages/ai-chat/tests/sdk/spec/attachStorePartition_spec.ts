@@ -7,10 +7,8 @@
  *  @license
  */
 
-import {
-  attachStorePartition,
-  type PartitionReducer,
-} from '../../../src/sdk/internal';
+import { attachStorePartition } from '../../../src/sdk/store/attachStorePartition';
+import type { PartitionReducer } from '../../../src/sdk/store/appStore';
 import {
   createAppStore,
   type AppStore,
