@@ -36,7 +36,8 @@ interface ChatClaimOptions<Chat> {
 
   /**
    * Takes over a running chat, for example by applying this claim's config.
-   * Runs only on adoption, after the chat's boot finishes.
+   * Runs only on adoption, after the chat's boot and any earlier adoption
+   * finish, and only if this claim is still live by then.
    */
   adopt(chat: Chat): Promise<void>;
 
@@ -92,8 +93,18 @@ interface Entry<Chat> {
   /** Settles when boot does. */
   booted: Promise<Chat>;
 
+  /**
+   * Settles once boot and every adoption so far have settled. Never rejects.
+   * Adoptions run one at a time behind it, and shutdown waits for it.
+   */
+  settled: Promise<void>;
+
   /** Set while the grace window is open. */
   graceTimer?: ReturnType<typeof setTimeout>;
+}
+
+function ignore(): void {
+  // A failure here was already reported to the claim that caused it.
 }
 
 function collisionMessage(namespace: string) {
@@ -104,7 +115,12 @@ function collisionMessage(namespace: string) {
 }
 
 function graceMsOf(entry: Entry<unknown>) {
-  const ms = entry.releaseGraceMs?.();
+  let ms: number | undefined;
+  try {
+    ms = entry.releaseGraceMs?.();
+  } catch {
+    // A reader that throws gets the default, so the chat still shuts down.
+  }
   return typeof ms === 'number' && Number.isFinite(ms) && ms >= 0
     ? ms
     : DEFAULT_RELEASE_GRACE_MS;
@@ -124,13 +140,16 @@ function createChatRegistry<Chat extends RegisteredChat>(): ChatRegistry<Chat> {
       return;
     }
     entries.delete(key);
-    // Waits for boot to settle. A boot that failed has nothing to shut down.
-    const done: Promise<void> = entry.booted.then(
-      (chat) => chat.shutdown(),
-      (): void => undefined
-    );
+    // Waits for boot and any adoption to settle. A boot that failed has
+    // nothing to shut down. `shutdown` must not reject; if it does anyway,
+    // the namespace still frees up.
+    const done = entry.settled
+      .then(() => entry.booted)
+      .then((chat) => chat.shutdown())
+      .catch(ignore);
     closing.set(key, done);
     void done.then(() => {
+      // A newer shutdown may have taken the namespace's place meanwhile.
       if (closing.get(key) === done) {
         closing.delete(key);
       }
@@ -149,21 +168,24 @@ function createChatRegistry<Chat extends RegisteredChat>(): ChatRegistry<Chat> {
   function boot(key: string, options: ChatClaimOptions<Chat>): ChatClaim<Chat> {
     const claim = {};
     const previous = closing.get(key) ?? Promise.resolve();
+    const booted = previous.then(() => options.boot());
     const entry: Entry<Chat> = {
       claim,
       releaseGraceMs: options.releaseGraceMs,
-      booted: previous.then(() => options.boot()),
+      booted,
+      settled: booted.then(ignore, ignore),
     };
     entries.set(key, entry);
-    entry.booted.catch(() => {
-      // Nothing to adopt, so the next claim boots a new chat.
+    booted.catch(() => {
+      // Nothing to adopt, so the next claim boots a new chat. By now a newer
+      // entry may hold the namespace; leave that one alone.
       if (entries.get(key) === entry) {
         clearTimeout(entry.graceTimer);
         entries.delete(key);
       }
     });
     return {
-      chat: entry.booted,
+      chat: booted,
       release: () => release(key, entry, claim),
     };
   }
@@ -178,11 +200,18 @@ function createChatRegistry<Chat extends RegisteredChat>(): ChatRegistry<Chat> {
     const claim = {};
     entry.claim = claim;
     entry.releaseGraceMs = options.releaseGraceMs;
-    const chat = entry.booted.then(async (booted) => {
-      await options.adopt(booted);
-      return booted;
-    });
-    // The caller never gets a chat it could release, so drop the claim here.
+    // After the adoption before it, so two configs never apply at once.
+    const chat = entry.settled
+      .then(() => entry.booted)
+      .then(async (booted) => {
+        // A claim released before its turn has nobody to apply its config for.
+        if (entry.claim === claim) {
+          await options.adopt(booted);
+        }
+        return booted;
+      });
+    entry.settled = chat.then(ignore, ignore);
+    // A failed adoption leaves the chat unclaimed, so reopen its window.
     chat.catch(() => release(key, entry, claim));
     return { chat, release: () => release(key, entry, claim) };
   }

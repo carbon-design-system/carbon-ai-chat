@@ -332,6 +332,170 @@ describe('chat registry (#2357)', () => {
     expect(chat).not.toBe(first);
   });
 
+  it('O15 (registry half): adoptions run one at a time', async () => {
+    const registry = createChatRegistry<FakeChat>();
+    const log: string[] = [];
+    const slow = resolvablePromise<void>();
+    const firstClaim = registry.claim('support', options());
+    await firstClaim.chat;
+    firstClaim.release();
+    const second = registry.claim(
+      'support',
+      options({
+        adopt: async () => {
+          log.push('second start');
+          await slow;
+          log.push('second end');
+        },
+      })
+    );
+    await settle();
+    second.release();
+    const third = registry.claim(
+      'support',
+      options({
+        adopt: async () => {
+          log.push('third start');
+        },
+      })
+    );
+    await settle();
+    expect(log).toEqual(['second start']);
+
+    slow.doResolve();
+    await third.chat;
+    expect(log).toEqual(['second start', 'second end', 'third start']);
+  });
+
+  it('O9: expiry waits for a running adoption before shutting down', async () => {
+    const registry = createChatRegistry<FakeChat>();
+    const slow = resolvablePromise<void>();
+    const firstClaim = registry.claim('support', options());
+    const chat = await firstClaim.chat;
+    firstClaim.release();
+    const second = registry.claim(
+      'support',
+      options({ adopt: () => slow, releaseGraceMs: () => 0 })
+    );
+    await settle();
+    second.release();
+    jest.advanceTimersByTime(0);
+    await settle();
+    expect(chat.shutdown).not.toHaveBeenCalled();
+
+    slow.doResolve();
+    await settle();
+    expect(chat.shutdown).toHaveBeenCalledTimes(1);
+  });
+
+  it('a claim released before its adoption starts skips adopt', async () => {
+    const registry = createChatRegistry<FakeChat>();
+    const boot = resolvablePromise<FakeChat>();
+    const firstClaim = registry.claim('support', options({ boot: () => boot }));
+    firstClaim.release();
+    const second = options();
+    const secondClaim = registry.claim('support', second);
+    secondClaim.release();
+    const third = options();
+    const thirdClaim = registry.claim('support', third);
+
+    const chat = fakeChat();
+    boot.doResolve(chat);
+    await expect(secondClaim.chat).resolves.toBe(chat);
+    await expect(thirdClaim.chat).resolves.toBe(chat);
+    expect(second.adopt).not.toHaveBeenCalled();
+    expect(third.adopt).toHaveBeenCalledWith(chat);
+  });
+
+  it("a boot that fails after expiry leaves the next chat's claim in place", async () => {
+    const registry = createChatRegistry<FakeChat>();
+    const boot = resolvablePromise<FakeChat>();
+    const firstClaim = registry.claim('support', options({ boot: () => boot }));
+    firstClaim.release();
+    jest.advanceTimersByTime(DEFAULT_RELEASE_GRACE_MS);
+
+    const nextBoot = resolvablePromise<FakeChat>();
+    registry.claim('support', options({ boot: () => nextBoot }));
+    boot.doReject(new Error('boot failed'));
+    await expect(firstClaim.chat).rejects.toThrow('boot failed');
+    await settle();
+
+    // The second chat is still booting and still claimed.
+    expect(() => registry.claim('support', options())).toThrow(
+      /already running/
+    );
+  });
+
+  it('O11: a claim waits for the newest shutdown, not an older one', async () => {
+    const registry = createChatRegistry<FakeChat>();
+    const firstShutdown = resolvablePromise<void>();
+    const firstClaim = registry.claim(
+      'support',
+      options({ boot: () => Promise.resolve(fakeChat(() => firstShutdown)) })
+    );
+    await firstClaim.chat;
+    firstClaim.release();
+    jest.advanceTimersByTime(DEFAULT_RELEASE_GRACE_MS);
+    await settle();
+
+    // The second chat waits for the first shutdown, and expires meanwhile.
+    const secondShutdown = resolvablePromise<void>();
+    const second = fakeChat(() => secondShutdown);
+    const secondClaim = registry.claim(
+      'support',
+      options({ boot: () => Promise.resolve(second) })
+    );
+    secondClaim.release();
+    jest.advanceTimersByTime(DEFAULT_RELEASE_GRACE_MS);
+    firstShutdown.doResolve();
+    await settle();
+    expect(second.shutdown).toHaveBeenCalledTimes(1);
+
+    const third = options();
+    const thirdClaim = registry.claim('support', third);
+    await settle();
+    expect(third.boot).not.toHaveBeenCalled();
+    secondShutdown.doResolve();
+    await thirdClaim.chat;
+    expect(third.boot).toHaveBeenCalledTimes(1);
+  });
+
+  it('a shutdown that rejects anyway still frees the namespace', async () => {
+    const registry = createChatRegistry<FakeChat>();
+    const claim = registry.claim(
+      'support',
+      options({
+        boot: () =>
+          Promise.resolve(fakeChat(() => Promise.reject(new Error('stuck')))),
+      })
+    );
+    await claim.chat;
+    claim.release();
+    jest.advanceTimersByTime(DEFAULT_RELEASE_GRACE_MS);
+    await settle();
+
+    const next = options();
+    await registry.claim('support', next).chat;
+    expect(next.boot).toHaveBeenCalledTimes(1);
+  });
+
+  it('O8: a releaseGraceMs reader that throws means the default', async () => {
+    const registry = createChatRegistry<FakeChat>();
+    const claim = registry.claim(
+      'support',
+      options({
+        releaseGraceMs: () => {
+          throw new Error('bad config');
+        },
+      })
+    );
+    const chat = await claim.chat;
+    claim.release();
+    jest.advanceTimersByTime(DEFAULT_RELEASE_GRACE_MS);
+    await settle();
+    expect(chat.shutdown).toHaveBeenCalledTimes(1);
+  });
+
   it('a failed boot rejects every waiting claim, and the next claim boots fresh', async () => {
     const registry = createChatRegistry<FakeChat>();
     const boot: ResolvablePromise<FakeChat> = resolvablePromise<FakeChat>();
