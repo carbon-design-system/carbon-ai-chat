@@ -62,6 +62,24 @@ interface ChatClaim<Chat> {
    * nothing.
    */
   release(): void;
+
+  /**
+   * Shuts the chat down for good, whoever holds it now, without waiting for
+   * the grace window. Nothing adopts it afterward, and a claim still waiting
+   * for it rejects. A new chat on the namespace waits for the shutdown. Does
+   * nothing once the chat has shut down or ended.
+   */
+  end(): void;
+
+  /**
+   * Files the chat under another namespace, so a claim there collides with it
+   * and one on the old namespace starts a new chat. Does nothing unless this
+   * claim is live.
+   *
+   * @throws If the namespace already has a chat, running or in its grace
+   * window.
+   */
+  move(namespace: string | undefined): void;
 }
 
 interface ChatRegistry<Chat extends RegisteredChat> {
@@ -84,6 +102,9 @@ interface ChatRegistry<Chat extends RegisteredChat> {
 
 /** One namespace's running chat. */
 interface Entry<Chat> {
+  /** The namespace the chat is filed under. {@link ChatClaim.move} changes it. */
+  key: string;
+
   /** The live claim, or `null` while the grace window is open. */
   claim: object | null;
 
@@ -101,6 +122,9 @@ interface Entry<Chat> {
 
   /** Set while the grace window is open. */
   graceTimer?: ReturnType<typeof setTimeout>;
+
+  /** Set by {@link ChatClaim.end}, so a claim still waiting rejects. */
+  ended?: boolean;
 }
 
 function ignore(): void {
@@ -112,6 +136,13 @@ function collisionMessage(namespace: string) {
     ? `with the namespace "${namespace}"`
     : 'with no namespace';
   return `A chat ${which} is already running, so this one didn't start. Give each chat its own namespace.`;
+}
+
+function endedMessage(namespace: string) {
+  const which = namespace
+    ? `with the namespace "${namespace}"`
+    : 'with no namespace';
+  return `A chat ${which} was destroyed before this one could reuse it, so this one didn't start. Start it again.`;
 }
 
 function graceMsOf(entry: Entry<unknown>) {
@@ -135,18 +166,25 @@ function createChatRegistry<Chat extends RegisteredChat>(): ChatRegistry<Chat> {
   /** Shutdowns still running, which a new chat on the namespace waits for. */
   const closing = new Map<string, Promise<void>>();
 
-  function expire(key: string, entry: Entry<Chat>) {
-    if (entries.get(key) !== entry || entry.claim) {
-      return;
-    }
+  function isCurrent(entry: Entry<Chat>) {
+    return entries.get(entry.key) === entry;
+  }
+
+  /** Removes the entry and shuts its chat down once boot and adoption settle. */
+  function shutDown(entry: Entry<Chat>) {
+    const { key } = entry;
+    clearTimeout(entry.graceTimer);
     entries.delete(key);
-    // Waits for boot and any adoption to settle. A boot that failed has
-    // nothing to shut down. `shutdown` must not reject; if it does anyway,
-    // the namespace still frees up.
-    const done = entry.settled
+    // A boot that failed has nothing to shut down. `shutdown` must not
+    // reject; if it does anyway, the namespace still frees up.
+    const own = entry.settled
       .then(() => entry.booted)
       .then((chat) => chat.shutdown())
       .catch(ignore);
+    // A chat moved onto a namespace that was still shutting down holds that
+    // shutdown's place, so the next boot there waits for both.
+    const previous = closing.get(key);
+    const done = previous ? Promise.all([previous, own]).then(ignore) : own;
     closing.set(key, done);
     void done.then(() => {
       // A newer shutdown may have taken the namespace's place meanwhile.
@@ -156,13 +194,56 @@ function createChatRegistry<Chat extends RegisteredChat>(): ChatRegistry<Chat> {
     });
   }
 
-  function release(key: string, entry: Entry<Chat>, claim: object) {
+  function expire(entry: Entry<Chat>) {
+    if (isCurrent(entry) && !entry.claim) {
+      shutDown(entry);
+    }
+  }
+
+  function release(entry: Entry<Chat>, claim: object) {
     // A repeat release, or one after another claim took over, does nothing.
-    if (entries.get(key) !== entry || entry.claim !== claim) {
+    if (!isCurrent(entry) || entry.claim !== claim) {
       return;
     }
     entry.claim = null;
-    entry.graceTimer = setTimeout(() => expire(key, entry), graceMsOf(entry));
+    entry.graceTimer = setTimeout(() => expire(entry), graceMsOf(entry));
+  }
+
+  function end(entry: Entry<Chat>) {
+    if (!isCurrent(entry)) {
+      return;
+    }
+    entry.ended = true;
+    entry.claim = null;
+    shutDown(entry);
+  }
+
+  function move(entry: Entry<Chat>, claim: object, namespace?: string) {
+    const key = namespace ?? '';
+    if (!isCurrent(entry) || entry.claim !== claim || key === entry.key) {
+      return;
+    }
+    if (entries.has(key)) {
+      throw new Error(collisionMessage(key));
+    }
+    entries.delete(entry.key);
+    entry.key = key;
+    entries.set(key, entry);
+  }
+
+  function handOut(entry: Entry<Chat>, claim: object, chat: Promise<Chat>) {
+    return {
+      // An end while this claim waited leaves it nothing to hold.
+      chat: chat.then((ready) => {
+        if (entry.ended) {
+          throw new Error(endedMessage(entry.key));
+        }
+        return ready;
+      }),
+      release: () => release(entry, claim),
+      end: () => end(entry),
+      move: (namespace: string | undefined) => move(entry, claim, namespace),
+    };
   }
 
   function boot(key: string, options: ChatClaimOptions<Chat>): ChatClaim<Chat> {
@@ -170,6 +251,7 @@ function createChatRegistry<Chat extends RegisteredChat>(): ChatRegistry<Chat> {
     const previous = closing.get(key) ?? Promise.resolve();
     const booted = previous.then(() => options.boot());
     const entry: Entry<Chat> = {
+      key,
       claim,
       releaseGraceMs: options.releaseGraceMs,
       booted,
@@ -179,19 +261,15 @@ function createChatRegistry<Chat extends RegisteredChat>(): ChatRegistry<Chat> {
     booted.catch(() => {
       // Nothing to adopt, so the next claim boots a new chat. By now a newer
       // entry may hold the namespace; leave that one alone.
-      if (entries.get(key) === entry) {
+      if (isCurrent(entry)) {
         clearTimeout(entry.graceTimer);
-        entries.delete(key);
+        entries.delete(entry.key);
       }
     });
-    return {
-      chat: booted,
-      release: () => release(key, entry, claim),
-    };
+    return handOut(entry, claim, booted);
   }
 
   function adopt(
-    key: string,
     entry: Entry<Chat>,
     options: ChatClaimOptions<Chat>
   ): ChatClaim<Chat> {
@@ -204,7 +282,8 @@ function createChatRegistry<Chat extends RegisteredChat>(): ChatRegistry<Chat> {
     const chat = entry.settled
       .then(() => entry.booted)
       .then(async (booted) => {
-        // A claim released before its turn has nobody to apply its config for.
+        // A claim released before its turn has nobody to apply its config
+        // for, and an ended chat takes no config.
         if (entry.claim === claim) {
           await options.adopt(booted);
         }
@@ -212,8 +291,8 @@ function createChatRegistry<Chat extends RegisteredChat>(): ChatRegistry<Chat> {
       });
     entry.settled = chat.then(ignore, ignore);
     // A failed adoption leaves the chat unclaimed, so reopen its window.
-    chat.catch(() => release(key, entry, claim));
-    return { chat, release: () => release(key, entry, claim) };
+    chat.catch(() => release(entry, claim));
+    return handOut(entry, claim, chat);
   }
 
   return {
@@ -223,9 +302,10 @@ function createChatRegistry<Chat extends RegisteredChat>(): ChatRegistry<Chat> {
       if (entry?.claim) {
         throw new Error(collisionMessage(key));
       }
-      return entry ? adopt(key, entry, options) : boot(key, options);
+      return entry ? adopt(entry, options) : boot(key, options);
     },
   };
 }
 
 export { createChatRegistry, DEFAULT_RELEASE_GRACE_MS };
+export type { ChatClaim };

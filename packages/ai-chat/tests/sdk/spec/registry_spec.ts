@@ -560,3 +560,188 @@ describe('chat registry (#2357)', () => {
     expect(chat.shutdown).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('ending a chat (#2358 O1, O4, as destroy uses it)', () => {
+  it('shuts the chat down at once, whoever holds it, and nothing adopts it', async () => {
+    const registry = createChatRegistry<FakeChat>();
+    const firstClaim = registry.claim('support', options());
+    const chat = await firstClaim.chat;
+    firstClaim.release();
+    const secondClaim = registry.claim('support', options());
+    await secondClaim.chat;
+
+    // The first claim let go, but ending still reaches the chat.
+    firstClaim.end();
+    await settle();
+    expect(chat.shutdown).toHaveBeenCalledTimes(1);
+
+    const third = options();
+    const next = await registry.claim('support', third).chat;
+    expect(next).not.toBe(chat);
+    expect(third.boot).toHaveBeenCalledTimes(1);
+    expect(third.adopt).not.toHaveBeenCalled();
+  });
+
+  it('O11: a claim after an end boots only after shutdown finishes', async () => {
+    const registry = createChatRegistry<FakeChat>();
+    const shutdown = resolvablePromise<void>();
+    const firstClaim = registry.claim(
+      'support',
+      options({ boot: () => Promise.resolve(fakeChat(() => shutdown)) })
+    );
+    await firstClaim.chat;
+    firstClaim.end();
+
+    const second = options();
+    const secondClaim = registry.claim('support', second);
+    await settle();
+    expect(second.boot).not.toHaveBeenCalled();
+
+    shutdown.doResolve();
+    await secondClaim.chat;
+    expect(second.boot).toHaveBeenCalledTimes(1);
+  });
+
+  it('an adoption still waiting rejects, naming the namespace, and skips adopt', async () => {
+    const registry = createChatRegistry<FakeChat>();
+    const slow = resolvablePromise<void>();
+    const firstClaim = registry.claim('support', options());
+    const chat = await firstClaim.chat;
+    firstClaim.release();
+    // This adoption holds the queue, so the next one waits behind it.
+    const adoptingOptions = options({ adopt: () => slow });
+    const adopting = registry.claim('support', adoptingOptions);
+    await settle();
+    expect(adoptingOptions.adopt).toHaveBeenCalledWith(chat);
+    adopting.release();
+    const waiting = options();
+    const waitingClaim = registry.claim('support', waiting);
+
+    firstClaim.end();
+    await settle();
+    // Not during the running adoption: shutdown waits for it to settle.
+    expect(chat.shutdown).not.toHaveBeenCalled();
+    slow.doResolve();
+    await expect(adopting.chat).rejects.toThrow(
+      'A chat with the namespace "support" was destroyed before this one could reuse it'
+    );
+    await expect(waitingClaim.chat).rejects.toThrow(/was destroyed/);
+    expect(waiting.adopt).not.toHaveBeenCalled();
+    await settle();
+    expect(chat.shutdown).toHaveBeenCalledTimes(1);
+  });
+
+  it('a claim whose boot is still running rejects once boot finishes', async () => {
+    const registry = createChatRegistry<FakeChat>();
+    const boot = resolvablePromise<FakeChat>();
+    const claim = registry.claim(undefined, options({ boot: () => boot }));
+    claim.end();
+    const chat = fakeChat();
+    boot.doResolve(chat);
+    await expect(claim.chat).rejects.toThrow(
+      'A chat with no namespace was destroyed'
+    );
+    await settle();
+    expect(chat.shutdown).toHaveBeenCalledTimes(1);
+  });
+
+  it('does nothing after expiry, a second time, or from an older chat', async () => {
+    const registry = createChatRegistry<FakeChat>();
+    const firstClaim = registry.claim('support', options());
+    const first = await firstClaim.chat;
+    firstClaim.release();
+    jest.advanceTimersByTime(DEFAULT_RELEASE_GRACE_MS);
+    await settle();
+    firstClaim.end();
+    await settle();
+    expect(first.shutdown).toHaveBeenCalledTimes(1);
+
+    const secondClaim = registry.claim('support', options());
+    const second = await secondClaim.chat;
+    // The first claim belongs to a chat that's gone; the new one keeps running.
+    firstClaim.end();
+    secondClaim.end();
+    secondClaim.end();
+    await settle();
+    expect(second.shutdown).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('moving a chat to another namespace', () => {
+  it('files the chat under the new namespace only', async () => {
+    const registry = createChatRegistry<FakeChat>();
+    const claim = registry.claim('old', options());
+    const chat = await claim.chat;
+    claim.move('new');
+
+    expect(() => registry.claim('new', options())).toThrow(
+      'A chat with the namespace "new" is already running'
+    );
+    const other = await registry.claim('old', options()).chat;
+    expect(other).not.toBe(chat);
+
+    // Released, it waits to be adopted under the new namespace.
+    claim.release();
+    await expect(registry.claim('new', options()).chat).resolves.toBe(chat);
+  });
+
+  it('throws, moving nothing, onto a namespace with a chat in its window', async () => {
+    const registry = createChatRegistry<FakeChat>();
+    const windowed = registry.claim('new', options());
+    const waiting = await windowed.chat;
+    windowed.release();
+    const claim = registry.claim(undefined, options());
+    const chat = await claim.chat;
+
+    expect(() => claim.move('new')).toThrow(
+      'A chat with the namespace "new" is already running'
+    );
+    expect(() => registry.claim(undefined, options())).toThrow(
+      'A chat with no namespace is already running'
+    );
+    await expect(registry.claim('new', options()).chat).resolves.toBe(waiting);
+    expect(chat.shutdown).not.toHaveBeenCalled();
+  });
+
+  it('does nothing for a released claim, or onto its own namespace', async () => {
+    const registry = createChatRegistry<FakeChat>();
+    const claim = registry.claim('old', options());
+    const chat = await claim.chat;
+    claim.move('old');
+    claim.release();
+    claim.move('new');
+
+    await expect(registry.claim('old', options()).chat).resolves.toBe(chat);
+    await expect(registry.claim('new', options()).chat).resolves.not.toBe(chat);
+  });
+
+  it('O11: a claim waits for both shutdowns after a chat moves onto a closing namespace', async () => {
+    const registry = createChatRegistry<FakeChat>();
+    const oldShutdown = resolvablePromise<void>();
+    const closingClaim = registry.claim(
+      'new',
+      options({ boot: () => Promise.resolve(fakeChat(() => oldShutdown)) })
+    );
+    await closingClaim.chat;
+    closingClaim.end();
+
+    const movedShutdown = resolvablePromise<void>();
+    const moving = registry.claim(
+      'old',
+      options({ boot: () => Promise.resolve(fakeChat(() => movedShutdown)) })
+    );
+    await moving.chat;
+    moving.move('new');
+    moving.end();
+
+    const next = options();
+    const nextClaim = registry.claim('new', next);
+    movedShutdown.doResolve();
+    await settle();
+    expect(next.boot).not.toHaveBeenCalled();
+
+    oldShutdown.doResolve();
+    await nextClaim.chat;
+    expect(next.boot).toHaveBeenCalledTimes(1);
+  });
+});

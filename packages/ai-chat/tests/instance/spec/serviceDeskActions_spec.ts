@@ -146,8 +146,9 @@ describe('serviceDesk.startConversation', () => {
   });
 
   it('starts the same chat as the matching connect card', async () => {
-    const card = await track(sdkChat());
-    const code = await track(sdkChat());
+    // Two chats at once need their own namespaces (#2357).
+    const card = await track(sdkChat({ namespace: 'card' }));
+    const code = await track(sdkChat({ namespace: 'code' }));
     await addResponse(card.chat, connectResponse());
     await addResponse(code.chat, connectResponse());
 
