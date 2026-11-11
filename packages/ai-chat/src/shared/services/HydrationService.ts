@@ -299,18 +299,9 @@ class HydrationService {
       const { store } = serviceManager;
       const state = store.getState();
 
-      if (fireEvents) {
-        const preRestartEvent: BusEventPreReset = {
-          type: BusEventType.PRE_RESTART_CONVERSATION,
-        };
-        await serviceManager.fire(preRestartEvent);
-        if (preRestartEvent.cancel) {
-          canceled = true;
-          debugLog(
-            'The restart was canceled by a pre:restartConversation event.'
-          );
-          return;
-        }
+      canceled = await this.isRestartCanceled(fireEvents);
+      if (canceled) {
+        return;
       }
 
       const restartGeneration =
@@ -360,21 +351,7 @@ class HydrationService {
         await this.hydrationPromise;
       }
 
-      let didHydrate = false;
-      if (!skipHydration && !serviceManager.store.getState().isHydrated) {
-        // Trigger re-hydration.
-        this.hydrationPromise = null;
-        this.hydrationFailure = undefined;
-        if (this.shouldHydrateAfterRestart()) {
-          didHydrate = true;
-          await serviceManager.actions.hydrateChat();
-        }
-      } else {
-        serviceManager.messageCoordinator.markChatHydrated();
-      }
-      if (!didHydrate) {
-        serviceManager.messageCoordinator.hydrationFinished(restartGeneration);
-      }
+      await this.rehydrateAfterRestart(skipHydration, restartGeneration);
     } finally {
       this.restarting = false;
       // Clear isRestarting flag to allow new messages and chunks to be processed.
@@ -382,6 +359,44 @@ class HydrationService {
       if (!canceled) {
         this.serviceManager.messageCoordinator.setRestartInProgress(false);
       }
+    }
+  }
+
+  /** Fires `pre:restartConversation`, and returns true when a handler canceled the restart. */
+  private async isRestartCanceled(fireEvents: boolean) {
+    if (!fireEvents) {
+      return false;
+    }
+    const preRestartEvent: BusEventPreReset = {
+      type: BusEventType.PRE_RESTART_CONVERSATION,
+    };
+    await this.serviceManager.fire(preRestartEvent);
+    if (preRestartEvent.cancel) {
+      debugLog('The restart was canceled by a pre:restartConversation event.');
+    }
+    return Boolean(preRestartEvent.cancel);
+  }
+
+  /** Loads the restarted conversation, or marks it loaded when it can't or needn't load now. */
+  private async rehydrateAfterRestart(
+    skipHydration: boolean,
+    restartGeneration: number
+  ) {
+    const { serviceManager } = this;
+    let didHydrate = false;
+    if (!skipHydration && !serviceManager.store.getState().isHydrated) {
+      // Trigger re-hydration.
+      this.hydrationPromise = null;
+      this.hydrationFailure = undefined;
+      if (this.shouldHydrateAfterRestart()) {
+        didHydrate = true;
+        await serviceManager.actions.hydrateChat();
+      }
+    } else {
+      serviceManager.messageCoordinator.markChatHydrated();
+    }
+    if (!didHydrate) {
+      serviceManager.messageCoordinator.hydrationFinished(restartGeneration);
     }
   }
 

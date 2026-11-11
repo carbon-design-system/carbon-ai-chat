@@ -423,17 +423,11 @@ class UpsertWorkflow {
         nextState
       );
 
-    if (willFireReceive) {
-      const canceled = await this.firePreReceive(messageID, result, isStale);
-      if (isStale()) {
-        return;
-      }
-      if (canceled) {
-        await this.serviceManager.messageCoordinator.dropCanceledReply(
-          messageID
-        );
-        return;
-      }
+    if (
+      willFireReceive &&
+      !(await this.passesPreReceive(messageID, result, isStale))
+    ) {
+      return;
     }
 
     if (nextState === MessageState.COMPLETE && !options.isLatestWelcomeNode) {
@@ -964,9 +958,10 @@ class UpsertWorkflow {
 
   /**
    * Phase 2: fire `pre:receive` and re-validate the id in case a listener mutated it.
-   * Returns true when a handler canceled the write.
+   * Returns false when the write goes no further: a restart or removal made it stale, or
+   * a handler canceled it, which drops a reply that already streamed in.
    */
-  private async firePreReceive(
+  private async passesPreReceive(
     messageID: string,
     result: MessageResponse,
     isStale: () => boolean
@@ -985,7 +980,14 @@ class UpsertWorkflow {
         );
       }
     }
-    return Boolean(preReceiveEvent.cancel);
+    if (isStale()) {
+      return false;
+    }
+    if (preReceiveEvent.cancel) {
+      await this.serviceManager.messageCoordinator.dropCanceledReply(messageID);
+      return false;
+    }
+    return true;
   }
 
   /**
