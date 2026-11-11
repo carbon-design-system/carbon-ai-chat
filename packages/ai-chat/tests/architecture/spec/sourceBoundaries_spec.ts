@@ -20,6 +20,16 @@ import {
 
 const root = path.resolve(__dirname, '../../..');
 
+/** The SDK's engine folders, as opposed to its entry files. */
+const engineFolders = [
+  'src/sdk/events/',
+  'src/sdk/languages/',
+  'src/sdk/schema/',
+  'src/sdk/services/',
+  'src/sdk/store/',
+  'src/sdk/utils/',
+];
+
 /** Which folders each folder may import. */
 const rules: FolderRule[] = [
   {
@@ -28,11 +38,18 @@ const rules: FolderRule[] = [
     frameworkFree: true,
   },
   {
-    // Public types may name an SDK type or read the SDK's JSON data. SDK code
-    // may import only sdk and types, so this leads into view code only
-    // through one of the SDK's listed exceptions.
+    // Public types may name an engine type or read the engine's JSON data,
+    // but not the SDK's entry files. SDK code may import only sdk and types,
+    // so this leads into view code only through one of the SDK's listed
+    // exceptions.
     folder: 'src/types/',
-    mayImport: ['src/types/', { folder: 'src/sdk/', only: ['type', 'data'] }],
+    mayImport: [
+      'src/types/',
+      ...engineFolders.map((folder) => ({
+        folder,
+        only: ['type' as const, 'data' as const],
+      })),
+    ],
   },
 ];
 
@@ -280,6 +297,15 @@ describe('planted imports', () => {
     const types = 'src/types/config/CornersType.ts';
     const result = plant(types, "import '../../sdk/utils/constants';");
     expect(result.folders).toContain(`${types} -> src/sdk/utils/constants.ts`);
+  });
+
+  it("fails a public type that imports the SDK's entry files, even as a type", () => {
+    const types = 'src/types/config/CornersType.ts';
+    const result = plant(
+      types,
+      "import type { chatOf } from '../../sdk/handle';"
+    );
+    expect(result.folders).toContain(`${types} -> src/sdk/handle.ts`);
   });
 
   it('fails the SDK entry that reaches a framework or view code', () => {

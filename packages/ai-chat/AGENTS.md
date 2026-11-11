@@ -54,11 +54,11 @@ Load only what you need:
 
 A test fails when a folder imports outside its rules, through type-only imports too:
 
-| Folder          | May import                                             |
-| --------------- | ------------------------------------------------------ |
-| `src/sdk/`      | `src/sdk/`, `src/types/`                               |
-| `src/types/`    | `src/types/`, plus types and JSON data from `src/sdk/` |
-| everything else | anything                                               |
+| Folder | May import |
+| --- | --- |
+| `src/sdk/` | `src/sdk/`, `src/types/` |
+| `src/types/` | `src/types/`, plus types and JSON data from `src/sdk/` engine folders, not its entry files |
+| everything else | anything |
 
 Nothing `src/sdk/` reaches may import React, React DOM, Lit, or a module that registers a custom element. Each exception still allowed today is listed with the issue that removes it. So a new service that works without a view goes in `src/sdk/services/`. One that touches the DOM or `ChatViewState` goes in `src/chat/services/`. SDK code reaches the view only through the ports in [viewBindings.ts](src/sdk/services/viewBindings.ts), which the mounted view attaches. The rules and their exceptions are in [the boundary spec](tests/architecture/spec/sourceBoundaries_spec.ts). The prebuilt interface reads conversation data through `instance.state`, as a host does. Each read that doesn't yet is listed with its owner issue in [conversationReadGaps.ts](tests/architecture/conversationReadGaps.ts), and [its spec](tests/architecture/spec/conversationReadGaps_spec.ts) fails on a new one. [The SDK surface snapshot](tests/architecture/spec/sdkSurface_spec.ts) lists every type and field the SDK entry reaches, so a change to it shows up in review.
 

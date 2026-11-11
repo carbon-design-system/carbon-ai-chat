@@ -15,6 +15,8 @@ These aren't SDK features. They live here because they must outlive a mount, or 
 - `UserSessionStorageService`. ADR-0002 gives storage to the entry point, not the conversation.
 - The view ports: `services/viewBindings.ts` and `services/messaging/presentationPort.ts`.
 - `services/slotTracking.ts`, plus `ServiceManager`'s slot and announcer services.
+- The seams the view partition uses: `store/attachStorePartition.ts`, `store/conversationActions.ts`, and `store/extendPublicState.ts`. Never export them through `index.ts`.
+- `utils/messageMetadataCommands.ts`, the prebuilt chat's two metadata write routes.
 
 Keep a new prebuilt-only part in `chat/` unless it has one of those two reasons.
 

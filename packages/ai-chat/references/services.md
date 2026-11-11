@@ -4,7 +4,7 @@ Load this when adding, editing, or testing a service. Services are orchestration
 
 Chat-instance services live in `src/sdk/services/`. View-owned classes, the ones that touch the DOM or `ChatViewState`, live in `src/chat/services/`; follow [the hook core contract](../src/chat/hooks/AGENTS.md) for them. The initialization, manager lookup, and teardown rules below apply to chat-instance services.
 
-For assistant message flows, read [messaging ownership](../src/sdk/services/messaging/AGENTS.md). `MessageCoordinator` owns the private workflows. Pure data helpers live in `inbound/`, `outbound/`, and `state/`; view work goes through the narrow `presentation/` port. Human-agent sends and writes stay in `shared/services/haa/`.
+For assistant message flows, read [messaging ownership](../src/sdk/services/messaging/AGENTS.md). `MessageCoordinator` owns the private workflows. Pure data helpers live in `inbound/`, `outbound/`, and `state/`; view work goes through the narrow `presentation/` port. Human-agent sends and writes stay in `sdk/services/haa/`.
 
 Keep the outbound queue, chunk FIFO, per-ID native write chains, and event queues separate. Their waits and release points differ. Shared event capture still serves legacy and human-agent paths; it is not a second assistant flow owner.
 
