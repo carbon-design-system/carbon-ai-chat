@@ -17,6 +17,8 @@ import { ChatContainer } from '../../../src/react/ChatContainer';
 import { chatMountStateContext } from '../../../src/web-components/shared/chat-mount-state-context';
 import type { ChatMountState } from '../../../src/chat/services/chatMountState';
 import enLanguagePack from '../../../src/sdk/languages/en.json';
+import { answerPrompt, openPrompt } from '../../../src/chat/state';
+import { chatStore } from '../../../src/chat/services/attachChatView';
 import {
   createBaseConfig,
   getChatHost,
@@ -52,7 +54,7 @@ function endChatPanel() {
   return open.map((title) => title.textContent);
 }
 
-it('opens the end-chat panel from the chat view state, and a card confirmation wins', async () => {
+it("opens the end-chat panel from the chat's prompt, and a card's prompt wins", async () => {
   const onAfterRender = jest.fn();
   render(
     <ChatContainer
@@ -68,20 +70,30 @@ it('opens the end-chat panel from the chat view state, and a card confirmation w
   const defaultTitle = enLanguagePack.agent_confirmCancelRequestTitle;
   expect(endChatPanel()).toEqual([]);
 
-  act(() => viewState.showEndChatConfirmation());
+  const store = chatStore(viewState.serviceManager);
+  act(() => {
+    openPrompt(store, { kind: 'endChat' }, { onConfirm: jest.fn() });
+  });
   await waitFor(() => expect(endChatPanel()).toEqual([defaultTitle]));
+  const endChatId = store.getState().view.prompt.id;
 
-  const release = viewState.openConfirmation({
-    title: 'Finish support',
-    message: 'Leave this conversation?',
-    onConfirm: jest.fn(),
-    onCancel: jest.fn(),
+  let release: () => void;
+  act(() => {
+    release = openPrompt(
+      store,
+      {
+        kind: 'humanAgent',
+        title: 'Finish support',
+        message: 'Leave this conversation?',
+      },
+      { onConfirm: jest.fn(), onCancel: jest.fn() }
+    );
   });
   await waitFor(() => expect(endChatPanel()).toEqual(['Finish support']));
 
   act(() => release());
   await waitFor(() => expect(endChatPanel()).toEqual([defaultTitle]));
 
-  act(() => viewState.hideEndChatConfirmation());
+  act(() => answerPrompt(store, endChatId, 'cancel'));
   await waitFor(() => expect(endChatPanel()).toEqual([]));
 }, 20000);

@@ -67,3 +67,5 @@ export { attachViewState };
 export { default as viewActions } from './actions';
 export * from './defaults';
 export { joinPersistedState, viewHalfOf } from './persisted';
+export { answerPrompt, closePrompt, openPrompt } from './prompts';
+export type { PromptChoice } from './prompts';

@@ -75,7 +75,9 @@ async function fixture(
   name: 'endChat' | 'screenShare',
   connected = true,
   suspended = false,
-  confirmation: PanelViewInputs['endChatConfirmation'] = null
+  prompt: PanelViewInputs['prompt'] = name === 'endChat'
+    ? { id: 'end-chat', kind: 'endChat' }
+    : null
 ) {
   const store = makeConfigStore({});
   const persisted = store.getState().persistedToBrowserStorage;
@@ -129,8 +131,7 @@ async function fixture(
     onRestart: jest.fn(),
     onToggleHomeScreen: jest.fn(),
     onAcceptDisclaimer: jest.fn(),
-    confirmHumanAgentEndChat: jest.fn(),
-    hideConfirmEndChat: jest.fn(),
+    answerPrompt: jest.fn(),
     fireCustomPanelEvent: jest.fn(),
     resetCustomPanelOptions: jest.fn(),
     closeCustomPanel: jest.fn(),
@@ -144,8 +145,7 @@ async function fixture(
   };
   const current = store.getState();
   view.inputs = {
-    endChatConfirmation: confirmation,
-    showEndChatConfirmation: name === 'endChat',
+    prompt,
     showScreenShareRequest: name === 'screenShare',
     isHydratingComplete: true,
     shouldShowHydrationPanel: false,
@@ -229,20 +229,26 @@ describe('end human agent chat panel', () => {
         languagePack.agent_confirmEndChatNo
       );
       f.buttons[1].click();
-      expect(f.callbacks.confirmHumanAgentEndChat).toHaveBeenCalledTimes(1);
+      expect(f.callbacks.answerPrompt).toHaveBeenCalledTimes(1);
+      expect(f.callbacks.answerPrompt).toHaveBeenLastCalledWith(
+        'end-chat',
+        'confirm'
+      );
       f.buttons[0].click();
-      expect(f.callbacks.hideConfirmEndChat).toHaveBeenCalledTimes(1);
+      expect(f.callbacks.answerPrompt).toHaveBeenCalledTimes(2);
+      expect(f.callbacks.answerPrompt).toHaveBeenLastCalledWith(
+        'end-chat',
+        'cancel'
+      );
     }
   );
 
-  it('uses card title, message, and handlers instead of the global end-chat handlers', async () => {
-    const onConfirm = jest.fn();
-    const onCancel = jest.fn();
+  it("uses the card's title and message, and answers the card's prompt", async () => {
     const f = await fixture('endChat', true, false, {
+      id: 'card',
+      kind: 'humanAgent',
       title: 'Finish support',
       message: 'Leave this conversation?',
-      onConfirm,
-      onCancel,
     });
     expect(
       within(f.frame).getByRole('heading', { name: 'Finish support' })
@@ -254,18 +260,18 @@ describe('end human agent chat panel', () => {
     );
     f.buttons[1].click();
     f.buttons[0].click();
-    expect(onConfirm).toHaveBeenCalledTimes(1);
-    expect(onCancel).toHaveBeenCalledTimes(1);
-    expect(f.callbacks.confirmHumanAgentEndChat).not.toHaveBeenCalled();
-    expect(f.callbacks.hideConfirmEndChat).not.toHaveBeenCalled();
+    expect(f.callbacks.answerPrompt.mock.calls).toEqual([
+      ['card', 'confirm'],
+      ['card', 'cancel'],
+    ]);
   });
 
   it('updates native prompt text without interpreting host text as markup', async () => {
     const confirmation = {
+      id: 'card',
+      kind: 'humanAgent' as const,
       title: '<strong>Finish support</strong>',
       message: '<img src=x onerror=alert(1)>',
-      onConfirm: jest.fn(),
-      onCancel: jest.fn(),
     };
     const f = await fixture('endChat', true, false, confirmation);
     const heading = within(f.frame).getByRole('heading', {
@@ -278,7 +284,7 @@ describe('end human agent chat panel', () => {
     expect(within(f.frame).getByText(confirmation.message)).toBeTruthy();
     f.view.inputs = {
       ...f.view.inputs,
-      endChatConfirmation: {
+      prompt: {
         ...confirmation,
         title: 'Leave support',
         message: 'You can start another conversation.',

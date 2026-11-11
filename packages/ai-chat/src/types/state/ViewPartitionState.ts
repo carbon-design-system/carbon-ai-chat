@@ -31,6 +31,21 @@ type ViewPersistedState = Omit<
 >;
 
 /**
+ * A confirmation the chat is asking: the end-chat prompt from the header, or
+ * a connect card's prompt to leave a suspended agent chat. It holds the
+ * question only; the answers live outside the store for as long as the chat.
+ */
+interface ChatPrompt {
+  /** Names this opening of the prompt, so a stale answer does nothing. */
+  id: string;
+  kind: 'endChat' | 'humanAgent';
+  /** Replaces the panel's default title. */
+  title?: string;
+  /** Replaces the panel's default message. */
+  message?: string;
+}
+
+/**
  * The prebuilt chat's view partition, under `view` in the chat's one store.
  * Conversation code never reads it. Internal; never exported.
  */
@@ -56,6 +71,9 @@ interface ViewPartitionState {
   suspendScrollDetection: boolean;
   isBrowserPageVisible: boolean;
 
+  /** The confirmation the chat is asking, if any. It outlives a mount. */
+  prompt: ChatPrompt | null;
+
   /** An ARIA message, announced whenever it changes. */
   announceMessage?: AnnounceMessage;
 
@@ -79,4 +97,4 @@ interface ViewPartitionState {
   persistedToBrowserStorage: ViewPersistedState;
 }
 
-export type { ViewPartitionState, ViewPersistedState };
+export type { ChatPrompt, ViewPartitionState, ViewPersistedState };

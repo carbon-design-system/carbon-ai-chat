@@ -10,6 +10,9 @@
 import { HumanAgentCallbacks } from '../../../src/chat/services/humanAgentCallbacks';
 import { ChatMountState } from '../../../src/chat/services/chatMountState';
 import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
+import { answerPrompt } from '../../../src/chat/state';
+import { chatStore } from '../../../src/chat/services/attachChatView';
+import { makeConfigStore } from '../../test_helpers';
 
 function setup() {
   const state = { humanAgent: { isConnected: false } };
@@ -21,6 +24,7 @@ function setup() {
   const manager = {
     instance: { state: { get: () => state } },
     humanAgentService: service,
+    store: makeConfigStore({}),
   } as unknown as ServiceManager;
   const focus = jest.fn();
   const viewState = new ChatMountState(manager, { width: 0, height: 0 });
@@ -29,26 +33,39 @@ function setup() {
     service,
     focus,
     viewState,
+    manager,
     controller: new HumanAgentCallbacks(viewState),
   };
 }
 
-it('keeps the end-chat prompt state in the view state', () => {
-  const { controller, service, viewState } = setup();
-  const isOpen = () => viewState.getSnapshot().endChatConfirmationOpen;
+it("keeps the end-chat prompt in the chat's view state", () => {
+  const { controller, service, manager } = setup();
+  const store = chatStore(manager);
+  const prompt = () => store.getState().view.prompt;
   const listener = jest.fn();
-  const unsubscribe = viewState.subscribe(listener);
-  expect(isOpen()).toBe(false);
+  const unsubscribe = store.subscribe(listener);
+  expect(prompt()).toBeNull();
   controller.showConfirmEndChat();
   controller.showConfirmEndChat();
-  expect(isOpen()).toBe(true);
+  expect(prompt()).toMatchObject({ kind: 'endChat' });
   expect(listener).toHaveBeenCalledTimes(1);
-  controller.confirmHumanAgentEndChat();
-  expect(isOpen()).toBe(false);
+  answerPrompt(store, prompt().id, 'confirm');
+  expect(prompt()).toBeNull();
   expect(service.endChat).toHaveBeenCalledWith(true);
   unsubscribe();
   controller.showConfirmEndChat();
   expect(listener).toHaveBeenCalledTimes(2);
+});
+
+it('ends the agent chat from a prompt answered after its mount left', () => {
+  const { controller, service, manager, viewState } = setup();
+  const store = chatStore(manager);
+  controller.showConfirmEndChat();
+  viewState.disconnect();
+
+  answerPrompt(store, store.getState().view.prompt.id, 'confirm');
+
+  expect(service.endChat).toHaveBeenCalledWith(true);
 });
 
 it('reads current connection state for typing and honors upload focus policy', () => {

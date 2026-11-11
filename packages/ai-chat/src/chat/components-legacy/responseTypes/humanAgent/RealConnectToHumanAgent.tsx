@@ -14,7 +14,7 @@ import Logout16 from '@carbon/icons/es/logout/16.js';
 import { carbonIconToReact } from '../../../utils/carbonIcon';
 import Card from '@carbon/ai-chat-components/es/react/card.js';
 import Button from '../../../components/carbon/Button';
-import React, { ReactNode, useEffect, useState } from 'react';
+import React, { ReactNode, useEffect, useRef, useState } from 'react';
 
 import { HasServiceManager } from '../../../hocs/withServiceManager';
 import { HumanAgentsOnlineStatus } from '../../../../sdk/services/haa/HumanAgentService';
@@ -33,6 +33,8 @@ import {
   MessageResponse,
 } from '../../../../types/messaging/Messages';
 import { useChatMountStateInstance } from '../../../hooks/useChatMountState';
+import { chatStore } from '../../../services/attachChatView';
+import { openPrompt } from '../../../state';
 
 const Checkmark = carbonIconToReact(Checkmark16);
 const Headset = carbonIconToReact(Headset16);
@@ -115,26 +117,47 @@ function RealConnectToHumanAgent(props: RealConnectToHumanAgentProps) {
   const { availability, isConnecting, isSuspended } = humanAgent;
 
   const [showConfirmSuspended, setShowConfirmSuspended] = useState(false);
-  const viewState = useChatMountStateInstance();
+  const mountState = useChatMountStateInstance();
+  // The prompt can outlive this card when a reuse remount keeps the chat, so
+  // its answers reach the card's focus only while the card is mounted.
+  const focusCard = useRef<(() => void) | null>(null);
+  useEffect(() => {
+    focusCard.current = requestFocus;
+    return () => {
+      focusCard.current = null;
+    };
+  }, [requestFocus]);
 
   useEffect(() => {
     if (!showConfirmSuspended || !isSuspended) {
       return undefined;
     }
-    const confirmation = {
-      title: languagePack.agent_confirmSuspendedEndChatTitle,
-      message: languagePack.agent_confirmSuspendedEndChatMessage,
-      onConfirm: () => {
-        setShowConfirmSuspended(false);
-        serviceManager.humanAgentService.startChat(
-          localMessage,
-          originalMessage
-        );
-        setTimeout(requestFocus);
+    const release = openPrompt(
+      chatStore(serviceManager),
+      {
+        kind: 'humanAgent',
+        title: languagePack.agent_confirmSuspendedEndChatTitle,
+        message: languagePack.agent_confirmSuspendedEndChatMessage,
       },
-      onCancel: () => setShowConfirmSuspended(false),
+      {
+        onConfirm: () => {
+          setShowConfirmSuspended(false);
+          serviceManager.humanAgentService.startChat(
+            localMessage,
+            originalMessage
+          );
+          setTimeout(() => focusCard.current?.());
+        },
+        onCancel: () => setShowConfirmSuspended(false),
+      }
+    );
+    return () => {
+      // When the mount detaches, the prompt stays open for the next mount of
+      // a reused chat. Any other cleanup closes it.
+      if (!mountState.detached) {
+        release();
+      }
     };
-    return viewState.openConfirmation(confirmation);
   }, [
     showConfirmSuspended,
     isSuspended,
@@ -142,8 +165,7 @@ function RealConnectToHumanAgent(props: RealConnectToHumanAgentProps) {
     serviceManager,
     localMessage,
     originalMessage,
-    requestFocus,
-    viewState,
+    mountState,
   ]);
 
   if (!isSuspended && showConfirmSuspended) {

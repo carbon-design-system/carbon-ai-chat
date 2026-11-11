@@ -17,7 +17,10 @@ import cloneDeep from 'lodash-es/cloneDeep.js';
 import type { AnnounceMessage } from '../../types/state/AnnounceMessage';
 import type { DerivedConfig } from '../../types/state/AppConfig';
 import type { ThemeState } from '../../types/state/ThemeState';
-import type { ViewPartitionState } from '../../types/state/ViewPartitionState';
+import type {
+  ChatPrompt,
+  ViewPartitionState,
+} from '../../types/state/ViewPartitionState';
 import type { MountViewState } from './initialState';
 import type { CatastrophicErrorPanelState } from '../../types/state/panels/CatastrophicErrorPanelState';
 import type { PersistedState } from '../../types/state/PersistedState';
@@ -46,6 +49,7 @@ const SET_VIEW_STATE = 'SET_VIEW_STATE';
 const SET_VIEW_CHANGING = 'SET_VIEW_CHANGING';
 const SET_INITIAL_VIEW_CHANGE_COMPLETE = 'SET_INITIAL_VIEW_CHANGE_COMPLETE';
 const START_NEW_MOUNT = 'START_NEW_MOUNT';
+const SET_PROMPT = 'SET_PROMPT';
 const ANNOUNCE_MESSAGE = 'ANNOUNCE_MESSAGE';
 const ACCEPTED_DISCLAIMER = 'ACCEPTED_DISCLAIMER';
 const SET_HOME_SCREEN_IS_OPEN = 'SET_HOME_SCREEN_IS_OPEN';
@@ -151,6 +155,10 @@ const viewActions = {
    */
   startNewMount(mountState: MountViewState) {
     return { type: START_NEW_MOUNT, mountState };
+  },
+  /** Sets the confirmation the panel shows. Only `prompts.ts` dispatches it. */
+  setPrompt(prompt: ChatPrompt | null) {
+    return { type: SET_PROMPT, prompt };
   },
   /**
    * Sets the value of one of the properties of {@link PersistedState}.
@@ -278,6 +286,7 @@ export {
   SET_VIEW_STATE,
   SET_VIEW_CHANGING,
   SET_INITIAL_VIEW_CHANGE_COMPLETE,
+  SET_PROMPT,
   START_NEW_MOUNT,
   ANNOUNCE_MESSAGE,
   ACCEPTED_DISCLAIMER,

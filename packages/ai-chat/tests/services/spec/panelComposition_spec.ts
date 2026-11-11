@@ -50,8 +50,7 @@ function callbacks() {
     }),
     onToggleHomeScreen: jest.fn(),
     onAcceptDisclaimer: jest.fn(),
-    confirmHumanAgentEndChat: jest.fn(),
-    hideConfirmEndChat: jest.fn(),
+    answerPrompt: jest.fn(),
     fireCustomPanelEvent: jest.fn((type) => {
       order.push(type);
     }),
@@ -386,18 +385,20 @@ describe('prompt derivation and actions', () => {
     }
   );
 
-  it('keeps card-owned confirmation callbacks and current screen-share facade calls', () => {
+  it('answers the shown prompt by its id, and current screen-share facade calls', () => {
     const { api } = callbacks();
-    const card = { onConfirm: jest.fn(), onCancel: jest.fn() };
-    const end = createEndChatActions(card, api);
+    const end = createEndChatActions({ id: 'card', kind: 'humanAgent' }, api);
     end.onConfirm();
     end.onCancel();
-    expect(card.onConfirm).toHaveBeenCalledTimes(1);
-    expect(card.onCancel).toHaveBeenCalledTimes(1);
-    expect(api.confirmHumanAgentEndChat).not.toHaveBeenCalled();
-    const defaults = createEndChatActions(null, api);
-    expect(defaults.onConfirm).toBe(api.confirmHumanAgentEndChat);
-    expect(defaults.onCancel).toBe(api.hideConfirmEndChat);
+    expect((api.answerPrompt as jest.Mock).mock.calls).toEqual([
+      ['card', 'confirm'],
+      ['card', 'cancel'],
+    ]);
+    // With no prompt shown, a late click during the close does nothing.
+    const closed = createEndChatActions(null, api);
+    closed.onConfirm();
+    closed.onCancel();
+    expect(api.answerPrompt).toHaveBeenCalledTimes(2);
     const share = createScreenShareActions(api);
     share.onConfirm();
     share.onCancel();

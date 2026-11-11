@@ -16,6 +16,8 @@ import { createIntl } from '../../../src/sdk/utils/i18n';
 import { setIntl } from '../../../src/sdk/utils/intlUtils';
 import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 import type { LanguagePack } from '../../../src/types/config/LanguagePack';
+import { openPrompt } from '../../../src/chat/state';
+import { chatStore } from '../../../src/chat/services/attachChatView';
 import {
   createTestViewState,
   makeConfigStore,
@@ -80,9 +82,15 @@ it('re-renders only formatter consumers on a formatter change', () => {
 });
 
 it('re-renders nothing for a confirmation change', () => {
-  const { viewState, renders } = setup();
+  const { serviceManager, renders } = setup();
 
-  act(() => viewState.showEndChatConfirmation());
+  act(() => {
+    openPrompt(
+      chatStore(serviceManager),
+      { kind: 'endChat' },
+      { onConfirm: jest.fn() }
+    );
+  });
 
   expect(renders).toEqual({ width: 1, intl: 1 });
 });

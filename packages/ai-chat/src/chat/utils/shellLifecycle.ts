@@ -125,7 +125,11 @@ import {
 } from '@carbon/ai-chat-components/es/components/shared/dynamic-css-var-sheet.js';
 
 import styles from '../AppShell.scss';
-import { DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS, viewActions } from '../state';
+import {
+  answerPrompt,
+  DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS,
+  viewActions,
+} from '../state';
 
 import { chatStore } from '../services/attachChatView';
 
@@ -238,6 +242,7 @@ export function selectShellState(state: AppState) {
     customInputVisible: selectCustomPromptLineVisible(state),
     isStopStreamingButtonVisible: selectStopStreamingButtonVisible(state),
     chatWidthBreakpoint: state.view.chatWidthBreakpoint,
+    prompt: state.view.prompt,
     ...selectInputUploadAndStreamingFields(state),
   };
 }
@@ -328,9 +333,8 @@ export class ShellLifecycle {
       onRestart: this.inputCallbacks.onRestart,
       onToggleHomeScreen: this.inputCallbacks.onToggleHomeScreen,
       onAcceptDisclaimer: this.inputCallbacks.onAcceptDisclaimer,
-      confirmHumanAgentEndChat:
-        this.humanAgentCallbacks.confirmHumanAgentEndChat,
-      hideConfirmEndChat: this.humanAgentCallbacks.hideConfirmEndChat,
+      answerPrompt: (id, choice) =>
+        answerPrompt(chatStore(manager), id, choice),
       fireCustomPanelEvent: (type) => {
         manager.eventBus.fire({ type }, manager.instance);
       },
@@ -738,10 +742,8 @@ export class ShellLifecycle {
             ],
           }
         : undefined;
-    const view = this.viewState.getSnapshot();
     const nextInputs: PanelViewInputs = {
-      endChatConfirmation: view.humanAgentConfirmation,
-      showEndChatConfirmation: view.endChatConfirmationOpen,
+      prompt: state.view.prompt,
       showScreenShareRequest: state.humanAgentState.showScreenShareRequest,
       isHydratingComplete,
       shouldShowHydrationPanel,

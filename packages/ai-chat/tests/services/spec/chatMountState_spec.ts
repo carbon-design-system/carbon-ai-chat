@@ -36,29 +36,37 @@ function createViewState(manager = createManager()) {
   return new ChatMountState(manager, { width: 800, height: 600 });
 }
 
-function confirmation(title: string) {
-  return { title, onConfirm: jest.fn(), onCancel: jest.fn() };
-}
-
 const frenchPack = { greeting: 'Bonjour' } as unknown as LanguagePack;
 
 beforeEach(() => mockAnnounce.mockClear());
 
-it('gives a plain caller every field for its chat without React', () => {
+it('gives a plain caller every field for its mount without React', () => {
   const manager = createManager();
   const viewState = createViewState(manager);
-  const card = confirmation('Card');
-
-  viewState.showEndChatConfirmation();
-  viewState.openConfirmation(card);
 
   const snapshot = viewState.getSnapshot();
   expect(snapshot.serviceManager).toBe(manager);
   expect(snapshot.intl).toBe(manager.intl);
   expect(snapshot.windowSize).toEqual({ width: 800, height: 600 });
-  expect(snapshot.endChatConfirmationOpen).toBe(true);
-  expect(snapshot.humanAgentConfirmation).toBe(card);
+  // Confirmations outlive a mount, so they're in the store's view partition.
+  expect(Object.keys(snapshot).sort()).toEqual([
+    'intl',
+    'serviceManager',
+    'windowSize',
+  ]);
   expect(Object.isFrozen(snapshot)).toBe(true);
+});
+
+it('reads as detached from disconnect until it connects again', () => {
+  const viewState = createViewState();
+  expect(viewState.detached).toBe(false);
+
+  viewState.connect();
+  expect(viewState.detached).toBe(false);
+  viewState.disconnect();
+  expect(viewState.detached).toBe(true);
+  viewState.connect();
+  expect(viewState.detached).toBe(false);
 });
 
 it('keeps the snapshot object until a field changes', () => {
@@ -68,7 +76,6 @@ it('keeps the snapshot object until a field changes', () => {
   const before = viewState.getSnapshot();
 
   viewState.setWindowSize({ width: 800, height: 600 });
-  viewState.hideEndChatConfirmation();
 
   expect(viewState.getSnapshot()).toBe(before);
   expect(listener).not.toHaveBeenCalled();
@@ -83,27 +90,12 @@ it('notifies a select listener only when its selected value changes', () => {
   const onWidth = jest.fn();
   viewState.select((snapshot) => snapshot.windowSize.width, onWidth);
 
-  viewState.showEndChatConfirmation();
   viewState.setWindowSize({ width: 800, height: 300 });
   expect(onWidth).not.toHaveBeenCalled();
 
   viewState.setWindowSize({ width: 500, height: 300 });
   expect(onWidth).toHaveBeenCalledTimes(1);
   expect(onWidth).toHaveBeenCalledWith(500);
-});
-
-it('lets an older confirmation release leave a newer one open', () => {
-  const viewState = createViewState();
-  const first = confirmation('First');
-  const second = confirmation('Second');
-
-  const releaseFirst = viewState.openConfirmation(first);
-  const releaseSecond = viewState.openConfirmation(second);
-  releaseFirst();
-
-  expect(viewState.getSnapshot().humanAgentConfirmation).toBe(second);
-  releaseSecond();
-  expect(viewState.getSnapshot().humanAgentConfirmation).toBeNull();
 });
 
 it('follows formatter changes only while connected', () => {

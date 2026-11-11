@@ -433,7 +433,7 @@ class NativePanels extends NativeChatView {
     const prompt =
       name === 'endChat'
         ? deriveEndChatPrompt(
-            this.inputs.endChatConfirmation,
+            this.inputs.prompt,
             this.isAgentConnected,
             this.isAgentSuspended,
             this.language
@@ -441,7 +441,7 @@ class NativePanels extends NativeChatView {
         : deriveScreenSharePrompt(this.language);
     const promptActions =
       name === 'endChat'
-        ? createEndChatActions(this.inputs.endChatConfirmation, this.callbacks)
+        ? createEndChatActions(this.inputs.prompt, this.callbacks)
         : createScreenShareActions(this.callbacks);
     return this.renderFrame({
       name,
@@ -449,8 +449,7 @@ class NativePanels extends NativeChatView {
       promptActions,
       open:
         name === 'endChat'
-          ? this.inputs.showEndChatConfirmation ||
-            Boolean(this.inputs.endChatConfirmation)
+          ? Boolean(this.inputs.prompt)
           : this.inputs.showScreenShareRequest,
       fullWidth: true,
       label: prompt.title,

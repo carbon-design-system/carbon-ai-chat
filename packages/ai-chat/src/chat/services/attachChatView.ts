@@ -14,7 +14,12 @@ import { toPersistableState } from '../../sdk/store/persistenceUtils';
 import type { PublicConfig } from '../../types/config/PublicConfig';
 import type { AppState } from '../../types/state/AppState';
 import type { DerivedConfig } from '../../types/state/AppConfig';
-import { attachViewState, joinPersistedState, viewHalfOf } from '../state';
+import {
+  attachViewState,
+  closePrompt,
+  joinPersistedState,
+  viewHalfOf,
+} from '../state';
 
 /**
  * The prebuilt chat's store: the conversation partition plus the view
@@ -64,6 +69,24 @@ function saveSessionOnChange(serviceManager: ServiceManager) {
 }
 
 /**
+ * Closes a connect card's prompt once the agent chat it would leave stops
+ * being suspended, as the card does while it's mounted. It runs for as long as
+ * the chat, so a prompt kept open across a reuse remount follows the rule too.
+ */
+function closeCardPromptOnResume(serviceManager: ServiceManager) {
+  const store = chatStore(serviceManager);
+  serviceManager.publicStateService.select(
+    (state) => state.humanAgent.isSuspended,
+    (isSuspended) => {
+      const { prompt } = store.getState().view;
+      if (!isSuspended && prompt?.kind === 'humanAgent') {
+        closePrompt(store, prompt.id);
+      }
+    }
+  );
+}
+
+/**
  * Attaches the view partition at boot, restoring the view half of a saved
  * session, and starts saving the session. The conversation restored its own
  * half when it created the store. A chat that already has its view does
@@ -84,6 +107,7 @@ function attachChatView(
     )
   ) {
     saveSessionOnChange(serviceManager);
+    closeCardPromptOnResume(serviceManager);
   }
 }
 

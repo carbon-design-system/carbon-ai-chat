@@ -31,6 +31,8 @@ import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
 import { setIntl } from '../../../src/sdk/utils/intlUtils';
 import { chatMountStateContext } from '../../../src/web-components/shared/chat-mount-state-context';
 import type { ChatMountState } from '../../../src/chat/services/chatMountState';
+import { chatStore } from '../../../src/chat/services/attachChatView';
+import { openPrompt } from '../../../src/chat/state';
 import { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import { ViewType } from '../../../src/types/instance/apiTypes';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
@@ -512,14 +514,18 @@ describe('how each host mounts the chat', () => {
       expect(firstState).not.toBe(secondState);
       const secondSnapshot = secondState.getSnapshot();
       const firstIntl = firstState.getSnapshot().intl;
+      const viewOf = (state: typeof firstState) =>
+        chatStore(state.serviceManager).getState().view;
       act(() => {
-        firstState.openConfirmation({
-          onConfirm: jest.fn(),
-          onCancel: jest.fn(),
-        });
+        openPrompt(
+          chatStore(firstState.serviceManager),
+          { kind: 'endChat' },
+          { onConfirm: jest.fn() }
+        );
         changeFormatter(firstState);
       });
-      expect(firstState.getSnapshot().humanAgentConfirmation).not.toBeNull();
+      expect(viewOf(firstState).prompt).not.toBeNull();
+      expect(viewOf(secondState).prompt).toBeNull();
       expect(firstState.getSnapshot().intl).not.toBe(firstIntl);
       expect(secondState.getSnapshot()).toBe(secondSnapshot);
     });

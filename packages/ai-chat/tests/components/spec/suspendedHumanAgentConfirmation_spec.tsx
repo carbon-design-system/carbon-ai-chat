@@ -12,7 +12,8 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { RealConnectToHumanAgent } from '../../../src/chat/components-legacy/responseTypes/humanAgent/RealConnectToHumanAgent';
 import { ChatContext } from '../../../src/chat/contexts/ChatContext';
 import languagePack from '../../../src/sdk/languages/en.json';
-import { createTestViewState } from '../../test_helpers';
+import { answerPrompt, openPrompt } from '../../../src/chat/state';
+import { createTestViewState, makeConfigStore } from '../../test_helpers';
 
 jest.mock('../../../src/chat/hooks/useSelector', () => ({
   useSelector: () => jest.requireActual('../../../src/sdk/languages/en.json'),
@@ -47,7 +48,10 @@ function renderSuspendedCard() {
     localMessage: { item: {}, ui_state: { id: 'new-request' } },
     originalMessage: {},
     disableUserInputs: false,
-    serviceManager: { humanAgentService: { startChat } },
+    serviceManager: {
+      humanAgentService: { startChat },
+      store: makeConfigStore({}),
+    },
     humanAgent: { isSuspended: true },
     agentDisplayState: {},
     requestFocus,
@@ -55,8 +59,10 @@ function renderSuspendedCard() {
   const viewState = createTestViewState({
     serviceManager: props.serviceManager,
   });
-  const currentConfirmation = () =>
-    viewState.getSnapshot().humanAgentConfirmation;
+  const store = props.serviceManager.store as ReturnType<
+    typeof makeConfigStore
+  >;
+  const currentConfirmation = () => store.getState().view.prompt;
   const view = render(
     <ChatContext.Provider value={viewState}>
       <RealConnectToHumanAgent {...props} />
@@ -72,6 +78,7 @@ function renderSuspendedCard() {
     startChat,
     requestFocus,
     viewState,
+    store,
     currentConfirmation,
     confirmation,
   };
@@ -86,10 +93,12 @@ describe('suspended human agent card confirmation', () => {
       props,
       startChat,
       requestFocus,
+      store,
       currentConfirmation,
       confirmation,
     } = renderSuspendedCard();
     expect(startChat).not.toHaveBeenCalled();
+    expect(confirmation.kind).toBe('humanAgent');
     expect(confirmation.title).toBe(
       languagePack.agent_confirmSuspendedEndChatTitle
     );
@@ -97,7 +106,7 @@ describe('suspended human agent card confirmation', () => {
       languagePack.agent_confirmSuspendedEndChatMessage
     );
 
-    act(() => confirmation.onConfirm());
+    act(() => answerPrompt(store, confirmation.id, 'confirm'));
 
     expect(startChat).toHaveBeenCalledWith(
       props.localMessage,
@@ -118,16 +127,58 @@ describe('suspended human agent card confirmation', () => {
   });
 
   it('leaves a newer confirmation open when it unmounts', () => {
-    const { unmount, viewState, currentConfirmation, confirmation, startChat } =
+    const { unmount, store, currentConfirmation, confirmation, startChat } =
       renderSuspendedCard();
-    const newerConfirmation = { ...confirmation };
     act(() => {
-      viewState.openConfirmation(newerConfirmation);
+      openPrompt(
+        store,
+        { kind: 'humanAgent', title: confirmation.title },
+        { onConfirm: jest.fn() }
+      );
     });
+    const newerConfirmation = currentConfirmation();
+    expect(newerConfirmation.id).not.toBe(confirmation.id);
 
     unmount();
 
     expect(currentConfirmation()).toBe(newerConfirmation);
+    expect(startChat).not.toHaveBeenCalled();
+  });
+
+  it('keeps its confirmation open when its mount detaches, and still starts the request', () => {
+    const {
+      props,
+      unmount,
+      viewState,
+      store,
+      currentConfirmation,
+      confirmation,
+      startChat,
+      requestFocus,
+    } = renderSuspendedCard();
+
+    viewState.disconnect();
+    unmount();
+
+    expect(currentConfirmation()).toBe(confirmation);
+    act(() => answerPrompt(store, confirmation.id, 'confirm'));
+    expect(startChat).toHaveBeenCalledWith(
+      props.localMessage,
+      props.originalMessage
+    );
+    expect(currentConfirmation()).toBeNull();
+    // The card is gone, so nothing moves focus to it.
+    act(() => jest.runOnlyPendingTimers());
+    expect(requestFocus).not.toHaveBeenCalled();
+  });
+
+  it('cancels without starting the request', () => {
+    const { store, currentConfirmation, confirmation, startChat } =
+      renderSuspendedCard();
+
+    act(() => answerPrompt(store, confirmation.id, 'cancel'));
+
+    expect(currentConfirmation()).toBeNull();
     expect(startChat).not.toHaveBeenCalled();
   });
 });

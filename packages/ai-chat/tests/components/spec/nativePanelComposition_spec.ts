@@ -132,8 +132,7 @@ async function fixture(
     onRestart: jest.fn(),
     onToggleHomeScreen: jest.fn(),
     onAcceptDisclaimer: jest.fn(),
-    confirmHumanAgentEndChat: jest.fn(),
-    hideConfirmEndChat: jest.fn(),
+    answerPrompt: jest.fn(),
     fireCustomPanelEvent: jest.fn(),
     resetCustomPanelOptions: jest.fn(),
     closeCustomPanel: jest.fn(),
@@ -147,8 +146,7 @@ async function fixture(
   };
   const current = store.getState();
   view.inputs = {
-    endChatConfirmation: null,
-    showEndChatConfirmation: false,
+    prompt: null,
     showScreenShareRequest: false,
     isHydratingComplete: true,
     shouldShowHydrationPanel: false,
@@ -197,7 +195,7 @@ function openInputs(inputs: PanelViewInputs): PanelViewInputs {
   return {
     ...inputs,
     contentRevision: {},
-    showEndChatConfirmation: true,
+    prompt: { id: 'end-chat', kind: 'endChat' },
     showScreenShareRequest: true,
     shouldShowHydrationPanel: true,
     showDisclaimer: true,

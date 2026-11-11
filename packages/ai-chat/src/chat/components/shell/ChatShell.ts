@@ -169,13 +169,8 @@ class ChatShell extends NativeChatView {
       shallowEqual
     );
     this.selectView(
-      (snapshot) => ({
-        intl: snapshot.intl,
-        endChatConfirmationOpen: snapshot.endChatConfirmationOpen,
-        humanAgentConfirmation: snapshot.humanAgentConfirmation,
-      }),
-      () => {},
-      shallowEqual
+      (snapshot) => snapshot.intl,
+      () => {}
     );
     this.own(
       subscribeToSelectedValue(

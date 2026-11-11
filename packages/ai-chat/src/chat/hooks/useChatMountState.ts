@@ -15,7 +15,7 @@ import type {
   ChatMountStateSnapshot,
 } from '../services/chatMountState';
 
-/** Returns the chat's view state, which stays the same for the mount. */
+/** Returns the mount's state, which stays the same for the mount. */
 function useChatMountStateInstance(): ChatMountState {
   const viewState = useContext(ChatContext);
   if (!viewState) {
@@ -25,7 +25,7 @@ function useChatMountStateInstance(): ChatMountState {
 }
 
 /**
- * Selects a field of the chat's view state and re-renders only when the
+ * Selects a field of the mount's state and re-renders only when the
  * selected value changes. Uses the same React 17 shim as `useSelector`.
  */
 function useChatMountState<Selected>(
