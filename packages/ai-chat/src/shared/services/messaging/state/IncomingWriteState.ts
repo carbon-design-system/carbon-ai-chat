@@ -13,6 +13,13 @@ export class IncomingWriteState {
   generation = 0;
 
   /**
+   * Bumped when a restart begins, before its `pre:restartConversation` handlers run. An
+   * upsert whose updater hadn't resolved by then drops its write, even if a handler
+   * cancels the restart. Other writes go on until the restart clears them.
+   */
+  updaterGeneration = 0;
+
+  /**
    * Receive-dedup record, **not** a liveness record. `addMessage` and `addMessageChunk`
    * write it too, it deliberately retains {@link MessageState.COMPLETE} for the life of
    * the session, and nothing drains it when a stream is canceled. Use

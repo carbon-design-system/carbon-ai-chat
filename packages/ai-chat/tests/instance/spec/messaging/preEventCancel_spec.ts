@@ -17,7 +17,6 @@ import { waitFor } from '@testing-library/react';
 import { createChatSDK } from '../../../../src/sdk';
 import { chatOf } from '../../../../src/sdk/internal';
 import type { ChatSDKHandle } from '../../../../src/sdk/handle';
-import actions from '../../../../src/shared/store/actions';
 import { resolvablePromise } from '../../../../src/shared/utils/resolvablePromise';
 import type { ChatSDKConfig } from '../../../../src/types/config/ChatSDKConfig';
 import { MessageState } from '../../../../src/types/config/MessagingConfig';
@@ -33,6 +32,7 @@ import {
   type BusEventHumanAgentEndChat,
   type BusEventHumanAgentPreEndChat,
   type BusEventHumanAgentPreReceive,
+  type BusEventHumanAgentPreSend,
   type BusEventPreReceive,
   type BusEventPreReset,
 } from '../../../../src/types/events/eventBusTypes';
@@ -282,6 +282,160 @@ describe('canceling pre: events', () => {
       await pending;
       expect(ids(chat)).not.toContain('late');
     });
+
+    it.each([true, false])(
+      'with cancel %s, an upsert past its updater finishes, or the restart clears it',
+      async (cancel) => {
+        const { chat } = await sdkChat();
+        await chat.messaging.upsertMessage('part', MessageState.STREAMING, () =>
+          response('part', 'Part')
+        );
+        const receiving = resolvablePromise<void>();
+        const releaseReceive = resolvablePromise<void>();
+        chat.on({
+          type: BusEventType.PRE_RECEIVE,
+          handler: async () => {
+            receiving.doResolve();
+            await releaseReceive;
+          },
+        });
+        chat.on({
+          type: BusEventType.PRE_RESTART_CONVERSATION,
+          handler: (event: BusEventPreReset) => {
+            event.cancel = cancel;
+          },
+        });
+        const completing = chat.messaging.upsertMessage(
+          'part',
+          MessageState.COMPLETE,
+          () => response('part', 'Whole')
+        );
+        await receiving;
+        await chat.messaging.restartConversation();
+        releaseReceive.doResolve();
+        await completing;
+
+        const messages = chat.state.get().messages as MessageResponse[];
+        expect(messages.map(({ output }) => output.generic[0])).toEqual(
+          cancel ? [expect.objectContaining({ text: 'Whole' })] : []
+        );
+        expect(chat.state.get().status).toBe('ready');
+      }
+    );
+
+    it('lets an addMessage reply waiting on pre:receive land', async () => {
+      const { instance } =
+        await renderChatAndGetInstanceWithStore(createBaseConfig());
+      const receiving = resolvablePromise<void>();
+      const releaseReceive = resolvablePromise<void>();
+      instance.on({
+        type: BusEventType.PRE_RECEIVE,
+        handler: async () => {
+          receiving.doResolve();
+          await releaseReceive;
+        },
+      });
+      instance.on({
+        type: BusEventType.PRE_RESTART_CONVERSATION,
+        handler: (event: BusEventPreReset) => {
+          event.cancel = true;
+        },
+      });
+      const fired = record(instance, [BusEventType.RECEIVE]);
+
+      const adding = instance.messaging.addMessage(response('late-reply'));
+      await receiving;
+      await instance.messaging.restartConversation();
+      releaseReceive.doResolve();
+      await adding;
+
+      expect(ids(instance)).toContain('late-reply');
+      expect(fired).toEqual([BusEventType.RECEIVE]);
+    });
+
+    it('lets a chunk turn waiting on pre:receive finish and the queued send go', async () => {
+      const sent: string[] = [];
+      const firstStreaming = resolvablePromise<void>();
+      const config: PublicConfig = {
+        ...createBaseConfig(),
+        messaging: {
+          skipWelcome: true,
+          customSendMessage: async (request, _options, chatInstance) => {
+            sent.push(request.input.text);
+            if (request.input.text === 'first') {
+              await chatInstance.messaging.addMessageChunk({
+                streaming_metadata: { response_id: 'streamed' },
+                partial_item: {
+                  response_type: MessageResponseTypes.TEXT,
+                  text: 'Partial',
+                  streaming_metadata: { id: 'text', cancellable: true },
+                },
+              });
+              firstStreaming.doResolve();
+            }
+          },
+        },
+      };
+      const { instance, store } =
+        await renderChatAndGetInstanceWithStore(config);
+      const first = instance.messaging.send('first');
+      await firstStreaming;
+      await first;
+      const second = instance.messaging.send('second');
+      const receiving = resolvablePromise<void>();
+      const releaseReceive = resolvablePromise<void>();
+      instance.on({
+        type: BusEventType.PRE_RECEIVE,
+        handler: async (event: BusEventPreReceive) => {
+          if (event.data.id === 'streamed') {
+            receiving.doResolve();
+            await releaseReceive;
+          }
+        },
+      });
+      instance.on({
+        type: BusEventType.PRE_RESTART_CONVERSATION,
+        handler: (event: BusEventPreReset) => {
+          event.cancel = true;
+        },
+      });
+
+      const finishing = instance.messaging.addMessageChunk({
+        final_response: response('streamed', 'Whole'),
+      });
+      await receiving;
+      await instance.messaging.restartConversation();
+      releaseReceive.doResolve();
+      await finishing;
+      await waitFor(() => expect(sent).toEqual(['first', 'second']));
+      await second;
+
+      expect(ids(instance)).toContain('streamed');
+      expect(instance.state.get().status).toBe('ready');
+      expect(
+        store.getState().assistantInputState.stopStreamingButtonState.isVisible
+      ).toBe(false);
+    });
+
+    it('treats a handler that sets cancel and then throws as a throw', async () => {
+      const { chat } = await sdkChat();
+      await chat.messaging.upsertMessage('kept', MessageState.COMPLETE, () =>
+        response('kept')
+      );
+      chat.on({
+        type: BusEventType.PRE_RESTART_CONVERSATION,
+        handler: (event: BusEventPreReset) => {
+          event.cancel = true;
+          throw new Error('handler failed');
+        },
+      });
+
+      await expect(chat.messaging.restartConversation()).rejects.toThrow(
+        'handler failed'
+      );
+      expect(ids(chat)).toEqual(['kept']);
+      expect(chatOf(chat).store.getState().isRestarting).toBe(false);
+    });
   });
 
   describe('pre:receive', () => {
@@ -456,78 +610,67 @@ describe('canceling pre: events', () => {
       expect(isStopVisible()).toBe(false);
       expect(instance.state.get().status).toBe('ready');
     });
+
+    it('removes a streamed reply whose handler changed its ID and then canceled', async () => {
+      const { instance } =
+        await renderChatAndGetInstanceWithStore(createBaseConfig());
+      await instance.messaging.addMessageChunk({
+        streaming_metadata: { response_id: 'renamed' },
+        partial_item: {
+          response_type: MessageResponseTypes.TEXT,
+          text: 'Partial',
+          streaming_metadata: { id: 'text' },
+        },
+      });
+      instance.on({
+        type: BusEventType.PRE_RECEIVE,
+        handler: (event: BusEventPreReceive) => {
+          event.data.id = 'other';
+          event.cancel = true;
+        },
+      });
+
+      await instance.messaging.addMessageChunk({
+        final_response: response('renamed', 'Whole'),
+      });
+
+      expect(ids(instance)).not.toContain('renamed');
+      expect(ids(instance)).not.toContain('other');
+      expect(instance.state.get().status).toBe('ready');
+    });
   });
 
   describe('human_agent:pre:send', () => {
-    function agentInputFiles(chat: ChatSDKHandle) {
-      return chatOf(chat)
-        .store.getState()
-        .humanAgentState.inputState.files.map(({ id }) => id);
-    }
-
-    it('stops the message and keeps its files, with no store change', async () => {
+    it('stops the message and its uploads, with no store change after the cancel', async () => {
       const { chat, desk } = await connectedChat();
-      const manager = chatOf(chat);
-      const file = inputFile('kept');
-      manager.store.dispatch(actions.addInputFile(file, true));
       const fired = record(chat, [BusEventType.HUMAN_AGENT_SEND]);
-      const cancel = cancelAfterAwait();
+      const entered = resolvablePromise<void>();
+      const gate = resolvablePromise<void>();
+      let notified: jest.Mock | undefined;
       chat.on({
         type: BusEventType.HUMAN_AGENT_PRE_SEND,
-        handler: cancel.handler,
+        handler: async (event: BusEventHumanAgentPreSend) => {
+          entered.doResolve();
+          await gate;
+          notified = watchStore(chat);
+          event.cancel = true;
+        },
       });
       const before = chat.state.get().messages;
-      const notified = watchStore(chat);
 
-      const sending = manager.humanAgentService.sendMessageToAgent('Hello', [
-        file,
-      ]);
-      await cancel.entered;
-      cancel.release();
+      const sending = chatOf(chat).humanAgentService.sendMessageToAgent(
+        'Hello',
+        [inputFile('upload')]
+      );
+      await entered;
+      gate.doResolve();
       await sending;
 
+      expect(notified).toBeDefined();
       expect(notified).not.toHaveBeenCalled();
       expect(chat.state.get().messages).toBe(before);
       expect(desk.sendMessageToAgent).not.toHaveBeenCalled();
       expect(fired).toEqual([]);
-      expect(agentInputFiles(chat)).toEqual(['kept']);
-    });
-
-    it('clears the sent files once the handlers settle, and keeps one added meanwhile', async () => {
-      const { chat, desk } = await connectedChat();
-      const manager = chatOf(chat);
-      const sentFile = inputFile('sent');
-      manager.store.dispatch(actions.addInputFile(sentFile, true));
-      const entered = resolvablePromise<void>();
-      const gate = resolvablePromise<void>();
-      chat.on({
-        type: BusEventType.HUMAN_AGENT_PRE_SEND,
-        handler: async () => {
-          entered.doResolve();
-          await gate;
-        },
-      });
-
-      const sending = manager.humanAgentService.sendMessageToAgent('Hello', [
-        sentFile,
-      ]);
-      await entered;
-      expect(agentInputFiles(chat)).toEqual(['sent']);
-      manager.store.dispatch(actions.addInputFile(inputFile('later'), true));
-      gate.doResolve();
-      await sending;
-
-      expect(desk.sendMessageToAgent).toHaveBeenCalledTimes(1);
-      expect(agentInputFiles(chat)).toEqual(['later']);
-    });
-
-    it('clears every file when all of them were sent', async () => {
-      const { chat } = await connectedChat();
-      const manager = chatOf(chat);
-      const file = inputFile('sent');
-      manager.store.dispatch(actions.addInputFile(file, true));
-      await manager.humanAgentService.sendMessageToAgent('Hello', [file]);
-      expect(agentInputFiles(chat)).toEqual([]);
     });
   });
 

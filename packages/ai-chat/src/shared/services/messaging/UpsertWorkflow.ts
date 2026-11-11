@@ -288,8 +288,12 @@ class UpsertWorkflow {
     }
   }
 
+  /**
+   * Drops every upsert whose updater hasn't resolved yet, including one still queued
+   * behind another write for its message. Writes past their updater go on.
+   */
   invalidatePendingUpserts() {
-    this.lifetime.state.generation++;
+    this.lifetime.state.updaterGeneration++;
   }
 
   /**
@@ -402,7 +406,7 @@ class UpsertWorkflow {
     // way `addMessage` does. Without these, message components render-crash because
     // they read `message.history.timestamp` directly.
     const result = addDefaultsToMessage(
-      await this.runUpdater(messageID, updater)
+      await this.runUpdater(messageID, updater, stamp)
     );
     const isStale = () => this.isStale(stamp, result.request_id);
     if (isStale()) {
@@ -568,6 +572,7 @@ class UpsertWorkflow {
   private takeStamp(isCurrent: () => boolean): UpsertStamp {
     return {
       generation: this.lifetime.state.generation,
+      updaterGeneration: this.lifetime.state.updaterGeneration,
       restartCount: this.serviceManager.restartCount,
       isCurrent,
     };
@@ -924,7 +929,8 @@ class UpsertWorkflow {
    */
   private async runUpdater(
     messageID: string,
-    updater: UpsertMessageUpdater
+    updater: UpsertMessageUpdater,
+    stamp: UpsertStamp
   ): Promise<MessageResponse> {
     const existing = this.getStoredResponse(messageID);
 
@@ -932,6 +938,9 @@ class UpsertWorkflow {
       ? cloneDeep(existing as MessageResponse)
       : undefined;
     let result = await updater(previousMessage);
+    // A restart that began before the updater resolved drops the write, even if canceled.
+    stamp.droppedByRestart =
+      stamp.updaterGeneration !== this.lifetime.state.updaterGeneration;
 
     result = this.incomingMessageService.prepareUpsertMessage(result);
     if (Object.isFrozen(result.history)) {

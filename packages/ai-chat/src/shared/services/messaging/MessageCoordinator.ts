@@ -257,6 +257,7 @@ class MessageCoordinator {
   isIncomingWriteStale(stamp: UpsertStamp, requestID?: string): boolean {
     return (
       !stamp.isCurrent() ||
+      stamp.droppedByRestart ||
       stamp.generation !== this.incomingWriteLifetime.state.generation ||
       stamp.restartCount !== this.serviceManager.restartCount ||
       this.isRequestFromPreviousConversation(requestID)

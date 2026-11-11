@@ -379,8 +379,9 @@ export interface BusEventPreReceive extends BusEvent {
   /**
    * Set to `true` to keep this message out of the conversation. The chat doesn't add it, and
    * {@link BusEventType.RECEIVE} doesn't fire. A message that streamed in fires this event when it
-   * completes, so the chat removes what it already showed and ends the stream. You can set this
-   * after an `await`, such as after a check on your server.
+   * completes, so the chat removes what it already showed and ends the stream. A finished message
+   * already stored under the same ID, such as one in an error state, stays as it was. You can set
+   * this after an `await`, such as after a check on your server.
    */
   cancel?: boolean;
 }
@@ -402,9 +403,9 @@ export interface BusEventReceive extends BusEvent {
 }
 
 /**
- * Fires when a message leaves the send queue, before the chat sends it. The user's message
- * already shows in the conversation. Handlers can change the message that goes out, but this
- * event can't cancel the send.
+ * Fires when a message leaves the send queue, before the chat sends it. Unless the message is
+ * silent, it already shows in the conversation. Handlers can change the message that goes out,
+ * but this event can't cancel the send.
  *
  * @category Events
  * @category SDK
@@ -472,9 +473,9 @@ export interface BusEventHumanAgentPreSend extends BusEvent {
 
   /**
    * Set to `true` to stop this message. The chat doesn't show it or pass it to the service desk,
-   * and {@link BusEventType.HUMAN_AGENT_SEND} doesn't fire. Its files and structured data stay
-   * attached for the next message. You can set this after an `await`, such as after asking the user
-   * to confirm.
+   * and {@link BusEventType.HUMAN_AGENT_SEND} doesn't fire. The input has already cleared what the
+   * user submitted, files included, so they don't come back. You can set this after an `await`,
+   * such as after asking the user to confirm.
    */
   cancel?: boolean;
 }
