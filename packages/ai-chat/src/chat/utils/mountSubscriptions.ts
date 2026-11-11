@@ -23,13 +23,20 @@ const drops = new WeakMap<ChatInstance, () => void>();
  */
 function mountSubscriptions(eventBus: EventBus, self: () => ChatInstance) {
   const own = new Set<TypeAndHandler>();
+  // Once dropped, the mount is gone and the chat belongs to the next one, so
+  // a late subscription through this instance adds nothing.
+  let dropped = false;
   const record = () =>
     drops.set(self(), () => {
+      dropped = true;
       eventBus.off([...own]);
       own.clear();
     });
   return {
     on: (handlers: TypeAndHandler | TypeAndHandler[]) => {
+      if (dropped) {
+        return self();
+      }
       record();
       asArray(handlers).forEach((entry) => {
         eventBus.on(entry);
@@ -41,6 +48,9 @@ function mountSubscriptions(eventBus: EventBus, self: () => ChatInstance) {
     },
 
     once: (handlers: TypeAndHandler | TypeAndHandler[]) => {
+      if (dropped) {
+        return self();
+      }
       record();
       asArray(handlers).forEach(({ type, handler }) => {
         if (typeof handler !== 'function') {
@@ -66,12 +76,16 @@ function mountSubscriptions(eventBus: EventBus, self: () => ChatInstance) {
     off: (handlers: TypeAndHandler | TypeAndHandler[]) => {
       eventBus.off(handlers);
       asArray(handlers).forEach(({ type, handler }) => {
-        own.forEach((entry) => {
-          // No handler removes every handler of the type, as on the bus.
+        // As on the bus: no handler removes every handler of the type, and a
+        // handler removes one of its copies.
+        for (const entry of own) {
           if (entry.type === type && (!handler || entry.handler === handler)) {
             own.delete(entry);
+            if (handler) {
+              break;
+            }
           }
-        });
+        }
       });
       return self();
     },

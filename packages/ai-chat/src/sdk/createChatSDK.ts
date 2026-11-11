@@ -62,7 +62,8 @@ interface ChatSDKBootOptions {
   /**
    * With `reuse`, aborting it releases the claim, even while boot is still
    * running. The prebuilt chat aborts it when its mount goes away, so a
-   * remount can adopt the chat that mount started.
+   * remount can adopt the chat that mount started. Already aborted, it rejects
+   * with its reason and claims nothing.
    */
   signal?: AbortSignal;
   /**
@@ -101,6 +102,10 @@ async function createChatSDK(
   if (!options.reuse) {
     return createHandle(await bootChat(config, options));
   }
+  const { signal } = options;
+  if (signal?.aborted) {
+    throw signal.reason;
+  }
   // Copied now: boot can wait for an old chat's shutdown, and adoption for
   // boot, and the host may change its object meanwhile.
   const appConfig = options.appConfig ?? createSDKAppConfig(config);
@@ -120,12 +125,7 @@ async function createChatSDK(
     releaseGraceMs: () =>
       releaseGraceMsOf(held.chat?.store.getState().config ?? appConfig),
   });
-  const { signal } = options;
-  if (signal?.aborted) {
-    claim.release();
-  } else {
-    signal?.addEventListener('abort', () => claim.release(), { once: true });
-  }
+  signal?.addEventListener('abort', () => claim.release(), { once: true });
   held.chat = await claim.chat;
   return createHandle(held.chat, claim);
 }

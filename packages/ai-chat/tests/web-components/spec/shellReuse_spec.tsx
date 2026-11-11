@@ -9,7 +9,7 @@
 
 /**
  * A shell with `lifecycle.reuseInstance` on keeps its conversation through a
- * remount (#2357), and one with it off works as before.
+ * remount, and one with it off works as before.
  */
 
 import { waitFor } from '@testing-library/react';
@@ -30,6 +30,7 @@ import type {
   ServiceDeskCallback,
 } from '../../../src/types/config/ServiceDeskConfig';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
+import { PanelType, ViewType } from '../../../src/types/instance/apiTypes';
 import {
   MessageResponseTypes,
   UserType,
@@ -257,7 +258,45 @@ describe('the window (O8, O9)', () => {
     expect(managerOf(next.instance)).not.toBe(chat);
   });
 
-  it('a mount released while booting still lets the remount adopt', async () => {
+  it('a mount released while its claimed chat boots lets the remount adopt it', async () => {
+    const namespace = freshNamespace();
+    const claim = chatRegistry.claim.bind(chatRegistry);
+    const gate = resolvablePromise<void>();
+    const claimed = jest
+      .spyOn(chatRegistry, 'claim')
+      .mockImplementationOnce((key, options) =>
+        claim(key, {
+          ...options,
+          boot: async () => {
+            await gate;
+            return options.boot();
+          },
+        })
+      );
+    const element = chatElement(reuseConfig(namespace));
+    element.onBeforeRender = jest.fn();
+    document.body.appendChild(element);
+    await waitFor(() => expect(claimed).toHaveBeenCalled());
+    element.remove();
+    await flushMicrotasks();
+
+    const onError = jest.fn();
+    const pending = mountElement(reuseConfig(namespace, { onError }));
+    await waitFor(() => expect(claimed).toHaveBeenCalledTimes(2));
+    gate.doResolve();
+    const second = await pending;
+
+    expect(onError).not.toHaveBeenCalled();
+    expect(element.onBeforeRender).not.toHaveBeenCalled();
+    expect(shutdown).not.toHaveBeenCalled();
+    // The first mount drew nothing, so the chat opens as a new one would.
+    expect(second.instance.getState().viewState).toEqual({
+      launcher: true,
+      mainWindow: false,
+    });
+  });
+
+  it('a mount released before it claims leaves nothing behind', async () => {
     const namespace = freshNamespace();
     const original = chatBoot.bootPrebuiltChat;
     const gate = resolvablePromise<void>();
@@ -267,6 +306,7 @@ describe('the window (O8, O9)', () => {
         await gate;
         return original(options);
       });
+    const claimed = jest.spyOn(chatRegistry, 'claim');
     const element = chatElement(reuseConfig(namespace));
     element.onBeforeRender = jest.fn();
     document.body.appendChild(element);
@@ -274,13 +314,11 @@ describe('the window (O8, O9)', () => {
     element.remove();
     await flushMicrotasks();
     gate.doResolve();
+    await flushMicrotasks(30);
 
-    const second = await mountElement(reuseConfig(namespace));
-
+    expect(claimed).not.toHaveBeenCalled();
+    expect(console.error).not.toHaveBeenCalled();
     expect(element.onBeforeRender).not.toHaveBeenCalled();
-    expect(managerOf(second.instance).isShutdown).toBe(false);
-    // One chat: the first boot's, adopted.
-    expect(shutdown).not.toHaveBeenCalled();
   });
 });
 
@@ -332,6 +370,23 @@ describe('two shells on one namespace (O12–O14)', () => {
     await mountElement(reuseConfig(namespace));
     expect(claim).toHaveBeenCalledTimes(1);
     expect(claim.mock.calls[0][0]).toBe(namespace);
+  });
+});
+
+describe('a new mount starts its own view', () => {
+  it('reopens what was showing, with the old mount’s panels closed', async () => {
+    const namespace = freshNamespace();
+    const first = await mountElement(reuseConfig(namespace));
+    await first.instance.changeView(ViewType.MAIN_WINDOW);
+    first.instance.customPanels.getPanel(PanelType.DEFAULT).open();
+    const view = () => (managerOf(first.instance).store.getState() as any).view;
+    expect(view().customPanelState.isOpen).toBe(true);
+
+    await unmount(first);
+    const second = await mountElement(reuseConfig(namespace));
+
+    expect(second.instance.getState().viewState.mainWindow).toBe(true);
+    expect(view().customPanelState.isOpen).toBe(false);
   });
 });
 
@@ -409,7 +464,13 @@ describe('what a host sees (O19)', () => {
   }
 
   it('a reused chat fires the same events and publishes the same state as a fresh one', async () => {
-    const fresh = await observe(reuseConfig(freshNamespace()));
+    // Today's remount: a new chat on a namespace with a saved session.
+    const freshConfig = {
+      namespace: freshNamespace(),
+      messaging: { skipWelcome: true },
+    };
+    await unmount(await mountElement(freshConfig));
+    const fresh = await observe(freshConfig);
 
     const namespace = freshNamespace();
     const first = await mountElement(reuseConfig(namespace));
@@ -421,6 +482,26 @@ describe('what a host sees (O19)', () => {
     expect(reused.mounted.instance.state.get()).toEqual(
       fresh.mounted.instance.state.get()
     );
+  });
+
+  it('a handler added twice and removed once still stops at release', async () => {
+    const namespace = freshNamespace();
+    const handler = jest.fn();
+    const first = await mountElement(reuseConfig(namespace), (instance) => {
+      instance.on({ type: BusEventType.RECEIVE, handler });
+      instance.on({ type: BusEventType.RECEIVE, handler });
+      instance.off({ type: BusEventType.RECEIVE, handler });
+    });
+    await unmount(first);
+    const second = await mountElement(reuseConfig(namespace));
+    // A late subscription through the released instance adds nothing.
+    const late = jest.fn();
+    first.instance.on({ type: BusEventType.RECEIVE, handler: late });
+
+    await addMessage(second.instance, 'after');
+
+    expect(handler).not.toHaveBeenCalled();
+    expect(late).not.toHaveBeenCalled();
   });
 
   it('handlers from the released mount stop; the new mount’s run once', async () => {

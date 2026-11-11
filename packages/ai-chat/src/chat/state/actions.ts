@@ -18,6 +18,7 @@ import type { AnnounceMessage } from '../../types/state/AnnounceMessage';
 import type { DerivedConfig } from '../../types/state/AppConfig';
 import type { ThemeState } from '../../types/state/ThemeState';
 import type { ViewPartitionState } from '../../types/state/ViewPartitionState';
+import type { MountViewState } from './initialState';
 import type { CatastrophicErrorPanelState } from '../../types/state/panels/CatastrophicErrorPanelState';
 import type { PersistedState } from '../../types/state/PersistedState';
 import type {
@@ -145,11 +146,11 @@ const viewActions = {
   },
   /**
    * Readies a running chat for a new mount, as a saved session readies a new
-   * chat: nothing is drawn yet, and the view that was showing becomes the one
-   * the mount's initial view change opens.
+   * chat: nothing is drawn yet, the view that was showing becomes the one the
+   * mount's initial view change opens, and the mount's own fields start over.
    */
-  startNewMount() {
-    return { type: START_NEW_MOUNT };
+  startNewMount(mountState: MountViewState) {
+    return { type: START_NEW_MOUNT, mountState };
   },
   /**
    * Sets the value of one of the properties of {@link PersistedState}.

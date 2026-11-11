@@ -537,6 +537,7 @@ class ChatContainer extends FlattenedConfigElement {
           mergePublicConfig,
           performInitialViewChange,
           reportNamespaceError,
+          isNamespaceError,
           dropSubscriptions,
         },
         { applyBootConfig, applyConfigUpdate, createAppliedConfig },
@@ -556,8 +557,17 @@ class ChatContainer extends FlattenedConfigElement {
           signal: state.released.signal,
         });
       } catch (error) {
-        // Another mount holds the namespace: this one renders nothing.
-        if (isCurrent() && reportNamespaceError(error, publicConfig)) {
+        if (!isCurrent()) {
+          // Released before it claimed, or after a remount took the
+          // namespace: nobody is left to tell.
+          if (
+            error === state.released.signal.reason ||
+            isNamespaceError(error)
+          ) {
+            return;
+          }
+        } else if (reportNamespaceError(error, publicConfig)) {
+          // Another mount holds the namespace: this one renders nothing.
           return;
         }
         throw error;

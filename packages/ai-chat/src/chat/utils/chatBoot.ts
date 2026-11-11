@@ -60,6 +60,7 @@ import {
 } from '../../types/state/AppState';
 import { AutoScrollOptions } from '../../types/utilities/HasDoAutoScroll';
 import { viewActions } from '../state';
+import { createMountViewState } from '../state/initialState';
 
 /**
  * Default values applied to the provided `PublicConfig` before boot. This keeps
@@ -148,6 +149,11 @@ export async function bootPrebuiltChat(options: {
   };
 }
 
+/** Whether boot failed because another chat holds the namespace. */
+export function isNamespaceError(error: unknown) {
+  return error instanceof ChatNamespaceError;
+}
+
 /**
  * Reports a namespace another chat holds through `onError` and the console,
  * as a shell reports one (ADR-0003). Returns `false`, reporting nothing, for
@@ -157,7 +163,7 @@ export function reportNamespaceError(
   error: unknown,
   config: Pick<PublicConfig, 'onError'>
 ): boolean {
-  if (!(error instanceof ChatNamespaceError)) {
+  if (!isNamespaceError(error)) {
     return false;
   }
   consoleError(error.message);
@@ -185,7 +191,9 @@ async function adoptPrebuiltChat(
     serviceManager
   );
   serviceManager.instance = createPrebuiltInstance(serviceManager);
-  serviceManager.store.dispatch(viewActions.startNewMount());
+  serviceManager.store.dispatch(
+    viewActions.startNewMount(createMountViewState(publicConfig))
+  );
 }
 
 /**
