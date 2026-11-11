@@ -831,11 +831,101 @@ describe('slots reach the view that adopts the chat', () => {
     await first.instance.messaging.addMessage(userDefinedResponse('in-window'));
     const second = await mountElement(reuseConfig(namespace));
 
-    const records = hostsOf.get(second.element).getSnapshot();
+    const records = () => hostsOf.get(second.element).getSnapshot();
+    await waitFor(() => expect(slotOf(chat, 'in-window')).toBeTruthy());
     const slot = slotOf(chat, 'in-window');
-    expect(slot).toBeTruthy();
-    expect(Object.keys(records.userDefinedResponse)).toContain(slot);
-    expect(Object.keys(records.customFooter)).toEqual(['footer-in-window']);
+    await waitFor(() =>
+      expect(Object.keys(records().userDefinedResponse)).toEqual([slot])
+    );
+    expect(Object.keys(records().customFooter)).toEqual(['footer-in-window']);
+  });
+
+  it('a reasoning step’s user-defined item from the window shows in the adopting view', async () => {
+    const namespace = freshNamespace();
+    const first = await mountElement(reuseConfig(namespace));
+    await first.instance.changeView(ViewType.MAIN_WINDOW);
+    const chat = managerOf(first.instance);
+    await unmount(first);
+
+    const reasoned: MessageResponse = {
+      id: 'reasoned',
+      output: {
+        generic: [{ response_type: MessageResponseTypes.TEXT, text: 'Done' }],
+      },
+      message_options: {
+        reasoning: {
+          content: [
+            {
+              response_type: MessageResponseTypes.USER_DEFINED,
+              user_defined: { id: 'reasoning-card' },
+            },
+          ],
+        },
+      },
+    };
+    const fired: Array<string | undefined> = [];
+    chat.eventBus.on({
+      type: BusEventType.USER_DEFINED_RESPONSE,
+      handler: ({ data }: any) => fired.push(data.slot),
+    });
+    await first.instance.messaging.addMessage(reasoned);
+    await waitFor(() => expect(fired).toEqual([undefined]));
+    const second = await mountElement(reuseConfig(namespace));
+
+    await waitFor(() => expect(fired.filter(Boolean)).toHaveLength(1));
+    const [slot] = fired.filter(Boolean);
+    await waitFor(() =>
+      expect(
+        Object.keys(
+          hostsOf.get(second.element).getSnapshot().userDefinedResponse
+        )
+      ).toEqual([slot])
+    );
+  });
+
+  it('a response still streaming in the window keeps its state', async () => {
+    const namespace = freshNamespace();
+    const first = await mountElement(reuseConfig(namespace));
+    await first.instance.changeView(ViewType.MAIN_WINDOW);
+    const chat = managerOf(first.instance);
+    await unmount(first);
+
+    await first.instance.messaging.upsertMessage(
+      'streaming',
+      MessageState.STREAMING,
+      () => userDefinedResponse('streaming')
+    );
+    const second = await mountElement(reuseConfig(namespace));
+
+    await waitFor(() => expect(slotOf(chat, 'streaming')).toBeTruthy());
+    const slot = slotOf(chat, 'streaming');
+    await waitFor(() =>
+      expect(
+        hostsOf.get(second.element).getSnapshot().userDefinedResponse[slot]
+          ?.state
+      ).toBe(MessageState.STREAMING)
+    );
+  });
+
+  it('a handler that throws on the replayed response still lets the chat render', async () => {
+    const namespace = freshNamespace();
+    const first = await mountElement(reuseConfig(namespace));
+    await first.instance.changeView(ViewType.MAIN_WINDOW);
+    await unmount(first);
+    await first.instance.messaging.addMessage(userDefinedResponse('throws'));
+
+    const failing = jest.fn(() => {
+      throw new Error('host handler failed');
+    });
+    const second = await mountElement(reuseConfig(namespace), (instance) =>
+      instance.on({
+        type: BusEventType.USER_DEFINED_RESPONSE,
+        handler: failing,
+      })
+    );
+
+    await waitFor(() => expect(failing).toHaveBeenCalled());
+    expect(second.element.onAfterRender).toHaveBeenCalled();
   });
 
   it('an item named before release and updated in the window shows its update', async () => {
@@ -855,8 +945,12 @@ describe('slots reach the view that adopts the chat', () => {
     await upsert(MessageState.COMPLETE);
     const second = await mountElement(reuseConfig(namespace));
 
-    const records = hostsOf.get(second.element).getSnapshot();
+    await waitFor(() =>
+      expect(
+        hostsOf.get(second.element).getSnapshot().userDefinedResponse[slot]
+          ?.state
+      ).toBe(MessageState.COMPLETE)
+    );
     expect(slotOf(chat, 'updated')).toBe(slot);
-    expect(records.userDefinedResponse[slot].state).toBe(MessageState.COMPLETE);
   });
 });

@@ -49,9 +49,13 @@ import {
   IncreaseOrDecrease,
   SendOptions,
 } from '../../types/instance/ChatInstance';
-import { AddMessageOptions } from '../../types/config/MessagingConfig';
+import {
+  AddMessageOptions,
+  type MessageState,
+} from '../../types/config/MessagingConfig';
 import { loadLocale } from '../../sdk/utils/languageUtils';
 import {
+  Message,
   MessageRequest,
   MessageResponse,
   StreamChunk,
@@ -491,7 +495,7 @@ function createPrebuiltInstance(serviceManager: ServiceManager): ChatInstance {
  * {@link nameSlotsMissedWithoutView}.
  */
 export async function performInitialViewChange(serviceManager: ServiceManager) {
-  await nameSlotsMissedWithoutView(serviceManager);
+  nameSlotsMissedWithoutView(serviceManager);
   const initialState = chatStore(serviceManager).getState();
   const { wasLoadedFromBrowser } = initialState.view.persistedToBrowserStorage;
   const { targetViewState } = initialState.view;
@@ -520,53 +524,111 @@ export async function performInitialViewChange(serviceManager: ServiceManager) {
   }
 }
 
-/** Per reusable chat, the messages whose user-defined responses had no slot. */
-const slotlessMessages = new WeakMap<ServiceManager, Set<string>>();
+/**
+ * Per reusable chat, each message whose user-defined response last fired with
+ * no slot, and the state that event carried.
+ */
+const slotlessMessages = new WeakMap<
+  ServiceManager,
+  Map<string, MessageState | undefined>
+>();
 
 /**
  * Notes each message whose user-defined response fired with no slot, which
  * happens while no view is attached: a released chat in its grace window.
  */
 function collectSlotlessResponses(serviceManager: ServiceManager) {
-  const messageIDs = new Set<string>();
-  slotlessMessages.set(serviceManager, messageIDs);
+  const missed = new Map<string, MessageState | undefined>();
+  slotlessMessages.set(serviceManager, missed);
   serviceManager.eventBus.on({
     type: BusEventType.USER_DEFINED_RESPONSE,
     handler: ({ data }: BusEventUserDefinedResponse) => {
       if (!data.slot && !data.message.user_defined?.silent) {
-        messageIDs.add(data.fullMessage.id);
+        missed.set(data.fullMessage.id, data.state);
       }
     },
   });
 }
 
 /**
- * Fires again, with a slot, the user-defined responses whose last event
- * fired while no view was attached, so this mount's handlers and extension
- * hosts get their current content. An item a view named before keeps its
- * slot. Only a chat adopted from its grace window has any; silent items are
- * skipped.
+ * Fires again, with a slot, the user-defined responses whose last event fired
+ * while no view was attached, so this mount's handlers and extension hosts get
+ * their current content and state. Only a chat adopted from its grace window
+ * has any. It doesn't hold the first view change, and a handler that throws is
+ * logged, as a slow or failing handler doesn't hold a fresh mount either.
  */
-async function nameSlotsMissedWithoutView(serviceManager: ServiceManager) {
-  const messageIDs = slotlessMessages.get(serviceManager);
-  if (!messageIDs?.size) {
+function nameSlotsMissedWithoutView(serviceManager: ServiceManager) {
+  const missed = slotlessMessages.get(serviceManager);
+  if (!missed?.size) {
     return;
   }
-  const { allMessageItemsByID, allMessagesByID, assistantMessageState } =
-    serviceManager.store.getState();
-  const missed = Object.fromEntries(
-    Object.entries(allMessageItemsByID).filter(
-      ([, local]) =>
-        messageIDs.has(local.fullMessageID) &&
-        renderAsUserDefinedMessage(local.item) &&
-        !local.item.user_defined?.silent
+  refireSlotlessResponses(serviceManager, missed).catch((error) =>
+    consoleError(
+      'Failed to show the responses a reused chat got while it waited:',
+      error
     )
   );
-  messageIDs.clear();
-  if (Object.keys(missed).length) {
-    await serviceManager.messageCoordinator.createElementsForUserDefinedResponses(
-      { allMessageItemsByID: missed, allMessagesByID, assistantMessageState }
+}
+
+/**
+ * Fires each missed message's user-defined items with the state it last had.
+ * A message leaves the list once its items fired. If this mount is released
+ * part way, the rest stay for the next one.
+ */
+async function refireSlotlessResponses(
+  serviceManager: ServiceManager,
+  missed: Map<string, MessageState | undefined>
+) {
+  const { instance } = serviceManager;
+  for (const [messageID, state] of [...missed]) {
+    if (serviceManager.instance !== instance) {
+      return;
+    }
+    const { allMessageItemsByID, allMessagesByID } =
+      serviceManager.store.getState();
+    const message = allMessagesByID[messageID];
+    const items = Object.values(allMessageItemsByID).filter(
+      (local) =>
+        local.fullMessageID === messageID &&
+        renderAsUserDefinedMessage(local.item) &&
+        !local.item.user_defined?.silent
     );
+    for (const local of items) {
+      await serviceManager.messageCoordinator.handleUserDefinedResponseItems(
+        local,
+        message,
+        state
+      );
+    }
+    refireUnnamedReasoning(serviceManager, messageID, message);
+    missed.delete(messageID);
+  }
+}
+
+/**
+ * Fires again, through this mount's view, the user-defined items inside a
+ * message's reasoning that fired with no view to name their slots.
+ */
+function refireUnnamedReasoning(
+  serviceManager: ServiceManager,
+  messageID: string,
+  message: Message
+) {
+  const { messageCoordinator, userDefinedElementRegistry } = serviceManager;
+  const isNamed = (itemID: string) => userDefinedElementRegistry.has(itemID);
+  for (const local of Object.values(
+    serviceManager.store.getState().allMessageItemsByID
+  )) {
+    if (
+      local.fullMessageID === messageID &&
+      messageCoordinator.forgetUnnamedReasoning(local.ui_state.id, isNamed)
+    ) {
+      messageCoordinator.notifyMountedReasoning(
+        local.ui_state.id,
+        message,
+        new Set()
+      );
+    }
   }
 }
 

@@ -317,7 +317,7 @@ const conversationReadGaps: ConversationReadGap[] = [
     // message slices, which the message model replaces.
     file: 'src/chat/utils/chatBoot.ts',
     read: 'allMessageItemsByID',
-    count: 1,
+    count: 2,
     owner: '#2693',
   },
   {
@@ -328,7 +328,13 @@ const conversationReadGaps: ConversationReadGap[] = [
   },
   {
     file: 'src/chat/utils/chatBoot.ts',
-    read: 'assistantMessageState',
+    read: 'refireSlotlessResponses()',
+    count: 1,
+    owner: '#2693',
+  },
+  {
+    file: 'src/chat/utils/chatBoot.ts',
+    read: 'refireUnnamedReasoning()',
     count: 1,
     owner: '#2693',
   },
