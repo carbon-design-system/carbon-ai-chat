@@ -17,7 +17,7 @@ import { deepQuerySelector } from '@carbon/ai-chat-components/es/globals/utils/d
 import ChatShell from '../../../src/chat/components/shell/ChatShell';
 import type HydrationBody from '../../../src/chat/components/panels/native/HydrationBody';
 import type ChatInput from '../../../src/chat/components/input/ChatInput';
-import type { ChatViewState } from '../../../src/chat/services/chatViewState';
+import type { ChatMountState } from '../../../src/chat/services/chatMountState';
 
 import { ChatContainer } from '../../../src/react/ChatContainer';
 
@@ -254,7 +254,7 @@ describe('native shell failure surface', () => {
     const f = await boot({ onError });
     expect(onError).toHaveBeenCalledTimes(1);
     // The failed shell's error view connects without publishing handles.
-    const { viewState } = f.view as unknown as { viewState: ChatViewState };
+    const { viewState } = f.view as unknown as { viewState: ChatMountState };
     expect(viewState.mainWindow).toBeUndefined();
     expect(viewState.appWindow).toBeUndefined();
     expect(viewState.ariaAnnouncer).toBeUndefined();

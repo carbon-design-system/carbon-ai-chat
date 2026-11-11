@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { ChatViewState } from '../../../src/chat/services/chatViewState';
+import { ChatMountState } from '../../../src/chat/services/chatMountState';
 import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 import { createIntl } from '../../../src/sdk/utils/i18n';
 import { setIntl } from '../../../src/sdk/utils/intlUtils';
@@ -33,7 +33,7 @@ function createManager() {
 }
 
 function createViewState(manager = createManager()) {
-  return new ChatViewState(manager, { width: 800, height: 600 });
+  return new ChatMountState(manager, { width: 800, height: 600 });
 }
 
 function confirmation(title: string) {

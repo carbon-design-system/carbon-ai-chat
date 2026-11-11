@@ -8,14 +8,14 @@
  */
 
 import { createContext } from 'react';
-import type { ChatViewState } from '../services/chatViewState';
+import type { ChatMountState } from '../services/chatMountState';
 
 /**
  * The chat's view state. Its value stays the same for the whole mount, so the
- * context itself never re-renders a consumer; `useChatViewState` subscribes to
+ * context itself never re-renders a consumer; `useChatMountState` subscribes to
  * the fields that change.
  */
-const ChatContext = createContext<ChatViewState | null>(null);
+const ChatContext = createContext<ChatMountState | null>(null);
 
 ChatContext.displayName = 'ChatContext';
 

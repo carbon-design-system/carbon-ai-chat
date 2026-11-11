@@ -25,7 +25,7 @@ import { AppState } from '../src/types/state/AppState';
 import { MessageResponseTypes } from '../src/types/messaging/Messages';
 import { ServiceManager } from '../src/sdk/services/ServiceManager';
 import { slotSource, type SlotSource } from '../src/sdk/services/slotTracking';
-import { ChatViewState } from '../src/chat/services/chatViewState';
+import { ChatMountState } from '../src/chat/services/chatMountState';
 import type { AriaAnnouncerFunctionType } from '../src/chat/services/ariaAnnouncer';
 import { ChatContext } from '../src/chat/contexts/ChatContext';
 import type { IntlShape } from '../src/sdk/utils/i18n';
@@ -225,7 +225,7 @@ export function createTestViewState({
   intl,
   serviceManager = {},
   announce,
-}: TestChatContextOptions = {}): ChatViewState {
+}: TestChatContextOptions = {}): ChatMountState {
   const manager = serviceManager as ServiceManager;
   if (
     (store && manager.store && manager.store !== store) ||
@@ -237,7 +237,7 @@ export function createTestViewState({
   }
   manager.store ??= store;
   manager.intl ??= intl;
-  const viewState = new ChatViewState(manager, getWindowSize());
+  const viewState = new ChatMountState(manager, getWindowSize());
   if (announce) {
     viewState.announcer.announce = announce;
   }

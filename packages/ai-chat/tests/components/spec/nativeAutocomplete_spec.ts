@@ -29,11 +29,11 @@ import { AutocompleteContentAdapter } from '../../../src/chat/components/input/A
 
 import { AutocompleteContent } from '../../../src/chat/services/autocompleteContent';
 
-import { ChatViewState } from '../../../src/chat/services/chatViewState';
+import { ChatMountState } from '../../../src/chat/services/chatMountState';
 
 import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 
-import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
+import { chatMountStateContext } from '../../../src/web-components/shared/chat-mount-state-context';
 
 import { createIntl } from '../../../src/sdk/utils/i18n';
 
@@ -49,7 +49,7 @@ import { viewActions } from '../../../src/chat/state';
 
 class AutocompleteProvider extends LitElement {
   readonly provider = new ContextProvider(this, {
-    context: chatViewStateContext,
+    context: chatMountStateContext,
   });
   render() {
     return nothing;
@@ -60,7 +60,7 @@ customElements.define(
   AutocompleteProvider
 );
 
-const states = new Set<ChatViewState>();
+const states = new Set<ChatMountState>();
 const owners = new Set<AutocompleteContent>();
 const items = [
   { id: 'alpha', label: 'Alpha', value: 'Alpha value' },
@@ -113,7 +113,7 @@ async function fixture(configure?: (view: NativeAutocomplete) => void) {
     intl: createIntl({ locale: 'en', messages: store.getState().languagePack }),
     actions: { errorOccurred },
   } as unknown as ServiceManager;
-  const state = new ChatViewState(manager, { width: 800, height: 601 });
+  const state = new ChatMountState(manager, { width: 800, height: 601 });
   state.connect();
   states.add(state);
   const provider = document.createElement(
@@ -580,7 +580,7 @@ describe('native autocomplete', () => {
       view.autocomplete = { items, renderCustomList: () => list };
     });
     await f.trigger();
-    const replacement = new ChatViewState(f.state.serviceManager, {
+    const replacement = new ChatMountState(f.state.serviceManager, {
       width: 800,
       height: 601,
     });

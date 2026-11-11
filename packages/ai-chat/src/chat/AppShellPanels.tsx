@@ -41,7 +41,7 @@ import { MarkdownWithDefaults } from './components/helpers/MarkdownWithDefaults/
 import WriteableElement from './components/helpers/WriteableElement/WriteableElement';
 import { useSelector } from './hooks/useSelector';
 
-import { useChatViewStateInstance } from './hooks/useChatViewState';
+import { useChatMountStateInstance } from './hooks/useChatMountState';
 
 import type { ButtonItem, MessageResponse } from '../types/messaging/Messages';
 
@@ -71,7 +71,7 @@ export function useAppShellPanels({
   content: ShellContentState;
   onRevision: (parts: PanelContentParts) => void;
 }) {
-  const viewState = useChatViewStateInstance();
+  const viewState = useChatMountStateInstance();
   const {
     customPanelState,
     responsePanelState,

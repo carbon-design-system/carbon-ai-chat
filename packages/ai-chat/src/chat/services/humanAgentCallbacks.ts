@@ -7,14 +7,14 @@
  *  @license
  */
 
-import type { ChatViewState } from './chatViewState';
+import type { ChatMountState } from './chatMountState';
 import type { ServiceManager } from '../../sdk/services/ServiceManager';
 import type { FileUpload } from '../../types/state/AppState';
 
 export class HumanAgentCallbacks {
   private serviceManager: ServiceManager;
 
-  constructor(private viewState: ChatViewState) {
+  constructor(private viewState: ChatMountState) {
     this.serviceManager = viewState.serviceManager;
   }
 

@@ -12,8 +12,8 @@ import { act, render, waitFor } from '@testing-library/react';
 import { deepQuerySelector } from '@carbon/ai-chat-components/es/globals/utils/dom-utils.js';
 import ChatShell from '../../../src/chat/components/shell/ChatShell';
 import type ChatInput from '../../../src/chat/components/input/ChatInput';
-import type { ChatViewState } from '../../../src/chat/services/chatViewState';
-import { useChatViewStateInstance } from '../../../src/chat/hooks/useChatViewState';
+import type { ChatMountState } from '../../../src/chat/services/chatMountState';
+import { useChatMountStateInstance } from '../../../src/chat/hooks/useChatMountState';
 import { ChatContainer } from '../../../src/react/ChatContainer';
 import { ChatCustomElement } from '../../../src/react/ChatCustomElement';
 import actions from '../../../src/sdk/store/actions';
@@ -317,7 +317,7 @@ async function boot(
   const root = document.querySelector('cds-aichat-container').shadowRoot;
   const view = root.querySelector<ChatShell>('cds-aichat-chat-shell');
   await view.whenReady();
-  const { viewState } = view as unknown as { viewState: ChatViewState };
+  const { viewState } = view as unknown as { viewState: ChatMountState };
   const manager = viewState.serviceManager;
   return { instance, root, view, mounted, manager, viewState };
 }
@@ -342,7 +342,7 @@ describe.each(wrappers)(
     it('publishes renderer handles before the first consumer passive effect', async () => {
       const seen = jest.fn();
       function Consumer(): React.ReactElement | null {
-        const viewState = useChatViewStateInstance();
+        const viewState = useChatMountStateInstance();
         useEffect(() => {
           const { appWindow, mainWindow } = viewState;
           seen(appWindow, mainWindow);
@@ -393,7 +393,7 @@ const FAILED_VIEW_RESOURCES = [
   'subscription:window',
 ];
 
-function registrations(viewState: ChatViewState) {
+function registrations(viewState: ChatMountState) {
   return {
     appWindow: viewState.appWindow,
     mainWindow: viewState.mainWindow,
@@ -402,7 +402,7 @@ function registrations(viewState: ChatViewState) {
   };
 }
 
-function expectNoRegistrations(viewState: ChatViewState) {
+function expectNoRegistrations(viewState: ChatMountState) {
   expect(viewState.appWindow).toBeUndefined();
   expect(viewState.mainWindow).toBeUndefined();
   expect(viewState.inputComponent).toBeNull();
@@ -660,7 +660,7 @@ function composedWithin(container: Node | null, node: Node | null): boolean {
 
 async function expectLiveInputRegistration(f: {
   view: ChatShell;
-  viewState: ChatViewState;
+  viewState: ChatMountState;
 }) {
   const input = f.view.querySelector<ChatInput>('cds-aichat-chat-input');
   await waitFor(() => expect(f.viewState.inputComponent).toBeTruthy());
@@ -772,7 +772,7 @@ it('restores the input registration when an Activity boundary hides and shows th
     const view = document
       .querySelector('cds-aichat-container')
       .shadowRoot.querySelector<ChatShell>('cds-aichat-chat-shell');
-    const { viewState } = view as unknown as { viewState: ChatViewState };
+    const { viewState } = view as unknown as { viewState: ChatMountState };
     return { view, viewState, manager: viewState?.serviceManager };
   };
   const before = currentShell();
@@ -942,7 +942,7 @@ it('shows error panel content configured while an Activity boundary hides a fail
     ).toBe(true)
   );
   expectNoRegistrations(
-    (view as unknown as { viewState: ChatViewState }).viewState
+    (view as unknown as { viewState: ChatMountState }).viewState
   );
 });
 

@@ -17,7 +17,7 @@ import type CDSButton from '@carbon/web-components/es/components/button/button.j
 import type Toolbar from '@carbon/ai-chat-components/es/components/toolbar/src/toolbar.js';
 import NativePanels from '../../../src/chat/components/panels/NativePanels';
 import { ExtensionHosts } from '../../../src/chat/services/extensionHosts';
-import { ChatViewState } from '../../../src/chat/services/chatViewState';
+import { ChatMountState } from '../../../src/chat/services/chatMountState';
 import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 import type {
   PanelViewInputs,
@@ -29,7 +29,7 @@ import languagePack from '../../../src/sdk/languages/en.json';
 import { EventBus } from '../../../src/sdk/events/EventBus';
 import actions from '../../../src/sdk/store/actions';
 import { createIntl } from '../../../src/sdk/utils/i18n';
-import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
+import { chatMountStateContext } from '../../../src/web-components/shared/chat-mount-state-context';
 import {
   applyConfigChange,
   makeConfigStore,
@@ -48,14 +48,14 @@ jest.mock('../../../src/chat/utils/domUtils', () => ({
 
 class PromptProvider extends LitElement {
   readonly provider = new ContextProvider(this, {
-    context: chatViewStateContext,
+    context: chatMountStateContext,
   });
   render() {
     return nothing;
   }
 }
 customElements.define('test-native-prompt-provider', PromptProvider);
-const states = new Set<ChatViewState>();
+const states = new Set<ChatMountState>();
 
 async function flush(view: NativePanels) {
   for (let index = 0; index < 5; index += 1) {
@@ -99,7 +99,7 @@ async function fixture(
     intl: createIntl({ locale: 'en', messages: languagePack }),
     actions: { errorOccurred: jest.fn() },
   } as unknown as ServiceManager);
-  const state = new ChatViewState(manager, { width: 800, height: 600 });
+  const state = new ChatMountState(manager, { width: 800, height: 600 });
   state.connect();
   states.add(state);
   const provider = document.createElement(

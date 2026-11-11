@@ -69,7 +69,7 @@ const frameworkExceptions: BoundaryException[] = [];
 const viewHandleTypes = new Set([
   'AriaAnnouncerFunctionType',
   'EventTarget',
-  'ChatViewState',
+  'ChatMountState',
   'Document',
   'Element',
   'HasRequestFocus',
@@ -102,7 +102,7 @@ const chatServices = [
   'assistantInputCommands.ts',
   'attachChatView.ts',
   'autocompleteContent.ts',
-  'chatViewState.ts',
+  'chatMountState.ts',
   'createViewBindings.ts',
   'extensionHosts.ts',
   'humanAgentCallbacks.ts',

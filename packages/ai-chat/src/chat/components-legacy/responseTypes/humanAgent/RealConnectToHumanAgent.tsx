@@ -32,7 +32,7 @@ import {
   ConnectToHumanAgentItem,
   MessageResponse,
 } from '../../../../types/messaging/Messages';
-import { useChatViewStateInstance } from '../../../hooks/useChatViewState';
+import { useChatMountStateInstance } from '../../../hooks/useChatMountState';
 
 const Checkmark = carbonIconToReact(Checkmark16);
 const Headset = carbonIconToReact(Headset16);
@@ -115,7 +115,7 @@ function RealConnectToHumanAgent(props: RealConnectToHumanAgentProps) {
   const { availability, isConnecting, isSuspended } = humanAgent;
 
   const [showConfirmSuspended, setShowConfirmSuspended] = useState(false);
-  const viewState = useChatViewStateInstance();
+  const viewState = useChatMountStateInstance();
 
   useEffect(() => {
     if (!showConfirmSuspended || !isSuspended) {

@@ -10,7 +10,7 @@
 import cx from 'classnames';
 import type { JSONContent } from '@tiptap/core';
 
-import type { ChatViewState } from '../services/chatViewState';
+import type { ChatMountState } from '../services/chatMountState';
 
 import type { AppState, PendingUpload } from '../../types/state/AppState';
 
@@ -138,7 +138,7 @@ const cssVariableOverrideStylesheet =
   typeof CSSStyleSheet !== 'undefined' ? new CSSStyleSheet() : null;
 const SCROLLBAR_WIDTH_ATTR = 'data-cds-aichat-widget-id';
 let scrollbarWidthCounter = 0;
-const announcerOwners = new WeakMap<ChatViewState, ShellLifecycle>();
+const announcerOwners = new WeakMap<ChatMountState, ShellLifecycle>();
 const WIDTH_BREAKPOINT_STANDARD = 'cds-aichat--standard-width';
 const WIDTH_BREAKPOINT_NARROW = 'cds-aichat--narrow-width';
 const WIDTH_BREAKPOINT_WIDE = 'cds-aichat--wide-width';
@@ -284,7 +284,7 @@ export class ShellLifecycle {
   private readonly appWindow: { requestFocus: () => boolean };
 
   constructor(
-    readonly viewState: ChatViewState,
+    readonly viewState: ChatMountState,
     private invalidate: () => void,
     private getMessages: () => MessagesComponentClass | null,
     private whenReady: () => Promise<boolean>,

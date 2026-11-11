@@ -14,7 +14,7 @@ import '@carbon/web-components/es/components/loading/loading.js';
 import '@carbon/web-components/es/components/loading/loading-icon.js';
 import { NativeChatView } from '../../shared/NativeChatView';
 import { HydrationBodyLifecycle } from '../../../utils/panelBodyLifecycle';
-import type { ChatViewState } from '../../../services/chatViewState';
+import type { ChatMountState } from '../../../services/chatMountState';
 
 @carbonElement('cds-aichat-hydration-body')
 class HydrationBody extends NativeChatView {
@@ -24,10 +24,10 @@ class HydrationBody extends NativeChatView {
   private loadingLabel: string;
   private lifecycle?: HydrationBodyLifecycle;
 
-  private lifecycleOwner?: ChatViewState;
+  private lifecycleOwner?: ChatMountState;
   private releaseGeneration = 0;
 
-  protected onViewConnected(viewState: ChatViewState) {
+  protected onViewConnected(viewState: ChatMountState) {
     this.releaseGeneration += 1;
     if (this.lifecycleOwner && this.lifecycleOwner !== viewState) {
       this.releaseLifecycle();

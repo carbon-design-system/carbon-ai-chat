@@ -30,7 +30,7 @@ import {
 
 import type { ChatRenderer, ChatRenderMount } from '../shared/react-renderer';
 
-import { chatViewStateContext } from '../shared/chat-view-state-context';
+import { chatMountStateContext } from '../shared/chat-mount-state-context';
 
 import { ChatInstance } from '../../types/instance/ChatInstance';
 
@@ -491,7 +491,7 @@ class ChatContainer extends FlattenedConfigElement {
   private current?: MountState;
 
   private viewStateProvider = new ContextProvider(this, {
-    context: chatViewStateContext,
+    context: chatMountStateContext,
   });
 
   private startMount() {

@@ -24,11 +24,11 @@ import { IFrameComponent } from '../../../src/chat/components-legacy/responseTyp
 
 import type { PanelBodyContentReadyEvent } from '../../../src/chat/components/panels/native/panelBodyContent';
 
-import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
+import { chatMountStateContext } from '../../../src/web-components/shared/chat-mount-state-context';
 
 import { ChatContext } from '../../../src/chat/contexts/ChatContext';
 
-import { ChatViewState } from '../../../src/chat/services/chatViewState';
+import { ChatMountState } from '../../../src/chat/services/chatMountState';
 
 import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 
@@ -47,7 +47,7 @@ import { viewActions } from '../../../src/chat/state';
 
 class PanelBodyProvider extends LitElement {
   readonly provider = new ContextProvider(this, {
-    context: chatViewStateContext,
+    context: chatMountStateContext,
   });
   render() {
     return nothing;
@@ -55,7 +55,7 @@ class PanelBodyProvider extends LitElement {
 }
 customElements.define('test-native-panel-body-provider', PanelBodyProvider);
 
-const states = new Set<ChatViewState>();
+const states = new Set<ChatMountState>();
 
 async function createProvider() {
   const store = makeConfigStore({});
@@ -76,7 +76,7 @@ async function createProvider() {
     namespace: new NamespaceService('panel-body-test'),
     actions: { errorOccurred },
   } as unknown as ServiceManager;
-  const state = new ChatViewState(manager, { width: 800, height: 600 });
+  const state = new ChatMountState(manager, { width: 800, height: 600 });
   state.connect();
   states.add(state);
   const announce = jest

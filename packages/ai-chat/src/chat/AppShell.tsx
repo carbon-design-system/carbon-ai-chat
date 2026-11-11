@@ -26,7 +26,7 @@ import type { ShellContentState, ShellOptions } from './utils/shellLifecycle';
 import type { PanelContentParts } from './components/panels/PanelContentAdapter';
 import { useNativeInputConfig } from './hooks/useNativeInputConfig';
 import { useWriteableElementPresence } from './hooks/useWriteableElementPresence';
-import { useChatViewStateInstance } from './hooks/useChatViewState';
+import { useChatMountStateInstance } from './hooks/useChatMountState';
 import { useIntl } from './hooks/useIntl';
 import { useSelector } from './hooks/useSelector';
 import { useAppShellPanels } from './AppShellPanels';
@@ -65,7 +65,7 @@ const ConfiguredNativeShell = React.forwardRef<
     normalizeInput: boolean;
   }
 >(function ConfiguredNativeShell({ options, normalizeInput, ...props }, ref) {
-  const { serviceManager } = useChatViewStateInstance();
+  const { serviceManager } = useChatMountStateInstance();
   const customPromptLinePresent = useWriteableElementPresence(
     WriteableElementName.CUSTOM_PROMPT_LINE,
     writeableElementsOf(serviceManager),
@@ -187,7 +187,7 @@ function AppShell({
   hostElement,
   writeableElementsPresentKeys,
 }: AppShellProps) {
-  const viewState = useChatViewStateInstance();
+  const viewState = useChatMountStateInstance();
   const catastrophicErrorType = useSelector(
     (state: AppState) => state.view.catastrophicErrorType
   );

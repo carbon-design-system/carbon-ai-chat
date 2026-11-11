@@ -8,7 +8,7 @@
  */
 
 import { HumanAgentCallbacks } from '../../../src/chat/services/humanAgentCallbacks';
-import { ChatViewState } from '../../../src/chat/services/chatViewState';
+import { ChatMountState } from '../../../src/chat/services/chatMountState';
 import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 
 function setup() {
@@ -23,7 +23,7 @@ function setup() {
     humanAgentService: service,
   } as unknown as ServiceManager;
   const focus = jest.fn();
-  const viewState = new ChatViewState(manager, { width: 0, height: 0 });
+  const viewState = new ChatMountState(manager, { width: 0, height: 0 });
   return {
     state,
     service,

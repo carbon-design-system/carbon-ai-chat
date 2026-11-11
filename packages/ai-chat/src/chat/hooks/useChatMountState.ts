@@ -11,12 +11,12 @@ import { useContext } from 'react';
 import { useSyncExternalStoreWithSelector } from 'use-sync-external-store/shim/with-selector.js';
 import { ChatContext } from '../contexts/ChatContext';
 import type {
-  ChatViewState,
-  ChatViewStateSnapshot,
-} from '../services/chatViewState';
+  ChatMountState,
+  ChatMountStateSnapshot,
+} from '../services/chatMountState';
 
 /** Returns the chat's view state, which stays the same for the mount. */
-function useChatViewStateInstance(): ChatViewState {
+function useChatMountStateInstance(): ChatMountState {
   const viewState = useContext(ChatContext);
   if (!viewState) {
     throw new Error('ChatContext is missing in the component tree.');
@@ -28,11 +28,11 @@ function useChatViewStateInstance(): ChatViewState {
  * Selects a field of the chat's view state and re-renders only when the
  * selected value changes. Uses the same React 17 shim as `useSelector`.
  */
-function useChatViewState<Selected>(
-  selector: (snapshot: ChatViewStateSnapshot) => Selected,
+function useChatMountState<Selected>(
+  selector: (snapshot: ChatMountStateSnapshot) => Selected,
   isEqual?: (left: Selected, right: Selected) => boolean
 ): Selected {
-  const viewState = useChatViewStateInstance();
+  const viewState = useChatMountStateInstance();
   return useSyncExternalStoreWithSelector(
     viewState.subscribe,
     viewState.getSnapshot,
@@ -42,4 +42,4 @@ function useChatViewState<Selected>(
   );
 }
 
-export { useChatViewState, useChatViewStateInstance };
+export { useChatMountState, useChatMountStateInstance };

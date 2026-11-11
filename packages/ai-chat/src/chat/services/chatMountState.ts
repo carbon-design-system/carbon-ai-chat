@@ -34,7 +34,7 @@ interface ShellHandles {
   inputComponent?: InputFunctions | null;
 }
 
-interface ChatViewStateSnapshot {
+interface ChatMountStateSnapshot {
   readonly serviceManager: ServiceManager;
   readonly intl: IntlShape;
   readonly windowSize: Dimension;
@@ -50,7 +50,7 @@ interface ChatViewStateSnapshot {
  * creates one per mount; React reads it through `ChatContext`, and Lit through
  * the view-state Lit context.
  */
-class ChatViewState {
+class ChatMountState {
   readonly announcer: AriaAnnouncer;
 
   // Handles the connected shell publishes, read by the view ports. They're
@@ -82,7 +82,7 @@ class ChatViewState {
     this.shellHandles[name] = value;
   }
 
-  private snapshot: ChatViewStateSnapshot;
+  private snapshot: ChatMountStateSnapshot;
   private listeners = new Set<() => void>();
   private unsubscribeIntl: (() => void) | null = null;
   private initialReactHolds = new Set<object>();
@@ -115,7 +115,7 @@ class ChatViewState {
     );
   }
 
-  getSnapshot = (): ChatViewStateSnapshot => this.snapshot;
+  getSnapshot = (): ChatMountStateSnapshot => this.snapshot;
 
   subscribe = (listener: () => void): (() => void) => {
     this.listeners.add(listener);
@@ -126,7 +126,7 @@ class ChatViewState {
 
   /** Calls `listener` only when the selected value changes. */
   select<T>(
-    selector: (snapshot: ChatViewStateSnapshot) => T,
+    selector: (snapshot: ChatMountStateSnapshot) => T,
     listener: (value: T) => void,
     isEqual: (left: T, right: T) => boolean = Object.is
   ): () => void {
@@ -236,9 +236,9 @@ class ChatViewState {
     }
   };
 
-  private update(change: Partial<ChatViewStateSnapshot>): void {
+  private update(change: Partial<ChatMountStateSnapshot>): void {
     if (
-      (Object.keys(change) as (keyof ChatViewStateSnapshot)[]).every(
+      (Object.keys(change) as (keyof ChatMountStateSnapshot)[]).every(
         (key) => this.snapshot[key] === change[key]
       )
     ) {
@@ -249,5 +249,5 @@ class ChatViewState {
   }
 }
 
-export { ChatViewState };
-export type { ChatViewStateSnapshot };
+export { ChatMountState };
+export type { ChatMountStateSnapshot };

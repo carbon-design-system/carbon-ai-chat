@@ -26,7 +26,7 @@ import type {
   PanelBodyContentDetail,
   PanelBodyContentReadyEvent,
 } from './native/panelBodyContent';
-import { useChatViewStateInstance } from '../../hooks/useChatViewState';
+import { useChatMountStateInstance } from '../../hooks/useChatMountState';
 
 const nativeErrorBodyEvents = { onPanelContentReady: 'panel-content-ready' };
 
@@ -46,7 +46,7 @@ function CatastrophicErrorPanel({
   title,
   ...props
 }: CatastrophicErrorPanelProps) {
-  const viewState = useChatViewStateInstance();
+  const viewState = useChatMountStateInstance();
   const releaseInitialCommit = useRef<() => void>(undefined);
   const [content, setContent] = useState<PanelBodyContentDetail | null>();
   useLayoutEffect(() => {

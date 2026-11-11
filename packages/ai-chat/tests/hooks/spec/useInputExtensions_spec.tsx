@@ -23,12 +23,12 @@ import type ChatInput from '../../../src/chat/components/input/ChatInput';
 import { loadBuildCarbonExtensions } from '../../../src/chat/components/input/buildExtensionsLoader';
 import { useInputConfig } from '../../../src/chat/hooks/useInputConfig';
 import { ChatContext } from '../../../src/chat/contexts/ChatContext';
-import { ChatViewState } from '../../../src/chat/services/chatViewState';
+import { ChatMountState } from '../../../src/chat/services/chatMountState';
 import { AutocompleteContent } from '../../../src/chat/services/autocompleteContent';
 import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 import type { InputProps } from '../../../src/chat/utils/inputTypes';
 import { createIntl } from '../../../src/sdk/utils/i18n';
-import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
+import { chatMountStateContext } from '../../../src/web-components/shared/chat-mount-state-context';
 import type {
   InputConfig,
   StartersConfig,
@@ -47,12 +47,12 @@ jest.mock('../../../src/chat/hooks/useInputConfig', () => ({
 // Keep item references stable so a changed items array cannot mask a missing dependency.
 const STARTER_ITEMS = [{ id: 's1', label: 'Summarize this' }];
 const InputConfigContext = createContext<InputConfig>({});
-const states = new Set<ChatViewState>();
+const states = new Set<ChatMountState>();
 const owners = new Set<AutocompleteContent>();
 
 class InputExtensionsProvider extends LitElement {
   readonly provider = new ContextProvider(this, {
-    context: chatViewStateContext,
+    context: chatMountStateContext,
   });
   render() {
     return nothing;
@@ -95,7 +95,7 @@ async function fixture(input: InputConfig) {
     intl: createIntl({ locale: 'en', messages: store.getState().languagePack }),
     actions: { errorOccurred },
   } as unknown as ServiceManager;
-  const state = new ChatViewState(manager, { width: 800, height: 600 });
+  const state = new ChatMountState(manager, { width: 800, height: 600 });
   state.connect();
   states.add(state);
   const provider = document.createElement(

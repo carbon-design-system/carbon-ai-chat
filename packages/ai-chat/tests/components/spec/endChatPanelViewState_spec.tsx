@@ -14,8 +14,8 @@ import { LitElement } from 'lit';
 
 import '../../../src/web-components/cds-aichat-container';
 import { ChatContainer } from '../../../src/react/ChatContainer';
-import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
-import type { ChatViewState } from '../../../src/chat/services/chatViewState';
+import { chatMountStateContext } from '../../../src/web-components/shared/chat-mount-state-context';
+import type { ChatMountState } from '../../../src/chat/services/chatMountState';
 import enLanguagePack from '../../../src/sdk/languages/en.json';
 import {
   createBaseConfig,
@@ -24,11 +24,11 @@ import {
 } from '../../test_helpers';
 
 class ViewStateProbe extends LitElement {
-  viewState = new ContextConsumer(this, { context: chatViewStateContext });
+  viewState = new ContextConsumer(this, { context: chatMountStateContext });
 }
 customElements.define('test-end-chat-view-state-probe', ViewStateProbe);
 
-function viewStateOf(host: Element): ChatViewState {
+function viewStateOf(host: Element): ChatMountState {
   const probe = document.createElement(
     'test-end-chat-view-state-probe'
   ) as ViewStateProbe;

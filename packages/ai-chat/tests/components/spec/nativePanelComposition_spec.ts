@@ -18,7 +18,7 @@ import '../../../src/chat/components/panels/NativePanels';
 import type NativePanels from '../../../src/chat/components/panels/NativePanels';
 import { ExtensionHosts } from '../../../src/chat/services/extensionHosts';
 
-import { ChatViewState } from '../../../src/chat/services/chatViewState';
+import { ChatMountState } from '../../../src/chat/services/chatMountState';
 
 import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 
@@ -28,7 +28,7 @@ import type {
   PanelName,
 } from '../../../src/chat/utils/panelComposition';
 
-import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
+import { chatMountStateContext } from '../../../src/web-components/shared/chat-mount-state-context';
 
 import { createIntl } from '../../../src/sdk/utils/i18n';
 
@@ -52,14 +52,14 @@ import { viewActions } from '../../../src/chat/state';
 
 class PanelProvider extends LitElement {
   readonly provider = new ContextProvider(this, {
-    context: chatViewStateContext,
+    context: chatMountStateContext,
   });
   render() {
     return nothing;
   }
 }
 customElements.define('test-native-panels-provider', PanelProvider);
-const states = new Set<ChatViewState>();
+const states = new Set<ChatMountState>();
 
 async function flush(view: NativePanels) {
   for (let index = 0; index < 5; index += 1) {
@@ -102,7 +102,7 @@ async function fixture(
     intl: createIntl({ locale: 'en', messages: store.getState().languagePack }),
     actions: { errorOccurred },
   } as unknown as ServiceManager;
-  const state = new ChatViewState(manager, { width: 800, height: 600 });
+  const state = new ChatMountState(manager, { width: 800, height: 600 });
   state.connect();
   states.add(state);
   const provider = document.createElement(

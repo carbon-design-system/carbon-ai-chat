@@ -29,8 +29,8 @@ import { ChatCustomElement } from '../../../src/react/ChatCustomElement';
 import * as sdkBoot from '../../../src/sdk/createChatSDK';
 import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
 import { setIntl } from '../../../src/sdk/utils/intlUtils';
-import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
-import type { ChatViewState } from '../../../src/chat/services/chatViewState';
+import { chatMountStateContext } from '../../../src/web-components/shared/chat-mount-state-context';
+import type { ChatMountState } from '../../../src/chat/services/chatMountState';
 import { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import { ViewType } from '../../../src/types/instance/apiTypes';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
@@ -86,12 +86,12 @@ function renderTargetOf(container: Element) {
 }
 
 class ViewStateProbe extends LitElement {
-  viewState = new ContextConsumer(this, { context: chatViewStateContext });
+  viewState = new ContextConsumer(this, { context: chatMountStateContext });
 }
 customElements.define('test-mount-view-state-probe', ViewStateProbe);
 
 /** The view state a chat element currently provides to its Lit children. */
-function viewStateOf(host: Element): ChatViewState | undefined {
+function viewStateOf(host: Element): ChatMountState | undefined {
   const probe = document.createElement(
     'test-mount-view-state-probe'
   ) as ViewStateProbe;
@@ -102,7 +102,7 @@ function viewStateOf(host: Element): ChatViewState | undefined {
 }
 
 /** Gives a view state's manager a new formatter, as a locale change does. */
-function changeFormatter(viewState: ChatViewState) {
+function changeFormatter(viewState: ChatMountState) {
   const { serviceManager } = viewState;
   setIntl(serviceManager, 'fr', serviceManager.store.getState().languagePack);
 }
