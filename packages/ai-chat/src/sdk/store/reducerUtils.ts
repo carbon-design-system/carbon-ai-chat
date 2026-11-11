@@ -18,10 +18,8 @@ import {
 } from '../../types/state/ChatMessagesState';
 import { HumanAgentState } from '../../types/state/HumanAgentState';
 import { InputState } from '../../types/state/InputState';
-import { ThemeState } from '../../types/state/ThemeState';
 import { ViewState } from '../../types/instance/apiTypes';
 import { PersistedState } from '../../types/state/PersistedState';
-import { CornersType } from '../utils/constants';
 import { deepFreeze } from '../utils/lang/objectUtils';
 
 import {
@@ -143,19 +141,6 @@ const DEFAULT_MESSAGE_STATE: AppStateMessages = {
   },
 };
 deepFreeze(DEFAULT_MESSAGE_STATE);
-
-const DEFAULT_THEME_STATE: ThemeState = {
-  derivedCarbonTheme: null,
-  originalCarbonTheme: null,
-  aiEnabled: true,
-  corners: {
-    startStart: CornersType.ROUND,
-    startEnd: CornersType.ROUND,
-    endStart: CornersType.ROUND,
-    endEnd: CornersType.ROUND,
-  },
-};
-deepFreeze(DEFAULT_THEME_STATE);
 
 /**
  * Returns a new state that has the {@link ChatMessagesState} modified for the given chat type with the new properties.
@@ -857,7 +842,6 @@ export {
   DEFAULT_PERSISTED_TO_BROWSER,
   DEFAULT_HUMAN_AGENT_STATE,
   VIEW_STATE_ALL_CLOSED,
-  DEFAULT_THEME_STATE,
   DEFAULT_INPUT_STATE,
   applyAssistantMessageState,
   applyChunkWriteWithIdentity,

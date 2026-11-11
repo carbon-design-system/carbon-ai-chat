@@ -42,7 +42,7 @@ Load only what you need:
   - `utils/` — helpers that conversation code uses. View code may import them too.
   - `languages/` — `intl-messageformat` string bundles, one locale file. [LanguagePack.ts](src/types/config/LanguagePack.ts) declares the public `LanguagePack` type over it, so adding a key widens public API and renaming one breaks it. Hosts translate through `PublicConfig.strings`; word new strings per [ui-strings.md](../../.bob/skills/caic-copy-writer/references/ui-strings.md).
 - [src/chat/](src/chat/) — the prebuilt interface. Do most feature work here.
-  - `state/` — the view partition, under `view` in the chat's one store: panels, layout, loading indicators, announcements, the unread agent count, and the view half of saved state. Conversation code can't see it. Internal; never exported.
+  - `state/` — the view partition, under `view` in the chat's one store: panels, layout, loading indicators, announcements, the unread agent count, the values derived from config (header, layout, launcher, and shortcut defaults, CSS overrides, and the theme), and the view half of saved state. Conversation code can't see it. Internal; never exported.
   - `services/` — view-owned classes with explicit cleanup: `ChatViewState`, extension hosts, the announcer, the theme watcher, the messaging presentation adapter, and the human-agent view callbacks.
   - `utils/` — view helpers, including DOM, focus, and shell lifecycle code.
   - `components/` and `components-legacy/` — follow [component placement](../../references/code-patterns.md#component-placement) when adding or moving UI. Private Lit views that read chat state extend `components/shared/NativeChatView.ts`.

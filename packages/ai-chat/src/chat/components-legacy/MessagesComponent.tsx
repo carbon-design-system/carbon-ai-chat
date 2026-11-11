@@ -949,10 +949,10 @@ const selectMessagesState = (
   disclaimerIsOn: state.config.public.disclaimer?.isOn,
   persistFeedback: state.config.public.persistFeedback,
   hideAvatar: state.config.public.hideAvatar,
-  // Reference-stable across config replaces via reconcileAppConfigReferences, so this
-  // survives shallowEqual.
+  // Reference-stable across config updates, which reconcile the derived values in the view
+  // partition, so this survives shallowEqual.
   keyboardShortcutConfig:
-    state.config.derived.keyboardShortcuts.messageFocusToggle,
+    state.view.derivedConfig.keyboardShortcuts.messageFocusToggle,
 });
 
 // Selected separately (with its own shallowEqual) rather than folded into

@@ -31,7 +31,6 @@ import {
 import { FileUpload } from '../../types/config/ServiceDeskConfig';
 import { InputState } from '../../types/state/InputState';
 import { PersistedState } from '../../types/state/PersistedState';
-import { ThemeState } from '../../types/state/ThemeState';
 import type { StructuredData } from '../../types/messaging/Messages';
 
 import type { ConversationStatus } from '../../types/instance/PublicChatState';
@@ -78,7 +77,6 @@ const SET_STOP_STREAMING_BUTTON_DISABLED = 'SET_STOP_STREAMING_BUTTON_DISABLED';
 const SET_STOP_STREAMING_BUTTON_METADATA_DISABLED =
   'SET_STOP_STREAMING_BUTTON_METADATA_DISABLED';
 const SET_STREAM_ID = 'SET_STREAM_ID';
-const UPDATE_THEME_STATE = 'UPDATE_THEME_STATE';
 const SET_IS_RESTARTING = 'SET_IS_RESTARTING';
 const SET_ACTIVE_RESPONSE_ID = 'SET_ACTIVE_RESPONSE_ID';
 const UPDATE_STRUCTURED_DATA = 'UPDATE_STRUCTURED_DATA';
@@ -444,10 +442,6 @@ const actions = {
     return { type: SET_IS_RESTARTING, isRestarting };
   },
 
-  updateThemeState(themeState: ThemeState) {
-    return { type: UPDATE_THEME_STATE, themeState };
-  },
-
   /**
    * Updates the pending structured data in the input state. The updater function receives the current
    * pending structured data and should return the new value (or undefined to clear it).
@@ -539,7 +533,6 @@ export {
   SET_STOP_STREAMING_BUTTON_DISABLED,
   SET_STOP_STREAMING_BUTTON_METADATA_DISABLED,
   SET_STREAM_ID,
-  UPDATE_THEME_STATE,
   SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY,
   SET_IS_RESTARTING,
   ADD_PENDING_UPLOAD,

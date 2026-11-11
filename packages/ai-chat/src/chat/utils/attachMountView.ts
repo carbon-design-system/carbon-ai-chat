@@ -16,6 +16,7 @@ import { ChatViewState } from '../services/chatViewState';
 import { createViewBindings } from '../services/createViewBindings';
 import { ExtensionHosts } from '../services/extensionHosts';
 import { ThemeWatcherService } from '../services/ThemeWatcherService';
+import { chatStore } from '../services/attachChatView';
 import { getWindowSize } from './windowSize';
 
 let bootContainerRulesInstalled = false;
@@ -104,7 +105,7 @@ function attachMountView({
   try {
     viewState.connect();
     undo.unshift(() => viewState.disconnect());
-    themeWatcher = new ThemeWatcherService(serviceManager.store);
+    themeWatcher = new ThemeWatcherService(chatStore(serviceManager));
     themeWatcher.connect();
     undo.unshift(() => themeWatcher.disconnect());
     // Before the host's callbacks and the initial view change, which both may

@@ -29,7 +29,6 @@ import { ConversationState } from '../../../src/types/state/AppState';
 import { MessageResponseTypes } from '../../../src/types/messaging/Messages';
 import { selectStopStreamingButtonVisible } from '../../../src/sdk/store/selectors';
 import { createInitialState } from '../../../src/sdk/store/doCreateStore';
-import { createAppConfig } from '../../../src/chat/utils/appConfig';
 import {
   getChatShadowRoot,
   mockCustomSendMessage,
@@ -38,7 +37,7 @@ import {
 } from '../../test_helpers';
 
 function stateFor(config: PublicConfig): ConversationState {
-  return createInitialState(createAppConfig(config));
+  return createInitialState({ public: config });
 }
 
 function withButtonState(

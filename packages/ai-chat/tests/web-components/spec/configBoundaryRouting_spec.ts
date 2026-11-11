@@ -54,8 +54,8 @@ describe('Web component: prop-update boundary routing', () => {
     const store = capturedInstance.serviceManager.store;
     const before = store.getState() as AppState;
     const beforeLanguagePack = before.languagePack;
-    const beforeTheme = before.config.derived.themeWithDefaults;
-    expect(before.config.derived.header?.title).toBe('Title A');
+    const beforeTheme = before.view.derivedConfig.themeWithDefaults;
+    expect(before.view.derivedConfig.header?.title).toBe('Title A');
 
     // Update only the header through the flattened web-component surface.
     element.header = { title: 'Title B' };
@@ -64,7 +64,7 @@ describe('Web component: prop-update boundary routing', () => {
     await waitFor(
       () => {
         expect(
-          (store.getState() as AppState).config.derived.header?.title
+          (store.getState() as AppState).view.derivedConfig.header?.title
         ).toBe('Title B');
       },
       { timeout: 5000 }
@@ -75,6 +75,6 @@ describe('Web component: prop-update boundary routing', () => {
     expect(after.languagePack).toBe(beforeLanguagePack);
     // The unrelated derived sub-object kept its reference via reconciliation, so
     // selectors reading it (and the memoized AppShell) do not re-render.
-    expect(after.config.derived.themeWithDefaults).toBe(beforeTheme);
+    expect(after.view.derivedConfig.themeWithDefaults).toBe(beforeTheme);
   });
 });

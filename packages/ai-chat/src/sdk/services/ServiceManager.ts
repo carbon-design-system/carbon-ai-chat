@@ -137,17 +137,6 @@ class ServiceManager {
    */
   intl: IntlShape;
 
-  /**
-   * As part of the view change work a bug was exposed where someone calling openWindow, closeWindow, or toggleOpen,
-   * immediately after calling instance.render(), without waiting for render to finish, would trigger viewChange to
-   * throw an error because it was in the middle of changing the view to set the view to the targetViewState and
-   * couldn't accept another view change request at that time. The solution is to force the instance.openWindow,
-   * instance.closeWindow, and instance.toggleOpen functions to wait for this renderPromise to complete before allowing
-   * them to try and trigger a view change. This can be removed from the service manager when the deprecated window
-   * methods and events are removed.
-   */
-  renderPromise: Promise<ChatInstance>;
-
   private shutdownPromise?: Promise<void>;
 
   /**

@@ -21,6 +21,7 @@ import type { AppStore } from '../../sdk/store/appStore';
 import type { PublicConfig } from '../../types/config/PublicConfig';
 import type { ConversationState } from '../../types/state/AppState';
 import type { ViewPersistedState } from '../../types/state/ViewPartitionState';
+import type { DerivedConfig } from '../../types/state/AppConfig';
 import { createInitialViewState } from './initialState';
 import { viewPublicFields } from './publicFields';
 import { viewReducer } from './reducer';
@@ -38,6 +39,7 @@ const VIEW_PARTITION_KEY = 'view';
  * @param chat.publicStateService The chat's public state, which gains the view's fields.
  * @param config The host's config.
  * @param saved The saved view half to restore, if a session was saved.
+ * @param derivedConfig The values derived from `config`. Boot builds them once, so their warnings print once.
  * @returns Whether this call attached it.
  */
 function attachViewState(
@@ -46,13 +48,14 @@ function attachViewState(
     publicStateService: PublicStateService;
   },
   config: PublicConfig,
-  saved: ViewPersistedState | null
+  saved: ViewPersistedState | null,
+  derivedConfig: DerivedConfig
 ): boolean {
   const attached = attachStorePartition(
     chat,
     VIEW_PARTITION_KEY,
     viewReducer,
-    createInitialViewState(config, saved)
+    createInitialViewState(config, saved, derivedConfig)
   );
   if (attached) {
     extendPublicState(chat, viewPublicFields);

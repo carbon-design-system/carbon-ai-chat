@@ -576,8 +576,8 @@ class ChatInput extends NativeChatView {
       );
     }
     if (focused && !this.hasAnnouncedShortcut) {
-      const shortcut = chatStore(this.serviceManager).getState().config.derived
-        .keyboardShortcuts.messageFocusToggle;
+      const shortcut = chatStore(this.serviceManager).getState().view
+        .derivedConfig.keyboardShortcuts.messageFocusToggle;
       if (shortcut.isOn) {
         store.dispatch(
           viewActions.announceMessage({

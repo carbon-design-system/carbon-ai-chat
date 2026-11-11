@@ -60,11 +60,7 @@ function createHandle(serviceManager: ServiceManager): ChatSDKHandle {
       if (serviceManager.isShutdown) {
         return;
       }
-      await applyConversationConfig(serviceManager, {
-        ...createSDKAppConfig(next),
-        // Derived values come from the view, which an SDK chat has none of.
-        derived: serviceManager.store.getState().config.derived,
-      });
+      await applyConversationConfig(serviceManager, createSDKAppConfig(next));
     },
   };
   chats.set(handle, serviceManager);

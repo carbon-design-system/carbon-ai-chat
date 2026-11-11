@@ -22,8 +22,8 @@ import { createSDKAppConfig } from './sdkAppConfig';
 /** The prebuilt chat's boot options. Internal; the SDK entry never takes them. */
 interface ChatSDKBootOptions {
   /**
-   * The config the store holds. The prebuilt chat passes its whole `AppConfig`,
-   * with the view's derived values; otherwise it's built from `config`.
+   * The config the store holds. The prebuilt chat passes
+   * `{ public: PublicConfig }`; otherwise it's built from `config`.
    */
   appConfig?: ConversationAppConfig;
   /** Saves and restores the session in browser session storage. */

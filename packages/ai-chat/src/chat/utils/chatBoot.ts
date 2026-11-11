@@ -17,7 +17,7 @@ import { chatOf, type ChatSDKHandle } from '../../sdk/handle';
 import actions from '../../sdk/store/actions';
 
 import { ServiceManager } from '../../sdk/services/ServiceManager';
-import { createAppConfig } from './appConfig';
+import { createDerivedConfig } from './appConfig';
 import { createCustomPanelManager } from '../services/CustomPanelManager';
 import { attachChatView, chatStore } from '../services/attachChatView';
 import { setIntl } from '../../sdk/utils/intlUtils';
@@ -103,15 +103,15 @@ export async function bootPrebuiltChat(options: {
   // Extend dayjs with LocalizedFormat plugin once before usage
   dayjs.extend(LocalizedFormat);
   // Before the locale loads, as before, so config warnings print first.
-  const appConfig = createAppConfig(publicConfig);
+  const derivedConfig = createDerivedConfig(publicConfig);
   const localePack = await loadLocale(publicConfig.locale || 'en');
 
   const handle = await createChatSDK(undefined, {
-    appConfig,
+    appConfig: { public: publicConfig },
     sessionStorage: true,
     loadHistory: false,
     onServicesCreated: (serviceManager) => {
-      attachChatView(serviceManager, publicConfig);
+      attachChatView(serviceManager, publicConfig, derivedConfig);
       // Update Redux with new values for language, locale, and messages
       setIntl(
         serviceManager,

@@ -11,7 +11,7 @@ import type { AppState } from '../../types/state/AppState';
 import { CarbonTheme } from '../../types/config/CarbonTheme';
 
 export function selectCarbonTheme(state: AppState) {
-  return state.config.derived.themeWithDefaults.derivedCarbonTheme;
+  return state.view.derivedConfig.themeWithDefaults.derivedCarbonTheme;
 }
 
 export function getCarbonTheme(carbonTheme: CarbonTheme) {

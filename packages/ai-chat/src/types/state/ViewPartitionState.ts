@@ -12,6 +12,7 @@ import type { ChatWidthBreakpoint } from './ChatWidthBreakpoint';
 import type { PersistedState } from './PersistedState';
 import type { ViewState } from '../instance/apiTypes';
 import type { MarkdownConfig } from '../config/MarkdownConfig';
+import type { DerivedConfig } from './AppConfig';
 import type { CatastrophicErrorPanelState } from './panels/CatastrophicErrorPanelState';
 import type { IFramePanelState } from './panels/IFramePanelState';
 import type { ViewSourcePanelState } from './panels/ViewSourcePanelState';
@@ -60,6 +61,9 @@ interface ViewPartitionState {
 
   /** Host markdown renderers and plugins. */
   markdownConfig?: MarkdownConfig;
+
+  /** The values the chat computes from its public config: header, layout, theme, and the like. */
+  derivedConfig: DerivedConfig;
 
   /** Shows the message loading indicator while above 0. */
   isMessageLoadingCounter: number;

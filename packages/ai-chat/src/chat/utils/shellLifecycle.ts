@@ -200,13 +200,13 @@ export function selectShellChatState(state: PublicChatState) {
 
 export function selectShellState(state: AppState) {
   return {
-    theme: state.config.derived.themeWithDefaults,
-    layout: state.config.derived.layout,
-    launcher: state.config.derived.launcher,
-    cssVariableOverrides: state.config.derived.cssVariableOverrides,
-    header: state.config.derived.header,
+    theme: state.view.derivedConfig.themeWithDefaults,
+    layout: state.view.derivedConfig.layout,
+    launcher: state.view.derivedConfig.launcher,
+    cssVariableOverrides: state.view.derivedConfig.cssVariableOverrides,
+    header: state.view.derivedConfig.header,
     messageFocusToggleShortcut:
-      state.config.derived.keyboardShortcuts.messageFocusToggle,
+      state.view.derivedConfig.keyboardShortcuts.messageFocusToggle,
     publicConfig: state.config.public,
     languagePack: state.languagePack,
     isHydrated: state.isHydrated,
@@ -577,7 +577,7 @@ export class ShellLifecycle {
       layout,
       launcher,
       header,
-    } = state.config.derived;
+    } = state.view.derivedConfig;
     const publicConfig = state.config.public;
     const intl = this.viewState.getSnapshot().intl;
     const namespaceName = serviceManager.namespace.originalName;
@@ -1073,7 +1073,7 @@ export class ShellLifecycle {
     const styleInputs = [
       container,
       this.options.hostElement,
-      state.config.derived.cssVariableOverrides,
+      state.view.derivedConfig.cssVariableOverrides,
     ];
     if (!this.styleInputs || !shallowEqual(this.styleInputs, styleInputs)) {
       this.styleInputs = styleInputs;
@@ -1081,7 +1081,7 @@ export class ShellLifecycle {
         container,
         hostElement: this.options.hostElement,
         cssVariableOverrideString: convertCSSVariablesToString(
-          state.config.derived.cssVariableOverrides
+          state.view.derivedConfig.cssVariableOverrides
         ),
         appStyles: styles,
         applicationStylesheet,
@@ -1139,7 +1139,7 @@ export class ShellLifecycle {
   private readonly handleKeyDown = (event: KeyboardEvent) => {
     const manager = this.viewState.serviceManager;
     const shortcut =
-      chatStore(manager).getState().config.derived.keyboardShortcuts
+      chatStore(manager).getState().view.derivedConfig.keyboardShortcuts
         .messageFocusToggle;
     if (shortcut.isOn && matchesShortcut(event, shortcut)) {
       let focused = false;
