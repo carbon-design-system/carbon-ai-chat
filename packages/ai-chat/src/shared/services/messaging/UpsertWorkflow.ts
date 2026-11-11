@@ -396,7 +396,9 @@ class UpsertWorkflow {
     requestID?: string
   ): Promise<void> {
     // A restart while the updater or `pre:receive` is pending must not write into the
-    // new conversation, the same check `addMessage` makes.
+    // new conversation, the same check `addMessage` makes. One that began while this
+    // upsert waited behind another write drops it before its updater runs.
+    this.markDroppedByRestart(stamp);
     if (this.isStale(stamp)) {
       return;
     }
@@ -570,6 +572,12 @@ class UpsertWorkflow {
       restartCount: this.serviceManager.restartCount,
       isCurrent,
     };
+  }
+
+  /** A restart that began before this upsert's updater resolved drops it, even if canceled. */
+  private markDroppedByRestart(stamp: UpsertStamp) {
+    stamp.droppedByRestart =
+      stamp.updaterGeneration !== this.lifetime.state.updaterGeneration;
   }
 
   private isStale(stamp: UpsertStamp, requestID?: string): boolean {
@@ -932,9 +940,7 @@ class UpsertWorkflow {
       ? cloneDeep(existing as MessageResponse)
       : undefined;
     let result = await updater(previousMessage);
-    // A restart that began before the updater resolved drops the write, even if canceled.
-    stamp.droppedByRestart =
-      stamp.updaterGeneration !== this.lifetime.state.updaterGeneration;
+    this.markDroppedByRestart(stamp);
 
     result = this.incomingMessageService.prepareUpsertMessage(result);
     if (Object.isFrozen(result.history)) {

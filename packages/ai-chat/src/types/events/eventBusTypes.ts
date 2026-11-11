@@ -606,8 +606,9 @@ export interface BusEventPreReset extends BusEvent {
    * stay as they were. {@link BusEventType.RESTART_CONVERSATION} doesn't fire, and
    * {@link ChatSDKInstanceMessaging.restartConversation} resolves. One write doesn't come back: an
    * {@link ChatSDKInstanceMessaging.upsertMessage} call that was still waiting on its updater when the
-   * restart began is dropped, even if you cancel. You can set this after an `await`, such as after
-   * asking the user to confirm.
+   * restart began is dropped, even if you cancel. If that call was completing a streamed message,
+   * the message keeps streaming until your next upsert for it. You can set this after an `await`,
+   * such as after asking the user to confirm.
    */
   cancel?: boolean;
 }

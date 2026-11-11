@@ -283,6 +283,41 @@ describe('canceling pre: events', () => {
       expect(ids(chat)).not.toContain('late');
     });
 
+    it('drops an upsert queued behind another write without calling its updater', async () => {
+      const { chat } = await sdkChat();
+      const firstEntered = resolvablePromise<void>();
+      const releaseFirst = resolvablePromise<MessageResponse>();
+      const first = chat.messaging.upsertMessage(
+        'queued',
+        MessageState.COMPLETE,
+        () => {
+          firstEntered.doResolve();
+          return releaseFirst;
+        }
+      );
+      const secondUpdater = jest.fn(() => response('queued', 'Second'));
+      const second = chat.messaging.upsertMessage(
+        'queued',
+        MessageState.COMPLETE,
+        secondUpdater
+      );
+      await firstEntered;
+      chat.on({
+        type: BusEventType.PRE_RESTART_CONVERSATION,
+        handler: async (event: BusEventPreReset) => {
+          // Both writes finish while the handler runs, then it cancels.
+          releaseFirst.doResolve(response('queued', 'First'));
+          await Promise.all([first, second]);
+          event.cancel = true;
+        },
+      });
+
+      await chat.messaging.restartConversation();
+
+      expect(secondUpdater).not.toHaveBeenCalled();
+      expect(ids(chat)).not.toContain('queued');
+    });
+
     it.each([true, false])(
       'with cancel %s, an upsert past its updater finishes, or the restart clears it',
       async (cancel) => {
