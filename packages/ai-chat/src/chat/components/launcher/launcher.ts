@@ -46,13 +46,13 @@ import { NativeChatView } from '../shared/NativeChatView';
 
 import { LauncherState, LauncherOpenState } from '../../services/launcherState';
 
-import { shallowEqual } from '../../../shared/store/appStore';
+import { shallowEqual } from '../../../sdk/store/appStore';
 
-import { IS_PHONE } from '../../../shared/utils/browserUtils';
+import { IS_PHONE } from '../../../sdk/utils/browserUtils';
 
 import { doFocus, isDirectionRTL } from '../../utils/domUtils';
 
-import type { IntlShape } from '../../../shared/utils/i18n';
+import type { IntlShape } from '../../../sdk/utils/i18n';
 
 import { viewActions } from '../../state';
 

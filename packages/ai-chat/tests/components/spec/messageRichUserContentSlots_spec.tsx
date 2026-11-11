@@ -18,7 +18,7 @@ import {
 import { InputNodePortalsContainer } from '../../../src/chat/components/portals/InputNodePortalsContainer';
 import { collectInputNodeSlots } from '../../../src/chat/utils/inputNodeSlots';
 import { ExtensionHosts } from '../../../src/chat/services/extensionHosts';
-import actions from '../../../src/shared/store/actions';
+import actions from '../../../src/sdk/store/actions';
 import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import {
   makeConfigStore,

@@ -23,24 +23,16 @@ const root = path.resolve(__dirname, '../../..');
 /** Which folders each folder may import. */
 const rules: FolderRule[] = [
   {
-    folder: 'src/shared/',
-    mayImport: ['src/shared/', 'src/types/'],
-    frameworkFree: true,
-  },
-  {
     folder: 'src/sdk/',
-    mayImport: ['src/sdk/', 'src/shared/', 'src/types/'],
+    mayImport: ['src/sdk/', 'src/types/'],
     frameworkFree: true,
   },
   {
-    // Public types may name a shared type or read shared JSON data. Shared
-    // code may import only shared and types, so this leads into view code
-    // only through one of shared's listed exceptions.
+    // Public types may name an SDK type or read the SDK's JSON data. SDK code
+    // may import only sdk and types, so this leads into view code only
+    // through one of the SDK's listed exceptions.
     folder: 'src/types/',
-    mayImport: [
-      'src/types/',
-      { folder: 'src/shared/', only: ['type', 'data'] },
-    ],
+    mayImport: ['src/types/', { folder: 'src/sdk/', only: ['type', 'data'] }],
   },
 ];
 
@@ -82,7 +74,7 @@ const viewHandleExceptions: Array<{
   reason: string;
 }> = [];
 
-/** View-owned classes that stay in `chat/services/`; conversation services go in `shared/`. */
+/** View-owned classes that stay in `chat/services/`; conversation services go in `sdk/`. */
 const chatServices = [
   'CustomPanelInstance.ts',
   'CustomPanelManager.ts',
@@ -149,28 +141,23 @@ it('keeps each folder to the folders it may import', () => {
   expect(current.folders).toEqual(keys(folderExceptions));
 });
 
-it('keeps frameworks and element registration out of what shared and sdk code reach', () => {
+it('keeps frameworks and element registration out of what sdk code reaches', () => {
   expect(current.frameworks).toEqual(keys(frameworkExceptions));
 });
 
 it('keeps view handles out of conversation services and the SDK', () => {
-  const services = files.filter(
-    (file) =>
-      file.startsWith('src/shared/services/') || file.startsWith('src/sdk/')
-  );
+  const services = files.filter((file) => file.startsWith('src/sdk/'));
   expect([...typeReferences(read, services, viewHandleTypes)].sort()).toEqual(
     viewHandleExceptions.map(({ reference }) => reference).sort()
   );
 });
 
-// The whole store's type includes the view partition, so only chat/ and view/
-// may name it. Conversation code sees ConversationState (#1831 O5, O6). The
-// whole config reaches view code too, so conversation code reads
+// The whole store's type includes the view partition, so only the prebuilt
+// chat may name it. Conversation code sees ConversationState (#1831 O5, O6).
+// The whole config reaches view code too, so conversation code reads
 // ConversationConfig, which the shell's PublicConfig fills (D5).
-it('keeps the view partition and the whole config out of conversation and SDK code', () => {
-  const conversation = files.filter(
-    (file) => file.startsWith('src/shared/') || file.startsWith('src/sdk/')
-  );
+it('keeps the view partition and the whole config out of SDK code', () => {
+  const conversation = files.filter((file) => file.startsWith('src/sdk/'));
   expect([
     ...typeReferences(
       read,
@@ -198,7 +185,7 @@ it('keeps conversation folders out of chat/', () => {
 });
 
 describe('planted imports', () => {
-  const shared = 'src/shared/services/NamespaceService.ts';
+  const shared = 'src/sdk/services/NamespaceService.ts';
 
   it.each([
     ["import 'lit';", 'lit'],
@@ -210,7 +197,7 @@ describe('planted imports', () => {
     ],
   ])('fails shared code that imports a framework: %s', (line, target) => {
     expect(plant(shared, line).frameworks).toContain(
-      `src/shared/: ${shared} -> ${target}`
+      `src/sdk/: ${shared} -> ${target}`
     );
   });
 
@@ -220,7 +207,7 @@ describe('planted imports', () => {
       "import type { CDSAIChatMarkdown } from '@carbon/ai-chat-components/es/components/markdown/index.js';"
     );
     expect(result.frameworks).toContain(
-      `src/shared/: ${shared} -> ../ai-chat-components/src/components/markdown/index.ts`
+      `src/sdk/: ${shared} -> ../ai-chat-components/src/components/markdown/index.ts`
     );
   });
 
@@ -255,7 +242,7 @@ describe('planted imports', () => {
     'fails shared code that reaches view code through a config type: %s',
     (line, from, to) => {
       expect(plant(shared, line).frameworks).toContain(
-        `src/shared/: ${from} -> ${to}`
+        `src/sdk/: ${from} -> ${to}`
       );
     }
   );
@@ -291,10 +278,8 @@ describe('planted imports', () => {
 
   it('fails a public type that loads shared code at runtime', () => {
     const types = 'src/types/config/CornersType.ts';
-    const result = plant(types, "import '../../shared/utils/constants';");
-    expect(result.folders).toContain(
-      `${types} -> src/shared/utils/constants.ts`
-    );
+    const result = plant(types, "import '../../sdk/utils/constants';");
+    expect(result.folders).toContain(`${types} -> src/sdk/utils/constants.ts`);
   });
 
   it('fails the SDK entry that reaches a framework or view code', () => {
@@ -322,7 +307,7 @@ describe('planted imports', () => {
     'fails shared code that reaches a framework another way: %s',
     (line, target) => {
       expect(plant(shared, line).frameworks).toContain(
-        `src/shared/: ${shared} -> ${target}`
+        `src/sdk/: ${shared} -> ${target}`
       );
     }
   );
@@ -335,7 +320,7 @@ describe('planted imports', () => {
       "import type { FileUpload } from '@carbon/ai-chat-components/es/components/prompt-line/src/types.js';"
     );
     expect(result.frameworks).toContain(
-      `src/shared/: ${shared} -> ../ai-chat-components/src/components/prompt-line/src/types.ts`
+      `src/sdk/: ${shared} -> ../ai-chat-components/src/components/prompt-line/src/types.ts`
     );
   });
 
@@ -353,7 +338,7 @@ describe('planted imports', () => {
       "import '@carbon/ai-chat-components/es-custom/components/markdown/index.js';"
     );
     expect(result.frameworks).toContain(
-      `src/shared/: ${shared} -> ../ai-chat-components/src/components/markdown/index.ts`
+      `src/sdk/: ${shared} -> ../ai-chat-components/src/components/markdown/index.ts`
     );
   });
 
@@ -363,7 +348,7 @@ describe('planted imports', () => {
       "const registry = customElements;\nregistry.define('x-planted', class extends HTMLElement {});"
     );
     expect(result.frameworks).toContain(
-      `src/shared/: ${shared} -> customElements`
+      `src/sdk/: ${shared} -> customElements`
     );
   });
 
@@ -381,17 +366,15 @@ describe('planted imports', () => {
     const types = 'src/types/config/CornersType.ts';
     const result = plant(
       types,
-      "export const load = () => import(('../../shared/utils/constants'));"
+      "export const load = () => import(('../../sdk/utils/constants'));"
     );
-    expect(result.folders).toContain(
-      `${types} -> src/shared/utils/constants.ts`
-    );
+    expect(result.folders).toContain(`${types} -> src/sdk/utils/constants.ts`);
   });
 
   it('fails a framework that shared code reaches through a type', () => {
     const types = 'src/types/config/CornersType.ts';
     expect(
       plant(types, "import type { TemplateResult } from 'lit';").frameworks
-    ).toContain(`src/shared/: ${types} -> lit`);
+    ).toContain(`src/sdk/: ${types} -> lit`);
   });
 });

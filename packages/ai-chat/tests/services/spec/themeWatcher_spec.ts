@@ -8,8 +8,8 @@
  */
 
 import { ThemeWatcherService } from '../../../src/chat/services/ThemeWatcherService';
-import { createAppStore } from '../../../src/shared/store/appStore';
-import type { AppStore } from '../../../src/shared/store/appStore';
+import { createAppStore } from '../../../src/sdk/store/appStore';
+import type { AppStore } from '../../../src/sdk/store/appStore';
 import { CarbonTheme } from '../../../src/types/config/CarbonTheme';
 import type { ConversationState } from '../../../src/types/state/ConversationState';
 

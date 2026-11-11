@@ -7,18 +7,18 @@
  *  @license
  */
 
-import actions from '../../shared/store/actions';
+import actions from '../../sdk/store/actions';
 import {
   selectInputState,
   selectIsInputToHumanAgent,
-} from '../../shared/store/selectors';
-import { createMessageRequestForText } from '../../shared/utils/messageUtils';
+} from '../../sdk/store/selectors';
+import { createMessageRequestForText } from '../../sdk/utils/messageUtils';
 import { shouldSendSilently } from '../utils/fileAttachments';
 import {
   BusEventType,
   MessageSendSource,
 } from '../../types/events/eventBusTypes';
-import type { ServiceManager } from '../../shared/services/ServiceManager';
+import type { ServiceManager } from '../../sdk/services/ServiceManager';
 import type { AppState } from '../../types/state/AppState';
 import type { SendOptions } from '../../types/instance/ChatInstance';
 import type { JSONContent } from '@tiptap/core';

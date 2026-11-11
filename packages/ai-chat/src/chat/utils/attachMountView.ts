@@ -9,8 +9,8 @@
 
 import { setVarsForSelector } from '@carbon/ai-chat-components/es/components/shared/dynamic-css-var-sheet.js';
 
-import type { ServiceManager } from '../../shared/services/ServiceManager';
-import { slotSource } from '../../shared/services/slotTracking';
+import type { ServiceManager } from '../../sdk/services/ServiceManager';
+import { slotSource } from '../../sdk/services/slotTracking';
 import { viewActions } from '../state';
 import { ChatViewState } from '../services/chatViewState';
 import { createViewBindings } from '../services/createViewBindings';

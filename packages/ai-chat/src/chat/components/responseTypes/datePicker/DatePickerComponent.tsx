@@ -31,16 +31,16 @@ import { useServiceManager } from '../../../hooks/useServiceManager';
 import { AppState } from '../../../../types/state/AppState';
 import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
 
-import { ENGLISH_US_DATE_FORMAT } from '../../../../shared/utils/constants';
+import { ENGLISH_US_DATE_FORMAT } from '../../../../sdk/utils/constants';
 import {
   sanitizeDateFormat,
   toAssistantDateFormat,
   toUserDateFormat,
 } from '../../../utils/dateUtils';
 import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
-import { loadDayjsLocale } from '../../../../shared/utils/languageUtils';
-import { createMessageRequestForDate } from '../../../../shared/utils/messageUtils';
-import { consoleError } from '../../../../shared/utils/miscUtils';
+import { loadDayjsLocale } from '../../../../sdk/utils/languageUtils';
+import { createMessageRequestForDate } from '../../../../sdk/utils/messageUtils';
+import { consoleError } from '../../../../sdk/utils/miscUtils';
 import {
   DateItem,
   MessageResponse,

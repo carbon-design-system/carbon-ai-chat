@@ -7,9 +7,9 @@
  *  @license
  */
 
-import { EventBus } from '../../../src/shared/events/EventBus';
+import { EventBus } from '../../../src/sdk/events/EventBus';
 import { ExtensionHosts } from '../../../src/chat/services/extensionHosts';
-import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 import { createChatSDK } from '../../../src/sdk';
 import { chatOf } from '../../../src/sdk/internal';
 import {
@@ -20,7 +20,7 @@ import {
   type CustomRequestFooterSlotState,
   type SlotStores,
   type UserDefinedSlotState,
-} from '../../../src/shared/services/slotTracking';
+} from '../../../src/sdk/services/slotTracking';
 import type {
   RenderCustomMessageFooterState,
   RenderCustomRequestFooterState,

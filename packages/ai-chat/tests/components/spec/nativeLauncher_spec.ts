@@ -16,12 +16,12 @@ import { ChatContainer } from '../../../src/react/ChatContainer';
 import { ChatCustomElement } from '../../../src/react/ChatCustomElement';
 import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
 import { ChatViewState } from '../../../src/chat/services/chatViewState';
-import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
-import { createIntl } from '../../../src/shared/utils/i18n';
-import { setIntl } from '../../../src/shared/utils/intlUtils';
-import * as browserUtils from '../../../src/shared/utils/browserUtils';
+import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
+import { createIntl } from '../../../src/sdk/utils/i18n';
+import { setIntl } from '../../../src/sdk/utils/intlUtils';
+import * as browserUtils from '../../../src/sdk/utils/browserUtils';
 import * as reducedMotion from '../../../src/chat/utils/prefersReducedMotion';
-import actions from '../../../src/shared/store/actions';
+import actions from '../../../src/sdk/store/actions';
 import { ViewType } from '../../../src/types/state/AppState';
 import type { LauncherConfig } from '../../../src/types/config/LauncherConfig';
 import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
@@ -38,8 +38,8 @@ import {
 } from '../../test_helpers';
 import { viewActions } from '../../../src/chat/state';
 
-jest.mock('../../../src/shared/utils/browserUtils', () => ({
-  ...jest.requireActual('../../../src/shared/utils/browserUtils'),
+jest.mock('../../../src/sdk/utils/browserUtils', () => ({
+  ...jest.requireActual('../../../src/sdk/utils/browserUtils'),
   __esModule: true,
   IS_PHONE: false,
 }));

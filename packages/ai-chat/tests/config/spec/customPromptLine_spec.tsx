@@ -15,8 +15,8 @@ import '../../../src/web-components/cds-aichat-container';
 import { ChatContainerProps } from '../../../src/types/component/ChatContainer';
 import { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import { WriteableElementName } from '../../../src/types/instance/WriteableElements';
-import { ServiceManager } from '../../../src/shared/services/ServiceManager';
-import actions from '../../../src/shared/store/actions';
+import { ServiceManager } from '../../../src/sdk/services/ServiceManager';
+import actions from '../../../src/sdk/store/actions';
 import {
   createBaseTestProps,
   setupAfterEach,

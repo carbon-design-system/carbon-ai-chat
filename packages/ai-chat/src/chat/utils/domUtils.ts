@@ -8,7 +8,7 @@
  */
 
 import { compute } from 'compute-scroll-into-view';
-import { memoizeFunction } from '../../shared/utils/memoizerUtils';
+import { memoizeFunction } from '../../sdk/utils/memoizerUtils';
 import type { KeyboardEvent as ReactKeyboardEvent, RefObject } from 'react';
 import { tabbable } from 'tabbable';
 import { setVarsForSelector } from '@carbon/ai-chat-components/es/components/shared/dynamic-css-var-sheet.js';

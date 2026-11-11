@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { VIEW_STATE_ALL_CLOSED } from '../../shared/store/reducerUtils';
+import { VIEW_STATE_ALL_CLOSED } from '../../sdk/store/reducerUtils';
 import { AppState, ViewState, ViewType } from '../../types/state/AppState';
 
 /**

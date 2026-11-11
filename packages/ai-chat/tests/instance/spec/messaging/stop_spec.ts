@@ -14,10 +14,10 @@
 
 import { waitFor } from '@testing-library/react';
 import { requestStopFromInput } from '../../../../src/chat/services/assistantInputCommands';
-import createHumanAgentService from '../../../../src/shared/services/haa/HumanAgentServiceImpl';
-import actions from '../../../../src/shared/store/actions';
+import createHumanAgentService from '../../../../src/sdk/services/haa/HumanAgentServiceImpl';
+import actions from '../../../../src/sdk/store/actions';
 import type { ServiceDesk } from '../../../../src/types/config/ServiceDeskConfig';
-import { resolvablePromise } from '../../../../src/shared/utils/resolvablePromise';
+import { resolvablePromise } from '../../../../src/sdk/utils/resolvablePromise';
 import {
   CancellationReason,
   MessageState,

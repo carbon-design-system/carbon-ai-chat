@@ -19,14 +19,14 @@ import {
 
 import { BusEventType } from '../../types/events/eventBusTypes';
 
-import { ServiceManager } from '../../shared/services/ServiceManager';
+import { ServiceManager } from '../../sdk/services/ServiceManager';
 
 import {
   captureMessageEvent,
   eventLocalItems,
-} from '../../shared/utils/messageEventOwnership';
+} from '../../sdk/utils/messageEventOwnership';
 
-import { deepFreeze } from '../../shared/utils/lang/objectUtils';
+import { deepFreeze } from '../../sdk/utils/lang/objectUtils';
 
 import { Message } from '../../types/messaging/Messages';
 

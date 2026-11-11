@@ -15,7 +15,7 @@
 
 export { attachStorePartition } from './attachStorePartition';
 export { conversationActions } from './conversationActions';
-export type { PartitionReducer } from '../../shared/store/appStore';
+export type { PartitionReducer } from '../store/appStore';
 export {
   extendPublicState,
   type PublicStateFieldDefinition,

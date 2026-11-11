@@ -15,7 +15,7 @@ import {
   createAppStore,
   type AppStore,
   type UnknownAction,
-} from '../../../src/shared/store/appStore';
+} from '../../../src/sdk/store/appStore';
 
 interface ConversationShape {
   count: number;

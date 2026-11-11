@@ -9,7 +9,7 @@
 
 import { act } from '@testing-library/react';
 import { MessageState } from '../../../src/types/config/MessagingConfig';
-import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
+import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
 import {
   MessageRequest,

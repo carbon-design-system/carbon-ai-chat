@@ -13,9 +13,9 @@ import {
 } from '../../../src/chat/utils/chatBoot';
 import { createChatSDK } from '../../../src/sdk';
 import { chatOf } from '../../../src/sdk/internal';
-import * as applyConfigModule from '../../../src/shared/services/applyConfig';
-import { createServiceManager } from '../../../src/shared/services/loadServices';
-import { DEFAULT_THEME_STATE } from '../../../src/shared/store/reducerUtils';
+import * as applyConfigModule from '../../../src/sdk/services/applyConfig';
+import { createServiceManager } from '../../../src/sdk/services/loadServices';
+import { DEFAULT_THEME_STATE } from '../../../src/sdk/store/reducerUtils';
 import type { ChatSDKConfig } from '../../../src/types/config/ChatSDKConfig';
 import type {
   ServiceDesk,

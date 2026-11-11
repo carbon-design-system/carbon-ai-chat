@@ -7,17 +7,17 @@
  *  @license
  */
 
-import type { ServiceManager } from '../../shared/services/ServiceManager';
+import type { ServiceManager } from '../../sdk/services/ServiceManager';
 import type {
   MessageRequest,
   MessageRequestHistory,
   MessageResponseHistory,
 } from '../../types/messaging/Messages';
-import actions from '../../shared/store/actions';
+import actions from '../../sdk/store/actions';
 import {
   isHumanAgentLocalOwner,
   isHumanAgentMessageOwner,
-} from '../../shared/store/messageOwnership';
+} from '../../sdk/store/messageOwnership';
 
 /** Shared renderers keep HAA metadata on its existing synchronous write path. */
 export function mergeMessageHistoryFromView(

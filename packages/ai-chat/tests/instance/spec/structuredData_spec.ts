@@ -15,7 +15,7 @@ import {
   setupBeforeEach,
 } from '../../test_helpers';
 import { WriteableElementName } from '../../../src/types/instance/WriteableElements';
-import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
+import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
 import type { StructuredData } from '../../../src/types/messaging/Messages';
 

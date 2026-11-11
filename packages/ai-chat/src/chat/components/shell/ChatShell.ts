@@ -24,7 +24,7 @@ import {
   type ShellInputConfig,
   type ShellContentState,
 } from '../../utils/shellLifecycle';
-import { shallowEqual } from '../../../shared/store/appStore';
+import { shallowEqual } from '../../../sdk/store/appStore';
 import { subscribeToSelectedValue } from '../../utils/selectedSubscription';
 
 import {

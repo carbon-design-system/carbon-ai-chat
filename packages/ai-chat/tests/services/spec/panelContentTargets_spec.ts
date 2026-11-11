@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { EventBus } from '../../../src/shared/events/EventBus';
+import { EventBus } from '../../../src/sdk/events/EventBus';
 import { ExtensionHosts } from '../../../src/chat/services/extensionHosts';
 import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import { slotSourceOf } from '../../test_helpers';

@@ -11,7 +11,7 @@ import dayjs from 'dayjs';
 import {
   localeLoaders,
   loadDayjsLocale,
-} from '../../../src/shared/utils/languageUtils';
+} from '../../../src/sdk/utils/languageUtils';
 
 describe('languageUtils', () => {
   it('exposes locale loaders', () => {

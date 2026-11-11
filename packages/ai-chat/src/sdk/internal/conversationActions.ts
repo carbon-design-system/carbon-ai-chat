@@ -12,12 +12,12 @@ import {
   HYDRATE_MESSAGE_HISTORY,
   RESTART_CONVERSATION,
   UPSERT_MESSAGE,
-} from '../../shared/store/messageActionTypes';
+} from '../store/messageActionTypes';
 import {
   RESET_PERSISTED_STATE,
   UPDATE_PERSISTED_STATE,
-} from '../../shared/store/actions';
-import { HA_SET_IS_CONNECTING } from '../../shared/store/humanAgentActions';
+} from '../store/actions';
+import { HA_SET_IS_CONNECTING } from '../store/humanAgentActions';
 
 /**
  * The conversation actions a store partition may react to, so one dispatch

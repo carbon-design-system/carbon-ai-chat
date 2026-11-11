@@ -18,9 +18,9 @@ import { ContextProvider } from '@lit/context';
 import { NativeChatView } from '../../../src/chat/components/shared/NativeChatView';
 import { ChatViewState } from '../../../src/chat/services/chatViewState';
 import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
-import { setIsConnecting } from '../../../src/shared/store/humanAgentActions';
+import { setIsConnecting } from '../../../src/sdk/store/humanAgentActions';
 import { viewActions } from '../../../src/chat/state';
-import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 import { makeConfigStore, withPublicState } from '../../test_helpers';
 
 class Provider extends LitElement {

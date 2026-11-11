@@ -13,7 +13,7 @@ import React from 'react';
 
 import { carbonIconToReact } from '../../../utils/carbonIcon';
 import { useSelector } from '../../../hooks/useSelector';
-import { shallowEqual } from '../../../../shared/store/appStore';
+import { shallowEqual } from '../../../../sdk/store/appStore';
 import { MarkdownWithDefaults } from '../../helpers/MarkdownWithDefaults/MarkdownWithDefaults';
 import { AppState } from '../../../../types/state/AppState';
 

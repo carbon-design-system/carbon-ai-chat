@@ -7,8 +7,8 @@
  *  @license
  */
 
-import { WriteableElementName } from '../../shared/utils/constants';
-import type { ServiceManager } from '../../shared/services/ServiceManager';
+import { WriteableElementName } from '../../sdk/utils/constants';
+import type { ServiceManager } from '../../sdk/services/ServiceManager';
 import type { ChatInstance } from '../../types/instance/ChatInstance';
 import type { WriteableElements } from '../../types/instance/WriteableElements';
 

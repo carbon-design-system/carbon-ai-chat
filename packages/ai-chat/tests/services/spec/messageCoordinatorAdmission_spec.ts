@@ -8,17 +8,17 @@
  */
 
 import { makeConfigStore } from '../../test_helpers';
-import actions from '../../../src/shared/store/actions';
-import { PublicStateService } from '../../../src/shared/services/PublicStateService';
-import { MessageCoordinator } from '../../../src/shared/services/messaging/MessageCoordinator';
+import actions from '../../../src/sdk/store/actions';
+import { PublicStateService } from '../../../src/sdk/services/PublicStateService';
+import { MessageCoordinator } from '../../../src/sdk/services/messaging/MessageCoordinator';
 import { MessagePresentationAdapter } from '../../../src/chat/services/MessagePresentationAdapter';
 import type { PublicChatState } from '../../../src/types/instance/PublicChatState';
-import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
-import type { MessagePresentationPort } from '../../../src/shared/services/messaging/presentationPort';
+import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
+import type { MessagePresentationPort } from '../../../src/sdk/services/messaging/presentationPort';
 import { PendingUploadStatus } from '../../../src/types/state/AppState';
 import type { MessageRequest } from '../../../src/types/messaging/Messages';
 import { MessageSendSource } from '../../../src/types/events/eventBusTypes';
-import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
+import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
 import { withMessagingView } from '../helpers/viewBindings';
 import { viewActions } from '../../../src/chat/state';
 import { chatStore } from '../../../src/chat/services/attachChatView';

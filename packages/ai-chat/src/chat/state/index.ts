@@ -15,8 +15,8 @@
  */
 
 import { attachStorePartition, extendPublicState } from '../../sdk/internal';
-import type { PublicStateService } from '../../shared/services/PublicStateService';
-import type { AppStore } from '../../shared/store/appStore';
+import type { PublicStateService } from '../../sdk/services/PublicStateService';
+import type { AppStore } from '../../sdk/store/appStore';
 import type { PublicConfig } from '../../types/config/PublicConfig';
 import type { ConversationState } from '../../types/state/AppState';
 import type { ViewPersistedState } from '../../types/state/ViewPartitionState';

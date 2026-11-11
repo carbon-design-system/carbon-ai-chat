@@ -55,7 +55,7 @@ import { HumanAgentCallbacks } from '../services/humanAgentCallbacks';
 
 import { WindowOpenState } from '../services/windowOpenState';
 
-import { shallowEqual } from '../../shared/store/appStore';
+import { shallowEqual } from '../../sdk/store/appStore';
 
 import {
   humanAgentDisplayStateOf,
@@ -64,7 +64,7 @@ import {
   selectInputFieldVisible,
   selectInputUploadAndStreamingFields,
   selectStopStreamingButtonVisible,
-} from '../../shared/store/selectors';
+} from '../../sdk/store/selectors';
 
 import { getDerivedState } from './derivedState';
 import type { PublicChatState } from '../../types/instance/PublicChatState';
@@ -99,20 +99,20 @@ import {
   consoleError,
   consoleWarn,
   isEnableDebugLog,
-} from '../../shared/utils/miscUtils';
+} from '../../sdk/utils/miscUtils';
 
 import {
   IS_PHONE,
   IS_PHONE_IN_PORTRAIT_MODE,
   isBrowser,
-} from '../../shared/utils/browserUtils';
+} from '../../sdk/utils/browserUtils';
 
 import { convertCSSVariablesToString, getThemeClassNames } from './styleUtils';
 
 import {
   WriteableElementName,
   FileStatusValue,
-} from '../../shared/utils/constants';
+} from '../../sdk/utils/constants';
 
 import {
   hasMeaningfulContent,

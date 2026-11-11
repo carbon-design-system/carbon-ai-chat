@@ -17,7 +17,7 @@ import {
   MessageResponseTypes,
 } from '../../../src/types/messaging/Messages';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
-import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
+import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
 import {
   createBaseConfig,
   renderChatAndGetInstanceWithStore,

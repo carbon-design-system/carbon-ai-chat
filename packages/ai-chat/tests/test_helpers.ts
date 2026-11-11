@@ -19,33 +19,30 @@ import { ChatInstance } from '../src/types/instance/ChatInstance';
 import {
   createStoreFromReduction,
   type AppStore,
-} from '../src/shared/store/appStore';
-import { enableMessageOwnership } from '../src/shared/store/messageOwnership';
+} from '../src/sdk/store/appStore';
+import { enableMessageOwnership } from '../src/sdk/store/messageOwnership';
 import { AppState } from '../src/types/state/AppState';
 import { MessageResponseTypes } from '../src/types/messaging/Messages';
-import { ServiceManager } from '../src/shared/services/ServiceManager';
-import {
-  slotSource,
-  type SlotSource,
-} from '../src/shared/services/slotTracking';
+import { ServiceManager } from '../src/sdk/services/ServiceManager';
+import { slotSource, type SlotSource } from '../src/sdk/services/slotTracking';
 import { ChatViewState } from '../src/chat/services/chatViewState';
 import type { AriaAnnouncerFunctionType } from '../src/chat/services/ariaAnnouncer';
 import { ChatContext } from '../src/chat/contexts/ChatContext';
-import type { IntlShape } from '../src/shared/utils/i18n';
+import type { IntlShape } from '../src/sdk/utils/i18n';
 import { getWindowSize } from '../src/chat/utils/windowSize';
-import { reduceWithMessageOwnership } from '../src/shared/store/reducers';
-import actions from '../src/shared/store/actions';
+import { reduceWithMessageOwnership } from '../src/sdk/store/reducers';
+import actions from '../src/sdk/store/actions';
 import isEqual from 'lodash-es/isEqual.js';
 import {
   buildLanguagePack,
   createInitialState,
-} from '../src/shared/store/doCreateStore';
+} from '../src/sdk/store/doCreateStore';
 import { createAppConfig } from '../src/chat/utils/appConfig';
-import { reconcileAppConfigReferences } from '../src/shared/utils/reconcileConfig';
+import { reconcileAppConfigReferences } from '../src/sdk/utils/reconcileConfig';
 import { chatStore } from '../src/chat/services/attachChatView';
 import { attachStorePartition } from '../src/sdk/internal';
-import { PublicStateService } from '../src/shared/services/PublicStateService';
-import { EventBus } from '../src/shared/events/EventBus';
+import { PublicStateService } from '../src/sdk/services/PublicStateService';
+import { EventBus } from '../src/sdk/events/EventBus';
 import { viewReducer } from '../src/chat/state/reducer';
 import { createInitialViewState } from '../src/chat/state/initialState';
 import type { ConversationState } from '../src/types/state/AppState';

@@ -11,7 +11,7 @@ import {
   attachPartition,
   type AppStore,
   type PartitionReducer,
-} from '../../shared/store/appStore';
+} from '../store/appStore';
 
 /** What the partition seam needs from a chat: the one store it owns. */
 interface ChatStoreOwner<StoreState> {

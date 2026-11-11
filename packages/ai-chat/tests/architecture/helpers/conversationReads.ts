@@ -23,7 +23,7 @@ const NOT_DATA = new Set(['config', 'languagePack']);
  * named function is exempt; another reader in its file still counts.
  */
 const SDK_ROUTES = new Set([
-  'shared/services/conversationInstance.ts: createConversationInstance',
+  'sdk/services/conversationInstance.ts: createConversationInstance',
 ]);
 
 /**

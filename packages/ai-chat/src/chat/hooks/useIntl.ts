@@ -8,7 +8,7 @@
  */
 
 import { useChatViewState } from './useChatViewState';
-import { IntlShape } from '../../shared/utils/i18n';
+import { IntlShape } from '../../sdk/utils/i18n';
 import type { ChatViewStateSnapshot } from '../services/chatViewState';
 
 const selectIntl = (snapshot: ChatViewStateSnapshot) => snapshot.intl;

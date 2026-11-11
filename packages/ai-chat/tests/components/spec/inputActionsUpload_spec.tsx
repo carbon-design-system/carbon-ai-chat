@@ -10,7 +10,7 @@
 import { act, fireEvent, waitFor } from '@testing-library/react';
 import { deepQuerySelector } from '@carbon/ai-chat-components/es/globals/utils/dom-utils.js';
 import type InputActions from '../../../src/chat/components/input/native/InputActions';
-import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
+import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
 import type { StructuredData } from '../../../src/types/messaging/Messages';
 import {
   createBaseConfig,

@@ -7,10 +7,10 @@
  *  @license
  */
 
-import actions from '../../../src/shared/store/actions';
-import { setIsConnecting } from '../../../src/shared/store/humanAgentActions';
-import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
-import type { AppStore } from '../../../src/shared/store/appStore';
+import actions from '../../../src/sdk/store/actions';
+import { setIsConnecting } from '../../../src/sdk/store/humanAgentActions';
+import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
+import type { AppStore } from '../../../src/sdk/store/appStore';
 import type {
   AppState,
   ConversationPersistedState,
@@ -26,9 +26,9 @@ import {
   MessageResponse,
   MessageResponseTypes,
 } from '../../../src/types/messaging/Messages';
-import { outputItemToLocalItem } from '../../../src/shared/schema/outputItemToLocalItem';
+import { outputItemToLocalItem } from '../../../src/sdk/schema/outputItemToLocalItem';
 import { viewActions } from '../../../src/chat/state';
-import { UserSessionStorageService } from '../../../src/shared/services/UserSessionStorageService';
+import { UserSessionStorageService } from '../../../src/sdk/services/UserSessionStorageService';
 import {
   createBaseConfig,
   makeConfigStore,

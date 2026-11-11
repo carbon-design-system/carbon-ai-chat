@@ -6,7 +6,7 @@
  *
  *  @license
  */
-import { PublicStateSnapshotCache } from '../../../src/shared/utils/publicState';
+import { PublicStateSnapshotCache } from '../../../src/sdk/utils/publicState';
 import {
   makeConfigStore,
   createBaseConfig,
@@ -15,10 +15,10 @@ import {
   setupAfterEach,
 } from '../../test_helpers';
 import { createCustomPanelInstance } from '../../../src/chat/services/CustomPanelInstance';
-import { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 import { PanelType } from '../../../src/types/instance/apiTypes';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
-import actions from '../../../src/shared/store/actions';
+import actions from '../../../src/sdk/store/actions';
 import {
   MessageResponse,
   MessageResponseTypes,

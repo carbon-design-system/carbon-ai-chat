@@ -12,7 +12,7 @@ import {
   type AriaAnnouncerHandle,
 } from '@carbon/ai-chat-components/es/globals/utils/aria-announcer-manager.js';
 import type { AnnounceMessage } from '../../types/state/AnnounceMessage';
-import type { IntlShape } from '../../shared/utils/i18n';
+import type { IntlShape } from '../../sdk/utils/i18n';
 import { nodeToText } from '../utils/domUtils';
 
 type AriaAnnouncerFunctionType = (

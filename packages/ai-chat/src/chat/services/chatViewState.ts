@@ -8,9 +8,9 @@
  */
 
 import { AriaAnnouncer } from './ariaAnnouncer';
-import { subscribeToIntl } from '../../shared/utils/intlUtils';
-import type { ServiceManager } from '../../shared/services/ServiceManager';
-import type { IntlShape } from '../../shared/utils/i18n';
+import { subscribeToIntl } from '../../sdk/utils/intlUtils';
+import type { ServiceManager } from '../../sdk/services/ServiceManager';
+import type { IntlShape } from '../../sdk/utils/i18n';
 import type { Dimension } from '../../types/utilities/Dimension';
 import type { HasRequestFocus } from '../../types/utilities/HasRequestFocus';
 import type { MainWindowFunctions } from '../../types/utilities/MainWindowFunctions';

@@ -11,7 +11,7 @@ import React, { useEffect } from 'react';
 import Carousel from '@carbon/ai-chat-components/es/react/carousel.js';
 import { CitationCard } from '../../../components-legacy/responseTypes/util/citations/CitationCard';
 import { useSelector } from '../../../hooks/useSelector';
-import { shallowEqual } from '../../../../shared/store/appStore';
+import { shallowEqual } from '../../../../sdk/store/appStore';
 import { AppState } from '../../../../types/state/AppState';
 import {
   ConversationalSearchItemCitation,

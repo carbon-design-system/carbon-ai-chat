@@ -13,7 +13,7 @@ import React, { useCallback } from 'react';
 import { useSelector } from '../../../hooks/useSelector';
 
 import { useServiceManager } from '../../../hooks/useServiceManager';
-import { selectInputIsReadonly } from '../../../../shared/store/selectors';
+import { selectInputIsReadonly } from '../../../../sdk/store/selectors';
 import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
 import {
   ButtonItem,

@@ -9,9 +9,9 @@
 
 import { createChatSDK } from '../../../src/sdk';
 import { chatOf } from '../../../src/sdk/internal';
-import actions from '../../../src/shared/store/actions';
+import actions from '../../../src/sdk/store/actions';
 import type { ChatSDKHandle } from '../../../src/sdk/handle';
-import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
+import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
 import type { ChatSDKServiceDeskConfig } from '../../../src/types/config/ChatSDKServiceDeskConfig';
 import {
   ScreenShareState,

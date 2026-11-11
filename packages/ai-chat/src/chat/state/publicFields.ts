@@ -10,7 +10,7 @@
 import cloneDeep from 'lodash-es/cloneDeep.js';
 
 import type { PublicStateFieldDefinition } from '../../sdk/internal';
-import { deepFreeze } from '../../shared/utils/lang/objectUtils';
+import { deepFreeze } from '../../sdk/utils/lang/objectUtils';
 import type { AppState } from '../../types/state/AppState';
 
 function freezeClone<T>(value: T): T {

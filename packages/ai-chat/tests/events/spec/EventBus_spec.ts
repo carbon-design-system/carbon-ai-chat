@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { EventBus } from '../../../src/shared/events/EventBus';
+import { EventBus } from '../../../src/sdk/events/EventBus';
 import { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import {
   BusEvent,

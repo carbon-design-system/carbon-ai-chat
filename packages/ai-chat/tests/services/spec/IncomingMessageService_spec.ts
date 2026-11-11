@@ -10,14 +10,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import ts from 'typescript';
-import { IncomingMessageService } from '../../../src/shared/services/messaging/inbound/IncomingMessageService';
+import { IncomingMessageService } from '../../../src/sdk/services/messaging/inbound/IncomingMessageService';
 import { MessageState } from '../../../src/types/config/MessagingConfig';
 import {
   MessageResponse,
   MessageResponseTypes,
 } from '../../../src/types/messaging/Messages';
-import type { ReceivedLocalItems } from '../../../src/shared/store/messageWriteTypes';
-import { outputItemData } from '../../../src/shared/schema/outputItemData';
+import type { ReceivedLocalItems } from '../../../src/sdk/store/messageWriteTypes';
+import { outputItemData } from '../../../src/sdk/schema/outputItemData';
 
 const incoming = new IncomingMessageService();
 function response(): MessageResponse {
@@ -117,7 +117,7 @@ describe('IncomingMessageService', () => {
 it('keeps incoming processors free of runtime effects and capability inputs', () => {
   const root = path.resolve(
     __dirname,
-    '../../../src/shared/services/messaging/inbound'
+    '../../../src/sdk/services/messaging/inbound'
   );
   const files = [
     'IncomingMessageService',

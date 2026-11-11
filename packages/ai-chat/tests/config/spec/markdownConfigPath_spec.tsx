@@ -19,7 +19,7 @@ import {
   createAppliedConfig,
 } from '../../../src/chat/utils/appConfigUpdates';
 import { mergePublicConfig } from '../../../src/chat/utils/chatBoot';
-import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 import type { PublicConfig } from '../../../src/types/config/PublicConfig';
 import type { AppState } from '../../../src/types/state/AppState';
 import { makeConfigStore, TestChatContext } from '../../test_helpers';

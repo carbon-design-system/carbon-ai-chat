@@ -16,9 +16,9 @@
 import mergeWith from 'lodash-es/mergeWith.js';
 import { AppConfig } from '../../types/state/AppConfig';
 import { ThemeState } from '../../types/state/ThemeState';
-import { IS_PHONE } from '../../shared/utils/browserUtils';
-import { CornersType } from '../../shared/utils/constants';
-import { deepFreeze } from '../../shared/utils/lang/objectUtils';
+import { IS_PHONE } from '../../sdk/utils/browserUtils';
+import { CornersType } from '../../sdk/utils/constants';
+import { deepFreeze } from '../../sdk/utils/lang/objectUtils';
 import {
   PerCornerConfig,
   ResolvedCornerConfig,
@@ -35,7 +35,7 @@ import {
 import { LayoutConfig } from '../../types/config/LayoutConfig';
 import { ChatShortcutConfig } from '../../types/config/ShortcutConfig';
 import { validateCustomProperties } from './styleUtils';
-import { DEFAULT_THEME_STATE } from '../../shared/store/reducerUtils';
+import { DEFAULT_THEME_STATE } from '../../sdk/store/reducerUtils';
 
 const DEFAULT_HEADER: HeaderConfig = {
   isOn: true,

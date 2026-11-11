@@ -11,12 +11,11 @@ import React from 'react';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { RealConnectToHumanAgent } from '../../../src/chat/components-legacy/responseTypes/humanAgent/RealConnectToHumanAgent';
 import { ChatContext } from '../../../src/chat/contexts/ChatContext';
-import languagePack from '../../../src/shared/languages/en.json';
+import languagePack from '../../../src/sdk/languages/en.json';
 import { createTestViewState } from '../../test_helpers';
 
 jest.mock('../../../src/chat/hooks/useSelector', () => ({
-  useSelector: () =>
-    jest.requireActual('../../../src/shared/languages/en.json'),
+  useSelector: () => jest.requireActual('../../../src/sdk/languages/en.json'),
 }));
 
 jest.mock('@carbon/ai-chat-components/es/react/card.js', () => ({

@@ -27,10 +27,10 @@ import type ChatElement from '../../../src/web-components/cds-aichat-container/c
 import { ChatCustomElement } from '../../../src/react/ChatCustomElement';
 import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
 import { ChatContainer } from '../../../src/react/ChatContainer';
-import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
+import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
 import * as extensionsLoader from '../../../src/chat/components/input/buildExtensionsLoader';
 import * as chatBoot from '../../../src/chat/utils/chatBoot';
-import { localeLoaders } from '../../../src/shared/utils/languageUtils';
+import { localeLoaders } from '../../../src/sdk/utils/languageUtils';
 import type { ChatAppEntryProps } from '../../../src/chat/ChatAppEntry';
 import type { ChatRenderer } from '../../../src/web-components/shared/react-renderer';
 import { ChatInstance } from '../../../src/types/instance/ChatInstance';

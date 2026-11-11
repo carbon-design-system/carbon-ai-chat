@@ -13,9 +13,9 @@
  */
 
 import { act, waitFor } from '@testing-library/react';
-import { UPSERT_MESSAGE } from '../../../../src/shared/store/actions';
-import type { MessageWriteOptions } from '../../../../src/shared/store/messageWriteTypes';
-import type { ServiceManager } from '../../../../src/shared/services/ServiceManager';
+import { UPSERT_MESSAGE } from '../../../../src/sdk/store/actions';
+import type { MessageWriteOptions } from '../../../../src/sdk/store/messageWriteTypes';
+import type { ServiceManager } from '../../../../src/sdk/services/ServiceManager';
 import { OnErrorType } from '../../../../src/types/config/ErrorConfig';
 import type {
   ServiceDesk,

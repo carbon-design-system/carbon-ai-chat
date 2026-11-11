@@ -11,7 +11,7 @@
  * A set of utilities for manipulating colors.
  */
 
-import { consoleError } from '../../shared/utils/miscUtils';
+import { consoleError } from '../../sdk/utils/miscUtils';
 
 /**
  * Converts the given color string into an array with the red, green and blue components

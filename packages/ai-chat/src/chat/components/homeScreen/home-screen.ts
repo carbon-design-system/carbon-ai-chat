@@ -24,7 +24,7 @@ import type { SendOptions } from '../../../types/instance/ChatInstance';
 import { WriteableElementName } from '../../../types/instance/WriteableElements';
 import { MessageSendSource } from '../../../types/events/eventBusTypes';
 import { PageObjectId } from '../../../testing/PageObjectId';
-import { shallowEqual } from '../../../shared/store/appStore';
+import { shallowEqual } from '../../../sdk/store/appStore';
 import { observeWriteableElementPresence } from '../../utils/writeableElementPresence';
 import { NativeChatView } from '../shared/NativeChatView';
 import { writeableElementsOf } from '../../utils/writeableElements';

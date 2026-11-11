@@ -7,9 +7,9 @@
  *  @license
  */
 
-import { coordinateReasoningEvents } from '../../../src/shared/services/messaging/coordinateReasoningEvents';
-import { retainNativeMessageOrigin } from '../../../src/shared/services/messaging/nativeMessageEvents';
-import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
+import { coordinateReasoningEvents } from '../../../src/sdk/services/messaging/coordinateReasoningEvents';
+import { retainNativeMessageOrigin } from '../../../src/sdk/services/messaging/nativeMessageEvents';
+import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
 import {
   MessageResponse,
   MessageResponseTypes,

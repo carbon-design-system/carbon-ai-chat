@@ -24,7 +24,7 @@ import type { ChatRenderer } from '../web-components/shared/react-renderer';
 import { ChatContainerProps } from '../types/component/ChatContainer';
 import { WriteableElementName } from '../types/instance/WriteableElements';
 import { FLATTENED_PUBLIC_CONFIG_FIELDS } from '../web-components/shared/flattenedPublicConfig';
-import { isBrowser } from '../shared/utils/browserUtils';
+import { isBrowser } from '../sdk/utils/browserUtils';
 
 // This component renders nothing on a server, but its hooks still run there,
 // and React 17 and 18 warn that a layout effect does nothing during server

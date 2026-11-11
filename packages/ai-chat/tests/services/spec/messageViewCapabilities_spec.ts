@@ -8,7 +8,7 @@
  */
 
 import { MessagePresentationAdapter } from '../../../src/chat/services/MessagePresentationAdapter';
-import { StreamAnnouncerService } from '../../../src/shared/services/messaging/presentation/StreamAnnouncerService';
+import { StreamAnnouncerService } from '../../../src/sdk/services/messaging/presentation/StreamAnnouncerService';
 
 function capabilities() {
   return {

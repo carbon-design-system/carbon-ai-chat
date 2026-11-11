@@ -7,10 +7,10 @@
  *  @license
  */
 
-import type { ServiceManager } from '../../shared/services/ServiceManager';
-import type { AppStore } from '../../shared/store/appStore';
-import { loadSavedSession } from '../../shared/store/doCreateStore';
-import { toPersistableState } from '../../shared/store/persistenceUtils';
+import type { ServiceManager } from '../../sdk/services/ServiceManager';
+import type { AppStore } from '../../sdk/store/appStore';
+import { loadSavedSession } from '../../sdk/store/doCreateStore';
+import { toPersistableState } from '../../sdk/store/persistenceUtils';
 import type { PublicConfig } from '../../types/config/PublicConfig';
 import type { AppState } from '../../types/state/AppState';
 import { attachViewState, joinPersistedState, viewHalfOf } from '../state';

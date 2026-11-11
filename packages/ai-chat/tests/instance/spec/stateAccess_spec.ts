@@ -8,7 +8,7 @@
  */
 
 import { act } from '@testing-library/react';
-import actions from '../../../src/shared/store/actions';
+import actions from '../../../src/sdk/store/actions';
 import { MessageState } from '../../../src/types/config/MessagingConfig';
 import {
   GenericItem,

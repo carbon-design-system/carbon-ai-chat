@@ -10,7 +10,7 @@ import type { GenericItem } from '../../types/messaging/Messages';
 import {
   isSingleItemCarousel,
   isFullWidthUserDefined,
-} from '../../shared/utils/messageUtils';
+} from '../../sdk/utils/messageUtils';
 
 /**
  * Maximum width a bubble's content may grow inside the message column.

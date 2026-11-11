@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { MessageLoadingManager } from '../../../src/shared/utils/messageServiceUtils';
+import { MessageLoadingManager } from '../../../src/sdk/utils/messageServiceUtils';
 
 describe('MessageLoadingManager', () => {
   beforeEach(() => {

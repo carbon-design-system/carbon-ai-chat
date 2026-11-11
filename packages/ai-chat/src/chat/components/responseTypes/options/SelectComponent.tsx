@@ -14,7 +14,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { HasServiceManager } from '../../../hocs/withServiceManager';
 import { useCounter } from '../../../hooks/useCounter';
 import { useSelector } from '../../../hooks/useSelector';
-import { shallowEqual } from '../../../../shared/store/appStore';
+import { shallowEqual } from '../../../../sdk/store/appStore';
 import { AppState } from '../../../../types/state/AppState';
 import { doScrollElementIntoView } from '../../../utils/domUtils';
 import {
@@ -26,7 +26,7 @@ import { TextBlock } from '../../../components/helpers/TextBlock/TextBlock';
 import {
   findSelectedChoiceIndex,
   resolveChoiceText,
-} from '../../../../shared/utils/messageUtils';
+} from '../../../../sdk/utils/messageUtils';
 
 interface OnChangeData<ItemType> {
   selectedItem: ItemType | null;

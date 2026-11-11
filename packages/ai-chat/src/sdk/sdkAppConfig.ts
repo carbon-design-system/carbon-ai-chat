@@ -9,7 +9,7 @@
 
 import merge from 'lodash-es/merge.js';
 
-import { DEFAULT_THEME_STATE } from '../shared/store/reducerUtils';
+import { DEFAULT_THEME_STATE } from './store/reducerUtils';
 import type { ChatSDKConfig } from '../types/config/ChatSDKConfig';
 import type {
   ConversationAppConfig,

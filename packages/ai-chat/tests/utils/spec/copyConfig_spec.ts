@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { copyConfig } from '../../../src/shared/utils/copyConfig';
+import { copyConfig } from '../../../src/sdk/utils/copyConfig';
 
 class Renderer {
   constructor(readonly name: string) {}

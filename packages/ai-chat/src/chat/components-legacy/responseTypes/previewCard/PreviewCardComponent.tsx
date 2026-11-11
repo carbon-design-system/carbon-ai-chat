@@ -23,7 +23,7 @@ import { AppState } from '../../../../types/state/AppState';
 
 import { useSelector } from '../../../hooks/useSelector';
 
-import { shallowEqual } from '../../../../shared/store/appStore';
+import { shallowEqual } from '../../../../sdk/store/appStore';
 
 import {
   PreviewCardItem,

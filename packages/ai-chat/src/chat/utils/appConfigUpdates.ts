@@ -9,7 +9,7 @@
 
 import isEqual from 'lodash-es/isEqual.js';
 
-import { ServiceManager } from '../../shared/services/ServiceManager';
+import { ServiceManager } from '../../sdk/services/ServiceManager';
 
 import { PublicConfig } from '../../types/config/PublicConfig';
 
@@ -17,12 +17,12 @@ import { mergePublicConfig } from './chatBoot';
 
 import { applyConfigChangesDynamically } from './dynamicConfigUpdates';
 
-import { consoleError, consoleWarn } from '../../shared/utils/miscUtils';
+import { consoleError, consoleWarn } from '../../sdk/utils/miscUtils';
 
 import { viewActions } from '../state';
 
 import { chatStore } from '../services/attachChatView';
-import { copyConfig } from '../../shared/utils/copyConfig';
+import { copyConfig } from '../../sdk/utils/copyConfig';
 
 /**
  * The config a mount last applied, plus the props it has already warned about.

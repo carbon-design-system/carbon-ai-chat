@@ -13,10 +13,10 @@ import { cleanup } from '@testing-library/react';
 import {
   ViewBindings,
   ViewConnection,
-} from '../../../src/shared/services/viewBindings';
-import { MessageCoordinator } from '../../../src/shared/services/messaging/MessageCoordinator';
-import { ChatInstanceService } from '../../../src/shared/services/ChatInstanceService';
-import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
+} from '../../../src/sdk/services/viewBindings';
+import { MessageCoordinator } from '../../../src/sdk/services/messaging/MessageCoordinator';
+import { ChatInstanceService } from '../../../src/sdk/services/ChatInstanceService';
+import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 import { ViewChangeReason } from '../../../src/types/events/eventBusTypes';
 import { ViewType } from '../../../src/types/state/AppState';
 import {

@@ -9,7 +9,7 @@
 
 import { act, waitFor } from '@testing-library/react';
 
-import { resolvablePromise } from '../../../../src/shared/utils/resolvablePromise';
+import { resolvablePromise } from '../../../../src/sdk/utils/resolvablePromise';
 
 import {
   createBaseConfig,

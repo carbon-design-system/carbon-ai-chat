@@ -7,9 +7,9 @@
  *  @license
  */
 
-import createHumanAgentService from '../../../src/shared/services/haa/HumanAgentServiceImpl';
-import { ServiceManager } from '../../../src/shared/services/ServiceManager';
-import { humanAgentReducers } from '../../../src/shared/store/humanAgentReducers';
+import createHumanAgentService from '../../../src/sdk/services/haa/HumanAgentServiceImpl';
+import { ServiceManager } from '../../../src/sdk/services/ServiceManager';
+import { humanAgentReducers } from '../../../src/sdk/store/humanAgentReducers';
 import {
   ScreenShareState,
   ServiceDeskCallback,
@@ -17,7 +17,7 @@ import {
 } from '../../../src/types/config/ServiceDeskConfig';
 import { HumanAgentMessageType } from '../../../src/types/messaging/Messages';
 import { ConversationState } from '../../../src/types/state/AppState';
-import type { MessagePresentationPort } from '../../../src/shared/services/messaging/presentationPort';
+import type { MessagePresentationPort } from '../../../src/sdk/services/messaging/presentationPort';
 import { withMessagingView } from '../helpers/viewBindings';
 
 async function createFixture(isConnected = true) {

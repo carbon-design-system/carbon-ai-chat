@@ -9,7 +9,7 @@
 
 import { act } from '@testing-library/react';
 import { ChatViewState } from '../../../../src/chat/services/chatViewState';
-import { resolvablePromise } from '../../../../src/shared/utils/resolvablePromise';
+import { resolvablePromise } from '../../../../src/sdk/utils/resolvablePromise';
 import { BusEventType } from '../../../../src/types/events/eventBusTypes';
 import { MessageResponseTypes } from '../../../../src/types/messaging/Messages';
 import type { MainWindowFunctions } from '../../../../src/types/utilities/MainWindowFunctions';

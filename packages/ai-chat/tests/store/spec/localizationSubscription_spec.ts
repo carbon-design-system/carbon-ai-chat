@@ -21,10 +21,10 @@
 import { waitFor } from '@testing-library/react';
 
 import { makeConfigStore, applyConfigChange } from '../../test_helpers';
-import { refreshLocalizationOnChange } from '../../../src/shared/store/subscriptions';
-import actions from '../../../src/shared/store/actions';
-import { buildLanguagePack } from '../../../src/shared/store/doCreateStore';
-import { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import { refreshLocalizationOnChange } from '../../../src/sdk/store/subscriptions';
+import actions from '../../../src/sdk/store/actions';
+import { buildLanguagePack } from '../../../src/sdk/store/doCreateStore';
+import { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
 import { viewActions } from '../../../src/chat/state';
 

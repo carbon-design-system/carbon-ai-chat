@@ -7,10 +7,10 @@
  *  @license
  */
 
-import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
-import { UpsertWorkflow } from '../../../src/shared/services/messaging/UpsertWorkflow';
-import { MessageCoordinator } from '../../../src/shared/services/messaging/MessageCoordinator';
-import { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
+import { UpsertWorkflow } from '../../../src/sdk/services/messaging/UpsertWorkflow';
+import { MessageCoordinator } from '../../../src/sdk/services/messaging/MessageCoordinator';
+import { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 import { MessageState } from '../../../src/types/config/MessagingConfig';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
 import {

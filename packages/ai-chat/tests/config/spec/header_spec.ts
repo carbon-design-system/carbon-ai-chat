@@ -21,16 +21,16 @@ import { createBaseTestProps, setupAfterEach } from '../../test_helpers';
 
 import { applyConfigChangesDynamically } from '../../../src/chat/utils/dynamicConfigUpdates';
 
-import { doCreateStore } from '../../../src/shared/store/doCreateStore';
+import { doCreateStore } from '../../../src/sdk/store/doCreateStore';
 import { createAppConfig } from '../../../src/chat/utils/appConfig';
 
-import { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 
-import { NamespaceService } from '../../../src/shared/services/NamespaceService';
+import { NamespaceService } from '../../../src/sdk/services/NamespaceService';
 
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
 
-import actions from '../../../src/shared/store/actions';
+import actions from '../../../src/sdk/store/actions';
 import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
 
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
