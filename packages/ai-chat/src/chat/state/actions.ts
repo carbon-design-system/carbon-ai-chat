@@ -70,6 +70,7 @@ const SET_HISTORY_PANEL_OPTIONS = 'SET_HISTORY_PANEL_OPTIONS';
 const SET_IS_BROWSER_PAGE_VISIBLE = 'SET_IS_PAGE_VISIBLE';
 const SET_RESPONSE_PANEL_IS_OPEN = 'SET_RESPONSE_PANEL_IS_OPEN';
 const SET_RESPONSE_PANEL_CONTENT = 'SET_PANEL_RESPONSE_CONTENT';
+const SET_MESSAGE_ITEM_ANNOUNCED = 'SET_MESSAGE_ITEM_ANNOUNCED';
 
 interface SetWorkspacePanelOptionsAction {
   type: typeof SET_WORKSPACE_PANEL_OPTIONS;
@@ -271,6 +272,15 @@ const viewActions = {
       isMessageForInput,
     };
   },
+  /**
+   * Records that a screen reader announced the item a local item draws, so
+   * it isn't announced again.
+   *
+   * @param localItemID The local item's ID (`ui_state.id`).
+   */
+  setMessageItemAnnounced(localItemID: string) {
+    return { type: SET_MESSAGE_ITEM_ANNOUNCED, localItemID };
+  },
 };
 
 export default viewActions;
@@ -307,4 +317,5 @@ export {
   SET_IS_BROWSER_PAGE_VISIBLE,
   SET_RESPONSE_PANEL_IS_OPEN,
   SET_RESPONSE_PANEL_CONTENT,
+  SET_MESSAGE_ITEM_ANNOUNCED,
 };

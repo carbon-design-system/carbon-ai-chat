@@ -60,6 +60,18 @@ interface MessageItemViewFlags {
    * or post-back button. History loading restores it.
    */
   optionSelected?: MessageRequest;
+
+  /**
+   * Set while a screen reader should announce the item: the message renderer
+   * announces it once it draws the item, and then sets `wasAnnounced`.
+   */
+  needsAnnouncement?: boolean;
+
+  /**
+   * Set once a screen reader has announced the item. An upsert that builds a
+   * new copy of the item keeps it, so the new copy isn't announced again.
+   */
+  wasAnnounced?: boolean;
 }
 
 /**

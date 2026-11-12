@@ -116,7 +116,16 @@ function choose(chat: Chat, localID: string, request: MessageRequest) {
   );
 }
 
-const flagsOf = (chat: Chat) => chat.store.getState().view.messageItemFlags;
+/** The choices the view's flags record, by item ID, without the other flags. */
+const choicesOf = (chat: Chat) =>
+  Object.fromEntries(
+    Object.entries(chat.store.getState().view.messageItemFlags)
+      .filter(([, flags]) => flags.optionSelected)
+      .map(([itemID, { messageID, optionSelected }]) => [
+        itemID,
+        { messageID, optionSelected },
+      ])
+  );
 
 /** Every element under `root` that matches `selector`, through shadow roots. */
 function deepQueryAll(root: ParentNode, selector: string): Element[] {
@@ -138,10 +147,10 @@ describe('per-item view flags', () => {
       });
     });
 
-    expect(flagsOf(chat)).toEqual({
+    expect(choicesOf(chat)).toEqual({
       'r1:i:0': { messageID: 'r1', optionSelected: expect.anything() },
     });
-    expect(flagsOf(chat)['r1:i:0'].optionSelected.input.text).toBe('yes');
+    expect(choicesOf(chat)['r1:i:0'].optionSelected.input.text).toBe('yes');
     expect(
       'optionSelected' in
         chat.store.getState().allMessageItemsByID[localID].ui_state
@@ -171,7 +180,7 @@ describe('per-item view flags', () => {
 
     choose(chat, buttonID, request);
 
-    expect(flagsOf(chat)).toEqual({
+    expect(choicesOf(chat)).toEqual({
       'r2:i:0:f:0': { messageID: 'r2', optionSelected: request },
     });
 
@@ -210,7 +219,7 @@ describe('per-item view flags', () => {
     );
 
     expect(localIDsOf(chat.store, 'r1')).toEqual([localID]);
-    expect(flagsOf(chat)).toEqual({
+    expect(choicesOf(chat)).toEqual({
       'r1:i:1': { messageID: 'r1', optionSelected: request },
     });
   });
@@ -239,7 +248,7 @@ describe('per-item view flags', () => {
     });
 
     expect(chat.store.getState().allMessageItemsByID[localID]).toBeDefined();
-    expect(flagsOf(chat)).toEqual({
+    expect(choicesOf(chat)).toEqual({
       'r3:s:opts': { messageID: 'r3', optionSelected: request },
     });
   });
@@ -253,7 +262,7 @@ describe('per-item view flags', () => {
     );
 
     expect(localIDsOf(chat.store, 'r1')).toHaveLength(1);
-    expect(flagsOf(chat)).toEqual({});
+    expect(choicesOf(chat)).toEqual({});
   });
 
   it('drops a choice when an added local item replaces its copy, as before', async () => {
@@ -286,12 +295,12 @@ describe('per-item view flags', () => {
       );
     await add();
     choose(chat, 'agent-options', choice('yes', 'agent'));
-    expect(Object.keys(flagsOf(chat))).toEqual(['agent:i:0']);
+    expect(Object.keys(choicesOf(chat))).toEqual(['agent:i:0']);
 
     await add();
 
     expect(localIDsOf(chat.store, 'agent')).toEqual(['agent-options']);
-    expect(flagsOf(chat)).toEqual({});
+    expect(choicesOf(chat)).toEqual({});
   });
 
   it('keeps a choice while a write keeps the item, and drops it when a write builds a new copy, as before', async () => {
@@ -307,7 +316,7 @@ describe('per-item view flags', () => {
       )
     );
     expect(chat.store.getState().allMessageItemsByID[localID]).toBeDefined();
-    expect(flagsOf(chat)['r1:i:0']?.optionSelected).toBe(request);
+    expect(choicesOf(chat)['r1:i:0']?.optionSelected).toBe(request);
 
     // A changed item gets a new local copy, which used to start with no choice.
     await act(() =>
@@ -315,7 +324,7 @@ describe('per-item view flags', () => {
         response('r1', [options('Continue now?')])
       )
     );
-    expect(flagsOf(chat)['r1:i:0']).toBeUndefined();
+    expect(choicesOf(chat)['r1:i:0']).toBeUndefined();
   });
 
   it('keeps the choices of other messages when one message is written', async () => {
@@ -332,7 +341,7 @@ describe('per-item view flags', () => {
       )
     );
 
-    expect(flagsOf(chat)['r1:i:0']?.optionSelected).toBe(request);
+    expect(choicesOf(chat)['r1:i:0']?.optionSelected).toBe(request);
   });
 
   it('drops the choices of removed messages, and all of them on a restart', async () => {
@@ -345,12 +354,12 @@ describe('per-item view flags', () => {
     choose(chat, localIDsOf(chat.store, 'r2')[0], kept);
 
     await act(() => chat.instance.messaging.removeMessages(['r1']));
-    expect(flagsOf(chat)).toEqual({
+    expect(choicesOf(chat)).toEqual({
       'r2:i:0': { messageID: 'r2', optionSelected: kept },
     });
 
     await act(() => chat.instance.messaging.restartConversation());
-    expect(flagsOf(chat)).toEqual({});
+    expect(choicesOf(chat)).toEqual({});
   });
 
   it('loaded history replaces the choices with its own, and inserted history adds to them', async () => {
@@ -376,7 +385,7 @@ describe('per-item view flags', () => {
         })
       )
     );
-    expect(flagsOf(chat)).toEqual({
+    expect(choicesOf(chat)).toEqual({
       'r2:i:0': { messageID: 'r2', optionSelected: fromHistory },
     });
 
@@ -388,7 +397,7 @@ describe('per-item view flags', () => {
         })
       )
     );
-    expect(flagsOf(chat)).toEqual({
+    expect(choicesOf(chat)).toEqual({
       'r1:i:0': { messageID: 'r1', optionSelected: inserted },
       'r2:i:0': { messageID: 'r2', optionSelected: fromHistory },
     });

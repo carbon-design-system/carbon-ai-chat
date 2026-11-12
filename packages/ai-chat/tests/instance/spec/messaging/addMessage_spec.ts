@@ -15,6 +15,7 @@ import {
   renderChatAndGetInstanceWithStore,
   setupBeforeEach,
   setupAfterEach,
+  needsAnnouncementOf,
 } from '../../../test_helpers';
 import {
   MessageResponse,
@@ -1594,9 +1595,7 @@ describe('ChatInstance.messaging.addMessage', () => {
       const localID = `${id}-a`;
       const history: boolean[] = [];
       const unsubscribe = store.subscribe(() => {
-        const value =
-          store.getState().allMessageItemsByID[localID]?.ui_state
-            .needsAnnouncement;
+        const value = needsAnnouncementOf(store.getState(), localID);
         if (value !== undefined && history[history.length - 1] !== value) {
           history.push(value);
         }

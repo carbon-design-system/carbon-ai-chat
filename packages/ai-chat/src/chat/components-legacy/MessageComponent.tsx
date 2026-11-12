@@ -57,9 +57,10 @@ function ImageWithFallback({
 }
 import { HasAriaAnnouncer, withAriaAnnouncer } from '../hocs/withAriaAnnouncer';
 import { HasServiceManager } from '../hocs/withServiceManager';
-import actions from '../../sdk/store/actions';
+import viewActions from '../state/actions';
 import { HasClassName } from '../../types/utilities/HasClassName';
 import HasIntl from '../../types/utilities/HasIntl';
+import { useMessageItemFlags } from '../hooks/useMessageItemFlags';
 import { useSelector } from '../hooks/useSelector';
 import { shallowEqual } from '../../sdk/store/appStore';
 import { useIntl } from '../hooks/useIntl';
@@ -185,6 +186,12 @@ interface MessageProps
    * The local message item that is part of the original message.
    */
   localMessageItem: LocalMessageItem;
+
+  /**
+   * Whether a screen reader should announce this item when it's drawn, from
+   * the item's view flags. Its connector passes it in.
+   */
+  needsAnnouncement?: boolean;
 
   /**
    * The original message that came from the assistant.
@@ -452,10 +459,10 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
 
   componentDidMount() {
     const uiState = this.props.localMessageItem.ui_state;
-    if (uiState.needsAnnouncement) {
+    if (this.props.needsAnnouncement) {
       this.props.ariaAnnouncer(this.ref.current);
       this.props.serviceManager.store.dispatch(
-        actions.setMessageWasAnnounced(uiState.id)
+        viewActions.setMessageItemAnnounced(uiState.id)
       );
     }
     this.syncAutoReasoningState();
@@ -475,10 +482,10 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     const uiState = this.props.localMessageItem.ui_state;
     // A pass that rendered nothing (a failed retry) has nothing to announce, so keep the
     // announcement for the pass that renders the error box.
-    if (uiState.needsAnnouncement && this.ref.current) {
+    if (this.props.needsAnnouncement && this.ref.current) {
       this.props.ariaAnnouncer(this.ref.current);
       this.props.serviceManager.store.dispatch(
-        actions.setMessageWasAnnounced(uiState.id)
+        viewActions.setMessageItemAnnounced(uiState.id)
       );
     }
     this.syncAutoReasoningState();
@@ -1509,13 +1516,14 @@ function canRenderIntermediateStreaming(type: MessageResponseTypes) {
  * Connects the (Pure)class `MessageComponent` to the store/context for the values
  * it must not receive as churning threaded props: a narrow language-pack bag
  * (`shallowEqual`, so the PureComponent only re-renders when one of its strings
- * changes), the intl formatter, and the two theme primitives. `serviceManager`,
+ * changes), the intl formatter, the two theme primitives, and whether the
+ * item waits to be announced, from its view flags. `serviceManager`,
  * `locale`, message data and callbacks stay threaded from `MessagesComponent`.
  * The ref is forwarded so `MessagesComponent` still receives the class instance.
  */
 type MessageConnectorProps = Omit<
   MessageProps,
-  'languagePack' | 'intl' | 'useAITheme' | 'carbonTheme'
+  'languagePack' | 'intl' | 'useAITheme' | 'carbonTheme' | 'needsAnnouncement'
 >;
 
 const MessageComponentConnector = React.forwardRef<
@@ -1531,10 +1539,14 @@ const MessageComponentConnector = React.forwardRef<
     (state: AppState) => state.view.derivedConfig.themeWithDefaults.aiEnabled
   );
   const { carbonTheme } = useCarbonTheme();
+  const needsAnnouncement = useMessageItemFlags(
+    props.localMessageItem.ui_state.id
+  )?.needsAnnouncement;
   return (
     <MessageComponent
       {...(props as unknown as MessageProps)}
       ref={ref}
+      needsAnnouncement={needsAnnouncement}
       languagePack={languagePack}
       intl={intl}
       useAITheme={aiEnabled}

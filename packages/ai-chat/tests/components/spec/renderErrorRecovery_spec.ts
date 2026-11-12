@@ -15,6 +15,7 @@ import {
   renderChatAndGetInstanceWithStore,
   setupBeforeEach,
   setupAfterEach,
+  itemFlagsFor,
 } from '../../test_helpers';
 import {
   MessageResponse,
@@ -476,8 +477,11 @@ describe('a still-broken message item', () => {
     expect(renderErrors(onError)).toHaveLength(1);
     const localID = firstLocalID(store, 'no-retry');
     // componentDidMount's announcement write has run by now.
-    expect(store.getState().allMessageItemsByID[localID].ui_state).toEqual(
-      expect.objectContaining({ needsAnnouncement: false })
+    expect(itemFlagsFor(store.getState(), localID)).toEqual(
+      expect.objectContaining({ wasAnnounced: true })
+    );
+    expect(itemFlagsFor(store.getState(), localID).needsAnnouncement).toBe(
+      undefined
     );
 
     await instance.messaging.addMessage(

@@ -17,6 +17,7 @@ import {
   renderChatAndGetInstanceWithStore,
   setupBeforeEach,
   setupAfterEach,
+  needsAnnouncementOf,
 } from '../../../test_helpers';
 
 import {
@@ -2786,7 +2787,7 @@ describe('ChatInstance.messaging.upsertMessage', () => {
             .filter((item: any) => item?.fullMessageID === messageID)
             .forEach((item: any) => {
               const seen = (history[item.ui_state.id] ??= []);
-              const value = item.ui_state.needsAnnouncement;
+              const value = needsAnnouncementOf(state, item.ui_state.id);
               if (value !== undefined && seen[seen.length - 1] !== value) {
                 seen.push(value);
               }

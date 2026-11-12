@@ -56,7 +56,6 @@ const HYDRATE_CHAT = 'HYDRATE_CHAT';
 const SET_APP_STATE_VALUE = 'SET_APP_STATE_VALUE';
 const MESSAGE_SET_OPTION_SELECTED = 'MESSAGE_SET_OPTION_SELECTED';
 const SET_MESSAGE_UI_PROPERTY = 'SET_MESSAGE_UI_PROPERTY';
-const SET_MESSAGE_WAS_ANNOUNCED = 'SET_MESSAGE_WAS_ANNOUNCED';
 const SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY =
   'SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY';
 const SET_MESSAGE_RESPONSE_HISTORY_PROPERTY =
@@ -364,13 +363,6 @@ const actions = {
   },
 
   /**
-   * Marks the given message to indicate that it has been announced and doesn't need to be announced again.
-   */
-  setMessageWasAnnounced(messageID: string) {
-    return { type: SET_MESSAGE_WAS_ANNOUNCED, localMessageID: messageID };
-  },
-
-  /**
    * Sets the property on one of the {@link ChatMessagesState} values.
    */
   setChatMessagesStateProperty<TPropertyName extends keyof ChatMessagesState>(
@@ -525,7 +517,6 @@ export {
   HYDRATE_CHAT,
   MESSAGE_SET_OPTION_SELECTED,
   SET_MESSAGE_UI_PROPERTY,
-  SET_MESSAGE_WAS_ANNOUNCED,
   RESTART_CONVERSATION,
   ADD_MESSAGE,
   UPDATE_HAS_SENT_NON_WELCOME_MESSAGE,

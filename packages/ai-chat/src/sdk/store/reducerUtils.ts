@@ -289,7 +289,7 @@ function canReuseLocalItem(
 
 /**
  * Sets the upsert-owned parts of a freshly built local item's UI state: its streaming
- * state, the marks the chat recorded on the item it replaces, and whether to announce it.
+ * state and the marks the chat recorded on the item it replaces.
  */
 function applyUpsertUIState(
   localItem: LocalMessageItem,
@@ -301,16 +301,9 @@ function applyUpsertUIState(
   // which is a chunk-flow rule, and upserted cards and tables have always rendered
   // mid-stream (D2).
   uiState.streamingState = { chunks: [], isDone: !isStreaming };
-  if (matchedPrev?.ui_state.wasAnnounced) {
-    uiState.wasAnnounced = true;
-  }
   if (matchedPrev?.ui_state.connectToAgentHandled) {
     uiState.connectToAgentHandled = true;
   }
-  // Announce an item once, when it first shows settled. Announcing mid-stream would
-  // read partial content, and again on every later rebuild.
-  uiState.needsAnnouncement =
-    uiState.needsAnnouncement && !isStreaming && !uiState.wasAnnounced;
 }
 
 /**
@@ -708,7 +701,6 @@ function newChunkLocalItem(
   isStopped = false
 ): LocalMessageItem {
   const localItem = outputItemToLocalItem(chunkItem as GenericItem, message);
-  localItem.ui_state.needsAnnouncement = false;
   localItem.ui_state.isIntermediateStreaming = true;
   localItem.ui_state.streamingState =
     isComplete || isStopped
