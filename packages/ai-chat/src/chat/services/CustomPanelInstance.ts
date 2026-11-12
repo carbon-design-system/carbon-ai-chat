@@ -24,6 +24,7 @@ import { ServiceManager } from '../../sdk/services/ServiceManager';
 import {
   captureMessageEvent,
   eventLocalItems,
+  watchPayloadEdits,
 } from '../../sdk/utils/messageEventOwnership';
 
 import { deepFreeze } from '../../sdk/utils/lang/objectUtils';
@@ -177,12 +178,14 @@ function createCustomPanelInstance(
     const ownsData =
       workspaceValues?.working === working &&
       workspaceValues?.stored === before.additionalData;
+    const checkEdits = watchPayloadEdits(serviceManager, type, data);
     try {
       await serviceManager.eventBus.fire(
         { type, data },
         serviceManager.instance
       );
     } finally {
+      checkEdits();
       let current = store.getState().view.workspacePanelState;
       if (
         messageEvent &&
