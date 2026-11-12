@@ -158,7 +158,7 @@ async function doSend(
   //
   // Deliberately not awaited: the send does not depend on the footer's content, and awaiting would let a host
   // handler that throws, never settles, or sends a message of its own take the send down with it.
-  serviceManager.slotEventService
+  serviceManager.messageCoordinator
     .handleCustomRequestFooterSlot(localMessage, message)
     .catch((error) => {
       consoleError('A customRequestFooterSlot handler failed.', error);

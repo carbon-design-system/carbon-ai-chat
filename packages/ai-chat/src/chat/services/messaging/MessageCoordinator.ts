@@ -32,9 +32,31 @@ import type { Message } from '../../../types/messaging/Messages';
 import type { MessageState } from '../../../types/config/MessagingConfig';
 
 import * as messageEvents from './coordinateMessageEvents';
-import type { MessageResponse } from '../../../types/messaging/Messages';
+import type {
+  GenericItem,
+  MessageResponse,
+  PartialOrCompleteItemChunk,
+} from '../../../types/messaging/Messages';
+import type { DeepPartial } from '../../../types/utilities/DeepPartial';
+import type { AppStateMessages } from '../../../types/state/AppState';
 
 class MessageCoordinator {
+  handleUserDefinedResponseItemsChunk(
+    messageID: string,
+    chunk: PartialOrCompleteItemChunk,
+    item: DeepPartial<GenericItem>,
+    isCurrent?: () => boolean
+  ) {
+    return messageEvents.handleUserDefinedResponseItemsChunk(
+      this.serviceManager,
+      this.presentation,
+      messageID,
+      chunk,
+      item,
+      isCurrent
+    );
+  }
+
   handleCustomFooterSlot(
     local: LocalMessageItem,
     message: MessageResponse,
@@ -46,6 +68,29 @@ class MessageCoordinator {
       message,
       isCurrent
     );
+  }
+
+  handleCustomRequestFooterSlot(
+    local: LocalMessageItem,
+    message: MessageRequest
+  ) {
+    return messageEvents.handleCustomRequestFooterSlot(
+      this.serviceManager,
+      local,
+      message
+    );
+  }
+
+  createElementsForUserDefinedResponses(messages: AppStateMessages) {
+    return messageEvents.createElementsForUserDefinedResponses(
+      this.serviceManager,
+      this.presentation,
+      messages
+    );
+  }
+
+  replayFooterSlots(messages: AppStateMessages) {
+    return messageEvents.replayFooterSlots(this.serviceManager, messages);
   }
 
   handleUserDefinedResponseItems(
