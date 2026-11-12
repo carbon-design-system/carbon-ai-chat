@@ -768,7 +768,11 @@ describe('UpsertWorkflow', () => {
         if (action.type === 'UPSERT_MESSAGE' && action.message?.id) {
           state.allMessagesByID[action.message.id] = action.message;
           state.allMessageItemsByID = {
-            local1: { ui_state: { id: 'local1' }, fullMessageID: 'm1' },
+            local1: {
+              ui_state: { id: 'local1' },
+              fullMessageID: 'm1',
+              item: action.message.output.generic[0],
+            },
           };
         }
       });
