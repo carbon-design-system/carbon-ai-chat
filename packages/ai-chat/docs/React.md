@@ -272,4 +272,5 @@ Your backend sends nothing extra for this. Passing the render prop is the whole 
 
 ## Related
 
+- [Keeping a chat through a remount](./Lifecycle.md) — keep the conversation when the chat leaves the page and comes back, or start fresh on logout.
 - [UI customization](./Customization.md) — theme the chat, control its layout, and inject your own content into slots, panels, responses, and footers.
