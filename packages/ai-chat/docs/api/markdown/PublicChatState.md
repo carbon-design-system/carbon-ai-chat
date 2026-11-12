@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Instance
-- Reference: https://chat.carbondesignsystem.com/version/v1.24.0/docs/interfaces/Type_reference.PublicChatState.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.PublicChatState.html
 
 Immutable public state returned by `state.get()` on ChatInstance.state.
 
@@ -29,7 +29,7 @@ received or is expected. For instance, if you send another message the current a
 null until you get a new response back. This is meant to be used to disable any user inputs in a user_defined
 response that you don't want active if its not a message you should be receiving inputs from.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0/docs/interfaces/Type_reference.PublicChatState.html#activeresponseid)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.PublicChatState.html#activeresponseid)
 
 ### customPanels
 
@@ -37,7 +37,7 @@ response that you don't want active if its not a message you should be receiving
 
 State for any surfaced custom panels.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0/docs/interfaces/Type_reference.PublicChatState.html#custompanels)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.PublicChatState.html#custompanels)
 
 ### disclaimersAccepted
 
@@ -46,7 +46,7 @@ State for any surfaced custom panels.
 Map of if a disclaimer has been accepted on a given window.hostname value, keyed by hostname via
 ObjectMap.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0/docs/interfaces/Type_reference.PublicChatState.html#disclaimersaccepted)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.PublicChatState.html#disclaimersaccepted)
 
 ### hasSentNonWelcomeMessage
 
@@ -57,7 +57,7 @@ with. This flag is duplicated so the information is available before hydration a
 Note that this property reflects only the last user and should only be used when an approximate value is
 acceptable.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0/docs/interfaces/Type_reference.PublicChatState.html#hassentnonwelcomemessage)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.PublicChatState.html#hassentnonwelcomemessage)
 
 ### homeScreenState
 
@@ -65,7 +65,7 @@ acceptable.
 
 State of home screen.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0/docs/interfaces/Type_reference.PublicChatState.html#homescreenstate)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.PublicChatState.html#homescreenstate)
 
 ### humanAgent
 
@@ -73,17 +73,15 @@ State of home screen.
 
 Current human agent state.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0/docs/interfaces/Type_reference.PublicChatState.html#humanagent)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.PublicChatState.html#humanagent)
 
 ### input
 
 `input: PublicInputState`
 
-**Experimental.**
-
 State representing the main input surface.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0/docs/interfaces/Type_reference.PublicChatState.html#input)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.PublicChatState.html#input)
 
 ### isHydratingCounter
 
@@ -93,7 +91,7 @@ State representing the main input surface.
 
 Counter that indicates if the chat is hydrating and a full screen loading state should be displayed.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0/docs/interfaces/Type_reference.PublicChatState.html#ishydratingcounter)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.PublicChatState.html#ishydratingcounter)
 
 ### isMessageLoadingCounter
 
@@ -102,7 +100,7 @@ Counter that indicates if the chat is hydrating and a full screen loading state 
 Counter that indicates if a message is loading and a loading indicator should be displayed.
 If "0" then we do not show loading indicator.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0/docs/interfaces/Type_reference.PublicChatState.html#ismessageloadingcounter)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.PublicChatState.html#ismessageloadingcounter)
 
 ### isMessageLoadingText
 
@@ -110,7 +108,7 @@ If "0" then we do not show loading indicator.
 
 Optional string to display next to the loading indicator.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0/docs/interfaces/Type_reference.PublicChatState.html#ismessageloadingtext)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.PublicChatState.html#ismessageloadingtext)
 
 ### launcherIsExpanded
 
@@ -118,7 +116,7 @@ Optional string to display next to the loading indicator.
 
 Indicates if the launcher should be in the expanded state.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0/docs/interfaces/Type_reference.PublicChatState.html#launcherisexpanded)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.PublicChatState.html#launcherisexpanded)
 
 ### launcherShouldStartCallToActionCounterIfEnabled
 
@@ -126,7 +124,7 @@ Indicates if the launcher should be in the expanded state.
 
 Determines if the launcher should start a timer to show its expanded state.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0/docs/interfaces/Type_reference.PublicChatState.html#launchershouldstartcalltoactioncounterifenabled)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.PublicChatState.html#launchershouldstartcalltoactioncounterifenabled)
 
 ### messages
 
@@ -136,7 +134,7 @@ Conversation messages, oldest first, or `[]` when empty. Partial
 streaming content is included as it arrives. The array and its message
 values are immutable snapshots, and internal UI state is omitted.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0/docs/interfaces/Type_reference.PublicChatState.html#messages)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.PublicChatState.html#messages)
 
 ### showUnreadIndicator
 
@@ -147,7 +145,7 @@ ChatInstance.updateAssistantUnreadIndicatorVisibility and will display an empty 
 the launcher. This setting is overridden if there are any unread human agent messages in which case a circle
 with a number is displayed.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0/docs/interfaces/Type_reference.PublicChatState.html#showunreadindicator)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.PublicChatState.html#showunreadindicator)
 
 ### status
 
@@ -155,7 +153,7 @@ with a number is displayed.
 
 The current conversation phase. See ConversationStatus for each value and its precedence.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0/docs/interfaces/Type_reference.PublicChatState.html#status)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.PublicChatState.html#status)
 
 ### version
 
@@ -165,7 +163,7 @@ The version of the Carbon AI Chat that this data is persisted for. If there are 
 application state and a user reloads and gets a new version of the widget, bad things might happen so we'll
 just invalidate the persisted storage if we ever attempt to load an old version on Carbon AI Chat startup.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0/docs/interfaces/Type_reference.PublicChatState.html#version)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.PublicChatState.html#version)
 
 ### viewState
 
@@ -173,7 +171,7 @@ just invalidate the persisted storage if we ever attempt to load an old version 
 
 Indicates which of the Carbon AI Chat views are visible and which are hidden.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0/docs/interfaces/Type_reference.PublicChatState.html#viewstate)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.PublicChatState.html#viewstate)
 
 ### wasLoadedFromBrowser
 
@@ -181,7 +179,7 @@ Indicates which of the Carbon AI Chat views are visible and which are hidden.
 
 Indicates if this state was loaded from browser session storage or if was created as part of a new session.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0/docs/interfaces/Type_reference.PublicChatState.html#wasloadedfrombrowser)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.PublicChatState.html#wasloadedfrombrowser)
 
 ### workspace
 
@@ -189,7 +187,7 @@ Indicates if this state was loaded from browser session storage or if was create
 
 State for the workspace panel.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0/docs/interfaces/Type_reference.PublicChatState.html#workspace)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.PublicChatState.html#workspace)
 
 ## Related
 
