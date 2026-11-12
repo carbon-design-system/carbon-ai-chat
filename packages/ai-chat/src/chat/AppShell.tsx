@@ -702,11 +702,12 @@ function AppShell({
           serviceManager.store.getState();
         const { viewState: storeViewState } = persisted;
         if (storeViewState.mainWindow) {
-          mainWindowRef.current?.requestFocus();
+          return Boolean(mainWindowRef.current?.requestFocus());
         }
       } catch (error) {
         consoleError('An error occurred in App.requestFocus', error);
       }
+      return false;
     }
     serviceManager.appWindow = { requestFocus: requestFocusWrapper };
   });

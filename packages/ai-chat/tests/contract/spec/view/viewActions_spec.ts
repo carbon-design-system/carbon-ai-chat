@@ -73,26 +73,26 @@ describe('requestFocus', () => {
     );
   });
 
-  it('returns undefined while the main window is open', async () => {
+  it('returns true when it moves focus while the main window is open', async () => {
     const instance = await mountOpen();
     focusHostButton();
     let result: boolean | void;
     await act(async () => {
       result = instance.requestFocus();
     });
-    // `main` differs from its JSDoc, which says it may return true or false
-    // and shows true in its example (MAIN-NOTES M28).
-    expect(result).toBeUndefined();
+    expect(result).toBe(true);
   });
 
-  it('leaves focus where it is while the main window is closed', async () => {
+  it('leaves focus where it is while the main window is closed, and returns false', async () => {
     const { instance } = await contractChat({
       messaging: { skipWelcome: true },
     });
     const button = focusHostButton();
+    let result: boolean | void;
     await act(async () => {
-      instance.requestFocus();
+      result = instance.requestFocus();
     });
+    expect(result).toBe(false);
     await pause();
     expect(deepActiveElement()).toBe(button);
   });

@@ -125,14 +125,14 @@ interface ChatActions {
    */
   messaging: ChatInstanceMessaging;
   /**
-   * This function can be called when another component wishes this component to gain focus. It is up to the
-   * component to decide where focus belongs. This may return true or false to indicate if a suitable focus location
-   * was found.
+   * Moves focus into the chat. The chat decides where focus belongs, such as the input or an open panel. Returns
+   * true when it moved focus there, and false when it found nothing to focus, such as while the main window is
+   * closed.
    *
    * @example Move focus into the chat
    * ```ts
    * const focused = instance.requestFocus();
-   * // => true when a suitable focus target was found
+   * // => true when focus moved into the chat
    * ```
    */
   requestFocus: () => boolean | void;

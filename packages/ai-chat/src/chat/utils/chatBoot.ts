@@ -479,7 +479,7 @@ export async function initServiceManagerAndInstance(options: {
 
     requestFocus: () => {
       debugLog('Called instance.requestFocus');
-      serviceManager.appWindow?.requestFocus();
+      return Boolean(serviceManager.appWindow?.requestFocus());
     },
 
     serviceDesk: {
