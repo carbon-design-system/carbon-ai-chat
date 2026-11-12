@@ -1,0 +1,415 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+import cloneDeep from 'lodash-es/cloneDeep.js';
+import isEqual from 'lodash-es/isEqual.js';
+
+import type { ChatSDKMessageItem } from '../../types/instance/ChatSDKState';
+import {
+  type LocalMessageItem,
+  MessageErrorState,
+} from '../../types/messaging/LocalMessageItem';
+import {
+  type GenericItem,
+  HumanAgentMessageType,
+  type Message,
+  type MessageRequest,
+  type MessageResponse,
+  MessageResponseTypes,
+} from '../../types/messaging/Messages';
+import type { HumanAgentsOnlineStatus } from '../../types/config/ServiceDeskConfig';
+import type ObjectMap from '../../types/utilities/ObjectMap';
+import { deepFreeze } from './lang/objectUtils';
+import {
+  getRequestBubbleText,
+  isConnectToHumanAgent,
+  isHiddenOutputItem,
+  isItemStillStreaming,
+  isPause,
+  isRequest,
+  isResponse,
+} from './messageUtils';
+import { assembleStreamingItem } from './publicMessages';
+
+type Kind = ChatSDKMessageItem['kind'];
+type Status = ChatSDKMessageItem['status'];
+
+/**
+ * What one entry is built from. Everything but `local` is a value the entry shows, so
+ * two plans with the same {@link planSources} give equal entries.
+ */
+interface ItemPlan {
+  id: string;
+  messageID: string;
+  kind: Kind;
+  parentID: string | undefined;
+  local: LocalMessageItem;
+  status: Status;
+  origin: ChatSDKMessageItem['origin'];
+  isConnectToAgent: boolean;
+  availability: HumanAgentsOnlineStatus | null | undefined;
+  noServiceDesk: boolean | undefined;
+  /** For a request, the text its bubble shows. */
+  requestText: string | undefined;
+}
+
+const AGENT_TURN_TYPES = new Set<unknown>([
+  HumanAgentMessageType.FROM_HUMAN_AGENT,
+  HumanAgentMessageType.FROM_USER,
+]);
+
+/**
+ * Whether an item is a note rather than part of a turn: a system or inline error item, or a human
+ * agent status message, such as the chat's own "agent joined" or "assistant returned" text.
+ */
+function isNoteItem(item: GenericItem): boolean {
+  return Boolean(
+    item &&
+    (item.response_type === MessageResponseTypes.SYSTEM ||
+      item.response_type === MessageResponseTypes.INLINE_ERROR ||
+      (item.agent_message_type !== undefined &&
+        !AGENT_TURN_TYPES.has(item.agent_message_type)))
+  );
+}
+
+function kindOf(message: Message): Kind {
+  if (!isResponse(message)) {
+    return 'request';
+  }
+  const generic = message.output.generic ?? [];
+  return generic.length && generic.every(isNoteItem) ? 'system' : 'response';
+}
+
+function statusOf(message: Message, local: LocalMessageItem): Status {
+  const errorState = message.history?.error_state;
+  if (
+    errorState === MessageErrorState.FAILED ||
+    errorState === MessageErrorState.FAILED_WHILE_STREAMING
+  ) {
+    return 'error';
+  }
+  return isItemStillStreaming(local) ? 'streaming' : 'complete';
+}
+
+function streamID(item: GenericItem): string | undefined {
+  return item?.streaming_metadata?.id || undefined;
+}
+
+/**
+ * Gives each unnamed top-level local item of one response its position in `output.generic`. Items
+ * keep their order, so each local item takes the next position whose item is the same or equal to
+ * its own. A streamed item can differ from the response's copy, so failing that it takes the next
+ * drawn position, skipping pauses and hidden items, which the live paths draw no item for. One left
+ * over, such as a streamed item the response doesn't list yet, counts on past the end, so no two
+ * share an index.
+ */
+function responseIndexes(
+  message: MessageResponse,
+  locals: readonly LocalMessageItem[]
+): Map<LocalMessageItem, number> {
+  const cached = indexCache.get(message);
+  if (
+    cached &&
+    cached.locals.length === locals.length &&
+    cached.locals.every((local, index) => local === locals[index])
+  ) {
+    return cached.indexes;
+  }
+  const indexes = matchIndexes(message, locals);
+  indexCache.set(message, { locals, indexes });
+  return indexes;
+}
+
+/**
+ * Each response's indexes, for as long as the response and its local items keep their objects, so
+ * a streamed chunk matches only the response it changed.
+ */
+const indexCache = new WeakMap<
+  MessageResponse,
+  {
+    locals: readonly LocalMessageItem[];
+    indexes: Map<LocalMessageItem, number>;
+  }
+>();
+
+function matchIndexes(
+  message: MessageResponse,
+  locals: readonly LocalMessageItem[]
+): Map<LocalMessageItem, number> {
+  const generic = message.output?.generic ?? [];
+  const candidate = (index: number) =>
+    generic[index] && !isPause(generic[index]) && !streamID(generic[index]);
+  const indexes = new Map<LocalMessageItem, number>();
+  let next = 0;
+  let overflow = 0;
+  locals.forEach((local) => {
+    if (streamID(local.item)) {
+      return;
+    }
+    let index = -1;
+    for (let at = next; at < generic.length && index === -1; at++) {
+      if (
+        candidate(at) &&
+        (generic[at] === local.item || isEqual(generic[at], local.item))
+      ) {
+        index = at;
+      }
+    }
+    for (let at = next; at < generic.length && index === -1; at++) {
+      if (candidate(at) && !isHiddenOutputItem(message, generic[at])) {
+        index = at;
+      }
+    }
+    if (index === -1) {
+      indexes.set(local, generic.length + overflow++);
+    } else {
+      indexes.set(local, index);
+      next = index + 1;
+    }
+  });
+  return indexes;
+}
+
+/**
+ * Each nested list of a local item, with how its children's IDs extend the parent's: carousel and
+ * body items by position, footer items by `f` and position, grid cell items by row, column, and
+ * position.
+ */
+function nestedLists(
+  local: LocalMessageItem
+): { ids: readonly string[]; part: (index: number) => string }[] {
+  const { ui_state } = local;
+  const lists: { ids: readonly string[]; part: (index: number) => string }[] =
+    [];
+  if (ui_state.itemsLocalMessageItemIDs) {
+    lists.push({
+      ids: ui_state.itemsLocalMessageItemIDs,
+      part: (index) => `i:${index}`,
+    });
+  }
+  if (ui_state.bodyLocalMessageItemIDs) {
+    lists.push({
+      ids: ui_state.bodyLocalMessageItemIDs,
+      part: (index) => `i:${index}`,
+    });
+  }
+  if (ui_state.footerLocalMessageItemIDs) {
+    lists.push({
+      ids: ui_state.footerLocalMessageItemIDs,
+      part: (index) => `f:${index}`,
+    });
+  }
+  ui_state.gridLocalMessageItemIDs?.forEach((row, rowIndex) =>
+    row.forEach((cell, columnIndex) =>
+      lists.push({
+        ids: cell,
+        part: (index) => `i:${rowIndex}.${columnIndex}.${index}`,
+      })
+    )
+  );
+  return lists;
+}
+
+/**
+ * Plans every entry the list draws, in its order: each top-level local item of a message that's in
+ * `messageIDs`, then the items nested in it, depth first.
+ */
+export function planMessageItems(
+  messageIDs: readonly string[],
+  allMessagesByID: ObjectMap<Message>,
+  allMessageItemsByID: ObjectMap<LocalMessageItem>,
+  localMessageIDs: readonly string[]
+): ItemPlan[] {
+  const currentIDs = new Set(messageIDs);
+  const localsByMessage = new Map<string, LocalMessageItem[]>();
+  const shown: LocalMessageItem[] = [];
+  localMessageIDs.forEach((localID) => {
+    const local = allMessageItemsByID[localID];
+    if (
+      local &&
+      currentIDs.has(local.fullMessageID) &&
+      allMessagesByID[local.fullMessageID]
+    ) {
+      shown.push(local);
+      const locals = localsByMessage.get(local.fullMessageID) ?? [];
+      locals.push(local);
+      localsByMessage.set(local.fullMessageID, locals);
+    }
+  });
+
+  const indexesByMessage = new Map<string, Map<LocalMessageItem, number>>();
+  const kindByMessage = new Map<string, Kind>();
+  const plans: ItemPlan[] = [];
+
+  const addPlan = (
+    id: string,
+    local: LocalMessageItem,
+    message: Message,
+    kind: Kind,
+    status: Status,
+    parentID?: string
+  ) => {
+    const isConnectToAgent = isConnectToHumanAgent(local.item);
+    plans.push({
+      id,
+      messageID: message.id,
+      kind,
+      parentID,
+      local,
+      status,
+      origin: message.ui_state_internal?.from_history ? 'history' : 'live',
+      isConnectToAgent,
+      availability: isConnectToAgent
+        ? message.ui_state_internal?.agent_availability
+        : undefined,
+      noServiceDesk: isConnectToAgent
+        ? message.ui_state_internal?.agent_no_service_desk
+        : undefined,
+      requestText: isRequest(message)
+        ? getRequestBubbleText(local, message as MessageRequest)
+        : undefined,
+    });
+    nestedLists(local).forEach(({ ids, part }) =>
+      ids.forEach((nestedID, index) => {
+        const nested = allMessageItemsByID[nestedID];
+        if (nested) {
+          addPlan(`${id}:${part(index)}`, nested, message, kind, status, id);
+        }
+      })
+    );
+  };
+
+  shown.forEach((local) => {
+    const message = allMessagesByID[local.fullMessageID];
+    let kind = kindByMessage.get(message.id);
+    if (!kind) {
+      kind = kindOf(message);
+      kindByMessage.set(message.id, kind);
+    }
+    let id: string;
+    const named = streamID(local.item);
+    if (named) {
+      id = `${message.id}:s:${named}`;
+    } else if (isResponse(message)) {
+      let indexes = indexesByMessage.get(message.id);
+      if (!indexes) {
+        indexes = responseIndexes(message, localsByMessage.get(message.id));
+        indexesByMessage.set(message.id, indexes);
+      }
+      id = `${message.id}:i:${indexes.get(local)}`;
+    } else {
+      id = `${message.id}:i:0`;
+    }
+    addPlan(id, local, message, kind, statusOf(message, local));
+  });
+  return plans;
+}
+
+function planValues(plan: ItemPlan): unknown[] {
+  const { streamingState } = plan.local.ui_state;
+  return [
+    plan.id,
+    plan.messageID,
+    plan.kind,
+    plan.parentID,
+    plan.local.item,
+    streamingState?.chunks,
+    streamingState?.isDone,
+    plan.status,
+    plan.origin,
+    plan.isConnectToAgent,
+    plan.availability,
+    plan.noServiceDesk,
+    plan.requestText,
+  ];
+}
+
+/** Every value the entries are built from, in order, for comparing two states by reference. */
+export function planSources(plans: readonly ItemPlan[]): readonly unknown[] {
+  return plans.flatMap(planValues);
+}
+
+function sameValues(left: readonly unknown[], right: readonly unknown[]) {
+  return (
+    left.length === right.length &&
+    left.every((value, index) => Object.is(value, right[index]))
+  );
+}
+
+function drawnItem(plan: ItemPlan): GenericItem {
+  const item = assembleStreamingItem(plan.local);
+  if (plan.kind === 'request' && plan.requestText !== undefined) {
+    return { ...item, text: plan.requestText } as GenericItem;
+  }
+  return item;
+}
+
+function buildEntry(plan: ItemPlan): Readonly<ChatSDKMessageItem> {
+  return Object.freeze({
+    id: plan.id,
+    messageID: plan.messageID,
+    kind: plan.kind,
+    ...(plan.parentID !== undefined && { parentID: plan.parentID }),
+    item: deepFreeze(cloneDeep(drawnItem(plan))),
+    status: plan.status,
+    origin: plan.origin,
+    ...(plan.isConnectToAgent && {
+      humanAgent: Object.freeze({
+        ...(plan.availability !== undefined && {
+          availability: plan.availability,
+        }),
+        ...(plan.noServiceDesk !== undefined && {
+          noServiceDesk: plan.noServiceDesk,
+        }),
+      }),
+    }),
+  });
+}
+
+/**
+ * Builds `state.messageItems`, keeping each entry whose values didn't change, and the array when
+ * none did.
+ */
+export class PublicMessageItemsProjection {
+  private entries = new Map<
+    string,
+    { values: readonly unknown[]; entry: Readonly<ChatSDKMessageItem> }
+  >();
+
+  private array: readonly Readonly<ChatSDKMessageItem>[] = Object.freeze([]);
+
+  project(plans: readonly ItemPlan[]): readonly Readonly<ChatSDKMessageItem>[] {
+    const seen = new Set<string>();
+    const next = plans.map((plan) => {
+      seen.add(plan.id);
+      const values = planValues(plan);
+      const cached = this.entries.get(plan.id);
+      if (cached && sameValues(cached.values, values)) {
+        return cached.entry;
+      }
+      const entry = buildEntry(plan);
+      this.entries.set(plan.id, { values, entry });
+      return entry;
+    });
+    this.entries.forEach((_entry, id) => {
+      if (!seen.has(id)) {
+        this.entries.delete(id);
+      }
+    });
+    if (
+      this.array.length !== next.length ||
+      next.some((entry, index) => entry !== this.array[index])
+    ) {
+      this.array = Object.freeze(next);
+    }
+    return this.array;
+  }
+}
+
+export type { ItemPlan };

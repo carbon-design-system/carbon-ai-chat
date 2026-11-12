@@ -216,6 +216,7 @@ chat.messaging.upsertMessage(
 // SDK state is the conversation alone.
 export const sdkStateFields: Record<keyof ChatSDKState, true> = {
   messages: true,
+  messageItems: true,
   status: true,
   error: true,
   pendingUploads: true,

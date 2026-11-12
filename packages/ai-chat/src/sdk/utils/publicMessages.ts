@@ -125,7 +125,12 @@ export function publicMessagesSources(
   });
 }
 
-function assembleStreamingItem(localItem: LocalMessageItem): GenericItem {
+/**
+ * A local item's content as drawn: its streamed content so far while it streams, else its item.
+ */
+export function assembleStreamingItem(
+  localItem: LocalMessageItem
+): GenericItem {
   const { streamingState } = localItem.ui_state;
   if (!streamingState || streamingState.isDone) {
     return localItem.item;

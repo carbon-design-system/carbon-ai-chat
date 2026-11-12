@@ -14,10 +14,13 @@
  */
 
 import {
+  MessageResponseTypes,
   OnErrorType,
   type ChatSDKErrorData,
+  type ChatSDKMessageItem,
   type ChatSDKState,
   type OnErrorData,
+  type PublicChatState,
 } from '../../../src/aiChatEntry';
 
 export const olderSdkState: ChatSDKState = {
@@ -41,4 +44,28 @@ export const olderOnErrorData: OnErrorData = {
   errorType: OnErrorType.MESSAGE_COMMUNICATION,
   message: 'failed',
   catastrophicErrorType: false,
+};
+
+/**
+ * `olderSdkState` above has no `messageItems`. These fail to compile if the field becomes required
+ * on either state type.
+ */
+type IsOptional<T, K extends keyof T> =
+  object extends Pick<T, K> ? true : false;
+export const messageItemsOptionalOnSdk: IsOptional<
+  ChatSDKState,
+  'messageItems'
+> = true;
+export const messageItemsOptionalOnPublic: IsOptional<
+  PublicChatState,
+  'messageItems'
+> = true;
+
+export const sdkMessageItem: ChatSDKMessageItem = {
+  id: 'message-1:i:0',
+  messageID: 'message-1',
+  kind: 'response',
+  item: { response_type: MessageResponseTypes.TEXT },
+  status: 'complete',
+  origin: 'live',
 };
