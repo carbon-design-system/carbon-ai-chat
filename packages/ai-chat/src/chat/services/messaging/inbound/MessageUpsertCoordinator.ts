@@ -102,10 +102,6 @@ interface SkipsUnchanged {
   previousItems: GenericItem[];
 }
 
-const noop = () => {
-  /* intentionally empty */
-};
-
 /**
  * Engine behind {@link ChatInstanceMessaging#upsertMessage}. `MessageCoordinator` owns the
  * send / stream / receive arc; this coordinator's job is narrower:
@@ -129,69 +125,14 @@ interface UpsertStamp {
 
 class MessageUpsertCoordinator {
   private readonly serviceManager: ServiceManager;
-
   private readonly incomingMessageService = new IncomingMessageService();
 
-  private readonly chainByID = new Map<string, Promise<void>>();
-
-  private generation = 0;
-
-  /**
-   * Receive-dedup record, **not** a liveness record. `addMessage` and `addMessageChunk`
-   * write it too, it deliberately retains {@link MessageState.COMPLETE} for the life of
-   * the session, and nothing drains it when a stream is canceled. Use
-   * {@link streamingIDs} to ask whether a message is still streaming.
-   */
-  private readonly stateByID = new Map<string, MessageState>();
-
-  /**
-   * IDs currently mid-stream via `upsertMessage`. Written only by {@link runOne}, which
-   * adds on {@link MessageState.STREAMING} and removes on {@link MessageState.COMPLETE} /
-   * {@link MessageState.ERROR}, so the two operations stay symmetric and the set cannot
-   * leak the way {@link stateByID} does.
-   */
-  private readonly streamingIDs = new Set<string>();
-
-  private readonly streamingControllers = new Map<string, AbortController>();
-
-  /**
-   * How many of each message's `pause` items have run, counted in `output.generic`
-   * order, so a later upsert of the same message never runs one again. `Infinity` when
-   * `addMessage` or history delivered the message, since they run its pauses themselves.
-   */
-  private readonly pausesRunByID = new Map<string, number>();
-
-  private readonly pendingWrites = new Map<
-    string,
-    { valid: boolean; count: number }
-  >();
+  private get lifetime() {
+    return this.serviceManager.messageCoordinator.incomingWriteLifetime;
+  }
 
   trackWrite(messageID: string) {
-    const entry = this.pendingWrites.get(messageID) ?? {
-      valid: true,
-      count: 0,
-    };
-    entry.count++;
-    this.pendingWrites.set(messageID, entry);
-    const generation = this.generation;
-    const restartCount = this.serviceManager.restartCount;
-    let released = false;
-    return {
-      isCurrent: () =>
-        entry.valid &&
-        generation === this.generation &&
-        restartCount === this.serviceManager.restartCount,
-      release: () => {
-        if (released) {
-          return;
-        }
-        released = true;
-        entry.count--;
-        if (!entry.count && this.pendingWrites.get(messageID) === entry) {
-          this.pendingWrites.delete(messageID);
-        }
-      },
-    };
+    return this.lifetime.trackWrite(messageID);
   }
 
   constructor(serviceManager: ServiceManager) {
@@ -207,17 +148,17 @@ class MessageUpsertCoordinator {
       this.serviceManager.messageCoordinator.clearStreamingCancellation(
         messageID
       );
-      this.stateByID.set(messageID, MessageState.COMPLETE);
-      this.streamingControllers.delete(messageID);
+      this.lifetime.state.stateByID.set(messageID, MessageState.COMPLETE);
+      this.lifetime.streamingControllers.delete(messageID);
       // `addMessage` and history already ran, or are running, this message's pauses, so
       // a later upsert of it must not run them again. Always overwrite, even when upsert
       // has already advanced the cursor: a finite count would let a subsequent upsert
       // replay pauses from the wrong index.
-      this.pausesRunByID.set(messageID, Infinity);
+      this.lifetime.state.pausesRunByID.set(messageID, Infinity);
       // If a streaming upsert was in progress for this id, `addMessage` delivering the
       // same id closes the stream. Without this, the stop button would stay up with
       // nothing left to take it down.
-      if (this.streamingIDs.delete(messageID)) {
+      if (this.lifetime.state.streamingIDs.delete(messageID)) {
         this.serviceManager.messageCoordinator.responseFinished(messageID);
         this.serviceManager.messageCoordinator.hideStopStreamingButtonIfIdle();
       }
@@ -230,7 +171,7 @@ class MessageUpsertCoordinator {
    */
   markStreaming(messageID: string | undefined) {
     if (messageID) {
-      this.stateByID.set(messageID, MessageState.STREAMING);
+      this.lifetime.state.stateByID.set(messageID, MessageState.STREAMING);
     }
   }
 
@@ -239,21 +180,21 @@ class MessageUpsertCoordinator {
    * `undefined` when no state has been recorded.
    */
   getState(messageID: string): MessageState | undefined {
-    return this.stateByID.get(messageID);
+    return this.lifetime.state.stateByID.get(messageID);
   }
 
   /**
    * Returns true when any message is currently mid-stream via `upsertMessage`.
    */
   hasStreamingMessages(): boolean {
-    return this.streamingIDs.size > 0;
+    return this.lifetime.state.streamingIDs.size > 0;
   }
 
   /**
    * Settles every message still registered as mid-stream and drops the registrations.
    *
    * A canceled `upsertMessage` stream has no terminal upsert to settle it — the host is
-   * told to stop and simply stops calling. Nothing else drains {@link streamingIDs}, so
+   * told to stop and simply stops calling. Nothing else drains `streamingIDs`, so
    * without this the stop streaming button stays visible and the items keep rendering
    * mid-stream for the rest of the session.
    *
@@ -261,10 +202,10 @@ class MessageUpsertCoordinator {
    * again on a later write; a stopped request can still update its content.
    */
   endAllStreaming(reason: string = CancellationReason.STOP_STREAMING): boolean {
-    const controllers = new Set(this.streamingControllers.values());
-    const settledAny = this.streamingIDs.size > 0;
+    const controllers = new Set(this.lifetime.streamingControllers.values());
+    const settledAny = this.lifetime.state.streamingIDs.size > 0;
     const lifecycle = this.serviceManager.messageCoordinator;
-    for (const messageID of this.streamingIDs) {
+    for (const messageID of this.lifetime.state.streamingIDs) {
       const requestID = lifecycle.responseRequestID(messageID);
       if (requestID) {
         lifecycle.requestStopped(requestID);
@@ -297,8 +238,8 @@ class MessageUpsertCoordinator {
   }
 
   endStreamingMessage(messageID: string, generation?: number) {
-    this.streamingIDs.delete(messageID);
-    this.streamingControllers.delete(messageID);
+    this.lifetime.state.streamingIDs.delete(messageID);
+    this.lifetime.streamingControllers.delete(messageID);
     this.serviceManager.messageCoordinator.responseFinished(
       messageID,
       generation
@@ -317,28 +258,28 @@ class MessageUpsertCoordinator {
    * `removeMessages`.
    */
   clear(messageID: string) {
-    const pending = this.pendingWrites.get(messageID);
+    const pending = this.lifetime.state.pendingWrites.get(messageID);
     if (pending) {
       pending.valid = false;
-      this.pendingWrites.delete(messageID);
+      this.lifetime.state.pendingWrites.delete(messageID);
     }
     this.serviceManager.messageCoordinator.clearStreamingCancellation(
       messageID
     );
-    const wasStreaming = this.streamingIDs.has(messageID);
-    this.stateByID.delete(messageID);
-    this.chainByID.delete(messageID);
-    this.streamingIDs.delete(messageID);
-    this.streamingControllers.delete(messageID);
+    const wasStreaming = this.lifetime.state.streamingIDs.has(messageID);
+    this.lifetime.state.stateByID.delete(messageID);
+    this.lifetime.chainByID.delete(messageID);
+    this.lifetime.state.streamingIDs.delete(messageID);
+    this.lifetime.streamingControllers.delete(messageID);
     this.serviceManager.messageCoordinator.responseRemoved(messageID);
-    this.pausesRunByID.delete(messageID);
+    this.lifetime.state.pausesRunByID.delete(messageID);
     if (wasStreaming) {
       this.serviceManager.messageCoordinator.hideStopStreamingButtonIfIdle();
     }
   }
 
   invalidatePendingUpserts() {
-    this.generation++;
+    this.lifetime.state.generation++;
   }
 
   /**
@@ -347,21 +288,21 @@ class MessageUpsertCoordinator {
    * into a fresh session.
    */
   clearAll() {
-    const controllers = new Set(this.streamingControllers.values());
+    const controllers = new Set(this.lifetime.streamingControllers.values());
     for (const controller of controllers) {
       controller.abort(CancellationReason.CONVERSATION_RESTARTED);
     }
     this.serviceManager.messageCoordinator.clearAllStreamingCancellation();
-    this.generation++;
-    this.chainByID.clear();
-    this.stateByID.clear();
-    for (const messageID of this.streamingIDs) {
+    this.lifetime.state.generation++;
+    this.lifetime.chainByID.clear();
+    this.lifetime.state.stateByID.clear();
+    for (const messageID of this.lifetime.state.streamingIDs) {
       this.serviceManager.messageCoordinator.responseFinished(messageID);
     }
-    this.streamingIDs.clear();
-    this.streamingControllers.clear();
-    this.pausesRunByID.clear();
-    this.pendingWrites.clear();
+    this.lifetime.state.streamingIDs.clear();
+    this.lifetime.streamingControllers.clear();
+    this.lifetime.state.pausesRunByID.clear();
+    this.lifetime.state.pendingWrites.clear();
   }
 
   /**
@@ -429,26 +370,7 @@ class MessageUpsertCoordinator {
     messageID: string,
     worker: () => Promise<void>
   ): Promise<void> {
-    const generation = this.generation;
-    const prev = this.chainByID.get(messageID) ?? Promise.resolve();
-    const next = prev.catch(noop).then(() => {
-      if (generation === this.generation) {
-        return worker();
-      }
-      return undefined;
-    });
-    this.chainByID.set(messageID, next);
-    // Detach a finalization handler that cleans up the chain entry. The trailing
-    // `.then(noop, noop)` absorbs the rejection so it isn't reported as unhandled —
-    // the original caller still sees the rejection via the returned `next`.
-    next
-      .finally(() => {
-        if (this.chainByID.get(messageID) === next) {
-          this.chainByID.delete(messageID);
-        }
-      })
-      .then(noop, noop);
-    return next;
+    return this.lifetime.enqueue(messageID, worker);
   }
 
   private async runOne(
@@ -483,7 +405,7 @@ class MessageUpsertCoordinator {
 
     const { willFireReceive, settlesMessage } =
       this.incomingMessageService.transitionOf(
-        this.stateByID.get(messageID),
+        this.lifetime.state.stateByID.get(messageID),
         nextState
       );
 
@@ -610,7 +532,7 @@ class MessageUpsertCoordinator {
       }
     }
 
-    this.stateByID.set(messageID, nextState);
+    this.lifetime.state.stateByID.set(messageID, nextState);
 
     if (willFireReceive) {
       await this.firePostReceiveAndFinalize(messageID, result, stamp);
@@ -623,7 +545,7 @@ class MessageUpsertCoordinator {
 
   private takeStamp(isCurrent: () => boolean): UpsertStamp {
     return {
-      generation: this.generation,
+      generation: this.lifetime.state.generation,
       restartCount: this.serviceManager.restartCount,
       isCurrent,
     };
@@ -632,7 +554,7 @@ class MessageUpsertCoordinator {
   private isStale(stamp: UpsertStamp, requestID?: string): boolean {
     return (
       !stamp.isCurrent() ||
-      stamp.generation !== this.generation ||
+      stamp.generation !== this.lifetime.state.generation ||
       stamp.restartCount !== this.serviceManager.restartCount ||
       this.serviceManager.messageCoordinator.isRequestFromPreviousConversation(
         requestID
@@ -903,7 +825,7 @@ class MessageUpsertCoordinator {
    * has not run yet, or `Infinity` when there is none. Items from there on are held back.
    */
   private findPauseToRun(messageID: string, result: MessageResponse): number {
-    const pausesRun = this.pausesRunByID.get(messageID) ?? 0;
+    const pausesRun = this.lifetime.state.pausesRunByID.get(messageID) ?? 0;
     let pausesSeen = 0;
     for (const [index, item] of (result.output?.generic ?? []).entries()) {
       if (item && isPause(item)) {
@@ -946,16 +868,16 @@ class MessageUpsertCoordinator {
       ) {
         return false;
       }
-      this.pausesRunByID.set(
+      this.lifetime.state.pausesRunByID.set(
         messageID,
-        (this.pausesRunByID.get(messageID) ?? 0) + 1
+        (this.lifetime.state.pausesRunByID.get(messageID) ?? 0) + 1
       );
 
       // A stop pressed during the pause settled the stream, so the reveal must not put
       // the items back mid-stream.
       const isStreaming =
         nextState === MessageState.STREAMING &&
-        this.streamingIDs.has(messageID);
+        this.lifetime.state.streamingIDs.has(messageID);
       const revealState =
         nextState === MessageState.STREAMING && !isStreaming
           ? MessageState.COMPLETE
@@ -1095,22 +1017,22 @@ class MessageUpsertCoordinator {
       return;
     }
     if (nextState === MessageState.STREAMING) {
-      this.stateByID.set(messageID, nextState);
-      if (!this.streamingIDs.has(messageID)) {
+      this.lifetime.state.stateByID.set(messageID, nextState);
+      if (!this.lifetime.state.streamingIDs.has(messageID)) {
         const controller =
           this.serviceManager.messageCoordinator.getCurrentMessageController();
         if (controller) {
-          this.streamingControllers.set(messageID, controller);
+          this.lifetime.streamingControllers.set(messageID, controller);
         }
       }
-      this.streamingIDs.add(messageID);
+      this.lifetime.state.streamingIDs.add(messageID);
       lifecycle.responseStreaming(messageID, undefined, requestID);
       this.syncStopStreamingButton(nextState, result, false);
       this.announceStreamStarts(result, holdFromIndex);
       return;
     }
-    const wasStreaming = this.streamingIDs.delete(messageID);
-    this.streamingControllers.delete(messageID);
+    const wasStreaming = this.lifetime.state.streamingIDs.delete(messageID);
+    this.lifetime.streamingControllers.delete(messageID);
     if (nextState === MessageState.COMPLETE) {
       lifecycle.responseReceived(messageID, undefined, requestID);
     }
