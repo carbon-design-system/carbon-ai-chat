@@ -34,14 +34,19 @@ import {
   isRequest,
   isResponse,
 } from './messageUtils';
-import { publicItemOf } from './publicMessages';
+import {
+  type MessageSlices,
+  changedMessageIDs,
+  localIDsByMessage,
+} from './messageChanges';
+import { type MessageProjectionObserver, publicItemOf } from './publicMessages';
 
 type Kind = ChatSDKMessageItem['kind'];
 type Status = ChatSDKMessageItem['status'];
 
 /**
  * What one entry is built from. Everything but `local` is a value the entry shows, so
- * two plans with the same {@link planSources} give equal entries.
+ * two plans with the same values give equal entries.
  */
 interface ItemPlan {
   id: string;
@@ -300,15 +305,47 @@ function topLevelID(
 }
 
 /**
- * Plans every entry the list draws, in its order: each top-level local item of a message that's in
- * `messageIDs`, then the items nested in it, depth first.
+ * The plans of one top-level item and the items nested in it, and the values each entry shows.
+ * `entries` is the projection's, set when it first projects the group.
  */
-export function planMessageItems(
-  messageIDs: readonly string[],
-  allMessagesByID: ObjectMap<Message>,
-  allMessageItemsByID: ObjectMap<LocalMessageItem>,
-  localMessageIDs: readonly string[]
-): ItemPlan[] {
+interface PlanGroup {
+  localID: string;
+  plans: readonly ItemPlan[];
+  values: readonly (readonly unknown[])[];
+  entries?: readonly Readonly<ChatSDKMessageItem>[];
+}
+
+/** Plans one top-level local item of a message, with `locals`, the message's top-level local items. */
+function planGroup(
+  message: Message,
+  local: LocalMessageItem,
+  locals: readonly LocalMessageItem[],
+  allMessageItemsByID: ObjectMap<LocalMessageItem>
+): PlanGroup {
+  const plans: ItemPlan[] = [];
+  addPlans(
+    plans,
+    allMessageItemsByID,
+    { message, kind: kindOf(message), status: statusOf(message, local) },
+    topLevelID(message, local, locals),
+    local
+  );
+  return { localID: local.ui_state.id, plans, values: plans.map(planValues) };
+}
+
+/**
+ * Plans each top-level local item of a message that's in `messageIDs`, in list order. `group`
+ * plans one; the planner passes one that keeps a group whose values didn't change.
+ */
+function planGroups(
+  {
+    messageIDs,
+    allMessagesByID,
+    allMessageItemsByID,
+    localMessageIDs,
+  }: MessageSlices,
+  group: typeof planGroup = planGroup
+): PlanGroup[] {
   const currentIDs = new Set(messageIDs);
   const localsByMessage = new Map<string, LocalMessageItem[]>();
   localMessageIDs.forEach((localID) => {
@@ -321,23 +358,38 @@ export function planMessageItems(
     }
   });
 
-  const plans: ItemPlan[] = [];
-  localMessageIDs.forEach((localID) => {
+  return localMessageIDs.flatMap((localID) => {
     const local = allMessageItemsByID[localID];
     const locals = localsByMessage.get(local?.fullMessageID);
-    if (!locals) {
-      return;
-    }
-    const message = allMessagesByID[local.fullMessageID];
-    addPlans(
-      plans,
-      allMessageItemsByID,
-      { message, kind: kindOf(message), status: statusOf(message, local) },
-      topLevelID(message, local, locals),
-      local
-    );
+    return locals
+      ? [
+          group(
+            allMessagesByID[local.fullMessageID],
+            local,
+            locals,
+            allMessageItemsByID
+          ),
+        ]
+      : [];
   });
-  return plans;
+}
+
+/**
+ * Plans every entry the list draws, in its order: each top-level local item of a message that's in
+ * `messageIDs`, then the items nested in it, depth first.
+ */
+export function planMessageItems(
+  messageIDs: readonly string[],
+  allMessagesByID: ObjectMap<Message>,
+  allMessageItemsByID: ObjectMap<LocalMessageItem>,
+  localMessageIDs: readonly string[]
+): ItemPlan[] {
+  return planGroups({
+    messageIDs,
+    allMessagesByID,
+    allMessageItemsByID,
+    localMessageIDs,
+  }).flatMap(({ plans }) => plans);
 }
 
 /**
@@ -411,11 +463,6 @@ function planValues(plan: ItemPlan): unknown[] {
   ];
 }
 
-/** Every value the entries are built from, in order, for comparing two states by reference. */
-export function planSources(plans: readonly ItemPlan[]): readonly unknown[] {
-  return plans.flatMap(planValues);
-}
-
 function sameValues(left: readonly unknown[], right: readonly unknown[]) {
   return (
     left.length === right.length &&
@@ -457,6 +504,146 @@ function buildEntry(plan: ItemPlan): Readonly<ChatSDKMessageItem> {
   });
 }
 
+function sameGroupValues(left: PlanGroup, right: PlanGroup) {
+  return (
+    left.localID === right.localID &&
+    left.values.length === right.values.length &&
+    left.values.every((values, index) =>
+      sameValues(values, right.values[index])
+    )
+  );
+}
+
+/** Every entry's plan, grouped by top-level item, in list order. */
+interface MessageItemsPlan {
+  groups: readonly PlanGroup[];
+  /** Each group's position by its top-level local ID. */
+  positions: ReadonlyMap<string, number>;
+  /** Whether a later plan may replace groups in place: each local ID has one group. */
+  updatable: boolean;
+  /** When the planner replaced only some groups of `base`: their positions. */
+  changes?: { base: MessageItemsPlan; positions: readonly number[] };
+}
+
+const EMPTY_PLAN: MessageItemsPlan = {
+  groups: [],
+  positions: new Map(),
+  updatable: true,
+};
+
+/** Each plan's flat list of item plans, built once per plan. */
+const flatLists = new WeakMap<MessageItemsPlan, readonly ItemPlan[]>();
+
+/** Every item plan of a plan, in list order. */
+export function flatItemPlans(plan: MessageItemsPlan): readonly ItemPlan[] {
+  let plans = flatLists.get(plan);
+  if (!plans) {
+    plans = plan.groups.flatMap((group) => group.plans);
+    flatLists.set(plan, plans);
+  }
+  return plans;
+}
+
+/**
+ * Plans `messageItems` from one state after another. When it can tell which messages a write
+ * changed, it plans only their top-level items, so a streamed chunk doesn't plan the transcript. A
+ * group whose values didn't change keeps its object, and the plan keeps its object when no group
+ * changed.
+ */
+export class MessageItemsPlanner {
+  private plan = EMPTY_PLAN;
+
+  /** The slices `plan` was planned from. */
+  private slices: MessageSlices | undefined;
+
+  constructor(private observer?: MessageProjectionObserver) {}
+
+  planFor(slices: MessageSlices): MessageItemsPlan {
+    const changed = this.slices && changedMessageIDs(this.slices, slices);
+    this.plan =
+      (changed && this.update(changed, slices)) ?? this.rebuild(slices);
+    this.slices = slices;
+    return this.plan;
+  }
+
+  private group = (
+    message: Message,
+    local: LocalMessageItem,
+    locals: readonly LocalMessageItem[],
+    allMessageItemsByID: ObjectMap<LocalMessageItem>
+  ): PlanGroup => {
+    this.observer?.onCompareMessage?.('messageItems', local.ui_state.id);
+    const group = planGroup(message, local, locals, allMessageItemsByID);
+    const position = this.plan.positions.get(group.localID);
+    const last =
+      position === undefined ? undefined : this.plan.groups[position];
+    return last && sameGroupValues(last, group) ? last : group;
+  };
+
+  /**
+   * Plans the changed messages' top-level items only, or returns `undefined` when one of those
+   * items wasn't drawn before, so every item is planned.
+   */
+  private update(
+    changed: ReadonlySet<string>,
+    slices: MessageSlices
+  ): MessageItemsPlan | undefined {
+    const { allMessagesByID, allMessageItemsByID } = slices;
+    const localIDs = localIDsByMessage(
+      slices.localMessageIDs,
+      allMessageItemsByID
+    );
+    if (!localIDs || !this.plan.updatable) {
+      return undefined;
+    }
+    const { groups, positions } = this.plan;
+    let next: PlanGroup[] | undefined;
+    const replaced: number[] = [];
+    for (const messageID of changed) {
+      const message = allMessagesByID[messageID];
+      const ids = localIDs.get(messageID) ?? [];
+      const locals = ids.map((localID) => allMessageItemsByID[localID]);
+      for (const local of locals) {
+        const position = local && positions.get(local.ui_state.id);
+        if (!message || position === undefined) {
+          return undefined;
+        }
+        const group = this.group(message, local, locals, allMessageItemsByID);
+        if (group !== groups[position]) {
+          next ??= [...groups];
+          next[position] = group;
+          replaced.push(position);
+        }
+      }
+    }
+    return next
+      ? {
+          groups: next,
+          positions,
+          updatable: true,
+          changes: { base: this.plan, positions: replaced },
+        }
+      : this.plan;
+  }
+
+  /** Plans every top-level item, keeping the plan when no group changed. */
+  private rebuild(slices: MessageSlices): MessageItemsPlan {
+    const groups = planGroups(slices, this.group);
+    const last = this.plan.groups;
+    if (
+      groups.length === last.length &&
+      groups.every((group, index) => group === last[index])
+    ) {
+      return this.plan;
+    }
+    const positions = new Map(
+      groups.map(({ localID }, index) => [localID, index])
+    );
+    // A local item listed twice has two groups, so every later write plans every item.
+    return { groups, positions, updatable: positions.size === groups.length };
+  }
+}
+
 /**
  * Builds `state.messageItems`, keeping each entry whose values didn't change, and the array when
  * none did.
@@ -469,24 +656,90 @@ export class PublicMessageItemsProjection {
 
   private array: readonly Readonly<ChatSDKMessageItem>[] = Object.freeze([]);
 
+  /** The plan `array` was projected from, when it came from a planner. */
+  private plan: MessageItemsPlan | undefined;
+
   project(plans: readonly ItemPlan[]): readonly Readonly<ChatSDKMessageItem>[] {
-    const seen = new Set<string>();
-    const next = plans.map((plan) => {
-      seen.add(plan.id);
-      const values = planValues(plan);
-      const cached = this.entries.get(plan.id);
-      if (cached && sameValues(cached.values, values)) {
-        return cached.entry;
-      }
-      const entry = buildEntry(plan);
-      this.entries.set(plan.id, { values, entry });
-      return entry;
-    });
+    this.plan = undefined;
+    return this.keepOrReplace(this.projectAll(plans, plans.map(planValues)));
+  }
+
+  /**
+   * Projects a planner's plan. When it replaced only some groups of the plan projected last, only
+   * those groups' entries are checked, and the array is a new list of the same entries otherwise.
+   */
+  projectPlan(plan: MessageItemsPlan): readonly Readonly<ChatSDKMessageItem>[] {
+    if (plan === this.plan) {
+      return this.array;
+    }
+    const { changes } = plan;
+    if (changes && this.plan && changes.base === this.plan) {
+      const replaced = changes.positions.map((position) => ({
+        before: changes.base.groups[position],
+        after: plan.groups[position],
+      }));
+      replaced.forEach(({ after }) => this.entriesOf(after));
+      const kept = new Set(
+        replaced.flatMap(({ after }) => after.plans.map(({ id }) => id))
+      );
+      replaced.forEach(({ before }) =>
+        before.plans.forEach(({ id }) => {
+          if (!kept.has(id)) {
+            this.entries.delete(id);
+          }
+        })
+      );
+      this.array = Object.freeze(
+        plan.groups.flatMap((group) => this.entriesOf(group))
+      );
+    } else {
+      const groups = plan.groups;
+      const next = groups.flatMap((group) => this.entriesOf(group));
+      const seen = new Set(
+        groups.flatMap((group) => group.plans.map(({ id }) => id))
+      );
+      this.dropUnseen(seen);
+      this.keepOrReplace(next);
+    }
+    this.plan = plan;
+    return this.array;
+  }
+
+  private entriesOf(group: PlanGroup) {
+    group.entries ??= group.plans.map((plan, index) =>
+      this.entryOf(plan, group.values[index])
+    );
+    return group.entries;
+  }
+
+  private entryOf(plan: ItemPlan, values: readonly unknown[]) {
+    const cached = this.entries.get(plan.id);
+    if (cached && sameValues(cached.values, values)) {
+      return cached.entry;
+    }
+    const entry = buildEntry(plan);
+    this.entries.set(plan.id, { values, entry });
+    return entry;
+  }
+
+  private projectAll(
+    plans: readonly ItemPlan[],
+    values: readonly (readonly unknown[])[]
+  ) {
+    const next = plans.map((plan, index) => this.entryOf(plan, values[index]));
+    this.dropUnseen(new Set(plans.map(({ id }) => id)));
+    return next;
+  }
+
+  private dropUnseen(seen: ReadonlySet<string>) {
     this.entries.forEach((_entry, id) => {
       if (!seen.has(id)) {
         this.entries.delete(id);
       }
     });
+  }
+
+  private keepOrReplace(next: readonly Readonly<ChatSDKMessageItem>[]) {
     if (
       this.array.length !== next.length ||
       next.some((entry, index) => entry !== this.array[index])
@@ -497,4 +750,4 @@ export class PublicMessageItemsProjection {
   }
 }
 
-export type { ItemPlan };
+export type { ItemPlan, MessageItemsPlan };

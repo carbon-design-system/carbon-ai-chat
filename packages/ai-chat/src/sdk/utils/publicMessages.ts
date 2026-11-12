@@ -31,6 +31,11 @@ import {
   isResponse,
   streamItemID,
 } from './messageUtils';
+import {
+  type MessageSlices,
+  changedMessageIDs,
+  localIDsByMessage,
+} from './messageChanges';
 import { deriveStreamingItemText } from './streamingUtils';
 
 interface CachedMessage {
@@ -40,11 +45,19 @@ interface CachedMessage {
 
 interface CachedMessageArray {
   messages: readonly CachedMessage[];
+  /** Each message's position in `messages`. */
+  positions: ReadonlyMap<string, number>;
   get(): readonly Readonly<Message>[];
 }
 
 export interface PreparedPublicMessages {
   get(): readonly Readonly<Message>[];
+}
+
+/** Sees the per-message work the message projections do. Specs count it. */
+export interface MessageProjectionObserver {
+  /** A projection compared one message, or one top-level item for `messageItems`, with its last version. */
+  onCompareMessage?(field: 'messages' | 'messageItems', id: string): void;
 }
 
 function sameSources(
@@ -86,43 +99,6 @@ function messageSources(
       localItem.ui_state.streamingState?.isDone,
     ]),
   ];
-}
-
-function getLocalItemsByMessage(
-  messageIDs: readonly string[],
-  allMessageItemsByID: ObjectMap<LocalMessageItem>,
-  localMessageIDs: readonly string[]
-): Map<string, LocalMessageItem[]> {
-  const currentIDs = new Set(messageIDs);
-  const localItemsByMessage = new Map<string, LocalMessageItem[]>();
-  localMessageIDs.forEach((localID) => {
-    const localItem = allMessageItemsByID[localID];
-    if (localItem && currentIDs.has(localItem.fullMessageID)) {
-      const items = localItemsByMessage.get(localItem.fullMessageID) ?? [];
-      items.push(localItem);
-      localItemsByMessage.set(localItem.fullMessageID, items);
-    }
-  });
-  return localItemsByMessage;
-}
-
-export function publicMessagesSources(
-  messageIDs: readonly string[],
-  allMessagesByID: ObjectMap<Message>,
-  allMessageItemsByID: ObjectMap<LocalMessageItem>,
-  localMessageIDs: readonly string[]
-): readonly unknown[] {
-  const localItemsByMessage = getLocalItemsByMessage(
-    messageIDs,
-    allMessageItemsByID,
-    localMessageIDs
-  );
-  return messageIDs.flatMap((id) => {
-    const message = allMessagesByID[id];
-    return message
-      ? [id, ...messageSources(message, localItemsByMessage.get(id) ?? [])]
-      : [id, undefined];
-  });
 }
 
 /**
@@ -364,12 +340,19 @@ function publicOutput(
   );
 }
 
+/** The public messages, rebuilding only the messages a write changed when it can tell which. */
 export class PublicMessagesProjection {
   private messages = new Map<string, CachedMessage>();
   private array: CachedMessageArray = {
     messages: [],
+    positions: new Map(),
     get: () => Object.freeze([]),
   };
+
+  /** The slices `array` was prepared from. */
+  private slices: MessageSlices | undefined;
+
+  constructor(private observer?: MessageProjectionObserver) {}
 
   project(
     messageIDs: readonly string[],
@@ -391,46 +374,88 @@ export class PublicMessagesProjection {
     allMessageItemsByID: ObjectMap<LocalMessageItem>,
     localMessageIDs: readonly string[]
   ): PreparedPublicMessages {
-    const localItemsByMessage = getLocalItemsByMessage(
+    const slices = {
       messageIDs,
+      allMessagesByID,
       allMessageItemsByID,
-      localMessageIDs
-    );
-    const currentIDs = new Set<string>();
+      localMessageIDs,
+    };
+    const changed = this.slices && changedMessageIDs(this.slices, slices);
+    this.array =
+      (changed && this.update(changed, slices)) ?? this.rebuild(slices);
+    this.slices = slices;
+    return this.array;
+  }
 
+  /**
+   * Rebuilds the entries of the changed messages only, or returns `undefined` when one of them
+   * wasn't listed before or isn't now, so every message is compared.
+   */
+  private update(
+    changed: ReadonlySet<string>,
+    slices: MessageSlices
+  ): CachedMessageArray | undefined {
+    const localIDs = localIDsByMessage(
+      slices.localMessageIDs,
+      slices.allMessageItemsByID
+    );
+    const { positions } = this.array;
+    let next: CachedMessage[] | undefined;
+    for (const id of changed) {
+      const position = positions.get(id);
+      const message = slices.allMessagesByID[id];
+      if (!localIDs || position === undefined || !message) {
+        return undefined;
+      }
+      const localItems = (localIDs.get(id) ?? []).map(
+        (localID) => slices.allMessageItemsByID[localID]
+      );
+      if (localItems.includes(undefined)) {
+        return undefined;
+      }
+      const entry = this.entryOf(id, message, localItems);
+      if (entry !== this.array.messages[position]) {
+        next ??= [...this.array.messages];
+        next[position] = entry;
+      }
+    }
+    return next ? arrayOf(next, positions) : this.array;
+  }
+
+  /** Compares every listed message with its last version. */
+  private rebuild(slices: MessageSlices): CachedMessageArray {
+    const { messageIDs, allMessagesByID, allMessageItemsByID } = slices;
+    const localItemsByMessage = new Map<string, LocalMessageItem[]>();
+    slices.localMessageIDs.forEach((localID) => {
+      const localItem = allMessageItemsByID[localID];
+      if (localItem) {
+        const items = localItemsByMessage.get(localItem.fullMessageID) ?? [];
+        items.push(localItem);
+        localItemsByMessage.set(localItem.fullMessageID, items);
+      }
+    });
+
+    const positions = new Map<string, number>();
+    let listedTwice = false;
     const next = messageIDs.flatMap((id) => {
       const message = allMessagesByID[id];
       if (!message) {
         return [];
       }
-      currentIDs.add(id);
-      const localItems = localItemsByMessage.get(id) ?? [];
-      const sources = messageSources(message, localItems);
-      const cached = this.messages.get(id);
-      if (cached && sameSources(cached.sources, sources)) {
-        return [cached];
-      }
-      let projected = false;
-      let value: Readonly<Message>;
-      const entry: CachedMessage = {
-        sources,
-        get: () => {
-          if (!projected) {
-            value = clonePublicMessage(message, localItems);
-            projected = true;
-          }
-          return value;
-        },
-      };
-      this.messages.set(id, entry);
-      return [entry];
+      listedTwice ||= positions.has(id);
+      positions.set(id, positions.size);
+      return [this.entryOf(id, message, localItemsByMessage.get(id) ?? [])];
     });
 
     this.messages.forEach((_message, id) => {
-      if (!currentIDs.has(id)) {
+      if (!positions.has(id)) {
         this.messages.delete(id);
       }
     });
+    // A message listed twice has two positions, so every later write compares every message.
+    if (listedTwice) {
+      positions.clear();
+    }
 
     if (
       this.array.messages.length === next.length &&
@@ -438,19 +463,54 @@ export class PublicMessagesProjection {
     ) {
       return this.array;
     }
+    return arrayOf(next, positions);
+  }
 
+  /** The message's entry: the last one when its values didn't change, else a new one. */
+  private entryOf(
+    id: string,
+    message: Message,
+    localItems: readonly LocalMessageItem[]
+  ): CachedMessage {
+    this.observer?.onCompareMessage?.('messages', id);
+    const sources = messageSources(message, localItems);
+    const cached = this.messages.get(id);
+    if (cached && sameSources(cached.sources, sources)) {
+      return cached;
+    }
     let projected = false;
-    let value: readonly Readonly<Message>[];
-    this.array = {
-      messages: next,
+    let value: Readonly<Message>;
+    const entry: CachedMessage = {
+      sources,
       get: () => {
         if (!projected) {
-          value = Object.freeze(next.map((message) => message.get()));
+          value = clonePublicMessage(message, localItems);
           projected = true;
         }
         return value;
       },
     };
-    return this.array;
+    this.messages.set(id, entry);
+    return entry;
   }
+}
+
+/** The public array of these entries, built when first read. */
+function arrayOf(
+  messages: readonly CachedMessage[],
+  positions: ReadonlyMap<string, number>
+): CachedMessageArray {
+  let projected = false;
+  let value: readonly Readonly<Message>[];
+  return {
+    messages,
+    positions,
+    get: () => {
+      if (!projected) {
+        value = Object.freeze(messages.map((message) => message.get()));
+        projected = true;
+      }
+      return value;
+    },
+  };
 }
