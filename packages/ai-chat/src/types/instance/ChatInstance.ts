@@ -348,9 +348,8 @@ export interface SendOptions {
 
   /**
    * @internal
-   * Optionally, we can provide the original ID of the original message that present an option response_type that
-   * provided the options that were selected. We use this to then set the `ui_state.setOptionSelected` in that
-   * original message to be able to show which option was selected in the UI.
+   * The local ID of the item that offered the choice this request sends, such as an option list. The chat records
+   * the choice for that item, so the UI can show which one the user picked.
    */
   setValueSelectedForMessageID?: string;
 }

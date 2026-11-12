@@ -17,6 +17,8 @@
 import { act, waitFor } from '@testing-library/react';
 
 import actions from '../../../src/sdk/store/actions';
+import { addMessages } from '../../../src/sdk/services/haa/humanAgentUtils';
+import type { LocalMessageItem } from '../../../src/types/messaging/LocalMessageItem';
 import { setMessageOptionSelectedFromView } from '../../../src/sdk/utils/messageMetadataCommands';
 import { MessageState } from '../../../src/types/config/MessagingConfig';
 import type { PublicConfig } from '../../../src/types/config/PublicConfig';
@@ -116,6 +118,14 @@ function choose(chat: Chat, localID: string, request: MessageRequest) {
 
 const flagsOf = (chat: Chat) => chat.store.getState().view.messageItemFlags;
 
+/** Every element under `root` that matches `selector`, through shadow roots. */
+function deepQueryAll(root: ParentNode, selector: string): Element[] {
+  return Array.from(root.querySelectorAll('*')).flatMap((element) => [
+    ...(element.matches(selector) ? [element] : []),
+    ...(element.shadowRoot ? deepQueryAll(element.shadowRoot, selector) : []),
+  ]);
+}
+
 describe('per-item view flags', () => {
   it('keeps an option chosen through a send under its public item ID, not on the local copy', async () => {
     const chat = await chatWith(response('r1', [options('Continue?')]));
@@ -164,6 +174,124 @@ describe('per-item view flags', () => {
     expect(flagsOf(chat)).toEqual({
       'r2:i:0:f:0': { messageID: 'r2', optionSelected: request },
     });
+
+    // The button item reads the flag and passes it to the post-back button.
+    await waitFor(() => {
+      const pressed = deepQueryAll(document, '[aria-pressed]').filter(
+        (element) => element.textContent?.includes('Go')
+      );
+      expect(pressed.length).toBeGreaterThan(0);
+      expect(
+        pressed.every(
+          (element) => element.getAttribute('aria-pressed') === 'true'
+        )
+      ).toBe(true);
+    });
+  });
+
+  it('moves a choice with its local copy when the copy is drawn under another ID', async () => {
+    const chat = await chatWith(response('r1', [options('Continue?')]));
+    const [localID] = localIDsOf(chat.store, 'r1');
+    const request = choice('yes', 'r1');
+    choose(chat, localID, request);
+
+    // A hidden item in front shifts the item's index; the list keeps the copy.
+    await act(() =>
+      chat.instance.messaging.upsertMessage('r1', MessageState.COMPLETE, () =>
+        response('r1', [
+          {
+            response_type: MessageResponseTypes.TEXT,
+            text: 'hidden',
+            user_defined: { silent: true },
+          } as GenericItem,
+          options('Continue?'),
+        ])
+      )
+    );
+
+    expect(localIDsOf(chat.store, 'r1')).toEqual([localID]);
+    expect(flagsOf(chat)).toEqual({
+      'r1:i:1': { messageID: 'r1', optionSelected: request },
+    });
+  });
+
+  it('keeps a choice through a streamed chunk into its item, as the spread copy did', async () => {
+    const chat = await chatWith();
+    const stream = (chunk: Record<string, unknown>) =>
+      act(() => chat.instance.messaging.addMessageChunk(chunk as any));
+    await stream({
+      streaming_metadata: { response_id: 'r3' },
+      complete_item: {
+        streaming_metadata: { id: 'opts' },
+        ...options('Continue?'),
+      },
+    });
+    const [localID] = localIDsOf(chat.store, 'r3');
+    const request = choice('yes', 'r3');
+    choose(chat, localID, request);
+
+    await stream({
+      streaming_metadata: { response_id: 'r3' },
+      partial_item: {
+        streaming_metadata: { id: 'opts' },
+        response_type: MessageResponseTypes.OPTION,
+      },
+    });
+
+    expect(chat.store.getState().allMessageItemsByID[localID]).toBeDefined();
+    expect(flagsOf(chat)).toEqual({
+      'r3:s:opts': { messageID: 'r3', optionSelected: request },
+    });
+  });
+
+  it('drops a choice when addMessage replaces its message, as before', async () => {
+    const chat = await chatWith(response('r1', [options('Continue?')]));
+    choose(chat, localIDsOf(chat.store, 'r1')[0], choice('yes', 'r1'));
+
+    await act(() =>
+      chat.instance.messaging.addMessage(response('r1', [options('Continue?')]))
+    );
+
+    expect(localIDsOf(chat.store, 'r1')).toHaveLength(1);
+    expect(flagsOf(chat)).toEqual({});
+  });
+
+  it('drops a choice when an added local item replaces its copy, as before', async () => {
+    const chat = await chatWith();
+    // Agent messages arrive as added local items.
+    const manager = (chat.serviceManager.messageCoordinator as any)
+      .serviceManager as ServiceManager;
+    const message = {
+      ...response('agent', [options('Continue?')]),
+      history: {},
+    };
+    const add = () =>
+      act(() =>
+        addMessages(
+          [
+            {
+              originalMessage: message,
+              localMessages: [
+                {
+                  item: message.output.generic[0],
+                  fullMessageID: message.id,
+                  ui_state: { id: 'agent-options' },
+                } as LocalMessageItem,
+              ],
+            },
+          ],
+          true,
+          manager
+        )
+      );
+    await add();
+    choose(chat, 'agent-options', choice('yes', 'agent'));
+    expect(Object.keys(flagsOf(chat))).toEqual(['agent:i:0']);
+
+    await add();
+
+    expect(localIDsOf(chat.store, 'agent')).toEqual(['agent-options']);
+    expect(flagsOf(chat)).toEqual({});
   });
 
   it('keeps a choice while a write keeps the item, and drops it when a write builds a new copy, as before', async () => {

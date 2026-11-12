@@ -108,10 +108,13 @@ function loadHistory(
 }
 
 /**
- * Drops the flags of each item of `message` the write gave a new local copy,
- * or stopped drawing. An item whose copy the write kept keeps its flags.
+ * Fits the flags of `message`'s items to a write. A flag follows the local
+ * copy it was set on: it stays when the write kept that copy, moves with it
+ * when the copy is now drawn under another item ID (such as after an item
+ * was added before it), and goes when the write built a new copy or stopped
+ * drawing the item.
  */
-function dropRebuiltItems(
+function followLocalCopies(
   flags: ItemFlags,
   message: Message,
   before: ConversationState,
@@ -123,12 +126,29 @@ function dropRebuiltItems(
   }
   const was = drawnItems(before, message.id);
   const now = drawnItems(after, message.id);
-  return withoutItems(
-    flags,
-    flagged.filter(
-      (itemID) => !now.has(itemID) || was.get(itemID) !== now.get(itemID)
-    )
+  const idOfCopy = new Map(
+    Array.from(now, ([itemID, local]) => [local, itemID])
   );
+  const moved: [string, ItemFlags[string]][] = [];
+  const changed = flagged.filter((itemID) => {
+    const copy = was.get(itemID);
+    const nextID = copy && idOfCopy.get(copy);
+    if (nextID === itemID) {
+      return false;
+    }
+    if (nextID) {
+      moved.push([nextID, flags[itemID]]);
+    }
+    return true;
+  });
+  if (!changed.length) {
+    return flags;
+  }
+  const next = { ...withoutItems(flags, changed) };
+  moved.forEach(([itemID, itemFlags]) => {
+    next[itemID] = itemFlags;
+  });
+  return next;
 }
 
 interface ItemWriteAction {
@@ -197,7 +217,7 @@ function nextFlags(
       );
     default:
       return rebuildsItems(action)
-        ? dropRebuiltItems(flags, action.message, before, after)
+        ? followLocalCopies(flags, action.message, before, after)
         : flags;
   }
 }

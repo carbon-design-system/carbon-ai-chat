@@ -24,7 +24,7 @@ function useMessageItemFlags(
 ): Readonly<MessageItemViewFlags> | undefined {
   const { publicStateService } = useServiceManager();
   return useSelector((state: AppState) => {
-    const itemID = publicStateService.messageItemIDOf(localItemID);
+    const itemID = publicStateService.messageItemIDOf(localItemID, state);
     return itemID === undefined
       ? undefined
       : state.view.messageItemFlags[itemID];
