@@ -35,7 +35,7 @@ These shared tokens apply to both the floating and custom-element layouts:
 | `--cds-aichat-history-width` | `320px` | Width of the history / conversation list panel |
 | `--cds-aichat-card-max-width` | `424px` | Maximum width for card components |
 
-You can also set these tokens from config through {@link LayoutConfig.customProperties | customProperties}, with keys from {@link LayoutCustomProperties}. Do this if you'd rather keep them out of a stylesheet.
+Set these tokens with CSS. Config through {@link LayoutConfig.customProperties | customProperties}, with keys from {@link LayoutCustomProperties}, still works but is deprecated, and 2.0.0 removes it.
 
 ## Floating layout
 

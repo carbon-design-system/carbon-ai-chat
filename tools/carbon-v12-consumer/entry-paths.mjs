@@ -287,6 +287,22 @@ export const componentEntries = [
     'markdown/index.js',
   ],
   [
+    'cds-aichat-message-byline',
+    'CDSAIChatMessageByline',
+    'aichat-message-byline/aichat-message-byline.js',
+    'message-byline/src/message-byline.js',
+    'aichat-message-byline/index.js',
+    'message-byline/index.js',
+  ],
+  [
+    'cds-aichat-message-item-shell',
+    'CDSAIChatMessageItemShell',
+    'aichat-message-item-shell/aichat-message-item-shell.js',
+    'message-item-shell/src/message-item-shell.js',
+    'aichat-message-item-shell/index.js',
+    'message-item-shell/index.js',
+  ],
+  [
     'cds-aichat-messages-shell',
     'CDSAIChatMessagesShell',
     'aichat-messages-shell/aichat-messages-shell.js',
@@ -405,6 +421,14 @@ export const componentEntries = [
     'truncated-text/src/truncated-text.js',
     'aichat-truncated-text/index.js',
     'truncated-text/index.js',
+  ],
+  [
+    'cds-aichat-user-avatar',
+    'CDSAIChatUserAvatar',
+    'aichat-user-avatar/aichat-user-avatar.js',
+    'user-avatar/src/user-avatar.js',
+    'aichat-user-avatar/index.js',
+    'user-avatar/index.js',
   ],
   [
     'cds-aichat-video-player',
