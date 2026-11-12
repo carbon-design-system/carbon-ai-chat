@@ -39,7 +39,8 @@ import { chatStore } from './attachChatView';
 /**
  * Opens the history panel. The header menu and the history panel's `open`
  * both come here, so `historyPanel:pre:open` fires once before every open.
- * Handlers can't cancel it, and the open doesn't wait for them.
+ * Handlers can't cancel it, and the open doesn't wait for them. A handler
+ * queued behind a slow earlier one may run after the panel is open.
  */
 function openHistoryPanel(serviceManager: ServiceManager) {
   serviceManager.fire({ type: BusEventType.HISTORY_PANEL_PRE_OPEN });
@@ -222,7 +223,13 @@ function createCustomPanelInstance(
     }
   }
 
-  const panelActions = {
+  const panelActions: Record<
+    PanelType,
+    {
+      setConfig?: (options: CustomPanelConfigOptions) => { type: string };
+      setOpen: (isOpen: boolean) => { type: string; isOpen: boolean };
+    }
+  > = {
     [PanelType.WORKSPACE]: {
       setConfig: viewActions.setWorkspaceCustomPanelConfigOptions,
       setOpen: viewActions.setWorkspaceCustomPanelOpen,
@@ -232,10 +239,9 @@ function createCustomPanelInstance(
       setOpen: viewActions.setCustomPanelOpen,
     },
     [PanelType.HISTORY]: {
-      setConfig: viewActions.setHistoryPanelConfigOptions,
       setOpen: viewActions.setHistoryPanelOpen,
     },
-  } as const;
+  };
 
   const { setConfig, setOpen } =
     panelActions[panelType] ?? panelActions[PanelType.DEFAULT];
@@ -244,6 +250,12 @@ function createCustomPanelInstance(
     async open(
       options?: CustomPanelOpenOptions | WorkspaceCustomPanelConfigOptions
     ) {
+      // The history panel has no options to show, so it ignores them.
+      if (panelType === PanelType.HISTORY) {
+        openHistoryPanel(serviceManager);
+        return;
+      }
+
       const resolvedOptions = (options ??
         defaultPanelOptions) as CustomPanelConfigOptions;
       const store = chatStore(serviceManager);
@@ -282,11 +294,7 @@ function createCustomPanelInstance(
       }
 
       store.dispatch(setConfig(resolvedOptions));
-      if (panelType === PanelType.HISTORY) {
-        openHistoryPanel(serviceManager);
-      } else {
-        store.dispatch(setOpen(true));
-      }
+      store.dispatch(setOpen(true));
 
       // Fire open event for workspace panel
       if (panelType === PanelType.WORKSPACE) {
