@@ -20,6 +20,8 @@ import {
   BusEventType,
   CancellationReason,
   MessageResponse,
+  MessageResponseTypes,
+  MessageState,
   OnErrorType,
   PageObjectId,
   PublicConfig,
@@ -47,6 +49,7 @@ import {
   shownText,
   startSend,
   textItem,
+  textResponse,
   textsOf,
 } from '../../helpers';
 
@@ -497,8 +500,7 @@ describe('the stop button', () => {
     expect(chat.instance.getState().status).toBe('submitted');
   });
 
-  // `main` handles a chunk that arrives after a stop two ways (MAIN-NOTES M49).
-  it('shows the button again for a later partial_item with no request_id, though it drops the chunk', async () => {
+  it('drops a later partial_item with no request_id, and keeps the button hidden', async () => {
     const chat = await streamingChat();
     await click(stopButton());
     await act(() => chat.started.done);
@@ -509,11 +511,11 @@ describe('the stop button', () => {
     );
     expect(storedTexts(chat.instance, 'r1')).toEqual(['Hello']);
     expect(chat.instance.getState().status).toBe('ready');
-    // MAIN-NOTES M49: the stop button comes back with nothing to stop.
-    await waitFor(() => expect(stopButtonCount()).toBe(1));
+    await pause();
+    expect(stopButtonCount()).toBe(0);
   });
 
-  it('still adds a later partial_item that names the stopped request, without showing the button', async () => {
+  it('drops a later partial_item that names the stopped request, and keeps the button hidden', async () => {
     const chat = await streamingChat();
     const requestID = chat.started.sent.request.id;
     await click(stopButton());
@@ -521,7 +523,70 @@ describe('the stop button', () => {
     const late = partialText('r1', 'a', ' more', { cancellable: true });
     late.streaming_metadata = { response_id: 'r1', request_id: requestID };
     await addChunk(chat.instance, late);
-    // MAIN-NOTES M49: the stopped response keeps taking its request's chunks.
+    expect(storedTexts(chat.instance, 'r1')).toEqual(['Hello']);
+    expect(chat.instance.getState().status).toBe('ready');
+    await pause();
+    expect(stopButtonCount()).toBe(0);
+  });
+
+  // @covers instance.messaging.addMessageChunk
+  it('still takes the closing complete_item and final_response that name the stopped request', async () => {
+    const chat = await streamingChat();
+    const requestID = chat.started.sent.request.id;
+    await click(stopButton());
+    await act(() => chat.started.done);
+    const closing = completeText('r1', 'a', 'Hello', { stream_stopped: true });
+    closing.streaming_metadata = { response_id: 'r1', request_id: requestID };
+    await addChunk(chat.instance, closing);
+    await waitFor(() =>
+      expect(shownText(document.body)).toContain(
+        STOP_STRINGS.messages_responseStopped
+      )
+    );
+    await addChunk(
+      chat.instance,
+      finalChunk('r1', [textItem('Hello, stopped', 'a')], {
+        request_id: requestID,
+      })
+    );
+    expect(storedTexts(chat.instance, 'r1')).toEqual(['Hello, stopped']);
+    expect(chat.instance.getState().status).toBe('ready');
+    await pause();
+    expect(stopButtonCount()).toBe(0);
+  });
+
+  // @covers instance.messaging.upsertMessage export.aiChatEntry.MessageState
+  it('still updates a response from a STREAMING upsert that names the stopped request, without the button', async () => {
+    const chat = await openChat({ strings: STOP_STRINGS });
+    const started = await startSend(chat.sender, 'hello');
+    const requestID = started.sent.request.id;
+    const cancellable = (text: string) =>
+      textResponse(text, 'r1', {
+        request_id: requestID,
+        output: {
+          generic: [
+            {
+              response_type: MessageResponseTypes.TEXT,
+              text,
+              streaming_metadata: { id: 'a', cancellable: true },
+            },
+          ],
+        },
+      });
+    await act(() =>
+      chat.instance.messaging.upsertMessage('r1', MessageState.STREAMING, () =>
+        cancellable('Hello')
+      )
+    );
+    await waitFor(() => expect(stopButtonCount()).toBe(1));
+    await click(stopButton());
+    await act(() => started.done);
+    await waitFor(() => expect(stopButtonCount()).toBe(0));
+    await act(() =>
+      chat.instance.messaging.upsertMessage('r1', MessageState.STREAMING, () =>
+        cancellable('Hello more')
+      )
+    );
     expect(storedTexts(chat.instance, 'r1')).toEqual(['Hello more']);
     expect(chat.instance.getState().status).toBe('ready');
     await pause();

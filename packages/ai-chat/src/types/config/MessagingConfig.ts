@@ -136,6 +136,9 @@ export interface ChatInstanceMessaging {
    * message did not previously exist. STREAMING-to-STREAMING and COMPLETE-to-COMPLETE
    * upserts do not fire these events.
    *
+   * After the user stops a request, a STREAMING upsert of its response still updates the
+   * message, but the stop button doesn't show again.
+   *
    * If the returned message has no `id`, Carbon AI Chat assigns `messageID`. The
    * cancellation contract for outbound messages is unchanged — see
    * {@link CustomSendMessageOptions}.

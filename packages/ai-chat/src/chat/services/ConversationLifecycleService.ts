@@ -109,6 +109,10 @@ class ConversationLifecycleService {
     return this.stoppedRequests.has(this.resolveRequestID(requestID));
   }
 
+  isResponseStopped(messageID: string) {
+    return this.stoppedResponses.has(messageID);
+  }
+
   responseRequestID(messageID: string) {
     return this.responseOwners.get(messageID);
   }
