@@ -20,7 +20,6 @@ import { HydrationService } from './HydrationService';
 import { InputActionsService } from './InputActionsService';
 import { PublicStateService } from './PublicStateService';
 import { MessageCoordinator } from './messaging/MessageCoordinator';
-import { ReceiveService } from './messaging/inbound/ReceiveService';
 import { SlotEventService } from './messaging/presentation/SlotEventService';
 import { StreamAnnouncerService } from './messaging/presentation/StreamAnnouncerService';
 import { ViewService } from './ViewService';
@@ -93,7 +92,6 @@ function createServiceManager(appConfig: AppConfig) {
   });
   serviceManager.slotEventService = new SlotEventService(serviceManager);
   serviceManager.hydrationService = new HydrationService(serviceManager);
-  serviceManager.receiveService = new ReceiveService(serviceManager);
   serviceManager.viewService = new ViewService(serviceManager);
   serviceManager.eventBus = new EventBus();
   serviceManager.store = doCreateStore(publicConfig, serviceManager);
@@ -101,6 +99,14 @@ function createServiceManager(appConfig: AppConfig) {
   serviceManager.messageCoordinator = new MessageCoordinator(
     serviceManager,
     new MessagePresentationAdapter({
+      openHomeScreen: () =>
+        serviceManager.store.dispatch(actions.setHomeScreenIsOpen(true)),
+      openHistoryResponsePanel: (local) => {
+        serviceManager.store.dispatch(
+          actions.setResponsePanelContent(local, true)
+        );
+        serviceManager.store.dispatch(actions.setResponsePanelIsOpen(true));
+      },
       getMessagesScrollBottom: () =>
         serviceManager.mainWindow?.getMessagesScrollBottom(),
       restoreMessagesScroll: (scrollBottom) =>

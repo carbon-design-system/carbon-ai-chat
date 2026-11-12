@@ -530,7 +530,7 @@ class ChunkWorkflow {
       messageID,
       chunk.final_response
     );
-    await this.serviceManager.receiveService.receive(
+    await this.serviceManager.messageCoordinator.receive(
       finalResponse,
       options.isLatestWelcomeNode,
       null,

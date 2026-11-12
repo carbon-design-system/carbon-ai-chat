@@ -58,7 +58,58 @@ import { ChunkWorkflow } from './ChunkWorkflow';
 import type { StreamChunk, PauseItem } from '../../../types/messaging/Messages';
 import type { AddMessageOptions } from '../../../types/config/MessagingConfig';
 
+import { HistoryWorkflow } from './HistoryWorkflow';
+import type { HistoryItem } from '../../../types/messaging/History';
+import type { LoadedHistory } from '../../schema/historyToMessages';
+import { resetStopStreamingButton } from '../../utils/streamingUtils';
+
 class MessageCoordinator {
+  private historyWorkflow?: HistoryWorkflow;
+
+  private getHistoryWorkflow() {
+    return (this.historyWorkflow ??= new HistoryWorkflow(this.serviceManager));
+  }
+
+  insertHistory(messages: HistoryItem[]) {
+    return this.getHistoryWorkflow().insertHistory(messages);
+  }
+
+  applyLoadedHistory(history: LoadedHistory) {
+    return this.getHistoryWorkflow().applyLoadedHistory(history);
+  }
+
+  openHistoryResponsePanel(local: LocalMessageItem) {
+    this.presentation?.openHistoryResponsePanel?.(local);
+  }
+
+  openHomeScreen() {
+    this.presentation?.openHomeScreen?.();
+  }
+
+  changeHydrationCounter(amount: 1 | -1) {
+    this.serviceManager.store.dispatch(actions.addIsHydratingCounter(amount));
+  }
+
+  markChatHydrated() {
+    this.serviceManager.store.dispatch(actions.chatWasHydrated());
+  }
+
+  setRestartInProgress(value: boolean) {
+    this.serviceManager.store.dispatch(actions.setIsRestarting(value));
+  }
+
+  resetMessageLoadingCounter() {
+    this.serviceManager.store.dispatch(actions.resetIsLoadingCounter());
+  }
+
+  resetStopButton() {
+    resetStopStreamingButton(this.serviceManager.store);
+  }
+
+  resetConversationStore() {
+    this.serviceManager.store.dispatch(actions.restartConversation());
+  }
+
   private chunkWorkflow?: ChunkWorkflow;
 
   private getChunkWorkflow() {

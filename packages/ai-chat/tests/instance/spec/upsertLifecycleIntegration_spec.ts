@@ -127,7 +127,7 @@ describe('upsert rendering and public-state integration', () => {
       if (operation === 'addMessage') {
         await instance.messaging.addMessage(response('mixed'));
       } else {
-        await serviceManager.receiveService.removeMessages(['mixed']);
+        await serviceManager.messageCoordinator.removeMessages(['mixed']);
       }
       expect(
         serviceManager.messageCoordinator.hasIncomingStreamingMessages()

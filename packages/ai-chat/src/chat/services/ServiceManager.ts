@@ -28,7 +28,6 @@ import { HydrationService } from './HydrationService';
 import { InputActionsService } from './InputActionsService';
 import { PublicStateService } from './PublicStateService';
 import { MessageCoordinator } from './messaging/MessageCoordinator';
-import { ReceiveService } from './messaging/inbound/ReceiveService';
 import { SlotEventService } from './messaging/presentation/SlotEventService';
 import { StreamAnnouncerService } from './messaging/presentation/StreamAnnouncerService';
 import { ViewService } from './ViewService';
@@ -98,11 +97,6 @@ class ServiceManager {
 
   /** Coordinates transient loading, send, stream, and error state. */
   messageCoordinator: MessageCoordinator;
-
-  /**
-   * Service that owns the inbound receive path.
-   */
-  receiveService: ReceiveService;
 
   /**
    * Service that manages view transitions and fires view-change events.
