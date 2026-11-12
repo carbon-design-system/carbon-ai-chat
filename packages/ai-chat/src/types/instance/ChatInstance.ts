@@ -238,6 +238,10 @@ interface ChatActions {
    * Fires an event that will open or close the Catastrophic Error Panel in the chat. This also accepts a
    * custom title and body text (markdown supported) to be displayed in the Catastrophic Error Panel.
    *
+   * Each call replaces the panel's state from the call before. A call without a title or body text shows the
+   * default text from {@link PublicConfig.strings}, and a call without `hideRetryButton` shows the retry button.
+   * Restarting the conversation closes the panel and clears what earlier calls set.
+   *
    * @param panelState The new state of the Catastrophic Error Panel, optionally including a custom title and body text.
    *
    * @example Open the panel with a custom message

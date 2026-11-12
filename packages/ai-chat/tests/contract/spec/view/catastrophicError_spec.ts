@@ -45,6 +45,10 @@ const STRINGS = {
   errors_communicating: '{assistantName} is down for the contract',
 };
 
+/** The default title and body from STRINGS, for a chat named "Contract bot". */
+const DEFAULT_TEXT =
+  'Contract went wrong Contract bot is down for the contract';
+
 /** How many error panels show: 0 or 1. */
 const panelCount = () =>
   allByRole('dialog', STRINGS.aria_catastrophicErrorPanel).length;
@@ -141,8 +145,8 @@ describe('updateCatastrophicErrorPanel', () => {
     expect(instance.getState()).toEqual(before);
   });
 
-  it('keeps the last title and body when a later call opens it without them', async () => {
-    const instance = await openChat();
+  it('shows the defaults from strings when a later call opens it without a title or body', async () => {
+    const instance = await openChat({ assistantName: 'Contract bot' });
     await update(instance, {
       isOpen: true,
       title: 'Contract first title',
@@ -154,11 +158,17 @@ describe('updateCatastrophicErrorPanel', () => {
     await update(instance, { isOpen: false });
     await waitFor(() => expect(panelCount()).toBe(0));
     await update(instance, { isOpen: true });
+    await waitFor(() => expect(panelText()).toContain(DEFAULT_TEXT));
+    expect(panelText()).not.toContain('Contract first');
+  });
+
+  it('shows the retry button again when a later call leaves out hideRetryButton', async () => {
+    const instance = await openChat();
+    await update(instance, { isOpen: true, hideRetryButton: true });
     await waitFor(() => expect(panelCount()).toBe(1));
-    // MAIN-NOTES M50: each call merges into the last one, so the defaults
-    // from strings don't come back.
-    expect(panelText()).toContain('Contract first title Contract first body');
-    expect(panelText()).not.toContain(STRINGS.errors_somethingWrong);
+    expect(retryCount()).toBe(0);
+    await update(instance, { isOpen: true });
+    await waitFor(() => expect(retryCount()).toBe(1));
   });
 
   it('shows a retry button inside the dialog, and none with hideRetryButton', async () => {
@@ -199,6 +209,23 @@ describe('the error panel’s retry button', () => {
     );
     expect(instance.getState().messages).toEqual([]);
     await waitFor(() => expect(panelCount()).toBe(0));
+  });
+
+  it('shows the defaults and the retry button on the next call after a restart', async () => {
+    const instance = await openChat({ assistantName: 'Contract bot' });
+    await update(instance, {
+      isOpen: true,
+      title: 'Contract first title',
+      bodyText: 'Contract first body',
+      hideRetryButton: true,
+    });
+    await waitFor(() => expect(panelCount()).toBe(1));
+    await act(() => instance.messaging.restartConversation());
+    await waitFor(() => expect(panelCount()).toBe(0));
+    await update(instance, { isOpen: true });
+    await waitFor(() => expect(panelText()).toContain(DEFAULT_TEXT));
+    expect(panelText()).not.toContain('Contract first');
+    expect(retryCount()).toBe(1);
   });
 
   it('closes the dialog when the host restarts the conversation', async () => {

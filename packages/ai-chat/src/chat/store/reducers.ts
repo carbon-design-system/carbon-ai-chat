@@ -494,10 +494,7 @@ const reducers: { [key: string]: ReducerType } = {
       },
       isHydrated: false,
       catastrophicErrorType: null,
-      catastrophicErrorPanelState: {
-        ...state.catastrophicErrorPanelState,
-        isOpen: false,
-      },
+      catastrophicErrorPanelState: { isOpen: false },
     };
 
     if (newState.config.public.homescreen?.isOn) {
@@ -859,13 +856,10 @@ const reducers: { [key: string]: ReducerType } = {
 
   [UPDATE_CATASTROPHIC_ERROR_PANEL]: (
     state: AppState,
-    action: { panelState: Partial<CatastrophicErrorPanelState> }
+    action: { panelState: CatastrophicErrorPanelState }
   ): AppState => ({
     ...state,
-    catastrophicErrorPanelState: {
-      ...state.catastrophicErrorPanelState,
-      ...action.panelState,
-    },
+    catastrophicErrorPanelState: { ...action.panelState },
   }),
 
   [UPDATE_PERSISTED_STATE]: (

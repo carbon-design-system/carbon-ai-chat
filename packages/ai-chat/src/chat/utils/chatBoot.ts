@@ -319,9 +319,7 @@ export async function initServiceManagerAndInstance(options: {
       serviceManager.mainWindow?.doScrollToMessage(messageID, animate);
     },
 
-    updateCatastrophicErrorPanel: (
-      panelState: Partial<CatastrophicErrorPanelState>
-    ) => {
+    updateCatastrophicErrorPanel: (panelState: CatastrophicErrorPanelState) => {
       debugLog('Called instance.updateCatastrophicPanel');
 
       if (
