@@ -60,10 +60,22 @@ const rules: FolderRule[] = [
 const folderExceptions: BoundaryException[] = [];
 
 // Each root folder lists its own exceptions, so a path from a new folder fails
-// even where another folder's path to the same edge is listed. The list is
-// empty: the last entry (ServiceDeskConfig reaching the input's editor types
-// through FileUpload) closed with #1732.
-const frameworkExceptions: BoundaryException[] = [];
+// even where another folder's path to the same edge is listed. The
+// ServiceDeskConfig entry (reaching the input's editor types through
+// FileUpload) closed with #1732. The SDK's own types reach the remaining edge
+// through the message types' ButtonItem.
+const frameworkExceptions: BoundaryException[] = [
+  'src/shared/',
+  'src/sdk/',
+].flatMap((folder) => [
+  {
+    folder,
+    from: 'src/types/messaging/Messages.ts',
+    to: 'react',
+    owner: '#2901',
+    reason: 'ButtonItem.icon accepts a React component, a 1.x public type',
+  },
+]);
 
 /** View objects and view handles that conversation services must not hold. */
 const viewHandleTypes = new Set([
@@ -355,7 +367,8 @@ describe('planted imports', () => {
       shared,
       "import type { FileUpload } from '@carbon/ai-chat-components/es/components/prompt-line/src/file-upload-types.js';"
     );
-    expect(result.frameworks).toEqual([]);
+    // The planted import adds no edge beyond the listed exceptions.
+    expect(result.frameworks).toEqual(keys(frameworkExceptions));
   });
 
   it('fails the custom-prefix build of an element-registering module', () => {
