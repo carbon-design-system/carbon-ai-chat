@@ -8,6 +8,7 @@
  */
 
 /* eslint-disable */
+import { manifestEventArgTypes } from '../../../../.storybook-react/manifest-event-arg-types.js';
 import React from 'react';
 import { Card, CardFooter } from '../../../react/card';
 import {
@@ -178,13 +179,8 @@ export const CardFooterStory = {
         CardFooterWC.argTypes;
       return rest;
     })(),
-    onFooterAction: {
-      action: 'action',
-      description:
-        CardFooterWC.argTypes['@cds-aichat-card-footer-action'].description,
-      control: 'none',
-      table: { category: 'events' },
-    },
+
+    ...manifestEventArgTypes(CardFooter),
   },
   args: {
     ...CardFooterWC.args,
@@ -205,4 +201,10 @@ export const CardFooterStory = {
       onFooterAction={(e) => action('action')(e.detail)}
     />
   ),
+};
+
+export const CardFooterEvents = {
+  tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
+  argTypes: { ...manifestEventArgTypes(CardFooter) },
 };

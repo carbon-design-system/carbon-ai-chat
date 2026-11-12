@@ -7,6 +7,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import { manifestEventArgTypes } from '../../../../.storybook-react/manifest-event-arg-types.js';
 import React from 'react';
 import VideoPlayer from '../../../react/video-player';
 import Card from '../../../react/card';
@@ -208,4 +209,10 @@ export const ErrorState = {
       </Card>
     );
   },
+};
+
+export const VideoPlayerEvents = {
+  tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
+  argTypes: { ...manifestEventArgTypes(VideoPlayer) },
 };

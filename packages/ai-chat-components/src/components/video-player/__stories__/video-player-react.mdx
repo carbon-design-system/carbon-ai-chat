@@ -44,29 +44,9 @@ function VideoExample() {
 
 ## Events
 
-The component supports the following event handlers:
+### `VideoPlayer`
 
-```jsx
-import VideoPlayer from '@carbon/ai-chat-components/es/react/video-player.js';
-
-function VideoExample() {
-  const handleReady = (event) => {
-    console.log('Video is ready to play');
-  };
-
-  const handleError = (event) => {
-    console.error('Video error:', event.detail);
-  };
-
-  return (
-    <VideoPlayer
-      source="https://www.youtube.com/watch?v=eZ1NizUx9U4"
-      onReady={handleReady}
-      onError={handleError}
-    />
-  );
-}
-```
+<ArgTypes of={VideoPlayerReactStories.VideoPlayerEvents} />
 
 ## Component API
 

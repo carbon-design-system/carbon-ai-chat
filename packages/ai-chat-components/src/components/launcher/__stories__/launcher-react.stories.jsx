@@ -7,6 +7,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import { manifestEventArgTypes } from '../../../../.storybook-react/manifest-event-arg-types.js';
 import React from 'react';
 import { action } from 'storybook/actions';
 import Launcher from '../../../react/launcher';
@@ -49,13 +50,15 @@ const sharedArgTypes = {
     control: 'text',
     description: 'Screen-reader label suffix for unread messages.',
   },
-  onToggle: { table: { disable: true } },
+
   tooltipPosition: {
     control: 'select',
     options: ['top', 'bottom', 'left', 'right'],
     description:
       'Renders the tooltip position either top, bottom, left, or right.',
   },
+
+  ...manifestEventArgTypes(Launcher),
 };
 
 const Template = (args) => <Launcher onToggle={action('onToggle')} {...args} />;
@@ -104,4 +107,10 @@ export const WithAvatar = {
   },
   argTypes: sharedArgTypes,
   render: Template,
+};
+
+export const LauncherEvents = {
+  tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
+  argTypes: { ...manifestEventArgTypes(Launcher) },
 };
