@@ -11,7 +11,7 @@ import actions from '../../store/actions';
 import type { ServiceManager } from '../ServiceManager';
 import { ConversationState } from './state/ConversationState';
 
-class ConversationLifecycleService {
+class MessageCoordinator {
   private state = new ConversationState();
 
   constructor(private serviceManager: ServiceManager) {}
@@ -155,4 +155,4 @@ class ConversationLifecycleService {
   }
 }
 
-export { ConversationLifecycleService };
+export { MessageCoordinator };

@@ -107,7 +107,7 @@ class ReceiveService {
         return;
       }
 
-      this.serviceManager.conversationLifecycleService.responseReceived(
+      this.serviceManager.messageCoordinator.responseReceived(
         message.id,
         undefined,
         message.request_id ?? requestMessage?.id

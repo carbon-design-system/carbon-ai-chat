@@ -11,7 +11,7 @@ import MessageService, {
   PendingMessageRequest,
 } from '../../../src/chat/services/messaging/MessageService';
 import { ChunkProcessingService } from '../../../src/chat/services/messaging/inbound/ChunkProcessingService';
-import { ConversationLifecycleService } from '../../../src/chat/services/messaging/ConversationLifecycleService';
+import { MessageCoordinator } from '../../../src/chat/services/messaging/MessageCoordinator';
 import { ServiceManager } from '../../../src/chat/services/ServiceManager';
 import storeActions from '../../../src/chat/store/actions';
 import {
@@ -103,10 +103,7 @@ const createServiceManagerStub = (
     endAllStreaming: jest.fn(),
     endStreamingForRequest: jest.fn(),
     endStreamingMessage: jest.fn((messageID, generation) => {
-      serviceManager.conversationLifecycleService.responseFinished(
-        messageID,
-        generation
-      );
+      serviceManager.messageCoordinator.responseFinished(messageID, generation);
       store.dispatch(storeActions.endMessageStreaming(messageID));
     }),
   };
@@ -124,8 +121,7 @@ const createServiceManagerStub = (
     },
   } as unknown as ServiceManager;
 
-  serviceManager.conversationLifecycleService =
-    new ConversationLifecycleService(serviceManager);
+  serviceManager.messageCoordinator = new MessageCoordinator(serviceManager);
   serviceManager.chunkProcessingService = new ChunkProcessingService(
     serviceManager
   );
@@ -766,7 +762,7 @@ describe('MessageService', () => {
         message.id === 'm-first' ? first.promise : Promise.resolve()
       );
       const serviceManager = createServiceManagerStub(customSendMessage);
-      const lifecycle = serviceManager.conversationLifecycleService;
+      const lifecycle = serviceManager.messageCoordinator;
       const responseFinished = jest.spyOn(lifecycle, 'responseFinished');
       const messageService = new MessageService(serviceManager, {
         messaging: {
@@ -818,7 +814,7 @@ describe('MessageService', () => {
           : Promise.resolve()
       );
       const serviceManager = createServiceManagerStub(customSendMessage);
-      const lifecycle = serviceManager.conversationLifecycleService;
+      const lifecycle = serviceManager.messageCoordinator;
       const responseFinished = jest.spyOn(lifecycle, 'responseFinished');
       const messageService = new MessageService(serviceManager, {
         messaging: {

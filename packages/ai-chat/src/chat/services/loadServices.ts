@@ -12,7 +12,7 @@ import { ChunkProcessingService } from './messaging/inbound/ChunkProcessingServi
 import { HydrationService } from './HydrationService';
 import { InputActionsService } from './InputActionsService';
 import { PublicStateService } from './PublicStateService';
-import { ConversationLifecycleService } from './messaging/ConversationLifecycleService';
+import { MessageCoordinator } from './messaging/MessageCoordinator';
 import { ReceiveService } from './messaging/inbound/ReceiveService';
 import { SlotEventService } from './messaging/presentation/SlotEventService';
 import { SendService } from './messaging/outbound/SendService';
@@ -70,8 +70,7 @@ function createServiceManager(appConfig: AppConfig) {
   serviceManager.eventBus = new EventBus();
   serviceManager.store = doCreateStore(publicConfig, serviceManager);
   serviceManager.publicStateService = new PublicStateService(serviceManager);
-  serviceManager.conversationLifecycleService =
-    new ConversationLifecycleService(serviceManager);
+  serviceManager.messageCoordinator = new MessageCoordinator(serviceManager);
   serviceManager.historyService = new HistoryService(serviceManager);
   serviceManager.messageUpsertCoordinator = new MessageUpsertCoordinator(
     serviceManager

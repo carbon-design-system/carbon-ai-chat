@@ -98,7 +98,7 @@ class HydrationService {
       if (!this.hydrationPromise) {
         this.hydrating = true;
         const generation =
-          this.serviceManager.conversationLifecycleService.hydrationStarted();
+          this.serviceManager.messageCoordinator.hydrationStarted();
         this.serviceManager.store.dispatch(actions.addIsHydratingCounter(1));
         this.hydrationPromise = this.doHydrateChat(
           alternateWelcomeRequest,
@@ -116,17 +116,13 @@ class HydrationService {
             );
           })
           .finally(() => {
-            if (
-              this.serviceManager.conversationLifecycleService.isCurrent(
-                generation
-              )
-            ) {
+            if (this.serviceManager.messageCoordinator.isCurrent(generation)) {
               this.serviceManager.store.dispatch(actions.chatWasHydrated());
             }
             this.serviceManager.store.dispatch(
               actions.addIsHydratingCounter(-1)
             );
-            this.serviceManager.conversationLifecycleService.hydrationFinished(
+            this.serviceManager.messageCoordinator.hydrationFinished(
               generation
             );
           });
@@ -156,8 +152,7 @@ class HydrationService {
   private async doHydrateChat(
     alternateWelcomeRequest?: MessageRequest,
     alternateOptions?: SendOptions,
-    generation = this.serviceManager.conversationLifecycleService
-      .currentGeneration
+    generation = this.serviceManager.messageCoordinator.currentGeneration
   ) {
     debugLog(
       'Hydrating Carbon AI Chat',
@@ -167,7 +162,7 @@ class HydrationService {
 
     const { serviceManager } = this;
     const history = await this.loadInitialHistory(generation);
-    if (!serviceManager.conversationLifecycleService.isCurrent(generation)) {
+    if (!serviceManager.messageCoordinator.isCurrent(generation)) {
       return;
     }
 
@@ -195,7 +190,7 @@ class HydrationService {
       this.alreadyHydrated = true;
       history = await serviceManager.historyService.loadHistory();
     }
-    if (!serviceManager.conversationLifecycleService.isCurrent(generation)) {
+    if (!serviceManager.messageCoordinator.isCurrent(generation)) {
       return history;
     }
 
@@ -240,7 +235,7 @@ class HydrationService {
       );
     } catch (error) {
       if (
-        !serviceManager.conversationLifecycleService.hasFailureForRequest(
+        !serviceManager.messageCoordinator.hasFailureForRequest(
           welcomeRequest.id
         )
       ) {
@@ -316,7 +311,7 @@ class HydrationService {
       }
 
       const restartGeneration =
-        serviceManager.conversationLifecycleService.restart(skipHydration);
+        serviceManager.messageCoordinator.restart(skipHydration);
 
       // Increment the restart generation to filter out any chunks from the previous conversation
       this.serviceManager.chunkProcessingService.bumpRestartGeneration();
@@ -390,9 +385,7 @@ class HydrationService {
         store.dispatch(actions.chatWasHydrated());
       }
       if (!didHydrate) {
-        serviceManager.conversationLifecycleService.hydrationFinished(
-          restartGeneration
-        );
+        serviceManager.messageCoordinator.hydrationFinished(restartGeneration);
       }
     } finally {
       this.restarting = false;

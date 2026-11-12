@@ -390,9 +390,7 @@ describe('ChatInstance.state', () => {
       (state) => state.messages,
       listener
     );
-    act(() =>
-      serviceManager.conversationLifecycleService.requestStarted('request')
-    );
+    act(() => serviceManager.messageCoordinator.requestStarted('request'));
     expect(instance.state.get().status).toBe('submitted');
     expect(instance.state.get().messages).toBe(initial);
     expect(listener).not.toHaveBeenCalled();

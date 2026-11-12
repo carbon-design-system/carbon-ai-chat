@@ -213,9 +213,7 @@ class MessageUpsertCoordinator {
       // same id closes the stream. Without this, the stop button would stay up with
       // nothing left to take it down.
       if (this.streamingIDs.delete(messageID)) {
-        this.serviceManager.conversationLifecycleService.responseFinished(
-          messageID
-        );
+        this.serviceManager.messageCoordinator.responseFinished(messageID);
         this.serviceManager.messageService.hideStopStreamingButtonIfIdle();
       }
     }
@@ -260,7 +258,7 @@ class MessageUpsertCoordinator {
   endAllStreaming(reason: string = CancellationReason.STOP_STREAMING): boolean {
     const controllers = new Set(this.streamingControllers.values());
     const settledAny = this.streamingIDs.size > 0;
-    const lifecycle = this.serviceManager.conversationLifecycleService;
+    const lifecycle = this.serviceManager.messageCoordinator;
     for (const messageID of this.streamingIDs) {
       const requestID = lifecycle.responseRequestID(messageID);
       if (requestID) {
@@ -276,7 +274,7 @@ class MessageUpsertCoordinator {
 
   endStreamingForRequest(requestID: string, generation?: number) {
     const responseIDs =
-      this.serviceManager.conversationLifecycleService.requestStopped(
+      this.serviceManager.messageCoordinator.requestStopped(
         requestID,
         generation
       ) ?? [];
@@ -296,7 +294,7 @@ class MessageUpsertCoordinator {
   endStreamingMessage(messageID: string, generation?: number) {
     this.streamingIDs.delete(messageID);
     this.streamingControllers.delete(messageID);
-    this.serviceManager.conversationLifecycleService.responseFinished(
+    this.serviceManager.messageCoordinator.responseFinished(
       messageID,
       generation
     );
@@ -323,7 +321,7 @@ class MessageUpsertCoordinator {
     this.chainByID.delete(messageID);
     this.streamingIDs.delete(messageID);
     this.streamingControllers.delete(messageID);
-    this.serviceManager.conversationLifecycleService.responseRemoved(messageID);
+    this.serviceManager.messageCoordinator.responseRemoved(messageID);
     this.pausesRunByID.delete(messageID);
     if (wasStreaming) {
       this.serviceManager.messageService.hideStopStreamingButtonIfIdle();
@@ -349,9 +347,7 @@ class MessageUpsertCoordinator {
     this.chainByID.clear();
     this.stateByID.clear();
     for (const messageID of this.streamingIDs) {
-      this.serviceManager.conversationLifecycleService.responseFinished(
-        messageID
-      );
+      this.serviceManager.messageCoordinator.responseFinished(messageID);
     }
     this.streamingIDs.clear();
     this.streamingControllers.clear();
@@ -501,14 +497,10 @@ class MessageUpsertCoordinator {
     }
     const ownerRequestID =
       result.request_id ??
-      this.serviceManager.conversationLifecycleService.responseRequestID(
-        messageID
-      ) ??
+      this.serviceManager.messageCoordinator.responseRequestID(messageID) ??
       requestID;
     const isStopped =
-      this.serviceManager.conversationLifecycleService.isRequestStopped(
-        ownerRequestID
-      );
+      this.serviceManager.messageCoordinator.isRequestStopped(ownerRequestID);
     const refsBefore = this.snapshotLocalItemRefs(messageID);
     const previousMessage = this.serviceManager.store.getState()
       .allMessagesByID[messageID] as MessageResponse | undefined;
@@ -654,10 +646,9 @@ class MessageUpsertCoordinator {
     // This updater is the chat's immutable chunk merge, not a host callback.
     const result = await updater(this.getStoredResponse(messageID));
     if (!this.isStale(stamp, result.request_id)) {
-      const isStopped =
-        this.serviceManager.conversationLifecycleService.isRequestStopped(
-          options.chunk?.requestID
-        );
+      const isStopped = this.serviceManager.messageCoordinator.isRequestStopped(
+        options.chunk?.requestID
+      );
       this.serviceManager.store.dispatch(
         actions.upsertMessage(result, true, undefined, {
           ...options,
@@ -1079,7 +1070,7 @@ class MessageUpsertCoordinator {
     holdFromIndex: number,
     requestID?: string
   ) {
-    const lifecycle = this.serviceManager.conversationLifecycleService;
+    const lifecycle = this.serviceManager.messageCoordinator;
     if (
       nextState === MessageState.STREAMING &&
       lifecycle.isRequestStopped(requestID)
