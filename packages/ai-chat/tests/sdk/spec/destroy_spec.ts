@@ -18,6 +18,7 @@ import { chatOf } from '../../../src/sdk/handle';
 import { DEFAULT_RELEASE_GRACE_MS } from '../../../src/sdk/registry';
 import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 import actions from '../../../src/sdk/store/actions';
+import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
 import { setIsConnecting } from '../../../src/sdk/store/humanAgentActions';
 import { toPersistableState } from '../../../src/sdk/store/persistenceUtils';
 import { DEFAULT_PERSISTED_TO_BROWSER } from '../../../src/sdk/store/reducerUtils';
@@ -242,6 +243,105 @@ describe('destroy (#2358 O1–O6)', () => {
   });
 });
 
+describe('destroy with an agent chat that is slow to end (#2358 O1, O6)', () => {
+  it('stops requests at once, and a handler that never settles holds neither the shutdown nor the namespace', async () => {
+    const signals: AbortSignal[] = [];
+    const { desk, factory, made } = fakeDesk();
+    const handle = await create({
+      namespace: 'slow',
+      serviceDeskFactory: factory,
+      messaging: {
+        skipWelcome: true,
+        customSendMessage: (_request, options) => {
+          signals.push(options.signal);
+          return new Promise(() => {});
+        },
+      },
+    });
+    const manager = chatOf(handle);
+    await joinAgent(manager, made);
+    void handle.messaging.send('Hello');
+    await settle();
+    expect(signals).toHaveLength(1);
+    handle.on({
+      type: BusEventType.HUMAN_AGENT_PRE_END_CHAT,
+      handler: () => new Promise(() => {}),
+    });
+    const error = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    jest.useFakeTimers();
+    handle.destroy();
+    await settle();
+    // The request stops while the end waits on the handler.
+    expect(signals[0].aborted).toBe(true);
+    expect(desk.endChat).not.toHaveBeenCalled();
+
+    await jest.advanceTimersByTimeAsync(5000);
+    expect(desk.endChat).toHaveBeenCalledTimes(1);
+    await manager.shutdown();
+    expect(error).toHaveBeenCalledWith(
+      expect.stringContaining("didn't settle within 5 seconds"),
+      expect.anything()
+    );
+    jest.useRealTimers();
+    const next = await create({ namespace: 'slow' });
+    expect(chatOf(next)).not.toBe(manager);
+  });
+
+  it('waits for an end already running, so the desk hears one end', async () => {
+    const { desk, factory, made } = fakeDesk();
+    const handle = await create({ serviceDeskFactory: factory });
+    const manager = chatOf(handle);
+    await joinAgent(manager, made);
+    const preEnd = resolvablePromise<void>();
+    const ended = jest.fn();
+    handle.on([
+      {
+        type: BusEventType.HUMAN_AGENT_PRE_END_CHAT,
+        handler: () => preEnd,
+      },
+      { type: BusEventType.HUMAN_AGENT_END_CHAT, handler: ended },
+    ]);
+    const running = handle.serviceDesk.endConversation();
+    await settle();
+
+    handle.destroy();
+    preEnd.doResolve();
+    await running;
+    await manager.shutdown();
+    expect(desk.endChat).toHaveBeenCalledTimes(1);
+    expect(ended).toHaveBeenCalledTimes(1);
+  });
+
+  it('still ends the agent chat when the end already running was canceled', async () => {
+    const { desk, factory, made } = fakeDesk();
+    const handle = await create({ serviceDeskFactory: factory });
+    const manager = chatOf(handle);
+    await joinAgent(manager, made);
+    const preEnd = resolvablePromise<void>();
+    let calls = 0;
+    handle.on({
+      type: BusEventType.HUMAN_AGENT_PRE_END_CHAT,
+      handler: async (event: BusEventHumanAgentPreEndChat) => {
+        calls += 1;
+        if (calls === 1) {
+          await preEnd;
+          event.cancel = true;
+        }
+      },
+    });
+    const running = handle.serviceDesk.endConversation();
+    await settle();
+
+    handle.destroy();
+    preEnd.doResolve();
+    await running;
+    await manager.shutdown();
+    expect(calls).toBe(2);
+    expect(desk.endChat).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('other handles after destroy (#2358 O7–O9)', () => {
   it('reject promise methods, ignore the rest, and keep their last state silently', async () => {
     const first = await create({ namespace: 'support' });
@@ -298,10 +398,32 @@ describe('other handles after destroy (#2358 O7–O9)', () => {
     expect(first.state.subscribe(listener)).toEqual(expect.any(Function));
     await second.messaging.send('Again');
     expect(listener).not.toHaveBeenCalled();
+    await expect(
+      first.messaging.addFile(new File(['a'], 'a.txt'))
+    ).rejects.toThrow(
+      'This chat handle was released, so the call did nothing and has no result. Use the handle from the latest create on its namespace.'
+    );
     await expect(first.updateConfig({ namespace: 'x' })).resolves.toBe(
       undefined
     );
     expect(chatOf(second).namespace.originalName).toBe('support');
+  });
+});
+
+describe('a released handle’s own event handlers', () => {
+  it('can still be removed, so they don’t run on the chat a later create adopts', async () => {
+    const first = await create({ namespace: 'support' });
+    const handler = jest.fn();
+    first.on({ type: BusEventType.PRE_SEND, handler });
+    first.release();
+    expect(first.off({ type: BusEventType.PRE_SEND, handler })).toBe(first);
+    // A new one added after the release goes nowhere.
+    first.on({ type: BusEventType.PRE_SEND, handler });
+
+    const second = await create({ namespace: 'support' });
+    expect(chatOf(second)).toBe(chatOf(first));
+    await second.messaging.send('Hello');
+    expect(handler).not.toHaveBeenCalled();
   });
 });
 

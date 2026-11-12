@@ -23,9 +23,10 @@ import type { PublicChatState } from '../types/instance/PublicChatState';
  * Internal in 1.x (#1834).
  *
  * Once the handle is released, its members no longer reach the chat: those
- * that return a promise resolve, doing nothing. Once another handle destroys
- * the chat, they reject. Either way, the rest do nothing, and `state` keeps
- * its last value and notifies nobody.
+ * that return a promise resolve, doing nothing, except one with a result,
+ * such as `addFile`, which rejects. Once another handle destroys the chat,
+ * they all reject. Either way, the rest do nothing, except `off`, and `state`
+ * keeps its last value and notifies nobody.
  */
 interface ChatSDKHandle extends ChatSDKInstance {
   /**
@@ -61,15 +62,25 @@ interface ChatSDKHandle extends ChatSDKInstance {
   updateConfig(next: ChatSDKConfig): Promise<void>;
 }
 
-/** Whether each member returns a promise, which a stopped handle settles. */
-type Returns<T> = Record<keyof T, 'promise' | 'nothing'>;
+/**
+ * What a member returns: a promise with no value, a promise with one, or
+ * nothing. Derived from its type, so a wrong label fails to compile.
+ */
+type ReturnKind<F> = F extends (...args: never[]) => Promise<infer R>
+  ? [R] extends [void]
+    ? 'promise'
+    : 'value'
+  : 'nothing';
+
+/** Each member's {@link ReturnKind}, which tells a stopped handle what to return. */
+type Returns<T> = { [K in keyof T]: ReturnKind<T[K]> };
 
 const MESSAGING_RETURNS: Returns<ChatSDKInstance['messaging']> = {
   send: 'promise',
   stop: 'promise',
   failTurn: 'promise',
   clearError: 'nothing',
-  addFile: 'promise',
+  addFile: 'value',
   removeFile: 'nothing',
   upsertMessage: 'promise',
   removeMessages: 'promise',
@@ -94,14 +105,26 @@ type Stopped = 'released' | 'destroyedElsewhere' | undefined;
 const DESTROYED_MESSAGE =
   'Another handle destroyed this chat, so the call did nothing. Start a new chat.';
 
-/** What a stopped handle's member returns instead of reaching the chat. */
-function stoppedResult(stopped: Stopped, returnsPromise: boolean) {
-  if (!returnsPromise) {
+const RELEASED_MESSAGE =
+  'This chat handle was released, so the call did nothing and has no result. Use the handle from the latest create on its namespace.';
+
+/**
+ * What a stopped handle's member returns instead of reaching the chat. A
+ * released handle's promise resolves, unless the caller expects a value.
+ */
+function stoppedResult(
+  stopped: Stopped,
+  kind: 'promise' | 'value' | 'nothing'
+) {
+  if (kind === 'nothing') {
     return undefined;
   }
-  return stopped === 'released'
-    ? Promise.resolve(undefined)
-    : Promise.reject(new Error(DESTROYED_MESSAGE));
+  if (stopped === 'released') {
+    return kind === 'promise'
+      ? Promise.resolve(undefined)
+      : Promise.reject(new Error(RELEASED_MESSAGE));
+  }
+  return Promise.reject(new Error(DESTROYED_MESSAGE));
 }
 
 /** Copies `members` with each one checking `stopped` first. */
@@ -111,13 +134,11 @@ function guard<T extends object>(
   stopped: () => Stopped
 ): T {
   const guarded = {} as Record<keyof T, unknown>;
-  (Object.keys(returns) as (keyof T)[]).forEach((key) => {
+  (Object.keys(returns) as (keyof T & string)[]).forEach((key) => {
     const member = members[key] as (...args: unknown[]) => unknown;
     guarded[key] = (...args: unknown[]) => {
       const why = stopped();
-      return why
-        ? stoppedResult(why, returns[key] === 'promise')
-        : member(...args);
+      return why ? stoppedResult(why, returns[key]) : member(...args);
     };
   });
   return guarded as T;
@@ -191,7 +212,9 @@ function createHandle(
         track(() => publicStateService.select(selector, listener, options)),
     },
     on: (handlers) => (stopped() ? handle : conversation.on(handlers)),
-    off: (handlers) => (stopped() ? handle : conversation.off(handlers)),
+    // Always reaches the bus, so a host can still remove what this handle
+    // added before it let go.
+    off: (handlers) => conversation.off(handlers),
     once: (handlers) => (stopped() ? handle : conversation.once(handlers)),
     release: () => {
       if (released || destroyedHere) {
@@ -215,7 +238,7 @@ function createHandle(
     updateConfig: async (next) => {
       const why = stopped();
       if (why) {
-        return stoppedResult(why, true);
+        return stoppedResult(why, 'promise');
       }
       // A chat that shut down takes no more config.
       if (serviceManager.isShutdown) {

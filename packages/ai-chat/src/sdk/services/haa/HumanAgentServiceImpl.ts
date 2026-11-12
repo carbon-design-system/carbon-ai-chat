@@ -120,6 +120,10 @@ const SEND_TIMEOUT_ERROR_MS = 20000;
  */
 const END_CHAT_TIMEOUT_MS = 5000;
 
+function ignoreError() {
+  // The caller of the end that failed hears of it.
+}
+
 /**
  * The amount of time to wait before a check for agent availability times out if there's no answer.
  */
@@ -458,6 +462,12 @@ class HumanAgentServiceImpl implements HumanAgentService {
     return this.startChat(localItem, message, options);
   }
 
+  /** An end running through {@link endChat}, which a destroy waits for. */
+  private endingNow: Promise<void> | null = null;
+
+  /** A destroy's end; an end asked for meanwhile waits for it instead. */
+  private endingOnDestroy: Promise<void> | null = null;
+
   /**
    * Fires the {@link BusEventType.HUMAN_AGENT_PRE_END_CHAT} event. The event fired is returned which can contain information
    * added by a listener.
@@ -499,10 +509,34 @@ class HumanAgentServiceImpl implements HumanAgentService {
    * @param showAssistantReturnMessage Indicates if the chat should show the "bot return" message.
    * @returns Returns a Promise that resolves when the service desk has successfully handled the call.
    */
-  public async endChat(
+  public endChat(
     endedByUser: boolean,
     showHumanAgentLeftMessage = true,
     showAssistantReturnMessage = true
+  ): Promise<void> {
+    // A destroy is already ending it, so this waits for that end.
+    if (this.endingOnDestroy) {
+      return this.endingOnDestroy;
+    }
+    const ending = this.runEndChat(
+      endedByUser,
+      showHumanAgentLeftMessage,
+      showAssistantReturnMessage
+    );
+    this.endingNow = ending;
+    const done = () => {
+      if (this.endingNow === ending) {
+        this.endingNow = null;
+      }
+    };
+    ending.then(done, done);
+    return ending;
+  }
+
+  private async runEndChat(
+    endedByUser: boolean,
+    showHumanAgentLeftMessage: boolean,
+    showAssistantReturnMessage: boolean
   ): Promise<void> {
     if (!this.chatStarted || !this.serviceDesk) {
       // Already ended or no service desk.
@@ -537,21 +571,41 @@ class HumanAgentServiceImpl implements HumanAgentService {
     const { isConnecting } =
       this.serviceManager.store.getState().humanAgentState;
     const { isConnected } = this.persistedHumanAgentState();
-    if (
-      !this.chatStarted ||
-      !this.serviceDesk ||
-      !(isConnected || isConnecting)
-    ) {
+    const live =
+      this.chatStarted && this.serviceDesk && (isConnected || isConnecting);
+    if (!live && !this.endingNow) {
       return undefined;
     }
-    return this.endStartedChatOnDestroy();
+    this.endingOnDestroy = this.endStartedChatOnDestroy();
+    return this.endingOnDestroy;
   }
 
   private async endStartedChatOnDestroy() {
+    if (this.endingNow) {
+      // An end already running goes first, so the desk hears one end. Its
+      // handlers may cancel it, which leaves the chat started.
+      await this.endingNow.catch(ignoreError);
+    }
+    if (!this.chatStarted || !this.serviceDesk) {
+      return;
+    }
     const { isConnected } = this.persistedHumanAgentState();
     // Handlers see the event and can hand the desk a payload, but the chat
-    // ends whatever they set on it.
-    const event = isConnected ? await this.firePreEndChat(false) : undefined;
+    // ends whatever they set on it, and doesn't wait on them for long.
+    let event: BusEventHumanAgentPreEndChat | undefined;
+    if (isConnected) {
+      try {
+        event = await resolveOrTimeout(
+          this.firePreEndChat(false),
+          END_CHAT_TIMEOUT_MS
+        );
+      } catch (error) {
+        consoleError(
+          "A human_agent:pre:endChat handler didn't settle within 5 seconds, so the destroyed chat ended the agent conversation without its payload.",
+          error
+        );
+      }
+    }
     // No left or return message, as a restart's end shows neither.
     await this.doEndChat(
       false,

@@ -13,6 +13,7 @@ import { closeStore, type AppStore } from '../store/appStore';
 import { humanAgentStateConfig } from '../store/humanAgentStatePersistence';
 import { toPersistableState } from '../store/persistenceUtils';
 import { DEFAULT_PERSISTED_TO_BROWSER } from '../store/reducerUtils';
+import { resolveOrTimeout } from '../utils/lang/promiseUtils';
 import { consoleError } from '../utils/miscUtils';
 import { IntlShape } from '../utils/i18n';
 
@@ -36,6 +37,13 @@ import { ViewConnection } from './viewBindings';
 interface UserDefinedElementRegistryItem {
   slotName: string;
 }
+
+/**
+ * How long a destroy waits for a live agent chat to end. Longer than the end's
+ * own two 5-second limits, on the pre-end handlers and the desk, so it cuts
+ * short only end handlers that never settle.
+ */
+const AGENT_END_TIMEOUT_MS = 15000;
 
 /** Runs one shutdown step, logging what it throws so the next step still runs. */
 function runStep<T>(step: () => T): T | undefined {
@@ -212,11 +220,18 @@ class ServiceManager {
     // Only a live agent chat waits here; otherwise the rest starts now.
     const ending = runStep(() => this.humanAgentService?.endChatOnDestroy());
     if (ending) {
+      // Requests and uploads stop now, not after the end. An abort listener
+      // that ends the agent chat waits for this end instead of starting one.
+      const stopping = this.stopWork();
       try {
-        await ending;
+        await resolveOrTimeout(ending, AGENT_END_TIMEOUT_MS);
       } catch (error) {
-        consoleError('A step of the chat shutdown failed.', error);
+        consoleError(
+          "The agent conversation didn't finish ending within 15 seconds, so the destroyed chat shut down without waiting for it.",
+          error
+        );
       }
+      await stopping;
     }
     await this.stopServices();
     runStep(() => this.clearSavedState());
@@ -254,12 +269,25 @@ class ServiceManager {
     // not reach the real desk.
     runStep(() => this.humanAgentService?.shutdown());
     runStep(() => this.publicStateService?.destroy());
-    runStep(() => this.inputActionsService?.abortAllUploads());
-    try {
-      await runStep(() => this.messageCoordinator?.shutdown());
-    } catch (error) {
-      consoleError('A step of the chat shutdown failed.', error);
+    await this.stopWork();
+  }
+
+  private workStopped?: Promise<void>;
+
+  /**
+   * Aborts uploads and stops the message coordinator's requests, streams, and
+   * timers. Runs once; a destroy runs it early.
+   */
+  private stopWork(): Promise<void> {
+    if (!this.workStopped) {
+      runStep(() => this.inputActionsService?.abortAllUploads());
+      this.workStopped = Promise.resolve(
+        runStep(() => this.messageCoordinator?.shutdown())
+      ).catch((error) => {
+        consoleError('A step of the chat shutdown failed.', error);
+      });
     }
+    return this.workStopped;
   }
 
   /**
