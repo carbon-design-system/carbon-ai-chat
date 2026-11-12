@@ -39,27 +39,28 @@ export const Default = {
   args: {
     ...DefaultWC.args,
   },
-  render: ({ topHandleLabel, bottomHandleLabel }) => (
+  render: ({ topHandleLabel, bottomHandleLabel, scrollDownButtonLabel }) => (
     <div className={`${storyClass}-container`}>
       <MessagesShell
         topHandleLabel={topHandleLabel}
         bottomHandleLabel={bottomHandleLabel}
+        scrollDownButtonLabel={scrollDownButtonLabel}
         onMessagesShellScroll={(e) => action('scroll')(e.detail)}>
         <div slot="notifications" className={`${storyClass}-notification`}>
           Notification slot — e.g. human-agent banner
         </div>
-        {placeholderMessages.map((msg) => (
+        {placeholderMessages.map((msg, index) => (
           <div
             key={msg.text}
+            id={`msg-${index}`}
+            data-message-id={`msg-${index}`}
+            {...(msg.type === 'user' ? { 'data-aichat-pinnable': '' } : {})}
             className={`${storyClass}-message ${storyClass}-message--${msg.type}`}>
             {msg.text}
           </div>
         ))}
         <div slot="processing" className={`${storyClass}-processing`}>
           Processing slot (typing indicator goes here)
-        </div>
-        <div slot="scroll-down" className={`${storyClass}-scroll-down`}>
-          <button type="button">↓ Scroll to bottom</button>
         </div>
         <div slot="error" className={`${storyClass}-error`}>
           Error slot — e.g. send failure
