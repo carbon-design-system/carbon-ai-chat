@@ -17,7 +17,6 @@ import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 import {
   createMessageResponseForText,
   isResponse,
-  isConnectToHumanAgent,
 } from '../../../utils/messageUtils';
 import {
   BusEventPreReceive,
@@ -29,7 +28,6 @@ import {
   MessageResponseTypes,
 } from '../../../../types/messaging/Messages';
 import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
-import { OnErrorType } from '../../../../types/config/ErrorConfig';
 import { MessageState } from '../../../../types/config/MessagingConfig';
 import { HistoryItem, HistoryNote } from '../../../../types/messaging/History';
 import type { ServiceManager } from '../../ServiceManager';
@@ -37,8 +35,6 @@ import { retainCopiedNativeMessageOrigin } from '../nativeMessageEvents';
 
 class ReceiveService {
   private serviceManager: ServiceManager;
-
-  private processedAgentItems = new Map<string, Set<string>>();
 
   private pendingReceiveRemovals = new Set<Set<string>>();
 
@@ -176,7 +172,7 @@ class ReceiveService {
     );
   }
 
-  async handleConnectToHumanAgent(
+  handleConnectToHumanAgent(
     localMessageItem: LocalMessageItem,
     fullMessage: MessageResponse,
     isCurrent: () => boolean = () => true,
@@ -185,74 +181,23 @@ class ReceiveService {
       deduplicateByLocalID?: boolean;
     } = {}
   ) {
-    const localIdentity = `local:${localMessageItem.ui_state.id}`;
-    const itemIdentity = options.identity ?? localIdentity;
-    const deduplicationKey = options.deduplicateByLocalID
-      ? localIdentity
-      : itemIdentity;
-    if (
-      !isCurrent() ||
-      !isConnectToHumanAgent(localMessageItem.item) ||
-      this.processedAgentItems
-        .get(localMessageItem.fullMessageID)
-        ?.has(deduplicationKey)
-    ) {
-      return;
-    }
-    let processedItems = this.processedAgentItems.get(
-      localMessageItem.fullMessageID
-    );
-    if (!processedItems) {
-      processedItems = new Set();
-      this.processedAgentItems.set(
-        localMessageItem.fullMessageID,
-        processedItems
-      );
-    }
-    processedItems.add(itemIdentity);
-    processedItems.add(localIdentity);
-
-    const { store, humanAgentService, restartCount } = this.serviceManager;
-    const { config } = store.getState();
-    if (humanAgentService) {
-      await humanAgentService.handleConnectToHumanAgent(
-        localMessageItem,
-        fullMessage,
-        config,
-        restartCount,
-        isCurrent
-      );
-      return;
-    }
-
-    this.serviceManager.actions.errorOccurred({
-      errorType: OnErrorType.INTEGRATION_ERROR,
-      message:
-        'Web chat received a "connect_to_agent" message but there is no service desk configured. Check your chat configuration.',
-    });
-    if (!isCurrent()) {
-      return;
-    }
-    store.dispatch(
-      actions.setMessageUIStateInternalProperty(
-        localMessageItem.fullMessageID,
-        'agent_no_service_desk',
-        true
-      )
+    return this.serviceManager.messageCoordinator.handleConnectToHumanAgent(
+      localMessageItem,
+      fullMessage,
+      isCurrent,
+      options
     );
   }
 
   retainAgentItemPositions(messageID: string, identities: Set<string>) {
-    const processed = this.processedAgentItems.get(messageID);
-    processed?.forEach((identity) => {
-      if (identity.startsWith('position:') && !identities.has(identity)) {
-        processed.delete(identity);
-      }
-    });
+    return this.serviceManager.messageCoordinator.retainAgentItemPositions(
+      messageID,
+      identities
+    );
   }
 
   clearProcessedAgentItems() {
-    this.processedAgentItems.clear();
+    return this.serviceManager.messageCoordinator.clearProcessedAgentItems();
   }
 
   /**
@@ -263,7 +208,7 @@ class ReceiveService {
       messageIDs.forEach((id) => removedIDs.add(id));
     });
     for (const id of messageIDs) {
-      this.processedAgentItems.delete(id);
+      this.serviceManager.messageCoordinator.forgetProcessedAgentMessage(id);
       this.serviceManager.messageUpsertCoordinator.clear(id);
     }
     this.serviceManager.store.dispatch(actions.removeMessages(messageIDs));
