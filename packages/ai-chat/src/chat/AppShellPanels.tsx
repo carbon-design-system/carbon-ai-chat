@@ -224,7 +224,8 @@ export const AppShellPanels = React.memo(function AppShellPanels({
         aiEnabled={aiEnabled ? true : false}
         priority={100}
         fullWidth={false}
-        showChatHeader={true}>
+        showChatHeader={true}
+        data-testid={PageObjectId.CATASTROPHIC_PANEL}>
         <div slot="body" className="cds-aichat--widget--expand-to-fit">
           <CatastrophicErrorPanel
             title={catastrophicErrorPanelState?.title}
@@ -248,7 +249,8 @@ export const AppShellPanels = React.memo(function AppShellPanels({
         onCloseStart={onPanelCloseStart}
         onCloseEnd={() => {
           onPanelCloseEnd(false);
-        }}>
+        }}
+        data-testid={PageObjectId.HYDRATING_PANEL}>
         <div slot="body" className="cds-aichat--widget--expand-to-fit">
           <HydrationPanel isHydrated={isHydratingComplete} />
         </div>

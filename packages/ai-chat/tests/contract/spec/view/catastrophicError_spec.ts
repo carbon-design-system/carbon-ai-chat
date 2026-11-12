@@ -8,9 +8,9 @@
  */
 
 /**
- * `PageObjectId.CATASTROPHIC_PANEL` is on no element (MAIN-NOTES M25), so these
- * tests find the panel by its dialog role and the name the test sets through
- * `strings`, and its retry button by role and name (plan D4.2).
+ * These tests find the panel by its dialog role and the name the test sets
+ * through `strings`, and its retry button by role and name (plan D4.2). One
+ * test checks the panel's public test ID.
  */
 
 import { act, waitFor } from '@testing-library/react';
@@ -19,6 +19,7 @@ import {
   BusEventType,
   CatastrophicErrorPanelState,
   ChatInstance,
+  PageObjectId,
   PublicConfig,
   ViewType,
 } from '../../../../src/aiChatEntry';
@@ -29,6 +30,7 @@ import {
   click,
   contractChat,
   contractSetup,
+  getByTestId,
   isShownWithin,
   recordEvents,
   responseOf,
@@ -95,6 +97,16 @@ describe('updateCatastrophicErrorPanel', () => {
       expect(panelText()).toContain('Contract title Contract body')
     );
     expect(panelText()).not.toContain('**');
+  });
+
+  // @covers export.aiChatEntry.PageObjectId
+  it('shows the dialog inside the catastrophic panel test ID', async () => {
+    const instance = await openChat();
+    await update(instance, { isOpen: true });
+    await waitFor(() => expect(panelCount()).toBe(1));
+    expect(
+      isShownWithin(panel(), getByTestId(PageObjectId.CATASTROPHIC_PANEL))
+    ).toBe(true);
   });
 
   // @covers config.assistantName

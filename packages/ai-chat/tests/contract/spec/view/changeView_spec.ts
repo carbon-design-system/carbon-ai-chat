@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { act } from '@testing-library/react';
+import { act, waitFor } from '@testing-library/react';
 
 import {
   BusEventType,
@@ -15,17 +15,22 @@ import {
   BusEventViewPreChange,
   ChatInstance,
   MessageSendSource,
+  PageObjectId,
   ViewChangeReason,
   ViewState,
   ViewType,
 } from '../../../../src/aiChatEntry';
 import {
   EventRecorder,
+  allByRole,
+  byRole,
   changeView,
   contractChat,
   contractSetup,
   deferred,
   fakeBackend,
+  getByTestId,
+  isShownWithin,
   pause,
   recordEvents,
 } from '../../helpers';
@@ -451,6 +456,40 @@ describe('the view at load', () => {
     const sent = await backend.next();
     expect(sent.options.busEventSend.source).toBe(
       MessageSendSource.WELCOME_REQUEST
+    );
+  });
+});
+
+// @covers export.aiChatEntry.PageObjectId config.strings state.status
+describe('the loading panel', () => {
+  contractSetup();
+
+  const LOADING_PANEL_NAME = 'Contract loading panel';
+
+  it('shows a dialog inside the hydrating panel test ID while the chat loads, and hides it after', async () => {
+    const backend = fakeBackend();
+    const { instance } = await contractChat({
+      strings: { aria_hydrationPanel: LOADING_PANEL_NAME },
+      messaging: { customSendMessage: backend.customSendMessage },
+    });
+    await changeView(instance, ViewType.MAIN_WINDOW);
+    const sent = await backend.next();
+    expect(instance.getState().status).toBe('loading');
+    await waitFor(() =>
+      expect(
+        isShownWithin(
+          byRole('dialog', LOADING_PANEL_NAME),
+          getByTestId(PageObjectId.HYDRATING_PANEL)
+        )
+      ).toBe(true)
+    );
+
+    await act(async () => {
+      sent.resolve();
+    });
+    await waitFor(() => expect(instance.getState().status).toBe('ready'));
+    await waitFor(() =>
+      expect(allByRole('dialog', LOADING_PANEL_NAME)).toEqual([])
     );
   });
 });
