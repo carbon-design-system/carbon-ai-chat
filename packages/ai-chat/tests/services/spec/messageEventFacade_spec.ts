@@ -1,0 +1,43 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+import { MessageCoordinator } from '../../../src/chat/services/messaging/MessageCoordinator';
+import * as events from '../../../src/chat/services/messaging/coordinateMessageEvents';
+import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
+import type { MessagePresentationPort } from '../../../src/chat/services/messaging/presentationPort';
+
+it('returns the exact response-tree workflow Promise from the coordinator facade', () => {
+  const result = Promise.resolve();
+  const invoke = jest
+    .spyOn(events, 'coordinateUserDefinedResponseItems')
+    .mockReturnValue(result);
+  try {
+    const manager = {} as ServiceManager;
+    const presentation = {} as MessagePresentationPort;
+    const core = new MessageCoordinator(manager, presentation);
+    const local = {} as Parameters<
+      typeof events.coordinateUserDefinedResponseItems
+    >[2];
+    const message = {} as Parameters<
+      typeof events.coordinateUserDefinedResponseItems
+    >[3];
+    expect(core.handleUserDefinedResponseItems(local, message)).toBe(result);
+    expect(invoke).toHaveBeenCalledWith(
+      manager,
+      presentation,
+      local,
+      message,
+      undefined,
+      undefined,
+      undefined
+    );
+  } finally {
+    invoke.mockRestore();
+  }
+});

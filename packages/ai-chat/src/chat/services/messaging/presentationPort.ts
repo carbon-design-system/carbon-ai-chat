@@ -8,6 +8,7 @@
  */
 
 interface MessagePresentationPort {
+  getUserDefinedResponseSlot?(messageItemID: string): string | undefined;
   hasCustomPromptLine(): boolean;
   announceSending(): void;
   requestComposerFocus(): void;

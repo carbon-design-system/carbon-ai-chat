@@ -76,6 +76,9 @@ function createServiceManager(appConfig: AppConfig) {
   serviceManager.messageCoordinator = new MessageCoordinator(
     serviceManager,
     new MessagePresentationAdapter({
+      getUserDefinedResponseSlot: (id) =>
+        serviceManager.slotEventService.getOrCreateUserDefinedElement(id)
+          .slotName,
       hasCustomPromptLine: () => hasCustomPromptLine(serviceManager),
       requestComposerFocus: () => requestComposerFocus(serviceManager),
       announceSending: () => {
