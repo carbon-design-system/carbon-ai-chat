@@ -21,6 +21,7 @@ import type { HistoryItem } from '../../../src/types/messaging/History';
 
 import actions from '../../../src/sdk/store/actions';
 import { addMessages } from '../../../src/sdk/services/haa/humanAgentUtils';
+import { outputItemToLocalItem } from '../../../src/sdk/schema/outputItemToLocalItem';
 import type { LocalMessageItem } from '../../../src/types/messaging/LocalMessageItem';
 import { setMessageOptionSelectedFromView } from '../../../src/sdk/utils/messageMetadataCommands';
 import { MessageState } from '../../../src/types/config/MessagingConfig';
@@ -555,5 +556,84 @@ describe('announcement flags', () => {
     });
     await act(() => chat.instance.messaging.restartConversation());
     expect(flagsOf(chat)).toEqual({});
+  });
+
+  it('announces an added local item, such as an agent message, and again when it is added again', async () => {
+    const chat = await chatWith();
+    const manager = (chat.serviceManager.messageCoordinator as any)
+      .serviceManager as ServiceManager;
+    const message = {
+      ...response('agent', [text('Agent says hi')]),
+      history: {},
+    };
+    const add = () => {
+      // Built the way the agent service builds it, under a fixed local ID.
+      const built = outputItemToLocalItem(message.output.generic[0], message);
+      const local = {
+        ...built,
+        ui_state: { ...built.ui_state, id: 'agent-text' },
+      };
+      return act(() =>
+        addMessages(
+          [{ originalMessage: message, localMessages: [local] }],
+          true,
+          manager
+        )
+      );
+    };
+
+    await add();
+    await waitFor(() => expect(announcementsOf('Agent says hi')).toBe(1));
+    expect(flagsOf(chat)).toEqual({
+      'agent:i:0': { messageID: 'agent', wasAnnounced: true },
+    });
+
+    await add();
+    await waitFor(() => expect(announcementsOf('Agent says hi')).toBe(2));
+  });
+
+  it('announces the error a failed silent send adds once', async () => {
+    const failing = (await renderChatAndGetInstanceWithStore({
+      ...config,
+      messaging: {
+        skipWelcome: true,
+        customSendMessage: () => Promise.reject(new Error('down')),
+      },
+    })) as Chat;
+    const errorText =
+      failing.store.getState().languagePack.errors_singleMessage;
+
+    await act(async () => {
+      await expect(
+        failing.instance.send('A silent question', { silent: true })
+      ).rejects.toThrow();
+    });
+
+    await waitFor(() => expect(announcementsOf(errorText)).toBe(1));
+    expect(Object.values(flagsOf(failing))).toEqual([
+      expect.objectContaining({ wasAnnounced: true }),
+    ]);
+  });
+
+  it('gives only top-level items announcement flags, not the items nested in a card', async () => {
+    const chat = await chatWith(
+      response('c1', [
+        text('Alpha item'),
+        {
+          response_type: MessageResponseTypes.CARD,
+          body: [text('Card body text')],
+        } as GenericItem,
+        text('Gamma item'),
+      ])
+    );
+
+    await waitFor(() => expect(announcementsOf('Gamma item')).toBe(1));
+    expect(announcementsOf('Alpha item')).toBe(1);
+    expect(announcementsOf('Card body text')).toBe(1);
+    expect(Object.keys(flagsOf(chat)).sort()).toEqual([
+      'c1:i:0',
+      'c1:i:1',
+      'c1:i:2',
+    ]);
   });
 });
