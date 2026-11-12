@@ -13,9 +13,7 @@ import { ButtonItemCustomEventComponent } from '../../../src/chat/components/res
 import { ButtonItemPostBackComponent } from '../../../src/chat/components/responseTypes/button/ButtonItemPostBackComponent';
 import { ButtonItemShowPanelComponent } from '../../../src/chat/components/responseTypes/button/ButtonItemShowPanelComponent';
 import { ButtonItemURLComponent } from '../../../src/chat/components/responseTypes/button/ButtonItemURLComponent';
-import { ServiceManagerContext } from '../../../src/chat/contexts/ServiceManagerContext';
-import { StoreProvider } from '../../../src/chat/providers/StoreProvider';
-import { makeConfigStore } from '../../test_helpers';
+import { makeConfigStore, TestChatContext } from '../../test_helpers';
 import {
   ButtonItemType,
   MessageResponseTypes,
@@ -113,18 +111,17 @@ function renderButton(
     fullMessageID: 'response-id',
     ui_state: { id: 'local-id' },
   } as any;
+  // useSelector reads the real store; dispatches go to the mock.
   const serviceManager = {
-    store: { dispatch: jest.fn() },
+    store: { ...makeConfigStore({}), dispatch: jest.fn() },
     actions: { sendWithCatch: jest.fn() },
     fire: jest.fn(),
   } as any;
 
   return render(
-    <StoreProvider store={makeConfigStore({})}>
-      <ServiceManagerContext.Provider value={serviceManager}>
-        {renderComponent(localMessageItem)}
-      </ServiceManagerContext.Provider>
-    </StoreProvider>
+    <TestChatContext serviceManager={serviceManager}>
+      {renderComponent(localMessageItem)}
+    </TestChatContext>
   );
 }
 
