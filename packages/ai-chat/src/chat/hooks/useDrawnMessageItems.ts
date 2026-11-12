@@ -87,8 +87,11 @@ function useDrawnMessageItems(
     [messageItems, publicStateService]
   );
   const drawn = useSelector(selectDrawn, sameDrawnItems);
-  // A new list of entries makes a new selector, which compares with the last value the hook
-  // committed, not the last one it returned, so keep that here too.
+  // A new list of entries makes a new selector, which compares with the last value React
+  // committed, not the last one this hook returned. The list can render twice before a commit
+  // (one change dispatched inside another), so without this it would get a new array with the
+  // same items. The ref only ever holds an array with the current items, so a discarded render
+  // that wrote it leaves nothing stale behind.
   const last = useRef(drawn);
   if (last.current !== drawn && !sameDrawnItems(last.current, drawn)) {
     last.current = drawn;

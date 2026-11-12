@@ -11,13 +11,13 @@
  * The message list reads its items from `instance.state.messageItems` and the
  * chat's own objects and view state from the store. Each change draws it once,
  * with both sources current, including a dispatch nested inside a host's
- * `state.subscribe` listener (#2693 O11).
+ * `state.subscribe` listener.
  *
  * A draw is a call to `render` whose items or view state changed. React calls
- * `render` again with the same props, on the parent build too, so that call
- * doesn't count, but every call must show both sources as they are. The list's
- * scroll work keeps drawing after `act` returns, so each change is measured
- * inside its own `act`.
+ * `render` again with the same props, so that call doesn't count, but every
+ * call must show both sources as they are. The list's scroll work keeps
+ * drawing after `act` returns, so each change is measured inside its own
+ * `act`.
  */
 
 import { act, waitFor } from '@testing-library/react';

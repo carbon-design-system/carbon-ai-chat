@@ -834,6 +834,34 @@ describe('render errors in response panel content', () => {
     expect(onError).not.toHaveBeenCalled();
   });
 
+  it('draws a nested item an update adds inside an open panel', async () => {
+    const { instance, store, onError } = await renderOpenChat();
+    await upsertPanelMessage(instance, {
+      body: [panelText('Body one'), panelText('Body two')],
+    });
+    await settle();
+    await openPanel();
+    await waitFor(() =>
+      expect(deepText(responsePanelBody())).toContain('Body two')
+    );
+
+    await upsertPanelMessage(instance, {
+      body: [
+        panelText('Body one'),
+        panelText('Body two'),
+        panelText('Body three'),
+      ],
+    });
+    await settle();
+
+    await waitFor(() =>
+      expect(deepText(responsePanelBody())).toContain('Body three')
+    );
+    expect(panelError('body')).toBeFalsy();
+    expect(onError).not.toHaveBeenCalled();
+    expect(store.getState().view.catastrophicErrorType).toBeUndefined();
+  });
+
   it('leaves the chat usable after a panel fails', async () => {
     const { instance, store } = await renderOpenChat();
     await upsertPanelMessage(instance, { body: [throwingImage] });

@@ -10,7 +10,7 @@
 /**
  * The message list draws the entries of `instance.state.messageItems`, each
  * with the chat's own local item and message, and finds nested items by their
- * parent's ID and list (#2693 O5).
+ * parent's ID and list.
  */
 
 import React, { type ReactNode } from 'react';
