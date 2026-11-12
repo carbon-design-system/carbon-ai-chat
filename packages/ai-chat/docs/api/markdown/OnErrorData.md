@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Config
-- Reference: https://chat.carbondesignsystem.com/version/v1.24.0/docs/interfaces/Type_reference.OnErrorData.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.OnErrorData.html
 
 Fired when a serious error in the chat occurs.
 
@@ -26,7 +26,7 @@ interface OnErrorData
 
 If the error is of the severity that requires a whole restart of Carbon AI Chat.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0/docs/interfaces/Type_reference.OnErrorData.html#catastrophicerrortype)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.OnErrorData.html#catastrophicerrortype)
 
 ### errorType
 
@@ -34,7 +34,7 @@ If the error is of the severity that requires a whole restart of Carbon AI Chat.
 
 The type of error that occurred.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0/docs/interfaces/Type_reference.OnErrorData.html#errortype)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.OnErrorData.html#errortype)
 
 ### message
 
@@ -42,7 +42,7 @@ The type of error that occurred.
 
 A message associated with the error.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0/docs/interfaces/Type_reference.OnErrorData.html#message)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.OnErrorData.html#message)
 
 ### otherData
 
@@ -52,4 +52,4 @@ An extra blob of data associated with the error. This may be a stack trace for t
 OnErrorType.RENDER report about an upserted item the chat can't draw, it names the item and the fields
 it's missing.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0/docs/interfaces/Type_reference.OnErrorData.html#otherdata)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.OnErrorData.html#otherdata)
