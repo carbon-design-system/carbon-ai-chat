@@ -194,7 +194,8 @@ export interface ChatInstanceMessaging {
    *
    * If the main window is open and {@link PublicConfigMessaging.skipWelcome} isn't set, the chat then sends a new
    * welcome request, and the promise resolves only after {@link PublicConfigMessaging.customSendMessage} finishes with
-   * that request.
+   * that request. It sends no welcome request when {@link HomeScreenConfig.isOn} is set (it opens the home screen
+   * instead) or when the user has a conversation with a human agent, now or earlier in the session.
    */
   restartConversation: () => Promise<void>;
 }
