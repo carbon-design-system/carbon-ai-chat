@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025, 2026
+ *  Copyright IBM Corp. 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -14,21 +14,35 @@ import type {
   ReceivedLocalItems,
 } from '../../store/messageWriteTypes';
 import { deepFreeze } from '../../utils/lang/objectUtils';
+import { consoleError } from '../../utils/miscUtils';
+import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 import {
-  addDefaultsToMessage,
+  createMessageResponseForText,
+  isResponse,
   isConnectToHumanAgent,
+  addDefaultsToMessage,
   isPause,
   isHiddenOutputItem,
   streamItemID,
 } from '../../utils/messageUtils';
-import type {
-  MessageResponse,
-  PauseItem,
+import {
+  BusEventType,
+  type BusEventPreReceive,
+} from '../../../types/events/eventBusTypes';
+import {
+  MessageResponseTypes,
+  type MessageRequest,
+  type MessageResponse,
+  type PauseItem,
 } from '../../../types/messaging/Messages';
 import type { LocalMessageItem } from '../../../types/messaging/LocalMessageItem';
 import { OnErrorType } from '../../../types/config/ErrorConfig';
-import { MessageState } from '../../../types/config/MessagingConfig';
+import {
+  MessageState,
+  type UpsertMessageUpdater,
+} from '../../../types/config/MessagingConfig';
 import type { ServiceManager } from '../ServiceManager';
+import type { UpsertStamp } from './incomingWriteTypes';
 import { IncomingMessageService } from './inbound/IncomingMessageService';
 import {
   outputItemToLocalItem,
@@ -37,6 +51,122 @@ import {
 
 class FullResponseWorkflow {
   private processedAgentItems = new Map<string, Set<string>>();
+  private pendingReceiveRemovals = new Set<Set<string>>();
+  private readonly incomingMessageService = new IncomingMessageService();
+  constructor(private serviceManager: ServiceManager) {}
+
+  async receive(
+    message: MessageResponse,
+    isLatestWelcomeNode = false,
+    requestMessage?: MessageRequest,
+    origin: 'addMessage' | 'chunk' = 'addMessage',
+    isCallerCurrent: () => boolean = () => true
+  ) {
+    const { restartCount: initialRestartCount } = this.serviceManager;
+    const { messageCoordinator: messageService } = this.serviceManager;
+    if (
+      !isCallerCurrent() ||
+      messageService.isRequestFromPreviousConversation(
+        message.request_id ?? requestMessage?.id
+      )
+    ) {
+      return;
+    }
+
+    // Received messages should be given an id if they don't have one.
+    if (!message.id) {
+      message.id = uuid();
+    }
+
+    const write = this.serviceManager.messageUpsertCoordinator.trackWrite(
+      message.id
+    );
+    // A writable pre:receive handler can choose its final ID after a removal.
+    const removedIDs = new Set<string>();
+    this.pendingReceiveRemovals.add(removedIDs);
+    const isCurrent = () =>
+      write.isCurrent() && isCallerCurrent() && !removedIDs.has(message.id);
+    try {
+      const preReceiveEvent: BusEventPreReceive = {
+        type: BusEventType.PRE_RECEIVE,
+        data: message,
+      };
+      // Fire the pre:receive event. User code is allowed to modify the message at this point.
+      await this.serviceManager.fire(preReceiveEvent, isCurrent);
+
+      if (
+        !isCurrent() ||
+        initialRestartCount !== this.serviceManager.restartCount ||
+        messageService.isRequestFromPreviousConversation(message.request_id)
+      ) {
+        // If a restart occurred during the await above, we need to exit.
+        return;
+      }
+
+      this.serviceManager.messageCoordinator.responseReceived(
+        message.id,
+        undefined,
+        message.request_id ?? requestMessage?.id
+      );
+      if (!isCurrent()) {
+        return;
+      }
+
+      if (isResponse(message as any)) {
+        await this.writeReceivedMessage(message, {
+          origin,
+          isLatestWelcomeNode,
+          requestMessage,
+          restartCount: initialRestartCount,
+          isCurrent,
+        });
+        return;
+      }
+
+      const { languagePack } = this.serviceManager.store.getState();
+      const inlineError: MessageResponse = createMessageResponseForText(
+        languagePack.errors_singleMessage,
+        message?.thread_id,
+        MessageResponseTypes.INLINE_ERROR
+      );
+      this.receive(inlineError, false);
+
+      deepFreeze(message);
+
+      await this.serviceManager.fire(
+        {
+          type: BusEventType.RECEIVE,
+          data: message,
+        },
+        isCurrent
+      );
+
+      // Record COMPLETE so a later `upsertMessage(id, MessageState.COMPLETE, ...)` for
+      // the same id suppresses a second `pre:receive` / `receive`.
+      if (
+        isCurrent() &&
+        initialRestartCount === this.serviceManager.restartCount
+      ) {
+        this.serviceManager.messageUpsertCoordinator.markComplete(message.id);
+      }
+    } finally {
+      this.pendingReceiveRemovals.delete(removedIDs);
+      write.release();
+    }
+  }
+
+  private writeReceivedMessage(
+    message: MessageResponse,
+    options: MessageWriteOptions
+  ): Promise<void> {
+    return this.serviceManager.messageUpsertCoordinator.upsert(
+      message.id,
+      MessageState.COMPLETE,
+      () => message,
+      options
+    );
+  }
+
   async handleConnectToHumanAgent(
     localMessageItem: LocalMessageItem,
     fullMessage: MessageResponse,
@@ -116,27 +246,83 @@ class FullResponseWorkflow {
     this.processedAgentItems.clear();
   }
 
-  agentItemIdentity(message: MessageResponse, index: number): string {
-    const item = message.output.generic[index];
-    const position = message.output.generic
-      .slice(0, index)
-      .filter((previous) => previous && !isPause(previous)).length;
-    const streamID = streamItemID(message.id, item);
-    return streamID ? `stream:${streamID}` : `position:${position}`;
+  async removeMessages(messageIDs: string[]) {
+    this.pendingReceiveRemovals.forEach((removedIDs) => {
+      messageIDs.forEach((id) => removedIDs.add(id));
+    });
+    for (const id of messageIDs) {
+      this.processedAgentItems.delete(id);
+      this.serviceManager.messageUpsertCoordinator.clear(id);
+    }
+    this.serviceManager.store.dispatch(actions.removeMessages(messageIDs));
   }
 
-  forgetProcessedAgentMessage(messageID: string) {
-    this.processedAgentItems.delete(messageID);
-  }
+  async runReceivedWrite(
+    messageID: string,
+    updater: UpsertMessageUpdater,
+    options: MessageWriteOptions,
+    stamp: UpsertStamp
+  ): Promise<void> {
+    const initialRestartCount = options.restartCount ?? stamp.restartCount;
+    const message = await updater(
+      this.serviceManager.store.getState().allMessagesByID[
+        messageID
+      ] as MessageResponse
+    );
+    const isCurrent = () =>
+      !this.serviceManager.messageCoordinator.isIncomingWriteStale(
+        stamp,
+        message.request_id
+      ) && initialRestartCount === this.serviceManager.restartCount;
+    if (!isCurrent()) {
+      return;
+    }
 
-  private readonly incomingMessageService = new IncomingMessageService();
-  constructor(private serviceManager: ServiceManager) {}
+    // Reveals outlive receive(), so they retain the same removal guard separately.
+    const reveal =
+      this.serviceManager.messageCoordinator.incomingWriteLifetime.trackWrite(
+        messageID
+      );
+    this.storeReceivedMessage(message, options, isCurrent, initialRestartCount)
+      .catch((error) => {
+        consoleError('Error processing the message response', error);
+      })
+      .finally(reveal.release);
+
+    if (!isCurrent()) {
+      return;
+    }
+    if (!options.isLatestWelcomeNode) {
+      this.serviceManager.store.dispatch(
+        actions.updateHasSentNonWelcomeMessage(true)
+      );
+    }
+    if (!isCurrent()) {
+      return;
+    }
+    deepFreeze(message);
+    const storedMessage =
+      this.serviceManager.store.getState().allMessagesByID[messageID];
+    if (storedMessage) {
+      deepFreeze(storedMessage);
+    }
+    await this.serviceManager.fire(
+      {
+        type: BusEventType.RECEIVE,
+        data: message,
+      },
+      isCurrent
+    );
+    if (isCurrent()) {
+      this.serviceManager.messageUpsertCoordinator.markComplete(messageID);
+    }
+  }
 
   /**
    * Stores a message from `addMessage` or `final_response`, then shows its items. Only the
    * part before the first item's wait runs before `receive` fires.
    */
-  async storeReceivedMessage(
+  private async storeReceivedMessage(
     message: MessageResponse,
     options: MessageWriteOptions,
     isCurrent: () => boolean,
@@ -250,15 +436,10 @@ class FullResponseWorkflow {
             true
           )
         );
-        await this.serviceManager.receiveService.handleConnectToHumanAgent(
-          localItem,
-          message,
-          isCurrent,
-          {
-            identity: this.agentItemIdentity(message, index),
-            deduplicateByLocalID: true,
-          }
-        );
+        await this.handleConnectToHumanAgent(localItem, message, isCurrent, {
+          identity: this.agentItemIdentity(message, index),
+          deduplicateByLocalID: true,
+        });
       }
       if (isPause(item)) {
         await this.serviceManager.chunkProcessingService.waitForPause(
@@ -290,6 +471,15 @@ class FullResponseWorkflow {
         addAfterID = localItem.ui_state.id;
       }
     }
+  }
+
+  agentItemIdentity(message: MessageResponse, index: number): string {
+    const item = message.output.generic[index];
+    const position = message.output.generic
+      .slice(0, index)
+      .filter((previous) => previous && !isPause(previous)).length;
+    const streamID = streamItemID(message.id, item);
+    return streamID ? `stream:${streamID}` : `position:${position}`;
   }
 }
 
