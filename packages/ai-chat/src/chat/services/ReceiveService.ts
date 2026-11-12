@@ -7,6 +7,7 @@
  *  @license
  */
 
+import cloneDeep from 'lodash-es/cloneDeep.js';
 import merge from 'lodash-es/merge.js';
 
 import actions from '../store/actions';
@@ -280,9 +281,16 @@ class ReceiveService {
 
     const state = this.serviceManager.store.getState();
 
+    // The chat writes its defaults onto each message, which a frozen one can't take.
+    const items = messages?.map((item) =>
+      item && Object.isFrozen(item.message)
+        ? { ...item, message: cloneDeep(item.message) }
+        : item
+    );
+
     // TODO: This doesn't work right if this is called more than once.
     const notes: { notes: HistoryNote[] } = {
-      notes: [{ body: messages }],
+      notes: [{ body: items }],
     };
     const history = await this.serviceManager.historyService.loadHistory(notes);
 

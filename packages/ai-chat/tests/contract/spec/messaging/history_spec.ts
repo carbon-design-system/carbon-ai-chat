@@ -63,6 +63,16 @@ const texts = (message: Message) => outputTexts(message as MessageResponse);
 const eventIDs = (event: BusEventHistoryBegin | BusEventHistoryEnd) =>
   event.messages.map(({ id }) => id);
 
+/** Freezes the value and everything it holds, the way an immutable store does. */
+function deepFrozen<T>(value: T): T {
+  Object.values(value).forEach((child) => {
+    if (child && typeof child === 'object') {
+      deepFrozen(child);
+    }
+  });
+  return Object.freeze(value);
+}
+
 // @covers instance.messaging.insertHistory event.history:begin
 // @covers event.history:end state.messages
 describeShared('insertHistory', (makeDriver) => {
@@ -105,6 +115,40 @@ describeShared('insertHistory', (makeDriver) => {
       chat.messaging.insertHistory([historyResponse('a0', 'zero', T0)])
     );
     expect(ids(chat)).toEqual(['a0', 'a1']);
+  });
+
+  it('adds frozen items as it adds unfrozen ones', async () => {
+    const chat = await makeDriver();
+    await act(() =>
+      chat.messaging.insertHistory(
+        deepFrozen([
+          historyRequest('q1', 'hello', T0),
+          historyResponse('a1', 'hi', T1, 'q1'),
+        ])
+      )
+    );
+    const messages = chat.messages();
+    expect(messages.map(({ id }) => id)).toEqual(['q1', 'a1']);
+    expect(messages.map(({ history }) => history?.timestamp)).toEqual([
+      Date.parse(T0),
+      Date.parse(T1),
+    ]);
+    expect(texts(messages[1])).toEqual(['hi']);
+  });
+
+  it('accepts items it was given in an earlier call', async () => {
+    const chat = await makeDriver();
+    const items = [historyResponse('a1', 'hi', T0)];
+    await act(() => chat.messaging.insertHistory(items));
+    const events = recordEvents(chat, HISTORY_EVENTS);
+    await act(async () => {
+      await expect(
+        chat.messaging.insertHistory(items)
+      ).resolves.toBeUndefined();
+    });
+    expect(events.types()).toEqual(['history:begin', 'history:end']);
+    const [end] = events.of<BusEventHistoryEnd>(BusEventType.HISTORY_END);
+    expect(eventIDs(end)).toEqual(['a1']);
   });
 
   it('fires history:begin, then history:end, each with the items', async () => {
