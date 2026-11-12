@@ -45,6 +45,7 @@ export {
   ChatSDKInstance,
 } from './types/instance/ChatSDKInstance';
 export {
+  ChatSDKMessageItem,
   ChatSDKPendingUpload,
   ChatSDKState,
   ChatSDKStateAccess,
