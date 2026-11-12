@@ -223,13 +223,7 @@ function createCustomPanelInstance(
     }
   }
 
-  const panelActions: Record<
-    PanelType,
-    {
-      setConfig?: (options: CustomPanelConfigOptions) => { type: string };
-      setOpen: (isOpen: boolean) => { type: string; isOpen: boolean };
-    }
-  > = {
+  const panelActions = {
     [PanelType.WORKSPACE]: {
       setConfig: viewActions.setWorkspaceCustomPanelConfigOptions,
       setOpen: viewActions.setWorkspaceCustomPanelOpen,
@@ -241,10 +235,15 @@ function createCustomPanelInstance(
     [PanelType.HISTORY]: {
       setOpen: viewActions.setHistoryPanelOpen,
     },
-  };
+  } as const;
 
-  const { setConfig, setOpen } =
+  const { setOpen } =
     panelActions[panelType] ?? panelActions[PanelType.DEFAULT];
+  // The history panel's `open` returns before it would set options.
+  const { setConfig } =
+    panelType === PanelType.WORKSPACE
+      ? panelActions[PanelType.WORKSPACE]
+      : panelActions[PanelType.DEFAULT];
 
   const customPanelInstance: CustomPanelInstance = {
     async open(
