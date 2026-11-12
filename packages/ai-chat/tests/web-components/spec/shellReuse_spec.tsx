@@ -23,6 +23,7 @@ import * as chatBoot from '../../../src/chat/utils/chatBoot';
 import { createChatSDK } from '../../../src/sdk';
 import { chatRegistry } from '../../../src/sdk/createChatSDK';
 import { ServiceManager } from '../../../src/sdk/services/ServiceManager';
+import { MessageCoordinator } from '../../../src/sdk/services/messaging/MessageCoordinator';
 import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
 import type { ExtensionHosts } from '../../../src/chat/services/extensionHosts';
 import type { ChatRenderer } from '../../../src/web-components/shared/react-renderer';
@@ -1117,6 +1118,48 @@ describe('lifecycle.onUnmount', () => {
     expect(element.onBeforeRender).not.toHaveBeenCalled();
     expect(onError).not.toHaveBeenCalled();
     expect(console.error).not.toHaveBeenCalled();
+  });
+
+  it('a mount removed while its chat boots still logs a failed boot', async () => {
+    const namespace = freshNamespace();
+    const claim = chatRegistry.claim.bind(chatRegistry);
+    const gate = resolvablePromise<void>();
+    const failure = new Error('The desk is down.');
+    const claimed = jest
+      .spyOn(chatRegistry, 'claim')
+      .mockImplementationOnce((key, options) =>
+        claim(key, {
+          ...options,
+          boot: async () => {
+            await gate;
+            return options.boot();
+          },
+        })
+      );
+    const element = chatElement(
+      reuseConfig(namespace, {
+        lifecycle: { reuseInstance: true, onUnmount: 'destroy' },
+      })
+    );
+    document.body.appendChild(element);
+    await waitFor(() => expect(claimed).toHaveBeenCalled());
+    element.remove();
+    await flushMicrotasks();
+    // The real boot fails after its services exist.
+    jest
+      .spyOn(MessageCoordinator.prototype, 'onInstanceReady')
+      .mockImplementationOnce(() => {
+        throw failure;
+      });
+    gate.doResolve();
+
+    await waitFor(() =>
+      expect(console.error).toHaveBeenCalledWith(
+        'Error initializing chat:',
+        failure
+      )
+    );
+    (console.error as jest.Mock).mockClear();
   });
 
   it('a mount removed while it adopts a chat destroys that chat', async () => {
