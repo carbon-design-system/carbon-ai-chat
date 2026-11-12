@@ -1,6 +1,6 @@
 {
-  "version": "v1.24.0",
-  "baseUrl": "https://chat.carbondesignsystem.com/version/v1.24.0/docs/",
+  "version": "v1.25.0-rc.0",
+  "baseUrl": "https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/",
   "generator": "@carbon/ai-chat typedoc apiIndexPlugin",
   "symbols": {
     "AdditionalDataToAgent": {
@@ -5314,8 +5314,8 @@
       "members": [],
       "related": [],
       "examples": [],
-      "deprecated": false,
-      "deprecatedMessage": "",
+      "deprecated": true,
+      "deprecatedMessage": "Set a Carbon theme on your page instead, on an element that contains the chat. The chat\ninherits that theme's tokens, and your own token overrides reach the Carbon components inside it.\nRemoved in 2.0.0. The v2 styling contract,\n[ADR-0004](https://github.com/carbon-design-system/carbon-ai-chat/blob/main/docs/adr/0004-component-styling-contract.md),\nproposes that the chat read the theme from your page and never force its own.",
       "experimental": false,
       "url": "interfaces/Type_reference.CdsAiChatContainerAttributes.html#injectcarbontheme",
       "anchor": "injectcarbontheme"
@@ -6071,8 +6071,8 @@
       "members": [],
       "related": [],
       "examples": [],
-      "deprecated": false,
-      "deprecatedMessage": "",
+      "deprecated": true,
+      "deprecatedMessage": "Set a Carbon theme on your page instead, on an element that contains the chat. The chat\ninherits that theme's tokens, and your own token overrides reach the Carbon components inside it.\nRemoved in 2.0.0. The v2 styling contract,\n[ADR-0004](https://github.com/carbon-design-system/carbon-ai-chat/blob/main/docs/adr/0004-component-styling-contract.md),\nproposes that the chat read the theme from your page and never force its own.",
       "experimental": false,
       "url": "interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#injectcarbontheme",
       "anchor": "injectcarbontheme"
@@ -7018,8 +7018,8 @@
       "members": [],
       "related": [],
       "examples": [],
-      "deprecated": false,
-      "deprecatedMessage": "",
+      "deprecated": true,
+      "deprecatedMessage": "Set a Carbon theme on your page instead, on an element that contains the chat. The chat\ninherits that theme's tokens, and your own token overrides reach the Carbon components inside it.\nRemoved in 2.0.0. The v2 styling contract,\n[ADR-0004](https://github.com/carbon-design-system/carbon-ai-chat/blob/main/docs/adr/0004-component-styling-contract.md),\nproposes that the chat read the theme from your page and never force its own.",
       "experimental": false,
       "url": "interfaces/Type_reference.ChatContainerProps.html#injectcarbontheme",
       "anchor": "injectcarbontheme"
@@ -7402,7 +7402,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.ChatContainerProps.html#renderuserdefinedinputnode",
       "anchor": "renderuserdefinedinputnode"
     },
@@ -7922,8 +7922,8 @@
       "members": [],
       "related": [],
       "examples": [],
-      "deprecated": false,
-      "deprecatedMessage": "",
+      "deprecated": true,
+      "deprecatedMessage": "Set a Carbon theme on your page instead, on an element that contains the chat. The chat\ninherits that theme's tokens, and your own token overrides reach the Carbon components inside it.\nRemoved in 2.0.0. The v2 styling contract,\n[ADR-0004](https://github.com/carbon-design-system/carbon-ai-chat/blob/main/docs/adr/0004-component-styling-contract.md),\nproposes that the chat read the theme from your page and never force its own.",
       "experimental": false,
       "url": "interfaces/Type_reference.ChatCustomElementProps.html#injectcarbontheme",
       "anchor": "injectcarbontheme"
@@ -8302,7 +8302,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.ChatCustomElementProps.html#renderuserdefinedinputnode",
       "anchor": "renderuserdefinedinputnode"
     },
@@ -8978,7 +8978,7 @@
       "kind": "Property",
       "parent": "ChatInstanceInput",
       "category": "Instance",
-      "summary": "Loads the rich Tiptap editor on demand and resolves with the live\n`Editor`. Chats that don't configure an advanced input feature\n(InputConfig.mention / InputConfig.command /\nInputConfig.autocomplete / InputConfig.starters /\nInputConfig.tiptap) render a lightweight textarea and ship no\nTiptap; the first call to this method dynamically imports the editor and\nupgrades that textarea in place — already-typed text, the caret, and focus\ncarry over. The upgrade is one-way for the life of the session: once the\nrich editor loads it stays loaded.\n\nRejects with `\"Input is not currently rendered\"` when there is no input\nsurface to upgrade (for example the input is hidden via\nInputConfig.isVisible and also when the\nsurface is in its deferred-teardown window — that is, the chat container\nhas been removed from the DOM but the teardown macrotask has not yet run or\nWriteableElementName.CUSTOM_PROMPT_LINE has content). A custom prompt\nline does not load Tiptap, even when hidden. Concurrent calls\nshare a single upgrade and resolve with the same instance.\n\nSole escape hatch from the curated public surface. Use the resolved editor\nfor direct Tiptap operations the facade doesn't cover:\n- `editor.commands.*` for imperative actions (focus, blur,\n  clearContent, setTextSelection, selectAll, undo, redo, insertContent\n  for cursor-position insertion, plus everything else Tiptap exposes —\n  toggleBold, insertContentAt, etc.)\n- `editor.chain()` for command chaining\n- `editor.view` for the live PM `EditorView`\n- `editor.view.dispatch(setHostOriginMeta(tr))` for raw transaction\n  dispatch — the host owns the `aichatOrigin` meta tagging\n- `editor.state.doc` for the live PMNode\n- `editor.getJSON()` for a JSONContent snapshot (equivalent to\n  `getState().input.content` but live, not the immutable store copy)\n- `editor.extensionStorage` for per-extension state\n- `editor.on(...)` for low-level event subscriptions\n\nRejects while no input is rendered. The chat hands you the\nChatInstance before it renders, so this is not available from\n`onBeforeRender`, and a host that hides the input has none to resolve.",
+      "summary": "Loads the rich Tiptap editor on demand and resolves with the live\n`Editor`. Chats that don't configure an advanced input feature\n(InputConfig.mention / InputConfig.command /\nInputConfig.autocomplete / InputConfig.starters /\nInputConfig.tiptap) render a lightweight textarea and ship no\nTiptap; the first call to this method dynamically imports the editor and\nupgrades that textarea in place — already-typed text, the caret, and focus\ncarry over. The upgrade is one-way for the life of the session: once the\nrich editor loads it stays loaded.\n\nRejects with `\"Input is not currently rendered\"` when there is no input\nsurface to upgrade (for example the input is hidden via\nInputConfig.isVisible and also when the\nsurface is in its deferred-teardown window — that is, the chat container\nhas been removed from the DOM but the teardown macrotask has not yet run or\nWriteableElementName.CUSTOM_PROMPT_LINE has content). A custom prompt\nline does not load Tiptap, even when hidden. Concurrent calls\nshare a single upgrade and resolve with the same instance.\n\nSole escape hatch from the curated public surface. Use the resolved editor\nfor direct Tiptap operations the facade doesn't cover:\n- `editor.commands.*` for imperative actions (focus, blur,\n  clearContent, setTextSelection, selectAll, undo, redo, insertContent\n  for cursor-position insertion, plus everything else Tiptap exposes —\n  toggleBold, insertContentAt, etc.)\n- `editor.chain()` for command chaining\n- `editor.view` for the live PM `EditorView`\n- `editor.view.dispatch(setHostOriginMeta(tr))` for raw transaction\n  dispatch — the host owns the `aichatOrigin` meta tagging\n- `editor.state.doc` for the live PMNode\n- `editor.getJSON()` for a JSONContent snapshot (equivalent to\n  `getState().input.content` but live, not the immutable store copy)\n- `editor.extensionStorage` for per-extension state\n- `editor.on(...)` for low-level event subscriptions\n\nThe resolved `Editor` is Tiptap's, and its API follows Tiptap's releases.\nSupported range: `@tiptap/core` `^3.22.5`.\n\nRejects while no input is rendered. The chat hands you the\nChatInstance before it renders, so this is not available from\n`onBeforeRender`, and a host that hides the input has none to resolve.",
       "description": "",
       "signature": "getEditor: () => Promise<Editor>",
       "signatures": [],
@@ -8998,7 +8998,7 @@
       ],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.ChatInstanceInput.html#geteditor",
       "anchor": "geteditor"
     },
@@ -9020,7 +9020,7 @@
       ],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.ChatInstanceInput.html#updatecontent",
       "anchor": "updatecontent"
     },
@@ -9065,7 +9065,7 @@
       ],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.ChatInstanceInput.html#updatestructureddata",
       "anchor": "updatestructureddata"
     },
@@ -10207,7 +10207,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.CustomListProps.html",
       "anchor": null
     },
@@ -10225,7 +10225,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.CustomListProps.html#items",
       "anchor": "items"
     },
@@ -10243,7 +10243,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.CustomListProps.html#ondismiss",
       "anchor": "ondismiss"
     },
@@ -10261,7 +10261,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.CustomListProps.html#onselect",
       "anchor": "onselect"
     },
@@ -10279,7 +10279,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.CustomListProps.html#onsend",
       "anchor": "onsend"
     },
@@ -10297,7 +10297,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.CustomListProps.html#query",
       "anchor": "query"
     },
@@ -11716,7 +11716,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.ExcludedTrigger.html",
       "anchor": null
     },
@@ -11734,7 +11734,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.ExcludedTrigger.html#char",
       "anchor": "char"
     },
@@ -11754,7 +11754,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.ExcludedTrigger.html#position",
       "anchor": "position"
     },
@@ -14729,7 +14729,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.InputConfig.html#actions",
       "anchor": "actions"
     },
@@ -14747,7 +14747,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.InputConfig.html#autocomplete",
       "anchor": "autocomplete"
     },
@@ -14767,7 +14767,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.InputConfig.html#command",
       "anchor": "command"
     },
@@ -14785,7 +14785,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.InputConfig.html#error",
       "anchor": "error"
     },
@@ -14806,7 +14806,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.InputConfig.html#expanded",
       "anchor": "expanded"
     },
@@ -14846,7 +14846,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.InputConfig.html#issenddisabled",
       "anchor": "issenddisabled"
     },
@@ -14902,7 +14902,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.InputConfig.html#mention",
       "anchor": "mention"
     },
@@ -14923,7 +14923,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.InputConfig.html#showstopstreamingbutton",
       "anchor": "showstopstreamingbutton"
     },
@@ -14943,7 +14943,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.InputConfig.html#starters",
       "anchor": "starters"
     },
@@ -14952,7 +14952,7 @@
       "kind": "Property",
       "parent": "InputConfig",
       "category": "Config",
-      "summary": "Tiptap-shaped configuration. The `tiptap` namespace signals \"you're\nstepping into Tiptap's API directly\" — use InputConfig.mention /\n`command` / `autocomplete` / `starters` for Carbon-curated chat features.",
+      "summary": "Tiptap-shaped configuration. The `tiptap` namespace signals \"you're\nstepping into Tiptap's API directly\" — use InputConfig.mention /\n`command` / `autocomplete` / `starters` for Carbon-curated chat features.\n\nThe types in this namespace come from Tiptap and follow its releases.\nSupported range: `@tiptap/core` `^3.22.5`.",
       "description": "",
       "signature": "tiptap?: { extensions?: Extension<any, any>[] }",
       "signatures": [],
@@ -14963,7 +14963,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.InputConfig.html#tiptap",
       "anchor": "tiptap"
     },
@@ -15350,8 +15350,8 @@
         "PublicConfig.injectCarbonTheme"
       ],
       "examples": [],
-      "deprecated": false,
-      "deprecatedMessage": "",
+      "deprecated": true,
+      "deprecatedMessage": "Set these custom properties with CSS instead, on an element that contains the chat.\nThey inherit into it. A bare key here is `--cds-aichat-<key>` in CSS, and a `$`-prefixed key is\n`--cds-<key>`. If you force a theme with PublicConfig.injectCarbonTheme, stop forcing it\nfirst, or your Carbon token overrides won't reach the chat. Removed in 2.0.0. The v2 styling contract,\n[ADR-0004](https://github.com/carbon-design-system/carbon-ai-chat/blob/main/docs/adr/0004-component-styling-contract.md),\nproposes CSS as the only way to set these, including on parts of the chat that config can't target.",
       "experimental": false,
       "url": "interfaces/Type_reference.LayoutConfig.html#customproperties",
       "anchor": "customproperties"
@@ -18237,7 +18237,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MessageInput.html#display_content",
       "anchor": "display_content"
     },
@@ -22126,7 +22126,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.PublicChatState.html#input",
       "anchor": "input"
     },
@@ -22591,8 +22591,8 @@
       "members": [],
       "related": [],
       "examples": [],
-      "deprecated": false,
-      "deprecatedMessage": "",
+      "deprecated": true,
+      "deprecatedMessage": "Set a Carbon theme on your page instead, on an element that contains the chat. The chat\ninherits that theme's tokens, and your own token overrides reach the Carbon components inside it.\nRemoved in 2.0.0. The v2 styling contract,\n[ADR-0004](https://github.com/carbon-design-system/carbon-ai-chat/blob/main/docs/adr/0004-component-styling-contract.md),\nproposes that the chat read the theme from your page and never force its own.",
       "experimental": false,
       "url": "interfaces/Type_reference.PublicConfig.html#injectcarbontheme",
       "anchor": "injectcarbontheme"
@@ -23346,7 +23346,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.PublicInputState.html#content",
       "anchor": "content"
     },
@@ -23366,7 +23366,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.PublicInputState.html#focused",
       "anchor": "focused"
     },
@@ -23386,7 +23386,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.PublicInputState.html#hasinflightuploads",
       "anchor": "hasinflightuploads"
     },
@@ -23404,7 +23404,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.PublicInputState.html#rawvalue",
       "anchor": "rawvalue"
     },
@@ -23424,7 +23424,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.PublicInputState.html#structureddata",
       "anchor": "structureddata"
     },
@@ -24241,7 +24241,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "types/Type_reference.RenderUserDefinedInputNode.html",
       "anchor": null
     },
@@ -24262,7 +24262,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.RenderUserDefinedInputNodeState.html",
       "anchor": null
     },
@@ -24280,7 +24280,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.RenderUserDefinedInputNodeState.html#message",
       "anchor": "message"
     },
@@ -24298,7 +24298,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.RenderUserDefinedInputNodeState.html#node",
       "anchor": "node"
     },
@@ -24402,7 +24402,7 @@
       "kind": "Property",
       "parent": "RenderUserDefinedState",
       "category": "React",
-      "summary": "The current MessageState of the containing message at the moment the renderer\nwas invoked. Use this to drive in-widget streaming indicators or error treatments\nwithout inspecting the message items directly.\n\n Field is additive; its presence and semantics may evolve as the\nlifecycle model stabilizes.",
+      "summary": "The current MessageState of the containing message at the moment the renderer\nwas invoked. Use this to drive in-widget streaming indicators or error treatments\nwithout inspecting the message items directly.",
       "description": "",
       "signature": "state?: MessageState",
       "signatures": [],
@@ -24413,7 +24413,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.RenderUserDefinedState.html#state",
       "anchor": "state"
     },
@@ -26897,6 +26897,8 @@
         "ToolbarAction.dangerDescription",
         "ToolbarAction.disabled",
         "ToolbarAction.divider",
+        "ToolbarAction.feedback",
+        "ToolbarAction.feedbackTimeout",
         "ToolbarAction.fixed",
         "ToolbarAction.href",
         "ToolbarAction.icon",
@@ -26991,6 +26993,42 @@
       "url": "interfaces/Type_reference.ToolbarAction.html#divider",
       "anchor": "divider"
     },
+    "ToolbarAction.feedback": {
+      "name": "feedback",
+      "kind": "Property",
+      "parent": "ToolbarAction",
+      "category": "Config",
+      "summary": "When provided, renders this action using `<cds-copy-button>` with the\nspecified feedback text shown after copying (e.g. \"Copied!\").",
+      "description": "",
+      "signature": "feedback?: string",
+      "signatures": [],
+      "members": [],
+      "related": [],
+      "examples": [],
+      "deprecated": false,
+      "deprecatedMessage": "",
+      "experimental": false,
+      "url": "interfaces/Type_reference.ToolbarAction.html#feedback",
+      "anchor": "feedback"
+    },
+    "ToolbarAction.feedbackTimeout": {
+      "name": "feedbackTimeout",
+      "kind": "Property",
+      "parent": "ToolbarAction",
+      "category": "Config",
+      "summary": "The number in milliseconds to determine how long the feedback tooltip should remain.",
+      "description": "",
+      "signature": "feedbackTimeout?: number",
+      "signatures": [],
+      "members": [],
+      "related": [],
+      "examples": [],
+      "deprecated": false,
+      "deprecatedMessage": "",
+      "experimental": false,
+      "url": "interfaces/Type_reference.ToolbarAction.html#feedbacktimeout",
+      "anchor": "feedbacktimeout"
+    },
     "ToolbarAction.fixed": {
       "name": "fixed",
       "kind": "Property",
@@ -27034,7 +27072,7 @@
       "category": "Config",
       "summary": "Either an icon from `@carbon/icons` or from `@carbon/icons-react`.",
       "description": "",
-      "signature": "icon: ComponentType<any> | CarbonIcon",
+      "signature": "icon?: ComponentType<any> | CarbonIcon",
       "signatures": [],
       "members": [],
       "related": [],
@@ -27527,13 +27565,12 @@
       "kind": "Property",
       "parent": "UploadConfig",
       "category": "Config",
-      "summary": "Called once per file when the user selects it.\n\nReturn a StructuredData object representing this file's contribution to the\npending message. The widget merges the returned `StructuredData` into\n`pendingStructuredData` and tracks it per-upload so that individual files can be\nremoved before the message is sent.\n\nOn failure: throw or return a rejected `Promise` — the widget marks the file as\nerrored in the UI. Your `Error`'s `message` becomes the description of that\nerror, so write it as the reason the file was rejected.\n\nThe chat owns the rest of the copy: the title above your message, and the\ninstruction to remove the attachment and try again. Both come from the\n`fileSharing_uploadErrorTitle` and `fileSharing_uploadErrorRecovery` keys of\nLanguagePack, so don't repeat the recovery step in your own message.\nReword either one through PublicConfig.strings.\n\nThe same two keys and your message make up the screen-reader announcement,\nwhich is assertive because a failed upload blocks sending.\n`fileSharing_uploadFailed` does not reach this path — it belongs to the\nhuman-agent file transfer.",
+      "summary": "Called once per file when the user selects it.\n\nReturn a StructuredData object representing this file's contribution to the\npending message. The widget merges the returned `StructuredData` into\n`pendingStructuredData` and tracks it per-upload so that individual files can be\nremoved before the message is sent.\n\nOn failure: throw or return a rejected `Promise` — the widget marks the file as\nerrored in the UI. Your `Error`'s `message` becomes the description of that\nerror, so write it as the reason the file was rejected.\n\nThe chat owns the rest of the copy: the title above your message, and the\ninstruction to remove the attachment and try again. On screen, each failed\nfile gets its own row, titled from `fileSharing_uploadErrorTitleWithName`\n(which names the file). The recovery instruction comes from\n`fileSharing_uploadErrorRecovery`, so don't repeat it in your own message.\nReword either one through PublicConfig.strings.\n\n`fileSharing_uploadErrorTitle` and `fileSharing_uploadErrorRecovery`, with\nyour message, make up the screen-reader announcement,\nwhich is assertive because a failed upload blocks sending.\n`fileSharing_uploadFailed` does not reach this path — it belongs to the\nhuman-agent file transfer.",
       "description": "",
       "signature": "onFileUpload?: (file: File, abortSignal: AbortSignal) => Promise<StructuredData>",
       "signatures": [],
       "members": [],
       "related": [
-        "LanguagePack",
         "PublicConfig.strings",
         "StructuredData"
       ],
@@ -28335,7 +28372,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "types/Type_reference.WCRenderUserDefinedInputNode.html",
       "anchor": null
     },
@@ -29138,7 +29175,7 @@
       "category": "Config",
       "summary": "The raw strings used for PublicConfig.strings. Presented in ICU format.",
       "description": "",
-      "signature": "enLanguagePack: { agent_agentEndedChat: string; agent_agentEndedChatNoName: string; agent_agentJoinedName: string; agent_agentJoinedNoName: string; agent_agentLeftChat: string; agent_agentLeftChatNoName: string; agent_agentNoNameTitle: string; agent_ariaGenericAssistantAvatar: string; agent_ariaGenericAvatar: string; agent_ariaHumanAgentAvatar: string; agent_assistantReturned: string; agent_cardButtonChatEnded: string; agent_cardButtonChatRequested: string; agent_cardButtonConnected: string; agent_cardMessageChatEnded: string; agent_cardMessageConnected: string; agent_chatTitle: string; agent_confirmCancelRequestMessage: string; agent_confirmCancelRequestNo: string; agent_confirmCancelRequestTitle: string; agent_confirmCancelRequestYes: string; agent_confirmEndChat: string; agent_confirmEndChatNo: string; agent_confirmEndChatYes: string; agent_confirmEndSuspendedYes: string; agent_confirmSuspendedEndChatMessage: string; agent_confirmSuspendedEndChatTitle: string; agent_connectButtonCancel: string; agent_connectedButtonEndChat: string; agent_connecting: string; agent_connectingMinutes: string; agent_connectingQueue: string; agent_connectWaiting: string; agent_conversationWasEnded: string; agent_defaultMessageToHumanAgent: string; agent_disconnected: string; agent_endChat: string; agent_inputPlaceholderConnecting: string; agent_inputPlaceholderReconnecting: string; agent_newMessage: string; agent_noName: string; agent_reason_error: string; agent_reconnected: string; agent_sdMissingWarning: string; agent_sharingAcceptButton: string; agent_sharingAccepted: string; agent_sharingCancelled: string; agent_sharingDeclineButton: string; agent_sharingDeclined: string; agent_sharingEnded: string; agent_sharingRequested: string; agent_sharingRequestMessage: string; agent_sharingRequestTitle: string; agent_sharingStopSharingButton: string; agent_startChat: string; agent_suspendedWarning: string; agent_transferring: string; agent_transferringNoName: string; agent_youConnectedWarning: string; agent_youEndedChat: string; ai_slug_description: string; ai_slug_label: string; ai_slug_title: string; aria_catastrophicErrorPanel: string; aria_customPanel: string; aria_disclaimerPanel: string; aria_historyRegion: string; aria_hydrationPanel: string; aria_iframePanel: string; aria_messagesRegion: string; aria_responsePanel: string; aria_viewSourcePanel: string; aria_workspaceRegion: string; buttons_cancel: string; buttons_restart: string; buttons_retry: string; carousel_nextNavButton: string; carousel_prevNavButton: string; chainOfThought_explainabilityLabel: string; chainOfThought_inputLabel: string; chainOfThought_outputLabel: string; chainOfThought_statusFailedLabel: string; chainOfThought_statusProcessingLabel: string; chainOfThought_statusSucceededLabel: string; chainOfThought_stepTitle: string; chainOfThought_toolLabel: string; codeSnippet_ariaLabelEditable: string; codeSnippet_ariaLabelEditableWithLanguage: string; codeSnippet_ariaLabelReadOnly: string; codeSnippet_ariaLabelReadOnlyWithLanguage: string; codeSnippet_feedback: string; codeSnippet_foldCollapse: string; codeSnippet_foldExpand: string; codeSnippet_lineCount: string; codeSnippet_showLessText: string; codeSnippet_showMoreText: string; codeSnippet_tooltipContent: string; components_overflow_ariaLabel: string; components_swiper_currentLabel: string; conversationalSearch_citationsLabel: string; conversationalSearch_responseStopped: string; conversationalSearch_streamingIncomplete: string; conversationalSearch_toggleCitations: string; conversationalSearch_viewSourceDocument: string; datePicker_chooseDate: string; datePicker_confirmDate: string; default_agent_availableMessage: string; default_agent_unavailableMessage: string; disclaimer_accept: string; disclaimer_acceptance_label: string; disclaimer_icon_label: string; disclaimer_title: string; errors_agentAppSessionExpired: string; errors_ariaMessageFailed: string; errors_ariaMessageRetrying: string; errors_audioSource: string; errors_busy: string; errors_communicating: string; errors_connectingToHumanAgent: string; errors_generalContent: string; errors_iframeSource: string; errors_imageSource: string; errors_noHumanAgentsAvailable: string; errors_noHumanAgentsJoined: string; errors_singleMessage: string; errors_somethingWrong: string; errors_upsertItemCannotDraw: string; errors_videoSource: string; feedback_cancelLabel: string; feedback_categoriesLabel: string; feedback_defaultPlaceholder: string; feedback_defaultPrompt: string; feedback_defaultTitle: string; feedback_negativeLabel: string; feedback_positiveLabel: string; feedback_submitLabel: string; fileSharing_agentMessageText: string; fileSharing_ariaAnnounceFileRemoved: string; fileSharing_ariaAnnounceFilesAdded: string; fileSharing_ariaAnnounceFilesUploading: string; fileSharing_ariaAnnounceSuccess: string; fileSharing_fileIcon: string; fileSharing_fileTooLarge: string; fileSharing_removeButtonTitle: string; fileSharing_removeButtonTitleWithName: string; fileSharing_request: string; fileSharing_statusUploading: string; fileSharing_tooManyFiles: string; fileSharing_unsupportedType: string; fileSharing_uploadErrorRecovery: string; fileSharing_uploadErrorTitle: string; fileSharing_uploadFailed: string; general_ariaAnnounceClosedInformationOverlay: string; general_ariaAnnounceEscapeOverlay: string; general_ariaAnnounceOpenedInformationOverlay: string; general_ariaCloseInformationOverlay: string; general_returnToAssistant: string; header_ariaAssistantAvatar: string; header_overflowMenu_options: string; header_previewLinkTitle: string; history_hidden: string; history_new_chat: string; history_shown: string; history_view_chats: string; homeScreen_ariaHomeScreenContent: string; homeScreen_ariaQuickStartListButton: string; homeScreen_ariaQuickStartListClosed: string; homeScreen_ariaQuickStartListOpened: string; homeScreen_hidden: string; homeScreen_overflowMenuHomeScreen: string; homeScreen_returnToAssistant: string; homeScreen_returnToHome: string; homeScreen_shown: string; icon_ariaUnreadMessages: string; iframe_ariaClickPreviewCard: string; iframe_ariaClosedPanel: string; iframe_ariaClosePanel: string; iframe_ariaImageAltText: string; iframe_ariaOpenedPanel: string; iframe_ariaSourceLoaded: string; input_actionsMenuLabel: string; input_actionsOverflowLabel: string; input_ariaLabel: string; input_buttonLabel: string; input_completionsTagApp: string; input_completionsTagAssistant: string; input_keyboardShortcutAnnouncement: string; input_maxCharCountExceeded: string; input_maxCharCountExceededTitle: string; input_placeholder: string; input_sendingMessage: string; input_stopResponse: string; input_uploadButtonLabel: string; launcher_ariaIsExpanded: string; launcher_closeButton: string; launcher_desktopGreeting: string; launcher_isClosed: string; launcher_isOpen: string; launcher_mobileGreeting: string; media_audioPlayer_errorLabel: string; media_audioPlayer_loading: string; media_audioPlayer_loadingLabel: string; media_audioPlayer_ready: string; media_audioPlayer_readyLabel: string; media_transcript_hide: string; media_transcript_label: string; media_transcript_show: string; media_videoPlayer_errorLabel: string; media_videoPlayer_loading: string; media_videoPlayer_loadingLabel: string; media_videoPlayer_ready: string; media_videoPlayer_readyLabel: string; message_labelAssistant: string; message_labelUser: string; message_labelYou: string; messages_agentIsTyping: string; messages_agentSaid: string; messages_assistantIsLoading: string; messages_assistantSaid: string; messages_attachmentsLabel: string; messages_focusHandle: string; messages_processingLabel: string; messages_reasoningStart: string; messages_requestCancelled: string; messages_responseStopped: string; messages_scrollHandle: string; messages_scrollHandleDetailed: string; messages_scrollHandleDetailedNoShortcut: string; messages_scrollHandleEnd: string; messages_scrollHandleEndDetailed: string; messages_scrollHandleEndDetailedNoShortcut: string; messages_scrollMoreButton: string; messages_searchResults: string; messages_searchResultsCollapse: string; messages_searchResultsExpand: string; messages_searchResultsLink: string; messages_searchResultsOpenDocument: string; messages_searchResultsOpenDocumentWithLabel: string; messages_streamingStart: string; messages_unnamedAttachment: string; messages_userSaid: string; messages_youSaid: string; options_ariaOptionsDisabled: string; options_select: string; panel_closed: string; panel_opened: string; reasoningSteps_mainLabelClosed: string; reasoningSteps_mainLabelOpen: string; showMore: string; showMoreResults: string; table_downloadButton: string; table_filterPlaceholder: string; table_itemsPerPage: string; table_nextPage: string; table_paginationStatus: string; table_paginationSupplementalText: string; table_previousPage: string; window_ariaChatRegion: string; window_ariaChatRegionNamespace: string; window_ariaWindowClosed: string; window_ariaWindowLoading: string; window_ariaWindowOpened: string; window_title: string; workspace_closed: string; workspace_opened: string; workspace_opened_no_title: string }",
+      "signature": "enLanguagePack: { agent_agentEndedChat: string; agent_agentEndedChatNoName: string; agent_agentJoinedName: string; agent_agentJoinedNoName: string; agent_agentLeftChat: string; agent_agentLeftChatNoName: string; agent_agentNoNameTitle: string; agent_ariaGenericAssistantAvatar: string; agent_ariaGenericAvatar: string; agent_ariaHumanAgentAvatar: string; agent_assistantReturned: string; agent_cardButtonChatEnded: string; agent_cardButtonChatRequested: string; agent_cardButtonConnected: string; agent_cardMessageChatEnded: string; agent_cardMessageConnected: string; agent_chatTitle: string; agent_confirmCancelRequestMessage: string; agent_confirmCancelRequestNo: string; agent_confirmCancelRequestTitle: string; agent_confirmCancelRequestYes: string; agent_confirmEndChat: string; agent_confirmEndChatNo: string; agent_confirmEndChatYes: string; agent_confirmEndSuspendedYes: string; agent_confirmSuspendedEndChatMessage: string; agent_confirmSuspendedEndChatTitle: string; agent_connectButtonCancel: string; agent_connectedButtonEndChat: string; agent_connecting: string; agent_connectingMinutes: string; agent_connectingQueue: string; agent_connectWaiting: string; agent_conversationWasEnded: string; agent_defaultMessageToHumanAgent: string; agent_disconnected: string; agent_endChat: string; agent_inputPlaceholderConnecting: string; agent_inputPlaceholderReconnecting: string; agent_newMessage: string; agent_noName: string; agent_reason_error: string; agent_reconnected: string; agent_sdMissingWarning: string; agent_sharingAcceptButton: string; agent_sharingAccepted: string; agent_sharingCancelled: string; agent_sharingDeclineButton: string; agent_sharingDeclined: string; agent_sharingEnded: string; agent_sharingRequested: string; agent_sharingRequestMessage: string; agent_sharingRequestTitle: string; agent_sharingStopSharingButton: string; agent_startChat: string; agent_suspendedWarning: string; agent_transferring: string; agent_transferringNoName: string; agent_youConnectedWarning: string; agent_youEndedChat: string; ai_slug_description: string; ai_slug_label: string; ai_slug_title: string; aria_catastrophicErrorPanel: string; aria_customPanel: string; aria_disclaimerPanel: string; aria_historyRegion: string; aria_hydrationPanel: string; aria_iframePanel: string; aria_messagesRegion: string; aria_responsePanel: string; aria_viewSourcePanel: string; aria_workspaceRegion: string; buttons_cancel: string; buttons_restart: string; buttons_retry: string; carousel_nextNavButton: string; carousel_prevNavButton: string; chainOfThought_explainabilityLabel: string; chainOfThought_inputLabel: string; chainOfThought_outputLabel: string; chainOfThought_statusFailedLabel: string; chainOfThought_statusProcessingLabel: string; chainOfThought_statusSucceededLabel: string; chainOfThought_stepTitle: string; chainOfThought_toolLabel: string; codeSnippet_ariaLabelEditable: string; codeSnippet_ariaLabelEditableWithLanguage: string; codeSnippet_ariaLabelReadOnly: string; codeSnippet_ariaLabelReadOnlyWithLanguage: string; codeSnippet_feedback: string; codeSnippet_foldCollapse: string; codeSnippet_foldExpand: string; codeSnippet_lineCount: string; codeSnippet_showLessText: string; codeSnippet_showMoreText: string; codeSnippet_tooltipContent: string; components_overflow_ariaLabel: string; components_swiper_currentLabel: string; conversationalSearch_citationsLabel: string; conversationalSearch_responseStopped: string; conversationalSearch_streamingIncomplete: string; conversationalSearch_toggleCitations: string; conversationalSearch_viewSourceDocument: string; datePicker_chooseDate: string; datePicker_confirmDate: string; default_agent_availableMessage: string; default_agent_unavailableMessage: string; disclaimer_accept: string; disclaimer_acceptance_label: string; disclaimer_icon_label: string; disclaimer_title: string; errors_agentAppSessionExpired: string; errors_ariaMessageFailed: string; errors_ariaMessageRetrying: string; errors_audioSource: string; errors_busy: string; errors_communicating: string; errors_connectingToHumanAgent: string; errors_generalContent: string; errors_iframeSource: string; errors_imageSource: string; errors_noHumanAgentsAvailable: string; errors_noHumanAgentsJoined: string; errors_singleMessage: string; errors_somethingWrong: string; errors_upsertItemCannotDraw: string; errors_videoSource: string; feedback_cancelLabel: string; feedback_categoriesLabel: string; feedback_defaultPlaceholder: string; feedback_defaultPrompt: string; feedback_defaultTitle: string; feedback_negativeLabel: string; feedback_positiveLabel: string; feedback_submitLabel: string; fileSharing_agentMessageText: string; fileSharing_ariaAnnounceFileRemoved: string; fileSharing_ariaAnnounceFilesAdded: string; fileSharing_ariaAnnounceFilesUploading: string; fileSharing_ariaAnnounceSuccess: string; fileSharing_fileIcon: string; fileSharing_fileTooLarge: string; fileSharing_removeButtonTitle: string; fileSharing_removeButtonTitleWithName: string; fileSharing_request: string; fileSharing_statusUploading: string; fileSharing_tooManyFiles: string; fileSharing_unsupportedType: string; fileSharing_uploadErrorRecovery: string; fileSharing_uploadErrorTitle: string; fileSharing_uploadErrorTitleWithName: string; fileSharing_uploadFailed: string; general_ariaAnnounceClosedInformationOverlay: string; general_ariaAnnounceEscapeOverlay: string; general_ariaAnnounceOpenedInformationOverlay: string; general_ariaCloseInformationOverlay: string; general_returnToAssistant: string; header_ariaAssistantAvatar: string; header_overflowMenu_options: string; header_previewLinkTitle: string; history_hidden: string; history_new_chat: string; history_shown: string; history_view_chats: string; homeScreen_ariaHomeScreenContent: string; homeScreen_ariaQuickStartListButton: string; homeScreen_ariaQuickStartListClosed: string; homeScreen_ariaQuickStartListOpened: string; homeScreen_hidden: string; homeScreen_overflowMenuHomeScreen: string; homeScreen_returnToAssistant: string; homeScreen_returnToHome: string; homeScreen_shown: string; icon_ariaUnreadMessages: string; iframe_ariaClickPreviewCard: string; iframe_ariaClosedPanel: string; iframe_ariaClosePanel: string; iframe_ariaImageAltText: string; iframe_ariaOpenedPanel: string; iframe_ariaSourceLoaded: string; input_actionsMenuLabel: string; input_actionsOverflowLabel: string; input_ariaLabel: string; input_buttonLabel: string; input_completionsTagApp: string; input_completionsTagAssistant: string; input_keyboardShortcutAnnouncement: string; input_maxCharCountExceeded: string; input_maxCharCountExceededTitle: string; input_placeholder: string; input_sendingMessage: string; input_stopResponse: string; input_uploadButtonLabel: string; launcher_ariaIsExpanded: string; launcher_closeButton: string; launcher_desktopGreeting: string; launcher_isClosed: string; launcher_isOpen: string; launcher_mobileGreeting: string; media_audioPlayer_errorLabel: string; media_audioPlayer_loading: string; media_audioPlayer_loadingLabel: string; media_audioPlayer_ready: string; media_audioPlayer_readyLabel: string; media_transcript_hide: string; media_transcript_label: string; media_transcript_show: string; media_videoPlayer_errorLabel: string; media_videoPlayer_loading: string; media_videoPlayer_loadingLabel: string; media_videoPlayer_ready: string; media_videoPlayer_readyLabel: string; message_labelAssistant: string; message_labelUser: string; message_labelYou: string; messages_agentIsTyping: string; messages_agentSaid: string; messages_assistantIsLoading: string; messages_assistantSaid: string; messages_attachmentsLabel: string; messages_focusHandle: string; messages_processingLabel: string; messages_reasoningStart: string; messages_requestCancelled: string; messages_responseStopped: string; messages_scrollHandle: string; messages_scrollHandleDetailed: string; messages_scrollHandleDetailedNoShortcut: string; messages_scrollHandleEnd: string; messages_scrollHandleEndDetailed: string; messages_scrollHandleEndDetailedNoShortcut: string; messages_scrollMoreButton: string; messages_searchResults: string; messages_searchResultsCollapse: string; messages_searchResultsExpand: string; messages_searchResultsLink: string; messages_searchResultsOpenDocument: string; messages_searchResultsOpenDocumentWithLabel: string; messages_streamingStart: string; messages_unnamedAttachment: string; messages_userSaid: string; messages_youSaid: string; options_ariaOptionsDisabled: string; options_select: string; panel_closed: string; panel_opened: string; reasoningSteps_mainLabelClosed: string; reasoningSteps_mainLabelOpen: string; showMore: string; showMoreResults: string; table_downloadButton: string; table_filterPlaceholder: string; table_itemsPerPage: string; table_nextPage: string; table_paginationStatus: string; table_paginationSupplementalText: string; table_previousPage: string; window_ariaChatRegion: string; window_ariaChatRegionNamespace: string; window_ariaWindowClosed: string; window_ariaWindowLoading: string; window_ariaWindowOpened: string; window_title: string; workspace_closed: string; workspace_opened: string; workspace_opened_no_title: string }",
       "signatures": [],
       "members": [],
       "related": [
