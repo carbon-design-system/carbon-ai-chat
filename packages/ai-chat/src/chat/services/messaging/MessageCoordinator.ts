@@ -8,6 +8,7 @@
  */
 
 import { SendWorkflow } from './SendWorkflow';
+import { TerminationWorkflow } from './TerminationWorkflow';
 import { MessageLoadingManager } from '../../utils/messageServiceUtils';
 import { consoleError } from '../../utils/miscUtils';
 import type { PublicConfig } from '../../../types/config/PublicConfig';
@@ -27,6 +28,7 @@ import { ConversationState } from './state/ConversationState';
 
 class MessageCoordinator {
   private state = new ConversationState();
+  private terminationWorkflow: TerminationWorkflow;
   private sendWorkflow?: SendWorkflow;
   private loadingManager?: MessageLoadingManager;
   private requestGenerations = new Map<string, number>();
@@ -38,7 +40,9 @@ class MessageCoordinator {
   constructor(
     private serviceManager: ServiceManager,
     private presentation?: MessagePresentationPort
-  ) {}
+  ) {
+    this.terminationWorkflow = new TerminationWorkflow(serviceManager);
+  }
 
   /**
    * Sends the given message to the assistant. Fires `pre:send` then `send` on
@@ -68,13 +72,19 @@ class MessageCoordinator {
     );
   }
 
-  registerMessageController(messageID: string, controller: AbortController) {
-    this.serviceManager.messageService.registerMessageController(
-      messageID,
-      controller
-    );
+  requestStopFromInput(markPending: () => void): Promise<void> {
+    return this.terminationWorkflow.requestStopFromInput(markPending);
   }
 
+  get inboundStreaming() {
+    return this.terminationWorkflow.inboundStreaming;
+  }
+  get currentRequestID() {
+    return this.terminationWorkflow.currentRequestID;
+  }
+  registerMessageController(messageID: string, controller: AbortController) {
+    this.terminationWorkflow.registerMessageController(messageID, controller);
+  }
   enqueueMessage(
     message: MessageRequest<any>,
     source: MessageSendSource,
@@ -86,6 +96,62 @@ class MessageCoordinator {
       source,
       localMessageID,
       options
+    );
+  }
+  cancelAllMessageRequests(reason?: string) {
+    return this.terminationWorkflow.cancelAllMessageRequests(reason);
+  }
+  markCurrentMessageAsStreaming(messageID?: string, itemID?: string) {
+    return this.terminationWorkflow.markCurrentMessageAsStreaming(
+      messageID,
+      itemID
+    );
+  }
+  finalizeStreamingMessage(messageID: string) {
+    return this.terminationWorkflow.finalizeStreamingMessage(messageID);
+  }
+  markStreamingResponseError(messageID: string) {
+    return this.terminationWorkflow.markStreamingResponseError(messageID);
+  }
+  finishFailedStreamingResponse(request: PendingMessageRequest) {
+    return this.terminationWorkflow.finishFailedStreamingResponse(request);
+  }
+  getCurrentMessageController() {
+    return this.terminationWorkflow.getCurrentMessageController();
+  }
+  isAnyMessageStreaming() {
+    return this.terminationWorkflow.isAnyMessageStreaming();
+  }
+  hideStopStreamingButtonIfIdle() {
+    return this.terminationWorkflow.hideStopStreamingButtonIfIdle();
+  }
+  updateStreamingCancellation(messageID: string, cancellable?: boolean) {
+    return this.terminationWorkflow.updateStreamingCancellation(
+      messageID,
+      cancellable
+    );
+  }
+  clearStreamingCancellation(messageID: string) {
+    return this.terminationWorkflow.clearStreamingCancellation(messageID);
+  }
+  clearAllStreamingCancellation() {
+    return this.terminationWorkflow.clearAllStreamingCancellation();
+  }
+  hideStopStreamingButtonIfNoUpsertStreaming() {
+    return this.terminationWorkflow.hideStopStreamingButtonIfNoUpsertStreaming();
+  }
+  cancelCurrentMessageRequest(reason?: string) {
+    return this.terminationWorkflow.cancelCurrentMessageRequest(reason);
+  }
+  cancelMessageRequestByID(
+    messageID: string,
+    logError: boolean,
+    reason?: string
+  ) {
+    return this.terminationWorkflow.cancelMessageRequestByID(
+      messageID,
+      logError,
+      reason
     );
   }
 

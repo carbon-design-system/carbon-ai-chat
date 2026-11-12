@@ -61,14 +61,18 @@ describe('upsert and chunk request ownership', () => {
       MessageState.ERROR,
       () => snapshot('response-a')
     );
-    expect(serviceManager.messageService.isAnyMessageStreaming()).toBe(true);
+    expect(serviceManager.messageCoordinator.isAnyMessageStreaming()).toBe(
+      true
+    );
 
     await instance.messaging.upsertMessage(
       'response-b',
       MessageState.ERROR,
       () => snapshot('response-b')
     );
-    expect(serviceManager.messageService.isAnyMessageStreaming()).toBe(false);
+    expect(serviceManager.messageCoordinator.isAnyMessageStreaming()).toBe(
+      false
+    );
     expect(
       store.getState().assistantInputState.stopStreamingButtonState.isVisible
     ).toBe(false);
@@ -105,7 +109,9 @@ describe('upsert and chunk request ownership', () => {
     consoleError.mockRestore();
     await instance.send('second');
 
-    expect(serviceManager.messageService.isAnyMessageStreaming()).toBe(false);
+    expect(serviceManager.messageCoordinator.isAnyMessageStreaming()).toBe(
+      false
+    );
     expect(
       store.getState().assistantInputState.stopStreamingButtonState.isVisible
     ).toBe(false);
@@ -148,7 +154,9 @@ describe('upsert and chunk request ownership', () => {
     release.doResolve();
     await pendingUpsert;
 
-    expect(serviceManager.messageService.isAnyMessageStreaming()).toBe(false);
+    expect(serviceManager.messageCoordinator.isAnyMessageStreaming()).toBe(
+      false
+    );
     expect(
       store.getState().assistantInputState.stopStreamingButtonState.isVisible
     ).toBe(false);
@@ -174,13 +182,17 @@ describe('upsert and chunk request ownership', () => {
       await renderChatAndGetInstanceWithStore(config);
     const pendingSend = instance.send('first');
     await streaming;
-    expect(serviceManager.messageService.isAnyMessageStreaming()).toBe(true);
+    expect(serviceManager.messageCoordinator.isAnyMessageStreaming()).toBe(
+      true
+    );
 
-    await serviceManager.messageService.cancelCurrentMessageRequest();
+    await serviceManager.messageCoordinator.cancelCurrentMessageRequest();
     release.doResolve();
     await pendingSend;
 
-    expect(serviceManager.messageService.isAnyMessageStreaming()).toBe(false);
+    expect(serviceManager.messageCoordinator.isAnyMessageStreaming()).toBe(
+      false
+    );
     expect(
       store.getState().assistantInputState.stopStreamingButtonState.isVisible
     ).toBe(false);
@@ -218,11 +230,13 @@ describe('upsert and chunk request ownership', () => {
     const pendingSend = instance.send('first');
     await streaming;
 
-    await serviceManager.messageService.cancelCurrentMessageRequest();
+    await serviceManager.messageCoordinator.cancelCurrentMessageRequest();
     release.doResolve();
     await pendingSend;
 
-    expect(serviceManager.messageService.isAnyMessageStreaming()).toBe(false);
+    expect(serviceManager.messageCoordinator.isAnyMessageStreaming()).toBe(
+      false
+    );
     expect(
       store.getState().assistantInputState.stopStreamingButtonState.isVisible
     ).toBe(false);
@@ -288,12 +302,14 @@ describe('upsert and chunk request ownership', () => {
           : send;
       await chunksQueued;
       if (outcome === 'cancel') {
-        await serviceManager.messageService.cancelCurrentMessageRequest();
+        await serviceManager.messageCoordinator.cancelCurrentMessageRequest();
       }
       releaseSend.doResolve();
       await sendSettled;
       await instance.send('next');
-      expect(serviceManager.messageService.isAnyMessageStreaming()).toBe(false);
+      expect(serviceManager.messageCoordinator.isAnyMessageStreaming()).toBe(
+        false
+      );
       expect(
         store.getState().assistantInputState.stopStreamingButtonState.isVisible
       ).toBe(false);
@@ -302,7 +318,9 @@ describe('upsert and chunk request ownership', () => {
       await heldChunk;
       await Promise.all(queuedChunks);
 
-      expect(serviceManager.messageService.isAnyMessageStreaming()).toBe(false);
+      expect(serviceManager.messageCoordinator.isAnyMessageStreaming()).toBe(
+        false
+      );
       expect(
         store.getState().assistantInputState.stopStreamingButtonState.isVisible
       ).toBe(false);
@@ -353,18 +371,22 @@ describe('upsert and chunk request ownership', () => {
           .streamingState.isDone
       ).toBe(true);
       expect(
-        serviceManager.messageService.inboundStreaming.getStreamingMeta(
+        serviceManager.messageCoordinator.inboundStreaming.getStreamingMeta(
           responseID
         )
       ).toBeUndefined();
     }
-    expect(serviceManager.messageService.isAnyMessageStreaming()).toBe(false);
+    expect(serviceManager.messageCoordinator.isAnyMessageStreaming()).toBe(
+      false
+    );
     expect(
       store.getState().assistantInputState.stopStreamingButtonState.isVisible
     ).toBe(false);
     await instance.send('next');
 
-    expect(serviceManager.messageService.isAnyMessageStreaming()).toBe(false);
+    expect(serviceManager.messageCoordinator.isAnyMessageStreaming()).toBe(
+      false
+    );
     expect(
       store.getState().assistantInputState.stopStreamingButtonState.isVisible
     ).toBe(false);
@@ -403,7 +425,9 @@ describe('upsert and chunk request ownership', () => {
 
     await expect(instance.send('start')).rejects.toThrow(failure.message);
 
-    expect(serviceManager.messageService.isAnyMessageStreaming()).toBe(false);
+    expect(serviceManager.messageCoordinator.isAnyMessageStreaming()).toBe(
+      false
+    );
     expect(
       store.getState().assistantInputState.stopStreamingButtonState.isVisible
     ).toBe(false);
@@ -452,11 +476,11 @@ describe('upsert and chunk request ownership', () => {
     const pendingSend = instance.send('third');
     await started;
     const streamingWhilePending =
-      serviceManager.messageService.isAnyMessageStreaming();
+      serviceManager.messageCoordinator.isAnyMessageStreaming();
     release.doResolve();
     await pendingSend;
     const streamingAfterSend =
-      serviceManager.messageService.isAnyMessageStreaming();
+      serviceManager.messageCoordinator.isAnyMessageStreaming();
     await instance.messaging.upsertMessage(
       'response-a',
       MessageState.COMPLETE,
@@ -465,7 +489,9 @@ describe('upsert and chunk request ownership', () => {
 
     expect(streamingWhilePending).toBe(true);
     expect(streamingAfterSend).toBe(true);
-    expect(serviceManager.messageService.isAnyMessageStreaming()).toBe(false);
+    expect(serviceManager.messageCoordinator.isAnyMessageStreaming()).toBe(
+      false
+    );
     expect(
       store.getState().assistantInputState.stopStreamingButtonState.isVisible
     ).toBe(false);
@@ -503,14 +529,14 @@ describe('upsert and chunk request ownership', () => {
       () => snapshot('response-a')
     );
 
-    await serviceManager.messageService.cancelMessageRequestByID(
+    await serviceManager.messageCoordinator.cancelMessageRequestByID(
       secondRequestID,
       false
     );
     release.doResolve();
     await pendingSend;
     const streamingAfterCancel =
-      serviceManager.messageService.isAnyMessageStreaming();
+      serviceManager.messageCoordinator.isAnyMessageStreaming();
     await instance.messaging.upsertMessage(
       'response-a',
       MessageState.COMPLETE,
@@ -518,7 +544,9 @@ describe('upsert and chunk request ownership', () => {
     );
 
     expect(streamingAfterCancel).toBe(true);
-    expect(serviceManager.messageService.isAnyMessageStreaming()).toBe(false);
+    expect(serviceManager.messageCoordinator.isAnyMessageStreaming()).toBe(
+      false
+    );
     expect(
       store.getState().assistantInputState.stopStreamingButtonState.isVisible
     ).toBe(false);
@@ -554,7 +582,7 @@ describe('upsert and chunk request ownership', () => {
       await renderChatAndGetInstanceWithStore(config);
     const pendingSend = instance.send('first');
     await streaming;
-    await serviceManager.messageService.cancelCurrentMessageRequest();
+    await serviceManager.messageCoordinator.cancelCurrentMessageRequest();
     release.doResolve();
     await pendingSend;
 
@@ -575,7 +603,9 @@ describe('upsert and chunk request ownership', () => {
     expect(store.getState().allMessagesByID['response-a']).toMatchObject({
       output: { generic: [{ text: 'after' }] },
     });
-    expect(serviceManager.messageService.isAnyMessageStreaming()).toBe(false);
+    expect(serviceManager.messageCoordinator.isAnyMessageStreaming()).toBe(
+      false
+    );
     expect(
       store.getState().assistantInputState.stopStreamingButtonState.isVisible
     ).toBe(false);
