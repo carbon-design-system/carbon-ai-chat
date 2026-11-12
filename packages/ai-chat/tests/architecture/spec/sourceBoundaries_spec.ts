@@ -65,17 +65,14 @@ const folderExceptions: BoundaryException[] = [];
 // FileUpload) closed with #1732. The SDK's own types reach the remaining edge
 // through the message types' ButtonItem.
 const frameworkExceptions: BoundaryException[] = [
-  'src/shared/',
-  'src/sdk/',
-].flatMap((folder) => [
   {
-    folder,
+    folder: 'src/sdk/',
     from: 'src/types/messaging/Messages.ts',
     to: 'react',
     owner: '#2901',
     reason: 'ButtonItem.icon accepts a React component, a 1.x public type',
   },
-]);
+];
 
 /** View objects and view handles that conversation services must not hold. */
 const viewHandleTypes = new Set([
