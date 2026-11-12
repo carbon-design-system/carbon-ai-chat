@@ -34,9 +34,10 @@ import AppShellErrorBoundary from './AppShellErrorBoundary';
 import MessagesComponent, {
   type MessagesComponentClass,
 } from './components-legacy/MessagesComponent';
-import { createUnmappingMemoizer } from '../sdk/utils/memoizerUtils';
 import { createDidCatchErrorData } from '../sdk/utils/miscUtils';
-import type { LocalMessageItem } from '../types/messaging/LocalMessageItem';
+import { useDrawnMessageItems } from './hooks/useDrawnMessageItems';
+import { usePublicChatState } from './hooks/usePublicChatState';
+import { topLevelMessageItems } from './utils/drawnMessageItems';
 import type { AppState } from '../types/state/AppState';
 import type { ExtensionHosts } from './services/extensionHosts';
 import type { HasServiceManager } from './hocs/withServiceManager';
@@ -134,20 +135,14 @@ function RetainedShellContent({
   onRevision: (parts: PanelContentParts) => void;
 }) {
   const intl = useIntl();
-  const assistantMessageState = useSelector(
-    (state: AppState) => state.assistantMessageState
+  const messageItems = usePublicChatState((state) =>
+    topLevelMessageItems(state.messageItems)
   );
-  const allMessageItemsByID = useSelector(
-    (state: AppState) => state.allMessageItemsByID
-  );
+  const drawnItems = useDrawnMessageItems(messageItems);
   const publicConfig = useSelector((state: AppState) => state.config.public);
   const carbonTheme = useSelector(
     (state: AppState) =>
       state.view.derivedConfig.themeWithDefaults.derivedCarbonTheme
-  );
-  const messagesToArray = useMemo(
-    () => createUnmappingMemoizer<LocalMessageItem>(),
-    []
   );
   const panelContent = useAppShellPanels({
     serviceManager,
@@ -162,11 +157,7 @@ function RetainedShellContent({
         <ShellMessages shell={shell} targets={targets}>
           <MessagesComponent
             ref={messagesRef}
-            messageState={assistantMessageState}
-            localMessageItems={messagesToArray(
-              assistantMessageState.localMessageIDs,
-              allMessageItemsByID
-            )}
+            drawnItems={drawnItems}
             requestInputFocus={content.requestInputFocus}
             assistantName={publicConfig.assistantName}
             assistantAvatarUrl={publicConfig.assistantAvatarUrl}

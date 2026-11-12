@@ -19,7 +19,13 @@
  * an alias, fails the spec until the entry changes.
  *
  * Owners:
- * - #2693: messages and message items, which the message model replaces.
+ * - #2693: the reads of messages and message items outside the message list:
+ *   the panels, boot, config updates, and the shell.
+ * - #2707: the message list's lookup of the chat's own local item and message
+ *   behind each entry of `messageItems`. The list draws the entries, but hands
+ *   the chat's own objects to host events, the workspace panel, and the agent
+ *   service, where a host can keep or edit them, and writes back by local item
+ *   ID. Once those payloads are read-only, the list can hand the entries.
  * - #2824: everything else the prebuilt chat reads from the conversation
  *   partition in 1.x:
  *   - view state the partition still holds: which connect card is
@@ -49,25 +55,7 @@ interface ConversationReadGap {
 
 const conversationReadGaps: ConversationReadGap[] = [
   {
-    file: 'src/chat/AppShell.tsx',
-    read: 'allMessageItemsByID',
-    count: 1,
-    owner: '#2693',
-  },
-  {
-    file: 'src/chat/AppShell.tsx',
-    read: 'assistantMessageState',
-    count: 1,
-    owner: '#2693',
-  },
-  {
     file: 'src/chat/AppShellPanels.tsx',
-    read: 'allMessagesByID',
-    count: 1,
-    owner: '#2693',
-  },
-  {
-    file: 'src/chat/components-legacy/MessagesComponent.tsx',
     read: 'allMessagesByID',
     count: 1,
     owner: '#2693',
@@ -82,13 +70,7 @@ const conversationReadGaps: ConversationReadGap[] = [
     file: 'src/chat/components-legacy/MessagesComponent.tsx',
     read: 'selectMessagesState()',
     count: 1,
-    owner: '#2693',
-  },
-  {
-    file: 'src/chat/components-legacy/responseTypes/grid/GridItemCell.tsx',
-    read: 'allMessageItemsByID',
-    count: 1,
-    owner: '#2693',
+    owner: '#2824',
   },
   {
     file: 'src/chat/components-legacy/responseTypes/grid/GridItemCell.tsx',
@@ -139,40 +121,28 @@ const conversationReadGaps: ConversationReadGap[] = [
     owner: '#2824',
   },
   {
-    file: 'src/chat/components/responseTypes/button/FooterButtonComponents.tsx',
-    read: 'allMessageItemsByID',
-    count: 1,
-    owner: '#2693',
-  },
-  {
     file: 'src/chat/components/responseTypes/card/CardItemComponent.tsx',
     read: 'selectInputIsReadonly()',
     count: 1,
     owner: '#2824',
   },
   {
-    file: 'src/chat/components/responseTypes/card/CarouselItemComponent.tsx',
-    read: 'allMessageItemsByID',
-    count: 1,
-    owner: '#2693',
-  },
-  {
-    file: 'src/chat/components/responseTypes/datePicker/DatePickerComponent.tsx',
-    read: 'allMessagesByID',
-    count: 1,
-    owner: '#2693',
-  },
-  {
-    file: 'src/chat/components/responseTypes/message/BodyMessageComponents.tsx',
-    read: 'allMessageItemsByID',
-    count: 1,
-    owner: '#2693',
-  },
-  {
     file: 'src/chat/components/shell/ChatShell.ts',
     read: 'selectShellState()',
     count: 2,
     owner: '#2824',
+  },
+  {
+    file: 'src/chat/hooks/useDrawnMessageItems.ts',
+    read: 'allMessageItemsByID',
+    count: 1,
+    owner: '#2707',
+  },
+  {
+    file: 'src/chat/hooks/useDrawnMessageItems.ts',
+    read: 'allMessagesByID',
+    count: 1,
+    owner: '#2707',
   },
   {
     file: 'src/chat/hooks/useInputCallbacks.tsx',

@@ -787,8 +787,10 @@ describe('render errors in response panel content', () => {
       expect(deepText(responsePanelBody())).toContain('Body two')
     );
 
-    // The open panel still lists the nested id this upsert prunes.
-    await upsertPanelMessage(instance, { body: [panelText('Body one')] });
+    // The open panel draws the live nested items, and this update's second one throws.
+    await upsertPanelMessage(instance, {
+      body: [panelText('Body one'), throwingImage],
+    });
     await settle();
 
     expect(store.getState().view.catastrophicErrorType).toBeUndefined();
@@ -798,12 +800,38 @@ describe('render errors in response panel content', () => {
     expect(onError.mock.calls[0][0].catastrophicErrorType).toBeUndefined();
 
     await closePanel(store);
+    await upsertPanelMessage(instance, { body: [panelText('Body one')] });
+    await settle();
     await openPanel();
     await waitFor(() =>
       expect(deepText(responsePanelBody())).toContain('Body one')
     );
     expect(panelError('body')).toBeFalsy();
     expect(deepText(responsePanelBody())).not.toContain('Body two');
+  });
+
+  it('draws the live nested items when an update inside an open panel drops one', async () => {
+    const { instance, store, onError } = await renderOpenChat();
+    await upsertPanelMessage(instance, {
+      body: [panelText('Body one'), panelText('Body two')],
+    });
+    await settle();
+    await openPanel();
+    await waitFor(() =>
+      expect(deepText(responsePanelBody())).toContain('Body two')
+    );
+
+    // The open panel still lists the nested id this upsert prunes.
+    await upsertPanelMessage(instance, { body: [panelText('Body one')] });
+    await settle();
+
+    expect(store.getState().view.catastrophicErrorType).toBeUndefined();
+    await waitFor(() =>
+      expect(deepText(responsePanelBody())).not.toContain('Body two')
+    );
+    expect(deepText(responsePanelBody())).toContain('Body one');
+    expect(panelError('body')).toBeFalsy();
+    expect(onError).not.toHaveBeenCalled();
   });
 
   it('leaves the chat usable after a panel fails', async () => {

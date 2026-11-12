@@ -28,7 +28,7 @@ import {
   humanAgentDisplayStateOf,
   selectInputIsReadonly,
 } from '../../sdk/store/selectors';
-import { AppState, ChatMessagesState } from '../../types/state/AppState';
+import { AppState } from '../../types/state/AppState';
 import { shallowEqual } from '../../sdk/store/appStore';
 import { AutoScrollOptions } from '../../types/utilities/HasDoAutoScroll';
 import HasIntl from '../../types/utilities/HasIntl';
@@ -38,7 +38,6 @@ import { IS_MOBILE } from '../../sdk/utils/browserUtils';
 import { WriteableElementName } from '../../sdk/utils/constants';
 import { applyDynamicStyles, clearDynamicStyles } from '../utils/cspStyleUtils';
 import { formatShortcutForDisplay } from '../utils/keyboardUtils';
-import { arrayLastValue } from '../../sdk/utils/lang/arrayUtils';
 import {
   isRequest,
   isResponse,
@@ -50,6 +49,9 @@ import {
   type ScrollHost,
 } from '../utils/messagesAutoScrollController';
 import { buildRenderableMessageMetadata } from '../utils/messagesRenderUtils';
+import { messagesByID } from '../utils/drawnMessageItems';
+import type { DrawnMessageItem } from '../hooks/useDrawnMessageItems';
+import type { ChatSDKMessageItem } from '../../types/instance/ChatSDKState';
 import { consoleError } from '../../sdk/utils/miscUtils';
 import MessageComponent, {
   MessageClass,
@@ -94,12 +96,11 @@ function applySpacerDeficit(spacerElem: HTMLElement, deficit: number): void {
  */
 function shouldScrollToMessage(
   message: Message,
-  allMessagesByID: Record<string, Message>
+  publicMessagesByID: ReadonlyMap<string, Readonly<Message>>
 ): boolean {
   if (isResponse(message)) {
-    const messageRequest = allMessagesByID[
-      message?.request_id
-    ] as MessageRequest;
+    const messageRequest = publicMessagesByID.get(message?.request_id) as
+      Readonly<MessageRequest> | undefined;
 
     if (messageRequest?.history?.is_welcome_request) {
       return false;
@@ -117,6 +118,38 @@ function shouldScrollToMessage(
   return false;
 }
 
+/** Each drawn item list's local items, built once per list. */
+const drawnLocalItems = new WeakMap<
+  readonly DrawnMessageItem[],
+  LocalMessageItem[]
+>();
+
+/** Each drawn item list's messages by ID, built once per list. */
+const drawnMessages = new WeakMap<
+  readonly DrawnMessageItem[],
+  Record<string, Message>
+>();
+
+function localItemsOf(drawnItems: readonly DrawnMessageItem[]) {
+  let items = drawnLocalItems.get(drawnItems);
+  if (!items) {
+    items = drawnItems.map((drawn) => drawn.localMessageItem);
+    drawnLocalItems.set(drawnItems, items);
+  }
+  return items;
+}
+
+function drawnMessagesByID(drawnItems: readonly DrawnMessageItem[]) {
+  let messages = drawnMessages.get(drawnItems);
+  if (!messages) {
+    messages = Object.fromEntries(
+      drawnItems.map((drawn) => [drawn.message.id, drawn.message])
+    );
+    drawnMessages.set(drawnItems, messages);
+  }
+  return messages;
+}
+
 /**
  * The type of the function used for scrolling elements inside the scroll panel into view.
  */
@@ -128,14 +161,10 @@ type ScrollElementIntoViewFunction = (
 
 interface MessagesOwnProps extends HasIntl, HasServiceManager {
   /**
-   * The message state for this list of messages.
+   * The items to display in this chat window, from `instance.state.messageItems`: its top-level
+   * entries, each with the chat's own local item and message.
    */
-  messageState: ChatMessagesState;
-
-  /**
-   * The specific list of messages to display in this chat window.
-   */
-  localMessageItems: LocalMessageItem[];
+  drawnItems: readonly DrawnMessageItem[];
 
   /**
    * A callback function that will request that focus be moved to the main input field.
@@ -189,7 +218,8 @@ type MessagesLanguagePackStrings = Pick<
  * doesn't re-render on every config update.
  */
 interface MessagesInjectedState {
-  allMessagesByID: AppState['allMessagesByID'];
+  /** The messages in public state, by ID, to find a response's request. */
+  publicMessagesByID: ReadonlyMap<string, Readonly<Message>>;
   /** The agent state, from public state. */
   humanAgent: PublicChatState['humanAgent'];
   disclaimersAccepted: AppState['view']['persistedToBrowserStorage']['disclaimersAccepted'];
@@ -238,6 +268,11 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     scrollDown: false,
   };
 
+  /** The local items of the drawn items, in order. */
+  private get localMessageItems(): LocalMessageItem[] {
+    return localItemsOf(this.props.drawnItems);
+  }
+
   /**
    * A registry of references to the child {@link MessageComponent} instances. The keys of the map are the IDs of
    * each message item and the value is the ref to the component.
@@ -282,7 +317,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   /**
    * Builds the {@link ScrollHost} adapter the controller uses to read/write the DOM
    * without knowing about React. Semantic booleans (`isPinnable`/`isStreaming`/
-   * `isResponse`) are computed here from `LocalMessageItem`/`allMessagesByID`.
+   * `isResponse`) are computed here from the drawn items and public messages.
    */
   private createScrollHost(): ScrollHost {
     return {
@@ -308,35 +343,36 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         }
       },
       getMessages: () => this.getPortableMessages(),
-      hasMessage: (id) => Boolean(this.props.allMessagesByID[id]),
+      hasMessage: (id) => this.props.publicMessagesByID.has(id),
       onScrollGeometryChanged: () => this.renderScrollDownNotification(),
     };
   }
 
   /**
-   * Maps the current `localMessageItems` to the framework-neutral
+   * Maps the current drawn items to the framework-neutral
    * {@link PortableMessage}[] the controller consumes, in document order.
    */
   private getPortableMessages(): PortableMessage[] {
-    const { localMessageItems, allMessagesByID } = this.props;
+    const { drawnItems, publicMessagesByID } = this.props;
     let previousMessageID: string | null = null;
-    return localMessageItems.map((item) => {
-      const fullMessage = allMessagesByID[item.fullMessageID];
-      const isFirstItem = previousMessageID !== item.fullMessageID;
-      previousMessageID = item.fullMessageID;
-      const streamingState = item.ui_state.streamingState;
-      return {
-        id: item.ui_state.id,
-        messageId: item.fullMessageID,
-        element: this.messageRefs.get(item.ui_state.id)?.ref?.current ?? null,
-        isPinnable:
-          isFirstItem && fullMessage
-            ? shouldScrollToMessage(fullMessage, allMessagesByID)
-            : false,
-        isStreaming: Boolean(streamingState && !streamingState.isDone),
-        isResponse: Boolean(fullMessage && isResponse(fullMessage)),
-      };
-    });
+    return drawnItems.map(
+      ({ localMessageItem: item, message: fullMessage }) => {
+        const isFirstItem = previousMessageID !== item.fullMessageID;
+        previousMessageID = item.fullMessageID;
+        const streamingState = item.ui_state.streamingState;
+        return {
+          id: item.ui_state.id,
+          messageId: item.fullMessageID,
+          element: this.messageRefs.get(item.ui_state.id)?.ref?.current ?? null,
+          isPinnable:
+            isFirstItem && fullMessage
+              ? shouldScrollToMessage(fullMessage, publicMessagesByID)
+              : false,
+          isStreaming: Boolean(streamingState && !streamingState.isDone),
+          isResponse: Boolean(fullMessage && isResponse(fullMessage)),
+        };
+      }
+    );
   }
 
   componentDidMount(): void {
@@ -451,7 +487,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    * Used by keyboard shortcut to toggle between input and message list.
    */
   public requestFocusOnFirstItemOfLastMessage() {
-    const { localMessageItems } = this.props;
+    const { localMessageItems } = this;
     if (localMessageItems.length === 0) {
       return false;
     }
@@ -486,7 +522,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     try {
       // Resolve the (full) message id to the first matching row's element (this host
       // owns the id → element mapping), then delegate the actual scroll to the controller.
-      const { localMessageItems } = this.props;
+      const { localMessageItems } = this;
       let panelComponent: MessageClass;
       for (let index = 0; index <= localMessageItems.length; index++) {
         const messageItem = localMessageItems[index];
@@ -536,9 +572,9 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    * Get all the elements inside the lastBotMessageGroupID.
    */
   public getLastOutputMessageElements(): HTMLElement[] {
-    const { localMessageItems, allMessagesByID } = this.props;
-    const lastMessageItem = arrayLastValue(localMessageItems);
-    const lastMessage = allMessagesByID[lastMessageItem?.fullMessageID];
+    const { localMessageItems } = this;
+    const { drawnItems } = this.props;
+    const lastMessage = drawnItems[drawnItems.length - 1]?.message;
     if (isResponse(lastMessage)) {
       const elements: HTMLElement[] = [];
       let hasFoundLastBotMessageGroupID = false;
@@ -574,6 +610,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    * Renders the given message.
    *
    * @param localMessage The localMessage to be processed.
+   * @param messageItem The item's entry in `instance.state.messageItems`.
    * @param fullMessage The full message to be processed.
    * @param messagesIndex The index of the message.
    * @param showBeforeWelcomeNodeElement Boolean indicating if this is the first message in the most recent welcome
@@ -585,6 +622,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    */
   renderMessage(
     localMessage: LocalMessageItem,
+    messageItem: Readonly<ChatSDKMessageItem>,
     fullMessage: Message,
     messagesIndex: number,
     showBeforeWelcomeNodeElement: boolean,
@@ -617,7 +655,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     }
 
     const totalMessagesWithTyping =
-      this.props.localMessageItems.length +
+      this.props.drawnItems.length +
       (isMessageLoadingCounter > 0 || isHumanAgentTyping ? 1 : 0);
 
     const isLastMessage = messagesIndex === totalMessagesWithTyping - 1;
@@ -643,6 +681,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         }}
         className={className}
         localMessageItem={localMessage}
+        messageItem={messageItem}
         message={fullMessage}
         requestInputFocus={requestInputFocus}
         serviceManager={serviceManager}
@@ -700,7 +739,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     if (moveFocusType === MoveFocusType.INPUT) {
       this.props.requestInputFocus();
     } else {
-      const { localMessageItems } = this.props;
+      const { localMessageItems } = this;
       let index: number;
       switch (moveFocusType) {
         case MoveFocusType.LAST:
@@ -808,12 +847,11 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    * @param messageIDForInput The ID of the last message response that can receive input.
    */
   renderMessages(messageIDForInput: string) {
-    const { localMessageItems, allMessagesByID } = this.props;
+    const { drawnItems } = this.props;
     const renderMessageArray: ReactNode[] = [];
-    const lastMessageID = arrayLastValue(localMessageItems)?.fullMessageID;
+    const lastMessageID = drawnItems[drawnItems.length - 1]?.message.id;
     const metadataList = buildRenderableMessageMetadata(
-      localMessageItems,
-      allMessagesByID,
+      drawnItems,
       messageIDForInput
     );
 
@@ -829,6 +867,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       renderMessageArray.push(
         this.renderMessage(
           metadata.localMessageItem,
+          metadata.messageItem,
           metadata.fullMessage,
           metadata.messagesIndex,
           metadata.showBeforeWelcomeNodeElement,
@@ -845,7 +884,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
 
   render() {
     const {
-      localMessageItems,
+      drawnItems,
       isMessageLoadingCounter,
       isMessageLoadingText,
       intl,
@@ -858,8 +897,8 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     const { scrollHandleHasFocus, scrollDown } = this.state;
 
     const messageIDForInput = getMessageIDForUserInput(
-      localMessageItems,
-      this.props.allMessagesByID
+      this.localMessageItems,
+      drawnMessagesByID(drawnItems)
     );
 
     const regularMessages = this.renderMessages(messageIDForInput);
@@ -881,7 +920,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     const typingIndicator = (
       <ProcessingWithText
         carbonTheme={this.props.carbonTheme}
-        index={localMessageItems.length}
+        index={drawnItems.length}
         isTypingMessage={isTypingMessage}
         isVisible={isTypingVisible}
         statusMessage={
@@ -942,8 +981,8 @@ const selectMessagesState = (
   | 'isMessageLoadingCounter'
   | 'isMessageLoadingText'
   | 'humanAgent'
+  | 'publicMessagesByID'
 > => ({
-  allMessagesByID: state.allMessagesByID,
   disclaimersAccepted: state.view.persistedToBrowserStorage.disclaimersAccepted,
   isInputReadonly: selectInputIsReadonly(state),
   disclaimerIsOn: state.config.public.disclaimer?.isOn,
@@ -969,6 +1008,7 @@ const selectMessagesStrings = (
 });
 
 const selectPublicMessagesState = (state: PublicChatState) => ({
+  publicMessagesByID: messagesByID(state.messages),
   isMessageLoadingCounter: state.isMessageLoadingCounter,
   isMessageLoadingText: state.isMessageLoadingText,
   humanAgent: state.humanAgent,

@@ -9,9 +9,8 @@
 
 import cx from 'classnames';
 import React from 'react';
-import { useSelector } from '../../../hooks/useSelector';
+import { useNestedMessageItems } from '../../../hooks/useDrawnMessageItems';
 
-import { AppState } from '../../../../types/state/AppState';
 import { MessageTypeComponentProps } from '../../../components-legacy/MessageTypeComponentProps';
 import { MessageResponseTypes } from '../../../../types/messaging/Messages';
 
@@ -28,27 +27,23 @@ interface BodyMessageComponentsProps extends MessageTypeComponentProps {
  * This component handles rendering nested messages for response types that have a "body" property.
  */
 function BodyMessageComponents(props: BodyMessageComponentsProps) {
-  const { bodyLocalMessageItemIDs } = props.message.ui_state;
-  const allMessageItemsByID = useSelector(
-    (state: AppState) => state.allMessageItemsByID
-  );
+  const nestedItems = useNestedMessageItems(props.message.ui_state.id, 'body');
 
-  // Loop through the list of supported local message ids and return a message component for each.
-  const messageComponents = bodyLocalMessageItemIDs?.map(
-    (nestedMessageID, index) => {
-      const nestedLocalMessage = allMessageItemsByID[nestedMessageID];
+  // Loop through the nested items the list draws and return a message component for each.
+  const messageComponents = nestedItems.map(
+    ({ localMessageItem: nestedLocalMessage }, index) => {
+      const nestedMessageID = nestedLocalMessage.ui_state.id;
       const isFullWidthMessage = isFullWidthResponseType(
         nestedLocalMessage.item.response_type
       );
       // Determine if the next message is a full width message, or not. Messages next to each other that aren't full
       // width should have small bottom padding separating them.
-      const nextLocalMessageID = bodyLocalMessageItemIDs[index + 1];
-      const nextLocalMessage = allMessageItemsByID[nextLocalMessageID];
+      const nextLocalMessage = nestedItems[index + 1]?.localMessageItem;
       const isNextMessageFullWidth = isFullWidthResponseType(
         nextLocalMessage?.item.response_type
       );
 
-      const isLastElement = index === bodyLocalMessageItemIDs.length - 1;
+      const isLastElement = index === nestedItems.length - 1;
       const withShortBottomPadding =
         !isLastElement && !isFullWidthMessage && !isNextMessageFullWidth;
 
@@ -74,7 +69,7 @@ function BodyMessageComponents(props: BodyMessageComponentsProps) {
     }
   );
 
-  if (!messageComponents?.length) {
+  if (!messageComponents.length) {
     return null;
   }
 
