@@ -34,6 +34,10 @@ export interface Action {
   text: string;
   delete?: boolean;
   divider?: boolean;
+  /**
+   * Prevents activation while keeping the action visible. Defaults to false.
+   */
+  disabled?: boolean;
   icon: CarbonIcon;
   onClick: () => void;
 }
@@ -211,6 +215,12 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
     if (event.key === 'Enter' || event.key === ' ') {
       this._adjustMenuPosition();
     }
+    const menu = event.currentTarget as HTMLElement & { open: boolean };
+    if (event.key === 'Escape' && menu.open) {
+      event.preventDefault();
+      event.stopPropagation();
+      menu.open = false;
+    }
   };
 
   /**
@@ -218,6 +228,11 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
    */
   private _handleMenuItemClick = (event: Event) => {
     const target = event.currentTarget as HTMLElement;
+    if (target.hasAttribute('disabled')) {
+      event.preventDefault();
+      event.stopPropagation();
+      return false;
+    }
     const menuItemText =
       target.getAttribute('data-action-text') || target.textContent?.trim();
 
@@ -233,7 +248,45 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
       },
     });
     this.dispatchEvent(itemActionEvent);
+    return true;
   };
+
+  /**
+   * Restore focus before rendering a disabled button can drop it to the body.
+   */
+  willUpdate(changedProperties: Map<string, any>) {
+    super.willUpdate(changedProperties);
+    const menu = this.overflowMenu as (HTMLElement & { open: boolean }) | null;
+    if (!changedProperties.has('actions') || !menu?.open) {
+      return;
+    }
+    // Carbon portals the menu body out of this shadow root, so follow focus.
+    let focused = this.ownerDocument.activeElement;
+    while (
+      focused?.shadowRoot?.activeElement &&
+      !focused.matches('cds-overflow-menu-item')
+    ) {
+      focused = focused.shadowRoot.activeElement;
+    }
+    const body = focused?.closest('cds-overflow-menu-body') as
+      (HTMLElement & { parent: HTMLElement }) | null;
+    if (!focused?.matches('cds-overflow-menu-item') || body?.parent !== menu) {
+      return;
+    }
+    const focusedIndex = Array.from(
+      body.querySelectorAll('cds-overflow-menu-item')
+    ).indexOf(focused);
+    const focusedAction = changedProperties.get('actions')?.[focusedIndex];
+    if (
+      focusedAction &&
+      this.actions.some(
+        (action) => action.disabled && action.text === focusedAction.text
+      )
+    ) {
+      menu.open = false;
+      menu.focus();
+    }
+  }
 
   /**
    * Handler for menu item keydown event
@@ -243,7 +296,9 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
   private _handleMenuItemKeyDown = (event: KeyboardEvent) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
-      this._handleMenuItemClick(event);
+      if (!this._handleMenuItemClick(event)) {
+        return;
+      }
       // Close the overflow menu after handling the action
       if (this.overflowMenu) {
         (this.overflowMenu as any).open = false;
@@ -457,6 +512,10 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
                 <cds-overflow-menu
                   align="top-right"
                   size="sm"
+                  .index=${Math.max(
+                    1,
+                    actions.findIndex((action) => !action.disabled) + 1
+                  )}
                   @click=${adjustMenuPosition}
                   @keydown=${handleMenuTriggerKeyDown}>
                   ${iconLoader(OverflowMenuVertical16, {
@@ -472,6 +531,7 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
                         html`<cds-overflow-menu-item
                           ?danger=${action.delete}
                           ?divider=${action.divider}
+                          ?disabled=${action.disabled}
                           @click=${handleMenuItemClick}
                           @keydown=${handleMenuItemKeyDown}
                           >${action.text}${action.icon}</cds-overflow-menu-item
