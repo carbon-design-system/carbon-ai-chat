@@ -13,16 +13,50 @@ import {
   BusEventStateChange,
   BusEventType,
   ChatInstance,
+  PublicChatState,
   ViewType,
 } from '../../../../src/aiChatEntry';
 import {
   changeView,
   contractChat,
   contractSetup,
+  fakeBackend,
   pause,
   recordEvents,
   showUnread,
 } from '../../helpers';
+
+/** Opens the main window and waits until loading ends and the input has focus. */
+async function openAndLoad(instance: ChatInstance): Promise<void> {
+  await changeView(instance, ViewType.MAIN_WINDOW);
+  await waitFor(() => {
+    const state = instance.state.get();
+    expect(state.isHydratingCounter).toBe(0);
+    expect(state.status).toBe('ready');
+    expect(state.input.focused).toBe(true);
+  });
+  // A short wait lets any change still on its way land first.
+  await pause();
+}
+
+/** The values a field takes across a run of states, without repeats. */
+function steps<T>(
+  states: PublicChatState[],
+  read: (state: PublicChatState) => T
+): T[] {
+  return states
+    .map(read)
+    .filter((value, index, all) => index === 0 || value !== all[index - 1]);
+}
+
+/** The top-level fields one `state:change` changed. */
+function changedFields(event: BusEventStateChange): string[] {
+  return Object.keys(event.newState).filter(
+    (key) =>
+      JSON.stringify(event.previousState[key as keyof PublicChatState]) !==
+      JSON.stringify(event.newState[key as keyof PublicChatState])
+  );
+}
 
 /** Records `state:change` events through the public `on`. */
 function recordStateChanges(instance: ChatInstance) {
@@ -63,16 +97,96 @@ describe('state:change (deprecated)', () => {
   });
 
   // The JSDoc names viewState as one of the fields that fire it.
-  it('fires for a view change, from the old view to the new one', async () => {
-    const { instance } = await contractChat();
+  // @covers instance.state.subscribe state.viewState
+  it('fires once for a close and once for a reopen, from the old view to the new one', async () => {
+    const { instance } = await contractChat({
+      messaging: { skipWelcome: true },
+    });
+    await openAndLoad(instance);
     const changes = recordStateChanges(instance);
+    const listener = jest.fn();
+    instance.state.subscribe(listener);
+
+    await changeView(instance, ViewType.LAUNCHER);
+    // A short wait proves no second notification follows.
+    await pause();
+    const [closed, ...afterClose] = changes.events();
+    expect(afterClose).toEqual([]);
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(closed.previousState.viewState).toEqual({
+      launcher: false,
+      mainWindow: true,
+    });
+    expect(closed.newState.viewState).toEqual({
+      launcher: true,
+      mainWindow: false,
+    });
+    changes.clear();
+    listener.mockClear();
+
     await changeView(instance, ViewType.MAIN_WINDOW);
+    await pause();
+    const [reopened, ...afterReopen] = changes.events();
+    expect(afterReopen).toEqual([]);
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(reopened.previousState.viewState).toEqual({
+      launcher: true,
+      mainWindow: false,
+    });
+    expect(reopened.newState.viewState).toEqual({
+      launcher: false,
+      mainWindow: true,
+    });
+  });
+
+  // A first open also starts loading, which changes status, the hydrating
+  // counter, and messages (the welcome request), and the input takes focus.
+  // Each of those is its own notification after the view change's.
+  // @covers instance.state.subscribe state.viewState state.status
+  // @covers state.isHydratingCounter state.messages state.input.focused
+  it('fires first for the view change on a first open, then for each change the loading and the input make', async () => {
+    const backend = fakeBackend({ autoResolve: true });
+    const { instance } = await contractChat({
+      messaging: { customSendMessage: backend.customSendMessage },
+    });
+    const changes = recordStateChanges(instance);
+    const listener = jest.fn();
+    instance.state.subscribe(listener);
+
+    await openAndLoad(instance);
     const events = changes.events();
-    // One changeView makes several public changes, and `main` fires one event
-    // for each (MAIN-NOTES M41), so only the first and last are pinned.
-    expect(events.length).toBeGreaterThan(0);
-    expect(events[0].previousState.viewState.mainWindow).toBe(false);
-    expect(events[events.length - 1].newState.viewState.mainWindow).toBe(true);
+
+    const [opened] = events;
+    expect(opened.previousState.viewState.mainWindow).toBe(false);
+    expect(opened.newState.viewState.mainWindow).toBe(true);
+    expect({
+      ...opened.newState,
+      viewState: opened.previousState.viewState,
+    }).toEqual(opened.previousState);
+
+    const values = <T>(read: (state: PublicChatState) => T) =>
+      steps([events[0].previousState, ...events.map((e) => e.newState)], read);
+    expect(values((state) => state.status)).toEqual([
+      'ready',
+      'loading',
+      'ready',
+    ]);
+    expect(values((state) => state.isHydratingCounter)).toEqual([0, 1, 0]);
+    expect(values((state) => state.input.focused)).toEqual([false, true]);
+    expect(
+      events[events.length - 1].newState.messages.map(({ id }) => id)
+    ).toEqual([backend.requests[0].request.id]);
+
+    expect(new Set(events.flatMap(changedFields))).toEqual(
+      new Set([
+        'viewState',
+        'status',
+        'isHydratingCounter',
+        'messages',
+        'input',
+      ])
+    );
+    expect(listener).toHaveBeenCalledTimes(events.length);
   });
 
   it('does not fire when no public field changed', async () => {
