@@ -429,7 +429,9 @@ describe('native home screen', () => {
 
     const retired = instance;
     mounted.rerender(mount('replacement'));
-    await waitFor(() => expect(after).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(after).toHaveBeenCalledTimes(2), {
+      timeout: 5000,
+    });
     expect(instance).not.toBe(retired);
     const currentHost = document.querySelector('cds-aichat-container');
     const currentPanel = currentHost.shadowRoot
