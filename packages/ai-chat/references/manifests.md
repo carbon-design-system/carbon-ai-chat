@@ -19,6 +19,7 @@ The analyzer rejects unsupported table syntax, duplicate fields, and table/type 
 The root `npm run test:manifest-consumer` checks packed discovery, shipped references, and host metadata against runtime attributes, runtime properties, and declarations.
 It runs from the root test gate. Run it after a fresh build; it does not build the packages itself (see the [build preflight](../../../references/commands.md#build-preflight)).
 The GitHub components test job runs it too. Run it before opening a PR that changes manifest inputs.
+The root `npm run test:carbon-consumer` installs the packed packages with the Carbon v12 alphas. It compares the packed manifest with built runtime properties and attributes, and checks JSON discovery and published module references.
 Its negative mutations catch missing or duplicate fields, lost host overrides, and optional callback type errors.
 
 ## Steps for a config or host change
@@ -36,6 +37,7 @@ Its negative mutations catch missing or duplicate fields, lost host overrides, a
 npm run test:manifest --workspace=@carbon/ai-chat-components
 npm run test:manifest --workspace=@carbon/ai-chat
 npm run test:manifest-consumer
+npm run test:carbon-consumer
 ```
 
 The checks do not prove all event detail types, slots, style hooks, or external type symbols. Those broader guards belong to #2287 and #2551.
