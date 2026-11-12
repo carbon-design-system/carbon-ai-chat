@@ -562,7 +562,10 @@ class ChatContainer extends FlattenedConfigElement {
         chatBoot,
         publicConfig,
         state,
-        isCurrent
+        isCurrent,
+        // The element's latest config, which reaches the chat only once it
+        // renders.
+        () => this.resolvedConfig.lifecycle?.onUnmount
       );
       if (!booted) {
         return;
@@ -725,12 +728,14 @@ async function bootMountChat(
   chatBoot: typeof import('../../chat/utils/chatBoot'),
   publicConfig: PublicConfig,
   state: MountState,
-  isCurrent: () => boolean
+  isCurrent: () => boolean,
+  onUnmount: () => PublicConfig['lifecycle']['onUnmount']
 ) {
   try {
     return await chatBoot.bootPrebuiltChat({
       publicConfig,
       signal: state.released.signal,
+      onUnmount,
     });
   } catch (error) {
     const handled = chatBoot.handleBootFailure(error, {

@@ -78,10 +78,11 @@ interface ChatClaim<Chat> {
   release(): void;
 
   /**
-   * Destroys the chat, whoever holds it now, as soon as boot finishes. It doesn't wait for the grace window or a running adoption.
-   * Nothing adopts it afterward, and a claim still waiting for it rejects. A
-   * new chat on the namespace waits for the shutdown. Does nothing once the
-   * chat has shut down or ended.
+   * Destroys the chat, or shuts down one without `destroy`, whoever holds it
+   * now, as soon as boot finishes. It doesn't wait for the grace window or a
+   * running adoption. Nothing adopts it afterward, and a claim still waiting
+   * for it rejects. A new chat on the namespace waits for the shutdown. Does
+   * nothing once the chat has shut down or ended.
    */
   end(): void;
 

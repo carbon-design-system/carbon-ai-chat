@@ -73,7 +73,7 @@ Removing the chat then ends it for good:
 
 - A live human agent conversation ends. Your handlers see the end-of-chat events, but they can't cancel them.
 - Saved session state is cleared, so the next user doesn't get the last user's accepted disclaimers or agent connection.
-- The next mount starts a new chat, even inside the grace window.
+- The next mount starts a new chat, even inside the grace window. It starts once the old chat finishes ending, which waits for a live human agent conversation to end.
 
 When you own that storage through {@link PublicConfig.persistedState | persistedState}, the chat can't clear your copy. Instead, your `onStateChange` gets the cleared value once. Save it, as you save any other value, so the old conversation doesn't come back on the next boot.
 

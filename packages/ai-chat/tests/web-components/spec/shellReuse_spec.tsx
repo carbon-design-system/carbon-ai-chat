@@ -1076,6 +1076,31 @@ describe('lifecycle.onUnmount', () => {
     expect(chat.isDestroyed).toBe(true);
   });
 
+  it('a change during onBeforeRender, before the chat has the config, counts', async () => {
+    const namespace = freshNamespace();
+    const held = resolvablePromise<void>();
+    const element = chatElement(reuseConfig(namespace));
+    let chat: ServiceManager;
+    element.onBeforeRender = async (instance) => {
+      chat = managerOf(instance);
+      element.lifecycle = { reuseInstance: true, onUnmount: 'destroy' };
+      element.remove();
+      await held;
+    };
+    document.body.appendChild(element);
+    await waitFor(() => expect(chat).toBeDefined());
+    await flushMicrotasks();
+
+    expect(chat.store.getState().config.public.lifecycle?.onUnmount).toBe(
+      undefined
+    );
+    expect(chat.isDestroyed).toBe(true);
+    held.doResolve();
+    await chat.shutdown();
+    const next = await mountElement(reuseConfig(namespace));
+    expect(managerOf(next.instance)).not.toBe(chat);
+  });
+
   it("a mount removed while its chat boots destroys it once it's ready", async () => {
     const namespace = freshNamespace();
     const destroy = jest.spyOn(ServiceManager.prototype, 'destroy');
@@ -1103,7 +1128,8 @@ describe('lifecycle.onUnmount', () => {
     element.remove();
     await flushMicrotasks();
 
-    // A remount doesn't wait for or collide with the chat being destroyed.
+    // A remount claims the namespace at once, without colliding, and boots
+    // after the destroyed chat shuts down.
     const onError = jest.fn();
     const pending = mountElement(reuseConfig(namespace, { onError }));
     await waitFor(() => expect(claimed).toHaveBeenCalledTimes(2));

@@ -51,9 +51,9 @@ export interface LifecycleConfig extends ChatSDKLifecycleConfig {
    * What removing the chat from the page does when {@link LifecycleConfig.reuseInstance} is on.
    * `'release'`, the default, keeps the conversation alive for the grace window, so a remount picks
    * it up. `'destroy'` ends it for good: a live human agent conversation ends, saved session state
-   * is cleared, and the next mount starts a new chat. When your app owns that storage through
-   * {@link PublicConfig.persistedState}, its `onStateChange` gets the cleared value instead. Use
-   * `'destroy'` where a remount must start fresh, such as on logout.
+   * is cleared, and the next mount starts a new chat once that end finishes. When your app owns
+   * that storage through {@link PublicConfig.persistedState}, its `onStateChange` gets the cleared
+   * value instead. Use `'destroy'` where a remount must start fresh, such as on logout.
    *
    * It's read when the chat is removed, so a config change before then counts. With
    * `reuseInstance` off, removing the chat always shuts it down and keeps saved session state, so

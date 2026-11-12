@@ -113,6 +113,12 @@ export function mergePublicConfig(config: Partial<PublicConfig>): PublicConfig {
 export async function bootPrebuiltChat(options: {
   publicConfig: PublicConfig;
   signal?: AbortSignal;
+  /**
+   * Reads the mount's current `lifecycle.onUnmount`, so a change the chat
+   * hasn't applied yet, such as one during `onBeforeRender`, still counts.
+   * Without it, the chat's own config is read.
+   */
+  onUnmount?: () => PublicConfig['lifecycle']['onUnmount'];
 }): Promise<{
   handle: ChatSDKHandle;
   serviceManager: ServiceManager;
@@ -129,9 +135,12 @@ export async function bootPrebuiltChat(options: {
   // The chat once boot creates it or the claim gets it. Before then, the
   // mount's own config is the one adoption will apply.
   let chat: ServiceManager | undefined;
-  const destroysOnUnmount = () =>
-    (chat?.store.getState().config.public ?? publicConfig).lifecycle
-      ?.onUnmount === 'destroy';
+  const onUnmount =
+    options.onUnmount ??
+    (() =>
+      (chat?.store.getState().config.public ?? publicConfig).lifecycle
+        ?.onUnmount);
+  const destroysOnUnmount = () => onUnmount() === 'destroy';
 
   // Extend dayjs with LocalizedFormat plugin once before usage
   dayjs.extend(LocalizedFormat);
