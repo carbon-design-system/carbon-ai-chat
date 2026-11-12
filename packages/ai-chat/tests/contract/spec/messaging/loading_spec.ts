@@ -276,14 +276,13 @@ describe('updateIsChatLoadingCounter', () => {
     expect(instance.getState().status).toBe('ready');
   });
 
-  it("resets the message-loading counter on 'reset', not the chat-loading one", async () => {
+  it("resets the chat-loading counter to 0 on 'reset', and leaves the message-loading one", async () => {
     const instance = await mount();
+    await host(() => instance.updateIsChatLoadingCounter('increase'));
     await host(() => instance.updateIsChatLoadingCounter('increase'));
     await host(() => instance.updateIsMessageLoadingCounter('increase', 'A'));
     await host(() => instance.updateIsChatLoadingCounter('reset'));
-    // Records `main`: its JSDoc says "reset" sets the chat-loading counter
-    // back to 0, but the action it dispatches resets the message-loading one.
-    expect(hydrating(instance)).toBe(1);
-    expect(loading(instance)).toEqual({ counter: 0, text: undefined });
+    expect(hydrating(instance)).toBe(0);
+    expect(loading(instance)).toEqual({ counter: 1, text: 'A' });
   });
 });

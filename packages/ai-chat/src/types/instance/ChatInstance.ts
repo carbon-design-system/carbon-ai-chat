@@ -326,7 +326,8 @@ interface ChatActions {
   /**
    * Either increases or decreases the internal counter that indicates whether the hydration fullscreen loading state is
    * shown. If the count is greater than zero, then the indicator is shown. Values of "increase" or "decrease" will
-   * increase or decrease the value. "reset" will set the value back to 0.
+   * increase or decrease the value. "reset" will set the value back to 0. It leaves the message-loading counter from
+   * {@link ChatInstance.updateIsMessageLoadingCounter} alone.
    *
    * You can access the current value via {@link ChatInstance.getState}.
    *
