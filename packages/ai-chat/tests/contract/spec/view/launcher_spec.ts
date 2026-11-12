@@ -83,7 +83,7 @@ describe('launcher', () => {
     expect(byTestId(PageObjectId.LAUNCHER)).not.toBeNull();
   });
 
-  it('comes back from the header close button, with the reason "main_window_minimized"', async () => {
+  it('comes back from the header close button, with the reason ViewChangeReason.MAIN_WINDOW_MINIMIZED', async () => {
     const backend = fakeBackend({ autoResolve: true });
     const { instance } = await contractChat({
       openChatByDefault: true,
@@ -101,13 +101,12 @@ describe('launcher', () => {
       BusEventType.VIEW_PRE_CHANGE,
       BusEventType.VIEW_CHANGE,
     ]);
-    const [change] = events.of<BusEventViewChange>(BusEventType.VIEW_CHANGE);
-    // `main` differs from its enum (MAIN-NOTES M26): the close button passes
-    // "main_window_minimized", not ViewChangeReason.MAIN_WINDOW_MINIMIZED
-    // ("mainWindowMinimized"), so a host comparing with the enum never matches.
-    expect(change.reason).toBe('main_window_minimized');
-    expect(change.reason).not.toBe(ViewChangeReason.MAIN_WINDOW_MINIMIZED);
-    expect(change.oldViewState).toEqual({ launcher: false, mainWindow: true });
+    for (const event of events.events as BusEventViewChange[]) {
+      expect(event.reason).toBe(ViewChangeReason.MAIN_WINDOW_MINIMIZED);
+      // A host that compares with the string, not the enum, still matches.
+      expect(event.reason).toBe('main_window_minimized');
+      expect(event.oldViewState).toEqual({ launcher: false, mainWindow: true });
+    }
   });
 
   it('is not drawn when launcher.isOn is false, though viewState.launcher is true', async () => {

@@ -263,9 +263,9 @@ export enum ViewChangeReason {
   LAUNCHER_CLICKED = 'launcherClicked',
 
   /**
-   * Indicates the user clicked on our built-in minimize button that closed the launcher.
+   * Indicates the user clicked the built-in minimize button in the chat header, which closed the main window.
    */
-  MAIN_WINDOW_MINIMIZED = 'mainWindowMinimized',
+  MAIN_WINDOW_MINIMIZED = 'main_window_minimized',
 
   /**
    * Indicates the view was changed by a call to {@link ChatInstance.changeView}.

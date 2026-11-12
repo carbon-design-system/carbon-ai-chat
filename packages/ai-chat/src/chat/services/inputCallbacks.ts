@@ -16,8 +16,11 @@ import { createMessageRequestForText } from '../utils/messageUtils';
 import { shouldSendSilently } from '../utils/fileAttachments';
 import {
   BusEventType,
+  MainWindowCloseReason,
   MessageSendSource,
+  ViewChangeReason,
 } from '../../types/events/eventBusTypes';
+import { ViewType } from '../../types/instance/apiTypes';
 import type { ServiceManager } from './ServiceManager';
 import type { AppState } from '../../types/state/AppState';
 import type { SendOptions } from '../../types/instance/ChatInstance';
@@ -75,9 +78,9 @@ export class InputCallbacks {
   };
 
   onClose = async () => {
-    await this.serviceManager.actions.changeView('launcher' as any, {
-      viewChangeReason: 'main_window_minimized' as any,
-      mainWindowCloseReason: 'default_minimize' as any,
+    await this.serviceManager.actions.changeView(ViewType.LAUNCHER, {
+      viewChangeReason: ViewChangeReason.MAIN_WINDOW_MINIMIZED,
+      mainWindowCloseReason: MainWindowCloseReason.DEFAULT_MINIMIZE,
     });
   };
 
