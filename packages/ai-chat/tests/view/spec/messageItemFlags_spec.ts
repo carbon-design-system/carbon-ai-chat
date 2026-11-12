@@ -16,6 +16,9 @@
 
 import { act, waitFor } from '@testing-library/react';
 
+import viewActions from '../../../src/chat/state/actions';
+import type { HistoryItem } from '../../../src/types/messaging/History';
+
 import actions from '../../../src/sdk/store/actions';
 import { addMessages } from '../../../src/sdk/services/haa/humanAgentUtils';
 import type { LocalMessageItem } from '../../../src/types/messaging/LocalMessageItem';
@@ -41,7 +44,24 @@ import {
   setupBeforeEach,
 } from '../../test_helpers';
 
+// Records every announcement instead of speaking it.
+const mockAnnounce = jest.fn();
+
+jest.mock(
+  '@carbon/ai-chat-components/es/globals/utils/aria-announcer-manager.js',
+  () => ({
+    ...jest.requireActual(
+      '@carbon/ai-chat-components/es/globals/utils/aria-announcer-manager.js'
+    ),
+    mountAriaAnnouncer: () => ({
+      announce: mockAnnounce,
+      disconnect: jest.fn(),
+    }),
+  })
+);
+
 beforeEach(setupBeforeEach);
+beforeEach(() => mockAnnounce.mockClear());
 afterEach(setupAfterEach);
 
 const config: PublicConfig = {
@@ -401,5 +421,139 @@ describe('per-item view flags', () => {
       'r1:i:0': { messageID: 'r1', optionSelected: inserted },
       'r2:i:0': { messageID: 'r2', optionSelected: fromHistory },
     });
+  });
+});
+
+function text(value: string): GenericItem {
+  return { response_type: MessageResponseTypes.TEXT, text: value };
+}
+
+/** How many times a screen reader announced text that contains `value`. */
+function announcementsOf(value: string) {
+  return mockAnnounce.mock.calls.filter(([announced]) =>
+    String(announced).includes(value)
+  ).length;
+}
+
+const flagsOf = (chat: Chat) => chat.store.getState().view.messageItemFlags;
+
+describe('announcement flags', () => {
+  it('keeps an announcement under the public item ID, not on the local copy, and announces once', async () => {
+    const chat = await chatWith(response('r1', [text('Hello there')]));
+    const [localID] = localIDsOf(chat.store, 'r1');
+
+    await waitFor(() => expect(announcementsOf('Hello there')).toBe(1));
+    expect(flagsOf(chat)).toEqual({
+      'r1:i:0': { messageID: 'r1', wasAnnounced: true },
+    });
+    const { ui_state } = chat.store.getState().allMessageItemsByID[localID];
+    expect('needsAnnouncement' in ui_state).toBe(false);
+    expect('wasAnnounced' in ui_state).toBe(false);
+
+    // A repeat of the view's record changes nothing.
+    const before = flagsOf(chat);
+    act(() =>
+      chat.store.dispatch(viewActions.setMessageItemAnnounced(localID))
+    );
+    expect(flagsOf(chat)).toBe(before);
+  });
+
+  it('asks for no announcement for a request, a streamed chunk, or loaded history, even rewritten', async () => {
+    const chat = await chatWith();
+
+    await act(() => chat.instance.send('A question'));
+    await act(() =>
+      chat.instance.messaging.addMessageChunk({
+        streaming_metadata: { response_id: 'r2' },
+        partial_item: {
+          streaming_metadata: { id: 'a' },
+          ...text('Streaming '),
+        },
+      } as any)
+    );
+    await act(() =>
+      chat.instance.messaging.insertHistory([
+        {
+          message: response('h1', [text('From history')]),
+          time: '2024-01-01T12:00:00.000Z',
+        },
+      ] as HistoryItem[])
+    );
+
+    // An upsert that builds a new copy of a loaded item keeps it unannounced.
+    await act(() =>
+      chat.instance.messaging.upsertMessage('h1', MessageState.COMPLETE, () =>
+        response('h1', [text('Edited history')])
+      )
+    );
+
+    expect(localIDsOf(chat.store, 'r2')).toHaveLength(1);
+    expect(localIDsOf(chat.store, 'h1')).toHaveLength(1);
+    expect(flagsOf(chat)).toEqual({});
+    expect(announcementsOf('A question')).toBe(0);
+    expect(announcementsOf('From history')).toBe(0);
+    expect(announcementsOf('Edited history')).toBe(0);
+  });
+
+  it('carries wasAnnounced through an upsert that builds a new copy, and starts over when addMessage replaces it', async () => {
+    const chat = await chatWith();
+    const upsert = (value: string) =>
+      act(() =>
+        chat.instance.messaging.upsertMessage('r3', MessageState.COMPLETE, () =>
+          response('r3', [text(value)])
+        )
+      );
+
+    await upsert('First version');
+    await waitFor(() => expect(announcementsOf('First version')).toBe(1));
+    const [localID] = localIDsOf(chat.store, 'r3');
+    const copy = chat.store.getState().allMessageItemsByID[localID];
+
+    await upsert('Second version');
+    expect(chat.store.getState().allMessageItemsByID[localID]).not.toBe(copy);
+    expect(flagsOf(chat)).toEqual({
+      'r3:i:0': { messageID: 'r3', wasAnnounced: true },
+    });
+
+    await act(() =>
+      chat.instance.messaging.addMessage(
+        response('r3', [text('Third version')])
+      )
+    );
+    await waitFor(() => expect(announcementsOf('Third version')).toBe(1));
+    expect(announcementsOf('Second version')).toBe(0);
+    expect(flagsOf(chat)).toEqual({
+      'r3:i:0': { messageID: 'r3', wasAnnounced: true },
+    });
+  });
+
+  it('moves the flags with a kept copy drawn under another ID, and drops them with the message', async () => {
+    const chat = await chatWith(
+      response('r1', [text('Kept text')]),
+      response('r2', [text('Other text')])
+    );
+    await waitFor(() => expect(announcementsOf('Other text')).toBe(1));
+
+    // A hidden item in front shifts the item's index; the list keeps the copy.
+    await act(() =>
+      chat.instance.messaging.upsertMessage('r1', MessageState.COMPLETE, () =>
+        response('r1', [
+          { ...text('hidden'), user_defined: { silent: true } } as GenericItem,
+          text('Kept text'),
+        ])
+      )
+    );
+    expect(flagsOf(chat)).toEqual({
+      'r1:i:1': { messageID: 'r1', wasAnnounced: true },
+      'r2:i:0': { messageID: 'r2', wasAnnounced: true },
+    });
+    expect(announcementsOf('Kept text')).toBe(1);
+
+    await act(() => chat.instance.messaging.removeMessages(['r1']));
+    expect(flagsOf(chat)).toEqual({
+      'r2:i:0': { messageID: 'r2', wasAnnounced: true },
+    });
+    await act(() => chat.instance.messaging.restartConversation());
+    expect(flagsOf(chat)).toEqual({});
   });
 });
