@@ -103,8 +103,9 @@ export function mergePublicConfig(config: Partial<PublicConfig>): PublicConfig {
  *
  * With `lifecycle.reuseInstance` on, it takes a claim on the namespace: a chat
  * released there less than a grace window ago is adopted instead of booted
- * (ADR-0003), and aborting `signal` releases the claim. A namespace another
- * mount holds rejects with a `ChatNamespaceError`.
+ * (ADR-0003), and aborting `signal` releases the claim, or destroys the chat
+ * with `lifecycle.onUnmount: 'destroy'`. A namespace another mount holds
+ * rejects with a `ChatNamespaceError`.
  *
  * This function does not render. Its caller, `cds-aichat-container`, attaches
  * the view and renders the app after the host's `onBeforeRender`.
@@ -118,8 +119,19 @@ export async function bootPrebuiltChat(options: {
   instance: ChatInstance;
   /** The chat's claim on its namespace, with reuse on. */
   claim?: ChatClaim<ServiceManager>;
+  /**
+   * Whether removing the mount destroys the chat, with reuse on. Read it at
+   * removal: it reads the chat's config, so an update counts.
+   */
+  destroysOnUnmount: () => boolean;
 }> {
   const { publicConfig, signal } = options;
+  // The chat once boot creates it or the claim gets it. Before then, the
+  // mount's own config is the one adoption will apply.
+  let chat: ServiceManager | undefined;
+  const destroysOnUnmount = () =>
+    (chat?.store.getState().config.public ?? publicConfig).lifecycle
+      ?.onUnmount === 'destroy';
 
   // Extend dayjs with LocalizedFormat plugin once before usage
   dayjs.extend(LocalizedFormat);
@@ -132,6 +144,7 @@ export async function bootPrebuiltChat(options: {
     sessionStorage: true,
     loadHistory: false,
     onServicesCreated: (serviceManager) => {
+      chat = serviceManager;
       attachChatView(serviceManager, publicConfig, derivedConfig);
       if (publicConfig.lifecycle?.reuseInstance === true) {
         collectSlotlessResponses(serviceManager);
@@ -148,14 +161,17 @@ export async function bootPrebuiltChat(options: {
     createInstance: createPrebuiltInstance,
     reuse: publicConfig.lifecycle?.reuseInstance === true,
     signal,
+    destroyOnAbort: destroysOnUnmount,
     adopt: (serviceManager) => adoptPrebuiltChat(serviceManager, publicConfig),
   });
   const serviceManager = chatOf(handle);
+  chat = serviceManager;
   return {
     handle,
     serviceManager,
     instance: serviceManager.instance,
     claim: claimOf(handle),
+    destroysOnUnmount,
   };
 }
 

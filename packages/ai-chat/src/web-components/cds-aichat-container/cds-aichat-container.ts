@@ -98,6 +98,8 @@ interface MountState {
   released: AbortController;
   /** Whether the chat outlives this mount for the next one to adopt. */
   reuse?: boolean;
+  /** With reuse, whether removing this mount destroys the chat instead. */
+  destroysOnUnmount?: () => boolean;
   /** Removes the handlers the host added through this mount's instance. */
   dropSubscriptions?: (instance: ChatInstance) => void;
   /** The view attached to the chat: view state, extension hosts, listeners. */
@@ -375,7 +377,9 @@ class ChatContainer extends FlattenedConfigElement {
    * Retires the current mount: no more rendering or callbacks from it, and
    * nothing it collected survives. Then its chat shuts down: requests and
    * uploads are cancelled, an agent conversation is disconnected without
-   * ending it, and saved session state stays for the next mount.
+   * ending it, and saved session state stays for the next mount. With reuse
+   * on, the chat waits for the next mount instead, or, with
+   * `lifecycle.onUnmount: 'destroy'`, ends for good.
    */
   private releaseMount() {
     const state = this.current;
@@ -385,6 +389,9 @@ class ChatContainer extends FlattenedConfigElement {
       // Settle the private waits so a boot paused on one resumes, finds it is
       // retired, and stops.
       state.initialViewCommitted.doResolve();
+      // The abort reads the same setting, so it destroys a chat that is
+      // still booting too.
+      const destroys = Boolean(state.reuse && state.destroysOnUnmount?.());
       state.released.abort();
       const unmountApp = () => {
         this.viewStateProvider.setValue(undefined);
@@ -395,12 +402,18 @@ class ChatContainer extends FlattenedConfigElement {
       } else {
         unmountApp();
       }
-      // A reused chat keeps running for the next mount; the host's handlers
-      // from this one stop, as they do when the chat shuts down.
-      if (state.reuse) {
-        state.dropSubscriptions?.(state.instance);
+      if (destroys) {
+        // The host's handlers stay, so they see the end-of-chat events. The
+        // chat drops them as it shuts down.
+        state.handle.destroy();
+      } else {
+        // A reused chat keeps running for the next mount; the host's handlers
+        // from this one stop, as they do when the chat shuts down.
+        if (state.reuse) {
+          state.dropSubscriptions?.(state.instance);
+        }
+        state.handle?.release();
       }
-      state.handle?.release();
     }
 
     this._instance?.off(this._mountHandlers);
@@ -554,10 +567,11 @@ class ChatContainer extends FlattenedConfigElement {
       if (!booted) {
         return;
       }
-      const { handle, serviceManager, instance, claim } = booted;
+      const { handle, serviceManager, instance, claim, destroysOnUnmount } =
+        booted;
       if (!isCurrent()) {
         // Released while its services started. Without reuse nothing else
-        // holds them; with it, the claim was already released.
+        // holds them; with it, the abort already released or ended the claim.
         handle.release();
         return;
       }
@@ -565,6 +579,7 @@ class ChatContainer extends FlattenedConfigElement {
       state.serviceManager = serviceManager;
       state.handle = handle;
       state.reuse = Boolean(claim);
+      state.destroysOnUnmount = destroysOnUnmount;
       state.dropSubscriptions = dropSubscriptions;
 
       state.bootConfig = config;
