@@ -47,7 +47,8 @@ interface SendInputValueArgs {
     PromptLineElement,
     'clearContent' | 'resetHistory'
   > | null;
-  clearTrackedValue?: () => void;
+  /** Gets the empty document when no surface was cleared to send it. */
+  clearTrackedValue?: (content?: JSONContent) => void;
 }
 
 function sendInputValue({
@@ -69,9 +70,14 @@ function sendInputValue({
   onSendInput(text, getDisplayContent() ?? undefined);
   clearLocalValue();
   const promptLine = getPromptLine();
-  promptLine?.clearContent();
-  promptLine?.resetHistory();
-  clearTrackedValue?.();
+  if (promptLine) {
+    // The surface's clear sends the empty document with its change event.
+    promptLine.clearContent();
+    promptLine.resetHistory();
+    clearTrackedValue?.();
+  } else {
+    clearTrackedValue?.(textToDoc(''));
+  }
 }
 
 interface MirrorInputValueArgs {

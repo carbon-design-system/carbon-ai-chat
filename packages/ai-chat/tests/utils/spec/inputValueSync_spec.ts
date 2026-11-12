@@ -131,6 +131,24 @@ describe('sendInputValue', () => {
     }
   );
 
+  it('clears the tracked document itself only when no surface is left to clear', () => {
+    const { args, promptLine } = sendFixture();
+
+    sendInputValue(args);
+
+    expect(promptLine.clearContent).toHaveBeenCalledTimes(1);
+    expect(args.clearTrackedValue).toHaveBeenCalledWith();
+
+    const noSurface = sendFixture();
+    noSurface.args.getPromptLine.mockReturnValue(null);
+
+    sendInputValue(noSurface.args);
+
+    expect(noSurface.args.clearTrackedValue).toHaveBeenCalledWith(
+      textToDoc('')
+    );
+  });
+
   it('sends a file without text and clears local input when tracking and the surface are absent', () => {
     const { args } = sendFixture();
     args.getRawValue.mockReturnValue('   ');
