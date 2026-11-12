@@ -7,7 +7,4 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import './src/message-item-shell.js';
-
-export { default as CDSAIChatMessageItemShell } from './src/message-item-shell.js';
-export type { MessageItemShellRowType } from './src/message-item-shell.js';
+export * from '../aichat-message-item-shell/index.js';

@@ -13,7 +13,7 @@ import '../index.js';
 import '../../message-byline/index.js';
 import type CDSAIChatMessageItemShell from '../src/message-item-shell.js';
 
-const blockClass = `${prefix}-message-item-shell`;
+const blockClass = `${prefix}-aichat-message-item-shell`;
 const rowTypes = ['request', 'response'] as const;
 
 /** Renders a shell of the given row type. */

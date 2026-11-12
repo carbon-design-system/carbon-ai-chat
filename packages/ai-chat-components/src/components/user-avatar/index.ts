@@ -7,6 +7,4 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import './src/user-avatar.js';
-
-export { default as CDSAIChatUserAvatar } from './src/user-avatar.js';
+export * from '../aichat-user-avatar/index.js';

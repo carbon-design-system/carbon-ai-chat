@@ -43,6 +43,9 @@ const componentEntries = {
   'file-uploads.min': 'src/components/aichat-file-uploads/index.ts',
   'launcher.min': 'src/components/aichat-launcher/index.ts',
   'markdown.min': 'src/components/aichat-markdown/index.ts',
+  'message-byline.min': 'src/components/aichat-message-byline/index.ts',
+  'message-item-shell.min':
+    'src/components/aichat-message-item-shell/index.ts',
   'messages-shell.min': 'src/components/aichat-messages-shell/index.ts',
   'processing.min': 'src/components/aichat-processing/index.ts',
   'prompt-line.min': 'src/components/aichat-prompt-line/index.ts',
@@ -50,6 +53,7 @@ const componentEntries = {
   'table.min': 'src/components/aichat-table/index.ts',
   'toolbar.min': 'src/components/aichat-toolbar/index.ts',
   'truncated-text.min': 'src/components/aichat-truncated-text/index.ts',
+  'user-avatar.min': 'src/components/aichat-user-avatar/index.ts',
   'video-player.min': 'src/components/aichat-video-player/index.ts',
   'workspace-shell.min': 'src/components/aichat-workspace-shell/index.ts',
 };
