@@ -177,6 +177,14 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
   @property({ attribute: 'copy-button-tooltip-content' })
   copyButtonTooltipContent = 'Copy to clipboard';
 
+  /** Feedback text shown after copying. */
+  @property({ attribute: 'feedback' })
+  feedback = 'Copied!';
+
+  /** The number in milliseconds to determine how long the feedback tooltip should remain. */
+  @property({ type: Number, attribute: 'feedback-timeout' })
+  feedbackTimeout = 2000;
+
   /** Label for folding/collapsing code. */
   @property({ attribute: 'fold-collapse-label' })
   foldCollapseLabel = 'Collapse code block';
@@ -954,6 +962,8 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
     const copyAction: Action = {
       text: this.copyButtonTooltipContent,
       icon: Copy16,
+      feedback: this.feedback,
+      feedbackTimeout: this.feedbackTimeout,
       onClick: () => this._handleCopyClick(),
     };
 

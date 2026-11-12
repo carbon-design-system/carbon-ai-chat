@@ -8,7 +8,7 @@
 
 - Kind: TypeAlias
 - Category: Instance
-- Reference: https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/types/Type_reference.ConversationStatus.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/types/Type_reference.ConversationStatus.html
 
 The current phase of conversation work, exposed as `status` on PublicChatState.
 

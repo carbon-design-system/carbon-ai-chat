@@ -33,6 +33,10 @@ export interface Action {
   text: string;
   delete?: boolean;
   divider?: boolean;
+  /**
+   * Prevents activation while keeping the action visible. Defaults to false.
+   */
+  disabled?: boolean;
   icon: CarbonIcon;
   onClick: () => void;
 }
@@ -125,6 +129,10 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
 
   @query(`${prefix}-aichat-history-panel-item-input`) input!: HTMLElement;
 
+  @query('cds-overflow-menu') private _overflowMenu?: HTMLElement & {
+    open: boolean;
+  };
+
   /**
    * MutationObserver to watch for changes to parent panel's always-show-actions attribute
    */
@@ -144,6 +152,10 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
    * Handle menu item clicks
    */
   private _handleMenuItemClick = (action: Action) => {
+    // Carbon ignores disabled items, but the host listener still sees the click.
+    if (action.disabled) {
+      return;
+    }
     // Dispatch a custom event with item details
     const itemActionEvent = new CustomEvent('history-item-menu-action', {
       bubbles: true,
@@ -264,6 +276,41 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
     }
   }
 
+  /**
+   * Close the menu when its focused action becomes disabled, so focus returns
+   * to the trigger instead of resting on an item that cannot act.
+   */
+  willUpdate(changedProperties: Map<string, any>) {
+    super.willUpdate(changedProperties);
+    const menu = this._overflowMenu;
+    if (!changedProperties.has('actions') || !menu?.open) {
+      return;
+    }
+    let focused = this.ownerDocument.activeElement;
+    while (
+      focused?.shadowRoot?.activeElement &&
+      !focused.matches('cds-menu-item')
+    ) {
+      focused = focused.shadowRoot.activeElement;
+    }
+    if (!focused?.matches('cds-menu-item') || !menu.contains(focused)) {
+      return;
+    }
+    const focusedIndex = Array.from(
+      menu.querySelectorAll('cds-menu-item')
+    ).indexOf(focused);
+    const focusedAction = changedProperties.get('actions')?.[focusedIndex];
+    if (
+      focusedAction &&
+      this.actions.some(
+        (action) => action.disabled && action.text === focusedAction.text
+      )
+    ) {
+      menu.open = false;
+      menu.focus();
+    }
+  }
+
   updated(changedProperties: Map<string, any>) {
     super.updated(changedProperties);
 
@@ -329,6 +376,7 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
                         <cds-menu-item
                           label=${action.text}
                           kind=${action.delete ? 'danger' : 'default'}
+                          ?disabled=${action.disabled}
                           @keydown=${suppressMenuItemSpaceScroll}
                           @click=${() => handleMenuItemClick(action)}>
                           ${
