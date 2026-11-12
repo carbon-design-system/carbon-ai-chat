@@ -494,7 +494,11 @@ test('rejects unrelated declaration errors and other setter return types', async
       'acme',
       resolve
     ),
-    { reasonCode: 'SetAccesorCannotHaveReturnType' }
+    (error) =>
+      [
+        'SetAccesorCannotHaveReturnType',
+        'SetAccessorCannotHaveReturnType',
+      ].includes(error.reasonCode)
   );
   await assert.rejects(
     transformModule(
