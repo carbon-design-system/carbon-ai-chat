@@ -18,6 +18,7 @@
 import { act } from '@testing-library/react';
 
 import {
+  ChatInstance,
   ChatInstanceMessaging,
   ChatInstanceServiceDeskActions,
   ConversationStatus,
@@ -28,7 +29,7 @@ import {
   SendOptions,
 } from '../../../src/aiChatEntry';
 import { FakeBackend, SentRequest, fakeBackend } from './backend';
-import { contractChat } from './mount';
+import { contractChat, contractSetup } from './mount';
 
 export interface ContractDriver extends EventHandlers {
   /** Names the driver in test titles. */
@@ -84,15 +85,33 @@ export const DRIVERS: ReadonlyArray<[string, DriverFactory]> = [
 
 /**
  * Runs a block of shared scenarios once per driver. Inside, `makeDriver`
- * builds that driver for a test.
+ * builds that driver for a test. Each block gets `contractSetup`.
  */
 export function describeShared(
   title: string,
   body: (makeDriver: DriverFactory) => void
 ): void {
   describe.each(DRIVERS)(`${title} [%s]`, (_name, makeDriver) => {
+    contractSetup();
     body(makeDriver);
   });
+}
+
+/** What `startSend` needs: a way to send, and the backend that gets it. */
+export type Sender = Pick<ContractDriver, 'send' | 'backend'>;
+
+/**
+ * The `startSend` pair for a plain mount: the instance's own `send`, and the
+ * fake backend the test passed in as `customSendMessage`.
+ */
+export function instanceSender(
+  instance: ChatInstance,
+  backend: FakeBackend
+): Sender {
+  return {
+    send: (message, options) => instance.send(message, options),
+    backend,
+  };
 }
 
 /** A send in flight: the call the backend got, and the send's own promise. */
@@ -107,7 +126,7 @@ export interface StartedSend {
  * send to settle: `send` resolves only after `customSendMessage` does.
  */
 export async function startSend(
-  chat: ContractDriver,
+  chat: Sender,
   message: MessageRequest | string,
   options?: SendOptions
 ): Promise<StartedSend> {

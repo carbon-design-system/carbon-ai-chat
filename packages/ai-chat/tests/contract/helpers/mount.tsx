@@ -44,6 +44,9 @@ export interface ContractMount {
 
 const MOUNT_TIMEOUT = 10000;
 
+/** How long a describe block's warm-up may take, under a loaded machine. */
+const WARM_UP_TIMEOUT = 60_000;
+
 let lazyDepsLoaded: Promise<void> | null = null;
 
 /**
@@ -74,8 +77,15 @@ async function waitForMount(
  * Renders `ChatContainer` with the given props and waits for its first
  * render. `onBeforeRender` and `onAfterRender` in `props` still run.
  */
-export async function contractChat(
+export function contractChat(
   props: Partial<ChatContainerProps> = {}
+): Promise<ContractMount> {
+  return mountChatContainer(props, MOUNT_TIMEOUT);
+}
+
+async function mountChatContainer(
+  props: Partial<ChatContainerProps>,
+  timeout: number
 ): Promise<ContractMount> {
   await warmUp();
   let instance: ChatInstance | null = null;
@@ -97,7 +107,7 @@ export async function contractChat(
   await act(async () => {
     result = render(<ChatContainer {...wrap(props)} />);
   });
-  await waitForMount(() => instance !== null && rendered);
+  await waitForMount(() => instance !== null && rendered, timeout);
 
   return {
     instance,
@@ -228,4 +238,19 @@ export function contractCleanup(): void {
   document.body.innerHTML = '';
   window.sessionStorage.clear();
   window.localStorage.clear();
+}
+
+/**
+ * Registers a describe block's setup. Before its first test it loads the lazy
+ * chunks and mounts one throwaway chat, under a long timeout, so a cold start
+ * doesn't count against the first test's own timeout. After each test it runs
+ * `contractCleanup`. `describeShared` calls it; call it first in every other
+ * describe block that mounts a chat.
+ */
+export function contractSetup(): void {
+  beforeAll(async () => {
+    await mountChatContainer({}, WARM_UP_TIMEOUT);
+    contractCleanup();
+  }, WARM_UP_TIMEOUT);
+  afterEach(contractCleanup);
 }

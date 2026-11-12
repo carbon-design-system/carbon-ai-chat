@@ -10,6 +10,7 @@
 import {
   BusEvent,
   BusEventType,
+  ChatInstance,
   EventHandlers,
   TypeAndHandler,
 } from '../../../src/aiChatEntry';
@@ -64,5 +65,32 @@ export function recordEvents(
     stop: () => {
       target.off(handlers);
     },
+  };
+}
+
+/** Counts `chat:ready` from the first moment a host can subscribe. */
+export interface ChatReadyCounter {
+  /** Pass this as the mount's `onBeforeRender`. */
+  onBeforeRender: (instance: ChatInstance) => void;
+  /** How many times `chat:ready` has fired. */
+  count(): number;
+}
+
+/**
+ * Subscribes to `chat:ready` in `onBeforeRender`, before the chat can fire
+ * it, and counts each event.
+ */
+export function countChatReady(): ChatReadyCounter {
+  let count = 0;
+  return {
+    onBeforeRender: (instance) => {
+      instance.on({
+        type: BusEventType.CHAT_READY,
+        handler: () => {
+          count += 1;
+        },
+      });
+    },
+    count: () => count,
   };
 }

@@ -14,11 +14,13 @@ import {
   PublicConfigMessaging,
 } from '../../../../src/aiChatEntry';
 import {
-  FakeBackend,
   SentRequest,
+  advance,
   contractChat,
-  contractCleanup,
+  contractSetup,
   fakeBackend,
+  instanceSender,
+  startSend,
   textResponse,
 } from '../../helpers';
 
@@ -38,7 +40,7 @@ async function host(call: () => unknown): Promise<void> {
 // @covers instance.updateIsMessageLoadingCounter state.isMessageLoadingCounter
 // @covers state.isMessageLoadingText
 describe('updateIsMessageLoadingCounter', () => {
-  afterEach(contractCleanup);
+  contractSetup();
 
   async function mount() {
     const { instance } = await contractChat({
@@ -118,9 +120,9 @@ describe('updateIsMessageLoadingCounter', () => {
 // @covers config.messaging.messageLoadingIndicatorTimeoutSecs
 // @covers state.isMessageLoadingCounter instance.messaging.addMessage
 describe('messageLoadingIndicatorTimeoutSecs', () => {
+  contractSetup();
   afterEach(() => {
     jest.useRealTimers();
-    contractCleanup();
   });
 
   /**
@@ -129,11 +131,7 @@ describe('messageLoadingIndicatorTimeoutSecs', () => {
    */
   async function pendingSend(
     messaging: Partial<PublicConfigMessaging> = {}
-  ): Promise<{
-    instance: ChatInstance;
-    backend: FakeBackend;
-    sent: SentRequest;
-  }> {
+  ): Promise<{ instance: ChatInstance; sent: SentRequest }> {
     const backend = fakeBackend();
     const { instance } = await contractChat({
       messaging: {
@@ -143,17 +141,12 @@ describe('messageLoadingIndicatorTimeoutSecs', () => {
       },
     });
     jest.useFakeTimers();
-    await act(async () => {
-      instance.send('hello').catch((): void => undefined);
-    });
-    const sent = await backend.next();
-    return { instance, backend, sent };
-  }
-
-  async function advance(ms: number): Promise<void> {
-    await act(async () => {
-      await jest.advanceTimersByTimeAsync(ms);
-    });
+    const { sent, done } = await startSend(
+      instanceSender(instance, backend),
+      'hello'
+    );
+    done.catch((): void => undefined);
+    return { instance, sent };
   }
 
   it('counts one loading indicator 4 seconds into a send by default', async () => {
@@ -216,7 +209,7 @@ describe('messageLoadingIndicatorTimeoutSecs', () => {
 // @covers config.messaging.messageLoadingIndicatorTimeoutSecs
 // @covers instance.updateIsMessageLoadingCounter state.isMessageLoadingCounter
 describe('restart and the message-loading counter', () => {
-  afterEach(contractCleanup);
+  contractSetup();
 
   it('clears a host-set counter on restart', async () => {
     const { instance } = await contractChat({
@@ -244,7 +237,7 @@ describe('restart and the message-loading counter', () => {
 // @covers instance.updateIsChatLoadingCounter state.isHydratingCounter
 // @covers state.status
 describe('updateIsChatLoadingCounter', () => {
-  afterEach(contractCleanup);
+  contractSetup();
 
   async function mount() {
     const { instance } = await contractChat({

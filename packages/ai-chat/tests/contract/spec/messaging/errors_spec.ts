@@ -10,9 +10,7 @@
 import { act, waitFor } from '@testing-library/react';
 
 import {
-  BusEventType,
   CancellationReason,
-  ChatInstance,
   MessageErrorState,
   MessageResponseTypes,
   MessageState,
@@ -22,10 +20,13 @@ import {
 } from '../../../../src/aiChatEntry';
 import {
   ContractDriver,
-  FakeBackend,
+  DriverFactory,
+  SEND_ERROR_MESSAGE,
   StartedSend,
+  advance,
   contractChat,
-  contractCleanup,
+  contractSetup,
+  countChatReady,
   describeShared,
   fakeBackend,
   finishSend,
@@ -44,12 +45,6 @@ function outcomeOf(started: StartedSend): Promise<Outcome> {
   );
 }
 
-async function advance(ms: number): Promise<void> {
-  await act(async () => {
-    await jest.advanceTimersByTimeAsync(ms);
-  });
-}
-
 /** The error state the chat wrote on a message in state. */
 function errorStateOf(chat: ContractDriver, id: string) {
   return chat.messages().find((message) => message.id === id)?.history
@@ -63,14 +58,11 @@ function errorStateOf(chat: ContractDriver, id: string) {
 describeShared('message timeout', (makeDriver) => {
   afterEach(() => {
     jest.useRealTimers();
-    contractCleanup();
   });
 
   /** A driver whose send timers are fake, and a send the backend holds open. */
   async function timedSend(messaging: Partial<PublicConfigMessaging>) {
-    const chat = await makeDriver({
-      messaging: { skipWelcome: true, ...messaging },
-    });
+    const chat = await makeDriver({ messaging });
     jest.useFakeTimers();
     const started = await startSend(chat, 'hello');
     const outcome = outcomeOf(started);
@@ -176,8 +168,6 @@ describeShared('message timeout', (makeDriver) => {
 // @covers export.aiChatEntry.MessageErrorState instance.send
 // @covers response-type.inline_error
 describeShared('send failure', (makeDriver) => {
-  afterEach(contractCleanup);
-
   async function failedSend(
     chat: ContractDriver,
     error: unknown,
@@ -193,7 +183,7 @@ describeShared('send failure', (makeDriver) => {
   }
 
   it('rejects the send with the rejection text when customSendMessage rejects', async () => {
-    const chat = await makeDriver({ messaging: { skipWelcome: true } });
+    const chat = await makeDriver();
     const { settled } = await failedSend(chat, 'backend down');
     expect(settled.resolved).toBe(false);
     expect((settled as { error: Error }).error).toBeInstanceOf(Error);
@@ -201,7 +191,7 @@ describeShared('send failure', (makeDriver) => {
   });
 
   it('marks the request failed and reads error', async () => {
-    const chat = await makeDriver({ messaging: { skipWelcome: true } });
+    const chat = await makeDriver();
     const { started } = await failedSend(chat, 'backend down');
     expect(chat.status()).toBe('error');
     expect(chat.messages().map((message) => message.id)).toEqual([
@@ -213,7 +203,7 @@ describeShared('send failure', (makeDriver) => {
   });
 
   it('adds an inline error response after a silent send fails', async () => {
-    const chat = await makeDriver({ messaging: { skipWelcome: true } });
+    const chat = await makeDriver();
     const { started } = await failedSend(chat, 'backend down', {
       silent: true,
     });
@@ -229,13 +219,13 @@ describeShared('send failure', (makeDriver) => {
   });
 
   it('adds no inline error response after a visible send fails', async () => {
-    const chat = await makeDriver({ messaging: { skipWelcome: true } });
+    const chat = await makeDriver();
     await failedSend(chat, 'backend down');
     expect(chat.messages()).toHaveLength(1);
   });
 
   it('leaves error for submitted on the next send, and ready once it settles', async () => {
-    const chat = await makeDriver({ messaging: { skipWelcome: true } });
+    const chat = await makeDriver();
     await failedSend(chat, 'backend down');
     const next = await startSend(chat, 'again');
     expect(chat.status()).toBe('submitted');
@@ -245,84 +235,63 @@ describeShared('send failure', (makeDriver) => {
   });
 });
 
-/** Mounts with an `onError` that records each call. */
-async function mountWithOnError(
-  messaging: Partial<PublicConfigMessaging> = {},
-  extra: { openChatByDefault?: boolean } = {}
-): Promise<{
-  instance: ChatInstance;
-  backend: FakeBackend;
-  errors: OnErrorData[];
-}> {
-  const backend = fakeBackend();
+/** Makes a driver whose `onError` records each call. */
+async function driverWithOnError(
+  makeDriver: DriverFactory,
+  messaging: Partial<PublicConfigMessaging> = {}
+): Promise<{ chat: ContractDriver; errors: OnErrorData[] }> {
   const errors: OnErrorData[] = [];
-  const { instance } = await contractChat({
-    ...extra,
+  const chat = await makeDriver({
     onError: (data) => {
       errors.push(data);
     },
-    messaging: {
-      skipWelcome: true,
-      customSendMessage: backend.customSendMessage,
-      ...messaging,
-    },
+    messaging,
   });
-  return { instance, backend, errors };
+  return { chat, errors };
 }
 
 // @covers config.onError export.aiChatEntry.OnErrorType
 // @covers config.messaging.messageTimeoutSecs config.messaging.customSendMessage
-describe('onError for messaging failures', () => {
+describeShared('onError for messaging failures', (makeDriver) => {
   afterEach(() => {
     jest.useRealTimers();
-    contractCleanup();
   });
 
   async function rejectSend(
-    instance: ChatInstance,
-    backend: FakeBackend,
+    chat: ContractDriver,
     error: unknown
   ): Promise<unknown> {
-    let rejection: unknown;
-    let done: Promise<void>;
+    const started = await startSend(chat, 'hello');
+    const outcome = outcomeOf(started);
     await act(async () => {
-      done = instance.send('hello').catch((caught) => {
-        rejection = caught;
-      });
+      started.sent.reject(error);
+      await outcome;
     });
-    const sent = await backend.next();
-    await act(async () => {
-      sent.reject(error);
-      await done;
-    });
-    return rejection;
+    const settled = await outcome;
+    return 'error' in settled ? settled.error : undefined;
   }
 
   it('reports a string rejection as MESSAGE_COMMUNICATION with the string as otherData', async () => {
-    const { instance, backend, errors } = await mountWithOnError();
-    await rejectSend(instance, backend, 'backend down');
+    const { chat, errors } = await driverWithOnError(makeDriver);
+    await rejectSend(chat, 'backend down');
     expect(errors).toEqual([
       {
         errorType: OnErrorType.MESSAGE_COMMUNICATION,
-        message: 'An error occurred sending a message',
+        message: SEND_ERROR_MESSAGE,
         otherData: 'backend down',
       },
     ]);
   });
 
   it('reports an Error rejection with its JSON as otherData', async () => {
-    const { instance, backend, errors } = await mountWithOnError();
-    const rejection = await rejectSend(
-      instance,
-      backend,
-      new Error('backend down')
-    );
+    const { chat, errors } = await driverWithOnError(makeDriver);
+    const rejection = await rejectSend(chat, new Error('backend down'));
     // On `main` the rejection goes through `JSON.stringify`, so an `Error`
     // loses its message: `otherData` and the send's own error read "{}".
     expect(errors).toEqual([
       {
         errorType: OnErrorType.MESSAGE_COMMUNICATION,
-        message: 'An error occurred sending a message',
+        message: SEND_ERROR_MESSAGE,
         otherData: '{}',
       },
     ]);
@@ -330,21 +299,19 @@ describe('onError for messaging failures', () => {
   });
 
   it('reports one error per failed send', async () => {
-    const { instance, backend, errors } = await mountWithOnError();
-    await rejectSend(instance, backend, 'first');
-    await rejectSend(instance, backend, 'second');
+    const { chat, errors } = await driverWithOnError(makeDriver);
+    await rejectSend(chat, 'first');
+    await rejectSend(chat, 'second');
     expect(errors.map((error) => error.otherData)).toEqual(['first', 'second']);
   });
 
   it('reports a timeout once, with the TIMEOUT reason as its message', async () => {
-    const { instance, backend, errors } = await mountWithOnError({
+    const { chat, errors } = await driverWithOnError(makeDriver, {
       messageTimeoutSecs: 2,
     });
     jest.useFakeTimers();
-    await act(async () => {
-      instance.send('hello').catch((): void => undefined);
-    });
-    await backend.next();
+    const started = await startSend(chat, 'hello');
+    started.done.catch((): void => undefined);
     await advance(1999);
     expect(errors).toEqual([]);
     await advance(1);
@@ -358,16 +325,8 @@ describe('onError for messaging failures', () => {
   });
 
   it('reports nothing while a send succeeds', async () => {
-    const { instance, backend, errors } = await mountWithOnError();
-    let done: Promise<void>;
-    await act(async () => {
-      done = instance.send('hello');
-    });
-    const sent = await backend.next();
-    await act(async () => {
-      sent.resolve();
-      await done;
-    });
+    const { chat, errors } = await driverWithOnError(makeDriver);
+    await finishSend(await startSend(chat, 'hello'));
     expect(errors).toEqual([]);
   });
 });
@@ -376,14 +335,10 @@ describe('onError for messaging failures', () => {
 // @covers event.chat:ready config.openChatByDefault state.messages
 // @covers export.aiChatEntry.MessageErrorState
 describe('a failed welcome request', () => {
-  beforeEach(() => {
-    sessionStorage.clear();
-    localStorage.clear();
-  });
-  afterEach(contractCleanup);
+  contractSetup();
 
   it('reports MESSAGE_COMMUNICATION, reads error, and still fires chat:ready', async () => {
-    let ready = 0;
+    const ready = countChatReady();
     const backend = fakeBackend();
     const errors: OnErrorData[] = [];
     const { instance } = await contractChat({
@@ -392,24 +347,17 @@ describe('a failed welcome request', () => {
         errors.push(data);
       },
       messaging: { customSendMessage: backend.customSendMessage },
-      onBeforeRender: (handed) => {
-        handed.on({
-          type: BusEventType.CHAT_READY,
-          handler: () => {
-            ready += 1;
-          },
-        });
-      },
+      onBeforeRender: ready.onBeforeRender,
     });
     const sent = await backend.next();
     await act(async () => {
       sent.reject('welcome failed');
     });
-    await waitFor(() => expect(ready).toBe(1));
+    await waitFor(() => expect(ready.count()).toBe(1));
     expect(errors).toEqual([
       {
         errorType: OnErrorType.MESSAGE_COMMUNICATION,
-        message: 'An error occurred sending a message',
+        message: SEND_ERROR_MESSAGE,
         otherData: 'welcome failed',
       },
     ]);

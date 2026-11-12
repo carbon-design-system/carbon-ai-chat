@@ -16,8 +16,11 @@ import {
 import {
   FakeBackend,
   contractChat,
-  contractCleanup,
+  contractSetup,
   fakeBackend,
+  finishSend,
+  instanceSender,
+  startSend,
   textResponse,
 } from '../../helpers';
 
@@ -35,7 +38,7 @@ const activeResponseId = (instance: ChatInstance) =>
 // @covers instance.messaging.addMessageChunk instance.messaging.removeMessages
 // @covers instance.messaging.clearConversation instance.messaging.restartConversation
 describe('activeResponseId', () => {
-  afterEach(contractCleanup);
+  contractSetup();
 
   async function mount(): Promise<{
     instance: ChatInstance;
@@ -67,22 +70,15 @@ describe('activeResponseId', () => {
   it('clears on send, and names the reply once it arrives', async () => {
     const { instance, backend } = await mount();
     await host(() => instance.messaging.addMessage(textResponse('a', 'r1')));
-    let done: Promise<void>;
-    await act(async () => {
-      done = instance.send('hello');
-    });
-    const sent = await backend.next();
+    const started = await startSend(instanceSender(instance, backend), 'hello');
     expect(activeResponseId(instance)).toBeNull();
     await host(() =>
       instance.messaging.addMessage(
-        textResponse('b', 'r2', { request_id: sent.request.id })
+        textResponse('b', 'r2', { request_id: started.sent.request.id })
       )
     );
     expect(activeResponseId(instance)).toBe('r2');
-    await act(async () => {
-      sent.resolve();
-      await done;
-    });
+    await finishSend(started);
     expect(activeResponseId(instance)).toBe('r2');
   });
 

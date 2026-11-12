@@ -7,8 +7,6 @@
  *  @license
  */
 
-import { act } from '@testing-library/react';
-
 import {
   BusEventChunkUserDefinedResponse,
   BusEventPreReceive,
@@ -16,119 +14,28 @@ import {
   BusEventType,
   BusEventUserDefinedResponse,
   CompleteItemChunk,
-  FinalResponseChunk,
-  GenericItem,
-  ItemStreamingMetadata,
   MessageResponse,
   MessageResponseTypes,
   MessageState,
-  PartialItemChunk,
-  StreamChunk,
 } from '../../../../src/aiChatEntry';
 import {
-  ContractDriver,
-  contractCleanup,
-  contractChat,
+  addChunk,
+  completeText,
   describeShared,
-  fakeBackend,
+  finalChunk,
   finishSend,
   outputTexts,
+  partialText,
+  partialUserDefined,
   recordEvents,
   startSend,
+  textItem,
+  textsOf,
+  userDefinedItem,
 } from '../../helpers';
-
-/** A text `partial_item` chunk. Leave `itemID` out for an item with no ID. */
-function partialText(
-  responseID: string,
-  itemID: string | undefined,
-  text: string,
-  metadata: Partial<ItemStreamingMetadata> = {}
-): PartialItemChunk {
-  return {
-    streaming_metadata: { response_id: responseID },
-    partial_item: {
-      response_type: MessageResponseTypes.TEXT,
-      text,
-      ...(itemID ? { streaming_metadata: { id: itemID, ...metadata } } : {}),
-    },
-  };
-}
-
-/** A text `complete_item` chunk. */
-function completeText(
-  responseID: string,
-  itemID: string,
-  text: string,
-  metadata: Partial<ItemStreamingMetadata> = {}
-): CompleteItemChunk {
-  return {
-    streaming_metadata: { response_id: responseID },
-    complete_item: {
-      response_type: MessageResponseTypes.TEXT,
-      text,
-      streaming_metadata: { id: itemID, ...metadata },
-    },
-  };
-}
-
-/** A `final_response` chunk with these items. */
-function finalChunk(
-  responseID: string,
-  generic: GenericItem[],
-  extra: Partial<MessageResponse> = {}
-): FinalResponseChunk {
-  return { final_response: { id: responseID, output: { generic }, ...extra } };
-}
-
-/** A text item, with a streaming ID when `itemID` is given. */
-function textItem(text: string, itemID?: string): GenericItem {
-  return {
-    response_type: MessageResponseTypes.TEXT,
-    text,
-    ...(itemID ? { streaming_metadata: { id: itemID } } : {}),
-  } as GenericItem;
-}
-
-/** A user_defined item, with a streaming ID. */
-function userDefinedItem(
-  itemID: string,
-  userDefined: Record<string, unknown>
-): GenericItem {
-  return {
-    response_type: MessageResponseTypes.USER_DEFINED,
-    user_defined: userDefined,
-    streaming_metadata: { id: itemID },
-  } as GenericItem;
-}
-
-/** A user_defined `partial_item` chunk. */
-function partialUserDefined(
-  responseID: string,
-  itemID: string,
-  userDefined: Record<string, unknown>
-): PartialItemChunk {
-  return {
-    streaming_metadata: { response_id: responseID },
-    partial_item: userDefinedItem(itemID, userDefined),
-  };
-}
-
-async function addChunk(chat: ContractDriver, chunk: StreamChunk) {
-  await act(async () => {
-    await chat.messaging.addMessageChunk(chunk);
-  });
-}
-
-/** The text items of one message in state, or `undefined` if it isn't there. */
-function textsOf(chat: ContractDriver, messageID: string) {
-  const message = chat.messages().find((value) => value.id === messageID);
-  return message ? outputTexts(message as MessageResponse) : undefined;
-}
 
 // @covers instance.messaging.addMessageChunk state.messages
 describeShared('addMessageChunk builds a streamed response', (makeDriver) => {
-  afterEach(contractCleanup);
-
   it('shows each partial_item in messages as it arrives, joining its text', async () => {
     const chat = await makeDriver();
     const { sent } = await startSend(chat, 'hello');
@@ -195,8 +102,6 @@ describeShared('addMessageChunk builds a streamed response', (makeDriver) => {
 
 // @covers state.status instance.messaging.addMessageChunk
 describeShared('status during a stream', (makeDriver) => {
-  afterEach(contractCleanup);
-
   it('goes submitted, then streaming at the first chunk, and ready only once the send settles', async () => {
     const chat = await makeDriver();
     expect(chat.status()).toBe('ready');
@@ -237,8 +142,6 @@ describeShared('status during a stream', (makeDriver) => {
 
 // @covers event.pre:receive event.receive instance.messaging.addMessageChunk
 describeShared('receive events for a stream', (makeDriver) => {
-  afterEach(contractCleanup);
-
   it('fires pre:receive then receive once, at final_response only', async () => {
     const chat = await makeDriver();
     const events = recordEvents(chat, [
@@ -281,8 +184,6 @@ describeShared('receive events for a stream', (makeDriver) => {
 
 // @covers event.chunk:userDefinedResponse event.userDefinedResponse instance.messaging.addMessageChunk
 describeShared('a streamed user_defined item', (makeDriver) => {
-  afterEach(contractCleanup);
-
   it('fires chunk:userDefinedResponse per chunk, with that chunk’s item, and merges the item in messages', async () => {
     const chat = await makeDriver();
     const events = recordEvents(chat, [
@@ -379,8 +280,6 @@ describeShared('a streamed user_defined item', (makeDriver) => {
 
 // @covers instance.messaging.addMessageChunk state.messages state.status
 describeShared('streams without streaming_metadata.id', (makeDriver) => {
-  afterEach(contractCleanup);
-
   it('keeps the text of two such streams in their own messages', async () => {
     const chat = await makeDriver();
     await addChunk(chat, partialText('r1', undefined, 'First '));
@@ -404,59 +303,5 @@ describeShared('streams without streaming_metadata.id', (makeDriver) => {
     expect(textsOf(chat, 'r1')).toEqual(['Third, final']);
     expect(textsOf(chat, 'r2')).toEqual(['Fourth, final']);
     expect(chat.status()).toBe('ready');
-  });
-});
-
-// @covers state.activeResponseId instance.messaging.addMessageChunk
-describe('activeResponseId during a stream', () => {
-  afterEach(contractCleanup);
-
-  it('clears on send and takes the response_id of the first chunk', async () => {
-    const backend = fakeBackend();
-    const { instance } = await contractChat({
-      messaging: { customSendMessage: backend.customSendMessage },
-    });
-    const activeID = () => instance.getState().activeResponseId;
-    expect(activeID()).toBeNull();
-    await act(() =>
-      instance.messaging.addMessage({
-        id: 'earlier',
-        output: { generic: [textItem('Earlier')] },
-      })
-    );
-    expect(activeID()).toBe('earlier');
-    let done: Promise<void>;
-    await act(async () => {
-      done = instance.send('hello');
-    });
-    const sent = await backend.next();
-    expect(activeID()).toBeNull();
-    await act(() =>
-      instance.messaging.addMessageChunk(partialText('r1', 'a', 'Hi'))
-    );
-    expect(activeID()).toBe('r1');
-    await act(() =>
-      instance.messaging.addMessageChunk(
-        finalChunk('r1', [textItem('Hi', 'a')], { request_id: sent.request.id })
-      )
-    );
-    expect(activeID()).toBe('r1');
-    await act(async () => {
-      sent.resolve();
-      await done;
-    });
-    expect(activeID()).toBe('r1');
-  });
-
-  it('takes the response_id of each new stream with no send at its first chunk', async () => {
-    const { instance } = await contractChat();
-    await act(() =>
-      instance.messaging.addMessageChunk(partialText('r1', 'a', 'Hi'))
-    );
-    expect(instance.getState().activeResponseId).toBe('r1');
-    await act(() =>
-      instance.messaging.addMessageChunk(partialText('r2', 'a', 'Hey'))
-    );
-    expect(instance.getState().activeResponseId).toBe('r2');
   });
 });

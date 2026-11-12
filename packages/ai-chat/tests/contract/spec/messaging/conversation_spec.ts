@@ -13,28 +13,23 @@ import {
   BusEventType,
   CancellationReason,
   MessageSendSource,
+  PublicConfigMessaging,
 } from '../../../../src/aiChatEntry';
 import {
   ContractDriver,
+  FakeBackend,
   contractChat,
-  contractCleanup,
+  contractSetup,
+  deferred,
   describeShared,
   fakeBackend,
   finishSend,
+  ids,
+  instanceSender,
   recordEvents,
   startSend,
   textResponse,
 } from '../../helpers';
-
-/**
- * Unmounts and forgets the saved session. A chat opened by default saves its
- * open window to sessionStorage, and the next mount in this file would
- * restore it.
- */
-function resetChat(): void {
-  contractCleanup();
-  sessionStorage.clear();
-}
 
 /** Adds complete responses with these IDs, in order. */
 async function addResponses(chat: ContractDriver, ...ids: string[]) {
@@ -43,19 +38,8 @@ async function addResponses(chat: ContractDriver, ...ids: string[]) {
   }
 }
 
-/** Answers the welcome request a chat opened by default sends on mount. */
-async function answerWelcome(chat: ContractDriver) {
-  const welcome = await chat.backend.next();
-  await act(async () => welcome.resolve());
-  return welcome;
-}
-
-const ids = (chat: ContractDriver) => chat.messages().map(({ id }) => id);
-
 // @covers instance.messaging.removeMessages state.messages
 describeShared('removeMessages', (makeDriver) => {
-  afterEach(resetChat);
-
   it('drops exactly the named messages and keeps the rest in order', async () => {
     const chat = await makeDriver();
     await addResponses(chat, 'r1', 'r2', 'r3', 'r4');
@@ -98,8 +82,6 @@ describeShared('removeMessages', (makeDriver) => {
 // @covers instance.messaging.clearConversation state.messages
 // @covers export.aiChatEntry.CancellationReason
 describeShared('clearConversation', (makeDriver) => {
-  afterEach(resetChat);
-
   it('empties messages', async () => {
     const chat = await makeDriver();
     await finishSend(await startSend(chat, 'hello'));
@@ -132,14 +114,6 @@ describeShared('clearConversation', (makeDriver) => {
     expect(chat.status()).toBe('ready');
   });
 
-  it('does not send a new welcome request, even with the main window open', async () => {
-    const chat = await makeDriver({ openChatByDefault: true });
-    await answerWelcome(chat);
-    await act(() => chat.messaging.clearConversation());
-    expect(chat.backend.requests).toHaveLength(1);
-    expect(chat.messages()).toEqual([]);
-  });
-
   it('accepts a new send afterward as the only message', async () => {
     const chat = await makeDriver();
     await addResponses(chat, 'r1');
@@ -154,8 +128,6 @@ describeShared('clearConversation', (makeDriver) => {
 // @covers event.restartConversation export.aiChatEntry.CancellationReason
 // @covers state.messages state.status
 describeShared('restartConversation', (makeDriver) => {
-  afterEach(resetChat);
-
   it('fires pre:restartConversation, then restartConversation', async () => {
     const chat = await makeDriver();
     const events = recordEvents(chat, [
@@ -195,13 +167,10 @@ describeShared('restartConversation', (makeDriver) => {
   it('waits for a pre:restartConversation handler’s promise before clearing', async () => {
     const chat = await makeDriver();
     await addResponses(chat, 'r1');
-    let release: () => void;
-    const gate = new Promise<void>((resolve) => {
-      release = resolve;
-    });
+    const gate = deferred();
     chat.on({
       type: BusEventType.PRE_RESTART_CONVERSATION,
-      handler: () => gate,
+      handler: () => gate.promise,
     });
     let restarted = false;
     let restart: Promise<void>;
@@ -213,7 +182,7 @@ describeShared('restartConversation', (makeDriver) => {
     expect(restarted).toBe(false);
     expect(ids(chat)).toEqual(['r1']);
     await act(async () => {
-      release();
+      gate.resolve();
       await restart;
     });
     expect(chat.messages()).toEqual([]);
@@ -221,17 +190,14 @@ describeShared('restartConversation', (makeDriver) => {
 
   it('ignores a second call while the first is still pending', async () => {
     const chat = await makeDriver();
-    let release: () => void;
-    const gate = new Promise<void>((resolve) => {
-      release = resolve;
-    });
+    const gate = deferred();
     const events = recordEvents(chat, [
       BusEventType.PRE_RESTART_CONVERSATION,
       BusEventType.RESTART_CONVERSATION,
     ]);
     chat.on({
       type: BusEventType.PRE_RESTART_CONVERSATION,
-      handler: () => gate,
+      handler: () => gate.promise,
     });
     let first: Promise<void>;
     await act(async () => {
@@ -241,7 +207,7 @@ describeShared('restartConversation', (makeDriver) => {
     await act(() => chat.messaging.restartConversation());
     expect(events.types()).toEqual(['pre:restartConversation']);
     await act(async () => {
-      release();
+      gate.resolve();
       await first;
     });
     expect(events.types()).toEqual([
@@ -285,22 +251,64 @@ describeShared('restartConversation', (makeDriver) => {
     expect(chat.backend.requests).toHaveLength(1);
     expect(chat.status()).toBe('ready');
   });
+});
+
+/** Mounts with the fake backend, and an open main window when `open` is set. */
+async function mountChat(
+  open: boolean,
+  messaging: Partial<PublicConfigMessaging> = {}
+) {
+  const backend = fakeBackend();
+  const { instance } = await contractChat({
+    openChatByDefault: open,
+    messaging: { customSendMessage: backend.customSendMessage, ...messaging },
+  });
+  return { instance, backend, messages: () => instance.getState().messages };
+}
+
+/** Answers the welcome request a chat opened by default sends on mount. */
+async function answerWelcome(backend: FakeBackend) {
+  const welcome = await backend.next();
+  await act(async () => welcome.resolve());
+  return welcome;
+}
+
+// @covers instance.messaging.clearConversation config.openChatByDefault state.messages
+describe('clearConversation with the main window', () => {
+  contractSetup();
+
+  it('does not send a new welcome request, even with the main window open', async () => {
+    const chat = await mountChat(true);
+    await answerWelcome(chat.backend);
+    await act(() => chat.instance.messaging.clearConversation());
+    expect(chat.backend.requests).toHaveLength(1);
+    expect(chat.messages()).toEqual([]);
+  });
+});
+
+// @covers instance.messaging.restartConversation config.openChatByDefault
+// @covers config.messaging.skipWelcome export.aiChatEntry.MessageSendSource
+// @covers state.messages state.status
+describe('restartConversation with the main window', () => {
+  contractSetup();
 
   it('sends no welcome request while the main window is closed', async () => {
-    const chat = await makeDriver();
-    await addResponses(chat, 'r1');
-    await act(() => chat.messaging.restartConversation());
+    const chat = await mountChat(false);
+    await act(() =>
+      chat.instance.messaging.addMessage(textResponse('r1', 'r1'))
+    );
+    await act(() => chat.instance.messaging.restartConversation());
     expect(chat.backend.requests).toHaveLength(0);
-    expect(chat.status()).toBe('ready');
+    expect(chat.instance.getState().status).toBe('ready');
   });
 
   it('sends a new welcome request with the main window open, and resolves after it settles', async () => {
-    const chat = await makeDriver({ openChatByDefault: true });
-    const first = await answerWelcome(chat);
+    const chat = await mountChat(true);
+    const first = await answerWelcome(chat.backend);
     let restarted = false;
     let restart: Promise<void>;
     await act(async () => {
-      restart = chat.messaging.restartConversation().then(() => {
+      restart = chat.instance.messaging.restartConversation().then(() => {
         restarted = true;
       });
     });
@@ -320,15 +328,12 @@ describeShared('restartConversation', (makeDriver) => {
       await restart;
     });
     expect(ids(chat)).toEqual([welcome.request.id]);
-    expect(chat.status()).toBe('ready');
+    expect(chat.instance.getState().status).toBe('ready');
   });
 
   it('sends no welcome request with skipWelcome, even with the main window open', async () => {
-    const chat = await makeDriver({
-      openChatByDefault: true,
-      messaging: { skipWelcome: true },
-    });
-    await act(() => chat.messaging.restartConversation());
+    const chat = await mountChat(true, { skipWelcome: true });
+    await act(() => chat.instance.messaging.restartConversation());
     expect(chat.backend.requests).toHaveLength(0);
     expect(chat.messages()).toEqual([]);
   });
@@ -337,7 +342,7 @@ describeShared('restartConversation', (makeDriver) => {
 // @covers instance.restartConversation event.pre:restartConversation
 // @covers event.restartConversation export.aiChatEntry.CancellationReason
 describe('instance.restartConversation (deprecated)', () => {
-  afterEach(resetChat);
+  contractSetup();
 
   it('fires both restart events, empties messages, and aborts an in-flight send', async () => {
     const backend = fakeBackend();
@@ -345,11 +350,10 @@ describe('instance.restartConversation (deprecated)', () => {
       messaging: { customSendMessage: backend.customSendMessage },
     });
     await act(() => instance.messaging.addMessage(textResponse('r1', 'r1')));
-    let done: Promise<void>;
-    await act(async () => {
-      done = instance.send('hello');
-    });
-    const sent = await backend.next();
+    const { sent, done } = await startSend(
+      instanceSender(instance, backend),
+      'hello'
+    );
     const events = recordEvents(instance, [
       BusEventType.PRE_RESTART_CONVERSATION,
       BusEventType.RESTART_CONVERSATION,

@@ -20,20 +20,15 @@ import {
 } from '../../../../src/aiChatEntry';
 import {
   contractChat,
-  contractCleanup,
+  contractSetup,
+  countChatReady,
   fakeBackend,
+  finishSend,
+  instanceSender,
   recordEvents,
+  startSend,
   textResponse,
 } from '../../helpers';
-
-/**
- * The chat keeps the open main window in browser storage, and a mount that
- * finds it open hydrates at once. Each test starts from a closed chat.
- */
-function clearBrowserStorage(): void {
-  sessionStorage.clear();
-  localStorage.clear();
-}
 
 /** Opens the main window, the way a host's own button would. */
 async function openMainWindow(instance: ChatInstance): Promise<void> {
@@ -43,11 +38,10 @@ async function openMainWindow(instance: ChatInstance): Promise<void> {
 }
 
 // @covers config.messaging.skipWelcome export.aiChatEntry.MessageSendSource
-// @covers instance.changeView config.openChatByDefault event.pre:send event.send
+// @covers config.openChatByDefault event.pre:send event.send
 // @covers config.messaging.customSendMessage state.messages event.chat:ready
 describe('welcome request', () => {
-  beforeEach(clearBrowserStorage);
-  afterEach(contractCleanup);
+  contractSetup();
 
   it('sends nothing at mount while the main window is closed', async () => {
     const backend = fakeBackend();
@@ -134,23 +128,16 @@ describe('welcome request', () => {
 
   it('sends no welcome request with skipWelcome, and fires chat:ready', async () => {
     const backend = fakeBackend();
-    let ready = 0;
+    const ready = countChatReady();
     const { instance } = await contractChat({
       openChatByDefault: true,
       messaging: {
         skipWelcome: true,
         customSendMessage: backend.customSendMessage,
       },
-      onBeforeRender: (handed) => {
-        handed.on({
-          type: BusEventType.CHAT_READY,
-          handler: () => {
-            ready += 1;
-          },
-        });
-      },
+      onBeforeRender: ready.onBeforeRender,
     });
-    await waitFor(() => expect(ready).toBe(1));
+    await waitFor(() => expect(ready.count()).toBe(1));
     expect(backend.requests).toHaveLength(0);
     expect(instance.getState().messages).toEqual([]);
     expect(instance.getState().status).toBe('ready');
@@ -160,8 +147,7 @@ describe('welcome request', () => {
 // @covers state.status state.isHydratingCounter event.chat:ready
 // @covers instance.messaging.addMessage
 describe('status while the welcome loads', () => {
-  beforeEach(clearBrowserStorage);
-  afterEach(contractCleanup);
+  contractSetup();
 
   it('reads loading until the welcome sender settles, then ready', async () => {
     const backend = fakeBackend();
@@ -211,8 +197,7 @@ describe('status while the welcome loads', () => {
 // @covers state.hasSentNonWelcomeMessage instance.messaging.addMessage
 // @covers instance.send
 describe('hasSentNonWelcomeMessage', () => {
-  beforeEach(clearBrowserStorage);
-  afterEach(contractCleanup);
+  contractSetup();
 
   it('starts false', async () => {
     const { instance } = await contractChat({
@@ -229,22 +214,15 @@ describe('hasSentNonWelcomeMessage', () => {
         customSendMessage: backend.customSendMessage,
       },
     });
-    let done: Promise<void>;
-    await act(async () => {
-      done = instance.send('hello');
-    });
-    const sent = await backend.next();
+    const started = await startSend(instanceSender(instance, backend), 'hello');
     expect(instance.getState().hasSentNonWelcomeMessage).toBe(false);
     await act(() =>
       instance.messaging.addMessage(
-        textResponse('hi', 'r1', { request_id: sent.request.id })
+        textResponse('hi', 'r1', { request_id: started.sent.request.id })
       )
     );
     expect(instance.getState().hasSentNonWelcomeMessage).toBe(true);
-    await act(async () => {
-      sent.resolve();
-      await done;
-    });
+    await finishSend(started);
   });
 
   it('turns true when the host adds the reply to the welcome request', async () => {

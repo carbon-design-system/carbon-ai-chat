@@ -17,9 +17,9 @@ import {
   MessageSendSource,
 } from '../../../../src/aiChatEntry';
 import {
-  contractCleanup,
   describeShared,
   finishSend,
+  ids,
   recordEvents,
   startSend,
   textResponse,
@@ -28,8 +28,6 @@ import {
 // @covers instance.send event.pre:send event.send state.messages state.status
 // @covers config.messaging.customSendMessage export.aiChatEntry.MessageSendSource
 describeShared('send', (makeDriver) => {
-  afterEach(contractCleanup);
-
   it('passes the request to customSendMessage with its text', async () => {
     const chat = await makeDriver();
     const { sent } = await startSend(chat, 'hello');
@@ -114,7 +112,7 @@ describeShared('send', (makeDriver) => {
     const request: MessageRequest = { id: 'host-id', input: { text: 'hello' } };
     const { sent } = await startSend(chat, request);
     expect(sent.request.id).toBe('host-id');
-    expect(chat.messages().map((message) => message.id)).toContain('host-id');
+    expect(ids(chat)).toEqual(['host-id']);
   });
 
   it('gives a string send an ID, and the same ID in state and to the backend', async () => {

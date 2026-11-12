@@ -22,26 +22,16 @@ import {
   ViewType,
 } from '../../../../src/aiChatEntry';
 import {
-  ContractDriver,
   EventRecorder,
   contractChat,
-  contractCleanup,
+  contractSetup,
   describeShared,
   fakeBackend,
+  ids,
   outputTexts,
   recordEvents,
   textResponse,
 } from '../../helpers';
-
-/**
- * Unmounts and forgets the saved session. A chat opened by default saves its
- * open window to sessionStorage, and the next mount in this file would
- * restore it.
- */
-function resetChat(): void {
-  contractCleanup();
-  sessionStorage.clear();
-}
 
 const HISTORY_EVENTS = [BusEventType.HISTORY_BEGIN, BusEventType.HISTORY_END];
 
@@ -67,8 +57,6 @@ const T0 = '2024-01-01T00:00:00.000Z';
 const T1 = '2024-01-01T00:00:01.000Z';
 const T2 = '2024-01-01T00:00:02.000Z';
 
-const ids = (chat: ContractDriver) => chat.messages().map(({ id }) => id);
-
 /** The texts of a response's text items. */
 const texts = (message: Message) => outputTexts(message as MessageResponse);
 
@@ -78,8 +66,6 @@ const eventIDs = (event: BusEventHistoryBegin | BusEventHistoryEnd) =>
 // @covers instance.messaging.insertHistory event.history:begin
 // @covers event.history:end state.messages
 describeShared('insertHistory', (makeDriver) => {
-  afterEach(resetChat);
-
   it('adds the items to an empty chat in order, stamped with their time', async () => {
     const chat = await makeDriver();
     await act(() =>
@@ -239,7 +225,7 @@ const stateIDs = (instance: ChatInstance) =>
 // @covers config.messaging.customLoadHistory event.history:begin
 // @covers event.history:end state.messages state.status state.activeResponseId
 describe('customLoadHistory at startup', () => {
-  afterEach(resetChat);
+  contractSetup();
 
   it('is not called while the main window is closed, then once with the instance when it opens', async () => {
     const calls: ChatInstance[] = [];
@@ -257,9 +243,9 @@ describe('customLoadHistory at startup', () => {
     expect(calls).toHaveLength(0);
     expect(events.types()).toEqual([]);
     await act(() => instance.changeView(ViewType.MAIN_WINDOW));
+    await waitFor(() => expect(stateIDs(instance)).toEqual(['a1']));
     expect(calls).toHaveLength(1);
     expect(calls[0]).toBe(instance);
-    expect(stateIDs(instance)).toEqual(['a1']);
   });
 
   it('makes its items the messages, fires the history events, and skips the welcome', async () => {
@@ -330,7 +316,7 @@ describe('customLoadHistory at startup', () => {
 
 // @covers state.wasLoadedFromBrowser
 describe('state.wasLoadedFromBrowser', () => {
-  afterEach(resetChat);
+  contractSetup();
 
   it('is false on a fresh session and true when a remount restores it', async () => {
     const config = {

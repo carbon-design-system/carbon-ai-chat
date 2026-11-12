@@ -22,9 +22,13 @@ import {
   OnErrorType,
 } from '../../../../src/aiChatEntry';
 import {
+  advance,
   contractChat,
-  contractCleanup,
+  contractSetup,
+  describeShared,
+  ids,
   recordEvents,
+  responseOf,
   slotted,
 } from '../../helpers';
 
@@ -130,16 +134,14 @@ const ITEMS: Record<MessageResponseTypes, GenericItem> = {
   },
 };
 
-const responseOf = (id: string, generic: GenericItem[]): MessageResponse => ({
-  id,
-  output: { generic },
-});
-
 /** Response types whose item an `addMessage` takes with no `onError`. */
 const QUIET_TYPES = Object.values(MessageResponseTypes).filter(
   (type) => type !== MessageResponseTypes.CONNECT_TO_HUMAN_AGENT
 );
 
+// These tags record that each type is accepted, stored as given, fires
+// receive once, and reports no error. How each type renders isn't observable
+// without reading its markup, which a contract test doesn't do.
 // @covers response-type.text response-type.option response-type.image
 // @covers response-type.pause response-type.user_defined response-type.iframe
 // @covers response-type.video response-type.audio response-type.date
@@ -147,22 +149,19 @@ const QUIET_TYPES = Object.values(MessageResponseTypes).filter(
 // @covers response-type.button response-type.grid
 // @covers response-type.conversational_search response-type.preview_card
 // @covers response-type.system
-describe('response types through addMessage', () => {
-  beforeEach(() => window.sessionStorage.clear());
-  afterEach(contractCleanup);
-
+describeShared('response types through addMessage', (makeDriver) => {
   it.each(QUIET_TYPES)(
     'stores a %s item as given, fires receive once, and reports no error',
     async (type) => {
       const onError = jest.fn();
-      const { instance } = await contractChat({ onError });
-      const events = recordEvents(instance, [BusEventType.RECEIVE]);
+      const chat = await makeDriver({ onError });
+      const events = recordEvents(chat, [BusEventType.RECEIVE]);
       const item = ITEMS[type];
       await act(() =>
-        instance.messaging.addMessage(responseOf(`r-${type}`, [item]))
+        chat.messaging.addMessage(responseOf(`r-${type}`, [item]))
       );
-      const messages = instance.getState().messages as MessageResponse[];
-      expect(messages.map((message) => message.id)).toEqual([`r-${type}`]);
+      const messages = chat.messages() as MessageResponse[];
+      expect(ids(chat)).toEqual([`r-${type}`]);
       expect(messages[0].output.generic).toEqual([item]);
       expect(
         events.of<BusEventReceive>(BusEventType.RECEIVE).map((e) => e.data.id)
@@ -173,24 +172,19 @@ describe('response types through addMessage', () => {
 });
 
 // @covers response-type.connect_to_agent
-describe('connect_to_agent through addMessage', () => {
-  beforeEach(() => window.sessionStorage.clear());
-  afterEach(contractCleanup);
-
+describeShared('connect_to_agent through addMessage', (makeDriver) => {
   it('stores the item, fires receive, and reports an integration error with no service desk', async () => {
     const onError = jest.fn();
-    const { instance } = await contractChat({ onError });
-    const events = recordEvents(instance, [BusEventType.RECEIVE]);
+    const chat = await makeDriver({ onError });
+    const events = recordEvents(chat, [BusEventType.RECEIVE]);
     const item = ITEMS[MessageResponseTypes.CONNECT_TO_HUMAN_AGENT];
-    await act(() =>
-      instance.messaging.addMessage(responseOf('r-agent', [item]))
-    );
+    await act(() => chat.messaging.addMessage(responseOf('r-agent', [item])));
     await waitFor(() => expect(onError).toHaveBeenCalledTimes(1));
     expect(onError.mock.calls[0][0].errorType).toBe(
       OnErrorType.INTEGRATION_ERROR
     );
-    const messages = instance.getState().messages as MessageResponse[];
-    expect(messages.map((message) => message.id)).toEqual(['r-agent']);
+    const messages = chat.messages() as MessageResponse[];
+    expect(ids(chat)).toEqual(['r-agent']);
     expect(messages[0].output.generic).toEqual([item]);
     expect(events.of(BusEventType.RECEIVE)).toHaveLength(1);
   });
@@ -198,8 +192,7 @@ describe('connect_to_agent through addMessage', () => {
 
 // @covers response-type.user_defined event.userDefinedResponse
 describe('user_defined rendering', () => {
-  beforeEach(() => window.sessionStorage.clear());
-  afterEach(contractCleanup);
+  contractSetup();
 
   it('fires userDefinedResponse with the item, the message, a slot, and the complete state', async () => {
     const { instance } = await contractChat();
@@ -242,14 +235,11 @@ describe('user_defined rendering', () => {
       Record<string, unknown>,
       unknown,
     ];
-    expect(Object.keys(state).sort()).toEqual([
-      'fullMessage',
-      'messageItem',
-      'state',
-    ]);
-    expect(state.messageItem).toEqual(item);
-    expect((state.fullMessage as MessageResponse).id).toBe('r-ud');
-    expect(state.state).toBe(MessageState.COMPLETE);
+    expect(state).toMatchObject({
+      messageItem: item,
+      fullMessage: { id: 'r-ud' },
+      state: MessageState.COMPLETE,
+    });
     expect(handed).toBe(instance);
     await waitFor(() =>
       expect(
@@ -261,8 +251,7 @@ describe('user_defined rendering', () => {
 
 // @covers response-type.card response-type.carousel response-type.grid event.userDefinedResponse
 describe('user_defined items nested in containers', () => {
-  beforeEach(() => window.sessionStorage.clear());
-  afterEach(contractCleanup);
+  contractSetup();
 
   it.each([
     [
@@ -317,18 +306,21 @@ describe('user_defined items nested in containers', () => {
 
 // @covers response-type.pause state.isMessageLoadingCounter
 describe('pause items', () => {
-  beforeEach(() => window.sessionStorage.clear());
-  afterEach(contractCleanup);
+  contractSetup();
+  afterEach(() => {
+    jest.useRealTimers();
+  });
 
   it('raises isMessageLoadingCounter during a typing pause and lowers it after', async () => {
     const { instance } = await contractChat();
+    jest.useFakeTimers();
     expect(instance.getState().isMessageLoadingCounter).toBe(0);
     await act(() =>
       instance.messaging.addMessage(
         responseOf('r-pause', [
           {
             response_type: MessageResponseTypes.PAUSE,
-            time: 200,
+            time: 60_000,
             typing: true,
           },
           { response_type: MessageResponseTypes.TEXT, text: 'after' },
@@ -336,13 +328,15 @@ describe('pause items', () => {
       )
     );
     expect(instance.getState().isMessageLoadingCounter).toBe(1);
-    await waitFor(() =>
-      expect(instance.getState().isMessageLoadingCounter).toBe(0)
-    );
+    await advance(59_999);
+    expect(instance.getState().isMessageLoadingCounter).toBe(1);
+    await advance(1);
+    expect(instance.getState().isMessageLoadingCounter).toBe(0);
   });
 
   it('leaves isMessageLoadingCounter at zero during a pause without typing', async () => {
     const { instance } = await contractChat();
+    jest.useFakeTimers();
     const counts: number[] = [];
     instance.on({
       type: BusEventType.STATE_CHANGE,
@@ -355,13 +349,14 @@ describe('pause items', () => {
     await act(() =>
       instance.messaging.addMessage(
         responseOf('r-quiet-pause', [
-          { response_type: MessageResponseTypes.PAUSE, time: 100 },
+          { response_type: MessageResponseTypes.PAUSE, time: 60_000 },
           nestedUserDefined('after'),
         ])
       )
     );
     expect(events.events).toHaveLength(0);
-    await waitFor(() => expect(events.events).toHaveLength(1));
+    await advance(60_000);
+    expect(events.events).toHaveLength(1);
     expect(counts.length).toBeGreaterThan(0);
     expect(counts.every((count) => count === 0)).toBe(true);
   });
