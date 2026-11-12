@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Config
-- Reference: https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.LayoutConfig.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.LayoutConfig.html
 
 ## Signature
 
@@ -41,11 +41,18 @@ corners: {
 
 Undefined corners in PerCornerConfig will fall back to CornersType.ROUND.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.LayoutConfig.html#corners)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.LayoutConfig.html#corners)
 
 ### customProperties
 
 `customProperties?: Partial<Record<LayoutCustomProperties | `$${string}`, string>>`
+
+**Deprecated.** Set these custom properties with CSS instead, on an element that contains the chat.
+They inherit into it. A bare key here is `--cds-aichat-<key>` in CSS, and a `$`-prefixed key is
+`--cds-<key>`. If you force a theme with PublicConfig.injectCarbonTheme, stop forcing it
+first, or your Carbon token overrides won't reach the chat. Removed in 2.0.0. The v2 styling contract,
+[ADR-0004](https://github.com/carbon-design-system/carbon-ai-chat/blob/main/docs/adr/0004-component-styling-contract.md),
+proposes CSS as the only way to set these, including on parts of the chat that config can't target.
 
 CSS custom property overrides for the chat UI. This is a convenience method; you may also set
 these properties via CSS. Unlike page-level CSS, these overrides are injected inside the chat
@@ -70,7 +77,7 @@ Example:
 }
 ```
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.LayoutConfig.html#customproperties)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.LayoutConfig.html#customproperties)
 
 ### hasContentMaxWidth
 
@@ -81,7 +88,7 @@ Indicates if content inside the Carbon AI Chat widget should be constrained to a
 At larger widths the card, carousel, options and conversational search response types
 have pending issues.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.LayoutConfig.html#hascontentmaxwidth)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.LayoutConfig.html#hascontentmaxwidth)
 
 ### showFrame
 
@@ -89,4 +96,4 @@ have pending issues.
 
 Indicates if the Carbon AI Chat widget should keep its border and box-shadow.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.LayoutConfig.html#showframe)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.LayoutConfig.html#showframe)
