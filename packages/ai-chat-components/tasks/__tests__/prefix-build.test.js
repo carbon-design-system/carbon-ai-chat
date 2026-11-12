@@ -679,6 +679,25 @@ test('rejects different app and components Carbon roots before replacing output'
   );
 });
 
+test('refuses an output that holds the working directory or a source tree', async () => {
+  const setup = await fixture({ app: true });
+  const marker = path.join(setup.components, 'es/index.js');
+  const before = await fs.readFile(marker, 'utf8');
+  for (const out of [
+    '.',
+    '..',
+    'node_modules',
+    setup.carbon,
+    path.join(setup.components, 'es/nested'),
+  ]) {
+    const result = invoke(setup, ['--prefix', 'acme', '--out', out]);
+    assert.equal(result.status, 1, out);
+    assert.match(result.stderr, /Cannot use --out/, out);
+    assert.equal(await fs.readFile(marker, 'utf8'), before, out);
+  }
+  await fs.access(setup.runner);
+});
+
 test('preserves opaque maps and their filenames byte for byte', async () => {
   const setup = await fixture();
   const source = path.join(setup.components, 'es/chunk.cds-aichat.js');

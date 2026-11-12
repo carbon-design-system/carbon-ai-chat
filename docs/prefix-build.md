@@ -36,7 +36,7 @@ import './vendor/components-acme/ai-chat-components/components/aichat-card/index
 
 ## Options and output
 
-Use a dedicated output directory in your project. The command replaces that whole directory on each run.
+Use a dedicated output directory in your project. The command replaces that whole directory on each run. It refuses an output that holds the current directory or an installed package, or that sits inside a source tree.
 
 - The prefix is required. Use lowercase letters, digits, and hyphens, starting with a letter. The exact default `cds` is rejected.
 - Without an output option, the command writes to a directory named for the prefix and invoking package.

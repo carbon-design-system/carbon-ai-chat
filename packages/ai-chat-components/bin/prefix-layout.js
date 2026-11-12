@@ -253,6 +253,45 @@ async function manifestPath(layer) {
   return source;
 }
 
+async function realOutputPath(file) {
+  try {
+    return await fs.realpath(file);
+  } catch (error) {
+    const parent = path.dirname(file);
+    if (error.code !== 'ENOENT' || parent === file) {
+      throw error;
+    }
+    return path.join(await realOutputPath(parent), path.basename(file));
+  }
+}
+
+/**
+ * The command deletes its output before copying. Refuse an output that holds
+ * the working directory or an installed package, or that sits in a tree the
+ * copy reads from.
+ */
+export async function assertSafeOutput(output, layers) {
+  const target = await realOutputPath(output);
+  const sources = await Promise.all(
+    layers
+      .flatMap((layer) => layer.roots.map((root) => root.source))
+      .map(realOutputPath)
+  );
+  const held = [
+    await realOutputPath(process.cwd()),
+    ...layers.map((layer) => layer.packageRoot),
+    ...sources,
+  ];
+  const conflict =
+    held.find((file) => inside(target, file)) ??
+    sources.find((source) => inside(source, target));
+  if (conflict) {
+    throw new Error(
+      `Cannot use --out ${output}: it holds or sits inside ${conflict}. Choose a new directory outside the working directory and the installed packages.`
+    );
+  }
+}
+
 export async function copyLayer(layer) {
   await fs.cp(layer.source, layer.destination, { recursive: true });
   if (layer.types && (await exists(layer.types))) {

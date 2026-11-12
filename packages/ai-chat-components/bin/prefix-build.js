@@ -18,6 +18,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {
+  assertSafeOutput,
   copyLayer,
   createLayout,
   layoutReceipt,
@@ -145,6 +146,7 @@ export async function run({ packageRoot, argv = process.argv.slice(2) }) {
     src ? source : undefined
   );
 
+  await assertSafeOutput(dest, layers);
   await fs.rm(dest, { recursive: true, force: true });
   for (const layer of layers) {
     await copyLayer(layer);
