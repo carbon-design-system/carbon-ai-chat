@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Instance
-- Reference: https://chat.carbondesignsystem.com/version/v1.24.0/docs/interfaces/Type_reference.ChatInstanceInput.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.ChatInstanceInput.html
 
 Methods for controlling the built-in input field.
 While WriteableElementName.CUSTOM_PROMPT_LINE has content, including
@@ -26,8 +26,6 @@ interface ChatInstanceInput
 ### getEditor
 
 `getEditor: () => Promise<Editor>`
-
-**Experimental.**
 
 Loads the rich Tiptap editor on demand and resolves with the live
 `Editor`. Chats that don't configure an advanced input feature
@@ -63,6 +61,9 @@ for direct Tiptap operations the facade doesn't cover:
   `getState().input.content` but live, not the immutable store copy)
 - `editor.extensionStorage` for per-extension state
 - `editor.on(...)` for low-level event subscriptions
+
+The resolved `Editor` is Tiptap's, and its API follows Tiptap's releases.
+Supported range: `@tiptap/core` `^3.22.5`.
 
 Rejects while no input is rendered. The chat hands you the
 ChatInstance before it renders, so this is not available from
@@ -101,13 +102,11 @@ editor.commands.focus();
    every render reads as a real change and replaces the editor mid-edit,
    losing its undo history.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0/docs/interfaces/Type_reference.ChatInstanceInput.html#geteditor)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.ChatInstanceInput.html#geteditor)
 
 ### updateContent
 
 `updateContent: (updater: (previous: JSONContent) => JSONContent) => Promise<void>`
-
-**Experimental.**
 
 Replace the entire input content with the result of an updater that
 receives the current Tiptap JSONContent doc and returns the next.
@@ -148,7 +147,7 @@ For cursor-position insertion, use the {@link ChatInstanceInput.getEditor}
 escape hatch:
 `(await instance.input.getEditor()).commands.insertContent(...)`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0/docs/interfaces/Type_reference.ChatInstanceInput.html#updatecontent)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.ChatInstanceInput.html#updatecontent)
 
 ### updateRawValue
 
@@ -178,13 +177,11 @@ the rawValue projection. Emits one deprecation warning per session.
 instance.input.updateRawValue(() => "Summarize this report");
 ```
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0/docs/interfaces/Type_reference.ChatInstanceInput.html#updaterawvalue)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.ChatInstanceInput.html#updaterawvalue)
 
 ### updateStructuredData
 
 `updateStructuredData: (updater: (previous: StructuredData) => StructuredData) => void`
-
-**Experimental.**
 
 Updates the pending structured data that will be merged into the next outgoing MessageRequest
 when the user sends a message via the UI send button or Enter key. The updater function receives the
@@ -221,7 +218,7 @@ instance.input.updateStructuredData(() => ({
 instance.input.updateStructuredData(() => undefined);
 ```
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0/docs/interfaces/Type_reference.ChatInstanceInput.html#updatestructureddata)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.ChatInstanceInput.html#updatestructureddata)
 
 ## Related
 
