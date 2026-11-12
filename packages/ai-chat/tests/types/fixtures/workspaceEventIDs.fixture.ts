@@ -27,14 +27,23 @@ import {
 type IsOptional<T, K extends keyof T> =
   object extends Pick<T, K> ? true : false;
 
-type WorkspaceData =
-  | BusEventWorkspacePreOpen['data']
-  | BusEventWorkspaceOpen['data']
-  | BusEventWorkspacePreClose['data']
-  | BusEventWorkspaceClose['data'];
-
-export const messageIDOptional: IsOptional<WorkspaceData, 'messageID'> = true;
-export const itemIDOptional: IsOptional<WorkspaceData, 'itemID'> = true;
+// One check per payload: `Pick` over a union would pass if any one member kept the field optional.
+export const preOpenIDsOptional: [
+  IsOptional<BusEventWorkspacePreOpen['data'], 'messageID'>,
+  IsOptional<BusEventWorkspacePreOpen['data'], 'itemID'>,
+] = [true, true];
+export const openIDsOptional: [
+  IsOptional<BusEventWorkspaceOpen['data'], 'messageID'>,
+  IsOptional<BusEventWorkspaceOpen['data'], 'itemID'>,
+] = [true, true];
+export const preCloseIDsOptional: [
+  IsOptional<BusEventWorkspacePreClose['data'], 'messageID'>,
+  IsOptional<BusEventWorkspacePreClose['data'], 'itemID'>,
+] = [true, true];
+export const closeIDsOptional: [
+  IsOptional<BusEventWorkspaceClose['data'], 'messageID'>,
+  IsOptional<BusEventWorkspaceClose['data'], 'itemID'>,
+] = [true, true];
 
 const card: PreviewCardItem = {
   response_type: MessageResponseTypes.PREVIEW_CARD,
