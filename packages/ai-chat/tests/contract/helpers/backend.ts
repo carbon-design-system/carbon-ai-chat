@@ -10,9 +10,11 @@
 import {
   ChatInstance,
   CustomSendMessageOptions,
+  Message,
   MessageRequest,
   MessageResponse,
   MessageResponseTypes,
+  TextItem,
 } from '../../../src/aiChatEntry';
 
 /** One call the chat made to `customSendMessage`. */
@@ -101,11 +103,10 @@ export function textResponse(
   } as MessageResponse;
 }
 
-/** The text of every text item in a message's output. */
-export function outputTexts(message: {
-  output?: { generic?: { response_type?: string; text?: string }[] };
-}): string[] {
-  return (message.output?.generic ?? [])
+/** The text of every text item in a message's output (none for a request). */
+export function outputTexts(message: Message | MessageResponse): string[] {
+  const generic = 'output' in message ? (message.output?.generic ?? []) : [];
+  return generic
     .filter((item) => item.response_type === MessageResponseTypes.TEXT)
-    .map((item) => item.text);
+    .map((item) => (item as TextItem).text);
 }

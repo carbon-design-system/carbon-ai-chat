@@ -9,7 +9,7 @@
 
 /**
  * Contract-test helpers. They hand out only public objects, and they don't
- * import `tests/test_helpers.ts` (plan D6).
+ * import the internal test helpers (plan D6).
  */
 
 export * from './backend';

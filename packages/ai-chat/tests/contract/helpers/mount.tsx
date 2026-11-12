@@ -218,8 +218,14 @@ export async function contractElement(
   };
 }
 
-/** Standard cleanup: unmount React trees, then empty the document. */
+/**
+ * Standard cleanup: unmount React trees, empty the document, and clear browser
+ * storage. The chat saves its open view in session storage, so without the
+ * clear the next mount in a file would start open and send a welcome request.
+ */
 export function contractCleanup(): void {
   cleanup();
   document.body.innerHTML = '';
+  window.sessionStorage.clear();
+  window.localStorage.clear();
 }
