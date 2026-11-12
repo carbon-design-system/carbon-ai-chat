@@ -9,8 +9,13 @@
 
 import { act, waitFor } from '@testing-library/react';
 
-import { MessageRequest } from '../../../../src/aiChatEntry';
-import { ContractDriver, describeShared, finishSend } from '../../helpers';
+import { BusEventType, MessageRequest } from '../../../../src/aiChatEntry';
+import {
+  ContractDriver,
+  deferred,
+  describeShared,
+  finishSend,
+} from '../../helpers';
 
 /** The text of each message in the list, in list order. */
 const listedTexts = (chat: ContractDriver) =>
@@ -38,6 +43,60 @@ describeShared(
       expect(chat.backend.texts()).toEqual(['first', 'second']);
       expect(listedTexts(chat)).toEqual(['first', 'second']);
       await waitFor(() => expect(chat.status()).toBe('ready'));
+    });
+  }
+);
+
+// @covers instance.send event.chat:ready config.messaging.customSendMessage
+describeShared(
+  'a chat:ready handler during a hydration a send started',
+  (makeDriver) => {
+    it('can await a send, which goes out before the starting send', async () => {
+      const chat = await makeDriver();
+      let fromReady: Promise<void>;
+      chat.on({
+        type: BusEventType.CHAT_READY,
+        handler: async () => {
+          fromReady = chat.send('from ready');
+          await fromReady;
+        },
+      });
+      let first: Promise<void>;
+      await act(async () => {
+        first = chat.send('first');
+      });
+      const sentFromReady = await chat.backend.next();
+      expect(sentFromReady.request.input.text).toBe('from ready');
+      await finishSend({ sent: sentFromReady, done: fromReady });
+      const sentFirst = await chat.backend.next();
+      expect(sentFirst.request.input.text).toBe('first');
+      await finishSend({ sent: sentFirst, done: first });
+      expect(chat.backend.texts()).toEqual(['from ready', 'first']);
+    });
+
+    it('that never settles still lets a send made after it fires go out', async () => {
+      const chat = await makeDriver();
+      const ready = deferred();
+      chat.on({
+        type: BusEventType.CHAT_READY,
+        handler: () => {
+          ready.resolve();
+          return new Promise<void>(() => {});
+        },
+      });
+      await act(async () => {
+        chat.send('first');
+      });
+      await ready.promise;
+      let later: Promise<void>;
+      await act(async () => {
+        later = chat.send('later');
+      });
+      await waitFor(() => expect(chat.backend.texts()).toContain('later'));
+      const sentLater = chat.backend.requests.find(
+        (sent) => sent.request.input.text === 'later'
+      );
+      await finishSend({ sent: sentLater, done: later });
     });
   }
 );

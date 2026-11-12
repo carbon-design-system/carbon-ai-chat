@@ -103,8 +103,13 @@ class SendService {
     try {
       if (hydrationService.hydrationPromise || ignoreHydration) {
         if (!ignoreHydration) {
+          // Once the hydration has settled, the send that started it waits only on `chat:ready` handlers, which may
+          // themselves await this send, so this send waits on the hydration alone.
           const starter = this.sendStartingHydration;
-          await (starter?.hydration === hydrationService.hydrationPromise
+          const queueAfterStarter =
+            starter?.hydration === hydrationService.hydrationPromise &&
+            hydrationService.isHydrating;
+          await (queueAfterStarter
             ? starter.queued
             : hydrationService.hydrationPromise);
         }
