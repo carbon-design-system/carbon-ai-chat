@@ -38,6 +38,30 @@ import { DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS, viewActions } from '../state';
 import { chatStore } from './attachChatView';
 
 /**
+ * The preview card each chat is about to open its workspace from, until that open takes it.
+ * Keyed by the chat's store, which every holder of the chat's service manager shares.
+ */
+const cardSources = new WeakMap<
+  object,
+  { messageID: string; localItemID: string }
+>();
+
+/**
+ * Names the preview card that the next workspace open comes from. The card calls this just
+ * before it opens the workspace, so only that open, and none from code, carries its IDs.
+ */
+function setWorkspaceCardSource(
+  serviceManager: ServiceManager,
+  fullMessage: Message,
+  localMessageItem: LocalMessageItem
+) {
+  cardSources.set(serviceManager.store, {
+    messageID: fullMessage.id,
+    localItemID: localMessageItem.ui_state.id,
+  });
+}
+
+/**
  * Opens the history panel. The header menu and the history panel's `open`
  * both come here, so `historyPanel:pre:open` fires once before every open.
  * Handlers can't cancel it, and the open doesn't wait for them. A handler
@@ -65,25 +89,37 @@ function createCustomPanelInstance(
     localItem: LocalMessageItem;
     working: { message: Message; localItems: Record<string, LocalMessageItem> };
   };
-  // The message and item a preview card opened the workspace from, until it closes.
-  let workspaceSource: { messageID: string; itemID?: string };
+  // The IDs of the card that opened the workspace, until it closes or the conversation restarts.
+  let workspaceSource: {
+    messageID: string;
+    itemID?: string;
+    restartCount: number;
+  };
 
-  /**
-   * The IDs of the message and item the workspace state holds, if any. A preview card
-   * writes them just before it opens the workspace, which then clears them.
-   */
-  function workspaceSourceOf() {
-    const { fullMessage, localMessageItem } =
-      chatStore(serviceManager).getState().view.workspacePanelState;
-    if (!fullMessage || !localMessageItem) {
+  /** Takes the card that named itself for this open, if any, with its public item ID. */
+  function takeCardSource() {
+    const card = cardSources.get(serviceManager.store);
+    cardSources.delete(serviceManager.store);
+    if (!card) {
       return undefined;
     }
     const itemID = serviceManager.publicStateService.messageItemIDOf(
-      localMessageItem.ui_state.id
+      card.localItemID
     );
-    return itemID
-      ? { messageID: fullMessage.id, itemID }
-      : { messageID: fullMessage.id };
+    return {
+      messageID: card.messageID,
+      ...(itemID && { itemID }),
+      restartCount: serviceManager.restartCount,
+    };
+  }
+
+  /** The workspace's card IDs for an event, unless a restart has removed that card. */
+  function sourceIDs() {
+    if (workspaceSource?.restartCount !== serviceManager.restartCount) {
+      return undefined;
+    }
+    const { messageID, itemID } = workspaceSource;
+    return itemID ? { messageID, itemID } : { messageID };
   }
 
   function captureWorkspaceEvent() {
@@ -126,7 +162,7 @@ function createCustomPanelInstance(
         workspaceMessages?.working.localItems[localMessageItem.ui_state.id]
           ?.item,
       fullMessage: fullMessage && workspaceMessages?.working.message,
-      ...workspaceSource,
+      ...sourceIDs(),
     };
   }
 
@@ -283,7 +319,7 @@ function createCustomPanelInstance(
         defaultPanelOptions) as CustomPanelConfigOptions;
       const store = chatStore(serviceManager);
       const source =
-        panelType === PanelType.WORKSPACE ? workspaceSourceOf() : undefined;
+        panelType === PanelType.WORKSPACE ? takeCardSource() : undefined;
 
       // For workspace panels, close any existing workspace before opening a new one
       if (panelType === PanelType.WORKSPACE) {
@@ -368,4 +404,9 @@ function createCustomPanelInstance(
   return Object.freeze(customPanelInstance);
 }
 
-export { createCustomPanelInstance, CustomPanelInstance, openHistoryPanel };
+export {
+  createCustomPanelInstance,
+  CustomPanelInstance,
+  openHistoryPanel,
+  setWorkspaceCardSource,
+};
