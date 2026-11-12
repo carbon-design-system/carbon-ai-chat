@@ -692,7 +692,7 @@ test('the analyzer includes canonical public source while excluding compatibilit
 function assertResolvableReferences(manifest, sources) {
   const globals = new Set(
     sources.flatMap((source) =>
-      [...globalSuperclassReferences(ts, source)].map(
+      [...globalSuperclassReferences(source)].map(
         ([name, base]) =>
           `${source.fileName.replace(/^src\//, 'es/').replace(/\.[jt]sx?$/, '.js')}#${name}#${base}`
       )
