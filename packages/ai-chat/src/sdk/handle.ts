@@ -51,7 +51,7 @@ interface ChatSDKHandle extends ChatSDKInstance {
   /**
    * Replaces the config rather than merging into it, so a field left out
    * returns to its default. Copies what it's given, as `createChatSDK` does.
-   * Resolves once the change has been applied (#1833). Resolves doing nothing
+   * Resolves once the change has been applied. Resolves doing nothing
    * once this handle is released or has destroyed its chat.
    *
    * Rejects, changing nothing, if the new namespace already has a chat, or if
