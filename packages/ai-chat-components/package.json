@@ -67,6 +67,7 @@
     "react": ">=17.0.0 <20.0.0"
   },
   "dependencies": {
+    "@babel/parser": "^7.29.9",
     "@carbon/icon-helpers": "^10.47.0",
     "@carbon/icons": "^12.0.0-alpha.3",
     "@carbon/styles": "^2.0.0-alpha.5",
@@ -117,8 +118,7 @@
     "lit": "^3.1.0",
     "lodash-es": "^4.18.1",
     "markdown-it": "^14.3.3",
-    "tslib": "^2.6.3",
-    "@babel/parser": "^7.29.9"
+    "tslib": "^2.6.3"
   },
   "devDependencies": {
     "@babel/core": "^8.0.0",
