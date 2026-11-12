@@ -28,7 +28,11 @@ import { ServiceManager } from './ServiceManager';
 import { PendingMessageRequest } from './MessageService';
 import cloneDeep from 'lodash-es/cloneDeep.js';
 import { consoleError, debugLog } from '../utils/miscUtils';
-import { BusEventSend, BusEventType } from '../../types/events/eventBusTypes';
+import {
+  BusEventSend,
+  BusEventType,
+  MessageSendSource,
+} from '../../types/events/eventBusTypes';
 import { ChatInstance } from '../../types/instance/ChatInstance';
 import { addDefaultsToMessage } from '../utils/messageUtils';
 
@@ -96,6 +100,19 @@ class OutboundMessageCoordinator {
   }
 
   /**
+   * A failed silent send has no user message to mark, so it adds an inline error message instead. The welcome
+   * request is silent too, but its failure stays quiet.
+   */
+  private addErrorMessageIfSilent(pendingRequest: PendingMessageRequest) {
+    if (
+      pendingRequest.requestOptions.silent &&
+      pendingRequest.source !== MessageSendSource.WELCOME_REQUEST
+    ) {
+      this.addErrorMessage();
+    }
+  }
+
+  /**
    * Process a message returned from the assistant send path with an error. Custom senders handle retries upstream;
    * we mark this attempt as failed and advance the queue.
    */
@@ -104,8 +121,7 @@ class OutboundMessageCoordinator {
     resultText: string,
     reportSendError = true
   ) {
-    const { timeFirstRequest, timeLastRequest, isProcessed, requestOptions } =
-      pendingRequest;
+    const { timeFirstRequest, timeLastRequest, isProcessed } = pendingRequest;
 
     // If this message was already invalidated, don't do anything.
     if (isProcessed) {
@@ -115,10 +131,7 @@ class OutboundMessageCoordinator {
     pendingRequest.trackData.lastRequestTime = Date.now() - timeLastRequest;
     pendingRequest.trackData.totalRequestTime = Date.now() - timeFirstRequest;
 
-    if (requestOptions.silent) {
-      // If the message that was sent was silent, we have to throw an error manually since there isn't any user message to reference.
-      this.addErrorMessage();
-    }
+    this.addErrorMessageIfSilent(pendingRequest);
 
     this.serviceManager.conversationLifecycleService.fail(
       { messageID: pendingRequest.message.id },
@@ -173,9 +186,7 @@ class OutboundMessageCoordinator {
     }
 
     const resultText = getSendErrorText(error, false);
-    if (pendingRequest.requestOptions.silent) {
-      this.addErrorMessage();
-    }
+    this.addErrorMessageIfSilent(pendingRequest);
     this.serviceManager.actions.errorOccurred({
       errorType: OnErrorType.MESSAGE_COMMUNICATION,
       message: 'An error occurred sending a message',

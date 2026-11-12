@@ -370,8 +370,8 @@ describe('a failed welcome request', () => {
     const [welcome] = instance.getState().messages;
     expect(welcome.id).toBe(sent.request.id);
     expect(welcome.history?.error_state).toBe(MessageErrorState.FAILED);
-    // The welcome request is sent without the `silent` send option, so no
-    // inline error response is added.
+    // The welcome request is silent, but its failure adds no inline error
+    // response.
     expect(instance.getState().messages).toHaveLength(1);
   });
 });

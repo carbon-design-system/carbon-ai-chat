@@ -235,7 +235,7 @@ class HydrationService {
       await serviceManager.actions.send(
         welcomeRequest,
         MessageSendSource.WELCOME_REQUEST,
-        {},
+        { silent: true },
         true
       );
     } catch (error) {

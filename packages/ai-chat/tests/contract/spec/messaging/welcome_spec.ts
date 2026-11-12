@@ -77,7 +77,7 @@ describe('welcome request', () => {
     );
   });
 
-  it('sends an empty text request marked silent and welcome in its history', async () => {
+  it('sends an empty text request marked silent in its options, and silent and welcome in its history', async () => {
     const backend = fakeBackend();
     await contractChat({
       openChatByDefault: true,
@@ -87,9 +87,7 @@ describe('welcome request', () => {
     expect(sent.request.input).toEqual({ text: '', message_type: 'text' });
     expect(sent.request.history.silent).toBe(true);
     expect(sent.request.history.is_welcome_request).toBe(true);
-    // On `main` the welcome is silent only in its history; the
-    // `CustomSendMessageOptions.silent` flag is left unset.
-    expect(sent.options.silent).toBeUndefined();
+    expect(sent.options.silent).toBe(true);
     expect(sent.options.signal.aborted).toBe(false);
   });
 
