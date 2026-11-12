@@ -22,9 +22,10 @@ import type { PublicChatState } from '../types/instance/PublicChatState';
  * verbs, so code the chat calls into can't tear down the chat that called it.
  * Internal in 1.x (#1834).
  *
- * Once the handle is released, or its chat destroyed, its members no longer
- * reach the chat. Those that return a promise reject, and the rest do
- * nothing. Its `state` keeps its last value and notifies nobody.
+ * Once the handle is released, its members no longer reach the chat: those
+ * that return a promise resolve, doing nothing. Once another handle destroys
+ * the chat, they reject. Either way, the rest do nothing, and `state` keeps
+ * its last value and notifies nobody.
  */
 interface ChatSDKHandle extends ChatSDKInstance {
   /**
@@ -52,7 +53,7 @@ interface ChatSDKHandle extends ChatSDKInstance {
    * Replaces the config rather than merging into it, so a field left out
    * returns to its default. Copies what it's given, as `createChatSDK` does.
    * Resolves once the change has been applied. Resolves doing nothing
-   * once this handle is released or has destroyed its chat.
+   * once this handle is released or its chat has shut down.
    *
    * Rejects, changing nothing, if the new namespace already has a chat, or if
    * another handle destroyed the chat.
@@ -60,7 +61,7 @@ interface ChatSDKHandle extends ChatSDKInstance {
   updateConfig(next: ChatSDKConfig): Promise<void>;
 }
 
-/** Whether each member returns a promise, which a stopped handle rejects. */
+/** Whether each member returns a promise, which a stopped handle settles. */
 type Returns<T> = Record<keyof T, 'promise' | 'nothing'>;
 
 const MESSAGING_RETURNS: Returns<ChatSDKInstance['messaging']> = {
@@ -84,33 +85,39 @@ const SERVICE_DESK_RETURNS: Returns<ChatSDKInstance['serviceDesk']> = {
   updateIsSuspended: 'promise',
 };
 
-const RELEASED_MESSAGE =
-  'This chat handle was released, so the call did nothing. Use the handle from the latest create on its namespace.';
+/**
+ * Why a handle no longer reaches its chat: it released it, or another handle
+ * destroyed the chat.
+ */
+type Stopped = 'released' | 'destroyedElsewhere' | undefined;
 
 const DESTROYED_MESSAGE =
-  'This chat was destroyed, so the call did nothing. Start a new chat.';
+  'Another handle destroyed this chat, so the call did nothing. Start a new chat.';
 
-/**
- * Copies `members` with each one checking `stopped` first. While it returns
- * a message, a member that returns a promise rejects with it, and the rest
- * return nothing.
- */
+/** What a stopped handle's member returns instead of reaching the chat. */
+function stoppedResult(stopped: Stopped, returnsPromise: boolean) {
+  if (!returnsPromise) {
+    return undefined;
+  }
+  return stopped === 'released'
+    ? Promise.resolve(undefined)
+    : Promise.reject(new Error(DESTROYED_MESSAGE));
+}
+
+/** Copies `members` with each one checking `stopped` first. */
 function guard<T extends object>(
   members: T,
   returns: Returns<T>,
-  stopped: () => string | undefined
+  stopped: () => Stopped
 ): T {
   const guarded = {} as Record<keyof T, unknown>;
   (Object.keys(returns) as (keyof T)[]).forEach((key) => {
     const member = members[key] as (...args: unknown[]) => unknown;
     guarded[key] = (...args: unknown[]) => {
-      const message = stopped();
-      if (message) {
-        return returns[key] === 'promise'
-          ? Promise.reject(new Error(message))
-          : undefined;
-      }
-      return member(...args);
+      const why = stopped();
+      return why
+        ? stoppedResult(why, returns[key] === 'promise')
+        : member(...args);
     };
   });
   return guarded as T;
@@ -140,12 +147,14 @@ function createHandle(
   const unsubscribes = new Set<() => void>();
 
   /** Why this handle no longer reaches its chat, or `undefined` while it does. */
-  const stopped = () => {
+  const stopped = (): Stopped => {
     if (released) {
-      return RELEASED_MESSAGE;
+      return 'released';
     }
-    return destroyedHere || serviceManager.isDestroyed
-      ? DESTROYED_MESSAGE
+    // The handle that destroyed the chat still reaches it, as before: the
+    // chat's own members do nothing, or reject, once it has shut down.
+    return serviceManager.isDestroyed && !destroyedHere
+      ? 'destroyedElsewhere'
       : undefined;
   };
 
@@ -204,21 +213,17 @@ function createHandle(
       claim?.end();
     },
     updateConfig: async (next) => {
-      // A handle that let go of its chat no longer configures it.
-      if (released || destroyedHere) {
-        return;
-      }
-      const message = stopped();
-      if (message) {
-        throw new Error(message);
+      const why = stopped();
+      if (why) {
+        return stoppedResult(why, true);
       }
       // A chat that shut down takes no more config.
       if (serviceManager.isShutdown) {
-        return;
+        return undefined;
       }
       // First, so a collision rejects before anything applies.
       claim?.move(next.namespace);
-      await applyConversationConfig(serviceManager, createSDKAppConfig(next));
+      return applyConversationConfig(serviceManager, createSDKAppConfig(next));
     },
   };
   chats.set(handle, serviceManager);

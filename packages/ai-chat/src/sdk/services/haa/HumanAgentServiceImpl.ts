@@ -530,7 +530,18 @@ class HumanAgentServiceImpl implements HumanAgentService {
 
   /** @see HumanAgentService.endChatOnDestroy */
   endChatOnDestroy(): Promise<void> | undefined {
-    if (!this.chatStarted || !this.serviceDesk) {
+    // At once, as a shutdown cancels it, not after the end's events.
+    this.closeScreenShareRequestPanel(ScreenShareState.CANCELLED);
+    // Live as a restart reads it: a start still in its pre-start handlers
+    // hasn't reached the desk, and shutdown's desk swap stops it there.
+    const { isConnecting } =
+      this.serviceManager.store.getState().humanAgentState;
+    const { isConnected } = this.persistedHumanAgentState();
+    if (
+      !this.chatStarted ||
+      !this.serviceDesk ||
+      !(isConnected || isConnecting)
+    ) {
       return undefined;
     }
     return this.endStartedChatOnDestroy();

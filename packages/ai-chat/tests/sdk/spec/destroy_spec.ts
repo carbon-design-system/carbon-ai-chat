@@ -18,6 +18,7 @@ import { chatOf } from '../../../src/sdk/handle';
 import { DEFAULT_RELEASE_GRACE_MS } from '../../../src/sdk/registry';
 import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 import actions from '../../../src/sdk/store/actions';
+import { setIsConnecting } from '../../../src/sdk/store/humanAgentActions';
 import { toPersistableState } from '../../../src/sdk/store/persistenceUtils';
 import { DEFAULT_PERSISTED_TO_BROWSER } from '../../../src/sdk/store/reducerUtils';
 import type { ChatSDKConfig } from '../../../src/types/config/ChatSDKConfig';
@@ -190,6 +191,7 @@ describe('destroy (#2358 O1–O6)', () => {
     const handle = await create({ serviceDeskFactory: factory });
     const manager = chatOf(handle);
     (manager.humanAgentService as any).chatStarted = true;
+    manager.store.dispatch(setIsConnecting(true, null));
     const ended = jest.fn();
     const preEnd = jest.fn();
     handle.on([
@@ -252,7 +254,8 @@ describe('other handles after destroy (#2358 O7–O9)', () => {
     const handler = jest.fn();
 
     first.destroy();
-    const destroyed = /This chat was destroyed/;
+    const destroyed =
+      'Another handle destroyed this chat, so the call did nothing. Start a new chat.';
     await expect(second.messaging.send('Again')).rejects.toThrow(destroyed);
     await expect(second.messaging.restartConversation()).rejects.toThrow(
       destroyed
@@ -284,20 +287,21 @@ describe('other handles after destroy (#2358 O7–O9)', () => {
     const second = await create({ namespace: 'support' });
 
     await second.messaging.send('Hello');
-    expect(second.state.get().messages.length).toBeGreaterThan(0);
+    const messages = second.state.get().messages.length;
+    expect(messages).toBeGreaterThan(0);
     expect(first.state.get()).toBe(before);
     expect(listener).not.toHaveBeenCalled();
     expect(selected).not.toHaveBeenCalled();
-    await expect(first.messaging.send('Hi')).rejects.toThrow(
-      'This chat handle was released, so the call did nothing. Use the handle from the latest create on its namespace.'
-    );
+    // It let go, so its calls do nothing, and its promises resolve.
+    await expect(first.messaging.send('Hi')).resolves.toBeUndefined();
+    expect(second.state.get().messages).toHaveLength(messages);
     expect(first.state.subscribe(listener)).toEqual(expect.any(Function));
     await second.messaging.send('Again');
     expect(listener).not.toHaveBeenCalled();
-    // As before: a released handle's config update resolves, changing nothing.
     await expect(first.updateConfig({ namespace: 'x' })).resolves.toBe(
       undefined
     );
+    expect(chatOf(second).namespace.originalName).toBe('support');
   });
 });
 

@@ -101,7 +101,9 @@ interface HumanAgentService {
   /**
    * Ends a live agent chat for a chat being destroyed, as a restart ends one,
    * except that no handler can cancel it. The end-of-chat events still fire.
-   * Returns `undefined`, at once, when no agent chat has started.
+   * A screen-share request still waiting is cancelled at once.
+   * Returns `undefined`, at once, unless an agent chat is connected or
+   * connecting.
    */
   endChatOnDestroy(): Promise<void> | undefined;
 
