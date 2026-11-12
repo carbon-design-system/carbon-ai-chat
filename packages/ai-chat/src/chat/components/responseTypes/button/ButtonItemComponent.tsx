@@ -18,9 +18,9 @@ import { ButtonItemURLComponent } from './ButtonItemURLComponent';
 import {
   ButtonItem,
   ButtonItemType,
-  MessageRequest,
   MessageResponse,
 } from '../../../../types/messaging/Messages';
+import { useMessageItemFlags } from '../../../hooks/useMessageItemFlags';
 
 interface ButtonItemComponentProps extends HasRequestFocus {
   localMessageItem: LocalMessageItem<ButtonItem>;
@@ -30,17 +30,16 @@ interface ButtonItemComponentProps extends HasRequestFocus {
    * Indicates if this message is part the most recent message response that allows for input.
    */
   isMessageForInput: boolean;
-
-  /**
-   * The request the button sent when the user clicked it, from the item's view flags.
-   */
-  optionSelected?: MessageRequest;
 }
 
 /**
  * This component determines the button response type to render.
  */
 function ButtonItemComponent(props: ButtonItemComponentProps) {
+  // The request the button sent when the user clicked it, from the item's view flags.
+  const optionSelected = useMessageItemFlags(
+    props.localMessageItem.ui_state.id
+  )?.optionSelected;
   switch (props.localMessageItem.item.button_type) {
     case ButtonItemType.URL:
       return (
@@ -58,7 +57,7 @@ function ButtonItemComponent(props: ButtonItemComponentProps) {
         <ButtonItemCustomEventComponent
           localMessageItem={props.localMessageItem}
           fullMessage={props.fullMessage}
-          optionSelected={props.optionSelected}
+          optionSelected={optionSelected}
         />
       );
     default:
@@ -67,7 +66,7 @@ function ButtonItemComponent(props: ButtonItemComponentProps) {
           localMessageItem={props.localMessageItem}
           requestFocus={props.requestFocus}
           isMessageForInput={props.isMessageForInput}
-          optionSelected={props.optionSelected}
+          optionSelected={optionSelected}
         />
       );
   }

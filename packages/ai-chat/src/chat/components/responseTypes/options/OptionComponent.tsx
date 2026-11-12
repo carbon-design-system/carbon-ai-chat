@@ -31,6 +31,7 @@ import {
 import { MessageSendSource } from '../../../../types/events/eventBusTypes';
 import { TextBlock } from '../../../components/helpers/TextBlock/TextBlock';
 import { consoleError } from '../../../../sdk/utils/miscUtils';
+import { useMessageItemFlags } from '../../../hooks/useMessageItemFlags';
 
 interface OnChangeData<ItemType> {
   selectedItem: ItemType | null;
@@ -66,6 +67,7 @@ interface OptionProps extends HasServiceManager {
 
   /**
    * The request the user's chosen option sent, from the item's view flags. Unset while nothing is chosen.
+   * {@link OptionItemComponent} reads it.
    */
   optionSelected?: MessageRequest;
 }
@@ -192,4 +194,14 @@ class OptionComponent extends Component<OptionProps> {
   }
 }
 
-export { OptionComponent };
+/**
+ * Draws an option item with the choice its view flags record.
+ */
+function OptionItemComponent(props: Omit<OptionProps, 'optionSelected'>) {
+  const optionSelected = useMessageItemFlags(
+    props.localMessage.ui_state.id
+  )?.optionSelected;
+  return <OptionComponent {...props} optionSelected={optionSelected} />;
+}
+
+export { OptionComponent, OptionItemComponent };
