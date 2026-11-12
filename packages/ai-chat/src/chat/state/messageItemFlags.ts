@@ -21,6 +21,7 @@ import { isResponse } from '../../sdk/utils/messageUtils';
 import {
   itemIDsByLocalID,
   planStateMessageItems,
+  type ItemPlan,
 } from '../../sdk/utils/publicMessageItems';
 import type { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
 import type { Message, MessageRequest } from '../../types/messaging/Messages';
@@ -33,17 +34,31 @@ type ItemFlags = ViewPartitionState['messageItemFlags'];
 /** No flags, for a cleared list and for a state made before the list existed. */
 const NO_FLAGS: ItemFlags = Object.freeze({});
 
-/** The local item each item ID of one message draws. */
-function drawnItems(
-  state: ConversationState,
-  messageID: string
-): Map<string, LocalMessageItem> {
-  return new Map(
-    planStateMessageItems(state, [messageID]).map((plan) => [
-      plan.id,
-      plan.local,
-    ])
-  );
+/**
+ * The item plans of the message a write touched, in the states before and
+ * after it, each planned at most once per write.
+ */
+interface WritePlans {
+  before(): readonly ItemPlan[];
+  after(): readonly ItemPlan[];
+}
+
+function writePlans(
+  messageID: string,
+  before: ConversationState,
+  after: ConversationState
+): WritePlans {
+  const planned: { before?: ItemPlan[]; after?: ItemPlan[] } = {};
+  return {
+    before: () =>
+      (planned.before ??= planStateMessageItems(before, [messageID])),
+    after: () => (planned.after ??= planStateMessageItems(after, [messageID])),
+  };
+}
+
+/** The local item each item ID of a plan list draws. */
+function drawnItems(plans: readonly ItemPlan[]): Map<string, LocalMessageItem> {
+  return new Map(plans.map((plan) => [plan.id, plan.local]));
 }
 
 function withoutItems(flags: ItemFlags, itemIDs: readonly string[]) {
@@ -145,16 +160,14 @@ function loadHistory(
  */
 function followLocalCopies(
   flags: ItemFlags,
-  message: Message,
-  before: ConversationState,
-  after: ConversationState
+  flagged: readonly string[],
+  plans: WritePlans
 ): ItemFlags {
-  const flagged = flaggedItemsOf(flags, new Set([message.id]));
   if (!flagged.length) {
     return flags;
   }
-  const was = drawnItems(before, message.id);
-  const now = drawnItems(after, message.id);
+  const was = drawnItems(plans.before());
+  const now = drawnItems(plans.after());
   const idOfCopy = new Map(
     Array.from(now, ([itemID, local]) => [local, itemID])
   );
@@ -206,13 +219,16 @@ function announcesNewCopy(message: Message | undefined, isStreaming: boolean) {
  *
  * @param flags The flags after they followed the write's local copies.
  * @param flagsBefore The flags before the write.
+ * @param hadFlags Whether the message's items had flags before the write.
  */
 function markNewCopies(
   flags: ItemFlags,
   flagsBefore: ItemFlags,
+  hadFlags: boolean,
   action: ItemWriteAction,
   before: ConversationState,
-  after: ConversationState
+  after: ConversationState,
+  plans: WritePlans
 ): ItemFlags {
   const messageID = action.message.id;
   const isUpsert =
@@ -223,37 +239,57 @@ function markNewCopies(
     stored,
     isUpsert && Boolean(action.isStreaming)
   );
-  const inherits =
-    isUpsert && flaggedItemsOf(flagsBefore, new Set([messageID])).length > 0;
+  const inherits = isUpsert && hadFlags;
   if (!announces && !inherits) {
     return flags;
   }
-  const itemIDBefore = inherits
-    ? itemIDsByLocalID(planStateMessageItems(before, [messageID]))
-    : undefined;
+  const itemIDBefore = inherits ? itemIDsByLocalID(plans.before()) : undefined;
   const marked: Record<string, ItemFlags[string]> = {};
-  planStateMessageItems(after, [messageID]).forEach(
-    ({ id, parentID, local }) => {
-      const localID = local.ui_state.id;
-      if (
-        parentID !== undefined ||
-        before.allMessageItemsByID[localID] === local
-      ) {
-        return;
-      }
-      const idBefore = itemIDBefore?.get(localID);
-      const wasAnnounced = Boolean(
-        idBefore && flagsBefore[idBefore]?.wasAnnounced
-      );
-      if (!announces && !wasAnnounced) {
-        return;
-      }
-      marked[id] = wasAnnounced
-        ? { messageID, wasAnnounced }
-        : { messageID, needsAnnouncement: true };
+  plans.after().forEach(({ id, parentID, local }) => {
+    const localID = local.ui_state.id;
+    if (
+      parentID !== undefined ||
+      before.allMessageItemsByID[localID] === local
+    ) {
+      return;
     }
-  );
+    const idBefore = itemIDBefore?.get(localID);
+    const wasAnnounced = Boolean(
+      idBefore && flagsBefore[idBefore]?.wasAnnounced
+    );
+    if (!announces && !wasAnnounced) {
+      return;
+    }
+    marked[id] = wasAnnounced
+      ? { messageID, wasAnnounced }
+      : { messageID, needsAnnouncement: true };
+  });
   return Object.keys(marked).length ? { ...flags, ...marked } : flags;
+}
+
+/**
+ * Fits the flags of a message's items to a write that builds new copies of
+ * them: flags follow the copies they were set on, and the new copies get
+ * their announcement flags. Each state's plan of the message is made once.
+ */
+function reactToRebuild(
+  flags: ItemFlags,
+  action: ItemWriteAction,
+  before: ConversationState,
+  after: ConversationState
+): ItemFlags {
+  const messageID = action.message.id;
+  const plans = writePlans(messageID, before, after);
+  const flagged = flaggedItemsOf(flags, new Set([messageID]));
+  return markNewCopies(
+    followLocalCopies(flags, flagged, plans),
+    flags,
+    flagged.length > 0,
+    action,
+    before,
+    after,
+    plans
+  );
 }
 
 /** Whether a write builds new local copies of a message's items. */
@@ -318,13 +354,7 @@ function nextFlags(
       return setAnnounced(flags, after, action.localItemID);
     default:
       return rebuildsItems(action)
-        ? markNewCopies(
-            followLocalCopies(flags, action.message, before, after),
-            flags,
-            action,
-            before,
-            after
-          )
+        ? reactToRebuild(flags, action, before, after)
         : flags;
   }
 }
