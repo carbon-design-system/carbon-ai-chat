@@ -44,6 +44,9 @@ function getSendErrorText(error: unknown, processingError: boolean): string {
       ? error.message
       : 'The chat could not process the message chunk.';
   }
+  if (error instanceof Error) {
+    return error.message || 'There was an unidentified error.';
+  }
   return (
     (error && (typeof error === 'string' ? error : JSON.stringify(error))) ||
     'There was an unidentified error.'

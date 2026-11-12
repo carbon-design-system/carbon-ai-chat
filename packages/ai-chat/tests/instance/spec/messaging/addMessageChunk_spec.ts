@@ -298,7 +298,9 @@ describe('ChatInstance.messaging.addMessageChunk', () => {
     let third: Promise<void>;
 
     try {
-      await expect(instance.send('first')).rejects.toEqual(new Error('{}'));
+      await expect(instance.send('first')).rejects.toEqual(
+        new Error('first send failed')
+      );
       second = instance.send('second').then(secondSettled);
       await secondStarted;
       third = instance.send('third');
@@ -395,7 +397,9 @@ describe('ChatInstance.messaging.addMessageChunk', () => {
       .spyOn(console, 'error')
       .mockImplementation(() => undefined);
     const first = instance.send('first');
-    const firstFailure = expect(first).rejects.toEqual(new Error('{}'));
+    const firstFailure = expect(first).rejects.toEqual(
+      new Error('first transport failed')
+    );
     let second: Promise<void>;
 
     try {
@@ -724,7 +728,9 @@ describe('ChatInstance.messaging.addMessageChunk', () => {
     await expect(instance.send('first')).rejects.toThrow(failure.message);
     expect(onError).toHaveBeenCalledTimes(1);
 
-    await expect(instance.send('second')).rejects.toEqual(new Error('{}'));
+    await expect(instance.send('second')).rejects.toEqual(
+      new Error(failure.message)
+    );
     expect(onError).toHaveBeenCalledTimes(2);
     expect(onError).toHaveBeenCalledWith(
       expect.objectContaining({ errorType: OnErrorType.MESSAGE_COMMUNICATION })
