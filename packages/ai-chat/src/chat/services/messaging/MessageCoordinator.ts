@@ -63,7 +63,27 @@ import type { HistoryItem } from '../../../types/messaging/History';
 import type { LoadedHistory } from '../../schema/historyToMessages';
 import { resetStopStreamingButton } from '../../utils/streamingUtils';
 
+import type {
+  MessageResponseHistory,
+  MessageRequestHistory,
+} from '../../../types/messaging/Messages';
+
 class MessageCoordinator {
+  mergeMessageHistory(
+    messageID: string,
+    history: MessageResponseHistory | MessageRequestHistory
+  ) {
+    this.serviceManager.store.dispatch(
+      actions.mergeMessageHistory(messageID, history)
+    );
+  }
+
+  setMessageOptionSelected(messageID: string, sentMessage: MessageRequest) {
+    this.serviceManager.store.dispatch(
+      actions.messageSetOptionSelected(messageID, sentMessage)
+    );
+  }
+
   private historyWorkflow?: HistoryWorkflow;
 
   private getHistoryWorkflow() {

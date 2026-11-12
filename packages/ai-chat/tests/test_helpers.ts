@@ -16,11 +16,15 @@ import { ChatContainer } from '../src/react/ChatContainer';
 import { PublicConfig } from '../src/types/config/PublicConfig';
 import { ChatContainerProps } from '../src/types/component/ChatContainer';
 import { ChatInstance } from '../src/types/instance/ChatInstance';
-import { createAppStore, type AppStore } from '../src/chat/store/appStore';
+import {
+  createStoreFromReduction,
+  type AppStore,
+} from '../src/chat/store/appStore';
+import { enableMessageOwnership } from '../src/chat/store/messageOwnership';
 import { AppState } from '../src/types/state/AppState';
 import { MessageResponseTypes } from '../src/types/messaging/Messages';
 import { ServiceManager } from '../src/chat/services/ServiceManager';
-import { reducers } from '../src/chat/store/reducers';
+import { reduceWithMessageOwnership } from '../src/chat/store/reducers';
 import actions from '../src/chat/store/actions';
 import isEqual from 'lodash-es/isEqual.js';
 import {
@@ -183,25 +187,18 @@ export const renderChatAndGetInstanceWithStore = async (
 // Store / config-change re-render harness
 // ============================================================================
 
-/** The real root reducer (mirrors `reducerFunction` in doCreateStore). */
-const rootReducer = (
-  state: AppState,
-  action: { type: string; [key: string]: unknown } | undefined
-): AppState =>
-  action && reducers[action.type]
-    ? reducers[action.type](state, action)
-    : state;
-
 /**
  * Builds a real store seeded from a PublicConfig, exactly the way doCreateStore
  * does. Use with {@link applyConfigChange} to drive runtime config updates in
  * re-render tests.
  */
 export function makeConfigStore(config: PublicConfig): AppStore<AppState> {
-  return createAppStore<AppState>(
-    rootReducer as never,
+  const store = createStoreFromReduction<AppState>(
+    reduceWithMessageOwnership,
     createInitialState(createAppConfig(config))
   );
+  enableMessageOwnership(store);
+  return store;
 }
 
 /**

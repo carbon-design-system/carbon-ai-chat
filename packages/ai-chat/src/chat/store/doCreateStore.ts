@@ -23,8 +23,9 @@ import { PublicConfig } from '../../types/config/PublicConfig';
 import { LanguagePack } from '../../types/config/LanguagePack';
 import { DeepPartial } from '../../types/utilities/DeepPartial';
 import { validateCustomProperties } from '../utils/styleUtils';
-import { reducers } from './reducers';
-import { AppStore, createAppStore } from './appStore';
+import { reduceWithMessageOwnership } from './reducers';
+import { AppStore, createStoreFromReduction } from './appStore';
+import { enableMessageOwnership } from './messageOwnership';
 import {
   DEFAULT_CITATION_PANEL_STATE,
   DEFAULT_CUSTOM_PANEL_STATE,
@@ -373,7 +374,12 @@ function doCreateStore(
       config.public.launcher.showUnreadIndicator;
   }
 
-  return createAppStore(reducerFunction, initialState);
+  const store = createStoreFromReduction(
+    reduceWithMessageOwnership,
+    initialState
+  );
+  enableMessageOwnership(store);
+  return store;
 }
 
 /**
@@ -460,19 +466,6 @@ function getLayoutState(publicConfig: PublicConfig): LayoutConfig {
     DEFAULT_LAYOUT_STATE,
     publicConfig.layout ?? {}
   );
-}
-
-/**
- * This is the global reducer for the redux store. It will use the map of reducers from the "reducers" array to map
- * the action type to the sub-reducer for that specific action.
- */
-function reducerFunction(
-  state: AppState,
-  action: { type: string; [key: string]: unknown } | undefined
-): AppState {
-  return action && reducers[action.type]
-    ? reducers[action.type](state, action)
-    : state;
 }
 
 export {
