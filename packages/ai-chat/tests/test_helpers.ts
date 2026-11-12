@@ -272,7 +272,8 @@ export function TestChatContext({
 
 /**
  * Runs one action through both partitions the way the store does: the
- * conversation reducer, then the view's with the conversation state after it.
+ * conversation reducer, then the view's with the conversation state after it
+ * and before it.
  */
 export function appRootReducer(
   state: AppState,
@@ -280,7 +281,7 @@ export function appRootReducer(
 ): AppState {
   const conversation = reduceWithMessageOwnership(state, action)
     .state as AppState;
-  const view = viewReducer(state.view, action, conversation);
+  const view = viewReducer(state.view, action, conversation, state);
   return Object.is(view, conversation.view)
     ? conversation
     : { ...conversation, view };
