@@ -260,6 +260,8 @@ collect:
         - table-locale
         - table-next-page-text
         - table-previous-page-text
+        # cds-aichat-message-byline
+        - timestamp
         # cds-aichat-message-item-shell
         - full-width
         - hide-avatar
