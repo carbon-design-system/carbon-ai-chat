@@ -403,7 +403,7 @@ export async function initServiceManagerAndInstance(options: {
         debugLog('Called instance.messaging.upsertMessage', messageID, state);
         const { restartCount } = serviceManager;
         try {
-          await serviceManager.messageUpsertCoordinator.upsert(
+          await serviceManager.messageCoordinator.upsertMessage(
             messageID,
             state,
             updater

@@ -184,7 +184,7 @@ class ChunkProcessingService {
     }
 
     const write =
-      this.serviceManager.messageUpsertCoordinator.trackWrite(
+      this.serviceManager.messageCoordinator.trackIncomingWrite(
         extractedMessageID
       );
     try {
@@ -199,7 +199,7 @@ class ChunkProcessingService {
           chunk.partial_item?.streaming_metadata?.id
         );
 
-        this.serviceManager.messageUpsertCoordinator.markStreaming(
+        this.serviceManager.messageCoordinator.markIncomingStreaming(
           extractedMessageID || undefined
         );
 
@@ -452,7 +452,7 @@ class ChunkProcessingService {
     }
     const { ownedItem, ownedChunk } =
       this.incomingMessageService.prepareChunkValues(chunk, item);
-    await this.serviceManager.messageUpsertCoordinator.upsert(
+    await this.serviceManager.messageCoordinator.upsertMessage(
       messageID,
       MessageState.STREAMING,
       (prev) =>

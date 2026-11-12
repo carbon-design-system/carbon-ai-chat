@@ -153,7 +153,7 @@ class OutboundMessageCoordinator {
       );
     }
 
-    this.serviceManager.messageUpsertCoordinator.endStreamingForRequest(
+    this.serviceManager.messageCoordinator.endIncomingStreamingForRequest(
       pendingRequest.message.id,
       pendingRequest.generation
     );

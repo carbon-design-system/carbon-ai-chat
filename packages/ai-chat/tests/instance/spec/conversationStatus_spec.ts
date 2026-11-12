@@ -525,10 +525,10 @@ describe('conversation status', () => {
       const statusAfterCancel = instance.state.get().status;
       expect(firstSignal.aborted).toBe(scope === 'global Stop');
       expect(
-        serviceManager.messageUpsertCoordinator.hasStreamingMessages()
+        serviceManager.messageCoordinator.hasIncomingStreamingMessages()
       ).toBe(scope === 'targeted cancellation');
       expect(
-        serviceManager.messageUpsertCoordinator.getState('response-a')
+        serviceManager.messageCoordinator.getIncomingState('response-a')
       ).toBe(MessageState.STREAMING);
       await instance.messaging.upsertMessage(
         'response-a',

@@ -11,7 +11,7 @@ import {
   CancellationReason,
   MessageState,
   UpsertMessageUpdater,
-} from '../../../../types/config/MessagingConfig';
+} from '../../../types/config/MessagingConfig';
 import {
   GenericItem,
   Message,
@@ -20,29 +20,29 @@ import {
   MessageResponseTypes,
   PauseItem,
   TextItem,
-} from '../../../../types/messaging/Messages';
+} from '../../../types/messaging/Messages';
 import {
   BusEventPreReceive,
   BusEventReceive,
   BusEventType,
-} from '../../../../types/events/eventBusTypes';
-import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
-import { OnErrorType } from '../../../../types/config/ErrorConfig';
+} from '../../../types/events/eventBusTypes';
+import { LocalMessageItem } from '../../../types/messaging/LocalMessageItem';
+import { OnErrorType } from '../../../types/config/ErrorConfig';
 import isEqual from 'lodash-es/isEqual.js';
 import cloneDeep from 'lodash-es/cloneDeep.js';
-import type { UpsertStamp } from '../incomingWriteTypes';
-import { IncomingMessageService } from './IncomingMessageService';
-import actions from '../../../store/actions';
+import type { UpsertStamp } from './incomingWriteTypes';
+import { IncomingMessageService } from './inbound/IncomingMessageService';
+import actions from '../../store/actions';
 import {
   captureMessageEvent,
   eventLocalItems,
-} from '../../../utils/messageEventOwnership';
-import type { MessageWriteOptions } from '../../../store/messageWriteTypes';
+} from '../../utils/messageEventOwnership';
+import type { MessageWriteOptions } from '../../store/messageWriteTypes';
 import {
   createLocalMessageItemsForNestedMessageItems,
   findDrawIssues,
   outputItemToLocalItem,
-} from '../../../schema/outputItemToLocalItem';
+} from '../../schema/outputItemToLocalItem';
 import {
   addDefaultsToMessage,
   isConnectToHumanAgent,
@@ -51,14 +51,14 @@ import {
   isItemStillStreaming,
   isRequest,
   streamItemID,
-} from '../../../utils/messageUtils';
-import { consoleError } from '../../../utils/miscUtils';
-import { hasDisplayableContentForItem } from '../../../utils/streamingUtils';
-import { ServiceManager } from '../../ServiceManager';
+} from '../../utils/messageUtils';
+import { consoleError } from '../../utils/miscUtils';
+import { hasDisplayableContentForItem } from '../../utils/streamingUtils';
+import { ServiceManager } from '../ServiceManager';
 import {
   retainNativeMessageOrigin,
   snapshotNativeMessageEvent,
-} from '../nativeMessageEvents';
+} from './nativeMessageEvents';
 
 /**
  * Whether an upserted item counts as content for the stream-start announcement. A text
@@ -100,8 +100,8 @@ interface SkipsUnchanged {
 }
 
 /**
- * Engine behind {@link ChatInstanceMessaging#upsertMessage}. `MessageCoordinator` owns the
- * send / stream / receive arc; this coordinator's job is narrower:
+ * Private incoming write workflow owned by MessageCoordinator. It preserves the native
+ * upsert flow and the shared full/chunk write dispatcher:
  *
  * - Serialize concurrent `upsertMessage` calls for the same message ID so the reducer
  *   sees them in caller order. Different IDs run in parallel by construction.
@@ -112,7 +112,7 @@ interface SkipsUnchanged {
  *   survives one concurrent stream finishing while another is still running.
  */
 
-class MessageUpsertCoordinator {
+class UpsertWorkflow {
   private readonly serviceManager: ServiceManager;
   private readonly incomingMessageService = new IncomingMessageService();
 
@@ -1318,4 +1318,4 @@ class MessageUpsertCoordinator {
   }
 }
 
-export { MessageUpsertCoordinator };
+export { UpsertWorkflow };

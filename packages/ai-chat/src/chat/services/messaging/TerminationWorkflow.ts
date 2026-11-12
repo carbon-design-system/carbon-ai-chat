@@ -118,7 +118,7 @@ class TerminationWorkflow {
     // cleanup: if any upsert stream was running, the stop button must come down
     // now that nothing in the send-queue remains either.
     const settledUpsertStreams =
-      this.serviceManager.messageUpsertCoordinator.endAllStreaming(reason);
+      this.serviceManager.messageCoordinator.endAllIncomingStreaming(reason);
     if (settledUpsertStreams) {
       this.hideStopStreamingButtonIfIdle();
     }
@@ -169,7 +169,7 @@ class TerminationWorkflow {
         (current.isStreaming &&
           this.inboundStreaming.streamingMessageID === responseID))
     );
-    this.serviceManager.messageUpsertCoordinator.endStreamingMessage(
+    this.serviceManager.messageCoordinator.endIncomingStreamingMessage(
       responseID,
       isCurrentResponse ? current.generation : undefined
     );
@@ -184,7 +184,7 @@ class TerminationWorkflow {
   }
 
   public finishFailedStreamingResponse(pendingRequest: PendingMessageRequest) {
-    this.serviceManager.messageUpsertCoordinator.endStreamingForRequest(
+    this.serviceManager.messageCoordinator.endIncomingStreamingForRequest(
       pendingRequest.message.id,
       pendingRequest.generation
     );
@@ -225,7 +225,7 @@ class TerminationWorkflow {
     if (this.inboundStreaming.streamingMessageID) {
       return true;
     }
-    return this.serviceManager.messageUpsertCoordinator.hasStreamingMessages();
+    return this.serviceManager.messageCoordinator.hasIncomingStreamingMessages();
   }
 
   /**
@@ -279,7 +279,9 @@ class TerminationWorkflow {
    * change than the one this method exists to make.
    */
   public hideStopStreamingButtonIfNoUpsertStreaming() {
-    if (!this.serviceManager.messageUpsertCoordinator.hasStreamingMessages()) {
+    if (
+      !this.serviceManager.messageCoordinator.hasIncomingStreamingMessages()
+    ) {
       resetStopStreamingButton(this.serviceManager.store);
     }
   }
@@ -291,7 +293,7 @@ class TerminationWorkflow {
     reason: string = CancellationReason.STOP_STREAMING
   ) {
     // Settle before the chunk branch, which can return early.
-    this.serviceManager.messageUpsertCoordinator.endAllStreaming(reason);
+    this.serviceManager.messageCoordinator.endAllIncomingStreaming(reason);
     this.hideStopStreamingButtonIfIdle();
 
     // If there's a streaming message, cancel it even if not in queue

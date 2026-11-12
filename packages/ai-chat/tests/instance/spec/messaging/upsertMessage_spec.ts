@@ -157,7 +157,7 @@ describe('ChatInstance.messaging.upsertMessage', () => {
           await renderChatAndGetInstanceWithStore(config);
         await instance.send('start');
         expect(
-          serviceManager.messageUpsertCoordinator.hasStreamingMessages()
+          serviceManager.messageCoordinator.hasIncomingStreamingMessages()
         ).toBe(true);
         expect(
           store.getState().assistantInputState.stopStreamingButtonState
@@ -171,7 +171,7 @@ describe('ChatInstance.messaging.upsertMessage', () => {
           (previous) => previous
         );
         expect(
-          serviceManager.messageUpsertCoordinator.hasStreamingMessages()
+          serviceManager.messageCoordinator.hasIncomingStreamingMessages()
         ).toBe(false);
         expect(
           store.getState().assistantInputState.stopStreamingButtonState
@@ -238,7 +238,7 @@ describe('ChatInstance.messaging.upsertMessage', () => {
         ).toMatchObject({ text: 'snapshot' });
       }
       expect(
-        serviceManager.messageUpsertCoordinator.hasStreamingMessages()
+        serviceManager.messageCoordinator.hasIncomingStreamingMessages()
       ).toBe(false);
       expect(
         store.getState().assistantInputState.stopStreamingButtonState.isVisible
@@ -279,7 +279,7 @@ describe('ChatInstance.messaging.upsertMessage', () => {
       await terminalWrite;
       expect(store.getState().allMessagesByID.early).toBeUndefined();
       expect(
-        serviceManager.messageUpsertCoordinator.hasStreamingMessages()
+        serviceManager.messageCoordinator.hasIncomingStreamingMessages()
       ).toBe(false);
     });
 
@@ -293,7 +293,7 @@ describe('ChatInstance.messaging.upsertMessage', () => {
       );
       await serviceManager.messageCoordinator.cancelCurrentMessageRequest();
       expect(
-        serviceManager.messageUpsertCoordinator.hasStreamingMessages()
+        serviceManager.messageCoordinator.hasIncomingStreamingMessages()
       ).toBe(false);
       expect(
         store.getState().assistantInputState.stopStreamingButtonState.isVisible
@@ -470,7 +470,7 @@ describe('ChatInstance.messaging.upsertMessage', () => {
       ).rejects.toThrow('slot failed');
       expect(receive).not.toHaveBeenCalled();
       expect(
-        serviceManager.messageUpsertCoordinator.hasStreamingMessages()
+        serviceManager.messageCoordinator.hasIncomingStreamingMessages()
       ).toBe(false);
       expect(
         store.getState().assistantInputState.stopStreamingButtonState.isVisible
@@ -638,7 +638,7 @@ describe('ChatInstance.messaging.upsertMessage', () => {
         )
       ).rejects.toThrow('Slot failed');
       expect(
-        serviceManager.messageUpsertCoordinator.getState('slot-rejection')
+        serviceManager.messageCoordinator.getIncomingState('slot-rejection')
       ).toBe(MessageState.STREAMING);
 
       await instance.messaging.upsertMessage(
@@ -686,7 +686,7 @@ describe('ChatInstance.messaging.upsertMessage', () => {
 
         expect(onError).toHaveBeenCalledTimes(1);
         expect(
-          serviceManager.messageUpsertCoordinator.hasStreamingMessages()
+          serviceManager.messageCoordinator.hasIncomingStreamingMessages()
         ).toBe(false);
         expect(
           store.getState().assistantInputState.stopStreamingButtonState
@@ -760,7 +760,7 @@ describe('ChatInstance.messaging.upsertMessage', () => {
           );
 
           expect(
-            serviceManager.messageUpsertCoordinator.hasStreamingMessages()
+            serviceManager.messageCoordinator.hasIncomingStreamingMessages()
           ).toBe(false);
           expect(
             store.getState().assistantInputState.stopStreamingButtonState
@@ -798,7 +798,7 @@ describe('ChatInstance.messaging.upsertMessage', () => {
       await instance.send('start');
       await serviceManager.messageCoordinator.cancelCurrentMessageRequest();
       expect(
-        serviceManager.messageUpsertCoordinator.hasStreamingMessages()
+        serviceManager.messageCoordinator.hasIncomingStreamingMessages()
       ).toBe(false);
       expect(
         store.getState().assistantInputState.stopStreamingButtonState.isVisible
@@ -2437,7 +2437,9 @@ describe('ChatInstance.messaging.upsertMessage', () => {
 
         expect(receive).not.toHaveBeenCalled();
         expect(
-          (instance as any).serviceManager.messageUpsertCoordinator.getState(id)
+          (instance as any).serviceManager.messageCoordinator.getIncomingState(
+            id
+          )
         ).toBeUndefined();
       });
     });

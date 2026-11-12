@@ -52,7 +52,76 @@ import type { UpsertStamp } from './incomingWriteTypes';
 import type { MessageWriteOptions } from '../../store/messageWriteTypes';
 import type { UpsertMessageUpdater } from '../../../types/config/MessagingConfig';
 
+import { UpsertWorkflow } from './UpsertWorkflow';
+
 class MessageCoordinator {
+  private upsertWorkflow?: UpsertWorkflow;
+
+  private getUpsertWorkflow() {
+    return (this.upsertWorkflow ??= new UpsertWorkflow(this.serviceManager));
+  }
+
+  trackIncomingWrite(messageID: string) {
+    return this.incomingWriteLifetime.trackWrite(messageID);
+  }
+
+  markIncomingComplete(messageID: string | undefined) {
+    return this.getUpsertWorkflow().markComplete(messageID);
+  }
+
+  markIncomingStreaming(messageID: string | undefined) {
+    return this.getUpsertWorkflow().markStreaming(messageID);
+  }
+
+  getIncomingState(messageID: string) {
+    return this.getUpsertWorkflow().getState(messageID);
+  }
+
+  hasIncomingStreamingMessages() {
+    return this.getUpsertWorkflow().hasStreamingMessages();
+  }
+
+  endAllIncomingStreaming(reason?: string) {
+    return this.getUpsertWorkflow().endAllStreaming(reason);
+  }
+
+  endIncomingStreamingForRequest(requestID: string, generation?: number) {
+    return this.getUpsertWorkflow().endStreamingForRequest(
+      requestID,
+      generation
+    );
+  }
+
+  endIncomingStreamingMessage(messageID: string, generation?: number) {
+    return this.getUpsertWorkflow().endStreamingMessage(messageID, generation);
+  }
+
+  clearIncomingMessage(messageID: string) {
+    return this.getUpsertWorkflow().clear(messageID);
+  }
+
+  invalidatePendingUpserts() {
+    return this.getUpsertWorkflow().invalidatePendingUpserts();
+  }
+
+  clearAllIncomingWrites() {
+    return this.getUpsertWorkflow().clearAll();
+  }
+
+  upsertMessage(
+    messageID: string,
+    nextState: MessageState,
+    updater: UpsertMessageUpdater,
+    options?: MessageWriteOptions
+  ) {
+    return this.getUpsertWorkflow().upsert(
+      messageID,
+      nextState,
+      updater,
+      options
+    );
+  }
+
   private fullResponseWorkflow?: FullResponseWorkflow;
 
   private getFullResponseWorkflow() {

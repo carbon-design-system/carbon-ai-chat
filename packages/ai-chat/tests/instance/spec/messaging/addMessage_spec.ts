@@ -1510,8 +1510,8 @@ describe('ChatInstance.messaging.addMessage', () => {
       const { instance, store, serviceManager } =
         await renderChatAndGetInstanceWithStore(createBaseConfig());
       const upsert = jest.spyOn(
-        serviceManager.messageUpsertCoordinator,
-        'upsert'
+        serviceManager.messageCoordinator,
+        'upsertMessage'
       );
       const dispatch = jest.spyOn(store, 'dispatch');
       const id = 'path-add';

@@ -16,7 +16,6 @@ import { AppState } from '../../types/state/AppState';
 import { HumanAgentService } from './haa/HumanAgentService';
 import { CustomPanelManager } from './CustomPanelManager';
 import { HistoryService } from './HistoryService';
-import { MessageUpsertCoordinator } from './messaging/inbound/MessageUpsertCoordinator';
 import { NamespaceService } from './NamespaceService';
 import { ThemeWatcherService } from './ThemeWatcherService';
 import { UserSessionStorageService } from './UserSessionStorageService';
@@ -136,15 +135,6 @@ class ServiceManager {
    * The redux store holding the application state.
    */
   store: AppStore<AppState>;
-
-  /**
-   * Engine for {@link ChatInstanceMessaging#upsertMessage}: serializes calls for the
-   * same message ID and tracks {@link MessageState} per ID so `addMessage`,
-   * `addMessageChunk`, and `upsertMessage` can be mixed without double-firing
-   * `pre:receive` / `receive`. {@link messageCoordinator} still owns the send / stream /
-   * receive arc.
-   */
-  messageUpsertCoordinator: MessageUpsertCoordinator;
 
   /**
    * The service to use to connect to a human agent. Note that this value will not be defined if no service desk is

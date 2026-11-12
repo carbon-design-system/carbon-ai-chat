@@ -28,7 +28,6 @@ import { ViewService } from './ViewService';
 import { EventBus } from '../events/EventBus';
 import { HistoryService } from './HistoryService';
 import { createCustomPanelManager } from './CustomPanelManager';
-import { MessageUpsertCoordinator } from './messaging/inbound/MessageUpsertCoordinator';
 import { NamespaceService } from './NamespaceService';
 import { ServiceManager } from './ServiceManager';
 import { ThemeWatcherService } from './ThemeWatcherService';
@@ -144,9 +143,6 @@ function createServiceManager(appConfig: AppConfig) {
     })
   );
   serviceManager.historyService = new HistoryService(serviceManager);
-  serviceManager.messageUpsertCoordinator = new MessageUpsertCoordinator(
-    serviceManager
-  );
   serviceManager.messageCoordinator.configureMessageTimeout(publicConfig);
   serviceManager.store.subscribe(copyToSessionStorage(serviceManager));
   // Single post-boot owner of `serviceManager.intl`: rebuild it whenever the
