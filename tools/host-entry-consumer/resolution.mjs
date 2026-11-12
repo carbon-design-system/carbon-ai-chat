@@ -9,12 +9,15 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { readFile, realpath, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
-import { join, relative } from 'node:path';
+import { isAbsolute, join, relative, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import * as sass from 'sass';
 import ts from 'typescript';
 
+// Both packed packages publish these two trees.
+const trees = ['es', 'es-custom'];
 const source = `
+import type { CSSResult } from 'lit';
 import { createElement, type ComponentType } from 'react';
 import { ChatContainer, ChatCustomElement } from '@carbon/ai-chat';
 import { ChatContainer as CustomChatContainer } from '@carbon/ai-chat/es-custom';
@@ -22,6 +25,8 @@ import ContainerHost from '@carbon/ai-chat/dist/es/web-components/cds-aichat-con
 import CustomElementHost from '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
 import type { ChatInstance, PublicConfig } from '@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js';
 import type { ChatInstance as OuterInstance, PublicConfig as OuterConfig } from '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
+import { inlineMarkdownStyles } from '@carbon/ai-chat-components/es/components/markdown/index.js';
+import { inlineMarkdownStyles as customInlineMarkdownStyles } from '@carbon/ai-chat-components/es-custom/components/markdown/index.js';
 const containerConstructor: CustomElementConstructor = ContainerHost;
 const outerConstructor: CustomElementConstructor = CustomElementHost;
 const container = new ContainerHost();
@@ -49,39 +54,70 @@ outer.openChatByDefault = 'yes';
 const hostConfig: PublicConfig = { openChatByDefault: true };
 const outerConfig: OuterConfig = hostConfig;
 type HostInstances = [ChatInstance, OuterInstance];
+// Both trees publish inline Markdown styles as a resolvable CSSResult.
+const regularStyles: CSSResult = inlineMarkdownStyles;
+const customStyles: CSSResult = customInlineMarkdownStyles;
+type IsAny<T> = 0 extends 1 & T ? true : false;
+const regularIsAny: IsAny<typeof inlineMarkdownStyles> = false;
+const customIsAny: IsAny<typeof customInlineMarkdownStyles> = false;
+// @ts-expect-error The regular style value is not a number.
+const regularNumber: number = inlineMarkdownStyles;
+// @ts-expect-error The custom style value is not a number.
+const customNumber: number = customInlineMarkdownStyles;
 export { containerConstructor, outerConstructor, container, outer, outerConfig };
+export { regularStyles, customStyles, regularIsAny, customIsAny };
 export type { HostInstances };
 `;
+
+// Match a whole '..' segment so a name like '..foo' stays inside.
+// A cross-drive Windows path is absolute rather than starting with '..'.
+function inside(root, path) {
+  const local = relative(root, path);
+  return local !== '..' && !local.startsWith(`..${sep}`) && !isAbsolute(local);
+}
+
+async function declaredPackages(root) {
+  const manifest = JSON.parse(
+    await readFile(join(root, 'package.json'), 'utf8')
+  );
+  return new Set([
+    manifest.name,
+    ...Object.keys(manifest.dependencies ?? {}),
+    ...Object.keys(manifest.peerDependencies ?? {}),
+  ]);
+}
+
+// Strict installs resolve only declared packages from published declarations.
+function assertDeclaredImport(name, declared, specifier, from) {
+  const packageName = specifier
+    .split('/')
+    .slice(0, specifier.startsWith('@') ? 2 : 1)
+    .join('/');
+  assert.ok(
+    declared.has(packageName),
+    `${name}: ${from} imports undeclared ${packageName}.`
+  );
+}
 
 async function assertLocalDeclarations(consumer, name, program, options) {
   const chatRoot = await realpath(
     join(consumer, 'node_modules/@carbon/ai-chat')
   );
-  const chat = JSON.parse(
-    await readFile(join(chatRoot, 'package.json'), 'utf8')
-  );
-  const declared = new Set([
-    chat.name,
-    ...Object.keys(chat.dependencies ?? {}),
-    ...Object.keys(chat.peerDependencies ?? {}),
-  ]);
+  const declared = await declaredPackages(chatRoot);
   for (const declaration of program.getSourceFiles()) {
     if (
       !declaration.isDeclarationFile ||
-      relative(chatRoot, declaration.fileName).startsWith('..')
+      !inside(chatRoot, declaration.fileName)
     ) {
       continue;
     }
     for (const imported of ts.preProcessFile(declaration.text).importedFiles) {
       if (!imported.fileName.startsWith('.')) {
-        // Strict installs resolve only declared packages from these declarations.
-        const segments = imported.fileName.split('/');
-        const packageName = segments
-          .slice(0, imported.fileName.startsWith('@') ? 2 : 1)
-          .join('/');
-        assert.ok(
-          declared.has(packageName),
-          `${name}: ${declaration.fileName} imports undeclared ${packageName}.`
+        assertDeclaredImport(
+          name,
+          declared,
+          imported.fileName,
+          declaration.fileName
         );
         continue;
       }
@@ -96,10 +132,7 @@ async function assertLocalDeclarations(consumer, name, program, options) {
         `${name}: missing published declaration dependency ${imported.fileName} from ${declaration.fileName}.`
       );
       assert.ok(
-        !relative(
-          chatRoot,
-          await realpath(resolved.resolvedFileName)
-        ).startsWith('..'),
+        inside(chatRoot, await realpath(resolved.resolvedFileName)),
         'Local declaration references must stay inside the packed chat package.'
       );
     }
@@ -127,14 +160,72 @@ async function assertTypePaths(consumer, name, program, fixture, options) {
     ).resolvedModule;
     assert.ok(resolved, `${name}: unresolved import ${specifier}.`);
     assert.ok(
-      !relative(
-        installed,
-        await realpath(resolved.resolvedFileName)
-      ).startsWith('..'),
+      inside(installed, await realpath(resolved.resolvedFileName)),
       `${specifier} must resolve inside the packed consumer.`
     );
   }
   await assertLocalDeclarations(consumer, name, program, options);
+}
+
+async function assertInlineStyleDeclarations(
+  consumer,
+  name,
+  program,
+  fixture,
+  options
+) {
+  const root = await realpath(
+    join(consumer, 'node_modules/@carbon/ai-chat-components')
+  );
+  const declared = await declaredPackages(root);
+  const resolve = (specifier, from) =>
+    ts.resolveModuleName(specifier, from, options, ts.sys).resolvedModule
+      ?.resolvedFileName;
+  // The program keeps a symlink inside a package under the path TypeScript
+  // resolved, so the walk keys files by that path. Real paths only check
+  // containment.
+  const pending = [];
+  for (const tree of trees) {
+    const specifier = `@carbon/ai-chat-components/${tree}/components/markdown/index.js`;
+    const index = resolve(specifier, fixture);
+    assert.ok(index, `${name}: unresolved style import ${specifier}.`);
+    assert.equal(
+      await realpath(index),
+      join(root, tree, 'components/markdown/index.d.ts'),
+      `${name}: style imports must resolve to the installed packed declarations.`
+    );
+    const styles = resolve('./src/inline-markdown.js', index);
+    assert.ok(styles, `${name}: unresolved inline Markdown styles in ${tree}.`);
+    pending.push(styles);
+  }
+  const visited = new Set();
+  while (pending.length) {
+    const path = pending.pop();
+    if (visited.has(path)) {
+      continue;
+    }
+    visited.add(path);
+    // A sibling .ts source wins resolution, and consumers would type-check it.
+    assert.match(path, /\.d\.[cm]?ts$/);
+    const declaration = program.getSourceFile(path);
+    assert.ok(declaration, `${name}: missing style declaration ${path}.`);
+    for (const imported of ts.preProcessFile(declaration.text).importedFiles) {
+      if (!imported.fileName.startsWith('.')) {
+        assertDeclaredImport(name, declared, imported.fileName, path);
+        continue;
+      }
+      const dependency = resolve(imported.fileName, declaration.fileName);
+      assert.ok(
+        dependency,
+        `${name}: missing published declaration dependency ${imported.fileName} from ${path}.`
+      );
+      assert.ok(
+        inside(root, await realpath(dependency)),
+        `${name}: local style declaration dependencies must stay inside the packed components package.`
+      );
+      pending.push(dependency);
+    }
+  }
 }
 
 function assertRootExportParity(name, program, fixture, options) {
@@ -203,9 +294,16 @@ async function compileTypes(consumer, name, module, moduleResolution) {
     `${name}: packed host type errors:\n${formatted}`
   );
   await assertTypePaths(consumer, name, program, fixture, options);
+  await assertInlineStyleDeclarations(
+    consumer,
+    name,
+    program,
+    fixture,
+    options
+  );
   assertRootExportParity(name, program, fixture, options);
   console.log(
-    `${name}: packed host constructors, config fields, negative types, and root React exports passed.`
+    `${name}: packed host constructors, config fields, negative types, root React exports, and inline Markdown styles passed.`
   );
 }
 
@@ -242,7 +340,7 @@ export async function assertPackedResolution(consumer) {
       await realpath(join(consumer, 'node_modules/@carbon/ai-chat', types))
     );
 
-    for (const tree of ['es', 'es-custom']) {
+    for (const tree of trees) {
       const specifier = `@carbon/ai-chat/dist/${tree}/web-components/${host}/index.js`;
       const url = execFileSync(
         process.execPath,

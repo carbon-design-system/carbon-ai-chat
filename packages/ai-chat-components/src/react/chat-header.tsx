@@ -130,7 +130,9 @@ const ChatHeader = React.forwardRef<any, any>((props, ref) => {
 
     return actions.map((action: ToolbarAction) => ({
       ...action,
-      icon: transformReactIconToCarbonIcon(action.icon, 16),
+      icon: action.icon
+        ? transformReactIconToCarbonIcon(action.icon, 16)
+        : undefined,
     }));
   }, [actions]);
 

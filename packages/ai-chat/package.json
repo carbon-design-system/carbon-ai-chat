@@ -1,6 +1,6 @@
 {
   "name": "@carbon/ai-chat",
-  "version": "1.24.0-rc.1",
+  "version": "1.25.0-rc.0",
   "description": "Be sure to review the [chat documentation](https://chat.carbondesignsystem.com/tag/latest/docs/documents/Overview.html).",
   "author": "IBM Corp",
   "license": "Apache-2.0",
@@ -126,11 +126,11 @@
     "@babel/plugin-transform-runtime": "^7.0.0",
     "@babel/preset-env": "^7.0.0",
     "@babel/preset-react": "^7.0.0",
-    "@carbon/icons": "^12.0.0-alpha.3",
-    "@carbon/styles": "^2.0.0-alpha.5",
-    "@carbon/themes": "^12.0.0-alpha.5",
-    "@carbon/typedoc-theme": "^0.13.0-rc.0",
-    "@carbon/web-components": "^3.0.0-alpha.5",
+    "@carbon/icons": "^12.0.0-alpha.4",
+    "@carbon/styles": "^2.0.0-alpha.6",
+    "@carbon/themes": "^12.0.0-alpha.6",
+    "@carbon/typedoc-theme": "^0.14.0-rc.0",
+    "@carbon/web-components": "^3.0.0-alpha.6",
     "@custom-elements-manifest/analyzer": "^0.11.0",
     "@open-wc/testing": "4.0.0",
     "@rollup/plugin-babel": "^7.1.0",
@@ -176,14 +176,14 @@
     "wait-on": "^9.0.1"
   },
   "peerDependencies": {
-    "@carbon/web-components": "^3.0.0-alpha.5",
+    "@carbon/web-components": "^3.0.0-alpha.6",
     "react": ">=17.0.0 <20.0.0",
     "react-dom": ">=17.0.0 <20.0.0"
   },
   "dependencies": {
     "@babel/runtime-corejs3": "^7.0.0",
-    "@carbon/ai-chat-components": "^1.14.0-rc.1",
-    "@carbon/icons": "^12.0.0-alpha.3",
+    "@carbon/ai-chat-components": "^1.15.0-rc.0",
+    "@carbon/icons": "^12.0.0-alpha.4",
     "@carbon/utilities": "^0.27.0",
     "@floating-ui/dom": "^1.6.3",
     "@ibm/telemetry-js": "^1.12.0",

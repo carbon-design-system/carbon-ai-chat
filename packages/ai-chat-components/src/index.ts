@@ -18,6 +18,8 @@ import './components/aichat-feedback/index.js';
 import './components/aichat-file-uploads/index.js';
 import './components/aichat-launcher/index.js';
 import './components/aichat-markdown/index.js';
+import './components/message-byline/index.js';
+import './components/message-item-shell/index.js';
 import './components/aichat-messages-shell/index.js';
 import './components/aichat-processing/index.js';
 import './components/aichat-autocomplete/index.js';
@@ -26,6 +28,7 @@ import './components/aichat-reasoning-steps/index.js';
 import './components/aichat-table/index.js';
 import './components/aichat-toolbar/index.js';
 import './components/aichat-truncated-text/index.js';
+import './components/user-avatar/index.js';
 import './components/aichat-video-player/index.js';
 import './components/aichat-workspace-shell/index.js';
 
@@ -64,6 +67,8 @@ export { default as FileUploadItemElement } from './components/aichat-file-uploa
 export { default as FileUploadsElement } from './components/aichat-file-uploads/aichat-file-uploads.js';
 export { default as CDSAIChatLauncher } from './components/aichat-launcher/aichat-launcher.js';
 export { default as CDSAIChatMarkdown } from './components/aichat-markdown/aichat-markdown.js';
+export { default as CDSAIChatMessageByline } from './components/message-byline/src/message-byline.js';
+export { default as CDSAIChatMessageItemShell } from './components/message-item-shell/src/message-item-shell.js';
 export { default as CDSAIChatMessagesShell } from './components/aichat-messages-shell/aichat-messages-shell.js';
 export { default as CDSAIChatProcessing } from './components/aichat-processing/aichat-processing.js';
 export { default as AutocompleteElement } from './components/aichat-autocomplete/aichat-autocomplete.js';
@@ -79,6 +84,7 @@ export { default as CDSAIChatReasoningSteps } from './components/aichat-reasonin
 export { default as CDSAIChatTable } from './components/aichat-table/aichat-table.js';
 export { default as CDSAIChatToolbar } from './components/aichat-toolbar/aichat-toolbar.js';
 export { default as CDSAIChatTruncatedText } from './components/aichat-truncated-text/aichat-truncated-text.js';
+export { default as CDSAIChatUserAvatar } from './components/user-avatar/src/user-avatar.js';
 export { default as VideoPlayer } from './components/aichat-video-player/aichat-video-player.js';
 export { default as CDSAIChatWorkspaceShellBody } from './components/aichat-workspace-shell/aichat-workspace-shell-body.js';
 export { default as CDSAIChatWorkspaceShellFooter } from './components/aichat-workspace-shell/aichat-workspace-shell-footer.js';
