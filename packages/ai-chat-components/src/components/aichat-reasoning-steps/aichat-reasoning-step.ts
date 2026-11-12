@@ -29,6 +29,7 @@ const generateId = (segment: string) =>
  * @fires {CustomEvent<ReasoningStepToggleEventDetail>} reasoning-step-beingtoggled - Requests a step toggle. Call preventDefault() to veto the toggle.
  * @fires {CustomEvent<ReasoningStepToggleEventDetail>} reasoning-step-toggled - A step toggle is accepted.
  * @fires {CustomEvent<ReasoningStepToggleEventDetail>} reasoning-animation-end - The step finishes its open or close animation.
+ * @slot title - Overrides the step header title.
  */
 class CDSAIChatReasoningStep extends LitElement {
   static get is() {
@@ -37,12 +38,15 @@ class CDSAIChatReasoningStep extends LitElement {
 
   static styles = [commonStyles, styles];
 
+  /** Title shown in the step header. */
   @property({ type: String, attribute: 'title' })
   title = '';
 
+  /** Whether the step body is expanded. */
   @property({ type: Boolean, attribute: 'open', reflect: true })
   open = false;
 
+  /** Lets the parent control the open state instead of toggling it internally. */
   @property({ type: Boolean, attribute: 'controlled', reflect: true })
   controlled = false;
 

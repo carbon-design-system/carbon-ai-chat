@@ -94,9 +94,11 @@ class CDSAIChatToolbar extends LitElement {
   @property({ type: Boolean, attribute: 'overflow', reflect: true })
   overflow = false;
 
+  /** Primary title shown when the title slot is empty. */
   @property({ type: String })
   titleText?: string;
 
+  /** Name shown above the primary title. */
   @property({ type: String })
   nameText?: string;
 
