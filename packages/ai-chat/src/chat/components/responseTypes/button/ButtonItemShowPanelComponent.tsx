@@ -8,7 +8,10 @@
  */
 
 import ArrowRight16 from '@carbon/icons/es/arrow--right/16.js';
-import { carbonIconToReact } from '../../../utils/carbonIcon';
+import {
+  carbonIconToReact,
+  customIconToReact,
+} from '../../../utils/carbonIcon';
 
 import React, { useCallback } from 'react';
 import { useSelector } from '../../../hooks/useSelector';
@@ -44,9 +47,11 @@ function ButtonItemShowPanelComponent({
   isMessageForInput,
 }: ButtonItemShowPanelComponentProps) {
   const serviceManager = useServiceManager();
-  const { image_url, alt_text, label, kind, size, is } = localMessageItem.item;
+  const { image_url, alt_text, label, kind, size, is, icon } =
+    localMessageItem.item;
   const isInputReadonly = useSelector(selectInputIsReadonly);
   const ArrowRight = carbonIconToReact(ArrowRight16);
+  const CustomIcon = customIconToReact(icon);
   const isDisabled = isInputReadonly;
 
   /**
@@ -68,7 +73,7 @@ function ButtonItemShowPanelComponent({
       is={is}
       kind={kind}
       size={size}
-      renderIcon={(image_url && ArrowRight) || undefined}
+      renderIcon={CustomIcon || (image_url && ArrowRight) || undefined}
       onClick={onClickHandler}
       disabled={isDisabled}
     />

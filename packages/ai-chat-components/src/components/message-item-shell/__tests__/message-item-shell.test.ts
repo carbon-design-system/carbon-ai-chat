@@ -10,6 +10,7 @@
 import { fixture, html, expect } from '@open-wc/testing';
 import prefix from '../../../globals/settings.js';
 import '../index.js';
+import '../../message-byline/index.js';
 import type CDSAIChatMessageItemShell from '../src/message-item-shell.js';
 
 const blockClass = `${prefix}-message-item-shell`;
@@ -93,59 +94,67 @@ describe('cds-aichat-message-item-shell', () => {
         expect(el.hasAttribute('hide-avatar')).to.be.true;
       });
 
-      it('hides and shows a directly slotted avatar', async () => {
+      it('hides and shows the byline avatar', async () => {
         const el = await fixture<CDSAIChatMessageItemShell>(html`
           <cds-aichat-message-item-shell row-type=${rowType}>
-            <span
-              slot="byline"
-              id="avatar"
-              class="${blockClass}__byline-avatar"></span>
-            <span slot="byline" id="text">Assistant</span>
+            <cds-aichat-message-byline slot="byline" label="Assistant">
+              <span slot="avatar" id="avatar"></span>
+            </cds-aichat-message-byline>
           </cds-aichat-message-item-shell>
         `);
         const avatar = el.querySelector<HTMLElement>('#avatar')!;
-        const text = el.querySelector<HTMLElement>('#text')!;
 
         el.hideAvatar = true;
         await el.updateComplete;
-        expect(getComputedStyle(avatar).display).to.equal('none');
-        expect(getComputedStyle(text).display).to.not.equal('none');
+        expect(avatar.hidden).to.be.true;
 
         el.hideAvatar = false;
         await el.updateComplete;
-        expect(getComputedStyle(avatar).display).to.not.equal('none');
+        expect(avatar.hidden).to.be.false;
       });
 
-      it('hides an avatar added after the first render', async () => {
+      it('hides the byline avatar when hide-avatar is set initially', async () => {
         const el = await fixture<CDSAIChatMessageItemShell>(html`
           <cds-aichat-message-item-shell row-type=${rowType} hide-avatar>
+            <cds-aichat-message-byline slot="byline" label="Assistant">
+              <span slot="avatar" id="avatar"></span>
+            </cds-aichat-message-byline>
+          </cds-aichat-message-item-shell>
+        `);
+
+        expect(el.querySelector<HTMLElement>('#avatar')!.hidden).to.be.true;
+      });
+
+      it('hides an avatar added to the byline after hide-avatar is set', async () => {
+        const el = await fixture<CDSAIChatMessageItemShell>(html`
+          <cds-aichat-message-item-shell row-type=${rowType} hide-avatar>
+            <cds-aichat-message-byline slot="byline" label="Assistant">
+            </cds-aichat-message-byline>
           </cds-aichat-message-item-shell>
         `);
         const avatar = document.createElement('span');
-        avatar.slot = 'byline';
-        avatar.className = `${blockClass}__byline-avatar`;
-        el.appendChild(avatar);
-        await el.updateComplete;
+        avatar.slot = 'avatar';
 
-        expect(getComputedStyle(avatar).display).to.equal('none');
+        el.querySelector('cds-aichat-message-byline')!.append(avatar);
+        await new Promise((resolve) => setTimeout(resolve));
+
+        expect(avatar.hidden).to.be.true;
       });
 
-      it('leaves a host-set inline display untouched after un-hiding', async () => {
+      it('hides an avatar swapped into the avatar slot after hide-avatar is set', async () => {
         const el = await fixture<CDSAIChatMessageItemShell>(html`
           <cds-aichat-message-item-shell row-type=${rowType} hide-avatar>
-            <span
-              slot="byline"
-              id="avatar"
-              class="${blockClass}__byline-avatar"
-              style="display: inline-flex"></span>
+            <cds-aichat-message-byline slot="byline" label="Assistant">
+              <span id="avatar"></span>
+            </cds-aichat-message-byline>
           </cds-aichat-message-item-shell>
         `);
         const avatar = el.querySelector<HTMLElement>('#avatar')!;
 
-        el.hideAvatar = false;
-        await el.updateComplete;
+        avatar.slot = 'avatar';
+        await new Promise((resolve) => setTimeout(resolve));
 
-        expect(avatar.style.display).to.equal('inline-flex');
+        expect(avatar.hidden).to.be.true;
       });
     });
   });
