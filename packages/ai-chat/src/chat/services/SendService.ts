@@ -33,6 +33,15 @@ import type { ServiceManager } from './ServiceManager';
 class SendService {
   private serviceManager: ServiceManager;
 
+  /**
+   * The hydration a send started, and a promise that settles once that send is in the queue (or has failed). Sends
+   * made while that hydration runs wait on `queued` instead of the hydration, so they queue after it, in call order.
+   */
+  private sendStartingHydration: {
+    hydration: Promise<void>;
+    queued: Promise<void>;
+  } = null;
+
   constructor(serviceManager: ServiceManager) {
     this.serviceManager = serviceManager;
   }
@@ -88,28 +97,49 @@ class SendService {
       this.serviceManager.store.dispatch(actions.setResponsePanelIsOpen(false));
     }
 
-    if (
-      this.serviceManager.hydrationService.hydrationPromise ||
-      ignoreHydration
-    ) {
-      if (!ignoreHydration) {
-        await this.serviceManager.hydrationService.hydrationPromise;
+    const { hydrationService } = this.serviceManager;
+    let releaseLaterSends = () => {};
+    let sending: Promise<void>;
+    try {
+      if (hydrationService.hydrationPromise || ignoreHydration) {
+        if (!ignoreHydration) {
+          const starter = this.sendStartingHydration;
+          await (starter?.hydration === hydrationService.hydrationPromise
+            ? starter.queued
+            : hydrationService.hydrationPromise);
+        }
+      } else {
+        // If no hydration has started, then we need to start the hydration and use this message as the alternate for
+        // the welcome node.
+        this.serviceManager.store.dispatch(actions.setHomeScreenIsOpen(false));
+        const hydrated = hydrationService.hydrateChat(messageRequest, options);
+        let resolveQueued: () => void;
+        const starter = {
+          hydration: hydrationService.hydrationPromise,
+          queued: new Promise<void>((resolve) => {
+            resolveQueued = resolve;
+          }),
+        };
+        this.sendStartingHydration = starter;
+        releaseLaterSends = () => {
+          if (this.sendStartingHydration === starter) {
+            this.sendStartingHydration = null;
+          }
+          resolveQueued();
+        };
+        await hydrated;
       }
-    } else {
-      // If no hydration has started, then we need to start the hydration and use this message as the alternate for
-      // the welcome node.
-      this.serviceManager.store.dispatch(actions.setHomeScreenIsOpen(false));
-      await this.serviceManager.hydrationService.hydrateChat(
-        messageRequest,
-        options
-      );
+
+      // Re-check: an upload can begin while hydration is awaited above, and the
+      // message would otherwise go out without that file's contributed data.
+      this.serviceManager.inputActionsService.assertNoInFlightUpload();
+
+      // `doSend` queues the message before its first await.
+      sending = this.doSend(messageRequest, source, options, useBuiltInData);
+    } finally {
+      releaseLaterSends();
     }
-
-    // Re-check: an upload can begin while hydration is awaited above, and the
-    // message would otherwise go out without that file's contributed data.
-    this.serviceManager.inputActionsService.assertNoInFlightUpload();
-
-    await this.doSend(messageRequest, source, options, useBuiltInData);
+    await sending;
   }
 
   /**
