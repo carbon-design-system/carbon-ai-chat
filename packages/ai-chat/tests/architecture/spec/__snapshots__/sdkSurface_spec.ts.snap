@@ -197,6 +197,7 @@ interface ButtonItem (src/types/messaging/Messages.ts)
   alt_text?: string
   button_type: ButtonItemType
   custom_event_name?: string
+  icon?: CarbonIcon | ComponentType<any>
   image_url?: string
   is?: "standard-button"
   kind?: BUTTON_KIND | "LINK"
