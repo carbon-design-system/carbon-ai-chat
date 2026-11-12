@@ -7,36 +7,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-/**
- * `<cds-aichat-prompt-line>` — the editing-surface layer of the chat input
- * stack.
- *
- * It renders a lightweight `<textarea>` by default and **never statically
- * imports `@tiptap/*`**, so chats that don't use advanced input features ship
- * no Tiptap. When the `rich` property is set, or `ensureEditor()` is called,
- * the element dynamically imports a Tiptap runtime and upgrades the surface in
- * place — text, caret, and focus carry over because the textarea holds plain
- * text. Host `extensions` alone do not trigger it; they are staged for whichever
- * surface mounts. The upgrade is **sticky**: once rich, the element stays rich
- * for the rest of its life.
- *
- * Both modes expose the same imperative API (`getEditor`, `setContent`,
- * `insertContent`, …) and emit the same events, so the React wrapper and
- * `@carbon/ai-chat`'s `Input` are mode-agnostic. `getEditor()` returns `null`
- * in textarea mode (it's a probe — it never triggers a load); call
- * `ensureEditor()` to force the upgrade and resolve with the live editor.
- *
- * The Carbon Tiptap bundle the rich editor installs — schema, value-sync,
- * typing-indicator, plain-text paste, keymap (`Mod-Enter`/`Enter` →
- * `cds-aichat-prompt-send-intent`), placeholder, undo/redo — lives in
- * [./prompt-line-rich-runtime.ts]. Non-chat hosts wanting Tiptap inside Lit
- * should compose their own element against `@tiptap/core` directly.
- *
- * @element cds-aichat-prompt-line
- *
- * @experimental
- */
-
 import type { Editor, Extension, JSONContent } from '@tiptap/core';
 import { css, html, LitElement, unsafeCSS } from 'lit';
 import { property } from 'lit/decorators.js';
@@ -58,6 +28,45 @@ import { getRawText, textOffsetToDocPos } from './tiptap/json-utils.js';
 
 import styles from './prompt-line.scss?lit';
 
+/**
+ * `<cds-aichat-prompt-line>` — the editing-surface layer of the chat input
+ * stack.
+ *
+ * It renders a lightweight `<textarea>` by default and **never statically
+ * imports `@tiptap/*`**, so chats that don't use advanced input features ship
+ * no Tiptap. When the `rich` property is set, or `ensureEditor()` is called,
+ * the element dynamically imports a Tiptap runtime and upgrades the surface in
+ * place — text, caret, and focus carry over because the textarea holds plain
+ * text. Host `extensions` alone do not trigger it; they are staged for whichever
+ * surface mounts. The upgrade is **sticky**: once rich, the element stays rich
+ * for the rest of its life.
+ *
+ * Both modes expose the same imperative API (`getEditor`, `setContent`,
+ * `insertContent`, …) and emit the same `cds-aichat-prompt-*` events, so the
+ * React wrapper and `@carbon/ai-chat`'s `Input` are mode-agnostic. Only rich
+ * mode fires `cds-aichat-trigger-change` and `cds-aichat-light-dom-portal`.
+ * `getEditor()` returns `null` in textarea mode (it's a probe — it never
+ * triggers a load); call `ensureEditor()` to force the upgrade and resolve
+ * with the live editor.
+ *
+ * The Carbon Tiptap bundle the rich editor installs — schema, value-sync,
+ * typing-indicator, plain-text paste, keymap (`Mod-Enter`/`Enter` →
+ * `cds-aichat-prompt-send-intent`), placeholder, undo/redo — lives in
+ * [./prompt-line-rich-runtime.ts]. Non-chat hosts wanting Tiptap inside Lit
+ * should compose their own element against `@tiptap/core` directly.
+ *
+ * @element cds-aichat-prompt-line
+ * @fires {CustomEvent<InputChangeEventDetail>} cds-aichat-prompt-change - Fired when the content changes.
+ * @fires {CustomEvent<{ keyboard: boolean }>} cds-aichat-prompt-focus - Fired when the editing surface gains focus. `keyboard` is false for mouse focus.
+ * @fires {CustomEvent} cds-aichat-prompt-blur - Fired when the editing surface loses focus.
+ * @fires {CustomEvent<TypingEventDetail>} cds-aichat-prompt-typing - Fired when the user starts or stops typing.
+ * @fires {CustomEvent<{ originalEvent: KeyboardEvent }>} cds-aichat-prompt-keydown - Fired for each key press in the editing surface.
+ * @fires {CustomEvent} cds-aichat-prompt-send-intent - Fired when the user presses Enter in a non-empty field, or Cmd+Enter (Ctrl+Enter on Windows and Linux) even when the field is empty.
+ * @fires {CustomEvent<TriggerChangeEventDetail>} cds-aichat-trigger-change - Fired when an autocomplete trigger such as `@` or `/` starts, changes, or ends. Rich mode only.
+ * @fires {CustomEvent<LightDomPortalEventDetail>} cds-aichat-light-dom-portal - Fired when a rich-editor node asks the host to render content in the light DOM. Rich mode only.
+ *
+ * @experimental
+ */
 @carbonElement(`${prefix}-prompt-line`)
 class PromptLineElement extends LitElement {
   static styles = css`
