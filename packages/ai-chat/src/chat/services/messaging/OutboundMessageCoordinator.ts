@@ -22,7 +22,7 @@ import { CustomSendMessageOptions } from '../../../types/config/MessagingConfig'
 import { OnErrorType } from '../../../types/config/ErrorConfig';
 import { PublicConfigMessaging } from '../../../types/config/PublicConfigMessaging';
 import { ServiceManager } from '../ServiceManager';
-import { PendingMessageRequest } from './MessageService';
+import { PendingMessageRequest } from './pendingRequestTypes';
 import { consoleError, debugLog } from '../../utils/miscUtils';
 import {
   BusEventSend,

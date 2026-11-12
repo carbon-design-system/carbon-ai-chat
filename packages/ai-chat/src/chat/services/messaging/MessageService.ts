@@ -29,10 +29,7 @@
  * - InboundStreamingCoordinator: streaming id tracking (response_id/item_id), finalization, cancellation cleanup.
  */
 import actions from '../../store/actions';
-import {
-  ResolvablePromise,
-  resolvablePromise,
-} from '../../utils/resolvablePromise';
+import type { PendingMessageRequest } from './pendingRequestTypes';
 import {
   resetStopStreamingButton,
   syncStopStreamingButton,
@@ -41,7 +38,6 @@ import { ServiceManager } from '../ServiceManager';
 import { InboundStreamingCoordinator } from './InboundStreamingCoordinator';
 import type { StreamResponseMeta } from './state/StreamState';
 import {
-  MessageInputType,
   MessageRequest,
   MessageResponse,
 } from '../../../types/messaging/Messages';
@@ -51,94 +47,25 @@ import { PublicConfig } from '../../../types/config/PublicConfig';
 import { OnErrorType } from '../../../types/config/ErrorConfig';
 import { CancellationReason } from '../../../types/config/MessagingConfig';
 
-/**
- * Extra data about a message response that we want included in the track event when the response is received.
- */
-interface ResponseTrackData {
-  /**
-   * The amount of time the last request took.
-   */
-  lastRequestTime: number;
-
-  /**
-   * The number of errors that occurred. This does not include JWT errors or session expired errors.
-   */
-  numErrors: number;
-
-  /**
-   * The total time that all the requests took, in milliseconds.
-   */
-  totalRequestTime: number;
-}
-
-interface SendMessageRequest {
-  /**
-   * The message being sent.
-   */
-  message: MessageRequest<any>;
-
-  /**
-   * The promise to resolve once the send is complete.
-   */
-  sendMessagePromise: ResolvablePromise<void>;
-}
-
-// In order to be able to resolve the correct message in the queue, we pass along the promise we will return with the
-// message and call resolve/reject on "resolvablePromise".
-export interface PendingMessageRequest extends SendMessageRequest {
-  /** Conversation generation in which this request was accepted. */
-  generation?: number;
-
-  restartGeneration: number;
-
-  /**
-   * The ID of the {@link LocalMessageItem} created from the current request.
-   */
-  localMessageID: string;
-
-  /**
-   * The time the message started the send process. This occurs after the message was in the queue and is now the
-   * next message to be sent.
-   */
-  timeFirstRequest: number;
-
-  /**
-   * The time the most recent request started.
-   */
-  timeLastRequest: number;
-
-  /**
-   * The AbortController for when using customSendMessage.
-   */
-  sendMessageController?: AbortController;
-
-  /**
-   * The options that were included when the request was sent.
-   */
-  requestOptions: SendOptions;
-
-  /**
-   * The source of the message.
-   */
-  source: MessageSendSource;
-
-  /**
-   * The tracking data for this message.
-   */
-  trackData: ResponseTrackData;
-
-  /**
-   * Indicates if the response has been processed.
-   */
-  isProcessed: boolean;
-
-  /**
-   * Indicates if this message is streaming and we should wait for FinalResponseChunk before clearing from queue.
-   */
-  isStreaming?: boolean;
-}
-
 class MessageService {
+  registerMessageController(messageID: string, controller: AbortController) {
+    this.messageAbortControllers.set(messageID, controller);
+  }
+
+  public send(
+    message: MessageRequest<any>,
+    source: MessageSendSource,
+    localMessageID?: string,
+    requestOptions?: SendOptions
+  ): Promise<MessageResponse | any> {
+    return this.serviceManager.messageCoordinator.enqueueMessage(
+      message,
+      source,
+      localMessageID,
+      requestOptions
+    );
+  }
+
   private nonCancellableResponseIDs = new Set<string>();
 
   /**
@@ -202,50 +129,6 @@ class MessageService {
   }
 
   /**
-   * Add a new message to the message queue.
-   *
-   * @param message A new message to add to the message queue.
-   @param source The source of the message.
-   * @param localMessageID The ID of the {@link LocalMessageItem} created from the current request.
-   * @param sendMessagePromise A promise that we will resolve or reject if the message is sent.
-   * @param requestOptions The options that were included when the request was sent.
-   */
-  private addToMessageQueue(
-    message: MessageRequest<any>,
-    source: MessageSendSource,
-    localMessageID: string,
-    sendMessagePromise: ResolvablePromise<void>,
-    requestOptions: SendOptions = {}
-  ) {
-    // Create AbortController immediately so it can be aborted even if message is still waiting
-    const controller = new AbortController();
-
-    // Store controller in map so it persists even after message is cleared from queue
-    this.messageAbortControllers.set(message.id, controller);
-
-    const newPendingMessage: PendingMessageRequest = {
-      generation: this.serviceManager.messageCoordinator.currentGeneration,
-      restartGeneration: this.serviceManager.restartCount,
-      localMessageID,
-      message,
-      sendMessagePromise,
-      requestOptions: requestOptions || {},
-      timeFirstRequest: 0,
-      timeLastRequest: 0,
-      trackData: {
-        numErrors: 0,
-        lastRequestTime: 0,
-        totalRequestTime: 0,
-      },
-      isProcessed: false,
-      source,
-      sendMessageController: controller,
-    };
-
-    this.serviceManager.messageCoordinator.enqueueRequest(newPendingMessage);
-  }
-
-  /**
    * Performs any finishes steps necessary to complete the current queue item.
    */
   private clearCurrentQueueItem() {
@@ -253,45 +136,6 @@ class MessageService {
   }
   private moveToNextQueueItem() {
     this.serviceManager.messageCoordinator.advanceRequestQueue();
-  }
-
-  /**
-   * Send a message to the backend. Returns "any" in the error case.
-   *
-   * @param message Takes a {@link MessageRequest} object.
-   * @param source The source of the message.
-   * @param localMessageID The ID of the {@link LocalMessageItem} created from the current request.
-   * @param requestOptions The options that were included when the request was sent.
-   */
-  public send(
-    message: MessageRequest<any>,
-    source: MessageSendSource,
-    localMessageID?: string,
-    requestOptions?: SendOptions
-  ): Promise<MessageResponse | any> {
-    message.history.timestamp = message.history.timestamp || Date.now();
-
-    // The messageService does different things based off the message type so lets make sure one exists.
-    message.input = message.input || {};
-    message.input.message_type =
-      message.input.message_type || MessageInputType.TEXT;
-
-    // Create a Promise that the caller can wait on that we'll resolve if/when the message is finally successfully sent
-    // to the assistant. This gets resolved or rejected by the core success or error workflow.
-    const sendMessagePromise = resolvablePromise<void>();
-
-    // Add our new message to the queue and kick off the queue.
-    this.addToMessageQueue(
-      message,
-      source,
-      localMessageID,
-      sendMessagePromise,
-      requestOptions
-    );
-    this.serviceManager.messageCoordinator.runQueueIfReady();
-
-    // Return the promise that is either successfully resolve or rejected in this.processSuccess or this.processError.
-    return sendMessagePromise;
   }
 
   /**

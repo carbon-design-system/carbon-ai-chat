@@ -8,9 +8,8 @@
  */
 
 import * as uuidUtils from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
-import MessageService, {
-  PendingMessageRequest,
-} from '../../../src/chat/services/messaging/MessageService';
+import MessageService from '../../../src/chat/services/messaging/MessageService';
+import type { PendingMessageRequest } from '../../../src/chat/services/messaging/pendingRequestTypes';
 import { ChunkProcessingService } from '../../../src/chat/services/messaging/inbound/ChunkProcessingService';
 import { MessageCoordinator } from '../../../src/chat/services/messaging/MessageCoordinator';
 import { ServiceManager } from '../../../src/chat/services/ServiceManager';
