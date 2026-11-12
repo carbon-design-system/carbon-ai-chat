@@ -25,14 +25,6 @@ $story-class: message-item-shell-story;
     inline-size: 100%;
   }
 
-  // The padding stays when the avatar is hidden, so the text keeps its inset.
-  &-byline-text {
-    @include type-style('helper-text-01');
-
-    color: theme.$text-secondary;
-    padding-inline-start: layout.$spacing-03;
-  }
-
   &-content {
     @include type-style('body-01');
   }
