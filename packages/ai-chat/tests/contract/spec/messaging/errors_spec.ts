@@ -10,6 +10,7 @@
 import { act, waitFor } from '@testing-library/react';
 
 import {
+  BusEventType,
   CancellationReason,
   MessageErrorState,
   MessageResponseTypes,
@@ -338,7 +339,7 @@ describeShared('onError for messaging failures', (makeDriver) => {
 
 // @covers config.onError export.aiChatEntry.OnErrorType state.status
 // @covers event.chat:ready config.openChatByDefault state.messages
-// @covers export.aiChatEntry.MessageErrorState
+// @covers export.aiChatEntry.MessageErrorState event.pre:send
 describe('a failed welcome request', () => {
   contractSetup();
 
@@ -373,5 +374,40 @@ describe('a failed welcome request', () => {
     // The welcome request is silent, but its failure adds no inline error
     // response.
     expect(instance.getState().messages).toHaveLength(1);
+  });
+
+  it('reports only MESSAGE_COMMUNICATION after a throwing pre:send handler, reads error, and still fires chat:ready', async () => {
+    const ready = countChatReady();
+    const backend = fakeBackend();
+    const errors: OnErrorData[] = [];
+    const { instance } = await contractChat({
+      openChatByDefault: true,
+      onError: (data) => {
+        errors.push(data);
+      },
+      messaging: { customSendMessage: backend.customSendMessage },
+      onBeforeRender: (chatInstance) => {
+        ready.onBeforeRender(chatInstance);
+        chatInstance.on({
+          type: BusEventType.PRE_SEND,
+          handler: () => {
+            throw new Error('welcome handler failed');
+          },
+        });
+      },
+    });
+    await waitFor(() => expect(ready.count()).toBe(1));
+    expect(errors).toEqual([
+      {
+        errorType: OnErrorType.MESSAGE_COMMUNICATION,
+        message: SEND_ERROR_MESSAGE,
+        otherData: 'welcome handler failed',
+      },
+    ]);
+    expect(instance.getState().status).toBe('error');
+    expect(backend.requests).toHaveLength(0);
+    const messages = instance.getState().messages;
+    expect(messages).toHaveLength(1);
+    expect(messages[0].history?.error_state).toBe(MessageErrorState.FAILED);
   });
 });

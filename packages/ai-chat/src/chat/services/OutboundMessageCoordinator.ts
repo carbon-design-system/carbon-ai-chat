@@ -178,7 +178,8 @@ class OutboundMessageCoordinator {
   /**
    * Fails a request whose `pre:send` or `send` handler threw, before it reached `customSendMessage`. The request
    * fails like a rejected send, but the conversation doesn't read `error`, and `send()` rejects with the handler's
-   * own error.
+   * own error. A welcome request is the exception: its failure reads `error`, as a rejected welcome send does, and
+   * hydration reports no second error for it.
    */
   processHandlerError(pendingRequest: PendingMessageRequest, error: unknown) {
     if (pendingRequest.isProcessed) {
@@ -187,6 +188,12 @@ class OutboundMessageCoordinator {
 
     const resultText = getSendErrorText(error, false);
     this.addErrorMessageIfSilent(pendingRequest);
+    if (pendingRequest.source === MessageSendSource.WELCOME_REQUEST) {
+      this.serviceManager.conversationLifecycleService.fail(
+        { messageID: pendingRequest.message.id },
+        pendingRequest.generation
+      );
+    }
     this.serviceManager.actions.errorOccurred({
       errorType: OnErrorType.MESSAGE_COMMUNICATION,
       message: 'An error occurred sending a message',
