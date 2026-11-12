@@ -8,7 +8,6 @@
  */
 
 import { makeConfigStore } from '../../test_helpers';
-import { ChunkProcessingService } from '../../../src/chat/services/messaging/inbound/ChunkProcessingService';
 import { MessageCoordinator } from '../../../src/chat/services/messaging/MessageCoordinator';
 import { HydrationService } from '../../../src/chat/services/HydrationService';
 import { ReceiveService } from '../../../src/chat/services/messaging/inbound/ReceiveService';
@@ -59,7 +58,6 @@ function createHarness(config: PublicConfig = {}) {
       cancelAllMessageRequests: jest.fn().mockResolvedValue(undefined),
     },
   } as unknown as ServiceManager;
-  manager.chunkProcessingService = new ChunkProcessingService(manager);
   const messageMethods = manager.messageCoordinator;
   manager.messageCoordinator = new MessageCoordinator(manager);
   for (const [name, value] of Object.entries(messageMethods)) {

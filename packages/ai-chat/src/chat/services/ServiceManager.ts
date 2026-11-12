@@ -24,7 +24,6 @@ import { WriteableElements } from '../../types/instance/WriteableElements';
 import { BusEvent } from '../../types/events/eventBusTypes';
 import type { MainWindowFunctions } from '../../types/utilities/MainWindowFunctions';
 import { ChatInstanceService } from './ChatInstanceService';
-import { ChunkProcessingService } from './messaging/inbound/ChunkProcessingService';
 import { HydrationService } from './HydrationService';
 import { InputActionsService } from './InputActionsService';
 import { PublicStateService } from './PublicStateService';
@@ -81,11 +80,6 @@ class ServiceManager {
    * Service that tracks and fires stream-start announcements for screen readers.
    */
   streamAnnouncerService: StreamAnnouncerService;
-
-  /**
-   * Service that owns the chunk queue and processes incoming streaming chunks.
-   */
-  chunkProcessingService: ChunkProcessingService;
 
   /**
    * Service that wires user-defined response elements and fires footer-slot events.

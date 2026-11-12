@@ -353,7 +353,7 @@ describe('existing host ownership contracts', () => {
       },
     };
     const pause = jest
-      .spyOn(serviceManager.chunkProcessingService, 'waitForPause')
+      .spyOn(serviceManager.messageCoordinator, 'waitForPause')
       .mockImplementation(async () => {
         const stored = store.getState().allMessagesByID[
           original.id
@@ -478,7 +478,7 @@ describe('existing host ownership contracts', () => {
         },
       });
       const pause = jest
-        .spyOn(serviceManager.chunkProcessingService, 'waitForPause')
+        .spyOn(serviceManager.messageCoordinator, 'waitForPause')
         .mockImplementation(async () => {
           const state = store.getState();
           const visibleIDs = state.assistantMessageState.localMessageIDs.filter(

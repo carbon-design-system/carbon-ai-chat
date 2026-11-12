@@ -314,7 +314,7 @@ class HydrationService {
         serviceManager.messageCoordinator.restart(skipHydration);
 
       // Increment the restart generation to filter out any chunks from the previous conversation
-      this.serviceManager.chunkProcessingService.bumpRestartGeneration();
+      this.serviceManager.messageCoordinator.bumpChunkRestartGeneration();
 
       this.serviceManager.streamAnnouncerService.clearAll();
       this.serviceManager.receiveService.clearProcessedAgentItems();

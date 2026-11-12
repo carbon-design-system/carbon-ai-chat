@@ -645,7 +645,7 @@ class UpsertWorkflow {
     let pauseIndex = holdFromIndex;
 
     while (pauseIndex < generic.length) {
-      await this.serviceManager.chunkProcessingService.waitForPause(
+      await this.serviceManager.messageCoordinator.waitForPause(
         generic[pauseIndex] as PauseItem,
         initialRestartCount
       );

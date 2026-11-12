@@ -16,7 +16,6 @@ import {
 } from '../utils/customPromptLine';
 import { MessagePresentationAdapter } from './messaging/presentation/MessagePresentationAdapter';
 import { ChatInstanceService } from './ChatInstanceService';
-import { ChunkProcessingService } from './messaging/inbound/ChunkProcessingService';
 import { HydrationService } from './HydrationService';
 import { InputActionsService } from './InputActionsService';
 import { PublicStateService } from './PublicStateService';
@@ -92,9 +91,6 @@ function createServiceManager(appConfig: AppConfig) {
       );
     },
   });
-  serviceManager.chunkProcessingService = new ChunkProcessingService(
-    serviceManager
-  );
   serviceManager.slotEventService = new SlotEventService(serviceManager);
   serviceManager.hydrationService = new HydrationService(serviceManager);
   serviceManager.receiveService = new ReceiveService(serviceManager);

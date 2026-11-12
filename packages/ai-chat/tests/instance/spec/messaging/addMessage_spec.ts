@@ -1283,7 +1283,7 @@ describe('ChatInstance.messaging.addMessage', () => {
           releasePause = resolve;
         });
         const waitForPause = jest
-          .spyOn(serviceManager.chunkProcessingService, 'waitForPause')
+          .spyOn(serviceManager.messageCoordinator, 'waitForPause')
           .mockImplementationOnce(async () => {
             await pause;
             isPauseOver = true;
