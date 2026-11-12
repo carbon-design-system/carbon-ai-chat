@@ -44,8 +44,7 @@ const componentEntries = {
   'launcher.min': 'src/components/aichat-launcher/index.ts',
   'markdown.min': 'src/components/aichat-markdown/index.ts',
   'message-byline.min': 'src/components/aichat-message-byline/index.ts',
-  'message-item-shell.min':
-    'src/components/aichat-message-item-shell/index.ts',
+  'message-item-shell.min': 'src/components/aichat-message-item-shell/index.ts',
   'messages-shell.min': 'src/components/aichat-messages-shell/index.ts',
   'processing.min': 'src/components/aichat-processing/index.ts',
   'prompt-line.min': 'src/components/aichat-prompt-line/index.ts',
