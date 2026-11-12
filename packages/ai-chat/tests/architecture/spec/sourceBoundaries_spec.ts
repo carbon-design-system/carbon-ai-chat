@@ -23,7 +23,6 @@ const root = path.resolve(__dirname, '../../..');
 /** The SDK's engine folders, as opposed to its entry files. */
 const engineFolders = [
   'src/sdk/events/',
-  'src/sdk/languages/',
   'src/sdk/schema/',
   'src/sdk/services/',
   'src/sdk/store/',
@@ -38,13 +37,14 @@ const rules: FolderRule[] = [
     frameworkFree: true,
   },
   {
-    // Public types may name an engine type or read the engine's JSON data,
-    // but not the SDK's entry files. SDK code may import only sdk and types,
-    // so this leads into view code only through one of the SDK's listed
-    // exceptions.
+    // Public types may name an engine type, read the engine's JSON data, or
+    // read the language packs, but not the SDK's entry files. SDK code may
+    // import only sdk and types, so this leads into view code only through
+    // one of the SDK's listed exceptions.
     folder: 'src/types/',
     mayImport: [
       'src/types/',
+      { folder: 'src/languages/', only: ['data' as const] },
       ...engineFolders.map((folder) => ({
         folder,
         only: ['type' as const, 'data' as const],
