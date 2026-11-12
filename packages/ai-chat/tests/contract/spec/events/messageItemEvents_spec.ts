@@ -212,6 +212,37 @@ describe('feedback events', () => {
     ]);
   });
 
+  it('fires DETAILS_CLOSED when the details form’s close button closes it, and the thumb opens it again', async () => {
+    const { instance } = await openChat();
+    await addFeedbackResponse(
+      instance,
+      feedbackItem({ categories: { positive: ['Fast'], negative: ['Wrong'] } })
+    );
+    const events = recordEvents(instance, [BusEventType.FEEDBACK]);
+    await click(byRole('button', STRINGS.feedback_negativeLabel));
+    // The close button's name is the shipped component's fixed "Close", which
+    // `strings` can't set (MAIN-NOTES M47). It is still an accessible name, but
+    // a weaker anchor than one the test sets: a copy change breaks it.
+    await click(inFormWith('button', 'Close', 'Wrong'));
+    await click(byRole('button', STRINGS.feedback_negativeLabel));
+    const closed = {
+      interactionType: FeedbackInteractionType.DETAILS_CLOSED,
+      isPositive: false,
+      text: undefined as string | undefined,
+      categories: undefined as string[] | undefined,
+    };
+    const opened = {
+      ...closed,
+      interactionType: FeedbackInteractionType.DETAILS_OPENED,
+    };
+    expect(feedbackEvents(events).map(summary)).toEqual([
+      opened,
+      closed,
+      opened,
+    ]);
+    expect(feedbackEvents(events)[1].message.id).toBe('r1');
+  });
+
   it('fires SUBMITTED with the text and categories the user entered in the details form', async () => {
     const { instance } = await openChat();
     const item = feedbackItem({
