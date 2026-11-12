@@ -25,7 +25,7 @@ import { MessageState } from '../../../src/types/config/MessagingConfig';
 import { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import { MessageClass } from '../../../src/chat/components-legacy/MessageComponent';
 import actions from '../../../src/sdk/store/actions';
-import enLanguagePack from '../../../src/sdk/languages/en.json';
+import enLanguagePack from '../../../src/languages/en.json';
 import { viewActions } from '../../../src/chat/state';
 
 // Records every announcement instead of speaking it.
