@@ -25,7 +25,7 @@ import type {
 } from '../../../src/chat/utils/panelComposition';
 import { ScreenShareState } from '../../../src/types/config/ServiceDeskConfig';
 import { ChatWidthBreakpoint } from '../../../src/types/state/AppState';
-import languagePack from '../../../src/sdk/languages/en.json';
+import languagePack from '../../../src/languages/en.json';
 import { EventBus } from '../../../src/sdk/events/EventBus';
 import actions from '../../../src/sdk/store/actions';
 import { createIntl } from '../../../src/sdk/utils/i18n';
