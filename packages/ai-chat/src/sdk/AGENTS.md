@@ -11,7 +11,7 @@ Everything a chat needs to run without a view: the store, services, messaging, e
 
 These aren't SDK features. They live here because they must outlive a mount, or because conversation code writes them:
 
-- `languages/`, and the localized messages the chat adds to the transcript. #1889 owns taking those out.
+- The localized messages the chat adds to the transcript, read from [src/languages/](../languages/). #1889 owns taking those out.
 - `UserSessionStorageService`. ADR-0002 gives storage to the entry point, not the conversation.
 - The view ports: `services/viewBindings.ts` and `services/messaging/presentationPort.ts`.
 - `services/slotTracking.ts`, plus `ServiceManager`'s slot and announcer services.
