@@ -34,10 +34,10 @@ let instanceCounter = 0;
 /**
  * Video player component that supports multiple video sources
  * @element cds-aichat-video-player
- * @fires cds-aichat-video-player-play - Fired when video starts playing
- * @fires cds-aichat-video-player-pause - Fired when video pauses
- * @fires cds-aichat-video-player-ready - Fired when video is ready to play
- * @fires cds-aichat-video-player-error - Fired when an error occurs
+ * @fires {CustomEvent<null>} cds-aichat-video-player-play - Video playback starts.
+ * @fires {CustomEvent<null>} cds-aichat-video-player-pause - Video playback pauses.
+ * @fires {CustomEvent<null>} cds-aichat-video-player-ready - The video is ready to play.
+ * @fires {CustomEvent<VideoPlayerErrorEventDetail>} cds-aichat-video-player-error - Video playback fails.
  */
 class VideoPlayer extends LitElement {
   static get is() {
@@ -278,7 +278,7 @@ class VideoPlayer extends LitElement {
     }
 
     this.dispatchEvent(
-      new CustomEvent('cds-aichat-video-player-ready', {
+      new CustomEvent<null>('cds-aichat-video-player-ready', {
         bubbles: true,
         composed: true,
       })
@@ -290,7 +290,7 @@ class VideoPlayer extends LitElement {
    */
   private handlePlay(): void {
     this.dispatchEvent(
-      new CustomEvent('cds-aichat-video-player-play', {
+      new CustomEvent<null>('cds-aichat-video-player-play', {
         bubbles: true,
         composed: true,
       })
@@ -302,7 +302,7 @@ class VideoPlayer extends LitElement {
    */
   private handlePause(): void {
     this.dispatchEvent(
-      new CustomEvent('cds-aichat-video-player-pause', {
+      new CustomEvent<null>('cds-aichat-video-player-pause', {
         bubbles: true,
         composed: true,
       })
@@ -324,11 +324,14 @@ class VideoPlayer extends LitElement {
 
     // Always use the generic error message, regardless of the actual error
     this.dispatchEvent(
-      new CustomEvent('cds-aichat-video-player-error', {
-        bubbles: true,
-        composed: true,
-        detail: { message: this.errorMessage },
-      })
+      new CustomEvent<VideoPlayerErrorEventDetail>(
+        'cds-aichat-video-player-error',
+        {
+          bubbles: true,
+          composed: true,
+          detail: { message: this.errorMessage },
+        }
+      )
     );
   }
 
@@ -458,3 +461,9 @@ class VideoPlayer extends LitElement {
 }
 
 export default VideoPlayer;
+
+/** Describes a video playback failure. */
+export interface VideoPlayerErrorEventDetail {
+  /** Localized error message shown by the player. */
+  message: string;
+}

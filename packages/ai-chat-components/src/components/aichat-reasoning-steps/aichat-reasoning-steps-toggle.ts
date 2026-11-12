@@ -19,6 +19,7 @@ import { prefix } from '../../globals/settings.js';
 /**
  * Reasoning steps toggle component
  * @element cds-aichat-reasoning-steps-toggle
+ * @fires {CustomEvent<ReasoningStepsToggleEventDetail>} reasoning-steps-toggle - The toggle changes its open state.
  */
 class CDSAIChatReasoningStepsToggle extends LitElement {
   static get is() {

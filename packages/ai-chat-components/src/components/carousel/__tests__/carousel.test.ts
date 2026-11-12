@@ -31,6 +31,31 @@ const template = html`
 `;
 
 describe('carousel', function async() {
+  it('uses an overridden event name when a subclass dispatches a view change', () => {
+    class NamedCarousel extends Carousel {
+      static get eventOnChange() {
+        return 'consumer-carousel-change';
+      }
+    }
+    customElements.define('test-named-carousel', NamedCarousel);
+    const element = new NamedCarousel();
+    const received: CustomEvent[] = [];
+    element.addEventListener('consumer-carousel-change', (event) => {
+      received.push(event as CustomEvent);
+    });
+    let defaultEvents = 0;
+    element.addEventListener('cds-aichat-carousel-onchange', () => {
+      defaultEvents += 1;
+    });
+    const detail = { currentIndex: 1 };
+
+    element['_dispatchChange'](detail as any);
+
+    expect(received).to.have.length(1);
+    expect(received[0].detail).to.equal(detail);
+    expect(defaultEvents).to.equal(0);
+  });
+
   it.skip('should render with cds-aichat-carousel minimum attributes', async () => {
     const el = await fixture<Carousel>(template);
     await el.updateComplete;

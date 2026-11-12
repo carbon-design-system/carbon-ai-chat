@@ -34,7 +34,7 @@ export interface CitationToggleEventDetail {
  * @slot answer-error - An optional answer error, after the toggle.
  * @slot citations - Citation content, including loading or error states.
  * @csspart answer - The answer and toggle container.
- * @fires {CustomEvent<CitationToggleEventDetail>} cds-aichat-citations-toggle - Requests a citation state change.
+ * @fires {CustomEvent<CitationToggleEventDetail>} cds-aichat-citations-toggle - Requests the next citation visibility state.
  */
 class ConversationalSearchShell extends LitElement {
   static get is() {

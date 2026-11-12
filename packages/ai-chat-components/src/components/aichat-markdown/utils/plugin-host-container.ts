@@ -317,3 +317,17 @@ export function createMarkdownPluginHostController(
     },
   };
 }
+
+/** Updates an ancestor-owned plugin fallback host. */
+export interface MarkdownPluginHostUpdateDetail {
+  /** Slot that identifies the accepted host. */
+  slotName: string;
+  /** Replacement HTML for the accepted host. */
+  html: string;
+}
+
+/** Releases an ancestor-owned renderer host. */
+export interface MarkdownPluginHostUnmountDetail {
+  /** Slot that identifies the host to release. */
+  slotName: string;
+}

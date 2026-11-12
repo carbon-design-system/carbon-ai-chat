@@ -39,6 +39,7 @@ const lastDetailByEditor = new WeakMap<
  * helper can suppress the exit if another plugin already claimed the trigger
  * in the same synchronous turn — preventing a late `onExit` from overwriting
  * an earlier `onStart` from a different extension.
+ * @eventOwner {import('../aichat-prompt-line.js').default}
  */
 export function dispatchTriggerChange(
   editor: Editor,
@@ -62,11 +63,14 @@ export function dispatchTriggerChange(
   }
   lastDetailByEditor.set(editor, detail);
   editor.view.dom.dispatchEvent(
-    new CustomEvent('cds-aichat-trigger-change', {
-      detail,
-      bubbles: true,
-      composed: true,
-    })
+    new CustomEvent<TriggerChangeEventDetail | null>(
+      'cds-aichat-trigger-change',
+      {
+        detail,
+        bubbles: true,
+        composed: true,
+      }
+    )
   );
 }
 

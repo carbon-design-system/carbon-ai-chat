@@ -18,3 +18,5 @@ export { CODE_SNIPPET_TYPE } from '@carbon/web-components/es/components/code-sni
 export { CDSAIChatCodeSnippet };
 
 defineCustomElement(CDSAIChatCodeSnippet);
+
+export type { CodeSnippetChangeEventDetail } from './aichat-code-snippet.js';

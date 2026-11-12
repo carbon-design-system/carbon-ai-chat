@@ -90,6 +90,8 @@ export interface LightDomPortalEventDetail {
 /**
  * Bridge `content` into the page's light DOM via the slot-projection portal.
  * Returns the shadow-side `container` to place where the content belongs.
+ * @eventProtocol
+ * @fires {CustomEvent<LightDomPortalEventDetail>} cds-aichat-light-dom-portal - Requests content projection into the page light DOM.
  */
 export function renderInLightDom(
   args: RenderInLightDomArgs
