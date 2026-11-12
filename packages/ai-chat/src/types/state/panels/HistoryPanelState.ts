@@ -7,6 +7,11 @@
  *  @license
  */
 
+import {
+  CustomPanelConfigOptions,
+  DefaultCustomPanelConfigOptions,
+} from '../../instance/apiTypes';
+
 /**
  * The state of the history panel.
  */
@@ -18,6 +23,12 @@ interface HistoryPanelState {
 
   /** Indicates if the history panel should open in chat panel. */
   isMobile: boolean;
+
+  /**
+   * The options from the last `customPanels.getPanel(PanelType.HISTORY).open()`
+   * call. The custom panel keeps its own. Unset until that call.
+   */
+  options?: CustomPanelConfigOptions | DefaultCustomPanelConfigOptions;
 }
 
 export type { HistoryPanelState };

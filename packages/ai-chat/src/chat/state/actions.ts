@@ -67,6 +67,7 @@ const SET_WORKSPACE_PANEL_OPTIONS = 'SET_WORKSPACE_PANEL_OPTIONS';
 const SET_WORKSPACE_PANEL_DATA = 'SET_WORKSPACE_PANEL_DATA';
 const SET_HISTORY_PANEL_OPEN = 'SET_HISTORY_PANEL_OPEN';
 const SET_HISTORY_PANEL_OPTIONS = 'SET_HISTORY_PANEL_OPTIONS';
+const SET_HISTORY_PANEL_CONFIG_OPTIONS = 'SET_HISTORY_PANEL_CONFIG_OPTIONS';
 const SET_IS_BROWSER_PAGE_VISIBLE = 'SET_IS_PAGE_VISIBLE';
 const SET_RESPONSE_PANEL_IS_OPEN = 'SET_RESPONSE_PANEL_IS_OPEN';
 const SET_RESPONSE_PANEL_CONTENT = 'SET_PANEL_RESPONSE_CONTENT';
@@ -248,6 +249,13 @@ const viewActions = {
     return { type: SET_HISTORY_PANEL_OPTIONS, isMobile, isOpen };
   },
   /**
+   * Keeps the options a host passed to the history panel's `open`, apart from
+   * the custom panel's.
+   */
+  setHistoryPanelConfigOptions(options: CustomPanelConfigOptions) {
+    return { type: SET_HISTORY_PANEL_CONFIG_OPTIONS, options };
+  },
+  /**
    * Switches between the bot and home screen views.
    */
   toggleHomeScreen() {
@@ -314,6 +322,7 @@ export {
   SET_WORKSPACE_PANEL_DATA,
   SET_HISTORY_PANEL_OPEN,
   SET_HISTORY_PANEL_OPTIONS,
+  SET_HISTORY_PANEL_CONFIG_OPTIONS,
   SET_IS_BROWSER_PAGE_VISIBLE,
   SET_RESPONSE_PANEL_IS_OPEN,
   SET_RESPONSE_PANEL_CONTENT,

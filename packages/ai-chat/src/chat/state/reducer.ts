@@ -49,6 +49,7 @@ import {
   SET_CUSTOM_PANEL_OPTIONS,
   SET_HISTORY_PANEL_OPEN,
   SET_HISTORY_PANEL_OPTIONS,
+  SET_HISTORY_PANEL_CONFIG_OPTIONS,
   SET_HOME_SCREEN_IS_OPEN,
   SET_INITIAL_VIEW_CHANGE_COMPLETE,
   START_NEW_MOUNT,
@@ -531,6 +532,19 @@ const viewReducers: Record<string, ViewReducer> = {
         ...state.historyPanelState,
         isMobile: action.isMobile,
         isOpen: action.isOpen ?? state.historyPanelState.isOpen,
+      },
+    };
+  },
+
+  [SET_HISTORY_PANEL_CONFIG_OPTIONS]: (
+    state: ViewPartitionState,
+    action: { options: CustomPanelConfigOptions }
+  ): ViewPartitionState => {
+    return {
+      ...state,
+      historyPanelState: {
+        ...state.historyPanelState,
+        options: action.options,
       },
     };
   },

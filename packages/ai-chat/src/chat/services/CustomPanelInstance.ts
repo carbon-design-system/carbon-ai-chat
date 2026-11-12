@@ -37,6 +37,16 @@ import { DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS, viewActions } from '../state';
 import { chatStore } from './attachChatView';
 
 /**
+ * Opens the history panel. The header menu and the history panel's `open`
+ * both come here, so `historyPanel:pre:open` fires once before every open.
+ * Handlers can't cancel it, and the open doesn't wait for them.
+ */
+function openHistoryPanel(serviceManager: ServiceManager) {
+  serviceManager.fire({ type: BusEventType.HISTORY_PANEL_PRE_OPEN });
+  serviceManager.store.dispatch(viewActions.setHistoryPanelOpen(true));
+}
+
+/**
  * This function takes in the service manager to help create a custom panel instance. The panel instance is created
  * using a function instead of a class because a private property at runtime can still be accessible. The service
  * manager is passed in instead made a private property.
@@ -222,7 +232,7 @@ function createCustomPanelInstance(
       setOpen: viewActions.setCustomPanelOpen,
     },
     [PanelType.HISTORY]: {
-      setConfig: viewActions.setCustomPanelConfigOptions,
+      setConfig: viewActions.setHistoryPanelConfigOptions,
       setOpen: viewActions.setHistoryPanelOpen,
     },
   } as const;
@@ -272,7 +282,11 @@ function createCustomPanelInstance(
       }
 
       store.dispatch(setConfig(resolvedOptions));
-      store.dispatch(setOpen(true));
+      if (panelType === PanelType.HISTORY) {
+        openHistoryPanel(serviceManager);
+      } else {
+        store.dispatch(setOpen(true));
+      }
 
       // Fire open event for workspace panel
       if (panelType === PanelType.WORKSPACE) {
@@ -315,4 +329,4 @@ function createCustomPanelInstance(
   return Object.freeze(customPanelInstance);
 }
 
-export { createCustomPanelInstance, CustomPanelInstance };
+export { createCustomPanelInstance, CustomPanelInstance, openHistoryPanel };

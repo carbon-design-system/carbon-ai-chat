@@ -105,7 +105,9 @@ export enum BusEventType {
   HISTORY_PANEL_NEW_CHAT = 'history:newChat',
 
   /**
-   * Fired before mobile chat history panel opens.
+   * Fired before the mobile chat history panel opens, from the header menu or
+   * from `customPanels.getPanel(PanelType.HISTORY).open()`. It can't cancel the
+   * open.
    */
   HISTORY_PANEL_PRE_OPEN = 'historyPanel:pre:open',
 
@@ -855,7 +857,9 @@ export interface BusEventHistoryPanelNewChat extends BusEvent {
 }
 
 /**
- * Fired before the mobile chat history panel opens.
+ * Fired before the mobile chat history panel opens, from the header menu or
+ * from `customPanels.getPanel(PanelType.HISTORY).open()`. It can't cancel the
+ * open.
  *
  * @category Events
  */
