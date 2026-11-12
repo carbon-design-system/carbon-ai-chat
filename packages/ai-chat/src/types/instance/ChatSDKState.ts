@@ -78,11 +78,13 @@ export interface ChatSDKMessageItem {
    *
    * - `<messageID>:s:<streamID>` when the item has a `streaming_metadata.id`;
    * - otherwise `<messageID>:i:<index>`, where the index is the item's position in `output.generic`, or
-   *   `0` for a request.
+   *   `0` for a request. A second item of the same message with the same `streaming_metadata.id` also
+   *   gets this form, so keep stream IDs unique within a message.
    *
    * An item nested in another one adds to its parent's ID: `<parentID>:i:<index>` for a carousel item
    * or a body item, `<parentID>:f:<index>` for a footer item, and `<parentID>:i:<row>.<column>.<index>`
-   * for an item in a grid cell.
+   * for an item in a grid cell. A nested index counts only the children the list draws, so a child of
+   * a type its parent doesn't support takes no index.
    *
    * The same messages give the same IDs after a reload or a history replay, as long as the messages
    * have IDs. The chat gives a message without one a new ID each time it loads, so give your messages
@@ -134,7 +136,7 @@ export interface ChatSDKMessageItem {
     /**
      * Whether agents were online when the chat checked. `null` means it checked and got no answer.
      */
-    availability?: HumanAgentsOnlineStatus | null;
+    onlineStatus?: HumanAgentsOnlineStatus | null;
 
     /** `true` when no service desk was set up. */
     noServiceDesk?: boolean;
@@ -218,7 +220,8 @@ export interface ChatSDKState {
   /**
    * One entry per item the message list draws, in the order it shows them, with items nested in
    * another one right after it. Each entry's `messageID` is in `messages`. Silent requests, pauses, and
-   * hidden items aren't listed. It changes in the same update as `messages`. The array and its entries
+   * items marked `user_defined.silent` aren't listed, except a `user_defined.silent` item loaded from
+   * history, which the list draws today. It changes in the same update as `messages`. The array and its entries
    * are frozen, and the array keeps its object until an entry changes. See {@link ChatSDKMessageItem}.
    *
    * Optional in 1.x so that objects typed as this state still compile; the chat always sets it.

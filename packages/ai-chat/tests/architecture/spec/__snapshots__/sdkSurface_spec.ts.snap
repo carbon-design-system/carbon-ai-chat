@@ -295,7 +295,7 @@ interface ChatSDKLifecycleConfig (src/types/config/ChatSDKLifecycleConfig.ts)
   releaseGraceMs?: number
 
 interface ChatSDKMessageItem (src/types/instance/ChatSDKState.ts)
-  humanAgent?: Readonly<{ availability?: HumanAgentsOnlineStatus | null; noServiceDesk?: boolean; }>
+  humanAgent?: Readonly<{ onlineStatus?: HumanAgentsOnlineStatus | null; noServiceDesk?: boolean; }>
   id: string
   item: Readonly<GenericItem>
   kind: "request" | "response" | "system"

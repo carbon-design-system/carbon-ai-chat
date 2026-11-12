@@ -35,7 +35,14 @@ import {
   MessageResponseTypes,
   UserType,
 } from '../../../src/types/messaging/Messages';
-import { MessageErrorState } from '../../../src/types/messaging/LocalMessageItem';
+import {
+  type LocalMessageItem,
+  MessageErrorState,
+} from '../../../src/types/messaging/LocalMessageItem';
+import {
+  PublicMessageItemsProjection,
+  planMessageItems,
+} from '../../../src/sdk/utils/publicMessageItems';
 
 const text = (value: string, streamID?: string): GenericItem => ({
   response_type: MessageResponseTypes.TEXT,
@@ -103,6 +110,21 @@ function richHistory() {
 }
 
 const last = <T>(values: readonly T[]): T => values[values.length - 1];
+
+/** Plans a store with one response and the given local items, in order. */
+function planOne(message: MessageResponse, items: GenericItem[]) {
+  const locals: LocalMessageItem[] = items.map((item, index) => ({
+    fullMessageID: message.id,
+    item,
+    ui_state: { id: `local-${index}` },
+  }));
+  return planMessageItems(
+    [message.id],
+    { [message.id]: message },
+    Object.fromEntries(locals.map((local) => [local.ui_state.id, local])),
+    locals.map((local) => local.ui_state.id)
+  );
+}
 
 const ids = (state: ChatSDKState) => state.messageItems.map(({ id }) => id);
 
@@ -437,7 +459,7 @@ describe('state.messageItems', () => {
       const [plain, connect] = chat.state.get().messageItems;
       expect(plain).not.toHaveProperty('humanAgent');
       expect(connect.humanAgent).toEqual({
-        availability: HumanAgentsOnlineStatus.UNKNOWN,
+        onlineStatus: HumanAgentsOnlineStatus.UNKNOWN,
         noServiceDesk: true,
       });
       expect(Object.isFrozen(connect.humanAgent)).toBe(true);
@@ -462,7 +484,7 @@ describe('state.messageItems', () => {
       );
       await new Promise((resolve) => setTimeout(resolve));
       expect(withDesk.state.get().messageItems[0].humanAgent).toMatchObject({
-        availability: HumanAgentsOnlineStatus.ONLINE,
+        onlineStatus: HumanAgentsOnlineStatus.ONLINE,
       });
       expect(
         withDesk.state.get().messageItems[0].humanAgent.noServiceDesk
@@ -470,7 +492,35 @@ describe('state.messageItems', () => {
     });
   });
 
+  describe('IDs from the store', () => {
+    it('gives a repeated stream ID the positional form, so no two IDs match', () => {
+      const first = text('one', 'same');
+      const second = text('two', 'same');
+      const plans = planOne(response('r', [first, second]), [first, second]);
+      expect(plans.map(({ id }) => id)).toEqual(['r:s:same', 'r:i:1']);
+    });
+
+    it('skips a hidden item when a streamed copy no longer matches the response', () => {
+      const hidden = { ...text('hidden'), user_defined: { silent: true } };
+      // The local copy has streamed on past the response's, so nothing is equal to it.
+      const plans = planOne(
+        response('r', [hidden as GenericItem, text('final')]),
+        [text('partial')]
+      );
+      expect(plans.map(({ id }) => id)).toEqual(['r:i:1']);
+    });
+  });
+
   describe('references', () => {
+    it('keeps the array when a new plan has the same values', () => {
+      const projection = new PublicMessageItemsProjection();
+      const item = text('same');
+      const first = projection.project(planOne(response('r', [item]), [item]));
+      const again = projection.project(planOne(response('r', [item]), [item]));
+      expect(again).toBe(first);
+      expect(again[0]).toBe(first[0]);
+    });
+
     it('freezes each entry and its item', async () => {
       const chat = await chatWithHistory();
       chat.state.get().messageItems.forEach((entry) => {

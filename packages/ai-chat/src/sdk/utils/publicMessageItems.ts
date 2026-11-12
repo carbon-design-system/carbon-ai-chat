@@ -53,7 +53,7 @@ interface ItemPlan {
   status: Status;
   origin: ChatSDKMessageItem['origin'];
   isConnectToAgent: boolean;
-  availability: HumanAgentsOnlineStatus | null | undefined;
+  onlineStatus: HumanAgentsOnlineStatus | null | undefined;
   noServiceDesk: boolean | undefined;
   /** For a request, the text its bubble shows. */
   requestText: string | undefined;
@@ -102,8 +102,9 @@ function streamID(item: GenericItem): string | undefined {
 }
 
 /**
- * Gives each unnamed top-level local item of one response its position in `output.generic`. Items
- * keep their order, so each local item takes the next position whose item is the same or equal to
+ * Gives each unnamed top-level local item of one response its position in `output.generic`. A local
+ * item whose stream ID an earlier one of the response already has counts as unnamed, so no two
+ * items share an ID. Items keep their order, so each local item takes the next position whose item is the same or equal to
  * its own. A streamed item can differ from the response's copy, so failing that it takes the next
  * drawn position, skipping pauses and hidden items, which the live paths draw no item for. One left
  * over, such as a streamed item the response doesn't list yet, counts on past the end, so no two
@@ -143,13 +144,27 @@ function matchIndexes(
   locals: readonly LocalMessageItem[]
 ): Map<LocalMessageItem, number> {
   const generic = message.output?.generic ?? [];
-  const candidate = (index: number) =>
-    generic[index] && !isPause(generic[index]) && !streamID(generic[index]);
+  const named = new Set<string>();
+  const repeated = new Set<string>();
+  locals.forEach(({ item }) => {
+    const id = streamID(item);
+    if (id) {
+      (named.has(id) ? repeated : named).add(id);
+    }
+  });
+  const candidate = (index: number) => {
+    const item = generic[index];
+    const id = item && streamID(item);
+    return item && !isPause(item) && (!id || repeated.has(id));
+  };
+  const firsts = new Set<string>();
   const indexes = new Map<LocalMessageItem, number>();
   let next = 0;
   let overflow = 0;
   locals.forEach((local) => {
-    if (streamID(local.item)) {
+    const id = streamID(local.item);
+    if (id && !firsts.has(id)) {
+      firsts.add(id);
       return;
     }
     let index = -1;
@@ -244,7 +259,7 @@ function addPlans(
     status: owner.status,
     origin: internal?.from_history ? 'history' : 'live',
     isConnectToAgent,
-    availability: isConnectToAgent ? internal?.agent_availability : undefined,
+    onlineStatus: isConnectToAgent ? internal?.agent_availability : undefined,
     noServiceDesk: isConnectToAgent
       ? internal?.agent_no_service_desk
       : undefined,
@@ -275,14 +290,14 @@ function topLevelID(
   local: LocalMessageItem,
   locals: readonly LocalMessageItem[]
 ): string {
-  const named = streamID(local.item);
-  if (named) {
-    return `${message.id}:s:${named}`;
-  }
   const index = isResponse(message)
     ? responseIndexes(message, locals).get(local)
-    : 0;
-  return `${message.id}:i:${index}`;
+    : undefined;
+  const named = streamID(local.item);
+  if (index === undefined && named) {
+    return `${message.id}:s:${named}`;
+  }
+  return `${message.id}:i:${index ?? 0}`;
 }
 
 /**
@@ -339,7 +354,7 @@ function planValues(plan: ItemPlan): unknown[] {
     plan.status,
     plan.origin,
     plan.isConnectToAgent,
-    plan.availability,
+    plan.onlineStatus,
     plan.noServiceDesk,
     plan.requestText,
   ];
@@ -376,8 +391,8 @@ function buildEntry(plan: ItemPlan): Readonly<ChatSDKMessageItem> {
     origin: plan.origin,
     ...(plan.isConnectToAgent && {
       humanAgent: Object.freeze({
-        ...(plan.availability !== undefined && {
-          availability: plan.availability,
+        ...(plan.onlineStatus !== undefined && {
+          onlineStatus: plan.onlineStatus,
         }),
         ...(plan.noServiceDesk !== undefined && {
           noServiceDesk: plan.noServiceDesk,
