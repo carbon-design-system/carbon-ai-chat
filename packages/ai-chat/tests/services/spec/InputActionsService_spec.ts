@@ -129,10 +129,9 @@ describe('InputActionsService plain-text draft writes', () => {
 
     service.updateRawInputValue(() => 'hi\n\nthere');
 
-    expect(store.getState().assistantInputState).toMatchObject({
-      rawValue: 'hi\n\nthere',
-      content: textToDoc('hi\n\nthere'),
-    });
+    const { rawValue, content } = store.getState().assistantInputState;
+    expect(rawValue).toBe('hi\n\nthere');
+    expect(content).toEqual(textToDoc('hi\n\nthere'));
     expect(store.getState().humanAgentState.inputState.content).toEqual([]);
   });
 
@@ -158,14 +157,12 @@ describe('InputActionsService plain-text draft writes', () => {
 
     service.updateRawInputValue((previous) => `${previous}er`);
 
-    expect(store.getState().humanAgentState.inputState).toMatchObject({
-      rawValue: 'older',
-      content: textToDoc('older'),
-    });
-    expect(store.getState().assistantInputState).toMatchObject({
-      rawValue: 'assistant',
-      content: textToDoc('assistant'),
-    });
+    const agent = store.getState().humanAgentState.inputState;
+    expect(agent.rawValue).toBe('older');
+    expect(agent.content).toEqual(textToDoc('older'));
+    const assistant = store.getState().assistantInputState;
+    expect(assistant.rawValue).toBe('assistant');
+    expect(assistant.content).toEqual(textToDoc('assistant'));
   });
 
   it('writes the empty document when the new text is empty', () => {

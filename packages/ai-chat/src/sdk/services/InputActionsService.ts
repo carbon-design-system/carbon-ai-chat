@@ -186,7 +186,7 @@ class InputActionsService {
       return;
     }
 
-    // The document follows the text, so `input.content` never keeps an older draft.
+    // On this path the document follows the text.
     store.dispatch(
       actions.updateInputState(
         { rawValue: nextValue, content: textToDoc(nextValue) },

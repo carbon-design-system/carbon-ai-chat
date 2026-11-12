@@ -43,6 +43,8 @@ import {
   setupBeforeEach,
 } from '../../test_helpers';
 import { viewActions } from '../../../src/chat/state';
+import { InputActionsService } from '../../../src/sdk/services/InputActionsService';
+import { ViewConnection } from '../../../src/sdk/services/viewBindings';
 
 class InputProvider extends LitElement {
   readonly provider = new ContextProvider(this, {
@@ -875,10 +877,10 @@ it('tracks the document for a text-only change in the active slice', async () =>
 
   change(prompt, 'plain\nlines');
   await flush(view);
-  expect(selectInputState(store.getState())).toMatchObject({
-    rawValue: 'plain\nlines',
-    content: textToDoc('plain\nlines'),
-  });
+  expect(selectInputState(store.getState()).rawValue).toBe('plain\nlines');
+  expect(selectInputState(store.getState()).content).toEqual(
+    textToDoc('plain\nlines')
+  );
   send(control);
   expect(onSendInput).toHaveBeenCalledWith('plain\nlines', undefined);
 
@@ -892,11 +894,71 @@ it('tracks the document for a text-only change in the active slice', async () =>
   );
   await flush(view);
   change(prompt, 'to the agent');
-  expect(store.getState().humanAgentState.inputState).toMatchObject({
-    rawValue: 'to the agent',
-    content: textToDoc('to the agent'),
-  });
+  expect(store.getState().humanAgentState.inputState.rawValue).toBe(
+    'to the agent'
+  );
+  expect(store.getState().humanAgentState.inputState.content).toEqual(
+    textToDoc('to the agent')
+  );
   expect(store.getState().assistantInputState.rawValue).toBe('');
+});
+
+it('clears the tracked document when the send handler removes the input', async () => {
+  const { view, prompt, store, onSendInput, control } = await fixture({
+    trackInputState: true,
+  });
+  const mentionDoc: JSONContent = {
+    type: 'doc',
+    content: [
+      {
+        type: 'paragraph',
+        content: [{ type: 'mention', attrs: { id: 'person', label: 'Ann' } }],
+      },
+    ],
+  };
+  change(prompt, '@Ann', mentionDoc);
+  onSendInput.mockImplementation(() => view.remove());
+
+  send(control);
+
+  expect(onSendInput).toHaveBeenCalledWith('@Ann', mentionDoc);
+  expect(selectInputState(store.getState()).rawValue).toBe('');
+  expect(selectInputState(store.getState()).content).toEqual(textToDoc(''));
+});
+
+it('restores plain text, not an older rich draft, after a plain-text write while hidden', async () => {
+  const richDoc: JSONContent = {
+    type: 'doc',
+    content: [
+      {
+        type: 'paragraph',
+        content: [{ type: 'text', text: 'old', marks: [{ type: 'bold' }] }],
+      },
+    ],
+  };
+  const { view, store, manager } = await fixture(
+    { trackInputState: true, restoreDraft: true, isInputVisible: false },
+    (store) => {
+      store.dispatch(
+        actions.updateInputState({ rawValue: 'old', content: richDoc }, false)
+      );
+    }
+  );
+  const service = new InputActionsService({
+    ...manager,
+    view: new ViewConnection(),
+  } as unknown as ServiceManager);
+
+  service.updateRawInputValue(() => 'hi');
+  await update(view, { isInputVisible: true });
+  await view.ready;
+
+  const prompt = view.querySelector<PromptLineElement>(
+    'cds-aichat-prompt-line'
+  );
+  expect(prompt.getValue()).toBe('hi');
+  expect(prompt.rich).toBe(false);
+  expect(selectInputState(store.getState()).content).toEqual(textToDoc('hi'));
 });
 
 it('retains a configured extension and its live custom node view on unrelated updates', async () => {
