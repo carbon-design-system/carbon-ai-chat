@@ -33,6 +33,7 @@ import { OnErrorType } from '../../../../types/config/ErrorConfig';
 import { MessageState } from '../../../../types/config/MessagingConfig';
 import { HistoryItem, HistoryNote } from '../../../../types/messaging/History';
 import type { ServiceManager } from '../../ServiceManager';
+import { retainCopiedNativeMessageOrigin } from '../nativeMessageEvents';
 
 class ReceiveService {
   private serviceManager: ServiceManager;
@@ -303,6 +304,14 @@ class ReceiveService {
       history.messageHistory,
       currentAppStateMessages
     );
+    for (const [messageID, message] of Object.entries(
+      currentAppStateMessages.allMessagesByID
+    )) {
+      const copied = newAppStateMessages.allMessagesByID[messageID];
+      if (isResponse(message) && isResponse(copied)) {
+        retainCopiedNativeMessageOrigin(message, copied);
+      }
+    }
 
     // Now make sure the message arrays are merged correctly.
     newAppStateMessages.assistantMessageState.messageIDs = [

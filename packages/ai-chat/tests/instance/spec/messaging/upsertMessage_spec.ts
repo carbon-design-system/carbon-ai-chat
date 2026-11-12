@@ -30,7 +30,6 @@ import {
   BusEventType,
   BusEventReceive,
   BusEventUserDefinedResponse,
-  BusEventCustomFooterSlot,
 } from '../../../../src/types/events/eventBusTypes';
 import actions from '../../../../src/chat/store/actions';
 import { OnErrorType } from '../../../../src/types/config/ErrorConfig';
@@ -1053,8 +1052,8 @@ describe('ChatInstance.messaging.upsertMessage', () => {
     });
   });
 
-  describe('writable upsert events', () => {
-    it('keeps caller item identity when a terminal event reuses a stored local item', async () => {
+  describe('read-only native notifications', () => {
+    it('keeps item aliases in a detached terminal snapshot when a local item is reused', async () => {
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(createBaseConfig());
       const first = userDefinedResponse('reused-slot', { value: 'before' });
@@ -1073,134 +1072,167 @@ describe('ChatInstance.messaging.upsertMessage', () => {
         text: 'second',
       });
       const slot = jest.fn((event: BusEventUserDefinedResponse) => {
-        expect(event.data.message).toBe(response.output.generic[0]);
-        expect(event.data.fullMessage).toBe(response);
-        event.data.message.user_defined.value = 'edited';
+        const message = event.data.fullMessage as MessageResponse;
+        expect(event.data.message).toBe(message.output.generic[0]);
+        expect(event.data.message).not.toBe(response.output.generic[0]);
+        expect(message).not.toBe(response);
+        expect(message).not.toBe(store.getState().allMessagesByID[response.id]);
+        expect(() => {
+          event.data.message.user_defined.value = 'edited';
+        }).toThrow(TypeError);
+        expect(() => {
+          (message.output.generic[1] as TextItem).text = 'edited';
+        }).toThrow(TypeError);
       });
       instance.on({ type: BusEventType.USER_DEFINED_RESPONSE, handler: slot });
-
       await instance.messaging.upsertMessage(
         response.id,
         MessageState.ERROR,
         () => response
       );
-
       expect(slot).toHaveBeenCalledTimes(1);
-      expect(response.output.generic[0].user_defined.value).toBe('edited');
-      const state = store.getState();
-      const localItem = Object.values(state.allMessageItemsByID).find(
+      expect(response.output.generic[0].user_defined.value).toBe('before');
+      expect(Object.isFrozen(response.output.generic[0].user_defined)).toBe(
+        false
+      );
+      const localItem = Object.values(
+        store.getState().allMessageItemsByID
+      ).find(
         (item) =>
           item.fullMessageID === response.id &&
           item.item.response_type === MessageResponseTypes.USER_DEFINED
       );
-      expect(localItem.item.user_defined.value).toBe('edited');
-      expect(localItem.item).not.toBe(response.output.generic[0]);
+      expect(localItem.item.user_defined.value).toBe('before');
     });
 
-    it('applies receive edits to the shared caller payload and stored message', async () => {
+    it('logs a frozen receive mutation and completes without writing it back', async () => {
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(createBaseConfig());
-      const response = textResponse('writable-receive', 'before');
+      const response = textResponse('readonly-receive', 'before');
+      const log = jest.spyOn(console, 'error').mockImplementation(() => {});
       const receive = jest.fn((event: BusEventReceive) => {
-        expect(Object.isFrozen(event.data)).toBe(false);
-        expect(event.data.output).toBe(response.output);
         (event.data.output.generic[0] as TextItem).text = 'receive edit';
       });
       instance.on({ type: BusEventType.RECEIVE, handler: receive });
+      try {
+        await expect(
+          instance.messaging.upsertMessage(
+            response.id,
+            MessageState.COMPLETE,
+            () => response
+          )
+        ).resolves.toBeUndefined();
+        expect(receive).toHaveBeenCalledTimes(1);
+        const payload = receive.mock.calls[0][0].data;
+        expect(Object.isFrozen(payload)).toBe(true);
+        expect(payload.output).not.toBe(response.output);
+        expect(payload).not.toBe(store.getState().allMessagesByID[response.id]);
+        expect(
+          log.mock.calls.some((args) =>
+            args.some((value) => value instanceof TypeError)
+          )
+        ).toBe(true);
+        expect(response.output.generic[0]).toMatchObject({ text: 'before' });
+        expect(
+          (store.getState().allMessagesByID[response.id] as MessageResponse)
+            .output.generic[0]
+        ).toMatchObject({ text: 'before' });
+      } finally {
+        log.mockRestore();
+      }
+    });
 
+    it.each([
+      BusEventType.USER_DEFINED_RESPONSE,
+      BusEventType.CUSTOM_FOOTER_SLOT,
+    ])(
+      'rejects a strict mutation from %s without changing accepted content',
+      async (type) => {
+        const { instance, store } =
+          await renderChatAndGetInstanceWithStore(createBaseConfig());
+        const response = userDefinedResponse('readonly-slot', {
+          value: 'before',
+        });
+        response.output.generic[0].message_item_options = {
+          custom_footer_slot: {
+            is_on: true,
+            slot_name: 'readonly-footer',
+            additional_data: { value: 'before' },
+          },
+        };
+        response.output.generic.push({
+          response_type: MessageResponseTypes.TEXT,
+          text: 'before',
+        });
+        const callback = jest.fn((event: any) => {
+          const item =
+            type === BusEventType.USER_DEFINED_RESPONSE
+              ? event.data.message
+              : event.data.messageItem;
+          const message =
+            type === BusEventType.USER_DEFINED_RESPONSE
+              ? event.data.fullMessage
+              : event.data.message;
+          expect(item).toBe(message.output.generic[0]);
+          expect(item).not.toBe(response.output.generic[0]);
+          expect(Object.isFrozen(message.output.generic[1])).toBe(true);
+          if (type === BusEventType.CUSTOM_FOOTER_SLOT) {
+            expect(event.data.additionalData).toBe(
+              item.message_item_options.custom_footer_slot.additional_data
+            );
+            event.data.additionalData.value = 'edited';
+          } else {
+            item.user_defined.value = 'edited';
+          }
+        });
+        instance.on({ type, handler: callback });
+        await expect(
+          instance.messaging.upsertMessage(
+            response.id,
+            MessageState.STREAMING,
+            () => response
+          )
+        ).rejects.toThrow(TypeError);
+        expect(callback).toHaveBeenCalledTimes(1);
+        expect(
+          (store.getState().allMessagesByID[response.id] as MessageResponse)
+            .output
+        ).toEqual(response.output);
+        expect(Object.isFrozen(response.output.generic[0])).toBe(false);
+      }
+    );
+
+    it('keeps pre:receive and later updater edits as the native write routes', async () => {
+      const { instance, store } =
+        await renderChatAndGetInstanceWithStore(createBaseConfig());
+      instance.on({
+        type: BusEventType.PRE_RECEIVE,
+        handler: (event: any) => {
+          expect(Object.isFrozen(event.data)).toBe(false);
+          event.data.output.generic[0].text = 'pre-receive';
+        },
+      });
       await instance.messaging.upsertMessage(
-        response.id,
+        'explicit-edits',
         MessageState.COMPLETE,
-        () => response
+        () => textResponse('explicit-edits', 'before')
       );
-
-      expect(receive).toHaveBeenCalledTimes(1);
-      expect(response.output.generic[0]).toMatchObject({
-        text: 'receive edit',
-      });
       expect(
-        (store.getState().allMessagesByID[response.id] as MessageResponse)
+        (store.getState().allMessagesByID['explicit-edits'] as MessageResponse)
           .output.generic[0]
-      ).toMatchObject({ text: 'receive edit' });
-    });
-
-    it('applies user-defined item and full-message edits to stored content', async () => {
-      const { instance, store } =
-        await renderChatAndGetInstanceWithStore(createBaseConfig());
-      const response = userDefinedResponse('writable-slot', {
-        value: 'before',
-      });
-      response.output.generic.push({
-        response_type: MessageResponseTypes.TEXT,
-        text: 'before',
-      });
-      const slot = jest.fn((event: BusEventUserDefinedResponse) => {
-        expect(Object.isFrozen(event.data)).toBe(false);
-        event.data.message.user_defined.value = 'item edit';
-        (
-          (event.data.fullMessage as MessageResponse).output
-            .generic[1] as TextItem
-        ).text = 'full-message edit';
-      });
-      instance.on({ type: BusEventType.USER_DEFINED_RESPONSE, handler: slot });
-
+      ).toMatchObject({ text: 'pre-receive' });
       await instance.messaging.upsertMessage(
-        response.id,
-        MessageState.STREAMING,
-        () => response
+        'explicit-edits',
+        MessageState.COMPLETE,
+        (message) => {
+          (message.output.generic[0] as TextItem).text = 'updater';
+          return message;
+        }
       );
-
-      expect(slot).toHaveBeenCalledTimes(1);
-      const stored = store.getState().allMessagesByID[
-        response.id
-      ] as MessageResponse;
-      expect(stored.output.generic[0].user_defined).toEqual({
-        value: 'item edit',
-      });
-      expect(stored.output.generic[1]).toMatchObject({
-        text: 'full-message edit',
-      });
-      expect(response.output).not.toBe(stored.output);
-      expect(response.output).toEqual(stored.output);
-    });
-
-    it('applies custom-footer item and message edits to stored content', async () => {
-      const { instance, store } =
-        await renderChatAndGetInstanceWithStore(createBaseConfig());
-      const response = textResponse('writable-footer', 'before');
-      response.output.generic[0].message_item_options = {
-        custom_footer_slot: { is_on: true, slot_name: 'writable-footer' },
-      };
-      response.output.generic.push({
-        response_type: MessageResponseTypes.TEXT,
-        text: 'before',
-      });
-      const footer = jest.fn((event: BusEventCustomFooterSlot) => {
-        expect(Object.isFrozen(event.data)).toBe(false);
-        (event.data.messageItem as TextItem).text = 'footer item edit';
-        (event.data.message.output.generic[1] as TextItem).text =
-          'footer message edit';
-      });
-      instance.on({ type: BusEventType.CUSTOM_FOOTER_SLOT, handler: footer });
-
-      await instance.messaging.upsertMessage(
-        response.id,
-        MessageState.STREAMING,
-        () => response
-      );
-
-      expect(footer).toHaveBeenCalledTimes(1);
-      const stored = store.getState().allMessagesByID[
-        response.id
-      ] as MessageResponse;
-      expect(stored.output.generic[0]).toMatchObject({
-        text: 'footer item edit',
-      });
-      expect(stored.output.generic[1]).toMatchObject({
-        text: 'footer message edit',
-      });
-      expect(response.output).not.toBe(stored.output);
-      expect(response.output).toEqual(stored.output);
+      expect(
+        (store.getState().allMessagesByID['explicit-edits'] as MessageResponse)
+          .output.generic[0]
+      ).toMatchObject({ text: 'updater' });
     });
   });
 
@@ -2101,6 +2133,10 @@ describe('ChatInstance.messaging.upsertMessage', () => {
         expect(userDefined.mock.calls[0][0].data.message).toEqual(
           silentUserDefined
         );
+        const event = userDefined.mock.calls[0][0].data;
+        expect(event.message).not.toBe(silentUserDefined);
+        expect(event.message).toBe(event.fullMessage.output.generic[0]);
+        expect(Object.isFrozen(event.message.user_defined)).toBe(true);
         expect(userDefined.mock.calls[0][0].data.slot).toBeUndefined();
       });
 
@@ -2172,6 +2208,9 @@ describe('ChatInstance.messaging.upsertMessage', () => {
           expect(streaming.state).toBe(MessageState.STREAMING);
           expect(complete.state).toBe(MessageState.COMPLETE);
           expect(complete.message).toEqual(nested);
+          expect(complete.message).not.toBe(nested);
+          expect(Object.isFrozen(streaming.message.user_defined)).toBe(true);
+          expect(Object.isFrozen(complete.fullMessage)).toBe(true);
           expect(streaming.slot).toEqual(expect.any(String));
           expect(complete.slot).toBe(streaming.slot);
           expect(shownItems(store, id)).toEqual([]);
@@ -2233,6 +2272,13 @@ describe('ChatInstance.messaging.upsertMessage', () => {
           expect(
             events.map((event) => event.message.user_defined.count)
           ).toEqual([1, 1, 2, 2]);
+          for (const event of events) {
+            expect(Object.isFrozen(event.message.user_defined)).toBe(true);
+            expect(Object.isFrozen(event.fullMessage)).toBe(true);
+            expect(event.fullMessage.output.generic[0].body).toContain(
+              event.message
+            );
+          }
           expect(events[0].slot).toEqual(expect.any(String));
           expect(events[2].slot).toBe(events[0].slot);
           expect(events[1].slot).toBeUndefined();
@@ -3463,7 +3509,13 @@ describe('ChatInstance.messaging.upsertMessage', () => {
         const baseline = loadingCounter();
         instance.on({
           type: BusEventType.USER_DEFINED_RESPONSE,
-          handler: () => instance.restartConversation(),
+          handler: (event: BusEventUserDefinedResponse) => {
+            expect(Object.isFrozen(event.data.message.user_defined)).toBe(true);
+            expect(event.data.message).toBe(
+              (event.data.fullMessage as MessageResponse).output.generic[1]
+            );
+            return instance.restartConversation();
+          },
         });
         const id = 'upsert-reveal-restart';
 
