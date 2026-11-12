@@ -42,7 +42,8 @@
     "scss/**/*",
     "custom-elements.json",
     "package.json",
-    "telemetry.yml"
+    "telemetry.yml",
+    "bin/**/*"
   ],
   "scripts": {
     "build": "npm run clean && node tasks/build.js && node tasks/build-dist.js && npm run custom-elements",
@@ -59,12 +60,14 @@
     "test:react": "jest",
     "test:updateSnapshot": "web-test-runner \"src/{components,globals/__tests__}/**/*.test.ts\" --node-resolve --update-snapshots",
     "test:web-components": "web-test-runner \"src/{components,globals/__tests__}/**/*.test.ts\" --node-resolve",
-    "test:manifest": "node --test tasks/__tests__/*.test.js"
+    "test:manifest": "node --test tasks/__tests__/*.test.js",
+    "test:prefix-build": "node --test tasks/__tests__/prefix-build.test.js"
   },
   "peerDependencies": {
     "react": ">=17.0.0 <20.0.0"
   },
   "dependencies": {
+    "@babel/parser": "^7.29.9",
     "@carbon/icon-helpers": "^10.47.0",
     "@carbon/icons": "^12.0.0-alpha.3",
     "@carbon/styles": "^2.0.0-alpha.5",
@@ -176,5 +179,8 @@
   },
   "main": "es/index.js",
   "module": "es/index.js",
-  "types": "es/index.d.ts"
+  "types": "es/index.d.ts",
+  "bin": {
+    "create-ai-chat-components-prefixed-build": "./bin/create-ai-chat-components-prefixed-build.js"
+  }
 }
