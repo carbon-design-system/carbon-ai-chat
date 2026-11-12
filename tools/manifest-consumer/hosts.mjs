@@ -199,7 +199,7 @@ export function assertHostParity(manifest, runtime, publishedTypes) {
     );
     assert.equal(
       registration?.path,
-      host.module.replace(/^dist\/es-custom\//, 'dist/es/'),
+      host.module,
       'Published host module must match its isolated runtime import.'
     );
     assert.deepEqual(
@@ -243,7 +243,7 @@ export function proveParityFailures(manifest, runtime, publishedTypes) {
   };
   mutate((host, module) => {
     const other = runtime.find((entry) => entry.tag !== host.tagName);
-    module.path = other.module.replace(/^dist\/es-custom\//, 'dist/es/');
+    module.path = other.module;
   }, /Published host module/);
   const first = publishedTypes.config.keys().next().value;
   mutate((host) => {

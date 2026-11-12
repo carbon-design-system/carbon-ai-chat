@@ -77,11 +77,7 @@ await writeFile(
 );
 await assertPackedResolution(consumer);
 
-for (const specifier of [
-  '@carbon/ai-chat',
-  '@carbon/ai-chat/es-custom',
-  '@carbon/ai-chat/server',
-]) {
+for (const specifier of ['@carbon/ai-chat', '@carbon/ai-chat/server']) {
   const script = `import assert from 'node:assert/strict';
 const globals = ['document', 'window', 'HTMLElement', 'customElements'];
 for (const name of globals) assert.equal(typeof globalThis[name], 'undefined');

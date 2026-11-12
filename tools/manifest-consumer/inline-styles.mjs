@@ -10,21 +10,16 @@ import { realpath, writeFile } from 'node:fs/promises';
 import { isAbsolute, join, relative } from 'node:path';
 import ts from 'typescript';
 
-const trees = ['es', 'es-custom'];
+const trees = ['es'];
 const source = `
 import type { CSSResult } from 'lit';
 import { inlineMarkdownStyles } from '@carbon/ai-chat-components/es/components/markdown/index.js';
-import { inlineMarkdownStyles as customInlineMarkdownStyles } from '@carbon/ai-chat-components/es-custom/components/markdown/index.js';
 const regularStyles: CSSResult = inlineMarkdownStyles;
-const customStyles: CSSResult = customInlineMarkdownStyles;
 type IsAny<T> = 0 extends 1 & T ? true : false;
 const regularIsAny: IsAny<typeof inlineMarkdownStyles> = false;
-const customIsAny: IsAny<typeof customInlineMarkdownStyles> = false;
 // @ts-expect-error The regular style value is not a number.
 const regularNumber: number = inlineMarkdownStyles;
-// @ts-expect-error The custom style value is not a number.
-const customNumber: number = customInlineMarkdownStyles;
-export { regularStyles, customStyles, regularIsAny, customIsAny };
+export { regularStyles, regularIsAny };
 `;
 
 async function assertLocalDeclarations(root, name, program, options) {
