@@ -11,7 +11,7 @@
 
 import { expect, fixture, html, waitUntil } from '@open-wc/testing';
 import { resetMouse, sendKeys, sendMouse } from '@web/test-runner-commands';
-import '@carbon/ai-chat-components/es/components/chat-history/src/history-panel-item.js';
+import '@carbon/ai-chat-components/es/components/chat-history/index.js';
 import type HistoryPanelItem from '@carbon/ai-chat-components/es/components/chat-history/src/history-panel-item.js';
 import type OverflowMenu from '@carbon/web-components/es/components/overflow-menu/overflow-menu.js';
 import type Menu from '@carbon/web-components/es/components/menu/menu.js';

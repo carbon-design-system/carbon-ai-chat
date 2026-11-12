@@ -1130,8 +1130,9 @@ export class MessagesScrollController {
       return;
     }
 
-    const markdownElement = targetElem.querySelector(`${prefix}-aichat-markdown`) as
-      (Element & { updateComplete?: Promise<unknown> }) | null;
+    const markdownElement = targetElem.querySelector(
+      `${prefix}-aichat-markdown`
+    ) as (Element & { updateComplete?: Promise<unknown> }) | null;
 
     if (!markdownElement) {
       return;
