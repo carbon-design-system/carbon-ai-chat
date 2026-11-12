@@ -892,6 +892,19 @@ export interface BusEventWorkspacePreOpen extends BusEvent {
      * The full message response that contains the message item.
      */
     fullMessage: MessageResponse;
+
+    /**
+     * The ID of the message whose preview card opened the workspace. It's missing when code
+     * opened the workspace. To change that message, call
+     * {@link ChatInstanceMessaging.upsertMessage} with this ID instead of editing this event.
+     */
+    messageID?: string;
+
+    /**
+     * The ID of the preview card item that opened the workspace, the same ID that item has in
+     * {@link ChatSDKState.messageItems}. It's missing when code opened the workspace.
+     */
+    itemID?: string;
   };
 }
 
@@ -920,6 +933,19 @@ export interface BusEventWorkspaceOpen extends BusEvent {
      * The full message response that contains the message item.
      */
     fullMessage: MessageResponse;
+
+    /**
+     * The ID of the message whose preview card opened the workspace. It's missing when code
+     * opened the workspace. To change that message, call
+     * {@link ChatInstanceMessaging.upsertMessage} with this ID instead of editing this event.
+     */
+    messageID?: string;
+
+    /**
+     * The ID of the preview card item that opened the workspace, the same ID that item has in
+     * {@link ChatSDKState.messageItems}. It's missing when code opened the workspace.
+     */
+    itemID?: string;
   };
 }
 
@@ -948,6 +974,19 @@ export interface BusEventWorkspacePreClose extends BusEvent {
      * The full message response that contains the message item.
      */
     fullMessage: MessageResponse;
+
+    /**
+     * The ID of the message whose preview card opened the workspace. It's missing when code
+     * opened the workspace. To change that message, call
+     * {@link ChatInstanceMessaging.upsertMessage} with this ID instead of editing this event.
+     */
+    messageID?: string;
+
+    /**
+     * The ID of the preview card item that opened the workspace, the same ID that item has in
+     * {@link ChatSDKState.messageItems}. It's missing when code opened the workspace.
+     */
+    itemID?: string;
   };
 }
 
@@ -976,6 +1015,19 @@ export interface BusEventWorkspaceClose extends BusEvent {
      * The full message response that contains the message item.
      */
     fullMessage: MessageResponse;
+
+    /**
+     * The ID of the message whose preview card opened the workspace. It's missing when code
+     * opened the workspace. To change that message, call
+     * {@link ChatInstanceMessaging.upsertMessage} with this ID instead of editing this event.
+     */
+    messageID?: string;
+
+    /**
+     * The ID of the preview card item that opened the workspace, the same ID that item has in
+     * {@link ChatSDKState.messageItems}. It's missing when code opened the workspace.
+     */
+    itemID?: string;
   };
 }
 

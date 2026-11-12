@@ -64,6 +64,26 @@ function createCustomPanelInstance(
     localItem: LocalMessageItem;
     working: { message: Message; localItems: Record<string, LocalMessageItem> };
   };
+  // The message and item a preview card opened the workspace from, until it closes.
+  let workspaceSource: { messageID: string; itemID?: string };
+
+  /**
+   * The IDs of the message and item the workspace state holds, if any. A preview card
+   * writes them just before it opens the workspace, which then clears them.
+   */
+  function workspaceSourceOf() {
+    const { fullMessage, localMessageItem } =
+      chatStore(serviceManager).getState().view.workspacePanelState;
+    if (!fullMessage || !localMessageItem) {
+      return undefined;
+    }
+    const itemID = serviceManager.publicStateService.messageItemIDOf(
+      localMessageItem.ui_state.id
+    );
+    return itemID
+      ? { messageID: fullMessage.id, itemID }
+      : { messageID: fullMessage.id };
+  }
 
   function captureWorkspaceEvent() {
     const store = chatStore(serviceManager);
@@ -105,6 +125,7 @@ function createCustomPanelInstance(
         workspaceMessages?.working.localItems[localMessageItem.ui_state.id]
           ?.item,
       fullMessage: fullMessage && workspaceMessages?.working.message,
+      ...workspaceSource,
     };
   }
 
@@ -258,6 +279,8 @@ function createCustomPanelInstance(
       const resolvedOptions = (options ??
         defaultPanelOptions) as CustomPanelConfigOptions;
       const store = chatStore(serviceManager);
+      const source =
+        panelType === PanelType.WORKSPACE ? workspaceSourceOf() : undefined;
 
       // For workspace panels, close any existing workspace before opening a new one
       if (panelType === PanelType.WORKSPACE) {
@@ -286,6 +309,7 @@ function createCustomPanelInstance(
 
       // Fire pre-open event for workspace panel
       if (panelType === PanelType.WORKSPACE) {
+        workspaceSource = source;
         await fireWorkspaceEvent(
           BusEventType.WORKSPACE_PRE_OPEN,
           captureWorkspaceEvent()
@@ -309,6 +333,7 @@ function createCustomPanelInstance(
 
       // For workspace panel, capture state BEFORE closing to preserve data for events
       let workspaceEventData;
+      const closingSource = workspaceSource;
       if (panelType === PanelType.WORKSPACE) {
         workspaceEventData = captureWorkspaceEvent();
         await fireWorkspaceEvent(
@@ -318,6 +343,10 @@ function createCustomPanelInstance(
       }
 
       store.dispatch(setOpen(false));
+      // An open that started while this close waited has its own source.
+      if (workspaceSource === closingSource) {
+        workspaceSource = undefined;
+      }
 
       // Fire close event for workspace panel using captured data
       if (panelType === PanelType.WORKSPACE && workspaceEventData) {
