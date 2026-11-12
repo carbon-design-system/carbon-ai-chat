@@ -8,28 +8,28 @@
  */
 
 import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
-import { OutgoingMessageService } from './OutgoingMessageService';
-import actions from '../../../store/actions';
-import { MessageLoadingManager } from '../../../utils/messageServiceUtils';
-import { MessageErrorState } from '../../../../types/messaging/LocalMessageItem';
+import { OutgoingMessageService } from './outbound/OutgoingMessageService';
+import actions from '../../store/actions';
+import { MessageLoadingManager } from '../../utils/messageServiceUtils';
+import { MessageErrorState } from '../../../types/messaging/LocalMessageItem';
 import {
   MessageInputType,
   MessageRequest,
   MessageResponse,
   MessageResponseTypes,
-} from '../../../../types/messaging/Messages';
-import { CustomSendMessageOptions } from '../../../../types/config/MessagingConfig';
-import { OnErrorType } from '../../../../types/config/ErrorConfig';
-import { PublicConfigMessaging } from '../../../../types/config/PublicConfigMessaging';
-import { ServiceManager } from '../../ServiceManager';
-import { PendingMessageRequest } from '../MessageService';
-import { consoleError, debugLog } from '../../../utils/miscUtils';
+} from '../../../types/messaging/Messages';
+import { CustomSendMessageOptions } from '../../../types/config/MessagingConfig';
+import { OnErrorType } from '../../../types/config/ErrorConfig';
+import { PublicConfigMessaging } from '../../../types/config/PublicConfigMessaging';
+import { ServiceManager } from '../ServiceManager';
+import { PendingMessageRequest } from './MessageService';
+import { consoleError, debugLog } from '../../utils/miscUtils';
 import {
   BusEventSend,
   BusEventType,
-} from '../../../../types/events/eventBusTypes';
-import { ChatInstance } from '../../../../types/instance/ChatInstance';
-import { streamItemID, THREAD_ID_MAIN } from '../../../utils/messageUtils';
+} from '../../../types/events/eventBusTypes';
+import { ChatInstance } from '../../../types/instance/ChatInstance';
+import { streamItemID, THREAD_ID_MAIN } from '../../utils/messageUtils';
 
 type CustomSendMessageFn = (
   message: MessageRequest<any>,

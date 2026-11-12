@@ -7,6 +7,9 @@
  *  @license
  */
 
+import { SendWorkflow } from './SendWorkflow';
+import { MessageLoadingManager } from '../../utils/messageServiceUtils';
+import type { PublicConfig } from '../../../types/config/PublicConfig';
 import { coordinateSend } from './coordinateSend';
 import type { MessagePresentationPort } from './presentationPort';
 import type { MessageRequest } from '../../../types/messaging/Messages';
@@ -20,6 +23,10 @@ import { ConversationState } from './state/ConversationState';
 
 class MessageCoordinator {
   private state = new ConversationState();
+  private sendWorkflow?: SendWorkflow;
+  private loadingManager?: MessageLoadingManager;
+  private processedMessageID: string | null = null;
+  public timeoutMS: number;
   private requestQueue = new RequestQueue();
   private requests = new WeakMap<RequestToken, PendingMessageRequest>();
 
@@ -54,6 +61,45 @@ class MessageCoordinator {
       options,
       ignoreHydration
     );
+  }
+
+  private getSendWorkflow() {
+    return (this.sendWorkflow ??= new SendWorkflow(this.serviceManager));
+  }
+
+  get messageLoadingManager() {
+    return (this.loadingManager ??= new MessageLoadingManager());
+  }
+
+  configureMessageTimeout(publicConfig: PublicConfig) {
+    const timeoutOverride = publicConfig.messaging?.messageTimeoutSecs;
+    this.timeoutMS =
+      timeoutOverride || timeoutOverride === 0
+        ? timeoutOverride * 1000
+        : 150 * 1000;
+  }
+
+  get lastProcessedMessageID() {
+    return this.processedMessageID;
+  }
+
+  recordProcessedMessageID(messageID: string) {
+    this.processedMessageID = messageID;
+  }
+
+  rejectFinalErrorOnMessage(request: PendingMessageRequest, text?: string) {
+    this.getSendWorkflow().rejectFinalErrorOnMessage(request, text);
+  }
+
+  resolveCancelledMessage(request: PendingMessageRequest) {
+    this.getSendWorkflow().resolveCancelledMessage(request);
+  }
+
+  sendToAssistant(
+    current: PendingMessageRequest,
+    startLoading: (() => void) | null
+  ) {
+    return this.getSendWorkflow().sendToAssistant(current, startLoading);
   }
 
   enqueueRequest(request: PendingMessageRequest) {
