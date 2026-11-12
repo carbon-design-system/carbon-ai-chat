@@ -20,6 +20,7 @@ Load only what you need:
 
 - Working across the React/Lit boundary, shadow DOM, or slots → [architecture.md](references/architecture.md)
 - Adding, editing, or wiring a service → [services.md](references/services.md)
+- Changing assistant message flows, data helpers, or view ports → [messaging ownership](src/chat/services/messaging/AGENTS.md)
 - Changing hooks or view-owned logic in `utils/` or `services/` → [hooks/AGENTS.md](src/chat/hooks/AGENTS.md)
 - Adding config fields or host properties/attributes, or editing CEM metadata → [manifests.md](references/manifests.md)
 - Writing or fixing a Jest test → [tests.md](references/tests.md)
@@ -34,7 +35,7 @@ Load only what you need:
 - [src/chat/](src/chat/) — the chat application. Do most feature work here.
   - `store/` — Redux-style store.
   - `services/` — chat-instance services wired through `ServiceManager.ts` and `loadServices.ts`, plus view-owned classes with explicit cleanup. `ChatInstanceService.ts` is the instance-facing API — public methods added here must also be reflected on `ChatInstance` in [`src/types/instance/ChatInstance.ts`](src/types/instance/ChatInstance.ts).
-  - `services/messaging/` — assistant message services, grouped under `inbound/`, `outbound/`, and `presentation/`. Human-agent callbacks live in `services/haa/`.
+  - `services/messaging/` — `MessageCoordinator` and its private workflows, pure `inbound/`, `outbound/`, and `state/` helpers, and the `presentation/` view adapter. Human-agent callbacks live in `services/haa/`.
   - `events/` — typed pub/sub for the public event API. Event names and payloads are part of the public contract.
   - `schema/` — runtime message/config schema. Keep in sync with types in [src/types/](src/types/).
   - `languages/` — `intl-messageformat` string bundles, one locale file. [LanguagePack.ts](src/types/config/LanguagePack.ts) declares the public `LanguagePack` type over it, so adding a key widens public API and renaming one breaks it. Hosts translate through `PublicConfig.strings`; word new strings per [ui-strings.md](../../.bob/skills/caic-copy-writer/references/ui-strings.md).
