@@ -8,7 +8,7 @@
  */
 
 import isEqual from 'lodash-es/isEqual.js';
-import cloneDeep from 'lodash-es/cloneDeep.js';
+import { IncomingMessageService } from './IncomingMessageService';
 import cloneDeepWith from 'lodash-es/cloneDeepWith.js';
 import {
   captureMessageEvent,
@@ -17,7 +17,6 @@ import {
 
 import actions from '../../../store/actions';
 import {
-  applyChunk,
   chunkHasDisplayableContent,
   FinalResponseChunk,
   resolveChunkContext,
@@ -59,6 +58,8 @@ interface RequestChunkErrors {
 }
 
 class ChunkProcessingService {
+  private readonly incomingMessageService = new IncomingMessageService();
+
   private serviceManager: ServiceManager;
 
   // A sender can still await chunks after its response advances the send queue.
@@ -449,15 +450,18 @@ class ChunkProcessingService {
     if (!messageID) {
       return undefined;
     }
-    const ownedItem = cloneDeep(item);
-    const ownedChunk = {
-      ...chunk,
-      partial_response: cloneDeep(chunk.partial_response),
-    };
+    const { ownedItem, ownedChunk } =
+      this.incomingMessageService.prepareChunkValues(chunk, item);
     await this.serviceManager.messageUpsertCoordinator.upsert(
       messageID,
       MessageState.STREAMING,
-      (prev) => applyChunk(prev, ownedChunk, messageID),
+      (prev) =>
+        this.incomingMessageService.applyChunkData(
+          prev,
+          ownedChunk,
+          messageID,
+          prev === null || prev === undefined ? Date.now() : undefined
+        ),
       {
         origin: 'chunk',
         chunk: { item: ownedItem, isComplete: isCompleteItem, requestID },
