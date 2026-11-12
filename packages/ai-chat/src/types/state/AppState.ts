@@ -11,7 +11,7 @@
 // For the prebuilt chat. Conversation code and public types import each
 // module directly, because `AppState` below reaches view code.
 
-export type { AppStateMessages, ChatMessagesState } from './ChatMessagesState';
+export type { AppStateMessages } from './ChatMessagesState';
 export type { InputState, PendingUpload } from './InputState';
 export { PendingUploadStatus } from './InputState'; // enum (runtime value)
 export type { HumanAgentDisplayState } from './HumanAgentState';

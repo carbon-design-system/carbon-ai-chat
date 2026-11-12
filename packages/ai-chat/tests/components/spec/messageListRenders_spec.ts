@@ -205,7 +205,7 @@ describe('the message list reading public and store state', () => {
     expect(nested).toBeGreaterThan(0);
     expect(drawsSince(start)).toEqual([['r1:i:0', 'r2:i:0']]);
     expect(
-      Object.keys(commits.at(-1).disclaimersAccepted).length
+      Object.keys(commits[commits.length - 1].disclaimersAccepted).length
     ).toBeGreaterThan(0);
     expect(commits.filter((commit) => !commit.current)).toEqual([]);
   });
