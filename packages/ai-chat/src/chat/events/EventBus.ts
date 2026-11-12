@@ -58,6 +58,13 @@ class EventBus {
   private handlersByType: Map<string, EventBusHandler[]> = new Map();
 
   /**
+   * The function given to {@link once} for each wrapper it registers, so {@link off} can find the wrapper from that
+   * function.
+   */
+  private onceHandlerSources: WeakMap<EventBusHandler, EventBusHandler> =
+    new WeakMap();
+
+  /**
    * The latest fire of each event type that has not finished yet. A new fire of a type listed here waits for this one
    * before its handlers start, so overlapping fires of one type run in call order. Fires of different types never
    * wait on each other. A same-type fire made synchronously from inside a handler runs nested, before this entry is
@@ -76,8 +83,7 @@ class EventBus {
   private eventsRunningCount = 0;
 
   /**
-   * Fires the given event and notifiers all listeners for this event type. All event listeners that listen for all
-   * ("*") events will also be notified. Events will be fired in the order in which they were registered.
+   * Fires the given event and notifies all listeners for this event type, in the order they were registered.
    *
    * If an earlier fire of the same type is still running, this one waits for it to settle before its handlers
    * start, so overlapping fires of one type run in the order they were called. A fire that waits longer than
@@ -286,7 +292,14 @@ class EventBus {
       const handlersForType = this.handlersByType.get(type);
       if (handlersForType) {
         if (handler) {
-          const index = handlersForType.indexOf(handler);
+          // A handler added with on matches first, as it always has; otherwise a pending once wrapper for it does.
+          let index = handlersForType.indexOf(handler);
+          if (index === -1) {
+            index = handlersForType.findIndex(
+              (registered) =>
+                this.onceHandlerSources.get(registered) === handler
+            );
+          }
           if (index !== -1) {
             handlersForType.splice(index, 1);
           }
@@ -314,6 +327,7 @@ class EventBus {
           this.off({ type, handler: onceHandler });
           return handler(event, instance);
         };
+        this.onceHandlerSources.set(onceHandler, handler);
         this.on({ type, handler: onceHandler });
       } else {
         consoleError(HANDLER_NOT_FUNCTION, handler);

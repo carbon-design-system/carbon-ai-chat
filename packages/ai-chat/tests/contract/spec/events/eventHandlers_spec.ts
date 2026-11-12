@@ -242,17 +242,14 @@ describeShared('off', (makeDriver) => {
     expect(idsOf(otherType)).toEqual(['r1']);
   });
 
-  // `main` differs from its JSDoc (MAIN-NOTES M32): the JSDoc says off
-  // removes a handler added with once, but `main` registers a wrapper for
-  // once, so off with the function passed to once matches nothing.
-  it("doesn't remove a once handler given the function passed to once", async () => {
+  it('removes a once handler given the function passed to once', async () => {
     const chat = await makeDriver();
     const handler = jest.fn();
     chat.once({ type: BusEventType.RECEIVE, handler });
     chat.off({ type: BusEventType.RECEIVE, handler });
     await add(chat, 'r1');
     await add(chat, 'r2');
-    expect(idsOf(handler)).toEqual(['r1']);
+    expect(handler).not.toHaveBeenCalled();
   });
 });
 
