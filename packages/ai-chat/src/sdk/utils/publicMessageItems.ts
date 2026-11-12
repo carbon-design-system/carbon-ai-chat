@@ -216,6 +216,75 @@ function nestedLists(
   return lists;
 }
 
+/** The message an entry belongs to, and what every entry of one top-level item shares. */
+interface PlanOwner {
+  message: Message;
+  kind: Kind;
+  status: Status;
+}
+
+/** Plans one entry and, depth first, the items nested in it. */
+function addPlans(
+  plans: ItemPlan[],
+  allMessageItemsByID: ObjectMap<LocalMessageItem>,
+  owner: PlanOwner,
+  id: string,
+  local: LocalMessageItem,
+  parentID?: string
+) {
+  const { message } = owner;
+  const internal = message.ui_state_internal;
+  const isConnectToAgent = isConnectToHumanAgent(local.item);
+  plans.push({
+    id,
+    messageID: message.id,
+    kind: owner.kind,
+    parentID,
+    local,
+    status: owner.status,
+    origin: internal?.from_history ? 'history' : 'live',
+    isConnectToAgent,
+    availability: isConnectToAgent ? internal?.agent_availability : undefined,
+    noServiceDesk: isConnectToAgent
+      ? internal?.agent_no_service_desk
+      : undefined,
+    requestText: isRequest(message)
+      ? getRequestBubbleText(local, message as MessageRequest)
+      : undefined,
+  });
+  nestedLists(local).forEach(({ ids, part }) =>
+    ids.forEach((nestedID, index) => {
+      const nested = allMessageItemsByID[nestedID];
+      if (nested) {
+        addPlans(
+          plans,
+          allMessageItemsByID,
+          owner,
+          `${id}:${part(index)}`,
+          nested,
+          id
+        );
+      }
+    })
+  );
+}
+
+/** A top-level item's ID: by its stream ID, else by its position in the response. */
+function topLevelID(
+  message: Message,
+  local: LocalMessageItem,
+  locals: readonly LocalMessageItem[]
+): string {
+  const named = streamID(local.item);
+  if (named) {
+    return `${message.id}:s:${named}`;
+  }
+  const index = isResponse(message)
+    ? responseIndexes(message, locals).get(local)
+    : 0;
+  return `${message.id}:i:${index}`;
+}
+
 /**
  * Plans every entry the list draws, in its order: each top-level local item of a message that's in
  * `messageIDs`, then the items nested in it, depth first.
@@ -228,85 +297,31 @@ export function planMessageItems(
 ): ItemPlan[] {
   const currentIDs = new Set(messageIDs);
   const localsByMessage = new Map<string, LocalMessageItem[]>();
-  const shown: LocalMessageItem[] = [];
   localMessageIDs.forEach((localID) => {
     const local = allMessageItemsByID[localID];
-    if (
-      local &&
-      currentIDs.has(local.fullMessageID) &&
-      allMessagesByID[local.fullMessageID]
-    ) {
-      shown.push(local);
-      const locals = localsByMessage.get(local.fullMessageID) ?? [];
+    const messageID = local?.fullMessageID;
+    if (local && currentIDs.has(messageID) && allMessagesByID[messageID]) {
+      const locals = localsByMessage.get(messageID) ?? [];
       locals.push(local);
-      localsByMessage.set(local.fullMessageID, locals);
+      localsByMessage.set(messageID, locals);
     }
   });
 
-  const indexesByMessage = new Map<string, Map<LocalMessageItem, number>>();
-  const kindByMessage = new Map<string, Kind>();
   const plans: ItemPlan[] = [];
-
-  const addPlan = (
-    id: string,
-    local: LocalMessageItem,
-    message: Message,
-    kind: Kind,
-    status: Status,
-    parentID?: string
-  ) => {
-    const isConnectToAgent = isConnectToHumanAgent(local.item);
-    plans.push({
-      id,
-      messageID: message.id,
-      kind,
-      parentID,
-      local,
-      status,
-      origin: message.ui_state_internal?.from_history ? 'history' : 'live',
-      isConnectToAgent,
-      availability: isConnectToAgent
-        ? message.ui_state_internal?.agent_availability
-        : undefined,
-      noServiceDesk: isConnectToAgent
-        ? message.ui_state_internal?.agent_no_service_desk
-        : undefined,
-      requestText: isRequest(message)
-        ? getRequestBubbleText(local, message as MessageRequest)
-        : undefined,
-    });
-    nestedLists(local).forEach(({ ids, part }) =>
-      ids.forEach((nestedID, index) => {
-        const nested = allMessageItemsByID[nestedID];
-        if (nested) {
-          addPlan(`${id}:${part(index)}`, nested, message, kind, status, id);
-        }
-      })
-    );
-  };
-
-  shown.forEach((local) => {
+  localMessageIDs.forEach((localID) => {
+    const local = allMessageItemsByID[localID];
+    const locals = localsByMessage.get(local?.fullMessageID);
+    if (!locals) {
+      return;
+    }
     const message = allMessagesByID[local.fullMessageID];
-    let kind = kindByMessage.get(message.id);
-    if (!kind) {
-      kind = kindOf(message);
-      kindByMessage.set(message.id, kind);
-    }
-    let id: string;
-    const named = streamID(local.item);
-    if (named) {
-      id = `${message.id}:s:${named}`;
-    } else if (isResponse(message)) {
-      let indexes = indexesByMessage.get(message.id);
-      if (!indexes) {
-        indexes = responseIndexes(message, localsByMessage.get(message.id));
-        indexesByMessage.set(message.id, indexes);
-      }
-      id = `${message.id}:i:${indexes.get(local)}`;
-    } else {
-      id = `${message.id}:i:0`;
-    }
-    addPlan(id, local, message, kind, statusOf(message, local));
+    addPlans(
+      plans,
+      allMessageItemsByID,
+      { message, kind: kindOf(message), status: statusOf(message, local) },
+      topLevelID(message, local, locals),
+      local
+    );
   });
   return plans;
 }
