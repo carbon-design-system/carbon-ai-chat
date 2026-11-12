@@ -13,7 +13,6 @@ import { PublicStateService } from '../../../src/chat/services/PublicStateServic
 import { MessageCoordinator } from '../../../src/chat/services/messaging/MessageCoordinator';
 import { MessagePresentationAdapter } from '../../../src/chat/services/messaging/presentation/MessagePresentationAdapter';
 import type { PublicChatState } from '../../../src/types/instance/PublicChatState';
-import { SendService } from '../../../src/chat/services/messaging/outbound/SendService';
 import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
 import type { MessagePresentationPort } from '../../../src/chat/services/messaging/presentationPort';
 import { PendingUploadStatus } from '../../../src/types/state/AppState';
@@ -21,7 +20,11 @@ import type { MessageRequest } from '../../../src/types/messaging/Messages';
 import { MessageSendSource } from '../../../src/types/events/eventBusTypes';
 import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
 
-function harness(presentation?: MessagePresentationPort) {
+function harness(
+  presentation?:
+    | MessagePresentationPort
+    | ((manager: ServiceManager) => MessagePresentationPort)
+) {
   const store = makeConfigStore({ messaging: {} });
   const hydration = resolvablePromise<void>();
   const transport = resolvablePromise<void>();
@@ -33,7 +36,11 @@ function harness(presentation?: MessagePresentationPort) {
     slotEventService: { handleCustomRequestFooterSlot: jest.fn(() => footer) },
     messageService: { send },
   } as unknown as ServiceManager;
-  const sender = new SendService(manager, presentation);
+  const sender = new MessageCoordinator(
+    manager,
+    typeof presentation === 'function' ? presentation(manager) : presentation
+  );
+  manager.messageCoordinator = sender;
   return { store, hydration, transport, footer, send, sender, manager };
 }
 
@@ -142,12 +149,29 @@ it('captures custom input before hydration and reads panels after earlier writes
 
 it('publishes the same conversation states with an adapter or without a view', async () => {
   async function run(withAdapter: boolean) {
-    const { store, hydration, transport, footer, send, manager } = harness();
+    const announce = jest.fn();
+    const focus = jest.fn(() => false);
+    const makeAdapter = (manager: ServiceManager) =>
+      new MessagePresentationAdapter({
+        hasCustomPromptLine: () => false,
+        announceSending: announce,
+        requestComposerFocus: focus,
+        isHomeScreenOpen: () =>
+          manager.store.getState().persistedToBrowserStorage.homeScreenState
+            .isHomeScreenOpen,
+        closeHomeScreen: () =>
+          manager.store.dispatch(actions.setHomeScreenIsOpen(false)),
+        isResponsePanelOpen: () =>
+          manager.store.getState().responsePanelState.isOpen,
+        closeResponsePanel: () =>
+          manager.store.dispatch(actions.setResponsePanelIsOpen(false)),
+      });
+    const { store, hydration, transport, footer, send, manager, sender } =
+      harness(withAdapter ? makeAdapter : undefined);
     manager.eventBus = {
       hasListeners: () => false,
     } as unknown as ServiceManager['eventBus'];
-    const coordinator = new MessageCoordinator(manager);
-    manager.messageCoordinator = coordinator;
+    const coordinator = sender;
     store.dispatch(actions.setHomeScreenIsOpen(false));
     store.dispatch(actions.setActiveResponseId('existing-response'));
     store.dispatch(
@@ -164,21 +188,6 @@ it('publishes the same conversation states with an adapter or without a view', a
       await transport;
       coordinator.requestFinished(message.id, generation);
     });
-    const announce = jest.fn();
-    const focus = jest.fn(() => false);
-    const adapter = new MessagePresentationAdapter({
-      hasCustomPromptLine: () => false,
-      announceSending: announce,
-      requestComposerFocus: focus,
-      isHomeScreenOpen: () =>
-        store.getState().persistedToBrowserStorage.homeScreenState
-          .isHomeScreenOpen,
-      closeHomeScreen: () => store.dispatch(actions.setHomeScreenIsOpen(false)),
-      isResponsePanelOpen: () => store.getState().responsePanelState.isOpen,
-      closeResponsePanel: () =>
-        store.dispatch(actions.setResponsePanelIsOpen(false)),
-    });
-    const sender = new SendService(manager, withAdapter ? adapter : undefined);
     const message = {
       id: 'same-request',
       input: { text: 'same input' },

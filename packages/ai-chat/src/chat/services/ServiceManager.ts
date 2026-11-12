@@ -33,7 +33,6 @@ import { PublicStateService } from './PublicStateService';
 import { MessageCoordinator } from './messaging/MessageCoordinator';
 import { ReceiveService } from './messaging/inbound/ReceiveService';
 import { SlotEventService } from './messaging/presentation/SlotEventService';
-import { SendService } from './messaging/outbound/SendService';
 import { StreamAnnouncerService } from './messaging/presentation/StreamAnnouncerService';
 import { ViewService } from './ViewService';
 import { HasRequestFocus } from '../../types/utilities/HasRequestFocus';
@@ -112,11 +111,6 @@ class ServiceManager {
    * Service that owns the inbound receive path.
    */
   receiveService: ReceiveService;
-
-  /**
-   * Service that owns the outbound send path.
-   */
-  sendService: SendService;
 
   /**
    * Service that manages view transitions and fires view-change events.
