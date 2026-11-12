@@ -77,17 +77,21 @@ function chatWith(prior: number, read = true) {
       return [messages, messageItems];
     });
   }
-  return { service, store, work };
+  return { service, serviceManager, store, work };
 }
 
-/** Writes one chunk of `text` into the live response's item `streamID`, as `addMessageChunk` does. */
+/**
+ * Writes one chunk of `text` into item `streamID` of the response `responseID`, the live one by
+ * default, as `addMessageChunk` does.
+ */
 function chunk(
   store: ReturnType<typeof makeConfigStore>,
   streamID: string,
-  text: string
+  text: string,
+  responseID = LIVE
 ) {
-  const message = store.getState().allMessagesByID[LIVE] ?? {
-    id: LIVE,
+  const message = store.getState().allMessagesByID[responseID] ?? {
+    id: responseID,
     output: { generic: [] },
   };
   store.dispatch(
@@ -197,22 +201,56 @@ describe('the work for one streamed chunk', () => {
     ).toMatchObject({ text: 'First more' });
   });
 
-  it('stays current when the reader falls more writes behind than are recorded', () => {
-    const { service, store } = chatWith(3, false);
-    chunk(store, 'a', '');
-    const stale = service.get();
-    for (let index = 0; index < 100; index++) {
-      chunk(store, 'a', `${index % 10}`);
-    }
-    const state = service.get();
-    expect(stale.messages).toHaveLength(4);
-    expect(
-      (state.messages[3] as MessageResponse).output.generic[0]
-    ).toMatchObject({
-      text: Array.from({ length: 100 }, (_, index) => index % 10).join(''),
+  /** The text of each response's first item, in `messages` and in `messageItems`. */
+  function textsOf(service: PublicStateService, responseIDs: string[]) {
+    const { messages, messageItems } = service.get();
+    return responseIDs.map((id) => {
+      const message = messages.find(
+        (each) => each.id === id
+      ) as MessageResponse;
+      const entry = messageItems.find(({ messageID }) => messageID === id);
+      return [
+        (message.output.generic[0] as TextItem).text,
+        (entry.item as TextItem).text,
+      ];
     });
-    expect(state.messageItems[3].item).toBe(
-      (state.messages[3] as MessageResponse).output.generic[0]
-    );
-  });
+  }
+
+  it.each([
+    ['more writes behind than are recorded', 100],
+    ['a few writes behind', 10],
+  ])(
+    'keeps a reader %s current, including an early write to another stream',
+    (_case, writes) => {
+      const { service, serviceManager, store } = chatWith(3, false);
+      chunk(store, 'a', 'Other ', 'other');
+      chunk(store, 'a', '');
+      // Another reader of the same store reads every change, so it never falls behind.
+      const everyChange = new PublicStateService(serviceManager);
+      everyChange.subscribe(() => everyChange.get().messageItems);
+      const stale = service.get();
+
+      chunk(store, 'a', 'EARLY', 'other');
+      for (let index = 0; index < writes; index++) {
+        chunk(store, 'a', `${index % 10}`);
+      }
+
+      const liveText = Array.from(
+        { length: writes },
+        (_, index) => index % 10
+      ).join('');
+      const expected = [
+        ['Other EARLY', 'Other EARLY'],
+        [liveText, liveText],
+      ];
+      expect(stale.messages).toHaveLength(5);
+      expect(textsOf(service, ['other', LIVE])).toEqual(expected);
+      expect(textsOf(everyChange, ['other', LIVE])).toEqual(expected);
+      expect(service.get().messages).toEqual(everyChange.get().messages);
+      expect(service.get().messageItems).toEqual(
+        everyChange.get().messageItems
+      );
+      everyChange.destroy();
+    }
+  );
 });
