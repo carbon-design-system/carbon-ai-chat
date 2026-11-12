@@ -9,7 +9,10 @@
 
 import Launch16 from '@carbon/icons/es/launch/16.js';
 import Link from '../../carbon/Link';
-import { carbonIconToReact } from '../../../utils/carbonIcon';
+import {
+  carbonIconToReact,
+  customIconToReact,
+} from '../../../utils/carbonIcon';
 import React from 'react';
 
 import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
@@ -27,11 +30,13 @@ function ButtonItemURLComponent({
 }: {
   localMessageItem: LocalMessageItem<ButtonItem>;
 }) {
-  const { image_url, alt_text, url, target, label, kind, size, is } =
+  const { image_url, alt_text, url, target, label, kind, size, is, icon } =
     localMessageItem.item;
+  const CustomIcon = customIconToReact(icon);
 
   // If no image url is provided and should is a normal link, then render a carbon link.
   if (!image_url && kind === 'LINK') {
+    const LinkIcon = CustomIcon || LaunchIcon;
     return (
       <div className="cds-aichat--button-item">
         <Link
@@ -39,7 +44,11 @@ function ButtonItemURLComponent({
           href={url}
           target={target}
           rel="noopener noreferrer">
-          <LaunchIcon slot="icon" className="icon" aria-label="Launch" />
+          <LinkIcon
+            slot="icon"
+            className="icon"
+            aria-label={CustomIcon ? label || url : 'Launch'}
+          />
           {label || url}
         </Link>
       </div>
@@ -56,7 +65,7 @@ function ButtonItemURLComponent({
       is={is}
       url={url}
       target={target}
-      renderIcon={LaunchIcon}
+      renderIcon={CustomIcon || LaunchIcon}
     />
   );
 }

@@ -49,7 +49,8 @@ jobs:
         run: |
           git checkout -b chore/${{ github.event.inputs.tag }}-release
           git push origin chore/${{ github.event.inputs.tag }}-release
-      # Create PR with the new branch
+      # Create PR with the new branch. This uses the PAT rather than GITHUB_TOKEN because events caused by
+      # GITHUB_TOKEN do not start workflows, so the DCO check would never report on the PR.
       - name: Create Pull Request
         run: |
           gh pr create -B main -H chore/${{ github.event.inputs.tag }}-release --title 'chore(release): ${{ github.event.inputs.tag }}' --body 'Automated release PR for ${{ github.event.inputs.tag }}
@@ -57,7 +58,7 @@ jobs:
             - [ ] Verify package version bumps are accurate
             - [ ] Verify CI passes as expected'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT }}
 
   # This job creates the git tag for the release (ie. v2.47.0)
   create-release-tag:
