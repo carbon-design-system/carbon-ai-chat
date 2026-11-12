@@ -1149,7 +1149,7 @@ class MessageUpsertCoordinator {
    */
   private announceStreamStarts(result: MessageResponse, holdFromIndex: number) {
     const { message_options: messageOptions } = result;
-    this.serviceManager.actions.announceStreamStarts(result.id, {
+    this.serviceManager.messageCoordinator.announceStreamStarts(result.id, {
       hasReasoning: Boolean(messageOptions?.reasoning),
       hasDisplayableContent: (result.output?.generic ?? []).some(
         (item, index) =>

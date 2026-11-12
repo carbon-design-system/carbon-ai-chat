@@ -203,7 +203,7 @@ class ChunkProcessingService {
         );
 
         if (extractedMessageID) {
-          this.serviceManager.streamAnnouncerService.announceStreamStarts(
+          this.serviceManager.messageCoordinator.announceStreamStarts(
             extractedMessageID,
             {
               hasReasoning: Boolean(
