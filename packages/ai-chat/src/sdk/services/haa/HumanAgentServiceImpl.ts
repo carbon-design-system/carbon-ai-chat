@@ -528,6 +528,29 @@ class HumanAgentServiceImpl implements HumanAgentService {
     );
   }
 
+  /** @see HumanAgentService.endChatOnDestroy */
+  endChatOnDestroy(): Promise<void> | undefined {
+    if (!this.chatStarted || !this.serviceDesk) {
+      return undefined;
+    }
+    return this.endStartedChatOnDestroy();
+  }
+
+  private async endStartedChatOnDestroy() {
+    const { isConnected } = this.persistedHumanAgentState();
+    // Handlers see the event and can hand the desk a payload, but the chat
+    // ends whatever they set on it.
+    const event = isConnected ? await this.firePreEndChat(false) : undefined;
+    // No left or return message, as a restart's end shows neither.
+    await this.doEndChat(
+      false,
+      event?.preEndChatPayload,
+      false,
+      false,
+      USER_ENDED_CHAT
+    );
+  }
+
   /**
    * This function will end the chat with a service class and clear the service state for it.
    */

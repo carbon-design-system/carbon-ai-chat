@@ -14,12 +14,17 @@ import type { ChatClaim } from './registry';
 import type { ChatSDKConfig } from '../types/config/ChatSDKConfig';
 import { createSDKAppConfig } from './sdkAppConfig';
 import type { ChatSDKInstance } from '../types/instance/ChatSDKInstance';
+import type { PublicChatState } from '../types/instance/PublicChatState';
 
 /**
  * What `createChatSDK` hands back: the conversation, plus the verbs that end
  * its life. Callbacks receive the chat's instance, which has none of these
  * verbs, so code the chat calls into can't tear down the chat that called it.
  * Internal in 1.x (#1834).
+ *
+ * Once the handle is released, or its chat destroyed, its members no longer
+ * reach the chat. Those that return a promise reject, and the rest do
+ * nothing. Its `state` keeps its last value and notifies nobody.
  */
 interface ChatSDKHandle extends ChatSDKInstance {
   /**
@@ -27,14 +32,18 @@ interface ChatSDKHandle extends ChatSDKInstance {
    * a grace window, 3000 ms by default, and a create on its namespace inside
    * the window gets it back. When the window runs out, the chat shuts down:
    * requests and uploads are cancelled, and a human agent conversation is
-   * disconnected without ending it. Calling it again does nothing.
+   * disconnected without ending it. Saved state stays, and no persistence
+   * callback hears of it. Calling it again does nothing.
    */
   release(): void;
 
   /**
-   * Shuts the chat down now, even if another handle holds it, and nothing can
-   * get it back afterward. A create on the namespace waits for the shutdown.
-   * It doesn't yet end a human agent conversation or clear saved state.
+   * Ends the conversation for good, even if another handle holds it, and
+   * nothing can get it back afterward. Shutdown starts now. A live human
+   * agent conversation ends as `messaging.restartConversation()` ends one:
+   * handlers see the end-of-chat events but can't cancel them. Saved session
+   * state is cleared, or, when the host owns it, `onStateChange` gets the
+   * cleared value once. A create on the namespace waits for all of it.
    * Calling it again does nothing.
    */
   destroy(): void;
@@ -42,12 +51,69 @@ interface ChatSDKHandle extends ChatSDKInstance {
   /**
    * Replaces the config rather than merging into it, so a field left out
    * returns to its default. Copies what it's given, as `createChatSDK` does.
-   * Resolves once the change has been applied (#1833). Does nothing once
-   * this handle is released.
+   * Resolves once the change has been applied (#1833). Resolves doing nothing
+   * once this handle is released or has destroyed its chat.
    *
-   * Rejects, changing nothing, if the new namespace already has a chat.
+   * Rejects, changing nothing, if the new namespace already has a chat, or if
+   * another handle destroyed the chat.
    */
   updateConfig(next: ChatSDKConfig): Promise<void>;
+}
+
+/** Whether each member returns a promise, which a stopped handle rejects. */
+type Returns<T> = Record<keyof T, 'promise' | 'nothing'>;
+
+const MESSAGING_RETURNS: Returns<ChatSDKInstance['messaging']> = {
+  send: 'promise',
+  stop: 'promise',
+  failTurn: 'promise',
+  clearError: 'nothing',
+  addFile: 'promise',
+  removeFile: 'nothing',
+  upsertMessage: 'promise',
+  removeMessages: 'promise',
+  clearConversation: 'promise',
+  insertHistory: 'promise',
+  restartConversation: 'promise',
+};
+
+const SERVICE_DESK_RETURNS: Returns<ChatSDKInstance['serviceDesk']> = {
+  startConversation: 'promise',
+  stopScreenShare: 'promise',
+  endConversation: 'promise',
+  updateIsSuspended: 'promise',
+};
+
+const RELEASED_MESSAGE =
+  'This chat handle was released, so the call did nothing. Use the handle from the latest create on its namespace.';
+
+const DESTROYED_MESSAGE =
+  'This chat was destroyed, so the call did nothing. Start a new chat.';
+
+/**
+ * Copies `members` with each one checking `stopped` first. While it returns
+ * a message, a member that returns a promise rejects with it, and the rest
+ * return nothing.
+ */
+function guard<T extends object>(
+  members: T,
+  returns: Returns<T>,
+  stopped: () => string | undefined
+): T {
+  const guarded = {} as Record<keyof T, unknown>;
+  (Object.keys(returns) as (keyof T)[]).forEach((key) => {
+    const member = members[key] as (...args: unknown[]) => unknown;
+    guarded[key] = (...args: unknown[]) => {
+      const message = stopped();
+      if (message) {
+        return returns[key] === 'promise'
+          ? Promise.reject(new Error(message))
+          : undefined;
+      }
+      return member(...args);
+    };
+  });
+  return guarded as T;
 }
 
 /** The chat behind each handle, for the prebuilt chat and tests. */
@@ -65,11 +131,65 @@ function createHandle(
   serviceManager: ServiceManager,
   claim?: ChatClaim<ServiceManager>
 ): ChatSDKHandle {
+  const { publicStateService } = serviceManager;
   let released = false;
+  let destroyedHere = false;
+  /** The value `state` keeps once this handle lets go of its chat. */
+  let lastState: PublicChatState | undefined;
+  /** This handle's `state` subscriptions, dropped when it lets go. */
+  const unsubscribes = new Set<() => void>();
+
+  /** Why this handle no longer reaches its chat, or `undefined` while it does. */
+  const stopped = () => {
+    if (released) {
+      return RELEASED_MESSAGE;
+    }
+    return destroyedHere || serviceManager.isDestroyed
+      ? DESTROYED_MESSAGE
+      : undefined;
+  };
+
+  /** Keeps this handle's state as it is now, and stops its notifications. */
+  const letGo = () => {
+    lastState = publicStateService.get();
+    unsubscribes.forEach((unsubscribe) => unsubscribe());
+    unsubscribes.clear();
+  };
+
+  const track = (subscribe: () => () => void) => {
+    if (stopped()) {
+      return () => {};
+    }
+    const unsubscribe = subscribe();
+    unsubscribes.add(unsubscribe);
+    return () => {
+      unsubscribes.delete(unsubscribe);
+      unsubscribe();
+    };
+  };
+
+  const conversation = createConversationInstance(serviceManager, () => handle);
   const handle: ChatSDKHandle = {
-    ...createConversationInstance(serviceManager, () => handle),
+    messaging: guard(conversation.messaging, MESSAGING_RETURNS, stopped),
+    serviceDesk: guard(conversation.serviceDesk, SERVICE_DESK_RETURNS, stopped),
+    state: {
+      // A destroyed chat's store keeps its last value, so only a release
+      // needs its own copy.
+      get: () => lastState ?? publicStateService.get(),
+      subscribe: (listener) =>
+        track(() => publicStateService.subscribe(listener)),
+      select: (selector, listener, options) =>
+        track(() => publicStateService.select(selector, listener, options)),
+    },
+    on: (handlers) => (stopped() ? handle : conversation.on(handlers)),
+    off: (handlers) => (stopped() ? handle : conversation.off(handlers)),
+    once: (handlers) => (stopped() ? handle : conversation.once(handlers)),
     release: () => {
+      if (released || destroyedHere) {
+        return;
+      }
       released = true;
+      letGo();
       if (claim) {
         claim.release();
       } else {
@@ -77,13 +197,23 @@ function createHandle(
       }
     },
     destroy: () => {
-      void serviceManager.shutdown();
+      if (!stopped()) {
+        destroyedHere = true;
+      }
+      void serviceManager.destroy();
       claim?.end();
     },
     updateConfig: async (next) => {
-      // A chat that shut down takes no more config, and a handle that let go
-      // of its chat no longer configures it.
-      if (serviceManager.isShutdown || released) {
+      // A handle that let go of its chat no longer configures it.
+      if (released || destroyedHere) {
+        return;
+      }
+      const message = stopped();
+      if (message) {
+        throw new Error(message);
+      }
+      // A chat that shut down takes no more config.
+      if (serviceManager.isShutdown) {
         return;
       }
       // First, so a collision rejects before anything applies.
