@@ -163,11 +163,34 @@ class OutboundMessageCoordinator {
   }
 
   /**
-   * Marks a message as failed.
+   * Fails a request whose `pre:send` or `send` handler threw, before it reached `customSendMessage`. The request
+   * fails like a rejected send, but the conversation doesn't read `error`, and `send()` rejects with the handler's
+   * own error.
+   */
+  processHandlerError(pendingRequest: PendingMessageRequest, error: unknown) {
+    if (pendingRequest.isProcessed) {
+      return;
+    }
+
+    const resultText = getSendErrorText(error, false);
+    if (pendingRequest.requestOptions.silent) {
+      this.addErrorMessage();
+    }
+    this.serviceManager.actions.errorOccurred({
+      errorType: OnErrorType.MESSAGE_COMMUNICATION,
+      message: 'An error occurred sending a message',
+      otherData: resultText,
+    });
+    this.rejectFinalErrorOnMessage(pendingRequest, resultText, error);
+  }
+
+  /**
+   * Marks a message as failed and rejects its send with `rejection`, an `Error` with the result text by default.
    */
   rejectFinalErrorOnMessage(
     pendingRequest: PendingMessageRequest,
-    resultText = 'An undefined error occurred trying to send your message.'
+    resultText = 'An undefined error occurred trying to send your message.',
+    rejection: unknown = new Error(resultText)
   ) {
     const { sendMessagePromise } = pendingRequest;
 
@@ -188,7 +211,7 @@ class OutboundMessageCoordinator {
 
     // Reject the promise that lets the original caller who sent the message know that the message failed to be sent.
     this.finishStreamingResponse(pendingRequest);
-    sendMessagePromise.doReject(new Error(resultText));
+    sendMessagePromise.doReject(rejection);
     pendingRequest.isProcessed = true;
     this.serviceManager.conversationLifecycleService.requestFinished(
       pendingRequest.message.id,

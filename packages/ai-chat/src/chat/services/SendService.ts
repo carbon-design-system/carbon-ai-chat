@@ -41,8 +41,8 @@ class SendService {
    * Sends the given message to the assistant. Fires `pre:send` then `send` on
    * the event bus before delegating to `customSendMessage`. Resolves when
    * `customSendMessage` completes or when the turn is stopped; rejects when
-   * `customSendMessage` throws, when the send path fails terminally, or when a
-   * file upload is still in progress.
+   * `customSendMessage` throws, when a `pre:send` or `send` handler throws, when
+   * the send path fails terminally, or when a file upload is still in progress.
    *
    * @param message The message to send.
    * @param source The source of the message.
@@ -115,8 +115,9 @@ class SendService {
   /**
    * Inner send: fires `pre:send` and `send`, then calls `customSendMessage` via
    * `MessageService`. Resolves when `customSendMessage` completes or the turn
-   * is stopped; rejects when `customSendMessage` throws or the send path fails
-   * terminally. Retries are handled upstream by `customSendMessage`.
+   * is stopped; rejects when `customSendMessage` or a `pre:send` or `send`
+   * handler throws, or the send path fails terminally. Retries are handled
+   * upstream by `customSendMessage`.
    *
    * @param message The message to send.
    * @param source The source of the message.
