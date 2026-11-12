@@ -40,7 +40,7 @@ Load only what you need:
   - `events/` — typed pub/sub for the public event API. Event names and payloads are part of the public contract.
   - `schema/` — runtime message/config schema. Keep in sync with types in [src/types/](src/types/).
   - `utils/` — helpers that conversation code uses. View code may import them too.
-  - `languages/` — `intl-messageformat` string bundles, one locale file. [LanguagePack.ts](src/types/config/LanguagePack.ts) declares the public `LanguagePack` type over it, so adding a key widens public API and renaming one breaks it. Hosts translate through `PublicConfig.strings`; word new strings per [ui-strings.md](../../.bob/skills/caic-copy-writer/references/ui-strings.md).
+- [src/languages/](src/languages/) — `intl-messageformat` string bundles, one locale file. [LanguagePack.ts](src/types/config/LanguagePack.ts) declares the public `LanguagePack` type over it, so adding a key widens public API and renaming one breaks it. Hosts translate through `PublicConfig.strings`; word new strings per [ui-strings.md](../../.bob/skills/caic-copy-writer/references/ui-strings.md).
 - [src/chat/](src/chat/) — the prebuilt interface. Do most feature work here.
   - `state/` — the view partition, under `view` in the chat's one store: panels, layout, loading indicators, announcements, the unread agent count, and the view half of saved state. Conversation code can't see it. Internal; never exported.
   - `services/` — view-owned classes with explicit cleanup: `ChatViewState`, extension hosts, the announcer, the theme watcher, the messaging presentation adapter, and the human-agent view callbacks.
@@ -89,4 +89,4 @@ See [definition-of-done.md](../../references/definition-of-done.md) for the gate
 ## Authoring rules
 
 - **Public API changes**: anything exported from `aiChatEntry.tsx`, `serverEntry.ts`, or `types/` is semver-visible. Coordinate with a `feat`/`fix!`/`BREAKING CHANGE` footer. JSDoc/TypeDoc rules: [src/types/AGENTS.md](src/types/AGENTS.md).
-- **i18n**: no user-visible strings in code. Route through `languages/`.
+- **i18n**: no user-visible strings in code. Route through [src/languages/](src/languages/).
