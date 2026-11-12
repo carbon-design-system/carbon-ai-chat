@@ -15,6 +15,8 @@
 
 import { act } from '@testing-library/react';
 import * as objectUtils from '../../../src/sdk/utils/lang/objectUtils';
+import { PublicMessagesProjection } from '../../../src/sdk/utils/publicMessages';
+import type { LocalMessageItem } from '../../../src/types/messaging/LocalMessageItem';
 import type { HistoryItem } from '../../../src/types/messaging/History';
 import {
   type GenericItem,
@@ -177,5 +179,43 @@ describe('streaming copies', () => {
     expect(entryOf(after, 'b')).toBe(entryOf(before, 'b'));
     expect(entryOf(after, 'a').item).toBe(itemsAfter.get('a'));
     expect(entryOf(after, 'c').item).toBe(itemsAfter.get('c'));
+  });
+  it('keeps the prototype of a response stored as a class instance while it streams', () => {
+    // The streaming copy used to spread the message into a plain object, which dropped a getter
+    // on its prototype. The copy of a message that isn't streaming always kept it.
+    class StoredResponse {
+      output = { generic: [] as GenericItem[] };
+
+      get id() {
+        return RESPONSE_ID;
+      }
+    }
+    const message = new StoredResponse() as unknown as MessageResponse;
+    const local: LocalMessageItem = {
+      fullMessageID: RESPONSE_ID,
+      item: {
+        response_type: MessageResponseTypes.TEXT,
+        text: '',
+        streaming_metadata: { id: 'a' },
+      },
+      ui_state: {
+        id: 'local-a',
+        streamingState: { chunks: [{ text: 'Streamed' }], isDone: false },
+      },
+    };
+
+    const [copy] = new PublicMessagesProjection().project(
+      [RESPONSE_ID],
+      { [RESPONSE_ID]: message },
+      { [local.ui_state.id]: local },
+      [local.ui_state.id]
+    );
+
+    expect(copy.id).toBe(RESPONSE_ID);
+    expect(copy).toBeInstanceOf(StoredResponse);
+    expect((copy as MessageResponse).output.generic[0]).toMatchObject({
+      text: 'Streamed',
+    });
+    expect(Object.isFrozen(copy)).toBe(true);
   });
 });
