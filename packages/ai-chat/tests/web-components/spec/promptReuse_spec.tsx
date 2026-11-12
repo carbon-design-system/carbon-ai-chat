@@ -26,7 +26,7 @@ import { HumanAgentCallbacks } from '../../../src/chat/services/humanAgentCallba
 import { chatStore } from '../../../src/chat/services/attachChatView';
 import { openPrompt } from '../../../src/chat/state';
 import actions from '../../../src/sdk/store/actions';
-import enLanguagePack from '../../../src/sdk/languages/en.json';
+import enLanguagePack from '../../../src/languages/en.json';
 import type { PublicConfig } from '../../../src/types/config/PublicConfig';
 import type { ServiceDesk } from '../../../src/types/config/ServiceDeskConfig';
 import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
