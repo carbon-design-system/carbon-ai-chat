@@ -23,6 +23,9 @@ import {
   contractChat,
   contractSetup,
   fakeBackend,
+  getByTestId,
+  isShownWithin,
+  pause,
   slotted,
   textResponse,
 } from '../../helpers';
@@ -44,34 +47,36 @@ function flatChildren(node: Node): Node[] {
   return Array.from(node.childNodes);
 }
 
-/** The public test IDs used as landmarks, with their subtree closed for regions. */
-const POINTS = [
+/** The point landmarks a layout reads host content against. */
+const LANDMARKS = [
   PageObjectId.CLOSE_CHAT,
   PageObjectId.INPUT,
   PageObjectId.INPUT_SEND,
 ];
-const REGIONS = [
-  PageObjectId.CHAT_HEADER,
-  PageObjectId.MAIN_PANEL,
-  PageObjectId.HOME_SCREEN_PANEL,
-];
+
+/** The input's two landmarks, for a layout of the input area only. */
+const INPUT_LANDMARKS = [PageObjectId.INPUT, PageObjectId.INPUT_SEND];
+
+/** The header's landmark, for a layout of the header area only. */
+const HEADER_LANDMARKS = [PageObjectId.CLOSE_CHAT];
 
 /**
- * The order a user meets the tracked nodes in, walking the flat tree: each
- * landmark test ID, `/<id>` where a region ends, and the label of each tracked
- * node the host wrote.
+ * The order a user meets the tracked nodes in, walking the flat tree: the
+ * label of each tracked node the host wrote that shows, and each of the given
+ * landmark test IDs that shows. It says nothing about which element wraps
+ * which; a test that names a region checks it with `isShownWithin`.
  */
-function layout(tracked: Map<Node, string>): string[] {
+function layout(
+  tracked: Map<Node, string>,
+  landmarks: PageObjectId[] = LANDMARKS
+): string[] {
   const labels = new Map(tracked);
-  for (const id of [...POINTS, ...REGIONS]) {
+  for (const id of landmarks) {
     const element = byTestId(id);
     if (element) {
       labels.set(element, id);
     }
   }
-  const regions = new Set(
-    REGIONS.map((id) => byTestId(id)).filter(Boolean) as Node[]
-  );
   const seen: string[] = [];
   const visit = (node: Node) => {
     const label = labels.get(node);
@@ -79,16 +84,13 @@ function layout(tracked: Map<Node, string>): string[] {
       seen.push(label);
     }
     flatChildren(node).forEach(visit);
-    if (label && regions.has(node)) {
-      seen.push(`/${label}`);
-    }
   };
   visit(document.body);
   return seen;
 }
 
 /** The first text node in the flat tree that contains this text. */
-function shownText(text: string): Node | null {
+function textNode(text: string): Node | null {
   let found: Node | null = null;
   const visit = (node: Node) => {
     if (found) {
@@ -102,6 +104,15 @@ function shownText(text: string): Node | null {
   };
   visit(document.body);
   return found;
+}
+
+/** The node the host wrote under this label. */
+function trackedNode(tracked: Map<Node, string>, label: string): Node {
+  const entry = [...tracked].find(([, each]) => each === label);
+  if (!entry) {
+    throw new Error(`nothing written under "${label}"`);
+  }
+  return entry[0];
 }
 
 /**
@@ -160,10 +171,12 @@ async function removeLater(tracked: Map<Node, string>): Promise<void> {
 
 const N = WriteableElementName;
 
-/** The elements a default conversation shows, before the AI label's popover content. */
+/**
+ * The elements a default conversation shows. The AI label's elements are left
+ * out: they show only because the label draws its closed popover's slots, so
+ * their own block checks only whether they show.
+ */
 const CONVERSATION = [
-  N.AI_TOOLTIP_AFTER_DESCRIPTION_ELEMENT,
-  N.EXPLAINABILITY_POPOVER_ACTIONS,
   N.HEADER_FIXED_ACTIONS_ELEMENT,
   N.HEADER_BOTTOM_ELEMENT,
   N.BEFORE_INPUT_ELEMENT,
@@ -172,19 +185,14 @@ const CONVERSATION = [
   N.FOOTER_ELEMENT,
 ];
 
-/** Where `CONVERSATION` shows on `main`, with its landmarks. */
+/** Where `CONVERSATION` shows on `main`, around its landmarks. */
 const CONVERSATION_LAYOUT = [
-  PageObjectId.CHAT_HEADER,
-  N.AI_TOOLTIP_AFTER_DESCRIPTION_ELEMENT,
-  N.EXPLAINABILITY_POPOVER_ACTIONS,
   PageObjectId.CLOSE_CHAT,
-  // The JSDoc puts the fixed actions "before close/minimize buttons"; on
-  // `main` they render after the close button.
+  // `main` differs from its JSDoc (MAIN-NOTES M42): the JSDoc puts the fixed
+  // actions "before close/minimize buttons"; they render after the close
+  // button.
   N.HEADER_FIXED_ACTIONS_ELEMENT,
-  `/${PageObjectId.CHAT_HEADER}`,
   N.HEADER_BOTTOM_ELEMENT,
-  PageObjectId.MAIN_PANEL,
-  `/${PageObjectId.MAIN_PANEL}`,
   N.BEFORE_INPUT_ELEMENT,
   PageObjectId.INPUT,
   N.PROMPT_LINE_SEND_BUTTON_START,
@@ -257,8 +265,6 @@ describe('instance.writeableElements', () => {
   });
 });
 
-// @covers writeable-element.aiTooltipAfterDescriptionElement
-// @covers writeable-element.explainabilityPopoverActions
 // @covers writeable-element.headerFixedActionsElement
 // @covers writeable-element.headerBottomElement
 // @covers writeable-element.beforeInputElement
@@ -268,7 +274,7 @@ describe('instance.writeableElements', () => {
 describe('writeable elements in a conversation', () => {
   contractSetup();
 
-  it('shows each element in its region, in order', async () => {
+  it('shows each element in order around the close button, the input, and the send button', async () => {
     const { tracked } = await mountWith(CONVERSATION);
     expect(layout(tracked)).toEqual(CONVERSATION_LAYOUT);
   });
@@ -281,11 +287,7 @@ describe('writeable elements in a conversation', () => {
       N.WELCOME_NODE_BEFORE_ELEMENT,
       N.PROMPT_LINE_ACTIONS_END,
     ]);
-    expect(layout(tracked)).toEqual(
-      CONVERSATION_LAYOUT.filter(
-        (label) => !(CONVERSATION as string[]).includes(label)
-      )
-    );
+    expect(layout(tracked)).toEqual(LANDMARKS);
   });
 });
 
@@ -302,19 +304,27 @@ describe('AI label popover elements', () => {
     N.EXPLAINABILITY_POPOVER_ACTIONS,
   ];
 
-  it('shows popover content in the header and hides aiTooltipAfterDescriptionElement', async () => {
-    const { tracked } = await mountWith(LABEL);
-    expect(layout(tracked)).toEqual([
-      PageObjectId.CHAT_HEADER,
-      N.EXPLAINABILITY_POPOVER_CONTENT,
+  it('shows aiTooltipAfterDescriptionElement and the popover actions while no popover content is written', async () => {
+    const { tracked } = await mountWith([
+      N.AI_TOOLTIP_AFTER_DESCRIPTION_ELEMENT,
       N.EXPLAINABILITY_POPOVER_ACTIONS,
-      PageObjectId.CLOSE_CHAT,
-      `/${PageObjectId.CHAT_HEADER}`,
-      PageObjectId.MAIN_PANEL,
-      `/${PageObjectId.MAIN_PANEL}`,
-      PageObjectId.INPUT,
-      PageObjectId.INPUT_SEND,
     ]);
+    expect(layout(tracked, []).sort()).toEqual(
+      [
+        N.AI_TOOLTIP_AFTER_DESCRIPTION_ELEMENT,
+        N.EXPLAINABILITY_POPOVER_ACTIONS,
+      ].sort()
+    );
+  });
+
+  it('shows popover content and actions, and hides aiTooltipAfterDescriptionElement, once content is written', async () => {
+    const { tracked } = await mountWith(LABEL);
+    expect(layout(tracked, []).sort()).toEqual(
+      [
+        N.EXPLAINABILITY_POPOVER_CONTENT,
+        N.EXPLAINABILITY_POPOVER_ACTIONS,
+      ].sort()
+    );
   });
 
   it('hides and restores aiTooltipAfterDescriptionElement as popover content is written and removed after render', async () => {
@@ -341,16 +351,7 @@ describe('AI label popover elements', () => {
       [...LABEL, N.HEADER_FIXED_ACTIONS_ELEMENT],
       { header: { showAiLabel: false } }
     );
-    expect(layout(tracked).filter((label) => !label.includes('panel'))).toEqual(
-      [
-        PageObjectId.CHAT_HEADER,
-        PageObjectId.CLOSE_CHAT,
-        N.HEADER_FIXED_ACTIONS_ELEMENT,
-        `/${PageObjectId.CHAT_HEADER}`,
-        PageObjectId.INPUT,
-        PageObjectId.INPUT_SEND,
-      ]
-    );
+    expect(layout(tracked, [])).toEqual([N.HEADER_FIXED_ACTIONS_ELEMENT]);
   });
 });
 
@@ -386,19 +387,21 @@ describe('welcomeNodeBeforeElement', () => {
         customLoadHistory: async () => welcomeHistory('Hello from history'),
       },
     });
-    await waitFor(() => expect(shownText('Hello from history')).not.toBeNull());
-    tracked.set(shownText('Hello from history'), 'welcome reply');
-    expect(
-      layout(tracked).filter((label) => !label.startsWith('input'))
-    ).toEqual([
-      PageObjectId.CHAT_HEADER,
+    await waitFor(() => expect(textNode('Hello from history')).not.toBeNull());
+    tracked.set(textNode('Hello from history'), 'welcome reply');
+    expect(layout(tracked)).toEqual([
       PageObjectId.CLOSE_CHAT,
-      `/${PageObjectId.CHAT_HEADER}`,
-      PageObjectId.MAIN_PANEL,
       N.WELCOME_NODE_BEFORE_ELEMENT,
       'welcome reply',
-      `/${PageObjectId.MAIN_PANEL}`,
+      PageObjectId.INPUT,
+      PageObjectId.INPUT_SEND,
     ]);
+    expect(
+      isShownWithin(
+        trackedNode(tracked, N.WELCOME_NODE_BEFORE_ELEMENT),
+        getByTestId(PageObjectId.MAIN_PANEL)
+      )
+    ).toBe(true);
   });
 
   it('does not show above a reply the host adds to the live welcome request', async () => {
@@ -416,7 +419,7 @@ describe('welcomeNodeBeforeElement', () => {
       )
     );
     await act(async () => sent.resolve());
-    await waitFor(() => expect(shownText('Hello live')).not.toBeNull());
+    await waitFor(() => expect(textNode('Hello live')).not.toBeNull());
     // The JSDoc says "directly above the welcome node"; on `main` a live reply
     // to the welcome request isn't one (INTENDED.md 08b3: only
     // `isLatestWelcomeNode` or history marks it).
@@ -450,24 +453,24 @@ describe('home-screen elements', () => {
 
   it('show on the home screen in place of headerBottomElement and beforeInputElement', async () => {
     const { tracked } = await mountWith(HOME, HOME_SCREEN);
-    tracked.set(shownText('Home greeting'), 'greeting');
-    tracked.set(shownText('Starter one'), 'starter');
+    tracked.set(textNode('Home greeting'), 'greeting');
+    tracked.set(textNode('Starter one'), 'starter');
     expect(layout(tracked)).toEqual([
-      PageObjectId.CHAT_HEADER,
       PageObjectId.CLOSE_CHAT,
-      `/${PageObjectId.CHAT_HEADER}`,
       N.HOME_SCREEN_HEADER_BOTTOM_ELEMENT,
-      PageObjectId.MAIN_PANEL,
-      PageObjectId.HOME_SCREEN_PANEL,
       'greeting',
       'starter',
       N.HOME_SCREEN_AFTER_STARTERS_ELEMENT,
-      `/${PageObjectId.HOME_SCREEN_PANEL}`,
-      `/${PageObjectId.MAIN_PANEL}`,
       N.HOME_SCREEN_BEFORE_INPUT_ELEMENT,
       PageObjectId.INPUT,
       PageObjectId.INPUT_SEND,
     ]);
+    expect(
+      isShownWithin(
+        trackedNode(tracked, N.HOME_SCREEN_AFTER_STARTERS_ELEMENT),
+        getByTestId(PageObjectId.HOME_SCREEN_PANEL)
+      )
+    ).toBe(true);
   });
 
   it('give way to the conversation elements once a message is sent', async () => {
@@ -480,12 +483,8 @@ describe('home-screen elements', () => {
     await act(() => instance.send('hello'));
     await waitFor(() =>
       expect(layout(tracked)).toEqual([
-        PageObjectId.CHAT_HEADER,
         PageObjectId.CLOSE_CHAT,
-        `/${PageObjectId.CHAT_HEADER}`,
         N.HEADER_BOTTOM_ELEMENT,
-        PageObjectId.MAIN_PANEL,
-        `/${PageObjectId.MAIN_PANEL}`,
         N.BEFORE_INPUT_ELEMENT,
         PageObjectId.INPUT,
         PageObjectId.INPUT_SEND,
@@ -504,17 +503,12 @@ describe('promptLineActionsEnd', () => {
       [N.PROMPT_LINE_ACTIONS_END, N.PROMPT_LINE_SEND_BUTTON_START],
       { input: { expanded: true } }
     );
-    expect(layout(tracked).filter((label) => !label.includes('panel'))).toEqual(
-      [
-        PageObjectId.CHAT_HEADER,
-        PageObjectId.CLOSE_CHAT,
-        `/${PageObjectId.CHAT_HEADER}`,
-        PageObjectId.INPUT,
-        N.PROMPT_LINE_ACTIONS_END,
-        N.PROMPT_LINE_SEND_BUTTON_START,
-        PageObjectId.INPUT_SEND,
-      ]
-    );
+    expect(layout(tracked, INPUT_LANDMARKS)).toEqual([
+      PageObjectId.INPUT,
+      N.PROMPT_LINE_ACTIONS_END,
+      N.PROMPT_LINE_SEND_BUTTON_START,
+      PageObjectId.INPUT_SEND,
+    ]);
   });
 
   it('does not show in the default compact input', async () => {
@@ -531,11 +525,9 @@ const AROUND_INPUT = [
   N.AFTER_INPUT_ELEMENT,
 ];
 
-/** The labels from the main panel on, the input area. */
-const inputArea = (tracked: Map<Node, string>) => {
-  const seen = layout(tracked);
-  return seen.slice(seen.indexOf(`/${PageObjectId.MAIN_PANEL}`) + 1);
-};
+/** The input area's layout: host content around the input's landmarks. */
+const inputArea = (tracked: Map<Node, string>) =>
+  layout(tracked, INPUT_LANDMARKS);
 
 const BUILT_IN_INPUT = [
   N.BEFORE_INPUT_ELEMENT,
@@ -593,9 +585,7 @@ describe('customPromptLine', () => {
       );
     });
     // A short wait to show the input isn't swapped out.
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 50));
-    });
+    await pause();
     expect(inputArea(tracked)).toEqual(BUILT_IN_INPUT);
   });
 
@@ -632,16 +622,12 @@ describe('customPromptLine', () => {
   });
 });
 
-/** The labels before the main panel: the header area. */
-const headerArea = (tracked: Map<Node, string>) => {
-  const seen = layout(tracked);
-  const end = seen.findIndex(
-    (label) =>
-      label === PageObjectId.MAIN_PANEL ||
-      label === N.HOME_SCREEN_HEADER_BOTTOM_ELEMENT
-  );
-  return seen.slice(0, seen[end] === PageObjectId.MAIN_PANEL ? end : end + 1);
-};
+/**
+ * The header area's layout: host content around the close button. The tests
+ * that use it write only header content.
+ */
+const headerArea = (tracked: Map<Node, string>) =>
+  layout(tracked, HEADER_LANDMARKS);
 
 const HEADER_PARTS = [
   N.CUSTOM_HEADER,
@@ -650,10 +636,8 @@ const HEADER_PARTS = [
 ];
 
 const DEFAULT_HEADER = [
-  PageObjectId.CHAT_HEADER,
   PageObjectId.CLOSE_CHAT,
   N.HEADER_FIXED_ACTIONS_ELEMENT,
-  `/${PageObjectId.CHAT_HEADER}`,
   N.HEADER_BOTTOM_ELEMENT,
 ];
 

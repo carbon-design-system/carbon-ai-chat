@@ -15,13 +15,18 @@ import {
   ViewType,
 } from '../../../../src/aiChatEntry';
 import {
+  byRole,
   byTestId,
+  changeView,
+  click,
   contractChat,
   contractSetup,
   fakeBackend,
-  instanceSender,
-  startSend,
   finishSend,
+  instanceSender,
+  isShownWithin,
+  pause,
+  startSend,
 } from '../../helpers';
 
 /** The focused element, looking through open shadow roots. */
@@ -33,18 +38,6 @@ function deepActiveElement(): Element | null {
   return active;
 }
 
-/** Whether `node` is `ancestor` or inside it, crossing shadow roots. */
-function isWithin(ancestor: Node, node: Node | null): boolean {
-  let current: Node | null = node;
-  while (current) {
-    if (current === ancestor) {
-      return true;
-    }
-    current = current.parentNode ?? (current as ShadowRoot).host ?? null;
-  }
-  return false;
-}
-
 /** A focusable element of the host page, outside the chat. */
 function focusHostButton(): HTMLButtonElement {
   const button = document.createElement('button');
@@ -52,15 +45,6 @@ function focusHostButton(): HTMLButtonElement {
   button.focus();
   expect(deepActiveElement()).toBe(button);
   return button;
-}
-
-async function changeView(
-  instance: ChatInstance,
-  view: ViewType
-): Promise<void> {
-  await act(async () => {
-    await instance.changeView(view);
-  });
 }
 
 // @covers instance.requestFocus
@@ -83,25 +67,22 @@ describe('requestFocus', () => {
       instance.requestFocus();
     });
     await waitFor(() =>
-      expect(isWithin(byTestId(PageObjectId.INPUT), deepActiveElement())).toBe(
-        true
-      )
+      expect(
+        isShownWithin(deepActiveElement(), byTestId(PageObjectId.INPUT))
+      ).toBe(true)
     );
   });
 
-  it('returns undefined, even when it moves focus', async () => {
+  it('returns undefined while the main window is open', async () => {
     const instance = await mountOpen();
     focusHostButton();
     let result: boolean | void;
     await act(async () => {
       result = instance.requestFocus();
     });
-    // On `main` the JSDoc says it may return true or false (its example shows
-    // true); it always returns undefined.
+    // `main` differs from its JSDoc, which says it may return true or false
+    // and shows true in its example (MAIN-NOTES M28).
     expect(result).toBeUndefined();
-    expect(isWithin(byTestId(PageObjectId.INPUT), deepActiveElement())).toBe(
-      true
-    );
   });
 
   it('leaves focus where it is while the main window is closed', async () => {
@@ -112,14 +93,20 @@ describe('requestFocus', () => {
     await act(async () => {
       instance.requestFocus();
     });
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 50));
-    });
+    await pause();
     expect(deepActiveElement()).toBe(button);
   });
 });
 
+// Copy the tests set through `strings`, so they find controls by an accessible
+// name they own rather than by the chat's default text.
+const STRINGS = {
+  homeScreen_returnToHome: 'Contract back to home',
+  homeScreen_returnToAssistant: 'Contract back to conversation',
+};
+
 // @covers state.homeScreenState.showBackToAssistant
+// @covers state.homeScreenState.isHomeScreenOpen config.homescreen.isOn
 describe('home screen back-to-assistant flag', () => {
   contractSetup();
 
@@ -127,6 +114,7 @@ describe('home screen back-to-assistant flag', () => {
     const backend = fakeBackend();
     const { instance } = await contractChat({
       homescreen: { isOn: true, greeting: 'Hello' },
+      strings: STRINGS,
       messaging: {
         skipWelcome: true,
         customSendMessage: backend.customSendMessage,
@@ -154,6 +142,26 @@ describe('home screen back-to-assistant flag', () => {
       isHomeScreenOpen: false,
       showBackToAssistant: false,
     });
+    expect(byTestId(PageObjectId.HOME_SCREEN_PANEL)).toBeNull();
+  });
+
+  it('turns true when the user goes back to the home screen from a conversation, and the home screen offers the way back', async () => {
+    const { instance, backend } = await mountWithHomeScreen();
+    await changeView(instance, ViewType.MAIN_WINDOW);
+    await finishSend(await startSend(instanceSender(instance, backend), 'hi'));
+    await click(byRole('button', STRINGS.homeScreen_returnToHome));
+    await waitFor(() =>
+      expect(instance.getState().homeScreenState).toEqual({
+        isHomeScreenOpen: true,
+        showBackToAssistant: true,
+      })
+    );
+    expect(byTestId(PageObjectId.HOME_SCREEN_PANEL)).not.toBeNull();
+
+    await click(byRole('button', STRINGS.homeScreen_returnToAssistant));
+    await waitFor(() =>
+      expect(instance.getState().homeScreenState.isHomeScreenOpen).toBe(false)
+    );
     expect(byTestId(PageObjectId.HOME_SCREEN_PANEL)).toBeNull();
   });
 });

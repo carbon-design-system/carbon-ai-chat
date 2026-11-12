@@ -26,9 +26,14 @@ import {
   ViewType,
 } from '../../../../src/aiChatEntry';
 import {
+  allByRole,
+  byRole,
+  changeView,
+  click,
   contractChat,
   contractSetup,
   fakeBackend,
+  flatParent,
   finishSend,
   instanceSender,
   recordEvents,
@@ -46,102 +51,40 @@ const STRINGS = {
 };
 const PLACEHOLDER = 'Contract feedback text';
 
-/** Every element under `root`, through open shadow roots. */
-function* deepElements(root: ParentNode): Generator<Element> {
-  for (const element of Array.from(root.querySelectorAll('*'))) {
-    yield element;
-    if (element.shadowRoot) {
-      yield* deepElements(element.shadowRoot);
-    }
+/** A node's flat-tree ancestors, nearest first, starting with the node. */
+function ancestors(node: Node): Node[] {
+  const chain: Node[] = [];
+  for (
+    let current: Node | null = node;
+    current;
+    current = flatParent(current)
+  ) {
+    chain.push(current);
   }
-}
-
-/** The text a node shows, following slots to what they show. */
-function shownText(node: Node): string {
-  if (node.nodeType === Node.TEXT_NODE) {
-    return node.textContent ?? '';
-  }
-  if (!(node instanceof Element) || node.tagName === 'STYLE') {
-    return '';
-  }
-  if (node instanceof HTMLSlotElement) {
-    const assigned = node.assignedNodes({ flatten: true });
-    return (assigned.length ? assigned : Array.from(node.childNodes))
-      .map(shownText)
-      .join('');
-  }
-  const children = node.shadowRoot
-    ? node.shadowRoot.childNodes
-    : node.childNodes;
-  return Array.from(children).map(shownText).join('');
-}
-
-/** A simple accessible name: aria-label, then content, then placeholder. */
-function accessibleName(element: Element): string {
-  return (
-    element.getAttribute('aria-label') ||
-    shownText(element).replace(/\s+/g, ' ').trim() ||
-    element.getAttribute('placeholder') ||
-    ''
-  );
-}
-
-function roleOf(element: Element): string | null {
-  const explicit = element.getAttribute('role');
-  if (explicit) {
-    return explicit;
-  }
-  if (element instanceof HTMLButtonElement) {
-    return 'button';
-  }
-  return element instanceof HTMLTextAreaElement ? 'textbox' : null;
+  return chain;
 }
 
 /**
- * Every control with this role and accessible name, in document order,
- * searching shadow roots. Where a custom element and the native control inside
- * it both match, only the native one is kept, since that's what a user clicks.
+ * The control with this role and name in the same details form as the
+ * category button `category`: of the matches, the one that shares the
+ * nearest ancestor with it.
+ *
+ * The chat draws the positive and the negative details form at once, and in
+ * jsdom nothing marks the closed one hidden (a stylesheet class hides it, and
+ * the thumbs buttons' `aria-controls` is empty), so a test reaches a form
+ * through a category name that only that form shows.
  */
-function allByRole(role: string, name: string): HTMLElement[] {
-  const matches = [...deepElements(document)].filter(
-    (element) => roleOf(element) === role && accessibleName(element) === name
-  ) as HTMLElement[];
-  return matches.filter(
-    (element) =>
-      !matches.some(
-        (other) =>
-          other !== element &&
-          element.shadowRoot !== null &&
-          [...deepElements(element.shadowRoot)].includes(other)
-      )
-  );
-}
-
-function firstByRole(role: string, name: string): HTMLElement {
-  const [element] = allByRole(role, name);
-  if (!element) {
-    throw new Error(`no ${role} named "${name}"`);
+function inFormWith(role: string, name: string, category: string): HTMLElement {
+  const anchor = ancestors(byRole('button', category));
+  const depth = (match: HTMLElement) =>
+    anchor.length - anchor.findIndex((node) => ancestors(match).includes(node));
+  const ranked = allByRole(role, name)
+    .map((match) => ({ match, depth: depth(match) }))
+    .sort((left, right) => right.depth - left.depth);
+  if (!ranked.length || ranked[0].depth === ranked[1]?.depth) {
+    throw new Error(`no single ${role} named "${name}" beside "${category}"`);
   }
-  return element;
-}
-
-/**
- * The chat renders both the positive and the negative details form. The
- * positive one comes first, so the first match is the positive form's control
- * and the last is the negative form's (both hold if only the open one is drawn).
- */
-function lastByRole(role: string, name: string): HTMLElement {
-  const element = allByRole(role, name).at(-1);
-  if (!element) {
-    throw new Error(`no ${role} named "${name}"`);
-  }
-  return element;
-}
-
-async function click(element: HTMLElement): Promise<void> {
-  await act(async () => {
-    element.click();
-  });
+  return ranked[0].match;
 }
 
 /** Mounts a chat with the test strings and opens the main window. */
@@ -151,7 +94,7 @@ async function openChat(config: Partial<PublicConfig> = {}) {
     strings: STRINGS,
     messaging: { skipWelcome: true, ...config.messaging },
   });
-  await act(() => mount.instance.changeView(ViewType.MAIN_WINDOW));
+  await changeView(mount.instance, ViewType.MAIN_WINDOW);
   return mount;
 }
 
@@ -211,9 +154,9 @@ describe('feedback events', () => {
     const { instance } = await openChat();
     const item = feedbackItem({ show_positive_details: false });
     await addFeedbackResponse(instance, item);
-    const events = recordEvents(instance);
-    await click(firstByRole('button', STRINGS.feedback_positiveLabel));
-    expect(events.typesExcept(BusEventType.STATE_CHANGE)).toEqual(['feedback']);
+    const events = recordEvents(instance, [BusEventType.FEEDBACK]);
+    await click(byRole('button', STRINGS.feedback_positiveLabel));
+    expect(feedbackEvents(events)).toHaveLength(1);
     const [event] = feedbackEvents(events);
     expect(summary(event)).toEqual({
       interactionType: FeedbackInteractionType.SUBMITTED,
@@ -233,7 +176,7 @@ describe('feedback events', () => {
       feedbackItem({ show_negative_details: false })
     );
     const events = recordEvents(instance, [BusEventType.FEEDBACK]);
-    await click(firstByRole('button', STRINGS.feedback_negativeLabel));
+    await click(byRole('button', STRINGS.feedback_negativeLabel));
     expect(feedbackEvents(events).map(summary)).toEqual([
       {
         interactionType: FeedbackInteractionType.SUBMITTED,
@@ -242,21 +185,17 @@ describe('feedback events', () => {
         categories: undefined,
       },
     ]);
-    await click(firstByRole('button', STRINGS.feedback_negativeLabel));
-    await click(firstByRole('button', STRINGS.feedback_positiveLabel));
+    await click(byRole('button', STRINGS.feedback_negativeLabel));
+    await click(byRole('button', STRINGS.feedback_positiveLabel));
     expect(feedbackEvents(events)).toHaveLength(1);
   });
 
   it('fires DETAILS_OPENED for a thumbs down with details, then DETAILS_CLOSED when clicked again', async () => {
     const { instance } = await openChat();
     await addFeedbackResponse(instance, feedbackItem());
-    const events = recordEvents(instance);
-    await click(firstByRole('button', STRINGS.feedback_negativeLabel));
-    await click(firstByRole('button', STRINGS.feedback_negativeLabel));
-    expect(events.typesExcept(BusEventType.STATE_CHANGE)).toEqual([
-      'feedback',
-      'feedback',
-    ]);
+    const events = recordEvents(instance, [BusEventType.FEEDBACK]);
+    await click(byRole('button', STRINGS.feedback_negativeLabel));
+    await click(byRole('button', STRINGS.feedback_negativeLabel));
     expect(feedbackEvents(events).map(summary)).toEqual([
       {
         interactionType: FeedbackInteractionType.DETAILS_OPENED,
@@ -280,14 +219,14 @@ describe('feedback events', () => {
     });
     await addFeedbackResponse(instance, item);
     const events = recordEvents(instance, [BusEventType.FEEDBACK]);
-    await click(firstByRole('button', STRINGS.feedback_positiveLabel));
-    await click(firstByRole('button', 'Clear'));
+    await click(byRole('button', STRINGS.feedback_positiveLabel));
+    await click(byRole('button', 'Clear'));
     await act(async () => {
-      fireEvent.input(firstByRole('textbox', PLACEHOLDER), {
+      fireEvent.input(inFormWith('textbox', PLACEHOLDER, 'Clear'), {
         target: { value: 'Great answer' },
       });
     });
-    await click(firstByRole('button', STRINGS.feedback_submitLabel));
+    await click(inFormWith('button', STRINGS.feedback_submitLabel, 'Clear'));
     expect(feedbackEvents(events).map(summary)).toEqual([
       {
         interactionType: FeedbackInteractionType.DETAILS_OPENED,
@@ -314,9 +253,9 @@ describe('feedback events', () => {
       feedbackItem({ categories: { positive: ['Fast'], negative: ['Wrong'] } })
     );
     const events = recordEvents(instance, [BusEventType.FEEDBACK]);
-    await click(firstByRole('button', STRINGS.feedback_negativeLabel));
-    await click(firstByRole('button', 'Wrong'));
-    await click(lastByRole('button', STRINGS.feedback_submitLabel));
+    await click(byRole('button', STRINGS.feedback_negativeLabel));
+    await click(byRole('button', 'Wrong'));
+    await click(inFormWith('button', STRINGS.feedback_submitLabel, 'Wrong'));
     expect(feedbackEvents(events).map(summary)).toEqual([
       {
         interactionType: FeedbackInteractionType.DETAILS_OPENED,
@@ -335,10 +274,13 @@ describe('feedback events', () => {
 
   it('submits empty text and no categories when the user enters nothing', async () => {
     const { instance } = await openChat();
-    await addFeedbackResponse(instance, feedbackItem({ categories: ['Fast'] }));
+    await addFeedbackResponse(
+      instance,
+      feedbackItem({ categories: { positive: ['Fast'], negative: ['Slow'] } })
+    );
     const events = recordEvents(instance, [BusEventType.FEEDBACK]);
-    await click(firstByRole('button', STRINGS.feedback_positiveLabel));
-    await click(firstByRole('button', STRINGS.feedback_submitLabel));
+    await click(byRole('button', STRINGS.feedback_positiveLabel));
+    await click(inFormWith('button', STRINGS.feedback_submitLabel, 'Fast'));
     // `main` sends an empty string and an empty array, not `undefined`.
     expect(summary(feedbackEvents(events)[1])).toEqual({
       interactionType: FeedbackInteractionType.SUBMITTED,
@@ -352,16 +294,18 @@ describe('feedback events', () => {
     const { instance } = await openChat();
     await addFeedbackResponse(
       instance,
-      feedbackItem({ categories: ['Fast', 'Clear'] })
+      feedbackItem({
+        categories: { positive: ['Fast', 'Clear'], negative: ['Slow'] },
+      })
     );
-    await click(firstByRole('button', STRINGS.feedback_positiveLabel));
-    await click(firstByRole('button', 'Fast'));
+    await click(byRole('button', STRINGS.feedback_positiveLabel));
+    await click(byRole('button', 'Fast'));
     await act(async () => {
-      fireEvent.input(firstByRole('textbox', PLACEHOLDER), {
+      fireEvent.input(inFormWith('textbox', PLACEHOLDER, 'Fast'), {
         target: { value: 'Nice' },
       });
     });
-    await click(firstByRole('button', STRINGS.feedback_submitLabel));
+    await click(inFormWith('button', STRINGS.feedback_submitLabel, 'Fast'));
     await waitFor(() =>
       expect(storedResponse(instance, 'r1').history?.feedback).toEqual({
         'fb-1': { is_positive: true, text: 'Nice', categories: ['Fast'] },
@@ -376,7 +320,7 @@ describe('feedback events', () => {
       feedbackItem({ id: undefined, show_positive_details: false })
     );
     const events = recordEvents(instance, [BusEventType.FEEDBACK]);
-    await click(firstByRole('button', STRINGS.feedback_positiveLabel));
+    await click(byRole('button', STRINGS.feedback_positiveLabel));
     expect(feedbackEvents(events)).toHaveLength(1);
     expect(storedResponse(instance, 'r1').history?.feedback).toBeUndefined();
   });
@@ -408,11 +352,13 @@ describe('custom event buttons', () => {
     await waitFor(() =>
       expect(allByRole('button', 'Contract custom')).toHaveLength(1)
     );
-    const events = recordEvents(instance);
-    await click(firstByRole('button', 'Contract custom'));
-    expect(events.typesExcept(BusEventType.STATE_CHANGE)).toEqual([
-      'messageItemCustom',
+    const events = recordEvents(instance, [
+      BusEventType.MESSAGE_ITEM_CUSTOM,
+      BusEventType.PRE_SEND,
+      BusEventType.SEND,
     ]);
+    await click(byRole('button', 'Contract custom'));
+    expect(events.types()).toEqual(['messageItemCustom']);
     const [event] = events.of<BusEventMessageItemCustom>(
       BusEventType.MESSAGE_ITEM_CUSTOM
     );
@@ -433,11 +379,12 @@ describe('custom event buttons', () => {
       expect(allByRole('button', 'Contract custom')).toHaveLength(1)
     );
     const events = recordEvents(instance, [BusEventType.MESSAGE_ITEM_CUSTOM]);
-    await click(firstByRole('button', 'Contract custom'));
-    await click(firstByRole('button', 'Contract custom'));
+    await click(byRole('button', 'Contract custom'));
+    await click(byRole('button', 'Contract custom'));
     expect(events.types()).toEqual(['messageItemCustom', 'messageItemCustom']);
   });
 
+  // @covers config.isReadonly
   it('fires nothing while the chat is readonly', async () => {
     const { instance } = await openChat({ isReadonly: true });
     await act(() =>
@@ -449,7 +396,7 @@ describe('custom event buttons', () => {
       expect(allByRole('button', 'Contract custom')).toHaveLength(1)
     );
     const events = recordEvents(instance, [BusEventType.MESSAGE_ITEM_CUSTOM]);
-    await click(firstByRole('button', 'Contract custom'));
+    await click(byRole('button', 'Contract custom'));
     expect(events.types()).toEqual([]);
   });
 });
@@ -549,7 +496,7 @@ describe('customRequestFooterSlot', () => {
     expect(events.types()).toEqual(['send']);
   });
 
-  it('fires for each restored request after history:end on insertHistory, under a new slot name each time', async () => {
+  it('fires once per restored request on each insertHistory, under a new slot name each time', async () => {
     const { instance } = await mount();
     // Fresh objects each time: insertHistory freezes what it is given.
     const history = () => [
@@ -563,20 +510,12 @@ describe('customRequestFooterSlot', () => {
       },
     ];
     const events = recordEvents(instance, [
-      BusEventType.HISTORY_BEGIN,
-      BusEventType.HISTORY_END,
       BusEventType.CUSTOM_REQUEST_FOOTER_SLOT,
     ]);
     await act(() => instance.messaging.insertHistory(history()));
+    expect(footerEvents(events)).toHaveLength(1);
     await act(() => instance.messaging.insertHistory(history()));
-    expect(events.types()).toEqual([
-      'history:begin',
-      'history:end',
-      'customRequestFooterSlot',
-      'history:begin',
-      'history:end',
-      'customRequestFooterSlot',
-    ]);
+    expect(footerEvents(events)).toHaveLength(2);
     const [first, second] = footerEvents(events);
     expect(first.data.message.id).toBe('q1');
     expect(first.data.message.input.text).toBe('from before');

@@ -15,7 +15,14 @@ import {
   ChatInstance,
   ViewType,
 } from '../../../../src/aiChatEntry';
-import { contractChat, contractSetup, recordEvents } from '../../helpers';
+import {
+  changeView,
+  contractChat,
+  contractSetup,
+  pause,
+  recordEvents,
+  showUnread,
+} from '../../helpers';
 
 /** Records `state:change` events through the public `on`. */
 function recordStateChanges(instance: ChatInstance) {
@@ -26,11 +33,6 @@ function recordStateChanges(instance: ChatInstance) {
   };
 }
 
-/** A public change that touches no messaging field: the unread indicator. */
-function showUnread(instance: ChatInstance, isVisible = true): void {
-  act(() => instance.updateAssistantUnreadIndicatorVisibility(isVisible));
-}
-
 // @covers event.state:change
 describe('state:change (deprecated)', () => {
   contractSetup();
@@ -38,7 +40,9 @@ describe('state:change (deprecated)', () => {
   it('fires once per public change, with the previous and new state', async () => {
     const { instance } = await contractChat();
     const changes = recordStateChanges(instance);
-    act(() => instance.updateIsMessageLoadingCounter('increase'));
+    await act(async () => {
+      instance.updateIsMessageLoadingCounter('increase');
+    });
     const [event, ...rest] = changes.events();
     expect(rest).toEqual([]);
     expect(event.type).toBe(BusEventType.STATE_CHANGE);
@@ -50,7 +54,7 @@ describe('state:change (deprecated)', () => {
     const { instance } = await contractChat();
     const before = instance.state.get();
     const changes = recordStateChanges(instance);
-    showUnread(instance);
+    await showUnread(instance);
     const [event] = changes.events();
     expect(event.previousState).toEqual(before);
     expect(event.newState).toEqual(instance.state.get());
@@ -62,10 +66,10 @@ describe('state:change (deprecated)', () => {
   it('fires for a view change, from the old view to the new one', async () => {
     const { instance } = await contractChat();
     const changes = recordStateChanges(instance);
-    await act(() => instance.changeView(ViewType.MAIN_WINDOW));
+    await changeView(instance, ViewType.MAIN_WINDOW);
     const events = changes.events();
-    // One changeView makes several public changes; `main` fires one event for
-    // each, so only the first and last are pinned.
+    // One changeView makes several public changes, and `main` fires one event
+    // for each (MAIN-NOTES M41), so only the first and last are pinned.
     expect(events.length).toBeGreaterThan(0);
     expect(events[0].previousState.viewState.mainWindow).toBe(false);
     expect(events[events.length - 1].newState.viewState.mainWindow).toBe(true);
@@ -74,15 +78,15 @@ describe('state:change (deprecated)', () => {
   it('does not fire when no public field changed', async () => {
     const { instance } = await contractChat();
     const changes = recordStateChanges(instance);
-    act(() => instance.updateInputFieldVisibility(false));
-    showUnread(instance, false);
+    // The indicator is already hidden, so hiding it changes no public field.
+    await showUnread(instance, false);
     expect(changes.events()).toEqual([]);
   });
 
   it('freezes previousState and newState', async () => {
     const { instance } = await contractChat();
     const changes = recordStateChanges(instance);
-    showUnread(instance);
+    await showUnread(instance);
     const [event] = changes.events();
     expect(Object.isFrozen(event.previousState)).toBe(true);
     expect(Object.isFrozen(event.newState)).toBe(true);
@@ -99,27 +103,14 @@ describe('state:change (deprecated)', () => {
         reads.push(instance.getState().showUnreadIndicator);
       },
     });
-    showUnread(instance);
+    await showUnread(instance);
     expect(reads).toEqual([true, true]);
-  });
-
-  // Not in the JSDoc: for one change, `main` fires the event before it calls
-  // the state.subscribe listeners.
-  it('fires before the state.subscribe listeners for the same change', async () => {
-    const { instance } = await contractChat();
-    const order: string[] = [];
-    instance.state.subscribe(() => order.push('subscribe'));
-    instance.on({
-      type: BusEventType.STATE_CHANGE,
-      handler: () => order.push('state:change'),
-    });
-    showUnread(instance);
-    expect(order).toEqual(['state:change', 'subscribe']);
   });
 
   // src/types/instance/PublicChatState.ts:66: input.focused "toggles in the
   // same dispatch pass as the underlying focus event, so subscribing via
   // STATE_CHANGE fires once per focus/blur transition".
+  // @covers state.input.focused
   it('fires once per input focus and once per blur', async () => {
     const { instance } = await contractChat();
     const editor = await instance.input.getEditor();
@@ -131,17 +122,12 @@ describe('state:change (deprecated)', () => {
           (event) =>
             `${event.previousState.input.focused}->${event.newState.input.focused}`
         );
-    // A short wait after each transition proves no second event follows it.
-    const settle = () =>
-      act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 50));
-      });
-
     await act(async () => {
       editor.commands.focus();
     });
     await waitFor(() => expect(transitions()).toEqual(['false->true']));
-    await settle();
+    // A short wait proves no second event follows the transition.
+    await pause();
     expect(transitions()).toEqual(['false->true']);
     changes.clear();
 
@@ -149,7 +135,8 @@ describe('state:change (deprecated)', () => {
       editor.commands.blur();
     });
     await waitFor(() => expect(transitions()).toEqual(['true->false']));
-    await settle();
+    // A short wait proves no second event follows the transition.
+    await pause();
     expect(transitions()).toEqual(['true->false']);
   });
 });

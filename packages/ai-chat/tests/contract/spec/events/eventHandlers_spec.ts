@@ -25,6 +25,8 @@ import {
   describeShared,
   finishSend,
   ids,
+  pause,
+  recordEvents,
   startSend,
   textResponse,
 } from '../../helpers';
@@ -32,13 +34,6 @@ import {
 /** Adds a complete text response with the given ID, which fires pre:receive and receive. */
 async function add(chat: ContractDriver, id: string): Promise<void> {
   await act(() => chat.messaging.addMessage(textResponse(id, id)));
-}
-
-/** Gives the chat time to do something a test expects it not to do. */
-async function pause(ms = 50): Promise<void> {
-  await act(async () => {
-    await new Promise((resolve) => setTimeout(resolve, ms));
-  });
 }
 
 /** The ID of each event's message, for events that carry one. */
@@ -229,7 +224,7 @@ describeShared('off', (makeDriver) => {
   });
 
   // `TypeAndHandler.handler` is required, but `main` treats a missing one as
-  // "remove every handler of this type" (src/chat/events/EventBus.ts:293-296).
+  // "remove every handler of this type" (MAIN-NOTES M34).
   it('removes every handler of a type when given no handler', async () => {
     const chat = await makeDriver();
     const first = jest.fn();
@@ -247,10 +242,9 @@ describeShared('off', (makeDriver) => {
     expect(idsOf(otherType)).toEqual(['r1']);
   });
 
-  // The JSDoc says off removes a handler added with once
-  // (src/types/instance/EventHandlers.ts:38), but `main` registers a wrapper
-  // for once (src/chat/events/EventBus.ts:313-317), so off with the function
-  // passed to once matches nothing.
+  // `main` differs from its JSDoc (MAIN-NOTES M32): the JSDoc says off
+  // removes a handler added with once, but `main` registers a wrapper for
+  // once, so off with the function passed to once matches nothing.
   it("doesn't remove a once handler given the function passed to once", async () => {
     const chat = await makeDriver();
     const handler = jest.fn();
@@ -389,26 +383,24 @@ describeShared('handlers while an event runs', (makeDriver) => {
     await finishSend({ sent, done });
   });
 
+  // Not in the JSDoc (MAIN-NOTES M36).
   it('skips the later handlers for an event when one throws, and runs them all for the next', async () => {
     const chat = await makeDriver();
-    const thrown = new Error('receive failed');
     const later = jest.fn();
     chat.once({
       type: BusEventType.RECEIVE,
       handler: () => {
-        throw thrown;
+        throw new Error('receive failed');
       },
     });
     chat.on({ type: BusEventType.RECEIVE, handler: later });
-    let error: unknown;
+    // The call rejects with the handler's error; the messaging specs cover
+    // that, so it is only caught here.
     await act(async () => {
       await chat.messaging
         .addMessage(textResponse('r1', 'r1'))
-        .catch((caught) => {
-          error = caught;
-        });
+        .catch((): void => undefined);
     });
-    expect(error).toBe(thrown);
     expect(later).not.toHaveBeenCalled();
     await add(chat, 'r2');
     expect(idsOf(later)).toEqual(['r2']);
@@ -449,56 +441,71 @@ describeShared('handlers while an event runs', (makeDriver) => {
     const chat = await makeDriver();
     const gate = deferred();
     chat.on({ type: BusEventType.PRE_RECEIVE, handler: () => gate.promise });
+    const events = recordEvents(chat, [
+      BusEventType.PRE_SEND,
+      BusEventType.SEND,
+      BusEventType.RECEIVE,
+    ]);
     let pending: Promise<void>;
+    let added = false;
     await act(async () => {
       pending = chat.messaging.addMessage(textResponse('r1', 'r1'));
+      pending.then(() => {
+        added = true;
+      });
     });
     const started = await startSend(chat, 'hello');
-    expect(started.sent.request.input.text).toBe('hello');
     await finishSend(started);
+    // The send went all the way through while pre:receive is still held.
+    expect(events.types()).toEqual(['pre:send', 'send']);
+    expect(started.sent.request.input.text).toBe('hello');
+    expect(added).toBe(false);
     await act(async () => {
       gate.resolve();
       await pending;
     });
+    expect(events.types()).toEqual(['pre:send', 'send', 'receive']);
   });
 });
 
 // @covers instance.on
 describeShared('a handler waiting on its own event type', (makeDriver) => {
-  afterEach(() => {
-    jest.useRealTimers();
-  });
-
   it('rejects the inner call after 10 seconds and skips its handlers', async () => {
     const chat = await makeDriver();
     jest.useFakeTimers();
-    let innerError: unknown;
-    let innerSettled = false;
-    const handler = jest.fn((event: BusEventReceive) => {
-      if (event.data.id !== 'outer') {
-        return undefined;
-      }
-      return chat.messaging.addMessage(textResponse('inner', 'inner')).then(
-        () => {
-          innerSettled = true;
-        },
-        (error) => {
-          innerSettled = true;
-          innerError = error;
+    // Real timers come back inside the test, so cleanup never runs under fake
+    // ones.
+    try {
+      let innerError: unknown;
+      let innerSettled = false;
+      const handler = jest.fn((event: BusEventReceive) => {
+        if (event.data.id !== 'outer') {
+          return undefined;
         }
-      );
-    });
-    chat.on({ type: BusEventType.RECEIVE, handler });
-    let outer: Promise<void>;
-    await act(async () => {
-      outer = chat.messaging.addMessage(textResponse('outer', 'outer'));
-    });
-    await advance(9_000);
-    expect(innerSettled).toBe(false);
-    await advance(1_000);
-    await act(() => outer);
-    expect(innerError).toBeInstanceOf(Error);
-    expect(idsOf(handler)).toEqual(['outer']);
+        return chat.messaging.addMessage(textResponse('inner', 'inner')).then(
+          () => {
+            innerSettled = true;
+          },
+          (error) => {
+            innerSettled = true;
+            innerError = error;
+          }
+        );
+      });
+      chat.on({ type: BusEventType.RECEIVE, handler });
+      let outer: Promise<void>;
+      await act(async () => {
+        outer = chat.messaging.addMessage(textResponse('outer', 'outer'));
+      });
+      await advance(9_000);
+      expect(innerSettled).toBe(false);
+      await advance(1_000);
+      await act(() => outer);
+      expect(innerError).toBeInstanceOf(Error);
+      expect(idsOf(handler)).toEqual(['outer']);
+    } finally {
+      jest.useRealTimers();
+    }
   });
 });
 

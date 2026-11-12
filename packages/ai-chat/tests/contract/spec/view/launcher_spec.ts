@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { act, waitFor } from '@testing-library/react';
+import { waitFor } from '@testing-library/react';
 
 import {
   BusEventType,
@@ -21,39 +21,18 @@ import {
 } from '../../../../src/aiChatEntry';
 import {
   byTestId,
+  changeView,
+  click,
   contractChat,
   contractSetup,
   fakeBackend,
+  getByTestId,
+  pause,
   recordEvents,
+  showUnread,
 } from '../../helpers';
 
 const VIEW_EVENTS = [BusEventType.VIEW_PRE_CHANGE, BusEventType.VIEW_CHANGE];
-
-/** Clicks a public test ID's element, the way a user would. */
-async function click(testId: PageObjectId): Promise<void> {
-  const element = byTestId(testId);
-  expect(element).not.toBeNull();
-  await act(async () => {
-    element.click();
-  });
-}
-
-/** Calls `changeView` the way a host would. */
-async function changeView(
-  instance: ChatInstance,
-  view: ViewType
-): Promise<void> {
-  await act(async () => {
-    await instance.changeView(view);
-  });
-}
-
-/** Lets timers that should not fire have their chance. */
-async function pause(ms: number): Promise<void> {
-  await act(async () => {
-    await new Promise((resolve) => setTimeout(resolve, ms));
-  });
-}
 
 /** The two call-to-action fields a host reads. */
 function callToAction(instance: ChatInstance) {
@@ -75,7 +54,7 @@ describe('launcher', () => {
       messaging: { customSendMessage: backend.customSendMessage },
     });
     const events = recordEvents(instance, VIEW_EVENTS);
-    await click(PageObjectId.LAUNCHER);
+    await click(getByTestId(PageObjectId.LAUNCHER));
     await waitFor(() =>
       expect(instance.getState().viewState).toEqual({
         launcher: false,
@@ -111,7 +90,7 @@ describe('launcher', () => {
       messaging: { customSendMessage: backend.customSendMessage },
     });
     const events = recordEvents(instance, VIEW_EVENTS);
-    await click(PageObjectId.CLOSE_CHAT);
+    await click(getByTestId(PageObjectId.CLOSE_CHAT));
     await waitFor(() =>
       expect(instance.getState().viewState).toEqual({
         launcher: true,
@@ -123,8 +102,8 @@ describe('launcher', () => {
       BusEventType.VIEW_CHANGE,
     ]);
     const [change] = events.of<BusEventViewChange>(BusEventType.VIEW_CHANGE);
-    // On `main` the close button passes the string "main_window_minimized",
-    // which is not ViewChangeReason.MAIN_WINDOW_MINIMIZED
+    // `main` differs from its enum (MAIN-NOTES M26): the close button passes
+    // "main_window_minimized", not ViewChangeReason.MAIN_WINDOW_MINIMIZED
     // ("mainWindowMinimized"), so a host comparing with the enum never matches.
     expect(change.reason).toBe('main_window_minimized');
     expect(change.reason).not.toBe(ViewChangeReason.MAIN_WINDOW_MINIMIZED);
@@ -189,7 +168,7 @@ describe('launcher call to action', () => {
   it('collapses when the launcher is clicked', async () => {
     const { instance } = await contractChat(desktopCallToAction(10));
     await waitFor(() => expect(callToAction(instance).expanded).toBe(true));
-    await click(PageObjectId.LAUNCHER);
+    await click(getByTestId(PageObjectId.LAUNCHER));
     await waitFor(() =>
       expect(callToAction(instance)).toEqual({
         expanded: false,
@@ -204,9 +183,10 @@ describe('launcher call to action', () => {
     await waitFor(() => expect(callToAction(instance).expanded).toBe(true));
     await changeView(instance, ViewType.MAIN_WINDOW);
     await pause(50);
-    // On `main` the launcher's "collapse when the main window opens some other
-    // way" effect never runs here: ViewType.MAIN_WINDOW hides the launcher,
-    // which unmounts before the effect can see the open window.
+    // `main` differs from the launcher's own docs (MAIN-NOTES M27): its
+    // "collapse when the main window opens some other way" effect never runs
+    // here, because ViewType.MAIN_WINDOW hides the launcher, which unmounts
+    // before the effect can see the open window.
     expect(callToAction(instance)).toEqual({ expanded: true, counter: false });
   });
 
@@ -261,13 +241,9 @@ describe('unread indicator', () => {
 
   it('follows updateAssistantUnreadIndicatorVisibility', async () => {
     const { instance } = await mount();
-    await act(async () => {
-      instance.updateAssistantUnreadIndicatorVisibility(true);
-    });
+    await showUnread(instance);
     expect(instance.getState().showUnreadIndicator).toBe(true);
-    await act(async () => {
-      instance.updateAssistantUnreadIndicatorVisibility(false);
-    });
+    await showUnread(instance, false);
     expect(instance.getState().showUnreadIndicator).toBe(false);
   });
 
@@ -280,9 +256,7 @@ describe('unread indicator', () => {
   it('stays set when set while the main window is open, through closing it', async () => {
     const { instance } = await mount();
     await changeView(instance, ViewType.MAIN_WINDOW);
-    await act(async () => {
-      instance.updateAssistantUnreadIndicatorVisibility(true);
-    });
+    await showUnread(instance);
     expect(instance.getState().showUnreadIndicator).toBe(true);
     await changeView(instance, ViewType.LAUNCHER);
     expect(instance.getState().showUnreadIndicator).toBe(true);

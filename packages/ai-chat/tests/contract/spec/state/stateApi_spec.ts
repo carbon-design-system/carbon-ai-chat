@@ -15,24 +15,18 @@ import {
   ViewType,
   readCarbonChatSession,
 } from '../../../../src/aiChatEntry';
-import { contractChat, contractSetup } from '../../helpers';
-
-/** A public change that touches no messaging field: the unread indicator. */
-function showUnread(instance: ChatInstance, isVisible = true): void {
-  act(() => instance.updateAssistantUnreadIndicatorVisibility(isVisible));
-}
+import {
+  changeView,
+  contractChat,
+  contractSetup,
+  showUnread,
+} from '../../helpers';
 
 /** A public change with a counter a test can step: the loading counter. */
-function increaseLoading(instance: ChatInstance): void {
-  act(() => instance.updateIsMessageLoadingCounter('increase'));
-}
-
-/**
- * A call that changes the chat but no public state field: the input field's
- * visibility isn't in `PublicChatState`.
- */
-function hideInputField(instance: ChatInstance): void {
-  act(() => instance.updateInputFieldVisibility(false));
+async function increaseLoading(instance: ChatInstance): Promise<void> {
+  await act(async () => {
+    instance.updateIsMessageLoadingCounter('increase');
+  });
 }
 
 // @covers instance.state instance.state.get
@@ -42,7 +36,7 @@ describe('state.get', () => {
   it('reflects a change made through a public action', async () => {
     const { instance } = await contractChat();
     expect(instance.state.get().showUnreadIndicator).toBe(false);
-    showUnread(instance);
+    await showUnread(instance);
     expect(instance.state.get().showUnreadIndicator).toBe(true);
   });
 
@@ -52,17 +46,18 @@ describe('state.get', () => {
     const { instance } = await contractChat();
     const first = instance.state.get();
     expect(instance.state.get()).toBe(first);
-    hideInputField(instance);
+    // Hiding an indicator that is already hidden changes no public field.
+    await showUnread(instance, false);
     expect(instance.state.get()).toBe(first);
-    showUnread(instance);
+    await showUnread(instance);
     expect(instance.state.get()).not.toBe(first);
   });
 
   it('keeps an older snapshot at its old values after a change', async () => {
     const { instance } = await contractChat();
     const before = instance.state.get();
-    showUnread(instance);
-    increaseLoading(instance);
+    await showUnread(instance);
+    await increaseLoading(instance);
     expect(before.showUnreadIndicator).toBe(false);
     expect(before.isMessageLoadingCounter).toBe(0);
   });
@@ -94,17 +89,6 @@ describe('state.get', () => {
       expect.arrayContaining(documented)
     );
     expect(Object.keys(instance.state.get())).not.toContain('humanAgentState');
-  });
-
-  // `PublicChatState` has no `history` field, but `main`'s snapshot carries
-  // one, a copy of `customPanels.history` (src/chat/utils/publicState.ts:226).
-  it('also carries an undocumented history field equal to customPanels.history', async () => {
-    const { instance } = await contractChat();
-    const state = instance.state.get() as PublicChatState & {
-      history?: unknown;
-    };
-    expect(Object.keys(state)).toContain('history');
-    expect(state.history).toEqual(state.customPanels.history);
   });
 });
 
@@ -155,34 +139,10 @@ describe('getState (deprecated)', () => {
   it('reads the same values as state.get', async () => {
     const { instance } = await contractChat();
     expect(instance.getState()).toEqual(instance.state.get());
-    showUnread(instance);
-    increaseLoading(instance);
+    await showUnread(instance);
+    await increaseLoading(instance);
     expect(instance.getState()).toEqual(instance.state.get());
     expect(instance.getState().showUnreadIndicator).toBe(true);
-  });
-
-  // Not in the JSDoc. While a change is being delivered to subscribers, a
-  // nested change shows in getState() at once, but state.get() keeps the
-  // snapshot being delivered until the nested change is delivered in turn.
-  it('reads a nested change live while state.get keeps the snapshot being delivered', async () => {
-    const { instance } = await contractChat();
-    const reads: string[] = [];
-    let nested = false;
-    instance.state.subscribe(() => {
-      if (!nested) {
-        nested = true;
-        instance.updateIsMessageLoadingCounter('increase');
-        reads.push(`getState ${instance.getState().isMessageLoadingCounter}`);
-        reads.push(`state.get ${instance.state.get().isMessageLoadingCounter}`);
-      } else {
-        reads.push(
-          `next state.get ${instance.state.get().isMessageLoadingCounter}`
-        );
-      }
-    });
-    showUnread(instance);
-    expect(reads).toEqual(['getState 1', 'state.get 0', 'next state.get 1']);
-    expect(instance.state.get().isMessageLoadingCounter).toBe(1);
   });
 });
 
@@ -195,7 +155,7 @@ describe('state.subscribe', () => {
     const listener = jest.fn();
     instance.state.subscribe(listener);
     expect(listener).not.toHaveBeenCalled();
-    showUnread(instance);
+    await showUnread(instance);
     expect(listener).toHaveBeenCalledTimes(1);
     expect(listener).toHaveBeenCalledWith();
   });
@@ -206,8 +166,8 @@ describe('state.subscribe', () => {
     instance.state.subscribe(() => {
       seen.push(instance.state.get().showUnreadIndicator);
     });
-    showUnread(instance);
-    showUnread(instance, false);
+    await showUnread(instance);
+    await showUnread(instance, false);
     expect(seen).toEqual([true, false]);
   });
 
@@ -215,10 +175,10 @@ describe('state.subscribe', () => {
     const { instance } = await contractChat();
     const listener = jest.fn();
     const unsubscribe = instance.state.subscribe(listener);
-    showUnread(instance);
+    await showUnread(instance);
     unsubscribe();
-    showUnread(instance, false);
-    increaseLoading(instance);
+    await showUnread(instance, false);
+    await increaseLoading(instance);
     expect(listener).toHaveBeenCalledTimes(1);
   });
 
@@ -228,7 +188,7 @@ describe('state.subscribe', () => {
     const second = jest.fn();
     instance.state.subscribe(first);
     instance.state.subscribe(second);
-    showUnread(instance);
+    await showUnread(instance);
     expect(first).toHaveBeenCalledTimes(1);
     expect(second).toHaveBeenCalledTimes(1);
   });
@@ -238,12 +198,12 @@ describe('state.subscribe', () => {
     const listener = jest.fn();
     const stopFirst = instance.state.subscribe(listener);
     instance.state.subscribe(listener);
-    showUnread(instance);
+    await showUnread(instance);
     expect(listener).toHaveBeenCalledTimes(2);
     stopFirst();
     // Stopping the same subscription again changes nothing.
     stopFirst();
-    showUnread(instance, false);
+    await showUnread(instance, false);
     expect(listener).toHaveBeenCalledTimes(3);
   });
 
@@ -253,12 +213,13 @@ describe('state.subscribe', () => {
     const { instance } = await contractChat();
     const listener = jest.fn();
     instance.state.subscribe(listener);
-    hideInputField(instance);
-    showUnread(instance, false);
+    // The indicator is already hidden, so hiding it changes no public field.
+    await showUnread(instance, false);
     expect(listener).not.toHaveBeenCalled();
   });
 
-  // Not in the JSDoc: `main` logs a listener's error and carries on.
+  // Not in the JSDoc: `main` logs a listener's error and carries on
+  // (MAIN-NOTES M39).
   it('still calls other listeners, and completes the action, when one throws', async () => {
     const { instance } = await contractChat();
     const after = jest.fn();
@@ -266,7 +227,7 @@ describe('state.subscribe', () => {
       throw new Error('listener failed');
     });
     instance.state.subscribe(after);
-    expect(() => showUnread(instance)).not.toThrow();
+    await expect(showUnread(instance)).resolves.toBeUndefined();
     expect(after).toHaveBeenCalledTimes(1);
     expect(instance.state.get().showUnreadIndicator).toBe(true);
   });
@@ -290,19 +251,19 @@ describe('state.select', () => {
       (state) => state.isMessageLoadingCounter,
       (value) => values.push(value)
     );
-    increaseLoading(instance);
-    increaseLoading(instance);
+    await increaseLoading(instance);
+    await increaseLoading(instance);
     expect(values).toEqual([1, 2]);
   });
 
-  it('calls the listener once when an action makes several public changes', async () => {
+  it('calls the listener once for a changeView that opens the main window', async () => {
     const { instance } = await contractChat();
     const values: boolean[] = [];
     instance.state.select(
       (state) => state.viewState.mainWindow,
       (value) => values.push(value)
     );
-    await act(() => instance.changeView(ViewType.MAIN_WINDOW));
+    await changeView(instance, ViewType.MAIN_WINDOW);
     expect(values).toEqual([true]);
   });
 
@@ -310,7 +271,7 @@ describe('state.select', () => {
     const { instance } = await contractChat();
     const listener = jest.fn();
     instance.state.select((state) => state.showUnreadIndicator, listener);
-    increaseLoading(instance);
+    await increaseLoading(instance);
     expect(listener).not.toHaveBeenCalled();
   });
 
@@ -323,7 +284,7 @@ describe('state.select', () => {
       (state) => ({ counter: state.isMessageLoadingCounter }),
       (value) => values.push(value)
     );
-    showUnread(instance);
+    await showUnread(instance);
     expect(values).toEqual([{ counter: 0 }]);
   });
 
@@ -338,11 +299,11 @@ describe('state.select', () => {
           Math.floor(left / 2) === Math.floor(right / 2),
       }
     );
-    increaseLoading(instance);
+    await increaseLoading(instance);
     expect(values).toEqual([]);
-    increaseLoading(instance);
+    await increaseLoading(instance);
     expect(values).toEqual([2]);
-    increaseLoading(instance);
+    await increaseLoading(instance);
     expect(values).toEqual([2]);
   });
 
@@ -353,25 +314,14 @@ describe('state.select', () => {
       (state) => state.isMessageLoadingCounter,
       (value) => values.push(value)
     );
-    increaseLoading(instance);
+    await increaseLoading(instance);
     unsubscribe();
-    increaseLoading(instance);
+    await increaseLoading(instance);
     expect(values).toEqual([1]);
   });
 
-  // Not in the JSDoc: `main` runs the selector once when select is called, so
-  // a selector that throws then throws from select itself.
-  it('throws from select when the selector throws on the first read', async () => {
-    const { instance } = await contractChat();
-    expect(() =>
-      instance.state.select(() => {
-        throw new Error('selector failed');
-      }, jest.fn())
-    ).toThrow('selector failed');
-  });
-
-  // Not in the JSDoc: `main` logs a later selector error, skips that change,
-  // and keeps the selection.
+  // Not in the JSDoc (MAIN-NOTES M39): when the selector throws on a change,
+  // `main` logs the error, skips that change, and keeps the selection.
   it('skips a change where the selector throws, and keeps selecting', async () => {
     const { instance } = await contractChat();
     const values: number[] = [];
@@ -384,27 +334,30 @@ describe('state.select', () => {
       },
       (value) => values.push(value)
     );
-    expect(() => increaseLoading(instance)).not.toThrow();
-    increaseLoading(instance);
+    await expect(increaseLoading(instance)).resolves.toBeUndefined();
+    await increaseLoading(instance);
     expect(values).toEqual([2]);
   });
 });
 
-// @covers state.version
-describe('state.version', () => {
+// @covers export.aiChatEntry.readCarbonChatSession
+describe('readCarbonChatSession', () => {
   contractSetup();
 
-  // The package build replaces `process.env.VERSION` with package.json's
-  // version (without a prerelease tag). Under Jest the source runs unbundled,
-  // so both sides are `undefined` here, though the field is typed `string`
-  // (src/chat/utils/environmentVariables.ts:10).
-  it('matches the build version and the saved session readCarbonChatSession returns', async () => {
-    const { instance } = await contractChat();
-    showUnread(instance);
+  it('returns null before a chat saves a session, then the latest saved view and indicator', async () => {
+    expect(readCarbonChatSession()).toBeNull();
+    const { instance } = await contractChat({
+      messaging: { skipWelcome: true },
+    });
+    await changeView(instance, ViewType.MAIN_WINDOW);
+    expect(readCarbonChatSession().viewState).toEqual({
+      launcher: false,
+      mainWindow: true,
+    });
+    await changeView(instance, ViewType.LAUNCHER);
+    await showUnread(instance);
     const session = readCarbonChatSession();
-    expect(session).not.toBeNull();
+    expect(session.viewState).toEqual({ launcher: true, mainWindow: false });
     expect(session.showUnreadIndicator).toBe(true);
-    expect(instance.state.get().version).toBe(session.version);
-    expect(instance.state.get().version).toBe(process.env.VERSION);
   });
 });

@@ -20,11 +20,16 @@ import {
   ViewType,
 } from '../../../../src/aiChatEntry';
 import {
+  byRole,
   byTestId,
+  changeView,
+  click,
   contractChat,
   contractSetup,
   fakeBackend,
+  getByTestId,
   recordEvents,
+  shownText,
   textResponse,
 } from '../../helpers';
 
@@ -36,89 +41,6 @@ const STRINGS = {
   homeScreen_returnToHome: 'Contract back',
 };
 
-/** Every element under `root`, through open shadow roots. */
-function* deepElements(root: ParentNode): Generator<Element> {
-  for (const element of Array.from(root.querySelectorAll('*'))) {
-    yield element;
-    if (element.shadowRoot) {
-      yield* deepElements(element.shadowRoot);
-    }
-  }
-}
-
-/** The text a node shows, following slots to what they show. */
-function shownText(node: Node): string {
-  if (node.nodeType === Node.TEXT_NODE) {
-    return node.textContent ?? '';
-  }
-  if (!(node instanceof Element) || node.tagName === 'STYLE') {
-    return '';
-  }
-  if (node instanceof HTMLSlotElement) {
-    const assigned = node.assignedNodes({ flatten: true });
-    return (assigned.length ? assigned : Array.from(node.childNodes))
-      .map(shownText)
-      .join('');
-  }
-  const children = node.shadowRoot
-    ? node.shadowRoot.childNodes
-    : node.childNodes;
-  return Array.from(children).map(shownText).join('');
-}
-
-/** A simple accessible name: aria-label, then content. */
-function accessibleName(element: Element): string {
-  return (
-    element.getAttribute('aria-label') ||
-    shownText(element).replace(/\s+/g, ' ').trim()
-  );
-}
-
-function roleOf(element: Element): string | null {
-  return (
-    element.getAttribute('role') ??
-    (element instanceof HTMLButtonElement ? 'button' : null)
-  );
-}
-
-/**
- * The control with this role and accessible name, searching shadow roots.
- * Where a custom element and the native control inside it both match, the
- * native one wins, since that's what a user clicks.
- */
-function byRole(role: string, name: string): HTMLElement | null {
-  const matches = [...deepElements(document)].filter(
-    (element) => roleOf(element) === role && accessibleName(element) === name
-  ) as HTMLElement[];
-  return (
-    matches.find((element) => element instanceof HTMLButtonElement) ??
-    matches[0] ??
-    null
-  );
-}
-
-function getByRole(role: string, name: string): HTMLElement {
-  const element = byRole(role, name);
-  if (!element) {
-    throw new Error(`no ${role} named "${name}"`);
-  }
-  return element;
-}
-
-function getByTestId(testId: string): HTMLElement {
-  const element = byTestId(testId);
-  if (!element) {
-    throw new Error(`no element with test ID "${testId}"`);
-  }
-  return element;
-}
-
-async function click(element: HTMLElement): Promise<void> {
-  await act(async () => {
-    element.click();
-  });
-}
-
 /**
  * Mounts a chat with the test strings, opens the main window, and leaves the
  * home screen (a response closes it), so the header shows its navigation.
@@ -127,9 +49,9 @@ async function openConversation(config: Partial<PublicConfig> = {}) {
   const mount = await contractChat({
     ...config,
     strings: STRINGS,
-    messaging: { skipWelcome: true },
+    messaging: { skipWelcome: true, ...config.messaging },
   });
-  await act(() => mount.instance.changeView(ViewType.MAIN_WINDOW));
+  await changeView(mount.instance, ViewType.MAIN_WINDOW);
   await act(() =>
     mount.instance.messaging.addMessage(textResponse('Hi', 'r1'))
   );
@@ -154,7 +76,7 @@ function summary(event: BusEventHeaderMenuClick) {
   };
 }
 
-// @covers event.header:menuClick config.header.menuOptions
+// @covers event.header:menuClick config.header.menuOptions config.homescreen.isOn
 describe('header:menuClick from the overflow menu', () => {
   contractSetup();
 
@@ -162,11 +84,8 @@ describe('header:menuClick from the overflow menu', () => {
     const { instance } = await openConversation({
       header: { menuOptions: [{ text: 'Option A', handler: () => {} }] },
     });
-    const events = recordEvents(instance);
-    await click(getByRole('button', STRINGS.header_overflowMenu_options));
-    expect(events.typesExcept(BusEventType.STATE_CHANGE)).toEqual([
-      'header:menuClick',
-    ]);
+    const events = recordEvents(instance, [BusEventType.HEADER_MENU_CLICK]);
+    await click(byRole('button', STRINGS.header_overflowMenu_options));
     expect(menuClicks(events).map(summary)).toEqual([
       {
         clickType: HeaderMenuClickType.OVERFLOW_MENU_OPENED,
@@ -196,7 +115,7 @@ describe('header:menuClick from the overflow menu', () => {
     await click(getByTestId('contract-b'));
     // Only the item event is pinned. In jsdom the item's click also bubbles to
     // the menu button, which fires a second, overflowMenuOpened event; whether
-    // a browser does the same depends on where Carbon places the open menu.
+    // a browser does the same is unverified (MAIN-NOTES M46).
     expect(
       menuClicks(events, HeaderMenuClickType.OVERFLOW_MENU_ITEM).map(summary)
     ).toEqual([
@@ -250,9 +169,7 @@ describe('header:menuClick from the overflow menu', () => {
         ),
     });
     const events = recordEvents(instance, [BusEventType.HEADER_MENU_CLICK]);
-    await click(
-      getByRole('menuitem', STRINGS.homeScreen_overflowMenuHomeScreen)
-    );
+    await click(byRole('menuitem', STRINGS.homeScreen_overflowMenuHomeScreen));
     const itemClicks = menuClicks(
       events,
       HeaderMenuClickType.OVERFLOW_MENU_ITEM
@@ -278,10 +195,15 @@ describe('header:menuClick from the overflow menu', () => {
         ],
       },
     });
+    const option = getByTestId('contract-link');
+    // The option renders as a link to its href, so the click below lands on a
+    // real link rather than on nothing.
+    const link = byRole('link', 'Docs', option);
+    expect(link.getAttribute('href')).toBe('#contract-docs');
     const events = recordEvents(instance, [BusEventType.HEADER_MENU_CLICK]);
-    await click(getByTestId('contract-link'));
-    // `main` gives an `href` option no click handler (Header.tsx), so it fires
-    // no overflowMenuItem, though the event's JSDoc covers every item.
+    await click(link);
+    // `main` differs from the event's JSDoc, which covers every overflow item:
+    // an `href` option gets no click handler (MAIN-NOTES M43).
     expect(menuClicks(events, HeaderMenuClickType.OVERFLOW_MENU_ITEM)).toEqual(
       []
     );
@@ -289,6 +211,7 @@ describe('header:menuClick from the overflow menu', () => {
 });
 
 // @covers event.header:menuClick state.homeScreenState.isHomeScreenOpen
+// @covers config.homescreen.isOn
 describe('header:menuClick from the home screen button', () => {
   contractSetup();
 
@@ -304,11 +227,8 @@ describe('header:menuClick from the home screen button', () => {
           instance.getState().homeScreenState.isHomeScreenOpen
         ),
     });
-    const events = recordEvents(instance);
-    await click(getByRole('button', STRINGS.homeScreen_returnToHome));
-    expect(events.typesExcept(BusEventType.STATE_CHANGE)).toEqual([
-      'header:menuClick',
-    ]);
+    const events = recordEvents(instance, [BusEventType.HEADER_MENU_CLICK]);
+    await click(byRole('button', STRINGS.homeScreen_returnToHome));
     expect(menuClicks(events).map(summary)).toEqual([
       {
         clickType: HeaderMenuClickType.HOMESCREEN_BUTTON,
@@ -328,15 +248,19 @@ const DISCLAIMER = {
   disclaimerHTML: '<p>Contract terms of use</p>',
 };
 
-/** Waits for the accept button to turn on (it waits for the panel to measure). */
-async function acceptButton(): Promise<HTMLElement> {
-  let button: HTMLElement | null = null;
+/**
+ * Clicks the accept button until the chat records the acceptance: the button
+ * only takes a click once the panel has measured its content.
+ */
+async function accept(instance: ChatInstance): Promise<void> {
+  const accepted = () =>
+    instance.getState().disclaimersAccepted[hostname()] === true;
   await waitFor(() => {
-    button = byTestId(PageObjectId.DISCLAIMER_ACCEPT_BUTTON);
-    expect(button).not.toBeNull();
-    expect(button.hasAttribute('disabled')).toBe(false);
+    if (!accepted()) {
+      byTestId(PageObjectId.DISCLAIMER_ACCEPT_BUTTON)?.click();
+    }
+    expect(accepted()).toBe(true);
   });
-  return button;
 }
 
 /** Props for a chat that opens with the disclaimer on. */
@@ -385,11 +309,9 @@ describe('disclaimer acceptance', () => {
       handler: () =>
         seenInHandler.push(instance.getState().disclaimersAccepted),
     });
-    const events = recordEvents(instance);
-    await click(await acceptButton());
-    expect(events.typesExcept(BusEventType.STATE_CHANGE)).toEqual([
-      'disclaimerAccepted',
-    ]);
+    const events = recordEvents(instance, [BusEventType.DISCLAIMER_ACCEPTED]);
+    await accept(instance);
+    expect(events.types()).toEqual(['disclaimerAccepted']);
     expect(seenInHandler).toEqual([{ [hostname()]: true }]);
     expect(instance.getState().disclaimersAccepted).toEqual({
       [hostname()]: true,
@@ -398,7 +320,7 @@ describe('disclaimer acceptance', () => {
 
   it('keeps acceptance across a remount in the same session, firing nothing', async () => {
     const first = await contractChat(disclaimerProps());
-    await click(await acceptButton());
+    await accept(first.instance);
     first.unmount();
     const fired: string[] = [];
     const second = await contractChat(
@@ -419,7 +341,7 @@ describe('disclaimer acceptance', () => {
 
   it('asks again when the disclaimer HTML changes, and fires again on the next accept', async () => {
     const { instance, rerender } = await contractChat(disclaimerProps());
-    await click(await acceptButton());
+    await accept(instance);
     const events = recordEvents(instance, [BusEventType.DISCLAIMER_ACCEPTED]);
     const changed = { isOn: true, disclaimerHTML: '<p>New contract terms</p>' };
     await rerender(disclaimerProps(changed));
@@ -434,7 +356,7 @@ describe('disclaimer acceptance', () => {
         'New contract terms'
       )
     );
-    await click(await acceptButton());
+    await accept(instance);
     expect(events.types()).toEqual(['disclaimerAccepted']);
     expect(instance.getState().disclaimersAccepted).toEqual({
       [hostname()]: true,
@@ -448,7 +370,8 @@ describe('disclaimer acceptance', () => {
         messaging: { customSendMessage: backend.customSendMessage },
       })
     );
-    // The disclaimer gates what the user sees, not the welcome request.
+    // The disclaimer gates what the user sees, not the welcome request, though
+    // its docs say it shows before a user can start chatting (MAIN-NOTES M44).
     const welcome = await backend.next();
     expect(welcome.request.input.text).toBe('');
     expect(instance.getState().disclaimersAccepted).toEqual({});

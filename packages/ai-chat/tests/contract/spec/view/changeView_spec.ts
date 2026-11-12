@@ -21,10 +21,12 @@ import {
 } from '../../../../src/aiChatEntry';
 import {
   EventRecorder,
+  changeView,
   contractChat,
   contractSetup,
   deferred,
   fakeBackend,
+  pause,
   recordEvents,
 } from '../../helpers';
 
@@ -41,23 +43,6 @@ async function mount(): Promise<ChatInstance> {
     messaging: { skipWelcome: true, customSendMessage: () => undefined },
   });
   return instance;
-}
-
-/** Calls `changeView` the way a host would. */
-async function changeView(
-  instance: ChatInstance,
-  view: ViewType | ViewState
-): Promise<void> {
-  await act(async () => {
-    await instance.changeView(view);
-  });
-}
-
-/** Moves a pending promise forward without settling a gate. */
-async function flush(): Promise<void> {
-  await act(async () => {
-    await new Promise((resolve) => setTimeout(resolve, 20));
-  });
 }
 
 // @covers instance.changeView state.viewState state.viewState.launcher
@@ -93,8 +78,9 @@ describe('changeView', () => {
 
   it('changes only the views a partial ViewState names', async () => {
     const instance = await mount();
-    // On `main` the JSDoc allows a partial ViewState, but the parameter's
-    // type is the full `ViewState`, so a host has to cast.
+    // `main` differs from its JSDoc (MAIN-NOTES M29): the JSDoc allows a
+    // partial ViewState, but the parameter's type is the full `ViewState`, so
+    // a host has to cast.
     await changeView(instance, { mainWindow: true } as ViewState);
     expect(instance.getState().viewState).toEqual(BOTH_OPEN);
   });
@@ -259,8 +245,8 @@ describe('view change events', () => {
     instance.once({
       type: BusEventType.VIEW_CHANGE,
       handler: (event: BusEventViewChange) => {
-        // On `main` the JSDoc says a view:change handler can change
-        // newViewState, but the object is frozen: only replacing it works.
+        // `main` differs from its JSDoc (MAIN-NOTES M30): the JSDoc says a
+        // handler can change newViewState, but the object is frozen.
         try {
           event.newViewState.launcher = true;
         } catch {
@@ -288,7 +274,8 @@ describe('view change events', () => {
         resolved = true;
       });
     });
-    await flush();
+    // Gives the pending call time to move on, without settling the gate.
+    await pause(20);
     expect(resolved).toBe(false);
     expect(instance.getState().viewState).toEqual(LAUNCHER_ONLY);
     expect(events.types()).toEqual([BusEventType.VIEW_PRE_CHANGE]);
@@ -314,7 +301,8 @@ describe('view change events', () => {
         resolved = true;
       });
     });
-    await flush();
+    // Gives the pending call time to move on, without settling the gate.
+    await pause(20);
     expect(resolved).toBe(false);
     expect(instance.getState().viewState).toEqual(MAIN_WINDOW_ONLY);
     gate.resolve();
@@ -324,6 +312,7 @@ describe('view change events', () => {
     expect(resolved).toBe(true);
   });
 
+  // Not in the JSDoc (MAIN-NOTES M31).
   it('rejects a changeView made while another view change is running', async () => {
     const instance = await mount();
     const gate = deferred();
@@ -347,6 +336,7 @@ describe('view change events', () => {
     expect(instance.getState().viewState).toEqual(MAIN_WINDOW_ONLY);
   });
 
+  // Not in the JSDoc (MAIN-NOTES M31).
   it('rejects with the error a view:pre:change handler throws, leaves the view, and accepts the next call', async () => {
     const instance = await mount();
     instance.once({
