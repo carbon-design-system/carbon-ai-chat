@@ -12,9 +12,11 @@
  * actions write them, so they keep the lifetime they had on the item's local
  * copy: an option chosen in an item stays chosen until the chat builds a new
  * copy of that item, removes it, or loads new history. A new copy of a live
- * response's item waits to be announced once it shows settled.
+ * response's item waits to be announced once it shows settled. A copy an
+ * upsert built that the chat can't draw is marked with what it's missing.
  */
 
+import { findDrawIssues } from '../../sdk/schema/outputItemToLocalItem';
 import { conversationActions } from '../../sdk/store/conversationActions';
 import { SET_MESSAGE_ITEM_ANNOUNCED } from './actions';
 import { isResponse } from '../../sdk/utils/messageUtils';
@@ -24,7 +26,11 @@ import {
   type ItemPlan,
 } from '../../sdk/utils/publicMessageItems';
 import type { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
-import type { Message, MessageRequest } from '../../types/messaging/Messages';
+import type {
+  Message,
+  MessageRequest,
+  MessageResponse,
+} from '../../types/messaging/Messages';
 import type { ConversationState } from '../../types/state/AppState';
 import type { ViewPartitionState } from '../../types/state/ViewPartitionState';
 import type ObjectMap from '../../types/utilities/ObjectMap';
@@ -268,9 +274,59 @@ function markNewCopies(
 }
 
 /**
+ * Marks each top-level copy an upsert built for `message` that the chat can't
+ * draw with what it's missing, as the upsert's builder did. Only that builder
+ * checked; copies other writes build, and copies a write kept, aren't checked
+ * again.
+ */
+function markUndrawableCopies(
+  flags: ItemFlags,
+  action: ItemWriteAction,
+  before: ConversationState,
+  after: ConversationState,
+  plans: WritePlans
+): ItemFlags {
+  if (
+    action.type !== conversationActions.UPSERT_MESSAGE ||
+    action.options?.received
+  ) {
+    return flags;
+  }
+  const messageID = action.message.id;
+  const message = after.allMessagesByID[messageID] as MessageResponse;
+  const missingByLocalID = new Map<string, string[]>();
+  after.assistantMessageState.localMessageIDs.forEach((localID) => {
+    const local = after.allMessageItemsByID[localID];
+    if (
+      local?.fullMessageID !== messageID ||
+      before.allMessageItemsByID[localID] === local
+    ) {
+      return;
+    }
+    const missing = findDrawIssues(local.item, message);
+    if (missing.length) {
+      missingByLocalID.set(localID, missing);
+    }
+  });
+  if (!missingByLocalID.size) {
+    return flags;
+  }
+  const itemIDs = itemIDsByLocalID(plans.after());
+  const next = { ...flags };
+  missingByLocalID.forEach((missing, localID) => {
+    const itemID = itemIDs.get(localID);
+    if (itemID) {
+      next[itemID] = { ...next[itemID], messageID, cannotDraw: { missing } };
+    }
+  });
+  return next;
+}
+
+/**
  * Fits the flags of a message's items to a write that builds new copies of
  * them: flags follow the copies they were set on, and the new copies get
- * their announcement flags. Each state's plan of the message is made once.
+ * their announcement and can't-draw flags. Each state's plan of the message is
+ * made once.
  */
 function reactToRebuild(
   flags: ItemFlags,
@@ -281,7 +337,7 @@ function reactToRebuild(
   const messageID = action.message.id;
   const plans = writePlans(messageID, before, after);
   const flagged = flaggedItemsOf(flags, new Set([messageID]));
-  return markNewCopies(
+  const marked = markNewCopies(
     followLocalCopies(flags, flagged, plans),
     flags,
     flagged.length > 0,
@@ -290,6 +346,7 @@ function reactToRebuild(
     after,
     plans
   );
+  return markUndrawableCopies(marked, action, before, after, plans);
 }
 
 /** Whether a write builds new local copies of a message's items. */

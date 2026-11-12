@@ -380,11 +380,20 @@ function isSupportedMessageItemInFooter(
  * listed, such as an image's `source`, draw without the field.
  */
 function findDrawIssues(item: GenericItem, message: MessageResponse): string[] {
-  const issues: string[] = [];
-  checkItem(item, '', true, issues);
+  const issues = findItemDrawIssues(item);
   if ((item.response_type as string) === MessageResponseTypes.SYSTEM) {
     checkMessageBeforeSystemItem(message, issues);
   }
+  return issues;
+}
+
+/**
+ * Lists what keeps an item from drawing by its own fields, leaving out the check a
+ * `system` item makes of the message around it. See {@link findDrawIssues}.
+ */
+function findItemDrawIssues(item: GenericItem): string[] {
+  const issues: string[] = [];
+  checkItem(item, '', true, issues);
   return issues;
 }
 
@@ -616,4 +625,5 @@ export {
   createLocalMessageItemsForNestedMessageItems,
   keepNestedLocalIDs,
   findDrawIssues,
+  findItemDrawIssues,
 };

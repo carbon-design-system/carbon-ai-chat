@@ -148,15 +148,6 @@ interface LocalMessageUIState<
   isIntermediateStreaming?: boolean;
 
   /**
-   * Set on an item `upsertMessage` wrote that the chat can't draw, with the path of each field it's missing. While
-   * the item streams it stays hidden; once its stream completes it shows an error instead. An item with it has no
-   * nested local items.
-   *
-   * @internal
-   */
-  cannotDraw?: { missing: string[] };
-
-  /**
    * Set once the chat has checked agent availability for this "connect_to_agent" item, so an upsert does not check
    * again.
    *

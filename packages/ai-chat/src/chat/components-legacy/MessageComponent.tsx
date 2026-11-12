@@ -194,6 +194,12 @@ interface MessageProps
   needsAnnouncement?: boolean;
 
   /**
+   * Whether the chat can't draw this item, from the item's view flags. Its
+   * connector passes it in.
+   */
+  cannotDraw?: boolean;
+
+  /**
    * The original message that came from the assistant.
    */
   message: Message;
@@ -497,10 +503,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
    * Whether this item failed to draw, or the chat already knows it can't.
    */
   private isFailedItem() {
-    return (
-      this.state.didRenderErrorOccur ||
-      Boolean(this.props.localMessageItem.ui_state.cannotDraw)
-    );
+    return this.state.didRenderErrorOccur || Boolean(this.props.cannotDraw);
   }
 
   /**
@@ -1516,14 +1519,20 @@ function canRenderIntermediateStreaming(type: MessageResponseTypes) {
  * Connects the (Pure)class `MessageComponent` to the store/context for the values
  * it must not receive as churning threaded props: a narrow language-pack bag
  * (`shallowEqual`, so the PureComponent only re-renders when one of its strings
- * changes), the intl formatter, the two theme primitives, and whether the
- * item waits to be announced, from its view flags. `serviceManager`,
+ * changes), the intl formatter, the two theme primitives, and, from the
+ * item's view flags, whether it waits to be announced and whether the chat
+ * can't draw it. `serviceManager`,
  * `locale`, message data and callbacks stay threaded from `MessagesComponent`.
  * The ref is forwarded so `MessagesComponent` still receives the class instance.
  */
 type MessageConnectorProps = Omit<
   MessageProps,
-  'languagePack' | 'intl' | 'useAITheme' | 'carbonTheme' | 'needsAnnouncement'
+  | 'languagePack'
+  | 'intl'
+  | 'useAITheme'
+  | 'carbonTheme'
+  | 'needsAnnouncement'
+  | 'cannotDraw'
 >;
 
 const MessageComponentConnector = React.forwardRef<
@@ -1539,14 +1548,13 @@ const MessageComponentConnector = React.forwardRef<
     (state: AppState) => state.view.derivedConfig.themeWithDefaults.aiEnabled
   );
   const { carbonTheme } = useCarbonTheme();
-  const needsAnnouncement = useMessageItemFlags(
-    props.localMessageItem.ui_state.id
-  )?.needsAnnouncement;
+  const flags = useMessageItemFlags(props.localMessageItem.ui_state.id);
   return (
     <MessageComponent
       {...(props as unknown as MessageProps)}
       ref={ref}
-      needsAnnouncement={needsAnnouncement}
+      needsAnnouncement={flags?.needsAnnouncement}
+      cannotDraw={Boolean(flags?.cannotDraw)}
       languagePack={languagePack}
       intl={intl}
       useAITheme={aiEnabled}

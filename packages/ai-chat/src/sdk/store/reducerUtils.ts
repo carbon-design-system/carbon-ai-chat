@@ -42,6 +42,7 @@ import type { MessageWriteOptions } from './messageWriteTypes';
 import {
   createLocalMessageItemsForNestedMessageItems,
   findDrawIssues,
+  findItemDrawIssues,
   keepNestedLocalIDs,
   outputItemToLocalItem,
 } from '../schema/outputItemToLocalItem';
@@ -268,7 +269,8 @@ function canReuseLocalItem(
   matchedPrev: LocalMessageItem | undefined,
   item: GenericItem,
   isStreaming: boolean,
-  message: MessageResponse
+  message: MessageResponse,
+  prevMessage: MessageResponse | undefined
 ): boolean {
   if (!matchedPrev) {
     return false;
@@ -278,10 +280,12 @@ function canReuseLocalItem(
   if (prevIsStreaming !== isStreaming || !isEqual(matchedPrev.item, item)) {
     return false;
   }
+  // A system item draws only when the message before it does, so it's built again
+  // when that changes.
   return (
     (item.response_type as string) !== MessageResponseTypes.SYSTEM ||
     isEqual(
-      matchedPrev.ui_state.cannotDraw?.missing ?? [],
+      findDrawIssues(item, prevMessage ?? message),
       findDrawIssues(item, message)
     )
   );
@@ -347,7 +351,7 @@ function addNestedLocalItems(
 /**
  * Builds a fresh {@link LocalMessageItem} for an upserted item under `localID`, and adds
  * local items for anything nested in it to `newLocalItemsByID`. An item the chat can't
- * draw is marked `cannotDraw` and gets no nested local items, since building them would
+ * draw ({@link findDrawIssues}) gets no nested local items, since building them would
  * throw.
  */
 function buildUpsertedLocalItem(
@@ -357,15 +361,13 @@ function buildUpsertedLocalItem(
   matchedPrev: LocalMessageItem | undefined,
   isStreaming: boolean,
   newLocalItemsByID: ObjectMap<LocalMessageItem>
-): LocalMessageItem {
+): { localItem: LocalMessageItem; canDraw: boolean } {
   const localItem = outputItemToLocalItem(item, message, false);
   localItem.ui_state.id = localID;
   localItem.fullMessageID = message.id;
   applyUpsertUIState(localItem, matchedPrev, isStreaming);
-  const missing = findDrawIssues(item, message);
-  if (missing.length) {
-    localItem.ui_state.cannotDraw = { missing };
-    return localItem;
+  if (findDrawIssues(item, message).length) {
+    return { localItem, canDraw: false };
   }
   addNestedLocalItems(
     localItem,
@@ -374,7 +376,7 @@ function buildUpsertedLocalItem(
     !isStreaming,
     newLocalItemsByID
   );
-  return localItem;
+  return { localItem, canDraw: true };
 }
 
 /**
@@ -382,16 +384,19 @@ function buildUpsertedLocalItem(
  * of the same item before it. A host that streams partial JSON often sends a grid whose
  * newest cell has no `items` yet; hiding the grid on each such snapshot would make it
  * flicker. A previous version of another type isn't the same item, so it isn't kept.
+ *
+ * The previous version counts as drawn when its own fields can draw. A system item's
+ * check of the message around it isn't made again here: the version shown was checked
+ * when it was written, and one kept in its place by this rule was the version shown.
  */
 function keepsLastDrawn(
   localItem: LocalMessageItem,
   matchedPrev: LocalMessageItem | undefined
 ): boolean {
   return Boolean(
-    localItem.ui_state.cannotDraw &&
     matchedPrev &&
-    !matchedPrev.ui_state.cannotDraw &&
-    matchedPrev.item.response_type === localItem.item.response_type
+    matchedPrev.item.response_type === localItem.item.response_type &&
+    !findItemDrawIssues(matchedPrev.item).length
   );
 }
 
@@ -474,21 +479,31 @@ function rebuildLocalItemsForUpsert(
     );
   const newLocalIDsForMessage: string[] = [];
 
+  const prevMessage = state.allMessagesByID[messageID] as
+    MessageResponse | undefined;
   shownItems.forEach(({ item, matchedPrev }) => {
     const streamId = streamItemID(messageID, item);
-    let localItem = canReuseLocalItem(matchedPrev, item, isStreaming, message)
-      ? matchedPrev
-      : buildUpsertedLocalItem(
-          item,
-          message,
-          // Keep the resolved ID so React keys and slot names stay stable.
-          matchedPrev?.ui_state.id ?? streamId ?? uuid(),
-          matchedPrev,
-          isStreaming,
-          newLocalItemsByID
-        );
-    if (isStreaming && keepsLastDrawn(localItem, matchedPrev)) {
+    let localItem: LocalMessageItem;
+    if (
+      canReuseLocalItem(matchedPrev, item, isStreaming, message, prevMessage)
+    ) {
       localItem = matchedPrev;
+    } else {
+      const built = buildUpsertedLocalItem(
+        item,
+        message,
+        // Keep the resolved ID so React keys and slot names stay stable.
+        matchedPrev?.ui_state.id ?? streamId ?? uuid(),
+        matchedPrev,
+        isStreaming,
+        newLocalItemsByID
+      );
+      localItem =
+        isStreaming &&
+        !built.canDraw &&
+        keepsLastDrawn(built.localItem, matchedPrev)
+          ? matchedPrev
+          : built.localItem;
     }
 
     newLocalIDsForMessage.push(localItem.ui_state.id);

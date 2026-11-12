@@ -1037,19 +1037,23 @@ class UpsertWorkflow {
     refsBefore: Map<string, LocalMessageItem>,
     reportErrors = true
   ) {
+    if (!reportErrors) {
+      return;
+    }
     const state = this.serviceManager.store.getState();
+    const message = state.allMessagesByID[messageID] as MessageResponse;
     for (const localID of state.assistantMessageState.localMessageIDs) {
       const localItem = state.allMessageItemsByID[localID];
-      const { cannotDraw } = localItem?.ui_state ?? {};
       if (
         localItem?.fullMessageID !== messageID ||
-        !cannotDraw ||
         refsBefore.get(localID) === localItem ||
         isItemStillStreaming(localItem)
       ) {
         continue;
       }
-      if (!reportErrors) {
+      // A new copy here is the upsert's, so this is the check it was built with.
+      const missing = findDrawIssues(localItem.item, message);
+      if (!missing.length) {
         continue;
       }
       const responseType = localItem.item.response_type;
@@ -1060,13 +1064,13 @@ class UpsertWorkflow {
           {
             responseType,
             messageID,
-            missing: cannotDraw.missing.join(', '),
+            missing: missing.join(', '),
           }
         ),
         otherData: {
           messageID,
           responseType,
-          missing: [...cannotDraw.missing],
+          missing,
           item: cloneDeep(localItem.item),
         },
       });
