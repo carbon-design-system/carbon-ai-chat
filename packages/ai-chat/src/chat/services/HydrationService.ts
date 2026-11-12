@@ -65,6 +65,13 @@ class HydrationService {
   private hydrating = false;
 
   /**
+   * Indicates if a hydration is running. This turns false once the hydration settles, before `chat:ready` fires.
+   */
+  get isHydrating() {
+    return this.hydrating;
+  }
+
+  /**
    * Indicates if a restart is currently in progress.
    */
   private restarting = false;
