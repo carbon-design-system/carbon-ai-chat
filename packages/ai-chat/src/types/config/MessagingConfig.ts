@@ -139,9 +139,12 @@ export interface ChatInstanceMessaging {
    * @param state The {@link MessageState} to record for this message once the updater
    *   resolves.
    * @param updater Function that produces the {@link MessageResponse} to store.
-   * @throws `TypeError` when the updater returns `null`/`undefined`, returns a message
-   *   whose `id` differs from `messageID`, or returns a non-assistant message (a request
-   *   or a human-agent message).
+   * @throws `TypeError` when `messageID` is the ID of a request, or when the updater
+   *   returns `null`/`undefined`, a message whose `id` differs from `messageID`, or a
+   *   non-assistant message (a request or a human-agent message). These cases reject
+   *   before any event fires, and store nothing. A {@link BusEventType.PRE_RECEIVE}
+   *   handler that changes the message's `id` also rejects the call with a `TypeError`,
+   *   and the message isn't stored.
    * @remarks A STREAMING sequence whose host simply stops calling `upsertMessage` without
    *   sending a terminal COMPLETE or ERROR write will leave `streamingState.isDone` as
    *   `false` indefinitely. The host is responsible for sending a terminal write, or for

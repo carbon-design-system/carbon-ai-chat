@@ -10,6 +10,7 @@
 import { act } from '@testing-library/react';
 
 import {
+  BusEventPreReceive,
   BusEventType,
   HumanAgentMessageType,
   MessageResponse,
@@ -79,21 +80,15 @@ describeShared('upsertMessage when the updater fails', (makeDriver) => {
     expect(chat.messages()).toEqual([]);
   });
 
-  it('rejects with an Error when the returned ID differs from the call ID', async () => {
-    // The upsertMessage JSDoc says `TypeError`; `main` rejects with a plain
-    // `Error`. Either passes, so a later fix to `TypeError` doesn't fail here.
+  it('rejects with a TypeError when the returned ID differs from the call ID', async () => {
     const chat = await makeDriver();
-    let rejection: unknown;
     await act(async () => {
-      await chat.messaging
-        .upsertMessage('m1', MessageState.COMPLETE, () =>
+      await expect(
+        chat.messaging.upsertMessage('m1', MessageState.COMPLETE, () =>
           textResponse('wrong', 'other')
         )
-        .catch((error) => {
-          rejection = error;
-        });
+      ).rejects.toBeInstanceOf(TypeError);
     });
-    expect(rejection).toBeInstanceOf(Error);
     expect(chat.messages()).toEqual([]);
   });
 
@@ -118,35 +113,28 @@ describeShared('upsertMessage when the updater fails', (makeDriver) => {
     expect(chat.messages()).toEqual([]);
   });
 
-  it('rejects for the ID of a request the user sent, and leaves it alone', async () => {
+  it('rejects with a TypeError for the ID of a request the user sent, and leaves it alone', async () => {
     const chat = await makeDriver();
     await finishSend(
       await startSend(chat, { id: 'req-1', input: { text: 'hello' } })
     );
-    let rejection: unknown;
     await act(async () => {
-      await chat.messaging
-        .upsertMessage('req-1', MessageState.COMPLETE, () =>
+      await expect(
+        chat.messaging.upsertMessage('req-1', MessageState.COMPLETE, () =>
           textResponse('x', 'req-1')
         )
-        .catch((error) => {
-          rejection = error;
-        });
+      ).rejects.toBeInstanceOf(TypeError);
     });
-    // The upsertMessage JSDoc says `TypeError`; `main` rejects with a plain
-    // `Error`. Either passes, so a later fix to `TypeError` doesn't fail here.
-    expect(rejection).toBeInstanceOf(Error);
     expect(chat.messages().map((message) => message.id)).toEqual(['req-1']);
     expect(
       (chat.messages()[0] as { input?: { text?: string } }).input.text
     ).toBe('hello');
   });
 
-  it('rejects for a returned request and stores nothing', async () => {
-    // `main` has no check for a returned request: a later step fails reading
-    // the message the store dropped. The JSDoc names a `TypeError`; this
-    // records only that the call rejects.
+  // @covers event.pre:receive event.receive
+  it('rejects with a TypeError for a returned request, fires nothing, and stores nothing', async () => {
     const chat = await makeDriver();
+    const events = recordEvents(chat, RECEIVE_EVENTS);
     await act(async () => {
       await expect(
         chat.messaging.upsertMessage(
@@ -155,15 +143,16 @@ describeShared('upsertMessage when the updater fails', (makeDriver) => {
           () =>
             ({ id: 'm1', input: { text: 'x' } }) as unknown as MessageResponse
         )
-      ).rejects.toBeDefined();
+      ).rejects.toBeInstanceOf(TypeError);
     });
+    expect(events.types()).toEqual([]);
     expect(chat.messages()).toEqual([]);
   });
 
-  it('stores a returned human-agent message', async () => {
-    // `main` accepts it; the upsertMessage JSDoc says it rejects with a
-    // `TypeError`.
+  // @covers event.pre:receive event.receive
+  it('rejects with a TypeError for a returned human-agent message, fires nothing, and stores nothing', async () => {
     const chat = await makeDriver();
+    const events = recordEvents(chat, RECEIVE_EVENTS);
     await act(async () => {
       await expect(
         chat.messaging.upsertMessage('m1', MessageState.COMPLETE, () =>
@@ -179,10 +168,31 @@ describeShared('upsertMessage when the updater fails', (makeDriver) => {
             },
           })
         )
-      ).resolves.toBeUndefined();
+      ).rejects.toBeInstanceOf(TypeError);
     });
-    expect(chat.messages().map((message) => message.id)).toEqual(['m1']);
-    expect(textsOf(chat, 'm1')).toEqual(['from agent']);
+    expect(events.types()).toEqual([]);
+    expect(chat.messages()).toEqual([]);
+  });
+
+  // @covers event.pre:receive event.receive
+  it('rejects with a TypeError when a pre:receive handler changes the ID, and stores nothing', async () => {
+    const chat = await makeDriver();
+    chat.on({
+      type: BusEventType.PRE_RECEIVE,
+      handler: (event: BusEventPreReceive) => {
+        event.data.id = 'other';
+      },
+    });
+    const events = recordEvents(chat, RECEIVE_EVENTS);
+    await act(async () => {
+      await expect(
+        chat.messaging.upsertMessage('m1', MessageState.COMPLETE, () =>
+          textResponse('x', 'm1')
+        )
+      ).rejects.toBeInstanceOf(TypeError);
+    });
+    expect(events.types()).toEqual(['pre:receive']);
+    expect(chat.messages()).toEqual([]);
   });
 });
 
