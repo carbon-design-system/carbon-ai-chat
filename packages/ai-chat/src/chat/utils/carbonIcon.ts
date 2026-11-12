@@ -11,7 +11,9 @@
  * Creates a React component from a Carbon icon object
  */
 
-import { createElement, FunctionComponent } from 'react';
+import { ComponentType, createElement, FunctionComponent } from 'react';
+import type { CarbonIcon as PublicCarbonIcon } from '@carbon/web-components/es/globals/internal/icon-loader-utils.js';
+import { transformReactIconToCarbonIcon } from '@carbon/ai-chat-components/es/globals/utils/iconTransform.js';
 
 type CarbonIcon = {
   elem: 'svg';
@@ -88,4 +90,21 @@ export function carbonIconToReact(
       )
     );
   };
+}
+
+/**
+ * Converts a consumer-provided icon (a `@carbon/icons` object or an `@carbon/icons-react` component) into a React
+ * component.
+ */
+export function customIconToReact(
+  icon: PublicCarbonIcon | ComponentType<any> | undefined
+): FunctionComponent<CarbonIconProps> | undefined {
+  if (!icon) {
+    return undefined;
+  }
+  return carbonIconToReact(
+    transformReactIconToCarbonIcon(icon, 16) as Parameters<
+      typeof carbonIconToReact
+    >[0]
+  );
 }

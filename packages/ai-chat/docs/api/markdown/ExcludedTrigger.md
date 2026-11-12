@@ -6,11 +6,9 @@
 
 # ExcludedTrigger
 
-**Experimental.**
-
 - Kind: Interface
 - Category: Utilities
-- Reference: https://chat.carbondesignsystem.com/version/v1.24.0/docs/interfaces/Type_reference.ExcludedTrigger.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.ExcludedTrigger.html
 
 A trigger character that carbonAutocomplete stands down for, passed
 as its only argument. Use it when autocomplete runs alongside a mention
@@ -29,24 +27,20 @@ interface ExcludedTrigger
 
 `char: string`
 
-**Experimental.**
-
 The character to stand down for, such as `"@"` or `"/"`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0/docs/interfaces/Type_reference.ExcludedTrigger.html#char)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.ExcludedTrigger.html#char)
 
 ### position
 
 `position: "start" | "anywhere"`
-
-**Experimental.**
 
 Where that character has to sit. `"anywhere"` stands down for any word
 starting with it; `"start"` stands down only when that word starts the
 line. Mirrors the picker's own
 TriggerSuggestionConfig.triggerPosition.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0/docs/interfaces/Type_reference.ExcludedTrigger.html#position)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.ExcludedTrigger.html#position)
 
 ## Related
 
