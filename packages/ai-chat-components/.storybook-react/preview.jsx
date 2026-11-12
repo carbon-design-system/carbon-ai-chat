@@ -14,6 +14,7 @@ import customElements from '../custom-elements.json';
 import prettier from 'prettier/standalone';
 import prettierPluginBabel from 'prettier/plugins/babel';
 import prettierPluginEstree from 'prettier/plugins/estree';
+import { docsTheme } from '../.storybook/docs-theme.js';
 
 // Import Carbon styles for React components
 import '@carbon/styles/css/styles.css';
@@ -101,6 +102,7 @@ export const parameters = {
     hideNoControlsWarning: true,
   },
   docs: {
+    theme: docsTheme,
     codePanel: true,
     defaultName: 'Overview',
     source: {

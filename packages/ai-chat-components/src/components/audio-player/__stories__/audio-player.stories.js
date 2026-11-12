@@ -16,6 +16,7 @@ const WITH_TRANSCRIPT_SOURCE_CHROMATIC_DATA_URI =
   'data:audio/wav;base64,UklGRiUAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQEAAACA';
 
 export default {
+  component: 'cds-aichat-audio-player',
   title: 'Components/Audio player',
   args: {
     source:
