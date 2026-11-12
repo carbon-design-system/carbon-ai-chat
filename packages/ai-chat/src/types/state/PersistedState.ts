@@ -20,6 +20,9 @@ import { PersistedHumanAgentState } from './PersistedHumanAgentState';
 interface PersistedState {
   /**
    * Indicates if this state was loaded from browser session storage or if was created as part of a new session.
+   *
+   * @deprecated Any initial state you pass also counts as a restored session, so this can't tell the
+   * two apart. Removed in 2.0.0, with no replacement.
    */
   wasLoadedFromBrowser: boolean;
 
