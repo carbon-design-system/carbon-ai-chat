@@ -149,6 +149,27 @@ describeShared('insertHistory', (makeDriver) => {
     expect(events.types()).toEqual(['history:begin', 'history:end']);
     const [end] = events.of<BusEventHistoryEnd>(BusEventType.HISTORY_END);
     expect(eventIDs(end)).toEqual(['a1']);
+    expect(ids(chat)).toEqual(['a1']);
+  });
+
+  it('lists an ID inserted again once, at its first position, with the later content', async () => {
+    const chat = await makeDriver();
+    await act(() =>
+      chat.messaging.insertHistory([
+        historyRequest('q1', 'hello', T0),
+        historyResponse('a1', 'hi', T1, 'q1'),
+        historyRequest('q2', 'again', T2),
+      ])
+    );
+    await act(() =>
+      chat.messaging.insertHistory([
+        historyRequest('q0', 'first', T0),
+        historyRequest('q1', 'hello', T0),
+        historyResponse('a1', 'hi there', T1, 'q1'),
+      ])
+    );
+    expect(ids(chat)).toEqual(['q0', 'q1', 'a1', 'q2']);
+    expect(texts(chat.messages()[2])).toEqual(['hi there']);
   });
 
   it('fires history:begin, then history:end, each with the items', async () => {
