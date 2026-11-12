@@ -39,7 +39,7 @@ function commandHost(isVisible: boolean) {
     order.push('pending');
   });
   const manager = {
-    store: { getState, dispatch },
+    store: { getState, dispatch, subscribe: () => () => {} },
     fire,
     messageCoordinator: { cancelCurrentMessageRequest },
   } as unknown as ServiceManager;

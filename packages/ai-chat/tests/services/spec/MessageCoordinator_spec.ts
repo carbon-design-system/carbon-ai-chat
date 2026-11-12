@@ -18,6 +18,7 @@ describe('MessageCoordinator', () => {
     status = 'ready';
     service = new MessageCoordinator({
       store: {
+        subscribe: jest.fn(() => jest.fn()),
         getState: () => ({ conversationStatus: status }),
         dispatch: (action: { status: string }) => {
           status = action.status;
@@ -183,7 +184,7 @@ describe('lifecycle publication', () => {
       status = action.status;
     });
     const service = new MessageCoordinator({
-      store: { getState, dispatch },
+      store: { getState, dispatch, subscribe: () => () => {} },
     } as unknown as ServiceManager);
     return {
       service,
@@ -301,6 +302,7 @@ describe('lifecycle publication', () => {
 
 it('creates loading state lazily before the message facade is wired', () => {
   const manager = {
+    store: { subscribe: () => () => {} },
     get messageService() {
       throw new Error('MessageService is not wired yet');
     },

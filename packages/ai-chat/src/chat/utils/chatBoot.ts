@@ -477,6 +477,7 @@ export async function initServiceManagerAndInstance(options: {
   }
 
   serviceManager.instance = instance;
+  serviceManager.messageCoordinator.onInstanceReady();
 
   return { serviceManager, instance };
 }
