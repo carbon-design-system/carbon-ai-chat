@@ -7,26 +7,28 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { createComponent } from '@lit/react';
+import { createComponent, type EventName } from '@lit/react';
 import React from 'react';
 
 import { PromptLineShellElement } from '../components/aichat-prompt-line/index.js';
-import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
+import type { AutocompleteNavigatedEventDetail } from '../components/aichat-prompt-line/index.js';
 
 /**
  * React wrapper for `<cds-aichat-prompt-line-shell>`. The shell is layout-only —
- * named slots plus the `rounded` flag — so this wrapper carries no event
- * mappings or prop transformations. Consumers compose `<PromptLine>`,
+ * named slots plus the `rounded` flag. It reports autocomplete navigation
+ * state without prop transformations. Consumers compose `<PromptLine>`,
  * autocomplete content, file-uploads, send-control, etc. into the named
  * slots themselves.
  */
-const PromptLineShell = withWebComponentBridge(
-  createComponent({
-    tagName: PromptLineShellElement.is,
-    elementClass: PromptLineShellElement,
-    react: React,
-    events: {},
-  })
-);
+const PromptLineShell = createComponent({
+  tagName: PromptLineShellElement.is,
+  elementClass: PromptLineShellElement,
+  react: React,
+  events: {
+    onAutocompleteNavigated: 'cds-aichat-autocomplete-navigated' as EventName<
+      CustomEvent<AutocompleteNavigatedEventDetail>
+    >,
+  },
+});
 
 export default PromptLineShell;

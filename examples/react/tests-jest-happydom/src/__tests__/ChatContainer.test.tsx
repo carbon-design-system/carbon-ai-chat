@@ -25,7 +25,7 @@
  */
 
 import React from 'react';
-import { act, waitFor } from '@testing-library/react';
+import { waitFor } from '@testing-library/react';
 import {
   ChatContainer,
   PageObjectId,
@@ -38,6 +38,7 @@ import {
   openChat,
   renderChatContainer,
   waitForChatElement,
+  sendUserMessage,
 } from './helpers';
 
 // happy-dom (unlike many minimal DOM stubs) implements shadow DOM and
@@ -223,29 +224,19 @@ describe('ChatContainer', () => {
   it(
     'should render a user-defined response type',
     async () => {
-      // Demonstrate how to test custom user_defined response types. The
-      // renderUserDefinedResponse prop receives the message state and returns
-      // a React node — give that node a data-testid so the test can assert
-      // on it without touching internal component selectors.
-      //
-      // Note: instead of driving the chat through the input UI to fire the
-      // send flow, this test captures the chat instance via `onBeforeRender`
-      // and calls `instance.send(...)` directly. Driving the input through
-      // the UI under happy-dom is unreliable (`@lit/react`'s onChange
-      // listener does not fire there, so the send button stays disabled);
-      // the public instance API exercises the same customSendMessage path
-      // without that dependency.
+      // A real prompt change and send-button click must reach customSendMessage.
       const CUSTOM_TYPE = 'my-custom-response';
 
-      let chatInstance: any = null;
+      const requests: string[] = [];
 
       const { container } = await renderChatContainer(
         <ChatContainer
-          onBeforeRender={(instance) => {
-            chatInstance = instance;
-          }}
           messaging={{
-            customSendMessage(_request, _requestOptions, instance) {
+            customSendMessage(request, _requestOptions, instance) {
+              requests.push(request.input.text);
+              if (!request.input.text) {
+                return;
+              }
               instance.messaging.addMessage({
                 output: {
                   generic: [
@@ -275,19 +266,16 @@ describe('ChatContainer', () => {
 
       const customElement = await waitForChatElement(container);
 
-      // Wait for `onBeforeRender` to run and capture the instance.
-      await waitFor(
-        () => {
-          if (!chatInstance) {
-            throw new Error('Chat instance not yet captured');
-          }
-          return chatInstance;
-        },
-        { timeout: WAIT_FOR_TIMEOUT }
-      );
-
-      await act(async () => {
-        await chatInstance.send('Hello');
+      const shadowRoot = await openChat(customElement);
+      await waitFor(() => expect(requests).toEqual(['']), {
+        timeout: WAIT_FOR_TIMEOUT,
+      });
+      expect(
+        customElement.querySelector('[data-testid="custom-response"]')
+      ).toBeNull();
+      await sendUserMessage(shadowRoot, 'Hello');
+      await waitFor(() => expect(requests).toEqual(['', 'Hello']), {
+        timeout: WAIT_FOR_TIMEOUT,
       });
 
       // The rendered output is portaled into the light DOM of the host element,

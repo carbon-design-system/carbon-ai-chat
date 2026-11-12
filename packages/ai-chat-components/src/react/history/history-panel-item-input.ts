@@ -7,22 +7,27 @@
  *  @license
  */
 
-import { createComponent } from '@lit/react';
+import { createComponent, type EventName } from '@lit/react';
 import React from 'react';
 import { CDSAIChatHistoryPanelItemInput } from '../../components/aichat-history/index.js';
-import { withWebComponentBridge } from '../utils/withWebComponentBridge.js';
+import type {
+  HistoryRenameChangeEventDetail,
+  HistoryRenameSaveEventDetail,
+} from '../../components/aichat-history/index.js';
 
-const HistoryPanelItemInput = withWebComponentBridge(
-  createComponent({
-    tagName: CDSAIChatHistoryPanelItemInput.is,
-    elementClass: CDSAIChatHistoryPanelItemInput,
-    react: React,
-    events: {
-      onChange: 'history-panel-item-input-change',
-      onCancel: 'history-panel-item-input-cancel',
-      onSave: 'history-panel-item-input-save',
-    },
-  })
-);
+const HistoryPanelItemInput = createComponent({
+  tagName: CDSAIChatHistoryPanelItemInput.is,
+  elementClass: CDSAIChatHistoryPanelItemInput,
+  react: React,
+  events: {
+    onChange: 'history-panel-item-input-change' as EventName<
+      CustomEvent<HistoryRenameChangeEventDetail>
+    >,
+    onCancel: 'history-panel-item-input-cancel' as EventName<CustomEvent<null>>,
+    onSave: 'history-panel-item-input-save' as EventName<
+      CustomEvent<HistoryRenameSaveEventDetail>
+    >,
+  },
+});
 
 export default HistoryPanelItemInput;

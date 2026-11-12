@@ -7,21 +7,23 @@
  *  @license
  */
 
-import { createComponent } from '@lit/react';
+import { createComponent, type EventName } from '@lit/react';
 import React from 'react';
 import { CDSAIChatHistoryToolbar } from '../../components/aichat-history/index.js';
-import { withWebComponentBridge } from '../utils/withWebComponentBridge.js';
+import type { HistorySearchInputEventDetail } from '../../components/aichat-history/index.js';
 
-const HistoryToolbar = withWebComponentBridge(
-  createComponent({
-    tagName: CDSAIChatHistoryToolbar.is,
-    elementClass: CDSAIChatHistoryToolbar,
-    react: React,
-    events: {
-      onSearchInput: 'cds-search-input',
-      onNewChatClick: 'chat-history-new-chat-click',
-    },
-  })
-);
+const HistoryToolbar = createComponent({
+  tagName: CDSAIChatHistoryToolbar.is,
+  elementClass: CDSAIChatHistoryToolbar,
+  react: React,
+  events: {
+    onSearchInput: 'cds-search-input' as EventName<
+      CustomEvent<HistorySearchInputEventDetail>
+    >,
+    onNewChatClick: 'chat-history-new-chat-click' as EventName<
+      CustomEvent<null>
+    >,
+  },
+});
 
 export default HistoryToolbar;

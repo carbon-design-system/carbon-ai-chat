@@ -11,15 +11,12 @@ import { createComponent } from '@lit/react';
 import React from 'react';
 
 import { CDSAIChatTable } from '../components/aichat-table/index.js';
-import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
-const Table = withWebComponentBridge(
-  createComponent({
-    tagName: CDSAIChatTable.is,
-    elementClass: CDSAIChatTable,
-    react: React,
-  })
-);
+const Table = createComponent({
+  tagName: CDSAIChatTable.is,
+  elementClass: CDSAIChatTable,
+  react: React,
+});
 
 export default Table;
 export type {

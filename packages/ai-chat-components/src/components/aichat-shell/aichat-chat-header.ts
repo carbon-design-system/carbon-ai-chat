@@ -8,7 +8,7 @@
  */
 
 import { LitElement, html, nothing } from 'lit';
-import { property, state } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
 import '@carbon/web-components/es/components/button/index.js';
 import '@carbon/web-components/es/components/icon-button/index.js';
@@ -52,10 +52,9 @@ class CdsAiChatChatHeader extends LitElement {
   static styles = styles;
 
   /**
-   * Whether the component is in RTL mode.
-   * @internal
+   * Whether action and navigation menus use right-to-left alignment.
    */
-  @state() private isRTL = false;
+  @property({ type: Boolean, attribute: false }) isRTL = false;
 
   /**
    * Selector strings for finding focusable elements.

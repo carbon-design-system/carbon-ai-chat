@@ -11,10 +11,8 @@ import cx from 'classnames';
 import Processing from '@carbon/ai-chat-components/es/react/processing.js';
 import React, { useEffect } from 'react';
 import { useAriaAnnouncer } from '../../../hooks/useAriaAnnouncer';
-import { CarbonTheme } from '../../../../types/config/CarbonTheme';
 
 interface ProcessingWithTextProps {
-  carbonTheme: CarbonTheme;
   index: number;
   isTypingMessage?: string;
   isVisible: boolean;
@@ -23,7 +21,6 @@ interface ProcessingWithTextProps {
 }
 
 function ProcessingWithText({
-  carbonTheme,
   index,
   isTypingMessage,
   isVisible,
@@ -53,7 +50,6 @@ function ProcessingWithText({
                   className="cds-aichat--processing-component"
                   loop
                   quickLoad
-                  carbonTheme={carbonTheme}
                   aria-label={processingLabel}
                 />{' '}
                 <div className="cds-aichat--processing-label">

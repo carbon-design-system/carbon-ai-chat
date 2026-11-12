@@ -7,11 +7,18 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { createComponent } from '@lit/react';
+import { createComponent, type EventName } from '@lit/react';
 import React from 'react';
 
 import { PromptLineElement } from '../components/aichat-prompt-line/index.js';
-import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
+import type {
+  InputChangeEventDetail,
+  LightDomPortalEventDetail,
+  PromptFocusEventDetail,
+  PromptKeydownEventDetail,
+  TriggerChangeEventDetail,
+  TypingEventDetail,
+} from '../components/aichat-prompt-line/index.js';
 
 /**
  * React wrapper for `<cds-aichat-prompt-line>`. Mirrors the WC's prompt-line
@@ -22,28 +29,36 @@ import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
  * happens one level up at the shell. Imperative
  * methods are reachable via ref.
  *
- * Wrapped in `withWebComponentBridge` so testId / rich / extensions / content
- * props land on the underlying custom element in happy-dom / jsdom, where
- * `@lit/react` doesn't reliably flush properties on its own.
- *
  * @experimental
  */
-const PromptLine = withWebComponentBridge(
-  createComponent({
-    tagName: PromptLineElement.is,
-    elementClass: PromptLineElement,
-    react: React,
-    events: {
-      onChange: 'cds-aichat-prompt-change',
-      onFocus: 'cds-aichat-prompt-focus',
-      onBlur: 'cds-aichat-prompt-blur',
-      onTyping: 'cds-aichat-prompt-typing',
-      onKeyDown: 'cds-aichat-prompt-keydown',
-      onSendIntent: 'cds-aichat-prompt-send-intent',
-      onTriggerChange: 'cds-aichat-trigger-change',
-      onLightDomPortal: 'cds-aichat-light-dom-portal',
-    },
-  })
-);
+const PromptLine = createComponent({
+  tagName: PromptLineElement.is,
+  elementClass: PromptLineElement,
+  react: React,
+  events: {
+    onChange: 'cds-aichat-prompt-change' as EventName<
+      CustomEvent<InputChangeEventDetail>
+    >,
+    onFocus: 'cds-aichat-prompt-focus' as EventName<
+      CustomEvent<PromptFocusEventDetail>
+    >,
+    onBlur: 'cds-aichat-prompt-blur' as EventName<CustomEvent<null>>,
+    onTyping: 'cds-aichat-prompt-typing' as EventName<
+      CustomEvent<TypingEventDetail>
+    >,
+    onKeyDown: 'cds-aichat-prompt-keydown' as EventName<
+      CustomEvent<PromptKeydownEventDetail>
+    >,
+    onSendIntent: 'cds-aichat-prompt-send-intent' as EventName<
+      CustomEvent<null>
+    >,
+    onTriggerChange: 'cds-aichat-trigger-change' as EventName<
+      CustomEvent<TriggerChangeEventDetail | null>
+    >,
+    onLightDomPortal: 'cds-aichat-light-dom-portal' as EventName<
+      CustomEvent<LightDomPortalEventDetail>
+    >,
+  },
+});
 
 export default PromptLine;

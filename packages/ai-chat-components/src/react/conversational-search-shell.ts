@@ -11,21 +11,18 @@ import { createComponent, type EventName } from '@lit/react';
 import React from 'react';
 import { ConversationalSearchShell as ConversationalSearchShellElement } from '../components/aichat-conversational-search/index.js';
 import { type CitationToggleEventDetail } from '../components/aichat-conversational-search/aichat-conversational-search-shell.js';
-import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
-const ConversationalSearchShell = withWebComponentBridge(
-  createComponent({
-    tagName: ConversationalSearchShellElement.is,
-    elementClass: ConversationalSearchShellElement,
-    react: React,
-    events: {
-      onCitationsToggle:
-        ConversationalSearchShellElement.eventCitationsToggle as EventName<
-          CustomEvent<CitationToggleEventDetail>
-        >,
-    },
-  })
-);
+const ConversationalSearchShell = createComponent({
+  tagName: ConversationalSearchShellElement.is,
+  elementClass: ConversationalSearchShellElement,
+  react: React,
+  events: {
+    onCitationsToggle:
+      ConversationalSearchShellElement.eventCitationsToggle as EventName<
+        CustomEvent<CitationToggleEventDetail>
+      >,
+  },
+});
 
 export { ConversationalSearchShell };
 export default ConversationalSearchShell;
