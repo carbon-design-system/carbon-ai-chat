@@ -134,7 +134,7 @@ const publicCopies = new WeakMap<object, unknown>();
  * A frozen deep copy of a value, made once per source object. A value that
  * isn't an object passes through.
  */
-export function publicCopyOf<T>(value: T): T {
+function publicCopyOf<T>(value: T): T {
   if (value === null || typeof value !== 'object') {
     return value;
   }
