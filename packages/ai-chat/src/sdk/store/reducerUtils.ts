@@ -385,9 +385,10 @@ function buildUpsertedLocalItem(
  * newest cell has no `items` yet; hiding the grid on each such snapshot would make it
  * flicker. A previous version of another type isn't the same item, so it isn't kept.
  *
- * The previous version counts as drawn when its own fields can draw. A system item's
- * check of the message around it isn't made again here: the version shown was checked
- * when it was written, and one kept in its place by this rule was the version shown.
+ * The previous version counts as drawn unless an upsert built it undrawable. Other
+ * writes never check, so a version they built counts as drawn. A system item's check of
+ * the message around it isn't made again here: the version shown was checked when it
+ * was written, and one kept in its place by this rule was the version shown.
  */
 function keepsLastDrawn(
   localItem: LocalMessageItem,
@@ -396,8 +397,19 @@ function keepsLastDrawn(
   return Boolean(
     matchedPrev &&
     matchedPrev.item.response_type === localItem.item.response_type &&
-    !findItemDrawIssues(matchedPrev.item).length
+    (!isUpsertBuilt(matchedPrev) ||
+      !findItemDrawIssues(matchedPrev.item).length)
   );
+}
+
+/**
+ * Whether `upsertMessage` built a top-level local item. Only its builder gives one a
+ * streaming state without the chunk flow's `isIntermediateStreaming` mark; `addMessage`
+ * and history give none.
+ */
+function isUpsertBuilt(localItem: LocalMessageItem): boolean {
+  const { streamingState, isIntermediateStreaming } = localItem.ui_state;
+  return Boolean(streamingState) && isIntermediateStreaming === undefined;
 }
 
 /**

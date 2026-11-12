@@ -24,6 +24,7 @@ import {
 import {
   ButtonItemType,
   CardItem,
+  GenericItem,
   MessageResponse,
   MessageResponseTypes,
   PauseItem,
@@ -35,6 +36,7 @@ import { LocalMessageItem } from '../../../src/types/messaging/LocalMessageItem'
 import { HumanAgentsOnlineStatus } from '../../../src/types/config/ServiceDeskConfig';
 
 import { deriveStreamingItemText } from '../../../src/sdk/utils/streamingUtils';
+import { outputItemToLocalItem } from '../../../src/sdk/schema/outputItemToLocalItem';
 
 import { DEFAULT_HISTORY_PANEL_STATE } from '../../../src/chat/state';
 import {
@@ -1607,6 +1609,27 @@ describe('[UPSERT_MESSAGE] an item the chat cannot draw', () => {
 
     write([{ ...system, title: 'Left' }], true);
     expect((shown()[0].item as any).title).toBe('Left');
+  });
+
+  it('keeps a version addMessage wrote while the stream is open, even one the chat can’t draw', () => {
+    const brokenOption = {
+      response_type: MessageResponseTypes.OPTION,
+      title: 'Pick one',
+    } as GenericItem;
+    const message = {
+      id: 'd1',
+      output: { generic: [brokenOption] },
+      history: {},
+    } as MessageResponse;
+    const added = outputItemToLocalItem(brokenOption, message);
+    store.dispatch(actions.addLocalMessageItem(added, message, true));
+
+    write([{ ...brokenOption, title: 'Pick two' }], true);
+
+    expect(shown()[0]).toBe(added);
+    expect(
+      cannotDrawOf(store.getState() as AppState, added.ui_state.id)
+    ).toBeUndefined();
   });
 
   it('hides an item that never drew, in its place in the message', () => {
