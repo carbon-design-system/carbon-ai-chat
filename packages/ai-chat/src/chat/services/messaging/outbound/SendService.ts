@@ -7,9 +7,8 @@
  *  @license
  */
 
-import cloneDeep from 'lodash-es/cloneDeep.js';
-
-import inputItemToLocalItem from '../../../schema/inputItemToLocalItem';
+import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
+import { OutgoingMessageService } from './OutgoingMessageService';
 import actions from '../../../store/actions';
 import {
   selectInputState,
@@ -17,7 +16,7 @@ import {
 } from '../../../store/selectors';
 import {
   addDefaultsToMessage,
-  createMessageRequestForText,
+  THREAD_ID_MAIN,
 } from '../../../utils/messageUtils';
 import { consoleError } from '../../../utils/miscUtils';
 import { deepFreeze } from '../../../utils/lang/objectUtils';
@@ -26,11 +25,17 @@ import {
   requestComposerFocus,
 } from '../../../utils/customPromptLine';
 import { MessageSendSource } from '../../../../types/events/eventBusTypes';
-import { MessageRequest } from '../../../../types/messaging/Messages';
+import {
+  MessageInputType,
+  MessageRequest,
+  MessageResponseTypes,
+} from '../../../../types/messaging/Messages';
 import { SendOptions } from '../../../../types/instance/ChatInstance';
 import type { ServiceManager } from '../../ServiceManager';
 
 class SendService {
+  private outgoing = new OutgoingMessageService();
+
   private serviceManager: ServiceManager;
 
   constructor(serviceManager: ServiceManager) {
@@ -60,7 +65,13 @@ class SendService {
 
     const messageRequest =
       typeof message === 'string'
-        ? createMessageRequestForText(message)
+        ? this.outgoing.prepareTextRequest(
+            message,
+            uuid(),
+            Date.now(),
+            THREAD_ID_MAIN,
+            MessageInputType.TEXT
+          )
         : message;
 
     // Announce that the message is being sent for screen reader users
@@ -134,10 +145,14 @@ class SendService {
 
     if (useBuiltInData) {
       const inputState = selectInputState(store.getState());
-      if (inputState.pendingStructuredData && !message.input.structured_data) {
-        message.input.structured_data = cloneDeep(
-          inputState.pendingStructuredData
-        );
+      const prepared = this.outgoing.prepareStructuredData(
+        inputState.pendingStructuredData
+          ? message.input.structured_data
+          : undefined,
+        inputState.pendingStructuredData
+      );
+      if (prepared.usedPendingData) {
+        message.input.structured_data = prepared.structuredData;
       }
       store.dispatch(
         actions.clearStructuredData(selectIsInputToHumanAgent(store.getState()))
@@ -145,7 +160,7 @@ class SendService {
     }
 
     // Grab the original text before it can be modified by a pre:send handler.
-    const originalUserText = message.history?.label || message.input.text;
+    const originalUserText = this.outgoing.originalText(message);
 
     // If the options object instructs us to create a silent message, update the history object to respect the silent
     // setting. This means that the message will not show in the UI, but will be sent to the API.
@@ -153,7 +168,12 @@ class SendService {
       message.history.silent = true;
     }
 
-    const localMessage = inputItemToLocalItem(message, originalUserText);
+    const { localMessage } = this.outgoing.prepareLocalItem(
+      message,
+      originalUserText,
+      uuid(),
+      MessageResponseTypes.TEXT
+    );
 
     // If history.silent is set to true, we don't add the message to the redux store as we do not want to show it.
     // Likewise, in schema/historyToMessages, if the message is coming from the history store, we do not add it to redux
@@ -192,7 +212,7 @@ class SendService {
       });
 
     await this.serviceManager.messageService.send(
-      cloneDeep(message),
+      this.outgoing.copyRequest(message),
       source,
       localMessage.ui_state.id,
       options
