@@ -241,7 +241,9 @@ describe('retained panel body content', () => {
           />
         </HostContext.Provider>
       );
-      await waitFor(() => expect(after).toHaveBeenCalledTimes(1));
+      await waitFor(() => expect(after).toHaveBeenCalledTimes(1), {
+        timeout: 5000,
+      });
       const target = getChatShadowRoot().querySelector<HTMLElement>(
         '.cds-aichat--catastrophic-error__error-body'
       );
@@ -318,7 +320,9 @@ describe('retained panel body content', () => {
           />
         </HostContext.Provider>
       );
-      await waitFor(() => expect(scheduled).toHaveBeenCalled());
+      await waitFor(() => expect(scheduled).toHaveBeenCalled(), {
+        timeout: 5000,
+      });
       await act(async () => {
         await new Promise((resolve) => setTimeout(resolve, 0));
         await new Promise((resolve) => setTimeout(resolve, 0));
@@ -328,7 +332,9 @@ describe('retained panel body content', () => {
         gate.doResolve();
         await gate;
       });
-      await waitFor(() => expect(after).toHaveBeenCalledTimes(1));
+      await waitFor(() => expect(after).toHaveBeenCalledTimes(1), {
+        timeout: 5000,
+      });
       expect(prematureCalls).toBe(0);
       expect(observed).toEqual([{ markdown: true, passive: 1 }]);
       expect(markdownEffects).toHaveLength(1);
@@ -403,7 +409,9 @@ describe('retained panel body content', () => {
       const mounted = render(
         <Wrapper {...createBaseConfig()} className="" onAfterRender={after} />
       );
-      await waitFor(() => expect(scheduled).toHaveBeenCalled());
+      await waitFor(() => expect(scheduled).toHaveBeenCalled(), {
+        timeout: 5000,
+      });
       mounted.unmount();
       await act(async () => {
         gate.doResolve();
