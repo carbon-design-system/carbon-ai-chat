@@ -262,24 +262,21 @@ describe('addMessage and renderCustomMessageFooter', () => {
 describe('addMessage and renderUserDefinedResponse for a silent item', () => {
   contractSetup();
 
-  // Suspected bug: a silent item gets no slot, yet the React host still calls
-  // renderUserDefinedResponse for it, keyed under the slot name "undefined"
-  // (src/chat/utils/chatBoot.ts:579). Its content has nowhere to show.
-  it('still calls renderUserDefinedResponse once for a silent item', async () => {
+  it('calls renderUserDefinedResponse only for the item that shows, not for a silent one', async () => {
     const render = jest.fn((): React.ReactNode => null);
     const { instance } = await contractChat({
       renderUserDefinedResponse: render,
     });
     const silent = userDefined({ silent: true });
+    const shown = userDefined({ n: 2 });
     await act(() =>
-      instance.messaging.addMessage(
-        responseOf('r1', [silent, textItem('After')])
-      )
+      instance.messaging.addMessage(responseOf('r1', [silent, shown]))
     );
-    await waitFor(() => expect(render).toHaveBeenCalledTimes(1));
-    const [state] = render.mock.calls[0] as unknown as [
-      { messageItem: GenericItem },
-    ];
-    expect(state.messageItem).toEqual(silent);
+    await waitFor(() => expect(render).toHaveBeenCalled());
+    const rendered = (
+      render.mock.calls as unknown as [{ messageItem: GenericItem }][]
+    ).map(([state]) => state.messageItem);
+    expect(rendered).toContainEqual(shown);
+    expect(rendered).not.toContainEqual(silent);
   });
 });

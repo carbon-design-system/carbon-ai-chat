@@ -577,7 +577,11 @@ export function attachUserDefinedResponseHandlers(
     }>
   >
 ) {
+  // A silent item has no slot and never shows, so it has nothing to render.
   function userDefinedResponseHandler(event: BusEventUserDefinedResponse) {
+    if (!event.data.slot) {
+      return;
+    }
     setBySlot((bySlot) => {
       return {
         ...bySlot,
@@ -591,6 +595,9 @@ export function attachUserDefinedResponseHandlers(
   }
 
   function userDefinedChunkHandler(event: BusEventChunkUserDefinedResponse) {
+    if (!event.data.slot) {
+      return;
+    }
     if ('complete_item' in event.data.chunk) {
       const messageItem = event.data.chunk.complete_item;
       setBySlot((bySlot) => {
