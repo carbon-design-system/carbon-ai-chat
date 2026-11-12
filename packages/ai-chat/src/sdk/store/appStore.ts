@@ -254,7 +254,10 @@ export function createStoreFromReduction<
   const store = { getState, dispatch, subscribe };
   storeClosers.set(store, () => {
     closed = true;
-    listeners.clear();
+    // After this round, so a listener that closes the store, as a chat's
+    // shutdown does, doesn't skip the listeners after it. Nothing notifies
+    // once the store is closed, so none of them runs again.
+    void Promise.resolve().then(() => listeners.clear());
   });
   partitionAttachers.set(store, (key, partitionReducer, initialState) => {
     if (closed || partitions.has(key)) {
@@ -274,7 +277,8 @@ export function createStoreFromReduction<
 /**
  * Closes a store made by {@link createStoreFromReduction} or
  * {@link createAppStore}, for a chat that shut down.
- * Its subscribers are dropped, and a later subscriber is never called. A
+ * Its subscribers are dropped, and a later subscriber is never called. Closed
+ * from inside a listener, the listeners after it still run for that change. A
  * later dispatch changes nothing, so work still running when the chat shut
  * down can't change its state or what it saves. Reads keep the last state.
  * Closing again does nothing.
