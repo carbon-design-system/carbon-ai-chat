@@ -307,7 +307,7 @@ const actions = {
 
   resetIsHydratingCounter() {
     return {
-      type: RESET_IS_LOADING_COUNTER,
+      type: RESET_IS_HYDRATING_COUNTER,
     };
   },
 

@@ -741,7 +741,7 @@ describe('MessageService', () => {
         'local-first'
       );
       const rejectedFirstSend = expect(firstSend).rejects.toEqual(
-        new Error('{}')
+        new Error('failed')
       );
       await flushMessageQueue();
       messageService.markCurrentMessageAsStreaming('response-first');
@@ -783,7 +783,7 @@ describe('MessageService', () => {
         'local-first'
       );
       const rejectedFirstSend = expect(firstSend).rejects.toEqual(
-        new Error('{}')
+        new Error('failed')
       );
       await flushMessageQueue();
       messageService.markCurrentMessageAsStreaming('response-first');

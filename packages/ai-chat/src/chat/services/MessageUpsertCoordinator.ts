@@ -1177,7 +1177,14 @@ class MessageUpsertCoordinator {
     messageID: string,
     updater: UpsertMessageUpdater
   ): Promise<MessageResponse> {
-    const existing = this.getStoredResponse(messageID);
+    const existing = this.serviceManager.store.getState().allMessagesByID[
+      messageID
+    ] as Message | undefined;
+    if (isRequest(existing)) {
+      throw new TypeError(
+        `upsertMessage: messageID "${messageID}" refers to a non-assistant message and cannot be upserted.`
+      );
+    }
 
     const previousMessage = existing
       ? cloneDeep(existing as MessageResponse)
@@ -1192,6 +1199,14 @@ class MessageUpsertCoordinator {
     if (typeof result !== 'object') {
       throw new TypeError(
         'upsertMessage: updater must return a MessageResponse object.'
+      );
+    }
+    if (
+      isRequest(result) ||
+      result.output?.generic?.some?.((item) => item?.agent_message_type)
+    ) {
+      throw new TypeError(
+        'upsertMessage: updater must return an assistant message, not a request or a human-agent message.'
       );
     }
 
@@ -1209,7 +1224,7 @@ class MessageUpsertCoordinator {
     if (result.id === undefined || result.id === null) {
       result.id = messageID;
     } else if (result.id !== messageID) {
-      throw new Error(
+      throw new TypeError(
         `upsertMessage: updater returned message id "${result.id}" but call was for "${messageID}".`
       );
     }
@@ -1234,7 +1249,7 @@ class MessageUpsertCoordinator {
       if (!result.id) {
         result.id = messageID;
       } else {
-        throw new Error(
+        throw new TypeError(
           `upsertMessage: pre:receive handler changed message id from "${messageID}" to "${result.id}".`
         );
       }

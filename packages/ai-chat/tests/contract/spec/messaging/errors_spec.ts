@@ -10,6 +10,7 @@
 import { act, waitFor } from '@testing-library/react';
 
 import {
+  BusEventType,
   CancellationReason,
   MessageErrorState,
   MessageResponseTypes,
@@ -283,19 +284,24 @@ describeShared('onError for messaging failures', (makeDriver) => {
     ]);
   });
 
-  it('reports an Error rejection with its JSON as otherData', async () => {
+  it('reports an Error rejection with its message as otherData and in the send rejection', async () => {
     const { chat, errors } = await driverWithOnError(makeDriver);
     const rejection = await rejectSend(chat, new Error('backend down'));
-    // On `main` the rejection goes through `JSON.stringify`, so an `Error`
-    // loses its message: `otherData` and the send's own error read "{}".
     expect(errors).toEqual([
       {
         errorType: OnErrorType.MESSAGE_COMMUNICATION,
         message: SEND_ERROR_MESSAGE,
-        otherData: '{}',
+        otherData: 'backend down',
       },
     ]);
-    expect((rejection as Error).message).toBe('{}');
+    expect((rejection as Error).message).toBe('backend down');
+  });
+
+  it('reports a non-Error object rejection with its JSON as otherData', async () => {
+    const { chat, errors } = await driverWithOnError(makeDriver);
+    const rejection = await rejectSend(chat, { code: 503 });
+    expect(errors.map((error) => error.otherData)).toEqual(['{"code":503}']);
+    expect((rejection as Error).message).toBe('{"code":503}');
   });
 
   it('reports one error per failed send', async () => {
@@ -333,7 +339,7 @@ describeShared('onError for messaging failures', (makeDriver) => {
 
 // @covers config.onError export.aiChatEntry.OnErrorType state.status
 // @covers event.chat:ready config.openChatByDefault state.messages
-// @covers export.aiChatEntry.MessageErrorState
+// @covers export.aiChatEntry.MessageErrorState event.pre:send
 describe('a failed welcome request', () => {
   contractSetup();
 
@@ -365,8 +371,43 @@ describe('a failed welcome request', () => {
     const [welcome] = instance.getState().messages;
     expect(welcome.id).toBe(sent.request.id);
     expect(welcome.history?.error_state).toBe(MessageErrorState.FAILED);
-    // The welcome request is sent without the `silent` send option, so no
-    // inline error response is added.
+    // The welcome request is silent, but its failure adds no inline error
+    // response.
     expect(instance.getState().messages).toHaveLength(1);
+  });
+
+  it('reports only MESSAGE_COMMUNICATION after a throwing pre:send handler, reads error, and still fires chat:ready', async () => {
+    const ready = countChatReady();
+    const backend = fakeBackend();
+    const errors: OnErrorData[] = [];
+    const { instance } = await contractChat({
+      openChatByDefault: true,
+      onError: (data) => {
+        errors.push(data);
+      },
+      messaging: { customSendMessage: backend.customSendMessage },
+      onBeforeRender: (chatInstance) => {
+        ready.onBeforeRender(chatInstance);
+        chatInstance.on({
+          type: BusEventType.PRE_SEND,
+          handler: () => {
+            throw new Error('welcome handler failed');
+          },
+        });
+      },
+    });
+    await waitFor(() => expect(ready.count()).toBe(1));
+    expect(errors).toEqual([
+      {
+        errorType: OnErrorType.MESSAGE_COMMUNICATION,
+        message: SEND_ERROR_MESSAGE,
+        otherData: 'welcome handler failed',
+      },
+    ]);
+    expect(instance.getState().status).toBe('error');
+    expect(backend.requests).toHaveLength(0);
+    const messages = instance.getState().messages;
+    expect(messages).toHaveLength(1);
+    expect(messages[0].history?.error_state).toBe(MessageErrorState.FAILED);
   });
 });

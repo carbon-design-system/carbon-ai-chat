@@ -167,9 +167,6 @@ describeShared('addMessage', (makeDriver) => {
     expect(Object.isFrozen(stored)).toBe(true);
   });
 
-  // JSDoc doesn't say so, but `main` writes its defaults onto the object the
-  // host passed (src/chat/services/MessageUpsertCoordinator.ts:744-745) and
-  // then deep-freezes it (same file, line 714).
   it("writes defaults onto the host's message object, then freezes it", async () => {
     const chat = await makeDriver();
     const message = textResponse('Hello', 'r1');
@@ -292,30 +289,24 @@ describeShared('addMessage', (makeDriver) => {
     ).toEqual(['no-output', generatedID]);
   });
 
-  // `main` has no check for this: the call fails writing an ID onto the
-  // frozen object. Only the rejection is recorded, not its error class.
-  it('rejects and fires nothing for a frozen response with no id', async () => {
+  it('stores a frozen response with no id under a generated one, and fires both events', async () => {
     const chat = await makeDriver();
     const events = recordEvents(chat, [
       BusEventType.PRE_RECEIVE,
       BusEventType.RECEIVE,
     ]);
-    await act(async () => {
-      await expect(
-        chat.messaging.addMessage(
-          Object.freeze(textResponse('Frozen')) as MessageResponse
-        )
-      ).rejects.toBeDefined();
-    });
-    expect(events.types()).toEqual([]);
-    expect(chat.messages()).toEqual([]);
+    await add(chat, Object.freeze(textResponse('Frozen')) as MessageResponse);
+    expect(events.types()).toEqual(['pre:receive', 'receive']);
+    const [stored] = chat.messages() as MessageResponse[];
+    expect(typeof stored.id).toBe('string');
+    expect(stored.id.length).toBeGreaterThan(0);
+    expect(
+      events.events.map((event) => (event as BusEventReceive).data.id)
+    ).toEqual([stored.id, stored.id]);
+    expect(outputTexts(stored)).toEqual(['Frozen']);
   });
 
-  // Suspected bug: a frozen response with an id fires pre:receive and receive
-  // but is never stored. Writing defaults onto the frozen object throws, and
-  // the error is only logged (src/chat/services/MessageUpsertCoordinator.ts:699,
-  // 744–745).
-  it('fires both events for a frozen response with an id, but leaves it out of messages', async () => {
+  it('stores a frozen response with an id, and fires both events', async () => {
     const chat = await makeDriver();
     const events = recordEvents(chat, [
       BusEventType.PRE_RECEIVE,
@@ -327,10 +318,10 @@ describeShared('addMessage', (makeDriver) => {
     }) as MessageResponse;
     await add(chat, message);
     expect(events.types()).toEqual(['pre:receive', 'receive']);
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 50));
-    });
-    expect(chat.messages()).toEqual([]);
+    expect(ids(chat)).toEqual(['frozen']);
+    expect(outputTexts(chat.messages()[0] as MessageResponse)).toEqual([
+      'Frozen',
+    ]);
   });
 
   it("rejects with a pre:receive handler's error, stores nothing, and skips receive", async () => {

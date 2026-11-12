@@ -7,6 +7,9 @@
  *  @license
  */
 
+import React from 'react';
+import { waitFor } from '@testing-library/react';
+
 import {
   BusEventChunkUserDefinedResponse,
   BusEventPreReceive,
@@ -14,6 +17,8 @@ import {
   BusEventType,
   BusEventUserDefinedResponse,
   CompleteItemChunk,
+  DeepPartial,
+  GenericItem,
   MessageResponse,
   MessageResponseTypes,
   MessageState,
@@ -21,6 +26,8 @@ import {
 import {
   addChunk,
   completeText,
+  contractChat,
+  contractSetup,
   describeShared,
   finalChunk,
   finishSend,
@@ -201,8 +208,7 @@ describeShared('a streamed user_defined item', (makeDriver) => {
     const chunkEvents = events.of<BusEventChunkUserDefinedResponse>(
       BusEventType.CHUNK_USER_DEFINED_RESPONSE
     );
-    // On `main` `messageItem` is the chunk's own partial item, not the item
-    // merged so far.
+    // `messageItem` is the chunk's own partial item, not the item merged so far.
     expect(chunkEvents.map((event) => event.data.messageItem)).toEqual([
       first.partial_item,
       second.partial_item,
@@ -275,6 +281,42 @@ describeShared('a streamed user_defined item', (makeDriver) => {
       'receive',
       'userDefinedResponse',
     ]);
+  });
+});
+
+// @covers react.ChatContainer.renderUserDefinedResponse event.chunk:userDefinedResponse
+// @covers instance.messaging.addMessageChunk
+describe('a streamed user_defined item and renderUserDefinedResponse', () => {
+  contractSetup();
+
+  it('calls renderUserDefinedResponse for a streamed item that shows, but not for a silent one', async () => {
+    const render = jest.fn((): React.ReactNode => null);
+    const { instance } = await contractChat({
+      renderUserDefinedResponse: render,
+    });
+    const events = recordEvents(instance, [
+      BusEventType.CHUNK_USER_DEFINED_RESPONSE,
+    ]);
+    const silent = partialUserDefined('u1', 'quiet', { silent: true, n: 1 });
+    const shown = partialUserDefined('u1', 'shown', { n: 2 });
+    await addChunk(instance, silent);
+    await addChunk(instance, shown);
+    const chunkEvents = events.of<BusEventChunkUserDefinedResponse>(
+      BusEventType.CHUNK_USER_DEFINED_RESPONSE
+    );
+    expect(chunkEvents.map((event) => event.data.chunk)).toEqual([
+      silent,
+      shown,
+    ]);
+    expect(chunkEvents[0].data.slot).toBeUndefined();
+    await waitFor(() => expect(render).toHaveBeenCalled());
+    const rendered = (
+      render.mock.calls as unknown as [
+        { partialItems?: DeepPartial<GenericItem>[] },
+      ][]
+    ).flatMap(([state]) => state.partialItems ?? []);
+    expect(rendered).toContainEqual(shown.partial_item);
+    expect(rendered).not.toContainEqual(silent.partial_item);
   });
 });
 

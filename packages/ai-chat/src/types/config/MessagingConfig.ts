@@ -17,9 +17,11 @@ import { BusEventSend } from '../events/eventBusTypes';
  * it is never written onto a {@link MessageResponse}.
  *
  * `addMessage`, `addMessageChunk`, and `upsertMessage` may all target the same message
- * id without producing duplicate `pre:receive` / `receive` events — Carbon AI Chat tracks
- * the recorded state per id and fires those events only on the first transition to
- * {@link COMPLETE}.
+ * id. Carbon AI Chat records the state per id and fires `pre:receive` and `receive` each
+ * time the message moves into {@link COMPLETE} from another state, so a message that goes
+ * from COMPLETE to ERROR and back to COMPLETE fires them twice.
+ * {@link ChatInstanceMessaging.addMessage} on an id that an upsert already completed fires
+ * them again.
  *
  * @category Messaging
  * @experimental
@@ -97,6 +99,10 @@ export interface ChatInstanceMessaging {
    * Instructs the widget to process the given message as an incoming message received from the assistant. This will
    * fire a "pre:receive" event immediately and a "receive" event after the event has been processed by the widget.
    *
+   * The chat writes its defaults onto the message you pass, including a generated `id` when it has none, and then
+   * freezes it, so don't change the object afterward. If the message is already frozen, the chat copies it first and
+   * stores the copy.
+   *
    * @param message A {@link MessageResponse} object.
    */
   addMessage: (message: MessageResponse) => Promise<void>;
@@ -139,9 +145,12 @@ export interface ChatInstanceMessaging {
    * @param state The {@link MessageState} to record for this message once the updater
    *   resolves.
    * @param updater Function that produces the {@link MessageResponse} to store.
-   * @throws `TypeError` when the updater returns `null`/`undefined`, returns a message
-   *   whose `id` differs from `messageID`, or returns a non-assistant message (a request
-   *   or a human-agent message).
+   * @throws `TypeError` when `messageID` is the ID of a request, or when the updater
+   *   returns `null`/`undefined`, a message whose `id` differs from `messageID`, or a
+   *   non-assistant message (a request or a human-agent message). These cases reject
+   *   before any event fires, and store nothing. A {@link BusEventType.PRE_RECEIVE}
+   *   handler that changes the message's `id` also rejects the call with a `TypeError`,
+   *   and the message isn't stored.
    * @remarks A STREAMING sequence whose host simply stops calling `upsertMessage` without
    *   sending a terminal COMPLETE or ERROR write will leave `streamingState.isDone` as
    *   `false` indefinitely. The host is responsible for sending a terminal write, or for
@@ -160,15 +169,20 @@ export interface ChatInstanceMessaging {
   removeMessages: (messageIDs: string[]) => Promise<void>;
 
   /**
-   * Clears the current conversation. This will trigger a restart of the conversation but will not start a new
-   * conversation (hydration). It will also clear any loading indicators UNLESS you have set
+   * Clears the current conversation: removes every message and cancels any outstanding messages. Unlike
+   * {@link ChatInstanceMessaging.restartConversation}, it fires no restart events, sends no new welcome request, and
+   * leaves a conversation with a human agent alone. It will also clear any loading indicators UNLESS you have set
    * {@link PublicConfigMessaging.messageLoadingIndicatorTimeoutSecs} to 0.
    */
   clearConversation: () => Promise<void>;
 
   /**
    * Inserts the given messages into the chat window as part of the chat history. This will fire the history:begin
-   * and history:end events.
+   * and history:end events. These messages fire no "pre:receive" or "receive" events.
+   *
+   * The chat writes its defaults onto each item's message, including a generated `id` when it has none, and then
+   * freezes it, so don't change the object afterward. If a message is already frozen, the chat copies it first and
+   * stores the copy.
    */
   insertHistory: (messages: HistoryItem[]) => Promise<void>;
 
@@ -177,6 +191,10 @@ export interface ChatInstanceMessaging {
    * This will clear all the current assistant messages from the main assistant view and cancel any outstanding
    * messages. It will also clear any loading indicators UNLESS you have set
    * {@link PublicConfigMessaging.messageLoadingIndicatorTimeoutSecs} to 0.
+   *
+   * If the main window is open and {@link PublicConfigMessaging.skipWelcome} isn't set, the chat then sends a new
+   * welcome request, and the promise resolves only after {@link PublicConfigMessaging.customSendMessage} finishes with
+   * that request.
    */
   restartConversation: () => Promise<void>;
 }

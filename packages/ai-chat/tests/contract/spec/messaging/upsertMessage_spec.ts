@@ -212,9 +212,6 @@ describeShared('upsertMessage fires pre:receive and receive', (makeDriver) => {
   });
 
   it('fires again when an ERROR message moves to COMPLETE, even after an earlier COMPLETE', async () => {
-    // `main` fires on every move into COMPLETE from another state, as the
-    // upsertMessage JSDoc says; the MessageState JSDoc says "only on the first
-    // transition to COMPLETE".
     const chat = await makeDriver();
     const events = recordEvents(chat, RECEIVE_EVENTS);
     await upsertText(chat, 'm1', MessageState.COMPLETE, 'one');
@@ -397,8 +394,6 @@ describeShared('upsertMessage mixed with addMessage', (makeDriver) => {
   });
 
   it('fires pre:receive and receive again when addMessage repeats an ID an upsert completed', async () => {
-    // `main` fires them for every addMessage; the MessageState JSDoc says
-    // mixing the APIs on one ID does not produce duplicate events.
     const chat = await makeDriver();
     await upsertText(chat, 'm1', MessageState.COMPLETE, 'upserted');
     const events = recordEvents(chat, RECEIVE_EVENTS);

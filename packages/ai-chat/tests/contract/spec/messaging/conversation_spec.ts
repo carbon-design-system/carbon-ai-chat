@@ -108,7 +108,7 @@ describeShared('clearConversation', (makeDriver) => {
     const { signal } = started.sent.options;
     expect(signal.aborted).toBe(true);
     expect(signal.reason).toBe(CancellationReason.CONVERSATION_RESTARTED);
-    // On `main` the send resolves, not rejects, once its request is canceled.
+    // The send resolves, not rejects, once its request is canceled.
     await expect(started.done).resolves.toBeUndefined();
     expect(chat.messages()).toEqual([]);
     expect(chat.status()).toBe('ready');
@@ -223,7 +223,7 @@ describeShared('restartConversation', (makeDriver) => {
     const { signal } = started.sent.options;
     expect(signal.aborted).toBe(true);
     expect(signal.reason).toBe(CancellationReason.CONVERSATION_RESTARTED);
-    // On `main` the send resolves, not rejects, once its request is canceled.
+    // The send resolves, not rejects, once its request is canceled.
     await expect(started.done).resolves.toBeUndefined();
     expect(chat.messages()).toEqual([]);
     expect(chat.status()).toBe('ready');
