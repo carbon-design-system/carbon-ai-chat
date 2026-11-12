@@ -218,8 +218,6 @@ describeShared('insertHistory', (makeDriver) => {
     await act(() =>
       chat.messaging.insertHistory([historyResponse('a1', 'hi', T0)])
     );
-    // The history:begin and history:end JSDoc say they bracket "pre:receive"
-    // and "receive" events, but on `main` history items fire neither.
     expect(events.types()).toEqual(['history:begin', 'history:end']);
   });
 

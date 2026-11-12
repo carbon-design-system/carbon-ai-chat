@@ -167,9 +167,6 @@ describeShared('addMessage', (makeDriver) => {
     expect(Object.isFrozen(stored)).toBe(true);
   });
 
-  // JSDoc doesn't say so, but `main` writes its defaults onto the object the
-  // host passed (src/chat/services/MessageUpsertCoordinator.ts:744-745) and
-  // then deep-freezes it (same file, line 714).
   it("writes defaults onto the host's message object, then freezes it", async () => {
     const chat = await makeDriver();
     const message = textResponse('Hello', 'r1');

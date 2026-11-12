@@ -606,7 +606,8 @@ export interface BusEventChunkUserDefinedResponse extends BusEvent {
   type: BusEventType.CHUNK_USER_DEFINED_RESPONSE;
   data: {
     /**
-     * The individual message item that is being displayed in this custom response.
+     * The item from this chunk alone (its `partial_item` or `complete_item`), not the item merged from earlier
+     * chunks.
      */
     messageItem: DeepPartial<GenericItem>;
 
@@ -681,9 +682,8 @@ export interface BusEventCustomRequestFooterSlot extends BusEvent {
  * This event may be fired not only when the history is first loaded but it may be fired later during the life of
  * the widget if additional messages are loaded from history.
  *
- * This event is fired when this process begins. This is fired before all the "pre:receive" and "receive" events are
- * fired which means that the messages here are the original messages before any possible modifications by the event
- * handlers.
+ * This event is fired when this process begins, before {@link BusEventType.HISTORY_END}. Messages loaded from history
+ * fire no {@link BusEventType.PRE_RECEIVE} or {@link BusEventType.RECEIVE} events.
  *
  * @category Events
  */
@@ -711,9 +711,8 @@ export interface BusEventHistoryBegin extends BusEvent {
  * This event may be fired not only when the history is first loaded but it may be fired later during the life of
  * the widget if additional messages are loaded from history.
  *
- * This event is fired when this process ends. This is fired after all the "pre:receive" and "receive" events are
- * fired which means that the messages here are the potentially modified messages after any possible modifications
- * by the event handlers.
+ * This event is fired when this process ends, after {@link BusEventType.HISTORY_BEGIN}. Messages loaded from history
+ * fire no {@link BusEventType.PRE_RECEIVE} or {@link BusEventType.RECEIVE} events.
  *
  * @category Events
  */

@@ -142,8 +142,11 @@ interface ChatActions {
    * the event bus before delegating to `customSendMessage`.
    *
    * **Settlement points:**
-   * - Resolves when `customSendMessage` completes, or when the turn is stopped
-   *   or the conversation restarted while the message is in flight.
+   * - Resolves when `customSendMessage` completes. It also resolves when the
+   *   send is canceled by a stop, a restart, or
+   *   {@link ChatInstanceMessaging.clearConversation}. A restart or clear
+   *   settles it at once, without waiting for `customSendMessage`, and a
+   *   queued send that never reached `customSendMessage` resolves too.
    * - Rejects when `customSendMessage` throws, when a `pre:send` or `send`
    *   handler throws (with that handler's error, and without calling
    *   `customSendMessage`), when the send path fails terminally (for example a

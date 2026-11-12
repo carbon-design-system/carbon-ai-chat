@@ -201,8 +201,7 @@ describeShared('a streamed user_defined item', (makeDriver) => {
     const chunkEvents = events.of<BusEventChunkUserDefinedResponse>(
       BusEventType.CHUNK_USER_DEFINED_RESPONSE
     );
-    // On `main` `messageItem` is the chunk's own partial item, not the item
-    // merged so far.
+    // `messageItem` is the chunk's own partial item, not the item merged so far.
     expect(chunkEvents.map((event) => event.data.messageItem)).toEqual([
       first.partial_item,
       second.partial_item,

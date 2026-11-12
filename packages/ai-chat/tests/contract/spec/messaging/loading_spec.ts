@@ -270,9 +270,7 @@ describe('updateIsChatLoadingCounter', () => {
     const instance = await mount();
     await host(() => instance.updateIsChatLoadingCounter('increase'));
     expect(hydrating(instance)).toBe(1);
-    // On `main` the host's counter never moves `status`, though
-    // `isHydratingCounter`'s deprecation note says to read `status` for
-    // `loading` instead: only the chat's own hydration sets `loading`.
+    // Only the chat's own hydration sets `loading`.
     expect(instance.getState().status).toBe('ready');
   });
 
