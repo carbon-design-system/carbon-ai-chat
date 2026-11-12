@@ -355,7 +355,8 @@ describe('planted imports', () => {
       shared,
       "import type { FileUpload } from '@carbon/ai-chat-components/es/components/prompt-line/src/file-upload-types.js';"
     );
-    expect(result.frameworks).toEqual([]);
+    // The planted import adds no edge beyond the listed exceptions.
+    expect(result.frameworks).toEqual(keys(frameworkExceptions));
   });
 
   it('fails the custom-prefix build of an element-registering module', () => {
