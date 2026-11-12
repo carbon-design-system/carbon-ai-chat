@@ -6,6 +6,32 @@ import * as ChatHistoryStories from './chat-history-react.stories';
 
 # AI Chat History
 
+## Disable an action
+
+Set an action's optional `disabled` field to `true` to keep it visible and prevent mouse or keyboard activation. Omitted or `false` values keep it enabled.
+
+Pass a new `actions` array to update the rendered menu, including while it is open:
+
+```jsx
+import HistoryPanelItem from '@carbon/ai-chat-components/es/react/history/history-panel-item.js';
+
+function Conversation({ actions, deleteDisabled }) {
+  return (
+    <HistoryPanelItem
+      id="chat-1"
+      name="My chat"
+      actions={actions.map((action) =>
+        action.text === 'Delete'
+          ? { ...action, disabled: deleteDisabled }
+          : action
+      )}
+    />
+  );
+}
+```
+
+Disabled actions do not call `onMenuAction`. Enabled actions keep the same event detail.
+
 ## Getting started
 
 Here's a quick example to get you started.

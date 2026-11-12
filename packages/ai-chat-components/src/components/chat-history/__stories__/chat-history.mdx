@@ -286,6 +286,21 @@ Using these subcomponents ensures visual consistency and predictable structure w
 </script>
 ```
 
+### Disable an action
+
+Set an action's optional `disabled` field to `true` to keep it visible and prevent mouse or keyboard activation. Omitted or `false` values keep it enabled.
+
+Replace the `actions` array to update the rendered menu, including while it is open:
+
+```javascript
+const item = document.querySelector('cds-aichat-history-panel-item');
+item.actions = item.actions.map((action) =>
+  action.text === 'Delete' ? { ...action, disabled: true } : action
+);
+```
+
+Disabled actions do not emit `history-item-menu-action`. Enabled actions keep the same event detail.
+
 ### Delete confirmation panel
 
 Render **`<cds-aichat-history-delete-panel>`** when the user chooses **Delete** from a chat item’s overflow menu. Set **`item-id`** to the id of the chat item being removed; **`cds-aichat-history-shell`** uses this (with **`history-delete-confirm`**) to move keyboard focus to the next or previous chat item after your handler deletes the item, and to fire **`history-item-selected`** on that item when the deleted chat item was the active/selected one.
