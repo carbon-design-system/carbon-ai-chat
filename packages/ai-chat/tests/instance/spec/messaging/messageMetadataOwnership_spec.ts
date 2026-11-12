@@ -25,6 +25,7 @@ import {
 import type { LocalMessageItem } from '../../../../src/types/messaging/LocalMessageItem';
 import {
   createBaseConfig,
+  itemFlagsFor,
   renderChatAndGetInstanceWithStore,
   setupAfterEach,
   setupBeforeEach,
@@ -87,8 +88,7 @@ it('restores captured HAA ownership through public history insertion after core 
     expect(merge).not.toHaveBeenCalled();
     expect(select).not.toHaveBeenCalled();
     expect(
-      store.getState().allMessageItemsByID[local.ui_state.id].ui_state
-        .optionSelected
+      itemFlagsFor(store.getState(), local.ui_state.id)?.optionSelected
     ).toBe(selected);
 
     await act(async () => {
@@ -144,8 +144,7 @@ it('restores captured HAA ownership through public history insertion after core 
     expect(merge).toHaveBeenCalledTimes(1);
     expect(select).not.toHaveBeenCalled();
     expect(
-      store.getState().allMessageItemsByID[local.ui_state.id].ui_state
-        .optionSelected
+      itemFlagsFor(store.getState(), local.ui_state.id)?.optionSelected
     ).toBe(selected);
   } finally {
     await act(async () => {

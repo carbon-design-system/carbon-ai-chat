@@ -48,6 +48,7 @@ import { OptionComponent } from '../components/responseTypes/options/OptionCompo
 import { MarkdownWithErrorHandling } from '../components/helpers/MarkdownWithErrorHandling/MarkdownWithErrorHandling';
 import { VideoComponent } from '../components/responseTypes/media/VideoComponent';
 import { useSelector } from '../hooks/useSelector';
+import { useMessageItemFlags } from '../hooks/useMessageItemFlags';
 import { shallowEqual } from '../../sdk/store/appStore';
 import { AppState } from '../../types/state/AppState';
 import { useUUID } from '../hooks/useUUID';
@@ -147,6 +148,9 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 
   const { formatMessage } = useIntl();
   const languagePack = useSelector(selectMessageTypeStrings, shallowEqual);
+  const optionSelected = useMessageItemFlags(
+    message.ui_state.id
+  )?.optionSelected;
   const feedbackDetailsRef = useRef<HTMLDivElement>(undefined);
   const chainOfThoughtRef = useRef<CDSAIChatChainOfThought>(null);
   const feedbackID = message.item.message_item_options?.feedback?.id;
@@ -443,6 +447,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
         requestInputFocus={requestInputFocus}
         serviceManager={serviceManager}
         removeHTML={withHumanAgent}
+        optionSelected={optionSelected}
       />
     );
   }
@@ -601,6 +606,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
         fullMessage={originalMessage}
         isMessageForInput={isMessageForInput}
         requestFocus={requestInputFocus}
+        optionSelected={optionSelected}
       />
     );
   }

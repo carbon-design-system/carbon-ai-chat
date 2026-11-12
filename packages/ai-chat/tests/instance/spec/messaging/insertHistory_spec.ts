@@ -12,6 +12,8 @@ import { act, waitFor } from '@testing-library/react';
 import {
   getChatShadowRoot,
   createBaseConfig,
+  itemFlagsFor,
+  itemsWithOptionSelected,
   renderChatAndGetInstance,
   renderChatAndGetInstanceWithStore,
   setupBeforeEach,
@@ -26,6 +28,7 @@ import {
   SelectionDisplay,
 } from '../../../../src/types/messaging/Messages';
 import { HistoryItem } from '../../../../src/types/messaging/History';
+import type { LocalMessageItem } from '../../../../src/types/messaging/LocalMessageItem';
 
 async function expectRequestSender(text: string, sender: string) {
   await waitFor(() => {
@@ -704,17 +707,15 @@ describe('ChatInstance.messaging.insertHistory', () => {
             item.fullMessageID === 'choice-response' &&
             item.item.response_type === MessageResponseTypes.OPTION
         );
+        const optionSelected = (local: LocalMessageItem) =>
+          itemFlagsFor(store.getState(), local.ui_state.id)?.optionSelected;
         expect(groups).toHaveLength(2);
-        expect(groups[0].ui_state.optionSelected).toBeUndefined();
-        expect(groups[1].ui_state.optionSelected?.id).toBe('choice-request');
-        expect(
-          groups[1].ui_state.optionSelected?.history.is_choice_request
-        ).toBe(is_choice_request);
-        expect(
-          Object.values(store.getState().allMessageItemsByID).filter(
-            (item) => item.ui_state.optionSelected
-          )
-        ).toHaveLength(1);
+        expect(optionSelected(groups[0])).toBeUndefined();
+        expect(optionSelected(groups[1])?.id).toBe('choice-request');
+        expect(optionSelected(groups[1])?.history.is_choice_request).toBe(
+          is_choice_request
+        );
+        expect(itemsWithOptionSelected(store.getState())).toHaveLength(1);
       }
     );
 
@@ -763,12 +764,10 @@ describe('ChatInstance.messaging.insertHistory', () => {
 
       await instance.messaging.insertHistory(historyItems);
 
-      const selected = Object.values(
-        store.getState().allMessageItemsByID
-      ).filter((item) => item.ui_state.optionSelected);
+      const selected = itemsWithOptionSelected(store.getState());
       expect(selected).toHaveLength(1);
-      expect((selected[0].item as any).label).toBe('Footer choice');
-      expect(selected[0].ui_state.optionSelected?.id).toBe('button-request');
+      expect((selected[0].local.item as any).label).toBe('Footer choice');
+      expect(selected[0].optionSelected?.id).toBe('button-request');
     });
   });
 });

@@ -24,6 +24,7 @@ import {
 import SelectComponent from './SelectComponent';
 import {
   Message,
+  MessageRequest,
   OptionItem,
   SingleOption,
 } from '../../../../types/messaging/Messages';
@@ -62,6 +63,11 @@ interface OptionProps extends HasServiceManager {
    * This is used to sanitize data coming from a human agent.
    */
   removeHTML?: boolean;
+
+  /**
+   * The request the user's chosen option sent, from the item's view flags. Unset while nothing is chosen.
+   */
+  optionSelected?: MessageRequest;
 }
 
 class OptionComponent extends Component<OptionProps> {
@@ -112,10 +118,14 @@ class OptionComponent extends Component<OptionProps> {
   };
 
   render() {
-    const { localMessage, disableUserInputs, serviceManager, removeHTML } =
-      this.props;
+    const {
+      localMessage,
+      disableUserInputs,
+      serviceManager,
+      removeHTML,
+      optionSelected,
+    } = this.props;
     const { options, title, description, preference } = localMessage.item;
-    const { optionSelected } = localMessage.ui_state;
     const validOptions = options.filter((option) => {
       if (resolveChoiceText(option).controlText) {
         return true;
