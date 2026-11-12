@@ -546,12 +546,25 @@ test('recognizes genuine library globals while retaining local, imported, shadow
     true
   );
   assert.deepEqual(
-    [...globalSuperclassReferences(ts, source)],
+    [...globalSuperclassReferences(source)],
     [
       ['Native', 'Error'],
       ['NativeCatchSibling', 'Error'],
     ]
   );
+  for (const text of [
+    'const Error = Object; class TopLevel extends Error {}',
+    'class Error {} class TopLevel extends Error {}',
+    'function HTMLElement() {} class TopLevel extends HTMLElement {}',
+  ]) {
+    const script = ts.createSourceFile(
+      'src/script.ts',
+      text,
+      ts.ScriptTarget.Latest,
+      true
+    );
+    assert.deepEqual([...globalSuperclassReferences(script)], [], text);
+  }
 });
 
 test('dynamic registration helpers do not invent element definitions', () => {
@@ -679,7 +692,7 @@ test('the analyzer includes canonical public source while excluding compatibilit
 function assertResolvableReferences(manifest, sources) {
   const globals = new Set(
     sources.flatMap((source) =>
-      [...globalSuperclassReferences(ts, source)].map(
+      [...globalSuperclassReferences(source)].map(
         ([name, base]) =>
           `${source.fileName.replace(/^src\//, 'es/').replace(/\.[jt]sx?$/, '.js')}#${name}#${base}`
       )

@@ -81,6 +81,12 @@ export interface PublicConfig {
   /**
    * Which Carbon theme tokens to inject. If unset (falsy), the chat inherits tokens from the host page.
    * Set to a specific theme to force token injection.
+   *
+   * @deprecated Set a Carbon theme on your page instead, on an element that contains the chat. The chat
+   * inherits that theme's tokens, and your own token overrides reach the Carbon components inside it.
+   * Removed in 2.0.0. The v2 styling contract,
+   * [ADR-0004](https://github.com/carbon-design-system/carbon-ai-chat/blob/main/docs/adr/0004-component-styling-contract.md),
+   * proposes that the chat read the theme from your page and never force its own.
    */
   injectCarbonTheme?: CarbonTheme;
 

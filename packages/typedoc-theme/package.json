@@ -1,6 +1,6 @@
 {
   "name": "@carbon/typedoc-theme",
-  "version": "0.13.0-rc.0",
+  "version": "0.14.0-rc.0",
   "private": true,
   "description": "Custom TypeDoc theme for Carbon AI Chat documentation.",
   "author": "IBM Corp",
@@ -20,7 +20,7 @@
     "typedoc": "^0.28.0"
   },
   "dependencies": {
-    "@carbon/styles": "^2.0.0-alpha.5"
+    "@carbon/styles": "^2.0.0-alpha.6"
   },
   "repository": {
     "type": "git",
