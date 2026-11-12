@@ -7,7 +7,6 @@
  *  @license
  */
 
-import cloneDeep from 'lodash-es/cloneDeep.js';
 import isEqual from 'lodash-es/isEqual.js';
 
 import type { ChatSDKMessageItem } from '../../types/instance/ChatSDKState';
@@ -26,7 +25,6 @@ import {
 import type { HumanAgentsOnlineStatus } from '../../types/config/ServiceDeskConfig';
 import type ObjectMap from '../../types/utilities/ObjectMap';
 import type { AppStateMessages } from '../../types/state/ChatMessagesState';
-import { deepFreeze } from './lang/objectUtils';
 import {
   getRequestBubbleText,
   isConnectToHumanAgent,
@@ -36,7 +34,7 @@ import {
   isRequest,
   isResponse,
 } from './messageUtils';
-import { assembleStreamingItem } from './publicMessages';
+import { publicItemOf } from './publicMessages';
 
 type Kind = ChatSDKMessageItem['kind'];
 type Status = ChatSDKMessageItem['status'];
@@ -425,10 +423,14 @@ function sameValues(left: readonly unknown[], right: readonly unknown[]) {
   );
 }
 
+/**
+ * The item as drawn: the local copy's shared public content, which `messages` uses too, or for a
+ * request, that content with its bubble's text.
+ */
 function drawnItem(plan: ItemPlan): GenericItem {
-  const item = assembleStreamingItem(plan.local);
+  const item = publicItemOf(plan.local);
   if (plan.kind === 'request' && plan.requestText !== undefined) {
-    return { ...item, text: plan.requestText } as GenericItem;
+    return Object.freeze({ ...item, text: plan.requestText }) as GenericItem;
   }
   return item;
 }
@@ -439,7 +441,7 @@ function buildEntry(plan: ItemPlan): Readonly<ChatSDKMessageItem> {
     messageID: plan.messageID,
     kind: plan.kind,
     ...(plan.parentID !== undefined && { parentID: plan.parentID }),
-    item: deepFreeze(cloneDeep(drawnItem(plan))),
+    item: drawnItem(plan),
     status: plan.status,
     origin: plan.origin,
     ...(plan.isConnectToAgent && {

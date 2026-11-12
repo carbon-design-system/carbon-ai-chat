@@ -128,9 +128,7 @@ export function publicMessagesSources(
 /**
  * A local item's content as drawn: its streamed content so far while it streams, else its item.
  */
-export function assembleStreamingItem(
-  localItem: LocalMessageItem
-): GenericItem {
+function assembleStreamingItem(localItem: LocalMessageItem): GenericItem {
   const { streamingState } = localItem.ui_state;
   if (!streamingState || streamingState.isDone) {
     return localItem.item;
@@ -153,11 +151,52 @@ export function assembleStreamingItem(
   return merge({}, localItem.item, ...streamingState.chunks) as GenericItem;
 }
 
+/** Each source object's frozen public copy. */
+const publicCopies = new WeakMap<object, unknown>();
+
+/**
+ * A frozen deep copy of a value, made once per source object. A value that
+ * isn't an object passes through.
+ */
+export function publicCopyOf<T>(value: T): T {
+  if (value === null || typeof value !== 'object') {
+    return value;
+  }
+  let copy = publicCopies.get(value) as T;
+  if (!copy) {
+    // Cloned as a nested value, as the whole message once was, so lodash keeps a value it can't clone.
+    copy = deepFreeze(cloneDeep([value])[0]);
+    publicCopies.set(value, copy);
+  }
+  return copy;
+}
+
+/** Each streaming local copy's drawn content, assembled and copied once. */
+const streamedItems = new WeakMap<LocalMessageItem, GenericItem>();
+
+/**
+ * A local item's frozen public content as drawn, made once per local copy. A
+ * streamed chunk replaces only the local copy it changed, so `messages` and
+ * `messageItems` copy and freeze only that item, and share it.
+ */
+export function publicItemOf(localItem: LocalMessageItem): GenericItem {
+  const { streamingState } = localItem.ui_state;
+  if (!streamingState || streamingState.isDone) {
+    return publicCopyOf(localItem.item);
+  }
+  let item = streamedItems.get(localItem);
+  if (!item) {
+    item = deepFreeze(cloneDeep(assembleStreamingItem(localItem)));
+    streamedItems.set(localItem, item);
+  }
+  return item;
+}
+
 function assembleResponseItems(
   message: MessageResponse,
   localItems: readonly LocalMessageItem[]
 ): GenericItem[] {
-  const projected = localItems.map(assembleStreamingItem);
+  const projected = localItems.map(publicItemOf);
   const generic = message.output?.generic ?? [];
   const nonRendering = generic
     .map((item, index) => ({ item, index }))
@@ -228,7 +267,7 @@ function assembleResponseItems(
       isHiddenOutputItem(message, item) ||
       streamItemID(message.id, item)
     ) {
-      return [item];
+      return [publicCopyOf(item)];
     }
     while (
       nextLocal < localItems.length &&
@@ -241,7 +280,7 @@ function assembleResponseItems(
       consumed.add(nextLocal);
       return [projected[nextLocal++]];
     }
-    return [item];
+    return [publicCopyOf(item)];
   });
   return result.concat(
     projected.filter((_item, index) => !consumed.has(index))
@@ -252,7 +291,7 @@ function clonePublicMessage(
   message: Message,
   localItems: readonly LocalMessageItem[]
 ): Readonly<Message> {
-  let projected = message;
+  let assembled: GenericItem[] | undefined;
   // Local items cover empty responses and retained streaming state, including the final frame before receive rebuilds them.
   if (
     isResponse(message) &&
@@ -260,22 +299,69 @@ function clonePublicMessage(
     (message.output?.generic?.length === 0 ||
       localItems.some((item) => item.ui_state.streamingState))
   ) {
-    projected = {
-      ...message,
-      output: {
-        ...message.output,
-        generic: assembleResponseItems(message as MessageResponse, localItems),
-      },
-    } as MessageResponse;
+    assembled = assembleResponseItems(message as MessageResponse, localItems);
   }
 
-  const clone = cloneDeep(projected) as Message & { ui_state?: unknown };
-  delete clone.ui_state_internal;
-  delete clone.ui_state;
-  if (clone.history) {
-    delete clone.history.file_upload_status;
-  }
-  return deepFreeze(clone);
+  // Each item and field comes from its shared copy, so an item that didn't change keeps its reference.
+  return copyFields(message, (key, value) => {
+    if (key === 'ui_state_internal' || key === 'ui_state') {
+      return LEAVE_OUT;
+    }
+    if (key === 'history' && value) {
+      return copyFields(value as object, (historyKey) =>
+        historyKey === 'file_upload_status' ? LEAVE_OUT : undefined
+      );
+    }
+    if (key === 'output' && (value || assembled)) {
+      return publicOutput(value as MessageResponse['output'], assembled);
+    }
+    return undefined;
+  }) as Readonly<Message>;
+}
+
+/** Leaves a field out of {@link copyFields}. */
+const LEAVE_OUT = Symbol('leave out');
+
+/**
+ * A frozen shallow copy of an object, with its prototype, whose own enumerable fields are their
+ * shared copies, as `cloneDeep` copies them. `replace` returns a field's value instead, or
+ * `LEAVE_OUT` to leave the field out.
+ */
+function copyFields(
+  source: object,
+  replace: (key: PropertyKey, value: unknown) => unknown = () => undefined
+): object {
+  const copy = Object.create(Object.getPrototypeOf(source));
+  const keys: PropertyKey[] = [
+    ...Object.keys(source),
+    ...Object.getOwnPropertySymbols(source).filter((symbol) =>
+      Object.prototype.propertyIsEnumerable.call(source, symbol)
+    ),
+  ];
+  keys.forEach((key) => {
+    const value = (source as Record<PropertyKey, unknown>)[key];
+    const replaced = replace(key, value);
+    if (replaced !== LEAVE_OUT) {
+      copy[key] = replaced === undefined ? publicCopyOf(value) : replaced;
+    }
+  });
+  return Object.freeze(copy);
+}
+
+/** A response's output, its items from their shared copies or as `assembled` draws them. */
+function publicOutput(
+  output: MessageResponse['output'],
+  assembled: GenericItem[] | undefined
+): object {
+  const source = assembled ? { ...output, generic: assembled } : output;
+  const items =
+    assembled ??
+    (Array.isArray(output.generic)
+      ? output.generic.map(publicCopyOf)
+      : undefined);
+  return copyFields(source, (key) =>
+    key === 'generic' && items ? Object.freeze(items) : undefined
+  );
 }
 
 export class PublicMessagesProjection {
