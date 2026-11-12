@@ -25,6 +25,7 @@ import {
 } from '../../types/messaging/Messages';
 import type { HumanAgentsOnlineStatus } from '../../types/config/ServiceDeskConfig';
 import type ObjectMap from '../../types/utilities/ObjectMap';
+import type { AppStateMessages } from '../../types/state/ChatMessagesState';
 import { deepFreeze } from './lang/objectUtils';
 import {
   getRequestBubbleText,
@@ -339,6 +340,40 @@ export function planMessageItems(
     );
   });
   return plans;
+}
+
+/**
+ * Plans the drawn items of the given messages in a state, all of its messages by default. A view
+ * that keys its own state by item ID uses it to find the ID of a local item.
+ */
+export function planStateMessageItems(
+  state: AppStateMessages,
+  messageIDs: readonly string[] = state.assistantMessageState.messageIDs
+): ItemPlan[] {
+  return planMessageItems(
+    messageIDs,
+    state.allMessagesByID,
+    state.allMessageItemsByID,
+    state.assistantMessageState.localMessageIDs
+  );
+}
+
+/** Each plan list's item IDs by local item ID, built once per list. */
+const itemIDIndexes = new WeakMap<
+  readonly ItemPlan[],
+  ReadonlyMap<string, string>
+>();
+
+/** Each planned item's public ID, keyed by the ID of the local item it draws. */
+export function itemIDsByLocalID(
+  plans: readonly ItemPlan[]
+): ReadonlyMap<string, string> {
+  let index = itemIDIndexes.get(plans);
+  if (!index) {
+    index = new Map(plans.map((plan) => [plan.local.ui_state.id, plan.id]));
+    itemIDIndexes.set(plans, index);
+  }
+  return index;
 }
 
 function planValues(plan: ItemPlan): unknown[] {

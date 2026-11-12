@@ -115,6 +115,18 @@ export class PublicStateService {
     });
   };
 
+  /**
+   * The public item ID (`ChatSDKMessageItem.id`) of the local item with this ID in the chat's
+   * current state, or `undefined` when the list doesn't draw it. Internal: the prebuilt list
+   * keys its per-item view state by this ID while it still draws local items.
+   */
+  messageItemIDOf(localItemID: string): string | undefined {
+    return this.cache.messageItemIDOf(
+      this.serviceManager.store.getState(),
+      localItemID
+    );
+  }
+
   destroy(): void {
     this.unsubscribeStore?.();
     this.listeners.clear();
