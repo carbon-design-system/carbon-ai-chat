@@ -7,8 +7,8 @@
  *  @license
  */
 
-import type { ServiceManager } from './ServiceManager';
-import type { FileUpload } from '../../types/state/AppState';
+import type { ServiceManager } from '../ServiceManager';
+import type { FileUpload } from '../../../types/state/AppState';
 
 export class HumanAgentCallbacks {
   private showEndChatConfirmation = false;

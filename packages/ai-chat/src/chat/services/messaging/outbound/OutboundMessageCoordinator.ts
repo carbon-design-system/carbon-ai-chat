@@ -10,27 +10,30 @@
 import {
   createLocalMessageForInlineError,
   outputItemToLocalItem,
-} from '../schema/outputItemToLocalItem';
-import actions from '../store/actions';
-import { MessageLoadingManager } from '../utils/messageServiceUtils';
-import { MessageErrorState } from '../../types/messaging/LocalMessageItem';
+} from '../../../schema/outputItemToLocalItem';
+import actions from '../../../store/actions';
+import { MessageLoadingManager } from '../../../utils/messageServiceUtils';
+import { MessageErrorState } from '../../../../types/messaging/LocalMessageItem';
 import {
   MessageInputType,
   MessageRequest,
   MessageResponse,
   MessageResponseTypes,
   SystemMessageItem,
-} from '../../types/messaging/Messages';
-import { CustomSendMessageOptions } from '../../types/config/MessagingConfig';
-import { OnErrorType } from '../../types/config/ErrorConfig';
-import { PublicConfigMessaging } from '../../types/config/PublicConfigMessaging';
-import { ServiceManager } from './ServiceManager';
-import { PendingMessageRequest } from './MessageService';
+} from '../../../../types/messaging/Messages';
+import { CustomSendMessageOptions } from '../../../../types/config/MessagingConfig';
+import { OnErrorType } from '../../../../types/config/ErrorConfig';
+import { PublicConfigMessaging } from '../../../../types/config/PublicConfigMessaging';
+import { ServiceManager } from '../../ServiceManager';
+import { PendingMessageRequest } from '../MessageService';
 import cloneDeep from 'lodash-es/cloneDeep.js';
-import { consoleError, debugLog } from '../utils/miscUtils';
-import { BusEventSend, BusEventType } from '../../types/events/eventBusTypes';
-import { ChatInstance } from '../../types/instance/ChatInstance';
-import { addDefaultsToMessage } from '../utils/messageUtils';
+import { consoleError, debugLog } from '../../../utils/miscUtils';
+import {
+  BusEventSend,
+  BusEventType,
+} from '../../../../types/events/eventBusTypes';
+import { ChatInstance } from '../../../../types/instance/ChatInstance';
+import { addDefaultsToMessage } from '../../../utils/messageUtils';
 
 type CustomSendMessageFn = (
   message: MessageRequest<any>,

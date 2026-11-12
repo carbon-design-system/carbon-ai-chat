@@ -9,9 +9,9 @@
 
 import MessageService, {
   PendingMessageRequest,
-} from '../../../src/chat/services/MessageService';
-import { ChunkProcessingService } from '../../../src/chat/services/ChunkProcessingService';
-import { ConversationLifecycleService } from '../../../src/chat/services/ConversationLifecycleService';
+} from '../../../src/chat/services/messaging/MessageService';
+import { ChunkProcessingService } from '../../../src/chat/services/messaging/inbound/ChunkProcessingService';
+import { ConversationLifecycleService } from '../../../src/chat/services/messaging/ConversationLifecycleService';
 import { ServiceManager } from '../../../src/chat/services/ServiceManager';
 import storeActions from '../../../src/chat/store/actions';
 import {

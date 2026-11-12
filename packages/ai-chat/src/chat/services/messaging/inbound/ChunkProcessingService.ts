@@ -13,32 +13,32 @@ import cloneDeepWith from 'lodash-es/cloneDeepWith.js';
 import {
   captureMessageEvent,
   eventValueMapper,
-} from '../utils/messageEventOwnership';
+} from '../../../utils/messageEventOwnership';
 
-import actions from '../store/actions';
+import actions from '../../../store/actions';
 import {
   applyChunk,
   chunkHasDisplayableContent,
   FinalResponseChunk,
   resolveChunkContext,
-} from '../utils/streamingUtils';
-import { consoleError, consoleWarn } from '../utils/miscUtils';
+} from '../../../utils/streamingUtils';
+import { consoleError, consoleWarn } from '../../../utils/miscUtils';
 import {
   ResolvablePromise,
   resolvablePromise,
-} from '../utils/resolvablePromise';
+} from '../../../utils/resolvablePromise';
 import {
   isStreamFinalResponse,
   isStreamPartialItem,
   isTyping,
   renderAsUserDefinedMessage,
   streamItemID,
-} from '../utils/messageUtils';
-import { sleep } from '../utils/lang/promiseUtils';
+} from '../../../utils/messageUtils';
+import { sleep } from '../../../utils/lang/promiseUtils';
 import {
   AddMessageOptions,
   MessageState,
-} from '../../types/config/MessagingConfig';
+} from '../../../../types/config/MessagingConfig';
 import {
   GenericItem,
   ItemStreamingMetadata,
@@ -47,10 +47,10 @@ import {
   PartialOrCompleteItemChunk,
   PauseItem,
   StreamChunk,
-} from '../../types/messaging/Messages';
-import { DeepPartial } from '../../types/utilities/DeepPartial';
-import { OnErrorType } from '../../types/config/ErrorConfig';
-import type { ServiceManager } from './ServiceManager';
+} from '../../../../types/messaging/Messages';
+import { DeepPartial } from '../../../../types/utilities/DeepPartial';
+import { OnErrorType } from '../../../../types/config/ErrorConfig';
+import type { ServiceManager } from '../../ServiceManager';
 
 interface RequestChunkErrors {
   restartGeneration: number;

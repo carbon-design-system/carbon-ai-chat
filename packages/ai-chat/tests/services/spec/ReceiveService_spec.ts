@@ -8,11 +8,11 @@
  */
 
 import { makeConfigStore } from '../../test_helpers';
-import { ChunkProcessingService } from '../../../src/chat/services/ChunkProcessingService';
-import { ConversationLifecycleService } from '../../../src/chat/services/ConversationLifecycleService';
+import { ChunkProcessingService } from '../../../src/chat/services/messaging/inbound/ChunkProcessingService';
+import { ConversationLifecycleService } from '../../../src/chat/services/messaging/ConversationLifecycleService';
 import { HydrationService } from '../../../src/chat/services/HydrationService';
-import { MessageUpsertCoordinator } from '../../../src/chat/services/MessageUpsertCoordinator';
-import { ReceiveService } from '../../../src/chat/services/ReceiveService';
+import { MessageUpsertCoordinator } from '../../../src/chat/services/messaging/inbound/MessageUpsertCoordinator';
+import { ReceiveService } from '../../../src/chat/services/messaging/inbound/ReceiveService';
 import { ServiceManager } from '../../../src/chat/services/ServiceManager';
 import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
