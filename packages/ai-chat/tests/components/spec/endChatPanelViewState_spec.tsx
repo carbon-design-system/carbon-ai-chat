@@ -16,7 +16,7 @@ import '../../../src/web-components/cds-aichat-container';
 import { ChatContainer } from '../../../src/react/ChatContainer';
 import { chatMountStateContext } from '../../../src/web-components/shared/chat-mount-state-context';
 import type { ChatMountState } from '../../../src/chat/services/chatMountState';
-import enLanguagePack from '../../../src/sdk/languages/en.json';
+import enLanguagePack from '../../../src/languages/en.json';
 import { answerPrompt, openPrompt } from '../../../src/chat/state';
 import { chatStore } from '../../../src/chat/services/attachChatView';
 import {
