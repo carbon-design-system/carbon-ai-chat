@@ -18,6 +18,8 @@ import './components/feedback/index.js';
 import './components/file-uploads/index.js';
 import './components/launcher/index.js';
 import './components/markdown/index.js';
+import './components/message-byline/index.js';
+import './components/message-item-shell/index.js';
 import './components/messages-shell/index.js';
 import './components/processing/index.js';
 import './components/prompt-line/autocomplete/index.js';
@@ -26,6 +28,7 @@ import './components/reasoning-steps/index.js';
 import './components/table/index.js';
 import './components/toolbar/index.js';
 import './components/truncated-text/index.js';
+import './components/user-avatar/index.js';
 import './components/video-player/index.js';
 import './components/workspace-shell/index.js';
 
@@ -64,6 +67,8 @@ export { default as FileUploadItemElement } from './components/file-uploads/src/
 export { default as FileUploadsElement } from './components/file-uploads/src/file-uploads.js';
 export { default as CDSAIChatLauncher } from './components/launcher/src/launcher.js';
 export { default as CDSAIChatMarkdown } from './components/markdown/src/markdown.js';
+export { default as CDSAIChatMessageByline } from './components/message-byline/src/message-byline.js';
+export { default as CDSAIChatMessageItemShell } from './components/message-item-shell/src/message-item-shell.js';
 export { default as CDSAIChatMessagesShell } from './components/messages-shell/src/messages-shell.js';
 export { default as CDSAIChatProcessing } from './components/processing/src/processing.js';
 export { default as AutocompleteElement } from './components/prompt-line/autocomplete/src/autocomplete.js';
@@ -79,6 +84,7 @@ export { default as CDSAIChatReasoningSteps } from './components/reasoning-steps
 export { default as CDSAIChatTable } from './components/table/src/table.js';
 export { default as CDSAIChatToolbar } from './components/toolbar/src/toolbar.js';
 export { default as CDSAIChatTruncatedText } from './components/truncated-text/src/truncated-text.js';
+export { default as CDSAIChatUserAvatar } from './components/user-avatar/src/user-avatar.js';
 export { default as VideoPlayer } from './components/video-player/src/video-player.js';
 export { default as CDSAIChatWorkspaceShellBody } from './components/workspace-shell/src/workspace-shell-body.js';
 export { default as CDSAIChatWorkspaceShellFooter } from './components/workspace-shell/src/workspace-shell-footer.js';
