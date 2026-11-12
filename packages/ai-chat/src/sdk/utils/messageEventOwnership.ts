@@ -27,7 +27,9 @@ const warnedEditTypes = new WeakMap<object, Set<string>>();
  * Watches a workspace or slot event's payload while its handlers run. Call the returned
  * function once they finish. If a handler edited the payload, it warns once per event type
  * per chat, in every build, since 2.0.0 drops these edits. The edit still applies. Receive
- * and human-agent events document their edits, so their paths don't watch.
+ * and human-agent events document their edits, so their paths don't watch. A payload the
+ * host passed in, such as a chunk or its own `additionalData`, also warns if the host edits
+ * it while the handlers run.
  */
 export function watchPayloadEdits(
   serviceManager: ServiceManager,
@@ -52,7 +54,7 @@ export function watchPayloadEdits(
     }
     warned.add(type);
     consoleWarn(
-      `A "${type}" handler edited its event data. From 2.0.0 the chat ignores these edits, so call messaging.upsertMessage to change the message instead.`
+      `A "${type}" handler edited its event data. From 2.0.0 the chat ignores these edits, so call messaging.upsertMessage to change the message, or keep other data in your own state.`
     );
   };
 }
