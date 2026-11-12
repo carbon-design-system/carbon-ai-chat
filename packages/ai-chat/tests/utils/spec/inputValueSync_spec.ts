@@ -8,6 +8,7 @@
  */
 
 import type { JSONContent } from '@tiptap/core';
+import { textToDoc } from '@carbon/ai-chat-components/es/components/prompt-line/src/tiptap/json-utils.js';
 import {
   changeInputValue,
   mirrorInputValue,
@@ -205,7 +206,7 @@ describe('changeInputValue', () => {
     expect(changeTrackedValue.mock.calls[0][0].content).toBe(content);
   });
 
-  it('keeps missing local content null and tracks an empty document only when requested', () => {
+  it('keeps missing local content null and tracks the text as a document only when requested', () => {
     const changeLocalValue = jest.fn();
     const changeTrackedValue = jest.fn();
 
@@ -221,7 +222,7 @@ describe('changeInputValue', () => {
       ['untracked', null],
     ]);
     expect(changeTrackedValue.mock.calls).toEqual([
-      [{ rawValue: 'plain', content: { type: 'doc', content: [] } }],
+      [{ rawValue: 'plain', content: textToDoc('plain') }],
     ]);
   });
 });

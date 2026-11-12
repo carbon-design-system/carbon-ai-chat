@@ -186,9 +186,10 @@ class InputActionsService {
       return;
     }
 
+    // The document follows the text, so `input.content` never keeps an older draft.
     store.dispatch(
       actions.updateInputState(
-        { rawValue: nextValue },
+        { rawValue: nextValue, content: textToDoc(nextValue) },
         selectIsInputToHumanAgent(state)
       )
     );

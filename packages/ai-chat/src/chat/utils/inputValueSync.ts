@@ -9,6 +9,8 @@
 
 import type { JSONContent } from '@tiptap/core';
 import type { PromptLineElement } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
+// The pure helpers module: the prompt-line entry registers its elements.
+import { textToDoc } from '@carbon/ai-chat-components/es/components/prompt-line/src/tiptap/json-utils.js';
 import type { FileUpload } from '../../types/config/ServiceDeskConfig';
 import { hasSendableInput } from './sendableInput';
 
@@ -17,6 +19,11 @@ interface InputValueChange {
   content?: JSONContent;
 }
 
+/**
+ * Applies a change event from the input. The local display document stays null
+ * for a text-only change, so a send carries no display content. The tracked
+ * draft gets the document for the text, so `input.content` matches `rawValue`.
+ */
 function changeInputValue(
   { rawValue, content }: InputValueChange,
   changeLocalValue: (rawValue: string, content: JSONContent | null) => void,
@@ -25,7 +32,7 @@ function changeInputValue(
   changeLocalValue(rawValue, content ?? null);
   changeTrackedValue?.({
     rawValue,
-    content: content ?? { type: 'doc', content: [] },
+    content: content ?? textToDoc(rawValue),
   });
 }
 
