@@ -38,21 +38,27 @@ function Message({ savedDocument }) {
 }
 ```
 
-### With chip
+### With Chip
 
 A `mention` node shows a chip until you fill its slot.
 
 <Canvas of={Stories.WithChip} />
 
-### With custom node
+### With Custom Node
 
 This story renders a Carbon tile in the slot.
 
 <Canvas of={Stories.WithCustomNode} />
 
+### Type, Send, View
+
+This story captures the document from the prompt line when you send, then renders it with the component.
+
+<Canvas of={Stories.TypeSendView} />
+
 ## Accessibility
 
-Chips and custom nodes are part of the message text, so keep their slotted content readable as text. The component adds no roles or live regions.
+Chips and custom nodes are part of the message text, so keep their slotted content readable as text.
 
 ## Component API
 
