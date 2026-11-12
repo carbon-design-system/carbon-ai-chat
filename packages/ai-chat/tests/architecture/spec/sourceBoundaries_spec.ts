@@ -119,6 +119,13 @@ const frameworkExceptions: BoundaryException[] = [
     owner: '#1732',
     reason: "FileUpload's module also types the autocomplete's React parts",
   },
+  {
+    folder,
+    from: 'src/types/messaging/Messages.ts',
+    to: 'react',
+    owner: '#2901',
+    reason: 'ButtonItem.icon accepts a React component, a 1.x public type',
+  },
 ]);
 
 /** View objects and view handles that conversation services must not hold. */
