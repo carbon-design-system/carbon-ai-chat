@@ -308,6 +308,16 @@ describe('input.updateContent', () => {
     );
   });
 
+  // @covers config.input.tiptap
+  it('clears a rich draft with an empty doc', async () => {
+    const { instance } = await openChat(CHIP_CONFIG);
+    await updateContent(instance, () => chipDoc('hi '));
+    await updateContent(instance, () => ({ type: 'doc', content: [] }));
+    expect(instance.state.get().input.rawValue).toBe('');
+    expect(instance.state.get().input.content).toEqual(EMPTY_DOC);
+    expect(consoleWarn).not.toHaveBeenCalled();
+  });
+
   it('seeds plain text while the input is hidden, and rejects a rich doc', async () => {
     const { instance } = await openChat({ input: { isVisible: false } });
     await updateContent(instance, () => textDoc('seeded'));

@@ -45,16 +45,28 @@ function warnUpdateRawValueDeprecated() {
 }
 
 /**
- * Throws when the editor's schema can't hold the doc. Tiptap would otherwise
- * log "Invalid content" and replace the draft with an empty doc.
+ * Throws when Tiptap's `setContent` can't parse the JSON, where Tiptap would
+ * log "Invalid content" and replace the draft with an empty doc. Runs only the
+ * parse Tiptap runs, so anything Tiptap applies still applies.
  */
 function assertEditorAccepts(editor: Editor, content: JSONContent) {
+  if (
+    typeof content !== 'object' ||
+    content === null ||
+    typeof (content as { nodesBetween?: unknown }).nodesBetween === 'function'
+  ) {
+    return;
+  }
   try {
-    editor.schema.nodeFromJSON(content).check();
+    if (Array.isArray(content) && content.length > 0) {
+      content.forEach((item) => editor.schema.nodeFromJSON(item));
+    } else {
+      editor.schema.nodeFromJSON(content);
+    }
   } catch (error) {
     const detail = error instanceof Error ? error.message : String(error);
     throw new TypeError(
-      `ChatInstance.input.updateContent can't apply this content, so the input keeps its draft: ${detail}. Add an extension for it through input.tiptap.extensions, or remove it from the content.`
+      `ChatInstance.input.updateContent can't apply this content, so the input keeps its draft: ${detail}. Pass JSON the editor's schema can read, and add any node or mark type it lacks through input.tiptap.extensions.`
     );
   }
 }
