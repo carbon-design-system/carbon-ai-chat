@@ -250,8 +250,6 @@ describe('view change events', () => {
     instance.once({
       type: BusEventType.VIEW_CHANGE,
       handler: (event: BusEventViewChange) => {
-        // `main` differs from its JSDoc (MAIN-NOTES M30): the JSDoc says a
-        // handler can change newViewState, but the object is frozen.
         try {
           event.newViewState.launcher = true;
         } catch {
@@ -317,7 +315,6 @@ describe('view change events', () => {
     expect(resolved).toBe(true);
   });
 
-  // Not in the JSDoc (MAIN-NOTES M31).
   it('rejects a changeView made while another view change is running', async () => {
     const instance = await mount();
     const gate = deferred();
@@ -341,7 +338,6 @@ describe('view change events', () => {
     expect(instance.getState().viewState).toEqual(MAIN_WINDOW_ONLY);
   });
 
-  // Not in the JSDoc (MAIN-NOTES M31).
   it('rejects with the error a view:pre:change handler throws, leaves the view, and accepts the next call', async () => {
     const instance = await mount();
     instance.once({
