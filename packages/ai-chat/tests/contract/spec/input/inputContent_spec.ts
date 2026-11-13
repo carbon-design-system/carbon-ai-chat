@@ -1,0 +1,577 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+import { act, waitFor } from '@testing-library/react';
+import { Node } from '@tiptap/core';
+import type { Extension, JSONContent } from '@tiptap/core';
+
+import {
+  BusEventStateChange,
+  BusEventType,
+  ChatInstance,
+  PageObjectId,
+  PublicConfig,
+  ViewType,
+  WriteableElementName,
+} from '../../../../src/aiChatEntry';
+import {
+  allByTestId,
+  changeView,
+  contractChat,
+  contractSetup,
+  getByTestId,
+  pause,
+} from '../../helpers';
+
+/** A one-paragraph doc holding this text. */
+function textDoc(text: string): JSONContent {
+  return {
+    type: 'doc',
+    content: [{ type: 'paragraph', content: [{ type: 'text', text }] }],
+  };
+}
+
+/** The doc the chat publishes for an empty input. */
+const EMPTY_DOC: JSONContent = {
+  type: 'doc',
+  content: [{ type: 'paragraph' }],
+};
+
+/** A host node, installed through `input.tiptap.extensions`. */
+const TestChip = Node.create({
+  name: 'testChip',
+  group: 'inline',
+  inline: true,
+  atom: true,
+  parseHTML() {
+    return [{ tag: 'span[data-test-chip]' }];
+  },
+  renderHTML() {
+    return ['span', { 'data-test-chip': '' }];
+  },
+});
+
+const CHIP_CONFIG: Partial<PublicConfig> = {
+  input: { tiptap: { extensions: [TestChip as unknown as Extension] } },
+};
+
+function chipDoc(text: string): JSONContent {
+  return {
+    type: 'doc',
+    content: [
+      {
+        type: 'paragraph',
+        content: [{ type: 'text', text }, { type: 'testChip' }],
+      },
+    ],
+  };
+}
+
+/** Mounts a chat and opens its main window, with no welcome request. */
+async function openChat(
+  config: Partial<PublicConfig> = {}
+): Promise<ChatInstance> {
+  const { instance } = await contractChat({
+    ...config,
+    messaging: { skipWelcome: true, ...config.messaging },
+  });
+  await changeView(instance, ViewType.MAIN_WINDOW);
+  await waitFor(() => expect(instance.state.get().isHydratingCounter).toBe(0));
+  return instance;
+}
+
+/** The input field, found by its public test ID. */
+function field(): HTMLTextAreaElement {
+  return getByTestId(PageObjectId.INPUT) as HTMLTextAreaElement;
+}
+
+/**
+ * Types into the plain input field the way a browser reports it: a new value,
+ * then an `input` event. Works only while the field is the plain one (no rich
+ * input feature configured and no `getEditor` call yet).
+ */
+async function typeText(text: string): Promise<void> {
+  await act(async () => {
+    field().value = text;
+    field().dispatchEvent(new Event('input', { bubbles: true }));
+  });
+}
+
+async function updateContent(
+  instance: ChatInstance,
+  updater: (previous: JSONContent) => JSONContent
+): Promise<void> {
+  await act(async () => {
+    await instance.input.updateContent(updater);
+  });
+}
+
+async function updateRawValue(
+  instance: ChatInstance,
+  updater: (previous: string) => string
+): Promise<void> {
+  await act(async () => {
+    instance.input.updateRawValue(updater);
+  });
+}
+
+/**
+ * The console warnings that name `updateRawValue`. Other warnings (a Tiptap
+ * one an earlier test set off, say) don't count.
+ */
+function deprecationWarnings(consoleWarn: jest.SpyInstance): unknown[][] {
+  return consoleWarn.mock.calls.filter((args) =>
+    args.some((arg: unknown) => String(arg).includes('updateRawValue'))
+  );
+}
+
+/** Each `state:change` from now on, as the input's text and doc. */
+function recordInputChanges(instance: ChatInstance) {
+  const changes: { rawValue: string; content: JSONContent }[] = [];
+  instance.on({
+    type: BusEventType.STATE_CHANGE,
+    handler: (event: BusEventStateChange) => {
+      const { input } = event.newState;
+      if (JSON.stringify(input) !== JSON.stringify(event.previousState.input)) {
+        changes.push({ rawValue: input.rawValue, content: input.content });
+      }
+    },
+  });
+  return changes;
+}
+
+// @covers state.input state.input.rawValue state.input.content state.input.structuredData
+describe('state.input', () => {
+  contractSetup();
+
+  it('starts with an empty draft and no structured data', async () => {
+    const instance = await openChat();
+    const { input } = instance.state.get();
+    expect(input.rawValue).toBe('');
+    // src/chat/store/reducerUtils.ts:213 seeds `content` with `[]`, and the
+    // projection at src/chat/utils/publicState.ts:167 only replaces null, so
+    // on `main` an untouched input publishes an empty array, not the
+    // JSONContent doc its type (src/types/instance/PublicChatState.ts:58)
+    // promises.
+    expect(input.content).toEqual([]);
+    expect(input.structuredData).toBeUndefined();
+  });
+
+  it('follows what the user types', async () => {
+    const instance = await openChat();
+    await typeText('typed by hand');
+    expect(instance.state.get().input.rawValue).toBe('typed by hand');
+    expect(instance.state.get().input.content).toEqual(
+      textDoc('typed by hand')
+    );
+  });
+
+  it('is a frozen snapshot', async () => {
+    const instance = await openChat();
+    await updateContent(instance, () => textDoc('draft'));
+    const { input } = instance.state.get();
+    expect(Object.isFrozen(input)).toBe(true);
+    expect(Object.isFrozen(input.content)).toBe(true);
+  });
+
+  it('joins paragraphs with one newline in the plain field', async () => {
+    const instance = await openChat();
+    await updateContent(instance, () => ({
+      type: 'doc',
+      content: [textDoc('one').content[0], textDoc('two').content[0]],
+    }));
+    expect(instance.state.get().input.rawValue).toBe('one\ntwo');
+    expect(field().value).toBe('one\ntwo');
+  });
+
+  it('joins paragraphs with two newlines and shows a hard break as one in the rich editor', async () => {
+    const instance = await openChat();
+    await act(async () => {
+      await instance.input.getEditor();
+    });
+    await updateContent(instance, () => ({
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'text', text: 'one' },
+            { type: 'hardBreak' },
+            { type: 'text', text: 'two' },
+          ],
+        },
+        textDoc('three').content[0],
+      ],
+    }));
+    // The plain field joins paragraphs with one newline (test above); the rich
+    // editor joins them with two. A finding: the same doc gives a different
+    // `rawValue` depending on which surface is mounted.
+    expect(instance.state.get().input.rawValue).toBe('one\ntwo\n\nthree');
+  });
+});
+
+// @covers instance.input instance.input.updateContent state.input.rawValue state.input.content
+describe('input.updateContent', () => {
+  contractSetup();
+
+  it('replaces the draft, and the field shows it', async () => {
+    const instance = await openChat();
+    await updateContent(instance, () => textDoc('hello'));
+    expect(instance.state.get().input.rawValue).toBe('hello');
+    expect(instance.state.get().input.content).toEqual(textDoc('hello'));
+    expect(field().value).toBe('hello');
+  });
+
+  it('gives the updater the current doc', async () => {
+    const instance = await openChat();
+    await typeText('typed');
+    const seen: JSONContent[] = [];
+    await updateContent(instance, (previous) => {
+      seen.push(previous);
+      return textDoc('next');
+    });
+    expect(seen).toEqual([textDoc('typed')]);
+  });
+
+  it('keeps no link to the doc the updater got or returned', async () => {
+    const instance = await openChat();
+    await updateContent(instance, () => textDoc('first'));
+    const returned = textDoc('second');
+    await updateContent(instance, (previous) => {
+      previous.content = [];
+      return returned;
+    });
+    returned.content[0].content[0].text = 'changed later';
+    expect(instance.state.get().input.rawValue).toBe('second');
+    expect(instance.state.get().input.content).toEqual(textDoc('second'));
+  });
+
+  it('publishes matching rawValue and content in every state:change', async () => {
+    const instance = await openChat();
+    const changes = recordInputChanges(instance);
+    await updateContent(instance, () => textDoc('together'));
+    await pause();
+    expect(changes.length).toBeGreaterThan(0);
+    for (const change of changes) {
+      expect(change).toEqual({
+        rawValue: 'together',
+        content: textDoc('together'),
+      });
+    }
+  });
+
+  it('resolves and keeps the draft when the updater throws', async () => {
+    const consoleError = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+    const instance = await openChat();
+    await updateContent(instance, () => textDoc('kept'));
+    await expect(
+      instance.input.updateContent(() => {
+        throw new Error('host updater failed');
+      })
+    ).resolves.toBeUndefined();
+    expect(instance.state.get().input.rawValue).toBe('kept');
+    expect(consoleError).toHaveBeenCalled();
+  });
+
+  // @covers config.input.tiptap
+  it('loads the rich editor for a node a host extension adds, and keeps the node', async () => {
+    const instance = await openChat(CHIP_CONFIG);
+    await updateContent(instance, () => chipDoc('hi '));
+    expect(instance.state.get().input.content).toEqual(chipDoc('hi '));
+    expect(instance.state.get().input.rawValue).toBe('hi ');
+    const editor = await instance.input.getEditor();
+    expect(editor.getJSON()).toEqual(chipDoc('hi '));
+  });
+
+  it('empties the draft for a mark no extension supports', async () => {
+    jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const instance = await openChat();
+    await updateContent(instance, () => textDoc('earlier draft'));
+    await updateContent(instance, () => ({
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [{ type: 'text', text: 'bold', marks: [{ type: 'bold' }] }],
+        },
+      ],
+    }));
+    // Suspected bug, reported: the promise resolves as if the doc were
+    // applied, but the rich editor rejects the unknown mark and the whole
+    // draft, the earlier text included, is gone.
+    expect(instance.state.get().input.rawValue).toBe('');
+    expect(instance.state.get().input.content).toEqual(EMPTY_DOC);
+  });
+
+  it('seeds plain text while the input is hidden, and rejects a rich doc', async () => {
+    const instance = await openChat({ input: { isVisible: false } });
+    await updateContent(instance, () => textDoc('seeded'));
+    expect(instance.state.get().input.rawValue).toBe('seeded');
+    expect(instance.state.get().input.content).toEqual(textDoc('seeded'));
+
+    await expect(
+      instance.input.updateContent(() => chipDoc('rich'))
+    ).rejects.toThrow();
+    expect(instance.state.get().input.rawValue).toBe('seeded');
+  });
+
+  it('seeds the draft from onBeforeRender, which a send then uses', async () => {
+    const sent: string[] = [];
+    const { instance } = await contractChat({
+      messaging: {
+        skipWelcome: true,
+        customSendMessage: async (request) => {
+          sent.push(request.input.text);
+        },
+      },
+      onBeforeRender: (handed) => {
+        handed.input.updateContent(() => textDoc('early'));
+      },
+    });
+    await changeView(instance, ViewType.MAIN_WINDOW);
+    await pause();
+    expect(instance.state.get().input.rawValue).toBe('early');
+    // Suspected bug, reported: src/types/instance/ChatInstanceInput.ts:62 says
+    // a staged value "seeds the field when it renders", but a value staged
+    // from onBeforeRender never shows; the field stays empty while the send
+    // button sends it.
+    expect(
+      allByTestId(PageObjectId.INPUT).map(
+        (each) => (each as HTMLTextAreaElement).value
+      )
+    ).toEqual(['']);
+    await act(async () => {
+      getByTestId(PageObjectId.INPUT_SEND).click();
+    });
+    await waitFor(() => expect(sent).toEqual(['early']));
+  });
+});
+
+// @covers instance.input instance.input.updateRawValue state.input.rawValue state.input.content
+describe('input.updateRawValue', () => {
+  contractSetup();
+
+  it('replaces the draft with plain text, and the field shows it', async () => {
+    const instance = await openChat();
+    await updateRawValue(instance, () => 'hello');
+    expect(instance.state.get().input.rawValue).toBe('hello');
+    expect(instance.state.get().input.content).toEqual(textDoc('hello'));
+    expect(field().value).toBe('hello');
+  });
+
+  it('keeps a newline in the plain field, as a second paragraph', async () => {
+    const instance = await openChat();
+    await updateRawValue(instance, () => 'one\ntwo');
+    expect(instance.state.get().input.rawValue).toBe('one\ntwo');
+    expect(instance.state.get().input.content).toEqual({
+      type: 'doc',
+      content: [textDoc('one').content[0], textDoc('two').content[0]],
+    });
+  });
+
+  it('gives the updater the current text', async () => {
+    const instance = await openChat();
+    await typeText('typed');
+    const seen: string[] = [];
+    await updateRawValue(instance, (previous) => {
+      seen.push(previous);
+      return `${previous}!`;
+    });
+    expect(seen).toEqual(['typed']);
+    expect(instance.state.get().input.rawValue).toBe('typed!');
+  });
+
+  it('turns a non-string result into text, and null into an empty draft', async () => {
+    const instance = await openChat();
+    await updateRawValue(instance, () => 42 as unknown as string);
+    expect(instance.state.get().input.rawValue).toBe('42');
+    await updateRawValue(instance, () => null as unknown as string);
+    expect(instance.state.get().input.rawValue).toBe('');
+  });
+
+  it('keeps the draft when the updater throws', async () => {
+    const consoleError = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+    const instance = await openChat();
+    await updateRawValue(instance, () => 'kept');
+    expect(() =>
+      instance.input.updateRawValue(() => {
+        throw new Error('host updater failed');
+      })
+    ).not.toThrow();
+    expect(instance.state.get().input.rawValue).toBe('kept');
+    expect(consoleError).toHaveBeenCalled();
+  });
+
+  it('publishes the new text before the new doc in the plain field', async () => {
+    const instance = await openChat();
+    const changes = recordInputChanges(instance);
+    await updateRawValue(instance, () => 'next');
+    await pause();
+    // src/types/instance/PublicChatState.ts:50 says `content` is "always
+    // consistent with rawValue". On `main` the plain field's write publishes
+    // `rawValue` first, with the old doc, then the doc in a second change.
+    expect(changes).toEqual([
+      { rawValue: 'next', content: [] },
+      { rawValue: 'next', content: textDoc('next') },
+    ]);
+  });
+
+  it('warns nothing in the plain field', async () => {
+    const consoleWarn = jest
+      .spyOn(console, 'warn')
+      .mockImplementation(() => {});
+    const instance = await openChat();
+    consoleWarn.mockClear();
+    await updateRawValue(instance, () => 'one');
+    // src/types/instance/ChatInstanceInput.ts:39 says the method "emits one
+    // deprecation warning per session"; on `main` it warns only once the rich
+    // editor is mounted (src/chat/services/InputActionsService.ts:78).
+    expect(deprecationWarnings(consoleWarn)).toEqual([]);
+  });
+
+  // The warning's once-per-session flag lives for the whole file, so this
+  // must stay the first test here to write to the rich editor with
+  // updateRawValue.
+  it('warns once, over two writes, in the rich editor', async () => {
+    const consoleWarn = jest
+      .spyOn(console, 'warn')
+      .mockImplementation(() => {});
+    const instance = await openChat();
+    await act(async () => {
+      await instance.input.getEditor();
+    });
+    consoleWarn.mockClear();
+    await updateRawValue(instance, () => 'one');
+    await updateRawValue(instance, () => 'two');
+    expect(instance.state.get().input.rawValue).toBe('two');
+    expect(deprecationWarnings(consoleWarn)).toHaveLength(1);
+  });
+
+  it('turns a newline into a space in the rich editor', async () => {
+    jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const instance = await openChat();
+    await act(async () => {
+      await instance.input.getEditor();
+    });
+    await updateRawValue(instance, () => 'one\ntwo');
+    // src/types/instance/ChatInstanceInput.ts:38 says a hard break "renders as
+    // `\n` in the rawValue projection". On `main` the rich editor drops the
+    // newline a host writes; the plain field keeps it.
+    expect(instance.state.get().input.rawValue).toBe('one two');
+  });
+
+  // @covers config.input.tiptap
+  it('throws without calling the updater while the doc has a non-text node', async () => {
+    const instance = await openChat(CHIP_CONFIG);
+    await updateContent(instance, () => chipDoc('hi '));
+    const updater = jest.fn(() => 'plain');
+    expect(() => instance.input.updateRawValue(updater)).toThrow();
+    expect(updater).not.toHaveBeenCalled();
+    expect(instance.state.get().input.content).toEqual(chipDoc('hi '));
+  });
+});
+
+// @covers instance.input instance.input.getEditor state.input.rawValue state.input.content
+describe('input.getEditor', () => {
+  contractSetup();
+
+  it('carries typed text over into the editor it loads', async () => {
+    const instance = await openChat();
+    await typeText('carried over');
+    let editor: Awaited<ReturnType<ChatInstance['input']['getEditor']>>;
+    await act(async () => {
+      editor = await instance.input.getEditor();
+    });
+    expect(editor.getText()).toBe('carried over');
+    expect(instance.state.get().input.rawValue).toBe('carried over');
+  });
+
+  it('resolves the same editor to concurrent and later calls', async () => {
+    const instance = await openChat();
+    let editors: unknown[];
+    await act(async () => {
+      editors = await Promise.all([
+        instance.input.getEditor(),
+        instance.input.getEditor(),
+      ]);
+    });
+    const later = await instance.input.getEditor();
+    expect(editors[0]).toBe(editors[1]);
+    expect(later).toBe(editors[0]);
+  });
+
+  it('publishes the edits a host makes through the editor', async () => {
+    const instance = await openChat();
+    const editor = await act(async () => instance.input.getEditor());
+    await act(async () => {
+      editor.commands.setContent(textDoc('from the editor'));
+    });
+    expect(instance.state.get().input.rawValue).toBe('from the editor');
+    expect(instance.state.get().input.content).toEqual(
+      textDoc('from the editor')
+    );
+    await updateContent(instance, () => textDoc('from the host'));
+    expect(editor.getJSON()).toEqual(textDoc('from the host'));
+  });
+
+  it('rejects while the input is hidden', async () => {
+    const instance = await openChat({ input: { isVisible: false } });
+    await expect(instance.input.getEditor()).rejects.toThrow(
+      'Input is not currently rendered'
+    );
+  });
+
+  it('rejects from onBeforeRender', async () => {
+    let result: Promise<unknown>;
+    await contractChat({
+      onBeforeRender: (handed) => {
+        result = handed.input.getEditor();
+        result.catch(() => {});
+      },
+    });
+    await expect(result).rejects.toThrow('Input is not currently rendered');
+  });
+});
+
+// @covers instance.input instance.input.updateContent instance.input.updateRawValue
+// @covers instance.input.updateStructuredData instance.input.getEditor
+describe('input methods while a custom prompt line has content', () => {
+  contractSetup();
+
+  it('reject every write without calling its updater, and leave the draft', async () => {
+    const instance = await openChat();
+    await updateContent(instance, () => textDoc('parked'));
+    await act(async () => {
+      instance.writeableElements[
+        WriteableElementName.CUSTOM_PROMPT_LINE
+      ].append(document.createElement('input'));
+    });
+    const before = instance.state.get().input;
+    const updater = jest.fn();
+    const hostOwned =
+      'Input content is host-owned while CUSTOM_PROMPT_LINE has content.';
+
+    expect(() => instance.input.updateRawValue(updater)).toThrow(hostOwned);
+    expect(() => instance.input.updateStructuredData(updater)).toThrow(
+      hostOwned
+    );
+    await expect(instance.input.updateContent(updater)).rejects.toThrow(
+      hostOwned
+    );
+    await expect(instance.input.getEditor()).rejects.toThrow(
+      'Input is not currently rendered'
+    );
+    expect(updater).not.toHaveBeenCalled();
+    expect(instance.state.get().input).toEqual(before);
+  });
+});

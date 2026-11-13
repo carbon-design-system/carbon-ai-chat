@@ -1,0 +1,330 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+import { act, waitFor } from '@testing-library/react';
+import type { Editor, JSONContent } from '@tiptap/core';
+
+import {
+  ChatInstance,
+  PublicConfig,
+  SuggestionItem,
+  ViewType,
+} from '../../../../src/aiChatEntry';
+import {
+  FakeBackend,
+  allByRole,
+  byRole,
+  changeView,
+  click,
+  contractChat,
+  contractSetup,
+  fakeBackend,
+  pause,
+} from '../../helpers';
+
+/** Mounts a chat, opens its main window, and answers each send at once. */
+async function openChat(config: Partial<PublicConfig>): Promise<{
+  instance: ChatInstance;
+  backend: FakeBackend;
+  editor: Editor;
+}> {
+  const backend = fakeBackend({ autoResolve: true });
+  const { instance } = await contractChat({
+    ...config,
+    messaging: {
+      skipWelcome: true,
+      customSendMessage: backend.customSendMessage,
+    },
+  });
+  await changeView(instance, ViewType.MAIN_WINDOW);
+  await waitFor(() => expect(instance.state.get().isHydratingCounter).toBe(0));
+  const editor = await act(async () => instance.input.getEditor());
+  await act(async () => {
+    editor.commands.focus();
+  });
+  return { instance, backend, editor };
+}
+
+/**
+ * Inserts text at the caret through the public editor handle. jsdom can't
+ * type real keystrokes into the rich editor, so this stands in for typing.
+ */
+async function insert(editor: Editor, text: string): Promise<void> {
+  await act(async () => {
+    editor.commands.insertContent(text);
+  });
+}
+
+/** The visible suggestion options with this name. */
+function options(name: string): HTMLElement[] {
+  return allByRole('option', name);
+}
+
+/** Waits for the suggestion option with this name, then clicks it. */
+async function choose(name: string): Promise<void> {
+  await waitFor(() => expect(options(name)).toHaveLength(1));
+  await click(byRole('option', name));
+}
+
+/** The inline nodes of the input's first paragraph, without attributes. */
+function nodeTypes(content: JSONContent): string[] {
+  return (content.content?.[0]?.content ?? []).map((node) => node.type);
+}
+
+const ALICE: SuggestionItem = { id: 'alice', label: 'Alice', value: '@alice' };
+const BOB: SuggestionItem = { id: 'bob', label: 'Bob', value: '@bob' };
+
+// @covers config.input config.input.mention state.input.content
+describe('input.mention', () => {
+  contractSetup();
+
+  it('asks items for the text typed after the trigger', async () => {
+    const queries: string[] = [];
+    const { editor } = await openChat({
+      input: {
+        mention: {
+          trigger: '@',
+          items: (query) => {
+            queries.push(query);
+            return [ALICE];
+          },
+        },
+      },
+    });
+    await insert(editor, '@al');
+    await waitFor(() => expect(options('Alice')).toHaveLength(1));
+    expect(queries).toContain('al');
+  });
+
+  it('filters an item list by the typed text', async () => {
+    const { editor } = await openChat({
+      input: { mention: { trigger: '@', items: [ALICE, BOB] } },
+    });
+    await insert(editor, '@bo');
+    await waitFor(() => expect(options('Bob')).toHaveLength(1));
+    expect(options('Alice')).toHaveLength(0);
+  });
+
+  it('inserts a mention node for the chosen item and calls onSelect', async () => {
+    const onSelect = jest.fn();
+    const { instance, editor, backend } = await openChat({
+      input: { mention: { trigger: '@', items: [ALICE], onSelect } },
+    });
+    await insert(editor, '@al');
+    await choose('Alice');
+    expect(onSelect).toHaveBeenCalledTimes(1);
+    expect(onSelect.mock.calls[0][0]).toMatchObject({ id: 'alice' });
+    const { content } = instance.state.get().input;
+    expect(nodeTypes(content)).toEqual(['mention', 'text']);
+    expect(content.content[0].content[0].attrs).toMatchObject({
+      id: 'alice',
+      label: 'Alice',
+      value: '@alice',
+    });
+    expect(instance.state.get().input.rawValue).toBe('@Alice ');
+    // Choosing a mention never sends.
+    expect(backend.requests).toHaveLength(0);
+  });
+
+  it('offers nothing without the trigger', async () => {
+    const { editor } = await openChat({
+      input: { mention: { trigger: '@', items: [ALICE] } },
+    });
+    await insert(editor, 'al');
+    // A short wait proves no list opens.
+    await pause();
+    expect(options('Alice')).toHaveLength(0);
+  });
+});
+
+// @covers config.input config.input.command state.input.content state.input.rawValue
+describe('input.command', () => {
+  contractSetup();
+
+  const SUMMARIZE: SuggestionItem = { id: 'sum', label: 'Summarize' };
+  const TRANSLATE: SuggestionItem = { id: 'tr', label: 'Translate' };
+
+  it('inserts a command node for the chosen item and calls onSelect', async () => {
+    const onSelect = jest.fn();
+    const { instance, editor } = await openChat({
+      input: {
+        command: { trigger: '/', items: [SUMMARIZE, TRANSLATE], onSelect },
+      },
+    });
+    await insert(editor, '/su');
+    await waitFor(() => expect(options('Summarize')).toHaveLength(1));
+    expect(options('Translate')).toHaveLength(0);
+    await choose('Summarize');
+    expect(onSelect.mock.calls[0][0]).toMatchObject({ id: 'sum' });
+    const { input } = instance.state.get();
+    expect(nodeTypes(input.content)).toEqual(['command', 'text']);
+    expect(input.content.content[0].content[0].attrs).toMatchObject({
+      id: 'sum',
+      label: 'Summarize',
+    });
+    expect(input.rawValue).toBe('/Summarize ');
+  });
+
+  it('calls onRemove when the command is deleted', async () => {
+    const onRemove = jest.fn();
+    const { instance, editor } = await openChat({
+      input: { command: { trigger: '/', items: [SUMMARIZE], onRemove } },
+    });
+    await insert(editor, '/su');
+    await choose('Summarize');
+    await act(async () => {
+      editor.commands.clearContent(true);
+    });
+    expect(instance.state.get().input.rawValue).toBe('');
+    await waitFor(() => expect(onRemove).toHaveBeenCalledTimes(1));
+    expect(onRemove.mock.calls[0][0]).toMatchObject({ id: 'sum' });
+  });
+});
+
+// @covers config.input config.input.autocomplete
+describe('input.autocomplete', () => {
+  contractSetup();
+
+  const HELLO: SuggestionItem = { id: 'hello', label: 'hello world' };
+
+  it('asks items for the typed text and sends a chosen item', async () => {
+    const queries: string[] = [];
+    const { instance, editor, backend } = await openChat({
+      input: {
+        autocomplete: {
+          items: (query) => {
+            queries.push(query);
+            return [HELLO];
+          },
+        },
+      },
+    });
+    await insert(editor, 'hel');
+    await choose('hello world');
+    expect(queries).toContain('hel');
+    await waitFor(() => expect(backend.texts()).toEqual(['hello world']));
+    expect(instance.state.get().input.rawValue).toBe('');
+  });
+
+  it('inserts a chosen item instead with disableDirectSend', async () => {
+    const { instance, editor, backend } = await openChat({
+      input: { autocomplete: { disableDirectSend: true, items: [HELLO] } },
+    });
+    await insert(editor, 'hel');
+    await choose('hello world');
+    // A short wait proves no send follows.
+    await pause();
+    expect(backend.requests).toHaveLength(0);
+    expect(instance.state.get().input.rawValue).toBe('hello world');
+  });
+
+  it('calls onSelect for an inserted item but not for a sent one', async () => {
+    const onSelect = jest.fn();
+    const sent = await openChat({
+      input: { autocomplete: { items: [HELLO], onSelect } },
+    });
+    await insert(sent.editor, 'hel');
+    await choose('hello world');
+    await waitFor(() => expect(sent.backend.requests).toHaveLength(1));
+    // The config's JSDoc calls onSelect the "selection callback"
+    // (src/types/config/InputConfig.ts:30); on `main` a direct send skips it.
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+
+  it('calls onSelect for an item inserted with disableDirectSend', async () => {
+    const onSelect = jest.fn();
+    const { editor } = await openChat({
+      input: {
+        autocomplete: { disableDirectSend: true, items: [HELLO], onSelect },
+      },
+    });
+    await insert(editor, 'hel');
+    await choose('hello world');
+    expect(onSelect).toHaveBeenCalledTimes(1);
+    expect(onSelect.mock.calls[0][0]).toMatchObject({ id: 'hello' });
+  });
+
+  it('waits for minQueryLength characters', async () => {
+    const { editor } = await openChat({
+      input: { autocomplete: { minQueryLength: 2, items: [HELLO] } },
+    });
+    await insert(editor, 'h');
+    // A short wait proves no list opens.
+    await pause();
+    expect(options('hello world')).toHaveLength(0);
+    await insert(editor, 'e');
+    await waitFor(() => expect(options('hello world')).toHaveLength(1));
+  });
+});
+
+// @covers config.input config.input.starters
+describe('input.starters', () => {
+  contractSetup();
+
+  const STARTER: SuggestionItem = {
+    id: 'start',
+    label: 'Contract starter',
+    value: 'starter value',
+  };
+
+  it('shows while the input is empty and focused, and sends the value of a chosen one', async () => {
+    const { instance, backend } = await openChat({
+      input: { starters: { items: [STARTER] } },
+    });
+    await choose('Contract starter');
+    await waitFor(() => expect(backend.texts()).toEqual(['starter value']));
+    expect(instance.state.get().input.rawValue).toBe('');
+  });
+
+  it('sends the label when an item has no value', async () => {
+    const { backend } = await openChat({
+      input: { starters: { items: [{ id: 'start', label: 'Label only' }] } },
+    });
+    await choose('Label only');
+    await waitFor(() => expect(backend.texts()).toEqual(['Label only']));
+  });
+
+  it('hides once the input has text', async () => {
+    const { editor } = await openChat({
+      input: { starters: { items: [STARTER] } },
+    });
+    await waitFor(() => expect(options('Contract starter')).toHaveLength(1));
+    await insert(editor, 'typed');
+    await waitFor(() => expect(options('Contract starter')).toHaveLength(0));
+  });
+
+  it('shows nothing with isOn false', async () => {
+    await openChat({ input: { starters: { isOn: false, items: [STARTER] } } });
+    // A short wait proves no list opens.
+    await pause();
+    expect(options('Contract starter')).toHaveLength(0);
+  });
+
+  it('sends nothing, and inserts nothing, with isSendDisabled', async () => {
+    const { instance, backend } = await openChat({
+      input: { isSendDisabled: true, starters: { items: [STARTER] } },
+    });
+    await choose('Contract starter');
+    // A short wait proves no send follows.
+    await pause();
+    expect(backend.requests).toHaveLength(0);
+    expect(instance.state.get().input.rawValue).toBe('');
+  });
+
+  it('still sends with disableDirectSend', async () => {
+    const { backend } = await openChat({
+      input: { starters: { disableDirectSend: true, items: [STARTER] } },
+    });
+    await choose('Contract starter');
+    // src/types/config/InputConfig.ts:31 says `disableDirectSend` "inserts a
+    // clicked item into the editor instead of sending it", and
+    // `StartersConfig` takes the field; on `main` starters ignore it.
+    await waitFor(() => expect(backend.texts()).toEqual(['starter value']));
+  });
+});
