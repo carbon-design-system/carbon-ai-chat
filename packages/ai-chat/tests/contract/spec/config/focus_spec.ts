@@ -15,6 +15,7 @@ import {
   KeyboardShortcuts,
   PageObjectId,
   ViewType,
+  WriteableElementName,
 } from '../../../../src/aiChatEntry';
 import {
   byRole,
@@ -26,6 +27,7 @@ import {
   focusHostButton,
   isShownWithin,
   pause,
+  recordEvents,
   textResponse,
 } from '../../helpers';
 
@@ -133,16 +135,35 @@ describe('shouldTakeFocusIfOpensAutomatically', () => {
     expect(focusIsInInput()).toBe(false);
   });
 
-  it('leaves outside focus in place when a custom panel closes with the flag false', async () => {
+  it('leaves outside focus in place when a custom panel opens and closes with the flag false', async () => {
     const { instance } = await contractChat({
       messaging: { skipWelcome: true },
       openChatByDefault: true,
       shouldTakeFocusIfOpensAutomatically: false,
     });
     const panel = instance.customPanels.getPanel();
-    await act(async () => panel.open());
-    expect(instance.state.get().customPanels.default.isOpen).toBe(true);
+    const content = document.createElement('button');
+    content.type = 'button';
+    content.textContent = 'Contract panel action';
+    // jsdom has no layout; give the host's button a rendered rectangle.
+    jest
+      .spyOn(content, 'getClientRects')
+      .mockReturnValue([new DOMRect(0, 0, 100, 20)] as unknown as DOMRectList);
+    await act(async () => {
+      instance.writeableElements[
+        WriteableElementName.CUSTOM_PANEL_ELEMENT
+      ].append(content);
+    });
     const button = focusHostButton();
+    const events = recordEvents(instance, [BusEventType.CUSTOM_PANEL_OPEN]);
+    await act(async () => panel.open());
+    await waitFor(() =>
+      expect(events.types()).toEqual([BusEventType.CUSTOM_PANEL_OPEN])
+    );
+    expect(instance.state.get().customPanels.default.isOpen).toBe(true);
+    expect(byRole('button', 'Contract panel action')).not.toBeNull();
+    expect(deepActiveElement()).toBe(button);
+    expect(focusIsInInput()).toBe(false);
     await act(async () => panel.close());
     expect(instance.state.get().customPanels.default.isOpen).toBe(false);
     await pause(100);
