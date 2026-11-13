@@ -93,7 +93,7 @@ The selected `--source worktree|index|head` must match the source used for cover
 
 To reuse coverage, set `CONTRACT_COVERAGE_REPORT` to the absolute report path. Its sibling `<report>.meta.json` must have a matching fingerprint for source, tests, config, lockfile, and built components. Node and environment settings must match too. Keep reports temporary and uncommitted. Coverage gaps are advisory and have no CI threshold.
 
-Executed lines do not prove assertions. For each new runtime branch, name the contract test that fails on a narrow source break. Plant it in an isolated scratch copy, then show a clean pass, the behavioral failure, and a restored pass. If another guard masks the change or it has no public effect, record that reason without exposing internals.
+Executed lines do not prove assertions. For each new runtime branch, name the contract test that fails on a narrow source break. Plant it in an isolated scratch copy, then show a clean pass, the behavioral failure, and a restored pass. If another guard masks the break, record why. For behavior a host can reach, also plant a break that exposes the public defect. Give a specific reason for a branch with no public effect. Keep the proof public.
 
 ## Running tests
 
