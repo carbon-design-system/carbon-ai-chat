@@ -65,6 +65,7 @@ import {
   addMessages,
   createHumanAgentLocalMessage,
   LocalAndOriginalMessagesPair,
+  MessageListPlace,
   toPair,
 } from './humanAgentUtils';
 import {
@@ -140,6 +141,14 @@ const {
   SHARING_ENDED,
 } = HumanAgentMessageType;
 
+/**
+ * An agent message held while the chat is suspended, with the place in the list it would have had when it arrived.
+ */
+interface HeldMessage {
+  pair: LocalAndOriginalMessagesPair;
+  after: MessageListPlace;
+}
+
 class HumanAgentServiceImpl implements HumanAgentService {
   /**
    * The service manager to use to access services.
@@ -198,6 +207,12 @@ class HumanAgentServiceImpl implements HumanAgentService {
    * warning has been shown.
    */
   showLeaveWarning = true;
+
+  /**
+   * Agent messages that arrived while the chat was suspended, in arrival order, each with the place in the list it
+   * would have had then.
+   */
+  private heldMessages: HeldMessage[] = [];
 
   constructor(serviceManager: ServiceManager) {
     this.serviceManager = serviceManager;
@@ -450,6 +465,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
 
     this.chatStarted = false;
     this.isHumanAgentTyping = false;
+    this.heldMessages = [];
     this.serviceManager.store.dispatch(endChat());
 
     await this.fireEndChat(endedByHumanAgent, !isConnected);
@@ -1011,6 +1027,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
           await this.endServiceDeskChat(false, event.preEndChatPayload);
         }
         this.chatStarted = false;
+        this.heldMessages = [];
         const wasSuspended = this.isSuspended();
         store.dispatch(endChat());
         await this.fireEndChat(false, false);
@@ -1072,6 +1089,57 @@ class HumanAgentServiceImpl implements HumanAgentService {
       !this.isSuspended(),
       this.serviceManager
     );
+  }
+
+  /**
+   * Holds an agent message that arrived while the chat is suspended, with the place at the end of the list it would
+   * have had.
+   */
+  holdMessage(pair: LocalAndOriginalMessagesPair) {
+    if (!pair.localMessages.length) {
+      // Nothing would show for it.
+      return () => {};
+    }
+    const { messageIDs, localMessageIDs } =
+      this.serviceManager.store.getState().assistantMessageState;
+    const entry = {
+      pair,
+      after: {
+        messageID: messageIDs[messageIDs.length - 1],
+        localMessageID: localMessageIDs[localMessageIDs.length - 1],
+      },
+    };
+    this.heldMessages.push(entry);
+    // Call once the receive handlers are done: keeps their edits, then drops the host's references.
+    return () => {
+      entry.pair = cloneDeep(entry.pair);
+    };
+  }
+
+  async showHeldMessages() {
+    if (this.isSuspended()) {
+      return;
+    }
+    const held = this.heldMessages;
+    this.heldMessages = [];
+    let previous: HeldMessage;
+    let previousEnd: MessageListPlace;
+    for (const entry of held) {
+      // A message held right after another one goes after it, keeping arrival order.
+      const followsPrevious = previous && isEqual(previous.after, entry.after);
+      await addMessages(
+        [entry.pair],
+        true,
+        this.serviceManager,
+        followsPrevious ? previousEnd : entry.after
+      );
+      const { localMessages, originalMessage } = entry.pair;
+      previous = entry;
+      previousEnd = {
+        messageID: originalMessage.id,
+        localMessageID: localMessages[localMessages.length - 1].ui_state.id,
+      };
+    }
   }
 
   /**
@@ -1258,11 +1326,18 @@ class ServiceDeskCallbackImpl<
     const localMessages = messageResponse.output.generic.map((item: any) => {
       return outputItemToLocalItem(item, messageResponse);
     });
-    await addMessages(
-      [toPair(localMessages, messageResponse)],
-      !this.service.isSuspended(),
-      this.serviceManager
-    );
+    let ownHeldMessage: () => void;
+    if (this.service.isSuspended()) {
+      ownHeldMessage = this.service.holdMessage(
+        toPair(localMessages, messageResponse)
+      );
+    } else {
+      await addMessages(
+        [toPair(localMessages, messageResponse)],
+        true,
+        this.serviceManager
+      );
+    }
 
     const stored = serviceManager.store.getState();
     const storedMessage = stored.allMessagesByID[messageResponse.id];
@@ -1290,6 +1365,7 @@ class ServiceDeskCallbackImpl<
       });
     } finally {
       event?.commit();
+      ownHeldMessage?.();
     }
   }
 

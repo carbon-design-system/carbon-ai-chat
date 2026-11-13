@@ -21,6 +21,7 @@ import {
   GenericItem,
   HumanAgentMessageType,
   HumanAgentsOnlineStatus,
+  MessageRequest,
   MessageResponse,
   MessageResponseTypes,
   OnErrorType,
@@ -39,10 +40,12 @@ import {
   describeShared,
   fakeDesk,
   finishSend,
+  outputTexts,
   pause,
   recordEvents,
   responseOf,
   startSend,
+  textItem,
 } from '../../helpers';
 
 /** A driver whose config plugs in the desk, auto-connecting when agents are online. */
@@ -93,6 +96,17 @@ const agentTypes = (chat: ContractDriver): string[] =>
         : []
     )
     .filter(Boolean);
+
+/** The text of each message after the first `from`: a request's input, a response's items. */
+const labels = (chat: ContractDriver, from: number): string[] =>
+  chat
+    .messages()
+    .slice(from)
+    .map((message) =>
+      'input' in message
+        ? (message as MessageRequest).input.text
+        : outputTexts(message).join(' ')
+    );
 
 // @covers config.serviceDeskFactory
 describeShared('serviceDeskFactory', (makeDriver) => {
@@ -908,24 +922,47 @@ describeShared('agentJoinTimeoutSeconds', (makeDriver) => {
 
 // @covers instance.serviceDesk.updateIsSuspended event.human_agent:receive
 describeShared('serviceDesk.updateIsSuspended', (makeDriver) => {
-  it('keeps agent messages out of the list while suspended, though their events still fire', async () => {
+  it('holds agent messages while suspended, firing their events on arrival, and shows each in arrival order on resume', async () => {
     const desk = fakeDesk();
     const chat = await deskDriver(makeDriver, desk);
     await join(chat, desk);
     await act(() => chat.serviceDesk.updateIsSuspended(true));
     const events = recordEvents(chat, HUMAN_AGENT_EVENTS);
     const before = chat.messages().length;
-    await act(() => desk.callback().sendMessageToUser('unseen'));
+    await act(() => desk.callback().sendMessageToUser('held one'));
+    await act(() => desk.callback().sendMessageToUser('held two'));
+    await finishSend(await startSend(chat, 'to the assistant'));
+    await act(() =>
+      chat.messaging.addMessage(
+        responseOf('r-assistant', [textItem('assistant reply')])
+      )
+    );
+    await act(() => desk.callback().sendMessageToUser('held three'));
     expect(events.types()).toEqual([
       BusEventType.HUMAN_AGENT_PRE_RECEIVE,
       BusEventType.HUMAN_AGENT_RECEIVE,
+      BusEventType.HUMAN_AGENT_PRE_RECEIVE,
+      BusEventType.HUMAN_AGENT_RECEIVE,
+      BusEventType.HUMAN_AGENT_PRE_RECEIVE,
+      BusEventType.HUMAN_AGENT_RECEIVE,
     ]);
-    expect(chat.messages()).toHaveLength(before);
+    expect(labels(chat, before)).toEqual([
+      'to the assistant',
+      'assistant reply',
+    ]);
+    events.clear();
     await act(() => chat.serviceDesk.updateIsSuspended(false));
-    await act(() => desk.callback().sendMessageToUser('seen'));
-    expect(chat.messages()).toHaveLength(before + 1);
+    expect(events.types()).toEqual([]);
+    expect(labels(chat, before)).toEqual([
+      'held one',
+      'held two',
+      'to the assistant',
+      'assistant reply',
+      'held three',
+    ]);
+    await act(() => desk.callback().sendMessageToUser('live'));
     expect(lastItems(chat)).toEqual([
-      expect.objectContaining({ text: 'seen' }),
+      expect.objectContaining({ text: 'live' }),
     ]);
   });
 

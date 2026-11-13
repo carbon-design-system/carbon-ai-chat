@@ -31,8 +31,12 @@ export interface ChatInstanceServiceDeskActions {
   /**
    * Sets the suspended state for an agent conversation. A conversation can be suspended or un-suspended only if the
    * user is currently connecting or connected to an agent. If a conversation is suspended, then messages from the user
-   * will no longer be routed to the service desk and incoming messages from the service desk will not be displayed. In
-   * addition, the current connection status with an agent will not be shown.
+   * will no longer be routed to the service desk, and the current connection status with an agent will not be shown.
+   *
+   * Messages the service desk sends while suspended aren't shown until the conversation resumes. Then each appears
+   * where it would have been when it arrived, among any messages sent in the meantime. Their
+   * `human_agent:pre:receive` and `human_agent:receive` events fire when they arrive, not when they appear. If the
+   * conversation ends while suspended, they're dropped.
    *
    * @example Suspend, then later resume, routing to the service desk
    * ```ts
