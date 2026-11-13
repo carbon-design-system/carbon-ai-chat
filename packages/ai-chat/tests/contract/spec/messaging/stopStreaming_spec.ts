@@ -40,6 +40,7 @@ import {
   describeShared,
   fakeBackend,
   finalChunk,
+  finishSend,
   instanceSender,
   outputTexts,
   pause,
@@ -136,6 +137,27 @@ describeShared('errors during a stream', (makeDriver) => {
     });
     await addChunk(chat, partialText('r1', 'a', ', more'));
     expect(textsOf(chat, 'r1')).toEqual(['Hello']);
+    expect(chat.status()).toBe('error');
+  });
+
+  it('still appends a chunk that names the request whose send failed', async () => {
+    const chat = await makeDriver({ onError: ignore });
+    const started = await startSend(chat, 'hello');
+    const named = (text: string) => {
+      const chunk = partialText('r1', 'a', text);
+      chunk.streaming_metadata = {
+        response_id: 'r1',
+        request_id: started.sent.request.id,
+      };
+      return chunk;
+    };
+    await addChunk(chat, named('Hello'));
+    await act(async () => {
+      started.sent.reject('backend went away');
+      await started.done.catch(ignore);
+    });
+    await addChunk(chat, named(' more'));
+    expect(textsOf(chat, 'r1')).toEqual(['Hello more']);
     expect(chat.status()).toBe('error');
   });
 });
@@ -553,6 +575,99 @@ describe('the stop button', () => {
     expect(chat.instance.getState().status).toBe('ready');
     await pause();
     expect(stopButtonCount()).toBe(0);
+  });
+
+  // @covers instance.messaging.addMessageChunk
+  it('drops a later partial_item after a stop once the send has settled, and still takes the closing chunks', async () => {
+    const chat = await openChat({ strings: STOP_STRINGS });
+    const started = await startSend(chat.sender, 'hello');
+    const requestID = started.sent.request.id;
+    const named = <T extends { streaming_metadata?: unknown }>(chunk: T) => {
+      chunk.streaming_metadata = { response_id: 'r1', request_id: requestID };
+      return chunk;
+    };
+    await finishSend(started);
+    await addChunk(
+      chat.instance,
+      named(partialText('r1', 'a', 'Hello', { cancellable: true }))
+    );
+    await waitFor(() => expect(stopButtonCount()).toBe(1));
+    await click(stopButton());
+    await waitFor(() =>
+      expect(started.sent.options.signal.reason).toBe(
+        CancellationReason.STOP_STREAMING
+      )
+    );
+    await addChunk(
+      chat.instance,
+      named(partialText('r1', 'a', ' more', { cancellable: true }))
+    );
+    expect(storedTexts(chat.instance, 'r1')).toEqual(['Hello']);
+    await addChunk(
+      chat.instance,
+      named(completeText('r1', 'a', 'Hello', { stream_stopped: true }))
+    );
+    await waitFor(() =>
+      expect(shownText(document.body)).toContain(
+        STOP_STRINGS.messages_responseStopped
+      )
+    );
+    await addChunk(
+      chat.instance,
+      finalChunk('r1', [textItem('Hello, stopped', 'a')], {
+        request_id: requestID,
+      })
+    );
+    expect(storedTexts(chat.instance, 'r1')).toEqual(['Hello, stopped']);
+    expect(chat.instance.getState().status).toBe('ready');
+    await pause();
+    expect(stopButtonCount()).toBe(0);
+  });
+
+  // @covers instance.messaging.addMessageChunk
+  it('still takes a later complete_item without stream_stopped that names the stopped request', async () => {
+    const chat = await streamingChat();
+    const requestID = chat.started.sent.request.id;
+    await click(stopButton());
+    await act(() => chat.started.done);
+    const late = completeText('r1', 'a', 'Hello world');
+    late.streaming_metadata = { response_id: 'r1', request_id: requestID };
+    await addChunk(chat.instance, late);
+    expect(storedTexts(chat.instance, 'r1')).toEqual(['Hello world']);
+  });
+
+  // @covers instance.messaging.addMessageChunk
+  it('streams a later request that names itself, and shows the button for it', async () => {
+    const chat = await streamingChat();
+    await click(stopButton());
+    await act(() => chat.started.done);
+    await waitFor(() => expect(stopButtonCount()).toBe(0));
+    const next = await startSend(chat.sender, 'again');
+    const chunk = partialText('r2', 'a', 'Hi', { cancellable: true });
+    chunk.streaming_metadata = {
+      response_id: 'r2',
+      request_id: next.sent.request.id,
+    };
+    await addChunk(chat.instance, chunk);
+    await waitFor(() => expect(stopButtonCount()).toBe(1));
+    expect(storedTexts(chat.instance, 'r2')).toEqual(['Hi']);
+    expect(chat.instance.getState().status).toBe('streaming');
+  });
+
+  // @covers instance.messaging.addMessageChunk
+  it('streams a later request with no request_id, and shows the button for it', async () => {
+    const chat = await streamingChat();
+    await click(stopButton());
+    await act(() => chat.started.done);
+    await waitFor(() => expect(stopButtonCount()).toBe(0));
+    await startSend(chat.sender, 'again');
+    await addChunk(
+      chat.instance,
+      partialText('r2', 'a', 'Hi', { cancellable: true })
+    );
+    await waitFor(() => expect(stopButtonCount()).toBe(1));
+    expect(storedTexts(chat.instance, 'r2')).toEqual(['Hi']);
+    expect(chat.instance.getState().status).toBe('streaming');
   });
 
   // @covers instance.messaging.upsertMessage export.aiChatEntry.MessageState

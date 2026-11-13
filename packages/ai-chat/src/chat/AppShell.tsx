@@ -45,6 +45,7 @@ import { LocalMessageItem } from '../types/messaging/LocalMessageItem';
 import { AppShellPanels } from './AppShellPanels';
 
 import { HasServiceManager } from './hocs/withServiceManager';
+import { fireUserEvent } from './services/fireUserEvent';
 import { useMobileViewportLayout } from './hooks/useMobileViewportLayout';
 import { useOnMount } from './hooks/useOnMount';
 import { useSelector, useStateAccessSelector } from './hooks/useSelector';
@@ -615,7 +616,7 @@ function AppShell({
         {
           text: languagePack.history_new_chat,
           handler: () => {
-            serviceManager.fire({
+            fireUserEvent(serviceManager, {
               type: BusEventType.HISTORY_PANEL_NEW_CHAT,
             });
           },
@@ -623,7 +624,7 @@ function AppShell({
         {
           text: languagePack.history_view_chats,
           handler: () => {
-            serviceManager.fire({
+            fireUserEvent(serviceManager, {
               type: BusEventType.HISTORY_PANEL_PRE_OPEN,
             });
 
