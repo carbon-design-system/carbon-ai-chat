@@ -441,6 +441,27 @@ class MessageCoordinator {
     );
   }
 
+  /**
+   * Forgets the reasoning items in a visible item's session that `isNamed`
+   * says never got a slot, so the next mounted delivery fires them again.
+   * Returns whether it forgot any. An adopting view uses it for items a
+   * released chat fired with no view attached.
+   */
+  forgetUnnamedReasoning(
+    localItemID: string,
+    isNamed: (itemID: string) => boolean
+  ): boolean {
+    const session = this.reasoningObserver?.sessionFor(localItemID);
+    let forgot = false;
+    for (const itemID of [...(session ?? [])]) {
+      if (!isNamed(itemID)) {
+        session.delete(itemID);
+        forgot = true;
+      }
+    }
+    return forgot;
+  }
+
   notifyReasoning(
     session: Set<string>,
     message: Message,

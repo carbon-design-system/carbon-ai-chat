@@ -86,9 +86,14 @@ const tracked = new WeakMap<ServiceManager, SlotStores>();
 
 function setSlot<T>(
   store: ValueStore<SlotRecords<T>>,
-  slot: string,
+  slot: string | undefined,
   record: T
 ) {
+  // A silent item, or one that fired with no view to name its slot, has no
+  // slot to render into.
+  if (!slot) {
+    return;
+  }
   store.set({ ...store.get(), [slot]: record });
 }
 

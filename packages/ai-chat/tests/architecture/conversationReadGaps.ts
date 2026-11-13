@@ -312,6 +312,39 @@ const conversationReadGaps: ConversationReadGap[] = [
     owner: '#2824',
   },
   {
+    // An adopting mount fires again the user-defined responses that had no
+    // slot while the chat waited in its grace window; it finds them in the
+    // message slices, which the message model replaces.
+    file: 'src/chat/utils/chatBoot.ts',
+    read: 'allMessageItemsByID',
+    count: 2,
+    owner: '#2693',
+  },
+  {
+    file: 'src/chat/utils/chatBoot.ts',
+    read: 'allMessagesByID',
+    count: 1,
+    owner: '#2693',
+  },
+  {
+    file: 'src/chat/utils/chatBoot.ts',
+    read: 'refireSlotlessResponses()',
+    count: 1,
+    owner: '#2693',
+  },
+  {
+    file: 'src/chat/utils/chatBoot.ts',
+    read: 'refireUnnamedReasoning()',
+    count: 1,
+    owner: '#2693',
+  },
+  {
+    file: 'src/chat/utils/chatBoot.ts',
+    read: 'nameSlotsMissedWithoutView()',
+    count: 1,
+    owner: '#2693',
+  },
+  {
     file: 'src/chat/utils/customPromptLine.ts',
     read: 'selectCustomPromptLineVisible()',
     count: 1,

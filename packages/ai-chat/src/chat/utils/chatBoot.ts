@@ -33,10 +33,13 @@ import { createConversationInstance } from '../../sdk/services/conversationInsta
 import { createWriteableElements } from './writeableElements';
 import { dropSubscriptions, mountSubscriptions } from './mountSubscriptions';
 import { applyConfigChangesDynamically } from './dynamicConfigUpdates';
+import { renderAsUserDefinedMessage } from '../../sdk/utils/messageUtils';
 
 import {
+  BusEventType,
   MainWindowOpenReason,
   ViewChangeReason,
+  type BusEventUserDefinedResponse,
 } from '../../types/events/eventBusTypes';
 import { VIEW_STATE_ALL_CLOSED } from '../../sdk/store/reducerUtils';
 import { PublicConfig } from '../../types/config/PublicConfig';
@@ -46,9 +49,13 @@ import {
   IncreaseOrDecrease,
   SendOptions,
 } from '../../types/instance/ChatInstance';
-import { AddMessageOptions } from '../../types/config/MessagingConfig';
+import {
+  AddMessageOptions,
+  type MessageState,
+} from '../../types/config/MessagingConfig';
 import { loadLocale } from '../../sdk/utils/languageUtils';
 import {
+  Message,
   MessageRequest,
   MessageResponse,
   StreamChunk,
@@ -126,6 +133,9 @@ export async function bootPrebuiltChat(options: {
     loadHistory: false,
     onServicesCreated: (serviceManager) => {
       attachChatView(serviceManager, publicConfig, derivedConfig);
+      if (publicConfig.lifecycle?.reuseInstance === true) {
+        collectSlotlessResponses(serviceManager);
+      }
       // Update Redux with new values for language, locale, and messages
       setIntl(
         serviceManager,
@@ -481,8 +491,11 @@ function createPrebuiltInstance(serviceManager: ServiceManager): ChatInstance {
  * Applies the first view transition after boot, deciding between restoring a
  * session or opening the default view. Keeps this sequencing in one place so
  * tests and callers can reason about what happens immediately after boot.
+ * First, it names the slots an adopted chat missed; see
+ * {@link nameSlotsMissedWithoutView}.
  */
 export async function performInitialViewChange(serviceManager: ServiceManager) {
+  nameSlotsMissedWithoutView(serviceManager);
   const initialState = chatStore(serviceManager).getState();
   const { wasLoadedFromBrowser } = initialState.view.persistedToBrowserStorage;
   const { targetViewState } = initialState.view;
@@ -508,6 +521,114 @@ export async function performInitialViewChange(serviceManager: ServiceManager) {
       tryHydrating,
       forceViewChange
     );
+  }
+}
+
+/**
+ * Per reusable chat, each message whose user-defined response last fired with
+ * no slot, and the state that event carried.
+ */
+const slotlessMessages = new WeakMap<
+  ServiceManager,
+  Map<string, MessageState | undefined>
+>();
+
+/**
+ * Notes each message whose user-defined response fired with no slot, which
+ * happens while no view is attached: a released chat in its grace window.
+ */
+function collectSlotlessResponses(serviceManager: ServiceManager) {
+  const missed = new Map<string, MessageState | undefined>();
+  slotlessMessages.set(serviceManager, missed);
+  serviceManager.eventBus.on({
+    type: BusEventType.USER_DEFINED_RESPONSE,
+    handler: ({ data }: BusEventUserDefinedResponse) => {
+      if (!data.slot && !data.message.user_defined?.silent) {
+        missed.set(data.fullMessage.id, data.state);
+      }
+    },
+  });
+}
+
+/**
+ * Fires again, with a slot, the user-defined responses whose last event fired
+ * while no view was attached, so this mount's handlers and extension hosts get
+ * their current content and state. Only a chat adopted from its grace window
+ * has any. It doesn't hold the first view change, and a handler that throws is
+ * logged, as a slow or failing handler doesn't hold a fresh mount either.
+ */
+function nameSlotsMissedWithoutView(serviceManager: ServiceManager) {
+  const missed = slotlessMessages.get(serviceManager);
+  if (!missed?.size) {
+    return;
+  }
+  refireSlotlessResponses(serviceManager, missed).catch((error) =>
+    consoleError(
+      'Failed to show the responses a reused chat got while it waited:',
+      error
+    )
+  );
+}
+
+/**
+ * Fires each missed message's user-defined items with the state it last had.
+ * A message leaves the list once its items fired. If this mount is released
+ * part way, the rest stay for the next one.
+ */
+async function refireSlotlessResponses(
+  serviceManager: ServiceManager,
+  missed: Map<string, MessageState | undefined>
+) {
+  const { instance } = serviceManager;
+  for (const [messageID, state] of [...missed]) {
+    if (serviceManager.instance !== instance) {
+      return;
+    }
+    const { allMessageItemsByID, allMessagesByID } =
+      serviceManager.store.getState();
+    const message = allMessagesByID[messageID];
+    const items = Object.values(allMessageItemsByID).filter(
+      (local) =>
+        local.fullMessageID === messageID &&
+        renderAsUserDefinedMessage(local.item) &&
+        !local.item.user_defined?.silent
+    );
+    for (const local of items) {
+      await serviceManager.messageCoordinator.handleUserDefinedResponseItems(
+        local,
+        message,
+        state
+      );
+    }
+    refireUnnamedReasoning(serviceManager, messageID, message);
+    missed.delete(messageID);
+  }
+}
+
+/**
+ * Fires again, through this mount's view, the user-defined items inside a
+ * message's reasoning that fired with no view to name their slots.
+ */
+function refireUnnamedReasoning(
+  serviceManager: ServiceManager,
+  messageID: string,
+  message: Message
+) {
+  const { messageCoordinator, userDefinedElementRegistry } = serviceManager;
+  const isNamed = (itemID: string) => userDefinedElementRegistry.has(itemID);
+  for (const local of Object.values(
+    serviceManager.store.getState().allMessageItemsByID
+  )) {
+    if (
+      local.fullMessageID === messageID &&
+      messageCoordinator.forgetUnnamedReasoning(local.ui_state.id, isNamed)
+    ) {
+      messageCoordinator.notifyMountedReasoning(
+        local.ui_state.id,
+        message,
+        new Set()
+      );
+    }
   }
 }
 

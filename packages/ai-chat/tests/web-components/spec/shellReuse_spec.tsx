@@ -21,6 +21,7 @@ import { createChatSDK } from '../../../src/sdk';
 import { chatRegistry } from '../../../src/sdk/createChatSDK';
 import { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
+import type { ExtensionHosts } from '../../../src/chat/services/extensionHosts';
 import type { ChatRenderer } from '../../../src/web-components/shared/react-renderer';
 import { OnErrorType } from '../../../src/types/config/ErrorConfig';
 import type { PublicConfig } from '../../../src/types/config/PublicConfig';
@@ -29,9 +30,11 @@ import type {
   ServiceDesk,
   ServiceDeskCallback,
 } from '../../../src/types/config/ServiceDeskConfig';
+import { MessageState } from '../../../src/types/config/MessagingConfig';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
 import { PanelType, ViewType } from '../../../src/types/instance/apiTypes';
 import {
+  type MessageResponse,
   MessageResponseTypes,
   UserType,
 } from '../../../src/types/messaging/Messages';
@@ -44,12 +47,16 @@ import {
 /** Each mount the stub renderer was asked to draw into, by element. */
 const rendered = new Set<HTMLElement>();
 
+/** The extension hosts each element's latest render got. */
+const hostsOf = new Map<HTMLElement, ExtensionHosts>();
+
 /** A renderer that renders nothing and reports the first commit at once. */
 function rendererFor(element: HTMLElement): ChatRenderer {
   return {
     mount: () => ({
       render(_App, inputs) {
         rendered.add(element);
+        hostsOf.set(element, inputs.hosts);
         if (inputs.initialViewReady) {
           queueMicrotask(inputs.onInitialViewCommitted);
         }
@@ -139,8 +146,11 @@ async function addMessage(instance: ChatInstance, id: string) {
 
 /** A desk that records itself, for agent-chat cases. */
 function deskFactory() {
-  const desks: Array<{ endChat: jest.Mock; callback: ServiceDeskCallback }> =
-    [];
+  const desks: Array<{
+    startChat: jest.Mock;
+    endChat: jest.Mock;
+    callback: ServiceDeskCallback;
+  }> = [];
   const factory = async (parameters: { callback: ServiceDeskCallback }) => {
     const desk = {
       getName: () => 'Test desk',
@@ -149,7 +159,11 @@ function deskFactory() {
       sendMessageToAgent: jest.fn(async () => {}),
       reconnect: jest.fn(async () => true),
     };
-    desks.push({ endChat: desk.endChat, callback: parameters.callback });
+    desks.push({
+      startChat: desk.startChat,
+      endChat: desk.endChat,
+      callback: parameters.callback,
+    });
     return desk as unknown as ServiceDesk;
   };
   return { desks, factory };
@@ -161,6 +175,7 @@ beforeEach(() => {
   setupBeforeEach();
   sessionStorage.clear();
   rendered.clear();
+  hostsOf.clear();
   shutdown = jest.spyOn(ServiceManager.prototype, 'shutdown');
 });
 
@@ -601,5 +616,341 @@ describe('a prebuilt chat and an SDK chat never adopt each other', () => {
     await expect(createChatSDK({ namespace })).rejects.toThrow(
       `"${namespace}"`
     );
+  });
+});
+
+/** The desk a chat's agent service holds now. */
+function deskOf(chat: ServiceManager) {
+  return (chat.humanAgentService as any).serviceDesk;
+}
+
+/** A desk whose factory call waits until the test lets it finish. */
+function deferredDeskFactory() {
+  const gate = resolvablePromise<void>();
+  const desk = {
+    getName: () => 'Old desk',
+    startChat: jest.fn(async () => {}),
+    endChat: jest.fn(async () => {}),
+    sendMessageToAgent: jest.fn(async () => {}),
+    reconnect: jest.fn(async () => true),
+  };
+  let callback: ServiceDeskCallback;
+  const factory = jest.fn(
+    async (parameters: { callback: ServiceDeskCallback }) => {
+      callback = parameters.callback;
+      await gate;
+      return desk as unknown as ServiceDesk;
+    }
+  );
+  return { desk, factory, gate, callback: () => callback };
+}
+
+describe('a new desk factory during the main window’s first load (O16)', () => {
+  it('a saved agent chat reconnects on the old desk, then the chat moves to the new one', async () => {
+    const namespace = freshNamespace();
+    // A reuse-off chat leaves an agent chat connected in the saved session,
+    // as a page reload would.
+    const saved = deskFactory();
+    const before = await mountElement({
+      namespace,
+      messaging: { skipWelcome: true },
+      serviceDeskFactory: saved.factory,
+    });
+    await before.instance.changeView(ViewType.MAIN_WINDOW);
+    await before.instance.serviceDesk.startConversation();
+    await waitFor(() => expect(saved.desks).toHaveLength(1));
+    await saved.desks[0].callback.agentJoined({
+      id: 'dana',
+      nickname: 'Dana',
+      user_type: UserType.HUMAN,
+    });
+    const savedChat = managerOf(before.instance);
+    await unmount(before);
+    // A repeat call returns the shutdown already running.
+    await savedChat.shutdown();
+
+    // The reuse-on chat opens its saved window, and its agent service waits on
+    // the first factory.
+    const old = deferredDeskFactory();
+    const first = await mountElement(
+      reuseConfig(namespace, { serviceDeskFactory: old.factory })
+    );
+    await waitFor(() => expect(old.factory).toHaveBeenCalledTimes(1));
+    const chat = managerOf(first.instance);
+    await unmount(first);
+
+    const next = deskFactory();
+    const second = await mountElement(
+      reuseConfig(namespace, { serviceDeskFactory: next.factory })
+    );
+    expect(managerOf(second.instance)).toBe(chat);
+    old.gate.doResolve();
+
+    await waitFor(() => expect(old.desk.reconnect).toHaveBeenCalledTimes(1));
+    await waitFor(() =>
+      expect(second.instance.state.get().humanAgent.isReconnecting).toBe(false)
+    );
+    expect(second.instance.state.get().humanAgent.isConnected).toBe(true);
+    // The live agent chat keeps its desk.
+    expect(next.desks).toHaveLength(0);
+    expect(deskOf(chat)).toBe(old.desk);
+
+    await second.instance.serviceDesk.endConversation();
+
+    expect(old.desk.endChat).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(next.desks).toHaveLength(1));
+    await waitFor(() =>
+      expect(chat.humanAgentService.serviceDeskFactory).toBe(next.factory)
+    );
+    expect(deskOf(chat)).not.toBe(old.desk);
+  });
+
+  it('with no saved agent chat, the chat ends on the new desk', async () => {
+    const namespace = freshNamespace();
+    const old = deferredDeskFactory();
+    const first = await mountElement(
+      reuseConfig(namespace, { serviceDeskFactory: old.factory })
+    );
+    await first.instance.changeView(ViewType.MAIN_WINDOW);
+    await waitFor(() => expect(old.factory).toHaveBeenCalledTimes(1));
+    const chat = managerOf(first.instance);
+    await unmount(first);
+
+    const next = deskFactory();
+    const second = await mountElement(
+      reuseConfig(namespace, { serviceDeskFactory: next.factory })
+    );
+    old.gate.doResolve();
+    await flushMicrotasks(30);
+
+    await waitFor(() => expect(next.desks).toHaveLength(1));
+    expect(chat.humanAgentService.serviceDeskFactory).toBe(next.factory);
+    expect(deskOf(chat)).not.toBe(old.desk);
+
+    await second.instance.serviceDesk.startConversation();
+    await waitFor(() => expect(next.desks[0].startChat).toHaveBeenCalled());
+    expect(old.desk.startChat).not.toHaveBeenCalled();
+    expect(old.desk.reconnect).not.toHaveBeenCalled();
+  });
+});
+
+/** A response with one user-defined item, under a custom footer. */
+function userDefinedResponse(id: string): MessageResponse {
+  return {
+    id,
+    output: {
+      generic: [
+        {
+          response_type: MessageResponseTypes.USER_DEFINED,
+          user_defined: { id },
+          message_item_options: {
+            custom_footer_slot: { slot_name: `footer-${id}`, is_on: true },
+          },
+        },
+      ],
+    },
+  };
+}
+
+/** The slot name the chat gave a message's first item. */
+function slotOf(chat: ServiceManager, messageID: string) {
+  const item = Object.values(chat.store.getState().allMessageItemsByID).find(
+    (local) => local.fullMessageID === messageID
+  );
+  return chat.userDefinedElementRegistry.get(item?.ui_state.id)?.slotName;
+}
+
+describe('slots reach the view that adopts the chat', () => {
+  it('a view that detaches during a host-awaited history replay leaves every slot to the next', async () => {
+    const namespace = freshNamespace();
+    const history = ['history-1', 'history-2'].map((id) => ({
+      message: userDefinedResponse(id),
+      time: new Date().toISOString(),
+    }));
+    const replaying = resolvablePromise<void>();
+    const gate = resolvablePromise<void>();
+    const first = await mountElement(
+      reuseConfig(namespace, {
+        messaging: {
+          skipWelcome: true,
+          customLoadHistory: async () => history,
+        },
+      }),
+      (instance) =>
+        instance.on({
+          type: BusEventType.USER_DEFINED_RESPONSE,
+          handler: () => {
+            replaying.doResolve();
+            return gate;
+          },
+        })
+    );
+    const chat = managerOf(first.instance);
+    const oldHosts = hostsOf.get(first.element);
+    await first.instance.changeView(ViewType.MAIN_WINDOW);
+    await replaying;
+
+    await unmount(first);
+    const oldRecords = oldHosts.getSnapshot();
+    const second = await mountElement(
+      reuseConfig(namespace, {
+        messaging: {
+          skipWelcome: true,
+          customLoadHistory: async () => history,
+        },
+      })
+    );
+    gate.doResolve();
+    await waitFor(() =>
+      expect(
+        Object.keys(hostsOf.get(second.element).getSnapshot().customFooter)
+      ).toHaveLength(2)
+    );
+
+    const records = hostsOf.get(second.element).getSnapshot();
+    const slots = ['history-1', 'history-2'].map((id) => slotOf(chat, id));
+    expect(slots.every(Boolean)).toBe(true);
+    expect(Object.keys(records.userDefinedResponse).sort()).toEqual(
+      [...slots].sort()
+    );
+    expect(Object.keys(records.customFooter).sort()).toEqual([
+      'footer-history-1',
+      'footer-history-2',
+    ]);
+    // The old view kept what it had at detach.
+    expect(oldHosts.getSnapshot()).toBe(oldRecords);
+  });
+
+  it('a released chat’s slots from inside the window show in the adopting view', async () => {
+    const namespace = freshNamespace();
+    const first = await mountElement(reuseConfig(namespace));
+    await first.instance.changeView(ViewType.MAIN_WINDOW);
+    const chat = managerOf(first.instance);
+    await unmount(first);
+
+    await first.instance.messaging.addMessage(userDefinedResponse('in-window'));
+    const second = await mountElement(reuseConfig(namespace));
+
+    const records = () => hostsOf.get(second.element).getSnapshot();
+    await waitFor(() => expect(slotOf(chat, 'in-window')).toBeTruthy());
+    const slot = slotOf(chat, 'in-window');
+    await waitFor(() =>
+      expect(Object.keys(records().userDefinedResponse)).toEqual([slot])
+    );
+    expect(Object.keys(records().customFooter)).toEqual(['footer-in-window']);
+  });
+
+  it('a reasoning step’s user-defined item from the window shows in the adopting view', async () => {
+    const namespace = freshNamespace();
+    const first = await mountElement(reuseConfig(namespace));
+    await first.instance.changeView(ViewType.MAIN_WINDOW);
+    const chat = managerOf(first.instance);
+    await unmount(first);
+
+    const reasoned: MessageResponse = {
+      id: 'reasoned',
+      output: {
+        generic: [{ response_type: MessageResponseTypes.TEXT, text: 'Done' }],
+      },
+      message_options: {
+        reasoning: {
+          content: [
+            {
+              response_type: MessageResponseTypes.USER_DEFINED,
+              user_defined: { id: 'reasoning-card' },
+            },
+          ],
+        },
+      },
+    };
+    const fired: Array<string | undefined> = [];
+    chat.eventBus.on({
+      type: BusEventType.USER_DEFINED_RESPONSE,
+      handler: ({ data }: any) => fired.push(data.slot),
+    });
+    await first.instance.messaging.addMessage(reasoned);
+    await waitFor(() => expect(fired).toEqual([undefined]));
+    const second = await mountElement(reuseConfig(namespace));
+
+    await waitFor(() => expect(fired.filter(Boolean)).toHaveLength(1));
+    const [slot] = fired.filter(Boolean);
+    await waitFor(() =>
+      expect(
+        Object.keys(
+          hostsOf.get(second.element).getSnapshot().userDefinedResponse
+        )
+      ).toEqual([slot])
+    );
+  });
+
+  it('a response still streaming in the window keeps its state', async () => {
+    const namespace = freshNamespace();
+    const first = await mountElement(reuseConfig(namespace));
+    await first.instance.changeView(ViewType.MAIN_WINDOW);
+    const chat = managerOf(first.instance);
+    await unmount(first);
+
+    await first.instance.messaging.upsertMessage(
+      'streaming',
+      MessageState.STREAMING,
+      () => userDefinedResponse('streaming')
+    );
+    const second = await mountElement(reuseConfig(namespace));
+
+    await waitFor(() => expect(slotOf(chat, 'streaming')).toBeTruthy());
+    const slot = slotOf(chat, 'streaming');
+    await waitFor(() =>
+      expect(
+        hostsOf.get(second.element).getSnapshot().userDefinedResponse[slot]
+          ?.state
+      ).toBe(MessageState.STREAMING)
+    );
+  });
+
+  it('a handler that throws on the replayed response still lets the chat render', async () => {
+    const namespace = freshNamespace();
+    const first = await mountElement(reuseConfig(namespace));
+    await first.instance.changeView(ViewType.MAIN_WINDOW);
+    await unmount(first);
+    await first.instance.messaging.addMessage(userDefinedResponse('throws'));
+
+    const failing = jest.fn(() => {
+      throw new Error('host handler failed');
+    });
+    const second = await mountElement(reuseConfig(namespace), (instance) =>
+      instance.on({
+        type: BusEventType.USER_DEFINED_RESPONSE,
+        handler: failing,
+      })
+    );
+
+    await waitFor(() => expect(failing).toHaveBeenCalled());
+    expect(second.element.onAfterRender).toHaveBeenCalled();
+  });
+
+  it('an item named before release and updated in the window shows its update', async () => {
+    const namespace = freshNamespace();
+    const first = await mountElement(reuseConfig(namespace));
+    await first.instance.changeView(ViewType.MAIN_WINDOW);
+    const chat = managerOf(first.instance);
+    const upsert = (state: MessageState) =>
+      first.instance.messaging.upsertMessage('updated', state, () =>
+        userDefinedResponse('updated')
+      );
+    await upsert(MessageState.STREAMING);
+    const slot = slotOf(chat, 'updated');
+    expect(slot).toBeTruthy();
+    await unmount(first);
+
+    await upsert(MessageState.COMPLETE);
+    const second = await mountElement(reuseConfig(namespace));
+
+    await waitFor(() =>
+      expect(
+        hostsOf.get(second.element).getSnapshot().userDefinedResponse[slot]
+          ?.state
+      ).toBe(MessageState.COMPLETE)
+    );
+    expect(slotOf(chat, 'updated')).toBe(slot);
   });
 });
