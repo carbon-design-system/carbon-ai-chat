@@ -409,7 +409,7 @@ describe('a throwing handler for an event the user fires', () => {
       type: BusEventType.DISCLAIMER_ACCEPTED,
       handler: thrower(error),
     });
-    await accept(instance);
+    await acceptDisclaimer(instance);
     await handlerErrors.expectLogged(BusEventType.DISCLAIMER_ACCEPTED, error);
     expect(instance.getState().disclaimersAccepted).toEqual({
       [hostname()]: true,
