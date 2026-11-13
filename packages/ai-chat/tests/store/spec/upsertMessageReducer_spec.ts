@@ -24,6 +24,7 @@ import {
 import {
   ButtonItemType,
   CardItem,
+  GenericItem,
   MessageResponse,
   MessageResponseTypes,
   PauseItem,
@@ -35,10 +36,12 @@ import { LocalMessageItem } from '../../../src/types/messaging/LocalMessageItem'
 import { HumanAgentsOnlineStatus } from '../../../src/types/config/ServiceDeskConfig';
 
 import { deriveStreamingItemText } from '../../../src/sdk/utils/streamingUtils';
+import { outputItemToLocalItem } from '../../../src/sdk/schema/outputItemToLocalItem';
 
 import { DEFAULT_HISTORY_PANEL_STATE } from '../../../src/chat/state';
 import {
   appRootReducer,
+  cannotDrawOf,
   itemFlagsFor,
   needsAnnouncementOf,
 } from '../../test_helpers';
@@ -1503,7 +1506,9 @@ describe('[UPSERT_MESSAGE] an item the chat cannot draw', () => {
     );
 
     const [card] = shown();
-    expect(card.ui_state.cannotDraw).toEqual({ missing: ['body[0]'] });
+    expect(
+      cannotDrawOf(store.getState() as AppState, card.ui_state.id)
+    ).toEqual({ missing: ['body[0]'] });
     expect(card.ui_state.bodyLocalMessageItemIDs).toBeUndefined();
     expect(
       Object.keys((store.getState() as AppState).allMessageItemsByID)
@@ -1513,7 +1518,9 @@ describe('[UPSERT_MESSAGE] an item the chat cannot draw', () => {
   it('leaves an item that can draw unmarked', () => {
     write([grid([{ items: [text('A')] }])], true);
 
-    expect(shown()[0].ui_state.cannotDraw).toBeUndefined();
+    expect(
+      cannotDrawOf(store.getState() as AppState, shown()[0].ui_state.id)
+    ).toBeUndefined();
   });
 
   it.each([false, true])(
@@ -1525,14 +1532,18 @@ describe('[UPSERT_MESSAGE] an item the chat cannot draw', () => {
       };
       write([null, system], isStreaming);
       const [failed] = shown();
-      expect(failed.ui_state.cannotDraw).toEqual({
+      expect(
+        cannotDrawOf(store.getState() as AppState, failed.ui_state.id)
+      ).toEqual({
         missing: ['output.generic[0]'],
       });
 
       write([system], isStreaming);
       const [repaired] = shown();
       expect(repaired.ui_state.id).toBe(failed.ui_state.id);
-      expect(repaired.ui_state.cannotDraw).toBeUndefined();
+      expect(
+        cannotDrawOf(store.getState() as AppState, repaired.ui_state.id)
+      ).toBeUndefined();
       expect(repaired.item).toBe(system);
 
       write([system], isStreaming);
@@ -1547,14 +1558,17 @@ describe('[UPSERT_MESSAGE] an item the chat cannot draw', () => {
     };
     write([system], false);
     const [drawn] = shown();
+    const stateBefore = store.getState() as AppState;
 
     write([null, system], false);
 
     expect(shown()[0].ui_state.id).toBe(drawn.ui_state.id);
-    expect(shown()[0].ui_state.cannotDraw).toEqual({
+    expect(
+      cannotDrawOf(store.getState() as AppState, shown()[0].ui_state.id)
+    ).toEqual({
       missing: ['output.generic[0]'],
     });
-    expect(drawn.ui_state.cannotDraw).toBeUndefined();
+    expect(cannotDrawOf(stateBefore, drawn.ui_state.id)).toBeUndefined();
   });
 
   it('keeps the last drawn version while the stream is open, until a new one can draw', () => {
@@ -1570,8 +1584,52 @@ describe('[UPSERT_MESSAGE] an item the chat cannot draw', () => {
 
     write([grid([{ items: [text('A')] }, { items: [text('B')] }])], true);
     expect(shown()[0]).not.toBe(drawn);
-    expect(shown()[0].ui_state.cannotDraw).toBeUndefined();
+    expect(
+      cannotDrawOf(store.getState() as AppState, shown()[0].ui_state.id)
+    ).toBeUndefined();
     expect(shown()[0].ui_state.gridLocalMessageItemIDs[0]).toHaveLength(2);
+  });
+
+  it('keeps a drawn system item while a missing item before it streams, even as the system item changes', () => {
+    const system = {
+      response_type: MessageResponseTypes.SYSTEM,
+      title: 'Joined',
+    };
+    write([system], true);
+    const [drawn] = shown();
+
+    write([null, system], true);
+    expect(shown()[0]).toBe(drawn);
+
+    write([null, { ...system, title: 'Left' }], true);
+    expect(shown()[0]).toBe(drawn);
+    expect(
+      cannotDrawOf(store.getState() as AppState, drawn.ui_state.id)
+    ).toBeUndefined();
+
+    write([{ ...system, title: 'Left' }], true);
+    expect((shown()[0].item as any).title).toBe('Left');
+  });
+
+  it('keeps a version addMessage wrote while the stream is open, even one the chat can’t draw', () => {
+    const brokenOption = {
+      response_type: MessageResponseTypes.OPTION,
+      title: 'Pick one',
+    } as GenericItem;
+    const message = {
+      id: 'd1',
+      output: { generic: [brokenOption] },
+      history: {},
+    } as MessageResponse;
+    const added = outputItemToLocalItem(brokenOption, message);
+    store.dispatch(actions.addLocalMessageItem(added, message, true));
+
+    write([{ ...brokenOption, title: 'Pick two' }], true);
+
+    expect(shown()[0]).toBe(added);
+    expect(
+      cannotDrawOf(store.getState() as AppState, added.ui_state.id)
+    ).toBeUndefined();
   });
 
   it('hides an item that never drew, in its place in the message', () => {
@@ -1581,7 +1639,9 @@ describe('[UPSERT_MESSAGE] an item the chat cannot draw', () => {
     );
 
     const [carousel, after] = shown();
-    expect(carousel.ui_state.cannotDraw).toEqual({ missing: ['items'] });
+    expect(
+      cannotDrawOf(store.getState() as AppState, carousel.ui_state.id)
+    ).toEqual({ missing: ['items'] });
     expect((after.item as any).text).toBe('After');
   });
 
@@ -1592,7 +1652,9 @@ describe('[UPSERT_MESSAGE] an item the chat cannot draw', () => {
 
     const [item] = shown();
     expect(item.item.response_type).toBe(MessageResponseTypes.GRID);
-    expect(item.ui_state.cannotDraw).toEqual({ missing: ['rows'] });
+    expect(
+      cannotDrawOf(store.getState() as AppState, item.ui_state.id)
+    ).toEqual({ missing: ['rows'] });
   });
 
   it('does not keep the last drawn version once the stream completes', () => {
@@ -1602,7 +1664,9 @@ describe('[UPSERT_MESSAGE] an item the chat cannot draw', () => {
     write([grid([{ items: [text('A')] }, {}])], false);
 
     expect(shown()[0]).not.toBe(drawn);
-    expect(shown()[0].ui_state.cannotDraw).toEqual({
+    expect(
+      cannotDrawOf(store.getState() as AppState, shown()[0].ui_state.id)
+    ).toEqual({
       missing: ['rows[0].cells[1].items'],
     });
   });

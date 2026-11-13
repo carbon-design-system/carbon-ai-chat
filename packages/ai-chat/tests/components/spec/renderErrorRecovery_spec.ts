@@ -15,6 +15,7 @@ import {
   renderChatAndGetInstanceWithStore,
   setupBeforeEach,
   setupAfterEach,
+  cannotDrawOf,
   itemFlagsFor,
 } from '../../test_helpers';
 import {
@@ -600,9 +601,7 @@ describe('renderer exceptions in upserted message items', () => {
     await settle();
 
     const localID = firstLocalID(store, 'renderer-recovery');
-    expect(
-      store.getState().allMessageItemsByID[localID].ui_state.cannotDraw
-    ).toBeUndefined();
+    expect(cannotDrawOf(store.getState(), localID)).toBeUndefined();
     expect(chatText()).not.toContain(ERROR_TEXT);
     expect(onError).not.toHaveBeenCalled();
 

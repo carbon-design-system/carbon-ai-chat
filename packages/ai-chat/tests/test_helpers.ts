@@ -447,6 +447,11 @@ export function itemFlagsFor(state: AppState, localItemID: string) {
   return itemID === undefined ? undefined : state.view.messageItemFlags[itemID];
 }
 
+/** What the view records the item a local item draws as missing, if the chat can't draw it. */
+export function cannotDrawOf(state: AppState, localItemID: string) {
+  return itemFlagsFor(state, localItemID)?.cannotDraw;
+}
+
 /** Each drawn local item whose view flags record a choice, with the request it sent. */
 export function itemsWithOptionSelected(state: AppState) {
   return planStateMessageItems(state).flatMap((plan) => {

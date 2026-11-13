@@ -44,6 +44,13 @@ import {
   setupAfterEach,
   setupBeforeEach,
 } from '../../test_helpers';
+import {
+  chatText,
+  failedItemCount,
+  itemsOf,
+  renderOpenChat,
+  settle,
+} from '../../utils/itemDrawabilityFixtures';
 
 // Records every announcement instead of speaking it.
 const mockAnnounce = jest.fn();
@@ -635,5 +642,120 @@ describe('announcement flags', () => {
       'c1:i:1',
       'c1:i:2',
     ]);
+  });
+});
+
+describe('can’t-draw flags', () => {
+  const rowlessGrid = { response_type: MessageResponseTypes.GRID };
+  const gridOf = (...cellTexts: string[]) => ({
+    response_type: MessageResponseTypes.GRID,
+    rows: [{ cells: cellTexts.map((value) => ({ items: [text(value)] })) }],
+  });
+  const upsert = (
+    chat: { instance: ChatInstance },
+    id: string,
+    state: MessageState,
+    generic: unknown[]
+  ) =>
+    act(() =>
+      chat.instance.messaging.upsertMessage(id, state, () =>
+        response(id, generic as GenericItem[])
+      )
+    );
+  /** The view's can't-draw records, by item ID, without the other flags. */
+  const undrawableOf = (store: AppStore<AppState>) =>
+    Object.fromEntries(
+      Object.entries(store.getState().view.messageItemFlags)
+        .filter(([, flags]) => flags.cannotDraw)
+        .map(([itemID, { messageID, cannotDraw }]) => [
+          itemID,
+          { messageID, cannotDraw },
+        ])
+    );
+
+  it('keeps what an upserted item is missing under its public item ID, not on the local copy, and shows the error once it completes', async () => {
+    const chat = await renderOpenChat();
+    const generic = [text('Before'), rowlessGrid, text('After')];
+
+    await upsert(chat, 'cd', MessageState.STREAMING, generic);
+    await settle();
+
+    expect(undrawableOf(chat.store)).toEqual({
+      'cd:i:1': { messageID: 'cd', cannotDraw: { missing: ['rows'] } },
+    });
+    const [, gridCopy] = itemsOf(chat.store, 'cd');
+    expect('cannotDraw' in gridCopy.ui_state).toBe(false);
+    await waitFor(() => expect(chatText()).toContain('After'));
+    expect(failedItemCount()).toBe(0);
+
+    await upsert(chat, 'cd', MessageState.COMPLETE, generic);
+    await settle();
+
+    expect(undrawableOf(chat.store)).toEqual({
+      'cd:i:1': { messageID: 'cd', cannotDraw: { missing: ['rows'] } },
+    });
+    await waitFor(() => expect(failedItemCount()).toBe(1));
+    expect(chat.onError).toHaveBeenCalledTimes(1);
+    expect(chat.onError.mock.calls[0][0].otherData.missing).toEqual(['rows']);
+  });
+
+  it('drops the record when a later version draws, and keeps none on a version kept while the stream is open', async () => {
+    const chat = await renderOpenChat();
+
+    await upsert(chat, 'kd', MessageState.STREAMING, [gridOf('Cell A')]);
+    const [drawn] = itemsOf(chat.store, 'kd');
+    await upsert(chat, 'kd', MessageState.STREAMING, [
+      {
+        ...gridOf('Cell A'),
+        rows: [{ cells: [{ items: [text('Cell A')] }, {}] }],
+      },
+    ]);
+
+    expect(itemsOf(chat.store, 'kd')[0]).toBe(drawn);
+    expect(undrawableOf(chat.store)).toEqual({});
+
+    await upsert(chat, 'kd', MessageState.STREAMING, [rowlessGrid]);
+    expect(itemsOf(chat.store, 'kd')[0]).toBe(drawn);
+
+    await upsert(chat, 'kd', MessageState.STREAMING, [
+      { response_type: MessageResponseTypes.CAROUSEL },
+    ]);
+    expect(undrawableOf(chat.store)).toEqual({
+      'kd:i:0': { messageID: 'kd', cannotDraw: { missing: ['items'] } },
+    });
+
+    await upsert(chat, 'kd', MessageState.COMPLETE, [gridOf('Cell B')]);
+    await settle();
+
+    expect(undrawableOf(chat.store)).toEqual({});
+    await waitFor(() => expect(chatText()).toContain('Cell B'));
+    expect(failedItemCount()).toBe(0);
+    expect(chat.onError).not.toHaveBeenCalled();
+  });
+
+  it('records nothing for an item addMessage writes, which the chat never checked', async () => {
+    const swallow = (event: ErrorEvent) => event.preventDefault();
+    window.addEventListener('error', swallow);
+    const consoleError = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+    try {
+      const chat = await renderOpenChat();
+
+      await act(() =>
+        chat.instance.messaging.addMessage(
+          response('am', [
+            { response_type: 'option', title: 'Pick one' } as GenericItem,
+          ])
+        )
+      );
+      await settle();
+
+      expect(itemsOf(chat.store, 'am')).toHaveLength(1);
+      expect(undrawableOf(chat.store)).toEqual({});
+    } finally {
+      consoleError.mockRestore();
+      window.removeEventListener('error', swallow);
+    }
   });
 });

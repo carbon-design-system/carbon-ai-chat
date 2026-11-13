@@ -72,6 +72,13 @@ interface MessageItemViewFlags {
    * new copy of the item keeps it, so the new copy isn't announced again.
    */
   wasAnnounced?: boolean;
+
+  /**
+   * Set when `upsertMessage` wrote a version of the item the chat can't draw,
+   * with the path of each field it's missing. While the item streams it stays
+   * hidden; once its stream completes it shows an error instead.
+   */
+  cannotDraw?: { missing: string[] };
 }
 
 /**
