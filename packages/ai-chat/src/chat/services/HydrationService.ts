@@ -17,13 +17,14 @@ import {
 } from '../store/reducerUtils';
 import { AppState } from '../../types/state/AppState';
 import { createWelcomeRequest, isResponse } from '../utils/messageUtils';
-import { consoleWarn, debugLog } from '../utils/miscUtils';
+import { consoleError, consoleWarn, debugLog } from '../utils/miscUtils';
 import { resetStopStreamingButton } from '../utils/streamingUtils';
 import {
   BusEventType,
   MessageSendSource,
 } from '../../types/events/eventBusTypes';
 import { SendOptions } from '../../types/instance/ChatInstance';
+import { PanelType } from '../../types/instance/apiTypes';
 import { MessageRequest } from '../../types/messaging/Messages';
 import { OnErrorType } from '../../types/config/ErrorConfig';
 import type { ServiceManager } from './ServiceManager';
@@ -376,6 +377,21 @@ class HydrationService {
       // on purpose — everything was just canceled, so there is no other stream to keep
       // it visible for.
       resetStopStreamingButton(store);
+
+      // The restart below would close an open workspace with no events, so close it through its panel first. A
+      // failing close handler can't stop the restart, which closes the workspace either way.
+      if (fireEvents && store.getState().workspacePanelState.isOpen) {
+        try {
+          await serviceManager.customPanelManager
+            .getPanel(PanelType.WORKSPACE)
+            .close();
+        } catch (error) {
+          consoleError(
+            'A workspace close handler failed during a restart. The restart closes the workspace anyway.',
+            error
+          );
+        }
+      }
 
       store.dispatch(actions.restartConversation());
       if (!skipHydration) {

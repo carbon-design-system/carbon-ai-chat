@@ -136,6 +136,27 @@ describe('workspace state', () => {
     expect(instance.state.get().customPanels.workspace).toEqual(expected);
   });
 
+  // @covers event.workspace:pre:close
+  it('closes on restartConversation even when a pre:close handler throws', async () => {
+    const { instance } = await mountOpen();
+    await openWorkspace(instance, OPTIONS);
+    instance.on({
+      type: BusEventType.WORKSPACE_PRE_CLOSE,
+      handler: () => {
+        throw new Error('Contract pre:close failure');
+      },
+    });
+    const events = recordEvents(instance, [BusEventType.RESTART_CONVERSATION]);
+    const error = jest.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      await act(() => instance.messaging.restartConversation());
+    } finally {
+      error.mockRestore();
+    }
+    expect(instance.state.get().workspace).toEqual(CLOSED);
+    expect(events.types()).toEqual([BusEventType.RESTART_CONVERSATION]);
+  });
+
   it('opens at the end with no ID or data when open gets no options', async () => {
     const { instance } = await mountOpen();
     await openWorkspace(instance);
@@ -157,17 +178,22 @@ describe('workspace state', () => {
     expect(instance.state.get().customPanels.history.isOpen).toBe(false);
   });
 
-  // Unlike the default panel, which fires its close events on restart (see
-  // customPanel_spec.ts), the workspace closes with no workspace event.
-  it('closes on restartConversation, firing no workspace event', async () => {
+  // @covers event.workspace:pre:close event.workspace:close
+  it('closes on restartConversation, firing pre:close then close with the ID and data it opened with', async () => {
     const { instance } = await mountOpen();
     await openWorkspace(instance, OPTIONS);
     const events = recordEvents(instance, WORKSPACE_EVENTS);
     await act(() => instance.messaging.restartConversation());
-    // A short wait to show no close event fires.
-    await pause(300);
     expect(instance.state.get().workspace).toEqual(CLOSED);
-    expect(events.types()).toEqual([]);
+    expect(events.events.map(summary)).toEqual(
+      [BusEventType.WORKSPACE_PRE_CLOSE, BusEventType.WORKSPACE_CLOSE].map(
+        (type) => ({
+          type,
+          workspaceId: 'contract-workspace',
+          additionalData: { source: 'contract' },
+        })
+      )
+    );
   });
 });
 
@@ -305,24 +331,14 @@ describe('workspace events', () => {
     );
   });
 
-  // Unlike the default panel, closing a closed workspace still fires both
-  // close events.
-  it('fires pre:close and close, with no ID or data, when a closed workspace is closed', async () => {
+  it('fires no events when a closed workspace is closed', async () => {
     const { instance } = await mountOpen();
     const events = recordEvents(instance, WORKSPACE_EVENTS);
     await closeWorkspace(instance);
-    expect(events.events.map(summary)).toEqual([
-      {
-        type: BusEventType.WORKSPACE_PRE_CLOSE,
-        workspaceId: undefined,
-        additionalData: undefined,
-      },
-      {
-        type: BusEventType.WORKSPACE_CLOSE,
-        workspaceId: undefined,
-        additionalData: undefined,
-      },
-    ]);
+    // A short wait to show nothing fires.
+    await pause();
+    expect(events.types()).toEqual([]);
+    expect(instance.state.get().workspace).toEqual(CLOSED);
   });
 
   it('finishes closing an open workspace before opening another with its own ID and data', async () => {

@@ -277,9 +277,13 @@ function createCustomPanelInstance(
     async close() {
       const { store } = serviceManager;
 
-      // For workspace panel, capture state BEFORE closing to preserve data for events
+      // For workspace panel, capture state BEFORE closing to preserve data for events. A closed workspace fires no
+      // close events.
       let workspaceEventData;
-      if (panelType === PanelType.WORKSPACE) {
+      if (
+        panelType === PanelType.WORKSPACE &&
+        store.getState().workspacePanelState.isOpen
+      ) {
         workspaceEventData = captureWorkspaceEvent();
         await fireWorkspaceEvent(
           BusEventType.WORKSPACE_PRE_CLOSE,
