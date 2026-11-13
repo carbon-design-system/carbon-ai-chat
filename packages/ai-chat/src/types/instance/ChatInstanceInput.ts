@@ -35,10 +35,10 @@ export interface ChatInstanceInput {
    * `paragraph`, `text`, or `hardBreak`, or if any text node carries
    * marks. Also throws `"Input content is host-owned while CUSTOM_PROMPT_LINE has content."`
    * before calling the updater while the custom prompt line has content.
-   * Empty paragraphs pass through. In both editors the text uses
-   * markdown-like breaks, in `previous` and in `rawValue`: a paragraph break
-   * reads as `\n\n` and a line break (`hardBreak`) as `\n`. In the text you
-   * return, `\n` becomes a line break and `\n\n` starts a new paragraph.
+   * Empty paragraphs pass through. In 1.x, `previous` uses one newline for both paragraph and hard breaks.
+   * The rich editor's `rawValue` uses two newlines between paragraphs, so it can differ from `previous`.
+   * Returned text keeps literal characters and newlines. In the plain field, each newline starts a paragraph;
+   * a rich write uses hard breaks in one paragraph to preserve the exact text.
    * Emits one deprecation warning per session.
    *
    * @example Replace a plain-text draft

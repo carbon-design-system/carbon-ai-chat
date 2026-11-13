@@ -24,7 +24,7 @@ import {
 import { PendingUploadStatus } from '../../types/state/AppState';
 import { StructuredData } from '../../types/messaging/Messages';
 import { consoleError, consoleWarn } from '../utils/miscUtils';
-import { isPlainTextDoc } from '../utils/inputContent';
+import { isPlainTextDoc, literalTextToDoc } from '../utils/inputContent';
 import { hasCustomPromptLine } from '../utils/customPromptLine';
 import type { ServiceManager } from './ServiceManager';
 
@@ -133,7 +133,7 @@ class InputActionsService {
         return;
       }
       // A string would reach Tiptap as HTML, which folds a newline into a space.
-      ref.setContent(textToDoc(nextValue));
+      ref.setContent(literalTextToDoc(nextValue));
       return;
     }
 

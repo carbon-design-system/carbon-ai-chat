@@ -39,8 +39,8 @@ describe('textToDoc / getRawText round-trip', function () {
   }
 });
 
-describe('markdown-like breaks', function () {
-  it('joins paragraphs with two newlines', () => {
+describe('legacy paragraph-per-line breaks', function () {
+  it('joins paragraphs with one newline', () => {
     expect(
       getRawText({
         type: 'doc',
@@ -49,7 +49,7 @@ describe('markdown-like breaks', function () {
           { type: 'paragraph', content: [{ type: 'text', text: 'two' }] },
         ],
       })
-    ).to.equal('one\n\ntwo');
+    ).to.equal('one\ntwo');
   });
 
   it('turns a hard break into one newline', () => {
@@ -70,18 +70,16 @@ describe('markdown-like breaks', function () {
     ).to.equal('one\ntwo');
   });
 
-  it('makes a single newline a hard break and two a new paragraph', () => {
+  it('makes each newline start a paragraph, including an empty line', () => {
     expect(textToDoc('one\ntwo\n\nthree')).to.deep.equal({
       type: 'doc',
       content: [
         {
           type: 'paragraph',
-          content: [
-            { type: 'text', text: 'one' },
-            { type: 'hardBreak' },
-            { type: 'text', text: 'two' },
-          ],
+          content: [{ type: 'text', text: 'one' }],
         },
+        { type: 'paragraph', content: [{ type: 'text', text: 'two' }] },
+        { type: 'paragraph' },
         { type: 'paragraph', content: [{ type: 'text', text: 'three' }] },
       ],
     });
@@ -96,23 +94,17 @@ describe('textOffsetToDocPos', function () {
     expect(textOffsetToDocPos('hello', 5)).to.equal(6);
   });
 
-  it('counts a hard break as one position and a paragraph boundary as two', () => {
-    // 'ab\ncd' -> doc(p('ab', hardBreak, 'cd')): offset 3 is 'c', at 4.
-    expect(textOffsetToDocPos('ab\ncd', 3)).to.equal(4);
-    // 'a\n\nb' -> doc(p('a'), p('b')): offset 3 is 'b', at 4.
-    expect(textOffsetToDocPos('a\n\nb', 3)).to.equal(4);
+  it('counts the extra position at every paragraph boundary', () => {
+    expect(textOffsetToDocPos('ab\ncd', 3)).to.equal(5);
+    expect(textOffsetToDocPos('a\n\nb', 3)).to.equal(6);
+    expect(textOffsetToDocPos('line1\nline2', 8)).to.equal(10);
   });
 
-  it('moves a caret on the blank line between paragraphs to the next paragraph', () => {
-    // 'a\n\nb' -> doc(p('a'), p('b')): offset 2 sits between the newlines.
+  it('keeps a blank-line caret inside its own empty paragraph', () => {
     expect(textOffsetToDocPos('a\n\nb', 2)).to.equal(4);
-    // 'a\n\n\n\nb' -> doc(p('a'), p(), p('b')): offset 2 lands in the empty
-    // paragraph and offset 4 at the start of 'b'.
     expect(textOffsetToDocPos('a\n\n\n\nb', 2)).to.equal(4);
-    expect(textOffsetToDocPos('a\n\n\n\nb', 4)).to.equal(6);
-    // 'a\n\n\nb' -> doc(p('a'), p(hardBreak, 'b')): the third newline is a
-    // hard break, so offset 3 is before it.
-    expect(textOffsetToDocPos('a\n\n\nb', 3)).to.equal(4);
+    expect(textOffsetToDocPos('a\n\n\n\nb', 4)).to.equal(8);
+    expect(textOffsetToDocPos('a\n\n\nb', 3)).to.equal(6);
   });
 
   describe('in an editor seeded with textToDoc', function () {
@@ -148,9 +140,9 @@ describe('textOffsetToDocPos', function () {
       ['hello', 5, 'helloX'],
       ['ab\ncd', 3, 'ab\nXcd'],
       ['a\n\nb', 1, 'aX\n\nb'],
-      ['a\n\nb', 2, 'a\n\nXb'],
+      ['a\n\nb', 2, 'a\nX\nb'],
       ['a\n\nb', 3, 'a\n\nXb'],
-      ['a\n\n\n\nb', 2, 'a\n\nX\n\nb'],
+      ['a\n\n\n\nb', 2, 'a\nX\n\n\nb'],
       ['a\n\n\nb', 3, 'a\n\nX\nb'],
     ];
     for (const [text, offset, typed] of cases) {
