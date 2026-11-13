@@ -364,7 +364,8 @@ interface ChatActions {
 
   /**
    * Resets the saved session to its defaults and removes its record from the browser's sessionStorage. The chat saves
-   * a new record at its next change.
+   * a new record at its next change. With {@link PublicConfig.persistedState} set, nothing touches sessionStorage:
+   * the reset goes to {@link PersistedStateConfig.onStateChange} like any other change.
    *
    * It also does the following:
    * - Closes the main window to the launcher, unless `keepOpenState` is true. This fires
