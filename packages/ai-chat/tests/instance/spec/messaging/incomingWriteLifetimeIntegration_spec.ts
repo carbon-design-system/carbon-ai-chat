@@ -13,7 +13,7 @@ import {
   type MessageResponse,
   MessageResponseTypes,
 } from '../../../../src/types/messaging/Messages';
-import { resolvablePromise } from '../../../../src/shared/utils/resolvablePromise';
+import { resolvablePromise } from '../../../../src/sdk/utils/resolvablePromise';
 import {
   createBaseConfig,
   renderChatAndGetInstanceWithStore,

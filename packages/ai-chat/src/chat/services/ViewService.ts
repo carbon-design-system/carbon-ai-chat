@@ -11,11 +11,11 @@ import isEqual from 'lodash-es/isEqual.js';
 
 import { ViewState, ViewType } from '../../types/state/AppState';
 
-import { deepFreeze } from '../../shared/utils/lang/objectUtils';
+import { deepFreeze } from '../../sdk/utils/lang/objectUtils';
 
 import { constructViewState } from '../utils/viewStateUtils';
 
-import { consoleError, debugLog } from '../../shared/utils/miscUtils';
+import { consoleError, debugLog } from '../../sdk/utils/miscUtils';
 
 import {
   BusEventType,
@@ -26,7 +26,7 @@ import {
   ViewChangeReason,
 } from '../../types/events/eventBusTypes';
 
-import type { ServiceManager } from '../../shared/services/ServiceManager';
+import type { ServiceManager } from '../../sdk/services/ServiceManager';
 
 import { viewActions } from '../state';
 

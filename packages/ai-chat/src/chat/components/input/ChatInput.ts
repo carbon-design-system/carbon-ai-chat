@@ -44,18 +44,18 @@ import type { AutocompleteContent } from '../../services/autocompleteContent';
 import type { ChatViewState } from '../../services/chatViewState';
 import { chatStore } from '../../services/attachChatView';
 import type { ToolbarAction } from '../../../types/config/HeaderConfig';
-import type { IntlShape } from '../../../shared/utils/i18n';
+import type { IntlShape } from '../../../sdk/utils/i18n';
 import type { LanguagePack } from '../../../types/config/LanguagePack';
 import { ChatWidthBreakpoint } from '../../../types/state/AppState';
 import { WriteableElementName } from '../../../types/instance/WriteableElements';
 import { PageObjectId } from '../../../testing/PageObjectId';
-import { shallowEqual } from '../../../shared/store/appStore';
-import actions from '../../../shared/store/actions';
+import { shallowEqual } from '../../../sdk/store/appStore';
+import actions from '../../../sdk/store/actions';
 import {
   selectInputState,
   selectIsInputToHumanAgent,
   selectLanguagePack,
-} from '../../../shared/store/selectors';
+} from '../../../sdk/store/selectors';
 import {
   InputExtensions,
   buildInputExtensions,
@@ -69,9 +69,9 @@ import {
 } from '../../utils/inputValueSync';
 import { hasInFlightUpload, hasSendableInput } from '../../utils/sendableInput';
 import { restoreInputDraft } from '../../utils/restoreInputDraft';
-import { validateFileSelection } from '../../../shared/utils/fileUploadValidation';
+import { validateFileSelection } from '../../../sdk/utils/fileUploadValidation';
 import { formatShortcutForDisplay } from '../../utils/keyboardUtils';
-import { consoleError } from '../../../shared/utils/miscUtils';
+import { consoleError } from '../../../sdk/utils/miscUtils';
 import { viewActions } from '../../state';
 
 const EMPTY_UPLOADS: FileUpload[] = [];

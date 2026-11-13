@@ -12,7 +12,7 @@ import type {
   MessagePresentationPort,
   PortAnnouncement,
   StreamAnnouncementContent,
-} from '../../shared/services/messaging/presentationPort';
+} from '../../sdk/services/messaging/presentationPort';
 
 import type { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
 

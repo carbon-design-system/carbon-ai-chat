@@ -8,12 +8,12 @@
  */
 
 import { makeConfigStore } from '../../test_helpers';
-import actions from '../../../src/shared/store/actions';
+import actions from '../../../src/sdk/store/actions';
 import {
   isHumanAgentLocalOwner,
   isHumanAgentMessageOwner,
   markHumanAgentIngress,
-} from '../../../src/shared/store/messageOwnership';
+} from '../../../src/sdk/store/messageOwnership';
 import {
   MessageResponseTypes,
   type MessageResponse,

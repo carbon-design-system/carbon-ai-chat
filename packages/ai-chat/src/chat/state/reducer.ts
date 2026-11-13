@@ -9,7 +9,8 @@
 
 import isEqual from 'lodash-es/isEqual.js';
 
-import { conversationActions, type PartitionReducer } from '../../sdk/internal';
+import { conversationActions } from '../../sdk/store/conversationActions';
+import type { PartitionReducer } from '../../sdk/store/appStore';
 import type { ConversationState } from '../../types/state/AppState';
 import type { ViewPartitionState } from '../../types/state/ViewPartitionState';
 import type { AnnounceMessage } from '../../types/state/AnnounceMessage';

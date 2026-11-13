@@ -7,10 +7,10 @@
  *  @license
  */
 
-import { VERSION } from '../../shared/utils/environmentVariables';
+import { VERSION } from '../../sdk/utils/environmentVariables';
 import { PersistedState } from '../../types/state/AppState';
-import { IS_SESSION_STORAGE } from '../../shared/utils/browserUtils';
-import { getSuffix } from '../../shared/services/NamespaceService';
+import { IS_SESSION_STORAGE } from '../../sdk/utils/browserUtils';
+import { getSuffix } from '../../sdk/services/NamespaceService';
 
 /**
  * Reads and validates the Carbon AI Chat session from sessionStorage.

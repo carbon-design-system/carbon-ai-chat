@@ -9,9 +9,9 @@
 
 import type { AppState } from '../../types/state/AppState';
 
-import type { AppStore } from '../../shared/store/appStore';
+import type { AppStore } from '../../sdk/store/appStore';
 
-import type { LoadingDirection } from '../../shared/services/messaging/presentationPort';
+import type { LoadingDirection } from '../../sdk/services/messaging/presentationPort';
 
 import { viewActions } from '../state';
 

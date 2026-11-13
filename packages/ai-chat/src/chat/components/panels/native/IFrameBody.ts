@@ -16,7 +16,7 @@ import '@carbon/web-components/es/components/loading/loading-icon.js';
 import { NativeChatView } from '../../shared/NativeChatView';
 import { IFrameBodyLifecycle } from '../../../utils/panelBodyLifecycle';
 import type { PanelBodyContentDetail } from './panelBodyContent';
-import { shallowEqual } from '../../../../shared/store/appStore';
+import { shallowEqual } from '../../../../sdk/store/appStore';
 import type { ChatViewState } from '../../../services/chatViewState';
 
 interface IFramePanelMessage {

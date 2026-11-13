@@ -9,13 +9,13 @@
 
 import isEqual from 'lodash-es/isEqual.js';
 import { PublicConfig } from '../../types/config/PublicConfig';
-import { ServiceManager } from '../../shared/services/ServiceManager';
+import { ServiceManager } from '../../sdk/services/ServiceManager';
 import { createAppConfig } from './appConfig';
-import { applyConversationConfig } from '../../shared/services/applyConfig';
-import { isBrowser } from '../../shared/utils/browserUtils';
+import { applyConversationConfig } from '../../sdk/services/applyConfig';
+import { isBrowser } from '../../sdk/utils/browserUtils';
 import { viewActions } from '../state';
 import { chatStore } from '../services/attachChatView';
-import type { AppStore } from '../../shared/store/appStore';
+import type { AppStore } from '../../sdk/store/appStore';
 import type { AppState } from '../../types/state/AppState';
 
 /**

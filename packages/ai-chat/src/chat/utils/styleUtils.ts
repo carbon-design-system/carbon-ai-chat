@@ -14,7 +14,7 @@
 
 import { ThemeState } from '../../types/state/ThemeState';
 import ObjectMap from '../../types/utilities/ObjectMap';
-import { WA_CONSOLE_PREFIX } from './constants';
+import { WA_CONSOLE_PREFIX } from '../../sdk/utils/constants';
 import { CarbonTheme } from '../../types/config/CarbonTheme';
 
 enum CarbonThemeClassNames {

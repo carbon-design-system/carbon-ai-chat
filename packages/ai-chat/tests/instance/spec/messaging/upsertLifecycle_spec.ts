@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { resolvablePromise } from '../../../../src/shared/utils/resolvablePromise';
+import { resolvablePromise } from '../../../../src/sdk/utils/resolvablePromise';
 import {
   MessageResponse,
   MessageResponseTypes,

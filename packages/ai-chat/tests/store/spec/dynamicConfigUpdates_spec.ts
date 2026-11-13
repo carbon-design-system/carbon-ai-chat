@@ -9,14 +9,14 @@
 
 import { applyConfigChangesDynamically } from '../../../src/chat/utils/dynamicConfigUpdates';
 
-import { selectInputIsReadonly } from '../../../src/shared/store/selectors';
+import { selectInputIsReadonly } from '../../../src/sdk/store/selectors';
 
-import { createAppStore } from '../../../src/shared/store/appStore';
+import { createAppStore } from '../../../src/sdk/store/appStore';
 
-import { createInitialState } from '../../../src/shared/store/doCreateStore';
+import { createInitialState } from '../../../src/sdk/store/doCreateStore';
 import { createAppConfig } from '../../../src/chat/utils/appConfig';
 
-import { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 
 import { AppState } from '../../../src/types/state/AppState';
 

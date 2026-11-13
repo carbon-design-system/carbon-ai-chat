@@ -14,8 +14,8 @@ import {
   setupBeforeEach,
   setupAfterEach,
 } from '../../../test_helpers';
-import { resolvablePromise } from '../../../../src/shared/utils/resolvablePromise';
-import actions from '../../../../src/shared/store/actions';
+import { resolvablePromise } from '../../../../src/sdk/utils/resolvablePromise';
+import actions from '../../../../src/sdk/store/actions';
 import { MessageState } from '../../../../src/types/config/MessagingConfig';
 import {
   BusEventType,

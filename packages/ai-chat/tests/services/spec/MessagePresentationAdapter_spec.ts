@@ -8,7 +8,7 @@
  */
 
 import { MessagePresentationAdapter } from '../../../src/chat/services/MessagePresentationAdapter';
-import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 import {
   hasCustomPromptLine,
   requestComposerFocus,
@@ -16,8 +16,8 @@ import {
 import {
   InputViewPort,
   ViewConnection,
-} from '../../../src/shared/services/viewBindings';
-import type { MessagePresentationPort } from '../../../src/shared/services/messaging/presentationPort';
+} from '../../../src/sdk/services/viewBindings';
+import type { MessagePresentationPort } from '../../../src/sdk/services/messaging/presentationPort';
 import { idleInstancePort } from '../helpers/viewBindings';
 
 /** A manager whose attached view reports `input` as its input handle. */

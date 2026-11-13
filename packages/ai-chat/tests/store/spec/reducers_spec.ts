@@ -7,12 +7,12 @@
  *  @license
  */
 
-import { createAppStore } from '../../../src/shared/store/appStore';
+import { createAppStore } from '../../../src/sdk/store/appStore';
 
-import { buildLanguagePack } from '../../../src/shared/store/doCreateStore';
+import { buildLanguagePack } from '../../../src/sdk/store/doCreateStore';
 import { createAppConfig } from '../../../src/chat/utils/appConfig';
 
-import actions from '../../../src/shared/store/actions';
+import actions from '../../../src/sdk/store/actions';
 import { AppState } from '../../../src/types/state/AppState';
 
 import {
@@ -25,7 +25,7 @@ import {
   DEFAULT_CHAT_MESSAGES_STATE,
   DEFAULT_PERSISTED_TO_BROWSER,
   DEFAULT_HUMAN_AGENT_STATE,
-} from '../../../src/shared/store/reducerUtils';
+} from '../../../src/sdk/store/reducerUtils';
 
 import {
   DEFAULT_HISTORY_PANEL_STATE,

@@ -16,7 +16,7 @@ import {
 import {
   selectInputFieldVisible,
   selectInputIsReadonly,
-} from '../../../src/shared/store/selectors';
+} from '../../../src/sdk/store/selectors';
 
 describe('ChatInstance.input', () => {
   beforeEach(setupBeforeEach);

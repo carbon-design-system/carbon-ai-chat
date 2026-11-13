@@ -17,10 +17,10 @@ import DisclaimerBody from '../../../src/chat/components/panels/native/Disclaime
 import { ChatContainer } from '../../../src/react/ChatContainer';
 import { ChatCustomElement } from '../../../src/react/ChatCustomElement';
 import { ChatViewState } from '../../../src/chat/services/chatViewState';
-import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
-import { createIntl } from '../../../src/shared/utils/i18n';
-import actions from '../../../src/shared/store/actions';
+import { createIntl } from '../../../src/sdk/utils/i18n';
+import actions from '../../../src/sdk/store/actions';
 import { ChatWidthBreakpoint } from '../../../src/types/state/AppState';
 import { CarbonTheme } from '../../../src/types/config/CarbonTheme';
 import type { ChatInstance } from '../../../src/types/instance/ChatInstance';

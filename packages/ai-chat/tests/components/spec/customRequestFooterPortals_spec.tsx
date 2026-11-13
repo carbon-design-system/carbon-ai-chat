@@ -18,7 +18,7 @@ import React from 'react';
 import { act, render } from '@testing-library/react';
 
 import { CustomRequestFooterPortalsContainer } from '../../../src/chat/components/portals/CustomRequestFooterPortalsContainer';
-import { EventBus } from '../../../src/shared/events/EventBus';
+import { EventBus } from '../../../src/sdk/events/EventBus';
 import { ExtensionHosts } from '../../../src/chat/services/extensionHosts';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
 import { ChatInstance } from '../../../src/types/instance/ChatInstance';

@@ -20,33 +20,32 @@ Load only what you need:
 
 - Working across the React/Lit boundary, shadow DOM, or slots → [architecture.md](references/architecture.md)
 - Adding, editing, or wiring a service → [services.md](references/services.md)
-- Changing assistant message flows, data helpers, or view ports → [messaging ownership](src/shared/services/messaging/AGENTS.md)
+- Changing assistant message flows, data helpers, or view ports → [messaging ownership](src/sdk/services/messaging/AGENTS.md)
 - Changing hooks or view-owned logic in `utils/` or `services/` → [hooks/AGENTS.md](src/chat/hooks/AGENTS.md)
 - Adding config fields or host properties/attributes, or editing CEM metadata → [manifests.md](references/manifests.md)
 - Writing or fixing a Jest test → [tests.md](references/tests.md)
 - Shipping any UI change (WCAG 2.1 AA checklist, live-region patterns, the announcer helpers, and when an announcement should be `assertive`) → [Root accessibility.md](../../references/accessibility.md)
-- Touching the store → [src/shared/store/AGENTS.md](src/shared/store/AGENTS.md)
+- Adding code to `src/sdk/`, or deciding whether it's public → [src/sdk/AGENTS.md](src/sdk/AGENTS.md)
+- Touching the store → [src/sdk/store/AGENTS.md](src/sdk/store/AGENTS.md)
 - Touching public types or JSDoc → [src/types/AGENTS.md](src/types/AGENTS.md)
 - Writing a code example (JSDoc `@example`, docs snippet) → [code-examples.md](references/code-examples.md)
 - Editing public docs in [docs/](docs/) → [docs/AGENTS.md](docs/AGENTS.md)
 
 ## Where things live
 
-- [src/shared/](src/shared/) — the conversation layer: everything a chat needs to run without a view.
-  - `store/` — Redux-style store.
+- [src/sdk/](src/sdk/) — the headless engine: everything a chat needs to run without a view. `createChatSDK` starts a chat with no view, DOM, or storage, and returns a handle with `release()` and `destroy()`. Internal in 1.x: `index.ts` is its future public entry, and no package entry point exports it.
+  - `store/` — Redux-style store, plus the seams the prebuilt chat uses to attach its view partition to it.
   - `services/` — chat-instance services wired through `ServiceManager.ts` and `loadServices.ts`. `ChatInstanceService.ts` is the instance-facing API — public methods added here must also be reflected on `ChatInstance` in [`src/types/instance/ChatInstance.ts`](src/types/instance/ChatInstance.ts).
   - `services/messaging/` — `MessageCoordinator` and its private workflows, pure `inbound/`, `outbound/`, and `state/` helpers, and the presentation port. The human-agent service lives in `services/haa/`.
   - `events/` — typed pub/sub for the public event API. Event names and payloads are part of the public contract.
   - `schema/` — runtime message/config schema. Keep in sync with types in [src/types/](src/types/).
   - `utils/` — helpers that conversation code uses. View code may import them too.
-  - `languages/` — `intl-messageformat` string bundles, one locale file. [LanguagePack.ts](src/types/config/LanguagePack.ts) declares the public `LanguagePack` type over it, so adding a key widens public API and renaming one breaks it. Hosts translate through `PublicConfig.strings`; word new strings per [ui-strings.md](../../.bob/skills/caic-copy-writer/references/ui-strings.md).
+- [src/languages/](src/languages/) — `intl-messageformat` string bundles, one locale file. [LanguagePack.ts](src/types/config/LanguagePack.ts) declares the public `LanguagePack` type over it, so adding a key widens public API and renaming one breaks it. Hosts translate through `PublicConfig.strings`; word new strings per [ui-strings.md](../../.bob/skills/caic-copy-writer/references/ui-strings.md).
 - [src/chat/](src/chat/) — the prebuilt interface. Do most feature work here.
   - `state/` — the view partition, under `view` in the chat's one store: panels, layout, loading indicators, announcements, the unread agent count, and the view half of saved state. Conversation code can't see it. Internal; never exported.
   - `services/` — view-owned classes with explicit cleanup: `ChatViewState`, extension hosts, the announcer, the theme watcher, the messaging presentation adapter, and the human-agent view callbacks.
   - `utils/` — view helpers, including DOM, focus, and shell lifecycle code.
   - `components/` and `components-legacy/` — follow [component placement](../../references/code-patterns.md#component-placement) when adding or moving UI. Private Lit views that read chat state extend `components/shared/NativeChatView.ts`.
-- [src/sdk/](src/sdk/) — the headless SDK: `createChatSDK` starts a chat with no view, DOM, or storage, and returns a handle with `release()` and `destroy()`. Internal in 1.x: `index.ts` is its future public entry, and no package entry point exports it.
-  - `internal/` — the seams other folders in this package use, such as attaching a store partition. Never exported.
 - [src/react/](src/react/) — public React wrapper components re-exported from the package root.
 - [src/web-components/](src/web-components/) — Lit hosts. They own startup, config updates, live regions, and extension hosts. Put new startup work here, not in React.
 - [src/types/](src/types/) — public type surface. Anything exported through `aiChatEntry.tsx` is public API; treat edits with semver discipline. TypeDoc output ships as the public docs site.
@@ -55,14 +54,13 @@ Load only what you need:
 
 A test fails when a folder imports outside its rules, through type-only imports too:
 
-| Folder          | May import                                                |
-| --------------- | --------------------------------------------------------- |
-| `src/shared/`   | `src/shared/`, `src/types/`                               |
-| `src/sdk/`      | `src/sdk/`, `src/shared/`, `src/types/`                   |
-| `src/types/`    | `src/types/`, plus types and JSON data from `src/shared/` |
-| everything else | anything                                                  |
+| Folder | May import |
+| --- | --- |
+| `src/sdk/` | `src/sdk/`, `src/types/` |
+| `src/types/` | `src/types/`, plus types and JSON data from `src/sdk/` engine folders, not its entry files |
+| everything else | anything |
 
-Nothing `src/shared/` or `src/sdk/` reaches may import React, React DOM, Lit, or a module that registers a custom element. Each exception still allowed today is listed with the issue that removes it. So a new service that works without a view goes in `src/shared/services/`. One that touches the DOM or `ChatViewState` goes in `src/chat/services/`. Shared code reaches the view only through the ports in [viewBindings.ts](src/shared/services/viewBindings.ts), which the mounted view attaches. The rules and their exceptions are in [the boundary spec](tests/architecture/spec/sourceBoundaries_spec.ts). The prebuilt interface reads conversation data through `instance.state`, as a host does. Each read that doesn't yet is listed with its owner issue in [conversationReadGaps.ts](tests/architecture/conversationReadGaps.ts), and [its spec](tests/architecture/spec/conversationReadGaps_spec.ts) fails on a new one. [The SDK surface snapshot](tests/architecture/spec/sdkSurface_spec.ts) lists every type and field the SDK entry reaches, so a change to it shows up in review.
+Nothing `src/sdk/` reaches may import React, React DOM, Lit, or a module that registers a custom element. Each exception still allowed today is listed with the issue that removes it. So a new service that works without a view goes in `src/sdk/services/`. One that touches the DOM or `ChatViewState` goes in `src/chat/services/`. SDK code reaches the view only through the ports in [viewBindings.ts](src/sdk/services/viewBindings.ts), which the mounted view attaches. The rules and their exceptions are in [the boundary spec](tests/architecture/spec/sourceBoundaries_spec.ts). The prebuilt interface reads conversation data through `instance.state`, as a host does. Each read that doesn't yet is listed with its owner issue in [conversationReadGaps.ts](tests/architecture/conversationReadGaps.ts), and [its spec](tests/architecture/spec/conversationReadGaps_spec.ts) fails on a new one. [The SDK surface snapshot](tests/architecture/spec/sdkSurface_spec.ts) lists every type and field the SDK entry reaches, so a change to it shows up in review.
 
 ## Build, test, lint
 
@@ -78,8 +76,8 @@ npm start          # rollup --watch + typedoc --watch + local doc server on :500
 
 ## Gotchas
 
-- **Custom store hooks**: `useSelector` comes from `src/chat/hooks/` — **not** `react-redux`. There is no `useDispatch`; dispatch through `serviceManager.store.dispatch` with an action creator from `src/shared/store/actions.ts`, or `viewActions` from `src/chat/state/` for view state.
-- **Two partitions, one store**: `ServiceManager.store` is typed with `ConversationState`, so shared code can't read view state. In `chat/`, `chatStore(serviceManager)` gives the whole store, and view slices are under `state.view`.
+- **Custom store hooks**: `useSelector` comes from `src/chat/hooks/` — **not** `react-redux`. There is no `useDispatch`; dispatch through `serviceManager.store.dispatch` with an action creator from `src/sdk/store/actions.ts`, or `viewActions` from `src/chat/state/` for view state.
+- **Two partitions, one store**: `ServiceManager.store` is typed with `ConversationState`, so SDK code can't read view state. In `chat/`, `chatStore(serviceManager)` gives the whole store, and view slices are under `state.view`.
 - **Import extensions**: `moduleResolution` is `bundler`, so relative imports of TS source resolve **with or without** a trailing `.js`; extensionless is the convention across the tree, and rollup, `tsc --noEmit`, and Jest all accept either. A deep import into a dependency is different: `bundler` enforces the package's `exports` map, so write the real built file, `.js` included (e.g. `@carbon/ai-chat-components/es/react/card.js`).
 - **Relaxed TS strictness**: `tsconfig` sets `strictNullChecks: false` and `strictFunctionTypes: false`. Don't assume null safety; check explicitly or add guards.
 - **React runs inside shadow DOM**: the `cds-aichat-*` custom elements mount React into a shadow root. User-defined responses and writeable elements use slotted content; follow existing patterns. Background in [architecture.md](references/architecture.md).
@@ -91,4 +89,4 @@ See [definition-of-done.md](../../references/definition-of-done.md) for the gate
 ## Authoring rules
 
 - **Public API changes**: anything exported from `aiChatEntry.tsx`, `serverEntry.ts`, or `types/` is semver-visible. Coordinate with a `feat`/`fix!`/`BREAKING CHANGE` footer. JSDoc/TypeDoc rules: [src/types/AGENTS.md](src/types/AGENTS.md).
-- **i18n**: no user-visible strings in code. Route through `languages/`.
+- **i18n**: no user-visible strings in code. Route through [src/languages/](src/languages/).

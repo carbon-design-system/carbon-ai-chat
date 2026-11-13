@@ -19,7 +19,7 @@ import {
   consoleLog,
   consoleWarn,
   consoleDebug,
-} from '../../../src/shared/utils/miscUtils';
+} from '../../../src/sdk/utils/miscUtils';
 
 describe('miscUtils', () => {
   describe('assertType', () => {

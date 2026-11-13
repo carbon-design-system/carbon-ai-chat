@@ -10,7 +10,7 @@
 import {
   convertCSSVariablesToString,
   validateCustomProperties,
-} from '../../../src/shared/utils/styleUtils';
+} from '../../../src/chat/utils/styleUtils';
 
 describe('styleUtils', () => {
   describe('convertCSSVariablesToString', () => {

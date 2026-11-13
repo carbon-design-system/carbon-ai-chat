@@ -18,17 +18,17 @@ import type Toolbar from '@carbon/ai-chat-components/es/components/toolbar/src/t
 import NativePanels from '../../../src/chat/components/panels/NativePanels';
 import { ExtensionHosts } from '../../../src/chat/services/extensionHosts';
 import { ChatViewState } from '../../../src/chat/services/chatViewState';
-import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 import type {
   PanelViewInputs,
   PanelCompositionCallbacks,
 } from '../../../src/chat/utils/panelComposition';
 import { ScreenShareState } from '../../../src/types/config/ServiceDeskConfig';
 import { ChatWidthBreakpoint } from '../../../src/types/state/AppState';
-import languagePack from '../../../src/shared/languages/en.json';
-import { EventBus } from '../../../src/shared/events/EventBus';
-import actions from '../../../src/shared/store/actions';
-import { createIntl } from '../../../src/shared/utils/i18n';
+import languagePack from '../../../src/languages/en.json';
+import { EventBus } from '../../../src/sdk/events/EventBus';
+import actions from '../../../src/sdk/store/actions';
+import { createIntl } from '../../../src/sdk/utils/i18n';
 import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
 import {
   applyConfigChange,

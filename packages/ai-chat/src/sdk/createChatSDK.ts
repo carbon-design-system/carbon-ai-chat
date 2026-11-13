@@ -7,11 +7,11 @@
  *  @license
  */
 
-import createHumanAgentService from '../shared/services/haa/HumanAgentServiceImpl';
-import { createServiceManager } from '../shared/services/loadServices';
-import { attachSlotTracking } from '../shared/services/slotTracking';
-import { createConversationInstance } from '../shared/services/conversationInstance';
-import type { ServiceManager } from '../shared/services/ServiceManager';
+import createHumanAgentService from './services/haa/HumanAgentServiceImpl';
+import { createServiceManager } from './services/loadServices';
+import { attachSlotTracking } from './services/slotTracking';
+import { createConversationInstance } from './services/conversationInstance';
+import type { ServiceManager } from './services/ServiceManager';
 import type { ChatSDKConfig } from '../types/config/ChatSDKConfig';
 import type { ChatInstance } from '../types/instance/ChatInstance';
 import type { ChatSDKInstance } from '../types/instance/ChatSDKInstance';

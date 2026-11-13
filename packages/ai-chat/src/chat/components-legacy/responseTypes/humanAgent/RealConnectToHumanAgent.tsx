@@ -17,13 +17,13 @@ import Button from '../../../components/carbon/Button';
 import React, { ReactNode, useEffect, useState } from 'react';
 
 import { HasServiceManager } from '../../../hocs/withServiceManager';
-import { HumanAgentsOnlineStatus } from '../../../../shared/services/haa/HumanAgentService';
+import { HumanAgentsOnlineStatus } from '../../../../sdk/services/haa/HumanAgentService';
 import {
   AppState,
   HumanAgentDisplayState,
 } from '../../../../types/state/AppState';
 import { useSelector } from '../../../hooks/useSelector';
-import { shallowEqual } from '../../../../shared/store/appStore';
+import { shallowEqual } from '../../../../sdk/store/appStore';
 import type { PublicChatHumanAgentState } from '../../../../types/instance/ChatSDKState';
 import { HasRequestFocus } from '../../../../types/utilities/HasRequestFocus';
 import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';

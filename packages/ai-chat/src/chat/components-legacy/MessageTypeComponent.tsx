@@ -48,10 +48,10 @@ import { OptionComponent } from '../components/responseTypes/options/OptionCompo
 import { MarkdownWithErrorHandling } from '../components/helpers/MarkdownWithErrorHandling/MarkdownWithErrorHandling';
 import { VideoComponent } from '../components/responseTypes/media/VideoComponent';
 import { useSelector } from '../hooks/useSelector';
-import { shallowEqual } from '../../shared/store/appStore';
+import { shallowEqual } from '../../sdk/store/appStore';
 import { AppState } from '../../types/state/AppState';
 import { useUUID } from '../hooks/useUUID';
-import { mergeMessageHistoryFromView } from '../utils/messageMetadataCommands';
+import { mergeMessageHistoryFromView } from '../../sdk/utils/messageMetadataCommands';
 import {
   LocalMessageItem,
   MessageErrorState,
@@ -64,7 +64,7 @@ import {
   isRequest,
   isResponse,
   renderAsUserDefinedMessage,
-} from '../../shared/utils/messageUtils';
+} from '../../sdk/utils/messageUtils';
 import { parseUnknownDataToMarkdown } from '../utils/parseUnknownDataToMarkdown';
 import ChainOfThought from '@carbon/ai-chat-components/es/react/chain-of-thought.js';
 import ChainOfThoughtStep from '@carbon/ai-chat-components/es/react/chain-of-thought-step.js';

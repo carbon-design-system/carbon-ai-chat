@@ -33,7 +33,7 @@ import { ChatCustomElement } from '../../../src/react/ChatCustomElement';
 import { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import { RenderUserDefinedResponse } from '../../../src/types/component/ChatContainer';
 import { MessageResponseTypes } from '../../../src/types/messaging/Messages';
-import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
+import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
 import {
   addUserDefinedResponse,
   createBaseConfig,

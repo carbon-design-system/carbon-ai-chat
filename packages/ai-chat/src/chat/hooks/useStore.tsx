@@ -19,7 +19,7 @@
  */
 
 import { useContext } from 'react';
-import type { AppStore, UnknownAction } from '../../shared/store/appStore';
+import type { AppStore, UnknownAction } from '../../sdk/store/appStore';
 import { ChatContext } from '../contexts/ChatContext';
 
 export function useStore<

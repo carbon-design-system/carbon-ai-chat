@@ -10,7 +10,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import ts from 'typescript';
-import { OutgoingMessageService } from '../../../src/shared/services/messaging/outbound/OutgoingMessageService';
+import { OutgoingMessageService } from '../../../src/sdk/services/messaging/outbound/OutgoingMessageService';
 import {
   MessageInputType,
   MessageRequest,
@@ -281,7 +281,7 @@ it('keeps the outgoing runtime graph pure and its type inputs free of capabiliti
   visit(
     path.join(
       sourceRoot,
-      'shared/services/messaging/outbound/OutgoingMessageService.ts'
+      'sdk/services/messaging/outbound/OutgoingMessageService.ts'
     )
   );
   expect(visited.size).toBe(3);

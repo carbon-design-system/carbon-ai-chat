@@ -7,14 +7,14 @@
  *  @license
  */
 
-import { HistoryWorkflow } from '../../../src/shared/services/messaging/HistoryWorkflow';
-import { MessageCoordinator } from '../../../src/shared/services/messaging/MessageCoordinator';
-import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
-import type { MessagePresentationPort } from '../../../src/shared/services/messaging/presentationPort';
-import type { LoadedHistory } from '../../../src/shared/schema/historyToMessages';
+import { HistoryWorkflow } from '../../../src/sdk/services/messaging/HistoryWorkflow';
+import { MessageCoordinator } from '../../../src/sdk/services/messaging/MessageCoordinator';
+import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
+import type { MessagePresentationPort } from '../../../src/sdk/services/messaging/presentationPort';
+import type { LoadedHistory } from '../../../src/sdk/schema/historyToMessages';
 import type { AppStateMessages } from '../../../src/types/state/AppState';
 import { MessageResponseTypes } from '../../../src/types/messaging/Messages';
-import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
+import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
 import { withMessagingView } from '../helpers/viewBindings';
 
 function messages(): AppStateMessages {

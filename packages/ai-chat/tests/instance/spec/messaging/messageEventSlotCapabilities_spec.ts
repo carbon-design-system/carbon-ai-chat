@@ -8,11 +8,11 @@
  */
 
 import { waitFor } from '@testing-library/react';
-import { MessageCoordinator } from '../../../../src/shared/services/messaging/MessageCoordinator';
+import { MessageCoordinator } from '../../../../src/sdk/services/messaging/MessageCoordinator';
 import { MessagePresentationAdapter } from '../../../../src/chat/services/MessagePresentationAdapter';
-import { SlotEventService } from '../../../../src/shared/services/messaging/presentation/SlotEventService';
-import type { ServiceManager } from '../../../../src/shared/services/ServiceManager';
-import { resolvablePromise } from '../../../../src/shared/utils/resolvablePromise';
+import { SlotEventService } from '../../../../src/sdk/services/messaging/presentation/SlotEventService';
+import type { ServiceManager } from '../../../../src/sdk/services/ServiceManager';
+import { resolvablePromise } from '../../../../src/sdk/utils/resolvablePromise';
 import { withMessagingView } from '../../../services/helpers/viewBindings';
 import { MessageState } from '../../../../src/types/config/MessagingConfig';
 import {

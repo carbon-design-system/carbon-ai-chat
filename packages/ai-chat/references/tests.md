@@ -84,4 +84,4 @@ A test's first chat boot waits with `{ timeout: 5000 }`, the repo convention. Th
 
 - [packages/ai-chat/AGENTS.md](../AGENTS.md) — package overview
 - [services.md](services.md) — service archetypes (test pattern background)
-- [src/shared/store/AGENTS.md](../src/shared/store/AGENTS.md) — store rules
+- [src/sdk/store/AGENTS.md](../src/sdk/store/AGENTS.md) — store rules

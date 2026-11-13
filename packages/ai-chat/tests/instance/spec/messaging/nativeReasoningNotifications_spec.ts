@@ -19,8 +19,8 @@ import {
   BusEventType,
   BusEventUserDefinedResponse,
 } from '../../../../src/types/events/eventBusTypes';
-import { prepareReasoningMessageEvent } from '../../../../src/shared/services/messaging/nativeMessageEvents';
-import { synthesizeReasoningLocalMessageItem } from '../../../../src/shared/utils/reasoningContent';
+import { prepareReasoningMessageEvent } from '../../../../src/sdk/services/messaging/nativeMessageEvents';
+import { synthesizeReasoningLocalMessageItem } from '../../../../src/sdk/utils/reasoningContent';
 import {
   createBaseConfig,
   renderChatAndGetInstanceWithStore,

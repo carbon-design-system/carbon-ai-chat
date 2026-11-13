@@ -7,15 +7,15 @@
  *  @license
  */
 
-import actions from '../../../src/shared/store/actions';
-import { createServiceManager } from '../../../src/shared/services/loadServices';
+import actions from '../../../src/sdk/store/actions';
+import { createServiceManager } from '../../../src/sdk/services/loadServices';
 import { createAppConfig } from '../../../src/chat/utils/appConfig';
-import { toPersistableState } from '../../../src/shared/store/persistenceUtils';
+import { toPersistableState } from '../../../src/sdk/store/persistenceUtils';
 import type { ChatSDKConfig } from '../../../src/types/config/ChatSDKConfig';
 import type { PublicConfig } from '../../../src/types/config/PublicConfig';
 import type { PersistableState } from '../../../src/types/config/PersistedStateConfig';
 import type { PersistedState } from '../../../src/types/state/PersistedState';
-import { VERSION } from '../../../src/shared/utils/environmentVariables';
+import { VERSION } from '../../../src/sdk/utils/environmentVariables';
 import { UserType } from '../../../src/types/messaging/Messages';
 import {
   joinPersistedState,

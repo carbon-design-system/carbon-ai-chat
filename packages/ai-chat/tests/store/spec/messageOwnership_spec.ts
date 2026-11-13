@@ -12,10 +12,10 @@ import { makeConfigStore } from '../../test_helpers';
 import {
   createAppStore,
   createStoreFromReduction,
-} from '../../../src/shared/store/appStore';
-import { reduceWithMessageOwnership } from '../../../src/shared/store/reducers';
-import { ADD_LOCAL_MESSAGE_ITEM } from '../../../src/shared/store/messageActionTypes';
-import actions from '../../../src/shared/store/actions';
+} from '../../../src/sdk/store/appStore';
+import { reduceWithMessageOwnership } from '../../../src/sdk/store/reducers';
+import { ADD_LOCAL_MESSAGE_ITEM } from '../../../src/sdk/store/messageActionTypes';
+import actions from '../../../src/sdk/store/actions';
 import {
   captureMessageOwnership,
   enableMessageOwnership,
@@ -23,7 +23,7 @@ import {
   isHumanAgentMessageOwner,
   markHumanAgentIngress,
   retainHistoryOwnership,
-} from '../../../src/shared/store/messageOwnership';
+} from '../../../src/sdk/store/messageOwnership';
 import {
   MessageResponseTypes,
   HumanAgentMessageType,

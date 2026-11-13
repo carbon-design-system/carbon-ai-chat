@@ -21,11 +21,11 @@ import { MessageResponseTypes } from '../../../src/types/messaging/Messages';
 
 import type { KeyboardShortcuts } from '../../../src/types/config/ShortcutConfig';
 
-import type { AppStore } from '../../../src/shared/store/appStore';
+import type { AppStore } from '../../../src/sdk/store/appStore';
 
 import type { AppState } from '../../../src/types/state/AppState';
 
-import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 
 import { getDeepActiveElement } from '../../../src/chat/utils/domUtils';
 

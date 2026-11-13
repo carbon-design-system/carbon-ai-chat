@@ -20,7 +20,7 @@ import { ExtensionHosts } from '../../../src/chat/services/extensionHosts';
 
 import { ChatViewState } from '../../../src/chat/services/chatViewState';
 
-import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 
 import type {
   PanelViewInputs,
@@ -30,11 +30,11 @@ import type {
 
 import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
 
-import { createIntl } from '../../../src/shared/utils/i18n';
+import { createIntl } from '../../../src/sdk/utils/i18n';
 
 import { ChatWidthBreakpoint } from '../../../src/types/state/AppState';
 
-import { EventBus } from '../../../src/shared/events/EventBus';
+import { EventBus } from '../../../src/sdk/events/EventBus';
 
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
 

@@ -17,15 +17,15 @@
  */
 
 import { applyConfigChangesDynamically } from '../../../src/chat/utils/dynamicConfigUpdates';
-import { createAppStore } from '../../../src/shared/store/appStore';
-import { createInitialState } from '../../../src/shared/store/doCreateStore';
+import { createAppStore } from '../../../src/sdk/store/appStore';
+import { createInitialState } from '../../../src/sdk/store/doCreateStore';
 import { createAppConfig } from '../../../src/chat/utils/appConfig';
-import { reducers } from '../../../src/shared/store/reducers';
-import { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import { reducers } from '../../../src/sdk/store/reducers';
+import { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 import { ConversationState } from '../../../src/types/state/AppState';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
 
-jest.mock('../../../src/shared/services/haa/HumanAgentServiceImpl', () => ({
+jest.mock('../../../src/sdk/services/haa/HumanAgentServiceImpl', () => ({
   __esModule: true,
   default: jest.fn(() => ({
     hasInitialized: false,
@@ -35,9 +35,9 @@ jest.mock('../../../src/shared/services/haa/HumanAgentServiceImpl', () => ({
     endChat: jest.fn(),
   })),
 }));
-import createHumanAgentService from '../../../src/shared/services/haa/HumanAgentServiceImpl';
+import createHumanAgentService from '../../../src/sdk/services/haa/HumanAgentServiceImpl';
 import { withPublicState } from '../../test_helpers';
-import { endChat } from '../../../src/shared/store/humanAgentActions';
+import { endChat } from '../../../src/sdk/store/humanAgentActions';
 import { waitFor } from '@testing-library/react';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
 

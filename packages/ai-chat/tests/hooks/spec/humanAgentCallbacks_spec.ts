@@ -9,7 +9,7 @@
 
 import { HumanAgentCallbacks } from '../../../src/chat/services/humanAgentCallbacks';
 import { ChatViewState } from '../../../src/chat/services/chatViewState';
-import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 
 function setup() {
   const state = { humanAgent: { isConnected: false } };

@@ -29,7 +29,7 @@ import {
   TestChatContext,
   slotSourceOf,
 } from '../../test_helpers';
-import actions from '../../../src/shared/store/actions';
+import actions from '../../../src/sdk/store/actions';
 
 let store: ReturnType<typeof makeConfigStore>;
 function render(ui: React.ReactElement) {

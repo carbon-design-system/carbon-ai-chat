@@ -22,7 +22,7 @@ import type { AppState } from '../../types/state/AppState';
 import {
   EMPTY_SLOT_RECORDS,
   type SlotSource,
-} from '../../shared/services/slotTracking';
+} from '../../sdk/services/slotTracking';
 import type { PanelName } from '../utils/panelComposition';
 import { AutocompleteContent } from './autocompleteContent';
 import type {

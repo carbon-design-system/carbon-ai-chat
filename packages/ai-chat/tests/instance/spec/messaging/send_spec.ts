@@ -15,7 +15,7 @@
 
 import { waitFor } from '@testing-library/react';
 import { createChatSDK } from '../../../../src/sdk';
-import { resolvablePromise } from '../../../../src/shared/utils/resolvablePromise';
+import { resolvablePromise } from '../../../../src/sdk/utils/resolvablePromise';
 import { MessageState } from '../../../../src/types/config/MessagingConfig';
 import type { PublicConfig } from '../../../../src/types/config/PublicConfig';
 import {

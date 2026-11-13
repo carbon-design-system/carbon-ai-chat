@@ -11,9 +11,9 @@ import {
   InstanceViewPort,
   ViewBindings,
   ViewConnection,
-} from '../../../src/shared/services/viewBindings';
-import type { MessagePresentationPort } from '../../../src/shared/services/messaging/presentationPort';
-import type { AppStore } from '../../../src/shared/store/appStore';
+} from '../../../src/sdk/services/viewBindings';
+import type { MessagePresentationPort } from '../../../src/sdk/services/messaging/presentationPort';
+import type { AppStore } from '../../../src/sdk/store/appStore';
 import type { AppState } from '../../../src/types/state/AppState';
 import { viewActions } from '../../../src/chat/state';
 import { createLoadingCounters } from '../../../src/chat/services/loadingCounters';

@@ -8,7 +8,7 @@
  */
 
 import { constructViewState } from '../../../src/chat/utils/viewStateUtils';
-import { VIEW_STATE_ALL_CLOSED } from '../../../src/shared/store/reducerUtils';
+import { VIEW_STATE_ALL_CLOSED } from '../../../src/sdk/store/reducerUtils';
 import { ViewType } from '../../../src/types/state/AppState';
 
 describe('viewStateUtils', () => {

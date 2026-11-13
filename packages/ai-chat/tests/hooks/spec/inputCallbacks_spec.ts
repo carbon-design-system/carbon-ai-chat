@@ -17,9 +17,9 @@ import {
 import { createAssistantUploadCallbacks } from '../../../src/chat/utils/assistantUploadCallbacks';
 import { createPanelCallbacks } from '../../../src/chat/utils/panelCallbacks';
 import { selectInputConfig } from '../../../src/chat/utils/inputConfig';
-import { shallowEqual } from '../../../src/shared/store/appStore';
+import { shallowEqual } from '../../../src/sdk/store/appStore';
 import type { AppState } from '../../../src/types/state/AppState';
-import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 import {
   MessageSendSource,
   BusEventType,

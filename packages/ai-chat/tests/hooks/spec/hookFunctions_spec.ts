@@ -28,7 +28,7 @@ import { getCarbonTheme } from '../../../src/chat/utils/carbonTheme';
 
 import { CarbonTheme } from '../../../src/types/config/CarbonTheme';
 
-import { createAppStore } from '../../../src/shared/store/appStore';
+import { createAppStore } from '../../../src/sdk/store/appStore';
 
 import type {
   AppState,
@@ -37,7 +37,7 @@ import type {
 
 import { viewActions } from '../../../src/chat/state';
 
-jest.mock('../../../src/shared/utils/browserUtils', () => ({
+jest.mock('../../../src/sdk/utils/browserUtils', () => ({
   IS_MOBILE: false,
 }));
 

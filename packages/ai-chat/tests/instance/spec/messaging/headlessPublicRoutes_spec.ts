@@ -8,8 +8,8 @@
  */
 
 import { act, cleanup } from '@testing-library/react';
-import type { ServiceManager } from '../../../../src/shared/services/ServiceManager';
-import { requestStopFromInput } from '../../../../src/shared/services/assistantInputCommands';
+import type { ServiceManager } from '../../../../src/sdk/services/ServiceManager';
+import { requestStopFromInput } from '../../../../src/chat/services/assistantInputCommands';
 import { MessageState } from '../../../../src/types/config/MessagingConfig';
 import type { PublicConfig } from '../../../../src/types/config/PublicConfig';
 import {
@@ -21,7 +21,7 @@ import {
   MessageResponseTypes,
   TextItem,
 } from '../../../../src/types/messaging/Messages';
-import { resolvablePromise } from '../../../../src/shared/utils/resolvablePromise';
+import { resolvablePromise } from '../../../../src/sdk/utils/resolvablePromise';
 import {
   bootPrebuiltChat,
   mergePublicConfig,

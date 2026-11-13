@@ -7,15 +7,15 @@
  *  @license
  */
 
-import { PublicStateSnapshotCache } from '../../../src/shared/utils/publicState';
+import { PublicStateSnapshotCache } from '../../../src/sdk/utils/publicState';
 import { makeConfigStore } from '../../test_helpers';
-import createHumanAgentService from '../../../src/shared/services/haa/HumanAgentServiceImpl';
+import createHumanAgentService from '../../../src/sdk/services/haa/HumanAgentServiceImpl';
 import {
   addMessages,
   createHumanAgentLocalMessage,
   toPair,
-} from '../../../src/shared/services/haa/humanAgentUtils';
-import { ServiceManager } from '../../../src/shared/services/ServiceManager';
+} from '../../../src/sdk/services/haa/humanAgentUtils';
+import { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
 import {
   HumanAgentMessageType,
@@ -23,8 +23,8 @@ import {
   MessageResponseTypes,
   type ResponseUserProfile,
 } from '../../../src/types/messaging/Messages';
-import { createMessageResponseForItem } from '../../../src/shared/utils/messageUtils';
-import { outputItemToLocalItem } from '../../../src/shared/schema/outputItemToLocalItem';
+import { createMessageResponseForItem } from '../../../src/sdk/utils/messageUtils';
+import { outputItemToLocalItem } from '../../../src/sdk/schema/outputItemToLocalItem';
 
 async function createAgentFixture(fire: (event: any) => Promise<void>) {
   const store = makeConfigStore({ messaging: {} });

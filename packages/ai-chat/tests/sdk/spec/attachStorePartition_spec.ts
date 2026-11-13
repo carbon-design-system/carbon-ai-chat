@@ -7,15 +7,13 @@
  *  @license
  */
 
-import {
-  attachStorePartition,
-  type PartitionReducer,
-} from '../../../src/sdk/internal';
+import { attachStorePartition } from '../../../src/sdk/store/attachStorePartition';
+import type { PartitionReducer } from '../../../src/sdk/store/appStore';
 import {
   createAppStore,
   type AppStore,
   type UnknownAction,
-} from '../../../src/shared/store/appStore';
+} from '../../../src/sdk/store/appStore';
 
 interface ConversationShape {
   count: number;

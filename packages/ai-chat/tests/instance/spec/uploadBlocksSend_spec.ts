@@ -15,8 +15,8 @@ import {
   setupBeforeEach,
 } from '../../test_helpers';
 import { WriteableElementName } from '../../../src/types/instance/WriteableElements';
-import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
-import actions from '../../../src/shared/store/actions';
+import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
+import actions from '../../../src/sdk/store/actions';
 import {
   PendingUploadStatus,
   type PendingUpload,

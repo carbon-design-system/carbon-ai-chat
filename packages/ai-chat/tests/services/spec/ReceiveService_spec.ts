@@ -8,12 +8,12 @@
  */
 
 import { makeConfigStore } from '../../test_helpers';
-import { MessageCoordinator } from '../../../src/shared/services/messaging/MessageCoordinator';
-import { HydrationService } from '../../../src/shared/services/HydrationService';
-import { FullResponseWorkflow } from '../../../src/shared/services/messaging/FullResponseWorkflow';
-import type { MessagePresentationPort } from '../../../src/shared/services/messaging/presentationPort';
-import { ServiceManager } from '../../../src/shared/services/ServiceManager';
-import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
+import { MessageCoordinator } from '../../../src/sdk/services/messaging/MessageCoordinator';
+import { HydrationService } from '../../../src/sdk/services/HydrationService';
+import { FullResponseWorkflow } from '../../../src/sdk/services/messaging/FullResponseWorkflow';
+import type { MessagePresentationPort } from '../../../src/sdk/services/messaging/presentationPort';
+import { ServiceManager } from '../../../src/sdk/services/ServiceManager';
+import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
 import { MessageState } from '../../../src/types/config/MessagingConfig';
 import {

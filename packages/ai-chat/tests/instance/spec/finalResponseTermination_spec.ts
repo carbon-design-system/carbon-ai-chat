@@ -8,8 +8,8 @@
  */
 
 import { waitFor } from '@testing-library/react';
-import { requestStopFromInput } from '../../../src/shared/services/assistantInputCommands';
-import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
+import { requestStopFromInput } from '../../../src/chat/services/assistantInputCommands';
+import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
 import {
   CancellationReason,
   MessageState,

@@ -12,7 +12,7 @@ import {
   closeStore,
   createAppStore,
   UnknownAction,
-} from '../../../src/shared/store/appStore';
+} from '../../../src/sdk/store/appStore';
 
 interface CounterState {
   count: number;

@@ -7,9 +7,9 @@
  *  @license
  */
 
-import { getCSSVariableValue } from '../../shared/utils/colors';
+import { getCSSVariableValue } from './colors';
 
-import type { ServiceManager } from '../../shared/services/ServiceManager';
+import type { ServiceManager } from '../../sdk/services/ServiceManager';
 
 import { viewActions } from '../state';
 

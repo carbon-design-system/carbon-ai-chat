@@ -9,7 +9,7 @@
 
 import type { ChatViewState } from './chatViewState';
 
-import type { ViewBindings } from '../../shared/services/viewBindings';
+import type { ViewBindings } from '../../sdk/services/viewBindings';
 
 import { MessagePresentationAdapter } from './MessagePresentationAdapter';
 
@@ -17,7 +17,7 @@ import { ViewService } from './ViewService';
 
 import { createLoadingCounters } from './loadingCounters';
 
-import type { PortAnnouncement } from '../../shared/services/messaging/presentationPort';
+import type { PortAnnouncement } from '../../sdk/services/messaging/presentationPort';
 
 import type { AnnounceMessage } from '../../types/state/AnnounceMessage';
 

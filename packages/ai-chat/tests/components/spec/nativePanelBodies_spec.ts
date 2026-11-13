@@ -30,11 +30,11 @@ import { ChatContext } from '../../../src/chat/contexts/ChatContext';
 
 import { ChatViewState } from '../../../src/chat/services/chatViewState';
 
-import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 
-import { NamespaceService } from '../../../src/shared/services/NamespaceService';
+import { NamespaceService } from '../../../src/sdk/services/NamespaceService';
 
-import { createIntl } from '../../../src/shared/utils/i18n';
+import { createIntl } from '../../../src/sdk/utils/i18n';
 
 import {
   applyConfigChange,

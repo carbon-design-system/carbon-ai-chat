@@ -36,7 +36,7 @@ import { ChatInstance } from '../../types/instance/ChatInstance';
 
 import type { TypeAndHandler } from '../../types/instance/EventHandlers';
 
-import type { ServiceManager } from '../../shared/services/ServiceManager';
+import type { ServiceManager } from '../../sdk/services/ServiceManager';
 
 import type { MountView } from '../../chat/utils/attachMountView';
 import type { ChatSDKHandle } from '../../sdk/handle';
@@ -45,15 +45,15 @@ import type { AppliedConfig } from '../../chat/utils/appConfigUpdates';
 
 import type { ChatAppEntryProps } from '../../chat/ChatAppEntry';
 
-import { resolvablePromise } from '../../shared/utils/resolvablePromise';
+import { resolvablePromise } from '../../sdk/utils/resolvablePromise';
 
-import type { ResolvablePromise } from '../../shared/utils/resolvablePromise';
+import type { ResolvablePromise } from '../../sdk/utils/resolvablePromise';
 
 import { resolvePromptLineMode } from '../../chat/components/input/promptLineMode';
 
 import { preloadBuildCarbonExtensions } from '../../chat/components/input/buildExtensionsLoader';
 
-import { consoleError } from '../../shared/utils/miscUtils';
+import { consoleError } from '../../sdk/utils/miscUtils';
 
 import { inputNodeIdentity } from '../../chat/utils/inputNodeSlots';
 

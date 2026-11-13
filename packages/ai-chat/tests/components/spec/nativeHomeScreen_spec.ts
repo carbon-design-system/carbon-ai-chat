@@ -14,10 +14,10 @@ import { act, render, waitFor } from '@testing-library/react';
 import HomeScreenView from '../../../src/chat/components/homeScreen/home-screen';
 import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
 import { ChatViewState } from '../../../src/chat/services/chatViewState';
-import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
-import { NamespaceService } from '../../../src/shared/services/NamespaceService';
-import { createIntl } from '../../../src/shared/utils/i18n';
-import actions from '../../../src/shared/store/actions';
+import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
+import { NamespaceService } from '../../../src/sdk/services/NamespaceService';
+import { createIntl } from '../../../src/sdk/utils/i18n';
+import actions from '../../../src/sdk/store/actions';
 import { ChatContainer } from '../../../src/react/ChatContainer';
 import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import {

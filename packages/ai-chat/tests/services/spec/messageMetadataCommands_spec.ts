@@ -8,23 +8,23 @@
  */
 
 import { makeConfigStore } from '../../test_helpers';
-import { MessageCoordinator } from '../../../src/shared/services/messaging/MessageCoordinator';
-import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
-import { addMessages } from '../../../src/shared/services/haa/humanAgentUtils';
+import { MessageCoordinator } from '../../../src/sdk/services/messaging/MessageCoordinator';
+import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
+import { addMessages } from '../../../src/sdk/services/haa/humanAgentUtils';
 import {
   mergeMessageHistoryFromView,
   setMessageOptionSelectedFromView,
-} from '../../../src/chat/utils/messageMetadataCommands';
-import { captureMessageEvent } from '../../../src/shared/utils/messageEventOwnership';
-import { handleCustomFooterSlot } from '../../../src/shared/services/messaging/coordinateMessageEvents';
+} from '../../../src/sdk/utils/messageMetadataCommands';
+import { captureMessageEvent } from '../../../src/sdk/utils/messageEventOwnership';
+import { handleCustomFooterSlot } from '../../../src/sdk/services/messaging/coordinateMessageEvents';
 import {
   isHumanAgentMessageOwner,
   isHumanAgentLocalOwner,
   markHumanAgentIngress,
-} from '../../../src/shared/store/messageOwnership';
+} from '../../../src/sdk/store/messageOwnership';
 import type { BusEventCustomFooterSlot } from '../../../src/types/events/eventBusTypes';
-import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
-import actions from '../../../src/shared/store/actions';
+import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
+import actions from '../../../src/sdk/store/actions';
 import {
   MessageResponseTypes,
   HumanAgentMessageType,
