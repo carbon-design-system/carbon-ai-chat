@@ -968,11 +968,14 @@ class MessageService {
     // Clean up the controller from the map and streaming tracking
     this.inboundStreaming.clearStreamingResponse(responseId);
     if (!pendingRequest) {
-      // The sender already settled, so only the response stream remains.
-      this.serviceManager.conversationLifecycleService.responseStopped(
-        responseId,
-        generation
-      );
+      // The sender already settled, so only the response stream remains. A user stop still
+      // records its request as stopped, so the request's late partial chunks are dropped.
+      const lifecycle = this.serviceManager.conversationLifecycleService;
+      lifecycle.responseStopped(responseId, generation);
+      const requestID = lifecycle.responseRequestID(responseId);
+      if (requestID && reason === CancellationReason.STOP_STREAMING) {
+        lifecycle.requestStopped(requestID, generation, true);
+      }
     }
 
     // Only process the pending request if it exists (it may have already been cleared from queue)

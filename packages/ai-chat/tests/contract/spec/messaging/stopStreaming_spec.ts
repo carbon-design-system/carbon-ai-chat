@@ -40,6 +40,7 @@ import {
   describeShared,
   fakeBackend,
   finalChunk,
+  finishSend,
   instanceSender,
   outputTexts,
   pause,
@@ -559,6 +560,53 @@ describe('the stop button', () => {
     const closing = completeText('r1', 'a', 'Hello', { stream_stopped: true });
     closing.streaming_metadata = { response_id: 'r1', request_id: requestID };
     await addChunk(chat.instance, closing);
+    await waitFor(() =>
+      expect(shownText(document.body)).toContain(
+        STOP_STRINGS.messages_responseStopped
+      )
+    );
+    await addChunk(
+      chat.instance,
+      finalChunk('r1', [textItem('Hello, stopped', 'a')], {
+        request_id: requestID,
+      })
+    );
+    expect(storedTexts(chat.instance, 'r1')).toEqual(['Hello, stopped']);
+    expect(chat.instance.getState().status).toBe('ready');
+    await pause();
+    expect(stopButtonCount()).toBe(0);
+  });
+
+  // @covers instance.messaging.addMessageChunk
+  it('drops a later partial_item after a stop once the send has settled, and still takes the closing chunks', async () => {
+    const chat = await openChat({ strings: STOP_STRINGS });
+    const started = await startSend(chat.sender, 'hello');
+    const requestID = started.sent.request.id;
+    const named = <T extends { streaming_metadata?: unknown }>(chunk: T) => {
+      chunk.streaming_metadata = { response_id: 'r1', request_id: requestID };
+      return chunk;
+    };
+    await finishSend(started);
+    await addChunk(
+      chat.instance,
+      named(partialText('r1', 'a', 'Hello', { cancellable: true }))
+    );
+    await waitFor(() => expect(stopButtonCount()).toBe(1));
+    await click(stopButton());
+    await waitFor(() =>
+      expect(started.sent.options.signal.reason).toBe(
+        CancellationReason.STOP_STREAMING
+      )
+    );
+    await addChunk(
+      chat.instance,
+      named(partialText('r1', 'a', ' more', { cancellable: true }))
+    );
+    expect(storedTexts(chat.instance, 'r1')).toEqual(['Hello']);
+    await addChunk(
+      chat.instance,
+      named(completeText('r1', 'a', 'Hello', { stream_stopped: true }))
+    );
     await waitFor(() =>
       expect(shownText(document.body)).toContain(
         STOP_STRINGS.messages_responseStopped
