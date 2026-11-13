@@ -199,9 +199,20 @@ export function textToDoc(text: string): JSONContent {
  * {@link textToDoc} builds from the same text. Lives here because it encodes
  * that function's shape: every character costs one position (a `hardBreak` is
  * one, and a `"\n\n"` paragraph boundary closes one paragraph and opens the
- * next), plus one for the doc/first-paragraph start. Change `textToDoc` and
+ * next), plus one for the doc/first-paragraph start. An offset between the two
+ * newlines of a boundary, a caret on the blank line, has no position of its
+ * own, so it moves to the start of the next paragraph. Change `textToDoc` and
  * this has to change with it.
  */
-export function textOffsetToDocPos(offset: number): number {
+export function textOffsetToDocPos(text: string, offset: number): number {
+  // Find boundaries the way `textToDoc`'s split does: left to right, without
+  // overlap.
+  let boundary = text.indexOf('\n\n');
+  while (boundary !== -1 && boundary < offset) {
+    if (offset === boundary + 1) {
+      return offset + 2;
+    }
+    boundary = text.indexOf('\n\n', boundary + 2);
+  }
   return offset + 1;
 }
