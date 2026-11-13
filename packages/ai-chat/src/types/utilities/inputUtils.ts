@@ -177,9 +177,10 @@ export const findNodesByType = _findNodesByType;
 
 /**
  * Project a Tiptap `JSONContent` doc to a plain-text string. Mirrors the
- * `rawValue` projection: text nodes contribute their text, mention/command
- * nodes contribute `attrs.value || attrs.label`, paragraph boundaries
- * become `"\n"`, and `hardBreak` nodes contribute `"\n"`.
+ * `rawValue` projection, with markdown-like breaks: text nodes contribute
+ * their text, mention/command nodes contribute `attrs.value || attrs.label`,
+ * paragraph boundaries become `"\n\n"`, and `hardBreak` nodes contribute
+ * `"\n"`.
  *
  * @function
  * @category Utilities
@@ -187,8 +188,9 @@ export const findNodesByType = _findNodesByType;
 export const getRawText = _getRawText;
 
 /**
- * Build a Tiptap `JSONContent` doc from a plain-text string — one paragraph
- * per line. The inverse of {@link getRawText} for plain text, so
+ * Build a Tiptap `JSONContent` doc from a plain-text string with markdown-like
+ * breaks: `"\n\n"` starts a new paragraph and a single `"\n"` becomes a line
+ * break (`hardBreak`). The inverse of {@link getRawText} for plain text, so
  * `getRawText(textToDoc(s)) === s`. Useful when migrating from the deprecated
  * {@link ChatInstanceInput.updateRawValue} to
  * {@link ChatInstanceInput.updateContent}:

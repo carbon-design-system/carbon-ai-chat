@@ -41,6 +41,8 @@ export type ConversationStatus =
 export interface PublicInputState {
   /**
    * Raw text currently queued in the input before being sent to customSendMessage.
+   * It uses markdown-like breaks, whichever editor shows the input: a paragraph
+   * break reads as `\n\n` and a line break as `\n`.
    */
   rawValue: string;
 

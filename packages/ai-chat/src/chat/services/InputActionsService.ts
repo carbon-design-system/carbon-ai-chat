@@ -119,7 +119,8 @@ class InputActionsService {
       if (nextValue === previousRaw) {
         return;
       }
-      ref.setContent(nextValue);
+      // A string would reach Tiptap as HTML, which folds a newline into a space.
+      ref.setContent(textToDoc(nextValue));
       return;
     }
 

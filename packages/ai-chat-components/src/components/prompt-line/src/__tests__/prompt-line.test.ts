@@ -260,11 +260,11 @@ describe('<cds-aichat-prompt-line> (rich upgrade)', function () {
     getTextarea(el).setSelectionRange(8, 8);
     el.rich = true;
     await waitForRich(el, describeUpgrade);
-    // textToDoc makes one paragraph per line, so offset 8 maps to doc pos 10:
-    // +1 for the doc/first-paragraph start and +1 for the newline before it.
+    // textToDoc turns the newline into a hard break, so offset 8 maps to doc
+    // pos 9: +1 for the doc/first-paragraph start.
     const { from, to } = el.getEditor()!.state.selection;
-    expect(from).to.equal(10);
-    expect(to).to.equal(10);
+    expect(from).to.equal(9);
+    expect(to).to.equal(9);
   });
 
   it('defers the upgrade until IME composition ends', async () => {

@@ -636,8 +636,8 @@ class PromptLineElement extends LitElement {
     rich.mount(host, this._makeInit(value));
 
     rich.setTextSelection({
-      from: textOffsetToDocPos(value, selection.from),
-      to: textOffsetToDocPos(value, selection.to),
+      from: textOffsetToDocPos(selection.from),
+      to: textOffsetToDocPos(selection.to),
     });
     if (hadFocus) {
       rich.focus(hadKeyboardFocus, true);
