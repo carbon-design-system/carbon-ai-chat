@@ -1,0 +1,31 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+/**
+ * Shared SCSS for User message content stories.
+ */
+
+@use '@carbon/layout';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/type';
+
+.user-message-content-story-hint {
+  @include type.type-style('helper-text-02');
+
+  color: theme.$text-helper;
+  margin-block-end: layout.$spacing-03;
+}
+
+.user-message-content-story-hint code {
+  @include type.type-style('code-01');
+
+  padding: layout.$spacing-01 layout.$spacing-02;
+  border-radius: layout.$spacing-01;
+  background: theme.$layer-01;
+}

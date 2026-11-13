@@ -1,0 +1,77 @@
+import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
+import * as Stories from './user-message-content-react.stories';
+
+<Meta of={Stories} />
+
+# User message content
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/user-message-content) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+## Overview
+
+Use `UserMessageContent` to show a sent message, including its text, chips, and custom nodes. It fills the default slot of `MessageItemShell`. This component is experimental, and its API may change without a deprecation window.
+
+<Canvas of={Stories.Default} />
+
+## Key features
+
+- **Text beside chips**: A document with only text renders through the markdown element. A document with chips or custom nodes renders each paragraph as one wrapping line, with text parsed as inline markdown.
+- **Host-owned nodes**: Every node that is not text gets a named slot in document order. An unfilled slot shows a chip for `mention` and `command` nodes, and the node's `label` or `value` for any other node.
+- **Shared markdown settings**: Plugins and link and image renderers apply to both paths.
+- **Untrusted text**: HTML in text shows as escaped source, and plugin and renderer output is sanitized. You can't turn this off.
+
+## Examples
+
+### Fill a slot for a custom node
+
+A top-level node uses the slot name `${slotPrefix}::${index}`. A node inside a paragraph uses `${slotPrefix}::${paragraphIndex}.${inlineIndex}`.
+
+```jsx
+import UserMessageContent from '@carbon/ai-chat-components/es/react/user-message-content.js';
+
+function Message({ savedDocument }) {
+  return (
+    <UserMessageContent slotPrefix="message-1" content={savedDocument}>
+      <MyChart slot="message-1::0.5" chartId="chart-4" />
+    </UserMessageContent>
+  );
+}
+```
+
+### With Chip
+
+A `mention` node shows a chip until you fill its slot.
+
+<Canvas of={Stories.WithChip} />
+
+### With Custom Node
+
+This story renders a Carbon tile in the slot.
+
+<Canvas of={Stories.WithCustomNode} />
+
+### Type, Send, View
+
+This story captures the document from the prompt line when you send, then renders it with the component.
+
+<Canvas of={Stories.TypeSendView} />
+
+## Accessibility
+
+Chips and custom nodes are part of the message text, so keep their slotted content readable as text.
+
+## Component API
+
+### `<UserMessageContent>`
+
+<ArgTypes of={Stories.Default} />
+
+## JSX (via import)
+
+```jsx
+import UserMessageContent from '@carbon/ai-chat-components/es/react/user-message-content.js';
+```
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.
