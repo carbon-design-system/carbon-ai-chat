@@ -1549,6 +1549,10 @@ context	packages/ai-chat/tests/contract/spec/view/launcher_spec.ts	"registration
 context	packages/ai-chat/tests/contract/spec/view/launcher_spec.ts	"scope:describe:'launcher call to action'"	82fddeeddb56cfc9c6a8d5339beccba4f0b5ae5eeea6500c7ce2787439095df2
 context	packages/ai-chat/tests/contract/spec/view/launcher_spec.ts	"scope:describe:'launcher'"	82fddeeddb56cfc9c6a8d5339beccba4f0b5ae5eeea6500c7ce2787439095df2
 context	packages/ai-chat/tests/contract/spec/view/launcher_spec.ts	"scope:describe:'unread indicator'"	a8c28153eed7afe9cd20e6486a4126c85f88ba702d29926ed9b08e0aa789a201
+context	packages/ai-chat/tests/contract/spec/view/requestFocusTargets_spec.ts	"file"	624420ad8e1a46dbc5e00f99bfda48fdc8aadfdd807a578a02d31a177f6b1146
+context	packages/ai-chat/tests/contract/spec/view/requestFocusTargets_spec.ts	"registration:describe:'requestFocus for the current target'"	19ba71e4d9349de2ce45d0c5e69714409003674c6085be61e7c391f025ae5100
+context	packages/ai-chat/tests/contract/spec/view/requestFocusTargets_spec.ts	"registration:describe:'requestFocus for the current target'/it:'returns true and moves focus to the %s'"	ec6b87980b2e842c6603abd50698a179a02d70405d25f531c886e387ee509cd1
+context	packages/ai-chat/tests/contract/spec/view/requestFocusTargets_spec.ts	"scope:describe:'requestFocus for the current target'"	b16c82b070175af8dcb3a2f9fe12884e55d32b7a61de2ade14a8db03864ead30
 context	packages/ai-chat/tests/contract/spec/view/viewActions_spec.ts	"file"	84933a9554b473830a338f6ce321bde37c6d4af25c9db935a8df42131fbe5efc
 context	packages/ai-chat/tests/contract/spec/view/viewActions_spec.ts	"registration:describe:'home screen back-to-assistant flag'"	b779d37624123930ad05a4326f771255fa1abbc4a0bf59890090f9fc7ba767df
 context	packages/ai-chat/tests/contract/spec/view/viewActions_spec.ts	"registration:describe:'home screen back-to-assistant flag'/it:'is false while the home screen shows on first open'"	1c05cc24527e289a9009309efcc0d37d1c8dec2a2f23a24146f41f023b8af3c8
@@ -2856,6 +2860,11 @@ test	packages/ai-chat/tests/contract/spec/view/launcher_spec.ts	"unread indicato
 test	packages/ai-chat/tests/contract/spec/view/launcher_spec.ts	"unread indicator is false by default"	782685a55d145d12672f9eddf31d21b4baffd0f79a7fcfb1650d94cf6ed3624d
 test	packages/ai-chat/tests/contract/spec/view/launcher_spec.ts	"unread indicator starts as launcher.showUnreadIndicator says"	108011f3355c4d462692606dbf4fb5a467575cec866292c6c24689ad478183a7
 test	packages/ai-chat/tests/contract/spec/view/launcher_spec.ts	"unread indicator stays set when set while the main window is open, through closing it"	22b9e82c16098593d4cb237eb1e7ee7b654e78f4412e17d7b6d5df188901bf57
+test	packages/ai-chat/tests/contract/spec/view/requestFocusTargets_spec.ts	"requestFocus for the current target returns true and moves focus to the custom panel"	24deddd350990546c67b1f17ba1c27943743f26049f8e5dca35023958d5feb6c
+test	packages/ai-chat/tests/contract/spec/view/requestFocusTargets_spec.ts	"requestFocus for the current target returns true and moves focus to the disclaimer"	24deddd350990546c67b1f17ba1c27943743f26049f8e5dca35023958d5feb6c
+test	packages/ai-chat/tests/contract/spec/view/requestFocusTargets_spec.ts	"requestFocus for the current target returns true and moves focus to the iframe panel"	24deddd350990546c67b1f17ba1c27943743f26049f8e5dca35023958d5feb6c
+test	packages/ai-chat/tests/contract/spec/view/requestFocusTargets_spec.ts	"requestFocus for the current target returns true and moves focus to the response panel"	24deddd350990546c67b1f17ba1c27943743f26049f8e5dca35023958d5feb6c
+test	packages/ai-chat/tests/contract/spec/view/requestFocusTargets_spec.ts	"requestFocus for the current target returns true and moves focus to the view source panel"	24deddd350990546c67b1f17ba1c27943743f26049f8e5dca35023958d5feb6c
 test	packages/ai-chat/tests/contract/spec/view/viewActions_spec.ts	"home screen back-to-assistant flag is false while the home screen shows on first open"	59da3a4938b149524e3c4fae6b5cc0459238ca9c09e03d76bb93171a785320b9
 test	packages/ai-chat/tests/contract/spec/view/viewActions_spec.ts	"home screen back-to-assistant flag stays false when a send closes the home screen"	a961e48f2fa27bda75f2f1db5c2eb3dde6d8f919a45e165e2c16efe555a80279
 test	packages/ai-chat/tests/contract/spec/view/viewActions_spec.ts	"home screen back-to-assistant flag turns true when the user goes back to the home screen from a conversation, and the home screen offers the way back"	4918b5359c9e413d95f4463f3e77c426ade10c0069f0c7d4c6a814a85572993a
