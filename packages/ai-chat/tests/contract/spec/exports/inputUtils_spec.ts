@@ -86,15 +86,12 @@ describe.each(ENTRIES)('%s plain-text projection', (_, utils) => {
     expect(utils.getRawText(doc(paragraph(bob)))).toBe('Bob');
   });
 
-  it('uses an empty token value as is, not the label', () => {
-    // MAIN-NOTES M100 (U54): the JSDoc says tokens contribute
-    // `attrs.value || attrs.label`; main uses any string value, so an empty
-    // one contributes nothing.
+  it('uses a token label when its value is empty', () => {
     const empty = {
       type: 'mention',
       attrs: { id: 'bob', label: 'Bob', value: '' },
     };
-    expect(utils.getRawText(doc(paragraph(empty)))).toBe('');
+    expect(utils.getRawText(doc(paragraph(empty)))).toBe('Bob');
   });
 
   it('builds one paragraph per line', () => {

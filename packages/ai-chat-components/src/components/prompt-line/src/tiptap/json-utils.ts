@@ -145,7 +145,7 @@ function collect(
       const value = typeof attrs.value === 'string' ? attrs.value : null;
       const label = typeof attrs.label === 'string' ? attrs.label : null;
       if (value !== null || label !== null) {
-        out.push(value ?? label ?? '');
+        out.push(value || label || '');
         return;
       }
       // Fall through: walk children.
