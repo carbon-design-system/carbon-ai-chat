@@ -26,9 +26,6 @@ async function logsDuringChangeView(
   return count;
 }
 
-// On `main` the debug flag is page-wide and, once a chat with `debug: true`
-// mounts, it stays on for every later chat on the page (see the report). So
-// this file holds one test, and the chat without `debug` mounts first.
 // @covers config.debug
 describe('debug', () => {
   contractSetup();
@@ -45,5 +42,11 @@ describe('debug', () => {
     expect(await logsDuringChangeView(log, {})).toBe(0);
     // The log lines are diagnostics, not copy; only that some appear is pinned.
     expect(await logsDuringChangeView(log, { debug: true })).toBeGreaterThan(0);
+  });
+
+  it('stops logging for a chat mounted with debug false after a debug chat', async () => {
+    expect(await logsDuringChangeView(log, { debug: true })).toBeGreaterThan(0);
+    expect(await logsDuringChangeView(log, { debug: false })).toBe(0);
+    expect(await logsDuringChangeView(log, {})).toBe(0);
   });
 });
