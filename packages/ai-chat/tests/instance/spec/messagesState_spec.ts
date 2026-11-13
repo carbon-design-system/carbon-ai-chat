@@ -251,7 +251,7 @@ describe('public message state', () => {
         {
           [complete.ui_state.id]: {
             ...complete,
-            ui_state: { ...complete.ui_state, needsAnnouncement: true },
+            ui_state: { ...complete.ui_state, connectToAgentHandled: true },
           },
         },
         [complete.ui_state.id]
@@ -376,7 +376,7 @@ describe('public message state', () => {
     );
     const statusOnlyItem = {
       ...item,
-      ui_state: { ...item.ui_state, needsAnnouncement: true },
+      ui_state: { ...item.ui_state, connectToAgentHandled: true },
     };
     const statusOnly = projection.project(
       ['response'],

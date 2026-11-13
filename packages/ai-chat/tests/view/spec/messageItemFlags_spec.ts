@@ -16,8 +16,12 @@
 
 import { act, waitFor } from '@testing-library/react';
 
+import viewActions from '../../../src/chat/state/actions';
+import type { HistoryItem } from '../../../src/types/messaging/History';
+
 import actions from '../../../src/sdk/store/actions';
 import { addMessages } from '../../../src/sdk/services/haa/humanAgentUtils';
+import { outputItemToLocalItem } from '../../../src/sdk/schema/outputItemToLocalItem';
 import type { LocalMessageItem } from '../../../src/types/messaging/LocalMessageItem';
 import { setMessageOptionSelectedFromView } from '../../../src/sdk/utils/messageMetadataCommands';
 import { MessageState } from '../../../src/types/config/MessagingConfig';
@@ -41,7 +45,24 @@ import {
   setupBeforeEach,
 } from '../../test_helpers';
 
+// Records every announcement instead of speaking it.
+const mockAnnounce = jest.fn();
+
+jest.mock(
+  '@carbon/ai-chat-components/es/globals/utils/aria-announcer-manager.js',
+  () => ({
+    ...jest.requireActual(
+      '@carbon/ai-chat-components/es/globals/utils/aria-announcer-manager.js'
+    ),
+    mountAriaAnnouncer: () => ({
+      announce: mockAnnounce,
+      disconnect: jest.fn(),
+    }),
+  })
+);
+
 beforeEach(setupBeforeEach);
+beforeEach(() => mockAnnounce.mockClear());
 afterEach(setupAfterEach);
 
 const config: PublicConfig = {
@@ -116,7 +137,16 @@ function choose(chat: Chat, localID: string, request: MessageRequest) {
   );
 }
 
-const flagsOf = (chat: Chat) => chat.store.getState().view.messageItemFlags;
+/** The choices the view's flags record, by item ID, without the other flags. */
+const choicesOf = (chat: Chat) =>
+  Object.fromEntries(
+    Object.entries(chat.store.getState().view.messageItemFlags)
+      .filter(([, flags]) => flags.optionSelected)
+      .map(([itemID, { messageID, optionSelected }]) => [
+        itemID,
+        { messageID, optionSelected },
+      ])
+  );
 
 /** Every element under `root` that matches `selector`, through shadow roots. */
 function deepQueryAll(root: ParentNode, selector: string): Element[] {
@@ -138,10 +168,10 @@ describe('per-item view flags', () => {
       });
     });
 
-    expect(flagsOf(chat)).toEqual({
+    expect(choicesOf(chat)).toEqual({
       'r1:i:0': { messageID: 'r1', optionSelected: expect.anything() },
     });
-    expect(flagsOf(chat)['r1:i:0'].optionSelected.input.text).toBe('yes');
+    expect(choicesOf(chat)['r1:i:0'].optionSelected.input.text).toBe('yes');
     expect(
       'optionSelected' in
         chat.store.getState().allMessageItemsByID[localID].ui_state
@@ -171,7 +201,7 @@ describe('per-item view flags', () => {
 
     choose(chat, buttonID, request);
 
-    expect(flagsOf(chat)).toEqual({
+    expect(choicesOf(chat)).toEqual({
       'r2:i:0:f:0': { messageID: 'r2', optionSelected: request },
     });
 
@@ -210,7 +240,7 @@ describe('per-item view flags', () => {
     );
 
     expect(localIDsOf(chat.store, 'r1')).toEqual([localID]);
-    expect(flagsOf(chat)).toEqual({
+    expect(choicesOf(chat)).toEqual({
       'r1:i:1': { messageID: 'r1', optionSelected: request },
     });
   });
@@ -239,7 +269,7 @@ describe('per-item view flags', () => {
     });
 
     expect(chat.store.getState().allMessageItemsByID[localID]).toBeDefined();
-    expect(flagsOf(chat)).toEqual({
+    expect(choicesOf(chat)).toEqual({
       'r3:s:opts': { messageID: 'r3', optionSelected: request },
     });
   });
@@ -253,7 +283,7 @@ describe('per-item view flags', () => {
     );
 
     expect(localIDsOf(chat.store, 'r1')).toHaveLength(1);
-    expect(flagsOf(chat)).toEqual({});
+    expect(choicesOf(chat)).toEqual({});
   });
 
   it('drops a choice when an added local item replaces its copy, as before', async () => {
@@ -286,12 +316,12 @@ describe('per-item view flags', () => {
       );
     await add();
     choose(chat, 'agent-options', choice('yes', 'agent'));
-    expect(Object.keys(flagsOf(chat))).toEqual(['agent:i:0']);
+    expect(Object.keys(choicesOf(chat))).toEqual(['agent:i:0']);
 
     await add();
 
     expect(localIDsOf(chat.store, 'agent')).toEqual(['agent-options']);
-    expect(flagsOf(chat)).toEqual({});
+    expect(choicesOf(chat)).toEqual({});
   });
 
   it('keeps a choice while a write keeps the item, and drops it when a write builds a new copy, as before', async () => {
@@ -307,7 +337,7 @@ describe('per-item view flags', () => {
       )
     );
     expect(chat.store.getState().allMessageItemsByID[localID]).toBeDefined();
-    expect(flagsOf(chat)['r1:i:0']?.optionSelected).toBe(request);
+    expect(choicesOf(chat)['r1:i:0']?.optionSelected).toBe(request);
 
     // A changed item gets a new local copy, which used to start with no choice.
     await act(() =>
@@ -315,7 +345,7 @@ describe('per-item view flags', () => {
         response('r1', [options('Continue now?')])
       )
     );
-    expect(flagsOf(chat)['r1:i:0']).toBeUndefined();
+    expect(choicesOf(chat)['r1:i:0']).toBeUndefined();
   });
 
   it('keeps the choices of other messages when one message is written', async () => {
@@ -332,7 +362,7 @@ describe('per-item view flags', () => {
       )
     );
 
-    expect(flagsOf(chat)['r1:i:0']?.optionSelected).toBe(request);
+    expect(choicesOf(chat)['r1:i:0']?.optionSelected).toBe(request);
   });
 
   it('drops the choices of removed messages, and all of them on a restart', async () => {
@@ -345,12 +375,12 @@ describe('per-item view flags', () => {
     choose(chat, localIDsOf(chat.store, 'r2')[0], kept);
 
     await act(() => chat.instance.messaging.removeMessages(['r1']));
-    expect(flagsOf(chat)).toEqual({
+    expect(choicesOf(chat)).toEqual({
       'r2:i:0': { messageID: 'r2', optionSelected: kept },
     });
 
     await act(() => chat.instance.messaging.restartConversation());
-    expect(flagsOf(chat)).toEqual({});
+    expect(choicesOf(chat)).toEqual({});
   });
 
   it('loaded history replaces the choices with its own, and inserted history adds to them', async () => {
@@ -376,7 +406,7 @@ describe('per-item view flags', () => {
         })
       )
     );
-    expect(flagsOf(chat)).toEqual({
+    expect(choicesOf(chat)).toEqual({
       'r2:i:0': { messageID: 'r2', optionSelected: fromHistory },
     });
 
@@ -388,9 +418,222 @@ describe('per-item view flags', () => {
         })
       )
     );
-    expect(flagsOf(chat)).toEqual({
+    expect(choicesOf(chat)).toEqual({
       'r1:i:0': { messageID: 'r1', optionSelected: inserted },
       'r2:i:0': { messageID: 'r2', optionSelected: fromHistory },
     });
+  });
+});
+
+function text(value: string): GenericItem {
+  return { response_type: MessageResponseTypes.TEXT, text: value };
+}
+
+/** How many times a screen reader announced text that contains `value`. */
+function announcementsOf(value: string) {
+  return mockAnnounce.mock.calls.filter(([announced]) =>
+    String(announced).includes(value)
+  ).length;
+}
+
+const flagsOf = (chat: Chat) => chat.store.getState().view.messageItemFlags;
+
+describe('announcement flags', () => {
+  it('keeps an announcement under the public item ID, not on the local copy, and announces once', async () => {
+    const chat = await chatWith(response('r1', [text('Hello there')]));
+    const [localID] = localIDsOf(chat.store, 'r1');
+
+    await waitFor(() => expect(announcementsOf('Hello there')).toBe(1));
+    expect(flagsOf(chat)).toEqual({
+      'r1:i:0': { messageID: 'r1', wasAnnounced: true },
+    });
+    const { ui_state } = chat.store.getState().allMessageItemsByID[localID];
+    expect('needsAnnouncement' in ui_state).toBe(false);
+    expect('wasAnnounced' in ui_state).toBe(false);
+
+    // A repeat of the view's record changes nothing.
+    const before = flagsOf(chat);
+    act(() =>
+      chat.store.dispatch(viewActions.setMessageItemAnnounced(localID))
+    );
+    expect(flagsOf(chat)).toBe(before);
+  });
+
+  it('asks for no announcement for a request, a streamed chunk, or loaded history, even rewritten', async () => {
+    const chat = await chatWith();
+
+    await act(() => chat.instance.send('A question'));
+    await act(() =>
+      chat.instance.messaging.addMessageChunk({
+        streaming_metadata: { response_id: 'r2' },
+        partial_item: {
+          streaming_metadata: { id: 'a' },
+          ...text('Streaming '),
+        },
+      } as any)
+    );
+    await act(() =>
+      chat.instance.messaging.insertHistory([
+        {
+          message: response('h1', [text('From history')]),
+          time: '2024-01-01T12:00:00.000Z',
+        },
+      ] as HistoryItem[])
+    );
+
+    // An upsert that builds a new copy of a loaded item keeps it unannounced.
+    await act(() =>
+      chat.instance.messaging.upsertMessage('h1', MessageState.COMPLETE, () =>
+        response('h1', [text('Edited history')])
+      )
+    );
+
+    expect(localIDsOf(chat.store, 'r2')).toHaveLength(1);
+    expect(localIDsOf(chat.store, 'h1')).toHaveLength(1);
+    expect(flagsOf(chat)).toEqual({});
+    expect(announcementsOf('A question')).toBe(0);
+    expect(announcementsOf('From history')).toBe(0);
+    expect(announcementsOf('Edited history')).toBe(0);
+  });
+
+  it('carries wasAnnounced through an upsert that builds a new copy, and starts over when addMessage replaces it', async () => {
+    const chat = await chatWith();
+    const upsert = (value: string) =>
+      act(() =>
+        chat.instance.messaging.upsertMessage('r3', MessageState.COMPLETE, () =>
+          response('r3', [text(value)])
+        )
+      );
+
+    await upsert('First version');
+    await waitFor(() => expect(announcementsOf('First version')).toBe(1));
+    const [localID] = localIDsOf(chat.store, 'r3');
+    const copy = chat.store.getState().allMessageItemsByID[localID];
+
+    await upsert('Second version');
+    expect(chat.store.getState().allMessageItemsByID[localID]).not.toBe(copy);
+    expect(flagsOf(chat)).toEqual({
+      'r3:i:0': { messageID: 'r3', wasAnnounced: true },
+    });
+
+    await act(() =>
+      chat.instance.messaging.addMessage(
+        response('r3', [text('Third version')])
+      )
+    );
+    await waitFor(() => expect(announcementsOf('Third version')).toBe(1));
+    expect(announcementsOf('Second version')).toBe(0);
+    expect(flagsOf(chat)).toEqual({
+      'r3:i:0': { messageID: 'r3', wasAnnounced: true },
+    });
+  });
+
+  it('moves the flags with a kept copy drawn under another ID, and drops them with the message', async () => {
+    const chat = await chatWith(
+      response('r1', [text('Kept text')]),
+      response('r2', [text('Other text')])
+    );
+    await waitFor(() => expect(announcementsOf('Other text')).toBe(1));
+
+    // A hidden item in front shifts the item's index; the list keeps the copy.
+    await act(() =>
+      chat.instance.messaging.upsertMessage('r1', MessageState.COMPLETE, () =>
+        response('r1', [
+          { ...text('hidden'), user_defined: { silent: true } } as GenericItem,
+          text('Kept text'),
+        ])
+      )
+    );
+    expect(flagsOf(chat)).toEqual({
+      'r1:i:1': { messageID: 'r1', wasAnnounced: true },
+      'r2:i:0': { messageID: 'r2', wasAnnounced: true },
+    });
+    expect(announcementsOf('Kept text')).toBe(1);
+
+    await act(() => chat.instance.messaging.removeMessages(['r1']));
+    expect(flagsOf(chat)).toEqual({
+      'r2:i:0': { messageID: 'r2', wasAnnounced: true },
+    });
+    await act(() => chat.instance.messaging.restartConversation());
+    expect(flagsOf(chat)).toEqual({});
+  });
+
+  it('announces an added local item, such as an agent message, and again when it is added again', async () => {
+    const chat = await chatWith();
+    const manager = (chat.serviceManager.messageCoordinator as any)
+      .serviceManager as ServiceManager;
+    const message = {
+      ...response('agent', [text('Agent says hi')]),
+      history: {},
+    };
+    const add = () => {
+      // Built the way the agent service builds it, under a fixed local ID.
+      const built = outputItemToLocalItem(message.output.generic[0], message);
+      const local = {
+        ...built,
+        ui_state: { ...built.ui_state, id: 'agent-text' },
+      };
+      return act(() =>
+        addMessages(
+          [{ originalMessage: message, localMessages: [local] }],
+          true,
+          manager
+        )
+      );
+    };
+
+    await add();
+    await waitFor(() => expect(announcementsOf('Agent says hi')).toBe(1));
+    expect(flagsOf(chat)).toEqual({
+      'agent:i:0': { messageID: 'agent', wasAnnounced: true },
+    });
+
+    await add();
+    await waitFor(() => expect(announcementsOf('Agent says hi')).toBe(2));
+  });
+
+  it('announces the error a failed silent send adds once', async () => {
+    const failing = (await renderChatAndGetInstanceWithStore({
+      ...config,
+      messaging: {
+        skipWelcome: true,
+        customSendMessage: () => Promise.reject(new Error('down')),
+      },
+    })) as Chat;
+    const errorText =
+      failing.store.getState().languagePack.errors_singleMessage;
+
+    await act(async () => {
+      await expect(
+        failing.instance.send('A silent question', { silent: true })
+      ).rejects.toThrow();
+    });
+
+    await waitFor(() => expect(announcementsOf(errorText)).toBe(1));
+    expect(Object.values(flagsOf(failing))).toEqual([
+      expect.objectContaining({ wasAnnounced: true }),
+    ]);
+  });
+
+  it('gives only top-level items announcement flags, not the items nested in a card', async () => {
+    const chat = await chatWith(
+      response('c1', [
+        text('Alpha item'),
+        {
+          response_type: MessageResponseTypes.CARD,
+          body: [text('Card body text')],
+        } as GenericItem,
+        text('Gamma item'),
+      ])
+    );
+
+    await waitFor(() => expect(announcementsOf('Gamma item')).toBe(1));
+    expect(announcementsOf('Alpha item')).toBe(1);
+    expect(announcementsOf('Card body text')).toBe(1);
+    expect(Object.keys(flagsOf(chat)).sort()).toEqual([
+      'c1:i:0',
+      'c1:i:1',
+      'c1:i:2',
+    ]);
   });
 });

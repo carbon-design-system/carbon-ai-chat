@@ -9,8 +9,9 @@
 
 /**
  * Compiled under `strict: true` by sdkTypes_spec.ts and never run. The choice an item's option,
- * date, or post-back button sent is view state: the view partition keys it by public item ID, and
- * the item's local copy, which conversation code builds, no longer holds it.
+ * date, or post-back button sent, and whether a screen reader still has to announce the item, are
+ * view state: the view partition keys them by public item ID, and the item's local copy, which
+ * conversation code builds, no longer holds them.
  */
 
 import type { LocalMessageUIState } from '../../../src/types/messaging/LocalMessageItem';
@@ -30,12 +31,22 @@ export const localCopyHasNoChoice: Equal<
   never
 > = true;
 
+export const localCopyHasNoAnnouncementFlags: Equal<
+  Extract<keyof LocalMessageUIState, 'needsAnnouncement' | 'wasAnnounced'>,
+  never
+> = true;
+
 export const viewKeysFlagsByItemID: Equal<
   ViewPartitionState['messageItemFlags'],
   Readonly<Record<string, Readonly<MessageItemViewFlags>>>
 > = true;
 
-export const flagsHoldTheChoice: Equal<
+export const flagsHoldTheChoiceAndAnnouncement: Equal<
   MessageItemViewFlags,
-  { messageID: string; optionSelected?: MessageRequest }
+  {
+    messageID: string;
+    optionSelected?: MessageRequest;
+    needsAnnouncement?: boolean;
+    wasAnnounced?: boolean;
+  }
 > = true;

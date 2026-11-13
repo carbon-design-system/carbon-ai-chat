@@ -37,7 +37,12 @@ import { HumanAgentsOnlineStatus } from '../../../src/types/config/ServiceDeskCo
 import { deriveStreamingItemText } from '../../../src/sdk/utils/streamingUtils';
 
 import { DEFAULT_HISTORY_PANEL_STATE } from '../../../src/chat/state';
-import { appRootReducer } from '../../test_helpers';
+import {
+  appRootReducer,
+  itemFlagsFor,
+  needsAnnouncementOf,
+} from '../../test_helpers';
+import viewActions from '../../../src/chat/state/actions';
 
 import { createInitialViewState } from '../../../src/chat/state/initialState';
 
@@ -751,10 +756,11 @@ describe('[UPSERT_MESSAGE] reducer', () => {
 
   describe('announcement', () => {
     const flags = (id: string) => {
-      const [item] = localItemsForMessage(store.getState() as AppState, id);
+      const state = store.getState() as AppState;
+      const [item] = localItemsForMessage(state, id);
       return {
-        needsAnnouncement: item.ui_state.needsAnnouncement,
-        wasAnnounced: item.ui_state.wasAnnounced,
+        needsAnnouncement: needsAnnouncementOf(state, item.ui_state.id),
+        wasAnnounced: itemFlagsFor(state, item.ui_state.id)?.wasAnnounced,
         localID: item.ui_state.id,
       };
     };
@@ -771,7 +777,7 @@ describe('[UPSERT_MESSAGE] reducer', () => {
 
     it('does not ask again for an item already announced, even when it changes', () => {
       store.dispatch(actions.upsertMessage(makeTextResponse('a2', ['Hello'])));
-      store.dispatch(actions.setMessageWasAnnounced(flags('a2').localID));
+      store.dispatch(viewActions.setMessageItemAnnounced(flags('a2').localID));
       expect(flags('a2')).toMatchObject({
         needsAnnouncement: false,
         wasAnnounced: true,
@@ -1054,7 +1060,7 @@ describe('[UPSERT_MESSAGE] reducer', () => {
               isDone: true,
             });
             expect(local.ui_state.isIntermediateStreaming).toBe(true);
-            expect(local.ui_state.needsAnnouncement).toBe(false);
+            expect(needsAnnouncementOf(state(), 'stopped-a')).toBe(false);
             expect(state().allMessageItemsByID['stopped-sibling']).toBe(
               sibling
             );
@@ -1096,7 +1102,7 @@ describe('[UPSERT_MESSAGE] reducer', () => {
       const local = state().allMessageItemsByID['c1-a'];
       expect(local.item).toBe(delta);
       expect(local.fullMessageID).toBe('c1');
-      expect(local.ui_state.needsAnnouncement).toBe(false);
+      expect(needsAnnouncementOf(state(), 'c1-a')).toBe(false);
       expect(local.ui_state.isIntermediateStreaming).toBe(true);
       expect(local.ui_state.streamingState).toEqual({
         chunks: [delta],
@@ -1631,9 +1637,9 @@ describe('upsert streaming snapshots', () => {
       );
       const [id, siblingID] = initial.assistantMessageState.localMessageIDs;
       expect(initial.allMessageItemsByID[id].ui_state).toMatchObject({
-        needsAnnouncement: false,
         streamingState: { chunks: [], isDone: false },
       });
+      expect(needsAnnouncementOf(initial, id)).toBe(false);
       expect(
         initial.allMessageItemsByID[id].ui_state.isIntermediateStreaming
       ).toBeUndefined();
@@ -1654,9 +1660,9 @@ describe('upsert streaming snapshots', () => {
       );
       expect(settled.allMessageItemsByID[id].ui_state).toMatchObject({
         id,
-        needsAnnouncement: true,
         streamingState: { chunks: [], isDone: true },
       });
+      expect(needsAnnouncementOf(settled, id)).toBe(true);
       expect(
         settled.allMessageItemsByID[id].ui_state.isIntermediateStreaming
       ).toBeUndefined();

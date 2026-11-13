@@ -454,3 +454,20 @@ export function itemsWithOptionSelected(state: AppState) {
     return optionSelected ? [{ local: plan.local, optionSelected }] : [];
   });
 }
+
+/**
+ * Whether the view waits to announce the item a local item draws: `undefined`
+ * when the list doesn't draw the local item, else whether its view flags ask
+ * for an announcement.
+ */
+export function needsAnnouncementOf(
+  state: AppState,
+  localItemID: string
+): boolean | undefined {
+  const itemID = itemIDsByLocalID(planStateMessageItems(state)).get(
+    localItemID
+  );
+  return itemID === undefined
+    ? undefined
+    : Boolean(state.view.messageItemFlags[itemID]?.needsAnnouncement);
+}

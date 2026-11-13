@@ -55,7 +55,6 @@ import {
   SET_MESSAGE_RESPONSE_HISTORY_PROPERTY,
   SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY,
   SET_MESSAGE_UI_PROPERTY,
-  SET_MESSAGE_WAS_ANNOUNCED,
   SET_STOP_STREAMING_BUTTON_DISABLED,
   SET_STOP_STREAMING_BUTTON_METADATA_DISABLED,
   SET_STOP_STREAMING_BUTTON_VISIBLE,
@@ -583,26 +582,6 @@ const stateReducers: { [key: string]: ReducerType } = {
       action.localMessageID,
       action.propertyName,
       action.propertyValue
-    );
-  },
-
-  [SET_MESSAGE_WAS_ANNOUNCED]: (
-    state: ConversationState,
-    action: { localMessageID: string }
-  ): ConversationState => {
-    // `wasAnnounced` outlives the clear, so an upsert that rebuilds the item knows not
-    // to announce it again.
-    const { localMessageID } = action;
-    return applyLocalMessageUIState(
-      applyLocalMessageUIState(
-        state,
-        localMessageID,
-        'needsAnnouncement',
-        false
-      ),
-      localMessageID,
-      'wasAnnounced',
-      true
     );
   },
 
