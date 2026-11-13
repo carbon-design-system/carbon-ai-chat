@@ -523,10 +523,10 @@ class ChatInput extends NativeChatView {
       },
       getPromptLine: () => (current() ? this.prompt : null),
       clearTrackedValue: props.trackInputState
-        ? () => {
+        ? (content) => {
             store.dispatch(
               actions.updateInputState(
-                { rawValue: '' },
+                content ? { rawValue: '', content } : { rawValue: '' },
                 selectIsInputToHumanAgent(store.getState())
               )
             );
