@@ -1607,7 +1607,7 @@ context	packages/ai-chat/tests/contract/spec/view/writeableElements_spec.ts	"sco
 context	packages/ai-chat/tests/contract/spec/view/writeableElements_spec.ts	"scope:describe:'promptLineActionsEnd'"	82fddeeddb56cfc9c6a8d5339beccba4f0b5ae5eeea6500c7ce2787439095df2
 context	packages/ai-chat/tests/contract/spec/view/writeableElements_spec.ts	"scope:describe:'welcomeNodeBeforeElement'"	82fddeeddb56cfc9c6a8d5339beccba4f0b5ae5eeea6500c7ce2787439095df2
 context	packages/ai-chat/tests/contract/spec/view/writeableElements_spec.ts	"scope:describe:'writeable elements in a conversation'"	82fddeeddb56cfc9c6a8d5339beccba4f0b5ae5eeea6500c7ce2787439095df2
-helper	packages/ai-chat/tests/contract/helpers/actions.ts	""	6f2ea268868359058f7bde549a904154ff76ebd87f5fb90611b720227aa7efbf
+helper	packages/ai-chat/tests/contract/helpers/actions.ts	""	d1d9ed1957fa46fab6b1084f11ce17b48dfc5782a7f37df375915e1b031446c4
 helper	packages/ai-chat/tests/contract/helpers/backend.ts	""	26b7105106cccf07e7b3db4fa1665eff376c195948224b008100de8750fd2464
 helper	packages/ai-chat/tests/contract/helpers/dom.ts	""	9d071b35b192419c129475a9903b36f50cf03efb7ec3bd5813f6814db2802230
 helper	packages/ai-chat/tests/contract/helpers/driver.ts	""	5031240fdb608b8f2e909f5b728933c4b5c12f281f687d8268b5e9d673b7208e
