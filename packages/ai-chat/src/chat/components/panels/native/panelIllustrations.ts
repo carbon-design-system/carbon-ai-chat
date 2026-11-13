@@ -346,4 +346,194 @@ function renderChatBubble(
     </svg>`;
 }
 
-export { renderChatBubble };
+function renderErrorIllustration(
+  theme: PanelIllustrationTheme,
+  gradientID: string
+) {
+  const isDark = theme === 'dark';
+  const darkGradients = svg`
+      <linearGradient
+        id=${`${gradientID}-1`}
+        x1="38.91"
+        y1="4.92"
+        x2="38.91"
+        y2="73.85"
+        gradientTransform="matrix(1, 0, 0, -1, 0, 82)"
+        gradientUnits="userSpaceOnUse">
+        <stop
+        offset="0"
+        stop-color="#262626"></stop>
+        <stop
+        offset="1"
+        stop-color="#393939"></stop>
+      </linearGradient>
+      <linearGradient
+        id=${`${gradientID}-2`}
+        x1="12.44"
+        y1="71.21"
+        x2="76.34"
+        y2="34.31"
+        gradientTransform="matrix(1, 0, 0, -1, 0, 82)"
+        gradientUnits="userSpaceOnUse">
+        <stop
+        offset="0"
+        stop-color="#525252"></stop>
+        <stop
+        offset="0.52"
+        stop-color="#393939"></stop>
+        <stop
+        offset="0.61"
+        stop-color="#393939"></stop>
+        <stop
+        offset="0.99"
+        stop-color="#161616"></stop>
+      </linearGradient>
+      <linearGradient
+        id=${`${gradientID}-3`}
+        x1="39.38"
+        y1="50.63"
+        x2="52.04"
+        y2="72.55"
+        gradientTransform="matrix(1, 0, 0, -1, 0, 82)"
+        gradientUnits="userSpaceOnUse">
+        <stop
+        offset="0.11"
+        stop-color="#6f6f6f"
+        stop-opacity="0"></stop>
+        <stop
+        offset="0.94"
+        stop-color="#6f6f6f"></stop>
+      </linearGradient>
+    `;
+  const lightGradients = svg`
+      <linearGradient
+        id=${`${gradientID}-1`}
+        x1="29.96"
+        y1="36.32"
+        x2="53.15"
+        y2="-3.84"
+        gradientTransform="matrix(1, 0, 0, -1, 0, 82)"
+        gradientUnits="userSpaceOnUse">
+        <stop
+        offset="0"
+        stop-color="#525252"
+        stop-opacity="0.05"></stop>
+        <stop
+        offset="1"
+        stop-opacity="0.1"></stop>
+      </linearGradient>
+      <linearGradient
+        id=${`${gradientID}-2`}
+        x1="38.91"
+        y1="29.41"
+        x2="38.91"
+        y2="78.7"
+        gradientTransform="matrix(1, 0, 0, -1, 0, 82)"
+        gradientUnits="userSpaceOnUse">
+        <stop
+        offset="0"
+        stop-color="#c6c6c6"></stop>
+        <stop
+        offset="0.78"
+        stop-color="#e0e0e0"></stop>
+      </linearGradient>
+      <linearGradient
+        id=${`${gradientID}-3`}
+        x1="18.08"
+        y1="67.95"
+        x2="71.65"
+        y2="37.02"
+        gradientTransform="matrix(1, 0, 0, -1, 0, 82)"
+        gradientUnits="userSpaceOnUse">
+        <stop
+        offset="0"
+        stop-color="#e0e0e0"></stop>
+        <stop
+        offset="0.13"
+        stop-color="#f4f4f4"></stop>
+        <stop
+        offset="0.56"
+        stop-color="#e0e0e0"></stop>
+        <stop
+        offset="0.62"
+        stop-color="#d8d8d8"></stop>
+        <stop
+        offset="0.7"
+        stop-color="#c6c6c6"></stop>
+        <stop
+        offset="0.89"
+        stop-color="#a8a8a8"></stop>
+        <stop
+        offset="1"
+        stop-color="#8d8d8d"></stop>
+      </linearGradient>
+      <linearGradient
+        id=${`${gradientID}-4`}
+        x1="27.93"
+        y1="30.78"
+        x2="49.86"
+        y2="68.76"
+        gradientTransform="matrix(1, 0, 0, -1, 0, 82)"
+        gradientUnits="userSpaceOnUse">
+        <stop
+        offset="0.54"
+        stop-color="#d0d0d0"
+        stop-opacity="0"></stop>
+        <stop
+        offset="0.82"
+        stop-color="#f1f1f1"
+        stop-opacity="0.7"></stop>
+        <stop
+        offset="0.94"
+        stop-color="#fff"></stop>
+      </linearGradient>
+      <linearGradient
+        id=${`${gradientID}-5`}
+        x1="28.67"
+        y1="55.68"
+        x2="47.16"
+        y2="45.01"
+        gradientTransform="matrix(1, 0, 0, -1, 0, 82)"
+        gradientUnits="userSpaceOnUse">
+        <stop
+        offset="0"
+        stop-color="#fff"></stop>
+        <stop
+        offset="0.05"
+        stop-color="#fdfdfd"></stop>
+        <stop
+        offset="0.3"
+        stop-color="#f6f6f6"></stop>
+        <stop
+        offset="1"
+        stop-color="#f4f4f4"></stop>
+      </linearGradient>
+    `;
+  return svg`<svg
+        viewBox="0 0 80 80">
+      <defs>${isDark ? darkGradients : lightGradients}</defs>
+      <rect
+        width="80"
+        height="80"
+        fill="none"></rect>
+      <polygon
+        points="59.91 78.34 16.91 53.51 21.77 50.7 64.77 75.53 59.91 78.34"
+        fill=${ifDefined(isDark ? undefined : `url(#${gradientID}-1)`)}
+        opacity=${ifDefined(isDark ? '0.25' : undefined)}></polygon>
+      <path
+        d="M39,6.92c12.15,7,22,24,21.92,38S51,64.49,38.83,57.48s-22-24-21.92-38S26.83-.09,39,6.92Z"
+        fill=${`url(#${gradientID}-${isDark ? '1' : '2'})`}></path>
+      <path
+        d="M42.85,4.68C36.74,1.15,31.2.82,27.2,3.15L23.54,5.28C27.52,3.08,33,3.45,39,6.92c12.15,7,22,24,21.92,38,0,6.77-2.35,11.58-6.13,13.94h-.07c-.32.2,3.66-2.1,3.66-2.1,4-2.3,6.39-7.18,6.41-14.12C64.81,28.7,55,11.69,42.85,4.68Z"
+        fill=${`url(#${gradientID}-${isDark ? '2' : '3'})`}></path>
+      <path
+        d="M29.11,3.91v.36a19.59,19.59,0,0,1,9.68,3c12,6.94,21.78,23.84,21.74,37.65,0,9.4-4.56,15.23-11.83,15.23a19.59,19.59,0,0,1-9.68-3C27,50.21,17.24,33.32,17.28,19.5c0-9.39,4.56-15.23,11.83-15.23V3.91m0,0c-7.21,0-12.17,5.71-12.2,15.59,0,14,9.77,31,21.92,38a20.18,20.18,0,0,0,9.87,3c7.21,0,12.17-5.71,12.2-15.6C60.9,31,51.13,14,39,6.9a19.94,19.94,0,0,0-9.87-3Z"
+        fill=${`url(#${gradientID}-${isDark ? '3' : '4'})`}></path>
+      <path
+        class=${ifDefined(isDark ? 'cls-6' : undefined)}
+        d="M38.93,49.79a6.83,6.83,0,0,1-2.66-2.51,6.19,6.19,0,0,1-.81-3v-1a2.26,2.26,0,0,1,.81-2c.54-.35,1.43-.17,2.66.54a6.67,6.67,0,0,1,2.61,2.5,6,6,0,0,1,.81,3v1a2.23,2.23,0,0,1-.81,2C41,50.66,40.13,50.49,38.93,49.79ZM37.77,38.16,36,22.77V13l5.81,3.36v9.73L40.17,39.55Z"
+        fill=${isDark ? '#525252' : `url(#${gradientID}-5)`}></path>
+    </svg>`;
+}
+
+export { renderChatBubble, renderErrorIllustration };
