@@ -87,8 +87,9 @@ describe.each(ENTRIES)('%s plain-text projection', (_, utils) => {
   });
 
   it('uses an empty token value as is, not the label', () => {
-    // The JSDoc says tokens contribute `attrs.value || attrs.label`; main
-    // uses any string value, so an empty one contributes nothing.
+    // MAIN-NOTES M100 (U54): the JSDoc says tokens contribute
+    // `attrs.value || attrs.label`; main uses any string value, so an empty
+    // one contributes nothing.
     const empty = {
       type: 'mention',
       attrs: { id: 'bob', label: 'Bob', value: '' },
@@ -428,8 +429,9 @@ describe('renderTokenChip', () => {
       type: 'mention',
       context: 'composer',
     });
-    // TokenChipAttrs' JSDoc says a custom renderer reads back the stored
-    // `value` too; main passes only `id`, `label`, and the custom data.
+    // MAIN-NOTES M101 (U55): TokenChipAttrs' JSDoc says a custom renderer
+    // reads back the stored `value` too; main passes only `id`, `label`, and
+    // the custom data.
     expect(renderCustomToken.mock.calls).toEqual([
       [{ id: 'alice', label: 'Alice', team: 'a' }],
     ]);

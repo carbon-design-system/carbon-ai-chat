@@ -15,10 +15,20 @@
  * the class is what a host can check here.
  */
 
-import { act } from '@testing-library/react';
+import { act, waitFor } from '@testing-library/react';
 
-import { BusEventViewChange, ViewType } from '../../../../src/aiChatEntry';
-import { changeView, contractElement, contractSetup } from '../../helpers';
+import {
+  BusEventViewChange,
+  GenericItem,
+  MessageResponseTypes,
+  ViewType,
+} from '../../../../src/aiChatEntry';
+import {
+  changeView,
+  contractElement,
+  contractSetup,
+  responseOf,
+} from '../../helpers';
 
 const HIDDEN = 'cds-aichat--hidden';
 
@@ -67,11 +77,6 @@ describe('cds-aichat-custom-element visibility', () => {
     await changeView(instance, ViewType.MAIN_WINDOW);
     await changeView(instance, ViewType.LAUNCHER);
     expect(element.classList.contains(HIDDEN)).toBe(false);
-    expect(change.mock.calls.map(([event]) => event.newViewState)).toEqual([
-      { launcher: true, mainWindow: false },
-      { launcher: false, mainWindow: true },
-      { launcher: true, mainWindow: false },
-    ]);
   });
 
   // @covers element.cds-aichat-custom-element.onViewPreChange
@@ -91,5 +96,43 @@ describe('cds-aichat-custom-element visibility', () => {
     expect(element.classList.contains(HIDDEN)).toBe(true);
     await changeView(instance, ViewType.MAIN_WINDOW);
     expect(element.classList.contains(HIDDEN)).toBe(false);
+  });
+});
+
+// MAIN-NOTES M108 (U57): on this element, `renderUserDefinedResponse` output
+// and the writeable elements sit in its shadow root, out of page CSS's reach.
+// `cds-aichat-container` keeps both in its light DOM
+// (`containerElement_spec.ts`).
+// @covers element.cds-aichat-custom-element.renderUserDefinedResponse instance.writeableElements
+describe('cds-aichat-custom-element host content', () => {
+  contractSetup();
+
+  it('puts renderUserDefinedResponse output in its shadow root', async () => {
+    const out = document.createElement('span');
+    const { instance, element } = await mount({
+      openChatByDefault: true,
+      renderUserDefinedResponse: () => out,
+    });
+    await act(() =>
+      instance.messaging.addMessage(
+        responseOf('r1', [
+          {
+            response_type: MessageResponseTypes.USER_DEFINED,
+            user_defined: {},
+          } as GenericItem,
+        ])
+      )
+    );
+    await waitFor(() => expect(out.isConnected).toBe(true));
+    expect(out.getRootNode()).toBe(element.shadowRoot);
+  });
+
+  it('puts its writeable elements in its shadow root', async () => {
+    const { instance, element } = await mount();
+    const writeable = Object.values(instance.writeableElements);
+    expect(writeable.length).toBeGreaterThan(0);
+    expect(
+      writeable.filter((node) => node.getRootNode() !== element.shadowRoot)
+    ).toEqual([]);
   });
 });

@@ -101,6 +101,18 @@ describe('entry exports', () => {
     );
   });
 
+  // The enums and the language pack are pinned from aiChatEntry in
+  // enums_spec and languagePack_spec; this is where serverEntry's copies are
+  // checked.
+  // @covers export.serverEntry.PageObjectId export.serverEntry.ViewType export.serverEntry.PanelType export.serverEntry.WriteableElementName
+  // @covers export.serverEntry.LayoutCustomProperties export.serverEntry.CornersType export.serverEntry.BusEventType export.serverEntry.FeedbackInteractionType
+  // @covers export.serverEntry.HeaderMenuClickType export.serverEntry.MessageSendSource export.serverEntry.ViewChangeReason export.serverEntry.CancellationReason
+  // @covers export.serverEntry.MessageState export.serverEntry.CarbonTheme export.serverEntry.MinimizeButtonIconType export.serverEntry.OnErrorType
+  // @covers export.serverEntry.HumanAgentsOnlineStatus export.serverEntry.ErrorType export.serverEntry.FileStatusValue export.serverEntry.ScreenShareState
+  // @covers export.serverEntry.ButtonItemKind export.serverEntry.ButtonItemType export.serverEntry.IFrameItemDisplayOption export.serverEntry.MessageInputType
+  // @covers export.serverEntry.MessageResponseTypes export.serverEntry.OptionItemPreference export.serverEntry.SelectionDisplay export.serverEntry.WidthOptions
+  // @covers export.serverEntry.HumanAgentMessageType export.serverEntry.ChainOfThoughtStepStatus export.serverEntry.CHAT_BUTTON_KIND export.serverEntry.CHAT_BUTTON_SIZE
+  // @covers export.serverEntry.ReasoningStepOpenState export.serverEntry.UserType export.serverEntry.MessageErrorState export.serverEntry.enLanguagePack
   it.each(SHARED)('%s is the same value in both entries', (name) => {
     const fromAiChat = (aiChatEntry as Record<string, unknown>)[name];
     const fromServer = (serverEntry as Record<string, unknown>)[name];

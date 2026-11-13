@@ -9,19 +9,22 @@
 
 /**
  * Hosts compare against enum values (event types, reasons, test IDs), so each
- * enum and enum-like constant is pinned whole, in both entries: an added,
- * removed, renamed, or re-valued member fails here as one edited line.
+ * enum and enum-like constant is pinned whole: an added, removed, renamed, or
+ * re-valued member fails here as one edited line. They're pinned from
+ * `aiChatEntry`; `entryParity_spec` checks that `serverEntry` holds the same
+ * values.
+ *
+ * MAIN-NOTES M103: some names and values don't follow one style (snake_case
+ * `human_agent:*` event values, sentence-case `CancellationReason` values,
+ * UPPER_CASE `OnErrorType` values, numeric `ErrorType` and
+ * `MessageErrorState`). They're pinned as `main` has them.
  *
  * This file mounts no chat, so it doesn't call `contractSetup()`.
  */
 
 import * as aiChatEntry from '../../../../src/aiChatEntry';
-import * as serverEntry from '../../../../src/serverEntry';
 
-const ENTRIES: [string, Record<string, unknown>][] = [
-  ['aiChatEntry', aiChatEntry],
-  ['serverEntry', serverEntry],
-];
+const ENTRY = aiChatEntry as Record<string, unknown>;
 
 /**
  * An enum's own members. TypeScript adds a reverse entry (`1: 'CONNECTING'`)
@@ -34,15 +37,15 @@ function membersOf(value: unknown): Record<string, unknown> {
   );
 }
 
-/** One test per entry: `name` holds exactly these members and values. */
+/** `name` holds exactly these members and values. */
 function pinMembers(name: string, expected: Record<string, unknown>): void {
-  it.each(ENTRIES)(`%s.${name} has exactly these members`, (_, entry) => {
-    expect(entry[name]).toBeInstanceOf(Object);
-    expect(membersOf(entry[name])).toEqual(expected);
+  it(`${name} has exactly these members`, () => {
+    expect(ENTRY[name]).toBeInstanceOf(Object);
+    expect(membersOf(ENTRY[name])).toEqual(expected);
   });
 }
 
-// @covers export.aiChatEntry.PageObjectId export.serverEntry.PageObjectId
+// @covers export.aiChatEntry.PageObjectId
 pinMembers('PageObjectId', {
   CHAT_HEADER: 'chat_header',
   HEADER_TITLE: 'header_title',
@@ -64,20 +67,20 @@ pinMembers('PageObjectId', {
   BUTTON_RESPONSE_PANEL: 'button_response_panel',
 });
 
-// @covers export.aiChatEntry.ViewType export.serverEntry.ViewType
+// @covers export.aiChatEntry.ViewType
 pinMembers('ViewType', {
   LAUNCHER: 'launcher',
   MAIN_WINDOW: 'mainWindow',
 });
 
-// @covers export.aiChatEntry.PanelType export.serverEntry.PanelType
+// @covers export.aiChatEntry.PanelType
 pinMembers('PanelType', {
   DEFAULT: 'default',
   WORKSPACE: 'workspace',
   HISTORY: 'history',
 });
 
-// @covers export.aiChatEntry.WriteableElementName export.serverEntry.WriteableElementName
+// @covers export.aiChatEntry.WriteableElementName
 pinMembers('WriteableElementName', {
   AI_TOOLTIP_AFTER_DESCRIPTION_ELEMENT: 'aiTooltipAfterDescriptionElement',
   EXPLAINABILITY_POPOVER_CONTENT: 'explainabilityPopoverContent',
@@ -100,7 +103,7 @@ pinMembers('WriteableElementName', {
   CUSTOM_HEADER: 'customHeader',
 });
 
-// @covers export.aiChatEntry.LayoutCustomProperties export.serverEntry.LayoutCustomProperties
+// @covers export.aiChatEntry.LayoutCustomProperties
 pinMembers('LayoutCustomProperties', {
   height: 'height',
   max_height: 'max-height',
@@ -140,13 +143,13 @@ pinMembers('LayoutCustomProperties', {
   prompt_border: 'prompt-border',
 });
 
-// @covers export.aiChatEntry.CornersType export.serverEntry.CornersType
+// @covers export.aiChatEntry.CornersType
 pinMembers('CornersType', {
   ROUND: 'round',
   SQUARE: 'square',
 });
 
-// @covers export.aiChatEntry.BusEventType export.serverEntry.BusEventType
+// @covers export.aiChatEntry.BusEventType
 // CLOSE_PANEL_BUTTON_TOGGLED is never fired (MAIN-NOTES M24); only the
 // export is pinned.
 pinMembers('BusEventType', {
@@ -192,21 +195,21 @@ pinMembers('BusEventType', {
   HEADER_MENU_CLICK: 'header:menuClick',
 });
 
-// @covers export.aiChatEntry.FeedbackInteractionType export.serverEntry.FeedbackInteractionType
+// @covers export.aiChatEntry.FeedbackInteractionType
 pinMembers('FeedbackInteractionType', {
   DETAILS_OPENED: 'detailsOpened',
   DETAILS_CLOSED: 'detailsClosed',
   SUBMITTED: 'submitted',
 });
 
-// @covers export.aiChatEntry.HeaderMenuClickType export.serverEntry.HeaderMenuClickType
+// @covers export.aiChatEntry.HeaderMenuClickType
 pinMembers('HeaderMenuClickType', {
   HOMESCREEN_BUTTON: 'homescreenButton',
   OVERFLOW_MENU_OPENED: 'overflowMenuOpened',
   OVERFLOW_MENU_ITEM: 'overflowMenuItem',
 });
 
-// @covers export.aiChatEntry.MessageSendSource export.serverEntry.MessageSendSource
+// @covers export.aiChatEntry.MessageSendSource
 pinMembers('MessageSendSource', {
   MESSAGE_INPUT: 'messageInput',
   HOME_SCREEN_INPUT: 'homeScreenInput',
@@ -222,7 +225,7 @@ pinMembers('MessageSendSource', {
   OTHER: 'other',
 });
 
-// @covers export.aiChatEntry.ViewChangeReason export.serverEntry.ViewChangeReason
+// @covers export.aiChatEntry.ViewChangeReason
 // MAIN_WINDOW_MINIMIZED is snake_case while the rest are camelCase: MAIN-NOTES M26
 // (ruled: keep this value in 1.x, camelCase in 2.0.0).
 pinMembers('ViewChangeReason', {
@@ -232,21 +235,21 @@ pinMembers('ViewChangeReason', {
   CALLED_CHANGE_VIEW: 'calledChangeView',
 });
 
-// @covers export.aiChatEntry.CancellationReason export.serverEntry.CancellationReason
+// @covers export.aiChatEntry.CancellationReason
 pinMembers('CancellationReason', {
   STOP_STREAMING: 'Stop streaming',
   CONVERSATION_RESTARTED: 'Conversation restarted',
   TIMEOUT: 'Request timeout',
 });
 
-// @covers export.aiChatEntry.MessageState export.serverEntry.MessageState
+// @covers export.aiChatEntry.MessageState
 pinMembers('MessageState', {
   STREAMING: 'streaming',
   COMPLETE: 'complete',
   ERROR: 'error',
 });
 
-// @covers export.aiChatEntry.CarbonTheme export.serverEntry.CarbonTheme
+// @covers export.aiChatEntry.CarbonTheme
 pinMembers('CarbonTheme', {
   WHITE: 'white',
   G10: 'g10',
@@ -254,7 +257,7 @@ pinMembers('CarbonTheme', {
   G100: 'g100',
 });
 
-// @covers export.aiChatEntry.MinimizeButtonIconType export.serverEntry.MinimizeButtonIconType
+// @covers export.aiChatEntry.MinimizeButtonIconType
 pinMembers('MinimizeButtonIconType', {
   CLOSE: 'close',
   MINIMIZE: 'minimize',
@@ -263,7 +266,7 @@ pinMembers('MinimizeButtonIconType', {
   SIDE_PANEL_DOWN: 'side-panel-down',
 });
 
-// @covers export.aiChatEntry.OnErrorType export.serverEntry.OnErrorType
+// @covers export.aiChatEntry.OnErrorType
 pinMembers('OnErrorType', {
   MESSAGE_COMMUNICATION: 'MESSAGE_COMMUNICATION',
   RENDER: 'RENDER',
@@ -271,21 +274,21 @@ pinMembers('OnErrorType', {
   HYDRATION: 'HYDRATION',
 });
 
-// @covers export.aiChatEntry.HumanAgentsOnlineStatus export.serverEntry.HumanAgentsOnlineStatus
+// @covers export.aiChatEntry.HumanAgentsOnlineStatus
 pinMembers('HumanAgentsOnlineStatus', {
   ONLINE: 'online',
   OFFLINE: 'offline',
   UNKNOWN: 'unknown',
 });
 
-// @covers export.aiChatEntry.ErrorType export.serverEntry.ErrorType
+// @covers export.aiChatEntry.ErrorType
 pinMembers('ErrorType', {
   CONNECTING: 1,
   DISCONNECTED: 2,
   USER_MESSAGE: 3,
 });
 
-// @covers export.aiChatEntry.FileStatusValue export.serverEntry.FileStatusValue
+// @covers export.aiChatEntry.FileStatusValue
 pinMembers('FileStatusValue', {
   COMPLETE: 'complete',
   EDIT: 'edit',
@@ -293,7 +296,7 @@ pinMembers('FileStatusValue', {
   SUCCESS: 'success',
 });
 
-// @covers export.aiChatEntry.ScreenShareState export.serverEntry.ScreenShareState
+// @covers export.aiChatEntry.ScreenShareState
 pinMembers('ScreenShareState', {
   ACCEPTED: 'accepted',
   DECLINED: 'declined',
@@ -301,7 +304,7 @@ pinMembers('ScreenShareState', {
   ENDED: 'ended',
 });
 
-// @covers export.aiChatEntry.ButtonItemKind export.serverEntry.ButtonItemKind
+// @covers export.aiChatEntry.ButtonItemKind
 pinMembers('ButtonItemKind', {
   DEFAULT: 'default',
   SECONDARY: 'secondary',
@@ -311,7 +314,7 @@ pinMembers('ButtonItemKind', {
   LINK: 'link',
 });
 
-// @covers export.aiChatEntry.ButtonItemType export.serverEntry.ButtonItemType
+// @covers export.aiChatEntry.ButtonItemType
 pinMembers('ButtonItemType', {
   POST_BACK: 'post_back',
   CUSTOM_EVENT: 'custom_event',
@@ -319,19 +322,19 @@ pinMembers('ButtonItemType', {
   URL: 'url',
 });
 
-// @covers export.aiChatEntry.IFrameItemDisplayOption export.serverEntry.IFrameItemDisplayOption
+// @covers export.aiChatEntry.IFrameItemDisplayOption
 pinMembers('IFrameItemDisplayOption', {
   INLINE: 'inline',
   PANEL: 'panel',
 });
 
-// @covers export.aiChatEntry.MessageInputType export.serverEntry.MessageInputType
+// @covers export.aiChatEntry.MessageInputType
 pinMembers('MessageInputType', {
   TEXT: 'text',
   EVENT: 'event',
 });
 
-// @covers export.aiChatEntry.MessageResponseTypes export.serverEntry.MessageResponseTypes
+// @covers export.aiChatEntry.MessageResponseTypes
 pinMembers('MessageResponseTypes', {
   TEXT: 'text',
   OPTION: 'option',
@@ -353,26 +356,26 @@ pinMembers('MessageResponseTypes', {
   SYSTEM: 'system',
 });
 
-// @covers export.aiChatEntry.OptionItemPreference export.serverEntry.OptionItemPreference
+// @covers export.aiChatEntry.OptionItemPreference
 pinMembers('OptionItemPreference', {
   DROPDOWN: 'dropdown',
   BUTTON: 'button',
 });
 
-// @covers export.aiChatEntry.SelectionDisplay export.serverEntry.SelectionDisplay
+// @covers export.aiChatEntry.SelectionDisplay
 pinMembers('SelectionDisplay', {
   LABEL: 'label',
   INPUT_TEXT: 'input_text',
 });
 
-// @covers export.aiChatEntry.WidthOptions export.serverEntry.WidthOptions
+// @covers export.aiChatEntry.WidthOptions
 pinMembers('WidthOptions', {
   SMALL: 'small',
   MEDIUM: 'medium',
   LARGE: 'large',
 });
 
-// @covers export.aiChatEntry.HumanAgentMessageType export.serverEntry.HumanAgentMessageType
+// @covers export.aiChatEntry.HumanAgentMessageType
 pinMembers('HumanAgentMessageType', {
   INLINE_ERROR: 'inline_error',
   FROM_HUMAN_AGENT: 'from_agent',
@@ -394,14 +397,14 @@ pinMembers('HumanAgentMessageType', {
   SYSTEM: 'system',
 });
 
-// @covers export.aiChatEntry.ChainOfThoughtStepStatus export.serverEntry.ChainOfThoughtStepStatus
+// @covers export.aiChatEntry.ChainOfThoughtStepStatus
 pinMembers('ChainOfThoughtStepStatus', {
   PROCESSING: 'processing',
   FAILURE: 'failure',
   SUCCESS: 'success',
 });
 
-// @covers export.aiChatEntry.CHAT_BUTTON_KIND export.serverEntry.CHAT_BUTTON_KIND
+// @covers export.aiChatEntry.CHAT_BUTTON_KIND
 pinMembers('CHAT_BUTTON_KIND', {
   PRIMARY: 'primary',
   SECONDARY: 'secondary',
@@ -413,28 +416,28 @@ pinMembers('CHAT_BUTTON_KIND', {
   DANGER_GHOST: 'danger-ghost',
 });
 
-// @covers export.aiChatEntry.CHAT_BUTTON_SIZE export.serverEntry.CHAT_BUTTON_SIZE
+// @covers export.aiChatEntry.CHAT_BUTTON_SIZE
 pinMembers('CHAT_BUTTON_SIZE', {
   SMALL: 'sm',
   MEDIUM: 'md',
   LARGE: 'lg',
 });
 
-// @covers export.aiChatEntry.ReasoningStepOpenState export.serverEntry.ReasoningStepOpenState
+// @covers export.aiChatEntry.ReasoningStepOpenState
 pinMembers('ReasoningStepOpenState', {
   OPEN: 'open',
   CLOSE: 'close',
   DEFAULT: 'default',
 });
 
-// @covers export.aiChatEntry.UserType export.serverEntry.UserType
+// @covers export.aiChatEntry.UserType
 pinMembers('UserType', {
   HUMAN: 'human',
   BOT: 'bot',
   WATSONX: 'watsonx',
 });
 
-// @covers export.aiChatEntry.MessageErrorState export.serverEntry.MessageErrorState
+// @covers export.aiChatEntry.MessageErrorState
 pinMembers('MessageErrorState', {
   NONE: 1,
   FAILED: 2,

@@ -44,6 +44,13 @@ export interface ContractMount {
 
 const MOUNT_TIMEOUT = 10000;
 
+/**
+ * Each test's timeout in a file that calls `contractSetup`. It sits above the
+ * mount wait, so a slow mount on a loaded machine fails as the mount's own
+ * error, or passes, rather than timing out the test around it.
+ */
+const TEST_TIMEOUT = 2 * MOUNT_TIMEOUT;
+
 /** How long a describe block's warm-up may take, under a loaded machine. */
 const WARM_UP_TIMEOUT = 120_000;
 
@@ -285,11 +292,13 @@ export function contractCleanup(): void {
 /**
  * Registers a describe block's setup. Before its first test it loads the lazy
  * chunks and mounts one throwaway chat, under a long timeout, so a cold start
- * doesn't count against the first test's own timeout. After each test it runs
+ * doesn't count against the first test's own timeout. It raises the file's
+ * test timeout above the mount wait. After each test it runs
  * `contractCleanup`. `describeShared` calls it; call it first in every other
  * describe block that mounts a chat.
  */
 export function contractSetup(): void {
+  jest.setTimeout(TEST_TIMEOUT);
   beforeAll(async () => {
     await mountChatContainer({}, WARM_UP_TIMEOUT);
     contractCleanup();

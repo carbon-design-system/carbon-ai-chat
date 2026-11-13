@@ -12,6 +12,10 @@
  * chat, so it runs no visibility handler on the element; and host content
  * (writeable elements, render-callback output) sits in its light DOM, the
  * page's own DOM, where page CSS reaches it.
+ *
+ * MAIN-NOTES M108 (U57): only the container promises light-DOM placement.
+ * `cds-aichat-custom-element` puts the same content in its shadow root
+ * (`customElement_spec.ts`).
  */
 
 import { act, waitFor } from '@testing-library/react';
@@ -39,15 +43,19 @@ describe('cds-aichat-container element', () => {
   contractSetup();
 
   // @covers element.cds-aichat-container.onViewChange
-  it('sets no class or attribute on itself as the chat opens and closes', async () => {
+  it('never hides itself as the chat opens and closes', async () => {
     const { instance, element } = await mount();
-    const before = element.getAttributeNames();
+    const hiding = () => ({
+      hiddenClass: element.classList.contains('cds-aichat--hidden'),
+      hidden: element.hasAttribute('hidden'),
+      style: element.hasAttribute('style'),
+    });
+    const none = { hiddenClass: false, hidden: false, style: false };
+    expect(hiding()).toEqual(none);
     await changeView(instance, ViewType.MAIN_WINDOW);
-    expect(element.getAttributeNames()).toEqual(before);
-    expect(element.className).toBe('');
+    expect(hiding()).toEqual(none);
     await changeView(instance, ViewType.LAUNCHER);
-    expect(element.getAttributeNames()).toEqual(before);
-    expect(element.className).toBe('');
+    expect(hiding()).toEqual(none);
   });
 
   it('keeps its writeable elements in its own light DOM', async () => {

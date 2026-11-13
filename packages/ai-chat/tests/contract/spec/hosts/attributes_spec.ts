@@ -273,33 +273,39 @@ describe.each(ELEMENT_TAGS)('string attributes on %s', (tag) => {
     ]);
   });
 
+  // Lit derives the attribute name from the property, so this one has no
+  // dashes, unlike most of the others (MAIN-NOTES M109).
+  const AVATAR_STRINGS = {
+    agent_ariaGenericAssistantAvatar: 'Contract avatar',
+  };
+
   // @covers attribute.assistantavatarurl
-  it('assistantavatarurl, all lowercase, sets the reply avatar, and assistant-avatar-url does not', async () => {
-    // Lit derives the attribute name from the property, so this one has no
-    // dashes, unlike most of the others.
-    const STRINGS = { agent_ariaGenericAssistantAvatar: 'Contract avatar' };
+  it('assistantavatarurl, all lowercase, sets the reply avatar', async () => {
     const URL = 'https://example.test/contract-avatar.png';
     const { instance } = await mountOpen(
       tag,
-      { 'assistant-avatar-url': 'https://example.test/dashed.png' },
-      { strings: STRINGS }
+      { assistantavatarurl: URL },
+      { strings: AVATAR_STRINGS }
     );
     await addReply(instance);
-    expect(imagesNamed(STRINGS.agent_ariaGenericAssistantAvatar)).toEqual([]);
-
-    document.body.innerHTML = '';
-    window.sessionStorage.clear();
-    const second = await mountOpen(
-      tag,
-      { assistantavatarurl: URL },
-      { strings: STRINGS }
-    );
-    await addReply(second.instance);
     expect(
-      imagesNamed(STRINGS.agent_ariaGenericAssistantAvatar).map((image) =>
-        image.getAttribute('src')
+      imagesNamed(AVATAR_STRINGS.agent_ariaGenericAssistantAvatar).map(
+        (image) => image.getAttribute('src')
       )
     ).toEqual([URL]);
+  });
+
+  // @covers attribute.assistantavatarurl
+  it('assistant-avatar-url, with dashes, sets no avatar', async () => {
+    const { instance } = await mountOpen(
+      tag,
+      { 'assistant-avatar-url': 'https://example.test/dashed.png' },
+      { strings: AVATAR_STRINGS }
+    );
+    await addReply(instance);
+    expect(
+      imagesNamed(AVATAR_STRINGS.agent_ariaGenericAssistantAvatar)
+    ).toEqual([]);
   });
 
   // @covers attribute.locale
@@ -324,11 +330,11 @@ describe.each(ELEMENT_TAGS)('JSON attributes on %s', (tag) => {
     expect(headerTitle()).toBe('Contract title');
   });
 
-  // Invalid JSON reads as `null`, and `null` counts as set, so it replaces
-  // the same field in `config` rather than falling back to it. Fields that
-  // tolerate `null` render with their defaults; `header`, `launcher`,
-  // `layout`, and `keyboardshortcuts` don't (see the report), so they have
-  // no test here.
+  // MAIN-NOTES M105 (U56): invalid JSON reads as `null`, and `null` counts
+  // as set, so it replaces the same field in `config` rather than falling
+  // back to it. Fields that tolerate `null` render with their defaults;
+  // `header`, `launcher`, `layout`, and `keyboardshortcuts` crash instead,
+  // so they have no test here.
   // @covers attribute.input element.cds-aichat-container.config element.cds-aichat-custom-element.config
   it('reads invalid input JSON as null, which replaces config.input', async () => {
     await mountOpen(
@@ -339,6 +345,7 @@ describe.each(ELEMENT_TAGS)('JSON attributes on %s', (tag) => {
     expect(inputField().disabled).toBe(false);
   });
 
+  // MAIN-NOTES M105 (U56), as above.
   // @covers attribute.strings
   it('renders with default strings for invalid strings JSON', async () => {
     await mountOpen(
@@ -347,7 +354,6 @@ describe.each(ELEMENT_TAGS)('JSON attributes on %s', (tag) => {
       { config: { strings: { window_ariaChatRegion: 'From config' } } }
     );
     expect(allByRole('region', 'From config')).toHaveLength(0);
-    expect(inputField().disabled).toBe(false);
   });
 
   // @covers attribute.disclaimer

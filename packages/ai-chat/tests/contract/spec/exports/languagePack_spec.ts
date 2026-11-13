@@ -11,18 +11,13 @@
  * `enLanguagePack` is the set of keys a host overrides through
  * `config.strings`. A removed or renamed key breaks that override, so every
  * key is pinned; an added key is harmless and passes. The English copy itself
- * is not pinned.
+ * is not pinned. The keys are read from `aiChatEntry`; `entryParity_spec`
+ * checks that `serverEntry` holds the same pack.
  *
  * This file mounts no chat, so it doesn't call `contractSetup()`.
  */
 
-import * as aiChatEntry from '../../../../src/aiChatEntry';
-import * as serverEntry from '../../../../src/serverEntry';
-
-const ENTRIES: [string, typeof serverEntry.enLanguagePack][] = [
-  ['aiChatEntry', aiChatEntry.enLanguagePack],
-  ['serverEntry', serverEntry.enLanguagePack],
-];
+import { enLanguagePack } from '../../../../src/aiChatEntry';
 
 /** Every key `main` ships, sorted. */
 const KEYS = [
@@ -295,14 +290,14 @@ const KEYS = [
   'workspace_opened_no_title',
 ];
 
-// @covers export.aiChatEntry.enLanguagePack export.serverEntry.enLanguagePack
-describe.each(ENTRIES)('%s.enLanguagePack', (_, pack) => {
+// @covers export.aiChatEntry.enLanguagePack
+describe('enLanguagePack', () => {
   it('still has every key a host may override', () => {
-    expect(Object.keys(pack)).toEqual(expect.arrayContaining(KEYS));
+    expect(Object.keys(enLanguagePack)).toEqual(expect.arrayContaining(KEYS));
   });
 
   it('holds a non-empty string for every key', () => {
-    const notText = Object.entries(pack)
+    const notText = Object.entries(enLanguagePack)
       .filter(([, value]) => typeof value !== 'string' || value === '')
       .map(([key]) => key);
     expect(notText).toEqual([]);
