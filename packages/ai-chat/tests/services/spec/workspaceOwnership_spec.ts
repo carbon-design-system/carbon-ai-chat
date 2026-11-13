@@ -363,7 +363,8 @@ describe('workspace event ownership', () => {
     });
     await panel.open({ workspaceId: 'old', additionalData: { value: 'old' } });
     await replacementOpen;
-    expect(seen.length).toBeGreaterThan(0);
+    // The subscriber's overlapping open replaces both pending pre-open payloads.
+    expect(seen).toEqual([replacement, replacement]);
     seen.forEach((value) => expect(value).toBe(replacement));
   });
 });

@@ -1,0 +1,167 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+import { act, waitFor } from '@testing-library/react';
+
+import {
+  HistoryItem,
+  PublicConfigMessaging,
+  ViewType,
+} from '../../../../src/aiChatEntry';
+import {
+  WELCOME,
+  changeView,
+  contractChat,
+  contractSetup,
+  countChatReady,
+  fakeBackend,
+  pause,
+  sendSources,
+} from '../../helpers';
+
+/**
+ * Mounts a closed chat that counts `chat:ready`. The backend answers each
+ * request at once unless `autoResolve` is false.
+ */
+async function closedChat(
+  { autoResolve = true }: { autoResolve?: boolean } = {},
+  messaging: Partial<PublicConfigMessaging> = {}
+) {
+  const backend = fakeBackend({ autoResolve });
+  const ready = countChatReady();
+  const { instance } = await contractChat({
+    onBeforeRender: ready.onBeforeRender,
+    messaging: { customSendMessage: backend.customSendMessage, ...messaging },
+  });
+  const sources = () => sendSources(backend);
+  return { instance, backend, ready, sources };
+}
+
+// @covers event.chat:ready config.messaging.customSendMessage instance.changeView
+describe('hydration on first open', () => {
+  contractSetup();
+
+  it('fires no chat:ready and sends no welcome on a reopen', async () => {
+    const { instance, ready, sources } = await closedChat();
+    await changeView(instance, ViewType.MAIN_WINDOW);
+    await waitFor(() => expect(ready.count()).toBe(1));
+    expect(sources()).toEqual([WELCOME]);
+
+    // Both the hydrated view and the settled hydration promise guard a reopen.
+    // Removing either guard alone leaves the same public behavior.
+    await changeView(instance, ViewType.LAUNCHER);
+    await changeView(instance, ViewType.MAIN_WINDOW);
+    await pause();
+    expect(ready.count()).toBe(1);
+    expect(sources()).toEqual([WELCOME]);
+  });
+});
+
+// @covers instance.messaging instance.messaging.restartConversation
+// @covers instance.messaging.clearConversation event.chat:ready
+// @covers config.messaging.customLoadHistory state.status
+describe('restart and clear on a mounted chat', () => {
+  contractSetup();
+
+  it('fires chat:ready again after a restart’s new welcome settles', async () => {
+    const { instance, backend, ready } = await closedChat({
+      autoResolve: false,
+    });
+    await changeView(instance, ViewType.MAIN_WINDOW);
+    await waitFor(() => expect(backend.requests).toHaveLength(1));
+    await act(async () => (await backend.next()).resolve());
+    await waitFor(() => expect(ready.count()).toBe(1));
+
+    let restart: Promise<void>;
+    await act(async () => {
+      restart = instance.messaging.restartConversation();
+    });
+    await waitFor(() => expect(backend.requests).toHaveLength(2));
+    const welcome = await backend.next();
+    expect(ready.count()).toBe(1);
+    await act(async () => {
+      welcome.resolve();
+      await restart;
+    });
+    await waitFor(() => expect(ready.count()).toBe(2));
+  });
+
+  it('leaves the welcome to the next open after a restart while closed', async () => {
+    const { instance, ready, sources } = await closedChat();
+    await changeView(instance, ViewType.MAIN_WINDOW);
+    await waitFor(() => expect(ready.count()).toBe(1));
+    await changeView(instance, ViewType.LAUNCHER);
+
+    await act(() => instance.messaging.restartConversation());
+    await pause();
+    expect(sources()).toEqual([WELCOME]);
+    expect(ready.count()).toBe(1);
+
+    await changeView(instance, ViewType.MAIN_WINDOW);
+    await waitFor(() => expect(ready.count()).toBe(2));
+    expect(sources()).toEqual([WELCOME, WELCOME]);
+  });
+
+  it('still hydrates on the first open after a restart before it', async () => {
+    const { instance, ready, sources } = await closedChat();
+    await act(() => instance.messaging.restartConversation());
+
+    await changeView(instance, ViewType.MAIN_WINDOW);
+    await waitFor(() => expect(ready.count()).toBe(1));
+    expect(sources()).toEqual([WELCOME]);
+  });
+
+  it('hydrates on the first open after a clear before it', async () => {
+    let loads = 0;
+    const { instance, ready, sources } = await closedChat(
+      {},
+      {
+        customLoadHistory: async (): Promise<HistoryItem[]> => {
+          loads += 1;
+          return [];
+        },
+      }
+    );
+    await act(() => instance.messaging.clearConversation());
+    await changeView(instance, ViewType.MAIN_WINDOW);
+    await waitFor(() => expect(ready.count()).toBe(1));
+    expect(loads).toBe(1);
+    expect(sources()).toEqual([WELCOME]);
+    expect(instance.getState().status).toBe('ready');
+
+    await act(() => instance.messaging.clearConversation());
+    await pause();
+    expect(loads).toBe(1);
+    expect(sources()).toEqual([WELCOME]);
+    expect(ready.count()).toBe(1);
+  });
+
+  it('loads history once for a send before the first open, after a clear', async () => {
+    let loads = 0;
+    const { instance, backend, ready } = await closedChat(
+      {},
+      {
+        customLoadHistory: async (): Promise<HistoryItem[]> => {
+          loads += 1;
+          return [];
+        },
+      }
+    );
+    await act(() => instance.messaging.clearConversation());
+    await act(() => instance.send('hello'));
+    await waitFor(() => expect(ready.count()).toBe(1));
+    expect(loads).toBe(1);
+    expect(backend.texts()).toContain('hello');
+
+    await changeView(instance, ViewType.MAIN_WINDOW);
+    await pause();
+    expect(loads).toBe(1);
+    expect(ready.count()).toBe(1);
+  });
+});

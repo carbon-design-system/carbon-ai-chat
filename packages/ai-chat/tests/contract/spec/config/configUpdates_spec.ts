@@ -446,10 +446,6 @@ describe('customSendMessage changed mid-conversation', () => {
 describe('messageTimeoutSecs updates', () => {
   contractSetup();
 
-  afterEach(() => {
-    jest.useRealTimers();
-  });
-
   /** Mounts with one timeout, rerenders with another, then sends. */
   async function sendAfterChange(before: number, after: number | undefined) {
     const backend = fakeBackend();

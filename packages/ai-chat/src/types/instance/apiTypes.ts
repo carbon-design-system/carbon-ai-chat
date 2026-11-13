@@ -68,7 +68,8 @@ export enum PanelType {
    * Opens the history panel.
    *
    * The history panel only appears in the chat panel when
-   * config.history.isMobile is true.
+   * config.history.isMobile is true. With `config.history.isOn` off,
+   * opening it does nothing.
    *
    */
   HISTORY = 'history',
@@ -98,19 +99,29 @@ export interface CustomPanels {
  */
 export interface CustomPanelInstance {
   /**
-   * The custom panel hostElement.
+   * The custom panel hostElement. Always `undefined`: no panel sets it.
+   *
+   * @deprecated Always `undefined`. Write panel content to the panel's writeable element instead
+   * ({@link WriteableElementName.CUSTOM_PANEL_ELEMENT}, {@link WriteableElementName.WORKSPACE_PANEL_ELEMENT}, or
+   * {@link WriteableElementName.HISTORY_PANEL_ELEMENT}). Removed in 2.0.0.
    */
   hostElement?: HTMLDivElement | undefined;
 
   /**
-   * Opens the custom panel.
+   * Opens the custom panel. Opening the workspace panel while a workspace is open closes that workspace first,
+   * firing its close events, then opens the new one. If a `workspace:pre:close` handler throws during that close, the
+   * error is logged and the old workspace closes anyway, without `workspace:close`.
+   *
+   * Workspace calls aren't queued. Await each call before making the next to keep its events and data together.
+   * Overlapping calls can interleave; closing while a `workspace:pre:open` handler waits doesn't cancel that open.
    *
    * @param options Custom panel options.
    */
   open: (options?: CustomPanelOpenOptions) => Promise<void>;
 
   /**
-   * Closes the custom panel.
+   * Closes the custom panel. A workspace close doesn't wait for a pending open or cancel it. Await the open before
+   * closing its workspace.
    */
   close: () => Promise<void>;
 }

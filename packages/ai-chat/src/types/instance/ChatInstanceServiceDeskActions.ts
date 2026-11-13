@@ -21,6 +21,9 @@ export interface ChatInstanceServiceDeskActions {
    * {@link BusEventType.HUMAN_AGENT_PRE_END_CHAT} and {@link BusEventType.HUMAN_AGENT_END_CHAT} events have been fired and
    * resolved.
    *
+   * When an agent has joined, the status message it adds is {@link HumanAgentMessageType.CHAT_WAS_ENDED}. When the user
+   * ends the conversation from the chat, it's {@link HumanAgentMessageType.USER_ENDED_CHAT} instead.
+   *
    * @example End the active human-agent conversation
    * ```ts
    * await instance.serviceDesk.endConversation();
@@ -31,8 +34,10 @@ export interface ChatInstanceServiceDeskActions {
   /**
    * Sets the suspended state for an agent conversation. A conversation can be suspended or un-suspended only if the
    * user is currently connecting or connected to an agent. If a conversation is suspended, then messages from the user
-   * will no longer be routed to the service desk and incoming messages from the service desk will not be displayed. In
-   * addition, the current connection status with an agent will not be shown.
+   * will no longer be routed to the service desk, and the current connection status with an agent will not be shown.
+   *
+   * Messages the service desk sends while suspended aren't stored, so they don't show, even after the conversation
+   * resumes. Their `human_agent:pre:receive` and `human_agent:receive` events still fire when they arrive.
    *
    * @example Suspend, then later resume, routing to the service desk
    * ```ts

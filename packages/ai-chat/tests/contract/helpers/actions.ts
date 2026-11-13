@@ -12,10 +12,15 @@
  * the result only after any batched notification has been delivered.
  */
 
-import { act } from '@testing-library/react';
+import { act, waitFor } from '@testing-library/react';
 
-import { ChatInstance, ViewState, ViewType } from '../../../src/aiChatEntry';
-import { byRole, click } from './dom';
+import {
+  ChatInstance,
+  PageObjectId,
+  ViewState,
+  ViewType,
+} from '../../../src/aiChatEntry';
+import { byRole, byTestId, click } from './dom';
 
 /** Calls `changeView` the way a host would, and waits for it. */
 export async function changeView(
@@ -72,5 +77,21 @@ export async function pickFiles(
       value: files,
     });
     picker.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+}
+
+/**
+ * Clicks the disclaimer's accept button until the chat records the
+ * acceptance under the page hostname: the button only takes a click once the
+ * panel has measured its content.
+ */
+export async function acceptDisclaimer(instance: ChatInstance): Promise<void> {
+  const accepted = () =>
+    instance.getState().disclaimersAccepted[window.location.hostname] === true;
+  await waitFor(() => {
+    if (!accepted()) {
+      byTestId(PageObjectId.DISCLAIMER_ACCEPT_BUTTON)?.click();
+    }
+    expect(accepted()).toBe(true);
   });
 }

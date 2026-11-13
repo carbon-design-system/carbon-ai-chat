@@ -140,7 +140,9 @@ interface ChatActions {
 
   /**
    * Sends the given message to the assistant. Fires `pre:send` then `send` on
-   * the event bus before delegating to `customSendMessage`.
+   * the event bus before delegating to `customSendMessage`. This holds during
+   * an agent chat too: only what the user types in the chat's input reaches
+   * the service desk.
    *
    * **Settlement points:**
    * - Resolves when `customSendMessage` completes. It also resolves at once,
@@ -366,12 +368,22 @@ interface ChatActions {
   serviceDesk: ChatInstanceServiceDeskActions;
 
   /**
-   * Remove any record of the current session from the browser's SessionStorage.
-   * It also cancels each file upload still in progress: the upload's abort signal
-   * fires and its attachment leaves the input.
+   * Resets the saved session to its defaults and removes its record from the browser's sessionStorage. The chat saves
+   * a new record at its next change. With {@link PublicConfig.persistedState} set, nothing touches sessionStorage:
+   * the reset goes to {@link PersistedStateConfig.onStateChange} like any other change.
    *
-   * @param keepOpenState If we are destroying the session to restart the chat this can be used to preserve if the web
-   * chat is open.
+   * It also does the following:
+   * - Closes the main window to the launcher, unless `keepOpenState` is true. This fires
+   *   {@link BusEventType.STATE_CHANGE}, but not {@link BusEventType.VIEW_PRE_CHANGE} or
+   *   {@link BusEventType.VIEW_CHANGE}.
+   * - Cancels any in-flight send with {@link CancellationReason.CONVERSATION_RESTARTED} and adds a message that says
+   *   the request was canceled.
+   * - Cancels each file upload still in progress: the upload's abort signal fires and its attachment leaves the input.
+   *
+   * The messages stay in place, and a chat that has loaded doesn't load again. Reopening it calls no
+   * {@link PublicConfigMessaging.customLoadHistory}, sends no welcome, and fires no {@link BusEventType.CHAT_READY}.
+   *
+   * @param keepOpenState Keeps the main window open or closed as it is, instead of closing it to the launcher.
    *
    * @example Clear the persisted session
    * ```ts

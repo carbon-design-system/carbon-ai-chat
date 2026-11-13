@@ -105,7 +105,9 @@ export enum BusEventType {
   HISTORY_PANEL_NEW_CHAT = 'history:newChat',
 
   /**
-   * Fired before mobile chat history panel opens.
+   * Fired when the user picks "View chats" in the mobile header menu, before the history panel opens. Only that menu
+   * item fires it; `customPanels.getPanel(PanelType.HISTORY).open()` doesn't. The chat doesn't wait for handlers, so
+   * a handler can't delay or stop the open.
    */
   HISTORY_PANEL_PRE_OPEN = 'historyPanel:pre:open',
 
@@ -125,7 +127,8 @@ export enum BusEventType {
   CHAT_READY = 'chat:ready',
 
   /**
-   * Fired before a custom panel opens.
+   * Fired as the default custom panel starts to draw open. It fires after `open()` resolves, when
+   * `customPanels.default.isOpen` already reads `true`, so a handler can't run before the change.
    */
   CUSTOM_PANEL_PRE_OPEN = 'customPanel:pre:open',
 
@@ -135,7 +138,8 @@ export enum BusEventType {
   CUSTOM_PANEL_OPEN = 'customPanel:open',
 
   /**
-   * Fired before a custom panel closes.
+   * Fired as the default custom panel starts to draw closed. It fires after `close()` resolves, when
+   * `customPanels.default.isOpen` already reads `false`, so a handler can't run before the change.
    */
   CUSTOM_PANEL_PRE_CLOSE = 'customPanel:pre:close',
 
@@ -155,12 +159,15 @@ export enum BusEventType {
   WORKSPACE_OPEN = 'workspace:open',
 
   /**
-   * Fired before a workspace closes.
+   * Fired before an open workspace closes through its panel API. Closing a workspace that's already closed fires
+   * nothing. `restartConversation` and `clearConversation` reset an open workspace without firing its close events
+   * or calling its close handlers.
    */
   WORKSPACE_PRE_CLOSE = 'workspace:pre:close',
 
   /**
-   * Fired after a workspace closes.
+   * Fired after an open workspace closes through its panel API. Closing an already-closed workspace fires nothing.
+   * `restartConversation` and `clearConversation` reset an open workspace without this event.
    */
   WORKSPACE_CLOSE = 'workspace:close',
 
@@ -196,14 +203,16 @@ export enum BusEventType {
 
   /**
    * This event is fired before a chat with an agent is ended. This occurs after the user has selected "Yes" from the
-   * confirmation modal but it can also be fired if the chat is ended by the agent. Note that this is not fired if a
-   * request for an agent is cancelled. The human_agent:endChat event however is fired in that case.
+   * confirmation modal but it can also be fired if the chat is ended by the agent. This isn't fired when a page
+   * reload can't resume the chat; see {@link ServiceDeskPublicConfig.allowReconnect}. It also isn't fired if a request
+   * for an agent is canceled. The human_agent:endChat event is fired in that case.
    */
   HUMAN_AGENT_PRE_END_CHAT = 'human_agent:pre:endChat',
 
   /**
    * This event is fired after a chat with an agent has ended. This is fired after {@link BusEventType.HUMAN_AGENT_PRE_END_CHAT} but
-   * can be fired both from the user leaving the chat or the agent ending the chat.
+   * can be fired both from the user leaving the chat or the agent ending the chat. A reload that can't resume the
+   * chat ends it locally without this event.
    */
   HUMAN_AGENT_END_CHAT = 'human_agent:endChat',
 
@@ -772,7 +781,8 @@ export interface BusEventHistoryPanelNewChat extends BusEvent {
 }
 
 /**
- * Fired before the mobile chat history panel opens.
+ * Fired when the user picks "View chats" in the mobile header menu, before the history panel opens. The chat doesn't
+ * wait for handlers, so a handler can't delay or stop the open.
  *
  * @category Events
  */
@@ -948,7 +958,7 @@ export interface BusEventHumanAgentPreEndChat<
   preEndChatPayload: TPayloadType;
 
   /**
-   * This value may be set by a listener to indicate that the process of ending the chat should be cancelled.
+   * This value may be set by a listener to indicate that the process of ending the chat should be canceled.
    */
   cancelEndChat: boolean;
 }
