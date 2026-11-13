@@ -8,16 +8,18 @@
  */
 
 import { ChatInstance } from '../instance/ChatInstance';
+import type { ChatSDKConfigMessaging } from './ChatSDKConfigMessaging';
 import { CustomSendMessageOptions } from './MessagingConfig';
 import { MessageRequest } from '../messaging/Messages';
 import { HistoryItem } from '../messaging/History';
 
 /**
- * Config options for controlling messaging.
+ * Config options for controlling messaging. It extends {@link ChatSDKConfigMessaging} with the two
+ * settings that control the prebuilt chat's loading indicator and stop button.
  *
  * @category Config
  */
-export interface PublicConfigMessaging {
+export interface PublicConfigMessaging extends ChatSDKConfigMessaging<ChatInstance> {
   /**
    * Indicates if Carbon AI Chat should make a request for the welcome message when a new conversation begins. If this is
    * true, then Carbon AI Chat will start with an empty conversation.
@@ -34,14 +36,6 @@ export interface PublicConfigMessaging {
    * {@link ChatInstanceMessaging.addMessageChunk}, or {@link ChatInstanceMessaging.upsertMessage} ends this timeout window.
    */
   messageTimeoutSecs?: number;
-
-  /**
-   * Controls how long AI chat should wait before showing the loading indicator. If set to 0, the chat will never show
-   * the loading indicator on its own. This is tied to either {@link ChatInstanceMessaging.addMessage} or
-   * {@link ChatInstanceMessaging.addMessageChunk} being called after this message was sent. If neither of those methods
-   * are called with in the window defined here, the loading indicator will be shown.
-   */
-  messageLoadingIndicatorTimeoutSecs?: number;
 
   /**
    * A callback for Carbon AI Chat to use to send messages to your assistant.
@@ -65,6 +59,14 @@ export interface PublicConfigMessaging {
    * If this function is mutated after it was initially called, the chat does not re-call it.
    */
   customLoadHistory?: (instance: ChatInstance) => Promise<HistoryItem[]>;
+
+  /**
+   * Controls how long AI chat should wait before showing the loading indicator. If set to 0, the chat will never show
+   * the loading indicator on its own. This is tied to either {@link ChatInstanceMessaging.addMessage} or
+   * {@link ChatInstanceMessaging.addMessageChunk} being called after this message was sent. If neither of those methods
+   * are called with in the window defined here, the loading indicator will be shown.
+   */
+  messageLoadingIndicatorTimeoutSecs?: number;
 
   /**
    * Controls when the stop streaming button becomes visible during message streaming.
