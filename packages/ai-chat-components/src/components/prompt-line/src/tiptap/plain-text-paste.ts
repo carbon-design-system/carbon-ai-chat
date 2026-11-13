@@ -9,19 +9,14 @@
 
 /**
  * Tiptap plain-text-paste extension. Intercepts paste/drop events,
- * extracts plain text, and inserts it as paragraph nodes. A paste follows
- * the markdown-like rule `textToDoc` uses: a blank line starts a paragraph
- * and a single newline becomes a line break (`hardBreak`). A drop, or a
- * paste into a schema without `hardBreak`, makes one paragraph per line.
- * Otherwise schema-agnostic — only requires `paragraph` and `text` nodes.
+ * extracts plain text, and inserts one paragraph per line. Only requires
+ * `paragraph` and `text` nodes.
  */
 
 import { Extension } from '@tiptap/core';
 import { Fragment, Slice } from '@tiptap/pm/model';
 import type { Schema } from '@tiptap/pm/model';
 import { Plugin } from '@tiptap/pm/state';
-
-import { textToDoc } from './json-utils.js';
 
 function linesToNodes(schema: Schema, lines: string[]) {
   return lines.map((line) => {
@@ -30,19 +25,6 @@ function linesToNodes(schema: Schema, lines: string[]) {
     }
     return schema.nodes.paragraph.create(null, schema.text(line));
   });
-}
-
-/**
- * The paragraphs for pasted text, built by `textToDoc` so a paste reads the
- * same as text the editor was seeded with.
- */
-function pastedNodes(schema: Schema, text: string) {
-  if (!schema.nodes.hardBreak) {
-    return linesToNodes(schema, text.split('\n'));
-  }
-  const nodes: ReturnType<Schema['nodeFromJSON']>[] = [];
-  schema.nodeFromJSON(textToDoc(text)).forEach((node) => nodes.push(node));
-  return nodes;
 }
 
 function createPastePlugin(): Plugin {
@@ -55,7 +37,10 @@ function createPastePlugin(): Plugin {
         }
 
         const { schema } = view.state;
-        const nodes = pastedNodes(schema, text.replace(/\r\n?/g, '\n'));
+        const nodes = linesToNodes(
+          schema,
+          text.replace(/\r\n?/g, '\n').split('\n')
+        );
 
         // openStart=1/openEnd=1 marks the boundary paragraphs as open so
         // ProseMirror merges them into the surrounding content rather than

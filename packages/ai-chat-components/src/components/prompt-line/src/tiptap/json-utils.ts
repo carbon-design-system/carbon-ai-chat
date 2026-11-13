@@ -90,13 +90,12 @@ function walkAll(node: JSONContent, visit: (node: JSONContent) => void): void {
 }
 
 /**
- * Project a JSONContent doc to a plain-text string, with markdown-like
- * breaks. This is the input's `rawValue` projection in both editors:
+ * Project a JSONContent doc to the legacy plain-text string:
  *
  * - Text nodes contribute their `text`.
  * - `mention` / `command` nodes (and any other `attrs.value`-bearing atom)
  *   contribute `attrs.value || attrs.label`.
- * - `paragraph` boundaries become `"\n\n"` (excluding the trailing one).
+ * - `paragraph` boundaries become `"\n"` (excluding the trailing one).
  * - `hardBreak` nodes contribute `"\n"`.
  *
  * Unknown node types are walked through to their children; if they have no
@@ -123,7 +122,7 @@ function collect(
       return;
     case 'paragraph':
       if (paragraphIndex.count > 0) {
-        out.push('\n\n');
+        out.push('\n');
       }
       paragraphIndex.count += 1;
       if (node.content) {
@@ -167,52 +166,29 @@ export function projectRawValue(editor: Editor): string {
 }
 
 /**
- * Build a JSONContent doc from a plain-text string with markdown-like breaks,
- * the inverse of {@link getRawText} for plain text
- * (`getRawText(textToDoc(s)) === s`): `"\n\n"` starts a new paragraph and a
- * single `"\n"` becomes a `hardBreak`. Used to seed the rich editor losslessly
- * from the textarea's value when the prompt-line upgrades from textarea to
- * Tiptap mode.
+ * Build one paragraph per line, including empty lines. This round-trips
+ * through getRawText; the rich editor's getText uses two newlines between
+ * paragraphs instead.
  */
 export function textToDoc(text: string): JSONContent {
   return {
     type: 'doc',
-    content: text.split('\n\n').map((block) => {
-      const content: JSONContent[] = [];
-      block.split('\n').forEach((line, index) => {
-        if (index > 0) {
-          content.push({ type: 'hardBreak' });
-        }
-        if (line) {
-          content.push({ type: 'text', text: line });
-        }
-      });
-      return content.length
-        ? { type: 'paragraph', content }
-        : { type: 'paragraph' };
-    }),
+    content: text
+      .split('\n')
+      .map((line) =>
+        line
+          ? { type: 'paragraph', content: [{ type: 'text', text: line }] }
+          : { type: 'paragraph' }
+      ),
   };
 }
 
 /**
  * Map a plain-text offset into a ProseMirror position inside the doc
  * {@link textToDoc} builds from the same text. Lives here because it encodes
- * that function's shape: every character costs one position (a `hardBreak` is
- * one, and a `"\n\n"` paragraph boundary closes one paragraph and opens the
- * next), plus one for the doc/first-paragraph start. An offset between the two
- * newlines of a boundary, a caret on the blank line, has no position of its
- * own, so it moves to the start of the next paragraph. Change `textToDoc` and
- * this has to change with it.
+ * that function's shape: one for the first paragraph's start, plus one extra
+ * position for each newline that opens another paragraph.
  */
 export function textOffsetToDocPos(text: string, offset: number): number {
-  // Find boundaries the way `textToDoc`'s split does: left to right, without
-  // overlap.
-  let boundary = text.indexOf('\n\n');
-  while (boundary !== -1 && boundary < offset) {
-    if (offset === boundary + 1) {
-      return offset + 2;
-    }
-    boundary = text.indexOf('\n\n', boundary + 2);
-  }
-  return offset + 1;
+  return offset + 1 + (text.slice(0, offset).split('\n').length - 1);
 }

@@ -196,17 +196,47 @@ describe('persistedState.initialState', () => {
 describe('persistedState.onStateChange', () => {
   contractSetup();
 
-  it('is not called at mount when nothing changed', async () => {
+  // MAIN-NOTES M79: compare values while retaining real initial view transitions.
+  it('reports the initial launcher transition once', async () => {
     const recorder = stateRecorder();
-    await mountWith({
+    const { instance } = await mountWith({
       messaging: { skipWelcome: true },
       persistedState: { onStateChange: recorder.onStateChange },
     });
     await pause();
+    expect(instance.getState().viewState).toEqual(CLOSED);
+    expect(recorder.values.map((value) => value.viewState)).toEqual([CLOSED]);
+  });
+
+  // @covers config.openChatByDefault
+  it('reports the initial openChatByDefault transition once', async () => {
+    const recorder = stateRecorder();
+    const { instance } = await mountWith({
+      openChatByDefault: true,
+      messaging: { skipWelcome: true },
+      persistedState: { onStateChange: recorder.onStateChange },
+    });
+    await pause();
+    expect(instance.getState().viewState).toEqual(OPEN);
+    expect(recorder.values.map((value) => value.viewState)).toEqual([OPEN]);
+  });
+
+  it('is not called at mount when the explicit all-closed view stays unchanged', async () => {
+    const recorder = stateRecorder();
+    const allClosed = { launcher: false, mainWindow: false };
+    const { instance } = await mountWith({
+      messaging: { skipWelcome: true },
+      persistedState: {
+        initialState: { viewState: allClosed } as PersistableState,
+        onStateChange: recorder.onStateChange,
+      },
+    });
+    await pause();
+    expect(instance.getState().viewState).toEqual(allClosed);
     expect(recorder.values).toEqual([]);
   });
 
-  it('is not called at mount when it boots from initialState', async () => {
+  it('reports the initial restored open transition once', async () => {
     const recorder = stateRecorder();
     const { instance } = await mountWith({
       messaging: { skipWelcome: true },
@@ -217,7 +247,7 @@ describe('persistedState.onStateChange', () => {
     });
     await pause();
     expect(instance.getState().viewState).toEqual(OPEN);
-    expect(recorder.values).toEqual([]);
+    expect(recorder.values.map((value) => value.viewState)).toEqual([OPEN]);
   });
 
   // @covers config.openChatByDefault event.view:pre:change

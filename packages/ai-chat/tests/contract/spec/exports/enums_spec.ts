@@ -226,12 +226,11 @@ pinMembers('MessageSendSource', {
 });
 
 // @covers export.aiChatEntry.ViewChangeReason
-// MAIN_WINDOW_MINIMIZED is snake_case while the rest are camelCase: MAIN-NOTES M26
-// (ruled: keep this value in 1.x, camelCase in 2.0.0).
+// MAIN-NOTES M26 (2.0.0): the enum stays camelCase while the close event emits snake_case.
 pinMembers('ViewChangeReason', {
   WEB_CHAT_LOADED: 'webChatLoaded',
   LAUNCHER_CLICKED: 'launcherClicked',
-  MAIN_WINDOW_MINIMIZED: 'main_window_minimized',
+  MAIN_WINDOW_MINIMIZED: 'mainWindowMinimized',
   CALLED_CHANGE_VIEW: 'calledChangeView',
 });
 

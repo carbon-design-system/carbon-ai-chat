@@ -9,10 +9,7 @@
 
 import { MutableRefObject, useEffect, useRef, useState } from 'react';
 import type { JSONContent } from '@tiptap/core';
-import {
-  textToDoc,
-  type PromptLineElement,
-} from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
+import type { PromptLineElement } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
 
 import actions from '../../store/actions';
 import {
@@ -23,6 +20,7 @@ import type { ServiceManager } from '../../services/ServiceManager';
 import type { FileUpload } from '../../../types/config/ServiceDeskConfig';
 import { hasInFlightUpload, hasSendableInput } from '../../utils/sendableInput';
 import { restoreInputDraft } from '../../utils/restoreInputDraft';
+import { literalTextToDoc } from '../../utils/inputContent';
 import { consoleError } from '../../utils/miscUtils';
 import { useSelector } from '../../hooks/useSelector';
 
@@ -214,7 +212,7 @@ function useInputValueSync({
         // branch), so the sync runs regardless of which surface is mounted.
         const promptLine = promptLineRef.current;
         if (promptLine && promptLine.getValue() !== nextRawValue) {
-          promptLine.setContent(textToDoc(nextRawValue));
+          promptLine.setContent(literalTextToDoc(nextRawValue));
         }
       }
     });

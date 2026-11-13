@@ -66,7 +66,8 @@ export interface PublicConfig {
   disableCustomElementMobileEnhancements?: boolean;
 
   /**
-   * Add a bunch of noisy console.log messages!
+   * Enables diagnostic console logs for every chat loaded from the same module on the page.
+   * In 1.x, logging stays enabled after that chat unmounts. A later chat with `debug: false` does not disable it.
    */
   debug?: boolean;
 
@@ -119,10 +120,9 @@ export interface PublicConfig {
   serviceDesk?: ServiceDeskPublicConfig;
 
   /**
-   * Whether the chat moves focus into itself when it opens on its own at page load, such as with
-   * {@link PublicConfig.openChatByDefault} or a restored session. Defaults to true. Set it to false to keep focus on
-   * your page at load. It doesn't affect other focus moves: opening the chat with {@link ChatInstance.changeView}
-   * and calling {@link ChatInstance.requestFocus} still move focus into the chat.
+   * Whether the chat's shared focus manager can move focus. Defaults to true.
+   * In 1.x, false blocks automatic transitions, focus after {@link ChatInstance.changeView}, and
+   * {@link ChatInstance.requestFocus}. A blocked focus request returns false. Direct user focus is unaffected.
    */
   shouldTakeFocusIfOpensAutomatically?: boolean;
 

@@ -138,9 +138,11 @@ describe('workspace state', () => {
   });
 
   // @covers event.workspace:pre:close
-  it('closes on restartConversation even when a pre:close handler throws', async () => {
+  // MAIN-NOTES M89: restart resets the workspace without its close handlers.
+  it('closes on restartConversation without calling a pre:close handler that would throw', async () => {
     const { instance } = await mountOpen();
     await openWorkspace(instance, OPTIONS);
+    expect(instance.state.get().workspace.isOpen).toBe(true);
     const handler = jest.fn(() => {
       throw new Error('Contract pre:close failure');
     });
@@ -152,7 +154,7 @@ describe('workspace state', () => {
     } finally {
       error.mockRestore();
     }
-    expect(handler).toHaveBeenCalledTimes(1);
+    expect(handler).not.toHaveBeenCalled();
     expect(instance.state.get().workspace).toEqual(CLOSED);
     expect(events.types()).toEqual([BusEventType.RESTART_CONVERSATION]);
   });
@@ -216,46 +218,33 @@ describe('workspace state', () => {
   });
 
   // @covers event.workspace:pre:close event.workspace:close
-  it('closes on restartConversation, firing pre:close then close with the ID and data it opened with', async () => {
+  it('closes on restartConversation without workspace events', async () => {
     const { instance } = await mountOpen();
     await openWorkspace(instance, OPTIONS);
+    expect(instance.state.get().workspace.isOpen).toBe(true);
     const events = recordEvents(instance, WORKSPACE_EVENTS);
     await act(() => instance.messaging.restartConversation());
     expect(instance.state.get().workspace).toEqual(CLOSED);
-    expect(events.events.map(summary)).toEqual(
-      [BusEventType.WORKSPACE_PRE_CLOSE, BusEventType.WORKSPACE_CLOSE].map(
-        (type) => ({
-          type,
-          workspaceId: 'contract-workspace',
-          additionalData: { source: 'contract' },
-        })
-      )
-    );
+    expect(events.events.map(summary)).toEqual([]);
   });
 
   // @covers event.workspace:pre:close event.workspace:close
   // @covers instance.messaging.clearConversation
-  it('closes on clearConversation, firing pre:close then close with the ID and data it opened with', async () => {
+  it('closes on clearConversation without workspace events', async () => {
     const { instance } = await mountOpen();
     await openWorkspace(instance, OPTIONS);
+    expect(instance.state.get().workspace.isOpen).toBe(true);
     const events = recordEvents(instance, WORKSPACE_EVENTS);
     await act(() => instance.messaging.clearConversation());
     expect(instance.state.get().workspace).toEqual(CLOSED);
-    expect(events.events.map(summary)).toEqual(
-      [BusEventType.WORKSPACE_PRE_CLOSE, BusEventType.WORKSPACE_CLOSE].map(
-        (type) => ({
-          type,
-          workspaceId: 'contract-workspace',
-          additionalData: { source: 'contract' },
-        })
-      )
-    );
+    expect(events.events.map(summary)).toEqual([]);
   });
 
   // @covers event.workspace:pre:close instance.messaging.clearConversation
-  it('closes on clearConversation when a pre:close handler throws, logging the error', async () => {
+  it('closes on clearConversation without calling a pre:close handler that would throw', async () => {
     const { instance } = await mountOpen();
     await openWorkspace(instance, OPTIONS);
+    expect(instance.state.get().workspace.isOpen).toBe(true);
     const failure = new Error('Contract pre:close failure');
     const handler = jest.fn(() => {
       throw failure;
@@ -265,12 +254,12 @@ describe('workspace state', () => {
     try {
       await act(() => instance.messaging.clearConversation());
       expect(error.mock.calls.some((call) => call.includes(failure))).toBe(
-        true
+        false
       );
     } finally {
       error.mockRestore();
     }
-    expect(handler).toHaveBeenCalledTimes(1);
+    expect(handler).not.toHaveBeenCalled();
     expect(instance.state.get().workspace).toEqual(CLOSED);
   });
 });
@@ -449,32 +438,50 @@ describe('workspace events', () => {
     });
   });
 
-  it('runs two opens made at once one after another: the open workspace closes once, then each opens in turn', async () => {
+  // MAIN-NOTES M88: overlapping workspace calls aren't queued.
+  it('a close during pre:open leaves the pending open to finish', async () => {
     const { instance } = await mountOpen();
-    await openWorkspace(instance, { workspaceId: 'a' });
     const events = recordEvents(instance, WORKSPACE_EVENTS);
-    const panel = workspacePanel(instance);
-    await act(() =>
-      Promise.all([
-        panel.open({ workspaceId: 'b' }),
-        panel.open({ workspaceId: 'c' }),
-      ])
-    );
-    expect(
-      events.events.map((event) => [event.type, summary(event).workspaceId])
-    ).toEqual([
-      [BusEventType.WORKSPACE_PRE_CLOSE, 'a'],
-      [BusEventType.WORKSPACE_CLOSE, 'a'],
-      [BusEventType.WORKSPACE_PRE_OPEN, 'b'],
-      [BusEventType.WORKSPACE_OPEN, 'b'],
-      [BusEventType.WORKSPACE_PRE_CLOSE, 'b'],
-      [BusEventType.WORKSPACE_CLOSE, 'b'],
-      [BusEventType.WORKSPACE_PRE_OPEN, 'c'],
-      [BusEventType.WORKSPACE_OPEN, 'c'],
+    const entered = deferred();
+    const release = deferred();
+    instance.once({
+      type: BusEventType.WORKSPACE_PRE_OPEN,
+      handler: () => {
+        entered.resolve();
+        return release.promise;
+      },
+    });
+    let opening: Promise<void>;
+    await act(async () => {
+      opening = workspacePanel(instance).open(OPTIONS);
+      await entered.promise;
+    });
+    expect(instance.state.get().workspace.isOpen).toBe(false);
+    await closeWorkspace(instance);
+    expect(instance.state.get().workspace.isOpen).toBe(false);
+    expect(events.types()).toEqual([BusEventType.WORKSPACE_PRE_OPEN]);
+    await act(async () => {
+      release.resolve();
+      await opening;
+    });
+    expect(events.events.map(summary)).toEqual([
+      {
+        type: BusEventType.WORKSPACE_PRE_OPEN,
+        workspaceId: 'contract-workspace',
+        additionalData: { source: 'contract' },
+      },
+      {
+        type: BusEventType.WORKSPACE_OPEN,
+        workspaceId: undefined,
+        additionalData: undefined,
+      },
     ]);
-    expect(instance.state.get().workspace).toEqual(
-      expect.objectContaining({ isOpen: true, workspaceID: 'c' })
-    );
+    expect(instance.state.get().workspace).toEqual({
+      isOpen: true,
+      options: OPTIONS,
+      workspaceID: undefined,
+      additionalData: undefined,
+    });
   });
 
   it('finishes an open whose open handler awaits close, leaving the workspace closed', async () => {

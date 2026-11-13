@@ -80,7 +80,7 @@ export class InputCallbacks {
 
   onClose = async () => {
     await this.serviceManager.actions.changeView(ViewType.LAUNCHER, {
-      viewChangeReason: ViewChangeReason.MAIN_WINDOW_MINIMIZED,
+      viewChangeReason: 'main_window_minimized' as ViewChangeReason,
       mainWindowCloseReason: MainWindowCloseReason.DEFAULT_MINIMIZE,
     });
   };

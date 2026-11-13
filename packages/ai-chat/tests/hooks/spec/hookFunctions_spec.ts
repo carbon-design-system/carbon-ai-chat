@@ -65,6 +65,7 @@ describe('plain hook functions', () => {
     const iframePanel = { requestFocus: jest.fn() };
     const input = { requestFocus: jest.fn() };
     const options: FocusManagerOptions = {
+      shouldAutoFocus: true,
       showDisclaimer: false,
       iFramePanelIsOpen: true,
       viewSourcePanelIsOpen: false,
@@ -81,6 +82,9 @@ describe('plain hook functions', () => {
     expect(iframePanel.requestFocus).toHaveBeenCalledTimes(1);
     expect(input.requestFocus).not.toHaveBeenCalled();
     requestFocus({ ...options, iFramePanelIsOpen: false });
+    expect(input.requestFocus).toHaveBeenCalledTimes(1);
+    expect(requestFocus({ ...options, shouldAutoFocus: false })).toBe(false);
+    expect(iframePanel.requestFocus).toHaveBeenCalledTimes(1);
     expect(input.requestFocus).toHaveBeenCalledTimes(1);
   });
 

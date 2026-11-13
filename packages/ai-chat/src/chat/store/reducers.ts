@@ -859,7 +859,10 @@ const reducers: { [key: string]: ReducerType } = {
     action: { panelState: CatastrophicErrorPanelState }
   ): AppState => ({
     ...state,
-    catastrophicErrorPanelState: { ...action.panelState },
+    catastrophicErrorPanelState: {
+      ...state.catastrophicErrorPanelState,
+      ...action.panelState,
+    },
   }),
 
   [UPDATE_PERSISTED_STATE]: (

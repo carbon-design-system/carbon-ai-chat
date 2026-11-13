@@ -157,7 +157,9 @@ function createServiceManager(publicConfig: PublicConfig) {
     };
   }
 
-  setEnableDebugLog(Boolean(publicConfig.debug));
+  if (publicConfig.debug) {
+    setEnableDebugLog(true);
+  }
 
   return serviceManager;
 }

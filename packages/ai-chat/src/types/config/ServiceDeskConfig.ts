@@ -76,10 +76,9 @@ export interface ServiceDeskPublicConfig {
    * Indicates if Carbon AI Chat should automatically attempt to reconnect the user to a human agent when it is loaded. This
    * only works if the service desk integration being used supports reconnecting. This value defaults to true.
    *
-   * When the chat doesn't reconnect (this is false, the desk has no {@link ServiceDesk#reconnect}, or it resolves
-   * false), it ends the agent chat: it fires `human_agent:pre:endChat`, calls {@link ServiceDesk#endChat}, and fires
-   * `human_agent:endChat`. A `pre:endChat` handler can't cancel this end, and one that throws is logged while the end
-   * goes on.
+   * If the chat doesn't reconnect (this is false, the desk has no {@link ServiceDesk#reconnect}, or reconnect
+   * returns false or rejects), it ends the local agent session. This reload path fires no `human_agent:pre:endChat`
+   * or `human_agent:endChat` events and makes no {@link ServiceDesk#endChat} call.
    */
   allowReconnect?: boolean;
 }

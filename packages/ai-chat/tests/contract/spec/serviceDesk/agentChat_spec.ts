@@ -207,10 +207,10 @@ describe('reloading during an agent chat', () => {
 
   /** Mounts again, as a page reload would, and sends to hydrate. */
   async function remount(
-    reconnect: () => Promise<boolean>,
+    reconnect: (() => Promise<boolean>) | undefined,
     config: Partial<PublicConfig> = {}
   ) {
-    const reconnectMock = jest.fn(reconnect);
+    const reconnectMock = reconnect && jest.fn(reconnect);
     const desk = fakeDesk({ reconnect: reconnectMock });
     const backend = fakeBackend({ autoResolve: true });
     const { instance } = await contractChat({
@@ -266,47 +266,41 @@ describe('reloading during an agent chat', () => {
     expect(desk.desk.endChat).not.toHaveBeenCalled();
   });
 
-  /** The end events and desk call a reload that can't resume the chat makes. */
-  function expectEnded(
-    events: ReturnType<typeof recordEvents>,
-    desk: FakeDesk,
-    preEndChatPayload: unknown = null
-  ): void {
-    expect(events.types()).toEqual([
-      BusEventType.HUMAN_AGENT_PRE_END_CHAT,
-      BusEventType.HUMAN_AGENT_END_CHAT,
-    ]);
-    expect(events.of(BusEventType.HUMAN_AGENT_PRE_END_CHAT)[0]).toEqual(
-      expect.objectContaining({ endedByHumanAgent: false })
-    );
-    expect(events.of(BusEventType.HUMAN_AGENT_END_CHAT)[0]).toEqual({
-      type: BusEventType.HUMAN_AGENT_END_CHAT,
-      endedByHumanAgent: false,
-      requestCancelled: false,
-    });
-    expect(desk.desk.endChat.mock.calls).toEqual([
-      [{ endedByHumanAgent: false, preEndChatPayload }],
-    ]);
-  }
+  // MAIN-NOTES M85: reload ends locally without end events or a remote desk call.
+  // @covers event.human_agent:pre:endChat event.human_agent:endChat
+  it.each([
+    ['returns false', () => Promise.resolve(false)],
+    ['has no reconnect method', undefined],
+    [
+      'rejects reconnect',
+      () => Promise.reject(new Error('Contract reconnect failure')),
+    ],
+  ] as const)(
+    'ends locally when the desk %s',
+    async (_case, reconnectMethod) => {
+      await joinThenUnmount();
+      const { desk, instance, reconnect } = await remount(reconnectMethod);
+      const events = recordEvents(instance, HUMAN_AGENT_EVENTS);
+      const error = jest.spyOn(console, 'error').mockImplementation(() => {});
+      try {
+        await act(() => instance.send('again'));
+        await waitFor(() =>
+          expect(humanAgent(instance).isConnected).toBe(false)
+        );
+        await pause();
+        if (reconnect) {
+          expect(reconnect).toHaveBeenCalledTimes(1);
+        }
+        expect(events.types()).toEqual([]);
+        expect(desk.desk.endChat).not.toHaveBeenCalled();
+      } finally {
+        error.mockRestore();
+      }
+    }
+  );
 
   // @covers event.human_agent:pre:endChat event.human_agent:endChat
-  it('ends the chat with the end events and the desk endChat when the desk cannot reconnect', async () => {
-    await joinThenUnmount();
-    const { desk, instance, reconnect } = await remount(() =>
-      Promise.resolve(false)
-    );
-    const events = recordEvents(instance, HUMAN_AGENT_EVENTS);
-    await act(() => instance.send('again'));
-    await waitFor(() => expect(reconnect).toHaveBeenCalledTimes(1));
-    await waitFor(() =>
-      expect(events.of(BusEventType.HUMAN_AGENT_END_CHAT)).toHaveLength(1)
-    );
-    expect(humanAgent(instance).isConnected).toBe(false);
-    expectEnded(events, desk);
-  });
-
-  // @covers event.human_agent:pre:endChat event.human_agent:endChat
-  it('does not try to reconnect when allowReconnect is false, and ends the chat with the end events', async () => {
+  it('does not reconnect when allowReconnect is false, and ends locally without end events', async () => {
     await joinThenUnmount();
     const { desk, instance, reconnect } = await remount(
       () => Promise.resolve(true),
@@ -314,36 +308,33 @@ describe('reloading during an agent chat', () => {
     );
     const events = recordEvents(instance, HUMAN_AGENT_EVENTS);
     await act(() => instance.send('again'));
-    await waitFor(() =>
-      expect(events.of(BusEventType.HUMAN_AGENT_END_CHAT)).toHaveLength(1)
-    );
+    await waitFor(() => expect(humanAgent(instance).isConnected).toBe(false));
+    await pause();
     expect(reconnect).not.toHaveBeenCalled();
-    expect(humanAgent(instance).isConnected).toBe(false);
-    expectEnded(events, desk);
+    expect(events.types()).toEqual([]);
+    expect(desk.desk.endChat).not.toHaveBeenCalled();
   });
 
   // @covers event.human_agent:pre:endChat event.human_agent:endChat
-  it('ends the chat even when a pre:endChat handler cancels, passing its payload to the desk', async () => {
+  it('ends locally without calling a pre:endChat handler that would cancel', async () => {
     await joinThenUnmount();
     const { desk, instance } = await remount(() => Promise.resolve(false));
-    instance.on({
-      type: BusEventType.HUMAN_AGENT_PRE_END_CHAT,
-      handler: (event: BusEventHumanAgentPreEndChat) => {
-        event.cancelEndChat = true;
-        event.preEndChatPayload = { reason: 'reload' };
-      },
+    const handler = jest.fn((event: BusEventHumanAgentPreEndChat) => {
+      event.cancelEndChat = true;
+      event.preEndChatPayload = { reason: 'reload' };
     });
+    instance.on({ type: BusEventType.HUMAN_AGENT_PRE_END_CHAT, handler });
     const events = recordEvents(instance, HUMAN_AGENT_EVENTS);
     await act(() => instance.send('again'));
-    await waitFor(() =>
-      expect(events.of(BusEventType.HUMAN_AGENT_END_CHAT)).toHaveLength(1)
-    );
-    expect(humanAgent(instance).isConnected).toBe(false);
-    expectEnded(events, desk, { reason: 'reload' });
+    await waitFor(() => expect(humanAgent(instance).isConnected).toBe(false));
+    await pause();
+    expect(handler).not.toHaveBeenCalled();
+    expect(events.types()).toEqual([]);
+    expect(desk.desk.endChat).not.toHaveBeenCalled();
   });
 
   // @covers event.human_agent:pre:endChat event.human_agent:endChat
-  it('ends the chat and logs the error when a pre:endChat handler throws', async () => {
+  it('ends locally without calling a pre:endChat handler that would throw', async () => {
     await joinThenUnmount();
     const { desk, instance } = await remount(() => Promise.resolve(false));
     const failure = new Error('Contract pre:endChat failure');
@@ -351,26 +342,21 @@ describe('reloading during an agent chat', () => {
       throw failure;
     });
     instance.on({ type: BusEventType.HUMAN_AGENT_PRE_END_CHAT, handler });
-    const events = recordEvents(instance, [BusEventType.HUMAN_AGENT_END_CHAT]);
+    const events = recordEvents(instance, HUMAN_AGENT_EVENTS);
     const error = jest.spyOn(console, 'error').mockImplementation(() => {});
     try {
       await act(() => instance.send('again'));
-      await waitFor(() =>
-        expect(events.of(BusEventType.HUMAN_AGENT_END_CHAT)).toHaveLength(1)
-      );
-      // A short wait lets a rejection nothing caught surface and fail the test.
+      await waitFor(() => expect(humanAgent(instance).isConnected).toBe(false));
       await pause();
       expect(error.mock.calls.some((call) => call.includes(failure))).toBe(
-        true
+        false
       );
     } finally {
       error.mockRestore();
     }
-    expect(handler).toHaveBeenCalledTimes(1);
-    expect(humanAgent(instance).isConnected).toBe(false);
-    expect(desk.desk.endChat.mock.calls).toEqual([
-      [{ endedByHumanAgent: false, preEndChatPayload: null }],
-    ]);
+    expect(handler).not.toHaveBeenCalled();
+    expect(events.types()).toEqual([]);
+    expect(desk.desk.endChat).not.toHaveBeenCalled();
   });
 });
 

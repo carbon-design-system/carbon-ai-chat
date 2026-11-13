@@ -76,9 +76,9 @@ describe.each(ENTRIES)('%s plain-text projection', (_, utils) => {
       paragraph(text('line'), { type: 'hardBreak' }, text('break')),
       paragraph()
     );
-    // Paragraph break \n\n, hard break \n: MAIN-NOTES M70/M71 (U31).
+    // MAIN-NOTES M70/M71 (2.0.0): the public projection uses one newline for each break.
     expect(utils.getRawText(content)).toBe(
-      'hi @alice and /summarize\n\nline\nbreak\n\n'
+      'hi @alice and /summarize\nline\nbreak\n'
     );
   });
 
@@ -95,12 +95,14 @@ describe.each(ENTRIES)('%s plain-text projection', (_, utils) => {
     expect(utils.getRawText(doc(paragraph(empty)))).toBe('Bob');
   });
 
-  it('starts a paragraph at a blank line and a hard break at a newline', () => {
-    // Markdown-like breaks, as getRawText reads them: MAIN-NOTES M70/M71 (U31).
+  it('starts a paragraph for every newline', () => {
+    // MAIN-NOTES M70/M71 (2.0.0): public text conversion keeps one paragraph per line.
     expect(utils.textToDoc('one\n\ntwo\nthree')).toEqual(
       doc(
         paragraph(text('one')),
-        paragraph(text('two'), { type: 'hardBreak' }, text('three'))
+        paragraph(),
+        paragraph(text('two')),
+        paragraph(text('three'))
       )
     );
   });
@@ -163,8 +165,8 @@ describe.each(ENTRIES)('%s JSONContent walkers', (_, utils) => {
       }
       return node.type === 'mention' ? text(String(node.attrs?.value)) : node;
     });
-    // Paragraphs join with \n\n: MAIN-NOTES M70/M71 (U31).
-    expect(utils.getRawText(mapped)).toBe('a@aliceb\n\n@alice');
+    // MAIN-NOTES M70/M71 (2.0.0): public paragraph boundaries use one newline.
+    expect(utils.getRawText(mapped)).toBe('a@aliceb\n@alice');
     expect(utils.findNodesByType(mapped, 'command')).toEqual([]);
   });
 

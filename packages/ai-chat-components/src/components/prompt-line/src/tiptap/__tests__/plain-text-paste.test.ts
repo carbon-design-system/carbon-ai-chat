@@ -83,25 +83,25 @@ describe('tiptap/plain-text-paste', function () {
     expect(getRawText(editor.getJSON())).to.equal('hello world');
   });
 
-  it('turns a single newline into a line break within the surrounding paragraph', () => {
+  it('starts a paragraph at each newline and merges the surrounding text', () => {
     const { editor, cleanup: c } = makeEditor('world');
     cleanup = c;
 
     editor.commands.setTextSelection(3);
     dispatchPaste(editor, 'a\nb');
 
-    expect(editor.getJSON().content?.length).to.equal(1);
+    expect(editor.getJSON().content?.length).to.equal(2);
     expect(getRawText(editor.getJSON())).to.equal('woa\nbrld');
   });
 
-  it('starts a new paragraph at a blank line, merged with the surrounding text', () => {
+  it('keeps an empty paragraph for a pasted blank line', () => {
     const { editor, cleanup: c } = makeEditor('world');
     cleanup = c;
 
     editor.commands.setTextSelection(3);
     dispatchPaste(editor, 'a\n\nb');
 
-    expect(editor.getJSON().content?.length).to.equal(2);
+    expect(editor.getJSON().content?.length).to.equal(3);
     expect(getRawText(editor.getJSON())).to.equal('woa\n\nbrld');
   });
 
@@ -133,7 +133,7 @@ describe('tiptap/plain-text-paste', function () {
     dispatchPaste(editor, 'a\nb');
 
     expect(editor.getJSON().content?.length).to.equal(2);
-    expect(getRawText(editor.getJSON())).to.equal('woa\n\nbrld');
+    expect(getRawText(editor.getJSON())).to.equal('woa\nbrld');
   });
 
   it('collapses the caret after text pasted over a selection', () => {
@@ -155,11 +155,11 @@ describe('tiptap/plain-text-paste', function () {
     dispatchPaste(editor, '\n\n');
     editor.commands.insertContent('Z');
 
-    expect(editor.getJSON().content?.length).to.equal(2);
+    expect(editor.getJSON().content?.length).to.equal(3);
     expect(getRawText(editor.getJSON())).to.equal('\n\nZ');
   });
 
-  it('keeps a pasted lone newline as a line break when replacing a select-all', () => {
+  it('keeps a pasted lone newline as two paragraphs when replacing a select-all', () => {
     const { editor, cleanup: c } = makeEditor('<p>one</p><p>two</p>');
     cleanup = c;
 
@@ -167,7 +167,7 @@ describe('tiptap/plain-text-paste', function () {
     dispatchPaste(editor, '\n');
     editor.commands.insertContent('Z');
 
-    expect(editor.getJSON().content?.length).to.equal(1);
+    expect(editor.getJSON().content?.length).to.equal(2);
     expect(getRawText(editor.getJSON())).to.equal('\nZ');
   });
 });

@@ -159,15 +159,15 @@ export enum BusEventType {
   WORKSPACE_OPEN = 'workspace:open',
 
   /**
-   * Fired before a workspace closes, including when `restartConversation` or `clearConversation` closes an open
-   * workspace. The chat waits for its handlers, but a handler can't stop the close: a restart or clear closes the
-   * workspace even if a handler throws. Closing a workspace that's already closed fires nothing.
+   * Fired before an open workspace closes through its panel API. Closing a workspace that's already closed fires
+   * nothing. `restartConversation` and `clearConversation` reset an open workspace without firing its close events
+   * or calling its close handlers.
    */
   WORKSPACE_PRE_CLOSE = 'workspace:pre:close',
 
   /**
-   * Fired after a workspace closes, including when `restartConversation` or `clearConversation` closes an open
-   * workspace. Closing a workspace that's already closed fires nothing.
+   * Fired after an open workspace closes through its panel API. Closing an already-closed workspace fires nothing.
+   * `restartConversation` and `clearConversation` reset an open workspace without this event.
    */
   WORKSPACE_CLOSE = 'workspace:close',
 
@@ -203,15 +203,16 @@ export enum BusEventType {
 
   /**
    * This event is fired before a chat with an agent is ended. This occurs after the user has selected "Yes" from the
-   * confirmation modal but it can also be fired if the chat is ended by the agent, or when a page reload can't resume
-   * the chat. Note that this is not fired if a request for an agent is cancelled. The human_agent:endChat event
-   * however is fired in that case.
+   * confirmation modal but it can also be fired if the chat is ended by the agent. This isn't fired when a page
+   * reload can't resume the chat; see {@link ServiceDeskPublicConfig.allowReconnect}. It also isn't fired if a request
+   * for an agent is canceled. The human_agent:endChat event is fired in that case.
    */
   HUMAN_AGENT_PRE_END_CHAT = 'human_agent:pre:endChat',
 
   /**
    * This event is fired after a chat with an agent has ended. This is fired after {@link BusEventType.HUMAN_AGENT_PRE_END_CHAT} but
-   * can be fired both from the user leaving the chat or the agent ending the chat.
+   * can be fired both from the user leaving the chat or the agent ending the chat. A reload that can't resume the
+   * chat ends it locally without this event.
    */
   HUMAN_AGENT_END_CHAT = 'human_agent:endChat',
 
@@ -275,8 +276,9 @@ export enum ViewChangeReason {
 
   /**
    * Indicates the user clicked the built-in minimize button in the chat header, which closed the main window.
+   * In 1.x, the button emits `main_window_minimized`; this enum retains `mainWindowMinimized`.
    */
-  MAIN_WINDOW_MINIMIZED = 'main_window_minimized',
+  MAIN_WINDOW_MINIMIZED = 'mainWindowMinimized',
 
   /**
    * Indicates the view was changed by a call to {@link ChatInstance.changeView}.
@@ -956,9 +958,7 @@ export interface BusEventHumanAgentPreEndChat<
   preEndChatPayload: TPayloadType;
 
   /**
-   * This value may be set by a listener to indicate that the process of ending the chat should be cancelled. It is
-   * ignored when a page reload can't resume the chat, since the chat can't go on; see
-   * {@link ServiceDeskPublicConfig.allowReconnect}.
+   * This value may be set by a listener to indicate that the process of ending the chat should be canceled.
    */
   cancelEndChat: boolean;
 }
