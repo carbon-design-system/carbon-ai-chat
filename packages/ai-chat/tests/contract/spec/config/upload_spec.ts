@@ -313,15 +313,27 @@ describe('upload: onFileUpload', () => {
     expect(allByRole('group', 'other.pdf')).toHaveLength(0);
   });
 
-  it('offers no remove control while a file uploads, so the user can’t abort it', async () => {
-    // UploadConfig.onFileUpload's JSDoc says the signal fires when the user
-    // removes a pending upload; on `main` a file still uploading shows no
-    // remove control, so a user can't reach that path.
+  it('offers a remove control while a file uploads, which aborts the signal and drops the file', async () => {
+    const backend = fakeBackend();
     const uploader = fakeUploader();
-    await openChat({ onFileUpload: uploader.onFileUpload });
+    const { instance } = await openChat(
+      { onFileUpload: uploader.onFileUpload },
+      backend
+    );
     await pickFiles(STRINGS.input_uploadButtonLabel, [makeFile('report.pdf')]);
-    expect(allByRole('button', 'Contract remove report.pdf')).toHaveLength(0);
-    expect(uploader.calls[0].signal.aborted).toBe(false);
+    expect(instance.getState().input.hasInFlightUploads).toBe(true);
+    await click(removeButton('report.pdf'));
+    expect(uploader.calls[0].signal.aborted).toBe(true);
+    expect(allByRole('group', 'report.pdf')).toHaveLength(0);
+    expect(instance.getState().input.hasInFlightUploads).toBe(false);
+    // A host that ignores the signal and resolves anyway adds nothing.
+    await settle(uploader.calls[0], {
+      data: { fields: [fileField('doc', 'ref-1')] },
+    });
+    expect(instance.getState().input.structuredData).toBeUndefined();
+    const started = await startSend(instanceSender(instance, backend), 'hi');
+    expect(started.sent.request.input.structured_data).toBeUndefined();
+    await finishSend(started);
   });
 
   it('leaves the signal unaborted when the chat unmounts mid-upload', async () => {

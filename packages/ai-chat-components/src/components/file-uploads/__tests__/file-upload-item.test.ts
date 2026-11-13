@@ -549,6 +549,51 @@ describe('file-upload-item', () => {
     });
   });
 
+  describe('while uploading', () => {
+    const removeButton = (el: FileUploadItemElement) =>
+      innerRoot(el).querySelector<HTMLButtonElement>('button.cds--file-close');
+    const spinners = (el: FileUploadItemElement) =>
+      innerRoot(el).querySelectorAll('cds-loading');
+
+    it('offers a remove button named after the file, beside the spinner', async () => {
+      const el = await mount(makeUpload('a', FileStatusValue.UPLOADING));
+      el.removeFileNamedLabel = 'Remove a.txt';
+      el.uploadingFileLabel = 'Uploading a file';
+      await settle(el);
+
+      const button = removeButton(el)!;
+      expect(button).to.exist;
+      expect(button.getAttribute('aria-label')).to.equal('Remove a.txt');
+      expect(spinners(el)).to.have.lengthOf(1);
+      expect(spinners(el)[0].getAttribute('assistive-text')).to.equal(
+        'Uploading a file'
+      );
+      expect(spinners(el)[0].nextElementSibling).to.equal(button);
+    });
+
+    it('fires cds-aichat-file-remove when the user clicks remove', async () => {
+      const el = await mount(makeUpload('a', FileStatusValue.UPLOADING));
+      await settle(el);
+
+      setTimeout(() => removeButton(el)!.click());
+      const event = await oneEvent(el, 'cds-aichat-file-remove');
+      expect(event.detail.fileId).to.equal('a');
+    });
+
+    it('drops the spinner and keeps the same button once the upload finishes', async () => {
+      const el = await mount(makeUpload('a', FileStatusValue.UPLOADING));
+      await settle(el);
+      const button = removeButton(el)!;
+      button.focus();
+
+      el.upload = makeUpload('a', FileStatusValue.EDIT);
+      await settle(el);
+      expect(spinners(el)).to.have.lengthOf(0);
+      expect(removeButton(el)).to.equal(button);
+      expect(innerRoot(el).activeElement).to.equal(button);
+    });
+  });
+
   describe('error state', () => {
     it('marks the host aria-invalid', async () => {
       const el = await mount(
