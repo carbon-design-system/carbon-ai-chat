@@ -24,6 +24,7 @@ import {
   DriverFactory,
   SEND_ERROR_MESSAGE,
   describeShared,
+  deferred,
   finishSend,
   startSend,
 } from '../../helpers';
@@ -158,6 +159,55 @@ describeShared('a throwing send handler', (makeDriver) => {
       expect(reply.output.generic.map((item) => item.response_type)).toEqual([
         MessageResponseTypes.INLINE_ERROR,
       ]);
+    }
+  );
+  it.each(HANDLERS)(
+    'ignores a %s handler rejection after clearConversation canceled its send',
+    async (_name, type) => {
+      const { chat, errors } = await driverWithOnError(makeDriver);
+      await finishSend(await startSend(chat, 'warm up'));
+      const gate = deferred();
+      let entered = false;
+      chat.on({
+        type,
+        handler: (event: BusEventPreSend | BusEventSend) => {
+          if (event.data.input.text === 'first') {
+            entered = true;
+            return gate.promise;
+          }
+          return undefined;
+        },
+      });
+      let outcome: Outcome;
+      await act(async () => {
+        chat.send('first', { silent: true }).then(
+          () => {
+            outcome = { resolved: true };
+          },
+          (error) => {
+            outcome = { resolved: false, error };
+          }
+        );
+      });
+      await waitFor(() => expect(entered).toBe(true));
+      await act(() => chat.messaging.clearConversation());
+      await waitFor(() => expect(outcome).toEqual({ resolved: true }));
+      expect(chat.messages()).toEqual([]);
+      expect(errors).toEqual([]);
+
+      await act(async () => {
+        gate.reject(new Error('late handler failure'));
+      });
+      const next = await startSend(chat, 'after');
+      await finishSend(next);
+      expect(chat.backend.texts()).toEqual(['warm up', 'after']);
+      expect(chat.messages().map((message) => message.id)).toEqual([
+        next.sent.request.id,
+      ]);
+      expect(chat.messages()[0]).toMatchObject({ input: { text: 'after' } });
+      expect(chat.status()).toBe('ready');
+      expect(errors).toEqual([]);
+      expect(outcome).toEqual({ resolved: true });
     }
   );
 });
