@@ -10,6 +10,9 @@
 import { act } from '@testing-library/react';
 
 import {
+  BusEventType,
+  BusEventViewPreChange,
+  ChatInstance,
   MessageSendSource,
   PersistableState,
   PublicConfig,
@@ -215,6 +218,38 @@ describe('persistedState.onStateChange', () => {
     await pause();
     expect(instance.getState().viewState).toEqual(OPEN);
     expect(recorder.values).toEqual([]);
+  });
+
+  // @covers config.openChatByDefault event.view:pre:change
+  it('reports a later open after a view:pre:change handler cancels the mount’s open', async () => {
+    const recorder = stateRecorder();
+    let cancelled = false;
+    const backend = fakeBackend({ autoResolve: true });
+    const { instance } = await contractChat({
+      openChatByDefault: true,
+      onBeforeRender: (handed: ChatInstance) => {
+        handed.on({
+          type: BusEventType.VIEW_PRE_CHANGE,
+          handler: (event: BusEventViewPreChange) => {
+            if (!cancelled) {
+              cancelled = true;
+              event.cancelViewChange = true;
+            }
+          },
+        });
+      },
+      messaging: {
+        skipWelcome: true,
+        customSendMessage: backend.customSendMessage,
+      },
+      persistedState: { onStateChange: recorder.onStateChange },
+    });
+    await pause();
+    expect(cancelled).toBe(true);
+    expect(instance.getState().viewState.mainWindow).toBe(false);
+    expect(recorder.values).toEqual([]);
+    await changeView(instance, ViewType.MAIN_WINDOW);
+    expect(recorder.values.map((value) => value.viewState)).toEqual([OPEN]);
   });
 
   it('reports one view change once, with the whole PersistableState and no bookkeeping', async () => {
