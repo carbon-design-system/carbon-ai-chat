@@ -73,6 +73,13 @@ interface InputNodeHost extends SlotHost {
   isInline: boolean;
   isToken: boolean;
   release: (() => void) | null;
+  /**
+   * True once the host has been in its target. The target's paragraph may
+   * still be detached then; it attaches later in the same commit, before the
+   * re-render this flag triggers. It stays true, so a target that
+   * re-registers later does not remount the host's content.
+   */
+  placed: boolean;
 }
 
 const EMPTY_SNAPSHOT: ExtensionHostsSnapshot = {
@@ -215,11 +222,20 @@ class ExtensionHosts {
         isInline,
         isToken,
         release: null,
+        placed: !isInline,
       };
       this.inputHosts.set(entry.slotKey, host);
     }
     return host.element;
   }
+
+  /**
+   * Whether an input node's host has been placed in its target. An inline host
+   * waits for its target in the sent bubble, so its content renders only once
+   * this is true and its first effects see a connected element.
+   */
+  isInputNodePlaced = (slotKey: string): boolean =>
+    this.inputHosts.get(slotKey)?.placed ?? false;
 
   /** A view reports from a layout effect whether a kind has a callback. */
   setRendererPresent(kind: HostKind, present: boolean): void {
@@ -393,7 +409,12 @@ class ExtensionHosts {
       const { element } = host;
       if (host.isInline) {
         element.className = `${prefix}-markdown-inline-plugin`;
-        host.release = mountInlineHost(chatWrapper, key, element);
+        host.release = mountInlineHost(chatWrapper, key, element, () => {
+          if (!host.placed) {
+            host.placed = true;
+            this.notify();
+          }
+        });
       } else {
         element.setAttribute('slot', key);
         mountHost(chatWrapper, element, key, host.isToken);
