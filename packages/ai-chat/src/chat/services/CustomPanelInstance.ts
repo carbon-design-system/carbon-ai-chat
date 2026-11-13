@@ -37,6 +37,17 @@ import { DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS, viewActions } from '../state';
 import { chatStore } from './attachChatView';
 
 /**
+ * Opens the history panel. The header menu and the history panel's `open`
+ * both come here, so `historyPanel:pre:open` fires once before every open.
+ * Handlers can't cancel it, and the open doesn't wait for them. A handler
+ * queued behind a slow earlier one may run after the panel is open.
+ */
+function openHistoryPanel(serviceManager: ServiceManager) {
+  serviceManager.fire({ type: BusEventType.HISTORY_PANEL_PRE_OPEN });
+  serviceManager.store.dispatch(viewActions.setHistoryPanelOpen(true));
+}
+
+/**
  * This function takes in the service manager to help create a custom panel instance. The panel instance is created
  * using a function instead of a class because a private property at runtime can still be accessible. The service
  * manager is passed in instead made a private property.
@@ -222,18 +233,28 @@ function createCustomPanelInstance(
       setOpen: viewActions.setCustomPanelOpen,
     },
     [PanelType.HISTORY]: {
-      setConfig: viewActions.setCustomPanelConfigOptions,
       setOpen: viewActions.setHistoryPanelOpen,
     },
   } as const;
 
-  const { setConfig, setOpen } =
+  const { setOpen } =
     panelActions[panelType] ?? panelActions[PanelType.DEFAULT];
+  // The history panel's `open` returns before it would set options.
+  const { setConfig } =
+    panelType === PanelType.WORKSPACE
+      ? panelActions[PanelType.WORKSPACE]
+      : panelActions[PanelType.DEFAULT];
 
   const customPanelInstance: CustomPanelInstance = {
     async open(
       options?: CustomPanelOpenOptions | WorkspaceCustomPanelConfigOptions
     ) {
+      // The history panel has no options to show, so it ignores them.
+      if (panelType === PanelType.HISTORY) {
+        openHistoryPanel(serviceManager);
+        return;
+      }
+
       const resolvedOptions = (options ??
         defaultPanelOptions) as CustomPanelConfigOptions;
       const store = chatStore(serviceManager);
@@ -315,4 +336,4 @@ function createCustomPanelInstance(
   return Object.freeze(customPanelInstance);
 }
 
-export { createCustomPanelInstance, CustomPanelInstance };
+export { createCustomPanelInstance, CustomPanelInstance, openHistoryPanel };

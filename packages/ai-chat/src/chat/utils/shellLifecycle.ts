@@ -132,6 +132,7 @@ import {
 } from '../state';
 
 import { chatStore } from '../services/attachChatView';
+import { openHistoryPanel } from '../services/CustomPanelInstance';
 
 import { joinPersistedState } from '../state';
 import { writeableElementsOf } from './writeableElements';
@@ -729,14 +730,7 @@ export class ShellLifecycle {
               },
               {
                 text: languagePack.history_view_chats,
-                handler: () => {
-                  serviceManager.fire({
-                    type: BusEventType.HISTORY_PANEL_PRE_OPEN,
-                  });
-                  serviceManager.store.dispatch(
-                    viewActions.setHistoryPanelOpen(true)
-                  );
-                },
+                handler: () => openHistoryPanel(serviceManager),
               },
               ...(header?.menuOptions || []),
             ],

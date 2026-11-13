@@ -388,4 +388,34 @@ describe('header controls through the ChatContainer wrapper', () => {
     });
     expect(newChat).toHaveBeenCalledTimes(1);
   });
+
+  it('fires historyPanel:pre:open once, before the panel opens, from the mobile history menu', async () => {
+    const { instance, store, base } = await mountChat({
+      homescreen: { isOn: false },
+      history: { isOn: true },
+    });
+    const openWhenFired: boolean[] = [];
+    instance.on({
+      type: BusEventType.HISTORY_PANEL_PRE_OPEN,
+      handler: async () => {
+        openWhenFired.push(store.getState().view.historyPanelState.isOpen);
+      },
+    });
+    act(() => {
+      store.dispatch(viewActions.setHistoryPanelOptions(true, false));
+    });
+    const customPanel = store.getState().view.customPanelState;
+    const { languagePack } = store.getState();
+    await waitFor(() => expect(base().navigationType).toBe('overflow'));
+    act(() => {
+      base()
+        .navigationOverflowItems.find(
+          (item) => item.text === languagePack.history_view_chats
+        )
+        .onClick();
+    });
+    expect(openWhenFired).toEqual([false]);
+    expect(store.getState().view.historyPanelState.isOpen).toBe(true);
+    expect(store.getState().view.customPanelState).toBe(customPanel);
+  });
 });

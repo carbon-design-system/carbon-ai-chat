@@ -21,6 +21,7 @@ import {
   CustomPanelConfigOptions,
 } from '../../../src/types/instance/apiTypes';
 import { waitFor } from '@testing-library/react';
+import { viewActions } from '../../../src/chat/state';
 
 describe('ChatInstance.customPanels', () => {
   beforeEach(setupBeforeEach);
@@ -635,6 +636,71 @@ describe('ChatInstance.customPanels', () => {
       panel.open({ disableAnimation: true });
       await new Promise((resolve) => setTimeout(resolve, 300));
       expect(openEventCount).toBe(1);
+    });
+  });
+
+  describe('history panel', () => {
+    it("keeps the custom panel's title and layout when history opens with other options", async () => {
+      const { instance, store } =
+        await renderChatAndGetInstanceWithStore(createBaseConfig());
+      const customOptions: DefaultCustomPanelConfigOptions = {
+        title: 'Order details',
+        fullWidth: true,
+        hideBackButton: true,
+      };
+      instance.customPanels.getPanel(PanelType.DEFAULT).open(customOptions);
+      const before = store.getState().view.customPanelState;
+
+      instance.customPanels.getPanel(PanelType.HISTORY).open({
+        title: 'Chats',
+        fullWidth: false,
+        hideBackButton: false,
+      } as DefaultCustomPanelConfigOptions);
+
+      const after = store.getState().view;
+      expect(after.customPanelState).toBe(before);
+      expect(after.customPanelState.options).toEqual(customOptions);
+      expect(after.historyPanelState.isOpen).toBe(true);
+      // The history panel shows no options, so it doesn't store them.
+      expect(Object.keys(after.historyPanelState).sort()).toEqual([
+        'isMobile',
+        'isOpen',
+      ]);
+    });
+
+    it("keeps the custom panel's title when history opens with no options", async () => {
+      const { instance, store } =
+        await renderChatAndGetInstanceWithStore(createBaseConfig());
+      instance.customPanels
+        .getPanel(PanelType.DEFAULT)
+        .open({ title: 'Order details' });
+
+      instance.customPanels.getPanel(PanelType.HISTORY).open();
+
+      expect(store.getState().view.customPanelState.options.title).toBe(
+        'Order details'
+      );
+      expect(store.getState().view.historyPanelState.isOpen).toBe(true);
+    });
+
+    it('fires historyPanel:pre:open once, before the panel opens, when opened from code', async () => {
+      const { instance, store } =
+        await renderChatAndGetInstanceWithStore(createBaseConfig());
+      const openWhenFired: boolean[] = [];
+      instance.on({
+        type: BusEventType.HISTORY_PANEL_PRE_OPEN,
+        handler: async () => {
+          openWhenFired.push(store.getState().view.historyPanelState.isOpen);
+        },
+      });
+
+      // The desktop layout: the header menu can't open history here, but code can.
+      store.dispatch(viewActions.setHistoryPanelOptions(false, false));
+      await instance.customPanels.getPanel(PanelType.HISTORY).open();
+
+      expect(openWhenFired).toEqual([false]);
+      expect(store.getState().view.historyPanelState.isOpen).toBe(true);
+      expect(store.getState().view.customPanelState.isOpen).toBe(false);
     });
   });
 });
