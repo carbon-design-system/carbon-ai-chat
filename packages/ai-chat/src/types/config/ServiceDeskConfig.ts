@@ -616,7 +616,7 @@ export interface ServiceDesk {
    * This will be called when the service desk is first initialized and it is determined that the user was previously
    * connected to an agent. This function should perform whatever steps are necessary to reconnect the user. Web chat
    * will assume the user is permitted to send messages and is connected to the same agent when this function resolves.
-   * If it resolves false or rejects, the chat ends the agent chat and calls {@link ServiceDesk#endChat}.
+   * If it resolves false or rejects, the chat ends the local agent session; see {@link ServiceDeskPublicConfig.allowReconnect}.
    *
    * @returns true to indicate that the reconnect was successful.
    */
