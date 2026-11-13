@@ -55,6 +55,7 @@ import {
   isResponseWithNestedItems,
   streamItemID,
 } from '../utils/messageUtils';
+import { withChangedKeys } from '../utils/messageChanges';
 
 import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
@@ -694,10 +695,9 @@ function applyFullMessageWithIdentity(
   // Add the original message to the global map.
   const newState = {
     ...state,
-    allMessagesByID: {
-      ...state.allMessagesByID,
+    allMessagesByID: withChangedKeys(state.allMessagesByID, {
       [(messageID = message.id)]: message,
-    },
+    }),
   };
 
   // Now add the full message ID to the specific ChatMessagesState but only if it's a new message.
@@ -844,7 +844,9 @@ function applyChunkWriteWithIdentity(
   const { localMessageIDs } = state.assistantMessageState;
   const nextState = {
     ...withMessage,
-    allMessageItemsByID: { ...state.allMessageItemsByID, [localID]: localItem },
+    allMessageItemsByID: withChangedKeys(state.allMessageItemsByID, {
+      [localID]: localItem,
+    }),
     assistantMessageState: {
       ...withMessage.assistantMessageState,
       localMessageIDs: existing
