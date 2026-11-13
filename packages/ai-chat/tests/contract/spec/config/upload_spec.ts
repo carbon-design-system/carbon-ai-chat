@@ -117,7 +117,7 @@ describe('upload: the attach button', () => {
   beforeEach(() => {
     consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
   });
-  afterEach(() => consoleError.mockRestore());
+  afterEach(() => consoleError?.mockRestore());
 
   /** The console errors that name an upload config field. */
   const uploadErrors = () =>

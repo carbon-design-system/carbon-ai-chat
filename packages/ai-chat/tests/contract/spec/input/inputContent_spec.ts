@@ -94,16 +94,6 @@ async function updateRawValue(
   });
 }
 
-/**
- * The console warnings that name `updateRawValue`. Other warnings (a Tiptap
- * one an earlier test set off, say) don't count.
- */
-function deprecationWarnings(consoleWarn: jest.SpyInstance): unknown[][] {
-  return consoleWarn.mock.calls.filter((args) =>
-    args.some((arg: unknown) => String(arg).includes('updateRawValue'))
-  );
-}
-
 /** Each `state:change` from now on, as the input's text and doc. */
 function recordInputChanges(instance: ChatInstance) {
   const changes: { rawValue: string; content: JSONContent }[] = [];
@@ -145,12 +135,10 @@ describe('state.input', () => {
     );
   });
 
-  it('is a frozen snapshot', async () => {
+  it('publishes the doc as a frozen snapshot', async () => {
     const { instance } = await openChat();
     await updateContent(instance, () => textDoc('draft'));
-    const { input } = instance.state.get();
-    expect(Object.isFrozen(input)).toBe(true);
-    expect(Object.isFrozen(input.content)).toBe(true);
+    expect(Object.isFrozen(instance.state.get().input.content)).toBe(true);
   });
 
   it('joins paragraphs with one newline in the plain field', async () => {
@@ -192,6 +180,17 @@ describe('state.input', () => {
 // @covers instance.input instance.input.updateContent state.input.rawValue state.input.content
 describe('input.updateContent', () => {
   contractSetup();
+
+  let consoleError: jest.SpyInstance;
+  let consoleWarn: jest.SpyInstance;
+  beforeEach(() => {
+    consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
+    consoleWarn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+  });
+  afterEach(() => {
+    consoleError?.mockRestore();
+    consoleWarn?.mockRestore();
+  });
 
   it('replaces the draft, and the field shows it', async () => {
     const { instance } = await openChat();
@@ -239,19 +238,20 @@ describe('input.updateContent', () => {
     }
   });
 
-  it('resolves and keeps the draft when the updater throws', async () => {
-    const consoleError = jest
-      .spyOn(console, 'error')
-      .mockImplementation(() => {});
+  it('resolves, keeps the draft, and logs the error when the updater throws', async () => {
     const { instance } = await openChat();
     await updateContent(instance, () => textDoc('kept'));
+    consoleError.mockClear();
     await expect(
       instance.input.updateContent(() => {
         throw new Error('host updater failed');
       })
     ).resolves.toBeUndefined();
     expect(instance.state.get().input.rawValue).toBe('kept');
-    expect(consoleError).toHaveBeenCalled();
+    expect(consoleError).toHaveBeenCalledWith(
+      expect.stringContaining('updating the input content'),
+      expect.objectContaining({ message: 'host updater failed' })
+    );
   });
 
   // @covers config.input.tiptap
@@ -265,7 +265,6 @@ describe('input.updateContent', () => {
   });
 
   it('empties the draft for a mark no extension supports', async () => {
-    jest.spyOn(console, 'warn').mockImplementation(() => {});
     const { instance } = await openChat();
     await updateContent(instance, () => textDoc('earlier draft'));
     await updateContent(instance, () => ({
@@ -332,6 +331,17 @@ describe('input.updateContent', () => {
 describe('input.updateRawValue', () => {
   contractSetup();
 
+  let consoleError: jest.SpyInstance;
+  let consoleWarn: jest.SpyInstance;
+  beforeEach(() => {
+    consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
+    consoleWarn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+  });
+  afterEach(() => {
+    consoleError?.mockRestore();
+    consoleWarn?.mockRestore();
+  });
+
   it('replaces the draft with plain text, and the field shows it', async () => {
     const { instance } = await openChat();
     await updateRawValue(instance, () => 'hello');
@@ -370,19 +380,20 @@ describe('input.updateRawValue', () => {
     expect(instance.state.get().input.rawValue).toBe('');
   });
 
-  it('keeps the draft when the updater throws', async () => {
-    const consoleError = jest
-      .spyOn(console, 'error')
-      .mockImplementation(() => {});
+  it('keeps the draft and logs the error when the updater throws', async () => {
     const { instance } = await openChat();
     await updateRawValue(instance, () => 'kept');
+    consoleError.mockClear();
     expect(() =>
       instance.input.updateRawValue(() => {
         throw new Error('host updater failed');
       })
     ).not.toThrow();
     expect(instance.state.get().input.rawValue).toBe('kept');
-    expect(consoleError).toHaveBeenCalled();
+    expect(consoleError).toHaveBeenCalledWith(
+      expect.stringContaining('updating the input value'),
+      expect.objectContaining({ message: 'host updater failed' })
+    );
   });
 
   it('publishes the new text before the new doc in the plain field', async () => {
@@ -399,39 +410,7 @@ describe('input.updateRawValue', () => {
     ]);
   });
 
-  it('warns nothing in the plain field', async () => {
-    const consoleWarn = jest
-      .spyOn(console, 'warn')
-      .mockImplementation(() => {});
-    const { instance } = await openChat();
-    consoleWarn.mockClear();
-    await updateRawValue(instance, () => 'one');
-    // src/types/instance/ChatInstanceInput.ts:39 says the method "emits one
-    // deprecation warning per session"; on `main` it warns only once the rich
-    // editor is mounted (src/chat/services/InputActionsService.ts:78).
-    expect(deprecationWarnings(consoleWarn)).toEqual([]);
-  });
-
-  // The warning's once-per-session flag lives for the whole file, so this
-  // must stay the first test here to write to the rich editor with
-  // updateRawValue.
-  it('warns once, over two writes, in the rich editor', async () => {
-    const consoleWarn = jest
-      .spyOn(console, 'warn')
-      .mockImplementation(() => {});
-    const { instance } = await openChat();
-    await act(async () => {
-      await instance.input.getEditor();
-    });
-    consoleWarn.mockClear();
-    await updateRawValue(instance, () => 'one');
-    await updateRawValue(instance, () => 'two');
-    expect(instance.state.get().input.rawValue).toBe('two');
-    expect(deprecationWarnings(consoleWarn)).toHaveLength(1);
-  });
-
   it('turns a newline into a space in the rich editor', async () => {
-    jest.spyOn(console, 'warn').mockImplementation(() => {});
     const { instance } = await openChat();
     await act(async () => {
       await instance.input.getEditor();

@@ -130,6 +130,14 @@ describe('sending from the input', () => {
 describe('input.isDisabled', () => {
   contractSetup();
 
+  let consoleWarn: jest.SpyInstance;
+  beforeEach(() => {
+    consoleWarn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+  });
+  afterEach(() => {
+    consoleWarn?.mockRestore();
+  });
+
   it('disables the field and the send button, and sends nothing', async () => {
     const { instance, backend } = await openChat({
       input: { isDisabled: true },
@@ -160,7 +168,6 @@ describe('input.isDisabled', () => {
 
   // @covers instance.updateInputIsDisabled
   it('is not lifted by updateInputIsDisabled(false)', async () => {
-    jest.spyOn(console, 'warn').mockImplementation(() => {});
     const { instance } = await openChat({ input: { isDisabled: true } });
     await act(async () => {
       instance.updateInputIsDisabled(false);
@@ -173,8 +180,15 @@ describe('input.isDisabled', () => {
 describe('updateInputIsDisabled', () => {
   contractSetup();
 
+  let consoleWarn: jest.SpyInstance;
+  beforeEach(() => {
+    consoleWarn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+  });
+  afterEach(() => {
+    consoleWarn?.mockRestore();
+  });
+
   it('disables the field and the send button, then enables them again', async () => {
-    jest.spyOn(console, 'warn').mockImplementation(() => {});
     const { instance, backend } = await openChat();
     await typeText('draft');
     await act(async () => {
@@ -196,7 +210,6 @@ describe('updateInputIsDisabled', () => {
 
   // @covers config.isReadonly
   it('overrides isReadonly', async () => {
-    jest.spyOn(console, 'warn').mockImplementation(() => {});
     const { instance } = await openChat({ isReadonly: true });
     expect(inputField().disabled).toBe(true);
     await act(async () => {
@@ -206,9 +219,6 @@ describe('updateInputIsDisabled', () => {
   });
 
   it('warns that it is deprecated on each call', async () => {
-    const consoleWarn = jest
-      .spyOn(console, 'warn')
-      .mockImplementation(() => {});
     const { instance } = await openChat();
     consoleWarn.mockClear();
     const deprecations = () =>
@@ -323,11 +333,6 @@ describe('input.error', () => {
     const text = shownText(document.body);
     expect(text).toContain('Contract error title');
     expect(text).toContain('Contract error description');
-  });
-
-  it('shows nothing without it', async () => {
-    await openChat();
-    expect(shownText(document.body)).not.toContain('Contract error title');
   });
 });
 

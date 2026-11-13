@@ -40,6 +40,14 @@ const RATING: StructuredData = { fields: [{ id: 'rating', value: 4 }] };
 describe('input.updateStructuredData', () => {
   contractSetup();
 
+  let consoleError: jest.SpyInstance;
+  beforeEach(() => {
+    consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
+  });
+  afterEach(() => {
+    consoleError?.mockRestore();
+  });
+
   it('publishes the data, fields and user_defined as given', async () => {
     const { instance } = await openChat();
     const data: StructuredData = {
@@ -97,19 +105,20 @@ describe('input.updateStructuredData', () => {
     expect(Object.isFrozen(structuredData.fields)).toBe(true);
   });
 
-  it('keeps the data when the updater throws', async () => {
-    const consoleError = jest
-      .spyOn(console, 'error')
-      .mockImplementation(() => {});
+  it('keeps the data and logs the error when the updater throws', async () => {
     const { instance } = await openChat();
     await setData(instance, () => RATING);
+    consoleError.mockClear();
     expect(() =>
       instance.input.updateStructuredData(() => {
         throw new Error('host updater failed');
       })
     ).not.toThrow();
     expect(instance.state.get().input.structuredData).toEqual(RATING);
-    expect(consoleError).toHaveBeenCalled();
+    expect(consoleError).toHaveBeenCalledWith(
+      expect.stringContaining('updating the structured data'),
+      expect.objectContaining({ message: 'host updater failed' })
+    );
   });
 
   it('does not make an empty input sendable', async () => {

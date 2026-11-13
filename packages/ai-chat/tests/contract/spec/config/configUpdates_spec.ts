@@ -29,6 +29,7 @@ import {
   ViewType,
 } from '../../../../src/aiChatEntry';
 import {
+  allByRole,
   byRole,
   byTestId,
   changeView,
@@ -350,6 +351,9 @@ describe('input updates', () => {
     const chat = await contractChat(openProps());
     await typeDraft(chat.instance, 'my draft');
     expect(inputField().disabled).toBe(false);
+    await waitFor(() =>
+      expect(chat.instance.getState().input.focused).toBe(true)
+    );
     await chat.rerender(openProps({ input: { isDisabled: true } }));
     await waitFor(() => expect(inputField().disabled).toBe(true));
     // Disabling takes focus from the input; its text stays.
@@ -603,7 +607,7 @@ describe('upload updates', () => {
     const chat = await contractChat(
       openProps({ strings, upload: { isOn: false, onFileUpload } })
     );
-    expect(() => byRole('button', UPLOAD_LABEL)).toThrow();
+    expect(allByRole('button', UPLOAD_LABEL)).toHaveLength(0);
     await chat.rerender(
       openProps({ strings, upload: { isOn: true, onFileUpload } })
     );
@@ -611,7 +615,9 @@ describe('upload updates', () => {
     await chat.rerender(
       openProps({ strings, upload: { isOn: false, onFileUpload } })
     );
-    await waitFor(() => expect(() => byRole('button', UPLOAD_LABEL)).toThrow());
+    await waitFor(() =>
+      expect(allByRole('button', UPLOAD_LABEL)).toHaveLength(0)
+    );
   });
 
   it('hands a file picked after the change to the new onFileUpload', async () => {

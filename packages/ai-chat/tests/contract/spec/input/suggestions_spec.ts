@@ -212,7 +212,7 @@ describe('input.autocomplete', () => {
     expect(instance.state.get().input.rawValue).toBe('hello world');
   });
 
-  it('calls onSelect for an inserted item but not for a sent one', async () => {
+  it('does not call onSelect when a chosen item sends', async () => {
     const onSelect = jest.fn();
     const sent = await openEditor({
       input: { autocomplete: { items: [HELLO], onSelect } },
