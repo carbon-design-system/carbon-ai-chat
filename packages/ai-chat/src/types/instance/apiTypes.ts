@@ -112,17 +112,16 @@ export interface CustomPanelInstance {
    * firing its close events, then opens the new one. If a `workspace:pre:close` handler throws during that close, the
    * error is logged and the old workspace closes anyway, without `workspace:close`.
    *
-   * The workspace panel runs its `open` and `close` calls one after another, in call order: each starts once the
-   * call before it has finished. A call made while a workspace event handler is running starts at once instead, so
-   * a handler can await `open` or `close` on the workspace panel.
+   * Workspace calls aren't queued. Await each call before making the next to keep its events and data together.
+   * Overlapping calls can interleave; closing while a `workspace:pre:open` handler waits doesn't cancel that open.
    *
    * @param options Custom panel options.
    */
   open: (options?: CustomPanelOpenOptions) => Promise<void>;
 
   /**
-   * Closes the custom panel. On the workspace panel, it waits for any earlier `open` or `close` call to finish,
-   * unless it's called while a workspace event handler is running.
+   * Closes the custom panel. A workspace close doesn't wait for a pending open or cancel it. Await the open before
+   * closing its workspace.
    */
   close: () => Promise<void>;
 }
