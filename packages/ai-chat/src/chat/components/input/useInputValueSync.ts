@@ -9,7 +9,10 @@
 
 import { MutableRefObject, useEffect, useRef, useState } from 'react';
 import type { JSONContent } from '@tiptap/core';
-import type { PromptLineElement } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
+import {
+  textToDoc,
+  type PromptLineElement,
+} from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
 
 import actions from '../../store/actions';
 import {
@@ -211,7 +214,7 @@ function useInputValueSync({
         // branch), so the sync runs regardless of which surface is mounted.
         const promptLine = promptLineRef.current;
         if (promptLine && promptLine.getValue() !== nextRawValue) {
-          promptLine.setContent(nextRawValue);
+          promptLine.setContent(textToDoc(nextRawValue));
         }
       }
     });

@@ -445,6 +445,34 @@ describe('input.updateRawValue', () => {
   });
 
   // @covers config.input.tiptap
+  it('seeds a multi-line draft from onBeforeRender, which the rich editor shows and a send uses', async () => {
+    const sent: string[] = [];
+    const { instance } = await contractChat({
+      ...CHIP_CONFIG,
+      messaging: {
+        skipWelcome: true,
+        customSendMessage: async (request) => {
+          sent.push(request.input.text);
+        },
+      },
+      onBeforeRender: (handed) => {
+        handed.input.updateRawValue(() => 'one\ntwo');
+      },
+    });
+    await changeView(instance, ViewType.MAIN_WINDOW);
+    let editor: Awaited<ReturnType<ChatInstance['input']['getEditor']>>;
+    await act(async () => {
+      editor = await instance.input.getEditor();
+    });
+    await waitFor(() => expect(editor.getJSON()).toEqual(LINE_BREAK_DOC));
+    expect(instance.state.get().input.rawValue).toBe('one\ntwo');
+    await act(async () => {
+      getByTestId(PageObjectId.INPUT_SEND).click();
+    });
+    await waitFor(() => expect(sent).toEqual(['one\ntwo']));
+  });
+
+  // @covers config.input.tiptap
   it('throws without calling the updater while the doc has a non-text node', async () => {
     const { instance } = await openChat(CHIP_CONFIG);
     await updateContent(instance, () => chipDoc('hi '));

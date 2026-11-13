@@ -258,7 +258,7 @@ describe('custom prompt line draft restoration', () => {
     const view = await setup(plain, true, false);
     await act(async () => {});
     expect(view.getByRole('textbox')).toHaveValue('parked draft');
-    expect(setContent.mock.calls).toEqual([['parked draft']]);
+    expect(setContent.mock.calls).toEqual([[plain]]);
     expect(ensureEditor).not.toHaveBeenCalled();
   });
 
@@ -278,7 +278,10 @@ describe('custom prompt line draft restoration', () => {
     await act(async () => {
       gate.resolve(true);
     });
-    expect(setContent).toHaveBeenLastCalledWith('');
+    expect(setContent).toHaveBeenLastCalledWith({
+      type: 'doc',
+      content: [{ type: 'paragraph' }],
+    });
     expect(ensureEditor).not.toHaveBeenCalled();
   });
 
