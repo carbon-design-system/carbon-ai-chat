@@ -459,7 +459,6 @@ export async function initServiceManagerAndInstance(options: {
           skipHydration: true,
           endHumanAgentConversation: false,
           fireEvents: false,
-          cancelUploads: false,
         });
       },
 

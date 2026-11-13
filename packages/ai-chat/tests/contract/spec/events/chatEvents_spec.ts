@@ -469,6 +469,11 @@ describe('a throwing handler for a default custom panel event', () => {
   contractSetup();
   const handlerErrors = handlerErrorLog();
 
+  // After customPanel:open fires, the chat's only remaining step is to move
+  // focus into the panel, and jsdom can't show that: finding the first
+  // focusable element needs layout. So a break that skips the step when a
+  // handler throws passes here. The open and close checks below fail when
+  // the panel itself stops opening or closing.
   it('logs a customPanel:open handler error, and the panel still opens and closes', async () => {
     const { instance } = await contractChat({
       messaging: { skipWelcome: true },
