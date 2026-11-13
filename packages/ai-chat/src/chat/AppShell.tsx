@@ -68,6 +68,7 @@ import {
   selectInputFieldVisible,
   selectInputUploadAndStreamingFields,
   selectLanguagePack,
+  selectLoadedLocale,
   selectStopStreamingButtonVisible,
 } from './store/selectors';
 import { shallowEqual } from './store/appStore';
@@ -231,6 +232,7 @@ function AppShell({
   const chatWidthBreakpoint = useSelector(selectChatWidthBreakpoint);
 
   const languagePack = useSelector(selectLanguagePack);
+  const loadedLocale = useSelector(selectLoadedLocale);
   const theme = useSelector(selectThemeWithDefaults);
   const layout = useSelector(selectLayoutConfig);
   const launcher = useSelector(selectLauncherConfig);
@@ -1033,7 +1035,7 @@ function AppShell({
                     assistantAvatarUrl={publicConfig.assistantAvatarUrl}
                     intl={intl}
                     onEndHumanAgentChat={showConfirmEndChat}
-                    locale={publicConfig.locale || 'en'}
+                    locale={loadedLocale}
                     carbonTheme={theme.derivedCarbonTheme}
                   />
                 )}

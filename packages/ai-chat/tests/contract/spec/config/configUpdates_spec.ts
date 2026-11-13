@@ -305,7 +305,7 @@ describe('locale updates', () => {
   const EN_TIME = /^From \S+ at \d{1,2}:\d{2} [AP]M\|$/;
   const DE_TIME = /^From \S+ at \d{2}:\d{2}\|$/;
 
-  it('formats times with the new locale from the next render on', async () => {
+  it('formats shown and later times with the new locale once it loads', async () => {
     const props = (locale: string) =>
       openProps({ locale, strings: LABEL_STRINGS });
     const chat = await contractChat(props('en'));
@@ -313,12 +313,9 @@ describe('locale updates', () => {
     expect(responseLabels()).toEqual([expect.stringMatching(EN_TIME)]);
 
     await chat.rerender(props('de'));
-    await pause(200);
-    // On `main` a reply already shown keeps the old locale's time format
-    // after the change, until something else renders it again: the chat
-    // re-renders on the new locale before the locale's data has loaded.
-    // Suspected bug, reported.
-    expect(responseLabels()).toEqual([expect.stringMatching(EN_TIME)]);
+    await waitFor(() =>
+      expect(responseLabels()).toEqual([expect.stringMatching(DE_TIME)])
+    );
 
     await addReply(chat.instance, 'Later', 'later');
     await waitFor(() =>
