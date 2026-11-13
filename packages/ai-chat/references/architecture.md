@@ -35,21 +35,65 @@ ChatContainer (React) ──────────→ cds-aichat-container (Li
 
 ## When to work in each layer
 
-Private native views in `src/chat/components/` render in light DOM inside the existing container shadow root. `NativeChatView` selects store and view-state values, releases subscriptions on detach, and routes render errors through the existing error callback. The home screen, header, and launcher use it behind temporary React wrappers. The header adapter passes React's icon normalizer to its native view, which converts configured React icons before the base header receives them. The launcher's plain owner releases timers and animation listeners on detach. Consumer content stays in its existing React tree.
+Private native views in `src/chat/components/` render in light DOM inside the existing container shadow root. `NativeChatView` selects store and view-state values. It releases subscriptions on detach and sends render errors to the existing callback. Native owners now cover the home screen, header, launcher, input, and panels. React still wraps retained content. Consumer content stays in its existing tree.
 
-`NativePanels` composes panel frames and their direct slots in light DOM, as the shell's direct `slot="panels"` child. The existing `PanelManager` owns rank, reactivation, and opener focus. Built-in loading, disclaimer, iframe, error, and confirmation bodies are native. Messages, response bodies and footers, citations, configured markdown, and consumer content stay in the existing React tree through stable portal targets.
+`NativePanels` composes panel frames and their direct slots in light DOM, as the shell's direct `slot="panels"` child. The existing `PanelManager` owns rank, reactivation, and opener focus. Built-in loading, hydration, disclaimer, iframe, error, and confirmation bodies are native. Messages, response bodies and footers, citations, configured markdown, inline errors, and consumer content stay in the existing React tree through stable portal targets.
 
 The existing `ExtensionHosts` owner keeps panel targets separate from its page-light-DOM extension hosts. Native views place panel targets inside the container's shadow root before React mounts their content. Later frame transitions wait for the matching retained content's layout commit; each frame preserves its initial open value and synchronous transition callbacks. The native views add no shadow root. Plain owners manage loading delays, iframe source lifetimes, and the disclaimer's read flag. Same-task moves preserve DOM and retained state; actual detach releases pending work.
 
-Native targets can arrive after the first React commit. Their wrappers hold the initial acknowledgment in `ChatViewState` until retained content effects finish, or an empty fallback commits. `ChatAppEntry` then acknowledges the commit to the container. Keep this passive-effect acknowledgment separate from later panel layout commits and the container's listener-ready gate. React does not start services.
+Native targets can arrive after the first React commit. Retained content adapters hold the first commit signal in `ChatViewState` until content effects finish or an empty fallback commits. `ChatAppEntry` then reports the commit to the container. Keep this passive effect separate from panel layout commits and the container's listener-ready gate. React does not start services.
 
-The native input caller keeps raw and display values, the editor handle, lazy extensions, drafts, local pending Stop state, upload wiring, and control wiring in private `ChatInput`. It renders light DOM in the existing shadow root as the shell's direct `slot="input"` child. `NativeInputAdapter` remains a thin bridge for React configuration and icon normalization and forwards the native handle ref; `AppShell` still supplies send and HAA callbacks, while the shared private Stop command owns Stop effects. One `ExtensionHosts.autocompleteContent` owner per chat and `AutocompleteContentAdapter` keep custom React lists in the consumer React tree through stable targets. This adds no root, provider, or shadow boundary. The container's startup and listener-ready gate and React's separate commit acknowledgment remain unchanged.
+The native input owner keeps values, the editor handle, lazy extensions, drafts, pending Stop state, uploads, and controls in private `ChatInput`. It renders in the existing shadow root as the shell's direct `slot="input"` child. `AppShell` retains React normalization and messages. `ShellLifecycle` supplies input callbacks. The private Stop command owns Stop effects. Each chat has one `ExtensionHosts.autocompleteContent` owner. `AutocompleteContentAdapter` keeps custom lists in the consumer React tree through stable targets. Content adapters use the existing root and provider. Startup, the listener-ready gate, and React's commit acknowledgment stay separate.
 
-| Layer | Files | Concerns |
+| Owner | Remaining responsibility |
+| --- | --- |
+| Container and renderer seam | Registration, shadow DOM, slots, startup, listener gate, renderer choice, cleanup, live regions |
+| `ChatShell` / `ShellLifecycle` | Native state, DOM callbacks, focus, sizing, subscriptions, resource cleanup |
+| `NativePanels` and native panel bodies | Native frames, slots, hydration, loading, disclaimer, iframe, error, confirmation |
+| `AppShell` / `AppShellPanels` and `ChatAppEntry` | React content, messages, response bodies and footers, citations, markdown, inline errors, portals, commit signal |
+| `ChatContainer` and public React wrappers | Public props, host context, events, consumer React root |
+
+This package still requires React. React 17, 18, and 19 remain supported. The standalone renderer keeps its client import out of the React entry. A future React-optional milestone must replace the message renderer and configured Markdown, citation, error, and consumer content paths. It also needs a host contract for content that does not use React. This milestone keeps SDK exports, host names, and service shutdown unchanged.
+
+## Panel content handshake
+
+```mermaid
+sequenceDiagram
+  participant P as AppShellPanels (React)
+  participant V as ChatViewState
+  participant S as ChatShell, NativePanels
+  participant H as ExtensionHosts
+  participant E as ChatAppEntry
+  P->>V: holdInitialReactCommit()
+  P->>S: onRevision(parts) sets contentRevision
+  S->>H: preparePanelContent, then markPanelContentPlaced
+  H-->>P: snapshot of requests
+  P->>H: portal content, then commitPanelContent
+  H-->>S: frames open once all commit
+  P->>V: release once native panels commit
+  V-->>E: whenInitialReactCommitReady
+  E->>E: onInitialViewCommitted (after-render may run)
+```
+
+The revision is React's `parts` object; a request counts only for it, while its targets stay connected. `AppShell` and `CatastrophicErrorPanel` also hold the initial commit.
+
+## Lifetime guards
+
+| Guard | Owner | Protects |
 | --- | --- | --- |
-| Lit | [src/web-components/](../src/web-components) | Registration, shadow DOM, slot forwarding, renderer selection, mount cleanup |
-| React wrappers | [src/react/](../src/react) | Public props, host portal, per-mount key |
-| React app | everything else under [src/chat/](../src/chat) | Application logic, state, UI components, store integration, service orchestration |
+| `current` / `isCurrent()` | `cds-aichat-container` | `boot()` awaits and host callbacks |
+| Microtask release on disconnect | Container, `cds-aichat-custom-element`, `ChatShell` | The chat through a same-task move |
+| `generation` | `NativeChatView` | Deferred work and error reports |
+| `lifetime` | `ChatShell` | `whenReady()` waits |
+| `targetGeneration` | `ChatShell` | Message commits for old layout targets |
+| `generation` | `ShellLifecycle` | Queued ready focus and frame callbacks |
+| Current request per panel | `ExtensionHosts` | Stale placement and commits |
+| `lifetime`, `draftGeneration` | `ChatInput` | Handle and draft work |
+| `initialReactGeneration` | `ChatViewState` | The queued initial-commit check |
+
+## Hand-off to #2349
+
+#1732 must split the container's `boot()` after `initServiceManagerAndInstance` creates the services; the code after it creates view owners (`ChatViewState`, `ExtensionHosts`, window listeners, the announcer region). `ExtensionHosts` records are the view-side slot bookkeeping #1741 replaces. `ShellLifecycle` publishes view handles to services: `publishHandles` sets `mainWindow`, `appWindow`, and `ariaAnnouncer`, and `setInputHandle` sets `inputComponent`. `ChatInput` publishes the input functions ref separately, through `registerInputImperativeHandle`.
 
 ## Debugging across the boundary
 

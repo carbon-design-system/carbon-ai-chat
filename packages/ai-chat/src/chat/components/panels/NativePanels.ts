@@ -22,6 +22,7 @@ import type HeaderView from '../header/chat-header';
 import './native/DisclaimerBody';
 import type DisclaimerBody from './native/DisclaimerBody';
 import './native/ConfirmationBody';
+import './native/HydrationBody';
 import { renderPanelHeader } from './native/panelHeader';
 import type { AppState } from '../../../types/state/AppState';
 import { ChatWidthBreakpoint } from '../../../types/state/AppState';
@@ -273,7 +274,6 @@ class NativePanels extends NativeChatView {
     );
     const content: [PanelName, PanelTargetName[]][] = [
       ['error', ['error-body']],
-      ['hydration', ['hydration-body']],
       [
         'custom',
         custom.showPanelHeader
@@ -621,7 +621,12 @@ class NativePanels extends NativeChatView {
             showChatHeader: true,
             animationOnOpen: 'fade-in',
             animationOnClose: 'fade-out',
-            content: this.target('hydration-body'),
+            content: html`<div
+              slot="body"
+              class="cds-aichat--widget--expand-to-fit">
+              <cds-aichat-hydration-body
+                .isHydrated=${this.inputs.isHydratingComplete}></cds-aichat-hydration-body>
+            </div>`,
           }),
       },
       { name: 'custom', render: () => this.renderCustom() },

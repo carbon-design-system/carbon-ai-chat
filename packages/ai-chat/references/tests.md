@@ -71,6 +71,8 @@ npm test -- --watch                              # watch mode
 
 Test setup: `tests/setup.ts` installs DOM + testing-library setup; `tests/test_helpers.ts` has shared fixtures.
 
+A test's first chat boot waits with `{ timeout: 5000 }`, the repo convention. The first boot loads boot modules on demand.
+
 ## Debugging failures
 
 | Symptom | Likely cause | Fix |
