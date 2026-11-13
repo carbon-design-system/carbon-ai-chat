@@ -777,6 +777,41 @@ describeShared('desk errors', (makeDriver) => {
     ]);
   });
 
+  // @covers config.serviceDeskFactory event.human_agent:pre:startChat
+  it('shows the connecting error and ends the request when the desk startChat rejects', async () => {
+    const desk = fakeDesk();
+    desk.desk.startChat.mockImplementation(() =>
+      Promise.reject(new Error('desk down'))
+    );
+    const chat = await deskDriver(makeDriver, desk, {
+      strings: { errors_connectingToHumanAgent: 'Contract cannot connect' },
+    });
+    await hydrate(chat);
+    const events = recordEvents(chat, HUMAN_AGENT_EVENTS);
+    await addConnect(chat);
+    await waitFor(() =>
+      expect(events.of(BusEventType.HUMAN_AGENT_END_CHAT)).toHaveLength(1)
+    );
+    // A short wait lets a rejection nothing caught surface and fail the test.
+    await pause();
+    expect(events.types()).toEqual([
+      BusEventType.HUMAN_AGENT_ARE_ANY_AGENTS_ONLINE,
+      BusEventType.HUMAN_AGENT_PRE_START_CHAT,
+      BusEventType.HUMAN_AGENT_END_CHAT,
+    ]);
+    expect(events.of(BusEventType.HUMAN_AGENT_END_CHAT)[0]).toEqual({
+      type: BusEventType.HUMAN_AGENT_END_CHAT,
+      endedByHumanAgent: false,
+      requestCancelled: true,
+    });
+    expect(lastItems(chat)).toEqual([
+      expect.objectContaining({
+        response_type: MessageResponseTypes.INLINE_ERROR,
+        text: 'Contract cannot connect',
+      }),
+    ]);
+  });
+
   it('makes send reject while the desk reports itself disconnected, until it reconnects', async () => {
     const desk = fakeDesk();
     const chat = await deskDriver(makeDriver, desk);

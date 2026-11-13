@@ -841,10 +841,10 @@ class HumanAgentServiceImpl implements HumanAgentService {
       config.public.serviceDesk?.skipConnectHumanAgentCard &&
       agentAvailability === HumanAgentsOnlineStatus.ONLINE
     ) {
-      this.serviceManager.humanAgentService.startChat(
-        localMessageItem,
-        fullMessage
-      );
+      // startChat reports a failed start to the user and ends the request itself.
+      this.serviceManager.humanAgentService
+        .startChat(localMessageItem, fullMessage)
+        .catch(() => {});
     }
   }
 

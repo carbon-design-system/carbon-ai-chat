@@ -17,6 +17,8 @@ import {
   HumanAgentMessageType,
   MessageErrorState,
   MessageRequest,
+  MessageResponse,
+  MessageResponseTypes,
   PageObjectId,
   PublicConfig,
 } from '../../../../src/aiChatEntry';
@@ -308,6 +310,7 @@ describe('a new serviceDeskFactory during an agent chat', () => {
 const STRINGS = {
   agent_startChat: 'Contract connect',
   input_uploadButtonLabel: 'Contract attach',
+  errors_connectingToHumanAgent: 'Contract cannot connect',
 };
 
 /** Opens the chat with the desk plugged in, and connects through the card's button. */
@@ -344,6 +347,41 @@ describe('the connect-to-agent card', () => {
     expect(events.types()).toEqual([BusEventType.HUMAN_AGENT_PRE_START_CHAT]);
     expect(desk.desk.startChat.mock.calls[0][0].id).toBe('r-connect');
     expect(humanAgent(instance).isConnecting).toBe(true);
+  });
+
+  it('shows the connecting error and ends the request when the desk startChat rejects', async () => {
+    const desk = fakeDesk();
+    desk.desk.startChat.mockImplementation(() =>
+      Promise.reject(new Error('desk down'))
+    );
+    const { instance } = await openAndConnectByCard(desk);
+    const events = recordEvents(instance, HUMAN_AGENT_EVENTS);
+    await click(byRole('button', STRINGS.agent_startChat));
+    await waitFor(() =>
+      expect(events.of(BusEventType.HUMAN_AGENT_END_CHAT)).toHaveLength(1)
+    );
+    // A short wait lets a rejection nothing caught surface and fail the test.
+    await pause();
+    expect(events.types()).toEqual([
+      BusEventType.HUMAN_AGENT_PRE_START_CHAT,
+      BusEventType.HUMAN_AGENT_END_CHAT,
+    ]);
+    expect(events.of(BusEventType.HUMAN_AGENT_END_CHAT)[0]).toEqual({
+      type: BusEventType.HUMAN_AGENT_END_CHAT,
+      endedByHumanAgent: false,
+      requestCancelled: true,
+    });
+    const { messages } = instance.getState();
+    const last = messages[messages.length - 1] as MessageResponse;
+    expect(last.output.generic).toEqual([
+      expect.objectContaining({
+        response_type: MessageResponseTypes.INLINE_ERROR,
+        text: STRINGS.errors_connectingToHumanAgent,
+      }),
+    ]);
+    expect(humanAgent(instance)).toEqual(
+      expect.objectContaining({ isConnecting: false, isConnected: false })
+    );
   });
 });
 
