@@ -20,16 +20,18 @@
  *
  * Owners:
  * - #2693: messages and message items, which the message model replaces.
- * - #2824: view state the conversation partition still holds: which connect
- *   card is connecting, and the screen-share request the modal shows.
- * - #2747: read-only state, the history load trigger, and attaching the view.
- * - #2748: the shell's home screen and loading decisions.
- * - #2751: the input slice, its routing to the agent, and its flags,
- *   including when the Stop button shows. Hosts tell whether a turn can be
- *   stopped from `status` (#2693 O8, amended November 10). Also the
- *   service desk's upload limits and the files staged for it. Hosts read
- *   pending uploads from `state.pendingUploads` and `hasInFlightUploads`
- *   (#2693 O7, amended November 10).
+ * - #2824: everything else the prebuilt chat reads from the conversation
+ *   partition in 1.x:
+ *   - view state the partition still holds: which connect card is
+ *     connecting, and the screen-share request the modal shows;
+ *   - read-only state, the history load trigger, and attaching the view;
+ *   - the shell's home screen and loading decisions;
+ *   - the input slice, its routing to the agent, and its flags, including
+ *     when the Stop button shows. Hosts tell whether a turn can be stopped
+ *     from `status` (#2693 O8, amended November 10);
+ *   - the service desk's upload limits and the files staged for it. Hosts
+ *     read pending uploads from `state.pendingUploads` and
+ *     `hasInFlightUploads` (#2693 O7, amended November 10).
  * - #1741: slot bookkeeping. #1732: saving the session.
  * - #1833: config updates.
  */
@@ -74,7 +76,7 @@ const conversationReadGaps: ConversationReadGap[] = [
     file: 'src/chat/components-legacy/MessagesComponent.tsx',
     read: 'selectInputIsReadonly()',
     count: 1,
-    owner: '#2747',
+    owner: '#2824',
   },
   {
     file: 'src/chat/components-legacy/MessagesComponent.tsx',
@@ -92,7 +94,7 @@ const conversationReadGaps: ConversationReadGap[] = [
     file: 'src/chat/components-legacy/responseTypes/grid/GridItemCell.tsx',
     read: 'selectInputIsReadonly()',
     count: 1,
-    owner: '#2747',
+    owner: '#2824',
   },
   {
     file: 'src/chat/components-legacy/responseTypes/humanAgent/ConnectToHumanAgent.tsx',
@@ -104,37 +106,37 @@ const conversationReadGaps: ConversationReadGap[] = [
     file: 'src/chat/components/input/ChatInput.ts',
     read: 'restoreInputDraft()',
     count: 1,
-    owner: '#2751',
+    owner: '#2824',
   },
   {
     file: 'src/chat/components/input/ChatInput.ts',
     read: 'selectInputState()',
     count: 2,
-    owner: '#2751',
+    owner: '#2824',
   },
   {
     file: 'src/chat/components/input/ChatInput.ts',
     read: 'selectIsInputToHumanAgent()',
     count: 8,
-    owner: '#2751',
+    owner: '#2824',
   },
   {
     file: 'src/chat/components/responseTypes/button/ButtonItemCustomEventComponent.tsx',
     read: 'selectInputIsReadonly()',
     count: 1,
-    owner: '#2747',
+    owner: '#2824',
   },
   {
     file: 'src/chat/components/responseTypes/button/ButtonItemPostBackComponent.tsx',
     read: 'selectInputIsReadonly()',
     count: 1,
-    owner: '#2747',
+    owner: '#2824',
   },
   {
     file: 'src/chat/components/responseTypes/button/ButtonItemShowPanelComponent.tsx',
     read: 'selectInputIsReadonly()',
     count: 1,
-    owner: '#2747',
+    owner: '#2824',
   },
   {
     file: 'src/chat/components/responseTypes/button/FooterButtonComponents.tsx',
@@ -146,7 +148,7 @@ const conversationReadGaps: ConversationReadGap[] = [
     file: 'src/chat/components/responseTypes/card/CardItemComponent.tsx',
     read: 'selectInputIsReadonly()',
     count: 1,
-    owner: '#2747',
+    owner: '#2824',
   },
   {
     file: 'src/chat/components/responseTypes/card/CarouselItemComponent.tsx',
@@ -170,37 +172,37 @@ const conversationReadGaps: ConversationReadGap[] = [
     file: 'src/chat/components/shell/ChatShell.ts',
     read: 'selectShellState()',
     count: 2,
-    owner: '#2748',
+    owner: '#2824',
   },
   {
     file: 'src/chat/hooks/useInputCallbacks.tsx',
     read: 'requestComposerFocus()',
     count: 1,
-    owner: '#2751',
+    owner: '#2824',
   },
   {
     file: 'src/chat/hooks/useInputCallbacks.tsx',
     read: 'selectInputIsDisabled()',
     count: 1,
-    owner: '#2751',
+    owner: '#2824',
   },
   {
     file: 'src/chat/hooks/useInputCallbacks.tsx',
     read: 'selectInputIsReadonly()',
     count: 1,
-    owner: '#2747',
+    owner: '#2824',
   },
   {
     file: 'src/chat/hooks/useInputCallbacks.tsx',
     read: 'selectInputUploads()',
     count: 1,
-    owner: '#2751',
+    owner: '#2824',
   },
   {
     file: 'src/chat/services/attachChatView.ts',
     read: 'attachViewState()',
     count: 1,
-    owner: '#2747',
+    owner: '#2824',
   },
   {
     file: 'src/chat/services/attachChatView.ts',
@@ -218,7 +220,7 @@ const conversationReadGaps: ConversationReadGap[] = [
     file: 'src/chat/services/createViewBindings.ts',
     read: 'requestComposerFocus()',
     count: 1,
-    owner: '#2751',
+    owner: '#2824',
   },
   {
     file: 'src/chat/services/CustomPanelInstance.ts',
@@ -254,19 +256,19 @@ const conversationReadGaps: ConversationReadGap[] = [
     file: 'src/chat/services/inputCallbacks.ts',
     read: 'selectInputState()',
     count: 2,
-    owner: '#2751',
+    owner: '#2824',
   },
   {
     file: 'src/chat/services/inputCallbacks.ts',
     read: 'selectIsInputToHumanAgent()',
     count: 1,
-    owner: '#2751',
+    owner: '#2824',
   },
   {
     file: 'src/chat/services/ViewService.ts',
     read: 'isHydrated',
     count: 1,
-    owner: '#2747',
+    owner: '#2824',
   },
   {
     file: 'src/chat/utils/appConfigUpdates.ts',
@@ -278,7 +280,7 @@ const conversationReadGaps: ConversationReadGap[] = [
     file: 'src/chat/utils/chatBoot.ts',
     read: 'attachChatView()',
     count: 1,
-    owner: '#2747',
+    owner: '#2824',
   },
   {
     file: 'src/chat/utils/chatBoot.ts',
@@ -292,19 +294,19 @@ const conversationReadGaps: ConversationReadGap[] = [
     file: 'src/chat/utils/chatBoot.ts',
     read: 'createPrebuiltInstance()',
     count: 1,
-    owner: '#2747',
+    owner: '#2824',
   },
   {
     file: 'src/chat/utils/customPromptLine.ts',
     read: 'selectCustomPromptLineVisible()',
     count: 1,
-    owner: '#2751',
+    owner: '#2824',
   },
   {
     file: 'src/chat/utils/customPromptLine.ts',
     read: 'selectInputState()',
     count: 1,
-    owner: '#2751',
+    owner: '#2824',
   },
   {
     file: 'src/chat/utils/dynamicConfigUpdates.ts',
@@ -316,13 +318,13 @@ const conversationReadGaps: ConversationReadGap[] = [
     file: 'src/chat/utils/restoreInputDraft.ts',
     read: 'selectInputState()',
     count: 2,
-    owner: '#2751',
+    owner: '#2824',
   },
   {
     file: 'src/chat/utils/restoreInputDraft.ts',
     read: 'selectIsInputToHumanAgent()',
     count: 1,
-    owner: '#2751',
+    owner: '#2824',
   },
   {
     file: 'src/chat/utils/shellLifecycle.ts',
@@ -336,66 +338,66 @@ const conversationReadGaps: ConversationReadGap[] = [
     count: 2,
     owner: '#2824',
   },
-  // Also #2751: the shell disables send until history loads.
+  // The shell also disables send until history loads.
   {
     file: 'src/chat/utils/shellLifecycle.ts',
     read: 'isHydrated',
     count: 5,
-    owner: '#2748',
+    owner: '#2824',
   },
   {
     file: 'src/chat/utils/shellLifecycle.ts',
     read: 'persistedToBrowserStorage',
     count: 1,
-    owner: '#2748',
+    owner: '#2824',
   },
   {
     file: 'src/chat/utils/shellLifecycle.ts',
     read: 'persistedToBrowserStorage.hasSentNonWelcomeMessage',
     count: 3,
-    owner: '#2748',
+    owner: '#2824',
   },
   {
     file: 'src/chat/utils/shellLifecycle.ts',
     read: 'requestComposerFocus()',
     count: 6,
-    owner: '#2751',
+    owner: '#2824',
   },
   {
     file: 'src/chat/utils/shellLifecycle.ts',
     read: 'selectCustomPromptLineVisible()',
     count: 2,
-    owner: '#2751',
+    owner: '#2824',
   },
   {
     file: 'src/chat/utils/shellLifecycle.ts',
     read: 'selectInputFieldVisible()',
     count: 2,
-    owner: '#2751',
+    owner: '#2824',
   },
   {
     file: 'src/chat/utils/shellLifecycle.ts',
     read: 'selectInputIsDisabled()',
     count: 2,
-    owner: '#2751',
+    owner: '#2824',
   },
   {
     file: 'src/chat/utils/shellLifecycle.ts',
     read: 'selectInputIsReadonly()',
     count: 2,
-    owner: '#2747',
+    owner: '#2824',
   },
   {
     file: 'src/chat/utils/shellLifecycle.ts',
     read: 'selectInputUploadAndStreamingFields()',
     count: 3,
-    owner: '#2751',
+    owner: '#2824',
   },
   {
     file: 'src/chat/utils/shellLifecycle.ts',
     read: 'selectStopStreamingButtonVisible()',
     count: 2,
-    owner: '#2751',
+    owner: '#2824',
   },
 ];
 

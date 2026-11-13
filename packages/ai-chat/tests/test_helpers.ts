@@ -46,8 +46,8 @@ import { chatStore } from '../src/chat/services/attachChatView';
 import { attachStorePartition } from '../src/sdk/internal';
 import { PublicStateService } from '../src/shared/services/PublicStateService';
 import { EventBus } from '../src/shared/events/EventBus';
-import { viewReducer } from '../src/view/state/reducer';
-import { createInitialViewState } from '../src/view/state/initialState';
+import { viewReducer } from '../src/chat/state/reducer';
+import { createInitialViewState } from '../src/chat/state/initialState';
 import type { ConversationState } from '../src/types/state/AppState';
 
 // ============================================================================

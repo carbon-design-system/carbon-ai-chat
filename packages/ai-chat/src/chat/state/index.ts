@@ -10,7 +10,7 @@
 /**
  * The prebuilt chat's view partition: its state, actions, reducer, and the
  * view half of saved state. It lives under `view` in the chat's one store, and
- * only `chat/` and `view/` use it. Internal; nothing here is exported from a
+ * only the prebuilt chat uses it. Internal; nothing here is exported from a
  * package entry point.
  */
 

@@ -31,7 +31,7 @@ import {
   setupAfterEach,
   setupBeforeEach,
 } from '../../test_helpers';
-import { viewActions } from '../../../src/view/state';
+import { viewActions } from '../../../src/chat/state';
 
 class HeaderProvider extends LitElement {
   readonly provider = new ContextProvider(this, {

@@ -54,7 +54,7 @@ import { doFocus, isDirectionRTL } from '../../utils/domUtils';
 
 import type { IntlShape } from '../../../shared/utils/i18n';
 
-import { viewActions } from '../../../view/state';
+import { viewActions } from '../../state';
 
 type LauncherLanguage = Pick<
   AppState['languagePack'],

@@ -45,7 +45,7 @@ import { MarkdownWithDefaults } from '../../../src/chat/components/helpers/Markd
 
 import { makeConfigStore, TestChatContext } from '../../test_helpers';
 
-import { viewActions } from '../../../src/view/state';
+import { viewActions } from '../../../src/chat/state';
 
 function renderWithStore(ui: ReactElement, markdownConfig?: MarkdownConfig) {
   const store = makeConfigStore({});

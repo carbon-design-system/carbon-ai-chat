@@ -9,8 +9,8 @@
 
 /**
  * The SDK's internal seam: what other layers of this package, such as the
- * view state, may use from the SDK besides its public entry. Nothing here is
- * exported from a package entry point.
+ * view partition in `chat/state/`, may use from the SDK besides its public
+ * entry. Nothing here is exported from a package entry point.
  */
 
 export { attachStorePartition } from './attachStorePartition';

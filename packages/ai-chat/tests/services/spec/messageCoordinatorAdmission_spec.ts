@@ -20,7 +20,7 @@ import type { MessageRequest } from '../../../src/types/messaging/Messages';
 import { MessageSendSource } from '../../../src/types/events/eventBusTypes';
 import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
 import { withMessagingView } from '../helpers/viewBindings';
-import { viewActions } from '../../../src/view/state';
+import { viewActions } from '../../../src/chat/state';
 import { chatStore } from '../../../src/chat/services/attachChatView';
 
 function harness(

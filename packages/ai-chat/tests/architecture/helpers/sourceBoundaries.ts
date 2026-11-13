@@ -29,7 +29,7 @@ export interface AllowedFolder {
 }
 
 /**
- * Rules are data so a later layer can add its own folder (#2706 adds `view/`).
+ * Rules are data so a later layer can add its own folder.
  * A file falls under the most specific rule whose folder contains it.
  */
 export interface FolderRule {

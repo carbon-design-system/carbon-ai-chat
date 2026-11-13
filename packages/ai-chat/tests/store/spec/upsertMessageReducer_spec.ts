@@ -37,12 +37,12 @@ import { HumanAgentsOnlineStatus } from '../../../src/types/config/ServiceDeskCo
 
 import { deriveStreamingItemText } from '../../../src/shared/utils/streamingUtils';
 
-import { DEFAULT_HISTORY_PANEL_STATE } from '../../../src/view/state';
+import { DEFAULT_HISTORY_PANEL_STATE } from '../../../src/chat/state';
 import { appRootReducer } from '../../test_helpers';
 
-import { createInitialViewState } from '../../../src/view/state/initialState';
+import { createInitialViewState } from '../../../src/chat/state/initialState';
 
-import { VIEW_STATE_ALL_CLOSED, viewHalfOf } from '../../../src/view/state';
+import { VIEW_STATE_ALL_CLOSED, viewHalfOf } from '../../../src/chat/state';
 
 function createInitialAppState(): AppState {
   const config = createAppConfig({});

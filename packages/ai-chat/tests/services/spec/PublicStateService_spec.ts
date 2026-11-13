@@ -15,8 +15,8 @@ import actions from '../../../src/shared/store/actions';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
 import { MessageResponseTypes } from '../../../src/types/messaging/Messages';
 import { createBaseConfig, makeConfigStore } from '../../test_helpers';
-import { viewActions } from '../../../src/view/state';
-import { viewPublicFields } from '../../../src/view/state/publicFields';
+import { viewActions } from '../../../src/chat/state';
+import { viewPublicFields } from '../../../src/chat/state/publicFields';
 
 function createService() {
   const counts = new Map<string, number>();

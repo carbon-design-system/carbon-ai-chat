@@ -28,7 +28,7 @@ import {
 
 import type { ServiceManager } from '../../shared/services/ServiceManager';
 
-import { viewActions } from '../../view/state';
+import { viewActions } from '../state';
 
 import { chatStore } from './attachChatView';
 

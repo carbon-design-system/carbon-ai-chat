@@ -11,7 +11,7 @@ import { setVarsForSelector } from '@carbon/ai-chat-components/es/components/sha
 
 import type { ServiceManager } from '../../shared/services/ServiceManager';
 import { slotSource } from '../../shared/services/slotTracking';
-import { viewActions } from '../../view/state';
+import { viewActions } from '../state';
 import { ChatViewState } from '../services/chatViewState';
 import { createViewBindings } from '../services/createViewBindings';
 import { ExtensionHosts } from '../services/extensionHosts';

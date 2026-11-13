@@ -30,7 +30,7 @@ import {
   MessageResponse,
 } from '../../../../types/messaging/Messages';
 
-import { viewActions } from '../../../../view/state';
+import { viewActions } from '../../../state';
 
 interface PreviewCardComponentProps {
   localMessageItem: LocalMessageItem;

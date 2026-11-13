@@ -13,7 +13,7 @@ import { ServiceManager } from '../../shared/services/ServiceManager';
 import { createAppConfig } from './appConfig';
 import { applyConversationConfig } from '../../shared/services/applyConfig';
 import { isBrowser } from '../../shared/utils/browserUtils';
-import { viewActions } from '../../view/state';
+import { viewActions } from '../state';
 import { chatStore } from '../services/attachChatView';
 import type { AppStore } from '../../shared/store/appStore';
 import type { AppState } from '../../types/state/AppState';

@@ -19,7 +19,7 @@ import { NativeChatView } from '../../../src/chat/components/shared/NativeChatVi
 import { ChatViewState } from '../../../src/chat/services/chatViewState';
 import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
 import { setIsConnecting } from '../../../src/shared/store/humanAgentActions';
-import { viewActions } from '../../../src/view/state';
+import { viewActions } from '../../../src/chat/state';
 import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
 import { makeConfigStore, withPublicState } from '../../test_helpers';
 

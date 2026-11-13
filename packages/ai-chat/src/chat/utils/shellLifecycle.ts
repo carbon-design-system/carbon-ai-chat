@@ -128,14 +128,11 @@ import {
 } from '@carbon/ai-chat-components/es/components/shared/dynamic-css-var-sheet.js';
 
 import styles from '../AppShell.scss';
-import {
-  DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS,
-  viewActions,
-} from '../../view/state';
+import { DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS, viewActions } from '../state';
 
 import { chatStore } from '../services/attachChatView';
 
-import { joinPersistedState } from '../../view/state';
+import { joinPersistedState } from '../state';
 import { writeableElementsOf } from './writeableElements';
 
 const applicationStylesheet =

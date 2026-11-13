@@ -31,12 +31,12 @@ import {
   DEFAULT_HISTORY_PANEL_STATE,
   DEFAULT_WORKSPACE_PANEL_STATE,
   viewActions,
-} from '../../../src/view/state';
+} from '../../../src/chat/state';
 import { appRootReducer } from '../../test_helpers';
 
-import { createInitialViewState } from '../../../src/view/state/initialState';
+import { createInitialViewState } from '../../../src/chat/state/initialState';
 
-import { VIEW_STATE_ALL_CLOSED, viewHalfOf } from '../../../src/view/state';
+import { VIEW_STATE_ALL_CLOSED, viewHalfOf } from '../../../src/chat/state';
 import type { AppConfig } from '../../../src/types/state/AppConfig';
 import type { ConversationState } from '../../../src/types/state/ConversationState';
 import type { DeepPartial } from '../../../src/types/utilities/DeepPartial';

@@ -55,7 +55,7 @@ import {
   observeWrite,
 } from '../../../utils/itemDrawabilityFixtures';
 
-import { viewActions } from '../../../../src/view/state';
+import { viewActions } from '../../../../src/chat/state';
 
 describe('ChatInstance.messaging.addMessageChunk', () => {
   beforeEach(setupBeforeEach);

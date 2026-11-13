@@ -24,8 +24,8 @@ import {
   MessageResponseTypes,
   PreviewCardItem,
 } from '../../../src/types/messaging/Messages';
-import { viewActions } from '../../../src/view/state';
-import { viewPublicFields } from '../../../src/view/state/publicFields';
+import { viewActions } from '../../../src/chat/state';
+import { viewPublicFields } from '../../../src/chat/state/publicFields';
 
 function fixture(fire: (event: any) => Promise<void>) {
   const store = makeConfigStore({});

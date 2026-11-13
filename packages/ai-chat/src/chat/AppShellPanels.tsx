@@ -53,7 +53,7 @@ import type { MessageTypeComponentProps } from './components-legacy/MessageTypeC
 
 import type { ServiceManager } from '../shared/services/ServiceManager';
 
-import { viewActions } from '../view/state';
+import { viewActions } from './state';
 
 const noScroll = () => {};
 const renderMessageComponent = (props: MessageTypeComponentProps) => (

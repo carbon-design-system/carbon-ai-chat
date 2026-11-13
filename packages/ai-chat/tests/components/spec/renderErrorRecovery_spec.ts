@@ -26,7 +26,7 @@ import { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import { MessageClass } from '../../../src/chat/components-legacy/MessageComponent';
 import actions from '../../../src/shared/store/actions';
 import enLanguagePack from '../../../src/shared/languages/en.json';
-import { viewActions } from '../../../src/view/state';
+import { viewActions } from '../../../src/chat/state';
 
 // Records every announcement instead of speaking it.
 const mockAnnounce = jest.fn();
