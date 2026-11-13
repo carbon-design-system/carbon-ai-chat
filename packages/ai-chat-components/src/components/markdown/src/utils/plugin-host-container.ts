@@ -144,6 +144,9 @@ export interface MarkdownPluginHostControllerOptions {
    * outer one is hosting. The innermost hop — into the markdown element's own
    * shadow slot — is never one of these; the element mints that one, for
    * either kind, in the pass that read the claim.
+   *
+   * Runs before a new host is appended, so a forwarder added synchronously
+   * here slots the host before its content connects.
    */
   onSlotNamesChange?: (slotNames: string[]) => void;
 
@@ -175,6 +178,30 @@ const MOUNT = 'cds-aichat-markdown-plugin-host-mount';
 const UPDATE = 'cds-aichat-markdown-plugin-host-update';
 const UNMOUNT = 'cds-aichat-markdown-plugin-host-unmount';
 
+const connectedControllers = new WeakMap<HTMLElement, (name: string) => void>();
+
+export function getMarkdownPluginHostTargets(sender: Node): HTMLElement[] {
+  const targets: HTMLElement[] = [];
+  let node: Node | null = sender;
+  while (node) {
+    if (node instanceof HTMLElement && connectedControllers.has(node)) {
+      targets.push(node);
+    }
+    node = node instanceof ShadowRoot ? node.host : node.parentNode;
+  }
+  return targets;
+}
+
+// A detached or reparented sender can no longer bubble through its old owners.
+export function releaseMarkdownPluginHostClaims(
+  targets: readonly HTMLElement[],
+  slotName: string
+) {
+  for (const target of targets) {
+    connectedControllers.get(target)?.(slotName);
+  }
+}
+
 /**
  * Answers the plugin-host offer on `target`'s behalf, hosting accepted offers
  * as slot-attributed children of `target`.
@@ -204,6 +231,65 @@ export function createMarkdownPluginHostController(
   // consumer's node and `disconnect()` from destroying one.
   const hosts = new Map<string, HTMLElement>();
   let slotNames: string[] = [];
+  // The node each name's offer came from. A markdown element announces its
+  // unmounts from its own disconnect, once it is already detached, so those
+  // events never reach `target`. A name whose sender has left the page is
+  // dropped on the next offer instead. Held weakly, so a removed message is
+  // not kept alive until then.
+  const senders = new Map<string, WeakRef<Node>>();
+  let pendingPrune: object | undefined;
+
+  /** Drops names whose sender left the page. Returns true if any went. */
+  const dropDetachedSenders = (): boolean => {
+    const detached = new Set<string>();
+    for (const [name, sender] of senders) {
+      if (!sender.deref()?.isConnected) {
+        detached.add(name);
+      }
+    }
+    for (const name of detached) {
+      senders.delete(name);
+      const host = hosts.get(name);
+      if (host?.parentNode === target) {
+        host.remove();
+      }
+      hosts.delete(name);
+    }
+    if (detached.size > 0) {
+      slotNames = slotNames.filter((name) => !detached.has(name));
+    }
+    return detached.size > 0;
+  };
+
+  const schedulePrune = () => {
+    if (pendingPrune) {
+      return;
+    }
+    const pending = {};
+    pendingPrune = pending;
+    // A same-task DOM move must settle before its slot is retired.
+    queueMicrotask(() => {
+      if (pendingPrune !== pending) {
+        return;
+      }
+      pendingPrune = undefined;
+      if (dropDetachedSenders()) {
+        onSlotNamesChange?.(slotNames);
+      }
+    });
+  };
+
+  const trackOffer = (event: Event, slotName: string) => {
+    const [sender] = event.composedPath();
+    if (sender instanceof Node) {
+      senders.set(slotName, new WeakRef(sender));
+    }
+    if (!slotNames.includes(slotName)) {
+      slotNames = [...slotNames, slotName];
+      onSlotNamesChange?.(slotNames);
+    }
+    schedulePrune();
+  };
 
   // Built once, not per `connect()`: a Lit `connectedCallback` can fire again
   // without an intervening disconnect, and fresh closures would register a
@@ -219,10 +305,7 @@ export function createMarkdownPluginHostController(
 
     // Track before deferring: a container nested inside an outer chat element
     // hosts nothing but still has to forward the slot inward.
-    if (!slotNames.includes(detail.slotName)) {
-      slotNames = [...slotNames, detail.slotName];
-      onSlotNamesChange?.(slotNames);
-    }
+    trackOffer(event, detail.slotName);
     if (shouldDefer?.(event)) {
       return;
     }
@@ -276,36 +359,47 @@ export function createMarkdownPluginHostController(
     }
   };
 
+  const releaseClaim = (slotName: string) => {
+    senders.delete(slotName);
+    if (slotNames.includes(slotName)) {
+      slotNames = slotNames.filter((name) => name !== slotName);
+      onSlotNamesChange?.(slotNames);
+    }
+    const host = hosts.get(slotName);
+    if (host?.parentNode === target) {
+      host.remove();
+    }
+    hosts.delete(slotName);
+  };
+
   const handleUnmount = (event: Event) => {
     const detail = (event as CustomEvent<{ slotName: string } | undefined>)
       .detail;
-    if (!detail?.slotName) {
-      return;
-    }
-    if (slotNames.includes(detail.slotName)) {
-      slotNames = slotNames.filter((name) => name !== detail.slotName);
-      onSlotNamesChange?.(slotNames);
-    }
-    const host = hosts.get(detail.slotName);
-    if (host) {
-      host.remove();
-      hosts.delete(detail.slotName);
+    if (detail?.slotName) {
+      releaseClaim(detail.slotName);
     }
   };
 
   return {
     hosts,
     connect() {
+      connectedControllers.set(target, releaseClaim);
       target.addEventListener(MOUNT, handleMount);
       target.addEventListener(UPDATE, handleUpdate);
       target.addEventListener(UNMOUNT, handleUnmount);
     },
     disconnect() {
+      if (connectedControllers.get(target) === releaseClaim) {
+        connectedControllers.delete(target);
+      }
+      pendingPrune = undefined;
       target.removeEventListener(MOUNT, handleMount);
       target.removeEventListener(UPDATE, handleUpdate);
       target.removeEventListener(UNMOUNT, handleUnmount);
       for (const host of hosts.values()) {
-        host.remove();
+        if (host.parentNode === target) {
+          host.remove();
+        }
       }
       hosts.clear();
       // Slot names deliberately survive. `handleUpdate` drops an update whose
