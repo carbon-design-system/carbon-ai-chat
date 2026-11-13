@@ -295,12 +295,22 @@ interface ChatSDKInstanceMessaging (src/types/config/ChatSDKInstanceMessaging.ts
 interface ChatSDKLifecycleConfig (src/types/config/ChatSDKLifecycleConfig.ts)
   releaseGraceMs?: number
 
+interface ChatSDKMessageItem (src/types/instance/ChatSDKState.ts)
+  humanAgent?: Readonly<{ onlineStatus?: HumanAgentsOnlineStatus | null; noServiceDesk?: boolean; }>
+  id: string
+  item: Readonly<GenericItem>
+  kind: "request" | "response" | "system"
+  messageID: string
+  origin: "history" | "live"
+  parentID?: string
+  status: "streaming" | "complete" | "error"
+
 interface ChatSDKPendingUpload (src/types/instance/ChatSDKState.ts)
   contributedData?: StructuredData
   errorMessage?: string
   file: File
   id: string
-  status: "uploading" | "complete" | "error"
+  status: "complete" | "error" | "uploading"
 
 interface ChatSDKPersistedStateConfig (src/types/config/ChatSDKPersistedStateConfig.ts)
   initialState?: S
@@ -318,6 +328,7 @@ interface ChatSDKState (src/types/instance/ChatSDKState.ts)
   hasInFlightUploads?: boolean
   humanAgent: Readonly<PersistedHumanAgentState & { isConnecting: boolean; isScreenSharing?: boolean; isReconnecting?: boolean; isTyping?: boolean; availability?: AgentAvailability | null; isUploadingFile?: boolean; }>
   isRestarting?: boolean
+  messageItems?: ReadonlyArray<Readonly<ChatSDKMessageItem>>
   messages: ReadonlyArray<Readonly<Message>>
   pendingUploads?: ReadonlyArray<ChatSDKPendingUpload>
   status: ConversationStatus

@@ -20,6 +20,12 @@ import {
   PublicMessagesProjection,
   publicMessagesSources,
 } from './publicMessages';
+import {
+  type ItemPlan,
+  PublicMessageItemsProjection,
+  planMessageItems,
+  planSources,
+} from './publicMessageItems';
 
 type PublicStateField = keyof PublicChatState | 'history';
 
@@ -152,6 +158,7 @@ const PUBLIC_FIELD_ORDER: readonly PublicStateField[] = [
   'workspace',
   'history',
   'messages',
+  'messageItems',
 ];
 
 const fieldDefinitions: readonly PublicStateFieldDefinition[] = [
@@ -260,11 +267,20 @@ const fieldDefinitions: readonly PublicStateFieldDefinition[] = [
 
 export type { PublicStateFieldDefinition };
 
+/** The fields built only from the message slices, which share a quick same-reference check. */
+const MESSAGE_FIELDS = new Set<PublicStateField>(['messages', 'messageItems']);
+
 export class PublicStateSnapshotCache {
   private fieldCache = new Map<PublicStateField, CachedField>();
   private messages = new PublicMessagesProjection();
   private messageSources = new WeakMap<ConversationState, readonly unknown[]>();
   private lastMessageState: ConversationState;
+  private messageItems = new PublicMessageItemsProjection();
+  private itemPlans = new WeakMap<
+    ConversationState,
+    { plans: readonly ItemPlan[]; sources: readonly unknown[] }
+  >();
+  private lastItemState: ConversationState;
   private definitions: readonly PublicStateFieldDefinition[];
 
   constructor(private observer?: PublicStateProjectionObserver) {
@@ -289,6 +305,12 @@ export class PublicStateSnapshotCache {
           );
           return prepared.get;
         },
+      },
+      {
+        name: 'messageItems',
+        sources: (state) => this.getItemPlans(state).sources,
+        project: (_sources, state) =>
+          this.messageItems.project(this.getItemPlans(state).plans),
       },
     ];
   }
@@ -318,7 +340,7 @@ export class PublicStateSnapshotCache {
   ): boolean {
     return this.definitions.every(
       (definition) =>
-        (definition.name === 'messages' &&
+        (MESSAGE_FIELDS.has(definition.name) &&
           sameMessageReferences(previous, current)) ||
         sameSources(definition.sources(previous), definition.sources(current))
     );
@@ -343,6 +365,29 @@ export class PublicStateSnapshotCache {
     });
 
     return Object.freeze(snapshot);
+  }
+
+  /** The plan of `messageItems` for a state, shared with the next state whose messages didn't change. */
+  private getItemPlans(state: ConversationState) {
+    let cached = this.itemPlans.get(state);
+    if (!cached) {
+      cached =
+        this.lastItemState && sameMessageReferences(this.lastItemState, state)
+          ? this.itemPlans.get(this.lastItemState)
+          : undefined;
+      if (!cached) {
+        const plans = planMessageItems(
+          state.assistantMessageState.messageIDs,
+          state.allMessagesByID,
+          state.allMessageItemsByID,
+          state.assistantMessageState.localMessageIDs
+        );
+        cached = { plans, sources: planSources(plans) };
+      }
+      this.itemPlans.set(state, cached);
+      this.lastItemState = state;
+    }
+    return cached;
   }
 
   private getMessageSources(state: ConversationState): readonly unknown[] {

@@ -48,6 +48,9 @@ const send = (
   entry === 'root' ? instance.send(...args) : instance.messaging.send(...args);
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+/** A message item ID: its message's ID, then the item's place. */
+const ITEM_ID =
+  /^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(:.+)$/i;
 
 /**
  * Copies `value` with each generated ID replaced by its order of first use, and each clock
@@ -64,6 +67,10 @@ function normalizer() {
         ids.set(value, `id-${ids.size}`);
       }
       return ids.get(value);
+    }
+    const itemID = typeof value === 'string' && ITEM_ID.exec(value);
+    if (itemID) {
+      return `${normalize(itemID[1])}${itemID[2]}`;
     }
     if (Array.isArray(value)) {
       return value.map((item) => normalize(item));
