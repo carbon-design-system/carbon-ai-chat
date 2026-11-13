@@ -99,7 +99,11 @@ export interface CustomPanels {
  */
 export interface CustomPanelInstance {
   /**
-   * The custom panel hostElement.
+   * The custom panel hostElement. Always `undefined`: no panel sets it.
+   *
+   * @deprecated Always `undefined`. Write panel content to the panel's writeable element instead
+   * ({@link WriteableElementName.CUSTOM_PANEL_ELEMENT}, {@link WriteableElementName.WORKSPACE_PANEL_ELEMENT}, or
+   * {@link WriteableElementName.HISTORY_PANEL_ELEMENT}). Removed in 2.0.0.
    */
   hostElement?: HTMLDivElement | undefined;
 

@@ -105,7 +105,9 @@ export enum BusEventType {
   HISTORY_PANEL_NEW_CHAT = 'history:newChat',
 
   /**
-   * Fired before mobile chat history panel opens.
+   * Fired when the user picks "View chats" in the mobile header menu, before the history panel opens. Only that menu
+   * item fires it; `customPanels.getPanel(PanelType.HISTORY).open()` doesn't. The chat doesn't wait for handlers, so
+   * a handler can't delay or stop the open.
    */
   HISTORY_PANEL_PRE_OPEN = 'historyPanel:pre:open',
 
@@ -125,7 +127,8 @@ export enum BusEventType {
   CHAT_READY = 'chat:ready',
 
   /**
-   * Fired before a custom panel opens.
+   * Fired as the default custom panel starts to draw open. It fires after `open()` resolves, when
+   * `customPanels.default.isOpen` already reads `true`, so a handler can't run before the change.
    */
   CUSTOM_PANEL_PRE_OPEN = 'customPanel:pre:open',
 
@@ -135,7 +138,8 @@ export enum BusEventType {
   CUSTOM_PANEL_OPEN = 'customPanel:open',
 
   /**
-   * Fired before a custom panel closes.
+   * Fired as the default custom panel starts to draw closed. It fires after `close()` resolves, when
+   * `customPanels.default.isOpen` already reads `false`, so a handler can't run before the change.
    */
   CUSTOM_PANEL_PRE_CLOSE = 'customPanel:pre:close',
 
@@ -775,7 +779,8 @@ export interface BusEventHistoryPanelNewChat extends BusEvent {
 }
 
 /**
- * Fired before the mobile chat history panel opens.
+ * Fired when the user picks "View chats" in the mobile header menu, before the history panel opens. The chat doesn't
+ * wait for handlers, so a handler can't delay or stop the open.
  *
  * @category Events
  */
