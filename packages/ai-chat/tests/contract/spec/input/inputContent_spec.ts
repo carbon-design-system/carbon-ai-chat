@@ -395,18 +395,12 @@ describe('input.updateRawValue', () => {
     );
   });
 
-  it('publishes the new text before the new doc in the plain field', async () => {
+  it('publishes the new text and the new doc in one change in the plain field', async () => {
     const { instance } = await openChat();
     const changes = recordInputChanges(instance);
     await updateRawValue(instance, () => 'next');
     await pause();
-    // src/types/instance/PublicChatState.ts:50 says `content` is "always
-    // consistent with rawValue". On `main` the plain field's write publishes
-    // `rawValue` first, with the old doc, then the doc in a second change.
-    expect(changes).toEqual([
-      { rawValue: 'next', content: [] },
-      { rawValue: 'next', content: textDoc('next') },
-    ]);
+    expect(changes).toEqual([{ rawValue: 'next', content: textDoc('next') }]);
   });
 
   it('turns a newline into a space in the rich editor', async () => {

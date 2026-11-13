@@ -145,9 +145,10 @@ class InputActionsService {
       return;
     }
 
+    // On this path the document follows the text.
     store.dispatch(
       actions.updateInputState(
-        { rawValue: nextValue },
+        { rawValue: nextValue, content: textToDoc(nextValue) },
         selectIsInputToHumanAgent(state)
       )
     );
