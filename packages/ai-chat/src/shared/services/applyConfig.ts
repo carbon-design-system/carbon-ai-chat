@@ -14,6 +14,7 @@ import { buildLanguagePack } from '../store/doCreateStore';
 import type { ConversationAppConfig } from '../../types/state/ConversationState';
 import { consoleDebug, consoleError } from '../utils/miscUtils';
 import { reconcileAppConfigReferences } from '../utils/reconcileConfig';
+import { BusEventType } from '../../types/events/eventBusTypes';
 import createHumanAgentService from './haa/HumanAgentServiceImpl';
 import { messageTimeoutMS } from './messaging/MessageCoordinator';
 import { NamespaceService } from './NamespaceService';
@@ -27,7 +28,9 @@ import type { ServiceManager } from './ServiceManager';
  *
  * The steps before the service desk's run before this returns its promise, so
  * a caller's next statement sees the new config in the store. The promise
- * resolves once the service desk step is done too.
+ * resolves once the service desk step is done. When that step has to wait for
+ * a live agent chat to end, it resolves at once; the switch runs later, and a
+ * failure then is logged rather than returned.
  *
  * - **The config replace** writes `next` into the store. Sub-objects that
  *   didn't change keep their previous references, so a one-field change
@@ -36,8 +39,8 @@ import type { ServiceManager } from './ServiceManager';
  * - **The namespace and message timeout** live on services, outside the
  *   store, so they're pushed to them. A timeout left out returns to its
  *   default.
- * - **The service desk** is rebuilt when the factory changed and the agent
- *   service had already started or is in a chat.
+ * - **The service desk** follows a changed factory, but never during a live
+ *   agent chat: see {@link syncServiceDeskFactory}.
  *
  * @param serviceManager - The running chat.
  * @param next - The whole config it should now have.
@@ -96,52 +99,88 @@ async function applyConversationConfig(
     serviceManager.messageCoordinator.timeoutMS = messageTimeoutMS(nextPublic);
   }
 
-  // The factory is read from config when a desk is created, so a future chat
-  // picks up the latest one with no work here. Only a desk already created
-  // from the old factory needs rebuilding. The comparison is by reference, so
-  // an inline factory changes on every host render; skipping an idle service
-  // keeps that from churning.
+  // A new desk factory never cuts a live agent chat (#2353).
   if (previous.serviceDeskFactory !== nextPublic.serviceDeskFactory) {
-    const isActive =
-      Boolean(serviceManager.humanAgentService) &&
-      isHumanAgentChatActive(serviceManager);
-    const wasInitialized = Boolean(
-      serviceManager.humanAgentService?.hasInitialized
-    );
-    if (isActive || wasInitialized) {
-      await replaceHumanAgentService(serviceManager, isActive, wasInitialized);
-    }
+    await syncServiceDeskFactory(serviceManager);
   }
 }
 
+/** Chats waiting for their agent chat to end before taking a new factory. */
+const waitingForAgentChatEnd = new WeakSet<ServiceManager>();
+
 /**
- * Rebuilds the human-agent service for a new desk factory. A live chat ends
- * quietly first (mirrors a user-initiated end), so no connection is stranded
- * on the old service. The new service initializes only if the old one had,
- * so a swap keeps the prior started state.
+ * Moves the agent service to the factory in the config, by the rule in
+ * #2353:
+ *
+ * - A service that never started needs nothing: it reads the factory from
+ *   config when it creates its desk, so the next chat uses the new one.
+ * - While an agent chat is connected or connecting, the running desk stays.
+ *   Once that chat ends, this runs again and switches. A host that wants to
+ *   switch now calls `serviceDesk.endConversation()` first.
+ * - Otherwise a service whose desk came from another factory is rebuilt, and
+ *   initializes again so it keeps its started state.
+ *
+ * A factory removed during an agent chat waits the same way.
  */
-async function replaceHumanAgentService(
-  serviceManager: ServiceManager,
-  isActive: boolean,
-  wasInitialized: boolean
-) {
-  try {
-    if (isActive) {
-      consoleDebug('Tearing down existing service desk');
-      await serviceManager.humanAgentService.endChat(true, true, false);
-    }
-    // A chat that shut down during that wait keeps its disconnected service.
-    if (serviceManager.isShutdown) {
+async function syncServiceDeskFactory(serviceManager: ServiceManager) {
+  const service = serviceManager.humanAgentService;
+  if (!service?.hasInitialized) {
+    return;
+  }
+  if (isHumanAgentChatActive(serviceManager)) {
+    waitForAgentChatEnd(serviceManager);
+    return;
+  }
+  const { serviceDeskFactory } = serviceManager.store.getState().config.public;
+  if (service.serviceDeskFactory === serviceDeskFactory) {
+    return;
+  }
+  await replaceHumanAgentService(serviceManager);
+}
+
+/**
+ * Runs {@link syncServiceDeskFactory} again once no agent chat is live. A chat
+ * that ends changes the store, or at least fires the end-chat event, so both
+ * are watched; the first that finds the chat over stops both.
+ */
+function waitForAgentChatEnd(serviceManager: ServiceManager) {
+  if (waitingForAgentChatEnd.has(serviceManager)) {
+    return;
+  }
+  waitingForAgentChatEnd.add(serviceManager);
+  const onChange = () => {
+    if (isHumanAgentChatActive(serviceManager)) {
       return;
     }
+    unsubscribe();
+    serviceManager.eventBus.off(endChatHandler);
+    waitingForAgentChatEnd.delete(serviceManager);
+    syncServiceDeskFactory(serviceManager).catch((error) =>
+      consoleError('Failed to switch to the new service desk factory:', error)
+    );
+  };
+  const endChatHandler = {
+    type: BusEventType.HUMAN_AGENT_END_CHAT,
+    handler: onChange,
+  };
+  const unsubscribe = serviceManager.store.subscribe(onChange);
+  serviceManager.eventBus.on(endChatHandler);
+}
 
+/**
+ * Rebuilds an idle, initialized human-agent service for a new desk factory,
+ * and initializes the new one, so a swap keeps the started state.
+ */
+async function replaceHumanAgentService(serviceManager: ServiceManager) {
+  // A chat that shut down keeps its disconnected service.
+  if (serviceManager.isShutdown) {
+    return;
+  }
+  try {
     consoleDebug('Recreating human agent service');
     serviceManager.humanAgentService = createHumanAgentService(serviceManager);
-
-    if (wasInitialized) {
-      consoleDebug('Human agent service restarting');
-      await serviceManager.humanAgentService.initialize();
-    }
+    consoleDebug('Human agent service restarting');
+    await serviceManager.humanAgentService.initialize();
   } catch (error) {
     // Surface failure to the caller, which decides on any fallback.
     consoleError('Failed to update human agent service dynamically:', error);
@@ -149,10 +188,17 @@ async function replaceHumanAgentService(
   }
 }
 
-/** True if a human agent chat is connected or connecting. */
+/**
+ * True while a human agent chat is live: started (its `pre:startChat`
+ * handlers may still be running), connecting, or connected.
+ */
 function isHumanAgentChatActive(serviceManager: ServiceManager): boolean {
   const { humanAgent } = serviceManager.instance.state.get();
-  return humanAgent.isConnected || humanAgent.isConnecting;
+  return (
+    Boolean(serviceManager.humanAgentService?.chatStarted) ||
+    humanAgent.isConnected ||
+    humanAgent.isConnecting
+  );
 }
 
 export { applyConversationConfig };
