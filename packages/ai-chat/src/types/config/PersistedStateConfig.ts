@@ -52,10 +52,11 @@ export interface PersistedStateConfig {
   initialState?: PersistableState;
 
   /**
-   * Called whenever the persistable session state changes, so the host can store it wherever it likes
-   * (its own backend, `localStorage`, and so on). Replaces the internal `sessionStorage` write. The
-   * argument is the complete {@link PersistableState}; persist it verbatim so it can later seed
-   * {@link PersistedStateConfig.initialState}.
+   * Called once for each change to the persistable session state, so the host can store it wherever it
+   * likes (its own backend, `localStorage`, and so on). Replaces the internal `sessionStorage` write.
+   * Changes are compared by value: an update that leaves every field equal isn't reported, and a mount
+   * that changes nothing makes no call. The argument is the complete {@link PersistableState}; persist
+   * it verbatim so it can later seed {@link PersistedStateConfig.initialState}.
    *
    * @experimental
    */
