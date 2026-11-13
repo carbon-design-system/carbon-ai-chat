@@ -19,6 +19,7 @@ import {
   contractChat,
   contractSetup,
   recordEvents,
+  showUnread,
   textResponse,
 } from '../../helpers';
 
@@ -66,11 +67,16 @@ describe('two chats on one page with different namespaces', () => {
     expect(southEvents.types()).toEqual([]);
   });
 
-  it('saves each chat’s session under its own namespace', async () => {
+  it('saves each chat’s changes under its own namespace while both are mounted', async () => {
     const chats = await twoChats();
     await changeView(chats.north, ViewType.MAIN_WINDOW);
-    expect(readCarbonChatSession('north').viewState).toEqual(OPEN);
-    expect(readCarbonChatSession('south').viewState).toEqual(CLOSED);
+    await showUnread(chats.south);
+    const north = readCarbonChatSession('north');
+    const south = readCarbonChatSession('south');
+    expect(north.viewState).toEqual(OPEN);
+    expect(north.showUnreadIndicator).toBe(false);
+    expect(south.viewState).toEqual(CLOSED);
+    expect(south.showUnreadIndicator).toBe(true);
     expect(readCarbonChatSession()).toBeNull();
   });
 

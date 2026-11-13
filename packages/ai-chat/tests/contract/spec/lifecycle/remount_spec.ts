@@ -28,11 +28,12 @@ import {
 
 type HostName = 'ChatContainer' | ContractElementTag;
 
-const HOSTS: HostName[] = [
-  'ChatContainer',
+const ELEMENT_TAGS: ContractElementTag[] = [
   'cds-aichat-container',
   'cds-aichat-custom-element',
 ];
+
+const HOSTS: HostName[] = ['ChatContainer', ...ELEMENT_TAGS];
 
 /** One host's callbacks and backend, shared by every mount in a test. */
 interface HostKit {
@@ -87,7 +88,7 @@ async function usedMount(host: HostName, kit: HostKit) {
 }
 
 // @covers event.chat:ready state.messages state.hasSentNonWelcomeMessage
-// @covers state.viewState config.messaging.customSendMessage
+// @covers config.messaging.customSendMessage
 describe.each(HOSTS)('unmount and remount of %s', (host) => {
   contractSetup();
 
@@ -101,7 +102,7 @@ describe.each(HOSTS)('unmount and remount of %s', (host) => {
     await waitFor(() => expect(kit.readyCount()).toBe(2));
   });
 
-  it('restores the open main window and the saved flags, but not the messages', async () => {
+  it('restores the saved flags, but not the messages', async () => {
     const kit = hostKit();
     const first = await usedMount(host, kit);
     expect(first.instance.getState().hasSentNonWelcomeMessage).toBe(true);
@@ -109,7 +110,6 @@ describe.each(HOSTS)('unmount and remount of %s', (host) => {
     const { instance } = await mountHost(host, kit);
     await waitFor(() => expect(kit.readyCount()).toBe(2));
     const state = instance.getState();
-    expect(state.viewState).toEqual({ launcher: false, mainWindow: true });
     expect(state.hasSentNonWelcomeMessage).toBe(true);
     // The restored open window hydrates again, so its only message is a
     // new welcome request.
@@ -136,45 +136,59 @@ describe.each(HOSTS)('unmount and remount of %s', (host) => {
   });
 });
 
-// @covers event.chat:ready state.messages state.viewState
-describe.each(['cds-aichat-container', 'cds-aichat-custom-element'] as const)(
-  'removing and adding back the same %s',
-  (tag) => {
-    contractSetup();
+// @covers state.viewState
+describe.each(ELEMENT_TAGS)('unmount and remount of %s, view state', (tag) => {
+  contractSetup();
 
-    it('starts a new chat: both render callbacks and chat:ready again, without the old messages', async () => {
-      const kit = hostKit();
-      const config = {
-        onBeforeRender: kit.onBeforeRender,
-        onAfterRender: kit.onAfterRender,
-        messaging: { customSendMessage: kit.backend.customSendMessage },
-      };
-      const { instance, element } = await contractElement(tag, {
-        properties: config,
-      });
-      await changeView(instance, ViewType.MAIN_WINDOW);
-      await waitFor(() => expect(kit.readyCount()).toBe(1));
-      await act(() => instance.messaging.addMessage(textResponse('Hi', 'r1')));
-
-      // The element lets go of its chat after the removal's microtasks run;
-      // a move inside one task keeps it.
-      await act(async () => {
-        element.remove();
-      });
-      await act(async () => {
-        document.body.appendChild(element);
-      });
-      await waitFor(() => expect(kit.onAfterRender).toHaveBeenCalledTimes(2));
-      expect(kit.onBeforeRender).toHaveBeenCalledTimes(2);
-      await waitFor(() => expect(kit.readyCount()).toBe(2));
-      const current: ChatInstance = kit.onBeforeRender.mock.calls[1][0];
-      expect(current.getState().viewState).toEqual({
-        launcher: false,
-        mainWindow: true,
-      });
-      expect(current.getState().messages.map(({ id }) => id)).toEqual([
-        kit.backend.requests[1].request.id,
-      ]);
+  it('restores the open main window', async () => {
+    const kit = hostKit();
+    const first = await usedMount(tag, kit);
+    first.unmount();
+    const { instance } = await mountHost(tag, kit);
+    await waitFor(() => expect(kit.readyCount()).toBe(2));
+    expect(instance.getState().viewState).toEqual({
+      launcher: false,
+      mainWindow: true,
     });
-  }
-);
+  });
+});
+
+// @covers event.chat:ready state.messages state.viewState
+describe.each(ELEMENT_TAGS)('removing and adding back the same %s', (tag) => {
+  contractSetup();
+
+  it('starts a new chat: both render callbacks and chat:ready again, without the old messages', async () => {
+    const kit = hostKit();
+    const config = {
+      onBeforeRender: kit.onBeforeRender,
+      onAfterRender: kit.onAfterRender,
+      messaging: { customSendMessage: kit.backend.customSendMessage },
+    };
+    const { instance, element } = await contractElement(tag, {
+      properties: config,
+    });
+    await changeView(instance, ViewType.MAIN_WINDOW);
+    await waitFor(() => expect(kit.readyCount()).toBe(1));
+    await act(() => instance.messaging.addMessage(textResponse('Hi', 'r1')));
+
+    // A removal that outlasts the task releases the chat.
+    await act(async () => {
+      element.remove();
+    });
+    await pause();
+    await act(async () => {
+      document.body.appendChild(element);
+    });
+    await waitFor(() => expect(kit.onAfterRender).toHaveBeenCalledTimes(2));
+    expect(kit.onBeforeRender).toHaveBeenCalledTimes(2);
+    await waitFor(() => expect(kit.readyCount()).toBe(2));
+    const current: ChatInstance = kit.onBeforeRender.mock.calls[1][0];
+    expect(current.getState().viewState).toEqual({
+      launcher: false,
+      mainWindow: true,
+    });
+    expect(current.getState().messages.map(({ id }) => id)).toEqual([
+      kit.backend.requests[1].request.id,
+    ]);
+  });
+});

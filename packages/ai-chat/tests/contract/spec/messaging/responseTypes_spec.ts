@@ -307,9 +307,6 @@ describe('user_defined items nested in containers', () => {
 // @covers response-type.pause state.isMessageLoadingCounter
 describe('pause items', () => {
   contractSetup();
-  afterEach(() => {
-    jest.useRealTimers();
-  });
 
   it('raises isMessageLoadingCounter during a typing pause and lowers it after', async () => {
     const { instance } = await contractChat();

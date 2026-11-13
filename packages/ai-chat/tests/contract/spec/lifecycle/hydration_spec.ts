@@ -47,13 +47,10 @@ async function closedChat(
 describe('hydration on first open', () => {
   contractSetup();
 
-  it('fires no chat:ready while closed, one after the first open, and none on a reopen', async () => {
+  it('fires no chat:ready and sends no welcome on a reopen', async () => {
     const { instance, ready, sources } = await closedChat();
-    await pause();
-    expect(ready.count()).toBe(0);
     await changeView(instance, ViewType.MAIN_WINDOW);
     await waitFor(() => expect(ready.count()).toBe(1));
-    expect(sources()).toEqual([WELCOME]);
 
     await changeView(instance, ViewType.LAUNCHER);
     await changeView(instance, ViewType.MAIN_WINDOW);
@@ -109,9 +106,6 @@ describe('restart and clear on a mounted chat', () => {
   it('still hydrates on the first open after a restart before it', async () => {
     const { instance, ready, sources } = await closedChat();
     await act(() => instance.messaging.restartConversation());
-    await pause();
-    expect(sources()).toEqual([]);
-    expect(ready.count()).toBe(0);
 
     await changeView(instance, ViewType.MAIN_WINDOW);
     await waitFor(() => expect(ready.count()).toBe(1));

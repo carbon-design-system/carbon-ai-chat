@@ -157,6 +157,8 @@ describe('history panel through customPanels', () => {
   contractSetup();
 
   it('fires no history event when getPanel(HISTORY) opens and closes it', async () => {
+    // `historyPanel:pre:open` fires only from the mobile menu; INTENDED.md row
+    // 09a keeps this.
     const { instance } = await mountWithHistory();
     const events = recordEvents(instance, HISTORY_EVENTS);
     await act(() => historyPanel(instance).open());
@@ -168,6 +170,8 @@ describe('history panel through customPanels', () => {
   });
 
   it('turns isOpen true with history off, though nothing shows', async () => {
+    // Suspected `main` bug (MAIN-NOTES M91): with history off, isOpen still
+    // turns true.
     const { instance } = await contractChat({ openChatByDefault: true });
     const content = writeHistoryContent(instance);
     await act(() => historyPanel(instance).open());

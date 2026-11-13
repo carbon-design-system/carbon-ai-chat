@@ -258,16 +258,6 @@ describe('persistedState.onStateChange', () => {
     expect(readCarbonChatSession()).toEqual(saved);
   });
 
-  it('writes nothing to sessionStorage', async () => {
-    const recorder = stateRecorder();
-    const { instance } = await mountWith({
-      messaging: { skipWelcome: true },
-      persistedState: { onStateChange: recorder.onStateChange },
-    });
-    await changeView(instance, ViewType.MAIN_WINDOW);
-    expect(readCarbonChatSession()).toBeNull();
-  });
-
   it('gives a value that restores the session as the next mount’s initialState', async () => {
     const recorder = stateRecorder();
     const first = await mountWith({

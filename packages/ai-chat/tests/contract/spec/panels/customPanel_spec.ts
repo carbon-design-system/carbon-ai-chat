@@ -216,6 +216,8 @@ describe('default custom panel events', () => {
   });
 
   it('reports the panel open in state by the time pre:open fires, and closed by pre:close', async () => {
+    // The JSDoc says pre:open fires before the change; on `main` the panel is
+    // already open (MAIN-NOTES M90).
     const { instance } = await mountOpen();
     const seen: string[] = [];
     instance.on(

@@ -493,7 +493,7 @@ describe('typing to an agent', () => {
     expect(events.types()).toEqual([]);
   });
 
-  // Records the known `main` bug in INTENDED.md "Known `main` bugs" (#2837):
+  // Records the known `main` bug in INTENDED.md "Known `main` bugs":
   // a file picked during an agent chat reaches `filesSelectedForUpload` but is
   // never added to the agent input, so the desk's send gets no files.
   it('passes a picked file to filesSelectedForUpload but not to sendMessageToAgent', async () => {

@@ -57,10 +57,6 @@ function errorStateOf(chat: ContractDriver, id: string) {
 // @covers instance.messaging.addMessage instance.messaging.addMessageChunk
 // @covers instance.messaging.upsertMessage export.aiChatEntry.MessageState
 describeShared('message timeout', (makeDriver) => {
-  afterEach(() => {
-    jest.useRealTimers();
-  });
-
   /** A driver whose send timers are fake, and a send the backend holds open. */
   async function timedSend(messaging: Partial<PublicConfigMessaging>) {
     const chat = await makeDriver({ messaging });
@@ -254,10 +250,6 @@ async function driverWithOnError(
 // @covers config.onError export.aiChatEntry.OnErrorType
 // @covers config.messaging.messageTimeoutSecs config.messaging.customSendMessage
 describeShared('onError for messaging failures', (makeDriver) => {
-  afterEach(() => {
-    jest.useRealTimers();
-  });
-
   async function rejectSend(
     chat: ContractDriver,
     error: unknown

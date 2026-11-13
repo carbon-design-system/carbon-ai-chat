@@ -213,10 +213,6 @@ describeShared('checking agent availability', (makeDriver) => {
 // @covers config.serviceDesk config.serviceDesk.availabilityTimeoutSeconds
 // @covers event.human_agent:areAnyAgentsOnline
 describeShared('availabilityTimeoutSeconds', (makeDriver) => {
-  afterEach(() => {
-    jest.useRealTimers();
-  });
-
   /** A desk whose availability check never answers, hydrated, with fake timers on. */
   async function silentDesk(config: Partial<PublicConfig>) {
     const desk = fakeDesk({ areAnyAgentsOnline: () => new Promise(() => {}) });
@@ -824,10 +820,6 @@ describeShared('desk errors', (makeDriver) => {
 // @covers config.serviceDesk config.serviceDesk.agentJoinTimeoutSeconds
 // @covers event.human_agent:endChat
 describeShared('agentJoinTimeoutSeconds', (makeDriver) => {
-  afterEach(() => {
-    jest.useRealTimers();
-  });
-
   /** Connects with fake timers on, so the join wait can be advanced. */
   async function waitingForAgent() {
     const desk = fakeDesk();
