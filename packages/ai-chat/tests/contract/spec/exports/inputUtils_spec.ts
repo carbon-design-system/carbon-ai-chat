@@ -411,7 +411,7 @@ describe('renderTokenChip', () => {
     expect(chip.textContent).toBe('/Summarize');
   });
 
-  it('calls renderCustomToken with the id, label, and custom data', () => {
+  it('calls renderCustomToken with the id, label, value, and custom data', () => {
     const renderCustomToken = jest.fn(
       (_item: SuggestionItem): HTMLElement | null => null
     );
@@ -426,11 +426,8 @@ describe('renderTokenChip', () => {
       type: 'mention',
       context: 'composer',
     });
-    // MAIN-NOTES M101 (U55): TokenChipAttrs' JSDoc says a custom renderer
-    // reads back the stored `value` too; main passes only `id`, `label`, and
-    // the custom data.
     expect(renderCustomToken.mock.calls).toEqual([
-      [{ id: 'alice', label: 'Alice', team: 'a' }],
+      [{ id: 'alice', label: 'Alice', value: '@alice', team: 'a' }],
     ]);
   });
 
