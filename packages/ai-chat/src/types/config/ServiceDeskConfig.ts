@@ -431,7 +431,8 @@ export interface UserMessageErrorInfo extends BaseErrorInfo {
   type: ErrorType.USER_MESSAGE;
 
   /**
-   * The ID of the message that is in error.
+   * The ID of the message that is in error. Use the `messageID` the chat passed to
+   * {@link ServiceDesk#sendMessageToAgent}, or the message's own `id`.
    */
   messageID: string;
 }

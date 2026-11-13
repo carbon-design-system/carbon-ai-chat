@@ -872,8 +872,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
   /**
    * Sets the error state for the message with the given id.
    *
-   * @param messageID The ID of the message to set the state for. This will be the ID that was passed on the service
-   * desk as part of the {@link ServiceDesk#sendMessageToAgent} call.
+   * @param messageID The `id` of the message to set the state for.
    * @param errorState The state to set of the message.
    */
   setMessageErrorState(messageID: string, errorState: MessageErrorState) {
@@ -1414,8 +1413,14 @@ class ServiceDeskCallbackImpl<
         break;
       }
       case ErrorType.USER_MESSAGE: {
+        // The desk gets the item ID in sendMessageToAgent but may name the message's own ID instead.
+        const { messageID } = errorInfo;
+        const { allMessagesByID, allMessageItemsByID } = store.getState();
+        const fullMessageID = allMessagesByID[messageID]
+          ? messageID
+          : (allMessageItemsByID[messageID]?.fullMessageID ?? messageID);
         this.service.setMessageErrorState(
-          errorInfo.messageID,
+          fullMessageID,
           MessageErrorState.FAILED
         );
         break;

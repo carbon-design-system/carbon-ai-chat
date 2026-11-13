@@ -441,36 +441,33 @@ describe('typing to an agent', () => {
     expect(stored.history.error_state).toBe(MessageErrorState.FAILED);
   });
 
-  // `main` passes the message's item ID as `messageID`, not the message's
-  // `id`, so a USER_MESSAGE error naming it changes nothing; only the
-  // message's own `id` works (`HumanAgentServiceImpl.ts:520`, `:601`, `:1417`).
-  it('marks a sent message failed for a USER_MESSAGE error naming its id, not the messageID given', async () => {
-    const desk = fakeDesk();
-    const { instance } = await openAndJoin(desk);
-    await typeAndSend('later failed');
-    await waitFor(() =>
-      expect(desk.desk.sendMessageToAgent).toHaveBeenCalledTimes(1)
-    );
-    const [message, messageID] = desk.desk.sendMessageToAgent.mock.calls[0];
-    const errorState = () =>
-      instance.getState().messages.find((stored) => stored.id === message.id)
-        .history.error_state;
-    await waitFor(() => expect(errorState()).toBe(MessageErrorState.NONE));
-    expect(messageID).not.toBe(message.id);
-    await act(() =>
-      desk
-        .callback()
-        .setErrorStatus({ type: ErrorType.USER_MESSAGE, messageID })
-    );
-    expect(errorState()).toBe(MessageErrorState.NONE);
-    await act(() =>
-      desk.callback().setErrorStatus({
-        type: ErrorType.USER_MESSAGE,
-        messageID: message.id,
-      })
-    );
-    expect(errorState()).toBe(MessageErrorState.FAILED);
-  });
+  it.each([
+    ['the messageID the desk was given', 'given'],
+    ["the message's own id", 'own'],
+  ])(
+    'marks a sent message failed for a USER_MESSAGE error naming %s',
+    async (_case, named) => {
+      const desk = fakeDesk();
+      const { instance } = await openAndJoin(desk);
+      await typeAndSend('later failed');
+      await waitFor(() =>
+        expect(desk.desk.sendMessageToAgent).toHaveBeenCalledTimes(1)
+      );
+      const [message, messageID] = desk.desk.sendMessageToAgent.mock.calls[0];
+      const errorState = () =>
+        instance.getState().messages.find((stored) => stored.id === message.id)
+          .history.error_state;
+      await waitFor(() => expect(errorState()).toBe(MessageErrorState.NONE));
+      expect(messageID).not.toBe(message.id);
+      await act(() =>
+        desk.callback().setErrorStatus({
+          type: ErrorType.USER_MESSAGE,
+          messageID: named === 'given' ? messageID : message.id,
+        })
+      );
+      expect(errorState()).toBe(MessageErrorState.FAILED);
+    }
+  );
 
   it('tells the desk the user is typing', async () => {
     const desk = fakeDesk();
