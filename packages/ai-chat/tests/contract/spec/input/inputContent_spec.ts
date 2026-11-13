@@ -296,7 +296,7 @@ describe('input.updateContent', () => {
     expect(instance.state.get().input.rawValue).toBe('seeded');
   });
 
-  it('seeds the draft from onBeforeRender, which a send then uses', async () => {
+  it('seeds the draft from onBeforeRender, which the field shows and a send uses', async () => {
     const sent: string[] = [];
     const { instance } = await contractChat({
       messaging: {
@@ -312,15 +312,13 @@ describe('input.updateContent', () => {
     await changeView(instance, ViewType.MAIN_WINDOW);
     await pause();
     expect(instance.state.get().input.rawValue).toBe('early');
-    // Suspected bug, reported: src/types/instance/ChatInstanceInput.ts:62 says
-    // a staged value "seeds the field when it renders", but a value staged
-    // from onBeforeRender never shows; the field stays empty while the send
-    // button sends it.
-    expect(
-      allByTestId(PageObjectId.INPUT).map(
-        (each) => (each as HTMLTextAreaElement).value
-      )
-    ).toEqual(['']);
+    await waitFor(() =>
+      expect(
+        allByTestId(PageObjectId.INPUT).map(
+          (each) => (each as HTMLTextAreaElement).value
+        )
+      ).toEqual(['early'])
+    );
     await act(async () => {
       getByTestId(PageObjectId.INPUT_SEND).click();
     });

@@ -254,11 +254,12 @@ describe('custom prompt line draft restoration', () => {
     expect(view.serviceManager.getInputFunctionsRef()).toBeNull();
   });
 
-  it('leaves normal first mounts unchanged', async () => {
+  it('shows a draft staged before a normal first mount, once', async () => {
     const view = await setup(plain, true, false);
     await act(async () => {});
-    expect(view.getByRole('textbox')).toHaveValue('');
-    expect(setContent).not.toHaveBeenCalled();
+    expect(view.getByRole('textbox')).toHaveValue('parked draft');
+    expect(setContent.mock.calls).toEqual([['parked draft']]);
+    expect(ensureEditor).not.toHaveBeenCalled();
   });
 
   it('reads the current draft after readiness, including a cleared parked draft', async () => {
