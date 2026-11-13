@@ -17,10 +17,11 @@ import {
 } from './writeableElementPresence';
 import { focusOnFirstFocusableElement, getDeepActiveElement } from './domUtils';
 import { chatStore } from '../services/attachChatView';
+import { writeableElementsOf } from './writeableElements';
 
 export function hasCustomPromptLine(manager: ServiceManager): boolean {
   return hasMeaningfulContent(
-    manager.writeableElements?.[WriteableElementName.CUSTOM_PROMPT_LINE]
+    writeableElementsOf(manager)[WriteableElementName.CUSTOM_PROMPT_LINE]
   );
 }
 
@@ -37,7 +38,7 @@ export function composerHasFocus(manager: ServiceManager): boolean {
     return manager.view.current?.instance.input()?.hasFocus() ?? false;
   }
   const content = getWriteableElementContent(
-    manager.writeableElements[WriteableElementName.CUSTOM_PROMPT_LINE]
+    writeableElementsOf(manager)[WriteableElementName.CUSTOM_PROMPT_LINE]
   );
   let active = getDeepActiveElement();
   while (active) {
@@ -64,7 +65,7 @@ export function requestComposerFocus(manager: ServiceManager): boolean {
   return (
     composerHasFocus(manager) ||
     getWriteableElementContent(
-      manager.writeableElements[WriteableElementName.CUSTOM_PROMPT_LINE]
+      writeableElementsOf(manager)[WriteableElementName.CUSTOM_PROMPT_LINE]
     ).some(
       (node) =>
         node instanceof HTMLElement && focusOnFirstFocusableElement(node, true)

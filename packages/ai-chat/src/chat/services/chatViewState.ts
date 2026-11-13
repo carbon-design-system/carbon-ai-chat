@@ -90,9 +90,16 @@ class ChatViewState {
   private initialReactCheckQueued = false;
   private initialReactGeneration = 0;
 
+  /**
+   * @param serviceManager - The chat this view shows.
+   * @param windowSize - The window's size at mount.
+   * @param customHostElement - The host's element the chat renders into, if
+   *   it doesn't float. The view owns it; the chat's services never see it.
+   */
   constructor(
     readonly serviceManager: ServiceManager,
-    windowSize: Dimension
+    windowSize: Dimension,
+    readonly customHostElement?: HTMLElement
   ) {
     const { intl } = serviceManager;
     this.snapshot = Object.freeze({
@@ -243,4 +250,4 @@ class ChatViewState {
 }
 
 export { ChatViewState };
-export type { ChatViewStateSnapshot, HumanAgentConfirmation };
+export type { ChatViewStateSnapshot };

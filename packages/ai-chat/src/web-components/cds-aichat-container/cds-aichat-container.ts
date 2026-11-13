@@ -38,11 +38,7 @@ import type { TypeAndHandler } from '../../types/instance/EventHandlers';
 
 import type { ServiceManager } from '../../shared/services/ServiceManager';
 
-import type { ChatViewState } from '../../chat/services/chatViewState';
-
-import type { ExtensionHosts } from '../../chat/services/extensionHosts';
-
-import type { ThemeWatcherService } from '../../chat/services/ThemeWatcherService';
+import type { MountView } from '../../chat/utils/attachMountView';
 
 import type { AppliedConfig } from '../../chat/utils/appConfigUpdates';
 
@@ -57,8 +53,6 @@ import { resolvePromptLineMode } from '../../chat/components/input/promptLineMod
 import { preloadBuildCarbonExtensions } from '../../chat/components/input/buildExtensionsLoader';
 
 import { consoleError } from '../../shared/utils/miscUtils';
-
-import { getWindowSize } from '../../chat/utils/windowSize';
 
 import { inputNodeIdentity } from '../../chat/utils/inputNodeSlots';
 
@@ -94,9 +88,8 @@ interface MountState {
   mount?: ChatRenderMount;
   App?: ComponentType<ChatAppEntryProps>;
   serviceManager?: ServiceManager;
-  viewState?: ChatViewState;
-  hosts?: ExtensionHosts;
-  announcerRegion?: HTMLDivElement;
+  /** The view attached to the chat: view state, extension hosts, listeners. */
+  view?: MountView;
   instance?: ChatInstance;
   bootConfig?: PublicConfig;
   appliedConfig?: AppliedConfig;
@@ -105,9 +98,6 @@ interface MountState {
   initialViewReady: boolean;
   initialViewCommitted: ResolvablePromise;
   afterRenderTimer?: ReturnType<typeof setTimeout>;
-  removeWindowListeners?: () => void;
-  detachView?: () => void;
-  themeWatcher?: ThemeWatcherService;
 }
 
 /**
@@ -121,10 +111,7 @@ export const bootModuleLoader = {
       import('../../chat/utils/appConfigUpdates'),
       import('../../chat/ChatAppEntry'),
       import('../../chat/utils/customPromptLine'),
-      import('../../chat/services/chatViewState'),
-      import('../../chat/services/extensionHosts'),
-      import('../../chat/services/createViewBindings'),
-      import('../../chat/services/ThemeWatcherService'),
+      import('../../chat/utils/attachMountView'),
     ]),
 };
 
@@ -383,18 +370,18 @@ class ChatContainer extends FlattenedConfigElement {
     if (state) {
       this.current = undefined;
       clearTimeout(state.afterRenderTimer);
-      state.removeWindowListeners?.();
       // Settle the private waits so a boot paused on one resumes, finds it is
       // retired, and stops.
       state.initialViewCommitted.doResolve();
-      state.hosts?.disconnect();
-      state.viewState?.announcer.disconnect();
-      state.announcerRegion?.remove();
-      state.viewState?.disconnect();
-      this.viewStateProvider.setValue(undefined);
-      state.mount?.unmount();
-      state.detachView?.();
-      state.themeWatcher?.disconnect();
+      const unmountApp = () => {
+        this.viewStateProvider.setValue(undefined);
+        state.mount?.unmount();
+      };
+      if (state.view) {
+        state.view.detach(unmountApp);
+      } else {
+        unmountApp();
+      }
       void state.serviceManager?.shutdown();
     }
 
@@ -534,10 +521,7 @@ class ChatContainer extends FlattenedConfigElement {
         { applyConfigUpdate, createAppliedConfig },
         { ChatAppEntry },
         { hasCustomPromptLine },
-        { ChatViewState },
-        { ExtensionHosts },
-        { createViewBindings },
-        { ThemeWatcherService },
+        { attachMountView },
       ] = await bootModuleLoader.loadBootModules();
       if (!isCurrent()) {
         return;
@@ -546,8 +530,6 @@ class ChatContainer extends FlattenedConfigElement {
       const publicConfig = mergePublicConfig(config);
       const { serviceManager, instance } = await initServiceManagerAndInstance({
         publicConfig,
-        container: this.renderTarget,
-        customHostElement: this.element,
       });
       if (!isCurrent()) {
         // Released while its services started; nothing else holds them.
@@ -565,31 +547,24 @@ class ChatContainer extends FlattenedConfigElement {
         );
       }
       state.App = ChatAppEntry;
-      state.viewState = new ChatViewState(serviceManager, getWindowSize());
-      state.viewState.connect();
-      state.themeWatcher = new ThemeWatcherService(serviceManager.store);
-      state.themeWatcher.connect();
-      // Attach before the host's callbacks and the initial view change, which
-      // both may change the view before the shell renders.
-      state.detachView = serviceManager.view.attach(
-        createViewBindings(state.viewState)
-      );
       state.instance = instance;
-      state.hosts = new ExtensionHosts(
+      // Before the host's callbacks and the initial view change, which both
+      // may change the view before the shell renders.
+      state.view = attachMountView({
+        serviceManager,
         instance,
-        this,
-        serviceManager.store,
-        () =>
+        chatElement: this,
+        renderTarget: this.renderTarget,
+        customHostElement: this.element,
+        isRequestFooterEnabled: () =>
           this.hostRendersCustomRequestFooter ||
-          Boolean(this.renderCustomRequestFooter)
-      );
-      state.hosts.connect();
+          Boolean(this.renderCustomRequestFooter),
+      });
       state.bootConfig = config;
       state.appliedConfig = createAppliedConfig(publicConfig, config);
       state.applyConfig = (nextConfig) =>
         applyConfigUpdate(state.appliedConfig, nextConfig, serviceManager);
-      state.removeWindowListeners = this.listenToWindow(state.viewState);
-      this.viewStateProvider.setValue(state.viewState);
+      this.viewStateProvider.setValue(state.view.viewState);
 
       this.renderApp();
       await this.runBeforeRender(instance);
@@ -618,7 +593,7 @@ class ChatContainer extends FlattenedConfigElement {
       if (this.resolvedConfig !== state.bootConfig) {
         state.applyConfig(this.resolvedConfig);
       }
-      this.connectAnnouncer(state);
+      state.view.connectAnnouncer(this.shadowRoot);
       this.renderApp();
 
       await performInitialViewChange(serviceManager);
@@ -650,9 +625,9 @@ class ChatContainer extends FlattenedConfigElement {
 
     state.mount?.render(state.App, {
       serviceManager: state.serviceManager,
-      viewState: state.viewState,
+      viewState: state.view?.viewState,
       instance: state.instance,
-      hosts: state.hosts,
+      hosts: state.view?.hosts,
       renderReady: state.renderReady,
       initialViewReady: state.initialViewReady,
       onInitialViewCommitted: () => state.initialViewCommitted.doResolve(),
@@ -675,40 +650,6 @@ class ChatContainer extends FlattenedConfigElement {
         this.renderUserDefinedInputNode
       ),
     });
-  }
-
-  private connectAnnouncer(state: MountState) {
-    const region = document.createElement('div');
-    region.className = 'cds-aichat--visually-hidden cds-aichat--aria-announcer';
-    // Outside the React target: a renderer can clear its subtree on unmount.
-    this.shadowRoot.appendChild(region);
-    state.announcerRegion = region;
-    state.viewState.announcer.connect(region);
-  }
-
-  /** Feeds window size to the view state and page visibility to the store. */
-  private listenToWindow(viewState: ChatViewState) {
-    const { serviceManager } = viewState;
-    const onResize = () => {
-      viewState.setWindowSize(getWindowSize());
-    };
-    const onVisibilityChange = () => {
-      serviceManager.store.dispatch(
-        viewActions.setIsBrowserPageVisible(
-          document.visibilityState === 'visible'
-        )
-      );
-    };
-    // Held here: the release runs a microtask after disconnect, and a closing
-    // page (or test environment) may have dropped its globals by then.
-    const view = window;
-    const doc = document;
-    view.addEventListener('resize', onResize);
-    doc.addEventListener('visibilitychange', onVisibilityChange);
-    return () => {
-      view.removeEventListener('resize', onResize);
-      doc.removeEventListener('visibilitychange', onVisibilityChange);
-    };
   }
 
   /**

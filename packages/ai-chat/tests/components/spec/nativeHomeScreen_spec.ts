@@ -77,8 +77,11 @@ async function createHome() {
     store,
     intl: createIntl({ locale: 'en', messages: store.getState().languagePack }),
     namespace: new NamespaceService('home-test'),
-    writeableElements: {
-      [WriteableElementName.HOME_SCREEN_AFTER_STARTERS_ELEMENT]: writable,
+    // The chat's instance holds its writeable elements.
+    instance: {
+      writeableElements: {
+        [WriteableElementName.HOME_SCREEN_AFTER_STARTERS_ELEMENT]: writable,
+      },
     },
     actions: { errorOccurred },
   } as unknown as ServiceManager;

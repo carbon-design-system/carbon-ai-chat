@@ -156,7 +156,7 @@ describe('storage (#1732 O4, O7)', () => {
     const chat = await createChatSDK({ messaging: { skipWelcome: true } });
     const manager = chatOf(chat);
     expect(manager.userSessionStorageService).toBeUndefined();
-    expect(manager.writeableElements).toEqual({});
+    expect('writeableElements' in manager).toBe(false);
     expect(chat.state.get().messages).toEqual([]);
     expect(chat.state.get().humanAgent.isConnected).toBe(false);
     chat.destroy();

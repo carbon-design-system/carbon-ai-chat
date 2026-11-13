@@ -75,9 +75,7 @@ function hasMeaningfulContent(node: HTMLElement): boolean {
 }
 
 function customHeaderNode(instance: ChatInstance): HTMLElement {
-  return (instance as any).serviceManager.writeableElements[
-    WriteableElementName.CUSTOM_HEADER
-  ];
+  return instance.writeableElements[WriteableElementName.CUSTOM_HEADER];
 }
 
 function setHistoryMobile(instance: ChatInstance) {

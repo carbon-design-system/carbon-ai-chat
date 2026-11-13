@@ -28,10 +28,8 @@ import {
 import { doCreateStore } from '../store/doCreateStore';
 import { refreshLocalizationOnChange } from '../store/subscriptions';
 import type { ConversationAppConfig } from '../../types/state/ConversationState';
-import { WriteableElementName } from '../utils/constants';
 import { assertType, setEnableDebugLog } from '../utils/miscUtils';
 import { setIntl } from '../utils/intlUtils';
-import { isBrowser } from '../utils/browserUtils';
 
 /** How a chat's services are built. */
 interface CreateServiceManagerOptions {
@@ -41,11 +39,6 @@ interface CreateServiceManagerOptions {
    * reads and writes no storage of its own (#1732).
    */
   sessionStorage?: boolean;
-  /**
-   * Creates the page elements hosts write into, as the prebuilt chat does. A
-   * chat `createChatSDK` starts passes `false`, so it touches no DOM.
-   */
-  writeableElements?: boolean;
 }
 
 type CreateServiceManagerFunction = (
@@ -59,10 +52,7 @@ type CreateServiceManagerFunction = (
  */
 function createServiceManager(
   appConfig: ConversationAppConfig,
-  {
-    sessionStorage = true,
-    writeableElements = true,
-  }: CreateServiceManagerOptions = {}
+  { sessionStorage = true }: CreateServiceManagerOptions = {}
 ) {
   const publicConfig = appConfig.public;
 
@@ -129,47 +119,6 @@ function createServiceManager(
     serviceManager.store.getState().config.public.locale || 'en',
     serviceManager.store.getState().languagePack
   );
-
-  // Create all custom elements for Deb.
-  serviceManager.writeableElements = {};
-  if (writeableElements && isBrowser()) {
-    serviceManager.writeableElements = {
-      [WriteableElementName.AI_TOOLTIP_AFTER_DESCRIPTION_ELEMENT]:
-        document.createElement('div'),
-      [WriteableElementName.EXPLAINABILITY_POPOVER_CONTENT]:
-        document.createElement('div'),
-      [WriteableElementName.EXPLAINABILITY_POPOVER_ACTIONS]:
-        document.createElement('div'),
-      [WriteableElementName.WELCOME_NODE_BEFORE_ELEMENT]:
-        document.createElement('div'),
-      [WriteableElementName.HEADER_BOTTOM_ELEMENT]:
-        document.createElement('div'),
-      [WriteableElementName.HEADER_FIXED_ACTIONS_ELEMENT]:
-        document.createElement('div'),
-      [WriteableElementName.BEFORE_INPUT_ELEMENT]:
-        document.createElement('div'),
-      [WriteableElementName.AFTER_INPUT_ELEMENT]: document.createElement('div'),
-      [WriteableElementName.PROMPT_LINE_ACTIONS_END]:
-        document.createElement('div'),
-      [WriteableElementName.PROMPT_LINE_SEND_BUTTON_START]:
-        document.createElement('div'),
-      [WriteableElementName.FOOTER_ELEMENT]: document.createElement('div'),
-      [WriteableElementName.HOME_SCREEN_HEADER_BOTTOM_ELEMENT]:
-        document.createElement('div'),
-      [WriteableElementName.HOME_SCREEN_AFTER_STARTERS_ELEMENT]:
-        document.createElement('div'),
-      [WriteableElementName.HOME_SCREEN_BEFORE_INPUT_ELEMENT]:
-        document.createElement('div'),
-      [WriteableElementName.CUSTOM_PANEL_ELEMENT]:
-        document.createElement('div'),
-      [WriteableElementName.WORKSPACE_PANEL_ELEMENT]:
-        document.createElement('div'),
-      [WriteableElementName.HISTORY_PANEL_ELEMENT]:
-        document.createElement('div'),
-      [WriteableElementName.CUSTOM_HEADER]: document.createElement('div'),
-      [WriteableElementName.CUSTOM_PROMPT_LINE]: document.createElement('div'),
-    };
-  }
 
   if (publicConfig.debug) {
     setEnableDebugLog(true);

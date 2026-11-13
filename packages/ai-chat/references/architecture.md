@@ -91,9 +91,9 @@ The revision is React's `parts` object; a request counts only for it, while its 
 | `lifetime`, `draftGeneration` | `ChatInput` | Handle and draft work |
 | `initialReactGeneration` | `ChatViewState` | The queued initial-commit check |
 
-## Hand-off to #2349
+## The view attach
 
-#1732 must split the container's `boot()` after `initServiceManagerAndInstance` creates the services; the code after it creates view owners (`ChatViewState`, `ExtensionHosts`, window listeners, the announcer region). `ExtensionHosts` records are the view-side slot bookkeeping #1741 replaces. `ShellLifecycle` publishes the shell's handles to the mount's `ChatViewState`: `publishHandles` sets `mainWindow`, `appWindow`, and `ariaAnnouncer`, and `setInputHandle` sets the input's one handle. The view ports the container attaches read them on each call.
+`boot()` creates the chat, then [`attachMountView`](../src/chat/utils/attachMountView.ts) adds what lives only while a view is mounted: `ChatViewState` (with the host element), the theme watcher, view ports, `ExtensionHosts`, window listeners, and the announcer region. `detach` removes them in release's order. Services hold no DOM; `ChatInstance` holds the writeable elements. `ShellLifecycle` publishes the shell's handles (`mainWindow`, `appWindow`, `ariaAnnouncer`, the input) to `ChatViewState`; the ports read them on each call.
 
 ## Debugging across the boundary
 
