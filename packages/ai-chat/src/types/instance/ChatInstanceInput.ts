@@ -58,6 +58,10 @@ export interface ChatInstanceInput {
    * already mounted — apply immediately and the promise resolves on the same
    * tick.
    *
+   * If the rich editor can't hold the result, such as a node or mark that no
+   * installed extension supports, the promise rejects with a `TypeError` that
+   * names it, and the draft stays as it was.
+   *
    * While the input is hidden or not yet mounted, a plain-text result is staged
    * as the pending value and seeds the field when it renders; a result with
    * non-text content throws, because there is no surface to upgrade.

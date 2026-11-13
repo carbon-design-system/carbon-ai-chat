@@ -40,12 +40,6 @@ function textDoc(text: string): JSONContent {
   };
 }
 
-/** The doc the chat publishes for an empty input. */
-const EMPTY_DOC: JSONContent = {
-  type: 'doc',
-  content: [{ type: 'paragraph' }],
-};
-
 /** A host node, installed through `input.tiptap.extensions`. */
 const TestChip = Node.create({
   name: 'testChip',
@@ -264,23 +258,30 @@ describe('input.updateContent', () => {
     expect(editor.getJSON()).toEqual(chipDoc('hi '));
   });
 
-  it('empties the draft for a mark no extension supports', async () => {
+  it('keeps the draft and rejects with a TypeError naming a mark no extension supports', async () => {
     const { instance } = await openChat();
     await updateContent(instance, () => textDoc('earlier draft'));
-    await updateContent(instance, () => ({
-      type: 'doc',
-      content: [
-        {
-          type: 'paragraph',
-          content: [{ type: 'text', text: 'bold', marks: [{ type: 'bold' }] }],
-        },
-      ],
-    }));
-    // Suspected bug, reported: the promise resolves as if the doc were
-    // applied, but the rich editor rejects the unknown mark and the whole
-    // draft, the earlier text included, is gone.
-    expect(instance.state.get().input.rawValue).toBe('');
-    expect(instance.state.get().input.content).toEqual(EMPTY_DOC);
+    let result: Promise<void>;
+    await act(async () => {
+      result = instance.input.updateContent(() => ({
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              { type: 'text', text: 'bold', marks: [{ type: 'bold' }] },
+            ],
+          },
+        ],
+      }));
+      await result.catch(() => {});
+    });
+    await expect(result).rejects.toThrow(TypeError);
+    await expect(result).rejects.toThrow(/\bbold\b/);
+    expect(instance.state.get().input.rawValue).toBe('earlier draft');
+    expect(instance.state.get().input.content).toEqual(
+      textDoc('earlier draft')
+    );
   });
 
   it('seeds plain text while the input is hidden, and rejects a rich doc', async () => {

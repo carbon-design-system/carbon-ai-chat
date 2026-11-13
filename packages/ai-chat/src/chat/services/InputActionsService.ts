@@ -35,6 +35,21 @@ import type { ServiceManager } from './ServiceManager';
  */
 let hasWarnedAboutUpdateRawValueDeprecation = false;
 
+/**
+ * Throws when the editor's schema can't hold the doc. Tiptap would otherwise
+ * log "Invalid content" and replace the draft with an empty doc.
+ */
+function assertEditorAccepts(editor: Editor, content: JSONContent) {
+  try {
+    editor.schema.nodeFromJSON(content).check();
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    throw new TypeError(
+      `ChatInstance.input.updateContent can't apply this content, so the input keeps its draft: ${detail}. Add an extension for it through input.tiptap.extensions, or remove it from the content.`
+    );
+  }
+}
+
 class InputActionsService {
   private serviceManager: ServiceManager;
 
@@ -172,6 +187,7 @@ class InputActionsService {
     }
 
     if (ref && editor) {
+      assertEditorAccepts(editor, next);
       ref.setContent(next);
       return;
     }
@@ -191,11 +207,12 @@ class InputActionsService {
         'ChatInstance.input.updateContent cannot seed non-text content before the input is rendered. Wait for the input to mount, or write plain text.'
       );
     }
-    await ref.ensureEditor();
+    const ensuredEditor = await ref.ensureEditor();
     this.assertBuiltInInput();
     if (this.serviceManager.getInputFunctionsRef() !== ref) {
       throw new Error('Input is not currently rendered');
     }
+    assertEditorAccepts(ensuredEditor, next);
     ref.setContent(next);
   }
 

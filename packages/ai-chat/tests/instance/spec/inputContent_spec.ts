@@ -179,7 +179,10 @@ describe('ChatInstance.input.updateContent (lazy rich upgrade)', () => {
     const promptLine = await getPromptLine();
     expect(promptLine.getEditor()).toBeNull();
 
-    await instance.input.updateContent(markedDoc);
+    // No installed extension supports bold, so the write itself rejects.
+    await expect(instance.input.updateContent(markedDoc)).rejects.toThrow(
+      TypeError
+    );
 
     await waitFor(() => {
       expect(promptLine.getEditor()).not.toBeNull();
