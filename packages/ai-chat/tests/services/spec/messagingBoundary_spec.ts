@@ -179,7 +179,7 @@ it('keeps core runtime imports and capabilities independent of the view', () => 
         !/\/ai-chat-components\/src\/components\/(chat-button|chain-of-thought)\/defs\.ts$/.test(
           file
         ) &&
-        !/\/ai-chat-components\/src\/components\/prompt-line\/src\/types\.ts$/.test(
+        !/\/ai-chat-components\/src\/components\/prompt-line\/src\/file-upload-types\.ts$/.test(
           file
         )
     )

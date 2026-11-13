@@ -10,7 +10,7 @@
 import { setVarsForSelector } from '@carbon/ai-chat-components/es/components/shared/dynamic-css-var-sheet.js';
 
 import type { ServiceManager } from '../../shared/services/ServiceManager';
-import type { ChatInstance } from '../../types/instance/ChatInstance';
+import { slotSource } from '../../shared/services/slotTracking';
 import { viewActions } from '../../view/state';
 import { ChatViewState } from '../services/chatViewState';
 import { createViewBindings } from '../services/createViewBindings';
@@ -42,7 +42,6 @@ function ensureBootContainerStyleRules(): void {
 
 interface MountViewOptions {
   serviceManager: ServiceManager;
-  instance: ChatInstance;
   /** The chat element: extension content goes in its light DOM. */
   chatElement: HTMLElement;
   /** The element React renders into, inside the chat element's shadow root. */
@@ -75,7 +74,6 @@ interface MountView {
  */
 function attachMountView({
   serviceManager,
-  instance,
   chatElement,
   renderTarget,
   customHostElement,
@@ -114,7 +112,7 @@ function attachMountView({
     detachBindings = serviceManager.view.attach(createViewBindings(viewState));
     undo.unshift(detachBindings);
     hosts = new ExtensionHosts(
-      instance,
+      slotSource(serviceManager),
       chatElement,
       serviceManager.store,
       isRequestFooterEnabled

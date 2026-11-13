@@ -14,6 +14,7 @@ import { BusEventType } from '../../../src/types/events/eventBusTypes';
 import { registerInlineTarget } from '../../../src/chat/components/portals/inputNodeHosts';
 import { inputNodeIdentity } from '../../../src/chat/utils/inputNodeSlots';
 import { LIGHT_DOM_PORTAL_EVENT } from '@carbon/ai-chat-components/es/components/prompt-line/src/tiptap/render-in-light-dom.js';
+import { slotSourceOf } from '../../test_helpers';
 
 const noMessages = {
   getState: () => ({ allMessagesByID: {} }),
@@ -26,7 +27,7 @@ function setup(isRequestFooterEnabled: () => boolean = () => true) {
   const chatWrapper = document.createElement('div');
   document.body.append(chatWrapper);
   const hosts = new ExtensionHosts(
-    instance,
+    slotSourceOf(instance),
     chatWrapper,
     noMessages,
     isRequestFooterEnabled
@@ -352,6 +353,42 @@ describe('extension slot hosts', () => {
     expect(hosts.hostFor('userDefinedResponse', 'r1')).not.toBe(responseHost);
   });
 
+  it('shows records collected while disconnected, but no request footers', () => {
+    const { hosts, fire } = setup();
+    hosts.disconnect();
+    fire(response('while-away'));
+    fire({
+      type: BusEventType.CUSTOM_REQUEST_FOOTER_SLOT,
+      data: { slotName: 'away-footer', message: { id: 'm', input: {} } },
+    });
+    const listener = jest.fn();
+    hosts.subscribe(listener);
+
+    hosts.connect();
+    expect(Object.keys(hosts.getSnapshot().userDefinedResponse)).toEqual([
+      'while-away',
+    ]);
+    expect(listener).toHaveBeenCalledTimes(1);
+    // No view gate was registered while disconnected.
+    expect(hosts.getSnapshot().customRequestFooter).toEqual({});
+  });
+
+  it('releases hosts on reconnect when a restart emptied their records meanwhile', () => {
+    const { hosts, chatWrapper, fire } = setup();
+    fire(response('r1'));
+    hosts.setRendererPresent('userDefinedResponse', true);
+    const host = hosts.hostFor('userDefinedResponse', 'r1');
+    hosts.setHasContent('userDefinedResponse', 'r1', true);
+    hosts.disconnect();
+    fire(restartEvent);
+
+    hosts.connect();
+    expect(hosts.getSnapshot().userDefinedResponse).toEqual({});
+    expect(attached(chatWrapper)).toEqual([]);
+    fire(response('r1'));
+    expect(hosts.hostFor('userDefinedResponse', 'r1')).not.toBe(host);
+  });
+
   it('leaves a host that was moved out of the chat element', () => {
     const { hosts, fire } = setup();
     fire(response('r1'));
@@ -484,7 +521,7 @@ it('stops following the store after disconnect', () => {
     },
   };
   const hosts = new ExtensionHosts(
-    new EventBus() as unknown as ChatInstance,
+    slotSourceOf(new EventBus()),
     document.createElement('div'),
     store,
     () => false
@@ -526,7 +563,12 @@ describe('input-node hosts', () => {
     const instance = eventBus as unknown as ChatInstance;
     const chatWrapper = document.createElement('div');
     document.body.append(chatWrapper);
-    const hosts = new ExtensionHosts(instance, chatWrapper, store, () => false);
+    const hosts = new ExtensionHosts(
+      slotSourceOf(instance),
+      chatWrapper,
+      store,
+      () => false
+    );
     hosts.connect();
     const setMessages = (next: Record<string, unknown>) => {
       allMessagesByID = next;

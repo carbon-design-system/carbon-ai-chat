@@ -11,6 +11,7 @@ import {
   BusEventType,
   type BusEventChunkUserDefinedResponse,
   type BusEventCustomFooterSlot,
+  type BusEventCustomRequestFooterSlot,
   type BusEventUserDefinedResponse,
 } from '../../types/events/eventBusTypes';
 import type { TypeAndHandler } from '../../types/instance/EventHandlers';
@@ -18,6 +19,7 @@ import type { MessageState } from '../../types/config/MessagingConfig';
 import type {
   GenericItem,
   Message,
+  MessageRequest,
   MessageResponse,
 } from '../../types/messaging/Messages';
 import type { DeepPartial } from '../../types/utilities/DeepPartial';
@@ -48,6 +50,11 @@ interface CustomFooterSlotState {
   additionalData?: Record<string, unknown>;
 }
 
+interface CustomRequestFooterSlotState {
+  slotName: string;
+  message: MessageRequest;
+}
+
 /** Each slot's state, by slot name. */
 type SlotRecords<T> = Readonly<Record<string, T>>;
 
@@ -59,8 +66,20 @@ interface SlotStores {
   >;
   /** Custom footer slots below assistant messages. */
   readonly customFooter: ReadableValueStore<SlotRecords<CustomFooterSlotState>>;
+  /**
+   * Footers under the user's messages. Collected only while a view says it
+   * renders them (see {@link collectRequestFooters}), because that event fires
+   * for every message the user sends.
+   */
+  readonly customRequestFooter: ReadableValueStore<
+    SlotRecords<CustomRequestFooterSlotState>
+  >;
 }
 
+/** Each chat's request-footer gates: a footer is kept if any says so. */
+const requestFooterGates = new WeakMap<ServiceManager, Set<() => boolean>>();
+
+/** The empty records every store starts at and returns to on restart. */
 const EMPTY: SlotRecords<never> = Object.freeze({});
 
 const tracked = new WeakMap<ServiceManager, SlotStores>();
@@ -75,8 +94,9 @@ function setSlot<T>(
 
 /**
  * Starts keeping the chat's slot state in stores, from the slot events on its
- * bus, and returns them. A restart empties both, the response store first, so
- * a listener reading both stores can see the footers emptied a moment later.
+ * bus, and returns them. A restart empties all three, the response store
+ * first, so a listener reading several stores can see the later ones emptied
+ * a moment later.
  * Calling it again for the same chat returns the same stores and adds no
  * second listener.
  *
@@ -93,6 +113,10 @@ function attachSlotTracking(serviceManager: ServiceManager): SlotStores {
     createValueStore<SlotRecords<UserDefinedSlotState>>(EMPTY);
   const customFooter =
     createValueStore<SlotRecords<CustomFooterSlotState>>(EMPTY);
+  const customRequestFooter =
+    createValueStore<SlotRecords<CustomRequestFooterSlotState>>(EMPTY);
+  const gates = new Set<() => boolean>();
+  requestFooterGates.set(serviceManager, gates);
 
   const handlers: TypeAndHandler[] = [
     {
@@ -135,10 +159,20 @@ function attachSlotTracking(serviceManager: ServiceManager): SlotStores {
       },
     },
     {
+      type: BusEventType.CUSTOM_REQUEST_FOOTER_SLOT,
+      handler: ({ data }: BusEventCustomRequestFooterSlot) => {
+        if ([...gates].some((isEnabled) => isEnabled())) {
+          const { slotName, message } = data;
+          setSlot(customRequestFooter, slotName, { slotName, message });
+        }
+      },
+    },
+    {
       type: BusEventType.RESTART_CONVERSATION,
       handler: () => {
         userDefinedResponse.set(EMPTY);
         customFooter.set(EMPTY);
+        customRequestFooter.set(EMPTY);
       },
     },
   ];
@@ -147,6 +181,7 @@ function attachSlotTracking(serviceManager: ServiceManager): SlotStores {
   const stores: SlotStores = Object.freeze({
     userDefinedResponse: readOnly(userDefinedResponse),
     customFooter: readOnly(customFooter),
+    customRequestFooter: readOnly(customRequestFooter),
   });
   tracked.set(serviceManager, stores);
   return stores;
@@ -157,5 +192,48 @@ function readOnly<T>({ get, subscribe }: ValueStore<T>): ReadableValueStore<T> {
   return Object.freeze({ get, subscribe });
 }
 
-export { attachSlotTracking };
-export type { CustomFooterSlotState, UserDefinedSlotState };
+/**
+ * Collects request footers while `isEnabled` says so, for a view that renders
+ * them. Asked on each footer event, so a render callback set after boot still
+ * collects. Returns a function that stops this gate.
+ */
+function collectRequestFooters(
+  serviceManager: ServiceManager,
+  isEnabled: () => boolean
+): () => void {
+  attachSlotTracking(serviceManager);
+  const gates = requestFooterGates.get(serviceManager);
+  gates.add(isEnabled);
+  return () => {
+    gates.delete(isEnabled);
+  };
+}
+
+/** A chat's slot stores, plus the request-footer gate, for a view to read. */
+interface SlotSource {
+  readonly stores: SlotStores;
+  collectRequestFooters(isEnabled: () => boolean): () => void;
+}
+
+/** The slot source for a chat's service manager. */
+function slotSource(serviceManager: ServiceManager): SlotSource {
+  return {
+    stores: attachSlotTracking(serviceManager),
+    collectRequestFooters: (isEnabled) =>
+      collectRequestFooters(serviceManager, isEnabled),
+  };
+}
+
+export {
+  attachSlotTracking,
+  collectRequestFooters,
+  EMPTY as EMPTY_SLOT_RECORDS,
+  slotSource,
+};
+export type {
+  CustomFooterSlotState,
+  CustomRequestFooterSlotState,
+  SlotSource,
+  SlotStores,
+  UserDefinedSlotState,
+};

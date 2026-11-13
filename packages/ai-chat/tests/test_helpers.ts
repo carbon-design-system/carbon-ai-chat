@@ -24,6 +24,10 @@ import { enableMessageOwnership } from '../src/shared/store/messageOwnership';
 import { AppState } from '../src/types/state/AppState';
 import { MessageResponseTypes } from '../src/types/messaging/Messages';
 import { ServiceManager } from '../src/shared/services/ServiceManager';
+import {
+  slotSource,
+  type SlotSource,
+} from '../src/shared/services/slotTracking';
 import { ChatViewState } from '../src/chat/services/chatViewState';
 import type { AriaAnnouncerFunctionType } from '../src/chat/services/ariaAnnouncer';
 import { ChatContext } from '../src/chat/contexts/ChatContext';
@@ -413,3 +417,15 @@ export const setupAfterEach = () => {
   cleanup();
   document.body.innerHTML = '';
 };
+
+/**
+ * A slot source for an `ExtensionHosts` built outside a chat: the tracking
+ * listens on `events`, the instance or event bus the spec fires through.
+ */
+export function slotSourceOf(events: unknown): SlotSource {
+  const eventBus =
+    events && typeof (events as { on?: unknown }).on === 'function'
+      ? events
+      : { on: (): void => undefined };
+  return slotSource({ eventBus } as unknown as ServiceManager);
+}
