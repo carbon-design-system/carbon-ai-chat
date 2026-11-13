@@ -14,36 +14,24 @@ import {
   ChatInstance,
   PublicConfig,
   SuggestionItem,
-  ViewType,
 } from '../../../../src/aiChatEntry';
 import {
   FakeBackend,
   allByRole,
   byRole,
-  changeView,
   click,
-  contractChat,
   contractSetup,
-  fakeBackend,
+  openChat,
   pause,
 } from '../../helpers';
 
-/** Mounts a chat, opens its main window, and answers each send at once. */
-async function openChat(config: Partial<PublicConfig>): Promise<{
+/** Opens a chat (see `openChat`), then loads and focuses its rich editor. */
+async function openEditor(config: Partial<PublicConfig>): Promise<{
   instance: ChatInstance;
   backend: FakeBackend;
   editor: Editor;
 }> {
-  const backend = fakeBackend({ autoResolve: true });
-  const { instance } = await contractChat({
-    ...config,
-    messaging: {
-      skipWelcome: true,
-      customSendMessage: backend.customSendMessage,
-    },
-  });
-  await changeView(instance, ViewType.MAIN_WINDOW);
-  await waitFor(() => expect(instance.state.get().isHydratingCounter).toBe(0));
+  const { instance, backend } = await openChat(config);
   const editor = await act(async () => instance.input.getEditor());
   await act(async () => {
     editor.commands.focus();
@@ -86,7 +74,7 @@ describe('input.mention', () => {
 
   it('asks items for the text typed after the trigger', async () => {
     const queries: string[] = [];
-    const { editor } = await openChat({
+    const { editor } = await openEditor({
       input: {
         mention: {
           trigger: '@',
@@ -103,7 +91,7 @@ describe('input.mention', () => {
   });
 
   it('filters an item list by the typed text', async () => {
-    const { editor } = await openChat({
+    const { editor } = await openEditor({
       input: { mention: { trigger: '@', items: [ALICE, BOB] } },
     });
     await insert(editor, '@bo');
@@ -113,7 +101,7 @@ describe('input.mention', () => {
 
   it('inserts a mention node for the chosen item and calls onSelect', async () => {
     const onSelect = jest.fn();
-    const { instance, editor, backend } = await openChat({
+    const { instance, editor, backend } = await openEditor({
       input: { mention: { trigger: '@', items: [ALICE], onSelect } },
     });
     await insert(editor, '@al');
@@ -133,7 +121,7 @@ describe('input.mention', () => {
   });
 
   it('offers nothing without the trigger', async () => {
-    const { editor } = await openChat({
+    const { editor } = await openEditor({
       input: { mention: { trigger: '@', items: [ALICE] } },
     });
     await insert(editor, 'al');
@@ -152,7 +140,7 @@ describe('input.command', () => {
 
   it('inserts a command node for the chosen item and calls onSelect', async () => {
     const onSelect = jest.fn();
-    const { instance, editor } = await openChat({
+    const { instance, editor } = await openEditor({
       input: {
         command: { trigger: '/', items: [SUMMARIZE, TRANSLATE], onSelect },
       },
@@ -173,7 +161,7 @@ describe('input.command', () => {
 
   it('calls onRemove when the command is deleted', async () => {
     const onRemove = jest.fn();
-    const { instance, editor } = await openChat({
+    const { instance, editor } = await openEditor({
       input: { command: { trigger: '/', items: [SUMMARIZE], onRemove } },
     });
     await insert(editor, '/su');
@@ -195,7 +183,7 @@ describe('input.autocomplete', () => {
 
   it('asks items for the typed text and sends a chosen item', async () => {
     const queries: string[] = [];
-    const { instance, editor, backend } = await openChat({
+    const { instance, editor, backend } = await openEditor({
       input: {
         autocomplete: {
           items: (query) => {
@@ -213,7 +201,7 @@ describe('input.autocomplete', () => {
   });
 
   it('inserts a chosen item instead with disableDirectSend', async () => {
-    const { instance, editor, backend } = await openChat({
+    const { instance, editor, backend } = await openEditor({
       input: { autocomplete: { disableDirectSend: true, items: [HELLO] } },
     });
     await insert(editor, 'hel');
@@ -226,7 +214,7 @@ describe('input.autocomplete', () => {
 
   it('calls onSelect for an inserted item but not for a sent one', async () => {
     const onSelect = jest.fn();
-    const sent = await openChat({
+    const sent = await openEditor({
       input: { autocomplete: { items: [HELLO], onSelect } },
     });
     await insert(sent.editor, 'hel');
@@ -239,7 +227,7 @@ describe('input.autocomplete', () => {
 
   it('calls onSelect for an item inserted with disableDirectSend', async () => {
     const onSelect = jest.fn();
-    const { editor } = await openChat({
+    const { editor } = await openEditor({
       input: {
         autocomplete: { disableDirectSend: true, items: [HELLO], onSelect },
       },
@@ -251,7 +239,7 @@ describe('input.autocomplete', () => {
   });
 
   it('waits for minQueryLength characters', async () => {
-    const { editor } = await openChat({
+    const { editor } = await openEditor({
       input: { autocomplete: { minQueryLength: 2, items: [HELLO] } },
     });
     await insert(editor, 'h');
@@ -274,7 +262,7 @@ describe('input.starters', () => {
   };
 
   it('shows while the input is empty and focused, and sends the value of a chosen one', async () => {
-    const { instance, backend } = await openChat({
+    const { instance, backend } = await openEditor({
       input: { starters: { items: [STARTER] } },
     });
     await choose('Contract starter');
@@ -283,7 +271,7 @@ describe('input.starters', () => {
   });
 
   it('sends the label when an item has no value', async () => {
-    const { backend } = await openChat({
+    const { backend } = await openEditor({
       input: { starters: { items: [{ id: 'start', label: 'Label only' }] } },
     });
     await choose('Label only');
@@ -291,7 +279,7 @@ describe('input.starters', () => {
   });
 
   it('hides once the input has text', async () => {
-    const { editor } = await openChat({
+    const { editor } = await openEditor({
       input: { starters: { items: [STARTER] } },
     });
     await waitFor(() => expect(options('Contract starter')).toHaveLength(1));
@@ -300,14 +288,16 @@ describe('input.starters', () => {
   });
 
   it('shows nothing with isOn false', async () => {
-    await openChat({ input: { starters: { isOn: false, items: [STARTER] } } });
+    await openEditor({
+      input: { starters: { isOn: false, items: [STARTER] } },
+    });
     // A short wait proves no list opens.
     await pause();
     expect(options('Contract starter')).toHaveLength(0);
   });
 
   it('sends nothing, and inserts nothing, with isSendDisabled', async () => {
-    const { instance, backend } = await openChat({
+    const { instance, backend } = await openEditor({
       input: { isSendDisabled: true, starters: { items: [STARTER] } },
     });
     await choose('Contract starter');
@@ -318,7 +308,7 @@ describe('input.starters', () => {
   });
 
   it('still sends with disableDirectSend', async () => {
-    const { backend } = await openChat({
+    const { backend } = await openEditor({
       input: { starters: { disableDirectSend: true, items: [STARTER] } },
     });
     await choose('Contract starter');

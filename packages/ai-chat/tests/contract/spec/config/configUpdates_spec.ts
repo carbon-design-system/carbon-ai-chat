@@ -32,15 +32,17 @@ import {
   byRole,
   byTestId,
   changeView,
-  click,
   contractChat,
   contractSetup,
   countChatReady,
   fakeBackend,
   finishSend,
   getByTestId,
+  inputField,
   instanceSender,
+  mainPanelText,
   pause,
+  pickFiles,
   recordEvents,
   shownText,
   startSend,
@@ -84,16 +86,6 @@ function countStateChanges(instance: ChatInstance) {
     calls += 1;
   });
   return () => calls;
-}
-
-/** The text the main panel shows, with whitespace collapsed. */
-function mainPanelText(): string {
-  return shownText(getByTestId(PageObjectId.MAIN_PANEL)).replace(/\s+/g, ' ');
-}
-
-/** The input field (a text control). */
-function inputField(): HTMLTextAreaElement {
-  return getByTestId(PageObjectId.INPUT) as HTMLTextAreaElement;
 }
 
 /**
@@ -601,27 +593,6 @@ describe('upload updates', () => {
   const UPLOAD_LABEL = 'Attach a file';
   const strings = { input_uploadButtonLabel: UPLOAD_LABEL };
 
-  /**
-   * Picks files through the upload button the way a user would. The button
-   * opens the browser's file picker, which jsdom can't show, so the picker's
-   * click is caught and its change fired by hand.
-   */
-  async function pickFiles(files: File[]) {
-    const spy = jest
-      .spyOn(HTMLInputElement.prototype, 'click')
-      .mockImplementation(() => undefined);
-    await click(byRole('button', UPLOAD_LABEL));
-    const [picker] = spy.mock.contexts as HTMLInputElement[];
-    spy.mockRestore();
-    await act(async () => {
-      Object.defineProperty(picker, 'files', {
-        configurable: true,
-        value: files,
-      });
-      picker.dispatchEvent(new Event('change', { bubbles: true }));
-    });
-  }
-
   const uploader = () =>
     jest.fn(
       (_file: File): Promise<StructuredData> => new Promise(() => undefined)
@@ -653,7 +624,7 @@ describe('upload updates', () => {
       openProps({ strings, upload: { isOn: true, onFileUpload: second } })
     );
     const file = new File(['abc'], 'notes.txt');
-    await pickFiles([file]);
+    await pickFiles(UPLOAD_LABEL, [file]);
     await waitFor(() => expect(second).toHaveBeenCalledTimes(1));
     expect(second.mock.calls[0][0]).toBe(file);
     expect(first).not.toHaveBeenCalled();

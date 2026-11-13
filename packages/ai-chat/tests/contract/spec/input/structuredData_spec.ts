@@ -13,33 +13,8 @@ import {
   ChatInstance,
   PageObjectId,
   StructuredData,
-  ViewType,
 } from '../../../../src/aiChatEntry';
-import {
-  FakeBackend,
-  changeView,
-  contractChat,
-  contractSetup,
-  fakeBackend,
-  getByTestId,
-} from '../../helpers';
-
-/** Mounts a chat, opens its main window, and answers each send at once. */
-async function openChat(): Promise<{
-  instance: ChatInstance;
-  backend: FakeBackend;
-}> {
-  const backend = fakeBackend({ autoResolve: true });
-  const { instance } = await contractChat({
-    messaging: {
-      skipWelcome: true,
-      customSendMessage: backend.customSendMessage,
-    },
-  });
-  await changeView(instance, ViewType.MAIN_WINDOW);
-  await waitFor(() => expect(instance.state.get().isHydratingCounter).toBe(0));
-  return { instance, backend };
-}
+import { contractSetup, getByTestId, openChat, typeText } from '../../helpers';
 
 async function setData(
   instance: ChatInstance,
@@ -52,11 +27,7 @@ async function setData(
 
 /** Types into the plain input field, then clicks its send button. */
 async function sendFromInput(text: string): Promise<void> {
-  const field = getByTestId(PageObjectId.INPUT) as HTMLTextAreaElement;
-  await act(async () => {
-    field.value = text;
-    field.dispatchEvent(new Event('input', { bubbles: true }));
-  });
+  await typeText(text);
   await act(async () => {
     getByTestId(PageObjectId.INPUT_SEND).click();
   });

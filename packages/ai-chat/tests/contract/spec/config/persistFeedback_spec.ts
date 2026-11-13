@@ -26,6 +26,7 @@ import {
   fakeBackend,
   finishSend,
   instanceSender,
+  isDisabled,
   recordEvents,
   responseOf,
   startSend,
@@ -36,14 +37,6 @@ import {
 const STRINGS = { feedback_positiveLabel: 'Contract thumbs up' };
 
 const thumbsUp = () => allByRole('button', STRINGS.feedback_positiveLabel);
-
-/** Whether a control is disabled, natively or through ARIA. */
-function isDisabled(element: HTMLElement): boolean {
-  return (
-    (element as HTMLButtonElement).disabled === true ||
-    element.getAttribute('aria-disabled') === 'true'
-  );
-}
 
 /** A text item asking for feedback; a thumbs up submits at once. */
 function feedbackItem(text: string, feedbackID: string): GenericItem {

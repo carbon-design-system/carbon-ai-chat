@@ -21,32 +21,17 @@ import {
   changeView,
   contractChat,
   contractSetup,
+  deepActiveElement,
+  focusHostButton,
   isShownWithin,
   pause,
   textResponse,
 } from '../../helpers';
 
-/** The focused element, looking through open shadow roots. */
-function deepActiveElement(): Element | null {
-  let active: Element | null = document.activeElement;
-  while (active?.shadowRoot?.activeElement) {
-    active = active.shadowRoot.activeElement;
-  }
-  return active;
-}
-
 /** Whether focus is in the chat's input field. */
 function focusIsInInput(): boolean {
   const input = byTestId(PageObjectId.INPUT);
   return input !== null && isShownWithin(deepActiveElement(), input);
-}
-
-/** A focusable element of the host page, outside the chat. */
-function focusHostButton(): HTMLButtonElement {
-  const button = document.createElement('button');
-  document.body.appendChild(button);
-  button.focus();
-  return button;
 }
 
 // @covers config.shouldTakeFocusIfOpensAutomatically config.openChatByDefault

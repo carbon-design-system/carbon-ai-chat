@@ -11,25 +11,23 @@ import { act, waitFor } from '@testing-library/react';
 import Add16 from '@carbon/icons/es/add/16.js';
 
 import {
-  ChatInstance,
   MessageSendSource,
   PageObjectId,
   PublicConfig,
-  ViewType,
 } from '../../../../src/aiChatEntry';
 import {
-  FakeBackend,
   allByRole,
   byRole,
   byTestId,
-  changeView,
   click,
-  contractChat,
   contractSetup,
-  fakeBackend,
   getByTestId,
+  inputField,
+  isDisabled,
+  openChat,
   pause,
   shownText,
+  typeText,
 } from '../../helpers';
 
 const STRINGS = {
@@ -37,42 +35,10 @@ const STRINGS = {
   input_maxCharCountExceededTitle: 'Contract too long',
 };
 
-/** Mounts a chat, opens its main window, and answers each send at once. */
-async function openChat(config: Partial<PublicConfig> = {}): Promise<{
-  instance: ChatInstance;
-  backend: FakeBackend;
-}> {
-  const backend = fakeBackend({ autoResolve: true });
-  const { instance } = await contractChat({
-    ...config,
-    strings: { ...STRINGS, ...config.strings },
-    messaging: {
-      skipWelcome: true,
-      customSendMessage: backend.customSendMessage,
-      ...config.messaging,
-    },
-  });
-  await changeView(instance, ViewType.MAIN_WINDOW);
-  await waitFor(() => expect(instance.state.get().isHydratingCounter).toBe(0));
-  return { instance, backend };
-}
-
-function field(): HTMLTextAreaElement {
-  return getByTestId(PageObjectId.INPUT) as HTMLTextAreaElement;
-}
-
-/** Types into the plain input field: a new value, then an `input` event. */
-async function typeText(text: string): Promise<void> {
-  await act(async () => {
-    field().value = text;
-    field().dispatchEvent(new Event('input', { bubbles: true }));
-  });
-}
-
 /** Presses Enter in the input field. */
 async function pressEnter(): Promise<void> {
   await act(async () => {
-    field().dispatchEvent(
+    inputField().dispatchEvent(
       new KeyboardEvent('keydown', {
         key: 'Enter',
         bubbles: true,
@@ -91,13 +57,7 @@ async function clickSend(): Promise<void> {
 }
 
 /** Whether the send button reports itself disabled. */
-function sendIsDisabled(): boolean {
-  const send = getByTestId(PageObjectId.INPUT_SEND);
-  return (
-    send.hasAttribute('disabled') ||
-    send.getAttribute('aria-disabled') === 'true'
-  );
-}
+const sendIsDisabled = () => isDisabled(getByTestId(PageObjectId.INPUT_SEND));
 
 /** Tries both ways a user sends, then waits long enough to see no request. */
 async function trySendBothWays(): Promise<void> {
@@ -141,7 +101,7 @@ describe('sending from the input', () => {
       type: 'doc',
       content: [{ type: 'paragraph' }],
     });
-    expect(field().value).toBe('');
+    expect(inputField().value).toBe('');
   });
 
   it('sends nothing for an empty or blank draft', async () => {
@@ -162,7 +122,7 @@ describe('sending from the input', () => {
     });
     expect(backend.texts()).toEqual(['from code']);
     expect(instance.state.get().input.rawValue).toBe('still here');
-    expect(field().value).toBe('still here');
+    expect(inputField().value).toBe('still here');
   });
 });
 
@@ -182,7 +142,7 @@ describe('input.isDisabled', () => {
         ],
       }));
     });
-    expect(field().disabled).toBe(true);
+    expect(inputField().disabled).toBe(true);
     expect(sendIsDisabled()).toBe(true);
     await trySendBothWays();
     expect(backend.requests).toHaveLength(0);
@@ -205,7 +165,7 @@ describe('input.isDisabled', () => {
     await act(async () => {
       instance.updateInputIsDisabled(false);
     });
-    expect(field().disabled).toBe(true);
+    expect(inputField().disabled).toBe(true);
   });
 });
 
@@ -220,7 +180,7 @@ describe('updateInputIsDisabled', () => {
     await act(async () => {
       instance.updateInputIsDisabled(true);
     });
-    expect(field().disabled).toBe(true);
+    expect(inputField().disabled).toBe(true);
     expect(sendIsDisabled()).toBe(true);
     await clickSend();
     // A short wait proves no send follows.
@@ -230,7 +190,7 @@ describe('updateInputIsDisabled', () => {
     await act(async () => {
       instance.updateInputIsDisabled(false);
     });
-    expect(field().disabled).toBe(false);
+    expect(inputField().disabled).toBe(false);
     expect(sendIsDisabled()).toBe(false);
   });
 
@@ -238,11 +198,11 @@ describe('updateInputIsDisabled', () => {
   it('overrides isReadonly', async () => {
     jest.spyOn(console, 'warn').mockImplementation(() => {});
     const { instance } = await openChat({ isReadonly: true });
-    expect(field().disabled).toBe(true);
+    expect(inputField().disabled).toBe(true);
     await act(async () => {
       instance.updateInputIsDisabled(false);
     });
-    expect(field().disabled).toBe(false);
+    expect(inputField().disabled).toBe(false);
   });
 
   it('warns that it is deprecated on each call', async () => {
@@ -274,7 +234,7 @@ describe('input.isSendDisabled', () => {
       input: { isSendDisabled: true },
     });
     await typeText('held');
-    expect(field().disabled).toBe(false);
+    expect(inputField().disabled).toBe(false);
     expect(sendIsDisabled()).toBe(true);
     await trySendBothWays();
     expect(backend.requests).toHaveLength(0);
@@ -297,7 +257,10 @@ describe('input.maxInputCharacters', () => {
   contractSetup();
 
   it('sends a draft at the limit', async () => {
-    const { backend } = await openChat({ input: { maxInputCharacters: 5 } });
+    const { backend } = await openChat({
+      strings: STRINGS,
+      input: { maxInputCharacters: 5 },
+    });
     await typeText('12345');
     expect(shownText(document.body)).not.toContain(
       STRINGS.input_maxCharCountExceededTitle
@@ -308,6 +271,7 @@ describe('input.maxInputCharacters', () => {
 
   it('shows the over-limit error and blocks sending past the limit, keeping every character', async () => {
     const { instance, backend } = await openChat({
+      strings: STRINGS,
       input: { maxInputCharacters: 5 },
     });
     await typeText('123456');
@@ -322,6 +286,7 @@ describe('input.maxInputCharacters', () => {
 
   it('does not limit instance.send', async () => {
     const { instance, backend } = await openChat({
+      strings: STRINGS,
       input: { maxInputCharacters: 5 },
     });
     await act(async () => {
@@ -331,7 +296,7 @@ describe('input.maxInputCharacters', () => {
   });
 
   it('defaults to 10000', async () => {
-    await openChat();
+    await openChat({ strings: STRINGS });
     await typeText('a'.repeat(10000));
     expect(sendIsDisabled()).toBe(false);
     await typeText('a'.repeat(10001));
@@ -372,6 +337,7 @@ describe('input.actions', () => {
 
   function actionsConfig(onClick: jest.Mock): Partial<PublicConfig> {
     return {
+      strings: STRINGS,
       input: {
         actions: [
           {
@@ -417,7 +383,7 @@ describe('input.actions', () => {
   });
 
   it('shows no actions button without actions', async () => {
-    await openChat();
+    await openChat({ strings: STRINGS });
     expect(allByRole('button', STRINGS.input_actionsMenuLabel)).toHaveLength(0);
   });
 });

@@ -25,6 +25,7 @@ import {
   click,
   contractChat,
   contractSetup,
+  flatChildren,
   getByTestId,
   recordEvents,
   shownText,
@@ -53,18 +54,6 @@ async function openWithHeader(
   });
   await changeView(mount.instance, ViewType.MAIN_WINDOW);
   return mount;
-}
-
-/** Children of a node in the flat tree: its shadow tree, or what a slot shows. */
-function flatChildren(node: Node): Node[] {
-  if (node instanceof Element && node.shadowRoot) {
-    return Array.from(node.shadowRoot.childNodes);
-  }
-  if (node instanceof HTMLSlotElement) {
-    const assigned = node.assignedNodes();
-    return assigned.length ? assigned : Array.from(node.childNodes);
-  }
-  return Array.from(node.childNodes);
 }
 
 /** The labels of `elements`, in the order a user meets them in the flat tree. */

@@ -26,7 +26,10 @@ import {
   contractChat,
   contractSetup,
   getByTestId,
+  inputField,
+  openChat,
   pause,
+  typeText,
 } from '../../helpers';
 
 /** A one-paragraph doc holding this text. */
@@ -71,36 +74,6 @@ function chipDoc(text: string): JSONContent {
       },
     ],
   };
-}
-
-/** Mounts a chat and opens its main window, with no welcome request. */
-async function openChat(
-  config: Partial<PublicConfig> = {}
-): Promise<ChatInstance> {
-  const { instance } = await contractChat({
-    ...config,
-    messaging: { skipWelcome: true, ...config.messaging },
-  });
-  await changeView(instance, ViewType.MAIN_WINDOW);
-  await waitFor(() => expect(instance.state.get().isHydratingCounter).toBe(0));
-  return instance;
-}
-
-/** The input field, found by its public test ID. */
-function field(): HTMLTextAreaElement {
-  return getByTestId(PageObjectId.INPUT) as HTMLTextAreaElement;
-}
-
-/**
- * Types into the plain input field the way a browser reports it: a new value,
- * then an `input` event. Works only while the field is the plain one (no rich
- * input feature configured and no `getEditor` call yet).
- */
-async function typeText(text: string): Promise<void> {
-  await act(async () => {
-    field().value = text;
-    field().dispatchEvent(new Event('input', { bubbles: true }));
-  });
 }
 
 async function updateContent(
@@ -151,7 +124,7 @@ describe('state.input', () => {
   contractSetup();
 
   it('starts with an empty draft and no structured data', async () => {
-    const instance = await openChat();
+    const { instance } = await openChat();
     const { input } = instance.state.get();
     expect(input.rawValue).toBe('');
     // src/chat/store/reducerUtils.ts:213 seeds `content` with `[]`, and the
@@ -164,7 +137,7 @@ describe('state.input', () => {
   });
 
   it('follows what the user types', async () => {
-    const instance = await openChat();
+    const { instance } = await openChat();
     await typeText('typed by hand');
     expect(instance.state.get().input.rawValue).toBe('typed by hand');
     expect(instance.state.get().input.content).toEqual(
@@ -173,7 +146,7 @@ describe('state.input', () => {
   });
 
   it('is a frozen snapshot', async () => {
-    const instance = await openChat();
+    const { instance } = await openChat();
     await updateContent(instance, () => textDoc('draft'));
     const { input } = instance.state.get();
     expect(Object.isFrozen(input)).toBe(true);
@@ -181,17 +154,17 @@ describe('state.input', () => {
   });
 
   it('joins paragraphs with one newline in the plain field', async () => {
-    const instance = await openChat();
+    const { instance } = await openChat();
     await updateContent(instance, () => ({
       type: 'doc',
       content: [textDoc('one').content[0], textDoc('two').content[0]],
     }));
     expect(instance.state.get().input.rawValue).toBe('one\ntwo');
-    expect(field().value).toBe('one\ntwo');
+    expect(inputField().value).toBe('one\ntwo');
   });
 
   it('joins paragraphs with two newlines and shows a hard break as one in the rich editor', async () => {
-    const instance = await openChat();
+    const { instance } = await openChat();
     await act(async () => {
       await instance.input.getEditor();
     });
@@ -221,15 +194,15 @@ describe('input.updateContent', () => {
   contractSetup();
 
   it('replaces the draft, and the field shows it', async () => {
-    const instance = await openChat();
+    const { instance } = await openChat();
     await updateContent(instance, () => textDoc('hello'));
     expect(instance.state.get().input.rawValue).toBe('hello');
     expect(instance.state.get().input.content).toEqual(textDoc('hello'));
-    expect(field().value).toBe('hello');
+    expect(inputField().value).toBe('hello');
   });
 
   it('gives the updater the current doc', async () => {
-    const instance = await openChat();
+    const { instance } = await openChat();
     await typeText('typed');
     const seen: JSONContent[] = [];
     await updateContent(instance, (previous) => {
@@ -240,7 +213,7 @@ describe('input.updateContent', () => {
   });
 
   it('keeps no link to the doc the updater got or returned', async () => {
-    const instance = await openChat();
+    const { instance } = await openChat();
     await updateContent(instance, () => textDoc('first'));
     const returned = textDoc('second');
     await updateContent(instance, (previous) => {
@@ -253,7 +226,7 @@ describe('input.updateContent', () => {
   });
 
   it('publishes matching rawValue and content in every state:change', async () => {
-    const instance = await openChat();
+    const { instance } = await openChat();
     const changes = recordInputChanges(instance);
     await updateContent(instance, () => textDoc('together'));
     await pause();
@@ -270,7 +243,7 @@ describe('input.updateContent', () => {
     const consoleError = jest
       .spyOn(console, 'error')
       .mockImplementation(() => {});
-    const instance = await openChat();
+    const { instance } = await openChat();
     await updateContent(instance, () => textDoc('kept'));
     await expect(
       instance.input.updateContent(() => {
@@ -283,7 +256,7 @@ describe('input.updateContent', () => {
 
   // @covers config.input.tiptap
   it('loads the rich editor for a node a host extension adds, and keeps the node', async () => {
-    const instance = await openChat(CHIP_CONFIG);
+    const { instance } = await openChat(CHIP_CONFIG);
     await updateContent(instance, () => chipDoc('hi '));
     expect(instance.state.get().input.content).toEqual(chipDoc('hi '));
     expect(instance.state.get().input.rawValue).toBe('hi ');
@@ -293,7 +266,7 @@ describe('input.updateContent', () => {
 
   it('empties the draft for a mark no extension supports', async () => {
     jest.spyOn(console, 'warn').mockImplementation(() => {});
-    const instance = await openChat();
+    const { instance } = await openChat();
     await updateContent(instance, () => textDoc('earlier draft'));
     await updateContent(instance, () => ({
       type: 'doc',
@@ -312,7 +285,7 @@ describe('input.updateContent', () => {
   });
 
   it('seeds plain text while the input is hidden, and rejects a rich doc', async () => {
-    const instance = await openChat({ input: { isVisible: false } });
+    const { instance } = await openChat({ input: { isVisible: false } });
     await updateContent(instance, () => textDoc('seeded'));
     expect(instance.state.get().input.rawValue).toBe('seeded');
     expect(instance.state.get().input.content).toEqual(textDoc('seeded'));
@@ -360,15 +333,15 @@ describe('input.updateRawValue', () => {
   contractSetup();
 
   it('replaces the draft with plain text, and the field shows it', async () => {
-    const instance = await openChat();
+    const { instance } = await openChat();
     await updateRawValue(instance, () => 'hello');
     expect(instance.state.get().input.rawValue).toBe('hello');
     expect(instance.state.get().input.content).toEqual(textDoc('hello'));
-    expect(field().value).toBe('hello');
+    expect(inputField().value).toBe('hello');
   });
 
   it('keeps a newline in the plain field, as a second paragraph', async () => {
-    const instance = await openChat();
+    const { instance } = await openChat();
     await updateRawValue(instance, () => 'one\ntwo');
     expect(instance.state.get().input.rawValue).toBe('one\ntwo');
     expect(instance.state.get().input.content).toEqual({
@@ -378,7 +351,7 @@ describe('input.updateRawValue', () => {
   });
 
   it('gives the updater the current text', async () => {
-    const instance = await openChat();
+    const { instance } = await openChat();
     await typeText('typed');
     const seen: string[] = [];
     await updateRawValue(instance, (previous) => {
@@ -390,7 +363,7 @@ describe('input.updateRawValue', () => {
   });
 
   it('turns a non-string result into text, and null into an empty draft', async () => {
-    const instance = await openChat();
+    const { instance } = await openChat();
     await updateRawValue(instance, () => 42 as unknown as string);
     expect(instance.state.get().input.rawValue).toBe('42');
     await updateRawValue(instance, () => null as unknown as string);
@@ -401,7 +374,7 @@ describe('input.updateRawValue', () => {
     const consoleError = jest
       .spyOn(console, 'error')
       .mockImplementation(() => {});
-    const instance = await openChat();
+    const { instance } = await openChat();
     await updateRawValue(instance, () => 'kept');
     expect(() =>
       instance.input.updateRawValue(() => {
@@ -413,7 +386,7 @@ describe('input.updateRawValue', () => {
   });
 
   it('publishes the new text before the new doc in the plain field', async () => {
-    const instance = await openChat();
+    const { instance } = await openChat();
     const changes = recordInputChanges(instance);
     await updateRawValue(instance, () => 'next');
     await pause();
@@ -430,7 +403,7 @@ describe('input.updateRawValue', () => {
     const consoleWarn = jest
       .spyOn(console, 'warn')
       .mockImplementation(() => {});
-    const instance = await openChat();
+    const { instance } = await openChat();
     consoleWarn.mockClear();
     await updateRawValue(instance, () => 'one');
     // src/types/instance/ChatInstanceInput.ts:39 says the method "emits one
@@ -446,7 +419,7 @@ describe('input.updateRawValue', () => {
     const consoleWarn = jest
       .spyOn(console, 'warn')
       .mockImplementation(() => {});
-    const instance = await openChat();
+    const { instance } = await openChat();
     await act(async () => {
       await instance.input.getEditor();
     });
@@ -459,7 +432,7 @@ describe('input.updateRawValue', () => {
 
   it('turns a newline into a space in the rich editor', async () => {
     jest.spyOn(console, 'warn').mockImplementation(() => {});
-    const instance = await openChat();
+    const { instance } = await openChat();
     await act(async () => {
       await instance.input.getEditor();
     });
@@ -472,7 +445,7 @@ describe('input.updateRawValue', () => {
 
   // @covers config.input.tiptap
   it('throws without calling the updater while the doc has a non-text node', async () => {
-    const instance = await openChat(CHIP_CONFIG);
+    const { instance } = await openChat(CHIP_CONFIG);
     await updateContent(instance, () => chipDoc('hi '));
     const updater = jest.fn(() => 'plain');
     expect(() => instance.input.updateRawValue(updater)).toThrow();
@@ -486,7 +459,7 @@ describe('input.getEditor', () => {
   contractSetup();
 
   it('carries typed text over into the editor it loads', async () => {
-    const instance = await openChat();
+    const { instance } = await openChat();
     await typeText('carried over');
     let editor: Awaited<ReturnType<ChatInstance['input']['getEditor']>>;
     await act(async () => {
@@ -497,7 +470,7 @@ describe('input.getEditor', () => {
   });
 
   it('resolves the same editor to concurrent and later calls', async () => {
-    const instance = await openChat();
+    const { instance } = await openChat();
     let editors: unknown[];
     await act(async () => {
       editors = await Promise.all([
@@ -511,7 +484,7 @@ describe('input.getEditor', () => {
   });
 
   it('publishes the edits a host makes through the editor', async () => {
-    const instance = await openChat();
+    const { instance } = await openChat();
     const editor = await act(async () => instance.input.getEditor());
     await act(async () => {
       editor.commands.setContent(textDoc('from the editor'));
@@ -525,7 +498,7 @@ describe('input.getEditor', () => {
   });
 
   it('rejects while the input is hidden', async () => {
-    const instance = await openChat({ input: { isVisible: false } });
+    const { instance } = await openChat({ input: { isVisible: false } });
     await expect(instance.input.getEditor()).rejects.toThrow(
       'Input is not currently rendered'
     );
@@ -549,7 +522,7 @@ describe('input methods while a custom prompt line has content', () => {
   contractSetup();
 
   it('reject every write without calling its updater, and leave the draft', async () => {
-    const instance = await openChat();
+    const { instance } = await openChat();
     await updateContent(instance, () => textDoc('parked'));
     await act(async () => {
       instance.writeableElements[

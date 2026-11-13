@@ -11,7 +11,6 @@ import { act, waitFor } from '@testing-library/react';
 
 import {
   MarkdownItPlugin,
-  PageObjectId,
   PublicConfig,
   ViewType,
 } from '../../../../src/aiChatEntry';
@@ -24,10 +23,9 @@ import {
   contractSetup,
   fakeBackend,
   finishSend,
-  getByTestId,
   instanceSender,
+  mainPanelText,
   responseOf,
-  shownText,
   startSend,
   textItem,
 } from '../../helpers';
@@ -47,10 +45,6 @@ const RAW_HTML = [
   'after',
 ].join(' ');
 
-/** The text the main message list shows, with whitespace collapsed. */
-const listText = () =>
-  shownText(getByTestId(PageObjectId.MAIN_PANEL)).replace(/\s+/g, ' ');
-
 /** Mounts a chat with this config, opens it, and adds a response with `text`. */
 async function showResponse(text: string, config: Partial<PublicConfig> = {}) {
   const mount = await contractChat({
@@ -61,7 +55,7 @@ async function showResponse(text: string, config: Partial<PublicConfig> = {}) {
   await act(() =>
     mount.instance.messaging.addMessage(responseOf('r1', [textItem(text)]))
   );
-  await waitFor(() => expect(listText()).toContain('after'));
+  await waitFor(() => expect(mainPanelText()).toContain('after'));
   return mount;
 }
 
@@ -97,7 +91,7 @@ describe('shouldSanitizeHTML', () => {
 
   it('when true, strips a javascript: link and an inline handler but keeps their text', async () => {
     await showResponse(RAW_HTML, { shouldSanitizeHTML: true });
-    expect(listText()).toContain(
+    expect(mainPanelText()).toContain(
       'Before Contract raw link Contract raw button Contract markdown link after'
     );
     expect(allByRole('link', 'Contract raw link')).toHaveLength(0);
@@ -125,7 +119,7 @@ describe('shouldSanitizeHTML', () => {
           ] as unknown as MarkdownItPlugin[],
         },
       });
-      expect(listText()).toContain('See Contract plugin link after');
+      expect(mainPanelText()).toContain('See Contract plugin link after');
       expect(allByRole('link', 'Contract plugin link')).toHaveLength(links);
     }
   );
@@ -144,7 +138,7 @@ describe('shouldSanitizeHTML', () => {
       instanceSender(mount.instance, backend),
       'User <button onclick="window.contractClicks = 1">Contract user button</button> after'
     );
-    await waitFor(() => expect(listText()).toContain('after'));
+    await waitFor(() => expect(mainPanelText()).toContain('after'));
     expect(allByRole('button', 'Contract user button')).toHaveLength(0);
     await finishSend(started);
   });

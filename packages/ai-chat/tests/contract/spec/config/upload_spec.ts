@@ -25,6 +25,8 @@ import {
   fakeBackend,
   finishSend,
   instanceSender,
+  isDisabled,
+  pickFiles,
   shownText,
   startSend,
 } from '../../helpers';
@@ -42,14 +44,6 @@ const attachButtons = () =>
 const removeButton = (name: string) =>
   byRole('button', `Contract remove ${name}`);
 const sendButton = () => byRole('button', STRINGS.input_buttonLabel);
-
-/** Whether a control is disabled, natively or through ARIA. */
-function isDisabled(element: HTMLElement): boolean {
-  return (
-    (element as HTMLButtonElement).disabled === true ||
-    element.getAttribute('aria-disabled') === 'true'
-  );
-}
 
 /** A file of `size` bytes. */
 function makeFile(name: string, type = 'application/pdf', size = 3): File {
@@ -89,38 +83,6 @@ async function settle(
     } else {
       call.reject(outcome.error);
     }
-  });
-}
-
-/**
- * Picks files the way a user does: clicks the attach button, then answers the
- * file picker it opens.
- *
- * jsdom has no file picker. The attach button opens the browser's picker by
- * clicking a file input, so this catches that click, and stands in for the
- * user's choice the way a browser hands it back: the input's `files` and a
- * `change` event. Nothing here reads markup to find the input.
- */
-async function pickFiles(files: File[]): Promise<void> {
-  let picker: HTMLInputElement | undefined;
-  const opened = jest
-    .spyOn(HTMLInputElement.prototype, 'click')
-    .mockImplementation(() => {});
-  try {
-    await click(byRole('button', STRINGS.input_uploadButtonLabel));
-    picker = opened.mock.contexts[0] as HTMLInputElement | undefined;
-  } finally {
-    opened.mockRestore();
-  }
-  if (!picker) {
-    throw new Error('the attach button opened no file picker');
-  }
-  await act(async () => {
-    Object.defineProperty(picker, 'files', {
-      configurable: true,
-      value: files,
-    });
-    picker.dispatchEvent(new Event('change', { bubbles: true }));
   });
 }
 
@@ -215,7 +177,7 @@ describe('upload: onFileUpload', () => {
     await openChat({ onFileUpload: uploader.onFileUpload });
     const first = makeFile('first.pdf');
     const second = makeFile('second.pdf');
-    await pickFiles([first, second]);
+    await pickFiles(STRINGS.input_uploadButtonLabel, [first, second]);
     expect(uploader.calls.map((call) => call.file)).toEqual([first, second]);
     expect(uploader.calls.map((call) => call.signal)).toEqual([
       expect.any(AbortSignal),
@@ -230,7 +192,7 @@ describe('upload: onFileUpload', () => {
   it('shows the file by name while it uploads', async () => {
     const uploader = fakeUploader();
     await openChat({ onFileUpload: uploader.onFileUpload });
-    await pickFiles([makeFile('report.pdf')]);
+    await pickFiles(STRINGS.input_uploadButtonLabel, [makeFile('report.pdf')]);
     expect(allByRole('group', 'report.pdf')).toHaveLength(1);
   });
 
@@ -239,7 +201,7 @@ describe('upload: onFileUpload', () => {
     const { instance } = await openChat({
       onFileUpload: uploader.onFileUpload,
     });
-    await pickFiles([makeFile('report.pdf')]);
+    await pickFiles(STRINGS.input_uploadButtonLabel, [makeFile('report.pdf')]);
     expect(instance.getState().input.structuredData).toBeUndefined();
     await settle(uploader.calls[0], {
       data: { fields: [fileField('doc', 'ref-1')] },
@@ -254,7 +216,10 @@ describe('upload: onFileUpload', () => {
     const { instance } = await openChat({
       onFileUpload: uploader.onFileUpload,
     });
-    await pickFiles([makeFile('b.pdf'), makeFile('a.pdf')]);
+    await pickFiles(STRINGS.input_uploadButtonLabel, [
+      makeFile('b.pdf'),
+      makeFile('a.pdf'),
+    ]);
     await settle(uploader.calls[1], {
       data: { fields: [fileField('from-a', 'ref-a')] },
     });
@@ -277,7 +242,7 @@ describe('upload: onFileUpload', () => {
       { onFileUpload: uploader.onFileUpload },
       backend
     );
-    await pickFiles([makeFile('report.pdf')]);
+    await pickFiles(STRINGS.input_uploadButtonLabel, [makeFile('report.pdf')]);
     await settle(uploader.calls[0], {
       data: { fields: [fileField('doc', 'ref-1')] },
     });
@@ -295,7 +260,10 @@ describe('upload: onFileUpload', () => {
     const { instance } = await openChat({
       onFileUpload: uploader.onFileUpload,
     });
-    await pickFiles([makeFile('a.pdf'), makeFile('b.pdf')]);
+    await pickFiles(STRINGS.input_uploadButtonLabel, [
+      makeFile('a.pdf'),
+      makeFile('b.pdf'),
+    ]);
     await settle(uploader.calls[0], {
       data: { fields: [fileField('from-a', 'ref-a')] },
     });
@@ -315,7 +283,7 @@ describe('upload: onFileUpload', () => {
     const { instance, host } = await openChat({
       onFileUpload: uploader.onFileUpload,
     });
-    await pickFiles([makeFile('report.pdf')]);
+    await pickFiles(STRINGS.input_uploadButtonLabel, [makeFile('report.pdf')]);
     await settle(uploader.calls[0], {
       error: new Error('Contract reason: too large'),
     });
@@ -335,12 +303,12 @@ describe('upload: onFileUpload', () => {
       { onFileUpload: uploader.onFileUpload },
       backend
     );
-    await pickFiles([makeFile('report.pdf')]);
+    await pickFiles(STRINGS.input_uploadButtonLabel, [makeFile('report.pdf')]);
     await settle(uploader.calls[0], { error: new Error('nope') });
     const started = await startSend(instanceSender(instance, backend), 'hi');
     expect(started.sent.request.input.structured_data).toBeUndefined();
     await finishSend(started);
-    await pickFiles([makeFile('other.pdf')]);
+    await pickFiles(STRINGS.input_uploadButtonLabel, [makeFile('other.pdf')]);
     await settle(uploader.calls[1], { error: new Error('nope') });
     await click(removeButton('other.pdf'));
     expect(allByRole('group', 'other.pdf')).toHaveLength(0);
@@ -352,7 +320,7 @@ describe('upload: onFileUpload', () => {
     // remove control, so a user can't reach that path.
     const uploader = fakeUploader();
     await openChat({ onFileUpload: uploader.onFileUpload });
-    await pickFiles([makeFile('report.pdf')]);
+    await pickFiles(STRINGS.input_uploadButtonLabel, [makeFile('report.pdf')]);
     expect(allByRole('button', 'Contract remove report.pdf')).toHaveLength(0);
     expect(uploader.calls[0].signal.aborted).toBe(false);
   });
@@ -363,7 +331,7 @@ describe('upload: onFileUpload', () => {
     // controllers and never aborts them on teardown).
     const uploader = fakeUploader();
     const { unmount } = await openChat({ onFileUpload: uploader.onFileUpload });
-    await pickFiles([makeFile('report.pdf')]);
+    await pickFiles(STRINGS.input_uploadButtonLabel, [makeFile('report.pdf')]);
     unmount();
     expect(uploader.calls[0].signal.aborted).toBe(false);
   });
@@ -379,7 +347,10 @@ describe('upload: hasInFlightUploads', () => {
       onFileUpload: uploader.onFileUpload,
     });
     expect(instance.getState().input.hasInFlightUploads).toBe(false);
-    await pickFiles([makeFile('a.pdf'), makeFile('b.pdf')]);
+    await pickFiles(STRINGS.input_uploadButtonLabel, [
+      makeFile('a.pdf'),
+      makeFile('b.pdf'),
+    ]);
     expect(instance.getState().input.hasInFlightUploads).toBe(true);
     await settle(uploader.calls[0], { data: {} });
     expect(instance.getState().input.hasInFlightUploads).toBe(true);
@@ -392,7 +363,7 @@ describe('upload: hasInFlightUploads', () => {
     const { instance } = await openChat({
       onFileUpload: uploader.onFileUpload,
     });
-    await pickFiles([makeFile('a.pdf')]);
+    await pickFiles(STRINGS.input_uploadButtonLabel, [makeFile('a.pdf')]);
     await settle(uploader.calls[0], { error: new Error('nope') });
     expect(instance.getState().input.hasInFlightUploads).toBe(false);
   });
@@ -400,7 +371,7 @@ describe('upload: hasInFlightUploads', () => {
   it('disables the send button while true, and enables it once the upload finishes', async () => {
     const uploader = fakeUploader();
     await openChat({ onFileUpload: uploader.onFileUpload });
-    await pickFiles([makeFile('a.pdf')]);
+    await pickFiles(STRINGS.input_uploadButtonLabel, [makeFile('a.pdf')]);
     expect(isDisabled(sendButton())).toBe(true);
     await settle(uploader.calls[0], { data: {} });
     // A finished attachment is enough to send, with no text.
@@ -414,7 +385,7 @@ describe('upload: hasInFlightUploads', () => {
       { onFileUpload: uploader.onFileUpload },
       backend
     );
-    await pickFiles([makeFile('a.pdf')]);
+    await pickFiles(STRINGS.input_uploadButtonLabel, [makeFile('a.pdf')]);
     await expect(instance.send('hi')).rejects.toThrow();
     expect(backend.requests).toHaveLength(0);
     expect(instance.getState().messages).toEqual([]);
@@ -451,7 +422,7 @@ describe('upload: accept', () => {
       onFileUpload: uploader.onFileUpload,
       accept: '.pdf,.docx',
     });
-    await pickFiles([
+    await pickFiles(STRINGS.input_uploadButtonLabel, [
       makeFile('notes.txt', 'text/plain'),
       makeFile('report.pdf'),
       makeFile('letter.docx', ''),
@@ -463,7 +434,7 @@ describe('upload: accept', () => {
   it('matches a MIME wildcard against the file’s type', async () => {
     const uploader = fakeUploader();
     await openChat({ onFileUpload: uploader.onFileUpload, accept: 'image/*' });
-    await pickFiles([
+    await pickFiles(STRINGS.input_uploadButtonLabel, [
       makeFile('photo.png', 'image/png'),
       makeFile('report.pdf'),
     ]);
@@ -473,7 +444,7 @@ describe('upload: accept', () => {
   it('passes every file when omitted', async () => {
     const uploader = fakeUploader();
     await openChat({ onFileUpload: uploader.onFileUpload });
-    await pickFiles([
+    await pickFiles(STRINGS.input_uploadButtonLabel, [
       makeFile('notes.txt', 'text/plain'),
       makeFile('photo.png', 'image/png'),
     ]);
@@ -491,7 +462,7 @@ describe('upload: maxFileSizeBytes', () => {
       onFileUpload: uploader.onFileUpload,
       maxFileSizeBytes: 10,
     });
-    await pickFiles([
+    await pickFiles(STRINGS.input_uploadButtonLabel, [
       makeFile('big.pdf', 'application/pdf', 11),
       makeFile('fits.pdf', 'application/pdf', 10),
     ]);
@@ -507,18 +478,25 @@ describe('upload: maxFiles', () => {
   it('passes only the first files up to the limit from one pick', async () => {
     const uploader = fakeUploader();
     await openChat({ onFileUpload: uploader.onFileUpload, maxFiles: 2 });
-    await pickFiles([makeFile('a.pdf'), makeFile('b.pdf'), makeFile('c.pdf')]);
+    await pickFiles(STRINGS.input_uploadButtonLabel, [
+      makeFile('a.pdf'),
+      makeFile('b.pdf'),
+      makeFile('c.pdf'),
+    ]);
     expect(uploader.names()).toEqual(['a.pdf', 'b.pdf']);
   });
 
   it('counts files already attached, and disables the attach button at the limit until one is removed', async () => {
     const uploader = fakeUploader();
     await openChat({ onFileUpload: uploader.onFileUpload, maxFiles: 2 });
-    await pickFiles([makeFile('a.pdf')]);
+    await pickFiles(STRINGS.input_uploadButtonLabel, [makeFile('a.pdf')]);
     expect(isDisabled(byRole('button', STRINGS.input_uploadButtonLabel))).toBe(
       false
     );
-    await pickFiles([makeFile('b.pdf'), makeFile('c.pdf')]);
+    await pickFiles(STRINGS.input_uploadButtonLabel, [
+      makeFile('b.pdf'),
+      makeFile('c.pdf'),
+    ]);
     expect(uploader.names()).toEqual(['a.pdf', 'b.pdf']);
     expect(isDisabled(byRole('button', STRINGS.input_uploadButtonLabel))).toBe(
       true
@@ -537,7 +515,7 @@ describe('upload: maxFiles', () => {
     const files = ['a', 'b', 'c', 'd', 'e'].map((name) =>
       makeFile(`${name}.pdf`)
     );
-    await pickFiles(files);
+    await pickFiles(STRINGS.input_uploadButtonLabel, files);
     expect(uploader.names()).toEqual([
       'a.pdf',
       'b.pdf',

@@ -12,7 +12,6 @@ import { act, waitFor } from '@testing-library/react';
 import {
   ChatInstance,
   MarkdownItPlugin,
-  PageObjectId,
   PublicConfig,
   ViewType,
 } from '../../../../src/aiChatEntry';
@@ -24,10 +23,9 @@ import {
   contractSetup,
   fakeBackend,
   finishSend,
-  getByTestId,
   instanceSender,
+  mainPanelText,
   responseOf,
-  shownText,
   startSend,
   textItem,
 } from '../../helpers';
@@ -87,10 +85,6 @@ function codeAsLink(md: MarkdownIt): void {
 
 const asPlugins = (...plugins: unknown[]) => plugins as MarkdownItPlugin[];
 
-/** The text the main message list shows, with whitespace collapsed. */
-const listText = () =>
-  shownText(getByTestId(PageObjectId.MAIN_PANEL)).replace(/\s+/g, ' ');
-
 /** Mounts a chat with this config and opens the main window. */
 async function openChat(config: Partial<PublicConfig> = {}) {
   const mount = await contractChat({
@@ -110,7 +104,7 @@ async function addText(
   await act(() =>
     instance.messaging.addMessage(responseOf('r1', [textItem(text)]))
   );
-  await waitFor(() => expect(listText()).toContain(shown));
+  await waitFor(() => expect(mainPanelText()).toContain(shown));
 }
 
 // @covers config.markdown
@@ -124,8 +118,8 @@ describe('markdown: with no config', () => {
       'Say **PLUGIN_ME** and [the docs](https://example.com)',
       'PLUGIN_ME'
     );
-    expect(listText()).toContain('Say PLUGIN_ME and the docs');
-    expect(listText()).not.toContain('**');
+    expect(mainPanelText()).toContain('Say PLUGIN_ME and the docs');
+    expect(mainPanelText()).not.toContain('**');
     expect(allByRole('link', 'the docs')).toHaveLength(1);
   });
 });
@@ -143,7 +137,7 @@ describe('markdown: markdownItPlugins', () => {
       'Before PLUGIN_ME after',
       'Before Plugin ran after'
     );
-    expect(listText()).not.toContain('PLUGIN_ME');
+    expect(mainPanelText()).not.toContain('PLUGIN_ME');
   });
 
   it('passes the options of a [plugin, options] entry to the plugin', async () => {
@@ -185,7 +179,7 @@ describe('markdown: markdownItPlugins', () => {
       },
     });
     await addText(instance, 'Before PLUGIN_ME after', 'Before Both ran after');
-    expect(listText()).not.toContain('STEP_TWO');
+    expect(mainPanelText()).not.toContain('STEP_TWO');
   });
 
   it('draws what a plugin’s renderer rule returns', async () => {
@@ -206,7 +200,9 @@ describe('markdown: markdownItPlugins', () => {
       instanceSender(instance, backend),
       'User says PLUGIN_ME'
     );
-    await waitFor(() => expect(listText()).toContain('User says Plugin ran'));
+    await waitFor(() =>
+      expect(mainPanelText()).toContain('User says Plugin ran')
+    );
     await finishSend(started);
   });
 
