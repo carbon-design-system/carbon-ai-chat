@@ -14,13 +14,10 @@ import isEqual from 'lodash-es/isEqual.js';
 import isPlainObject from 'lodash-es/isPlainObject.js';
 import merge from 'lodash-es/merge.js';
 import { DeepPartial } from '../../types/utilities/DeepPartial';
-import { isBrowser } from '../utils/browserUtils';
 
 import {
-  AnnounceMessage,
-  AppState,
+  ConversationState,
   AppStateMessages,
-  CatastrophicErrorPanelState,
   ChatMessagesState,
   FileUpload,
   InputState,
@@ -28,71 +25,43 @@ import {
   PendingUploadStatus,
   PersistedState,
   ThemeState,
-  ViewState,
 } from '../../types/state/AppState';
-import {
-  CustomPanelConfigOptions,
-  WorkspaceCustomPanelConfigOptions,
-} from '../../types/instance/apiTypes';
 import {
   LocalMessageItem,
   LocalMessageUIState,
 } from '../../types/messaging/LocalMessageItem';
+
 import { FileStatusValue } from '../utils/constants';
-import { isRequest, isResponse } from '../utils/messageUtils';
+
+import { isResponse } from '../utils/messageUtils';
 import {
-  ACCEPTED_DISCLAIMER,
   ADD_INPUT_FILE,
-  ADD_IS_HYDRATING_COUNTER,
-  ADD_IS_LOADING_COUNTER,
   ADD_LOCAL_MESSAGE_ITEM,
   ADD_MESSAGE,
-  ANNOUNCE_MESSAGE,
   CHANGE_STATE,
   CLEAR_INPUT_FILES,
   CLEAR_STRUCTURED_DATA,
-  CLOSE_IFRAME_PANEL,
   FILE_UPLOAD_INPUT_ERROR,
   HYDRATE_CHAT,
   HYDRATE_MESSAGE_HISTORY,
   MERGE_HISTORY,
   MESSAGE_SET_OPTION_SELECTED,
-  OPEN_IFRAME_CONTENT,
   REMOVE_INPUT_FILE,
   REMOVE_LOCAL_MESSAGE_ITEM,
   REMOVE_MESSAGES,
   RESTART_CONVERSATION,
   SET_APP_STATE_VALUE,
   SET_CHAT_MESSAGES_PROPERTY,
-  SET_CONVERSATIONAL_SEARCH_CITATION_PANEL_IS_OPEN,
-  SET_CUSTOM_PANEL_OPEN,
-  SET_CUSTOM_PANEL_OPTIONS,
-  SET_WORKSPACE_PANEL_OPEN,
-  SET_WORKSPACE_PANEL_OPTIONS,
-  SET_WORKSPACE_PANEL_DATA,
-  SET_HISTORY_PANEL_OPEN,
-  SET_HISTORY_PANEL_OPTIONS,
-  SET_HOME_SCREEN_IS_OPEN,
-  SET_INITIAL_VIEW_CHANGE_COMPLETE,
-  SET_IS_BROWSER_PAGE_VISIBLE,
-  SET_LAUNCHER_MINIMIZED,
-  SET_LAUNCHER_PROPERTY,
   SET_MESSAGE_RESPONSE_HISTORY_PROPERTY,
   SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY,
   SET_MESSAGE_UI_PROPERTY,
   SET_MESSAGE_WAS_ANNOUNCED,
-  SET_RESPONSE_PANEL_CONTENT,
-  SET_RESPONSE_PANEL_IS_OPEN,
   SET_STOP_STREAMING_BUTTON_DISABLED,
   SET_STOP_STREAMING_BUTTON_METADATA_DISABLED,
   SET_STOP_STREAMING_BUTTON_VISIBLE,
   SET_STREAM_ID,
   SET_IS_RESTARTING,
-  SET_VIEW_CHANGING,
-  SET_VIEW_STATE,
   SET_ACTIVE_RESPONSE_ID,
-  TOGGLE_HOME_SCREEN,
-  UPDATE_CATASTROPHIC_ERROR_PANEL,
   UPDATE_HAS_SENT_NON_WELCOME_MESSAGE,
   UPDATE_INPUT_STATE,
   UPDATE_LOCAL_MESSAGE_ITEM,
@@ -103,18 +72,19 @@ import {
   UPDATE_PERSISTED_STATE,
   RESET_PERSISTED_STATE,
   UPDATE_THEME_STATE,
-  RESET_IS_HYDRATING_COUNTER,
-  RESET_IS_LOADING_COUNTER,
   ADD_PENDING_UPLOAD,
   UPDATE_PENDING_UPLOAD,
   REMOVE_PENDING_UPLOAD,
   SET_CONVERSATION_LIFECYCLE,
 } from './actions';
+
 import type {
   MessageWriteOptions,
   ReceivedLocalItems,
 } from './messageWriteTypes';
+
 import { humanAgentReducers } from './humanAgentReducers';
+
 import {
   applyAssistantMessageState,
   applyChunkWriteWithIdentity,
@@ -123,31 +93,24 @@ import {
   computeLocalIDInsertionPoint,
   rebuildLocalItemsForUpsert,
   keepStreamedItemsOnly,
-  DEFAULT_CITATION_PANEL_STATE,
-  DEFAULT_CUSTOM_PANEL_STATE,
-  DEFAULT_WORKSPACE_PANEL_STATE,
-  DEFAULT_IFRAME_PANEL_STATE,
-  handleViewStateChange,
-  setHomeScreenOpenState,
   keepPriorUIStateInternal,
   keepMessageRefIfUnchanged,
   DEFAULT_PERSISTED_TO_BROWSER,
-  VIEW_STATE_LAUNCHER_OPEN,
 } from './reducerUtils';
+
 import {
-  HumanAgentMessageType,
-  ConversationalSearchItemCitation,
-  IFrameItem,
   Message,
   MessageRequest,
   MessageResponse,
-  SearchResult,
   MessageUIStateInternal,
   MessageResponseHistory,
   MessageRequestHistory,
 } from '../../types/messaging/Messages';
 
-type ReducerType = (state: AppState, action?: any) => AppState;
+type ReducerType = (
+  state: ConversationState,
+  action?: any
+) => ConversationState;
 
 /**
  * Rebuilds `pendingStructuredData` by combining `manualStructuredData` with the
@@ -211,12 +174,6 @@ function rebuildPendingStructuredData(
 }
 
 // The set of agent message types that should be excluded on the unread agent message count.
-const EXCLUDE_HUMAN_AGENT_UNREAD = new Set([
-  HumanAgentMessageType.USER_ENDED_CHAT,
-  HumanAgentMessageType.CHAT_WAS_ENDED,
-  HumanAgentMessageType.RELOAD_WARNING,
-]);
-
 /**
  * Returns `localMessageIDs` with `id` in it: in its own place when it is already there,
  * else at the end, or after `addAfterID` when that is there.
@@ -251,59 +208,11 @@ function withLocalMessageID(
 }
 
 /**
- * Applies what showing a new local item does beyond listing it: the home screen closes,
- * and a human agent's message counts as unread while the chat is out of sight.
- *
- * @param state The state before the item was shown, which says whether the chat was in
- * sight.
- * @param newState The state with the item shown.
- * @param messageItem The local item shown.
- * @param message The message the item belongs to.
- */
-function applyLocalItemShown(
-  state: AppState,
-  newState: AppState,
-  messageItem: LocalMessageItem,
-  message: Message
-): AppState {
-  if (newState.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen) {
-    // When a message has been sent, we don't want the home screen open anymore.
-    newState = setHomeScreenOpenState(newState, false);
-  }
-
-  const isAssistantMessage = !messageItem.item.agent_message_type;
-  const isMainWindowOpen = state.persistedToBrowserStorage.viewState.mainWindow;
-  if (
-    !isAssistantMessage &&
-    (!isMainWindowOpen || !state.isBrowserPageVisible)
-  ) {
-    // This message is with an agent, and it occurred while the main window was closed or the page is not
-    // visible, so it may need to be counted as an unread message.
-    const fromHumanAgent = !isRequest(message);
-    if (
-      fromHumanAgent &&
-      !EXCLUDE_HUMAN_AGENT_UNREAD.has(messageItem.item.agent_message_type)
-    ) {
-      // If this message came from an agent, then add one to the unread count, but not if it's one of the excluded
-      // types.
-      newState = {
-        ...newState,
-        humanAgentState: {
-          ...newState.humanAgentState,
-          numUnreadMessages: newState.humanAgentState.numUnreadMessages + 1,
-        },
-      };
-    }
-  }
-  return newState;
-}
-
-/**
  * Shows a local item, placed by {@link withLocalMessageID}, and replaces any local item
  * with its id. Nothing shows for a `history.silent` message.
  */
 function applyLocalMessageItemWithOwnership(
-  state: AppState,
+  state: ConversationState,
   {
     messageItem,
     message,
@@ -315,7 +224,7 @@ function applyLocalMessageItemWithOwnership(
     addMessage: boolean;
     addAfterID: string;
   }
-): StoreReduction<AppState> {
+): StoreReduction<ConversationState> {
   const full = addMessage
     ? applyFullMessageWithIdentity(state, message)
     : undefined;
@@ -331,7 +240,7 @@ function applyLocalMessageItemWithOwnership(
   }
 
   const { id } = messageItem.ui_state;
-  const newState: AppState = {
+  const newState: ConversationState = {
     ...withMessage,
     allMessageItemsByID: {
       ...withMessage.allMessageItemsByID,
@@ -346,16 +255,15 @@ function applyLocalMessageItemWithOwnership(
       ),
     },
   };
-  const shown = applyLocalItemShown(state, newState, messageItem, message);
   // The local wrapper is an internal DTO; host callbacks receive its item only.
   ownership.local = { id, parentID: messageItem.fullMessageID };
-  return { state: shown, ownership };
+  return { state: newState, ownership };
 }
 
 function applyLocalMessageItem(
-  state: AppState,
+  state: ConversationState,
   action: Parameters<typeof applyLocalMessageItemWithOwnership>[1]
-): AppState {
+): ConversationState {
   return applyLocalMessageItemWithOwnership(state, action).state;
 }
 
@@ -366,11 +274,11 @@ function applyLocalMessageItem(
  * shows one item, with the items nested in it, and changes nothing else about the message.
  */
 function applyReceivedWrite(
-  state: AppState,
+  state: ConversationState,
   message: MessageResponse,
   { localItem, nestedLocalItems, addAfterID }: ReceivedLocalItems,
   messageID: string
-): StoreReduction<AppState> {
+): StoreReduction<ConversationState> {
   if (!localItem) {
     const full = applyFullMessageWithIdentity(
       keepStreamedItemsOnly(state, message),
@@ -450,9 +358,9 @@ function mergeStatePatch(currentValue: unknown, patchValue: unknown): unknown {
 
 const stateReducers: { [key: string]: ReducerType } = {
   [CHANGE_STATE]: (
-    state: AppState,
-    action: { partialState: DeepPartial<AppState> }
-  ): AppState => {
+    state: ConversationState,
+    action: { partialState: DeepPartial<ConversationState> }
+  ): ConversationState => {
     const { partialState } = action;
     if (!partialState) {
       return state;
@@ -463,7 +371,7 @@ const stateReducers: { [key: string]: ReducerType } = {
     }
 
     const { config, ...rest } = partialState;
-    let nextState = mergeStatePatch(state, rest) as AppState;
+    let nextState = mergeStatePatch(state, rest) as ConversationState;
 
     // Handle config separately because callers sometimes pass a completely rebuilt AppConfig (for example after
     // recomputing derived fields based on a new PublicConfig). A blind deep merge would blend the new tree with the
@@ -475,7 +383,7 @@ const stateReducers: { [key: string]: ReducerType } = {
         if (!isEqual(state.config, config)) {
           nextState = {
             ...nextState,
-            config: config as AppState['config'],
+            config: config as ConversationState['config'],
           };
         }
       } else if (config) {
@@ -483,13 +391,13 @@ const stateReducers: { [key: string]: ReducerType } = {
         if (nextConfig !== nextState.config) {
           nextState = {
             ...nextState,
-            config: nextConfig as AppState['config'],
+            config: nextConfig as ConversationState['config'],
           };
         }
       } else if (config !== nextState.config) {
         nextState = {
           ...nextState,
-          config: config as AppState['config'],
+          config: config as ConversationState['config'],
         };
       }
     }
@@ -497,62 +405,39 @@ const stateReducers: { [key: string]: ReducerType } = {
     return nextState;
   },
 
-  [HYDRATE_CHAT]: (state: AppState): AppState => ({
+  [HYDRATE_CHAT]: (state: ConversationState): ConversationState => ({
     ...state,
     isHydrated: true,
   }),
 
-  [RESTART_CONVERSATION]: (state: AppState): AppState => {
-    let newState: AppState = {
-      ...state,
-      assistantMessageState: {
-        ...state.assistantMessageState,
-        localMessageIDs: [],
-        messageIDs: [],
-        activeResponseId: null,
-      },
-      allMessageItemsByID: {},
-      allMessagesByID: {},
-      iFramePanelState: {
-        ...DEFAULT_IFRAME_PANEL_STATE,
-      },
-      viewSourcePanelState: {
-        ...DEFAULT_CITATION_PANEL_STATE,
-      },
-      customPanelState: {
-        ...DEFAULT_CUSTOM_PANEL_STATE,
-      },
-      workspacePanelState: {
-        ...DEFAULT_WORKSPACE_PANEL_STATE,
-      },
-      isHydrated: false,
-      catastrophicErrorType: null,
-      catastrophicErrorPanelState: {
-        ...state.catastrophicErrorPanelState,
-        isOpen: false,
-      },
-    };
-
-    if (newState.config.public.homescreen?.isOn) {
-      newState = setHomeScreenOpenState(newState, true, false);
-    }
-    return newState;
-  },
+  // The view partition resets its panels and home screen on the same action.
+  [RESTART_CONVERSATION]: (state: ConversationState): ConversationState => ({
+    ...state,
+    assistantMessageState: {
+      ...state.assistantMessageState,
+      localMessageIDs: [],
+      messageIDs: [],
+      activeResponseId: null,
+    },
+    allMessageItemsByID: {},
+    allMessagesByID: {},
+    isHydrated: false,
+  }),
 
   [SET_CONVERSATION_LIFECYCLE]: (
-    state: AppState,
+    state: ConversationState,
     action: {
-      status: AppState['conversationStatus'];
+      status: ConversationState['conversationStatus'];
     }
-  ): AppState => ({
+  ): ConversationState => ({
     ...state,
     conversationStatus: action.status,
   }),
 
   [HYDRATE_MESSAGE_HISTORY]: (
-    state: AppState,
+    state: ConversationState,
     action: { messageHistory: AppStateMessages }
-  ): AppState => {
+  ): ConversationState => {
     const newState = {
       ...state,
       ...action.messageHistory,
@@ -572,9 +457,9 @@ const stateReducers: { [key: string]: ReducerType } = {
   },
 
   [END_MESSAGE_STREAMING]: (
-    state: AppState,
+    state: ConversationState,
     action: { messageID: string }
-  ): AppState => {
+  ): ConversationState => {
     const { messageID } = action;
 
     let changed = false;
@@ -624,9 +509,9 @@ const stateReducers: { [key: string]: ReducerType } = {
   },
 
   [MESSAGE_SET_OPTION_SELECTED]: (
-    state: AppState,
+    state: ConversationState,
     action: { sentMessage: MessageRequest; messageID: string }
-  ): AppState => {
+  ): ConversationState => {
     const newMessagesByID = {
       ...state.allMessageItemsByID,
     };
@@ -644,113 +529,47 @@ const stateReducers: { [key: string]: ReducerType } = {
     };
   },
 
-  [RESET_IS_LOADING_COUNTER]: (state: AppState): AppState => {
-    return {
-      ...state,
-      assistantMessageState: {
-        ...state.assistantMessageState,
-        isMessageLoadingCounter: 0,
-        isMessageLoadingText: undefined,
-      },
-    };
-  },
-
-  [ADD_IS_LOADING_COUNTER]: (
-    state: AppState,
-    action: { addToIsLoading: number; message?: string }
-  ): AppState => {
-    const isMessageLoadingCounter = Math.max(
-      state.assistantMessageState.isMessageLoadingCounter +
-        action.addToIsLoading,
-      0
-    );
-    return {
-      ...state,
-      assistantMessageState: {
-        ...state.assistantMessageState,
-        isMessageLoadingCounter,
-        isMessageLoadingText:
-          isMessageLoadingCounter > 0 && action.message
-            ? action.message
-            : undefined,
-      },
-    };
-  },
-
-  [RESET_IS_HYDRATING_COUNTER]: (state: AppState): AppState => {
-    return {
-      ...state,
-      assistantMessageState: {
-        ...state.assistantMessageState,
-        isHydratingCounter: 0,
-      },
-    };
-  },
-
-  [ADD_IS_HYDRATING_COUNTER]: (
-    state: AppState,
-    action: { addToIsHydrating: number }
-  ): AppState => {
-    return {
-      ...state,
-      assistantMessageState: {
-        ...state.assistantMessageState,
-        isHydratingCounter: Math.max(
-          state.assistantMessageState.isHydratingCounter +
-            action.addToIsHydrating,
-          0
-        ),
-      },
-    };
-  },
-
   [SET_APP_STATE_VALUE]: (
-    state: AppState,
-    action: { key: keyof AppState; value: any }
-  ): AppState => ({
-    ...state,
-    [action.key]: action.value,
-  }),
-
-  [UPDATE_CATASTROPHIC_ERROR_PANEL]: (
-    state: AppState,
-    action: { panelState: Partial<CatastrophicErrorPanelState> }
-  ): AppState => ({
-    ...state,
-    catastrophicErrorPanelState: {
-      ...state.catastrophicErrorPanelState,
-      ...action.panelState,
-    },
-  }),
+    state: ConversationState,
+    action: { key: keyof ConversationState; value: any }
+  ): ConversationState =>
+    // Keys the conversation doesn't hold belong to a partition's reducer.
+    action.key in state ? { ...state, [action.key]: action.value } : state,
 
   [UPDATE_PERSISTED_STATE]: (
-    state: AppState,
+    state: ConversationState,
     action: { chatState: Partial<PersistedState> }
-  ): AppState => ({
-    ...state,
-    persistedToBrowserStorage: {
-      ...state.persistedToBrowserStorage,
-      ...action.chatState,
-    },
-  }),
+  ): ConversationState => {
+    // The view partition applies the saved fields it holds.
+    const { hasSentNonWelcomeMessage, humanAgentState } = action.chatState;
+    return {
+      ...state,
+      persistedToBrowserStorage: {
+        ...state.persistedToBrowserStorage,
+        ...(hasSentNonWelcomeMessage !== undefined && {
+          hasSentNonWelcomeMessage,
+        }),
+        ...(humanAgentState !== undefined && { humanAgentState }),
+      },
+    };
+  },
 
   [RESET_PERSISTED_STATE]: (
-    state: AppState,
-    action: { keepOpenState: boolean }
-  ): AppState => ({
+    state: ConversationState,
+    _action: { keepOpenState: boolean }
+  ): ConversationState => ({
     ...state,
     persistedToBrowserStorage: {
-      ...cloneDeep(DEFAULT_PERSISTED_TO_BROWSER),
-      viewState: action.keepOpenState
-        ? state.persistedToBrowserStorage.viewState
-        : VIEW_STATE_LAUNCHER_OPEN,
+      hasSentNonWelcomeMessage:
+        DEFAULT_PERSISTED_TO_BROWSER.hasSentNonWelcomeMessage,
+      humanAgentState: cloneDeep(DEFAULT_PERSISTED_TO_BROWSER.humanAgentState),
     },
   }),
 
   [UPDATE_HAS_SENT_NON_WELCOME_MESSAGE]: (
-    state: AppState,
+    state: ConversationState,
     action: { hasSentNonWelcomeMessage: boolean }
-  ): AppState => {
+  ): ConversationState => {
     if (
       state.persistedToBrowserStorage.hasSentNonWelcomeMessage ===
       action.hasSentNonWelcomeMessage
@@ -767,44 +586,21 @@ const stateReducers: { [key: string]: ReducerType } = {
   },
 
   [SET_IS_RESTARTING]: (
-    state: AppState,
+    state: ConversationState,
     action: { isRestarting: boolean }
-  ): AppState => ({
+  ): ConversationState => ({
     ...state,
     isRestarting: action.isRestarting,
   }),
 
-  [SET_VIEW_STATE]: (
-    state: AppState,
-    action: { viewState: ViewState }
-  ): AppState => {
-    return handleViewStateChange(state, action.viewState);
-  },
-
-  [SET_VIEW_CHANGING]: (
-    state: AppState,
-    action: { viewChanging: boolean }
-  ): AppState => ({
-    ...state,
-    viewChanging: action.viewChanging,
-  }),
-
-  [SET_INITIAL_VIEW_CHANGE_COMPLETE]: (
-    state: AppState,
-    action: { changeComplete: boolean }
-  ): AppState => ({
-    ...state,
-    initialViewChangeComplete: action.changeComplete,
-  }),
-
   [SET_MESSAGE_UI_PROPERTY]: <TPropertyName extends keyof LocalMessageUIState>(
-    state: AppState,
+    state: ConversationState,
     action: {
       localMessageID: string;
       propertyName: TPropertyName;
       propertyValue: LocalMessageUIState[TPropertyName];
     }
-  ): AppState => {
+  ): ConversationState => {
     return applyLocalMessageUIState(
       state,
       action.localMessageID,
@@ -814,9 +610,9 @@ const stateReducers: { [key: string]: ReducerType } = {
   },
 
   [SET_MESSAGE_WAS_ANNOUNCED]: (
-    state: AppState,
+    state: ConversationState,
     action: { localMessageID: string }
-  ): AppState => {
+  ): ConversationState => {
     // `wasAnnounced` outlives the clear, so an upsert that rebuilds the item knows not
     // to announce it again.
     const { localMessageID } = action;
@@ -836,13 +632,13 @@ const stateReducers: { [key: string]: ReducerType } = {
   [SET_MESSAGE_RESPONSE_HISTORY_PROPERTY]: <
     TPropertyName extends keyof MessageResponseHistory,
   >(
-    state: AppState,
+    state: ConversationState,
     action: {
       messageID: string;
       propertyName: TPropertyName;
       propertyValue: MessageResponseHistory[TPropertyName];
     }
-  ): AppState => {
+  ): ConversationState => {
     const { messageID, propertyName, propertyValue } = action;
     const oldMessage = state.allMessagesByID[messageID];
     if (oldMessage) {
@@ -866,13 +662,13 @@ const stateReducers: { [key: string]: ReducerType } = {
   [SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY]: <
     TPropertyName extends keyof MessageUIStateInternal,
   >(
-    state: AppState,
+    state: ConversationState,
     action: {
       messageID: string;
       propertyName: TPropertyName;
       propertyValue: MessageUIStateInternal[TPropertyName];
     }
-  ): AppState => {
+  ): ConversationState => {
     const { messageID, propertyName, propertyValue } = action;
     const oldMessage = state.allMessagesByID[messageID];
     if (oldMessage) {
@@ -894,12 +690,12 @@ const stateReducers: { [key: string]: ReducerType } = {
   },
 
   [MERGE_HISTORY]: (
-    state: AppState,
+    state: ConversationState,
     action: {
       messageID: string;
       history: MessageResponseHistory | MessageRequestHistory;
     }
-  ): AppState => {
+  ): ConversationState => {
     const oldMessage = state.allMessagesByID[action.messageID];
     if (oldMessage) {
       return {
@@ -916,59 +712,8 @@ const stateReducers: { [key: string]: ReducerType } = {
     return state;
   },
 
-  [ANNOUNCE_MESSAGE]: (
-    state: AppState,
-    action: { message: AnnounceMessage }
-  ): AppState => ({
-    ...state,
-    announceMessage: action.message,
-  }),
-
-  [ACCEPTED_DISCLAIMER]: (state: AppState): AppState => ({
-    ...state,
-    persistedToBrowserStorage: {
-      ...state.persistedToBrowserStorage,
-      disclaimersAccepted: {
-        ...state.persistedToBrowserStorage.disclaimersAccepted,
-        [isBrowser() ? window.location.hostname : 'localhost']: true,
-      },
-    },
-  }),
-
-  [SET_HOME_SCREEN_IS_OPEN]: (
-    state: AppState,
-    { isOpen }: { isOpen: boolean }
-  ) => setHomeScreenOpenState(state, isOpen),
-
-  [TOGGLE_HOME_SCREEN]: (state: AppState) => {
-    const isCurrentlyOpen =
-      state.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen;
-    // Only show "back to assistant" button when manually navigating back to home screen (not closing it)
-    return setHomeScreenOpenState(
-      state,
-      !isCurrentlyOpen,
-      !isCurrentlyOpen // true when opening, false when closing
-    );
-  },
-
-  [SET_LAUNCHER_PROPERTY]: <TPropertyName extends keyof PersistedState>(
-    state: AppState,
-    action: {
-      propertyName: TPropertyName;
-      propertyValue: PersistedState[TPropertyName];
-    }
-  ) => {
-    return {
-      ...state,
-      persistedToBrowserStorage: {
-        ...state.persistedToBrowserStorage,
-        [action.propertyName]: action.propertyValue,
-      },
-    };
-  },
-
   [SET_CHAT_MESSAGES_PROPERTY]: <TPropertyName extends keyof ChatMessagesState>(
-    state: AppState,
+    state: ConversationState,
     action: {
       propertyName: TPropertyName;
       propertyValue: ChatMessagesState[TPropertyName];
@@ -979,188 +724,8 @@ const stateReducers: { [key: string]: ReducerType } = {
     });
   },
 
-  [SET_LAUNCHER_MINIMIZED]: (state: AppState) => {
-    return {
-      ...state,
-      persistedToBrowserStorage: {
-        ...state.persistedToBrowserStorage,
-        launcherIsExpanded: false,
-      },
-    };
-  },
-
-  [OPEN_IFRAME_CONTENT]: (
-    state: AppState,
-    { messageItem }: { messageItem: IFrameItem }
-  ) => {
-    return {
-      ...state,
-      iFramePanelState: {
-        ...state.iFramePanelState,
-        messageItem,
-        isOpen: true,
-      },
-      announceMessage: {
-        messageID: 'iframe_ariaOpenedPanel',
-      },
-    };
-  },
-
-  [CLOSE_IFRAME_PANEL]: (state: AppState) => {
-    return {
-      ...state,
-      iFramePanelState: {
-        ...state.iFramePanelState,
-        isOpen: false,
-      },
-      announceMessage: {
-        messageID: 'iframe_ariaClosedPanel',
-      },
-    };
-  },
-
-  [SET_CONVERSATIONAL_SEARCH_CITATION_PANEL_IS_OPEN]: (
-    state: AppState,
-    action: {
-      isOpen: boolean;
-      citationItem: ConversationalSearchItemCitation;
-      relatedSearchResult: SearchResult;
-    }
-  ) => {
-    return {
-      ...state,
-      viewSourcePanelState: {
-        ...state.viewSourcePanelState,
-        citationItem: action.citationItem,
-        relatedSearchResult: action.relatedSearchResult,
-        isOpen: action.isOpen,
-      },
-    };
-  },
-
-  [SET_CUSTOM_PANEL_OPEN]: (state: AppState, action: { isOpen: boolean }) => {
-    return {
-      ...state,
-      customPanelState: {
-        ...state.customPanelState,
-        isOpen: action.isOpen,
-      },
-    };
-  },
-
-  [SET_CUSTOM_PANEL_OPTIONS]: (
-    state: AppState,
-    action: { options: CustomPanelConfigOptions }
-  ) => {
-    return {
-      ...state,
-      customPanelState: {
-        ...state.customPanelState,
-        options: action.options,
-      },
-    };
-  },
-
-  [SET_WORKSPACE_PANEL_OPEN]: (
-    state: AppState,
-    action: { isOpen: boolean }
-  ) => {
-    // When closing the panel, reset the workspace panel state to default
-    if (!action.isOpen) {
-      return {
-        ...state,
-        workspacePanelState: {
-          ...DEFAULT_WORKSPACE_PANEL_STATE,
-          isOpen: false,
-        },
-      };
-    }
-
-    return {
-      ...state,
-      workspacePanelState: {
-        ...state.workspacePanelState,
-        isOpen: action.isOpen,
-      },
-    };
-  },
-
-  [SET_WORKSPACE_PANEL_OPTIONS]: (
-    state: AppState,
-    action: { options: Partial<WorkspaceCustomPanelConfigOptions> }
-  ) => {
-    return {
-      ...state,
-      workspacePanelState: {
-        ...state.workspacePanelState,
-        options: {
-          ...(state.workspacePanelState.options ?? {}),
-          ...action.options,
-        },
-      },
-    };
-  },
-
-  [SET_WORKSPACE_PANEL_DATA]: (
-    state: AppState,
-    action: {
-      workspaceID?: string;
-      localMessageItem?: LocalMessageItem;
-      fullMessage?: Message;
-      additionalData?: unknown;
-    }
-  ) => {
-    return {
-      ...state,
-      workspacePanelState: {
-        ...state.workspacePanelState,
-        workspaceID: action.workspaceID,
-        localMessageItem: action.localMessageItem,
-        fullMessage: action.fullMessage,
-        additionalData: action.additionalData,
-      },
-    };
-  },
-
-  [SET_HISTORY_PANEL_OPEN]: (
-    state: AppState,
-    action: { isOpen: boolean }
-  ): AppState => {
-    if (!action.isOpen) {
-      return {
-        ...state,
-        historyPanelState: {
-          ...state.historyPanelState,
-          isOpen: false,
-        },
-      };
-    }
-
-    return {
-      ...state,
-      historyPanelState: {
-        ...state.historyPanelState,
-        isOpen: action.isOpen,
-      },
-    };
-  },
-
-  [SET_HISTORY_PANEL_OPTIONS]: (
-    state: AppState,
-    action: { isMobile: boolean; isOpen?: boolean }
-  ): AppState => {
-    return {
-      ...state,
-      historyPanelState: {
-        ...state.historyPanelState,
-        isMobile: action.isMobile,
-        isOpen: action.isOpen ?? state.historyPanelState.isOpen,
-      },
-    };
-  },
-
   [UPDATE_INPUT_STATE]: (
-    state: AppState,
+    state: ConversationState,
     action: { newState: Partial<InputState>; isInputToHumanAgent: boolean }
   ) => {
     const currentInputState = getInputState(state, action.isInputToHumanAgent);
@@ -1176,30 +741,8 @@ const stateReducers: { [key: string]: ReducerType } = {
     return newState;
   },
 
-  [SET_IS_BROWSER_PAGE_VISIBLE]: (
-    state: AppState,
-    action: { isVisible: boolean }
-  ) => {
-    // If the page becomes visible while the main window is open, then clear the number of unread messages.
-    const isMainWindowOpen =
-      state.persistedToBrowserStorage.viewState.mainWindow;
-    const numUnreadMessages =
-      isMainWindowOpen && action.isVisible
-        ? 0
-        : state.humanAgentState.numUnreadMessages;
-
-    return {
-      ...state,
-      isBrowserPageVisible: action.isVisible,
-      humanAgentState: {
-        ...state.humanAgentState,
-        numUnreadMessages,
-      },
-    };
-  },
-
   [ADD_INPUT_FILE]: (
-    state: AppState,
+    state: ConversationState,
     {
       file,
       isInputToHumanAgent,
@@ -1217,7 +760,7 @@ const stateReducers: { [key: string]: ReducerType } = {
   },
 
   [REMOVE_INPUT_FILE]: (
-    state: AppState,
+    state: ConversationState,
     {
       fileID,
       isInputToHumanAgent,
@@ -1240,7 +783,7 @@ const stateReducers: { [key: string]: ReducerType } = {
   },
 
   [CLEAR_INPUT_FILES]: (
-    state: AppState,
+    state: ConversationState,
     { isInputToHumanAgent }: { isInputToHumanAgent: boolean }
   ) => {
     const currentInputState = getInputState(state, isInputToHumanAgent);
@@ -1255,7 +798,7 @@ const stateReducers: { [key: string]: ReducerType } = {
   },
 
   [UPDATE_STRUCTURED_DATA]: (
-    state: AppState,
+    state: ConversationState,
     {
       structuredData,
       isInputToHumanAgent,
@@ -1276,7 +819,7 @@ const stateReducers: { [key: string]: ReducerType } = {
   },
 
   [CLEAR_STRUCTURED_DATA]: (
-    state: AppState,
+    state: ConversationState,
     { isInputToHumanAgent }: { isInputToHumanAgent: boolean }
   ) => {
     const currentInputState = getInputState(state, isInputToHumanAgent);
@@ -1293,7 +836,7 @@ const stateReducers: { [key: string]: ReducerType } = {
   },
 
   [ADD_PENDING_UPLOAD]: (
-    state: AppState,
+    state: ConversationState,
     {
       upload,
       isInputToHumanAgent,
@@ -1310,7 +853,7 @@ const stateReducers: { [key: string]: ReducerType } = {
   },
 
   [UPDATE_PENDING_UPLOAD]: (
-    state: AppState,
+    state: ConversationState,
     {
       uploadId,
       patch,
@@ -1335,7 +878,7 @@ const stateReducers: { [key: string]: ReducerType } = {
   },
 
   [REMOVE_PENDING_UPLOAD]: (
-    state: AppState,
+    state: ConversationState,
     {
       uploadId,
       isInputToHumanAgent,
@@ -1355,7 +898,7 @@ const stateReducers: { [key: string]: ReducerType } = {
   },
 
   [FILE_UPLOAD_INPUT_ERROR]: (
-    state: AppState,
+    state: ConversationState,
     {
       fileID,
       errorMessage,
@@ -1383,38 +926,8 @@ const stateReducers: { [key: string]: ReducerType } = {
     );
   },
 
-  [SET_RESPONSE_PANEL_IS_OPEN]: (
-    state: AppState,
-    { isOpen }: { isOpen: boolean }
-  ) => {
-    return {
-      ...state,
-      responsePanelState: {
-        ...state.responsePanelState,
-        isOpen,
-      },
-    };
-  },
-
-  [SET_RESPONSE_PANEL_CONTENT]: (
-    state: AppState,
-    {
-      localMessageItem,
-      isMessageForInput,
-    }: { localMessageItem: LocalMessageItem; isMessageForInput: boolean }
-  ) => {
-    return {
-      ...state,
-      responsePanelState: {
-        ...state.responsePanelState,
-        localMessageItem,
-        isMessageForInput,
-      },
-    };
-  },
-
   [SET_STOP_STREAMING_BUTTON_VISIBLE]: (
-    state: AppState,
+    state: ConversationState,
     { isVisible }: { isVisible: boolean }
   ) => {
     return {
@@ -1430,7 +943,7 @@ const stateReducers: { [key: string]: ReducerType } = {
   },
 
   [SET_STOP_STREAMING_BUTTON_DISABLED]: (
-    state: AppState,
+    state: ConversationState,
     { isDisabled }: { isDisabled: boolean }
   ) => {
     return {
@@ -1446,7 +959,7 @@ const stateReducers: { [key: string]: ReducerType } = {
   },
 
   [SET_STOP_STREAMING_BUTTON_METADATA_DISABLED]: (
-    state: AppState,
+    state: ConversationState,
     { isMetadataDisabled }: { isMetadataDisabled: boolean }
   ) => ({
     ...state,
@@ -1460,7 +973,7 @@ const stateReducers: { [key: string]: ReducerType } = {
   }),
 
   [SET_STREAM_ID]: (
-    state: AppState,
+    state: ConversationState,
     { currentStreamID }: { currentStreamID: string }
   ) => {
     return {
@@ -1476,7 +989,7 @@ const stateReducers: { [key: string]: ReducerType } = {
   },
 
   [SET_ACTIVE_RESPONSE_ID]: (
-    state: AppState,
+    state: ConversationState,
     { activeResponseId }: { activeResponseId: string | null }
   ) => {
     return {
@@ -1489,7 +1002,7 @@ const stateReducers: { [key: string]: ReducerType } = {
   },
 
   [UPDATE_THEME_STATE]: (
-    state: AppState,
+    state: ConversationState,
     { themeState }: { themeState: ThemeState }
   ) => {
     return {
@@ -1510,10 +1023,10 @@ const stateReducers: { [key: string]: ReducerType } = {
  * the user is connected to an agent or not.
  */
 function applyInputState(
-  state: AppState,
+  state: ConversationState,
   newInputState: InputState,
   isInputToHumanAgent: boolean
-): AppState {
+): ConversationState {
   if (isInputToHumanAgent) {
     return {
       ...state,
@@ -1532,7 +1045,7 @@ function applyInputState(
 /**
  * Returns the given input state.
  */
-function getInputState(state: AppState, isInputToHumanAgent: boolean) {
+function getInputState(state: ConversationState, isInputToHumanAgent: boolean) {
   return isInputToHumanAgent
     ? state.humanAgentState.inputState
     : state.assistantInputState;
@@ -1542,22 +1055,25 @@ function getInputState(state: AppState, isInputToHumanAgent: boolean) {
 Object.assign(stateReducers, humanAgentReducers);
 
 const ownershipReducers: {
-  [key: string]: (state: AppState, action: any) => StoreReduction<AppState>;
+  [key: string]: (
+    state: ConversationState,
+    action: any
+  ) => StoreReduction<ConversationState>;
 } = {
   [ADD_LOCAL_MESSAGE_ITEM]: (
-    state: AppState,
+    state: ConversationState,
     action: {
       messageItem: LocalMessageItem;
       message: Message;
       addMessage: boolean;
       addAfterID: string;
     }
-  ): StoreReduction<AppState> =>
+  ): StoreReduction<ConversationState> =>
     applyLocalMessageItemWithOwnership(state, action),
   [REMOVE_MESSAGES]: (
-    state: AppState,
+    state: ConversationState,
     { messageIDs }: { messageIDs: string[] }
-  ): StoreReduction<AppState> => {
+  ): StoreReduction<ConversationState> => {
     const idsSet = new Set(messageIDs);
     const removedMessages: string[] = [];
     const removedLocals: string[] = [];
@@ -1589,7 +1105,7 @@ const ownershipReducers: {
       removedMessages.push(messageID);
     });
 
-    const newState: AppState = {
+    const newState: ConversationState = {
       ...state,
       allMessagesByID: newAllMessages,
       allMessageItemsByID: newAllMessageItems,
@@ -1613,9 +1129,9 @@ const ownershipReducers: {
     };
   },
   [UPDATE_LOCAL_MESSAGE_ITEM]: (
-    state: AppState,
+    state: ConversationState,
     action: { messageItem: LocalMessageItem }
-  ): StoreReduction<AppState> => {
+  ): StoreReduction<ConversationState> => {
     const { messageItem } = action;
     let localID: string;
     const nextState = {
@@ -1635,9 +1151,9 @@ const ownershipReducers: {
     };
   },
   [UPDATE_MESSAGE]: (
-    state: AppState,
+    state: ConversationState,
     action: { message: Message }
-  ): StoreReduction<AppState> => {
+  ): StoreReduction<ConversationState> => {
     const { message } = action;
     let messageID: string;
     const nextState = {
@@ -1653,14 +1169,14 @@ const ownershipReducers: {
     };
   },
   [UPSERT_MESSAGE]: (
-    state: AppState,
+    state: ConversationState,
     action: {
       message: Message;
       isStreaming?: boolean;
       holdFromIndex?: number;
       options?: MessageWriteOptions;
     }
-  ): StoreReduction<AppState> => {
+  ): StoreReduction<ConversationState> => {
     const { message, isStreaming = false, holdFromIndex, options } = action;
     const messageID = message.id;
 
@@ -1723,7 +1239,7 @@ const ownershipReducers: {
       nextMessageIDs = [...nextMessageIDs, messageID];
     }
 
-    const newState: AppState = {
+    const newState: ConversationState = {
       ...state,
       allMessagesByID: {
         ...state.allMessagesByID,
@@ -1738,18 +1254,12 @@ const ownershipReducers: {
       },
     };
 
-    if (
-      newLocalIDsForMessage.length &&
-      newState.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen
-    ) {
-      return { state: setHomeScreenOpenState(newState, false), ownership };
-    }
     return { state: newState, ownership };
   },
   [ADD_MESSAGE]: (
-    state: AppState,
+    state: ConversationState,
     action: { message: Message }
-  ): StoreReduction<AppState> => {
+  ): StoreReduction<ConversationState> => {
     const result = applyFullMessageWithIdentity(state, action.message);
     return {
       state: result.state,
@@ -1757,7 +1267,7 @@ const ownershipReducers: {
     };
   },
   [REMOVE_LOCAL_MESSAGE_ITEM]: (
-    state: AppState,
+    state: ConversationState,
     { localMessageItemID }: { localMessageItemID: string }
   ) => {
     const newLocalMessageIDs =
@@ -1797,7 +1307,9 @@ const reductions: typeof ownershipReducers = {
   ...Object.fromEntries(
     Object.entries(stateReducers).map(([type, reduce]) => [
       type,
-      (state: AppState, action: any) => ({ state: reduce(state, action) }),
+      (state: ConversationState, action: any) => ({
+        state: reduce(state, action),
+      }),
     ])
   ),
   ...ownershipReducers,
@@ -1806,15 +1318,15 @@ const reductions: typeof ownershipReducers = {
 const reducers: { [key: string]: ReducerType } = Object.fromEntries(
   Object.entries(reductions).map(([type, reduce]) => [
     type,
-    (state: AppState, action: any) => reduce(state, action).state,
+    (state: ConversationState, action: any) => reduce(state, action).state,
   ])
 );
 
 /** Selects the same reducer at the same action-type reads as the state-only root. */
 function reduceWithMessageOwnership(
-  state: AppState,
+  state: ConversationState,
   action: { type: string; [key: string]: unknown } | undefined
-): StoreReduction<AppState> {
+): StoreReduction<ConversationState> {
   return action && reductions[action.type]
     ? reductions[action.type](state, action)
     : { state };

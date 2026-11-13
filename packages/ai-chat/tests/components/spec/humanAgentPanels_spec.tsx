@@ -37,6 +37,7 @@ import {
   setupAfterEach,
   setupBeforeEach,
 } from '../../test_helpers';
+import { viewActions } from '../../../src/view/state';
 
 const mockFocus = jest.fn();
 jest.mock('../../../src/chat/utils/domUtils', () => ({
@@ -87,7 +88,9 @@ async function fixture(
       },
     })
   );
-  store.dispatch(actions.setViewState({ mainWindow: true, launcher: false }));
+  store.dispatch(
+    viewActions.setViewState({ mainWindow: true, launcher: false })
+  );
   const eventBus = new EventBus();
   const manager = {
     store,
@@ -146,15 +149,15 @@ async function fixture(
     isHydratingComplete: true,
     shouldShowHydrationPanel: false,
     isHomeScreenActive: false,
-    customPanelState: current.customPanelState,
-    historyPanelState: current.historyPanelState,
+    customPanelState: current.view.customPanelState,
+    historyPanelState: current.view.historyPanelState,
     showDisclaimer: false,
-    responsePanelState: current.responsePanelState,
+    responsePanelState: current.view.responsePanelState,
     responseHasMessage: false,
-    iFramePanelState: current.iFramePanelState,
-    viewSourcePanelState: current.viewSourcePanelState,
+    iFramePanelState: current.view.iFramePanelState,
+    viewSourcePanelState: current.view.viewSourcePanelState,
     isInputReadonly: false,
-    catastrophicErrorPanelState: current.catastrophicErrorPanelState,
+    catastrophicErrorPanelState: current.view.catastrophicErrorPanelState,
     contentRevision: {},
   };
   view.hosts = hosts;
@@ -422,7 +425,7 @@ describe('screen share request panel', () => {
     expect(f.buttons[0].kind).toBe('secondary');
     expect(f.buttons[1].kind).toBe('primary');
     f.store.dispatch(
-      actions.setAppStateValue(
+      viewActions.setViewValue(
         'chatWidthBreakpoint',
         ChatWidthBreakpoint.NARROW
       )
@@ -430,7 +433,7 @@ describe('screen share request panel', () => {
     await flush(f.view);
     expect(f.buttons.map((button) => button.size)).toEqual(['lg', 'lg']);
     f.store.dispatch(
-      actions.setAppStateValue('chatWidthBreakpoint', ChatWidthBreakpoint.WIDE)
+      viewActions.setViewValue('chatWidthBreakpoint', ChatWidthBreakpoint.WIDE)
     );
     await flush(f.view);
     expect(f.buttons.map((button) => button.size)).toEqual(['2xl', '2xl']);

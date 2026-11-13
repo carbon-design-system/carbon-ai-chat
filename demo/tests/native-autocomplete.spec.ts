@@ -59,7 +59,7 @@ async function prepare(page: Page, host: Host, width = 760, both = false) {
       }
     )?.current;
     return Boolean(
-      current?.viewState?.serviceManager.store.getState()
+      current?.viewState?.serviceManager.store.getState().view
         .initialViewChangeComplete
     );
   }, host);

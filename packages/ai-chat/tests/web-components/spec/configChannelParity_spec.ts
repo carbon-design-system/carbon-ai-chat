@@ -86,11 +86,11 @@ describe('Config channel parity (React vs web component)', () => {
     );
 
     // markdown -> markdownConfig slice: same plugin reference on both surfaces.
-    expect(reactState.markdownConfig?.markdownItPlugins?.[0]).toBe(
+    expect(reactState.view.markdownConfig?.markdownItPlugins?.[0]).toBe(
       sharedMarkdownPlugin
     );
-    expect(wcState.markdownConfig?.markdownItPlugins?.[0]).toBe(
-      reactState.markdownConfig?.markdownItPlugins?.[0]
+    expect(wcState.view.markdownConfig?.markdownItPlugins?.[0]).toBe(
+      reactState.view.markdownConfig?.markdownItPlugins?.[0]
     );
   });
 });

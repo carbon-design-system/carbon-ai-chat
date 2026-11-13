@@ -23,16 +23,13 @@ describe('ChatInstance.updateIsChatLoadingCounter', () => {
       await renderChatAndGetInstanceWithStore(createBaseConfig());
     instance.updateIsChatLoadingCounter('increase');
     instance.updateIsMessageLoadingCounter('increase');
-    const hydrationCount =
-      store.getState().assistantMessageState.isHydratingCounter;
+    const hydrationCount = store.getState().view.isHydratingCounter;
     expect(hydrationCount).toBeGreaterThan(0);
-    expect(
-      store.getState().assistantMessageState.isMessageLoadingCounter
-    ).toBeGreaterThan(0);
+    expect(store.getState().view.isMessageLoadingCounter).toBeGreaterThan(0);
 
     instance.updateIsChatLoadingCounter('reset');
 
-    const state = store.getState().assistantMessageState;
+    const state = store.getState().view;
     expect(state.isHydratingCounter).toBe(hydrationCount);
     expect(state.isMessageLoadingCounter).toBe(0);
   });
@@ -42,15 +39,12 @@ describe('ChatInstance.updateIsChatLoadingCounter', () => {
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
 
     const initialState = store.getState();
-    const initialCounter =
-      initialState.assistantMessageState.isHydratingCounter;
+    const initialCounter = initialState.view.isHydratingCounter;
 
     instance.updateIsChatLoadingCounter('increase');
 
     const updatedState = store.getState();
-    expect(updatedState.assistantMessageState.isHydratingCounter).toBe(
-      initialCounter + 1
-    );
+    expect(updatedState.view.isHydratingCounter).toBe(initialCounter + 1);
   });
 
   it('should decrease chat loading counter in Redux state', async () => {
@@ -61,15 +55,12 @@ describe('ChatInstance.updateIsChatLoadingCounter', () => {
     instance.updateIsChatLoadingCounter('increase');
 
     const stateAfterIncrease = store.getState();
-    const counterAfterIncrease =
-      stateAfterIncrease.assistantMessageState.isHydratingCounter;
+    const counterAfterIncrease = stateAfterIncrease.view.isHydratingCounter;
 
     instance.updateIsChatLoadingCounter('decrease');
 
     const finalState = store.getState();
-    expect(finalState.assistantMessageState.isHydratingCounter).toBe(
-      counterAfterIncrease - 1
-    );
+    expect(finalState.view.isHydratingCounter).toBe(counterAfterIncrease - 1);
   });
 
   it('should not decrease chat loading counter below 0', async () => {
@@ -80,7 +71,7 @@ describe('ChatInstance.updateIsChatLoadingCounter', () => {
     instance.updateIsChatLoadingCounter('decrease');
 
     const state = store.getState();
-    expect(state.assistantMessageState.isHydratingCounter).toBe(0);
+    expect(state.view.isHydratingCounter).toBe(0);
   });
 
   it('should handle multiple chat loading counter operations correctly', async () => {
@@ -89,22 +80,22 @@ describe('ChatInstance.updateIsChatLoadingCounter', () => {
 
     // Get initial counter
     let state = store.getState();
-    const initial = state.assistantMessageState.isHydratingCounter;
+    const initial = state.view.isHydratingCounter;
 
     // Increase multiple times
     instance.updateIsChatLoadingCounter('increase');
     instance.updateIsChatLoadingCounter('increase');
     state = store.getState();
-    expect(state.assistantMessageState.isHydratingCounter).toBe(initial + 2);
+    expect(state.view.isHydratingCounter).toBe(initial + 2);
 
     // Decrease once
     instance.updateIsChatLoadingCounter('decrease');
     state = store.getState();
-    expect(state.assistantMessageState.isHydratingCounter).toBe(initial + 1);
+    expect(state.view.isHydratingCounter).toBe(initial + 1);
 
     // Decrease to original
     instance.updateIsChatLoadingCounter('decrease');
     state = store.getState();
-    expect(state.assistantMessageState.isHydratingCounter).toBe(initial);
+    expect(state.view.isHydratingCounter).toBe(initial);
   });
 });

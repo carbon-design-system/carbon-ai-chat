@@ -7,7 +7,7 @@
  *  @license
  */
 
-import type { AppState } from '../../types/state/AppState';
+import type { ConversationState } from '../../types/state/AppState';
 import type { AppStore, UnknownAction } from './appStore';
 
 export type MessageOwnershipReceipt =
@@ -78,7 +78,9 @@ export function markHumanAgentIngress<T extends object>(action: T): T {
 }
 
 /** Captured once with history's current state, before its asynchronous load. */
-export function captureMessageOwnership(store: AppStore<AppState>): Ownership {
+export function captureMessageOwnership(
+  store: AppStore<ConversationState>
+): Ownership {
   const current = stores.get(store);
   const captured = emptyOwnership();
   if (current) {
@@ -99,14 +101,14 @@ export function retainHistoryOwnership<T extends object>(
 }
 
 export function isHumanAgentMessageOwner(
-  store: AppStore<AppState>,
+  store: AppStore<ConversationState>,
   messageID: string
 ): boolean {
   return stores.get(store)?.messages.has(messageID) ?? false;
 }
 
 export function isHumanAgentLocalOwner(
-  store: AppStore<AppState>,
+  store: AppStore<ConversationState>,
   localID: string
 ): boolean {
   return stores.get(store)?.locals.has(localID) ?? false;
@@ -115,7 +117,7 @@ export function isHumanAgentLocalOwner(
 /** Keeps the source entity's current owner when a mutable callback changes IDs. */
 export function retainMessageCloneOwnership<T extends object>(
   action: T,
-  store: AppStore<AppState>,
+  store: AppStore<ConversationState>,
   sourceID: string
 ): T {
   retainedCloneOwnership.set(action, isHumanAgentMessageOwner(store, sourceID));
@@ -124,7 +126,7 @@ export function retainMessageCloneOwnership<T extends object>(
 
 export function retainLocalCloneOwnership<T extends object>(
   action: T,
-  store: AppStore<AppState>,
+  store: AppStore<ConversationState>,
   sourceID: string
 ): T {
   retainedCloneOwnership.set(action, isHumanAgentLocalOwner(store, sourceID));
@@ -226,7 +228,9 @@ function applyOwnership(
 }
 
 /** Enables private ownership bookkeeping only for the chat's store. */
-export function enableMessageOwnership(store: AppStore<AppState>): void {
+export function enableMessageOwnership(
+  store: AppStore<ConversationState>
+): void {
   stores.set(store, emptyOwnership());
 }
 

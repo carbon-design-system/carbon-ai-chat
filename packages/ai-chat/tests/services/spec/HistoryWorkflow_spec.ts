@@ -34,8 +34,6 @@ function messages(): AppStateMessages {
       messageIDs: ['historical'],
       localMessageIDs: [],
       activeResponseId: null,
-      isMessageLoadingCounter: 0,
-      isHydratingCounter: 0,
     },
   };
 }
@@ -52,8 +50,6 @@ it('keeps insertion response and footer replays separate and restores scroll las
       messageIDs: [],
       localMessageIDs: [],
       activeResponseId: null,
-      isMessageLoadingCounter: 0,
-      isHydratingCounter: 0,
     },
   };
   const manager = {

@@ -9,12 +9,19 @@
 
 import isEqual from 'lodash-es/isEqual.js';
 
-import appActions from '../../shared/store/actions';
 import { ServiceManager } from '../../shared/services/ServiceManager';
+
 import { PublicConfig } from '../../types/config/PublicConfig';
+
 import { mergePublicConfig } from './chatBoot';
+
 import { applyConfigChangesDynamically } from './dynamicConfigUpdates';
+
 import { consoleError, consoleWarn } from '../../shared/utils/miscUtils';
+
+import { viewActions } from '../../view/state';
+
+import { chatStore } from '../services/attachChatView';
 
 /**
  * The config a mount last applied, plus the props it has already warned about.
@@ -70,7 +77,7 @@ function syncMarkdownConfig(
   markdown: PublicConfig['markdown'],
   serviceManager: ServiceManager
 ) {
-  const current = serviceManager.store.getState().markdownConfig;
+  const current = chatStore(serviceManager).getState().view.markdownConfig;
   if (isEqual(current, markdown)) {
     if (markdown !== undefined && markdown !== current) {
       warnUnstableProp(applied, serviceManager, 'markdown');
@@ -78,7 +85,7 @@ function syncMarkdownConfig(
     return;
   }
   serviceManager.store.dispatch(
-    appActions.setAppStateValue('markdownConfig', markdown)
+    viewActions.setViewValue('markdownConfig', markdown)
   );
 }
 

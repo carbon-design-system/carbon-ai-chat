@@ -8,26 +8,22 @@
  */
 
 import { createAppStore } from '../../../src/shared/store/appStore';
+
 import {
   buildLanguagePack,
   createAppConfig,
 } from '../../../src/shared/store/doCreateStore';
+
 import actions from '../../../src/shared/store/actions';
-import { reducers } from '../../../src/shared/store/reducers';
 import { AppState } from '../../../src/types/state/AppState';
+
 import {
-  DEFAULT_CITATION_PANEL_STATE,
-  DEFAULT_CUSTOM_PANEL_STATE,
-  DEFAULT_WORKSPACE_PANEL_STATE,
-  DEFAULT_HISTORY_PANEL_STATE,
-  DEFAULT_IFRAME_PANEL_STATE,
   DEFAULT_INPUT_STATE,
-  DEFAULT_MESSAGE_PANEL_STATE,
   DEFAULT_CHAT_MESSAGES_STATE,
   DEFAULT_PERSISTED_TO_BROWSER,
   DEFAULT_HUMAN_AGENT_STATE,
-  VIEW_STATE_ALL_CLOSED,
 } from '../../../src/shared/store/reducerUtils';
+
 import {
   ButtonItemType,
   CardItem,
@@ -36,52 +32,51 @@ import {
   PauseItem,
   TextItem,
 } from '../../../src/types/messaging/Messages';
+
 import { LocalMessageItem } from '../../../src/types/messaging/LocalMessageItem';
+
 import { HumanAgentsOnlineStatus } from '../../../src/types/config/ServiceDeskConfig';
+
 import { deriveStreamingItemText } from '../../../src/shared/utils/streamingUtils';
 
-function rootReducer(
-  state: AppState,
-  action: { type: string; [key: string]: unknown } | undefined
-): AppState {
-  return action && reducers[action.type]
-    ? reducers[action.type](state, action)
-    : state;
-}
+import { DEFAULT_HISTORY_PANEL_STATE } from '../../../src/view/state';
+import { appRootReducer } from '../../test_helpers';
+
+import { createInitialViewState } from '../../../src/view/state/initialState';
+
+import { VIEW_STATE_ALL_CLOSED, viewHalfOf } from '../../../src/view/state';
 
 function createInitialAppState(): AppState {
   const config = createAppConfig({});
+
   return {
     config,
     languagePack: buildLanguagePack(config.public.strings),
     allMessageItemsByID: {},
     allMessagesByID: {},
-    targetViewState: VIEW_STATE_ALL_CLOSED,
-    viewChanging: false,
     assistantMessageState: DEFAULT_CHAT_MESSAGES_STATE,
-    conversationStatus: 'ready',
     isHydrated: false,
-    suspendScrollDetection: false,
-    showNonHeaderBackgroundCover: false,
     isRestarting: false,
-    isBrowserPageVisible: true,
-    chatWidthBreakpoint: null,
-    chatWidth: null,
-    chatHeight: null,
+    conversationStatus: 'ready',
     assistantInputState: DEFAULT_INPUT_STATE,
     humanAgentState: DEFAULT_HUMAN_AGENT_STATE,
     persistedToBrowserStorage: {
-      ...DEFAULT_PERSISTED_TO_BROWSER,
-      homeScreenState: { isHomeScreenOpen: false, showBackToAssistant: false },
+      hasSentNonWelcomeMessage:
+        DEFAULT_PERSISTED_TO_BROWSER.hasSentNonWelcomeMessage,
+      humanAgentState: DEFAULT_PERSISTED_TO_BROWSER.humanAgentState,
     },
-    viewSourcePanelState: DEFAULT_CITATION_PANEL_STATE,
-    iFramePanelState: DEFAULT_IFRAME_PANEL_STATE,
-    customPanelState: DEFAULT_CUSTOM_PANEL_STATE,
-    workspacePanelState: DEFAULT_WORKSPACE_PANEL_STATE,
-    historyPanelState: DEFAULT_HISTORY_PANEL_STATE,
-    responsePanelState: DEFAULT_MESSAGE_PANEL_STATE,
-    announceMessage: undefined,
-    initialViewChangeComplete: false,
+    view: {
+      ...createInitialViewState(config.public, null),
+      targetViewState: VIEW_STATE_ALL_CLOSED,
+      historyPanelState: DEFAULT_HISTORY_PANEL_STATE,
+      persistedToBrowserStorage: {
+        ...viewHalfOf(DEFAULT_PERSISTED_TO_BROWSER),
+        homeScreenState: {
+          isHomeScreenOpen: false,
+          showBackToAssistant: false,
+        },
+      },
+    },
   };
 }
 
@@ -114,7 +109,7 @@ describe('[UPSERT_MESSAGE] reducer', () => {
   let store: ReturnType<typeof createAppStore>;
 
   beforeEach(() => {
-    store = createAppStore(rootReducer, createInitialAppState());
+    store = createAppStore(appRootReducer, createInitialAppState());
   });
 
   it('inserts a brand-new message and its local items', () => {
@@ -1250,13 +1245,17 @@ describe('[UPSERT_MESSAGE] reducer', () => {
     });
 
     it('keeps an open home screen open', () => {
-      store = createAppStore(rootReducer, {
-        ...createInitialAppState(),
-        persistedToBrowserStorage: {
-          ...DEFAULT_PERSISTED_TO_BROWSER,
-          homeScreenState: {
-            isHomeScreenOpen: true,
-            showBackToAssistant: false,
+      const initial = createInitialAppState();
+      store = createAppStore(appRootReducer, {
+        ...initial,
+        view: {
+          ...initial.view,
+          persistedToBrowserStorage: {
+            ...initial.view.persistedToBrowserStorage,
+            homeScreenState: {
+              isHomeScreenOpen: true,
+              showBackToAssistant: false,
+            },
           },
         },
       });
@@ -1264,7 +1263,7 @@ describe('[UPSERT_MESSAGE] reducer', () => {
       writeChunk(placeholder('c8'), text('a', 'Hi'));
 
       expect(
-        state().persistedToBrowserStorage.homeScreenState.isHomeScreenOpen
+        state().view.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen
       ).toBe(true);
     });
 
@@ -1468,7 +1467,7 @@ describe('[UPSERT_MESSAGE] an item the chat cannot draw', () => {
   let store: ReturnType<typeof createAppStore>;
 
   beforeEach(() => {
-    store = createAppStore(rootReducer, createInitialAppState());
+    store = createAppStore(appRootReducer, createInitialAppState());
   });
 
   const text = (value: string) => ({
@@ -1628,7 +1627,7 @@ describe('upsert streaming snapshots', () => {
           ],
         },
       } as MessageResponse;
-      const initial = rootReducer(
+      const initial = appRootReducer(
         createInitialAppState(),
         actions.upsertMessage(message, true)
       );
@@ -1641,7 +1640,7 @@ describe('upsert streaming snapshots', () => {
         initial.allMessageItemsByID[id].ui_state.isIntermediateStreaming
       ).toBeUndefined();
       expect(initial.allMessageItemsByID[id].item).toBe(item);
-      const repeated = rootReducer(
+      const repeated = appRootReducer(
         initial,
         actions.upsertMessage(message, true)
       );
@@ -1651,7 +1650,7 @@ describe('upsert streaming snapshots', () => {
       expect(repeated.allMessageItemsByID[siblingID]).toBe(
         initial.allMessageItemsByID[siblingID]
       );
-      const settled = rootReducer(
+      const settled = appRootReducer(
         repeated,
         actions.upsertMessage(message, false)
       );
@@ -1672,7 +1671,7 @@ describe('upsert streaming snapshots', () => {
       expect(
         initial.allMessageItemsByID[id].ui_state.streamingState.isDone
       ).toBe(false);
-      const final = rootReducer(settled, actions.upsertMessage(message));
+      const final = appRootReducer(settled, actions.upsertMessage(message));
       expect(final.allMessageItemsByID[id]).toBe(
         settled.allMessageItemsByID[id]
       );

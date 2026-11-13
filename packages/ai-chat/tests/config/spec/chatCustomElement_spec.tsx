@@ -19,12 +19,17 @@ import React from 'react';
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
 
 import { ChatCustomElement } from '../../../src/react/ChatCustomElement';
+
 import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
+
 import { BusEventViewPreChange } from '../../../src/types/events/eventBusTypes';
+
 import { ChatInstance } from '../../../src/types/instance/ChatInstance';
+
 import { ViewType } from '../../../src/types/instance/apiTypes';
+
 import { createBaseTestProps } from '../../test_helpers';
-import { AppState } from '../../../src/types/state/AppState';
+
 import { enLanguagePack } from '../../../src/types/config/LanguagePack';
 
 describe('ChatCustomElement prop forwarding', () => {
@@ -57,7 +62,7 @@ describe('ChatCustomElement prop forwarding', () => {
       timeout: 5000,
     });
 
-    const state: AppState = capturedInstance.serviceManager.store.getState();
+    const state = capturedInstance.serviceManager.store.getState();
     // Flattened config fields reached the chat.
     expect(state.config.public.namespace).toBe('custom-ns');
     expect(state.languagePack.input_placeholder).toBe(

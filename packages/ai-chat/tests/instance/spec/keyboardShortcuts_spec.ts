@@ -14,14 +14,22 @@ import {
   setupAfterEach,
   setupBeforeEach,
 } from '../../test_helpers';
+
 import { fireEvent } from '@testing-library/react';
+
 import { MessageResponseTypes } from '../../../src/types/messaging/Messages';
+
 import type { KeyboardShortcuts } from '../../../src/types/config/ShortcutConfig';
+
 import type { AppStore } from '../../../src/shared/store/appStore';
+
 import type { AppState } from '../../../src/types/state/AppState';
+
 import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
+
 import { getDeepActiveElement } from '../../../src/chat/utils/domUtils';
-import actions from '../../../src/shared/store/actions';
+
+import { viewActions } from '../../../src/view/state';
 
 const ANNOUNCEMENT_ID = 'input_keyboardShortcutAnnouncement';
 
@@ -118,7 +126,7 @@ function scrollHandleText(root: ShadowRoot): string[] {
 /** Triggers the one-shot first-focus announcement and returns whatever was announced. */
 function announceOnInputFocus(chat: BootedChat) {
   fireEvent.focus(chat.input);
-  return chat.store.getState().announceMessage;
+  return chat.store.getState().view.announceMessage;
 }
 
 describe('Keyboard Shortcuts', () => {
@@ -303,16 +311,16 @@ describe('Keyboard Shortcuts', () => {
       });
 
       fireEvent.focus(chat.input);
-      expect(chat.store.getState().announceMessage?.messageID).toBe(
+      expect(chat.store.getState().view.announceMessage?.messageID).toBe(
         ANNOUNCEMENT_ID
       );
 
       // The announcement is one-shot.
-      chat.store.dispatch(actions.announceMessage(null));
+      chat.store.dispatch(viewActions.announceMessage(null));
       fireEvent.blur(chat.input);
       fireEvent.focus(chat.input);
 
-      expect(chat.store.getState().announceMessage).toBeNull();
+      expect(chat.store.getState().view.announceMessage).toBeNull();
     });
   });
 

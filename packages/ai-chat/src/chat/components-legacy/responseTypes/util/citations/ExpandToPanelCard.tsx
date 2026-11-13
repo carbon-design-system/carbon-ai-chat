@@ -11,14 +11,18 @@ import Card from '@carbon/ai-chat-components/es/react/card.js';
 import React, { useState } from 'react';
 
 import { useServiceManager } from '../../../../hooks/useServiceManager';
-import actions from '../../../../../shared/store/actions';
+
 import { HasClassName } from '../../../../../types/utilities/HasClassName';
+
 import {
   CitationCardContent,
   CitationCardProps,
   CitationType,
 } from './CitationCardContent';
+
 import { CitationClickableCard } from './CitationClickableCard';
+
+import { viewActions } from '../../../../../view/state';
 
 /**
  * Shows a Citation Card that will add an onClick handler to open up content that doesn't fit in the card IF NEEDED.
@@ -48,7 +52,7 @@ function ExpandToPanelCard({
     // If a search result is provided we want to show that in the panel with the citation text highlighted, otherwise
     // just show the citation.
     serviceManager.store.dispatch(
-      actions.setViewSourcePanelIsOpen(true, citation, relatedSearchResult)
+      viewActions.setViewSourcePanelIsOpen(true, citation, relatedSearchResult)
     );
   }
 

@@ -23,6 +23,8 @@ import type { AppState } from '../../types/state/AppState';
 import type { SendOptions } from '../../types/instance/ChatInstance';
 import type { JSONContent } from '@tiptap/core';
 import { requestStopFromInput } from '../../shared/services/assistantInputCommands';
+import { viewActions } from '../../view/state';
+import { chatStore } from './attachChatView';
 
 export class InputCallbacks {
   private scrollTimers = new Set<ReturnType<typeof setTimeout>>();
@@ -82,10 +84,9 @@ export class InputCallbacks {
   };
 
   onToggleHomeScreen = () => {
-    const willShowMessages =
-      this.serviceManager.store.getState().persistedToBrowserStorage
-        .homeScreenState.isHomeScreenOpen;
-    this.serviceManager.store.dispatch(actions.toggleHomeScreen());
+    const willShowMessages = chatStore(this.serviceManager).getState().view
+      .persistedToBrowserStorage.homeScreenState.isHomeScreenOpen;
+    this.serviceManager.store.dispatch(viewActions.toggleHomeScreen());
     if (willShowMessages) {
       const timer = setTimeout(() => {
         this.scrollTimers.delete(timer);
@@ -96,7 +97,7 @@ export class InputCallbacks {
   };
 
   onAcceptDisclaimer = () => {
-    this.serviceManager.store.dispatch(actions.acceptDisclaimer());
+    this.serviceManager.store.dispatch(viewActions.acceptDisclaimer());
     this.serviceManager.fire({ type: BusEventType.DISCLAIMER_ACCEPTED });
   };
 }

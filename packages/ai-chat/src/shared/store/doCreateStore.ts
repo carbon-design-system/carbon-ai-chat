@@ -12,7 +12,11 @@ import isEqual from 'lodash-es/isEqual.js';
 import mergeWith from 'lodash-es/mergeWith.js';
 import { ServiceManager } from '../services/ServiceManager';
 import { AppConfig } from '../../types/state/AppConfig';
-import { AppState, ThemeState } from '../../types/state/AppState';
+import {
+  ConversationState,
+  PersistedState,
+  ThemeState,
+} from '../../types/state/AppState';
 import { IS_PHONE } from '../utils/browserUtils';
 import { CornersType } from '../utils/constants';
 import {
@@ -27,22 +31,13 @@ import { reduceWithMessageOwnership } from './reducers';
 import { AppStore, createStoreFromReduction } from './appStore';
 import { enableMessageOwnership } from './messageOwnership';
 import {
-  DEFAULT_CITATION_PANEL_STATE,
-  DEFAULT_CUSTOM_PANEL_STATE,
-  DEFAULT_IFRAME_PANEL_STATE,
   DEFAULT_INPUT_STATE,
   DEFAULT_LAUNCHER,
   DEFAULT_LAYOUT_STATE,
-  DEFAULT_MESSAGE_PANEL_STATE,
   DEFAULT_MESSAGE_STATE,
   DEFAULT_PERSISTED_TO_BROWSER,
   DEFAULT_HUMAN_AGENT_STATE,
   DEFAULT_THEME_STATE,
-  DEFAULT_HISTORY_PANEL_STATE,
-  DEFAULT_WORKSPACE_PANEL_STATE,
-  VIEW_STATE_ALL_CLOSED,
-  VIEW_STATE_LAUNCHER_OPEN,
-  VIEW_STATE_MAIN_WINDOW_OPEN,
   DEFAULT_HEADER,
   DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT,
 } from './reducerUtils';
@@ -133,7 +128,7 @@ function createAppConfig(publicConfig: PublicConfig): AppConfig {
  * Builds the active language pack: the `enLanguagePack` defaults overlaid with
  * any host-provided `strings`. The language pack is a flat key→string map, so a
  * shallow overlay is sufficient (and matches the dynamic-update path). Lives in
- * its own `AppState.languagePack` slice so a string change never churns the
+ * its own `ConversationState.languagePack` slice so a string change never churns the
  * config tree. Shared by boot, the dynamic `strings` effect, and the dynamic
  * config path so they all merge identically.
  */
@@ -240,138 +235,109 @@ function reconcileAppConfigReferences(
   return { public: publicConfig, derived };
 }
 
-function createInitialState(config: AppConfig): AppState {
+function createInitialState(config: AppConfig): ConversationState {
   // Input config (isVisible/isDisabled/isReadonly) is intentionally NOT mirrored
   // into state at boot. Those values are derived from config at read time via
   // the selectInput* selectors; assistantInputState only carries runtime
   // overrides, which start unset (null).
   const assistantInputState = { ...DEFAULT_INPUT_STATE };
 
-  const persistedToBrowserStorage = cloneDeep(DEFAULT_PERSISTED_TO_BROWSER);
-
-  const initialState: AppState = {
+  return {
     // Config with derived values
     config,
 
     // Active language pack (defaults + host `strings`), kept off the config tree.
     languagePack: buildLanguagePack(config.public.strings),
 
-    // Host markdown config; set from the `markdown` prop in ChatAppEntry.
-    markdownConfig: undefined,
-
     // Messaging state
     ...DEFAULT_MESSAGE_STATE,
 
-    // UI state
-    suspendScrollDetection: false,
-    showNonHeaderBackgroundCover: false,
     isRestarting: false,
     conversationStatus: 'ready',
-    isBrowserPageVisible: true,
 
     // Input state
     assistantInputState,
 
-    // Layout/responsive state
-    chatWidthBreakpoint: null,
-    chatWidth: null,
-    chatHeight: null,
-
     // Lifecycle state
     isHydrated: false,
-    viewChanging: false,
-    initialViewChangeComplete: false,
-    targetViewState:
-      // If openChatByDefault is true we open on first load, otherwise we use the launcher.
-      // This will be overwritten by session history if it exists.
-      config.public.openChatByDefault
-        ? VIEW_STATE_MAIN_WINDOW_OPEN
-        : VIEW_STATE_LAUNCHER_OPEN,
 
-    // Session state
-    persistedToBrowserStorage,
+    // The conversation's half of the saved session.
+    persistedToBrowserStorage: {
+      hasSentNonWelcomeMessage:
+        DEFAULT_PERSISTED_TO_BROWSER.hasSentNonWelcomeMessage,
+      humanAgentState: cloneDeep(DEFAULT_PERSISTED_TO_BROWSER.humanAgentState),
+    },
 
     // Agent UI State
     humanAgentState: DEFAULT_HUMAN_AGENT_STATE,
-
-    // Panel states
-    iFramePanelState: DEFAULT_IFRAME_PANEL_STATE,
-    viewSourcePanelState: DEFAULT_CITATION_PANEL_STATE,
-    customPanelState: DEFAULT_CUSTOM_PANEL_STATE,
-    workspacePanelState: DEFAULT_WORKSPACE_PANEL_STATE,
-    historyPanelState: {
-      ...DEFAULT_HISTORY_PANEL_STATE,
-      // If startClosed is true, start closed everywhere
-      // Otherwise, start open (will be adjusted by mobile detection)
-      isOpen: config.public.history?.startClosed ? false : true,
-    },
-    responsePanelState: DEFAULT_MESSAGE_PANEL_STATE,
   };
+}
 
-  return initialState;
+/**
+ * The saved session the chat restores at boot, or null for a new one. When
+ * the host owns persistence (`config.persistedState`), it's the host's
+ * `initialState`; otherwise it's the session storage copy, if any. The shell
+ * reads the view half of the same value.
+ */
+function loadSavedSession(
+  publicConfig: PublicConfig,
+  serviceManager: ServiceManager
+): PersistedState | null {
+  // Load once per chat: loading can clear a stale session from storage.
+  if (savedSessions.has(serviceManager)) {
+    return savedSessions.get(serviceManager);
+  }
+  const saved = readSavedSession(publicConfig, serviceManager);
+  savedSessions.set(serviceManager, saved);
+  return saved;
+}
+
+/** The saved session each chat loaded at boot. */
+const savedSessions = new WeakMap<object, PersistedState | null>();
+
+function readSavedSession(
+  publicConfig: PublicConfig,
+  serviceManager: ServiceManager
+): PersistedState | null {
+  const persistedStateConfig = publicConfig.persistedState;
+  const externallyPersisted = Boolean(
+    persistedStateConfig?.initialState || persistedStateConfig?.onStateChange
+  );
+  if (externallyPersisted) {
+    return persistedStateConfig?.initialState
+      ? fromPersistableState(persistedStateConfig.initialState)
+      : null;
+  }
+  return serviceManager.userSessionStorageService?.loadSession() ?? null;
 }
 
 function doCreateStore(
   publicConfig: PublicConfig,
   serviceManager: ServiceManager
-): AppStore<AppState> {
+): AppStore<ConversationState> {
   // Build the complete AppConfig with derived values
   const config = createAppConfig(publicConfig);
 
-  const initialState: AppState = createInitialState(config);
+  const initialState: ConversationState = createInitialState(config);
 
-  // When the host owns persistence (config.persistedState), boot from its initialState instead of
-  // sessionStorage. Otherwise, pre-fill from session storage if a saved session exists.
-  const persistedStateConfig = config.public.persistedState;
-  const externallyPersisted = Boolean(
-    persistedStateConfig?.initialState || persistedStateConfig?.onStateChange
-  );
-  const sessionStorageState = externallyPersisted
-    ? persistedStateConfig?.initialState
-      ? fromPersistableState(persistedStateConfig.initialState)
-      : null
-    : serviceManager.userSessionStorageService?.loadSession();
-
-  if (sessionStorageState) {
-    // Use the viewState from session storage as the targetViewState. Note, this overwrites the value that was set for
-    // targetViewState above, which took into account if openChatByDefault is true. This overwriting is intentional
-    // since we only want those openChatByDefault to open the main window the first time the chat loads for a user.
-    // After doCreateStore is finished Chat.startInternal() will try to change the view to this
-    // targetViewState.
-    initialState.targetViewState = sessionStorageState.viewState;
-    // In order to keep the initial view state as the default view state we need to change the session storage
-    // view state to the default before replacing the launcher state with the session storage state.
-    sessionStorageState.viewState = VIEW_STATE_ALL_CLOSED;
-    // Replace the launcher state with the session storage state.
+  // Restore the conversation's half of a saved session. The view partition
+  // restores the rest when the shell attaches it.
+  const saved = loadSavedSession(publicConfig, serviceManager);
+  if (saved) {
+    const { humanAgentState } = initialState.persistedToBrowserStorage;
     initialState.persistedToBrowserStorage = {
-      ...initialState.persistedToBrowserStorage,
-      ...sessionStorageState,
-      // We only bother to show this on initial page load, so if we are getting something from session storage,
-      // we set it to false.
-      launcherShouldStartCallToActionCounterIfEnabled: false,
-      disclaimersAccepted: {
-        ...initialState.persistedToBrowserStorage.disclaimersAccepted,
-        ...sessionStorageState?.disclaimersAccepted,
-      },
-      homeScreenState: {
-        ...initialState.persistedToBrowserStorage.homeScreenState,
-        ...sessionStorageState?.homeScreenState,
-      },
+      hasSentNonWelcomeMessage:
+        saved.hasSentNonWelcomeMessage ??
+        initialState.persistedToBrowserStorage.hasSentNonWelcomeMessage,
       humanAgentState: {
-        ...initialState.persistedToBrowserStorage.humanAgentState,
-        ...sessionStorageState?.humanAgentState,
+        ...humanAgentState,
+        ...saved.humanAgentState,
         responseUserProfiles: {
-          ...initialState.persistedToBrowserStorage.humanAgentState
-            .responseUserProfiles,
-          ...sessionStorageState?.humanAgentState?.responseUserProfiles,
+          ...humanAgentState.responseUserProfiles,
+          ...saved.humanAgentState?.responseUserProfiles,
         },
       },
     };
-  }
-
-  if (typeof config.public.launcher?.showUnreadIndicator === 'boolean') {
-    initialState.persistedToBrowserStorage.showUnreadIndicator =
-      config.public.launcher.showUnreadIndicator;
   }
 
   const store = createStoreFromReduction(
@@ -470,6 +436,7 @@ function getLayoutState(publicConfig: PublicConfig): LayoutConfig {
 
 export {
   doCreateStore,
+  loadSavedSession,
   createAppConfig,
   buildLanguagePack,
   reconcileAppConfigReferences,

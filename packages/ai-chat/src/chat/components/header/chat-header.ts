@@ -138,7 +138,7 @@ class HeaderView extends NativeChatView implements HeaderProps {
       }
     );
     this.selectStore(
-      (state) => state.persistedToBrowserStorage.viewState.mainWindow,
+      (state) => state.view.persistedToBrowserStorage.viewState.mainWindow,
       (isOpen) => {
         this.isOpen = isOpen;
       }

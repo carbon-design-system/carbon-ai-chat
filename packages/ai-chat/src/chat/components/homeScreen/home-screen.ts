@@ -81,7 +81,8 @@ class HomeScreenView extends NativeChatView implements HomeScreenProps {
     );
     this.selectStore(
       (state) =>
-        state.persistedToBrowserStorage.homeScreenState.showBackToAssistant,
+        state.view.persistedToBrowserStorage.homeScreenState
+          .showBackToAssistant,
       (showBackToAssistant) => {
         this.showBackToAssistant = showBackToAssistant;
       }

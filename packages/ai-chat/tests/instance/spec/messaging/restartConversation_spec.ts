@@ -113,7 +113,7 @@ describe('ChatInstance.messaging.restartConversation', () => {
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
     expect(
-      store.getState().persistedToBrowserStorage.viewState.mainWindow
+      store.getState().view.persistedToBrowserStorage.viewState.mainWindow
     ).toBe(false);
 
     await instance.messaging.restartConversation();

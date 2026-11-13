@@ -8,6 +8,7 @@
  */
 
 import { act, waitFor } from '@testing-library/react';
+
 import {
   createBaseConfig,
   getChatShadowRoot,
@@ -16,13 +17,16 @@ import {
   setupBeforeEach,
   setupAfterEach,
 } from '../../../test_helpers';
-import actions, { UPSERT_MESSAGE } from '../../../../src/shared/store/actions';
+
+import { UPSERT_MESSAGE } from '../../../../src/shared/store/actions';
 import type { MessageWriteOptions } from '../../../../src/shared/store/messageWriteTypes';
+
 import {
   BusEventChunkUserDefinedResponse,
   BusEventPreReceive,
   BusEventType,
 } from '../../../../src/types/events/eventBusTypes';
+
 import {
   MessageResponseTypes,
   TextItem,
@@ -32,19 +36,26 @@ import {
   CompleteItemChunk,
   MessageRequest,
 } from '../../../../src/types/messaging/Messages';
+
 import {
   CancellationReason,
   MessageState,
   CustomSendMessageOptions,
 } from '../../../../src/types/config/MessagingConfig';
+
 import { ChatInstance } from '../../../../src/types/instance/ChatInstance';
+
 import { OnErrorType } from '../../../../src/types/config/ErrorConfig';
+
 import { resolvablePromise } from '../../../../src/shared/utils/resolvablePromise';
+
 import {
   MALFORMED,
   fixtureMessage,
   observeWrite,
 } from '../../../utils/itemDrawabilityFixtures';
+
+import { viewActions } from '../../../../src/view/state';
 
 describe('ChatInstance.messaging.addMessageChunk', () => {
   beforeEach(setupBeforeEach);
@@ -3071,9 +3082,9 @@ describe('ChatInstance.messaging.addMessageChunk', () => {
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(createBaseConfig());
       const announced: Array<{ key: string; sender: string }> = [];
-      let last = store.getState().announceMessage;
+      let last = store.getState().view.announceMessage;
       const unsubscribe = store.subscribe(() => {
-        const current = store.getState().announceMessage;
+        const current = store.getState().view.announceMessage;
         if (current && current !== last) {
           announced.push({
             key: current.messageID,
@@ -3122,12 +3133,12 @@ describe('ChatInstance.messaging.addMessageChunk', () => {
         config as any
       );
       const isHomeScreenOpen = () =>
-        store.getState().persistedToBrowserStorage.homeScreenState
+        store.getState().view.persistedToBrowserStorage.homeScreenState
           .isHomeScreenOpen;
       const responseId = 'pin-home-screen';
 
       act(() => {
-        store.dispatch(actions.setHomeScreenIsOpen(true));
+        store.dispatch(viewActions.setHomeScreenIsOpen(true));
       });
       expect(isHomeScreenOpen()).toBe(true);
 

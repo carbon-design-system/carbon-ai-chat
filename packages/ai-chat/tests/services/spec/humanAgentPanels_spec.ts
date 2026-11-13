@@ -16,7 +16,7 @@ import {
   ServiceDeskFactoryParameters,
 } from '../../../src/types/config/ServiceDeskConfig';
 import { HumanAgentMessageType } from '../../../src/types/messaging/Messages';
-import { AppState } from '../../../src/types/state/AppState';
+import { ConversationState } from '../../../src/types/state/AppState';
 
 async function createFixture(isConnected = true) {
   let callback: ServiceDeskCallback<unknown>;
@@ -38,7 +38,7 @@ async function createFixture(isConnected = true) {
     },
     humanAgentState: { isScreenSharing: false, showScreenShareRequest: false },
     persistedToBrowserStorage: { humanAgentState: { isConnected } },
-  } as unknown as AppState;
+  } as unknown as ConversationState;
   const manager = {
     store: {
       getState: () => state,

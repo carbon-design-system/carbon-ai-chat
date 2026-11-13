@@ -21,6 +21,7 @@ import {
   MessageResponseTypes,
 } from '../../../src/types/messaging/Messages';
 import { withViewCounters } from '../helpers/viewBindings';
+import { viewActions } from '../../../src/view/state';
 
 function createFixture(
   skipConnectHumanAgentCard = true,
@@ -96,9 +97,7 @@ describe('human agent handoff', () => {
     const pending = handleConnect();
 
     expect(checkAvailability).toHaveBeenCalledWith(message);
-    expect(store.getState().assistantMessageState.isMessageLoadingCounter).toBe(
-      1
-    );
+    expect(store.getState().view.isMessageLoadingCounter).toBe(1);
 
     const replacement = createHumanAgentService(manager);
     const startReplacementChat = jest
@@ -115,9 +114,7 @@ describe('human agent handoff', () => {
       store.getState().allMessagesByID[message.id].ui_state_internal
         .agent_availability
     ).toBe(HumanAgentsOnlineStatus.ONLINE);
-    expect(store.getState().assistantMessageState.isMessageLoadingCounter).toBe(
-      0
-    );
+    expect(store.getState().view.isMessageLoadingCounter).toBe(0);
   });
 
   it('records offline availability without starting a chat', async () => {
@@ -132,9 +129,7 @@ describe('human agent handoff', () => {
       store.getState().allMessagesByID[message.id].ui_state_internal
         .agent_availability
     ).toBe(HumanAgentsOnlineStatus.OFFLINE);
-    expect(store.getState().assistantMessageState.isMessageLoadingCounter).toBe(
-      0
-    );
+    expect(store.getState().view.isMessageLoadingCounter).toBe(0);
   });
 
   it('reports a missing service desk and releases the loading indicator', async () => {
@@ -167,9 +162,7 @@ describe('human agent handoff', () => {
         agent_availability: HumanAgentsOnlineStatus.UNKNOWN,
       })
     );
-    expect(store.getState().assistantMessageState.isMessageLoadingCounter).toBe(
-      0
-    );
+    expect(store.getState().view.isMessageLoadingCounter).toBe(0);
     expect(startChat).not.toHaveBeenCalled();
   });
 
@@ -190,9 +183,7 @@ describe('human agent handoff', () => {
     checkAvailability.mockReturnValueOnce(availability);
     let current = true;
     const pending = handleConnect(() => current);
-    expect(store.getState().assistantMessageState.isMessageLoadingCounter).toBe(
-      1
-    );
+    expect(store.getState().view.isMessageLoadingCounter).toBe(1);
 
     current = false;
     store.dispatch(actions.removeMessages([message.id]));
@@ -211,9 +202,7 @@ describe('human agent handoff', () => {
       HumanAgentsOnlineStatus.OFFLINE
     );
     expect(startChat).not.toHaveBeenCalled();
-    expect(store.getState().assistantMessageState.isMessageLoadingCounter).toBe(
-      0
-    );
+    expect(store.getState().view.isMessageLoadingCounter).toBe(0);
   });
 
   it('drops an availability result when the conversation restarts', async () => {
@@ -224,15 +213,13 @@ describe('human agent handoff', () => {
     const pending = handleConnect();
 
     manager.restartCount++;
-    store.dispatch(actions.resetIsLoadingCounter());
+    store.dispatch(viewActions.resetIsLoadingCounter());
     store.dispatch(actions.restartConversation());
     availability.doResolve(HumanAgentsOnlineStatus.ONLINE);
     await pending;
 
     expect(startChat).not.toHaveBeenCalled();
     expect(store.getState().allMessagesByID).toEqual({});
-    expect(store.getState().assistantMessageState.isMessageLoadingCounter).toBe(
-      0
-    );
+    expect(store.getState().view.isMessageLoadingCounter).toBe(0);
   });
 });

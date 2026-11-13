@@ -88,7 +88,7 @@ it.each([true, false])(
         .map((local) => local.item);
     };
     const loadingCounter = () =>
-      boot.store.getState().assistantMessageState.isMessageLoadingCounter;
+      boot.store.getState().view.isMessageLoadingCounter;
     const baselineLoading = loadingCounter();
     let settled = false;
     let work: Promise<void>;
@@ -103,7 +103,9 @@ it.each([true, false])(
         await jest.advanceTimersByTimeAsync(0);
       });
       expect(visibleItems()).toEqual([response.output.generic[0]]);
-      expect(loadingCounter()).toBe(baselineLoading + 1);
+      // The typing indicator is view state, written through the view's port,
+      // so a chat with no view attached leaves it alone.
+      expect(loadingCounter()).toBe(baselineLoading + (withAdapter ? 1 : 0));
       expect(trace).toEqual([]);
       expect(settled).toBe(false);
 

@@ -9,23 +9,34 @@
 
 import React from 'react';
 import { act, render, waitFor } from '@testing-library/react';
+
 import { deepQuerySelector } from '@carbon/ai-chat-components/es/globals/utils/dom-utils.js';
+
 import '../../../src/web-components/cds-aichat-container';
 import '../../../src/web-components/cds-aichat-custom-element';
 import { ChatContainer } from '../../../src/react/ChatContainer';
+
 import { ChatCustomElement } from '../../../src/react/ChatCustomElement';
+
 import { MessagesComponentClass } from '../../../src/chat/components-legacy/MessagesComponent';
-import actions from '../../../src/shared/store/actions';
+
 import type { ChatContainerProps } from '../../../src/types/component/ChatContainer';
+
 import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
+
 import type { PublicConfig } from '../../../src/types/config/PublicConfig';
+
 import { WriteableElementName } from '../../../src/types/instance/WriteableElements';
+
 import { MessageResponseTypes } from '../../../src/types/messaging/Messages';
+
 import {
   createBaseConfig,
   setupAfterEach,
   setupBeforeEach,
 } from '../../test_helpers';
+
+import { viewActions } from '../../../src/view/state';
 
 const wrappers = [
   ['ChatContainer', ChatContainer],
@@ -292,7 +303,7 @@ describe.each(wrappers)('shell layout through %s', (_name, Wrapper) => {
     for (let cycle = 0; cycle < 2; cycle += 1) {
       act(() => {
         f.instance.serviceManager.store.dispatch(
-          actions.setHomeScreenIsOpen(false)
+          viewActions.setHomeScreenIsOpen(false)
         );
       });
       await waitFor(() => expect(mounted).toHaveBeenCalledTimes(cycle + 1));
@@ -313,7 +324,7 @@ describe.each(wrappers)('shell layout through %s', (_name, Wrapper) => {
       );
       act(() => {
         f.instance.serviceManager.store.dispatch(
-          actions.setHomeScreenIsOpen(true)
+          viewActions.setHomeScreenIsOpen(true)
         );
       });
       await waitFor(() => expect(unmounted).toHaveBeenCalledTimes(cycle + 1));

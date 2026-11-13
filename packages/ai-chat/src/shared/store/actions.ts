@@ -7,7 +7,6 @@
  *  @license
  */
 
-import cloneDeep from 'lodash-es/cloneDeep.js';
 import {
   ADD_MESSAGE,
   ADD_LOCAL_MESSAGE_ITEM,
@@ -21,52 +20,39 @@ import {
 } from './messageActionTypes';
 
 import { DeepPartial } from '../../types/utilities/DeepPartial';
+
 import type { MessageWriteOptions } from './messageWriteTypes';
 
 import {
-  AnnounceMessage,
-  AppState,
+  ConversationState,
   AppStateMessages,
-  CatastrophicErrorPanelState,
   ChatMessagesState,
   FileUpload,
   InputState,
   PersistedState,
   ThemeState,
-  ViewState,
 } from '../../types/state/AppState';
 import type { StructuredData } from '../../types/messaging/Messages';
+
 import type { ConversationStatus } from '../../types/instance/PublicChatState';
-import {
-  CustomPanelConfigOptions,
-  WorkspaceCustomPanelConfigOptions,
-} from '../../types/instance/apiTypes';
+
 import {
   LocalMessageItem,
   LocalMessageUIState,
   MessageErrorState,
 } from '../../types/messaging/LocalMessageItem';
+
 import {
-  ConversationalSearchItemCitation,
-  IFrameItem,
   Message,
   MessageRequest,
   MessageRequestHistory,
   MessageResponseHistory,
   MessageUIStateInternal,
-  SearchResult,
 } from '../../types/messaging/Messages';
 
 const CHANGE_STATE = 'CHANGE_STATE';
 const HYDRATE_CHAT = 'HYDRATE_CHAT';
 const SET_APP_STATE_VALUE = 'SET_APP_STATE_VALUE';
-const ADD_IS_LOADING_COUNTER = 'ADD_IS_LOADING_COUNTER';
-const RESET_IS_LOADING_COUNTER = 'RESET_IS_LOADING_COUNTER';
-const ADD_IS_HYDRATING_COUNTER = 'ADD_IS_HYDRATING_COUNTER';
-const RESET_IS_HYDRATING_COUNTER = 'RESET_IS_HYDRATING_COUNTER';
-const SET_VIEW_STATE = 'SET_VIEW_STATE';
-const SET_VIEW_CHANGING = 'SET_VIEW_CHANGING';
-const SET_INITIAL_VIEW_CHANGE_COMPLETE = 'SET_INITIAL_VIEW_CHANGE_COMPLETE';
 const MESSAGE_SET_OPTION_SELECTED = 'MESSAGE_SET_OPTION_SELECTED';
 const SET_MESSAGE_UI_PROPERTY = 'SET_MESSAGE_UI_PROPERTY';
 const SET_MESSAGE_WAS_ANNOUNCED = 'SET_MESSAGE_WAS_ANNOUNCED';
@@ -75,38 +61,17 @@ const SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY =
 const SET_MESSAGE_RESPONSE_HISTORY_PROPERTY =
   'SET_MESSAGE_RESPONSE_HISTORY_PROPERTY';
 const MERGE_HISTORY = 'MERGE_HISTORY';
-const SET_LAUNCHER_PROPERTY = 'SET_LAUNCHER_PROPERTY';
-const ANNOUNCE_MESSAGE = 'ANNOUNCE_MESSAGE';
 const SET_CHAT_MESSAGES_PROPERTY = 'SET_CHAT_MESSAGES_PROPERTY';
-const ACCEPTED_DISCLAIMER = 'ACCEPTED_DISCLAIMER';
-const UPDATE_CATASTROPHIC_ERROR_PANEL = 'UPDATE_CATASTROPHIC_ERROR_PANEL';
 const UPDATE_HAS_SENT_NON_WELCOME_MESSAGE =
   'UPDATE_HAS_SENT_NON_WELCOME_MESSAGE';
 const UPDATE_PERSISTED_STATE = 'UPDATE_PERSISTED_STATE';
 const RESET_PERSISTED_STATE = 'RESET_PERSISTED_STATE';
-const SET_HOME_SCREEN_IS_OPEN = 'SET_HOME_SCREEN_IS_OPEN';
 const END_MESSAGE_STREAMING = 'END_MESSAGE_STREAMING';
-const SET_LAUNCHER_MINIMIZED = 'SET_LAUNCHER_MINIMIZED';
-const CLOSE_IFRAME_PANEL = 'CLOSE_IFRAME_PANEL';
-const OPEN_IFRAME_CONTENT = 'OPEN_IFRAME_CONTENT';
-const SET_CONVERSATIONAL_SEARCH_CITATION_PANEL_IS_OPEN =
-  'SET_CONVERSATIONAL_SEARCH_CITATION_PANEL_IS_OPEN';
-const SET_CUSTOM_PANEL_OPTIONS = 'SET_CUSTOM_PANEL_OPTIONS';
-const SET_WORKSPACE_PANEL_OPTIONS = 'SET_WORKSPACE_PANEL_OPTIONS';
-const SET_WORKSPACE_PANEL_DATA = 'SET_WORKSPACE_PANEL_DATA';
-const SET_CUSTOM_PANEL_OPEN = 'SET_CUSTOM_PANEL_OPEN';
-const SET_WORKSPACE_PANEL_OPEN = 'SET_WORKSPACE_PANEL_OPEN';
-const SET_HISTORY_PANEL_OPEN = 'SET_HISTORY_PANEL_OPEN';
-const SET_HISTORY_PANEL_OPTIONS = 'SET_HISTORY_PANEL_OPTIONS';
-const TOGGLE_HOME_SCREEN = 'GO_BACK_TO_HOME';
 const UPDATE_INPUT_STATE = 'UPDATE_INPUT_STATE';
-const SET_IS_BROWSER_PAGE_VISIBLE = 'SET_IS_PAGE_VISIBLE';
 const ADD_INPUT_FILE = 'ADD_INPUT_FILE';
 const CLEAR_INPUT_FILES = 'CLEAR_INPUT_FILES';
 const REMOVE_INPUT_FILE = 'REMOVE_INPUT_FILE';
 const FILE_UPLOAD_INPUT_ERROR = 'FILE_UPLOAD_INPUT_ERROR';
-const SET_RESPONSE_PANEL_IS_OPEN = 'SET_RESPONSE_PANEL_IS_OPEN';
-const SET_RESPONSE_PANEL_CONTENT = 'SET_PANEL_RESPONSE_CONTENT';
 const SET_STOP_STREAMING_BUTTON_VISIBLE = 'SET_STOP_STREAMING_BUTTON_VISIBLE';
 const SET_STOP_STREAMING_BUTTON_DISABLED = 'SET_STOP_STREAMING_BUTTON_DISABLED';
 const SET_STOP_STREAMING_BUTTON_METADATA_DISABLED =
@@ -128,26 +93,11 @@ interface UnknownAction {
   [extraProps: string]: any;
 }
 
-interface SetWorkspacePanelOptionsAction {
-  type: typeof SET_WORKSPACE_PANEL_OPTIONS;
-  options: Partial<WorkspaceCustomPanelConfigOptions>;
-  [key: string]: unknown;
-}
-
-interface SetWorkspacePanelDataAction {
-  type: typeof SET_WORKSPACE_PANEL_DATA;
-  workspaceID?: string;
-  localMessageItem?: LocalMessageItem;
-  fullMessage?: Message;
-  additionalData?: unknown;
-  [key: string]: unknown;
-}
-
 const actions = {
   /**
    * Allows you to change any portion of the app state.
    */
-  changeState(partialState: DeepPartial<AppState>): UnknownAction {
+  changeState(partialState: DeepPartial<ConversationState>): UnknownAction {
     // Using "UnknownAction" here seems to be required or our dts bundler blows up on this with a "this node exceeds the
     // maximum length" error.
     return { type: CHANGE_STATE, partialState };
@@ -157,8 +107,15 @@ const actions = {
     return { type: HYDRATE_CHAT };
   },
 
-  hydrateMessageHistory(messageHistory: AppStateMessages) {
-    return { type: HYDRATE_MESSAGE_HISTORY, messageHistory };
+  /**
+   * Replaces the transcript with loaded history. `insertsHistory` is true when
+   * the history was merged in front of the current transcript instead.
+   */
+  hydrateMessageHistory(
+    messageHistory: AppStateMessages,
+    insertsHistory = false
+  ) {
+    return { type: HYDRATE_MESSAGE_HISTORY, messageHistory, insertsHistory };
   },
 
   removeMessages(messageIDs: string[]) {
@@ -256,15 +213,6 @@ const actions = {
     };
   },
 
-  updateCatastrophicErrorPanel(
-    panelState: Partial<CatastrophicErrorPanelState>
-  ) {
-    return {
-      type: UPDATE_CATASTROPHIC_ERROR_PANEL,
-      panelState,
-    };
-  },
-
   updatePersistedState(chatState: Partial<PersistedState>) {
     return {
       type: UPDATE_PERSISTED_STATE,
@@ -291,38 +239,14 @@ const actions = {
     };
   },
 
-  setAppStateValue<K extends keyof AppState>(key: K, value: AppState[K]) {
+  setAppStateValue<K extends keyof ConversationState>(
+    key: K,
+    value: ConversationState[K]
+  ) {
     return {
       type: SET_APP_STATE_VALUE,
       key,
       value,
-    };
-  },
-
-  addIsLoadingCounter(addToIsLoading: number, message?: string) {
-    return {
-      type: ADD_IS_LOADING_COUNTER,
-      addToIsLoading,
-      message,
-    };
-  },
-
-  resetIsLoadingCounter() {
-    return {
-      type: RESET_IS_LOADING_COUNTER,
-    };
-  },
-
-  addIsHydratingCounter(addToIsHydrating: number) {
-    return {
-      type: ADD_IS_HYDRATING_COUNTER,
-      addToIsHydrating,
-    };
-  },
-
-  resetIsHydratingCounter() {
-    return {
-      type: RESET_IS_LOADING_COUNTER,
     };
   },
 
@@ -335,18 +259,6 @@ const actions = {
       type: SET_ACTIVE_RESPONSE_ID,
       activeResponseId,
     };
-  },
-
-  setViewState(viewState: ViewState) {
-    return { type: SET_VIEW_STATE, viewState };
-  },
-
-  setViewChanging(viewChanging: boolean) {
-    return { type: SET_VIEW_CHANGING, viewChanging };
-  },
-
-  setInitialViewChangeComplete(changeComplete: boolean) {
-    return { type: SET_INITIAL_VIEW_CHANGE_COMPLETE, changeComplete };
   },
 
   /**
@@ -368,16 +280,6 @@ const actions = {
       propertyName,
       propertyValue,
     };
-  },
-
-  /**
-   * Sets the value of one of the properties of {@link PersistedState}.
-   */
-  setLauncherProperty<TPropertyName extends keyof PersistedState>(
-    propertyName: TPropertyName,
-    propertyValue: PersistedState[TPropertyName]
-  ) {
-    return { type: SET_LAUNCHER_PROPERTY, propertyName, propertyValue };
   },
 
   /**
@@ -452,14 +354,6 @@ const actions = {
   },
 
   /**
-   * Sets the given message as the current accessibility announcement so that it will immediately be read by a
-   * screen reader.
-   */
-  announceMessage(message: AnnounceMessage) {
-    return { type: ANNOUNCE_MESSAGE, message };
-  },
-
-  /**
    * Sets the property on one of the {@link ChatMessagesState} values.
    */
   setChatMessagesStateProperty<TPropertyName extends keyof ChatMessagesState>(
@@ -470,96 +364,6 @@ const actions = {
   },
 
   /**
-   * Sets the disclaimer state for the current domain to true.
-   */
-  acceptDisclaimer() {
-    return { type: ACCEPTED_DISCLAIMER };
-  },
-
-  /**
-   * For toggling Home Screen open state.
-   */
-  setHomeScreenIsOpen(isOpen: boolean) {
-    return { type: SET_HOME_SCREEN_IS_OPEN, isOpen };
-  },
-
-  setLauncherMinimized() {
-    return { type: SET_LAUNCHER_MINIMIZED };
-  },
-
-  closeIFramePanel() {
-    return { type: CLOSE_IFRAME_PANEL };
-  },
-
-  setIFrameContent(messageItem: IFrameItem) {
-    return { type: OPEN_IFRAME_CONTENT, messageItem };
-  },
-
-  setViewSourcePanelIsOpen(
-    isOpen: boolean,
-    citationItem?: ConversationalSearchItemCitation,
-    relatedSearchResult?: SearchResult
-  ) {
-    return {
-      type: SET_CONVERSATIONAL_SEARCH_CITATION_PANEL_IS_OPEN,
-      isOpen,
-      citationItem,
-      relatedSearchResult,
-    };
-  },
-
-  setCustomPanelConfigOptions(options: CustomPanelConfigOptions) {
-    return { type: SET_CUSTOM_PANEL_OPTIONS, options };
-  },
-
-  setCustomPanelOpen(isOpen: boolean) {
-    return { type: SET_CUSTOM_PANEL_OPEN, isOpen };
-  },
-
-  setWorkspaceCustomPanelConfigOptions(
-    options: Partial<WorkspaceCustomPanelConfigOptions>
-  ): SetWorkspacePanelOptionsAction {
-    return {
-      type: SET_WORKSPACE_PANEL_OPTIONS,
-      options,
-    };
-  },
-
-  setWorkspaceCustomPanelOpen(isOpen: boolean) {
-    return { type: SET_WORKSPACE_PANEL_OPEN, isOpen };
-  },
-
-  setWorkspacePanelData(data: {
-    workspaceID?: string;
-    localMessageItem?: LocalMessageItem;
-    fullMessage?: Message;
-    additionalData?: unknown;
-  }): SetWorkspacePanelDataAction {
-    return {
-      type: SET_WORKSPACE_PANEL_DATA,
-      workspaceID: data.workspaceID,
-      localMessageItem: data.localMessageItem,
-      fullMessage: data.fullMessage,
-      additionalData: cloneDeep(data.additionalData),
-    };
-  },
-
-  setHistoryPanelOpen(isOpen: boolean) {
-    return { type: SET_HISTORY_PANEL_OPEN, isOpen };
-  },
-
-  setHistoryPanelOptions(isMobile: boolean, isOpen?: boolean) {
-    return { type: SET_HISTORY_PANEL_OPTIONS, isMobile, isOpen };
-  },
-
-  /**
-   * Switches between the bot and home screen views.
-   */
-  toggleHomeScreen() {
-    return { type: TOGGLE_HOME_SCREEN };
-  },
-
-  /**
    * Updates the state of the input field.
    */
   updateInputState(
@@ -567,13 +371,6 @@ const actions = {
     isInputToHumanAgent: boolean
   ) {
     return { type: UPDATE_INPUT_STATE, newState, isInputToHumanAgent };
-  },
-
-  /**
-   * Changes the values that indicates whether the browser page is visible.
-   */
-  setIsBrowserPageVisible(isVisible: boolean) {
-    return { type: SET_IS_BROWSER_PAGE_VISIBLE, isVisible };
   },
 
   /**
@@ -618,21 +415,6 @@ const actions = {
    */
   clearInputFiles(isInputToHumanAgent: boolean) {
     return { type: CLEAR_INPUT_FILES, isInputToHumanAgent };
-  },
-
-  setResponsePanelIsOpen(isOpen: boolean) {
-    return { type: SET_RESPONSE_PANEL_IS_OPEN, isOpen };
-  },
-
-  setResponsePanelContent(
-    localMessageItem: LocalMessageItem,
-    isMessageForInput = false
-  ) {
-    return {
-      type: SET_RESPONSE_PANEL_CONTENT,
-      localMessageItem,
-      isMessageForInput,
-    };
   },
 
   setStopStreamingButtonVisible(isVisible: boolean) {
@@ -723,56 +505,29 @@ export default actions;
 
 export {
   CHANGE_STATE,
-  ADD_IS_LOADING_COUNTER,
-  RESET_IS_LOADING_COUNTER,
-  ADD_IS_HYDRATING_COUNTER,
-  RESET_IS_HYDRATING_COUNTER,
   SET_APP_STATE_VALUE,
   ADD_LOCAL_MESSAGE_ITEM,
   UPDATE_LOCAL_MESSAGE_ITEM,
   HYDRATE_MESSAGE_HISTORY,
   HYDRATE_CHAT,
-  SET_VIEW_STATE,
-  SET_VIEW_CHANGING,
-  SET_INITIAL_VIEW_CHANGE_COMPLETE,
   MESSAGE_SET_OPTION_SELECTED,
   SET_MESSAGE_UI_PROPERTY,
   SET_MESSAGE_WAS_ANNOUNCED,
-  ANNOUNCE_MESSAGE,
   RESTART_CONVERSATION,
-  ACCEPTED_DISCLAIMER,
   ADD_MESSAGE,
-  UPDATE_CATASTROPHIC_ERROR_PANEL,
   UPDATE_HAS_SENT_NON_WELCOME_MESSAGE,
   UPDATE_PERSISTED_STATE,
   RESET_PERSISTED_STATE,
-  SET_HOME_SCREEN_IS_OPEN,
   SET_MESSAGE_RESPONSE_HISTORY_PROPERTY,
   UPDATE_MESSAGE,
   UPSERT_MESSAGE,
   END_MESSAGE_STREAMING,
-  SET_LAUNCHER_PROPERTY,
-  SET_LAUNCHER_MINIMIZED,
-  CLOSE_IFRAME_PANEL,
-  OPEN_IFRAME_CONTENT,
-  SET_CONVERSATIONAL_SEARCH_CITATION_PANEL_IS_OPEN,
-  SET_CUSTOM_PANEL_OPTIONS,
-  SET_CUSTOM_PANEL_OPEN,
-  SET_WORKSPACE_PANEL_OPTIONS,
-  SET_WORKSPACE_PANEL_DATA,
-  SET_WORKSPACE_PANEL_OPEN,
-  SET_HISTORY_PANEL_OPEN,
-  SET_HISTORY_PANEL_OPTIONS,
   SET_CHAT_MESSAGES_PROPERTY,
-  TOGGLE_HOME_SCREEN,
   UPDATE_INPUT_STATE,
-  SET_IS_BROWSER_PAGE_VISIBLE,
   ADD_INPUT_FILE,
   REMOVE_INPUT_FILE,
   FILE_UPLOAD_INPUT_ERROR,
   CLEAR_INPUT_FILES,
-  SET_RESPONSE_PANEL_IS_OPEN,
-  SET_RESPONSE_PANEL_CONTENT,
   REMOVE_LOCAL_MESSAGE_ITEM,
   REMOVE_MESSAGES,
   MERGE_HISTORY,

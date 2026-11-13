@@ -194,7 +194,7 @@ class NativePanels extends NativeChatView {
       }
     );
     this.selectStore(
-      (state) => state.chatWidthBreakpoint === ChatWidthBreakpoint.WIDE,
+      (state) => state.view.chatWidthBreakpoint === ChatWidthBreakpoint.WIDE,
       (wide) => {
         this.buttonSize = wide ? '2xl' : 'lg';
       }

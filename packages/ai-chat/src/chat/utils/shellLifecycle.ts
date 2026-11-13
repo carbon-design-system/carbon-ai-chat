@@ -9,27 +9,40 @@
 
 import cx from 'classnames';
 import type { JSONContent } from '@tiptap/core';
+
 import type { ChatViewState } from '../services/chatViewState';
+
 import type { AppState, PendingUpload } from '../../types/state/AppState';
+
 import { ChatWidthBreakpoint } from '../../types/state/AppState';
+
 import { CarbonTheme } from '../../types/config/CarbonTheme';
+
 import {
   MessageSendSource,
   BusEventType,
 } from '../../types/events/eventBusTypes';
+
 import type { FileUpload } from '../../types/config/ServiceDeskConfig';
+
 import type { ExtensionHosts } from '../services/extensionHosts';
+
 import type { MessagesComponentClass } from '../components-legacy/MessagesComponent';
+
 import type {
   ShellLayoutInputs,
   ShellLayoutTargets,
 } from '../components/shell/renderShellLayout';
+
 import type {
   PanelViewInputs,
   PanelCompositionCallbacks,
 } from './panelComposition';
+
 import type { InputFunctions, InputProps } from './inputTypes';
+
 import type { MainWindowFunctions } from '../../types/utilities/MainWindowFunctions';
+
 import {
   InputCallbacks,
   requestInputFocus as focusInput,
@@ -37,11 +50,13 @@ import {
   shouldDisableSend,
   isUploadButtonDisabled,
 } from '../services/inputCallbacks';
+
 import { HumanAgentCallbacks } from '../services/humanAgentCallbacks';
+
 import { WindowOpenState } from '../services/windowOpenState';
+
 import { shallowEqual } from '../../shared/store/appStore';
-import actions from '../../shared/store/actions';
-import { DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS } from '../../shared/store/reducerUtils';
+
 import {
   selectHumanAgentDisplayState,
   selectInputIsReadonly,
@@ -50,49 +65,76 @@ import {
   selectInputUploadAndStreamingFields,
   selectStopStreamingButtonVisible,
 } from '../../shared/store/selectors';
+
 import { getDerivedState } from './derivedState';
+
 import { requestFocus as focusTargets } from './focusManager';
+
 import { connectMobileViewportLayout } from './mobileViewportLayout';
+
 import { injectStyles } from './styleInjection';
+
 import { observeResize } from './resizeObserver';
+
 import { updateHistoryMobileDetection } from './historyMobileDetection';
+
 import { calculateChatWidthBreakpoint } from './breakpointUtils';
+
 import { createAssistantUploadCallbacks } from './assistantUploadCallbacks';
+
 import { createPanelCallbacks } from './panelCallbacks';
+
 import {
   composerHasFocus,
   requestComposerFocus,
   selectCustomPromptLineVisible,
 } from './customPromptLine';
+
 import { matchesShortcut } from './keyboardUtils';
+
 import { getDeepActiveElement, SCROLLBAR_WIDTH } from './domUtils';
+
 import {
   consoleError,
   consoleWarn,
   isEnableDebugLog,
 } from '../../shared/utils/miscUtils';
+
 import {
   IS_PHONE,
   IS_PHONE_IN_PORTRAIT_MODE,
   isBrowser,
 } from '../../shared/utils/browserUtils';
+
 import {
   convertCSSVariablesToString,
   getThemeClassNames,
 } from '../../shared/utils/styleUtils';
+
 import {
   WriteableElementName,
   FileStatusValue,
 } from '../../shared/utils/constants';
+
 import {
   hasMeaningfulContent,
   observeWriteableElementPresence,
 } from './writeableElementPresence';
+
 import {
   adoptOnRoot,
   setVarsForSelector,
 } from '@carbon/ai-chat-components/es/components/shared/dynamic-css-var-sheet.js';
+
 import styles from '../AppShell.scss';
+import {
+  DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS,
+  viewActions,
+} from '../../view/state';
+
+import { chatStore } from '../services/attachChatView';
+
+import { joinPersistedState } from '../../view/state';
 
 const applicationStylesheet =
   typeof CSSStyleSheet !== 'undefined' ? new CSSStyleSheet() : null;
@@ -142,26 +184,27 @@ export function selectShellState(state: AppState) {
     publicConfig: state.config.public,
     languagePack: state.languagePack,
     isHydrated: state.isHydrated,
-    mainWindow: state.persistedToBrowserStorage.viewState.mainWindow,
-    launcherVisible: state.persistedToBrowserStorage.viewState.launcher,
-    disclaimersAccepted: state.persistedToBrowserStorage.disclaimersAccepted,
+    mainWindow: state.view.persistedToBrowserStorage.viewState.mainWindow,
+    launcherVisible: state.view.persistedToBrowserStorage.viewState.launcher,
+    disclaimersAccepted:
+      state.view.persistedToBrowserStorage.disclaimersAccepted,
     homeScreenOpen:
-      state.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen,
+      state.view.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen,
     hasSentNonWelcomeMessage:
       state.persistedToBrowserStorage.hasSentNonWelcomeMessage,
-    catastrophicErrorType: state.catastrophicErrorType,
-    catastrophicErrorPanelState: state.catastrophicErrorPanelState,
-    workspacePanelState: state.workspacePanelState,
-    historyPanelState: state.historyPanelState,
-    customPanelState: state.customPanelState,
-    responsePanelState: state.responsePanelState,
+    catastrophicErrorType: state.view.catastrophicErrorType,
+    catastrophicErrorPanelState: state.view.catastrophicErrorPanelState,
+    workspacePanelState: state.view.workspacePanelState,
+    historyPanelState: state.view.historyPanelState,
+    customPanelState: state.view.customPanelState,
+    responsePanelState: state.view.responsePanelState,
     responseHasMessage: Boolean(
       state.allMessagesByID[
-        state.responsePanelState.localMessageItem?.fullMessageID
+        state.view.responsePanelState.localMessageItem?.fullMessageID
       ]
     ),
-    iFramePanelState: state.iFramePanelState,
-    viewSourcePanelState: state.viewSourcePanelState,
+    iFramePanelState: state.view.iFramePanelState,
+    viewSourcePanelState: state.view.viewSourcePanelState,
     showScreenShareRequest: state.humanAgentState.showScreenShareRequest,
     fileUploadInProgress: state.humanAgentState.fileUploadInProgress,
     agentConnected: agent.isConnectingOrConnected,
@@ -172,7 +215,7 @@ export function selectShellState(state: AppState) {
     isInputFieldVisible: selectInputFieldVisible(state),
     customInputVisible: selectCustomPromptLineVisible(state),
     isStopStreamingButtonVisible: selectStopStreamingButtonVisible(state),
-    chatWidthBreakpoint: state.chatWidthBreakpoint,
+    chatWidthBreakpoint: state.view.chatWidthBreakpoint,
     ...selectInputUploadAndStreamingFields(state),
   };
 }
@@ -248,8 +291,8 @@ export class ShellLifecycle {
       requestFocus: () => {
         try {
           return (
-            manager.store.getState().persistedToBrowserStorage.viewState
-              .mainWindow && this.requestFocus()
+            chatStore(manager).getState().view.persistedToBrowserStorage
+              .viewState.mainWindow && this.requestFocus()
           );
         } catch (error) {
           consoleError('An error occurred in App.requestFocus', error);
@@ -271,28 +314,30 @@ export class ShellLifecycle {
       },
       resetCustomPanelOptions: () => {
         manager.store.dispatch(
-          actions.setCustomPanelConfigOptions(
+          viewActions.setCustomPanelConfigOptions(
             DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS
           )
         );
       },
       closeCustomPanel: () => {
-        manager.store.dispatch(actions.setCustomPanelOpen(false));
+        manager.store.dispatch(viewActions.setCustomPanelOpen(false));
       },
       closeResponsePanel: () => {
-        manager.store.dispatch(actions.setResponsePanelIsOpen(false));
+        manager.store.dispatch(viewActions.setResponsePanelIsOpen(false));
       },
       clearResponsePanelContent: () => {
-        manager.store.dispatch(actions.setResponsePanelContent(null, false));
+        manager.store.dispatch(
+          viewActions.setResponsePanelContent(null, false)
+        );
       },
       closeIFramePanel: () => {
-        manager.store.dispatch(actions.closeIFramePanel());
+        manager.store.dispatch(viewActions.closeIFramePanel());
       },
       closeViewSourcePanel: () => {
-        manager.store.dispatch(actions.setViewSourcePanelIsOpen(false));
+        manager.store.dispatch(viewActions.setViewSourcePanelIsOpen(false));
       },
       closeHistoryPanel: () => {
-        manager.store.dispatch(actions.setHistoryPanelOpen(false));
+        manager.store.dispatch(viewActions.setHistoryPanelOpen(false));
       },
       updateScreenShareRequest: (state) => {
         manager.humanAgentService?.screenShareUpdateRequestState(state);
@@ -373,9 +418,10 @@ export class ShellLifecycle {
   }
 
   private windowOptions() {
-    const state = this.viewState.serviceManager.store.getState();
+    const state = chatStore(this.viewState.serviceManager).getState();
     return {
-      viewStateMainWindow: state.persistedToBrowserStorage.viewState.mainWindow,
+      viewStateMainWindow:
+        state.view.persistedToBrowserStorage.viewState.mainWindow,
       isHydrated: state.isHydrated,
       useCustomHostElement: Boolean(this.options?.hostElement),
       requestFocus: this.requestReadyFocus,
@@ -400,7 +446,7 @@ export class ShellLifecycle {
     });
   };
   readonly requestFocus = () => {
-    const state = this.viewState.serviceManager.store.getState();
+    const state = chatStore(this.viewState.serviceManager).getState();
     const derived = this.derived(state);
     const panels = this.targets?.panels;
     const handle = (
@@ -410,18 +456,18 @@ export class ShellLifecycle {
       shouldAutoFocus:
         state.config.public.shouldTakeFocusIfOpensAutomatically ?? true,
       showDisclaimer: derived.showDisclaimer,
-      iFramePanelIsOpen: state.iFramePanelState.isOpen,
-      viewSourcePanelIsOpen: state.viewSourcePanelState.isOpen,
-      customPanelIsOpen: state.customPanelState.isOpen,
-      responsePanelIsOpen: state.responsePanelState.isOpen,
+      iFramePanelIsOpen: state.view.iFramePanelState.isOpen,
+      viewSourcePanelIsOpen: state.view.viewSourcePanelState.isOpen,
+      customPanelIsOpen: state.view.customPanelState.isOpen,
+      responsePanelIsOpen: state.view.responsePanelState.isOpen,
       disclaimer: panels?.disclaimerButton() ?? null,
       iframePanel: handle('iframe'),
       viewSourcePanel: handle('citation'),
       customPanel: handle('custom'),
       responsePanel:
-        state.responsePanelState.localMessageItem &&
+        state.view.responsePanelState.localMessageItem &&
         state.allMessagesByID[
-          state.responsePanelState.localMessageItem.fullMessageID
+          state.view.responsePanelState.localMessageItem.fullMessageID
         ]
           ? handle('response')
           : null,
@@ -444,7 +490,7 @@ export class ShellLifecycle {
   ) =>
     this.inputCallbacks.onSendInput(
       text,
-      this.derived(this.viewState.serviceManager.store.getState())
+      this.derived(chatStore(this.viewState.serviceManager).getState())
         .showHomeScreen
         ? MessageSendSource.HOME_SCREEN_INPUT
         : MessageSendSource.MESSAGE_INPUT,
@@ -452,7 +498,7 @@ export class ShellLifecycle {
       displayContent
     );
   private readonly filesForAgent = (uploads: FileUpload[]) => {
-    const state = this.viewState.serviceManager.store.getState();
+    const state = chatStore(this.viewState.serviceManager).getState();
     this.humanAgentCallbacks.onFilesSelectedForUpload(
       uploads,
       selectHumanAgentDisplayState(state).isConnectingOrConnected,
@@ -471,12 +517,15 @@ export class ShellLifecycle {
     return getDerivedState(
       {
         publicConfig: state.config.public,
-        persistedToBrowserStorage: state.persistedToBrowserStorage,
-        isHydratingCounter:
-          this.viewState.serviceManager.instance.state.get().isHydratingCounter,
-        catastrophicErrorType: state.catastrophicErrorType,
+        persistedToBrowserStorage: joinPersistedState(
+          state.persistedToBrowserStorage,
+          state.view.persistedToBrowserStorage
+        ),
+        // The view's own counter, not the deprecated public field (#2695).
+        isHydratingCounter: state.view.isHydratingCounter,
+        catastrophicErrorType: state.view.catastrophicErrorType,
         viewStateMainWindow:
-          state.persistedToBrowserStorage.viewState.mainWindow,
+          state.view.persistedToBrowserStorage.viewState.mainWindow,
       },
       isBrowser() ? window.location.hostname : 'localhost'
     );
@@ -486,10 +535,10 @@ export class ShellLifecycle {
       return undefined;
     }
     const serviceManager = this.viewState.serviceManager;
-    const state = serviceManager.store.getState();
+    const state = chatStore(serviceManager).getState();
     const { hosts, hostElement, writeableElementsPresentKeys } = this.options;
+    const { languagePack, isHydrated } = state;
     const {
-      languagePack,
       workspacePanelState,
       historyPanelState,
       customPanelState,
@@ -498,8 +547,7 @@ export class ShellLifecycle {
       viewSourcePanelState,
       catastrophicErrorPanelState,
       chatWidthBreakpoint,
-      isHydrated,
-    } = state;
+    } = state.view;
     const {
       themeWithDefaults: theme,
       layout,
@@ -533,7 +581,7 @@ export class ShellLifecycle {
       isHydratingComplete,
     } = this.derived(state);
     const showLauncher =
-      launcher.isOn && state.persistedToBrowserStorage.viewState.launcher;
+      launcher.isOn && state.view.persistedToBrowserStorage.viewState.launcher;
     const inputIsVisible = selectCustomPromptLineVisible(state);
     const { customPromptLinePresent } = this.options;
     const customHeaderPresent =
@@ -682,7 +730,7 @@ export class ShellLifecycle {
                     type: BusEventType.HISTORY_PANEL_PRE_OPEN,
                   });
                   serviceManager.store.dispatch(
-                    actions.setHistoryPanelOpen(true)
+                    viewActions.setHistoryPanelOpen(true)
                   );
                 },
               },
@@ -947,12 +995,12 @@ export class ShellLifecycle {
         }
         const manager = this.viewState.serviceManager;
         const width = targets.widget.offsetWidth;
-        manager.store.dispatch(actions.setAppStateValue('chatWidth', width));
+        manager.store.dispatch(viewActions.setViewValue('chatWidth', width));
         manager.store.dispatch(
-          actions.setAppStateValue('chatHeight', targets.widget.offsetHeight)
+          viewActions.setViewValue('chatHeight', targets.widget.offsetHeight)
         );
         manager.store.dispatch(
-          actions.setAppStateValue(
+          viewActions.setViewValue(
             'chatWidthBreakpoint',
             calculateChatWidthBreakpoint(width)
           )
@@ -1010,7 +1058,7 @@ export class ShellLifecycle {
   }
 
   private updateDOM(changed: boolean) {
-    const state = this.viewState.serviceManager.store.getState();
+    const state = chatStore(this.viewState.serviceManager).getState();
     const container = this.targets?.container;
     if (!container || !this.options) {
       return;
@@ -1040,7 +1088,7 @@ export class ShellLifecycle {
         cssVariableOverrideStylesheet,
       });
     }
-    const active = state.persistedToBrowserStorage.viewState.mainWindow;
+    const active = state.view.persistedToBrowserStorage.viewState.mainWindow;
     if (!active || changed) {
       this.releaseKeyboard?.();
       this.releaseKeyboard = undefined;
@@ -1077,7 +1125,7 @@ export class ShellLifecycle {
     if (
       this.customHeaderPresent &&
       config.history?.isOn &&
-      state.historyPanelState.isMobile &&
+      state.view.historyPanelState.isMobile &&
       !this.warnedCustomHeader &&
       isEnableDebugLog()
     ) {

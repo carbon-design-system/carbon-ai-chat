@@ -38,6 +38,11 @@ import {
   createInitialState,
   reconcileAppConfigReferences,
 } from '../src/shared/store/doCreateStore';
+import { chatStore } from '../src/chat/services/attachChatView';
+import { attachStorePartition } from '../src/sdk/internal';
+import { viewReducer } from '../src/view/state/reducer';
+import { createInitialViewState } from '../src/view/state/initialState';
+import type { ConversationState } from '../src/types/state/AppState';
 
 // ============================================================================
 // Configuration helpers
@@ -179,7 +184,7 @@ export const renderChatAndGetInstanceWithStore = async (
 ): Promise<ChatInstanceWithStore> => {
   const capturedInstance = await renderChatAndGetInstance(config);
   const serviceManager = capturedInstance.serviceManager;
-  const store = serviceManager.store;
+  const store = chatStore(serviceManager);
 
   return {
     instance: capturedInstance,
@@ -262,17 +267,50 @@ export function TestChatContext({
 // ============================================================================
 
 /**
+ * Runs one action through both partitions the way the store does: the
+ * conversation reducer, then the view's with the conversation state after it.
+ */
+export function appRootReducer(
+  state: AppState,
+  action: { type: string; [key: string]: unknown }
+): AppState {
+  const conversation = reduceWithMessageOwnership(state, action)
+    .state as AppState;
+  const view = viewReducer(state.view, action, conversation);
+  return Object.is(view, conversation.view)
+    ? conversation
+    : { ...conversation, view };
+}
+
+/**
  * Builds a real store seeded from a PublicConfig, exactly the way doCreateStore
  * does. Use with {@link applyConfigChange} to drive runtime config updates in
  * re-render tests.
  */
 export function makeConfigStore(config: PublicConfig): AppStore<AppState> {
-  const store = createStoreFromReduction<AppState>(
+  const store = createStoreFromReduction<ConversationState>(
     reduceWithMessageOwnership,
     createInitialState(createAppConfig(config))
   );
   enableMessageOwnership(store);
-  return store;
+  return withView(store, config);
+}
+
+/**
+ * Attaches the view partition to a store made without the shell, as a mounted
+ * chat does at boot, and returns the store typed for `chat/`.
+ */
+export function withView(
+  store: AppStore<ConversationState>,
+  config: PublicConfig = {}
+): AppStore<AppState> {
+  attachStorePartition(
+    { store },
+    'view',
+    viewReducer,
+    createInitialViewState(config, null)
+  );
+  return store as unknown as AppStore<AppState>;
 }
 
 /**
@@ -282,7 +320,7 @@ export function makeConfigStore(config: PublicConfig): AppStore<AppState> {
  * what lets narrowed selectors skip re-rendering on unrelated changes.
  */
 export function applyConfigChange(
-  store: AppStore<AppState>,
+  store: AppStore<ConversationState>,
   nextConfig: PublicConfig
 ): void {
   const prevConfig = store.getState().config;

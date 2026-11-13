@@ -9,7 +9,7 @@
 
 import cloneDeep from 'lodash-es/cloneDeep.js';
 
-import { AppState } from '../../types/state/AppState';
+import { ConversationState } from '../../types/state/AppState';
 import { PublicChatState } from '../../types/instance/PublicChatState';
 import { deepFreeze } from './lang/objectUtils';
 import { selectHasInFlightUpload, selectInputState } from '../store/selectors';
@@ -20,11 +20,15 @@ import {
 
 type PublicStateField = keyof PublicChatState | 'history';
 
-interface PublicStateFieldDefinition {
+/**
+ * One public field: the state values it's built from, and how to build it.
+ * `S` is the state the field reads; the view's fields read the whole store.
+ */
+interface PublicStateFieldDefinition<S = ConversationState> {
   name: PublicStateField;
-  sources(state: AppState): readonly unknown[];
-  project(sources: readonly unknown[], state: AppState): unknown;
-  prepare?(sources: readonly unknown[], state: AppState): () => unknown;
+  sources(state: S): readonly unknown[];
+  project(sources: readonly unknown[], state: S): unknown;
+  prepare?(sources: readonly unknown[], state: S): () => unknown;
 }
 
 interface CachedField {
@@ -50,7 +54,10 @@ function sameSources(
   );
 }
 
-function sameMessageReferences(left: AppState, right: AppState): boolean {
+function sameMessageReferences(
+  left: ConversationState,
+  right: ConversationState
+): boolean {
   return (
     left.assistantMessageState.messageIDs ===
       right.assistantMessageState.messageIDs &&
@@ -61,56 +68,40 @@ function sameMessageReferences(left: AppState, right: AppState): boolean {
   );
 }
 
+/**
+ * Every public field in the order `getState()` has always listed them. Field
+ * definitions another layer adds, such as the view's, take their place here.
+ */
+const PUBLIC_FIELD_ORDER: readonly PublicStateField[] = [
+  'wasLoadedFromBrowser',
+  'version',
+  'viewState',
+  'showUnreadIndicator',
+  'launcherIsExpanded',
+  'launcherShouldStartCallToActionCounterIfEnabled',
+  'hasSentNonWelcomeMessage',
+  'disclaimersAccepted',
+  'homeScreenState',
+  'humanAgent',
+  'status',
+  'isMessageLoadingCounter',
+  'isMessageLoadingText',
+  'isHydratingCounter',
+  'activeResponseId',
+  'input',
+  'customPanels',
+  'workspace',
+  'history',
+  'messages',
+];
+
 const fieldDefinitions: readonly PublicStateFieldDefinition[] = [
-  {
-    name: 'wasLoadedFromBrowser',
-    sources: (state) => [state.persistedToBrowserStorage.wasLoadedFromBrowser],
-    project: ([value]) => value,
-  },
-  {
-    name: 'version',
-    sources: (state) => [state.persistedToBrowserStorage.version],
-    project: ([value]) => value,
-  },
-  {
-    name: 'viewState',
-    sources: (state) => [state.persistedToBrowserStorage.viewState],
-    project: ([value]) => freezeClone(value),
-  },
-  {
-    name: 'showUnreadIndicator',
-    sources: (state) => [state.persistedToBrowserStorage.showUnreadIndicator],
-    project: ([value]) => value,
-  },
-  {
-    name: 'launcherIsExpanded',
-    sources: (state) => [state.persistedToBrowserStorage.launcherIsExpanded],
-    project: ([value]) => value,
-  },
-  {
-    name: 'launcherShouldStartCallToActionCounterIfEnabled',
-    sources: (state) => [
-      state.persistedToBrowserStorage
-        .launcherShouldStartCallToActionCounterIfEnabled,
-    ],
-    project: ([value]) => value,
-  },
   {
     name: 'hasSentNonWelcomeMessage',
     sources: (state) => [
       state.persistedToBrowserStorage.hasSentNonWelcomeMessage,
     ],
     project: ([value]) => value,
-  },
-  {
-    name: 'disclaimersAccepted',
-    sources: (state) => [state.persistedToBrowserStorage.disclaimersAccepted],
-    project: ([value]) => freezeClone(value),
-  },
-  {
-    name: 'homeScreenState',
-    sources: (state) => [state.persistedToBrowserStorage.homeScreenState],
-    project: ([value]) => freezeClone(value),
   },
   {
     name: 'humanAgent',
@@ -127,21 +118,6 @@ const fieldDefinitions: readonly PublicStateFieldDefinition[] = [
   {
     name: 'status',
     sources: (state) => [state.conversationStatus],
-    project: ([value]) => value,
-  },
-  {
-    name: 'isMessageLoadingCounter',
-    sources: (state) => [state.assistantMessageState.isMessageLoadingCounter],
-    project: ([value]) => value,
-  },
-  {
-    name: 'isMessageLoadingText',
-    sources: (state) => [state.assistantMessageState.isMessageLoadingText],
-    project: ([value]) => value,
-  },
-  {
-    name: 'isHydratingCounter',
-    sources: (state) => [state.assistantMessageState.isHydratingCounter],
     project: ([value]) => value,
   },
   {
@@ -173,68 +149,15 @@ const fieldDefinitions: readonly PublicStateFieldDefinition[] = [
         hasInFlightUploads: uploads,
       }),
   },
-  {
-    name: 'customPanels',
-    sources: (state) => [
-      Boolean(state.customPanelState.isOpen),
-      Boolean(state.workspacePanelState.isOpen),
-      state.workspacePanelState.options.preferredLocation,
-      state.workspacePanelState.workspaceID,
-      state.workspacePanelState.additionalData,
-      Boolean(state.historyPanelState.isOpen),
-      Boolean(state.historyPanelState.isMobile),
-    ],
-    project: ([
-      defaultOpen,
-      workspaceOpen,
-      preferredLocation,
-      workspaceID,
-      additionalData,
-      historyOpen,
-      historyMobile,
-    ]) =>
-      freezeClone({
-        default: { isOpen: defaultOpen },
-        workspace: {
-          isOpen: workspaceOpen,
-          options: { preferredLocation },
-          workspaceID,
-          additionalData,
-        },
-        history: { isOpen: historyOpen, isMobile: historyMobile },
-      }),
-  },
-  {
-    name: 'workspace',
-    sources: (state) => [
-      Boolean(state.workspacePanelState.isOpen),
-      state.workspacePanelState.options.preferredLocation,
-      state.workspacePanelState.workspaceID,
-      state.workspacePanelState.additionalData,
-    ],
-    project: ([isOpen, preferredLocation, workspaceID, additionalData]) =>
-      freezeClone({
-        isOpen,
-        options: { preferredLocation },
-        workspaceID,
-        additionalData,
-      }),
-  },
-  {
-    name: 'history',
-    sources: (state) => [
-      Boolean(state.historyPanelState.isOpen),
-      Boolean(state.historyPanelState.isMobile),
-    ],
-    project: ([isOpen, isMobile]) => freezeClone({ isOpen, isMobile }),
-  },
 ];
+
+export type { PublicStateFieldDefinition };
 
 export class PublicStateSnapshotCache {
   private fieldCache = new Map<PublicStateField, CachedField>();
   private messages = new PublicMessagesProjection();
-  private messageSources = new WeakMap<AppState, readonly unknown[]>();
-  private lastMessageState: AppState;
+  private messageSources = new WeakMap<ConversationState, readonly unknown[]>();
+  private lastMessageState: ConversationState;
   private definitions: readonly PublicStateFieldDefinition[];
 
   constructor(private observer?: PublicStateProjectionObserver) {
@@ -263,7 +186,29 @@ export class PublicStateSnapshotCache {
     ];
   }
 
-  haveSamePublicSources(previous: AppState, current: AppState): boolean {
+  /**
+   * Adds fields that another layer builds, such as the view's. Each takes its
+   * place in {@link PUBLIC_FIELD_ORDER}, so `getState()` keeps its key order.
+   * Fields already added are kept.
+   */
+  addDefinitions(definitions: readonly PublicStateFieldDefinition<never>[]) {
+    const names = new Set(this.definitions.map(({ name }) => name));
+    this.definitions = [
+      ...this.definitions,
+      ...(definitions as readonly PublicStateFieldDefinition[]).filter(
+        ({ name }) => !names.has(name)
+      ),
+    ].sort(
+      (left, right) =>
+        PUBLIC_FIELD_ORDER.indexOf(left.name) -
+        PUBLIC_FIELD_ORDER.indexOf(right.name)
+    );
+  }
+
+  haveSamePublicSources(
+    previous: ConversationState,
+    current: ConversationState
+  ): boolean {
     return this.definitions.every(
       (definition) =>
         (definition.name === 'messages' &&
@@ -272,7 +217,7 @@ export class PublicStateSnapshotCache {
     );
   }
 
-  createSnapshot(state: AppState): PublicChatState {
+  createSnapshot(state: ConversationState): PublicChatState {
     const snapshot = {} as PublicChatState;
 
     this.definitions.forEach((definition) => {
@@ -293,7 +238,7 @@ export class PublicStateSnapshotCache {
     return Object.freeze(snapshot);
   }
 
-  private getMessageSources(state: AppState): readonly unknown[] {
+  private getMessageSources(state: ConversationState): readonly unknown[] {
     const cached = this.messageSources.get(state);
     if (cached) {
       return cached;
@@ -316,7 +261,7 @@ export class PublicStateSnapshotCache {
   private createField(
     definition: PublicStateFieldDefinition,
     sources: readonly unknown[],
-    state: AppState
+    state: ConversationState
   ): CachedField {
     const project =
       definition.prepare?.(sources, state) ??

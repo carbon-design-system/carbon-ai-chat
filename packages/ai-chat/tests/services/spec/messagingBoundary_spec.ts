@@ -781,7 +781,10 @@ it('keeps the adapter types and actual boot bindings view-only', () => {
             checker,
             call,
             path.join(root, 'src/shared/store/appStore.ts'),
-            path.join(root, 'src/shared/store/actions.ts')
+            [
+              path.join(root, 'src/shared/store/actions.ts'),
+              path.join(root, 'src/view/state/actions.ts'),
+            ]
           )
         ).toBe(false);
         if (!ts.isCallExpression(call)) {
@@ -792,7 +795,11 @@ it('keeps the adapter types and actual boot bindings view-only', () => {
           return;
         }
         const target = relative(signature.getSourceFile().fileName);
-        if (target === 'src/shared/store/actions.ts') {
+        // View actions are the sinks a view adapter may reach (#1831).
+        if (
+          target === 'src/shared/store/actions.ts' ||
+          target === 'src/view/state/actions.ts'
+        ) {
           const name = (signature as ts.MethodDeclaration).name?.getText();
           if (name) {
             actual.push(name);
@@ -1442,6 +1449,8 @@ it('rejects raw store writes throughout the package except exact existing view s
   const creatorFiles = new Set([
     actionsFile,
     path.join(root, 'src/shared/store/humanAgentActions.ts'),
+    // The view partition's own creators (#1831).
+    path.join(root, 'src/view/state/actions.ts'),
   ]);
   const ownershipFile = path.join(root, 'src/shared/store/messageOwnership.ts');
   const issues: string[] = [];

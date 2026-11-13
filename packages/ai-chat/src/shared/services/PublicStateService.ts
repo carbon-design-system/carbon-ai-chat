@@ -9,10 +9,11 @@
 
 import { BusEventType } from '../../types/events/eventBusTypes';
 import { PublicChatState } from '../../types/instance/PublicChatState';
-import { AppState } from '../../types/state/AppState';
+import { ConversationState } from '../../types/state/AppState';
 import {
   PublicStateProjectionObserver,
   PublicStateSnapshotCache,
+  type PublicStateFieldDefinition,
 } from '../utils/publicState';
 import { consoleError } from '../utils/miscUtils';
 import type { ServiceManager } from './ServiceManager';
@@ -27,10 +28,10 @@ interface PublicStateListenerRegistration {
 export class PublicStateService {
   private cache: PublicStateSnapshotCache;
   private currentSnapshot: PublicChatState;
-  private currentSnapshotState: AppState;
-  private publishedState: AppState;
+  private currentSnapshotState: ConversationState;
+  private publishedState: ConversationState;
   private listeners = new Set<PublicStateListenerRegistration>();
-  private queuedStates: AppState[] = [];
+  private queuedStates: ConversationState[] = [];
   private isPublishing = false;
   private unsubscribeStore: () => void;
 
@@ -43,6 +44,16 @@ export class PublicStateService {
     this.unsubscribeStore = serviceManager.store.subscribe(
       this.handleStoreChange
     );
+  }
+
+  /**
+   * Adds public fields that another layer builds, such as the view's, after
+   * that layer attaches its store partition. The next read includes them.
+   */
+  addFields(definitions: readonly PublicStateFieldDefinition<never>[]) {
+    this.cache.addDefinitions(definitions);
+    this.currentSnapshot = undefined;
+    this.currentSnapshotState = undefined;
   }
 
   get = (): PublicChatState => {
@@ -126,7 +137,7 @@ export class PublicStateService {
     }
   };
 
-  private publish(nextState: AppState): void {
+  private publish(nextState: ConversationState): void {
     const previousState = this.publishedState;
     this.publishedState = nextState;
 
@@ -174,7 +185,7 @@ export class PublicStateService {
     });
   }
 
-  private snapshotFor(state: AppState): PublicChatState {
+  private snapshotFor(state: ConversationState): PublicChatState {
     if (
       this.currentSnapshot &&
       (this.currentSnapshotState === state ||

@@ -33,6 +33,8 @@ import {
   setupAfterEach,
   setupBeforeEach,
 } from '../../test_helpers';
+import { viewActions } from '../../../src/view/state';
+import { chatStore } from '../../../src/chat/services/attachChatView';
 
 class HomeProvider extends LitElement {
   readonly provider = new ContextProvider(this, {
@@ -111,7 +113,7 @@ async function createHome() {
 }
 
 function showBack(store: ReturnType<typeof makeConfigStore>) {
-  const persisted = store.getState().persistedToBrowserStorage;
+  const persisted = store.getState().view.persistedToBrowserStorage;
   store.dispatch(
     actions.updatePersistedState({
       homeScreenState: {
@@ -209,16 +211,14 @@ describe('native home screen', () => {
   it('does not render for unrelated assistant or agent typing, visibility, or window-size changes', async () => {
     const { view, state, store } = await createHome();
     const renderView = jest.spyOn(view as any, 'renderView');
-    store.dispatch(
-      actions.setChatMessagesStateProperty('isMessageLoadingCounter', 1)
-    );
+    store.dispatch(viewActions.setViewValue('isMessageLoadingCounter', 1));
     store.dispatch(
       actions.setAppStateValue('humanAgentState', {
         ...store.getState().humanAgentState,
         isHumanAgentTyping: true,
       })
     );
-    store.dispatch(actions.setAppStateValue('isBrowserPageVisible', false));
+    store.dispatch(viewActions.setViewValue('isBrowserPageVisible', false));
     state.setWindowSize({ width: 420, height: 700 });
     await Promise.resolve();
     await view.updateComplete;
@@ -407,9 +407,9 @@ describe('native home screen', () => {
       .querySelector('.cds-aichat--catastrophic-error')
       .closest('cds-aichat-panel') as HTMLElement & { open: boolean };
     expect(panel.open).toBe(true);
-    expect(instance.serviceManager.store.getState().catastrophicErrorType).toBe(
-      true
-    );
+    expect(
+      chatStore(instance.serviceManager).getState().view.catastrophicErrorType
+    ).toBe(true);
     expect(
       host.shadowRoot.querySelectorAll('.cds-aichat--catastrophic-error')
     ).toHaveLength(1);
@@ -445,7 +445,7 @@ describe('native home screen', () => {
     expect(onError).toHaveBeenCalledTimes(1);
     expect(errorOccurred).toHaveBeenCalledTimes(1);
     expect(
-      instance.serviceManager.store.getState().catastrophicErrorType
+      chatStore(instance.serviceManager).getState().view.catastrophicErrorType
     ).toBeUndefined();
     expect(currentPanel.open).toBe(false);
     expect(
