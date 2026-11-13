@@ -77,7 +77,7 @@ export enum WriteableElementName {
    * The adjacent before-input and after-input slots keep their usual placement.
    *
    * Your application owns the draft, labels, keyboard handling, limits, errors,
-   * uploads, and send controls. Send through {@link ChatInstance.send};
+   * uploads, and send controls. Send through {@link ChatInstanceMessaging.send};
    * {@link ChatInstanceInput} editor methods reject or throw while content exists,
    * even when hidden. The public input state still describes the built-in input.
    */

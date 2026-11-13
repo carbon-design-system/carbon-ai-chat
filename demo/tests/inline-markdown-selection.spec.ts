@@ -58,7 +58,7 @@ async function sendStructuredMessage(
   );
   await page.evaluate(
     ({ instanceKey, content }) =>
-      window.hostCompatibility[instanceKey as 'reactInstance'].send({
+      window.hostCompatibility[instanceKey as 'reactInstance'].messaging.send({
         id: 'selection',
         input: {
           message_type: 'text',

@@ -27,7 +27,7 @@ Where you go next depends on what you build:
 
 ## Connecting your server
 
-You pass your custom messaging configuration as part of the {@link PublicConfig | config}. You must provide a {@link PublicConfigMessaging.customSendMessage | customSendMessage} function, which the chat calls whenever the user sends a message. It also runs when you call {@link ChatInstance.send | send}.
+You pass your custom messaging configuration as part of the {@link PublicConfig | config}. You must provide a {@link PublicConfigMessaging.customSendMessage | customSendMessage} function, which the chat calls whenever the user sends a message. It also runs when you call {@link ChatInstanceMessaging.send | messaging.send}.
 
 For more information, see [the examples page](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react/basic-float/src/customSendMessage.ts).
 

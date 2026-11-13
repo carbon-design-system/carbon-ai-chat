@@ -149,6 +149,7 @@ chat.off(typedHandler);
 // SDK messaging has exactly these methods.
 export const sdkMessagingMembers: Record<keyof ChatSDKInstanceMessaging, true> =
   {
+    send: true,
     upsertMessage: true,
     removeMessages: true,
     clearConversation: true,
@@ -163,6 +164,16 @@ sdk.messaging.restartConversation();
 sdk.messaging.addMessage(message);
 // @ts-expect-error addMessageChunk stays on the prebuilt chat.
 sdk.messaging.addMessageChunk(chunk);
+
+// SDK messaging sends with the root send's signature (#1826 O1), so either one stands in for the other.
+export const sent: Promise<void> = sdk.messaging.send('Hello', {
+  silent: true,
+});
+sdk.messaging.send({ input: { text: 'Hello' } });
+export const sdkSendAsRoot: ChatInstance['send'] = sdk.messaging.send;
+export const rootSendAsSdk: ChatSDKInstanceMessaging['send'] = chat.send;
+// @ts-expect-error A message is required.
+sdk.messaging.send();
 
 // Prebuilt-chat callers keep both older message methods.
 chat.messaging.addMessage(message);

@@ -309,7 +309,7 @@ export enum MessageSendSource {
   HISTORY_UPDATE = 'historyUpdate',
 
   /**
-   * An external call to the public "instance.send" method was made.
+   * Your code called `instance.messaging.send`, or the deprecated `instance.send`.
    */
   INSTANCE_SEND = 'instanceSend',
 

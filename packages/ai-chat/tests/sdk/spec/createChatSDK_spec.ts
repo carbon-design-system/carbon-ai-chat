@@ -17,10 +17,7 @@ import type {
   ServiceDeskCallback,
 } from '../../../src/types/config/ServiceDeskConfig';
 import type { PersistedHumanAgentState } from '../../../src/types/state/PersistedHumanAgentState';
-import {
-  BusEventType,
-  MessageSendSource,
-} from '../../../src/types/events/eventBusTypes';
+import { BusEventType } from '../../../src/types/events/eventBusTypes';
 import type { ChatSDKInstance } from '../../../src/types/instance/ChatSDKInstance';
 import type { HistoryItem } from '../../../src/types/messaging/History';
 import {
@@ -125,7 +122,7 @@ describe('storage (#1732 O4, O7)', () => {
       const chat = await createChatSDK({
         messaging: { customSendMessage: echo },
       });
-      await chatOf(chat).actions.send('hello', MessageSendSource.INSTANCE_SEND);
+      await chat.messaging.send('hello');
       await chat.messaging.restartConversation();
       expect(chat.state.get().messages.length).toBeGreaterThan(0);
       chat.destroy();
@@ -290,6 +287,7 @@ describe('the handle (#1732 O9–O11)', () => {
         'insertHistory',
         'removeMessages',
         'restartConversation',
+        'send',
         'upsertMessage',
       ].sort()
     );
