@@ -14,8 +14,8 @@ import { AppState } from '../../../../types/state/AppState';
 import { HasRequestFocus } from '../../../../types/utilities/HasRequestFocus';
 import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
 import { useSelector } from '../../../hooks/useSelector';
-import { shallowEqual } from '../../../store/appStore';
-import { selectHumanAgentDisplayState } from '../../../store/selectors';
+import { shallowEqual } from '../../../../shared/store/appStore';
+import { selectHumanAgentDisplayState } from '../../../../shared/store/selectors';
 import { RealConnectToHumanAgent } from './RealConnectToHumanAgent';
 import {
   ConnectToHumanAgentItem,

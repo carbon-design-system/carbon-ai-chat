@@ -12,10 +12,10 @@ import { makeConfigStore } from '../../test_helpers';
 import {
   createAppStore,
   createStoreFromReduction,
-} from '../../../src/chat/store/appStore';
-import { reduceWithMessageOwnership } from '../../../src/chat/store/reducers';
-import { ADD_LOCAL_MESSAGE_ITEM } from '../../../src/chat/store/messageActionTypes';
-import actions from '../../../src/chat/store/actions';
+} from '../../../src/shared/store/appStore';
+import { reduceWithMessageOwnership } from '../../../src/shared/store/reducers';
+import { ADD_LOCAL_MESSAGE_ITEM } from '../../../src/shared/store/messageActionTypes';
+import actions from '../../../src/shared/store/actions';
 import {
   captureMessageOwnership,
   enableMessageOwnership,
@@ -23,7 +23,7 @@ import {
   isHumanAgentMessageOwner,
   markHumanAgentIngress,
   retainHistoryOwnership,
-} from '../../../src/chat/store/messageOwnership';
+} from '../../../src/shared/store/messageOwnership';
 import {
   MessageResponseTypes,
   HumanAgentMessageType,

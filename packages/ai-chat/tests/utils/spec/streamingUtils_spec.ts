@@ -10,7 +10,7 @@
 import {
   StreamState,
   type StreamControllerToken,
-} from '../../../src/chat/services/messaging/state/StreamState';
+} from '../../../src/shared/services/messaging/state/StreamState';
 import {
   chunkHasDisplayableContent,
   deriveStreamingItemText,
@@ -19,9 +19,9 @@ import {
   resolveChunkContext,
   shouldShowStopStreaming,
   syncStopStreamingButton,
-} from '../../../src/chat/utils/streamingUtils';
-import { applyChunkData } from '../../../src/chat/services/messaging/inbound/prepareChunk';
-import actions from '../../../src/chat/store/actions';
+} from '../../../src/shared/utils/streamingUtils';
+import { applyChunkData } from '../../../src/shared/services/messaging/inbound/prepareChunk';
+import actions from '../../../src/shared/store/actions';
 
 describe('streamingUtils', () => {
   const createStore = (isVisible = true) => {

@@ -16,7 +16,7 @@ import {
   SystemMessageItem,
   SystemMessageVariant,
 } from '../../../../types/messaging/Messages';
-import { isResponse } from '../../../utils/messageUtils';
+import { isResponse } from '../../../../shared/utils/messageUtils';
 
 interface SystemMessageProps {
   /**

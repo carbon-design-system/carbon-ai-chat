@@ -8,9 +8,9 @@
  */
 
 import { ChatViewState } from '../../../src/chat/services/chatViewState';
-import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
-import { createIntl } from '../../../src/chat/utils/i18n';
-import { setIntl } from '../../../src/chat/utils/intlUtils';
+import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import { createIntl } from '../../../src/shared/utils/i18n';
+import { setIntl } from '../../../src/shared/utils/intlUtils';
 import type { LanguagePack } from '../../../src/types/config/LanguagePack';
 
 const mockAnnounce = jest.fn();

@@ -13,9 +13,9 @@ import type {
   MessageResponse,
   TextItem,
 } from '../../../src/types/messaging/Messages';
-import { deriveStreamingItemText } from '../../../src/chat/utils/streamingUtils';
+import { deriveStreamingItemText } from '../../../src/shared/utils/streamingUtils';
 import { act } from '@testing-library/react';
-import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
+import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
 import { MessageResponseTypes } from '../../../src/types/messaging/Messages';
 
 import { OnErrorType } from '../../../src/types/config/ErrorConfig';

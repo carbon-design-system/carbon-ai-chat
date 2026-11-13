@@ -10,7 +10,7 @@
 import FileUploadItem from '@carbon/ai-chat-components/es/react/file-upload-item.js';
 import React from 'react';
 
-import type { MessageFileAttachment } from '../../../utils/fileAttachments';
+import type { MessageFileAttachment } from '../../../../shared/utils/fileAttachments';
 
 interface MessageFileAttachmentsProps {
   /** The attachments to render, in the order they appear on the message. */

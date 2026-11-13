@@ -33,11 +33,11 @@ import {
 import { PageObjectId } from '../../../testing/PageObjectId';
 import { NativeChatView } from '../shared/NativeChatView';
 import { LauncherState, LauncherOpenState } from '../../services/launcherState';
-import { shallowEqual } from '../../store/appStore';
-import actions from '../../store/actions';
-import { IS_PHONE } from '../../utils/browserUtils';
+import { shallowEqual } from '../../../shared/store/appStore';
+import actions from '../../../shared/store/actions';
+import { IS_PHONE } from '../../../shared/utils/browserUtils';
 import { doFocus, isDirectionRTL } from '../../utils/domUtils';
-import type { IntlShape } from '../../utils/i18n';
+import type { IntlShape } from '../../../shared/utils/i18n';
 
 type LauncherLanguage = Pick<
   AppState['languagePack'],

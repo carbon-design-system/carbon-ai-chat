@@ -8,9 +8,9 @@
  */
 
 import { composedContains } from '@carbon/ai-chat-components/es/globals/utils/focus-utils.js';
-import { IS_MOBILE } from './browserUtils';
+import { IS_MOBILE } from '../../shared/utils/browserUtils';
 import { doFocus, getDeepActiveElement } from './domUtils';
-import { consoleError } from './miscUtils';
+import { consoleError } from '../../shared/utils/miscUtils';
 import type { HasRequestFocus } from '../../types/utilities/HasRequestFocus';
 
 export interface FocusManagerOptions {

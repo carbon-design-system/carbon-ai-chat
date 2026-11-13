@@ -13,7 +13,7 @@ import { Transcript } from '@carbon/ai-chat-components/es/react/transcript.js';
 import React from 'react';
 
 import { useSelector } from '../../../hooks/useSelector';
-import { shallowEqual } from '../../../store/appStore';
+import { shallowEqual } from '../../../../shared/store/appStore';
 import { VideoComponentConfig } from './VideoComponent';
 import { MessageResponseTypes } from '../../../../types/messaging/Messages';
 import { AppState } from '../../../../types/state/AppState';

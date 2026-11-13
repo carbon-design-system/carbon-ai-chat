@@ -8,9 +8,9 @@
  */
 
 import { act, cleanup } from '@testing-library/react';
-import { MessageCoordinator } from '../../../../src/chat/services/messaging/MessageCoordinator';
-import type { ServiceManager } from '../../../../src/chat/services/ServiceManager';
-import { requestStopFromInput } from '../../../../src/chat/services/assistantInputCommands';
+import { MessageCoordinator } from '../../../../src/shared/services/messaging/MessageCoordinator';
+import type { ServiceManager } from '../../../../src/shared/services/ServiceManager';
+import { requestStopFromInput } from '../../../../src/shared/services/assistantInputCommands';
 import { MessageState } from '../../../../src/types/config/MessagingConfig';
 import type { PublicConfig } from '../../../../src/types/config/PublicConfig';
 import {
@@ -22,7 +22,7 @@ import {
   MessageResponseTypes,
   TextItem,
 } from '../../../../src/types/messaging/Messages';
-import { resolvablePromise } from '../../../../src/chat/utils/resolvablePromise';
+import { resolvablePromise } from '../../../../src/shared/utils/resolvablePromise';
 import {
   createBaseConfig,
   renderChatAndGetInstanceWithStore,

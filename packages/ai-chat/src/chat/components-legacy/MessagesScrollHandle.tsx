@@ -9,7 +9,7 @@
 
 import React from 'react';
 import ClickableTile from '../components/carbon/ClickableTile';
-import { IS_MOBILE } from '../utils/browserUtils';
+import { IS_MOBILE } from '../../shared/utils/browserUtils';
 
 interface MessagesScrollHandleProps {
   ariaLabel: string;

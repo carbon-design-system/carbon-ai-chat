@@ -9,7 +9,7 @@
 
 import { waitFor } from '@testing-library/react';
 import { MessageResponseTypes } from '../../../../src/types/messaging/Messages';
-import actions from '../../../../src/chat/store/actions';
+import actions from '../../../../src/shared/store/actions';
 import {
   createBaseConfig,
   mockCustomSendMessage,

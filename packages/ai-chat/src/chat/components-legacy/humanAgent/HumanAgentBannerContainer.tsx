@@ -9,9 +9,9 @@
 
 import React from 'react';
 import { useSelector } from '../../hooks/useSelector';
-import { shallowEqual } from '../../store/appStore';
+import { shallowEqual } from '../../../shared/store/appStore';
 
-import { selectHumanAgentDisplayState } from '../../store/selectors';
+import { selectHumanAgentDisplayState } from '../../../shared/store/selectors';
 import { AppState } from '../../../types/state/AppState';
 import { HasRequestFocus } from '../../../types/utilities/HasRequestFocus';
 import { HumanAgentBanner } from './HumanAgentBanner';

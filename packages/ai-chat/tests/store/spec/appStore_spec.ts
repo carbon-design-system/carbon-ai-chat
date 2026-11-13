@@ -10,7 +10,7 @@
 import {
   createAppStore,
   UnknownAction,
-} from '../../../src/chat/store/appStore';
+} from '../../../src/shared/store/appStore';
 
 interface CounterState {
   count: number;

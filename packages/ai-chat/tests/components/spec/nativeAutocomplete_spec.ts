@@ -23,10 +23,10 @@ import type NativeAutocomplete from '../../../src/chat/components/input/NativeAu
 import { AutocompleteContentAdapter } from '../../../src/chat/components/input/AutocompleteContentAdapter';
 import { AutocompleteContent } from '../../../src/chat/services/autocompleteContent';
 import { ChatViewState } from '../../../src/chat/services/chatViewState';
-import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
+import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
 import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
-import { createIntl } from '../../../src/chat/utils/i18n';
-import actions from '../../../src/chat/store/actions';
+import { createIntl } from '../../../src/shared/utils/i18n';
+import actions from '../../../src/shared/store/actions';
 import { ChatWidthBreakpoint } from '../../../src/types/state/AppState';
 import {
   makeConfigStore,

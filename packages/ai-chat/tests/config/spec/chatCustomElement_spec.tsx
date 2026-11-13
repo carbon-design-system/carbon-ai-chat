@@ -19,7 +19,7 @@ import React from 'react';
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
 
 import { ChatCustomElement } from '../../../src/react/ChatCustomElement';
-import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
+import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
 import { BusEventViewPreChange } from '../../../src/types/events/eventBusTypes';
 import { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import { ViewType } from '../../../src/types/instance/apiTypes';

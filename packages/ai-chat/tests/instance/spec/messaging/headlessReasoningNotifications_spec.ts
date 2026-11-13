@@ -8,8 +8,8 @@
  */
 
 import { cleanup, waitFor } from '@testing-library/react';
-import { MessageCoordinator } from '../../../../src/chat/services/messaging/MessageCoordinator';
-import type { ServiceManager } from '../../../../src/chat/services/ServiceManager';
+import { MessageCoordinator } from '../../../../src/shared/services/messaging/MessageCoordinator';
+import type { ServiceManager } from '../../../../src/shared/services/ServiceManager';
 import { MessageState } from '../../../../src/types/config/MessagingConfig';
 import {
   MessageResponse,

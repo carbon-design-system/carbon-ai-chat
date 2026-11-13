@@ -22,15 +22,15 @@ import { applyConfigChangesDynamically } from '../../../src/chat/utils/dynamicCo
 import {
   selectInputIsDisabled,
   selectInputIsReadonly,
-} from '../../../src/chat/store/selectors';
-import { createAppStore } from '../../../src/chat/store/appStore';
+} from '../../../src/shared/store/selectors';
+import { createAppStore } from '../../../src/shared/store/appStore';
 import {
   createAppConfig,
   createInitialState,
-} from '../../../src/chat/store/doCreateStore';
-import { reducers } from '../../../src/chat/store/reducers';
-import actions from '../../../src/chat/store/actions';
-import { ServiceManager } from '../../../src/chat/services/ServiceManager';
+} from '../../../src/shared/store/doCreateStore';
+import { reducers } from '../../../src/shared/store/reducers';
+import actions from '../../../src/shared/store/actions';
+import { ServiceManager } from '../../../src/shared/services/ServiceManager';
 import { AppState } from '../../../src/types/state/AppState';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
 

@@ -57,11 +57,11 @@ function ImageWithFallback({
 }
 import { HasAriaAnnouncer, withAriaAnnouncer } from '../hocs/withAriaAnnouncer';
 import { HasServiceManager } from '../hocs/withServiceManager';
-import actions from '../store/actions';
+import actions from '../../shared/store/actions';
 import { HasClassName } from '../../types/utilities/HasClassName';
 import HasIntl from '../../types/utilities/HasIntl';
 import { useSelector } from '../hooks/useSelector';
-import { shallowEqual } from '../store/appStore';
+import { shallowEqual } from '../../shared/store/appStore';
 import { useIntl } from '../hooks/useIntl';
 import { useCarbonTheme } from '../hooks/useCarbonTheme';
 import { AppState } from '../../types/state/AppState';
@@ -69,7 +69,7 @@ import {
   LocalMessageItem,
   MessageErrorState,
 } from '../../types/messaging/LocalMessageItem';
-import { FileStatusValue } from '../utils/constants';
+import { FileStatusValue } from '../../shared/utils/constants';
 import { doFocusRef } from '../utils/domUtils';
 import {
   getRequestFooterSlotName,
@@ -83,13 +83,13 @@ import {
   isResponse,
   hasRequestBubbleContent,
   renderAsUserDefinedMessage,
-} from '../utils/messageUtils';
+} from '../../shared/utils/messageUtils';
 import { getBubbleLayout } from '../utils/messageBubbleLayout';
-import { getMessageFileAttachments } from '../utils/fileAttachments';
+import { getMessageFileAttachments } from '../../shared/utils/fileAttachments';
 import MessageCustomRequestFooterSlot from './MessageCustomRequestFooterSlot';
 import { MessageFileAttachments } from '../components/helpers/MessageFileAttachments/MessageFileAttachments';
-import { messageHasDisplayableContent } from '../utils/streamingUtils';
-import { createDidCatchErrorData } from '../utils/miscUtils';
+import { messageHasDisplayableContent } from '../../shared/utils/streamingUtils';
+import { createDidCatchErrorData } from '../../shared/utils/miscUtils';
 import { OnErrorData } from '../../types/config/ErrorConfig';
 import { timestampToTimeString } from '../utils/timeUtils';
 import { type ScrollElementIntoViewFunction } from './MessagesComponent';
@@ -115,7 +115,7 @@ import {
   hasReasoningContent,
   resolveReasoningContainerOpen,
   synthesizeReasoningLocalMessageItem,
-} from '../utils/reasoningContent';
+} from '../../shared/utils/reasoningContent';
 
 const ChatBot = carbonIconToReact(ChatBot32);
 const CheckmarkFilled = carbonIconToReact(CheckmarkFilled16);

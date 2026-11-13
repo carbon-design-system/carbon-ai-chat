@@ -10,13 +10,16 @@
 import { ContextConsumer } from '@lit/context';
 import { LitElement, nothing } from 'lit';
 import type { AppState } from '../../../types/state/AppState';
-import type { ServiceManager } from '../../services/ServiceManager';
+import type { ServiceManager } from '../../../shared/services/ServiceManager';
 import type {
   ChatViewState,
   ChatViewStateSnapshot,
 } from '../../services/chatViewState';
 import { chatViewStateContext } from '../../../web-components/shared/chat-view-state-context';
-import { consoleError, createDidCatchErrorData } from '../../utils/miscUtils';
+import {
+  consoleError,
+  createDidCatchErrorData,
+} from '../../../shared/utils/miscUtils';
 import { subscribeToSelectedValue } from '../../utils/selectedSubscription';
 
 abstract class NativeChatView extends LitElement {

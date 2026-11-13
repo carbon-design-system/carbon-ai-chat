@@ -7,20 +7,20 @@
  *  @license
  */
 
-import { outputItemToLocalItem } from '../../../src/chat/schema/outputItemToLocalItem';
+import { outputItemToLocalItem } from '../../../src/shared/schema/outputItemToLocalItem';
 import {
   addMessages,
   createHumanAgentLocalMessage,
   toPair,
-} from '../../../src/chat/services/haa/humanAgentUtils';
-import { ServiceManager } from '../../../src/chat/services/ServiceManager';
+} from '../../../src/shared/services/haa/humanAgentUtils';
+import { ServiceManager } from '../../../src/shared/services/ServiceManager';
 import { makeConfigStore } from '../../test_helpers';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
 import {
   HumanAgentMessageType,
   MessageResponseTypes,
 } from '../../../src/types/messaging/Messages';
-import { createMessageResponseForItem } from '../../../src/chat/utils/messageUtils';
+import { createMessageResponseForItem } from '../../../src/shared/utils/messageUtils';
 
 describe('humanAgentUtils event ownership', () => {
   it('freezes the received status event and the message returned for storage together', async () => {

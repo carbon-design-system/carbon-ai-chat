@@ -16,13 +16,13 @@ import '../../../src/chat/components/input/ChatInput';
 import type ChatInput from '../../../src/chat/components/input/ChatInput';
 import { ChatViewState } from '../../../src/chat/services/chatViewState';
 import { AutocompleteContent } from '../../../src/chat/services/autocompleteContent';
-import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
+import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
 import type { InputFunctions } from '../../../src/chat/utils/inputTypes';
 import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
-import { createIntl } from '../../../src/chat/utils/i18n';
-import * as miscUtils from '../../../src/chat/utils/miscUtils';
-import actions from '../../../src/chat/store/actions';
-import { selectInputState } from '../../../src/chat/store/selectors';
+import { createIntl } from '../../../src/shared/utils/i18n';
+import * as miscUtils from '../../../src/shared/utils/miscUtils';
+import actions from '../../../src/shared/store/actions';
+import { selectInputState } from '../../../src/shared/store/selectors';
 import { WriteableElementName } from '../../../src/types/instance/WriteableElements';
 import {
   makeConfigStore,

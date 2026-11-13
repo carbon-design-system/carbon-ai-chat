@@ -25,8 +25,8 @@ import {
 } from '@carbon/ai-chat-components/es/components/conversational-search/src/citation-utils.js';
 import { ScrollElementIntoViewFunction } from '../../../components-legacy/MessagesComponent';
 import { useSelector } from '../../../hooks/useSelector';
-import { shallowEqual } from '../../../store/appStore';
-import { deriveStreamingItemText } from '../../../utils/streamingUtils';
+import { shallowEqual } from '../../../../shared/store/appStore';
+import { deriveStreamingItemText } from '../../../../shared/utils/streamingUtils';
 import { AppState } from '../../../../types/state/AppState';
 import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
 import { ConversationalSearchItem } from '../../../../types/messaging/Messages';

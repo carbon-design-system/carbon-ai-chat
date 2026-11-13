@@ -26,8 +26,8 @@
  */
 
 import React from 'react';
-import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
-import { PublicStateSnapshotCache } from '../../../src/chat/utils/publicState';
+import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
+import { PublicStateSnapshotCache } from '../../../src/shared/utils/publicState';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import {
   createBaseConfig,
@@ -37,13 +37,13 @@ import {
   setupBeforeEach,
   TestChatContext,
 } from '../../test_helpers';
-import createHumanAgentService from '../../../src/chat/services/haa/HumanAgentServiceImpl';
+import createHumanAgentService from '../../../src/shared/services/haa/HumanAgentServiceImpl';
 import { useInputCallbacks } from '../../../src/chat/hooks/useInputCallbacks';
 import {
   BusEventType,
   MessageSendSource,
 } from '../../../src/types/events/eventBusTypes';
-import actions from '../../../src/chat/store/actions';
+import actions from '../../../src/shared/store/actions';
 import {
   MessageResponseTypes,
   type MessageRequest,

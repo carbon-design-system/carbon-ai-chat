@@ -16,7 +16,7 @@ import React, { useCallback } from 'react';
 import { useSelector } from '../../../hooks/useSelector';
 
 import { useServiceManager } from '../../../hooks/useServiceManager';
-import { selectInputIsReadonly } from '../../../store/selectors';
+import { selectInputIsReadonly } from '../../../../shared/store/selectors';
 import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
 import {
   ButtonItem,

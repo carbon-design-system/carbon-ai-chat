@@ -19,7 +19,7 @@ Sort the changed files by risk per line, then spend attention in that order.
 **Read in full**
 
 - `packages/ai-chat/src/types/**`: the public contract. A wrong line here ships to consumers and comes back only in a major.
-- `packages/ai-chat/src/chat/store/**`: reducers and state transitions, where a broken reference costs a re-render nobody asked for.
+- `packages/ai-chat/src/shared/store/**`: reducers and state transitions, where a broken reference costs a re-render nobody asked for.
 - Any file whose directory carries its own `AGENTS.md`. That file exists because the area has rules that are easy to get wrong.
 - New files. There is no unchanged context to lean on; all of it is new logic.
 

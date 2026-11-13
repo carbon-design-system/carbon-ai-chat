@@ -12,7 +12,7 @@ import { property } from 'lit/decorators.js';
 import { carbonElement } from '@carbon/ai-chat-components/es/globals/decorators/index.js';
 import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 import { CarbonTheme } from '../../../../types/config/CarbonTheme';
-import { shallowEqual } from '../../../store/appStore';
+import { shallowEqual } from '../../../../shared/store/appStore';
 import { DisclaimerReadState } from '../../../utils/panelBodyLifecycle';
 import { NativeChatView } from '../../shared/NativeChatView';
 import { renderChatBubble } from './panelIllustrations';

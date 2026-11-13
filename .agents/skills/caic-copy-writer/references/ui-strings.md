@@ -1,6 +1,6 @@
 # ui-strings.md: strings the chat shows a person (type 6)
 
-Load this before adding or rewording a key in `packages/ai-chat/src/chat/languages/en.json`. **The only type whose reader is not a developer**, and no other file in this repo states a voice for them, so this one does.
+Load this before adding or rewording a key in `packages/ai-chat/src/shared/languages/en.json`. **The only type whose reader is not a developer**, and no other file in this repo states a voice for them, so this one does.
 
 Someone is mid-conversation with an assistant and needs the label to land at a glance.
 

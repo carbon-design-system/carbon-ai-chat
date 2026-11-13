@@ -14,9 +14,9 @@ import { ChatContainerProps } from '../../../src/types/component/ChatContainer';
 import { createBaseTestProps, mockCustomSendMessage } from '../../test_helpers';
 import { AppState } from '../../../src/types/state/AppState';
 import { applyConfigChangesDynamically } from '../../../src/chat/utils/dynamicConfigUpdates';
-import { doCreateStore } from '../../../src/chat/store/doCreateStore';
-import { ServiceManager } from '../../../src/chat/services/ServiceManager';
-import { NamespaceService } from '../../../src/chat/services/NamespaceService';
+import { doCreateStore } from '../../../src/shared/store/doCreateStore';
+import { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import { NamespaceService } from '../../../src/shared/services/NamespaceService';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
 
 describe('Config Messaging', () => {

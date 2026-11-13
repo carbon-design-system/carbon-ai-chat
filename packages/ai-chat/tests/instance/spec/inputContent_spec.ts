@@ -7,7 +7,7 @@
  *  @license
  */
 
-import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
+import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
 import { WriteableElementName } from '../../../src/types/instance/WriteableElements';
 import { waitFor } from '@testing-library/react';
 import { deepQuerySelector } from '@carbon/ai-chat-components/es/globals/utils/dom-utils.js';

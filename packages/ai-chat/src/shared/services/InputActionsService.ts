@@ -25,7 +25,7 @@ import { PendingUploadStatus } from '../../types/state/AppState';
 import { StructuredData } from '../../types/messaging/Messages';
 import { consoleError, consoleWarn } from '../utils/miscUtils';
 import { isPlainTextDoc } from '../utils/inputContent';
-import { hasCustomPromptLine } from '../utils/customPromptLine';
+import { hasCustomPromptLine } from '../../chat/utils/customPromptLine';
 import type { ServiceManager } from './ServiceManager';
 
 /**
