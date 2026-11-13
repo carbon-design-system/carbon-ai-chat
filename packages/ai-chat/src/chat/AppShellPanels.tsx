@@ -7,46 +7,54 @@
  *  @license
  */
 
-import React from 'react';
-import { EndHumanAgentChatPanel } from './components/panels/EndHumanAgentChatPanel';
-import { RequestScreenSharePanel } from './components/panels/RequestScreenSharePanel';
-import type { HumanAgentConfirmation } from './services/chatViewState';
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { createComponent } from '@lit/react';
+import { withWebComponentBridge } from '@carbon/ai-chat-components/es/react/utils/withWebComponentBridge.js';
+import { useSyncExternalStore } from 'use-sync-external-store/shim/index.js';
+import { transformReactIconToCarbonIcon } from '@carbon/ai-chat-components/es/globals/utils/iconTransform.js';
 import type CDSButton from '@carbon/web-components/es/components/button/button.js';
-import cx from 'classnames';
-import ChatPanel from '@carbon/ai-chat-components/es/react/panel.js';
-import { PanelHeader } from './components/panels/PanelHeader';
+import type { HumanAgentConfirmation } from './services/chatViewState';
+import type { ExtensionHosts } from './services/extensionHosts';
+import NativePanels from './components/panels/NativePanels';
+import {
+  PanelContentAdapter,
+  type PanelContentParts,
+} from './components/panels/PanelContentAdapter';
 import HydrationPanel from './components/panels/HydrationPanel';
-import DisclaimerPanel from './components/panels/DisclaimerPanel';
 import IFramePanel from './components/panels/IFramePanel';
 import ViewSourcePanel from './components/panels/ViewSourcePanel';
 import CatastrophicErrorPanel from './components/panels/CatastrophicErrorPanel';
-import {
-  PanelContentErrorBoundary,
-  PanelWithFocus,
-} from './components/panels/PanelWithFocus';
+import { PanelContentErrorBoundary } from './components/panels/PanelContentErrorBoundary';
 import { BodyMessageComponents } from './components/responseTypes/message/BodyMessageComponents';
 import { FooterButtonComponents } from './components/responseTypes/button/FooterButtonComponents';
 import { MessageTypeComponent } from './components-legacy/MessageTypeComponent';
-import { Header } from './components/header/Header';
+import { MarkdownWithDefaults } from './components/helpers/MarkdownWithDefaults/MarkdownWithDefaults';
+import WriteableElement from './components/helpers/WriteableElement/WriteableElement';
 import { useSelector } from './hooks/useSelector';
+import { useChatViewStateInstance } from './hooks/useChatViewState';
 import actions from './store/actions';
 import { DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS } from './store/reducerUtils';
-import type {
-  CustomPanelConfigOptions,
-  DefaultCustomPanelConfigOptions,
-} from '../types/instance/apiTypes';
 import type { ButtonItem, MessageResponse } from '../types/messaging/Messages';
 import type { AppState } from '../types/state/AppState';
 import type { OnErrorData } from '../types/config/ErrorConfig';
 import type { HasRequestFocus } from '../types/utilities/HasRequestFocus';
 import type { MessageTypeComponentProps } from '../types/messaging/MessageTypeComponentProps';
-import { HasServiceManager } from './hocs/withServiceManager';
-import { shallowEqual } from './store/appStore';
-import { BusEventType } from '../types/events/eventBusTypes';
-import WriteableElement from './components/helpers/WriteableElement/WriteableElement';
-import { PageObjectId } from '../testing/PageObjectId';
+import type { HasServiceManager } from './hocs/withServiceManager';
+import type {
+  PanelCompositionCallbacks,
+  PanelName,
+  PanelViewInputs,
+} from './utils/panelComposition';
 
 interface AppShellPanelsProps extends HasServiceManager {
+  hosts: ExtensionHosts;
   endChatConfirmation: HumanAgentConfirmation | null;
   showEndChatConfirmation: boolean;
   confirmHumanAgentEndChat: () => void;
@@ -80,24 +88,28 @@ interface AppShellPanelsProps extends HasServiceManager {
   catastrophicErrorPanelState: AppState['catastrophicErrorPanelState'];
 }
 
-function isCustomPanelConfigOptions(
-  options: CustomPanelConfigOptions | DefaultCustomPanelConfigOptions
-): options is CustomPanelConfigOptions {
-  const legacyOptions = options as Partial<CustomPanelConfigOptions>;
-  return (
-    typeof legacyOptions.disableDefaultCloseAction === 'boolean' ||
-    typeof legacyOptions.hideCloseButton === 'boolean' ||
-    typeof legacyOptions.onClickBack === 'function' ||
-    typeof legacyOptions.onClickRestart === 'function' ||
-    typeof legacyOptions.onClickClose === 'function'
-  );
-}
+const nativePanelsRegionEvents = {};
 
-/**
- * Renders all ChatPanel instances inside the `panels` slot of ChatShell.
- */
+// The bridge sets the view's properties in DOM shims, where @lit/react's node
+// build passes them only to server rendering.
+const NativePanelsRegion = withWebComponentBridge(
+  createComponent({
+    tagName: 'cds-aichat-native-panels',
+    elementClass: NativePanels,
+    react: React,
+    events: nativePanelsRegionEvents,
+  }),
+  { events: nativePanelsRegionEvents }
+);
+
+const noScroll = () => {};
+const renderMessageComponent = (props: MessageTypeComponentProps) => (
+  <MessageTypeComponent {...props} />
+);
+
 export const AppShellPanels = React.memo(function AppShellPanels({
   serviceManager,
+  hosts,
   endChatConfirmation,
   showEndChatConfirmation,
   confirmHumanAgentEndChat,
@@ -130,32 +142,23 @@ export const AppShellPanels = React.memo(function AppShellPanels({
   isInputReadonly,
   catastrophicErrorPanelState,
 }: AppShellPanelsProps) {
-  // Only the panel aria labels this host renders — a narrow bag (shallowEqual)
-  // so editing an unrelated string doesn't re-render every panel. Bag keys match
-  // the `languagePack.<key>` read sites below verbatim.
-  const languagePack = useSelector(
-    (state: AppState) => ({
-      aria_catastrophicErrorPanel:
-        state.languagePack.aria_catastrophicErrorPanel,
-      aria_customPanel: state.languagePack.aria_customPanel,
-      aria_disclaimerPanel: state.languagePack.aria_disclaimerPanel,
-      aria_hydrationPanel: state.languagePack.aria_hydrationPanel,
-      aria_iframePanel: state.languagePack.aria_iframePanel,
-      aria_responsePanel: state.languagePack.aria_responsePanel,
-      aria_viewSourcePanel: state.languagePack.aria_viewSourcePanel,
-      general_returnToAssistant: state.languagePack.general_returnToAssistant,
-      errors_singleMessage: state.languagePack.errors_singleMessage,
-    }),
-    shallowEqual
+  const viewState = useChatViewStateInstance();
+  const native = useRef<NativePanels>(null);
+  const active = useRef(true);
+  const latestDisclaimerRef = useRef(disclaimerRef);
+  latestDisclaimerRef.current = disclaimerRef;
+  const publishedButton = useRef<CDSButton | null>(null);
+  const [nativeReady, setNativeReady] = useState(false);
+  const releaseInitialCommit = useRef<() => void>(undefined);
+  const requests = useSyncExternalStore(
+    hosts.subscribePanelContent,
+    hosts.getPanelContentSnapshot,
+    hosts.getPanelContentSnapshot
   );
-
-  // Narrow config selections: each stays referentially stable across unrelated
-  // config changes (reconcileAppConfigReferences preserves the `disclaimer`
-  // sub-object reference; the rest are primitives), so this memoized panel host
-  // re-renders only when one of these specific values changes — not on every
-  // config field change the way selecting whole `config`/`publicConfig` did.
-  // A failure in the response panel's body or footer stays in the panel, so it isn't catastrophic.
-  const onPanelContentError = React.useCallback(
+  const errorText = useSelector(
+    (state: AppState) => state.languagePack.errors_singleMessage
+  );
+  const onPanelContentError = useCallback(
     (errorData: OnErrorData) => {
       serviceManager.actions.errorOccurred(errorData);
       serviceManager.store.dispatch(
@@ -164,515 +167,303 @@ export const AppShellPanels = React.memo(function AppShellPanels({
     },
     [serviceManager]
   );
+  const item = responsePanelState.localMessageItem;
+  const originalMessage = allMessagesByID[item?.fullMessageID] as
+    MessageResponse | undefined;
+  const customTitle = customPanelState.options.title;
+  const responseTitle = (item?.item as ButtonItem | undefined)?.panel?.title;
+  const iframeTitle =
+    iFramePanelState.messageItem?.title ?? iFramePanelState.messageItem?.source;
+  const citationTitle = viewSourcePanelState.citationItem?.title;
+  const parts = useMemo<PanelContentParts>(() => {
+    const responseProps =
+      item && originalMessage
+        ? {
+            message: item,
+            originalMessage,
+            requestInputFocus: requestFocus,
+            disableUserInputs: isInputReadonly,
+            isMessageForInput: responsePanelState.isMessageForInput,
+            scrollElementIntoView: noScroll,
+            serviceManager,
+            hideFeedback: true,
+            showChainOfThought: false,
+            allowNewFeedback: false,
+            renderMessageComponent,
+          }
+        : undefined;
+    return {
+      'error-body': (
+        <CatastrophicErrorPanel
+          title={catastrophicErrorPanelState?.title}
+          bodyText={catastrophicErrorPanelState?.bodyText}
+          hideRetryButton={catastrophicErrorPanelState?.hideRetryButton}
+          onRestart={onRestart}
+        />
+      ),
+      'hydration-body': <HydrationPanel isHydrated={isHydratingComplete} />,
+      'custom-title': customTitle && (
+        <MarkdownWithDefaults text={customTitle} />
+      ),
+      'custom-body': (
+        <WriteableElement
+          slotName="customPanelElement"
+          className="cds-aichat--custom-panel__content-container"
+        />
+      ),
+      'response-title': responseTitle && (
+        <MarkdownWithDefaults text={responseTitle} />
+      ),
+      'response-body': responseProps && (
+        <PanelContentErrorBoundary
+          key={item.ui_state.id}
+          errorText={errorText}
+          onError={onPanelContentError}
+          isBody>
+          <BodyMessageComponents {...responseProps} />
+        </PanelContentErrorBoundary>
+      ),
+      'response-footer': responseProps && (
+        <PanelContentErrorBoundary
+          key={item.ui_state.id}
+          errorText={errorText}
+          onError={onPanelContentError}>
+          <FooterButtonComponents {...responseProps} />
+        </PanelContentErrorBoundary>
+      ),
+      'iframe-title': iframeTitle && (
+        <MarkdownWithDefaults text={iframeTitle} />
+      ),
+      'iframe-body': <IFramePanel messageItem={iFramePanelState.messageItem} />,
+      'citation-title': citationTitle && (
+        <MarkdownWithDefaults text={citationTitle} />
+      ),
+      'citation-body': (
+        <ViewSourcePanel
+          citationItem={viewSourcePanelState.citationItem}
+          relatedSearchResult={viewSourcePanelState.relatedSearchResult}
+        />
+      ),
+      'history-body': (
+        <WriteableElement
+          slotName="historyPanelElement"
+          className="cds-aichat--history-panel__content-container"
+        />
+      ),
+    };
+  }, [
+    catastrophicErrorPanelState?.title,
+    catastrophicErrorPanelState?.bodyText,
+    catastrophicErrorPanelState?.hideRetryButton,
+    onRestart,
+    isHydratingComplete,
+    customTitle,
+    responseTitle,
+    item,
+    originalMessage,
+    requestFocus,
+    isInputReadonly,
+    responsePanelState.isMessageForInput,
+    serviceManager,
+    errorText,
+    onPanelContentError,
+    iframeTitle,
+    iFramePanelState.messageItem,
+    citationTitle,
+    viewSourcePanelState.citationItem,
+    viewSourcePanelState.relatedSearchResult,
+  ]);
 
-  const aiEnabled = useSelector(
-    (state: AppState) => state.config.public.aiEnabled
+  const inputs = useMemo<PanelViewInputs>(
+    () => ({
+      endChatConfirmation,
+      showEndChatConfirmation,
+      showScreenShareRequest,
+      isHydratingComplete,
+      shouldShowHydrationPanel,
+      isHomeScreenActive,
+      customPanelState,
+      historyPanelState,
+      showDisclaimer,
+      responsePanelState,
+      responseHasMessage: Boolean(originalMessage),
+      iFramePanelState,
+      viewSourcePanelState,
+      isInputReadonly,
+      catastrophicErrorPanelState,
+      contentRevision: parts,
+    }),
+    [
+      endChatConfirmation,
+      showEndChatConfirmation,
+      showScreenShareRequest,
+      isHydratingComplete,
+      shouldShowHydrationPanel,
+      isHomeScreenActive,
+      customPanelState,
+      historyPanelState,
+      showDisclaimer,
+      responsePanelState,
+      originalMessage,
+      iFramePanelState,
+      viewSourcePanelState,
+      isInputReadonly,
+      catastrophicErrorPanelState,
+      parts,
+    ]
   );
-  const disclaimer = useSelector(
-    (state: AppState) => state.config.public.disclaimer
-  );
-  const historyIsOn = useSelector(
-    (state: AppState) => state.config.public.history?.isOn
+  const callbacks = useMemo<PanelCompositionCallbacks>(
+    () => ({
+      onPanelOpenStart,
+      onPanelOpenEnd,
+      onPanelCloseStart,
+      onPanelCloseEnd,
+      onClose,
+      onRestart,
+      onToggleHomeScreen,
+      onAcceptDisclaimer,
+      confirmHumanAgentEndChat,
+      hideConfirmEndChat,
+      fireCustomPanelEvent: (type) => {
+        serviceManager.eventBus.fire({ type }, serviceManager.instance);
+      },
+      resetCustomPanelOptions: () => {
+        serviceManager.store.dispatch(
+          actions.setCustomPanelConfigOptions(
+            DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS
+          )
+        );
+      },
+      closeCustomPanel: () => {
+        serviceManager.store.dispatch(actions.setCustomPanelOpen(false));
+      },
+      closeResponsePanel: () => {
+        serviceManager.store.dispatch(actions.setResponsePanelIsOpen(false));
+      },
+      clearResponsePanelContent: () => {
+        serviceManager.store.dispatch(
+          actions.setResponsePanelContent(null, false)
+        );
+      },
+      closeIFramePanel: () => {
+        serviceManager.store.dispatch(actions.closeIFramePanel());
+      },
+      closeViewSourcePanel: () => {
+        serviceManager.store.dispatch(actions.setViewSourcePanelIsOpen(false));
+      },
+      closeHistoryPanel: () => {
+        serviceManager.store.dispatch(actions.setHistoryPanelOpen(false));
+      },
+      updateScreenShareRequest: (state) => {
+        serviceManager.humanAgentService?.screenShareUpdateRequestState(state);
+      },
+      announce: (text) => viewState.announcer.announce(text),
+    }),
+    [
+      onPanelOpenStart,
+      onPanelOpenEnd,
+      onPanelCloseStart,
+      onPanelCloseEnd,
+      onClose,
+      onRestart,
+      onToggleHomeScreen,
+      onAcceptDisclaimer,
+      confirmHumanAgentEndChat,
+      hideConfirmEndChat,
+      serviceManager,
+      viewState,
+    ]
   );
 
-  // Call DisclaimerPanel hook at component level (not inside render)
-  const disclaimerContent = disclaimer?.isOn
-    ? DisclaimerPanel({
-        disclaimerHTML: disclaimer?.disclaimerHTML,
-        disclaimerAcceptButtonRef: disclaimerRef,
-        onAcceptDisclaimer: onAcceptDisclaimer,
-      })
-    : null;
-
-  const customPanelOptions = customPanelState.options;
-  const isLegacyCustomPanel = isCustomPanelConfigOptions(customPanelOptions);
-  const legacyCustomPanelOptions = isLegacyCustomPanel
-    ? (customPanelOptions as CustomPanelConfigOptions)
-    : undefined;
-  const shouldShowCustomPanelHeader = !(
-    'hidePanelHeader' in customPanelOptions &&
-    customPanelOptions.hidePanelHeader
-  );
-  const panelTitle = customPanelOptions.title;
-  const headerConfigOverride = isLegacyCustomPanel
-    ? {
-        hideMinimizeButton:
-          typeof legacyCustomPanelOptions?.hideCloseButton === 'boolean'
-            ? legacyCustomPanelOptions.hideCloseButton
-            : undefined,
-        title:
-          legacyCustomPanelOptions?.hideBackButton &&
-          legacyCustomPanelOptions?.title
-            ? legacyCustomPanelOptions.title
-            : undefined,
+  const onTargetsReady = useCallback(() => {
+    if (!active.current) {
+      return;
+    }
+    const button = native.current?.disclaimerButton() ?? null;
+    latestDisclaimerRef.current.current = button;
+    publishedButton.current = button;
+    setNativeReady(Boolean(native.current?.isConnected));
+  }, []);
+  useLayoutEffect(() => {
+    active.current = true;
+    const release = viewState.holdInitialReactCommit();
+    releaseInitialCommit.current = release;
+    return () => {
+      active.current = false;
+      release();
+    };
+  }, [viewState]);
+  useLayoutEffect(() => {
+    const assignments = [
+      [customPanelRef, 'custom'],
+      [responsePanelRef, 'response'],
+      [iframePanelRef, 'iframe'],
+      [viewSourcePanelRef, 'citation'],
+    ] as const;
+    const owned = assignments
+      .filter(
+        ([, name]) => name !== 'response' || Boolean(item && originalMessage)
+      )
+      .map(([ref, name]) => {
+        const handle = {
+          requestFocus: () =>
+            native.current?.requestPanelFocus(name as PanelName) ?? false,
+        };
+        ref.current = handle;
+        return { ref, handle };
+      });
+    const button = native.current?.disclaimerButton() ?? null;
+    disclaimerRef.current = button;
+    publishedButton.current = button;
+    return () => {
+      owned.forEach(({ ref, handle }) => {
+        if (ref.current === handle) {
+          ref.current = null;
+        }
+      });
+      if (disclaimerRef.current === publishedButton.current) {
+        disclaimerRef.current = null;
       }
-    : undefined;
+    };
+  }, [
+    customPanelRef,
+    responsePanelRef,
+    iframePanelRef,
+    viewSourcePanelRef,
+    disclaimerRef,
+    item,
+    originalMessage,
+  ]);
+  useEffect(() => {
+    if (
+      nativeReady &&
+      requests.every((request) =>
+        hosts.isPanelContentCommitted(request.panel, parts)
+      )
+    ) {
+      releaseInitialCommit.current?.();
+    }
+  }, [nativeReady, requests, hosts, parts]);
 
   return (
-    <div slot="panels">
-      <EndHumanAgentChatPanel
-        open={showEndChatConfirmation || Boolean(endChatConfirmation)}
-        onConfirm={endChatConfirmation?.onConfirm ?? confirmHumanAgentEndChat}
-        onCancel={endChatConfirmation?.onCancel ?? hideConfirmEndChat}
-        title={endChatConfirmation?.title}
-        message={endChatConfirmation?.message}
+    <>
+      <NativePanelsRegion
+        slot="panels"
+        ref={native}
+        inputs={inputs}
+        callbacks={callbacks}
+        hosts={hosts}
+        transformHeaderIcon={transformReactIconToCarbonIcon}
+        onTargetsReady={onTargetsReady}
       />
-      <RequestScreenSharePanel open={showScreenShareRequest} />
-      <ChatPanel
-        panelAriaLabel={languagePack.aria_catastrophicErrorPanel}
-        open={Boolean(catastrophicErrorPanelState?.isOpen)}
-        aiEnabled={aiEnabled ? true : false}
-        priority={100}
-        fullWidth={false}
-        showChatHeader={true}>
-        <div slot="body" className="cds-aichat--widget--expand-to-fit">
-          <CatastrophicErrorPanel
-            title={catastrophicErrorPanelState?.title}
-            bodyText={catastrophicErrorPanelState?.bodyText}
-            hideRetryButton={catastrophicErrorPanelState?.hideRetryButton}
-            onRestart={onRestart}
-          />
-        </div>
-      </ChatPanel>
-      <ChatPanel
-        panelAriaLabel={languagePack.aria_hydrationPanel}
-        open={shouldShowHydrationPanel}
-        priority={90}
-        aiEnabled={aiEnabled ? true : false}
-        fullWidth={false}
-        showChatHeader={true}
-        animationOnOpen="fade-in"
-        animationOnClose="fade-out"
-        onOpenStart={() => onPanelOpenStart(false)}
-        onOpenEnd={onPanelOpenEnd}
-        onCloseStart={onPanelCloseStart}
-        onCloseEnd={() => {
-          onPanelCloseEnd(false);
-        }}>
-        <div slot="body" className="cds-aichat--widget--expand-to-fit">
-          <HydrationPanel isHydrated={isHydratingComplete} />
-        </div>
-      </ChatPanel>
-
-      <ChatPanel
-        panelAriaLabel={panelTitle || languagePack.aria_customPanel}
-        open={customPanelState.isOpen}
-        priority={60}
-        fullWidth={
-          'fullWidth' in customPanelState.options &&
-          customPanelState.options.fullWidth
-            ? true
-            : false
-        }
-        showFrame={
-          'showFrame' in customPanelState.options &&
-          customPanelState.options.showFrame
-            ? true
-            : false
-        }
-        aiEnabled={
-          'aiEnabled' in customPanelState.options &&
-          customPanelState.options.aiEnabled
-            ? true
-            : false
-        }
-        showChatHeader={
-          !isLegacyCustomPanel &&
-          'showChatHeader' in customPanelState.options &&
-          customPanelState.options.showChatHeader
-            ? true
-            : false
-        }
-        animationOnOpen={
-          customPanelState.options.disableAnimation
-            ? 'none'
-            : 'openFromSide' in customPanelState.options &&
-                customPanelState.options.openFromSide
-              ? 'slide-in-from-start'
-              : 'slide-in-from-bottom'
-        }
-        animationOnClose={
-          customPanelState.options.disableAnimation
-            ? 'none'
-            : 'openFromSide' in customPanelState.options &&
-                customPanelState.options.openFromSide
-              ? 'slide-out-to-start'
-              : 'slide-out-to-bottom'
-        }
-        openFromSide={
-          'openFromSide' in customPanelState.options &&
-          customPanelState.options.openFromSide
-            ? true
-            : false
-        }
-        onOpenStart={() => {
-          serviceManager.eventBus.fire(
-            { type: BusEventType.CUSTOM_PANEL_PRE_OPEN },
-            serviceManager.instance
-          );
-          onPanelOpenStart(true);
-        }}
-        onOpenEnd={(event: CustomEvent) => {
-          serviceManager.eventBus.fire(
-            { type: BusEventType.CUSTOM_PANEL_OPEN },
-            serviceManager.instance
-          );
-          onPanelOpenEnd(event);
-        }}
-        onCloseStart={(event: CustomEvent) => {
-          serviceManager.eventBus.fire(
-            { type: BusEventType.CUSTOM_PANEL_PRE_CLOSE },
-            serviceManager.instance
-          );
-          onPanelCloseStart(event);
-        }}
-        onCloseEnd={() => {
-          serviceManager.eventBus.fire(
-            { type: BusEventType.CUSTOM_PANEL_CLOSE },
-            serviceManager.instance
-          );
-          serviceManager.store.dispatch(
-            actions.setCustomPanelConfigOptions(
-              DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS
-            )
-          );
-          onPanelCloseEnd(true);
-        }}>
-        <PanelWithFocus
-          ref={customPanelRef}
-          header={
-            shouldShowCustomPanelHeader ? (
-              <>
-                {isLegacyCustomPanel && (
-                  <Header
-                    onClose={() => {
-                      if (
-                        !legacyCustomPanelOptions?.disableDefaultCloseAction
-                      ) {
-                        onClose();
-                      }
-                      legacyCustomPanelOptions?.onClickClose?.();
-                    }}
-                    onRestart={() => {
-                      onRestart();
-                      legacyCustomPanelOptions?.onClickRestart?.();
-                    }}
-                    onToggleHomeScreen={onToggleHomeScreen}
-                    isHomeScreenActive={isHomeScreenActive}
-                    headerConfigOverride={headerConfigOverride}
-                  />
-                )}
-                <div
-                  className={cx('cds-aichat--panel-header', {
-                    'cds-aichat--panel-header--full-width':
-                      'fullWidth' in customPanelState.options &&
-                      customPanelState.options.fullWidth,
-                  })}>
-                  <div className="cds-aichat--panel-header-content">
-                    <PanelHeader
-                      title={panelTitle}
-                      labelBackButton={languagePack.general_returnToAssistant}
-                      backButtonType={
-                        'backButtonType' in customPanelState.options
-                          ? customPanelState.options.backButtonType
-                          : undefined
-                      }
-                      backButtonPosition={
-                        'backButtonPosition' in customPanelState.options
-                          ? customPanelState.options.backButtonPosition
-                          : undefined
-                      }
-                      openFromSide={
-                        'openFromSide' in customPanelState.options &&
-                        customPanelState.options.openFromSide
-                      }
-                      onClickBack={() => {
-                        serviceManager.store.dispatch(
-                          actions.setCustomPanelOpen(false)
-                        );
-                        if ('onClickBack' in customPanelState.options) {
-                          customPanelState.options.onClickBack?.();
-                        }
-                      }}
-                      showBackButton={
-                        !(
-                          'hideBackButton' in customPanelState.options &&
-                          customPanelState.options.hideBackButton
-                        )
-                      }
-                    />
-                  </div>
-                </div>
-              </>
-            ) : undefined
-          }
-          body={
-            <WriteableElement
-              slotName="customPanelElement"
-              className="cds-aichat--custom-panel__content-container"
-            />
-          }
+      {requests.map((request) => (
+        <PanelContentAdapter
+          key={request.panel}
+          hosts={hosts}
+          request={request}
+          parts={parts}
         />
-      </ChatPanel>
-
-      {disclaimerContent && (
-        <ChatPanel
-          panelAriaLabel={languagePack.aria_disclaimerPanel}
-          open={showDisclaimer}
-          priority={80}
-          aiEnabled={aiEnabled ? true : false}
-          fullWidth={true}
-          showChatHeader={true}
-          animationOnOpen="fade-in"
-          animationOnClose="fade-out"
-          onOpenStart={() => onPanelOpenStart(false)}
-          onOpenEnd={onPanelOpenEnd}
-          onCloseStart={onPanelCloseStart}
-          onCloseEnd={() => onPanelCloseEnd(false)}
-          onBodyScroll={disclaimerContent.onBodyScroll}
-          data-testid={PageObjectId.DISCLAIMER_PANEL}>
-          <div slot="body" className="cds-aichat--widget--expand-to-fit">
-            {disclaimerContent.body}
-          </div>
-          <div slot="footer" className="cds-aichat--disclaimer__footer">
-            {disclaimerContent.footer}
-          </div>
-        </ChatPanel>
-      )}
-
-      <ChatPanel
-        panelAriaLabel={
-          (responsePanelState.localMessageItem?.item as ButtonItem)?.panel
-            .title || languagePack.aria_responsePanel
-        }
-        open={responsePanelState.isOpen}
-        priority={50}
-        fullWidth={
-          (responsePanelState.localMessageItem?.item as ButtonItem)?.panel
-            .full_width
-            ? true
-            : false
-        }
-        showFrame={
-          (responsePanelState.localMessageItem?.item as ButtonItem)?.panel
-            .show_frame === undefined
-            ? true
-            : (responsePanelState.localMessageItem?.item as ButtonItem)?.panel
-                .show_frame
-        }
-        aiEnabled={
-          (responsePanelState.localMessageItem?.item as ButtonItem)?.panel
-            .ai_enabled === undefined
-            ? aiEnabled
-            : (responsePanelState.localMessageItem?.item as ButtonItem)?.panel
-                .ai_enabled
-        }
-        showChatHeader={
-          (responsePanelState.localMessageItem?.item as ButtonItem)?.panel
-            .show_header === undefined
-            ? true
-            : (responsePanelState.localMessageItem?.item as ButtonItem)?.panel
-                .show_header
-        }
-        animationOnOpen="slide-in-from-bottom"
-        animationOnClose="slide-out-to-bottom"
-        onOpenStart={() => onPanelOpenStart(true)}
-        onOpenEnd={onPanelOpenEnd}
-        onCloseStart={onPanelCloseStart}
-        onCloseEnd={() => {
-          onPanelCloseEnd(true);
-          serviceManager.store.dispatch(
-            actions.setResponsePanelContent(null, false)
-          );
-        }}>
-        {responsePanelState.localMessageItem &&
-          (allMessagesByID[
-            responsePanelState.localMessageItem?.fullMessageID
-          ] as MessageResponse | undefined) && (
-            <PanelWithFocus
-              ref={responsePanelRef}
-              header={
-                (responsePanelState.localMessageItem?.item as ButtonItem)?.panel
-                  .show_header !== false ? (
-                  <PanelHeader
-                    title={
-                      (
-                        responsePanelState.localMessageItem?.item as
-                          ButtonItem | undefined
-                      )?.panel?.title
-                    }
-                    labelBackButton={languagePack.general_returnToAssistant}
-                    onClickBack={() =>
-                      serviceManager.store.dispatch(
-                        actions.setResponsePanelIsOpen(false)
-                      )
-                    }
-                  />
-                ) : undefined
-              }
-              body={
-                <PanelContentErrorBoundary
-                  key={responsePanelState.localMessageItem.ui_state.id}
-                  errorText={languagePack.errors_singleMessage}
-                  onError={onPanelContentError}
-                  isBody>
-                  <BodyMessageComponents
-                    message={responsePanelState.localMessageItem}
-                    originalMessage={
-                      allMessagesByID[
-                        responsePanelState.localMessageItem?.fullMessageID
-                      ] as MessageResponse
-                    }
-                    requestInputFocus={requestFocus}
-                    disableUserInputs={isInputReadonly}
-                    isMessageForInput={responsePanelState.isMessageForInput}
-                    scrollElementIntoView={() => {
-                      /* no-op; shell handles layout */
-                    }}
-                    serviceManager={serviceManager}
-                    hideFeedback
-                    showChainOfThought={false}
-                    allowNewFeedback={false}
-                    renderMessageComponent={(
-                      childProps: MessageTypeComponentProps
-                    ) => <MessageTypeComponent {...childProps} />}
-                  />
-                </PanelContentErrorBoundary>
-              }
-              footer={
-                <PanelContentErrorBoundary
-                  key={responsePanelState.localMessageItem.ui_state.id}
-                  errorText={languagePack.errors_singleMessage}
-                  onError={onPanelContentError}>
-                  <FooterButtonComponents
-                    message={responsePanelState.localMessageItem}
-                    originalMessage={
-                      allMessagesByID[
-                        responsePanelState.localMessageItem?.fullMessageID
-                      ] as MessageResponse
-                    }
-                    requestInputFocus={requestFocus}
-                    disableUserInputs={isInputReadonly}
-                    isMessageForInput={responsePanelState.isMessageForInput}
-                    scrollElementIntoView={() => {
-                      /* no-op; shell handles layout */
-                    }}
-                    serviceManager={serviceManager}
-                    hideFeedback
-                    showChainOfThought={false}
-                    allowNewFeedback={false}
-                    renderMessageComponent={(
-                      childProps: MessageTypeComponentProps
-                    ) => <MessageTypeComponent {...childProps} />}
-                  />
-                </PanelContentErrorBoundary>
-              }
-            />
-          )}
-      </ChatPanel>
-
-      <ChatPanel
-        panelAriaLabel={
-          iFramePanelState.messageItem?.title ||
-          iFramePanelState.messageItem?.source ||
-          languagePack.aria_iframePanel
-        }
-        open={iFramePanelState.isOpen}
-        priority={40}
-        showFrame={true}
-        fullWidth={false}
-        showChatHeader={true}
-        aiEnabled={aiEnabled ? true : false}
-        animationOnOpen="slide-in-from-bottom"
-        animationOnClose="slide-out-to-bottom"
-        onOpenStart={() => onPanelOpenStart(true)}
-        onOpenEnd={onPanelOpenEnd}
-        onCloseStart={onPanelCloseStart}
-        onCloseEnd={() => onPanelCloseEnd(true)}>
-        <PanelWithFocus
-          ref={iframePanelRef}
-          header={
-            <PanelHeader
-              title={
-                iFramePanelState.messageItem?.title ??
-                iFramePanelState.messageItem?.source
-              }
-              labelBackButton={languagePack.general_returnToAssistant}
-              onClickBack={() =>
-                serviceManager.store.dispatch(actions.closeIFramePanel())
-              }
-            />
-          }
-          body={<IFramePanel messageItem={iFramePanelState.messageItem} />}
-        />
-      </ChatPanel>
-
-      <ChatPanel
-        panelAriaLabel={
-          viewSourcePanelState.citationItem?.title ||
-          languagePack.aria_viewSourcePanel
-        }
-        open={viewSourcePanelState.isOpen}
-        priority={30}
-        showFrame={true}
-        fullWidth={false}
-        showChatHeader={true}
-        aiEnabled={aiEnabled ? true : false}
-        animationOnOpen="slide-in-from-bottom"
-        animationOnClose="slide-out-to-bottom"
-        onOpenStart={() => onPanelOpenStart(true)}
-        onOpenEnd={onPanelOpenEnd}
-        onCloseStart={onPanelCloseStart}
-        onCloseEnd={() => onPanelCloseEnd(true)}>
-        <PanelWithFocus
-          ref={viewSourcePanelRef}
-          header={
-            <PanelHeader
-              title={viewSourcePanelState.citationItem?.title}
-              labelBackButton={languagePack.general_returnToAssistant}
-              onClickBack={() =>
-                serviceManager.store.dispatch(
-                  actions.setViewSourcePanelIsOpen(false)
-                )
-              }
-            />
-          }
-          body={
-            <ViewSourcePanel
-              citationItem={viewSourcePanelState.citationItem}
-              relatedSearchResult={viewSourcePanelState.relatedSearchResult}
-            />
-          }
-        />
-      </ChatPanel>
-
-      {historyIsOn && historyPanelState.isMobile && (
-        <ChatPanel
-          open={historyPanelState.isOpen}
-          priority={3}
-          fullWidth={true}
-          bodyNoPadding={true}
-          noScroll={true}
-          aiEnabled={aiEnabled ? true : false}
-          animationOnOpen="slide-in-from-start"
-          animationOnClose="slide-out-to-start"
-          onOpenStart={() => onPanelOpenStart(true)}
-          onOpenEnd={onPanelOpenEnd}
-          onCloseStart={onPanelCloseStart}
-          onCloseEnd={() => {
-            onPanelCloseEnd(true);
-            serviceManager.store.dispatch(actions.setHistoryPanelOpen(false));
-          }}>
-          <PanelWithFocus
-            body={
-              <WriteableElement
-                slotName="historyPanelElement"
-                className="cds-aichat--history-panel__content-container"
-              />
-            }
-          />
-        </ChatPanel>
-      )}
-    </div>
+      ))}
+    </>
   );
 });
