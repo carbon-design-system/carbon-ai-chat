@@ -96,6 +96,8 @@ import {
 } from '../../../types/config/ServiceDeskConfig';
 import {
   BusEventHumanAgentPreEndChat,
+  BusEventHumanAgentPreReceive,
+  BusEventHumanAgentPreSend,
   BusEventHumanAgentPreStartChat,
   BusEventType,
 } from '../../../types/events/eventBusTypes';
@@ -352,7 +354,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
       await serviceManager.fire(event);
       inPreStartHandlers = false;
 
-      if (event.cancelStartChat) {
+      if (event.cancel || event.cancelStartChat) {
         // Abort the connecting.
         this.chatStarted = false;
         await this.fireEndChat(false, true);
@@ -511,7 +513,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
     let event: BusEventHumanAgentPreEndChat;
     if (isConnected) {
       event = await this.firePreEndChat(false);
-      if (event.cancelEndChat) {
+      if (event.cancel || event.cancelEndChat) {
         return;
       }
     }
@@ -581,7 +583,8 @@ class HumanAgentServiceImpl implements HumanAgentService {
   }
 
   /**
-   * Sends a message to the agent in the service desk.
+   * Sends a message to the agent in the service desk. A `human_agent:pre:send` handler can
+   * cancel it.
    *
    * @param text The message from the user.
    * @param uploads An optional set of files to upload.
@@ -613,11 +616,15 @@ class HumanAgentServiceImpl implements HumanAgentService {
     serviceManager.store.dispatch(actions.clearStructuredData(true));
 
     // Fire the pre:send event that will allow code to customize the message.
-    await serviceManager.fire({
+    const preSendEvent: BusEventHumanAgentPreSend = {
       type: BusEventType.HUMAN_AGENT_PRE_SEND,
       data: originalMessage,
       files: uploads,
-    });
+    };
+    await serviceManager.fire(preSendEvent);
+    if (preSendEvent.cancel) {
+      return;
+    }
 
     // Add the outgoing message to the store immediately.
     const textMessage: LocalMessageItem<TextItem> = inputItemToLocalItem(
@@ -1262,15 +1269,17 @@ class HumanAgentServiceImpl implements HumanAgentService {
     if (!responseUserProfile) {
       responseUserProfile = this.persistedHumanAgentState().responseUserProfile;
     }
-    const { localMessage, originalMessage } =
-      await createHumanAgentLocalMessage(
-        agentMessageType,
-        this.serviceManager,
-        responseUserProfile,
-        fireEvents
-      );
+    const created = await createHumanAgentLocalMessage(
+      agentMessageType,
+      this.serviceManager,
+      responseUserProfile,
+      fireEvents
+    );
+    if (!created) {
+      return;
+    }
     await addMessages(
-      [toPair([localMessage], originalMessage)],
+      [toPair([created.localMessage], created.originalMessage)],
       !this.isSuspended(),
       this.serviceManager
     );
@@ -1475,11 +1484,15 @@ class ServiceDeskCallbackImpl<
     responseUserProfile = cloneDeep(responseUserProfile);
 
     // Fire the pre:receive event that will allow code to customize the message.
-    await serviceManager.fire({
+    const preReceiveEvent: BusEventHumanAgentPreReceive = {
       type: BusEventType.HUMAN_AGENT_PRE_RECEIVE,
       data: messageResponse,
       responseUserProfile,
-    });
+    };
+    await serviceManager.fire(preReceiveEvent);
+    if (preReceiveEvent.cancel) {
+      return;
+    }
 
     messageResponse.message_options = messageResponse.message_options || {};
     messageResponse.message_options.response_user_profile = responseUserProfile;
@@ -1581,7 +1594,7 @@ class ServiceDeskCallbackImpl<
     }
 
     const event = await this.service.firePreEndChat(true);
-    if (event.cancelEndChat) {
+    if (event.cancel || event.cancelEndChat) {
       return;
     }
 

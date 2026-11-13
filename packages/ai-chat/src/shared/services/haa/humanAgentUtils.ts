@@ -8,7 +8,10 @@
  */
 
 import { captureMessageEvent } from '../../utils/messageEventOwnership';
-import { BusEventType } from '../../../types/events/eventBusTypes';
+import {
+  BusEventHumanAgentPreReceive,
+  BusEventType,
+} from '../../../types/events/eventBusTypes';
 import { outputItemToLocalItem } from '../../schema/outputItemToLocalItem';
 import actions from '../../store/actions';
 import { markHumanAgentIngress } from '../../store/messageOwnership';
@@ -47,7 +50,8 @@ function toPair(localMessages: LocalMessageItem[], originalMessage: Message) {
 }
 
 /**
- * Create a local message that represent a status message to display to the user.
+ * Create a local message that represent a status message to display to the user. Returns null
+ * when a `human_agent:pre:receive` handler cancels the message.
  */
 async function createHumanAgentLocalMessage(
   agentMessageType: HumanAgentMessageType,
@@ -78,10 +82,14 @@ async function createHumanAgentLocalMessage(
   }
 
   if (fireEvents) {
-    await serviceManager.fire({
+    const preReceiveEvent: BusEventHumanAgentPreReceive = {
       type: BusEventType.HUMAN_AGENT_PRE_RECEIVE,
       data: originalMessage,
-    });
+    };
+    await serviceManager.fire(preReceiveEvent);
+    if (preReceiveEvent.cancel) {
+      return null;
+    }
   }
   deepFreeze(originalMessage);
   if (fireEvents) {
@@ -303,6 +311,9 @@ async function addHumanAgentEndChatMessage(
     responseUserProfile,
     fireEvents
   );
+  if (!endChatMessage) {
+    return;
+  }
   await addMessages(
     [toPair([endChatMessage.localMessage], endChatMessage.originalMessage)],
     !wasSuspended,

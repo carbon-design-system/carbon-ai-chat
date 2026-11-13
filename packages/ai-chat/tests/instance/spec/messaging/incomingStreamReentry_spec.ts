@@ -120,7 +120,12 @@ it('aborts the captured controllers before clearAll advances the generation and 
   const { instance, store, serviceManager, signals } = await renderTwoStreams();
   const lifetime = serviceManager.messageCoordinator.incomingWriteLifetime;
   const originalGeneration = lifetime.state.generation;
-  const aborts: { id: string; generation: number }[] = [];
+  const originalUpdaterGeneration = lifetime.state.updaterGeneration;
+  const aborts: {
+    id: string;
+    generation: number;
+    updaterGeneration: number;
+  }[] = [];
   const updater = jest.fn(() => response('abort-write'));
   let removal: Promise<void>;
   let write: Promise<void>;
@@ -128,7 +133,11 @@ it('aborts the captured controllers before clearAll advances the generation and 
     signal.addEventListener(
       'abort',
       () => {
-        aborts.push({ id, generation: lifetime.state.generation });
+        aborts.push({
+          id,
+          generation: lifetime.state.generation,
+          updaterGeneration: lifetime.state.updaterGeneration,
+        });
         if (id === 'a') {
           removal = instance.messaging.removeMessages(['b']);
           write = instance.messaging.upsertMessage(
@@ -147,13 +156,18 @@ it('aborts the captured controllers before clearAll advances the generation and 
   });
   expect(removal).toBeDefined();
   expect(write).toBeDefined();
-  // Restart invalidates pending writes once before clearAll runs. Both aborts
-  // still see that generation; clearAll advances it only after the callbacks.
+  // Restart drops upserts waiting on their updater once, before clearAll runs. Both
+  // aborts see that, and the write generation clearAll advances only after them.
+  const seen = {
+    generation: originalGeneration,
+    updaterGeneration: originalUpdaterGeneration + 1,
+  };
   expect(aborts).toEqual([
-    { id: 'a', generation: originalGeneration + 1 },
-    { id: 'b', generation: originalGeneration + 1 },
+    { id: 'a', ...seen },
+    { id: 'b', ...seen },
   ]);
-  expect(lifetime.state.generation).toBe(originalGeneration + 2);
+  expect(lifetime.state.generation).toBe(originalGeneration + 1);
+  expect(lifetime.state.updaterGeneration).toBe(originalUpdaterGeneration + 1);
   expect(updater).not.toHaveBeenCalled();
   expect(store.getState().allMessagesByID['abort-write']).toBeUndefined();
   expect(store.getState().allMessagesByID.a).toBeUndefined();

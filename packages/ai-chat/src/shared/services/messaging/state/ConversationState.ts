@@ -123,6 +123,11 @@ class ConversationState {
     return this.startedRequests.get(key)?.id ?? key;
   }
 
+  /** True while the response streams in, from its first chunk or streaming upsert until it settles. */
+  isResponseStreaming(messageID: string) {
+    return this.activeResponses.has(messageID);
+  }
+
   /** The responses still streaming for the request `key` names. */
   activeResponsesOf(key: string) {
     return [...this.activeResponses].filter(

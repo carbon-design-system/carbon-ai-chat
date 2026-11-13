@@ -257,6 +257,7 @@ class MessageCoordinator {
   isIncomingWriteStale(stamp: UpsertStamp, requestID?: string): boolean {
     return (
       !stamp.isCurrent() ||
+      stamp.droppedByRestart ||
       stamp.generation !== this.incomingWriteLifetime.state.generation ||
       stamp.restartCount !== this.serviceManager.restartCount ||
       this.isRequestFromPreviousConversation(requestID)
@@ -320,6 +321,10 @@ class MessageCoordinator {
 
   removeMessages(messageIDs: string[]) {
     return this.getFullResponseWorkflow().removeMessages(messageIDs);
+  }
+
+  dropCanceledReply(messageID: string) {
+    return this.getFullResponseWorkflow().dropCanceledReply(messageID);
   }
 
   incomingAgentItemIdentity(message: MessageResponse, index: number) {
@@ -911,6 +916,10 @@ class MessageCoordinator {
 
   isResponseOwnedByRequest(messageID: string, requestID: string) {
     return this.state.isResponseOwnedByRequest(messageID, requestID);
+  }
+
+  isResponseStreaming(messageID: string) {
+    return this.state.isResponseStreaming(messageID);
   }
 
   responseRemoved(messageID: string) {
