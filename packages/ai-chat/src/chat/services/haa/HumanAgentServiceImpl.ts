@@ -287,27 +287,12 @@ class HumanAgentServiceImpl implements HumanAgentService {
     localConnectMessage: LocalMessageItem<ConnectToHumanAgentItem>,
     originalMessage: Message
   ): Promise<void> {
-    // A service that replaced an idle one creates its desk here; a failed factory leaves no desk.
-    await this.initialize().catch(() => {});
-    if (!this.serviceDesk) {
-      // No service desk connected.
-      throw new Error('A service desk has not been configured.');
-    }
-
-    if (
-      this.serviceManager.store.getState().persistedToBrowserStorage
-        .humanAgentState.isSuspended
-    ) {
-      // If the user is currently engaged in a conversation with an agent that is suspended and we start a new chat, we
-      // need to end the current conversation first. We do still want to generate the "agent left" message however but
-      // not the "bot return" message that occurs on a delay.
-      await this.endChat(true, true, false);
-    }
-
-    if (this.chatStarted) {
-      throw new Error(
-        'A chat is already running. A call to endChat must be made before a new chat can start.'
-      );
+    // The catch below reports a failed start to the user; a start that can't begin is only logged.
+    try {
+      await this.prepareToStartChat();
+    } catch (error) {
+      consoleError('[startChat] The agent chat could not start.', error);
+      throw error;
     }
 
     const { serviceManager } = this;
@@ -371,6 +356,34 @@ class HumanAgentServiceImpl implements HumanAgentService {
       this.cancelHumanAgentJoinedTimer();
 
       throw error;
+    }
+  }
+
+  /**
+   * Checks that a new agent chat can start, ending a suspended one first. Throws when it can't.
+   */
+  private async prepareToStartChat() {
+    // A service that replaced an idle one creates its desk here; a failed factory leaves no desk.
+    await this.initialize().catch(() => {});
+    if (!this.serviceDesk) {
+      // No service desk connected.
+      throw new Error('A service desk has not been configured.');
+    }
+
+    if (
+      this.serviceManager.store.getState().persistedToBrowserStorage
+        .humanAgentState.isSuspended
+    ) {
+      // If the user is currently engaged in a conversation with an agent that is suspended and we start a new chat, we
+      // need to end the current conversation first. We do still want to generate the "agent left" message however but
+      // not the "bot return" message that occurs on a delay.
+      await this.endChat(true, true, false);
+    }
+
+    if (this.chatStarted) {
+      throw new Error(
+        'A chat is already running. A call to endChat must be made before a new chat can start.'
+      );
     }
   }
 
@@ -880,7 +893,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
       config.public.serviceDesk?.skipConnectHumanAgentCard &&
       agentAvailability === HumanAgentsOnlineStatus.ONLINE
     ) {
-      // startChat reports a failed start to the user and ends the request itself.
+      // startChat logs every failure, and reports a failed start to the user and ends the request itself.
       this.serviceManager.humanAgentService
         .startChat(localMessageItem, fullMessage)
         .catch(() => {});

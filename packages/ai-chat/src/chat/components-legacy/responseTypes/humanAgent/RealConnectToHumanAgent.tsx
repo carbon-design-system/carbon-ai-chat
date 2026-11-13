@@ -102,8 +102,8 @@ const selectRealConnectStrings = (state: AppState) => ({
 });
 
 /**
- * Starts the agent chat. A failed start is already shown to the user and ends the request, so the rejection is
- * dropped here.
+ * Starts the agent chat. startChat logs every failure, and a failed start is already shown to the user and ends the
+ * request, so the rejection is dropped here.
  */
 function startChat(
   serviceManager: RealConnectToHumanAgentProps['serviceManager'],

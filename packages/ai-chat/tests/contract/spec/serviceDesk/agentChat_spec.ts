@@ -546,6 +546,36 @@ describe('the connect-to-agent card', () => {
   });
 });
 
+// @covers config.serviceDeskFactory
+describe('the connect-to-agent card with no desk', () => {
+  contractSetup();
+
+  it('logs the error when the factory failed and the user clicks its button', async () => {
+    const error = jest.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const { instance } = await openChat({
+        serviceDeskFactory: () => Promise.reject(new Error('Contract no desk')),
+        strings: STRINGS,
+      });
+      await addConnect(instance);
+      await waitFor(() => byRole('button', STRINGS.agent_startChat));
+      error.mockClear();
+      await click(byRole('button', STRINGS.agent_startChat));
+      await waitFor(() => expect(error).toHaveBeenCalled());
+      expect(
+        error.mock.calls.some((call) =>
+          call.some((value) => value instanceof Error)
+        )
+      ).toBe(true);
+      expect(humanAgent(instance)).toEqual(
+        expect.objectContaining({ isConnecting: false, isConnected: false })
+      );
+    } finally {
+      error.mockRestore();
+    }
+  });
+});
+
 /** Opens the chat and joins an agent through the card. */
 async function openAndJoin(desk: FakeDesk) {
   const opened = await openAndConnectByCard(desk);
