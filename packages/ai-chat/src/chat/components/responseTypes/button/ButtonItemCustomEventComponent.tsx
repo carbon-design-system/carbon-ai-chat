@@ -20,6 +20,7 @@ import { selectInputIsReadonly } from '../../../../sdk/store/selectors';
 import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
 import {
   ButtonItem,
+  MessageRequest,
   MessageResponse,
 } from '../../../../types/messaging/Messages';
 import { BusEventType } from '../../../../types/events/eventBusTypes';
@@ -32,18 +33,19 @@ import { BaseButtonItemComponent } from './BaseButtonItemComponent';
 function ButtonItemCustomEventComponent({
   localMessageItem,
   fullMessage,
+  optionSelected,
 }: {
   localMessageItem: LocalMessageItem<ButtonItem>;
   fullMessage: MessageResponse;
+  /** The request recorded for the button, from the item's view flags. */
+  optionSelected?: MessageRequest;
 }) {
   const serviceManager = useServiceManager();
   const messageItem = localMessageItem.item;
-  const { ui_state } = localMessageItem;
   const { image_url, alt_text, label, kind, value, size, is, icon } =
     messageItem;
   const isInputReadonly = useSelector(selectInputIsReadonly);
-  const isDisabled =
-    Boolean(value && ui_state.optionSelected) || isInputReadonly;
+  const isDisabled = Boolean(value && optionSelected) || isInputReadonly;
   const TouchInteraction = carbonIconToReact(TouchInteraction16);
   const CustomIcon = customIconToReact(icon);
 

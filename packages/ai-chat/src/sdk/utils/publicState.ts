@@ -23,6 +23,7 @@ import {
 import {
   type ItemPlan,
   PublicMessageItemsProjection,
+  itemIDsByLocalID,
   planMessageItems,
   planSources,
 } from './publicMessageItems';
@@ -365,6 +366,17 @@ export class PublicStateSnapshotCache {
     });
 
     return Object.freeze(snapshot);
+  }
+
+  /**
+   * The public item ID of a local item in a state, or `undefined` when the list doesn't draw it.
+   * It reads the plan `messageItems` is built from, so it costs nothing more once that's built.
+   */
+  messageItemIDOf(
+    state: ConversationState,
+    localItemID: string
+  ): string | undefined {
+    return itemIDsByLocalID(this.getItemPlans(state).plans).get(localItemID);
   }
 
   /** The plan of `messageItems` for a state, shared with the next state whose messages didn't change. */

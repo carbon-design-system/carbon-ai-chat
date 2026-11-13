@@ -47,6 +47,10 @@ import { EventBus } from '../src/sdk/events/EventBus';
 import { viewReducer } from '../src/chat/state/reducer';
 import { createInitialViewState } from '../src/chat/state/initialState';
 import type { ConversationState } from '../src/types/state/AppState';
+import {
+  itemIDsByLocalID,
+  planStateMessageItems,
+} from '../src/sdk/utils/publicMessageItems';
 
 // ============================================================================
 // Configuration helpers
@@ -272,7 +276,8 @@ export function TestChatContext({
 
 /**
  * Runs one action through both partitions the way the store does: the
- * conversation reducer, then the view's with the conversation state after it.
+ * conversation reducer, then the view's with the conversation state after it
+ * and before it.
  */
 export function appRootReducer(
   state: AppState,
@@ -280,7 +285,7 @@ export function appRootReducer(
 ): AppState {
   const conversation = reduceWithMessageOwnership(state, action)
     .state as AppState;
-  const view = viewReducer(state.view, action, conversation);
+  const view = viewReducer(state.view, action, conversation, state);
   return Object.is(view, conversation.view)
     ? conversation
     : { ...conversation, view };
@@ -429,4 +434,23 @@ export function slotSourceOf(events: unknown): SlotSource {
       ? events
       : { on: (): void => undefined };
   return slotSource({ eventBus } as unknown as ServiceManager);
+}
+
+/**
+ * The view's flags for the item a local item draws, which the view partition
+ * keys by public item ID.
+ */
+export function itemFlagsFor(state: AppState, localItemID: string) {
+  const itemID = itemIDsByLocalID(planStateMessageItems(state)).get(
+    localItemID
+  );
+  return itemID === undefined ? undefined : state.view.messageItemFlags[itemID];
+}
+
+/** Each drawn local item whose view flags record a choice, with the request it sent. */
+export function itemsWithOptionSelected(state: AppState) {
+  return planStateMessageItems(state).flatMap((plan) => {
+    const optionSelected = state.view.messageItemFlags[plan.id]?.optionSelected;
+    return optionSelected ? [{ local: plan.local, optionSelected }] : [];
+  });
 }

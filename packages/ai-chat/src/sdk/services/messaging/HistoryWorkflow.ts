@@ -79,7 +79,11 @@ class HistoryWorkflow {
 
     this.serviceManager.store.dispatch(
       retainHistoryOwnership(
-        actions.hydrateMessageHistory(newAppStateMessages, true),
+        actions.hydrateMessageHistory(
+          newAppStateMessages,
+          true,
+          history.optionsSelected
+        ),
         ownership
       )
     );
@@ -124,7 +128,11 @@ class HistoryWorkflow {
     const { serviceManager } = this;
     // User-defined response handlers read history from the store when their events fire.
     serviceManager.store.dispatch(
-      actions.hydrateMessageHistory(history.messageHistory)
+      actions.hydrateMessageHistory(
+        history.messageHistory,
+        false,
+        history.optionsSelected
+      )
     );
     const { messageIDs } = history.messageHistory.assistantMessageState;
     const lastId = messageIDs[messageIDs.length - 1];

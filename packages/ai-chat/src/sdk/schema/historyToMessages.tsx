@@ -50,6 +50,7 @@ import {
   ButtonItemType,
   GenericItem,
   Message,
+  MessageRequest,
   MessageResponse,
   PanelItem,
   SingleOption,
@@ -75,6 +76,12 @@ interface LoadedHistory {
    * latest message.
    */
   latestPanelLocalMessageItem: LocalMessageItem<PanelItem>;
+
+  /**
+   * The request each choice the history shows was made with, keyed by the ID of the local item that offered the
+   * choice: an option, date, or post-back button. The view keeps these; the local items don't.
+   */
+  optionsSelected: ObjectMap<MessageRequest>;
 }
 
 /**
@@ -177,6 +184,7 @@ async function notesToLoadedHistory(
       },
       latestTransferToHumanAgentResponse: null,
       latestPanelLocalMessageItem: null,
+      optionsSelected: {},
     },
     latestMessageResponsePanelID: null,
   };
@@ -491,14 +499,15 @@ function markIsLatestWelcomeNode(loadingState: LoadingState) {
 
 /**
  * Goes through all the messages looking for the option and suggestion responses. For each of those, this will
- * look to see if there's a related message request where the user chose one of the options and then marks the
- * option or suggestion with the value that was chosen.
+ * look to see if there's a related message request where the user chose one of the options and then records the
+ * request it sent in `optionsSelected`, under the ID of the local item that offered it.
  */
 function markSelectedOptions({
   allMessages,
   allLocalMessagesByID,
   relatedMessageByID,
   localMessagesByOriginalMessageID,
+  loadedHistory,
 }: LoadingState) {
   allMessages.forEach((message) => {
     if (isResponse(message)) {
@@ -559,8 +568,9 @@ function markSelectedOptions({
         relatedRequest
       );
       if (selectedIndex !== -1) {
-        candidates[selectedIndex].localMessage.ui_state.optionSelected =
-          relatedRequest;
+        loadedHistory.optionsSelected[
+          candidates[selectedIndex].localMessage.ui_state.id
+        ] = relatedRequest;
       }
     }
   });

@@ -46,7 +46,6 @@ import {
   HYDRATE_CHAT,
   HYDRATE_MESSAGE_HISTORY,
   MERGE_HISTORY,
-  MESSAGE_SET_OPTION_SELECTED,
   REMOVE_INPUT_FILE,
   REMOVE_LOCAL_MESSAGE_ITEM,
   REMOVE_MESSAGES,
@@ -100,7 +99,6 @@ import {
 
 import {
   Message,
-  MessageRequest,
   MessageResponse,
   MessageUIStateInternal,
   MessageResponseHistory,
@@ -506,27 +504,6 @@ const stateReducers: { [key: string]: ReducerType } = {
     }
 
     return { ...state, allMessageItemsByID: newLocalItems };
-  },
-
-  [MESSAGE_SET_OPTION_SELECTED]: (
-    state: ConversationState,
-    action: { sentMessage: MessageRequest; messageID: string }
-  ): ConversationState => {
-    const newMessagesByID = {
-      ...state.allMessageItemsByID,
-    };
-    newMessagesByID[action.messageID] = {
-      ...state.allMessageItemsByID[action.messageID],
-      ui_state: {
-        ...state.allMessageItemsByID[action.messageID].ui_state,
-        optionSelected: action.sentMessage,
-      },
-    };
-
-    return {
-      ...state,
-      allMessageItemsByID: newMessagesByID,
-    };
   },
 
   [SET_APP_STATE_VALUE]: (

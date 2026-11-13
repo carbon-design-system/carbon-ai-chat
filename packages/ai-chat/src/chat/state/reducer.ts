@@ -78,6 +78,7 @@ import {
   VIEW_STATE_LAUNCHER_OPEN,
 } from './defaults';
 import type { MountViewState } from './initialState';
+import { reactToItemWrites } from './messageItemFlags';
 import { createDefaultViewPersistedState } from './persisted';
 
 /** Agent messages that never count as unread. */
@@ -737,15 +738,30 @@ function reactToConversation(
 
 /**
  * The view partition's reducer: its own actions, then its reactions to the
- * conversation action, with the conversation state after that action.
+ * conversation action, with the conversation state after that action and,
+ * for the per-item flags, the state before it.
  */
 const viewReducer: PartitionReducer<ViewPartitionState, ConversationState> = (
   state,
   action,
-  after
+  after,
+  before
 ) => {
   const own = viewReducers[action.type];
-  return reactToConversation(own ? own(state, action) : state, action, after);
+  const next = reactToConversation(
+    own ? own(state, action) : state,
+    action,
+    after
+  );
+  const messageItemFlags = reactToItemWrites(
+    next.messageItemFlags,
+    action,
+    after,
+    before
+  );
+  return messageItemFlags === next.messageItemFlags
+    ? next
+    : { ...next, messageItemFlags };
 };
 
 export { viewReducer };

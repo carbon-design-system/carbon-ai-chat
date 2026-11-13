@@ -26,7 +26,10 @@ import {
 import { consoleError } from '../../../../sdk/utils/miscUtils';
 import { setMessageOptionSelectedFromView } from '../../../../sdk/utils/messageMetadataCommands';
 import { MessageSendSource } from '../../../../types/events/eventBusTypes';
-import { ButtonItem } from '../../../../types/messaging/Messages';
+import {
+  ButtonItem,
+  MessageRequest,
+} from '../../../../types/messaging/Messages';
 import { BaseButtonItemComponent } from './BaseButtonItemComponent';
 
 interface ButtonItemPostBackComponentProps extends HasRequestFocus {
@@ -36,6 +39,11 @@ interface ButtonItemPostBackComponentProps extends HasRequestFocus {
    * Indicates if this message is part the most recent message response that allows for input.
    */
   isMessageForInput: boolean;
+
+  /**
+   * The request the button sent when the user clicked it, from the item's view flags.
+   */
+  optionSelected?: MessageRequest;
 }
 
 /**
@@ -46,6 +54,7 @@ function ButtonItemPostBackComponent({
   localMessageItem,
   requestFocus,
   isMessageForInput,
+  optionSelected,
 }: ButtonItemPostBackComponentProps) {
   const serviceManager = useServiceManager();
   const Send = carbonIconToReact(Send16);
@@ -55,7 +64,7 @@ function ButtonItemPostBackComponent({
   const CustomIcon = customIconToReact(icon);
   const isInputReadonly = useSelector(selectInputIsReadonly);
   const { controlText } = resolveChoiceText(messageItem);
-  const isSelected = Boolean(ui_state.optionSelected);
+  const isSelected = Boolean(optionSelected);
   const isDisabled = !isMessageForInput || isSelected || isInputReadonly;
 
   const onClickHandler = useCallback(() => {

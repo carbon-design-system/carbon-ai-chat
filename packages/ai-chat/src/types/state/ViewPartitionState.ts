@@ -20,6 +20,7 @@ import type { CustomPanelState } from './panels/CustomPanelState';
 import type { WorkspacePanelState } from './panels/WorkspacePanelState';
 import type { HistoryPanelState } from './panels/HistoryPanelState';
 import type { MessagePanelState } from './panels/MessagePanelState';
+import type { MessageRequest } from '../messaging/Messages';
 
 /**
  * The saved view half: every saved field except the agent connection and
@@ -43,6 +44,22 @@ interface ChatPrompt {
   title?: string;
   /** Replaces the panel's default message. */
   message?: string;
+}
+
+/**
+ * The view's flags for one drawn message item. The item is named by its
+ * public ID (`ChatSDKMessageItem.id`), which stays the same when the chat
+ * rebuilds the item's local copy.
+ */
+interface MessageItemViewFlags {
+  /** The message the item belongs to. */
+  messageID: string;
+
+  /**
+   * The request the user's choice in this item sent: a chosen option, date,
+   * or post-back button. History loading restores it.
+   */
+  optionSelected?: MessageRequest;
 }
 
 /**
@@ -74,6 +91,14 @@ interface ViewPartitionState {
   /** The confirmation the chat is asking, if any. It outlives a mount. */
   prompt: ChatPrompt | null;
 
+  /**
+   * The view's flags for each message item that has any, keyed by public
+   * item ID. They outlive a mount. An item's flags go when the chat builds a
+   * new copy of the item, or removes it, as they did when they lived on the
+   * item's local copy.
+   */
+  messageItemFlags: Readonly<Record<string, Readonly<MessageItemViewFlags>>>;
+
   /** An ARIA message, announced whenever it changes. */
   announceMessage?: AnnounceMessage;
 
@@ -97,4 +122,9 @@ interface ViewPartitionState {
   persistedToBrowserStorage: ViewPersistedState;
 }
 
-export type { ChatPrompt, ViewPartitionState, ViewPersistedState };
+export type {
+  ChatPrompt,
+  MessageItemViewFlags,
+  ViewPartitionState,
+  ViewPersistedState,
+};
