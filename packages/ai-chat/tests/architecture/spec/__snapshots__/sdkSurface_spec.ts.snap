@@ -312,7 +312,8 @@ interface ChatSDKState (src/types/instance/ChatSDKState.ts)
   activeResponseId: string
   error?: Readonly<ChatSDKErrorData>
   hasInFlightUploads?: boolean
-  humanAgent: Readonly<PersistedHumanAgentState & { isConnecting: boolean; isScreenSharing?: boolean; }>
+  humanAgent: Readonly<PersistedHumanAgentState & { isConnecting: boolean; isScreenSharing?: boolean; isReconnecting?: boolean; isTyping?: boolean; availability?: AgentAvailability | null; isUploadingFile?: boolean; }>
+  isRestarting?: boolean
   messages: ReadonlyArray<Readonly<Message>>
   pendingUploads?: ReadonlyArray<ChatSDKPendingUpload>
   status: ConversationStatus

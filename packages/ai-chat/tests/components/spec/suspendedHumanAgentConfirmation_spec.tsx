@@ -49,8 +49,7 @@ function renderSuspendedCard() {
     originalMessage: {},
     disableUserInputs: false,
     serviceManager: { humanAgentService: { startChat } },
-    humanAgentState: {},
-    persistedHumanAgentState: { isSuspended: true },
+    humanAgent: { isSuspended: true },
     agentDisplayState: {},
     requestFocus,
   } as unknown as React.ComponentProps<typeof RealConnectToHumanAgent>;

@@ -21,11 +21,10 @@ import { HumanAgentsOnlineStatus } from '../../../../shared/services/haa/HumanAg
 import {
   AppState,
   HumanAgentDisplayState,
-  HumanAgentState,
 } from '../../../../types/state/AppState';
 import { useSelector } from '../../../hooks/useSelector';
 import { shallowEqual } from '../../../../shared/store/appStore';
-import { PersistedHumanAgentState } from '../../../../types/state/PersistedHumanAgentState';
+import type { PublicChatHumanAgentState } from '../../../../types/instance/ChatSDKState';
 import { HasRequestFocus } from '../../../../types/utilities/HasRequestFocus';
 import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
 import { AvailabilityMessage } from '../../humanAgent/AvailabilityMessage';
@@ -57,14 +56,14 @@ interface RealConnectToHumanAgentProps
   originalMessage: MessageResponse;
 
   /**
-   * The current application agent state.
+   * The ID of the connect card whose start is connecting, if any.
    */
-  humanAgentState: HumanAgentState;
+  activeLocalMessageID?: string;
 
   /**
-   * The current persisted agent state.
+   * The agent state, as public state publishes it.
    */
-  persistedHumanAgentState: PersistedHumanAgentState;
+  humanAgent: PublicChatHumanAgentState;
 
   /**
    * The current application agent state.
@@ -108,13 +107,12 @@ function RealConnectToHumanAgent(props: RealConnectToHumanAgentProps) {
     originalMessage,
     disableUserInputs,
     serviceManager,
-    humanAgentState,
+    activeLocalMessageID,
     requestFocus,
     agentDisplayState,
-    persistedHumanAgentState,
+    humanAgent,
   } = props;
-  const { activeLocalMessageID, availability, isConnecting } = humanAgentState;
-  const { isSuspended } = persistedHumanAgentState;
+  const { availability, isConnecting, isSuspended } = humanAgent;
 
   const [showConfirmSuspended, setShowConfirmSuspended] = useState(false);
   const viewState = useChatViewStateInstance();

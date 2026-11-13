@@ -36,6 +36,18 @@ type HumanAgentDisplayStateInput = Pick<
 >;
 
 /**
+ * The agent fields the display state depends on, named as `state.humanAgent` names them in
+ * public state, so the interface can pass that object in.
+ */
+interface HumanAgentDisplayInput {
+  isConnected: boolean;
+  isSuspended: boolean;
+  isConnecting: boolean;
+  isReconnecting?: boolean;
+  isTyping?: boolean;
+}
+
+/**
  * Compute the display state for the agent.
  */
 function selectHumanAgentDisplayState(
@@ -43,8 +55,23 @@ function selectHumanAgentDisplayState(
 ): HumanAgentDisplayState {
   const humanAgentState = getHumanAgentState(state);
   const persisted = getPersistedHumanAgent(state);
+  return humanAgentDisplayStateOf({
+    isConnected: persisted.isConnected,
+    isSuspended: persisted.isSuspended,
+    isConnecting: humanAgentState.isConnecting,
+    isReconnecting: humanAgentState.isReconnecting,
+    isTyping: humanAgentState.isHumanAgentTyping,
+  });
+}
 
-  if (persisted.isSuspended) {
+/**
+ * Compute the display state for the agent from its connection fields. A missing optional field
+ * reads as `false`; the chat always sets them.
+ */
+function humanAgentDisplayStateOf(
+  agent: HumanAgentDisplayInput
+): HumanAgentDisplayState {
+  if (agent.isSuspended) {
     return {
       isConnectingOrConnected: false,
       disableInput: false,
@@ -53,8 +80,9 @@ function selectHumanAgentDisplayState(
     };
   }
 
-  const { isReconnecting, isConnecting, isHumanAgentTyping } = humanAgentState;
-  const { isConnected } = persisted;
+  const { isConnecting, isConnected } = agent;
+  const isReconnecting = Boolean(agent.isReconnecting);
+  const isHumanAgentTyping = Boolean(agent.isTyping);
 
   let inputPlaceholderKey: keyof LanguagePack;
   if (isConnecting) {
@@ -216,7 +244,7 @@ function selectLanguagePack(
 }
 
 export {
-  selectHumanAgentDisplayState,
+  humanAgentDisplayStateOf,
   selectIsInputToHumanAgent,
   selectInputState,
   selectInputIsReadonly,

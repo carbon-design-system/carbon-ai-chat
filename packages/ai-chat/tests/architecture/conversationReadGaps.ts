@@ -19,9 +19,9 @@
  * an alias, fails the spec until the entry changes.
  *
  * Owners:
- * - #2693: messages and message items, which the message model replaces, and
- *   restart in progress.
- * - #2352: the agent state the interface shows beyond the connection.
+ * - #2693: messages and message items, which the message model replaces.
+ * - #2824: view state the conversation partition still holds: which connect
+ *   card is connecting, and the screen-share request the modal shows.
  * - #2747: read-only state, the history load trigger, and attaching the view.
  * - #2748: the shell's home screen and loading decisions.
  * - #2751: the input slice, its routing to the agent, and its flags,
@@ -65,52 +65,10 @@ const conversationReadGaps: ConversationReadGap[] = [
     owner: '#2693',
   },
   {
-    file: 'src/chat/components-legacy/humanAgent/HumanAgentBanner.tsx',
-    read: 'humanAgentState',
-    count: 1,
-    owner: '#2352',
-  },
-  {
-    file: 'src/chat/components-legacy/humanAgent/HumanAgentBanner.tsx',
-    read: 'selectHumanAgentDisplayState()',
-    count: 1,
-    owner: '#2352',
-  },
-  {
-    file: 'src/chat/components-legacy/humanAgent/HumanAgentBannerContainer.tsx',
-    read: 'humanAgentState',
-    count: 1,
-    owner: '#2352',
-  },
-  {
-    file: 'src/chat/components-legacy/humanAgent/HumanAgentBannerContainer.tsx',
-    read: 'selectHumanAgentDisplayState()',
-    count: 1,
-    owner: '#2352',
-  },
-  {
     file: 'src/chat/components-legacy/MessagesComponent.tsx',
     read: 'allMessagesByID',
     count: 1,
     owner: '#2693',
-  },
-  {
-    file: 'src/chat/components-legacy/MessagesComponent.tsx',
-    read: 'humanAgentState',
-    count: 1,
-    owner: '#2352',
-  },
-  {
-    file: 'src/chat/components-legacy/MessagesComponent.tsx',
-    read: 'persistedToBrowserStorage',
-    count: 1,
-    owner: '#2352',
-  },
-  {
-    file: 'src/chat/components-legacy/MessagesComponent.tsx',
-    read: 'selectHumanAgentDisplayState()',
-    count: 4,
-    owner: '#2352',
   },
   {
     file: 'src/chat/components-legacy/MessagesComponent.tsx',
@@ -138,27 +96,9 @@ const conversationReadGaps: ConversationReadGap[] = [
   },
   {
     file: 'src/chat/components-legacy/responseTypes/humanAgent/ConnectToHumanAgent.tsx',
-    read: 'humanAgentState',
+    read: 'humanAgentState.activeLocalMessageID',
     count: 1,
-    owner: '#2352',
-  },
-  {
-    file: 'src/chat/components-legacy/responseTypes/humanAgent/ConnectToHumanAgent.tsx',
-    read: 'selectHumanAgentDisplayState()',
-    count: 1,
-    owner: '#2352',
-  },
-  {
-    file: 'src/chat/components/header/chat-header.ts',
-    read: 'isRestarting',
-    count: 1,
-    owner: '#2693',
-  },
-  {
-    file: 'src/chat/components/header/chat-header.ts',
-    read: 'selectHumanAgentDisplayState()',
-    count: 1,
-    owner: '#2352',
+    owner: '#2824',
   },
   {
     file: 'src/chat/components/input/ChatInput.ts',
@@ -392,15 +332,9 @@ const conversationReadGaps: ConversationReadGap[] = [
   },
   {
     file: 'src/chat/utils/shellLifecycle.ts',
-    read: 'humanAgentState.fileUploadInProgress',
-    count: 2,
-    owner: '#2352',
-  },
-  {
-    file: 'src/chat/utils/shellLifecycle.ts',
     read: 'humanAgentState.showScreenShareRequest',
     count: 2,
-    owner: '#2352',
+    owner: '#2824',
   },
   // Also #2751: the shell disables send until history loads.
   {
@@ -432,12 +366,6 @@ const conversationReadGaps: ConversationReadGap[] = [
     read: 'selectCustomPromptLineVisible()',
     count: 2,
     owner: '#2751',
-  },
-  {
-    file: 'src/chat/utils/shellLifecycle.ts',
-    read: 'selectHumanAgentDisplayState()',
-    count: 4,
-    owner: '#2352',
   },
   {
     file: 'src/chat/utils/shellLifecycle.ts',
