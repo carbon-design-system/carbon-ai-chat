@@ -33,9 +33,11 @@ export type PersistableState = Omit<
  * {@link PersistedStateConfig.onStateChange}. When neither field is set, the default `sessionStorage`
  * behavior is unchanged.
  *
- * Round-trip the whole {@link PersistableState} value. Dropping fields such as `disclaimersAccepted`,
- * `humanAgentState`, or `hasSentNonWelcomeMessage` regresses the experience on reload: the disclaimer
- * re-prompts, an in-progress human-agent chat cannot reconnect, and the welcome message is re-sent.
+ * Round-trip the whole {@link PersistableState} value. Dropping a field such as `disclaimersAccepted`
+ * or `humanAgentState` regresses the experience on reload: the disclaimer re-prompts, and an
+ * in-progress human-agent chat can't reconnect. `hasSentNonWelcomeMessage` doesn't decide whether the
+ * welcome is sent. A mount with no history sends one unless {@link PublicConfigMessaging.skipWelcome}
+ * is set.
  *
  * @category Config
  * @experimental
@@ -46,6 +48,10 @@ export interface PersistedStateConfig {
    * asynchronous load (for example from your own backend) before constructing the chat and pass the
    * resolved value here. When omitted, the chat starts a fresh session but still reports changes to
    * {@link PersistedStateConfig.onStateChange}.
+   *
+   * A restored session never restores an expanded launcher or a pending call to action:
+   * `launcherIsExpanded` and `launcherShouldStartCallToActionCounterIfEnabled` always start false, as
+   * they do for a session restored from `sessionStorage`.
    *
    * @experimental
    */

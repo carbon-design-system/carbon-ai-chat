@@ -95,8 +95,6 @@ describe('destroySession', () => {
   });
 
   it('closes the main window to the launcher, firing only state:change', async () => {
-    // The JSDoc names only the stored record; on `main` the reset also closes
-    // the main window, with no view:pre:change or view:change.
     const { instance } = await usedChat();
     const events = recordEvents(instance);
     await destroy(instance);
@@ -121,8 +119,6 @@ describe('destroySession', () => {
   });
 
   it('cancels an in-flight send with CONVERSATION_RESTARTED, and the send settles', async () => {
-    // Not in the JSDoc: on `main` the reset cancels every pending request and
-    // adds a system message after the canceled request.
     const backend = fakeBackend();
     const { instance } = await contractChat({
       messaging: {

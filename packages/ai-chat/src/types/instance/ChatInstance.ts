@@ -361,11 +361,20 @@ interface ChatActions {
   serviceDesk: ChatInstanceServiceDeskActions;
 
   /**
-   * Remove any record of the current session from the browser's SessionStorage. The chat saves a new record at its next
-   * change.
+   * Resets the saved session to its defaults and removes its record from the browser's sessionStorage. The chat saves
+   * a new record at its next change.
    *
-   * @param keepOpenState If we are destroying the session to restart the chat this can be used to preserve if the web
-   * chat is open.
+   * It also does the following:
+   * - Closes the main window to the launcher, unless `keepOpenState` is true. This fires
+   *   {@link BusEventType.STATE_CHANGE}, but not {@link BusEventType.VIEW_PRE_CHANGE} or
+   *   {@link BusEventType.VIEW_CHANGE}.
+   * - Cancels any in-flight send with {@link CancellationReason.CONVERSATION_RESTARTED} and adds a message that says
+   *   the request was canceled.
+   *
+   * The messages stay in place, and a chat that has loaded doesn't load again. Reopening it calls no
+   * {@link PublicConfigMessaging.customLoadHistory}, sends no welcome, and fires no {@link BusEventType.CHAT_READY}.
+   *
+   * @param keepOpenState Keeps the main window open or closed as it is, instead of closing it to the launcher.
    *
    * @example Clear the persisted session
    * ```ts

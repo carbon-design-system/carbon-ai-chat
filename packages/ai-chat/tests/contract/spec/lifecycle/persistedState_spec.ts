@@ -155,9 +155,6 @@ describe('persistedState.initialState', () => {
   });
 
   it('sends the welcome on open even when it says a message was sent', async () => {
-    // The PersistedStateConfig JSDoc says dropping hasSentNonWelcomeMessage
-    // re-sends the welcome on reload. On `main` the flag doesn't gate the
-    // welcome: a new mount with no history sends it either way.
     const { instance, backend } = await mountWith({
       persistedState: {
         initialState: {
