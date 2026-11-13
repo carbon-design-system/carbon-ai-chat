@@ -251,6 +251,28 @@ describeShared('off', (makeDriver) => {
     await add(chat, 'r2');
     expect(handler).not.toHaveBeenCalled();
   });
+
+  it('removes the on registration first for a function given to both on and once', async () => {
+    const chat = await makeDriver();
+    const handler = jest.fn();
+    chat.on({ type: BusEventType.RECEIVE, handler });
+    chat.once({ type: BusEventType.RECEIVE, handler });
+    chat.off({ type: BusEventType.RECEIVE, handler });
+    await add(chat, 'r1');
+    await add(chat, 'r2');
+    expect(idsOf(handler)).toEqual(['r1']);
+  });
+
+  it('removes the on registration first even when once came first', async () => {
+    const chat = await makeDriver();
+    const handler = jest.fn();
+    chat.once({ type: BusEventType.RECEIVE, handler });
+    chat.on({ type: BusEventType.RECEIVE, handler });
+    chat.off({ type: BusEventType.RECEIVE, handler });
+    await add(chat, 'r1');
+    await add(chat, 'r2');
+    expect(idsOf(handler)).toEqual(['r1']);
+  });
 });
 
 // @covers instance.once

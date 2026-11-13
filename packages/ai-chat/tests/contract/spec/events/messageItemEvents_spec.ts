@@ -388,6 +388,7 @@ function customEventButton(label: string): GenericItem {
   } as GenericItem;
 }
 
+// @covers response-type.text config.strings
 describe('feedback buttons', () => {
   contractSetup();
 

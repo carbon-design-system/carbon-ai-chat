@@ -576,6 +576,52 @@ describe('the stop button', () => {
     expect(stopButtonCount()).toBe(0);
   });
 
+  // @covers instance.messaging.addMessageChunk
+  it('still takes a later complete_item without stream_stopped that names the stopped request', async () => {
+    const chat = await streamingChat();
+    const requestID = chat.started.sent.request.id;
+    await click(stopButton());
+    await act(() => chat.started.done);
+    const late = completeText('r1', 'a', 'Hello world');
+    late.streaming_metadata = { response_id: 'r1', request_id: requestID };
+    await addChunk(chat.instance, late);
+    expect(storedTexts(chat.instance, 'r1')).toEqual(['Hello world']);
+  });
+
+  // @covers instance.messaging.addMessageChunk
+  it('streams a later request that names itself, and shows the button for it', async () => {
+    const chat = await streamingChat();
+    await click(stopButton());
+    await act(() => chat.started.done);
+    await waitFor(() => expect(stopButtonCount()).toBe(0));
+    const next = await startSend(chat.sender, 'again');
+    const chunk = partialText('r2', 'a', 'Hi', { cancellable: true });
+    chunk.streaming_metadata = {
+      response_id: 'r2',
+      request_id: next.sent.request.id,
+    };
+    await addChunk(chat.instance, chunk);
+    await waitFor(() => expect(stopButtonCount()).toBe(1));
+    expect(storedTexts(chat.instance, 'r2')).toEqual(['Hi']);
+    expect(chat.instance.getState().status).toBe('streaming');
+  });
+
+  // @covers instance.messaging.addMessageChunk
+  it('streams a later request with no request_id, and shows the button for it', async () => {
+    const chat = await streamingChat();
+    await click(stopButton());
+    await act(() => chat.started.done);
+    await waitFor(() => expect(stopButtonCount()).toBe(0));
+    await startSend(chat.sender, 'again');
+    await addChunk(
+      chat.instance,
+      partialText('r2', 'a', 'Hi', { cancellable: true })
+    );
+    await waitFor(() => expect(stopButtonCount()).toBe(1));
+    expect(storedTexts(chat.instance, 'r2')).toEqual(['Hi']);
+    expect(chat.instance.getState().status).toBe('streaming');
+  });
+
   // @covers instance.messaging.upsertMessage export.aiChatEntry.MessageState
   it('still updates a response from a STREAMING upsert that names the stopped request, without the button', async () => {
     const chat = await openChat({ strings: STOP_STRINGS });
