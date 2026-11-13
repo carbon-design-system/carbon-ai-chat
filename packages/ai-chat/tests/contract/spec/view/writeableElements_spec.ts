@@ -23,29 +23,13 @@ import {
   contractChat,
   contractSetup,
   fakeBackend,
+  flatChildren,
   getByTestId,
   isShownWithin,
   pause,
   slotted,
   textResponse,
 } from '../../helpers';
-
-/**
- * What a user sees is the flat tree: a shadow host shows its shadow root, a
- * slot shows the nodes assigned to it (or its fallback), and anything else
- * shows its children. Writeable-element content that no rendered slot picks
- * up is not in it.
- */
-function flatChildren(node: Node): Node[] {
-  if (node instanceof Element && node.shadowRoot) {
-    return Array.from(node.shadowRoot.childNodes);
-  }
-  if (node instanceof HTMLSlotElement) {
-    const assigned = node.assignedNodes();
-    return assigned.length ? assigned : Array.from(node.childNodes);
-  }
-  return Array.from(node.childNodes);
-}
 
 /** The point landmarks a layout reads host content against. */
 const LANDMARKS = [

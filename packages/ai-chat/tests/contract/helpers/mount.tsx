@@ -46,7 +46,7 @@ export interface ContractMount {
 const MOUNT_TIMEOUT = 10000;
 
 /** How long a describe block's warm-up may take, under a loaded machine. */
-const WARM_UP_TIMEOUT = 60_000;
+const WARM_UP_TIMEOUT = 120_000;
 
 let lazyDepsLoaded: Promise<void> | null = null;
 

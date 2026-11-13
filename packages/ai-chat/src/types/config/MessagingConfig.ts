@@ -175,7 +175,8 @@ export interface ChatInstanceMessaging {
    * Clears the current conversation: removes every message and cancels any outstanding messages. Unlike
    * {@link ChatInstanceMessaging.restartConversation}, it fires no restart events, sends no new welcome request, and
    * leaves a conversation with a human agent alone. It will also clear any loading indicators UNLESS you have set
-   * {@link PublicConfigMessaging.messageLoadingIndicatorTimeoutSecs} to 0.
+   * {@link PublicConfigMessaging.messageLoadingIndicatorTimeoutSecs} to 0. Like a restart, it cancels each file
+   * upload still in progress: the upload's abort signal fires and its attachment leaves the input.
    */
   clearConversation: () => Promise<void>;
 
@@ -193,7 +194,8 @@ export interface ChatInstanceMessaging {
    * Restarts the conversation with the assistant. This does not make any changes to a conversation with a human agent.
    * This will clear all the current assistant messages from the main assistant view and cancel any outstanding
    * messages. It will also clear any loading indicators UNLESS you have set
-   * {@link PublicConfigMessaging.messageLoadingIndicatorTimeoutSecs} to 0.
+   * {@link PublicConfigMessaging.messageLoadingIndicatorTimeoutSecs} to 0. It also cancels each file upload still in
+   * progress: the upload's abort signal fires and its attachment leaves the input.
    *
    * If the main window is open and {@link PublicConfigMessaging.skipWelcome} isn't set, the chat then sends a new
    * welcome request, and the promise resolves only after {@link PublicConfigMessaging.customSendMessage} finishes with

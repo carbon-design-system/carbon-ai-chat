@@ -448,6 +448,7 @@ describe('cds-aichat-autocomplete', () => {
 
       expect(eventDetail).to.exist;
       expect(eventDetail.text).to.equal('inserted-value');
+      expect(eventDetail.item).to.deep.equal(itemWithValue);
       expect(eventDetail.text).to.not.equal(itemWithValue.label);
     });
 

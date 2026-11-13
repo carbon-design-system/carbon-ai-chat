@@ -9,9 +9,8 @@
 
 /**
  * Tiptap plain-text-paste extension. Intercepts paste/drop events,
- * extracts plain text, and inserts it as paragraph nodes split on
- * newlines. Schema-agnostic — only requires `paragraph` and `text`
- * nodes.
+ * extracts plain text, and inserts one paragraph per line. Only requires
+ * `paragraph` and `text` nodes.
  */
 
 import { Extension } from '@tiptap/core';
@@ -38,8 +37,10 @@ function createPastePlugin(): Plugin {
         }
 
         const { schema } = view.state;
-        const lines = text.replace(/\r\n?/g, '\n').split('\n');
-        const nodes = linesToNodes(schema, lines);
+        const nodes = linesToNodes(
+          schema,
+          text.replace(/\r\n?/g, '\n').split('\n')
+        );
 
         // openStart=1/openEnd=1 marks the boundary paragraphs as open so
         // ProseMirror merges them into the surrounding content rather than

@@ -80,10 +80,10 @@ export class WindowOpenState {
     }
     this.wasHydrated = options.isHydrated;
     if (options.viewStateMainWindow) {
-      const shouldFocus = !this.snapshot.open || this.snapshot.closing;
+      const opening = !this.snapshot.open || this.snapshot.closing;
       this.cancelClose();
       this.setSnapshot({ open: true, closing: false });
-      if (shouldFocus) {
+      if (opening) {
         options.requestFocus();
       }
     } else if (this.snapshot.open && this.closeTimeout === null) {

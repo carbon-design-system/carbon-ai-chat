@@ -14,7 +14,7 @@ import {
   selectIsInputToHumanAgent,
 } from '../store/selectors';
 import { hasCustomPromptLine } from './customPromptLine';
-import { isPlainTextDoc } from './inputContent';
+import { isPlainTextDoc, literalTextToDoc } from './inputContent';
 
 export async function restoreInputDraft(
   serviceManager: ServiceManager,
@@ -50,7 +50,7 @@ export async function restoreInputDraft(
     }
     promptLine.setContent(draft.content);
   } else {
-    promptLine.setContent(draft.rawValue ?? '');
+    promptLine.setContent(literalTextToDoc(draft.rawValue ?? ''));
   }
   return true;
 }

@@ -65,6 +65,11 @@ import { CancellationReason } from '../../types/config/MessagingConfig';
 // move on to the next item in the queue.
 const MS_MAX_ATTEMPT = 150 * 1000;
 
+/** The request timeout for a `messageTimeoutSecs` value, in milliseconds: 0 turns it off, unset uses the default. */
+function messageTimeoutMS(timeoutSecs: number | undefined): number {
+  return timeoutSecs || timeoutSecs === 0 ? timeoutSecs * 1000 : MS_MAX_ATTEMPT;
+}
+
 // The maximum amount of time we allow to pass before the loading indicator becomes visible.
 const MS_MAX_SILENT_LOADING = 4000;
 
@@ -264,11 +269,9 @@ class MessageService {
       current: null,
     };
 
-    const timeoutOverride = publicConfig.messaging?.messageTimeoutSecs;
-    this.timeoutMS =
-      timeoutOverride || timeoutOverride === 0
-        ? timeoutOverride * 1000
-        : MS_MAX_ATTEMPT;
+    this.timeoutMS = messageTimeoutMS(
+      publicConfig.messaging?.messageTimeoutSecs
+    );
   }
 
   /**
@@ -1088,4 +1091,5 @@ class MessageService {
   }
 }
 
+export { messageTimeoutMS };
 export default MessageService;

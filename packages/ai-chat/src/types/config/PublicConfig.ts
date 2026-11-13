@@ -66,7 +66,8 @@ export interface PublicConfig {
   disableCustomElementMobileEnhancements?: boolean;
 
   /**
-   * Add a bunch of noisy console.log messages!
+   * Enables diagnostic console logs for every chat loaded from the same module on the page.
+   * In 1.x, logging stays enabled after that chat unmounts. A later chat with `debug: false` does not disable it.
    */
   debug?: boolean;
 
@@ -117,7 +118,9 @@ export interface PublicConfig {
   serviceDesk?: ServiceDeskPublicConfig;
 
   /**
-   * If the Carbon AI Chat should grab focus if the chat is open on page load.
+   * Whether the chat's shared focus manager can move focus. Defaults to true.
+   * In 1.x, false blocks automatic transitions, focus after {@link ChatInstance.changeView}, and
+   * {@link ChatInstance.requestFocus}. A blocked focus request returns false. Direct user focus is unaffected.
    */
   shouldTakeFocusIfOpensAutomatically?: boolean;
 

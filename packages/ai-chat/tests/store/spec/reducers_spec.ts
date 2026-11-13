@@ -50,6 +50,7 @@ function createInitialAppState(): AppState {
   return {
     config,
     languagePack: buildLanguagePack(config.public.strings),
+    loadedLocale: 'en',
     allMessageItemsByID: {},
     allMessagesByID: {},
     targetViewState: VIEW_STATE_ALL_CLOSED,

@@ -219,7 +219,9 @@ export interface InputConfig {
    * (set `fixed: true` to keep an action out of the overflow). If file
    * uploads are also enabled, an "Add files" action is automatically
    * prepended and the standalone upload button is not rendered. The button
-   * size is controlled by the input, so a per-action `size` is ignored.
+   * size is controlled by the input, so a per-action `size` is ignored. An
+   * action without an `icon` renders as text in both layouts, named by its
+   * `text`.
    */
   actions?: ToolbarAction[];
 
