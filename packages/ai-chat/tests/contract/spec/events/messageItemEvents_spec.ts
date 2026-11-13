@@ -33,6 +33,7 @@ import {
   contractChat,
   contractSetup,
   fakeBackend,
+  handlerErrorLog,
   flatParent,
   finishSend,
   instanceSender,
@@ -594,5 +595,79 @@ describe('customRequestFooterSlot', () => {
     expect(first.data.message.input.text).toBe('from before');
     expect(second.data.message.id).toBe('q1');
     expect(first.data.slotName).not.toBe(second.data.slotName);
+  });
+});
+
+// @covers instance.on event.feedback event.messageItemCustom
+describe('a throwing handler for a message item event', () => {
+  contractSetup();
+  const handlerErrors = handlerErrorLog();
+
+  it('logs a feedback handler error, and the feedback is still recorded', async () => {
+    const { instance } = await openChat();
+    await addFeedbackResponse(
+      instance,
+      feedbackItem({ show_positive_details: false })
+    );
+    handlerErrors.watch();
+    const error = new Error('feedback handler failed');
+    instance.on({
+      type: BusEventType.FEEDBACK,
+      handler: () => {
+        throw error;
+      },
+    });
+    await click(byRole('button', STRINGS.feedback_positiveLabel));
+    await handlerErrors.expectLogged(BusEventType.FEEDBACK, error);
+    expect(storedResponse(instance, 'r1').history?.feedback).toEqual({
+      'fb-1': { is_positive: true },
+    });
+  });
+
+  it('logs a feedback handler error from the details form, and the submission is still recorded', async () => {
+    const { instance } = await openChat();
+    await addFeedbackResponse(
+      instance,
+      feedbackItem({ categories: { positive: ['Fast'], negative: ['Slow'] } })
+    );
+    handlerErrors.watch();
+    const error = new Error('feedback handler failed');
+    instance.on({
+      type: BusEventType.FEEDBACK,
+      handler: () => {
+        throw error;
+      },
+    });
+    await click(byRole('button', STRINGS.feedback_positiveLabel));
+    await click(byRole('button', 'Fast'));
+    await click(inFormWith('button', STRINGS.feedback_submitLabel, 'Fast'));
+    await handlerErrors.expectLogged(BusEventType.FEEDBACK, error);
+    await waitFor(() =>
+      expect(storedResponse(instance, 'r1').history?.feedback).toEqual({
+        'fb-1': { is_positive: true, text: '', categories: ['Fast'] },
+      })
+    );
+  });
+
+  it('logs a messageItemCustom handler error, and the button fires again on the next click', async () => {
+    const { instance } = await openChat();
+    await act(() =>
+      instance.messaging.addMessage(
+        responseOf('r1', [customEventButton('Contract custom')])
+      )
+    );
+    await waitFor(() =>
+      expect(allByRole('button', 'Contract custom')).toHaveLength(1)
+    );
+    handlerErrors.watch();
+    const error = new Error('custom event handler failed');
+    const handler = jest.fn(() => {
+      throw error;
+    });
+    instance.on({ type: BusEventType.MESSAGE_ITEM_CUSTOM, handler });
+    await click(byRole('button', 'Contract custom'));
+    await handlerErrors.expectLogged(BusEventType.MESSAGE_ITEM_CUSTOM, error);
+    await click(byRole('button', 'Contract custom'));
+    await waitFor(() => expect(handler).toHaveBeenCalledTimes(2));
   });
 });

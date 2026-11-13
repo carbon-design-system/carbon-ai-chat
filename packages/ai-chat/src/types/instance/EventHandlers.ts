@@ -16,7 +16,8 @@ import type { ChatInstance } from './ChatInstance';
  *
  * If a handler throws or its promise rejects, the chat skips the later handlers for that event. When your call fired
  * the event, such as {@link ChatInstance.changeView}, that call rejects with the error. When the user fired it, such
- * as by pressing the stop button, no call of yours rejects, so catch the error in the handler if you need it.
+ * as by pressing the stop button or a feedback button, no call of yours rejects. The chat logs the error to the console
+ * and carries on, so catch the error in the handler if you need it.
  * {@link BusEventType.STATE_CHANGE} is the exception: the chat logs the error and still runs the other handlers.
  *
  * @category Instance

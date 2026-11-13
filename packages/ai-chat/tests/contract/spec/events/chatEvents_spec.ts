@@ -28,6 +28,7 @@ import {
   contractSetup,
   fakeBackend,
   getByTestId,
+  handlerErrorLog,
   recordEvents,
   shownText,
   textResponse,
@@ -48,7 +49,7 @@ const STRINGS = {
 async function openConversation(config: Partial<PublicConfig> = {}) {
   const mount = await contractChat({
     ...config,
-    strings: STRINGS,
+    strings: { ...STRINGS, ...config.strings },
     messaging: { skipWelcome: true, ...config.messaging },
   });
   await changeView(mount.instance, ViewType.MAIN_WINDOW);
@@ -371,5 +372,103 @@ describe('disclaimer acceptance', () => {
     const welcome = await backend.next();
     expect(welcome.request.input.text).toBe('');
     expect(instance.getState().disclaimersAccepted).toEqual({});
+  });
+});
+
+/** A handler that throws `error`. */
+function thrower(error: Error) {
+  return () => {
+    throw error;
+  };
+}
+
+const HISTORY_STRINGS = {
+  history_new_chat: 'Contract new chat',
+  history_view_chats: 'Contract view chats',
+};
+
+// @covers instance.on event.header:menuClick event.disclaimerAccepted
+// @covers event.history:newChat event.historyPanel:pre:open
+// @covers config.history.isOn state.customPanels.history.isOpen
+describe('a throwing handler for an event the user fires', () => {
+  contractSetup();
+  const handlerErrors = handlerErrorLog();
+
+  it('logs a header:menuClick handler error, and the menu click still runs its option', async () => {
+    const optionHandler = jest.fn();
+    const { instance } = await openConversation({
+      header: {
+        menuOptions: [
+          { text: 'Option A', handler: optionHandler, testId: 'contract-a' },
+        ],
+      },
+    });
+    handlerErrors.watch();
+    const error = new Error('menu handler failed');
+    instance.on({
+      type: BusEventType.HEADER_MENU_CLICK,
+      handler: thrower(error),
+    });
+    await click(getByTestId('contract-a'));
+    await handlerErrors.expectLogged(BusEventType.HEADER_MENU_CLICK, error);
+    expect(optionHandler).toHaveBeenCalledTimes(1);
+  });
+
+  it('logs a disclaimerAccepted handler error, and the acceptance is still recorded', async () => {
+    const { instance } = await contractChat(disclaimerProps());
+    handlerErrors.watch();
+    const error = new Error('disclaimer handler failed');
+    instance.on({
+      type: BusEventType.DISCLAIMER_ACCEPTED,
+      handler: thrower(error),
+    });
+    await accept(instance);
+    await handlerErrors.expectLogged(BusEventType.DISCLAIMER_ACCEPTED, error);
+    expect(instance.getState().disclaimersAccepted).toEqual({
+      [hostname()]: true,
+    });
+  });
+
+  it('logs a history:newChat handler error from the mobile history menu, and the menu still works', async () => {
+    const { instance } = await openConversation({
+      history: { isOn: true },
+      strings: HISTORY_STRINGS,
+    });
+    handlerErrors.watch();
+    const error = new Error('new chat handler failed');
+    instance.on({
+      type: BusEventType.HISTORY_PANEL_NEW_CHAT,
+      handler: thrower(error),
+    });
+    await click(byRole('menuitem', HISTORY_STRINGS.history_new_chat));
+    await handlerErrors.expectLogged(
+      BusEventType.HISTORY_PANEL_NEW_CHAT,
+      error
+    );
+    await click(byRole('menuitem', HISTORY_STRINGS.history_view_chats));
+    await waitFor(() =>
+      expect(instance.getState().customPanels.history.isOpen).toBe(true)
+    );
+  });
+
+  it('logs a historyPanel:pre:open handler error from the mobile history menu, and the panel still opens', async () => {
+    const { instance } = await openConversation({
+      history: { isOn: true },
+      strings: HISTORY_STRINGS,
+    });
+    handlerErrors.watch();
+    const error = new Error('pre:open handler failed');
+    instance.on({
+      type: BusEventType.HISTORY_PANEL_PRE_OPEN,
+      handler: thrower(error),
+    });
+    await click(byRole('menuitem', HISTORY_STRINGS.history_view_chats));
+    await handlerErrors.expectLogged(
+      BusEventType.HISTORY_PANEL_PRE_OPEN,
+      error
+    );
+    await waitFor(() =>
+      expect(instance.getState().customPanels.history.isOpen).toBe(true)
+    );
   });
 });
