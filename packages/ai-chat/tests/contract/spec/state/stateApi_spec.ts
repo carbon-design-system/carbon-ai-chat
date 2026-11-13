@@ -11,6 +11,7 @@ import { act } from '@testing-library/react';
 
 import {
   ChatInstance,
+  PanelType,
   PublicChatState,
   ViewType,
   readCarbonChatSession,
@@ -89,6 +90,34 @@ describe('state.get', () => {
       expect.arrayContaining(documented)
     );
     expect(Object.keys(instance.state.get())).not.toContain('humanAgentState');
+  });
+});
+
+// @covers instance.state.get state.customPanels.history
+// @covers state.customPanels.history.isOpen config.history.isOn
+// @covers config.history.startClosed
+describe('history state', () => {
+  contractSetup();
+
+  it('mirrors customPanels.history as the history panel opens and closes', async () => {
+    const { instance } = await contractChat({
+      history: { isOn: true, startClosed: true },
+    });
+    await changeView(instance, ViewType.MAIN_WINDOW);
+    const history = () => {
+      const state = instance.state.get();
+      expect(state.history).toEqual(state.customPanels.history);
+      return state.history;
+    };
+    expect(history().isOpen).toBe(false);
+    await act(async () => {
+      await instance.customPanels.getPanel(PanelType.HISTORY).open();
+    });
+    expect(history().isOpen).toBe(true);
+    await act(async () => {
+      await instance.customPanels.getPanel(PanelType.HISTORY).close();
+    });
+    expect(history().isOpen).toBe(false);
   });
 });
 

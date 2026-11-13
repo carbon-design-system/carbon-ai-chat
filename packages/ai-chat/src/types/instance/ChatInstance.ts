@@ -199,7 +199,7 @@ interface ChatActions {
    * await instance.changeView({ launcher: false, mainWindow: true });
    * ```
    */
-  changeView: (newView: ViewType | ViewState) => Promise<void>;
+  changeView: (newView: ViewType | Partial<ViewState>) => Promise<void>;
 
   /**
    * Returns the list of writable elements.

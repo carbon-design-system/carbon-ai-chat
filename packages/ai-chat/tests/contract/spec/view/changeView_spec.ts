@@ -83,10 +83,7 @@ describe('changeView', () => {
 
   it('changes only the views a partial ViewState names', async () => {
     const instance = await mount();
-    // `main` differs from its JSDoc (MAIN-NOTES M29): the JSDoc allows a
-    // partial ViewState, but the parameter's type is the full `ViewState`, so
-    // a host has to cast.
-    await changeView(instance, { mainWindow: true } as ViewState);
+    await changeView(instance, { mainWindow: true });
     expect(instance.getState().viewState).toEqual(BOTH_OPEN);
   });
 
