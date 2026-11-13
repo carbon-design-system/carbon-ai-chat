@@ -91,7 +91,8 @@ interface CdsAiChatCustomElementAttributes extends Omit<
 
   /**
    * Optional callback to render user defined responses. When provided, the inner cds-aichat-container
-   * manages all event listening, slot tracking, streaming state, and element lifecycle.
+   * manages all event listening, slot tracking, streaming state, and element lifecycle. The element it returns
+   * goes in this element's light DOM, where page CSS reaches it.
    */
   renderUserDefinedResponse?: WCRenderUserDefinedResponse;
 

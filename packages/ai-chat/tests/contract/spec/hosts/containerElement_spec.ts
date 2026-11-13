@@ -12,10 +12,6 @@
  * chat, so it runs no visibility handler on the element; and host content
  * (writeable elements, render-callback output) sits in its light DOM, the
  * page's own DOM, where page CSS reaches it.
- *
- * MAIN-NOTES M108 (U57): only the container promises light-DOM placement.
- * `cds-aichat-custom-element` puts the same content in its shadow root
- * (`customElement_spec.ts`).
  */
 
 import { act, waitFor } from '@testing-library/react';

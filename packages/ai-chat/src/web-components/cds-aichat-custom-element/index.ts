@@ -166,7 +166,8 @@ class ChatCustomElement extends FlattenedConfigElement {
 
   /**
    * Optional callback to render user defined responses. When provided, the inner cds-aichat-container
-   * manages all event listening, slot tracking, and element lifecycle.
+   * manages all event listening, slot tracking, and element lifecycle. The element it returns goes in this
+   * element's light DOM, where page CSS reaches it.
    */
   @property({ attribute: false })
   renderUserDefinedResponse?: WCRenderUserDefinedResponse;
@@ -318,18 +319,16 @@ class ChatCustomElement extends FlattenedConfigElement {
           : this.defaultViewChangeHandler,
     });
 
-    if (!this.renderUserDefinedResponse) {
-      // Legacy path: custom-element tracks slot names for manual slotting.
-      // When renderUserDefinedResponse is set, the inner cds-aichat-container handles everything.
-      this.subscribe({
-        type: BusEventType.USER_DEFINED_RESPONSE,
-        handler: this.userDefinedHandler,
-      });
-      this.subscribe({
-        type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
-        handler: this.userDefinedHandler,
-      });
-    }
+    // The inner cds-aichat-container also puts renderUserDefinedResponse
+    // output in this element's light DOM, so both paths forward the slot.
+    this.subscribe({
+      type: BusEventType.USER_DEFINED_RESPONSE,
+      handler: this.userDefinedHandler,
+    });
+    this.subscribe({
+      type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
+      handler: this.userDefinedHandler,
+    });
 
     if (!this.renderCustomMessageFooter) {
       // Legacy path: custom-element tracks slot names for manual slotting.
@@ -368,13 +367,9 @@ class ChatCustomElement extends FlattenedConfigElement {
         ${this._writeableElementSlots.map(
           (slot) => html`<slot name=${slot} slot=${slot}></slot>`
         )}
-        ${
-          this.renderUserDefinedResponse
-            ? null
-            : this._userDefinedSlotNames.map(
-                (slot) => html`<slot name=${slot} slot=${slot}></slot>`
-              )
-        }
+        ${this._userDefinedSlotNames.map(
+          (slot) => html`<slot name=${slot} slot=${slot}></slot>`
+        )}
         ${
           this.renderCustomMessageFooter
             ? null

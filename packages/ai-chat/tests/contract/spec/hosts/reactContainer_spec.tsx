@@ -858,6 +858,36 @@ describe.each(REACT_HOSTS)(
       );
     }
 
+    // @covers instance.writeableElements
+    it('puts response content and writeable elements in the page’s DOM, where page CSS reaches them', async () => {
+      const onBeforeRender = jest.fn();
+      const onAfterRender = jest.fn();
+      await renderTree(
+        <Page
+          theme="light"
+          onClick={() => undefined}
+          {...{ onBeforeRender, onAfterRender }}
+        />
+      );
+      await calledTimes(onAfterRender);
+      const instance = instanceFrom(onBeforeRender);
+      await act(() =>
+        instance.messaging.addMessage(
+          responseOf('r1', [userDefinedItem('item', { kind: 'probe' })])
+        )
+      );
+      await waitFor(() =>
+        expect(byRole('button', 'Response light 0')).not.toBeNull()
+      );
+      expect(byRole('button', 'Response light 0').getRootNode()).toBe(document);
+      expect(byRole('button', 'Footer light 0').getRootNode()).toBe(document);
+      const writeable = Object.values(instance.writeableElements);
+      expect(writeable.length).toBeGreaterThan(0);
+      expect(
+        writeable.filter((node) => node.getRootNode() !== document)
+      ).toEqual([]);
+    });
+
     // That writeable-element content keeps its state across a rerender is in
     // the renderWriteableElements block above.
     it('reads the host’s context, bubbles clicks to host handlers, and its response content follows a host rerender', async () => {

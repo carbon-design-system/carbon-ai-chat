@@ -357,9 +357,13 @@ class ChatContainer extends FlattenedConfigElement {
     this._instance?.off(this._mountHandlers);
     this._mountHandlers = [];
 
+    const slottedContentHost = this.slottedContentHost;
     Object.values(this._instance?.writeableElements ?? {}).forEach(
       (element) => {
-        if (element?.parentNode === this) {
+        if (
+          element?.parentNode === this ||
+          element?.parentNode === slottedContentHost
+        ) {
           element.remove();
         }
       }
@@ -422,7 +426,21 @@ class ChatContainer extends FlattenedConfigElement {
         unattached.push(element);
       }
     });
-    this.prepend(...unattached);
+    this.slottedContentHost.prepend(...unattached);
+  }
+
+  /**
+   * Where writeable elements and user_defined response hosts go: this
+   * element's light DOM, or, inside a `cds-aichat-custom-element`, that
+   * element's light DOM, which is outside its shadow root. The custom element
+   * forwards each slot name to this element through a `<slot>`.
+   */
+  private get slottedContentHost(): HTMLElement {
+    const root = this.getRootNode();
+    return root instanceof ShadowRoot &&
+      root.host.tagName === OUTER_CHAT_TAG_NAME
+      ? (root.host as HTMLElement)
+      : this;
   }
 
   /**
@@ -616,6 +634,7 @@ class ChatContainer extends FlattenedConfigElement {
         this.renderUserDefinedInputNode
       ),
       chatWrapper: this,
+      userDefinedResponseWrapper: this.slottedContentHost,
     });
   }
 

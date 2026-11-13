@@ -21,12 +21,16 @@ import {
   BusEventViewChange,
   GenericItem,
   MessageResponseTypes,
+  PageObjectId,
   ViewType,
 } from '../../../../src/aiChatEntry';
 import {
   changeView,
   contractElement,
   contractSetup,
+  getByTestId,
+  isInFlatTree,
+  isShownWithin,
   responseOf,
 } from '../../helpers';
 
@@ -99,15 +103,13 @@ describe('cds-aichat-custom-element visibility', () => {
   });
 });
 
-// MAIN-NOTES M108 (U57): on this element, `renderUserDefinedResponse` output
-// and the writeable elements sit in its shadow root, out of page CSS's reach.
-// `cds-aichat-container` keeps both in its light DOM
-// (`containerElement_spec.ts`).
+// Like `cds-aichat-container` (`containerElement_spec.ts`), this element
+// keeps host content in the page's DOM, where page CSS reaches it.
 // @covers element.cds-aichat-custom-element.renderUserDefinedResponse instance.writeableElements
 describe('cds-aichat-custom-element host content', () => {
   contractSetup();
 
-  it('puts renderUserDefinedResponse output in its shadow root', async () => {
+  it('puts renderUserDefinedResponse output in the page’s DOM', async () => {
     const out = document.createElement('span');
     const { instance, element } = await mount({
       openChatByDefault: true,
@@ -124,15 +126,20 @@ describe('cds-aichat-custom-element host content', () => {
       )
     );
     await waitFor(() => expect(out.isConnected).toBe(true));
-    expect(out.getRootNode()).toBe(element.shadowRoot);
+    expect(out.getRootNode()).toBe(document);
+    expect(element.contains(out)).toBe(true);
+    expect(isShownWithin(out, getByTestId(PageObjectId.MAIN_PANEL))).toBe(true);
   });
 
-  it('puts its writeable elements in its shadow root', async () => {
-    const { instance, element } = await mount();
+  it('puts its writeable elements in the page’s DOM', async () => {
+    const { instance, element } = await mount({ openChatByDefault: true });
     const writeable = Object.values(instance.writeableElements);
     expect(writeable.length).toBeGreaterThan(0);
     expect(
-      writeable.filter((node) => node.getRootNode() !== element.shadowRoot)
+      writeable.filter(
+        (node) => node.getRootNode() !== document || !element.contains(node)
+      )
     ).toEqual([]);
+    expect(isInFlatTree(instance.writeableElements.footerElement)).toBe(true);
   });
 });
