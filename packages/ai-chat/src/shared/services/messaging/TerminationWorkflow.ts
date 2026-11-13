@@ -21,25 +21,124 @@ import type { StreamResponseMeta } from './state/StreamState';
 import { OnErrorType } from '../../../types/config/ErrorConfig';
 import { CancellationReason } from '../../../types/config/MessagingConfig';
 
+/** The turn a stop was started for: the current request, if any, in its chat generation. */
+interface StopTarget {
+  request: PendingMessageRequest | undefined;
+  generation: number;
+}
+
 class TerminationWorkflow {
+  /** The stop in progress. Stops of the same turn share it, so the turn is stopped once. */
+  private stopping: { target: StopTarget; done: Promise<void> } | undefined;
+
+  /**
+   * `messaging.stop()`: fires `STOP_STREAMING`, then aborts the active turn, the way the
+   * chat's own Stop button does. Resolves once the abort signal is delivered, or at once
+   * with no active turn. Never rejects.
+   */
+  stop(): Promise<void> {
+    if (!this.hasActiveTurn()) {
+      return Promise.resolve();
+    }
+    return this.stopTurn(this.chatShowsStopButton(), false);
+  }
+
   async requestStopFromInput(markPending: () => void): Promise<void> {
-    const serviceManager = this.serviceManager;
-    const { store } = serviceManager;
     // Pending UI can flush host effects; capture visibility before calling it.
-    const chatShowsButton =
-      store.getState().assistantInputState.stopStreamingButtonState.isVisible;
+    const chatShowsButton = this.chatShowsStopButton();
     markPending();
+    if (chatShowsButton) {
+      return this.stopTurn(true, true);
+    }
+    // A button the host shows for its own work only tells the host.
+    try {
+      await this.serviceManager.fire({ type: BusEventType.STOP_STREAMING });
+    } catch (error) {
+      consoleError('Error stopping stream:', error);
+      this.serviceManager.store.dispatch(
+        actions.setStopStreamingButtonDisabled(false)
+      );
+    }
+  }
+
+  private chatShowsStopButton() {
+    return this.serviceManager.store.getState().assistantInputState
+      .stopStreamingButtonState.isVisible;
+  }
+
+  /** A sent message is the current request, or a response streams. Agent sends never queue. */
+  private hasActiveTurn() {
+    return (
+      Boolean(this.serviceManager.messageCoordinator.getCurrentRequest()) ||
+      this.isAnyMessageStreaming()
+    );
+  }
+
+  private stopTarget(): StopTarget {
+    const { messageCoordinator } = this.serviceManager;
+    return {
+      request: messageCoordinator.getCurrentRequest(),
+      generation: messageCoordinator.currentGeneration,
+    };
+  }
+
+  private isStopTarget(target: StopTarget) {
+    const current = this.stopTarget();
+    return (
+      current.request === target.request &&
+      current.generation === target.generation
+    );
+  }
+
+  private stopTurn(chatShowsButton: boolean, fromButton: boolean) {
+    if (this.stopping && this.isStopTarget(this.stopping.target)) {
+      return this.stopping.done;
+    }
+    const target = this.stopTarget();
+    const done = this.runStop(target, chatShowsButton, fromButton).finally(
+      () => {
+        if (this.stopping?.done === done) {
+          this.stopping = undefined;
+        }
+      }
+    );
+    this.stopping = { target, done };
+    return done;
+  }
+
+  private async runStop(
+    target: StopTarget,
+    chatShowsButton: boolean,
+    fromButton: boolean
+  ) {
+    const { store } = this.serviceManager;
+    const enableButton = () => {
+      if (chatShowsButton) {
+        store.dispatch(actions.setStopStreamingButtonDisabled(false));
+      }
+    };
     if (chatShowsButton) {
       store.dispatch(actions.setStopStreamingButtonDisabled(true));
     }
     try {
-      await serviceManager.fire({ type: BusEventType.STOP_STREAMING });
-      if (chatShowsButton) {
-        await serviceManager.messageCoordinator.cancelCurrentMessageRequest();
-      }
+      await this.serviceManager.fire({ type: BusEventType.STOP_STREAMING });
     } catch (error) {
       consoleError('Error stopping stream:', error);
-      store.dispatch(actions.setStopStreamingButtonDisabled(false));
+      // The button keeps its recovery: a failed handler leaves the turn running.
+      if (fromButton) {
+        enableButton();
+        return;
+      }
+    }
+    // A handler can end the turn or restart the chat; then the stop has nothing left to cancel.
+    if (!this.isStopTarget(target)) {
+      return;
+    }
+    try {
+      await this.serviceManager.messageCoordinator.cancelCurrentMessageRequest();
+    } catch (error) {
+      consoleError('Error stopping stream:', error);
+      enableButton();
     }
   }
 

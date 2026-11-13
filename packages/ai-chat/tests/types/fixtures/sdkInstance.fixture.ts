@@ -150,6 +150,7 @@ chat.off(typedHandler);
 export const sdkMessagingMembers: Record<keyof ChatSDKInstanceMessaging, true> =
   {
     send: true,
+    stop: true,
     upsertMessage: true,
     removeMessages: true,
     clearConversation: true,
@@ -174,6 +175,9 @@ export const sdkSendAsRoot: ChatInstance['send'] = sdk.messaging.send;
 export const rootSendAsSdk: ChatSDKInstanceMessaging['send'] = chat.send;
 // @ts-expect-error A message is required.
 sdk.messaging.send();
+
+// Stop takes nothing and never needs a result (#1816 O3).
+export const stopped: Promise<void> = sdk.messaging.stop();
 
 // Prebuilt-chat callers keep both older message methods.
 chat.messaging.addMessage(message);
