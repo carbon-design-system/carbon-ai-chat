@@ -35,6 +35,15 @@ import type { ServiceManager } from './ServiceManager';
  */
 let hasWarnedAboutUpdateRawValueDeprecation = false;
 
+function warnUpdateRawValueDeprecated() {
+  if (!hasWarnedAboutUpdateRawValueDeprecation) {
+    hasWarnedAboutUpdateRawValueDeprecation = true;
+    consoleWarn(
+      'ChatInstance.input.updateRawValue is deprecated. Use updateContent.'
+    );
+  }
+}
+
 /**
  * Throws when the editor's schema can't hold the doc. Tiptap would otherwise
  * log "Invalid content" and replace the draft with an empty doc.
@@ -89,12 +98,7 @@ class InputActionsService {
           'ChatInstance.input.updateRawValue cannot be used while the input contains non-text nodes or marked text. Use updateContent instead.'
         );
       }
-      if (!hasWarnedAboutUpdateRawValueDeprecation) {
-        hasWarnedAboutUpdateRawValueDeprecation = true;
-        consoleWarn(
-          'ChatInstance.input.updateRawValue is deprecated. Use updateContent.'
-        );
-      }
+      warnUpdateRawValueDeprecated();
       let previousRaw = getRawText(currentJson);
       if (previousRaw === '\n') {
         previousRaw = '';
@@ -119,6 +123,7 @@ class InputActionsService {
       return;
     }
 
+    warnUpdateRawValueDeprecated();
     const { store } = this.serviceManager;
     const state = store.getState();
     const inputState = selectInputState(state);
