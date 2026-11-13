@@ -36,6 +36,8 @@ const coreFiles = [
   'src/chat/services/extensionHosts.ts',
   'src/chat/services/lightDomHosts.ts',
   'src/chat/utils/inputNodeSlots.ts',
+  'src/chat/components/shell/ChatShell.ts',
+  'src/chat/components/shell/renderShellLayout.ts',
 ];
 const componentsRoot = path.resolve(packageRoot, '../ai-chat-components/src');
 
@@ -98,7 +100,7 @@ function runtimeImports(file: string): string[] {
   return imports;
 }
 
-it('keeps plain hook cores free of direct and transitive React runtime dependencies', () => {
+it('keeps plain hook cores and native shell views free of direct and transitive React runtime dependencies', () => {
   const pending = coreFiles.map((name) => path.join(packageRoot, name));
   expect(pending.length).toBeGreaterThan(0);
   const visited = new Set<string>();
@@ -122,5 +124,24 @@ it('keeps plain hook cores free of direct and transitive React runtime dependenc
       }
     }
   }
+  expect(violations).toEqual([]);
+});
+
+it('keeps retired React view adapters out of AppShell', () => {
+  const file = path.join(packageRoot, 'src/chat/AppShell.tsx');
+  const retiredViews = [
+    'src/chat/components/carbon/Layer',
+    'src/chat/components/header/Header',
+    'src/chat/components/homeScreen/HomeScreen',
+    'src/chat/components/input/Input',
+    'src/chat/components/input/NativeInputAdapter',
+    'src/chat/components/launcher/LauncherContainer',
+    'src/chat/AppShellWriteableElements',
+  ].map((name) => path.join(packageRoot, name));
+  const violations = runtimeImports(file).filter((specifier) =>
+    retiredViews.includes(
+      path.resolve(path.dirname(file), specifier).replace(/\.[jt]sx?$/, '')
+    )
+  );
   expect(violations).toEqual([]);
 });
