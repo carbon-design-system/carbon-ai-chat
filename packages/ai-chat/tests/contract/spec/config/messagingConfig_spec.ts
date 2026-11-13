@@ -34,14 +34,14 @@ const failed = {
   message: SEND_ERROR_MESSAGE,
 };
 
-// The chat has nothing to send through, so every request fails. `main` gets
-// there by calling the missing `customSendMessage`, so these tests don't pin
-// the error `send` rejects with or `onError`'s `otherData`.
-// @covers config.messaging
+// The chat has nothing to send through, so every request fails with an error
+// that names the missing `messaging.customSendMessage`. The rest of its text
+// is copy.
+// @covers config.messaging config.messaging.customSendMessage
 describe('messaging: a chat with no messaging config', () => {
   contractSetup();
 
-  it('fails the welcome request when it opens, and reports it through onError', async () => {
+  it('fails the welcome request when it opens, naming customSendMessage in onError', async () => {
     const errors: OnErrorData[] = [];
     const { instance } = await contractChat({
       onError: (data) => errors.push(data),
@@ -49,24 +49,30 @@ describe('messaging: a chat with no messaging config', () => {
     await changeView(instance, ViewType.MAIN_WINDOW);
     await waitFor(() => expect(errors).toHaveLength(1));
     expect(errors.map(summary)).toEqual([failed]);
+    expect(errors[0].otherData).toEqual(
+      expect.stringContaining('messaging.customSendMessage')
+    );
     const messages = instance.getState().messages as MessageRequest[];
     expect(messages.map((message) => message.history?.error_state)).toEqual([
       MessageErrorState.FAILED,
     ]);
   });
 
-  it('rejects a send, keeps the request marked failed, and reports it through onError', async () => {
+  it('rejects a send with an error naming customSendMessage, and marks it failed', async () => {
     const errors: OnErrorData[] = [];
     const { instance } = await contractChat({
       onError: (data) => errors.push(data),
     });
-    let rejected = false;
+    let rejection: unknown;
     await act(async () => {
-      await instance.send('hello').catch(() => {
-        rejected = true;
+      await instance.send('hello').catch((error: unknown) => {
+        rejection = error;
       });
     });
-    expect(rejected).toBe(true);
+    expect(rejection).toBeInstanceOf(Error);
+    expect((rejection as Error).message).toContain(
+      'messaging.customSendMessage'
+    );
     // The send stands in for the welcome request, so it is the only request.
     const messages = instance.getState().messages as MessageRequest[];
     expect(
@@ -76,5 +82,8 @@ describe('messaging: a chat with no messaging config', () => {
       ])
     ).toEqual([['hello', MessageErrorState.FAILED]]);
     expect(errors.map(summary)).toEqual([failed]);
+    expect(errors[0].otherData).toEqual(
+      expect.stringContaining('messaging.customSendMessage')
+    );
   });
 });
