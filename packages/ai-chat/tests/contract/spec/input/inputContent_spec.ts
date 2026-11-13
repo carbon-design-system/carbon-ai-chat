@@ -40,6 +40,12 @@ function textDoc(text: string): JSONContent {
   };
 }
 
+/** The doc the chat publishes for an empty input. */
+const EMPTY_DOC: JSONContent = {
+  type: 'doc',
+  content: [{ type: 'paragraph' }],
+};
+
 /** A host node, installed through `input.tiptap.extensions`. */
 const TestChip = Node.create({
   name: 'testChip',
@@ -111,12 +117,7 @@ describe('state.input', () => {
     const { instance } = await openChat();
     const { input } = instance.state.get();
     expect(input.rawValue).toBe('');
-    // src/chat/store/reducerUtils.ts:213 seeds `content` with `[]`, and the
-    // projection at src/chat/utils/publicState.ts:167 only replaces null, so
-    // on `main` an untouched input publishes an empty array, not the
-    // JSONContent doc its type (src/types/instance/PublicChatState.ts:58)
-    // promises.
-    expect(input.content).toEqual([]);
+    expect(input.content).toEqual(EMPTY_DOC);
     expect(input.structuredData).toBeUndefined();
   });
 
