@@ -296,6 +296,29 @@ describeShared('onError for messaging failures', (makeDriver) => {
     expect((rejection as Error).message).toBe('backend down');
   });
 
+  it('uses the default failure text for an Error with an empty message', async () => {
+    const { chat, errors } = await driverWithOnError(makeDriver);
+    const defaultRejection = await rejectSend(chat, undefined);
+    const fallback = (defaultRejection as Error).message;
+    expect(fallback).toEqual(expect.any(String));
+    expect(fallback).not.toBe('');
+
+    const rejection = await rejectSend(chat, new Error(''));
+    expect((rejection as Error).message).toBe(fallback);
+    expect(errors).toEqual([
+      {
+        errorType: OnErrorType.MESSAGE_COMMUNICATION,
+        message: SEND_ERROR_MESSAGE,
+        otherData: fallback,
+      },
+      {
+        errorType: OnErrorType.MESSAGE_COMMUNICATION,
+        message: SEND_ERROR_MESSAGE,
+        otherData: fallback,
+      },
+    ]);
+  });
+
   it('reports a non-Error object rejection with its JSON as otherData', async () => {
     const { chat, errors } = await driverWithOnError(makeDriver);
     const rejection = await rejectSend(chat, { code: 503 });

@@ -454,4 +454,92 @@ describe('input.actions', () => {
     await click(byRole('button', 'Contract text action'));
     expect(onClick).toHaveBeenCalledTimes(1);
   });
+
+  const OVERFLOW_ACTION_TEXT = 'Contract overflow action';
+  const OVERFLOW_LABEL = 'Contract more input actions';
+
+  async function withExpandedOverflowAction(
+    onClick: jest.Mock,
+    disabled: boolean,
+    check: (item: HTMLElement) => Promise<void>
+  ): Promise<void> {
+    // jsdom has no layout; give named actions widths within a narrow row.
+    const originalBounds = HTMLElement.prototype.getBoundingClientRect;
+    const bounds = jest
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: HTMLElement) {
+        return this.getAttribute('data-testid')?.startsWith(
+          'contract-overflow-'
+        )
+          ? new DOMRect(0, 0, 48, 32)
+          : originalBounds.call(this);
+      });
+    const width = jest
+      .spyOn(HTMLElement.prototype, 'clientWidth', 'get')
+      .mockReturnValue(240);
+    try {
+      await openChat({
+        strings: { input_actionsOverflowLabel: OVERFLOW_LABEL },
+        input: {
+          expanded: true,
+          actions: [
+            ...Array.from({ length: 7 }, (_, index) => ({
+              text: `Contract earlier action ${index}`,
+              icon: Add16,
+              testId: `contract-overflow-${index}`,
+            })),
+            {
+              text: OVERFLOW_ACTION_TEXT,
+              testId: 'contract-overflow-target',
+              icon: disabled ? Add16 : undefined,
+              disabled,
+              onClick,
+            },
+          ],
+        },
+      });
+      await act(async () => {
+        for (let frame = 0; frame < 3; frame += 1) {
+          await new Promise<void>((resolve) =>
+            requestAnimationFrame(() => resolve())
+          );
+        }
+      });
+      expect(inputField()).not.toBeNull();
+      expect(allByRole('menuitem', OVERFLOW_ACTION_TEXT)).toHaveLength(0);
+      await click(byRole('button', OVERFLOW_LABEL));
+      const item = await waitFor(() =>
+        byRole('menuitem', OVERFLOW_ACTION_TEXT)
+      );
+      await check(item);
+    } finally {
+      bounds.mockRestore();
+      width.mockRestore();
+    }
+  }
+
+  // @covers config.input.expanded
+  it('shows a readable action without an icon in expanded overflow, and runs it on selection', async () => {
+    const onClick = jest.fn();
+    await withExpandedOverflowAction(onClick, false, async (item) => {
+      expect(shownText(item)).toContain(OVERFLOW_ACTION_TEXT);
+      expect(isDisabled(item)).toBe(false);
+      await click(item);
+      expect(onClick).toHaveBeenCalledTimes(1);
+      await waitFor(() =>
+        expect(allByRole('menuitem', OVERFLOW_ACTION_TEXT)).toHaveLength(0)
+      );
+    });
+  });
+
+  // @covers config.input.expanded
+  it('does not run a disabled expanded overflow action on a mouse click', async () => {
+    const onClick = jest.fn();
+    await withExpandedOverflowAction(onClick, true, async (item) => {
+      expect(item.getAttribute('aria-disabled')).toBe('true');
+      await click(item);
+      expect(onClick).not.toHaveBeenCalled();
+      expect(byRole('menuitem', OVERFLOW_ACTION_TEXT)).toBe(item);
+    });
+  });
 });
