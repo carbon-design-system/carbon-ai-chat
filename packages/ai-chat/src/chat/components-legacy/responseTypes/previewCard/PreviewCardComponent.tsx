@@ -52,7 +52,12 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
 
   const isViewing = isOpen && workspaceID === workspace_id;
 
-  const handleClick = useCallback(() => {
+  const handleClick = useCallback(async () => {
+    // Close the open workspace before storing this card's data, so its close events carry its own data.
+    if (serviceManager.store.getState().workspacePanelState.isOpen) {
+      await panel.close();
+    }
+
     // Store workspace panel data in Redux before opening
     serviceManager.store.dispatch(
       actions.setWorkspacePanelData({
@@ -64,7 +69,6 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
     );
 
     // Open the panel - it will fire WORKSPACE_PRE_OPEN and WORKSPACE_OPEN events
-    // If a workspace is already open, it will be closed first (handled in CustomPanelInstance)
     panel.open({
       ...workspace_options,
       workspaceId: workspace_id,

@@ -229,13 +229,13 @@ function createCustomPanelInstance(
         defaultPanelOptions) as CustomPanelConfigOptions;
       const { store } = serviceManager;
 
-      // For workspace panels, close any existing workspace before opening a new one
-      if (panelType === PanelType.WORKSPACE) {
-        const state = store.getState();
-        if (state.workspacePanelState.isOpen) {
-          // Close the existing workspace panel first
-          customPanelInstance.close();
-        }
+      // Finish closing the open workspace first: its close resets the workspace state, which would otherwise wipe
+      // the ID and data stored below.
+      if (
+        panelType === PanelType.WORKSPACE &&
+        store.getState().workspacePanelState.isOpen
+      ) {
+        await customPanelInstance.close();
       }
 
       // For workspace panels, extract and store workspaceId and additionalData if provided

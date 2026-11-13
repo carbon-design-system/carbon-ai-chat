@@ -23,6 +23,7 @@ import {
   WorkspaceCustomPanelConfigOptions,
 } from '../../../../src/aiChatEntry';
 import {
+  allByRole,
   byRole,
   click,
   contractChat,
@@ -334,11 +335,7 @@ describe('workspace events', () => {
     ]);
   });
 
-  // Suspected `main` bug (reported, not in INTENDED.md): `open` closes the
-  // open workspace without waiting (src/chat/services/CustomPanelInstance.ts:237),
-  // and that close resets the state after the new ID is stored, so the new
-  // workspace opens with no ID or data and its open event carries none.
-  it('closes an open workspace before opening another, and loses the new ID', async () => {
+  it('finishes closing an open workspace before opening another with its own ID and data', async () => {
     const { instance } = await mountOpen();
     await openWorkspace(instance, OPTIONS);
     const events = recordEvents(instance, WORKSPACE_EVENTS);
@@ -346,40 +343,26 @@ describe('workspace events', () => {
       workspaceId: 'second-workspace',
       additionalData: { source: 'second' },
     });
-    const byType = (type: BusEventType) =>
-      events.events.filter((event) => event.type === type).map(summary);
-    expect(events.types()).toHaveLength(4);
-    expect(events.types()[0]).toBe(BusEventType.WORKSPACE_PRE_CLOSE);
-    expect(events.types()[3]).toBe(BusEventType.WORKSPACE_OPEN);
-    expect(byType(BusEventType.WORKSPACE_PRE_CLOSE)).toEqual([
-      {
-        type: BusEventType.WORKSPACE_PRE_CLOSE,
-        workspaceId: 'contract-workspace',
-        additionalData: { source: 'contract' },
-      },
+    const first = {
+      workspaceId: 'contract-workspace',
+      additionalData: { source: 'contract' },
+    };
+    const second = {
+      workspaceId: 'second-workspace',
+      additionalData: { source: 'second' },
+    };
+    expect(events.events.map(summary)).toEqual([
+      { type: BusEventType.WORKSPACE_PRE_CLOSE, ...first },
+      { type: BusEventType.WORKSPACE_CLOSE, ...first },
+      { type: BusEventType.WORKSPACE_PRE_OPEN, ...second },
+      { type: BusEventType.WORKSPACE_OPEN, ...second },
     ]);
-    expect(byType(BusEventType.WORKSPACE_CLOSE)).toEqual([
-      {
-        type: BusEventType.WORKSPACE_CLOSE,
-        workspaceId: 'contract-workspace',
-        additionalData: { source: 'contract' },
-      },
-    ]);
-    expect(byType(BusEventType.WORKSPACE_PRE_OPEN)).toEqual([
-      {
-        type: BusEventType.WORKSPACE_PRE_OPEN,
-        workspaceId: 'second-workspace',
-        additionalData: { source: 'second' },
-      },
-    ]);
-    expect(byType(BusEventType.WORKSPACE_OPEN)).toEqual([
-      {
-        type: BusEventType.WORKSPACE_OPEN,
-        workspaceId: undefined,
-        additionalData: undefined,
-      },
-    ]);
-    expect(instance.state.get().workspace).toEqual({ ...CLOSED, isOpen: true });
+    expect(instance.state.get().workspace).toEqual({
+      ...CLOSED,
+      isOpen: true,
+      workspaceID: 'second-workspace',
+      additionalData: { source: 'second' },
+    });
   });
 });
 
@@ -505,5 +488,38 @@ describe('workspace opened from a preview card', () => {
         })
       )
     );
+  });
+
+  it('closes the workspace one card opened before another card opens its own', async () => {
+    const { instance } = await contractChat({
+      openChatByDefault: true,
+      messaging: { skipWelcome: true },
+    });
+    await act(() =>
+      instance.messaging.addMessage(
+        responseOf('r-cards', [
+          previewCard({ title: 'Card A', workspace_id: 'card-a' }),
+          previewCard({ title: 'Card B', workspace_id: 'card-b' }),
+        ])
+      )
+    );
+    const [cardA, cardB] = allByRole('button', VIEW_DETAILS);
+    await click(cardA);
+    await waitFor(() =>
+      expect(instance.state.get().workspace.workspaceID).toBe('card-a')
+    );
+    const events = recordEvents(instance, WORKSPACE_EVENTS);
+    await click(cardB);
+    await waitFor(() => expect(events.types()).toHaveLength(4));
+    expect(
+      events.events.map((event) => [event.type, summary(event).workspaceId])
+    ).toEqual([
+      [BusEventType.WORKSPACE_PRE_CLOSE, 'card-a'],
+      [BusEventType.WORKSPACE_CLOSE, 'card-a'],
+      [BusEventType.WORKSPACE_PRE_OPEN, 'card-b'],
+      [BusEventType.WORKSPACE_OPEN, 'card-b'],
+    ]);
+    expect(instance.state.get().workspace.isOpen).toBe(true);
+    expect(instance.state.get().workspace.workspaceID).toBe('card-b');
   });
 });

@@ -103,7 +103,8 @@ export interface CustomPanelInstance {
   hostElement?: HTMLDivElement | undefined;
 
   /**
-   * Opens the custom panel.
+   * Opens the custom panel. Opening the workspace panel while a workspace is open closes that workspace first,
+   * firing its close events, then opens the new one.
    *
    * @param options Custom panel options.
    */
