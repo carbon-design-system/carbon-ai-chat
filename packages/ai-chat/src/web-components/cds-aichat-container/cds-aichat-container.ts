@@ -517,7 +517,7 @@ class ChatContainer extends FlattenedConfigElement {
       // mount, so a failed load lands in the catch below for every host.
       const [
         { bootPrebuiltChat, mergePublicConfig, performInitialViewChange },
-        { applyConfigUpdate, createAppliedConfig },
+        { applyBootConfig, applyConfigUpdate, createAppliedConfig },
         { ChatAppEntry },
         { hasCustomPromptLine },
         { attachMountView },
@@ -539,13 +539,13 @@ class ChatContainer extends FlattenedConfigElement {
       state.serviceManager = serviceManager;
       state.handle = handle;
 
-      // Read markdown off the original config, not the merged one, to keep the
-      // host's plugin and renderer references for the slice's isEqual guard.
-      if (config.markdown) {
-        serviceManager.store.dispatch(
-          viewActions.setViewValue('markdownConfig', config.markdown)
-        );
-      }
+      state.bootConfig = config;
+      state.appliedConfig = createAppliedConfig(publicConfig, config);
+      state.applyConfig = (nextConfig) =>
+        applyConfigUpdate(state.appliedConfig, nextConfig, serviceManager);
+      // The view's half of the config, such as markdown, goes through the
+      // same function at startup as on update (#1833 O5).
+      applyBootConfig(state.appliedConfig, config, serviceManager);
       state.App = ChatAppEntry;
       state.instance = instance;
       // Before the host's callbacks and the initial view change, which both
@@ -559,10 +559,6 @@ class ChatContainer extends FlattenedConfigElement {
           this.hostRendersCustomRequestFooter ||
           Boolean(this.renderCustomRequestFooter),
       });
-      state.bootConfig = config;
-      state.appliedConfig = createAppliedConfig(publicConfig, config);
-      state.applyConfig = (nextConfig) =>
-        applyConfigUpdate(state.appliedConfig, nextConfig, serviceManager);
       this.viewStateProvider.setValue(state.view.viewState);
 
       this.renderApp();

@@ -264,6 +264,7 @@ interface ChatSDKHandle (src/sdk/handle.ts)
   release: () => void
   serviceDesk: import("../types/instance/ChatInstanceServiceDeskActions").ChatInstanceServiceDeskActions
   state: import(".").ChatSDKStateAccess<import(".").ChatSDKState>
+  updateConfig: (next: ChatSDKConfig) => Promise<void>
 
 interface ChatSDKInstance (src/types/instance/ChatSDKInstance.ts)
   messaging: ChatSDKInstanceMessaging

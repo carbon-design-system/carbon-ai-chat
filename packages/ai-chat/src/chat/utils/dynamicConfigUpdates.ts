@@ -10,12 +10,8 @@
 import isEqual from 'lodash-es/isEqual.js';
 import { PublicConfig } from '../../types/config/PublicConfig';
 import { ServiceManager } from '../../shared/services/ServiceManager';
-import { NamespaceService } from '../../shared/services/NamespaceService';
-import actions from '../../shared/store/actions';
-import createHumanAgentService from '../../shared/services/haa/HumanAgentServiceImpl';
-import { consoleDebug, consoleError } from '../../shared/utils/miscUtils';
-import { buildLanguagePack } from '../../shared/store/doCreateStore';
-import { createAppConfig, reconcileAppConfigReferences } from './appConfig';
+import { createAppConfig } from './appConfig';
+import { applyConversationConfig } from '../../shared/services/applyConfig';
 import { isBrowser } from '../../shared/utils/browserUtils';
 import { viewActions } from '../../view/state';
 import { chatStore } from '../services/attachChatView';
@@ -23,48 +19,14 @@ import type { AppStore } from '../../shared/store/appStore';
 import type { AppState } from '../../types/state/AppState';
 
 /**
- * Rebuilds the human-agent service for a new desk factory. A live chat ends
- * quietly first (mirrors a user-initiated end), so no connection is stranded
- * on the old service. The new service initializes only if the old one had,
- * so a swap keeps the prior started state.
- */
-async function replaceHumanAgentService(
-  serviceManager: ServiceManager,
-  isActive: boolean,
-  wasInitialized: boolean
-) {
-  try {
-    if (isActive) {
-      consoleDebug('Tearing down existing service desk');
-      await serviceManager.humanAgentService.endChat(true, true, false);
-    }
-    // A chat that shut down during that wait keeps its disconnected service.
-    if (serviceManager.isShutdown) {
-      return;
-    }
-
-    consoleDebug('Recreating human agent service');
-    serviceManager.humanAgentService = createHumanAgentService(serviceManager);
-
-    if (wasInitialized) {
-      consoleDebug('Human agent service restarting');
-      await serviceManager.humanAgentService.initialize();
-    }
-  } catch (error) {
-    // Surface failure to the caller, which decides on any fallback.
-    consoleError('Failed to update human agent service dynamically:', error);
-    throw error;
-  }
-}
-
-/**
  * Applies a runtime `PublicConfig` change to an already-booted `ServiceManager`
  * in place — without tearing down and rebuilding the chat.
  *
  * The model has two layers:
  *
- * 1. The wholesale config replace (below) is the backbone. It writes the freshly
- *    recomputed `AppConfig` (public + derived) into the store, and everything a
+ * 1. The wholesale config replace is the backbone. The shared update path,
+ *    `applyConversationConfig`, writes the freshly recomputed `AppConfig`
+ *    (public + derived) into the store, and everything a
  *    component reads reactively from config then updates on the next render with
  *    no extra work here — header, layout, theme, `assistantName`,
  *    `input.maxInputCharacters`, the input flags (`input.isVisible` /
@@ -76,7 +38,8 @@ async function replaceHumanAgentService(
  *    render. Two kinds —
  *      a. Service-internal mirrors — pushing a value into a long-lived service
  *         object the store can't reach (the namespace service, the message
- *         service's internal timeout, the human-agent service).
+ *         service's internal timeout, the human-agent service). These are the
+ *         conversation's, so they live in `applyConversationConfig` too.
  *      b. State transitions / invalidations — logic that decides "what should
  *         happen" on a change rather than copying a value (opening/closing the
  *         homescreen, forcing re-acceptance of a changed disclaimer, seeding
@@ -114,120 +77,26 @@ export async function applyConfigChangesDynamically(
       currentState.config.derived.themeWithDefaults.derivedCarbonTheme;
   }
 
-  // BACKBONE: replace the whole config (public + derived) in the store. This is
-  // what propagates every reactively-read config value to the UI. The blocks
-  // below only add out-of-store side effects on top of this.
-  //
-  // `createAppConfig` always rebuilds the entire tree, so reconcile against the
-  // currently stored config first: sub-objects (and the `public` / `derived`
-  // parents) whose value is unchanged keep their previous reference, so a
-  // single-field change does not force every config-reading selector to
-  // re-render. Run this AFTER the theme carry-forward above so the reconciliation
-  // sees the final derived theme.
-  const reconciledConfig = reconcileAppConfigReferences(
-    currentState.config,
-    newAppConfig
+  // BACKBONE: the shared update path replaces the config, keeping the
+  // references of unchanged sub-objects, and pushes the conversation's
+  // service mirrors (language pack, namespace, timeout, service desk). The
+  // home screen step runs inside it, right after the config replace and before
+  // the service steps, as before. Steps read `currentState`, from before the
+  // replace.
+  const before: HomeScreenBefore = {
+    wasOn: Boolean(currentState.config.public.homescreen?.isOn),
+    messageCount: currentState.assistantMessageState.messageIDs.length,
+  };
+  const conversationUpdate = applyConversationConfig(
+    serviceManager,
+    newAppConfig,
+    () => applyHomeScreenToggle(prevConfig, newConfig, before, store)
   );
-  // When nothing actually changed, reconcile returns the previous config
-  // reference; skip the dispatch entirely so we don't allocate a new top-level
-  // state and re-run every subscriber's selector for a no-op replace.
-  if (reconciledConfig !== currentState.config) {
-    store.dispatch(actions.changeState({ config: reconciledConfig }));
-  }
-
-  // The language pack lives in its own `AppState.languagePack` slice (off the
-  // config tree), so the config replace above does not update it. Recompute it
-  // ONLY when config-provided `strings` actually changed — rebuilding from the
-  // `enLanguagePack` defaults so a removed key reverts. Gating on a real
-  // `strings` change is important: an unrelated config update (e.g. a theme
-  // switch) must not clobber strings supplied through the separate `strings`
-  // prop, which leaves `config.public.strings` undefined.
-  if (!isEqual(currentState.config.public.strings, newConfig.strings)) {
-    const nextLanguagePack = buildLanguagePack(newConfig.strings);
-    if (!isEqual(currentState.languagePack, nextLanguagePack)) {
-      // Dispatch the slice only; the `refreshLocalizationOnChange` store
-      // subscription rebuilds `serviceManager.intl` from it. A runtime locale
-      // change is likewise picked up by that subscription off the config replace
-      // above, so neither sink can go stale here.
-      store.dispatch(
-        actions.setAppStateValue('languagePack', nextLanguagePack)
-      );
-    }
-  }
-
-  // STATE TRANSITION: whether the homescreen is currently open is session/runtime
-  // state, not a config value, so toggling `homescreen.isOn` has to decide what
-  // the open/closed flag should become — it can't be derived by a reactive read.
-  if (prevConfig?.homescreen?.isOn !== newConfig.homescreen?.isOn) {
-    // Going off -> on: open the homescreen, but only when the conversation is
-    // empty (don't yank the user away from an in-progress conversation).
-    if (
-      newConfig.homescreen?.isOn &&
-      !currentState.config.public.homescreen?.isOn &&
-      currentState.assistantMessageState.messageIDs.length === 0
-    ) {
-      store.dispatch(viewActions.setHomeScreenIsOpen(true));
-    }
-    // Going on -> off (or switching to "splash" with active messages): make sure
-    // the homescreen is not left open.
-    if (
-      (!newConfig.homescreen?.isOn &&
-        currentState.config.public.homescreen?.isOn) ||
-      (newConfig.homescreen?.disableReturn &&
-        currentState.assistantMessageState.messageIDs.length > 0)
-    ) {
-      store.dispatch(viewActions.setHomeScreenIsOpen(false));
-    }
-  }
 
   // (Custom panel state is driven imperatively by ChatInstance, so there is
   // nothing to apply from config here.)
 
-  // SERVICE-INTERNAL MIRROR: the namespace lives on the ServiceManager (and is
-  // baked into the session-storage key), not in the store, so swap the service
-  // instance. UserSessionStorageService derives its key from
-  // `serviceManager.namespace` on each access, so the session bucket follows the
-  // new namespace automatically.
-  if (prevConfig?.namespace !== newConfig.namespace) {
-    serviceManager.namespace = new NamespaceService(newConfig.namespace);
-  }
-
-  // SERVICE-INTERNAL MIRROR: the request timeout is held as a field inside the
-  // message service, which the store/React render cannot reach, so push it.
-  const prevTimeoutSecs = prevConfig?.messaging?.messageTimeoutSecs;
-  const nextTimeoutSecs = newConfig.messaging?.messageTimeoutSecs;
-  if (
-    prevTimeoutSecs !== nextTimeoutSecs &&
-    nextTimeoutSecs &&
-    serviceManager.messageCoordinator
-  ) {
-    serviceManager.messageCoordinator.timeoutMS = nextTimeoutSecs * 1000;
-  }
-
-  // SERVICE-INTERNAL MIRROR: the human-agent service coordinates a service desk
-  // built from `serviceDeskFactory`. The factory is read live from config at
-  // chat start (see HumanAgentServiceImpl), so a *future* chat always picks up
-  // the latest factory with no work here. The only thing bound to the old
-  // factory is a live or already-initialized connection — so we only rebuild
-  // when one exists.
-  //
-  // This matters because the comparison is by factory *reference* identity: a
-  // non-memoized `serviceDeskFactory` would flip this block on every unrelated
-  // re-render. When the service is idle (never initialized and no active chat),
-  // rebuilding would be pure churn that a future chat undoes anyway, so we skip
-  // it entirely. Callers should still memoize the factory if they connect.
-  if (prevConfig?.serviceDeskFactory !== newConfig.serviceDeskFactory) {
-    const isActive =
-      Boolean(serviceManager.humanAgentService) &&
-      isHumanAgentChatActive(serviceManager);
-    const wasInitialized = Boolean(
-      serviceManager.humanAgentService?.hasInitialized
-    );
-
-    if (isActive || wasInitialized) {
-      await replaceHumanAgentService(serviceManager, isActive, wasInitialized);
-    }
-  }
+  await conversationUpdate;
 
   // STATE INVALIDATION: when the disclaimer *content* changes, the user's prior
   // acceptance is no longer meaningful, so clear the recorded acceptance for this
@@ -262,6 +131,65 @@ export async function applyConfigChangesDynamically(
 }
 
 /**
+ * The home screen inputs a config update reads from before the replace.
+ */
+interface HomeScreenBefore {
+  /** Whether the old config had the home screen on. */
+  wasOn: boolean;
+  /** How many messages the conversation had. */
+  messageCount: number;
+}
+
+/**
+ * STATE TRANSITION: whether the home screen is open is session state, not a
+ * config value, so toggling `homescreen.isOn` has to decide what the open flag
+ * becomes; a reactive read can't. `before` is from before the replace.
+ */
+function applyHomeScreenToggle(
+  prevConfig: PublicConfig | null,
+  newConfig: PublicConfig,
+  before: HomeScreenBefore,
+  store: AppStore<AppState>
+) {
+  if (prevConfig?.homescreen?.isOn === newConfig.homescreen?.isOn) {
+    return;
+  }
+  if (shouldOpenHomeScreen(newConfig, before)) {
+    store.dispatch(viewActions.setHomeScreenIsOpen(true));
+  }
+  if (shouldCloseHomeScreen(newConfig, before)) {
+    store.dispatch(viewActions.setHomeScreenIsOpen(false));
+  }
+}
+
+/**
+ * Going off to on opens the home screen, but only when the conversation is
+ * empty, so the user isn't pulled out of one in progress.
+ */
+function shouldOpenHomeScreen(
+  newConfig: PublicConfig,
+  before: HomeScreenBefore
+) {
+  return (
+    newConfig.homescreen?.isOn && !before.wasOn && before.messageCount === 0
+  );
+}
+
+/**
+ * Going on to off, or to "splash" with messages, makes sure the home screen
+ * isn't left open.
+ */
+function shouldCloseHomeScreen(
+  newConfig: PublicConfig,
+  before: HomeScreenBefore
+) {
+  return (
+    (!newConfig.homescreen?.isOn && before.wasOn) ||
+    (newConfig.homescreen?.disableReturn && before.messageCount > 0)
+  );
+}
+
+/**
  * Clears this hostname's disclaimer acceptance. It marks the hostname as not
  * accepted rather than deleting the key, as before. Acceptance is read as a
  * truthy check, so `false` shows the disclaimer again. An unchanged value saves
@@ -279,14 +207,4 @@ function clearDisclaimerAcceptance(store: AppStore<AppState>) {
       })
     );
   }
-}
-
-/**
- * True if a human agent chat is currently active (connected or connecting).
- * Used to decide whether a `serviceDeskFactory` change should tear down an
- * existing connection before rebuilding the service.
- */
-function isHumanAgentChatActive(serviceManager: ServiceManager): boolean {
-  const { humanAgent } = serviceManager.instance.state.get();
-  return humanAgent.isConnected || humanAgent.isConnecting;
 }

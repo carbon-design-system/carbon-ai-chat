@@ -40,10 +40,8 @@ import {
   buildLanguagePack,
   createInitialState,
 } from '../src/shared/store/doCreateStore';
-import {
-  createAppConfig,
-  reconcileAppConfigReferences,
-} from '../src/chat/utils/appConfig';
+import { createAppConfig } from '../src/chat/utils/appConfig';
+import { reconcileAppConfigReferences } from '../src/shared/utils/reconcileConfig';
 import { chatStore } from '../src/chat/services/attachChatView';
 import { attachStorePartition } from '../src/sdk/internal';
 import { PublicStateService } from '../src/shared/services/PublicStateService';

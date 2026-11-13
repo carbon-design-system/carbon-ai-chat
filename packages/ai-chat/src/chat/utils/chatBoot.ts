@@ -79,6 +79,9 @@ export const DEFAULT_PUBLIC_CONFIG: Partial<PublicConfig> = {
  * produce a complete `PublicConfig` used throughout the app.
  */
 export function mergePublicConfig(config: Partial<PublicConfig>): PublicConfig {
+  // Merging into a new object copies plain objects and arrays and keeps
+  // functions and class instances by reference, so the host editing its
+  // object later changes nothing (#1833).
   return merge({}, DEFAULT_PUBLIC_CONFIG, config) as PublicConfig;
 }
 

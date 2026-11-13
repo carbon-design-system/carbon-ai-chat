@@ -70,6 +70,18 @@ import type {
   MessageRequestHistory,
 } from '../../../types/messaging/Messages';
 
+/**
+ * The message timeout a config asks for: `messaging.messageTimeoutSecs` in
+ * milliseconds, `0` for none, and 150 seconds when it's left out. Boot and
+ * config updates both use it.
+ */
+function messageTimeoutMS(publicConfig: ConversationConfig): number {
+  const timeoutOverride = publicConfig.messaging?.messageTimeoutSecs;
+  return timeoutOverride || timeoutOverride === 0
+    ? timeoutOverride * 1000
+    : 150 * 1000;
+}
+
 /** The directions the public loading counter methods accept. */
 const LOADING_DIRECTIONS = new Set(['reset', 'increase', 'decrease']);
 
@@ -660,11 +672,7 @@ class MessageCoordinator {
   }
 
   configureMessageTimeout(publicConfig: ConversationConfig) {
-    const timeoutOverride = publicConfig.messaging?.messageTimeoutSecs;
-    this.timeoutMS =
-      timeoutOverride || timeoutOverride === 0
-        ? timeoutOverride * 1000
-        : 150 * 1000;
+    this.timeoutMS = messageTimeoutMS(publicConfig);
   }
 
   get lastProcessedMessageID() {
@@ -921,4 +929,4 @@ class MessageCoordinator {
   }
 }
 
-export { MessageCoordinator };
+export { MessageCoordinator, messageTimeoutMS };

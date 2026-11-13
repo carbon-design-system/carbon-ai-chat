@@ -36,6 +36,7 @@ import {
   setupBeforeEach,
 } from '../../test_helpers';
 import { chatStore } from '../../../src/chat/services/attachChatView';
+import * as applyConfigModule from '../../../src/shared/services/applyConfig';
 
 type ContainerElement = HTMLElement & {
   config: PublicConfig;
@@ -175,6 +176,35 @@ describe('config updates after startup', () => {
     expect(storeOf(instance).getState().config).toBe(afterFirst);
   });
 
+  it('sends prop changes through the shared update path (#1833 O4)', async () => {
+    const apply = jest.spyOn(applyConfigModule, 'applyConversationConfig');
+    try {
+      const onBeforeRender = jest.fn(
+        (_instance: ChatInstance): void => undefined
+      );
+      const onAfterRender = jest.fn();
+      const set = surface.boot(onBeforeRender, onAfterRender);
+      await waitFor(() => expect(onAfterRender).toHaveBeenCalled(), {
+        timeout: 5000,
+      });
+      const instance: ChatInstance = onBeforeRender.mock.calls[0][0];
+      apply.mockClear();
+
+      await set({ assistantName: 'Through the path' });
+      await waitFor(() => expect(apply).toHaveBeenCalledTimes(1));
+      const [manager, next] = apply.mock.calls[0];
+      expect(manager.store.getState().config.public.assistantName).toBe(
+        'Through the path'
+      );
+      expect(next.public.assistantName).toBe('Through the path');
+      expect(storeOf(instance).getState().config).toBe(
+        manager.store.getState().config
+      );
+    } finally {
+      apply.mockRestore();
+    }
+  });
+
   it('replaces and then removes markdown options', async () => {
     const onBeforeRender = jest.fn(
       (_instance: ChatInstance): void => undefined
@@ -190,14 +220,26 @@ describe('config updates after startup', () => {
     const first = { markdownItPlugins: [plugin] };
     await set({ markdown: first });
     await waitFor(() =>
-      expect(storeOf(instance).getState().view.markdownConfig).toBe(first)
+      expect(storeOf(instance).getState().view.markdownConfig).toStrictEqual(
+        first
+      )
     );
+    // A copy of the host's object, sharing its plugin functions (#1833).
+    const storedFirst = storeOf(instance).getState().view.markdownConfig;
+    expect(storedFirst).not.toBe(first);
+    expect(storedFirst.markdownItPlugins[0]).toBe(plugin);
 
     const second = { markdownItPlugins: [plugin, plugin] };
     await set({ markdown: second });
     await waitFor(() =>
-      expect(storeOf(instance).getState().view.markdownConfig).toBe(second)
+      expect(storeOf(instance).getState().view.markdownConfig).toStrictEqual(
+        second
+      )
     );
+    // A copy of the host's object, sharing its plugin functions (#1833).
+    const storedSecond = storeOf(instance).getState().view.markdownConfig;
+    expect(storedSecond).not.toBe(second);
+    expect(storedSecond.markdownItPlugins[0]).toBe(plugin);
 
     await set({ markdown: undefined });
     await waitFor(() =>

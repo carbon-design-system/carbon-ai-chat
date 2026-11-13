@@ -8,7 +8,10 @@
  */
 
 import { createConversationInstance } from '../shared/services/conversationInstance';
+import { applyConversationConfig } from '../shared/services/applyConfig';
 import type { ServiceManager } from '../shared/services/ServiceManager';
+import type { ChatSDKConfig } from '../types/config/ChatSDKConfig';
+import { createSDKAppConfig } from './sdkAppConfig';
 import type { ChatSDKInstance } from '../types/instance/ChatSDKInstance';
 
 /**
@@ -32,6 +35,13 @@ interface ChatSDKHandle extends ChatSDKInstance {
    * clearing saved state come with #2358. Calling it again does nothing.
    */
   destroy(): void;
+
+  /**
+   * Replaces the config rather than merging into it, so a field left out
+   * returns to its default. Copies what it's given, as `createChatSDK` does.
+   * Resolves once the change has been applied (#1833).
+   */
+  updateConfig(next: ChatSDKConfig): Promise<void>;
 }
 
 /** The chat behind each handle, for the prebuilt chat and tests. */
@@ -45,6 +55,17 @@ function createHandle(serviceManager: ServiceManager): ChatSDKHandle {
     ...createConversationInstance(serviceManager, () => handle),
     release: shutdown,
     destroy: shutdown,
+    updateConfig: async (next) => {
+      // A chat that shut down takes no more config.
+      if (serviceManager.isShutdown) {
+        return;
+      }
+      await applyConversationConfig(serviceManager, {
+        ...createSDKAppConfig(next),
+        // Derived values come from the view, which an SDK chat has none of.
+        derived: serviceManager.store.getState().config.derived,
+      });
+    },
   };
   chats.set(handle, serviceManager);
   return handle;

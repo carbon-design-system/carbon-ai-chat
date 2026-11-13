@@ -18,10 +18,8 @@
  * ones get a new one.
  */
 
-import {
-  createAppConfig,
-  reconcileAppConfigReferences,
-} from '../../../src/chat/utils/appConfig';
+import { createAppConfig } from '../../../src/chat/utils/appConfig';
+import { reconcileAppConfigReferences } from '../../../src/shared/utils/reconcileConfig';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
 
 /**
