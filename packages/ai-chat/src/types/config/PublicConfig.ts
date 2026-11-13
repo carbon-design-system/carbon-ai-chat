@@ -97,8 +97,9 @@ export interface PublicConfig {
 
   /**
    * This is a factory for producing custom implementations of service desks. If this value is set, the chat calls it
-   * once when it mounts to create an instance of a {@link ServiceDesk}, passing any desk state saved before a page
-   * reload. A restored agent chat still reconnects only when the chat first loads its conversation.
+   * to create an instance of a {@link ServiceDesk} when it first loads its conversation (the first time it opens or
+   * sends), not when it mounts. Until then, a restored agent chat shows in `getState().humanAgent` with no desk
+   * behind it.
    *
    * If it is changed in the middle of a conversation (you should obviously avoid this) the conversation with the
    * human agent will be disconnected.
@@ -106,10 +107,7 @@ export interface PublicConfig {
    * This factory is compared by reference. Provide a stable reference (for example
    * a module-level function or a memoized `useCallback`); a new function identity
    * on every render is treated as a change and, while an agent chat is active, tears
-   * down and rebuilds the service desk connection. While no agent chat is active, a
-   * changed factory isn't called right away: the chat drops the desk it has and calls
-   * the latest factory when it next needs one, when it first loads its conversation or
-   * when an agent chat is requested.
+   * down and rebuilds the service desk connection.
    */
   serviceDeskFactory?: (
     parameters: ServiceDeskFactoryParameters

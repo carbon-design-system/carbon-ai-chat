@@ -25,6 +25,7 @@ import {
   PublicConfig,
 } from '../../../src/aiChatEntry';
 import { loadAllLazyDeps } from '../../../src/serverEntry';
+import { settleOpenRequests } from './backend';
 // The two element entries in package.json's `exports`. Importing them defines
 // `cds-aichat-container` and `cds-aichat-custom-element`.
 import '../../../src/web-components/cds-aichat-container/index';
@@ -257,6 +258,9 @@ export async function contractElement(
   };
 }
 
+/** The real `setTimeout`, kept from before any test installs fake timers. */
+const realSetTimeout = globalThis.setTimeout;
+
 /**
  * Connects an element that opens its main window at mount
  * (`openChatByDefault`) with no welcome request. A `messaging` in
@@ -276,12 +280,27 @@ export function openElement(
 }
 
 /**
- * Standard cleanup: unmount React trees, empty the document, clear browser
- * storage, and restore real timers. The chat saves its open view in session
- * storage, so without the clear the next mount in a file would start open and
- * send a welcome request.
+ * Settles every fake-backend call the last test left open, and gives the chat
+ * a turn to finish what each one releases. A test that ends (or times out)
+ * with a call open, such as a welcome request no one answered, can leave the
+ * chat waiting inside a pending `act`, which holds back every later render in
+ * the file: the next mount never renders, and tests that pass alone fail.
  */
-export function contractCleanup(): void {
+async function settleLeftoverWork(): Promise<void> {
+  // This runs outside `act`: wrapped in one, the pending `act` stays stuck.
+  for (let round = 0; round < 10 && settleOpenRequests() > 0; round += 1) {
+    await new Promise((resolve) => realSetTimeout(resolve, 0));
+  }
+}
+
+/**
+ * Standard cleanup: settle backend calls the test left open, unmount React
+ * trees, empty the document, clear browser storage, and restore real timers.
+ * The chat saves its open view in session storage, so without the clear the next mount in a file
+ * would start open and send a welcome request.
+ */
+export async function contractCleanup(): Promise<void> {
+  await settleLeftoverWork();
   cleanup();
   document.body.innerHTML = '';
   window.sessionStorage.clear();
@@ -301,7 +320,7 @@ export function contractSetup(): void {
   jest.setTimeout(TEST_TIMEOUT);
   beforeAll(async () => {
     await mountChatContainer({}, WARM_UP_TIMEOUT);
-    contractCleanup();
+    await contractCleanup();
   }, WARM_UP_TIMEOUT);
   afterEach(contractCleanup);
 }

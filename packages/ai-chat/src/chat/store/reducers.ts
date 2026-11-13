@@ -303,18 +303,14 @@ function applyLocalMessageItem(
     message,
     addMessage,
     addAfterID,
-    addMessageAfterID,
   }: {
     messageItem: LocalMessageItem;
     message: Message;
     addMessage: boolean;
     addAfterID: string;
-    addMessageAfterID?: string;
   }
 ): AppState {
-  const withMessage = addMessage
-    ? applyFullMessage(state, message, addMessageAfterID)
-    : state;
+  const withMessage = addMessage ? applyFullMessage(state, message) : state;
 
   // If we receive back a silent message, we don't want to add to the store.
   if (message.history.silent) {
@@ -546,7 +542,6 @@ const reducers: { [key: string]: ReducerType } = {
       message: Message;
       addMessage: boolean;
       addAfterID: string;
-      addMessageAfterID?: string;
     }
   ): AppState => applyLocalMessageItem(state, action),
 

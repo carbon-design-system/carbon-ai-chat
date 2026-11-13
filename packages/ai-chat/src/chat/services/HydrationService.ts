@@ -48,10 +48,6 @@ interface RestartConversationOptions {
    * This defaults to true.
    */
   fireEvents?: boolean;
-  /**
-   * Indicates if file uploads still in progress should be canceled. This defaults to true.
-   */
-  cancelUploads?: boolean;
 }
 
 class HydrationService {
@@ -85,11 +81,6 @@ class HydrationService {
    * Records the first history-load attempt so a restart cannot load the old conversation again.
    */
   private alreadyHydrated = false;
-
-  /**
-   * Indicates if a load has already waited for the service desk to be created.
-   */
-  private waitedForServiceDesk = false;
 
   constructor(serviceManager: ServiceManager) {
     this.serviceManager = serviceManager;
@@ -217,15 +208,14 @@ class HydrationService {
       return history;
     }
 
-    // The service desk is created at mount, and each load waits for it. Only the first load to wait reports a
-    // failure, so a failed desk is reported once.
-    const initialization = serviceManager.humanAgentService?.initialize();
-    if (this.waitedForServiceDesk) {
-      await initialization?.catch(() => {});
-    } else {
-      this.waitedForServiceDesk = true;
-      await initialization;
+    const humanAgentService = serviceManager.humanAgentService;
+    if (!humanAgentService || humanAgentService.hasInitialized) {
+      debugLog('No service desk integrations present');
+      return history;
     }
+
+    debugLog('Initializing the human agent service');
+    await humanAgentService.initialize();
     return history;
   }
 
@@ -308,7 +298,6 @@ class HydrationService {
       skipHydration = false,
       endHumanAgentConversation = true,
       fireEvents = true,
-      cancelUploads = true,
     } = options;
 
     debugLog('Restarting conversation');
@@ -378,25 +367,23 @@ class HydrationService {
       }
 
       await this.serviceManager.messageService.cancelAllMessageRequests();
-      if (cancelUploads) {
-        this.serviceManager.inputActionsService.cancelPendingUploads();
-      }
+      this.serviceManager.inputActionsService.cancelPendingUploads();
 
       // Hide the stop streaming button since we've canceled all streams. Unconditional
       // on purpose — everything was just canceled, so there is no other stream to keep
       // it visible for.
       resetStopStreamingButton(store);
 
-      // The restart below would close an open workspace with no events, so close it through its panel first. A
-      // failing close handler can't stop the restart, which closes the workspace either way.
-      if (fireEvents && store.getState().workspacePanelState.isOpen) {
+      // The restart below would close an open workspace with no events, so close it through its panel first, for a
+      // clear too. A failing close handler can't stop the restart, which closes the workspace either way.
+      if (store.getState().workspacePanelState.isOpen) {
         try {
           await serviceManager.customPanelManager
             .getPanel(PanelType.WORKSPACE)
             .close();
         } catch (error) {
           consoleError(
-            'A workspace close handler failed during a restart. The restart closes the workspace anyway.',
+            'A workspace close handler failed while the conversation was cleared. The workspace closes anyway.',
             error
           );
         }
@@ -464,7 +451,6 @@ class HydrationService {
     this.serviceManager.inputActionsService.cancelPendingUploads();
 
     this.serviceManager.messageUpsertCoordinator.clearAll();
-    this.serviceManager.humanAgentService?.dropHeldMessages();
 
     this.serviceManager.store.dispatch(
       actions.setAppStateValue(

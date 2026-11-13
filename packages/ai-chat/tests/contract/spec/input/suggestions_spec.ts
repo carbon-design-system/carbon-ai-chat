@@ -8,6 +8,7 @@
  */
 
 import { act, waitFor } from '@testing-library/react';
+import React from 'react';
 import type { Editor, JSONContent } from '@tiptap/core';
 
 import {
@@ -15,6 +16,7 @@ import {
   PageObjectId,
   PublicConfig,
   SuggestionItem,
+  TriggerSuggestionConfig,
 } from '../../../../src/aiChatEntry';
 import {
   FakeBackend,
@@ -24,6 +26,7 @@ import {
   contractSetup,
   getByTestId,
   isShownWithin,
+  mainPanelText,
   openChat,
   pause,
 } from '../../helpers';
@@ -198,6 +201,81 @@ describe('input.command', () => {
     expect(instance.state.get().input.rawValue).toBe('');
     await waitFor(() => expect(onRemove).toHaveBeenCalledTimes(1));
     expect(onRemove.mock.calls[0][0]).toMatchObject({ id: 'sum' });
+  });
+});
+
+/** Clicks the send button, found by its public test ID. */
+async function clickSend(): Promise<void> {
+  await act(async () => {
+    getByTestId(PageObjectId.INPUT_SEND).click();
+  });
+}
+
+/** The visible elements with this role and name that show in the main panel. */
+function shownInMainPanel(role: string, name: string): HTMLElement[] {
+  const panel = getByTestId(PageObjectId.MAIN_PANEL);
+  return allByRole(role, name).filter((element) =>
+    isShownWithin(element, panel)
+  );
+}
+
+// @covers config.input.mention
+describe('input token chips in a sent message', () => {
+  contractSetup();
+
+  const renderers: [string, TriggerSuggestionConfig['renderCustomToken']][] = [
+    [
+      'an element',
+      (item) => {
+        const chip = document.createElement('span');
+        chip.setAttribute('role', 'img');
+        chip.setAttribute('aria-label', `Person ${item.label}`);
+        return chip;
+      },
+    ],
+    [
+      'a React node',
+      (item) =>
+        React.createElement('span', {
+          role: 'img',
+          'aria-label': `Person ${item.label}`,
+        }),
+    ],
+  ];
+
+  for (const [kind, renderCustomToken] of renderers) {
+    it(`draws a chip with the renderCustomToken the input used, which returns ${kind}`, async () => {
+      const { instance, editor, backend } = await openEditor({
+        input: {
+          mention: { trigger: '@', items: [ALICE], renderCustomToken },
+        },
+      });
+      await insert(editor, '@al');
+      await choose('Alice');
+      // The input draws the custom chip; the main panel shows no message yet.
+      await waitFor(() =>
+        expect(allByRole('img', 'Person Alice')).toHaveLength(1)
+      );
+      expect(shownInMainPanel('img', 'Person Alice')).toHaveLength(0);
+      await clickSend();
+      await waitFor(() => expect(backend.requests).toHaveLength(1));
+      expect(instance.state.get().input.rawValue).toBe('');
+      await waitFor(() =>
+        expect(shownInMainPanel('img', 'Person Alice')).toHaveLength(1)
+      );
+    });
+  }
+
+  it('draws the default chip without a renderCustomToken', async () => {
+    const { instance, editor, backend } = await openEditor({
+      input: { mention: { trigger: '@', items: [ALICE] } },
+    });
+    await insert(editor, '@al');
+    await choose('Alice');
+    await clickSend();
+    await waitFor(() => expect(backend.requests).toHaveLength(1));
+    expect(instance.state.get().input.rawValue).toBe('');
+    await waitFor(() => expect(mainPanelText()).toContain('Alice'));
   });
 });
 

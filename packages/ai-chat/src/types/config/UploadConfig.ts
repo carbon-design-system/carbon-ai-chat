@@ -70,8 +70,9 @@ export interface UploadConfig {
    *
    * @param file - The `File` object selected by the user.
    * @param abortSignal - Fires if the user removes the pending upload before it
-   *   completes, if the conversation restarts or its session is destroyed
-   *   ({@link ChatInstanceMessaging.restartConversation},
+   *   completes, if the conversation restarts or clears, or its session is
+   *   destroyed ({@link ChatInstanceMessaging.restartConversation},
+   *   {@link ChatInstanceMessaging.clearConversation},
    *   {@link ChatInstance.destroySession}), or if the chat unmounts.
    */
   onFileUpload?: (

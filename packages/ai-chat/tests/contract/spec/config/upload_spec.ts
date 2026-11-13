@@ -348,6 +348,7 @@ describe('upload: onFileUpload', () => {
 
 // @covers config.upload.onFileUpload state.input.hasInFlightUploads
 // @covers instance.messaging.restartConversation instance.destroySession
+// @covers instance.messaging.clearConversation
 describe('upload: restart, clearConversation, and destroySession', () => {
   contractSetup();
 
@@ -356,6 +357,7 @@ describe('upload: restart, clearConversation, and destroySession', () => {
       'restartConversation',
       (instance) => instance.messaging.restartConversation(),
     ],
+    ['clearConversation', (instance) => instance.messaging.clearConversation()],
     ['destroySession', (instance) => instance.destroySession(true)],
   ];
 
@@ -387,31 +389,6 @@ describe('upload: restart, clearConversation, and destroySession', () => {
       await finishSend(started);
     });
   }
-
-  // @covers instance.messaging.clearConversation
-  it('clearConversation leaves an upload in progress, which adds its data to the next send', async () => {
-    const backend = fakeBackend();
-    const uploader = fakeUploader();
-    const { instance } = await openChat(
-      { onFileUpload: uploader.onFileUpload },
-      backend
-    );
-    await pickFiles(STRINGS.input_uploadButtonLabel, [makeFile('report.pdf')]);
-    await act(async () => {
-      await instance.messaging.clearConversation();
-    });
-    expect(uploader.calls[0].signal.aborted).toBe(false);
-    expect(allByRole('group', 'report.pdf')).toHaveLength(1);
-    expect(instance.getState().input.hasInFlightUploads).toBe(true);
-    await settle(uploader.calls[0], {
-      data: { fields: [fileField('doc', 'ref-1')] },
-    });
-    const started = await startSend(instanceSender(instance, backend), 'hi');
-    expect(started.sent.request.input.structured_data).toEqual({
-      fields: [fileField('doc', 'ref-1')],
-    });
-    await finishSend(started);
-  });
 });
 
 // @covers state.input.hasInFlightUploads config.upload.onFileUpload instance.send

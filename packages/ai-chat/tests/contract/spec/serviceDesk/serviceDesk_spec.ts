@@ -21,7 +21,6 @@ import {
   GenericItem,
   HumanAgentMessageType,
   HumanAgentsOnlineStatus,
-  MessageRequest,
   MessageResponse,
   MessageResponseTypes,
   OnErrorType,
@@ -40,12 +39,10 @@ import {
   describeShared,
   fakeDesk,
   finishSend,
-  outputTexts,
   pause,
   recordEvents,
   responseOf,
   startSend,
-  textItem,
 } from '../../helpers';
 
 /** A driver whose config plugs in the desk, auto-connecting when agents are online. */
@@ -61,7 +58,7 @@ function deskDriver(
   });
 }
 
-/** Sends one message and settles it, which hydrates the chat. */
+/** Sends one message and settles it, which hydrates the chat and builds the desk. */
 async function hydrate(chat: ContractDriver): Promise<void> {
   await finishSend(await startSend(chat, 'hello'));
 }
@@ -97,23 +94,14 @@ const agentTypes = (chat: ContractDriver): string[] =>
     )
     .filter(Boolean);
 
-/** The text of each message after the first `from`: a request's input, a response's items. */
-const labels = (chat: ContractDriver, from: number): string[] =>
-  chat
-    .messages()
-    .slice(from)
-    .map((message) =>
-      'input' in message
-        ? (message as MessageRequest).input.text
-        : outputTexts(message).join(' ')
-    );
-
 // @covers config.serviceDeskFactory
 describeShared('serviceDeskFactory', (makeDriver) => {
-  it('is called once at mount, and not again when sends load the chat', async () => {
+  it('is not called at mount, then once when the first send hydrates the chat', async () => {
     const desk = fakeDesk();
     const chat = await deskDriver(makeDriver, desk);
-    expect(desk.factory).toHaveBeenCalledTimes(1);
+    // `main` calls the factory at the first load, not at mount; calling it at
+    // mount waits for 2.0.0 (MAIN-NOTES M85 (2.0.0)).
+    expect(desk.factory).not.toHaveBeenCalled();
     await hydrate(chat);
     await hydrate(chat);
     expect(desk.factory).toHaveBeenCalledTimes(1);
@@ -920,47 +908,27 @@ describeShared('agentJoinTimeoutSeconds', (makeDriver) => {
 
 // @covers instance.serviceDesk.updateIsSuspended event.human_agent:receive
 describeShared('serviceDesk.updateIsSuspended', (makeDriver) => {
-  it('holds agent messages while suspended, firing their events on arrival, and shows each in arrival order on resume', async () => {
+  it('keeps agent messages out of the list while suspended, though their events still fire', async () => {
     const desk = fakeDesk();
     const chat = await deskDriver(makeDriver, desk);
     await join(chat, desk);
     await act(() => chat.serviceDesk.updateIsSuspended(true));
     const events = recordEvents(chat, HUMAN_AGENT_EVENTS);
     const before = chat.messages().length;
-    await act(() => desk.callback().sendMessageToUser('held one'));
-    await act(() => desk.callback().sendMessageToUser('held two'));
-    await finishSend(await startSend(chat, 'to the assistant'));
-    await act(() =>
-      chat.messaging.addMessage(
-        responseOf('r-assistant', [textItem('assistant reply')])
-      )
-    );
-    await act(() => desk.callback().sendMessageToUser('held three'));
+    // `main` fires the events of a message that arrives while suspended but
+    // never stores it, even after a resume; keeping it waits for 2.0.0
+    // (MAIN-NOTES M85 (2.0.0)).
+    await act(() => desk.callback().sendMessageToUser('unseen'));
     expect(events.types()).toEqual([
       BusEventType.HUMAN_AGENT_PRE_RECEIVE,
       BusEventType.HUMAN_AGENT_RECEIVE,
-      BusEventType.HUMAN_AGENT_PRE_RECEIVE,
-      BusEventType.HUMAN_AGENT_RECEIVE,
-      BusEventType.HUMAN_AGENT_PRE_RECEIVE,
-      BusEventType.HUMAN_AGENT_RECEIVE,
     ]);
-    expect(labels(chat, before)).toEqual([
-      'to the assistant',
-      'assistant reply',
-    ]);
-    events.clear();
+    expect(chat.messages()).toHaveLength(before);
     await act(() => chat.serviceDesk.updateIsSuspended(false));
-    expect(events.types()).toEqual([]);
-    expect(labels(chat, before)).toEqual([
-      'held one',
-      'held two',
-      'to the assistant',
-      'assistant reply',
-      'held three',
-    ]);
-    await act(() => desk.callback().sendMessageToUser('live'));
+    await act(() => desk.callback().sendMessageToUser('seen'));
+    expect(chat.messages()).toHaveLength(before + 1);
     expect(lastItems(chat)).toEqual([
-      expect.objectContaining({ text: 'live' }),
+      expect.objectContaining({ text: 'seen' }),
     ]);
   });
 

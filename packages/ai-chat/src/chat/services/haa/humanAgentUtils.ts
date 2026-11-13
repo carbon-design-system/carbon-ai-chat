@@ -189,28 +189,13 @@ function createAssistantReturnMessage(languagePack: LanguagePack) {
 }
 
 /**
- * A place in the message list: right after the given message and item.
- */
-interface MessageListPlace {
-  messageID: string;
-  localMessageID: string;
-}
-
-/**
  * Adds the given messages to the redux store and optionally to session history as well.
- *
- * @param messagePairs The messages to add, in order.
- * @param showLiveMessages Indicates if the messages should be added. Nothing is added when this is false.
- * @param serviceManager The service manager to use.
- * @param after Places the messages, in order, right after this place in the list instead of at the end.
  */
 async function addMessages(
   messagePairs: LocalAndOriginalMessagesPair[],
   showLiveMessages: boolean,
-  serviceManager: ServiceManager,
-  after?: MessageListPlace
+  serviceManager: ServiceManager
 ) {
-  let place = after;
   if (showLiveMessages) {
     // Add to the redux store and fire any custom response events that are needed.
     await asyncForEach(
@@ -252,17 +237,9 @@ async function addMessages(
             actions.addLocalMessageItem(
               owned.localMessage,
               owned.originalMessage,
-              index === 0,
-              place?.localMessageID,
-              place?.messageID
+              index === 0
             )
           );
-          if (place) {
-            place = {
-              messageID: originalMessage.id,
-              localMessageID: localMessage.ui_state.id,
-            };
-          }
         });
       }
     );
@@ -332,7 +309,6 @@ async function addHumanAgentEndChatMessage(
 
 export {
   LocalAndOriginalMessagesPair,
-  MessageListPlace,
   createHumanAgentLocalMessage,
   addMessages,
   toPair,

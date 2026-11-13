@@ -112,6 +112,7 @@ await instance.messaging.insertHistory(newConversationHistory);
 - Restarts the conversation
 - Clears all current assistant messages from the view
 - Cancels any outstanding messages
+- Cancels any file uploads still in progress
 - Doesn't start a new hydration process
 
 ## History loading indicators

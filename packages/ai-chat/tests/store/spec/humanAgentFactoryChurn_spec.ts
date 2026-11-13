@@ -8,11 +8,12 @@
  */
 
 /**
- * A changed `serviceDeskFactory` reference (e.g. a non-memoized config object
- * on an unrelated re-render) must not call the factory while no agent chat is
- * active. An idle service that created its desk is swapped for a fresh one
- * that creates its desk when next needed; a fresh one is left alone. An active
- * service is ended, rebuilt, and initialized so it adopts the new factory.
+ * The human-agent service is rebuilt when `serviceDeskFactory` changes by
+ * reference. Because the factory is read live from config at chat start, an idle
+ * service (never initialized, no active chat) needs no rebuild — so a changed
+ * factory reference (e.g. a non-memoized config object on an unrelated
+ * re-render) must NOT churn the service. An active or initialized service is
+ * still rebuilt so it adopts the new factory.
  */
 
 import { applyConfigChangesDynamically } from '../../../src/chat/utils/dynamicConfigUpdates';
@@ -118,7 +119,7 @@ describe('human-agent serviceDeskFactory reference change', () => {
     ).toBe(factoryB);
   });
 
-  it('replaces an idle initialized service so it adopts the new factory', async () => {
+  it('rebuilds an initialized service so it adopts the new factory', async () => {
     const { serviceManager, humanAgentService } = setup({
       hasInitialized: true,
     });
@@ -129,16 +130,16 @@ describe('human-agent serviceDeskFactory reference change', () => {
     expect(humanAgentService.endChat).not.toHaveBeenCalled();
   });
 
-  it('does not initialize the replacement of an idle service', async () => {
+  it('re-initializes the rebuilt service when the previous one was initialized', async () => {
     const { serviceManager } = setup({ hasInitialized: true });
     await applyFactoryChange(serviceManager);
 
-    // The replacement creates its desk at the next load or agent chat, so the
-    // new factory isn't called now.
-    const replacement = serviceManager.humanAgentService as unknown as {
+    // After the rebuild, serviceManager.humanAgentService is the new instance;
+    // it must be initialized so the factory swap preserves the started state.
+    const rebuilt = serviceManager.humanAgentService as unknown as {
       initialize: jest.Mock;
     };
-    expect(replacement.initialize).not.toHaveBeenCalled();
+    expect(rebuilt.initialize).toHaveBeenCalledTimes(1);
   });
 
   it('ends and rebuilds an active service', async () => {

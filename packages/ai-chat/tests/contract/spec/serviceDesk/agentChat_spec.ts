@@ -31,32 +31,26 @@ import {
   FakeBackend,
   FakeDesk,
   HUMAN_AGENT_EVENTS,
-  addChunk,
   addConnect,
   byRole,
   click,
-  completeText,
   contractChat,
   contractSetup,
   fakeBackend,
   fakeDesk,
-  finalChunk,
   getByTestId,
-  mainPanelText,
   openChat,
-  partialText,
   pause,
   pickFiles,
   recordEvents,
-  textItem,
   typeText,
 } from '../../helpers';
 
 const humanAgent = (instance: ChatInstance) => instance.getState().humanAgent;
 
 /**
- * A closed chat with the desk plugged in and an answering backend, loaded by
- * a first send.
+ * A closed chat with the desk plugged in and an answering backend. A first
+ * send hydrates it, which builds the desk.
  */
 async function deskChat(
   desk: FakeDesk,
@@ -227,7 +221,7 @@ describe('reloading during an agent chat', () => {
     return { desk, instance, reconnect: reconnectMock };
   }
 
-  it('restores the agent state, and gives the factory the saved desk state at mount', async () => {
+  it('restores the agent state, and gives the factory the saved desk state', async () => {
     await joinThenUnmount();
     const { desk, instance } = await remount(() => Promise.resolve(true));
     expect(humanAgent(instance)).toEqual(
@@ -237,12 +231,15 @@ describe('reloading during an agent chat', () => {
         serviceDeskState: { token: 'saved' },
       })
     );
+    // `main` calls the factory at the first load, not at mount, so the restored
+    // state shows before any desk exists; calling it at mount waits for 2.0.0
+    // (MAIN-NOTES M85 (2.0.0)).
+    expect(desk.factory).not.toHaveBeenCalled();
+    await act(() => instance.send('again'));
     expect(desk.factory).toHaveBeenCalledTimes(1);
     expect(desk.factory.mock.calls[0][0].persistedState).toEqual({
       token: 'saved',
     });
-    await act(() => instance.send('again'));
-    expect(desk.factory).toHaveBeenCalledTimes(1);
   });
 
   it('reconnects through the desk by default, staying connected', async () => {
@@ -413,14 +410,18 @@ describe('a new serviceDeskFactory during an agent chat', () => {
 describe('a new serviceDeskFactory with no agent chat', () => {
   contractSetup();
 
-  it('is not called on rerenders; the next load calls the latest one', async () => {
-    const desk = fakeDesk();
-    const backend = fakeBackend({ autoResolve: true });
-    const calledBy: number[] = [];
+  /** Props whose factory is a new function on each call, recording which call made it. */
+  function churningProps(
+    desk: FakeDesk,
+    backend: ReturnType<typeof fakeBackend>,
+    calledBy: number[],
+    extra: Partial<PublicConfig> = {}
+  ) {
     let renders = 0;
-    const props = () => {
+    return () => {
       const render = renders++;
       return {
+        ...extra,
         serviceDeskFactory: (parameters: ServiceDeskFactoryParameters) => {
           calledBy.push(render);
           return desk.factory(parameters);
@@ -428,43 +429,47 @@ describe('a new serviceDeskFactory with no agent chat', () => {
         messaging: { customSendMessage: backend.customSendMessage },
       };
     };
+  }
+
+  it('is not called before the first load; the first load calls the latest one', async () => {
+    const calledBy: number[] = [];
+    const props = churningProps(
+      fakeDesk(),
+      fakeBackend({ autoResolve: true }),
+      calledBy
+    );
     const { instance, rerender } = await contractChat(props());
     await rerender(props());
     await rerender(props());
     await rerender(props());
     // A short wait to show no call follows.
     await pause();
-    expect(calledBy).toEqual([0]);
+    // `main` calls the factory at the first load, not at mount (MAIN-NOTES M85
+    // (2.0.0)).
+    expect(calledBy).toEqual([]);
     await act(() => instance.send('hello'));
-    expect(calledBy).toEqual([0, 3]);
+    expect(calledBy).toEqual([3]);
   });
 
-  it('calls the latest one when an agent chat is requested after the chat loaded', async () => {
+  it('is called again on each rerender after the chat loaded', async () => {
     const desk = fakeDesk();
-    const backend = fakeBackend({ autoResolve: true });
     const calledBy: number[] = [];
-    let renders = 0;
-    const props = () => {
-      const render = renders++;
-      return {
-        serviceDeskFactory: (parameters: ServiceDeskFactoryParameters) => {
-          calledBy.push(render);
-          return desk.factory(parameters);
-        },
-        serviceDesk: { skipConnectHumanAgentCard: true },
-        messaging: { customSendMessage: backend.customSendMessage },
-      };
-    };
+    const props = churningProps(
+      desk,
+      fakeBackend({ autoResolve: true }),
+      calledBy,
+      { serviceDesk: { skipConnectHumanAgentCard: true } }
+    );
     const { instance, rerender } = await contractChat(props());
     await act(() => instance.send('hello'));
     await rerender(props());
     await rerender(props());
-    // A short wait to show no call follows.
-    await pause();
-    expect(calledBy).toEqual([0]);
+    // `main` rebuilds a loaded desk on every new factory, even with no agent
+    // chat; keeping it idle waits for 2.0.0 (MAIN-NOTES M85 (2.0.0)).
+    await waitFor(() => expect(calledBy).toEqual([0, 1, 2]));
     await addConnect(instance);
     await waitFor(() => expect(desk.desk.startChat).toHaveBeenCalledTimes(1));
-    expect(calledBy).toEqual([0, 2]);
+    expect(calledBy).toEqual([0, 1, 2]);
   });
 });
 
@@ -740,64 +745,5 @@ describe('typing to an agent', () => {
     expect(desk.desk.sendMessageToAgent.mock.calls[0][2]).toEqual({
       filesToUpload: [],
     });
-  });
-});
-
-/** Where each text first shows in the main panel, in order of position. */
-function shownOrder(texts: string[]): string[] {
-  const shown = mainPanelText();
-  for (const text of texts) {
-    expect(shown).toContain(text);
-  }
-  return [...texts].sort((a, b) => shown.indexOf(a) - shown.indexOf(b));
-}
-
-// @covers instance.serviceDesk.updateIsSuspended
-describe('agent messages held while suspended', () => {
-  contractSetup();
-
-  /** An open chat in a suspended agent chat with Dana. */
-  async function suspendedChat(desk: FakeDesk) {
-    const mount = await deskChat(desk, { openChatByDefault: true });
-    await joined(mount.instance, desk);
-    await act(() => mount.instance.serviceDesk.updateIsSuspended(true));
-    return mount;
-  }
-
-  it('shows desk messages held while the assistant streams after the whole streamed response, in arrival order', async () => {
-    const desk = fakeDesk();
-    const { instance } = await suspendedChat(desk);
-    await addChunk(instance, partialText('r-stream', 'i1', 'Stream one'));
-    await addChunk(instance, completeText('r-stream', 'i1', 'Stream one'));
-    await act(() => desk.callback().sendMessageToUser('Held mid-stream'));
-    await addChunk(instance, partialText('r-stream', 'i2', 'Stream two'));
-    await addChunk(instance, completeText('r-stream', 'i2', 'Stream two'));
-    await act(() => desk.callback().sendMessageToUser('Held later'));
-    await addChunk(
-      instance,
-      finalChunk('r-stream', [
-        textItem('Stream one', 'i1'),
-        textItem('Stream two', 'i2'),
-      ])
-    );
-    await act(() => instance.serviceDesk.updateIsSuspended(false));
-    await waitFor(() => expect(mainPanelText()).toContain('Held later'));
-    expect(
-      shownOrder(['Held later', 'Held mid-stream', 'Stream two', 'Stream one'])
-    ).toEqual(['Stream one', 'Stream two', 'Held mid-stream', 'Held later']);
-  });
-
-  // @covers instance.destroySession
-  it('drops held messages on destroySession', async () => {
-    const desk = fakeDesk();
-    const { instance } = await suspendedChat(desk);
-    await act(() => desk.callback().sendMessageToUser('Held then destroyed'));
-    const count = instance.getState().messages.length;
-    await act(() => instance.destroySession(true));
-    await act(() => instance.serviceDesk.updateIsSuspended(false));
-    // A short wait to show nothing is added.
-    await pause();
-    expect(instance.getState().messages).toHaveLength(count);
-    expect(mainPanelText()).not.toContain('Held then destroyed');
   });
 });
