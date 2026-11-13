@@ -21,10 +21,15 @@ import type { ChatSDKHandle } from './handle';
  * Starts a conversation with no interface. Takes no DOM element, touches no
  * DOM, and reads or writes no browser storage. Resolves once services are
  * built and history has loaded; rejects if either fails.
+ *
+ * A create on a namespace whose chat was released less than a grace window
+ * ago resumes that conversation, with a new handle and this config applied as
+ * a replacement. A create on a namespace whose chat another handle still
+ * holds rejects. A missing namespace is a namespace like any other.
  */
 export const createChatSDK: (
   config?: ChatSDKConfig
-) => Promise<ChatSDKHandle> = (config) => bootChatSDK(config);
+) => Promise<ChatSDKHandle> = (config) => bootChatSDK(config, { reuse: true });
 export type { ChatSDKHandle } from './handle';
 export type {
   ChatSDKEventType,

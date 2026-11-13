@@ -17,7 +17,15 @@ import type { ChatInstance } from '../types/instance/ChatInstance';
 import type { ChatSDKInstance } from '../types/instance/ChatSDKInstance';
 import type { ConversationAppConfig } from '../types/state/ConversationState';
 import { createHandle, type ChatSDKHandle } from './handle';
+import { createChatRegistry } from './registry';
 import { createSDKAppConfig } from './sdkAppConfig';
+import { applyConversationConfig } from './services/applyConfig';
+
+/**
+ * The page's chats that can be reused, one per namespace. Module state, so two
+ * copies of the package on one page don't share it (ADR-0003).
+ */
+const chatRegistry = createChatRegistry<ServiceManager>();
 
 /** The prebuilt chat's boot options. Internal; the SDK entry never takes them. */
 interface ChatSDKBootOptions {
@@ -43,11 +51,22 @@ interface ChatSDKBootOptions {
    * instance. The prebuilt chat attaches its view partition here.
    */
   onServicesCreated?: (serviceManager: ServiceManager) => void;
+  /**
+   * Takes a claim on the namespace, so the chat outlives its handle for a
+   * grace window and the next create on the namespace adopts it (ADR-0003).
+   * The SDK entry always reuses. The prebuilt chat doesn't, so it never
+   * collides with another chat.
+   */
+  reuse?: boolean;
 }
 
 /**
  * Starts a conversation with no interface. Takes no DOM element, touches no
  * DOM, and reads or writes no browser storage.
+ *
+ * With `reuse`, a create on a namespace whose chat was released less than a
+ * grace window ago gets that chat back, with this config applied as a
+ * replacement. A create on a namespace whose chat is still held rejects.
  *
  * Resolves once services are built and history has loaded; rejects, after
  * shutting the chat down, if either fails. Internal in 1.x: `@carbon/ai-chat/sdk`
@@ -60,6 +79,26 @@ async function createChatSDK(
   config: ChatSDKConfig = {},
   options: ChatSDKBootOptions = {}
 ): Promise<ChatSDKHandle> {
+  if (!options.reuse) {
+    return createHandle(await bootChat(config, options));
+  }
+  // Copied now: boot can wait for an old chat's shutdown, and adoption for
+  // boot, and the host may change its object meanwhile.
+  const appConfig = options.appConfig ?? createSDKAppConfig(config);
+  const claim = chatRegistry.claim(appConfig.public.namespace, {
+    boot: () => bootChat(config, { ...options, appConfig }),
+    // A replacement, as `updateConfig` applies one.
+    adopt: (serviceManager) =>
+      applyConversationConfig(serviceManager, appConfig),
+  });
+  return createHandle(await claim.chat, claim);
+}
+
+/** Builds a new chat, and shuts it down again if boot fails. */
+async function bootChat(
+  config: ChatSDKConfig,
+  options: ChatSDKBootOptions
+): Promise<ServiceManager> {
   let serviceManager: ServiceManager | undefined;
   try {
     const appConfig = options.appConfig ?? createSDKAppConfig(config);
@@ -91,7 +130,7 @@ async function createChatSDK(
     await serviceManager?.shutdown();
     throw error;
   }
-  return createHandle(serviceManager);
+  return serviceManager;
 }
 
-export { createChatSDK };
+export { createChatSDK, chatRegistry };
