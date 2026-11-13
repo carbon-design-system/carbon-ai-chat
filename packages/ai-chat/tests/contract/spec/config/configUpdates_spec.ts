@@ -484,11 +484,17 @@ describe('messageTimeoutSecs updates', () => {
     expect(signal.reason).toBe(CancellationReason.TIMEOUT);
   });
 
-  it('keeps the old timeout when the new value is 0', async () => {
+  it('turns the timeout off when the new value is 0', async () => {
     const signal = await sendAfterChange(2, 0);
-    await advance(2000);
-    // On `main` a change to 0 after mount is ignored, though the JSDoc says 0
-    // turns the timeout off; the old timeout still applies.
+    await advance(200_000);
+    expect(signal.aborted).toBe(false);
+  });
+
+  it('goes back to the 150 second default when the field is removed', async () => {
+    const signal = await sendAfterChange(2, undefined);
+    await advance(149_999);
+    expect(signal.aborted).toBe(false);
+    await advance(1);
     expect(signal.aborted).toBe(true);
     expect(signal.reason).toBe(CancellationReason.TIMEOUT);
   });
