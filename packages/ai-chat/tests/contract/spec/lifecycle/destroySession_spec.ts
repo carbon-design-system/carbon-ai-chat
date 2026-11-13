@@ -162,6 +162,7 @@ describe('destroySession', () => {
     });
     expect(instance.getState().viewState).toEqual(CLOSED);
     expect(instance.getState().hasSentNonWelcomeMessage).toBe(false);
+    expect(instance.getState().wasLoadedFromBrowser).toBe(false);
   });
 
   it('doesn’t hydrate again: reopening sends no welcome and fires no chat:ready', async () => {

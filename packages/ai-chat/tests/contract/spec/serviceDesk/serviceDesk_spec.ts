@@ -161,30 +161,30 @@ describeShared('checking agent availability', (makeDriver) => {
     expect(asked.output.generic).toEqual([CONNECT_ITEM]);
   });
 
-  it.each<[string, Partial<ServiceDesk>, HumanAgentsOnlineStatus]>([
+  it.each<[string, HumanAgentsOnlineStatus, Partial<ServiceDesk>]>([
     [
       'false',
-      { areAnyAgentsOnline: () => Promise.resolve(false) },
       HumanAgentsOnlineStatus.OFFLINE,
+      { areAnyAgentsOnline: () => Promise.resolve(false) },
     ],
     [
       'null',
-      { areAnyAgentsOnline: () => Promise.resolve(null) },
       HumanAgentsOnlineStatus.UNKNOWN,
+      { areAnyAgentsOnline: () => Promise.resolve(null) },
     ],
     [
       'a rejection',
-      { areAnyAgentsOnline: () => Promise.reject(new Error('down')) },
       HumanAgentsOnlineStatus.OFFLINE,
+      { areAnyAgentsOnline: () => Promise.reject(new Error('down')) },
     ],
     [
       'no areAnyAgentsOnline method',
-      { areAnyAgentsOnline: undefined },
       HumanAgentsOnlineStatus.UNKNOWN,
+      { areAnyAgentsOnline: undefined },
     ],
   ])(
     'reports %s as %s and starts no chat',
-    async (_case, overrides, status) => {
+    async (_case, status, overrides) => {
       const desk = fakeDesk(overrides);
       const chat = await deskDriver(makeDriver, desk);
       await hydrate(chat);

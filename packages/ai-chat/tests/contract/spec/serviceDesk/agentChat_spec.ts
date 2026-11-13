@@ -551,6 +551,11 @@ describe('the connect-to-agent card with no desk', () => {
       await addConnect(instance);
       await waitFor(() => byRole('button', STRINGS.agent_startChat));
       error.mockClear();
+      const events = recordEvents(instance, [
+        BusEventType.HUMAN_AGENT_PRE_START_CHAT,
+        BusEventType.HUMAN_AGENT_PRE_END_CHAT,
+        BusEventType.HUMAN_AGENT_END_CHAT,
+      ]);
       await click(byRole('button', STRINGS.agent_startChat));
       await waitFor(() => expect(error).toHaveBeenCalled());
       expect(
@@ -561,6 +566,7 @@ describe('the connect-to-agent card with no desk', () => {
       expect(humanAgent(instance)).toEqual(
         expect.objectContaining({ isConnecting: false, isConnected: false })
       );
+      expect(events.types()).toEqual([]);
     } finally {
       error.mockRestore();
     }

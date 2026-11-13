@@ -564,6 +564,8 @@ describe('workspacePanelElement', () => {
     const { instance } = await mountOpen();
     const content = writeWorkspaceContent(instance);
     await act(() => instance.customPanels.getPanel().open());
+    expect(instance.state.get().customPanels.default.isOpen).toBe(true);
+    expect(instance.state.get().workspace.isOpen).toBe(false);
     // A short wait to show the workspace doesn't open.
     await pause(300);
     expect(isInFlatTree(content)).toBe(false);
