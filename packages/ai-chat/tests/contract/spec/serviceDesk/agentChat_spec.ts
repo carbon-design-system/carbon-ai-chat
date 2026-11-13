@@ -48,8 +48,8 @@ import {
 const humanAgent = (instance: ChatInstance) => instance.getState().humanAgent;
 
 /**
- * A closed chat with the desk plugged in and an answering backend. A first
- * send hydrates it, which builds the desk.
+ * A closed chat with the desk plugged in and an answering backend, loaded by
+ * a first send.
  */
 async function deskChat(
   desk: FakeDesk,
@@ -221,7 +221,7 @@ describe('reloading during an agent chat', () => {
     return { desk, instance, reconnect: reconnectMock };
   }
 
-  it('restores the agent state, and gives the factory the saved desk state', async () => {
+  it('restores the agent state, and gives the factory the saved desk state at mount', async () => {
     await joinThenUnmount();
     const { desk, instance } = await remount(() => Promise.resolve(true));
     expect(humanAgent(instance)).toEqual(
@@ -231,12 +231,12 @@ describe('reloading during an agent chat', () => {
         serviceDeskState: { token: 'saved' },
       })
     );
-    expect(desk.factory).not.toHaveBeenCalled();
-    await act(() => instance.send('again'));
     expect(desk.factory).toHaveBeenCalledTimes(1);
     expect(desk.factory.mock.calls[0][0].persistedState).toEqual({
       token: 'saved',
     });
+    await act(() => instance.send('again'));
+    expect(desk.factory).toHaveBeenCalledTimes(1);
   });
 
   it('reconnects through the desk by default, staying connected', async () => {

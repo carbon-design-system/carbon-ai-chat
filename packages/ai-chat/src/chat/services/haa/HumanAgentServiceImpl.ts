@@ -228,16 +228,23 @@ class HumanAgentServiceImpl implements HumanAgentService {
   }
 
   /**
-   * Initializes this service. This will create the service desk instance that can be used for communicating with
-   * service desks.
+   * The service desk's creation, once started.
    */
-  public async initialize() {
-    if (this.serviceDesk) {
-      throw new Error('A service desk has already been created!');
+  private initialization: Promise<void>;
+
+  /**
+   * Initializes this service. This will create the service desk instance that can be used for communicating with
+   * service desks. Later calls return the first call's Promise.
+   */
+  public initialize() {
+    if (!this.initialization) {
+      this.hasInitialized = true;
+      this.initialization = this.createServiceDesk();
     }
+    return this.initialization;
+  }
 
-    this.hasInitialized = true;
-
+  private async createServiceDesk() {
     const { store, instance } = this.serviceManager;
     const state = store.getState();
     const { config, persistedToBrowserStorage } = state;

@@ -96,8 +96,9 @@ export interface PublicConfig {
   aiEnabled?: boolean;
 
   /**
-   * This is a factory for producing custom implementations of service desks. If this value is set, then this will
-   * be used to create an instance of a {@link ServiceDesk} when the user attempts to connect to an agent.
+   * This is a factory for producing custom implementations of service desks. If this value is set, the chat calls it
+   * once when it mounts to create an instance of a {@link ServiceDesk}, passing any desk state saved before a page
+   * reload. A restored agent chat still reconnects only when the chat first loads its conversation.
    *
    * If it is changed in the middle of a conversation (you should obviously avoid this) the conversation with the
    * human agent will be disconnected.

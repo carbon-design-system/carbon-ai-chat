@@ -81,6 +81,11 @@ class HydrationService {
    */
   private alreadyHydrated = false;
 
+  /**
+   * Indicates if a load has already waited for the service desk to be created.
+   */
+  private waitedForServiceDesk = false;
+
   constructor(serviceManager: ServiceManager) {
     this.serviceManager = serviceManager;
   }
@@ -206,14 +211,15 @@ class HydrationService {
       return history;
     }
 
-    const humanAgentService = serviceManager.humanAgentService;
-    if (!humanAgentService || humanAgentService.hasInitialized) {
-      debugLog('No service desk integrations present');
-      return history;
+    // The service desk is created at mount, and each load waits for it. Only the first load to wait reports a
+    // failure, so a failed desk is reported once.
+    const initialization = serviceManager.humanAgentService?.initialize();
+    if (this.waitedForServiceDesk) {
+      await initialization?.catch(() => {});
+    } else {
+      this.waitedForServiceDesk = true;
+      await initialization;
     }
-
-    debugLog('Initializing the human agent service');
-    await humanAgentService.initialize();
     return history;
   }
 
