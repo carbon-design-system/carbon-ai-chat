@@ -140,12 +140,10 @@ describe('workspace state', () => {
   it('closes on restartConversation even when a pre:close handler throws', async () => {
     const { instance } = await mountOpen();
     await openWorkspace(instance, OPTIONS);
-    instance.on({
-      type: BusEventType.WORKSPACE_PRE_CLOSE,
-      handler: () => {
-        throw new Error('Contract pre:close failure');
-      },
+    const handler = jest.fn(() => {
+      throw new Error('Contract pre:close failure');
     });
+    instance.on({ type: BusEventType.WORKSPACE_PRE_CLOSE, handler });
     const events = recordEvents(instance, [BusEventType.RESTART_CONVERSATION]);
     const error = jest.spyOn(console, 'error').mockImplementation(() => {});
     try {
@@ -153,6 +151,7 @@ describe('workspace state', () => {
     } finally {
       error.mockRestore();
     }
+    expect(handler).toHaveBeenCalledTimes(1);
     expect(instance.state.get().workspace).toEqual(CLOSED);
     expect(events.types()).toEqual([BusEventType.RESTART_CONVERSATION]);
   });
