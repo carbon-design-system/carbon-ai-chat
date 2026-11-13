@@ -38,6 +38,7 @@ import {
   instanceSender,
   recordEvents,
   responseOf,
+  roleOf,
   startSend,
   textItem,
 } from '../../helpers';
@@ -71,7 +72,7 @@ function ancestors(node: Node): Node[] {
  *
  * The chat draws the positive and the negative details form at once, and in
  * jsdom nothing marks the closed one hidden (a stylesheet class hides it, and
- * the thumbs buttons' `aria-controls` is empty), so a test reaches a form
+ * the thumbs buttons name no form they control), so a test reaches a form
  * through a category name that only that form shows.
  */
 function inFormWith(role: string, name: string, category: string): HTMLElement {
@@ -122,6 +123,25 @@ async function addFeedbackResponse(
   await waitFor(() =>
     expect(allByRole('button', STRINGS.feedback_positiveLabel)).toHaveLength(1)
   );
+}
+
+/**
+ * The thumbs button with this name, and each flat-tree ancestor that is also a
+ * button: the control the role lookup finds sits inside a wrapper that carries
+ * the button's ARIA state.
+ */
+function thumbsButtonChain(name: string): Element[] {
+  return ancestors(byRole('button', name)).filter(
+    (node): node is Element =>
+      node instanceof Element && roleOf(node) === 'button'
+  );
+}
+
+/** Each value of `attribute` on a thumbs button, skipping where it's unset. */
+function ariaOf(name: string, attribute: string): string[] {
+  return thumbsButtonChain(name)
+    .filter((element) => element.hasAttribute(attribute))
+    .map((element) => element.getAttribute(attribute));
 }
 
 function feedbackEvents(
@@ -367,6 +387,27 @@ function customEventButton(label: string): GenericItem {
     user_defined: { action: 'open-cart' },
   } as GenericItem;
 }
+
+describe('feedback buttons', () => {
+  contractSetup();
+
+  it('give neither thumbs button aria-controls, and mark each as expanded or collapsed', async () => {
+    const { instance } = await openChat();
+    await addFeedbackResponse(instance, feedbackItem());
+    for (const name of [
+      STRINGS.feedback_positiveLabel,
+      STRINGS.feedback_negativeLabel,
+    ]) {
+      expect(ariaOf(name, 'aria-controls')).toEqual([]);
+      expect(ariaOf(name, 'aria-expanded')).toEqual(['false']);
+    }
+    await click(byRole('button', STRINGS.feedback_negativeLabel));
+    expect(ariaOf(STRINGS.feedback_negativeLabel, 'aria-controls')).toEqual([]);
+    expect(ariaOf(STRINGS.feedback_negativeLabel, 'aria-expanded')).toEqual([
+      'true',
+    ]);
+  });
+});
 
 // @covers event.messageItemCustom
 describe('custom event buttons', () => {
