@@ -7,11 +7,11 @@
  *  @license
  */
 
-import { ScrollElementIntoViewFunction } from '../../chat/components-legacy/MessagesComponent';
-import { HasServiceManager } from '../../chat/hocs/withServiceManager';
-import { HasDisplayOverride } from '../utilities/HasDisplayOverride';
-import { LocalMessageItem } from './LocalMessageItem';
-import { Message } from './Messages';
+import { ScrollElementIntoViewFunction } from './MessagesComponent';
+import { HasServiceManager } from '../hocs/withServiceManager';
+import { HasDisplayOverride } from '../../types/utilities/HasDisplayOverride';
+import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
+import { Message } from '../../types/messaging/Messages';
 
 interface MessageContextValues extends HasServiceManager, HasDisplayOverride {
   originalMessage: Message;
