@@ -22,6 +22,7 @@ import {
   MessageResponseTypes,
   PageObjectId,
   PublicConfig,
+  ServiceDeskFactoryParameters,
 } from '../../../../src/aiChatEntry';
 import {
   ContractMount,
@@ -405,6 +406,65 @@ describe('a new serviceDeskFactory during an agent chat', () => {
       BusEventType.HUMAN_AGENT_END_CHAT,
     ]);
     expect(humanAgent(instance).isConnected).toBe(false);
+  });
+});
+
+// @covers config.serviceDeskFactory
+describe('a new serviceDeskFactory with no agent chat', () => {
+  contractSetup();
+
+  it('is not called on rerenders; the next load calls the latest one', async () => {
+    const desk = fakeDesk();
+    const backend = fakeBackend({ autoResolve: true });
+    const calledBy: number[] = [];
+    let renders = 0;
+    const props = () => {
+      const render = renders++;
+      return {
+        serviceDeskFactory: (parameters: ServiceDeskFactoryParameters) => {
+          calledBy.push(render);
+          return desk.factory(parameters);
+        },
+        messaging: { customSendMessage: backend.customSendMessage },
+      };
+    };
+    const { instance, rerender } = await contractChat(props());
+    await rerender(props());
+    await rerender(props());
+    await rerender(props());
+    // A short wait to show no call follows.
+    await pause();
+    expect(calledBy).toEqual([0]);
+    await act(() => instance.send('hello'));
+    expect(calledBy).toEqual([0, 3]);
+  });
+
+  it('calls the latest one when an agent chat is requested after the chat loaded', async () => {
+    const desk = fakeDesk();
+    const backend = fakeBackend({ autoResolve: true });
+    const calledBy: number[] = [];
+    let renders = 0;
+    const props = () => {
+      const render = renders++;
+      return {
+        serviceDeskFactory: (parameters: ServiceDeskFactoryParameters) => {
+          calledBy.push(render);
+          return desk.factory(parameters);
+        },
+        serviceDesk: { skipConnectHumanAgentCard: true },
+        messaging: { customSendMessage: backend.customSendMessage },
+      };
+    };
+    const { instance, rerender } = await contractChat(props());
+    await act(() => instance.send('hello'));
+    await rerender(props());
+    await rerender(props());
+    // A short wait to show no call follows.
+    await pause();
+    expect(calledBy).toEqual([0]);
+    await addConnect(instance);
+    await waitFor(() => expect(desk.desk.startChat).toHaveBeenCalledTimes(1));
+    expect(calledBy).toEqual([0, 2]);
   });
 });
 

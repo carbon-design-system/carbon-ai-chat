@@ -106,7 +106,10 @@ export interface PublicConfig {
    * This factory is compared by reference. Provide a stable reference (for example
    * a module-level function or a memoized `useCallback`); a new function identity
    * on every render is treated as a change and, while an agent chat is active, tears
-   * down and rebuilds the service desk connection.
+   * down and rebuilds the service desk connection. While no agent chat is active, a
+   * changed factory isn't called right away: the chat drops the desk it has and calls
+   * the latest factory when it next needs one, when it first loads its conversation or
+   * when an agent chat is requested.
    */
   serviceDeskFactory?: (
     parameters: ServiceDeskFactoryParameters

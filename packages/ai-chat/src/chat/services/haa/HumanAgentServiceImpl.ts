@@ -287,6 +287,8 @@ class HumanAgentServiceImpl implements HumanAgentService {
     localConnectMessage: LocalMessageItem<ConnectToHumanAgentItem>,
     originalMessage: Message
   ): Promise<void> {
+    // A service that replaced an idle one creates its desk here; a failed factory leaves no desk.
+    await this.initialize().catch(() => {});
     if (!this.serviceDesk) {
       // No service desk connected.
       throw new Error('A service desk has not been configured.');
@@ -760,6 +762,8 @@ class HumanAgentServiceImpl implements HumanAgentService {
     let resultValue: HumanAgentsOnlineStatus;
     const initialRestartCount = this.serviceManager.restartCount;
 
+    // A service that replaced an idle one creates its desk here.
+    await this.initialize().catch(() => {});
     if (!this.serviceDesk?.areAnyAgentsOnline) {
       resultValue = HumanAgentsOnlineStatus.UNKNOWN;
     } else {
