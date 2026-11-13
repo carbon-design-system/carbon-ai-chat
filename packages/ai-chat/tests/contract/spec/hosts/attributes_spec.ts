@@ -648,6 +648,9 @@ describe.each(ELEMENT_TAGS)('invalid JSON attributes on %s', (tag) => {
 
   // @covers attribute.layout element.cds-aichat-container.config element.cds-aichat-custom-element.config
   it('falls back to config.layout for invalid layout JSON', async () => {
+    // The warning is the only effect of layout a host can see here. jsdom
+    // computes none of the custom properties layout sets, and its other
+    // fields reach only internal elements' attributes and classes.
     const layout = {
       customProperties: { '$button-primary': 'red' },
     } as unknown as PublicConfig['layout'];
