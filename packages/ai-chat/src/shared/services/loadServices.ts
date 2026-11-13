@@ -33,24 +33,48 @@ import { assertType, setEnableDebugLog } from '../utils/miscUtils';
 import { setIntl } from '../utils/intlUtils';
 import { isBrowser } from '../utils/browserUtils';
 
+/** How a chat's services are built. */
+interface CreateServiceManagerOptions {
+  /**
+   * Saves and restores the session in browser session storage, as the
+   * prebuilt chat does. A chat started by `createChatSDK` passes `false`, so it
+   * reads and writes no storage of its own (#1732).
+   */
+  sessionStorage?: boolean;
+  /**
+   * Creates the page elements hosts write into, as the prebuilt chat does. A
+   * chat `createChatSDK` starts passes `false`, so it touches no DOM.
+   */
+  writeableElements?: boolean;
+}
+
 type CreateServiceManagerFunction = (
-  appConfig: ConversationAppConfig
+  appConfig: ConversationAppConfig,
+  options?: CreateServiceManagerOptions
 ) => ServiceManager;
 
 /**
  * This file contains the code needed to bootstrap all the shared services in Carbon AI Chat. Services are used to hold
  * functions that are used throughout the application that need access to the current instance of the Carbon AI Chat.
  */
-function createServiceManager(appConfig: ConversationAppConfig) {
+function createServiceManager(
+  appConfig: ConversationAppConfig,
+  {
+    sessionStorage = true,
+    writeableElements = true,
+  }: CreateServiceManagerOptions = {}
+) {
   const publicConfig = appConfig.public;
 
   const serviceManager = new ServiceManager();
 
   // Create all the services we will be using.
   serviceManager.namespace = new NamespaceService(publicConfig.namespace);
-  serviceManager.userSessionStorageService = new UserSessionStorageService(
-    serviceManager
-  );
+  if (sessionStorage) {
+    serviceManager.userSessionStorageService = new UserSessionStorageService(
+      serviceManager
+    );
+  }
   serviceManager.actions = new ChatInstanceService(serviceManager);
   serviceManager.inputActionsService = new InputActionsService(serviceManager);
   serviceManager.streamAnnouncerService = new StreamAnnouncerService({
@@ -108,7 +132,7 @@ function createServiceManager(appConfig: ConversationAppConfig) {
 
   // Create all custom elements for Deb.
   serviceManager.writeableElements = {};
-  if (isBrowser()) {
+  if (writeableElements && isBrowser()) {
     serviceManager.writeableElements = {
       [WriteableElementName.AI_TOOLTIP_AFTER_DESCRIPTION_ELEMENT]:
         document.createElement('div'),

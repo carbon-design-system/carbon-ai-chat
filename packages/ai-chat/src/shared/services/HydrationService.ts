@@ -42,6 +42,11 @@ interface RestartConversationOptions {
   fireEvents?: boolean;
 }
 
+/** A history load that failed, with the value it rejected with. */
+interface HydrationFailure {
+  error: unknown;
+}
+
 class HydrationService {
   private serviceManager: ServiceManager;
 
@@ -67,6 +72,16 @@ class HydrationService {
    */
   private alreadyHydrated = false;
 
+  /**
+   * True for a chat `createChatSDK` started on its own: it has no window to
+   * wait for, so a restart loads the welcome message at once. The prebuilt chat
+   * waits for its main window to open. History loads once per chat either way.
+   */
+  loadsWithoutView = false;
+
+  /** Why the current hydration failed, if it did. */
+  private hydrationFailure: HydrationFailure | undefined;
+
   constructor(serviceManager: ServiceManager) {
     this.serviceManager = serviceManager;
   }
@@ -80,11 +95,13 @@ class HydrationService {
    * enabled and it was always append this message to the end of any session history that is
    * retrieved.
    * @param alternateOptions The send to send along with the alternate welcome request.
+   * @returns The failure, if loading failed. It was already reported through `onError`;
+   * `createChatSDK` also rejects with it.
    */
   async hydrateChat(
     alternateWelcomeRequest?: MessageRequest,
     alternateOptions?: SendOptions
-  ) {
+  ): Promise<HydrationFailure | undefined> {
     // Make sure we only fire this event once after the thread that actually does the hydration is finished.
     let fireReady = false;
     try {
@@ -99,6 +116,7 @@ class HydrationService {
           generation
         )
           .catch((error) => {
+            this.hydrationFailure = { error };
             this.serviceManager.actions.conversationErrorOccurred(
               {
                 errorType: OnErrorType.HYDRATION,
@@ -125,9 +143,11 @@ class HydrationService {
       this.hydrating = false;
     }
 
+    const failure = this.hydrationFailure;
     if (fireReady) {
       await this.serviceManager.fire({ type: BusEventType.CHAT_READY });
     }
+    return failure;
   }
 
   /**
@@ -311,6 +331,7 @@ class HydrationService {
       if (!skipHydration) {
         // Clear this promise in case the restart event below triggers another hydration.
         this.hydrationPromise = null;
+        this.hydrationFailure = undefined;
       }
 
       if (fireEvents) {
@@ -325,7 +346,8 @@ class HydrationService {
       if (!skipHydration && !serviceManager.store.getState().isHydrated) {
         // Trigger re-hydration.
         this.hydrationPromise = null;
-        if (this.isMainWindowOpen()) {
+        this.hydrationFailure = undefined;
+        if (this.shouldHydrateAfterRestart()) {
           didHydrate = true;
           await serviceManager.actions.hydrateChat();
         }
@@ -343,6 +365,11 @@ class HydrationService {
   }
 
   /** True while the attached view's main window is open. False with no view. */
+  /** An SDK chat loads at once; the prebuilt chat waits for its window. */
+  private shouldHydrateAfterRestart() {
+    return this.loadsWithoutView || this.isMainWindowOpen();
+  }
+
   private isMainWindowOpen() {
     return Boolean(
       this.serviceManager.view?.current?.instance.isMainWindowOpen?.()
@@ -364,7 +391,7 @@ class HydrationService {
     // below flows to its onStateChange callback like any other change.
     const { persistedState } = store.getState().config.public;
     if (!persistedState?.initialState && !persistedState?.onStateChange) {
-      this.serviceManager.userSessionStorageService.clearSession();
+      this.serviceManager.userSessionStorageService?.clearSession();
     }
 
     this.serviceManager.store.dispatch(

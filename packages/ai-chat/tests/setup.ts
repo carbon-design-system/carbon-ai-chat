@@ -16,83 +16,91 @@ const ENABLE_CONSOLE_LOGGING = false;
 // Mock Symbol.for for Lit's use of symbols and ensure all needed symbols exist
 global.Symbol.for = global.Symbol.for || ((key: string) => Symbol(key));
 
-(globalThis as any).document = global.document;
+// DOM mocks for jsdom specs. A spec that runs in Node (`@jest-environment node`),
+// such as the headless SDK's, has no window and skips them.
+function installDomMocks() {
+  (globalThis as any).document = global.document;
 
-// Mock CSS template literal functions
-(global as any).__CSS_TAG_SYMBOL__ = Symbol('css-tag');
+  // Mock CSS template literal functions
+  (global as any).__CSS_TAG_SYMBOL__ = Symbol('css-tag');
 
-// Mock CSS functions that might not be available in test environment
-if (!global.CSSStyleSheet) {
-  (global as any).CSSStyleSheet = class {
-    replaceSync() {}
-    insertRule() {
-      return 0;
-    }
-    deleteRule() {}
-  };
-}
+  // Mock CSS functions that might not be available in test environment
+  if (!global.CSSStyleSheet) {
+    (global as any).CSSStyleSheet = class {
+      replaceSync() {}
+      insertRule() {
+        return 0;
+      }
+      deleteRule() {}
+    };
+  }
 
-// Mock window.matchMedia since it's not available in jsdom
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: jest.fn().mockImplementation((query: string) => ({
-    matches: false,
-    media: query,
-    onchange: null as any,
-    addListener: jest.fn(), // deprecated
-    removeListener: jest.fn(), // deprecated
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    dispatchEvent: jest.fn(),
-  })),
-});
-
-// Mock document.execCommand since it's not available in jsdom but is used
-// internally by ProseMirror (e.g. safariShadowSelectionRange)
-if (!document.execCommand) {
-  document.execCommand = jest.fn().mockReturnValue(false);
-}
-
-// Mock elementFromPoint since it's not available in jsdom but is used
-// internally by ProseMirror/Tiptap (posAtCoords -> root.elementFromPoint).
-// Tiptap's placeholder extension viewport tracking (@tiptap/extensions >= 3.27)
-// calls this on editor mount; the editor lives in a shadow root, so patch both
-// Document and ShadowRoot. Returning null mirrors the real "no element at point"
-// case, which ProseMirror handles gracefully.
-if (!Document.prototype.elementFromPoint) {
-  Document.prototype.elementFromPoint = jest.fn().mockReturnValue(null);
-}
-if (
-  typeof ShadowRoot !== 'undefined' &&
-  !ShadowRoot.prototype.elementFromPoint
-) {
-  (ShadowRoot.prototype as any).elementFromPoint = jest
-    .fn()
-    .mockReturnValue(null);
-}
-
-// `cds-aichat-custom-element` appends its hide-sheet to the shadow root's
-// `adoptedStyleSheets`, which jsdom's ShadowRoot does not implement, so
-// connecting that element would throw before anything renders.
-const adoptedSheets = new WeakMap<ShadowRoot, unknown[]>();
-if (!('adoptedStyleSheets' in ShadowRoot.prototype)) {
-  Object.defineProperty(ShadowRoot.prototype, 'adoptedStyleSheets', {
-    configurable: true,
-    get(this: ShadowRoot) {
-      return adoptedSheets.get(this) ?? [];
-    },
-    set(this: ShadowRoot, sheets: unknown[]) {
-      adoptedSheets.set(this, sheets);
-    },
+  // Mock window.matchMedia since it's not available in jsdom
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: jest.fn().mockImplementation((query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null as any,
+      addListener: jest.fn(), // deprecated
+      removeListener: jest.fn(), // deprecated
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      dispatchEvent: jest.fn(),
+    })),
   });
+
+  // Mock document.execCommand since it's not available in jsdom but is used
+  // internally by ProseMirror (e.g. safariShadowSelectionRange)
+  if (!document.execCommand) {
+    document.execCommand = jest.fn().mockReturnValue(false);
+  }
+
+  // Mock elementFromPoint since it's not available in jsdom but is used
+  // internally by ProseMirror/Tiptap (posAtCoords -> root.elementFromPoint).
+  // Tiptap's placeholder extension viewport tracking (@tiptap/extensions >= 3.27)
+  // calls this on editor mount; the editor lives in a shadow root, so patch both
+  // Document and ShadowRoot. Returning null mirrors the real "no element at point"
+  // case, which ProseMirror handles gracefully.
+  if (!Document.prototype.elementFromPoint) {
+    Document.prototype.elementFromPoint = jest.fn().mockReturnValue(null);
+  }
+  if (
+    typeof ShadowRoot !== 'undefined' &&
+    !ShadowRoot.prototype.elementFromPoint
+  ) {
+    (ShadowRoot.prototype as any).elementFromPoint = jest
+      .fn()
+      .mockReturnValue(null);
+  }
+
+  // `cds-aichat-custom-element` appends its hide-sheet to the shadow root's
+  // `adoptedStyleSheets`, which jsdom's ShadowRoot does not implement, so
+  // connecting that element would throw before anything renders.
+  const adoptedSheets = new WeakMap<ShadowRoot, unknown[]>();
+  if (!('adoptedStyleSheets' in ShadowRoot.prototype)) {
+    Object.defineProperty(ShadowRoot.prototype, 'adoptedStyleSheets', {
+      configurable: true,
+      get(this: ShadowRoot) {
+        return adoptedSheets.get(this) ?? [];
+      },
+      set(this: ShadowRoot, sheets: unknown[]) {
+        adoptedSheets.set(this, sheets);
+      },
+    });
+  }
+
+  // Mock ResizeObserver since it's not available in jsdom
+  (global as any).ResizeObserver = jest.fn().mockImplementation(() => ({
+    observe: jest.fn(),
+    unobserve: jest.fn(),
+    disconnect: jest.fn(),
+  }));
 }
 
-// Mock ResizeObserver since it's not available in jsdom
-(global as any).ResizeObserver = jest.fn().mockImplementation(() => ({
-  observe: jest.fn(),
-  unobserve: jest.fn(),
-  disconnect: jest.fn(),
-}));
+if (typeof window !== 'undefined') {
+  installDomMocks();
+}
 
 // Suppress console output during tests unless debugging
 if (!ENABLE_CONSOLE_LOGGING) {

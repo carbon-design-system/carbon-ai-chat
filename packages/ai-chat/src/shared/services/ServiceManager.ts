@@ -131,9 +131,10 @@ class ServiceManager {
   writeableElements: Partial<WriteableElements>;
 
   /**
-   * A service to write and read items in browser storage related to the session.
+   * A service to write and read items in browser storage related to the session. Only the
+   * prebuilt chat has one; a chat `createChatSDK` starts uses no storage.
    */
-  userSessionStorageService: UserSessionStorageService;
+  userSessionStorageService: UserSessionStorageService | undefined;
 
   /**
    * An object defining the namespace of this Carbon AI Chat and derived properties from that namespace name.
