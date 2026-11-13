@@ -101,7 +101,8 @@ export interface PublicWorkspaceCustomPanelState {
   isOpen: boolean;
 
   /**
-   * Config options for the workspace panels.
+   * The options the open workspace was opened with. Holds only the default `preferredLocation` while the workspace
+   * is closed.
    */
   options: WorkspaceCustomPanelConfigOptions;
 

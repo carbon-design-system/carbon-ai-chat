@@ -123,27 +123,17 @@ describe('workspace state', () => {
     expect(instance.state.get().customPanels.workspace).toEqual(CLOSED);
   });
 
-  // `options` is typed `WorkspaceCustomPanelConfigOptions`, but on `main` it
-  // holds only `preferredLocation`: `title`, `workspaceId`, and
-  // `additionalData` never reach it (src/chat/utils/publicState.ts:200,218).
-  it('holds the opened workspace: isOpen, preferredLocation, ID, and data', async () => {
+  it('holds the opened workspace: isOpen, the options it opened with, ID, and data', async () => {
     const { instance } = await mountOpen();
     await openWorkspace(instance, OPTIONS);
     const expected = {
       isOpen: true,
-      options: { preferredLocation: 'start' },
+      options: OPTIONS,
       workspaceID: 'contract-workspace',
       additionalData: { source: 'contract' },
     };
     expect(instance.state.get().workspace).toEqual(expected);
     expect(instance.state.get().customPanels.workspace).toEqual(expected);
-    expect(instance.state.get().workspace.options).not.toHaveProperty('title');
-    expect(instance.state.get().workspace.options).not.toHaveProperty(
-      'workspaceId'
-    );
-    expect(instance.state.get().workspace.options).not.toHaveProperty(
-      'additionalData'
-    );
   });
 
   it('opens at the end with no ID or data when open gets no options', async () => {
@@ -358,8 +348,8 @@ describe('workspace events', () => {
       { type: BusEventType.WORKSPACE_OPEN, ...second },
     ]);
     expect(instance.state.get().workspace).toEqual({
-      ...CLOSED,
       isOpen: true,
+      options: { preferredLocation: 'end', ...second },
       workspaceID: 'second-workspace',
       additionalData: { source: 'second' },
     });
@@ -467,7 +457,11 @@ describe('workspace opened from a preview card', () => {
     );
     expect(instance.state.get().workspace).toEqual({
       isOpen: true,
-      options: { preferredLocation: 'start' },
+      options: {
+        preferredLocation: 'start',
+        workspaceId: 'card-workspace',
+        additionalData: { from: 'card' },
+      },
       workspaceID: 'card-workspace',
       additionalData: { from: 'card' },
     });
