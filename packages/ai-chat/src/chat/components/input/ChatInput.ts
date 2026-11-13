@@ -60,10 +60,7 @@ import {
   buildInputExtensions,
 } from '../../services/inputExtensions';
 import { resolvePromptLineMode } from './promptLineMode';
-import {
-  createInputImperativeHandle,
-  registerInputImperativeHandle,
-} from '../../utils/inputImperativeHandle';
+import { createInputImperativeHandle } from '../../utils/inputImperativeHandle';
 import {
   changeInputValue,
   mirrorInputValue,
@@ -126,7 +123,6 @@ class ChatInput extends NativeChatView {
   private hasAnnouncedShortcut = false;
   private stopPending = false;
   private listNavigated = false;
-  private releaseHandle?: () => void;
   private restored?: { prompt: PromptLineElement; agent: boolean };
   private restoring?: {
     prompt: PromptLineElement;
@@ -269,8 +265,6 @@ class ChatInput extends NativeChatView {
     this.lifetimeOwner = undefined;
     this.lifetime += 1;
     this.draftGeneration += 1;
-    this.releaseHandle?.();
-    this.releaseHandle = undefined;
     if (this.inputFunctions) {
       this.inputFunctions = undefined;
       this.dispatchEvent(
@@ -397,12 +391,6 @@ class ChatInput extends NativeChatView {
   protected updated() {
     if (!this.active || !this.inputProps) {
       return;
-    }
-    if (!this.releaseHandle) {
-      this.releaseHandle = registerInputImperativeHandle(
-        this.serviceManager,
-        this.inputFunctions
-      );
     }
     this.restoreDraft();
     const error = this.currentError;

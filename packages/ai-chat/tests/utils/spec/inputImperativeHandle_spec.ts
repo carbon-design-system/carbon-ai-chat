@@ -8,10 +8,7 @@
  */
 
 import type { InputFunctions } from '../../../src/chat/utils/inputTypes';
-import {
-  createInputImperativeHandle,
-  registerInputImperativeHandle,
-} from '../../../src/chat/utils/inputImperativeHandle';
+import { createInputImperativeHandle } from '../../../src/chat/utils/inputImperativeHandle';
 
 type Editor = NonNullable<ReturnType<InputFunctions['getEditor']>>;
 
@@ -29,16 +26,6 @@ function createSurface() {
       getEditor: jest.fn(() => null as Editor | null),
       ensureEditor: jest.fn<Promise<Editor>, []>(),
     },
-  };
-}
-
-function createRegistration() {
-  let current: InputFunctions | null = null;
-  return {
-    getInputFunctionsRef: () => current,
-    setInputFunctionsRef: jest.fn((next: InputFunctions | null) => {
-      current = next;
-    }),
   };
 }
 
@@ -190,54 +177,5 @@ describe('createInputImperativeHandle', () => {
     const pending = handle.ensureEditor();
     expect(pending).toBe(upgrade);
     await expect(pending).rejects.toBe(failure);
-  });
-});
-
-describe('registerInputImperativeHandle', () => {
-  it('registers explicitly and clears its own handle only once', () => {
-    const registration = createRegistration();
-    const handle = createInputImperativeHandle(() => null, jest.fn());
-    expect(registration.getInputFunctionsRef()).toBeNull();
-
-    const release = registerInputImperativeHandle(registration, handle);
-    expect(registration.getInputFunctionsRef()).toBe(handle);
-    release();
-    release();
-    expect(registration.getInputFunctionsRef()).toBeNull();
-    expect(registration.setInputFunctionsRef.mock.calls).toEqual([
-      [handle],
-      [null],
-    ]);
-  });
-
-  it('leaves replacements and later registrations intact after a stale release', () => {
-    const registration = createRegistration();
-    const handle = createInputImperativeHandle(() => null, jest.fn());
-    const replacement = createInputImperativeHandle(() => null, jest.fn());
-    const release = registerInputImperativeHandle(registration, handle);
-    const releaseReplacement = registerInputImperativeHandle(
-      registration,
-      replacement
-    );
-
-    release();
-    expect(registration.getInputFunctionsRef()).toBe(replacement);
-    releaseReplacement();
-    const releaseReconnected = registerInputImperativeHandle(
-      registration,
-      handle
-    );
-    release();
-    releaseReplacement();
-    expect(registration.getInputFunctionsRef()).toBe(handle);
-    releaseReconnected();
-    expect(registration.getInputFunctionsRef()).toBeNull();
-    expect(registration.setInputFunctionsRef.mock.calls).toEqual([
-      [handle],
-      [replacement],
-      [null],
-      [handle],
-      [null],
-    ]);
   });
 });

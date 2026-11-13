@@ -7,6 +7,8 @@
  *  @license
  */
 
+import fs from 'node:fs';
+import path from 'node:path';
 import { cleanup } from '@testing-library/react';
 import {
   ViewBindings,
@@ -23,6 +25,7 @@ import {
   setupAfterEach,
   setupBeforeEach,
 } from '../../test_helpers';
+import { idleInstancePort } from '../helpers/viewBindings';
 
 function bindings(): ViewBindings & {
   announced: string[];
@@ -55,6 +58,7 @@ function bindings(): ViewBindings & {
     },
   };
   result.instance = {
+    ...idleInstancePort(),
     changeView: async (view) => {
       result.changed.push(view);
       return undefined;
@@ -171,5 +175,49 @@ describe('a mounted chat', () => {
       instance.changeView(ViewType.LAUNCHER)
     ).resolves.toBeUndefined();
     expect(instance.getState().viewState.mainWindow).toBe(true);
+    // The other view members do nothing, and don't throw, with no view.
+    expect(instance.requestFocus()).toBe(false);
+    expect(() => instance.doAutoScroll()).not.toThrow();
+    expect(() => instance.scrollToMessage('missing', false)).not.toThrow();
+    await expect(instance.input.getEditor()).rejects.toThrow(
+      'Input is not currently rendered'
+    );
+  });
+});
+
+describe('view handles', () => {
+  it('stay off ServiceManager', () => {
+    type Removed =
+      | 'appWindow'
+      | 'ariaAnnouncer'
+      | 'getInputFunctionsRef'
+      | 'inputComponent'
+      | 'mainWindow'
+      | 'setInputFunctionsRef'
+      | 'viewService';
+    // Fails to compile if ServiceManager regains any of these members.
+    const none: [Extract<keyof ServiceManager, Removed>] extends [never]
+      ? true
+      : false = true;
+    expect(none).toBe(true);
+  });
+
+  // The handles are getters, so a stray assignment fails to compile.
+  it('are published only by the shell lifecycle', () => {
+    const root = path.resolve(__dirname, '../../../src');
+    const walk = (dir: string): string[] =>
+      fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+        const file = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          return walk(file);
+        }
+        return /\.tsx?$/.test(file) ? [file] : [];
+      });
+    const writers = walk(root)
+      .filter((file) =>
+        /\.setShellHandle\(/.test(fs.readFileSync(file, 'utf8'))
+      )
+      .map((file) => path.relative(root, file).replaceAll('\\', '/'));
+    expect(writers).toEqual(['chat/utils/shellLifecycle.ts']);
   });
 });

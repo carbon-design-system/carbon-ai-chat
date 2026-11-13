@@ -26,7 +26,6 @@ import { PendingUploadStatus } from '../../types/state/AppState';
 import { StructuredData } from '../../types/messaging/Messages';
 import { consoleError, consoleWarn } from '../utils/miscUtils';
 import { isPlainTextDoc } from '../utils/inputContent';
-import { hasCustomPromptLine } from '../../chat/utils/customPromptLine';
 import type { ServiceManager } from './ServiceManager';
 
 /**
@@ -51,8 +50,19 @@ class InputActionsService {
     this.serviceManager = serviceManager;
   }
 
+  /** The rendered input's handle, through the attached view. */
+  private input() {
+    return this.serviceManager.view.current?.instance.input() ?? null;
+  }
+
+  private hasCustomPromptLine() {
+    return (
+      this.serviceManager.view.current?.instance.hasCustomPromptLine() ?? false
+    );
+  }
+
   private assertBuiltInInput() {
-    if (hasCustomPromptLine(this.serviceManager)) {
+    if (this.hasCustomPromptLine()) {
       throw new Error(
         'Input content is host-owned while CUSTOM_PROMPT_LINE has content.'
       );
@@ -66,7 +76,7 @@ class InputActionsService {
       return;
     }
 
-    const ref = this.serviceManager.getInputFunctionsRef();
+    const ref = this.input();
     const editor = ref?.getEditor();
     if (ref && editor) {
       const currentJson = editor.getJSON();
@@ -150,7 +160,7 @@ class InputActionsService {
 
     const { store } = this.serviceManager;
     const state = store.getState();
-    const ref = this.serviceManager.getInputFunctionsRef();
+    const ref = this.input();
     const editor = ref?.getEditor() ?? null;
 
     let previous: JSONContent;
@@ -194,22 +204,19 @@ class InputActionsService {
     }
     await ref.ensureEditor();
     this.assertBuiltInInput();
-    if (this.serviceManager.getInputFunctionsRef() !== ref) {
+    if (this.input() !== ref) {
       throw new Error('Input is not currently rendered');
     }
     ref.setContent(next);
   }
 
   async ensureInputEditor(): Promise<Editor> {
-    const ref = this.serviceManager.getInputFunctionsRef();
-    if (!ref || hasCustomPromptLine(this.serviceManager)) {
+    const ref = this.input();
+    if (!ref || this.hasCustomPromptLine()) {
       throw new Error('Input is not currently rendered');
     }
     const editor = await ref.ensureEditor();
-    if (
-      this.serviceManager.getInputFunctionsRef() !== ref ||
-      hasCustomPromptLine(this.serviceManager)
-    ) {
+    if (this.input() !== ref || this.hasCustomPromptLine()) {
       throw new Error('Input is not currently rendered');
     }
     return editor;

@@ -533,7 +533,7 @@ class ChatContainer extends FlattenedConfigElement {
       // Attach before the host's callbacks and the initial view change, which
       // both may change the view before the shell renders.
       state.detachView = serviceManager.view.attach(
-        createViewBindings(serviceManager)
+        createViewBindings(state.viewState)
       );
       state.instance = instance;
       state.hosts = new ExtensionHosts(

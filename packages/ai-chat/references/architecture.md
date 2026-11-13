@@ -93,7 +93,7 @@ The revision is React's `parts` object; a request counts only for it, while its 
 
 ## Hand-off to #2349
 
-#1732 must split the container's `boot()` after `initServiceManagerAndInstance` creates the services; the code after it creates view owners (`ChatViewState`, `ExtensionHosts`, window listeners, the announcer region). `ExtensionHosts` records are the view-side slot bookkeeping #1741 replaces. `ShellLifecycle` publishes view handles to services: `publishHandles` sets `mainWindow`, `appWindow`, and `ariaAnnouncer`, and `setInputHandle` sets `inputComponent`. `ChatInput` publishes the input functions ref separately, through `registerInputImperativeHandle`.
+#1732 must split the container's `boot()` after `initServiceManagerAndInstance` creates the services; the code after it creates view owners (`ChatViewState`, `ExtensionHosts`, window listeners, the announcer region). `ExtensionHosts` records are the view-side slot bookkeeping #1741 replaces. `ShellLifecycle` publishes the shell's handles to the mount's `ChatViewState`: `publishHandles` sets `mainWindow`, `appWindow`, and `ariaAnnouncer`, and `setInputHandle` sets the input's one handle. The view ports the container attaches read them on each call.
 
 ## Debugging across the boundary
 

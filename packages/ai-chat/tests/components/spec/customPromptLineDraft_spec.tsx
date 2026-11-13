@@ -117,10 +117,6 @@ async function setup(
     instance: {
       writeableElements: { [WriteableElementName.CUSTOM_PROMPT_LINE]: wrapper },
     },
-    setInputFunctionsRef: jest.fn((value) => {
-      inputFunctions = value;
-    }),
-    getInputFunctionsRef: () => inputFunctions,
   } as unknown as ServiceManager;
   const state = new ChatViewState(serviceManager, { width: 800, height: 600 });
   state.connect();
@@ -135,6 +131,14 @@ async function setup(
   owner.connect();
   owners.add(owner);
   const view = document.createElement('cds-aichat-chat-input');
+  // The shell publishes whatever handle this event carries.
+  view.addEventListener(
+    'cds-aichat-input-handle-change',
+    (event: CustomEvent<InputFunctions | null>) => {
+      inputFunctions = event.detail;
+    }
+  );
+  const published = () => inputFunctions;
   const onSendInput = jest.fn();
   let displayContent: JSONContent;
   view.addEventListener(
@@ -158,6 +162,7 @@ async function setup(
   await flush(view);
   return {
     view,
+    published,
     store,
     serviceManager,
     wrapper,
@@ -314,7 +319,7 @@ describe('custom prompt line draft restoration', () => {
     gate.resolve(true);
     await flush(fixture.view);
     expect(setContent).not.toHaveBeenCalled();
-    expect(fixture.serviceManager.getInputFunctionsRef()).toBeNull();
+    expect(fixture.published()).toBeNull();
   });
 
   it('leaves normal first mounts unchanged', async () => {
@@ -433,14 +438,16 @@ describe('custom prompt line draft restoration', () => {
     }
   );
 
-  it('clears built-in focus on unmount without clearing a newer handle', async () => {
+  // The shell owns the one input handle and keeps a newer one when an older
+  // input retires; nativeShellLifecycle_spec proves that. The input only
+  // reports its own retirement.
+  it('clears built-in focus on unmount and reports its handle gone', async () => {
     const fixture = await setup();
     await expectDraft(fixture, 'parked draft');
+    expect(fixture.published()).toBe(fixture.view.inputFunctions);
     fixture.store.dispatch(actions.updateInputState({ focused: true }, false));
-    const replacement = {} as InputFunctions;
-    fixture.serviceManager.setInputFunctionsRef(replacement);
     await fixture.unmount();
     expect(selectInputState(fixture.store.getState()).focused).toBe(false);
-    expect(fixture.serviceManager.getInputFunctionsRef()).toBe(replacement);
+    expect(fixture.published()).toBeNull();
   });
 });

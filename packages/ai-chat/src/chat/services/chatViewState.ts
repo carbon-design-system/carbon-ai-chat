@@ -12,6 +12,10 @@ import { subscribeToIntl } from '../../shared/utils/intlUtils';
 import type { ServiceManager } from '../../shared/services/ServiceManager';
 import type { IntlShape } from '../../shared/utils/i18n';
 import type { Dimension } from '../../types/utilities/Dimension';
+import type { HasRequestFocus } from '../../types/utilities/HasRequestFocus';
+import type { MainWindowFunctions } from '../../types/utilities/MainWindowFunctions';
+import type { AriaAnnouncerFunctionType } from './ariaAnnouncer';
+import type { InputFunctions } from '../utils/inputTypes';
 
 /** A response card's own confirmation, shown in the end-chat panel. */
 interface HumanAgentConfirmation {
@@ -19,6 +23,14 @@ interface HumanAgentConfirmation {
   message?: string;
   onConfirm: () => void;
   onCancel: () => void;
+}
+
+/** What a connected shell publishes for the view ports. */
+interface ShellHandles {
+  mainWindow?: MainWindowFunctions;
+  appWindow?: HasRequestFocus;
+  ariaAnnouncer?: AriaAnnouncerFunctionType;
+  inputComponent?: InputFunctions | null;
 }
 
 interface ChatViewStateSnapshot {
@@ -39,6 +51,36 @@ interface ChatViewStateSnapshot {
  */
 class ChatViewState {
   readonly announcer: AriaAnnouncer;
+
+  // Handles the connected shell publishes, read by the view ports. They're
+  // read-only here; `ShellLifecycle` writes them through `setShellHandle`.
+  private shellHandles: ShellHandles = {};
+
+  get mainWindow() {
+    return this.shellHandles.mainWindow;
+  }
+
+  get appWindow() {
+    return this.shellHandles.appWindow;
+  }
+
+  get ariaAnnouncer() {
+    return this.shellHandles.ariaAnnouncer;
+  }
+
+  /** The input's one handle, while it's rendered. */
+  get inputComponent() {
+    return this.shellHandles.inputComponent;
+  }
+
+  /** Publishes or clears one shell handle. Only `ShellLifecycle` calls this. */
+  setShellHandle<K extends keyof ShellHandles>(
+    name: K,
+    value: ShellHandles[K]
+  ): void {
+    this.shellHandles[name] = value;
+  }
+
   private snapshot: ChatViewStateSnapshot;
   private listeners = new Set<() => void>();
   private unsubscribeIntl: (() => void) | null = null;
