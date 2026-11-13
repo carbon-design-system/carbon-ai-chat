@@ -370,6 +370,68 @@ describe('workspace events', () => {
       additionalData: { source: 'second' },
     });
   });
+
+  it('runs two opens made at once one after another: the open workspace closes once, then each opens in turn', async () => {
+    const { instance } = await mountOpen();
+    await openWorkspace(instance, { workspaceId: 'a' });
+    const events = recordEvents(instance, WORKSPACE_EVENTS);
+    const panel = workspacePanel(instance);
+    await act(() =>
+      Promise.all([
+        panel.open({ workspaceId: 'b' }),
+        panel.open({ workspaceId: 'c' }),
+      ])
+    );
+    expect(
+      events.events.map((event) => [event.type, summary(event).workspaceId])
+    ).toEqual([
+      [BusEventType.WORKSPACE_PRE_CLOSE, 'a'],
+      [BusEventType.WORKSPACE_CLOSE, 'a'],
+      [BusEventType.WORKSPACE_PRE_OPEN, 'b'],
+      [BusEventType.WORKSPACE_OPEN, 'b'],
+      [BusEventType.WORKSPACE_PRE_CLOSE, 'b'],
+      [BusEventType.WORKSPACE_CLOSE, 'b'],
+      [BusEventType.WORKSPACE_PRE_OPEN, 'c'],
+      [BusEventType.WORKSPACE_OPEN, 'c'],
+    ]);
+    expect(instance.state.get().workspace).toEqual(
+      expect.objectContaining({ isOpen: true, workspaceID: 'c' })
+    );
+  });
+
+  it('opens another workspace when a pre:close handler throws, logging the error', async () => {
+    const { instance } = await mountOpen();
+    await openWorkspace(instance, OPTIONS);
+    const events = recordEvents(instance, WORKSPACE_EVENTS);
+    const failure = new Error('Contract pre:close failure');
+    const handler = jest.fn(() => {
+      throw failure;
+    });
+    instance.on({ type: BusEventType.WORKSPACE_PRE_CLOSE, handler });
+    const error = jest.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      await openWorkspace(instance, { workspaceId: 'second-workspace' });
+      expect(error.mock.calls.some((call) => call.includes(failure))).toBe(
+        true
+      );
+    } finally {
+      error.mockRestore();
+    }
+    expect(handler).toHaveBeenCalledTimes(1);
+    expect(
+      events.events.map((event) => [event.type, summary(event).workspaceId])
+    ).toEqual([
+      [BusEventType.WORKSPACE_PRE_CLOSE, 'contract-workspace'],
+      [BusEventType.WORKSPACE_PRE_OPEN, 'second-workspace'],
+      [BusEventType.WORKSPACE_OPEN, 'second-workspace'],
+    ]);
+    expect(instance.state.get().workspace).toEqual({
+      isOpen: true,
+      options: { preferredLocation: 'end', workspaceId: 'second-workspace' },
+      workspaceID: 'second-workspace',
+      additionalData: undefined,
+    });
+  });
 });
 
 // @covers writeable-element.workspacePanelElement
@@ -548,5 +610,43 @@ describe('workspace opened from a preview card', () => {
     ]);
     expect(instance.state.get().workspace.isOpen).toBe(true);
     expect(instance.state.get().workspace.workspaceID).toBe('card-b');
+  });
+
+  it('opens another card’s workspace when a pre:close handler throws, logging the error', async () => {
+    const { instance } = await mountForCards();
+    await act(() =>
+      instance.messaging.addMessage(
+        responseOf('r-cards', [
+          previewCard({ title: 'Card A', workspace_id: 'card-a' }),
+          previewCard({ title: 'Card B', workspace_id: 'card-b' }),
+        ])
+      )
+    );
+    const [cardA, cardB] = allByRole('button', STRINGS.previewCard_viewDetails);
+    await click(cardA);
+    await waitFor(() =>
+      expect(instance.state.get().workspace.workspaceID).toBe('card-a')
+    );
+    const failure = new Error('Contract pre:close failure');
+    const handler = jest.fn(() => {
+      throw failure;
+    });
+    instance.on({ type: BusEventType.WORKSPACE_PRE_CLOSE, handler });
+    const error = jest.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      await click(cardB);
+      await waitFor(() =>
+        expect(instance.state.get().workspace.workspaceID).toBe('card-b')
+      );
+      // A short wait lets a rejection nothing caught surface and fail the test.
+      await pause();
+      expect(error.mock.calls.some((call) => call.includes(failure))).toBe(
+        true
+      );
+    } finally {
+      error.mockRestore();
+    }
+    expect(handler).toHaveBeenCalledTimes(1);
+    expect(instance.state.get().workspace.isOpen).toBe(true);
   });
 });

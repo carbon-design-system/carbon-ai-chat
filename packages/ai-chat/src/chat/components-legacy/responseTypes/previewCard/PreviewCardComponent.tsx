@@ -23,6 +23,7 @@ import {
   MessageResponse,
 } from '../../../../types/messaging/Messages';
 import actions from '../../../store/actions';
+import { closeWorkspaceForNext } from '../../../services/CustomPanelInstance';
 
 interface PreviewCardComponentProps {
   localMessageItem: LocalMessageItem;
@@ -57,7 +58,7 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
   const handleClick = useCallback(async () => {
     // Close the open workspace before storing this card's data, so its close events carry its own data.
     if (serviceManager.store.getState().workspacePanelState.isOpen) {
-      await panel.close();
+      await closeWorkspaceForNext(() => panel.close(), serviceManager);
     }
 
     // Store workspace panel data in Redux before opening
@@ -82,7 +83,7 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
     additional_data,
     localMessageItem,
     fullMessage,
-    serviceManager.store,
+    serviceManager,
     panel,
   ]);
 

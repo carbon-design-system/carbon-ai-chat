@@ -25,8 +25,28 @@ import {
   eventLocalItems,
 } from '../utils/messageEventOwnership';
 import { deepFreeze } from '../utils/lang/objectUtils';
+import { consoleError } from '../utils/miscUtils';
 import { Message } from '../../types/messaging/Messages';
 import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
+
+/**
+ * Closes the open workspace so another can open. A close handler that throws is logged, and the workspace closes
+ * anyway, without its close event.
+ */
+async function closeWorkspaceForNext(
+  close: () => Promise<void>,
+  serviceManager: ServiceManager
+) {
+  try {
+    await close();
+  } catch (error) {
+    consoleError(
+      'A workspace close handler failed while another workspace was opening. The open workspace closes anyway.',
+      error
+    );
+    serviceManager.store.dispatch(actions.setWorkspaceCustomPanelOpen(false));
+  }
+}
 
 /**
  * This function takes in the service manager to help create a custom panel instance. The panel instance is created
@@ -221,7 +241,8 @@ function createCustomPanelInstance(
   const { setConfig, setOpen } =
     panelActions[panelType] ?? panelActions[PanelType.DEFAULT];
 
-  const customPanelInstance: CustomPanelInstance = {
+  // The unordered open and close. The panel's own methods below run them in call order.
+  const panelOperations = {
     async open(
       options?: CustomPanelOpenOptions | WorkspaceCustomPanelConfigOptions
     ) {
@@ -243,7 +264,7 @@ function createCustomPanelInstance(
         panelType === PanelType.WORKSPACE &&
         store.getState().workspacePanelState.isOpen
       ) {
-        await customPanelInstance.close();
+        await closeWorkspaceForNext(panelOperations.close, serviceManager);
       }
 
       // For workspace panels, extract and store workspaceId and additionalData if provided
@@ -311,6 +332,28 @@ function createCustomPanelInstance(
     },
   };
 
+  // A workspace's opens and closes wait on event handlers, so they run one after another in call order: a call
+  // starts once the one before it has finished.
+  let workspaceQueue: Promise<unknown> = Promise.resolve();
+  function inOrder(run: () => Promise<void>): Promise<void> {
+    if (panelType !== PanelType.WORKSPACE) {
+      return run();
+    }
+    const result = workspaceQueue.then(run);
+    workspaceQueue = result.catch(() => {});
+    return result;
+  }
+
+  const customPanelInstance: CustomPanelInstance = {
+    open(options?: CustomPanelOpenOptions | WorkspaceCustomPanelConfigOptions) {
+      return inOrder(() => panelOperations.open(options));
+    },
+
+    close() {
+      return inOrder(panelOperations.close);
+    },
+  };
+
   if (hostElement) {
     customPanelInstance.hostElement = hostElement;
   }
@@ -318,4 +361,8 @@ function createCustomPanelInstance(
   return Object.freeze(customPanelInstance);
 }
 
-export { createCustomPanelInstance, CustomPanelInstance };
+export {
+  closeWorkspaceForNext,
+  createCustomPanelInstance,
+  CustomPanelInstance,
+};
