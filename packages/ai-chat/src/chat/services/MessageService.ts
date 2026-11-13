@@ -980,7 +980,8 @@ class MessageService {
       if (reason !== CancellationReason.TIMEOUT) {
         this.serviceManager.conversationLifecycleService.requestStopped(
           pendingRequest.message.id,
-          pendingRequest.generation
+          pendingRequest.generation,
+          reason === CancellationReason.STOP_STREAMING
         );
       }
       if (reason === CancellationReason.TIMEOUT) {

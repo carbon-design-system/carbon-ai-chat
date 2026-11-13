@@ -138,6 +138,27 @@ describeShared('errors during a stream', (makeDriver) => {
     expect(textsOf(chat, 'r1')).toEqual(['Hello']);
     expect(chat.status()).toBe('error');
   });
+
+  it('still appends a chunk that names the request whose send failed', async () => {
+    const chat = await makeDriver({ onError: ignore });
+    const started = await startSend(chat, 'hello');
+    const named = (text: string) => {
+      const chunk = partialText('r1', 'a', text);
+      chunk.streaming_metadata = {
+        response_id: 'r1',
+        request_id: started.sent.request.id,
+      };
+      return chunk;
+    };
+    await addChunk(chat, named('Hello'));
+    await act(async () => {
+      started.sent.reject('backend went away');
+      await started.done.catch(ignore);
+    });
+    await addChunk(chat, named(' more'));
+    expect(textsOf(chat, 'r1')).toEqual(['Hello more']);
+    expect(chat.status()).toBe('error');
+  });
 });
 
 // @covers instance.messaging.restartConversation
