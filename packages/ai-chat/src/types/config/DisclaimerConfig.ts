@@ -8,8 +8,12 @@
  */
 
 /**
- * Configuration for the disclaimer screen shown before a user can start chatting,
- * consumed by {@link PublicConfig.disclaimer}.
+ * Configuration for the disclaimer screen, consumed by {@link PublicConfig.disclaimer}.
+ *
+ * The disclaimer holds back only user input: the user can't chat until they accept it. The chat still sends the
+ * welcome request to {@link PublicConfigMessaging.customSendMessage} while the disclaimer shows. If you need consent
+ * first, check `disclaimersAccepted` in {@link ChatInstance.state} before you answer, or set
+ * {@link PublicConfigMessaging.skipWelcome}.
  *
  * @category Config
  */

@@ -101,6 +101,8 @@ class CDSAIChatFeedbackButtons extends LitElement {
 
   /**
    * The unique ID of the panel that is used for showing details.
+   *
+   * @deprecated This property has no effect. Removed in 2.0.0.
    */
   @property({ type: String, attribute: 'panel-id', reflect: true })
   panelID?: string;
@@ -129,13 +131,6 @@ class CDSAIChatFeedbackButtons extends LitElement {
       this.handleButtonClick(isPositive);
     };
 
-    const feedbackPositiveControls = this.panelID
-      ? `${this.panelID}-feedback-positive`
-      : undefined;
-    const feedbackNegativeControls = this.panelID
-      ? `${this.panelID}-feedback-negative`
-      : undefined;
-
     // Flip tooltip alignment in RTL mode
     const tooltipAlign = this.isRTL ? 'top-end' : 'top-start';
 
@@ -153,7 +148,6 @@ class CDSAIChatFeedbackButtons extends LitElement {
             : this.isPositiveOpen
         }"
         aria-pressed="${this.isPositiveSelected || nothing}"
-        ?aria-controls=${feedbackPositiveControls}
         @click="${() => handleButtonClick(true)}">
         <span slot="icon"
           >${iconLoader(
@@ -177,7 +171,6 @@ class CDSAIChatFeedbackButtons extends LitElement {
             : this.isNegativeOpen
         }"
         aria-pressed="${this.isNegativeSelected || nothing}"
-        ?aria-controls=${feedbackNegativeControls}
         @click="${() => handleButtonClick(false)}">
         <span slot="icon"
           >${iconLoader(

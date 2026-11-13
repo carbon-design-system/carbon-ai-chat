@@ -32,6 +32,9 @@ import { MessageState } from '../config/MessagingConfig';
 export enum BusEventType {
   /**
    * When a panel has been closed.
+   *
+   * @deprecated The chat never fires this event. Listen for {@link BusEventType.CUSTOM_PANEL_CLOSE} or
+   * {@link BusEventType.WORKSPACE_CLOSE} instead. Removed in 2.0.0.
    */
   CLOSE_PANEL_BUTTON_TOGGLED = 'closePanelButton:toggled',
 
@@ -263,7 +266,8 @@ export enum ViewChangeReason {
   LAUNCHER_CLICKED = 'launcherClicked',
 
   /**
-   * Indicates the user clicked on our built-in minimize button that closed the launcher.
+   * Indicates the user clicked the built-in minimize button in the chat header, which closed the main window.
+   * In 1.x, the button emits `main_window_minimized`; this enum retains `mainWindowMinimized`.
    */
   MAIN_WINDOW_MINIMIZED = 'mainWindowMinimized',
 
@@ -352,7 +356,8 @@ export interface BusEvent {
 }
 
 /**
- *
+ * @deprecated The chat never fires {@link BusEventType.CLOSE_PANEL_BUTTON_TOGGLED}. Listen for
+ * {@link BusEventType.CUSTOM_PANEL_CLOSE} or {@link BusEventType.WORKSPACE_CLOSE} instead. Removed in 2.0.0.
  *
  * @category Events
  */
@@ -507,7 +512,8 @@ export interface BusEventViewChange extends BusEvent {
   oldViewState: ViewState;
 
   /**
-   * The new view state that Carbon AI Chat has switched to. This new state can be changed by the event handler.
+   * The new view state that Carbon AI Chat has switched to. The object is frozen, so a handler can't edit it in place.
+   * To change the view, replace `newViewState` with a new object.
    */
   newViewState: ViewState;
 
@@ -1093,7 +1099,8 @@ export enum HeaderMenuClickType {
   OVERFLOW_MENU_OPENED = 'overflowMenuOpened',
 
   /**
-   * An item in the overflow menu was clicked.
+   * An item in the overflow menu was clicked. A link item, one with {@link CustomMenuOption.href}, navigates without
+   * firing this event.
    */
   OVERFLOW_MENU_ITEM = 'overflowMenuItem',
 }

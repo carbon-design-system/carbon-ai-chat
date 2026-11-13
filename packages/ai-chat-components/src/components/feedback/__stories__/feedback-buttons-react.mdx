@@ -96,7 +96,6 @@ function DetailedFeedback() {
     <>
       <FeedbackButtons
         hasNegativeDetails
-        panelID="feedback-panel-123"
         positiveLabel="I like this response"
         negativeLabel="I dislike this response"
         isNegativeOpen={isNegativeOpen}
@@ -158,7 +157,7 @@ function ToggleableFeedback() {
 
 - Buttons include customizable labels for screen readers
 - Uses `aria-pressed` to indicate selected state
-- Uses `aria-controls` to link to detail panels when applicable
+- Uses `aria-expanded` to indicate whether a details panel is open, when the button has one
 - Keyboard navigable with standard tab/enter interactions
 
 ## Feedback

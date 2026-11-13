@@ -61,11 +61,6 @@ export default {
       description: 'Whether the negative details panel is open',
       table: { disable: true },
     },
-    panelID: {
-      control: 'text',
-      description: 'ID of the associated feedback panel',
-      table: { disable: true },
-    },
   },
 };
 
@@ -89,7 +84,6 @@ const renderButtons = (args, options) => {
         isNegativeOpen={args.isNegativeOpen}
         positiveLabel={args.positiveLabel}
         negativeLabel={args.negativeLabel}
-        panelID={args.panelID}
         onClick={(event) => {
           const { isPositive } = event.detail;
           clickHandler?.(isPositive);
@@ -116,10 +110,10 @@ const reactNegativeCategories = [
 const FeedbackButtonsWithDetailsDemo = ({
   hasPositiveDetails,
   hasNegativeDetails,
-  panelID,
   positiveLabel,
   negativeLabel,
 }) => {
+  const panelID = 'feedback-panel-demo';
   const [state, setState] = React.useState({
     isPositiveSelected: false,
     isNegativeSelected: false,
@@ -244,7 +238,6 @@ const FeedbackButtonsWithDetailsDemo = ({
         isNegativeOpen={state.isNegativeOpen}
         positiveLabel={positiveLabel}
         negativeLabel={negativeLabel}
-        panelID={panelID}
         onClick={(event) => {
           handleButtonClick(event.detail.isPositive);
         }}
@@ -293,7 +286,6 @@ export const WithDetailsPanel = {
   args: {
     positiveLabel: 'I like this response',
     negativeLabel: 'I dislike this response',
-    panelID: 'feedback-panel-example',
     hasPositiveDetails: true,
     hasNegativeDetails: true,
   },
@@ -309,17 +301,11 @@ export const WithDetailsPanel = {
       description: 'Whether negative button opens a details panel',
       table: { disable: false },
     },
-    panelID: {
-      control: false,
-      description: 'ID of the associated feedback panel',
-      table: { disable: false },
-    },
   },
   render: (args) => (
     <FeedbackButtonsWithDetailsDemo
       hasPositiveDetails={args.hasPositiveDetails}
       hasNegativeDetails={args.hasNegativeDetails}
-      panelID={args.panelID}
       positiveLabel={args.positiveLabel}
       negativeLabel={args.negativeLabel}
     />
