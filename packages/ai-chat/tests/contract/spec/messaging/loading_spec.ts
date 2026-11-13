@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { act } from '@testing-library/react';
+import { act, waitFor } from '@testing-library/react';
 
 import {
   ChatInstance,
@@ -95,6 +95,11 @@ describe('updateIsMessageLoadingCounter', () => {
     expect(loading(instance)).toEqual({ counter: 0, text: undefined });
   });
 
+  // Two floors keep the counter at 0: the instance call ignores a decrease at
+  // 0, and the chat's own count never goes below 0. With only the first gone,
+  // the second leaves the same state and fires no change, so no public
+  // observable tells them apart here. The chat's own floor is pinned on its
+  // own in "floors the counter at 0 when its indicator ends after a reset".
   it('never decreases below 0', async () => {
     const instance = await mount();
     await host(() => instance.updateIsMessageLoadingCounter('decrease'));
@@ -190,6 +195,24 @@ describe('messageLoadingIndicatorTimeoutSecs', () => {
     expect(loading(instance).counter).toBe(0);
   });
 
+  // @covers instance.updateIsMessageLoadingCounter
+  it('floors the counter at 0 when its indicator ends after a reset', async () => {
+    const { instance, sent } = await pendingSend({
+      messageLoadingIndicatorTimeoutSecs: 1,
+    });
+    await advance(1000);
+    expect(loading(instance).counter).toBe(1);
+    await host(() => instance.updateIsMessageLoadingCounter('reset'));
+    // The response removes the indicator the chat counted, from a count the
+    // host already reset.
+    await host(() =>
+      instance.messaging.addMessage(
+        textResponse('hi', 'r1', { request_id: sent.request.id })
+      )
+    );
+    expect(loading(instance).counter).toBe(0);
+  });
+
   it('counts no indicator when a response arrives before the wait ends', async () => {
     const { instance, sent } = await pendingSend({
       messageLoadingIndicatorTimeoutSecs: 1,
@@ -259,11 +282,30 @@ describe('updateIsChatLoadingCounter', () => {
     expect(hydrating(instance)).toBe(1);
   });
 
+  // As with the message-loading counter, the instance call's floor and the
+  // chat's own floor leave the same state, so this test needs both gone to
+  // fail. The chat's own floor is pinned on its own in "floors the counter at
+  // 0 when the chat's own loading ends after a reset".
   it('never decreases below 0', async () => {
     const instance = await mount();
     await host(() => instance.updateIsChatLoadingCounter('decrease'));
     await host(() => instance.updateIsChatLoadingCounter('increase'));
     expect(hydrating(instance)).toBe(1);
+  });
+
+  it("floors the counter at 0 when the chat's own loading ends after a reset", async () => {
+    const backend = fakeBackend();
+    const { instance } = await contractChat({
+      openChatByDefault: true,
+      messaging: { customSendMessage: backend.customSendMessage },
+    });
+    // The chat counts itself loading until its welcome request settles.
+    const welcome = await backend.next();
+    expect(hydrating(instance)).toBe(1);
+    await host(() => instance.updateIsChatLoadingCounter('reset'));
+    await host(() => welcome.resolve());
+    await waitFor(() => expect(instance.getState().status).toBe('ready'));
+    expect(hydrating(instance)).toBe(0);
   });
 
   it('leaves status ready while the counter is above 0', async () => {
