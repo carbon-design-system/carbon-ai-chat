@@ -39,10 +39,12 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
     item;
 
   const serviceManager = useServiceManager();
-  const { isOpen, workspaceID } = useSelector(
+  const { isOpen, workspaceID, viewDetailsLabel, viewingLabel } = useSelector(
     (state: AppState) => ({
       isOpen: state.workspacePanelState.isOpen,
       workspaceID: state.workspacePanelState.workspaceID,
+      viewDetailsLabel: state.languagePack.previewCard_viewDetails,
+      viewingLabel: state.languagePack.previewCard_viewing,
     }),
     shallowEqual
   );
@@ -90,12 +92,12 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
         icon: isViewing ? View16 : Maximize16,
         id: 'docs',
         kind: 'ghost',
-        label: isViewing ? 'Viewing' : 'View details',
+        label: isViewing ? viewingLabel : viewDetailsLabel,
         payload: { test: 'value' },
         isViewing,
       },
     ],
-    [isViewing]
+    [isViewing, viewingLabel, viewDetailsLabel]
   );
 
   return (

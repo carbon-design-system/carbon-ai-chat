@@ -406,9 +406,21 @@ describe('workspacePanelElement', () => {
   });
 });
 
-// The preview card's open button has no `strings` key; on `main` its label is
-// fixed copy, so the tests find it by that text.
-const VIEW_DETAILS = 'View details';
+// Copy the tests set through `strings`, so they find the preview card's button
+// by an accessible name they own rather than by the chat's default text.
+const STRINGS = {
+  previewCard_viewDetails: 'Contract view details',
+  previewCard_viewing: 'Contract viewing',
+};
+
+/** Mounts an open chat with no welcome and the test strings. */
+async function mountForCards() {
+  return contractChat({
+    openChatByDefault: true,
+    messaging: { skipWelcome: true },
+    strings: STRINGS,
+  });
+}
 
 /** A preview card with these fields, in a response with ID `r-card`. */
 function previewCard(extra: Partial<PreviewCardItem> = {}): PreviewCardItem {
@@ -422,13 +434,10 @@ function previewCard(extra: Partial<PreviewCardItem> = {}): PreviewCardItem {
 
 /** Mounts an open chat, adds a response holding `item`, and clicks it open. */
 async function openFromCard(item: PreviewCardItem) {
-  const { instance } = await contractChat({
-    openChatByDefault: true,
-    messaging: { skipWelcome: true },
-  });
+  const { instance } = await mountForCards();
   const events = recordEvents(instance, WORKSPACE_EVENTS);
   await act(() => instance.messaging.addMessage(responseOf('r-card', [item])));
-  await click(byRole('button', VIEW_DETAILS));
+  await click(byRole('button', STRINGS.previewCard_viewDetails));
   await waitFor(() =>
     expect(events.types()).toEqual([
       BusEventType.WORKSPACE_PRE_OPEN,
@@ -500,11 +509,19 @@ describe('workspace opened from a preview card', () => {
     );
   });
 
+  // @covers config.strings
+  it('labels the button with the strings for view details, then viewing once its workspace is open', async () => {
+    await openFromCard(previewCard({ workspace_id: 'card-workspace' }));
+    await waitFor(() =>
+      expect(allByRole('button', STRINGS.previewCard_viewing)).toHaveLength(1)
+    );
+    expect(allByRole('button', STRINGS.previewCard_viewDetails)).toHaveLength(
+      0
+    );
+  });
+
   it('closes the workspace one card opened before another card opens its own', async () => {
-    const { instance } = await contractChat({
-      openChatByDefault: true,
-      messaging: { skipWelcome: true },
-    });
+    const { instance } = await mountForCards();
     await act(() =>
       instance.messaging.addMessage(
         responseOf('r-cards', [
@@ -513,7 +530,7 @@ describe('workspace opened from a preview card', () => {
         ])
       )
     );
-    const [cardA, cardB] = allByRole('button', VIEW_DETAILS);
+    const [cardA, cardB] = allByRole('button', STRINGS.previewCard_viewDetails);
     await click(cardA);
     await waitFor(() =>
       expect(instance.state.get().workspace.workspaceID).toBe('card-a')
