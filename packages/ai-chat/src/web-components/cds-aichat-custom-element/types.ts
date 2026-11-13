@@ -26,6 +26,10 @@ import type {
  * Extends {@link PublicConfig} with component-specific props, flattening all
  * config properties as top-level properties for TypeScript IntelliSense.
  *
+ * An object field also takes JSON through its HTML attribute. If the JSON
+ * doesn't parse, the chat logs a warning that names the attribute and uses the
+ * field's value from `config`, or its default.
+ *
  * @category Web component
  */
 interface CdsAiChatCustomElementAttributes extends Omit<

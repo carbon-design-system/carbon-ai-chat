@@ -23,6 +23,7 @@ import type { PropertyDeclaration, PropertyDeclarations } from 'lit';
 import { PublicConfig } from '../../types/config/PublicConfig';
 import {
   FLATTENED_PUBLIC_CONFIG_FIELDS,
+  objectAttributeConverter,
   resolveFlattenedConfig,
 } from './flattenedPublicConfig';
 
@@ -48,7 +49,18 @@ function buildFlattenedProperties(): PropertyDeclarations {
     aiDisabled: { type: Boolean, attribute: 'ai-disabled' },
   };
   for (const field of FLATTENED_PUBLIC_CONFIG_FIELDS) {
-    properties[field.name] = field.options;
+    const options: PropertyDeclaration = field.options;
+    properties[field.name] =
+      options.type === Object && options.attribute !== false
+        ? {
+            ...options,
+            converter: objectAttributeConverter(
+              typeof options.attribute === 'string'
+                ? options.attribute
+                : field.name.toLowerCase()
+            ),
+          }
+        : options;
   }
   return properties;
 }

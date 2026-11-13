@@ -765,6 +765,10 @@ declare global {
  * This interface extends {@link PublicConfig} with additional component-specific props,
  * flattening all config properties as top-level properties for better TypeScript IntelliSense.
  *
+ * An object field also takes JSON through its HTML attribute. If the JSON
+ * doesn't parse, the chat logs a warning that names the attribute and uses the
+ * field's value from `config`, or its default.
+ *
  * @category Web component
  */
 interface CdsAiChatContainerAttributes extends Omit<PublicConfig, 'markdown'> {

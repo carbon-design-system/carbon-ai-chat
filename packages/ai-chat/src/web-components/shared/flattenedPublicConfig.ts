@@ -22,6 +22,7 @@
 import type { ComplexAttributeConverter, PropertyDeclaration } from 'lit';
 
 import { PublicConfig } from '../../types/config/PublicConfig';
+import { consoleWarn } from '../../chat/utils/miscUtils';
 
 /**
  * A single flattened-config field: a {@link PublicConfig} key plus the exact
@@ -56,6 +57,32 @@ const aiEnabledConverter: ComplexAttributeConverter<boolean | undefined> = {
     return !falsey;
   },
 };
+
+/**
+ * Converter for the JSON object attributes. Unlike Lit's default, which turns
+ * JSON it can't parse into `null`, it returns `undefined` for bad JSON, so the
+ * field falls back to `config` or its default, and it warns with the
+ * attribute's name. A removed attribute still reads as `null`, as with Lit.
+ */
+export function objectAttributeConverter(
+  attribute: string
+): ComplexAttributeConverter<unknown> {
+  return {
+    fromAttribute: (value: string | null) => {
+      if (value === null) {
+        return null;
+      }
+      try {
+        return JSON.parse(value);
+      } catch {
+        consoleWarn(
+          `The "${attribute}" attribute is not valid JSON, so the chat ignored it and used the value from config or the default.`
+        );
+        return undefined;
+      }
+    },
+  };
+}
 
 /**
  * Every {@link PublicConfig} field exposed as a flattened attribute/property

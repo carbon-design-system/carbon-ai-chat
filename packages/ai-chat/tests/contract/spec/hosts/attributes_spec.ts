@@ -107,6 +107,76 @@ async function addReply(instance: ChatInstance, text = 'Hi', shown = text) {
   await waitFor(() => expect(mainPanelText()).toContain(shown));
 }
 
+/**
+ * Mounts an open chat with a fake service desk, sends, adds a connect
+ * response, and checks the agent chat starts with no connect card.
+ */
+async function expectConnectStartsAgentChat(
+  tag: ContractElementTag,
+  attributes: Record<string, string>,
+  properties: Properties = {}
+) {
+  const desk = fakeDesk();
+  const backend = fakeBackend({ autoResolve: true });
+  const { instance } = await mountOpen(tag, attributes, {
+    serviceDeskFactory: desk.factory,
+    messaging: {
+      skipWelcome: true,
+      customSendMessage: backend.customSendMessage,
+    },
+    ...properties,
+  });
+  await act(() => instance.send('hello'));
+  await addConnect(instance);
+  await waitFor(() => expect(desk.desk.startChat).toHaveBeenCalledTimes(1));
+}
+
+/**
+ * Mounts an open chat with a reply, focuses the input, and checks that F6
+ * moves focus to the messages.
+ */
+async function expectF6MovesFocusToMessages(
+  tag: ContractElementTag,
+  attributes: Record<string, string>,
+  properties: Properties = {}
+) {
+  const { instance } = await mountOpen(tag, attributes, {
+    strings: { messages_assistantSaid: 'Reply from {assistantName}' },
+    ...properties,
+  });
+  await addReply(instance);
+  await act(async () => {
+    instance.requestFocus();
+  });
+  await waitFor(() => expect(focusIsInInput()).toBe(true));
+  await act(async () => {
+    deepActiveElement().dispatchEvent(
+      new KeyboardEvent('keydown', {
+        bubbles: true,
+        composed: true,
+        key: 'F6',
+        code: 'F6',
+      })
+    );
+  });
+  await waitFor(() =>
+    expect(
+      isShownWithin(deepActiveElement(), getByTestId(PageObjectId.MAIN_PANEL))
+    ).toBe(true)
+  );
+}
+
+/** Runs `run` with `console.warn` stubbed, and returns each warning as text. */
+async function warningsDuring(run: () => Promise<unknown>): Promise<string[]> {
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+  try {
+    await run();
+    return warn.mock.calls.map((args) => args.map(String).join(' '));
+  } finally {
+    warn.mockRestore();
+  }
+}
+
 describe.each(ELEMENT_TAGS)('boolean attributes on %s', (tag) => {
   contractSetup();
 
@@ -330,32 +400,6 @@ describe.each(ELEMENT_TAGS)('JSON attributes on %s', (tag) => {
     expect(headerTitle()).toBe('Contract title');
   });
 
-  // MAIN-NOTES M105 (U56): invalid JSON reads as `null`, and `null` counts
-  // as set, so it replaces the same field in `config` rather than falling
-  // back to it. Fields that tolerate `null` render with their defaults;
-  // `header`, `launcher`, `layout`, and `keyboardshortcuts` crash instead,
-  // so they have no test here.
-  // @covers attribute.input element.cds-aichat-container.config element.cds-aichat-custom-element.config
-  it('reads invalid input JSON as null, which replaces config.input', async () => {
-    await mountOpen(
-      tag,
-      { input: 'not json' },
-      { config: { input: { isDisabled: true } } }
-    );
-    expect(inputField().disabled).toBe(false);
-  });
-
-  // MAIN-NOTES M105 (U56), as above.
-  // @covers attribute.strings
-  it('renders with default strings for invalid strings JSON', async () => {
-    await mountOpen(
-      tag,
-      { strings: '{not json' },
-      { config: { strings: { window_ariaChatRegion: 'From config' } } }
-    );
-    expect(allByRole('region', 'From config')).toHaveLength(0);
-  });
-
   // @covers attribute.disclaimer
   it('disclaimer shows its HTML in the disclaimer panel', async () => {
     await mount(tag, {
@@ -447,50 +491,189 @@ describe.each(ELEMENT_TAGS)('JSON attributes on %s', (tag) => {
 
   // @covers attribute.service-desk
   it('service-desk with skipConnectHumanAgentCard starts the agent chat on a connect response', async () => {
-    const desk = fakeDesk();
-    const backend = fakeBackend({ autoResolve: true });
-    const { instance } = await mountOpen(
-      tag,
-      { 'service-desk': '{"skipConnectHumanAgentCard":true}' },
-      {
-        serviceDeskFactory: desk.factory,
-        messaging: {
-          skipWelcome: true,
-          customSendMessage: backend.customSendMessage,
-        },
-      }
-    );
-    await act(() => instance.send('hello'));
-    await addConnect(instance);
-    await waitFor(() => expect(desk.desk.startChat).toHaveBeenCalledTimes(1));
+    await expectConnectStartsAgentChat(tag, {
+      'service-desk': '{"skipConnectHumanAgentCard":true}',
+    });
   });
 
   // @covers attribute.keyboardshortcuts
   it('keyboardshortcuts turns on the message focus toggle', async () => {
+    await expectF6MovesFocusToMessages(tag, {
+      keyboardshortcuts: '{"messageFocusToggle":{"isOn":true}}',
+    });
+  });
+});
+
+/** Every attribute that takes JSON. */
+const JSON_ATTRIBUTES = [
+  'disclaimer',
+  'service-desk',
+  'header',
+  'history',
+  'layout',
+  'messaging',
+  'homescreen',
+  'launcher',
+  'input',
+  'strings',
+  'keyboardshortcuts',
+];
+
+const INVALID_JSON = '{not json';
+
+describe.each(ELEMENT_TAGS)('invalid JSON attributes on %s', (tag) => {
+  contractSetup();
+
+  // @covers attribute.disclaimer attribute.service-desk attribute.header attribute.history attribute.layout attribute.messaging attribute.homescreen attribute.launcher attribute.input attribute.strings attribute.keyboardshortcuts
+  it.each(JSON_ATTRIBUTES)(
+    'ignores invalid %s JSON, warning with the attribute name',
+    async (attribute) => {
+      const onError = jest.fn();
+      // The attribute sets the same field as the `messaging` property, so the
+      // welcome request is skipped through config instead.
+      const warnings = await warningsDuring(() =>
+        mountOpen(
+          tag,
+          { [attribute]: INVALID_JSON },
+          { onError, config: { messaging: { skipWelcome: true } } }
+        )
+      );
+      expect(getByTestId(PageObjectId.MAIN_PANEL)).not.toBeNull();
+      expect(onError).not.toHaveBeenCalled();
+      expect(warnings.filter((text) => text.includes(attribute))).toHaveLength(
+        1
+      );
+    }
+  );
+
+  // @covers attribute.header element.cds-aichat-container.config element.cds-aichat-custom-element.config
+  it('falls back to config.header for invalid header JSON', async () => {
+    await mountOpen(
+      tag,
+      { header: INVALID_JSON },
+      { config: { header: { title: 'From config' } } }
+    );
+    expect(headerTitle()).toBe('From config');
+  });
+
+  // @covers attribute.input element.cds-aichat-container.config element.cds-aichat-custom-element.config
+  it('falls back to config.input for invalid input JSON', async () => {
+    await mountOpen(
+      tag,
+      { input: INVALID_JSON },
+      { config: { input: { isDisabled: true } } }
+    );
+    expect(inputField().disabled).toBe(true);
+  });
+
+  // @covers attribute.strings element.cds-aichat-container.config element.cds-aichat-custom-element.config
+  it('falls back to config.strings for invalid strings JSON', async () => {
+    await mountOpen(
+      tag,
+      { strings: INVALID_JSON },
+      { config: { strings: { window_ariaChatRegion: 'From config' } } }
+    );
+    expect(allByRole('region', 'From config')).toHaveLength(1);
+  });
+
+  // @covers attribute.launcher element.cds-aichat-container.config element.cds-aichat-custom-element.config
+  it('falls back to config.launcher for invalid launcher JSON', async () => {
+    const { instance } = await mount(
+      tag,
+      { launcher: INVALID_JSON },
+      { config: { launcher: { isOn: false } } }
+    );
+    expect(instance.getState().viewState.launcher).toBe(true);
+    expect(byTestId(PageObjectId.LAUNCHER)).toBeNull();
+  });
+
+  // @covers attribute.disclaimer element.cds-aichat-container.config element.cds-aichat-custom-element.config
+  it('falls back to config.disclaimer for invalid disclaimer JSON', async () => {
+    await mount(
+      tag,
+      { 'open-chat-by-default': '', disclaimer: INVALID_JSON },
+      {
+        config: {
+          disclaimer: { isOn: true, disclaimerHTML: '<p>From config</p>' },
+        },
+      }
+    );
+    await waitFor(() =>
+      expect(shownText(getByTestId(PageObjectId.DISCLAIMER_PANEL))).toContain(
+        'From config'
+      )
+    );
+  });
+
+  // @covers attribute.homescreen element.cds-aichat-container.config element.cds-aichat-custom-element.config
+  it('falls back to config.homescreen for invalid homescreen JSON', async () => {
     const { instance } = await mountOpen(
       tag,
-      { keyboardshortcuts: '{"messageFocusToggle":{"isOn":true}}' },
-      { strings: { messages_assistantSaid: 'Reply from {assistantName}' } }
+      { homescreen: INVALID_JSON },
+      { config: { homescreen: { isOn: true, greeting: 'From config' } } }
     );
-    await addReply(instance);
-    await act(async () => {
-      instance.requestFocus();
-    });
-    await waitFor(() => expect(focusIsInInput()).toBe(true));
-    await act(async () => {
-      deepActiveElement().dispatchEvent(
-        new KeyboardEvent('keydown', {
-          bubbles: true,
-          composed: true,
-          key: 'F6',
-          code: 'F6',
-        })
-      );
-    });
     await waitFor(() =>
-      expect(
-        isShownWithin(deepActiveElement(), getByTestId(PageObjectId.MAIN_PANEL))
-      ).toBe(true)
+      expect(instance.getState().homeScreenState.isHomeScreenOpen).toBe(true)
+    );
+    expect(shownText(getByTestId(PageObjectId.HOME_SCREEN_PANEL))).toContain(
+      'From config'
+    );
+  });
+
+  // @covers attribute.messaging element.cds-aichat-container.config element.cds-aichat-custom-element.config
+  it('falls back to config.messaging for invalid messaging JSON', async () => {
+    // No `messaging` property here, so only config can skip the welcome.
+    const { instance } = await contractElement(tag, {
+      attributes: { 'open-chat-by-default': '', messaging: INVALID_JSON },
+      properties: { config: { messaging: { skipWelcome: true } } },
+    });
+    await pause();
+    expect(instance.getState().messages).toEqual([]);
+  });
+
+  // @covers attribute.history element.cds-aichat-container.config element.cds-aichat-custom-element.config
+  it('falls back to config.history for invalid history JSON', async () => {
+    const STRINGS = {
+      history_new_chat: 'Contract new chat',
+      history_view_chats: 'Contract view chats',
+    };
+    await mount(
+      tag,
+      { 'open-chat-by-default': '', history: INVALID_JSON },
+      { strings: STRINGS, config: { history: { isOn: true } } }
+    );
+    expect(allByRole('menuitem', STRINGS.history_new_chat)).toHaveLength(1);
+    expect(allByRole('menuitem', STRINGS.history_view_chats)).toHaveLength(1);
+  });
+
+  // @covers attribute.layout element.cds-aichat-container.config element.cds-aichat-custom-element.config
+  it('falls back to config.layout for invalid layout JSON', async () => {
+    const layout = {
+      customProperties: { '$button-primary': 'red' },
+    } as unknown as PublicConfig['layout'];
+    const warnings = await warningsDuring(() =>
+      mount(tag, { layout: INVALID_JSON }, { config: { layout } })
+    );
+    expect(
+      warnings.filter((text) => text.includes('$button-primary')).length
+    ).toBeGreaterThan(0);
+  });
+
+  // @covers attribute.keyboardshortcuts element.cds-aichat-container.config element.cds-aichat-custom-element.config
+  it('falls back to config.keyboardShortcuts for invalid keyboardshortcuts JSON', async () => {
+    await expectF6MovesFocusToMessages(
+      tag,
+      { keyboardshortcuts: INVALID_JSON },
+      { config: { keyboardShortcuts: { messageFocusToggle: { isOn: true } } } }
+    );
+  });
+
+  // @covers attribute.service-desk element.cds-aichat-container.config element.cds-aichat-custom-element.config
+  it('falls back to config.serviceDesk for invalid service-desk JSON', async () => {
+    await expectConnectStartsAgentChat(
+      tag,
+      { 'service-desk': INVALID_JSON },
+      { config: { serviceDesk: { skipConnectHumanAgentCard: true } } }
     );
   });
 });
