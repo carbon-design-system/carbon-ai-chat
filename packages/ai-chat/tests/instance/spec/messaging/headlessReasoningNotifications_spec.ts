@@ -55,6 +55,8 @@ async function headless() {
   const manager = (boot.serviceManager.messageCoordinator as any)
     .serviceManager as ServiceManager;
   cleanup();
+  // The boot coordinator goes headless once cleanup detaches the view; retire it.
+  manager.messageCoordinator.disposeReasoningObserver();
   expect(manager.instance).toBe(boot.instance);
   const core = new MessageCoordinator(manager);
   manager.messageCoordinator = core;
@@ -213,7 +215,9 @@ it.each(['mounted', 'headless'])(
   }
 );
 
-it('does not install headless delivery when an adapter remains installed without a renderer', async () => {
+// D7 of the #2349 plan: headless delivery runs whenever no view is attached,
+// so a chat whose view detached keeps delivering reasoning items.
+it('delivers headlessly once the view detaches', async () => {
   const { instance } =
     await renderChatAndGetInstanceWithStore(createBaseConfig());
   cleanup();
@@ -221,11 +225,87 @@ it('does not install headless delivery when an adapter remains installed without
   instance.on({
     type: BusEventType.USER_DEFINED_RESPONSE,
     handler: (event: any) => {
-      values.push(event.data.message);
+      values.push(event.data.message.user_defined.value);
     },
   });
   await instance.messaging.addMessage(response('hidden-view', 'reasoning'));
-  expect(values).toEqual([]);
+  await waitFor(() => expect(values).toEqual(['reasoning']));
+});
+
+describe('switching between mounted and headless delivery', () => {
+  const collect = (instance: any) => {
+    const values: string[] = [];
+    instance.on({
+      type: BusEventType.USER_DEFINED_RESPONSE,
+      handler: (event: any) => {
+        values.push(event.data.message.user_defined.value);
+      },
+    });
+    return values;
+  };
+  const settle = async () => {
+    for (let i = 0; i < 5; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    }
+  };
+
+  it('fires a mounted item once across a detach, and later items headlessly', async () => {
+    const { instance } =
+      await renderChatAndGetInstanceWithStore(createBaseConfig());
+    const values = collect(instance);
+    await instance.messaging.addMessage(response('mounted', 'first'));
+    await waitFor(() => expect(values).toEqual(['first']));
+    cleanup();
+    await settle();
+    expect(values).toEqual(['first']);
+    await instance.messaging.addMessage(response('after', 'second'));
+    await waitFor(() => expect(values).toEqual(['first', 'second']));
+    await settle();
+    expect(values).toEqual(['first', 'second']);
+  });
+
+  it('fires a headless item once across an attach, and later items through the view', async () => {
+    const { instance, manager, core, store } = await headless();
+    const values = collect(instance);
+    try {
+      const first = response('switch', 'first');
+      await instance.messaging.addMessage(first);
+      await waitFor(() => expect(values).toEqual(['first']));
+      const detach = manager.view.attach({
+        messaging: {} as any,
+        humanAgent: { requestFocus: () => undefined },
+        instance: { changeView: async () => undefined as any },
+      });
+      const localID = () =>
+        store.getState().allMessagesByID.switch &&
+        store
+          .getState()
+          .assistantMessageState.localMessageIDs.find(
+            (id: string) =>
+              store.getState().allMessageItemsByID[id].fullMessageID ===
+              'switch'
+          );
+      // What a mounted MessageComponent does when it renders the item.
+      core.notifyMountedReasoning(
+        localID(),
+        store.getState().allMessagesByID.switch,
+        new Set()
+      );
+      await settle();
+      expect(values).toEqual(['first']);
+      // While attached, a new item waits for the view, not the observer.
+      await instance.messaging.addMessage(response('attached', 'second'));
+      await settle();
+      expect(values).toEqual(['first']);
+      // The view never drew it; detaching hands it to headless delivery.
+      detach();
+      await waitFor(() => expect(values).toEqual(['first', 'second']));
+      await settle();
+      expect(values).toEqual(['first', 'second']);
+    } finally {
+      core.disposeReasoningObserver();
+    }
+  });
 });
 
 it('keeps per-local-item sessions and detects new reasoning positions from a chunk', async () => {

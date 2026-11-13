@@ -28,6 +28,7 @@ import {
   MessageResponse,
   MessageResponseTypes,
 } from '../../../src/types/messaging/Messages';
+import { withMessagingView } from '../helpers/viewBindings';
 
 function createHarness(config: PublicConfig = {}) {
   const store = makeConfigStore({ messaging: {}, ...config });
@@ -566,8 +567,7 @@ describe('Full response core', () => {
       .spyOn(FullResponseWorkflow.prototype, 'removeMessages')
       .mockReturnValue(pending);
     const service = new MessageCoordinator(
-      {} as ServiceManager,
-      {} as MessagePresentationPort
+      withMessagingView({} as ServiceManager, {} as MessagePresentationPort)
     );
     expect(service.receive(response())).toBe(pending);
     expect(service.removeMessages(['response-1'])).toBe(pending);

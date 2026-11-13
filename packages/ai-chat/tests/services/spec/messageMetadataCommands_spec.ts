@@ -32,6 +32,7 @@ import {
   type MessageRequest,
 } from '../../../src/types/messaging/Messages';
 import type { LocalMessageItem } from '../../../src/types/messaging/LocalMessageItem';
+import { withMessagingView } from '../helpers/viewBindings';
 
 it.each(['assistant', 'human agent'] as const)(
   'routes %s metadata by actual ingress and preserves arguments and synchronous writes',
@@ -44,14 +45,16 @@ it.each(['assistant', 'human agent'] as const)(
         handleUserDefinedResponseItems: jest.fn().mockResolvedValue(undefined),
       },
     } as unknown as ServiceManager;
-    manager.messageCoordinator = new MessageCoordinator(manager, {
-      hasCustomPromptLine: () => false,
-      announceSending: () => undefined,
-      requestComposerFocus: () => undefined,
-      closeHomeScreenIfOpen: () => undefined,
-      closeResponsePanelIfOpen: () => undefined,
-      closeHomeScreen: () => undefined,
-    });
+    manager.messageCoordinator = new MessageCoordinator(
+      withMessagingView(manager, {
+        hasCustomPromptLine: () => false,
+        announceSending: () => undefined,
+        requestComposerFocus: () => undefined,
+        closeHomeScreenIfOpen: () => undefined,
+        closeResponsePanelIfOpen: () => undefined,
+        closeHomeScreen: () => undefined,
+      })
+    );
     const item = {
       response_type: MessageResponseTypes.TEXT as const,
       text: 'answer',
@@ -124,14 +127,16 @@ it.each([false, true])(
         await pending;
       },
     } as unknown as ServiceManager;
-    manager.messageCoordinator = new MessageCoordinator(manager, {
-      hasCustomPromptLine: () => false,
-      announceSending: () => undefined,
-      requestComposerFocus: () => undefined,
-      closeHomeScreenIfOpen: () => undefined,
-      closeResponsePanelIfOpen: () => undefined,
-      closeHomeScreen: () => undefined,
-    });
+    manager.messageCoordinator = new MessageCoordinator(
+      withMessagingView(manager, {
+        hasCustomPromptLine: () => false,
+        announceSending: () => undefined,
+        requestComposerFocus: () => undefined,
+        closeHomeScreenIfOpen: () => undefined,
+        closeResponsePanelIfOpen: () => undefined,
+        closeHomeScreen: () => undefined,
+      })
+    );
     const response: MessageResponse = {
       id: 'source',
       history: {},

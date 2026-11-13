@@ -10,11 +10,6 @@
 import actions from '../store/actions';
 import { getSpeakerName } from '../utils/messageUtils';
 import type { MessageResponse } from '../../types/messaging/Messages';
-import {
-  hasCustomPromptLine,
-  requestComposerFocus,
-} from '../../chat/utils/customPromptLine';
-import { MessagePresentationAdapter } from '../../chat/services/MessagePresentationAdapter';
 import { ChatInstanceService } from './ChatInstanceService';
 import { HydrationService } from './HydrationService';
 import { InputActionsService } from './InputActionsService';
@@ -22,7 +17,6 @@ import { PublicStateService } from './PublicStateService';
 import { MessageCoordinator } from './messaging/MessageCoordinator';
 import { SlotEventService } from './messaging/presentation/SlotEventService';
 import { StreamAnnouncerService } from './messaging/presentation/StreamAnnouncerService';
-import { ViewService } from '../../chat/services/ViewService';
 import { EventBus } from '../events/EventBus';
 import { HistoryService } from './HistoryService';
 import { createCustomPanelManager } from './CustomPanelManager';
@@ -92,58 +86,10 @@ function createServiceManager(appConfig: AppConfig) {
   });
   serviceManager.slotEventService = new SlotEventService(serviceManager);
   serviceManager.hydrationService = new HydrationService(serviceManager);
-  serviceManager.viewService = new ViewService(serviceManager);
   serviceManager.eventBus = new EventBus();
   serviceManager.store = doCreateStore(publicConfig, serviceManager);
   serviceManager.publicStateService = new PublicStateService(serviceManager);
-  serviceManager.messageCoordinator = new MessageCoordinator(
-    serviceManager,
-    new MessagePresentationAdapter({
-      openHomeScreen: () =>
-        serviceManager.store.dispatch(actions.setHomeScreenIsOpen(true)),
-      openHistoryResponsePanel: (local) => {
-        serviceManager.store.dispatch(
-          actions.setResponsePanelContent(local, true)
-        );
-        serviceManager.store.dispatch(actions.setResponsePanelIsOpen(true));
-      },
-      getMessagesScrollBottom: () =>
-        serviceManager.mainWindow?.getMessagesScrollBottom(),
-      restoreMessagesScroll: (scrollBottom) =>
-        serviceManager.mainWindow?.doAutoScroll({
-          scrollToBottom: scrollBottom,
-        }),
-      announceSendFailure: () =>
-        serviceManager.store.dispatch(
-          actions.announceMessage({ messageID: 'errors_ariaMessageFailed' })
-        ),
-      announceStreamStarts: (messageID, content) =>
-        serviceManager.streamAnnouncerService.announceStreamStarts(
-          messageID,
-          content
-        ),
-      getUserDefinedResponseSlot: (id) =>
-        serviceManager.slotEventService.getOrCreateUserDefinedElement(id)
-          .slotName,
-      hasCustomPromptLine: () => hasCustomPromptLine(serviceManager),
-      requestComposerFocus: () => requestComposerFocus(serviceManager),
-      announceSending: () => {
-        if (serviceManager.ariaAnnouncer) {
-          const languagePack = serviceManager.store.getState().languagePack;
-          serviceManager.ariaAnnouncer(languagePack.input_sendingMessage);
-        }
-      },
-      isHomeScreenOpen: () =>
-        serviceManager.store.getState().persistedToBrowserStorage
-          .homeScreenState.isHomeScreenOpen,
-      closeHomeScreen: () =>
-        serviceManager.store.dispatch(actions.setHomeScreenIsOpen(false)),
-      isResponsePanelOpen: () =>
-        serviceManager.store.getState().responsePanelState.isOpen,
-      closeResponsePanel: () =>
-        serviceManager.store.dispatch(actions.setResponsePanelIsOpen(false)),
-    })
-  );
+  serviceManager.messageCoordinator = new MessageCoordinator(serviceManager);
   serviceManager.historyService = new HistoryService(serviceManager);
   serviceManager.messageCoordinator.configureMessageTimeout(publicConfig);
   serviceManager.store.subscribe(copyToSessionStorage(serviceManager));

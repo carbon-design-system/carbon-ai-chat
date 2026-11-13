@@ -11,6 +11,7 @@ import { MessageCoordinator } from '../../../src/shared/services/messaging/Messa
 import * as events from '../../../src/shared/services/messaging/coordinateMessageEvents';
 import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
 import type { MessagePresentationPort } from '../../../src/shared/services/messaging/presentationPort';
+import { withMessagingView } from '../helpers/viewBindings';
 
 it('returns the exact response-tree workflow Promise from the coordinator facade', () => {
   const result = Promise.resolve();
@@ -20,7 +21,9 @@ it('returns the exact response-tree workflow Promise from the coordinator facade
   try {
     const manager = {} as ServiceManager;
     const presentation = {} as MessagePresentationPort;
-    const core = new MessageCoordinator(manager, presentation);
+    const core = new MessageCoordinator(
+      withMessagingView(manager, presentation)
+    );
     const local = {} as Parameters<
       typeof events.coordinateUserDefinedResponseItems
     >[2];
@@ -44,8 +47,7 @@ it('returns the exact response-tree workflow Promise from the coordinator facade
 
 it('returns each remaining event workflow Promise without wrapping it', () => {
   const core = new MessageCoordinator(
-    {} as ServiceManager,
-    {} as MessagePresentationPort
+    withMessagingView({} as ServiceManager, {} as MessagePresentationPort)
   );
   const result = Promise.resolve();
   const specs: ReadonlyArray<

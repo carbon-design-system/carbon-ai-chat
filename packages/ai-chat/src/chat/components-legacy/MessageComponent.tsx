@@ -946,12 +946,14 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
    * `LocalMessageItem` wrappers that never pass through `handleUserDefinedResponseItems`, so without this
    * the host app's portal/slot machinery would never be notified and the items would render as empty slots.
    *
-   * Tracked per-item by stable id so each item fires the event once across the message's lifetime.
+   * Tracked per-item by stable id in the coordinator's session for this item, which headless delivery shares, so
+   * each item fires once across the message's lifetime even when the view attaches or detaches.
    */
   private fireReasoningUserDefinedResponseEvents() {
-    this.props.serviceManager.messageCoordinator.notifyReasoning(
-      this.firedReasoningUserDefinedIds,
-      this.props.message
+    this.props.serviceManager.messageCoordinator.notifyMountedReasoning(
+      this.props.localMessageItem.ui_state.id,
+      this.props.message,
+      this.firedReasoningUserDefinedIds
     );
   }
 
