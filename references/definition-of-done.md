@@ -14,7 +14,7 @@ Coordinate builds under the [watcher rule](commands.md#with-a-watcher-running).
 | --- | --- |
 | Agent guidance only (`AGENTS.md`, agent `references/`, skills) | `npm run validate:agents` + `npm run validate:skills` + `npm run format`; check changed commands against their scripts and review the instructions. Sync skills first if canonical files changed. |
 | Cross-cutting / multiple packages | `npm run build && npm run ci-check` |
-| `packages/ai-chat/` | `npm run build:docs --workspace=@carbon/ai-chat` + `npm run test --workspace=@carbon/ai-chat` |
+| `packages/ai-chat/` | `npm run build:docs --workspace=@carbon/ai-chat` + `npm run test --workspace=@carbon/ai-chat`; host-visible changes include a contract test in the same commit. |
 | `packages/ai-chat-components/` | `npm run build --workspace=@carbon/ai-chat-components` + `npm run test --workspace=@carbon/ai-chat-components` (runs web-components + react suites) |
 | `demo/` | `npm run build --workspace=@carbon/ai-chat-examples-demo` + `npm run test --workspace=@carbon/ai-chat-examples-demo` (Playwright) |
 | `examples/**` | `npm run build --workspace=<example>` + visual smoke via `npm run start --workspace=<example>` (load in browser, open chat, send one message, confirm no console errors) |
@@ -22,6 +22,8 @@ Coordinate builds under the [watcher rule](commands.md#with-a-watcher-running).
 | `scripts/` or `tools/` | `npm run measure -- --changed <base>`, plus the three tools on the files you changed — no new row at the default `--report` floor |
 
 Any code change also runs `npm run measure -- --changed <base>` on the working tree mid-change. At submission, run `npm run measure -- --changed <PR base> --source head`; use the parent branch for a stacked layer. In the PR, report size and flagged rows only by exception, per [caic-pr](../.bob/skills/caic-pr/SKILL.md). A clean run proves shape, not correctness — see [measuring.md](measuring.md).
+
+For each new runtime branch, name the contract test that fails when it breaks. In isolated scratch, show a clean pass, a narrow source break that fails the test, and a restored pass. Use the advisory contract coverage row to find gaps; executed lines alone do not prove assertions. Record a specific no-public-effect reason where a branch has none. Follow the [contract stop rule and manifest workflow](../packages/ai-chat/references/tests.md#contract-tests-pin-host-behavior).
 
 Always run `npm run lint` + `npm run lint:license` before opening a PR if you touched more than one file.
 
