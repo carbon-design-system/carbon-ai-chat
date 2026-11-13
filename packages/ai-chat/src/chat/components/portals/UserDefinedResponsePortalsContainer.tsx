@@ -10,6 +10,7 @@
 import React, { useRef, useEffect } from 'react';
 
 import { useRemoveHostsOnUnmount } from '../../hooks/useRemoveHostsOnUnmount';
+import { placeHosts } from '../../utils/removeHostsOnUnmount';
 import { SlotHostPortal } from './SlotHostPortal';
 
 import { ChatInstance } from '../../../types/instance/ChatInstance';
@@ -97,7 +98,7 @@ function UserDefinedResponsePortalsContainer({
       // Add it to the chat wrapper
       if (chatWrapper) {
         slotElementsRef.current.set(slot, hostElement);
-        chatWrapper.appendChild(hostElement);
+        placeHosts(chatWrapper, [hostElement]);
       }
     }
 

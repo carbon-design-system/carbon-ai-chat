@@ -34,6 +34,7 @@ import type { ResolvablePromise } from '../../chat/utils/resolvablePromise';
 import { resolvePromptLineMode } from '../../chat/components/input/promptLineMode';
 import { preloadBuildCarbonExtensions } from '../../chat/components/input/buildExtensionsLoader';
 import { consoleError } from '../../chat/utils/miscUtils';
+import { placeHosts } from '../../chat/utils/removeHostsOnUnmount';
 import {
   BusEventType,
   BusEventViewChange,
@@ -415,11 +416,6 @@ class ChatContainer extends FlattenedConfigElement {
       return;
     }
 
-    // Prepend so these host nodes land before any Lit ChildPart comment
-    // markers a parent template may have stamped into this element's light
-    // DOM. Lit only manages nodes between its start/end markers; a node
-    // prepended before the start marker is outside that range and survives
-    // parent re-renders unchanged. One call keeps them in their map order.
     const unattached: HTMLElement[] = [];
     Object.entries(writeableElements).forEach(([slot, element]) => {
       if (!element) {
@@ -432,7 +428,7 @@ class ChatContainer extends FlattenedConfigElement {
         unattached.push(element);
       }
     });
-    this.slottedContentHost.prepend(...unattached);
+    placeHosts(this.slottedContentHost, unattached);
   }
 
   /**

@@ -16,9 +16,11 @@
  */
 
 import { act, waitFor } from '@testing-library/react';
+import { html, nothing, render } from 'lit';
 
 import {
   BusEventViewChange,
+  ChatInstance,
   GenericItem,
   MessageResponseTypes,
   PageObjectId,
@@ -31,7 +33,9 @@ import {
   getByTestId,
   isInFlatTree,
   isShownWithin,
+  pause,
   responseOf,
+  userDefinedItem,
 } from '../../helpers';
 
 const HIDDEN = 'cds-aichat--hidden';
@@ -141,5 +145,89 @@ describe('cds-aichat-custom-element host content', () => {
       )
     ).toEqual([]);
     expect(isInFlatTree(instance.writeableElements.footerElement)).toBe(true);
+  });
+
+  it('keeps response output and writeable elements when a Lit host clears its last child part', async () => {
+    const out = document.createElement('span');
+    const renderUserDefinedResponse = () => out;
+    const messaging = { skipWelcome: true };
+    let instance: ChatInstance | null = null;
+    const onAfterRender = (handed: ChatInstance) => {
+      instance = handed;
+    };
+    const root = document.body.appendChild(document.createElement('div'));
+    // No whitespace before the closing tag, so the banner's part runs to the
+    // end of the element's children, and clearing it clears everything after.
+    const view = (banner: boolean) =>
+      html`<cds-aichat-custom-element
+        .openChatByDefault=${true}
+        .messaging=${messaging}
+        .renderUserDefinedResponse=${renderUserDefinedResponse}
+        .onAfterRender=${onAfterRender}
+        >${banner ? html`<p>Banner</p>` : nothing}</cds-aichat-custom-element
+      >`;
+    await act(async () => {
+      render(view(true), root);
+    });
+    await waitFor(() => expect(instance).not.toBeNull(), { timeout: 10000 });
+    await act(() =>
+      instance.messaging.addMessage(
+        responseOf('r1', [userDefinedItem('u1', {})])
+      )
+    );
+    await waitFor(() => expect(out.isConnected).toBe(true));
+
+    await act(async () => {
+      render(view(false), root);
+    });
+    await pause();
+
+    expect(root.textContent).not.toContain('Banner');
+    expect(out.isConnected).toBe(true);
+    expect(isShownWithin(out, getByTestId(PageObjectId.MAIN_PANEL))).toBe(true);
+    expect(
+      Object.values(instance.writeableElements).filter(
+        (node) => !node.isConnected
+      )
+    ).toEqual([]);
+    expect(isInFlatTree(instance.writeableElements.footerElement)).toBe(true);
+  });
+
+  it('keeps response output in the order the responses arrived', async () => {
+    const outputs = new Map<string, HTMLElement>();
+    const { instance } = await mount({
+      openChatByDefault: true,
+      renderUserDefinedResponse: ({
+        messageItem,
+      }: {
+        messageItem: GenericItem;
+      }) => {
+        const { name } = messageItem.user_defined as { name: string };
+        if (!outputs.has(name)) {
+          const output = document.createElement('span');
+          output.textContent = name;
+          outputs.set(name, output);
+        }
+        return outputs.get(name);
+      },
+    });
+    await act(() =>
+      instance.messaging.addMessage(
+        responseOf('r1', [userDefinedItem('u1', { name: 'first' })])
+      )
+    );
+    await act(() =>
+      instance.messaging.addMessage(
+        responseOf('r2', [userDefinedItem('u2', { name: 'second' })])
+      )
+    );
+    await waitFor(() => expect(outputs.get('second')?.isConnected).toBe(true));
+    const shown = [...outputs.values()].sort((a, b) =>
+      a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
+    );
+    expect(shown.map((output) => output.textContent)).toEqual([
+      'first',
+      'second',
+    ]);
   });
 });
