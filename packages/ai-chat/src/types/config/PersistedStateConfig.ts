@@ -60,9 +60,10 @@ export interface PersistedStateConfig {
   /**
    * Called once for each change to the persistable session state, so the host can store it wherever it
    * likes (its own backend, `localStorage`, and so on). Replaces the internal `sessionStorage` write.
-   * Changes are compared by value: an update that leaves every field equal isn't reported, and a mount
-   * that changes nothing makes no call. The argument is the complete {@link PersistableState}; persist
-   * it verbatim so it can later seed {@link PersistedStateConfig.initialState}.
+   * Changes are compared by value: an update that leaves every field equal isn't reported. The initial view
+   * transition is reported once, including a restored open view. A mount that leaves the saved values unchanged
+   * makes no call. The argument is the complete {@link PersistableState}; persist it verbatim so it can later seed
+   * {@link PersistedStateConfig.initialState}.
    *
    * @experimental
    */

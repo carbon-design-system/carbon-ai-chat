@@ -26,22 +26,12 @@ import { toPersistableState } from './persistenceUtils';
 function copyToSessionStorage(serviceManager: ServiceManager) {
   let previousPersistedToBrowserStorage =
     serviceManager.store.getState().persistedToBrowserStorage;
-  // The chat boots with its views closed, then opens the view it starts in. That first view change
-  // isn't a change to the session, so the comparison starts from the view the chat boots into. Once
-  // the first view change settles, the comparison restarts from the state it left, so a handler that
-  // cancelled it doesn't hide a later change to the view it would have opened.
-  let previousPersistableState = toPersistableState({
-    ...previousPersistedToBrowserStorage,
-    viewState: serviceManager.store.getState().targetViewState,
-  });
-  let settledInitialView = false;
+  let previousPersistableState = toPersistableState(
+    previousPersistedToBrowserStorage
+  );
   return () => {
-    const { persistedToBrowserStorage, config, initialViewChangeComplete } =
+    const { persistedToBrowserStorage, config } =
       serviceManager.store.getState();
-    if (!settledInitialView && initialViewChangeComplete) {
-      settledInitialView = true;
-      previousPersistableState = toPersistableState(persistedToBrowserStorage);
-    }
     const persistChatSession =
       previousPersistedToBrowserStorage !== persistedToBrowserStorage;
 
