@@ -24,6 +24,7 @@ import {
 } from '../../../../types/messaging/Messages';
 import actions from '../../../store/actions';
 import { closeWorkspaceForNext } from '../../../services/CustomPanelInstance';
+import { consoleError } from '../../../utils/miscUtils';
 
 interface PreviewCardComponentProps {
   localMessageItem: LocalMessageItem;
@@ -71,12 +72,20 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
       })
     );
 
-    // Open the panel - it will fire WORKSPACE_PRE_OPEN and WORKSPACE_OPEN events
-    panel.open({
-      ...workspace_options,
-      workspaceId: workspace_id,
-      additionalData: additional_data,
-    });
+    // Open the panel - it will fire WORKSPACE_PRE_OPEN and WORKSPACE_OPEN events. Nothing awaits the click, so a
+    // workspace handler that throws is logged here.
+    panel
+      .open({
+        ...workspace_options,
+        workspaceId: workspace_id,
+        additionalData: additional_data,
+      })
+      .catch((error) => {
+        consoleError(
+          'A workspace open handler failed while a preview card opened its workspace.',
+          error
+        );
+      });
   }, [
     workspace_id,
     workspace_options,

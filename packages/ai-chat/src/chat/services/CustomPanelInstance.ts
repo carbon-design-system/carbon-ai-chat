@@ -66,6 +66,10 @@ function createCustomPanelInstance(
     working: { message: Message; localItems: Record<string, LocalMessageItem> };
   };
 
+  // How many workspace event handlers are running. A call made while one runs skips the queue below, since the call
+  // that fired the event can't finish until the handler does.
+  let workspaceHandlersRunning = 0;
+
   function captureWorkspaceEvent() {
     const { store } = serviceManager;
     const { workspaceID, localMessageItem, fullMessage, additionalData } =
@@ -156,12 +160,14 @@ function createCustomPanelInstance(
     const ownsData =
       workspaceValues?.working === working &&
       workspaceValues?.stored === before.additionalData;
+    workspaceHandlersRunning++;
     try {
       await serviceManager.eventBus.fire(
         { type, data },
         serviceManager.instance
       );
     } finally {
+      workspaceHandlersRunning--;
       let current = store.getState().workspacePanelState;
       if (
         messageEvent &&
@@ -333,10 +339,11 @@ function createCustomPanelInstance(
   };
 
   // A workspace's opens and closes wait on event handlers, so they run one after another in call order: a call
-  // starts once the one before it has finished.
+  // starts once the one before it has finished. A call made while a workspace event handler runs starts at once
+  // instead, so a handler can await it.
   let workspaceQueue: Promise<unknown> = Promise.resolve();
   function inOrder(run: () => Promise<void>): Promise<void> {
-    if (panelType !== PanelType.WORKSPACE) {
+    if (panelType !== PanelType.WORKSPACE || workspaceHandlersRunning > 0) {
       return run();
     }
     const result = workspaceQueue.then(run);
