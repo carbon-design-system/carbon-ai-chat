@@ -24,6 +24,7 @@ import {
   type ItemPlan,
   PublicMessageItemsProjection,
   itemIDsByLocalID,
+  localIDsByItemID,
   planMessageItems,
   planSources,
 } from './publicMessageItems';
@@ -377,6 +378,14 @@ export class PublicStateSnapshotCache {
     localItemID: string
   ): string | undefined {
     return itemIDsByLocalID(this.getItemPlans(state).plans).get(localItemID);
+  }
+
+  /**
+   * The ID of the local item a public item draws in a state, or `undefined` when the state has no
+   * such item. It reads the same plan as {@link messageItemIDOf}.
+   */
+  localItemIDOf(state: ConversationState, itemID: string): string | undefined {
+    return localIDsByItemID(this.getItemPlans(state).plans).get(itemID);
   }
 
   /** The plan of `messageItems` for a state, shared with the next state whose messages didn't change. */

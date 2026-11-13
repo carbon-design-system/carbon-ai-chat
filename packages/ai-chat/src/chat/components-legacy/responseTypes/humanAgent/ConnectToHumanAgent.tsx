@@ -15,6 +15,7 @@ import { HasRequestFocus } from '../../../../types/utilities/HasRequestFocus';
 import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
 import { useSelector } from '../../../hooks/useSelector';
 import { usePublicChatState } from '../../../hooks/usePublicChatState';
+import { useMessageItem } from '../../../hooks/useDrawnMessageItems';
 import { shallowEqual } from '../../../../sdk/store/appStore';
 import { humanAgentDisplayStateOf } from '../../../../sdk/store/selectors';
 import { RealConnectToHumanAgent } from './RealConnectToHumanAgent';
@@ -71,6 +72,10 @@ function ConnectToHumanAgent(props: ConnectToHumanAgentProps) {
     (state: AppState) => state.humanAgentState.activeLocalMessageID
   );
 
+  // What the chat found about agents when it got the card.
+  const onlineStatus = useMessageItem(localMessage.ui_state.id)?.humanAgent
+    ?.onlineStatus;
+
   const hasServiceDesk = useSelector((state: AppState) =>
     Boolean(state.config.public.serviceDeskFactory)
   );
@@ -87,6 +92,7 @@ function ConnectToHumanAgent(props: ConnectToHumanAgentProps) {
         serviceManager={serviceManager}
         disableUserInputs={childDisableUserInputs}
         activeLocalMessageID={activeLocalMessageID}
+        onlineStatus={onlineStatus}
         humanAgent={humanAgent}
         agentDisplayState={agentDisplayState}
         requestFocus={requestFocus}

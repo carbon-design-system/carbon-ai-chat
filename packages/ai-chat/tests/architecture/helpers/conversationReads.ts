@@ -36,7 +36,9 @@ const SDK_ROUTES = new Set([
  *   such as `persistedToBrowserStorage.humanAgentState.isConnected`.
  * - a use of a reader that reads one, written as `name()`. A reader is a
  *   function in `src/` with a parameter that holds part of the store state, a
- *   store, or a service manager. The SDK instance's builder isn't one.
+ *   store, or a service manager, or a hook (`use…`) whose body reads one, so a
+ *   component that gets conversation data from a hook counts too. The SDK
+ *   instance's builder isn't one.
  *
  * It uses the type checker, so a read through a destructured state, a
  * selector callback's parameter, or a re-exported selector still counts. Each
@@ -165,7 +167,7 @@ export function conversationReads(
       symbol = checker.getAliasedSymbol(symbol);
     }
     const declaration = symbol?.valueDeclaration;
-    const fn = declaration && readerFunction(declaration);
+    const fn = declaration && readerFunction(declaration, symbol.name);
     if (!fn || !inScope(fn, symbol.name)) {
       return undefined;
     }
@@ -177,8 +179,8 @@ export function conversationReads(
     return readers.get(fn) ? symbol.name : undefined;
   };
 
-  /** The function, when a parameter holds state, a store, or a manager. */
-  const readerFunction = (declaration: ts.Declaration) => {
+  /** The function, when a parameter holds state, a store, or a manager, or it's a hook. */
+  const readerFunction = (declaration: ts.Declaration, name: string) => {
     const fn =
       ts.isVariableDeclaration(declaration) && declaration.initializer
         ? declaration.initializer
@@ -190,9 +192,10 @@ export function conversationReads(
     ) {
       return undefined;
     }
-    return fn.parameters.some((parameter) =>
-      holdsState(checker.getTypeAtLocation(parameter))
-    )
+    return /^use[A-Z]/.test(name) ||
+      fn.parameters.some((parameter) =>
+        holdsState(checker.getTypeAtLocation(parameter))
+      )
       ? fn
       : undefined;
   };

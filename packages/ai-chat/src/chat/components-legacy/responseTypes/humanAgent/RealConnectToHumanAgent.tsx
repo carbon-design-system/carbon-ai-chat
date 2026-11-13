@@ -63,6 +63,12 @@ interface RealConnectToHumanAgentProps
   activeLocalMessageID?: string;
 
   /**
+   * Whether agents were online when the chat got this card, from the card's entry in
+   * `instance.state.messageItems`. `null` means the chat checked and got no answer.
+   */
+  onlineStatus?: HumanAgentsOnlineStatus | null;
+
+  /**
    * The agent state, as public state publishes it.
    */
   humanAgent: PublicChatHumanAgentState;
@@ -110,6 +116,7 @@ function RealConnectToHumanAgent(props: RealConnectToHumanAgentProps) {
     disableUserInputs,
     serviceManager,
     activeLocalMessageID,
+    onlineStatus,
     requestFocus,
     agentDisplayState,
     humanAgent,
@@ -211,8 +218,7 @@ function RealConnectToHumanAgent(props: RealConnectToHumanAgentProps) {
   }
 
   const noHumanAgentsWereOnline =
-    originalMessage.ui_state_internal?.agent_availability ===
-    HumanAgentsOnlineStatus.OFFLINE;
+    onlineStatus === HumanAgentsOnlineStatus.OFFLINE;
   if (noHumanAgentsWereOnline) {
     // Display the "agents are not available" message that was configured in the skill or show a default value if
     // there is none.

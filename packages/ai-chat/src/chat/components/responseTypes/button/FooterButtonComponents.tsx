@@ -9,9 +9,8 @@
 
 import cx from 'classnames';
 import React from 'react';
-import { useSelector } from '../../../hooks/useSelector';
+import { useNestedMessageItems } from '../../../hooks/useDrawnMessageItems';
 
-import { AppState } from '../../../../types/state/AppState';
 import { MessageTypeComponentProps } from '../../../components-legacy/MessageTypeComponentProps';
 
 interface FooterButtonComponentsProps extends MessageTypeComponentProps {
@@ -27,12 +26,13 @@ interface FooterButtonComponentsProps extends MessageTypeComponentProps {
  * {@link #BodyMessageComponents}.
  */
 function FooterButtonComponents(props: FooterButtonComponentsProps) {
-  const allMessageItemsByID = useSelector(
-    (state: AppState) => state.allMessageItemsByID
+  const nestedItems = useNestedMessageItems(
+    props.message.ui_state.id,
+    'footer'
   );
-  const buttonComponents =
-    props.message.ui_state.footerLocalMessageItemIDs?.map((nestedMessageID) => {
-      const nestedLocalMessage = allMessageItemsByID[nestedMessageID];
+  const buttonComponents = nestedItems.map(
+    ({ localMessageItem: nestedLocalMessage }) => {
+      const nestedMessageID = nestedLocalMessage.ui_state.id;
       // Build a local view object that does not mutate the store state, the `is: 'standard-button'` override is a rendering concern only
       const messageWithStandardButton = {
         ...nestedLocalMessage,
@@ -47,8 +47,9 @@ function FooterButtonComponents(props: FooterButtonComponentsProps) {
           })}
         </React.Fragment>
       );
-    });
-  const totalButtons = buttonComponents?.length ?? 0;
+    }
+  );
+  const totalButtons = buttonComponents.length;
   const isColumnList = totalButtons > 2;
 
   return totalButtons ? (

@@ -376,6 +376,24 @@ export function itemIDsByLocalID(
   return index;
 }
 
+/** Each plan list's local item IDs by item ID, built once per list. */
+const localIDIndexes = new WeakMap<
+  readonly ItemPlan[],
+  ReadonlyMap<string, string>
+>();
+
+/** The ID of the local item each planned item draws, keyed by the item's public ID. */
+export function localIDsByItemID(
+  plans: readonly ItemPlan[]
+): ReadonlyMap<string, string> {
+  let index = localIDIndexes.get(plans);
+  if (!index) {
+    index = new Map(plans.map((plan) => [plan.id, plan.local.ui_state.id]));
+    localIDIndexes.set(plans, index);
+  }
+  return index;
+}
+
 function planValues(plan: ItemPlan): unknown[] {
   const { streamingState } = plan.local.ui_state;
   return [

@@ -194,6 +194,24 @@ import type { ServiceManager } from '../../sdk/services/ServiceManager';
     expect(reads.get(read)).toBe(counts.get(read) + 1);
   });
 
+  it('fails a component that gets the chat objects from a hook', () => {
+    const reads = readsWith({
+      [planted]:
+        header +
+        "import { useNestedMessageItems } from '../hooks/useDrawnMessageItems';\nexport function useBody(id: string) { return useNestedMessageItems(id, 'body')[0]?.message; }",
+    });
+    expect([...reads]).toContain(`${planted}: useNestedMessageItems()`);
+  });
+
+  it('passes a hook that reads no conversation data', () => {
+    const reads = readsWith({
+      [planted]:
+        header +
+        "import { useMessageItem } from '../hooks/useDrawnMessageItems';\nexport function useOrigin(id: string) { return useMessageItem(id)?.origin; }",
+    });
+    expect([...reads].filter((read) => read.startsWith(planted))).toEqual([]);
+  });
+
   it('passes building the SDK instance, whose verbs read for it', () => {
     const reads = readsWith({
       [planted]:

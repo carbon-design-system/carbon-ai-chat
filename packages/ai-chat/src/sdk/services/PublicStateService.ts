@@ -118,7 +118,7 @@ export class PublicStateService {
   /**
    * The public item ID (`ChatSDKMessageItem.id`) of the local item with this ID, or `undefined`
    * when the list doesn't draw it. Internal: the prebuilt list keys its per-item view state by
-   * this ID while it still draws local items.
+   * this ID, and its renderers still get local items.
    *
    * @param localItemID The local item's ID (`ui_state.id`).
    * @param state The store state to read, the chat's current state by default.
@@ -128,6 +128,21 @@ export class PublicStateService {
     state: ConversationState = this.serviceManager.store.getState()
   ): string | undefined {
     return this.cache.messageItemIDOf(state, localItemID);
+  }
+
+  /**
+   * The ID of the local item (`ui_state.id`) a public item draws, or `undefined` when the state has
+   * no such item. Internal: the prebuilt list draws the items in `messageItems`, and finds the local
+   * item behind each one with it.
+   *
+   * @param itemID The public item ID (`ChatSDKMessageItem.id`).
+   * @param state The store state to read, the chat's current state by default.
+   */
+  localItemIDOf(
+    itemID: string,
+    state: ConversationState = this.serviceManager.store.getState()
+  ): string | undefined {
+    return this.cache.localItemIDOf(state, itemID);
   }
 
   destroy(): void {

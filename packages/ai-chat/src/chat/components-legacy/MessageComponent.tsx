@@ -70,6 +70,7 @@ import {
   LocalMessageItem,
   MessageErrorState,
 } from '../../types/messaging/LocalMessageItem';
+import type { ChatSDKMessageItem } from '../../types/instance/ChatSDKState';
 import { FileStatusValue } from '../../sdk/utils/constants';
 import { doFocusRef } from '../utils/domUtils';
 import {
@@ -186,6 +187,12 @@ interface MessageProps
    * The local message item that is part of the original message.
    */
   localMessageItem: LocalMessageItem;
+
+  /**
+   * The item's entry in `instance.state.messageItems`. Where the item came from and what the chat
+   * found about agents are read from it.
+   */
+  messageItem: Readonly<ChatSDKMessageItem>;
 
   /**
    * Whether a screen reader should announce this item when it's drawn, from
@@ -515,13 +522,13 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       return true;
     }
 
-    const { localMessageItem, message } = this.props;
+    const { localMessageItem, messageItem } = this.props;
 
     // If the message is a CTA, has a service desk error, and we're supposed to report service desk errors, then we
     // need to render the failed message.
     return (
       isConnectToHumanAgent(localMessageItem.item) &&
-      message.ui_state_internal?.agent_no_service_desk
+      messageItem.humanAgent?.noServiceDesk
     );
   }
 
@@ -1292,7 +1299,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     const { isIntermediateStreaming } = localMessageItem.ui_state;
     const messageItem = localMessageItem.item;
     const responseType = messageItem.response_type;
-    const fromHistory = message.ui_state_internal?.from_history;
+    const fromHistory = this.props.messageItem.origin === 'history';
     const readWidgetSaid = isFirstMessageItem;
 
     if (
