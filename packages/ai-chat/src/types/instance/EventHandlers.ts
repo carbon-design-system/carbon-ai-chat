@@ -14,6 +14,10 @@ import type { ChatInstance } from './ChatInstance';
  * This is a subset of the public interface that is managed by the event bus that is used for registering and
  * unregistering event listeners on the bus.
  *
+ * If a handler throws or its promise rejects, the chat skips the later handlers for that event, and the chat action
+ * that fired it rejects with that error. {@link BusEventType.STATE_CHANGE} is the exception: the chat logs the error
+ * and still runs the other handlers.
+ *
  * @category Instance
  */
 export interface EventHandlers {

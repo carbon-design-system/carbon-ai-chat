@@ -140,7 +140,6 @@ describe('updateCatastrophicErrorPanel', () => {
     await waitFor(() => expect(panelCount()).toBe(1));
     await update(instance, { isOpen: false });
     await waitFor(() => expect(panelCount()).toBe(0));
-    // MAIN-NOTES M51: its JSDoc says the call fires an event; no host event fires.
     expect(events.types()).toEqual([]);
     expect(instance.getState()).toEqual(before);
   });

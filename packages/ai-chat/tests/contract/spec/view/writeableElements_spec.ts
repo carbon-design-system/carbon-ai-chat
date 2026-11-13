@@ -188,9 +188,6 @@ const CONVERSATION = [
 /** Where `CONVERSATION` shows on `main`, around its landmarks. */
 const CONVERSATION_LAYOUT = [
   PageObjectId.CLOSE_CHAT,
-  // `main` differs from its JSDoc (MAIN-NOTES M42): the JSDoc puts the fixed
-  // actions "before close/minimize buttons"; they render after the close
-  // button.
   N.HEADER_FIXED_ACTIONS_ELEMENT,
   N.HEADER_BOTTOM_ELEMENT,
   N.BEFORE_INPUT_ELEMENT,

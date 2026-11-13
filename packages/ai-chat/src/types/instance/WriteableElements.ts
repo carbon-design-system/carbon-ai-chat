@@ -50,7 +50,7 @@ export enum WriteableElementName {
   HEADER_BOTTOM_ELEMENT = 'headerBottomElement',
 
   /**
-   * An element that appears in the header's fixed-actions slot (before close/minimize buttons).
+   * An element that appears in the header's fixed-actions slot, after the header's built-in buttons.
    */
   HEADER_FIXED_ACTIONS_ELEMENT = 'headerFixedActionsElement',
 

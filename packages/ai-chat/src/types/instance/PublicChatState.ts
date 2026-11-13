@@ -214,6 +214,11 @@ export type PublicChatState = Readonly<
      * State for the workspace panel.
      */
     workspace: PublicWorkspaceCustomPanelState;
+
+    /**
+     * State for the history panel. The same value as `customPanels.history`.
+     */
+    history?: PublicHistoryPanelState;
   }
 >;
 

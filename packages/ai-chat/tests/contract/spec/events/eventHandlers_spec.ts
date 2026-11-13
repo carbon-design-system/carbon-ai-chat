@@ -380,7 +380,6 @@ describeShared('handlers while an event runs', (makeDriver) => {
     await finishSend({ sent, done });
   });
 
-  // Not in the JSDoc (MAIN-NOTES M36).
   it('skips the later handlers for an event when one throws, and runs them all for the next', async () => {
     const chat = await makeDriver();
     const later = jest.fn();

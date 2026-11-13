@@ -184,6 +184,9 @@ interface ChatActions {
    * includes all of the views then all of the views will be changed accordingly. If a partial {@link ViewState} is
    * provided then only the views provided will be changed.
    *
+   * The promise rejects if another view change is still running, for example when a view event handler calls
+   * `changeView`. It also rejects with the error a view event handler throws.
+   *
    * @example Open the main window
    * ```ts
    * import { ViewType } from "@carbon/ai-chat";
@@ -196,7 +199,7 @@ interface ChatActions {
    * await instance.changeView({ launcher: false, mainWindow: true });
    * ```
    */
-  changeView: (newView: ViewType | ViewState) => Promise<void>;
+  changeView: (newView: ViewType | Partial<ViewState>) => Promise<void>;
 
   /**
    * Returns the list of writable elements.
@@ -234,8 +237,9 @@ interface ChatActions {
   scrollToMessage: (messageID: string, animate?: boolean) => void;
 
   /**
-   * Fires an event that will open or close the Catastrophic Error Panel in the chat. This also accepts a
-   * custom title and body text (markdown supported) to be displayed in the Catastrophic Error Panel.
+   * Opens or closes the Catastrophic Error Panel in the chat. This also accepts a custom title and body text
+   * (markdown supported) to be displayed in the Catastrophic Error Panel. The call fires no event, and the panel's
+   * state isn't part of {@link ChatInstance.state}.
    *
    * Each call replaces the panel's state from the call before. A call without a title or body text shows the
    * default text from {@link PublicConfig.strings}, and a call without `hideRetryButton` shows the retry button.

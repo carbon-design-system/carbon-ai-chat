@@ -19,7 +19,7 @@ import { ChatInstance, ViewState, ViewType } from '../../../src/aiChatEntry';
 /** Calls `changeView` the way a host would, and waits for it. */
 export async function changeView(
   instance: ChatInstance,
-  view: ViewType | ViewState
+  view: ViewType | Partial<ViewState>
 ): Promise<void> {
   await act(async () => {
     await instance.changeView(view);

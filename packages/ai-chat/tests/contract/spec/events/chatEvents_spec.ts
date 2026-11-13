@@ -202,8 +202,6 @@ describe('header:menuClick from the overflow menu', () => {
     expect(link.getAttribute('href')).toBe('#contract-docs');
     const events = recordEvents(instance, [BusEventType.HEADER_MENU_CLICK]);
     await click(link);
-    // `main` differs from the event's JSDoc, which covers every overflow item:
-    // an `href` option gets no click handler (MAIN-NOTES M43).
     expect(menuClicks(events, HeaderMenuClickType.OVERFLOW_MENU_ITEM)).toEqual(
       []
     );
@@ -370,8 +368,6 @@ describe('disclaimer acceptance', () => {
         messaging: { customSendMessage: backend.customSendMessage },
       })
     );
-    // The disclaimer gates what the user sees, not the welcome request, though
-    // its docs say it shows before a user can start chatting (MAIN-NOTES M44).
     const welcome = await backend.next();
     expect(welcome.request.input.text).toBe('');
     expect(instance.getState().disclaimersAccepted).toEqual({});
