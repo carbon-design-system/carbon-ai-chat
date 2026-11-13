@@ -153,6 +153,8 @@ export const sdkMessagingMembers: Record<keyof ChatSDKInstanceMessaging, true> =
     stop: true,
     failTurn: true,
     clearError: true,
+    addFile: true,
+    removeFile: true,
     upsertMessage: true,
     removeMessages: true,
     clearConversation: true,
@@ -188,6 +190,17 @@ export const failedWith: Promise<void> = chat.messaging.failTurn({
   error: { message: 'The stream closed.', otherData: new Error('closed') },
 });
 export const cleared: void = sdk.messaging.clearError();
+
+// Files: addFile resolves with the ID removeFile takes (#2351).
+export const attached: Promise<{ id: string }> = sdk.messaging.addFile(
+  new File(['x'], 'x.txt')
+);
+sdk.messaging.removeFile('upload-1');
+// Optional in 1.x (D13), so strict code reads it with `?.`.
+export const uploadStatus: 'uploading' | 'complete' | 'error' | undefined =
+  sdk.state.get().pendingUploads?.[0]?.status;
+// @ts-expect-error A file is required.
+sdk.messaging.addFile();
 // @ts-expect-error The error's type is always MESSAGE_COMMUNICATION.
 sdk.messaging.failTurn({ error: { errorType: 'other' } });
 
@@ -205,6 +218,8 @@ export const sdkStateFields: Record<keyof ChatSDKState, true> = {
   messages: true,
   status: true,
   error: true,
+  pendingUploads: true,
+  hasInFlightUploads: true,
   humanAgent: true,
   activeResponseId: true,
 };

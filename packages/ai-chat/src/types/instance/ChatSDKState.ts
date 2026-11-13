@@ -8,7 +8,7 @@
  */
 
 import type { PersistedHumanAgentState } from '../state/PersistedHumanAgentState';
-import type { Message } from '../messaging/Messages';
+import type { Message, StructuredData } from '../messaging/Messages';
 import type { ChatSDKErrorData } from '../config/ChatSDKErrorData';
 
 /**
@@ -30,6 +30,31 @@ import type { ChatSDKErrorData } from '../config/ChatSDKErrorData';
  */
 export type ConversationStatus =
   'ready' | 'loading' | 'submitted' | 'streaming' | 'error';
+
+/**
+ * A file on its way into the next message.
+ *
+ * @category SDK
+ */
+export interface ChatSDKPendingUpload {
+  /** Made by the chat. {@link ChatSDKInstanceMessaging.addFile} resolves with it, and `removeFile` takes it. */
+  readonly id: string;
+
+  /** The file that was added. */
+  readonly file: File;
+
+  /** Whether the file is still uploading, finished, or failed. */
+  readonly status: 'uploading' | 'complete' | 'error';
+
+  /** What your `onFileUpload` returned, once it resolved. */
+  readonly contributedData?: StructuredData;
+
+  /**
+   * Why the file failed, when `status` is `'error'`: the message your `onFileUpload` threw, or, for
+   * a file staged for a service desk, the message the desk reported.
+   */
+  readonly errorMessage?: string;
+}
 
 /**
  * Current connection state of the human agent experience.
@@ -81,6 +106,26 @@ export interface ChatSDKState {
    * Optional in 1.x so that objects typed as this state still compile; the chat always sets it.
    */
   readonly error?: Readonly<ChatSDKErrorData> | null;
+
+  /**
+   * Files attached to the next message, in the order they were added. Each entry shows its upload
+   * status. {@link ChatSDKInstanceMessaging.addFile} adds one, and
+   * {@link ChatSDKInstanceMessaging.removeFile} takes one out. The next send carries them, then the
+   * list empties. During a human agent conversation it lists the files for the service desk, which
+   * transfers them when the message is sent; until then they show as `'complete'`. A restart keeps
+   * them, as it keeps the prebuilt input's attachments.
+   *
+   * Optional in 1.x so that objects typed as this state still compile; the chat always sets it.
+   */
+  readonly pendingUploads?: readonly ChatSDKPendingUpload[];
+
+  /**
+   * `true` while any file in `pendingUploads` is still uploading.
+   * {@link ChatSDKInstanceMessaging.send} rejects while it's `true`.
+   *
+   * Optional in 1.x so that objects typed as this state still compile; the chat always sets it.
+   */
+  readonly hasInFlightUploads?: boolean;
 
   /**
    * Current human agent state.

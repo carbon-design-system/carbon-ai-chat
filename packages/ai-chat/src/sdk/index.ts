@@ -32,6 +32,7 @@ export type {
   ChatSDKInstance,
 } from '../types/instance/ChatSDKInstance';
 export type {
+  ChatSDKPendingUpload,
   ChatSDKState,
   ChatSDKStateAccess,
 } from '../types/instance/ChatSDKState';
@@ -44,3 +45,4 @@ export type {
 } from '../types/config/ChatSDKInstanceMessaging';
 export type { ChatSDKPersistedStateConfig } from '../types/config/ChatSDKPersistedStateConfig';
 export type { ChatSDKServiceDeskConfig } from '../types/config/ChatSDKServiceDeskConfig';
+export type { ChatSDKUploadConfig } from '../types/config/ChatSDKUploadConfig';

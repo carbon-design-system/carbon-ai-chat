@@ -300,7 +300,8 @@ describe('upload UI wiring – handleFileSelectedForUpload', () => {
     consoleSpy.mockRestore();
   });
 
-  it('logs an error at startup when onFileUpload is provided but isOn is omitted', async () => {
+  // #2351 O5: isOn only draws the attach button, so onFileUpload alone is valid config.
+  it('logs no error at startup when onFileUpload is provided but isOn is omitted (#2351 O5)', async () => {
     const consoleSpy = jest
       .spyOn(console, 'error')
       .mockImplementation(() => {});
@@ -312,8 +313,8 @@ describe('upload UI wiring – handleFileSelectedForUpload', () => {
 
     await renderChatAndGetInstanceWithStore(config);
 
-    expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining('isOn is not true')
+    expect(consoleSpy).not.toHaveBeenCalledWith(
+      expect.stringContaining('[upload]')
     );
 
     consoleSpy.mockRestore();

@@ -13,6 +13,9 @@ import { ConversationState } from '../../types/state/ConversationState';
 import { PublicChatState } from '../../types/instance/PublicChatState';
 import { deepFreeze } from './lang/objectUtils';
 import { selectHasInFlightUpload, selectInputState } from '../store/selectors';
+import type { PendingUpload } from '../../types/state/InputState';
+import type { FileUpload } from '../../types/config/ServiceDeskConfig';
+import type { ChatSDKPendingUpload } from '../../types/instance/ChatSDKState';
 import {
   PublicMessagesProjection,
   publicMessagesSources,
@@ -42,6 +45,58 @@ export interface PublicStateProjectionObserver {
 
 function freezeClone<T>(value: T): T {
   return deepFreeze(cloneDeep(value));
+}
+
+/**
+ * A pending upload as hosts see it. The `File` passes through by reference and isn't frozen, since
+ * it's the host's own object.
+ */
+function publicPendingUpload(upload: PendingUpload): ChatSDKPendingUpload {
+  return cachedEntry(upload, () =>
+    Object.freeze({
+      id: upload.id,
+      file: upload.file,
+      status: upload.status,
+      ...(upload.contributedData && {
+        contributedData: freezeClone(upload.contributedData),
+      }),
+      ...(upload.errorMessage !== undefined && {
+        errorMessage: upload.errorMessage,
+      }),
+    })
+  );
+}
+
+/**
+ * Each store entry's public copy. Store entries are replaced when they change, so an entry that
+ * didn't change keeps its public object while another upload settles.
+ */
+const publicEntries = new WeakMap<object, ChatSDKPendingUpload>();
+
+function cachedEntry(
+  entry: object,
+  build: () => ChatSDKPendingUpload
+): ChatSDKPendingUpload {
+  let cached = publicEntries.get(entry);
+  if (!cached) {
+    cached = build();
+    publicEntries.set(entry, cached);
+  }
+  return cached;
+}
+
+/** A file staged for the service desk, which transfers it when the message is sent. */
+function publicDeskFile(upload: FileUpload): ChatSDKPendingUpload {
+  return cachedEntry(upload, () =>
+    Object.freeze({
+      id: upload.id,
+      file: upload.file,
+      status: upload.isError ? 'error' : 'complete',
+      ...(upload.errorMessage !== undefined && {
+        errorMessage: upload.errorMessage,
+      }),
+    })
+  );
 }
 
 function sameSources(
@@ -85,6 +140,8 @@ const PUBLIC_FIELD_ORDER: readonly PublicStateField[] = [
   'humanAgent',
   'status',
   'error',
+  'pendingUploads',
+  'hasInFlightUploads',
   'isMessageLoadingCounter',
   'isMessageLoadingText',
   'isHydratingCounter',
@@ -125,6 +182,23 @@ const fieldDefinitions: readonly PublicStateFieldDefinition[] = [
     name: 'error',
     // Already frozen when the conversation failed; otherData keeps its reference.
     sources: (state) => [state.conversationError],
+    project: ([value]) => value,
+  },
+  {
+    name: 'pendingUploads',
+    sources: (state) => {
+      const input = selectInputState(state);
+      return [input.pendingUploads, input.files];
+    },
+    project: ([uploads, deskFiles]) =>
+      Object.freeze([
+        ...(uploads as PendingUpload[]).map(publicPendingUpload),
+        ...(deskFiles as FileUpload[]).map(publicDeskFile),
+      ]),
+  },
+  {
+    name: 'hasInFlightUploads',
+    sources: (state) => [selectHasInFlightUpload(state)],
     project: ([value]) => value,
   },
   {

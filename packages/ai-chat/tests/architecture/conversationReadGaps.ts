@@ -22,12 +22,14 @@
  * - #2693: messages and message items, which the message model replaces, and
  *   restart in progress.
  * - #2352: the agent state the interface shows beyond the connection.
- * - #2351: pending uploads.
  * - #2747: read-only state, the history load trigger, and attaching the view.
  * - #2748: the shell's home screen and loading decisions.
  * - #2751: the input slice, its routing to the agent, and its flags,
  *   including when the Stop button shows. Hosts tell whether a turn can be
- *   stopped from `status` (#2693 O8, amended November 10).
+ *   stopped from `status` (#2693 O8, amended November 10). Also the
+ *   service desk's upload limits and the files staged for it. Hosts read
+ *   pending uploads from `state.pendingUploads` and `hasInFlightUploads`
+ *   (#2693 O7, amended November 10).
  * - #1741: slot bookkeeping. #1732: saving the session.
  * - #1833: config updates.
  */
@@ -252,7 +254,7 @@ const conversationReadGaps: ConversationReadGap[] = [
     file: 'src/chat/hooks/useInputCallbacks.tsx',
     read: 'selectInputUploads()',
     count: 1,
-    owner: '#2351',
+    owner: '#2751',
   },
   {
     file: 'src/chat/services/attachChatView.ts',
@@ -459,7 +461,7 @@ const conversationReadGaps: ConversationReadGap[] = [
     file: 'src/chat/utils/shellLifecycle.ts',
     read: 'selectInputUploadAndStreamingFields()',
     count: 3,
-    owner: '#2351',
+    owner: '#2751',
   },
   {
     file: 'src/chat/utils/shellLifecycle.ts',

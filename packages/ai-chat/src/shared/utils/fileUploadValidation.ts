@@ -137,4 +137,4 @@ function formatBytes(bytes: number): string {
   return `${rounded} ${units[unitIndex]}`;
 }
 
-export { validateFileSelection };
+export { validateFileSelection, type FileUploadValidationConfig };

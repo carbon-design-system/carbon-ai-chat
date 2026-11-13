@@ -44,8 +44,8 @@ export interface ChatSDKInstanceMessaging {
    *   {@link ChatSDKInstanceMessaging.failTurn} before `customSendMessage` resolves. The
    *   conversation's `status` becomes `'error'`.
    * - In read-only mode, or while a file upload is still running. In these cases the message isn't
-   *   sent and `pre:send` doesn't fire. In a prebuilt chat, `state.get().input.hasInFlightUploads`
-   *   is `true` while an upload runs.
+   *   sent and `pre:send` doesn't fire. `state.get().hasInFlightUploads` is `true` while an upload
+   *   runs. Files that finished uploading, in `state.get().pendingUploads`, go out with the message.
    *
    * It never throws: every failure comes back as a rejected promise.
    *
@@ -184,6 +184,45 @@ export interface ChatSDKInstanceMessaging {
    * ```
    */
   clearError: () => void;
+
+  /**
+   * Attaches a file to the next message, through the same steps the prebuilt input uses. It checks
+   * {@link ChatSDKUploadConfig.accept}, `maxFileSizeBytes`, and `maxFiles`, then calls your
+   * {@link ChatSDKUploadConfig.onFileUpload}. The prebuilt chat's `upload.isOn` setting doesn't
+   * gate it. During a human agent conversation, it checks the service desk's limits instead and
+   * hands the file to the desk, which receives it with the next message.
+   *
+   * Resolves with the file's ID once the upload starts (or, for a service desk, once the file is
+   * staged), so you can pass the ID to
+   * {@link ChatSDKInstanceMessaging.removeFile} while it runs. Progress and failure show in
+   * `state.get().pendingUploads`. Rejects when a file breaks a limit, when there's no
+   * `onFileUpload` (or, during a human agent conversation, when the desk doesn't take files), or
+   * after the chat was removed.
+   *
+   * @param file The file to attach.
+   *
+   * @example Attach a file from your own control
+   * ```ts
+   * fileInput.addEventListener("change", async () => {
+   *   for (const file of fileInput.files) {
+   *     try {
+   *       await instance.messaging.addFile(file);
+   *     } catch (error) {
+   *       showError(error.message);
+   *     }
+   *   }
+   * });
+   * ```
+   */
+  addFile: (file: File) => Promise<{ id: string }>;
+
+  /**
+   * Takes a file out of the next message. A file still uploading has its upload aborted. An unknown
+   * ID does nothing.
+   *
+   * @param id The ID {@link ChatSDKInstanceMessaging.addFile} resolved with.
+   */
+  removeFile: (id: string) => void;
 
   /**
    * Inserts or updates a single message identified by `messageID`. The `updater` receives

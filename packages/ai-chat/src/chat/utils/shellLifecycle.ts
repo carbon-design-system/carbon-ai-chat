@@ -172,6 +172,26 @@ export interface ShellContentState {
   showConfirmEndChat: () => void;
 }
 
+/** The input's error rows for failed uploads, one per file. */
+function uploadErrorsFor(
+  failed: Array<{ id: string; file?: File; errorMessage?: string }>,
+  intl: { formatMessage: (...args: any[]) => string },
+  recovery: string
+): NonNullable<InputProps['uploadErrors']> {
+  return failed.map((upload) => {
+    const filename = upload.file?.name ?? '';
+    return {
+      id: upload.id,
+      filename,
+      title: intl.formatMessage(
+        { id: 'fileSharing_uploadErrorTitleWithName' },
+        { filename }
+      ),
+      description: [upload.errorMessage, recovery].filter(Boolean).join(' '),
+    };
+  });
+}
+
 export function selectShellState(state: AppState) {
   const agent = selectHumanAgentDisplayState(state);
   return {
@@ -652,50 +672,25 @@ export class ShellLifecycle {
     const errorInputs = [
       inputFields.files,
       inputFields.pendingUploads,
+      isAssistantUploadEnabled,
       intl,
       languagePack.fileSharing_uploadErrorRecovery,
     ];
     if (!this.errorInputs || !shallowEqual(errorInputs, this.errorInputs)) {
       this.errorInputs = errorInputs;
-      const errors: NonNullable<InputProps['uploadErrors']> = [];
-      for (const upload of inputFields.files) {
-        if (upload.isError) {
-          const filename = upload.file?.name ?? '';
-          errors.push({
-            id: upload.id,
-            filename,
-            title: intl.formatMessage(
-              { id: 'fileSharing_uploadErrorTitleWithName' },
-              { filename }
-            ),
-            description: [
-              upload.errorMessage,
-              languagePack.fileSharing_uploadErrorRecovery,
-            ]
-              .filter(Boolean)
-              .join(' '),
-          });
-        }
-      }
-      for (const upload of inputFields.pendingUploads) {
-        if (upload.status === 'error') {
-          const filename = upload.file?.name ?? '';
-          errors.push({
-            id: upload.id,
-            filename,
-            title: intl.formatMessage(
-              { id: 'fileSharing_uploadErrorTitleWithName' },
-              { filename }
-            ),
-            description: [
-              upload.errorMessage,
-              languagePack.fileSharing_uploadErrorRecovery,
-            ]
-              .filter(Boolean)
-              .join(' '),
-          });
-        }
-      }
+      // With the attach button off, only the host's own control adds files (messaging.addFile),
+      // so the input has nothing to remove and the host shows the failure itself.
+      const errors = uploadErrorsFor(
+        [
+          ...inputFields.files.filter((upload) => upload.isError),
+          ...(isAssistantUploadEnabled
+            ? inputFields.pendingUploads
+            : []
+          ).filter((upload) => upload.status === 'error'),
+        ],
+        intl,
+        languagePack.fileSharing_uploadErrorRecovery
+      );
       errors.sort((a, b) =>
         a.filename.localeCompare(b.filename, undefined, { sensitivity: 'base' })
       );

@@ -43,6 +43,7 @@ export {
   ChatSDKInstance,
 } from './types/instance/ChatSDKInstance';
 export {
+  ChatSDKPendingUpload,
   ChatSDKState,
   ChatSDKStateAccess,
 } from './types/instance/ChatSDKState';
@@ -164,6 +165,7 @@ export { ChatSDKConfigMessaging } from './types/config/ChatSDKConfigMessaging';
 export { ChatSDKErrorData } from './types/config/ChatSDKErrorData';
 export { ChatSDKPersistedStateConfig } from './types/config/ChatSDKPersistedStateConfig';
 export { ChatSDKServiceDeskConfig } from './types/config/ChatSDKServiceDeskConfig';
+export { ChatSDKUploadConfig } from './types/config/ChatSDKUploadConfig';
 export { CarbonTheme } from './types/config/CarbonTheme';
 export { DisclaimerPublicConfig } from './types/config/DisclaimerConfig';
 export {

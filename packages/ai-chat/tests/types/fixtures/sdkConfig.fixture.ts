@@ -46,6 +46,7 @@ export const sdkConfigFields: Record<keyof ChatSDKConfig, true> = {
   messaging: true,
   isReadonly: true,
   humanAgentState: true,
+  upload: true,
 };
 export const sdkMessagingFields: Record<keyof ChatSDKConfigMessaging, true> = {
   skipWelcome: true,
