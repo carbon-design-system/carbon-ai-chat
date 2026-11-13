@@ -7,7 +7,13 @@
  *  @license
  */
 
+import cloneDeep from 'lodash-es/cloneDeep.js';
+
 import { closeStore, type AppStore } from '../store/appStore';
+import { humanAgentStateConfig } from '../store/humanAgentStatePersistence';
+import { toPersistableState } from '../store/persistenceUtils';
+import { DEFAULT_PERSISTED_TO_BROWSER } from '../store/reducerUtils';
+import { resolveOrTimeout } from '../utils/lang/promiseUtils';
 import { consoleError } from '../utils/miscUtils';
 import { IntlShape } from '../utils/i18n';
 
@@ -30,6 +36,23 @@ import { ViewConnection } from './viewBindings';
 
 interface UserDefinedElementRegistryItem {
   slotName: string;
+}
+
+/**
+ * How long a destroy waits for a live agent chat to end. Longer than the end's
+ * own two 5-second limits, on the pre-end handlers and the desk, so it cuts
+ * short only end handlers that never settle.
+ */
+const AGENT_END_TIMEOUT_MS = 15000;
+
+/** Runs one shutdown step, logging what it throws so the next step still runs. */
+function runStep<T>(step: () => T): T | undefined {
+  try {
+    return step();
+  } catch (error) {
+    consoleError('A step of the chat shutdown failed.', error);
+    return undefined;
+  }
 }
 
 /**
@@ -147,6 +170,12 @@ class ServiceManager {
   isShutdown = false;
 
   /**
+   * True once {@link destroy} has started. A handle that didn't destroy the
+   * chat reads it to stop reaching the chat.
+   */
+  isDestroyed = false;
+
+  /**
    * Stops this chat's service work for good. Removing the chat's element calls
    * it; hosts never do. The store closes first: its subscriptions go, and
    * later dispatches change nothing, so saved session state stays as it was
@@ -162,30 +191,103 @@ class ServiceManager {
     return this.shutdownPromise;
   }
 
+  /**
+   * Shuts this chat down as {@link shutdown} does, and ends the conversation
+   * for good (ADR-0003). Stores stop notifying at once. A live agent chat then
+   * ends as a restart ends one: handlers get the end-of-chat events but can't
+   * cancel them. Last, saved session state is cleared, or, when the host owns
+   * storage, its `onStateChange` gets the cleared value once.
+   *
+   * Once the chat has started shutting down, it returns that shutdown and
+   * does nothing more.
+   */
+  destroy(): Promise<void> {
+    if (!this.shutdownPromise) {
+      this.isShutdown = true;
+      this.isDestroyed = true;
+      this.shutdownPromise = this.endForGood();
+    }
+    return this.shutdownPromise;
+  }
+
+  private async endForGood() {
+    // First, so neither the agent chat's end nor anything later reaches a
+    // subscriber or saved state.
+    if (this.store) {
+      runStep(() => closeStore(this.store));
+    }
+    runStep(() => this.publicStateService?.destroy());
+    // Only a live agent chat waits here; otherwise the rest starts now.
+    const ending = runStep(() => this.humanAgentService?.endChatOnDestroy());
+    if (ending) {
+      // Requests and uploads stop now, not after the end. An abort listener
+      // that ends the agent chat waits for this end instead of starting one.
+      const stopping = this.stopWork();
+      try {
+        await resolveOrTimeout(ending, AGENT_END_TIMEOUT_MS);
+      } catch (error) {
+        consoleError(
+          "The agent conversation didn't finish ending within 15 seconds, so the destroyed chat shut down without waiting for it.",
+          error
+        );
+      }
+      await stopping;
+    }
+    await this.stopServices();
+    runStep(() => this.clearSavedState());
+  }
+
+  /**
+   * Clears the namespace's saved session. Storage the host owns is out of
+   * reach, so its `onStateChange` gets the cleared value instead.
+   */
+  private clearSavedState() {
+    const { config } = this.store.getState();
+    const { persistedState } = config.public;
+    const cleared = cloneDeep(DEFAULT_PERSISTED_TO_BROWSER);
+    if (persistedState?.initialState || persistedState?.onStateChange) {
+      runStep(() =>
+        persistedState.onStateChange?.(toPersistableState(cleared))
+      );
+    } else {
+      runStep(() => this.userSessionStorageService?.clearSession());
+    }
+    runStep(() =>
+      humanAgentStateConfig(config.public)?.onStateChange?.(
+        cleared.humanAgentState
+      )
+    );
+  }
+
   private async stopServices() {
     // The steps run back to back, and each runs even if one before it throws.
-    const run = (step: () => unknown) => {
-      try {
-        return step();
-      } catch (error) {
-        consoleError('A step of the chat shutdown failed.', error);
-        return undefined;
-      }
-    };
     if (this.store) {
-      run(() => closeStore(this.store));
+      runStep(() => closeStore(this.store));
     }
-    run(() => this.eventBus?.clear());
+    runStep(() => this.eventBus?.clear());
     // Before anything aborts: an abort listener that ends the agent chat must
     // not reach the real desk.
-    run(() => this.humanAgentService?.shutdown());
-    run(() => this.publicStateService?.destroy());
-    run(() => this.inputActionsService?.abortAllUploads());
-    try {
-      await run(() => this.messageCoordinator?.shutdown());
-    } catch (error) {
-      consoleError('A step of the chat shutdown failed.', error);
+    runStep(() => this.humanAgentService?.shutdown());
+    runStep(() => this.publicStateService?.destroy());
+    await this.stopWork();
+  }
+
+  private workStopped?: Promise<void>;
+
+  /**
+   * Aborts uploads and stops the message coordinator's requests, streams, and
+   * timers. Runs once; a destroy runs it early.
+   */
+  private stopWork(): Promise<void> {
+    if (!this.workStopped) {
+      runStep(() => this.inputActionsService?.abortAllUploads());
+      this.workStopped = Promise.resolve(
+        runStep(() => this.messageCoordinator?.shutdown())
+      ).catch((error) => {
+        consoleError('A step of the chat shutdown failed.', error);
+      });
     }
+    return this.workStopped;
   }
 
   /**

@@ -54,6 +54,7 @@ Put state transformations in reducers. Put pure utilities that conversation code
   - destroys `PublicStateService` and aborts uploads in `InputActionsService`;
   - stops `MessageCoordinator` through restart's own steps (`MessageCoordinator.shutdown()`), which cancels every request and ends its timers.
 - **A new service with live work adds its stop to `ServiceManager.shutdown()`.** Keep the timer id or controller you create, so you can stop it there. A store subscription needs nothing more; closing the store drops it. Late async work that reaches outside the store, such as a host callback or a global, checks `serviceManager.isShutdown` first.
+- **`ServiceManager.destroy()` is shutdown that ends the conversation for good** (ADR-0003). The SDK handle's `destroy()` calls it. It closes the store and `PublicStateService` first, then ends a live agent chat as a restart does, through `HumanAgentService.endChatOnDestroy()`: handlers get the end-of-chat events but can't cancel them. Then it runs the shutdown steps above and clears the namespace's saved session, or, when the host owns storage, gives `onStateChange` the cleared value once. A grace window that runs out calls `shutdown()`, which keeps saved state.
 - `destroySession()` resets session data; it is not a shutdown.
 - Public methods on `ChatInstanceService` must be reflected on the `ChatInstance` type in [`src/types/instance/ChatInstance.ts`](../src/types/instance/ChatInstance.ts). The instance object is constructed in [`src/chat/utils/chatBoot.ts`](../src/chat/utils/chatBoot.ts).
 
