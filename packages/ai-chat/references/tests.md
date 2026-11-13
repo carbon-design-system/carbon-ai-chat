@@ -11,6 +11,7 @@ Tests are organized by what they validate. Naming is `_spec.ts(x)` (not `.test.t
 | Store & hooks | `tests/store/spec/` | Redux-like store + custom hooks | Local test store, wrap in `TestChatContext` from `test_helpers.ts`, assert state |
 | Services | `tests/services/spec/` | Service orchestration & side effects | Stub `ServiceManager`, instantiate directly, assert calls/state |
 | Components | `tests/components/spec/` | React component rendering & interactions | Testing Library, simulate user, assert DOM |
+| Architecture | `tests/architecture/spec/` | Folder import rules and the SDK's reachable types | Read source with the TypeScript compiler; prove each rule with a planted import |
 | Integration | `demo/tests/` (Playwright) | End-to-end flows across the full stack | See [demo/AGENTS.md](../../../demo/AGENTS.md) |
 
 ### Store & hook example
