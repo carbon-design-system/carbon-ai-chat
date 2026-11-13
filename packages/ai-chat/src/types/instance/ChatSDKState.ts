@@ -9,6 +9,7 @@
 
 import type { PersistedHumanAgentState } from '../state/PersistedHumanAgentState';
 import type { Message } from '../messaging/Messages';
+import type { ChatSDKErrorData } from '../config/ChatSDKErrorData';
 
 /**
  * The current phase of conversation work, exposed as `status` on {@link PublicChatState}.
@@ -21,8 +22,8 @@ import type { Message } from '../messaging/Messages';
  * - `error`: the conversation is in a failure state.
  *
  * Failure takes precedence over loading, and loading takes precedence over turn activity.
- * You can retain error details received through {@link PublicConfig.onError}. An error
- * status does not guarantee an error callback.
+ * The failure behind `error` is in {@link ChatSDKState.error}. An error status does not
+ * guarantee a {@link PublicConfig.onError} call.
  *
  * @category Instance
  * @category SDK
@@ -63,6 +64,21 @@ export interface ChatSDKState {
 
   /** The current conversation phase. See {@link ConversationStatus} for each value and its precedence. */
   readonly status: ConversationStatus;
+
+  /**
+   * The failure behind a `status` of `error`, or `null` when there is none. It's set and cleared
+   * together with `status`. A send that fails or times out, a failed history load, or a streamed
+   * response the chat can't process sets it. The next send, a restart, or a history load clears it,
+   * and so does a human agent's send that the service desk confirms late.
+   *
+   * It has the same fields as the object {@link PublicConfig.onError} gets for that failure,
+   * with `messageID` naming the failed request when the error belongs to a turn. A failure the
+   * chat doesn't report to `onError`, such as a human agent's send timing out, still sets it.
+   * The object is frozen, but `otherData` keeps its reference, so it can be a live `Error`.
+   *
+   * Optional in 1.x so that objects typed as this state still compile; the chat always sets it.
+   */
+  readonly error?: Readonly<ChatSDKErrorData> | null;
 
   /**
    * Current human agent state.

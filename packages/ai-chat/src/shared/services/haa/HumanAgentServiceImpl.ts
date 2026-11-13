@@ -601,13 +601,20 @@ class HumanAgentServiceImpl implements HumanAgentService {
       let messageSucceeded = false;
       let messageFailed = false;
       let failure: ReturnType<typeof serviceManager.messageCoordinator.fail>;
-      const reportFailure = () => {
+      const reportFailure = (deskError?: { thrown: unknown }) => {
         if (messageSucceeded || messageFailed) {
           return;
         }
         messageFailed = true;
         failure = serviceManager.messageCoordinator.fail(
-          { messageID: originalMessage.id },
+          {
+            errorType: OnErrorType.MESSAGE_COMMUNICATION,
+            message: deskError
+              ? 'The service desk could not send the message, so the chat marked it failed.'
+              : 'The service desk did not confirm that the message was sent, so the chat marked it failed.',
+            ...(deskError && { otherData: deskError.thrown }),
+            messageID: originalMessage.id,
+          },
           generation
         );
       };
@@ -649,7 +656,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
           files: uploads,
         });
       } catch (error) {
-        reportFailure();
+        reportFailure({ thrown: error });
         consoleError(
           '[sendMessageToAgent] An error with the service desk occurred.',
           error

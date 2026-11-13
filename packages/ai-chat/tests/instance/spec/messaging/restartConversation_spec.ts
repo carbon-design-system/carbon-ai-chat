@@ -119,7 +119,7 @@ describe('ChatInstance.messaging.restartConversation', () => {
     await instance.messaging.restartConversation();
 
     expect(instance.state.get().status).toBe('ready');
-    expect(instance.state.get()).not.toHaveProperty('error');
+    expect(instance.state.get().error).toBeNull();
   });
 
   describe('Deprecated instance.restartConversation', () => {

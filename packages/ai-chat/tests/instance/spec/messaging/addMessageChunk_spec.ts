@@ -1228,7 +1228,7 @@ describe('ChatInstance.messaging.addMessageChunk', () => {
 
     expect(onError).not.toHaveBeenCalled();
     expect(instance.state.get().status).toBe('ready');
-    expect(instance.state.get()).not.toHaveProperty('error');
+    expect(instance.state.get().error).toBeNull();
   });
 
   it('should own chunk data passed by the caller', async () => {

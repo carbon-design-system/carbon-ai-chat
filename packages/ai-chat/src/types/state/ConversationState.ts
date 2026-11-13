@@ -8,6 +8,7 @@
  */
 
 import type { ChatSDKConfig } from '../config/ChatSDKConfig';
+import type { ChatSDKErrorData } from '../config/ChatSDKErrorData';
 import type { OnErrorData } from '../config/ErrorConfig';
 import type { HomeScreenConfig } from '../config/HomeScreenConfig';
 import type { LanguagePack } from '../config/LanguagePack';
@@ -77,6 +78,9 @@ type ConversationPersistedState = Pick<
 interface ConversationState extends AppStateMessages {
   /** Current conversation operation phase. */
   conversationStatus: ConversationStatus;
+
+  /** The frozen error behind a `conversationStatus` of `error`, else `null`. */
+  conversationError: Readonly<ChatSDKErrorData> | null;
 
   /**
    * Whether we have hydrated Carbon AI Chat. This means we have loaded session history if it exists as well as the

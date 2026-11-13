@@ -253,6 +253,7 @@ interface ChatSDKConfigMessaging (src/types/config/ChatSDKConfigMessaging.ts)
 interface ChatSDKErrorData (src/types/config/ChatSDKErrorData.ts)
   errorType: OnErrorType
   message: string
+  messageID?: string
   otherData?: unknown
 
 interface ChatSDKHandle (src/sdk/handle.ts)
@@ -292,6 +293,7 @@ interface ChatSDKServiceDeskConfig (src/types/config/ChatSDKServiceDeskConfig.ts
 
 interface ChatSDKState (src/types/instance/ChatSDKState.ts)
   activeResponseId: string
+  error?: Readonly<ChatSDKErrorData>
   humanAgent: Readonly<PersistedHumanAgentState & { isConnecting: boolean; }>
   messages: ReadonlyArray<Readonly<Message>>
   status: ConversationStatus

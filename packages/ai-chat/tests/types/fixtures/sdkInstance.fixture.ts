@@ -177,6 +177,7 @@ chat.messaging.upsertMessage(
 export const sdkStateFields: Record<keyof ChatSDKState, true> = {
   messages: true,
   status: true,
+  error: true,
   humanAgent: true,
   activeResponseId: true,
 };

@@ -9,6 +9,16 @@
 
 import { MessageCoordinator } from '../../../src/shared/services/messaging/MessageCoordinator';
 import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import { OnErrorType } from '../../../src/types/config/ErrorConfig';
+
+/** Error data for a failure a spec creates directly. */
+function failedWith(messageID?: string) {
+  return {
+    errorType: OnErrorType.MESSAGE_COMMUNICATION,
+    message: 'failed',
+    ...(messageID && { messageID }),
+  };
+}
 
 describe('MessageCoordinator', () => {
   let service: MessageCoordinator;
@@ -179,9 +189,14 @@ describe('MessageCoordinator', () => {
 describe('lifecycle publication', () => {
   function setup() {
     let status = 'ready';
-    const getState = jest.fn(() => ({ conversationStatus: status }));
-    const dispatch = jest.fn((action: { status: string }) => {
+    let error: unknown = null;
+    const getState = jest.fn(() => ({
+      conversationStatus: status,
+      conversationError: error,
+    }));
+    const dispatch = jest.fn((action: { status: string; error: unknown }) => {
       status = action.status;
+      error = action.error;
     });
     const service = new MessageCoordinator({
       store: { getState, dispatch, subscribe: () => () => {} },
@@ -208,7 +223,7 @@ describe('lifecycle publication', () => {
   it('does not consult the store for stale or rejected operations', () => {
     const { service, getState, dispatch } = setup();
     const generation = service.currentGeneration;
-    const token = service.fail({});
+    const token = service.fail(failedWith());
     service.restart(true);
     getState.mockClear();
     dispatch.mockClear();
@@ -221,7 +236,7 @@ describe('lifecycle publication', () => {
     service.responseReceived('response', generation);
     service.responseStopped('response', generation);
     service.responseFinished('response', generation);
-    expect(service.fail({}, generation)).toBeNull();
+    expect(service.fail(failedWith(), generation)).toBeNull();
     service.clearFailure(token);
     expect(getState).not.toHaveBeenCalled();
     expect(dispatch).not.toHaveBeenCalled();
@@ -253,18 +268,24 @@ describe('lifecycle publication', () => {
     let current: ReturnType<MessageCoordinator['fail']>;
     dispatch.mockImplementationOnce((action) => {
       setStatus(action.status);
-      current = service.fail({ messageID: 'newer' });
+      current = service.fail(failedWith('newer'));
     });
-    const first = service.fail({ messageID: 'first' });
+    const first = service.fail(failedWith('first'));
     expect(first.messageID).toBe('first');
     expect(first).not.toBe(current);
     service.clearFailure(first);
     expect(service.hasFailureForRequest('newer')).toBe(true);
     service.clearFailure(current);
+    // The newer failure keeps status 'error' but changes state.error, so it publishes too.
     expect(dispatch.mock.calls.map(([action]) => action.status)).toEqual([
+      'error',
       'error',
       'ready',
     ]);
+    expect(dispatch.mock.calls[1][0].error).toMatchObject({
+      messageID: 'newer',
+    });
+    expect(dispatch.mock.calls[2][0].error).toBeNull();
   });
 
   it('reads fresh model and store status for both streaming publication attempts', () => {

@@ -63,6 +63,7 @@ function createInitialAppState(): AppState {
     isHydrated: false,
     isRestarting: false,
     conversationStatus: 'ready',
+    conversationError: null,
     assistantInputState: DEFAULT_INPUT_STATE,
     humanAgentState: DEFAULT_HUMAN_AGENT_STATE,
     persistedToBrowserStorage: {

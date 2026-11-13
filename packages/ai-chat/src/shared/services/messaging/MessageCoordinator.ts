@@ -59,6 +59,7 @@ import { ChunkWorkflow } from './ChunkWorkflow';
 import type { StreamChunk, PauseItem } from '../../../types/messaging/Messages';
 import type { AddMessageOptions } from '../../../types/config/MessagingConfig';
 import { CancellationReason } from '../../../types/config/MessagingConfig';
+import type { ChatSDKErrorData } from '../../../types/config/ChatSDKErrorData';
 
 import { HistoryWorkflow } from './HistoryWorkflow';
 import type { HistoryItem } from '../../../types/messaging/History';
@@ -525,6 +526,9 @@ class MessageCoordinator {
   }
 
   private state = new ConversationState();
+  /** Each failure token's frozen error. State helpers hold no opaque data. */
+  private failureErrors = new WeakMap<object, Readonly<ChatSDKErrorData>>();
+  private frozenErrors = new WeakSet<ChatSDKErrorData>();
   private terminationWorkflow: TerminationWorkflow;
   private sendWorkflow?: SendWorkflow;
   private loadingManager?: MessageLoadingManager;
@@ -900,16 +904,52 @@ class MessageCoordinator {
     }
   }
 
-  fail(error: { messageID?: string }, generation = this.currentGeneration) {
-    const failure = this.state.fail(error, generation);
+  /**
+   * Fails the conversation with `error`, whose fields `state.error` then
+   * holds; it's the object a caller reports through `onError`, if it does.
+   * `failedID` names what failed when that's not a request, such as a
+   * response with no request.
+   */
+  fail(
+    error: ChatSDKErrorData,
+    generation = this.currentGeneration,
+    failedID = error.messageID
+  ) {
+    const failure = this.state.fail({ messageID: failedID }, generation);
     if (failure) {
+      this.failureErrors.set(failure, this.frozenError(error));
       this.publish();
     }
     return failure;
   }
 
+  /**
+   * Freezes a copy of `error`'s outer object; `otherData` keeps its reference.
+   * An error this coordinator already froze is reused, so failing again with
+   * the same error publishes nothing new.
+   */
+  private frozenError(error: ChatSDKErrorData) {
+    if (this.frozenErrors.has(error)) {
+      return error;
+    }
+    const frozen = Object.freeze({ ...error });
+    this.frozenErrors.add(frozen);
+    return frozen;
+  }
+
+  /** The error behind `status: 'error'`, or `null`. */
+  private currentError() {
+    const failure = this.state.getFailure();
+    return (failure && this.failureErrors.get(failure)) ?? null;
+  }
+
   hasFailureForRequest(messageID: string) {
     return this.state.hasFailureForRequest(messageID);
+  }
+
+  /** The current error, if it belongs to the request `messageID` names. */
+  errorForRequest(messageID: string) {
+    return this.hasFailureForRequest(messageID) ? this.currentError() : null;
   }
 
   clearFailure(failure: ReturnType<ConversationState['fail']>) {
@@ -920,10 +960,14 @@ class MessageCoordinator {
 
   private publish() {
     const status = this.state.getStatus();
+    const error = this.currentError();
     const state = this.serviceManager.store.getState();
-    if (state.conversationStatus !== status) {
+    if (
+      state.conversationStatus !== status ||
+      state.conversationError !== error
+    ) {
       this.serviceManager.store.dispatch(
-        actions.setConversationLifecycle(status)
+        actions.setConversationLifecycle(status, error)
       );
     }
   }

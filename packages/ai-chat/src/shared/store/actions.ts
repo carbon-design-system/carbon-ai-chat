@@ -35,6 +35,7 @@ import { ThemeState } from '../../types/state/ThemeState';
 import type { StructuredData } from '../../types/messaging/Messages';
 
 import type { ConversationStatus } from '../../types/instance/PublicChatState';
+import type { ChatSDKErrorData } from '../../types/config/ChatSDKErrorData';
 
 import {
   LocalMessageItem,
@@ -250,8 +251,11 @@ const actions = {
     };
   },
 
-  setConversationLifecycle(status: ConversationStatus) {
-    return { type: SET_CONVERSATION_LIFECYCLE, status };
+  setConversationLifecycle(
+    status: ConversationStatus,
+    error: Readonly<ChatSDKErrorData> | null
+  ) {
+    return { type: SET_CONVERSATION_LIFECYCLE, status, error };
   },
 
   setActiveResponseId(activeResponseId: string | null) {

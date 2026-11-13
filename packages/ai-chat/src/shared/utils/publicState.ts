@@ -84,6 +84,7 @@ const PUBLIC_FIELD_ORDER: readonly PublicStateField[] = [
   'homeScreenState',
   'humanAgent',
   'status',
+  'error',
   'isMessageLoadingCounter',
   'isMessageLoadingText',
   'isHydratingCounter',
@@ -118,6 +119,12 @@ const fieldDefinitions: readonly PublicStateFieldDefinition[] = [
   {
     name: 'status',
     sources: (state) => [state.conversationStatus],
+    project: ([value]) => value,
+  },
+  {
+    name: 'error',
+    // Already frozen when the conversation failed; otherData keeps its reference.
+    sources: (state) => [state.conversationError],
     project: ([value]) => value,
   },
   {

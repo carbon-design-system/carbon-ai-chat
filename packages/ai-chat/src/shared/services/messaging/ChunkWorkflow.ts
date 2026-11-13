@@ -405,18 +405,39 @@ class ChunkWorkflow {
         );
       }
       if (terminalConversationFailure) {
-        this.serviceManager.messageCoordinator.fail({
-          messageID: requestID ?? messageID,
-        });
         requestErrors?.reportedErrors.add(error);
-        this.serviceManager.actions.errorOccurred({
-          errorType: OnErrorType.MESSAGE_COMMUNICATION,
-          message: 'The chat could not process a streamed response.',
-          otherData: error,
-        });
+        this.failConversation(requestID, messageID, error);
       }
       this.advanceChunkQueue(chunkPromise, { error });
     }
+  }
+
+  /**
+   * Fails the conversation for a chunk the chat couldn't process, and reports
+   * it. The error names the response's request, and has no `messageID` when
+   * there is none, such as a chunk the host added on its own.
+   */
+  private failConversation(
+    requestID: string | undefined,
+    responseID: string | undefined,
+    error: unknown
+  ) {
+    const { messageCoordinator } = this.serviceManager;
+    const ownerID =
+      requestID ??
+      (responseID && messageCoordinator.responseRequestID(responseID));
+    const chunkError = {
+      errorType: OnErrorType.MESSAGE_COMMUNICATION,
+      message: 'The chat could not process a streamed response.',
+      otherData: error,
+      ...(ownerID && { messageID: ownerID }),
+    };
+    messageCoordinator.fail(
+      chunkError,
+      messageCoordinator.currentGeneration,
+      requestID ?? responseID
+    );
+    this.serviceManager.actions.errorOccurred(chunkError);
   }
 
   private shouldSkipChunkDueToGeneration(messageID: string | undefined) {
