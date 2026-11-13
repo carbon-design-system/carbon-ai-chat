@@ -1,0 +1,73 @@
+import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
+import * as Stories from './system-message.stories';
+
+<Meta of={Stories} />
+
+# System message
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/system-message) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+## Overview
+
+Use `cds-aichat-system-message` for a status line between messages. This element is experimental, and its API may change without a deprecation window.
+
+<Canvas of={Stories.Default} />
+
+## Key features
+
+- **Divider**: Set the boolean `divider` attribute to draw a line above the text.
+- **Response stopped**: Set the boolean `response-stopped` attribute to render the message in the "response stopped" indicator styling.
+- **Optional icon**: Set the `icon` property to a `@carbon/icons` icon to show it before the text.
+- **Text-only slot**: Put the text in the default slot.
+
+## Examples
+
+### With a divider
+
+```html
+<cds-aichat-system-message divider>
+  The agent joined the conversation
+</cds-aichat-system-message>
+```
+
+<Canvas of={Stories.Divider} />
+
+### With an icon
+
+```javascript
+import Headset16 from '@carbon/icons/es/headset/16.js';
+
+document.querySelector('cds-aichat-system-message').icon = Headset16;
+```
+
+<Canvas of={Stories.WithIcon} />
+
+### Response stopped
+
+```html
+<cds-aichat-system-message response-stopped>
+  Response generation stopped
+</cds-aichat-system-message>
+```
+
+<Canvas of={Stories.ResponseStopped} />
+
+## Accessibility
+
+The host element gets `role="status"` unless you set a role yourself. That role already announces changes politely, so the element adds no `aria-live` attribute. The icon is decorative and hidden from assistive technology, so the text must carry the full meaning.
+
+## Component API
+
+### `cds-aichat-system-message`
+
+<ArgTypes of="cds-aichat-system-message" />
+
+## JS (via import)
+
+```javascript
+import '@carbon/ai-chat-components/es/components/system-message/index.js';
+```
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

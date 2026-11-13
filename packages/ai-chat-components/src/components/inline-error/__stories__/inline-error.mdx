@@ -1,0 +1,52 @@
+import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
+import * as Stories from './inline-error.stories';
+
+<Meta of={Stories} />
+
+# Inline error
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/inline-error) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+## Overview
+
+Use `cds-aichat-inline-error` to show an error row: an error icon followed by the error text. The text inside the element is rendered as markdown with all HTML removed, so put text in the element, not child markup. This element is experimental, and its API may change without a deprecation window.
+
+<Canvas of={Stories.Default} />
+
+## Key features
+
+- **Error icon**: The element draws the icon. You do not supply one.
+- **Host-supplied label**: Set `icon-label` to a translated string so assistive technology names the icon.
+- **Markdown text**: The text inside the element is rendered as markdown. HTML in the text is removed.
+
+## Examples
+
+### With markdown
+
+```html
+<cds-aichat-inline-error>
+  Something went wrong. [Try again](https://www.carbondesignsystem.com/)
+</cds-aichat-inline-error>
+```
+
+<Canvas of={Stories.WithMarkdown} />
+
+## Accessibility
+
+When `icon-label` is set, the icon has `role="img"` and an `aria-label` with that value. Otherwise the icon has `aria-hidden="true"`. The element adds no live region; if the error appears after the user acts, announce it from the host.
+
+## Component API
+
+### `cds-aichat-inline-error`
+
+<ArgTypes of="cds-aichat-inline-error" />
+
+## JS (via import)
+
+```javascript
+import '@carbon/ai-chat-components/es/components/inline-error/index.js';
+```
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.
