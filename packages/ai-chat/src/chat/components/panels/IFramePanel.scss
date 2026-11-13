@@ -8,6 +8,10 @@
 @use '@carbon/layout';
 @use '@carbon/styles/scss/theme';
 
+cds-aichat-iframe-body {
+  display: contents;
+}
+
 .cds-aichat--i-frame-panel {
   position: relative;
   display: flex;
