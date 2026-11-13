@@ -14,7 +14,7 @@ import Logout16 from '@carbon/icons/es/logout/16.js';
 import { carbonIconToReact } from '../../../utils/carbonIcon';
 import Card from '@carbon/ai-chat-components/es/react/card.js';
 import Button from '../../../components/carbon/Button';
-import React, { ReactNode, useContext, useEffect, useState } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 
 import { HasServiceManager } from '../../../hocs/withServiceManager';
 import { HumanAgentsOnlineStatus } from '../../../services/haa/HumanAgentService';
@@ -33,7 +33,7 @@ import {
   ConnectToHumanAgentItem,
   MessageResponse,
 } from '../../../../types/messaging/Messages';
-import { HumanAgentConfirmationContext } from '../../../contexts/HumanAgentConfirmationContext';
+import { useChatViewStateInstance } from '../../../hooks/useChatViewState';
 
 const Checkmark = carbonIconToReact(Checkmark16);
 const Headset = carbonIconToReact(Headset16);
@@ -117,7 +117,7 @@ function RealConnectToHumanAgent(props: RealConnectToHumanAgentProps) {
   const { isSuspended } = persistedHumanAgentState;
 
   const [showConfirmSuspended, setShowConfirmSuspended] = useState(false);
-  const setConfirmation = useContext(HumanAgentConfirmationContext);
+  const viewState = useChatViewStateInstance();
 
   useEffect(() => {
     if (!showConfirmSuspended || !isSuspended) {
@@ -136,9 +136,7 @@ function RealConnectToHumanAgent(props: RealConnectToHumanAgentProps) {
       },
       onCancel: () => setShowConfirmSuspended(false),
     };
-    setConfirmation(confirmation);
-    return () =>
-      setConfirmation((current) => (current === confirmation ? null : current));
+    return viewState.openConfirmation(confirmation);
   }, [
     showConfirmSuspended,
     isSuspended,
@@ -147,7 +145,7 @@ function RealConnectToHumanAgent(props: RealConnectToHumanAgentProps) {
     localMessage,
     originalMessage,
     requestFocus,
-    setConfirmation,
+    viewState,
   ]);
 
   if (!isSuspended && showConfirmSuspended) {
