@@ -137,7 +137,8 @@ class ChatCustomElement extends FlattenedConfigElement {
    * A common pattern is to use this for when the chat is closing and to use onViewChange for when the chat opens.
    *
    * Note that this function can only be provided before Carbon AI Chat is loaded as it is registered before the
-   * chat renders. After Carbon AI Chat is loaded, the callback will not be updated.
+   * chat renders. After Carbon AI Chat is loaded, the callback will not be updated. It also runs at mount, for the
+   * chat's move to its first view.
    */
   @property()
   onViewPreChange?: (event: BusEventViewPreChange) => Promise<void> | void;
@@ -159,14 +160,17 @@ class ChatCustomElement extends FlattenedConfigElement {
    * A common pattern is to use this for when the chat is opening and to use onViewPreChange for when the chat closes.
    *
    * Note that this function can only be provided before Carbon AI Chat is loaded as it is registered before the
-   * chat renders. After Carbon AI Chat is loaded, the callback will not be updated.
+   * chat renders. After Carbon AI Chat is loaded, the callback will not be updated. It also runs at mount, for the
+   * chat's move to its first view.
    */
   @property()
   onViewChange?: (event: BusEventViewChange, instance: ChatInstance) => void;
 
   /**
    * Optional callback to render user defined responses. When provided, the inner cds-aichat-container
-   * manages all event listening, slot tracking, and element lifecycle.
+   * manages all event listening, slot tracking, and element lifecycle. The returned element and the instance's
+   * writeable elements stay inside this element's shadow root. Page CSS does not reach them. Content you slot
+   * by hand stays in this element's light DOM. The container element and both React hosts use page DOM.
    */
   @property({ attribute: false })
   renderUserDefinedResponse?: WCRenderUserDefinedResponse;
@@ -181,6 +185,9 @@ class ChatCustomElement extends FlattenedConfigElement {
   /**
    * Optional callback to render a footer below each user message. When provided, the inner cds-aichat-container
    * manages all event listening, slot tracking, and element lifecycle.
+   *
+   * Only a message sent while this is set gets a footer. Setting it later doesn't add one to messages already
+   * sent.
    */
   @property({ attribute: false })
   renderCustomRequestFooter?: WCRenderCustomRequestFooter;
@@ -188,6 +195,9 @@ class ChatCustomElement extends FlattenedConfigElement {
   /**
    * Renderer for `mention` chips, `command` chips, and custom TipTap nodes
    * inside sent user message bubbles (rich user message content). Forwarded to the inner cds-aichat-container.
+   *
+   * The chat may call it more than once for the same node, for example while the message is sending. Return
+   * the same output for the same node.
    *
    * @experimental
    */
@@ -319,8 +329,6 @@ class ChatCustomElement extends FlattenedConfigElement {
     });
 
     if (!this.renderUserDefinedResponse) {
-      // Legacy path: custom-element tracks slot names for manual slotting.
-      // When renderUserDefinedResponse is set, the inner cds-aichat-container handles everything.
       this.subscribe({
         type: BusEventType.USER_DEFINED_RESPONSE,
         handler: this.userDefinedHandler,

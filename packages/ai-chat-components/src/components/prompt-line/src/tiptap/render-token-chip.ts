@@ -115,6 +115,9 @@ export function renderTokenChip(args: RenderTokenChipArgs): HTMLElement {
   const item: SuggestionItem = {
     id: typeof args.attrs.id === 'string' ? args.attrs.id : '',
     label: typeof args.attrs.label === 'string' ? args.attrs.label : '',
+    ...(typeof args.attrs.value === 'string'
+      ? { value: args.attrs.value }
+      : {}),
     ...((args.attrs.data ?? {}) as Record<string, unknown>),
   };
 

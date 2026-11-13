@@ -32,59 +32,63 @@ if (!global.CSSStyleSheet) {
   };
 }
 
-// Mock window.matchMedia since it's not available in jsdom
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: jest.fn().mockImplementation((query: string) => ({
-    matches: false,
-    media: query,
-    onchange: null as any,
-    addListener: jest.fn(), // deprecated
-    removeListener: jest.fn(), // deprecated
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    dispatchEvent: jest.fn(),
-  })),
-});
-
-// Mock document.execCommand since it's not available in jsdom but is used
-// internally by ProseMirror (e.g. safariShadowSelectionRange)
-if (!document.execCommand) {
-  document.execCommand = jest.fn().mockReturnValue(false);
-}
-
-// Mock elementFromPoint since it's not available in jsdom but is used
-// internally by ProseMirror/Tiptap (posAtCoords -> root.elementFromPoint).
-// Tiptap's placeholder extension viewport tracking (@tiptap/extensions >= 3.27)
-// calls this on editor mount; the editor lives in a shadow root, so patch both
-// Document and ShadowRoot. Returning null mirrors the real "no element at point"
-// case, which ProseMirror handles gracefully.
-if (!Document.prototype.elementFromPoint) {
-  Document.prototype.elementFromPoint = jest.fn().mockReturnValue(null);
-}
-if (
-  typeof ShadowRoot !== 'undefined' &&
-  !ShadowRoot.prototype.elementFromPoint
-) {
-  (ShadowRoot.prototype as any).elementFromPoint = jest
-    .fn()
-    .mockReturnValue(null);
-}
-
-// `cds-aichat-custom-element` appends its hide-sheet to the shadow root's
-// `adoptedStyleSheets`, which jsdom's ShadowRoot does not implement, so
-// connecting that element would throw before anything renders.
-const adoptedSheets = new WeakMap<ShadowRoot, unknown[]>();
-if (!('adoptedStyleSheets' in ShadowRoot.prototype)) {
-  Object.defineProperty(ShadowRoot.prototype, 'adoptedStyleSheets', {
-    configurable: true,
-    get(this: ShadowRoot) {
-      return adoptedSheets.get(this) ?? [];
-    },
-    set(this: ShadowRoot, sheets: unknown[]) {
-      adoptedSheets.set(this, sheets);
-    },
+// Every DOM mock below needs a window. A spec that runs in Jest's node
+// environment (no DOM) skips them.
+if (typeof window !== 'undefined') {
+  // Mock window.matchMedia since it's not available in jsdom
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: jest.fn().mockImplementation((query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null as any,
+      addListener: jest.fn(), // deprecated
+      removeListener: jest.fn(), // deprecated
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      dispatchEvent: jest.fn(),
+    })),
   });
+
+  // Mock document.execCommand since it's not available in jsdom but is used
+  // internally by ProseMirror (e.g. safariShadowSelectionRange)
+  if (!document.execCommand) {
+    document.execCommand = jest.fn().mockReturnValue(false);
+  }
+
+  // Mock elementFromPoint since it's not available in jsdom but is used
+  // internally by ProseMirror/Tiptap (posAtCoords -> root.elementFromPoint).
+  // Tiptap's placeholder extension viewport tracking (@tiptap/extensions >= 3.27)
+  // calls this on editor mount; the editor lives in a shadow root, so patch both
+  // Document and ShadowRoot. Returning null mirrors the real "no element at point"
+  // case, which ProseMirror handles gracefully.
+  if (!Document.prototype.elementFromPoint) {
+    Document.prototype.elementFromPoint = jest.fn().mockReturnValue(null);
+  }
+  if (
+    typeof ShadowRoot !== 'undefined' &&
+    !ShadowRoot.prototype.elementFromPoint
+  ) {
+    (ShadowRoot.prototype as any).elementFromPoint = jest
+      .fn()
+      .mockReturnValue(null);
+  }
+
+  // `cds-aichat-custom-element` appends its hide-sheet to the shadow root's
+  // `adoptedStyleSheets`, which jsdom's ShadowRoot does not implement, so
+  // connecting that element would throw before anything renders.
+  const adoptedSheets = new WeakMap<ShadowRoot, unknown[]>();
+  if (!('adoptedStyleSheets' in ShadowRoot.prototype)) {
+    Object.defineProperty(ShadowRoot.prototype, 'adoptedStyleSheets', {
+      configurable: true,
+      get(this: ShadowRoot) {
+        return adoptedSheets.get(this) ?? [];
+      },
+      set(this: ShadowRoot, sheets: unknown[]) {
+        adoptedSheets.set(this, sheets);
+      },
+    });
+  }
 }
 
 // Mock ResizeObserver since it's not available in jsdom

@@ -126,6 +126,29 @@ describe('input.mention', () => {
     expect(backend.requests).toHaveLength(0);
   });
 
+  // The chip goes through renderInLightDom's handshake, so its content
+  // reaches page DOM only when that works end to end inside the chat.
+  // @covers export.aiChatEntry.renderInLightDom
+  it('shows renderCustomToken content for a chosen mention in the input, in page DOM', async () => {
+    const chip = document.createElement('span');
+    chip.textContent = 'Custom Alice';
+    const { editor } = await openEditor({
+      input: {
+        mention: {
+          trigger: '@',
+          items: [ALICE],
+          renderCustomToken: () => chip,
+        },
+      },
+    });
+    await insert(editor, '@al');
+    await choose('Alice');
+    await waitFor(() =>
+      expect(isShownWithin(chip, getByTestId(PageObjectId.INPUT))).toBe(true)
+    );
+    expect(chip.getRootNode()).toBe(document);
+  });
+
   it('offers nothing without the trigger', async () => {
     const { editor } = await openEditor({
       input: { mention: { trigger: '@', items: [ALICE] } },

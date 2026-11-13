@@ -6,7 +6,7 @@ Run `npm run measure -- --changed <base>` before review and report per [definiti
 
 ## Measuring a diff
 
-The wrapper prints five blocks: `== complexity`, `== coupling`, `== smells`, `== diff`, `== size`.
+The wrapper prints six blocks: `== complexity`, `== coupling`, `== smells`, `== diff`, `== size`, `== contract`.
 
 See [measure.mjs](../scripts/measure.mjs)'s header for flags. The exit code is the highest of the three tools; bad usage exits 2 before any runs.
 
@@ -31,6 +31,8 @@ The `diff` rows:
 New-file length comes from the selected source; neighbors come from `<base>`, excluding the new file. The median is the middle length or rounded mean of the middle pair.
 
 **Blind spots.** Importers use `git grep -lw`; common words over-count. Comment ratios measure lines, not value. A clean run proves shape, not correctness or the need for a change.
+
+The advisory `contract` row lists changed runtime lines and branch arms missed by contract tests. Missing or stale coverage is unverified. No runtime source diff skips the producer. Read the [coverage workflow](../packages/ai-chat/references/tests.md#check-contract-execution) for source matching, report reuse, and planted proof.
 
 ## Measuring PR size
 

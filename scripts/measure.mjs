@@ -30,6 +30,7 @@
  */
 
 import { spawnSync } from 'node:child_process';
+import { contractCoverage } from './contract-coverage.mjs';
 import { dirname, extname } from 'node:path';
 import {
   addedLines,
@@ -254,6 +255,8 @@ function main() {
   const worst = runTools(cli.base, cli);
   diffBlock(cli.base, cli.source);
   console.log(`\n${sizeReport(cli.base, cli.source)}`);
+  console.log('\n== contract');
+  console.log(contractCoverage(cli.base, cli.source));
   process.exit(worst);
 }
 
