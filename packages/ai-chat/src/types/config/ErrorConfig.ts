@@ -13,6 +13,7 @@ import type { ChatSDKErrorData } from './ChatSDKErrorData';
  * The different categories of errors that the system can record. These values are published for end user consumption.
  *
  * @category Config
+ * @category SDK
  */
 export enum OnErrorType {
   /**

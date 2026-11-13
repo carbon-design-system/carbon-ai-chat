@@ -11,6 +11,7 @@
  * Start or end conversations with human agent.
  *
  * @category Instance
+ * @category SDK
  */
 export interface ChatInstanceServiceDeskActions {
   /**

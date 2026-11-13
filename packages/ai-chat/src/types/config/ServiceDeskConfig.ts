@@ -33,6 +33,7 @@ import {
  * `COMPLETE` (processing finished), `SUCCESS` (upload finished cleanly).
  *
  * @category Service desk
+ * @category SDK
  */
 export const FileStatusValue = _FileStatusValue;
 export type FileStatusValue = _FileStatusValue;
@@ -42,6 +43,7 @@ export type FileStatusValue = _FileStatusValue;
  * {@link FileStatusValue} and any error metadata.
  *
  * @category Service desk
+ * @category SDK
  * @interface
  */
 export type FileUpload = _FileUpload;
@@ -84,6 +86,7 @@ export interface ServiceDeskPublicConfig extends ChatSDKServiceDeskConfig {
  * Represents the different states for the availability of a human agent from a service desk.
  *
  * @category Service desk
+ * @category SDK
  */
 export enum HumanAgentsOnlineStatus {
   /**
@@ -109,6 +112,7 @@ export enum HumanAgentsOnlineStatus {
  * @typeParam I The instance the factory receives. Defaults to {@link ChatInstance}; a factory on
  * {@link ChatSDKConfig} receives {@link ChatSDKInstance}.
  * @category Service desk
+ * @category SDK
  */
 export interface ServiceDeskFactoryParameters<I = ChatInstance> {
   /**
@@ -133,6 +137,7 @@ export interface ServiceDeskFactoryParameters<I = ChatInstance> {
  * implementation of this interface to the integration for it to use.
  *
  * @category Service desk
+ * @category SDK
  */
 export interface ServiceDeskCallback<TPersistedStateType = unknown> {
   /**
@@ -284,6 +289,7 @@ export interface ServiceDeskCallback<TPersistedStateType = unknown> {
  * The set of capabilities and parameters that are supported by the service desk.
  *
  * @category Service desk
+ * @category SDK
  */
 export type ServiceDeskCapabilities = FileUploadCapabilities;
 
@@ -291,6 +297,7 @@ export type ServiceDeskCapabilities = FileUploadCapabilities;
  * The possible state changes for a screen sharing request.
  *
  * @category Service desk
+ * @category SDK
  */
 export enum ScreenShareState {
   /**
@@ -322,6 +329,7 @@ export enum ScreenShareState {
  * first goes to estimatedWaitTime, then positionInQueue, and then message.
  *
  * @category Service desk
+ * @category SDK
  */
 export interface AgentAvailability {
   /**
@@ -344,6 +352,7 @@ export interface AgentAvailability {
  * The possible events that may have some form of error status.
  *
  * @category Service desk
+ * @category SDK
  */
 export enum ErrorType {
   /**
@@ -386,6 +395,7 @@ interface BaseErrorInfo {
  * treat the chat as having ended (or never started).
  *
  * @category Service desk
+ * @category SDK
  */
 export interface ConnectingErrorInfo extends BaseErrorInfo {
   /**
@@ -408,6 +418,7 @@ export interface ConnectingErrorInfo extends BaseErrorInfo {
  * agent to join, it will be treated as a {@link ErrorType.CONNECTING} error instead.
  *
  * @category Service desk
+ * @category SDK
  */
 export interface DisconnectedErrorInfo extends BaseErrorInfo {
   /**
@@ -426,6 +437,7 @@ export interface DisconnectedErrorInfo extends BaseErrorInfo {
  * This error is used to report when there was an error sending a message to the agent.
  *
  * @category Service desk
+ * @category SDK
  */
 export interface UserMessageErrorInfo extends BaseErrorInfo {
   /**
@@ -444,6 +456,7 @@ export interface UserMessageErrorInfo extends BaseErrorInfo {
  * where the type property is the discriminating value that determines which child interface is to be used.
  *
  * @category Service desk
+ * @category SDK
  */
 export type ServiceDeskErrorInfo =
   ConnectingErrorInfo | DisconnectedErrorInfo | UserMessageErrorInfo;
@@ -452,6 +465,7 @@ export type ServiceDeskErrorInfo =
  * Additional options that may be passed to the service desk when a chat is started.
  *
  * @category Service desk
+ * @category SDK
  */
 export interface StartChatOptions<TPayloadType = unknown> {
   /**
@@ -464,6 +478,7 @@ export interface StartChatOptions<TPayloadType = unknown> {
  * Additional info that may be provided when a chat is ended.
  *
  * @category Service desk
+ * @category SDK
  */
 export interface EndChatInfo<TPayloadType = unknown> {
   /**
@@ -483,6 +498,7 @@ export interface EndChatInfo<TPayloadType = unknown> {
  * This is a set of additional data that may be included when the user sends a message to an agent.
  *
  * @category Service desk
+ * @category SDK
  */
 export interface AdditionalDataToAgent {
   /**
@@ -497,6 +513,7 @@ export interface AdditionalDataToAgent {
  * widget and the implementation of the human agent interface with one of the various supported service desks.
  *
  * @category Service desk
+ * @category SDK
  */
 export interface ServiceDesk {
   /**

@@ -13,6 +13,7 @@ import { ResponseUserProfile } from '../messaging/Messages';
  * The subset of HumanAgentState that is persisted to browser storage.
  *
  * @category Instance
+ * @category SDK
  */
 interface PersistedHumanAgentState {
   /** Indicates that the user is connected to a human agent. */

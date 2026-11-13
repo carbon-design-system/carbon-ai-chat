@@ -25,6 +25,7 @@ import type { Message } from '../messaging/Messages';
  * status does not guarantee an error callback.
  *
  * @category Instance
+ * @category SDK
  */
 export type ConversationStatus =
   'ready' | 'loading' | 'submitted' | 'streaming' | 'error';
@@ -33,6 +34,7 @@ export type ConversationStatus =
  * Current connection state of the human agent experience.
  *
  * @category Instance
+ * @category SDK
  */
 export type PublicChatHumanAgentState = Readonly<
   PersistedHumanAgentState & {

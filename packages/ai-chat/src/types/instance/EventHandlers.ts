@@ -97,6 +97,7 @@ export interface EventHandlers {
  * @typeParam I The instance this handler receives. Defaults to {@link ChatInstance}; handlers registered
  * through {@link ChatSDKInstance.on} receive {@link ChatSDKInstance}.
  * @category Instance
+ * @category SDK
  */
 export type EventBusHandler<T extends BusEvent = BusEvent, I = ChatInstance> = (
   event: T,
@@ -109,6 +110,7 @@ export type EventBusHandler<T extends BusEvent = BusEvent, I = ChatInstance> = (
  * @typeParam I The instance the handler receives. Defaults to {@link ChatInstance}.
  * @typeParam E The event types the handler can register for. Defaults to every {@link BusEventType}.
  * @category Instance
+ * @category SDK
  */
 export interface TypeAndHandler<
   I = ChatInstance,
