@@ -15,7 +15,7 @@
  * pass's job; see configReferenceSharing_spec.
  */
 
-import { createAppConfig } from '../../../src/chat/utils/appConfig';
+import { createDerivedConfig } from '../../../src/chat/utils/appConfig';
 import {
   DEFAULT_PUBLIC_CONFIG,
   mergePublicConfig,
@@ -106,9 +106,9 @@ describe('mergePublicConfig', () => {
       layout: { customProperties: { '$button-primary': 'var(--brand)' } },
     } as Partial<PublicConfig>);
 
-    const appConfig = createAppConfig(merged);
+    const derivedConfig = createDerivedConfig(merged);
 
-    expect(appConfig.derived.cssVariableOverrides['$button-primary']).toBe(
+    expect(derivedConfig.cssVariableOverrides['$button-primary']).toBe(
       undefined
     );
     expect(merged.layout.customProperties['$button-primary']).toBe(

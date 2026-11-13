@@ -8,6 +8,8 @@
  */
 
 import type { PublicConfig } from '../../types/config/PublicConfig';
+import type { DerivedConfig } from '../../types/state/AppConfig';
+import { createDerivedConfig } from '../utils/appConfig';
 import type {
   ViewPartitionState,
   ViewPersistedState,
@@ -54,11 +56,13 @@ function restoreViewPersistedState(
 
 /**
  * The view partition's first value, from the host's config and the saved view
- * half, if a session was saved.
+ * half, if a session was saved. Boot passes the values it already derived from
+ * the config, so they're computed once.
  */
 function createInitialViewState(
   config: PublicConfig,
-  saved: ViewPersistedState | null
+  saved: ViewPersistedState | null,
+  derivedConfig: DerivedConfig = createDerivedConfig(config)
 ): ViewPartitionState {
   const persistedToBrowserStorage = saved
     ? restoreViewPersistedState(saved)
@@ -101,6 +105,7 @@ function createInitialViewState(
     announceMessage: undefined,
     // Set from the `markdown` prop; `undefined` when the host omits it.
     markdownConfig: undefined,
+    derivedConfig,
 
     isMessageLoadingCounter: 0,
     isMessageLoadingText: undefined,

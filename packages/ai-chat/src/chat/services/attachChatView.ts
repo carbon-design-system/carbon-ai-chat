@@ -13,6 +13,7 @@ import { loadSavedSession } from '../../sdk/store/doCreateStore';
 import { toPersistableState } from '../../sdk/store/persistenceUtils';
 import type { PublicConfig } from '../../types/config/PublicConfig';
 import type { AppState } from '../../types/state/AppState';
+import type { DerivedConfig } from '../../types/state/AppConfig';
 import { attachViewState, joinPersistedState, viewHalfOf } from '../state';
 
 /**
@@ -70,11 +71,17 @@ function saveSessionOnChange(serviceManager: ServiceManager) {
  */
 function attachChatView(
   serviceManager: ServiceManager,
-  publicConfig: PublicConfig
+  publicConfig: PublicConfig,
+  derivedConfig: DerivedConfig
 ) {
   const saved = loadSavedSession(publicConfig, serviceManager);
   if (
-    attachViewState(serviceManager, publicConfig, saved && viewHalfOf(saved))
+    attachViewState(
+      serviceManager,
+      publicConfig,
+      saved && viewHalfOf(saved),
+      derivedConfig
+    )
   ) {
     saveSessionOnChange(serviceManager);
   }

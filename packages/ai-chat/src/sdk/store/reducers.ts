@@ -27,7 +27,6 @@ import {
   PendingUploadStatus,
 } from '../../types/state/InputState';
 import { PersistedState } from '../../types/state/PersistedState';
-import { ThemeState } from '../../types/state/ThemeState';
 import {
   LocalMessageItem,
   LocalMessageUIState,
@@ -73,7 +72,6 @@ import {
   END_MESSAGE_STREAMING,
   UPDATE_PERSISTED_STATE,
   RESET_PERSISTED_STATE,
-  UPDATE_THEME_STATE,
   ADD_PENDING_UPLOAD,
   UPDATE_PENDING_UPLOAD,
   REMOVE_PENDING_UPLOAD,
@@ -375,11 +373,9 @@ const stateReducers: { [key: string]: ReducerType } = {
     const { config, ...rest } = partialState;
     let nextState = mergeStatePatch(state, rest) as ConversationState;
 
-    // Handle config separately because callers sometimes pass a completely rebuilt AppConfig (for example after
-    // recomputing derived fields based on a new PublicConfig). A blind deep merge would blend the new tree with the
-    // previous one, leaving behind stale nested values. By detecting a full config payload and replacing it wholesale
-    // we ensure each update starts from a clean AppConfig while still allowing partial config updates (e.g.
-    // `config: { derived: { header: ... } }`) to merge as before.
+    // Handle config separately: a config update passes a whole new config. A blind deep merge would blend the new
+    // tree with the previous one, leaving behind stale nested values. So any payload with `public` replaces the
+    // config wholesale. Only a payload without `public` merges into it.
     if (config !== undefined) {
       if (config && Object.prototype.hasOwnProperty.call(config, 'public')) {
         if (!isEqual(state.config, config)) {
@@ -1001,22 +997,6 @@ const stateReducers: { [key: string]: ReducerType } = {
       assistantMessageState: {
         ...state.assistantMessageState,
         activeResponseId,
-      },
-    };
-  },
-
-  [UPDATE_THEME_STATE]: (
-    state: ConversationState,
-    { themeState }: { themeState: ThemeState }
-  ) => {
-    return {
-      ...state,
-      config: {
-        ...state.config,
-        derived: {
-          ...state.config.derived,
-          themeWithDefaults: themeState,
-        },
       },
     };
   },

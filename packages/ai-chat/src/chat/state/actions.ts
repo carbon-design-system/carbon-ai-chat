@@ -15,6 +15,8 @@
 import cloneDeep from 'lodash-es/cloneDeep.js';
 
 import type { AnnounceMessage } from '../../types/state/AnnounceMessage';
+import type { DerivedConfig } from '../../types/state/AppConfig';
+import type { ThemeState } from '../../types/state/ThemeState';
 import type { ViewPartitionState } from '../../types/state/ViewPartitionState';
 import type { CatastrophicErrorPanelState } from '../../types/state/panels/CatastrophicErrorPanelState';
 import type { PersistedState } from '../../types/state/PersistedState';
@@ -32,6 +34,8 @@ import type {
 } from '../../types/messaging/Messages';
 
 const SET_VIEW_VALUE = 'SET_VIEW_VALUE';
+const SET_DERIVED_CONFIG = 'SET_DERIVED_CONFIG';
+const UPDATE_THEME_STATE = 'UPDATE_THEME_STATE';
 const RESET_IS_LOADING_COUNTER = 'RESET_IS_LOADING_COUNTER';
 const ADD_IS_LOADING_COUNTER = 'ADD_IS_LOADING_COUNTER';
 const RESET_IS_HYDRATING_COUNTER = 'RESET_IS_HYDRATING_COUNTER';
@@ -83,6 +87,19 @@ const viewActions = {
     value: ViewPartitionState[TKey]
   ) {
     return { type: SET_VIEW_VALUE, key, value };
+  },
+
+  /**
+   * Replaces the values derived from the config. Each top-level value equal to
+   * the stored one keeps its reference, so its readers don't rerun.
+   */
+  setDerivedConfig(derivedConfig: DerivedConfig) {
+    return { type: SET_DERIVED_CONFIG, derivedConfig };
+  },
+
+  /** Sets the theme, as the theme watcher resolves an inherited one. */
+  updateThemeState(themeState: ThemeState) {
+    return { type: UPDATE_THEME_STATE, themeState };
   },
 
   updateCatastrophicErrorPanel(
@@ -241,6 +258,8 @@ const viewActions = {
 export default viewActions;
 export {
   SET_VIEW_VALUE,
+  SET_DERIVED_CONFIG,
+  UPDATE_THEME_STATE,
   RESET_IS_LOADING_COUNTER,
   ADD_IS_LOADING_COUNTER,
   RESET_IS_HYDRATING_COUNTER,

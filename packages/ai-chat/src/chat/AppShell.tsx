@@ -143,7 +143,7 @@ function RetainedShellContent({
   const publicConfig = useSelector((state: AppState) => state.config.public);
   const carbonTheme = useSelector(
     (state: AppState) =>
-      state.config.derived.themeWithDefaults.derivedCarbonTheme
+      state.view.derivedConfig.themeWithDefaults.derivedCarbonTheme
   );
   const messagesToArray = useMemo(
     () => createUnmappingMemoizer<LocalMessageItem>(),

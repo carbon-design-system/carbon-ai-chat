@@ -117,7 +117,7 @@ class HeaderView extends NativeChatView implements HeaderProps {
       shallowEqual
     );
     this.selectStore(
-      (state) => state.config.derived.header,
+      (state) => state.view.derivedConfig.header,
       (headerConfig) => {
         this.derivedHeaderConfig = headerConfig;
       }

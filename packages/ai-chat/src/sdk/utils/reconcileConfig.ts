@@ -25,8 +25,8 @@ import isEqual from 'lodash-es/isEqual.js';
  * matters beyond its value, it must not rely on this for change detection.
  *
  * Workload: called only on a runtime config replace (rare), with `prev`/`next`
- * being the `public` and `derived` slots of `AppConfig` — tens of keys at the
- * top level. The per-key `isEqual` deep walk is acceptable at that scale; if a
+ * being the public config, or the values the prebuilt chat derives from it —
+ * tens of keys at the top level. The per-key `isEqual` deep walk is acceptable at that scale; if a
  * field is ever added whose sub-tree is large (e.g. a big lookup table), revisit.
  */
 function reconcileObjectReferences<T extends object>(prev: T, next: T): T {
@@ -59,28 +59,29 @@ function reconcileObjectReferences<T extends object>(prev: T, next: T): T {
 /**
  * Preserves object references for the parts of `next` that are value-equal to
  * `prev`, so a config change that only touches one field (e.g. toggling
- * `input.isDisabled`) does not hand every `config.public.*` / `config.derived.*`
- * sub-object — nor the `public` / `derived` / top-level `config` objects
- * themselves — a fresh reference. Selectors that read an unchanged sub-object
- * then keep their identity and skip re-rendering.
+ * `input.isDisabled`) does not hand every `config.public.*` sub-object — nor
+ * the `public` / top-level `config` objects themselves — a fresh reference.
+ * Selectors that read an unchanged sub-object then keep their identity and skip
+ * re-rendering. The prebuilt chat's derived values get the same one-level pass
+ * in its view partition.
  *
- * `createAppConfig` always rebuilds the whole tree, so call this on its output
- * (against the previously stored `AppConfig`) before dispatching the replace.
- * At boot there is no previous config; pass `null` and `next` is returned as-is.
+ * A config update builds a whole new config, so call this on it (against the
+ * previously stored config) before dispatching the replace. At boot there is no
+ * previous config; pass `null` and `next` is returned as-is.
  *
  * Reconciliation is one level deep, with `public.input` the single deliberate
  * exception — see the comment at that call. Everything else stays all-or-nothing
  * per top-level key.
  */
-function reconcileAppConfigReferences<
-  C extends { public: { input?: object }; derived: object },
->(prev: C | null | undefined, next: C): C {
+function reconcileAppConfigReferences<C extends { public: { input?: object } }>(
+  prev: C | null | undefined,
+  next: C
+): C {
   if (!prev) {
     return next;
   }
 
   const publicConfig = reconcileObjectReferences(prev.public, next.public);
-  const derived = reconcileObjectReferences(prev.derived, next.derived);
 
   // `input` is the one key reconciled a second level down. It is the only slot
   // whose siblings are consumed as memo dependencies, so an unrelated change
@@ -98,11 +99,11 @@ function reconcileAppConfigReferences<
     );
   }
 
-  if (publicConfig === prev.public && derived === prev.derived) {
+  if (publicConfig === prev.public) {
     return prev;
   }
 
-  return { ...next, public: publicConfig, derived };
+  return { ...next, public: publicConfig };
 }
 
-export { reconcileAppConfigReferences };
+export { reconcileAppConfigReferences, reconcileObjectReferences };

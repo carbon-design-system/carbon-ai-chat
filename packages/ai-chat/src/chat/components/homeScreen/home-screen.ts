@@ -89,7 +89,7 @@ class HomeScreenView extends NativeChatView implements HomeScreenProps {
       }
     );
     this.selectStore(
-      (state) => state.config.derived.themeWithDefaults.aiEnabled,
+      (state) => state.view.derivedConfig.themeWithDefaults.aiEnabled,
       (aiEnabled) => {
         this.aiEnabled = aiEnabled;
       }

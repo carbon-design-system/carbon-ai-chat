@@ -10,7 +10,6 @@
 import { createAppStore } from '../../../src/sdk/store/appStore';
 
 import { buildLanguagePack } from '../../../src/sdk/store/doCreateStore';
-import { createAppConfig } from '../../../src/chat/utils/appConfig';
 
 import actions from '../../../src/sdk/store/actions';
 import { AppState } from '../../../src/types/state/AppState';
@@ -52,7 +51,7 @@ function changeAppState(
 
 // Helper to create initial state like doCreateStore does
 function createInitialAppState(): AppState {
-  const config = createAppConfig({});
+  const config: AppState['config'] = { public: {} };
 
   return {
     config,

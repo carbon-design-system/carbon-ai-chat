@@ -74,7 +74,6 @@ const createServiceManagerStub = (
             messageLoadingIndicatorTimeoutSecs: 0,
           },
         },
-        derived: {},
       },
       languagePack: {
         errors_singleMessage: 'error',

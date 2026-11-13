@@ -10,9 +10,12 @@
 import isEqual from 'lodash-es/isEqual.js';
 
 import { conversationActions } from '../../sdk/store/conversationActions';
+import { reconcileObjectReferences } from '../../sdk/utils/reconcileConfig';
 import type { PartitionReducer } from '../../sdk/store/appStore';
 import type { ConversationState } from '../../types/state/AppState';
 import type { ViewPartitionState } from '../../types/state/ViewPartitionState';
+import type { DerivedConfig } from '../../types/state/AppConfig';
+import type { ThemeState } from '../../types/state/ThemeState';
 import type { AnnounceMessage } from '../../types/state/AnnounceMessage';
 import type { CatastrophicErrorPanelState } from '../../types/state/panels/CatastrophicErrorPanelState';
 import type { PersistedState } from '../../types/state/PersistedState';
@@ -58,6 +61,8 @@ import {
   TOGGLE_HOME_SCREEN,
   UPDATE_CATASTROPHIC_ERROR_PANEL,
   SET_VIEW_VALUE,
+  SET_DERIVED_CONFIG,
+  UPDATE_THEME_STATE,
 } from './actions';
 import {
   DEFAULT_CITATION_PANEL_STATE,
@@ -150,6 +155,24 @@ const viewReducers: Record<string, ViewReducer> = {
     state: ViewPartitionState,
     action: { key: keyof ViewPartitionState; value: unknown }
   ) => ({ ...state, [action.key]: action.value }),
+
+  [SET_DERIVED_CONFIG]: (
+    state: ViewPartitionState,
+    { derivedConfig }: { derivedConfig: DerivedConfig }
+  ) => {
+    const next = reconcileObjectReferences(state.derivedConfig, derivedConfig);
+    return next === state.derivedConfig
+      ? state
+      : { ...state, derivedConfig: next };
+  },
+
+  [UPDATE_THEME_STATE]: (
+    state: ViewPartitionState,
+    { themeState }: { themeState: ThemeState }
+  ) => ({
+    ...state,
+    derivedConfig: { ...state.derivedConfig, themeWithDefaults: themeState },
+  }),
 
   [RESET_IS_LOADING_COUNTER]: (state: ViewPartitionState) => ({
     ...state,

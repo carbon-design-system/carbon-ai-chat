@@ -21,7 +21,6 @@ import {
   selectInputFieldVisible,
 } from '../../../src/sdk/store/selectors';
 import { createInitialState } from '../../../src/sdk/store/doCreateStore';
-import { createAppConfig } from '../../../src/chat/utils/appConfig';
 import {
   ConversationState,
   InputState,
@@ -29,7 +28,7 @@ import {
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
 
 function stateFor(config: PublicConfig): ConversationState {
-  return createInitialState(createAppConfig(config));
+  return createInitialState({ public: config });
 }
 
 /** Build a state where the chat is connected to a human agent. */
@@ -114,7 +113,7 @@ describe('input flag selectors', () => {
       // the derive-at-read model always prefers a non-null slice override.
       const afterConfigChange: ConversationState = {
         ...state,
-        config: createAppConfig({ isReadonly: false }),
+        config: { public: { isReadonly: false } },
       };
       expect(selectInputIsReadonly(afterConfigChange)).toBe(true);
     });

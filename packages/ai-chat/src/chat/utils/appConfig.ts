@@ -8,13 +8,14 @@
  */
 
 /**
- * Builds the prebuilt chat's whole `AppConfig` from its `PublicConfig`: the
- * config itself, plus the values derived from it. The shell builds it and hands
- * it to the conversation, which reads only its `ConversationAppConfig` fields.
+ * Builds the values the prebuilt chat derives from its `PublicConfig`: header,
+ * layout, launcher, and shortcut defaults, CSS overrides, and the theme. They
+ * live in the view partition, under `view.derivedConfig`; the conversation
+ * never sees them.
  */
 
 import mergeWith from 'lodash-es/mergeWith.js';
-import { AppConfig } from '../../types/state/AppConfig';
+import { DerivedConfig } from '../../types/state/AppConfig';
 import { ThemeState } from '../../types/state/ThemeState';
 import { IS_PHONE } from '../../sdk/utils/browserUtils';
 import { CornersType } from '../../sdk/utils/constants';
@@ -35,7 +36,7 @@ import {
 import { LayoutConfig } from '../../types/config/LayoutConfig';
 import { ChatShortcutConfig } from '../../types/config/ShortcutConfig';
 import { validateCustomProperties } from './styleUtils';
-import { DEFAULT_THEME_STATE } from '../../sdk/store/reducerUtils';
+import { DEFAULT_THEME_STATE } from '../state/defaults';
 
 const DEFAULT_HEADER: HeaderConfig = {
   isOn: true,
@@ -110,9 +111,9 @@ function mergeDefaultsDeep<T>(target: Partial<T>, ...sources: Partial<T>[]): T {
 }
 
 /**
- * Creates a complete AppConfig with derived values computed from the public config.
+ * Computes the derived values from the public config.
  */
-function createAppConfig(publicConfig: PublicConfig): AppConfig {
+function createDerivedConfig(publicConfig: PublicConfig): DerivedConfig {
   // Create the theme state with defaults applied and corners computed
   const themeWithDefaults: ThemeState = {
     originalCarbonTheme:
@@ -149,18 +150,15 @@ function createAppConfig(publicConfig: PublicConfig): AppConfig {
   );
 
   return {
-    public: publicConfig,
-    derived: {
-      cssVariableOverrides,
-      themeWithDefaults,
-      header: derived.header,
-      layout: derived.layout,
-      launcher: derived.launcher,
-      // The defaults above always supply `messageFocusToggle` and its `isOn`; the merge
-      // helper's return type can't express that.
-      keyboardShortcuts:
-        derived.keyboardShortcuts as AppConfig['derived']['keyboardShortcuts'],
-    },
+    cssVariableOverrides,
+    themeWithDefaults,
+    header: derived.header,
+    layout: derived.layout,
+    launcher: derived.launcher,
+    // The defaults above always supply `messageFocusToggle` and its `isOn`; the merge
+    // helper's return type can't express that.
+    keyboardShortcuts:
+      derived.keyboardShortcuts as DerivedConfig['keyboardShortcuts'],
   };
 }
 
@@ -250,4 +248,4 @@ function getLayoutState(publicConfig: PublicConfig): LayoutConfig {
   );
 }
 
-export { createAppConfig, DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT };
+export { createDerivedConfig, DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT };

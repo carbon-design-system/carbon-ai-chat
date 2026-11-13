@@ -56,7 +56,7 @@ function createInitialState(config: ConversationAppConfig): ConversationState {
   const assistantInputState = { ...DEFAULT_INPUT_STATE };
 
   return {
-    // Config with derived values
+    // The host's config
     config,
 
     // Active language pack (defaults + host `strings`), kept off the config tree.
@@ -126,16 +126,20 @@ function readSavedSession(
 }
 
 /**
- * Creates the conversation's store. The shell builds `config` from its
- * `PublicConfig` and the values derived from it.
+ * Creates the conversation's store. The prebuilt chat passes its whole
+ * `PublicConfig` as `config.public`.
  */
 function doCreateStore(
   appConfig: ConversationAppConfig,
   serviceManager: ServiceManager
 ): AppStore<ConversationState> {
   // Every path that creates a store copies the config's plain data, so the
-  // caller editing its object later changes nothing stored (#1833 O6).
-  const config = { ...appConfig, public: copyConfig(appConfig.public) };
+  // caller editing its object later changes nothing stored (#1833 O6). Only
+  // `public` is kept: the values the prebuilt chat derives from its config
+  // live in its view partition.
+  const config: ConversationAppConfig = {
+    public: copyConfig(appConfig.public),
+  };
   const { public: publicConfig } = config;
   const initialState: ConversationState = createInitialState(config);
 

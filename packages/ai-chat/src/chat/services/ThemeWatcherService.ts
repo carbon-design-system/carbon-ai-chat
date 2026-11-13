@@ -9,11 +9,11 @@
 
 import type { AppStore } from '../../sdk/store/appStore';
 import { CarbonTheme } from '../../types/config/CarbonTheme';
-import { ConversationState } from '../../types/state/ConversationState';
+import type { AppState } from '../../types/state/AppState';
 import { ThemeState } from '../../types/state/ThemeState';
 import { getCSSVariableValue, isColorLighterThan } from '../utils/colors';
 import { consoleError } from '../../sdk/utils/miscUtils';
-import { UPDATE_THEME_STATE } from '../../sdk/store/actions';
+import { viewActions } from '../state';
 
 enum CARBON_BG_HEX {
   WHITE = '#ffffff',
@@ -27,7 +27,7 @@ enum CARBON_BG_HEX {
  * Specifically monitors --cds-background and switches between themes based on detected values.
  */
 class ThemeWatcherService {
-  private store: AppStore<ConversationState>;
+  private store: AppStore<AppState>;
   private observer: MutationObserver | null = null;
   private pollInterval: number | null = null;
   private isWatching = false;
@@ -37,10 +37,7 @@ class ThemeWatcherService {
 
   private unsubscribeStore: (() => void) | null = null;
 
-  constructor(
-    store: AppStore<ConversationState>,
-    element = document.documentElement
-  ) {
+  constructor(store: AppStore<AppState>, element = document.documentElement) {
     this.store = store;
     this.parentElement = element;
   }
@@ -72,7 +69,7 @@ class ThemeWatcherService {
   }
 
   private configuredTheme() {
-    return this.store.getState().config.derived.themeWithDefaults
+    return this.store.getState().view.derivedConfig.themeWithDefaults
       .originalCarbonTheme;
   }
 
@@ -86,7 +83,8 @@ class ThemeWatcherService {
 
     const currentState = this.store.getState();
     if (
-      currentState.config.derived.themeWithDefaults.originalCarbonTheme !== null
+      currentState.view.derivedConfig.themeWithDefaults.originalCarbonTheme !==
+      null
     ) {
       return;
     }
@@ -200,12 +198,12 @@ class ThemeWatcherService {
     try {
       const currentState = this.store.getState();
       const currentTheme =
-        currentState.config.derived.themeWithDefaults.derivedCarbonTheme;
+        currentState.view.derivedConfig.themeWithDefaults.derivedCarbonTheme;
 
       // Only act if we're currently in inherit mode or derived from it
       if (
         this.originalTheme &&
-        currentState.config.derived.themeWithDefaults.originalCarbonTheme
+        currentState.view.derivedConfig.themeWithDefaults.originalCarbonTheme
       ) {
         return;
       }
@@ -252,14 +250,11 @@ class ThemeWatcherService {
   private updateTheme(newTheme: CarbonTheme): void {
     const currentState = this.store.getState();
     const newThemeState: ThemeState = {
-      ...currentState.config.derived.themeWithDefaults,
+      ...currentState.view.derivedConfig.themeWithDefaults,
       derivedCarbonTheme: newTheme,
     };
 
-    this.store.dispatch({
-      type: UPDATE_THEME_STATE,
-      themeState: newThemeState,
-    });
+    this.store.dispatch(viewActions.updateThemeState(newThemeState));
   }
 
   /**

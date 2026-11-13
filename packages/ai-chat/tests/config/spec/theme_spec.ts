@@ -59,7 +59,7 @@ describe('Config Theme', () => {
 
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
-      expect(state.config.derived.themeWithDefaults).toEqual({
+      expect(state.view.derivedConfig.themeWithDefaults).toEqual({
         originalCarbonTheme: CarbonTheme.G90,
         derivedCarbonTheme: CarbonTheme.G90,
         aiEnabled: true,
@@ -95,7 +95,7 @@ describe('Config Theme', () => {
 
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
-      expect(state.config.derived.themeWithDefaults).toEqual({
+      expect(state.view.derivedConfig.themeWithDefaults).toEqual({
         derivedCarbonTheme: 'white',
         originalCarbonTheme: 'white',
         corners: {
@@ -130,7 +130,7 @@ describe('Config Theme', () => {
 
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
-      expect(state.config.derived.themeWithDefaults).toEqual({
+      expect(state.view.derivedConfig.themeWithDefaults).toEqual({
         derivedCarbonTheme: 'white',
         originalCarbonTheme: null,
         corners: {
@@ -166,12 +166,14 @@ describe('Config Theme', () => {
 
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
-      expect(state.config.derived.themeWithDefaults.aiEnabled).toEqual(true);
-      expect(state.config.derived.themeWithDefaults.derivedCarbonTheme).toEqual(
-        'white'
+      expect(state.view.derivedConfig.themeWithDefaults.aiEnabled).toEqual(
+        true
       );
       expect(
-        state.config.derived.themeWithDefaults.originalCarbonTheme
+        state.view.derivedConfig.themeWithDefaults.derivedCarbonTheme
+      ).toEqual('white');
+      expect(
+        state.view.derivedConfig.themeWithDefaults.originalCarbonTheme
       ).toEqual(null);
     });
 
@@ -205,14 +207,16 @@ describe('Config Theme', () => {
 
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
-      expect(state.config.derived.themeWithDefaults.derivedCarbonTheme).toEqual(
-        CarbonTheme.G90
-      );
       expect(
-        state.config.derived.themeWithDefaults.originalCarbonTheme
+        state.view.derivedConfig.themeWithDefaults.derivedCarbonTheme
       ).toEqual(CarbonTheme.G90);
-      expect(state.config.derived.themeWithDefaults.aiEnabled).toEqual(true);
-      expect(state.config.derived.themeWithDefaults.corners).toEqual({
+      expect(
+        state.view.derivedConfig.themeWithDefaults.originalCarbonTheme
+      ).toEqual(CarbonTheme.G90);
+      expect(state.view.derivedConfig.themeWithDefaults.aiEnabled).toEqual(
+        true
+      );
+      expect(state.view.derivedConfig.themeWithDefaults.corners).toEqual({
         startStart: CornersType.SQUARE,
         startEnd: CornersType.SQUARE,
         endStart: CornersType.SQUARE,
@@ -261,9 +265,9 @@ describe('Config Theme', () => {
       });
 
       let state: AppState = store.getState();
-      expect(state.config.derived.themeWithDefaults.derivedCarbonTheme).toEqual(
-        'g10'
-      );
+      expect(
+        state.view.derivedConfig.themeWithDefaults.derivedCarbonTheme
+      ).toEqual('g10');
 
       // Simulate dynamic config update (e.g., toggling aiEnabled).
       await applyConfigChangesDynamically(
@@ -275,12 +279,14 @@ describe('Config Theme', () => {
       // Check that derivedCarbonTheme was preserved
       state = store.getState();
       expect(
-        state.config.derived.themeWithDefaults.originalCarbonTheme
+        state.view.derivedConfig.themeWithDefaults.originalCarbonTheme
       ).toEqual(null);
-      expect(state.config.derived.themeWithDefaults.derivedCarbonTheme).toEqual(
-        'g10'
-      ); // Should be preserved
-      expect(state.config.derived.themeWithDefaults.aiEnabled).toEqual(false); // Should be updated
+      expect(
+        state.view.derivedConfig.themeWithDefaults.derivedCarbonTheme
+      ).toEqual('g10'); // Should be preserved
+      expect(state.view.derivedConfig.themeWithDefaults.aiEnabled).toEqual(
+        false
+      ); // Should be updated
     });
   });
 });
@@ -318,7 +324,7 @@ it('should store per-corner config in Redux state', async () => {
 
   const store = (capturedInstance as any).serviceManager.store;
   const state: AppState = store.getState();
-  expect(state.config.derived.themeWithDefaults.corners).toEqual({
+  expect(state.view.derivedConfig.themeWithDefaults.corners).toEqual({
     startStart: CornersType.ROUND,
     startEnd: CornersType.SQUARE,
     endStart: CornersType.SQUARE,
@@ -356,7 +362,7 @@ it('should handle partial per-corner config with defaults', async () => {
 
   const store = (capturedInstance as any).serviceManager.store;
   const state: AppState = store.getState();
-  expect(state.config.derived.themeWithDefaults.corners).toEqual({
+  expect(state.view.derivedConfig.themeWithDefaults.corners).toEqual({
     startStart: CornersType.SQUARE,
     startEnd: CornersType.ROUND, // defaulted
     endStart: CornersType.ROUND, // defaulted
@@ -397,7 +403,7 @@ it('should force all corners to square when showFrame is false', async () => {
   const store = (capturedInstance as any).serviceManager.store;
   const state: AppState = store.getState();
   // All corners should be forced to square when showFrame is false
-  expect(state.config.derived.themeWithDefaults.corners).toEqual({
+  expect(state.view.derivedConfig.themeWithDefaults.corners).toEqual({
     startStart: CornersType.SQUARE,
     startEnd: CornersType.SQUARE,
     endStart: CornersType.SQUARE,
