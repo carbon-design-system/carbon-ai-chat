@@ -25,11 +25,21 @@ export interface EventHandlers {
    *
    * @example Listen for received messages, chaining a second subscription
    * ```ts
-   * import { BusEventType } from "@carbon/ai-chat";
+   * import {
+   *   BusEventType,
+   *   type BusEventReceive,
+   *   type BusEventViewChange,
+   * } from "@carbon/ai-chat";
    *
    * instance
-   *   .on({ type: BusEventType.RECEIVE, handler: (event) => console.log(event.data) })
-   *   .on({ type: BusEventType.VIEW_CHANGE, handler: (event) => console.log(event.newViewState) });
+   *   .on({
+   *     type: BusEventType.RECEIVE,
+   *     handler: (event) => console.log((event as BusEventReceive).data),
+   *   })
+   *   .on({
+   *     type: BusEventType.VIEW_CHANGE,
+   *     handler: (event) => console.log((event as BusEventViewChange).newViewState),
+   *   });
    * ```
    */
   on: (handlers: TypeAndHandler | TypeAndHandler[]) => EventHandlers;
@@ -42,10 +52,11 @@ export interface EventHandlers {
    *
    * @example Remove a previously registered handler
    * ```ts
-   * import { BusEventType } from "@carbon/ai-chat";
+   * import { BusEventType, type BusEvent, type BusEventReceive } from "@carbon/ai-chat";
    *
    * // off requires the same handler reference passed to on.
-   * const onReceive = (event) => console.log(event.data);
+   * const onReceive = (event: BusEvent) =>
+   *   console.log((event as BusEventReceive).data);
    * instance.on({ type: BusEventType.RECEIVE, handler: onReceive });
    * instance.off({ type: BusEventType.RECEIVE, handler: onReceive });
    * ```
