@@ -13,6 +13,7 @@ import { act, render, waitFor } from '@testing-library/react';
 import { deepQuerySelector } from '@carbon/ai-chat-components/es/globals/utils/dom-utils.js';
 import ChatShell from '../../../src/chat/components/shell/ChatShell';
 import type ChatInput from '../../../src/chat/components/input/ChatInput';
+import type { ChatViewState } from '../../../src/chat/services/chatViewState';
 import { ChatContainer } from '../../../src/react/ChatContainer';
 import actions from '../../../src/chat/store/actions';
 import { getDeepActiveElement } from '../../../src/chat/utils/domUtils';
@@ -211,6 +212,13 @@ describe('native shell failure surface', () => {
     const onError = jest.fn();
     const f = await boot({ onError });
     expect(onError).toHaveBeenCalledTimes(1);
+    // The failed shell's error view connects without publishing handles.
+    const manager = (f.view as unknown as { viewState: ChatViewState })
+      .viewState.serviceManager;
+    expect(manager.mainWindow).toBeUndefined();
+    expect(manager.appWindow).toBeUndefined();
+    expect(manager.ariaAnnouncer).toBeUndefined();
+    expect(manager.inputComponent).toBeFalsy();
     expect(onError).toHaveBeenCalledWith(
       expect.objectContaining({
         errorType: OnErrorType.RENDER,
