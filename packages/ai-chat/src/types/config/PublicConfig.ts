@@ -118,10 +118,9 @@ export interface PublicConfig {
   serviceDesk?: ServiceDeskPublicConfig;
 
   /**
-   * Whether the chat moves focus into itself when it opens on its own at page load, such as with
-   * {@link PublicConfig.openChatByDefault} or a restored session. Defaults to true. Set it to false to keep focus on
-   * your page at load. It doesn't affect other focus moves: opening the chat with {@link ChatInstance.changeView}
-   * and calling {@link ChatInstance.requestFocus} still move focus into the chat.
+   * Whether the chat's shared focus manager can move focus. Defaults to true.
+   * In 1.x, false blocks automatic transitions, focus after {@link ChatInstance.changeView}, and
+   * {@link ChatInstance.requestFocus}. A blocked focus request returns false. Direct user focus is unaffected.
    */
   shouldTakeFocusIfOpensAutomatically?: boolean;
 

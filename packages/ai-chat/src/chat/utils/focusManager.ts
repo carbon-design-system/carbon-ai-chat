@@ -13,6 +13,7 @@ import { consoleError } from './miscUtils';
 import type { HasRequestFocus } from '../../types/utilities/HasRequestFocus';
 
 export interface FocusManagerOptions {
+  shouldAutoFocus: boolean;
   showDisclaimer: boolean;
   iFramePanelIsOpen: boolean;
   viewSourcePanelIsOpen: boolean;
@@ -29,7 +30,7 @@ export interface FocusManagerOptions {
 /** Moves focus to the window's current target, and returns whether it found one to focus. */
 export function requestFocus(options: FocusManagerOptions): boolean {
   try {
-    if (IS_MOBILE) {
+    if (!options.shouldAutoFocus || IS_MOBILE) {
       return false;
     }
     if (options.showDisclaimer) {

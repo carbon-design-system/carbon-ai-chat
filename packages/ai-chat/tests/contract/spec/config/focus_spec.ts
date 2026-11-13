@@ -84,32 +84,37 @@ describe('shouldTakeFocusIfOpensAutomatically', () => {
     await waitFor(() => expect(focusIsInInput()).toBe(true));
   });
 
-  it('moves focus into the input on a changeView open when false', async () => {
+  // MAIN-NOTES M55 (2.0.0): false blocks the shared focus manager in 1.x.
+  it('leaves focus outside on a changeView open when false', async () => {
     const { instance } = await contractChat({
       messaging: { skipWelcome: true },
       shouldTakeFocusIfOpensAutomatically: false,
     });
-    focusHostButton();
+    const button = focusHostButton();
     await changeView(instance, ViewType.MAIN_WINDOW);
-    await waitFor(() => expect(focusIsInInput()).toBe(true));
+    await pause(100);
+    expect(deepActiveElement()).toBe(button);
+    expect(focusIsInInput()).toBe(false);
   });
 
-  it('lets requestFocus move focus into the input when false', async () => {
+  it('returns false and leaves focus outside on requestFocus when false', async () => {
     const { instance } = await contractChat({
       messaging: { skipWelcome: true },
       shouldTakeFocusIfOpensAutomatically: false,
     });
     await changeView(instance, ViewType.MAIN_WINDOW);
-    focusHostButton();
+    const button = focusHostButton();
     let result: boolean | void;
     await act(async () => {
       result = instance.requestFocus();
     });
-    expect(result).toBe(true);
-    await waitFor(() => expect(focusIsInInput()).toBe(true));
+    expect(result).toBe(false);
+    await pause(100);
+    expect(deepActiveElement()).toBe(button);
+    expect(focusIsInInput()).toBe(false);
   });
 
-  it('lets requestFocus move focus after the chat opens by default when false', async () => {
+  it('keeps requestFocus blocked after the chat opens by default when false', async () => {
     const { instance } = await contractChat({
       messaging: { skipWelcome: true },
       openChatByDefault: true,
@@ -122,8 +127,27 @@ describe('shouldTakeFocusIfOpensAutomatically', () => {
     await act(async () => {
       result = instance.requestFocus();
     });
-    expect(result).toBe(true);
-    await waitFor(() => expect(focusIsInInput()).toBe(true));
+    expect(result).toBe(false);
+    await pause(100);
+    expect(deepActiveElement()).toBe(button);
+    expect(focusIsInInput()).toBe(false);
+  });
+
+  it('leaves outside focus in place when a custom panel closes with the flag false', async () => {
+    const { instance } = await contractChat({
+      messaging: { skipWelcome: true },
+      openChatByDefault: true,
+      shouldTakeFocusIfOpensAutomatically: false,
+    });
+    const panel = instance.customPanels.getPanel();
+    await act(async () => panel.open());
+    expect(instance.state.get().customPanels.default.isOpen).toBe(true);
+    const button = focusHostButton();
+    await act(async () => panel.close());
+    expect(instance.state.get().customPanels.default.isOpen).toBe(false);
+    await pause(100);
+    expect(deepActiveElement()).toBe(button);
+    expect(focusIsInInput()).toBe(false);
   });
 });
 
