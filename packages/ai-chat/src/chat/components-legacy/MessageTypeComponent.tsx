@@ -964,7 +964,6 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
           isNegativeDisabled={isPositiveFeedbackSelected || isFeedbackSubmitted}
           positiveLabel={languagePack.feedback_positiveLabel}
           negativeLabel={languagePack.feedback_negativeLabel}
-          panelID={feedbackPanelID}
           onClick={(event: CustomEvent<{ isPositive: boolean }>) =>
             onFeedbackClicked(event.detail.isPositive)
           }

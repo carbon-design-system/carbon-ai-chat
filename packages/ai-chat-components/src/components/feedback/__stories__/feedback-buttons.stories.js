@@ -35,10 +35,6 @@ class FeedbackButtonsDetailsDemo extends LitElement {
       type: Boolean,
       attribute: 'has-negative-details',
     },
-    panelId: {
-      type: String,
-      attribute: 'panel-id',
-    },
     positiveLabel: {
       type: String,
       attribute: 'positive-label',
@@ -99,7 +95,6 @@ class FeedbackButtonsDetailsDemo extends LitElement {
         }
         positive-label=${this.positiveLabel}
         negative-label=${this.negativeLabel}
-        panel-id=${this.panelId}
         @feedback-buttons-click=${(event) =>
           this._handleFeedbackToggle(
             event.detail.isPositive
@@ -306,11 +301,6 @@ export default {
       description: 'Whether the negative details panel is open',
       table: { disable: true },
     },
-    panelID: {
-      control: 'text',
-      description: 'ID of the associated feedback panel',
-      table: { disable: true },
-    },
   },
 };
 
@@ -349,7 +339,6 @@ export const WithDetailsPanel = {
   args: {
     positiveLabel: 'I like this response',
     negativeLabel: 'I dislike this response',
-    panelID: 'feedback-panel-example',
     hasPositiveDetails: true,
     hasNegativeDetails: true,
   },
@@ -365,11 +354,6 @@ export const WithDetailsPanel = {
       description: 'Whether negative button opens a details panel',
       table: { disable: false },
     },
-    panelID: {
-      control: false,
-      description: 'ID of the associated feedback panel',
-      table: { disable: false },
-    },
   },
   render: (args) => html`
     <div style="padding: 2rem;">
@@ -378,7 +362,6 @@ export const WithDetailsPanel = {
         clicking the thumbs up or thumbs down buttons to provide feedback.
       </p>
       <cds-aichat-feedback-buttons-demo
-        panel-id=${args.panelID}
         positive-label=${args.positiveLabel}
         negative-label=${args.negativeLabel}
         ?has-positive-details=${args.hasPositiveDetails}
