@@ -30,6 +30,10 @@ import type {
  * doesn't parse, the chat logs a warning that names the attribute and uses the
  * field's value from `config`, or its default.
  *
+ * A Boolean field also takes an HTML attribute, which turns it on whatever its
+ * value, `"false"` included. Removing the attribute sets the field to `false`,
+ * which overrides `config`.
+ *
  * @category Web component
  */
 interface CdsAiChatCustomElementAttributes extends Omit<
@@ -71,7 +75,7 @@ interface CdsAiChatCustomElementAttributes extends Omit<
    * hidden. A common pattern is to use this when the chat is closing and `onViewChange` when it opens.
    *
    * Note that this function can only be provided before Carbon AI Chat is loaded. After Carbon AI Chat is loaded, the
-   * callback will not be updated.
+   * callback will not be updated. It also runs at mount, for the chat's move to its first view.
    */
   onViewPreChange?: (event: BusEventViewPreChange) => Promise<void> | void;
 
@@ -85,7 +89,7 @@ interface CdsAiChatCustomElementAttributes extends Omit<
    * is opened or closed.
    *
    * Note that this function can only be provided before Carbon AI Chat is loaded. After Carbon AI Chat is loaded, the event
-   * handler will not be updated.
+   * handler will not be updated. It also runs at mount, for the chat's move to its first view.
    */
   onViewChange?: (event: BusEventViewChange, instance: ChatInstance) => void;
 

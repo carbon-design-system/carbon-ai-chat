@@ -209,8 +209,6 @@ describe.each(ELEMENT_TAGS)('onViewPreChange and onViewChange on %s', (tag) => {
 
   // @covers element.cds-aichat-container.onViewPreChange element.cds-aichat-custom-element.onViewPreChange
   // @covers element.cds-aichat-container.onViewChange element.cds-aichat-custom-element.onViewChange
-  // MAIN-NOTES M107: the JSDoc says these run when the chat opens or closes;
-  // they also run for the mount's own move to the launcher.
   it('calls both once at mount, for the move from all closed to the launcher', async () => {
     const pre = jest.fn();
     const change = jest.fn();
@@ -266,8 +264,6 @@ describe.each(ELEMENT_TAGS)('onViewPreChange and onViewChange on %s', (tag) => {
 
   // @covers element.cds-aichat-container.onViewPreChange element.cds-aichat-custom-element.onViewPreChange
   // @covers element.cds-aichat-container.onViewChange element.cds-aichat-custom-element.onViewChange
-  // MAIN-NOTES M107: the elements read view callbacks once, at the first
-  // render. The custom element's JSDoc says so; the container's doesn't.
   it('ignores view callbacks set after the first render', async () => {
     const { instance, element } = await contractElement(tag, {
       properties: { messaging: { skipWelcome: true } },

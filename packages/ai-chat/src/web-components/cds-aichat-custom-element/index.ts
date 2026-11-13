@@ -137,7 +137,8 @@ class ChatCustomElement extends FlattenedConfigElement {
    * A common pattern is to use this for when the chat is closing and to use onViewChange for when the chat opens.
    *
    * Note that this function can only be provided before Carbon AI Chat is loaded as it is registered before the
-   * chat renders. After Carbon AI Chat is loaded, the callback will not be updated.
+   * chat renders. After Carbon AI Chat is loaded, the callback will not be updated. It also runs at mount, for the
+   * chat's move to its first view.
    */
   @property()
   onViewPreChange?: (event: BusEventViewPreChange) => Promise<void> | void;
@@ -159,7 +160,8 @@ class ChatCustomElement extends FlattenedConfigElement {
    * A common pattern is to use this for when the chat is opening and to use onViewPreChange for when the chat closes.
    *
    * Note that this function can only be provided before Carbon AI Chat is loaded as it is registered before the
-   * chat renders. After Carbon AI Chat is loaded, the callback will not be updated.
+   * chat renders. After Carbon AI Chat is loaded, the callback will not be updated. It also runs at mount, for the
+   * chat's move to its first view.
    */
   @property()
   onViewChange?: (event: BusEventViewChange, instance: ChatInstance) => void;

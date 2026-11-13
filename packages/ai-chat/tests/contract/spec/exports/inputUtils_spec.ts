@@ -163,7 +163,6 @@ describe.each(ENTRIES)('%s JSONContent walkers', (_, utils) => {
   });
 
   it('gives an empty doc when the root is mapped to null', () => {
-    // Not in the JSDoc; this is main's fallback for a removed root.
     expect(utils.mapNodes(SOURCE, () => null)).toEqual(doc(paragraph()));
   });
 });

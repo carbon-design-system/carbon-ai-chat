@@ -684,6 +684,9 @@ interface ChatContainerProps extends Omit<PublicConfig, 'markdown'> {
    * This is an opt-in observation hook. Unlike {@link ChatCustomElementProps},
    * the container has no wrapping element to size, so no default visibility
    * behavior runs when this prop is omitted.
+   *
+   * The chat reads this prop once, at mount, so a later change to it is
+   * ignored. It also runs at mount, for the chat's move to its first view.
    */
   onViewPreChange?: (
     event: BusEventViewPreChange,
@@ -696,6 +699,9 @@ interface ChatContainerProps extends Omit<PublicConfig, 'markdown'> {
    * This is an opt-in observation hook. Unlike {@link ChatCustomElementProps},
    * the container has no wrapping element to size, so no default visibility
    * behavior runs when this prop is omitted.
+   *
+   * The chat reads this prop once, at mount, so a later change to it is
+   * ignored. It also runs at mount, for the chat's move to its first view.
    */
   onViewChange?: (event: BusEventViewChange, instance: ChatInstance) => void;
 
@@ -707,6 +713,9 @@ interface ChatContainerProps extends Omit<PublicConfig, 'markdown'> {
   /**
    * This is the function that this component will call when a footer below a user message should be rendered.
    * Leave it off and user messages have no footer.
+   *
+   * Only a message sent while this prop is set gets a footer. Setting it later doesn't add one to messages already
+   * sent.
    */
   renderCustomRequestFooter?: RenderCustomRequestFooter;
 
@@ -717,10 +726,13 @@ interface ChatContainerProps extends Omit<PublicConfig, 'markdown'> {
 
   /**
    * Renderer for nodes inside sent user message bubbles (rich user message
-   * content). Invoked once per `mention` chip, `command` chip, and custom
+   * content). Invoked for each `mention` chip, `command` chip, and custom
    * TipTap node in a user message's `display_content`; returned React content
    * mounts into light DOM. Return `null` for a node you don't render: a chip
    * keeps its default look, and a custom node shows its `label` or `value`.
+   *
+   * The chat may call it more than once for the same node, for example while
+   * the message is sending. Return the same output for the same node.
    */
   renderUserDefinedInputNode?: RenderUserDefinedInputNode;
 

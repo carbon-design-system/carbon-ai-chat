@@ -189,6 +189,9 @@ class ChatContainer extends FlattenedConfigElement {
    * This is an opt-in observation hook. Unlike `cds-aichat-custom-element`, the
    * container has no wrapping element to size, so no default visibility
    * behavior runs when this property is omitted.
+   *
+   * The chat reads this property once, at its first render, so a later change
+   * is ignored. It also runs at mount, for the chat's move to its first view.
    */
   @property()
   onViewPreChange?: (event: BusEventViewPreChange) => Promise<void> | void;
@@ -199,6 +202,9 @@ class ChatContainer extends FlattenedConfigElement {
    * This is an opt-in observation hook. Unlike `cds-aichat-custom-element`, the
    * container has no wrapping element to size, so no default visibility
    * behavior runs when this property is omitted.
+   *
+   * The chat reads this property once, at its first render, so a later change
+   * is ignored. It also runs at mount, for the chat's move to its first view.
    */
   @property()
   onViewChange?: (event: BusEventViewChange, instance: ChatInstance) => void;
@@ -788,6 +794,10 @@ declare global {
  * doesn't parse, the chat logs a warning that names the attribute and uses the
  * field's value from `config`, or its default.
  *
+ * A Boolean field also takes an HTML attribute, which turns it on whatever its
+ * value, `"false"` included. Removing the attribute sets the field to `false`,
+ * which overrides `config`.
+ *
  * @category Web component
  */
 interface CdsAiChatContainerAttributes extends Omit<PublicConfig, 'markdown'> {
@@ -823,12 +833,18 @@ interface CdsAiChatContainerAttributes extends Omit<PublicConfig, 'markdown'> {
   /**
    * Called before a view change (the chat opening or closing). Async — return a Promise to defer the view
    * change until it resolves. This is an opt-in observation hook with no default visibility behavior.
+   *
+   * The chat reads this property once, at its first render, so a later change is ignored. It also runs at mount,
+   * for the chat's move to its first view.
    */
   onViewPreChange?: (event: BusEventViewPreChange) => Promise<void> | void;
 
   /**
    * Called when a view change (the chat opening or closing) is complete. This is an opt-in observation hook
    * with no default visibility behavior.
+   *
+   * The chat reads this property once, at its first render, so a later change is ignored. It also runs at mount,
+   * for the chat's move to its first view.
    */
   onViewChange?: (event: BusEventViewChange, instance: ChatInstance) => void;
 

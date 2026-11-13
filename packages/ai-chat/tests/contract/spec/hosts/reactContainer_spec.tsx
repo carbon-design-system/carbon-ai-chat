@@ -376,8 +376,8 @@ describe.each(REACT_HOSTS)(
       };
     }
 
-    // The load's own view change is in elementCallbacks_spec (MAIN-NOTES
-    // M107), so this clears it and checks a host's change only.
+    // The load's own view change is in elementCallbacks_spec, so this clears
+    // it and checks a host's change only.
     it('calls onViewPreChange, then onViewChange, with the event and the instance', async () => {
       const { calls, instance } = await mountRecording();
       calls.length = 0;
@@ -437,8 +437,6 @@ describe.each(REACT_HOSTS)(
       onViewPreChange.mockClear();
       onViewChange.mockClear();
       await changeView(instance, ViewType.MAIN_WINDOW);
-      // On `main` both callbacks are read once, when the chat starts. Only
-      // ChatCustomElementProps documents that; ChatContainerProps does not.
       expect(onViewPreChange).toHaveBeenCalledTimes(1);
       expect(onViewChange).toHaveBeenCalledTimes(1);
       expect(newPreChange).not.toHaveBeenCalled();
@@ -591,8 +589,6 @@ describe('renderCustomRequestFooter', () => {
     await send('two');
     await setFooter(footer('Footer for'));
     await send('three');
-    // On `main` a footer is collected only for a message sent while a
-    // renderer was set.
     await waitFor(() =>
       expect(footerTexts()).toEqual(['Footer for one', 'Footer for three'])
     );
@@ -664,9 +660,8 @@ describe('renderUserDefinedInputNode', () => {
       { node: { type: string; attrs: unknown }; message: MessageRequest },
       ChatInstance,
     ][];
-    // On `main` each node's call repeats each time the sent message changes
-    // during the send, though the prop's JSDoc says it is invoked once per
-    // node. Only which nodes it is called for is held here.
+    // A node's call can repeat while the message sends, so only which nodes
+    // it is called for is held here.
     expect(
       [...new Set(calls.map(([state]) => state.node.type))].sort()
     ).toEqual(['command', 'mention', 'taskCard']);
