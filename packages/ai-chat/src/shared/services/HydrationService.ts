@@ -276,25 +276,8 @@ class HydrationService {
       }
 
       const restartGeneration =
-        serviceManager.messageCoordinator.restart(skipHydration);
-
-      // Increment the restart generation to filter out any chunks from the previous conversation
-      this.serviceManager.messageCoordinator.bumpChunkRestartGeneration();
-
+        serviceManager.messageCoordinator.beginRestart(skipHydration);
       this.serviceManager.streamAnnouncerService.clearAll();
-      this.serviceManager.messageCoordinator.clearProcessedAgentItems();
-
-      // Mark all existing messages as belonging to the OLD generation by keeping them in the map
-      // (don't clear - this way we can detect stale chunks from old messages)
-
-      // Set isRestarting to true to signal that we're in the middle of a restart
-      serviceManager.messageCoordinator.setRestartInProgress(true);
-
-      serviceManager.restartCount++;
-      serviceManager.messageCoordinator.clearAllIncomingWrites();
-
-      // A request that got no reply has already left the queue, so the cancel below never ends its timers.
-      serviceManager.messageCoordinator.messageLoadingManager.end();
 
       if (
         state.config.public.messaging.messageLoadingIndicatorTimeoutSecs !== 0

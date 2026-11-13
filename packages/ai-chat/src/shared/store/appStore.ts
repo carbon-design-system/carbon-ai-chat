@@ -112,6 +112,9 @@ type PartitionAttacher = (
  */
 const partitionAttachers = new WeakMap<object, PartitionAttacher>();
 
+/** How to close each store {@link createStoreFromReduction} made. */
+const storeClosers = new WeakMap<object, () => void>();
+
 /**
  * Creates a lightweight, synchronous store.
  *
@@ -155,6 +158,7 @@ export function createStoreFromReduction<
   preloadedState: StateShape
 ): AppStore<StateShape, ActionType> {
   let currentState: StateShape = preloadedState;
+  let closed = false;
   const listeners: Set<StoreListener> = new Set();
   const partitions = new Map<string, PartitionReducer<unknown, StateShape>>();
 
@@ -193,6 +197,9 @@ export function createStoreFromReduction<
   const dispatch: DispatchFunction<ActionType> = (
     action: Readonly<ActionType>
   ): ActionType => {
+    if (closed) {
+      return action as ActionType;
+    }
     const previousState = currentState;
     if (isEnableDebugLog()) {
       debugLog(
@@ -235,6 +242,9 @@ export function createStoreFromReduction<
   };
 
   const subscribe = (listener: StoreListener): (() => void) => {
+    if (closed) {
+      return () => {};
+    }
     listeners.add(listener);
     return () => {
       listeners.delete(listener);
@@ -242,8 +252,12 @@ export function createStoreFromReduction<
   };
 
   const store = { getState, dispatch, subscribe };
+  storeClosers.set(store, () => {
+    closed = true;
+    listeners.clear();
+  });
   partitionAttachers.set(store, (key, partitionReducer, initialState) => {
-    if (partitions.has(key)) {
+    if (closed || partitions.has(key)) {
       return false;
     }
     if (Object.prototype.hasOwnProperty.call(currentState, key)) {
@@ -255,6 +269,21 @@ export function createStoreFromReduction<
     return true;
   });
   return store;
+}
+
+/**
+ * Closes a store made by {@link createStoreFromReduction} or
+ * {@link createAppStore}, for a chat that shut down.
+ * Its subscribers are dropped, and a later subscriber is never called. A
+ * later dispatch changes nothing, so work still running when the chat shut
+ * down can't change its state or what it saves. Reads keep the last state.
+ * Closing again does nothing.
+ *
+ * @param store - A store from {@link createStoreFromReduction} or
+ *   {@link createAppStore}.
+ */
+export function closeStore(store: AppStore<unknown>): void {
+  storeClosers.get(store)?.();
 }
 
 /**
@@ -272,7 +301,8 @@ export function createStoreFromReduction<
  * @param key - Where the partition's value lives in the state.
  * @param reducer - Updates the partition's value.
  * @param initialState - The partition's first value.
- * @returns Whether this call added the partition.
+ * @returns Whether this call added the partition. False when the store
+ * already had it, or was closed by {@link closeStore}.
  */
 export function attachPartition<StoreState, PartState>(
   store: AppStore<StoreState>,

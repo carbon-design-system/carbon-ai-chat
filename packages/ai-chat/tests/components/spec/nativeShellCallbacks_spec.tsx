@@ -145,6 +145,7 @@ describe.each(wrappers)('shell callbacks through %s', (_name, Wrapper) => {
     const service = {
       userTyping: jest.fn(),
       filesSelectedForUpload: jest.fn(),
+      shutdown: jest.fn(),
     };
     (manager as unknown as { humanAgentService: unknown }).humanAgentService =
       service;

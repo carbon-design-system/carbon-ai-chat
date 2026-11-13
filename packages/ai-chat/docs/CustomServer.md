@@ -194,6 +194,7 @@ The {@link CustomSendMessageOptions.signal | abort signal} fires when a message 
 - {@link CancellationReason.STOP_STREAMING} (`"Stop streaming"`) - the user clicked the stop streaming button
 - {@link CancellationReason.CONVERSATION_RESTARTED} (`"Conversation restarted"`) - the user restarted or cleared the conversation
 - {@link CancellationReason.TIMEOUT} (`"Request timeout"`) - the request exceeded the configured timeout
+- {@link CancellationReason.CHAT_REMOVED} (`"Chat removed"`) - the chat was removed from the page. Its saved session stays, so the next chat on the page can resume the conversation. Don't end the conversation on your server for this reason.
 
 Check whether the request was cancelled with `signal.aborted`, or by listening for the "abort" event, and read the reason from `signal.reason`. The abort signal handles every cancellation the same way.
 
@@ -207,7 +208,7 @@ async function customSendMessage(
 ) {
   let isCanceled = false;
 
-  // Listen to abort signal (handles stop button, restart/clear, and timeout)
+  // Listen to abort signal (handles stop button, restart/clear, timeout, and removal)
   const abortHandler = () => {
     isCanceled = true;
     const reason = requestOptions.signal?.reason;
@@ -219,6 +220,8 @@ async function customSendMessage(
       console.log('Conversation was restarted/cleared');
     } else if (reason === CancellationReason.TIMEOUT) {
       console.log('Request timed out');
+    } else if (reason === CancellationReason.CHAT_REMOVED) {
+      console.log('Chat was removed; keep the conversation on the server');
     }
 
     // Stop your stream. Only finalize it if the conversation still exists.
@@ -316,7 +319,7 @@ await instance.messaging.upsertMessage(
 - The "stop streaming" button appears with `cancellable: true`. An explicit `false` disables it; see the rules above for mixed items.
 - Clicking the button fires the abort signal (with reason {@link CancellationReason.STOP_STREAMING}), but it does not stop your streaming on its own.
 - Listen for the abort signal and stop your streaming logic. After the stop button, deliver the final state. After restart or clear, skip it.
-- The abort signal also fires on conversation restarts and clears ({@link CancellationReason.CONVERSATION_RESTARTED}) and on timeouts ({@link CancellationReason.TIMEOUT}).
+- The abort signal also fires on conversation restarts and clears ({@link CancellationReason.CONVERSATION_RESTARTED}), on timeouts ({@link CancellationReason.TIMEOUT}), and when the chat is removed from the page ({@link CancellationReason.CHAT_REMOVED}).
 - With {@link ChatInstanceMessaging.addMessageChunk | addMessageChunk}, the button stays visible but disabled until a {@link FinalResponseChunk | final response chunk} arrives. With {@link ChatInstanceMessaging.upsertMessage | upsertMessage}, it hides when the message reaches {@link MessageState.COMPLETE | complete} (or {@link MessageState.ERROR | error}).
 - If a {@link CancellationReason.TIMEOUT | timeout} cancels the message, the UI marks it as errored.
 

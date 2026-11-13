@@ -7,13 +7,16 @@
  *  @license
  */
 
-import type { AppStore } from '../store/appStore';
+import type { AppStore } from '../../shared/store/appStore';
 import { CarbonTheme } from '../../types/config/CarbonTheme';
 import { ConversationState } from '../../types/state/ConversationState';
 import { ThemeState } from '../../types/state/ThemeState';
-import { getCSSVariableValue, isColorLighterThan } from '../utils/colors';
-import { consoleError } from '../utils/miscUtils';
-import { UPDATE_THEME_STATE } from '../store/actions';
+import {
+  getCSSVariableValue,
+  isColorLighterThan,
+} from '../../shared/utils/colors';
+import { consoleError } from '../../shared/utils/miscUtils';
+import { UPDATE_THEME_STATE } from '../../shared/store/actions';
 
 enum CARBON_BG_HEX {
   WHITE = '#ffffff',
@@ -35,12 +38,45 @@ class ThemeWatcherService {
   private lastBgColor: string | null = null;
   private parentElement: HTMLElement;
 
+  private unsubscribeStore: (() => void) | null = null;
+
   constructor(
     store: AppStore<ConversationState>,
     element = document.documentElement
   ) {
     this.store = store;
     this.parentElement = element;
+  }
+
+  /**
+   * Watches while the config inherits the host's theme, and follows changes
+   * to that setting. The mount calls this at boot. Repeat-safe.
+   */
+  connect(): void {
+    if (this.unsubscribeStore) {
+      return;
+    }
+    let originalTheme = this.configuredTheme();
+    this.unsubscribeStore = this.store.subscribe(() => {
+      const nextTheme = this.configuredTheme();
+      if (nextTheme !== originalTheme) {
+        originalTheme = nextTheme;
+        this.onThemeChange(nextTheme);
+      }
+    });
+    this.onThemeChange(originalTheme);
+  }
+
+  /** Stops watching and following the config. The mount calls this on release. */
+  disconnect(): void {
+    this.unsubscribeStore?.();
+    this.unsubscribeStore = null;
+    this.stopWatching();
+  }
+
+  private configuredTheme() {
+    return this.store.getState().config.derived.themeWithDefaults
+      .originalCarbonTheme;
   }
 
   /**

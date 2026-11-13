@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { cleanup, waitFor } from '@testing-library/react';
+import { waitFor } from '@testing-library/react';
 import { MessageCoordinator } from '../../../../src/shared/services/messaging/MessageCoordinator';
 import type { ServiceManager } from '../../../../src/shared/services/ServiceManager';
 import { MessageState } from '../../../../src/types/config/MessagingConfig';
@@ -21,6 +21,7 @@ import {
   renderChatAndGetInstanceWithStore,
   setupAfterEach,
   setupBeforeEach,
+  unmountKeepingServices,
 } from '../../../test_helpers';
 import { idleInstancePort } from '../../../services/helpers/viewBindings';
 
@@ -55,8 +56,8 @@ async function headless() {
   // The debug helper exposes a shallow manager copy; use the actual boot manager.
   const manager = (boot.serviceManager.messageCoordinator as any)
     .serviceManager as ServiceManager;
-  cleanup();
-  // The boot coordinator goes headless once cleanup detaches the view; retire it.
+  unmountKeepingServices(boot.instance);
+  // The boot coordinator goes headless once the view detaches; retire it.
   manager.messageCoordinator.disposeReasoningObserver();
   expect(manager.instance).toBe(boot.instance);
   const core = new MessageCoordinator(manager);
@@ -221,7 +222,7 @@ it.each(['mounted', 'headless'])(
 it('delivers headlessly once the view detaches', async () => {
   const { instance } =
     await renderChatAndGetInstanceWithStore(createBaseConfig());
-  cleanup();
+  unmountKeepingServices(instance);
   const values: unknown[] = [];
   instance.on({
     type: BusEventType.USER_DEFINED_RESPONSE,
@@ -256,7 +257,7 @@ describe('switching between mounted and headless delivery', () => {
     const values = collect(instance);
     await instance.messaging.addMessage(response('mounted', 'first'));
     await waitFor(() => expect(values).toEqual(['first']));
-    cleanup();
+    unmountKeepingServices(instance);
     await settle();
     expect(values).toEqual(['first']);
     await instance.messaging.addMessage(response('after', 'second'));

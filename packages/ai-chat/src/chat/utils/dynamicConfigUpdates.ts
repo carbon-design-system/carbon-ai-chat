@@ -23,6 +23,41 @@ import type { AppStore } from '../../shared/store/appStore';
 import type { AppState } from '../../types/state/AppState';
 
 /**
+ * Rebuilds the human-agent service for a new desk factory. A live chat ends
+ * quietly first (mirrors a user-initiated end), so no connection is stranded
+ * on the old service. The new service initializes only if the old one had,
+ * so a swap keeps the prior started state.
+ */
+async function replaceHumanAgentService(
+  serviceManager: ServiceManager,
+  isActive: boolean,
+  wasInitialized: boolean
+) {
+  try {
+    if (isActive) {
+      consoleDebug('Tearing down existing service desk');
+      await serviceManager.humanAgentService.endChat(true, true, false);
+    }
+    // A chat that shut down during that wait keeps its disconnected service.
+    if (serviceManager.isShutdown) {
+      return;
+    }
+
+    consoleDebug('Recreating human agent service');
+    serviceManager.humanAgentService = createHumanAgentService(serviceManager);
+
+    if (wasInitialized) {
+      consoleDebug('Human agent service restarting');
+      await serviceManager.humanAgentService.initialize();
+    }
+  } catch (error) {
+    // Surface failure to the caller, which decides on any fallback.
+    consoleError('Failed to update human agent service dynamically:', error);
+    throw error;
+  }
+}
+
+/**
  * Applies a runtime `PublicConfig` change to an already-booted `ServiceManager`
  * in place — without tearing down and rebuilding the chat.
  *
@@ -68,9 +103,8 @@ export async function applyConfigChangesDynamically(
   // theme forward — but ONLY when staying in inherit mode. On an explicit →
   // inherit transition the previous derivedCarbonTheme is the *explicit* value,
   // which would now be stale; leaving it at the freshly-built null lets the
-  // ThemeWatcherService (re-)resolve the host theme. The watcher is kicked off
-  // by the originalCarbonTheme change via the store subscription in
-  // loadServices.ts.
+  // ThemeWatcherService (re-)resolve the host theme. The mounted watcher starts
+  // when it sees originalCarbonTheme change to null.
   const prevInheritMode =
     currentState.config.derived.themeWithDefaults.originalCarbonTheme === null;
   const nextInheritMode =
@@ -191,33 +225,7 @@ export async function applyConfigChangesDynamically(
     );
 
     if (isActive || wasInitialized) {
-      try {
-        // If a chat is in progress/connecting, end it quietly first (mirrors a
-        // user-initiated end) so we don't strand a live connection on the old
-        // service instance.
-        if (isActive) {
-          consoleDebug('Tearing down existing service desk');
-          await serviceManager.humanAgentService.endChat(true, true, false);
-        }
-
-        consoleDebug('Recreating human agent service');
-        serviceManager.humanAgentService =
-          createHumanAgentService(serviceManager);
-
-        // Re-initialize only if the previous service had already initialized, so
-        // a factory swap preserves the prior started state.
-        if (wasInitialized) {
-          consoleDebug('Human agent service restarting');
-          await serviceManager.humanAgentService.initialize();
-        }
-      } catch (error) {
-        // Surface failure to the caller, which decides on any fallback.
-        consoleError(
-          'Failed to update human agent service dynamically:',
-          error
-        );
-        throw error;
-      }
+      await replaceHumanAgentService(serviceManager, isActive, wasInitialized);
     }
   }
 

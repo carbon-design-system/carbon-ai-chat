@@ -308,8 +308,8 @@ class ChatCustomElement extends FlattenedConfigElement {
 
   /**
    * Clears what this element holds for the current mount: its instance
-   * subscriptions and the slot names collected from them. Services keep
-   * running.
+   * subscriptions and the slot names collected from them. The inner
+   * container shuts the chat down.
    */
   private releaseMount() {
     this._instance?.off(this._mountHandlers);

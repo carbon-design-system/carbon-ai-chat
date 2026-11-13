@@ -31,7 +31,7 @@ ChatContainer (React) ──────────→ cds-aichat-container (Li
 
 - **Invalidate the mount first.** A retired mount's `onBeforeRender` and `onAfterRender` calls are dropped: every `await` in startup rechecks that its mount is still the current one.
 - **Release outer-host state on detach and on a new mount's before-render.** Both outer elements remove their bus handlers from the old instance and clear slot state. The container also removes nodes it created. Caller-owned children stay.
-- **Do not treat this as teardown.** Services keep running after detach; full disposal belongs to #1681.
+- **Then shut down.** Release calls `ServiceManager.shutdown()`; a same-task move keeps the chat.
 
 ## When to work in each layer
 
@@ -106,5 +106,5 @@ The revision is React's `parts` object; a request counts only for it, while its 
 ## Related guidance
 
 - [packages/ai-chat/AGENTS.md](../AGENTS.md) — package overview
-- [services.md](services.md) — service lifecycle and the teardown gap
+- [services.md](services.md) — service lifecycle and shutdown
 - [packages/ai-chat-components/AGENTS.md](../../ai-chat-components/AGENTS.md) — Lit component authoring

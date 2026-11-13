@@ -58,6 +58,7 @@ import { UpsertWorkflow } from './UpsertWorkflow';
 import { ChunkWorkflow } from './ChunkWorkflow';
 import type { StreamChunk, PauseItem } from '../../../types/messaging/Messages';
 import type { AddMessageOptions } from '../../../types/config/MessagingConfig';
+import { CancellationReason } from '../../../types/config/MessagingConfig';
 
 import { HistoryWorkflow } from './HistoryWorkflow';
 import type { HistoryItem } from '../../../types/messaging/History';
@@ -213,8 +214,8 @@ class MessageCoordinator {
     return this.getUpsertWorkflow().invalidatePendingUpserts();
   }
 
-  clearAllIncomingWrites() {
-    return this.getUpsertWorkflow().clearAll();
+  clearAllIncomingWrites(reason?: string) {
+    return this.getUpsertWorkflow().clearAll(reason);
   }
 
   upsertMessage(
@@ -342,6 +343,48 @@ class MessageCoordinator {
     this.reasoningDisposed = true;
     this.stopWatchingView?.();
     this.reasoningObserver?.dispose();
+  }
+
+  /**
+   * The first steps of a restart, which shutdown shares: later chunks and
+   * writes from the old conversation are stale, and its loading timers end.
+   * Streams it ends abort with `reason`. Returns the new generation.
+   */
+  beginRestart(skipHydration: boolean, reason?: string) {
+    const generation = this.restart(skipHydration);
+
+    // Increment the restart generation to filter out any chunks from the previous conversation
+    this.bumpChunkRestartGeneration();
+
+    this.clearProcessedAgentItems();
+
+    // Mark all existing messages as belonging to the OLD generation by keeping them in the map
+    // (don't clear - this way we can detect stale chunks from old messages)
+
+    // Set isRestarting to true to signal that we're in the middle of a restart
+    this.setRestartInProgress(true);
+
+    this.serviceManager.restartCount++;
+    this.clearAllIncomingWrites(reason);
+
+    // A request that got no reply has already left the queue, so the cancel below never ends its timers.
+    this.messageLoadingManager.end();
+    return generation;
+  }
+
+  /**
+   * Stops this chat's message work for good, through a restart's own steps:
+   * {@link beginRestart}, then cancelling every queued, running, or streaming
+   * request, which aborts its signal with `CancellationReason.CHAT_REMOVED`.
+   * The chat's service manager calls this
+   * once, after closing the store, so none of it changes state or saved
+   * session data.
+   */
+  shutdown() {
+    this.invalidatePendingUpserts();
+    this.beginRestart(true, CancellationReason.CHAT_REMOVED);
+    this.disposeReasoningObserver();
+    return this.cancelAllMessageRequests(CancellationReason.CHAT_REMOVED);
   }
 
   /**
