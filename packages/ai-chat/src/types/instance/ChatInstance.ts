@@ -366,6 +366,8 @@ interface ChatActions {
 
   /**
    * Remove any record of the current session from the browser's SessionStorage.
+   * It also cancels each file upload still in progress: the upload's abort signal
+   * fires and its attachment leaves the input.
    *
    * @param keepOpenState If we are destroying the session to restart the chat this can be used to preserve if the web
    * chat is open.

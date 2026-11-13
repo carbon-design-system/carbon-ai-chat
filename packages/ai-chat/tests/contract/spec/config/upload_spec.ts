@@ -346,6 +346,49 @@ describe('upload: onFileUpload', () => {
   });
 });
 
+// @covers config.upload.onFileUpload state.input.hasInFlightUploads
+// @covers instance.messaging.restartConversation instance.destroySession
+describe('upload: restart and destroySession', () => {
+  contractSetup();
+
+  const resets: [string, (instance: ChatInstance) => Promise<void>][] = [
+    [
+      'restartConversation',
+      (instance) => instance.messaging.restartConversation(),
+    ],
+    ['destroySession', (instance) => instance.destroySession(true)],
+  ];
+
+  for (const [name, reset] of resets) {
+    it(`${name} aborts an upload in progress and drops its file, which adds nothing to the next send`, async () => {
+      const backend = fakeBackend();
+      const uploader = fakeUploader();
+      const { instance } = await openChat(
+        { onFileUpload: uploader.onFileUpload },
+        backend
+      );
+      await pickFiles(STRINGS.input_uploadButtonLabel, [
+        makeFile('report.pdf'),
+      ]);
+      expect(instance.getState().input.hasInFlightUploads).toBe(true);
+      await act(async () => {
+        await reset(instance);
+      });
+      expect(uploader.calls[0].signal.aborted).toBe(true);
+      expect(allByRole('group', 'report.pdf')).toHaveLength(0);
+      expect(instance.getState().input.hasInFlightUploads).toBe(false);
+      // A host that ignores the signal and resolves anyway adds nothing.
+      await settle(uploader.calls[0], {
+        data: { fields: [fileField('doc', 'ref-1')] },
+      });
+      expect(instance.getState().input.structuredData).toBeUndefined();
+      const started = await startSend(instanceSender(instance, backend), 'hi');
+      expect(started.sent.request.input.structured_data).toBeUndefined();
+      await finishSend(started);
+    });
+  }
+});
+
 // @covers state.input.hasInFlightUploads config.upload.onFileUpload instance.send
 describe('upload: hasInFlightUploads', () => {
   contractSetup();

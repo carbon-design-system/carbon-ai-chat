@@ -64,7 +64,8 @@ class InputActionsService {
 
   /**
    * Maps pending upload IDs to their AbortControllers so that in-progress uploads can be canceled
-   * when the user removes an attachment before the upload completes, or when the chat unmounts.
+   * when the user removes an attachment before the upload completes, when the conversation restarts
+   * or its session is destroyed, or when the chat unmounts.
    *
    * AbortControllers are not serializable and therefore cannot be stored in Redux.
    */
@@ -294,6 +295,31 @@ class InputActionsService {
     const controllers = [...this.uploadAbortControllers.values()];
     this.uploadAbortControllers.clear();
     controllers.forEach((controller) => controller.abort());
+  }
+
+  /**
+   * Cancels every upload still in progress, for a restart or a destroyed
+   * session: aborts its signal and removes its attachment from the input, so
+   * nothing it returns reaches a later send.
+   */
+  cancelPendingUploads() {
+    const uploadIds = new Set(this.uploadAbortControllers.keys());
+    this.abortPendingUploads();
+    const { store } = this.serviceManager;
+    const state = store.getState();
+    const slices = [
+      { isInputToHumanAgent: false, input: state.assistantInputState },
+      { isInputToHumanAgent: true, input: state.humanAgentState.inputState },
+    ];
+    for (const { isInputToHumanAgent, input } of slices) {
+      for (const upload of input.pendingUploads) {
+        if (uploadIds.has(upload.id)) {
+          store.dispatch(
+            actions.removePendingUpload(upload.id, isInputToHumanAgent)
+          );
+        }
+      }
+    }
   }
 
   async handleFileSelectedForUpload(file: File): Promise<void> {

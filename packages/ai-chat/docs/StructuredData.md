@@ -111,7 +111,7 @@ async function handleFileUpload(
 }
 ```
 
-Honor the `abortSignal`; it fires when the user removes a pending upload or the chat unmounts. Throw or reject to mark the file errored in the UI. While an upload is in flight, the Send button is disabled — watch this with {@link PublicInputState.hasInFlightUploads | hasInFlightUploads}.
+Honor the `abortSignal`; it fires when the user removes a pending upload, when the conversation restarts or its session is destroyed, or when the chat unmounts. Throw or reject to mark the file errored in the UI. While an upload is in flight, the Send button is disabled — watch this with {@link PublicInputState.hasInFlightUploads | hasInFlightUploads}.
 
 A `file` field's value is a {@link FileFieldValue | file value}, one of two types. A {@link ExternalFileReference | reference} (`type: "reference"`) points to a file you uploaded yourself — the common case shown above. An {@link InlineFile | inline file} (`type: "inline"`) carries the raw `File` through to `customSendMessage` for you to upload there.
 
