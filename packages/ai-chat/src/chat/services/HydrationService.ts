@@ -458,7 +458,6 @@ class HydrationService {
     this.serviceManager.inputActionsService.cancelPendingUploads();
 
     this.serviceManager.messageUpsertCoordinator.clearAll();
-    this.serviceManager.humanAgentService?.dropHeldMessages();
 
     this.serviceManager.store.dispatch(
       actions.setAppStateValue(

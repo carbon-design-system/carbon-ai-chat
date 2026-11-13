@@ -160,17 +160,6 @@ interface HumanAgentService {
     allowReconnect: boolean,
     allowEndChatMessages: boolean
   ): Promise<void>;
-
-  /**
-   * Adds the agent messages that arrived while the chat was suspended, each where it would have been when it
-   * arrived. Does nothing while the chat is still suspended.
-   */
-  showHeldMessages(): Promise<void>;
-
-  /**
-   * Drops the agent messages held while the chat is suspended, so a later resume doesn't show them.
-   */
-  dropHeldMessages(): void;
 }
 
 /**
