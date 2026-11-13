@@ -193,6 +193,24 @@ describe('state.input', () => {
     expect(instance.state.get().input.content).toEqual(BREAKS_DOC);
     expect(await previousRawValue(instance)).toBe('one\ntwo\n\nthree');
   });
+
+  it('reads plain text pasted into the rich editor with a blank line as a paragraph break and a newline as a line break', async () => {
+    const { instance } = await openChat();
+    const editor = await act(async () => instance.input.getEditor());
+    // jsdom has no clipboard, so this stands in for a user's paste.
+    const paste = new Event('paste', { bubbles: true, cancelable: true });
+    Object.defineProperty(paste, 'clipboardData', {
+      value: {
+        getData: (type: string) =>
+          type === 'text/plain' ? 'one\ntwo\n\nthree' : '',
+      },
+    });
+    await act(async () => {
+      editor.view.dom.dispatchEvent(paste);
+    });
+    expect(instance.state.get().input.rawValue).toBe('one\ntwo\n\nthree');
+    expect(instance.state.get().input.content).toEqual(BREAKS_DOC);
+  });
 });
 
 // @covers instance.input instance.input.updateContent state.input.rawValue state.input.content
