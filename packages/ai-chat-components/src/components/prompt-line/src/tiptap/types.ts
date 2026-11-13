@@ -123,8 +123,9 @@ export interface BaseSuggestionConfig {
   minQueryLength?: number;
 
   /**
-   * Called after the user selects an item and the controller has finished
-   * inserting it.
+   * Called for each item the user chooses: after the controller inserts it,
+   * or, for an autocomplete item the built-in list sends directly, before it
+   * sends.
    */
   onSelect?: (item: SuggestionItem) => void;
 

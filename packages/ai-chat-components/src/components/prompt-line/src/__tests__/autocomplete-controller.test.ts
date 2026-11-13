@@ -1404,6 +1404,43 @@ describe('AutocompleteController', () => {
       expect(selected).to.equal(USERS[0]);
       expect(editor.rawValue).to.equal('@alice');
     });
+
+    it('fires the autocomplete config onSelect for an item reported as sent', async () => {
+      const { promptLine } = makeEditorStub();
+      const selected: SuggestionItem[] = [];
+      const controller = new AutocompleteController({
+        autocomplete: { items: USERS, onSelect: (item) => selected.push(item) },
+        onChange: () => {},
+      });
+      controller.setPromptLine(promptLine);
+      controller.handleTriggerChange({
+        type: 'autocomplete',
+        query: 'al',
+        triggerOffset: 0,
+      });
+      await flush();
+      controller.reportSent(USERS[0]);
+      expect(selected).to.deep.equal([USERS[0]]);
+    });
+
+    it('does not fire onSelect for a starter reported as sent', async () => {
+      const { promptLine } = makeEditorStub();
+      const selected: SuggestionItem[] = [];
+      const controller = new AutocompleteController({
+        autocomplete: { items: USERS, onSelect: (item) => selected.push(item) },
+        starters: STARTERS,
+        onChange: () => {},
+      });
+      controller.setPromptLine(promptLine);
+      controller.handleTriggerChange({
+        type: 'starter',
+        query: '',
+        triggerOffset: 0,
+      });
+      await flush();
+      controller.reportSent(STARTERS.items[0]);
+      expect(selected).to.deep.equal([]);
+    });
   });
 });
 

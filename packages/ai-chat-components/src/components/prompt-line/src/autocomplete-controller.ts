@@ -363,6 +363,17 @@ export class AutocompleteController {
     this.dismiss();
   }
 
+  /**
+   * Report a chosen item that sends instead of being inserted, so the
+   * autocomplete config's `onSelect` fires for it as it does for an insert.
+   * Call it before `dismiss()`, which clears the trigger.
+   */
+  reportSent(item: SuggestionItem): void {
+    if (!this._destroyed && this._trigger?.type === 'autocomplete') {
+      this._autocomplete?.onSelect?.(item);
+    }
+  }
+
   // ---------------------------------------------------------------------
   // Lifecycle
   // ---------------------------------------------------------------------

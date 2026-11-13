@@ -212,17 +212,16 @@ describe('input.autocomplete', () => {
     expect(instance.state.get().input.rawValue).toBe('hello world');
   });
 
-  it('does not call onSelect when a chosen item sends', async () => {
+  it('calls onSelect for a chosen item that sends', async () => {
     const onSelect = jest.fn();
     const sent = await openEditor({
       input: { autocomplete: { items: [HELLO], onSelect } },
     });
     await insert(sent.editor, 'hel');
     await choose('hello world');
-    await waitFor(() => expect(sent.backend.requests).toHaveLength(1));
-    // The config's JSDoc calls onSelect the "selection callback"
-    // (src/types/config/InputConfig.ts:30); on `main` a direct send skips it.
-    expect(onSelect).not.toHaveBeenCalled();
+    await waitFor(() => expect(sent.backend.texts()).toEqual(['hello world']));
+    expect(onSelect).toHaveBeenCalledTimes(1);
+    expect(onSelect.mock.calls[0][0]).toMatchObject({ id: 'hello' });
   });
 
   it('calls onSelect for an item inserted with disableDirectSend', async () => {

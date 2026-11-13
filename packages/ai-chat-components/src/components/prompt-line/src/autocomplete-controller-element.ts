@@ -14,7 +14,10 @@ import { carbonElement } from '../../../globals/decorators/carbon-element.js';
 import prefix from '../../../globals/settings.js';
 
 import '../autocomplete/src/autocomplete.js';
-import type { AutocompleteNavigatedEventDetail } from '../autocomplete/src/autocomplete.js';
+import type {
+  AutocompleteNavigatedEventDetail,
+  AutocompleteSendEventDetail,
+} from '../autocomplete/src/autocomplete.js';
 import {
   AutocompleteController,
   itemsToGroups,
@@ -279,8 +282,9 @@ class AutocompleteControllerElement extends LitElement {
         @cds-aichat-autocomplete-select=${(
           e: CustomEvent<{ item: SuggestionItem }>
         ) => this._selectItem(e.detail.item)}
-        @cds-aichat-autocomplete-send=${(e: CustomEvent<{ text: string }>) =>
-          this._sendItem(e.detail.text)}
+        @cds-aichat-autocomplete-send=${(
+          e: CustomEvent<AutocompleteSendEventDetail>
+        ) => this._sendItem(e.detail.text, e.detail.item)}
         @cds-aichat-autocomplete-dismiss=${() => this._controller?.dismiss()}></cds-aichat-autocomplete>
     `;
   }
@@ -296,9 +300,12 @@ class AutocompleteControllerElement extends LitElement {
     );
   }
 
-  private _sendItem(text: string): void {
+  private _sendItem(text: string, item?: SuggestionItem): void {
     if (this.isSendDisabled) {
       return;
+    }
+    if (item) {
+      this._controller?.reportSent(item);
     }
     this._controller?.dismiss(true);
     this.dispatchEvent(
