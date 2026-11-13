@@ -157,11 +157,18 @@ describeShared('message timeout', (makeDriver) => {
       messageTimeoutSecs: 2,
     });
     await advance(2000);
+    const before = chat.messages();
     await act(async () => {
       started.sent.resolve();
       await outcome;
     });
+    // The late settle changes nothing: the request stays failed, and no
+    // message is added or rewritten.
     expect(chat.status()).toBe('error');
+    expect(errorStateOf(chat, started.sent.request.id)).toBe(
+      MessageErrorState.FAILED
+    );
+    expect(chat.messages()).toEqual(before);
   });
 });
 

@@ -44,6 +44,22 @@ export interface FakeBackend {
   texts(): string[];
 }
 
+/** Every fake-backend call no test has settled yet, across all backends. */
+const openRequests = new Set<SentRequest>();
+
+/**
+ * Resolves every fake-backend call still open, so the chat can finish the
+ * work it was waiting on (a restart's welcome request, say). Returns how many
+ * calls it settled. `contractCleanup` calls it after each test.
+ */
+export function settleOpenRequests(): number {
+  const open = [...openRequests];
+  for (const sent of open) {
+    sent.resolve();
+  }
+  return open.length;
+}
+
 /**
  * A `customSendMessage` that records each call and leaves its promise open
  * until the test settles it. Set `autoResolve` to settle each call at once.
@@ -60,11 +76,24 @@ export function fakeBackend({
     options,
     instance
   ) =>
-    new Promise<void>((resolve, reject) => {
-      const sent: SentRequest = { request, options, instance, resolve, reject };
+    new Promise<void>((resolvePromise, rejectPromise) => {
+      const sent: SentRequest = {
+        request,
+        options,
+        instance,
+        resolve: () => {
+          openRequests.delete(sent);
+          resolvePromise();
+        },
+        reject: (error) => {
+          openRequests.delete(sent);
+          rejectPromise(error);
+        },
+      };
+      openRequests.add(sent);
       requests.push(sent);
       if (autoResolve) {
-        resolve();
+        sent.resolve();
       }
       const waiter = waiters.shift();
       if (waiter) {
