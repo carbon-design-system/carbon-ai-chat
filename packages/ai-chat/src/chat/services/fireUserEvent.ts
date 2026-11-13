@@ -12,8 +12,9 @@ import { consoleError } from '../utils/miscUtils';
 import type { ServiceManager } from './ServiceManager';
 
 /**
- * Fires an event the user set off, such as a feedback click. No host call is waiting on it, so a handler's error
- * is logged here rather than left as an unhandled rejection.
+ * Fires an event the user set off, such as a feedback click, or one the view fires as it draws, such as a custom
+ * panel finishing its open. No host call is waiting on it, so a handler's error is logged here rather than left as an
+ * unhandled rejection.
  */
 async function fireUserEvent<T extends BusEvent>(
   serviceManager: Pick<ServiceManager, 'fire'>,

@@ -16,6 +16,7 @@ import {
   ChatInstance,
   HeaderMenuClickType,
   PageObjectId,
+  PanelType,
   PublicConfig,
   ViewType,
 } from '../../../../src/aiChatEntry';
@@ -470,5 +471,53 @@ describe('a throwing handler for an event the user fires', () => {
     await waitFor(() =>
       expect(instance.getState().customPanels.history.isOpen).toBe(true)
     );
+  });
+});
+
+// @covers event.customPanel:pre:open event.customPanel:open
+// @covers event.customPanel:pre:close event.customPanel:close
+// @covers instance.customPanels.getPanel().open
+// @covers instance.customPanels.getPanel().close
+// @covers state.customPanels.default.isOpen
+describe('a throwing handler for a default custom panel event', () => {
+  contractSetup();
+  const handlerErrors = handlerErrorLog();
+
+  it('logs a customPanel:open handler error, and the panel still opens and closes', async () => {
+    const { instance } = await contractChat({
+      messaging: { skipWelcome: true },
+    });
+    await changeView(instance, ViewType.MAIN_WINDOW);
+    const events = recordEvents(instance, [
+      BusEventType.CUSTOM_PANEL_PRE_OPEN,
+      BusEventType.CUSTOM_PANEL_OPEN,
+      BusEventType.CUSTOM_PANEL_PRE_CLOSE,
+      BusEventType.CUSTOM_PANEL_CLOSE,
+    ]);
+    handlerErrors.watch();
+    const error = new Error('panel open handler failed');
+    instance.on({
+      type: BusEventType.CUSTOM_PANEL_OPEN,
+      handler: thrower(error),
+    });
+    const panel = instance.customPanels.getPanel(PanelType.DEFAULT);
+
+    await act(() => panel.open({ disableAnimation: true }));
+    await waitFor(() =>
+      expect(events.types()).toContain(BusEventType.CUSTOM_PANEL_OPEN)
+    );
+    await handlerErrors.expectLogged(BusEventType.CUSTOM_PANEL_OPEN, error);
+    expect(instance.getState().customPanels.default.isOpen).toBe(true);
+
+    await act(() => panel.close());
+    await waitFor(() =>
+      expect(events.types()).toEqual([
+        BusEventType.CUSTOM_PANEL_PRE_OPEN,
+        BusEventType.CUSTOM_PANEL_OPEN,
+        BusEventType.CUSTOM_PANEL_PRE_CLOSE,
+        BusEventType.CUSTOM_PANEL_CLOSE,
+      ])
+    );
+    expect(instance.getState().customPanels.default.isOpen).toBe(false);
   });
 });
