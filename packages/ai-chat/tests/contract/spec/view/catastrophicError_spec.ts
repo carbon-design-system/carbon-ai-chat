@@ -144,29 +144,43 @@ describe('updateCatastrophicErrorPanel', () => {
     expect(instance.getState()).toEqual(before);
   });
 
-  it('shows the defaults from strings when a later call opens it without a title or body', async () => {
+  // MAIN-NOTES M50 (2.0.0): updates merge fields rather than replacing state.
+  it('keeps omitted title and retry settings while updating the body, including after reopening', async () => {
     const instance = await openChat({ assistantName: 'Contract bot' });
     await update(instance, {
       isOpen: true,
       title: 'Contract first title',
       bodyText: 'Contract first body',
+      hideRetryButton: true,
     });
     await waitFor(() =>
       expect(panelText()).toContain('Contract first title Contract first body')
     );
+    expect(retryCount()).toBe(0);
+    await update(instance, { isOpen: true, bodyText: 'Contract next body' });
+    await waitFor(() =>
+      expect(panelText()).toContain('Contract first title Contract next body')
+    );
+    expect(panelText()).not.toContain('Contract first body');
+    expect(retryCount()).toBe(0);
     await update(instance, { isOpen: false });
     await waitFor(() => expect(panelCount()).toBe(0));
     await update(instance, { isOpen: true });
-    await waitFor(() => expect(panelText()).toContain(DEFAULT_TEXT));
-    expect(panelText()).not.toContain('Contract first');
+    await waitFor(() =>
+      expect(panelText()).toContain('Contract first title Contract next body')
+    );
+    expect(panelText()).not.toContain(DEFAULT_TEXT);
+    expect(retryCount()).toBe(0);
   });
 
-  it('shows the retry button again when a later call leaves out hideRetryButton', async () => {
+  it('keeps Retry hidden when omitted and shows it when explicitly false', async () => {
     const instance = await openChat();
     await update(instance, { isOpen: true, hideRetryButton: true });
     await waitFor(() => expect(panelCount()).toBe(1));
     expect(retryCount()).toBe(0);
     await update(instance, { isOpen: true });
+    expect(retryCount()).toBe(0);
+    await update(instance, { isOpen: true, hideRetryButton: false });
     await waitFor(() => expect(retryCount()).toBe(1));
   });
 
