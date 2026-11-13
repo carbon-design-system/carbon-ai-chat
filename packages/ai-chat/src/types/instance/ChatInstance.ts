@@ -127,7 +127,7 @@ interface ChatActions {
   /**
    * Moves focus into the chat. The chat decides where focus belongs, such as the input or an open panel. Returns
    * true when it moved focus there, and false when it found nothing to focus, such as while the main window is
-   * closed.
+   * closed. On a phone the chat never moves focus, so this moves nothing and returns false.
    *
    * @example Move focus into the chat
    * ```ts
@@ -159,6 +159,10 @@ interface ChatActions {
    * delivery is handled asynchronously by `customSendMessage` itself; use
    * `{@link EventHandlers.on}` with the `receive` event to react to incoming
    * messages.
+   *
+   * A send made while the chat loads waits until every `chat:ready` handler
+   * settles. A handler that never settles holds those sends, so they never
+   * reach `customSendMessage`. Sends made after `chat:ready` fires don't wait.
    *
    * @param message The message to send.
    * @param options Options for the message sent.
@@ -373,6 +377,7 @@ interface ChatActions {
    *   {@link BusEventType.VIEW_CHANGE}.
    * - Cancels any in-flight send with {@link CancellationReason.CONVERSATION_RESTARTED} and adds a message that says
    *   the request was canceled.
+   * - Cancels each file upload still in progress: the upload's abort signal fires and its attachment leaves the input.
    *
    * The messages stay in place, and a chat that has loaded doesn't load again. Reopening it calls no
    * {@link PublicConfigMessaging.customLoadHistory}, sends no welcome, and fires no {@link BusEventType.CHAT_READY}.

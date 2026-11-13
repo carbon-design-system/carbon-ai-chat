@@ -14,8 +14,9 @@
  * the send carried.
  *
  * Checks that an uploaded file sends its name, type, and size and shows in
- * the sent message, and that a rejected upload blocks send until it is
- * removed, keeping the typed draft.
+ * the sent message, that a rejected upload blocks send until it is removed,
+ * keeping the typed draft, and that a file removed while it uploads adds
+ * nothing to the send.
  */
 
 import { PageObjectId } from '@carbon/ai-chat/server';
@@ -73,16 +74,15 @@ test('rejected upload blocks send and removal restores retained text', async ({
   await attach(page, 'fail.txt');
   const input = page.getByTestId(PageObjectId.INPUT);
   await input.fill('review report');
-  const chip = page.getByRole('group', { name: 'fail.txt', exact: true });
+  // A failed chip states the failure in its name, after the file name.
+  const chip = page.getByRole('group', { name: /^fail\.txt\. / });
   await expect(chip).toHaveAttribute('aria-invalid', 'true');
-  await expect(
-    chip.getByText('The server rejected this file after a virus scan.', {
-      exact: true,
-    })
-  ).toBeVisible();
+  await expect(chip).toHaveAccessibleName(
+    /The server rejected this file after a virus scan\./
+  );
   // The notice above the input. The off-screen announcer words it differently.
   const notice = page.getByText(
-    /File upload error\s*The server rejected this file after a virus scan\./
+    /File upload error: fail\.txt\s*The server rejected this file after a virus scan\./
   );
   await expect(notice).toBeVisible();
   const send = page.getByRole('button', { name: /send/i });
@@ -104,12 +104,7 @@ test('rejected upload blocks send and removal restores retained text', async ({
   ).toHaveCount(0);
 });
 
-// fixme: no cancel control exists while an upload is pending. The chip shows
-// only an unnamed spinner; "Remove report.txt" appears after the upload completes.
-// Tracked in #2522.
-test.fixme('canceling a pending upload contributes nothing', async ({
-  page,
-}) => {
+test('canceling a pending upload contributes nothing', async ({ page }) => {
   // Reload under a paused fake clock so the mock's one-second upload stays
   // pending.
   await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });

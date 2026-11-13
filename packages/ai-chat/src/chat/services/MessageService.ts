@@ -65,6 +65,11 @@ import { CancellationReason } from '../../types/config/MessagingConfig';
 // move on to the next item in the queue.
 const MS_MAX_ATTEMPT = 150 * 1000;
 
+/** The request timeout for a `messageTimeoutSecs` value, in milliseconds: 0 turns it off, unset uses the default. */
+function messageTimeoutMS(timeoutSecs: number | undefined): number {
+  return timeoutSecs || timeoutSecs === 0 ? timeoutSecs * 1000 : MS_MAX_ATTEMPT;
+}
+
 // The maximum amount of time we allow to pass before the loading indicator becomes visible.
 const MS_MAX_SILENT_LOADING = 4000;
 
@@ -264,11 +269,9 @@ class MessageService {
       current: null,
     };
 
-    const timeoutOverride = publicConfig.messaging?.messageTimeoutSecs;
-    this.timeoutMS =
-      timeoutOverride || timeoutOverride === 0
-        ? timeoutOverride * 1000
-        : MS_MAX_ATTEMPT;
+    this.timeoutMS = messageTimeoutMS(
+      publicConfig.messaging?.messageTimeoutSecs
+    );
   }
 
   /**
@@ -968,11 +971,14 @@ class MessageService {
     // Clean up the controller from the map and streaming tracking
     this.inboundStreaming.clearStreamingResponse(responseId);
     if (!pendingRequest) {
-      // The sender already settled, so only the response stream remains.
-      this.serviceManager.conversationLifecycleService.responseStopped(
-        responseId,
-        generation
-      );
+      // The sender already settled, so only the response stream remains. A user stop still
+      // records its request as stopped, so the request's late partial chunks are dropped.
+      const lifecycle = this.serviceManager.conversationLifecycleService;
+      lifecycle.responseStopped(responseId, generation);
+      const requestID = lifecycle.responseRequestID(responseId);
+      if (requestID && reason === CancellationReason.STOP_STREAMING) {
+        lifecycle.requestStopped(requestID, generation, true);
+      }
     }
 
     // Only process the pending request if it exists (it may have already been cleared from queue)
@@ -980,7 +986,8 @@ class MessageService {
       if (reason !== CancellationReason.TIMEOUT) {
         this.serviceManager.conversationLifecycleService.requestStopped(
           pendingRequest.message.id,
-          pendingRequest.generation
+          pendingRequest.generation,
+          reason === CancellationReason.STOP_STREAMING
         );
       }
       if (reason === CancellationReason.TIMEOUT) {
@@ -1084,4 +1091,5 @@ class MessageService {
   }
 }
 
+export { messageTimeoutMS };
 export default MessageService;

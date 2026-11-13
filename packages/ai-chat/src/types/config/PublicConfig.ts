@@ -121,7 +121,10 @@ export interface PublicConfig {
   serviceDesk?: ServiceDeskPublicConfig;
 
   /**
-   * If the Carbon AI Chat should grab focus if the chat is open on page load.
+   * Whether the chat moves focus into itself when it opens on its own at page load, such as with
+   * {@link PublicConfig.openChatByDefault} or a restored session. Defaults to true. Set it to false to keep focus on
+   * your page at load. It doesn't affect other focus moves: opening the chat with {@link ChatInstance.changeView}
+   * and calling {@link ChatInstance.requestFocus} still move focus into the chat.
    */
   shouldTakeFocusIfOpensAutomatically?: boolean;
 

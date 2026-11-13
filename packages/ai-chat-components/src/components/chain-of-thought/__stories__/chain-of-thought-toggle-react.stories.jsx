@@ -90,7 +90,7 @@ export default {
     panelId: {
       control: 'text',
       description:
-        'ID of the chain-of-thought wrapper used for accessibility bindings.',
+        'Deprecated, with no effect on the button. Passed back in the toggle event detail.',
     },
     open: {
       control: 'boolean',

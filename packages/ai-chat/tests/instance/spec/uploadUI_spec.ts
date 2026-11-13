@@ -89,7 +89,10 @@ describe('upload UI wiring – handleFileSelectedForUpload', () => {
     await waitFor(() => {
       const item = queryFileUploaderItem();
       expect(item).not.toBeNull();
-      expect(item?.getAttribute('state')).toBe('uploading');
+      // An uploading chip keeps its remove button, with the spinner beside it.
+      expect(item?.getAttribute('state')).toBe('edit');
+      expect(item?.shadowRoot?.querySelector('cds-loading')).not.toBeNull();
+      expect(item?.shadowRoot?.querySelector('button')).not.toBeNull();
     });
   });
 

@@ -45,6 +45,7 @@ import { LocalMessageItem } from '../types/messaging/LocalMessageItem';
 import { AppShellPanels } from './AppShellPanels';
 
 import { HasServiceManager } from './hocs/withServiceManager';
+import { fireUserEvent } from './services/fireUserEvent';
 import { useMobileViewportLayout } from './hooks/useMobileViewportLayout';
 import { useOnMount } from './hooks/useOnMount';
 import { useSelector, useStateAccessSelector } from './hooks/useSelector';
@@ -68,6 +69,7 @@ import {
   selectInputFieldVisible,
   selectInputUploadAndStreamingFields,
   selectLanguagePack,
+  selectLoadedLocale,
   selectStopStreamingButtonVisible,
 } from './store/selectors';
 import { shallowEqual } from './store/appStore';
@@ -145,6 +147,8 @@ const selectPublicConfig = (state: AppState) => state.config.public;
 const selectPersistedToBrowserStorage = (state: AppState) =>
   state.persistedToBrowserStorage;
 const selectIsHydrated = (state: AppState) => state.isHydrated;
+const selectInitialViewChangeComplete = (state: AppState) =>
+  state.initialViewChangeComplete;
 const selectAssistantMessageState = (state: AppState) =>
   state.assistantMessageState;
 const selectIsHydratingCounter = (state: PublicChatState) =>
@@ -205,6 +209,9 @@ function AppShell({
     selectPersistedToBrowserStorage
   );
   const isHydrated = useSelector(selectIsHydrated);
+  const initialViewChangeComplete = useSelector(
+    selectInitialViewChangeComplete
+  );
   const assistantMessageState = useSelector(selectAssistantMessageState);
   const isHydratingCounter = useStateAccessSelector(
     serviceManager.instance.state,
@@ -226,6 +233,7 @@ function AppShell({
   const chatWidthBreakpoint = useSelector(selectChatWidthBreakpoint);
 
   const languagePack = useSelector(selectLanguagePack);
+  const loadedLocale = useSelector(selectLoadedLocale);
   const theme = useSelector(selectThemeWithDefaults);
   const layout = useSelector(selectLayoutConfig);
   const launcher = useSelector(selectLauncherConfig);
@@ -366,17 +374,14 @@ function AppShell({
     viewStateMainWindow: viewState.mainWindow,
     isHydrated,
     useCustomHostElement,
+    shouldTakeFocusIfOpensAutomatically:
+      publicConfig.shouldTakeFocusIfOpensAutomatically ?? true,
+    initialViewChangeComplete,
     requestFocus: requestFocusCallback,
   });
 
-  // Auto-focus is based on config only - no dynamic toggling to avoid
-  // interrupting screen reader announcements when messages arrive
-  const shouldAutoFocus =
-    publicConfig.shouldTakeFocusIfOpensAutomatically ?? true;
-
   // Focus manager - provides requestFocus function
   const requestFocus = useFocusManager({
-    shouldAutoFocus,
     showDisclaimer,
     iFramePanelIsOpen: iFramePanelState.isOpen,
     viewSourcePanelIsOpen: viewSourcePanelState.isOpen,
@@ -611,7 +616,7 @@ function AppShell({
         {
           text: languagePack.history_new_chat,
           handler: () => {
-            serviceManager.fire({
+            fireUserEvent(serviceManager, {
               type: BusEventType.HISTORY_PANEL_NEW_CHAT,
             });
           },
@@ -619,7 +624,7 @@ function AppShell({
         {
           text: languagePack.history_view_chats,
           handler: () => {
-            serviceManager.fire({
+            fireUserEvent(serviceManager, {
               type: BusEventType.HISTORY_PANEL_PRE_OPEN,
             });
 
@@ -1031,7 +1036,7 @@ function AppShell({
                     assistantAvatarUrl={publicConfig.assistantAvatarUrl}
                     intl={intl}
                     onEndHumanAgentChat={showConfirmEndChat}
-                    locale={publicConfig.locale || 'en'}
+                    locale={loadedLocale}
                     carbonTheme={theme.derivedCarbonTheme}
                   />
                 )}

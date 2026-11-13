@@ -13,6 +13,8 @@ export interface WindowOpenStateOptions {
   viewStateMainWindow: boolean;
   isHydrated: boolean;
   useCustomHostElement: boolean;
+  shouldTakeFocusIfOpensAutomatically: boolean;
+  initialViewChangeComplete: boolean;
   requestFocus: () => void;
 }
 
@@ -33,6 +35,10 @@ export class WindowOpenState {
   private closeElement: HTMLElement | null = null;
   private closeTimeout: ReturnType<typeof setTimeout> | null = null;
   private focusFrame: number | null = null;
+  // The chat opened on its own at load: it was open at the first render, or it
+  // opened before the initial view change finished. Only that open's focus
+  // moves follow shouldTakeFocusIfOpensAutomatically.
+  private openedAutomatically: boolean;
 
   constructor(
     private options: WindowOpenStateOptions,
@@ -43,6 +49,7 @@ export class WindowOpenState {
       closing: false,
       isHydrationAnimationComplete: options.isHydrated,
     };
+    this.openedAutomatically = options.viewStateMainWindow;
   }
 
   getSnapshot = (): WindowOpenStateSnapshot => this.snapshot;
@@ -73,18 +80,21 @@ export class WindowOpenState {
       const frame = requestAnimationFrame(() => {
         if (this.focusFrame === frame && this.connected) {
           this.focusFrame = null;
-          this.options.requestFocus();
+          this.requestFocusUnlessAutomaticOpen();
         }
       });
       this.focusFrame = frame;
     }
     this.wasHydrated = options.isHydrated;
     if (options.viewStateMainWindow) {
-      const shouldFocus = !this.snapshot.open || this.snapshot.closing;
+      const opening = !this.snapshot.open || this.snapshot.closing;
+      if (opening) {
+        this.openedAutomatically = !options.initialViewChangeComplete;
+      }
       this.cancelClose();
       this.setSnapshot({ open: true, closing: false });
-      if (shouldFocus) {
-        options.requestFocus();
+      if (opening) {
+        this.requestFocusUnlessAutomaticOpen();
       }
     } else if (this.snapshot.open && this.closeTimeout === null) {
       this.close();
@@ -103,6 +113,15 @@ export class WindowOpenState {
       this.focusFrame = null;
     }
     this.wasHydrated = false;
+  }
+
+  private requestFocusUnlessAutomaticOpen(): void {
+    if (
+      this.options.shouldTakeFocusIfOpensAutomatically ||
+      !this.openedAutomatically
+    ) {
+      this.options.requestFocus();
+    }
   }
 
   private setSnapshot(change: Partial<WindowOpenStateSnapshot>): void {

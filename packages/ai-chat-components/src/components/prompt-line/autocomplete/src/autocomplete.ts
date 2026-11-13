@@ -126,6 +126,8 @@ export interface AutocompleteSelectEventDetail {
  */
 export interface AutocompleteSendEventDetail {
   text: string;
+  /** The item the user chose. */
+  item?: SuggestionItem;
 }
 
 export interface AutocompleteNavigatedEventDetail {
@@ -484,7 +486,7 @@ class AutocompleteElement extends LitElement {
       new CustomEvent<AutocompleteSendEventDetail>(
         'cds-aichat-autocomplete-send',
         {
-          detail: { text: item.value ?? item.label },
+          detail: { text: item.value ?? item.label, item },
           bubbles: true,
           composed: true,
         }

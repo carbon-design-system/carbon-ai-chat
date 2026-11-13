@@ -31,10 +31,9 @@ function deprecationWarnings(consoleWarn: jest.SpyInstance): unknown[][] {
   );
 }
 
-// On `main` the deprecation warning's once-per-session flag is module-level,
-// so it lives for the whole test file. This file holds only the tests that
-// watch for the warning, and no test before them writes to the rich editor
-// with updateRawValue.
+// The deprecation warning fires once per session, and a session lasts for the
+// whole test file, so each field's warning test has a file of its own. The
+// rich editor's is in updateRawValueRichWarning_spec.ts.
 // @covers instance.input.updateRawValue state.input.rawValue
 describe('input.updateRawValue deprecation warning', () => {
   contractSetup();
@@ -47,21 +46,8 @@ describe('input.updateRawValue deprecation warning', () => {
     consoleWarn?.mockRestore();
   });
 
-  it('warns nothing in the plain field', async () => {
+  it('warns once, over two writes, in the plain field', async () => {
     const { instance } = await openChat();
-    consoleWarn.mockClear();
-    await updateRawValue(instance, () => 'one');
-    // src/types/instance/ChatInstanceInput.ts:39 says the method "emits one
-    // deprecation warning per session"; on `main` it warns only once the rich
-    // editor is mounted (src/chat/services/InputActionsService.ts:78).
-    expect(deprecationWarnings(consoleWarn)).toEqual([]);
-  });
-
-  it('warns once, over two writes, in the rich editor', async () => {
-    const { instance } = await openChat();
-    await act(async () => {
-      await instance.input.getEditor();
-    });
     consoleWarn.mockClear();
     await updateRawValue(instance, () => 'one');
     await updateRawValue(instance, () => 'two');

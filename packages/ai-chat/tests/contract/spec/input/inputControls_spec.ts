@@ -366,9 +366,8 @@ describe('input.actions', () => {
     await openChat(actionsConfig(jest.fn()));
     expect(allByRole('menuitem', 'Contract action')).toHaveLength(0);
     await click(byRole('button', STRINGS.input_actionsMenuLabel));
-    expect(byRole('menuitem', 'Contract action')).toBe(
-      byTestId('contract-action')
-    );
+    const item = await waitFor(() => byRole('menuitem', 'Contract action'));
+    expect(item).toBe(byTestId('contract-action'));
     expect(
       byRole('menuitem', 'Contract disabled action').getAttribute(
         'aria-disabled'
@@ -380,15 +379,79 @@ describe('input.actions', () => {
     const onClick = jest.fn();
     await openChat(actionsConfig(onClick));
     await click(byRole('button', STRINGS.input_actionsMenuLabel));
-    await click(byRole('menuitem', 'Contract action'));
+    await click(await waitFor(() => byRole('menuitem', 'Contract action')));
     expect(onClick.mock.calls).toEqual([['enabled']]);
     await waitFor(() =>
       expect(allByRole('menuitem', 'Contract action')).toHaveLength(0)
     );
   });
 
+  /** One disabled action, which records each run of its onClick. */
+  function disabledActionConfig(onClick: jest.Mock): Partial<PublicConfig> {
+    return {
+      strings: STRINGS,
+      input: {
+        actions: [
+          {
+            text: 'Contract disabled action',
+            icon: Add16,
+            disabled: true,
+            onClick,
+          },
+        ],
+      },
+    };
+  }
+
+  it('does not run a disabled action by click or by Enter', async () => {
+    const onClick = jest.fn();
+    await openChat(disabledActionConfig(onClick));
+    await click(byRole('button', STRINGS.input_actionsMenuLabel));
+    const item = await waitFor(() =>
+      byRole('menuitem', 'Contract disabled action')
+    );
+    await click(item);
+    await act(async () => {
+      item.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Enter',
+          bubbles: true,
+          composed: true,
+          cancelable: true,
+        })
+      );
+    });
+    expect(onClick).not.toHaveBeenCalled();
+  });
+
   it('shows no actions button without actions', async () => {
     await openChat({ strings: STRINGS });
     expect(allByRole('button', STRINGS.input_actionsMenuLabel)).toHaveLength(0);
+  });
+
+  it('lists an action without an icon by its text, and runs it', async () => {
+    const onClick = jest.fn();
+    await openChat({
+      strings: STRINGS,
+      input: { actions: [{ text: 'Contract text action', onClick }] },
+    });
+    await click(byRole('button', STRINGS.input_actionsMenuLabel));
+    await click(
+      await waitFor(() => byRole('menuitem', 'Contract text action'))
+    );
+    expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
+  // @covers config.input.expanded
+  it('shows an action without an icon as a button named by its text in the expanded layout', async () => {
+    const onClick = jest.fn();
+    await openChat({
+      input: {
+        expanded: true,
+        actions: [{ text: 'Contract text action', onClick }],
+      },
+    });
+    await click(byRole('button', 'Contract text action'));
+    expect(onClick).toHaveBeenCalledTimes(1);
   });
 });

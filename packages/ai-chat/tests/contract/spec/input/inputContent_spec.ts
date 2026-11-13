@@ -76,6 +76,27 @@ function chipDoc(text: string): JSONContent {
   };
 }
 
+/** One paragraph holding "one", a line break, then "two". */
+const LINE_BREAK_DOC: JSONContent = {
+  type: 'doc',
+  content: [
+    {
+      type: 'paragraph',
+      content: [
+        { type: 'text', text: 'one' },
+        { type: 'hardBreak' },
+        { type: 'text', text: 'two' },
+      ],
+    },
+  ],
+};
+
+/** {@link LINE_BREAK_DOC}'s paragraph, then a second one holding "three". */
+const BREAKS_DOC: JSONContent = {
+  type: 'doc',
+  content: [...LINE_BREAK_DOC.content, textDoc('three').content[0]],
+};
+
 async function updateContent(
   instance: ChatInstance,
   updater: (previous: JSONContent) => JSONContent
@@ -92,6 +113,16 @@ async function updateRawValue(
   await act(async () => {
     instance.input.updateRawValue(updater);
   });
+}
+
+/** The text `updateRawValue` hands its updater, which leaves the draft as is. */
+async function previousRawValue(instance: ChatInstance): Promise<string> {
+  let seen: string;
+  await updateRawValue(instance, (previous) => {
+    seen = previous;
+    return previous;
+  });
+  return seen;
 }
 
 /** Each `state:change` from now on, as the input's text and doc. */
@@ -117,12 +148,7 @@ describe('state.input', () => {
     const { instance } = await openChat();
     const { input } = instance.state.get();
     expect(input.rawValue).toBe('');
-    // src/chat/store/reducerUtils.ts:213 seeds `content` with `[]`, and the
-    // projection at src/chat/utils/publicState.ts:167 only replaces null, so
-    // on `main` an untouched input publishes an empty array, not the
-    // JSONContent doc its type (src/types/instance/PublicChatState.ts:58)
-    // promises.
-    expect(input.content).toEqual([]);
+    expect(input.content).toEqual(EMPTY_DOC);
     expect(input.structuredData).toBeUndefined();
   });
 
@@ -141,39 +167,31 @@ describe('state.input', () => {
     expect(Object.isFrozen(instance.state.get().input.content)).toBe(true);
   });
 
-  it('joins paragraphs with one newline in the plain field', async () => {
+  it('keeps a typed newline in the plain field, as a line break', async () => {
     const { instance } = await openChat();
-    await updateContent(instance, () => ({
-      type: 'doc',
-      content: [textDoc('one').content[0], textDoc('two').content[0]],
-    }));
+    await typeText('one\ntwo');
     expect(instance.state.get().input.rawValue).toBe('one\ntwo');
-    expect(inputField().value).toBe('one\ntwo');
+    expect(instance.state.get().input.content).toEqual(LINE_BREAK_DOC);
   });
 
-  it('joins paragraphs with two newlines and shows a hard break as one in the rich editor', async () => {
+  it('reads a paragraph break as two newlines and a line break as one in the plain field', async () => {
+    const { instance } = await openChat();
+    await updateContent(instance, () => BREAKS_DOC);
+    expect(instance.state.get().input.rawValue).toBe('one\ntwo\n\nthree');
+    expect(instance.state.get().input.content).toEqual(BREAKS_DOC);
+    expect(inputField().value).toBe('one\ntwo\n\nthree');
+    expect(await previousRawValue(instance)).toBe('one\ntwo\n\nthree');
+  });
+
+  it('reads a paragraph break as two newlines and a line break as one in the rich editor', async () => {
     const { instance } = await openChat();
     await act(async () => {
       await instance.input.getEditor();
     });
-    await updateContent(instance, () => ({
-      type: 'doc',
-      content: [
-        {
-          type: 'paragraph',
-          content: [
-            { type: 'text', text: 'one' },
-            { type: 'hardBreak' },
-            { type: 'text', text: 'two' },
-          ],
-        },
-        textDoc('three').content[0],
-      ],
-    }));
-    // The plain field joins paragraphs with one newline (test above); the rich
-    // editor joins them with two. A finding: the same doc gives a different
-    // `rawValue` depending on which surface is mounted.
+    await updateContent(instance, () => BREAKS_DOC);
     expect(instance.state.get().input.rawValue).toBe('one\ntwo\n\nthree');
+    expect(instance.state.get().input.content).toEqual(BREAKS_DOC);
+    expect(await previousRawValue(instance)).toBe('one\ntwo\n\nthree');
   });
 });
 
@@ -264,23 +282,40 @@ describe('input.updateContent', () => {
     expect(editor.getJSON()).toEqual(chipDoc('hi '));
   });
 
-  it('empties the draft for a mark no extension supports', async () => {
+  it('keeps the draft and rejects with a TypeError naming a mark no extension supports', async () => {
     const { instance } = await openChat();
     await updateContent(instance, () => textDoc('earlier draft'));
-    await updateContent(instance, () => ({
-      type: 'doc',
-      content: [
-        {
-          type: 'paragraph',
-          content: [{ type: 'text', text: 'bold', marks: [{ type: 'bold' }] }],
-        },
-      ],
-    }));
-    // Suspected bug, reported: the promise resolves as if the doc were
-    // applied, but the rich editor rejects the unknown mark and the whole
-    // draft, the earlier text included, is gone.
+    let result: Promise<void>;
+    await act(async () => {
+      result = instance.input.updateContent(() => ({
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              { type: 'text', text: 'bold', marks: [{ type: 'bold' }] },
+            ],
+          },
+        ],
+      }));
+      await result.catch(() => {});
+    });
+    await expect(result).rejects.toThrow(TypeError);
+    await expect(result).rejects.toThrow(/\bbold\b/);
+    expect(instance.state.get().input.rawValue).toBe('earlier draft');
+    expect(instance.state.get().input.content).toEqual(
+      textDoc('earlier draft')
+    );
+  });
+
+  // @covers config.input.tiptap
+  it('clears a rich draft with an empty doc', async () => {
+    const { instance } = await openChat(CHIP_CONFIG);
+    await updateContent(instance, () => chipDoc('hi '));
+    await updateContent(instance, () => ({ type: 'doc', content: [] }));
     expect(instance.state.get().input.rawValue).toBe('');
     expect(instance.state.get().input.content).toEqual(EMPTY_DOC);
+    expect(consoleWarn).not.toHaveBeenCalled();
   });
 
   it('seeds plain text while the input is hidden, and rejects a rich doc', async () => {
@@ -295,7 +330,7 @@ describe('input.updateContent', () => {
     expect(instance.state.get().input.rawValue).toBe('seeded');
   });
 
-  it('seeds the draft from onBeforeRender, which a send then uses', async () => {
+  it('seeds the draft from onBeforeRender, which the field shows and a send uses', async () => {
     const sent: string[] = [];
     const { instance } = await contractChat({
       messaging: {
@@ -311,15 +346,13 @@ describe('input.updateContent', () => {
     await changeView(instance, ViewType.MAIN_WINDOW);
     await pause();
     expect(instance.state.get().input.rawValue).toBe('early');
-    // Suspected bug, reported: src/types/instance/ChatInstanceInput.ts:62 says
-    // a staged value "seeds the field when it renders", but a value staged
-    // from onBeforeRender never shows; the field stays empty while the send
-    // button sends it.
-    expect(
-      allByTestId(PageObjectId.INPUT).map(
-        (each) => (each as HTMLTextAreaElement).value
-      )
-    ).toEqual(['']);
+    await waitFor(() =>
+      expect(
+        allByTestId(PageObjectId.INPUT).map(
+          (each) => (each as HTMLTextAreaElement).value
+        )
+      ).toEqual(['early'])
+    );
     await act(async () => {
       getByTestId(PageObjectId.INPUT_SEND).click();
     });
@@ -350,14 +383,11 @@ describe('input.updateRawValue', () => {
     expect(inputField().value).toBe('hello');
   });
 
-  it('keeps a newline in the plain field, as a second paragraph', async () => {
+  it('keeps a newline in the plain field, as a line break', async () => {
     const { instance } = await openChat();
     await updateRawValue(instance, () => 'one\ntwo');
     expect(instance.state.get().input.rawValue).toBe('one\ntwo');
-    expect(instance.state.get().input.content).toEqual({
-      type: 'doc',
-      content: [textDoc('one').content[0], textDoc('two').content[0]],
-    });
+    expect(instance.state.get().input.content).toEqual(LINE_BREAK_DOC);
   });
 
   it('gives the updater the current text', async () => {
@@ -396,30 +426,50 @@ describe('input.updateRawValue', () => {
     );
   });
 
-  it('publishes the new text before the new doc in the plain field', async () => {
+  it('publishes the new text and the new doc in one change in the plain field', async () => {
     const { instance } = await openChat();
     const changes = recordInputChanges(instance);
     await updateRawValue(instance, () => 'next');
     await pause();
-    // src/types/instance/PublicChatState.ts:50 says `content` is "always
-    // consistent with rawValue". On `main` the plain field's write publishes
-    // `rawValue` first, with the old doc, then the doc in a second change.
-    expect(changes).toEqual([
-      { rawValue: 'next', content: [] },
-      { rawValue: 'next', content: textDoc('next') },
-    ]);
+    expect(changes).toEqual([{ rawValue: 'next', content: textDoc('next') }]);
   });
 
-  it('turns a newline into a space in the rich editor', async () => {
+  it('turns a newline into a line break in the rich editor', async () => {
     const { instance } = await openChat();
     await act(async () => {
       await instance.input.getEditor();
     });
     await updateRawValue(instance, () => 'one\ntwo');
-    // src/types/instance/ChatInstanceInput.ts:38 says a hard break "renders as
-    // `\n` in the rawValue projection". On `main` the rich editor drops the
-    // newline a host writes; the plain field keeps it.
-    expect(instance.state.get().input.rawValue).toBe('one two');
+    expect(instance.state.get().input.rawValue).toBe('one\ntwo');
+    expect(instance.state.get().input.content).toEqual(LINE_BREAK_DOC);
+  });
+
+  // @covers config.input.tiptap
+  it('seeds a multi-line draft from onBeforeRender, which the rich editor shows and a send uses', async () => {
+    const sent: string[] = [];
+    const { instance } = await contractChat({
+      ...CHIP_CONFIG,
+      messaging: {
+        skipWelcome: true,
+        customSendMessage: async (request) => {
+          sent.push(request.input.text);
+        },
+      },
+      onBeforeRender: (handed) => {
+        handed.input.updateRawValue(() => 'one\ntwo');
+      },
+    });
+    await changeView(instance, ViewType.MAIN_WINDOW);
+    let editor: Awaited<ReturnType<ChatInstance['input']['getEditor']>>;
+    await act(async () => {
+      editor = await instance.input.getEditor();
+    });
+    await waitFor(() => expect(editor.getJSON()).toEqual(LINE_BREAK_DOC));
+    expect(instance.state.get().input.rawValue).toBe('one\ntwo');
+    await act(async () => {
+      getByTestId(PageObjectId.INPUT_SEND).click();
+    });
+    await waitFor(() => expect(sent).toEqual(['one\ntwo']));
   });
 
   // @covers config.input.tiptap

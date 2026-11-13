@@ -21,7 +21,6 @@ import actions from '../store/actions';
 import { selectInputIsReadonly } from '../store/selectors';
 
 import { ServiceManager } from '../services/ServiceManager';
-import { createAppConfig } from '../store/doCreateStore';
 import { setIntl } from './intlUtils';
 import { consoleDebug, consoleError, consoleWarn, debugLog } from './miscUtils';
 import createHumanAgentService from '../services/haa/HumanAgentServiceImpl';
@@ -124,8 +123,7 @@ export async function initServiceManagerAndInstance(options: {
   dayjs.extend(LocalizedFormat);
 
   // Create service manager
-  const appConfig = createAppConfig(publicConfig);
-  const serviceManager = createServiceManager(appConfig);
+  const serviceManager = createServiceManager(publicConfig);
 
   // Set container + hosting information
   serviceManager.container = container;
@@ -461,6 +459,7 @@ export async function initServiceManagerAndInstance(options: {
           skipHydration: true,
           endHumanAgentConversation: false,
           fireEvents: false,
+          cancelUploads: false,
         });
       },
 

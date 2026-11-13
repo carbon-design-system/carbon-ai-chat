@@ -13,7 +13,6 @@ import { requestFocus as requestFocusForTargets } from '../utils/focusManager';
 import type { HasRequestFocus } from '../../types/utilities/HasRequestFocus';
 
 interface UseFocusManagerProps {
-  shouldAutoFocus: boolean;
   showDisclaimer: boolean;
   iFramePanelIsOpen: boolean;
   viewSourcePanelIsOpen: boolean;
@@ -32,7 +31,6 @@ interface UseFocusManagerProps {
  * Homescreen now uses the same input field as messages, so no special focus handling needed
  */
 export function useFocusManager({
-  shouldAutoFocus,
   showDisclaimer,
   iFramePanelIsOpen,
   viewSourcePanelIsOpen,
@@ -47,7 +45,6 @@ export function useFocusManager({
 }: UseFocusManagerProps) {
   const requestFocus = useCallback(() => {
     return requestFocusForTargets({
-      shouldAutoFocus,
       showDisclaimer,
       iFramePanelIsOpen,
       viewSourcePanelIsOpen,
@@ -69,7 +66,6 @@ export function useFocusManager({
     inputRef,
     responsePanelIsOpen,
     responsePanelRef,
-    shouldAutoFocus,
     showDisclaimer,
     viewSourcePanelIsOpen,
     viewSourcePanelRef,

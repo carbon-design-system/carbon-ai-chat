@@ -18,6 +18,8 @@ function setup(overrides: Partial<WindowOpenStateOptions> = {}) {
     viewStateMainWindow: true,
     isHydrated: false,
     useCustomHostElement: false,
+    shouldTakeFocusIfOpensAutomatically: true,
+    initialViewChangeComplete: true,
     requestFocus: jest.fn(),
     ...overrides,
   };
@@ -142,6 +144,26 @@ describe('WindowOpenState', () => {
     jest.mocked(options.requestFocus).mockClear();
     controller.connect();
     frames.shift()(0);
+    expect(options.requestFocus).toHaveBeenCalledTimes(1);
+    controller.disconnect();
+  });
+
+  it('skips focus only for an automatic open when the flag is false', () => {
+    const { controller, options } = setup({
+      isHydrated: true,
+      shouldTakeFocusIfOpensAutomatically: false,
+      initialViewChangeComplete: false,
+    });
+    controller.connect();
+    jest.runAllTimers();
+    expect(options.requestFocus).not.toHaveBeenCalled();
+    controller.update({
+      ...options,
+      viewStateMainWindow: false,
+      initialViewChangeComplete: true,
+    });
+    jest.mocked(options.requestFocus).mockClear();
+    controller.update({ ...options, initialViewChangeComplete: true });
     expect(options.requestFocus).toHaveBeenCalledTimes(1);
     controller.disconnect();
   });

@@ -48,6 +48,10 @@ interface RestartConversationOptions {
    * This defaults to true.
    */
   fireEvents?: boolean;
+  /**
+   * Indicates if file uploads still in progress should be canceled. This defaults to true.
+   */
+  cancelUploads?: boolean;
 }
 
 class HydrationService {
@@ -304,6 +308,7 @@ class HydrationService {
       skipHydration = false,
       endHumanAgentConversation = true,
       fireEvents = true,
+      cancelUploads = true,
     } = options;
 
     debugLog('Restarting conversation');
@@ -373,6 +378,9 @@ class HydrationService {
       }
 
       await this.serviceManager.messageService.cancelAllMessageRequests();
+      if (cancelUploads) {
+        this.serviceManager.inputActionsService.cancelPendingUploads();
+      }
 
       // Hide the stop streaming button since we've canceled all streams. Unconditional
       // on purpose — everything was just canceled, so there is no other stream to keep
@@ -453,6 +461,7 @@ class HydrationService {
       newPersistedToBrowserStorage.viewState = VIEW_STATE_LAUNCHER_OPEN;
     }
     this.serviceManager.messageService.cancelAllMessageRequests();
+    this.serviceManager.inputActionsService.cancelPendingUploads();
 
     this.serviceManager.messageUpsertCoordinator.clearAll();
     this.serviceManager.humanAgentService?.dropHeldMessages();

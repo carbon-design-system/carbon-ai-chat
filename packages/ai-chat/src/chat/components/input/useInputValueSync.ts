@@ -9,7 +9,10 @@
 
 import { MutableRefObject, useEffect, useRef, useState } from 'react';
 import type { JSONContent } from '@tiptap/core';
-import type { PromptLineElement } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
+import {
+  textToDoc,
+  type PromptLineElement,
+} from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
 
 import actions from '../../store/actions';
 import {
@@ -99,13 +102,26 @@ function useInputValueSync({
     isInputToHumanAgent: boolean;
   } | null>(null);
 
+  // A draft staged before the first surface rendered (from onBeforeRender, for
+  // example) never passes through the store subscription below, so that
+  // surface restores it once. Null when no draft was staged.
+  const stagedDraftSurface = useRef<PromptLineElement | null | undefined>(
+    undefined
+  );
+
   useEffect(() => {
     const promptLine = promptLineRef.current;
+    if (!trackInputState || !isInputVisible || !promptLine) {
+      return undefined;
+    }
+    if (stagedDraftSurface.current === undefined) {
+      const { rawValue } = selectInputState(serviceManager.store.getState());
+      stagedDraftSurface.current = rawValue ? promptLine : null;
+    }
+    const restoresStagedDraft =
+      stagedDraftSurface.current === promptLine && !restoredSurface.current;
     if (
-      !trackInputState ||
-      !restoreDraft ||
-      !isInputVisible ||
-      !promptLine ||
+      (!restoreDraft && !restoresStagedDraft) ||
       (restoredSurface.current?.promptLine === promptLine &&
         restoredSurface.current.isInputToHumanAgent === isInputToHumanAgent)
     ) {
@@ -198,7 +214,7 @@ function useInputValueSync({
         // branch), so the sync runs regardless of which surface is mounted.
         const promptLine = promptLineRef.current;
         if (promptLine && promptLine.getValue() !== nextRawValue) {
-          promptLine.setContent(nextRawValue);
+          promptLine.setContent(textToDoc(nextRawValue));
         }
       }
     });

@@ -52,6 +52,10 @@ export interface PublicConfigMessaging {
    * sent when the previous is still processing. If the Promise rejects, an error indicator will be displayed next to the user's message.
    *
    * If the request takes longer than PublicConfigMessaging.messageTimeoutSecs than the AbortSignal will be sent.
+   *
+   * Without it, every send fails, the welcome request included. The message shows as failed,
+   * {@link PublicConfig.onError} reports a message communication error, and {@link ChatInstance.send} rejects with
+   * an error that names this field.
    */
   customSendMessage?: (
     request: MessageRequest,

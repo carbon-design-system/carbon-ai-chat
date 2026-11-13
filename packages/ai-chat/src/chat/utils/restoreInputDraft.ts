@@ -7,7 +7,10 @@
  *  @license
  */
 
-import type { PromptLineElement } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
+import {
+  textToDoc,
+  type PromptLineElement,
+} from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
 import type { ServiceManager } from '../services/ServiceManager';
 import {
   selectInputState,
@@ -50,7 +53,7 @@ export async function restoreInputDraft(
     }
     promptLine.setContent(draft.content);
   } else {
-    promptLine.setContent(draft.rawValue ?? '');
+    promptLine.setContent(textToDoc(draft.rawValue ?? ''));
   }
   return true;
 }
