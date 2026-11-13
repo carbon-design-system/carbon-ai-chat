@@ -78,7 +78,8 @@ export interface ServiceDeskPublicConfig {
    *
    * When the chat doesn't reconnect (this is false, the desk has no {@link ServiceDesk#reconnect}, or it resolves
    * false), it ends the agent chat: it fires `human_agent:pre:endChat`, calls {@link ServiceDesk#endChat}, and fires
-   * `human_agent:endChat`. A `pre:endChat` handler can't cancel this end.
+   * `human_agent:endChat`. A `pre:endChat` handler can't cancel this end, and one that throws is logged while the end
+   * goes on.
    */
   allowReconnect?: boolean;
 }

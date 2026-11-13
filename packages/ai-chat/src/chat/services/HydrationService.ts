@@ -195,10 +195,11 @@ class HydrationService {
     // Note, we're not waiting for the human agent service to handle the hydration. It may start an asynchronous
     // process to reconnect the user to an agent but that is considered separate from the main hydration.
     const allowReconnect = config.public.serviceDesk.allowReconnect ?? true;
-    this.serviceManager?.humanAgentService?.handleHydration(
-      allowReconnect,
-      Boolean(history)
-    );
+    this.serviceManager?.humanAgentService
+      ?.handleHydration(allowReconnect, Boolean(history))
+      .catch((error) =>
+        consoleError('Resuming the agent chat after a load failed.', error)
+      );
   }
 
   private async loadInitialHistory(generation: number): Promise<LoadedHistory> {

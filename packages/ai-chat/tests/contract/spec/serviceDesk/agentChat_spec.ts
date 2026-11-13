@@ -337,6 +337,37 @@ describe('reloading during an agent chat', () => {
     expect(humanAgent(instance).isConnected).toBe(false);
     expectEnded(events, desk, { reason: 'reload' });
   });
+
+  // @covers event.human_agent:pre:endChat event.human_agent:endChat
+  it('ends the chat and logs the error when a pre:endChat handler throws', async () => {
+    await joinThenUnmount();
+    const { desk, instance } = await remount(() => Promise.resolve(false));
+    const failure = new Error('Contract pre:endChat failure');
+    const handler = jest.fn(() => {
+      throw failure;
+    });
+    instance.on({ type: BusEventType.HUMAN_AGENT_PRE_END_CHAT, handler });
+    const events = recordEvents(instance, [BusEventType.HUMAN_AGENT_END_CHAT]);
+    const error = jest.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      await act(() => instance.send('again'));
+      await waitFor(() =>
+        expect(events.of(BusEventType.HUMAN_AGENT_END_CHAT)).toHaveLength(1)
+      );
+      // A short wait lets a rejection nothing caught surface and fail the test.
+      await pause();
+      expect(error.mock.calls.some((call) => call.includes(failure))).toBe(
+        true
+      );
+    } finally {
+      error.mockRestore();
+    }
+    expect(handler).toHaveBeenCalledTimes(1);
+    expect(humanAgent(instance).isConnected).toBe(false);
+    expect(desk.desk.endChat.mock.calls).toEqual([
+      [{ endedByHumanAgent: false, preEndChatPayload: null }],
+    ]);
+  });
 });
 
 // @covers config.serviceDeskFactory event.human_agent:pre:endChat
