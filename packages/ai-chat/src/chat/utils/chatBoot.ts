@@ -511,9 +511,6 @@ export async function initServiceManagerAndInstance(options: {
 
   serviceManager.instance = instance;
 
-  // Create the service desk now, so it exists from mount. The first load waits for it and reports a failure.
-  serviceManager.humanAgentService.initialize().catch(() => {});
-
   return { serviceManager, instance };
 }
 

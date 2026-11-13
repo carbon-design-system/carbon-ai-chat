@@ -61,7 +61,7 @@ function deskDriver(
   });
 }
 
-/** Sends one message and settles it, which hydrates the chat. */
+/** Sends one message and settles it, which hydrates the chat and builds the desk. */
 async function hydrate(chat: ContractDriver): Promise<void> {
   await finishSend(await startSend(chat, 'hello'));
 }
@@ -110,10 +110,12 @@ const labels = (chat: ContractDriver, from: number): string[] =>
 
 // @covers config.serviceDeskFactory
 describeShared('serviceDeskFactory', (makeDriver) => {
-  it('is called once at mount, and not again when sends load the chat', async () => {
+  it('is not called at mount, then once when the first send hydrates the chat', async () => {
     const desk = fakeDesk();
     const chat = await deskDriver(makeDriver, desk);
-    expect(desk.factory).toHaveBeenCalledTimes(1);
+    // `main` calls the factory at the first load, not at mount; calling it at
+    // mount waits for 2.0.0 (MAIN-NOTES M85 (2.0.0)).
+    expect(desk.factory).not.toHaveBeenCalled();
     await hydrate(chat);
     await hydrate(chat);
     expect(desk.factory).toHaveBeenCalledTimes(1);

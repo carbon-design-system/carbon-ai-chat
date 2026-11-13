@@ -229,23 +229,16 @@ class HumanAgentServiceImpl implements HumanAgentService {
   }
 
   /**
-   * The service desk's creation, once started.
-   */
-  private initialization: Promise<void>;
-
-  /**
    * Initializes this service. This will create the service desk instance that can be used for communicating with
-   * service desks. Later calls return the first call's Promise.
+   * service desks.
    */
-  public initialize() {
-    if (!this.initialization) {
-      this.hasInitialized = true;
-      this.initialization = this.createServiceDesk();
+  public async initialize() {
+    if (this.serviceDesk) {
+      throw new Error('A service desk has already been created!');
     }
-    return this.initialization;
-  }
 
-  private async createServiceDesk() {
+    this.hasInitialized = true;
+
     const { store, instance } = this.serviceManager;
     const state = store.getState();
     const { config, persistedToBrowserStorage } = state;
@@ -363,8 +356,6 @@ class HumanAgentServiceImpl implements HumanAgentService {
    * Checks that a new agent chat can start, ending a suspended one first. Throws when it can't.
    */
   private async prepareToStartChat() {
-    // A service that replaced an idle one creates its desk here; a failed factory leaves no desk.
-    await this.initialize().catch(() => {});
     if (!this.serviceDesk) {
       // No service desk connected.
       throw new Error('A service desk has not been configured.');
@@ -775,8 +766,6 @@ class HumanAgentServiceImpl implements HumanAgentService {
     let resultValue: HumanAgentsOnlineStatus;
     const initialRestartCount = this.serviceManager.restartCount;
 
-    // A service that replaced an idle one creates its desk here.
-    await this.initialize().catch(() => {});
     if (!this.serviceDesk?.areAnyAgentsOnline) {
       resultValue = HumanAgentsOnlineStatus.UNKNOWN;
     } else {

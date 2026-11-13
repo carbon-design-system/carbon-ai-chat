@@ -30,7 +30,7 @@ import { JSONContent } from '@tiptap/core';
 interface HumanAgentService {
   /**
    * Initializes this service. This will create the service desk instance that can be used for communicating with
-   * service desks. Later calls return the first call's Promise.
+   * service desks.
    */
   initialize(): Promise<void>;
 
