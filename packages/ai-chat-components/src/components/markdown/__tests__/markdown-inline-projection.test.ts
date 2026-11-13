@@ -10,7 +10,7 @@
 import { expect, fixture, html, waitUntil } from '@open-wc/testing';
 import type MarkdownIt from 'markdown-it';
 import type CDSAIChatMarkdownElement from '../src/markdown.js';
-import '../src/markdown.js';
+import '../../aichat-markdown/index.js';
 
 function codePlugin(md: MarkdownIt) {
   md.renderer.rules.code_inline = () =>

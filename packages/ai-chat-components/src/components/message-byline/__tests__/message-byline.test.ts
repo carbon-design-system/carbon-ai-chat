@@ -14,7 +14,7 @@ import '../../user-avatar/index.js';
 import '../../message-item-shell/index.js';
 import type CDSAIChatMessageByline from '../src/message-byline.js';
 
-const blockClass = `${prefix}-message-byline`;
+const blockClass = `${prefix}-aichat-message-byline`;
 
 describe(blockClass, () => {
   describe('label and timestamp', () => {

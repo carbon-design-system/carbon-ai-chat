@@ -9,13 +9,12 @@
 
 import { createComponent } from '@lit/react';
 import React from 'react';
-import prefix from '../globals/settings.js';
-import CDSAIChatMessageItemShell from '../components/message-item-shell/src/message-item-shell.js';
+import { CDSAIChatMessageItemShell } from '../components/aichat-message-item-shell/index.js';
 import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
 const MessageItemShell = withWebComponentBridge(
   createComponent({
-    tagName: `${prefix}-message-item-shell`,
+    tagName: CDSAIChatMessageItemShell.is,
     elementClass: CDSAIChatMessageItemShell,
     react: React,
     events: {},

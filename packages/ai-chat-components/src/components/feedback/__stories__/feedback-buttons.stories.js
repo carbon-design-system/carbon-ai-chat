@@ -7,8 +7,8 @@
  *  @license
  */
 
-import '../src/feedback-buttons';
-import '../src/feedback';
+import '../../aichat-feedback/index.js';
+
 import { LitElement, css, html, nothing } from 'lit';
 
 const positiveCategories = [

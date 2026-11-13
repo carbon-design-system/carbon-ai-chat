@@ -7,7 +7,7 @@
  *  @license
  */
 
-import type { PromptLineElement } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
+import type { PromptLineElement } from '@carbon/ai-chat-components/es/components/aichat-prompt-line/index.js';
 import type { ServiceManager } from '../services/ServiceManager';
 import {
   selectInputState,

@@ -7,6 +7,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import '../../../aichat-prompt-line/index.js';
+
 /**
  * Layout-only smoke tests for `<cds-aichat-prompt-line-shell>`. The shell is
  * pure chrome — five named slots, the `rounded` reflection, and a
@@ -17,7 +19,6 @@
 
 import { expect, fixture, html } from '@open-wc/testing';
 
-import '../prompt-line-shell.js';
 import type PromptLineShellElement from '../prompt-line-shell.js';
 
 describe('<cds-aichat-prompt-line-shell>', () => {

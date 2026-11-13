@@ -10,12 +10,12 @@
 import { createComponent } from '@lit/react';
 import React from 'react';
 
-import CDSAIChatTable from '../components/table/src/table.js';
+import { CDSAIChatTable } from '../components/aichat-table/index.js';
 import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
 const Table = withWebComponentBridge(
   createComponent({
-    tagName: 'cds-aichat-table',
+    tagName: CDSAIChatTable.is,
     elementClass: CDSAIChatTable,
     react: React,
   })
@@ -25,4 +25,4 @@ export default Table;
 export type {
   TableCellContent,
   TableRowContent,
-} from '../components/table/src/table.js';
+} from '../components/aichat-table/aichat-table.js';

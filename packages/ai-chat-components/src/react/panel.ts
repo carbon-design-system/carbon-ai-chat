@@ -9,12 +9,12 @@
 
 import { createComponent } from '@lit/react';
 import React from 'react';
-import CdsChatPanelElement from '../components/chat-shell/src/panel.js';
+import { CDSAIChatPanel as CdsChatPanelElement } from '../components/aichat-shell/index.js';
 import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
 const CDSAIChatPanel = withWebComponentBridge(
   createComponent({
-    tagName: 'cds-aichat-panel',
+    tagName: CdsChatPanelElement.is,
     elementClass: CdsChatPanelElement,
     react: React,
     events: {

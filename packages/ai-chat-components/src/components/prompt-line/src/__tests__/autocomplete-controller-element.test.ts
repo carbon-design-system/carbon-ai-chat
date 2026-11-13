@@ -7,13 +7,14 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import '../../../aichat-prompt-line/index.js';
+
 /**
  * Integration tests for `<cds-aichat-autocomplete-controller>`
  */
 
 import { expect, fixture, html, oneEvent } from '@open-wc/testing';
 
-import '../autocomplete-controller-element.js';
 import '../../autocomplete/index.js';
 import type AutocompleteControllerElement from '../autocomplete-controller-element.js';
 import type { SuggestionItem, StartersConfig } from '../tiptap/types.js';

@@ -9,7 +9,7 @@
 
 import { expect, fixture, html } from '@open-wc/testing';
 import { sendKeys } from '@web/test-runner-commands';
-import ConversationalSearchShell from '@carbon/ai-chat-components/es/components/conversational-search/src/conversational-search-shell.js';
+import { ConversationalSearchShell } from '@carbon/ai-chat-components/es/components/aichat-conversational-search/index.js';
 import '@carbon/ai-chat-components/es/components/markdown/index.js';
 import Markdown from '@carbon/ai-chat-components/es/components/markdown/src/markdown.js';
 import { insertHighlightMarkdown } from '../src/citation-utils.js';

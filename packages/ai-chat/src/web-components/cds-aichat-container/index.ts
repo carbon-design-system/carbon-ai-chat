@@ -7,15 +7,13 @@
  *  @license
  */
 
-/**
- * This is the exposed web component for a basic floating chat.
- */
-
 import { installReactDomRenderer } from '../shared/react-dom-renderer';
 
 installReactDomRenderer();
 
-export { default } from './cds-aichat-container';
+// The host class stays a default export so `ChatContainer` keeps naming the
+// root React type below; import the pure class entry for a named class.
+export { default } from './register';
 export type { CdsAiChatContainerAttributes } from './cds-aichat-container';
 // Before these paths had their own declarations they resolved to the root ones.
 // Keep those names so existing type imports through them still compile.

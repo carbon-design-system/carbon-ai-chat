@@ -7,81 +7,81 @@
 
 export const elementEntries = {
   'es/card-footer': () =>
-    import('@carbon/ai-chat-components/es/components/card/src/card-footer.js'),
+    import('@carbon/ai-chat-components/es/components/aichat-card/index.js'),
   'es/card-steps': () =>
-    import('@carbon/ai-chat-components/es/components/card/src/card-steps.js'),
+    import('@carbon/ai-chat-components/es/components/aichat-card/index.js'),
   'es/carousel': () =>
-    import('@carbon/ai-chat-components/es/components/carousel/src/carousel.js'),
+    import('@carbon/ai-chat-components/es/components/aichat-carousel/index.js'),
   'es/history-loading': () =>
-    import('@carbon/ai-chat-components/es/components/chat-history/src/history-loading.js'),
+    import('@carbon/ai-chat-components/es/components/aichat-history/index.js'),
   'es/history-panel-item-input': () =>
-    import('@carbon/ai-chat-components/es/components/chat-history/src/history-panel-item-input.js'),
+    import('@carbon/ai-chat-components/es/components/aichat-history/index.js'),
   'es/history-toolbar': () =>
-    import('@carbon/ai-chat-components/es/components/chat-history/src/history-toolbar.js'),
+    import('@carbon/ai-chat-components/es/components/aichat-history/index.js'),
   'es/chat-header': () =>
-    import('@carbon/ai-chat-components/es/components/chat-shell/src/chat-header.js'),
+    import('@carbon/ai-chat-components/es/components/aichat-shell/index.js'),
   'es/code-snippet': () =>
-    import('@carbon/ai-chat-components/es/components/code-snippet/src/code-snippet.js'),
+    import('@carbon/ai-chat-components/es/components/aichat-code-snippet/index.js'),
   'es/conversational-search-shell': () =>
-    import('@carbon/ai-chat-components/es/components/conversational-search/src/conversational-search-shell.js'),
+    import('@carbon/ai-chat-components/es/components/aichat-conversational-search/index.js'),
   'es/table': () =>
-    import('@carbon/ai-chat-components/es/components/table/src/table.js'),
+    import('@carbon/ai-chat-components/es/components/aichat-table/index.js'),
   'es/toolbar': () =>
-    import('@carbon/ai-chat-components/es/components/toolbar/src/toolbar.js'),
+    import('@carbon/ai-chat-components/es/components/aichat-toolbar/index.js'),
   'es/workspace-shell-footer': () =>
-    import('@carbon/ai-chat-components/es/components/workspace-shell/src/workspace-shell-footer.js'),
+    import('@carbon/ai-chat-components/es/components/aichat-workspace-shell/index.js'),
   'es/history-panel-item': () =>
-    import('@carbon/ai-chat-components/es/components/chat-history/src/history-panel-item.js'),
+    import('@carbon/ai-chat-components/es/components/aichat-history/index.js'),
   'es/card': () =>
-    import('@carbon/ai-chat-components/es/components/card/src/card.js'),
+    import('@carbon/ai-chat-components/es/components/aichat-card/index.js'),
   'es/chat-button': () =>
-    import('@carbon/ai-chat-components/es/components/chat-button/src/chat-button.js'),
+    import('@carbon/ai-chat-components/es/components/aichat-button/index.js'),
   'es/chat-button-skeleton': () =>
-    import('@carbon/ai-chat-components/es/components/chat-button/src/chat-button-skeleton.js'),
+    import('@carbon/ai-chat-components/es/components/aichat-button/index.js'),
   'es/history-panel': () =>
-    import('@carbon/ai-chat-components/es/components/chat-history/src/history-panel.js'),
+    import('@carbon/ai-chat-components/es/components/aichat-history/index.js'),
   'es/history-panel-items': () =>
-    import('@carbon/ai-chat-components/es/components/chat-history/src/history-panel-items.js'),
+    import('@carbon/ai-chat-components/es/components/aichat-history/index.js'),
   'es/history-panel-menu': () =>
-    import('@carbon/ai-chat-components/es/components/chat-history/src/history-panel-menu.js'),
+    import('@carbon/ai-chat-components/es/components/aichat-history/index.js'),
   'es-custom/card-footer': () =>
-    import('@carbon/ai-chat-components/es-custom/components/card/src/card-footer.js'),
+    import('@carbon/ai-chat-components/es-custom/components/aichat-card/index.js'),
   'es-custom/card-steps': () =>
-    import('@carbon/ai-chat-components/es-custom/components/card/src/card-steps.js'),
+    import('@carbon/ai-chat-components/es-custom/components/aichat-card/index.js'),
   'es-custom/carousel': () =>
-    import('@carbon/ai-chat-components/es-custom/components/carousel/src/carousel.js'),
+    import('@carbon/ai-chat-components/es-custom/components/aichat-carousel/index.js'),
   'es-custom/history-loading': () =>
-    import('@carbon/ai-chat-components/es-custom/components/chat-history/src/history-loading.js'),
+    import('@carbon/ai-chat-components/es-custom/components/aichat-history/index.js'),
   'es-custom/history-panel-item-input': () =>
-    import('@carbon/ai-chat-components/es-custom/components/chat-history/src/history-panel-item-input.js'),
+    import('@carbon/ai-chat-components/es-custom/components/aichat-history/index.js'),
   'es-custom/history-toolbar': () =>
-    import('@carbon/ai-chat-components/es-custom/components/chat-history/src/history-toolbar.js'),
+    import('@carbon/ai-chat-components/es-custom/components/aichat-history/index.js'),
   'es-custom/chat-header': () =>
-    import('@carbon/ai-chat-components/es-custom/components/chat-shell/src/chat-header.js'),
+    import('@carbon/ai-chat-components/es-custom/components/aichat-shell/index.js'),
   'es-custom/code-snippet': () =>
-    import('@carbon/ai-chat-components/es-custom/components/code-snippet/src/code-snippet.js'),
+    import('@carbon/ai-chat-components/es-custom/components/aichat-code-snippet/index.js'),
   'es-custom/conversational-search-shell': () =>
-    import('@carbon/ai-chat-components/es-custom/components/conversational-search/src/conversational-search-shell.js'),
+    import('@carbon/ai-chat-components/es-custom/components/aichat-conversational-search/index.js'),
   'es-custom/table': () =>
-    import('@carbon/ai-chat-components/es-custom/components/table/src/table.js'),
+    import('@carbon/ai-chat-components/es-custom/components/aichat-table/index.js'),
   'es-custom/toolbar': () =>
-    import('@carbon/ai-chat-components/es-custom/components/toolbar/src/toolbar.js'),
+    import('@carbon/ai-chat-components/es-custom/components/aichat-toolbar/index.js'),
   'es-custom/workspace-shell-footer': () =>
-    import('@carbon/ai-chat-components/es-custom/components/workspace-shell/src/workspace-shell-footer.js'),
+    import('@carbon/ai-chat-components/es-custom/components/aichat-workspace-shell/index.js'),
   'es-custom/history-panel-item': () =>
-    import('@carbon/ai-chat-components/es-custom/components/chat-history/src/history-panel-item.js'),
+    import('@carbon/ai-chat-components/es-custom/components/aichat-history/index.js'),
   'es-custom/card': () =>
-    import('@carbon/ai-chat-components/es-custom/components/card/src/card.js'),
+    import('@carbon/ai-chat-components/es-custom/components/aichat-card/index.js'),
   'es-custom/chat-button': () =>
-    import('@carbon/ai-chat-components/es-custom/components/chat-button/src/chat-button.js'),
+    import('@carbon/ai-chat-components/es-custom/components/aichat-button/index.js'),
   'es-custom/chat-button-skeleton': () =>
-    import('@carbon/ai-chat-components/es-custom/components/chat-button/src/chat-button-skeleton.js'),
+    import('@carbon/ai-chat-components/es-custom/components/aichat-button/index.js'),
   'es-custom/history-panel': () =>
-    import('@carbon/ai-chat-components/es-custom/components/chat-history/src/history-panel.js'),
+    import('@carbon/ai-chat-components/es-custom/components/aichat-history/index.js'),
   'es-custom/history-panel-items': () =>
-    import('@carbon/ai-chat-components/es-custom/components/chat-history/src/history-panel-items.js'),
+    import('@carbon/ai-chat-components/es-custom/components/aichat-history/index.js'),
   'es-custom/history-panel-menu': () =>
-    import('@carbon/ai-chat-components/es-custom/components/chat-history/src/history-panel-menu.js'),
+    import('@carbon/ai-chat-components/es-custom/components/aichat-history/index.js'),
 };
 
 export const wrapperEntries = {

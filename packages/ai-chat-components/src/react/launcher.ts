@@ -10,12 +10,12 @@
 import { createComponent } from '@lit/react';
 import React from 'react';
 
-import CDSAIChatLauncher from '../components/launcher/src/launcher.js';
+import { CDSAIChatLauncher } from '../components/aichat-launcher/index.js';
 import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
 const Launcher = withWebComponentBridge(
   createComponent({
-    tagName: 'cds-aichat-launcher',
+    tagName: CDSAIChatLauncher.is,
     elementClass: CDSAIChatLauncher,
     react: React,
     events: {

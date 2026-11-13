@@ -14,7 +14,7 @@ import type {
   MarkdownRendererImageResult,
   MarkdownRendererLinkArgs,
   MarkdownRendererLinkResult,
-} from '@carbon/ai-chat-components/es/components/markdown/index.js';
+} from '@carbon/ai-chat-components/es/components/aichat-markdown/index.js';
 
 import type { MarkdownItPlugin } from './PublicConfig';
 
