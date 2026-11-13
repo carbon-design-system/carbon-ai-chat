@@ -1018,32 +1018,9 @@ class HumanAgentServiceImpl implements HumanAgentService {
       setTimeout(this.serviceManager?.appWindow?.requestFocus);
 
       if (!didReconnect) {
-        // The chat can't go on, so a pre:endChat handler's cancel is ignored here, and a handler that throws can't
-        // stop the end either.
-        let preEndChatPayload: unknown = null;
-        try {
-          const event = await this.firePreEndChat(false);
-          preEndChatPayload = event.preEndChatPayload;
-        } catch (error) {
-          consoleError(
-            'A human_agent:pre:endChat handler failed while ending an agent chat a reload could not resume. The chat ends anyway.',
-            error
-          );
-        }
-        if (this.serviceDesk) {
-          await this.endServiceDeskChat(false, preEndChatPayload);
-        }
         this.chatStarted = false;
         const wasSuspended = this.isSuspended();
         store.dispatch(endChat());
-        try {
-          await this.fireEndChat(false, false);
-        } catch (error) {
-          consoleError(
-            'A human_agent:endChat handler failed after a reload ended an agent chat.',
-            error
-          );
-        }
 
         if (allowEndChatMessages) {
           // If we didn't reconnect, then show the "end chat" messages to the user.
