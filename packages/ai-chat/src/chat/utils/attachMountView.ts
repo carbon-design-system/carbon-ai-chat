@@ -12,7 +12,7 @@ import { setVarsForSelector } from '@carbon/ai-chat-components/es/components/sha
 import type { ServiceManager } from '../../sdk/services/ServiceManager';
 import { slotSource } from '../../sdk/services/slotTracking';
 import { viewActions } from '../state';
-import { ChatViewState } from '../services/chatViewState';
+import { ChatMountState } from '../services/chatMountState';
 import { createViewBindings } from '../services/createViewBindings';
 import { ExtensionHosts } from '../services/extensionHosts';
 import { ThemeWatcherService } from '../services/ThemeWatcherService';
@@ -55,7 +55,7 @@ interface MountViewOptions {
 
 /** What one mounted view adds to a running chat, and how to take it away. */
 interface MountView {
-  readonly viewState: ChatViewState;
+  readonly viewState: ChatMountState;
   readonly hosts: ExtensionHosts;
   /** Starts announcing into a region in `root`. Call once the app can render. */
   connectAnnouncer(root: ShadowRoot): void;
@@ -93,7 +93,7 @@ function attachMountView({
 
   // Each step's undo, newest first, so a throw part way undoes what started.
   const undo: Array<() => void> = [];
-  const viewState = new ChatViewState(
+  const viewState = new ChatMountState(
     serviceManager,
     getWindowSize(),
     customHostElement
@@ -160,7 +160,7 @@ function attachMountView({
 }
 
 /** Feeds window size to the view state and page visibility to the store. */
-function listenToWindow(viewState: ChatViewState) {
+function listenToWindow(viewState: ChatMountState) {
   const { serviceManager } = viewState;
   const onResize = () => {
     viewState.setWindowSize(getWindowSize());

@@ -13,7 +13,10 @@ import { conversationActions } from '../../sdk/store/conversationActions';
 import { reconcileObjectReferences } from '../../sdk/utils/reconcileConfig';
 import type { PartitionReducer } from '../../sdk/store/appStore';
 import type { ConversationState } from '../../types/state/AppState';
-import type { ViewPartitionState } from '../../types/state/ViewPartitionState';
+import type {
+  ChatPrompt,
+  ViewPartitionState,
+} from '../../types/state/ViewPartitionState';
 import type { DerivedConfig } from '../../types/state/AppConfig';
 import type { ThemeState } from '../../types/state/ThemeState';
 import type { AnnounceMessage } from '../../types/state/AnnounceMessage';
@@ -49,6 +52,7 @@ import {
   SET_HOME_SCREEN_IS_OPEN,
   SET_INITIAL_VIEW_CHANGE_COMPLETE,
   START_NEW_MOUNT,
+  SET_PROMPT,
   SET_IS_BROWSER_PAGE_VISIBLE,
   SET_LAUNCHER_MINIMIZED,
   SET_LAUNCHER_PROPERTY,
@@ -287,6 +291,14 @@ const viewReducers: Record<string, ViewReducer> = {
       wasLoadedFromBrowser: true,
     },
   }),
+
+  [SET_PROMPT]: (
+    state: ViewPartitionState,
+    action: { prompt: ChatPrompt | null }
+  ): ViewPartitionState =>
+    state.prompt === action.prompt
+      ? state
+      : { ...state, prompt: action.prompt },
 
   [ANNOUNCE_MESSAGE]: (
     state: ViewPartitionState,

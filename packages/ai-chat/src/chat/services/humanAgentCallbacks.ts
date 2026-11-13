@@ -7,28 +7,30 @@
  *  @license
  */
 
-import type { ChatViewState } from './chatViewState';
+import type { ChatMountState } from './chatMountState';
 import type { ServiceManager } from '../../sdk/services/ServiceManager';
 import type { FileUpload } from '../../types/state/AppState';
+import { openPrompt } from '../state';
+import { chatStore } from './attachChatView';
 
 export class HumanAgentCallbacks {
   private serviceManager: ServiceManager;
 
-  constructor(private viewState: ChatViewState) {
-    this.serviceManager = viewState.serviceManager;
+  constructor(mountState: ChatMountState) {
+    this.serviceManager = mountState.serviceManager;
   }
 
+  /**
+   * Asks whether to end the agent chat. The prompt lives as long as the chat,
+   * so its answer closes over the chat, not this mount.
+   */
   showConfirmEndChat = () => {
-    this.viewState.showEndChatConfirmation();
-  };
-
-  hideConfirmEndChat = () => {
-    this.viewState.hideEndChatConfirmation();
-  };
-
-  confirmHumanAgentEndChat = () => {
-    this.hideConfirmEndChat();
-    this.serviceManager.humanAgentService.endChat(true);
+    const { serviceManager } = this;
+    openPrompt(
+      chatStore(serviceManager),
+      { kind: 'endChat' },
+      { onConfirm: () => serviceManager.humanAgentService.endChat(true) }
+    );
   };
 
   onUserTyping = (isTyping: boolean) => {

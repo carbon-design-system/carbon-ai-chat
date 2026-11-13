@@ -30,13 +30,13 @@ import type {
   AutocompleteContent,
   AutocompleteContentRecord,
 } from '../../services/autocompleteContent';
-import type { ChatViewState } from '../../services/chatViewState';
+import type { ChatMountState } from '../../services/chatMountState';
 import { ChatWidthBreakpoint } from '../../../types/state/AppState';
 
 interface AutocompleteLifetime {
   controller: AutocompleteController;
   owner: AutocompleteContent;
-  viewState: ChatViewState;
+  viewState: ChatMountState;
   report: (error: unknown) => void;
   active: boolean;
   retired: boolean;
@@ -104,7 +104,7 @@ class NativeAutocomplete extends NativeChatView {
     }
   }
 
-  protected onViewConnected(viewState: ChatViewState) {
+  protected onViewConnected(viewState: ChatMountState) {
     if (this.lifetime && this.lifetime.viewState !== viewState) {
       this.retire();
     }

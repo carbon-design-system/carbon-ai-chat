@@ -2,7 +2,7 @@
 
 Load this when adding, editing, or testing a service. Services are orchestration boundaries that coordinate the store, external APIs, and browser APIs.
 
-Chat-instance services live in `src/sdk/services/`. View-owned classes, the ones that touch the DOM or `ChatViewState`, live in `src/chat/services/`; follow [the hook core contract](../src/chat/hooks/AGENTS.md) for them. The initialization, manager lookup, and teardown rules below apply to chat-instance services.
+Chat-instance services live in `src/sdk/services/`. View-owned classes, the ones that touch the DOM or `ChatMountState`, live in `src/chat/services/`; follow [the hook core contract](../src/chat/hooks/AGENTS.md) for them. The initialization, manager lookup, and teardown rules below apply to chat-instance services.
 
 For assistant message flows, read [messaging ownership](../src/sdk/services/messaging/AGENTS.md). `MessageCoordinator` owns the private workflows. Pure data helpers live in `inbound/`, `outbound/`, and `state/`; view work goes through the narrow `presentation/` port. Human-agent sends and writes stay in `sdk/services/haa/`.
 
@@ -41,7 +41,7 @@ Put state transformations in reducers. Put pure utilities that conversation code
 
 ## Who starts services
 
-[`cds-aichat-container`](../src/web-components/cds-aichat-container/cds-aichat-container.ts) starts them, for every host. React starts nothing. The container calls [`bootPrebuiltChat`](../src/chat/utils/chatBoot.ts), which starts the chat through the internal `createChatSDK`, then [`attachMountView`](../src/chat/utils/attachMountView.ts), which creates `ChatViewState` and attaches the view's ports from [`createViewBindings`](../src/chat/services/createViewBindings.ts). Then it runs the host application's `onBeforeRender` and lets the renderer show the app. Release detaches the view, then shuts the chat down (see below). **Conversation services reach the view only through `serviceManager.view.current`**, which is `undefined` with no view attached, so each view call there must do nothing without one. **A Lit element reads the chat's view state, which holds the manager, from the context in [chat-view-state-context.ts](../src/web-components/shared/chat-view-state-context.ts)**, never from a singleton. The value is `undefined` before startup and after detach.
+[`cds-aichat-container`](../src/web-components/cds-aichat-container/cds-aichat-container.ts) starts them, for every host. React starts nothing. The container calls [`bootPrebuiltChat`](../src/chat/utils/chatBoot.ts), which starts the chat through the internal `createChatSDK`, then [`attachMountView`](../src/chat/utils/attachMountView.ts), which creates `ChatMountState` and attaches the view's ports from [`createViewBindings`](../src/chat/services/createViewBindings.ts). Then it runs the host application's `onBeforeRender` and lets the renderer show the app. Release detaches the view, then shuts the chat down (see below). **Conversation services reach the view only through `serviceManager.view.current`**, which is `undefined` with no view attached, so each view call there must do nothing without one. **A Lit element reads the mount's state, which holds the manager, from the context in [chat-mount-state-context.ts](../src/web-components/shared/chat-mount-state-context.ts)**, never from a singleton. The value is `undefined` before startup and after detach.
 
 ## Wiring & teardown
 

@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { ChatViewState } from '../../../src/chat/services/chatViewState';
+import { ChatMountState } from '../../../src/chat/services/chatMountState';
 import { ExtensionHosts } from '../../../src/chat/services/extensionHosts';
 import { attachMountView } from '../../../src/chat/utils/attachMountView';
 import {
@@ -81,7 +81,7 @@ it('attaches the view ports and takes everything off in order, once', async () =
     .spyOn(ExtensionHosts.prototype, 'disconnect')
     .mockImplementation(() => order.push('hosts'));
   jest
-    .spyOn(ChatViewState.prototype, 'disconnect')
+    .spyOn(ChatMountState.prototype, 'disconnect')
     .mockImplementation(() => order.push('viewState'));
   const removeListener = jest.spyOn(window, 'removeEventListener');
 
@@ -115,7 +115,7 @@ it('undoes what it started when a step throws', async () => {
   jest.spyOn(ExtensionHosts.prototype, 'connect').mockImplementation(() => {
     throw failure;
   });
-  const disconnect = jest.spyOn(ChatViewState.prototype, 'disconnect');
+  const disconnect = jest.spyOn(ChatMountState.prototype, 'disconnect');
   expect(() => attach(chat)).toThrow(failure);
   expect(disconnect).toHaveBeenCalledTimes(1);
   expect(chat.serviceManager.view.current).toBeUndefined();

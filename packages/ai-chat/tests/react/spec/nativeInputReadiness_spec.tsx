@@ -21,7 +21,7 @@ import { useSelector } from '../../../src/chat/hooks/useSelector';
 import { selectInputFieldVisible } from '../../../src/sdk/store/selectors';
 import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
 import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
-import type { ChatViewState } from '../../../src/chat/services/chatViewState';
+import type { ChatMountState } from '../../../src/chat/services/chatMountState';
 import type { InputFunctions } from '../../../src/chat/utils/inputTypes';
 import type { PublicConfig } from '../../../src/types/config/PublicConfig';
 import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
@@ -83,7 +83,7 @@ function readInputTargets(instance: ChatInstance) {
   const { viewState } = deepQuerySelector(
     document,
     'cds-aichat-chat-shell'
-  ) as unknown as { viewState: ChatViewState };
+  ) as unknown as { viewState: ChatMountState };
   return {
     native,
     prompt,

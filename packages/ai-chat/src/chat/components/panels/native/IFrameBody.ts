@@ -17,7 +17,7 @@ import { NativeChatView } from '../../shared/NativeChatView';
 import { IFrameBodyLifecycle } from '../../../utils/panelBodyLifecycle';
 import type { PanelBodyContentDetail } from './panelBodyContent';
 import { shallowEqual } from '../../../../sdk/store/appStore';
-import type { ChatViewState } from '../../../services/chatViewState';
+import type { ChatMountState } from '../../../services/chatMountState';
 
 interface IFramePanelMessage {
   source?: string;
@@ -40,9 +40,9 @@ class IFrameBody extends NativeChatView {
   private errorTarget?: HTMLDivElement;
   private reportedContent?: PanelBodyContentDetail;
   private releaseGeneration = 0;
-  private lifecycleOwner?: ChatViewState;
+  private lifecycleOwner?: ChatMountState;
 
-  protected onViewConnected(viewState: ChatViewState) {
+  protected onViewConnected(viewState: ChatMountState) {
     this.releaseGeneration += 1;
     if (this.lifecycleOwner && this.lifecycleOwner !== viewState) {
       this.releaseFrame();

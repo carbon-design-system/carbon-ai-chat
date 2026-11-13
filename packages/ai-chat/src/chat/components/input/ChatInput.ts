@@ -41,7 +41,7 @@ import './native/InputActions';
 import './native/PromptLineSlot';
 import type { InputFunctions, InputProps } from '../../utils/inputTypes';
 import type { AutocompleteContent } from '../../services/autocompleteContent';
-import type { ChatViewState } from '../../services/chatViewState';
+import type { ChatMountState } from '../../services/chatMountState';
 import { chatStore } from '../../services/attachChatView';
 import type { ToolbarAction } from '../../../types/config/HeaderConfig';
 import type { IntlShape } from '../../../sdk/utils/i18n';
@@ -94,7 +94,7 @@ class ChatInput extends NativeChatView {
   private renderedSurface = -1;
   private lifetime = 0;
   private bindingGeneration = 0;
-  private lifetimeOwner?: ChatViewState;
+  private lifetimeOwner?: ChatMountState;
   private renderedDisableSend = false;
   private renderedUploads?: FileUpload[];
   private surfaceGeneration = 0;
@@ -175,7 +175,7 @@ class ChatInput extends NativeChatView {
     }
   }
 
-  protected onViewConnected(viewState: ChatViewState) {
+  protected onViewConnected(viewState: ChatMountState) {
     this.bindingGeneration += 1;
     if (this.lifetimeOwner && this.lifetimeOwner !== viewState) {
       this.retire();

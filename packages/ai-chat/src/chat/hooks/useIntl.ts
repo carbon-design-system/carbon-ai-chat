@@ -7,11 +7,11 @@
  *  @license
  */
 
-import { useChatViewState } from './useChatViewState';
+import { useChatMountState } from './useChatMountState';
 import { IntlShape } from '../../sdk/utils/i18n';
-import type { ChatViewStateSnapshot } from '../services/chatViewState';
+import type { ChatMountStateSnapshot } from '../services/chatMountState';
 
-const selectIntl = (snapshot: ChatViewStateSnapshot) => snapshot.intl;
+const selectIntl = (snapshot: ChatMountStateSnapshot) => snapshot.intl;
 
 /**
  * React hook to access the i18n formatter.
@@ -36,7 +36,7 @@ const selectIntl = (snapshot: ChatViewStateSnapshot) => snapshot.intl;
  * ```
  */
 export function useIntl(): IntlShape {
-  const formatter = useChatViewState(selectIntl);
+  const formatter = useChatMountState(selectIntl);
 
   if (!formatter) {
     throw new Error(

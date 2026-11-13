@@ -18,14 +18,6 @@ import type { AriaAnnouncerFunctionType } from './ariaAnnouncer';
 import type { InputFunctions } from '../utils/inputTypes';
 import { chatStore } from './attachChatView';
 
-/** A response card's own confirmation, shown in the end-chat panel. */
-interface HumanAgentConfirmation {
-  title?: string;
-  message?: string;
-  onConfirm: () => void;
-  onCancel: () => void;
-}
-
 /** What a connected shell publishes for the view ports. */
 interface ShellHandles {
   mainWindow?: MainWindowFunctions;
@@ -34,23 +26,21 @@ interface ShellHandles {
   inputComponent?: InputFunctions | null;
 }
 
-interface ChatViewStateSnapshot {
+interface ChatMountStateSnapshot {
   readonly serviceManager: ServiceManager;
   readonly intl: IntlShape;
   readonly windowSize: Dimension;
-  /** True while the header's end-chat prompt is open. */
-  readonly endChatConfirmationOpen: boolean;
-  /** A card's confirmation, which wins over the end-chat prompt's text. */
-  readonly humanAgentConfirmation: HumanAgentConfirmation | null;
 }
 
 /**
- * The per-chat state that views read outside the store: services, the
- * formatter, window size, and confirmation state. `cds-aichat-container`
- * creates one per mount; React reads it through `ChatContext`, and Lit through
- * the view-state Lit context.
+ * What belongs to one mount, which views read outside the store: the chat's
+ * services, the formatter, window size, the announcer, and the initial-render
+ * holds. `cds-aichat-container` creates one per mount; React reads it through
+ * `ChatContext`, and Lit through the mount-state Lit context. State that
+ * outlives a mount, such as an open confirmation, is in the store's view
+ * partition (`chat/state/`).
  */
-class ChatViewState {
+class ChatMountState {
   readonly announcer: AriaAnnouncer;
 
   // Handles the connected shell publishes, read by the view ports. They're
@@ -82,9 +72,10 @@ class ChatViewState {
     this.shellHandles[name] = value;
   }
 
-  private snapshot: ChatViewStateSnapshot;
+  private snapshot: ChatMountStateSnapshot;
   private listeners = new Set<() => void>();
   private unsubscribeIntl: (() => void) | null = null;
+  private isDetached = false;
   private initialReactHolds = new Set<object>();
   private initialReactWaiters = new Set<() => void>();
   private initialReactCheckQueued = false;
@@ -106,8 +97,6 @@ class ChatViewState {
       serviceManager,
       intl,
       windowSize,
-      endChatConfirmationOpen: false,
-      humanAgentConfirmation: null,
     });
     this.announcer = new AriaAnnouncer(
       chatStore(serviceManager),
@@ -115,7 +104,7 @@ class ChatViewState {
     );
   }
 
-  getSnapshot = (): ChatViewStateSnapshot => this.snapshot;
+  getSnapshot = (): ChatMountStateSnapshot => this.snapshot;
 
   subscribe = (listener: () => void): (() => void) => {
     this.listeners.add(listener);
@@ -126,7 +115,7 @@ class ChatViewState {
 
   /** Calls `listener` only when the selected value changes. */
   select<T>(
-    selector: (snapshot: ChatViewStateSnapshot) => T,
+    selector: (snapshot: ChatMountStateSnapshot) => T,
     listener: (value: T) => void,
     isEqual: (left: T, right: T) => boolean = Object.is
   ): () => void {
@@ -140,15 +129,25 @@ class ChatViewState {
     });
   }
 
+  /**
+   * True once the mount detaches, before its views unmount. A view's cleanup
+   * reads it to tell the mount ending from the view alone going away.
+   */
+  get detached(): boolean {
+    return this.isDetached;
+  }
+
   connect(): void {
     if (this.unsubscribeIntl) {
       return;
     }
+    this.isDetached = false;
     this.unsubscribeIntl = subscribeToIntl(this.serviceManager, this.syncIntl);
     this.syncIntl();
   }
 
   disconnect(): void {
+    this.isDetached = true;
     this.unsubscribeIntl?.();
     this.unsubscribeIntl = null;
     this.initialReactGeneration += 1;
@@ -206,28 +205,6 @@ class ChatViewState {
     }
   }
 
-  showEndChatConfirmation = (): void => {
-    this.update({ endChatConfirmationOpen: true });
-  };
-
-  hideEndChatConfirmation = (): void => {
-    this.update({ endChatConfirmationOpen: false });
-  };
-
-  /**
-   * Shows a card's confirmation. The returned release clears it only while it
-   * is still the current one, so an older card's cleanup cannot close a newer
-   * card's confirmation.
-   */
-  openConfirmation(confirmation: HumanAgentConfirmation): () => void {
-    this.update({ humanAgentConfirmation: confirmation });
-    return () => {
-      if (this.snapshot.humanAgentConfirmation === confirmation) {
-        this.update({ humanAgentConfirmation: null });
-      }
-    };
-  }
-
   private syncIntl = (): void => {
     const { intl } = this.serviceManager;
     if (intl !== this.snapshot.intl) {
@@ -236,9 +213,9 @@ class ChatViewState {
     }
   };
 
-  private update(change: Partial<ChatViewStateSnapshot>): void {
+  private update(change: Partial<ChatMountStateSnapshot>): void {
     if (
-      (Object.keys(change) as (keyof ChatViewStateSnapshot)[]).every(
+      (Object.keys(change) as (keyof ChatMountStateSnapshot)[]).every(
         (key) => this.snapshot[key] === change[key]
       )
     ) {
@@ -249,5 +226,5 @@ class ChatViewState {
   }
 }
 
-export { ChatViewState };
-export type { ChatViewStateSnapshot };
+export { ChatMountState };
+export type { ChatMountStateSnapshot };

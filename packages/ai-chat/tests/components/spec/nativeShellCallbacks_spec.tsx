@@ -17,7 +17,7 @@ import { act, render, waitFor } from '@testing-library/react';
 import type { PromptLineElement } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
 import type ChatInput from '../../../src/chat/components/input/ChatInput';
 import type ChatShell from '../../../src/chat/components/shell/ChatShell';
-import type { ChatViewState } from '../../../src/chat/services/chatViewState';
+import type { ChatMountState } from '../../../src/chat/services/chatMountState';
 import actions from '../../../src/sdk/store/actions';
 import { ChatContainer } from '../../../src/react/ChatContainer';
 import { ChatCustomElement } from '../../../src/react/ChatCustomElement';
@@ -56,7 +56,7 @@ async function boot(
   const root = document.querySelector('cds-aichat-container').shadowRoot;
   const view = root.querySelector<ChatShell>('cds-aichat-chat-shell');
   await view.whenReady();
-  const manager = (view as unknown as { viewState: ChatViewState }).viewState
+  const manager = (view as unknown as { viewState: ChatMountState }).viewState
     .serviceManager;
   return { root, view, manager };
 }

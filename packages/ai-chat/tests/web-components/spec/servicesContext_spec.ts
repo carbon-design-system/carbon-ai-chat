@@ -18,7 +18,7 @@ import { LitElement } from 'lit';
 import { waitFor } from '@testing-library/react';
 
 import '../../../src/web-components/cds-aichat-container';
-import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
+import { chatMountStateContext } from '../../../src/web-components/shared/chat-mount-state-context';
 import { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
 import {
@@ -29,7 +29,7 @@ import {
 
 class ServicesProbe extends LitElement {
   services = new ContextConsumer(this, {
-    context: chatViewStateContext,
+    context: chatMountStateContext,
     subscribe: true,
   });
 }

@@ -41,7 +41,7 @@ Private native views in `src/chat/components/` render in light DOM inside the ex
 
 The existing `ExtensionHosts` owner keeps panel targets separate from its page-light-DOM extension hosts. Native views place panel targets inside the container's shadow root before React mounts their content. Later frame transitions wait for the matching retained content's layout commit; each frame preserves its initial open value and synchronous transition callbacks. The native views add no shadow root. Plain owners manage loading delays, iframe source lifetimes, and the disclaimer's read flag. Same-task moves preserve DOM and retained state; actual detach releases pending work.
 
-Native targets can arrive after the first React commit. Retained content adapters hold the first commit signal in `ChatViewState` until content effects finish or an empty fallback commits. `ChatAppEntry` then reports the commit to the container. Keep this passive effect separate from panel layout commits and the container's listener-ready gate. React does not start services.
+Native targets can arrive after the first React commit. Retained content adapters hold the first commit signal in `ChatMountState` until content effects finish or an empty fallback commits. `ChatAppEntry` then reports the commit to the container. Keep this passive effect separate from panel layout commits and the container's listener-ready gate. React does not start services.
 
 The native input owner keeps values, the editor handle, lazy extensions, drafts, pending Stop state, uploads, and controls in private `ChatInput`. It renders in the existing shadow root as the shell's direct `slot="input"` child. `AppShell` retains React normalization and messages. `ShellLifecycle` supplies input callbacks. The private Stop command owns Stop effects. Each chat has one `ExtensionHosts.autocompleteContent` owner. `AutocompleteContentAdapter` keeps custom lists in the consumer React tree through stable targets. Content adapters use the existing root and provider. Startup, the listener-ready gate, and React's commit acknowledgment stay separate.
 
@@ -60,7 +60,7 @@ This package still requires React. React 17, 18, and 19 remain supported. The st
 ```mermaid
 sequenceDiagram
   participant P as AppShellPanels (React)
-  participant V as ChatViewState
+  participant V as ChatMountState
   participant S as ChatShell, NativePanels
   participant H as ExtensionHosts
   participant E as ChatAppEntry
@@ -89,11 +89,11 @@ The revision is React's `parts` object; a request counts only for it, while its 
 | `generation` | `ShellLifecycle` | Queued ready focus and frame callbacks |
 | Current request per panel | `ExtensionHosts` | Stale placement and commits |
 | `lifetime`, `draftGeneration` | `ChatInput` | Handle and draft work |
-| `initialReactGeneration` | `ChatViewState` | The queued initial-commit check |
+| `initialReactGeneration` | `ChatMountState` | The queued initial-commit check |
 
 ## The view attach
 
-`boot()` creates the chat, then [`attachMountView`](../src/chat/utils/attachMountView.ts) adds what lives only while a view is mounted: `ChatViewState` (with the host element), the theme watcher, view ports, `ExtensionHosts`, window listeners, and the announcer region. `detach` removes them in release's order. Services hold no DOM; `ChatInstance` holds the writeable elements. `ShellLifecycle` publishes the shell's handles (`mainWindow`, `appWindow`, `ariaAnnouncer`, the input) to `ChatViewState`; the ports read them on each call.
+`boot()` creates the chat, then [`attachMountView`](../src/chat/utils/attachMountView.ts) adds what lives only while a view is mounted: `ChatMountState` (with the host element), the theme watcher, view ports, `ExtensionHosts`, window listeners, and the announcer region. `detach` removes them in release's order. Services hold no DOM; `ChatInstance` holds the writeable elements. `ShellLifecycle` publishes the shell's handles (`mainWindow`, `appWindow`, `ariaAnnouncer`, the input) to `ChatMountState`; the ports read them on each call.
 
 ## Debugging across the boundary
 
