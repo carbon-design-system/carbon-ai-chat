@@ -34,6 +34,7 @@ jest.mock('../../../src/shared/services/haa/HumanAgentServiceImpl', () => ({
   })),
 }));
 import createHumanAgentService from '../../../src/shared/services/haa/HumanAgentServiceImpl';
+import { withPublicState } from '../../test_helpers';
 
 function createStore(initialState: ConversationState) {
   return createAppStore(
@@ -76,12 +77,12 @@ function setup(
     endChat: jest.fn(),
   };
 
-  const serviceManager = {
+  const serviceManager = withPublicState({
     store: createStore(initialState),
     namespace: { suffix: '' },
     messageCoordinator: { timeoutMS: 30000 },
     humanAgentService,
-  } as any as ServiceManager;
+  } as any as ServiceManager);
 
   return { serviceManager, humanAgentService };
 }
