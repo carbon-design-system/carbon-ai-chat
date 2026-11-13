@@ -16,8 +16,6 @@ import { AppState } from '../../types/state/AppState';
 import { HumanAgentService } from './haa/HumanAgentService';
 import { CustomPanelManager } from './CustomPanelManager';
 import { HistoryService } from './HistoryService';
-import { MessageUpsertCoordinator } from './MessageUpsertCoordinator';
-import MessageService from './MessageService';
 import { NamespaceService } from './NamespaceService';
 import { ThemeWatcherService } from './ThemeWatcherService';
 import { UserSessionStorageService } from './UserSessionStorageService';
@@ -26,15 +24,12 @@ import { WriteableElements } from '../../types/instance/WriteableElements';
 import { BusEvent } from '../../types/events/eventBusTypes';
 import type { MainWindowFunctions } from '../../types/utilities/MainWindowFunctions';
 import { ChatInstanceService } from './ChatInstanceService';
-import { ChunkProcessingService } from './ChunkProcessingService';
 import { HydrationService } from './HydrationService';
 import { InputActionsService } from './InputActionsService';
 import { PublicStateService } from './PublicStateService';
-import { ConversationLifecycleService } from './ConversationLifecycleService';
-import { ReceiveService } from './ReceiveService';
-import { SlotEventService } from './SlotEventService';
-import { SendService } from './SendService';
-import { StreamAnnouncerService } from './StreamAnnouncerService';
+import { MessageCoordinator } from './messaging/MessageCoordinator';
+import { SlotEventService } from './messaging/presentation/SlotEventService';
+import { StreamAnnouncerService } from './messaging/presentation/StreamAnnouncerService';
 import { ViewService } from './ViewService';
 import { HasRequestFocus } from '../../types/utilities/HasRequestFocus';
 import type { InputFunctions } from '../utils/inputTypes';
@@ -86,11 +81,6 @@ class ServiceManager {
   streamAnnouncerService: StreamAnnouncerService;
 
   /**
-   * Service that owns the chunk queue and processes incoming streaming chunks.
-   */
-  chunkProcessingService: ChunkProcessingService;
-
-  /**
    * Service that wires user-defined response elements and fires footer-slot events.
    */
   slotEventService: SlotEventService;
@@ -106,17 +96,7 @@ class ServiceManager {
   publicStateService: PublicStateService;
 
   /** Coordinates transient loading, send, stream, and error state. */
-  conversationLifecycleService: ConversationLifecycleService;
-
-  /**
-   * Service that owns the inbound receive path.
-   */
-  receiveService: ReceiveService;
-
-  /**
-   * Service that owns the outbound send path.
-   */
-  sendService: SendService;
+  messageCoordinator: MessageCoordinator;
 
   /**
    * Service that manages view transitions and fires view-change events.
@@ -143,20 +123,6 @@ class ServiceManager {
    * The redux store holding the application state.
    */
   store: AppStore<AppState>;
-
-  /**
-   * The message service used to send and receive messages.
-   */
-  messageService: MessageService;
-
-  /**
-   * Engine for {@link ChatInstanceMessaging#upsertMessage}: serializes calls for the
-   * same message ID and tracks {@link MessageState} per ID so `addMessage`,
-   * `addMessageChunk`, and `upsertMessage` can be mixed without double-firing
-   * `pre:receive` / `receive`. {@link messageService} still owns the send / stream /
-   * receive arc.
-   */
-  messageUpsertCoordinator: MessageUpsertCoordinator;
 
   /**
    * The service to use to connect to a human agent. Note that this value will not be defined if no service desk is

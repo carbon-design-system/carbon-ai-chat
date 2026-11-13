@@ -56,6 +56,65 @@ describe('existing host ownership contracts', () => {
     ).toBe('after');
   });
 
+  it('commits current chunk edits when a deferred callback rejects', async () => {
+    const onError = jest.fn();
+    const { instance, store } = await renderChatAndGetInstanceWithStore({
+      ...createBaseConfig(),
+      onError,
+    });
+    const entered = resolvablePromise<void>();
+    const release = resolvablePromise<void>();
+    const failure = new Error('chunk callback failed');
+    const chunk = {
+      streaming_metadata: { response_id: 'held-chunk' },
+      partial_item: {
+        response_type: MessageResponseTypes.USER_DEFINED,
+        user_defined: { value: 'before' },
+        streaming_metadata: { id: 'item' },
+      },
+    };
+    instance.on({
+      type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
+      handler: async (event: any) => {
+        expect(event.data.chunk).toBe(chunk);
+        expect(event.data.messageItem).toBe(chunk.partial_item);
+        event.data.messageItem.user_defined.value = 'during';
+        entered.doResolve();
+        await release;
+        event.data.messageItem.user_defined.value = 'after';
+        throw failure;
+      },
+    });
+    let rejected: Promise<void>;
+    try {
+      await act(async () => {
+        const work = instance.messaging.addMessageChunk(chunk);
+        rejected = expect(work).rejects.toBe(failure);
+        await entered;
+      });
+      expect(chunk.partial_item.user_defined.value).toBe('during');
+      expect(
+        store.getState().allMessageItemsByID['held-chunk-item'].item
+          .user_defined.value
+      ).toBe('before');
+      await act(async () => {
+        release.doResolve();
+        await rejected;
+      });
+      expect(chunk.partial_item.user_defined.value).toBe('after');
+      expect(
+        store.getState().allMessageItemsByID['held-chunk-item'].item
+          .user_defined.value
+      ).toBe('after');
+      expect(onError).not.toHaveBeenCalled();
+    } finally {
+      await act(async () => {
+        release.doResolve();
+        await rejected;
+      });
+    }
+  });
+
   it.each([false, true])(
     'discards held chunk event edits after removal and replacement (reject: %p)',
     async (reject) => {
@@ -181,6 +240,7 @@ describe('existing host ownership contracts', () => {
       const replacementCommitted = resolvablePromise<void>();
       let replacementWrite: Promise<void>;
       let beforeReplacement: ReturnType<typeof instance.state.get>;
+      let notification: MessageResponse;
       const failure = new Error('Expected callback failure');
       const unsubscribe = store.subscribe(() => {
         const stored = store.getState().allMessagesByID[
@@ -194,9 +254,14 @@ describe('existing host ownership contracts', () => {
       });
       const handler = jest.fn(async (event: any) => {
         const message = phase === 'slot' ? event.data.fullMessage : event.data;
-        if (message !== original) {
+        if (
+          message.id !== original.id ||
+          message.output.generic[0]?.response_type !==
+            MessageResponseTypes.USER_DEFINED
+        ) {
           return;
         }
+        notification = message;
         beforeReplacement = instance.state.get();
         replacementWrite = instance.messaging.addMessage(replacement);
         await replacementCommitted;
@@ -233,6 +298,18 @@ describe('existing host ownership contracts', () => {
         const stored = store.getState().allMessagesByID[
           original.id
         ] as MessageResponse;
+        if (phase === 'receive' && reject) {
+          expect(
+            errorLog.mock.calls.some((args) => args.includes(failure))
+          ).toBe(true);
+        }
+        expect(notification).not.toBe(original);
+        expect(
+          Object.isFrozen(notification.output.generic[0].user_defined)
+        ).toBe(true);
+        expect(notification.output.generic[0].user_defined.value).toBe(
+          'original'
+        );
         expect(stored).not.toBe(replacement);
         expect(stored.output).toEqual(replacement.output);
         expect(
@@ -256,7 +333,7 @@ describe('existing host ownership contracts', () => {
     }
   );
 
-  it('copies host edits back through each owned pause phase and receive', async () => {
+  it('isolates native notifications through each pause phase and receive', async () => {
     const { instance, store, serviceManager } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
     const original: MessageResponse = {
@@ -276,31 +353,29 @@ describe('existing host ownership contracts', () => {
       },
     };
     const pause = jest
-      .spyOn(serviceManager.chunkProcessingService, 'waitForPause')
+      .spyOn(serviceManager.messageCoordinator, 'waitForPause')
       .mockImplementation(async () => {
         const stored = store.getState().allMessagesByID[
           original.id
         ] as MessageResponse;
-        expect(stored.output.generic[0].user_defined.value).toBe('first slot');
+        expect(stored.output.generic[0].user_defined.value).toBe('first');
       });
+    const slotItems: GenericItem[] = [];
+    let receiveMessage: MessageResponse;
     instance.on([
       {
         type: BusEventType.USER_DEFINED_RESPONSE,
         handler: (event: any) => {
-          event.data.message.user_defined.value += ' slot';
+          slotItems.push(event.data.message);
+          expect(() => {
+            event.data.message.user_defined.value += ' slot';
+          }).toThrow(TypeError);
         },
       },
       {
         type: BusEventType.RECEIVE,
         handler: (event: any) => {
-          expect(event.data).toBe(original);
-          expect(original.output.generic[0].user_defined.value).toBe(
-            'first slot'
-          );
-          expect(original.output.generic[2].user_defined.value).toBe(
-            'second slot'
-          );
-          original.output.generic[2].user_defined.value = 'receive edit';
+          receiveMessage = event.data;
         },
       },
     ]);
@@ -316,16 +391,27 @@ describe('existing host ownership contracts', () => {
       const stored = store.getState().allMessagesByID[
         original.id
       ] as MessageResponse;
-      expect(stored.output.generic[0].user_defined.value).toBe('first slot');
-      expect(stored.output.generic[2].user_defined.value).toBe('receive edit');
+      expect(stored.output.generic[0].user_defined.value).toBe('first');
+      expect(stored.output.generic[2].user_defined.value).toBe('second');
       expect(stored.output).not.toBe(original.output);
+      expect(slotItems.map((item) => item.user_defined.value)).toEqual([
+        'first',
+        'second',
+      ]);
+      expect(receiveMessage).not.toBe(original);
+      expect(receiveMessage.output).toEqual(original.output);
+      expect(() => {
+        receiveMessage.output.generic[2].user_defined.value = 'receive edit';
+      }).toThrow(TypeError);
+      expect(slotItems[0]).not.toBe(original.output.generic[0]);
+      expect(slotItems[1]).not.toBe(original.output.generic[2]);
     } finally {
       pause.mockRestore();
     }
   });
 
   it.each([false, true])(
-    'keeps held and retained full-message edits separate during a pause (edit retained: %p)',
+    'rejects native edits to held and retained items during a pause (edit retained: %p)',
     async (editRetained) => {
       const { instance, store, serviceManager } =
         await renderChatAndGetInstanceWithStore(createBaseConfig());
@@ -370,20 +456,29 @@ describe('existing host ownership contracts', () => {
         type: BusEventType.USER_DEFINED_RESPONSE,
         handler: (event: any) => {
           if (event.data.message.streaming_metadata?.id === 'c') {
-            expect(event.data.fullMessage).toBe(next);
-            event.data.fullMessage.output.generic[2].user_defined.value =
-              'held edit';
+            expect(event.data.fullMessage).not.toBe(next);
+            expect(event.data.message).toBe(
+              event.data.fullMessage.output.generic[0]
+            );
+            expect(() => {
+              event.data.fullMessage.output.generic[2].user_defined.value =
+                'held edit';
+            }).toThrow(TypeError);
             if (editRetained) {
-              event.data.fullMessage.output.generic[3].user_defined.value =
-                'retained edit';
-              event.data.fullMessage.output.generic[4].text =
-                'retained text edit';
+              expect(() => {
+                event.data.fullMessage.output.generic[3].user_defined.value =
+                  'retained edit';
+              }).toThrow(TypeError);
+              expect(() => {
+                event.data.fullMessage.output.generic[4].text =
+                  'retained text edit';
+              }).toThrow(TypeError);
             }
           }
         },
       });
       const pause = jest
-        .spyOn(serviceManager.chunkProcessingService, 'waitForPause')
+        .spyOn(serviceManager.messageCoordinator, 'waitForPause')
         .mockImplementation(async () => {
           const state = store.getState();
           const visibleIDs = state.assistantMessageState.localMessageIDs.filter(
@@ -395,20 +490,16 @@ describe('existing host ownership contracts', () => {
             `${id}-a`,
           ]);
           retainedDuringPause = state.allMessageItemsByID[retained.ui_state.id];
-          expect(retainedDuringPause.item.user_defined.value).toBe(
-            editRetained ? 'retained edit' : 'same'
-          );
+          expect(retainedDuringPause.item.user_defined.value).toBe('same');
           expect(
             (state.allMessageItemsByID[`${id}-a`].item as TextItem).text
-          ).toBe(editRetained ? 'retained text edit' : 'a');
-          if (!editRetained) {
-            expect(retainedDuringPause).toBe(retained);
-          }
+          ).toBe('a');
+          expect(retainedDuringPause).toBe(retained);
           expect(retained.item.user_defined.value).toBe('same');
           expect(
             (state.allMessagesByID[id] as MessageResponse).output.generic[2]
               .user_defined.value
-          ).toBe('held edit');
+          ).toBe('same');
         });
       try {
         await act(async () =>
@@ -423,11 +514,9 @@ describe('existing host ownership contracts', () => {
         const visible = state.assistantMessageState.localMessageIDs
           .map((localID) => state.allMessageItemsByID[localID])
           .filter((localItem) => localItem.fullMessageID === id);
-        expect(visible[1].item.user_defined.value).toBe('held edit');
+        expect(visible[1].item.user_defined.value).toBe('same');
         expect(visible[2]).toBe(retainedDuringPause);
-        expect(visible[2].item.user_defined.value).toBe(
-          editRetained ? 'retained edit' : 'same'
-        );
+        expect(visible[2].item.user_defined.value).toBe('same');
       } finally {
         pause.mockRestore();
       }
@@ -513,7 +602,7 @@ describe('existing host ownership contracts', () => {
     expect(Object.isFrozen(response)).toBe(true);
   });
 
-  it('assigns defaults to an upsert result and keeps its receive event writable', async () => {
+  it('assigns defaults to an upsert result and detaches its frozen receive data', async () => {
     const { instance, store } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
     const response: MessageResponse = {
@@ -521,13 +610,11 @@ describe('existing host ownership contracts', () => {
         generic: [{ response_type: MessageResponseTypes.TEXT, text: 'before' }],
       },
     };
-    let writable: boolean;
+    let notification: MessageResponse;
     instance.on({
       type: BusEventType.RECEIVE,
       handler: (event: any) => {
-        expect(event.data).toBe(response);
-        writable = !Object.isFrozen(event.data);
-        (event.data.output.generic[0] as any).text = 'edited';
+        notification = event.data;
       },
     });
     await instance.messaging.upsertMessage(
@@ -537,15 +624,21 @@ describe('existing host ownership contracts', () => {
     );
     expect(response.id).toBe('upsert');
     expect(response.history.timestamp).toEqual(expect.any(Number));
-    expect(response.output.generic[0]).toMatchObject({ text: 'edited' });
-    expect(writable).toBe(true);
+    expect(response.output.generic[0]).toMatchObject({ text: 'before' });
+    expect(notification).not.toBe(response);
+    expect(notification.output).not.toBe(response.output);
+    expect(Object.isFrozen(notification)).toBe(true);
+    expect(Object.isFrozen(response)).toBe(false);
+    expect(() => {
+      (notification.output.generic[0] as TextItem).text = 'edited';
+    }).toThrow(TypeError);
     expect(
       (store.getState().allMessagesByID.upsert as MessageResponse).output
         .generic[0]
-    ).toMatchObject({ text: 'edited' });
+    ).toMatchObject({ text: 'before' });
   });
 
-  it('keeps upsert slot wrappers writable and applies handler edits', async () => {
+  it('keeps native slot wrappers writable without writing snapshot or wrapper edits back', async () => {
     const { instance, store } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
     let writable: boolean;
@@ -553,7 +646,13 @@ describe('existing host ownership contracts', () => {
       type: BusEventType.USER_DEFINED_RESPONSE,
       handler: (event: any) => {
         writable = !Object.isFrozen(event.data);
-        event.data.message.user_defined.value = 'edited';
+        expect(() => {
+          event.data.message.user_defined.value = 'edited';
+        }).toThrow(TypeError);
+        event.data.message = {
+          ...event.data.message,
+          user_defined: { value: 'wrapper edit' },
+        };
       },
     });
     await instance.messaging.upsertMessage(
@@ -575,7 +674,7 @@ describe('existing host ownership contracts', () => {
     expect(
       (store.getState().allMessagesByID.slot as MessageResponse).output
         .generic[0].user_defined.value
-    ).toBe('edited');
+    ).toBe('before');
   });
 
   it.each([

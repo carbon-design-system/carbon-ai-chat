@@ -12,9 +12,8 @@ import { EventBus } from '../../../src/chat/events/EventBus';
 import { HydrationService } from '../../../src/chat/services/HydrationService';
 import { InputActionsService } from '../../../src/chat/services/InputActionsService';
 import { PublicStateService } from '../../../src/chat/services/PublicStateService';
-import { ReceiveService } from '../../../src/chat/services/ReceiveService';
-import { SendService } from '../../../src/chat/services/SendService';
-import { SlotEventService } from '../../../src/chat/services/SlotEventService';
+import { MessageCoordinator } from '../../../src/chat/services/messaging/MessageCoordinator';
+import { SlotEventService } from '../../../src/chat/services/messaging/presentation/SlotEventService';
 import { ViewService } from '../../../src/chat/services/ViewService';
 import { ServiceManager } from '../../../src/chat/services/ServiceManager';
 import {
@@ -74,8 +73,8 @@ const createServiceManagerStub = () => {
       getState: () => state,
       subscribe: jest.fn(() => jest.fn()),
     },
-    messageService: {
-      send: jest.fn().mockResolvedValue(undefined),
+    messageCoordinator: {
+      enqueueMessage: jest.fn().mockResolvedValue(undefined),
       isRequestFromPreviousConversation: jest.fn().mockReturnValue(false),
       messageLoadingManager: { end: jest.fn() },
     },
@@ -96,8 +95,15 @@ const createServiceManagerStub = () => {
   (serviceManager as any).publicStateService = new PublicStateService(
     serviceManager
   );
-  (serviceManager as any).receiveService = new ReceiveService(serviceManager);
-  (serviceManager as any).sendService = new SendService(serviceManager);
+  const messageMethods = serviceManager.messageCoordinator;
+  serviceManager.messageCoordinator = new MessageCoordinator(serviceManager);
+  for (const [name, value] of Object.entries(messageMethods)) {
+    Object.defineProperty(serviceManager.messageCoordinator, name, {
+      value,
+      writable: true,
+      configurable: true,
+    });
+  }
   (serviceManager as any).viewService = new ViewService(serviceManager);
 
   return { serviceManager, firedEvents };
@@ -146,7 +152,7 @@ describe('custom request footer slot', () => {
       'what is the weather?'
     );
     const [, , localMessageID] = (
-      serviceManager.messageService.send as jest.Mock
+      serviceManager.messageCoordinator.enqueueMessage as jest.Mock
     ).mock.calls[0];
     expect(footerEvents[0].data.slotName).toBe(
       `request-footer-${localMessageID}`
@@ -178,7 +184,9 @@ describe('custom request footer slot', () => {
       true
     );
 
-    expect(serviceManager.messageService.send).toHaveBeenCalledTimes(1);
+    expect(
+      serviceManager.messageCoordinator.enqueueMessage
+    ).toHaveBeenCalledTimes(1);
 
     // And the next send still fires: the bus recovers from a rejected fire.
     await chatActions.send(
@@ -216,7 +224,9 @@ describe('custom request footer slot', () => {
       true
     );
 
-    expect(serviceManager.messageService.send).toHaveBeenCalledTimes(2);
+    expect(
+      serviceManager.messageCoordinator.enqueueMessage
+    ).toHaveBeenCalledTimes(2);
   });
 
   it('hands the host a frozen message', async () => {

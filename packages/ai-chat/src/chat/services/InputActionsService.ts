@@ -15,9 +15,9 @@ import type { Editor, JSONContent } from '@tiptap/core';
 import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 import cloneDeep from 'lodash-es/cloneDeep.js';
 
+import { assertNoInFlightUpload } from './messaging/assertNoInFlightUpload';
 import actions from '../store/actions';
 import {
-  selectHasInFlightUpload,
   selectInputState,
   selectIsInputToHumanAgent,
 } from '../store/selectors';
@@ -313,11 +313,7 @@ class InputActionsService {
   }
 
   assertNoInFlightUpload() {
-    if (selectHasInFlightUpload(this.serviceManager.store.getState())) {
-      throw new Error(
-        'Cannot send while a file upload is in progress. Check instance.getState().input.hasInFlightUploads before sending, or wait for the upload to finish.'
-      );
-    }
+    assertNoInFlightUpload(this.serviceManager.store.getState());
   }
 }
 

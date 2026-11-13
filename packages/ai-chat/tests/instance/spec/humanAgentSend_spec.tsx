@@ -691,7 +691,7 @@ describe('human-agent send path — display_content and structured_data', () => 
       expect(instance.state.get().status).toBe('error');
       if (newerFailure) {
         act(() =>
-          serviceManager.conversationLifecycleService.fail({
+          serviceManager.messageCoordinator.fail({
             message: 'newer',
             messageID: 'different',
           } as any)
