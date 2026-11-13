@@ -13,6 +13,7 @@ import {
   renderChatAndGetInstanceWithStore,
   setupBeforeEach,
   setupAfterEach,
+  withPublicState,
 } from '../../test_helpers';
 import { createCustomPanelInstance } from '../../../src/chat/services/CustomPanelInstance';
 import { ServiceManager } from '../../../src/sdk/services/ServiceManager';
@@ -29,12 +30,12 @@ import { viewPublicFields } from '../../../src/chat/state/publicFields';
 
 function fixture(fire: (event: any) => Promise<void>) {
   const store = makeConfigStore({});
-  const manager = {
+  const manager = withPublicState({
     restartCount: 0,
     store,
     eventBus: { fire },
     instance: {},
-  } as unknown as ServiceManager;
+  }) as unknown as ServiceManager;
   return {
     store,
     manager,

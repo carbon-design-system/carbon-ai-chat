@@ -24,6 +24,7 @@ import { ServiceManager } from '../../sdk/services/ServiceManager';
 import {
   captureMessageEvent,
   eventLocalItems,
+  watchPayloadEdits,
 } from '../../sdk/utils/messageEventOwnership';
 
 import { deepFreeze } from '../../sdk/utils/lang/objectUtils';
@@ -35,6 +36,30 @@ import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
 import { DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS, viewActions } from '../state';
 
 import { chatStore } from './attachChatView';
+
+/**
+ * The preview card each chat is about to open its workspace from, until that open takes it.
+ * Keyed by the chat's store, which every holder of the chat's service manager shares.
+ */
+const cardSources = new WeakMap<
+  object,
+  { messageID: string; localItemID: string }
+>();
+
+/**
+ * Names the preview card that the next workspace open comes from. The card calls this just
+ * before it opens the workspace, so only that open, and none from code, carries its IDs.
+ */
+function setWorkspaceCardSource(
+  serviceManager: ServiceManager,
+  fullMessage: Message,
+  localMessageItem: LocalMessageItem
+) {
+  cardSources.set(serviceManager.store, {
+    messageID: fullMessage.id,
+    localItemID: localMessageItem.ui_state.id,
+  });
+}
 
 /**
  * Opens the history panel. The header menu and the history panel's `open`
@@ -64,6 +89,38 @@ function createCustomPanelInstance(
     localItem: LocalMessageItem;
     working: { message: Message; localItems: Record<string, LocalMessageItem> };
   };
+  // The IDs of the card that opened the workspace, until it closes or the conversation restarts.
+  let workspaceSource: {
+    messageID: string;
+    itemID?: string;
+    restartCount: number;
+  };
+
+  /** Takes the card that named itself for this open, if any, with its public item ID. */
+  function takeCardSource() {
+    const card = cardSources.get(serviceManager.store);
+    cardSources.delete(serviceManager.store);
+    if (!card) {
+      return undefined;
+    }
+    const itemID = serviceManager.publicStateService.messageItemIDOf(
+      card.localItemID
+    );
+    return {
+      messageID: card.messageID,
+      ...(itemID && { itemID }),
+      restartCount: serviceManager.restartCount,
+    };
+  }
+
+  /** The workspace's card IDs for an event, unless a restart has removed that card. */
+  function sourceIDs() {
+    if (workspaceSource?.restartCount !== serviceManager.restartCount) {
+      return undefined;
+    }
+    const { messageID, itemID } = workspaceSource;
+    return itemID ? { messageID, itemID } : { messageID };
+  }
 
   function captureWorkspaceEvent() {
     const store = chatStore(serviceManager);
@@ -105,6 +162,7 @@ function createCustomPanelInstance(
         workspaceMessages?.working.localItems[localMessageItem.ui_state.id]
           ?.item,
       fullMessage: fullMessage && workspaceMessages?.working.message,
+      ...sourceIDs(),
     };
   }
 
@@ -156,12 +214,14 @@ function createCustomPanelInstance(
     const ownsData =
       workspaceValues?.working === working &&
       workspaceValues?.stored === before.additionalData;
+    const checkEdits = watchPayloadEdits(serviceManager, type, data);
     try {
       await serviceManager.eventBus.fire(
         { type, data },
         serviceManager.instance
       );
     } finally {
+      checkEdits();
       let current = store.getState().view.workspacePanelState;
       if (
         messageEvent &&
@@ -258,6 +318,8 @@ function createCustomPanelInstance(
       const resolvedOptions = (options ??
         defaultPanelOptions) as CustomPanelConfigOptions;
       const store = chatStore(serviceManager);
+      const source =
+        panelType === PanelType.WORKSPACE ? takeCardSource() : undefined;
 
       // For workspace panels, close any existing workspace before opening a new one
       if (panelType === PanelType.WORKSPACE) {
@@ -286,6 +348,7 @@ function createCustomPanelInstance(
 
       // Fire pre-open event for workspace panel
       if (panelType === PanelType.WORKSPACE) {
+        workspaceSource = source;
         await fireWorkspaceEvent(
           BusEventType.WORKSPACE_PRE_OPEN,
           captureWorkspaceEvent()
@@ -309,6 +372,7 @@ function createCustomPanelInstance(
 
       // For workspace panel, capture state BEFORE closing to preserve data for events
       let workspaceEventData;
+      const closingSource = workspaceSource;
       if (panelType === PanelType.WORKSPACE) {
         workspaceEventData = captureWorkspaceEvent();
         await fireWorkspaceEvent(
@@ -318,6 +382,10 @@ function createCustomPanelInstance(
       }
 
       store.dispatch(setOpen(false));
+      // An open that started while this close waited has its own source.
+      if (workspaceSource === closingSource) {
+        workspaceSource = undefined;
+      }
 
       // Fire close event for workspace panel using captured data
       if (panelType === PanelType.WORKSPACE && workspaceEventData) {
@@ -336,4 +404,9 @@ function createCustomPanelInstance(
   return Object.freeze(customPanelInstance);
 }
 
-export { createCustomPanelInstance, CustomPanelInstance, openHistoryPanel };
+export {
+  createCustomPanelInstance,
+  CustomPanelInstance,
+  openHistoryPanel,
+  setWorkspaceCardSource,
+};

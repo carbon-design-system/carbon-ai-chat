@@ -32,6 +32,8 @@ import {
 
 import { viewActions } from '../../../state';
 
+import { setWorkspaceCardSource } from '../../../services/CustomPanelInstance';
+
 interface PreviewCardComponentProps {
   localMessageItem: LocalMessageItem;
   fullMessage: MessageResponse;
@@ -71,6 +73,8 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
       })
     );
 
+    // Name this card as the workspace's source, so its events carry the card's IDs.
+    setWorkspaceCardSource(serviceManager, fullMessage, localMessageItem);
     // Open the panel - it will fire WORKSPACE_PRE_OPEN and WORKSPACE_OPEN events
     // If a workspace is already open, it will be closed first (handled in CustomPanelInstance)
     panel.open({
@@ -84,7 +88,7 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
     additional_data,
     localMessageItem,
     fullMessage,
-    serviceManager.store,
+    serviceManager,
     panel,
   ]);
 
