@@ -30,7 +30,7 @@ const coreFiles = [
   'src/chat/utils/carbonTheme.ts',
   'src/chat/services/humanAgentCallbacks.ts',
   'src/chat/utils/mobileViewportLayout.ts',
-  'src/shared/services/inputCallbacks.ts',
+  'src/chat/services/inputCallbacks.ts',
   'src/chat/services/inputExtensions.ts',
   'src/chat/services/chatViewState.ts',
   'src/chat/services/extensionHosts.ts',

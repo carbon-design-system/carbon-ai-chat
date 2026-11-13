@@ -17,14 +17,14 @@ import {
   PanelType,
 } from '../../types/instance/apiTypes';
 import { BusEventType } from '../../types/events/eventBusTypes';
-import actions from '../store/actions';
-import { DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS } from '../store/reducerUtils';
-import { ServiceManager } from './ServiceManager';
+import actions from '../../shared/store/actions';
+import { DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS } from '../../shared/store/reducerUtils';
+import { ServiceManager } from '../../shared/services/ServiceManager';
 import {
   captureMessageEvent,
   eventLocalItems,
-} from '../utils/messageEventOwnership';
-import { deepFreeze } from '../utils/lang/objectUtils';
+} from '../../shared/utils/messageEventOwnership';
+import { deepFreeze } from '../../shared/utils/lang/objectUtils';
 import { Message } from '../../types/messaging/Messages';
 import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
 

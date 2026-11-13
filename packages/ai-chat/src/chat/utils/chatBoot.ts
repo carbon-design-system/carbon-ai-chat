@@ -20,6 +20,7 @@ import { selectInputIsReadonly } from '../../shared/store/selectors';
 
 import { ServiceManager } from '../../shared/services/ServiceManager';
 import { createAppConfig } from '../../shared/store/doCreateStore';
+import { createCustomPanelManager } from '../services/CustomPanelManager';
 import { setIntl } from '../../shared/utils/intlUtils';
 import {
   consoleDebug,
@@ -337,7 +338,7 @@ export async function initServiceManagerAndInstance(options: {
       );
     },
 
-    customPanels: serviceManager.customPanelManager,
+    customPanels: createCustomPanelManager(serviceManager),
 
     restartConversation: async () => {
       debugLog('Called instance.restartConversation');

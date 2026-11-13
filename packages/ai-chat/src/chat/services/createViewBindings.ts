@@ -12,6 +12,9 @@ import type { ChatViewState } from './chatViewState';
 import type { ViewBindings } from '../../shared/services/viewBindings';
 import { MessagePresentationAdapter } from './MessagePresentationAdapter';
 import { ViewService } from './ViewService';
+import { createLoadingCounters } from './loadingCounters';
+import type { PortAnnouncement } from '../../shared/services/messaging/presentationPort';
+import type { AnnounceMessage } from '../../types/state/AnnounceMessage';
 import {
   hasCustomPromptLine,
   requestComposerFocus,
@@ -29,6 +32,10 @@ function createViewBindings(viewState: ChatViewState): ViewBindings {
   const { serviceManager } = viewState;
   const { store } = serviceManager;
   const viewService = new ViewService(serviceManager);
+  const counters = createLoadingCounters(store);
+  const announce = (message: PortAnnouncement) =>
+    // The port carries plain strings; these IDs come from the language pack.
+    store.dispatch(actions.announceMessage(message as AnnounceMessage));
   return {
     messaging: new MessagePresentationAdapter({
       openHomeScreen: () => store.dispatch(actions.setHomeScreenIsOpen(true)),
@@ -69,11 +76,22 @@ function createViewBindings(viewState: ChatViewState): ViewBindings {
       isResponsePanelOpen: () => store.getState().responsePanelState.isOpen,
       closeResponsePanel: () =>
         store.dispatch(actions.setResponsePanelIsOpen(false)),
+      announce: (message) => announce(message),
+      changeMessageLoadingCounter: (amount) =>
+        counters.changeMessageLoadingCounter(amount),
+      updateMessageLoadingCounter: (direction, message) =>
+        counters.updateMessageLoadingCounter(direction, message),
+      changeChatLoadingCounter: (amount) =>
+        counters.changeChatLoadingCounter(amount),
+      updateChatLoadingCounter: (direction) =>
+        counters.updateChatLoadingCounter(direction),
     }),
     humanAgent: {
       requestFocus: () => {
         viewState.appWindow?.requestFocus();
       },
+      announce,
+      changeMessageLoadingCounter: counters.changeMessageLoadingCounter,
     },
     instance: {
       requestFocus: () => viewState.appWindow?.requestFocus() === true,
@@ -82,6 +100,10 @@ function createViewBindings(viewState: ChatViewState): ViewBindings {
         viewState.mainWindow?.doScrollToMessage(messageID, animate),
       input: () => viewState.inputComponent ?? null,
       hasCustomPromptLine: () => hasCustomPromptLine(serviceManager),
+      isMainWindowOpen: () =>
+        store.getState().persistedToBrowserStorage.viewState.mainWindow,
+      showCatastrophicError: () =>
+        store.dispatch(actions.setAppStateValue('catastrophicErrorType', true)),
       changeView: (newView, reason, tryHydrating, forceViewChange) =>
         viewService.changeView(newView, reason, tryHydrating, forceViewChange),
     },

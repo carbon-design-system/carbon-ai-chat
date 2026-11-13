@@ -14,7 +14,7 @@ import {
   setupBeforeEach,
   setupAfterEach,
 } from '../../test_helpers';
-import { createCustomPanelInstance } from '../../../src/shared/services/CustomPanelInstance';
+import { createCustomPanelInstance } from '../../../src/chat/services/CustomPanelInstance';
 import { ServiceManager } from '../../../src/shared/services/ServiceManager';
 import { PanelType } from '../../../src/types/instance/apiTypes';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';

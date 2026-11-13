@@ -11,7 +11,7 @@ import {
   ServiceManager,
   type UserDefinedElementRegistryItem,
 } from './ServiceManager';
-import actions from '../store/actions';
+import { VIEW_STATE_ALL_CLOSED } from '../store/reducerUtils';
 import { agentUpdateIsSuspended } from '../store/humanAgentActions';
 import {
   AppStateMessages,
@@ -265,24 +265,11 @@ class ChatInstanceService {
     );
   }
 
-  /**
-   * Opens the response panel using the provided local message item to render the content in the panel.
-   */
-  openResponsePanel(
-    localMessageItem: LocalMessageItem,
-    isMessageForInput: boolean
-  ) {
-    this.serviceManager.store.dispatch(
-      actions.setResponsePanelContent(localMessageItem, isMessageForInput)
-    );
-    this.serviceManager.store.dispatch(actions.setResponsePanelIsOpen(true));
-  }
-
   // updateLanguagePack removed; use top-level `strings` prop on components.
 
   /**
    * Changes the view through the attached view. With no view attached it does
-   * nothing and resolves with the current view state.
+   * nothing and resolves with every part closed, since nothing is drawn.
    */
   async changeView(
     newView: ViewType | Partial<ViewState>,
@@ -296,8 +283,7 @@ class ChatInstanceService {
   ): Promise<ViewState> {
     const view = this.serviceManager.view.current;
     if (!view) {
-      return this.serviceManager.store.getState().persistedToBrowserStorage
-        .viewState;
+      return { ...VIEW_STATE_ALL_CLOSED };
     }
     return view.instance.changeView(
       newView,
@@ -316,12 +302,7 @@ class ChatInstanceService {
     consoleError('An error has occurred', error);
 
     if (error.catastrophicErrorType) {
-      this.serviceManager.store.dispatch(
-        actions.setAppStateValue(
-          'catastrophicErrorType',
-          error.catastrophicErrorType
-        )
-      );
+      this.serviceManager.view.current?.instance.showCatastrophicError?.();
     }
     callOnError(
       this.serviceManager.store.getState().config.public.onError,

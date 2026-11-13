@@ -9,6 +9,7 @@
 import type { StoreReduction } from './appStore';
 import type { MessageOwnershipReceipt } from './messageOwnership';
 
+import cloneDeep from 'lodash-es/cloneDeep.js';
 import isEqual from 'lodash-es/isEqual.js';
 import isPlainObject from 'lodash-es/isPlainObject.js';
 import merge from 'lodash-es/merge.js';
@@ -100,6 +101,7 @@ import {
   UPSERT_MESSAGE,
   END_MESSAGE_STREAMING,
   UPDATE_PERSISTED_STATE,
+  RESET_PERSISTED_STATE,
   UPDATE_THEME_STATE,
   RESET_IS_HYDRATING_COUNTER,
   RESET_IS_LOADING_COUNTER,
@@ -129,6 +131,8 @@ import {
   setHomeScreenOpenState,
   keepPriorUIStateInternal,
   keepMessageRefIfUnchanged,
+  DEFAULT_PERSISTED_TO_BROWSER,
+  VIEW_STATE_LAUNCHER_OPEN,
 } from './reducerUtils';
 import {
   HumanAgentMessageType,
@@ -727,6 +731,19 @@ const stateReducers: { [key: string]: ReducerType } = {
     persistedToBrowserStorage: {
       ...state.persistedToBrowserStorage,
       ...action.chatState,
+    },
+  }),
+
+  [RESET_PERSISTED_STATE]: (
+    state: AppState,
+    action: { keepOpenState: boolean }
+  ): AppState => ({
+    ...state,
+    persistedToBrowserStorage: {
+      ...cloneDeep(DEFAULT_PERSISTED_TO_BROWSER),
+      viewState: action.keepOpenState
+        ? state.persistedToBrowserStorage.viewState
+        : VIEW_STATE_LAUNCHER_OPEN,
     },
   }),
 

@@ -132,10 +132,10 @@ class ChunkWorkflow {
    * during the pause resets the indicator itself, so it is not lowered again.
    */
   async waitForPause(pause: PauseItem, initialRestartCount: number) {
-    const { store } = this.serviceManager;
+    const coordinator = this.serviceManager.messageCoordinator;
     const showIsTyping = isTyping(pause);
     if (showIsTyping) {
-      store.dispatch(actions.addIsLoadingCounter(1));
+      coordinator.changeMessageLoadingCounter(1);
     }
 
     await sleep(pause.time);
@@ -144,7 +144,7 @@ class ChunkWorkflow {
       showIsTyping &&
       initialRestartCount === this.serviceManager.restartCount
     ) {
-      store.dispatch(actions.addIsLoadingCounter(-1));
+      coordinator.changeMessageLoadingCounter(-1);
     }
   }
 

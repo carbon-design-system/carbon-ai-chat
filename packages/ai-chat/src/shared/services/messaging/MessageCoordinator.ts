@@ -14,6 +14,7 @@ import { consoleError } from '../../utils/miscUtils';
 import type { PublicConfig } from '../../../types/config/PublicConfig';
 import { coordinateSend } from './coordinateSend';
 import type {
+  LoadingDirection,
   MessagePresentationPort,
   StreamAnnouncementContent,
 } from './presentationPort';
@@ -68,6 +69,9 @@ import type {
   MessageRequestHistory,
 } from '../../../types/messaging/Messages';
 
+/** The directions the public loading counter methods accept. */
+const LOADING_DIRECTIONS = new Set(['reset', 'increase', 'decrease']);
+
 class MessageCoordinator {
   mergeMessageHistory(
     messageID: string,
@@ -107,7 +111,11 @@ class MessageCoordinator {
   }
 
   changeHydrationCounter(amount: 1 | -1) {
-    this.serviceManager.store.dispatch(actions.addIsHydratingCounter(amount));
+    this.presentation?.changeChatLoadingCounter?.(amount);
+  }
+
+  changeMessageLoadingCounter(amount: 1 | -1) {
+    this.presentation?.changeMessageLoadingCounter?.(amount);
   }
 
   markChatHydrated() {
@@ -119,7 +127,7 @@ class MessageCoordinator {
   }
 
   resetMessageLoadingCounter() {
-    this.serviceManager.store.dispatch(actions.resetIsLoadingCounter());
+    this.presentation?.updateMessageLoadingCounter?.('reset');
   }
 
   resetStopButton() {
@@ -658,42 +666,29 @@ class MessageCoordinator {
     );
   }
 
+  /**
+   * Checks the direction, and the attached view applies it. With no view, a
+   * valid direction does nothing.
+   */
   updateIsMessageLoadingCounter(
     direction: IncreaseOrDecrease,
     message?: string
   ): void {
-    const { store } = this.serviceManager;
-
-    if (direction === 'reset') {
-      store.dispatch(actions.resetIsLoadingCounter());
-    } else if (direction === 'increase') {
-      store.dispatch(actions.addIsLoadingCounter(1, message));
-    } else if (direction === 'decrease') {
-      if (store.getState().assistantMessageState.isMessageLoadingCounter <= 0) {
-        return;
-      }
-      store.dispatch(actions.addIsLoadingCounter(-1, message));
-    } else if (!direction && message) {
-      store.dispatch(actions.addIsLoadingCounter(0, message));
-    } else if (direction) {
+    if (direction && !LOADING_DIRECTIONS.has(direction)) {
       consoleError(
         `[updateIsMessageLoadingCounter] Invalid direction: ${direction}. Valid values are undefined (with loading message), "reset", "increase" and "decrease".`
       );
+    } else if (direction || message) {
+      this.presentation?.updateMessageLoadingCounter?.(direction, message);
     }
   }
 
+  /** Checks the direction, and the attached view applies it. */
   updateIsChatLoadingCounter(direction: string): void {
-    const { store } = this.serviceManager;
-
-    if (direction === 'reset') {
-      store.dispatch(actions.resetIsHydratingCounter());
-    } else if (direction === 'increase') {
-      store.dispatch(actions.addIsHydratingCounter(1));
-    } else if (direction === 'decrease') {
-      if (store.getState().assistantMessageState.isHydratingCounter <= 0) {
-        return;
-      }
-      store.dispatch(actions.addIsHydratingCounter(-1));
+    if (LOADING_DIRECTIONS.has(direction)) {
+      this.presentation?.updateChatLoadingCounter?.(
+        direction as LoadingDirection
+      );
     } else {
       consoleError(
         `[updateIsChatLoadingCounter] Invalid direction: ${direction}. Valid values are "reset", "increase" and "decrease".`

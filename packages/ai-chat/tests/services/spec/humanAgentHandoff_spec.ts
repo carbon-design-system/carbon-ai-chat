@@ -20,6 +20,7 @@ import {
   MessageResponse,
   MessageResponseTypes,
 } from '../../../src/types/messaging/Messages';
+import { withViewCounters } from '../helpers/viewBindings';
 
 function createFixture(
   skipConnectHumanAgentCard = true,
@@ -29,7 +30,10 @@ function createFixture(
     serviceDeskFactory: serviceDeskConfigured ? jest.fn() : undefined,
     serviceDesk: { skipConnectHumanAgentCard },
   });
-  const manager = { store, restartCount: 0 } as unknown as ServiceManager;
+  const manager = withViewCounters({
+    store,
+    restartCount: 0,
+  } as unknown as ServiceManager);
   const service = createHumanAgentService(manager);
   manager.humanAgentService = service;
   const checkAvailability = jest

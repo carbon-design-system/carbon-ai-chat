@@ -261,10 +261,6 @@ const transcriptWrites = new Set([
   'upsertMessage',
   'endMessageStreaming',
   'messageSetOptionSelected',
-  'addIsLoadingCounter',
-  'resetIsLoadingCounter',
-  'addIsHydratingCounter',
-  'resetIsHydratingCounter',
   'setConversationLifecycle',
   'setActiveResponseId',
   'setMessageUIProperty',
@@ -292,7 +288,6 @@ const sharedWrites: Record<string, string[]> = {
   'src/shared/services/haa/HumanAgentServiceImpl.ts': [
     'updateMessage',
     'updateLocalMessageItem',
-    'addIsLoadingCounter',
     'setMessageUIStateInternalProperty',
     'setMessageErrorState',
     'setMessageResponseHistoryProperty',
@@ -305,7 +300,7 @@ const captureRoots = new Set([
   messaging + 'ChunkWorkflow.ts',
   'src/shared/services/haa/HumanAgentServiceImpl.ts',
   'src/shared/services/haa/humanAgentUtils.ts',
-  'src/shared/services/CustomPanelInstance.ts',
+  'src/chat/services/CustomPanelInstance.ts',
 ]);
 const calls = callsIn(
   checker,
@@ -579,8 +574,7 @@ function isAllowedStateField(
       'chatHeight',
       'chatWidthBreakpoint',
     ],
-    'src/shared/services/ChatInstanceService.ts': ['catastrophicErrorType'],
-    'src/shared/services/HydrationService.ts': ['persistedToBrowserStorage'],
+    'src/chat/services/createViewBindings.ts': ['catastrophicErrorType'],
     'src/chat/utils/dynamicConfigUpdates.ts': ['languagePack'],
     'src/chat/utils/appConfigUpdates.ts': ['markdownConfig'],
     'src/web-components/cds-aichat-container/cds-aichat-container.ts': [
@@ -706,6 +700,21 @@ it('keeps the adapter types and actual boot bindings view-only', () => {
     closeHomeScreen: ['setHomeScreenIsOpen'],
     isResponsePanelOpen: [],
     closeResponsePanel: ['setResponsePanelIsOpen'],
+    // The loading counters and announcements are view state (#1831).
+    announce: ['announceMessage'],
+    changeMessageLoadingCounter: ['addIsLoadingCounter'],
+    updateMessageLoadingCounter: [
+      'resetIsLoadingCounter',
+      'addIsLoadingCounter',
+      'addIsLoadingCounter',
+      'addIsLoadingCounter',
+    ],
+    changeChatLoadingCounter: ['addIsHydratingCounter'],
+    updateChatLoadingCounter: [
+      'resetIsHydratingCounter',
+      'addIsHydratingCounter',
+      'addIsHydratingCounter',
+    ],
   };
   const port = get(messaging + 'presentationPort.ts').statements.find(
     (n): n is ts.InterfaceDeclaration =>
@@ -726,6 +735,11 @@ it('keeps the adapter types and actual boot bindings view-only', () => {
       'closeHomeScreenIfOpen',
       'closeResponsePanelIfOpen',
       'closeHomeScreen',
+      'announce',
+      'changeMessageLoadingCounter',
+      'updateMessageLoadingCounter',
+      'changeChatLoadingCounter',
+      'updateChatLoadingCounter',
     ].sort()
   );
   let found = false;
@@ -841,8 +855,15 @@ it('keeps the adapter types and actual boot bindings view-only', () => {
       if (file === 'src/shared/store/actions.ts') {
         sinks.push((d as ts.MethodDeclaration).name.getText());
       }
+      // The announcement reaches the view only through its port (#1831).
+      if (
+        file === messaging + 'presentationPort.ts' &&
+        ts.isPropertyAccessExpression(call.expression)
+      ) {
+        sinks.push(`port.${call.expression.name.text}`);
+      }
     });
-    expect(sinks).toEqual(['announceMessage']);
+    expect(sinks).toEqual(['port.announce']);
   });
   expect(foundStream).toBe(true);
   // Other boot dispatches remain view-only too.
