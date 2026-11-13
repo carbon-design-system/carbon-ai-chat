@@ -104,6 +104,11 @@ describe.each(HOSTS)('unmount and remount of %s', (host) => {
     expect(first.instance.getState().hasSentNonWelcomeMessage).toBe(true);
     first.unmount();
     const { instance } = await mountHost(host, kit);
+    expect(instance.getState().hasSentNonWelcomeMessage).toBe(true);
+    expect(instance.getState().messages.map(({ id }) => id)).not.toContain(
+      'r1'
+    );
+    await waitFor(() => expect(kit.backend.requests).toHaveLength(2));
     await waitFor(() => expect(kit.readyCount()).toBe(2));
     const state = instance.getState();
     expect(state.hasSentNonWelcomeMessage).toBe(true);

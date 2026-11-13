@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { act } from '@testing-library/react';
+import { act, waitFor } from '@testing-library/react';
 
 import {
   BusEventType,
@@ -139,6 +139,7 @@ describe('persistedState.initialState', () => {
       },
     });
     expect(instance.getState().viewState).toEqual(OPEN);
+    await waitFor(() => expect(backend.requests).toHaveLength(1));
     const welcome = await backend.next();
     expect(welcome.options.busEventSend.source).toBe(
       MessageSendSource.WELCOME_REQUEST
@@ -167,6 +168,7 @@ describe('persistedState.initialState', () => {
       },
     });
     await changeView(instance, ViewType.MAIN_WINDOW);
+    await waitFor(() => expect(backend.requests).toHaveLength(1));
     const welcome = await backend.next();
     expect(welcome.options.busEventSend.source).toBe(
       MessageSendSource.WELCOME_REQUEST
@@ -340,6 +342,8 @@ describe('persistedState.onStateChange', () => {
     });
     await pause();
     expect(instance.getState().input.rawValue).toBe('a draft');
+    expect(instance.state.get().isMessageLoadingCounter).toBe(1);
+    // The saved-slice gate also skips transient changes; removing value equality alone has no public effect here.
     expect(recorder.values).toEqual([]);
   });
 

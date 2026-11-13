@@ -51,7 +51,10 @@ describe('hydration on first open', () => {
     const { instance, ready, sources } = await closedChat();
     await changeView(instance, ViewType.MAIN_WINDOW);
     await waitFor(() => expect(ready.count()).toBe(1));
+    expect(sources()).toEqual([WELCOME]);
 
+    // Both the hydrated view and the settled hydration promise guard a reopen.
+    // Removing either guard alone leaves the same public behavior.
     await changeView(instance, ViewType.LAUNCHER);
     await changeView(instance, ViewType.MAIN_WINDOW);
     await pause();
@@ -71,6 +74,7 @@ describe('restart and clear on a mounted chat', () => {
       autoResolve: false,
     });
     await changeView(instance, ViewType.MAIN_WINDOW);
+    await waitFor(() => expect(backend.requests).toHaveLength(1));
     await act(async () => (await backend.next()).resolve());
     await waitFor(() => expect(ready.count()).toBe(1));
 
@@ -78,6 +82,7 @@ describe('restart and clear on a mounted chat', () => {
     await act(async () => {
       restart = instance.messaging.restartConversation();
     });
+    await waitFor(() => expect(backend.requests).toHaveLength(2));
     const welcome = await backend.next();
     expect(ready.count()).toBe(1);
     await act(async () => {

@@ -271,12 +271,20 @@ describe('default custom panel events', () => {
   });
 
   it('fires no events for the workspace or history panels', async () => {
-    const { instance } = await mountOpen();
+    const { instance } = await contractChat({
+      openChatByDefault: true,
+      strings: STRINGS,
+      history: { isOn: true, startClosed: true },
+    });
     const events = recordEvents(instance, PANEL_EVENTS);
     await openPanel(instance, undefined, PanelType.WORKSPACE);
+    expect(instance.state.get().customPanels.workspace.isOpen).toBe(true);
     await closePanel(instance, PanelType.WORKSPACE);
+    expect(instance.state.get().customPanels.workspace.isOpen).toBe(false);
     await openPanel(instance, undefined, PanelType.HISTORY);
+    expect(instance.state.get().customPanels.history.isOpen).toBe(true);
     await closePanel(instance, PanelType.HISTORY);
+    expect(instance.state.get().customPanels.history.isOpen).toBe(false);
     // A short wait to show nothing fires.
     await pause(300);
     expect(events.types()).toEqual([]);
