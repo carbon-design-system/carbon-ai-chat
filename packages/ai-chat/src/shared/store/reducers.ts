@@ -15,17 +15,19 @@ import isPlainObject from 'lodash-es/isPlainObject.js';
 import merge from 'lodash-es/merge.js';
 import { DeepPartial } from '../../types/utilities/DeepPartial';
 
+import { ConversationState } from '../../types/state/ConversationState';
 import {
-  ConversationState,
   AppStateMessages,
   ChatMessagesState,
-  FileUpload,
+} from '../../types/state/ChatMessagesState';
+import { FileUpload } from '../../types/config/ServiceDeskConfig';
+import {
   InputState,
   PendingUpload,
   PendingUploadStatus,
-  PersistedState,
-  ThemeState,
-} from '../../types/state/AppState';
+} from '../../types/state/InputState';
+import { PersistedState } from '../../types/state/PersistedState';
+import { ThemeState } from '../../types/state/ThemeState';
 import {
   LocalMessageItem,
   LocalMessageUIState,

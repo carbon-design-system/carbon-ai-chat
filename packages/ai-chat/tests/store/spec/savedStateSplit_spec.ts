@@ -9,7 +9,7 @@
 
 import actions from '../../../src/shared/store/actions';
 import { createServiceManager } from '../../../src/shared/services/loadServices';
-import { createAppConfig } from '../../../src/shared/store/doCreateStore';
+import { createAppConfig } from '../../../src/chat/utils/appConfig';
 import { toPersistableState } from '../../../src/shared/store/persistenceUtils';
 import type { ChatSDKConfig } from '../../../src/types/config/ChatSDKConfig';
 import type { PublicConfig } from '../../../src/types/config/PublicConfig';

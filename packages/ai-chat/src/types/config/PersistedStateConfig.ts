@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { PersistedState } from '../state/AppState';
+import { PersistedState } from '../state/PersistedState';
 import type { ChatSDKPersistedStateConfig } from './ChatSDKPersistedStateConfig';
 
 /**

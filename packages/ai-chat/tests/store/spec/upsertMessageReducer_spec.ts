@@ -9,10 +9,8 @@
 
 import { createAppStore } from '../../../src/shared/store/appStore';
 
-import {
-  buildLanguagePack,
-  createAppConfig,
-} from '../../../src/shared/store/doCreateStore';
+import { buildLanguagePack } from '../../../src/shared/store/doCreateStore';
+import { createAppConfig } from '../../../src/chat/utils/appConfig';
 
 import actions from '../../../src/shared/store/actions';
 import { AppState } from '../../../src/types/state/AppState';

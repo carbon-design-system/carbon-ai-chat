@@ -13,10 +13,8 @@ import { selectInputIsReadonly } from '../../../src/shared/store/selectors';
 
 import { createAppStore } from '../../../src/shared/store/appStore';
 
-import {
-  createAppConfig,
-  createInitialState,
-} from '../../../src/shared/store/doCreateStore';
+import { createInitialState } from '../../../src/shared/store/doCreateStore';
+import { createAppConfig } from '../../../src/chat/utils/appConfig';
 
 import { ServiceManager } from '../../../src/shared/services/ServiceManager';
 
@@ -47,8 +45,11 @@ const createMockServiceManager = (initialState: AppState): ServiceManager => {
 };
 
 function createInitialAppState(config: PublicConfig = {}): AppState {
+  const appConfig = createAppConfig(config);
   return {
-    ...createInitialState(createAppConfig(config)),
+    ...createInitialState(appConfig),
+    // The same object; restated so the state is typed with the whole config.
+    config: appConfig,
     view: createInitialViewState(config, null),
   };
 }
@@ -84,7 +85,7 @@ describe('Dynamic Config Updates', () => {
         serviceManager
       );
 
-      const updatedState = serviceManager.store.getState();
+      const updatedState = chatStore(serviceManager).getState();
       expect(updatedState.config.public.debug).toBe(true);
       expect(updatedState.config.derived.header?.title).toBe('Updated Title');
       expect(updatedState.config.derived.header?.showRestartButton).toBe(false);
@@ -100,7 +101,7 @@ describe('Dynamic Config Updates', () => {
       // A partial config inherits the other fields one by one rather than replacing the
       // whole default object.
       expect(
-        serviceManager.store.getState().config.derived.keyboardShortcuts
+        chatStore(serviceManager).getState().config.derived.keyboardShortcuts
           .messageFocusToggle
       ).toEqual({ key: 'F7', modifiers: {}, isOn: false });
     });
@@ -114,7 +115,7 @@ describe('Dynamic Config Updates', () => {
 
       // What the demo's keyboard-shortcut switcher dispatches: the toggle alone.
       expect(
-        serviceManager.store.getState().config.derived.keyboardShortcuts
+        chatStore(serviceManager).getState().config.derived.keyboardShortcuts
           .messageFocusToggle
       ).toEqual({ key: 'F6', modifiers: {}, isOn: true });
     });
@@ -132,19 +133,19 @@ describe('Dynamic Config Updates', () => {
         serviceManager
       );
       expect(
-        serviceManager.store.getState().config.derived.keyboardShortcuts
+        chatStore(serviceManager).getState().config.derived.keyboardShortcuts
           .messageFocusToggle
       ).toEqual({ key: 'F7', modifiers: {}, isOn: true });
 
       // Retract with an explicit `isOn: false` — the toggle alone, which is what
       // the demo's switcher dispatches.
       await applyConfigChangesDynamically(
-        serviceManager.store.getState().config.public,
+        chatStore(serviceManager).getState().config.public,
         { keyboardShortcuts: { messageFocusToggle: { isOn: false } } },
         serviceManager
       );
       expect(
-        serviceManager.store.getState().config.derived.keyboardShortcuts
+        chatStore(serviceManager).getState().config.derived.keyboardShortcuts
           .messageFocusToggle
       ).toEqual({ key: 'F6', modifiers: {}, isOn: false });
     });
@@ -164,12 +165,12 @@ describe('Dynamic Config Updates', () => {
       // `createAppConfig`, so an omitted `keyboardShortcuts` is not "unchanged"
       // — it drops back to the factory default rather than carrying F7 forward.
       await applyConfigChangesDynamically(
-        serviceManager.store.getState().config.public,
+        chatStore(serviceManager).getState().config.public,
         {},
         serviceManager
       );
       expect(
-        serviceManager.store.getState().config.derived.keyboardShortcuts
+        chatStore(serviceManager).getState().config.derived.keyboardShortcuts
           .messageFocusToggle
       ).toEqual({ key: 'F6', modifiers: {}, isOn: false });
     });
@@ -208,7 +209,7 @@ describe('Dynamic Config Updates', () => {
         serviceManagerWithFullHeader
       );
 
-      const updatedState = serviceManagerWithFullHeader.store.getState();
+      const updatedState = chatStore(serviceManagerWithFullHeader).getState();
       const header = updatedState.config.derived.header;
 
       // Property that was updated should be present
@@ -235,7 +236,7 @@ describe('Dynamic Config Updates', () => {
         serviceManager
       );
 
-      const updatedState = serviceManager.store.getState();
+      const updatedState = chatStore(serviceManager).getState();
       const header = updatedState.config.derived.header;
 
       expect(header?.name).toBe('New Assistant');
@@ -260,7 +261,7 @@ describe('Dynamic Config Updates', () => {
         serviceManager
       );
 
-      const updatedState = serviceManager.store.getState();
+      const updatedState = chatStore(serviceManager).getState();
 
       expect(updatedState.config.public.strings).toEqual(stringOverrides);
       const languagePack = updatedState.languagePack;
@@ -296,7 +297,7 @@ describe('Dynamic Config Updates', () => {
         serviceManager
       );
 
-      const updatedState = serviceManager.store.getState();
+      const updatedState = chatStore(serviceManager).getState();
 
       // Config should be updated
       expect(updatedState.config.public.homescreen?.isOn).toBe(true);
@@ -365,7 +366,7 @@ describe('Dynamic Config Updates', () => {
         serviceManager
       );
 
-      const updatedState = serviceManager.store.getState();
+      const updatedState = chatStore(serviceManager).getState();
 
       // Config should be updated
       expect(updatedState.config.public.isReadonly).toBe(true);
@@ -467,7 +468,7 @@ describe('Dynamic Config Updates', () => {
         serviceManager
       );
 
-      const updatedState = serviceManager.store.getState();
+      const updatedState = chatStore(serviceManager).getState();
 
       // Config should be updated
       expect(updatedState.config.public.messaging?.messageTimeoutSecs).toBe(60);
@@ -495,7 +496,7 @@ describe('Dynamic Config Updates', () => {
         serviceManager
       );
 
-      const updatedState = serviceManager.store.getState();
+      const updatedState = chatStore(serviceManager).getState();
 
       // All changes should be applied
       expect(updatedState.config.public.debug).toBe(true);
@@ -590,7 +591,7 @@ describe('Dynamic Config Updates', () => {
           );
         }).not.toThrow();
 
-        const updatedState = serviceManager.store.getState();
+        const updatedState = chatStore(serviceManager).getState();
         expect(updatedState.config.derived.header).toBeNull();
       });
     });

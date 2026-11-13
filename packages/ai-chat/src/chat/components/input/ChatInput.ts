@@ -42,6 +42,7 @@ import './native/PromptLineSlot';
 import type { InputFunctions, InputProps } from '../../utils/inputTypes';
 import type { AutocompleteContent } from '../../services/autocompleteContent';
 import type { ChatViewState } from '../../services/chatViewState';
+import { chatStore } from '../../services/attachChatView';
 import type { ToolbarAction } from '../../../types/config/HeaderConfig';
 import type { IntlShape } from '../../../shared/utils/i18n';
 import type { LanguagePack } from '../../../types/config/LanguagePack';
@@ -575,8 +576,8 @@ class ChatInput extends NativeChatView {
       );
     }
     if (focused && !this.hasAnnouncedShortcut) {
-      const shortcut =
-        store.getState().config.derived.keyboardShortcuts.messageFocusToggle;
+      const shortcut = chatStore(this.serviceManager).getState().config.derived
+        .keyboardShortcuts.messageFocusToggle;
       if (shortcut.isOn) {
         store.dispatch(
           viewActions.announceMessage({

@@ -28,10 +28,8 @@ import { CancellationReason } from '../../../src/types/config/MessagingConfig';
 import { ConversationState } from '../../../src/types/state/AppState';
 import { MessageResponseTypes } from '../../../src/types/messaging/Messages';
 import { selectStopStreamingButtonVisible } from '../../../src/shared/store/selectors';
-import {
-  createAppConfig,
-  createInitialState,
-} from '../../../src/shared/store/doCreateStore';
+import { createInitialState } from '../../../src/shared/store/doCreateStore';
+import { createAppConfig } from '../../../src/chat/utils/appConfig';
 import {
   getChatShadowRoot,
   mockCustomSendMessage,

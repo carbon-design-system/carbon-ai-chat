@@ -34,10 +34,12 @@ import actions from '../src/shared/store/actions';
 import isEqual from 'lodash-es/isEqual.js';
 import {
   buildLanguagePack,
-  createAppConfig,
   createInitialState,
-  reconcileAppConfigReferences,
 } from '../src/shared/store/doCreateStore';
+import {
+  createAppConfig,
+  reconcileAppConfigReferences,
+} from '../src/chat/utils/appConfig';
 import { chatStore } from '../src/chat/services/attachChatView';
 import { attachStorePartition } from '../src/sdk/internal';
 import { viewReducer } from '../src/view/state/reducer';
@@ -323,7 +325,7 @@ export function applyConfigChange(
   store: AppStore<ConversationState>,
   nextConfig: PublicConfig
 ): void {
-  const prevConfig = store.getState().config;
+  const prevConfig = chatStore({ store }).getState().config;
   const next = createAppConfig(nextConfig);
   const reconciled = reconcileAppConfigReferences(prevConfig, next);
   act(() => {

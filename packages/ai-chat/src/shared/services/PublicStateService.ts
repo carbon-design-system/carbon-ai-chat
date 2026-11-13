@@ -9,7 +9,7 @@
 
 import { BusEventType } from '../../types/events/eventBusTypes';
 import { PublicChatState } from '../../types/instance/PublicChatState';
-import { ConversationState } from '../../types/state/AppState';
+import { ConversationState } from '../../types/state/ConversationState';
 import {
   PublicStateProjectionObserver,
   PublicStateSnapshotCache,

@@ -9,7 +9,7 @@
 
 import cloneDeep from 'lodash-es/cloneDeep.js';
 
-import { ConversationState } from '../../types/state/AppState';
+import { ConversationState } from '../../types/state/ConversationState';
 import { PublicChatState } from '../../types/instance/PublicChatState';
 import { deepFreeze } from './lang/objectUtils';
 import { selectHasInFlightUpload, selectInputState } from '../store/selectors';

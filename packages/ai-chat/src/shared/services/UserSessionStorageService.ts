@@ -13,7 +13,7 @@
  */
 
 import { VERSION } from '../utils/environmentVariables';
-import { PersistedState } from '../../types/state/AppState';
+import { PersistedState } from '../../types/state/PersistedState';
 import { IS_SESSION_STORAGE } from '../utils/browserUtils';
 import { consoleError } from '../utils/miscUtils';
 import mockStorage from './mockStorage';

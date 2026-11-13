@@ -8,7 +8,7 @@
  */
 
 import { selectHasInFlightUpload } from '../../store/selectors';
-import type { ConversationState } from '../../../types/state/AppState';
+import type { ConversationState } from '../../../types/state/ConversationState';
 
 function assertNoInFlightUpload(state: ConversationState) {
   if (selectHasInFlightUpload(state)) {

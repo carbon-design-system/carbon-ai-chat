@@ -19,7 +19,7 @@ import actions from '../../shared/store/actions';
 import { selectInputIsReadonly } from '../../shared/store/selectors';
 
 import { ServiceManager } from '../../shared/services/ServiceManager';
-import { createAppConfig } from '../../shared/store/doCreateStore';
+import { createAppConfig } from './appConfig';
 import { createCustomPanelManager } from '../services/CustomPanelManager';
 import { attachChatView, chatStore } from '../services/attachChatView';
 import { setIntl } from '../../shared/utils/intlUtils';
@@ -466,7 +466,8 @@ export async function initServiceManagerAndInstance(options: {
 
   // Add serviceManager for testing if the flag is enabled (exclude instance to avoid circular reference)
   if (
-    serviceManager.store.getState().config.public.exposeServiceManagerForTesting
+    chatStore(serviceManager).getState().config.public
+      .exposeServiceManagerForTesting
   ) {
     const { instance: _, ...serviceManagerForTesting } = serviceManager;
     instance.serviceManager = serviceManagerForTesting as ServiceManager;

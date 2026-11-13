@@ -8,7 +8,7 @@
  */
 
 import { WorkspaceCustomPanelConfigOptions } from './apiTypes';
-import type { PersistedState } from '../state/AppState';
+import type { PersistedState } from '../state/PersistedState';
 import type { StructuredData } from '../messaging/Messages';
 import type { JSONContent } from '@tiptap/core';
 import type {
