@@ -249,6 +249,44 @@ it('releases each layout owner on menu close, count changes, detach, and reconne
   expect(connectInputActionsOverflow).toHaveBeenCalledTimes(3);
 });
 
+it('returns focus to the trigger after Escape closes the menu and leaves a blur alone', async () => {
+  const { view } = await fixture([action('One')]);
+  const trigger = view.querySelector<HTMLElement>(
+    '[data-input-actions-trigger]'
+  );
+  const focusTrigger = jest.spyOn(trigger, 'focus');
+  const closeWith = async (triggerEventType: string, before = () => {}) => {
+    await click(view, '[data-input-actions-trigger]');
+    const menu = view.querySelector('cds-menu') as HTMLElement & {
+      updateComplete: Promise<unknown>;
+    };
+    expect(menu).not.toBeNull();
+    // Let the menu finish opening, including its own initial focus.
+    await menu.updateComplete;
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    before();
+    // Carbon fires the close event twice when the first isn't canceled.
+    for (let count = 0; count < 2; count++) {
+      menu.dispatchEvent(
+        new CustomEvent('cds-menu-closed', { detail: { triggerEventType } })
+      );
+    }
+    await view.updateComplete;
+    expect(view.querySelector('cds-menu')).toBeNull();
+  };
+
+  await closeWith('keydown');
+  expect(focusTrigger).toHaveBeenCalled();
+
+  focusTrigger.mockClear();
+  const outside = document.createElement('button');
+  document.body.appendChild(outside);
+  // A blur closes the menu after focus has already moved elsewhere.
+  await closeWith('focusout', () => outside.focus());
+  expect(focusTrigger).not.toHaveBeenCalled();
+  expect(document.activeElement).toBe(outside);
+});
+
 it('routes callback errors once and ignores detached action nodes', async () => {
   const selected = jest.fn(() => {
     throw new Error('action failed');

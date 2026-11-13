@@ -205,7 +205,7 @@ export class ShellLifecycle {
   private readonly window: WindowOpenState;
   readonly panelCallbacks: PanelCompositionCallbacks;
   readonly mainWindow: MainWindowFunctions;
-  private readonly appWindow: { requestFocus: () => void };
+  private readonly appWindow: { requestFocus: () => boolean };
 
   constructor(
     readonly viewState: ChatViewState,
@@ -236,14 +236,13 @@ export class ShellLifecycle {
     this.appWindow = {
       requestFocus: () => {
         try {
-          if (
+          return (
             manager.store.getState().persistedToBrowserStorage.viewState
-              .mainWindow
-          ) {
-            this.mainWindow.requestFocus();
-          }
+              .mainWindow && this.requestFocus()
+          );
         } catch (error) {
           consoleError('An error occurred in App.requestFocus', error);
+          return false;
         }
       },
     };
@@ -372,6 +371,15 @@ export class ShellLifecycle {
     };
   }
 
+  /**
+   * The home screen's Return to conversation. Its button leaves with the home
+   * screen, so focus moves the way a reopen moves it once the shell is ready.
+   * The header shares the plain toggle and keeps its own focus.
+   */
+  private readonly returnToConversation = () => {
+    this.inputCallbacks.onToggleHomeScreen();
+    this.requestReadyFocus();
+  };
   readonly requestReadyFocus = () => {
     const generation = this.generation;
     void this.whenReady().then((ready) => {
@@ -387,7 +395,7 @@ export class ShellLifecycle {
     const handle = (
       name: Parameters<NonNullable<typeof panels>['requestPanelFocus']>[0]
     ) => ({ requestFocus: () => panels?.requestPanelFocus(name) ?? false });
-    focusTargets({
+    return focusTargets({
       shouldAutoFocus:
         state.config.public.shouldTakeFocusIfOpensAutomatically ?? true,
       showDisclaimer: derived.showDisclaimer,
@@ -877,7 +885,11 @@ export class ShellLifecycle {
             }
           : undefined,
       showHomeScreen,
-      home: { isHydrated: true, onSendInput, onToggleHomeScreen },
+      home: {
+        isHydrated: true,
+        onSendInput,
+        onToggleHomeScreen: this.returnToConversation,
+      },
       input: !customPromptLinePresent
         ? {
             inputProps,

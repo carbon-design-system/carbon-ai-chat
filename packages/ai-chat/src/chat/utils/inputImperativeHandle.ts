@@ -13,6 +13,7 @@ import type { ServiceManager } from '../services/ServiceManager';
 
 type InputImperativeSurface = Pick<
   PromptLineElement,
+  | 'disabled'
   | 'focus'
   | 'hasFocus'
   | 'setContent'
@@ -28,7 +29,8 @@ function createInputImperativeHandle(
   return {
     requestFocus: () => {
       const promptLine = getPromptLine();
-      if (!promptLine) {
+      // A hidden input has no surface, and a disabled one can't take focus.
+      if (!promptLine || promptLine.disabled) {
         return false;
       }
       promptLine.focus();

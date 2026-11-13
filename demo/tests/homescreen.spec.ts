@@ -230,9 +230,7 @@ for (const framework of ['react', 'web-component']) {
       await expect(
         page.getByTestId(PageObjectId.HOME_SCREEN_PANEL)
       ).toBeHidden();
-      // Removing the focused return button currently leaves focus on the page.
-      await expect(page.locator('body')).toBeFocused();
-      await page.evaluate(() => window.chatInstance.requestFocus());
+      // The return button leaves with the home screen; focus moves to the input.
       await expect(page.getByTestId(PageObjectId.INPUT)).toBeFocused();
       expect(sends).toHaveLength(1);
     });
