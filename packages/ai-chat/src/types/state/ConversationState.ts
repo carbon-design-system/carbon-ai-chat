@@ -12,6 +12,7 @@ import type { ChatSDKErrorData } from '../config/ChatSDKErrorData';
 import type { OnErrorData } from '../config/ErrorConfig';
 import type { HomeScreenConfig } from '../config/HomeScreenConfig';
 import type { LanguagePack } from '../config/LanguagePack';
+import type { LifecycleConfig } from '../config/LifecycleConfig';
 import type { PersistedStateConfig } from '../config/PersistedStateConfig';
 import type { PublicConfigMessaging } from '../config/PublicConfigMessaging';
 import type { ServiceDeskPublicConfig } from '../config/ServiceDeskConfig';
@@ -43,6 +44,7 @@ interface ConversationConfig extends Omit<
   upload?: UploadConfig;
   homescreen?: HomeScreenConfig;
   persistedState?: PersistedStateConfig;
+  lifecycle?: LifecycleConfig;
 
   /** The input flags the conversation's selectors read. */
   input?: {

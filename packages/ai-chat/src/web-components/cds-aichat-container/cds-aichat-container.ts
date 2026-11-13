@@ -91,6 +91,15 @@ interface MountState {
   serviceManager?: ServiceManager;
   /** The chat's handle from `createChatSDK`; releasing the mount releases it. */
   handle?: ChatSDKHandle;
+  /**
+   * Aborted when the mount is released. With reuse on, that releases the
+   * chat's claim even while it boots, so a remount can adopt the chat.
+   */
+  released: AbortController;
+  /** Whether the chat outlives this mount for the next one to adopt. */
+  reuse?: boolean;
+  /** Removes the handlers the host added through this mount's instance. */
+  dropSubscriptions?: (instance: ChatInstance) => void;
   /** The view attached to the chat: view state, extension hosts, listeners. */
   view?: MountView;
   instance?: ChatInstance;
@@ -376,6 +385,7 @@ class ChatContainer extends FlattenedConfigElement {
       // Settle the private waits so a boot paused on one resumes, finds it is
       // retired, and stops.
       state.initialViewCommitted.doResolve();
+      state.released.abort();
       const unmountApp = () => {
         this.viewStateProvider.setValue(undefined);
         state.mount?.unmount();
@@ -384,6 +394,11 @@ class ChatContainer extends FlattenedConfigElement {
         state.view.detach(unmountApp);
       } else {
         unmountApp();
+      }
+      // A reused chat keeps running for the next mount; the host's handlers
+      // from this one stop, as they do when the chat shuts down.
+      if (state.reuse) {
+        state.dropSubscriptions?.(state.instance);
       }
       state.handle?.release();
     }
@@ -489,6 +504,7 @@ class ChatContainer extends FlattenedConfigElement {
       return;
     }
     const state: MountState = {
+      released: new AbortController(),
       renderReady: false,
       initialViewReady: false,
       initialViewCommitted: resolvablePromise(),
@@ -516,7 +532,7 @@ class ChatContainer extends FlattenedConfigElement {
       // globals. Keep registration server-safe and load them only for a live
       // mount, so a failed load lands in the catch below for every host.
       const [
-        { bootPrebuiltChat, mergePublicConfig, performInitialViewChange },
+        chatBoot,
         { applyBootConfig, applyConfigUpdate, createAppliedConfig },
         { ChatAppEntry },
         { hasCustomPromptLine },
@@ -525,24 +541,41 @@ class ChatContainer extends FlattenedConfigElement {
       if (!isCurrent()) {
         return;
       }
+      const { mergePublicConfig, performInitialViewChange, dropSubscriptions } =
+        chatBoot;
       const config = this.resolvedConfig;
       const publicConfig = mergePublicConfig(config);
-      const { handle, serviceManager, instance } = await bootPrebuiltChat({
+      const booted = await bootMountChat(
+        chatBoot,
         publicConfig,
-      });
+        state,
+        isCurrent
+      );
+      if (!booted) {
+        return;
+      }
+      const { handle, serviceManager, instance, claim } = booted;
       if (!isCurrent()) {
-        // Released while its services started; nothing else holds them.
+        // Released while its services started. Without reuse nothing else
+        // holds them; with it, the claim was already released.
         handle.release();
         return;
       }
       // Held first, so a release reaches it even if a step below throws.
       state.serviceManager = serviceManager;
       state.handle = handle;
+      state.reuse = Boolean(claim);
+      state.dropSubscriptions = dropSubscriptions;
 
       state.bootConfig = config;
       state.appliedConfig = createAppliedConfig(publicConfig, config);
       state.applyConfig = (nextConfig) =>
-        applyConfigUpdate(state.appliedConfig, nextConfig, serviceManager);
+        applyConfigUpdate(
+          state.appliedConfig,
+          nextConfig,
+          serviceManager,
+          claim
+        );
       // The view's half of the config, such as markdown, goes through the
       // same function at startup as on update (#1833 O5).
       applyBootConfig(state.appliedConfig, config, serviceManager);
@@ -665,6 +698,35 @@ class ChatContainer extends FlattenedConfigElement {
       this.shadowRoot.appendChild(this.renderTarget);
     }
     return this.renderTarget;
+  }
+}
+
+/**
+ * Boots a mount's chat. Resolves with nothing when it failed in a way reuse
+ * expects, such as another mount holding the namespace, which `chatBoot`
+ * has already reported if anyone is left to tell.
+ */
+async function bootMountChat(
+  chatBoot: typeof import('../../chat/utils/chatBoot'),
+  publicConfig: PublicConfig,
+  state: MountState,
+  isCurrent: () => boolean
+) {
+  try {
+    return await chatBoot.bootPrebuiltChat({
+      publicConfig,
+      signal: state.released.signal,
+    });
+  } catch (error) {
+    const handled = chatBoot.handleBootFailure(error, {
+      current: isCurrent(),
+      signal: state.released.signal,
+      config: publicConfig,
+    });
+    if (handled) {
+      return undefined;
+    }
+    throw error;
   }
 }
 

@@ -53,6 +53,9 @@ interface ChatSDKHandle extends ChatSDKInstance {
 /** The chat behind each handle, for the prebuilt chat and tests. */
 const chats = new WeakMap<ChatSDKHandle, ServiceManager>();
 
+/** Each handle's registry claim, for the prebuilt chat's namespace changes. */
+const claims = new WeakMap<ChatSDKHandle, ChatClaim<ServiceManager>>();
+
 /**
  * Wraps a chat in a handle. With a registry claim, the handle is the claim
  * (ADR-0003). Without one, as for the prebuilt chat, releasing shuts the chat
@@ -89,6 +92,9 @@ function createHandle(
     },
   };
   chats.set(handle, serviceManager);
+  if (claim) {
+    claims.set(handle, claim);
+  }
   return handle;
 }
 
@@ -100,5 +106,13 @@ function chatOf(handle: ChatSDKHandle): ServiceManager | undefined {
   return chats.get(handle);
 }
 
-export { createHandle, chatOf };
+/**
+ * The registry claim behind a handle, or `undefined` for a chat that doesn't
+ * reuse. Internal: never exported from an entry.
+ */
+function claimOf(handle: ChatSDKHandle): ChatClaim<ServiceManager> | undefined {
+  return claims.get(handle);
+}
+
+export { createHandle, chatOf, claimOf };
 export type { ChatSDKHandle };

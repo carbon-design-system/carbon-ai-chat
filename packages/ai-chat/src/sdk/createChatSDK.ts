@@ -54,10 +54,30 @@ interface ChatSDKBootOptions {
   /**
    * Takes a claim on the namespace, so the chat outlives its handle for a
    * grace window and the next create on the namespace adopts it (ADR-0003).
-   * The SDK entry always reuses. The prebuilt chat doesn't, so it never
-   * collides with another chat.
+   * The SDK entry always reuses. The prebuilt chat reuses only with
+   * `lifecycle.reuseInstance` on; otherwise it never collides with another
+   * chat.
    */
   reuse?: boolean;
+  /**
+   * With `reuse`, aborting it releases the claim, even while boot is still
+   * running. The prebuilt chat aborts it when its mount goes away, so a
+   * remount can adopt the chat that mount started. Already aborted, it rejects
+   * with its reason and claims nothing.
+   */
+  signal?: AbortSignal;
+  /**
+   * With `reuse`, applies this create's config to a chat it adopts. Defaults
+   * to replacing the conversation's config, as `updateConfig` does. The
+   * prebuilt chat applies its view's half too, and gives the new mount its
+   * own instance.
+   */
+  adopt?: (serviceManager: ServiceManager) => Promise<void>;
+}
+
+/** What `lifecycle.releaseGraceMs` says, for a chat or a config not yet in one. */
+function releaseGraceMsOf(config: ConversationAppConfig) {
+  return config.public.lifecycle?.releaseGraceMs;
 }
 
 /**
@@ -82,16 +102,32 @@ async function createChatSDK(
   if (!options.reuse) {
     return createHandle(await bootChat(config, options));
   }
+  const { signal } = options;
+  if (signal?.aborted) {
+    throw signal.reason;
+  }
   // Copied now: boot can wait for an old chat's shutdown, and adoption for
   // boot, and the host may change its object meanwhile.
   const appConfig = options.appConfig ?? createSDKAppConfig(config);
+  // Set once the claim has its chat, which the grace reader prefers.
+  const held: { chat?: ServiceManager } = {};
   const claim = chatRegistry.claim(appConfig.public.namespace, {
+    // A prebuilt chat has a view partition and session storage that a chat
+    // with no view lacks, so neither adopts the other.
+    kind: options.createInstance ? 'prebuilt' : 'sdk',
     boot: () => bootChat(config, { ...options, appConfig }),
     // A replacement, as `updateConfig` applies one.
     adopt: (serviceManager) =>
-      applyConversationConfig(serviceManager, appConfig),
+      options.adopt
+        ? options.adopt(serviceManager)
+        : applyConversationConfig(serviceManager, appConfig),
+    // The chat's own config once it has one, so an update counts.
+    releaseGraceMs: () =>
+      releaseGraceMsOf(held.chat?.store.getState().config ?? appConfig),
   });
-  return createHandle(await claim.chat, claim);
+  signal?.addEventListener('abort', () => claim.release(), { once: true });
+  held.chat = await claim.chat;
+  return createHandle(held.chat, claim);
 }
 
 /** Builds a new chat, and shuts it down again if boot fails. */

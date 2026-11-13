@@ -13,7 +13,8 @@ import merge from 'lodash-es/merge.js';
 import isEqual from 'lodash-es/isEqual.js';
 
 import { createChatSDK } from '../../sdk/createChatSDK';
-import { chatOf, type ChatSDKHandle } from '../../sdk/handle';
+import { chatOf, claimOf, type ChatSDKHandle } from '../../sdk/handle';
+import { ChatNamespaceError, type ChatClaim } from '../../sdk/registry';
 import actions from '../../sdk/store/actions';
 
 import { ServiceManager } from '../../sdk/services/ServiceManager';
@@ -22,6 +23,7 @@ import { createCustomPanelManager } from '../services/CustomPanelManager';
 import { attachChatView, chatStore } from '../services/attachChatView';
 import { setIntl } from '../../sdk/utils/intlUtils';
 import {
+  callOnError,
   consoleDebug,
   consoleError,
   consoleWarn,
@@ -29,6 +31,8 @@ import {
 } from '../../sdk/utils/miscUtils';
 import { createConversationInstance } from '../../sdk/services/conversationInstance';
 import { createWriteableElements } from './writeableElements';
+import { dropSubscriptions, mountSubscriptions } from './mountSubscriptions';
+import { applyConfigChangesDynamically } from './dynamicConfigUpdates';
 
 import {
   MainWindowOpenReason,
@@ -36,6 +40,7 @@ import {
 } from '../../types/events/eventBusTypes';
 import { VIEW_STATE_ALL_CLOSED } from '../../sdk/store/reducerUtils';
 import { PublicConfig } from '../../types/config/PublicConfig';
+import { OnErrorType } from '../../types/config/ErrorConfig';
 import {
   ChatInstance,
   IncreaseOrDecrease,
@@ -55,6 +60,7 @@ import {
 } from '../../types/state/AppState';
 import { AutoScrollOptions } from '../../types/utilities/HasDoAutoScroll';
 import { viewActions } from '../state';
+import { createMountViewState } from '../state/initialState';
 
 /**
  * Default values applied to the provided `PublicConfig` before boot. This keeps
@@ -88,17 +94,25 @@ export function mergePublicConfig(config: Partial<PublicConfig>): PublicConfig {
  * chat has: the view partition, session storage, the formatter's locale, and
  * the full {@link ChatInstance}. History waits for the main window to open.
  *
+ * With `lifecycle.reuseInstance` on, it takes a claim on the namespace: a chat
+ * released there less than a grace window ago is adopted instead of booted
+ * (ADR-0003), and aborting `signal` releases the claim. A namespace another
+ * mount holds rejects with a `ChatNamespaceError`.
+ *
  * This function does not render. Its caller, `cds-aichat-container`, attaches
  * the view and renders the app after the host's `onBeforeRender`.
  */
 export async function bootPrebuiltChat(options: {
   publicConfig: PublicConfig;
+  signal?: AbortSignal;
 }): Promise<{
   handle: ChatSDKHandle;
   serviceManager: ServiceManager;
   instance: ChatInstance;
+  /** The chat's claim on its namespace, with reuse on. */
+  claim?: ChatClaim<ServiceManager>;
 }> {
-  const { publicConfig } = options;
+  const { publicConfig, signal } = options;
 
   // Extend dayjs with LocalizedFormat plugin once before usage
   dayjs.extend(LocalizedFormat);
@@ -122,9 +136,83 @@ export async function bootPrebuiltChat(options: {
       dayjs.locale(localePack);
     },
     createInstance: createPrebuiltInstance,
+    reuse: publicConfig.lifecycle?.reuseInstance === true,
+    signal,
+    adopt: (serviceManager) => adoptPrebuiltChat(serviceManager, publicConfig),
   });
   const serviceManager = chatOf(handle);
-  return { handle, serviceManager, instance: serviceManager.instance };
+  return {
+    handle,
+    serviceManager,
+    instance: serviceManager.instance,
+    claim: claimOf(handle),
+  };
+}
+
+/**
+ * Handles a boot failure that's part of reuse, and returns whether it did:
+ *
+ * - For the current mount, another chat holding the namespace is reported
+ *   through `onError` and the console, and the mount renders nothing.
+ * - For a mount already gone, its own release or a namespace taken meanwhile
+ *   needs no report: nobody is left to tell.
+ *
+ * Any other failure returns `false`, for the caller to log.
+ */
+export function handleBootFailure(
+  error: unknown,
+  mount: {
+    current: boolean;
+    signal: AbortSignal;
+    config: Pick<PublicConfig, 'onError'>;
+  }
+): boolean {
+  if (!mount.current) {
+    return error === mount.signal.reason || error instanceof ChatNamespaceError;
+  }
+  return reportNamespaceError(error, mount.config);
+}
+
+/**
+ * Reports a namespace another chat holds through `onError` and the console,
+ * as a shell reports one (ADR-0003). Returns `false`, reporting nothing, for
+ * any other error.
+ */
+export function reportNamespaceError(
+  error: unknown,
+  config: Pick<PublicConfig, 'onError'>
+): boolean {
+  if (!(error instanceof ChatNamespaceError)) {
+    return false;
+  }
+  consoleError(error.message);
+  callOnError(config.onError, {
+    errorType: OnErrorType.INTEGRATION_ERROR,
+    message: error.message,
+  });
+  return true;
+}
+
+/**
+ * Hands a running chat to a new mount. Its config is replaced, the view's
+ * half included, as an update would replace it. The mount gets its own
+ * {@link ChatInstance}, which callbacks and events receive from now on. Its
+ * view starts closed and opens to what was showing, as a remount with a
+ * saved session does.
+ */
+async function adoptPrebuiltChat(
+  serviceManager: ServiceManager,
+  publicConfig: PublicConfig
+) {
+  await applyConfigChangesDynamically(
+    serviceManager.store.getState().config.public as PublicConfig,
+    publicConfig,
+    serviceManager
+  );
+  serviceManager.instance = createPrebuiltInstance(serviceManager);
+  serviceManager.store.dispatch(
+    viewActions.startNewMount(createMountViewState(publicConfig))
+  );
 }
 
 /**
@@ -158,6 +246,9 @@ function createPrebuiltInstance(serviceManager: ServiceManager): ChatInstance {
   );
   const instance: ChatInstance = {
     ...conversation,
+
+    // A reused chat outlives this mount; what it subscribed goes with it.
+    ...mountSubscriptions(serviceManager.eventBus, () => instance),
 
     send: (message: MessageRequest | string, options?: SendOptions) => {
       debugLog('Called instance.send', message, options);
@@ -419,3 +510,5 @@ export async function performInitialViewChange(serviceManager: ServiceManager) {
     );
   }
 }
+
+export { dropSubscriptions };

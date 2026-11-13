@@ -48,6 +48,7 @@ import {
   SET_HISTORY_PANEL_OPTIONS,
   SET_HOME_SCREEN_IS_OPEN,
   SET_INITIAL_VIEW_CHANGE_COMPLETE,
+  START_NEW_MOUNT,
   SET_IS_BROWSER_PAGE_VISIBLE,
   SET_LAUNCHER_MINIMIZED,
   SET_LAUNCHER_PROPERTY,
@@ -69,8 +70,10 @@ import {
   DEFAULT_CUSTOM_PANEL_STATE,
   DEFAULT_IFRAME_PANEL_STATE,
   DEFAULT_WORKSPACE_PANEL_STATE,
+  VIEW_STATE_ALL_CLOSED,
   VIEW_STATE_LAUNCHER_OPEN,
 } from './defaults';
+import type { MountViewState } from './initialState';
 import { createDefaultViewPersistedState } from './persisted';
 
 /** Agent messages that never count as unread. */
@@ -261,6 +264,28 @@ const viewReducers: Record<string, ViewReducer> = {
   ): ViewPartitionState => ({
     ...state,
     initialViewChangeComplete: action.changeComplete,
+  }),
+
+  // What `createInitialViewState` does for a new chat with a saved session.
+  [START_NEW_MOUNT]: (
+    state: ViewPartitionState,
+    action: { mountState: MountViewState }
+  ): ViewPartitionState => ({
+    ...state,
+    ...action.mountState,
+    initialViewChangeComplete: false,
+    // A mount that left before its initial view change drew nothing, so its
+    // target still says where the chat opens.
+    targetViewState: state.initialViewChangeComplete
+      ? state.persistedToBrowserStorage.viewState
+      : state.targetViewState,
+    persistedToBrowserStorage: {
+      ...state.persistedToBrowserStorage,
+      viewState: { ...VIEW_STATE_ALL_CLOSED },
+      launcherShouldStartCallToActionCounterIfEnabled: false,
+      // The new mount continues an earlier one, as a restored session does.
+      wasLoadedFromBrowser: true,
+    },
   }),
 
   [ANNOUNCE_MESSAGE]: (

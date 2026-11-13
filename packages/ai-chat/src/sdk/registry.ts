@@ -31,6 +31,14 @@ interface RegisteredChat {
 
 /** How one claim gets its chat. */
 interface ChatClaimOptions<Chat> {
+  /**
+   * What sort of chat this claim wants, such as one with an interface or one
+   * without. A claim adopts only a chat of its own kind. A chat of another kind
+   * in its grace window ends early, and a new one boots after it shuts down.
+   * Claims that leave it out share one kind.
+   */
+  kind?: string;
+
   /** Starts a new chat. Runs only when the namespace has none to adopt. */
   boot(): Promise<Chat>;
 
@@ -78,8 +86,8 @@ interface ChatClaim<Chat> {
    * claim is live. It doesn't wait for a chat on the new namespace that is
    * still shutting down; a new chat there waits for both.
    *
-   * @throws If the namespace already has a chat, running or in its grace
-   * window.
+   * @throws {@link ChatNamespaceError} If the namespace already has a chat,
+   * running or in its grace window.
    */
   move(namespace: string | undefined): void;
 }
@@ -94,7 +102,8 @@ interface ChatRegistry<Chat extends RegisteredChat> {
    * boots a new one, after the last chat on the namespace finishes shutting
    * down.
    *
-   * @throws If another claim on the namespace is live.
+   * @throws {@link ChatNamespaceError} If another claim on the namespace is
+   * live.
    */
   claim(
     namespace: string | undefined,
@@ -106,6 +115,9 @@ interface ChatRegistry<Chat extends RegisteredChat> {
 interface Entry<Chat> {
   /** The namespace the chat is filed under. {@link ChatClaim.move} changes it. */
   key: string;
+
+  /** The kind of claim that booted it. */
+  kind?: string;
 
   /** The live claim, or `null` while the grace window is open. */
   claim: object | null;
@@ -133,18 +145,39 @@ function ignore(): void {
   // A failure here was already reported to the claim that caused it.
 }
 
-function collisionMessage(namespace: string) {
-  const which = namespace
-    ? `with the namespace "${namespace}"`
-    : 'with no namespace';
-  return `A chat ${which} is already running, so this one didn't start. Give each chat its own namespace.`;
+/**
+ * Thrown when a namespace already has a chat that a claim can't take over. It
+ * carries the namespace, so a caller can tell it from other failures.
+ */
+class ChatNamespaceError extends Error {
+  /** The namespace, or `''` for none. */
+  readonly namespace: string;
+
+  constructor(message: string, namespace: string) {
+    super(message);
+    this.name = 'ChatNamespaceError';
+    this.namespace = namespace;
+  }
 }
 
-function moveCollisionMessage(namespace: string) {
+function collisionError(namespace: string) {
   const which = namespace
     ? `with the namespace "${namespace}"`
     : 'with no namespace';
-  return `A chat ${which} is already running, so this chat's config didn't change. Give each chat its own namespace; a config that leaves it out means no namespace.`;
+  return new ChatNamespaceError(
+    `A chat ${which} is already running, so this one didn't start. Give each chat its own namespace.`,
+    namespace
+  );
+}
+
+function moveCollisionError(namespace: string) {
+  const which = namespace
+    ? `with the namespace "${namespace}"`
+    : 'with no namespace';
+  return new ChatNamespaceError(
+    `A chat ${which} is already running, so this chat's config didn't change. Give each chat its own namespace; a config that leaves it out means no namespace.`,
+    namespace
+  );
 }
 
 function endedMessage(namespace: string) {
@@ -238,7 +271,7 @@ function createChatRegistry<Chat extends RegisteredChat>(): ChatRegistry<Chat> {
       return;
     }
     if (entries.has(key)) {
-      throw new Error(moveCollisionMessage(key));
+      throw moveCollisionError(key);
     }
     entries.delete(entry.key);
     entry.key = key;
@@ -266,6 +299,7 @@ function createChatRegistry<Chat extends RegisteredChat>(): ChatRegistry<Chat> {
     const booted = previous.then(() => options.boot());
     const entry: Entry<Chat> = {
       key,
+      kind: options.kind,
       claim,
       releaseGraceMs: options.releaseGraceMs,
       booted,
@@ -314,12 +348,18 @@ function createChatRegistry<Chat extends RegisteredChat>(): ChatRegistry<Chat> {
       const key = namespace ?? '';
       const entry = entries.get(key);
       if (entry?.claim) {
-        throw new Error(collisionMessage(key));
+        throw collisionError(key);
+      }
+      if (entry && entry.kind !== options.kind) {
+        // Another kind of chat can't take this one over. It was waiting for
+        // nobody this claim could be, so it ends now rather than at expiry.
+        shutDown(entry);
+        return boot(key, options);
       }
       return entry ? adopt(entry, options) : boot(key, options);
     },
   };
 }
 
-export { createChatRegistry, DEFAULT_RELEASE_GRACE_MS };
+export { ChatNamespaceError, createChatRegistry, DEFAULT_RELEASE_GRACE_MS };
 export type { ChatClaim };

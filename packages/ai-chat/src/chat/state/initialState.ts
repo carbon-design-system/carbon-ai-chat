@@ -75,22 +75,7 @@ function createInitialViewState(
   return {
     catastrophicErrorType: undefined,
     catastrophicErrorPanelState: undefined,
-    iFramePanelState: DEFAULT_IFRAME_PANEL_STATE,
-    viewSourcePanelState: DEFAULT_CITATION_PANEL_STATE,
-    customPanelState: DEFAULT_CUSTOM_PANEL_STATE,
-    workspacePanelState: DEFAULT_WORKSPACE_PANEL_STATE,
-    historyPanelState: {
-      ...DEFAULT_HISTORY_PANEL_STATE,
-      // If startClosed is true, start closed everywhere
-      // Otherwise, start open (will be adjusted by mobile detection)
-      isOpen: config.history?.startClosed ? false : true,
-    },
-    responsePanelState: DEFAULT_MESSAGE_PANEL_STATE,
-
-    chatWidthBreakpoint: null,
-    chatWidth: null,
-    chatHeight: null,
-    viewChanging: false,
+    ...createMountViewState(config),
     initialViewChangeComplete: false,
     // A saved session reopens where it was. Otherwise, openChatByDefault opens the main window on first load.
     targetViewState: saved
@@ -98,11 +83,8 @@ function createInitialViewState(
       : config.openChatByDefault
         ? VIEW_STATE_MAIN_WINDOW_OPEN
         : VIEW_STATE_LAUNCHER_OPEN,
-    showNonHeaderBackgroundCover: false,
-    suspendScrollDetection: false,
     isBrowserPageVisible: true,
 
-    announceMessage: undefined,
     // Set from the `markdown` prop; `undefined` when the host omits it.
     markdownConfig: undefined,
     derivedConfig,
@@ -116,4 +98,51 @@ function createInitialViewState(
   };
 }
 
-export { createInitialViewState };
+/** The view fields that belong to one mount, not the chat. */
+type MountViewState = Pick<
+  ViewPartitionState,
+  | 'iFramePanelState'
+  | 'viewSourcePanelState'
+  | 'customPanelState'
+  | 'workspacePanelState'
+  | 'historyPanelState'
+  | 'responsePanelState'
+  | 'chatWidthBreakpoint'
+  | 'chatWidth'
+  | 'chatHeight'
+  | 'viewChanging'
+  | 'showNonHeaderBackgroundCover'
+  | 'suspendScrollDetection'
+  | 'announceMessage'
+>;
+
+/**
+ * The view fields a mount starts with: closed panels, nothing measured, and
+ * nothing to announce. A reused chat gets them again for each new mount,
+ * since a panel's content and the sizes belonged to the mount that left.
+ */
+function createMountViewState(config: PublicConfig): MountViewState {
+  return {
+    iFramePanelState: DEFAULT_IFRAME_PANEL_STATE,
+    viewSourcePanelState: DEFAULT_CITATION_PANEL_STATE,
+    customPanelState: DEFAULT_CUSTOM_PANEL_STATE,
+    workspacePanelState: DEFAULT_WORKSPACE_PANEL_STATE,
+    historyPanelState: {
+      ...DEFAULT_HISTORY_PANEL_STATE,
+      // If startClosed is true, start closed everywhere
+      // Otherwise, start open (will be adjusted by mobile detection)
+      isOpen: config.history?.startClosed ? false : true,
+    },
+    responsePanelState: DEFAULT_MESSAGE_PANEL_STATE,
+    chatWidthBreakpoint: null,
+    chatWidth: null,
+    chatHeight: null,
+    viewChanging: false,
+    showNonHeaderBackgroundCover: false,
+    suspendScrollDetection: false,
+    announceMessage: undefined,
+  };
+}
+
+export { createInitialViewState, createMountViewState };
+export type { MountViewState };

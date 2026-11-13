@@ -240,6 +240,7 @@ interface ChatSDKConfig (src/types/config/ChatSDKConfig.ts)
   debug?: boolean
   humanAgentState?: ChatSDKPersistedStateConfig<PersistedHumanAgentState>
   isReadonly?: boolean
+  lifecycle?: ChatSDKLifecycleConfig
   messaging?: ChatSDKConfigMessaging<I>
   namespace?: string
   onError?: (data: ChatSDKErrorData) => void
@@ -290,6 +291,9 @@ interface ChatSDKInstanceMessaging (src/types/config/ChatSDKInstanceMessaging.ts
   send: (message: MessageRequest | string, options?: SendOptions) => Promise<void>
   stop: () => Promise<void>
   upsertMessage: (messageID: string, state: MessageState, updater: UpsertMessageUpdater) => Promise<void>
+
+interface ChatSDKLifecycleConfig (src/types/config/ChatSDKLifecycleConfig.ts)
+  releaseGraceMs?: number
 
 interface ChatSDKPendingUpload (src/types/instance/ChatSDKState.ts)
   contributedData?: StructuredData

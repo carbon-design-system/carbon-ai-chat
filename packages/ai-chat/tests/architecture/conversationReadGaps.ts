@@ -277,6 +277,20 @@ const conversationReadGaps: ConversationReadGap[] = [
     owner: '#1833',
   },
   {
+    // Adoption replaces the config the way an update does, from the config
+    // the chat holds now.
+    file: 'src/chat/utils/chatBoot.ts',
+    read: 'adoptPrebuiltChat()',
+    count: 1,
+    owner: '#1833',
+  },
+  {
+    file: 'src/chat/utils/chatBoot.ts',
+    read: 'applyConfigChangesDynamically()',
+    count: 1,
+    owner: '#1833',
+  },
+  {
     file: 'src/chat/utils/chatBoot.ts',
     read: 'attachChatView()',
     count: 1,
@@ -290,10 +304,11 @@ const conversationReadGaps: ConversationReadGap[] = [
   },
   {
     // Hands the instance builder, which wraps the custom panel read above, to
-    // createChatSDK; it goes when that read does.
+    // createChatSDK, and builds an adopting mount its own; both go when that
+    // read does.
     file: 'src/chat/utils/chatBoot.ts',
     read: 'createPrebuiltInstance()',
-    count: 1,
+    count: 2,
     owner: '#2824',
   },
   {
