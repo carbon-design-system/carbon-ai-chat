@@ -46,6 +46,7 @@ import {
 } from '../schema/outputItemToLocalItem';
 import {
   addDefaultsToMessage,
+  hasLiveHumanAgentMessage,
   isConnectToHumanAgent,
   isHiddenOutputItem,
   isPause,
@@ -1156,13 +1157,19 @@ class MessageUpsertCoordinator {
     });
   }
 
-  private getStoredResponse(messageID: string): MessageResponse | undefined {
+  /**
+   * Reads the stored response for `messageID`, throwing `ErrorType` when the ID names a request.
+   */
+  private getStoredResponse(
+    messageID: string,
+    ErrorType: new (message: string) => Error = Error
+  ): MessageResponse | undefined {
     const existing = this.serviceManager.store.getState().allMessagesByID[
       messageID
     ] as Message | undefined;
 
     if (existing && isRequest(existing as MessageRequest)) {
-      throw new Error(
+      throw new ErrorType(
         `upsertMessage: messageID "${messageID}" refers to a non-assistant message and cannot be upserted.`
       );
     }
@@ -1177,11 +1184,8 @@ class MessageUpsertCoordinator {
     messageID: string,
     updater: UpsertMessageUpdater
   ): Promise<MessageResponse> {
-    const existing = this.getStoredResponse(messageID);
-
-    const previousMessage = existing
-      ? cloneDeep(existing as MessageResponse)
-      : undefined;
+    const existing = this.getStoredResponse(messageID, TypeError);
+    const previousMessage = existing ? cloneDeep(existing) : undefined;
     let result = await updater(previousMessage);
 
     if (result === null || result === undefined) {
@@ -1192,6 +1196,11 @@ class MessageUpsertCoordinator {
     if (typeof result !== 'object') {
       throw new TypeError(
         'upsertMessage: updater must return a MessageResponse object.'
+      );
+    }
+    if (isRequest(result) || hasLiveHumanAgentMessage(result)) {
+      throw new TypeError(
+        'upsertMessage: updater must return an assistant message, not a request or a human-agent message.'
       );
     }
 
@@ -1209,7 +1218,7 @@ class MessageUpsertCoordinator {
     if (result.id === undefined || result.id === null) {
       result.id = messageID;
     } else if (result.id !== messageID) {
-      throw new Error(
+      throw new TypeError(
         `upsertMessage: updater returned message id "${result.id}" but call was for "${messageID}".`
       );
     }
@@ -1234,7 +1243,7 @@ class MessageUpsertCoordinator {
       if (!result.id) {
         result.id = messageID;
       } else {
-        throw new Error(
+        throw new TypeError(
           `upsertMessage: pre:receive handler changed message id from "${messageID}" to "${result.id}".`
         );
       }

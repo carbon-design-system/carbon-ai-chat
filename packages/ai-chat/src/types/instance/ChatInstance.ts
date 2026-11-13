@@ -142,11 +142,15 @@ interface ChatActions {
    * the event bus before delegating to `customSendMessage`.
    *
    * **Settlement points:**
-   * - Resolves when `customSendMessage` completes, or when the turn is stopped
-   *   or the conversation restarted while the message is in flight.
-   * - Rejects when `customSendMessage` throws, when the send path fails
-   *   terminally (for example a timeout), when called in read-only mode, or
-   *   when a file upload is still in progress. For the upload case, check
+   * - Resolves when `customSendMessage` completes. It also resolves at once,
+   *   without waiting for `customSendMessage`, when a stop, a restart, or
+   *   {@link ChatInstanceMessaging.clearConversation} cancels the send. A
+   *   queued send that never reached `customSendMessage` resolves too.
+   * - Rejects when `customSendMessage` throws, when a `pre:send` or `send`
+   *   handler throws (with that handler's error, and without calling
+   *   `customSendMessage`), when the send path fails terminally (for example a
+   *   timeout), when called in read-only mode, or when a file upload is still
+   *   in progress. For the upload case, check
    *   `instance.getState().input.hasInFlightUploads` before calling.
    *
    * The promise settling does **not** mean a response has arrived. Response
@@ -324,7 +328,8 @@ interface ChatActions {
   /**
    * Either increases or decreases the internal counter that indicates whether the hydration fullscreen loading state is
    * shown. If the count is greater than zero, then the indicator is shown. Values of "increase" or "decrease" will
-   * increase or decrease the value. "reset" will set the value back to 0.
+   * increase or decrease the value. "reset" will set the value back to 0. It leaves the message-loading counter from
+   * {@link ChatInstance.updateIsMessageLoadingCounter} alone.
    *
    * You can access the current value via {@link ChatInstance.getState}.
    *
