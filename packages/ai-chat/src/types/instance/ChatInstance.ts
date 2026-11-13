@@ -139,7 +139,9 @@ interface ChatActions {
 
   /**
    * Sends the given message to the assistant. Fires `pre:send` then `send` on
-   * the event bus before delegating to `customSendMessage`.
+   * the event bus before delegating to `customSendMessage`. This holds during
+   * an agent chat too: only what the user types in the chat's input reaches
+   * the service desk.
    *
    * **Settlement points:**
    * - Resolves when `customSendMessage` completes. It also resolves at once,

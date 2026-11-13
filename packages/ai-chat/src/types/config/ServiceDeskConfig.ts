@@ -54,7 +54,7 @@ export interface ServiceDeskPublicConfig {
   /**
    * The timeout value in seconds to use when determining agent availability. When a connect_to_agent response is
    * received, the system will ask the service desk if any agents are available. If no response is received within
-   * the timeout window, the system will return "false" to indicate no agents are available.
+   * the timeout window, the system will return "false" to indicate no agents are available. This value defaults to 5.
    */
   availabilityTimeoutSeconds?: number;
 

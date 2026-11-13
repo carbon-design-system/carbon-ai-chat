@@ -88,7 +88,6 @@ describe('state.humanAgent', () => {
       isConnecting: false,
       isSuspended: false,
       responseUserProfiles: {},
-      // Typed `responseUserProfile?: ResponseUserProfile`; `main` sets null.
       responseUserProfile: null,
     });
   });

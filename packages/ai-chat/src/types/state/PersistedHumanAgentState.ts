@@ -21,8 +21,11 @@ interface PersistedHumanAgentState {
   /** Indicates if the human agent conversation is currently suspended. */
   isSuspended: boolean;
 
-  /** The profile of the last human agent to join the chat. */
-  responseUserProfile?: ResponseUserProfile;
+  /**
+   * The profile of the last human agent to join the chat. It's `null` when no agent is in the chat: before one joins,
+   * after the agent leaves, and after the chat ends.
+   */
+  responseUserProfile?: ResponseUserProfile | null;
 
   /** Cache of known agent profiles by ID. */
   responseUserProfiles: Record<string, ResponseUserProfile>;

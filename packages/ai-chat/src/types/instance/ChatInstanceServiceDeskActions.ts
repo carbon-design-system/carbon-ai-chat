@@ -21,6 +21,9 @@ export interface ChatInstanceServiceDeskActions {
    * {@link BusEventType.HUMAN_AGENT_PRE_END_CHAT} and {@link BusEventType.HUMAN_AGENT_END_CHAT} events have been fired and
    * resolved.
    *
+   * When an agent has joined, the status message it adds is {@link HumanAgentMessageType.CHAT_WAS_ENDED}. When the user
+   * ends the conversation from the chat, it's {@link HumanAgentMessageType.USER_ENDED_CHAT} instead.
+   *
    * @example End the active human-agent conversation
    * ```ts
    * await instance.serviceDesk.endConversation();

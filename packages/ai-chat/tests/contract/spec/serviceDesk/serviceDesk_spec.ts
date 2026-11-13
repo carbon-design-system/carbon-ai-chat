@@ -258,8 +258,6 @@ describeShared('availabilityTimeoutSeconds', (makeDriver) => {
     expect(desk.desk.startChat).not.toHaveBeenCalled();
   });
 
-  // The JSDoc names no default; `main` waits 5 seconds
-  // (`HumanAgentServiceImpl.ts:118`).
   it('waits 5 seconds by default', async () => {
     const { events } = await silentDesk({});
     await advance(4999);
