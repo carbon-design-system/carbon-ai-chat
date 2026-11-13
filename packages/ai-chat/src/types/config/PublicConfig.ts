@@ -66,7 +66,8 @@ export interface PublicConfig {
   disableCustomElementMobileEnhancements?: boolean;
 
   /**
-   * Add a bunch of noisy console.log messages!
+   * Enables diagnostic console logs for every chat loaded from the same module on the page.
+   * In 1.x, logging stays enabled after that chat unmounts. A later chat with `debug: false` does not disable it.
    */
   debug?: boolean;
 
