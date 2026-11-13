@@ -229,6 +229,14 @@ function createCustomPanelInstance(
         defaultPanelOptions) as CustomPanelConfigOptions;
       const { store } = serviceManager;
 
+      // The history panel only draws with history on, so opening it otherwise would report a panel nobody sees.
+      if (
+        panelType === PanelType.HISTORY &&
+        !store.getState().config.public.history?.isOn
+      ) {
+        return;
+      }
+
       // Finish closing the open workspace first: its close resets the workspace state, which would otherwise wipe
       // the ID and data stored below.
       if (

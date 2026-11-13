@@ -68,7 +68,8 @@ export enum PanelType {
    * Opens the history panel.
    *
    * The history panel only appears in the chat panel when
-   * config.history.isMobile is true.
+   * config.history.isMobile is true. With `config.history.isOn` off,
+   * opening it does nothing.
    *
    */
   HISTORY = 'history',
