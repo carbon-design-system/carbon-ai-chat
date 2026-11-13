@@ -11,7 +11,8 @@ import type { ChatSDKLifecycleConfig } from './ChatSDKLifecycleConfig';
 
 /**
  * How long the chat's conversation outlives the element that shows it. It extends
- * {@link ChatSDKLifecycleConfig} with `reuseInstance`, which turns reuse on.
+ * {@link ChatSDKLifecycleConfig} with `reuseInstance`, which turns reuse on, and `onUnmount`, which
+ * chooses whether removing the chat keeps its conversation or ends it.
  *
  * With reuse on, removing the chat from the page releases it rather than shutting it down. It keeps
  * running for {@link ChatSDKLifecycleConfig.releaseGraceMs}, and a chat mounted on the same
@@ -45,4 +46,28 @@ export interface LifecycleConfig extends ChatSDKLifecycleConfig {
    * every chat reuses, and this setting is removed.
    */
   reuseInstance?: boolean;
+
+  /**
+   * What removing the chat from the page does when {@link LifecycleConfig.reuseInstance} is on.
+   * `'release'`, the default, keeps the conversation alive for the grace window, so a remount picks
+   * it up. `'destroy'` ends it for good: a live human agent conversation ends, saved session state
+   * is cleared, and the next mount starts a new chat once that end finishes. When your app owns
+   * that storage through {@link PublicConfig.persistedState}, its `onStateChange` gets the cleared
+   * value instead. Use `'destroy'` where a remount must start fresh, such as on logout.
+   *
+   * It's read when the chat is removed, so a config change before then counts. With
+   * `reuseInstance` off, removing the chat always shuts it down and keeps saved session state, so
+   * this setting does nothing.
+   *
+   * @example Start a new chat for each user
+   * ```tsx
+   * <ChatContainer
+   *   key={user.id}
+   *   namespace="support"
+   *   lifecycle={{ reuseInstance: true, onUnmount: 'destroy' }}
+   *   messaging={{ customSendMessage }}
+   * />
+   * ```
+   */
+  onUnmount?: 'release' | 'destroy';
 }

@@ -27,6 +27,12 @@ interface RegisteredChat {
    * namespace waits for it.
    */
   shutdown(): Promise<void>;
+
+  /**
+   * Ends the chat for good, which {@link ChatClaim.end} asks for. Must not
+   * reject. A chat without it shuts down instead.
+   */
+  destroy?(): Promise<void>;
 }
 
 /** How one claim gets its chat. */
@@ -72,11 +78,11 @@ interface ChatClaim<Chat> {
   release(): void;
 
   /**
-   * Shuts the chat down for good, whoever holds it now, as soon as boot
-   * finishes. It doesn't wait for the grace window or a running adoption.
-   * Nothing adopts it afterward, and a claim still waiting for it rejects. A
-   * new chat on the namespace waits for the shutdown. Does nothing once the
-   * chat has shut down or ended.
+   * Destroys the chat, or shuts down one without `destroy`, whoever holds it
+   * now, as soon as boot finishes. It doesn't wait for the grace window or a
+   * running adoption. Nothing adopts it afterward, and a claim still waiting
+   * for it rejects. A new chat on the namespace waits for the shutdown. Does
+   * nothing once the chat has shut down or ended.
    */
   end(): void;
 
@@ -214,7 +220,7 @@ function createChatRegistry<Chat extends RegisteredChat>(): ChatRegistry<Chat> {
 
   /**
    * Removes the entry and shuts its chat down once boot and any adoption
-   * settle, or once boot does for an ended chat.
+   * settle, or destroys an ended chat once boot does.
    */
   function shutDown(entry: Entry<Chat>) {
     const { key } = entry;
@@ -227,7 +233,11 @@ function createChatRegistry<Chat extends RegisteredChat>(): ChatRegistry<Chat> {
     const ready = entry.ended
       ? entry.booted
       : entry.settled.then(() => entry.booted);
-    const own = ready.then((chat) => chat.shutdown()).catch(ignore);
+    const own = ready
+      .then((chat) =>
+        entry.ended && chat.destroy ? chat.destroy() : chat.shutdown()
+      )
+      .catch(ignore);
     // A chat moved onto a namespace that was still shutting down holds that
     // shutdown's place, so the next boot there waits for both.
     const previous = closing.get(key);

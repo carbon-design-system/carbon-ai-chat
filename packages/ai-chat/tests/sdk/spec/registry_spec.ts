@@ -652,6 +652,47 @@ describe('ending a chat (#2358 O1, O4, as destroy uses it)', () => {
     expect(chat.shutdown).toHaveBeenCalledTimes(1);
   });
 
+  it('destroys a chat that can be destroyed, even one still booting; expiry and a kind change only shut down', async () => {
+    const destroyable = () => {
+      const chat = fakeChat();
+      return Object.assign(chat, { destroy: jest.fn(() => Promise.resolve()) });
+    };
+    const registry = createChatRegistry<FakeChat & { destroy?: jest.Mock }>();
+    const boot = resolvablePromise<FakeChat & { destroy: jest.Mock }>();
+    const booting = registry.claim('ended', options({ boot: () => boot }));
+    booting.end();
+    const ended = destroyable();
+    boot.doResolve(ended);
+    await expect(booting.chat).rejects.toThrow(/was destroyed/);
+    await settle();
+    expect(ended.destroy).toHaveBeenCalledTimes(1);
+    expect(ended.shutdown).not.toHaveBeenCalled();
+
+    const expiring = destroyable();
+    const expiringClaim = registry.claim(
+      'expired',
+      options({ boot: () => Promise.resolve(expiring) })
+    );
+    await expiringClaim.chat;
+    expiringClaim.release();
+    jest.advanceTimersByTime(DEFAULT_RELEASE_GRACE_MS);
+    await settle();
+    expect(expiring.shutdown).toHaveBeenCalledTimes(1);
+
+    const replaced = destroyable();
+    const replacedClaim = registry.claim(
+      'kind',
+      options({ boot: () => Promise.resolve(replaced) })
+    );
+    await replacedClaim.chat;
+    replacedClaim.release();
+    await registry.claim('kind', { ...options(), kind: 'other' }).chat;
+    await settle();
+    expect(replaced.shutdown).toHaveBeenCalledTimes(1);
+    expect(expiring.destroy).not.toHaveBeenCalled();
+    expect(replaced.destroy).not.toHaveBeenCalled();
+  });
+
   it('does nothing after expiry, a second time, or from an older chat', async () => {
     const registry = createChatRegistry<FakeChat>();
     const firstClaim = registry.claim('support', options());

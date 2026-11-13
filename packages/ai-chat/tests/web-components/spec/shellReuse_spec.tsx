@@ -9,17 +9,21 @@
 
 /**
  * A shell with `lifecycle.reuseInstance` on keeps its conversation through a
- * remount, and one with it off works as before.
+ * remount, unless `lifecycle.onUnmount` destroys it, and one with it off works
+ * as before.
  */
 
-import { waitFor } from '@testing-library/react';
+import React from 'react';
+import { render, waitFor } from '@testing-library/react';
 
 import '../../../src/web-components/cds-aichat-container';
 import type ChatElement from '../../../src/web-components/cds-aichat-container/cds-aichat-container';
+import { ChatContainer } from '../../../src/react/ChatContainer';
 import * as chatBoot from '../../../src/chat/utils/chatBoot';
 import { createChatSDK } from '../../../src/sdk';
 import { chatRegistry } from '../../../src/sdk/createChatSDK';
 import { ServiceManager } from '../../../src/sdk/services/ServiceManager';
+import { MessageCoordinator } from '../../../src/sdk/services/messaging/MessageCoordinator';
 import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
 import type { ExtensionHosts } from '../../../src/chat/services/extensionHosts';
 import type { ChatRenderer } from '../../../src/web-components/shared/react-renderer';
@@ -953,4 +957,311 @@ describe('slots reach the view that adopts the chat', () => {
     );
     expect(slotOf(chat, 'updated')).toBe(slot);
   });
+});
+
+describe('lifecycle.onUnmount', () => {
+  /** A reuse-on mount whose host saw the agent chat's end events. */
+  async function mountWithAgent(config: Partial<PublicConfig>) {
+    const { desks, factory } = deskFactory();
+    const seen: string[] = [];
+    const record = (event: { type: string }) => {
+      seen.push(event.type);
+    };
+    const mounted = await mountElement(
+      { ...config, serviceDeskFactory: factory },
+      (instance) =>
+        instance.on([
+          { type: BusEventType.HUMAN_AGENT_PRE_END_CHAT, handler: record },
+          { type: BusEventType.HUMAN_AGENT_END_CHAT, handler: record },
+        ])
+    );
+    await mounted.instance.serviceDesk.startConversation();
+    await waitFor(() => expect(desks).toHaveLength(1));
+    await desks[0].callback.agentJoined({
+      id: 'dana',
+      nickname: 'Dana',
+      user_type: UserType.HUMAN,
+    });
+    const chat = managerOf(mounted.instance);
+    const sessionKey = chat.userSessionStorageService.getSessionKey();
+    expect(sessionStorage.getItem(sessionKey)).toContain('"isConnected":true');
+    return { mounted, chat, desk: desks[0], seen, sessionKey };
+  }
+
+  it("O15: 'destroy' ends the agent chat, which the host's handlers see, and clears the saved session", async () => {
+    const namespace = freshNamespace();
+    const config = reuseConfig(namespace, {
+      lifecycle: { reuseInstance: true, onUnmount: 'destroy' },
+    });
+    const { mounted, chat, desk, seen, sessionKey } =
+      await mountWithAgent(config);
+
+    await unmount(mounted);
+    await chat.shutdown();
+
+    expect(chat.isDestroyed).toBe(true);
+    expect(desk.endChat).toHaveBeenCalledTimes(1);
+    expect(seen).toEqual([
+      BusEventType.HUMAN_AGENT_PRE_END_CHAT,
+      BusEventType.HUMAN_AGENT_END_CHAT,
+    ]);
+    expect(sessionStorage.getItem(sessionKey)).toBeNull();
+    // Inside what would be the window, a remount starts a new chat.
+    const next = await mountElement(reuseConfig(namespace));
+    expect(managerOf(next.instance)).not.toBe(chat);
+    expect(next.instance.state.get().humanAgent.isConnected).toBe(false);
+  });
+
+  it.each([
+    ['the default', undefined],
+    ["'release'", 'release' as const],
+  ])(
+    'O16: %s keeps the chat and its agent chat for a remount',
+    async (_name, onUnmount) => {
+      const namespace = freshNamespace();
+      const config = reuseConfig(namespace, {
+        lifecycle: { reuseInstance: true, onUnmount },
+      });
+      const { mounted, chat, desk, seen, sessionKey } =
+        await mountWithAgent(config);
+
+      await unmount(mounted);
+      const next = await mountElement(config);
+
+      expect(managerOf(next.instance)).toBe(chat);
+      expect(chat.isShutdown).toBe(false);
+      expect(next.instance.state.get().humanAgent.isConnected).toBe(true);
+      expect(desk.endChat).not.toHaveBeenCalled();
+      expect(seen).toEqual([]);
+      expect(sessionStorage.getItem(sessionKey)).toContain(
+        '"isConnected":true'
+      );
+    }
+  );
+
+  it("with reuse off, 'destroy' does nothing: the chat shuts down and keeps its saved session", async () => {
+    const destroy = jest.spyOn(ServiceManager.prototype, 'destroy');
+    const { mounted, chat, desk, seen, sessionKey } = await mountWithAgent({
+      namespace: freshNamespace(),
+      messaging: { skipWelcome: true },
+      lifecycle: { onUnmount: 'destroy' },
+    });
+
+    await unmount(mounted);
+    await chat.shutdown();
+
+    expect(destroy).not.toHaveBeenCalled();
+    expect(chat.isDestroyed).toBe(false);
+    expect(desk.endChat).not.toHaveBeenCalled();
+    expect(seen).toEqual([]);
+    expect(sessionStorage.getItem(sessionKey)).toContain('"isConnected":true');
+  });
+
+  it('a change to it before removal counts', async () => {
+    const namespace = freshNamespace();
+    const mounted = await mountElement(reuseConfig(namespace));
+    const chat = managerOf(mounted.instance);
+
+    mounted.element.config = {
+      ...mounted.element.config,
+      lifecycle: { reuseInstance: true, onUnmount: 'destroy' },
+    };
+    await waitFor(() =>
+      expect(chat.store.getState().config.public.lifecycle?.onUnmount).toBe(
+        'destroy'
+      )
+    );
+    await unmount(mounted);
+
+    expect(chat.isDestroyed).toBe(true);
+  });
+
+  it('a change during onBeforeRender, before the chat has the config, counts', async () => {
+    const namespace = freshNamespace();
+    const held = resolvablePromise<void>();
+    const element = chatElement(reuseConfig(namespace));
+    let chat: ServiceManager;
+    element.onBeforeRender = async (instance) => {
+      chat = managerOf(instance);
+      element.lifecycle = { reuseInstance: true, onUnmount: 'destroy' };
+      element.remove();
+      await held;
+    };
+    document.body.appendChild(element);
+    await waitFor(() => expect(chat).toBeDefined());
+    await flushMicrotasks();
+
+    expect(chat.store.getState().config.public.lifecycle?.onUnmount).toBe(
+      undefined
+    );
+    expect(chat.isDestroyed).toBe(true);
+    held.doResolve();
+    await chat.shutdown();
+    const next = await mountElement(reuseConfig(namespace));
+    expect(managerOf(next.instance)).not.toBe(chat);
+  });
+
+  it("a mount removed while its chat boots destroys it once it's ready", async () => {
+    const namespace = freshNamespace();
+    const destroy = jest.spyOn(ServiceManager.prototype, 'destroy');
+    const claim = chatRegistry.claim.bind(chatRegistry);
+    const gate = resolvablePromise<void>();
+    let booted: Promise<ServiceManager>;
+    const claimed = jest
+      .spyOn(chatRegistry, 'claim')
+      .mockImplementationOnce((key, options) =>
+        claim(key, {
+          ...options,
+          boot: () => {
+            booted = gate.then(() => options.boot());
+            return booted;
+          },
+        })
+      );
+    const config = reuseConfig(namespace, {
+      lifecycle: { reuseInstance: true, onUnmount: 'destroy' },
+    });
+    const element = chatElement(config);
+    element.onBeforeRender = jest.fn();
+    document.body.appendChild(element);
+    await waitFor(() => expect(claimed).toHaveBeenCalled());
+    element.remove();
+    await flushMicrotasks();
+
+    // A remount claims the namespace at once, without colliding, and boots
+    // after the destroyed chat shuts down.
+    const onError = jest.fn();
+    const pending = mountElement(reuseConfig(namespace, { onError }));
+    await waitFor(() => expect(claimed).toHaveBeenCalledTimes(2));
+    gate.doResolve();
+    const second = await pending;
+    const first = await booted;
+    await first.shutdown();
+
+    expect(first.isDestroyed).toBe(true);
+    expect(destroy).toHaveBeenCalledTimes(1);
+    expect(managerOf(second.instance)).not.toBe(first);
+    expect(element.onBeforeRender).not.toHaveBeenCalled();
+    expect(onError).not.toHaveBeenCalled();
+    expect(console.error).not.toHaveBeenCalled();
+  });
+
+  it('a mount removed while its chat boots still logs a failed boot', async () => {
+    const namespace = freshNamespace();
+    const claim = chatRegistry.claim.bind(chatRegistry);
+    const gate = resolvablePromise<void>();
+    const failure = new Error('The desk is down.');
+    const claimed = jest
+      .spyOn(chatRegistry, 'claim')
+      .mockImplementationOnce((key, options) =>
+        claim(key, {
+          ...options,
+          boot: async () => {
+            await gate;
+            return options.boot();
+          },
+        })
+      );
+    const element = chatElement(
+      reuseConfig(namespace, {
+        lifecycle: { reuseInstance: true, onUnmount: 'destroy' },
+      })
+    );
+    document.body.appendChild(element);
+    await waitFor(() => expect(claimed).toHaveBeenCalled());
+    element.remove();
+    await flushMicrotasks();
+    // The real boot fails after its services exist.
+    jest
+      .spyOn(MessageCoordinator.prototype, 'onInstanceReady')
+      .mockImplementationOnce(() => {
+        throw failure;
+      });
+    gate.doResolve();
+
+    await waitFor(() =>
+      expect(console.error).toHaveBeenCalledWith(
+        'Error initializing chat:',
+        failure
+      )
+    );
+    (console.error as jest.Mock).mockClear();
+  });
+
+  it('a mount removed while it adopts a chat destroys that chat', async () => {
+    const namespace = freshNamespace();
+    const first = await mountElement(reuseConfig(namespace));
+    const chat = managerOf(first.instance);
+    await unmount(first);
+
+    const claim = chatRegistry.claim.bind(chatRegistry);
+    const gate = resolvablePromise<void>();
+    const claimed = jest
+      .spyOn(chatRegistry, 'claim')
+      .mockImplementationOnce((key, options) =>
+        claim(key, {
+          ...options,
+          adopt: async (adopted) => {
+            await gate;
+            return options.adopt(adopted);
+          },
+        })
+      );
+    const element = chatElement(
+      reuseConfig(namespace, {
+        lifecycle: { reuseInstance: true, onUnmount: 'destroy' },
+      })
+    );
+    element.onBeforeRender = jest.fn();
+    document.body.appendChild(element);
+    await waitFor(() => expect(claimed).toHaveBeenCalled());
+    element.remove();
+    await flushMicrotasks();
+    await chat.shutdown();
+
+    expect(chat.isDestroyed).toBe(true);
+    gate.doResolve();
+    await flushMicrotasks(30);
+    expect(element.onBeforeRender).not.toHaveBeenCalled();
+    expect(console.error).not.toHaveBeenCalled();
+    const next = await mountElement(reuseConfig(namespace));
+    expect(managerOf(next.instance)).not.toBe(chat);
+  });
+
+  it("a ChatContainer key change with 'destroy' starts a new chat", async () => {
+    const namespace = freshNamespace();
+    const onAfterRender = jest.fn();
+    const instances: ChatInstance[] = [];
+    const chatFor = (user: string) => (
+      <ChatContainer
+        key={user}
+        {...createBaseConfig()}
+        namespace={namespace}
+        messaging={{ skipWelcome: true }}
+        lifecycle={{ reuseInstance: true, onUnmount: 'destroy' }}
+        onBeforeRender={(instance) => {
+          instances.push(instance);
+        }}
+        onAfterRender={onAfterRender}
+      />
+    );
+    const view = render(chatFor('ada'));
+    await waitFor(() => expect(onAfterRender).toHaveBeenCalledTimes(1), {
+      timeout: 8000,
+    });
+    await addMessage(instances[0], 'ada-only');
+    const firstChat = managerOf(instances[0]);
+
+    view.rerender(chatFor('grace'));
+    await waitFor(() => expect(onAfterRender).toHaveBeenCalledTimes(2), {
+      timeout: 8000,
+    });
+
+    expect(firstChat.isDestroyed).toBe(true);
+    expect(managerOf(instances[1])).not.toBe(firstChat);
+    expect(
+      instances[1].state.get().messages.some(({ id }) => id === 'ada-only')
+    ).toBe(false);
+    view.unmount();
+  }, 30000);
 });

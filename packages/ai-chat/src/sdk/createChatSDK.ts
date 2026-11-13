@@ -67,6 +67,13 @@ interface ChatSDKBootOptions {
    */
   signal?: AbortSignal;
   /**
+   * With `signal`, read when it aborts: `true` destroys the chat instead of
+   * releasing it, even while boot is still running, so nothing adopts it. The
+   * create then rejects with the signal's reason. The prebuilt chat passes
+   * `lifecycle.onUnmount: 'destroy'` here.
+   */
+  destroyOnAbort?: () => boolean;
+  /**
    * With `reuse`, applies this create's config to a chat it adopts. Defaults
    * to replacing the conversation's config, as `updateConfig` does. The
    * prebuilt chat applies its view's half too, and gives the new mount its
@@ -111,22 +118,50 @@ async function createChatSDK(
   const appConfig = options.appConfig ?? createSDKAppConfig(config);
   // Set once the claim has its chat, which the grace reader prefers.
   const held: { chat?: ServiceManager } = {};
+  /** Whether this create's own boot or adoption failed, which it reports. */
+  let failed = false;
+  const reporting = <T>(work: Promise<T>) =>
+    work.catch((error) => {
+      failed = true;
+      throw error;
+    });
   const claim = chatRegistry.claim(appConfig.public.namespace, {
     // A prebuilt chat has a view partition and session storage that a chat
     // with no view lacks, so neither adopts the other.
     kind: options.createInstance ? 'prebuilt' : 'sdk',
-    boot: () => bootChat(config, { ...options, appConfig }),
+    boot: () => reporting(bootChat(config, { ...options, appConfig })),
     // A replacement, as `updateConfig` applies one.
     adopt: (serviceManager) =>
-      options.adopt
-        ? options.adopt(serviceManager)
-        : applyConversationConfig(serviceManager, appConfig),
+      reporting(
+        options.adopt
+          ? options.adopt(serviceManager)
+          : applyConversationConfig(serviceManager, appConfig)
+      ),
     // The chat's own config once it has one, so an update counts.
     releaseGraceMs: () =>
       releaseGraceMsOf(held.chat?.store.getState().config ?? appConfig),
   });
-  signal?.addEventListener('abort', () => claim.release(), { once: true });
-  held.chat = await claim.chat;
+  /** Set when this create's abort destroyed the chat it claimed. */
+  let destroyed = false;
+  signal?.addEventListener(
+    'abort',
+    () => {
+      if (options.destroyOnAbort?.()) {
+        destroyed = true;
+        claim.end();
+      } else {
+        claim.release();
+      }
+    },
+    { once: true }
+  );
+  try {
+    held.chat = await claim.chat;
+  } catch (error) {
+    // A claim this create's abort ended rejects as an abort before the claim
+    // does. A failed boot or adoption still reports its own error.
+    throw destroyed && !failed ? signal.reason : error;
+  }
   return createHandle(held.chat, claim);
 }
 
