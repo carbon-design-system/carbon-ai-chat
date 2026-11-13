@@ -498,19 +498,8 @@ describe('input.getEditor', () => {
     expect(instance.state.get().input.rawValue).toBe('carried over');
   });
 
-  it('resolves the same editor to concurrent and later calls', async () => {
-    const { instance } = await openChat();
-    let editors: unknown[];
-    await act(async () => {
-      editors = await Promise.all([
-        instance.input.getEditor(),
-        instance.input.getEditor(),
-      ]);
-    });
-    const later = await instance.input.getEditor();
-    expect(editors[0]).toBe(editors[1]);
-    expect(later).toBe(editors[0]);
-  });
+  // "resolves the same editor to concurrent and later calls" is in
+  // getEditorFirstLoad_spec.ts, which loads the editor runtime cold.
 
   it('publishes the edits a host makes through the editor', async () => {
     const { instance } = await openChat();
