@@ -137,10 +137,7 @@ describe('ChatCustomElement hiding its element', () => {
     expect(wrapper.classList.contains(HIDDEN)).toBe(false);
   });
 
-  // MAIN-NOTES M99 (U53): the default handler adds the class through
-  // `classList`, so a rerender with a new `className` resets the class
-  // attribute and drops it while the chat is still closed.
-  it('drops the class when the host rerenders a closed chat with a new className', async () => {
+  it('keeps the class when the host rerenders a closed chat with a new className', async () => {
     const chat = await contractCustomElementChat({
       ...CLOSED,
       className: 'class-one',
@@ -150,6 +147,12 @@ describe('ChatCustomElement hiding its element', () => {
     );
     await chat.rerender({ ...CLOSED, className: 'class-two' });
     expect(chat.instance.getState().viewState.mainWindow).toBe(false);
-    expect(Array.from(chat.wrapper.classList)).toEqual(['class-two']);
+    expect(Array.from(chat.wrapper.classList).sort()).toEqual(
+      [HIDDEN, 'class-two'].sort()
+    );
+    await changeView(chat.instance, ViewType.MAIN_WINDOW);
+    await waitFor(() =>
+      expect(Array.from(chat.wrapper.classList)).toEqual(['class-two'])
+    );
   });
 });

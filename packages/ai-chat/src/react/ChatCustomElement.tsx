@@ -172,24 +172,27 @@ function ChatCustomElement(
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [elementReady, setElementReady] = useState(false);
+  const [hidden, setHidden] = useState(false);
 
   useLayoutEffect(() => {
     setElementReady(true);
   }, []);
 
   /**
-   * The default "view:change" handler. It shows or hides the chat by toggling a class that sizes the element to 0x0.
+   * The default "view:change" handler. It shows or hides the chat with a class that sizes the element to 0x0. The
+   * class lives in state, not on `classList`, so a rerender with a new `className` keeps it.
    */
   const defaultViewChangeHandler = useCallback((event: BusEventViewChange) => {
-    const el = containerRef.current;
-    if (el) {
-      el.classList.toggle('cds-aichat--hidden', !event.newViewState.mainWindow);
-    }
+    setHidden(!event.newViewState.mainWindow);
   }, []);
+
+  const wrapperClassName = hidden
+    ? [className, 'cds-aichat--hidden'].filter(Boolean).join(' ')
+    : className;
 
   return (
     <div
-      className={className}
+      className={wrapperClassName}
       id={id}
       ref={containerRef}
       {...(wrapperDomProps as HTMLAttributes<HTMLDivElement>)}>
