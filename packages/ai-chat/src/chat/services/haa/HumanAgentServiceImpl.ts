@@ -9,6 +9,7 @@
 
 import { captureMessageEvent } from '../../utils/messageEventOwnership';
 import cloneDeep from 'lodash-es/cloneDeep.js';
+import findLast from 'lodash-es/findLast.js';
 import isEqual from 'lodash-es/isEqual.js';
 import merge from 'lodash-es/merge.js';
 import { DeepPartial } from '../../../types/utilities/DeepPartial';
@@ -142,7 +143,7 @@ const {
 } = HumanAgentMessageType;
 
 /**
- * An agent message held while the chat is suspended, with the place in the list it would have had when it arrived.
+ * An agent message held while the chat is suspended, with the last message and item in the list when it arrived.
  */
 interface HeldMessage {
   pair: LocalAndOriginalMessagesPair;
@@ -1116,8 +1117,8 @@ class HumanAgentServiceImpl implements HumanAgentService {
   }
 
   /**
-   * Holds an agent message that arrived while the chat is suspended, with the place at the end of the list it would
-   * have had.
+   * Holds an agent message that arrived while the chat is suspended, recording the last message in the list when it
+   * arrived.
    */
   holdMessage(pair: LocalAndOriginalMessagesPair) {
     if (!pair.localMessages.length) {
@@ -1149,13 +1150,14 @@ class HumanAgentServiceImpl implements HumanAgentService {
     let previous: HeldMessage;
     let previousEnd: MessageListPlace;
     for (const entry of held) {
-      // A message held right after another one goes after it, keeping arrival order.
-      const followsPrevious = previous && isEqual(previous.after, entry.after);
+      // A message held while the same message was last goes after the one held before it, keeping arrival order.
+      const followsPrevious =
+        previous && previous.after.messageID === entry.after.messageID;
       await addMessages(
         [entry.pair],
         true,
         this.serviceManager,
-        followsPrevious ? previousEnd : entry.after
+        followsPrevious ? previousEnd : this.placeAfterMessage(entry.after)
       );
       const { localMessages, originalMessage } = entry.pair;
       previous = entry;
@@ -1164,6 +1166,27 @@ class HumanAgentServiceImpl implements HumanAgentService {
         localMessageID: localMessages[localMessages.length - 1].ui_state.id,
       };
     }
+  }
+
+  dropHeldMessages() {
+    this.heldMessages = [];
+  }
+
+  /**
+   * The place right after the recorded message's last item, which may have streamed more items since it was
+   * recorded. Falls back to the recorded item when none of the message's items are in the list.
+   */
+  private placeAfterMessage(recorded: MessageListPlace): MessageListPlace {
+    const { allMessageItemsByID, assistantMessageState } =
+      this.serviceManager.store.getState();
+    const lastItemID = findLast(
+      assistantMessageState.localMessageIDs,
+      (id) => allMessageItemsByID[id]?.fullMessageID === recorded.messageID
+    );
+    return {
+      messageID: recorded.messageID,
+      localMessageID: lastItemID ?? recorded.localMessageID,
+    };
   }
 
   /**

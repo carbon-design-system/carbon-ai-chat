@@ -30,18 +30,24 @@ import {
   FakeBackend,
   FakeDesk,
   HUMAN_AGENT_EVENTS,
+  addChunk,
   addConnect,
   byRole,
   click,
+  completeText,
   contractChat,
   contractSetup,
   fakeBackend,
   fakeDesk,
+  finalChunk,
   getByTestId,
+  mainPanelText,
   openChat,
+  partialText,
   pause,
   pickFiles,
   recordEvents,
+  textItem,
   typeText,
 } from '../../helpers';
 
@@ -644,5 +650,64 @@ describe('typing to an agent', () => {
     expect(desk.desk.sendMessageToAgent.mock.calls[0][2]).toEqual({
       filesToUpload: [],
     });
+  });
+});
+
+/** Where each text first shows in the main panel, in order of position. */
+function shownOrder(texts: string[]): string[] {
+  const shown = mainPanelText();
+  for (const text of texts) {
+    expect(shown).toContain(text);
+  }
+  return [...texts].sort((a, b) => shown.indexOf(a) - shown.indexOf(b));
+}
+
+// @covers instance.serviceDesk.updateIsSuspended
+describe('agent messages held while suspended', () => {
+  contractSetup();
+
+  /** An open chat in a suspended agent chat with Dana. */
+  async function suspendedChat(desk: FakeDesk) {
+    const mount = await deskChat(desk, { openChatByDefault: true });
+    await joined(mount.instance, desk);
+    await act(() => mount.instance.serviceDesk.updateIsSuspended(true));
+    return mount;
+  }
+
+  it('shows desk messages held while the assistant streams after the whole streamed response, in arrival order', async () => {
+    const desk = fakeDesk();
+    const { instance } = await suspendedChat(desk);
+    await addChunk(instance, partialText('r-stream', 'i1', 'Stream one'));
+    await addChunk(instance, completeText('r-stream', 'i1', 'Stream one'));
+    await act(() => desk.callback().sendMessageToUser('Held mid-stream'));
+    await addChunk(instance, partialText('r-stream', 'i2', 'Stream two'));
+    await addChunk(instance, completeText('r-stream', 'i2', 'Stream two'));
+    await act(() => desk.callback().sendMessageToUser('Held later'));
+    await addChunk(
+      instance,
+      finalChunk('r-stream', [
+        textItem('Stream one', 'i1'),
+        textItem('Stream two', 'i2'),
+      ])
+    );
+    await act(() => instance.serviceDesk.updateIsSuspended(false));
+    await waitFor(() => expect(mainPanelText()).toContain('Held later'));
+    expect(
+      shownOrder(['Held later', 'Held mid-stream', 'Stream two', 'Stream one'])
+    ).toEqual(['Stream one', 'Stream two', 'Held mid-stream', 'Held later']);
+  });
+
+  // @covers instance.destroySession
+  it('drops held messages on destroySession', async () => {
+    const desk = fakeDesk();
+    const { instance } = await suspendedChat(desk);
+    await act(() => desk.callback().sendMessageToUser('Held then destroyed'));
+    const count = instance.getState().messages.length;
+    await act(() => instance.destroySession(true));
+    await act(() => instance.serviceDesk.updateIsSuspended(false));
+    // A short wait to show nothing is added.
+    await pause();
+    expect(instance.getState().messages).toHaveLength(count);
+    expect(mainPanelText()).not.toContain('Held then destroyed');
   });
 });

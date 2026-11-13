@@ -39,7 +39,7 @@ export interface ChatInstanceServiceDeskActions {
    * Messages the service desk sends while suspended aren't shown until the conversation resumes. Then each appears
    * where it would have been when it arrived, among any messages sent in the meantime. Their
    * `human_agent:pre:receive` and `human_agent:receive` events fire when they arrive, not when they appear. If the
-   * conversation ends while suspended, they're dropped.
+   * conversation ends while suspended, or {@link ChatInstance.destroySession} runs, they're dropped.
    *
    * @example Suspend, then later resume, routing to the service desk
    * ```ts

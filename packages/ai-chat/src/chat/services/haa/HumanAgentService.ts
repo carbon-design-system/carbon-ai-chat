@@ -166,6 +166,11 @@ interface HumanAgentService {
    * arrived. Does nothing while the chat is still suspended.
    */
   showHeldMessages(): Promise<void>;
+
+  /**
+   * Drops the agent messages held while the chat is suspended, so a later resume doesn't show them.
+   */
+  dropHeldMessages(): void;
 }
 
 /**
