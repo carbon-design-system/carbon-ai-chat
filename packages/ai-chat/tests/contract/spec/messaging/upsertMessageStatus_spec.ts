@@ -9,7 +9,11 @@
 
 import { act } from '@testing-library/react';
 
-import { MessageState } from '../../../../src/aiChatEntry';
+import {
+  BusEventStateChange,
+  BusEventType,
+  MessageState,
+} from '../../../../src/aiChatEntry';
 import {
   describeShared,
   finishSend,
@@ -71,9 +75,20 @@ describeShared('upsertMessage and status', (makeDriver) => {
 
   it('keeps ready for a COMPLETE or ERROR upsert of a new ID', async () => {
     const chat = await makeDriver();
+    // Every status a state:change reports on the way, so a passing streaming
+    // phase shows too.
+    const seen: string[] = [];
+    chat.on({
+      type: BusEventType.STATE_CHANGE,
+      handler: (event: BusEventStateChange) => {
+        seen.push(event.newState.status);
+      },
+    });
     await upsertText(chat, 'a', MessageState.COMPLETE, 'a');
     expect(chat.status()).toBe('ready');
     await upsertText(chat, 'b', MessageState.ERROR, 'b');
     expect(chat.status()).toBe('ready');
+    expect(seen.length).toBeGreaterThan(0);
+    expect(seen.filter((status) => status !== 'ready')).toEqual([]);
   });
 });

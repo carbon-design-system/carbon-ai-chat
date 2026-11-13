@@ -20,9 +20,11 @@ import {
   MessageResponseTypes,
   MessageState,
   OnErrorType,
+  PageObjectId,
 } from '../../../../src/aiChatEntry';
 import {
   advance,
+  byTestId,
   contractChat,
   contractSetup,
   describeShared,
@@ -70,14 +72,17 @@ const ITEMS: Record<MessageResponseTypes, GenericItem> = {
   [MessageResponseTypes.IFRAME]: {
     response_type: MessageResponseTypes.IFRAME,
     source: 'https://example.com/embed',
+    title: 'Embedded page',
   },
   [MessageResponseTypes.VIDEO]: {
     response_type: MessageResponseTypes.VIDEO,
     source: 'https://example.com/video.mp4',
+    title: 'A video',
   },
   [MessageResponseTypes.AUDIO]: {
     response_type: MessageResponseTypes.AUDIO,
     source: 'https://example.com/audio.mp3',
+    title: 'An audio clip',
   },
   [MessageResponseTypes.DATE]: {
     response_type: MessageResponseTypes.DATE,
@@ -140,8 +145,8 @@ const QUIET_TYPES = Object.values(MessageResponseTypes).filter(
 );
 
 // These tags record that each type is accepted, stored as given, fires
-// receive once, and reports no error. How each type renders isn't observable
-// without reading its markup, which a contract test doesn't do.
+// receive once, and reports no error. What each type shows is pinned below in
+// "response types in the main panel", one row per type.
 // @covers response-type.text response-type.option response-type.image
 // @covers response-type.pause response-type.user_defined response-type.iframe
 // @covers response-type.video response-type.audio response-type.date
@@ -167,6 +172,150 @@ describeShared('response types through addMessage', (makeDriver) => {
         events.of<BusEventReceive>(BusEventType.RECEIVE).map((e) => e.data.id)
       ).toEqual([`r-${type}`]);
       expect(onError).not.toHaveBeenCalled();
+    }
+  );
+});
+
+/** Every element under `root`, through open shadow roots. */
+function* walk(root: ParentNode): Generator<Element> {
+  for (const element of Array.from(root.querySelectorAll('*'))) {
+    yield element;
+    if (element.shadowRoot) {
+      yield* walk(element.shadowRoot);
+    }
+  }
+}
+
+/** The text a node shows, following shadow roots and slots. */
+function shownText(node: Node): string {
+  if (node.nodeType === Node.TEXT_NODE) {
+    return node.textContent ?? '';
+  }
+  if (!(node instanceof Element) || node.tagName === 'STYLE') {
+    return '';
+  }
+  if (node instanceof HTMLSlotElement) {
+    const assigned = node.assignedNodes({ flatten: true });
+    return (assigned.length ? assigned : Array.from(node.childNodes))
+      .map(shownText)
+      .join('');
+  }
+  const children = node.shadowRoot
+    ? node.shadowRoot.childNodes
+    : node.childNodes;
+  return Array.from(children).map(shownText).join('');
+}
+
+/** An element's accessible name, for the few ways the chat names one. */
+function nameOf(element: Element): string {
+  const root = element.getRootNode() as Document | ShadowRoot;
+  const labelledBy = (element.getAttribute('aria-labelledby') ?? '')
+    .split(/\s+/)
+    .map((id) => id && root.getElementById(id))
+    .filter(Boolean)
+    .map((label) => shownText(label as Element))
+    .join(' ');
+  const labels = (element as HTMLInputElement).labels;
+  const name =
+    labelledBy ||
+    element.getAttribute('aria-label') ||
+    (labels?.length ? shownText(labels[0]) : shownText(element));
+  return name.replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * What the main panel shows a user: its text, the accessible names of the
+ * buttons, regions, and text boxes in it, and its images' alt text.
+ */
+function mainPanel() {
+  const panel = byTestId(PageObjectId.MAIN_PANEL);
+  const elements = [...walk(panel)];
+  const named = (role: string, implicit: (element: Element) => boolean) =>
+    elements
+      .filter(
+        (element) => element.getAttribute('role') === role || implicit(element)
+      )
+      .map(nameOf);
+  return {
+    text: shownText(panel).replace(/\s+/g, ' '),
+    buttons: named('button', (element) => element instanceof HTMLButtonElement),
+    regions: named('region', () => false),
+    textboxes: named(
+      'textbox',
+      (element) =>
+        element instanceof HTMLInputElement && element.type === 'text'
+    ),
+    images: elements
+      .filter((element) => element instanceof HTMLImageElement)
+      .map((element) => (element as HTMLImageElement).alt),
+  };
+}
+
+/** The date picker's label, set through `strings`. */
+const DATE_LABEL = 'Pick the day';
+
+/**
+ * What a user sees of each type's item from `ITEMS`, all of it content the
+ * item (or `strings`) set. A pause shows nothing and a user_defined item shows
+ * only what the host renders: "pause items" and "user_defined rendering"
+ * below pin those two.
+ */
+const SHOWN: Partial<
+  Record<MessageResponseTypes, (shown: ReturnType<typeof mainPanel>) => void>
+> = {
+  [MessageResponseTypes.TEXT]: ({ text }) => expect(text).toContain('Hello'),
+  [MessageResponseTypes.OPTION]: ({ text, buttons }) => {
+    expect(text).toContain('Pick one');
+    expect(buttons).toEqual(expect.arrayContaining(['Red', 'Blue']));
+  },
+  [MessageResponseTypes.IMAGE]: ({ images }) =>
+    expect(images).toContain('An image'),
+  [MessageResponseTypes.IFRAME]: ({ text }) =>
+    expect(text).toContain('Embedded page'),
+  [MessageResponseTypes.VIDEO]: ({ regions }) =>
+    expect(regions).toContain('A video'),
+  [MessageResponseTypes.AUDIO]: ({ regions }) =>
+    expect(regions).toContain('An audio clip'),
+  [MessageResponseTypes.DATE]: ({ textboxes }) =>
+    expect(textboxes).toContain(DATE_LABEL),
+  [MessageResponseTypes.INLINE_ERROR]: ({ text }) =>
+    expect(text).toContain('Something went wrong'),
+  [MessageResponseTypes.CARD]: ({ text }) =>
+    expect(text).toContain('In a card'),
+  [MessageResponseTypes.CAROUSEL]: ({ text }) =>
+    expect(text).toContain('Slide'),
+  [MessageResponseTypes.BUTTON]: ({ buttons }) =>
+    expect(buttons).toContain('Go'),
+  [MessageResponseTypes.GRID]: ({ text }) => expect(text).toContain('Cell'),
+  [MessageResponseTypes.CONVERSATIONAL_SEARCH]: ({ text }) =>
+    expect(text).toContain('An answer'),
+  [MessageResponseTypes.PREVIEW_CARD]: ({ text }) =>
+    expect(text).toContain('Preview'),
+  [MessageResponseTypes.SYSTEM]: ({ text }) =>
+    expect(text).toContain('Processing'),
+};
+
+// @covers response-type.text response-type.option response-type.image
+// @covers response-type.iframe response-type.video response-type.audio
+// @covers response-type.date response-type.inline_error response-type.card
+// @covers response-type.carousel response-type.button response-type.grid
+// @covers response-type.conversational_search response-type.preview_card
+// @covers response-type.system
+describe('response types in the main panel', () => {
+  contractSetup();
+
+  it.each(Object.keys(SHOWN) as MessageResponseTypes[])(
+    "shows a %s item's content",
+    async (type) => {
+      const { instance } = await contractChat({
+        openChatByDefault: true,
+        messaging: { skipWelcome: true },
+        strings: { datePicker_chooseDate: DATE_LABEL },
+      });
+      await act(() =>
+        instance.messaging.addMessage(responseOf(`r-${type}`, [ITEMS[type]]))
+      );
+      await waitFor(() => SHOWN[type](mainPanel()));
     }
   );
 });
