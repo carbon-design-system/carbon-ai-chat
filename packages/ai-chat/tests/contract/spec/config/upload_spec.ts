@@ -336,15 +336,13 @@ describe('upload: onFileUpload', () => {
     await finishSend(started);
   });
 
-  it('leaves the signal unaborted when the chat unmounts mid-upload', async () => {
-    // UploadConfig.onFileUpload's JSDoc says the signal fires "if the chat is
-    // destroyed"; on `main` nothing aborts it (InputActionsService keeps the
-    // controllers and never aborts them on teardown).
+  it('aborts the signal when the chat unmounts mid-upload', async () => {
     const uploader = fakeUploader();
     const { unmount } = await openChat({ onFileUpload: uploader.onFileUpload });
     await pickFiles(STRINGS.input_uploadButtonLabel, [makeFile('report.pdf')]);
-    unmount();
     expect(uploader.calls[0].signal.aborted).toBe(false);
+    unmount();
+    await waitFor(() => expect(uploader.calls[0].signal.aborted).toBe(true));
   });
 });
 
