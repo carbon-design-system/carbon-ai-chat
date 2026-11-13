@@ -393,7 +393,8 @@ class HydrationService {
           didHydrate = true;
           await serviceManager.actions.hydrateChat();
         }
-      } else {
+      } else if (this.alreadyHydrated) {
+        // A chat that never started hydrating leaves it to its first open.
         store.dispatch(actions.chatWasHydrated());
       }
       if (!didHydrate) {

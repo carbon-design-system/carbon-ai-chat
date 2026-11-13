@@ -175,7 +175,9 @@ export interface ChatInstanceMessaging {
    * Clears the current conversation: removes every message and cancels any outstanding messages. Unlike
    * {@link ChatInstanceMessaging.restartConversation}, it fires no restart events, sends no new welcome request, and
    * leaves a conversation with a human agent alone. It will also clear any loading indicators UNLESS you have set
-   * {@link PublicConfigMessaging.messageLoadingIndicatorTimeoutSecs} to 0.
+   * {@link PublicConfigMessaging.messageLoadingIndicatorTimeoutSecs} to 0. A clear before the chat's first open leaves
+   * loading to that open, which calls {@link PublicConfigMessaging.customLoadHistory}, sends the welcome, and fires
+   * {@link BusEventType.CHAT_READY} as usual.
    */
   clearConversation: () => Promise<void>;
 
