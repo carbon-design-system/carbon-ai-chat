@@ -13,6 +13,7 @@ import {
   BusEventType,
   ChatInstance,
   CustomPanelOpenOptions,
+  PageObjectId,
   PanelType,
   ViewType,
 } from '../../../../src/aiChatEntry';
@@ -24,7 +25,9 @@ import {
   click,
   contractChat,
   contractSetup,
+  getByTestId,
   isHidden,
+  isShownWithin,
   pause,
   recordEvents,
 } from '../../helpers';
@@ -326,6 +329,18 @@ describe('customPanelElement', () => {
     // A short wait to show the custom panel doesn't open.
     await pause(300);
     expect(isHidden(content)).toBe(true);
+  });
+
+  // @covers export.aiChatEntry.PageObjectId
+  it('shows inside the element with the custom panel test ID while open', async () => {
+    const { instance } = await mountOpen();
+    const content = writePanelContent(instance);
+    const events = recordEvents(instance, PANEL_EVENTS);
+    await openPanel(instance);
+    await waitForEvent(events, BusEventType.CUSTOM_PANEL_OPEN);
+    const panel = getByTestId(PageObjectId.CUSTOM_PANEL);
+    expect(isHidden(panel)).toBe(false);
+    expect(isShownWithin(content, panel)).toBe(true);
   });
 });
 
