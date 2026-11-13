@@ -20,6 +20,7 @@ import {
   ViewType,
 } from '../../../../src/aiChatEntry';
 import {
+  acceptDisclaimer,
   byRole,
   byTestId,
   changeView,
@@ -246,21 +247,6 @@ const DISCLAIMER = {
   disclaimerHTML: '<p>Contract terms of use</p>',
 };
 
-/**
- * Clicks the accept button until the chat records the acceptance: the button
- * only takes a click once the panel has measured its content.
- */
-async function accept(instance: ChatInstance): Promise<void> {
-  const accepted = () =>
-    instance.getState().disclaimersAccepted[hostname()] === true;
-  await waitFor(() => {
-    if (!accepted()) {
-      byTestId(PageObjectId.DISCLAIMER_ACCEPT_BUTTON)?.click();
-    }
-    expect(accepted()).toBe(true);
-  });
-}
-
 /** Props for a chat that opens with the disclaimer on. */
 function disclaimerProps(
   disclaimer = DISCLAIMER,
@@ -308,7 +294,7 @@ describe('disclaimer acceptance', () => {
         seenInHandler.push(instance.getState().disclaimersAccepted),
     });
     const events = recordEvents(instance, [BusEventType.DISCLAIMER_ACCEPTED]);
-    await accept(instance);
+    await acceptDisclaimer(instance);
     expect(events.types()).toEqual(['disclaimerAccepted']);
     expect(seenInHandler).toEqual([{ [hostname()]: true }]);
     expect(instance.getState().disclaimersAccepted).toEqual({
@@ -318,7 +304,7 @@ describe('disclaimer acceptance', () => {
 
   it('keeps acceptance across a remount in the same session, firing nothing', async () => {
     const first = await contractChat(disclaimerProps());
-    await accept(first.instance);
+    await acceptDisclaimer(first.instance);
     first.unmount();
     const fired: string[] = [];
     const second = await contractChat(
@@ -339,7 +325,7 @@ describe('disclaimer acceptance', () => {
 
   it('asks again when the disclaimer HTML changes, and fires again on the next accept', async () => {
     const { instance, rerender } = await contractChat(disclaimerProps());
-    await accept(instance);
+    await acceptDisclaimer(instance);
     const events = recordEvents(instance, [BusEventType.DISCLAIMER_ACCEPTED]);
     const changed = { isOn: true, disclaimerHTML: '<p>New contract terms</p>' };
     await rerender(disclaimerProps(changed));
@@ -354,7 +340,7 @@ describe('disclaimer acceptance', () => {
         'New contract terms'
       )
     );
-    await accept(instance);
+    await acceptDisclaimer(instance);
     expect(events.types()).toEqual(['disclaimerAccepted']);
     expect(instance.getState().disclaimersAccepted).toEqual({
       [hostname()]: true,

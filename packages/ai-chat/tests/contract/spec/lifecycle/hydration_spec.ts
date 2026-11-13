@@ -11,17 +11,18 @@ import { act, waitFor } from '@testing-library/react';
 
 import {
   HistoryItem,
-  MessageSendSource,
   PublicConfigMessaging,
   ViewType,
 } from '../../../../src/aiChatEntry';
 import {
+  WELCOME,
   changeView,
   contractChat,
   contractSetup,
   countChatReady,
   fakeBackend,
   pause,
+  sendSources,
 } from '../../helpers';
 
 /**
@@ -38,12 +39,9 @@ async function closedChat(
     onBeforeRender: ready.onBeforeRender,
     messaging: { customSendMessage: backend.customSendMessage, ...messaging },
   });
-  const sources = () =>
-    backend.requests.map(({ options }) => options.busEventSend?.source);
+  const sources = () => sendSources(backend);
   return { instance, backend, ready, sources };
 }
-
-const WELCOME = MessageSendSource.WELCOME_REQUEST;
 
 // @covers event.chat:ready config.messaging.customSendMessage instance.changeView
 describe('hydration on first open', () => {

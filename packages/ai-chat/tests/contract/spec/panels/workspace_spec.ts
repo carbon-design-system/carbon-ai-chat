@@ -28,8 +28,8 @@ import {
   contractChat,
   contractSetup,
   deferred,
-  flatChildren,
   isHidden,
+  isInFlatTree,
   pause,
   recordEvents,
   responseOf,
@@ -94,13 +94,6 @@ function summary(event: BusEvent) {
     workspaceId: data.workspaceId,
     additionalData: data.additionalData,
   };
-}
-
-/** Whether a node shows anywhere in the flat tree a user sees. */
-function isInFlatTree(target: Node): boolean {
-  const visit = (node: Node): boolean =>
-    node === target || flatChildren(node).some(visit);
-  return visit(document.body);
 }
 
 /** Writes a span into the workspace's writeable element. */

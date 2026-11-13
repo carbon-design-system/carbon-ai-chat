@@ -14,6 +14,7 @@ import {
   MessageRequest,
   MessageResponse,
   MessageResponseTypes,
+  MessageSendSource,
   TextItem,
 } from '../../../src/aiChatEntry';
 
@@ -109,4 +110,14 @@ export function outputTexts(message: Message | MessageResponse): string[] {
   return generic
     .filter((item) => item.response_type === MessageResponseTypes.TEXT)
     .map((item) => (item as TextItem).text);
+}
+
+/** The send source a welcome request carries. */
+export const WELCOME = MessageSendSource.WELCOME_REQUEST;
+
+/** The send source of each request the backend got, oldest first. */
+export function sendSources(
+  backend: FakeBackend
+): (MessageSendSource | undefined)[] {
+  return backend.requests.map(({ options }) => options.busEventSend?.source);
 }

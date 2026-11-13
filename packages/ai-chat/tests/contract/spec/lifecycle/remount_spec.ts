@@ -9,14 +9,11 @@
 
 import { act, waitFor } from '@testing-library/react';
 
-import {
-  ChatInstance,
-  MessageSendSource,
-  ViewType,
-} from '../../../../src/aiChatEntry';
+import { ChatInstance, ViewType } from '../../../../src/aiChatEntry';
 import {
   ContractElementTag,
   FakeBackend,
+  WELCOME,
   changeView,
   contractChat,
   contractElement,
@@ -24,6 +21,7 @@ import {
   countChatReady,
   fakeBackend,
   pause,
+  sendSources,
   showUnread,
   textResponse,
 } from '../../helpers';
@@ -88,11 +86,6 @@ async function usedMount(host: HostName, kit: HostKit) {
   return mount;
 }
 
-const sources = (backend: FakeBackend) =>
-  backend.requests.map(({ options }) => options.busEventSend?.source);
-
-const WELCOME = MessageSendSource.WELCOME_REQUEST;
-
 // @covers event.chat:ready state.messages state.hasSentNonWelcomeMessage
 // @covers state.viewState config.messaging.customSendMessage
 describe.each(HOSTS)('unmount and remount of %s', (host) => {
@@ -120,7 +113,7 @@ describe.each(HOSTS)('unmount and remount of %s', (host) => {
     expect(state.hasSentNonWelcomeMessage).toBe(true);
     // The restored open window hydrates again, so its only message is a
     // new welcome request.
-    expect(sources(kit.backend)).toEqual([WELCOME, WELCOME]);
+    expect(sendSources(kit.backend)).toEqual([WELCOME, WELCOME]);
     expect(state.messages.map(({ id }) => id)).toEqual([
       kit.backend.requests[1].request.id,
     ]);
@@ -135,11 +128,11 @@ describe.each(HOSTS)('unmount and remount of %s', (host) => {
     await pause();
     expect(instance.getState().showUnreadIndicator).toBe(true);
     expect(kit.readyCount()).toBe(0);
-    expect(sources(kit.backend)).toEqual([]);
+    expect(sendSources(kit.backend)).toEqual([]);
 
     await changeView(instance, ViewType.MAIN_WINDOW);
     await waitFor(() => expect(kit.readyCount()).toBe(1));
-    expect(sources(kit.backend)).toEqual([WELCOME]);
+    expect(sendSources(kit.backend)).toEqual([WELCOME]);
   });
 });
 

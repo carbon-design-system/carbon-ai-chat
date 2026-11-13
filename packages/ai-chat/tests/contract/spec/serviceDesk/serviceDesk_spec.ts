@@ -10,7 +10,6 @@
 import { act, waitFor } from '@testing-library/react';
 
 import {
-  AdditionalDataToAgent,
   BusEventHumanAgentAreAnyAgentsOnline,
   BusEventHumanAgentEndChat,
   BusEventHumanAgentPreEndChat,
@@ -18,100 +17,33 @@ import {
   BusEventHumanAgentPreStartChat,
   BusEventHumanAgentReceive,
   BusEventType,
-  EndChatInfo,
   ErrorType,
   GenericItem,
   HumanAgentMessageType,
   HumanAgentsOnlineStatus,
-  MessageRequest,
   MessageResponse,
   MessageResponseTypes,
   OnErrorType,
   PublicConfig,
-  ResponseUserProfile,
   ServiceDesk,
-  ServiceDeskCallback,
-  ServiceDeskFactoryParameters,
-  StartChatOptions,
-  UserType,
 } from '../../../../src/aiChatEntry';
 import {
+  CONNECT_ITEM,
   ContractDriver,
+  DANA,
   DriverFactory,
+  FakeDesk,
+  HUMAN_AGENT_EVENTS,
+  addConnect,
   advance,
   describeShared,
+  fakeDesk,
   finishSend,
   pause,
   recordEvents,
   responseOf,
   startSend,
 } from '../../helpers';
-
-/**
- * A service desk a host would plug in through `serviceDeskFactory`, built from
- * the public `ServiceDesk` type. Each method records its calls. `callback()`
- * is the `ServiceDeskCallback` the chat handed to the factory.
- */
-function fakeDesk(overrides: Partial<ServiceDesk> = {}) {
-  const made: ServiceDeskFactoryParameters[] = [];
-  const mocks = {
-    startChat: jest.fn(
-      (_message: MessageResponse, _options: StartChatOptions) =>
-        Promise.resolve()
-    ),
-    endChat: jest.fn((_info: EndChatInfo) => Promise.resolve()),
-    sendMessageToAgent: jest.fn(
-      (
-        _message: MessageRequest,
-        _messageID: string,
-        _additionalData: AdditionalDataToAgent
-      ) => Promise.resolve()
-    ),
-    areAnyAgentsOnline: jest.fn(
-      (_message: MessageResponse): Promise<boolean | null> =>
-        Promise.resolve(true)
-    ),
-  };
-  const serviceDesk: ServiceDesk = {
-    getName: () => 'contract desk',
-    ...mocks,
-    ...overrides,
-  };
-  const factory = jest.fn((parameters: ServiceDeskFactoryParameters) => {
-    made.push(parameters);
-    return Promise.resolve(serviceDesk);
-  });
-  return {
-    /** The default methods' mocks. A method in `overrides` replaces its mock. */
-    desk: mocks,
-    factory,
-    callback: (): ServiceDeskCallback => made[made.length - 1].callback,
-  };
-}
-
-type FakeDesk = ReturnType<typeof fakeDesk>;
-
-const CONNECT_ITEM = {
-  response_type: MessageResponseTypes.CONNECT_TO_HUMAN_AGENT,
-  message_to_human_agent: 'The user needs help',
-} as GenericItem;
-
-const AGENT: ResponseUserProfile = {
-  id: 'agent-1',
-  nickname: 'Dana',
-  user_type: UserType.HUMAN,
-};
-
-const HUMAN_AGENT_EVENTS = [
-  BusEventType.HUMAN_AGENT_PRE_RECEIVE,
-  BusEventType.HUMAN_AGENT_RECEIVE,
-  BusEventType.HUMAN_AGENT_PRE_SEND,
-  BusEventType.HUMAN_AGENT_SEND,
-  BusEventType.HUMAN_AGENT_PRE_START_CHAT,
-  BusEventType.HUMAN_AGENT_PRE_END_CHAT,
-  BusEventType.HUMAN_AGENT_END_CHAT,
-  BusEventType.HUMAN_AGENT_ARE_ANY_AGENTS_ONLINE,
-];
 
 /** A driver whose config plugs in the desk, auto-connecting when agents are online. */
 function deskDriver(
@@ -131,11 +63,6 @@ async function hydrate(chat: ContractDriver): Promise<void> {
   await finishSend(await startSend(chat, 'hello'));
 }
 
-/** Adds an assistant response holding a connect_to_agent item. */
-async function addConnect(chat: ContractDriver, id = 'r-connect') {
-  await act(() => chat.messaging.addMessage(responseOf(id, [CONNECT_ITEM])));
-}
-
 /** Hydrates, adds the connect response, and waits for the desk's startChat. */
 async function connect(chat: ContractDriver, desk: FakeDesk): Promise<void> {
   await hydrate(chat);
@@ -146,7 +73,7 @@ async function connect(chat: ContractDriver, desk: FakeDesk): Promise<void> {
 /** Connects, then has the agent join. */
 async function join(chat: ContractDriver, desk: FakeDesk): Promise<void> {
   await connect(chat, desk);
-  await act(() => desk.callback().agentJoined(AGENT));
+  await act(() => desk.callback().agentJoined(DANA));
 }
 
 /** The items of the last message in the list. */
@@ -431,7 +358,7 @@ describeShared('messages from the desk', (makeDriver) => {
     const chat = await deskDriver(makeDriver, desk);
     await connect(chat, desk);
     const events = recordEvents(chat, HUMAN_AGENT_EVENTS);
-    await act(() => desk.callback().agentJoined(AGENT));
+    await act(() => desk.callback().agentJoined(DANA));
     expect(events.types()).toEqual([
       BusEventType.HUMAN_AGENT_PRE_RECEIVE,
       BusEventType.HUMAN_AGENT_RECEIVE,
@@ -445,7 +372,7 @@ describeShared('messages from the desk', (makeDriver) => {
         agent_message_type: HumanAgentMessageType.HUMAN_AGENT_JOINED,
       }),
     ]);
-    expect(received.data.message_options.response_user_profile).toEqual(AGENT);
+    expect(received.data.message_options.response_user_profile).toEqual(DANA);
     // The reload warning is added without events, because the desk has no
     // `reconnect`.
     expect(agentTypes(chat)).toEqual([
@@ -476,7 +403,7 @@ describeShared('messages from the desk', (makeDriver) => {
         type: BusEventType.HUMAN_AGENT_PRE_RECEIVE,
         handler: (event: BusEventHumanAgentPreReceive) => {
           order.push(`pre:receive, ${seen() - before} added`);
-          expect(event.responseUserProfile).toEqual(AGENT);
+          expect(event.responseUserProfile).toEqual(DANA);
         },
       },
       {
@@ -489,7 +416,7 @@ describeShared('messages from the desk', (makeDriver) => {
     ]);
     await act(() => desk.callback().sendMessageToUser('Hi, I am Dana'));
     expect(order).toEqual(['pre:receive, 0 added', 'receive, 1 added']);
-    expect(received.responseUserProfile).toEqual(AGENT);
+    expect(received.responseUserProfile).toEqual(DANA);
     expect(received.data.output.generic).toEqual([
       {
         response_type: MessageResponseTypes.TEXT,
@@ -502,7 +429,7 @@ describeShared('messages from the desk', (makeDriver) => {
       chat.messages().length - 1
     ] as MessageResponse;
     expect(stored.id).toBe(received.data.id);
-    expect(stored.message_options.response_user_profile).toEqual(AGENT);
+    expect(stored.message_options.response_user_profile).toEqual(DANA);
   });
 
   it('stores a message object as given, marking its items as from the agent', async () => {
@@ -553,7 +480,7 @@ describeShared('messages from the desk', (makeDriver) => {
     expect(
       events.of<BusEventHumanAgentReceive>(BusEventType.HUMAN_AGENT_RECEIVE)[0]
         .responseUserProfile
-    ).toEqual(AGENT);
+    ).toEqual(DANA);
   });
 
   it('ignores the callback before a chat has started', async () => {
@@ -562,7 +489,7 @@ describeShared('messages from the desk', (makeDriver) => {
     await hydrate(chat);
     const events = recordEvents(chat, HUMAN_AGENT_EVENTS);
     const before = chat.messages().length;
-    await act(() => desk.callback().agentJoined(AGENT));
+    await act(() => desk.callback().agentJoined(DANA));
     await act(() => desk.callback().sendMessageToUser('too early'));
     expect(events.types()).toEqual([]);
     expect(chat.messages()).toHaveLength(before);
@@ -944,7 +871,7 @@ describeShared('agentJoinTimeoutSeconds', (makeDriver) => {
 
   it('stops waiting once an agent joins', async () => {
     const { desk, events } = await waitingForAgent();
-    await act(() => desk.callback().agentJoined(AGENT));
+    await act(() => desk.callback().agentJoined(DANA));
     events.clear();
     await advance(10_000);
     expect(events.types()).toEqual([]);

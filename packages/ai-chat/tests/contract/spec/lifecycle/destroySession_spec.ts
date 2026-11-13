@@ -15,14 +15,13 @@ import {
   ChatInstance,
   MessageResponse,
   MessageResponseTypes,
-  PageObjectId,
   PersistableState,
   PublicConfig,
   ViewType,
   readCarbonChatSession,
 } from '../../../../src/aiChatEntry';
 import {
-  byTestId,
+  acceptDisclaimer,
   changeView,
   contractChat,
   contractSetup,
@@ -87,15 +86,9 @@ describe('destroySession', () => {
       messaging: { skipWelcome: true },
       disclaimer: { isOn: true, disclaimerHTML: '<p>Contract terms</p>' },
     });
-    const hostname = window.location.hostname;
-    // The accept button takes a click only once its panel has measured.
-    await waitFor(() => {
-      if (!instance.getState().disclaimersAccepted[hostname]) {
-        byTestId(PageObjectId.DISCLAIMER_ACCEPT_BUTTON)?.click();
-      }
-      expect(instance.getState().disclaimersAccepted).toEqual({
-        [hostname]: true,
-      });
+    await acceptDisclaimer(instance);
+    expect(instance.getState().disclaimersAccepted).toEqual({
+      [window.location.hostname]: true,
     });
     await destroy(instance);
     expect(instance.getState().disclaimersAccepted).toEqual({});

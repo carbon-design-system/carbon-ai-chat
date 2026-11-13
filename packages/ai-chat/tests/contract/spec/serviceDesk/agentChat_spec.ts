@@ -10,126 +10,39 @@
 import { act, waitFor } from '@testing-library/react';
 
 import {
-  AdditionalDataToAgent,
   BusEventHumanAgentPreSend,
   BusEventType,
   ChatInstance,
-  EndChatInfo,
   ErrorType,
-  GenericItem,
   HumanAgentMessageType,
   MessageErrorState,
   MessageRequest,
-  MessageResponse,
-  MessageResponseTypes,
   PageObjectId,
   PublicConfig,
-  ResponseUserProfile,
-  ServiceDesk,
-  ServiceDeskCallback,
-  ServiceDeskFactoryParameters,
-  StartChatOptions,
-  UserType,
 } from '../../../../src/aiChatEntry';
 import {
   ContractMount,
+  DANA,
+  EVE,
   FakeBackend,
+  FakeDesk,
+  HUMAN_AGENT_EVENTS,
+  addConnect,
   byRole,
   click,
   contractChat,
   contractSetup,
   fakeBackend,
+  fakeDesk,
   getByTestId,
   openChat,
   pause,
   pickFiles,
   recordEvents,
-  responseOf,
   typeText,
 } from '../../helpers';
 
-/**
- * A service desk a host would plug in through `serviceDeskFactory`, built from
- * the public `ServiceDesk` type. Each default method is a mock. `callback()`
- * is the `ServiceDeskCallback` the chat handed to the latest factory call.
- */
-function fakeDesk(overrides: Partial<ServiceDesk> = {}) {
-  const made: ServiceDeskFactoryParameters[] = [];
-  const mocks = {
-    startChat: jest.fn(
-      (_message: MessageResponse, _options: StartChatOptions) =>
-        Promise.resolve()
-    ),
-    endChat: jest.fn((_info: EndChatInfo) => Promise.resolve()),
-    sendMessageToAgent: jest.fn(
-      (
-        _message: MessageRequest,
-        _messageID: string,
-        _additionalData: AdditionalDataToAgent
-      ) => Promise.resolve()
-    ),
-    areAnyAgentsOnline: jest.fn(
-      (_message: MessageResponse): Promise<boolean | null> =>
-        Promise.resolve(true)
-    ),
-    userTyping: jest.fn((_isTyping: boolean) => Promise.resolve()),
-    filesSelectedForUpload: jest.fn((_uploads: unknown[]): void => undefined),
-  };
-  const serviceDesk: ServiceDesk = {
-    getName: () => 'contract desk',
-    ...mocks,
-    ...overrides,
-  };
-  const factory = jest.fn((parameters: ServiceDeskFactoryParameters) => {
-    made.push(parameters);
-    return Promise.resolve(serviceDesk);
-  });
-  return {
-    /** The default methods' mocks. A method in `overrides` replaces its mock. */
-    desk: mocks,
-    factory,
-    callback: (): ServiceDeskCallback => made[made.length - 1].callback,
-  };
-}
-
-type FakeDesk = ReturnType<typeof fakeDesk>;
-
-const CONNECT_ITEM = {
-  response_type: MessageResponseTypes.CONNECT_TO_HUMAN_AGENT,
-  message_to_human_agent: 'The user needs help',
-} as GenericItem;
-
-const DANA: ResponseUserProfile = {
-  id: 'agent-1',
-  nickname: 'Dana',
-  user_type: UserType.HUMAN,
-};
-
-const EVE: ResponseUserProfile = {
-  id: 'agent-2',
-  nickname: 'Eve',
-  user_type: UserType.HUMAN,
-};
-
-const HUMAN_AGENT_EVENTS = [
-  BusEventType.HUMAN_AGENT_PRE_RECEIVE,
-  BusEventType.HUMAN_AGENT_RECEIVE,
-  BusEventType.HUMAN_AGENT_PRE_SEND,
-  BusEventType.HUMAN_AGENT_SEND,
-  BusEventType.HUMAN_AGENT_PRE_START_CHAT,
-  BusEventType.HUMAN_AGENT_PRE_END_CHAT,
-  BusEventType.HUMAN_AGENT_END_CHAT,
-  BusEventType.HUMAN_AGENT_ARE_ANY_AGENTS_ONLINE,
-];
-
 const humanAgent = (instance: ChatInstance) => instance.getState().humanAgent;
-
-/** Adds an assistant response holding a connect_to_agent item. */
-async function addConnect(instance: ChatInstance, id = 'r-connect') {
-  await act(() =>
-    instance.messaging.addMessage(responseOf(id, [CONNECT_ITEM]))
-  );
-}
 
 /**
  * A closed chat with the desk plugged in and an answering backend. A first

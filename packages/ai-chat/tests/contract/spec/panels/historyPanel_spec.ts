@@ -21,8 +21,8 @@ import {
   click,
   contractChat,
   contractSetup,
-  flatChildren,
   isHidden,
+  isInFlatTree,
   pause,
   recordEvents,
   textResponse,
@@ -60,13 +60,6 @@ function writeHistoryContent(instance: ChatInstance): HTMLElement {
   span.textContent = 'Contract history content';
   instance.writeableElements.historyPanelElement.append(span);
   return span;
-}
-
-/** Whether a node shows anywhere in the flat tree a user sees. */
-function isInFlatTree(target: Node): boolean {
-  const visit = (node: Node): boolean =>
-    node === target || flatChildren(node).some(visit);
-  return visit(document.body);
 }
 
 // @covers state.customPanels.history.isMobile config.history
