@@ -41,6 +41,8 @@ export type ConversationStatus =
 export interface PublicInputState {
   /**
    * Raw text currently queued in the input before being sent to customSendMessage.
+   * It uses markdown-like breaks, whichever editor shows the input: a paragraph
+   * break reads as `\n\n` and a line break as `\n`.
    */
   rawValue: string;
 
@@ -101,7 +103,8 @@ export interface PublicWorkspaceCustomPanelState {
   isOpen: boolean;
 
   /**
-   * Config options for the workspace panels.
+   * The options the open workspace was opened with. Holds only the default `preferredLocation` while the workspace
+   * is closed.
    */
   options: WorkspaceCustomPanelConfigOptions;
 

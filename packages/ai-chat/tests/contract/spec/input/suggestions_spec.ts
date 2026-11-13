@@ -238,17 +238,45 @@ describe('input.autocomplete', () => {
     expect(instance.state.get().input.rawValue).toBe('hello world');
   });
 
-  it('does not call onSelect when a chosen item sends', async () => {
+  it('calls onSelect for a chosen item that sends', async () => {
     const onSelect = jest.fn();
     const sent = await openEditor({
       input: { autocomplete: { items: [HELLO], onSelect } },
     });
     await insert(sent.editor, 'hel');
     await choose('hello world');
-    await waitFor(() => expect(sent.backend.requests).toHaveLength(1));
-    // The config's JSDoc calls onSelect the "selection callback"
-    // (src/types/config/InputConfig.ts:30); on `main` a direct send skips it.
-    expect(onSelect).not.toHaveBeenCalled();
+    await waitFor(() => expect(sent.backend.texts()).toEqual(['hello world']));
+    expect(onSelect).toHaveBeenCalledTimes(1);
+    expect(onSelect.mock.calls[0][0]).toMatchObject({ id: 'hello' });
+  });
+
+  it('sends a chosen item and logs the error when onSelect throws', async () => {
+    const consoleError = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+    try {
+      const sent = await openEditor({
+        input: {
+          autocomplete: {
+            items: [HELLO],
+            onSelect: () => {
+              throw new Error('host onSelect failed');
+            },
+          },
+        },
+      });
+      await insert(sent.editor, 'hel');
+      await choose('hello world');
+      await waitFor(() =>
+        expect(sent.backend.texts()).toEqual(['hello world'])
+      );
+      expect(consoleError).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({ message: 'host onSelect failed' })
+      );
+    } finally {
+      consoleError.mockRestore();
+    }
   });
 
   it('calls onSelect for an item inserted with disableDirectSend', async () => {
@@ -333,14 +361,14 @@ describe('input.starters', () => {
     expect(instance.state.get().input.rawValue).toBe('');
   });
 
-  it('still sends with disableDirectSend', async () => {
-    const { backend } = await openEditor({
+  it('inserts a clicked starter instead of sending it with disableDirectSend', async () => {
+    const { instance, backend } = await openEditor({
       input: { starters: { disableDirectSend: true, items: [STARTER] } },
     });
     await choose('Contract starter');
-    // src/types/config/InputConfig.ts:31 says `disableDirectSend` "inserts a
-    // clicked item into the editor instead of sending it", and
-    // `StartersConfig` takes the field; on `main` starters ignore it.
-    await waitFor(() => expect(backend.texts()).toEqual(['starter value']));
+    // A short wait proves no send follows.
+    await pause();
+    expect(backend.requests).toHaveLength(0);
+    expect(instance.state.get().input.rawValue).toBe('starter value');
   });
 });

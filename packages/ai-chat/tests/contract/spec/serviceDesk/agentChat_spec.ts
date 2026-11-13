@@ -10,6 +10,7 @@
 import { act, waitFor } from '@testing-library/react';
 
 import {
+  BusEventHumanAgentPreEndChat,
   BusEventHumanAgentPreSend,
   BusEventType,
   ChatInstance,
@@ -17,8 +18,11 @@ import {
   HumanAgentMessageType,
   MessageErrorState,
   MessageRequest,
+  MessageResponse,
+  MessageResponseTypes,
   PageObjectId,
   PublicConfig,
+  ServiceDeskFactoryParameters,
 } from '../../../../src/aiChatEntry';
 import {
   ContractMount,
@@ -27,26 +31,32 @@ import {
   FakeBackend,
   FakeDesk,
   HUMAN_AGENT_EVENTS,
+  addChunk,
   addConnect,
   byRole,
   click,
+  completeText,
   contractChat,
   contractSetup,
   fakeBackend,
   fakeDesk,
+  finalChunk,
   getByTestId,
+  mainPanelText,
   openChat,
+  partialText,
   pause,
   pickFiles,
   recordEvents,
+  textItem,
   typeText,
 } from '../../helpers';
 
 const humanAgent = (instance: ChatInstance) => instance.getState().humanAgent;
 
 /**
- * A closed chat with the desk plugged in and an answering backend. A first
- * send hydrates it, which builds the desk.
+ * A closed chat with the desk plugged in and an answering backend, loaded by
+ * a first send.
  */
 async function deskChat(
   desk: FakeDesk,
@@ -85,7 +95,6 @@ describe('state.humanAgent', () => {
       isConnecting: false,
       isSuspended: false,
       responseUserProfiles: {},
-      // Typed `responseUserProfile?: ResponseUserProfile`; `main` sets null.
       responseUserProfile: null,
     });
   });
@@ -218,7 +227,7 @@ describe('reloading during an agent chat', () => {
     return { desk, instance, reconnect: reconnectMock };
   }
 
-  it('restores the agent state, and gives the factory the saved desk state', async () => {
+  it('restores the agent state, and gives the factory the saved desk state at mount', async () => {
     await joinThenUnmount();
     const { desk, instance } = await remount(() => Promise.resolve(true));
     expect(humanAgent(instance)).toEqual(
@@ -228,12 +237,12 @@ describe('reloading during an agent chat', () => {
         serviceDeskState: { token: 'saved' },
       })
     );
-    expect(desk.factory).not.toHaveBeenCalled();
-    await act(() => instance.send('again'));
     expect(desk.factory).toHaveBeenCalledTimes(1);
     expect(desk.factory.mock.calls[0][0].persistedState).toEqual({
       token: 'saved',
     });
+    await act(() => instance.send('again'));
+    expect(desk.factory).toHaveBeenCalledTimes(1);
   });
 
   it('reconnects through the desk by default, staying connected', async () => {
@@ -245,7 +254,46 @@ describe('reloading during an agent chat', () => {
     expect(humanAgent(instance).isConnected).toBe(true);
   });
 
-  it('ends the chat quietly when the desk cannot reconnect', async () => {
+  // @covers event.human_agent:pre:endChat event.human_agent:endChat
+  it('fires no end events and makes no desk endChat call when the desk reconnects', async () => {
+    await joinThenUnmount();
+    const { desk, instance, reconnect } = await remount(() =>
+      Promise.resolve(true)
+    );
+    const events = recordEvents(instance, HUMAN_AGENT_EVENTS);
+    await act(() => instance.send('again'));
+    await waitFor(() => expect(reconnect).toHaveBeenCalledTimes(1));
+    // A short wait proves no end follows.
+    await pause();
+    expect(events.types()).toEqual([]);
+    expect(desk.desk.endChat).not.toHaveBeenCalled();
+  });
+
+  /** The end events and desk call a reload that can't resume the chat makes. */
+  function expectEnded(
+    events: ReturnType<typeof recordEvents>,
+    desk: FakeDesk,
+    preEndChatPayload: unknown = null
+  ): void {
+    expect(events.types()).toEqual([
+      BusEventType.HUMAN_AGENT_PRE_END_CHAT,
+      BusEventType.HUMAN_AGENT_END_CHAT,
+    ]);
+    expect(events.of(BusEventType.HUMAN_AGENT_PRE_END_CHAT)[0]).toEqual(
+      expect.objectContaining({ endedByHumanAgent: false })
+    );
+    expect(events.of(BusEventType.HUMAN_AGENT_END_CHAT)[0]).toEqual({
+      type: BusEventType.HUMAN_AGENT_END_CHAT,
+      endedByHumanAgent: false,
+      requestCancelled: false,
+    });
+    expect(desk.desk.endChat.mock.calls).toEqual([
+      [{ endedByHumanAgent: false, preEndChatPayload }],
+    ]);
+  }
+
+  // @covers event.human_agent:pre:endChat event.human_agent:endChat
+  it('ends the chat with the end events and the desk endChat when the desk cannot reconnect', async () => {
     await joinThenUnmount();
     const { desk, instance, reconnect } = await remount(() =>
       Promise.resolve(false)
@@ -253,12 +301,15 @@ describe('reloading during an agent chat', () => {
     const events = recordEvents(instance, HUMAN_AGENT_EVENTS);
     await act(() => instance.send('again'));
     await waitFor(() => expect(reconnect).toHaveBeenCalledTimes(1));
-    await waitFor(() => expect(humanAgent(instance).isConnected).toBe(false));
-    expect(events.types()).toEqual([]);
-    expect(desk.desk.endChat).not.toHaveBeenCalled();
+    await waitFor(() =>
+      expect(events.of(BusEventType.HUMAN_AGENT_END_CHAT)).toHaveLength(1)
+    );
+    expect(humanAgent(instance).isConnected).toBe(false);
+    expectEnded(events, desk);
   });
 
-  it('does not try to reconnect when allowReconnect is false, and ends the chat', async () => {
+  // @covers event.human_agent:pre:endChat event.human_agent:endChat
+  it('does not try to reconnect when allowReconnect is false, and ends the chat with the end events', async () => {
     await joinThenUnmount();
     const { desk, instance, reconnect } = await remount(
       () => Promise.resolve(true),
@@ -266,10 +317,63 @@ describe('reloading during an agent chat', () => {
     );
     const events = recordEvents(instance, HUMAN_AGENT_EVENTS);
     await act(() => instance.send('again'));
-    await waitFor(() => expect(humanAgent(instance).isConnected).toBe(false));
+    await waitFor(() =>
+      expect(events.of(BusEventType.HUMAN_AGENT_END_CHAT)).toHaveLength(1)
+    );
     expect(reconnect).not.toHaveBeenCalled();
-    expect(events.types()).toEqual([]);
-    expect(desk.desk.endChat).not.toHaveBeenCalled();
+    expect(humanAgent(instance).isConnected).toBe(false);
+    expectEnded(events, desk);
+  });
+
+  // @covers event.human_agent:pre:endChat event.human_agent:endChat
+  it('ends the chat even when a pre:endChat handler cancels, passing its payload to the desk', async () => {
+    await joinThenUnmount();
+    const { desk, instance } = await remount(() => Promise.resolve(false));
+    instance.on({
+      type: BusEventType.HUMAN_AGENT_PRE_END_CHAT,
+      handler: (event: BusEventHumanAgentPreEndChat) => {
+        event.cancelEndChat = true;
+        event.preEndChatPayload = { reason: 'reload' };
+      },
+    });
+    const events = recordEvents(instance, HUMAN_AGENT_EVENTS);
+    await act(() => instance.send('again'));
+    await waitFor(() =>
+      expect(events.of(BusEventType.HUMAN_AGENT_END_CHAT)).toHaveLength(1)
+    );
+    expect(humanAgent(instance).isConnected).toBe(false);
+    expectEnded(events, desk, { reason: 'reload' });
+  });
+
+  // @covers event.human_agent:pre:endChat event.human_agent:endChat
+  it('ends the chat and logs the error when a pre:endChat handler throws', async () => {
+    await joinThenUnmount();
+    const { desk, instance } = await remount(() => Promise.resolve(false));
+    const failure = new Error('Contract pre:endChat failure');
+    const handler = jest.fn(() => {
+      throw failure;
+    });
+    instance.on({ type: BusEventType.HUMAN_AGENT_PRE_END_CHAT, handler });
+    const events = recordEvents(instance, [BusEventType.HUMAN_AGENT_END_CHAT]);
+    const error = jest.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      await act(() => instance.send('again'));
+      await waitFor(() =>
+        expect(events.of(BusEventType.HUMAN_AGENT_END_CHAT)).toHaveLength(1)
+      );
+      // A short wait lets a rejection nothing caught surface and fail the test.
+      await pause();
+      expect(error.mock.calls.some((call) => call.includes(failure))).toBe(
+        true
+      );
+    } finally {
+      error.mockRestore();
+    }
+    expect(handler).toHaveBeenCalledTimes(1);
+    expect(humanAgent(instance).isConnected).toBe(false);
+    expect(desk.desk.endChat.mock.calls).toEqual([
+      [{ endedByHumanAgent: false, preEndChatPayload: null }],
+    ]);
   });
 });
 
@@ -305,9 +409,69 @@ describe('a new serviceDeskFactory during an agent chat', () => {
   });
 });
 
+// @covers config.serviceDeskFactory
+describe('a new serviceDeskFactory with no agent chat', () => {
+  contractSetup();
+
+  it('is not called on rerenders; the next load calls the latest one', async () => {
+    const desk = fakeDesk();
+    const backend = fakeBackend({ autoResolve: true });
+    const calledBy: number[] = [];
+    let renders = 0;
+    const props = () => {
+      const render = renders++;
+      return {
+        serviceDeskFactory: (parameters: ServiceDeskFactoryParameters) => {
+          calledBy.push(render);
+          return desk.factory(parameters);
+        },
+        messaging: { customSendMessage: backend.customSendMessage },
+      };
+    };
+    const { instance, rerender } = await contractChat(props());
+    await rerender(props());
+    await rerender(props());
+    await rerender(props());
+    // A short wait to show no call follows.
+    await pause();
+    expect(calledBy).toEqual([0]);
+    await act(() => instance.send('hello'));
+    expect(calledBy).toEqual([0, 3]);
+  });
+
+  it('calls the latest one when an agent chat is requested after the chat loaded', async () => {
+    const desk = fakeDesk();
+    const backend = fakeBackend({ autoResolve: true });
+    const calledBy: number[] = [];
+    let renders = 0;
+    const props = () => {
+      const render = renders++;
+      return {
+        serviceDeskFactory: (parameters: ServiceDeskFactoryParameters) => {
+          calledBy.push(render);
+          return desk.factory(parameters);
+        },
+        serviceDesk: { skipConnectHumanAgentCard: true },
+        messaging: { customSendMessage: backend.customSendMessage },
+      };
+    };
+    const { instance, rerender } = await contractChat(props());
+    await act(() => instance.send('hello'));
+    await rerender(props());
+    await rerender(props());
+    // A short wait to show no call follows.
+    await pause();
+    expect(calledBy).toEqual([0]);
+    await addConnect(instance);
+    await waitFor(() => expect(desk.desk.startChat).toHaveBeenCalledTimes(1));
+    expect(calledBy).toEqual([0, 2]);
+  });
+});
+
 const STRINGS = {
   agent_startChat: 'Contract connect',
   input_uploadButtonLabel: 'Contract attach',
+  errors_connectingToHumanAgent: 'Contract cannot connect',
 };
 
 /** Opens the chat with the desk plugged in, and connects through the card's button. */
@@ -344,6 +508,71 @@ describe('the connect-to-agent card', () => {
     expect(events.types()).toEqual([BusEventType.HUMAN_AGENT_PRE_START_CHAT]);
     expect(desk.desk.startChat.mock.calls[0][0].id).toBe('r-connect');
     expect(humanAgent(instance).isConnecting).toBe(true);
+  });
+
+  it('shows the connecting error and ends the request when the desk startChat rejects', async () => {
+    const desk = fakeDesk();
+    desk.desk.startChat.mockImplementation(() =>
+      Promise.reject(new Error('desk down'))
+    );
+    const { instance } = await openAndConnectByCard(desk);
+    const events = recordEvents(instance, HUMAN_AGENT_EVENTS);
+    await click(byRole('button', STRINGS.agent_startChat));
+    await waitFor(() =>
+      expect(events.of(BusEventType.HUMAN_AGENT_END_CHAT)).toHaveLength(1)
+    );
+    // A short wait lets a rejection nothing caught surface and fail the test.
+    await pause();
+    expect(events.types()).toEqual([
+      BusEventType.HUMAN_AGENT_PRE_START_CHAT,
+      BusEventType.HUMAN_AGENT_END_CHAT,
+    ]);
+    expect(events.of(BusEventType.HUMAN_AGENT_END_CHAT)[0]).toEqual({
+      type: BusEventType.HUMAN_AGENT_END_CHAT,
+      endedByHumanAgent: false,
+      requestCancelled: true,
+    });
+    const { messages } = instance.getState();
+    const last = messages[messages.length - 1] as MessageResponse;
+    expect(last.output.generic).toEqual([
+      expect.objectContaining({
+        response_type: MessageResponseTypes.INLINE_ERROR,
+        text: STRINGS.errors_connectingToHumanAgent,
+      }),
+    ]);
+    expect(humanAgent(instance)).toEqual(
+      expect.objectContaining({ isConnecting: false, isConnected: false })
+    );
+  });
+});
+
+// @covers config.serviceDeskFactory
+describe('the connect-to-agent card with no desk', () => {
+  contractSetup();
+
+  it('logs the error when the factory failed and the user clicks its button', async () => {
+    const error = jest.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const { instance } = await openChat({
+        serviceDeskFactory: () => Promise.reject(new Error('Contract no desk')),
+        strings: STRINGS,
+      });
+      await addConnect(instance);
+      await waitFor(() => byRole('button', STRINGS.agent_startChat));
+      error.mockClear();
+      await click(byRole('button', STRINGS.agent_startChat));
+      await waitFor(() => expect(error).toHaveBeenCalled());
+      expect(
+        error.mock.calls.some((call) =>
+          call.some((value) => value instanceof Error)
+        )
+      ).toBe(true);
+      expect(humanAgent(instance)).toEqual(
+        expect.objectContaining({ isConnecting: false, isConnected: false })
+      );
+    } finally {
+      error.mockRestore();
+    }
   });
 });
 
@@ -441,36 +670,33 @@ describe('typing to an agent', () => {
     expect(stored.history.error_state).toBe(MessageErrorState.FAILED);
   });
 
-  // `main` passes the message's item ID as `messageID`, not the message's
-  // `id`, so a USER_MESSAGE error naming it changes nothing; only the
-  // message's own `id` works (`HumanAgentServiceImpl.ts:520`, `:601`, `:1417`).
-  it('marks a sent message failed for a USER_MESSAGE error naming its id, not the messageID given', async () => {
-    const desk = fakeDesk();
-    const { instance } = await openAndJoin(desk);
-    await typeAndSend('later failed');
-    await waitFor(() =>
-      expect(desk.desk.sendMessageToAgent).toHaveBeenCalledTimes(1)
-    );
-    const [message, messageID] = desk.desk.sendMessageToAgent.mock.calls[0];
-    const errorState = () =>
-      instance.getState().messages.find((stored) => stored.id === message.id)
-        .history.error_state;
-    await waitFor(() => expect(errorState()).toBe(MessageErrorState.NONE));
-    expect(messageID).not.toBe(message.id);
-    await act(() =>
-      desk
-        .callback()
-        .setErrorStatus({ type: ErrorType.USER_MESSAGE, messageID })
-    );
-    expect(errorState()).toBe(MessageErrorState.NONE);
-    await act(() =>
-      desk.callback().setErrorStatus({
-        type: ErrorType.USER_MESSAGE,
-        messageID: message.id,
-      })
-    );
-    expect(errorState()).toBe(MessageErrorState.FAILED);
-  });
+  it.each([
+    ['the messageID the desk was given', 'given'],
+    ["the message's own id", 'own'],
+  ])(
+    'marks a sent message failed for a USER_MESSAGE error naming %s',
+    async (_case, named) => {
+      const desk = fakeDesk();
+      const { instance } = await openAndJoin(desk);
+      await typeAndSend('later failed');
+      await waitFor(() =>
+        expect(desk.desk.sendMessageToAgent).toHaveBeenCalledTimes(1)
+      );
+      const [message, messageID] = desk.desk.sendMessageToAgent.mock.calls[0];
+      const errorState = () =>
+        instance.getState().messages.find((stored) => stored.id === message.id)
+          .history.error_state;
+      await waitFor(() => expect(errorState()).toBe(MessageErrorState.NONE));
+      expect(messageID).not.toBe(message.id);
+      await act(() =>
+        desk.callback().setErrorStatus({
+          type: ErrorType.USER_MESSAGE,
+          messageID: named === 'given' ? messageID : message.id,
+        })
+      );
+      expect(errorState()).toBe(MessageErrorState.FAILED);
+    }
+  );
 
   it('tells the desk the user is typing', async () => {
     const desk = fakeDesk();
@@ -514,5 +740,64 @@ describe('typing to an agent', () => {
     expect(desk.desk.sendMessageToAgent.mock.calls[0][2]).toEqual({
       filesToUpload: [],
     });
+  });
+});
+
+/** Where each text first shows in the main panel, in order of position. */
+function shownOrder(texts: string[]): string[] {
+  const shown = mainPanelText();
+  for (const text of texts) {
+    expect(shown).toContain(text);
+  }
+  return [...texts].sort((a, b) => shown.indexOf(a) - shown.indexOf(b));
+}
+
+// @covers instance.serviceDesk.updateIsSuspended
+describe('agent messages held while suspended', () => {
+  contractSetup();
+
+  /** An open chat in a suspended agent chat with Dana. */
+  async function suspendedChat(desk: FakeDesk) {
+    const mount = await deskChat(desk, { openChatByDefault: true });
+    await joined(mount.instance, desk);
+    await act(() => mount.instance.serviceDesk.updateIsSuspended(true));
+    return mount;
+  }
+
+  it('shows desk messages held while the assistant streams after the whole streamed response, in arrival order', async () => {
+    const desk = fakeDesk();
+    const { instance } = await suspendedChat(desk);
+    await addChunk(instance, partialText('r-stream', 'i1', 'Stream one'));
+    await addChunk(instance, completeText('r-stream', 'i1', 'Stream one'));
+    await act(() => desk.callback().sendMessageToUser('Held mid-stream'));
+    await addChunk(instance, partialText('r-stream', 'i2', 'Stream two'));
+    await addChunk(instance, completeText('r-stream', 'i2', 'Stream two'));
+    await act(() => desk.callback().sendMessageToUser('Held later'));
+    await addChunk(
+      instance,
+      finalChunk('r-stream', [
+        textItem('Stream one', 'i1'),
+        textItem('Stream two', 'i2'),
+      ])
+    );
+    await act(() => instance.serviceDesk.updateIsSuspended(false));
+    await waitFor(() => expect(mainPanelText()).toContain('Held later'));
+    expect(
+      shownOrder(['Held later', 'Held mid-stream', 'Stream two', 'Stream one'])
+    ).toEqual(['Stream one', 'Stream two', 'Held mid-stream', 'Held later']);
+  });
+
+  // @covers instance.destroySession
+  it('drops held messages on destroySession', async () => {
+    const desk = fakeDesk();
+    const { instance } = await suspendedChat(desk);
+    await act(() => desk.callback().sendMessageToUser('Held then destroyed'));
+    const count = instance.getState().messages.length;
+    await act(() => instance.destroySession(true));
+    await act(() => instance.serviceDesk.updateIsSuspended(false));
+    // A short wait to show nothing is added.
+    await pause();
+    expect(instance.getState().messages).toHaveLength(count);
+    expect(mainPanelText()).not.toContain('Held then destroyed');
   });
 });

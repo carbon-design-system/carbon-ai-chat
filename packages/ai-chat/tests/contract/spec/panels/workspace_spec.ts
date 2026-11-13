@@ -23,6 +23,8 @@ import {
   WorkspaceCustomPanelConfigOptions,
 } from '../../../../src/aiChatEntry';
 import {
+  advance,
+  allByRole,
   byRole,
   click,
   contractChat,
@@ -122,27 +124,73 @@ describe('workspace state', () => {
     expect(instance.state.get().customPanels.workspace).toEqual(CLOSED);
   });
 
-  // `options` is typed `WorkspaceCustomPanelConfigOptions`, but on `main` it
-  // holds only `preferredLocation`: `title`, `workspaceId`, and
-  // `additionalData` never reach it (src/chat/utils/publicState.ts:200,218).
-  it('holds the opened workspace: isOpen, preferredLocation, ID, and data', async () => {
+  it('holds the opened workspace: isOpen, the options it opened with, ID, and data', async () => {
     const { instance } = await mountOpen();
     await openWorkspace(instance, OPTIONS);
     const expected = {
       isOpen: true,
-      options: { preferredLocation: 'start' },
+      options: OPTIONS,
       workspaceID: 'contract-workspace',
       additionalData: { source: 'contract' },
     };
     expect(instance.state.get().workspace).toEqual(expected);
     expect(instance.state.get().customPanels.workspace).toEqual(expected);
-    expect(instance.state.get().workspace.options).not.toHaveProperty('title');
-    expect(instance.state.get().workspace.options).not.toHaveProperty(
-      'workspaceId'
-    );
-    expect(instance.state.get().workspace.options).not.toHaveProperty(
-      'additionalData'
-    );
+  });
+
+  // @covers event.workspace:pre:close
+  it('closes on restartConversation even when a pre:close handler throws', async () => {
+    const { instance } = await mountOpen();
+    await openWorkspace(instance, OPTIONS);
+    const handler = jest.fn(() => {
+      throw new Error('Contract pre:close failure');
+    });
+    instance.on({ type: BusEventType.WORKSPACE_PRE_CLOSE, handler });
+    const events = recordEvents(instance, [BusEventType.RESTART_CONVERSATION]);
+    const error = jest.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      await act(() => instance.messaging.restartConversation());
+    } finally {
+      error.mockRestore();
+    }
+    expect(handler).toHaveBeenCalledTimes(1);
+    expect(instance.state.get().workspace).toEqual(CLOSED);
+    expect(events.types()).toEqual([BusEventType.RESTART_CONVERSATION]);
+  });
+
+  // @covers event.workspace:pre:close instance.messaging.restartConversation
+  it('finishes a close whose pre:close handler awaits restartConversation, closing the workspace', async () => {
+    const { instance } = await mountOpen();
+    await openWorkspace(instance, OPTIONS);
+    const events = recordEvents(instance, [BusEventType.RESTART_CONVERSATION]);
+    let restarted = false;
+    instance.once({
+      type: BusEventType.WORKSPACE_PRE_CLOSE,
+      handler: async () => {
+        await instance.messaging.restartConversation();
+        restarted = true;
+      },
+    });
+    const error = jest.spyOn(console, 'error').mockImplementation(() => {});
+    jest.useFakeTimers();
+    let closed = false;
+    await act(async () => {
+      workspacePanel(instance)
+        .close()
+        .then(() => {
+          closed = true;
+        });
+    });
+    try {
+      // The restart closes the workspace too, and that close's pre:close waits behind the running one until the
+      // chat gives up on it after 10 seconds.
+      await advance(10_000);
+    } finally {
+      error.mockRestore();
+    }
+    expect(closed).toBe(true);
+    expect(restarted).toBe(true);
+    expect(instance.state.get().workspace).toEqual(CLOSED);
+    expect(events.types()).toEqual([BusEventType.RESTART_CONVERSATION]);
   });
 
   it('opens at the end with no ID or data when open gets no options', async () => {
@@ -166,17 +214,22 @@ describe('workspace state', () => {
     expect(instance.state.get().customPanels.history.isOpen).toBe(false);
   });
 
-  // Unlike the default panel, which fires its close events on restart (see
-  // customPanel_spec.ts), the workspace closes with no workspace event.
-  it('closes on restartConversation, firing no workspace event', async () => {
+  // @covers event.workspace:pre:close event.workspace:close
+  it('closes on restartConversation, firing pre:close then close with the ID and data it opened with', async () => {
     const { instance } = await mountOpen();
     await openWorkspace(instance, OPTIONS);
     const events = recordEvents(instance, WORKSPACE_EVENTS);
     await act(() => instance.messaging.restartConversation());
-    // A short wait to show no close event fires.
-    await pause(300);
     expect(instance.state.get().workspace).toEqual(CLOSED);
-    expect(events.types()).toEqual([]);
+    expect(events.events.map(summary)).toEqual(
+      [BusEventType.WORKSPACE_PRE_CLOSE, BusEventType.WORKSPACE_CLOSE].map(
+        (type) => ({
+          type,
+          workspaceId: 'contract-workspace',
+          additionalData: { source: 'contract' },
+        })
+      )
+    );
   });
 });
 
@@ -314,31 +367,17 @@ describe('workspace events', () => {
     );
   });
 
-  // Unlike the default panel, closing a closed workspace still fires both
-  // close events.
-  it('fires pre:close and close, with no ID or data, when a closed workspace is closed', async () => {
+  it('fires no events when a closed workspace is closed', async () => {
     const { instance } = await mountOpen();
     const events = recordEvents(instance, WORKSPACE_EVENTS);
     await closeWorkspace(instance);
-    expect(events.events.map(summary)).toEqual([
-      {
-        type: BusEventType.WORKSPACE_PRE_CLOSE,
-        workspaceId: undefined,
-        additionalData: undefined,
-      },
-      {
-        type: BusEventType.WORKSPACE_CLOSE,
-        workspaceId: undefined,
-        additionalData: undefined,
-      },
-    ]);
+    // A short wait to show nothing fires.
+    await pause();
+    expect(events.types()).toEqual([]);
+    expect(instance.state.get().workspace).toEqual(CLOSED);
   });
 
-  // Suspected `main` bug (reported, not in INTENDED.md): `open` closes the
-  // open workspace without waiting (src/chat/services/CustomPanelInstance.ts:237),
-  // and that close resets the state after the new ID is stored, so the new
-  // workspace opens with no ID or data and its open event carries none.
-  it('closes an open workspace before opening another, and loses the new ID', async () => {
+  it('finishes closing an open workspace before opening another with its own ID and data', async () => {
     const { instance } = await mountOpen();
     await openWorkspace(instance, OPTIONS);
     const events = recordEvents(instance, WORKSPACE_EVENTS);
@@ -346,40 +385,105 @@ describe('workspace events', () => {
       workspaceId: 'second-workspace',
       additionalData: { source: 'second' },
     });
-    const byType = (type: BusEventType) =>
-      events.events.filter((event) => event.type === type).map(summary);
-    expect(events.types()).toHaveLength(4);
-    expect(events.types()[0]).toBe(BusEventType.WORKSPACE_PRE_CLOSE);
-    expect(events.types()[3]).toBe(BusEventType.WORKSPACE_OPEN);
-    expect(byType(BusEventType.WORKSPACE_PRE_CLOSE)).toEqual([
-      {
-        type: BusEventType.WORKSPACE_PRE_CLOSE,
-        workspaceId: 'contract-workspace',
-        additionalData: { source: 'contract' },
-      },
+    const first = {
+      workspaceId: 'contract-workspace',
+      additionalData: { source: 'contract' },
+    };
+    const second = {
+      workspaceId: 'second-workspace',
+      additionalData: { source: 'second' },
+    };
+    expect(events.events.map(summary)).toEqual([
+      { type: BusEventType.WORKSPACE_PRE_CLOSE, ...first },
+      { type: BusEventType.WORKSPACE_CLOSE, ...first },
+      { type: BusEventType.WORKSPACE_PRE_OPEN, ...second },
+      { type: BusEventType.WORKSPACE_OPEN, ...second },
     ]);
-    expect(byType(BusEventType.WORKSPACE_CLOSE)).toEqual([
-      {
-        type: BusEventType.WORKSPACE_CLOSE,
-        workspaceId: 'contract-workspace',
-        additionalData: { source: 'contract' },
-      },
+    expect(instance.state.get().workspace).toEqual({
+      isOpen: true,
+      options: { preferredLocation: 'end', ...second },
+      workspaceID: 'second-workspace',
+      additionalData: { source: 'second' },
+    });
+  });
+
+  it('runs two opens made at once one after another: the open workspace closes once, then each opens in turn', async () => {
+    const { instance } = await mountOpen();
+    await openWorkspace(instance, { workspaceId: 'a' });
+    const events = recordEvents(instance, WORKSPACE_EVENTS);
+    const panel = workspacePanel(instance);
+    await act(() =>
+      Promise.all([
+        panel.open({ workspaceId: 'b' }),
+        panel.open({ workspaceId: 'c' }),
+      ])
+    );
+    expect(
+      events.events.map((event) => [event.type, summary(event).workspaceId])
+    ).toEqual([
+      [BusEventType.WORKSPACE_PRE_CLOSE, 'a'],
+      [BusEventType.WORKSPACE_CLOSE, 'a'],
+      [BusEventType.WORKSPACE_PRE_OPEN, 'b'],
+      [BusEventType.WORKSPACE_OPEN, 'b'],
+      [BusEventType.WORKSPACE_PRE_CLOSE, 'b'],
+      [BusEventType.WORKSPACE_CLOSE, 'b'],
+      [BusEventType.WORKSPACE_PRE_OPEN, 'c'],
+      [BusEventType.WORKSPACE_OPEN, 'c'],
     ]);
-    expect(byType(BusEventType.WORKSPACE_PRE_OPEN)).toEqual([
-      {
-        type: BusEventType.WORKSPACE_PRE_OPEN,
-        workspaceId: 'second-workspace',
-        additionalData: { source: 'second' },
+    expect(instance.state.get().workspace).toEqual(
+      expect.objectContaining({ isOpen: true, workspaceID: 'c' })
+    );
+  });
+
+  it('finishes an open whose open handler awaits close, leaving the workspace closed', async () => {
+    const { instance } = await mountOpen();
+    const events = recordEvents(instance, WORKSPACE_EVENTS);
+    let closed = false;
+    instance.once({
+      type: BusEventType.WORKSPACE_OPEN,
+      handler: async () => {
+        await workspacePanel(instance).close();
+        closed = true;
       },
+    });
+    await openWorkspace(instance, OPTIONS);
+    expect(closed).toBe(true);
+    expect(events.types()).toEqual(WORKSPACE_EVENTS);
+    expect(instance.state.get().workspace).toEqual(CLOSED);
+  });
+
+  it('opens another workspace when a pre:close handler throws, logging the error', async () => {
+    const { instance } = await mountOpen();
+    await openWorkspace(instance, OPTIONS);
+    const events = recordEvents(instance, WORKSPACE_EVENTS);
+    const failure = new Error('Contract pre:close failure');
+    const handler = jest.fn(() => {
+      throw failure;
+    });
+    instance.on({ type: BusEventType.WORKSPACE_PRE_CLOSE, handler });
+    const error = jest.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      await openWorkspace(instance, { workspaceId: 'second-workspace' });
+      expect(error.mock.calls.some((call) => call.includes(failure))).toBe(
+        true
+      );
+    } finally {
+      error.mockRestore();
+    }
+    expect(handler).toHaveBeenCalledTimes(1);
+    expect(
+      events.events.map((event) => [event.type, summary(event).workspaceId])
+    ).toEqual([
+      [BusEventType.WORKSPACE_PRE_CLOSE, 'contract-workspace'],
+      [BusEventType.WORKSPACE_PRE_OPEN, 'second-workspace'],
+      [BusEventType.WORKSPACE_OPEN, 'second-workspace'],
     ]);
-    expect(byType(BusEventType.WORKSPACE_OPEN)).toEqual([
-      {
-        type: BusEventType.WORKSPACE_OPEN,
-        workspaceId: undefined,
-        additionalData: undefined,
-      },
-    ]);
-    expect(instance.state.get().workspace).toEqual({ ...CLOSED, isOpen: true });
+    expect(instance.state.get().workspace).toEqual({
+      isOpen: true,
+      options: { preferredLocation: 'end', workspaceId: 'second-workspace' },
+      workspaceID: 'second-workspace',
+      additionalData: undefined,
+    });
   });
 });
 
@@ -417,9 +521,21 @@ describe('workspacePanelElement', () => {
   });
 });
 
-// The preview card's open button has no `strings` key; on `main` its label is
-// fixed copy, so the tests find it by that text.
-const VIEW_DETAILS = 'View details';
+// Copy the tests set through `strings`, so they find the preview card's button
+// by an accessible name they own rather than by the chat's default text.
+const STRINGS = {
+  previewCard_viewDetails: 'Contract view details',
+  previewCard_viewing: 'Contract viewing',
+};
+
+/** Mounts an open chat with no welcome and the test strings. */
+async function mountForCards() {
+  return contractChat({
+    openChatByDefault: true,
+    messaging: { skipWelcome: true },
+    strings: STRINGS,
+  });
+}
 
 /** A preview card with these fields, in a response with ID `r-card`. */
 function previewCard(extra: Partial<PreviewCardItem> = {}): PreviewCardItem {
@@ -433,13 +549,10 @@ function previewCard(extra: Partial<PreviewCardItem> = {}): PreviewCardItem {
 
 /** Mounts an open chat, adds a response holding `item`, and clicks it open. */
 async function openFromCard(item: PreviewCardItem) {
-  const { instance } = await contractChat({
-    openChatByDefault: true,
-    messaging: { skipWelcome: true },
-  });
+  const { instance } = await mountForCards();
   const events = recordEvents(instance, WORKSPACE_EVENTS);
   await act(() => instance.messaging.addMessage(responseOf('r-card', [item])));
-  await click(byRole('button', VIEW_DETAILS));
+  await click(byRole('button', STRINGS.previewCard_viewDetails));
   await waitFor(() =>
     expect(events.types()).toEqual([
       BusEventType.WORKSPACE_PRE_OPEN,
@@ -484,7 +597,11 @@ describe('workspace opened from a preview card', () => {
     );
     expect(instance.state.get().workspace).toEqual({
       isOpen: true,
-      options: { preferredLocation: 'start' },
+      options: {
+        preferredLocation: 'start',
+        workspaceId: 'card-workspace',
+        additionalData: { from: 'card' },
+      },
       workspaceID: 'card-workspace',
       additionalData: { from: 'card' },
     });
@@ -502,6 +619,122 @@ describe('workspace opened from a preview card', () => {
           additionalData: { from: 'card' },
           message: undefined as unknown,
           fullMessage: undefined as unknown,
+        })
+      )
+    );
+  });
+
+  // @covers config.strings
+  it('labels the button with the strings for view details, then viewing once its workspace is open', async () => {
+    await openFromCard(previewCard({ workspace_id: 'card-workspace' }));
+    await waitFor(() =>
+      expect(allByRole('button', STRINGS.previewCard_viewing)).toHaveLength(1)
+    );
+    expect(allByRole('button', STRINGS.previewCard_viewDetails)).toHaveLength(
+      0
+    );
+  });
+
+  it('closes the workspace one card opened before another card opens its own', async () => {
+    const { instance } = await mountForCards();
+    await act(() =>
+      instance.messaging.addMessage(
+        responseOf('r-cards', [
+          previewCard({ title: 'Card A', workspace_id: 'card-a' }),
+          previewCard({ title: 'Card B', workspace_id: 'card-b' }),
+        ])
+      )
+    );
+    const [cardA, cardB] = allByRole('button', STRINGS.previewCard_viewDetails);
+    await click(cardA);
+    await waitFor(() =>
+      expect(instance.state.get().workspace.workspaceID).toBe('card-a')
+    );
+    const events = recordEvents(instance, WORKSPACE_EVENTS);
+    await click(cardB);
+    await waitFor(() => expect(events.types()).toHaveLength(4));
+    expect(
+      events.events.map((event) => [event.type, summary(event).workspaceId])
+    ).toEqual([
+      [BusEventType.WORKSPACE_PRE_CLOSE, 'card-a'],
+      [BusEventType.WORKSPACE_CLOSE, 'card-a'],
+      [BusEventType.WORKSPACE_PRE_OPEN, 'card-b'],
+      [BusEventType.WORKSPACE_OPEN, 'card-b'],
+    ]);
+    expect(instance.state.get().workspace.isOpen).toBe(true);
+    expect(instance.state.get().workspace.workspaceID).toBe('card-b');
+  });
+
+  it('opens another card’s workspace when a pre:close handler throws, logging the error', async () => {
+    const { instance } = await mountForCards();
+    await act(() =>
+      instance.messaging.addMessage(
+        responseOf('r-cards', [
+          previewCard({ title: 'Card A', workspace_id: 'card-a' }),
+          previewCard({ title: 'Card B', workspace_id: 'card-b' }),
+        ])
+      )
+    );
+    const [cardA, cardB] = allByRole('button', STRINGS.previewCard_viewDetails);
+    await click(cardA);
+    await waitFor(() =>
+      expect(instance.state.get().workspace.workspaceID).toBe('card-a')
+    );
+    const failure = new Error('Contract pre:close failure');
+    const handler = jest.fn(() => {
+      throw failure;
+    });
+    instance.on({ type: BusEventType.WORKSPACE_PRE_CLOSE, handler });
+    const error = jest.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      await click(cardB);
+      await waitFor(() =>
+        expect(instance.state.get().workspace.workspaceID).toBe('card-b')
+      );
+      // A short wait lets a rejection nothing caught surface and fail the test.
+      await pause();
+      expect(error.mock.calls.some((call) => call.includes(failure))).toBe(
+        true
+      );
+    } finally {
+      error.mockRestore();
+    }
+    expect(handler).toHaveBeenCalledTimes(1);
+    expect(instance.state.get().workspace.isOpen).toBe(true);
+  });
+
+  it('logs a pre:open handler that throws when a card opens its workspace, and the card opens it once the handler is gone', async () => {
+    const { instance } = await mountForCards();
+    await act(() =>
+      instance.messaging.addMessage(
+        responseOf('r-card', [previewCard({ workspace_id: 'card-workspace' })])
+      )
+    );
+    const failure = new Error('Contract pre:open failure');
+    const handler = jest.fn(() => {
+      throw failure;
+    });
+    instance.on({ type: BusEventType.WORKSPACE_PRE_OPEN, handler });
+    const error = jest.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      await click(byRole('button', STRINGS.previewCard_viewDetails));
+      await waitFor(() =>
+        expect(error.mock.calls.some((call) => call.includes(failure))).toBe(
+          true
+        )
+      );
+    } finally {
+      error.mockRestore();
+    }
+    expect(handler).toHaveBeenCalledTimes(1);
+    expect(instance.state.get().workspace.isOpen).toBe(false);
+    instance.off({ type: BusEventType.WORKSPACE_PRE_OPEN, handler });
+    await click(byRole('button', STRINGS.previewCard_viewDetails));
+    await waitFor(() =>
+      expect(instance.state.get().workspace).toEqual(
+        expect.objectContaining({
+          isOpen: true,
+          workspaceID: 'card-workspace',
         })
       )
     );

@@ -210,7 +210,7 @@ deepFreeze(VIEW_STATE_MAIN_WINDOW_OPEN);
 
 const DEFAULT_INPUT_STATE: InputState = {
   rawValue: '',
-  content: [],
+  content: { type: 'doc', content: [{ type: 'paragraph' }] },
   focused: false,
   fieldVisible: null,
   isReadonly: null,
@@ -907,8 +907,17 @@ function computeLocalIDInsertionPoint(
 /**
  * Adds the given full message to the redux store. This will add it global to the global map as well as add the
  * id to the specific chat type.
+ *
+ * @param state The state to add the message to.
+ * @param message The message to add.
+ * @param addAfterID Places a new message right after this message, when it is in the list. Otherwise a new message
+ * goes at the end.
  */
-function applyFullMessage(state: AppState, message: Message): AppState {
+function applyFullMessage(
+  state: AppState,
+  message: Message,
+  addAfterID?: string
+): AppState {
   // Add the original message to the global map.
   const newState = {
     ...state,
@@ -920,8 +929,10 @@ function applyFullMessage(state: AppState, message: Message): AppState {
 
   // Now add the full message ID to the specific ChatMessagesState but only if it's a new message.
   if (!state.allMessagesByID[message.id]) {
-    const currentMessageIDs = state.assistantMessageState.messageIDs;
-    const newMessageIDs = [...currentMessageIDs, message.id];
+    const newMessageIDs = [...state.assistantMessageState.messageIDs];
+    const afterIndex = addAfterID ? newMessageIDs.indexOf(addAfterID) : -1;
+    const insertAt = afterIndex === -1 ? newMessageIDs.length : afterIndex + 1;
+    newMessageIDs.splice(insertAt, 0, message.id);
     return applyAssistantMessageState(newState, { messageIDs: newMessageIDs });
   }
 

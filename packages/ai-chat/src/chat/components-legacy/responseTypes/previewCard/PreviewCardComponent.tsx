@@ -23,6 +23,8 @@ import {
   MessageResponse,
 } from '../../../../types/messaging/Messages';
 import actions from '../../../store/actions';
+import { closeWorkspaceForNext } from '../../../services/CustomPanelInstance';
+import { consoleError } from '../../../utils/miscUtils';
 
 interface PreviewCardComponentProps {
   localMessageItem: LocalMessageItem;
@@ -39,10 +41,12 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
     item;
 
   const serviceManager = useServiceManager();
-  const { isOpen, workspaceID } = useSelector(
+  const { isOpen, workspaceID, viewDetailsLabel, viewingLabel } = useSelector(
     (state: AppState) => ({
       isOpen: state.workspacePanelState.isOpen,
       workspaceID: state.workspacePanelState.workspaceID,
+      viewDetailsLabel: state.languagePack.previewCard_viewDetails,
+      viewingLabel: state.languagePack.previewCard_viewing,
     }),
     shallowEqual
   );
@@ -52,7 +56,12 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
 
   const isViewing = isOpen && workspaceID === workspace_id;
 
-  const handleClick = useCallback(() => {
+  const handleClick = useCallback(async () => {
+    // Close the open workspace before storing this card's data, so its close events carry its own data.
+    if (serviceManager.store.getState().workspacePanelState.isOpen) {
+      await closeWorkspaceForNext(() => panel.close(), serviceManager);
+    }
+
     // Store workspace panel data in Redux before opening
     serviceManager.store.dispatch(
       actions.setWorkspacePanelData({
@@ -63,20 +72,27 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
       })
     );
 
-    // Open the panel - it will fire WORKSPACE_PRE_OPEN and WORKSPACE_OPEN events
-    // If a workspace is already open, it will be closed first (handled in CustomPanelInstance)
-    panel.open({
-      ...workspace_options,
-      workspaceId: workspace_id,
-      additionalData: additional_data,
-    });
+    // Open the panel - it will fire WORKSPACE_PRE_OPEN and WORKSPACE_OPEN events. Nothing awaits the click, so a
+    // workspace handler that throws is logged here.
+    panel
+      .open({
+        ...workspace_options,
+        workspaceId: workspace_id,
+        additionalData: additional_data,
+      })
+      .catch((error) => {
+        consoleError(
+          'A workspace open handler failed while a preview card opened its workspace.',
+          error
+        );
+      });
   }, [
     workspace_id,
     workspace_options,
     additional_data,
     localMessageItem,
     fullMessage,
-    serviceManager.store,
+    serviceManager,
     panel,
   ]);
 
@@ -86,12 +102,12 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
         icon: isViewing ? View16 : Maximize16,
         id: 'docs',
         kind: 'ghost',
-        label: isViewing ? 'Viewing' : 'View details',
+        label: isViewing ? viewingLabel : viewDetailsLabel,
         payload: { test: 'value' },
         isViewing,
       },
     ],
-    [isViewing]
+    [isViewing, viewingLabel, viewDetailsLabel]
   );
 
   return (

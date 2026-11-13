@@ -171,12 +171,14 @@ class ChunkProcessingService {
       messageID
     );
     const lifecycle = this.serviceManager.conversationLifecycleService;
-    // After a stop, the stopped request's own response still takes its closing complete_item and
-    // final_response, but no more partial content.
+    // After the user stops a request, its own response still takes its closing complete_item and
+    // final_response, but no more partial content. After a failed send, its own response still
+    // takes every chunk.
     if (
       requestID &&
       lifecycle.isRequestStopped(requestID) &&
-      (isStreamPartialItem(chunk) ||
+      ((isStreamPartialItem(chunk) &&
+        lifecycle.isRequestStoppedByUser(requestID)) ||
         !lifecycle.isResponseOwnedByRequest(extractedMessageID, requestID))
     ) {
       return;

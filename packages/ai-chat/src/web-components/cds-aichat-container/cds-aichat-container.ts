@@ -351,7 +351,8 @@ class ChatContainer extends FlattenedConfigElement {
    * Retires the current mount: no more rendering or callbacks from it, and
    * nothing it collected survives. This is not service teardown — its
    * services keep running, and work the host's callbacks started is not
-   * canceled. Exhaustive disposal is #1681.
+   * canceled, except that each pending upload's abort signal fires.
+   * Exhaustive disposal is #1681.
    */
   private releaseMount() {
     const state = this.current;
@@ -359,6 +360,7 @@ class ChatContainer extends FlattenedConfigElement {
       this.current = undefined;
       clearTimeout(state.afterRenderTimer);
       state.removeWindowListeners?.();
+      state.serviceManager?.inputActionsService.abortPendingUploads();
       // Settle the private waits so a boot paused on one resumes, finds it is
       // retired, and stops.
       state.listenersReady.doResolve();

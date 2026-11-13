@@ -178,7 +178,7 @@ const fieldDefinitions: readonly PublicStateFieldDefinition[] = [
     sources: (state) => [
       Boolean(state.customPanelState.isOpen),
       Boolean(state.workspacePanelState.isOpen),
-      state.workspacePanelState.options.preferredLocation,
+      state.workspacePanelState.options,
       state.workspacePanelState.workspaceID,
       state.workspacePanelState.additionalData,
       Boolean(state.historyPanelState.isOpen),
@@ -187,7 +187,7 @@ const fieldDefinitions: readonly PublicStateFieldDefinition[] = [
     project: ([
       defaultOpen,
       workspaceOpen,
-      preferredLocation,
+      options,
       workspaceID,
       additionalData,
       historyOpen,
@@ -197,7 +197,7 @@ const fieldDefinitions: readonly PublicStateFieldDefinition[] = [
         default: { isOpen: defaultOpen },
         workspace: {
           isOpen: workspaceOpen,
-          options: { preferredLocation },
+          options,
           workspaceID,
           additionalData,
         },
@@ -208,14 +208,14 @@ const fieldDefinitions: readonly PublicStateFieldDefinition[] = [
     name: 'workspace',
     sources: (state) => [
       Boolean(state.workspacePanelState.isOpen),
-      state.workspacePanelState.options.preferredLocation,
+      state.workspacePanelState.options,
       state.workspacePanelState.workspaceID,
       state.workspacePanelState.additionalData,
     ],
-    project: ([isOpen, preferredLocation, workspaceID, additionalData]) =>
+    project: ([isOpen, options, workspaceID, additionalData]) =>
       freezeClone({
         isOpen,
-        options: { preferredLocation },
+        options,
         workspaceID,
         additionalData,
       }),

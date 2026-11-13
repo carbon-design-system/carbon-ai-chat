@@ -13,6 +13,7 @@ import {
   BusEventType,
   ChatInstance,
   CustomPanelOpenOptions,
+  PageObjectId,
   PanelType,
   ViewType,
 } from '../../../../src/aiChatEntry';
@@ -24,7 +25,9 @@ import {
   click,
   contractChat,
   contractSetup,
+  getByTestId,
   isHidden,
+  isShownWithin,
   pause,
   recordEvents,
 } from '../../helpers';
@@ -131,8 +134,6 @@ describe('customPanels.getPanel', () => {
 describe('custom panel hostElement', () => {
   contractSetup();
 
-  // The JSDoc reads "The custom panel hostElement"; on `main` no panel ever
-  // gets one (src/chat/services/CustomPanelInstance.ts:41 is never assigned).
   it.each([PanelType.DEFAULT, PanelType.WORKSPACE, PanelType.HISTORY])(
     'is undefined for the %s panel, closed or open',
     async (type) => {
@@ -216,8 +217,6 @@ describe('default custom panel events', () => {
   });
 
   it('reports the panel open in state by the time pre:open fires, and closed by pre:close', async () => {
-    // The JSDoc says pre:open fires before the change; on `main` the panel is
-    // already open (MAIN-NOTES M90).
     const { instance } = await mountOpen();
     const seen: string[] = [];
     instance.on(
@@ -326,6 +325,18 @@ describe('customPanelElement', () => {
     // A short wait to show the custom panel doesn't open.
     await pause(300);
     expect(isHidden(content)).toBe(true);
+  });
+
+  // @covers export.aiChatEntry.PageObjectId
+  it('shows inside the element with the custom panel test ID while open', async () => {
+    const { instance } = await mountOpen();
+    const content = writePanelContent(instance);
+    const events = recordEvents(instance, PANEL_EVENTS);
+    await openPanel(instance);
+    await waitForEvent(events, BusEventType.CUSTOM_PANEL_OPEN);
+    const panel = getByTestId(PageObjectId.CUSTOM_PANEL);
+    expect(isHidden(panel)).toBe(false);
+    expect(isShownWithin(content, panel)).toBe(true);
   });
 });
 

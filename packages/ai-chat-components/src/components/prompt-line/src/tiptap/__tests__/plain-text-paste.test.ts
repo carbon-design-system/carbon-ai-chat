@@ -84,7 +84,8 @@ describe('tiptap/plain-text-paste', function () {
     dispatchPaste(editor, 'a\nb');
 
     expect(editor.getJSON().content?.length).to.equal(2);
-    expect(getRawText(editor.getJSON())).to.equal('woa\nbrld');
+    // Two paragraphs read as two newlines.
+    expect(getRawText(editor.getJSON())).to.equal('woa\n\nbrld');
   });
 
   it('collapses the caret after text pasted over a selection', () => {
@@ -107,6 +108,6 @@ describe('tiptap/plain-text-paste', function () {
     editor.commands.insertContent('Z');
 
     expect(editor.getJSON().content?.length).to.equal(2);
-    expect(getRawText(editor.getJSON())).to.equal('\nZ');
+    expect(getRawText(editor.getJSON())).to.equal('\n\nZ');
   });
 });

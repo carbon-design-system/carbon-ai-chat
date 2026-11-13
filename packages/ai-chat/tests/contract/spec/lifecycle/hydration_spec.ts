@@ -112,10 +112,7 @@ describe('restart and clear on a mounted chat', () => {
     expect(sources()).toEqual([WELCOME]);
   });
 
-  it('never hydrates after a clear before the first open', async () => {
-    // Suspected bug on `main`: clearConversation marks a chat that never
-    // opened as hydrated, so its first open loads no history, sends no
-    // welcome, and never fires chat:ready.
+  it('hydrates on the first open after a clear before it', async () => {
     let loads = 0;
     const { instance, ready, sources } = await closedChat(
       {},
@@ -128,10 +125,38 @@ describe('restart and clear on a mounted chat', () => {
     );
     await act(() => instance.messaging.clearConversation());
     await changeView(instance, ViewType.MAIN_WINDOW);
-    await pause(100);
-    expect(loads).toBe(0);
-    expect(sources()).toEqual([]);
-    expect(ready.count()).toBe(0);
+    await waitFor(() => expect(ready.count()).toBe(1));
+    expect(loads).toBe(1);
+    expect(sources()).toEqual([WELCOME]);
     expect(instance.getState().status).toBe('ready');
+
+    await act(() => instance.messaging.clearConversation());
+    await pause();
+    expect(loads).toBe(1);
+    expect(sources()).toEqual([WELCOME]);
+    expect(ready.count()).toBe(1);
+  });
+
+  it('loads history once for a send before the first open, after a clear', async () => {
+    let loads = 0;
+    const { instance, backend, ready } = await closedChat(
+      {},
+      {
+        customLoadHistory: async (): Promise<HistoryItem[]> => {
+          loads += 1;
+          return [];
+        },
+      }
+    );
+    await act(() => instance.messaging.clearConversation());
+    await act(() => instance.send('hello'));
+    await waitFor(() => expect(ready.count()).toBe(1));
+    expect(loads).toBe(1);
+    expect(backend.texts()).toContain('hello');
+
+    await changeView(instance, ViewType.MAIN_WINDOW);
+    await pause();
+    expect(loads).toBe(1);
+    expect(ready.count()).toBe(1);
   });
 });

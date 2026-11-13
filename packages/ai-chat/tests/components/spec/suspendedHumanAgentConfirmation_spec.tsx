@@ -40,7 +40,7 @@ jest.mock('../../../src/chat/components/carbon/Button', () => ({
 }));
 
 function renderSuspendedCard() {
-  const startChat = jest.fn();
+  const startChat = jest.fn(() => Promise.resolve());
   const requestFocus = jest.fn();
   const setConfirmation = jest.fn();
   const props = {

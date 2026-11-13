@@ -17,13 +17,14 @@ import {
 } from '../store/reducerUtils';
 import { AppState } from '../../types/state/AppState';
 import { createWelcomeRequest, isResponse } from '../utils/messageUtils';
-import { consoleWarn, debugLog } from '../utils/miscUtils';
+import { consoleError, consoleWarn, debugLog } from '../utils/miscUtils';
 import { resetStopStreamingButton } from '../utils/streamingUtils';
 import {
   BusEventType,
   MessageSendSource,
 } from '../../types/events/eventBusTypes';
 import { SendOptions } from '../../types/instance/ChatInstance';
+import { PanelType } from '../../types/instance/apiTypes';
 import { MessageRequest } from '../../types/messaging/Messages';
 import { OnErrorType } from '../../types/config/ErrorConfig';
 import type { ServiceManager } from './ServiceManager';
@@ -47,6 +48,10 @@ interface RestartConversationOptions {
    * This defaults to true.
    */
   fireEvents?: boolean;
+  /**
+   * Indicates if file uploads still in progress should be canceled. This defaults to true.
+   */
+  cancelUploads?: boolean;
 }
 
 class HydrationService {
@@ -80,6 +85,11 @@ class HydrationService {
    * Records the first history-load attempt so a restart cannot load the old conversation again.
    */
   private alreadyHydrated = false;
+
+  /**
+   * Indicates if a load has already waited for the service desk to be created.
+   */
+  private waitedForServiceDesk = false;
 
   constructor(serviceManager: ServiceManager) {
     this.serviceManager = serviceManager;
@@ -189,10 +199,11 @@ class HydrationService {
     // Note, we're not waiting for the human agent service to handle the hydration. It may start an asynchronous
     // process to reconnect the user to an agent but that is considered separate from the main hydration.
     const allowReconnect = config.public.serviceDesk.allowReconnect ?? true;
-    this.serviceManager?.humanAgentService?.handleHydration(
-      allowReconnect,
-      Boolean(history)
-    );
+    this.serviceManager?.humanAgentService
+      ?.handleHydration(allowReconnect, Boolean(history))
+      .catch((error) =>
+        consoleError('Resuming the agent chat after a load failed.', error)
+      );
   }
 
   private async loadInitialHistory(generation: number): Promise<LoadedHistory> {
@@ -206,14 +217,15 @@ class HydrationService {
       return history;
     }
 
-    const humanAgentService = serviceManager.humanAgentService;
-    if (!humanAgentService || humanAgentService.hasInitialized) {
-      debugLog('No service desk integrations present');
-      return history;
+    // The service desk is created at mount, and each load waits for it. Only the first load to wait reports a
+    // failure, so a failed desk is reported once.
+    const initialization = serviceManager.humanAgentService?.initialize();
+    if (this.waitedForServiceDesk) {
+      await initialization?.catch(() => {});
+    } else {
+      this.waitedForServiceDesk = true;
+      await initialization;
     }
-
-    debugLog('Initializing the human agent service');
-    await humanAgentService.initialize();
     return history;
   }
 
@@ -296,6 +308,7 @@ class HydrationService {
       skipHydration = false,
       endHumanAgentConversation = true,
       fireEvents = true,
+      cancelUploads = true,
     } = options;
 
     debugLog('Restarting conversation');
@@ -365,11 +378,29 @@ class HydrationService {
       }
 
       await this.serviceManager.messageService.cancelAllMessageRequests();
+      if (cancelUploads) {
+        this.serviceManager.inputActionsService.cancelPendingUploads();
+      }
 
       // Hide the stop streaming button since we've canceled all streams. Unconditional
       // on purpose — everything was just canceled, so there is no other stream to keep
       // it visible for.
       resetStopStreamingButton(store);
+
+      // The restart below would close an open workspace with no events, so close it through its panel first. A
+      // failing close handler can't stop the restart, which closes the workspace either way.
+      if (fireEvents && store.getState().workspacePanelState.isOpen) {
+        try {
+          await serviceManager.customPanelManager
+            .getPanel(PanelType.WORKSPACE)
+            .close();
+        } catch (error) {
+          consoleError(
+            'A workspace close handler failed during a restart. The restart closes the workspace anyway.',
+            error
+          );
+        }
+      }
 
       store.dispatch(actions.restartConversation());
       if (!skipHydration) {
@@ -393,7 +424,8 @@ class HydrationService {
           didHydrate = true;
           await serviceManager.actions.hydrateChat();
         }
-      } else {
+      } else if (this.alreadyHydrated) {
+        // A chat that never started hydrating leaves it to its first open.
         store.dispatch(actions.chatWasHydrated());
       }
       if (!didHydrate) {
@@ -429,15 +461,10 @@ class HydrationService {
       newPersistedToBrowserStorage.viewState = VIEW_STATE_LAUNCHER_OPEN;
     }
     this.serviceManager.messageService.cancelAllMessageRequests();
+    this.serviceManager.inputActionsService.cancelPendingUploads();
 
     this.serviceManager.messageUpsertCoordinator.clearAll();
-
-    // When the host owns persistence there is no sessionStorage to clear; the state reset dispatched
-    // below flows to its onStateChange callback like any other change.
-    const { persistedState } = store.getState().config.public;
-    if (!persistedState?.initialState && !persistedState?.onStateChange) {
-      this.serviceManager.userSessionStorageService.clearSession();
-    }
+    this.serviceManager.humanAgentService?.dropHeldMessages();
 
     this.serviceManager.store.dispatch(
       actions.setAppStateValue(
@@ -445,6 +472,14 @@ class HydrationService {
         newPersistedToBrowserStorage
       )
     );
+
+    // The store subscription saves the reset synchronously, so the record is cleared after the
+    // dispatch; it's saved again at the next change. When the host owns persistence there is no
+    // sessionStorage to clear, and the reset flows to its onStateChange callback like any other change.
+    const { persistedState } = store.getState().config.public;
+    if (!persistedState?.initialState && !persistedState?.onStateChange) {
+      this.serviceManager.userSessionStorageService.clearSession();
+    }
   }
 
   /**

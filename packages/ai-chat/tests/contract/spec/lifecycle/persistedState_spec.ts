@@ -10,6 +10,9 @@
 import { act } from '@testing-library/react';
 
 import {
+  BusEventType,
+  BusEventViewPreChange,
+  ChatInstance,
   MessageSendSource,
   PersistableState,
   PublicConfig,
@@ -155,9 +158,6 @@ describe('persistedState.initialState', () => {
   });
 
   it('sends the welcome on open even when it says a message was sent', async () => {
-    // The PersistedStateConfig JSDoc says dropping hasSentNonWelcomeMessage
-    // re-sends the welcome on reload. On `main` the flag doesn't gate the
-    // welcome: a new mount with no history sends it either way.
     const { instance, backend } = await mountWith({
       persistedState: {
         initialState: {
@@ -196,7 +196,63 @@ describe('persistedState.initialState', () => {
 describe('persistedState.onStateChange', () => {
   contractSetup();
 
-  it('reports a saved-field change with the whole PersistableState and no bookkeeping', async () => {
+  it('is not called at mount when nothing changed', async () => {
+    const recorder = stateRecorder();
+    await mountWith({
+      messaging: { skipWelcome: true },
+      persistedState: { onStateChange: recorder.onStateChange },
+    });
+    await pause();
+    expect(recorder.values).toEqual([]);
+  });
+
+  it('is not called at mount when it boots from initialState', async () => {
+    const recorder = stateRecorder();
+    const { instance } = await mountWith({
+      messaging: { skipWelcome: true },
+      persistedState: {
+        initialState: { viewState: OPEN } as PersistableState,
+        onStateChange: recorder.onStateChange,
+      },
+    });
+    await pause();
+    expect(instance.getState().viewState).toEqual(OPEN);
+    expect(recorder.values).toEqual([]);
+  });
+
+  // @covers config.openChatByDefault event.view:pre:change
+  it('reports a later open after a view:pre:change handler cancels the mount’s open', async () => {
+    const recorder = stateRecorder();
+    let cancelled = false;
+    const backend = fakeBackend({ autoResolve: true });
+    const { instance } = await contractChat({
+      openChatByDefault: true,
+      onBeforeRender: (handed: ChatInstance) => {
+        handed.on({
+          type: BusEventType.VIEW_PRE_CHANGE,
+          handler: (event: BusEventViewPreChange) => {
+            if (!cancelled) {
+              cancelled = true;
+              event.cancelViewChange = true;
+            }
+          },
+        });
+      },
+      messaging: {
+        skipWelcome: true,
+        customSendMessage: backend.customSendMessage,
+      },
+      persistedState: { onStateChange: recorder.onStateChange },
+    });
+    await pause();
+    expect(cancelled).toBe(true);
+    expect(instance.getState().viewState.mainWindow).toBe(false);
+    expect(recorder.values).toEqual([]);
+    await changeView(instance, ViewType.MAIN_WINDOW);
+    expect(recorder.values.map((value) => value.viewState)).toEqual([OPEN]);
+  });
+
+  it('reports one view change once, with the whole PersistableState and no bookkeeping', async () => {
     const recorder = stateRecorder();
     const { instance } = await mountWith({
       messaging: { skipWelcome: true },
@@ -204,27 +260,41 @@ describe('persistedState.onStateChange', () => {
     });
     recorder.values.length = 0;
     await changeView(instance, ViewType.MAIN_WINDOW);
-    // On `main` one view change can report the same value more than once, so
-    // this reads the last report rather than counting them.
-    expect(recorder.values.length).toBeGreaterThan(0);
-    const reported = recorder.last();
+    expect(recorder.values).toHaveLength(1);
+    const [reported] = recorder.values;
     expect(Object.keys(reported).sort()).toEqual(PERSISTABLE_KEYS);
     expect(reported.viewState).toEqual(OPEN);
     expect(reported.hasSentNonWelcomeMessage).toBe(false);
     expect(reported.disclaimersAccepted).toEqual({});
   });
 
-  it('reports the latest value after each change', async () => {
+  it('reports each change once, with its latest value', async () => {
     const recorder = stateRecorder();
     const { instance } = await mountWith({
       messaging: { skipWelcome: true },
       persistedState: { onStateChange: recorder.onStateChange },
     });
+    recorder.values.length = 0;
     await showUnread(instance);
-    expect(recorder.last().showUnreadIndicator).toBe(true);
-    expect(recorder.last().viewState).toEqual(CLOSED);
     await showUnread(instance, false);
-    expect(recorder.last().showUnreadIndicator).toBe(false);
+    expect(recorder.values.map((value) => value.showUnreadIndicator)).toEqual([
+      true,
+      false,
+    ]);
+    expect(recorder.last().viewState).toEqual(CLOSED);
+  });
+
+  it('is not called for a change that leaves the saved values equal', async () => {
+    const recorder = stateRecorder();
+    const { instance } = await mountWith({
+      messaging: { skipWelcome: true },
+      persistedState: { onStateChange: recorder.onStateChange },
+    });
+    await changeView(instance, ViewType.MAIN_WINDOW);
+    recorder.values.length = 0;
+    await changeView(instance, ViewType.MAIN_WINDOW);
+    await showUnread(instance, false);
+    expect(recorder.values).toEqual([]);
   });
 
   it('is not called for a change outside the saved fields, such as typing', async () => {

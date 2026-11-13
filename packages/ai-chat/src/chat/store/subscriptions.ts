@@ -19,15 +19,29 @@ import { toPersistableState } from './persistenceUtils';
 /**
  * Persists `persistedToBrowserStorage` whenever it changes. By default this writes to the browser's
  * sessionStorage. When the host owns persistence (`config.persistedState`), the change is reported to
- * its `onStateChange` callback instead — the persisted-slice reference gate below is exactly "the
- * persistable state changed", so the callback is not fired on transient changes such as input text.
+ * its `onStateChange` callback instead, once per change of the persistable values: a new slice with
+ * equal values, or a change to bookkeeping alone, isn't reported. Transient changes such as input text
+ * never touch the slice.
  */
 function copyToSessionStorage(serviceManager: ServiceManager) {
   let previousPersistedToBrowserStorage =
     serviceManager.store.getState().persistedToBrowserStorage;
+  // The chat boots with its views closed, then opens the view it starts in. That first view change
+  // isn't a change to the session, so the comparison starts from the view the chat boots into. Once
+  // the first view change settles, the comparison restarts from the state it left, so a handler that
+  // cancelled it doesn't hide a later change to the view it would have opened.
+  let previousPersistableState = toPersistableState({
+    ...previousPersistedToBrowserStorage,
+    viewState: serviceManager.store.getState().targetViewState,
+  });
+  let settledInitialView = false;
   return () => {
-    const { persistedToBrowserStorage, config } =
+    const { persistedToBrowserStorage, config, initialViewChangeComplete } =
       serviceManager.store.getState();
+    if (!settledInitialView && initialViewChangeComplete) {
+      settledInitialView = true;
+      previousPersistableState = toPersistableState(persistedToBrowserStorage);
+    }
     const persistChatSession =
       previousPersistedToBrowserStorage !== persistedToBrowserStorage;
 
@@ -39,9 +53,11 @@ function copyToSessionStorage(serviceManager: ServiceManager) {
         persistedStateConfig?.initialState ||
         persistedStateConfig?.onStateChange
       ) {
-        persistedStateConfig.onStateChange?.(
-          toPersistableState(persistedToBrowserStorage)
-        );
+        const persistableState = toPersistableState(persistedToBrowserStorage);
+        if (!isEqual(previousPersistableState, persistableState)) {
+          previousPersistableState = persistableState;
+          persistedStateConfig.onStateChange?.(persistableState);
+        }
       } else {
         serviceManager.userSessionStorageService.persistSession(
           persistedToBrowserStorage

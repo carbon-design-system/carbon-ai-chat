@@ -10,6 +10,7 @@
 import { act, waitFor } from '@testing-library/react';
 
 import {
+  BusEventType,
   ChatInstance,
   KeyboardShortcuts,
   PageObjectId,
@@ -52,6 +53,23 @@ describe('shouldTakeFocusIfOpensAutomatically', () => {
     expect(deepActiveElement()).toBe(button);
   });
 
+  it('leaves focus outside the chat when false and a view:pre:change handler delays the default open', async () => {
+    const button = focusHostButton();
+    await contractChat({
+      messaging: { skipWelcome: true },
+      openChatByDefault: true,
+      shouldTakeFocusIfOpensAutomatically: false,
+      onBeforeRender: (instance) => {
+        instance.on({
+          type: BusEventType.VIEW_PRE_CHANGE,
+          handler: () => pause(50),
+        });
+      },
+    });
+    await pause(150);
+    expect(deepActiveElement()).toBe(button);
+  });
+
   it('moves focus into the input on a changeView open by default', async () => {
     const { instance } = await contractChat({
       messaging: { skipWelcome: true },
@@ -61,34 +79,46 @@ describe('shouldTakeFocusIfOpensAutomatically', () => {
     await waitFor(() => expect(focusIsInInput()).toBe(true));
   });
 
-  // `main` applies the flag to every focus move the chat makes, not only to
-  // an automatic open as its JSDoc says: a changeView open and
-  // instance.requestFocus() also leave focus alone.
-  it('leaves focus alone on a changeView open when false', async () => {
+  it('moves focus into the input on a changeView open when false', async () => {
     const { instance } = await contractChat({
       messaging: { skipWelcome: true },
       shouldTakeFocusIfOpensAutomatically: false,
     });
-    const button = focusHostButton();
+    focusHostButton();
     await changeView(instance, ViewType.MAIN_WINDOW);
-    await pause(100);
-    expect(deepActiveElement()).toBe(button);
+    await waitFor(() => expect(focusIsInInput()).toBe(true));
   });
 
-  it('makes requestFocus return false and move nothing when false', async () => {
+  it('lets requestFocus move focus into the input when false', async () => {
     const { instance } = await contractChat({
       messaging: { skipWelcome: true },
       shouldTakeFocusIfOpensAutomatically: false,
     });
     await changeView(instance, ViewType.MAIN_WINDOW);
-    const button = focusHostButton();
+    focusHostButton();
     let result: boolean | void;
     await act(async () => {
       result = instance.requestFocus();
     });
-    expect(result).toBe(false);
+    expect(result).toBe(true);
+    await waitFor(() => expect(focusIsInInput()).toBe(true));
+  });
+
+  it('lets requestFocus move focus after the chat opens by default when false', async () => {
+    const { instance } = await contractChat({
+      messaging: { skipWelcome: true },
+      openChatByDefault: true,
+      shouldTakeFocusIfOpensAutomatically: false,
+    });
+    const button = focusHostButton();
     await pause(100);
     expect(deepActiveElement()).toBe(button);
+    let result: boolean | void;
+    await act(async () => {
+      result = instance.requestFocus();
+    });
+    expect(result).toBe(true);
+    await waitFor(() => expect(focusIsInInput()).toBe(true));
   });
 });
 

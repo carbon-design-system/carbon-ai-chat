@@ -32,7 +32,10 @@ import {
   itemsToGroups,
   type AutocompleteControllerState,
 } from '../../components/prompt-line/src/autocomplete-controller.js';
-import type { AutocompleteNavigatedEventDetail } from '../../components/prompt-line/autocomplete/src/autocomplete.js';
+import type {
+  AutocompleteNavigatedEventDetail,
+  AutocompleteSendEventDetail,
+} from '../../components/prompt-line/autocomplete/src/autocomplete.js';
 import type {
   AutocompleteConfig,
   StartersConfig,
@@ -173,13 +176,19 @@ export function useChatAutocomplete(
   const isSendDisabledRef = React.useRef(isSendDisabled);
   isSendDisabledRef.current = isSendDisabled;
 
-  const handleSend = React.useCallback((text: string) => {
-    if (!text || isSendDisabledRef.current) {
-      return;
-    }
-    controllerRef.current?.dismiss(true);
-    onSendItemRef.current?.(text);
-  }, []);
+  const handleSend = React.useCallback(
+    (text: string, item?: SuggestionItem) => {
+      if (!text || isSendDisabledRef.current) {
+        return;
+      }
+      if (item) {
+        controllerRef.current?.reportSent(item);
+      }
+      controllerRef.current?.dismiss(true);
+      onSendItemRef.current?.(text);
+    },
+    []
+  );
 
   const dismiss = React.useCallback(() => {
     controllerRef.current?.dismiss();
@@ -307,8 +316,8 @@ export function useChatAutocomplete(
         onSelect={(e: CustomEvent<{ item: SuggestionItem }>) =>
           handleSelect(e.detail.item)
         }
-        onSend={(e: CustomEvent<{ text: string }>) =>
-          handleSend(e.detail?.text)
+        onSend={(e: CustomEvent<AutocompleteSendEventDetail>) =>
+          handleSend(e.detail?.text, e.detail?.item)
         }
       />
     );

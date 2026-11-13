@@ -357,11 +357,14 @@ class ChatInstanceService {
   /**
    * Sets the suspended state for an agent conversation. A conversation can be suspended or un-suspended only if the
    * user is currently connecting or connected to an agent. If a conversation is suspended, then messages from the user
-   * will no longer be routed to the service desk and incoming messages from the service desk will not be displayed. In
-   * addition, the current connection status with an agent will not be shown.
+   * will no longer be routed to the service desk and incoming messages from the service desk are held until it
+   * resumes. In addition, the current connection status with an agent will not be shown.
    */
-  agentUpdateIsSuspended(isSuspended: boolean) {
+  async agentUpdateIsSuspended(isSuspended: boolean) {
     this.serviceManager.store.dispatch(agentUpdateIsSuspended(isSuspended));
+    if (!isSuspended) {
+      await this.serviceManager.humanAgentService?.showHeldMessages();
+    }
   }
 
   /** @see SlotEventService.createElementsForUserDefinedResponses */
@@ -395,6 +398,10 @@ interface RestartConversationOptions {
    * Indicates if the "pre:restartConversation" and "restartConversation" events should be fired. This defaults to true.
    */
   fireEvents?: boolean;
+  /**
+   * Indicates if file uploads still in progress should be canceled. This defaults to true.
+   */
+  cancelUploads?: boolean;
 }
 
 export { ChatInstanceService };

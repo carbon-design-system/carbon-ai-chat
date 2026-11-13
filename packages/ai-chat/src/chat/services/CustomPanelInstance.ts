@@ -25,8 +25,28 @@ import {
   eventLocalItems,
 } from '../utils/messageEventOwnership';
 import { deepFreeze } from '../utils/lang/objectUtils';
+import { consoleError } from '../utils/miscUtils';
 import { Message } from '../../types/messaging/Messages';
 import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
+
+/**
+ * Closes the open workspace so another can open. A close handler that throws is logged, and the workspace closes
+ * anyway, without its close event.
+ */
+async function closeWorkspaceForNext(
+  close: () => Promise<void>,
+  serviceManager: ServiceManager
+) {
+  try {
+    await close();
+  } catch (error) {
+    consoleError(
+      'A workspace close handler failed while another workspace was opening. The open workspace closes anyway.',
+      error
+    );
+    serviceManager.store.dispatch(actions.setWorkspaceCustomPanelOpen(false));
+  }
+}
 
 /**
  * This function takes in the service manager to help create a custom panel instance. The panel instance is created
@@ -45,6 +65,10 @@ function createCustomPanelInstance(
     localItem: LocalMessageItem;
     working: { message: Message; localItems: Record<string, LocalMessageItem> };
   };
+
+  // How many workspace event handlers are running. A call made while one runs skips the queue below, since the call
+  // that fired the event can't finish until the handler does.
+  let workspaceHandlersRunning = 0;
 
   function captureWorkspaceEvent() {
     const { store } = serviceManager;
@@ -136,12 +160,14 @@ function createCustomPanelInstance(
     const ownsData =
       workspaceValues?.working === working &&
       workspaceValues?.stored === before.additionalData;
+    workspaceHandlersRunning++;
     try {
       await serviceManager.eventBus.fire(
         { type, data },
         serviceManager.instance
       );
     } finally {
+      workspaceHandlersRunning--;
       let current = store.getState().workspacePanelState;
       if (
         messageEvent &&
@@ -221,7 +247,8 @@ function createCustomPanelInstance(
   const { setConfig, setOpen } =
     panelActions[panelType] ?? panelActions[PanelType.DEFAULT];
 
-  const customPanelInstance: CustomPanelInstance = {
+  // The unordered open and close. The panel's own methods below run them in call order.
+  const panelOperations = {
     async open(
       options?: CustomPanelOpenOptions | WorkspaceCustomPanelConfigOptions
     ) {
@@ -229,13 +256,21 @@ function createCustomPanelInstance(
         defaultPanelOptions) as CustomPanelConfigOptions;
       const { store } = serviceManager;
 
-      // For workspace panels, close any existing workspace before opening a new one
-      if (panelType === PanelType.WORKSPACE) {
-        const state = store.getState();
-        if (state.workspacePanelState.isOpen) {
-          // Close the existing workspace panel first
-          customPanelInstance.close();
-        }
+      // The history panel only draws with history on, so opening it otherwise would report a panel nobody sees.
+      if (
+        panelType === PanelType.HISTORY &&
+        !store.getState().config.public.history?.isOn
+      ) {
+        return;
+      }
+
+      // Finish closing the open workspace first: its close resets the workspace state, which would otherwise wipe
+      // the ID and data stored below.
+      if (
+        panelType === PanelType.WORKSPACE &&
+        store.getState().workspacePanelState.isOpen
+      ) {
+        await closeWorkspaceForNext(panelOperations.close, serviceManager);
       }
 
       // For workspace panels, extract and store workspaceId and additionalData if provided
@@ -277,9 +312,13 @@ function createCustomPanelInstance(
     async close() {
       const { store } = serviceManager;
 
-      // For workspace panel, capture state BEFORE closing to preserve data for events
+      // For workspace panel, capture state BEFORE closing to preserve data for events. A closed workspace fires no
+      // close events.
       let workspaceEventData;
-      if (panelType === PanelType.WORKSPACE) {
+      if (
+        panelType === PanelType.WORKSPACE &&
+        store.getState().workspacePanelState.isOpen
+      ) {
         workspaceEventData = captureWorkspaceEvent();
         await fireWorkspaceEvent(
           BusEventType.WORKSPACE_PRE_CLOSE,
@@ -299,6 +338,29 @@ function createCustomPanelInstance(
     },
   };
 
+  // A workspace's opens and closes wait on event handlers, so they run one after another in call order: a call
+  // starts once the one before it has finished. A call made while a workspace event handler runs starts at once
+  // instead, so a handler can await it.
+  let workspaceQueue: Promise<unknown> = Promise.resolve();
+  function inOrder(run: () => Promise<void>): Promise<void> {
+    if (panelType !== PanelType.WORKSPACE || workspaceHandlersRunning > 0) {
+      return run();
+    }
+    const result = workspaceQueue.then(run);
+    workspaceQueue = result.catch(() => {});
+    return result;
+  }
+
+  const customPanelInstance: CustomPanelInstance = {
+    open(options?: CustomPanelOpenOptions | WorkspaceCustomPanelConfigOptions) {
+      return inOrder(() => panelOperations.open(options));
+    },
+
+    close() {
+      return inOrder(panelOperations.close);
+    },
+  };
+
   if (hostElement) {
     customPanelInstance.hostElement = hostElement;
   }
@@ -306,4 +368,8 @@ function createCustomPanelInstance(
   return Object.freeze(customPanelInstance);
 }
 
-export { createCustomPanelInstance, CustomPanelInstance };
+export {
+  closeWorkspaceForNext,
+  createCustomPanelInstance,
+  CustomPanelInstance,
+};

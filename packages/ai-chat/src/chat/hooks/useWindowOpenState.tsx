@@ -34,6 +34,8 @@ export function useWindowOpenState(options: WindowOpenStateOptions) {
     viewStateMainWindow,
     isHydrated,
     useCustomHostElement,
+    shouldTakeFocusIfOpensAutomatically,
+    initialViewChangeComplete,
     requestFocus,
   } = options;
   useEffect(() => {
@@ -41,6 +43,8 @@ export function useWindowOpenState(options: WindowOpenStateOptions) {
       viewStateMainWindow,
       isHydrated,
       useCustomHostElement,
+      shouldTakeFocusIfOpensAutomatically,
+      initialViewChangeComplete,
       requestFocus,
     });
   }, [
@@ -48,6 +52,8 @@ export function useWindowOpenState(options: WindowOpenStateOptions) {
     viewStateMainWindow,
     isHydrated,
     useCustomHostElement,
+    shouldTakeFocusIfOpensAutomatically,
+    initialViewChangeComplete,
     requestFocus,
   ]);
 

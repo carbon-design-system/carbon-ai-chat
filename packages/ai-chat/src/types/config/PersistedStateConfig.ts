@@ -33,9 +33,11 @@ export type PersistableState = Omit<
  * {@link PersistedStateConfig.onStateChange}. When neither field is set, the default `sessionStorage`
  * behavior is unchanged.
  *
- * Round-trip the whole {@link PersistableState} value. Dropping fields such as `disclaimersAccepted`,
- * `humanAgentState`, or `hasSentNonWelcomeMessage` regresses the experience on reload: the disclaimer
- * re-prompts, an in-progress human-agent chat cannot reconnect, and the welcome message is re-sent.
+ * Round-trip the whole {@link PersistableState} value. Dropping a field such as `disclaimersAccepted`
+ * or `humanAgentState` regresses the experience on reload: the disclaimer re-prompts, and an
+ * in-progress human-agent chat can't reconnect. `hasSentNonWelcomeMessage` doesn't decide whether the
+ * welcome is sent. A mount with no history sends one unless {@link PublicConfigMessaging.skipWelcome}
+ * is set.
  *
  * @category Config
  * @experimental
@@ -47,15 +49,20 @@ export interface PersistedStateConfig {
    * resolved value here. When omitted, the chat starts a fresh session but still reports changes to
    * {@link PersistedStateConfig.onStateChange}.
    *
+   * A restored session never restores an expanded launcher or a pending call to action:
+   * `launcherIsExpanded` and `launcherShouldStartCallToActionCounterIfEnabled` always start false, as
+   * they do for a session restored from `sessionStorage`.
+   *
    * @experimental
    */
   initialState?: PersistableState;
 
   /**
-   * Called whenever the persistable session state changes, so the host can store it wherever it likes
-   * (its own backend, `localStorage`, and so on). Replaces the internal `sessionStorage` write. The
-   * argument is the complete {@link PersistableState}; persist it verbatim so it can later seed
-   * {@link PersistedStateConfig.initialState}.
+   * Called once for each change to the persistable session state, so the host can store it wherever it
+   * likes (its own backend, `localStorage`, and so on). Replaces the internal `sessionStorage` write.
+   * Changes are compared by value: an update that leaves every field equal isn't reported, and a mount
+   * that changes nothing makes no call. The argument is the complete {@link PersistableState}; persist
+   * it verbatim so it can later seed {@link PersistedStateConfig.initialState}.
    *
    * @experimental
    */

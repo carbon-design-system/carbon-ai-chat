@@ -54,7 +54,7 @@ export interface ServiceDeskPublicConfig {
   /**
    * The timeout value in seconds to use when determining agent availability. When a connect_to_agent response is
    * received, the system will ask the service desk if any agents are available. If no response is received within
-   * the timeout window, the system will return "false" to indicate no agents are available.
+   * the timeout window, the system will return "false" to indicate no agents are available. This value defaults to 5.
    */
   availabilityTimeoutSeconds?: number;
 
@@ -75,6 +75,11 @@ export interface ServiceDeskPublicConfig {
   /**
    * Indicates if Carbon AI Chat should automatically attempt to reconnect the user to a human agent when it is loaded. This
    * only works if the service desk integration being used supports reconnecting. This value defaults to true.
+   *
+   * When the chat doesn't reconnect (this is false, the desk has no {@link ServiceDesk#reconnect}, or it resolves
+   * false), it ends the agent chat: it fires `human_agent:pre:endChat`, calls {@link ServiceDesk#endChat}, and fires
+   * `human_agent:endChat`. A `pre:endChat` handler can't cancel this end, and one that throws is logged while the end
+   * goes on.
    */
   allowReconnect?: boolean;
 }
@@ -431,7 +436,8 @@ export interface UserMessageErrorInfo extends BaseErrorInfo {
   type: ErrorType.USER_MESSAGE;
 
   /**
-   * The ID of the message that is in error.
+   * The ID of the message that is in error. Use the `messageID` the chat passed to
+   * {@link ServiceDesk#sendMessageToAgent}, or the message's own `id`.
    */
   messageID: string;
 }
@@ -611,6 +617,7 @@ export interface ServiceDesk {
    * This will be called when the service desk is first initialized and it is determined that the user was previously
    * connected to an agent. This function should perform whatever steps are necessary to reconnect the user. Web chat
    * will assume the user is permitted to send messages and is connected to the same agent when this function resolves.
+   * If it resolves false or rejects, the chat ends the agent chat and calls {@link ServiceDesk#endChat}.
    *
    * @returns true to indicate that the reconnect was successful.
    */

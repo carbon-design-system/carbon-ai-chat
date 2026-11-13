@@ -169,15 +169,15 @@ describe('history panel through customPanels', () => {
     expect(events.types()).toEqual([]);
   });
 
-  it('turns isOpen true with history off, though nothing shows', async () => {
-    // Suspected `main` bug (MAIN-NOTES M91): with history off, isOpen still
-    // turns true.
+  it('changes nothing with history off', async () => {
     const { instance } = await contractChat({ openChatByDefault: true });
     const content = writeHistoryContent(instance);
+    const before = instance.state.get();
     await act(() => historyPanel(instance).open());
-    expect(instance.state.get().customPanels.history.isOpen).toBe(true);
-    // A short wait to show the content stays out of view.
+    // A short wait to show nothing changes and the content stays out of view.
     await pause(300);
+    expect(instance.state.get()).toEqual(before);
+    expect(instance.state.get().customPanels.history.isOpen).toBe(false);
     expect(isInFlatTree(content)).toBe(false);
   });
 });

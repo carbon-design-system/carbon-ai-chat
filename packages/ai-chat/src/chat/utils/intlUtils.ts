@@ -13,6 +13,7 @@ import { createIntl } from './i18n';
 import { loadLocale } from './languageUtils';
 import { LanguagePack } from '../../types/config/LanguagePack';
 import { ServiceManager } from '../services/ServiceManager';
+import actions from '../store/actions';
 
 /**
  * A simple utility function to set the i18n formatter on the given service manager.
@@ -53,6 +54,9 @@ async function refreshLocalization(
     const localePack = await loadLocale(locale);
     dayjs.locale(localePack);
     setIntl(serviceManager, localePack.name, languagePack);
+    serviceManager.store.dispatch(
+      actions.setAppStateValue('loadedLocale', locale)
+    );
   } else {
     // Strings-only change: keep the locale the formatter already resolved (the
     // normalized name set at boot / the last locale change), so a strings edit

@@ -363,8 +363,9 @@ describe('workspace event ownership', () => {
     });
     await panel.open({ workspaceId: 'old', additionalData: { value: 'old' } });
     await replacementOpen;
-    expect(seen.length).toBeGreaterThan(0);
-    seen.forEach((value) => expect(value).toBe(replacement));
+    // The replacement open waits for the first to finish, then gets its caller's own object.
+    expect(seen).toEqual([{ value: 'old' }, replacement]);
+    expect(seen[1]).toBe(replacement);
   });
 });
 

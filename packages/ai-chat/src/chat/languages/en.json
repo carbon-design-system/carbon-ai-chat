@@ -186,6 +186,8 @@
   "iframe_ariaOpenedPanel": "Web page panel has opened.",
   "iframe_ariaClosedPanel": "Web page panel has closed.",
   "iframe_ariaClickPreviewCard": "Click to open the web page panel and visit {source}.",
+  "previewCard_viewDetails": "View details",
+  "previewCard_viewing": "Viewing",
   "datePicker_chooseDate": "Choose a date ({format})",
   "datePicker_confirmDate": "Confirm date",
   "fileSharing_fileTooLarge": "The maximum file size allowed is {maxSize}.",

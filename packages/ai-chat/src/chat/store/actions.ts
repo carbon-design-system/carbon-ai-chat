@@ -179,12 +179,15 @@ const actions = {
    * @param addAfterID Indicates if the message item should be inserted immediately after another item that may
    * already be in the list. If this value is not provided, the item will be inserted at the end of the list (if it
    * does not already exist in the list).
+   * @param addMessageAfterID With `addMessage`, places a new full message right after this message in the message
+   * list instead of at the end.
    */
   addLocalMessageItem(
     messageItem: LocalMessageItem,
     message: Message,
     addMessage: boolean,
-    addAfterID?: string
+    addAfterID?: string,
+    addMessageAfterID?: string
   ) {
     return {
       type: ADD_LOCAL_MESSAGE_ITEM,
@@ -192,6 +195,7 @@ const actions = {
       message,
       addMessage,
       addAfterID,
+      addMessageAfterID,
     };
   },
 

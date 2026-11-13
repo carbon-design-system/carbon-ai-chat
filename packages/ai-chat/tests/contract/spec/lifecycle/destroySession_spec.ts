@@ -95,8 +95,6 @@ describe('destroySession', () => {
   });
 
   it('closes the main window to the launcher, firing only state:change', async () => {
-    // The JSDoc names only the stored record; on `main` the reset also closes
-    // the main window, with no view:pre:change or view:change.
     const { instance } = await usedChat();
     const events = recordEvents(instance);
     await destroy(instance);
@@ -121,8 +119,6 @@ describe('destroySession', () => {
   });
 
   it('cancels an in-flight send with CONVERSATION_RESTARTED, and the send settles', async () => {
-    // Not in the JSDoc: on `main` the reset cancels every pending request and
-    // adds a system message after the canceled request.
     const backend = fakeBackend();
     const { instance } = await contractChat({
       messaging: {
@@ -145,14 +141,14 @@ describe('destroySession', () => {
     expect(status).toBe('ready');
   });
 
-  it('saves a default session in sessionStorage rather than none', async () => {
-    // The JSDoc says the record is removed; on `main` the reset is saved
-    // straight back, so a later read finds a default session.
+  it('leaves no session in sessionStorage until the next change saves one', async () => {
     const { instance } = await usedChat();
+    expect(readCarbonChatSession()).not.toBeNull();
     await destroy(instance);
+    expect(readCarbonChatSession()).toBeNull();
+    await changeView(instance, ViewType.MAIN_WINDOW);
     const session = readCarbonChatSession();
-    expect(session).not.toBeNull();
-    expect(session.viewState).toEqual(CLOSED);
+    expect(session.viewState).toEqual(OPEN);
     expect(session.hasSentNonWelcomeMessage).toBe(false);
     expect(session.showUnreadIndicator).toBe(false);
   });

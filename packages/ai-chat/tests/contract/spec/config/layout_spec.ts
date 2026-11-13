@@ -43,8 +43,7 @@ describe('layout.customProperties', () => {
 
   it('warns, naming the key, for a Carbon token whose value is not a hex color', async () => {
     await mount({ '$button-primary': 'red' });
-    // `main` warns twice for one mount; only "at least once" is pinned.
-    expect(warningsNaming(warn, '$button-primary').length).toBeGreaterThan(0);
+    expect(warningsNaming(warn, '$button-primary')).toHaveLength(1);
   });
 
   it('does not warn for a Carbon token with a hex color', async () => {
@@ -63,7 +62,7 @@ describe('layout.customProperties', () => {
       $background: '#ffffff',
       width: '420px',
     });
-    expect(warningsNaming(warn, '$button-primary').length).toBeGreaterThan(0);
+    expect(warningsNaming(warn, '$button-primary')).toHaveLength(1);
     expect(warningsNaming(warn, '$background')).toEqual([]);
     expect(warningsNaming(warn, 'width')).toEqual([]);
   });

@@ -96,8 +96,9 @@ export interface PublicConfig {
   aiEnabled?: boolean;
 
   /**
-   * This is a factory for producing custom implementations of service desks. If this value is set, then this will
-   * be used to create an instance of a {@link ServiceDesk} when the user attempts to connect to an agent.
+   * This is a factory for producing custom implementations of service desks. If this value is set, the chat calls it
+   * once when it mounts to create an instance of a {@link ServiceDesk}, passing any desk state saved before a page
+   * reload. A restored agent chat still reconnects only when the chat first loads its conversation.
    *
    * If it is changed in the middle of a conversation (you should obviously avoid this) the conversation with the
    * human agent will be disconnected.
@@ -105,7 +106,10 @@ export interface PublicConfig {
    * This factory is compared by reference. Provide a stable reference (for example
    * a module-level function or a memoized `useCallback`); a new function identity
    * on every render is treated as a change and, while an agent chat is active, tears
-   * down and rebuilds the service desk connection.
+   * down and rebuilds the service desk connection. While no agent chat is active, a
+   * changed factory isn't called right away: the chat drops the desk it has and calls
+   * the latest factory when it next needs one, when it first loads its conversation or
+   * when an agent chat is requested.
    */
   serviceDeskFactory?: (
     parameters: ServiceDeskFactoryParameters
@@ -117,7 +121,10 @@ export interface PublicConfig {
   serviceDesk?: ServiceDeskPublicConfig;
 
   /**
-   * If the Carbon AI Chat should grab focus if the chat is open on page load.
+   * Whether the chat moves focus into itself when it opens on its own at page load, such as with
+   * {@link PublicConfig.openChatByDefault} or a restored session. Defaults to true. Set it to false to keep focus on
+   * your page at load. It doesn't affect other focus moves: opening the chat with {@link ChatInstance.changeView}
+   * and calling {@link ChatInstance.requestFocus} still move focus into the chat.
    */
   shouldTakeFocusIfOpensAutomatically?: boolean;
 

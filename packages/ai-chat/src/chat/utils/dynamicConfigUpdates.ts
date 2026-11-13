@@ -11,6 +11,7 @@ import isEqual from 'lodash-es/isEqual.js';
 import { PublicConfig } from '../../types/config/PublicConfig';
 import { ServiceManager } from '../services/ServiceManager';
 import { NamespaceService } from '../services/NamespaceService';
+import { messageTimeoutMS } from '../services/MessageService';
 import actions from '../store/actions';
 import createHumanAgentService from '../services/haa/HumanAgentServiceImpl';
 import { consoleDebug, consoleError } from './miscUtils';
@@ -161,54 +162,36 @@ export async function applyConfigChangesDynamically(
   // message service, which the store/React render cannot reach, so push it.
   const prevTimeoutSecs = prevConfig?.messaging?.messageTimeoutSecs;
   const nextTimeoutSecs = newConfig.messaging?.messageTimeoutSecs;
-  if (
-    prevTimeoutSecs !== nextTimeoutSecs &&
-    nextTimeoutSecs &&
-    serviceManager.messageService
-  ) {
-    serviceManager.messageService.timeoutMS = nextTimeoutSecs * 1000;
+  if (prevTimeoutSecs !== nextTimeoutSecs && serviceManager.messageService) {
+    serviceManager.messageService.timeoutMS = messageTimeoutMS(nextTimeoutSecs);
   }
 
-  // SERVICE-INTERNAL MIRROR: the human-agent service coordinates a service desk
-  // built from `serviceDeskFactory`. The factory is read live from config at
-  // chat start (see HumanAgentServiceImpl), so a *future* chat always picks up
-  // the latest factory with no work here. The only thing bound to the old
-  // factory is a live or already-initialized connection — so we only rebuild
-  // when one exists.
+  // SERVICE-INTERNAL MIRROR: the human-agent service holds the service desk
+  // the factory created at mount. The comparison is by factory *reference*
+  // identity, so a non-memoized `serviceDeskFactory` flips this block on every
+  // unrelated re-render.
   //
-  // This matters because the comparison is by factory *reference* identity: a
-  // non-memoized `serviceDeskFactory` would flip this block on every unrelated
-  // re-render. When the service is idle (never initialized and no active chat),
-  // rebuilding would be pure churn that a future chat undoes anyway, so we skip
-  // it entirely. Callers should still memoize the factory if they connect.
+  // While no agent chat is going, the service is idle: swap in a fresh service
+  // without calling the new factory. The next load's initialize(), or the next
+  // agent chat, creates the desk with the factory current then. A fresh service
+  // that hasn't created its desk needs no second swap, so repeated re-renders
+  // call nothing. Only a live connection is torn down and rebuilt at once.
   if (prevConfig?.serviceDeskFactory !== newConfig.serviceDeskFactory) {
     const isActive =
       Boolean(serviceManager.humanAgentService) &&
       isHumanAgentChatActive(serviceManager);
-    const wasInitialized = Boolean(
-      serviceManager.humanAgentService?.hasInitialized
-    );
 
-    if (isActive || wasInitialized) {
+    if (isActive) {
       try {
-        // If a chat is in progress/connecting, end it quietly first (mirrors a
-        // user-initiated end) so we don't strand a live connection on the old
-        // service instance.
-        if (isActive) {
-          consoleDebug('Tearing down existing service desk');
-          await serviceManager.humanAgentService.endChat(true, true, false);
-        }
+        // End the chat quietly first (mirrors a user-initiated end) so we
+        // don't strand a live connection on the old service instance.
+        consoleDebug('Tearing down existing service desk');
+        await serviceManager.humanAgentService.endChat(true, true, false);
 
         consoleDebug('Recreating human agent service');
         serviceManager.humanAgentService =
           createHumanAgentService(serviceManager);
-
-        // Re-initialize only if the previous service had already initialized, so
-        // a factory swap preserves the prior started state.
-        if (wasInitialized) {
-          consoleDebug('Human agent service restarting');
-          await serviceManager.humanAgentService.initialize();
-        }
+        await serviceManager.humanAgentService.initialize();
       } catch (error) {
         // Surface failure to the caller, which decides on any fallback.
         consoleError(
@@ -217,6 +200,10 @@ export async function applyConfigChangesDynamically(
         );
         throw error;
       }
+    } else if (serviceManager.humanAgentService?.hasInitialized) {
+      consoleDebug('Replacing the idle human agent service');
+      serviceManager.humanAgentService =
+        createHumanAgentService(serviceManager);
     }
   }
 
