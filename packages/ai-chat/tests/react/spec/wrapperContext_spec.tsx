@@ -23,6 +23,7 @@ import React, {
   lazy,
   Suspense,
   useContext,
+  useEffect,
   useState,
 } from 'react';
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
@@ -43,9 +44,14 @@ import {
 
 const ThemeContext = createContext('none');
 
+let probeEffects = 0;
+
 function Probe() {
   const theme = useContext(ThemeContext);
   const [count, setCount] = useState(0);
+  useEffect(() => {
+    probeEffects += 1;
+  }, []);
   return (
     <button
       type="button"
@@ -185,6 +191,54 @@ describe('React wrappers keep custom content in the host React tree', () => {
       );
       expect(probeButton()).toBe(button);
       expect(button.textContent).toBe('dark:1');
+    });
+
+    it('runs custom content effects once and keeps its node while a response streams', async () => {
+      let instance: ChatInstance | null = null;
+      probeEffects = 0;
+      render(
+        <Host
+          theme="light"
+          onBeforeRender={(chat) => {
+            instance = chat;
+          }}
+        />
+      );
+      await waitFor(() => expect(instance).not.toBeNull(), { timeout: 5000 });
+      const item = (step: number) => ({
+        streaming_metadata: { id: 'item-1' },
+        response_type: MessageResponseTypes.USER_DEFINED,
+        user_defined: { step },
+      });
+      const chunk = (value: unknown) =>
+        act(() => instance.messaging.addMessageChunk(value as never));
+
+      await chunk({
+        streaming_metadata: { response_id: 'streamed' },
+        partial_item: item(1),
+      });
+      await waitFor(() => expect(probeButton()).not.toBeNull(), {
+        timeout: 5000,
+      });
+      const button = probeButton();
+      fireEvent.click(button);
+
+      await chunk({
+        streaming_metadata: { response_id: 'streamed' },
+        partial_item: item(2),
+      });
+      await chunk({
+        streaming_metadata: { response_id: 'streamed' },
+        complete_item: item(3),
+      });
+      await chunk({
+        final_response: { id: 'streamed', output: { generic: [item(3)] } },
+      });
+
+      expect(probeButton()).toBe(button);
+      expect(button.textContent).toBe('light:1');
+      expect(document.querySelectorAll('[data-probe="udr"]')).toHaveLength(1);
+      expect(probeEffects).toBe(1);
     });
   });
 
